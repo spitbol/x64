@@ -1,0 +1,31 @@
+Dave Shields	12-Jun-2012 5:10:49 pm
+
+Note from Mark Emmer on 9 September 2009. Attached was a tar file that
+contained the starting files for this project.
+
+
+Dave,
+
+ 
+
+Here are all the source files and a makefile to build 32-bit spitbol.
+Undoubtedly you'll find that you're missing some libraries and perhaps
+the correct 'as'.  Let me know and I'll steer you in the right
+direction.  Also included is a spitbol executable which might work
+straight out of the box on your system.
+
+ 
+
+I included v37.s and errors.s, thus you should not need a working
+spitbol executable to build.
+
+ 
+
+Let me know how it goes.  And please don't upload this source to any
+public site until we decide on the license and refine it a bit more.
+
+ 
+
+Mark
+
+ 
