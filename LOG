@@ -1,3 +1,14 @@
+Dave Shields	12-Jun-2012 5:20:22 pm
+
+Save spitbol executable and supplied *.s files in new ./boot
+directory. The .s files are to see if we can reproduce mark's
+translation.
+
+Move other files to new ./spitbol directory, with include and c files
+for osint in ./spitbol/osint. Will need to revise makefile.
+
+
+
 Dave Shields	12-Jun-2012 5:10:49 pm
 
 Tag files as supplied by emmer as  v3.7
