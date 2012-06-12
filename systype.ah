@@ -1,0 +1,150 @@
+# configuration information for inter.s
+#
+linux=1
+winnt=0
+
+#        Segment Declarations Macros
+#
+                .macro          CSeg_           # Open a Code Segment
+                .section        .text
+                .endm
+
+                .macro          CSegEnd_        # Close a Code Segment
+                .endm
+
+                .macro          DSeg_           # Open a Data Segment
+                .section        .data
+                .endm
+
+                .macro          DSegEnd_        # Close a Data Segment
+                .endm
+
+                .macro          BSSSeg_         # Open a BSS Segment
+                .section        .bss
+                .endm
+
+                .macro          BSSSegEnd_      # Close a BSS Segment
+                .endm
+
+                .macro          Header_         # Group and Assume directives
+                CSeg_
+                CSegEnd_
+                DSeg_
+                DSegEnd_
+                .endm
+
+# Structure definition macros
+#
+        .macro  struc name
+        .struct 0
+        .endm
+
+        .macro  ends name
+        DSeg_
+        .endm
+
+# define how data locations in the Minimal code are accessed from
+# assembly-language and C routines.  "direct" is non-zero to make
+# the symbols public for direct access, zero to have access via
+# a table of pointers and the minadr procedure.
+#
+direct=1
+
+# define how floating point results are returned from a function
+# (either in ST(0) or in EDX:EAX.
+fretst0=1
+freteax=0
+
+# Macros defining whether a leading underscore is required for public Minimal
+# names that will be referenced from C.
+#
+underscore=0
+        .macro  address name
+.ifne underscore
+        .long   _\name
+.else
+        .long   \name
+.endif
+        .endm
+
+        .macro  ext name,type
+        .extern name:type
+        .endm
+
+        .macro  cext name,type
+.ifne underscore
+\name	=	_\name
+.endif
+        ext     \name,\type
+        .endm
+
+        .macro  def name,op,val
+\name:   \op    \val
+        .endm
+
+        .macro  pubdef name,op,val
+.ifne underscore
+        .global _\name
+_\name: \op     \val
+\name   =	_\name
+.else
+        .global \name
+\name:  \op     \val
+.endif
+        .endm
+
+        .macro  pubname procname
+.ifne underscore
+        .global _\procname
+.else
+        .global \procname
+.endif
+        .endm
+
+        .macro  proc procname,distance
+\procname:
+        .endm
+
+        .macro  endp procname
+        .endm
+
+        .macro  cproc procname,distance
+.ifne underscore
+_\procname:
+.else
+\procname:
+.endif
+        .endm
+
+        .macro  cendp procname
+        .endm
+
+        .macro  publab procname
+        .global \procname
+        .endm
+
+# Call C function.  Intel follows standard C conventions, and
+# caller pops arguments.
+        .macro  callc routine,nbytes
+.ifne underscore
+        call    _\routine
+.else
+        call    \routine
+.endif
+.ifne \nbytes
+        add     esp,\nbytes
+.endif
+        .endm
+
+# Intel runs in one flat segment.  Far calls are the same as near calls.
+        .macro  callfar routine,nbytes
+        ext     \routine:near
+        callc   \routine,\nbytes
+        .endm
+
+# Return from an assembly-language function that will be called by C.
+# Caller pops arguments
+        .macro  retc nbytes
+	ret
+        .endm
+
