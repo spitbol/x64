@@ -435,7 +435,7 @@ int io;
    }
 
 /* Rename a file.  Return 0 if OK */
-int rename(oldname, newname)
+int renames(oldname, newname)
 char *oldname;
 char *newname;
    {

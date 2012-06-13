@@ -114,7 +114,7 @@ extern	int			rdenv Params(( struct scblk *varname, struct scblk *result ));
 #ifndef readfar
 extern	uword		readfar Params(( File_handle fd, void FAR *Buf, uword Cnt ));
 #endif
-extern	int			rename Params((char *oldname, char *newname));
+extern	int			renames Params((char *oldname, char *newname));
 extern	void		rereloc Params(( void ));
 extern	int			resaout Params(( char *filename ));
 extern	void		restart Params(( char *code, char *stack ));

@@ -1,4 +1,31 @@
-Dave Shields	12-Jun-2012 5:20:22 pm
+dave shields	13-Jun-2012 1:41:37 pm
+
+changed permissions of ostint files to not have 'x' attribute.
+
+had to patch /usr/include/unistd.h to eliminate compiler error near line 1171. Did this
+by enclosing in comment to avoid compilation.
+
+dave shields	12-Jun-2012 10:11:06 pm
+
+compile error due to missing include file /usr/include/bits/predef.h
+
+A web search for "missing bits/prefer.h" led to
+	http://ubuntuforums.org/showthread.php?t=1877944
+which reported
+
+	Found a fix. I needed the proper libc includes for 32-bit
+	builds. I'm running a 64-bit machine. So I just ran:
+
+		sudo apt-get install libc6-dev-i386
+
+This fixed the problem
+
+Another response suggested
+	sudo apt-get install gcc-multilib 
+and I also tried that, only to learn gcc-multilib was alredy installed.
+
+
+dave shields	12-Jun-2012 5:20:22 pm
 
 Save spitbol executable and supplied *.s files in new ./boot
 directory. The .s files are to see if we can reproduce mark's
@@ -9,36 +36,37 @@ for osint in ./spitbol/osint. Will need to revise makefile.
 
 
 
-Dave Shields	12-Jun-2012 5:10:49 pm
+dave shields	12-Jun-2012 5:10:49 pm
 
 Tag files as supplied by emmer as  v3.7
 
-Note from Mark Emmer on 9 September 2009. Attached was a tar file that
+
+Note from Mark Emmer sent 9 September 2009. Attached was a tar file that
 contained the starting files for this project.
 
 
-Dave,
+	Dave,
 
- 
 
-Here are all the source files and a makefile to build 32-bit spitbol.
-Undoubtedly you'll find that you're missing some libraries and perhaps
-the correct 'as'.  Let me know and I'll steer you in the right
-direction.  Also included is a spitbol executable which might work
-straight out of the box on your system.
 
- 
+	Here are all the source files and a makefile to build 32-bit spitbol.
+	Undoubtedly you'll find that you're missing some libraries and perhaps
+	the correct 'as'.  Let me know and I'll steer you in the right
+	direction.  Also included is a spitbol executable which might work
+	straight out of the box on your system.
 
-I included v37.s and errors.s, thus you should not need a working
-spitbol executable to build.
 
- 
 
-Let me know how it goes.  And please don't upload this source to any
-public site until we decide on the license and refine it a bit more.
+	I included v37.s and errors.s, thus you should not need a working
+	spitbol executable to build.
 
- 
 
-Mark
+
+	Let me know how it goes.  And please don't upload this source to any
+	public site until we decide on the license and refine it a bit more.
+
+
+
+	Mark
 
  

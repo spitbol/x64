@@ -1,12 +1,17 @@
 # Linux/386 SPITBOL
 #
 
+
 # SPITBOL Version:
 VERS=   linux
 DEBUG=	0
 
 # Minimal source directory.
 MINPATH=./
+
+OSINT=./osint
+
+vpath %.c $(OSINT)
 
 
 # Compiler info:
@@ -30,21 +35,22 @@ endif
 TOK=	token.spt
 COD=    codlinux.spt
 ERR=    err386.spt
-SPIT=   ./spitbol
+SPIT=   ../boot/spitbol
 
 # Implicit rule for building objects from C files.
-.c.o:
-	$(CC) -c $(CFLAGS) -o$@ $*.c
+./%.o: %.c
+#.c.o:
+	$(CC) -c $(CFLAGS) -o$@ $(OSINT)/$*.c
 
 # Implicit rule for building objects from assembly language files.
 .s.o:
 	$(AS) -a=$*.lst -o $@ $(ASFLAGS) $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
-CHDRS =	osint.h port.h sproto.h spitio.h spitblks.h globals.h
+CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h
 
 # C Headers unique to this version of SPITBOL:
-UHDRS=	systype.h extern32.h blocks32.h system.h
+UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/system.h
 
 # Headers common to all C files.
 HDRS=	$(CHDRS) $(UHDRS)
@@ -113,13 +119,16 @@ errors.s: $(VERS).cnd $(ERR) v37.s
 
 inter.o: systype.ah osint.inc
 
+# make osint objects
+cobjs:	$(COBJS)
+
 # C language header dependencies:
 $(COBJS): $(HDRS)
 $(MOBJS): $(HDRS)
 $(SYSOBJS): $(HDRS)
-main.o: save.h
-sysgc.o: save.h
-sysxi.o: save.h
+main.o: $(OSINT)/save.h
+sysgc.o: $(OSINT)/save.h
+sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
 
 clean:
