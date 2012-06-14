@@ -447,8 +447,9 @@ pop1:	popad
         cs                              # CS segment override
         lodsd                           # point to C function entry point
 #       lodsd   cs:ccaller              # point to C function entry point
-
-        movzx   ebx,byte ptr cs:[esi]   # save normal exit adjustment
+#	line below failed assembly on 6/13/12, so comment it out ERROR
+#        movzx   ebx,byte ptr cs:[esi]   # save normal exit adjustment
+#
         mov     reg_pp,ebx              # in memory
         pop     reg_pc                  # save return PC past "CALL SYSXX"
 #
@@ -806,7 +807,7 @@ sysxi_p: address zysxi
 	sub	eax,stacksiz            # end of MINIMAL stack is where C stack will start
         mov     osisp,eax               # save new C stack pointer
 	add	eax,4*100               # 100 words smaller for CHK
-        SETMIN  LOWSPMIN,eax            # Set LOWSPMIN
+        SETMINR  LOWSPMIN,eax            # Set LOWSPMIN
 	ret
 	endp	stackinit
 
@@ -1011,7 +1012,7 @@ min1:   callc   calltab[eax*4],0        # off to the Minimal code
 	mov	ebx,ecx
         sub     ebx,esp                 # ebx = old stbas - new stbas
 
-        SETMIN  STBAS,esp               # save initial sp
+        SETMINR  STBAS,esp               # save initial sp
         GETOFF  eax,DFFNC               # get address of PPM offset
         mov     ppoff,eax               # save for use later
 #
@@ -1087,7 +1088,7 @@ re4:	GETMIN	eax,STBAS
         SETMIN  GBCNT,0                 # reset garbage collect count
         callc   zystm,0                 # Fetch execution time to reg_ia
         mov     eax,reg_ia              # Set time into compiler
-	SETMIN	TIMSX,eax
+	SETMINR	TIMSX,eax
 
 #       Code that would be executed if we returned to sysbx:
 #

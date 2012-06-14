@@ -8,6 +8,8 @@
  */
 /*  Copyright 1991 Robert Goldberg and Catspaw, Inc. */
 #include "port.h"
+/* next needed on Ubunto to avoid TLS error message from ld  (DS 6/13/12) */
+#include <errno.h>
 
 #if FLOAT & !MATHHDWR
 

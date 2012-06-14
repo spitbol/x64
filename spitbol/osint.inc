@@ -169,6 +169,14 @@ ENGTS   =       13
 .endif
         .endm
 
+        .macro          SETMINR valno,value
+.ifne underscore
+        mov             _\valno,\value
+.else
+        mov             \valno,\value
+.endif
+        .endm
+
         .macro          access name
         ext             \name,dword
         .endm

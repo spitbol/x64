@@ -46,7 +46,6 @@
 
 void setout Params(( void ));
 
-
 main( argc, argv )
 int	argc;
 char	*argv[];

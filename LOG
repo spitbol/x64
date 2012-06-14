@@ -1,3 +1,12 @@
+dave shields	13-Jun-2012 10:48:19 pm
+
+Hand patch v37.s to get clean assembly. This involve eliminating extraneous instances of
+DWORD PTR; for example, DWORD PRT regname.
+Fix errors in osint files to get clean compiles.
+Add include for <errno.h> to eliminate TLS mismatch error message from ld
+Result is linked spitbol binary. 
+
+
 dave shields	13-Jun-2012 1:41:37 pm
 
 changed permissions of ostint files to not have 'x' attribute.
