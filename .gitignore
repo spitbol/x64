@@ -1,0 +1,13 @@
+# object files
+*.o
+# listing files
+*.lst
+# temporary files
+*.tmp
+# translator token files
+*.tok
+# my temporary outfiles
+*.ao
+*.ap
+./osint/*.ao
+./osint/*.ap
