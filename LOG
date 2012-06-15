@@ -1,3 +1,12 @@
+dave shields	15-Jun-2012 11:45:10 am
+
+tag as v3.7.1 (I wrongly used tag 3.7.1 for same version)
+at this point can get compile and start execution, but crash if give an input file.
+
+commit now so can start nasm branch.
+
+save v37.s before patching as v37.s.oldgit
+
 dave shields	13-Jun-2012 10:48:19 pm
 
 Hand patch v37.s to get clean assembly. This involve eliminating extraneous instances of
