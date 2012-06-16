@@ -25,16 +25,10 @@ CFLAGS= -g -m32 -fno-leading-underscore -mfpmath=387
 endif
 
 # Assembler info -- Intel 32-bit syntax
-#ifeq	($(DEBUG),0)
-#ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
-#else
-#ASFLAGS = --32 -g -gstabs+ -msyntax=intel -mmnemonic=intel -mnaked-reg
-#endif
-# add option for nasm
 ifeq	($(DEBUG),0)
-ASFLAGS = 
+ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
 else
-ASFLAGS = -g 
+ASFLAGS = --32 -g -gstabs+ -msyntax=intel -mmnemonic=intel -mnaked-reg
 endif
 
 # Tools for processing Minimal source file.
@@ -49,11 +43,8 @@ SPIT=   ../boot/spitbol
 	$(CC) -c $(CFLAGS) -o$@ $(OSINT)/$*.c
 
 # Implicit rule for building objects from assembly language files.
-AS=nasm
 .s.o:
-#gas	$(AS) -a=$*.lst -o $@ $(ASFLAGS) $*.s
-# nasm
-	$(AS) -l $*.lst -o $@ $(ASFLAGS) $*.s
+	$(AS) -a=$*.lst -o $@ $(ASFLAGS) $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
 CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h
