@@ -1,6 +1,6 @@
         .title "SPITBOL TRANSLATOR V37"
         .sbttl "V37"
-# MINIMAL/80386 Translator V1.12 06/15/12 23:42:31 for linux
+# MINIMAL/80386 Translator V1.12 06/15/12 23:27:14 for linux
         .psize          80,132
         .arch           pentium
         .include        "systype.ah"
