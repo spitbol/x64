@@ -1,17 +1,17 @@
-#   File:  osint.inc            Version:  01.00
-#   -------------------------------------------
-#
-#   This header file defines the interface between the Macro SPITBOL compiler
-#   and any assembly-language OSINT modules.
-#   Communication between the two is handled via a set of global variables
-#   defined as externals below.
+;   File:  osintinc            Version:  01.00
+;   -------------------------------------------
+;
+;   This header file defines the interface between the Macro SPITBOL compiler
+;   and any assembly-language OSINT modules.
+;   Communication between the two is handled via a set of global variables
+;   defined as externals below.
 
-#  Copyright 1991 Robert Goldberg and Catspaw, Inc.
+;  Copyright 1991 Robert Goldberg and Catspaw, Inc.
 
-#   Set up externals for all the compiler's registers.
+;   Set up externals for all the compiler's registers.
 
         DSeg_
-.ifndef globals
+%ifndef globals
 	ext		reg_cp,dword
 	ext		reg_wa,dword
 	ext		reg_wb,dword
@@ -20,179 +20,163 @@
 	ext		reg_xl,dword
 	ext		reg_xs,dword
 	ext		reg_ia,dword
-.endif
+%endif
         DSegEnd_
 
-#   Macros to load a compiler register into a machine register
+;   Macros to load a compiler register into a machine register
 
-        .macro          GET_CP reg
-        mov             \reg, reg_cp
-        .endm
+%macro          GET_CP 1
+        mov             %1, reg_cp
+        %endmacro
 
-        .macro          GET_IA reg
-        mov             \reg, reg_ia
-        .endm
+        %macro          GET_IA 1
+        mov             %1, reg_ia
+        %endmacro
 
-        .macro          GET_WA reg
-        mov             \reg, reg_wa
-        .endm
+        %macro          GET_WA 1
+        mov             %1, reg_wa
+        %endmacro
 
-        .macro          GET_WB reg
-        mov             \reg, reg_wb
-        .endm
+        %macro          GET_WB 1
+        mov             %1, reg_wb
+        %endmacro
 
-        .macro          GET_WC reg
-        mov             \reg, reg_wc
-        .endm
+        %macro          GET_WC 1
+        mov             %1, reg_wc
+        %endmacro
 
-        .macro          GET_XR reg
-        mov             \reg, reg_xr
-        .endm
+        %macro          GET_XR 1
+        mov             %1, reg_xr
+        %endmacro
 
-        .macro          GET_XL reg
-        mov             \reg, reg_xl
-        .endm
+        %macro          GET_XL 1
+        mov             %1, reg_xl
+        %endmacro
 
-        .macro          GET_XS reg
-        mov             \reg, reg_xs
-        .endm
-
-
-#   Macros to store a machine register into a compiler register.
-
-        .macro          SET_CP val
-        mov             reg_cp, \val
-        .endm
-
-        .macro          SET_IA val
-        mov             reg_ia, \val
-        .endm
-
-        .macro          SET_WA val
-        mov             reg_wa, \val
-        .endm
-
-        .macro          SET_WB val
-        mov             reg_wb, \val
-        .endm
-
-        .macro          vSET_WC val
-        mov             reg_wc, \val
-        .endm
-
-        .macro          SET_XR val
-        mov             reg_xr, \val
-        .endm
-
-        .macro          SET_XL val
-        mov             reg_xl, \val
-        .endm
-
-        .macro          SET_XS val
-        mov             reg_xs, \val
-        .endm
+        %macro          GET_XS 1
+        mov             %1, reg_xs
+        %endmacro
 
 
-#   Return values to take exit N from interface
+;   Macros to store a machine register into a compiler register.
 
-EXIT_1  =       0
-EXIT_2  =       4
-EXIT_3  =       8
-EXIT_4  =       12
-EXIT_5  =       16
-EXIT_6  =       20
-EXIT_7  =       24
-EXIT_8  =       28
-EXIT_9  =       32
+        %macro          SET_CP 1
+        mov             reg_cp, %1
+        %endmacro
 
-#    Return value to do a normal return from interface.
+        %macro          SET_IA 1
+        mov             reg_ia, %1
+        %endmacro
 
-NORMAL_RETURN   =       -1
+        %macro          SET_WA 1
+        mov             reg_wa, %1
+        %endmacro
+
+        %macro          SET_WB 1
+        mov             reg_wb, %1
+        %endmacro
+
+        %macro          SET_WC 1
+        mov             reg_wc, %1
+        %endmacro
+
+        %macro          SET_XR 1
+        mov             reg_xr, %1
+        %endmacro
+
+        %macro          SET_XL 1
+        mov             reg_xl, %1
+        %endmacro
+
+        %macro          SET_XS 1
+        mov             reg_xs, %1
+        %endmacro
+
+
+;   Return values to take exit N from interface
+
+EXIT_1  equ       0
+EXIT_2  equ       4
+EXIT_3  equ       8
+EXIT_4  equ       12
+EXIT_5  equ       16
+EXIT_6  equ       20
+EXIT_7  equ       24
+EXIT_8  equ       28
+EXIT_9  equ       32
+
+;    Return value to do a normal return from interface.
+
+NORMAL_RETURN   equ       -1
 
         CSeg_
 
-#       Function and macro to call into MINIMAL code.
-#       The argument is an ordinal number defined below.
-.ifndef globals
+;       Function and macro to call into MINIMAL code.
+;       The argument is an ordinal number defined below.
+%ifndef globals
 	ext		minimal,near
-.endif
-        .macro          MINIMAL callno
-        push            offset \callno
+%endif
+        %macro          MINIMAL 1
+        push            offset %1
 	callc		minimal,4
-        .endm
+        %endmacro
 
-#   Ordinals for MINIMAL calls from assembly language.
-#
-#   The order of entries here must correspond to the order of
-#   calltab entries in the INTER assembly language module.
-#
-RELAJ   =       0
-RELCR   =       1
-RELOC   =       2
-ALLOC   =       3
-ALOCS   =       4
-ALOST   =       5
-BLKLN   =       6
-INSTA   =       7
-RSTRT   =       8
-START   =       9
-FILNM   =       10
-DTYPE   =       11
-ENEVS   =       12
-ENGTS   =       13
+;   Ordinals for MINIMAL calls from assembly language.
+;
+;   The order of entries here must correspond to the order of
+;   calltab entries in the INTER assembly language module.
+;
+RELAJ   equ       0
+RELCR   equ       1
+RELOC   equ       2
+ALLOC   equ       3
+ALOCS   equ       4
+ALOST   equ       5
+BLKLN   equ       6
+INSTA   equ       7
+RSTRT   equ       8
+START   equ       9
+FILNM   equ       10
+DTYPE   equ       1
+ENEVS   equ       12
+ENGTS   equ       13
 
-#       Function and macro to get/set value from/to MINIMAL dataspace.
-#       The argument is an ordinal number defined below.
-#       The macro GETOFF returns the address of the value.
-.if direct                                  # [[
-        .macro          GETOFF reg,valno
-.ifne underscore
-        lea             \reg,_\valno
-.else
-        lea             \reg,\valno
-.endif
-        .endm
+;       Function and macro to get/set value from/to MINIMAL dataspace.
+;       The argument is an ordinal number defined below.
+;       The macro GETOFF returns the address of the value.
+%ifne direct                                  ; [[
+        %macro          GETOFF 2
+        lea             %1,%2
+        %endmacro
 
-        .macro          GETMIN reg,valno
-.ifne underscore
-        mov             \reg,_\valno
-.else
-        mov             \reg,\valno
-.endif
-        .endm
+        %macro          GETMIN 2
+        mov             %1,%2
+        %endmacro
 
-        .macro          SETMIN valno,value
-.ifne underscore
-        mov             _\valno,dword ptr \value
-.else
-        mov             \valno,dword ptr \value
-.endif
-        .endm
+        %macro          SETMIN valno,value
+        mov             %1,[dword %2]
+        %endmacro
 
-        .macro          SETMINR valno,value
-.ifne underscore
-        mov             _\valno,\value
-.else
-        mov             \valno,\value
-.endif
-        .endm
+        %macro          SETMINR 2
+        mov             %1,%2
+        %endmacro
 
-        .macro          access name
-        ext             \name,dword
-        .endm
+        %macro          access 2
+        ext             %1,dword
+        %endmacro
 
-        .macro          access2 name
+        %macro          access2 name
 .ifndef globals
         ext            \name,dword
 .endif
-        .endm
+        %endmacro
 
         DSeg_
-.else                                       # ][
+.else                                       ; ][
 .ifndef globals
 	ext		minoff,near
 .endif
-        .macro          GETOFF reg,valno
+        %macro          GETOFF reg,valno
 .ifnc \reg,eax
 	push		eax
 .endif
@@ -202,9 +186,9 @@ ENGTS   =       13
         mov             \reg,eax
 	pop		eax
 .endif
-        .endm
+        %endmacro
 
-        .macro          GETMIN reg,valno
+        %macro          GETMIN reg,valno
 .ifnc \reg,eax
 	push		eax
 .endif
@@ -214,9 +198,9 @@ ENGTS   =       13
 .ifnc \reg,eax
 	pop		eax
 .endif
-        .endm
+        %endmacro
 
-        .macro          SETMIN valno,value
+        %macro          SETMIN valno,value
 .ifc \value,eax
 	push		eax
 .endif
@@ -227,26 +211,26 @@ ENGTS   =       13
 .else
         mov             [eax],\value
 .endif
-        .endm
+        %endmacro
 
-        .macro          access name
+        %macro          access name
 \name:  .byte           0
-        .endm
+        %endmacro
 
-        .macro          access2 name
+        %macro          access2 name
 \name:  .byte           0
-        .endm
+        %endmacro
 
-#   Ordinals for transferring MINIMAL values to/from assembly language.
-#
-#   The order of entries here must correspond to the order of
-#   valtab entries in the INTER assembly language module.
-#
-#   The structure vords and the access macro is merely a device to
-#   produce an enumeration similar to an enum structure to C.
-#
+;   Ordinals for transferring MINIMAL values to/from assembly language.
+;
+;   The order of entries here must correspond to the order of
+;   valtab entries in the INTER assembly language module.
+;
+;   The structure vords and the access macro is merely a device to
+;   produce an enumeration similar to an enum structure to C.
+;
         struc   vords
-.endif                                      # ]]
+.endif                                      ; ]]
 
         access  GBCNT
         access  HEADV
