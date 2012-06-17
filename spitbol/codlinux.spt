@@ -665,11 +665,11 @@ GETARG.C.19
 *  =NAME (Data section)
 GETARG.C.20
 GETARG.C.21
-        GETARG = 'offset ds:' LABFIX(SUBSTR(L1,2)) :(RETURN)
+        GETARG = 'offset ' LABFIX(SUBSTR(L1,2)) :(RETURN)
 
 *  =NAME (Program section)
 GETARG.C.22
-        GETARG = 'offset cs:' LABFIX(SUBSTR(L1,2))  :(RETURN)
+        GETARG = 'offset ' LABFIX(SUBSTR(L1,2))  :(RETURN)
 
 *  PNAM, EQOP
 GETARG.C.23
@@ -1018,8 +1018,9 @@ G.ERB	ERRFILE =  I.TEXT(I1) ' ' I.TEXT(I2)
 	GENOP('CALL','ERR_' (LT(T1,256) '0','1'))
         GENOP('.byte',(LT(T1,256) +T1,T1 - 256)) :(OPDONE)
 
-G.ICV   GENOP('INC','DWORD PTR ' GETARG(I1))    :(OPDONE)
-G.DCV   GENOP('DEC','DWORD PTR ' GETARG(I1))    :(OPDONE)
+
+G.ICV   GENOP('INC',GETARG(I1))    :(OPDONE)
+G.DCV   GENOP('DEC',GETARG(I1))    :(OPDONE)
 
 G.ZER	IDENT(I.TEXT(I1),'(XR)+') GENOP('XOR','EAX','EAX')
 +		GENOP('STOSD')			:S(OPDONE)
@@ -1173,7 +1174,7 @@ G.SBR
 G.MLR
 G.DVR	T1 = I.TYPE(I1)
 	(GE(T1,9) LE(T1,15) GENOP('LEA','EAX',GETARG(I1)),
-+               GENOP('MOV','EAX','offset ds:' GETARG(I1)))
++               GENOP('MOV','EAX','offset ' GETARG(I1)))
 	GENOP('CALL',INCODE '_')		:(OPDONE)
 
 G.NGR
