@@ -181,15 +181,8 @@ NoInit(	word	*lmodstk);
 /*
  * Globals found in assembly language modules.
  *
- * For 8088 DOS SPITBOL, note that the "serial" global is placed
- * in the code segment as a kludge to put it somewhere it can be
- * accessed easily from the SNOBOL serializer program.  By making
- * serial.obj the first object to link, the serial number doesn't move
- * around in the EXE file as we make different versions.
  */
 extern int  reg_size;
-#define SERIAL serial
-extern char serial[];
 extern int  hasfpu;
 extern char cprtmsg[];
 extern word reg_block;

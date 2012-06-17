@@ -92,7 +92,6 @@ word	maxlen;
 		scp += mystrncpy(scp, pID1->str, (int)pID1->len);
 		*scp++ = ' ';
 		*scp++ = '#';
-		scp = mystrcpy(scp, SERIAL);
 		cnt = scp - scptr->str;
 	}
 

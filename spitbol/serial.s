@@ -10,13 +10,6 @@
 
         Header_
         DSeg_
-        pubname         serial
-.ifne underscore
-_serial:
-.else
-serial:
-.endif
-				.asciz          "28001"
         .balign         4
         pubdef          hasfpu,.long,0               #-1 if 80x87 present, else 0
         pubname         cprtmsg

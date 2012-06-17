@@ -42,11 +42,9 @@ zysdc()
 		write( STDERRFD, " Runtime", 8);
 #endif					/* RUNTIME */
 
-		write( STDERRFD, "   Release ", 11);
+		write( STDERRFD, "  Release ", 10);
 		write( STDERRFD, pHEADV->str, pHEADV->len );
 		write( STDERRFD, pID1->str, pID1->len );
-		write( STDERRFD, "   Serial ", 10 );
-		wrterr( SERIAL );
 		wrterr( cprtmsg );
 	}
 

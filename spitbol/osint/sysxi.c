@@ -513,8 +513,6 @@ word *stkbase, stklen;
 	svfheader.spare = 0;
 	hcopy(vscb->str, svfheader.headv, vscb->len, sizeof(svfheader.headv));
 	hcopy(pID1->str, svfheader.iov, pID1->len, sizeof(svfheader.iov));
-  hcopy(SERIAL, svfheader.serial, sizeof(svfheader.serial),
-	 sizeof(svfheader.serial));
 	svfheader.timedate = time((time_t *)0);
   svfheader.flags = spitflag;
 	svfheader.stacksiz = (uword)stacksiz;
