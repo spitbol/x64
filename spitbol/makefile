@@ -100,6 +100,7 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS)
 # main program
 spitbol: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) /usr/lib32/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
+#	$(CC) $(CFLAGS) $(OBJS) /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
 
 # Assembly language dependencies:
 errors.o: errors.s

@@ -164,6 +164,8 @@ extern	uword		writefar Params(( File_handle fd, void FAR *Buf, uword Cnt ));
 #endif
 extern	int			wrtaout Params(( unsigned char FAR *startadr, uword size ));
 extern	void		wrterr Params(( char *s ));
+extern	void		wrtint Params(( int));
+extern	void		wrtmsg Params(( char *s ));
 extern	int			zysax Params(( void ));
 extern	int			zysbs Params(( void ));
 extern	int			zysbx Params(( void ));

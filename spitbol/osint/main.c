@@ -59,7 +59,7 @@ char	*argv[];
 */
     gblargc = argc;
     gblargv = argv;
-
+    lowsp = 0L;
 #if WINNT
 	init_custom();				/* Perform system specific initializations */
 #endif
@@ -188,7 +188,7 @@ char	*argv[];
     __exit( 1 );
 	    }
 
-#if WINNT
+#if WINNT | LINUX
 /*
 /   Allocate stack
 */
@@ -259,30 +259,46 @@ char	*s;
 #if EOL2
 	static char eol[2] = {EOL1,EOL2};
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #else					/* EOL2 */
 	static char eol[1] = {EOL1};
 #endif					/* EOL2 */
 	write( STDERRFD, s, length(s) );
 	write( STDERRFD,  eol, sizeof(eol) );
+}
+
+void wrtint(n)
+int	n;
+{
+#if EOL2
+	static char eol[2] = {EOL1,EOL2};
+
+#else					/* EOL2 */
+	static char eol[1] = {EOL1};
+#endif					/* EOL2 */
+/*
+	char str[16];
+	itoa(n,str);
+	write( STDOUTFD, str, length(str) );
+	write( STDOUTFD,  eol, sizeof(eol) );
+*/
+}
+
+/*
+/	wrtmsg( s )
+/
+/	Write message to standard output, and append end-of-line.
+*/
+void wrtmsg(s)
+char	*s;
+{
+#if EOL2
+	static char eol[2] = {EOL1,EOL2};
+
+#else					/* EOL2 */
+	static char eol[1] = {EOL1};
+#endif					/* EOL2 */
+	write( STDOUTFD, s, length(s) );
+	write( STDOUTFD,  eol, sizeof(eol) );
 }
 
 /*

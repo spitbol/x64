@@ -63,21 +63,16 @@ void prompt()
 	wrterr("-y write save (.spx) file");
 #endif					/* SAVEFILE & !EXECFILE */
 
-		wrterr("-r INPUT from source file following END statement");
+	wrterr("-r INPUT from source file following END statement");
         wrterr("-T=file  write TERMINAL output to file");
         wrterr("-#=file[options]  associate file with I/O channel #");
 #if SOLARIS | LINUX | WINNT
-    wrterr("option defaults: -d64m -i128k -m4m -s128k -g60 -t120");
+    	wrterr("option defaults: -d64m -i128k -m4m -s128k -g60 -t120");
 #else
     wrterr("option defaults: -d64m -i128k -m64k -s128k -g60 -t120");
 #endif
 
 #endif					/* RUNTIME */
-
-	wrterr("");
-	wrterr("SPITBOL is not a public domain program.  For licensing information contact:");
-	wrterr("Catspaw, Inc., P.O. Box 1123, Salida, CO 81201 USA  719-539-3884  FAX:539-4830");
-   wrterr("e-mail: sales@SNOBOL4.com   http://www.SNOBOL4.com");
 
 	__exit(0);
 }
