@@ -448,7 +448,7 @@ pop1:	popad
         lodsd                           # point to C function entry point
 #       lodsd   cs:ccaller              # point to C function entry point
 #	line below failed assembly on 6/13/12, so comment it out ERROR
-#        movzx   ebx,byte ptr cs:[esi]   # save normal exit adjustment
+        movzx   ebx,byte ptr [esi]   # save normal exit adjustment
 #
         mov     reg_pp,ebx              # in memory
         pop     reg_pc                  # save return PC past "CALL SYSXX"

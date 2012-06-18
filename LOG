@@ -1,3 +1,14 @@
+dave shields	17-Jun-2012 11:53:20 pm
+
+now trying to put details of changes in the git commit comments, and
+not so much in this file
+
+now able to build a spitbol binary that can be used to build v37.s, so
+used a built spitbol to update the bootstrap version of spitbol in
+../boot
+
+next start work on release. Tag this version as v3.7.2
+
 dave shields	15-Jun-2012 11:45:10 am
 
 tag as v3.7.1 (I wrongly used tag 3.7.1 for same version)
