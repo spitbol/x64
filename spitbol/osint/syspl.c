@@ -46,23 +46,23 @@ zyspl()
 {
 #if POLLING
 
-	/* Make simple polling case the fastest by avoiding switch statement */
-	if (WA(word) == 0) {
+    /* Make simple polling case the fastest by avoiding switch statement */
+    if (WA(word) == 0) {
 #if !ENGINE
-		pollevent();
+        pollevent();
 #endif					/* !ENGINE */
-		SET_WA(stmtDelay);	/* Poll finished or Continue */
+        SET_WA(stmtDelay);	/* Poll finished or Continue */
 #if !ENGINE & (WINNT | UNIX)
-		if (brkpnd) {
-			brkpnd = 0;		/* User interrupt */
-			rearmbrk();		/* allow breaks again */
-			return EXIT_1;
-			}
+        if (brkpnd) {
+            brkpnd = 0;		/* User interrupt */
+            rearmbrk();		/* allow breaks again */
+            return EXIT_1;
+        }
 #endif
-		}
+    }
 #else					/* POLLING */
-	SET_WA((word)MAXPOSWORD);			/* Effectively shut off polling */
+    SET_WA((word)MAXPOSWORD);			/* Effectively shut off polling */
 #endif					/* POLLING */
-	return NORMAL_RETURN;
+    return NORMAL_RETURN;
 }
 

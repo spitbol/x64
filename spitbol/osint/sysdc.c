@@ -17,44 +17,44 @@
 
 zysdc()
 {
-  struct scblk *pHEADV = GET_DATA_OFFSET(HEADV,struct scblk *);
-	/* announce name and copyright */
-	if (!dcdone && !(spitflag & NOBRAG))
-	{
-		dcdone = 1;				/* Only do once per run */
+    struct scblk *pHEADV = GET_DATA_OFFSET(HEADV,struct scblk *);
+    /* announce name and copyright */
+    if (!dcdone && !(spitflag & NOBRAG))
+    {
+        dcdone = 1;				/* Only do once per run */
 #if WINNT
-		write( STDERRFD, "SPITBOL-386", 11);
+        write( STDERRFD, "SPITBOL-386", 11);
 #endif
 
 #if SUN4
-		write( STDERRFD, "SPARC SPITBOL", 13);
+        write( STDERRFD, "SPARC SPITBOL", 13);
 #endif          /* SUN4 */
 
 #if LINUX
-		write( STDERRFD, "LINUX SPITBOL", 13);
+        write( STDERRFD, "LINUX SPITBOL", 13);
 #endif
 
 #if AIX
-		write( STDERRFD, "AIX SPITBOL", 11);
+        write( STDERRFD, "AIX SPITBOL", 11);
 #endif
 
 #if RUNTIME
-		write( STDERRFD, " Runtime", 8);
+        write( STDERRFD, " Runtime", 8);
 #endif					/* RUNTIME */
 
-		write( STDERRFD, "  Release ", 10);
-		write( STDERRFD, pHEADV->str, pHEADV->len );
-		write( STDERRFD, pID1->str, pID1->len );
-		wrterr( cprtmsg );
-	}
+        write( STDERRFD, "  Release ", 10);
+        write( STDERRFD, pHEADV->str, pHEADV->len );
+        write( STDERRFD, pID1->str, pID1->len );
+        wrterr( cprtmsg );
+    }
 
 #if DATECHECK
 #if WINNT
-   {
-      extern void date_check(void);
-      date_check();
-   }
+    {
+        extern void date_check(void);
+        date_check();
+    }
 #endif
 #endif
-		return NORMAL_RETURN;
+    return NORMAL_RETURN;
 }

@@ -38,37 +38,37 @@ extern int wait(int *status);
 void oswait( pid )
 int	pid;
 {
-	int	deadpid, status;
+    int	deadpid, status;
     struct  chfcb   *chptr;
 #if UNIX
     SigType (*hstat)Params((int)),
-			(*istat)Params((int)),
-			(*qstat)Params((int));
+            (*istat)Params((int)),
+            (*qstat)Params((int));
 
-	istat	= signal( SIGINT, SIG_IGN );
-	qstat	= signal( SIGQUIT ,SIG_IGN );
-	hstat	= signal( SIGHUP, SIG_IGN );
+    istat	= signal( SIGINT, SIG_IGN );
+    qstat	= signal( SIGQUIT ,SIG_IGN );
+    hstat	= signal( SIGHUP, SIG_IGN );
 #endif
 
     while ( (deadpid = wait( &status )) != pid  &&  deadpid != -1 )
     {
-		for ( chptr = GET_MIN_VALUE(R_FCB,struct chfcb *); chptr != 0;
-         chptr = MK_MP(chptr->nxt, struct chfcb *) )
+        for ( chptr = GET_MIN_VALUE(R_FCB,struct chfcb *); chptr != 0;
+                chptr = MK_MP(chptr->nxt, struct chfcb *) )
         {
-			if ( deadpid == MK_MP(MK_MP(chptr->fcp, struct fcblk *)->iob,
-             struct ioblk *)->pid )
+            if ( deadpid == MK_MP(MK_MP(chptr->fcp, struct fcblk *)->iob,
+                                  struct ioblk *)->pid )
             {
-				MK_MP(MK_MP(chptr->fcp, struct fcblk *)->iob,
-				 struct ioblk *)->flg2 |= IO_DED;
-				break;
+                MK_MP(MK_MP(chptr->fcp, struct fcblk *)->iob,
+                      struct ioblk *)->flg2 |= IO_DED;
+                break;
             }
         }
     }
 
 #if UNIX
     signal( SIGINT,istat );
-	signal( SIGQUIT,qstat );
-	signal( SIGHUP,hstat );
+    signal( SIGQUIT,qstat );
+    signal( SIGHUP,hstat );
 #endif                  /* UNIX */
 }
 #endif					/* PIPES */

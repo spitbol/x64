@@ -1,6 +1,6 @@
 /*
  * int.c - integer support for SPITBOL.
- * 
+ *
  * Needed for RISC systems that do not provide integer multiply/
  * divide in hardware.
  */
@@ -16,9 +16,9 @@ typedef long i;
  */
 i i_mli(arg,ia)
 i arg,ia;
-   {
-   return ia * arg;
-   }
+{
+    return ia * arg;
+}
 
 
 /*
@@ -26,17 +26,17 @@ i arg,ia;
  */
 i i_dvi(arg,ia)
 i arg,ia;
-   {
-   return ia / arg;
-   }
+{
+    return ia / arg;
+}
 
 /*
  * i_rmi - remainder after division into accumulator
  */
 i i_rmi(arg,ia)
 i arg,ia;
-   {
-   return ia % arg;
-   }
+{
+    return ia % arg;
+}
 
 #endif					/* SUN4 */

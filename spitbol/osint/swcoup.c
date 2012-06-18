@@ -70,116 +70,116 @@ int swcoup( oupptr )
 char  *oupptr;
 
 {
-	int	retval = 0;
+    int	retval = 0;
 
-/*
-/   No switch necessary if no -o option or previous errors encountered.
-*/
-  char namebuf[256];
+    /*
+    /   No switch necessary if no -o option or previous errors encountered.
+    */
+    char namebuf[256];
 
-	if (errflag)
-		return 0;
+    if (errflag)
+        return 0;
 
-	/* if no output file specified, but listing requested, use input name */
-	if ( oupptr == 0)
-	{
-		if (((spitflag & NOLIST) == 0) && (**inpptr))
-		{
-			appendext(*inpptr, LISTEXT, namebuf, 1);
-			oupptr = namebuf;
-		}
-		else
-			goto swcexit;
-	}
+    /* if no output file specified, but listing requested, use input name */
+    if ( oupptr == 0)
+    {
+        if (((spitflag & NOLIST) == 0) && (**inpptr))
+        {
+            appendext(*inpptr, LISTEXT, namebuf, 1);
+            oupptr = namebuf;
+        }
+        else
+            goto swcexit;
+    }
 
-	/*
-	/   If -o file name is '-' then continue to write file
-	/   descriptor 1 provided by the shell.
-	*/
-	if ( *oupptr == '-' && *(oupptr + 1) == '\0')
-		goto swcexit;
+    /*
+    /   If -o file name is '-' then continue to write file
+    /   descriptor 1 provided by the shell.
+    */
+    if ( *oupptr == '-' && *(oupptr + 1) == '\0')
+        goto swcexit;
 
-/*
-/   Do output file switch based on current state:
-*/
-	switch ( oupState++ )
-	{
+    /*
+    /   Do output file switch based on current state:
+    */
+    switch ( oupState++ )
+    {
 
-/*
-/	State 0 (1st call to swcoup):  standard output -> -o file
-*/
-	case 0:
+        /*
+        /	State 0 (1st call to swcoup):  standard output -> -o file
+        */
+    case 0:
 #if USEFD0FD1
-		origoup = dup( 1 );		/* save std output	*/
-		close( 1 );				/* close std output	*/
-		if (appendext(oupptr, LISTEXT, namebuf, 0))	/* Append .lst if needed */
-			oupptr = namebuf;
-		if ( (spit_open( oupptr, O_WRONLY|O_CREAT|O_TRUNC,
-		 IO_PRIVATE | IO_DENY_READWRITE /* 0666 */,
-		 IO_REPLACE_IF_EXISTS | IO_CREATE_IF_NOT_EXIST )) < 0 ) /* create -o file */
-		{
-			wrterr( "-o file open error." );
-			++errflag;
-			dup( origoup );
-			close( origoup );
-			retval = -1;
-		}
+        origoup = dup( 1 );		/* save std output	*/
+        close( 1 );				/* close std output	*/
+        if (appendext(oupptr, LISTEXT, namebuf, 0))	/* Append .lst if needed */
+            oupptr = namebuf;
+        if ( (spit_open( oupptr, O_WRONLY|O_CREAT|O_TRUNC,
+                         IO_PRIVATE | IO_DENY_READWRITE /* 0666 */,
+                         IO_REPLACE_IF_EXISTS | IO_CREATE_IF_NOT_EXIST )) < 0 ) /* create -o file */
+        {
+            wrterr( "-o file open error." );
+            ++errflag;
+            dup( origoup );
+            close( origoup );
+            retval = -1;
+        }
 #else					/* USEFD0FD1 */
-		setprfd( origoup );
+        setprfd( origoup );
 #endif					/* USEFD0FD1 */
 
-		break;
+        break;
 
-/*
-/	State 1 (2nd call to swcoup):  standard output -> shell output file
-*/
-	case 1:
+        /*
+        /	State 1 (2nd call to swcoup):  standard output -> shell output file
+        */
+    case 1:
 #if USEFD0FD1
-		close( 1 );				/* close -o file	*/
-		dup( origoup );			/* restore std output	*/
-		close( origoup );		/* close its duplicate	*/
+        close( 1 );				/* close -o file	*/
+        dup( origoup );			/* restore std output	*/
+        close( origoup );		/* close its duplicate	*/
 #else					/* USEFD0FD1 */
-		setprfd( 1 );			/* switch to fd 1, leave list file open */
+        setprfd( 1 );			/* switch to fd 1, leave list file open */
 #endif					/* USEFD0FD1 */
-		break;
+        break;
 
-/*
-/	State 2 (3rd call to swcoup):  standard output -> -o file
-*/
-	case 2:
+        /*
+        /	State 2 (3rd call to swcoup):  standard output -> -o file
+        */
+    case 2:
 #if USEFD0FD1
-		close( 1 );				/* close std output	*/
-		if (appendext(oupptr, LISTEXT, namebuf, 0))	/* Append .lst if needed */
-			oupptr = namebuf;
-		if ( (spit_open( oupptr,O_WRONLY,
-		 IO_PRIVATE | IO_DENY_READWRITE /* 0666 */,
-		 IO_OPEN_IF_EXISTS )) < 0 ) /* reopen -o file	*/
-		{
-			wrterr( "error reopening" );
-		}
-		oupeof();				/* seek to EOF on -o file */
+        close( 1 );				/* close std output	*/
+        if (appendext(oupptr, LISTEXT, namebuf, 0))	/* Append .lst if needed */
+            oupptr = namebuf;
+        if ( (spit_open( oupptr,O_WRONLY,
+                         IO_PRIVATE | IO_DENY_READWRITE /* 0666 */,
+                         IO_OPEN_IF_EXISTS )) < 0 ) /* reopen -o file	*/
+        {
+            wrterr( "error reopening" );
+        }
+        oupeof();				/* seek to EOF on -o file */
 #else					/* USEFD0FD1 */
-		setprfd( origoup );		/* resume -o file	*/
+        setprfd( origoup );		/* resume -o file	*/
 #endif					/* USEFD0FD1 */
 
-		break;
+        break;
 
-	default:
+    default:
 #if USEQUIT
-		quit(354);
+        quit(354);
 #else					/* USEQUIT */
-		wrterr( "Internal system error--SWCOUP" );
+        wrterr( "Internal system error--SWCOUP" );
 #endif					/* USEQUIT */
 
-	}
+    }
 
 swcexit:
 #if HOST386
-	if ( coutdev( 1 ) == 0 )		/* Test for character output */
-	    getpriob()->flg1 |= IO_COT;
-	else
-		getpriob()->flg1 &= ~IO_COT;
+    if ( coutdev( 1 ) == 0 )		/* Test for character output */
+        getpriob()->flg1 |= IO_COT;
+    else
+        getpriob()->flg1 &= ~IO_COT;
 #endif					/* HOST386 */
 
-	return	retval;
+    return	retval;
 }

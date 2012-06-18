@@ -29,8 +29,8 @@ void __exit(code)
 int code;
 {
 #if WINNT | AIX
-	exit_custom(code);				/* Perform system specific shutdown */
+    exit_custom(code);				/* Perform system specific shutdown */
 #endif
 
-	_exit(code);
+    _exit(code);
 }

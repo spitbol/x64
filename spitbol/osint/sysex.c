@@ -35,25 +35,25 @@
 zysex()
 {
 #if EXTFUN
-	struct efblk *efb = XL(struct efblk *);
-	word nargs = WA(word);
-	union block *result = 0;		/* initialize so collectable */
+    struct efblk *efb = XL(struct efblk *);
+    word nargs = WA(word);
+    union block *result = 0;		/* initialize so collectable */
 
-	/* Bypass return word in second argument to callef */
-	result = callef(efb, MK_MP(MP_OFF(XS(union block **),word)
-	 + sizeof(word),union block **), nargs);
-	switch ((word)result) {
-	    case (word)0:
-	            return EXIT_1;			/* fail */
-	    case (word)-1:
-	            return EXIT_2;			/* insufficient memory */
-	    case (word)-2:
-	            return EXIT_3;			/* improper argument */
-	    default:
-	        SET_XR(result);
-	        return NORMAL_RETURN;	/* Success, return pointer to stuff in EFBLK */
-	    }
+    /* Bypass return word in second argument to callef */
+    result = callef(efb, MK_MP(MP_OFF(XS(union block **),word)
+                               + sizeof(word),union block **), nargs);
+    switch ((word)result) {
+    case (word)0:
+        return EXIT_1;			/* fail */
+    case (word)-1:
+        return EXIT_2;			/* insufficient memory */
+    case (word)-2:
+        return EXIT_3;			/* improper argument */
+    default:
+        SET_XR(result);
+        return NORMAL_RETURN;	/* Success, return pointer to stuff in EFBLK */
+    }
 #else					/* EXTFUN */
-	return EXIT_1;
+    return EXIT_1;
 #endif					/* EXTFUN */
 }

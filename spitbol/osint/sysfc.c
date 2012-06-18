@@ -59,106 +59,107 @@ struct ioblk	tioblk;			/* temporary ioblk		*/
 
 zysfc()
 {
-	int	fd_spec, i;
-	word	allocsize, length_fname;
-	register struct scblk *scb1 = XL( struct scblk * );
-	register struct scblk *scb2 = XR( struct scblk * );
-	register struct fcblk *fcb  = WA( struct fcblk * );
-  word use_env = 0;   /* Initially, flag that not using environment block */
+    int	fd_spec, i;
+    word	allocsize, length_fname;
+    register struct scblk *scb1 = XL( struct scblk * );
+    register struct scblk *scb2 = XR( struct scblk * );
+    register struct fcblk *fcb  = WA( struct fcblk * );
+    word use_env = 0;   /* Initially, flag that not using environment block */
 
-	/*
-	/   Bad filearg2 or NULL filearg1 is an error
-	*/
-again:	if ( (length_fname = lenfnm( scb2 )) < 0  ||  !scb1->len )
-	    return  EXIT_1;
+    /*
+    /   Bad filearg2 or NULL filearg1 is an error
+    */
+again:
+    if ( (length_fname = lenfnm( scb2 )) < 0  ||  !scb1->len )
+        return  EXIT_1;
 
-	/*
-	/   Scan out I/O arguments and build temporary ioblk.
-	*/
-	if ( sioarg( WB(int), &tioblk, scb2 ) < 0 )
-	    return  EXIT_1;
+    /*
+    /   Scan out I/O arguments and build temporary ioblk.
+    */
+    if ( sioarg( WB(int), &tioblk, scb2 ) < 0 )
+        return  EXIT_1;
 
-	/*
-	/   If previous I/O association on this channel, be sure that type
-	/   of access is consistent with current call.  I.e., both are
-	/   input or both are output.  An illegal association is marked
-	/   with the IO_ILL flag and SYSIO does the error return.
-	*/
-	if ( fcb )
-	{
-		i = MK_MP(fcb->iob, struct ioblk *)->flg1 & (IO_INP | IO_OUP);
-		if ( !(tioblk.flg1 & i) )
-			tioblk.flg2 |= IO_ILL;
-	}
+    /*
+    /   If previous I/O association on this channel, be sure that type
+    /   of access is consistent with current call.  I.e., both are
+    /   input or both are output.  An illegal association is marked
+    /   with the IO_ILL flag and SYSIO does the error return.
+    */
+    if ( fcb )
+    {
+        i = MK_MP(fcb->iob, struct ioblk *)->flg1 & (IO_INP | IO_OUP);
+        if ( !(tioblk.flg1 & i) )
+            tioblk.flg2 |= IO_ILL;
+    }
 
-	/*
-	/   Processing now is dependent on how filename is supplied
-	*/
-	fd_spec = tioblk.flg1 & IO_OPN;
-	if ( length_fname  ||  fd_spec )
-	{
-		/*
-		/   CANNOT specify BOTH filename and -f option!
-		/   CANNOT specify filename with existing open FCB
-		/
-		/   Unopened FCB may be present if previous sysio failed
-		/   on this channel.  V1.02 MBE
-		/
-		/	Note that allocsize may exceed MXLEN, because ALLOC doesn't
-		/	check it, and we will carve the allocated block into three
-		/	chunks, each of which will be MXLEN or less.
-		*/
-    if ( (length_fname && fd_spec) )
-			return EXIT_1;
-    if ( (fcb && (MK_MP(fcb->iob, struct ioblk *)->flg1 & IO_OPN)) )
-      return EXIT_2;
+    /*
+    /   Processing now is dependent on how filename is supplied
+    */
+    fd_spec = tioblk.flg1 & IO_OPN;
+    if ( length_fname  ||  fd_spec )
+    {
+        /*
+        /   CANNOT specify BOTH filename and -f option!
+        /   CANNOT specify filename with existing open FCB
+        /
+        /   Unopened FCB may be present if previous sysio failed
+        /   on this channel.  V1.02 MBE
+        /
+        /	Note that allocsize may exceed MXLEN, because ALLOC doesn't
+        /	check it, and we will carve the allocated block into three
+        /	chunks, each of which will be MXLEN or less.
+        */
+        if ( (length_fname && fd_spec) )
+            return EXIT_1;
+        if ( (fcb && (MK_MP(fcb->iob, struct ioblk *)->flg1 & IO_OPN)) )
+            return EXIT_2;
 
-		save_iob = 0;
-		bfblksize = (BFSIZE + tioblk.pid + sizeof( word ) - 1 )
-				& ~(sizeof( word ) - 1);
-		allocsize = FCSIZE + IOSIZE + bfblksize;
-		tioblk.typ = 1;
-	}
+        save_iob = 0;
+        bfblksize = (BFSIZE + tioblk.pid + sizeof( word ) - 1 )
+                    & ~(sizeof( word ) - 1);
+        allocsize = FCSIZE + IOSIZE + bfblksize;
+        tioblk.typ = 1;
+    }
 
-	/*
-	/   With a NULL filename there MUST BE an existing fcblk for us
-	/   to use!
-	/   1.03 - Lookup filearg1 in environment block before giving up.
-	/   Use presence of arguments to allocate a new FCB.
-	*/
-	else
-	{
-		if ( !fcb )					/* if no FCB then error	*/
-		{
-      /*
-			/ 1.03 - look up in environment block.  Filename
-			/	 will be copied to tscblk.
-			*/
-			scb2 = pTSCBLK;
-			if (!optfile(scb1, scb2) && !use_env)
-			{
-				use_env = IO_ENV;
-				goto again;
-			}
-      return  EXIT_1;
-		}
-		if ( tioblk.typ )		/* if args then		*/
-		{
-			allocsize = FCSIZE;	/*    alloc new FCB	*/
-			/* BAD!! Garbage collect could move ioblk before sysio is called */
-			save_iob = MK_MP(fcb->iob, struct ioblk *);
-		}
-		else				/* if no args then	*/
-			allocsize = 0;		/*   no new FCB needed	*/
-	}
+    /*
+    /   With a NULL filename there MUST BE an existing fcblk for us
+    /   to use!
+    /   1.03 - Lookup filearg1 in environment block before giving up.
+    /   Use presence of arguments to allocate a new FCB.
+    */
+    else
+    {
+        if ( !fcb )					/* if no FCB then error	*/
+        {
+            /*
+            	/ 1.03 - look up in environment block.  Filename
+            	/	 will be copied to tscblk.
+            	*/
+            scb2 = pTSCBLK;
+            if (!optfile(scb1, scb2) && !use_env)
+            {
+                use_env = IO_ENV;
+                goto again;
+            }
+            return  EXIT_1;
+        }
+        if ( tioblk.typ )		/* if args then		*/
+        {
+            allocsize = FCSIZE;	/*    alloc new FCB	*/
+            /* BAD!! Garbage collect could move ioblk before sysio is called */
+            save_iob = MK_MP(fcb->iob, struct ioblk *);
+        }
+        else				/* if no args then	*/
+            allocsize = 0;		/*   no new FCB needed	*/
+    }
 
-/*
-/   Do a normal return here.
-*/
-  tioblk.flg2 |= use_env; /*  record use of environment for sysio */
-  SET_WA( allocsize );  /*  size of block to alloc or 0   */
-	SET_WC( 0 );		/*  xrblk please			*/
-	SET_XL( 0 );		/*  no private fcblk			*/
+    /*
+    /   Do a normal return here.
+    */
+    tioblk.flg2 |= use_env; /*  record use of environment for sysio */
+    SET_WA( allocsize );  /*  size of block to alloc or 0   */
+    SET_WC( 0 );		/*  xrblk please			*/
+    SET_XL( 0 );		/*  no private fcblk			*/
 
-	return NORMAL_RETURN;
+    return NORMAL_RETURN;
 }

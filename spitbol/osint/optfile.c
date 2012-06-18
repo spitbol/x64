@@ -36,29 +36,29 @@ int optfile( varname, result )
 struct	scblk	*varname, *result;
 
 {
-	word	i, j, n;
-	register char *p, *q;
+    word	i, j, n;
+    register char *p, *q;
 
-	/* try to convert alias to an integer */
-	i = 0;
-	n = scnint( varname->str, varname->len, &i);
-	if (i == varname->len)		/* Consume all characters? */
-	{
-		for (j = 0; j <= maxf; j++)
-		{
-			if (cfiles[j].filenum == n)
-			{
-				p = cfiles[j].fileptr;
-				q = result->str;
-				while ((*q++ = *p++) != 0)
-					;
-				result->len = q - result->str - 1;
-				return 0;
-			}
-		}
-	}
+    /* try to convert alias to an integer */
+    i = 0;
+    n = scnint( varname->str, varname->len, &i);
+    if (i == varname->len)		/* Consume all characters? */
+    {
+        for (j = 0; j <= maxf; j++)
+        {
+            if (cfiles[j].filenum == n)
+            {
+                p = cfiles[j].fileptr;
+                q = result->str;
+                while ((*q++ = *p++) != 0)
+                    ;
+                result->len = q - result->str - 1;
+                return 0;
+            }
+        }
+    }
 
-	/* didn't find it on the command line.  Check environment */
-	return rdenv( varname, result );
+    /* didn't find it on the command line.  Check environment */
+    return rdenv( varname, result );
 }
 

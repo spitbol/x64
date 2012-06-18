@@ -26,11 +26,11 @@
 zysil()
 
 {
-	register struct fcblk *fcb = WA (struct fcblk *);
+    register struct fcblk *fcb = WA (struct fcblk *);
 
-	SET_WA( fcb->rsz );
-	SET_WC( fcb->mode );
+    SET_WA( fcb->rsz );
+    SET_WC( fcb->mode );
 
-	/* normal return */
-	return NORMAL_RETURN;
+    /* normal return */
+    return NORMAL_RETURN;
 }

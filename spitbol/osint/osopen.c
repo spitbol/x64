@@ -47,147 +47,147 @@ int	osopen( ioptr )
 struct	ioblk	*ioptr;
 
 {
-	word	fd;
-	char	savech;
-	word 	len;
-	char	*cp;
-	struct	scblk	*scptr;
+    word	fd;
+    char	savech;
+    word 	len;
+    char	*cp;
+    struct	scblk	*scptr;
 
-/*
-/	If file already open, return.
-*/
-	if ( ioptr->flg1 & IO_OPN )
-		return 0;
+    /*
+    /	If file already open, return.
+    */
+    if ( ioptr->flg1 & IO_OPN )
+        return 0;
 
-/*
-/	Establish a few pointers and filename length.
-*/
-	scptr	= MK_MP(ioptr->fnm, struct scblk *);	/* point to filename SCBLK	*/
-  if (ioptr->flg2 & IO_ENV)
-	{
-		if (optfile(scptr, pTSCBLK))
-			return -1;
-		scptr = pTSCBLK;
-		pTSCBLK->len = lenfnm(scptr);	/* remove any options */
-	}
+    /*
+    /	Establish a few pointers and filename length.
+    */
+    scptr	= MK_MP(ioptr->fnm, struct scblk *);	/* point to filename SCBLK	*/
+    if (ioptr->flg2 & IO_ENV)
+    {
+        if (optfile(scptr, pTSCBLK))
+            return -1;
+        scptr = pTSCBLK;
+        pTSCBLK->len = lenfnm(scptr);	/* remove any options */
+    }
 
-	cp	= scptr->str;		/* point to filename string	*/
-	len	= lenfnm( scptr );	/* get length of filename	*/
+    cp	= scptr->str;		/* point to filename string	*/
+    len	= lenfnm( scptr );	/* get length of filename	*/
 
 #if PIPES
-/*
-/	Handle pipes here.
-*/
-        if ( cp[0] == '!' )		/* if pipe ...			*/
-	{
-		ioptr -> flg2 |= IO_PIP;	/*   then set flag and		*/
-		fd = ospipe( ioptr );   /*      let ospipe() do work	*/
-	}
+    /*
+    /	Handle pipes here.
+    */
+    if ( cp[0] == '!' )		/* if pipe ...			*/
+    {
+        ioptr -> flg2 |= IO_PIP;	/*   then set flag and		*/
+        fd = ospipe( ioptr );   /*      let ospipe() do work	*/
+    }
 
 
-/*
-/	Handle files here.
-*/
-	else
+    /*
+    /	Handle files here.
+    */
+    else
 #endif					/* PIPES */
 
-	{
+    {
 #if WINNT
-		/* Check for CON:, AUX:, LPT1:, etc., and remove colon */
-		if ((len == 4 || len == 5) && cp[len - 1] == ':')
-			len--;
+        /* Check for CON:, AUX:, LPT1:, etc., and remove colon */
+        if ((len == 4 || len == 5) && cp[len - 1] == ':')
+            len--;
 #endif               /* WINNT */
 
-		savech	= make_c_str(&cp[len]);	/*   else temporarily terminate	filename */
-		if ( ioptr->flg1 & IO_OUP ) /*  output file		*/
-		{
-			fd = -1;	/* force creat if not update or append	*/
+        savech	= make_c_str(&cp[len]);	/*   else temporarily terminate	filename */
+        if ( ioptr->flg1 & IO_OUP ) /*  output file		*/
+        {
+            fd = -1;	/* force creat if not update or append	*/
 
-			/* Look for "-" as a file name.  Assign to fd 1 */
-			if (len == 1 && *cp == '-')
-			{
+            /* Look for "-" as a file name.  Assign to fd 1 */
+            if (len == 1 && *cp == '-')
+            {
                 fd = STDERRFD;          /* was STDOUTFD, changed for WinNT */
-				ioptr->flg1 |= IO_SYS;
-			}
-			else
-			{
-				/* default mode:
-				 *   create file if it doesn't exist
-				 *   open for read/write so we can fill buffer after a seek
-				 *    (even if this is a write only from file from the user's
-				 *    point of view)
-				 *   if file is not buffered and not appending or updating,
-				 *    use O_WRONLY instead of O_RDWR.
-				 */
-				int mode = O_CREAT;		/* create file if it doesn't exist */
+                ioptr->flg1 |= IO_SYS;
+            }
+            else
+            {
+                /* default mode:
+                 *   create file if it doesn't exist
+                 *   open for read/write so we can fill buffer after a seek
+                 *    (even if this is a write only from file from the user's
+                 *    point of view)
+                 *   if file is not buffered and not appending or updating,
+                 *    use O_WRONLY instead of O_RDWR.
+                 */
+                int mode = O_CREAT;		/* create file if it doesn't exist */
 
-				if (ioptr->flg1 & IO_WRC && !(ioptr->action & IO_OPEN_IF_EXISTS))
-					mode |= O_WRONLY;
-				else
-					mode |= O_RDWR;
+                if (ioptr->flg1 & IO_WRC && !(ioptr->action & IO_OPEN_IF_EXISTS))
+                    mode |= O_WRONLY;
+                else
+                    mode |= O_RDWR;
 
-				/* if not update or append mode */
-				if (!(ioptr->flg1 & (IO_INP|IO_APP)))
-					mode |= O_TRUNC;			/* truncate existing file */
+                /* if not update or append mode */
+                if (!(ioptr->flg1 & (IO_INP|IO_APP)))
+                    mode |= O_TRUNC;			/* truncate existing file */
 
-				fd = spit_open( cp, mode, ioptr->share /* 0666 */, ioptr->action);
-			}
+                fd = spit_open( cp, mode, ioptr->share /* 0666 */, ioptr->action);
+            }
 
-		}
-		else			/* input-only file		*/
-		{
-			/* Look for "-" as a file name.  Assign to fd 0 */
-			if (len == 1 && *cp == '-')
-			{
-				fd = STDINFD;
-				ioptr->flg1 |= IO_SYS;
-			}
-			else
-				fd = spit_open( cp, O_RDONLY, ioptr->share /* 0 */, ioptr->action);
+        }
+        else			/* input-only file		*/
+        {
+            /* Look for "-" as a file name.  Assign to fd 0 */
+            if (len == 1 && *cp == '-')
+            {
+                fd = STDINFD;
+                ioptr->flg1 |= IO_SYS;
+            }
+            else
+                fd = spit_open( cp, O_RDONLY, ioptr->share /* 0 */, ioptr->action);
+        }
+        unmake_c_str(&cp[len], savech);	/* restore filename string	*/
     }
-		unmake_c_str(&cp[len], savech);	/* restore filename string	*/
-	}
 
-/*
-/	If file/pipe opened successfully, then set
-/
-/	o  file descriptor number in IOBLK
-/	o  open flag in IOBLK
-/	o  if output file is a TTY device, set the IO_WRC flag (no buffering)
-/	o  if IO_WRC flag set, throw away the buffer
-/	o  if output, append and not pipe, seek to end of file.
-/
-/	and then do a normal return.
-*/
-	if (fd != -1)
-	{
-		ioptr->fdn = (word)fd;
-		ioptr->flg1 |= IO_OPN;
-    if ( ioptr->flg1 & IO_OUP  &&  testty( fd ) == 0 )
-      ioptr->flg1 |= IO_WRC;
+    /*
+    /	If file/pipe opened successfully, then set
+    /
+    /	o  file descriptor number in IOBLK
+    /	o  open flag in IOBLK
+    /	o  if output file is a TTY device, set the IO_WRC flag (no buffering)
+    /	o  if IO_WRC flag set, throw away the buffer
+    /	o  if output, append and not pipe, seek to end of file.
+    /
+    /	and then do a normal return.
+    */
+    if (fd != -1)
+    {
+        ioptr->fdn = (word)fd;
+        ioptr->flg1 |= IO_OPN;
+        if ( ioptr->flg1 & IO_OUP  &&  testty( fd ) == 0 )
+            ioptr->flg1 |= IO_WRC;
 #if WINNT
-		/* Test for character input */
-		if ( ioptr->flg1 & IO_INP && cindev( ioptr->fdn ) == 0 )
-				ioptr->flg1 |= IO_CIN;
+        /* Test for character input */
+        if ( ioptr->flg1 & IO_INP && cindev( ioptr->fdn ) == 0 )
+            ioptr->flg1 |= IO_CIN;
 #endif               /* WINNT */
 
 #if HOST386
-		/* Test for character output.  Definicon doesn't have screen functions */
-		if ( ioptr->flg1 & IO_OUP && coutdev( ioptr->fdn ) == 0 )
-				ioptr->flg1 |= IO_COT;
+        /* Test for character output.  Definicon doesn't have screen functions */
+        if ( ioptr->flg1 & IO_OUP && coutdev( ioptr->fdn ) == 0 )
+            ioptr->flg1 |= IO_COT;
 #endif					/* HOST386 */
 
-		if ( ioptr->flg1 & IO_WRC )
-			ioptr->bfb = 0;
+        if ( ioptr->flg1 & IO_WRC )
+            ioptr->bfb = 0;
 
-		if ( (ioptr->flg1 & (IO_OUP|IO_APP)) == (IO_OUP|IO_APP) &&
-		 !(ioptr->flg2 & IO_PIP))
-			doset(ioptr, 0L, 2);
-		return 0;
-	}
+        if ( (ioptr->flg1 & (IO_OUP|IO_APP)) == (IO_OUP|IO_APP) &&
+                !(ioptr->flg2 & IO_PIP))
+            doset(ioptr, 0L, 2);
+        return 0;
+    }
 
-/*
-/	When control passes here the open/pipe has failed so return -1.
-*/
-	return  -1;
+    /*
+    /	When control passes here the open/pipe has failed so return -1.
+    */
+    return  -1;
 }

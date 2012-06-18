@@ -63,75 +63,75 @@ word lenfnm( scptr )
 struct	scblk	*scptr;
 
 {
-  register word cnt, len, len2;
-	register char	*cp;
+    register word cnt, len, len2;
+    register char	*cp;
 #if PIPES
-	register char delim;
+    register char delim;
 #endif					/* PIPES */
 
-/*
-/	Null strings have filenames with lengths of 0.
-*/
-  len = len2 = scptr->len;
-  if ( len == 0 )
-		return	0L;
+    /*
+    /	Null strings have filenames with lengths of 0.
+    */
+    len = len2 = scptr->len;
+    if ( len == 0 )
+        return	0L;
 
-/*
-/   Here to examine end of string for "[option]".
-*/
-  cp = &scptr->str[--len2];    /* last char of strng */
-	if ( *cp == ']')			/* string end with "]" ? */
-	{
-		/* String ends with "]", find preceeding "[" */
-    while (len2--)
-		{
-			if (*--cp == ']')
-				break;
-			if (*cp == '[')
-      {
-        /* valid option syntax, remove from length of string we'll examine */
-        len = cp - scptr->str;
-        break;
-      }
-		}
-	}
+    /*
+    /   Here to examine end of string for "[option]".
+    */
+    cp = &scptr->str[--len2];    /* last char of strng */
+    if ( *cp == ']')			/* string end with "]" ? */
+    {
+        /* String ends with "]", find preceeding "[" */
+        while (len2--)
+        {
+            if (*--cp == ']')
+                break;
+            if (*cp == '[')
+            {
+                /* valid option syntax, remove from length of string we'll examine */
+                len = cp - scptr->str;
+                break;
+            }
+        }
+    }
 
-	/* Look for space as the options delimiter */
-	cp = scptr->str;
+    /* Look for space as the options delimiter */
+    cp = scptr->str;
 
 #if PIPES
-/*
-/	Here to bypass spaces within a pipe command.
-/   Count characters through second occurrence of delimiting
-/   character.  lenfnm( "!!foo goo!" ) = 10
-*/
-	if ( *cp == '!' )
-	{
-		if ( len < 3L )		/* "!!" clearly invalid		*/
-			return	-1L;
-		delim = *++cp;		/*  pick up delimiter		*/
-		if ( *++cp == delim )	/* "!!!" also invalid		*/
-			return	-1L;
-					/*  count chars up to delim	*/
-    for ( cnt = 2; cnt < len  && *cp++ != delim; cnt++ )
-			;
-    if ( *--cp == delim )   /* if last char is delim then */
-         ++cnt;             /*   include it in the count  */
-    return cnt;
-	}
+    /*
+    /	Here to bypass spaces within a pipe command.
+    /   Count characters through second occurrence of delimiting
+    /   character.  lenfnm( "!!foo goo!" ) = 10
+    */
+    if ( *cp == '!' )
+    {
+        if ( len < 3L )		/* "!!" clearly invalid		*/
+            return	-1L;
+        delim = *++cp;		/*  pick up delimiter		*/
+        if ( *++cp == delim )	/* "!!!" also invalid		*/
+            return	-1L;
+        /*  count chars up to delim	*/
+        for ( cnt = 2; cnt < len  && *cp++ != delim; cnt++ )
+            ;
+        if ( *--cp == delim )   /* if last char is delim then */
+            ++cnt;             /*   include it in the count  */
+        return cnt;
+    }
 #endif					/* PIPES */
 
 #if WINNT
-  /* WIN NT NTFS permit blanks within file names.
-	 */
-  return len;
+    /* WIN NT NTFS permit blanks within file names.
+     */
+    return len;
 #else           /* WINNT */
-/*
-/	Here for a normal filename.  Just count the number of characters
-/	up to the first blank or end of string, whichever occurs first.
-*/
-  for ( cnt = 0; cnt < len  &&  *cp++ != ' '; cnt++ )
-		;
-	return cnt;
+    /*
+    /	Here for a normal filename.  Just count the number of characters
+    /	up to the first blank or end of string, whichever occurs first.
+    */
+    for ( cnt = 0; cnt < len  &&  *cp++ != ' '; cnt++ )
+        ;
+    return cnt;
 #endif          /* WINNT */
 }

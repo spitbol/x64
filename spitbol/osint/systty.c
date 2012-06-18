@@ -43,7 +43,7 @@ void ttyinit()
 {
     ttyiobin.bfb = MP_OFF(pTTYBUF, struct bfblk NEAR *);
 }
-	
+
 /*
 /   zyspi - print on interactive channel
 /
@@ -61,17 +61,17 @@ void ttyinit()
 zyspi()
 
 {
-	word	retval;
+    word	retval;
 
     retval = oswrite( 1, ttyiobout.len, WA(word), &ttyiobout, XR( struct scblk * ) );
 
-/*
-/	Return error if oswrite fails.
-*/
-	if ( retval != 0 )
-		return EXIT_1;
+    /*
+    /	Return error if oswrite fails.
+    */
+    if ( retval != 0 )
+        return EXIT_1;
 
-	return  NORMAL_RETURN;
+    return  NORMAL_RETURN;
 }
 
 
@@ -92,31 +92,31 @@ zyspi()
 zysri()
 
 {
-	register word	length;
-	register struct scblk *scb = XR( struct scblk * );
-	register char *saveptr, savechr;
+    register word	length;
+    register struct scblk *scb = XR( struct scblk * );
+    register char *saveptr, savechr;
 
-/*
-/	Read a line specified by length of scblk.  If EOF take exit 1.
-*/
-	length = scb->len;					/* Length of buffer provided */
-	saveptr = scb->str + length;		/* Save char following buffer for \n */
-	savechr = *saveptr;
+    /*
+    /	Read a line specified by length of scblk.  If EOF take exit 1.
+    */
+    length = scb->len;					/* Length of buffer provided */
+    saveptr = scb->str + length;		/* Save char following buffer for \n */
+    savechr = *saveptr;
 
     MK_MP(ttyiobin.bfb, struct bfblk *)->size = ++length; /* Size includes extra byte for \n */
 
     length = osread( 1, length, &ttyiobin, scb );
 
-	*saveptr = savechr;					/* Restore saved char */
+    *saveptr = savechr;					/* Restore saved char */
 
-	if ( length < 0 )
-		return  EXIT_1;
+    if ( length < 0 )
+        return  EXIT_1;
 
-/*
-/	Line read OK, so set string length and return normally.
-*/
-	scb->len = length;
-	return NORMAL_RETURN;
+    /*
+    /	Line read OK, so set string length and return normally.
+    */
+    scb->len = length;
+    return NORMAL_RETURN;
 }
 
 
@@ -128,9 +128,9 @@ File_handle h;
 #if HOST386
     if (coutdev(h))
 #else
-	 if (testty(h))
+    if (testty(h))
 #endif
-       ttyiobout.flg1 &= ~IO_COT;
+        ttyiobout.flg1 &= ~IO_COT;
     else
-       ttyiobout.flg1 |= IO_COT;
+        ttyiobout.flg1 |= IO_COT;
 }

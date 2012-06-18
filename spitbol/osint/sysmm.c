@@ -28,20 +28,20 @@
 zysmm()
 
 {
-	long n;
-	char *dummy;
+    long n;
+    char *dummy;
 
-	SET_XR( 0 );			/* Assume allocation will fail */
+    SET_XR( 0 );			/* Assume allocation will fail */
 
-  /*
-	/   If not already at maximum allocation, try to get more memory.
-	*/
-	if ( topmem < maxmem ) {
-	    n = moremem(memincb, &dummy);
-	    topmem += n;		/*  adjust current top address	*/
-	    SET_XR( n / sizeof(word) ); /*  set # of words obtained*/
-	    }
-  return NORMAL_RETURN;
+    /*
+    /   If not already at maximum allocation, try to get more memory.
+    */
+    if ( topmem < maxmem ) {
+        n = moremem(memincb, &dummy);
+        topmem += n;		/*  adjust current top address	*/
+        SET_XR( n / sizeof(word) ); /*  set # of words obtained*/
+    }
+    return NORMAL_RETURN;
 }
 
 /*
@@ -59,30 +59,30 @@ long moremem(n,pp)
 long n;
 char **pp;
 {
-	long start, result;
-	char *p;
+    long start, result;
+    char *p;
 
-	n &= -(int)sizeof(word);		/* multiple of word size only */
-	start = n;			/* initial request size */
-	result = 0;			/* nothing obtained yet */
-	*pp = (char *) 0;		/* no result sbrk value */
+    n &= -(int)sizeof(word);		/* multiple of word size only */
+    start = n;			/* initial request size */
+    result = 0;			/* nothing obtained yet */
+    *pp = (char *) 0;		/* no result sbrk value */
 
-	while ( n >= sizeof(word) ) {	/* Word is minimum allocation unit */
-	    p = (char *)sbrk((uword)n);		/* Attempt allocation */
-	    if ( p != (char *) -1 ) {	/* If successful */
-		result += n;		/* Accumulate allocation size */
-		if (*pp == (char *) 0) {/* First success? */
-		    if (p != topmem) {
-			wrterr( "Internal system error--SYSMM" );
-			__exit(1);
-		        }
-		    *pp = p;		/* record first allocation */
-		    }
-		if (n == start)		/* If easily satisfied, great */
-		    break;
-	        }
-    	    n >>= 1;			/* Continue with smaller request size */
-	    n &= -(int)sizeof(word);		/* Always keeping it a word multiple */
-	    }
-	return result;
+    while ( n >= sizeof(word) ) {	/* Word is minimum allocation unit */
+        p = (char *)sbrk((uword)n);		/* Attempt allocation */
+        if ( p != (char *) -1 ) {	/* If successful */
+            result += n;		/* Accumulate allocation size */
+            if (*pp == (char *) 0) {/* First success? */
+                if (p != topmem) {
+                    wrterr( "Internal system error--SYSMM" );
+                    __exit(1);
+                }
+                *pp = p;		/* record first allocation */
+            }
+            if (n == start)		/* If easily satisfied, great */
+                break;
+        }
+        n >>= 1;			/* Continue with smaller request size */
+        n &= -(int)sizeof(word);		/* Always keeping it a word multiple */
+    }
+    return result;
 }

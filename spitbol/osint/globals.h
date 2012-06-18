@@ -90,9 +90,9 @@ Init(	word	maxf, -1);		/* number of files specified this way -1 */
 #define Ncmdf	12
 
 typedef	struct {
-	word	filenum;
-	char	*fileptr;
-	} CFile;
+    word	filenum;
+    char	*fileptr;
+} CFile;
 NoInit(	CFile	cfiles[Ncmdf]);	/* Array of structures to record info	*/
 
 #define ttyiobininit {0,    /* type word            */ \

@@ -22,7 +22,7 @@
 zysul()
 {
 #if EXTFUN
-	unldef(XR(struct efblk *));
+    unldef(XR(struct efblk *));
 #endif					/* EXTFUN */
     return NORMAL_RETURN;
 }

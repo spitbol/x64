@@ -57,9 +57,9 @@ word special Params((word c));
 
 zysem()
 {
-  pTSCBLK->len = msgcopy( WA(word), errors, pTSCBLK->str );
-  SET_XR( pTSCBLK );
-	return NORMAL_RETURN;
+    pTSCBLK->len = msgcopy( WA(word), errors, pTSCBLK->str );
+    SET_XR( pTSCBLK );
+    return NORMAL_RETURN;
 }
 
 /*
@@ -71,13 +71,13 @@ zysem()
 word special(c)
 word c;
 {
-	if ( c == 0 )
-		return 0;
-	if ( c < 32 )
-		return c;
-	if ( c < 128 )
-		return 0;
-	return (c - 96);
+    if ( c == 0 )
+        return 0;
+    if ( c < 32 )
+        return c;
+    if ( c < 128 )
+        return 0;
+    return (c - 96);
 }
 
 /*
@@ -95,41 +95,41 @@ word	n;
 unsigned char ERRDIST *source;
 char		*dest;
 {
-	word 	k;
-	unsigned char	c;
-	char		*dstart;
+    word 	k;
+    unsigned char	c;
+    char		*dstart;
 
-	/*
-	/   Save starting destination pointer
-	*/
-	dstart = dest;
+    /*
+    /   Save starting destination pointer
+    */
+    dstart = dest;
 
-	/*
-	/   Scan to first character of Nth string
-	*/
-	for ( ; n--; )
-	{
-		for ( ; *source++; )
-			;
-	}
+    /*
+    /   Scan to first character of Nth string
+    */
+    for ( ; n--; )
+    {
+        for ( ; *source++; )
+            ;
+    }
 
-	/*
-	/   Examine next character of string.
-	/	If it is a special character, recurse to unpack it
-	/	   from phrases array.
-	/	If normal character, just copy it.
-	*/
-	for ( ; (c = *source++) != 0; )
-	{
-		if ( (k = special(c)) != 0 )
-			dest += msgcopy( k, phrases, dest );
-		else
-			*dest++ = c;
-	}
+    /*
+    /   Examine next character of string.
+    /	If it is a special character, recurse to unpack it
+    /	   from phrases array.
+    /	If normal character, just copy it.
+    */
+    for ( ; (c = *source++) != 0; )
+    {
+        if ( (k = special(c)) != 0 )
+            dest += msgcopy( k, phrases, dest );
+        else
+            *dest++ = c;
+    }
 
-	/*
-	/   Return number of characters transferred.
-	*/
-	return dest - dstart;
+    /*
+    /   Return number of characters transferred.
+    */
+    return dest - dstart;
 }
 

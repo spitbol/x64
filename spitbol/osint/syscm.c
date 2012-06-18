@@ -37,22 +37,22 @@ long *kvcom_ptr;
 
 zyscm()
 {
-	register word result;
-	
-	if (!kvcom_ptr)							/* Cheap optimization to speed up */
-		kvcom_ptr = GET_DATA_OFFSET(KVCOM,long *);	/* &COMPARE consultation */
+    register word result;
 
-	result = gencmp(XL(char *), XR(char *), WA(word), WB(word), *kvcom_ptr);
+    if (!kvcom_ptr)							/* Cheap optimization to speed up */
+        kvcom_ptr = GET_DATA_OFFSET(KVCOM,long *);	/* &COMPARE consultation */
 
-	SET_XL(0);
+    result = gencmp(XL(char *), XR(char *), WA(word), WB(word), *kvcom_ptr);
 
-	if (result == 0x80000000)
-		return EXIT_1;
-	else if (result == 0)
-		return NORMAL_RETURN;
-	else if (result < 0)
-		return EXIT_2;
-	else
-		return EXIT_3;
+    SET_XL(0);
+
+    if (result == 0x80000000)
+        return EXIT_1;
+    else if (result == 0)
+        return NORMAL_RETURN;
+    else if (result < 0)
+        return EXIT_2;
+    else
+        return EXIT_3;
 }
 #endif					/* ALTCOMP */

@@ -68,7 +68,7 @@ struct fcblk
     word	len;			/*  length of fcblk				*/
     word	rsz;			/*  record size					*/
     struct ioblk NEAR *iob;	/*  pointer to IOBLK			*/
-	word	mode;			/*  1=line mode, 0 = raw mode	*/
+    word	mode;			/*  1=line mode, 0 = raw mode	*/
 };
 
 #define FCSIZE		(sizeof( struct fcblk ))
@@ -100,8 +100,8 @@ struct ioblk
     word	flg2;			/*  second nine flags			*/
     word	eol1;			/*  end of line character 1		*/
     word	eol2;			/*  end of line character 2		*/
-	word	share;			/*	sharing mode				*/
-	word	action;			/*  file open actions			*/
+    word	share;			/*	sharing mode				*/
+    word	action;			/*  file open actions			*/
 };
 
 #define IOSIZE		(sizeof( struct ioblk ))

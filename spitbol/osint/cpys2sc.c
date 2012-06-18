@@ -9,7 +9,7 @@
 /   cpys2sc( cp, scptr, maxlen )
 /
 /   cpys2sc() copies a C style string pointed to by cp into the SCBLK
-/   pointed to by scptr. 
+/   pointed to by scptr.
 /
 /   Parameters:
 /	cp	pointer to C style string
@@ -35,14 +35,14 @@ struct	scblk	*scptr;
 word	maxlen;
 
 {
-	register word	i;
-	register char	*scbcp;
+    register word	i;
+    register char	*scbcp;
 
-	scptr->typ = TYPE_SCL;
-	scbcp	= scptr->str;
-	for( i = 0 ; i < maxlen  &&  ((*scbcp++ = *cp++) != 0) ; i++ )
-		;
-	scptr->len = i;
-	while (i++ & (sizeof(word) - 1))
-		*scbcp++ = 0;
+    scptr->typ = TYPE_SCL;
+    scbcp	= scptr->str;
+    for( i = 0 ; i < maxlen  &&  ((*scbcp++ = *cp++) != 0) ; i++ )
+        ;
+    scptr->len = i;
+    while (i++ & (sizeof(word) - 1))
+        *scbcp++ = 0;
 }

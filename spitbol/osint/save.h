@@ -63,9 +63,9 @@ struct svfilehdr {
     uword           memincb;        /* memory increment size                */
     uword           maxsize;        /* maximum object size                  */
     word            compress;       /* 0 = no compress,                     */
-                                    /* >0 = code word size (bits)           */
+    /* >0 = code word size (bits)           */
     word            uarglen;        /* length of -u command string          */
-	};
+};
 
 #define OURMAGIC1   0xfaa5a5fa
 #define OURMAGIC2   0x0d0a0d0a

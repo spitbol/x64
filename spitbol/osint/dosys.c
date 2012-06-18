@@ -43,6 +43,6 @@ int dosys( cmd, path )
 char	*cmd;
 char	*path;
 {
-  return system( cmd );
+    return system( cmd );
 }
 

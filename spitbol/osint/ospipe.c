@@ -51,7 +51,7 @@ static int interlock;
 #endif
 
 #if WINNT
-	HFILE childfd, stdfd;		/* kludge to get info to syswinnt.c */
+HFILE childfd, stdfd;		/* kludge to get info to syswinnt.c */
 #endif
 /*
 /   ospipe( ioptr )
@@ -70,124 +70,124 @@ struct	ioblk	*ioptr;
 {
     int   childpid;
 #if WINNT
-	HFILE parentfd, savefd, fd[2];
+    HFILE parentfd, savefd, fd[2];
 #else
-	HFILE childfd, parentfd, savefd, stdfd, fd[2];
+    HFILE childfd, parentfd, savefd, stdfd, fd[2];
 #endif
 
-	if ( (ioptr->flg1 & (IO_INP | IO_OUP)) == (IO_INP | IO_OUP) )
-		return -1;		/* can't open read/write pipe */
-/*
-/	Fail if system call to create pipe fails.
-*/
-	if ( pipe( fd ) < 0 )
-		return -1;
+    if ( (ioptr->flg1 & (IO_INP | IO_OUP)) == (IO_INP | IO_OUP) )
+        return -1;		/* can't open read/write pipe */
+    /*
+    /	Fail if system call to create pipe fails.
+    */
+    if ( pipe( fd ) < 0 )
+        return -1;
 
-/*
-/	Set up file descriptors properly based on whose reading from pipe/
-/	writing to pipe.
-*/
-	if ( ioptr->flg1 & IO_INP ) {
-		parentfd = fd[0];	/* parent reads from fd[0]	*/
-		childfd  = fd[1];	/* child writes to fd[1]	*/
-		stdfd = 1;
-		}
-	else {
-		parentfd = fd[1];	/* parent writes to fd[1]	*/
-		childfd  = fd[0];	/* child reads from fd[0]	*/
-		stdfd = 0;
-		}
+    /*
+    /	Set up file descriptors properly based on whose reading from pipe/
+    /	writing to pipe.
+    */
+    if ( ioptr->flg1 & IO_INP ) {
+        parentfd = fd[0];	/* parent reads from fd[0]	*/
+        childfd  = fd[1];	/* child writes to fd[1]	*/
+        stdfd = 1;
+    }
+    else {
+        parentfd = fd[1];	/* parent writes to fd[1]	*/
+        childfd  = fd[0];	/* child reads from fd[0]	*/
+        stdfd = 0;
+    }
 
 #if UNIX
-/*
-/	Execute the proper code based on whose process is the parent and
-/	whose is the child.
-*/
+    /*
+    /	Execute the proper code based on whose process is the parent and
+    /	whose is the child.
+    */
 #if SOLARIS
     interlock = 0;
-	switch ( childpid = vfork() ) {
+    switch ( childpid = vfork() ) {
 #else
-	switch ( childpid = fork() ) {
+    switch ( childpid = fork() ) {
 #endif
-		int n;
-		case -1:
-			/*
-			/   Fork failed, so close up files and return -1.
-			*/
-			close( parentfd );
-			close( childfd );
-			parentfd = -1;
-			break;
+        int n;
+    case -1:
+        /*
+        /   Fork failed, so close up files and return -1.
+        */
+        close( parentfd );
+        close( childfd );
+        parentfd = -1;
+        break;
 
-		case 0:
-			/*
-			/   Child executes here.  Set up file descriptors 0 & 1 properly
-			/   and close any file descriptors open above 2.
-			/
-			/    If parent is expecting to read from us, we must write
-			/    via file descriptor 1 to childfd.
-			/    If parent is expecting to write to us, we must read via
-			/    file descriptor 0 from childfd.
-			*/
-			close( stdfd );
+    case 0:
+        /*
+        /   Child executes here.  Set up file descriptors 0 & 1 properly
+        /   and close any file descriptors open above 2.
+        /
+        /    If parent is expecting to read from us, we must write
+        /    via file descriptor 1 to childfd.
+        /    If parent is expecting to write to us, we must read via
+        /    file descriptor 0 from childfd.
+        */
+        close( stdfd );
 
-			/*
-			/   Duplicate childfd to be either child's (our) fd 0 or 1.
-			*/
-			dup( childfd );
+        /*
+        /   Duplicate childfd to be either child's (our) fd 0 or 1.
+        */
+        dup( childfd );
 
-			/*
-			/   Close all unnecessary file descriptors.
-			*/
-			for ( n=3 ; n<=OPEN_FILES ; close( n++ ) )
-				;
+        /*
+        /   Close all unnecessary file descriptors.
+        */
+        for ( n=3 ; n<=OPEN_FILES ; close( n++ ) )
+            ;
 
-			if (doshell(ioptr) == -1)
-				return -1;
-			__exit(1);			/* Should never get here! */
+        if (doshell(ioptr) == -1)
+            return -1;
+        __exit(1);			/* Should never get here! */
 
-		default:
-			/*
-			/   Parent executes here.  Remember process id of child and close
-			/   its file descriptor.
-			*/
-			ioptr->pid = childpid;
-         close( childfd );
+    default:
+        /*
+        /   Parent executes here.  Remember process id of child and close
+        /   its file descriptor.
+        */
+        ioptr->pid = childpid;
+        close( childfd );
 #if SOLARIS
-            /* Need to wait here until child says that is has copied data */
-            while (!interlock)
-                usleep(100);                       /* Yield to other tasks */
+        /* Need to wait here until child says that is has copied data */
+        while (!interlock)
+            usleep(100);                       /* Yield to other tasks */
 #endif
-			break;
-		}
+        break;
+    }
 #endif					/* UNIX */
 
 #if WINNT
-	savefd = dup(stdfd);			/* prepare to set up child's stdout */
-	if (savefd == -1) {
-		close( parentfd );
-		close( childfd );
-		parentfd = -1;
-		}
-	else {
-		dup2(childfd, stdfd);		/* close stdfd, make it same a childfd */
-		privatize(parentfd);		/* don't let child inherit this fd */
-		childpid = doshell(ioptr);
-		close(childfd);
-		dup2(savefd,stdfd);			/* bring back our standard file */
-		if (childpid == -1) {
-			close(parentfd);
-			parentfd = -1;
-			}
-		else
-			ioptr->pid = childpid;
-		}
+    savefd = dup(stdfd);			/* prepare to set up child's stdout */
+    if (savefd == -1) {
+        close( parentfd );
+        close( childfd );
+        parentfd = -1;
+    }
+    else {
+        dup2(childfd, stdfd);		/* close stdfd, make it same a childfd */
+        privatize(parentfd);		/* don't let child inherit this fd */
+        childpid = doshell(ioptr);
+        close(childfd);
+        dup2(savefd,stdfd);			/* bring back our standard file */
+        if (childpid == -1) {
+            close(parentfd);
+            parentfd = -1;
+        }
+        else
+            ioptr->pid = childpid;
+    }
 #endif                  /* WINNT */
-/*
-/	Control comes here ONLY in parent process. Return the file descriptor
-/	to be used for communication with child process or -1 if error.
-*/
-	return parentfd;
+    /*
+    /	Control comes here ONLY in parent process. Return the file descriptor
+    /	to be used for communication with child process or -1 if error.
+    */
+    return parentfd;
 }
 
 
@@ -195,24 +195,24 @@ static int doshell( ioptr )
 struct	ioblk	*ioptr;
 {
 #define CMDBUFLEN 1024
-	struct	scblk	*scptr;
+    struct	scblk	*scptr;
     char    *shellpath, cmdbuf[CMDBUFLEN];
     int     len;
 
-	/*
-	/   Set up to execute command.
-	/
-	/   Be sure to point properly at start of command and to
-	/   terminate it with a Nul character.  Remember that
-	/   command is in string with form "!*command* options".
-	*/
-	scptr = MK_MP(ioptr->fnm,struct scblk *);	/* point to cmd scblk	*/
-	if (ioptr->flg2 & IO_ENV) {
-		if (optfile(scptr, pTSCBLK))
-			return -1;
-		scptr = pTSCBLK;
-		pTSCBLK->len = lenfnm(scptr);	/* remove any options	*/
-		}
+    /*
+    /   Set up to execute command.
+    /
+    /   Be sure to point properly at start of command and to
+    /   terminate it with a Nul character.  Remember that
+    /   command is in string with form "!*command* options".
+    */
+    scptr = MK_MP(ioptr->fnm,struct scblk *);	/* point to cmd scblk	*/
+    if (ioptr->flg2 & IO_ENV) {
+        if (optfile(scptr, pTSCBLK))
+            return -1;
+        scptr = pTSCBLK;
+        pTSCBLK->len = lenfnm(scptr);	/* remove any options	*/
+    }
     len   = lenfnm( scptr ) - 2;        /* length of cmd without ! & delimiter */
     if (len >= CMDBUFLEN)
         return -1;
@@ -230,7 +230,7 @@ struct	ioblk	*ioptr;
     interlock = 1;                  /* release parent */
 #endif
     execl( shellpath, pathlast( shellpath ), "-c", cmdbuf, (char *)NULL );
-	return -1;					/* should not get here */
+    return -1;					/* should not get here */
 #endif					/* UNIX */
 }
 

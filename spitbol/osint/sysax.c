@@ -25,7 +25,7 @@
 
 zysax()
 {
-	/*  swcoup does real work  */
-	swcoup( outptr );
-	return NORMAL_RETURN;
+    /*  swcoup does real work  */
+    swcoup( outptr );
+    return NORMAL_RETURN;
 }

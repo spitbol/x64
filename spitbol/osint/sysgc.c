@@ -31,6 +31,6 @@
 
 zysgc()
 {
-  in_gbcol = XR(word);  /* retain information */
-	return NORMAL_RETURN;
+    in_gbcol = XR(word);  /* retain information */
+    return NORMAL_RETURN;
 }

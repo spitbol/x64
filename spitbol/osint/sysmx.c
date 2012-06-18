@@ -22,6 +22,6 @@
 zysmx()
 
 {
-	SET_WA( maxsize );
-	return NORMAL_RETURN;
+    SET_WA( maxsize );
+    return NORMAL_RETURN;
 }

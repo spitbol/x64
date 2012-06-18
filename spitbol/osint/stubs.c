@@ -17,12 +17,12 @@
 
 zysdm()
 {
-	return NORMAL_RETURN;
+    return NORMAL_RETURN;
 }
 
 
 zystt()
 {
-	return NORMAL_RETURN;
+    return NORMAL_RETURN;
 }
 

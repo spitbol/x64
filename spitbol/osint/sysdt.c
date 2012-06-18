@@ -33,10 +33,10 @@ register char *dest;
 register int value;
 
 {
-	register short int i;
-	i = value / 10;
-	dest[0] = i + '0';
-	dest[1] = value - i*10 + '0';
+    register short int i;
+    i = value / 10;
+    dest[0] = i + '0';
+    dest[1] = value - i*10 + '0';
 }
 
 zysdt()
@@ -44,8 +44,8 @@ zysdt()
     struct icblk *dtscb = XR (struct icblk *);
 
     pTSCBLK->len = datecvt( pTSCBLK->str, dtscb->val );
-	SET_XL( pTSCBLK );
-	return NORMAL_RETURN;
+    SET_XL( pTSCBLK );
+    return NORMAL_RETURN;
 }
 
 /*
@@ -55,10 +55,10 @@ int storedate( cp, maxlen )
 char	*cp;
 word	maxlen;
 {
-   if (maxlen < 18)
-       return 0;
+    if (maxlen < 18)
+        return 0;
 
-   return datecvt(cp, 0);
+    return datecvt(cp, 0);
 }
 
 /*
@@ -71,41 +71,41 @@ int     type;
 
     time_t      tod;
 
-	register struct tm *tm;
+    register struct tm *tm;
 #if !WINNT
-	time( &tod );
+    time( &tod );
 #endif          /* !WINNT */
 
     tm = localtime( &tod );
 
     switch (type)
     {
-        default:
-        case 0:     /* "MM/DD/YY hh:mm:ss" */
-            conv( cp, tm->tm_mon+1 );
-                cp[2] = '/';
-            conv( cp+3, tm->tm_mday );
-                cp[5] = '/';
-            conv( cp+6, tm->tm_year % 100 );    /* Prepare for year 2000! */
-            return 8 + timeconv(&cp[8], tm);
+    default:
+    case 0:     /* "MM/DD/YY hh:mm:ss" */
+        conv( cp, tm->tm_mon+1 );
+        cp[2] = '/';
+        conv( cp+3, tm->tm_mday );
+        cp[5] = '/';
+        conv( cp+6, tm->tm_year % 100 );    /* Prepare for year 2000! */
+        return 8 + timeconv(&cp[8], tm);
 
-        case 1:     /* "MM/DD/YYYY hh:mm:ss" */
-            conv( cp, tm->tm_mon+1 );
-                cp[2] = '/';
-            conv( cp+3, tm->tm_mday );
-                cp[5] = '/';
-            conv( cp+6, (tm->tm_year + 1900) / 100 );
-            conv( cp+8, tm->tm_year % 100 );    /* Prepare for year 2000! */
-            return 10 + timeconv(&cp[10], tm);
+    case 1:     /* "MM/DD/YYYY hh:mm:ss" */
+        conv( cp, tm->tm_mon+1 );
+        cp[2] = '/';
+        conv( cp+3, tm->tm_mday );
+        cp[5] = '/';
+        conv( cp+6, (tm->tm_year + 1900) / 100 );
+        conv( cp+8, tm->tm_year % 100 );    /* Prepare for year 2000! */
+        return 10 + timeconv(&cp[10], tm);
 
-        case 2:     /* "YYYY-MM-DD/YYYY hh:mm:ss" */
-            conv( cp+0, (tm->tm_year + 1900) / 100 );
-            conv( cp+2, tm->tm_year % 100 );    /* Prepare for year 2000! */
-                cp[4] = '-';
-            conv( cp+5, tm->tm_mon+1 );
-                cp[7] = '-';
-            conv( cp+8, tm->tm_mday );
-            return 10 + timeconv(&cp[10], tm);
+    case 2:     /* "YYYY-MM-DD/YYYY hh:mm:ss" */
+        conv( cp+0, (tm->tm_year + 1900) / 100 );
+        conv( cp+2, tm->tm_year % 100 );    /* Prepare for year 2000! */
+        cp[4] = '-';
+        conv( cp+5, tm->tm_mon+1 );
+        cp[7] = '-';
+        conv( cp+8, tm->tm_mday );
+        return 10 + timeconv(&cp[10], tm);
     }
 }
 
@@ -113,13 +113,13 @@ static int timeconv( tp, tm)
 char *tp;
 struct tm *tm;
 {
-     tp[0] = ' ';
-     conv( tp+1, tm->tm_hour );
-       tp[3] = ':';
-     conv( tp+4, tm->tm_min );
-       tp[6] = ':';
-     conv( tp+7, tm->tm_sec );
-       *(tp+9) = '\0';
-     return 9;
+    tp[0] = ' ';
+    conv( tp+1, tm->tm_hour );
+    tp[3] = ':';
+    conv( tp+4, tm->tm_min );
+    tp[6] = ':';
+    conv( tp+7, tm->tm_sec );
+    *(tp+9) = '\0';
+    return 9;
 }
 

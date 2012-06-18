@@ -30,9 +30,9 @@ extern double inf;	/* infinity */
  */
 double f_atn(ra)
 double ra;
-   {
-   return atan(ra);
-   }
+{
+    return atan(ra);
+}
 
 
 /*
@@ -40,12 +40,12 @@ double ra;
  */
 double f_chp(ra)
 double ra;
-   {
-   if (ra >= 0.0)
-      return floor(ra);
-   else
-      return ceil(ra);
-   }
+{
+    if (ra >= 0.0)
+        return floor(ra);
+    else
+        return ceil(ra);
+}
 
 
 
@@ -54,9 +54,9 @@ double ra;
  */
 double f_cos(ra)
 double ra;
-   {
-   return cos(ra);
-   }
+{
+    return cos(ra);
+}
 
 
 
@@ -65,12 +65,12 @@ double ra;
  */
 double f_etx(ra)
 double ra;
-   {
-   double result;
-   errno = 0;
-   result = exp(ra);
-   return errno ? inf : result;
-   }
+{
+    double result;
+    errno = 0;
+    result = exp(ra);
+    return errno ? inf : result;
+}
 
 
 
@@ -79,12 +79,12 @@ double ra;
  */
 double f_lnf(ra)
 double ra;
-   {
-   double result;
-   errno = 0;
-   result = log(ra);
-   return errno ? inf : result;
-   }
+{
+    double result;
+    errno = 0;
+    result = log(ra);
+    return errno ? inf : result;
+}
 
 
 
@@ -93,9 +93,9 @@ double ra;
  */
 double f_sin(ra)
 double ra;
-   {
-   return sin(ra);
-   }
+{
+    return sin(ra);
+}
 
 
 /*
@@ -103,9 +103,9 @@ double ra;
  */
 double f_sqr(ra)
 double ra;
-   {
-   return sqrt(ra);
-   }
+{
+    return sqrt(ra);
+}
 
 
 /*
@@ -113,11 +113,11 @@ double ra;
  */
 double f_tan(ra)
 double ra;
-   {
-   double result;
-   errno = 0;
-   result = tan(ra);
-   return errno ? inf : result;
-   }
+{
+    double result;
+    errno = 0;
+    result = tan(ra);
+    return errno ? inf : result;
+}
 
 #endif					/* FLOAT & !MATHHDWR */

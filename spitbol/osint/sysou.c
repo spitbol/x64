@@ -35,44 +35,44 @@
 zysou()
 
 {
-	register struct fcblk *fcb = WA (struct fcblk *);
-	register union block  *blk = XR (union block *);
-	int result;
+    register struct fcblk *fcb = WA (struct fcblk *);
+    register union block  *blk = XR (union block *);
+    int result;
 
-	if (blk->scb.typ == TYPE_SCL)
-	{
-		/* called with string, get length from SCBLK */
-		SET_WA(blk->scb.len);
-	}
-	else
-	{
-		/* called with buffer, get length from BCBLK, and treat BSBLK
-		 * like an SCBLK
-		 */
-		SET_WA(blk->bcb.len);
-		SET_XR(blk->bcb.bcbuf);
-	}	
-		
-	if (fcb == (struct fcblk *)0 || fcb == (struct fcblk *)1)
-	{
-		if (!fcb)
-			result = zyspi();
-		else
-			result = zyspr();
-		if (result == NORMAL_RETURN)
-			return NORMAL_RETURN;
-		else
-			return EXIT_2;
-	}
+    if (blk->scb.typ == TYPE_SCL)
+    {
+        /* called with string, get length from SCBLK */
+        SET_WA(blk->scb.len);
+    }
+    else
+    {
+        /* called with buffer, get length from BCBLK, and treat BSBLK
+         * like an SCBLK
+         */
+        SET_WA(blk->bcb.len);
+        SET_XR(blk->bcb.bcbuf);
+    }
 
-	/* ensure iob is open, fail if unsuccessful */
-	if ( !(MK_MP(fcb->iob, struct ioblk *)->flg1 & IO_OPN) )
-		return EXIT_1;
+    if (fcb == (struct fcblk *)0 || fcb == (struct fcblk *)1)
+    {
+        if (!fcb)
+            result = zyspi();
+        else
+            result = zyspr();
+        if (result == NORMAL_RETURN)
+            return NORMAL_RETURN;
+        else
+            return EXIT_2;
+    }
 
-	/* write the data, fail if unsuccessful */
-	if ( oswrite( fcb->mode, fcb->rsz, WA(word), MK_MP(fcb->iob, struct ioblk *), XR(struct scblk *)) != 0 )
-		return EXIT_2;
+    /* ensure iob is open, fail if unsuccessful */
+    if ( !(MK_MP(fcb->iob, struct ioblk *)->flg1 & IO_OPN) )
+        return EXIT_1;
 
-	/* normal return */
-	return NORMAL_RETURN;
+    /* write the data, fail if unsuccessful */
+    if ( oswrite( fcb->mode, fcb->rsz, WA(word), MK_MP(fcb->iob, struct ioblk *), XR(struct scblk *)) != 0 )
+        return EXIT_2;
+
+    /* normal return */
+    return NORMAL_RETURN;
 }

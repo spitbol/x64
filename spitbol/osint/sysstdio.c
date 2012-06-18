@@ -56,7 +56,7 @@
 
 void stdioinit()
 {
-	inpiob.bfb = MP_OFF(pINPBUF, struct bfblk NEAR *);
+    inpiob.bfb = MP_OFF(pINPBUF, struct bfblk NEAR *);
 }
 
 /*
@@ -78,13 +78,13 @@ void stdioinit()
 zyspr()
 
 {
-/*
-/	Do writes in line mode.
-*/
-	if ( oswrite( 1, oupiob.len, WA(word), &oupiob, XR( struct scblk * ) ) < 0 )
-		return  EXIT_1;
+    /*
+    /	Do writes in line mode.
+    */
+    if ( oswrite( 1, oupiob.len, WA(word), &oupiob, XR( struct scblk * ) ) < 0 )
+        return  EXIT_1;
 
-	return NORMAL_RETURN;
+    return NORMAL_RETURN;
 }
 
 
@@ -112,79 +112,79 @@ zysrd()
 
 {
 
-	word	length;
-	struct scblk *scb = XR( struct scblk * );
+    word	length;
+    struct scblk *scb = XR( struct scblk * );
 
-	if (provide_name)
-	{
-		/* Provide compiler with name of source file, if desired. */
-		provide_name = 0;
-		if (sfn && sfn[0])
-		{
-			cpys2sc( sfn, scb, WC(word));
-			return  EXIT_1;
-		}
-	}
+    if (provide_name)
+    {
+        /* Provide compiler with name of source file, if desired. */
+        provide_name = 0;
+        if (sfn && sfn[0])
+        {
+            cpys2sc( sfn, scb, WC(word));
+            return  EXIT_1;
+        }
+    }
 
 
-/*
-/	Read a line from standard input.  If EOF on current standard input
-/	file, call function swcinp to switch to the next file, if any, except
-/       if within an include file.
-*/
-	while ( (length = osread( 1, WC(word), &inpiob, scb )) < 0 )
-	{
-		if ( nesting || swcinp( inpcnt, inpptr ) < 0 )
-		{
-			/* EOF */
-			scb->len = 0;
-			return  EXIT_1;
-		}
-		else
-		{
-			/* Successful switch, report new file name if still in compilation phase */
-			if (!executing && sfn && sfn[0])
-			{
-				cpys2sc( sfn, scb, WC(word));
-				return  EXIT_1;
-			}
-		}
+    /*
+    /	Read a line from standard input.  If EOF on current standard input
+    /	file, call function swcinp to switch to the next file, if any, except
+    /       if within an include file.
+    */
+    while ( (length = osread( 1, WC(word), &inpiob, scb )) < 0 )
+    {
+        if ( nesting || swcinp( inpcnt, inpptr ) < 0 )
+        {
+            /* EOF */
+            scb->len = 0;
+            return  EXIT_1;
+        }
+        else
+        {
+            /* Successful switch, report new file name if still in compilation phase */
+            if (!executing && sfn && sfn[0])
+            {
+                cpys2sc( sfn, scb, WC(word));
+                return  EXIT_1;
+            }
+        }
 
-	}
-	scb->len = length;	/* line read, so set line length	*/
+    }
+    scb->len = length;	/* line read, so set line length	*/
 
 #if UNIX
-/*
-/	Special check for '#!' invocation.
-*/
-	if ( first_record  &&  inpptr )
-	{
-		first_record = 0;
-		if ( scb->str[0] == '#'  &&  scb->str[1] == '!' )
-		{
-			cmdcnt = gblargc - inpcnt + 1;
-			inpcnt = 1;
-			while( (length=osread(1, WC(word), &inpiob, scb)) < 0 )
-			{
-				if ( swcinp( inpcnt, inpptr ) < 0 )
-				{
-					scb->len = 0;
-					return  EXIT_1;
-				}
-				/* Successful switch, report new file name */
-				if (sfn && sfn[0])
-				{
-					cpys2sc( sfn, scb, WC(word));
-					return  EXIT_1;
-				}
+    /*
+    /	Special check for '#!' invocation.
+    */
+    if ( first_record  &&  inpptr )
+    {
+        first_record = 0;
+        if ( scb->str[0] == '#'  &&  scb->str[1] == '!' )
+        {
+            cmdcnt = gblargc - inpcnt + 1;
+            inpcnt = 1;
+            while( (length=osread(1, WC(word), &inpiob, scb)) < 0 )
+            {
+                if ( swcinp( inpcnt, inpptr ) < 0 )
+                {
+                    scb->len = 0;
+                    return  EXIT_1;
+                }
+                /* Successful switch, report new file name */
+                if (sfn && sfn[0])
+                {
+                    cpys2sc( sfn, scb, WC(word));
+                    return  EXIT_1;
+                }
 
-			}
-			scb->len = length;
-		}
-	}
+            }
+            scb->len = length;
+        }
+    }
 #endif					/* UNIX */
 
-	return NORMAL_RETURN;
+    return NORMAL_RETURN;
 }
 
 /*
@@ -193,7 +193,7 @@ zysrd()
 
 int getrdfd( )
 {
-	return inpiob.fdn;
+    return inpiob.fdn;
 }
 
 /*
@@ -202,7 +202,7 @@ int getrdfd( )
 
 int getprfd( )
 {
-	return oupiob.fdn;
+    return oupiob.fdn;
 }
 
 
@@ -213,7 +213,7 @@ int getprfd( )
 struct ioblk *
 getrdiob()
 {
-	return &inpiob;
+    return &inpiob;
 }
 
 
@@ -225,7 +225,7 @@ getrdiob()
 struct ioblk *
 getpriob()
 {
-	return &oupiob;
+    return &oupiob;
 }
 #endif               /* WINNT */
 
@@ -235,13 +235,13 @@ getpriob()
  */
 void clrbuf()
 {
-	register struct bfblk *bfptr;
+    register struct bfblk *bfptr;
 
-	bfptr = MK_MP(inpiob.bfb,struct bfblk *);
-	bfptr->next = bfptr->fill = 0;
-   bfptr->offset = (FILEPOS)0;
-   bfptr->curpos = (FILEPOS)-1;
-	inpiob.flg2 &= ~IO_LF;
+    bfptr = MK_MP(inpiob.bfb,struct bfblk *);
+    bfptr->next = bfptr->fill = 0;
+    bfptr->offset = (FILEPOS)0;
+    bfptr->curpos = (FILEPOS)-1;
+    inpiob.flg2 &= ~IO_LF;
 }
 
 /*
@@ -249,7 +249,7 @@ void clrbuf()
  */
 void oupeof()
 {
-	doset(&oupiob, 0L, 2);
+    doset(&oupiob, 0L, 2);
 }
 
 #if !USEFD0FD1
@@ -264,14 +264,14 @@ void oupeof()
 void setprfd( fd )
 int	fd;
 {
-	oupiob.fdn = fd;
+    oupiob.fdn = fd;
 }
 
 void setrdfd( fd )
 int	fd;
 {
-	inpiob.fdn = fd;
-	clrbuf();
+    inpiob.fdn = fd;
+    clrbuf();
 }
 #endif					/* !USEFD0FD1 */
 

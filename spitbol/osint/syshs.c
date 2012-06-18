@@ -109,8 +109,8 @@ int
 checkstr(scp)
 struct scblk *scp;
 {
-	return scp != (struct scblk *)0L &&
-		   scp->typ == TYPE_SCL && scp->len < TSCBLK_LENGTH;
+    return scp != (struct scblk *)0L &&
+           scp->typ == TYPE_SCL && scp->len < TSCBLK_LENGTH;
 }
 
 /*  check2str - check first two argument strings in XL, XR.
@@ -120,7 +120,7 @@ struct scblk *scp;
 int
 check2str()
 {
-	return checkstr( XL(struct scblk *) ) && checkstr( XR(struct scblk *) );
+    return checkstr( XL(struct scblk *) ) && checkstr( XR(struct scblk *) );
 }
 
 
@@ -134,9 +134,9 @@ savestr(scp,cp)
 struct scblk *scp;
 char *cp;
 {
-	*cp = scp->str[scp->len];
-	scp->str[scp->len] = '\0';
-	return scp->str;
+    *cp = scp->str[scp->len];
+    scp->str[scp->len] = '\0';
+    return scp->str;
 }
 
 /*
@@ -146,8 +146,8 @@ void
 save2str(s1p,s2p)
 char **s1p, **s2p;
 {
-	*s1p = savestr( XL(struct scblk *), &savexl );
-	*s2p = savestr( XR(struct scblk *), &savexr );
+    *s1p = savestr( XL(struct scblk *), &savexl );
+    *s2p = savestr( XR(struct scblk *), &savexr );
 }
 
 /*
@@ -160,7 +160,7 @@ getstring(scp,cp)
 struct scblk *scp;
 char *cp;
 {
-	return checkstr(scp) ? savestr(scp,cp) : (char *)0L;
+    return checkstr(scp) ? savestr(scp,cp) : (char *)0L;
 }
 
 
@@ -174,8 +174,8 @@ void restorestring(scp,c)
 struct scblk *scp;
 word c;
 {
-	if (scp)
-		scp->str[scp->len] = c;
+    if (scp)
+        scp->str[scp->len] = c;
 }
 
 
@@ -185,8 +185,8 @@ word c;
 void
 restore2str()
 {
-	restorestring( XR(struct scblk *), savexr);
-	restorestring( XL(struct scblk *), savexl);
+    restorestring( XR(struct scblk *), savexr);
+    restorestring( XL(struct scblk *), savexl);
 }
 
 /*
@@ -199,227 +199,227 @@ getint(icp,pword)
 struct icblk *icp;
 IATYPE *pword;
 {
-	register char *p, c;
-	struct scblk *scp;
-	word i;
-	IATYPE result;
-	int sign;
+    register char *p, c;
+    struct scblk *scp;
+    word i;
+    IATYPE result;
+    int sign;
 
-	sign = 1;
-	if ( icp->typ == TYPE_ICL)
-		result = icp->val;
-   else if (icp->typ == TYPE_RCL)
-   {
+    sign = 1;
+    if ( icp->typ == TYPE_ICL)
+        result = icp->val;
+    else if (icp->typ == TYPE_RCL)
+    {
 #if sparc
-      union {
-         mword  rcvals[2];
-         double rcval;
-      } val;
-      val.rcvals[0] = ((struct rcblk *)icp)->rcvals[0];
-      val.rcvals[1] = ((struct rcblk *)icp)->rcvals[1];
-      result = (IATYPE)val.rcval;
+        union {
+            mword  rcvals[2];
+            double rcval;
+        } val;
+        val.rcvals[0] = ((struct rcblk *)icp)->rcvals[0];
+        val.rcvals[1] = ((struct rcblk *)icp)->rcvals[1];
+        result = (IATYPE)val.rcval;
 #else
-      result = (IATYPE)(((struct rcblk *)icp)->rcval);
+        result = (IATYPE)(((struct rcblk *)icp)->rcval);
 #endif
-   }
-  else {
-		scp = (struct scblk *)icp;
-		if (!checkstr(scp))
-			return 0;
-		i = scp->len;
-		p = scp->str;
-		result = (IATYPE)0;
-		while (i && *p == ' ') {		/* remove leading blanks */
-			p++;
-			i--;
-	   		}
-		if (i && (*p == '+' || *p == '-')) {	/* process optional sign char */
-			if (*p++ == '-')
-				sign = -1;
-			i--;
-			}
-		while (i--) {
-			c = *p++;
-	   		if ( c < '0' || c > '9' ) {	/* not handling trailing blanks */
-				return 0;
-				}
-			result = result * 10 + (c - '0');
-			}
-		}
-	*pword = sign * result;
-	return 1;
+    }
+    else {
+        scp = (struct scblk *)icp;
+        if (!checkstr(scp))
+            return 0;
+        i = scp->len;
+        p = scp->str;
+        result = (IATYPE)0;
+        while (i && *p == ' ') {		/* remove leading blanks */
+            p++;
+            i--;
+        }
+        if (i && (*p == '+' || *p == '-')) {	/* process optional sign char */
+            if (*p++ == '-')
+                sign = -1;
+            i--;
+        }
+        while (i--) {
+            c = *p++;
+            if ( c < '0' || c > '9' ) {	/* not handling trailing blanks */
+                return 0;
+            }
+            result = result * 10 + (c - '0');
+        }
+    }
+    *pword = sign * result;
+    return 1;
 }
 
 
 
 zyshs()
 {
-	word	retval;
-	IATYPE	val;
-	register struct icblk *icp = WA (struct icblk *);
-	register struct scblk *scp;
+    word	retval;
+    IATYPE	val;
+    register struct icblk *icp = WA (struct icblk *);
+    register struct scblk *scp;
 
-/*
-/   if argument one is null...
-*/
-	scp = WA (struct scblk *);
-	if (scp->typ == TYPE_SCL && !scp->len)
-	{
-	    gethost( pTSCBLK, TSCBLK_LENGTH );
-	    if ( pTSCBLK->len == 0 )
-			return EXIT_4;
-	    SET_XL( pTSCBLK );
-	    return EXIT_3;
-	}
+    /*
+    /   if argument one is null...
+    */
+    scp = WA (struct scblk *);
+    if (scp->typ == TYPE_SCL && !scp->len)
+    {
+        gethost( pTSCBLK, TSCBLK_LENGTH );
+        if ( pTSCBLK->len == 0 )
+            return EXIT_4;
+        SET_XL( pTSCBLK );
+        return EXIT_3;
+    }
 
-/*
-/   If argument one is an integer ...
-*/
-	if ( getint(icp,&val) ) {
-	    switch( (int)val ) {
-			/*
-			/ HOST( -1, n ) returns internal parameter n
-			*/
-		    case -1:
-			icp = XL( struct icblk * );
-			if ( getint(icp,&val) ) {
-			    pTICBLK->typ = TYPE_ICL;
-			    SET_XR( pTICBLK );
-				 switch ( (int)val ) {
-				 	case 0:
-			         pTICBLK->val = memincb;
-			         return EXIT_8;
-				 	case 1:
-			         pTICBLK->val = databts;
-			         return EXIT_8;
-				 	case 2:
-			         pTICBLK->val = (IATYPE)basemem;
-			         return EXIT_8;
-				 	case 3:
-			         pTICBLK->val = (IATYPE)topmem;
-			         return EXIT_8;
-				 	case 4:
-			         pTICBLK->val = stacksiz - 400;	/* safety margin */
-			         return EXIT_8;
-				 	case 5:							/* stack in use */
+    /*
+    /   If argument one is an integer ...
+    */
+    if ( getint(icp,&val) ) {
+        switch( (int)val ) {
+            /*
+            / HOST( -1, n ) returns internal parameter n
+            */
+        case -1:
+            icp = XL( struct icblk * );
+            if ( getint(icp,&val) ) {
+                pTICBLK->typ = TYPE_ICL;
+                SET_XR( pTICBLK );
+                switch ( (int)val ) {
+                case 0:
+                    pTICBLK->val = memincb;
+                    return EXIT_8;
+                case 1:
+                    pTICBLK->val = databts;
+                    return EXIT_8;
+                case 2:
+                    pTICBLK->val = (IATYPE)basemem;
+                    return EXIT_8;
+                case 3:
+                    pTICBLK->val = (IATYPE)topmem;
+                    return EXIT_8;
+                case 4:
+                    pTICBLK->val = stacksiz - 400;	/* safety margin */
+                    return EXIT_8;
+                case 5:							/* stack in use */
 #if WINNT | LINUX
-			         pTICBLK->val = stacksiz - (XS(IATYPE) - (IATYPE)lowsp);
+                    pTICBLK->val = stacksiz - (XS(IATYPE) - (IATYPE)lowsp);
 #else
-                  pTICBLK->val = stacksiz - (XS(IATYPE) - ((IATYPE)lowxs-400));
+                    pTICBLK->val = stacksiz - (XS(IATYPE) - ((IATYPE)lowxs-400));
 #endif
-                  return EXIT_8;
-				 	case 6:
-			         pTICBLK->val = sizeof(IATYPE);
-			         return EXIT_8;
-			   	default:
-						return EXIT_1;
-				 }
-				}
-			else
-			    return EXIT_1;
+                    return EXIT_8;
+                case 6:
+                    pTICBLK->val = sizeof(IATYPE);
+                    return EXIT_8;
+                default:
+                    return EXIT_1;
+                }
+            }
+            else
+                return EXIT_1;
 
-			/*
-			/  HOST( 0 ) returns the -u command line option argument
-			*/
-		    case 0:
-			if ( uarg ) {
-			    cpys2sc( uarg, pTSCBLK, TSCBLK_LENGTH );
-			    SET_XL( pTSCBLK );
-			    return EXIT_3;
-				}
-			else if ((val = cmdcnt) != 0) {
-			    pTSCBLK->len = 0;
-			    while (pTSCBLK->len < TSCBLK_LENGTH - 2 &&
-			     arg2scb( (int) val++, gblargc, gblargv,
-			     pTSCBLK, TSCBLK_LENGTH - pTSCBLK->len ) > 0)
-				pTSCBLK->str[pTSCBLK->len++] = ' ';
-			    if (pTSCBLK->len)
-				--pTSCBLK->len;
-			    SET_XL( pTSCBLK );
-			    return EXIT_3;
-				}
-			else
-				return EXIT_4;
-			/*
-			/ HOST( 1, "command", "path" ) executes "command" using "path"
-			*/
-		    case 1: {
-				char *cmd, *path;
+            /*
+            /  HOST( 0 ) returns the -u command line option argument
+            */
+        case 0:
+            if ( uarg ) {
+                cpys2sc( uarg, pTSCBLK, TSCBLK_LENGTH );
+                SET_XL( pTSCBLK );
+                return EXIT_3;
+            }
+            else if ((val = cmdcnt) != 0) {
+                pTSCBLK->len = 0;
+                while (pTSCBLK->len < TSCBLK_LENGTH - 2 &&
+                        arg2scb( (int) val++, gblargc, gblargv,
+                                 pTSCBLK, TSCBLK_LENGTH - pTSCBLK->len ) > 0)
+                    pTSCBLK->str[pTSCBLK->len++] = ' ';
+                if (pTSCBLK->len)
+                    --pTSCBLK->len;
+                SET_XL( pTSCBLK );
+                return EXIT_3;
+            }
+            else
+                return EXIT_4;
+            /*
+            / HOST( 1, "command", "path" ) executes "command" using "path"
+            */
+        case 1: {
+            char *cmd, *path;
 
-				if (!check2str())
-					return EXIT_1;
-				save2str(&cmd,&path);
-				save0();		/* made sure fd 0 OK	*/
-        pTICBLK->val = dosys( cmd, path );
+            if (!check2str())
+                return EXIT_1;
+            save2str(&cmd,&path);
+            save0();		/* made sure fd 0 OK	*/
+            pTICBLK->val = dosys( cmd, path );
 
-				pTICBLK->typ = TYPE_ICL;
-				restore2str();
-				restore0();
-				if (pTICBLK->val < 0)
-					return EXIT_6;
-				SET_XR( pTICBLK );
-				return EXIT_8;
-				}
+            pTICBLK->typ = TYPE_ICL;
+            restore2str();
+            restore0();
+            if (pTICBLK->val < 0)
+                return EXIT_6;
+            SET_XR( pTICBLK );
+            return EXIT_8;
+        }
 
-			/*
-			/ HOST( 2, n ) returns command line argument n
-			*/
-		    case 2:
-			icp = XL( struct icblk * );
-			if ( getint(icp,&val) ) {
-			    pTSCBLK->len = 0;
-			    retval = arg2scb( (int) val, gblargc, gblargv, pTSCBLK, TSCBLK_LENGTH );
-			    if ( retval < 0 )
-				return EXIT_6;
-			    if ( retval == 0 )
-				return EXIT_1;
-			    SET_XL( pTSCBLK );
-			    return EXIT_3;
-				}
-			else
-			    return EXIT_1;
+        /*
+        / HOST( 2, n ) returns command line argument n
+        */
+        case 2:
+            icp = XL( struct icblk * );
+            if ( getint(icp,&val) ) {
+                pTSCBLK->len = 0;
+                retval = arg2scb( (int) val, gblargc, gblargv, pTSCBLK, TSCBLK_LENGTH );
+                if ( retval < 0 )
+                    return EXIT_6;
+                if ( retval == 0 )
+                    return EXIT_1;
+                SET_XL( pTSCBLK );
+                return EXIT_3;
+            }
+            else
+                return EXIT_1;
 
-			/*
-			/  HOST( 3 ) returns the command count
-			*/
-		    case 3:
-			if ( cmdcnt ) {
-			    pTICBLK->typ = TYPE_ICL;
-			    pTICBLK->val = cmdcnt;
-			    SET_XR( pTICBLK );
-			    return EXIT_8;
-				}
-			else
-			    return EXIT_6;
+            /*
+            /  HOST( 3 ) returns the command count
+            */
+        case 3:
+            if ( cmdcnt ) {
+                pTICBLK->typ = TYPE_ICL;
+                pTICBLK->val = cmdcnt;
+                SET_XR( pTICBLK );
+                return EXIT_8;
+            }
+            else
+                return EXIT_6;
 
-			/*
-			/ HOST( 4, "env-var" ) returns the value of "env-var" from
-			/	    the environment.
-			*/
-		    case 4:
-      scp = XL( struct scblk * );
-			if ( scp->typ == TYPE_SCL ) {
-			    if ( scp->len == 0 )
-				return EXIT_1;
-			    if ( rdenv( scp, pTSCBLK ) < 0 )
-				return EXIT_6;
-			    SET_XL( pTSCBLK );
-			    return EXIT_3;
-				}
-			else
-			    return EXIT_1;
+            /*
+            / HOST( 4, "env-var" ) returns the value of "env-var" from
+            /	    the environment.
+            */
+        case 4:
+            scp = XL( struct scblk * );
+            if ( scp->typ == TYPE_SCL ) {
+                if ( scp->len == 0 )
+                    return EXIT_1;
+                if ( rdenv( scp, pTSCBLK ) < 0 )
+                    return EXIT_6;
+                SET_XL( pTSCBLK );
+                return EXIT_3;
+            }
+            else
+                return EXIT_1;
         }       /* end switch */
 
-		/*
-		/ Any other integer value is processed by the system-specific functions
-		*/
+        /*
+        / Any other integer value is processed by the system-specific functions
+        */
 #if HOST386
-		return host386( (int)val );
+        return host386( (int)val );
 #endif					/* HOST386 */
 
-/*
-/   Here if first argument wasn't an integer or was an illegal value.
-*/
-		}
-	return EXIT_1;
+        /*
+        /   Here if first argument wasn't an integer or was an illegal value.
+        */
+    }
+    return EXIT_1;
 }

@@ -39,16 +39,16 @@ static struct scblk	ffscblk =
 
 zysef()
 {
-	register struct fcblk *fcb = WA(struct fcblk *);
-	register struct ioblk *iob = MK_MP(fcb->iob, struct ioblk *);
+    register struct fcblk *fcb = WA(struct fcblk *);
+    register struct ioblk *iob = MK_MP(fcb->iob, struct ioblk *);
 
-	/* ensure the file is open */
-	if ( !(iob->flg1 & IO_OPN) )
-		return EXIT_1;
+    /* ensure the file is open */
+    if ( !(iob->flg1 & IO_OPN) )
+        return EXIT_1;
 
-	/* write the data, fail if unsuccessful */
-	if ( oswrite( fcb->mode, fcb->rsz, ffscblk.len, iob, &ffscblk) != 0 )
-		return EXIT_2;
+    /* write the data, fail if unsuccessful */
+    if ( oswrite( fcb->mode, fcb->rsz, ffscblk.len, iob, &ffscblk) != 0 )
+        return EXIT_2;
 
-	return NORMAL_RETURN;
+    return NORMAL_RETURN;
 }
