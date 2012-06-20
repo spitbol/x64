@@ -270,11 +270,11 @@ osisp:  .long   0               # 1.39 OSINT's stack pointer
 #
         pubdef  ID1,.long,0
 .if SETREAL == 1
-        .long    10
-        .ascii  "(ver 1.2x)\x00\x00"
+        .long    2
+        .ascii  "1x\x00\x00"
 .else
-        .long    9
-        .ascii  "(ver 1.2)\x00\x00\x00"
+        .long    1
+        .ascii  "1x\x00\x00\x00"
 .endif
 #
         pubdef  ID2BLK,.long,52
@@ -464,7 +464,6 @@ pop1:	popad
         cs                              # CS segment override
         lodsd                           # point to C function entry point
 #       lodsd   cs:ccaller              # point to C function entry point
-#	line below failed assembly on 6/13/12, so comment it out ERROR
         movzx   ebx,byte ptr [esi]   # save normal exit adjustment
 #
         mov     reg_pp,ebx              # in memory

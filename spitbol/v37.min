@@ -1,41 +1,34 @@
-       TTL  S P I T B O L -- COPYRIGHT NOTICE
-*
-*      COPYRIGHT (C) BY ROBERT B. K. DEWAR, 1983, 2009
-*
-*      THIS SOFTWARE IS THE PROPERTY OF
-*           PROFESSOR ROBERT B. K. DEWAR
-*           COURANT INSTITUTE OF MATHEMATICAL SCIENCES
-*           251 MERCER STREET
-*           NEW YORK,  NY 10012
-*           U.S.A.
-*      TEL NO -  (212) 460 7497
-*
-       EJC
        TTL  L I C E N S E -- SOFTWARE LICENSE FOR THIS PROGRAM
-*      THIS PROGRAM IS FREE SOFTWARE: YOU CAN REDISTRIBUTE IT AND/OR MODIFY
-*      IT UNDER THE TERMS OF THE GNU GENERAL PUBLIC LICENSE AS PUBLISHED BY
-*      THE FREE SOFTWARE FOUNDATION, EITHER VERSION 3 OF THE LICENSE, OR
-*      (AT YOUR OPTION) ANY LATER VERSION.
 *
-*      THIS PROGRAM IS DISTRIBUTED IN THE HOPE THAT IT WILL BE USEFUL,
-*      but WITHOUT ANY WARRANTY; without even the implied warranty of
-*      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*      GNU General Public License for more details.
+*     Copyright 1983-2012 Robert B. K. Dewar
+* 
+*     This file is part of Macro SPITBOL.
+* 
+*     Macro SPITBOL is free software: you can redistribute it and/or modify
+*     it under the terms of the GNU General Public License as published by
+*     the Free Software Foundation, either version 3 of the License, or
+*     (at your option) any later version.
+* 
+*     Macro SPITBOL is distributed in the hope that it will be useful,
+*     but WITHOUT ANY WARRANTY; without even the implied warranty of
+*     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*     GNU General Public License for more details.
+* 
+*     You should have received a copy of the GNU General Public License
+*     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 *
-*      YOU SHOULD HAVE RECEIVED A COPY OF THE GNU GENERAL PUBLIC LICENSE
-*      ALONG WITH THIS PROGRAM.  IF NOT, SEE <HTTP://WWW.GNU.ORG/LICENSES/>.
        TTL  S P I T B O L -- NOTES TO IMPLEMENTORS
 *
-*      M A C R O   S P I T B O L     V E R S I O N   3 . 7
+*      M A C R O   S P I T B O L     V E R S I O N   3 . 8
 *      ---------------------------------------------------
 *
-*      DATE OF RELEASE  -  16 APRIL 2009
+*      DATE OF RELEASE  -  JUNE 2012
 *
-*      PERMISSION TO USE SPITBOL MAY BE NEGOTIATED WITH
-*      PROFESSOR ROBERT B. K. DEWAR.
-*      SITES WHICH HAVE OBTAINED SUCH PERMISSION MAY NOT PASS
-*      ON COPIES OF THE SPITBOL SYSTEM OR PARTS OF IT EXCEPT
-*      BY AGREEMENT WITH DEWAR.
+*      VERSION 3.8 IS MAINTAINED BY
+*           DR. DAVID SHIELDS
+*           260 GARTH RD APT 3H4
+*           SCARSDALE, NY 10583
+*      E-MAIL - THEDAVESHIELDS AT GMAIL DOT COM
 *
 *      VERSION 3.7 WAS MAINTAINED BY
 *           MARK EMMER
@@ -43,7 +36,6 @@
 *           P.O. BOX 1123
 *           SALIDA, COLORADO 81021
 *           U.S.A
-*      TEL NO -  (719) 539 3884
 *      E-MAIL - MARKE AT SNOBOL4 DOT COM
 *
 *      VERSIONS 2.6 THROUGH 3.4 WERE MAINTAINED BY
@@ -64,6 +56,15 @@
 *      R E V I S I O N   H I S T O R Y
 *      -------------------------------
 *
+*
+*      VERSION 3.8 (JUNE 2012, DAVID SHIELDS)
+*
+*	       THIS VERSION IS VERY CLOSE TO V3.7, WITH THE
+*              SAME FUNCTIONALITY.
+*
+*              THE SOURCE IS NOW MAINTAINED USING GIT, SO
+*              CHANGES ARE NOW DOCUMENTED IN 
+*              THE GIT COMMIT LOG, AND NOT IN THE SOURCE FILES.
 *
 *      VERSION 3.6A TO 3.7 (NOVEMBER 1, 1991, MARK B. EMMER)
 *      -----------------------------------------------------
@@ -7941,8 +7942,8 @@ HEADR  DAC  B$SCL
        DTC  /Macro SPITBOL Version 3.7/
 *
 HEADV  DAC  B$SCL            FOR EXIT() VERSION NO. CHECK
-       DAC  3
-       DTC  /3.7/
+       DAC  4
+       DTC  /3.8.1/
 .IF    .CSED
 *      FREE STORE PERCENTAGE (USED BY GBCOL)
 *

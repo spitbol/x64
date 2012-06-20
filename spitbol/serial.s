@@ -35,6 +35,6 @@ _cprtmsg:
 .else
 cprtmsg:
 .endif
-				.asciz          "(c) Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer."
+				.asciz          " Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer."
         DSegEnd_
         .end
