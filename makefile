@@ -132,6 +132,8 @@ sysgc.o: $(OSINT)/save.h
 sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
 
+install:
+	sudo cp spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) spitbol *.lst *.map *.err v37.tok v37.tmp v37.s errors.s
+	rm -f $(OBJS) *.lst *.map *.err v37.tok v37.tmp v37.s errors.s
 
