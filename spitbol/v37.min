@@ -58,13 +58,14 @@
 *
 *
 *      VERSION 3.8 (JUNE 2012, DAVID SHIELDS)
+*      --------------------------------------
 *
 *	       THIS VERSION IS VERY CLOSE TO V3.7, WITH THE
 *              SAME FUNCTIONALITY.
 *
-*              THE SOURCE IS NOW MAINTAINED USING GIT, SO
-*              CHANGES ARE NOW DOCUMENTED IN 
-*              THE GIT COMMIT LOG, AND NOT IN THE SOURCE FILES.
+*              THE SOURCE IS NOW MAINTAINED USING GIT, SO GOING FORWARD
+*              THE DETAILED REVISION HISTORY WILL BE RECORDED IN THE GIT
+*              COMMIT LOGS, NOT IN THIS FILE.
 *
 *      VERSION 3.6A TO 3.7 (NOVEMBER 1, 1991, MARK B. EMMER)
 *      -----------------------------------------------------
