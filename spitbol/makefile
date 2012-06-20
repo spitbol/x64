@@ -35,7 +35,7 @@ endif
 TOK=	token.spt
 COD=    codlinux.spt
 ERR=    err386.spt
-SPIT=   ../boot/spitbol
+SPIT=   ./bootstrap-spitbol
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
@@ -133,6 +133,5 @@ sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
 
 clean:
-	rm -f $(OBJS) spitbol
-
+	rm -f $(OBJS) spitbol *.lst *.map *.err v37.tok v37.tmp v37.s errors.s
 
