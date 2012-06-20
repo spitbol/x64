@@ -4,7 +4,7 @@
 
 # SPITBOL Version:
 VERS=   linux
-DEBUG=	1
+DEBUG=	0
 
 # Minimal source directory.
 MINPATH=./
