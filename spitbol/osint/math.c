@@ -1,4 +1,23 @@
 /*
+Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+
+This file is part of Macro SPITBOL.
+
+    Macro SPITBOL is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Macro SPITBOL is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*
  * math.c - extended math support for spitbol
  *
  * Routines not provided by hardware floating point.
@@ -6,9 +25,9 @@
  * These routines are not called from other C routines.  Rather they
  * are called by inter.*, and by external functions.
  */
-/*  Copyright 1991 Robert Goldberg and Catspaw, Inc. */
+
 #include "port.h"
-/* next needed on Ubunto to avoid TLS error message from ld  (DS 6/13/12) */
+
 #include <errno.h>
 
 #if FLOAT & !MATHHDWR

@@ -1,4 +1,23 @@
 /*
+Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+
+This file is part of Macro SPITBOL.
+
+    Macro SPITBOL is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Macro SPITBOL is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*
 /   File:  OSPIPE.C     Version:  01.06
 /	---------------------------------------
 /
@@ -26,7 +45,6 @@
 /       not vfork.  vfork shares the parent's address space, whereas fork
 /       gives the child a complete new copy of the address space.
 */
-/*  Copyright 1996 Robert Goldberg and Catspaw, Inc. */
 
 #include "port.h"
 #if PIPES
