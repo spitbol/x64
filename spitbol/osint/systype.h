@@ -45,7 +45,6 @@ This file is part of Macro SPITBOL.
  * that need to be altered.
  */
 /*  Values for x86 Linux 32-bit SPITBOL.
- *  Copyright 2009 Robert Goldberg and Catspaw, Inc.
  */
 #define EXECFILE    0
 #define FLTHDWR     0   /* Change to 1 when do floating ops inline */

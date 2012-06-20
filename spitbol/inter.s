@@ -1,5 +1,22 @@
         .title          "SPITBOL ASSEMBLY-LANGUAGE TO C-LANGUAGE O/S INTERFACE"
         .sbttl          "INTER"
+# Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+# 
+# This file is part of Macro SPITBOL.
+# 
+#     Macro SPITBOL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     Macro SPITBOL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+#
         .psize          80,132
         .arch           pentium
 globals =               1                       #ASM globals defined here
@@ -253,11 +270,11 @@ osisp:  .long   0               # 1.39 OSINT's stack pointer
 #
         pubdef  ID1,.long,0
 .if SETREAL == 1
-        .long    14
-        .ascii  "(ver 1.30.23x)\x00\x00"
+        .long    10
+        .ascii  "(ver 1.2x)\x00\x00"
 .else
-        .long    13
-        .ascii  "(ver 1.30.23)\x00\x00\x00"
+        .long    9
+        .ascii  "(ver 1.2)\x00\x00\x00"
 .endif
 #
         pubdef  ID2BLK,.long,52
