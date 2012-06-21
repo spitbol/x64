@@ -92,7 +92,7 @@ MOBJS=	main.o getargs.o
 AOBJS = $(CAOBJS)
 
 # Minimal source object file:
-VOBJS =	v37.o
+VOBJS =	v38.o
 
 # All objects:
 OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS)
@@ -104,19 +104,19 @@ spitbol: $(OBJS)
 
 # Assembly language dependencies:
 errors.o: errors.s
-v37.o: v37.s
+v38.o: v38.s
 
 # SPITBOL Minimal source
-v37.s:	v37.tok $(VHDRS) $(COD) systype.ah
-	  $(SPIT) -u "v37:$(VERS):comments" $(COD)
+v38.s:	v38.tok $(VHDRS) $(COD) systype.ah
+	  $(SPIT) -u "v38:$(VERS):comments" $(COD)
 
-v37.tok: $(MINPATH)v37.min $(VERS).cnd $(TOK)
-	 $(SPIT) -u "$(MINPATH)v37:$(VERS):v37" $(TOK)
+v38.tok: $(MINPATH)v38.min $(VERS).cnd $(TOK)
+	 $(SPIT) -u "$(MINPATH)v38:$(VERS):v38" $(TOK)
 
-v37.err: v37.s
+v38.err: v38.s
 
-errors.s: $(VERS).cnd $(ERR) v37.s
-	   $(SPIT) -1=v37.err -2=errors.s $(ERR)
+errors.s: $(VERS).cnd $(ERR) v38.s
+	   $(SPIT) -1=v38.err -2=errors.s $(ERR)
 
 inter.o: systype.ah osint.inc
 
@@ -135,5 +135,5 @@ dlfcn.o: dlfcn.h
 install:
 	sudo cp spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.lst *.map *.err v37.tok v37.tmp v37.s errors.s
+	rm -f $(OBJS) *.lst *.map *.err v38.tok v38.tmp v38.s errors.s
 
