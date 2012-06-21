@@ -1,0 +1,10 @@
+A "save file" records the program object code and data in SPITBOL's
+heap as well as other information necessary to resume the program.
+
+You can create a save file by specifying the -y command-line option.
+The save file is created immediately after program compilation and prior to execution.
+
+You can also create a save file by calling the function EXIT(-3,filename).
+
+Since save files contain no code from the SPITBOL system, they are NOT subject
+to the terms of the GPLv3 license. You can license them however you please.
