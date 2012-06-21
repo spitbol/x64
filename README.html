@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+<html>
+<head>
+<title>README</title>
+</head>
+ 
+
+<body>
+
+<h2>Macro SPITBOL for Linux V3.8.1 (June 2012)</h2>
+
+<p>Macro SPITBOL is an extremely high performance implementation of the
+   SNOBOL4 language.</p>
+
+<p>It is maintained by Dave Shields (dave dot shields dot github at
+   gmail dot com).
+</p>
+
+<p>Development versions, as well as other files of interest, can be
+   found at
+   <a href="http://github.com/daveshields/spitbol-linux">github.com/daveshields/spitbol-linux</a>.
+
+<h2>Licensing</h2>
+	
+<p>Macro SPITBOL is licensed with the GPLv3 (or later) license.</p>
+
+<p><a href="COPYING">COPYING</a> contains a copy of the GPLv3 license.</p>
+
+<p><a href="COPYING-SAVE-FILES">COPYING-SAVE-FILE</a>  describes licensing issues for a SPITBOL "save file."</p>
+
+<p><a href="COPYING-LOAD-MODULES">COPYING-LOAD-MODULES</a> describes licensing issues for a SPITBOL "load module."</p>
+
+<h2>Documentation</h2>
+
+
+<p>Macro Spitbol Manual by Mark Emmer and Edward Quillen: 
+   <a href="http://github.com/downloads/daveshields/spitbol-linux/spitman.pdf"
+      >Macro SPITBOL: The High-Performance SNOBOL4 Language</a>.
+</p>
+
+
+<p>The "Green Book" by R. E. Griswold, J.  F. Poage and I.
+   P. Polonsky:
+<a href="http://github.com/downloads/daveshields/spitbol-linux/GreenBook.pdf">
+The SNOBOL4 Programming Language</a>.</p>
+
+<h2>Known Problems and Limitations</h2>
+
+
+<p>Load modules don't work.</p>
+
+
+
+<h2>Building Macro SPITBOL</h2>
+
+This version was built using Ubunt using
+<a href="http://www.ubuntu.com/download/desktop">Ubuntu 12.04 LTS</a>.
+
+To build the system:
+<p><code>
+   <br>make clean
+   <br>make
+   <br>make install
+   </code>
+   </p>
+
+<p>This creates <code>/usr/bin/spitbol</code>.</p>
+
+<p>If you get a compile error due to missing include file
+   <code>/usr/include/bits/predef.h</code>, then try<br>
+<code>sudo apt-get libc6-dev-i386</code>.See
+	<a href="http://ubuntuforums.org/showthread.php?t=1877944">Missing
+	   predefs.h</a>.
+</p><p>You can also try <br><code>sudo apt-get install
+   gcc-multilib</code><br>
+</p>
+
+</body>
+</html>
