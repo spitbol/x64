@@ -1,0 +1,3 @@
+    OUTPUT = "host(): " HOST()
+    OUTPUT = "host(0)"  HOST(0)
+END
