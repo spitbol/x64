@@ -24,6 +24,7 @@ This file is part of Macro SPITBOL.
 \************************************************************************/
 
 #define PRIVATEBLOCKS 1
+#include <unistd.h>
 #include "port.h"
 #include <stdlib.h>
 #include <fcntl.h>
