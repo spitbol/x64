@@ -1,0 +1,897 @@
+*  KALAH.spt - SPITBOL version
+*
+*	KALAH in SNOBOL4
+*
+*
+*	The program follows a LISP program which appeared in
+*	 Shapiro, S.C., Techniques of Artificial Intelligence,
+*	  New York: Van Nostrand, 1979, pp. 31-55.
+*
+*	The comments are from Shapiro's LISP program.
+*
+*	Try it with 4 stones per pot, and a search depth of 2.
+*
+*	This is one of the many variations of Mancala games.  Mancala games
+*	are popular in Africa and India.  It is a very old game; boards have
+*	been found in Ancient Egyptian ruins.  Some of the names of
+*	different versions are:  Mankala'h, Pallanguli, Wari, Awari, and Ba-Awa.
+*	We do not know the precise name of the version present here.
+*
+*	The board consists of two rows of six depressions, called 'pits' or
+*	'pots'.  A larger pit at each end holds captured pieces.
+*
+*	The board is as follows: (integers are pot numbers, 'P' is the
+*	program, 'O' is the opponent (you).
+*
+*	    P6  P5  P4  P3  P2  P1
+*	PKALAH			OKALAH
+*	    O1  O2  O3  O4  O5  O6
+*
+*	The move path is counter-clockwise.
+*	 For the computer: P1-P6-PKALAH-O1-O6-P1,
+*	 and for the user, O1-O6-OKALAH-P1-P6-O1.
+*
+*	Initially, P1-P6 and O1-O6 are filled with the desired number of stones.
+*	A move is made by taking all the stones from a numbered pot on your
+*	side, and sowing them one-by-one into succeeding pots along your
+*	path.  If your last stone went into the KALAH, you get another turn.
+*	If the last stone went into a numbered pot ON YOUR SIDE that was empty,
+*	and if the opponent's pot directly across from it is not empty, then
+*	all the stones in these two pots are "captured" and placed in the
+*	moving side's KALAH.  The game ends when one side has a majority
+*	of the stones in their KALAH.  If it is your turn and all of your
+*	are empty (you have no play), then all the stones in the other side's
+*	pots go into that side's KALAH, the game is over, and the one with the
+*	most stones wins.
+*
+*
+*---------------------------------------------------------------------------
+* Keyword settings
+*
+*	&PROFILE = 2
+*-LIST
+	&ANCHOR	= 0
+        &DUMP   = 0
+        &STLIMIT = 10000000
+	&TRIM	= 1
+*
+*---------------------------------------------------------------------------
+* Defined datatypes
+*
+* The data structure describing each pot will contain these items:
+*  ONWER - the owner (P or O)
+*  NUM - the number of the pot (1-6, 0=kalah)
+*  KVALUE - stack of number of stones in the pot.  Top value is current.
+*  OPP - The pot number opposite this pot on the board
+*  PPATH, OPATH - Name of next pot along the program or opponent's path
+*
+	DATA( 'POT(OWNER,NUM,KVALUE,OPP,PPATH,OPATH)' )
+*
+* A node will contain three elements.  When a node is first generated, the
+* first element will be the player who is to move, the second element will
+* be the pot whose stones are to be taken, and the third element will be
+* the player who will move next.
+*
+	DATA( 'NODE(PLAYER,MOVEOF,NEXT_PLAYER)' )
+*
+* A simple stack consisting of a top-of-stack value, and a pointer to
+* the rest of stack.
+*
+	DATA( 'STACK(TOP,REST)' )
+*
+*---------------------------------------------------------------------------
+* Global constants
+*
+	null = ''
+	nil = STACK(null,null)
+	TOP(nil) = nil
+	REST(nil) = nil
+	t = COPY(nil)
+	TOP(t) = t
+	REST(t) = t
+	nilpot = POT(null,0,nil,null,null,null)
+	OPP(nilpot) = nilpot
+	PPATH(nilpot) = nilpot
+	OPATH(nilpot) = nilpot
+*
+*---------------------------------------------------------------------------
+* Utility patterns
+*
+	LEFT_END = POS(0)
+	RIGHT_END = RPOS(0)
+	TO_NEXT_BLANK = BREAK(' ')
+	SKIP_BLANKS = SPAN(' ')
+*
+*---------------------------------------------------------------------------
+* Utility functions
+*
+* DEF - Define other functions
+	DEFINE( 'DEF(NAME,ARGS,LOCALS,BODY,RTN)', 'DEF1')
++	    :(DEF_END)
+DEF1	ARGS ' ' = ','				:S(DEF1)
+DEF2	LOCALS ' ' = ','			:S(DEF2)
+*
+* Define new function
+	DEFINE( NAME '(' ARGS ')' LOCALS )
+* Build body with proper return
+	BODY = IDENT( RTN, null) BODY ' :(RETURN)'
++	  :S(DEF3)
+	BODY = IDENT( RTN, 'S') BODY ' :S(RETURN)F(FRETURN)'
++	  :S(DEF3)
+	BODY = IDENT( RTN, 'F') BODY ' :F(RETURN)S(FRETURN)'
++	  :S(DEF3)
+	BODY = IDENT( RTN, 'N') BODY ' :(NRETURN)'
+DEF3	CODE(NAME ' ' BODY)		:(RETURN)
+DEF_END
+*
+*---------------------------------------------------------------------------
+*
+* APPEND3 - Makes one stack out of three stacks.
+*
+	DEFINE( 'APPEND3(S1,S2,S3)' )	:(APPEND3_END)
+APPEND3 APPEND3 = ( NULL(S1) NULL(S2) NULL(S3)) nil	:S(RETURN)
+ 	APPEND3 = ( NULL(S1) NULL(S2))
++	   STACK( TOP(S3), APPEND3( S1, S2, REST(S3)))
++	    :S(RETURN)
+	APPEND3 = NULL(S1)
++	   STACK( TOP(S2), APPEND3( S1, REST(S2), S3))
++	    :S(RETURN)
+	APPEND3 =
++	   STACK( TOP(S1), APPEND3( REST(S1), S2, S3))
++	   :(RETURN)
+APPEND3_END
+*
+*---------------------------------------------------------------------------
+* NULL - Succeed if stack empty
+	DEF( 'NULL', 'X',, 'IDENT(X,nil)', 'S')
+*
+*---------------------------------------------------------------------------
+* TRUE - Succeed if stack not empty
+	DEF( 'TRUE', 'X',, 'DIFFER(X,nil)', 'S')
+*
+*---------------------------------------------------------------------------
+* MAX - Maximum of two values
+	DEF( 'MAX', 'N1 N2',, 'MAX = N1 ; MAX = GT(N2,N1) N2')
+*
+*---------------------------------------------------------------------------
+* MIN - Minimum of two values
+	DEF( 'MIN', 'N1 N2',, 'MIN = N1 ; MIN = LT(N2,N1) N2')
+*
+*---------------------------------------------------------------------------
+* CNTR - Center string in field
+	DEFINE( 'CNTR(N,V)X' )			:(CNTR_END)
+CNTR
+	X = CONVERT( (N - SIZE(V)) / 2, 'INTEGER')
+	CNTR = LPAD(RPAD(V, N - X), N)		:(RETURN)
+CNTR_END
+*
+*---------------------------------------------------------------------------
+* PRT - String to OUTPUT
+	PRT_PAT = LEFT_END REM $ OUTPUT
+	DEF( 'PRT', 'X',, 'X PRT_PAT' )
+
+
+
+
+
+*
+***************************************************************************
+* CORE FUNCTIONS FOR SEARCHING A GAME TREE WITH THE ALPHA-BETA ALGORITHMS *
+***************************************************************************
+*
+* We will assume the existance of some data structure called a NODE, which
+* will contain information about a state of the game space.  Since the
+* depth limit of the search might be changed in various runs of a game-
+* playing program, we assume the level of the root of the tree will be the
+* current depth bound and each node will have a level equal to 1 less than
+* that of its parent.
+*
+*---------------------------------------------------------------------------
+* Searches the node NODE that is at LEVEL and has alpha value ALPHA and
+* beta value BETA.  Returns the value of NODE as determined by the search.
+*
+	DEFINE( 'SEARCH(NODE,LEVEL,ALPHA,BETA)' )	:(SEARCH_END)
+SEARCH
+	NODE = START(NODE)
+	SEARCH = DEAD(NODE,LEVEL) STATIC(NODE)		:S(SEARCH_A)
+	SEARCH =
++	  SEARCH1( MAXER(NODE), (LEVEL - 1), ALPHA, BETA, EXPAND(NODE))
+SEARCH_A
+	NEND(NODE)					:(RETURN)
+SEARCH_END
+*
+*---------------------------------------------------------------------------
+* Initializes the search of the successors of some node.  MAXR is T or NIL
+* depending on whether the parent node is a maximizer or a minimizer.  ALPHA
+* and BETA are the alpha and beta values of the parent node.  NL is a list
+* of the successor nodes, and LVL is their level.
+*
+	DEFINE( 'SEARCH1(MAXR,LVL,ALPHA,BETA,NL)' )	:(SEARCH1_END)
+SEARCH1
+	SEARCH1 =
++	  SEARCH2( MAXR, LVL, ALPHA, BETA, REST(NL),
++	       SEARCH( TOP(NL), LVL, ALPHA, BETA))	:(RETURN)
+SEARCH1_END
+*
+*---------------------------------------------------------------------------
+* Searches the successors of some node, returning its final backed up value.
+* MAXR, LVL, ALPHA, and BETA are as in SEARCH1.  PBV is the provisional
+* backed-up value of the parent node.  NL is a list of the still to be
+* searched successor nodes.
+*
+	DEFINE( 'SEARCH2(MAXR,LVL,ALPHA,BETA,NL,PBV)' )	:(SEARCH2_END)
+SEARCH2
+	SEARCH2 = NULL(NL) PBV				:S(RETURN)
+	SEARCH2 = CUTOFF( MAXR, PBV, ALPHA, BETA ) PBV
++	  :S(RETURN)
+	SEARCH2 = TRUE(MAXR)
++	  SEARCH2( MAXR, LVL, ALPHA, BETA, REST(NL),
++	     MAX( PBV, SEARCH( TOP(NL), LVL, MAX(ALPHA,PBV), BETA)))
++	       :S(RETURN)
+	SEARCH2 =
++	  SEARCH2( MAXR, LVL, ALPHA, BETA, REST(NL),
++	     MIN( PBV, SEARCH( TOP(NL), LVL, ALPHA, MIN(BETA,PBV))))
++	       :(RETURN)
+SEARCH2_END
+*
+*---------------------------------------------------------------------------
+* PBV, ALPHA, and BETA are, respectively, the provisional backed up value,
+* alpha value, and beta value of some node.  MAXR is T or NIL depending on
+* whether the node is a maximizing or minimizing node.  CUTOFF returns T if
+* searching below then node should be terminated and PBV returned as the
+* final backed up value, and returns NIL otherwise.
+*
+	DEFINE( 'CUTOFF(MAXR,PBV,ALPHA,BETA)' )	:(CUTOFF_END)
+CUTOFF
+	TRUE(MAXR)				:F(CUTOFF1)
+	GE( PBV, BETA)				:S(RETURN)F(FRETURN)
+CUTOFF1
+	LE( PBV, ALPHA)				:S(RETURN)F(FRETURN)
+CUTOFF_END
+
+
+
+
+
+*
+*******************************************************
+* FUNCTIONS DEFINING THE REPRESENTATIONS OF THE BOARD *
+*******************************************************
+*
+* Assuming that PL represents one player, OTHER returns the atom
+* representing the other player.  We use P to represent the program and
+* O to represent the opponent.
+*
+	OTHERP = 'O' ; OTHERO = 'P'
+	DEF( 'OTHER', 'PL',, 'OTHER = $( "OTHER" PL)' )
+*
+*---------------------------------------------------------------------------
+* Returns the atom representing player PL's Nth pot.
+*
+* The program's pots are P1, P2, P3, P4, P5, and P6.  The opponent's pots are
+* O1, O2, O3, O4, O5, and O6.
+*
+	DEF( 'POTR', 'PL N',, 'POTR = $( PL N)' )
+*
+*---------------------------------------------------------------------------
+* Returns the atom representing player PL' kalah.
+*
+* The program's kalah is represented by PKALAH, the opponents's by OKALAH.
+*
+	DEF( 'KALAHR', 'PL',, 'KALAHR = $( PL "KALAH" )' )
+*
+*---------------------------------------------------------------------------
+* Returns the number of stones in the pot POT.
+*
+	DEF( 'VALUE', 'POT',, 'VALUE = TOP(KVALUE(POT))' )
+*
+*---------------------------------------------------------------------------
+* Stacks VAL as the current number of stones in the pot POT.  Previous
+* values are maintained further down in the stack.
+*
+	DEF( 'PUSHVAL', 'POT VAL',, 'KVALUE(POT) = STACK(VAL,KVALUE(POT))' )
+*
+*---------------------------------------------------------------------------
+* Pops the stack used to maintain the value of pot POT, restoring the
+* previous value.
+*
+	DEF( 'POPVAL', 'POT',, 'KVALUE(POT) = REST(KVALUE(POT))' )
+*
+*---------------------------------------------------------------------------
+* Changes the current value of the POT to VAL, destroying the previous
+* current value.
+*
+	DEF( 'CHANGEVAL', 'POT VAL',, 'TOP(KVALUE(POT)) = VAL' )
+*
+*---------------------------------------------------------------------------
+* Succeeds if pot POT is empty.
+*
+	DEF( 'EMPTY', 'POT',, 'EQ(VALUE(POT), 0)', 'S')
+*
+*---------------------------------------------------------------------------
+* Returns the name of one of the two circular paths connecting the pots
+* and kalahs:  PPATH is the path the program uses to drop its stones,
+*	       OPATH is the path the opponent uses to drop its stones.
+*
+	DEF( 'PATHR', 'PL',, 'PATHR = PL "PATH" ' )
+*
+*---------------------------------------------------------------------------
+* Returns a list of all the pots on player PL' side of the board.
+*
+	PSIDE = 'P1 P2 P3 P4 P5 P6 '
+	OSIDE = 'O1 O2 O3 O4 O5 O6 '
+	DEF( 'SIDER', 'PL',, 'SIDER = $( PL "SIDE" )' )
+*
+*---------------------------------------------------------------------------
+* Joins each atom in the list LAT to the next one via the path P.
+*
+	DEFINE( 'SETPATH(P,LAT)' )
+	SETPATH_PAT = LEFT_END ( TO_NEXT_BLANK $ A )
++		     SKIP_BLANKS
++		     (( ( TO_NEXT_BLANK $ B) REM) $ C)
++			:(SETPATH_END)
+SETPATH
+	LAT SETPATH_PAT = C			:F(RETURN)
+* xPATH(pot) = pot
+	:<CODE(' ' P '(' A ') = ' B ' :(SETPATH)')>
+SETPATH_END
+*
+*---------------------------------------------------------------------------
+* Joins pairs of atoms in list L to each other symmetrically via the path P.
+*
+	SETSYM_PAT = FENCE ( TO_NEXT_BLANK $ A)
++	      SKIP_BLANKS ( TO_NEXT_BLANK $ B)
++	      SKIP_BLANKS *SETSYM1()
++	      *SETSYM_PAT
+	DEF( 'SETSYM', 'P L',, 'L SETSYM_PAT')
+*
+*---------------------------------------------------------------------------
+* SETSYM1 - Helper for SETSYM
+*
+	DEFINE( 'SETSYM1()' )			:(SETSYM1_END)
+*
+* Returns the pot oppostive 
+SETSYM1
+	:<CODE(' ' P '(' A ') = ' B ' ; '
++	  P '(' B ') = ' A ' :(RETURN)')>
+SETSYM1_END
+
+
+
+
+
+*
+***************************************
+* FUNCTIONS TO DEFINE THE LEGAL MOVES *
+***************************************
+*
+* Makes the move, representing player PL moving the stones in pot POT,
+* and changes the global board representation accordingly.  It returns
+* success if player PL gets to go again, otherwise fails.
+*
+	DEFINE( 'MOVE(PL,POT)' )		:(MOVE_END)
+MOVE
+	MOVE1(PL,POT,TAKE(POT),PATHR(PL),KALAHR(PL))	:S(RETURN)F(FRETURN)
+MOVE_END
+*
+*---------------------------------------------------------------------------
+* Player PL moves STONES number of stones taken from pot POT along the
+* path PATH.  KALAH is PL's kalah.  It succeeds if PL gets to go again,
+* fails otherwise.
+*
+	DEFINE( 'MOVE1(PL,POT,STONES,PATH,KALAH)' )	:(MOVE1_END)
+*
+* Distribute all stones
+MOVE1
+	EQ(STONES,0)					:S(MOVE1A)
+*
+* Next pot along path
+	POT = APPLY(PATH,POT)
+*
+* Put a stone in it
+	DROP(1,POT)
+*
+* One less stone
+	STONES = STONES - 1				:(MOVE1)
+*
+* Check capture
+MOVE1A
+	CHECKCAP( POT, PL, KALAH, OPP(POT))
+*
+* Check for empty side
+	CHECKMT()
+*
+* Ck last stone land in Kalah?
+	IDENT( POT, KALAH)			:S(RETURN)F(FRETURN)
+MOVE1_END
+*
+*---------------------------------------------------------------------------
+* Player PL, whose kalah is KALAH, has just moved, the last stone landing
+* in the pot POT.  OPPOT is the pot opposite POT.  CHECKCAP checks to see
+* if this move was a capture move, and, if so, makes the capture.
+*
+* A capture occurs if:
+*  there is 1 stone in the landing pot,
+*   and it is a pot on the player's side,
+*    and it is not the nalah,
+*     and the opponent's opposite pot is not empty.
+* If so, then:
+*  transfer stones from player's pot to the Kalah and
+*   transfer stones from opponent's pot to the Kalah.
+*
+	DEFINE( 'CHECKCAP(POT,PL,KALAH,OPPOT)' )	:(CHECKCAP_END)
+CHECKCAP
+	 ( EQ(VALUE(POT), 1)
++	   IDENT(OWNER(POT),PL)
++	    DIFFER(POT,KALAH)
++	     ~EMPTY(OPPOT)
++	      DROP(TAKE(POT), KALAH)
++	       DROP(TAKE(OPPOT), KALAH) )		:(RETURN)
+CHECKCAP_END
+*
+*---------------------------------------------------------------------------
+* If all the pots on either side are empty, all the pots on the other
+* side are emptied into that side's kalah.
+*
+	DEFINE( 'CHECKMT()' )				:(CHECKMT_END)
+CHECKMT
+	( MTSIDEP(PSIDE) MTSIDE(OSIDE,OKALAH) )	:S(RETURN)
+	( MTSIDEP(OSIDE) MTSIDE(PSIDE,PKALAH) )	:S(RETURN)F(FRETURN)
+CHECKMT_END
+*
+* Use recursive pattern to loop scan
+	MTSIDEP_PAT = FENCE
++	      TO_NEXT_BLANK $ P  *EMPTY($P)
++	      SKIP_BLANKS (RIGHT_END | *MTSIDEP_PAT)
+*
+*---------------------------------------------------------------------------
+* Scan side for all empty
+*
+	DEF( 'MTSIDEP', 'SIDE',, 'SIDE MTSIDEP_PAT', 'S')
+*
+* Use recursive pattern to loop calls
+	MTSIDE_PAT = FENCE
++	      TO_NEXT_BLANK $ P *DROP(TAKE($P),KALAH)
++	      SKIP_BLANKS *MTSIDE_PAT
+*
+*---------------------------------------------------------------------------
+* Removes the stones from all pots in the list SIDE and puts them in KALAH.
+*
+	DEF( 'MTSIDE', 'SIDE KALAH',, 'SIDE MTSIDE_PAT' )
+*
+*---------------------------------------------------------------------------
+* Removes all the stones from pot POT and returns the number of stones removed.
+*
+	DEF( 'TAKE', 'POT',, 'TAKE = VALUE(POT) ; CHANGEVAL(POT,0)' )
+*
+*---------------------------------------------------------------------------
+* Adds N stones to pot POT.
+*
+	DEF( 'DROP', 'N POT',, 'CHANGEVAL(POT, (N + VALUE(POT)))' )
+*
+*---------------------------------------------------------------------------
+* A node represents a multiple move if the player who is to move is the
+* same as the player who will move next.
+*
+* MULT
+	DEF( 'MULT', 'NODE',, 'IDENT(PLAYER(NODE),NEXT_PLAYER(NODE))', 'S')
+
+
+
+
+
+*
+**************************************************
+* FUNCTIONS REQUIRED FOR SEARCHING THE GAME TREE *
+**************************************************
+*
+* When we start to search the node NODE, we must stack the current contents
+* of the board, make the move represented by NODE, and return the reverse
+* of NODE as mentioned above.
+*
+	DEFINE( 'START(NODE)' )
+	START_PAT = FENCE
++	      TO_NEXT_BLANK $ P *PUSHVAL($P,VALUE($P))
++	      SKIP_BLANKS *START_PAT			:(START_END)
+START
+	(PSIDE 'PKALAH ' OSIDE 'OKALAH ') START_PAT
+	MOVE( PLAYER(NODE), MOVEOF(NODE))
+	START =
++	 NODE( NEXT_PLAYER(NODE), MOVEOF(NODE), PLAYER(NODE))	:(RETURN)
+START_END
+*
+*---------------------------------------------------------------------------
+* The only thing that need be done when we have finished evaluating a node
+* is to restore the board to its previous condition by popping the values of
+* the pots and kalahs.
+*
+	NEND_PAT = FENCE
++	 TO_NEXT_BLANK $ P *POPVAL($P)
++	 SKIP_BLANKS *NEND_PAT
+*
+	DEF( 'NEND', 'NODE',, '(PSIDE "PKALAH " OSIDE "OKALAH ") NEND_PAT' )
+*
+*---------------------------------------------------------------------------
+* Succeeds if NODE is to be a terminal node of the search tree.  LEVEL will
+* be greater than 0 if the depth bound has not yet been reached.
+* This will be a terminal node if we have reached the level bound and we
+* are not in the midst of a multiple move, or if the game is over.
+*
+	DEFINE( 'DEAD(NODE,LEVEL)' )			:(DEAD_END)
+DEAD
+	( LE(LEVEL,0) ~MULT(NODE) )			:S(RETURN)
+	GT( VALUE(PKALAH), HALFSTONES)			:S(RETURN)
+	GT( VALUE(OKALAH), HALFSTONES)			:S(RETURN)
+	( EQ( VALUE(PKALAH), HALFSTONES)
++	 EQ( VALUE(OKALAH), HALFSTONES) )		:S(RETURN)F(FRETURN)
+DEAD_END
+*
+*---------------------------------------------------------------------------
+* Returns the static value of NODE.  The static value will just be the
+* difference in kalahs, unless the game is won or lost.  TNODES is
+* used to keep count of the number of terminal nodes evaluated, so
+* that statistics can be printed.
+*
+	DEFINE( 'STATIC(NODE)' )			:(STATIC_END)
+STATIC
+	TNODES = TNODES + 1
+	STATIC = GT( VALUE(PKALAH), HALFSTONES) INFINITY	:S(RETURN)
+	STATIC = GT( VALUE(OKALAH), HALFSTONES) -INFINITY	:S(RETURN)
+	STATIC = VALUE(PKALAH) - VALUE(OKALAH)			:(RETURN)
+STATIC_END
+*
+*---------------------------------------------------------------------------
+* Returns T if the node is a maximizing node, NIL otherwise.
+*
+	DEFINE( 'MAXER(NODE)' )			:(MAXER_END)
+MAXER
+	MAXER = nil
+	MAXER = IDENT( PLAYER(NODE), 'P') t	:(RETURN)
+MAXER_END
+*
+*---------------------------------------------------------------------------
+* Returns a list of the successor nodes of NODE.
+* BNODES is used to keep count of the number of nodes expanded.
+*
+	DEFINE( 'EXPAND(NODE)' )		:(EXPAND_END)
+EXPAND
+	BNODES = BNODES + 1
+	EXPAND = EXPAND1( PLAYER(NODE), SIDER(PLAYER(NODE)))	:(RETURN)
+EXPAND_END
+*
+*---------------------------------------------------------------------------
+* Returns a list of nodes representing the moves player PL can make from
+* the current state of the board.  SIDE is a list of PL's pots.
+*
+* Moves can only made from nonempty pots.  The list of possible moves is
+* ordered: multiple moves, capture moves, others.  This is done to try to
+* play a strong game and to try to maximize cutoffs.
+*
+	DEFINE( 'EXPAND1(PL,SIDE)LMULT,LCAP,LREG')
+	EXPAND1_PAT = FENCE
++	      TO_NEXT_BLANK $ P  *EXPAND2(PL,$P)
++	      SKIP_BLANKS  *EXPAND1_PAT			:(EXPAND1_END)
+EXPAND1
+	LMULT = nil ; LCAP = nil ; LREG = nil
+	SIDE EXPAND1_PAT
+	EXPAND1 = APPEND3( LMULT, LCAP, LREG)		:(RETURN)
+EXPAND1_END
+*
+* EXPAND2
+	DEFINE( 'EXPAND2(PL,POT)' )			:(EXPAND2_END)
+EXPAND2
+	EMPTY(POT)					:S(RETURN)
+	LMULT = MULTMOVE(POT)
++	 STACK( NODE(PL,POT,PL), LMULT)			:S(RETURN)
+	LCAP = CAPMOVE(PL,POT)
++	 STACK( NODE(PL,POT,OTHER(PL)), LCAP)		:S(RETURN)
+	LREG =
++	 STACK( NODE(PL,POT,OTHER(PL)), LREG)		:(RETURN)
+EXPAND2_END
+*
+*---------------------------------------------------------------------------
+* Succeeds if a move from pot POT will result in the player making the
+* move getting another turn, fails otherwise.
+*
+* If s is the number of stones in the player's nth pot, the last stone will
+* land in the player's kalah if and only if:  s mod 13 = 7 - n
+*
+	DEF( 'MULTMOVE', 'POT',,
++	  'EQ(REMDR(VALUE(POT),13), 7 - NUM(POT))', 'S')
+*
+* Succeeds if player PL's move from pot POT will result in a capture
+* of some stones.
+*
+	DEF( 'CAPMOVE', 'PL POT',,
++	 'CAPMOVE1(PL,POT,VALUE(POT),NUM(POT))', 'S')
+*
+* Returns T if PL's move from POT will result in a capture, NIL otherwise.
+* POT is PL's Nth pot and it has V stones in it.
+*
+* If V=13, the last stone will land in POT, and the opposite pot must have
+* at least one stone in it, since one will be dropped into it on this move.
+* If V<(7-N), the last stone will land in PL's pot number N+V.  We must
+* check that it is empty and that the pot opposite it is not.
+* If (13-N)<V<13, the last stone will land in PL's pot number N+V+13, and we
+* must check that it is now empty, but PL will drop a stone into all the
+* opponent's pots, so none of them will be empty.  In all other cases, a
+* capture will not occur.
+*
+	DEFINE( 'CAPMOVE1(PL,POT,V,N)' )		:(CAPMOVE1_END)
+CAPMOVE1
+	EQ(V,13)					:S(RETURN)
+	( LT(V, (7 - N))
++	 EMPTY( POTR( PL, (N + V)))
++	 ~EMPTY( OPP( POTR( PL, (N + V)))) )		:S(RETURN)
+	( GT(V, (13 - N))
++	 LT(V, 13)
++	 EMPTY( POTR( PL, (N - 13 + V))) )		:S(RETURN)F(FRETURN)
+CAPMOVE1_END
+
+
+
+
+
+*
+*************************************************
+* FUNCTIONS FOR CONTROLLING AN INTERACTIVE GAME *
+*************************************************
+*
+* This function is used to begin a game with the program.  N is the
+* number of stones in each pot at the beginning of the game.  DEPTH
+* is the depth bound on the search.
+*
+	DEFINE( 'KALAH(N,DEPTH)' )			:(KALAH_END)
+KALAH
+	( INITBRD(N)
++	 PRINTBRD()
++	 ALTMOVE(MEFIRST()) )
+	  KALAH = 'Thanks.'				:(RETURN)
+KALAH_END
+*
+*---------------------------------------------------------------------------
+* Initializes the board by putting VAL stones in each pot and emptying
+* the two kalahs.  Also, it initializes the global variable HALFSTONES.
+*
+	DEFINE( 'INITBRD(VAL)' )
+	INITBRD_PAT = FENCE
++	 TO_NEXT_BLANK $ P  *INITBRD1(P)
++	 SKIP_BLANKS  *INITBRD_PAT
+	INITBRD1_PAT = LEFT_END
++	      ( (LEN(1) $ O) (LEN(1) $ N) )
+	:(INITBRD_END)
+INITBRD
+	INFINITY = 100
+	TNODES = 0
+	BNODES = 0
+	HALFSTONES = 6 * VAL
+	(PSIDE OSIDE) INITBRD_PAT
+	PKALAH = POT('P',0,STACK(0,nil),null,null,null)
+	OKALAH = POT('O',0,STACK(0,nil),null,null,null)
+	SETSYM('OPP','P1 O6 P2 O5 P3 O4 P4 O3 P5 O2 P6 O1 ')
+	SETPATH('PPATH',
++	  'P1 P2 P3 P4 P5 P6 PKALAH O1 O2 O3 O4 O5 O6 P1 ')
+	SETPATH('OPATH',
++	  'O1 O2 O3 O4 O5 O6 OKALAH P1 P2 P3 P4 P5 P6 O1 ')
+			:(RETURN)
+INITBRD_END
+*
+* INITBRD1
+	DEFINE( 'INITBRD1(PNAME)' )			:(INITBRD1_END)
+INITBRD1
+	PNAME INITBRD1_PAT
+	$PNAME = POT(O,N,STACK(VAL,nil),null,null,null)	:(RETURN)
+INITBRD1_END
+*
+*---------------------------------------------------------------------------
+* Does a formatted print of the current state of the board.
+*
+	DEFINE( 'PRINTBRD()' )			:(PRINTBRD_END)
+PRINTBRD
+	PRT( DUPL(' ',7)
++	    CNTR(7,VALUE(P6))
++	    CNTR(7,VALUE(P5))
++	    CNTR(7,VALUE(P4))
++	    CNTR(7,VALUE(P3))
++	    CNTR(7,VALUE(P2))
++	    CNTR(7,VALUE(P1)) )
+	PRT( CNTR(7,VALUE(PKALAH))
++	    DUPL(' ',42)
++	    CNTR(7,VALUE(OKALAH)) )
+	PRT( DUPL(' ',7)
++	    CNTR(7,VALUE(O1))
++	    CNTR(7,VALUE(O2))
++	    CNTR(7,VALUE(O3))
++	    CNTR(7,VALUE(O4))
++	    CNTR(7,VALUE(O5))
++	    CNTR(7,VALUE(O6)) )
+		   :(RETURN)
+PRINTBRD_END
+*
+*---------------------------------------------------------------------------
+* Asks if the opponent wants to go first.  Returns YES or NO.
+*
+	DEFINE( 'MEFIRST()' )				:(MEFIRST_END)
+MEFIRST
+	PRT( 'Do you want to go first?')
+	MEFIRST = REPLACE(INPUT,&LCASE,&UCASE)		:F(END)
+	MEFIRST (LEFT_END ('YES' | 'NO' | 'Y' | 'N') RIGHT_END)	:S(MEF1)
+	PRT( 'Please answer YES or NO.')		:(MEFIRST)
+MEF1	MEFIRST (LEFT_END 'Y') = 'YES'			:S(RETURN)
+	MEFIRST = 'NO'					:(RETURN)
+MEFIRST_END
+*
+*---------------------------------------------------------------------------
+* Alternates moves between the program and the opponent until the
+* game is over.
+*
+	DEFINE( 'ALTMOVE(YN)' )			:(ALTMOVE_END)
+ALTMOVE
+	IDENT(YN,'NO')				:F(ALTMOVE2)
+ALTMOVE1
+*
+* Computer, then user
+	( PMOVE() OMOVE() )			:S(ALTMOVE1)F(RETURN)
+*
+* User, then computer
+ALTMOVE2
+	( OMOVE() PMOVE() )			:S(ALTMOVE2)F(RETURN)
+ALTMOVE_END
+*
+*---------------------------------------------------------------------------
+* Gets the opponent's move, makes it, and prints the resulting board
+* until either it is no longer the opponent's move or the game is over.
+* If returns failing if the game is over, succeeds if it is now
+* the program's move.  In the latter case, the game might or might not
+* be over.
+*
+	DEFINE( 'OMOVE()' )			:(OMOVE_END)
+* Check for end of game
+OMOVE
+	ENDGAME()				:S(FRETURN)
+*
+* Get and make move
+	MOVE( 'O', GETMOVE() )			:F(OMOVE1)
+*
+* Landed on kalah
+	PRINTBRD()
+	PRT( 'You go again.' )			:(OMOVE)
+*
+* Did not land on Kalah
+OMOVE1
+	PRINTBRD()				:(RETURN)
+OMOVE_END
+*
+*---------------------------------------------------------------------------
+* Interacts with the opponent, returning the pot the opponent chooses
+* to move, making sure it is a legal move.
+*
+	DEFINE( 'GETMOVE()N' )			:(GETMOVE_END)
+GETMOVE
+	PRT( "What's your move?" )
+	N = INPUT				:F(END)
+	GETMOVE =
++	  ( INTEGER(N) GT(N,0) LT(N,7) ~EMPTY(POTR('O',N)) )
++	 POTR('O',N)				:S(RETURN)
+	PRT( "That's illegal.")			:(GETMOVE)
+GETMOVE_END
+*
+*---------------------------------------------------------------------------
+* If the game is over, this function prints an appropriate message
+* and returns succeeding.  Otherwise it fails.
+*
+	DEFINE( 'ENDGAME()' )			:(ENDGAME_END)
+ENDGAME
+	( GT(VALUE(PKALAH),HALFSTONES) PRT( 'I win.') )		:S(RETURN)
+	( GT(VALUE(OKALAH),HALFSTONES) PRT( 'You win.') )	:S(RETURN)
+	( EQ(VALUE(PKALAH),HALFSTONES)
++	   EQ(VALUE(OKALAH),HALFSTONES)
++	 PRT( "It's a tie.") )					:S(RETURN)
+	       :(FRETURN)
+ENDGAME_END
+*
+*---------------------------------------------------------------------------
+* Causes the program to make moves until either it isthe opponent's turn
+* of the game ends.  It returns failing if the game is over, succeeds
+* if it now the opponent's move.  In the latter case, the game might or
+* might not be over.
+*
+	DEFINE( 'PMOVE()' )			:(PMOVE_END)
+PMOVE
+	PRT( 'I go.' )
+PMOVE1
+	ENDGAME()				:S(FRETURN)
+	PRT( 'Hmmm....' )
+*	COLLECT()
+	PLAY(-INFINITY,INFINITY,0,0,TIME())	:F(RETURN)
+*
+* If computer landed on PKALAH
+	PRT( 'I go again.' )			:(PMOVE1)
+PMOVE_END
+*
+*---------------------------------------------------------------------------
+* Makes a move for the program.  BNODES is the number of nodes expanded
+* so far.  TNODES is thenumber of terminal nodes evaluated.  SECS is the
+* nmber of CPU milliseconds used so far by the program.  This function
+* succeeds if the program gets another move.
+*
+	DEFINE( 'PLAY(ALPHA,BETA,BNODES,TNODES,SECS)' )	:(PLAY_END)
+PLAY
+	PLAY1(EXPAND(NODE('P',nilpot,'O')))		:S(RETURN)F(FRETURN)
+PLAY_END
+*
+*---------------------------------------------------------------------------
+* LNODES is a list of possible moves.  PLAY1 chooses one of them and makes it,
+* succeeding if the program gets another move.
+*
+	DEFINE( 'PLAY1(LNODES)' )			:(PLAY1_END)
+PLAY1
+	NULL(REST(LNODES))				:F(PLAY1A)
+	CHOOSE(REST(LNODES),TOP(LNODES),"not calculated") :S(RETURN)F(FRETURN)
+PLAY1A
+	CHOOSE(REST(LNODES),TOP(LNODES),
++	 SEARCH(TOP(LNODES),DEPTH,ALPHA,BETA))		:S(RETURN)F(FRETURN)
+PLAY1_END
+*
+*---------------------------------------------------------------------------
+* Chooses and makes the best possible move.  BEST is the best move found
+* so far, V is its value.  LNODES is a list of alternate moves.  It
+* returns succeeding if the program gets another move.
+*
+	DEFINE( 'CHOOSE(LNODES,BEST,V)NV' )		:(CHOOSE_END)
+CHOOSE
+	NULL(LNODES)					:S(CHOOSE2)
+	EQ(V,INFINITY)					:S(CHOOSE2)
+	NV = SEARCH(TOP(LNODES),DEPTH,V,BETA)
+	LE(NV,V)					:S(CHOOSE1)
+	V = NV
+	BEST = TOP(LNODES)
+CHOOSE1
+	LNODES = REST(LNODES)				:(CHOOSE)
+CHOOSE2
+	MAKE(BEST,V)					:S(RETURN)F(FRETURN)
+CHOOSE_END
+*
+*---------------------------------------------------------------------------
+* Makes the move CHOSEN, whose valueis VAL, reports to the opponent and
+* prints the board.  It returns success if the program gets another move.
+*
+	DEFINE( 'MAKE(CHOSEN,VAL)' )			:(MAKE_END)
+MAKE
+	REPORT(NUM(MOVEOF(CHOSEN)),
++	 VAL, BNODES, TNODES, TIME() - SECS )
+	MOVE(PLAYER(CHOSEN),MOVEOF(CHOSEN))		:F(MAKE1)
+	PRINTBRD()					:(RETURN)
+MAKE1
+	PRINTBRD()					:(FRETURN)
+MAKE_END
+*
+*---------------------------------------------------------------------------
+* Reports to the opponent that move M was chosen, it had calculated a
+* value of V, B nodes were expanded, T terminal nodes were evaluated,
+* and S CPU msec were used to make the decision.
+*
+	DEFINE( 'REPORT(M,V,B,T,S)' )			:(REPORT_END)
+REPORT
+	PRT("I pick pot " M ".  Value " V)
+	PRT(B " nodes expanded, " T " evaluated")
+	PRT(S " milliseconds used")			:(RETURN)
+REPORT_END
+
+
+
+*
+****************************
+* MAIN PROGRAM STARTS HERE *
+****************************
+*
+GET_NUMBER_OF_STONES
+	PRT( 'Enter number of stones per pot' )
+	N = INPUT					:F(END)
+	( INTEGER(N) GT(N,0) )			:F(GET_NUMBER_OF_STONES)
+GET_SEARCH_DEPTH
+	PRT( 'Enter maximum search depth' )
+	D = INPUT
+	( INTEGER(D) GT(D,0) )			:F(GET_SEARCH_DEPTH)
+	OUTPUT = KALAH(N,D)			:S(GET_NUMBER_OF_STONES)
+END

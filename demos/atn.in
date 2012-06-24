@@ -1,0 +1,166 @@
+**********************************
+ NETWORK PARSE_CLAUSE
+**********************************
+	S1
+	    IF PARSE_NOUN_GROUP(THIS_NODE) GOTO S2
+		AFTER SETR('SUBJECT',LAST_PARSED)
+	    ENDIF
+	END S1
+**********************************
+	S2
+	    IF PARSE_WORD(THIS_NODE,'VERB TENSED ') GOTO S3
+		AFTER SETR('VERB',LAST_PARSED)
+	    ENDIF
+	END S2
+**********************************
+	S3
+	    IF	TESTF(LAST_PARSED,'BE ')
+		PARSE_WORD(THIS_NODE,'PASTPARTICIPLE ') GOTO S4
+		AFTER	SETR('OBJECT',GETR('SUBJECT'))
+			SETR('SUBJECT')
+			SETR('VERB',LAST_PARSED)
+	    ENDIF
+	    IF	TESTF(GETR('VERB'),'TRANSITIVE ')
+		PARSE_NOUN_GROUP(THIS_NODE) GOTO S4
+		AFTER SETR('OBJECT',LAST_PARSED)
+	    ENDIF
+	    IF TESTF(GETR('VERB'),'INTRANSITIVE ') GOTO S4 ENDIF
+	    IF ~NULL(GETR('OBJECT')) GOTO S4 ENDIF
+	END S3
+**********************************
+	S4
+	    IF	~NULL(GETR('SUBJECT'))
+		NULL(REMAINING_WORDS) GOTO WIN
+	    ENDIF
+	    IF	NULL(GETR('SUBJECT'))
+		IDENT(CURRENT_WORD,'BY')
+		PARSE_WORD(THIS_NODE) GOTO S5
+	    ENDIF
+	    IF NULL(GETR('SUBJECT')) GOTO S4
+		AFTER SETR('SUBJECT','SOMEONE')
+	    ENDIF
+	END S4
+**********************************
+	S5
+	    IF PARSE_NOUN_GROUP(THIS_NODE) GOTO S4
+		AFTER SETR('SUBJECT',LAST_PARSED)
+	    ENDIF
+	END S5
+ END PARSE_CLAUSE
+
+**********************************
+ NETWORK PARSE_NOUN_GROUP
+**********************************
+	S1
+	    IF PARSE_WORD(THIS_NODE,'DETERMINER ') GOTO S2
+		AFTER SETR('NUMBER',
+			   SELECT('SINGULAR PLURAL ',
+				  GETF(LAST_PARSED)))
+		      SETR('DETERMINER',
+			   SELECT('DEFINITE INDEFINITE ',
+				  GETF(LAST_PARSED)))
+	    ENDIF
+	END S1
+**********************************
+	S2
+	    IF PARSE_WORD(THIS_NODE,'ADJECTIVE ') GOTO S2
+		 AFTER ADDR('ADJECTIVES',LAST_PARSED)
+	    ENDIF
+	    IF PARSE_WORD(THIS_NODE,'NOUN ') GOTO WIN
+		 AFTER SETR('NUMBER',
+			    SELECT('SINGULAR PLURAL ',
+				   GETF(LAST_PARSED)))
+		       SETR('NOUN',LAST_PARSED)
+	    ENDIF
+	END S2
+ END PARSE_NOUN_GROUP
+
+**********************************
+ NETWORK PARSE_WORD
+	S1
+	    IF NULL(null) GOTO WIN
+		AFTER PARSE_WORD_1()
+	    ENDIF
+	END S1
+ END PARSE_WORD
+
+**********************************
+ FUNCTION PARSE_WORD_1 () ()
+	THIS_NODE = CURRENT_WORD ;
+	REMAINING_WORDS BREAK(" ") SPAN(" ") = ;
+	REMAINING_WORDS (BREAK(" ") | null) $ CURRENT_WORD	:(RETURN) ;
+ END PARSE_WORD_1
+
+**********************************
+ FUNCTION SETR (REGISTER,VALUE) ()
+	PUT(THIS_NODE,VALUE,REGISTER)		:(RETURN) ;
+ END SETR
+
+**********************************
+ FUNCTION GETR (REGISTER) ()
+	GETR = GET(THIS_NODE,REGISTER)		:(RETURN) ;
+ END GETR
+
+**********************************
+ FUNCTION ADDR (REGISTER,VALUE) ()
+	SETR(REGISTER,GETR(REGISTER) VALUE " ")	:(RETURN) ;
+ END ADDR
+
+**********************************
+ FUNCTION GENNAME (X) ()
+	GENNAME =
+	    '*' X '_' STATEMENTS(0) '*'
+		:(RETURN) ;
+ END GENNAME
+
+**********************************
+ FUNCTION ATTACH (C,P) ()
+	PUT(C,P,'PARENT') ;
+	PUT(P,GET(P,'CHILDREN') C " ",'CHILDREN')
+		:(RETURN) ;
+ END ATTACH
+
+**********************************
+ FUNCTION SELECT (S,T) ()
+	S (BREAK(" ") $ SELECT) SPAN(" ") =	:F(FRETURN) ;
+	T (POS(0) | " ") SELECT " "
+		:S(RETURN)F(SELECT) ;
+ END SELECT
+
+**********************************
+ FUNCTION TESTF (X,F) (W,G)
+	NULL(F)		:S(RETURN) ;
+	G = GETF(X) ;
+TESTF1
+	F (BREAK(" ") $ W) SPAN(" ") =	:F(RETURN) ;
+	G (POS(0) | " ") W " "	:S(TESTF)F(FRETURN) ;
+ END TESTF
+
+**********************************
+ FUNCTION GETF (X) ()
+	GETF = LEXICAL_FEATURES<X> :(RETURN) ;
+ END GETF
+
+**********************************
+ LEXICON L1
+	<* >NOUN >SINGULAR BLOCK BOY
+	<* >DETERMINER >SINGULAR >INDEFINITE A
+		       <SINGULAR >DEFINITE THE
+	<* >VERB >TENSED >TRANSITIVE >INTRANSITIVE >PASTPARTICIPLE DROPPED
+		 <TENSED >BE WAS
+	<* >ADJECTIVE BIG RED
+	<* >PREPOSITION BY
+	<*
+ END L1
+
+**********************************
+ SENTENCES S1
+	A BIG RED BLOCK WAS DROPPED BY THE BOY ;
+	THE BOY DROPPED A BIG RED BLOCK ;
+	A BLOCK WAS DROPPED ;
+	THE BLOCK DROPPED ;
+ END S1
+
+**********************************
+ EXEC PARSE_CLAUSE("SENTENCE",null)
+

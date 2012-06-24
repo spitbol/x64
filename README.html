@@ -17,12 +17,11 @@
    SNOBOL4 language.</p>
 
 <p>It is maintained by Dave Shields (dave dot shields dot github at
-   gmail dot com).
-</p>
+   gmail dot com).  </p>
 
 <p>Development versions, as well as other files of interest, can be
    found at
-   <a href="http://github.com/daveshields/spitbol-linux">github.com/daveshields/spitbol-linux</a>.
+   <a href="http://github.com/daveshields/spitbol-linux">github.com/daveshields/spitbol-linux</a>.</p>
 
 <h2>Licensing</h2>
 	
@@ -36,14 +35,21 @@
 
 <h2>Documentation</h2>
 
+The <code>./docs</code> directory contains:
+<ul>
 
-<p>Macro Spitbol Manual by Mark Emmer and Edward Quillen: 
-   <a href="http://github.com/downloads/daveshields/spitbol-linux/spitman.pdf"
-      >Macro SPITBOL: The High-Performance SNOBOL4 Language</a>.
-</p>
-<p>The SPITBOL project notes with sadness the death of Ed Quillen in
-   June, 2012. To
-   quote from Mark Emmer's  Acknowledgments in the SPITBOL Manual:
+<li>
+<a href="docs/green-book.pdf">The SNOBOL4 Programming Language</a> 
+by R. E. Griswold, J.  F. Poage and I. P. Polonski.</li>
+
+<li>
+<a href="docs/spitbol-manual-v3.7.pdf">Macro SPITBOL: The High-Performance SNOBOL4 Language</a> 
+by Mark Emmer and Edward Quillen.</a>
+</li>
+</ul>
+
+<p>The SPITBOL project notes with sadness the death of Ed Quillen in June, 2012. To
+quote from Mark Emmer's  Acknowledgments in the SPITBOL Manual:
    <blockquote>
       Ed Quillen, local novelist, political columnist, and SNOBOL
       enthusiast, co-authored this manual. He combined various terse
@@ -53,17 +59,11 @@
       while the more opaque portions can be blamed on me.
       </blockquote>
 
-      </p><p>
-
-	 You can learn more about Ed at
-<a href="http://www.edquillen.com/">Ed's web site</a> and
+</p>
+<p>You can learn more about Ed at <a href="http://www.edquillen.com/">Ed's web site</a> and
 <a
-href="http://www.denverpost.com/obituaries/ci_20781716/denver-post-columnist-ed-quillen-dies-at-age">Denver
-   Post columnist Ed Quillen dies at age 61 in his Salida home</a>.</p>
-<p>The "Green Book" by R. E. Griswold, J.  F. Poage and I.
-   P. Polonsky:
-<a href="http://github.com/downloads/daveshields/spitbol-linux/GreenBook.pdf">
-The SNOBOL4 Programming Language</a>.</p>
+href="http://www.denverpost.com/obituaries/ci_20781716/denver-post-columnist-ed-quillen-dies-at-age">
+Denver Post columnist Ed Quillen dies at age 61 in his Salida home</a>.</p>
 
 <h2>Known Problems and Limitations</h2>
 
@@ -74,18 +74,33 @@ The SNOBOL4 Programming Language</a>.</p>
 
 <h2>Building Macro SPITBOL</h2>
 
-This version was built using Ubunt using
-<a href="http://www.ubuntu.com/download/desktop">Ubuntu 12.04 LTS</a>.
-
-To build the system:
+<p>To see if spitbol is working:
 <p><code>
-   <br>make clean
-   <br>make
-   <br>make install
+   <br>$ ./spitbol demos/hi.spt
    </code>
-   </p>
+</p>
+
+<p>If this doesn't work, especially if you get a message about a file not being found, then do
+<br><code>$ ldd -v ./spitbol</code>
+<br>to list out the libraries required by the spitbol executble. Then verify that they are installed
+on your system, installing any that are missing. TODO: say how to do this...
+</p>
+
+<p>
+To build the system:
+    <code>
+   <br>$ make clean
+   <br>$ make
+   <br>$ make install
+   </code>
+</p>
 
 <p>This creates <code>/usr/bin/spitbol</code>.</p>
+
+<p>This release was built with the help of
+<a href="http://www.ubuntu.com/download/desktop">Ubuntu 12.04 LTS</a>.
+You should be able to build it on most Linux distributions.</p>
+
 
 <p>If you get a compile error due to missing include file
    <code>/usr/include/bits/predef.h</code>, then try<br>
@@ -96,10 +111,18 @@ To build the system:
    gcc-multilib</code><br>
 </p>
 
+<p>If you get the message "No such file or directory" when you try to
+   run <code>./spitbol</code> or <code>./bootstrap-spitbol</code>, then
+   install <code>libc6-dev-i386</code> as described above.
+   </p>
+   
 <h2>Resources</h2>
 
 <p>Mark Emmer's SNOBOL4 site:
-   <a href="http://snobol4.org">SNOBOL4.ORG</a></p>
+   <a href="http://snobol4.com">Snobol4.coM</a></p>
+<p>
+   Phil Bunde's SNOBOL site:
+   <a href="http://snobol4.org">Snobol4.org</a></p>
 
 </body>
 </html>

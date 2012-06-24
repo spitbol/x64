@@ -1,0 +1,326 @@
+The following communication appeared in the December, 1970 issue of SIGPLAN
+notices (Volume 5, Number 12).  The program and script described are in
+the files ELIZA.spt and ELIZA.scr.
+
+                                ELIZA IN SNOBOL4
+
+Robert T. Duquet.  Department of Computer Science, State University of
+New York at Albany, 1400 Washington Avenue, Albany, New York 12203.
+
+
+
+                                   ABSTRACT
+
+When implemented in SNOBOL4, Eliza is dramatically shorter and simpler
+than the original Fortran program.  The brevity of the rewritten Eliza
+greatly enhances its value in a course on artificial intelligence.  The
+complete program, and a portion of a script are included as Appendices.
+
+
+
+                                 INTRODUCTION
+
+Eliza was an instant success when it was first introduced to computer society
+by Professor Weizenbaum (5).  Although time may have diminished some of the
+original fascination of Eliza, it remains a delightfully interesting creature,
+particularly for students in an introductory course on artificial intelli-
+gence (1).  To enhance this attractiveness, Eliza has been reprogrammed in
+SNOBOL4 (2).  The result is much shorter and simpler than the original program
+and is therefore much more readily understood (providing, of course, that the
+students have some familiarity with SNOBOL4 -- an independently desirable
+condition!)
+
+After a quick review of the basic Eliza algorithm, this article discusses the
+SNOBOL4 implementation, emphasizing those unique aspects of SNOBOL4 that made
+the language particularly suited for the task.  Some major simplifications in
+the preparation of an Eliza script along with additional power and flexibility
+placed in the hands of the scriptwriter are discussed.  (Extensions to Eliza
+described by Weizenbaum in (7) have not been included in the SNOBOL4 imple-
+mentation.)  The article concludes with a few miscellaneous comments concerning
+languages and techniques for artificial intelligence.
+
+
+
+                              THE ELIZA ALGORITHM
+
+The objective of Eliza is to transform English sentences into other English
+sentences in such a way as to create an illusion of understanding and conver-
+sation.  For this purpose the sentences may be regarded as mere strings of char-
+acters that are to be transformed to other strings according to the following
+steps:
+
+1.      The input is scanned for the occurrence of key words; i.e., for sig-
+        nificant substrings.
+
+2.      The keys are inserted in a linear list according to a pre-assigned
+        rank.  Where appropriate, the key words are replaced in the input by
+        alternate words.
+
+3.      The revised input string is examined for the presence of relatively
+        simple patterns that, in normal English usage, commonly appear in con-
+        junction with the highest-ranking key.  If no such patterns are found,
+        those associated with lower ranking keys are tried.
+
+4.      On a successful pattern match, a suitable portion of the context is
+        concatenated with one of a number of stock phrases.
+
+5.      If no pattern is discovered in the current input sentence, a previous
+        sentence may be re-used with one or more stock phrases that return the
+        "conversation" to an earlier topic.
+
+The key words, their substitutes, the associated patterns and the stock phrases
+are all read from a "script" before the "conversation" begins.  The "person-
+ality" of Eliza may be completely altered by changing this script.
+
+The original Eliza was written in Fortran, supplemented by the Slip package (6).
+It was heavily reliant on list-processing techniques; the script had to be cast
+as a list, the program converted each sentence to a list, and pattern matching
+was performed by an analysis of list structures.  This approach was entirely
+a matter of efficiency and convenience.  (Convenience here means that Fortran
+was widely known and available, not that the program was particularly simple
+to write.)
+
+
+
+                           A SNOBOL4 IMPLEMENTATION
+
+                              The Basic Concepts
+
+As indicated in the summary above, Eliza may be viewed as an exercise in
+string manipulation rather than list processing.  Consequently, it is relatively
+straightforward to implement in a string-manipulation language such as SNOBOL4.
+It turns out that fewer than 100 SNOBOL4 statements are required to program
+Eliza.
+
+The SNOBOL4 language permits the creation of variables at execution time.  Thus,
+if the program reads the character string XXXX into variable V, the statement
+$V = 'ABC' automatically creates a variable named XXXX and assigns ABC as its
+value.  Subsequent reference to $V in an expression or in a pattern will refer
+to the string 'ABC'.  In large measure, the simplicity of Eliza in SNOBOL4 is
+due to this indirect-addressing capability.
+
+Each keyword in an Eliza script is used to create a set of uniquely-named vari-
+ables that contain the pertinent information for that word.  Thus, if XXXX is a
+keyword, the variable S.XXXX will contain the substitute (if any) for XXXX.
+Similarly, L.XXXX will contain the level number (rank) of the keyword, N.XXXX
+will contain the number of decomposition rules (patterns) associated with XXXX,
+D.i.XXXX (where i is an integer) will contain the ith such rule and R.i.XXXX
+will contain all the recomposition rules (context to be selected plus stock
+phrases) to be used when the ith decomposition is successful.  Within the string
+represented by R.i.XXXX, individual recomposition rules are delimited by an
+arbitrarily-selected special character.
+
+Keywords could be hash-coded and stored in an array as in the original Eliza
+implementation.  Instead, for maximum simplicity, all keywords (suitably de-
+limited) are concatenated in a single string.  One pattern matching statement
+is all that is then required to determine whether a given word occurs as a
+substring of this "dictionary" string.
+
+The keyword substitutes and the recomposition rules are stored as character
+strings.  The level number and the tally of decomposition rules for a given
+keyword are stored as integers.  The decomposition rules are stored as
+patterns (a special data type in SNOBOL4) that are constructed by the program
+from information supplied in the script.
+
+
+                              Decomposition Rules
+
+In most cases, decomposition rules contained in a script will consist of a
+single string that is expected as a substring in input sentences.  In these
+cases the program constructs a pattern in such a way that when the pattern
+matches an input sentence, a variable named POST will contain that portion
+of the sentence that follows the specified substring.  The content of that
+variable may then be used in the recomposition procedure.
+
+When the decomposition rule contains merely a null (an empty string), the
+pattern constructed by the program will unconditionally match any input sen-
+tence and the variable POST will contain than entire sentence.
+
+Although the two patterns described above are rather special cases of the
+general decomposition procedures discussed in the original Eliza article, they
+serve about 90% of the cases shown in the original sample script.  A more gen-
+eral mechanism is necessary, however, and is readily supplied by the SNOBOL4
+primitive function, EVAL.
+
+When a script contains a decomposition rule that starts with the word SNOBOL,
+the program recognizes that the remainder of that rule is a "pattern" in the
+sense (and syntax) of SNOBOL4.  The EVAL function converts that part of the
+script (which has been read as a string) to a datum of the type "pattern".
+
+When using this form of decomposition rule, the scriptwriter may assign any
+portion of the input sentence to any variables he may wish to create.  For
+example, a decomposition rule may be stated as follows:
+
+        SNOBOL ARB . FIRST 'I' ARB . SECOND 'YOU' REM . THIRD
+
+where the first word, SNOBOL, serves to identify the remainder of the line as a
+decomposition rule of the second kind.  This pattern matches any sentence that
+contains 'I' and 'YOU' (in that order) separated by any number of characters
+at any point in the sentence.  The pattern assigns the portion of the sentence
+preceding 'I' to the variable FIRST, any portion of the sentence between 'I'
+and 'YOU' to SECOND and anything following 'YOU' to THIRD.  FIRST, SECOND, and
+THIRD are variables created by the script.
+
+It is apparent that the use of EVAL has considerably expanded the type of
+decomposition rule available to the scriptwriter since all of the many SNOBOL4
+primitives and operators that facilitate the specification of patterns are now
+at his disposal.  The amount of SNOBOL4 language required to write a script is
+not large, however, since three operators (concatenation, alternation and
+conditional assignment) and a few primitives (ARB and REM in the example above)
+will suffice for all but the most elaborate decomposition rules.
+
+To avoid potential conflict between variables created and named by the script-
+writer and those program variables that should not be modified, all of the
+latter have a special character (a period) incorporated into their names.
+
+
+
+                              Recomposition Rules
+
+As indicated previously, recomposition rules (prescriptions for a "response"
+to a given input sentence that has been successfully decomposed) are stored
+as strings.  The strings contain stock phrases (literal substrings) and names
+of variables (such as POST or other scriptwriter-defined variables) whose con-
+tents are to be concatenated with the literals.  The rules are followed by the
+program simply by applying the EVAL function to the string wherein the rule is
+stored.
+
+Actually, several recomposition rules are usually given for each decomposition.
+All rules in such a set are stored, suitably delimited, in one larger string.
+The rule selected in any instance is the leading one in the appropriate string.
+When it is used, it is shifted cyclically from the leading to the trailing
+position.  The simplicity with which a string can be cut and re-assembled ob-
+viates the type of counter or pointer for each set of rules that was used in the
+original Eliza implementation.
+
+Whenever 'MY' becomes the dominant keyword in an input sentence, that sentence
+is stored for later use on those occasions when the input either contains no
+recognizable keys or cannot be decomposed successfully by any of the given
+rules.  The set of sentences retained for this purpose is maintained as a string
+but is used as a pushdown stack; i.e., previous sentences are recalled on a
+last-in-first-out basis.  The word 'MY' was chosen for this special role solely
+because it was so used in the original Eliza.  An alternative word (or set of
+words) may be designated by the scriptwriter through redefinition of the vari-
+able, RETAIN.  The variable CLUELESS contains stock phrases to be used as self-
+contained responses when all else fails.
+
+
+
+                                SCRIPTWRITING
+
+                                   General
+
+Scripts for the original Eliza were encumbered by many levels of parentheses
+used to cast the script as a suitably structured list.  A script is now regarded
+merely as a string that is segmented into suitable substrings by a small set of
+metacharacters with reasonably high mnemonic value.
+
+There are two types of substrings that we will designate as normal and excep-
+tional elements.  Normal elements begin with a keyword, contain information ger-
+mane to that key and terminate any number of lines later with a metacharacter (a
+colon followed by a slash :/).  Exceptional elements start with an asterisk,
+extend over only one line, and (usually) contain a SNOBOL4 statement that is to
+be incorporated into the program.  More these exceptional elements later.
+
+                                Normal Elements
+
+The normal element of a script contains one decomposition rule and the associ-
+ated recomposition rules for the keyword that initiates the substring.  To
+specify a number of decomposition rules for the same key, that word may initiate
+as many elements as the scriptwriter desires; these elements need not be contig-
+uous in the script.  The normal element may also contain a level number and a
+substitute for the keyword.  To distinguish between types of information in an
+element, the information is enclosed in a pair of slashes (/) and is preceded by
+the single letter S (for Substitute), L (for Level number), or D (for Decompo-
+sition) delimited by one or more spaces.  For example,
+
+        MAYBE  L /2/ D //CF PERHAPS:/
+
+states that the keyword MAYBE has been assigned rank 2, the null decomposition
+rule matches any sentence, and the (single) recomposition rules refers the
+program to rules for the keyword PERHAPS.
+
+
+
+                              Exceptional Elements
+
+SNOBOL4 programs are interpreted rather than compiled or assembled.  Capital-
+izing on this fact, Eliza allows the scriptwriter to include SNOBOL4 statements
+that are to be executed as they are encountered.  By this means, substring
+categories can be defined for later use in decomposition and/or recomposition
+rules.  For example, the script line
+
+        *SNOBOL PARENTS = ('FATHER' | 'MOTHER') . PARENT
+
+will create the variable PARENTS whose value will be pattern that matches
+either the substring FATHER or the substring MOTHER.  It also assigns whichever
+substring is actually matched to the variable PARENT.  Subsequently, the decom-
+position rule
+
+        *SNOBOL ARB 'MY' ARB PARENTS ' IS' REM . AFTER
+
+and the recomposition rule
+
+        'WHY IS YOUR ' PARENT AFTER
+
+applied to the input sentence 'I THINK MY OLD FATHER IS MAD' would produce the
+reply 'WHY IS YOUR FATHER MAD'.
+
+This feature may also be used to debug a script since the script can include
+a request to output specific variables, to initiate tracing or to perform any
+other desirable program modification.  The end of a script is signalled by a
+line that begins with an asterisk and the words END OF SCRIPT.
+
+
+
+                            MISCELLANEOUS COMMENTS
+
+By current standards Eliza is a rather trivial and outdated example of artifi-
+cial intelligence (4), (7).  That makes it all the more important to minimize
+the amount of effort required for a student to comprehend the operation of the
+program.
+
+To date, the most commonly used language in artificial intelligence has been
+Lisp (3).  Among the most important characteristics of Lisp are:  The manner
+of representing and manipulating data structures; Dynamic and automatic allo-
+cation of computer memory; The ability to execute data as program statements.
+To a considerable degree, the facilities of SNOBOL4 equal or surpass those of
+Lisp in the above respects.  The student of artificial intelligence should be
+made aware of this alternate tool.
+
+Earlier comments contrasted the original list processing basis for Eliza with
+a string manipulation approach.  It should be understood, however, that the
+SNOBOL4 interpreter employs list-processing techniques to manipulate strings.
+The pre-eminence of these techniques in artificial intelligence is therefore
+not questioned.
+
+A Fortran-based version of Eliza is undoubtly more efficient than a SNOBOL4
+version.  But the power of SNOBOL4 and the economy of its notation have per-
+mitted the replication of Eliza in such a way that the fundamental algorithm
+stands clearly revealed in the program.  For tutorial purposes at least, this
+clarity more than justifies the loss of computional efficiency.
+
+
+
+                                REFERENCES
+
+1.      ACM Curriculum Committee.  CURRICULUM 68.  Communications of the ACM,
+        Volume 11, No. 3. (March 1968) 151-197
+
+2.      Griswold, R.E. et al.  THE SNOBOL4 PROGRAMMING LANGUAGE.  Prentice-
+        Hall, Inc. (1968)
+
+3.      McCarthy, J. et al.  LISP 1.5 PROGRAMMER'S MANUAL.  MIT Press (1965)
+
+4.      Simmons, R.F.  NATURAL LANGUAGE QUESTION-ANSWERING SYSTEMS: 1969.
+        Communications of the ACM, Volume 13, No. 1. (January 1970) 15-30
+
+5.      Weizenbaum, J.  ELIZA -- A COMPUTER PROGRAM FOR THE STUDY OF NATURAL
+        LANGUAGE COMMUNICATION BETWEEN MAN AND MACHINE.  Communications of the
+        ACM, Volume 9, No. 1. (January 1966) 36-45
+
+6.      Weizenbaum, J.  SYMMETRIC LIST PROCESSOR.  Communications of the ACM,
+        Volume 6, No. 7.  (September 1963) 524-544
+
+7.      Weizenbaum, J.  CONTEXTUAL UNDERSTANDING BY COMPUTERS.  Communications
+        of the ACM, Volume 10, No. 8.  (August 1967) 474-480
