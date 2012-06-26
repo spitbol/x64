@@ -4,8 +4,6 @@
 *.lst
 # temporary files
 *.tmp
-# translator token files
-*.tok
 # my temporary outfiles
 *.ao
 *.ap

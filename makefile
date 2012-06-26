@@ -35,7 +35,7 @@ endif
 TOK=	token.spt
 COD=    codlinux.spt
 ERR=    err386.spt
-SPIT=   ./bootstrap-spitbol
+SPIT=   ./spitbol
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
@@ -131,6 +131,9 @@ main.o: $(OSINT)/save.h
 sysgc.o: $(OSINT)/save.h
 sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
+
+boot:
+	cp -p bootstrap/v38.s bootstrap/v38.tok bootstrap/errors.s .
 
 install:
 	sudo cp spitbol /usr/local/bin
