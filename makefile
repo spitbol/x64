@@ -14,9 +14,7 @@ OSINT=./osint
 vpath %.c $(OSINT)
 
 
-# Compiler info:
-# Use POWER architecture for instruction generation until want to
-# produce a version that runs on PowerPC, then change to -qarch=com.
+
 CC=     gcc
 ifeq	($(DEBUG),0)
 CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
@@ -100,7 +98,6 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS)
 # main program
 spitbol: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) /usr/lib32/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
-#	$(CC) $(CFLAGS) $(OBJS) /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
 
 # Assembly language dependencies:
 errors.o: errors.s
@@ -139,4 +136,3 @@ install:
 	sudo cp spitbol /usr/local/bin
 clean:
 	rm -f $(OBJS) *.lst *.map *.err v38.tok v38.tmp v38.s errors.s
-
