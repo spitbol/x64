@@ -233,7 +233,6 @@ shrink_end
 *  Entry:  Define a fresh table to hold all the generated phrases.
 *
 best	t = table(1001)
-        output = n
 
 *  Generate phrases for all error messages, then sort and select best.
 *

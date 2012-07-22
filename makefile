@@ -33,7 +33,7 @@ endif
 TOK=	token.spt
 COD=    codlinux.spt
 ERR=    err386.spt
-SPIT=   ./spitbol
+SPIT=   ./bootstrap/spitbol
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
@@ -97,7 +97,7 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS)
 
 # main program
 spitbol: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) /usr/lib32/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
+	$(CC) $(CFLAGS) $(OBJS) -lm  -ospitbol -Wl,-M,-Map,spitbol.map
 
 # Assembly language dependencies:
 errors.o: errors.s
