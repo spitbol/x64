@@ -1,32 +1,32 @@
-# Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+# copyright 1987-2012 robert b. k. dewar and mark emmer.
 # 
-# This file is part of Macro SPITBOL.
+# this file is part of macro spitbol.
 # 
-#     Macro SPITBOL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     macro spitbol is free software: you can redistribute it and/or modify
+#     it under the terms of the gnu general public license as published by
+#     the free software foundation, either version 3 of the license, or
 #     (at your option) any later version.
 # 
-#     Macro SPITBOL is distributed in the hope that it will be useful,
-#     but WITHOUT ANY WARRANTY; without even the implied warranty of
-#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#     GNU General Public License for more details.
+#     macro spitbol is distributed in the hope that it will be useful,
+#     but without any warranty; without even the implied warranty of
+#     merchantability or fitness for a particular purpose.  see the
+#     gnu general public license for more details.
 # 
-#     You should have received a copy of the GNU General Public License
-#     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+#     you should have received a copy of the gnu general public license
+#     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 #
-# First segment in program.  Contains serial number string.
-# If external functions are included, a call to the external
+# first segment in program.  contains serial number string.
+# if external functions are included, a call to the external
 # function will appear in this segment as well, placed here
 # by the code in load.asm.
 #
-        .sbttl          "SERIAL"
+        .sbttl          "serial"
         .psize          80,132
         .arch           pentium
         .include        "systype.ah"
 
-        Header_
-        DSeg_
+        header_
+        dseg_
         .balign         4
         pubdef          hasfpu,.long,0               #-1 if 80x87 present, else 0
         pubname         cprtmsg
@@ -35,6 +35,6 @@ _cprtmsg:
 .else
 cprtmsg:
 .endif
-				.asciz          " Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer."
-        DSegEnd_
+				.asciz          " copyright 1987-2012 robert b. k. dewar and mark emmer."
+        dsegend_
         .end

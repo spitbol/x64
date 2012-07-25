@@ -2,34 +2,34 @@
         .arch           pentium
         .include        "systype.ah"
 
-        Header_
+        header_
 
-        CSeg_
+        cseg_
 
         .include        "hdrcode.inc"
         .include        "hdrdata.inc"
 
-        .extern         LDR_:near
-        .extern         STR_:near
-        .extern         OVR_:near
-        .extern         DVI_:near
-        .extern         RMI_:near
-        .extern         CVD_:near
-        .extern         RTI_:near
-        .extern         ITR_:near
-        .extern         ADR_:near
-        .extern         SBR_:near
-        .extern         MLR_:near
-        .extern         DVR_:near
-        .extern         NGR_:near
-        .extern         ATN_:near
-        .extern         CHP_:near
-        .extern         COS_:near
-        .extern         ETX_:near
-        .extern         LNF_:near
-        .extern         SIN_:near
-        .extern         SQR_:near
-        .extern         TAN_:near
-        .extern         CPR_:near
+        .extern         ldr_:near
+        .extern         str_:near
+        .extern         ovr_:near
+        .extern         dvi_:near
+        .extern         rmi_:near
+        .extern         cvd_:near
+        .extern         rti_:near
+        .extern         itr_:near
+        .extern         adr_:near
+        .extern         sbr_:near
+        .extern         mlr_:near
+        .extern         dvr_:near
+        .extern         ngr_:near
+        .extern         atn_:near
+        .extern         chp_:near
+        .extern         cos_:near
+        .extern         etx_:near
+        .extern         lnf_:near
+        .extern         sin_:near
+        .extern         sqr_:near
+        .extern         tan_:near
+        .extern         cpr_:near
 
-        CSegEnd_
+        csegend_
