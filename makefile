@@ -17,21 +17,21 @@ vpath %.c $(OSINT)
 
 CC=     gcc
 ifeq	($(DEBUG),0)
-CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
+CFLAGS= 
 else
-CFLAGS= -g -m32 -fno-leading-underscore -mfpmath=387
+CFLAGS= -g -
 endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
+ASFLAGS = 
 else
-ASFLAGS = --32 -g -gstabs+ -msyntax=intel -mmnemonic=intel -mnaked-reg
+ASFLAGS = -g
 endif
 
 # Tools for processing Minimal source file.
-TOK=	token.spt
-COD=    codlinux.spt
+TOK=	minimal-tokens.spt
+COD=    minimal-x86-gas.spt
 ERR=    err386.spt
 SPIT=   ./bootstrap/spitbol
 
