@@ -236,7 +236,6 @@ ENGTS   equ       13
 ;   produce an enumeration similar to an enum structure to C.
 ;
         struc   vords
-%endif                                      ; ]]
 
         access  GBCNT
         access  HEADV

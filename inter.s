@@ -783,7 +783,7 @@ sysxi_p: address zysxi
 
 min1:   
 ; TODO DAVE - FIX NEXT LINE WITH CALLS
-;	callc   calltab[eax*4],0        ; off to the Minimal code
+;       callc   calltab[eax*4],0        ; off to the Minimal code
 
         mov     esp,osisp               ; 1.39 switch to OSINT stack
 
@@ -940,7 +940,7 @@ min1:
                                         ; set up for stack relocation
         lea     eax,TSCBLK+scstr        ; top of saved stack
         mov     ebx,lmodstk             ; bottom of saved stack
-        GETMIN	ecx,[STBAS]             ; ecx = stbas from exit() time
+        GETMIN  ecx,[STBAS]             ; ecx = stbas from exit() time
         sub     ebx,eax                 ; ebx = size of saved stack
         mov     edx,ecx
         sub     edx,ebx                 ; edx = stack bottom from exit() time
@@ -1607,8 +1607,8 @@ cpr100: ret
 ;       OVR_ test for overflow value in RA
 ;
         global  OVR_
-	
-OVR_:	
+        
+OVR_:   
 
         mov     ax, [word  reg_ra+6]   ; get top 2 bytes
         and     ax, 0x7ff0              ; check for infinity or nan
@@ -1860,7 +1860,7 @@ rawmode1: pop   ebx
 ;  tryfpu - perform a floating point op to trigger a trap if no floating point hardware.
 ;
         global  tryfpu
-	cproc   tryfpu,near
+        cproc   tryfpu,near
         push    ebp
         fldz
         pop     ebp

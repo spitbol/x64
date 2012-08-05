@@ -92,15 +92,6 @@
 *	minutes with 68K Spitbol on a Unix PC, 22 hours with SNOBOL4+ on
 *	a PC/XT).
 *
-*	History:
-*	  1.00	01/24/87	MBE - Initial version
-*	  1.01  01/26/87	MBE - Generate generic M68K pseudo-ops
-*	  1.02  08/06/89	MBE - 80386 version
-*	  1.03	04/17/90	MBE - Read channel 1, write channel 2
-*	  1.04  06/09/91	MBE - Added machine definition -u param
-*	  1.05  09/13/92	MBE - Test for inconsistent re-use of error
-*				      numbers.
-*         1.06  06/27/09        MBE - Modified for Linux 386 SPITBOL.
 *
 *	Note: Moving the lower case characters (64-95) from the normal
 *	      character set to the special set (thus providing for 191
@@ -126,26 +117,24 @@ nomachine
 *
 *
 *  Comma delimited string of decimal bytes:
-        db      = '.byte'
+        db      = 'db'
 	byte	= tab db tab
 
 *  Delim delimited string of 'normal' ascii characters (32-127)
-	delim	= '"'
-        ascii   = tab '.ascii' tab
+	delim	= "'"
+        ascii   = tab 'db' tab
 
 *  Comment lead-in character
 *
-        comment = '#'
+        comment = ';'
 
 *  Data and public definitions
 *
-        name    = tab '.sbttl' tab '"errors"'
-        model   = tab '.arch' tab 'pentium'
-        data    = tab 'DSeg_'
-        enddata = tab 'DSegEnd_'
-        endstmt = tab '.end'
-	public	= tab 'pubdef' tab
-        include = tab '.include' tab '"systype.ah"'
+        name    = tab ';.sbttl' tab '"errors"'
+        model   = tab ';.arch' tab 'pentium'
+        data    = tab 'segment  .data'
+*	public	= tab 'pubdef dd,0' tab
+        include = tab '%include' tab '"mintype.h"'
 
 *  Setup keywords
 *
@@ -233,7 +222,6 @@ shrink_end
 *  Entry:  Define a fresh table to hold all the generated phrases.
 *
 best	t = table(1001)
-
 *  Generate phrases for all error messages, then sort and select best.
 *
 	seq(" generate(err[j],t)", .j)
@@ -414,19 +402,18 @@ readerr_end
 
 *  Putout label and compressed error message table
 *
-        outfile = public 'errors,' db ',0'
+        outfile = public 'errors:' tab 'db' tab '0'
 	seq(" putout(err[i],i)", .i)
 
 *  Putout label and phrase table
 *
         outfile =
-        outfile = public 'phrases,' db ',0'
+        outfile = public 'phrases:' tab 'db' tab '0'
 	seq(" putout(phrase[i],spread(i))", .i)
 
 *  Finish up the output file
 *
         outfile =
-        outfile = enddata
         outfile = endstmt
 
 *  Print statistics

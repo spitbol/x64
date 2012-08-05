@@ -42,7 +42,7 @@ SPIT=   ./bootstrap/spitbol
 
 # Implicit rule for building objects from assembly language files.
 .s.o:
-	$(AS) -a=$*.lst -o $@ $(ASFLAGS) $*.s
+	$(AS) -o $@ $(ASFLAGS) $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
 CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h
@@ -93,7 +93,7 @@ AOBJS = $(CAOBJS)
 VOBJS =	v40.o
 
 # All objects:
-OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS)
+OBJS=	 $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(AOBJS)
 
 # main program
 spitbol: $(OBJS)
