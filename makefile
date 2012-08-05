@@ -14,7 +14,7 @@ OSINT=./osint
 vpath %.c $(OSINT)
 
 
-
+AS=nasm
 CC=     gcc
 ifeq	($(DEBUG),0)
 CFLAGS= 
@@ -31,7 +31,7 @@ endif
 
 # Tools for processing Minimal source file.
 TOK=	minimal-tokens.spt
-COD=    minimal-x86-gas.spt
+COD=    minimal-x86-nasm.spt
 ERR=    err386.spt
 SPIT=   ./bootstrap/spitbol
 

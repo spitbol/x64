@@ -23,12 +23,9 @@
 
 serial:
 	bits	32
-;        .sbttl          "SERIAL"
-;        .psize          80,132
-;       .arch           pentium
 	%include	"mintype.h"
 
-	segment	.data
+	segment	data
        align	4
        global	hasfpu
 hasfpu:	 dd	0		; -1 if 80x87 present, else 0
