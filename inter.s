@@ -145,25 +145,37 @@ globals equ               1                       ;ASM globals defined here
 ; Words saved during exit(-3)
 ;
         align 4
-        pubdef  reg_block,dd,0
-        pubdef  reg_wa,dd,0     ; Register WA (ECX)
-        pubdef  reg_wb,dd,0     ; Register WB (EBX)
-        pubdef  reg_ia,dd,0
-        pubdef  reg_wc,dd,0     ; Register WC & IA (EDX)
-        pubdef  reg_xr,dd,0     ; Register XR (EDI)
-        pubdef  reg_xl,dd,0     ; Register XL (ESI)g147
-        pubdef  reg_cp,dd,0     ; Register CP
-        pubdef  reg_ra,dd,0e  ; Register RA
+	global	reg_block
+reg_block:	dd	0
+	global	reg_wa		; ECX
+reg_wa	dd	0	
+	global	reg_wb		; EBC
+reg_wb	dd	0	
+	global	reg_ia		; WC & IA: EDX
+reg_ia	dd	0	
+	global	reg_wc
+reg_wc	dd	0	
+	global	reg_xr		; EDI
+reg_xr	dd	0		; ESI
+	global	reg_xl
+reg_xl	dd	0	
+	global	reg_cp
+reg_cp	dd	0	
+	global	reg_ra 
+reg_ra	dd	0	
 ;
 ; These locations save information needed to return after calling OSINT
 ; and after a restart from EXIT()
 ;
-        pubdef  reg_pc,dd,0  ; Return PC from ccaller
-reg_pp: dd   0               ; Number of bytes of PPMs
-        pubdef  reg_xs,dd,0  ; Minimal stack pointer
+	global	reg_pc
+reg_pc:	dd	0		; Return PC from ccaller
+reg_pp: dd   0			; Number of bytes of PPMs
+	global	reg_xs
+reg_xs:	dd	0		; Minimal stack pointer
 ;
 r_size  equ     .-reg_block
-        pubdef  reg_size,dd,r_size
+	global	reg_size
+reg_size:	dd	r_size
 ;
 ; end of words saved during exit(-3)
 ;
@@ -172,7 +184,8 @@ r_size  equ     .-reg_block
 ;  Constants
 ;
 ten:    dd   10              ; constant 10
-        pubdef  inf,dd,0
+	global	inf
+inf:	dd	0
         dd   0x7ff00000      ; double precision infinity
 
 sav_block:
@@ -190,7 +203,8 @@ osisp:  dd   0               ; 1.39 OSINT's stack pointer
 ;       Setup a number of internal addresses in the compiler that cannot
 ;       be directly accessed from within C because of naming difficulties.
 ;
-        pubdef  ID1,dd,0
+	global	ID1
+ID1:	dd	0
 %if SETREAL == 1
         dd    2
         .ascii  "1x\x00\x00"
@@ -199,21 +213,24 @@ osisp:  dd   0               ; 1.39 OSINT's stack pointer
         db  "1x\x00\x00\x00"
 %endif
 ;
-        pubdef  ID2BLK,dd,52
+	global	ID2BLK
+ID2BLK	dd	512
         dd   0
         times   52 db 0
-
-        pubdef  TICBLK,dd,0
+	
+	global	TICBLK
+TICBLK:	dd	0
         dd   0
 
-        pubdef  TSCBLK,dd,512
+	global	TSCBLK
+TSCBLK:	dd	512
         dd   0
         times   512 db 0 
 
 ;
 ;       Standard input buffer block.
-;
-        pubdef  INPBUF,dd,0     ; type word
+;	global	INPBUF
+INPBUF:	dd	0     ; type word
         dd   0               ; block length
         dd   1024            ; buffer size
         dd   0               ; remaining chars to read
@@ -226,7 +243,8 @@ osisp:  dd   0               ; 1.39 OSINT's stack pointer
 %endif
         times   1024 db 0    ; buffer
 ;
-        pubdef  TTYBUF,dd,0     ; type word
+	global	TTYBUF
+TTYBUF:	dd	0	     ; type word
         dd   0               ; block length
         dd   260             ; buffer size  (260 OK in MS-DOS with cinread())
         dd   0               ; remaining chars to read

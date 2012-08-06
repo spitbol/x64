@@ -104,7 +104,7 @@ errors.o: errors.s
 v40.o: v40.s
 
 # SPITBOL Minimal source
-v40.s:	v40.tok $(VHDRS) $(COD) systype.ah
+v40.s:	v40.tok $(VHDRS) $(COD) mintype.h
 	  $(SPIT) -u "v40:$(VERS):comments" $(COD)
 
 v40.tok: $(MINPATH)v40.min $(VERS).cnd $(TOK)
@@ -115,7 +115,7 @@ v40.err: v40.s
 errors.s: $(VERS).cnd $(ERR) v40.s
 	   $(SPIT) -1=v40.err -2=errors.s $(ERR)
 
-inter.o: systype.ah osint.inc
+inter.o: mintype.h osint.inc
 
 # make osint objects
 cobjs:	$(COBJS)

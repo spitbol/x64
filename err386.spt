@@ -132,8 +132,8 @@ nomachine
 *
         name    = tab ';.sbttl' tab '"errors"'
         model   = tab ';.arch' tab 'pentium'
-        data    = tab 'segment  .data'
-*	public	= tab 'pubdef dd,0' tab
+        data    = tab 'segment  data'
+
         include = tab '%include' tab '"mintype.h"'
 
 *  Setup keywords

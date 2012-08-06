@@ -66,48 +66,6 @@
 *
         version = 'v1.12'
 *
-*  v1.00  20-jul-89
-*	adopted from 68000 version cod368.spt (q.v.)
-*
-*  v1.01  30-oct-89
-*	put everything into code segment so as to be at the beginning
-*	of the load module, and hence immune from size changes due to changes
-*	in c code.
-*
-*  v1.02  10-sep-90
-*       clear xr as well as xl after completing cmc and trc opcodes.
-*
-*  v1.03  21-mar-91
-*	moved portions of jump short optimization kludge to <machine>.def
-*	file.
-*
-*  v1.04  12-jun-91
-*	allow comments as a command line flag to preserve comments.
-*
-*  v1.05  08-aug-91
-*	use seg1n-seg9n and seg1c-seg9c variables defined in <machine>.def
-*	to specify segment names and classes respectively.
-*
-*  v1.06  07-nov-91
-*	add to c_labels.
-*
-*  v1.07  02-aug-93
-*	add public label end_min_data after all the data.
-*
-*  v1.08  19-mar-95
-*       use labfix on borlandc 32-bit version.
-*
-*  v1.09  12-oct-95
-*       use labfix on borlandc 32-bit version for win nt.
-*
-*  v1.10 25-dec-95
-*       changed terminal to output for use in microsoft build program.
-*
-*  v1.11 28-mar-96
-*       changed rti to use carry flag to signal real too large to convert
-*       to integer (changed rti in inter.s as well).
-*  v1.12 13-jun-09
-*       adopted for linux "as" assembler from codlinux.spt.
 
 *  note: as an experiment, we tried aligning all ent and prc's on
 *  a dword boundary, in an attempt to minimize instruction stall time
@@ -584,7 +542,11 @@ genlab	genlab = 'l' lpad(genlabels = genlabels + 1,4,'0') :(return)
 
 -stitl genopl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
-genopl	
+genopl
+*   see if op requires global declaration
+    output = ';  op '  gopl ':' gopc ' ' gop1 ',' gop2 ',' gop3
+    output = 'genopl ' gopl (differ(gopl) ':', '') ' '  gopc ' ' gop1 ' ' gop2 ' ' gop3
+    ident(gopc,'inp')   genop('global',gop1)
 	cstmts[cstmts.n = cstmts.n + 1] =
 .		tstmt(gopl,gopc,gop1,gop2,gop3)		
 							:(return)
@@ -920,13 +882,14 @@ g.bsw	t1 = getarg(i1)
 	genop('jge',getarg(i3))
 * here after default case.
 g.bsw1	genop('jmp', '[dword ' t2 '+' t1 '*4]')
-        genop('dseg_')
+        genop('segment','.data')
         genopl(t2 label.delim)                  :(opdone)
 
 g.iff   genop('dd',getarg(i2))               :(opdone)
 
-g.esw   genop('dsegend_')
-        genop('cseg_')                          :(opdone)
+g.esw
+        genop('segment','.text')
+                                                :(opdone)
 
 g.ent
 *
@@ -977,6 +940,7 @@ g.prc
 *	generate public declaration and then generate label again
 *	need to save label so can emit global declaration since
 *	nasm required global before label definition
+        genop('global',tlabel)
 	t1 = tlabel
 	t1 ? rtab(1) . t1 label.delim
 	flush()
@@ -1559,8 +1523,10 @@ g.equ   genop('equ',i.text(i1))			:(opdone)
 g.exp   genop('extern',tlabel '')
 	tlabel =				:(opdone)
 
-g.inp	prc.count1 = ident(i.text(i1),'n') prc.count1 + 1
-+						:(opnext)
+g.inp
+        genop('global',tlabel)
+        prc.count1 = ident(i.text(i1),'n') prc.count1 + 1
+                                                :(opnext)
 
 g.inr			                  	:(opnext)
 
@@ -1581,22 +1547,19 @@ g.sec.1
         genopl('sec01' label.delim)             :(opdone)
 
 * definitions section
-g.sec.2 genop('csegend_')
-        genop('dseg_')
+g.sec.2 
+        genop('segment','.data')
         genop('global','sec02')
         genopl('sec02' label.delim)             :(opdone)
 
 * constants section
-g.sec.3 genop('dsegend_')
-        genop('dseg_')
+g.sec.3
         genop('global',labfix('sec03'))
         genopl(labfix('sec03') label.delim)     :(opdone)
 
 * working variables section
 g.sec.4 genop('global',labfix('esec03'))
         genopl(labfix('esec03') label.delim)
-        genop('dsegend_')
-        genop('dseg_')
         genop('global',labfix('sec04'))
         genopl(labfix('sec04') label.delim)     :(opdone)
 
@@ -1607,13 +1570,12 @@ g.sec.5
 *  get direction set to up.
         genop('global',labfix('esec04'))
         genopl(labfix('esec04') label.delim)
-        (gt(prc.count1) genopl('prc$' label.delim,'.fill', prc.count1 ',4,0'))
+	gt(prc.count1)	genop('times',prc.count1 ' dd 0')
         genop('global',labfix('lowspmin'))
         genopl(labfix('lowspmin') label.delim,'dd','0')
         genop('global',labfix('end$min$data'))
         genopl(labfix('end$min$data') label.delim)
-        genop('dsegend_')
-        genop('cseg_')
+        genop('segment','.text')
         genop('global',labfix('sec05'))
         genopl(labfix('sec05') label.delim)     :(opdone)
 

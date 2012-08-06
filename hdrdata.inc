@@ -5,7 +5,8 @@
 ;
 
 	%include "mintype.h"
-        pubdef  TYPET
+	global	TYPET
+TYPET:
         dd   B_ART   ; ARBLK type word - 0
         dd   B_CDC   ; CDBLK type word - 1
         dd   B_EXL   ; EXBLK type word - 2
@@ -43,7 +44,8 @@
 ;   to the order of entries in the CALL enumeration in osint.h
 ;   and osint.inc.
 ;
-        pubdef  calltab
+	global calltab
+calltab:
         dd   RELAJ
         dd   RELCR
         dd   RELOC
@@ -76,15 +78,17 @@
 
 %macro  access 1
 	%if	 direct
-		pubname %1
+		global	 %1
 	%else
 		address %1
 	%endif
 %endmacro
 
-        pubdef  valtab
 
-	access	GBCNT
+	global	valtab
+valtab:
+
+ 	access	GBCNT
 	access	HEADV
 	access	MXLEN
 	access	STAGE
