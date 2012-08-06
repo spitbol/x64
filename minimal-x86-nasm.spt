@@ -544,9 +544,9 @@ genlab	genlab = 'l' lpad(genlabels = genlabels + 1,4,'0') :(return)
 *  generate operation with label
 genopl
 *   see if op requires global declaration
-    output = ';  op '  gopl ':' gopc ' ' gop1 ',' gop2 ',' gop3
-    output = 'genopl ' gopl (differ(gopl) ':', '') ' '  gopc ' ' gop1 ' ' gop2 ' ' gop3
-    ident(gopc,'inp')   genop('global',gop1)
+*    output = ';  op '  gopl ':' gopc ' ' gop1 ',' gop2 ',' gop3
+*    output = 'genopl ' gopl (differ(gopl) ':', '') ' '  gopc ' ' gop1 ' ' gop2 ' ' gop3
+*    ident(gopc,'inp')   genop('global',gop1)
 	cstmts[cstmts.n = cstmts.n + 1] =
 .		tstmt(gopl,gopc,gop1,gop2,gop3)		
 							:(return)
@@ -623,7 +623,7 @@ getarg.c.13
 getarg.c.14
 getarg.c.15
 	l1 break('(') . t1 '(' len(2) . t2
-	getarg = labfix(t1) '[' regmap[t2] ']'	:(return)
+	getarg = '[' labfix(t1) ' + ' regmap[t2] ']'		:(return)
 
 * signed integer
 getarg.c.16 getarg = l1				:(return)
@@ -1059,7 +1059,8 @@ g.bhi
 *
 	memmem()
 	t1 = branchtab[incode]
-	genop('cmp',getarg(i1),getarg(i2))
+* TODO: do better job in memory reference in next line
+	genop('cmp',getarg(i1), getarg(i2))
 	genop(branchtab[incode],getarg(i3))
 .						:(opdone)
 
@@ -1315,7 +1316,7 @@ g.trc
 *	xor	esi,esi			;set xl to zero
 *	xor	edi,edi			;v1.02  xr also
 	genop('xchg','esi','edi')
-        genopl((t1 = genlab()) label.delim,'movzx','eax','[byte [edi]')
+        genopl((t1 = genlab()) label.delim,'movzx','eax','[byte edi]')
 	genop('mov','al','[esi+eax]')
 	genop('stosb')
 	genop('loop',t1)
@@ -1543,7 +1544,6 @@ g.sec	genop('')
 * procedure declaration section
 g.sec.1 
         genop('global','sec01')
-	genop('cseg_')
         genopl('sec01' label.delim)             :(opdone)
 
 * definitions section

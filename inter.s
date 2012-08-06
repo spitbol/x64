@@ -125,11 +125,10 @@ globals equ               1                       ;ASM globals defined here
 ;
 ;       Global Variables
 ;
-        CSeg_
+        segment	.text
         extern  swcoup,near
-        CSegEnd_
 
-        DSeg_
+        segment	.data
         cext    stacksiz,dword
         cext    lmodstk,dword
         global  lowsp,dword

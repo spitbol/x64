@@ -2,9 +2,8 @@
 ;        :.arch           pentium
         %include        "mintype.h"
 
-        Header_
 
-        CSeg_
+	segment		.text
 
         %include        "hdrcode.inc"
         %include        "hdrdata.inc"
