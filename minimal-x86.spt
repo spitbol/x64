@@ -79,7 +79,8 @@
 *  keyword initialization
 *
 	&anchor = 1
-	&stlimit = 10000000
+*	&stlimit = 10000000
+*	&stlimit = 1000000
 	&trim	= 1
 	&dump = 1
 *
@@ -173,13 +174,13 @@
 *  initial patterns
 *
 *  p.csparse parses tokenized line
-	p.csparse = '{' break('{') . inlabel
-.	'{' break('{') . incode
-.	'{' break('{') . iarg1
-.	'{' break('{') . iarg2
-.	'{' break('{') . iarg3
-.	'{' break('{') . incomment
-	'{' rem . slineno
+	p.csparse = '|' break('|') . inlabel
+.	'|' break('|') . incode
+.	'|' break('|') . iarg1
+.	'|' break('|') . iarg2
+.	'|' break('|') . iarg3
+.	'|' break('|') . incomment
+	'|' rem . slineno
 
 *  dispatch table
 *
@@ -282,10 +283,11 @@ compdone defs =
 +	'stbas statb polct stmcs stmct typet diffnc lowspmin flprt flptr gtcef hshtb pmhbd r_fcb c_aaa '
 +	'c_yyy g_aaa w_yyy s_aaa s_yyy r_cod kvstn kvcom kvdmp kvftr kvcom kvdmp kvftr kvpfl cswfl '
 c_labels.init
-	s break(' ') . nam =				:f(c_labels.init.done)
+	s break(' ') . nam span(' ') =				:f(c_labels.init.done)
+	output = 'nam ' nam '; s = ' s
 	new = nam
 	nam break('$') . first '$' rem . second	= first '_' second
-	  c_labels[nam] = evak('c.out ' new)		:(c_labels.init)
+	  c_labels[nam] = eval('c.out ' new)		:(c_labels.init)
 c_labels.init.done
 
 * various constants
