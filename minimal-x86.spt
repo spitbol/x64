@@ -329,11 +329,19 @@ branchtab.init.done
 *  optim.tab flags opcodes capable of participating in or optimization
 *		in outstmt routine
 *
+<<<<<<< HEAD
 	optim.tab = table(20)
 	s = 'and add sub neg or or shr shl inc dec '
 optim.tab.init
 	s break(' ') . val span(' ') =		:f(optim.tab.init.end)
 	optim.tab[val] = 1		:(optim.tab.init)
+=======
+	optim.tab = array(20,0)
+	s = 'and add sub neg or or shr shl inc dec '
+optim.tab.init
+	s break(' ') . val span(' ') =				:f(optim.tab.init.end)
+	optim.tab<val> = 1					:(optimi.tab.init)
+>>>>>>> 6630aa31d8a416292715e0ae0299e1aaa4e760b9
 optim.tab.init.end
 
 *  ismem is table indexed by operand type which is nonzero if
