@@ -1,4 +1,4 @@
--title mincod: phase 2 translation from minimal tokens to 80386 code
+-title minimal-x86: phase 2 translation from minimal lexemes to 80386 code
 -stitl description
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
 * 
@@ -18,13 +18,13 @@
 *     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 *
 *
-*  this program takes input file in minimal token form and
+*  this program takes input file in minimal lexemes form and
 *  produces assembly code for intel 80386 processor.
 *  the program obtains the name of the file to be translated from the
 *  command line string in host(0).  options relating to the processing
 *  of comments can be changed by modifying the source.
 *
-*  in addition to the minimal token file, the program requires the
+*  in addition to the minimal lexemes file, the program requires the
 *  name of a "machine definition file" that contains code specific
 *  to a particular 80386 assembler.
 *
@@ -50,7 +50,7 @@
 *  to run under spitbol:
 *       spitbol -u "<file>:<machine>[:flag:...:flag]" minimal-x86.spt
 *
-*	reads <file>.tok	containing tokenized source code
+*	reads <file>.lex	containing tokenized source code
 *       writes <file>.s         with 80386 assembly code
 *	also writes <file>.err	with err and erb error messages
 *	using <machine>.def	to provide machine-specific information
@@ -83,6 +83,7 @@
 *	&stlimit = 1000000
 	&trim	= 1
 	&dump = 1
+	&trace = 10000
 *
 *  useful constants
 *
@@ -225,10 +226,10 @@ getarg.init
 *  default the parameter string if none present
 *
         parms = (differ(host(0)) host(0), "v37:x86:compress")
-        output = ident(parms) "filename (.tok) required" :s(end)
+        output = ident(parms) "filename (.lex) required" :s(end)
 
 *
-* get machine definition file name following token file name, and flags.
+* get machine definition file name following lexeme file name, and flags.
 *
 	parms ? break(';:') . parms len(1) (break(';:') | rem) . machine
 +		((len(1) rem . flags) | '')
@@ -284,7 +285,6 @@ compdone defs =
 +	'c_yyy g_aaa w_yyy s_aaa s_yyy r_cod kvstn kvcom kvdmp kvftr kvcom kvdmp kvftr kvpfl cswfl '
 c_labels.init
 	s break(' ') . nam span(' ') =				:f(c_labels.init.done)
-	output = 'nam ' nam '; s = ' s
 	new = nam
 	nam break('$') . first '$' rem . second	= first '_' second
 	  c_labels[nam] = eval('c.out ' new)		:(c_labels.init)
@@ -310,18 +310,12 @@ branchtab.init.done
 *  optim.tab flags opcodes capable of participating in or optimization
 *		in outstmt routine
 *
-	optim.tab = table(10)
-	optim.tab<"and"> = 1
-	optim.tab<"add"> = 1
-	optim.tab<"sub"> = 1
-	optim.tab<"neg"> = 1
-	optim.tab<"or"> = 1
-	optim.tab<"xor"> = 1
-	optim.tab<"shr"> = 1
-	optim.tab<"shl"> = 1
-	optim.tab<"inc"> = 1
-	optim.tab<"dec"> = 1
-
+	optim.tab = array(20,0)
+	s = 'and add sub neg or or shr shl inc dec '
+optim.tab.init
+	s break(' ') . val span(' ') =				:f(optim.tab.init.end)
+	optim.tab<val> = 1					:(optimi.tab.init)
+optim.tab.init.end
 
 *  ismem is table indexed by operand type which is nonzero if
 *  operand type implies memory reference.
@@ -362,10 +356,10 @@ regmap.init.done
 *
 	strip_comment = (differ(comments) 'n', 'y')
 
-	filenami = parms '.tok'
+	filenami = parms '.lex'
         input(.infile,1,filenami)                     :s(inputok)
-        output = 'cannot open token file: ' filenami  :(end)
-inputok output = 'input token file: ' filenami
+        output = 'cannot open lex file: ' filenami  :(end)
+inputok output = 'input lexeme file: ' filenami
 *
 *
 *
@@ -440,7 +434,7 @@ opnext	thisline = readline()
 *  here if bad opcode
 ds01	error('bad op-code')			:(dsout)
 
-*  generate tokens.
+*  generate lexemesn.
 *
 ds.typerr
 	error('operand type zero')		:(dsout)
