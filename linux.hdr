@@ -1,7 +1,5 @@
-;        :.psize          80,132
-;        :.arch           pentium
-        %include        "mintype.h"
 
+        %include        "mintype.h"
 
 	segment		.text
 
@@ -30,5 +28,3 @@
         extern         SQR_
         extern         TAN_
         extern         CPR_
-
-        CSegEnd_

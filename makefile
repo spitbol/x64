@@ -30,8 +30,8 @@ ASFLAGS = -g
 endif
 
 # Tools for processing Minimal source file.
-TOK=	minimal-tokens.spt
-COD=    minimal-x86-nasm.spt
+TOK=	minimal-lexer.spt
+COD=    minimal-x86.spt
 ERR=    err386.spt
 SPIT=   ./bootstrap/spitbol
 
@@ -104,10 +104,10 @@ errors.o: errors.s
 v40.o: v40.s
 
 # SPITBOL Minimal source
-v40.s:	v40.tok $(VHDRS) $(COD) mintype.h
+v40.s:	v40.lex $(VHDRS) $(COD) mintype.h
 	  $(SPIT) -u "v40:$(VERS):comments" $(COD)
 
-v40.tok: $(MINPATH)v40.min $(VERS).cnd $(TOK)
+v40.lex: $(MINPATH)v40.min $(VERS).cnd $(TOK)
 	 $(SPIT) -u "$(MINPATH)v40:$(VERS):v40" $(TOK)
 
 v40.err: v40.s
@@ -130,9 +130,9 @@ sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
 
 boot:
-	cp -p bootstrap/v40.s bootstrap/v40.tok bootstrap/errors.s .
+	cp -p bootstrap/v40.s bootstrap/v40.lex bootstrap/errors.s .
 
 install:
 	sudo cp spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.lst *.map *.err v40.tok v40.tmp v40.s errors.s
+	rm -f $(OBJS) *.lst *.map *.err v40.lex v40.tmp v40.s errors.s

@@ -173,13 +173,13 @@
 *  initial patterns
 *
 *  p.csparse parses tokenized line
-	p.csparse = '{' break('{') . inlabel
-.	'{' break('{') . incode
-.	'{' break('{') . iarg1
-.	'{' break('{') . iarg2
-.	'{' break('{') . iarg3
-.	'{' break('{') . incomment
-	'{' rem . slineno
+	p.csparse = '|' break('|') . inlabel
+.	'|' break('|') . incode
+.	'|' break('|') . iarg1
+.	'|' break('|') . iarg2
+.	'|' break('|') . iarg3
+.	'|' break('|') . incomment
+	'|' rem . slineno
 
 *  dispatch table
 *
@@ -405,7 +405,7 @@ compdone defs =
 *
 *  p.outstmt examines output lines for certain types of comment contructions
 	fillc	  = (ident(compress) " ",tab)
-	p.outstmt = (break(fillc) . label span(fillc)) . leader
+	p.outstmt = (break(fillc) . labels span(fillc)) . leader
 +			comment.delim rem . comment
 	p.alltabs = span(tab) rpos(0)
 
@@ -543,10 +543,6 @@ genlab	genlab = 'l' lpad(genlabels = genlabels + 1,4,'0') :(return)
 -stitl genopl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
 genopl
-*   see if op requires global declaration
-*    output = ';  op '  gopl ':' gopc ' ' gop1 ',' gop2 ',' gop3
-*    output = 'genopl ' gopl (differ(gopl) ':', '') ' '  gopc ' ' gop1 ' ' gop2 ' ' gop3
-*    ident(gopc,'inp')   genop('global',gop1)
 	cstmts[cstmts.n = cstmts.n + 1] =
 .		tstmt(gopl,gopc,gop1,gop2,gop3)		
 							:(return)
@@ -915,7 +911,7 @@ g.ent
 	cstmts[cstmts.n] = t1
 *  here to see if want label made public
 	tlabel ? rtab(1) . tlabel label.delim
-        (differ(pubtab[tlabel]), differ(debug)) genop('global',tlabel)
+*TODO*        (differ(pubtab[tlabel]), differ(debug)) genop('global',tlabel)
 	tlabel =				:(opdone)
 
 g.bri	genop('jmp',getarg(i1))			:(opdone)
@@ -937,15 +933,10 @@ g.ppm1
 						:(g.err1)
 
 g.prc
-*	generate public declaration and then generate label again
-*	need to save label so can emit global declaration since
-*	nasm required global before label definition
-        genop('global',tlabel)
 	t1 = tlabel
 	t1 ? rtab(1) . t1 label.delim
-	flush()
-        genop('global',t1 )
-	flush()
+        genop()
+*       gas has genop('.global',t1) here
 	prc.args = getarg(i2)
 	max_exi = gt(prc.args,max_exi) prc.args
 	prc.type = i.text(i1)		:($('g.prc.' prc.type))
@@ -1022,19 +1013,14 @@ g.ssl   genop()					:(opdone)
 g.sss   genop()					:(opdone)
 
 g.rtn
-*	generate public declaration and then regenerate label
 	t1 = tlabel
 	t1 ? rtab(1) . t1 label.delim
 * dave label.delim
 *	need label definition after global declaration, so save
 *	and restore it.
 	tlabel =
-	make_global = t1
 		:(opdone)
-* here
-	genop()
-        genop('global',t1)                     
-						:(opdone)
+
 
 g.add	memmem()
 	genop('add',getarg(i2),getarg(i1))	:(opdone)
@@ -1643,13 +1629,8 @@ opdone.3
 	outstmt(cstmts[i])
 	le(i = i + 1, cstmts.n)			
 .						:s(opdone.3)
-*	issue global definition if one is needed
-	ident(make_global)			:s(opdone.4)
-	outstmt(tstmt(make_global))
-	outstmt(tstmt(,'global',make_global))
-	make_global =
 	
-opdone.4	eq(astmts.n)			:s(opdone.6)
+	eq(astmts.n)            		:s(opdone.6)
 	i = 1
 	ident(pifatal[incode])			:s(opdone.5)
 *  here if post incrementing code not allowed

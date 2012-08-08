@@ -1078,10 +1078,10 @@ re4:    GETMIN  eax,[STBAS]
 ;
 ;-----------
 ;
-;       DVI_ - divide IA (EDX) by long in EAX
+;       dvi_ - divide IA (EDX) by long in EAX
 ;
-        global  DVI_
-        proc    DVI_,near
+        global  dvi_
+        proc    dvi_,near
 
         or      eax,eax         ; test for 0
         jz      short setovr    ; jump if 0 divisor
@@ -1095,7 +1095,7 @@ re4:    GETMIN  eax,[STBAS]
         xor     eax,eax         ; clear overflow indicator
         ret
 
-        endp    DVI_
+        endp    dvi_
 
 ;
 ;-----------
