@@ -319,9 +319,9 @@ c_labels.init.done
 *  target instruction
 *
 	branchtab = table(10)
-	s = 'beq:je bne:jne bgt:ja bge:jae ble:jbe blt:jb blo:jb bhi:la '
+	s = 'beq:je bne:jne bgt:ja bge:jae ble:jbe blt:jb blo:jb bhi:ja '
 branchtab.init
-	s break(':') . first ':' rem . second span(' ')  = :f(branchtab.init.done)
+	s break(':') . first ':' break(' ') . second span(' ')  = :f(branchtab.init.done)
 	branchtab[first] = second			:(branchtab.init)
 branchtab.init.done
 	
@@ -329,19 +329,12 @@ branchtab.init.done
 *  optim.tab flags opcodes capable of participating in or optimization
 *		in outstmt routine
 *
-<<<<<<< HEAD
+
 	optim.tab = table(20)
-	s = 'and add sub neg or or shr shl inc dec '
+	s = 'and add sub neg or xor shr shl inc dec '
 optim.tab.init
 	s break(' ') . val span(' ') =		:f(optim.tab.init.end)
 	optim.tab[val] = 1		:(optim.tab.init)
-=======
-	optim.tab = array(20,0)
-	s = 'and add sub neg or or shr shl inc dec '
-optim.tab.init
-	s break(' ') . val span(' ') =				:f(optim.tab.init.end)
-	optim.tab<val> = 1					:(optimi.tab.init)
->>>>>>> 6630aa31d8a416292715e0ae0299e1aaa4e760b9
 optim.tab.init.end
 
 *  ismem is table indexed by operand type which is nonzero if
@@ -359,7 +352,8 @@ ismem.init.done
 *  register/memory-location name.
 *
 	regmap = table(30)
-	s = 'xl:esi xt:esi xr:edi xs:esp wa:exc wb:ebc wc:edx ia:edx cp:ebp '
+*       w0 is temporary register
+	s = 'xl:esi xt:esi xr:edi xs:esp wa:ecx wb:ebx wc:edx ia:edx cp:ebp w0:eax '
 regmap.init
 	s break(':') . first ':' 
 +	  break(' ') . second span(' ')  =  :f(regmap.init.done)
@@ -597,7 +591,7 @@ getarg.c.13
 getarg.c.14
 getarg.c.15
 	l1 break('(') . t1 '(' len(2) . t2
-	getarg = labfix(t1) '[' regmap[t2] ']'	:(return)
+	getarg = '[' labfix(t1) '+' regmap[t2] ']'	:(return)
 
 * signed integer
 getarg.c.16 getarg = l1				:(return)
@@ -997,13 +991,13 @@ g.sss   genop()					:(opdone)
 
 g.rtn
 *	generate public declaration and then regenerate label
-	t1 = tlabel
-	t1 ? rtab(1) . t1 label.delim
+*	t1 = tlabel
+*	t1 ? rtab(1) . t1 label.delim
 * dave label.delim
 *	need label definition after global declaration, so save
 *	and restore it.
-	tlabel =
-	make_global = t1
+*	tlabel =
+*	make_global = t1
 		:(opdone)
 * here
 	genop()
@@ -1032,8 +1026,10 @@ g.bhi
 *  issue target opcode by table lookup.
 *
 	memmem()
-	t1 = branchtab[incode]
+*	t1 = branchtab[incode]
+*        genop('dave')
 	genop('cmp',getarg(i1),getarg(i2))
+*        output = 'branch ' incode ':' branchtab[incode] ':'
 	genop(branchtab[incode],getarg(i3))
 .						:(opdone)
 
@@ -1289,7 +1285,7 @@ g.trc
 *	xor	esi,esi			;set xl to zero
 *	xor	edi,edi			;v1.02  xr also
 	genop('xchg','esi','edi')
-        genopl((t1 = genlab()) label.delim,'movzx','eax','[byte [edi]')
+        genopl((t1 = genlab()) label.delim,'movzx','eax','[byte edi]')
 	genop('mov','al','[esi+eax]')
 	genop('stosb')
 	genop('loop',t1)
@@ -1517,7 +1513,6 @@ g.sec	genop('')
 * procedure declaration section
 g.sec.1 
         genop('global','sec01')
-	genop('cseg_')
         genopl('sec01' label.delim)             :(opdone)
 
 * definitions section
