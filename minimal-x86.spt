@@ -79,12 +79,12 @@
 *  keyword initialization
 *
 	&anchor = 1
-*	&stlimit = 10000000
-*	&stlimit = 1000000
+	&stlimit = 10000000
+
 	&trim	= 1
 	&dump = 1
-	&trace = 10000
-	trace('c')
+*	&trace = 10000
+*	trace('c')
 *
 *  useful constants
 *
@@ -183,14 +183,32 @@
 .	'|' break('|') . iarg3
 .	'|' break('|') . incomment
 	'|' rem . slineno
+*  Dispatch Table
+*
+	getargcase = table(27)
+	getargcase[1] = .getarg.c.1;   getargcase[2] = .getarg.c.2
+	getargcase[3] = .getarg.c.3;   getargcase[4] = .getarg.c.4
+	getargcase[5] = .getarg.c.5;   getargcase[6] = .getarg.c.6
+	getargcase[7] = .getarg.c.7;   getargcase[8] = .getarg.c.8
+	getargcase[9] = .getarg.c.9;   getargcase[10] = .getarg.c.10
+	getargcase[11] = .getarg.c.11; getargcase[12] = .getarg.c.12
+	getargcase[13] = .getarg.c.13; getargcase[14] = .getarg.c.14
+	getargcase[15] = .getarg.c.15; getargcase[16] = .getarg.c.16
+	getargcase[17] = .getarg.c.17; getargcase[18] = .getarg.c.18
+	getargcase[19] = .getarg.c.19; getargcase[20] = .getarg.c.20
+	getargcase[21] = .getarg.c.21; getargcase[22] = .getarg.c.22
+	getargcase[23] = .getarg.c.23; getargcase[24] = .getarg.c.24
+	getargcase[25] = .getarg.c.25; getargcase[26] = .getarg.c.26
+	getargcase[27] = .getarg.c.27
+
 
 *  dispatch table
 *
-	getargcase = table(27)
-	i = 0
-getarg.init
-	getargcase[i = i + 1] = '.getarg.c. ' i
-	lt(i = i + 1, 27)				:s(getarg.init)
+*	getargcase = table(27)
+*	i = 0
+*getarg.init
+*	getargcase[i = i + 1] = '.getarg.c. ' i
+*	lt(i = i + 1, 27)				:s(getarg.init)
 *
 *  pifatal maps minimal opcodes for which no a code allowed
 *  to nonzero value. such operations include conditional
@@ -308,7 +326,6 @@ branchtab.init
 branchtab.init.done
 	
 
-	output = 'start optim init'
 *  optim.tab flags opcodes capable of participating in or optimization
 *		in outstmt routine
 *
@@ -318,7 +335,6 @@ optim.tab.init
 	s break(' ') . val span(' ') =		:f(optim.tab.init.end)
 	optim.tab[val] = 1		:(optim.tab.init)
 optim.tab.init.end
-	output = 'finish optim init'
 
 *  ismem is table indexed by operand type which is nonzero if
 *  operand type implies memory reference.
@@ -334,7 +350,6 @@ ismem.init.done
 *  regmap maps minimal register name to target machine
 *  register/memory-location name.
 *
-	output = 'strat regmap init'
 	regmap = table(30)
 	s = 'xl:esi xt:esi xr:edi xs:esp wa:exc wb:ebc wc:edx ia:edx cp:ebp '
 regmap.init
@@ -342,7 +357,6 @@ regmap.init
 +	  break(' ') . second span(' ')  =  :f(regmap.init.done)
 	regmap[first] = second		:(regmap.init)
 regmap.init.done
-	output = 'finish regmap init'
 
 *  quick reference:
 	reg.ia = regmap['ia']
@@ -353,7 +367,6 @@ regmap.init.done
 *  machine definition file, and cannot be built until after the definition
 *  file has been read in.
 *
-	output = 'start pattern definitions:'
 
 *  p.outstmt examines output lines for certain types of comment contructions
 	fillc	  = (ident(compress) " ",tab)
@@ -429,7 +442,6 @@ nopub
 *  &profile = 1
 dsout
 opnext	thisline = readline()
-	output = thisline
 	crack(thisline)				:f(dsout)
 *
 * append label.delim after label if in code or data.
@@ -498,8 +510,8 @@ genlab	genlab = 'l' lpad(genlabels = genlabels + 1,4,'0') :(return)
 *  generate operation with label
 genopl
 *   see if op requires global declaration
-    output = ';  op '  gopl ':' gopc ' ' gop1 ',' gop2 ',' gop3
-    output = 'genopl ' gopl (differ(gopl) ':', '') ' '  gopc ' ' gop1 ' ' gop2 ' ' gop3
+*    output = ';  op '  gopl ':' gopc ' ' gop1 ',' gop2 ',' gop3
+*s    output = 'genopl ' gopl (differ(gopl) ':', '') ' '  gopc ' ' gop1 ' ' gop2 ' ' gop3
     ident(gopc,'inp')   genop('global',gop1)
 	cstmts[cstmts.n = cstmts.n + 1] =
 .		tstmt(gopl,gopc,gop1,gop2,gop3)		
