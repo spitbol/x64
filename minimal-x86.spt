@@ -173,32 +173,21 @@
 *  initial patterns
 *
 *  p.csparse parses tokenized line
-	p.csparse = '|' break('|') . inlabel
-.	'|' break('|') . incode
-.	'|' break('|') . iarg1
-.	'|' break('|') . iarg2
-.	'|' break('|') . iarg3
-.	'|' break('|') . incomment
-	'|' rem . slineno
+	p.csparse = '{' break('{') . inlabel
+.	'{' break('{') . incode
+.	'{' break('{') . iarg1
+.	'{' break('{') . iarg2
+.	'{' break('{') . iarg3
+.	'{' break('{') . incomment
+	'{' rem . slineno
 
 *  dispatch table
 *
 	getargcase = table(27)
-	getargcase[1] = .getarg.c.1;   getargcase[2] = .getarg.c.2
-	getargcase[3] = .getarg.c.3;   getargcase[4] = .getarg.c.4
-	getargcase[5] = .getarg.c.5;   getargcase[6] = .getarg.c.6
-	getargcase[7] = .getarg.c.7;   getargcase[8] = .getarg.c.8
-	getargcase[9] = .getarg.c.9;   getargcase[10] = .getarg.c.10
-	getargcase[11] = .getarg.c.11; getargcase[12] = .getarg.c.12
-	getargcase[13] = .getarg.c.13; getargcase[14] = .getarg.c.14
-	getargcase[15] = .getarg.c.15; getargcase[16] = .getarg.c.16
-	getargcase[17] = .getarg.c.17; getargcase[18] = .getarg.c.18
-	getargcase[19] = .getarg.c.19; getargcase[20] = .getarg.c.20
-	getargcase[21] = .getarg.c.21; getargcase[22] = .getarg.c.22
-	getargcase[23] = .getarg.c.23; getargcase[24] = .getarg.c.24
-	getargcase[25] = .getarg.c.25; getargcase[26] = .getarg.c.26
-	getargcase[27] = .getarg.c.27
-
+	i = 0
+getarg.init
+	getargcase[i = i + 1] = '.getarg.c. ' i
+	lt(i = i + 1, 27)				:s(getarg.init)
 *
 *  pifatal maps minimal opcodes for which no a code allowed
 *  to nonzero value. such operations include conditional
@@ -207,11 +196,6 @@
 	pifatal = tblini(
 .	'aov[1]beq[1]bne[1]bge[1]bgt[1]bhi[1]ble[1]blo[1]'
 .	'blt[1]bne[1]bnz[1]ceq[1]cne[1]mfi[1]nzb[1]zrb[1]')
-*
-*
-
-
-
 -stitl main program
 *  here follows the driver code for the "main" program.
 
@@ -294,49 +278,15 @@ compdone defs =
 *  c.out is provided by the machine.def file.
 *
 	c_labels = table(37)
-          c_labels['gbcnt'] = c.out 'gbcnt'
-          c_labels['headv'] = c.out 'headv'
-          c_labels['mxlen'] = c.out 'mxlen'
-          c_labels['stage'] = c.out 'stage'
-          c_labels['timsx'] = c.out 'timsx'
-          c_labels['dnamb'] = c.out 'dnamb'
-          c_labels['dnamp'] = c.out 'dnamp'
-          c_labels['state'] = c.out 'state'
-          c_labels['b$efc'] = c.out 'b_efc'
-          c_labels['b$icl'] = c.out 'b_icl'
-          c_labels['b$rcl'] = c.out 'b_rcl'
-          c_labels['b$scl'] = c.out 'b_scl'
-          c_labels['b$vct'] = c.out 'b_vct'
-          c_labels['b$xnt'] = c.out 'b_xnt'
-          c_labels['b$xrt'] = c.out 'b_xrt'
-          c_labels['stbas'] = c.out 'stbas'
-          c_labels['statb'] = c.out 'statb'
-          c_labels['polct'] = c.out 'polct'
-          c_labels['stmcs'] = c.out 'stmcs'
-          c_labels['stmct'] = c.out 'stmct'
-          c_labels['typet'] = c.out 'typet'
-          c_labels['dffnc'] = c.out 'dffnc'
-          c_labels['lowspmin'] = c.out 'lowspmin'
-          c_labels['flprt'] = c.out 'flprt'
-          c_labels['flptr'] = c.out 'flptr'
-          c_labels['gtcef'] = c.out 'gtcef'
-          c_labels['hshtb'] = c.out 'hshtb'
-          c_labels['pmhbs'] = c.out 'pmhbs'
-          c_labels['r$fcb'] = c.out 'r_fcb'
-          c_labels['c$aaa'] = c.out 'c_aaa'
-          c_labels['c$yyy'] = c.out 'c_yyy'
-          c_labels['g$aaa'] = c.out 'g_aaa'
-          c_labels['w$yyy'] = c.out 'w_yyy'
-          c_labels['s$aaa'] = c.out 's_aaa'
-          c_labels['s$yyy'] = c.out 's_yyy'
-          c_labels['r$cod'] = c.out 'r_cod'
-          c_labels['kvstn'] = c.out 'kvstn'
-          c_labels['kvcom'] = c.out 'kvcom'
-          c_labels['kvdmp'] = c.out 'kvdmp'
-          c_labels['kvftr'] = c.out 'kvftr'
-          c_labels['kvpfl'] = c.out 'kvpfl'
-          c_labels['cswfl'] = c.out 'cswfl'
-          c_labels['end$min$data'] = c.out 'end_min_data'
+	s = 'gbcnt headv mxlen stage timsx dnamb dnamp state b$efc b$icl b$rcl b$scl b$vct b$xnt b$xrt '
++	'stbas statb polct stmcs stmct typet diffnc lowspmin flprt flptr gtcef hshtb pmhbd r_fcb c_aaa '
++	'c_yyy g_aaa w_yyy s_aaa s_yyy r_cod kvstn kvcom kvdmp kvftr kvcom kvdmp kvftr kvpfl cswfl '
+c_labels.init
+	s break(' ') . nam =				:f(c_labels.init.done)
+	new = nam
+	nam break('$') . first '$' rem . second	= first '_' second
+	  c_labels[nam] = evak('c.out ' new)		:(c_labels.init)
+c_labels.init.done
 
 * various constants
 *
@@ -348,14 +298,12 @@ compdone defs =
 *  target instruction
 *
 	branchtab = table(10)
-	branchtab['beq'] = 'je'
-	branchtab['bne'] = 'jne'
-	branchtab['bgt'] = 'ja'
-	branchtab['bge'] = 'jae'
-	branchtab['ble'] = 'jbe'
-	branchtab['blt'] = 'jb'
-	branchtab['blo'] = 'jb'
-	branchtab['bhi'] = 'ja'
+	s = 'beq:je bne:jne bgt:ja bge:jae ble:jbe blt:jb blo:jb bhi:la '
+branchtab.init
+	s break(':') . first ':' rem . second span(' ')  = :f(branchtab.init.done)
+	branchtab[first] = second			:(branchtab.init)
+branchtab.init.done
+	
 
 *  optim.tab flags opcodes capable of participating in or optimization
 *		in outstmt routine
@@ -377,22 +325,21 @@ compdone defs =
 *  operand type implies memory reference.
 
 	ismem = array(30,0)
-	ismem<3> = 1; ismem<4> = 1; ismem<5> = 1
-	ismem<9> = 1; ismem<10> = 1; ismem<11> = 1
-	ismem<12> = 1; ismem<13> = 1; ismem<14> = 1
-	ismem<15> = 1
+	s = '3 4 5 9 10 11 12 13 14 15 '
+ismem.init
+	s break(' ') . val =			:f(ismem.init.done)
+	ismem<integer(val)> = 1			:(ismem.init)
+ismem.init.done
 *
 *  regmap maps minimal register name to target machine
 *  register/memory-location name.
 *
 	regmap = table(30)
-	regmap['xl'] = 'esi';  regmap['xt'] = 'esi'
-	regmap['xr'] = 'edi';  regmap['xs'] = 'esp'
-	regmap['wa'] = 'ecx';  regmap['wb'] = 'ebx'
-	regmap['wc'] = 'edx';  regmap['ia'] = 'edx'
-	regmap['cp'] = 'ebp'
-*	w0 is temp register
-	regmap['w0'] = 'eax'
+	s = 'xl:esi xt:esi xr:edi xs:esp wa:exc wb:ebc wc:edx ia:edx cp:ebp '
+regmap.init
+*	s break(':') . first ':' break(' ') . second = 
+	regmap[first] = second				:(regmap.init)
+regmap.init.done
 
 *  quick reference:
 	reg.ia = regmap['ia']
@@ -405,7 +352,7 @@ compdone defs =
 *
 *  p.outstmt examines output lines for certain types of comment contructions
 	fillc	  = (ident(compress) " ",tab)
-	p.outstmt = (break(fillc) . labels span(fillc)) . leader
+	p.outstmt = (break(fillc) . label span(fillc)) . leader
 +			comment.delim rem . comment
 	p.alltabs = span(tab) rpos(0)
 
@@ -543,6 +490,10 @@ genlab	genlab = 'l' lpad(genlabels = genlabels + 1,4,'0') :(return)
 -stitl genopl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
 genopl
+*   see if op requires global declaration
+    output = ';  op '  gopl ':' gopc ' ' gop1 ',' gop2 ',' gop3
+    output = 'genopl ' gopl (differ(gopl) ':', '') ' '  gopc ' ' gop1 ' ' gop2 ' ' gop3
+    ident(gopc,'inp')   genop('global',gop1)
 	cstmts[cstmts.n = cstmts.n + 1] =
 .		tstmt(gopl,gopc,gop1,gop2,gop3)		
 							:(return)
@@ -619,7 +570,7 @@ getarg.c.13
 getarg.c.14
 getarg.c.15
 	l1 break('(') . t1 '(' len(2) . t2
-	getarg = '[' labfix(t1) ' + ' regmap[t2] ']'		:(return)
+	getarg = labfix(t1) '[' regmap[t2] ']'	:(return)
 
 * signed integer
 getarg.c.16 getarg = l1				:(return)
@@ -911,7 +862,7 @@ g.ent
 	cstmts[cstmts.n] = t1
 *  here to see if want label made public
 	tlabel ? rtab(1) . tlabel label.delim
-*TODO*        (differ(pubtab[tlabel]), differ(debug)) genop('global',tlabel)
+        (differ(pubtab[tlabel]), differ(debug)) genop('global',tlabel)
 	tlabel =				:(opdone)
 
 g.bri	genop('jmp',getarg(i1))			:(opdone)
@@ -933,10 +884,15 @@ g.ppm1
 						:(g.err1)
 
 g.prc
+*	generate public declaration and then generate label again
+*	need to save label so can emit global declaration since
+*	nasm required global before label definition
+        genop('global',tlabel)
 	t1 = tlabel
 	t1 ? rtab(1) . t1 label.delim
-        genop()
-*       gas has genop('.global',t1) here
+	flush()
+        genop('global',t1 )
+	flush()
 	prc.args = getarg(i2)
 	max_exi = gt(prc.args,max_exi) prc.args
 	prc.type = i.text(i1)		:($('g.prc.' prc.type))
@@ -1013,14 +969,19 @@ g.ssl   genop()					:(opdone)
 g.sss   genop()					:(opdone)
 
 g.rtn
+*	generate public declaration and then regenerate label
 	t1 = tlabel
 	t1 ? rtab(1) . t1 label.delim
 * dave label.delim
 *	need label definition after global declaration, so save
 *	and restore it.
 	tlabel =
+	make_global = t1
 		:(opdone)
-
+* here
+	genop()
+        genop('global',t1)                     
+						:(opdone)
 
 g.add	memmem()
 	genop('add',getarg(i2),getarg(i1))	:(opdone)
@@ -1045,8 +1006,7 @@ g.bhi
 *
 	memmem()
 	t1 = branchtab[incode]
-* TODO: do better job in memory reference in next line
-	genop('cmp',getarg(i1), getarg(i2))
+	genop('cmp',getarg(i1),getarg(i2))
 	genop(branchtab[incode],getarg(i3))
 .						:(opdone)
 
@@ -1302,7 +1262,7 @@ g.trc
 *	xor	esi,esi			;set xl to zero
 *	xor	edi,edi			;v1.02  xr also
 	genop('xchg','esi','edi')
-        genopl((t1 = genlab()) label.delim,'movzx','eax','[byte edi]')
+        genopl((t1 = genlab()) label.delim,'movzx','eax','[byte [edi]')
 	genop('mov','al','[esi+eax]')
 	genop('stosb')
 	genop('loop',t1)
@@ -1530,6 +1490,7 @@ g.sec	genop('')
 * procedure declaration section
 g.sec.1 
         genop('global','sec01')
+	genop('cseg_')
         genopl('sec01' label.delim)             :(opdone)
 
 * definitions section
@@ -1629,8 +1590,13 @@ opdone.3
 	outstmt(cstmts[i])
 	le(i = i + 1, cstmts.n)			
 .						:s(opdone.3)
+*	issue global definition if one is needed
+	ident(make_global)			:s(opdone.4)
+	outstmt(tstmt(make_global))
+	outstmt(tstmt(,'global',make_global))
+	make_global =
 	
-	eq(astmts.n)            		:s(opdone.6)
+opdone.4	eq(astmts.n)			:s(opdone.6)
 	i = 1
 	ident(pifatal[incode])			:s(opdone.5)
 *  here if post incrementing code not allowed
