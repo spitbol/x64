@@ -6,7 +6,7 @@
 *      lines beginning with ">" are treated as spitbol statements and
 *      immediately executed.
 *
-*      for linux spitbol-x86
+*      for x86 spitbol
 *
 *      in the spitbol translator, the following conditional
 *      assembly symbols are referred to. to incorporate the

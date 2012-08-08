@@ -1,4 +1,4 @@
-* platform-specific mods to codlinux.spt
+* platform-specific mods to minimal-x86.spt
 *
 
 * gnu c labels do not have an underscore prefix

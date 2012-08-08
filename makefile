@@ -3,7 +3,7 @@
 
 
 # SPITBOL Version:
-VERS=   linux
+VERS=   x86
 DEBUG=	0
 
 # Minimal source directory.

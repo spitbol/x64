@@ -48,7 +48,7 @@
 *  pc-spitbol translator by david shields.
 *
 *  to run under spitbol:
-*       spitbol -u "<file>:<machine>[:flag:...:flag]" codlinux.spt
+*       spitbol -u "<file>:<machine>[:flag:...:flag]" minimal-x86.spt
 *
 *	reads <file>.tok	containing tokenized source code
 *       writes <file>.s         with 80386 assembly code
@@ -59,7 +59,7 @@
 *	also reads <file>.pub	for debug symbols to be declared public
 *
 *  example:
-*       spitbol -u v37:dos:compress codlinux.spt
+*       spitbol -u v37:dos:compress minimal-x86.spt
 *
 *
 *  revision history:
@@ -223,7 +223,7 @@ getarg.init
 *
 *  default the parameter string if none present
 *
-        parms = (differ(host(0)) host(0), "v37:linux:compress")
+        parms = (differ(host(0)) host(0), "v37:x86:compress")
         output = ident(parms) "filename (.tok) required" :s(end)
 
 *
