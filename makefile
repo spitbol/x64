@@ -3,7 +3,7 @@
 
 
 # SPITBOL Version:
-VERS=   x86
+VERS=   linux
 DEBUG=	0
 
 # Minimal source directory.
@@ -14,24 +14,24 @@ OSINT=./osint
 vpath %.c $(OSINT)
 
 
-AS=nasm
+
 CC=     gcc
 ifeq	($(DEBUG),0)
-CFLAGS= 
+CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
 else
-CFLAGS= -g -
+CFLAGS= -g -m32 -fno-leading-underscore -mfpmath=387
 endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASFLAGS = 
+ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
 else
-ASFLAGS = -g
+ASFLAGS = --32 -g -gstabs+ -msyntax=intel -mmnemonic=intel -mnaked-reg
 endif
 
 # Tools for processing Minimal source file.
-TOK=	minimal-lexer.spt
-COD=    minimal-x86.spt
+TOK=	token.spt
+COD=    codlinux.spt
 ERR=    err386.spt
 SPIT=   ./bootstrap/spitbol
 
@@ -42,7 +42,7 @@ SPIT=   ./bootstrap/spitbol
 
 # Implicit rule for building objects from assembly language files.
 .s.o:
-	$(AS) -o $@ $(ASFLAGS) $*.s
+	$(AS) -a=$*.lst -o $@ $(ASFLAGS) $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
 CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h
@@ -90,10 +90,10 @@ MOBJS=	main.o getargs.o
 AOBJS = $(CAOBJS)
 
 # Minimal source object file:
-VOBJS =	v40.o
+VOBJS =	v38.o
 
 # All objects:
-OBJS=	 $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(AOBJS)
+OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS)
 
 # main program
 spitbol: $(OBJS)
@@ -101,21 +101,21 @@ spitbol: $(OBJS)
 
 # Assembly language dependencies:
 errors.o: errors.s
-v40.o: v40.s
+v38.o: v38.s
 
 # SPITBOL Minimal source
-v40.s:	v40.lex $(VHDRS) $(COD) mintype.h
-	  $(SPIT) -u "v40:$(VERS):comments" $(COD)
+v38.s:	v38.tok $(VHDRS) $(COD) systype.ah
+	  $(SPIT) -u "v38:$(VERS):comments" $(COD)
 
-v40.lex: $(MINPATH)v40.min $(VERS).cnd $(TOK)
-	 $(SPIT) -u "$(MINPATH)v40:$(VERS):v40" $(TOK)
+v38.tok: $(MINPATH)v38.min $(VERS).cnd $(TOK)
+	 $(SPIT) -u "$(MINPATH)v38:$(VERS):v38" $(TOK)
 
-v40.err: v40.s
+v38.err: v38.s
 
-errors.s: $(VERS).cnd $(ERR) v40.s
-	   $(SPIT) -1=v40.err -2=errors.s $(ERR)
+errors.s: $(VERS).cnd $(ERR) v38.s
+	   $(SPIT) -1=v38.err -2=errors.s $(ERR)
 
-inter.o: mintype.h osint.inc
+inter.o: systype.ah osint.inc
 
 # make osint objects
 cobjs:	$(COBJS)
@@ -130,9 +130,9 @@ sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
 
 boot:
-	cp -p bootstrap/v40.s bootstrap/v40.lex bootstrap/errors.s .
+	cp -p bootstrap/v38.s bootstrap/v38.tok bootstrap/errors.s .
 
 install:
 	sudo cp spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.lst *.map *.err v40.lex v40.tmp v40.s errors.s
+	rm -f $(OBJS) *.lst *.map *.err v38.tok v38.tmp v38.s errors.s
