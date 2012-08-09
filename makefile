@@ -14,7 +14,7 @@ OSINT=./osint
 vpath %.c $(OSINT)
 
 
-
+AS=as
 CC=     gcc
 ifeq	($(DEBUG),0)
 CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
