@@ -1,51 +1,51 @@
 /*
-Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+copyright 1987-2012 robert b. k. dewar and mark emmer.
 
-This file is part of Macro SPITBOL.
+this file is part of macro spitbol.
 
-    Macro SPITBOL is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    macro spitbol is free software: you can redistribute it and/or modify
+    it under the terms of the gnu general public license as published by
+    the free software foundation, either version 3 of the license, or
     (at your option) any later version.
 
-    Macro SPITBOL is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    macro spitbol is distributed in the hope that it will be useful,
+    but without any warranty; without even the implied warranty of
+    merchantability or fitness for a particular purpose.  see the
+    gnu general public license for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+    you should have received a copy of the gnu general public license
+    along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 */
 
 /*
-/   The following manifest constants define the target hardware platform
+/   the following manifest constants define the target hardware platform
 /   and tool chain.
 /
 /               running on a:
-/   BCC32       Intel 32-bit x86, Borland C++ compiler (Windows command line)
-/   VCC         Intel 32-bit x86, Microsoft Visual C (Windows command line)
-/   GCCi32      Intel 32-bit x86, GNU GCC
-/   GCCi64      Intel 64-bit x86, GNU GCC
-/   RS6         IBM RS6000 (Power)
-/   SUN4        SPARC, SUN4
+/   bcc32       intel 32-bit x86, borland c++ compiler (windows command line)
+/   vcc         intel 32-bit x86, microsoft visual c (windows command line)
+/   gcci32      intel 32-bit x86, gnu gcc
+/   gcci64      intel 64-bit x86, gnu gcc
+/   rs6         ibm rs6000 (power)
+/   sun4        sparc, sun4
 /
-/   The following manifest constants define the target operating system.
+/   the following manifest constants define the target operating system.
 /
-/   LINUX       Linux
-/   WINNT       Windows NT/XP/Vista
+/   linux       linux
+/   winnt       windows nt/xp/vista
 /
 */
 
-/* Override default values in port.h.  It is necessary for a user configuring
- * SPITBOL to examine all the default values in port.h and override those
+/* override default values in port.h.  it is necessary for a user configuring
+ * spitbol to examine all the default values in port.h and override those
  * that need to be altered.
  */
-/*  Values for x86 Linux 32-bit SPITBOL.
+/*  values for x86 linux 32-bit spitbol.
  */
-#define EXECFILE    0
-#define FLTHDWR     0   /* Change to 1 when do floating ops inline */
-#define GCCi32      1
-#define LINUX       1
-#define SAVEFILE    1
+#define execfile    0
+#define flthdwr     0   /* change to 1 when do floating ops inline */
+#define gcci32      1
+#define linux       1
+#define savefile    1
 
 

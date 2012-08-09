@@ -1,56 +1,56 @@
 %ifndef systype_included
 %define systype_included        1
 ; 
-; This file is part of Macro SPITBOL.
+; this file is part of macro spitbol.
 ; 
-;     Macro SPITBOL is free software: you can redistribute it and/or modify
-;     it under the terms of the GNU General Public License as published by
-;     the Free Software Foundation, either version 3 of the License, or
+;     macro spitbol is free software: you can redistribute it and/or modify
+;     it under the terms of the gnu general public license as published by
+;     the free software foundation, either version 3 of the license, or
 ;     (at your option) any later version.
 ; 
-;     Macro SPITBOL is distributed in the hope that it will be useful,
-;     but WITHOUT ANY WARRANTY; without even the implied warranty of
-;     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;     GNU General Public License for more details.
+;     macro spitbol is distributed in the hope that it will be useful,
+;     but without any warranty; without even the implied warranty of
+;     merchantability or fitness for a particular purpose.  see the
+;     gnu general public license for more details.
 ; 
-;     You should have received a copy of the GNU General Public License
-;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+;     you should have received a copy of the gnu general public license
+;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 
 ; configuration information for inter.s
 ;
-SETREAL equ     0       ; DS review later why this is needed 6/30
+setreal equ     0       ; ds review later why this is needed 6/30
 linux   equ     1
 winnt   equ     0
-_MASM_  equ     0
+_masm_  equ     0
 
-;        Segment Declarations Macros
+;        segment declarations macros
 ;
 
 
-; Structure definition macros
+; structure definition macros
 ;
 ;        %macro  struct 1
 ;        struc  %1
 ;%endmacro
 
         %macro  ends 1
-        DSeg_
+        dseg_
 %endmacro
 
-; define how data locations in the Minimal code are accessed from
-; assembly-language and C routines.  "direct" is non-zero to make
+; define how data locations in the minimal code are accessed from
+; assembly-language and c routines.  "direct" is non-zero to make
 ; the symbols public for direct access, zero to have access via
 ; a table of pointers and the minadr procedure.
 ;
 direct equ 1
 
 ; define how floating point results are returned from a function
-; (either in ST(0) or in EDX:EAX.
+; (either in st(0) or in edx:eax.
 fretst0 equ 1
 freteax equ 0
 
-; Macros defining whether a leading underscore is required for public Minimal
-; names that will be referenced from C.
+; macros defining whether a leading underscore is required for public minimal
+; names that will be referenced from c.
 ;
 underscore equ 0
 %macro  address 1
@@ -81,7 +81,7 @@ underscore equ 0
 %endmacro
 
 
-; Call C function.  Intel follows standard C conventions, and
+; call c function.  intel follows standard c conventions, and
 ; caller pops arguments.
 %macro  callc 2
         call    %1
@@ -90,14 +90,14 @@ underscore equ 0
 %endif
 %endmacro
 
-; Intel runs in one flat segment.  Far calls are the same as near calls.
+; intel runs in one flat segment.  far calls are the same as near calls.
 %macro  callfar 2
         extern     %1
         callc   %1,%2
 %endmacro
 
-; Return from an assembly-language function that will be called by C.
-; Caller pops arguments
+; return from an assembly-language function that will be called by c.
+; caller pops arguments
 %macro  retc 1
         ret
 %endmacro

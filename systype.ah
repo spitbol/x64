@@ -1,167 +1,167 @@
-# Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+# COPYRIGHT 1987-2012 ROBERT B. K. DEWAR AND MARK EMMER.
 # 
-# This file is part of Macro SPITBOL.
+# THIS FILE IS PART OF MACRO SPITBOL.
 # 
-#     Macro SPITBOL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
-#     (at your option) any later version.
+#     MACRO SPITBOL IS FREE SOFTWARE: YOU CAN REDISTRIBUTE IT AND/OR MODIFY
+#     IT UNDER THE TERMS OF THE GNU GENERAL PUBLIC LICENSE AS PUBLISHED BY
+#     THE FREE SOFTWARE FOUNDATION, EITHER VERSION 3 OF THE LICENSE, OR
+#     (AT YOUR OPTION) ANY LATER VERSION.
 # 
-#     Macro SPITBOL is distributed in the hope that it will be useful,
-#     but WITHOUT ANY WARRANTY; without even the implied warranty of
-#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#     GNU General Public License for more details.
+#     MACRO SPITBOL IS DISTRIBUTED IN THE HOPE THAT IT WILL BE USEFUL,
+#     BUT WITHOUT ANY WARRANTY; WITHOUT EVEN THE IMPLIED WARRANTY OF
+#     MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  SEE THE
+#     GNU GENERAL PUBLIC LICENSE FOR MORE DETAILS.
 # 
-#     You should have received a copy of the GNU General Public License
-#     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+#     YOU SHOULD HAVE RECEIVED A COPY OF THE GNU GENERAL PUBLIC LICENSE
+#     ALONG WITH MACRO SPITBOL.  IF NOT, SEE <HTTP://WWW.GNU.ORG/LICENSES/>.
 
-# configuration information for inter.s
+# CONFIGURATION INFORMATION FOR INTER.S
 #
-linux=1
-winnt=0
+LINUX=1
+WINNT=0
 
-#        Segment Declarations Macros
+#        SEGMENT DECLARATIONS MACROS
 #
-                .macro          CSeg_           # Open a Code Segment
-                .section        .text
-                .endm
+                .MACRO          CSEG_           # OPEN A CODE SEGMENT
+                .SECTION        .TEXT
+                .ENDM
 
-                .macro          CSegEnd_        # Close a Code Segment
-                .endm
+                .MACRO          CSEGEND_        # CLOSE A CODE SEGMENT
+                .ENDM
 
-                .macro          DSeg_           # Open a Data Segment
-                .section        .data
-                .endm
+                .MACRO          DSEG_           # OPEN A DATA SEGMENT
+                .SECTION        .DATA
+                .ENDM
 
-                .macro          DSegEnd_        # Close a Data Segment
-                .endm
+                .MACRO          DSEGEND_        # CLOSE A DATA SEGMENT
+                .ENDM
 
-                .macro          BSSSeg_         # Open a BSS Segment
-                .section        .bss
-                .endm
+                .MACRO          BSSSEG_         # OPEN A BSS SEGMENT
+                .SECTION        .BSS
+                .ENDM
 
-                .macro          BSSSegEnd_      # Close a BSS Segment
-                .endm
+                .MACRO          BSSSEGEND_      # CLOSE A BSS SEGMENT
+                .ENDM
 
-                .macro          Header_         # Group and Assume directives
-                CSeg_
-                CSegEnd_
-                DSeg_
-                DSegEnd_
-                .endm
+                .MACRO          HEADER_         # GROUP AND ASSUME DIRECTIVES
+                CSEG_
+                CSEGEND_
+                DSEG_
+                DSEGEND_
+                .ENDM
 
-# Structure definition macros
+# STRUCTURE DEFINITION MACROS
 #
-        .macro  struc name
-        .struct 0
-        .endm
+        .MACRO  STRUC NAME
+        .STRUCT 0
+        .ENDM
 
-        .macro  ends name
-        DSeg_
-        .endm
+        .MACRO  ENDS NAME
+        DSEG_
+        .ENDM
 
-# define how data locations in the Minimal code are accessed from
-# assembly-language and C routines.  "direct" is non-zero to make
-# the symbols public for direct access, zero to have access via
-# a table of pointers and the minadr procedure.
+# DEFINE HOW DATA LOCATIONS IN THE MINIMAL CODE ARE ACCESSED FROM
+# ASSEMBLY-LANGUAGE AND C ROUTINES.  "DIRECT" IS NON-ZERO TO MAKE
+# THE SYMBOLS PUBLIC FOR DIRECT ACCESS, ZERO TO HAVE ACCESS VIA
+# A TABLE OF POINTERS AND THE MINADR PROCEDURE.
 #
-direct=1
+DIRECT=1
 
-# define how floating point results are returned from a function
-# (either in ST(0) or in EDX:EAX.
-fretst0=1
-freteax=0
+# DEFINE HOW FLOATING POINT RESULTS ARE RETURNED FROM A FUNCTION
+# (EITHER IN ST(0) OR IN EDX:EAX.
+FRETST0=1
+FRETEAX=0
 
-# Macros defining whether a leading underscore is required for public Minimal
-# names that will be referenced from C.
+# MACROS DEFINING WHETHER A LEADING UNDERSCORE IS REQUIRED FOR PUBLIC MINIMAL
+# NAMES THAT WILL BE REFERENCED FROM C.
 #
-underscore=0
-        .macro  address name
-.ifne underscore
-        .long   _\name
-.else
-        .long   \name
-.endif
-        .endm
+UNDERSCORE=0
+        .MACRO  ADDRESS NAME
+.IFNE UNDERSCORE
+        .LONG   _\NAME
+.ELSE
+        .LONG   \NAME
+.ENDIF
+        .ENDM
 
-        .macro  ext name,type
-        .extern name:type
-        .endm
+        .MACRO  EXT NAME,TYPE
+        .EXTERN NAME:TYPE
+        .ENDM
 
-        .macro  cext name,type
-.ifne underscore
-\name	=	_\name
-.endif
-        ext     \name,\type
-        .endm
+        .MACRO  CEXT NAME,TYPE
+.IFNE UNDERSCORE
+\NAME	=	_\NAME
+.ENDIF
+        EXT     \NAME,\TYPE
+        .ENDM
 
-        .macro  def name,op,val
-\name:   \op    \val
-        .endm
+        .MACRO  DEF NAME,OP,VAL
+\NAME:   \OP    \VAL
+        .ENDM
 
-        .macro  pubdef name,op,val
-.ifne underscore
-        .global _\name
-_\name: \op     \val
-\name   =	_\name
-.else
-        .global \name
-\name:  \op     \val
-.endif
-        .endm
+        .MACRO  PUBDEF NAME,OP,VAL
+.IFNE UNDERSCORE
+        .GLOBAL _\NAME
+_\NAME: \OP     \VAL
+\NAME   =	_\NAME
+.ELSE
+        .GLOBAL \NAME
+\NAME:  \OP     \VAL
+.ENDIF
+        .ENDM
 
-        .macro  pubname procname
-.ifne underscore
-        .global _\procname
-.else
-        .global \procname
-.endif
-        .endm
+        .MACRO  PUBNAME PROCNAME
+.IFNE UNDERSCORE
+        .GLOBAL _\PROCNAME
+.ELSE
+        .GLOBAL \PROCNAME
+.ENDIF
+        .ENDM
 
-        .macro  proc procname,distance
-\procname:
-        .endm
+        .MACRO  PROC PROCNAME,DISTANCE
+\PROCNAME:
+        .ENDM
 
-        .macro  endp procname
-        .endm
+        .MACRO  ENDP PROCNAME
+        .ENDM
 
-        .macro  cproc procname,distance
-.ifne underscore
-_\procname:
-.else
-\procname:
-.endif
-        .endm
+        .MACRO  CPROC PROCNAME,DISTANCE
+.IFNE UNDERSCORE
+_\PROCNAME:
+.ELSE
+\PROCNAME:
+.ENDIF
+        .ENDM
 
-        .macro  cendp procname
-        .endm
+        .MACRO  CENDP PROCNAME
+        .ENDM
 
-        .macro  publab procname
-        .global \procname
-        .endm
+        .MACRO  PUBLAB PROCNAME
+        .GLOBAL \PROCNAME
+        .ENDM
 
-# Call C function.  Intel follows standard C conventions, and
-# caller pops arguments.
-        .macro  callc routine,nbytes
-.ifne underscore
-        call    _\routine
-.else
-        call    \routine
-.endif
-.ifne \nbytes
-        add     esp,\nbytes
-.endif
-        .endm
+# CALL C FUNCTION.  INTEL FOLLOWS STANDARD C CONVENTIONS, AND
+# CALLER POPS ARGUMENTS.
+        .MACRO  CALLC ROUTINE,NBYTES
+.IFNE UNDERSCORE
+        CALL    _\ROUTINE
+.ELSE
+        CALL    \ROUTINE
+.ENDIF
+.IFNE \NBYTES
+        ADD     ESP,\NBYTES
+.ENDIF
+        .ENDM
 
-# Intel runs in one flat segment.  Far calls are the same as near calls.
-        .macro  callfar routine,nbytes
-        ext     \routine:near
-        callc   \routine,\nbytes
-        .endm
+# INTEL RUNS IN ONE FLAT SEGMENT.  FAR CALLS ARE THE SAME AS NEAR CALLS.
+        .MACRO  CALLFAR ROUTINE,NBYTES
+        EXT     \ROUTINE:NEAR
+        CALLC   \ROUTINE,\NBYTES
+        .ENDM
 
-# Return from an assembly-language function that will be called by C.
-# Caller pops arguments
-        .macro  retc nbytes
-	ret
-        .endm
+# RETURN FROM AN ASSEMBLY-LANGUAGE FUNCTION THAT WILL BE CALLED BY C.
+# CALLER POPS ARGUMENTS
+        .MACRO  RETC NBYTES
+	RET
+        .ENDM
 

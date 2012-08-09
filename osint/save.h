@@ -1,56 +1,56 @@
 /*
-Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+copyright 1987-2012 robert b. k. dewar and mark emmer.
 
-This file is part of Macro SPITBOL.
+this file is part of macro spitbol.
 
-    Macro SPITBOL is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    macro spitbol is free software: you can redistribute it and/or modify
+    it under the terms of the gnu general public license as published by
+    the free software foundation, either version 3 of the license, or
     (at your option) any later version.
 
-    Macro SPITBOL is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    macro spitbol is distributed in the hope that it will be useful,
+    but without any warranty; without even the implied warranty of
+    merchantability or fitness for a particular purpose.  see the
+    gnu general public license for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+    you should have received a copy of the gnu general public license
+    along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 */
 
 /*
-/	File:   SAVE.H           Version 1.01
+/	file:   save.h           version 1.01
 /	-------------------------------------
 /
-/	This header file provides information for writing the impure
-/	portions of SPITBOL's data segments to a save file.
+/	this header file provides information for writing the impure
+/	portions of spitbol's data segments to a save file.
 /
-/ v1.01 3-Jun-91 MBE
-/	Added memincb, maxsize, readshell0 & uarg to header, and
+/ v1.01 3-jun-91 mbe
+/	added memincb, maxsize, readshell0 & uarg to header, and
 /	additional argument to specify whether these values should
 /	override existing values, as would be the case for the
-/	Intel MS-DOS version, where Save files are used to simulate
-/	Exec files.
+/	intel ms-dos version, where save files are used to simulate
+/	exec files.
 /
 */
-#if SAVEFILE
+#if savefile
 /*
  * +--------2--------+--------2--------+---------4---------+
  * |                 |                 |                   |
- * |     IA size     |    WORD size    | Save File Version |
+ * |     ia size     |    word size    | save file version |
  * |                 |                 |                   |
  * +-----------------+-----------------+-------------------+
  *
- * IA (integer accumulator) and Minimal Word Size:
+ * ia (integer accumulator) and minimal word size:
  *  0 - 16 bits
  *  1 - 32 bits
  *  2 - 64 bits
  *  3 - 128 bits
  */
-#define VWBSHFT     4
-#define VIASHFT     (VWBSHFT+2)
-#define VERSION     5
-#define SaveVersion ((unsigned char)(VERSION+((WORDBITS/32)<<VWBSHFT)+(IABITS/32)<<VIASHFT))
-#define UargSize    128
+#define vwbshft     4
+#define viashft     (vwbshft+2)
+#define version     5
+#define saveversion ((unsigned char)(version+((wordbits/32)<<vwbshft)+(iabits/32)<<viashft))
+#define uargsize    128
 
 struct svfilehdr {
     unsigned long   magic1;         /* recognizer for object file           */
@@ -76,8 +76,8 @@ struct svfilehdr {
     char            *heapadr;       /* address of heap                      */
     char            *topmem;        /* previous top of heap                 */
     uword           databts;        /* largest allowed size of heap         */
-    uword           sec5size;       /* size of SPITBOL code                 */
-    char            *sec5adr;       /* address of SPITBOL code              */
+    uword           sec5size;       /* size of spitbol code                 */
+    char            *sec5adr;       /* address of spitbol code              */
     uword           memincb;        /* memory increment size                */
     uword           maxsize;        /* maximum object size                  */
     word            compress;       /* 0 = no compress,                     */
@@ -85,17 +85,17 @@ struct svfilehdr {
     word            uarglen;        /* length of -u command string          */
 };
 
-#define OURMAGIC1   0xfaa5a5fa
-#define OURMAGIC2   0x0d0a0d0a
-#endif					/* SAVEFILE */
+#define ourmagic1   0xfaa5a5fa
+#define ourmagic2   0x0d0a0d0a
+#endif					/* savefile */
 
-#if WINNT
-#define	PAGESIZE	4096
-#define L2PGSZ		12		/* Log base 2 of page size */
+#if winnt
+#define	pagesize	4096
+#define l2pgsz		12		/* log base 2 of page size */
 #endif
 
-#if SUN4
-#define	PAGESIZE	PAGSIZ
-#define T_START     SEGSIZ   /* N_MAGIC, no dynamic loading */
-#endif					/* SUN4 */
+#if sun4
+#define	pagesize	pagsiz
+#define t_start     segsiz   /* n_magic, no dynamic loading */
+#endif					/* sun4 */
 

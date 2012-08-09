@@ -146,7 +146,7 @@
 *  ityptab is table mapping from common operands to gross type
 
 	ityptab = table(21)
-*OLD
+*old
 	ityptab['0'] = 1; ityptab['1'] = 1; ityptab['wa'] = 8
 	ityptab['wb'] = 8; ityptab['wc'] = 8; ityptab['xl'] = 7
 	ityptab['xr'] = 7; ityptab['xs'] = 7; ityptab['xt'] = 7
@@ -155,7 +155,7 @@
 	ityptab['-(xs)'] = 11; ityptab['-(xt)'] = 11;
 	ityptab['(xl)+'] = 10;	ityptab['(xr)+'] = 10;
 	ityptab['(xs)+'] = 10; ityptab['(xt)+'] = 10
-*NEW
+*new
 *	s = '0,1 1,1 wa,8 wb,8 wc,8 xl,7 (xl),9 (xr),9 (xs),9 (xt),9 (-xl),11 -(xr),11 '
 *+	    '-(xs),11 -(xt),11 (xl)+,10 (xr)+,10 (xs)+,10 (xt)+,10 '
 *ityptab.init
@@ -178,7 +178,7 @@
 *  the entry [i,j] is nonzero is gross type j is valid for named
 *  type i.
 	validform = array('18,27',0) 
-*OLD
+*old
 
 *	s = '1,1 1,2 2,7 2,8 3.9 3,10 3,11 4,3 4,4 4,9 4,12 4,13 4,14 4,15 5,3 5,4 5,8 5,9 5,10 '
 *+	    '5,11 5,12 5,13 5,14 5,15 6,3 6,4 6,7 6,8 6,9 6,10 6,11 6,12 6,13 6,14 6,15 ' 
@@ -235,7 +235,7 @@
 **	s break(',') . first ',' break(' ') . second span(' ') =	:f(validform.init.end)
 *	validform[integer(first),integer(second)) = 1			:(validform.init)
 *validform.init.end
-*FINIS
+*finis
 
    validform[7,15] = 1 
    validform[7,18] = 1 

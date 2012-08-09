@@ -183,7 +183,7 @@
 .	'|' break('|') . iarg3
 .	'|' break('|') . incomment
 	'|' rem . slineno
-*  Dispatch Table
+*  dispatch table
 *
 	getargcase = table(27)
 	getargcase[1] = .getarg.c.1;   getargcase[2] = .getarg.c.2

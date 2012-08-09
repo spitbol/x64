@@ -1,63 +1,63 @@
 #--------------------------  extrn386.inc -------------------------------------
-# Equates of routines and data available to external function from SPITBOL-386
+# equates of routines and data available to external function from spitbol-386
 
 nearptr =       1
 
-# Macros for code that must be assembled differently depending upon
-# whether this function is being built for OS/2 or MS-DOS.
+# macros for code that must be assembled differently depending upon
+# whether this function is being built for os/2 or ms-dos.
 #
-# MS-DOS external functions are reached via FAR calls, and use FAR
-# pointers to SPITBOL data.
+# ms-dos external functions are reached via far calls, and use far
+# pointers to spitbol data.
 #
-# OS/2 external functions are reached via NEAR calls, and use NEAR
-# pointers to SPITBOL data.
+# os/2 external functions are reached via near calls, and use near
+# pointers to spitbol data.
 #------------------------------------------------------------------
 #
-# Macro Glossary:
-# entry     entry name          Define main procedure for this function.
+# macro glossary:
+# entry     entry name          define main procedure for this function.
 #
-# fstore    fstore arg          Store floating point result after call to
-#                               SPITBOL floating point function.
+# fstore    fstore arg          store floating point result after call to
+#                               spitbol floating point function.
 #
-# preamble  preamble segname    Define group and seg name for 1 seg program.
-#           preamble seg1,seg2  Define group and segs for 2 segment program.
-#
-#
-# procx     proc name           Define near or far procedure.
-#
-# sload     sload sreg,reg,arg  Load pointer into registers.
-#
-# sstore    sstore arg,reg,sreg Store pointer into memory.
-#
-# spop      spop sreg           Pop segment register.
-#
-# spush     spush sreg          Push segment register.
+# preamble  preamble segname    define group and seg name for 1 seg program.
+#           preamble seg1,seg2  define group and segs for 2 segment program.
 #
 #
-# Equate Glossary:
+# procx     proc name           define near or far procedure.
 #
-# Name      Usage               Purpose
+# sload     sload sreg,reg,arg  load pointer into registers.
+#
+# sstore    sstore arg,reg,sreg store pointer into memory.
+#
+# spop      spop sreg           pop segment register.
+#
+# spush     spush sreg          push segment register.
+#
+#
+# equate glossary:
+#
+# name      usage               purpose
 # --------  -----------------   -------------------------------------------
 #
-# cbrptr    cbrptr              Size of pointer in bytes.
+# cbrptr    cbrptr              size of pointer in bytes.
 #
-# scs       op  reg, scs:arg    Code segment override.
+# scs       op  reg, scs:arg    code segment override.
 #
-# ses       op  reg, ses:arg    ES segment override.
+# ses       op  reg, ses:arg    es segment override.
 #
-# sfs       op  reg, sfs:arg    FS segment override.
+# sfs       op  reg, sfs:arg    fs segment override.
 #
-# sgs       op  reg, sgs:arg    GS segment override.
+# sgs       op  reg, sgs:arg    gs segment override.
 #
 #
-# Structure Glossary:
+# structure glossary:
 #
-# Name      Usage               Purpose
+# name      usage               purpose
 # --------  -----------------   -------------------------------------------
 #
-# dpt       dpt <?>             Pointer data declaration.
+# dpt       dpt <?>             pointer data declaration.
 #
-# dps       dps <?>             Pointer data declaration (on stack, padded
+# dps       dps <?>             pointer data declaration (on stack, padded
 #                               to even word boundary).
 
         .macro          fstore arg
@@ -66,13 +66,13 @@ nearptr =       1
         .endm
 
         .macro          preamble segname1,segname2
-        CSeg_
-        CSegEnd_
-        DSeg_
-        DSegEnd_
-        BSSSeg_
-        BSSSegEnd_
-        CSeg_
+        cseg_
+        csegend_
+        dseg_
+        dsegend_
+        bssseg_
+        bsssegend_
+        cseg_
         .endm
 
         .equ    cbrptr,4
@@ -117,17 +117,17 @@ o:      .long   0
         .include         "block386.inc"
 
 .nolist
-#       V1.02   10-Sep-92 Add string buffer blocks.
+#       v1.02   10-sep-92 add string buffer blocks.
 #
-#       V1.03   19-Jun-09 Modified for Linux 386 (32-bit) SPITBOL.
+#       v1.03   19-jun-09 modified for linux 386 (32-bit) spitbol.
 #
-#       (c) Copyright 1990 - Catspaw, Incorporated
+#       (c) copyright 1990 - catspaw, incorporated
 #
 #
-# At function entry, the stack looks like this:
+# at function entry, the stack looks like this:
 #
 #               +-----------------------+
-# SS:ESP -----> |     return offset     |
+# ss:esp -----> |     return offset     |
 #               |-----------------------|
 #               |  result area offset   |
 #               |-----------------------|
@@ -141,16 +141,16 @@ o:      .long   0
 #               +-----------------------+
 #
 #
-# Generally, the items in the miscinfo area can be ignored, and are provided
-# only for the benefit of those wishing to operate directly on SPITBOL's
+# generally, the items in the miscinfo area can be ignored, and are provided
+# only for the benefit of those wishing to operate directly on spitbol's
 # internal data structures.
 #
-# However, the result area pointer *must* be used by the external
+# however, the result area pointer *must* be used by the external
 # function to locate the area in which results are returned.
 #
-# Note that pointers on the stack are 4-byte quantities.
+# note that pointers on the stack are 4-byte quantities.
 #
-# Definition of structure of the miscinfo area.  A pointer to this
+# definition of structure of the miscinfo area.  a pointer to this
 # area is placed on the stack below the result area pointer.
 #
 
@@ -163,30 +163,30 @@ ptyptab:.long   0               #pointer to table of data types
 pxnblk: .long   0               #pointer to xnblk describing function
 pefblk: .long   0               #pointer to efblk describing function
 pflttab:.long   0               #pointer to floating point table
-spds:   .word   0               #SPITBOL's DS
-spcs:   .word   0               #SPITBOL's CS
+spds:   .word   0               #spitbol's ds
+spcs:   .word   0               #spitbol's cs
         ends    misc
 
-# values in env word of misc structure.  Executing under:
-t_pharlap =     0               #PharLap DOS Extender
-t_intel   =     1               #Intel DOS Extender
-t_os2     =     2               #OS/2 2.0
-t_tc16    =     3               #MS-DOS TurboC with 16-bit IA
-t_tc32    =     4               #MS-DOS TurboC with 32-bit IA
-t_w1616   =     5               #16-bit Windows, 16-bit SPITBOL
-t_w1632   =     6               #16-bit Windows, 32-bit SPITBOL
-t_wnt8    =     7               #Windows NT on 386/486
-t_sparc   =     8               #Sun 4 / SPARC
-t_mips    =    10               #MIPS R3000
-t_rs6000  =    11               #IBM RS/6000
-t_lnx8632 =    12               #Linux Intel x86 32-bit
-t_lnx8664 =    13               #Linux Intel x86 64-bit
+# values in env word of misc structure.  executing under:
+t_pharlap =     0               #pharlap dos extender
+t_intel   =     1               #intel dos extender
+t_os2     =     2               #os/2 2.0
+t_tc16    =     3               #ms-dos turboc with 16-bit ia
+t_tc32    =     4               #ms-dos turboc with 32-bit ia
+t_w1616   =     5               #16-bit windows, 16-bit spitbol
+t_w1632   =     6               #16-bit windows, 32-bit spitbol
+t_wnt8    =     7               #windows nt on 386/486
+t_sparc   =     8               #sun 4 / sparc
+t_mips    =    10               #mips r3000
+t_rs6000  =    11               #ibm rs/6000
+t_lnx8632 =    12               #linux intel x86 32-bit
+t_lnx8664 =    13               #linux intel x86 64-bit
 
 #
-# Sample usage.  Example stack frame for function arguments, assuming
-#                the execution of an ENTER instruction to put the stack
-#                pointer in EBP.  This example assumes the function is
-#                called with three arguments of type (INTEGER, REAL, STRING):
+# sample usage.  example stack frame for function arguments, assuming
+#                the execution of an enter instruction to put the stack
+#                pointer in ebp.  this example assumes the function is
+#                called with three arguments of type (integer, real, string):
 #
 #               struc
 #       stk_ebp .long      0               #save ebp
@@ -199,11 +199,11 @@ t_lnx8664 =    13               #Linux Intel x86 64-bit
 #       iarg1   .long      0               #integer arg 1
 #               ends
 #
-#               The pointer to the result area could be loaded with:
+#               the pointer to the result area could be loaded with:
 #
 #               sload   fs, edi, [ebp].presult
 #
-#               The pointer to the type table would be loaded by
+#               the pointer to the type table would be loaded by
 #               double indexing:
 #
 #               sload   fs, ecx, [ebp].pmisc
@@ -212,86 +212,86 @@ t_lnx8664 =    13               #Linux Intel x86 64-bit
 
 
 #
-# Simple names for datatypes.  Performs a lookup in SPITBOL's type
+# simple names for datatypes.  performs a lookup in spitbol's type
 # table to fetch a 32-bit type word for specific data types.
 #
-# The address of SPITBOL's type table is passed to the function on the
-# stack in ptyptab (see above).  Prior to using these symbols, a
-# pointer to this table must be loaded into the registers.  These equates
-# assume that the pointer has been loaded into DS:[ECX].  There is nothing
+# the address of spitbol's type table is passed to the function on the
+# stack in ptyptab (see above).  prior to using these symbols, a
+# pointer to this table must be loaded into the registers.  these equates
+# assume that the pointer has been loaded into ds:[ecx].  there is nothing
 # special about these registers, and any others could be used
 # provided the equates are modified.
 #
-# Note:  This DOES NOT work in the GNU assembler.  It generates the error message
-#         Error: can't make global register symbol `xx'
-#        for each line.  Nor can it be made into a macro, because macro expansion only
+# note:  this does not work in the gnu assembler.  it generates the error message
+#         error: can't make global register symbol `xx'
+#        for each line.  nor can it be made into a macro, because macro expansion only
 #        occurs for macros that appear in the opcode field.
 #
-#        Users will just have to use the expansion expression explicitly in code.
+#        users will just have to use the expansion expression explicitly in code.
 #
-                                         #data types in type table at DS:[ECX]
-#ar      =       [ecx+BL_AR*4]           # Array
-#bc      =       [ecx+BL_BC*4]           # Buffer Control
-#bf      =       [ecx+BL_BF*4]           # String Buffer
-#cd      =       [ecx+BL_CD*4]           # Code
-#ex      =       [ecx+BL_EX*4]           # Expression
-#ic      =       [ecx+BL_IC*4]           # Integer
-#nm      =       [ecx+BL_NM*4]           # Name
-#rc      =       [ecx+BL_RC*4]           # Real
-#sc      =       [ecx+BL_SC*4]           # String
-#tb      =       [ecx+BL_TB*4]           # Table
-#vc      =       [ecx+BL_VC*4]           # Vector
-#xn      =       [ecx+BL_XN*4]           # External
+                                         #data types in type table at ds:[ecx]
+#ar      =       [ecx+bl_ar*4]           # array
+#bc      =       [ecx+bl_bc*4]           # buffer control
+#bf      =       [ecx+bl_bf*4]           # string buffer
+#cd      =       [ecx+bl_cd*4]           # code
+#ex      =       [ecx+bl_ex*4]           # expression
+#ic      =       [ecx+bl_ic*4]           # integer
+#nm      =       [ecx+bl_nm*4]           # name
+#rc      =       [ecx+bl_rc*4]           # real
+#sc      =       [ecx+bl_sc*4]           # string
+#tb      =       [ecx+bl_tb*4]           # table
+#vc      =       [ecx+bl_vc*4]           # vector
+#xn      =       [ecx+bl_xn*4]           # external
 
 #
-# Non-standard block-type values that may be returned in register EAX.
+# non-standard block-type values that may be returned in register eax.
 #
-FAIL    =       -1                      # Signal function failure
-BL_NC   =       100                     # Unconverted result
-BL_FS   =       101                     # Pointer to string
-BL_FX   =       102                     # Pointer to external block
+fail    =       -1                      # signal function failure
+bl_nc   =       100                     # unconverted result
+bl_fs   =       101                     # pointer to string
+bl_fx   =       102                     # pointer to external block
 
 #
-# Length of string area in result buffer
+# length of string area in result buffer
 #
 buflen  =       512
 
 
-# Vectors to real number functions.
+# vectors to real number functions.
 #
-# Reals are 8-byte, double-precision reals in IEEE format.
-# Integers (for fix and float) are 32-bit two's complement numbers.
+# reals are 8-byte, double-precision reals in ieee format.
+# integers (for fix and float) are 32-bit two's complement numbers.
 #
-# Function arguments are pushed onto the stack left-to-right.  With 8-byte
-# reals, the most-significant half (MSH) is pushed first.  Note that this
-# differs from standard C calling conventions.
+# function arguments are pushed onto the stack left-to-right.  with 8-byte
+# reals, the most-significant half (msh) is pushed first.  note that this
+# differs from standard c calling conventions.
 #
-# Integer results are returned in EAX.  Real results are returned in
-# EDX:EAX  (EDX = MSH, EAX = LSH).
+# integer results are returned in eax.  real results are returned in
+# edx:eax  (edx = msh, eax = lsh).
 #
-# The caller is responsible for removing arguments from the stack
+# the caller is responsible for removing arguments from the stack
 # after the function returns.
 #
-# Functions taking two arguments, such as r_sub(r1,r2) order their
+# functions taking two arguments, such as r_sub(r1,r2) order their
 # operations as r1-r2.
 #
-# The address of a table of dispatch vectors is passed to the external
-# function on the stack in pflttab (see above).  These =  ates assume
-# that a pointer to the table has been loaded into DS:[EBX] by your code.
+# the address of a table of dispatch vectors is passed to the external
+# function on the stack in pflttab (see above).  these =  ates assume
+# that a pointer to the table has been loaded into ds:[ebx] by your code.
 #
-# Using the example above, this might be done with the following:
+# using the example above, this might be done with the following:
 #
 #                       sload   ds, ebx, [ebp].pmisc
 #                       sload   ds, ebx, [ebx].pflttab
 #
 #
-# The real functions preserve EBX, ESI, EDI and EBP, and may destroy
-# EAX, ECX, and EDX.
+# the real functions preserve ebx, esi, edi and ebp, and may destroy
+# eax, ecx, and edx.
 #
-# Example.  Divide the real number in location r1 by the number in r2, and
+# example.  divide the real number in location r1 by the number in r2, and
 #           store the result in r3:
 #
-#       spush   ds                      #save our DS
+#       spush   ds                      #save our ds
 #       push    dword ptr r1+4          #push first arg, msh
 #       push    dword ptr r1            #push first arg, lsh
 #       push    dword ptr r2+4          #push second arg, msh
@@ -300,7 +300,7 @@ buflen  =       512
 #       sload   ds,ebx,[ebx].pflttab    #get address of vector table
 #       r_div                           #perform division
 #       add     esp, 2*8                #remove arguments
-#       spop    ds                      #restore our DS
+#       spop    ds                      #restore our ds
 #       mov     dword ptr r3, eax       #store result lsh
 #       mov     dword ptr r3+4, edx     #store result msh
 #
@@ -353,4 +353,4 @@ buflen  =       512
         .endm
 
 .list
-#-------------------------- End of extrn386.inc -----------------------------
+#-------------------------- end of extrn386.inc -----------------------------
