@@ -352,13 +352,21 @@ ismem.init.done
 *  register/memory-location name.
 *
 	regmap = table(30)
+	regmap['xl'] = 'esi';  regmap['xt'] = 'esi'
+	regmap['xr'] = 'edi';  regmap['xs'] = 'esp'
+	regmap['wa'] = 'ecx';  regmap['wb'] = 'ebx'
+	regmap['wc'] = 'edx';  regmap['ia'] = 'edx'
+	regmap['cp'] = 'ebp'
+*	w0 is temp register
+	regmap['w0'] = 'eax'
+
 *       w0 is temporary register
-	s = 'xl:esi xt:esi xr:edi xs:esp wa:ecx wb:ebx wc:edx ia:edx cp:ebp w0:eax '
-regmap.init
-	s break(':') . first ':' 
-+	  break(' ') . second span(' ')  =  :f(regmap.init.done)
-	regmap[first] = second		:(regmap.init)
-regmap.init.done
+*	s = 'xl:esi xt:esi xr:edi xs:esp wa:ecx wb:ebx wc:edx ia:edx cp:ebp w0:eax '
+*regmap.init
+*	s break(':') . first ':' 
+*+	  break(' ') . second span(' ')  =  :f(regmap.init.done)
+*	regmap[first] = second		:(regmap.init)
+*regmap.init.done
 
 *  quick reference:
 	reg.ia = regmap['ia']
@@ -514,7 +522,7 @@ genopl
 *   see if op requires global declaration
 *    output = ';  op '  gopl ':' gopc ' ' gop1 ',' gop2 ',' gop3
 *s    output = 'genopl ' gopl (differ(gopl) ':', '') ' '  gopc ' ' gop1 ' ' gop2 ' ' gop3
-    ident(gopc,'inp')   genop('global',gop1)
+*    ident(gopc,'inp')   genop('global',gop1)
 	cstmts[cstmts.n = cstmts.n + 1] =
 .		tstmt(gopl,gopc,gop1,gop2,gop3)		
 							:(return)
@@ -538,7 +546,7 @@ getarg	l1 = i.text(iarg)
 	eq(l2)					:f($(getargcase[l2]))
 	getarg = labfix(l1)			:(return)
 
-* int
+* int:
 getarg.c.1 getarg = l1				:(return)
 
 * dlbl
@@ -546,7 +554,7 @@ getarg.c.2 getarg = labfix(l1)			:(return)
 
 * wlbl, clbl
 getarg.c.3
-getarg.c.4 getarg = '[dword  ' labfix(l1) ']'     :(return)
+getarg.c.4 getarg = 'dword [ ' labfix(l1) ']'     :(return)
 
 * elbl, plbl
 getarg.c.5
@@ -561,7 +569,7 @@ getarg.c.8
 getarg.c.9
 	l1 len(1) len(2) . l2
 	l2 = regmap[l2]
-	getarg = '[dword ' l2 ']'		:(return)
+	getarg = 'dword [' l2 ']'		:(return)
 
 * (x)+, register indirect, post increment
 * use lea reg,[reg+4] unless reg is esp, since it takes an extra byte.
@@ -570,14 +578,14 @@ getarg.c.9
 getarg.c.10
 	l1 = substr(l1,2,2)
 	t1 = regmap[l1]
-	getarg = '[dword ' t1 ']'
+	getarg = 'dword [' t1 ']'
 	(ident(l1,'xs') genaop(tstmt(,'add',t1,'4'))) :s(return)
 	genaop(tstmt(,'lea',t1,'[' t1 '+4]'))	:(return)
 
 *  -(x), register indirect, pre decrement
 getarg.c.11
 	t1 = regmap[substr(l1,3,2)]
-	getarg = '[dword ' t1 ']'
+	getarg = 'dword [' t1 ']'
 	genbop(tstmt(,'lea',t1,'[' t1 '-4]'))	:(return)
 
 * int(x)
@@ -585,7 +593,7 @@ getarg.c.11
 getarg.c.12
 getarg.c.13
 	l1 break('(') . t1 '(' len(2) . t2
-	getarg = '[dword 4*' labfix(t1) '+' regmap[t2] ']'	:(return)
+	getarg = 'dword [4*' labfix(t1) '+' regmap[t2] ']'	:(return)
 
 *  name(x), where name is in working section
 getarg.c.14
@@ -849,7 +857,7 @@ g.bsw	t1 = getarg(i1)
 	genop('cmp',t1,getarg(i2))
 	genop('jge',getarg(i3))
 * here after default case.
-g.bsw1	genop('jmp', '[dword ' t2 '+' t1 '*4]')
+g.bsw1	genop('jmp', 'dword [' t2 '+' t1 '*4]')
         genop('segment','.data')
         genopl(t2 label.delim)                  :(opdone)
 
@@ -882,14 +890,14 @@ g.ent
 	t.label(t1) = tlabel 
 	cstmts[cstmts.n] = t1
 *  here to see if want label made public
-	tlabel ? rtab(1) . tlabel label.delim
-        (differ(pubtab[tlabel]), differ(debug)) genop('global',tlabel)
+*	tlabel ? rtab(1) . tlabel label.delim
+*        (differ(pubtab[tlabel]), differ(debug)) genop('global',tlabel)
 	tlabel =				:(opdone)
 
 g.bri	genop('jmp',getarg(i1))			:(opdone)
 
 g.lei	t1 = regmap[i.text(i1)]
-	genop('movzx',t1,'[byte ' t1 '-1]')	:(opdone)
+	genop('movzx',t1,'byte [' t1 '-1]')	:(opdone)
 
 g.jsr	genop('call',getarg(i1))		:(opdone)
 
@@ -908,12 +916,12 @@ g.prc
 *	generate public declaration and then generate label again
 *	need to save label so can emit global declaration since
 *	nasm required global before label definition
-        genop('global',tlabel)
-	t1 = tlabel
-	t1 ? rtab(1) . t1 label.delim
-	flush()
-        genop('global',t1 )
-	flush()
+*        genop('global',tlabel)
+*	t1 = tlabel
+*	t1 ? rtab(1) . t1 label.delim
+*	flush()
+*       genop('global',t1 )
+*	flush()
 	prc.args = getarg(i2)
 	max_exi = gt(prc.args,max_exi) prc.args
 	prc.type = i.text(i1)		:($('g.prc.' prc.type))
@@ -1000,8 +1008,7 @@ g.rtn
 *	make_global = t1
 		:(opdone)
 * here
-	genop()
-        genop('global',t1)                     
+*        genop('global',t1)                     
 						:(opdone)
 
 g.add	memmem()
@@ -1192,7 +1199,7 @@ g.lch
 	genop('dec',regmap[t3])
 g.lcg.1
 	t2 break('(') len(1) len(2) . t3
-	genop('movzx',t1,'[byte ' regmap[t3] ']')
+	genop('movzx',t1,'byte [' regmap[t3] ']')
 
 *  see if postincrement needed
 	t2 rtab(1) '+'				:f(g.lcg.2)
@@ -1238,7 +1245,7 @@ g.scg.w.xl
 	genop('mov','[esi]',t1)			:(opdone)
 g.scg.w.pxl
 	genop('dec','esi')
-	genop('mov','[esi]',t1)			:(opdone)
+	genop('mov','esi',t1)			:(opdone)
 g.scg.w.xlp
 	genop('mov','[esi]',t1)
 	genop('inc','esi')			:(opdone)
@@ -1246,7 +1253,7 @@ g.scg.w.xr
 	genop('mov','[edi]',t1)			:(opdone)
 g.scg.w.pxr
 	genop('dec','edi')
-	genop('mov','[edi]',t1)			:(opdone)
+	genop('mov','edi',t1)			:(opdone)
 g.scg.w.xrp
 	genop('mov','al',t1)
 	genop('stosb')				:(opdone)
@@ -1285,7 +1292,7 @@ g.trc
 *	xor	esi,esi			;set xl to zero
 *	xor	edi,edi			;v1.02  xr also
 	genop('xchg','esi','edi')
-        genopl((t1 = genlab()) label.delim,'movzx','eax','[byte edi]')
+        genopl((t1 = genlab()) label.delim,'movzx','eax','byte [edi]')
 	genop('mov','al','[esi+eax]')
 	genop('stosb')
 	genop('loop',t1)
@@ -1454,8 +1461,9 @@ g.chk   genop('cmp','esp',labfix('lowspmin'))
 
 decend
 *  here at end of dic or dac to see if want label made public
-	tlabel ? rtab(1) . tlabel label.delim
-        differ(pubtab[tlabel]) genop('global',tlabel)  :(opdone)
+*	tlabel ? rtab(1) . tlabel label.delim
+*        differ(pubtab[tlabel]) genop('global',tlabel)
+                                                    :(opdone)
 
 g.dac	t1 = i.type(i1)
         t2 = "" ;*(le(t1,2) "", le(t1,4) " ", le(t1,6) " ", "")
@@ -1494,7 +1502,7 @@ g.exp   genop('extern',tlabel '')
 	tlabel =				:(opdone)
 
 g.inp
-        genop('global',tlabel)
+*        genop('global',tlabel)
         prc.count1 = ident(i.text(i1),'n') prc.count1 + 1
                                                 :(opnext)
 
@@ -1539,7 +1547,7 @@ g.sec.5
 *  get direction set to up.
         genop('global',labfix('esec04'))
         genopl(labfix('esec04') label.delim)
-	gt(prc.count1)	genop('times',prc.count1 ' dd 0')
+	(gt(prc.count1)	genopl('prc_' label.delim, 'times',prc.count1 ' dd 0'))
         genop('global',labfix('lowspmin'))
         genopl(labfix('lowspmin') label.delim,'dd','0')
         genop('global',labfix('end$min$data'))
@@ -1569,11 +1577,11 @@ g.sec.6.1
 g.sec.7
         (differ(debug) genopl(,'global','err_0'))
         genopl('err_0' label.delim,'pop','eax')
-	genop('movzx','eax','[byte eax]')
+	genop('movzx','eax','byte [eax]')
 	genop('jmp','short err_1a')
         (differ(debug) genopl(,'global','err_1'))
         genopl('err_1' label.delim,'pop','eax')
-	genop('movzx','eax','[byte eax]')
+	genop('movzx','eax','byte [eax]')
 	genop('add','eax','256')
         genopl('err_1a' label.delim,'jmp','err$')
 	flush()
