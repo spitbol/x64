@@ -136,15 +136,15 @@ globals =               1                       #asm globals defined here
 # words saved during exit(-3)
 #
         .balign 4
-        pubdef  REG_BLOCK
-        pubdef  REG_WA,.long,0     # register wa (ecx)
-        pubdef  REG_WB,.long,0     # register wb (ebx)
-        pubdef  REG_IA
-        pubdef  REG_WC,.long,0     # register wc & ia (edx)
-        pubdef  REG_XR,.long,0     # register xr (edi)
-        pubdef  REG_XL,.long,0     # register xl (esi)
-        pubdef  REG_CP,.long,0     # register cp
-        pubdef  REG_RA,.double,0e  # register ra
+        pubdef  reg_block
+        pubdef  reg_wa,.long,0     # register wa (ecx)
+        pubdef  reg_wb,.long,0     # register wb (ebx)
+        pubdef  reg_ia
+        pubdef  reg_wc,.long,0     # register wc & ia (edx)
+        pubdef  reg_xr,.long,0     # register xr (edi)
+        pubdef  reg_xl,.long,0     # register xl (esi)
+        pubdef  reg_cp,.long,0     # register cp
+        pubdef  reg_ra,.double,0e  # register ra
 #
 # these locations save information needed to return after calling osint
 # and after a restart from exit()
@@ -166,7 +166,24 @@ ten:    .long   10              # constant 10
         pubdef  inf,.long,0
         .long   0x7ff00000      # double precision infinity
 
-sav_block: .fill r_size,1,0     # save minimal registers during push/pop reg
+#sav_block: .fill r_size,1,0     # save minimal registers during push/pop reg
+sav_block:	.long 0
+		.long 0
+		.long 0
+		.long 0
+		.long 0
+		.long 0
+		.long 0
+		.long 0
+		.long 0
+		.long 0
+		.long 0
+		.long 0
+		.long 0
+		.long 0
+		.long 0
+		.long 0
+		.long 0
 #
         .balign 4
 ppoff:  .long   0               # offset for ppm exits
@@ -180,7 +197,7 @@ osisp:  .long   0               # 1.39 osint's stack pointer
 #       setup a number of internal addresses in the compiler that cannot
 #       be directly accessed from within c because of naming difficulties.
 #
-        pubdef  ID1,.long,0
+        pubdef  id1,.long,0
 .if setreal == 1
         .long    2
         .ascii  "1x\x00\x00"
@@ -189,21 +206,21 @@ osisp:  .long   0               # 1.39 osint's stack pointer
         .ascii  "1x\x00\x00\x00"
 .endif
 #
-        pubdef  ID2BLK,.long,52
+        pubdef  id2blk,.long,52
         .long   0
         .fill   52,1,0
 
-        pubdef  TICBLK,.long,0
+        pubdef  ticblk,.long,0
         .long   0
 
-        pubdef  TSCBLK,.long,512
+        pubdef  tscblk,.long,512
         .long   0
         .fill   512,1,0
 
 #
 #       standard input buffer block.
 #
-        pubdef  INPBUF,.long,0     # type word
+        pubdef  inpbuf,.long,0     # type word
         .long   0               # block length
         .long   1024            # buffer size
         .long   0               # remaining chars to read
@@ -216,7 +233,7 @@ osisp:  .long   0               # 1.39 osint's stack pointer
 .endif
         .fill   1024,1,0        # buffer
 #
-        pubdef  TTYBUF,.long,0     # type word
+        pubdef  ttybuf,.long,0     # type word
         .long   0               # block length
         .long   260             # buffer size  (260 ok in ms-dos with cinread())
         .long   0               # remaining chars to read
@@ -263,7 +280,7 @@ osisp:  .long   0               # 1.39 osint's stack pointer
 	pushad
 	lea	esi,reg_block
 	lea	edi,sav_block
-	mov	ecx,R_SIZE/4
+	mov	ecx,r_size/4
 	cld
    rep	movsd
 
@@ -287,7 +304,7 @@ push1:	popad
 	cld
 	lea	esi,sav_block
         lea     edi,reg_block                   #unload saved registers
-	mov	ecx,R_SIZE/4
+	mov	ecx,r_size/4
    rep  movsd                                   #restore from temp area
 	mov	reg_cp,eax
 

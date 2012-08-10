@@ -132,20 +132,20 @@ extern void pushregs Params((void));
 /   table entries in the INTER assembly language module.
 */
 enum CALLS {
-    RELAJ,
-    RELCR,
-    RELOC,
-    ALLOC,
-    ALOCS,
-    ALOST,
-    BLKLN,
-    INSTA,
-    RSTRT,
-    START,
-    FILNM,
-    DTYPE,
-    ENEVS,
-    ENGTS
+    relaj,
+    relcr,
+    reloc,
+    Aaloc,
+    Alocs,
+    Alost,
+    blkln,
+    insta,
+    rstrt,
+    start,
+    filnm,
+    dtype,
+    Enevs,
+    Engts
 };
 
 /*
@@ -165,59 +165,59 @@ enum CALLS {
 /   Names for accessing MINIMAL data values via GET_DATA_OFFSET macro.
 */
 extern word
-GBCNT,
-HEADV,
-MXLEN,
-STAGE,
-TIMSX,
-DNAMB,
-DNAMP,
-STATE,
-STBAS,
-STATB,
-POLCT,
-TYPET,
-LOWSPMIN,
-FLPRT,
-FLPTR,
-GTCEF,
-HSHTB,
-PMHBS,
-R_FCB,
-C_AAA,
-C_YYY,
-G_AAA,
-W_YYY,
-R_COD,
-KVSTN,
-KVDMP,
-KVFTR,
-KVCOM,
-KVPFL,
-CSWFL,
-STMCS,
-STMCT,
-TICBLK,
-TSCBLK,
-ID1,
-ID2BLK,
-INPBUF,
-TTYBUF,
+gbcnt,
+headv,
+mxlen,
+stage,
+timsx,
+dnamb,
+dnamp,
+state,
+stbas,
+statb,
+polct,
+typet,
+lowspmin,
+flprt,
+flptr,
+gtcef,
+hshtb,
+pmhbs,
+r_fcb,
+c_aaa,
+c_yyy,
+g_aaa,
+w_yyy,
+r_cod,
+kvstn,
+kvdmp,
+kvftr,
+kvcom,
+kvpfl,
+cswfl,
+stmcs,
+stmct,
+ticblk,
+tscblk,
+id1,
+id2blk,
+inpbuf,
+ttybuf,
 END_MIN_DATA;
 
 /*
 /   Names for accessing MINIMAL code values via GET_CODE_OFFSET macro.
 */
-extern void	B_EFC();
-extern void	B_ICL();
-extern void B_RCL();
-extern void B_SCL();
-extern void	B_VCT();
-extern void	B_XNT();
-extern void	B_XRT();
-extern void	DFFNC();
-extern void	S_AAA();
-extern void	S_YYY();
+extern void	b_efc();
+extern void	b_icl();
+extern void b_rcl();
+extern void b_scl();
+extern void	b_vct();
+extern void	b_xnt();
+extern void	b_xrt();
+extern void	dffnc();
+extern void	s_aaa();
+extern void	s_yyy();
 
 #else					/* DIRECT */
 extern  word *minoff Params((word valno));
@@ -231,73 +231,73 @@ extern  word *minoff Params((word valno));
 /   The order of entries here must correspond to the order of
 /   valtab entries in the INTER assembly language module.
 */
-enum VALS {
-    GBCNT,
-    HEADV,
-    MXLEN,
-    STAGE,
-    TIMSX,
-    DNAMB,
-    DNAMP,
-    STATE,
-    B_EFC,
-    B_ICL,
-    B_SCL,
-    B_VCT,
-    B_XNT,
-    B_XRT,
-    STBAS,
-    STATB,
-    POLCT,
-    TYPET,
-    DFFNC,
-    LOWSPMIN,
-    FLPRT,
-    FLPTR,
-    GTCEF,
-    HSHTB,
-    PMHBS,
-    R_FCB,
-    C_AAA,
-    C_YYY,
-    G_AAA,
-    W_YYY,
-    S_AAA,
-    S_YYY,
-    R_COD,
-    KVSTN,
-    KVDMP,
-    KVFTR,
-    KVCOM,
-    KVPFL,
-    CSWFL,
-    STMCS,
-    STMCT,
-    TICBLK,
-    TSCBLK,
-    ID1,
-    ID2BLK,
-    INPBUF,
-    TTYBUF,
-    B_RCL,
-    END_MIN_DATA
+enum vals {
+    gbcnt,
+    headv,
+    mxlen,
+    stage,
+    timsx,
+    dnamb,
+    dnamp,
+    state,
+    b_efc,
+    b_icl,
+    b_scl,
+    b_vct,
+    b_xnt,
+    b_xrt,
+    stbas,
+    statb,
+    polct,
+    typet,
+    dffnc,
+    lowspmin,
+    flprt,
+    flptr,
+    gtcef,
+    hshtb,
+    pmhbs,
+    r_fcb,
+    c_aaa,
+    c_yyy,
+    g_aaa,
+    w_yyy,
+    s_aaa,
+    s_yyy,
+    r_cod,
+    kvstn,
+    kvdmp,
+    kvftr,
+    kvcom,
+    kvpfl,
+    cswfl,
+    stmcs,
+    stmct,
+    ticblk,
+    tscblk,
+    id1,
+    id2blk,
+    inpbuf,
+    ttybuf,
+    b_rcl,
+    end_min_data
 };
 
 #endif					/* DIRECT */
 
 /* Some shorthand notations */
-#define pID1 GET_DATA_OFFSET(ID1,struct scblk *)
-#define pID2BLK GET_DATA_OFFSET(ID2BLK,struct scblk *)
-#define pINPBUF GET_DATA_OFFSET(INPBUF,struct bfblk *)
-#define pTTYBUF GET_DATA_OFFSET(TTYBUF,struct bfblk *)
-#define pTICBLK GET_DATA_OFFSET(TICBLK,struct icblk *)
-#define pTSCBLK GET_DATA_OFFSET(TSCBLK,struct scblk *)
+#define pID1 GET_DATA_OFFSET(id1,struct scblk *)
+#define pID2BLK GET_DATA_OFFSET(id2blk,struct scblk *)
+#define pINPBUF GET_DATA_OFFSET(inpbuf,struct bfblk *)
+#define pTTYBUF GET_DATA_OFFSET(ttybuf,struct bfblk *)
+#define pTICBLK GET_DATA_OFFSET(ticblk,struct icblk *)
+#define pTSCBLK GET_DATA_OFFSET(tscblk,struct scblk *)
 
-#define TYPE_EFC GET_CODE_OFFSET(B_EFC,word)
-#define TYPE_ICL GET_CODE_OFFSET(B_ICL,word)
-#define TYPE_SCL GET_CODE_OFFSET(B_SCL,word)
-#define TYPE_VCT GET_CODE_OFFSET(B_VCT,word)
-#define TYPE_XNT GET_CODE_OFFSET(B_XNT,word)
-#define TYPE_XRT GET_CODE_OFFSET(B_XRT,word)
-#define TYPE_RCL GET_CODE_OFFSET(B_RCL,word)
+#define TYPE_EFC GET_CODE_OFFSET(b_efc,word)
+#define TYPE_ICL GET_CODE_OFFSET(b_icl,word)
+#define TYPE_SCL GET_CODE_OFFSET(b_scl,word)
+#define TYPE_VCT GET_CODE_OFFSET(b_vct,word)
+#define TYPE_XNT GET_CODE_OFFSET(b_xnt,word)
+#define TYPE_XRT GET_CODE_OFFSET(b_xrt,word)
+#define TYPE_RCL GET_CODE_OFFSET(b_rcl,word)
 

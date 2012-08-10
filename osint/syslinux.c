@@ -136,7 +136,7 @@ mword nargs;
         return (union block *)-1L;
 
     if (!initsels) {						/* one-time initializations */
-        pTYPET = (mword (*)[])GET_DATA_OFFSET(TYPET,muword);
+        pTYPET = (mword (*)[])GET_DATA_OFFSET(typet,muword);
         miscinfo.ptyptab = pTYPET;		/* pointer to table of data types */
         initsels++;
     }
@@ -254,7 +254,7 @@ mword nargs;
     case BL_FX:						/* pointer to external data at TSCBLK.str */
         length = ((result->fxb.fxlen + sizeof(mword) - 1) &
                   -sizeof(mword)) + FIELDOFFSET(struct xnblk, xnu.xndta[0]);
-        if (length > GET_MIN_VALUE(MXLEN,mword)) {
+        if (length > GET_MIN_VALUE(mxlen,mword)) {
             result = (union block *)0;
             break;
         }
@@ -415,7 +415,7 @@ int io;
     pXFNode pnode;
 
     MINSAVE();
-    for (dnamp = GET_MIN_VALUE(DNAMP,union block *);
+    for (dnamp = GET_MIN_VALUE(dnamp,union block *);
             scanp < dnamp; scanp = MK_MP(MP_OFF(scanp,muword)+blksize, union block *)) {
         type = scanp->scb.sctyp;				/* any block type lets us access type word */
         SET_WA(type);
@@ -474,7 +474,7 @@ char *newname;
  */
 void scanef()
 {
-    scanp = GET_MIN_VALUE(DNAMB,union block *);
+    scanp = GET_MIN_VALUE(dnamb,union block *);
 }
 
 
@@ -826,7 +826,7 @@ int type;
     reg_xl = 0;
     reg_ia = type;
     reg_wb = 0;
-    reg_xr = GET_DATA_OFFSET(HEADV,word);
+    reg_xr = GET_DATA_OFFSET(headv,word);
 
     /*  -1 is the normal return, so result >= 0 is an error */
     result = zysxi() + 1;
