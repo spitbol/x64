@@ -1,5 +1,4 @@
-        .title          "spitbol assembly-language to c-language o/s interface"
-        .sbttl          "inter"
+#        .title          "spitbol assembly-language to c-language o/s interface
 # copyright 1987-2012 robert b. k. dewar and mark emmer.
 # 
 # this file is part of macro spitbol.
@@ -445,19 +444,19 @@ erexit: shr     eax,1           # divide by 2
 #
 #       individual osint routine entry points
 #
-        publab SYSAX
+        publab sysax
 	ext	zysax,near
-spysax:	call	ccaller
+sysax:	call	ccaller
         address   zysax
         .byte   0
 #
-        publab SYSBS
+        publab sysbs
 	ext	zysbs,near
 sysbs:	call	ccaller
         address   zysbs
         .byte   3*2
 #
-        publab SYSBX
+        publab sysbx
 	ext	zysbx,near
 sysbx:	mov	reg_xs,esp
 	call	ccaller
@@ -465,75 +464,75 @@ sysbx:	mov	reg_xs,esp
         .byte   0
 #
 .if setreal == 1
-        publab SYSCR
+        publab syscr
 	ext	zyscr,near
 syscr:  call    ccaller
         address zyscr
         .byte   0
 #
 .endif
-        publab SYSDC
+        publab sysdc
 	ext	zysdc,near
 sysdc:	call	ccaller
         address zysdc
         .byte   0
 #
-        publab SYSDM
+        publab sysdm
 	ext	zysdm,near
 sysdm:	call	ccaller
         address zysdm
         .byte   0
 #
-        publab SYSDT
+        publab sysdt
 	ext	zysdt,near
 sysdt:	call	ccaller
         address zysdt
         .byte   0
 #
-        publab SYSEA
+        publab sysea
 	ext	zysea,near
 sysea:	call	ccaller
         address zysea
         .byte   1*2
 #
-        publab SYSEF
+        publab sysef
 	ext	zysef,near
 sysef:	call	ccaller
         address zysef
         .byte   3*2
 #
-        publab SYSEJ
+        publab sysej
 	ext	zysej,near
 sysej:	call	ccaller
         address zysej
         .byte   0
 #
-        publab SYSEM
+        publab sysem
 	ext	zysem,near
 sysem:	call	ccaller
         address zysem
         .byte   0
 #
-        publab SYSEN
+        publab sysen
 	ext	zysen,near
 sysen:	call	ccaller
         address zysen
         .byte   3*2
 #
-        publab SYSEP
+        publab sysep
 	ext	zysep,near
 sysep:	call	ccaller
         address zysep
         .byte   0
 #
-        publab SYSEX
+        publab sysex
 	ext	zysex,near
 sysex:	mov	reg_xs,esp
 	call	ccaller
         address zysex
         .byte   3*2
 #
-        publab SYSFC
+        publab sysfc
 	ext	zysfc,near
 sysfc:  pop     eax             # <<<<remove stacked scblk>>>>
 	lea	esp,[esp+edx*4]
@@ -542,140 +541,140 @@ sysfc:  pop     eax             # <<<<remove stacked scblk>>>>
         address zysfc
         .byte   2*2
 #
-        publab SYSGC
+        publab sysgc
 	ext	zysgc,near
 sysgc:	call	ccaller
         address zysgc
         .byte   0
 #
-        publab SYSHS
+        publab syshs
 	ext	zyshs,near
 syshs:	mov	reg_xs,esp
 	call	ccaller
         address zyshs
         .byte   8*2
 #
-        publab SYSID
+        publab sysid
 	ext	zysid,near
 sysid:	call	ccaller
         address zysid
         .byte   0
 #
-        publab SYSIF
+        publab sysif
 	ext	zysif,near
 sysif:	call	ccaller
         address zysif
         .byte   1*2
 #
-        publab SYSIL
+        publab sysil
 	ext	zysil,near
 sysil:  call    ccaller
         address zysil
         .byte   0
 #
-        publab SYSIN
+        publab sysin
 	ext	zysin,near
 sysin:	call	ccaller
         address zysin
         .byte   3*2
 #
-        publab SYSIO
+        publab sysio
 	ext	zysio,near
 sysio:	call	ccaller
         address zysio
         .byte   2*2
 #
-        publab SYSLD
+        publab sysld
 	ext	zysld,near
 sysld:  call    ccaller
         address zysld
         .byte   3*2
 #
-        publab SYSMM
+        publab sysmm
 	ext	zysmm,near
 sysmm:	call	ccaller
         address zysmm
         .byte   0
 #
-        publab SYSMX
+        publab sysmx
 	ext	zysmx,near
 sysmx:	call	ccaller
         address zysmx
         .byte   0
 #
-        publab SYSOU
+        publab sysou
 	ext	zysou,near
 sysou:	call	ccaller
         address zysou
         .byte   2*2
 #
-        publab SYSPI
+        publab syspi
 	ext	zyspi,near
 syspi:	call	ccaller
         address zyspi
         .byte   1*2
 #
-        publab SYSPL
+        publab syspl
 	ext	zyspl,near
 syspl:	call	ccaller
         address zyspl
         .byte   3*2
 #
-        publab SYSPP
+        publab syspp
 	ext	zyspp,near
 syspp:	call	ccaller
         address zyspp
         .byte   0
 #
-        publab SYSPR
+        publab syspr
 	ext	zyspr,near
 syspr:	call	ccaller
         address zyspr
         .byte   1*2
 #
-        publab SYSRD
+        publab sysrd
 	ext	zysrd,near
 sysrd:	call	ccaller
         address zysrd
         .byte   1*2
 #
-        publab SYSRI
+        publab sysri
 	ext	zysri,near
 sysri:	call	ccaller
         address zysri
         .byte   1*2
 #
-        publab SYSRW
+        publab sysrw
 	ext	zysrw,near
 sysrw:	call	ccaller
         address zysrw
         .byte   3*2
 #
-        publab SYSST
+        publab sysst
 	ext	zysst,near
 sysst:	call	ccaller
         address zysst
         .byte   5*2
 #
-        publab SYSTM
+        publab systm
 	ext	zystm,near
 systm:	call	ccaller
 systm_p: address zystm
         .byte   0
 #
-        publab SYSTT
+        publab systt
 	ext	zystt,near
 systt:	call	ccaller
         address zystt
         .byte   0
 #
-        publab SYSUL
+        publab sysul
 	ext	zysul,near
 sysul:	call	ccaller
         address zysul
         .byte   0
 #
-        publab SYSXI
+        publab sysxi
 	ext	zysxi,near
 sysxi:	mov	reg_xs,esp
 	call	ccaller
