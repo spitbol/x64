@@ -1,42 +1,42 @@
 /*
-copyright 1987-2012 robert b. k. dewar and mark emmer.
+Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 
-this file is part of macro spitbol.
+This file is part of Macro SPITBOL.
 
-    macro spitbol is free software: you can redistribute it and/or modify
-    it under the terms of the gnu general public license as published by
-    the free software foundation, either version 3 of the license, or
+    Macro SPITBOL is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    macro spitbol is distributed in the hope that it will be useful,
-    but without any warranty; without even the implied warranty of
-    merchantability or fitness for a particular purpose.  see the
-    gnu general public license for more details.
+    Macro SPITBOL is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-    you should have received a copy of the gnu general public license
-    along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /*
-/   file:  spitblks.h		version:  01.01
+/   File:  SPITBLKS.H		Version:  01.01
 /   -------------------------------------------
 /
-/   this header file defines structures used by the macro spitbol compiler
-/   that are passed into the os interface.
+/   This header file defines structures used by the Macro SPITBOL compiler
+/   that are passed into the OS interface.
 */
 
 /*
-/   first, define the c type word to be the same size as a word used
-/   by the macro spitbol compiler.  the type of a word is a signed
+/   First, define the C type word to be the same size as a word used
+/   by the Macro SPITBOL compiler.  The type of a word is a signed
 /   integer for now.
 */
 
 /*
- * 	buffer control block
+ * 	BUFFER CONTROL BLOCK
  *
- *	a buffer control block (bcblk) is created by the buffer
+ *	A buffer control block (BCBLK) is created by the BUFFER
  *	function, and serves as an indirect control header for the
- *	buffer. it contains the number of characters currently
+ *	buffer. It contains the number of characters currently
  *	stored in the buffer.
  */
 struct bcblk {
@@ -47,10 +47,10 @@ struct bcblk {
 };
 
 /*
- * 	string buffer block
+ * 	STRING BUFFER BLOCK
  *
- *	a string buffer block (bfblk) contains the actual buffer
- *	memory area. it specifies the largest string that can be
+ *	A string buffer block (BFBLK) contains the actual buffer
+ *	memory area. It specifies the largest string that can be
  *	stored in the buffer.
  */
 struct bsblk {
@@ -61,45 +61,45 @@ struct bsblk {
 
 
 /*
- * code block
+ * CODE BLOCK
  *
- * a code block (cdblk) is present for every source statement.
+ * A code block (CDBLK) is present for every source statement.
  */
 
 struct cdblk {
     word			cdjmp;			/* ptr to routine to execute statement	*/
     word			cdstm;			/* statement number						*/
     word			cdsln;			/* source file line number				*/
-    word			cdlen;			/* length of cdblk in bytes				*/
+    word			cdlen;			/* length of CDBLK in bytes				*/
     union {
-        struct cdblk near *cdnxt;	/* if failure exit is next statement	*/
-        struct vrblk near *cdlab;	/* if failure exit is a simple label	*/
-        char 		 near *cdnof;	/* no failure exit (-nofail mode)		*/
+        struct cdblk NEAR *cdnxt;	/* if failure exit is next statement	*/
+        struct vrblk NEAR *cdlab;	/* if failure exit is a simple label	*/
+        char 		 NEAR *cdnof;	/* no failure exit (-NOFAIL mode)		*/
         word		  cddir;		/* failure exit is complex or direct	*/
-    }			cdfal;			/* failure exit							*/
+    }			cdfal;			/* Failure exit							*/
     word			cdcod[1];		/* executable pseudo-code				*/
 };
 
 
 /*
-/   chfcb - chain of fcbs block
+/   CHFCB - chain of FCBs block
 /
-/   for every fcb created by osint, the compiler creates a chfcb pointing
-/   to the fcb and links it onto a chain of chfcbs.  at eoj the head of this
-/   chfcb chain is passed to the interface function sysej so that all files
+/   For every FCB created by OSINT, the compiler creates a CHFCB pointing
+/   to the FCB and links it onto a chain of CHFCBs.  At EOJ the head of this
+/   CHFCB chain is passed to the interface function SYSEJ so that all files
 /   can be closed.
 */
 
 struct	chfcb {
     word	typ;				/*  type word			*/
     word	len;				/*  block length		*/
-    struct	chfcb near *nxt;	/*  pointer to next chfcb	*/
-    struct	fcblk near *fcp;	/*  pointer to fcb		*/
+    struct	chfcb NEAR *nxt;	/*  pointer to next chfcb	*/
+    struct	fcblk NEAR *fcp;	/*  pointer to fcb		*/
 };
 
 
 /*
-/   efblk - external function block
+/   EFBLK - external function block
 /
 */
 
@@ -108,28 +108,28 @@ struct	efblk {
     word	fargs;				/*  number of arguments	*/
     word	eflen;				/*  block length		*/
     word	efuse;				/*  usage count			*/
-    void near *efcod;			/*  pointer to xnblk	*/
-    struct vrblk near *efvar;	/*  pointer to vrblk	*/
+    void NEAR *efcod;			/*  pointer to XNBLK	*/
+    struct vrblk NEAR *efvar;	/*  pointer to VRBLK	*/
     word	efrsl;				/*  result type			*/
     word	eftar[1];			/*  argument types		*/
 };
 
 /*
-/   icblk - integer block
+/   ICBLK - integer block
 /
-/   integer values are stored in icblks.  field icval should be defined
+/   Integer values are stored in ICBLKs.  Field icval should be defined
 /   to be the appropriate type for the implementation.
 */
 
 struct	icblk {
     word	typ;		/*  type word - b$icl		*/
-    iatype	val;
+    IATYPE	val;
 };
 
 /*
-/	rcblk - real block
+/	RCBLK - real block
 /
-/	real values are stored in rcblks.  field rcval should be defined
+/	Real values are stored in RCBLKs.  Field rcval should be defined
 /	to be the appropriate type for the implementation.
 */
 
@@ -139,13 +139,13 @@ struct	rcblk {
 };
 
 /*
-/   scblk - string block
+/   SCBLK - string block
 /
-/   string values are stored in scblks.  notice that the scstr field
-/   is defined as an array of characters of length 1.  this is a slight
-/   kludge to side-step c's lack of support for varying length strings.
+/   String values are stored in SCBLKs.  Notice that the scstr field
+/   is defined as an array of characters of length 1.  This is a slight
+/   kludge to side-step C's lack of support for varying length strings.
 /
-/   the actual length of a scblk is 2 words + the number of words necessary
+/   The actual length of a SCBLK is 2 words + the number of words necessary
 /   to hold a string of length sclen.
 */
 
@@ -157,19 +157,19 @@ struct	scblk {
 
 
 /*
- * variable block
+ * VARIABLE BLOCK
  *
- * a variable block (vrblk) is used to hold a program variable.
+ * A variable block (VRBLK) is used to hold a program variable.
  */
 
 struct vrblk {
     word			vrget;			/* routine to load variable onto stack	*/
     word			vrsto;			/* routine to store stack top into var.	*/
-    union block	 near *vrval;		/* variable value						*/
+    union block	 NEAR *vrval;		/* variable value						*/
     word			vrtra;			/* routine to transfer to label			*/
-    union block	 near *vrlbl;		/* pointer to code for label			*/
-    union block	 near *vrfnc;		/* function block if name is function	*/
-    struct vrblk near *vrnxt;		/* next vrblk on hash chain				*/
+    union block	 NEAR *vrlbl;		/* pointer to code for label			*/
+    union block	 NEAR *vrfnc;		/* function block if name is function	*/
+    struct vrblk NEAR *vrnxt;		/* next vrblk on hash chain				*/
     word			vrlen;			/* length of name						*/
     char			vrchs[1];		/* characters of name					*/
 };
@@ -178,7 +178,7 @@ struct vrblk {
 
 
 /*
-/	block - an arbitrary block
+/	BLOCK - an arbitrary block
 */
 
 union block {

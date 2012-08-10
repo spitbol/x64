@@ -1,20 +1,20 @@
 /*
-copyright 1987-2012 robert b. k. dewar and mark emmer.
+Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 
-this file is part of macro spitbol.
+This file is part of Macro SPITBOL.
 
-    macro spitbol is free software: you can redistribute it and/or modify
-    it under the terms of the gnu general public license as published by
-    the free software foundation, either version 3 of the license, or
+    Macro SPITBOL is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    macro spitbol is distributed in the hope that it will be useful,
-    but without any warranty; without even the implied warranty of
-    merchantability or fitness for a particular purpose.  see the
-    gnu general public license for more details.
+    Macro SPITBOL is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-    you should have received a copy of the gnu general public license
-    along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /*----------------------------  blocks32.h  --------------------------------*/
@@ -22,75 +22,75 @@ this file is part of macro spitbol.
 #define __blocks32__
 
 /*
- * definitions of spitbol data blocks available to c-language
- * external functions to be called from 32-bit versions of spitbol.
+ * Definitions of SPITBOL data blocks available to C-language
+ * external functions to be called from 32-bit versions of SPITBOL.
  *
- * v1.00	02/17/90 01:53pm
- *			initial version
- * v1.01	12-03-90 12:01pm
- * 			to match release 1.08.  split flags in ioblk
+ * V1.00	02/17/90 01:53pm
+ *			Initial version
+ * V1.01	12-03-90 12:01pm
+ * 			To match release 1.08.  Split flags in IOBLK
  * 			into to words to prevent flag bits from being
  * 			mistaken for a relocatable value.
- * v1.02	03-11-91 15:00pm
- * 			to match release 1.1.  add new words to ioblk for end-
- * 			of-line characters.  the bfblk has been completely
- * 			reworked to accommodate read/write i/o.
- * v1.03	10-18-91 04:27pm
+ * V1.02	03-11-91 15:00pm
+ * 			To match release 1.1.  Add new words to ioblk for end-
+ * 			of-line characters.  The bfblk has been completely
+ * 			reworked to accommodate read/write I/O.
+ * V1.03	10-18-91 04:27pm
  *        <withdrawn>.
- * v1.04	3-july-92
- * 			begin to customize for sparc/sun 4.
- * v1.05	09-12-94 07:13pm
- *		 	add definitions for buffers
- * v1.06	04-25-95 10:07pm
- *			customize for rs/6000.
- * v1.07    12-29-96 06:05pm
- *          customize for windows nt
- * v1.08    03-04-97 01:45pm
- *          tweak for sparc
- * v1.09 04-27-97
- *          add filepos definition.
+ * V1.04	3-July-92
+ * 			Begin to customize for SPARC/Sun 4.
+ * V1.05	09-12-94 07:13pm
+ *		 	Add definitions for buffers
+ * V1.06	04-25-95 10:07pm
+ *			Customize for RS/6000.
+ * V1.07    12-29-96 06:05pm
+ *          Customize for Windows NT
+ * V1.08    03-04-97 01:45pm
+ *          Tweak for SPARC
+ * V1.09 04-27-97
+ *          Add FILEPOS definition.
  *
  *
- * spitbol blocks
+ * SPITBOL BLOCKS
  *
- * all spitbol objects are encapsulated into blocks of memory.
- * the first word of each block identifies the block type in a
- * curious way.  rather than containing a simple integer type
+ * All SPITBOL objects are encapsulated into blocks of memory.
+ * The first word of each block identifies the block type in a
+ * curious way.  Rather than containing a simple integer type
  * code, it contains the address of a subroutine that performs
  * some particular action on the block, such as placing it on
- * the stack.  because each block type uses a different subroutine,
+ * the stack.  Because each block type uses a different subroutine,
  * the subroutine addresses serve as a type identifier.
  *
  *
- * each subroutine is proceeded in memory by a one-byte (intel platforms)
+ * Each subroutine is proceeded in memory by a one-byte (Intel platforms)
  * or one-word (all other platforms) integer type code (given below).
- * thus to obtain a simple ordinal type code for a block pointed to by an
+ * Thus to obtain a simple ordinal type code for a block pointed to by an
  * address in pblk, use the following:
  *
  * block	*pblk;
  * unsigned	typecode;
  *   ...
- *  typecode = *((unsigned char *)((long)pblk - 1)); (intel platform)
- *  typecode = *((unsigned *)((long)pblk - 4));      (sun, rs/6000, sgi, etc.)
+ *  typecode = *((unsigned char *)((long)pblk - 1)); (Intel platform)
+ *  typecode = *((unsigned *)((long)pblk - 4));      (Sun, RS/6000, SGI, etc.)
  *
  *
- * here's a visualization of how spitbol stores data blocks and identifies
+ * Here's a visualization of how SPITBOL stores data blocks and identifies
  * their type by pointing to unique sections of code:
  *
  *
- *   in data space:                        in code space:
+ *   In Data Space:                        In Code Space:
  * +---------------------+               +-----------+
- * |      type word      |----+          | type code |
+ * |      Type Word      |----+          | Type code |
  * +---------------------+    |          +-----------+----------------+
- * |      block data     |    +--------->|   program code for this    |
- *...                   ...              |   block type               |
+ * |      Block Data     |    +--------->|   Program Code for this    |
+ *...                   ...              |   Block Type               |
  * |                     |               |                            |
  * +---------------------+               +----------------------------+
  *
  *
- * given an integer type, the type word can be obtained by
+ * Given an integer type, the Type Word can be obtained by
  * looking it up in a table provided to external functions as ptyptab in
- * the misc info structure.  for example, if the locator information
+ * the misc info structure.  For example, if the locator information
  * structure is passed to the function as an argument called "info",
  * use the following:
  *
@@ -101,66 +101,66 @@ this file is part of macro spitbol.
  */
 
 /*
- * block codes for accessible datatypes
+ * BLOCK CODES FOR ACCESSIBLE DATATYPES
  *
- * these blocks may appear in an argument list if left untranslated
- * by the load function definition.
+ * These blocks may appear in an argument list if left untranslated
+ * by the LOAD function definition.
  */
 
 enum {
-    bl_ar =	0,				/* arblk	array								*/
-    bl_cd,					/* cdblk	code								*/
-    bl_ex,					/* exblk	expression							*/
-    bl_ic,					/* icblk	integer								*/
-    bl_nm,					/* nmblk	name								*/
-    bl_p0,					/* p0blk	pattern, 0 args						*/
-    bl_p1,					/* p1blk	pattern, 1 arg						*/
-    bl_p2,					/* p2blk	pattern, 2 args						*/
-    bl_rc,					/* rcblk	real								*/
-    bl_sc,					/* scblk	string								*/
-    bl_se,					/* seblk	expression							*/
-    bl_tb,					/* tbblk	table								*/
-    bl_vc,					/* vcblk	vector (array)						*/
-    bl_xn,					/* xnblk	external, non-relocatable contents	*/
-    bl_xr,					/* xrblk	external, relocatable contents		*/
-    bl_bc,					/* bcblk	buffer control						*/
-    bl_pd,					/* pdblk	program defined datatype			*/
-    bl__d					/* number of block codes for data				*/
+    BL_AR =	0,				/* ARBLK	ARRAY								*/
+    BL_CD,					/* CDBLK	CODE								*/
+    BL_EX,					/* EXBLK	EXPRESSION							*/
+    BL_IC,					/* ICBLK	INTEGER								*/
+    BL_NM,					/* NMBLK	NAME								*/
+    BL_P0,					/* P0BLK	PATTERN, 0 args						*/
+    BL_P1,					/* P1BLK	PATTERN, 1 arg						*/
+    BL_P2,					/* P2BLK	PATTERN, 2 args						*/
+    BL_RC,					/* RCBLK	REAL								*/
+    BL_SC,					/* SCBLK	STRING								*/
+    BL_SE,					/* SEBLK	EXPRESSION							*/
+    BL_TB,					/* TBBLK	TABLE								*/
+    BL_VC,					/* VCBLK	VECTOR (array)						*/
+    BL_XN,					/* XNBLK	EXTERNAL, non-relocatable contents	*/
+    BL_XR,					/* XRBLK	EXTERNAL, relocatable contents		*/
+    BL_BC,					/* BCBLK	BUFFER CONTROL						*/
+    BL_PD,					/* PDBLK	PROGRAM DEFINED DATATYPE			*/
+    BL__D					/* NUMBER OF BLOCK CODES FOR DATA				*/
 };
 
 /*
- * other block codes
+ * OTHER BLOCK CODES
  *
- * these blocks will never appear in an argument list, but are
+ * These blocks will never appear in an argument list, but are
  * listed here for completeness.
  */
 
 enum {
-    bl_tr = bl__d,			/* trblk	trace							*/
-    bl_bf,					/* bfblk	buffer							*/
-    bl_cc,					/* ccblk	code construction				*/
-    bl_cm,					/* cmblk	compiler tree node				*/
-    bl_ct,					/* ctblk	character table					*/
-    bl_df,					/* dfblk	datatype function				*/
-    bl_ef,					/* efblk	external function				*/
-    bl_ev,					/* evblk	expression variable				*/
-    bl_ff,					/* ffblk	field function					*/
-    bl_kv,					/* kvblk	keyword variable				*/
-    bl_pf,					/* pfblk	program-defined function		*/
-    bl_te					/* teblk	table element					*/
+    BL_TR = BL__D,			/* TRBLK	TRACE							*/
+    BL_BF,					/* BFBLK	BUFFER							*/
+    BL_CC,					/* CCBLK	CODE CONSTRUCTION				*/
+    BL_CM,					/* CMBLK	COMPILER TREE NODE				*/
+    BL_CT,					/* CTBLK	CHARACTER TABLE					*/
+    BL_DF,					/* DFBLK	DATATYPE FUNCTION				*/
+    BL_EF,					/* EFBLK	EXTERNAL FUNCTION				*/
+    BL_EV,					/* EVBLK	EXPRESSION VARIABLE				*/
+    BL_FF,					/* FFBLK	FIELD FUNCTION					*/
+    BL_KV,					/* KVBLK	KEYWORD VARIABLE				*/
+    BL_PF,					/* PFBLK	PROGRAM-DEFINED FUNCTION		*/
+    BL_TE					/* TEBLK	TABLE ELEMENT					*/
 };
 
 /*
- * structure of common spitbol blocks:
- * 	    integer, real, string, and file blocks.
+ * Structure of common SPITBOL blocks:
+ * 	    Integer, Real, String, and File blocks.
  *
- *  	these structures are part of the "blocks" union that can be applied
+ *  	These structures are part of the "blocks" union that can be applied
  * 	    to the result area to determine where to store required return
  *      information.
  */
 
 /*
- *  	structure of icblk (integers)
+ *  	Structure of ICBLK (integers)
  */
 
 struct icblk {
@@ -170,31 +170,31 @@ struct icblk {
 
 
 /*
- * 		structure of rcblk (reals)
+ * 		Structure of RCBLK (reals)
  */
 #if sparc
 /*
- * 		note that the obvious declaration "double rcval" can not be
- *      used, because the sparc c compiler insists on placing double
+ * 		Note that the obvious declaration "double rcval" can not be
+ *      used, because the SPARC C compiler insists on placing double
  * 		values on an 8-byte boundary, effectively making the rcblk into
- * 		a four-word structure, instead of three. (a filler word is
- * 		inserted between rctyp and rcval).  but an rcblk really is a
- * 		three-word structure inside of spitbol.
+ * 		a four-word structure, instead of three. (A filler word is
+ * 		inserted between rctyp and rcval).  But an rcblk really is a
+ * 		three-word structure inside of SPITBOL.
  *
- * 		as a workaround, we define rcvals as a two word array, and use
- * 		an rcval macro to access the double value there.  the macro
- * 		is invoked with the rcblk as its argument.  for example,
- * 		suppose presult pointed to a union of all block types.  the
+ * 		As a workaround, we define rcvals as a two word array, and use
+ * 		an rcval macro to access the double value there.  The macro
+ * 		is invoked with the rcblk as its argument.  For example,
+ * 		suppose presult pointed to a union of all block types.  The
  * 		double value stored in an rcblk there would be accessed as
  *
  * 			rcval(presult->rcb)
  *
- * 		it may be necessary to use the -misalign command option with
+ * 		It may be necessary to use the -misalign command option with
  * 		cc to have the compiler generate the two single-precision loads
- * 		needed to access the real at rcvals.  the normal double-precision
+ * 		needed to access the real at rcvals.  The normal double-precision
  * 		load will fault because the operand is not aligned properly.
  *
- *  	see function retreal in extrnlib.c for an example.
+ *  	See function retreal in extrnlib.c for an example.
  */
 struct rcblk {
     mword	rctyp;					/* type word						*/
@@ -209,7 +209,7 @@ struct rcblk {
 #endif
 
 /*
- *  	structure of scblk (strings)
+ *  	Structure of SCBLK (strings)
  */
 
 struct scblk {
@@ -219,7 +219,7 @@ struct scblk {
 };
 
 /*
- *   	structure for returning a far string
+ *   	Structure for returning a far string
  */
 
 struct fsblk {
@@ -230,7 +230,7 @@ struct fsblk {
 
 
 /*
- *   	structure for returning a far external block
+ *   	Structure for returning a far external block
  */
 
 struct fxblk {
@@ -241,41 +241,41 @@ struct fxblk {
 
 
 /*
- * file control block
+ * FILE CONTROL BLOCK
  *
- * the user may provide the word "file" for any argument in
- * the load function prototype.  when a call is made to the
- * external function with an i/o associated variable in this argument
- * position, spitbol will provide a pointer to the file control
+ * The user may provide the word "FILE" for any argument in
+ * the LOAD function prototype.  When a call is made to the
+ * external function with an I/O associated variable in this argument
+ * position, SPITBOL will provide a pointer to the file control
  * block instead of the value of the variable.
  *
- * the file control block (fcb) points to an i/o block with
- * additional information.  in turn, the i/o block points to any
+ * The file control block (FCB) points to an I/O block with
+ * additional information.  In turn, the I/O block points to any
  * buffer used by the file.
  *
- * this block is obtained for every file except those associated
- * with input, output, or terminal.  note that these fcb's are
- * unrelated to ms-dos fcb's.  file control blocks do not have
- * their own type word, but appear as xrblks with the following structure:
+ * This block is obtained for every file except those associated
+ * with INPUT, OUTPUT, or TERMINAL.  Note that these FCB's are
+ * unrelated to MS-DOS FCB's.  File control blocks do not have
+ * their own type word, but appear as XRBLKs with the following structure:
  */
 
 struct fcblk {
-    mword			fcbtyp;	 		/* type word (xrblk)				*/
+    mword			fcbtyp;	 		/* type word (XRBLK)				*/
     mword			fcblen;	 		/* size of block, in bytes			*/
-    mword			fcbrsz;	 		/* spitbol record size and mode
+    mword			fcbrsz;	 		/* SPITBOL record size and mode
 									   positive if text mode,
 									   negative if binary.				*/
-    struct ioblk   *fcbiob;			/* pointer to ioblk					*/
+    struct ioblk   *fcbiob;			/* pointer to IOBLK					*/
     mword			fcbmod;			/* 1 if text mode, 0 if binary mode	*/
 };
 
 
 /*
- *   chfcb - chain of fcbs block
+ *   CHFCB - chain of FCBs block
  *
- *   for every fcb created by osint, the compiler creates a chfcb pointing
- *   to the fcb and links it onto a chain of chfcbs.  at eoj the head of this
- *   chfcb chain is passed to the interface function sysej so that all files
+ *   For every FCB created by OSINT, the compiler creates a CHFCB pointing
+ *   to the FCB and links it onto a chain of CHFCBs.  At EOJ the head of this
+ *   CHFCB chain is passed to the interface function SYSEJ so that all files
  *   can be closed.
  */
 
@@ -289,18 +289,18 @@ struct	chfcb {
 
 
 /*
- * i/o block
+ * I/O BLOCK
  *
- * an i/o block is pointed to by the fcbiob field of a file control block.
+ * An I/O block is pointed to by the fcbiob field of a file control block.
  */
 
 struct ioblk {
-    mword			iobtyp;	   		/* type word (xrblk)				*/
-    mword			ioblen;			/* size of ioblk in bytes			*/
-    struct scblk   *iobfnm;			/* scblk holding filename			*/
-    mword			iobpid;			/* pipe id (not used for dos)		*/
-    struct bfbblk  *iobbfb;         /* pointer to bfbblk                */
-    mword			iobfdn;			/* o/s file descriptor number 		*/
+    mword			iobtyp;	   		/* type word (XRBLK)				*/
+    mword			ioblen;			/* size of IOBLK in bytes			*/
+    struct scblk   *iobfnm;			/* SCBLK holding filename			*/
+    mword			iobpid;			/* pipe id (not used for DOS)		*/
+    struct bfbblk  *iobbfb;         /* pointer to BFBBLK                */
+    mword			iobfdn;			/* O/S file descriptor number 		*/
     mword			iobflg1;		/* flags 1 (see below)				*/
     mword			iobflg2;		/* flags 2 (see below)				*/
     mword			iobeol1;		/* end of line character 1			*/
@@ -310,77 +310,77 @@ struct ioblk {
 };
 
 /*
- * 	bits in iobflg1 dword
+ * 	Bits in iobflg1 dword
  */
-#define io_inp	0x00000001			/* input file							*/
-#define io_oup	0x00000002			/* output file							*/
-#define io_app	0x00000004			/* append output to existing file		*/
-#define io_opn	0x00000008			/* file is open							*/
-#define io_cot	0x00000010			/* console output to non-disk device	*/
-#define io_cin	0x00000020			/* console input from non-disk device	*/
-#define io_sys	0x00000040			/* -f option used instead of name		*/
-#define io_wrc	0x00000080			/* output without buffering				*/
+#define IO_INP	0x00000001			/* input file							*/
+#define IO_OUP	0x00000002			/* output file							*/
+#define IO_APP	0x00000004			/* append output to existing file		*/
+#define IO_OPN	0x00000008			/* file is open							*/
+#define IO_COT	0x00000010			/* console output to non-disk device	*/
+#define IO_CIN	0x00000020			/* console input from non-disk device	*/
+#define IO_SYS	0x00000040			/* -f option used instead of name		*/
+#define IO_WRC	0x00000080			/* output without buffering				*/
 
 /*
- * 	bits in iobflg2 dword
+ * 	Bits in iobflg2 dword
  */
-#define io_pip	0x00000001			/* pipe (not used in ms-dos)			*/
-#define io_ded	0x00000002			/* dead pipe (not used in ms-dos)		*/
-#define io_ill	0x00000004			/* illegal i/o association				*/
-#define io_raw	0x00000008			/* binary i/o to character device			*/
-#define io_lf 	0x00000010			/* ignore line feed if next character	*/
-#define io_noe	0x00000020			/* no echo input						*/
-#define io_env	0x00000040			/* filearg1 mapped via environment var	*/
-#define io_dir  0x00000080		    /* buffer is dirty (needs to be written)*/
-#define	io_bin	0x00000100			/* binary i/o */
+#define IO_PIP	0x00000001			/* pipe (not used in MS-DOS)			*/
+#define IO_DED	0x00000002			/* dead pipe (not used in MS-DOS)		*/
+#define IO_ILL	0x00000004			/* illegal I/O association				*/
+#define IO_RAW	0x00000008			/* binary I/O to character device			*/
+#define IO_LF 	0x00000010			/* ignore line feed if next character	*/
+#define IO_NOE	0x00000020			/* no echo input						*/
+#define IO_ENV	0x00000040			/* filearg1 mapped via environment var	*/
+#define IO_DIR  0x00000080		    /* buffer is dirty (needs to be written)*/
+#define	IO_BIN	0x00000100			/* binary I/O */
 
-/* private flags used to convey sharing status when opening a file */
-#define io_compatibility	0x00
-#define io_deny_readwrite	0x01
-#define io_deny_write		0x02
-#define io_deny_read		0x03
-#define io_deny_none		0x04
-#define io_deny_mask		0x07		/* mask for above deny mode bits*/
-#define	io_executable		0x40		/* file to be marked executable */
-#define io_private			0x80		/* file is private to current process */
+/* Private flags used to convey sharing status when opening a file */
+#define IO_COMPATIBILITY	0x00
+#define IO_DENY_READWRITE	0x01
+#define IO_DENY_WRITE		0x02
+#define IO_DENY_READ		0x03
+#define IO_DENY_NONE		0x04
+#define IO_DENY_MASK		0x07		/* mask for above deny mode bits*/
+#define	IO_EXECUTABLE		0x40		/* file to be marked executable */
+#define IO_PRIVATE			0x80		/* file is private to current process */
 
-/* private flags used to convey file open actions */
-#define io_fail_if_exists		0x00
-#define io_open_if_exists		0x01
-#define io_replace_if_exists	0x02
-#define io_fail_if_not_exist	0x00
-#define io_create_if_not_exist	0x10
-#define io_exist_action_mask	0x13	/* mask for above bits */
-#define io_write_thru       	0x20	/* writes complete before return*/
+/* Private flags used to convey file open actions */
+#define IO_FAIL_IF_EXISTS		0x00
+#define IO_OPEN_IF_EXISTS		0x01
+#define IO_REPLACE_IF_EXISTS	0x02
+#define IO_FAIL_IF_NOT_EXIST	0x00
+#define IO_CREATE_IF_NOT_EXIST	0x10
+#define IO_EXIST_ACTION_MASK	0x13	/* mask for above bits */
+#define IO_WRITE_THRU       	0x20	/* writes complete before return*/
 
 /*
- * i/o buffer block
+ * I/O BUFFER BLOCK
  *
- * an i/o buffer block (bfbblk) is pointed to by an ioblk.
+ * An I/O buffer block (BFBBLK) is pointed to by an IOBLK.
  *
- * size of file position words in i/o buffer block
+ * Size of file position words in I/O buffer block
  */
 
-#if setreal
-typedef double filepos;     /* real file positions */
+#if SETREAL
+typedef double FILEPOS;     /* real file positions */
 #else
-typedef long filepos;       /* 32-bit file positions */
+typedef long FILEPOS;       /* 32-bit file positions */
 #endif
 
 struct bfbblk {
-    mword	bfbtyp;					/* type word (xnblk)					*/
-    mword	bfblen;					/* size of bfbblk, in bytes				*/
+    mword	bfbtyp;					/* type word (XNBLK)					*/
+    mword	bfblen;					/* size of BFBBLK, in bytes				*/
     mword	bfbsiz;					/* size of buffer in bytes				*/
     mword	bfbfil;					/* number of bytes currently in buffer	*/
     mword	bfbnxt;					/* offset of next buffer char to r/w	*/
-    filepos bfboff;                 /* file position of first byte in buf   */
-    filepos bfbcur;                 /* physical file position               */
+    FILEPOS bfboff;                 /* file position of first byte in buf   */
+    FILEPOS bfbcur;                 /* physical file position               */
     char	bfbbuf[1];				/* start of buffer						*/
 };
 
 
 /*
- * structure of efblk (external function).  a pointer to this block
+ * Structure of EFBLK (external function).  A pointer to this block
  * is passed to the external function in the stack in info.pefblk.
  */
 
@@ -389,8 +389,8 @@ struct efblk {
     mword   		fargs;			/* number of arguments					*/
     mword			eflen;			/* block length							*/
     mword			efuse;			/* usage count							*/
-    struct xnblk   *efcod;			/* pointer to xnblk, see below			*/
-    struct vrblk   *efvar;			/* pointer to vrblk with function name	*/
+    struct xnblk   *efcod;			/* pointer to XNBLK, see below			*/
+    struct vrblk   *efvar;			/* pointer to VRBLK with function name	*/
     mword			efrsl;			/* result type  (see below)				*/
     mword			eftar[1];		/* array of argument types, one per arg	*/
 };
@@ -407,15 +407,15 @@ struct efblk {
 
 
 /*
- * structure of xnblk allocated for external function
- * a pointer to this structure is passed to the external function
+ * Structure of XNBLK allocated for external function
+ * A pointer to this structure is passed to the external function
  * in the stack in pxnblk.
  *
- * this structure is used to ways:
- *   1.	 as a general structure in which the user can place private
- * 		 data and have it maintained by spitbol.
+ * This structure is used to ways:
+ *   1.	 As a general structure in which the user can place private
+ * 		 data and have it maintained by SPITBOL.
  *
- *   2.  as a particular structure in which information about each
+ *   2.  As a particular structure in which information about each
  * 		 external function is maintained.
  */
 
@@ -425,23 +425,23 @@ struct xnblk {
     union {							/* two uses for rest of block:			*/
         mword	xndta[1];			/* 1. user defined data starts here		*/
         struct ef {                 /* 2. external function info            */
-#if winnt | sparc | aix
+#if WINNT | sparc | aix
             void   *xnhand;         /*    module handle                     */
-            mword  (*xnpfn) params((void));  /*    pointer to function entry         */
+            mword  (*xnpfn) Params((void));  /*    pointer to function entry         */
             mword	xn1st;			/*    non-zero = first-ever call		*/
             mword	xnsave;			/*    non-zero = first call after reload*/
-            void   (*xncbp) params((void));  /*    callback function prior to exiting*/
+            void   (*xncbp) Params((void));  /*    callback function prior to exiting*/
 #else
             mword   xnoff;          /*    base offset of function image     */
             mword   xnsiz;          /*    size of function in bytes         */
-            mword   xneip;          /*    transfer eip                      */
-            short	xncs;			/*    transfer cs						*/
-            mword   xnesp;          /*    transfer esp, 0 = spitbol's stack */
-            short	xnss;			/*	  transfer ss, 0 = spitbol's stack	*/
-            short	xnds;			/*	  transfer ds						*/
-            short	xnes;			/*	  transfer es						*/
-            short	xnfs;			/*	  transfer fs						*/
-            short	xngs;			/*	  transfer gs						*/
+            mword   xneip;          /*    transfer EIP                      */
+            short	xncs;			/*    transfer CS						*/
+            mword   xnesp;          /*    transfer ESP, 0 = SPITBOL's stack */
+            short	xnss;			/*	  transfer SS, 0 = SPITBOL's stack	*/
+            short	xnds;			/*	  transfer DS						*/
+            short	xnes;			/*	  transfer ES						*/
+            short	xnfs;			/*	  transfer FS						*/
+            short	xngs;			/*	  transfer GS						*/
             short	xn1st;			/*    non-zero = first-ever call		*/
             short	xnsave;			/*    non-zero = first call after reload*/
             far void (*xncbp)(void);/*    callback function prior to exiting*/
@@ -452,7 +452,7 @@ struct xnblk {
 };
 
 /*
- * simplified access to xn1st and xnsave words in xnblk via pointer to
+ * Simplified access to xn1st and xnsave words in xnblk via pointer to
  * miscellaneous info area in pinfo.
  */
 
@@ -461,19 +461,19 @@ struct xnblk {
 
 
 /*
- * other selected blocks of interest:
+ * Other selected blocks of interest:
  *
  *
- * array block
+ * ARRAY BLOCK
  *
- * an array block (arblk) represents an array value other than one
- * with one dimension whose lower bound is one (see vcblk).
+ * An array block (ARBLK) represents an array value other than one
+ * with one dimension whose lower bound is one (see VCBLK).
  */
 
-struct arblk1 {	   					/* one dimensional array				*/
-    mword			arblk;			/* type word (arblk)                    */
+struct arblk1 {	   					/* One dimensional array				*/
+    mword			arblk;			/* type word (ARBLK)                    */
     mword			aridv;			/* identifier value						*/
-    mword			arlen;			/* length of arblk in bytes				*/
+    mword			arlen;			/* length of ARBLK in bytes				*/
     mword			arofs;			/* offset in arblk to arpro field		*/
     mword			arndm;			/* number of dimensions					*/
     mword			arlbd;			/* low bound (first subscript)			*/
@@ -482,10 +482,10 @@ struct arblk1 {	   					/* one dimensional array				*/
     union block	   *arvls[1];		/* start of values in row-wise order	*/
 };
 
-struct arblk2 {						/* two dimensional array				*/
-    mword			arblk;	  		/* type word (arblk)                    */
+struct arblk2 {						/* Two dimensional array				*/
+    mword			arblk;	  		/* type word (ARBLK)                    */
     mword			aridv;	  		/* identifier value						*/
-    mword			arlen;			/* length of arblk in bytes				*/
+    mword			arlen;			/* length of ARBLK in bytes				*/
     mword			arofs;			/* offset in arblk to arpro field		*/
     mword			arndm;			/* number of dimensions					*/
     mword			arlbd;			/* low bound (first subscript)			*/
@@ -496,11 +496,11 @@ struct arblk2 {						/* two dimensional array				*/
     union block	   *arvls[1];		/* start of values in row-wise order	*/
 };
 
-#define ndim	3					/* for example, 3-dimensional array		*/
-struct arblkn {						/* n-dimensional array					*/
-    mword			arblk;			/* type word (arblk)                    */
+#define ndim	3					/* For example, 3-dimensional array		*/
+struct arblkn {						/* N-dimensional array					*/
+    mword			arblk;			/* type word (ARBLK)                    */
     mword			aridv;			/* identifier value						*/
-    mword			arlen;			/* length of arblk in bytes				*/
+    mword			arlen;			/* length of ARBLK in bytes				*/
     mword			arofs;			/* offset in arblk to arpro field		*/
     mword			arndm;		  	/* number of dimensions					*/
     struct {
@@ -513,11 +513,11 @@ struct arblkn {						/* n-dimensional array					*/
 
 
 /*
- * 	buffer control block
+ * 	BUFFER CONTROL BLOCK
  *
- *	a buffer control block (bcblk) is created by the buffer
+ *	A buffer control block (BCBLK) is created by the BUFFER
  *	function, and serves as an indirect control header for the
- *	buffer. it contains the number of characters currently
+ *	buffer. It contains the number of characters currently
  *	stored in the buffer.
  */
 struct bcblk {
@@ -529,10 +529,10 @@ struct bcblk {
 
 
 /*
- * 	string buffer block
+ * 	STRING BUFFER BLOCK
  *
- *	a string buffer block (bfblk) contains the actual buffer
- *	memory area. it specifies the largest string that can be
+ *	A string buffer block (BFBLK) contains the actual buffer
+ *	memory area. It specifies the largest string that can be
  *	stored in the buffer.
  */
 struct bfblk {
@@ -543,79 +543,79 @@ struct bfblk {
 
 
 /*
- * code block
+ * CODE BLOCK
  *
- * a code block (cdblk) is present for every source statement.
+ * A code block (CDBLK) is present for every source statement.
  */
 
 struct cdblk {
     mword			cdjmp;			/* ptr to routine to execute statement	*/
     mword			cdstm;			/* statement number						*/
     mword			cdsln;			/* source file line number				*/
-    mword			cdlen;			/* length of cdblk in bytes				*/
+    mword			cdlen;			/* length of CDBLK in bytes				*/
     union {
         struct cdblk *cdnxt;		/* if failure exit is next statement	*/
         struct vrblk *cdlab;		/* if failure exit is a simple label	*/
-        char 		 *cdnof;		/* no failure exit (-nofail mode)		*/
+        char 		 *cdnof;		/* no failure exit (-NOFAIL mode)		*/
         mword		  cddir;		/* failure exit is complex or direct	*/
-    }			cdfal;			/* failure exit							*/
+    }			cdfal;			/* Failure exit							*/
     mword			cdcod[1];		/* executable pseudo-code				*/
 };
 
 
 /*
- * name block
+ * NAME BLOCK
  *
- * a name block (nmblk) is used whereever a name must be stored as
+ * A name block (NMBLK) is used whereever a name must be stored as
  * a value following use of the unary dot operator.
  */
 
 struct nmblk {
-    mword			nmtyp;		  	/* type word (nmblk)					*/
+    mword			nmtyp;		  	/* type word (NMBLK)					*/
     union block	   *nmbas;			/* base pointer for variable			*/
     mword			nmofs;			/* offset within block for variable		*/
 };
 
 
 /*
- * table block
+ * TABLE BLOCK
  *
- * a table block (tbblk) is used to represent a table value.
- * it comprises a list of buckets, each of which may point to
- * a chain of teblks.  tbbuk entries either point to the first
- * teblk on the chain or they point to the tbblk itself to
- * indicate the end of the chain.  the number of buckets can
+ * A table block (TBBLK) is used to represent a table value.
+ * It comprises a list of buckets, each of which may point to
+ * a chain of TEBLKs.  TBBUK entries either point to the first
+ * TEBLK on the chain or they point to the TBBLK itself to
+ * indicate the end of the chain.  The number of buckets can
  * be deduced from tblen.
  */
 
 struct tbblk {
-    mword			tbtyp;			/* type word (tbblk)					*/
+    mword			tbtyp;			/* type word (TBBLK)					*/
     mword			tbidv;			/* identifier value						*/
-    mword			tblen;			/* length of tbblk in bytes				*/
+    mword			tblen;			/* length of TBBLK in bytes				*/
     union block	   *tbinv; 			/* default initial lookup value			*/
     struct teblk   *tbbuk[1];		/* start of hash bucket pointers		*/
 };
 
 
 /*
- * table element block
+ * TABLE ELEMENT BLOCK
  *
- * a table element (teblk) is used to represent a single entry in
+ * A table element (TEBLK) is used to represent a single entry in
  * a table.
  */
 
 struct teblk {
-    mword			teblk;			/* type word (teblk)					*/
+    mword			teblk;			/* type word (TEBLK)					*/
     union block	   *tesub;			/* subscript value						*/
     union block    *teval;			/* table element value					*/
-    struct teblk   *tenxt;			/* next teblk or tbblk if end of chain	*/
+    struct teblk   *tenxt;			/* next TEBLK or TBBLK if end of chain	*/
 };
 
 
 /*
- * variable block
+ * VARIABLE BLOCK
  *
- * a variable block (vrblk) is used to hold a program variable.
+ * A variable block (VRBLK) is used to hold a program variable.
  */
 
 struct vrblk {
@@ -632,16 +632,16 @@ struct vrblk {
 
 
 /*
- * vector block
+ * VECTOR BLOCK
  *
- * a vector block (vcblk) is used to represent an array value which has
- * one dimension whose lower bound is one. all other arrays are
- * represented by arblks.  the number of elements can be deduced
+ * A vector block (VCBLK) is used to represent an array value which has
+ * one dimension whose lower bound is one. All other arrays are
+ * represented by ARBLKs.  The number of elements can be deduced
  * from vclen.
  */
 
 struct vcblk {
-    mword			vctyp;			/* type word (vcblk)					*/
+    mword			vctyp;			/* type word (VCBLK)					*/
     mword			vcidv;			/* identifier value						*/
     mword			vclen;			/* length of vcblk in bytes				*/
     union block	   *vcvls[1];		/* start of vector values				*/
@@ -649,9 +649,9 @@ struct vcblk {
 
 
 /*
- * union of all blocks
+ * UNION OF ALL BLOCKS
  *
- * a block is merely a union of all the block types enumerated here.
+ * A block is merely a union of all the block types enumerated here.
  *
  */
 

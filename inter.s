@@ -57,10 +57,10 @@ globals =               1                       #asm globals defined here
 #
 #               ...code to put arguments in registers...
 #               call    sysxx           # call osint function
-#               .long   exit_1          # address of exit point 1
-#               .long   exit_2          # address of exit point 2
+#               .long   EXIT_1          # address of exit point 1
+#               .long   EXIT_2          # address of exit point 2
 #               ...     ...             # ...
-#               .long   exit_n          # address of exit point n
+#               .long   EXIT_N          # address of exit point n
 #               ...instruction following call...
 #
 #       the osint function 'sysxx' can then return in one of n+1 ways:
@@ -112,94 +112,6 @@ globals =               1                       #asm globals defined here
 #
 #       this interfacing scheme is based on an idea put forth by andy koenig.
 #
-#       v1.0    10/21/86 robert e. goldberg, disc.  vax version
-#       v1.01   10/23/86 mark b. emmer, catspaw.  at&t 7300 version
-#       v1.02   01/07/87   "  "    "      "   generic 68000 version
-#       v1.03   01/15/87 revised to match new vaxinter, v1.03.  mbe
-#       v1.04   01/23/87 adjust pointers within stack during restart.
-#                        add function makeexec to write a.out file when
-#                        requested with -w command option.  mbe
-#       v1.05   02/04/87 <withdrawn>
-#       v1.06   02/14/87 <withdrawn>
-#       v1.07   02/21/87 <withdrawn>
-#       v1.08   05/18/87 <withdrawn>
-#       v1.10   06/03/87 changed compiler to use a6 as pointer to constant
-#                        and working storage, rather than a5.
-#       v1.11   10/11/87 added conditional 68020 opcodes for multiply,
-#                        divide and remainder.
-#                        corrected bug in makeexec added when moved db
-#                        from a5 to a6.
-#       v1.12   11/16/87 <withdrawn>
-#       v1.13   01/15/88 version for hp.  initialize 68881 if present
-#       v1.14   02/27/88 version for definicon.
-#       v1.15   03/03/88 added sysgc call.
-#       v1.16   05/09/88 split off 80386 version
-#       v1.17   09/12/89 add support for keyboard polling and keyboard editing.
-#                        makeexec accepts file name scblk.
-#       v1.18   10/27/89 <withdrawn>
-#       v1.19   12/16/89 add pushregs, popregs
-#       v1.20   07/21/90 modify pushregs/popregs to save/restore ebp and
-#                        load it with reg_cp, so that any minimal routine
-#                        call between adjusts cp properly.
-#                        change ccaller to clear ebp, so cp (which points
-#                        within a spitbol block) isn't placed on stack when
-#                        c routine pushes ebp.  this is not a legimate
-#                        collectable value, and will crash if a garbage
-#                        collect occurs (as within callef). 2.43 i/o.
-#       v1.21   09/09/90 modify pushregs to return zero in esi (xl), so
-#                        that a safe, collectable value is there for any
-#                        subsequent call to a memory allocation routine.
-#       v1.22   10/31/90 remove sysgc call.
-#       v1.23   11/08/90 update i/o version number to 2.45.
-#       v1.24   11/17/90 modify push/pop regs to put reg_xl on stack,
-#                        other regs into a temp area.
-#       v1.25   12/04/90 mark sysex for 3 exits.
-#       v1.26   01/21/91 update i/o version number to 2.46.
-#       v1.27   02/07/91 add control-c checking.
-#       v1.28   02/16/91 add backspace function via sysbs.
-#       v1.29   02/22/91 rewrite cinread to allocate buffer on stack.
-#       v1.30   05/12/91 add include of systype.ah to assemble different
-#                        versions for use with highc and intel compilers.
-#                        move break logic to break.c for intel version.
-#       v1.31   06/09/91 <withdrawn>.
-#       v1.32   06/21/91 add routines for intel version to allow c code
-#                        to manage an ldt, including transitions to and
-#                        from protection ring 0.  update version number
-#                        to 2.47 for 1.20 release.
-#       v1.33   10/17/91 update to 2.48 for 1.21 release.
-#       v1.34   11/07/91 add call to insta to initialize static
-#                        region after reloading save file.
-#       v1.35   11/30/91 add minimal function to allow calls into
-#                        minimal code from c.
-#       v1.36   12/17/91 update to 2.49 for 1.22 release.
-#       v1.37   01/23/92 update to 2.50 for 1.23 release.
-#       v1.38   03/06/92 update to 2.51 for 1.24 release.
-#       v1.39   03/13/92 fix pushregs and popregs to not save and
-#                        restore reg_cp.  it is necessary for gbcol
-#                        to be able to modify reg_cp and have its
-#                        change stick.  we also go to a dual stack
-#                        approach like the macintosh, with the compiler's
-#                        stack and the osint stack keep seperate.  this
-#                        is necessary because if an osint return calls into
-#                        minimal and triggers a garbage collect, anything on
-#                        the stack from osint could be fatal to gbcol.
-#       v1.40   03/29/92 update to 2.52 for 1.25 release.
-#       v1.41   10/11/95 redid overflow detection logic to check for infinity
-#                        in ra, relying on masked exceptions to produce infinity
-#                        from basic math ops.
-#       v1.42   10/08/96 increased number of exits for sysfc from 1 to 2.
-#       v1.43   03/31/97 added sav_compsp for use by push/popregs.  call to
-#                        sysld would save esp in compsp (at ccaller), then
-#                        loadef calls alost which may call gbcol, which calls
-#                        sysgc and clobbers compsp with this nested cccaller call.
-#                        pushregs saves compsp in sav_compsp, and popregs
-#                        restores it.
-#       v1.44   06/20/99 fix bug in rti_ when negative number was not pushing
-#                        ecx.
-#       v1.45   11/26/99 fix bug in cpr_ not detecting -0.0 as true zero.  (-0.0
-#                        results from -1.0 * 0.0 and 0.0 / -1.0.
-#       v1.46   06/17/09 modify for linux "as" assembler.
-#
 #------------
 #
 #       global variables
@@ -224,15 +136,15 @@ globals =               1                       #asm globals defined here
 # words saved during exit(-3)
 #
         .balign 4
-        pubdef  reg_block
-        pubdef  reg_wa,.long,0     # register wa (ecx)
-        pubdef  reg_wb,.long,0     # register wb (ebx)
-        pubdef  reg_ia
-        pubdef  reg_wc,.long,0     # register wc & ia (edx)
-        pubdef  reg_xr,.long,0     # register xr (edi)
-        pubdef  reg_xl,.long,0     # register xl (esi)
-        pubdef  reg_cp,.long,0     # register cp
-        pubdef  reg_ra,.double,0e  # register ra
+        pubdef  REG_BLOCK
+        pubdef  REG_WA,.long,0     # register wa (ecx)
+        pubdef  REG_WB,.long,0     # register wb (ebx)
+        pubdef  REG_IA
+        pubdef  REG_WC,.long,0     # register wc & ia (edx)
+        pubdef  REG_XR,.long,0     # register xr (edi)
+        pubdef  REG_XL,.long,0     # register xl (esi)
+        pubdef  REG_CP,.long,0     # register cp
+        pubdef  REG_RA,.double,0e  # register ra
 #
 # these locations save information needed to return after calling osint
 # and after a restart from exit()
@@ -268,7 +180,7 @@ osisp:  .long   0               # 1.39 osint's stack pointer
 #       setup a number of internal addresses in the compiler that cannot
 #       be directly accessed from within c because of naming difficulties.
 #
-        pubdef  id1,.long,0
+        pubdef  ID1,.long,0
 .if setreal == 1
         .long    2
         .ascii  "1x\x00\x00"
@@ -277,21 +189,21 @@ osisp:  .long   0               # 1.39 osint's stack pointer
         .ascii  "1x\x00\x00\x00"
 .endif
 #
-        pubdef  id2blk,.long,52
+        pubdef  ID2BLK,.long,52
         .long   0
         .fill   52,1,0
 
-        pubdef  ticblk,.long,0
+        pubdef  TICBLK,.long,0
         .long   0
 
-        pubdef  tscblk,.long,512
+        pubdef  TSCBLK,.long,512
         .long   0
         .fill   512,1,0
 
 #
 #       standard input buffer block.
 #
-        pubdef  inpbuf,.long,0     # type word
+        pubdef  INPBUF,.long,0     # type word
         .long   0               # block length
         .long   1024            # buffer size
         .long   0               # remaining chars to read
@@ -304,7 +216,7 @@ osisp:  .long   0               # 1.39 osint's stack pointer
 .endif
         .fill   1024,1,0        # buffer
 #
-        pubdef  ttybuf,.long,0     # type word
+        pubdef  TTYBUF,.long,0     # type word
         .long   0               # block length
         .long   260             # buffer size  (260 ok in ms-dos with cinread())
         .long   0               # remaining chars to read
@@ -351,7 +263,7 @@ osisp:  .long   0               # 1.39 osint's stack pointer
 	pushad
 	lea	esi,reg_block
 	lea	edi,sav_block
-	mov	ecx,r_size/4
+	mov	ecx,R_SIZE/4
 	cld
    rep	movsd
 
@@ -375,7 +287,7 @@ push1:	popad
 	cld
 	lea	esi,sav_block
         lea     edi,reg_block                   #unload saved registers
-	mov	ecx,r_size/4
+	mov	ecx,R_SIZE/4
    rep  movsd                                   #restore from temp area
 	mov	reg_cp,eax
 
@@ -516,19 +428,19 @@ erexit: shr     eax,1           # divide by 2
 #
 #       individual osint routine entry points
 #
-        publab sysax
+        publab SYSAX
 	ext	zysax,near
-sysax:	call	ccaller
+spysax:	call	ccaller
         address   zysax
         .byte   0
 #
-        publab sysbs
+        publab SYSBS
 	ext	zysbs,near
 sysbs:	call	ccaller
         address   zysbs
         .byte   3*2
 #
-        publab sysbx
+        publab SYSBX
 	ext	zysbx,near
 sysbx:	mov	reg_xs,esp
 	call	ccaller
@@ -536,75 +448,75 @@ sysbx:	mov	reg_xs,esp
         .byte   0
 #
 .if setreal == 1
-        publab syscr
+        publab SYSCR
 	ext	zyscr,near
 syscr:  call    ccaller
         address zyscr
         .byte   0
 #
 .endif
-        publab sysdc
+        publab SYSDC
 	ext	zysdc,near
 sysdc:	call	ccaller
         address zysdc
         .byte   0
 #
-        publab sysdm
+        publab SYSDM
 	ext	zysdm,near
 sysdm:	call	ccaller
         address zysdm
         .byte   0
 #
-        publab sysdt
+        publab SYSDT
 	ext	zysdt,near
 sysdt:	call	ccaller
         address zysdt
         .byte   0
 #
-        publab sysea
+        publab SYSEA
 	ext	zysea,near
 sysea:	call	ccaller
         address zysea
         .byte   1*2
 #
-        publab sysef
+        publab SYSEF
 	ext	zysef,near
 sysef:	call	ccaller
         address zysef
         .byte   3*2
 #
-        publab sysej
+        publab SYSEJ
 	ext	zysej,near
 sysej:	call	ccaller
         address zysej
         .byte   0
 #
-        publab sysem
+        publab SYSEM
 	ext	zysem,near
 sysem:	call	ccaller
         address zysem
         .byte   0
 #
-        publab sysen
+        publab SYSEN
 	ext	zysen,near
 sysen:	call	ccaller
         address zysen
         .byte   3*2
 #
-        publab sysep
+        publab SYSEP
 	ext	zysep,near
 sysep:	call	ccaller
         address zysep
         .byte   0
 #
-        publab sysex
+        publab SYSEX
 	ext	zysex,near
 sysex:	mov	reg_xs,esp
 	call	ccaller
         address zysex
         .byte   3*2
 #
-        publab sysfc
+        publab SYSFC
 	ext	zysfc,near
 sysfc:  pop     eax             # <<<<remove stacked scblk>>>>
 	lea	esp,[esp+edx*4]
@@ -613,140 +525,140 @@ sysfc:  pop     eax             # <<<<remove stacked scblk>>>>
         address zysfc
         .byte   2*2
 #
-        publab sysgc
+        publab SYSGC
 	ext	zysgc,near
 sysgc:	call	ccaller
         address zysgc
         .byte   0
 #
-        publab syshs
+        publab SYSHS
 	ext	zyshs,near
 syshs:	mov	reg_xs,esp
 	call	ccaller
         address zyshs
         .byte   8*2
 #
-        publab sysid
+        publab SYSID
 	ext	zysid,near
 sysid:	call	ccaller
         address zysid
         .byte   0
 #
-        publab sysif
+        publab SYSIF
 	ext	zysif,near
 sysif:	call	ccaller
         address zysif
         .byte   1*2
 #
-        publab sysil
+        publab SYSIL
 	ext	zysil,near
 sysil:  call    ccaller
         address zysil
         .byte   0
 #
-        publab sysin
+        publab SYSIN
 	ext	zysin,near
 sysin:	call	ccaller
         address zysin
         .byte   3*2
 #
-        publab sysio
+        publab SYSIO
 	ext	zysio,near
 sysio:	call	ccaller
         address zysio
         .byte   2*2
 #
-        publab sysld
+        publab SYSLD
 	ext	zysld,near
 sysld:  call    ccaller
         address zysld
         .byte   3*2
 #
-        publab sysmm
+        publab SYSMM
 	ext	zysmm,near
 sysmm:	call	ccaller
         address zysmm
         .byte   0
 #
-        publab sysmx
+        publab SYSMX
 	ext	zysmx,near
 sysmx:	call	ccaller
         address zysmx
         .byte   0
 #
-        publab sysou
+        publab SYSOU
 	ext	zysou,near
 sysou:	call	ccaller
         address zysou
         .byte   2*2
 #
-        publab syspi
+        publab SYSPI
 	ext	zyspi,near
 syspi:	call	ccaller
         address zyspi
         .byte   1*2
 #
-        publab syspl
+        publab SYSPL
 	ext	zyspl,near
 syspl:	call	ccaller
         address zyspl
         .byte   3*2
 #
-        publab syspp
+        publab SYSPP
 	ext	zyspp,near
 syspp:	call	ccaller
         address zyspp
         .byte   0
 #
-        publab syspr
+        publab SYSPR
 	ext	zyspr,near
 syspr:	call	ccaller
         address zyspr
         .byte   1*2
 #
-        publab sysrd
+        publab SYSRD
 	ext	zysrd,near
 sysrd:	call	ccaller
         address zysrd
         .byte   1*2
 #
-        publab sysri
+        publab SYSRI
 	ext	zysri,near
 sysri:	call	ccaller
         address zysri
         .byte   1*2
 #
-        publab sysrw
+        publab SYSRW
 	ext	zysrw,near
 sysrw:	call	ccaller
         address zysrw
         .byte   3*2
 #
-        publab sysst
+        publab SYSST
 	ext	zysst,near
 sysst:	call	ccaller
         address zysst
         .byte   5*2
 #
-        publab systm
+        publab SYSTM
 	ext	zystm,near
 systm:	call	ccaller
 systm_p: address zystm
         .byte   0
 #
-        publab systt
+        publab SYSTT
 	ext	zystt,near
 systt:	call	ccaller
         address zystt
         .byte   0
 #
-        publab sysul
+        publab SYSUL
 	ext	zysul,near
 sysul:	call	ccaller
         address zysul
         .byte   0
 #
-        publab sysxi
+        publab SYSXI
 	ext	zysxi,near
 sysxi:	mov	reg_xs,esp
 	call	ccaller

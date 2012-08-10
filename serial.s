@@ -1,38 +1,38 @@
-# COPYRIGHT 1987-2012 ROBERT B. K. DEWAR AND MARK EMMER.
+# copyright 1987-2012 robert b. k. dewar and mark emmer.
 # 
-# THIS FILE IS PART OF MACRO SPITBOL.
+# this file is part of macro spitbol.
 # 
-#     MACRO SPITBOL IS FREE SOFTWARE: YOU CAN REDISTRIBUTE IT AND/OR MODIFY
-#     IT UNDER THE TERMS OF THE GNU GENERAL PUBLIC LICENSE AS PUBLISHED BY
-#     THE FREE SOFTWARE FOUNDATION, EITHER VERSION 3 OF THE LICENSE, OR
-#     (AT YOUR OPTION) ANY LATER VERSION.
+#     macro spitbol is free software: you can redistribute it and/or modify
+#     it under the terms of the gnu general public license as published by
+#     the free software foundation, either version 3 of the license, or
+#     (at your option) any later version.
 # 
-#     MACRO SPITBOL IS DISTRIBUTED IN THE HOPE THAT IT WILL BE USEFUL,
-#     BUT WITHOUT ANY WARRANTY; WITHOUT EVEN THE IMPLIED WARRANTY OF
-#     MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  SEE THE
-#     GNU GENERAL PUBLIC LICENSE FOR MORE DETAILS.
+#     macro spitbol is distributed in the hope that it will be useful,
+#     but without any warranty; without even the implied warranty of
+#     merchantability or fitness for a particular purpose.  see the
+#     gnu general public license for more details.
 # 
-#     YOU SHOULD HAVE RECEIVED A COPY OF THE GNU GENERAL PUBLIC LICENSE
-#     ALONG WITH MACRO SPITBOL.  IF NOT, SEE <HTTP://WWW.GNU.ORG/LICENSES/>.
+#     you should have received a copy of the gnu general public license
+#     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 #
-# FIRST SEGMENT IN PROGRAM.  CONTAINS SERIAL NUMBER STRING.
-# IF EXTERNAL FUNCTIONS ARE INCLUDED, A CALL TO THE EXTERNAL
-# FUNCTION WILL APPEAR IN THIS SEGMENT AS WELL, PLACED HERE
-# BY THE CODE IN LOAD.ASM.
+# first segment in program.  contains serial number string.
+# if external functions are included, a call to the external
+# function will appear in this segment as well, placed here
+# by the code in load.asm.
 #
-        .SBTTL          "SERIAL"
-        .INCLUDE        "systype.ah"
+        .sbttl          "serial"
+        .include        "systype.ah"
 
-        HEADER_
-        DSEG_
-        .BALIGN         4
-        PUBDEF          HASFPU,.LONG,0               #-1 IF 80X87 PRESENT, ELSE 0
-        PUBNAME         CPRTMSG
-.IFNE  UNDERSCORE
-_CPRTMSG:
-.ELSE
-CPRTMSG:
-.ENDIF
-				.ASCIZ          " COPYRIGHT 1987-2012 ROBERT B. K. DEWAR AND MARK EMMER."
-        DSEGEND_
-        .END
+        header_
+        dseg_
+        .balign         4
+        pubdef          hasfpu,.long,0               #-1 if 80x87 present, else 0
+        pubname         cprtmsg
+.ifne  underscore
+_cprtmsg:
+.else
+cprtmsg:
+.endif
+				.asciz          " copyright 1987-2012 robert b. k. dewar and mark emmer."
+        dsegend_
+        .end
