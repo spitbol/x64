@@ -1,0 +1,1753 @@
+-title mincod: phase 2 translation from minimal tokens to 80386 code
+-stitl description
+* copyright 1987-2012 robert b. k. dewar and mark emmer.
+* 
+* this file is part of macro spitbol.
+* 
+*     macro spitbol is free software: you can redistribute it and/or modify
+*     it under the terms of the gnu general public license as published by
+*     the free software foundation, either version 3 of the license, or
+*     (at your option) any later version.
+* 
+*     macro spitbol is distributed in the hope that it will be useful,
+*     but without any warranty; without even the implied warranty of
+*     merchantability or fitness for a particular purpose.  see the
+*     gnu general public license for more details.
+* 
+*     you should have received a copy of the gnu general public license
+*     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+*
+*
+*  this program takes input file in minimal token form and
+*  produces assembly code for intel 80386 processor.
+*  the program obtains the name of the file to be translated from the
+*  command line string in host(0).  options relating to the processing
+*  of comments can be changed by modifying the source.
+*
+*  in addition to the minimal token file, the program requires the
+*  name of a "machine definition file" that contains code specific
+*  to a particular 80386 assembler.
+*
+*  you may also specify option flags on the command line to control the
+*  code generation.  the following flags are processed:
+*	compress	generate tabs rather than spaces in output file
+*       comments        retain full-line and end-of-line comments
+*
+*  the variable machine is set equal to the uppercase name of the machine
+*  being processed.  specific tests upon this variable are discouraged, as
+*  all machine-dependent code should be placed in the machine-definition
+*  file if possible.
+*
+*  in addition to the normal minimal register complement, one scratch
+*  work register, w0 is defined.
+*  see the register map below for specific allocations.
+*
+*  this program is based in part on earlier translators for the
+*  it is based in part on earlier translators for the dec vax
+*  (vms and un*x) written by steve duff and robert goldberg, and the
+*  pc-spitbol translator by david shields.
+*
+*  to run under spitbol:
+*       spitbol -u "<file>:<machine>[:flag:...:flag]" codlinux.spt
+*
+*	reads <file>.tok	containing tokenized source code
+*       writes <file>.s         with 80386 assembly code
+*	also writes <file>.err	with err and erb error messages
+*	using <machine>.def	to provide machine-specific information
+*       parts of <machine>.hdr  are prepended and appended to <file>.s
+*	also sets flags		to 1 after converting names to upper case
+*	also reads <file>.pub	for debug symbols to be declared public
+*
+*  example:
+*       spitbol -u v37:dos:compress codlinux.spt
+*
+*
+*  revision history:
+*
+        version = 'v1.12'
+*
+*  v1.00  20-jul-89
+*	adopted from 68000 version cod368.spt (q.v.)
+*
+*  v1.01  30-oct-89
+*	put everything into code segment so as to be at the beginning
+*	of the load module, and hence immune from size changes due to changes
+*	in c code.
+*
+*  v1.02  10-sep-90
+*       clear xr as well as xl after completing cmc and trc opcodes.
+*
+*  v1.03  21-mar-91
+*	moved portions of jump short optimization kludge to <machine>.def
+*	file.
+*
+*  v1.04  12-jun-91
+*	allow comments as a command line flag to preserve comments.
+*
+*  v1.05  08-aug-91
+*	use seg1n-seg9n and seg1c-seg9c variables defined in <machine>.def
+*	to specify segment names and classes respectively.
+*
+*  v1.06  07-nov-91
+*	add to c_labels.
+*
+*  v1.07  02-aug-93
+*	add public label end_min_data after all the data.
+*
+*  v1.08  19-mar-95
+*       use labfix on borlandc 32-bit version.
+*
+*  v1.09  12-oct-95
+*       use labfix on borlandc 32-bit version for win nt.
+*
+*  v1.10 25-dec-95
+*       changed terminal to output for use in microsoft build program.
+*
+*  v1.11 28-mar-96
+*       changed rti to use carry flag to signal real too large to convert
+*       to integer (changed rti in inter.s as well).
+*  v1.12 13-jun-09
+*       adopted for linux "as" assembler from codlinux.spt.
+
+*  note: as an experiment, we tried aligning all ent and prc's on
+*  a dword boundary, in an attempt to minimize instruction stall time
+*  on the first opcode of a procedure.  the resultant exe file was
+*  larger by 592 bytes, and actually ran 0.1% slower.  we will continue
+*  to use odd alignment of block entry routines so that the .cepp
+*  conditional may be used.
+*
+-eject
+*
+*  keyword initialization
+*
+	&anchor = 1;	&stlimit = 10000000;	&trim	= 1;  &dump = 1
+*
+*  useful constants
+*
+	letters = 'abcdefghijklmnopqrstuvwxyz'
+	ucase   = letters
+	lcase   = 'abcdefghijklmnopqrstuvwxyz'
+	nos     = '0123456789'
+	tab	= char(9)
+*
+*  data structures
+*
+	data('minarg(i.type,i.text)')
+	data('tstmt(t.label,t.opc,t.op1,t.op2,t.op3,t.comment)')
+
+	sectnow = 0
+*
+*  function definitions
+*
+*  crack parses stmt into a stmt data plex and returns it.
+*  it fails if there is a syntax error.
+*
+	define('crack(line)operands,operand,char')
+*
+*	comregs - map minimal register names to target register names
+	define('comregs(line)t,pre,word')
+*
+*  error is used to report an error for current statement
+*
+	define('error(text)')
+	define('flush()')
+	define('genaop(stmt)')
+	define('genbop(stmt)')
+        define('genlab()')
+	define('genop(gopc,gop1,gop2,gop3)')
+	define('genopl(gopl,gopc,gop1,gop2,gop3)')
+	define('getarg(iarg,iacc)l1,l2,t1,t2')
+	define('ifreg(iarg)')
+	define('memmem()t1')
+	define('labfix(labfix)')
+	define('prcent(n)')
+	define('prsarg(iarg)l1,l2')
+	define('tblini(str)pos,cnt,index,val,lastval')
+
+*  outstmt is used to send a target statement to the target code
+*  output file outfile
+*
+	define('outstmt(ostmt)label,opcode,op1,op2,op3,comment,t,stmtout')
+
+*  readline is called to return the next non-comment line from
+*  the minimal input file (infile <=> lu1).   note that it will
+*  not fail on eof, but it will return a minimal end statement
+*
+	define('readline()')
+*
+	 p.comregs = break(letters) . pre span(letters) . word
+
+*  exttab has entry for external procedures
+*
+	exttab = table(50)
+
+*  labtab records labels in the code section, and their line numbers
+*
+	labtab = table(500)
+
+*  for each statement, code in generated into three
+*  arrays of statements:
+*
+*	astmts:	statements after opcode (()+, etc.)
+*	bstmts: statements before code (-(), etc)
+*	cstmts: generated code proper
+*
+	astmts = array(20,'')
+	bstmts = array(10,'')
+	cstmts = array(20,'')
+*
+*  genlabels is count of generated labels (cf. genlab)
+*
+	genlabels = 0
+
+*
+*  initialize variables
+*
+	labcnt = noutlines = nlines = nstmts = ntarget = nerrors = 0
+	noptim1 = noptim2 = 0
+	lastopc = lastop1 = lastop2 =
+	data_lc = 0
+	max_exi = 0
+*
+*  initial patterns
+*
+*  p.csparse parses tokenized line
+	p.csparse = '{' break('{') . inlabel
+.	'{' break('{') . incode
+.	'{' break('{') . iarg1
+.	'{' break('{') . iarg2
+.	'{' break('{') . iarg3
+.	'{' break('{') . incomment
+	'{' rem . slineno
+
+*  dispatch table
+*
+	getargcase = table(27)
+	getargcase[1] = .getarg.c.1;   getargcase[2] = .getarg.c.2
+	getargcase[3] = .getarg.c.3;   getargcase[4] = .getarg.c.4
+	getargcase[5] = .getarg.c.5;   getargcase[6] = .getarg.c.6
+	getargcase[7] = .getarg.c.7;   getargcase[8] = .getarg.c.8
+	getargcase[9] = .getarg.c.9;   getargcase[10] = .getarg.c.10
+	getargcase[11] = .getarg.c.11; getargcase[12] = .getarg.c.12
+	getargcase[13] = .getarg.c.13; getargcase[14] = .getarg.c.14
+	getargcase[15] = .getarg.c.15; getargcase[16] = .getarg.c.16
+	getargcase[17] = .getarg.c.17; getargcase[18] = .getarg.c.18
+	getargcase[19] = .getarg.c.19; getargcase[20] = .getarg.c.20
+	getargcase[21] = .getarg.c.21; getargcase[22] = .getarg.c.22
+	getargcase[23] = .getarg.c.23; getargcase[24] = .getarg.c.24
+	getargcase[25] = .getarg.c.25; getargcase[26] = .getarg.c.26
+	getargcase[27] = .getarg.c.27
+
+*
+*  pifatal maps minimal opcodes for which no a code allowed
+*  to nonzero value. such operations include conditional
+*  branches with operand of form (x)+
+*
+	pifatal = tblini(
+.	'aov[1]beq[1]bne[1]bge[1]bgt[1]bhi[1]ble[1]blo[1]'
+.	'blt[1]bne[1]bnz[1]ceq[1]cne[1]mfi[1]nzb[1]zrb[1]')
+*
+*
+
+
+
+-stitl main program
+*  here follows the driver code for the "main" program.
+
+*
+*  loop until program exits via g.end
+*
+*  opnext is invoked to initiate processing of the next line from
+*  readline.
+*  after doing this, opnext branches to the generator routine indicated
+*  for this opcode if there is one.
+*  the generators all have entry points beginning
+*  with "g.", and can be considered a logical extension of the
+*  opnext routine.  the generators have the choice of branching back
+*  to dsgen to cause the thisstmt plex to be sent to outstmt, or
+*  or branching to dsout, in which case the generator must output
+*  all needed code itself.
+*
+*  the generators are listed in a separate section below.
+*
+*
+*  get file name
+*
+	transdate = date()
+        output = 'minimal to 80386 translator'
+*
+*  default the parameter string if none present
+*
+        parms = (differ(host(0)) host(0), "v37:linux:compress")
+        output = ident(parms) "filename (.tok) required" :s(end)
+
+*
+* get machine definition file name following token file name, and flags.
+*
+	parms ? break(';:') . parms len(1) (break(';:') | rem) . machine
++		((len(1) rem . flags) | '')
+        output = ident(machine)
++		"machine type file (.def) required"	:s(end)
+	$replace(machine,lcase,ucase) = 1
+*
+* parse and display flags, setting each one's name to non-null value (1).
+*
+flgs	flags ? ((len(1) break(';:')) . flag len(1)) |
++	 ((len(1) rem) . flag) =			:f(flgs2)
+	flag = replace(flag,lcase,ucase)
+        output = "flag: " flag
+	$flag = 1					:(flgs)
+*
+*  open machine definition file
+*
+flgs2	filenamd = machine '.def'
+	input(.deffile,1,filenamd)			:s(defok)
+        output = "cannot open machine definition file: " filenamd :(end)
+*
+*  read in statements, discarding comments and building a long string.
+*  spitbol code in machine definition file may contain one-line
+*  statements and comments only.  continuation lines are not processed
+*  by this code (but could be easily handled).
+*
+defok   output = "machine definition file: " filenamd
+	defs =
+defloop	line = deffile					:f(defcomp)
+	line '*'					:s(defloop)
+	defs = differ(line) defs ';' line		:(defloop)
+*
+*  compile the code, and execute it to perform initializations.
+*  returns to label compdone when complete.
+*
+defcomp	defs = code(defs '; :(compdone)')		:s(compok)
+        output = "error compiling definitions file"
+        output = &errtext                             :(end)
+compok	endfile(1)					:<defs>
+compdone defs =
+
+* here define things that depend on the def file.
+*
+*
+*  table of labels that must be in a form that allows c functions
+*  to access them.  table is used by labfix().
+*
+*  c.out is provided by the machine.def file.
+*
+	c_labels = table(37)
+          c_labels['gbcnt'] = c.out 'gbcnt'
+          c_labels['headv'] = c.out 'headv'
+          c_labels['mxlen'] = c.out 'mxlen'
+          c_labels['stage'] = c.out 'stage'
+          c_labels['timsx'] = c.out 'timsx'
+          c_labels['dnamb'] = c.out 'dnamb'
+          c_labels['dnamp'] = c.out 'dnamp'
+          c_labels['state'] = c.out 'state'
+          c_labels['b$efc'] = c.out 'b_efc'
+          c_labels['b$icl'] = c.out 'b_icl'
+          c_labels['b$rcl'] = c.out 'b_rcl'
+          c_labels['b$scl'] = c.out 'b_scl'
+          c_labels['b$vct'] = c.out 'b_vct'
+          c_labels['b$xnt'] = c.out 'b_xnt'
+          c_labels['b$xrt'] = c.out 'b_xrt'
+          c_labels['stbas'] = c.out 'stbas'
+          c_labels['statb'] = c.out 'statb'
+          c_labels['polct'] = c.out 'polct'
+          c_labels['stmcs'] = c.out 'stmcs'
+          c_labels['stmct'] = c.out 'stmct'
+          c_labels['typet'] = c.out 'typet'
+          c_labels['dffnc'] = c.out 'dffnc'
+          c_labels['lowspmin'] = c.out 'lowspmin'
+          c_labels['flprt'] = c.out 'flprt'
+          c_labels['flptr'] = c.out 'flptr'
+          c_labels['gtcef'] = c.out 'gtcef'
+          c_labels['hshtb'] = c.out 'hshtb'
+          c_labels['pmhbs'] = c.out 'pmhbs'
+          c_labels['r$fcb'] = c.out 'r_fcb'
+          c_labels['c$aaa'] = c.out 'c_aaa'
+          c_labels['c$yyy'] = c.out 'c_yyy'
+          c_labels['g$aaa'] = c.out 'g_aaa'
+          c_labels['w$yyy'] = c.out 'w_yyy'
+          c_labels['s$aaa'] = c.out 's_aaa'
+          c_labels['s$yyy'] = c.out 's_yyy'
+          c_labels['r$cod'] = c.out 'r_cod'
+          c_labels['kvstn'] = c.out 'kvstn'
+          c_labels['kvcom'] = c.out 'kvcom'
+          c_labels['kvdmp'] = c.out 'kvdmp'
+          c_labels['kvftr'] = c.out 'kvftr'
+          c_labels['kvpfl'] = c.out 'kvpfl'
+          c_labels['cswfl'] = c.out 'cswfl'
+          c_labels['end$min$data'] = c.out 'end_min_data'
+
+* various constants
+*
+        comment.delim = '#'
+	label.delim   = ':'
+*
+*
+*  branchtab maps minimal opcodes 'beq', etc to desired
+*  target instruction
+*
+	branchtab = table(10)
+	branchtab['beq'] = 'je'
+	branchtab['bne'] = 'jne'
+	branchtab['bgt'] = 'ja'
+	branchtab['bge'] = 'jae'
+	branchtab['ble'] = 'jbe'
+	branchtab['blt'] = 'jb'
+	branchtab['blo'] = 'jb'
+	branchtab['bhi'] = 'ja'
+
+*  optim.tab flags opcodes capable of participating in or optimization
+*		in outstmt routine
+*
+	optim.tab = table(10)
+	optim.tab<"and"> = 1
+	optim.tab<"add"> = 1
+	optim.tab<"sub"> = 1
+	optim.tab<"neg"> = 1
+	optim.tab<"or"> = 1
+	optim.tab<"xor"> = 1
+	optim.tab<"shr"> = 1
+	optim.tab<"shl"> = 1
+	optim.tab<"inc"> = 1
+	optim.tab<"dec"> = 1
+
+
+*  ismem is table indexed by operand type which is nonzero if
+*  operand type implies memory reference.
+
+	ismem = array(30,0)
+	ismem<3> = 1; ismem<4> = 1; ismem<5> = 1
+	ismem<9> = 1; ismem<10> = 1; ismem<11> = 1
+	ismem<12> = 1; ismem<13> = 1; ismem<14> = 1
+	ismem<15> = 1
+*
+*  regmap maps minimal register name to target machine
+*  register/memory-location name.
+*
+	regmap = table(30)
+	regmap['xl'] = 'esi';  regmap['xt'] = 'esi'
+	regmap['xr'] = 'edi';  regmap['xs'] = 'esp'
+	regmap['wa'] = 'ecx';  regmap['wb'] = 'ebx'
+	regmap['wc'] = 'edx';  regmap['ia'] = 'edx'
+	regmap['cp'] = 'ebp'
+*	w0 is temp register
+	regmap['w0'] = 'eax'
+
+*  quick reference:
+	reg.ia = regmap['ia']
+	reg.wa = regmap['wa']
+	reg.cp = regmap['cp']
+	w0 = regmap['w0']
+*  other definitions that are dependent upon things defined in the
+*  machine definition file, and cannot be built until after the definition
+*  file has been read in.
+*
+*  p.outstmt examines output lines for certain types of comment contructions
+	fillc	  = (ident(compress) " ",tab)
+	p.outstmt = (break(fillc) . label span(fillc)) . leader
++			comment.delim rem . comment
+	p.alltabs = span(tab) rpos(0)
+
+*  strip end of comments if y
+*
+	strip_comment = (differ(comments) 'n', 'y')
+
+	filenami = parms '.tok'
+        input(.infile,1,filenami)                     :s(inputok)
+        output = 'cannot open token file: ' filenami  :(end)
+inputok output = 'input token file: ' filenami
+*
+*
+*
+*  associate output files.  code is written to a temp file, which
+*  will subsequently be rewound and reread for jump optimization.
+*
+	filenamo = parms '.tmp'
+        output(.outfile,2,filenamo)                 :s(outputok)
+        output = 'cannot open temp file: ' filenamo :(end)
+outputok
+        output = 'output temp file: ' filenamo
+
+*
+* open file for compilation of minimal err and erb messages
+*
+        output(.errfile,3, parms ".err")             :s(err_ok)
+        output = "cannot open error message file: " parms ".err" :(end)
+err_ok
+
+* begin with standard preamble
+        outstmt(tstmt(,'.title','"spitbol translator ' replace(parms,lcase,ucase) '"'))
+        outstmt(tstmt(,'.sbttl','"' replace(parms,lcase,ucase) '"'))
+
+*  then copy contents of <machine>.hdr (if it exists) to outfile
+*  stop at line with just 'end' or end of file
+*
+	outfile = comment.delim ' minimal/80386 translator ' version
++		  ' ' transdate ' for ' machine
+	noutlines = noutlines + 1
+
+	input(.hdrfile,4,machine '.hdr')	:f(nohdr)
+	havehdr = 1
+        output = 'input header file: ' machine '.hdr'
+hdrcopy line = hdrfile				:f(hdrend)
+	ident(line,'end')			:s(nohdr)
+	outfile = line
+	noutlines = noutlines + 1		:(hdrcopy)
+hdrend	havehdr =
+nohdr
+*
+*  will have havehdr non-null if more remains to copy out at end.
+*
+*  read in pub file if it exists.  this contains a list of symbols to
+*  be declared public when encountered.
+*
+	pubtab = table(2)
+	input(.pubfile,5, parms ".pub")		:f(nopub)
+	pubtab = table(101)
+pubcopy	line = pubfile				:f(pubend)
+	pubtab[line] = 1			:(pubcopy)
+pubend	endfile(5)
+nopub
+
+						:(dsout)
+  &trace = 2000
+  &ftrace = 1000
+*  &profile = 1
+dsout
+opnext	thisline = readline()
+	crack(thisline)				:f(dsout)
+*
+* append label.delim after label if in code or data.
+*
+        tlabel = labfix(inlabel) (differ(inlabel) ge(sectnow,3) label.delim, )
+	i1 = prsarg(iarg1)
+	i2 = prsarg(iarg2)
+	i3 = prsarg(iarg3)
+	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' '
+.		i.text(i2) ' ' i.text(i3)
+	argerrs = 0
+						:($('g.' incode))
+*  here if bad opcode
+ds01	error('bad op-code')			:(dsout)
+
+*  generate tokens.
+*
+ds.typerr
+	error('operand type zero')		:(dsout)
+-stitl comregs(line)t,pre,word
+comregs
+	line p.comregs =			:f(comregs1)
+	word = eq(size(word),2) differ(t = regmap[word]) t
+	comregs = comregs pre word		:(comregs)
+comregs1 comregs = comregs line			:(return)
+-stitl crack(line)
+*  crack is called to create a stmt plex containing the various
+*  entrails of the minimal source statement in line.  for
+*  conditional assembly ops, the opcode is the op, and op1
+*  is the symbol.  note that dtc is handled as a special case to
+*  assure that the decomposition is correct.
+*
+*  crack will print an error and fail if a syntax error occurs.
+*
+crack   nstmts  = nstmts + 1
+	op1 = op2 = op3 = typ1 = typ2 = typ3 =
+	line    p.csparse			:s(return)
+*  here on syntax error
+*
+	error('source line syntax error')	:(freturn)
+-stitl error(text)
+*  this module handles reporting of errors with the offending
+*  statement text in thisline.  comments explaining
+*  the error are written to the listing (including error chain), and
+*  the appropriate counts are updated.
+*
+error   outfile = '* *???* ' thisline
+	outfile = '*       ' text
+.	          (ident(lasterror),'. last error was line ' lasterror)
+	lasterror = noutlines
+	noutlines = noutlines + 2
+	le(nerrors = nerrors + 1, 10)		:s(dsout)
+        output = 'too many errors, quitting'  :(end)
+-stitl genaop(stmt)
+genaop
+	astmts[astmts.n = astmts.n + 1] = stmt	:(return)
+-stitl genbop(stmt)
+genbop
+	bstmts[bstmts.n = bstmts.n + 1] = stmt	:(return)
+
+-stitl genlab()
+*  generate unique labels for use in generated code
+genlab	genlab = 'l' lpad(genlabels = genlabels + 1,4,'0') :(return)
+
+-stitl genopl(gopl,gopc,gop1,gop2,gop3)
+*  generate operation with label
+genopl	cstmts[cstmts.n = cstmts.n + 1] =
+.		tstmt(gopl,gopc,gop1,gop2,gop3)		:(return)
+
+-stitl genop(gopc,gop1,gop2,gop3)
+*  generate operation with no label
+genop   genopl(,gopc,gop1,gop2,gop3)            :(return)
+
+-stitl labfix(labfix)
+*  perform substitution for a few labels that must be in a
+*  form that allows c functions to access them.
+*
+*
+labfix  labfix = differ(c.out)
++	 differ(c_labels[labfix]) c_labels[labfix] :(return)
+
+
+-stitl getarg(iarg,iacc)
+getarg	l1 = i.text(iarg)
+	l2 = i.type(iarg)
+	eq(l2)					:f($(getargcase[l2]))
+	getarg = labfix(l1)			:(return)
+
+* int
+getarg.c.1 getarg = l1				:(return)
+
+* dlbl
+getarg.c.2 getarg = labfix(l1)			:(return)
+
+* wlbl, clbl
+getarg.c.3
+getarg.c.4 getarg = 'dword ptr ' labfix(l1)     :(return)
+
+* elbl, plbl
+getarg.c.5
+getarg.c.6 getarg = labfix(l1)			:(return)
+
+* w,x, map register name
+getarg.c.7
+getarg.c.8
+	getarg = regmap[l1]			:(return)
+
+* (x), register indirect
+getarg.c.9
+	l1 len(1) len(2) . l2
+	l2 = regmap[l2]
+	getarg = 'dword ptr [' l2 ']'		:(return)
+
+* (x)+, register indirect, post increment
+* use lea reg,[reg+4] unless reg is esp, since it takes an extra byte.
+* actually, lea reg,[reg+4] and add reg,4 are both 2 cycles and 3 bytes
+* for all the other regs, and either could be used.
+getarg.c.10
+	l1 = substr(l1,2,2)
+	t1 = regmap[l1]
+	getarg = 'dword ptr [' t1 ']'
+	(ident(l1,'xs') genaop(tstmt(,'add',t1,'4'))) :s(return)
+	genaop(tstmt(,'lea',t1,'[' t1 '+4]'))	:(return)
+
+*  -(x), register indirect, pre decrement
+getarg.c.11
+	t1 = regmap[substr(l1,3,2)]
+	getarg = 'dword ptr [' t1 ']'
+	genbop(tstmt(,'lea',t1,'[' t1 '-4]'))	:(return)
+
+* int(x)
+* dlbl(x)
+getarg.c.12
+getarg.c.13
+	l1 break('(') . t1 '(' len(2) . t2
+	getarg = 'dword ptr (4*' labfix(t1) ')[' regmap[t2] ']'	:(return)
+
+*  name(x), where name is in working section
+getarg.c.14
+getarg.c.15
+	l1 break('(') . t1 '(' len(2) . t2
+	getarg = labfix(t1) '[' regmap[t2] ']'	:(return)
+
+* signed integer
+getarg.c.16 getarg = l1				:(return)
+
+* signed real
+getarg.c.17 getarg = l1				:(return)
+
+*  =dlbl
+getarg.c.18
+	getarg = labfix(substr(l1,2))		:(return)
+
+*  *dlbl
+getarg.c.19
+	getarg = '4*' labfix(substr(l1,2))	:(return)
+
+*  =name (data section)
+getarg.c.20
+getarg.c.21
+        getarg = 'offset ' labfix(substr(l1,2)) :(return)
+
+*  =name (program section)
+getarg.c.22
+        getarg = 'offset ' labfix(substr(l1,2))  :(return)
+
+*  pnam, eqop
+getarg.c.23
+getarg.c.24 getarg = labfix(l1)			:(return)
+
+* ptyp, text, dtext
+getarg.c.25
+getarg.c.26
+getarg.c.27 getarg = l1				:(return)
+
+-stitl memmem()t1
+memmem
+*  memmem is called for those ops for which both operands may be
+*  in memory, in which case, we generate code to load first operand
+*  to pseudo-register 'w0', and then modify the first argument
+*  to reference this register
+*
+  eq(ismem[i.type(i1)])				:s(return)
+  eq(ismem[i.type(i2)])				:s(return)
+*  here if memory-memory case, load first argument
+  t1 = getarg(i1)
+  i1 = minarg(8,'w0')
+  genop('mov','eax',t1)				:(return)
+
+-stitl prcent(n)
+prcent prcent = labfix('prc$') '+'  (4 * ( n - 1)) :(return)
+
+-stitl outstmt(ostmt)label,opcode,op1,op2,op3,comment)
+*  this module writes the components of the statement
+*  passed in the argument list to the formatted .s file
+*
+outstmt	label = t.label(ostmt)
+*  attach source label to first generated instruction
+	differ(label)				:s(outstmt1)
+	ident(tlabel)				:s(outstmt1)
+	label = tlabel; tlabel =
+
+outstmt1
+	comment = t.comment(ostmt)
+*  attach source comment to first generated instruction
+	differ(comment)				:s(outstmt2)
+	ident(tcomment)				:s(outstmt2)
+	comment = tcomment; tcomment =
+outstmt2
+	opcode = t.opc(ostmt)
+	op1 = t.op1(ostmt)
+	op2 = t.op2(ostmt)
+	op3 = t.op3(ostmt)
+	differ(compress)			:s(outstmt6)
+	stmtout = rpad( rpad(label,7) ' ' rpad(opcode,4) ' '
+.		  (ident(op1), op1
+.			(ident(op2), ',' op2
+.				(ident(op3), ',' op3))) ,27)
+.       (ident(strip_comment,'y'), ' ' (ident(comment), '#') comment)
+.						:(outstmt7)
+outstmt6
+	stmtout = label tab opcode tab
+.		  (ident(op1), op1
+.		    (ident(op2), ',' op2
+.		      (ident(op3), ',' op3)))
+.       (ident(strip_comment,'y'), tab (ident(comment), '#') comment)
+*
+**	send text to outfile
+*
+**
+**  here is the peephole optimizer
+**
+*   optimization if:
+*	1) this statement is not labeled
+*   and	2) this opcode is or op1,op1 or cmp op1,0
+*   and 3) last opcode was and, add, sub, neg, or, xor, shr, shl, inc or dec.
+*   and	4) last op1 = current op1
+*
+outstmt7 (
+.	ident(label)
+.	  (ident(opcode,"or") ident(op1,op2),
+.	   ident(opcode,"cmp") ident(op2,"0"))
+.	      differ(optim.tab<lastopc>)
+.	        ident(lastop1,op1)
+.		)				:f(outstmt4)
+*
+*  criteria satisfied.  make current line into a comment.
+*
+	stmtout = comment.delim stmtout fillc "(optimized)"
+	noptim1 = noptim1 + 1
+*
+*  record this statement's components for next time
+*
+outstmt4
+	lastopc = opcode
+	lastop1 = op1
+	lastop2 = op2
+**
+**	send text to output file if not null.
+*
+	stmtout = replace(trim(stmtout),'$','_')
+	ident(stmtout)				:s(return)
+	outfile = stmtout
+	ntarget	= ntarget + 1
+	noutlines = noutlines + 1
+*
+*  record code labels in table with delimiter removed.
+	(ge(sectnow,5) differ(label))		:f(return)
+	label ? break(label.delim) . label	:f(return)
+	labtab<label> = noutlines		:(return)
+
+-stitl prsarg(iarg)
+prsarg	prsarg = minarg(0)
+	iarg break(',') . l1 ',' rem . l2	:f(return)
+	prsarg = minarg(convert(l1,'integer'),l2)	:(return)
+-stitl readline()
+*  this routine returns the next statement line in the input file
+*  to the caller.  it never fails.  if there is no more input,
+*  then a minimal end statement is returned.
+*  comments are passed through to the output file directly.
+*
+*
+readline readline = infile                      :f(rl02)
+	nlines  = nlines + 1
+	ident( readline )			:s(readline)
+	leq( substr( readline,1,1 ),'*' )       :f(rl01)
+*
+*  only print comment if requested.
+*
+	ident(strip_comment,'n')		:f(readline)
+        readline len(1) = '#'
+	outfile = readline
+	noutlines = noutlines + 1               :(readline)
+*
+*  here if not a comment line
+*
+rl01						:(return)
+*
+*  here on eof
+*
+rl02    readline = '       end'
+						:(rl01)
+-stitl tblini(str)
+*  this routine is called to initialize a table from a string of
+*  index/value pairs.
+*
+tblini   pos     = 0
+*
+*  count the number of "[" symbols to get an assessment of the table
+*  size we need.
+*
+tin01   str     (tab(*pos) '[' break(']') *?(cnt = cnt + 1) @pos)
+.						:s(tin01)
+*
+*  allocate the table, and then fill it. note that a small memory
+*  optimisation is attempted here by trying to re-use the previous
+*  value string if it is the same as the present one.
+*
+	tblini   = table(cnt)
+tin02   str     (break('[') $ index len(1) break(']') $ val len(1)) =
+.						:f(return)
+	val     = convert( val,'integer' )
+	val     = ident(val,lastval) lastval
+	lastval = val
+	tblini[index] = val			:(tin02)
+-stitl generators
+
+ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
+.						:f(freturn)s(return)
+
+g.flc
+	t1 = substr(getarg(i1),2,1) 'l'
+	t2 = genlab()
+	genop('cmp',t1,"'a'")
+	genop('jb','short ' t2)
+	genop('cmp',t1,"'z'")
+	genop('ja','short ' t2)
+	genop('sub',t1,'32')
+        genopl(t2 label.delim)                  :(opdone)
+
+g.mov
+*  perhaps change mov x,(xr)+ to
+*	mov ax,x; stows
+*
+*  perhaps do  mov (xl)+,wx as
+*	lodsw
+*	xchg ax,tx
+*  and also mov (xl)+,name as
+*	lodsw
+*	mov name,eax
+*  need to process memory-memory case
+*  change 'mov (xs)+,a' to 'pop a'
+*  change 'mov a,-(xs)' to 'push a'
+	t1 = i.text(i1); t2 = i.text(i2)
+	ident(t1,'(xl)+')			:s(mov.xlp)
+	ident(t1,'(xt)+')			:s(mov.xtp)
+	ident(t1,'(xs)+')			:s(mov.xsp)
+	ident(t2,'(xr)+')			:s(mov.xrp)
+	ident(t2,'-(xs)')			:s(mov.2)
+	memmem()
+	genop('mov',getarg(i2),getarg(i1))
+						:(opdone)
+mov.xtp
+mov.xlp
+	ident(t2,'(xr)+') genop('movsd')	:s(opdone)
+	genop('lodsd')
+	ident(t2,'-(xs)') genop('push','eax')	:s(opdone)
+	genop('mov',getarg(i2),'eax')		:(opdone)
+mov.xsp
+	ident(i.text(i2),'(xr)+')		:s(mov.xsprp)
+	genop('pop',getarg(i2))			:(opdone)
+mov.xsprp genop('pop','eax')
+	genop('stosd')				:(opdone)
+mov.xrp genop('mov','eax',getarg(i1))
+	genop('stosd')				:(opdone)
+mov.2
+	genop('push',getarg(i1))		:(opdone)
+
+* odd/even tests.  if w reg, use low byte of register.
+g.bod	t1 = getarg(i1)
+	t1 = eq(i.type(i1),8) substr(t1,2,1) 'l'
+	genop('test',t1,'1')
+	genop('jne',getarg(i2))			:(opdone)
+
+g.bev	t1 = getarg(i1)
+	t1 = eq(i.type(i1),8) substr(t1,2,1) 'l'
+	genop('test',t1,'1')
+	genop('je',getarg(i2))			:(opdone)
+
+g.brn   genop('jmp',getarg(i1))			:(opdone)
+
+g.bsw	t1 = getarg(i1)
+	t2 = genlab()
+	ident(i.text(i3))			:s(g.bsw1)
+	genop('cmp',t1,getarg(i2))
+	genop('jge',getarg(i3))
+* here after default case.
+g.bsw1	genop('jmp', 'dword ptr ' t2 '[' t1 '*4]')
+        genop('dseg_')
+        genopl(t2 label.delim)                  :(opdone)
+
+g.iff   genop('.long',getarg(i2))               :(opdone)
+
+g.esw   genop('dsegend_')
+        genop('cseg_')                          :(opdone)
+
+g.ent
+*
+*  entry points are stored in byte before program entry label
+*  last arg is optional, in which case no initial '.byte' need be
+*  issued. we force odd alignment so can distinguish entry point
+*  addresses from block addresses (which are always even).
+*
+*  note that this address of odd/even is less restrictive than
+*  the minimal definition, which defines an even address as being
+*  a multiple of cfp$b (4), and an odd address as one that is not
+*  a multiple of cfp$b (ends in 1, 2, or 3).  the definition here
+*  is a simple odd/even, least significant bit definition.
+*  that is, for us, 1 and 3 are odd, 2 and 4 are even.
+*
+	t1 = i.text(i1)
+        genop('.balign',2)
+        (differ(t1) genop('.byte',t1), genop('nop'))
+	genop()
+*  note that want to attach label to last instruction
+	t1 = cstmts[cstmts.n]
+	t.label(t1) = tlabel
+	cstmts[cstmts.n] = t1
+*  here to see if want label made public
+	tlabel ? rtab(1) . tlabel label.delim
+        (differ(pubtab[tlabel]), differ(debug)) genop('.global',tlabel)
+	tlabel =				:(opdone)
+
+g.bri	genop('jmp',getarg(i1))			:(opdone)
+
+g.lei	t1 = regmap[i.text(i1)]
+	genop('movzx',t1,'byte ptr [' t1 '-1]')	:(opdone)
+
+g.jsr	genop('call',getarg(i1))		:(opdone)
+
+g.ppm
+*  last arg is optional. generate two bytes
+	ident(i.text(i1))			:s(g.ppm1)
+        genop('.short',getarg(i1) '-' labfix('dffnc'))        :(opdone)
+g.ppm1
+*  a ppm with no arguments, which should never be executed, is
+*  translated to err 299,internal logic error: unexpected ppm branch
+	t1 = 299
+	errfile =  t1 ' internal logic error: unexpected ppm branch'
+						:(g.err1)
+
+g.prc
+*	generate public declaration and then generate label again
+	t1 = tlabel
+	t1 ? rtab(1) . t1 label.delim
+	genop()
+        genop('.global',t1)
+	prc.args = getarg(i2)
+	max_exi = gt(prc.args,max_exi) prc.args
+	prc.type = i.text(i1)		:($('g.prc.' prc.type))
+g.prc.e
+g.prc.r						:(opdone)
+
+g.prc.n
+*  store return address in reserved location
+	prc.count = prc.count + 1
+	genop('pop',prcent(prc.count))		:(opdone)
+
+g.exi	t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
+	ident(t2,'n')				:s(g.exin)
+*  here if r or e, with return address on stack.
+	ident(t3) eq(prc.args) genop('ret')	:s(opdone)
+	differ(t3)				:s(g.exire)
+*  here if normal return.
+	genop('pop','eax')
+g.exir0	ge(prc.args,1) genop('lea','eax','[eax+' 2 * prc.args ']')
+	genop('jmp','eax')			:(opdone)
+g.exire;* here if error return
+	genop('pop','eax')
+g.exir1	genop('jmp','exi__' t1)			:(opdone)
+g.exin;* here if n type procedure
+	differ(t3)				:s(g.exine)
+*  here if normal n return.  if no args, we can jump
+*  directly through the return link cell.
+	(eq(prc.args,0) genop('jmp', '[' prcent(prc.count) ']')) :s(opdone)
+	genop('mov','eax', prcent(prc.count))	:(g.exir0)
+g.exine;* here if error return from n procedure
+	genop('mov','eax',prcent(prc.count))	:(g.exir1)
+
+g.enp   genop()					:(opdone)
+
+g.err
+*  assume ax is zero, then err nnn,text is translated to
+*       .long  err-nnn
+*  and will be branched through indirectly
+*  where the sequence of instructions
+*	inc eax
+*	inc eax
+*  err	mov	wa,eax
+*	jmp	sec07
+*  is defined elsewhere.
+*  remove '0' prefix from t1 so it's not perceived as an octal constant by assembler.
+	errfile =  i.text(i1) ' ' i.text(i2)
+	t1 = getarg(i1)
+g.err1	max.err = gt(t1,max.err) t1
+        genop('.short',labfix('err$') '-' +t1 '-' labfix('dffnc')) :(opdone)
+
+g.erb	errfile =  i.text(i1) ' ' i.text(i2)
+	t1 = getarg(i1)
+	max.err = gt(t1,max.err) t1
+	genop('call','err_' (lt(t1,256) '0','1'))
+        genop('.byte',(lt(t1,256) +t1,t1 - 256)) :(opdone)
+
+
+g.icv   genop('inc',getarg(i1))    :(opdone)
+g.dcv   genop('dec',getarg(i1))    :(opdone)
+
+g.zer	ident(i.text(i1),'(xr)+') genop('xor','eax','eax')
++		genop('stosd')			:s(opdone)
+	ifreg(i1)				:s(g.zer1)
+	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
+	genop('xor','eax','eax')
+	genop('mov',getarg(i1),'eax')		:(opdone)
+g.zer1	t1 = getarg(i1)
+	genop('xor',t1,t1)			:(opdone)
+g.zer.xs genop('push','0')			:(opdone)
+
+g.mnz   genop('mov',getarg(i1),'esp')		:(opdone)
+
+g.ssl   genop()					:(opdone)
+g.sss   genop()					:(opdone)
+
+g.rtn
+*	generate public declaration and then regenerate label
+	t1 = tlabel
+	t1 ? rtab(1) . t1 label.delim
+	genop()
+        genop('.global',t1)                     :(opdone)
+
+g.add	memmem()
+	genop('add',getarg(i2),getarg(i1))	:(opdone)
+
+g.sub	memmem()
+	genop('sub',getarg(i2),getarg(i1))	:(opdone)
+
+g.ica   genop('add',getarg(i1),'4')		:(opdone)
+g.dca   genop('sub',getarg(i1),'4')		:(opdone)
+
+g.beq
+g.bne
+g.bgt
+g.bge
+g.blt
+g.ble
+g.blo
+g.bhi
+*
+*  these operators all have two operands, memmem may apply
+*  issue target opcode by table lookup.
+*
+	memmem()
+	t1 = branchtab[incode]
+	genop('cmp',getarg(i1),getarg(i2))
+	genop(branchtab[incode],getarg(i3))
+.						:(opdone)
+
+g.bnz
+	ifreg(i1)				:s(g.bnz1)
+        genop('cmp','dword ptr ' getarg(i1),'0')
+	genop('jnz',getarg(i2))			:(opdone)
+g.bnz1	genop('or',getarg(i1),getarg(i1))
+	genop('jnz',getarg(i2))			:(opdone)
+
+g.bze   ifreg(i1)				:s(g.bze1)
+        genop('cmp','dword ptr ' getarg(i1),'0')
+	genop('jz',getarg(i2))			:(opdone)
+g.bze1
+	t1 = getarg(i1)
+	genop('or',t1,t1)
+	genop('jz',getarg(i2))			:(opdone)
+
+g.lct
+*
+*  if operands differ must emit code
+*
+	differ(i.text(i1),i.text(i2))		:s(g.lct.1)
+*  here if operands same. emit no code if no label, else emit null
+	ident(tlabel)				:s(opnext)
+	genop()					:(opdone)
+
+g.lct.1	genop('mov',getarg(i1),getarg(i2))	:(opdone)
+
+g.bct
+*  can issue loop if target register is cx.
+	t1 = getarg(i1)
+	t2 = getarg(i2)
+	ident(t1,'ecx')				:s(g.bct1)
+g.bct2	genop('dec',t1)
+	genop('jnz',t2)				:(opdone)
+g.bct1	genop('loop',t2)			:(opdone)
+
+g.aov   genop('add',getarg(i2),getarg(i1))
+	genop('jc',getarg(i3))			:(opdone)
+g.lcp
+*  use cp for code pointer.
+	genop('mov',reg.cp,getarg(i1))		:(opdone)
+g.scp   genop('mov',getarg(i1),reg.cp)		:(opdone)
+g.lcw
+*  should be able to get lodsd; xchg eax,getarg(i1)
+	genop('mov',getarg(i1),'[' reg.cp ']')
+	genop('add',reg.cp,'4')			:(opdone)
+
+
+g.icp   genop('add',reg.cp,'4')			:(opdone)
+
+*  integer accumulator kept in wdx (wc)
+g.ldi	genop('mov',reg.ia,getarg(i1))		:(opdone)
+
+g.adi   genop('add',reg.ia,getarg(i1))		:(opdone)
+
+g.mli	genop('imul',reg.ia,getarg(i1))		:(opdone)
+
+g.sbi   genop('sub',reg.ia,getarg(i1))		:(opdone)
+
+g.dvi
+g.rmi
+*	move argument to eax, call procedure
+	genop('mov','eax',getarg(i1))
+	genop('call', incode '_')	:(opdone)
+
+g.sti   genop('mov',getarg(i1),reg.ia)		:(opdone)
+
+g.ngi   genop('neg',reg.ia)			:(opdone)
+
+g.ino   genop('jno',getarg(i1))			:(opdone)
+g.iov   genop('jo',getarg(i1))			:(opdone)
+
+g.ieq	genop('or',reg.ia,reg.ia)
+	genop('je',getarg(i1))			:(opdone)
+g.ige   genop('or',reg.ia,reg.ia)
+	genop('jge',getarg(i1))			:(opdone)
+g.igt   genop('or',reg.ia,reg.ia)
+	genop('jg',getarg(i1))			:(opdone)
+g.ile   genop('or',reg.ia,reg.ia)
+	genop('jle',getarg(i1))			:(opdone)
+g.ilt   genop('or',reg.ia,reg.ia)
+	genop('jl',getarg(i1))			:(opdone)
+g.ine   genop('or',reg.ia,reg.ia)
+	genop('jne',getarg(i1))			:(opdone)
+
+
+
+*
+*  real operations
+*
+g.itr	genop('call','itr_')	:(opdone)
+
+g.rti	genop('call','rti_')
+	eq(i.type(i1))				:s(opdone)
+*  here if label given, branch if real too large
+        genop('jc',getarg(i1))                 :(opdone)
+
+g.ldr
+g.str
+g.adr
+g.sbr
+g.mlr
+g.dvr	t1 = i.type(i1)
+	(ge(t1,9) le(t1,15) genop('lea','eax',getarg(i1)),
++               genop('mov','eax','offset ' getarg(i1)))
+	genop('call',incode '_')		:(opdone)
+
+g.ngr
+g.atn
+g.chp
+g.cos
+g.etx
+g.lnf
+g.sin
+g.sqr
+g.tan	genop('call',incode '_')		:(opdone)
+
+
+g.rno	t1 = 'jno'				:(g.rov1)
+g.rov	t1 = 'jo'
+g.rov1  genop('call','ovr_')
+	genop(t1,getarg(i1))			:(opdone)
+
+g.req	t1 = 'je'				:(g.r1)
+g.rne	t1 = 'jne'				:(g.r1)
+g.rge	t1 = 'jge'				:(g.r1)
+g.rgt	t1 = 'jg'				:(g.r1)
+g.rle	t1 = 'jle'				:(g.r1)
+g.rlt	t1 = 'jl'
+g.r1	genop('call','cpr_')
+	genop(t1,getarg(i1))			:(opdone)
+
+g.plc
+g.psc
+*  last arg is optinal.  if present and a register or constant,
+*  use lea instead.
+
+	t1 = getarg(i1)
+	t2 = i.type(i2)
+	((ifreg(i2), ge(t2,1) le(t2,2))
++	genop('lea',t1,'[cfp$f+' t1 '+' getarg(i2) ']')) :s(opdone)
+	genop('add',t1,'cfp$f')
+	eq(i.type(i2))				:s(opdone)
+*
+*  here if offset given (in a variable), so add it in.
+*
+	genop('add',t1,getarg(i2))		:(opdone)
+*
+*  lch requires separate cases for each first operand possibility.
+*
+g.lch
+	t2 = i.text(i2)
+	t1 = getarg(i1)
+
+*  see if predecrement.
+	leq('-',substr(t2,1,1))			:f(g.lcg.1)
+	t2 break('(') len(1) len(2) . t3
+	genop('dec',regmap[t3])
+g.lcg.1
+	t2 break('(') len(1) len(2) . t3
+	genop('movzx',t1,'byte ptr [' regmap[t3] ']')
+
+*  see if postincrement needed
+	t2 rtab(1) '+'				:f(g.lcg.2)
+	genop('inc',regmap[t3])
+g.lcg.2						:(opdone)
+
+g.sch
+	t2 = i.text(i2)
+	eq(i.type(i1),8)			:s(g.scg.w)
+	t1 = getarg(i1)
+	ident(t2,'(xr)+')			:f(g.scg.0)
+*
+*  here if can use stosb.
+*
+	genop('mov','al',getarg(i1))
+	genop('stosb')				:(opdone)
+
+g.scg.0
+	leq('-',substr(t2,1,1))			:f(g.scg.1)
+	t2 break('(') len(1) len(2) . t3
+	genop('dec',regmap[t3])
+g.scg.1
+	t2 break('(') len(1) len(2) . t3
+	genop('mov','eax',t1,)
+	genop('mov','[' regmap[t3] ']','al')
+*  see if postincrement needed.
+	t2 rtab(1) '+'				:f(g.scg.2)
+	genop('inc',regmap[t3])
+g.scg.2						:(opdone)
+g.scg.w
+*
+*  here if moving character from work register, convert t1
+*  to name of low part.
+*
+	t1 = substr(regmap[i.text(i1)],2,1) 'l'
+	ident(t2,'(xl)')			:s(g.scg.w.xl)
+	ident(t2,'-(xl)')			:s(g.scg.w.pxl)
+	ident(t2,'(xl)+')			:s(g.scg.w.xlp)
+	ident(t2,'(xr)')			:s(g.scg.w.xr)
+	ident(t2,'-(xr)')			:s(g.scg.w.pxr)
+	ident(t2,'(xr)+')			:s(g.scg.w.xrp)
+g.scg.w.xl
+	genop('mov','[esi]',t1)			:(opdone)
+g.scg.w.pxl
+	genop('dec','esi')
+	genop('mov','[esi]',t1)			:(opdone)
+g.scg.w.xlp
+	genop('mov','[esi]',t1)
+	genop('inc','esi')			:(opdone)
+g.scg.w.xr
+	genop('mov','[edi]',t1)			:(opdone)
+g.scg.w.pxr
+	genop('dec','edi')
+	genop('mov','[edi]',t1)			:(opdone)
+g.scg.w.xrp
+	genop('mov','al',t1)
+	genop('stosb')				:(opdone)
+g.csc  	ident(tlabel)				:s(opnext)
+	genop()					:(opdone)
+
+g.ceq
+	memmem()
+	genop('cmp',getarg(i1),getarg(i2))
+	genop('je',getarg(i3))			:(opdone)
+
+g.cne   memmem()
+	genop('cmp',getarg(i1),getarg(i2))
+	genop('jnz',getarg(i3))			:(opdone)
+
+g.cmc
+*	repe	cmpsb		;compare strings
+*	mov	esi,0		;clear xl (without changing flags)
+*	mov	edi,esi		;v1.02  xr also
+*
+	genop('repe','cmpsb')
+	genop('mov','esi','0')
+	genop('mov','edi','esi')
+	t1 = getarg(i1)
+	t2 = getarg(i2)
+	(ident(t1,t2) genop('jnz',t1))		:s(opdone)
+	genop('ja',t2)
+	genop('jb',t1)				:(opdone)
+
+g.trc
+*	xchg	esi,edi
+*  tmp	movzx   eax,byte ptr [edi]	;get character
+*	mov	al,[esi+eax]		;translate
+*	stosd				;put back and increment ptr
+*	loop	tmp
+*	xor	esi,esi			;set xl to zero
+*	xor	edi,edi			;v1.02  xr also
+	genop('xchg','esi','edi')
+        genopl((t1 = genlab()) label.delim,'movzx','eax','byte ptr [edi]')
+	genop('mov','al','[esi+eax]')
+	genop('stosb')
+	genop('loop',t1)
+	genop('xor','esi','esi')
+	genop('xor','edi','edi')		:(opdone)
+
+
+g.anb   genop('and',getarg(i2),getarg(i1))	:(opdone)
+g.orb   genop('or',getarg(i2),getarg(i1))	:(opdone)
+g.xob   genop('xor',getarg(i2),getarg(i1))	:(opdone)
+g.cmb   genop('not',getarg(i1))			:(opdone)
+
+g.rsh
+	genop('shr',getarg(i1),getarg(i2))		:(opdone)
+
+g.lsh
+	genop('shl',getarg(i1),getarg(i2))		:(opdone)
+
+g.rsx	t1 = regmap[substr(i.text(i2),2,2)]
+	ident(i.text(i1),'wa')				:s(g.rsx.c)
+	genop('xchg',t1,'ecx')
+	genop('shr',getarg(i1),'cl')
+	genop('xchg',t1,'ecx')				:(opdone)
+
+g.rsx.c	genop('xchg',t1,'ecx')
+	genop('shr',t1,'cl')
+	genop('xchg',t1,'ecx')				:(opdone)
+
+g.lsx	t1 = regmap[substr(i.text(i2),2,2)]
+	ident(i.text(i1),'wa')				:s(g.lsx.c)
+	genop('xchg',t1,'ecx')
+	genop('shl',getarg(i1),'cl')
+	genop('xchg',t1,'ecx')				:(opdone)
+
+g.lsx.c	genop('xchg',t1,'ecx')
+	genop('shl',t1,'cl')
+	genop('xchg',t1,'ecx')				:(opdone)
+
+g.nzb	ifreg(i1)				:s(g.nzb1)
+	genop('cmp',getarg(i1),'0')
+	genop('jnz',getarg(i2))			:(opdone)
+g.nzb1	genop('or',getarg(i1),getarg(i1))
+	genop('jnz',getarg(i2))			:(opdone)
+
+g.zrb	ifreg(i1)				:s(g.zrb1)
+	genop('cmp',getarg(i1),'0')
+	genop('jz',getarg(i2))			:(opdone)
+g.zrb1	genop('or',getarg(i1),getarg(i1))
+	genop('jz',getarg(i2))			:(opdone)
+
+* 80386 is a little-endian machine, so zgb must swap bytes.
+*
+* note that on a 486 and later cpu, this can be done with one instruction, bswap.
+* should consider abandoning the 80386 so can use bswap.
+*
+g.zgb	t1 = getarg(i1)			;* 32-bit register name, e.g., edx
+        t2 = substr(t1,2,1) 'l'         ;* 8-bit low register name, e.g., dl
+	t3 = substr(t1,2,1) 'h'		;* 8-bit high register name, e.g., dh
+	genop('xchg',t2,t3)		;* e.g., xchg dl,dh
+	genop('rol',t1,16)		;* e.g., rol edx,16
+	genop('xchg',t2,t3)		;* e.g., xchg dl,dh
+						:(opdone)
+
+g.wtb   genop('sal',getarg(i1),'2')		:(opdone)
+g.btw   genop('shr',getarg(i1),'2')		:(opdone)
+
+g.mti	(ident(i.text(i1),'(xs)+') genop('pop',reg.ia)) :s(opdone)
+	genop('mov',reg.ia,getarg(i1))		:(opdone)
+
+g.mfi
+*  last arg is optional
+*  compare with cfp$m, branching if result negative
+	eq(i.type(i2))				:s(g.mfi1)
+*  here if label given, branch if wc not in range (ie, negative)
+	genop('or',reg.ia,reg.ia)
+	genop('js',getarg(i2))
+g.mfi1	ident(i.text(i1),'wc') genop()		:s(opdone)
+	ident(i.text(i1),'-(xs)') genop('push',reg.ia)	:s(opdone)
+	genop('mov',getarg(i1),reg.ia)		:(opdone)
+
+g.ctw
+*  assume four chars per word
+	t1 = getarg(i1)
+	genop('add',t1,'3+4*' i.text(i2))
+	genop('shr',t1,'2')		:(opdone)
+
+g.ctb
+*  use add w,val*cfp.b+3; and w,-4
+	t1 = getarg(i1)
+	genop('add',t1,'3+4*' i.text(i2))
+	genop('and',t1,'-4')	:(opdone)
+
+g.cvm	t1 = getarg(i1)
+	genop('imul',reg.ia,'10')
+	genop('jo',t1)
+	genop('sub',regmap['wb'],'ch$d0')
+	genop('sub',reg.ia,regmap['wb'])
+	genop('jo',t1)				:(opdone)
+
+g.cvd	genop('call','cvd_')			:(opdone)
+
+g.mvc
+*	move chars from xl (esi) to xr (edi), count in wa (ecx)
+*
+*  the following sequence "old method" is shorter than the "new method"
+*  shown below, but is much slower because of the conditional jumps that
+*  cause the instruction cache to be flushed for 3 out of 4 count values.
+*
+*  old method:
+*	shr	ecx,1
+*	jnc	tmp1
+*	movsb		; move odd byte
+*  tmp1	shr	ecx,1
+*	jnc	tmp2
+*	movsw		; move odd word
+*  tmp2 rep	movsd	; move string as double words
+*
+*	genop('shr','ecx','1')
+*	genop('jnc','short ' (t1 = genlab()))
+*	genop('movsb')
+*       genopl(t1 label.delim,'shr','ecx','1')
+*	genop('jnc','short ' (t1 = genlab()))
+*	genop('movsw')
+*       genopl(t1 label.delim,'rep','movsd')        :(opdone)
+*
+*  new method:
+*	shrd	eax,ecx,1 ; preserve ecx[0] in eax[31]
+*	shr	ecx,2	  ; preserve ecx[1] in cy, divide by 4
+*	rep	movsd	  ; move dwords, leaves ecx=0
+*	adc	ecx,ecx	  ; copy cy to ecx[0]
+*	rep	movsw	  ; copy 1 or 0 words, leaves ecx=0
+*	shld	ecx,eax,1 ; copy eax[31] to ecx[0]
+*	rep	movsb	  ; copy 1 or 0 bytes
+*
+	genop('shrd','eax','ecx','1')
+	genop('shr','ecx','2')
+	genop('rep','movsd')
+	genop('adc','ecx','ecx')
+	genop('rep','movsw')
+	genop('shld','ecx','eax','1')
+	genop('rep','movsb')			:(opdone)
+
+g.mvw
+	genop('shr','ecx','2')
+	genop('rep','movsd')			:(opdone)
+
+g.mwb
+*   move words backwards
+	genop('shr','ecx','2')
+	genop('std')
+	genop('lea','esi','[esi-4]')
+	genop('lea','edi','[edi-4]')
+	genop('rep','movsd')
+	genop('cld')				:(opdone)
+
+g.mcb
+*   move characters backwards
+	genop('std')
+	genop('dec','esi')
+	genop('dec','edi')
+	genop('rep','movsb')
+	genop('cld')				:(opdone)
+
+g.chk   genop('cmp','esp',labfix('lowspmin'))
+	genop('jb','sec06')			:(opdone)
+
+decend
+*  here at end of dic or dac to see if want label made public
+	tlabel ? rtab(1) . tlabel label.delim
+        differ(pubtab[tlabel]) genop('.global',tlabel)  :(opdone)
+
+g.dac	t1 = i.type(i1)
+        t2 = "" ;*(le(t1,2) "", le(t1,4) "offset ", le(t1,6) "offset ", "")
+        genopl(tlabel,'.long',t2 labfix(i.text(i1)))    :(decend)
+g.dic   genopl(tlabel,'.long',i.text(i1))               :(decend)
+
+*
+* make sure don't attach label to the align.
+*
+* note that we strip any leading plus sign from the constant.  with
+* microsoft masm 6.0, it treats "+0.0" as an expression, and
+* then says that real-valued expressions are illegal.
+*
+g.drc   genop('.balign','4')
+	t1 = i.text(i1)
+	t1 ? fence "+" = ""
+        genop('.double','0e' t1)
+*  note that want to attach label to last instruction
+	t.label(cstmts[cstmts.n]) = tlabel
+	tlabel =					:(opdone)
+
+g.dtc
+*  change first and last chars to " (assume / used in source)
+	t1 = i.text(i1)
+	t1 tab(1) rtab(1) . t2
+	t3 = remdr(size(t2),4)
+        t2 = '"' t2
+*  append "\x00" if string has odd length to complete last dword
+        t2 = ne(t3) t2 dupl('\x00',4 - t3)
+        t2 = t2  '"'
+        genopl(tlabel,'.ascii',t2)              :(opdone)
+g.dbc   genopl(tlabel,'.long',getarg(i1))       :(opdone)
+g.equ   genop('=',i.text(i1))			:(opdone)
+g.exp   genop('.extern',tlabel ':near')
+	tlabel =				:(opdone)
+
+g.inp	prc.count1 = ident(i.text(i1),'n') prc.count1 + 1
++						:(opnext)
+
+g.inr						:(opnext)
+
+g.ejc	genop('')
+        genop('.eject')                         :(opdone)
+
+g.ttl	genop('')
+        genop('.sbttl','"' i.text(i1) '"')      :(opdone)
+
+g.sec	genop('')
+	sectnow = sectnow + 1			:($("g.sec." sectnow))
+
+* procedure declaration section
+g.sec.1 genop('cseg_')
+        genop('.global','sec01')
+        genopl('sec01' label.delim)             :(opdone)
+
+* definitions section
+g.sec.2 genop('csegend_')
+        genop('dseg_')
+        genop('.global','sec02')
+        genopl('sec02' label.delim)             :(opdone)
+
+* constants section
+g.sec.3 genop('dsegend_')
+        genop('dseg_')
+        genop('.global',labfix('sec03'))
+        genopl(labfix('sec03') label.delim)     :(opdone)
+
+* working variables section
+g.sec.4 genop('.global',labfix('esec03'))
+        genopl(labfix('esec03') label.delim)
+        genop('dsegend_')
+        genop('dseg_')
+        genop('.global',labfix('sec04'))
+        genopl(labfix('sec04') label.delim)     :(opdone)
+
+*  here at start of program section.  if any n type procedures,
+*  put out entry-word block declaration at end of working storage
+g.sec.5
+*  emit code to indicate in code section
+*  get direction set to up.
+        genop('.global',labfix('esec04'))
+        genopl(labfix('esec04') label.delim)
+        (gt(prc.count1) genopl('prc$' label.delim,'.fill', prc.count1 ',4,0'))
+        genop('.global',labfix('lowspmin'))
+        genopl(labfix('lowspmin') label.delim,'.long','0')
+        genop('.global',labfix('end$min$data'))
+        genopl(labfix('end$min$data') label.delim)
+        genop('dsegend_')
+        genop('cseg_')
+        genop('.global',labfix('sec05'))
+        genopl(labfix('sec05') label.delim)     :(opdone)
+
+*  stack overflow section.  output exi__n tail code
+g.sec.6	i1 = 1
+g.sec.6.1
+        (differ(debug) genopl(,'.global','exi__' i1))
+        genopl('exi__' i1 label.delim, 'movsx', 'eax',
++		'word ptr [eax+' (2 * (i1 - 1)) ']')
+        genop('add','eax','offset ' labfix('dffnc'))
+	genop('push','eax')
+	genop('xor','eax','eax')
+	genop('ret')
+	flush()
+	i1 = lt(i1,max_exi) i1 + 1		:s(g.sec.6.1)
+
+* now being the stack overflow section
+        genop('.global','sec06')
+        genopl('sec06' label.delim)             :(opdone)
+
+*  error section.  produce code to receive erb's
+g.sec.7
+        (differ(debug) genopl(,'.global','err_0'))
+        genopl('err_0' label.delim,'pop','eax')
+	genop('movzx','eax','byte ptr [eax]')
+	genop('jmp','short err_1a')
+        (differ(debug) genopl(,'.global','err_1'))
+        genopl('err_1' label.delim,'pop','eax')
+	genop('movzx','eax','byte ptr [eax]')
+	genop('add','eax','256')
+        genopl('err_1a' label.delim,'jmp','err$')
+	flush()
+
+*  loop to emit inc eax for each possible error code
+	i1 = max.err
+g.sec.7.1
+	ge(i1 = i1 - 1) outstmt(tstmt(,'inc','eax'))	:s(g.sec.7.1)
+        genopl('err$' label.delim,'xchg',reg.wa,'eax')
+        genop('.global','sec07')
+        genopl('sec07' label.delim)             :(opdone)
+
+
+
+opdone	flush()					:(opnext)
+*
+*  here to emit bstmts, cstmts, astmts. attach input label and
+*  comment to first instruction generated.
+*
+flush	eq(astmts.n) eq(bstmts.n) eq(cstmts.n)	:f(opdone1)
+*
+*  here if no statements, so output single 'null' statement to get label
+*  and comment field right.
+*
+	outstmt(tstmt())			:(opdone.6)
+opdone1	eq(bstmts.n)				:s(opdone.2)
+	i = 1
+opdone.1
+	outstmt(bstmts[i])
+	le(i = i + 1, bstmts.n)			:s(opdone.1)
+
+opdone.2	eq(cstmts.n)			:s(opdone.4)
+	i = 1
+opdone.3
+	outstmt(cstmts[i])
+	le(i = i + 1, cstmts.n)			:s(opdone.3)
+
+opdone.4	eq(astmts.n)			:s(opdone.6)
+	i = 1
+	ident(pifatal[incode])			:s(opdone.5)
+*  here if post incrementing code not allowed
+	error('post increment not allowed for op ' incode)
+opdone.5	outstmt(astmts[i])
+	le(i = i + 1, astmts.n)			:s(opdone.5)
+opdone.6 astmts.n = bstmts.n = cstmts.n =	:(return)
+flush_end
+
+g.end
+	&dump = 0
+	ident(havehdr)				:s(g.end.2)
+*  here to copy remaining part from hdr file
+g.end.1	line = hdrfile				:f(g.end.2)
+	ntarget = ntarget + 1
+	noutlines = noutlines + 1
+	outfile = line				:(g.end.1)
+g.end.2
+        outstmt(tstmt(,'.end',,,,comment))
+
+
+* here at end of code generation.  close the temp file, and reread
+* it to perform jump optimization.
+	endfile(1)
+	endfile(2)
+        output = "code generation complete, begin jump optimization"
+
+	input(.infile,1,filenamo)			:s(g.end.3)
+        output = 'cannot reopen temp file: ' filenamo :(end)
+
+g.end.3 filenamo = parms ".s"
+        output(.outfile,2,filenamo '[-m10 -n0]')            :s(g.end.4)
+        output = 'cannot open assembly file: ' filenamo :(end)
+g.end.4 output = 'output assembly file: ' filenamo
+
+***************************************************************************
+* jump optimization
+*
+* forward jumps to target labels within jump_n lines of the jump receive
+* a short.  exception is made for those lines that match ns_pat.
+*
+* jump_n and ns_pat are defined in the <machine>.def file.
+*
+***************************************************************************
+*
+	n = jump_n			;* # lines allowed for shortening
+	jump = "j" span(&ucase)
+	ws = span(" " char(9))
+	lets = &ucase "_0123456789"
+	l_pat = span(lets)
+	l_patc = l_pat label.delim
+	l_pat2 = l_pat . label label.delim
+	stmt = ((l_patc | "") ws jump ws) . first (l_pat . label rem) . rest
+
+	lno = 0
+g.end.5	line = infile					:f(g.end.7)
+	lno = lno + 1
+	line ? stmt					:f(g.end.6)
+	(ident(label,"short"), ident(labtab<label>))	:s(g.end.6)
+	distance = labtab<label> - lno
+	(gt(distance,0) le(distance,n))			:f(g.end.6)
+	line ? ns_pat					:s(g.end.6)
+	noptim2 = noptim2 + 1
+        line = first "short " rest fillc "# (jump shortened)"
+g.end.6	outfile = line					:(g.end.5)
+
+g.end.7 endfile(1)
+	endfile(2)
+	endfile(3)
+	host(1,"touch " parms ".err")
+	host(1,"del " parms ".tmp")
+        output = '*** translation complete ***'
+        output = nlines ' lines read.'
+        output = nstmts ' statements processed.'
+        output = ntarget ' target code lines produced.'
+        output = noptim1 ' "or" optimizations performed.'
+        output = noptim2 ' jumps shortened.'
+        output = max.err ' maximum err/erb number.'
+        output = prc.count1 ' prc count.'
+        output = gt(prc.count,prc.count1)
+.	  'differing counts for n-procedures:'
+.	  ' inp ' prc.count1 ' prc ' prc.count
+        output = nerrors ' errors occurred.'
+        output =
+	errfile = '* ' max.err ' maximum err/erb number'
+	errfile  = '* ' prc.count ' prc count'
+.		differ(lasterror) 'the last error was in line ' lasterror
+	&code   = ne(nerrors) 2001
+        output = collect() ' free words'
+	:(end)
+end
