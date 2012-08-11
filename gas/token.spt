@@ -1,0 +1,963 @@
+-TITLE MINTOK: PHASE 1 TRANSLATION FROM MINIMAL TO TOKENS
+-STITL Initialization
+* Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+* 
+* This file is part of Macro SPITBOL.
+* 
+*     Macro SPITBOL is free software: you can redistribute it and/or modify
+*     it under the terms of the GNU General Public License as published by
+*     the Free Software Foundation, either version 3 of the License, or
+*     (at your option) any later version.
+* 
+*     Macro SPITBOL is distributed in the hope that it will be useful,
+*     but WITHOUT ANY WARRANTY; without even the implied warranty of
+*     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*     GNU General Public License for more details.
+* 
+*     You should have received a copy of the GNU General Public License
+*     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+*
+*
+*	Usage:
+*
+*	SPITBOL -u "infile<sep>condfile<sep>outfile" token
+*
+*	where:
+*	 infile    - Minimal file name, less .min extension
+*	 condfiile - Conditional file name, less .cnd extension
+*	 outfile   - Output file name, less .tok extension.
+*		     Default is infile.tok.
+*	 <sep>	   - ; or :
+*
+*	note: <sep>outfile component is optional.
+*
+*  This program takes MINIMAL statements and parses them up into
+*  a stream of tokens. It performs EQU * substitution and
+*  conditional assembly.
+*
+*  It is based on earlier translators written by David Shields,
+*  Steve Duff and Robert Goldberg.
+*
+        VERSION = 'V1.14'
+*
+*  Revision History:
+*
+*  V1.14 25-Dec-95
+*       Changed TERMINAL to OUTPUT for use in Microsoft build program.
+*  V1.13 07-Jun-95
+*	Check for missing IFF case with no default PLBL on BSW.
+*  V1.12 10-Sep-94
+*	Add CFP$L.
+*  V1.11 20-Sep-91
+*       Increase E$STS to 1000
+*  V1.10 15-Dec-90
+*	Increase hash table size from 127 to 257.
+*
+*  V1.09 30-Oct-90
+*	Allowed optional specification of output file as third argument.
+*
+*  V1.08 10-Oct-89
+*	Corrected Validforms array for (X) row.
+*
+*  V1.07 05-Jul-89
+*	Add ':' as separator on command line.
+*
+*  V1.06 17-Sep-88
+*	Enable ValidForms table to check argument type of operands against
+*	requirements of opcode.  This is not quite rigorous for PNAME
+*	arguments to JSR, which are treated as as PLBL.
+*  V1.05E 20-Jun-88
+*	Read optional file containing .DEF conditional assignments.  If found,
+*	.DEFs within the main Minimal file are ignored.  This file
+*       has a filename extension of .cnd.
+*  V1.05D 09-Sep-87
+*	Correct bug in TBLINI
+*  V1.05C 28-Oct-86
+*	Converted back to Spitbol to run on 68000
+*  V1.05B 17-Aug-86
+*	Optimised for SNOBOL4+
+*	Added source line numbers for use with symbolic debugger
+*  V1.05A 04-Aug-86
+*	Converted to SNOBOL4+:
+*		Changed file specification to use /1, /2 on command line
+*		Changed TERMINAL to SCREEN
+*		Explicitly set FULLSCAN
+*		Rewrote two patterns which used FENCE function
+*		Removed use of third argument in table function for .BADOP
+*  V1.05 09-Oct-83
+*	Correct CFP$M to be 32767, not 65535.
+*  V1.04 23-May-83
+*	Withdraw ENT file feature, since no longer needed.
+*	Replace BRP by (new) BEV and BOD opcodes.
+*	Use smaller values for E$ values since memory scarce.
+*  V1.03 17-May-83
+*	Restore E$HNB to 127, default suggested by McCann.
+*	Generate ENT file with list of ENT instructions so that
+*	these can be placed at start of code section and thus
+*	give ENT addresses low values.
+*  V1.02 25-Nov-82
+*	Modify to process BSW/IFF/ESW by sorting IFF's to be
+*	in order. Revive machinery used in original Duff code.
+*
+*  V1.01 15-Nov-82
+*	First release, assuming 8088 target machine.
+*
+-EJECT
+*  Keyword initialization
+
+        &ANCHOR = 1;    &STLIMIT = -1;  &TRIM   = 1
+*  Useful constants
+
+	MINLETS = 'ABCDEFGHIJKLMNOPQRSTUVWXY$'
+	NOS     = '0123456789'
+	P.NOS	= SPAN(NOS) RPOS(0)
+	P.EXP	= 'E' ANY('+-') SPAN(NOS)
+	P.REAL	= SPAN(NOS) '.' (SPAN(NOS) | NULL) (P.EXP | NULL) RPOS(0)
+	TAB	= CHAR(9)
+
+*  ARGFORM classifies arguments
+	DEFINE('ARGFORM(ARG)')
+
+*  ARGTYPE checks argument types
+	DEFINE('ARGTYPE(OP,TYP)')
+
+*  CRACK parses STMT into a STMT data plex and returns it.
+*  STMT is the common data plex used to hold the components of
+*  a Minimal statement during processing.
+*  It fails if there is a syntax error.
+*
+	DEFINE('CRACK(LINE)OPERANDS,OPERAND,CHAR')
+
+*
+*  Error is used to report an error for current statement
+*
+	DEFINE('ERROR(TEXT)')
+
+*  LABENTER enters non-null LABEL in LABTAB
+	DEFINE('LABENTER()TLAB')
+
+*  OUTSTMT is used to send a target statement to the target code
+*  output file (OUTFILE <=> LU2)
+*
+	DEFINE('OUTSTMT(LABEL,OPCODE,OP1,OP2,OP3,COMMENT)T,STMTOUT')
+
+*  RDLINE is called to return the next non-comment line from
+*  the Minimal input file (INFILE <=> LU1).   Note that it will
+*  not fail on EOF, but it will return a Minimal END statement
+*
+	DEFINE('RDLINE()')
+* 	Conditional assembly initialization
+
+	DEFINE('TBLINI(STR)POS,CNT,INDEX,VAL,LASTVAL')
+*  CATAB is the transfer vector for routing control to generators
+*  for conditional assembly directives.
+*
+       CATAB = TABLE( 11,,.BADOP )
+       CATAB['.DEF']   = .DEFOP; CATAB['.UNDEF'] = .UNDEFOP
+       CATAB['.IF']    = .IFOP; CATAB['.THEN']  = .THENOP
+       CATAB['.ELSE']  = .ELSEOP; CATAB['.FI']    = .FIOP
+
+*  SYMTBL tracks defined conditional symbols.  (undefined symbols
+*  are assigned null values in SYMTBL.)
+*
+       SYMTBL      = TABLE( 11 )
+*
+*  STATESTK maintains all state information while processing conditional
+*  statements.  LEVEL indexes the top entry.  Another variable, TOP,
+*  has a copy of SAVESTK[LEVEL].
+*
+       STATESTK    = ARRAY( 30 )
+       LEVEL       = 0
+       TOP         =
+*
+*  Each state entry in STATESTK contains state information about
+*  the processing for each active .IF.  The state is maintained
+*  as 2 fields:
+*
+*      RESULT    the result of the .IF expression evaluation-
+*                TRUE, FALSE, OR BYPASS
+*
+*      MODE      Whether processing THEN or ELSE portion of .IF
+*
+       DATA( 'STATE(RESULT,MODE)' )
+       FALSE    = 0
+       TRUE     = 1
+       BYPASS   = 2
+       ELSE     = 0
+       THEN     = 1
+*
+*  PROCESSREC is indexed by the current result and mode to determine
+*  whether or not a statement should be processed and written to the
+*  output file.
+*
+       PROCESSREC    = ARRAY( FALSE ':' BYPASS ',' ELSE ':' THEN,0 )
+       PROCESSREC[TRUE,THEN]  = 1
+       PROCESSREC[FALSE,ELSE] = 1
+*
+*  P.CONDASM breaks up conditional assembly directives.
+*
+       SEP      = ' '
+       P.CONDASM      = ( BREAK(SEP) | REM ) . CONDCMD
+.	          ( SPAN(SEP) | '' )
+.	          ( BREAK(SEP) | REM ) . CONDVAR
+*
+*
+	P.ARGSKEL1 = FENCE(BREAK(',') | REM) $ ARGTHIS *DIFFER(ARGTHIS)
+	P.ARGSKEL2 = LEN(1) FENCE(BREAK(',') | REM) $ ARGTHIS *DIFFER(ARGTHIS)
+
+*  ITYPTAB is table mapping from common operands to gross type
+
+	ITYPTAB = TABLE(21)
+	ITYPTAB['0'] = 1; ITYPTAB['1'] = 1; ITYPTAB['WA'] = 8
+	ITYPTAB['WB'] = 8; ITYPTAB['WC'] = 8; ITYPTAB['XL'] = 7
+	ITYPTAB['XR'] = 7; ITYPTAB['XS'] = 7; ITYPTAB['XT'] = 7
+	ITYPTAB['(XL)'] = 9; ITYPTAB['(XR)'] = 9; ITYPTAB['(XS)'] = 9
+	ITYPTAB['(XT)'] = 9; ITYPTAB['-(XL)'] = 11; ITYPTAB['-(XR)'] = 11
+	ITYPTAB['-(XS)'] = 11; ITYPTAB['-(XT)'] = 11;
+	ITYPTAB['(XL)+'] = 10;	ITYPTAB['(XR)+'] = 10;
+	ITYPTAB['(XS)+'] = 10; ITYPTAB['(XT)+'] = 10
+
+*  OPFORMTAB is table mapping general op formats to row index for
+*  VALIDFORM array.
+	OPFORMTAB = TBLINI(
++	'VAL[1]REG[2]OPC[3]OPS[4]OPW[5]OPN[6]OPV[7]ADDR[8]'
++	'X[9]W[10]PLBL[11](X)[12]INTEGER[13]REAL[14]'
++	'DTEXT[15]EQOP[16]INT[17]PNAM[18]')
+
+*  VALIDFORM is ARRAY that validates general op formats (OPV, etc).
+*  The first index is named type VAL=1 REG=2 OPC=3 OPS=4 OPW=5
+*  OPN=6 OPV=7 ADDR=8 X=9 W=10 PLBL=11 (X)=12 INTEGER=13 REAL=14
+*  DTEXT=15 EQOP=16 INT=17 PNAM=18
+*  The second argument is gross type 01=INT 02=DLBL ... 27=DTEXT
+*  The entry [i,j] is nonzero is gross type j is valid for named
+*  type i.
+   VALIDFORM = ARRAY('18,27',0)
+   VALIDFORM[1,1] = 1
+   VALIDFORM[1,2] = 1
+   VALIDFORM[2,7] = 1
+   VALIDFORM[2,8] = 1
+   VALIDFORM[3,9] = 1
+   VALIDFORM[3,10] = 1
+   VALIDFORM[3,11] = 1
+   VALIDFORM[4,3] = 1
+   VALIDFORM[4,4] = 1
+   VALIDFORM[4,9] = 1
+   VALIDFORM[4,12] = 1
+   VALIDFORM[4,13] = 1
+   VALIDFORM[4,14] = 1
+   VALIDFORM[4,15] = 1
+   VALIDFORM[5,3] = 1
+   VALIDFORM[5,4] = 1
+   VALIDFORM[5,8] = 1
+   VALIDFORM[5,9] = 1
+   VALIDFORM[5,10] = 1
+   VALIDFORM[5,11] = 1
+   VALIDFORM[5,12] = 1
+   VALIDFORM[5,13] = 1
+   VALIDFORM[5,14] = 1
+   VALIDFORM[5,15] = 1
+   VALIDFORM[6,3] = 1
+   VALIDFORM[6,4] = 1
+   VALIDFORM[6,7] = 1
+   VALIDFORM[6,8] = 1
+   VALIDFORM[6,9] = 1
+   VALIDFORM[6,10] = 1
+   VALIDFORM[6,11] = 1
+   VALIDFORM[6,12] = 1
+   VALIDFORM[6,13] = 1
+   VALIDFORM[6,14] = 1
+   VALIDFORM[6,15] = 1
+   VALIDFORM[7,3] = 1
+   VALIDFORM[7,4] = 1
+   VALIDFORM[7,7] = 1
+   VALIDFORM[7,8] = 1
+   VALIDFORM[7,9] = 1
+   VALIDFORM[7,10] = 1
+   VALIDFORM[7,11] = 1
+   VALIDFORM[7,12] = 1
+   VALIDFORM[7,13] = 1
+   VALIDFORM[7,14] = 1
+   VALIDFORM[7,15] = 1
+   VALIDFORM[7,18] = 1
+   VALIDFORM[7,19] = 1
+   VALIDFORM[7,20] = 1
+   VALIDFORM[7,21] = 1
+   VALIDFORM[7,22] = 1
+   VALIDFORM[8,1] = 1
+   VALIDFORM[8,2] = 1
+   VALIDFORM[8,3] = 1
+   VALIDFORM[8,4] = 1
+   VALIDFORM[8,5] = 1
+   VALIDFORM[8,6] = 1
+   VALIDFORM[9,7] = 1
+   VALIDFORM[10,8] = 1
+   VALIDFORM[11,6] = 1
+   VALIDFORM[12,9] = 1
+   VALIDFORM[13,16] = 1
+   VALIDFORM[14,17] = 1
+   VALIDFORM[15,27] = 1
+   VALIDFORM[16,24] = 1
+   VALIDFORM[17,1] = 1
+   VALIDFORM[18,6] = 1
+   VALIDFORM[18,23] = 1
+*
+*  Zero the counts
+*
+	LABCNT = NOUTLINES = NLINES = NSTMTS = NTARGET = NERRORS = 0
+*
+*  P.MINLABEL is a pattern matching a valid Minimal Source Label.
+*
+	P.MINLABEL = ANY(MINLETS) ANY(MINLETS) ANY(MINLETS NOS)
+.	           ANY(MINLETS NOS) ANY(MINLETS NOS)
+*
+*  P.CSPARSE parses out the components of the input line in STMT,
+*  and puts them into the locals: LABEL, OPCODE, OPERANDS, COMMENT
+*
+	P.CSPARSE = (((P.MINLABEL . LABEL) | ('     '  '' . LABEL)) '  '
+.	  LEN(3) . OPCODE
+.	  (('  ' (BREAK(' ') | RTAB(0)) . OPERANDS
+.	      (SPAN(' ') | '') RTAB(0) . COMMENT)  |
+.	      (RPOS(0) . OPERANDS . COMMENT)))  |
+.	     ('.'  '' . LABEL  MINCOND . OPCODE
+.	       ((TAB(7)  '.'  LEN(4) . OPERANDS) | (RPOS(0) . OPERANDS))
+.	           '' . COMMENT)
+*
+*  P.CSOPERAND breaks out the next operand in the OPERANDS string.
+*
+	P.CSOPERAND = (BREAK(',') . OPERAND  ',')  |
+.			((LEN(1) RTAB(0)) . OPERAND)
+*
+*  P.CSDTC is a pattern that handles the special case of the
+*  MINIMAL DTC op
+*
+	P.CSDTC   = ((P.MINLABEL . LABEL)  |  ('     '  '' . LABEL))
+.	          LEN(7) (LEN(1) $ CHAR  BREAK(*CHAR)  LEN(1)) . OPERAND
+.	          (SPAN(' ') | '')  RTAB(0) . COMMENT
+*
+*  P.equ.rip is a pattern that parses out the components of an EQU
+*  expression.
+*
+	P.EQU.RIP  = ( SPAN(NOS) . NUM1 | P.MINLABEL . SYM1 )
+.		   ( ANY('+-') . OPRTR | '' )
+.		   ( SPAN(NOS) . NUM2 | P.MINLABEL . SYM2 | '' )
+.		   RPOS(0)
+
+*  OPTAB is a table that maps opcodes into their argument
+*  types and is used for argument checking and processing.
+	OPTAB = TBLINI(
+. 'FLC[W]'
+. 'ADD[OPV,OPN]ADI[OPS]ADR[OPS]ANB[OPW,W]AOV[OPV,OPN,PLBL]ATN[NONE]'
+. 'BOD[OPN,PLBL]BEV[OPN,PLBL]'
+. 'BCT[W,PLBL]BEQ[OPN,OPV,PLBL]BGE[OPN,OPV,PLBL]BGT[OPN,OPV,PLBL]'
+. 'BHI[OPN,OPV,PLBL]BLE[OPN,OPV,PLBL]BLO[OPN,OPV,PLBL]'
+. 'BLT[OPN,OPV,PLBL]BNE[OPN,OPV,PLBL]BNZ[OPN,PLBL]BRN[PLBL]'
+. 'BRI[OPN]BSW[X,VAL,*PLBL BSW]BTW[REG]'
+. 'BZE[OPN,PLBL]CEQ[OPS,OPS,PLBL]'
+. 'CHK[NONE]CHP[NONE]CMB[W]CMC[PLBL,PLBL]CNE[OPS,OPS,PLBL]COS[NONE]CSC[X]CTB[W,VAL]'
+. 'CTW[W,VAL]CVD[NONE]CVM[PLBL]DAC[ADDR]DBC[VAL]DCA[OPN]DCV[OPN]'
+. 'DEF[DEF]DIC[INTEGER]DRC[REAL]DTC[DTEXT]DVI[OPS]DVR[OPS]EJC[NONE]'
+. 'ELSE[ELSE]END[NONE END]ENP[NONE]ENT[*VAL ENT]EQU[EQOP EQU]'
+. 'ERB[INT,TEXT ERB]ERR[INT,TEXT ERR]ESW[NONE ESW]ETX[NONE]EXI[*INT]EXP[NONE]FI[FI]'
+. 'ICA[OPN]ICP[NONE]ICV[OPN]IEQ[PLBL]IF[IF]IFF[VAL,PLBL IFF]IGE[PLBL]'
+. 'IGT[PLBL]ILE[PLBL]ILT[PLBL]INE[PLBL]INO[PLBL]INP[PTYP,INT INP]'
+. 'INR[NONE]IOV[PLBL]ITR[NONE]JSR[PNAM]LCH[REG,OPC]LCT[W,OPV]LCP[REG]'
+. 'LCW[REG]LDI[OPS]LDR[OPS]LEI[X]LNF[NONE]LSH[W,VAL]LSX[W,(X)]MCB[NONE]'
+. 'MFI[OPN,*PLBL]MLI[OPS]MLR[OPS]MNZ[OPN]MOV[OPV,OPN]MTI[OPN]'
+. 'MVC[NONE]MVW[NONE]MWB[NONE]NGI[NONE]NGR[NONE]NZB[W,PLBL]'
+. 'ORB[OPW,W]PLC[X,*OPV]PPM[*PLBL]PRC[PTYP,VAL PRC]PSC[X,*OPV]REQ[PLBL]'
+. 'RGE[PLBL]RGT[PLBL]RLE[PLBL]RLT[PLBL]RMI[OPS]RNE[PLBL]RNO[PLBL]'
+. 'ROV[PLBL]RSH[W,VAL]RSX[W,(X)]RTI[*PLBL]RTN[NONE]SBI[OPS]'
+. 'SBR[OPS]SCH[REG,OPC]SCP[REG]SEC[NONE SEC]SIN[NONE]SQR[NONE]SSL[OPW]SSS[OPW]'
+. 'STI[OPS]STR[OPS]SUB[OPV,OPN]TAN[NONE]THEN[THEN]TRC[NONE]TTL[NONE TTL]'
+. 'UNDEF[UNDEF]WTB[REG]XOB[OPW,W]ZER[OPN]ZGB[OPN]ZRB[W,PLBL]' )
+
+
+*  PRCTAB is table of procedures declared in INP that is used to
+*  check for consistency of INP/PRC statements.
+*
+	PRCTAB = TABLE(60)
+*
+*  EQUATES is used by G.EQU and .  It contains a directory of
+*  all labels that were defined by EQU instructions.
+*
+	EQUATES = TABLE(257)
+
+*  LABTAB is a table that maps each label to the section in which
+*  it is defined, except labels defined in the Definitions Section
+*  (Section 2).
+
+	LABTAB = TABLE(150,150)
+
+*  BSW is a flag that indicates whether or not a BSW...ESW range
+*  is being processed.
+*
+	BSW	= 0
+
+-STITL Machine-Dependent Initializations
+*  Following values for 68000, a 32-bit machine
+*  Some definitions appear in limited form in COD.SPT
+*
+       G.EQU.DEFS = TBLINI(
+. 'CFP$A[256]'
+. 'CFP$B[4]'
+. 'CFP$C[4]'
+. 'CFP$F[8]'
+. 'CFP$I[1]'
+. 'CFP$L[4294967295]'
+. 'CFP$M[2147483647]'
+. 'CFP$N[32]'
+. 'CFP$U[128]'
+. 'NSTMX[10]'
+. 'CFP$R[2]'
+. 'CFP$S[9]'
+. 'CFP$X[3]'
+. 'E$SRS[100]'
+. 'E$STS[1000]'
+. 'E$CBS[500]'
+. 'E$HNB[257]'
+. 'E$HNW[6]'
+. 'E$FSP[15]'
+. 'E$SED[25]'
+. 'CH$LA[065]CH$LB[066]CH$LC[067]CH$LD[068]CH$LE[069]CH$LF[070]'
+. 'CH$LG[071]CH$LH[072]CH$LI[073]CH$LJ[074]CH$LK[075]CH$LL[076]'
+. 'CH$LM[077]CH$LN[078]CH$LO[079]CH$LP[080]CH$LQ[081]CH$LR[082]'
+. 'CH$LS[083]CH$LT[084]CH$LU[085]CH$LV[086]CH$LW[087]CH$LX[088]'
+. 'CH$LY[089]CH$L$[090]'
+. 'CH$D0[048]CH$D1[049]CH$D2[050]CH$D3[051]CH$D4[052]CH$D5[053]'
+. 'CH$D6[054]CH$D7[055]CH$D8[056]CH$D9[057]CH$$A[097]CH$$B[098]'
+. 'CH$$C[099]CH$$D[100]CH$$E[101]CH$$F[102]CH$$G[103]CH$$H[104]'
+. 'CH$$I[105]CH$$J[106]CH$$K[107]CH$$L[108]CH$$M[109]CH$$N[110]'
+. 'CH$$O[111]CH$$P[112]CH$$Q[113]CH$$R[114]CH$$S[115]CH$$T[116]'
+. 'CH$$U[117]CH$$V[118]CH$$W[119]CH$$X[120]CH$$Y[121]CH$$$[122]'
+. 'CH$AM[038]CH$AS[042]CH$AT[064]CH$BB[060]CH$BL[032]CH$BR[124]'
+. 'CH$CL[058]CH$CM[044]CH$DL[036]CH$DT[046]CH$DQ[034]CH$EQ[061]'
+. 'CH$EX[033]CH$MN[045]CH$NM[035]CH$NT[126]CH$PC[037]CH$PL[043]'
+. 'CH$PP[040]CH$RB[062]CH$RP[041]CH$QU[063]CH$SL[047]CH$SM[059]'
+. 'CH$SQ[039]CH$UN[095]CH$OB[091]CH$CB[093]CH$HT[009]CH$VT[011]'
+. 'CH$EY[094]IODEL[032]' )
+*
+-STITL MAIN PROGRAM
+*  Here follows the driver code for the "main" program.
+
+*
+*  Loop until program exits via G.END
+*
+*  DOSTMT is invoked to initiate processing of the next line from
+*  RDLINE.
+*  After doing this, DOSTMT branches to the generator routine indicated
+*  for this opcode if there is one.
+*  The generators all have entry points beginning
+*  with "G.", and can be considered a logical extension of the
+*  DOSTMT routine.  The generators have the choice of branching back
+*  to DSGEN to cause the THISSTMT plex to be sent to OUTSTMT, or
+*  or branching to DSOUT, in which case the generator must output
+*  all needed code itself.
+*
+*  The generators are listed in a separate section below.
+	TRANDATE = DATE()
+*	EXIT(-2)
+
+*  START EXECUTION
+*
+*	Reads for xxx.min, writes to xxx.tok, where xxx is a command line parameter.
+*	The command line parameter may optionally be expressed as xxx;yyy, where
+*	yyy.cnd is the name of a file containing .DEFs to override those in
+*	file xxx.min.
+*
+*  Get file name
+*
+*
+*  Default the parameter string if none present
+*
+	PARMS = (DIFFER(HOST(0)) HOST(0), "v37:dos")
+*
+*  Get file name
+*
+	PARMS ? BREAK(';:') . PARMS LEN(1) (BREAK(';:') | REM) . FILENAMC
+.		(LEN(1) | NULL) REM . FILENAMO
+	FILENAMC = DIFFER(FILENAMC) FILENAMC '.cnd'
+        OUTPUT = IDENT(PARMS) "Need file name (.min)" :S(END)
+
+        OUTPUT = 'MINIMAL translator, pass 1 ' VERSION
+.		' ' TRANDATE
+	FILENAMI = PARMS '.min'
+        OUTPUT = 'Input MINIMAL file: ' FILENAMI
+	FILENAMO = (IDENT(FILENAMO) PARMS, FILENAMO) '.tok'
+        OUTPUT = 'Output TOKEN file: ' FILENAMO
+        OUTPUT = DIFFER(FILENAMC) 'Condition definition file: ' FILENAMC
+*   FLCFLAG  = REPLACE( INPUT,'y','Y' )
+	FLCFLAG = 'N'
+	FLCFLAG = 'Y'
+*  OUTPUT = 'Full line comments passed to TOKEN file? ' FLCFLAG
+*
+*  No page ejects without full line comments
+*
+*   OUTPUT = DIFFER(FLCFLAG,'N')
+*   EJCFLAG  = REPLACE( (DIFFER(FLCFLAG,'N') INPUT, 'N'),'y','Y' )
+	EJCFLAG = 'N'
+	EJCFLAG = 'Y'
+*  OUTPUT = 'EJCs passed to TOKEN file? ' EJCFLAG
+*
+*  Associate input file to LU1.  If a conditional file was specified,
+*  read it first.
+*
+	INPUT(.INFILE,1,(DIFFER(FILENAMC) FILENAMC,FILENAMI))	:S(MAIN1)
+        OUTPUT = DIFFER(FILENAMC) "Cannot open CONDITIONAL file: " FILENAMC
++						:S(END)
+        OUTPUT = "Cannot open MINIMAL file: " FILENAMI        :(END)
+*
+*
+*  Associate output file
+*
+MAIN1	OUTPUT(.OUTFILE,2,FILENAMO)		:S(MAIN2)
+        OUTPUT = "Cannot open TOKEN file: " FILENAMO  :(END)
+MAIN2
+
+*  Patterns used by DOSTMT
+	P.OPSK1 = (BREAK(' ') | REM) . ARGSKEL
+
+  :(DSOUT)
+  &TRACE = 4000
+  &FTRACE = 4000
+*  &PROFILE = 1
+DSOUT
+DOSTMT	THISLINE = RDLINE()
+	CRACK(THISLINE)            		:F(DSOUT)
+	DIFFER(LABEL) LABENTER()
+	ARGERRS = 0
+
+	OPSKEL = OPTAB[OPCODE]			:F(DS01)
+	IDENT(OPSKEL) ERROR("OPCODE NOT KNOWN")
+	OPSKEL P.OPSK1 =
+	IDENT(ARGSKEL,'NONE')			:S(DOS10)
+
+*  HERE IF ARGUMENTS TO VERIFY
+DOS01	IDENT(ARGSKEL)				:S(DOS05)
+	ARGSKEL P.ARGSKEL1 =
+*  ACCEPT NULL ARGUMENT IF THIS ARGUMENT OPTIONAL
+	ARGTHIS '*' IDENT(OP1)			:S(DOS05)
+	TYP1 = ARGTYPE(OP1,ARGTHIS)
+	ARGERRS = EQ(TYP1) ARGERRS + 1
+	IDENT(ARGSKEL)				:S(DOS05)
+	ARGSKEL P.ARGSKEL2 =
+	ARGTHIS '*' IDENT(OP2)			:S(DOS05)
+	TYP2 = ARGTYPE(OP2,ARGTHIS)
+	ARGERRS = EQ(TYP2) ARGERRS + 1
+	IDENT(ARGSKEL)				:S(DOS05)
+	ARGSKEL P.ARGSKEL2 =
+	ARGTHIS '*' IDENT(OP3)			:S(DOS05)
+	TYP3 = ARGTYPE(OP3,ARGTHIS)		:(DOS05)
+	ARGERRS = EQ(TYP3) ARGERRS + 1
+DOS10
+DOS05
+	GT(ARGERRS) ERROR('ARG TYPE NOT KNOWN')
+*  HERE IF AN ARGUMENT TYPE NOT RECOGNIZED
+	OPSKEL ' ' =				:F(DSGEN)
+*  Here if post-processing required
+	            :($('G.' OPSKEL))
+*
+*  Get generator entry point (less "G." prefix)
+*
+  :(G.H)
+*  Here if bad opcode
+DS01	ERROR('BAD OP-CODE')			:(DSOUT)
+
+*  GENERATE TOKENS.
+*
+DS.TYPERR
+	ERROR('OPERAND TYPE ZERO')		:(DSOUT)
+DSGEN   OUTSTMT(LABEL,OPCODE,OP1,OP2,OP3,COMMENT) :(DSOUT)
+-STITL ARGFORM(ARG)
+ARGFORM
+	ARGFORM = 0
+*  DETERMINE OPERAND FORMAT TYPE as follows
+	IDENT(T = ITYPTAB[ARG])			:S(ARGFORM1)
+*  ITYPTAB has table of cases for types 07,08,09,10,11
+*  If entry in this table, type immediately available:
+*  W reg is 08 X reg is 07 (X)+ is 10 -(X) is 11 (X) is 09
+	ARGFORM = T				:(RETURN)
+ARGFORM1
+	ARG P.NOS				:S(ARGFORM.INT)
+	ARG '='					:S(ARGFORM.EQ)
+	ARG '*'					:S(ARGFORM.STAR)
+	ARG ANY('+-')				:S(ARGFORM.SNUM)
+	ARG BREAK('(')				:S(ARGFORM.INDEX)
+*  HERE IF THE ONLY POSSIBILITY REMAINING IS A NAME WHICH MUST BE LBL
+*  IF THE LABEL NOT YET KNOWN, ASSUME IT IS A PLBL
+	IDENT(T = LABTAB[ARG])			:S(ARGFORM.PLBL)
+	ARGFORM = T				:(RETURN)
+ARGFORM.PLBL LABTAB[ARG] = 6
+	ARGFORM = 6				:(RETURN)
+ARGFORM.EQ
+	ARG LEN(1) REM . ITYPA
+	ITYPA = LABTAB[ITYPA]
+	ARGFORM = (EQ(ITYPA,2) 18, EQ(ITYPA,6) 22,
+.	GT(ITYPA,2) ITYPA + 17) :S(RETURN)
+*  if =LBL and LBL not known, it must be ELBL
+	ARGFORM = 22
+	LABTAB[ITYPA] = 5			:(RETURN)
+ARGFORM.STAR
+	ARG LEN(1) REM . T			:F(RETURN)
+	EQ(LABTAB[T],2)				:F(RETURN)
+	ARGFORM = 19				:(RETURN)
+ARGFORM.INT	ARGFORM = 1			:(RETURN)
+ARGFORM.SNUM	ARG LEN(1) P.NOS		:F(ARGFORM.SREAL)
+		ARGFORM = 16			:(RETURN)
+ARGFORM.SREAL	ARG LEN(1) P.REAL		:F(RETURN)
+		ARGFORM = 17			:(RETURN)
+ARGFORM.INDEX	ARG BREAK('(') . T '(X' ANY('LRST') ')' RPOS(0)
+.						:F(RETURN)
+	T P.NOS					:F(ARGFORM.INDEX1)
+*  HERE IF INT(X)
+	ARGFORM = 12				:(RETURN)
+ARGFORM.INDEX1
+	IDENT(T = LABTAB[T])			:S(RETURN)
+	ARGFORM = (EQ(T,2) 13, EQ(T,3) 15, EQ(T,4) 14)	:(RETURN)
+-STITL ARGTYPE(OP,TYP)
+*  This module checks operand types of current operation,
+*  prefixing each operand with type code as given in
+*  Minimal definition.
+*  Initially classify as one of following:
+*  01=INT 02=DLBL  03=NAME 07=X  08=W  09=(X) 10=(X)+  11=-(X)
+*  12=INT(X)  13=DLBL(X)  14=NAME(X)  16=SIGNED-INTEGER
+*  17=REAL  18==DLBL  19=*DLBL 20==NAME  23=PNAM 24=EQOP
+*  25=PTYP  26=TEXT  27=DTEXT
+ARGTYPE
+	ARGTYPE = 0
+*  TYP MAY HAVE INITIAL'*' INDICATING ARGUMENT OPTIONAL. THIS
+*  CODE REACHED ONLY IF ARGUMENT NOT NULL, SO REMOVE THE '*'.
+	TYP '*' =
+
+	IDENT(TYP,'TEXT') 			:S(ARG.TEXT)
+	IDENT(TYP,'DTEXT') 			:S(ARG.DTEXT)
+	IDENT(TYP,'PTYP')			:S(ARG.PTYP)
+	IDENT(TYP,'EQOP')			:S(ARG.EQOP)
+	ITYPE = ARGFORM(OP)
+	OPFORM = OPFORMTAB<TYP>
+	ARGTYPE = NE(VALIDFORM<+OPFORM,ITYPE>) ITYPE	:(RETURN)
+*	ARGTYPE = ITYPE 			:(RETURN)
+
+ARG.TEXT ARGTYPE = 26 				:(RETURN)
+ARG.DTEXT ARGTYPE = 27				:(RETURN)
+ARG.PTYP OP ANY('RNE')				:F(RETURN)
+	ARGTYPE = 25				:(RETURN)
+ARG.EQOP
+	OP1 = IDENT(OP,'*')
+.			G.EQU.DEFS[LABEL]
+	ARGTYPE = 24				:(RETURN)
+
+*
+-STITL CRACK(LINE)OPERANDS,OPERAND,CHAR
+*  CRACK is called to create a STMT plex containing the various
+*  entrails of the Minimal Source statement in LINE.  For
+*  conditional assembly ops, the opcode is the op, and OP1
+*  is the symbol.  Note that DTC is handled as a special case to
+*  assure that the decomposition is correct.
+*
+*  CRACK will print an error and fail if a syntax error occurs.
+*
+CRACK   NSTMTS  = NSTMTS + 1
+	LINE    P.CSPARSE			:F(CS03)
+	OP1 = OP2 = OP3 = TYP1 = TYP2 = TYP3 =
+	IDENT(OPCODE,'DTC')			:S(CS02)
+*
+*  Now pick out operands until none left
+*
+	OPERANDS  P.CSOPERAND = 		:F(CS01)
+	OP1 = OPERAND
+	OPERANDS  P.CSOPERAND = 		:F(CS01)
+	OP2 = OPERAND
+	OPERANDS  P.CSOPERAND			:F(CS01)
+	OP3 = OPERAND
+CS01	:(RETURN)
+*
+*  DTC - Special case
+*
+CS02	LINE	P.CSDTC				:F(CS03)
+	OP1 = OPERAND
+						:(CS01)
+*
+*  Here on syntax error
+*
+CS03	ERROR('SOURCE LINE SYNTAX ERROR')	:(FRETURN)
+-STITL ERROR(TEXT)
+*  This module handles reporting of errors with the offending
+*  statement text in THISLINE.  Comments explaining
+*  the error are written to the listing (including error chain), and
+*  the appropriate counts are updated.
+*
+ERROR
+	OUTFILE = '* *???* ' THISLINE
+	OUTFILE = '*       ' TEXT
+.	          (IDENT(LASTERROR),'. LAST ERROR WAS LINE ' LASTERROR)
+	LASTERROR = NOUTLINES
+	NOUTLINES = NOUTLINES + 2
+	NERRORS = NERRORS + 1
+.	              			:(DSOUT)
+-STITL LABENTER()TLAB
+*  LABENTER is called to make entry in LABTAB for a label
+*  Current classification is 3 for WLBL, 4 for CLBL and 5 for
+*  other labels
+LABENTER
+	IDENT(LABEL)				:S(RETURN)
+	LABTAB[LABEL] = (EQ(SECTNOW,2) 2, EQ(SECTNOW,3) 4,
+.	EQ(SECTNOW,4) 3 , GT(SECTNOW,4)  6) 	:(RETURN)
+-STITL OUTSTMT(LABEL,OPCODE,OP1,OP2,OP3,COMMENT)T,STMTOUT
+*
+OUTSTMT
+*
+*  Send text to OUTFILE
+*
+	OUTFILE = '{' LABEL '{' OPCODE '{'
+.	(IDENT(TYP1), TYP1 ',') OP1 '{'
+.	(IDENT(TYP2), TYP2 ',') OP2 '{'
+.	(IDENT(TYP3), TYP3 ',') OP3 '{' COMMENT
+.	'{' NLINES
+	NTARGET = NTARGET + 1
+	NOUTLINES = NOUTLINES + 1
+.						:(RETURN)
+-STITL RDLINE()
+*  This routine returns the next statement line in the input file
+*  to the caller.  It never fails.  If there is no more input,
+*  then a Minimal END statement is returned.
+*  Comments are passed through to the output file directly.
+*  Conditional assembly is performed here.
+*
+*  If we were reading from FILENAMC (conditional DEFs), then the
+*  input stream is switched to FILENAMI, and the flag IGNORE_DEFS
+*  is set.
+*
+*  Lines beginning with ">" are treated as SNOBOL4 statements
+*  and immediately executed.
+*
+RDLINE	RDLINE = INFILE				:F(RL02)
+	NLINES  = NLINES + 1
+	IDENT( RDLINE )				:S(RDLINE)
+*
+*  Transfer control to appropriate conditional assembly
+*  directive generator or other statement generator.
+*
+	LEQ( SUBSTR( RDLINE,1,1 ),'.' )		:F(OTHER)
+	RDLINE ? P.CONDASM			:S( $CATAB[CONDCMD] )
+RL00	LEQ( SUBSTR( RDLINE,1,1 ),'*' )		:F(RL01)
+
+*
+*  Only print comment if requested.
+*
+	OUTFILE = IDENT(FLCFLAG,'Y') RDLINE	:F(RDLINE)
+	NOUTLINES = NOUTLINES + 1		:(RDLINE)
+*
+*  Here if not a comment line
+*
+RL01	LEQ( SUBSTR( RDLINE,1,1 ),'>' )		:F(RETURN)
+
+*
+*  Here with SNOBOL4 line to execute
+*
+	C = CODE(SUBSTR( RDLINE, 2 ) "; :(RDLINE)") :S<C>
+        OUTPUT = "Error compiling SNOBOL4 statement"
+  						:(RL03)
+*
+*  Here on EOF.  FILENAMC is non-null if we were reading from it.
+*
+RL02	IDENT(FILENAMC)				:S(RL03)
+	FILENAMC =
+	IGNORE_DEFS = 1
+	ENDFILE(1)
+	INPUT(.INFILE,1,FILENAMI)		:S(RDLINE)
+        OUTPUT = "Cannot open MINIMAL file: " FILENAMI        :(END)
+
+RL03	RDLINE = '       END'			:(RL01)
+*
+*  syntax error handler.
+*
+SYNERR OUTPUT = INCNT '(SYNTAX ERROR):' RDLINE            :(RDLINE)
+*
+*  process define
+*
+DEFOP  IDENT( CONDVAR )				:S(SYNERR)
+       DIFFER( IGNORE_DEFS )			:S(RDLINE)
+       EQ( LEVEL )				:S(DEFOK)
+       EQ( PROCESSREC[RESULT(TOP),MODE(TOP)] )	:S(RDLINE)
+DEFOK  SYMTBL[CONDVAR] = 1			:(RDLINE)
+*
+*  process undefine
+*
+UNDEFOP
+       IDENT( CONDVAR )				:S(SYNERR)
+       EQ( LEVEL )				:S(UNDOK)
+       EQ( PROCESSREC[RESULT(TOP),MODE(TOP)] )	:S(RDLINE)
+UNDOK  SYMTBL[CONDVAR] =			:(RDLINE)
+*
+*  process if
+*
+IFOP   IDENT( CONDVAR )				:S(SYNERR)
+       EQ( LEVEL )				:S(IFOK)
+*
+*  here for .IF encountered during bypass state.
+*
+       NE( PROCESSREC[RESULT(TOP),MODE(TOP)] )  :S(IFOK)
+       LEVEL    = LEVEL + 1
+       TOP      = STATESTK[LEVEL] = STATE(BYPASS,THEN)    :(RDLINE)
+*
+*  here for .IF to be processed normally.
+*
+IFOK   LEVEL    = LEVEL + 1
+       TOP      = STATESTK[LEVEL] = STATE(
+.	             ( DIFFER( SYMTBL[CONDVAR] ) TRUE,FALSE ),
+.	             THEN )			:(RDLINE)
+*
+*  Process .THEN
+*
+THENOP	DIFFER(CONDVAR)				:S(SYNERR)
+	EQ(LEVEL)				:S(SYNERR)F(RDLINE)
+*
+*  Process .ELSE
+*
+ELSEOP	DIFFER(CONDVAR)				:S(SYNERR)
+	MODE(TOP) = NE( LEVEL ) ELSE		:S(RDLINE)F(SYNERR)
+*
+*  Process .FI
+*
+FIOP	DIFFER(CONDVAR)				:S(SYNERR)
+	LEVEL = NE( LEVEL ) LEVEL - 1		:F(SYNERR)
+	TOP   = ( NE( LEVEL ) STATESTK[LEVEL],'' )     :(RDLINE)
+*
+*  Process statements other than conditional directives.
+*
+OTHER	EQ( LEVEL )				:S(RL00)
+	EQ( PROCESSREC[RESULT(TOP),MODE(TOP)] )	:S(RDLINE)F(RL00)
+-STITL	TBLINI(STR)POS,CNT,INDEX,VAL,LASTVAL
+*  This routine is called to initialize a table from a string of
+*  index/value pairs.
+*
+TBLINI	POS     = 0
+*
+*  Count the number of "[" symbols to get an assessment of the table
+*  size we need.
+*
+TIN01   STR     (TAB(*POS) BREAK('[') BREAK(']') *?(CNT = CNT + 1) @POS)
+.	                              	:S(TIN01)
+*
+*  Allocate the table, and then fill it. Note that a small memory
+*  optimisation is attempted here by trying to re-use the previous
+*  value string if it is the same as the present one.
+*
+	TBLINI   = TABLE(CNT)
+TIN02   STR     (BREAK('[') $ INDEX LEN(1) BREAK(']') $ VAL LEN(1)) =
+.	                              	:F(RETURN)
+	VAL     = CONVERT( VAL,'INTEGER' )
+	VAL     = IDENT(VAL,LASTVAL) LASTVAL
+	LASTVAL = VAL
+	TBLINI[INDEX] = VAL			:(TIN02)
+-STITL Generators
+*
+*  BSW processing begins by building an array that can hold all
+*  IFF operands and comments.
+*
+G.BSW
+*  save prior vms code in case needed
+	UB = ( INTEGER( OP2 ) OP2, EQUATES[OP2] )
+	IFFAR = INTEGER( UB )
+.		ARRAY( '0:' UB - 1,'{{' )	:F(G.BSW1)
+	DPLBL = OP3
+	BSW   = 1				:(DSGEN)
+G.BSW1	ERROR("NON-INTEGER UPPER BOUND FOR BSW")
+
+*
+*  IFF processing sets the iffar[] element to the current
+*  value, plbl, and comment.
+*
+G.IFF
+	(EQ( BSW ) ERROR("IFF WITHOUT BSW"))
+	IFFTYP = ( INTEGER(OP1) '1', '2')
+	IFFVAL = ( INTEGER( OP1 ) OP1, EQUATES[OP1] )
+	IFFAR[IFFVAL] = INTEGER( IFFVAL )
+.		IFFTYP ',' OP1 '{' TYP2 ',' OP2 '{'  COMMENT
+.						:S(DSOUT)
+	ERROR("NON-INTEGER IFF VALUE")
+*
+*  In order to support translation of MINIMAL operands and
+*  BSW/IFF/ESW preprocessing, all EQU expressions must be
+* 	evaluated and kept in a symbol table.
+*
+G.EQU
+	EQUATES[LABEL] = IDENT(OP1,'*')
+.			G.EQU.DEFS[LABEL]	:S(DSGEN)
+
+	NUM1 = NUM2 = SYM1 = SYM2 = OPRTR =
+	OP1 P.EQU.RIP				:F(G.EQU2)
+	NUM1    = DIFFER(SYM1) EQUATES[SYM1]
+	NUM2    = DIFFER(SYM2) EQUATES[SYM2]
+	VAL     = EVAL( NUM1 ' ' OPRTR ' ' NUM2 )	:F(G.EQU3)
+G.EQU1	EQUATES[LABEL] = VAL				:(DSGEN)
+G.EQU2	ERROR("EQU OPERAND SYNTAX ERROR")
+G.EQU3	ERROR("EQU EVALUATION FAILED: " NUM1 ' ' OPRTR ' ' NUM2 ' "' OP1 '"' )
+*
+*  ESW processing generates an IFF for every value in the
+*  BSW range.
+*
+G.ESW
+	(EQ(BSW) ERROR("ESW WITHOUT BSW"))
+	IFFINDX = 0
+G.ESW1	IFFAR[IFFINDX] BREAK('{') $ VAL LEN(1)
+.		BREAK( '{' ) $ PLBL LEN(1)
+.		REM $ CMNT
+.						:F(G.ESW2)
+	VAL = IDENT( VAL ) '1,' IFFINDX
+	PLBL = IDENT( PLBL ) '6,' DPLBL
+	(IDENT(DPLBL) IDENT(PLBL) ERROR("MISSING IFF VALUE: "
+.		 VAL " WITHOUT PLBL IN PRECEDING BSW"))
+	OUTSTMT(,'IFF',VAL,PLBL,,CMNT)
+	IFFINDX = IFFINDX + 1			:(G.ESW1)
+G.ESW2  IFFAR =					:(DSGEN)
+
+*  END prints statistics on terminal then exits program
+*
+G.END   OUTSTMT(,'END',,,,COMMENT)
+	(NE(LEVEL) ERROR("Unclosed IF conditional clause"))
+        OUTPUT = '*** TRANSLATION COMPLETE ***'
+        OUTPUT = NLINES ' LINES READ.'
+        OUTPUT = NSTMTS ' STATEMENTS PROCESSED.'
+        OUTPUT = NTARGET ' TARGET CODE LINES PRODUCED.'
+        OUTPUT = NERRORS ' ERRORS OCCURRED.'
+        OUTPUT =
+.	  DIFFER(LASTERROR) 'THE LAST ERROR WAS IN LINE ' LASTERROR
+	&CODE   = NE(NERRORS) 2001
+        OUTPUT = COLLECT() * 5 ' FREE BYTES'
+	T = CONVERT(PRCTAB,'ARRAY')		:F(G.END.2)
+*  Here if procedures declared by INP but not by PRC
+        OUTPUT = 'Procedures with INP, no PRC'
+	I = 1
+G.END.1 OUTPUT = T[I,1] ' ' T[I,2]            :F(G.END.2)
+	I = I + 1				:(G.END.1)
+G.END.2
+						:(END)
+G.ENT
+*  NOTE PROGRAM ENTRY LABELS
+*	ENTFILE = LABEL ',' OP1
+	LABTAB[LABEL] = 5			:(DSGEN)
+G.H						:(DSGEN)
+
+*  Keep track of SEC statements
+
+G.SEC	SECTNOW = SECTNOW + 1  		:(DSGEN)
+G.TTL
+	THISLINE LEN(10) REM . T
+	T SPAN(' ') =
+	OUTSTMT(,'TTL','27,' T)			:(DSOUT)
+G.ERB
+G.ERR	THISLINE BREAK(',') LEN(1) REM . T
+	OUTSTMT(LABEL,OPCODE,OP1, T)		:(DSOUT)
+
+G.INP
+	IDENT(LABEL) ERROR('NO LABEL FOR INP')
+	DIFFER(T = PRCTAB[LABEL]) ERROR('DUPLICATE INP')
+	PRCTAB[LABEL] = OP1			:(DSGEN)
+
+G.PRC
+	IDENT(LABEL) ERROR('NO LABEL FOR PRC')
+	IDENT(T = PRCTAB[LABEL]) ERROR('MISSING INP')
+	DIFFER(T,OP1) ERROR('INCONSISTENT INP/PRC')
+	PRCTAB[LABEL] =				:(DSGEN)
+END
