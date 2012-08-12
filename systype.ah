@@ -1,79 +1,79 @@
-# copyright 1987-2012 robert b. k. dewar and mark emmer.
+# Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 # 
-# this file is part of macro spitbol.
+# This file is part of Macro SPITBOL.
 # 
-#     macro spitbol is free software: you can redistribute it and/or modify
-#     it under the terms of the gnu general public license as published by
-#     the free software foundation, either version 3 of the license, or
+#     Macro SPITBOL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
-#     macro spitbol is distributed in the hope that it will be useful,
-#     but without any warranty; without even the implied warranty of
-#     merchantability or fitness for a particular purpose.  see the
-#     gnu general public license for more details.
+#     Macro SPITBOL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
 # 
-#     you should have received a copy of the gnu general public license
-#     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+#     You should have received a copy of the GNU General Public License
+#     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 
 # configuration information for inter.s
 #
 linux=1
 winnt=0
 
-#        segment declarations macros
+#        Segment Declarations Macros
 #
-                .macro          cseg_           # open a code segment
+                .macro          CSeg_           # Open a Code Segment
                 .section        .text
                 .endm
 
-                .macro          csegend_        # close a code segment
+                .macro          CSegEnd_        # Close a Code Segment
                 .endm
 
-                .macro          dseg_           # open a data segment
+                .macro          DSeg_           # Open a Data Segment
                 .section        .data
                 .endm
 
-                .macro          dsegend_        # close a data segment
+                .macro          DSegEnd_        # Close a Data Segment
                 .endm
 
-                .macro          bssseg_         # open a bss segment
+                .macro          BSSSeg_         # Open a BSS Segment
                 .section        .bss
                 .endm
 
-                .macro          bsssegend_      # close a bss segment
+                .macro          BSSSegEnd_      # Close a BSS Segment
                 .endm
 
-                .macro          header_         # group and assume directives
-                cseg_
-                csegend_
-                dseg_
-                dsegend_
+                .macro          Header_         # Group and Assume directives
+                CSeg_
+                CSegEnd_
+                DSeg_
+                DSegEnd_
                 .endm
 
-# structure definition macros
+# Structure definition macros
 #
         .macro  struc name
         .struct 0
         .endm
 
         .macro  ends name
-        dseg_
+        DSeg_
         .endm
 
-# define how data locations in the minimal code are accessed from
-# assembly-language and c routines.  "direct" is non-zero to make
+# define how data locations in the Minimal code are accessed from
+# assembly-language and C routines.  "direct" is non-zero to make
 # the symbols public for direct access, zero to have access via
 # a table of pointers and the minadr procedure.
 #
 direct=1
 
 # define how floating point results are returned from a function
-# (either in st(0) or in edx:eax.
+# (either in ST(0) or in EDX:EAX.
 fretst0=1
 freteax=0
 
-# macros defining whether a leading underscore is required for public minimal
-# names that will be referenced from c.
+# Macros defining whether a leading underscore is required for public Minimal
+# names that will be referenced from C.
 #
 underscore=0
         .macro  address name
@@ -140,7 +140,7 @@ _\procname:
         .global \procname
         .endm
 
-# call c function.  intel follows standard c conventions, and
+# Call C function.  Intel follows standard C conventions, and
 # caller pops arguments.
         .macro  callc routine,nbytes
 .ifne underscore
@@ -153,14 +153,14 @@ _\procname:
 .endif
         .endm
 
-# intel runs in one flat segment.  far calls are the same as near calls.
+# Intel runs in one flat segment.  Far calls are the same as near calls.
         .macro  callfar routine,nbytes
         ext     \routine:near
         callc   \routine,\nbytes
         .endm
 
-# return from an assembly-language function that will be called by c.
-# caller pops arguments
+# Return from an assembly-language function that will be called by C.
+# Caller pops arguments
         .macro  retc nbytes
 	ret
         .endm

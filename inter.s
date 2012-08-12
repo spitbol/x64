@@ -1,4 +1,3 @@
-#        .title          "spitbol assembly-language to c-language o/s interface
 # copyright 1987-2012 robert b. k. dewar and mark emmer.
 # 
 # this file is part of macro spitbol.
@@ -16,8 +15,6 @@
 #     you should have received a copy of the gnu general public license
 #     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 #
-        .psize          80,132
-        .arch           pentium
 globals =               1                       #asm globals defined here
         .include        "systype.ah"
         .include        "osint.inc"
@@ -56,10 +53,10 @@ globals =               1                       #asm globals defined here
 #
 #               ...code to put arguments in registers...
 #               call    sysxx           # call osint function
-#               .long   EXIT_1          # address of exit point 1
-#               .long   EXIT_2          # address of exit point 2
+#               .long   exit_1          # address of exit point 1
+#               .long   exit_2          # address of exit point 2
 #               ...     ...             # ...
-#               .long   EXIT_N          # address of exit point n
+#               .long   exit_n          # address of exit point n
 #               ...instruction following call...
 #
 #       the osint function 'sysxx' can then return in one of n+1 ways:
@@ -108,8 +105,6 @@ globals =               1                       #asm globals defined here
 #       '_osopen'.  however, not all c compilers follow this convention.
 #
 #       acknowledgement:
-#
-#       this interfacing scheme is based on an idea put forth by andy koenig.
 #
 #------------
 #
@@ -165,24 +160,7 @@ ten:    .long   10              # constant 10
         pubdef  inf,.long,0
         .long   0x7ff00000      # double precision infinity
 
-#sav_block: .fill r_size,1,0     # save minimal registers during push/pop reg
-sav_block:	.long 0
-		.long 0
-		.long 0
-		.long 0
-		.long 0
-		.long 0
-		.long 0
-		.long 0
-		.long 0
-		.long 0
-		.long 0
-		.long 0
-		.long 0
-		.long 0
-		.long 0
-		.long 0
-		.long 0
+sav_block: .fill r_size,1,0     # save minimal registers during push/pop reg
 #
         .balign 4
 ppoff:  .long   0               # offset for ppm exits

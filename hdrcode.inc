@@ -1,5 +1,5 @@
-#   hdrcode.inc
+#   HDRCODE.INC
 #
-#  no header code in 386 version.
+#  No header code in 386 version.
 #
 

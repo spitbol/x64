@@ -1,16 +1,16 @@
-#   file:  osint.inc            version:  01.00
+#   File:  osint.inc            Version:  01.00
 #   -------------------------------------------
 #
-#   this header file defines the interface between the macro spitbol compiler
-#   and any assembly-language osint modules.
-#   communication between the two is handled via a set of global variables
+#   This header file defines the interface between the Macro SPITBOL compiler
+#   and any assembly-language OSINT modules.
+#   Communication between the two is handled via a set of global variables
 #   defined as externals below.
 
-#  copyright 1991 robert goldberg and catspaw, inc.
+#  Copyright 1991 Robert Goldberg and Catspaw, Inc.
 
-#   set up externals for all the compiler's registers.
+#   Set up externals for all the compiler's registers.
 
-        dseg_
+        DSeg_
 .ifndef globals
 	ext		reg_cp,dword
 	ext		reg_wa,dword
@@ -21,131 +21,131 @@
 	ext		reg_xs,dword
 	ext		reg_ia,dword
 .endif
-        dsegend_
+        DSegEnd_
 
-#   macros to load a compiler register into a machine register
+#   Macros to load a compiler register into a machine register
 
-        .macro          get_cp reg
+        .macro          GET_CP reg
         mov             \reg, reg_cp
         .endm
 
-        .macro          get_ia reg
+        .macro          GET_IA reg
         mov             \reg, reg_ia
         .endm
 
-        .macro          get_wa reg
+        .macro          GET_WA reg
         mov             \reg, reg_wa
         .endm
 
-        .macro          get_wb reg
+        .macro          GET_WB reg
         mov             \reg, reg_wb
         .endm
 
-        .macro          get_wc reg
+        .macro          GET_WC reg
         mov             \reg, reg_wc
         .endm
 
-        .macro          get_xr reg
+        .macro          GET_XR reg
         mov             \reg, reg_xr
         .endm
 
-        .macro          get_xl reg
+        .macro          GET_XL reg
         mov             \reg, reg_xl
         .endm
 
-        .macro          get_xs reg
+        .macro          GET_XS reg
         mov             \reg, reg_xs
         .endm
 
 
-#   macros to store a machine register into a compiler register.
+#   Macros to store a machine register into a compiler register.
 
-        .macro          set_cp val
+        .macro          SET_CP val
         mov             reg_cp, \val
         .endm
 
-        .macro          set_ia val
+        .macro          SET_IA val
         mov             reg_ia, \val
         .endm
 
-        .macro          set_wa val
+        .macro          SET_WA val
         mov             reg_wa, \val
         .endm
 
-        .macro          set_wb val
+        .macro          SET_WB val
         mov             reg_wb, \val
         .endm
 
-        .macro          vset_wc val
+        .macro          vSET_WC val
         mov             reg_wc, \val
         .endm
 
-        .macro          set_xr val
+        .macro          SET_XR val
         mov             reg_xr, \val
         .endm
 
-        .macro          set_xl val
+        .macro          SET_XL val
         mov             reg_xl, \val
         .endm
 
-        .macro          set_xs val
+        .macro          SET_XS val
         mov             reg_xs, \val
         .endm
 
 
-#   return values to take exit n from interface
+#   Return values to take exit N from interface
 
-exit_1  =       0
-exit_2  =       4
-exit_3  =       8
-exit_4  =       12
-exit_5  =       16
-exit_6  =       20
-exit_7  =       24
-exit_8  =       28
-exit_9  =       32
+EXIT_1  =       0
+EXIT_2  =       4
+EXIT_3  =       8
+EXIT_4  =       12
+EXIT_5  =       16
+EXIT_6  =       20
+EXIT_7  =       24
+EXIT_8  =       28
+EXIT_9  =       32
 
-#    return value to do a normal return from interface.
+#    Return value to do a normal return from interface.
 
-normal_return   =       -1
+NORMAL_RETURN   =       -1
 
-        cseg_
+        CSeg_
 
-#       function and macro to call into minimal code.
-#       the argument is an ordinal number defined below.
+#       Function and macro to call into MINIMAL code.
+#       The argument is an ordinal number defined below.
 .ifndef globals
 	ext		minimal,near
 .endif
-        .macro          minimal callno
+        .macro          MINIMAL callno
         push            offset \callno
 	callc		minimal,4
         .endm
 
-#   ordinals for minimal calls from assembly language.
+#   Ordinals for MINIMAL calls from assembly language.
 #
-#   the order of entries here must correspond to the order of
-#   calltab entries in the inter assembly language module.
+#   The order of entries here must correspond to the order of
+#   calltab entries in the INTER assembly language module.
 #
-relaj   =       0
-relcr   =       1
-reloc   =       2
-alloc   =       3
-alocs   =       4
-alost   =       5
-blkln   =       6
-insta   =       7
-rstrt   =       8
-start   =       9
-filnm   =       10
-dtype   =       11
-enevs   =       12
-engts   =       13
+RELAJ   =       0
+RELCR   =       1
+RELOC   =       2
+ALLOC   =       3
+ALOCS   =       4
+ALOST   =       5
+BLKLN   =       6
+INSTA   =       7
+RSTRT   =       8
+START   =       9
+FILNM   =       10
+DTYPE   =       11
+ENEVS   =       12
+ENGTS   =       13
 
-#       function and macro to get/set value from/to minimal dataspace.
-#       the argument is an ordinal number defined below.
-#       the macro getoff returns the address of the value.
+#       Function and macro to get/set value from/to MINIMAL dataspace.
+#       The argument is an ordinal number defined below.
+#       The macro GETOFF returns the address of the value.
 .if direct                                  # [[
-        .macro          getoff reg,valno
+        .macro          GETOFF reg,valno
 .ifne underscore
         lea             \reg,_\valno
 .else
@@ -153,7 +153,7 @@ engts   =       13
 .endif
         .endm
 
-        .macro          getmin reg,valno
+        .macro          GETMIN reg,valno
 .ifne underscore
         mov             \reg,_\valno
 .else
@@ -161,7 +161,7 @@ engts   =       13
 .endif
         .endm
 
-        .macro          setmin valno,value
+        .macro          SETMIN valno,value
 .ifne underscore
         mov             _\valno,dword ptr \value
 .else
@@ -169,7 +169,7 @@ engts   =       13
 .endif
         .endm
 
-        .macro          setminr valno,value
+        .macro          SETMINR valno,value
 .ifne underscore
         mov             _\valno,\value
 .else
@@ -187,12 +187,12 @@ engts   =       13
 .endif
         .endm
 
-        dseg_
+        DSeg_
 .else                                       # ][
 .ifndef globals
 	ext		minoff,near
 .endif
-        .macro          getoff reg,valno
+        .macro          GETOFF reg,valno
 .ifnc \reg,eax
 	push		eax
 .endif
@@ -204,7 +204,7 @@ engts   =       13
 .endif
         .endm
 
-        .macro          getmin reg,valno
+        .macro          GETMIN reg,valno
 .ifnc \reg,eax
 	push		eax
 .endif
@@ -216,7 +216,7 @@ engts   =       13
 .endif
         .endm
 
-        .macro          setmin valno,value
+        .macro          SETMIN valno,value
 .ifc \value,eax
 	push		eax
 .endif
@@ -237,70 +237,70 @@ engts   =       13
 \name:  .byte           0
         .endm
 
-#   ordinals for transferring minimal values to/from assembly language.
+#   Ordinals for transferring MINIMAL values to/from assembly language.
 #
-#   the order of entries here must correspond to the order of
-#   valtab entries in the inter assembly language module.
+#   The order of entries here must correspond to the order of
+#   valtab entries in the INTER assembly language module.
 #
-#   the structure vords and the access macro is merely a device to
-#   produce an enumeration similar to an enum structure to c.
+#   The structure vords and the access macro is merely a device to
+#   produce an enumeration similar to an enum structure to C.
 #
         struc   vords
 .endif                                      # ]]
 
-        access  gbcnt
-        access  headv
-        access  mxlen
-        access  stage
-        access  timsx
-        access  dnamb
-        access  dnamp
-        access  state
-        access  b_efc
-        access  b_icl
-        access  b_scl
-        access  b_vct
-        access  b_xnt
-        access  b_xrt
-        access  stbas
-        access  statb
-        access  polct
-        access  typet
-        access  dffnc
-        access  lowspmin
-        access  flprt
-        access  flptr
-        access  gtcef
-        access  hshtb
-        access  pmhbs
-        access  r_fcb
-        access  c_aaa
-        access  c_yyy
-        access  g_aaa
-        access  w_yyy
-        access  s_aaa
-        access  s_yyy
-        access  r_cod
-        access  kvstn
-        access  kvdmp
-        access  kvftr
-        access  kvcom
-        access  kvpfl
-        access  cswfl
-        access  stmcs
-        access  stmct
-        access2 ticblk
-        access2 tscblk
-        access2 id1
-        access2 id2blk
-        access2 inpbuf
-        access2 ttybuf
-        access  b_rcl
+        access  GBCNT
+        access  HEADV
+        access  MXLEN
+        access  STAGE
+        access  TIMSX
+        access  DNAMB
+        access  DNAMP
+        access  STATE
+        access  B_EFC
+        access  B_ICL
+        access  B_SCL
+        access  B_VCT
+        access  B_XNT
+        access  B_XRT
+        access  STBAS
+        access  STATB
+        access  POLCT
+        access  TYPET
+        access  DFFNC
+        access  LOWSPMIN
+        access  FLPRT
+        access  FLPTR
+        access  GTCEF
+        access  HSHTB
+        access  PMHBS
+        access  R_FCB
+        access  C_AAA
+        access  C_YYY
+        access  G_AAA
+        access  W_YYY
+        access  S_AAA
+        access  S_YYY
+        access  R_COD
+        access  KVSTN
+        access  KVDMP
+        access  KVFTR
+        access  KVCOM
+        access  KVPFL
+        access  CSWFL
+        access  STMCS
+        access  STMCT
+        access2 TICBLK
+        access2 TSCBLK
+        access2 ID1
+        access2 ID2BLK
+        access2 INPBUF
+        access2 TTYBUF
+        access  B_RCL
 
 .if direct
-        dsegend_
+        DSegEnd_
 .else
         ends    vords
 .endif
 
-        csegend_
+        CSegEnd_

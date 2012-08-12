@@ -1,16 +1,5 @@
 #-------------------------- block386.inc -----------------------------
 .nolist
-#       version 0.90    18-dec-89
-#                       initial version
-#
-#       version 1.00    28-feb-90
-#                       first release version.  add additional blocks.
-#
-#       version 1.10    10-sep-92
-#                       add string buffer blocks.
-#
-#       version 1.20    19-jun-09
-#                       modified for linux 386 (32-bit) spitbol.
 #
 #
 #       copyright 1989 catspaw, inc.   all rights reserved.
@@ -62,10 +51,10 @@
 #       these blocks may appear in an argument list if left untranslated
 #       by the load function definition.
 #
-bl_ar   =       0               #arblk  array
-bl_cd   =       bl_ar+1         #cdblk  code
-bl_ex   =       bl_cd+1         #exblk  expression
-bl_ic   =       bl_ex+1         #icblk  integer
+BL_AR   =       0               #arblk  array
+BL_CD   =       BL_AR+1         #cdblk  code
+BL_EX   =       BL_CD+1         #exblk  expression
+BL_IC   =       BL_EX+1         #icblk  integer
 bl_nm   =       bl_ic+1         #nmblk  name
 bl_p0   =       bl_nm+1         #p0blk  pattern, 0 args
 bl_p1   =       bl_p0+1         #p1blk  pattern, 1 arg

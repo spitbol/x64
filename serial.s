@@ -20,7 +20,6 @@
 # function will appear in this segment as well, placed here
 # by the code in load.asm.
 #
-        .sbttl          "serial"
         .include        "systype.ah"
 
         header_
