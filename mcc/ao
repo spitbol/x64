@@ -1,0 +1,132 @@
+gcc -o mcc mcc.c -DMCC_TARGET_I386 -O2 -g -Wall -fno-strict-aliasing -mpreferred-stack-boundary=2 -march=i386 -falign-functions=0 -Wno-pointer-sign -Wno-sign-compare -D_FORTIFY_SOURCE=0 -lm -ldl
+<command-line>:0:0: warning: "_FORTIFY_SOURCE" redefined [enabled by default]
+<built-in>:0:0: note: this is the location of the previous definition
+In file included from libmcc.c:1130:0,
+                 from mcc.c:21:
+mccpp.c: In function ‘preprocess_new’:
+mccpp.c:2870:15: warning: variable ‘ts’ set but not used [-Wunused-but-set-variable]
+In file included from libmcc.c:1315:0,
+                 from mcc.c:21:
+mccasm.c: In function ‘asm_instr’:
+mccasm.c:897:9: warning: variable ‘nb_inputs’ set but not used [-Wunused-but-set-variable]
+In file included from libmcc.c:1328:0,
+                 from mcc.c:21:
+mccelf.c: In function ‘build_got_entries’:
+mccelf.c:988:18: warning: variable ‘symtab’ set but not used [-Wunused-but-set-variable]
+mccelf.c: In function ‘mcc_add_runtime’:
+mccelf.c:1182:9: warning: implicit declaration of function ‘mcc_add_file’ [-Wimplicit-function-declaration]
+mccelf.c:1199:9: warning: implicit declaration of function ‘mcc_add_library’ [-Wimplicit-function-declaration]
+In file included from mcc.c:21:0:
+libmcc.c: In function ‘mcc_new’:
+libmcc.c:1826:5: warning: implicit declaration of function ‘mcc_add_library_path’ [-Wimplicit-function-declaration]
+In file included from libmcc.c:1130:0,
+                 from mcc.c:21:
+mccpp.c: In function ‘next_nomacro_spc’:
+mccpp.c:2325:13: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2325:13: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2325:13: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c: In function ‘macro_subst_tok’:
+mccpp.c:2355:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2355:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2355:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2360:13: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2360:13: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2360:13: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2369:21: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2369:21: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2369:21: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2411:29: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2411:29: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2411:29: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c: In function ‘macro_subst’:
+mccpp.c:2611:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2611:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2611:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2634:17: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2634:17: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2634:17: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2747:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2747:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2747:9: warning: array subscript is above array bounds [-Warray-bounds]
+gcc -o libmcc1.o -c lib/libmcc1.c -O2 -Wall
+gcc -o alloca86.o -c lib/alloca86.S
+gcc -o alloca86-bt.o -c lib/alloca86-bt.S
+ar rcs libmcc1.a libmcc1.o alloca86.o alloca86-bt.o
+gcc -o bcheck.o -c lib/bcheck.c -O2 -Wall
+lib/bcheck.c: In function ‘install_malloc_hooks’:
+lib/bcheck.c:654:5: warning: ‘__malloc_hook’ is deprecated (declared at /usr/include/malloc.h:176) [-Wdeprecated-declarations]
+lib/bcheck.c:655:5: warning: ‘__free_hook’ is deprecated (declared at /usr/include/malloc.h:173) [-Wdeprecated-declarations]
+lib/bcheck.c:656:5: warning: ‘__realloc_hook’ is deprecated (declared at /usr/include/malloc.h:179) [-Wdeprecated-declarations]
+lib/bcheck.c:657:5: warning: ‘__memalign_hook’ is deprecated (declared at /usr/include/malloc.h:183) [-Wdeprecated-declarations]
+lib/bcheck.c:658:5: warning: ‘__malloc_hook’ is deprecated (declared at /usr/include/malloc.h:176) [-Wdeprecated-declarations]
+lib/bcheck.c:659:5: warning: ‘__free_hook’ is deprecated (declared at /usr/include/malloc.h:173) [-Wdeprecated-declarations]
+lib/bcheck.c:660:5: warning: ‘__realloc_hook’ is deprecated (declared at /usr/include/malloc.h:179) [-Wdeprecated-declarations]
+lib/bcheck.c:661:5: warning: ‘__memalign_hook’ is deprecated (declared at /usr/include/malloc.h:183) [-Wdeprecated-declarations]
+lib/bcheck.c: In function ‘restore_malloc_hooks’:
+lib/bcheck.c:668:5: warning: ‘__malloc_hook’ is deprecated (declared at /usr/include/malloc.h:176) [-Wdeprecated-declarations]
+lib/bcheck.c:669:5: warning: ‘__free_hook’ is deprecated (declared at /usr/include/malloc.h:173) [-Wdeprecated-declarations]
+lib/bcheck.c:670:5: warning: ‘__realloc_hook’ is deprecated (declared at /usr/include/malloc.h:179) [-Wdeprecated-declarations]
+lib/bcheck.c:671:5: warning: ‘__memalign_hook’ is deprecated (declared at /usr/include/malloc.h:183) [-Wdeprecated-declarations]
+gcc -o libmcc.o -c libmcc.c -DMCC_TARGET_I386 -O2 -g -Wall -fno-strict-aliasing -mpreferred-stack-boundary=2 -march=i386 -falign-functions=0 -Wno-pointer-sign -Wno-sign-compare -D_FORTIFY_SOURCE=0
+<command-line>:0:0: warning: "_FORTIFY_SOURCE" redefined [enabled by default]
+<built-in>:0:0: note: this is the location of the previous definition
+In file included from libmcc.c:1130:0:
+mccpp.c: In function ‘preprocess_new’:
+mccpp.c:2870:15: warning: variable ‘ts’ set but not used [-Wunused-but-set-variable]
+In file included from libmcc.c:1315:0:
+mccasm.c: In function ‘asm_instr’:
+mccasm.c:897:9: warning: variable ‘nb_inputs’ set but not used [-Wunused-but-set-variable]
+In file included from libmcc.c:1328:0:
+mccelf.c: In function ‘build_got_entries’:
+mccelf.c:988:18: warning: variable ‘symtab’ set but not used [-Wunused-but-set-variable]
+mccelf.c: In function ‘mcc_add_runtime’:
+mccelf.c:1182:9: warning: implicit declaration of function ‘mcc_add_file’ [-Wimplicit-function-declaration]
+mccelf.c:1199:9: warning: implicit declaration of function ‘mcc_add_library’ [-Wimplicit-function-declaration]
+libmcc.c: In function ‘mcc_new’:
+libmcc.c:1826:5: warning: implicit declaration of function ‘mcc_add_library_path’ [-Wimplicit-function-declaration]
+In file included from libmcc.c:1130:0:
+mccpp.c: In function ‘next_nomacro_spc’:
+mccpp.c:2325:13: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2325:13: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2325:13: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c: In function ‘macro_subst_tok’:
+mccpp.c:2355:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2355:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2355:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2360:13: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2360:13: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2360:13: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2369:21: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2369:21: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2369:21: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2411:29: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2411:29: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2411:29: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c: In function ‘macro_subst’:
+mccpp.c:2611:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2611:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2611:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2634:17: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2634:17: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2634:17: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2747:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2747:9: warning: array subscript is above array bounds [-Warray-bounds]
+mccpp.c:2747:9: warning: array subscript is above array bounds [-Warray-bounds]
+ar rcs libmcc.a libmcc.o
+texi2html -monolithic -number mcc-doc.texi
+make: texi2html: Command not found
+make: [mcc-doc.html] Error 127 (ignored)
+gcc -o libmcc_test tests/libmcc_test.c libmcc.a -I. -O2 -g -Wall -fno-strict-aliasing -mpreferred-stack-boundary=2 -march=i386 -falign-functions=0 -Wno-pointer-sign -Wno-sign-compare -D_FORTIFY_SOURCE=0 -lm -ldl
+<command-line>:0:0: warning: "_FORTIFY_SOURCE" redefined [enabled by default]
+<built-in>:0:0: note: this is the location of the previous definition
+tests/libmcc_test.c: In function ‘main’:
+tests/libmcc_test.c:42:5: warning: implicit declaration of function ‘mcc_new’ [-Wimplicit-function-declaration]
+tests/libmcc_test.c:42:7: warning: assignment makes pointer from integer without a cast [enabled by default]
+tests/libmcc_test.c:50:9: warning: implicit declaration of function ‘mcc_set_lib_path’ [-Wimplicit-function-declaration]
+tests/libmcc_test.c:53:5: warning: implicit declaration of function ‘mcc_set_output_type’ [-Wimplicit-function-declaration]
+tests/libmcc_test.c:55:5: warning: implicit declaration of function ‘mcc_compile_string’ [-Wimplicit-function-declaration]
+tests/libmcc_test.c:60:5: warning: implicit declaration of function ‘mcc_add_symbol’ [-Wimplicit-function-declaration]
+tests/libmcc_test.c:63:5: warning: implicit declaration of function ‘mcc_relocate’ [-Wimplicit-function-declaration]
+tests/libmcc_test.c:72:5: warning: implicit declaration of function ‘mcc_get_symbol’ [-Wimplicit-function-declaration]
+tests/libmcc_test.c:72:10: warning: assignment makes pointer from integer without a cast [enabled by default]
+tests/libmcc_test.c:77:5: warning: implicit declaration of function ‘mcc_delete’ [-Wimplicit-function-declaration]
