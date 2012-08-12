@@ -24,9 +24,11 @@ endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASFLAGS = -f elf
+#ASFLAGS = -f elf
+ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
 else
-ASFLAGS = -f elf -g
+ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
+#ASFLAGS = -f elf -g
 endif
 
 # Tools for processing Minimal source file.

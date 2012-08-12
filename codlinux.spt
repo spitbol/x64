@@ -215,13 +215,13 @@
 *  Initial patterns
 *
 *  P.CSPARSE Parses tokenized line
-	P.CSPARSE = '{' BREAK('{') . INLABEL
-.	'{' BREAK('{') . INCODE
-.	'{' BREAK('{') . IARG1
-.	'{' BREAK('{') . IARG2
-.	'{' BREAK('{') . IARG3
-.	'{' BREAK('{') . INCOMMENT
-	'{' REM . SLINENO
+	P.CSPARSE = '|' BREAK('|') . INLABEL
+.	'|' BREAK('|') . INCODE
+.	'|' BREAK('|') . IARG1
+.	'|' BREAK('|') . IARG2
+.	'|' BREAK('|') . IARG3
+.	'|' BREAK('|') . INCOMMENT
+	'|' REM . SLINENO
 
 *  Dispatch Table
 *
@@ -321,7 +321,10 @@ DEFLOOP	LINE = DEFFILE					:F(DEFCOMP)
 *  Compile the code, and execute it to perform initializations.
 *  Returns to label COMPDONE when complete.
 *
-DEFCOMP	DEFS = CODE(DEFS '; :(COMPDONE)')		:S(COMPOK)
+DEFCOMP	
+	OUTPUT = "Machine defs code: " DEFS
+	DEFS = CODE(DEFS '; :(COMPDONE)')		:S(COMPOK)
+
         OUTPUT = "Error compiling definitions file"
         OUTPUT = &ERRTEXT                             :(END)
 COMPOK	ENDFILE(1)					:<DEFS>
@@ -382,7 +385,7 @@ COMPDONE DEFS =
 
 * Various constants
 *
-        COMMENT.DELIM = ';'
+        COMMENT.DELIM = '#'
 	LABEL.DELIM   = ':'
 *
 *
@@ -477,10 +480,11 @@ OUTPUTOK
         OUTPUT(.ERRFILE,3, PARMS ".err")             :S(ERR_OK)
         OUTPUT = "Cannot open error message file: " PARMS ".err" :(END)
 ERR_OK
+	OUTPUT = "Error file: " PARMS ".err"
 
 * Begin with standard preamble
-*        OUTSTMT(TSTMT(,';.title','"SPITBOL TRANSLATOR ' REPLACE(PARMS,LCASE,UCASE) '"'))
-*        OUTSTMT(TSTMT(,';.sbttl','"' REPLACE(PARMS,LCASE,UCASE) '"'))
+*        OUTSTMT(TSTMT(,'#.title','"SPITBOL TRANSLATOR ' REPLACE(PARMS,LCASE,UCASE) '"'))
+*        OUTSTMT(TSTMT(,'#.sbttl','"' REPLACE(PARMS,LCASE,UCASE) '"'))
 
 *  Then copy contents of <machine>.HDR (if it exists) to OUTFILE
 *  Stop at line with just 'END' or end of file
@@ -740,14 +744,14 @@ OUTSTMT2
 .		  (IDENT(OP1), OP1
 .			(IDENT(OP2), ',' OP2
 .				(IDENT(OP3), ',' OP3))) ,27)
-.       (IDENT(STRIP_COMMENT,'Y'), ' ' (IDENT(COMMENT), ';') COMMENT)
+.       (IDENT(STRIP_COMMENT,'Y'), ' ' (IDENT(COMMENT), '*') COMMENT)
 .						:(OUTSTMT7)
 OUTSTMT6
 	STMTOUT = LABEL TAB OPCODE TAB
 .		  (IDENT(OP1), OP1
 .		    (IDENT(OP2), ',' OP2
 .		      (IDENT(OP3), ',' OP3)))
-.       (IDENT(STRIP_COMMENT,'Y'), TAB (IDENT(COMMENT), ';') COMMENT)
+.       (IDENT(STRIP_COMMENT,'Y'), TAB (IDENT(COMMENT), '#') COMMENT)
 *
 **	Send text to OUTFILE
 *
@@ -812,7 +816,7 @@ READLINE READLINE = INFILE                      :F(RL02)
 *  Only print comment if requested.
 *
 	IDENT(STRIP_COMMENT,'N')		:F(READLINE)
-        READLINE LEN(1) = ';'
+        READLINE LEN(1) = '#'
 	OUTFILE = READLINE
 	NOUTLINES = NOUTLINES + 1               :(READLINE)
 *

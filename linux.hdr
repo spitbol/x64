@@ -1,35 +1,35 @@
-;        :.psize          80,132
-;        :.arch           pentium
-        %include        "mintype.h"
+        .psize          80,132
+        .arch           pentium
+        .include        "systype.ah"
 
-        Header_
+        header_
 
-        CSeg_
+        cseg_
 
-        %include        "hdrcode.inc"
-        %include        "hdrdata.inc"
+        .include        "hdrcode.inc"
+        .include        "hdrdata.inc"
 
-        extern         LDR_
-        extern         STR_
-        extern         OVR_
-        extern         DVI_
-        extern         RMI_
-        extern         CVD_
-        extern         RTI_
-        extern         ITR_
-        extern         ADR_
-        extern         SBR_
-        extern         MLR_
-        extern         DVR_
-        extern         NGR_
-        extern         ATN_
-        extern         CHP_
-        extern         COS_
-        extern         ETX_
-        extern         LNF_
-        extern         SIN_
-        extern         SQR_
-        extern         TAN_
-        extern         CPR_
+        .extern         ldr_:near
+        .extern         str_:near
+        .extern         ovr_:near
+        .extern         dvi_:near
+        .extern         rmi_:near
+        .extern         cvd_:near
+        .extern         rti_:near
+        .extern         itr_:near
+        .extern         adr_:near
+        .extern         sbr_:near
+        .extern         mlr_:near
+        .extern         dvr_:near
+        .extern         ngr_:near
+        .extern         atn_:near
+        .extern         chp_:near
+        .extern         cos_:near
+        .extern         etx_:near
+        .extern         lnf_:near
+        .extern         sin_:near
+        .extern         sqr_:near
+        .extern         tan_:near
+        .extern         cpr_:near
 
-        CSegEnd_
+        csegend_
