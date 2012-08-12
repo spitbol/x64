@@ -1,120 +1,214 @@
-# copyright 1987-2012 robert b. k. dewar and mark emmer.
+        .title          "SPITBOL ASSEMBLY-LANGUAGE TO C-LANGUAGE O/S INTERFACE"
+        .sbttl          "INTER"
+# Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 # 
-# this file is part of macro spitbol.
+# This file is part of Macro SPITBOL.
 # 
-#     macro spitbol is free software: you can redistribute it and/or modify
-#     it under the terms of the gnu general public license as published by
-#     the free software foundation, either version 3 of the license, or
+#     Macro SPITBOL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
-#     macro spitbol is distributed in the hope that it will be useful,
-#     but without any warranty; without even the implied warranty of
-#     merchantability or fitness for a particular purpose.  see the
-#     gnu general public license for more details.
+#     Macro SPITBOL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
 # 
-#     you should have received a copy of the gnu general public license
-#     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+#     You should have received a copy of the GNU General Public License
+#     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 #
-globals =               1                       #asm globals defined here
+        .psize          80,132
+        .arch           pentium
+globals =               1                       #ASM globals defined here
         .include        "systype.ah"
         .include        "osint.inc"
 
-        header_
+        Header_
 #
-#       file: inter.s           version: 1.46
+#       File: inter.s           Version: 1.46
 #       ---------------------------------------
 #
-#       this file contains the assembly language routines that interface
-#       the macro spitbol compiler written in 80386 assembly language to its
-#       operating system interface functions written in c.
+#       This file contains the assembly language routines that interface
+#       the Macro SPITBOL compiler written in 80386 assembly language to its
+#       operating system interface functions written in C.
 #
-#       contents:
+#       Contents:
 #
-#       o overview
-#       o global variables accessed by osint functions
-#       o interface routines between compiler and osint functions
-#       o c callable function startup
-#       o c callable function get_fp
-#       o c callable function restart
-#       o c callable function makeexec
-#       o routines for minimal opcodes chk and cvd
-#       o math functions for integer multiply, divide, and remainder
-#       o math functions for real operation
+#       o Overview
+#       o Global variables accessed by OSINT functions
+#       o Interface routines between compiler and OSINT functions
+#       o C callable function startup
+#       o C callable function get_fp
+#       o C callable function restart
+#       o C callable function makeexec
+#       o Routines for Minimal opcodes CHK and CVD
+#       o Math functions for integer multiply, divide, and remainder
+#       o Math functions for real operation
 #
 #-----------
 #
-#       overview
+#       Overview
 #
-#       the macro spitbol compiler relies on a set of operating system
+#       The Macro SPITBOL compiler relies on a set of operating system
 #       interface functions to provide all interaction with the host
-#       operating system.  these functions are referred to as osint
-#       functions.  a typical call to one of these osint functions takes
+#       operating system.  These functions are referred to as OSINT
+#       functions.  A typical call to one of these OSINT functions takes
 #       the following form in the 80386 version of the compiler:
 #
 #               ...code to put arguments in registers...
-#               call    sysxx           # call osint function
-#               .long   exit_1          # address of exit point 1
-#               .long   exit_2          # address of exit point 2
+#               call    SYSXX           # call osint function
+#               .long   EXIT_1          # address of exit point 1
+#               .long   EXIT_2          # address of exit point 2
 #               ...     ...             # ...
-#               .long   exit_n          # address of exit point n
+#               .long   EXIT_n          # address of exit point n
 #               ...instruction following call...
 #
-#       the osint function 'sysxx' can then return in one of n+1 ways:
+#       The OSINT function 'SYSXX' can then return in one of n+1 ways:
 #       to one of the n exit points or to the instruction following the
-#       last exit.  this is not really very complicated - the call places
+#       last exit.  This is not really very complicated - the call places
 #       the return address on the stack, so all the interface function has
 #       to do is add the appropriate offset to the return address and then
-#       pick up the exit address and jump to it or do a normal return via
+#       pick up the exit address and jump to it OR do a normal return via
 #       an ret instruction.
 #
-#       unfortunately, a c function cannot handle this scheme.  so, an
+#       Unfortunately, a C function cannot handle this scheme.  So, an
 #       intermediary set of routines have been established to allow the
-#       interfacing of c functions.  the mechanism is as follows:
+#       interfacing of C functions.  The mechanism is as follows:
 #
-#       (1) the compiler calls osint functions as described above.
+#       (1) The compiler calls OSINT functions as described above.
 #
-#       (2) a set of assembly language interface routines is established,
-#           one per osint function, named accordingly.  each interface
+#       (2) A set of assembly language interface routines is established,
+#           one per OSINT function, named accordingly.  Each interface
 #           routine ...
 #
 #           (a) saves all compiler registers in global variables
-#               accessible by c functions
-#           (b) calls the osint function written in c
+#               accessible by C functions
+#           (b) calls the OSINT function written in C
 #           (c) restores all compiler registers from the global variables
-#           (d) inspects the osint function's return value to determine
+#           (d) inspects the OSINT function's return value to determine
 #               which of the n+1 returns should be taken and does so
 #
-#       (3) a set of c language osint functions is established, one per
-#           osint function, named differently than the interface routines.
-#           each osint function can access compiler registers via global
-#           variables.  no arguments are passed via the call.
+#       (3) A set of C language OSINT functions is established, one per
+#           OSINT function, named differently than the interface routines.
+#           Each OSINT function can access compiler registers via global
+#           variables.  NO arguments are passed via the call.
 #
-#           when an osint function returns, it must return a value indicating
-#           which of the n+1 exits should be taken.  these return values are
+#           When an OSINT function returns, it must return a value indicating
+#           which of the n+1 exits should be taken.  These return values are
 #           defined in header file 'inter.h'.
 #
-#       note:  in the actual implementation below, the saving and restoring
+#       Note:  in the actual implementation below, the saving and restoring
 #       of registers is actually done in one common routine accessed by all
 #       interface routines.
 #
-#       other notes:
+#       Other notes:
 #
-#       some c ompilers transform "internal" global names to
+#       Some C ompilers transform "internal" global names to
 #       "external" global names by adding a leading underscore at the front
-#       of the internal name.  thus, the function name 'osopen' becomes
-#       '_osopen'.  however, not all c compilers follow this convention.
+#       of the internal name.  Thus, the function name 'osopen' becomes
+#       '_osopen'.  However, not all C compilers follow this convention.
 #
-#       acknowledgement:
+#       Acknowledgement:
+#
+#       This interfacing scheme is based on an idea put forth by Andy Koenig.
+#
+#       V1.0    10/21/86 Robert E. Goldberg, DISC.  VAX version
+#       V1.01   10/23/86 Mark B. Emmer, Catspaw.  AT&T 7300 version
+#       V1.02   01/07/87   "  "    "      "   Generic 68000 version
+#       V1.03   01/15/87 Revised to match new VAXINTER, V1.03.  MBE
+#       V1.04   01/23/87 Adjust pointers within stack during restart.
+#                        Add function makeexec to write a.out file when
+#                        requested with -w command option.  MBE
+#       V1.05   02/04/87 <withdrawn>
+#       V1.06   02/14/87 <withdrawn>
+#       V1.07   02/21/87 <withdrawn>
+#       V1.08   05/18/87 <withdrawn>
+#       V1.10   06/03/87 Changed compiler to use A6 as pointer to constant
+#                        and working storage, rather than A5.
+#       V1.11   10/11/87 Added conditional 68020 opcodes for multiply,
+#                        divide and remainder.
+#                        Corrected bug in makeexec added when moved DB
+#                        from A5 to A6.
+#       V1.12   11/16/87 <withdrawn>
+#       V1.13   01/15/88 Version for HP.  Initialize 68881 if present
+#       V1.14   02/27/88 Version for Definicon.
+#       V1.15   03/03/88 Added SYSGC call.
+#       V1.16   05/09/88 Split off 80386 version
+#       V1.17   09/12/89 Add support for keyboard polling and keyboard editing.
+#                        Makeexec accepts file name scblk.
+#       V1.18   10/27/89 <withdrawn>
+#       V1.19   12/16/89 Add pushregs, popregs
+#       V1.20   07/21/90 Modify pushregs/popregs to save/restore EBP and
+#                        load it with reg_cp, so that any MINIMAL routine
+#                        call between adjusts CP properly.
+#                        Change ccaller to clear EBP, so CP (which points
+#                        within a SPITBOL block) isn't placed on stack when
+#                        C routine pushes EBP.  This is not a legimate
+#                        collectable value, and will crash if a garbage
+#                        collect occurs (as within callef). 2.43 I/O.
+#       V1.21   09/09/90 Modify pushregs to return zero in ESI (XL), so
+#                        that a safe, collectable value is there for any
+#                        subsequent call to a memory allocation routine.
+#       V1.22   10/31/90 Remove SYSGC call.
+#       V1.23   11/08/90 Update I/O version number to 2.45.
+#       V1.24   11/17/90 Modify push/pop regs to put reg_xl on stack,
+#                        other regs into a temp area.
+#       V1.25   12/04/90 Mark SYSEX for 3 exits.
+#       V1.26   01/21/91 Update I/O version number to 2.46.
+#       V1.27   02/07/91 Add Control-C checking.
+#       V1.28   02/16/91 Add BACKSPACE function via SYSBS.
+#       V1.29   02/22/91 Rewrite CINREAD to allocate buffer on stack.
+#       V1.30   05/12/91 Add include of systype.ah to assemble different
+#                        versions for use with HighC and Intel compilers.
+#                        Move break logic to break.c for Intel version.
+#       V1.31   06/09/91 <withdrawn>.
+#       V1.32   06/21/91 Add routines for Intel version to allow C code
+#                        to manage an LDT, including transitions to and
+#                        from protection ring 0.  Update version number
+#                        to 2.47 for 1.20 release.
+#       V1.33   10/17/91 Update to 2.48 for 1.21 release.
+#       V1.34   11/07/91 Add call to INSTA to initialize static
+#                        region after reloading save file.
+#       V1.35   11/30/91 Add MINIMAL function to allow calls into
+#                        MINIMAL code from C.
+#       V1.36   12/17/91 Update to 2.49 for 1.22 release.
+#       V1.37   01/23/92 Update to 2.50 for 1.23 release.
+#       V1.38   03/06/92 Update to 2.51 for 1.24 release.
+#       V1.39   03/13/92 Fix pushregs and popregs to not save and
+#                        restore REG_CP.  It is necessary for GBCOL
+#                        to be able to modify REG_CP and have its
+#                        change stick.  We also go to a dual stack
+#                        approach like the Macintosh, with the compiler's
+#                        stack and the OSINT stack keep seperate.  This
+#                        is necessary because if an OSINT return calls into
+#                        Minimal and triggers a garbage collect, anything on
+#                        the stack from OSINT could be fatal to GBCOL.
+#       V1.40   03/29/92 Update to 2.52 for 1.25 release.
+#       V1.41   10/11/95 Redid overflow detection logic to check for infinity
+#                        in RA, relying on masked exceptions to produce infinity
+#                        from basic math ops.
+#       V1.42   10/08/96 Increased number of exits for SYSFC from 1 to 2.
+#       V1.43   03/31/97 Added sav_compsp for use by push/popregs.  Call to
+#                        SYSLD would save esp in compsp (at ccaller), then
+#                        loadef calls ALOST which may call GBCOL, which calls
+#                        SYSGC and clobbers compsp with this nested cccaller call.
+#                        pushregs saves compsp in sav_compsp, and popregs
+#                        restores it.
+#       V1.44   06/20/99 Fix bug in RTI_ when negative number was not pushing
+#                        ecx.
+#       V1.45   11/26/99 Fix bug in CPR_ not detecting -0.0 as true zero.  (-0.0
+#                        results from -1.0 * 0.0 and 0.0 / -1.0.
+#       V1.46   06/17/09 Modify for Linux "as" assembler.
 #
 #------------
 #
-#       global variables
+#       Global Variables
 #
-        cseg_
+        CSeg_
 	ext	swcoup,near
-        csegend_
+        CSegEnd_
 
-        dseg_
+        DSeg_
 	cext	stacksiz,dword
 	cext	lmodstk,dword
 	ext	lowsp,dword
@@ -127,25 +221,25 @@ globals =               1                       #asm globals defined here
         .include "extrn386.inc"
 
 
-# words saved during exit(-3)
+# Words saved during exit(-3)
 #
         .balign 4
         pubdef  reg_block
-        pubdef  reg_wa,.long,0     # register wa (ecx)
-        pubdef  reg_wb,.long,0     # register wb (ebx)
+        pubdef  reg_wa,.long,0     # Register WA (ECX)
+        pubdef  reg_wb,.long,0     # Register WB (EBX)
         pubdef  reg_ia
-        pubdef  reg_wc,.long,0     # register wc & ia (edx)
-        pubdef  reg_xr,.long,0     # register xr (edi)
-        pubdef  reg_xl,.long,0     # register xl (esi)
-        pubdef  reg_cp,.long,0     # register cp
-        pubdef  reg_ra,.double,0e  # register ra
+        pubdef  reg_wc,.long,0     # Register WC & IA (EDX)
+        pubdef  reg_xr,.long,0     # Register XR (EDI)
+        pubdef  reg_xl,.long,0     # Register XL (ESI)
+        pubdef  reg_cp,.long,0     # Register CP
+        pubdef  reg_ra,.double,0e  # Register RA
 #
-# these locations save information needed to return after calling osint
-# and after a restart from exit()
+# These locations save information needed to return after calling OSINT
+# and after a restart from EXIT()
 #
-        pubdef  reg_pc,.long,0  # return pc from ccaller
-reg_pp: .long   0               # number of bytes of ppms
-        pubdef  reg_xs,.long,0  # minimal stack pointer
+        pubdef  reg_pc,.long,0  # Return PC from ccaller
+reg_pp: .long   0               # Number of bytes of PPMs
+        pubdef  reg_xs,.long,0  # Minimal stack pointer
 #
 r_size  =       .-reg_block
         pubdef  reg_size,.long,r_size
@@ -154,28 +248,28 @@ r_size  =       .-reg_block
 #
 
 #
-#  constants
+#  Constants
 #
 ten:    .long   10              # constant 10
         pubdef  inf,.long,0
         .long   0x7ff00000      # double precision infinity
 
-sav_block: .fill r_size,1,0     # save minimal registers during push/pop reg
+sav_block: .fill r_size,1,0     # Save Minimal registers during push/pop reg
 #
         .balign 4
 ppoff:  .long   0               # offset for ppm exits
 compsp: .long   0               # 1.39 compiler's stack pointer
 sav_compsp:
         .long   0               # save compsp here
-osisp:  .long   0               # 1.39 osint's stack pointer
+osisp:  .long   0               # 1.39 OSINT's stack pointer
 
 
 #
-#       setup a number of internal addresses in the compiler that cannot
-#       be directly accessed from within c because of naming difficulties.
+#       Setup a number of internal addresses in the compiler that cannot
+#       be directly accessed from within C because of naming difficulties.
 #
-        pubdef  id1,.long,0
-.if setreal == 1
+        pubdef  ID1,.long,0
+.if SETREAL == 1
         .long    2
         .ascii  "1x\x00\x00"
 .else
@@ -183,72 +277,72 @@ osisp:  .long   0               # 1.39 osint's stack pointer
         .ascii  "1x\x00\x00\x00"
 .endif
 #
-        pubdef  id2blk,.long,52
+        pubdef  ID2BLK,.long,52
         .long   0
         .fill   52,1,0
 
-        pubdef  ticblk,.long,0
+        pubdef  TICBLK,.long,0
         .long   0
 
-        pubdef  tscblk,.long,512
+        pubdef  TSCBLK,.long,512
         .long   0
         .fill   512,1,0
 
 #
-#       standard input buffer block.
+#       Standard input buffer block.
 #
-        pubdef  inpbuf,.long,0     # type word
+        pubdef  INPBUF,.long,0     # type word
         .long   0               # block length
         .long   1024            # buffer size
         .long   0               # remaining chars to read
         .long   0               # offset to next character to read
         .long   0               # file position of buffer
         .long   0               # physical position in file
-.if winnt && _masm_ <> 0
+.if winnt && _MASM_ <> 0
         .long   0               # 64-bit offset
         .long   0               # and current position
 .endif
         .fill   1024,1,0        # buffer
 #
-        pubdef  ttybuf,.long,0     # type word
+        pubdef  TTYBUF,.long,0     # type word
         .long   0               # block length
-        .long   260             # buffer size  (260 ok in ms-dos with cinread())
+        .long   260             # buffer size  (260 OK in MS-DOS with cinread())
         .long   0               # remaining chars to read
         .long   0               # offset to next char to read
         .long   0               # file position of buffer
         .long   0               # physical position in file
-.if winnt && _masm_ <> 0
+.if winnt && _MASM_ <> 0
         .long   0               # 64-bit offset
         .long   0               # and current position
 .endif
         .fill   260,1,0         # buffer
 
-  dsegend_
+  DSegEnd_
 
-  cseg_
+  CSeg_
 #
 #-----------
 #
-#       save and restore minimal and interface registers on stack.
-#       used by any routine that needs to call back into the minimal
-#       code in such a way that the minimal code might trigger another
-#       sysxx call before returning.
+#       Save and restore MINIMAL and interface registers on stack.
+#       Used by any routine that needs to call back into the MINIMAL
+#       code in such a way that the MINIMAL code might trigger another
+#       SYSxx call before returning.
 #
-#       note 1:  pushregs returns a collectable value in xl, safe
+#       Note 1:  pushregs returns a collectable value in XL, safe
 #       for subsequent call to memory allocation routine.
 #
-#       note 2:  these are not recursive routines.  only reg_xl is
+#       Note 2:  these are not recursive routines.  Only reg_xl is
 #       saved on the stack, where it is accessible to the garbage
-#       collector.  other registers are just moved to a temp area.
+#       collector.  Other registers are just moved to a temp area.
 #
-#       note 3:  popregs does not restore reg_cp, because it may have
-#       been modified by the minimal routine called between pushregs
-#       and popregs as a result of a garbage collection.  calling of
-#       another sysxx routine in between is not a problem, because
-#       cp will have been preserved by minimal.
+#       Note 3:  popregs does not restore REG_CP, because it may have
+#       been modified by the Minimal routine called between pushregs
+#       and popregs as a result of a garbage collection.  Calling of
+#       another SYSxx routine in between is not a problem, because
+#       CP will have been preserved by Minimal.
 #
-#       note 4:  if there isn't a compiler stack yet, we don't bother
-#       saving xl.  this only happens in call of nextef from sysxi when
+#       Note 4:  if there isn't a compiler stack yet, we don't bother
+#       saving XL.  This only happens in call of nextef from sysxi when
 #       reloading a save file.
 #
 #
@@ -265,9 +359,9 @@ osisp:  .long   0               # 1.39 osint's stack pointer
         or      edi,edi                         # 1.39 is there a compiler stack
         je      short push1                     # 1.39 jump if none yet
         sub     edi,4                           #push onto compiler's stack
-        mov     esi,reg_xl                      #collectable xl
+        mov     esi,reg_xl                      #collectable XL
 	mov	[edi],esi
-        mov     compsp,edi                      #smashed if call osint again (sysgc)
+        mov     compsp,edi                      #smashed if call OSINT again (SYSGC)
         mov     sav_compsp,edi                  #used by popregs
 
 push1:	popad
@@ -277,7 +371,7 @@ push1:	popad
         proc    popregs,near                    #bashes eax,ebx,ecx
 	publab	popregs
 	pushad
-        mov     eax,reg_cp                      #don't restore cp
+        mov     eax,reg_cp                      #don't restore CP
 	cld
 	lea	esi,sav_block
         lea     edi,reg_block                   #unload saved registers
@@ -288,8 +382,8 @@ push1:	popad
         mov     edi,sav_compsp                  #saved compiler's stack
         or      edi,edi                         #1.39 is there one?
         je      short pop1                      #1.39 jump if none yet
-        mov     esi,[edi]                       #retrieve collectable xl
-        mov     reg_xl,esi                      #update xl
+        mov     esi,[edi]                       #retrieve collectable XL
+        mov     reg_xl,esi                      #update XL
         add     edi,4                           #update compiler's sp
         mov     compsp,edi
 
@@ -300,94 +394,94 @@ pop1:	popad
 #
 #-----------
 #
-#       interface routines
+#       Interface routines
 #
-#       each interface routine takes the following form:
+#       Each interface routine takes the following form:
 #
-#               sysxx   call    ccaller         # call common interface
-#                       dd      zysxx           # address of c osint function
+#               SYSXX   call    ccaller         # call common interface
+#                       dd      zysxx           # address of C OSINT function
 #                       db      n               # offset to instruction after
 #                                               #   last procedure exit
 #
-#       in an effort to achieve portability of c osint functions, we
+#       In an effort to achieve portability of C OSINT functions, we
 #       do not take take advantage of any "internal" to "external"
-#       transformation of names by c compilers.  so, a c osint function
-#       representing sysxx is named _zysxx.  this renaming should satisfy
-#       all c compilers.
+#       transformation of names by C compilers.  So, a C OSINT function
+#       representing sysxx is named _zysxx.  This renaming should satisfy
+#       all C compilers.
 #
-#       important  one interface routine, sysfc, is passed arguments on
-#       the stack.  these items are removed from the stack before calling
+#       IMPORTANT  ONE interface routine, SYSFC, is passed arguments on
+#       the stack.  These items are removed from the stack before calling
 #       ccaller, as they are not needed by this implementation.
 #
 #
 #-----------
 #
-#       ccaller is called by the os interface routines to call the
-#       real c os interface function.
+#       CCALLER is called by the OS interface routines to call the
+#       real C OS interface function.
 #
-#       general calling sequence is
+#       General calling sequence is
 #
 #               call    ccaller
-#               dd      address_of_c_function
+#               dd      address_of_C_function
 #               db      2*number_of_exit_points
 #
-#       control is never returned to a interface routine.  instead, control
-#       is returned to the compiler (the caller of the interface routine).
+#       Control IS NEVER returned to a interface routine.  Instead, control
+#       is returned to the compiler (THE caller of the interface routine).
 #
-#       the c function that is called must always return an integer
+#       The C function that is called MUST ALWAYS return an integer
 #       indicating the procedure exit to take or that a normal return
 #       is to be performed.
 #
-#               c function      interpretation
+#               C function      Interpretation
 #               return value
 #               ------------    -------------------------------------------
-#                    <0         do normal return to instruction past
+#                    <0         Do normal return to instruction past
 #                               last procedure exit (distance passed
 #                               in by dummy routine and saved on stack)
-#                     0         take procedure exit 1
-#                     4         take procedure exit 2
-#                     8         take procedure exit 3
+#                     0         Take procedure exit 1
+#                     4         Take procedure exit 2
+#                     8         Take procedure exit 3
 #                    ...        ...
 #
         proc   ccaller,near
 
-#       (1) save registers in global variables
+#       (1) Save registers in global variables
 #
         mov     reg_wa,ecx              # save registers
 	mov	reg_wb,ebx
         mov     reg_wc,edx              # (also _reg_ia)
 	mov	reg_xr,edi
 	mov	reg_xl,esi
-        mov     reg_cp,ebp              # needed in image saved by sysxi
+        mov     reg_cp,ebp              # Needed in image saved by sysxi
 
-#       (2) get pointer to arg list
+#       (2) Get pointer to arg list
 #
         pop     esi                     # point to arg list
 #
-#       (3) fetch address of c function, fetch offset to 1st instruction
-#           past last procedure exit, and call c function.
+#       (3) Fetch address of C function, fetch offset to 1st instruction
+#           past last procedure exit, and call C function.
 #
-        cs                              # cs segment override
-        lodsd                           # point to c function entry point
-#       lodsd   cs:ccaller              # point to c function entry point
+        cs                              # CS segment override
+        lodsd                           # point to C function entry point
+#       lodsd   cs:ccaller              # point to C function entry point
         movzx   ebx,byte ptr [esi]   # save normal exit adjustment
 #
         mov     reg_pp,ebx              # in memory
-        pop     reg_pc                  # save return pc past "call sysxx"
+        pop     reg_pc                  # save return PC past "CALL SYSXX"
 #
-#       (3a) save compiler stack and switch to osint stack
+#       (3a) Save compiler stack and switch to OSINT stack
 #
         mov     compsp,esp              # 1.39 save compiler's stack pointer
-        mov     esp,osisp               # 1.39 load osint's stack pointer
+        mov     esp,osisp               # 1.39 load OSINT's stack pointer
 #
-#       (3b) make call to osint
+#       (3b) Make call to OSINT
 #
-        call    eax                     # call c interface function
+        call    eax                     # call C interface function
 #
-#       (4) restore registers after c function returns.
+#       (4) Restore registers after C function returns.
 #
 
-cc1:    mov     osisp,esp               # 1.39 save osint's stack pointer
+cc1:    mov     osisp,esp               # 1.39 save OSINT's stack pointer
         mov     esp,compsp              # 1.39 restore compiler's stack pointer
         mov     ecx,reg_wa              # restore registers
 	mov	ebx,reg_wb
@@ -398,14 +492,14 @@ cc1:    mov     osisp,esp               # 1.39 save osint's stack pointer
 
 	cld
 #
-#       (5) based on returned value from c function (in eax) either do a normal
+#       (5) Based on returned value from C function (in EAX) either do a normal
 #           return or take a procedure exit.
 #
         or      eax,eax         # test if normal return ...
         jns     short erexit    # j. if >= 0 (take numbered exit)
 	mov	eax,reg_pc
         add     eax,reg_pp      # point to instruction following exits
-        jmp     eax             # bypass ppm exits
+        jmp     eax             # bypass PPM exits
 
 #                               # else (take procedure exit n)
 erexit: shr     eax,1           # divide by 2
@@ -414,247 +508,247 @@ erexit: shr     eax,1           # divide by 2
         add     eax,ppoff       # bias to fit in 16-bit word
 	push	eax
         xor     eax,eax         # in case branch to error cascade
-        ret                     #   take procedure exit via ppm address
+        ret                     #   take procedure exit via PPM address
 
         endp    ccaller
 #
 #---------------
 #
-#       individual osint routine entry points
+#       Individual OSINT routine entry points
 #
-        publab sysax
+        publab SYSAX
 	ext	zysax,near
-sysax:	call	ccaller
+SYSAX:	call	ccaller
         address   zysax
         .byte   0
 #
-        publab sysbs
+        publab SYSBS
 	ext	zysbs,near
-sysbs:	call	ccaller
+SYSBS:	call	ccaller
         address   zysbs
         .byte   3*2
 #
-        publab sysbx
+        publab SYSBX
 	ext	zysbx,near
-sysbx:	mov	reg_xs,esp
+SYSBX:	mov	reg_xs,esp
 	call	ccaller
         address zysbx
         .byte   0
 #
-.if setreal == 1
-        publab syscr
+.if SETREAL == 1
+        publab SYSCR
 	ext	zyscr,near
-syscr:  call    ccaller
+SYSCR:  call    ccaller
         address zyscr
         .byte   0
 #
 .endif
-        publab sysdc
+        publab SYSDC
 	ext	zysdc,near
-sysdc:	call	ccaller
+SYSDC:	call	ccaller
         address zysdc
         .byte   0
 #
-        publab sysdm
+        publab SYSDM
 	ext	zysdm,near
-sysdm:	call	ccaller
+SYSDM:	call	ccaller
         address zysdm
         .byte   0
 #
-        publab sysdt
+        publab SYSDT
 	ext	zysdt,near
-sysdt:	call	ccaller
+SYSDT:	call	ccaller
         address zysdt
         .byte   0
 #
-        publab sysea
+        publab SYSEA
 	ext	zysea,near
-sysea:	call	ccaller
+SYSEA:	call	ccaller
         address zysea
         .byte   1*2
 #
-        publab sysef
+        publab SYSEF
 	ext	zysef,near
-sysef:	call	ccaller
+SYSEF:	call	ccaller
         address zysef
         .byte   3*2
 #
-        publab sysej
+        publab SYSEJ
 	ext	zysej,near
-sysej:	call	ccaller
+SYSEJ:	call	ccaller
         address zysej
         .byte   0
 #
-        publab sysem
+        publab SYSEM
 	ext	zysem,near
-sysem:	call	ccaller
+SYSEM:	call	ccaller
         address zysem
         .byte   0
 #
-        publab sysen
+        publab SYSEN
 	ext	zysen,near
-sysen:	call	ccaller
+SYSEN:	call	ccaller
         address zysen
         .byte   3*2
 #
-        publab sysep
+        publab SYSEP
 	ext	zysep,near
-sysep:	call	ccaller
+SYSEP:	call	ccaller
         address zysep
         .byte   0
 #
-        publab sysex
+        publab SYSEX
 	ext	zysex,near
-sysex:	mov	reg_xs,esp
+SYSEX:	mov	reg_xs,esp
 	call	ccaller
         address zysex
         .byte   3*2
 #
-        publab sysfc
+        publab SYSFC
 	ext	zysfc,near
-sysfc:  pop     eax             # <<<<remove stacked scblk>>>>
+SYSFC:  pop     eax             # <<<<remove stacked SCBLK>>>>
 	lea	esp,[esp+edx*4]
 	push	eax
 	call	ccaller
         address zysfc
         .byte   2*2
 #
-        publab sysgc
+        publab SYSGC
 	ext	zysgc,near
-sysgc:	call	ccaller
+SYSGC:	call	ccaller
         address zysgc
         .byte   0
 #
-        publab syshs
+        publab SYSHS
 	ext	zyshs,near
-syshs:	mov	reg_xs,esp
+SYSHS:	mov	reg_xs,esp
 	call	ccaller
         address zyshs
         .byte   8*2
 #
-        publab sysid
+        publab SYSID
 	ext	zysid,near
-sysid:	call	ccaller
+SYSID:	call	ccaller
         address zysid
         .byte   0
 #
-        publab sysif
+        publab SYSIF
 	ext	zysif,near
-sysif:	call	ccaller
+SYSIF:	call	ccaller
         address zysif
         .byte   1*2
 #
-        publab sysil
+        publab SYSIL
 	ext	zysil,near
-sysil:  call    ccaller
+SYSIL:  call    ccaller
         address zysil
         .byte   0
 #
-        publab sysin
+        publab SYSIN
 	ext	zysin,near
-sysin:	call	ccaller
+SYSIN:	call	ccaller
         address zysin
         .byte   3*2
 #
-        publab sysio
+        publab SYSIO
 	ext	zysio,near
-sysio:	call	ccaller
+SYSIO:	call	ccaller
         address zysio
         .byte   2*2
 #
-        publab sysld
+        publab SYSLD
 	ext	zysld,near
-sysld:  call    ccaller
+SYSLD:  call    ccaller
         address zysld
         .byte   3*2
 #
-        publab sysmm
+        publab SYSMM
 	ext	zysmm,near
-sysmm:	call	ccaller
+SYSMM:	call	ccaller
         address zysmm
         .byte   0
 #
-        publab sysmx
+        publab SYSMX
 	ext	zysmx,near
-sysmx:	call	ccaller
+SYSMX:	call	ccaller
         address zysmx
         .byte   0
 #
-        publab sysou
+        publab SYSOU
 	ext	zysou,near
-sysou:	call	ccaller
+SYSOU:	call	ccaller
         address zysou
         .byte   2*2
 #
-        publab syspi
+        publab SYSPI
 	ext	zyspi,near
-syspi:	call	ccaller
+SYSPI:	call	ccaller
         address zyspi
         .byte   1*2
 #
-        publab syspl
+        publab SYSPL
 	ext	zyspl,near
-syspl:	call	ccaller
+SYSPL:	call	ccaller
         address zyspl
         .byte   3*2
 #
-        publab syspp
+        publab SYSPP
 	ext	zyspp,near
-syspp:	call	ccaller
+SYSPP:	call	ccaller
         address zyspp
         .byte   0
 #
-        publab syspr
+        publab SYSPR
 	ext	zyspr,near
-syspr:	call	ccaller
+SYSPR:	call	ccaller
         address zyspr
         .byte   1*2
 #
-        publab sysrd
+        publab SYSRD
 	ext	zysrd,near
-sysrd:	call	ccaller
+SYSRD:	call	ccaller
         address zysrd
         .byte   1*2
 #
-        publab sysri
+        publab SYSRI
 	ext	zysri,near
-sysri:	call	ccaller
+SYSRI:	call	ccaller
         address zysri
         .byte   1*2
 #
-        publab sysrw
+        publab SYSRW
 	ext	zysrw,near
-sysrw:	call	ccaller
+SYSRW:	call	ccaller
         address zysrw
         .byte   3*2
 #
-        publab sysst
+        publab SYSST
 	ext	zysst,near
-sysst:	call	ccaller
+SYSST:	call	ccaller
         address zysst
         .byte   5*2
 #
-        publab systm
+        publab SYSTM
 	ext	zystm,near
-systm:	call	ccaller
+SYSTM:	call	ccaller
 systm_p: address zystm
         .byte   0
 #
-        publab systt
+        publab SYSTT
 	ext	zystt,near
-systt:	call	ccaller
+SYSTT:	call	ccaller
         address zystt
         .byte   0
 #
-        publab sysul
+        publab SYSUL
 	ext	zysul,near
-sysul:	call	ccaller
+SYSUL:	call	ccaller
         address zysul
         .byte   0
 #
-        publab sysxi
+        publab SYSXI
 	ext	zysxi,near
-sysxi:	mov	reg_xs,esp
+SYSXI:	mov	reg_xs,esp
 	call	ccaller
 sysxi_p: address zysxi
         .byte   2*2
@@ -664,13 +758,13 @@ sysxi_p: address zysxi
 #
 #       startup( char *dummy1, char *dummy2) - startup compiler
 #
-#       an osint c function calls startup to transfer control
+#       An OSINT C function calls startup to transfer control
 #       to the compiler.
 #
-#       (xr) = basemem
-#       (xl) = topmem - sizeof(word)
+#       (XR) = basemem
+#       (XL) = topmem - sizeof(WORD)
 #
-#	note: this function never returns.
+#	Note: This function never returns.
 #
 
         cproc   startup,near
@@ -679,16 +773,16 @@ sysxi_p: address zysxi
         pop     eax                     # discard return
         pop     eax                     # discard dummy1
         pop     eax                     # discard dummy2
-	call	stackinit               # initialize minimal stack
-        mov     eax,compsp              # get minimal's stack pointer
-        set_wa  eax                     # startup stack pointer
+	call	stackinit               # initialize MINIMAL stack
+        mov     eax,compsp              # get MINIMAL's stack pointer
+        SET_WA  eax                     # startup stack pointer
 
-	cld                             # default to up direction for string ops
-        getoff  eax,dffnc               # get address of ppm offset
+	cld                             # default to UP direction for string ops
+        GETOFF  eax,DFFNC               # get address of PPM offset
         mov     ppoff,eax               # save for use later
 #
-        mov     esp,osisp               # switch to new c stack
-        minimal start                   # load regs, switch stack, start compiler
+        mov     esp,osisp               # switch to new C stack
+        MINIMAL START                   # load regs, switch stack, start compiler
 
         cendp   startup
 
@@ -697,27 +791,27 @@ sysxi_p: address zysxi
 #
 #-----------
 #
-#	stackinit  -- initialize lowspmin from sp.
+#	stackinit  -- initialize LOWSPMIN from sp.
 #
-#	input:  sp - current c stack
-#		stacksiz - size of desired minimal stack in bytes
+#	Input:  sp - current C stack
+#		stacksiz - size of desired Minimal stack in bytes
 #
-#	uses:	eax
+#	Uses:	eax
 #
-#	output: register wa, sp, lowspmin, compsp, osisp set up per diagram:
+#	Output: register WA, sp, LOWSPMIN, compsp, osisp set up per diagram:
 #
 #	(high)	+----------------+
-#		|  old c stack   |
-#	  	|----------------| <-- incoming sp, resultant wa (future xs)
+#		|  old C stack   |
+#	  	|----------------| <-- incoming sp, resultant WA (future XS)
 #		|	     ^	 |
 #		|	     |	 |
 #		/ stacksiz bytes /
 #		|	     |	 |
 #		|            |	 |
-#		|----------- | --| <-- resultant lowspmin
+#		|----------- | --| <-- resultant LOWSPMIN
 #		| 400 bytes  v   |
-#	  	|----------------| <-- future c stack pointer, osisp
-#		|  new c stack	 |
+#	  	|----------------| <-- future C stack pointer, osisp
+#		|  new C stack	 |
 #	(low)	|                |
 #
 #
@@ -725,36 +819,36 @@ sysxi_p: address zysxi
 
 	proc	stackinit,near
 	mov	eax,esp
-        mov     compsp,eax              # save as minimal's stack pointer
-	sub	eax,stacksiz            # end of minimal stack is where c stack will start
-        mov     osisp,eax               # save new c stack pointer
-	add	eax,4*100               # 100 words smaller for chk
-        setminr  lowspmin,eax            # set lowspmin
+        mov     compsp,eax              # save as MINIMAL's stack pointer
+	sub	eax,stacksiz            # end of MINIMAL stack is where C stack will start
+        mov     osisp,eax               # save new C stack pointer
+	add	eax,4*100               # 100 words smaller for CHK
+        SETMINR  LOWSPMIN,eax            # Set LOWSPMIN
 	ret
 	endp	stackinit
 
 #
 #-----------
 #
-#       mimimal -- call minimal function from c
+#       mimimal -- call MINIMAL function from C
 #
-#       usage:  extern void minimal(word callno)
+#       Usage:  extern void minimal(WORD callno)
 #
 #       where:
 #         callno is an ordinal defined in osint.h, osint.inc, and calltab.
 #
-#       minimal registers wa, wb, wc, xr, and xl are loaded and
+#       Minimal registers WA, WB, WC, XR, and XL are loaded and
 #       saved from/to the register block.
 #
-#       note that before restart is called, we do not yet have compiler
-#       stack to switch to.  in that case, just make the call on the
-#       the osint stack.
+#       Note that before restart is called, we do not yet have compiler
+#       stack to switch to.  In that case, just make the call on the
+#       the OSINT stack.
 #
 
         cproc    minimal,near
 	pubname	minimal
 
-        pushad                          # save all registers for c
+        pushad                          # save all registers for C
         mov     eax,[esp+32+4]          # get ordinal
         mov     ecx,reg_wa              # restore registers
 	mov	ebx,reg_wb
@@ -763,14 +857,14 @@ sysxi_p: address zysxi
 	mov	esi,reg_xl
 	mov	ebp,reg_cp
 
-        mov     osisp,esp               # 1.39 save osint stack pointer
+        mov     osisp,esp               # 1.39 save OSINT stack pointer
         cmp     dword ptr compsp,0      # 1.39 is there a compiler stack?
         je      short min1              # 1.39 jump if none yet
         mov     esp,compsp              # 1.39 switch to compiler stack
 
-min1:   callc   calltab[eax*4],0        # off to the minimal code
+min1:   callc   calltab[eax*4],0        # off to the Minimal code
 
-        mov     esp,osisp               # 1.39 switch to osint stack
+        mov     esp,osisp               # 1.39 switch to OSINT stack
 
         mov     reg_wa,ecx              # save registers
 	mov	reg_wb,ebx
@@ -788,9 +882,9 @@ min1:   callc   calltab[eax*4],0        # off to the minimal code
 #
 #-----------
 #
-#       minoff -- obtain address of minimal variable
+#       minoff -- obtain address of MINIMAL variable
 #
-#       usage:  extern word *minoff(word valno)
+#       Usage:  extern WORD *minoff(WORD valno)
 #
 #       where:
 #         valno is an ordinal defined in osint.h, osint.inc and valtab.
@@ -800,7 +894,7 @@ min1:   callc   calltab[eax*4],0        # off to the minimal code
 	pubname	minoff
 
         mov     eax,[esp+4]             # get ordinal
-        mov     eax,valtab[eax*4]       # get address of minimal value
+        mov     eax,valtab[eax*4]       # get address of Minimal value
 	retc	4
 
         endp    minoff
@@ -810,75 +904,75 @@ min1:   callc   calltab[eax*4],0        # off to the minimal code
 #
 #-----------
 #
-#       get_fp  - get c caller's fp (frame pointer)
+#       get_fp  - get C caller's FP (frame pointer)
 #
-#       get_fp() returns the frame pointer for the c function that called
-#       this function.  however, this function is only called by zysxi.
+#       get_fp() returns the frame pointer for the C function that called
+#       this function.  HOWEVER, THIS FUNCTION IS ONLY CALLED BY ZYSXI.
 #
-#       c function zysxi calls this function to determine the lowest useful
+#       C function zysxi calls this function to determine the lowest USEFUL
 #       word on the stack, so that only the useful part of the stack will be
 #       saved in the load module.
 #
-#       the flow goes like this:
+#       The flow goes like this:
 #
-#       (1) user's spitbol program calls exit function
+#       (1) User's spitbol program calls EXIT function
 #
 #       (2) spitbol compiler calls interface routine sysxi to handle exit
 #
-#       (3) interface routine sysxi passes control to ccaller which then
-#           calls c function zysxi
+#       (3) Interface routine sysxi passes control to ccaller which then
+#           calls C function zysxi
 #
-#       (4) c function zysxi will write a load module, but needs to save
-#           a copy of the current stack in the load module.  the base of
+#       (4) C function zysxi will write a load module, but needs to save
+#           a copy of the current stack in the load module.  The base of
 #           the part of the stack to be saved begins with the frame of our
 #           caller, so that the load module can execute a return to ccaller.
 #
-#           this will allow the load module to pretend to be returning from
-#           c function zysxi.  so, c function zysxi calls this function,
-#           get_fp, to determine the base of the useful part of the stack.
+#           This will allow the load module to pretend to be returning from
+#           C function zysxi.  So, C function zysxi calls this function,
+#           get_fp, to determine the BASE OF THE USEFUL PART OF THE STACK.
 #
-#           we cheat just a little bit here.  c function zysxi can (and does)
+#           We cheat just a little bit here.  C function zysxi can (and does)
 #           have local variables, but we won't save them in the load module.
-#           only the portion of the frame established by the 80386 call
-#           instruction, from bp up, is saved.  these local variables
+#           Only the portion of the frame established by the 80386 call
+#           instruction, from BP up, is saved.  These local variables
 #           aren't needed, because the load module will not be going back
-#           to c function zysxi.  instead when function restart returns, it
-#           will act as if c function zysxi is returning.
+#           to C function zysxi.  Instead when function restart returns, it
+#           will act as if C function zysxi is returning.
 #
-#       (5) after writing the load module, c function zysxi calls c function
+#       (5) After writing the load module, C function zysxi calls C function
 #           zysej to terminate spitbol's execution.
 #
-#       (6) when the resulting load module is executed, c function main
-#           calls function restart.  function restart restores the stack
-#           and then does a return.  this return will act as if it is
-#           c function zysxi doing the return and the user's program will
-#           continue execution following its call to exit.
+#       (6) When the resulting load module is executed, C function main
+#           calls function restart.  Function restart restores the stack
+#           and then does a return.  This return will act as if it is
+#           C function zysxi doing the return and the user's program will
+#           continue execution following its call to EXIT.
 #
-#       on entry to _get_fp, the stack looks like
+#       On entry to _get_fp, the stack looks like
 #
 #               /      ...      /
 #       (high)  |               |
 #               |---------------|
-#       zysxi   |    old pc     |  --> return point in ccaller
-#         +     |---------------|  useful part of stack
-#       frame   |    old bp     |  <<<<-- bp of get_fp's caller
+#       ZYSXI   |    old PC     |  --> return point in CCALLER
+#         +     |---------------|  USEFUL part of stack
+#       frame   |    old BP     |  <<<<-- BP of get_fp's caller
 #               |---------------|     -
-#               |     zysxi's   |     -
-#               /     locals    /     - non-useful part of stack
+#               |     ZYSXI's   |     -
+#               /     locals    /     - NON-USEFUL part of stack
 #               |               |     ------
 #       ======= |---------------|
-#       sp-->   |    old pc     |  --> return pc in c function zysxi
+#       SP-->   |    old PC     |  --> return PC in C function ZYSXI
 #       (low)   +---------------+
 #
-#       on exit, return ebp in eax. this is the lower limit on the
+#       On exit, return EBP in EAX. This is the lower limit on the
 #       size of the stack.
 
 
         cproc    get_fp,near
 	pubname	get_fp
 
-        mov     eax,reg_xs      # minimal's xs
-        add     eax,4           # pop return from call to sysbx or sysxi
+        mov     eax,reg_xs      # Minimal's XS
+        add     eax,4           # pop return from call to SYSBX or SYSXI
         retc    0               # done
 
         cendp    get_fp
@@ -890,26 +984,26 @@ min1:   callc   calltab[eax*4],0        # off to the minimal code
 #
 #       restart( char *dummy, char *stackbase ) - startup compiler
 #
-#       the osint main function calls restart when resuming execution
-#       of a program from a load module.  the osint main function has
+#       The OSINT main function calls restart when resuming execution
+#       of a program from a load module.  The OSINT main function has
 #       reset global variables except for the stack and any associated
 #       variables.
 #
-#       before restoring stack, set up values for proper checking of
+#       Before restoring stack, set up values for proper checking of
 #       stack overflow. (initial sp here will most likely differ
 #       from initial sp when compile was done.)
 #
-#       it is also necessary to relocate any addresses in the the stack
-#       that point within the stack itself.  an adjustment factor is
-#       calculated as the difference between the stbas at exit() time,
-#       and stbas at restart() time.  as the stack is transferred from
-#       tscblk to the active stack, each word is inspected to see if it
-#       points within the old stack boundaries.  if so, the adjustment
+#       It is also necessary to relocate any addresses in the the stack
+#       that point within the stack itself.  An adjustment factor is
+#       calculated as the difference between the STBAS at exit() time,
+#       and STBAS at restart() time.  As the stack is transferred from
+#       TSCBLK to the active stack, each word is inspected to see if it
+#       points within the old stack boundaries.  If so, the adjustment
 #       factor is subtracted from it.
 #
-#       we use minimal's insta routine to initialize static variables
-#       not saved in the save file.  these values were not saved so as
-#       to minimize the size of the save file.
+#       We use Minimal's INSTA routine to initialize static variables
+#       not saved in the Save file.  These values were not saved so as
+#       to minimize the size of the Save file.
 #
 	ext	rereloc,near
 
@@ -922,27 +1016,27 @@ min1:   callc   calltab[eax*4],0        # off to the minimal code
 
         add     eax,stacksiz            # top of compiler's stack
         mov     esp,eax                 # switch to this stack
-	call	stackinit               # initialize minimal stack
+	call	stackinit               # initialize MINIMAL stack
 
                                         # set up for stack relocation
-        lea     eax,tscblk+scstr        # top of saved stack
+        lea     eax,TSCBLK+scstr        # top of saved stack
         mov     ebx,lmodstk             # bottom of saved stack
-        getmin  ecx,stbas               # ecx = stbas from exit() time
+        GETMIN  ecx,STBAS               # ecx = stbas from exit() time
         sub     ebx,eax                 # ebx = size of saved stack
 	mov	edx,ecx
         sub     edx,ebx                 # edx = stack bottom from exit() time
 	mov	ebx,ecx
         sub     ebx,esp                 # ebx = old stbas - new stbas
 
-        setminr  stbas,esp               # save initial sp
-        getoff  eax,dffnc               # get address of ppm offset
+        SETMINR  STBAS,esp               # save initial sp
+        GETOFF  eax,DFFNC               # get address of PPM offset
         mov     ppoff,eax               # save for use later
 #
-#       restore stack from tscblk.
+#       restore stack from TSCBLK.
 #
-        mov     esi,lmodstk             # -> bottom word of stack in tscblk
-        lea     edi,tscblk+scstr        # -> top word of stack
-        cmp     esi,edi                 # any stack to transfer?
+        mov     esi,lmodstk             # -> bottom word of stack in TSCBLK
+        lea     edi,TSCBLK+scstr        # -> top word of stack
+        cmp     esi,edi                 # Any stack to transfer?
         je      short re3               #  skip if not
 	sub	esi,4
 	std
@@ -958,68 +1052,68 @@ re2:    push    eax                     # transfer word of stack
 
 re3:	cld
         mov     compsp,esp              # 1.39 save compiler's stack pointer
-        mov     esp,osisp               # 1.39 back to osint's stack pointer
-        callc   rereloc,0               # v1.08 relocate compiler pointers into stack
-        getmin  eax,statb               # v1.34 start of static region to xr
-	set_xr  eax
-        minimal insta                   # v1.34 initialize static region
+        mov     esp,osisp               # 1.39 back to OSINT's stack pointer
+        callc   rereloc,0               # V1.08 relocate compiler pointers into stack
+        GETMIN  eax,STATB               # V1.34 start of static region to XR
+	SET_XR  eax
+        MINIMAL INSTA                   # V1.34 initialize static region
 
 #
-#       now pretend that we're executing the following c statement from
+#       Now pretend that we're executing the following C statement from
 #       function zysxi:
 #
-#               return  normal_return#
+#               return  NORMAL_RETURN#
 #
-#       if the load module was invoked by exit(), the return path is
-#       as follows:  back to ccaller, back to s$ext following sysxi call,
-#       back to user program following exit() call.
+#       If the load module was invoked by EXIT(), the return path is
+#       as follows:  back to ccaller, back to S$EXT following SYSXI call,
+#       back to user program following EXIT() call.
 #
-#       alternately, the user specified -w as a command line option, and
-#       sysbx called makeexec, which in turn called sysxi.  the return path
-#       should be:  back to ccaller, back to makeexec following sysxi call,
-#       back to sysbx, back to minimal code.  if we allowed this to happen,
-#       then it would require that stacked return address to sysbx still be
-#       valid, which may not be true if some of the c programs have changed
-#       size.  instead, we clear the stack and execute the restart code that
-#       simulates resumption just past the sysbx call in the minimal code.
-#       we distinguish this case by noting the variable stage is 4.
+#       Alternately, the user specified -w as a command line option, and
+#       SYSBX called MAKEEXEC, which in turn called SYSXI.  The return path
+#       should be:  back to ccaller, back to MAKEEXEC following SYSXI call,
+#       back to SYSBX, back to MINIMAL code.  If we allowed this to happen,
+#       then it would require that stacked return address to SYSBX still be
+#       valid, which may not be true if some of the C programs have changed
+#       size.  Instead, we clear the stack and execute the restart code that
+#       simulates resumption just past the SYSBX call in the MINIMAL code.
+#       We distinguish this case by noting the variable STAGE is 4.
 #
 .if winnt
 	ext	startbrk,near
 .endif
-        callc   startbrk,0              # start control-c logic
+        callc   startbrk,0              # start control-C logic
 
-        getmin  eax,stage               # is this a -w call?
+        GETMIN  eax,STAGE               # is this a -w call?
 	cmp	eax,4
         je      short re4               # yes, do a complete fudge
 
 #
-#       jump back to cc1 with return value = normal_return
+#       Jump back to cc1 with return value = NORMAL_RETURN
 	mov	eax,-1
         jmp     cc1                     # jump back
 
-#       here if -w produced load module.  simulate all the code that
-#       would occur if we naively returned to sysbx.  clear the stack and
+#       Here if -w produced load module.  simulate all the code that
+#       would occur if we naively returned to sysbx.  Clear the stack and
 #       go for it.
 #
-re4:	getmin	eax,stbas
+re4:	GETMIN	eax,STBAS
         mov     compsp,eax              # 1.39 empty the stack
 
-#       code that would be executed if we had returned to makeexec:
+#       Code that would be executed if we had returned to makeexec:
 #
-        setmin  gbcnt,0                 # reset garbage collect count
-        callc   zystm,0                 # fetch execution time to reg_ia
-        mov     eax,reg_ia              # set time into compiler
-	setminr	timsx,eax
+        SETMIN  GBCNT,0                 # reset garbage collect count
+        callc   zystm,0                 # Fetch execution time to reg_ia
+        mov     eax,reg_ia              # Set time into compiler
+	SETMINR	TIMSX,eax
 
-#       code that would be executed if we returned to sysbx:
+#       Code that would be executed if we returned to sysbx:
 #
         push    outptr                  # swcoup(outptr)
 	callc	swcoup,4
 
-#       jump to minimal code to restart a save file.
+#       Jump to Minimal code to restart a save file.
 
-        minimal rstrt                   # no return
+        MINIMAL RSTRT                   # no return
 
         cendp    restart
 
@@ -1027,132 +1121,132 @@ re4:	getmin	eax,stbas
 #
 #-----------
 #
-#       cvd_ - convert by division
+#       CVD_ - convert by division
 #
-#       input   ia (edx) = number <=0 to convert
-#       output  ia / 10
-#               wa (ecx) = remainder + '0'
+#       Input   IA (EDX) = number <=0 to convert
+#       Output  IA / 10
+#               WA (ECX) = remainder + '0'
 #
-        publab  cvd_
-        proc    cvd_,near
+        publab  CVD_
+        proc    CVD_,near
 
-        xchg    eax,edx         # ia to eax
+        xchg    eax,edx         # IA to EAX
         cdq                     # sign extend
         idiv    dword ptr ten   # divide by 10. edx = remainder (negative)
         neg     edx             # make remainder positive
         add     dl,0x30         # convert remainder to ascii ('0')
-        mov     ecx,edx         # return remainder in wa
-        xchg    edx,eax         # return quotient in ia
+        mov     ecx,edx         # return remainder in WA
+        xchg    edx,eax         # return quotient in IA
 	ret
 
-        endp    cvd_
+        endp    CVD_
 #
 #-----------
 #
-#       dvi_ - divide ia (edx) by long in eax
+#       DVI_ - divide IA (EDX) by long in EAX
 #
-        publab  dvi_
-        proc    dvi_,near
+        publab  DVI_
+        proc    DVI_,near
 
         or      eax,eax         # test for 0
         jz      short setovr    # jump if 0 divisor
-        push    ebp             # preserve cp
+        push    ebp             # preserve CP
         xchg    ebp,eax         # divisor to ebp
         xchg    eax,edx         # dividend in eax
         cdq                     # extend dividend
         idiv    ebp             # perform division. eax=quotient, edx=remainder
-        xchg    edx,eax         # place quotient in edx (ia)
-        pop     ebp             # restore cp
+        xchg    edx,eax         # place quotient in edx (IA)
+        pop     ebp             # restore CP
         xor     eax,eax         # clear overflow indicator
 	ret
 
-        endp    dvi_
+        endp    DVI_
 
 #
 #-----------
 #
-#       rmi_ - remainder of ia (edx) divided by long in eax
+#       RMI_ - remainder of IA (EDX) divided by long in EAX
 #
-        publab  rmi_
-        proc    rmi_,near
+        publab  RMI_
+        proc    RMI_,near
              or      eax,eax         # test for 0
         jz      short setovr    # jump if 0 divisor
-        push    ebp             # preserve cp
+        push    ebp             # preserve CP
         xchg    ebp,eax         # divisor to ebp
         xchg    eax,edx         # dividend in eax
         cdq                     # extend dividend
         idiv    ebp             # perform division. eax=quotient, edx=remainder
-        pop     ebp             # restore cp
+        pop     ebp             # restore CP
         xor     eax,eax         # clear overflow indicator
-        ret                     # return remainder in edx (ia)
+        ret                     # return remainder in edx (IA)
 setovr: mov     al,0x80         # set overflow indicator
 	dec	al
 	ret
 
-        endp    rmi_
+        endp    RMI_
 
 
 #----------
 #
-#    calls to c
+#    Calls to C
 #
-#       the calling convention of the various compilers:
+#       The calling convention of the various compilers:
 #
-#       integer results returned in eax.
-#       float results returned in st0 for intel.
-#       see conditional switches fretst0 and
+#       Integer results returned in EAX.
+#       Float results returned in ST0 for Intel.
+#       See conditional switches fretst0 and
 #       freteax in systype.ah for each compiler.
 #
-#       c function preserves ebp, ebx, esi, edi.
+#       C function preserves EBP, EBX, ESI, EDI.
 #
 
 
 #----------
 #
-#       rti_ - convert real in ra to integer in ia
-#               returns c=0 if fit ok, c=1 if too large to convert
+#       RTI_ - convert real in RA to integer in IA
+#               returns C=0 if fit OK, C=1 if too large to convert
 #
-        publab  rti_
-        proc    rti_,near
+        publab  RTI_
+        proc    RTI_,near
 
-# 41e00000 00000000 = 2147483648.0
-# 41e00000 00200000 = 2147483649.0
-        mov     eax, dword ptr reg_ra+4   # ra msh
+# 41E00000 00000000 = 2147483648.0
+# 41E00000 00200000 = 2147483649.0
+        mov     eax, dword ptr reg_ra+4   # RA msh
         btr     eax,31          # take absolute value, sign bit to carry flag
-        jc      short rti_2     # jump if negative real
-        cmp     eax,0x41e00000  # test against 2147483648
-        jae     short rti_1     # jump if >= +2147483648
-rti_3:  push    ecx             # protect against c routine usage.
-        push    eax             # push ra msh
-        push    dword ptr reg_ra# push ra lsh
+        jc      short RTI_2     # jump if negative real
+        cmp     eax,0x41E00000  # test against 2147483648
+        jae     short RTI_1     # jump if >= +2147483648
+RTI_3:  push    ecx             # protect against C routine usage.
+        push    eax             # push RA MSH
+        push    dword ptr reg_ra# push RA LSH
         callfar f_2_i,8         # float to integer
-        xchg    eax,edx         # return integer in edx (ia)
+        xchg    eax,edx         # return integer in edx (IA)
         pop     ecx             # restore ecx
         clc
 	ret
 
 # here to test negative number, made positive by the btr instruction
-rti_2:  cmp     eax,0x41e00000          # test against 2147483649
-        jb      short rti_0             # definately smaller
-        ja      short rti_1             # definately larger
+RTI_2:  cmp     eax,0x41E00000          # test against 2147483649
+        jb      short RTI_0             # definately smaller
+        ja      short RTI_1             # definately larger
         cmp     word ptr reg_ra+2, 0x0020
-        jae     short rti_1
-rti_0:  btc     eax,31                  # make negative again
-        jmp     rti_3
-rti_1:  stc                             # return c=1 for too large to convert
+        jae     short RTI_1
+RTI_0:  btc     eax,31                  # make negative again
+        jmp     RTI_3
+RTI_1:  stc                             # return C=1 for too large to convert
         ret
 
-        endp    cvd_
+        endp    CVD_
 #
 #----------
 #
-#       itr_ - convert integer in ia to real in ra
+#       ITR_ - convert integer in IA to real in RA
 #
-        publab  itr_
-        proc    itr_,near
+        publab  ITR_
+        proc    ITR_,near
 
         push    ecx             # preserve
-        push    edx             # push ia
+        push    edx             # push IA
         callfar i_2_f,4         # integer to float
 .if fretst0
 	fstp	qword ptr reg_ra
@@ -1160,20 +1254,20 @@ rti_1:  stc                             # return c=1 for too large to convert
 	fwait
 .endif
 .if freteax
-        mov     dword ptr reg_ra,eax    # return result in ra
+        mov     dword ptr reg_ra,eax    # return result in RA
 	mov	dword ptr reg_ra+4,edx
         pop     ecx             # restore ecx
 .endif
 	ret
 
-        endp    itr_
+        endp    ITR_
 #
 #----------
 #
-#       ldr_ - load real pointed to by eax to ra
+#       LDR_ - load real pointed to by eax to RA
 #
-        publab  ldr_
-        proc    ldr_,near
+        publab  LDR_
+        proc    LDR_,near
 
         push    dword ptr [eax]                 # lsh
 	pop	dword ptr reg_ra
@@ -1181,14 +1275,14 @@ rti_1:  stc                             # return c=1 for too large to convert
 	mov	dword ptr reg_ra+4, eax
 	ret
 
-        endp    ldr_
+        endp    LDR_
 #
 #----------
 #
-#       str_ - store ra in real pointed to by eax
+#       STR_ - store RA in real pointed to by eax
 #
-        publab  str_
-        proc    str_,near
+        publab  STR_
+        proc    STR_,near
 
         push    dword ptr reg_ra                # lsh
 	pop	dword ptr [eax]
@@ -1196,19 +1290,19 @@ rti_1:  stc                             # return c=1 for too large to convert
 	pop	dword ptr [eax+4]
 	ret
 
-        endp    str_
+        endp    STR_
 #
 #----------
 #
-#       adr_ - add real at [eax] to ra
+#       ADR_ - add real at [eax] to RA
 #
-        publab  adr_
-        proc    adr_,near
+        publab  ADR_
+        proc    ADR_,near
 
-        push    ecx                             # preserve regs for c
+        push    ecx                             # preserve regs for C
 	push	edx
-        push    dword ptr reg_ra+4              # ra msh
-        push    dword ptr reg_ra                # ra lsh
+        push    dword ptr reg_ra+4              # RA msh
+        push    dword ptr reg_ra                # RA lsh
         push    dword ptr [eax+4]               # arg msh
         push    dword ptr [eax]                 # arg lsh
         callfar f_add,16                        # perform op
@@ -1226,19 +1320,19 @@ rti_1:  stc                             # return c=1 for too large to convert
 .endif
 	ret
 
-        endp    adr_
+        endp    ADR_
 #
 #----------
 #
-#       sbr_ - subtract real at [eax] from ra
+#       SBR_ - subtract real at [eax] from RA
 #
-        publab  sbr_
-        proc    sbr_,near
+        publab  SBR_
+        proc    SBR_,near
 
-        push    ecx                             # preserve regs for c
+        push    ecx                             # preserve regs for C
 	push	edx
-        push    dword ptr reg_ra+4              # ra msh
-        push    dword ptr reg_ra                # ra lsh
+        push    dword ptr reg_ra+4              # RA msh
+        push    dword ptr reg_ra                # RA lsh
         push    dword ptr [eax+4]               # arg msh
         push    dword ptr [eax]                 # arg lsh
         callfar f_sub,16                        # perform op
@@ -1256,19 +1350,19 @@ rti_1:  stc                             # return c=1 for too large to convert
 .endif
 	ret
 
-        endp    sbr_
+        endp    SBR_
 #
 #----------
 #
-#       mlr_ - multiply real in ra by real at [eax]
+#       MLR_ - multiply real in RA by real at [eax]
 #
-        publab  mlr_
-        proc    mlr_,near
+        publab  MLR_
+        proc    MLR_,near
 
-        push    ecx                             # preserve regs for c
+        push    ecx                             # preserve regs for C
 	push	edx
-        push    dword ptr reg_ra+4              # ra msh
-        push    dword ptr reg_ra                # ra lsh
+        push    dword ptr reg_ra+4              # RA msh
+        push    dword ptr reg_ra                # RA lsh
         push    dword ptr [eax+4]               # arg msh
         push    dword ptr [eax]                 # arg lsh
         callfar f_mul,16                        # perform op
@@ -1286,20 +1380,20 @@ rti_1:  stc                             # return c=1 for too large to convert
 .endif
 	ret
 
-        endp    mlr_
+        endp    MLR_
 #
 #----------
 #
-#       dvr_ - divide real in ra by real at [eax]
+#       DVR_ - divide real in RA by real at [eax]
 #
-        publab  dvr_
+        publab  DVR_
 
-        proc    dvr_,near
+        proc    DVR_,near
 
-        push    ecx                             # preserve regs for c
+        push    ecx                             # preserve regs for C
 	push	edx
-        push    dword ptr reg_ra+4              # ra msh
-        push    dword ptr reg_ra                # ra lsh
+        push    dword ptr reg_ra+4              # RA msh
+        push    dword ptr reg_ra                # RA lsh
         push    dword ptr [eax+4]               # arg msh
         push    dword ptr [eax]                 # arg lsh
         callfar f_div,16                        # perform op
@@ -1317,15 +1411,15 @@ rti_1:  stc                             # return c=1 for too large to convert
 .endif
 	ret
 
-        endp    dvr_
+        endp    DVR_
 #
 #----------
 #
-#       ngr_ - negate real in ra
+#       NGR_ - negate real in RA
 #
-        publab  ngr_
+        publab  NGR_
 
-        proc    ngr_,near
+        proc    NGR_,near
 	cmp	dword ptr reg_ra, 0
 	jne	short ngr_1
 	cmp	dword ptr reg_ra+4, 0
@@ -1333,20 +1427,20 @@ rti_1:  stc                             # return c=1 for too large to convert
 ngr_1:  xor     byte ptr reg_ra+7, 0x80         # complement mantissa sign
 ngr_2:	ret
 
-        endp    ngr_
+        endp    NGR_
 #
 #----------
 #
-#       atn_ arctangent of real in ra
+#       ATN_ arctangent of real in RA
 #
-        publab  atn_
+        publab  ATN_
 
-        proc    atn_,near
+        proc    ATN_,near
 
-        push    ecx                             # preserve regs for c
+        push    ecx                             # preserve regs for C
 	push	edx
-        push    dword ptr reg_ra+4              # ra msh
-        push    dword ptr reg_ra                # ra lsh
+        push    dword ptr reg_ra+4              # RA msh
+        push    dword ptr reg_ra                # RA lsh
         callfar f_atn,8                         # perform op
 .if fretst0
         fstp	qword ptr reg_ra
@@ -1362,20 +1456,20 @@ ngr_2:	ret
 .endif
 	ret
 
-        endp    atn_
+        endp    ATN_
 #
 #----------
 #
-#       chp_ chop fractional part of real in ra
+#       CHP_ chop fractional part of real in RA
 #
-        publab  chp_
+        publab  CHP_
 
-        proc    chp_,near
+        proc    CHP_,near
 
-        push    ecx                             # preserve regs for c
+        push    ecx                             # preserve regs for C
 	push	edx
-        push    dword ptr reg_ra+4              # ra msh
-        push    dword ptr reg_ra                # ra lsh
+        push    dword ptr reg_ra+4              # RA msh
+        push    dword ptr reg_ra                # RA lsh
         callfar f_chp,8                         # perform op
 .if fretst0
         fstp	qword ptr reg_ra
@@ -1391,20 +1485,20 @@ ngr_2:	ret
 .endif
 	ret
 
-        endp    chp_
+        endp    CHP_
 #
 #----------
 #
-#       cos_ cosine of real in ra
+#       COS_ cosine of real in RA
 #
-        publab  cos_
+        publab  COS_
 
-        proc    cos_,near
+        proc    COS_,near
 
-        push    ecx                             # preserve regs for c
+        push    ecx                             # preserve regs for C
 	push	edx
-        push    dword ptr reg_ra+4              # ra msh
-        push    dword ptr reg_ra                # ra lsh
+        push    dword ptr reg_ra+4              # RA msh
+        push    dword ptr reg_ra                # RA lsh
         callfar f_cos,8                         # perform op
 .if fretst0
         fstp	qword ptr reg_ra
@@ -1420,20 +1514,20 @@ ngr_2:	ret
 .endif
 	ret
 
-        endp    cos_
+        endp    COS_
 #
 #----------
 #
-#       etx_ exponential of real in ra
+#       ETX_ exponential of real in RA
 #
-        publab  etx_
+        publab  ETX_
 
-        proc    etx_,near
+        proc    ETX_,near
 
-        push    ecx                             # preserve regs for c
+        push    ecx                             # preserve regs for C
 	push	edx
-        push    dword ptr reg_ra+4              # ra msh
-        push    dword ptr reg_ra                # ra lsh
+        push    dword ptr reg_ra+4              # RA msh
+        push    dword ptr reg_ra                # RA lsh
         callfar f_etx,8                         # perform op
 .if fretst0
         fstp	qword ptr reg_ra
@@ -1449,20 +1543,20 @@ ngr_2:	ret
 .endif
 	ret
 
-        endp    etx_
+        endp    ETX_
 #
 #----------
 #
-#       lnf_ natural logarithm of real in ra
+#       LNF_ natural logarithm of real in RA
 #
-        publab  lnf_
+        publab  LNF_
 
-        proc    lnf_,near
+        proc    LNF_,near
 
-        push    ecx                             # preserve regs for c
+        push    ecx                             # preserve regs for C
 	push	edx
-        push    dword ptr reg_ra+4              # ra msh
-        push    dword ptr reg_ra                # ra lsh
+        push    dword ptr reg_ra+4              # RA msh
+        push    dword ptr reg_ra                # RA lsh
         callfar f_lnf,8                         # perform op
 .if fretst0
         fstp	qword ptr reg_ra
@@ -1478,20 +1572,20 @@ ngr_2:	ret
 .endif
 	ret
 
-        endp    lnf_
+        endp    LNF_
 #
 #----------
 #
-#       sin_ arctangent of real in ra
+#       SIN_ arctangent of real in RA
 #
-        publab  sin_
+        publab  SIN_
 
-        proc    sin_,near
+        proc    SIN_,near
 
-        push    ecx                             # preserve regs for c
+        push    ecx                             # preserve regs for C
 	push	edx
-        push    dword ptr reg_ra+4              # ra msh
-        push    dword ptr reg_ra                # ra lsh
+        push    dword ptr reg_ra+4              # RA msh
+        push    dword ptr reg_ra                # RA lsh
         callfar f_sin,8                         # perform op
 .if fretst0
         fstp	qword ptr reg_ra
@@ -1507,20 +1601,20 @@ ngr_2:	ret
 .endif
 	ret
 
-        endp    sin_
+        endp    SIN_
 #
 #----------
 #
-#       sqr_ arctangent of real in ra
+#       SQR_ arctangent of real in RA
 #
-        publab  sqr_
+        publab  SQR_
 
-        proc    sqr_,near
+        proc    SQR_,near
 
-        push    ecx                             # preserve regs for c
+        push    ecx                             # preserve regs for C
 	push	edx
-        push    dword ptr reg_ra+4              # ra msh
-        push    dword ptr reg_ra                # ra lsh
+        push    dword ptr reg_ra+4              # RA msh
+        push    dword ptr reg_ra                # RA lsh
         callfar f_sqr,8                         # perform op
 .if fretst0
         fstp	qword ptr reg_ra
@@ -1536,20 +1630,20 @@ ngr_2:	ret
 .endif
 	ret
 
-        endp    sqr_
+        endp    SQR_
 #
 #----------
 #
-#       tan_ arctangent of real in ra
+#       TAN_ arctangent of real in RA
 #
-        publab  tan_
+        publab  TAN_
 
-        proc    tan_,near
+        proc    TAN_,near
 
-        push    ecx                             # preserve regs for c
+        push    ecx                             # preserve regs for C
 	push	edx
-        push    dword ptr reg_ra+4              # ra msh
-        push    dword ptr reg_ra                # ra lsh
+        push    dword ptr reg_ra+4              # RA msh
+        push    dword ptr reg_ra                # RA lsh
         callfar f_tan,8                         # perform op
 .if fretst0
         fstp	qword ptr reg_ra
@@ -1565,15 +1659,15 @@ ngr_2:	ret
 .endif
 	ret
 
-        endp    tan_
+        endp    TAN_
 #
 #----------
 #
-#       cpr_ compare real in ra to 0
+#       CPR_ compare real in RA to 0
 #
-        publab  cpr_
+        publab  CPR_
 
-        proc    cpr_,near
+        proc    CPR_,near
 
         mov     eax, dword ptr reg_ra+4 # fetch msh
         cmp     eax, 0x80000000         # test msh for -0.0
@@ -1586,48 +1680,48 @@ cpr050: cmp     dword ptr reg_ra, 0     # true zero, or denormalized number?
         cmp     al, 0                   # positive denormal, set cc
 cpr100:	ret
 
-        endp    cpr_
+        endp    CPR_
 #
 #----------
 #
-#       ovr_ test for overflow value in ra
+#       OVR_ test for overflow value in RA
 #
-        publab  ovr_
+        publab  OVR_
 
-ovr_:   proc    near
+OVR_:   proc    near
 
         mov     ax, word ptr reg_ra+6   # get top 2 bytes
         and     ax, 0x7ff0              # check for infinity or nan
         add     ax, 0x10                # set/clear overflow accordingly
 	ret
 
-        endp    ovr_
+        endp    OVR_
 
 .if winnt
 #
 #----------
 #
-#       cinread(fdn, buffer, size)      do buffered console input
+#       cinread(fdn, buffer, size)      Do buffered console input
 #
-#       input:  fdn     = file descriptor in case can't use dos function 0a
+#       Input:  fdn     = file descriptor in case can't use DOS function 0A
 #               buffer  = buffer
 #               size    = buffer size
-#       output: eax    = number of bytes transferred if no error
+#       Output: eax    = number of bytes transferred if no error
 #               = -1 if error
 #
-#       preserves ds, es, esi, edi, ebx
+#       Preserves ds, es, esi, edi, ebx
 #
-#       uses dos function 0a because that is the function intercepted by
-#       various keyboard editing programs, such as dos edit.
+#       Uses DOS function 0A because that is the function intercepted by
+#       various keyboard editing programs, such as DOS Edit.
 #
-#       if a program has redirected standard output, function 0a's echos
-#       will go to the redirected file, instead of the screen.  to overcome
+#       If a program has redirected standard output, function 0A's echos
+#       will go to the redirected file, instead of the screen.  To overcome
 #       this, we save standard out's handle, and force it to be the console
-#       (stderr).  similarly, function 0ah reads from handle 0, and we
+#       (stderr).  Similarly, function 0Ah reads from handle 0, and we
 #       force it to the console to preclude reading from a file.
 #
-#       if insufficient handles remain in the system to do this little
-#       shuffle, we simple fall back to the normal dos read routine.
+#       If insufficient handles remain in the system to do this little
+#       shuffle, we simple fall back to the normal DOS read routine.
 #
 
         struc   cinarg
@@ -1657,71 +1751,71 @@ ctemp   =       [ebp-zct]               #temp on stack
 	push	esi
 	push	edi
 
-        xor     ebx,ebx                 # save stdin by duplicating to
+        xor     ebx,ebx                 # Save STDIN by duplicating to
         mov     ecx,ebx                 #  get another handle
 	xor	eax,eax
-        mov     ah,0x45                 # cx = stdin
+        mov     ah,0x45                 # CX = STDIN
         int     0x21
-        jc      cinr5                   # out of handles
-        push    eax                     # save handle to old stdin
-        mov     ebx,2                   # make stdin refer to stderr
-        mov     ah,0x46                 # so dos's input comes from keyboard
+        jc      cinr5                   # Out of handles
+        push    eax                     # Save handle to old STDIN
+        mov     ebx,2                   # Make STDIN refer to STDERR
+        mov     ah,0x46                 # so DOS's input comes from keyboard
         int     0x21
 
-        mov     ebx,1                   # save stdout by duplicating to
+        mov     ebx,1                   # Save STDOUT by duplicating to
         mov     ecx,ebx                 #  get another handle
-        mov     ah,0x45                 # cx = stdout
+        mov     ah,0x45                 # CX = STDOUT
         int     0x21
-        jc      short cinr4             # out of handles
+        jc      short cinr4             # Out of handles
 	push	ecx
-        push    eax                     # save handle to old stdout
-        mov     ebx,2                   # make stdout refer to stderr
-        mov     ah,0x46                 # so dos' echo goes to screen
+        push    eax                     # Save handle to old STDOUT
+        mov     ebx,2                   # Make STDOUT refer to STDERR
+        mov     ah,0x46                 # so DOS' echo goes to screen
         int     0x21
 
 	mov	ecx,[ebp].cin_siz
-        inc     ecx                     # allow for cr
+        inc     ecx                     # Allow for CR
 	cmp	ecx,255
 	jle	short cinr1
-        mov     cl,255                  # 255 is the max size for function 0ah
-cinr1:  lea     edx,ctemp.crbuf         # buffer (ds=ss)
-        mov     [edx],cl                # set up count
+        mov     cl,255                  # 255 is the max size for function 0Ah
+cinr1:  lea     edx,ctemp.crbuf         # Buffer (DS=SS)
+        mov     [edx],cl                # Set up count
 
         mov     ah,0x0a
-        int     0x21                    # do buffered input into [edx+2]
+        int     0x21                    # Do buffered input into [edx+2]
 
 	pop	ebx
-        pop     ecx                     # (cx = stdout)
-        mov     ah,0x46                 # restore stdout to original file
+        pop     ecx                     # (CX = STDOUT)
+        mov     ah,0x46                 # Restore STDOUT to original file
         int     0x21
-        mov     ah,0x3e                 # discard dup'ed handle
+        mov     ah,0x3e                 # Discard dup'ed handle
         int     0x21
 
-        xor     ecx,ecx                 # cx = stdin
+        xor     ecx,ecx                 # CX = STDIN
 	pop	ebx
-        mov     ah,0x46                 # restore stdin to original file
+        mov     ah,0x46                 # Restore STDIN to original file
         int     0x21
-        mov     ah,0x3e                 # discard dup'ed handle
+        mov     ah,0x3e                 # Discard dup'ed handle
         int     0x21
 
 	mov	esi,edx
-        inc     esi                     # point to number of bytes read
-        movzx   ebx,byte ptr [esi]      # char count
-        inc     ebx                     # include cr
-        inc     esi                     # point to first char
-        lea     edx,[esi+ebx]           # point past cr
-        mov     [edx],byte ptr 10       # append lf after cr
-        inc     ebx                     # include lf
-        cmp     ebx,cin_siz[ebp]        # compare with caller's buffer size
+        inc     esi                     # Point to number of bytes read
+        movzx   ebx,byte ptr [esi]      # Char count
+        inc     ebx                     # Include CR
+        inc     esi                     # Point to first char
+        lea     edx,[esi+ebx]           # Point past CR
+        mov     [edx],byte ptr 10       # Append LF after CR
+        inc     ebx                     # Include LF
+        cmp     ebx,cin_siz[ebp]        # Compare with caller's buffer size
 	jle	short cinr3
-        mov     ebx,cin_siz[ebp]        # caller's buffer size limits us
+        mov     ebx,cin_siz[ebp]        # Caller's buffer size limits us
 cinr3:	mov	ecx,ebx
-        mov     edi,cin_buf[ebp]        # caller's buffer
+        mov     edi,cin_buf[ebp]        # Caller's buffer
   rep	movsb
 
-        push    ebx                     # save count
-        mov     ebx,2                   # force lf echo to screen
-        mov     ah,0x40                 # edx points to lf
+        push    ebx                     # Save count
+        mov     ebx,2                   # Force LF echo to screen
+        mov     ah,0x40                 # edx points to LF
 	mov	ecx,1
         int     0x21
 	pop	eax
@@ -1732,18 +1826,18 @@ cinr2:	pop	edi
 	leave
 	retc	12
 
-# here if insufficient handles to save standard out.
-# release standard in.
+# Here if insufficient handles to save standard out.
+# Release standard in.
 #
-cinr4:  xor     ecx,ecx                 # cx = stdin
+cinr4:  xor     ecx,ecx                 # CX = STDIN
 	pop	ebx
-        mov     ah,0x46                 # restore stdin to original file
+        mov     ah,0x46                 # Restore STDIN to original file
         int     0x21
-        mov     ah,0x3e                 # discard dup'ed handle
+        mov     ah,0x3e                 # Discard dup'ed handle
         int     0x21
 
-# here if insufficient handles to save standard in.
-# just fall back to read routine.
+# Here if insufficient handles to save standard in.
+# Just fall back to read routine.
 #
 cinr5:	push	cin_siz[ebp]
 	push	cin_buf[ebp]
@@ -1764,12 +1858,12 @@ cinr5:	push	cin_siz[ebp]
 #
 #----------
 #
-#       chrdevdos(fdn)  do ioctl to see if character device.
+#       chrdevdos(fdn)  Do ioctl to see if character device.
 #
-#       input:  fdn     = file descriptor
-#       output: eax     = 81h/82h if input/output char dev, else 0
+#       Input:  fdn     = file descriptor
+#       Output: eax     = 81h/82h if input/output char dev, else 0
 #
-#       preserves ds, es, esi, edi, ebx
+#       Preserves ds, es, esi, edi, ebx
 #
 
                 struc   chrdevarg
@@ -1783,8 +1877,8 @@ chrdev_fdn:     .long   0
 	enter	0,0
 	push	ebx
 
-        mov     ebx,chrdev_fdn[ebp]     # caller's fdn
-        mov     ax,0x4400               # ioctl get status
+        mov     ebx,chrdev_fdn[ebp]     # Caller's fdn
+        mov     ax,0x4400               # IOCTL get status
         int     0x21
 	pop	ebx
 	jc	short chrdev1
@@ -1800,13 +1894,13 @@ chrdev1: xor	eax,eax
 #
 #----------
 #
-#       rawmodedos(fdn,mode)    set console to raw/cooked mode
+#       rawmodedos(fdn,mode)    Set console to raw/cooked mode
 #
-#       input:  fdn     = file descriptor
+#       Input:  fdn     = file descriptor
 #               mode    = 0 = cooked, 1 = raw
-#       output: none
+#       Output: none
 #
-#       preserves ds, es, esi, edi, ebx
+#       Preserves ds, es, esi, edi, ebx
 #
 
                 struc   rawmodearg
@@ -1825,7 +1919,7 @@ rawmode_mode:   .long   0
 	callc	chrdevdos,4
 	or	eax,eax
 	jz	rawmode1
-        and     eax,0x0df
+        and     eax,0x0DF
 	cmp	rawmode_mode[ebp],0
 	je	rawmode0
         or      al,0x20                 # set raw bit
@@ -1855,5 +1949,5 @@ rawmode1: pop	ebx
 .endif
 
 
-  csegend_
+  CSegEnd_
         .end
