@@ -80,11 +80,11 @@ int sig;
 {
     word    stmct, stmcs;
     brkpnd++;
-    stmct = GET_MIN_VALUE(stmct,word) - 1;
-    stmcs = GET_MIN_VALUE(stmcs,word);
-    SET_MIN_VALUE(stmct,1,word);                /* force STMGO loop to check */
-    SET_MIN_VALUE(stmcs,stmcs - stmct,word);    /* counters quickly */
-    SET_MIN_VALUE(polct,1,word);				/* force quick SYSPL call */
+    stmct = GET_MIN_VALUE(STMCT,word) - 1;
+    stmcs = GET_MIN_VALUE(STMCS,word);
+    SET_MIN_VALUE(STMCT,1,word);                /* force STMGO loop to check */
+    SET_MIN_VALUE(STMCS,stmcs - stmct,word);    /* counters quickly */
+    SET_MIN_VALUE(POLCT,1,word);				/* force quick SYSPL call */
 }
 
 
