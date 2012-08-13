@@ -708,11 +708,11 @@ OUTSTMT
 *
 *  Send text to OUTFILE
 *
-	OUTFILE = '{' LABEL '{' OPCODE '{'
-.	(IDENT(TYP1), TYP1 ',') OP1 '{'
-.	(IDENT(TYP2), TYP2 ',') OP2 '{'
-.	(IDENT(TYP3), TYP3 ',') OP3 '{' COMMENT
-.	'{' NLINES
+	OUTFILE = '|' LABEL '|' OPCODE '|'
+.	(IDENT(TYP1), TYP1 ',') OP1 '|'
+.	(IDENT(TYP2), TYP2 ',') OP2 '|'
+.	(IDENT(TYP3), TYP3 ',') OP3 '|' COMMENT
+.	'|' NLINES
 	NTARGET = NTARGET + 1
 	NOUTLINES = NOUTLINES + 1
 .						:(RETURN)
@@ -859,7 +859,7 @@ G.BSW
 *  save prior vms code in case needed
 	UB = ( INTEGER( OP2 ) OP2, EQUATES[OP2] )
 	IFFAR = INTEGER( UB )
-.		ARRAY( '0:' UB - 1,'{{' )	:F(G.BSW1)
+.		ARRAY( '0:' UB - 1,'||' )	:F(G.BSW1)
 	DPLBL = OP3
 	BSW   = 1				:(DSGEN)
 G.BSW1	ERROR("NON-INTEGER UPPER BOUND FOR BSW")
@@ -873,7 +873,7 @@ G.IFF
 	IFFTYP = ( INTEGER(OP1) '1', '2')
 	IFFVAL = ( INTEGER( OP1 ) OP1, EQUATES[OP1] )
 	IFFAR[IFFVAL] = INTEGER( IFFVAL )
-.		IFFTYP ',' OP1 '{' TYP2 ',' OP2 '{'  COMMENT
+.		IFFTYP ',' OP1 '|' TYP2 ',' OP2 '|'  COMMENT
 .						:S(DSOUT)
 	ERROR("NON-INTEGER IFF VALUE")
 *
@@ -900,8 +900,8 @@ G.EQU3	ERROR("EQU EVALUATION FAILED: " NUM1 ' ' OPRTR ' ' NUM2 ' "' OP1 '"' )
 G.ESW
 	(EQ(BSW) ERROR("ESW WITHOUT BSW"))
 	IFFINDX = 0
-G.ESW1	IFFAR[IFFINDX] BREAK('{') $ VAL LEN(1)
-.		BREAK( '{' ) $ PLBL LEN(1)
+G.ESW1	IFFAR[IFFINDX] BREAK('|') $ VAL LEN(1)
+.		BREAK( '|' ) $ PLBL LEN(1)
 .		REM $ CMNT
 .						:F(G.ESW2)
 	VAL = IDENT( VAL ) '1,' IFFINDX

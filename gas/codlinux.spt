@@ -212,13 +212,13 @@
 *  Initial patterns
 *
 *  P.CSPARSE Parses tokenized line
-	P.CSPARSE = '{' BREAK('{') . INLABEL
-.	'{' BREAK('{') . INCODE
-.	'{' BREAK('{') . IARG1
-.	'{' BREAK('{') . IARG2
-.	'{' BREAK('{') . IARG3
-.	'{' BREAK('{') . INCOMMENT
-	'{' REM . SLINENO
+	P.CSPARSE = '|' BREAK('|') . INLABEL
+.	'|' BREAK('|') . INCODE
+.	'|' BREAK('|') . IARG1
+.	'|' BREAK('|') . IARG2
+.	'|' BREAK('|') . IARG3
+.	'|' BREAK('|') . INCOMMENT
+	'|' REM . SLINENO
 
 *  Dispatch Table
 *

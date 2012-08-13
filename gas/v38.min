@@ -7940,11 +7940,11 @@ LSTMS  DAC  B$SCL            PAGE
 *
 HEADR  DAC  B$SCL
        DAC  25
-       DTC  /Macro SPITBOL Version 3.8/
+       DTC  /Macro SPITBOL Version 3.7/
 *
 HEADV  DAC  B$SCL            FOR EXIT() VERSION NO. CHECK
-       DAC  5
-       DTC  /3.8.2/
+       DAC  4
+       DTC  /3.8.1/
 .IF    .CSED
 *      FREE STORE PERCENTAGE (USED BY GBCOL)
 *

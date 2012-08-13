@@ -14,7 +14,7 @@ OSINT=./osint
 vpath %.c $(OSINT)
 
 
-
+AS=as
 CC=     gcc
 ifeq	($(DEBUG),0)
 CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
@@ -24,9 +24,11 @@ endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
+#ASFLAGS = -f elf
 ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
 else
-ASFLAGS = --32 -g -gstabs+ -msyntax=intel -mmnemonic=intel -mnaked-reg
+ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
+#ASFLAGS = -f elf -g
 endif
 
 # Tools for processing Minimal source file.
@@ -42,7 +44,8 @@ SPIT=   ./bootstrap/spitbol
 
 # Implicit rule for building objects from assembly language files.
 .s.o:
-	$(AS) -a=$*.lst -o $@ $(ASFLAGS) $*.s
+#	$(AS) -a=$*.lst -o $@ $(ASFLAGS) $*.s
+	$(AS) -o $@ $(ASFLAGS) $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
 CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h
