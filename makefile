@@ -14,7 +14,7 @@ OSINT=./osint
 vpath %.c $(OSINT)
 
 
-AS=as
+AS=nasm
 CC=     gcc
 ifeq	($(DEBUG),0)
 CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
@@ -24,11 +24,11 @@ endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-#ASFLAGS = -f elf
-ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
+ASFLAGS = -f elf
+#ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
 else
-ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
-#ASFLAGS = -f elf -g
+#ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
+ASFLAGS = -f elf -g
 endif
 
 # Tools for processing Minimal source file.
@@ -96,7 +96,7 @@ AOBJS = $(CAOBJS)
 VOBJS =	v38.o
 
 # All objects:
-OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS)
+OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 
 # main program
 spitbol: $(OBJS)

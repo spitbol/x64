@@ -402,5 +402,4 @@ vclen:  dd      0               ;length of vcblk in bytes
 vcvls:  dd      0               ;start of vector values
         endstruc
 
-.list
 ;---------------------  end of block386.inc -----------------------

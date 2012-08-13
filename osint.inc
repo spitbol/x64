@@ -7,11 +7,12 @@
 ;   defined as externals below.
 
 ;  Copyright 1991 Robert Goldberg and Catspaw, Inc.
+;  Copyright 2012 Davi Shields
 
 ;   Set up externals for all the compiler's registers.
 
         DSeg_
-.ifndef globals
+%ifndef globals
 	ext		reg_cp,dword
 	ext		reg_wa,dword
 	ext		reg_wb,dword
@@ -20,222 +21,214 @@
 	ext		reg_xl,dword
 	ext		reg_xs,dword
 	ext		reg_ia,dword
-.endif
+%endif
         DSegEnd_
 
 ;   Macros to load a compiler register into a machine register
 
-        %macro          GET_CP reg
-        mov             \reg, reg_cp
-        %endmarco
+%macro          GET_CP 1
+        mov             1, reg_cp
+%endmacro
 
-        %macro          GET_IA reg
-        mov             \reg, reg_ia
-        %endmarco
+%macro          GET_IA 1
+        mov             1, reg_ia
+%endmacro
 
-        %macro          GET_WA reg
-        mov             \reg, reg_wa
-        %endmarco
+%macro          GET_WA 1
+        mov             1, reg_wa
+%endmacro
 
-        %macro          GET_WB reg
-        mov             \reg, reg_wb
-        %endmarco
+%macro          GET_WB 1
+        mov             1, reg_wb
+%endmacro
 
-        %macro          GET_WC reg
-        mov             \reg, reg_wc
-        %endmarco
+%macro          GET_WC 1
+        mov             1, reg_wc
+%endmacro
 
-        %macro          GET_XR reg
-        mov             \reg, reg_xr
-        %endmarco
+%macro          GET_XR 1
+        mov             1, reg_xr
+%endmacro
 
-        %macro          GET_XL reg
-        mov             \reg, reg_xl
-        %endmarco
+%macro          GET_XL 1
+        mov             1, reg_xl
+%endmacro
 
-        %macro          GET_XS reg
-        mov             \reg, reg_xs
-        %endmarco
+%macro          GET_XS 1
+        mov             1, reg_xs
+%endmacro
 
 
 ;   Macros to store a machine register into a compiler register.
 
-        %macro          SET_CP val
+%macro          SET_CP 1
         mov             reg_cp, \val
-        %endmarco
+%endmacro
 
-        %macro          SET_IA val
-        mov             reg_ia, \val
-        %endmarco
+%macro          SET_IA 1
+        mov             reg_ia, 1
+%endmacro
 
-        %macro          SET_WA val
-        mov             reg_wa, \val
-        %endmarco
+%macro          SET_WA 1
+        mov             reg_wa, 1
+%endmacro
 
-        %macro          SET_WB val
-        mov             reg_wb, \val
-        %endmarco
+%macro          SET_WB 1
+        mov             reg_wb, 1
+%endmacro
 
-        %macro          vSET_WC val
-        mov             reg_wc, \val
-        %endmarco
+%macro          SET_WC 1
+        mov             reg_wc, 1
+%endmacro
 
-        %macro          SET_XR val
-        mov             reg_xr, \val
-        %endmarco
+%macro          SET_XR 1
+        mov             reg_xr, 1
+%endmacro
 
-        %macro          SET_XL val
-        mov             reg_xl, \val
-        %endmarco
+%macro          SET_XL 1
+        mov             reg_xl, 1
+%endmacro
 
-        %macro          SET_XS val
-        mov             reg_xs, \val
-        %endmarco
+%macro          SET_XS 1
+        mov             reg_xs, 1
+%endmacro
 
 
 ;   Return values to take exit N from interface
 
-EXIT_1  =       0
-EXIT_2  =       4
-EXIT_3  =       8
-EXIT_4  =       12
-EXIT_5  =       16
-EXIT_6  =       20
-EXIT_7  =       24
-EXIT_8  =       28
-EXIT_9  =       32
+EXIT_1 equ      0
+EXIT_2 equ      4
+EXIT_3 equ      8
+EXIT_4 equ      12
+EXIT_5 equ      16
+EXIT_6 equ      20
+EXIT_7 equ      24
+EXIT_8 equ      28
+EXIT_9 equ      32
 
 ;    Return value to do a normal return from interface.
 
-NORMAL_RETURN   =       -1
+NORMAL_RETURN  equ      -1
 
         CSeg_
 
 ;       Function and macro to call into MINIMAL code.
 ;       The argument is an ordinal number defined below.
-.ifndef globals
+%ifndef globals
 	ext		minimal,near
-.endif
-        %macro          MINIMAL callno
-        push            offset \callno
+%endif
+        %macro          MINIMAL 1
+        push            1
 	callc		minimal,4
-        %endmarco
+        %endmacro
 
 ;   Ordinals for MINIMAL calls from assembly language.
 ;
 ;   The order of entries here must correspond to the order of
 ;   calltab entries in the INTER assembly language module.
 ;
-RELAJ   =       0
-RELCR   =       1
-RELOC   =       2
-ALLOC   =       3
-ALOCS   =       4
-ALOST   =       5
-BLKLN   =       6
-INSTA   =       7
-RSTRT   =       8
-START   =       9
-FILNM   =       10
-DTYPE   =       11
-ENEVS   =       12
-ENGTS   =       13
+RELAJ  equ      0
+RELCR  equ      1
+RELOC  equ      2
+ALLOC  equ      3
+ALOCS  equ      4
+ALOST  equ      5
+BLKLN  equ      6
+INSTA  equ      7
+RSTRT  equ      8
+START  equ      9
+FILNM  equ      10
+DTYPE  equ      11
+ENEVS  equ      12
+ENGTS  equ      13
 
 ;       Function and macro to get/set value from/to MINIMAL dataspace.
 ;       The argument is an ordinal number defined below.
 ;       The macro GETOFF returns the address of the value.
-.if direct                                  ; [[
-        %macro          GETOFF reg,valno
-.ifne underscore
-        lea             \reg,_\valno
-.else
-        lea             \reg,\valno
-.endif
-        %endmarco
+%if direct                                  ; [[
+        %macro          GETOFF 2
+%ifne underscore
+        lea             1,2
+%else
+        lea             1,2
+%endif
+        %endmacro
 
-        %macro          GETMIN reg,valno
-.ifne underscore
-        mov             \reg,_\valno
-.else
-        mov             \reg,\valno
-.endif
-        %endmarco
+        %macro          GETMIN 2
+%ifne underscore
+        mov             1,2
+%else
+        mov             1,2
+%endif
+        %endmacro
 
-        %macro          SETMIN valno,value
-.ifne underscore
-        mov             _\valno,dword ptr \value
-.else
-        mov             \valno,dword ptr \value
-.endif
-        %endmarco
+        %macro          SETMIN 2
+        mov             1,dword [2]
+        %endmacro
 
-        %macro          SETMINR valno,value
-.ifne underscore
-        mov             _\valno,\value
-.else
-        mov             \valno,\value
-.endif
-        %endmarco
+        %macro          SETMINR 2
+        mov             1,2
+        %endmacro
 
-        %macro          access name
-        ext             \name,dword
-        %endmarco
+        %macro          access 1
+        ext             1
+        %endmacro
 
-        %macro          access2 name
-.ifndef globals
-        ext            \name,dword
-.endif
-        %endmarco
+        %macro          access2 1
+%ifndef globals
+        ext            1
+%endif
+        %endmacro
 
         DSeg_
-.else                                       ; ][
-.ifndef globals
-	ext		minoff,near
-.endif
-        %macro          GETOFF reg,valno
-.ifnc \reg,eax
+%else                                       ; ][
+%ifndef globals
+	ext		minoff
+%endif
+        %macro          GETOFF 2
+%ifnidn 1,eax
 	push		eax
-.endif
-        push            offset \valno
+%endif
+        push            2
 	callc		minoff,4
-.ifnc \reg,eax
-        mov             \reg,eax
+%ifnc 1,eax
+        mov             1,eax
 	pop		eax
-.endif
-        %endmarco
+%endif
+        %endmacro
 
-        %macro          GETMIN reg,valno
-.ifnc \reg,eax
+        %macro          GETMIN 2
+%ifnidn 1,eax
 	push		eax
-.endif
-        push            offset \valno
+%endif
+        push            2
 	callc		minoff,4
-        mov             \reg,[eax]
-.ifnc \reg,eax
+        mov             1,[eax]
+%ifnidn 1,eax
 	pop		eax
-.endif
-        %endmarco
+%endif
+        %endmacro
 
-        %macro          SETMIN valno,value
-.ifc \value,eax
+        %macro          SETMIN 2
+%ifidn 2,eax
 	push		eax
-.endif
-        push            offset \valno
+%endif
+        push            1
 	callc		minoff,4
-.ifc \value,eax
+%ifidn 2,eax
 	pop		[eax]
-.else
-        mov             [eax],\value
-.endif
-        %endmarco
+%else
+        mov             [eax],2
+%endif
+        %endmacro
 
-        %macro          access name
-\name:  .byte           0
-        %endmarco
+        %macro          access 1
+1:  db           0
+        %endmacro
 
-        %macro          access2 name
-\name:  .byte           0
-        %endmarco
+        %macro          access2 1
+1:  db           0
+        %endmacro
 
 ;   Ordinals for transferring MINIMAL values to/from assembly language.
 ;
@@ -245,8 +238,8 @@ ENGTS   =       13
 ;   The structure vords and the access macro is merely a device to
 ;   produce an enumeration similar to an enum structure to C.
 ;
-        struc   vords
-.endif                                      ; ]]
+        struct   vords
+%endif                                      ; ]]
 
         access  GBCNT
         access  HEADV
@@ -296,11 +289,12 @@ ENGTS   =       13
         access2 INPBUF
         access2 TTYBUF
         access  B_RCL
+%endif
 
-.if direct
+%if direct
         DSegEnd_
-.else
+%else
         ends    vords
-.endif
+%endif
 
         CSegEnd_

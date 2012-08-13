@@ -72,17 +72,17 @@
 ;   Note that the order of entries in this table must correspond to the
 ;   order of entries in the VAL enumeration in osint.h and osint.inc.
 ;
-.ifne direct
-        .macro  access name
-        pubname \name
-        .endm
-.else
-        .macro  access name
-        address \name
-        .endm
+%if  direct
+        %macro  access 1
+        pubname 1
+        %endmacro
+%else
+        %macro  access 1
+        address 1
+        %endmacro
 
         pubdef  valtab
-.endif
+%endif
 	access	GBCNT
 	access	HEADV
 	access	MXLEN
@@ -100,9 +100,9 @@
 	access	STBAS
 	access	STATB
 	access	POLCT
-.ifeq direct
+%if 	direct = 0
 	access  TYPET
-.endif
+%endif
 	access	LOWSPMIN
 	access	FLPRT
 	access	FLPTR
