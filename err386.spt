@@ -125,17 +125,17 @@ nomachine
 
 *  Comment lead-in character
 *
-        comment = '#'
+        comment = ';'
 
 *  Data and public definitions
 *
-        name    = tab '.sbttl' tab '"errors"'
-        model   = tab '.arch' tab 'pentium'
+*        name    = tab '.sbttl' tab '"errors"'
+*        model   = tab '.arch' tab 'pentium'
         data    = tab 'DSeg_'
         enddata = tab 'DSegEnd_'
-        endstmt = tab '.end'
+        endstmt = tab 'end'
 	public	= tab 'pubdef' tab
-        include = tab '.include' tab '"systype.ah"'
+        include = tab '%include' tab '"systype.ah"'
 
 *  Setup keywords
 *

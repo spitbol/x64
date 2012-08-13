@@ -1,105 +1,105 @@
-# Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
-# 
-# This file is part of Macro SPITBOL.
-# 
-#     Macro SPITBOL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
-#     (at your option) any later version.
-# 
-#     Macro SPITBOL is distributed in the hope that it will be useful,
-#     but WITHOUT ANY WARRANTY; without even the implied warranty of
-#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#     GNU General Public License for more details.
-# 
-#     You should have received a copy of the GNU General Public License
-#     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+; Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+; 
+; This file is part of Macro SPITBOL.
+; 
+;     Macro SPITBOL is free software: you can redistribute it and/or modify
+;     it under the terms of the GNU General Public License as published by
+;     the Free Software Foundation, either version 3 of the License, or
+;     (at your option) any later version.
+; 
+;     Macro SPITBOL is distributed in the hope that it will be useful,
+;     but WITHOUT ANY WARRANTY; without even the implied warranty of
+;     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;     GNU General Public License for more details.
+; 
+;     You should have received a copy of the GNU General Public License
+;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 
-# configuration information for inter.s
-#
+; configuration information for inter.s
+;
 linux=1
 winnt=0
 
-#        Segment Declarations Macros
-#
-                .macro          CSeg_           # Open a Code Segment
-                .section        .text
-                .endm
+;        Segment Declarations Macros
+;
+                %macro          CSeg_           ; Open a Code Segment
+                segment		.text
+                %endmacro
 
-                .macro          CSegEnd_        # Close a Code Segment
-                .endm
+                %macro          CSegEnd_        ; Close a Code Segment
+                %endmacro
 
-                .macro          DSeg_           # Open a Data Segment
-                .section        .data
-                .endm
+                %macro          DSeg_           ; Open a Data Segment
+                segment        .data
+                %endmacro
 
-                .macro          DSegEnd_        # Close a Data Segment
-                .endm
+                %macro          DSegEnd_        ; Close a Data Segment
+                %endmacro
 
-                .macro          BSSSeg_         # Open a BSS Segment
-                .section        .bss
-                .endm
+                %macro          BSSSeg_         ; Open a BSS Segment
+                segment        .bss
+                %endmacro
 
-                .macro          BSSSegEnd_      # Close a BSS Segment
-                .endm
+                %macro          BSSSegEnd_      ; Close a BSS Segment
+                %endmacro
 
-                .macro          Header_         # Group and Assume directives
+                %macro          Header_         ; Group and Assume directives
                 CSeg_
                 CSegEnd_
                 DSeg_
                 DSegEnd_
-                .endm
+                %endmacro
 
-# Structure definition macros
-#
-        .macro  struc name
+; Structure definition macros
+;
+        %macro  struc name
         .struct 0
-        .endm
+        %endmacro
 
-        .macro  ends name
+        %macro  ends name
         DSeg_
-        .endm
+        %endmacro
 
-# define how data locations in the Minimal code are accessed from
-# assembly-language and C routines.  "direct" is non-zero to make
-# the symbols public for direct access, zero to have access via
-# a table of pointers and the minadr procedure.
-#
+; define how data locations in the Minimal code are accessed from
+; assembly-language and C routines.  "direct" is non-zero to make
+; the symbols public for direct access, zero to have access via
+; a table of pointers and the minadr procedure.
+;
 direct=1
 
-# define how floating point results are returned from a function
-# (either in ST(0) or in EDX:EAX.
+; define how floating point results are returned from a function
+; (either in ST(0) or in EDX:EAX.
 fretst0=1
 freteax=0
 
-# Macros defining whether a leading underscore is required for public Minimal
-# names that will be referenced from C.
-#
+; Macros defining whether a leading underscore is required for public Minimal
+; names that will be referenced from C.
+;
 underscore=0
-        .macro  address name
+        %macro  address name
 .ifne underscore
         .long   _\name
 .else
         .long   \name
 .endif
-        .endm
+        %endmacro
 
-        .macro  ext name,type
+        %macro  ext name,type
         .extern name:type
-        .endm
+        %endmacro
 
-        .macro  cext name,type
+        %macro  cext name,type
 .ifne underscore
 \name	=	_\name
 .endif
         ext     \name,\type
-        .endm
+        %endmacro
 
-        .macro  def name,op,val
+        %macro  def name,op,val
 \name:   \op    \val
-        .endm
+        %endmacro
 
-        .macro  pubdef name,op,val
+        %macro  pubdef name,op,val
 .ifne underscore
         .global _\name
 _\name: \op     \val
@@ -108,41 +108,41 @@ _\name: \op     \val
         .global \name
 \name:  \op     \val
 .endif
-        .endm
+        %endmacro
 
-        .macro  pubname procname
+        %macro  pubname procname
 .ifne underscore
         .global _\procname
 .else
         .global \procname
 .endif
-        .endm
+        %endmacro
 
-        .macro  proc procname,distance
+        %macro  proc procname,distance
 \procname:
-        .endm
+        %endmacro
 
-        .macro  endp procname
-        .endm
+        %macro  endp procname
+        %endmacro
 
-        .macro  cproc procname,distance
+        %macro  cproc procname,distance
 .ifne underscore
 _\procname:
 .else
 \procname:
 .endif
-        .endm
+        %endmacro
 
-        .macro  cendp procname
-        .endm
+        %macro  cendp procname
+        %endmacro
 
-        .macro  publab procname
+        %macro  publab procname
         .global \procname
-        .endm
+        %endmacro
 
-# Call C function.  Intel follows standard C conventions, and
-# caller pops arguments.
-        .macro  callc routine,nbytes
+; Call C function.  Intel follows standard C conventions, and
+; caller pops arguments.
+        %macro  callc routine,nbytes
 .ifne underscore
         call    _\routine
 .else
@@ -151,17 +151,17 @@ _\procname:
 .ifne \nbytes
         add     esp,\nbytes
 .endif
-        .endm
+        %endmacro
 
-# Intel runs in one flat segment.  Far calls are the same as near calls.
-        .macro  callfar routine,nbytes
+; Intel runs in one flat segment.  Far calls are the same as near calls.
+        %macro  callfar routine,nbytes
         ext     \routine:near
         callc   \routine,\nbytes
-        .endm
+        %endmacro
 
-# Return from an assembly-language function that will be called by C.
-# Caller pops arguments
-        .macro  retc nbytes
+; Return from an assembly-language function that will be called by C.
+; Caller pops arguments
+        %macro  retc nbytes
 	ret
-        .endm
+        %endmacro
 

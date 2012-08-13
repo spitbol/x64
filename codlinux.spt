@@ -379,7 +379,7 @@ COMPDONE DEFS =
 
 * Various constants
 *
-        COMMENT.DELIM = '#'
+        COMMENT.DELIM = ';'
 	LABEL.DELIM   = ':'
 *
 *
@@ -733,14 +733,14 @@ OUTSTMT2
 .		  (IDENT(OP1), OP1
 .			(IDENT(OP2), ',' OP2
 .				(IDENT(OP3), ',' OP3))) ,27)
-.       (IDENT(STRIP_COMMENT,'Y'), ' ' (IDENT(COMMENT), '#') COMMENT)
+.       (IDENT(STRIP_COMMENT,'Y'), ' ' (IDENT(COMMENT), ';') COMMENT)
 .						:(OUTSTMT7)
 OUTSTMT6
 	STMTOUT = LABEL TAB OPCODE TAB
 .		  (IDENT(OP1), OP1
 .		    (IDENT(OP2), ',' OP2
 .		      (IDENT(OP3), ',' OP3)))
-.       (IDENT(STRIP_COMMENT,'Y'), TAB (IDENT(COMMENT), '#') COMMENT)
+.       (IDENT(STRIP_COMMENT,'Y'), TAB (IDENT(COMMENT), ';') COMMENT)
 *
 **	Send text to OUTFILE
 *
@@ -805,7 +805,7 @@ READLINE READLINE = INFILE                      :F(RL02)
 *  Only print comment if requested.
 *
 	IDENT(STRIP_COMMENT,'N')		:F(READLINE)
-        READLINE LEN(1) = '#'
+        READLINE LEN(1) = ';'
 	OUTFILE = READLINE
 	NOUTLINES = NOUTLINES + 1               :(READLINE)
 *

@@ -72,5 +72,5 @@
 .DEF   .CULK                 DEFINE TO INCLUDE &LCASE, &UCASE KEYWORDS
 .DEF   .CUST                 DEFINE TO INCLUDE SET() CODE
 *      .CUSR                 DEFINE TO HAVE SET() USE REAL VALUES
-*                             (MUST ALSO #DEFINE SETREAL 1 IN SYSTYPE.H)
+*                             (MUST ALSO DEFINE SETREAL 1 IN SYSTYPE.H)
 *
