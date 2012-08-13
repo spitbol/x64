@@ -52,11 +52,11 @@ winnt equ 0
 
 ; Structure definition macros
 ;
-%macro  struc name	0
+%macro  struc 0
         struct 0
 %endmacro
 
-%macro  ends name	0
+%macro  ends 0
         DSeg_
 %endmacro
 
@@ -76,7 +76,7 @@ freteax equ 0
 ; names that will be referenced from C.
 ;
 underscore equ 0
-%macro  address name
+%macro  address 1
         dd 1
 %endmacro
 
@@ -84,7 +84,7 @@ underscore equ 0
         extern 1
 %endmacro
 
-%macro  cext name,type
+%macro  cext 2
         ext     1,2
 %endmacro
 
@@ -92,7 +92,7 @@ underscore equ 0
 1:	2	3
 %endmacro
 
-%macro  pubdef name,op,val
+%macro  pubdef 3
         global 1
 1:	2	3
 %endmacro
@@ -129,8 +129,8 @@ underscore equ 0
 %endmacro
 
 ; Intel runs in one flat segment.  Far calls are the same as near calls.
-%macro  callfar routine,nbytes
-        ext     1
+%macro  callfar 2
+        extern     1
         callc   1,2
 %endmacro
 

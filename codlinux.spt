@@ -476,8 +476,8 @@ OUTPUTOK
 ERR_OK
 
 * Begin with standard preamble
-        OUTSTMT(TSTMT(,'.title','"SPITBOL TRANSLATOR ' REPLACE(PARMS,LCASE,UCASE) '"'))
-        OUTSTMT(TSTMT(,'.sbttl','"' REPLACE(PARMS,LCASE,UCASE) '"'))
+        OUTSTMT(TSTMT(,';','"SPITBOL TRANSLATOR ' REPLACE(PARMS,LCASE,UCASE) '"'))
+        OUTSTMT(TSTMT(,';','"' REPLACE(PARMS,LCASE,UCASE) '"'))
 
 *  Then copy contents of <machine>.HDR (if it exists) to OUTFILE
 *  Stop at line with just 'END' or end of file
@@ -611,7 +611,7 @@ GETARG.C.2 GETARG = LABFIX(L1)			:(RETURN)
 
 * WLBL, CLBL
 GETARG.C.3
-GETARG.C.4 GETARG = 'DWORD PTR ' LABFIX(L1)     :(RETURN)
+GETARG.C.4 GETARG = 'DWORD ' LABFIX(L1)     :(RETURN)
 
 * ELBL, PLBL
 GETARG.C.5
@@ -626,7 +626,7 @@ GETARG.C.8
 GETARG.C.9
 	L1 LEN(1) LEN(2) . L2
 	L2 = REGMAP[L2]
-	GETARG = 'DWORD PTR [' L2 ']'		:(RETURN)
+	GETARG = 'DWORD [' L2 ']'		:(RETURN)
 
 * (X)+, Register indirect, post increment
 * Use lea reg,[reg+4] unless reg is esp, since it takes an extra byte.
@@ -635,14 +635,14 @@ GETARG.C.9
 GETARG.C.10
 	L1 = SUBSTR(L1,2,2)
 	T1 = REGMAP[L1]
-	GETARG = 'DWORD PTR [' T1 ']'
+	GETARG = 'DWORD [' T1 ']'
 	(IDENT(L1,'XS') GENAOP(TSTMT(,'ADD',T1,'4'))) :S(RETURN)
 	GENAOP(TSTMT(,'LEA',T1,'[' T1 '+4]'))	:(RETURN)
 
 *  -(X), Register indirect, pre decrement
 GETARG.C.11
 	T1 = REGMAP[SUBSTR(L1,3,2)]
-	GETARG = 'DWORD PTR [' T1 ']'
+	GETARG = 'DWORD [' T1 ']'
 	GENBOP(TSTMT(,'LEA',T1,'[' T1 '-4]'))	:(RETURN)
 
 * INT(X)
@@ -650,7 +650,7 @@ GETARG.C.11
 GETARG.C.12
 GETARG.C.13
 	L1 BREAK('(') . T1 '(' LEN(2) . T2
-	GETARG = 'DWORD PTR (4*' LABFIX(T1) ')[' REGMAP[T2] ']'	:(RETURN)
+	GETARG = 'DWORD (4*' LABFIX(T1) ')[' REGMAP[T2] ']'	:(RETURN)
 
 *  NAME(X), WHERE NAME IS IN WORKING SECTION
 GETARG.C.14
@@ -912,7 +912,7 @@ G.BSW	T1 = GETARG(I1)
 	GENOP('CMP',T1,GETARG(I2))
 	GENOP('JGE',GETARG(I3))
 * Here after default case.
-G.BSW1	GENOP('JMP', 'DWORD PTR ' T2 '[' T1 '*4]')
+G.BSW1	GENOP('JMP', 'DWORD ' T2 '[' T1 '*4]')
         GENOP('DSeg_')
         GENOPL(T2 LABEL.DELIM)                  :(OPDONE)
 
@@ -945,13 +945,13 @@ G.ENT
 	CSTMTS[CSTMTS.N] = T1
 *  Here to see if want label made public
 	TLABEL ? RTAB(1) . TLABEL LABEL.DELIM
-        (DIFFER(PUBTAB[TLABEL]), DIFFER(DEBUG)) GENOP('.global',TLABEL)
+        (DIFFER(PUBTAB[TLABEL]), DIFFER(DEBUG)) GENOP('global',TLABEL)
 	TLABEL =				:(OPDONE)
 
 G.BRI	GENOP('JMP',GETARG(I1))			:(OPDONE)
 
 G.LEI	T1 = REGMAP[I.TEXT(I1)]
-	GENOP('MOVZX',T1,'BYTE PTR [' T1 '-1]')	:(OPDONE)
+	GENOP('MOVZX',T1,'BYTE [' T1 '-1]')	:(OPDONE)
 
 G.JSR	GENOP('CALL',GETARG(I1))		:(OPDONE)
 
@@ -971,7 +971,7 @@ G.PRC
 	T1 = TLABEL
 	T1 ? RTAB(1) . T1 LABEL.DELIM
 	GENOP()
-        GENOP('.global',T1)
+        GENOP('global',T1)
 	PRC.ARGS = GETARG(I2)
 	MAX_EXI = GT(PRC.ARGS,MAX_EXI) PRC.ARGS
 	PRC.TYPE = I.TEXT(I1)		:($('G.PRC.' PRC.TYPE))
@@ -1052,7 +1052,7 @@ G.RTN
 	T1 = TLABEL
 	T1 ? RTAB(1) . T1 LABEL.DELIM
 	GENOP()
-        GENOP('.global',T1)                     :(OPDONE)
+        GENOP('global',T1)                     :(OPDONE)
 
 G.ADD	MEMMEM()
 	GENOP('ADD',GETARG(I2),GETARG(I1))	:(OPDONE)
@@ -1083,13 +1083,13 @@ G.BHI
 
 G.BNZ
 	IFREG(I1)				:S(G.BNZ1)
-        GENOP('CMP','DWORD PTR ' GETARG(I1),'0')
+        GENOP('CMP','DWORD ' GETARG(I1),'0')
 	GENOP('JNZ',GETARG(I2))			:(OPDONE)
 G.BNZ1	GENOP('OR',GETARG(I1),GETARG(I1))
 	GENOP('JNZ',GETARG(I2))			:(OPDONE)
 
 G.BZE   IFREG(I1)				:S(G.BZE1)
-        GENOP('CMP','DWORD PTR ' GETARG(I1),'0')
+        GENOP('CMP','DWORD ' GETARG(I1),'0')
 	GENOP('JZ',GETARG(I2))			:(OPDONE)
 G.BZE1
 	T1 = GETARG(I1)
@@ -1240,7 +1240,7 @@ G.LCH
 	GENOP('DEC',REGMAP[T3])
 G.LCG.1
 	T2 BREAK('(') LEN(1) LEN(2) . T3
-	GENOP('MOVZX',T1,'BYTE PTR [' REGMAP[T3] ']')
+	GENOP('MOVZX',T1,'BYTE [' REGMAP[T3] ']')
 
 *  SEE IF POSTINCREMENT NEEDED
 	T2 RTAB(1) '+'				:F(G.LCG.2)
@@ -1333,7 +1333,7 @@ G.TRC
 *	xor	esi,esi			;set XL to zero
 *	xor	edi,edi			;v1.02  XR also
 	GENOP('XCHG','ESI','EDI')
-        GENOPL((T1 = GENLAB()) LABEL.DELIM,'MOVZX','EAX','BYTE PTR [EDI]')
+        GENOPL((T1 = GENLAB()) LABEL.DELIM,'MOVZX','EAX','BYTE [EDI]')
 	GENOP('MOV','AL','[ESI+EAX]')
 	GENOP('STOSB')
 	GENOP('LOOP',T1)
@@ -1503,7 +1503,7 @@ G.CHK   GENOP('CMP','ESP',LABFIX('LOWSPMIN'))
 DECEND
 *  Here at end of DIC or DAC to see if want label made public
 	TLABEL ? RTAB(1) . TLABEL LABEL.DELIM
-        DIFFER(PUBTAB[TLABEL]) GENOP('.global',TLABEL)  :(OPDONE)
+        DIFFER(PUBTAB[TLABEL]) GENOP('global',TLABEL)  :(OPDONE)
 
 G.DAC	T1 = I.TYPE(I1)
         T2 = "" ;*(LE(T1,2) "", LE(T1,4) "offset ", LE(T1,6) "offset ", "")
@@ -1556,27 +1556,27 @@ G.SEC	GENOP('')
 
 * Procedure declaration section
 G.SEC.1 GENOP('CSeg_')
-        GENOP('.global','SEC01')
+        GENOP('global','SEC01')
         GENOPL('SEC01' LABEL.DELIM)             :(OPDONE)
 
 * Definitions section
 G.SEC.2 GENOP('CSegEnd_')
         GENOP('DSeg_')
-        GENOP('.global','SEC02')
+        GENOP('global','SEC02')
         GENOPL('SEC02' LABEL.DELIM)             :(OPDONE)
 
 * Constants section
 G.SEC.3 GENOP('DSegEnd_')
         GENOP('DSeg_')
-        GENOP('.global',LABFIX('SEC03'))
+        GENOP('global',LABFIX('SEC03'))
         GENOPL(LABFIX('SEC03') LABEL.DELIM)     :(OPDONE)
 
 * Working variables section
-G.SEC.4 GENOP('.global',LABFIX('ESEC03'))
+G.SEC.4 GENOP('global',LABFIX('ESEC03'))
         GENOPL(LABFIX('ESEC03') LABEL.DELIM)
         GENOP('DSegEnd_')
         GENOP('DSeg_')
-        GENOP('.global',LABFIX('SEC04'))
+        GENOP('global',LABFIX('SEC04'))
         GENOPL(LABFIX('SEC04') LABEL.DELIM)     :(OPDONE)
 
 *  Here at start of program section.  If any N type procedures,
@@ -1584,24 +1584,24 @@ G.SEC.4 GENOP('.global',LABFIX('ESEC03'))
 G.SEC.5
 *  Emit code to indicate in code section
 *  Get direction set to up.
-        GENOP('.global',LABFIX('ESEC04'))
+        GENOP('global',LABFIX('ESEC04'))
         GENOPL(LABFIX('ESEC04') LABEL.DELIM)
         (GT(PRC.COUNT1) GENOPL('PRC$' LABEL.DELIM,'.fill', PRC.COUNT1 ',4,0'))
-        GENOP('.global',LABFIX('LOWSPMIN'))
+        GENOP('global',LABFIX('LOWSPMIN'))
         GENOPL(LABFIX('LOWSPMIN') LABEL.DELIM,'.long','0')
-        GENOP('.global',LABFIX('END$MIN$DATA'))
+        GENOP('global',LABFIX('END$MIN$DATA'))
         GENOPL(LABFIX('END$MIN$DATA') LABEL.DELIM)
         GENOP('DSegEnd_')
         GENOP('CSeg_')
-        GENOP('.global',LABFIX('SEC05'))
+        GENOP('global',LABFIX('SEC05'))
         GENOPL(LABFIX('SEC05') LABEL.DELIM)     :(OPDONE)
 
 *  Stack overflow section.  Output EXI__n tail code
 G.SEC.6	I1 = 1
 G.SEC.6.1
-        (DIFFER(DEBUG) GENOPL(,'.global','EXI__' I1))
+        (DIFFER(DEBUG) GENOPL(,'global','EXI__' I1))
         GENOPL('EXI__' I1 LABEL.DELIM, 'MOVSX', 'EAX',
-+		'WORD PTR [EAX+' (2 * (I1 - 1)) ']')
++		'WORD [EAX+' (2 * (I1 - 1)) ']')
         GENOP('ADD','EAX','offset ' LABFIX('DFFNC'))
 	GENOP('PUSH','EAX')
 	GENOP('XOR','EAX','EAX')
@@ -1610,18 +1610,18 @@ G.SEC.6.1
 	I1 = LT(I1,MAX_EXI) I1 + 1		:S(G.SEC.6.1)
 
 * Now being the stack overflow section
-        GENOP('.global','SEC06')
+        GENOP('global','SEC06')
         GENOPL('SEC06' LABEL.DELIM)             :(OPDONE)
 
 *  Error section.  Produce code to receive ERB's
 G.SEC.7
-        (DIFFER(DEBUG) GENOPL(,'.global','ERR_0'))
+        (DIFFER(DEBUG) GENOPL(,'global','ERR_0'))
         GENOPL('ERR_0' LABEL.DELIM,'POP','EAX')
-	GENOP('MOVZX','EAX','BYTE PTR [EAX]')
+	GENOP('MOVZX','EAX','BYTE [EAX]')
 	GENOP('JMP','SHORT ERR_1A')
-        (DIFFER(DEBUG) GENOPL(,'.global','ERR_1'))
+        (DIFFER(DEBUG) GENOPL(,'global','ERR_1'))
         GENOPL('ERR_1' LABEL.DELIM,'POP','EAX')
-	GENOP('MOVZX','EAX','BYTE PTR [EAX]')
+	GENOP('MOVZX','EAX','BYTE [EAX]')
 	GENOP('ADD','EAX','256')
         GENOPL('ERR_1A' LABEL.DELIM,'JMP','ERR$')
 	FLUSH()
@@ -1631,7 +1631,7 @@ G.SEC.7
 G.SEC.7.1
 	GE(I1 = I1 - 1) OUTSTMT(TSTMT(,'INC','EAX'))	:S(G.SEC.7.1)
         GENOPL('ERR$' LABEL.DELIM,'XCHG',REG.WA,'EAX')
-        GENOP('.global','SEC07')
+        GENOP('global','SEC07')
         GENOPL('SEC07' LABEL.DELIM)             :(OPDONE)
 
 
