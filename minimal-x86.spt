@@ -1497,7 +1497,7 @@ g.dtc
         genopl(tlabel,'db',t2)              :(opdone)
 g.dbc   genopl(tlabel,'dd',getarg(i1))       :(opdone)
 g.equ   genop('equ',i.text(i1))			:(opdone)
-* todo g.exp   genop('extern',tlabel ':near')
+* todo g.exp   genop('extern',tlabel)
 g.exp   genop('extern',tlabel '')
 	tlabel =				:(opdone)
 

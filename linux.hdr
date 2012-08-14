@@ -9,27 +9,28 @@
         %include        "hdrcode.inc"
         %include        "hdrdata.inc"
 
-        extern          LDR_:near
-        extern          STR_:near
-        extern          OVR_:near
-        extern          DVI_:near
-        extern          RMI_:near
-        extern          CVD_:near
-        extern          RTI_:near
-        extern          ITR_:near
-        extern          ADR_:near
-        extern          SBR_:near
-        extern          MLR_:near
-        extern          DVR_:near
-        extern          NGR_:near
-        extern          ATN_:near
-        extern          CHP_:near
-        extern          COS_:near
-        extern          ETX_:near
-        extern          LNF_:near
-        extern          SIN_:near
-        extern          SQR_:near
-        extern          TAN_:near
-        extern          CPR_:near
-
+        extern          LDR_
+        extern          STR_
+        extern          OVR_
+        extern          DVI_
+        extern          RMI_
+        extern          CVD_
+        extern          RTI_
+        extern          ITR_
+        extern          ADR_
+        extern          SBR_
+        extern          MLR_
+        extern          DVR_
+        extern          NGR_
+        extern          ATN_
+        extern          CHP_
+        extern          COS_
+        extern          ETX_
+        extern          LNF_
+        extern          SIN_
+        extern          SQR_
+        extern          TAN_
+        extern          CPR_
+	%include	"globals.h"
+; globals.h
         CSegEnd_

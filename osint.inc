@@ -7,90 +7,91 @@
 ;   defined as externals below.
 
 ;  Copyright 1991 Robert Goldberg and Catspaw, Inc.
-;  Copyright 2012 Davi Shields
+;  Copyright 2012 David Shields
 
 ;   Set up externals for all the compiler's registers.
+	%include	"systype.ah"
 
         DSeg_
 %ifndef globals
-	ext		reg_cp,dword
-	ext		reg_wa,dword
-	ext		reg_wb,dword
-	ext		reg_wc,dword
-	ext		reg_xr,dword
-	ext		reg_xl,dword
-	ext		reg_xs,dword
-	ext		reg_ia,dword
+	extern		reg_cp
+	extern		reg_wa
+	extern		reg_wb
+	extern		reg_wc
+	extern		reg_xr
+	extern		reg_xl
+	extern		reg_xs
+	extern		reg_ia
 %endif
         DSegEnd_
 
 ;   Macros to load a compiler register into a machine register
 
 %macro          GET_CP 1
-        mov             1, reg_cp
+        mov             %1, reg_cp
 %endmacro
 
 %macro          GET_IA 1
-        mov             1, reg_ia
+        mov             %1, reg_ia
 %endmacro
 
 %macro          GET_WA 1
-        mov             1, reg_wa
+        mov             %1, reg_wa
 %endmacro
 
 %macro          GET_WB 1
-        mov             1, reg_wb
+        mov             %1, reg_wb
 %endmacro
 
 %macro          GET_WC 1
-        mov             1, reg_wc
+        mov             %1, reg_wc
 %endmacro
 
 %macro          GET_XR 1
-        mov             1, reg_xr
+        mov             %1, reg_xr
 %endmacro
 
 %macro          GET_XL 1
-        mov             1, reg_xl
+        mov             %1, reg_xl
 %endmacro
 
 %macro          GET_XS 1
-        mov             1, reg_xs
+        mov             %1, reg_xs
 %endmacro
 
 
 ;   Macros to store a machine register into a compiler register.
 
 %macro          SET_CP 1
-        mov             reg_cp, \val
+        mov             reg_cp, %2
 %endmacro
 
 %macro          SET_IA 1
-        mov             reg_ia, 1
+        mov             reg_ia, %1
 %endmacro
 
 %macro          SET_WA 1
-        mov             reg_wa, 1
+        mov             reg_wa, %1
 %endmacro
 
 %macro          SET_WB 1
-        mov             reg_wb, 1
+        mov             reg_wb, %1
 %endmacro
 
 %macro          SET_WC 1
-        mov             reg_wc, 1
+        mov             reg_wc, %1
 %endmacro
 
 %macro          SET_XR 1
-        mov             reg_xr, 1
+        mov             reg_xr, %1
 %endmacro
 
 %macro          SET_XL 1
-        mov             reg_xl, 1
+        mov             reg_xl, %1
 %endmacro
 
 %macro          SET_XS 1
-        mov             reg_xs, 1
+        mov             reg_xs, %1
 %endmacro
 
 
@@ -115,12 +116,12 @@ NORMAL_RETURN  equ      -1
 ;       Function and macro to call into MINIMAL code.
 ;       The argument is an ordinal number defined below.
 %ifndef globals
-	ext		minimal,near
+	extern		minimal
 %endif
-        %macro          MINIMAL 1
-        push            1
+%macro          MINIMAL 1
+        push            %1
 	callc		minimal,4
-        %endmacro
+%endmacro
 
 ;   Ordinals for MINIMAL calls from assembly language.
 ;
@@ -146,89 +147,95 @@ ENGTS  equ      13
 ;       The argument is an ordinal number defined below.
 ;       The macro GETOFF returns the address of the value.
 %if direct                                  ; [[
-        %macro          GETOFF 2
+%macro          GETOFF 2
 %ifne underscore
-        lea             1,2
+        lea             %1,%2
 %else
-        lea             1,2
+        lea             %1,%2
 %endif
-        %endmacro
+%endmacro
 
-        %macro          GETMIN 2
+%macro          GETMIN 2
 %ifne underscore
-        mov             1,2
+        mov             %1,%2
 %else
-        mov             1,2
+        mov             %1,%2
 %endif
-        %endmacro
+%endmacro
 
-        %macro          SETMIN 2
-        mov             1,dword [2]
-        %endmacro
+%macro          SETMIN 2
+        mov             %1,dword [%2]
+%endmacro
 
-        %macro          SETMINR 2
-        mov             1,2
-        %endmacro
+%macro          SETMINR 2
+        mov             %1,%2
+%endmacro
 
-        %macro          access 1
-        ext             1
-        %endmacro
+%ifnmacro	access
+%macro          access 1
+        extern             %1
+%endmacro
+%endif
 
-        %macro          access2 1
+%macro          access2 1
 %ifndef globals
-        ext            1
+        extern            %1
 %endif
-        %endmacro
+%endmacro
 
         DSeg_
 %else                                       ; ][
 %ifndef globals
-	ext		minoff
+	extern		minoff
 %endif
-        %macro          GETOFF 2
-%ifnidn 1,eax
+%macro          GETOFF 2
+%ifnidn %1,eax
 	push		eax
 %endif
-        push            2
+        push            %2
 	callc		minoff,4
-%ifnc 1,eax
-        mov             1,eax
+%ifnidn %1,eax
+        mov             %1,eax
 	pop		eax
 %endif
-        %endmacro
+%endmacro
 
-        %macro          GETMIN 2
-%ifnidn 1,eax
+%macro          GETMIN 2
+%ifnidn %1,eax
 	push		eax
 %endif
-        push            2
+        push            %2
 	callc		minoff,4
-        mov             1,[eax]
-%ifnidn 1,eax
+        mov             %1,[eax]
+%ifnidn %1,eax
 	pop		eax
 %endif
-        %endmacro
+%endmacro
 
-        %macro          SETMIN 2
-%ifidn 2,eax
+%macro          SETMIN 2
+%ifidn %2,eax
 	push		eax
 %endif
-        push            1
+        push            %1
 	callc		minoff,4
-%ifidn 2,eax
+%ifidn %2,eax
 	pop		[eax]
 %else
-        mov             [eax],2
+        mov             [eax],%2
 %endif
-        %endmacro
+%endmacro
 
-        %macro          access 1
-1:  db           0
-        %endmacro
+%ifnmacro	access
+%macro          access 1
+	extern	%1
+%endmacro
+%endif
 
-        %macro          access2 1
-1:  db           0
-        %endmacro
+%ifnmacro	access2
+%macro          access2 1
+	extern %1
+%endmacro
+%endif
 
 ;   Ordinals for transferring MINIMAL values to/from assembly language.
 ;
@@ -239,7 +246,11 @@ ENGTS  equ      13
 ;   produce an enumeration similar to an enum structure to C.
 ;
         struct   vords
-%endif                                      ; ]]
+%endif
+%ifnmacro access
+	dave shields
+%endif
+	segment	.text
 
         access  GBCNT
         access  HEADV
@@ -289,7 +300,6 @@ ENGTS  equ      13
         access2 INPBUF
         access2 TTYBUF
         access  B_RCL
-%endif
 
 %if direct
         DSegEnd_

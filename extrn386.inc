@@ -1,7 +1,7 @@
 ;--------------------------  extrn386.inc -------------------------------------
 ; Equates of routines and data available to external function from SPITBOL-386
 
-nearptr =       1
+nearptr equ       1
 
 ; Macros for code that must be assembled differently depending upon
 ; whether this function is being built for OS/2 or MS-DOS.
@@ -61,7 +61,7 @@ nearptr =       1
 ;                               to even word boundary).
 
 %macro	fstore	1
-	fstp	1
+	fstp	%1
 	fwait
 %endmacro
 ;        .macro          fstore arg
@@ -78,7 +78,7 @@ nearptr =       1
 ;        BSSSegEnd_
 ;        CSeg_
 ;        %endmacro
-%macro   preamble segname1,segname2
+%macro   preamble 2
         CSeg_
         CSegEnd_
         DSeg_
@@ -88,11 +88,11 @@ nearptr =       1
         CSeg_
 %endmacro
 
-cbrptr	equ	4
-scs	equ	cs
-ses	equ	ds
-sfs	equ	ds
-sgs	equ	ds
+%define	cbrptr	4
+%define	scs	cs
+%define	ses	ds
+%define	sfs	ds
+%define	sgs	ds
 ;       .equ    cbrptr,4
 
 ;       .equ    scs,cs
@@ -114,8 +114,8 @@ o:      dd      0
 %endmacro
 
 %macro	entry	1
-	global	1
-	procx	1
+	global  %1	
+	procx	%1
 %endmacro
 ;        .macro  entry procnm
 ;        .global \procnm
@@ -125,14 +125,14 @@ o:      dd      0
 ;       mov     \reg,\arg
 ;       %endmacro
 %macro	sload	3
-	mov	2,3
+	mov	%2,%3
 %endmacro
 
 ;       .macro  sstore arg,reg,sreg
 ;       mov     \arg,\reg
 ;       %endmacro
-%maco	sstore	3
-	mov	1,2
+%macro	sstore	3
+	mov	%1,%2
 %endmacro
 
 ;       .macro  spop sreg
@@ -143,7 +143,7 @@ o:      dd      0
 ;       .macro  spush sreg
 ;       %endmacro
 %macro	spush	1
-%endmaco
+%endmacro
 
 ;.list
 

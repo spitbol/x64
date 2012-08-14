@@ -56,13 +56,17 @@ underscore equ 0
 %macro  address 1
         dd   %1
 %endmacro
+%ifnmacro ext
 %macro  ext 2
-        extern %1:%2
+        extern %1
 %endmacro
+%endif
 
-%macro  cext 2
-        extern     %1,%2
+%ifnmacro cext
+%macro  cext 1
+        extern     %1
 %endmacro
+%endif
 
 ;        %macro  def 3
 ;%1     %2      %3

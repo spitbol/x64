@@ -3,8 +3,17 @@
 ;
 ;   Table to recover type word from type ordinal
 ;
+;	%include	"systype.ah"
 
-        pubdef  TYPET
+;%macro  pubdef 3
+;        global %1
+;%1:	%2	%3
+;%endmacro
+%macro	pubdef1 1
+	global %1
+%1:
+%endmacro
+        pubdef1  TYPET
         dd      B_ART   ; ARBLK type word - 0
         dd      B_CDC   ; CDBLK type word - 1
         dd      B_EXL   ; EXBLK type word - 2
@@ -42,7 +51,7 @@
 ;   to the order of entries in the CALL enumeration in osint.h
 ;   and osint.inc.
 ;
-        pubdef  calltab
+        pubdef1  calltab
         dd      RELAJ
         dd      RELCR
         dd      RELOC
@@ -73,15 +82,15 @@
 ;   order of entries in the VAL enumeration in osint.h and osint.inc.
 ;
 %if  direct
-        %macro  access 1
-        pubname 1
+%macro  access 1
+        pubname %1
         %endmacro
 %else
-        %macro  access 1
-        address 1
+%macro  access 1
+        address %1
         %endmacro
 
-        pubdef  valtab
+        pubdef1  valtab
 %endif
 	access	GBCNT
 	access	HEADV

@@ -116,12 +116,12 @@ nomachine
 *
 *
 *  Comma delimited string of decimal bytes:
-        db      = '.byte'
+        db      = 'db'
 	byte	= tab db tab
 
 *  Delim delimited string of 'normal' ascii characters (32-127)
 	delim	= '"'
-        ascii   = tab '.ascii' tab
+        ascii   = tab 'db' tab
 
 *  Comment lead-in character
 *
@@ -133,7 +133,6 @@ nomachine
 *        model   = tab '.arch' tab 'pentium'
         data    = tab 'DSeg_'
         enddata = tab 'DSegEnd_'
-        endstmt = tab 'end'
 	public	= tab 'pubdef' tab
         include = tab '%include' tab '"systype.ah"'
 
