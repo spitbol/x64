@@ -10,9 +10,8 @@
 ;  Copyright 2012 David Shields
 
 ;   Set up externals for all the compiler's registers.
-	%include	"systype.ah"
 
-        DSeg_
+	segment	.data
 %ifndef globals
 	extern		reg_cp
 	extern		reg_wa
@@ -23,7 +22,6 @@
 	extern		reg_xs
 	extern		reg_ia
 %endif
-        DSegEnd_
 
 ;   Macros to load a compiler register into a machine register
 
@@ -111,7 +109,7 @@ EXIT_9 equ      32
 
 NORMAL_RETURN  equ      -1
 
-        CSeg_
+	segment	.text
 
 ;       Function and macro to call into MINIMAL code.
 ;       The argument is an ordinal number defined below.
@@ -148,19 +146,11 @@ ENGTS  equ      13
 ;       The macro GETOFF returns the address of the value.
 %if direct                                  ; [[
 %macro          GETOFF 2
-%ifne underscore
         lea             %1,%2
-%else
-        lea             %1,%2
-%endif
 %endmacro
 
 %macro          GETMIN 2
-%ifne underscore
         mov             %1,%2
-%else
-        mov             %1,%2
-%endif
 %endmacro
 
 %macro          SETMIN 2
@@ -183,7 +173,7 @@ ENGTS  equ      13
 %endif
 %endmacro
 
-        DSeg_
+	segment	.data
 %else                                       ; ][
 %ifndef globals
 	extern		minoff
@@ -301,10 +291,6 @@ ENGTS  equ      13
         access2 TTYBUF
         access  B_RCL
 
-%if direct
-        DSegEnd_
-%else
+%if direct == 0
         ends    vords
 %endif
-
-        CSegEnd_

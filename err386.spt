@@ -129,11 +129,7 @@ nomachine
 
 *  Data and public definitions
 *
-*        name    = tab '.sbttl' tab '"errors"'
-*        model   = tab '.arch' tab 'pentium'
-        data    = tab 'DSeg_'
-        enddata = tab 'DSegEnd_'
-	public	= tab 'pubdef' tab
+	data = tab 'segment' tab '.data'
         include = tab '%include' tab '"systype.ah"'
 
 *  Setup keywords
@@ -403,13 +399,13 @@ readerr_end
 
 *  Putout label and compressed error message table
 *
-        outfile = public 'errors,' db ',0'
+	outfile = 'errors:  db  0'
 	seq(" putout(err[i],i)", .i)
 
 *  Putout label and phrase table
 *
         outfile =
-        outfile = public 'phrases,' db ',0'
+	outfile = 'phrases:   db   0'
 	seq(" putout(phrase[i],spread(i))", .i)
 
 *  Finish up the output file

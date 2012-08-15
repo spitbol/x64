@@ -17,18 +17,18 @@
         dd      B_ART   ; ARBLK type word - 0
         dd      B_CDC   ; CDBLK type word - 1
         dd      B_EXL   ; EXBLK type word - 2
-        address B_ICL   ; ICBLK type word - 3
+        dd B_ICL   ; ICBLK type word - 3
         dd      B_NML   ; NMBLK type word - 4
         dd      P_ABA   ; P0BLK type word - 5
         dd      P_ALT   ; P1BLK type word - 6
         dd      P_ANY   ; P2BLK type word - 7
-        address B_RCL   ; RCBLK type word - 8
-        address B_SCL   ; SCBLK type word - 9
+        dd B_RCL   ; RCBLK type word - 8
+        dd B_SCL   ; SCBLK type word - 9
         dd      B_SEL   ; SEBLK type word - 10
         dd      B_TBT   ; TBBLK type word - 11
-        address B_VCT   ; VCBLK type word - 12
-        address B_XNT   ; XNBLK type word - 13
-        address B_XRT   ; XRBLK type word - 14
+        dd B_VCT   ; VCBLK type word - 12
+        dd B_XNT   ; XNBLK type word - 13
+        dd B_XRT   ; XRBLK type word - 14
         dd      B_BCT   ; BCBLK type word - 15
         dd      B_PDT   ; PDBLK type word - 16
         dd      B_TRT   ; TRBLK type word - 17
@@ -37,7 +37,7 @@
         dd      B_CMT   ; CMBLK type word - 20
         dd      B_CTT   ; CTBLK type word - 21
         dd      B_DFC   ; DFBLK type word - 22
-        address B_EFC   ; EFBLK type word - 23
+        dd B_EFC   ; EFBLK type word - 23
         dd      B_EVT   ; EVBLK type word - 24
         dd      B_FFC   ; FFBLK type word - 25
         dd      B_KVT   ; KVBLK type word - 26
@@ -83,11 +83,11 @@
 ;
 %if  direct
 %macro  access 1
-        pubname %1
+        global %1
         %endmacro
 %else
 %macro  access 1
-        address %1
+        dd %1
         %endmacro
 
         pubdef1  valtab

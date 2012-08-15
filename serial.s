@@ -20,13 +20,11 @@
 ; function will appear in this segment as well, placed here
 ; by the code in load.asm.
 ;
-        %include        "systype.ah"
+        %include	"systype.ah"
 
-        Header_
-        DSeg_
-        align         4
-        pubdef          hasfpu,dd,0               ;-1 if 80x87 present, else 0
-        pubname         cprtmsg
+        segment		.data
+        align         	4
+hasfpu:	dd	0
+        global         cprtmsg
 cprtmsg:
-	db          " Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer."
-        DSegEnd_
+	db              " Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer."

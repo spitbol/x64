@@ -19,11 +19,12 @@
 ;
 ;        .psize          80,132
 ;        .arch           pentium
-globals equ 1                       ;ASM globals defined here
-        %include        "systype.ah"
-        %include        "osint.inc"
 
-        Header_
+%define	globals	1
+
+	segment	.data
+	%include	"systype.ah"
+        %include        "osint.inc"
 ;
 ;       File: inter.s           Version: 1.46
 ;       ---------------------------------------
@@ -57,18 +58,18 @@ globals equ 1                       ;ASM globals defined here
 ;
 ;               ...code to put arguments in registers...
 ;               call    SYSXX           ; call osint function
-;               dd      EXIT_1          ; address of exit point 1
-;               dd      EXIT_2          ; address of exit point 2
+;               dd      EXIT_1          ; dd of exit point 1
+;               dd      EXIT_2          ; dd of exit point 2
 ;               ...     ...             ; ...
-;               dd      EXIT_n          ; address of exit point n
+;               dd      EXIT_n          ; dd of exit point n
 ;               ...instruction following call...
 ;
 ;       The OSINT function 'SYSXX' can then return in one of n+1 ways:
 ;       to one of the n exit points or to the instruction following the
 ;       last exit.  This is not really very complicated - the call places
-;       the return address on the stack, so all the interface function has
-;       to do is add the appropriate offset to the return address and then
-;       pick up the exit address and jump to it OR do a normal return via
+;       the return dd on the stack, so all the interface function has
+;       to do is add the appropriate offset to the return dd and then
+;       pick up the exit dd and jump to it OR do a normal return via
 ;       an ret instruction.
 ;
 ;       Unfortunately, a C function cannot handle this scheme.  So, an
@@ -116,11 +117,8 @@ globals equ 1                       ;ASM globals defined here
 ;
 ;       Global Variables
 ;
-        CSeg_
 	extern	swcoup
-        CSegEnd_
 
-        DSeg_
 	extern	stacksiz
 	extern	lmodstk
 	extern	lowsp
@@ -136,25 +134,37 @@ globals equ 1                       ;ASM globals defined here
 ; Words saved during exit(-3)
 ;
         align 4
-        pubdef  reg_block
-        pubdef  reg_wa,dd   ,0     ; Register WA (ECX)
-        pubdef  reg_wb,dd   ,0     ; Register WB (EBX)
-        pubdef  reg_ia
-        pubdef  reg_wc,dd   ,0     ; Register WC & IA (EDX)
-        pubdef  reg_xr,dd   ,0     ; Register XR (EDI)
-        pubdef  reg_xl,dd   ,0     ; Register XL (ESI)
-        pubdef  reg_cp,dd   ,0     ; Register CP
-        pubdef  reg_ra,.double,0e  ; Register RA
+
+	global	reg_wb
+	global	reg_ia
+	global	reg_wc
+	global	reg_xr
+	global	reg_xl
+	global	reg_cp
+	global	reg_ra
+	global	reg_pc
+	global	reg_pp
+	global	reg_xs
+
+reg_block:
+reg_wa:	dd	0     ; Register WA (ECX)
+reg_wb:	dd	0     ; Register WB (EBX)
+reg_ia:
+reg_wc:	dd   0     ; Register WC & IA (EDX)
+reg_xr:	dd   0     ; Register XR (EDI)
+reg_xl:	dd   0     ; Register XL (ESI)
+reg_cp:	dd   0     ; Register CP
+reg_ra:	dd	0e  ; Register RA
 ;
 ; These locations save information needed to return after calling OSINT
 ; and after a restart from EXIT()
 ;
-        pubdef  reg_pc,dd   ,0  ; Return PC from ccaller
+reg_pc:	dd	0		; return pc from caller
 reg_pp: dd      0               ; Number of bytes of PPMs
-        pubdef  reg_xs,dd   ,0  ; Minimal stack pointer
+reg_xs:	dd   	0  		; Minimal stack pointer
 ;
 r_size equ      $-reg_block
-        pubdef  reg_size,dd   ,r_size
+reg_size	dd	r_size
 ;
 ; end of words saved during exit(-3)
 ;
@@ -163,7 +173,7 @@ r_size equ      $-reg_block
 ;  Constants
 ;
 ten:    dd      10              ; constant 10
-        pubdef  inf,dd   ,0
+inf:	dd	0	
         dd      0x7ff00000      ; double precision infinity
 
 sav_block: times r_size dd 0    ; Save Minimal registers during push/pop reg
@@ -177,31 +187,28 @@ osisp:  dd      0               ; 1.39 OSINT's stack pointer
 
 
 ;
-;       Setup a number of internal addresses in the compiler that cannot
+;       Setup a number of internal ddes in the compiler that cannot
 ;       be directly accessed from within C because of naming difficulties.
 ;
-        pubdef  ID1,dd   ,0
-%if SETREAL == 1
+ID1	dd	0
+%ifdef SETREAL
         dd       2
-        .ascii  "1x\x00\x00"
+        db  "1x\x00\x00"
 %else
         dd       1
-        .ascii  "1x\x00\x00\x00"
+        db  "1x\x00\x00\x00"
 %endif
 ;
-        pubdef  ID2BLK,dd   ,52
-        dd      0
-	times	52 dd 0
+ID2BLK:	times	52 dd 0
 
-        pubdef  TICBLK,dd   ,0
+TICBLK:	dd	0
         dd      0
 
-        pubdef  TSCBLK,dd   ,512
-        dd      0
-	times	512 dd 0
+TSCBLK:	times	512 dd 0
+
 ;       Standard input buffer block.
 ;
-        pubdef  INPBUF,dd   ,0     ; type word
+INPBUF:	dd   	0     ; type word
         dd      0               ; block length
         dd      1024            ; buffer size
         dd      0               ; remaining chars to read
@@ -214,7 +221,7 @@ osisp:  dd      0               ; 1.39 OSINT's stack pointer
 %endif
 	times	1024 dd 0	; buffer
 ;
-        pubdef  TTYBUF,dd   ,0     ; type word
+TTYBUF:	dd   0     ; type word
         dd      0               ; block length
         dd      260             ; buffer size  (260 OK in MS-DOS with cinread())
         dd      0               ; remaining chars to read
@@ -227,9 +234,8 @@ osisp:  dd      0               ; 1.39 OSINT's stack pointer
 %endif
 	times	260 dd 0	; buffer
 
-  DSegEnd_
 
-  CSeg_
+	segment	.text
 ;
 ;-----------
 ;
@@ -256,8 +262,8 @@ osisp:  dd      0               ; 1.39 OSINT's stack pointer
 ;       reloading a save file.
 ;
 ;
-        proc    pushregs                   ;bashes eax,ecx,esi
-	publab	pushregs
+        					;bashes eax,ecx,esi
+pushregs:
 	pushad
 	lea	esi,reg_block
 	lea	edi,sav_block
@@ -271,15 +277,13 @@ osisp:  dd      0               ; 1.39 OSINT's stack pointer
         sub     edi,4                           ;push onto compiler's stack
         mov     esi,reg_xl                      ;collectable XL
 	mov	[edi],esi
-        mov     compsp,edi                      ;smashed if call OSINT again (SYSGC)
+        mov     [compsp],edi                      ;smashed if call OSINT again (SYSGC)
         mov     sav_compsp,edi                  ;used by popregs
 
 push1:	popad
 	retc	0
-        endp    pushregs
 
-        proc    popregs                    ;bashes eax,ebx,ecx
-	publab	popregs
+popregs:
 	pushad
         mov     eax,reg_cp                      ;don't restore CP
 	cld
@@ -293,13 +297,12 @@ push1:	popad
         or      edi,edi                         ;1.39 is there one?
         je      short pop1                      ;1.39 jump if none yet
         mov     esi,[edi]                       ;retrieve collectable XL
-        mov     reg_xl,esi                      ;update XL
+        mov     [reg_xl],esi                      ;update XL
         add     edi,4                           ;update compiler's sp
         mov     compsp,edi
 
 pop1:	popad
 	retc	0
-        endp    popregs
 
 ;
 ;-----------
@@ -309,7 +312,7 @@ pop1:	popad
 ;       Each interface routine takes the following form:
 ;
 ;               SYSXX   call    ccaller         ; call common interface
-;                       dd      zysxx           ; address of C OSINT function
+;                       dd      zysxx           ; dd of C OSINT function
 ;                       db      n               ; offset to instruction after
 ;                                               ;   last procedure exit
 ;
@@ -332,7 +335,7 @@ pop1:	popad
 ;       General calling sequence is
 ;
 ;               call    ccaller
-;               dd      address_of_C_function
+;               dd      dd_of_C_function
 ;               db      2*number_of_exit_points
 ;
 ;       Control IS NEVER returned to a interface routine.  Instead, control
@@ -353,22 +356,22 @@ pop1:	popad
 ;                     8         Take procedure exit 3
 ;                    ...        ...
 ;
-        proc   ccaller
+ccaller:
 
 ;       (1) Save registers in global variables
 ;
-        mov     reg_wa,ecx              ; save registers
-	mov	reg_wb,ebx
-        mov     reg_wc,edx              ; (also _reg_ia)
-	mov	reg_xr,edi
-	mov	reg_xl,esi
-        mov     reg_cp,ebp              ; Needed in image saved by sysxi
+        mov     [reg_wa],ecx              ; save registers
+	mov	[reg_wb],ebx
+        mov     [reg_wc],edx              ; (also _reg_ia)
+	mov	[reg_xr],edi
+	mov	[reg_xl],esi
+        mov     [reg_cp],ebp              ; Needed in image saved by sysxi
 
 ;       (2) Get pointer to arg list
 ;
         pop     esi                     ; point to arg list
 ;
-;       (3) Fetch address of C function, fetch offset to 1st instruction
+;       (3) Fetch dd of C function, fetch offset to  instruction
 ;           past last procedure exit, and call C function.
 ;
         cs                              ; CS segment override
@@ -376,8 +379,8 @@ pop1:	popad
 ;       lodsd   cs:ccaller              ; point to C function entry point
         movzx   ebx,byte [esi]   ; save normal exit adjustment
 ;
-        mov     reg_pp,ebx              ; in memory
-        pop     reg_pc                  ; save return PC past "CALL SYSXX"
+        mov     [reg_pp],ebx              ; in memory
+        pop     [reg_pc]                  ; save return PC past "CALL SYSXX"
 ;
 ;       (3a) Save compiler stack and switch to OSINT stack
 ;
@@ -393,12 +396,12 @@ pop1:	popad
 
 cc1:    mov     osisp,esp               ; 1.39 save OSINT's stack pointer
         mov     esp,compsp              ; 1.39 restore compiler's stack pointer
-        mov     ecx,reg_wa              ; restore registers
-	mov	ebx,reg_wb
-        mov     edx,reg_wc              ; (also reg_ia)
-	mov	edi,reg_xr
-	mov	esi,reg_xl
-	mov	ebp,reg_cp
+        mov     ecx,[reg_wa]              ; restore registers
+	mov	ebx,[reg_wb]
+        mov     edx,[reg_wc]             ; (also reg_ia)
+	mov	edi,[reg_xr]
+	mov	esi,[reg_xl]
+	mov	ebp,[reg_cp]
 
 	cld
 ;
@@ -407,260 +410,259 @@ cc1:    mov     osisp,esp               ; 1.39 save OSINT's stack pointer
 ;
         or      eax,eax         ; test if normal return ...
         jns     short erexit    ; j. if >= 0 (take numbered exit)
-	mov	eax,reg_pc
-        add     eax,reg_pp      ; point to instruction following exits
+	mov	eax,[reg_pc]
+        add     eax,[reg_pp]      ; point to instruction following exits
         jmp     eax             ; bypass PPM exits
 
 ;                               ; else (take procedure exit n)
 erexit: shr     eax,1           ; divide by 2
-        add     eax,reg_pc      ;   get to address of exit offset
+        add     eax,[reg_pc]      ;   get to dd of exit offset
 	movsx	eax,word [eax]
         add     eax,ppoff       ; bias to fit in 16-bit word
 	push	eax
         xor     eax,eax         ; in case branch to error cascade
-        ret                     ;   take procedure exit via PPM address
+        ret                     ;   take procedure exit via PPM dd
 
-        endp    ccaller
 ;
 ;---------------
 ;
 ;       Individual OSINT routine entry points
 ;
-        publab SYSAX
+	global	SYSAX
 	extern	zysax
 SYSAX:	call	ccaller
-        address   zysax
+        dd   zysax
         db      0
 ;
-        publab SYSBS
+	global	SYSBS
 	extern	zysbs
 SYSBS:	call	ccaller
-        address   zysbs
+        dd   zysbs
         db      3*2
 ;
-        publab SYSBX
+        global	 SYSBX
 	extern	zysbx
-SYSBX:	mov	reg_xs,esp
+SYSBX:	mov	[reg_xs],esp
 	call	ccaller
-        address zysbx
+        dd zysbx
         db      0
 ;
-%if SETREAL == 1
-        publab SYSCR
+%ifdef SETREAL
+        global SYSCR
 	extern	zyscr
 SYSCR:  call    ccaller
-        address zyscr
+        dd zyscr
         db      0
 ;
 %endif
-        publab SYSDC
+        global SYSDC
 	extern	zysdc
 SYSDC:	call	ccaller
-        address zysdc
+        dd zysdc
         db      0
 ;
-        publab SYSDM
+        global SYSDM
 	extern	zysdm
 SYSDM:	call	ccaller
-        address zysdm
+        dd zysdm
         db      0
 ;
-        publab SYSDT
+        global SYSDT
 	extern	zysdt
 SYSDT:	call	ccaller
-        address zysdt
+        dd zysdt
         db      0
 ;
-        publab SYSEA
+        global SYSEA
 	extern	zysea
 SYSEA:	call	ccaller
-        address zysea
+        dd zysea
         db      1*2
 ;
-        publab SYSEF
+        global SYSEF
 	extern	zysef
 SYSEF:	call	ccaller
-        address zysef
+        dd zysef
         db      3*2
 ;
-        publab SYSEJ
+        global SYSEJ
 	extern	zysej
 SYSEJ:	call	ccaller
-        address zysej
+        dd zysej
         db      0
 ;
-        publab SYSEM
+        global SYSEM
 	extern	zysem
 SYSEM:	call	ccaller
-        address zysem
+        dd zysem
         db      0
 ;
-        publab SYSEN
+        global SYSEN
 	extern	zysen
 SYSEN:	call	ccaller
-        address zysen
+        dd zysen
         db      3*2
 ;
-        publab SYSEP
+        global SYSEP
 	extern	zysep
 SYSEP:	call	ccaller
-        address zysep
+        dd zysep
         db      0
 ;
-        publab SYSEX
+        global SYSEX
 	extern	zysex
-SYSEX:	mov	reg_xs,esp
+SYSEX:	mov	[reg_xs],esp
 	call	ccaller
-        address zysex
+        dd zysex
         db      3*2
 ;
-        publab SYSFC
+        global SYSFC
 	extern	zysfc
 SYSFC:  pop     eax             ; <<<<remove stacked SCBLK>>>>
 	lea	esp,[esp+edx*4]
 	push	eax
 	call	ccaller
-        address zysfc
+        dd zysfc
         db      2*2
 ;
-        publab SYSGC
+        global SYSGC
 	extern	zysgc
 SYSGC:	call	ccaller
-        address zysgc
+        dd zysgc
         db      0
 ;
-        publab SYSHS
+        global SYSHS
 	extern	zyshs
-SYSHS:	mov	reg_xs,esp
+SYSHS:	mov	[reg_xs],esp
 	call	ccaller
-        address zyshs
+        dd zyshs
         db      8*2
 ;
-        publab SYSID
+        global SYSID
 	extern	zysid
 SYSID:	call	ccaller
-        address zysid
+        dd zysid
         db      0
 ;
-        publab SYSIF
+        global SYSIF
 	extern	zysif
 SYSIF:	call	ccaller
-        address zysif
+        dd zysif
         db      1*2
 ;
-        publab SYSIL
+        global SYSIL
 	extern	zysil
 SYSIL:  call    ccaller
-        address zysil
+        dd zysil
         db      0
 ;
-        publab SYSIN
+        global SYSIN
 	extern	zysin
 SYSIN:	call	ccaller
-        address zysin
+        dd zysin
         db      3*2
 ;
-        publab SYSIO
+        global SYSIO
 	extern	zysio
 SYSIO:	call	ccaller
-        address zysio
+        dd zysio
         db      2*2
 ;
-        publab SYSLD
+        global SYSLD
 	extern	zysld
 SYSLD:  call    ccaller
-        address zysld
+        dd zysld
         db      3*2
 ;
-        publab SYSMM
+        global SYSMM
 	extern	zysmm
 SYSMM:	call	ccaller
-        address zysmm
+        dd zysmm
         db      0
 ;
-        publab SYSMX
+        global SYSMX
 	extern	zysmx
 SYSMX:	call	ccaller
-        address zysmx
+        dd zysmx
         db      0
 ;
-        publab SYSOU
+        global SYSOU
 	extern	zysou
 SYSOU:	call	ccaller
-        address zysou
+        dd zysou
         db      2*2
 ;
-        publab SYSPI
+        global SYSPI
 	extern	zyspi
 SYSPI:	call	ccaller
-        address zyspi
+        dd zyspi
         db      1*2
 ;
-        publab SYSPL
+        global SYSPL
 	extern	zyspl
 SYSPL:	call	ccaller
-        address zyspl
+        dd zyspl
         db      3*2
 ;
-        publab SYSPP
+        global SYSPP
 	extern	zyspp
 SYSPP:	call	ccaller
-        address zyspp
+        dd zyspp
         db      0
 ;
-        publab SYSPR
+        global SYSPR
 	extern	zyspr
 SYSPR:	call	ccaller
-        address zyspr
+        dd zyspr
         db      1*2
 ;
-        publab SYSRD
+        global SYSRD
 	extern	zysrd
 SYSRD:	call	ccaller
-        address zysrd
+        dd zysrd
         db      1*2
 ;
-        publab SYSRI
+        global SYSRI
 	extern	zysri
 SYSRI:	call	ccaller
-        address zysri
+        dd zysri
         db      1*2
 ;
-        publab SYSRW
+        global SYSRW
 	extern	zysrw
 SYSRW:	call	ccaller
-        address zysrw
+        dd zysrw
         db      3*2
 ;
-        publab SYSST
+        global SYSST
 	extern	zysst
 SYSST:	call	ccaller
-        address zysst
+        dd zysst
         db      5*2
 ;
-        publab SYSTM
+        global SYSTM
 	extern	zystm
 SYSTM:	call	ccaller
-systm_p: address zystm
+systm_p: dd zystm
         db      0
 ;
-        publab SYSTT
+        global SYSTT
 	extern	zystt
 SYSTT:	call	ccaller
-        address zystt
+        dd zystt
         db      0
 ;
-        publab SYSUL
+        global SYSUL
 	extern	zysul
 SYSUL:	call	ccaller
-        address zysul
+        dd zysul
         db      0
 ;
-        publab SYSXI
+        global SYSXI
 	extern	zysxi
-SYSXI:	mov	reg_xs,esp
+SYSXI:	mov	[reg_xs],esp
 	call	ccaller
-sysxi_p: address zysxi
+sysxi_p: dd zysxi
         db      2*2
 
 ;
@@ -677,8 +679,9 @@ sysxi_p: address zysxi
 ;	Note: This function never returns.
 ;
 
-        cproc   startup
-	pubname	startup
+	
+	global	startup
+startup:
 
         pop     eax                     ; discard return
         pop     eax                     ; discard dummy1
@@ -688,14 +691,11 @@ sysxi_p: address zysxi
         SET_WA  eax                     ; startup stack pointer
 
 	cld                             ; default to UP direction for string ops
-        GETOFF  eax,DFFNC               ; get address of PPM offset
+        GETOFF  eax,DFFNC               ; get dd of PPM offset
         mov     ppoff,eax               ; save for use later
 ;
         mov     esp,osisp               ; switch to new C stack
         MINIMAL START                   ; load regs, switch stack, start compiler
-
-        cendp   startup
-
 
 
 ;
@@ -727,7 +727,8 @@ sysxi_p: address zysxi
 ;
 ;
 
-	proc	stackinit
+	global	stackinit
+stackinit:
 	mov	eax,esp
         mov     compsp,eax              ; save as MINIMAL's stack pointer
 	sub	eax,stacksiz            ; end of MINIMAL stack is where C stack will start
@@ -735,7 +736,6 @@ sysxi_p: address zysxi
 	add	eax,4*100               ; 100 words smaller for CHK
         SETMINR  LOWSPMIN,eax            ; Set LOWSPMIN
 	ret
-	endp	stackinit
 
 ;
 ;-----------
@@ -755,44 +755,43 @@ sysxi_p: address zysxi
 ;       the OSINT stack.
 ;
 
-        cproc    minimal
-	pubname	minimal
+	global	minimal
+minimal:
 
         pushad                          ; save all registers for C
         mov     eax,[esp+32+4]          ; get ordinal
-        mov     ecx,reg_wa              ; restore registers
-	mov	ebx,reg_wb
-        mov     edx,reg_wc              ; (also _reg_ia)
-	mov	edi,reg_xr
-	mov	esi,reg_xl
-	mov	ebp,reg_cp
+        mov     ecx,[reg_wa]              ; restore registers
+	mov	ebx,[reg_wb]
+        mov     edx,[reg_wc]              ; (also _reg_ia)
+	mov	edi,[reg_xr]
+	mov	esi,[reg_xl]
+	mov	ebp,[reg_cp]
 
         mov     osisp,esp               ; 1.39 save OSINT stack pointer
         cmp     dword compsp,0      ; 1.39 is there a compiler stack?
         je      short min1              ; 1.39 jump if none yet
         mov     esp,compsp              ; 1.39 switch to compiler stack
 
-min1:   callc   calltab[eax*4],0        ; off to the Minimal code
+min1:   callc   [calltab+eax*4],0        ; off to the Minimal code
 
         mov     esp,osisp               ; 1.39 switch to OSINT stack
 
-        mov     reg_wa,ecx              ; save registers
-	mov	reg_wb,ebx
-	mov	reg_wc,edx
-	mov	reg_xr,edi
-	mov	reg_xl,esi
-	mov	reg_cp,ebp
+        mov     [reg_wa],ecx              ; save registers
+	mov	[reg_wb],ebx
+	mov	[reg_wc],edx
+	mov	[reg_xr],edi
+	mov	[reg_xl],esi
+	mov	[reg_cp],ebp
 	popad
 	retc	4
 
-        cendp    minimal
 
 
-%ife direct = 0
+%if direct = 0
 ;
 ;-----------
 ;
-;       minoff -- obtain address of MINIMAL variable
+;       minoff -- obtain dd of MINIMAL variable
 ;
 ;       Usage:  extern WORD *minoff(WORD valno)
 ;
@@ -800,14 +799,13 @@ min1:   callc   calltab[eax*4],0        ; off to the Minimal code
 ;         valno is an ordinal defined in osint.h, osint.inc and valtab.
 ;
 
-        proc    minoff
-	pubname	minoff
+	global 	minoff
+minoff:
 
         mov     eax,[esp+4]             ; get ordinal
-        mov     eax,valtab[eax*4]       ; get address of Minimal value
+        mov     eax,[valtab+eax*4]       ; get dd of Minimal value
 	retc	4
 
-        endp    minoff
 %endif
 
 
@@ -878,14 +876,13 @@ min1:   callc   calltab[eax*4],0        ; off to the Minimal code
 ;       size of the stack.
 
 
-        cproc    get_fp
-	pubname	get_fp
+	global	get_fp
+get_fp:
 
         mov     eax,reg_xs      ; Minimal's XS
         add     eax,4           ; pop return from call to SYSBX or SYSXI
         retc    0               ; done
 
-        cendp    get_fp
 
 ;
 ;-----------
@@ -903,7 +900,7 @@ min1:   callc   calltab[eax*4],0        ; off to the Minimal code
 ;       stack overflow. (initial sp here will most likely differ
 ;       from initial sp when compile was done.)
 ;
-;       It is also necessary to relocate any addresses in the the stack
+;       It is also necessary to relocate any ddes in the the stack
 ;       that point within the stack itself.  An adjustment factor is
 ;       calculated as the difference between the STBAS at exit() time,
 ;       and STBAS at restart() time.  As the stack is transferred from
@@ -917,8 +914,9 @@ min1:   callc   calltab[eax*4],0        ; off to the Minimal code
 ;
 	extern	rereloc
 
-        cproc   restart
-	pubname	restart
+       global   restart
+restart:
+	global	restart
 
         pop     eax                     ; discard return
         pop     eax                     ; discard dummy
@@ -939,7 +937,7 @@ min1:   callc   calltab[eax*4],0        ; off to the Minimal code
         sub     ebx,esp                 ; ebx = old stbas - new stbas
 
         SETMINR  STBAS,esp               ; save initial sp
-        GETOFF  eax,DFFNC               ; get address of PPM offset
+        GETOFF  eax,DFFNC               ; get dd of PPM offset
         mov     ppoff,eax               ; save for use later
 ;
 ;       restore stack from TSCBLK.
@@ -982,7 +980,7 @@ re3:	cld
 ;       SYSBX called MAKEEXEC, which in turn called SYSXI.  The return path
 ;       should be:  back to ccaller, back to MAKEEXEC following SYSXI call,
 ;       back to SYSBX, back to MINIMAL code.  If we allowed this to happen,
-;       then it would require that stacked return address to SYSBX still be
+;       then it would require that stacked return dd to SYSBX still be
 ;       valid, which may not be true if some of the C programs have changed
 ;       size.  Instead, we clear the stack and execute the restart code that
 ;       simulates resumption just past the SYSBX call in the MINIMAL code.
@@ -1013,7 +1011,7 @@ re4:	GETMIN	eax,STBAS
 ;
         SETMIN  GBCNT,0                 ; reset garbage collect count
         callc   zystm,0                 ; Fetch execution time to reg_ia
-        mov     eax,reg_ia              ; Set time into compiler
+        mov     eax,[reg_ia]              ; Set time into compiler0
 	SETMINR	TIMSX,eax
 
 ;       Code that would be executed if we returned to sysbx:
@@ -1025,9 +1023,6 @@ re4:	GETMIN	eax,STBAS
 
         MINIMAL RSTRT                   ; no return
 
-        cendp    restart
-
-
 ;
 ;-----------
 ;
@@ -1037,9 +1032,8 @@ re4:	GETMIN	eax,STBAS
 ;       Output  IA / 10
 ;               WA (ECX) = remainder + '0'
 ;
-        publab  CVD_
-        proc    CVD_
-
+	global	CVD_
+CVD_:
         xchg    eax,edx         ; IA to EAX
         cdq                     ; sign extend
         idiv    dword ten   ; divide by 10. edx = remainder (negative)
@@ -1049,14 +1043,13 @@ re4:	GETMIN	eax,STBAS
         xchg    edx,eax         ; return quotient in IA
 	ret
 
-        endp    CVD_
 ;
 ;-----------
 ;
 ;       DVI_ - divide IA (EDX) by long in EAX
 ;
-        publab  DVI_
-        proc    DVI_
+	global	DVI_
+DVI_:
 
         or      eax,eax         ; test for 0
         jz      short setovr    ; jump if 0 divisor
@@ -1070,15 +1063,14 @@ re4:	GETMIN	eax,STBAS
         xor     eax,eax         ; clear overflow indicator
 	ret
 
-        endp    DVI_
 
 ;
 ;-----------
 ;
 ;       RMI_ - remainder of IA (EDX) divided by long in EAX
 ;
-        publab  RMI_
-        proc    RMI_
+	global	RMI_
+RMI_:
              or      eax,eax         ; test for 0
         jz      short setovr    ; jump if 0 divisor
         push    ebp             ; preserve CP
@@ -1093,7 +1085,6 @@ setovr: mov     al,0x80         ; set overflow indicator
 	dec	al
 	ret
 
-        endp    RMI_
 
 
 ;----------
@@ -1116,19 +1107,19 @@ setovr: mov     al,0x80         ; set overflow indicator
 ;       RTI_ - convert real in RA to integer in IA
 ;               returns C=0 if fit OK, C=1 if too large to convert
 ;
-        publab  RTI_
-        proc    RTI_
+	global	RTI_
+RTI_:
 
 ; 41E00000 00000000 = 2147483648.0
 ; 41E00000 00200000 = 2147483649.0
-        mov     eax, dword reg_ra+4   ; RA msh
+        mov     eax, dword [reg_ra+4]   ; RA msh
         btr     eax,31          ; take absolute value, sign bit to carry flag
         jc      short RTI_2     ; jump if negative real
         cmp     eax,0x41E00000  ; test against 2147483648
         jae     short RTI_1     ; jump if >= +2147483648
 RTI_3:  push    ecx             ; protect against C routine usage.
         push    eax             ; push RA MSH
-        push    dword reg_ra; push RA LSH
+        push    dword [reg_ra]; push RA LSH
         callfar f_2_i,8         ; float to integer
         xchg    eax,edx         ; return integer in edx (IA)
         pop     ecx             ; restore ecx
@@ -1139,60 +1130,57 @@ RTI_3:  push    ecx             ; protect against C routine usage.
 RTI_2:  cmp     eax,0x41E00000          ; test against 2147483649
         jb      short RTI_0             ; definately smaller
         ja      short RTI_1             ; definately larger
-        cmp     word reg_ra+2, 0x0020
+        cmp     dword [reg_ra+2], 0x0020
         jae     short RTI_1
 RTI_0:  btc     eax,31                  ; make negative again
         jmp     RTI_3
 RTI_1:  stc                             ; return C=1 for too large to convert
         ret
 
-        endp    CVD_
 ;
 ;----------
 ;
 ;       ITR_ - convert integer in IA to real in RA
 ;
-        publab  ITR_
-        proc    ITR_
+	global	ITR_
+ITR_:
 
         push    ecx             ; preserve
         push    edx             ; push IA
         callfar i_2_f,4         ; integer to float
 %if fretst0
-	fstp	qword reg_ra
+	fstp	dword [reg_ra]
         pop     ecx             ; restore ecx
 	fwait
 %endif
 %if freteax
-        mov     dword reg_ra,eax    ; return result in RA
+        mov     dword [reg_ra],eax    ; return result in RA
+
 	mov	dword reg_ra+4,edx
         pop     ecx             ; restore ecx
 %endif
 	ret
 
-        endp    ITR_
 ;
 ;----------
 ;
 ;       LDR_ - load real pointed to by eax to RA
 ;
-        publab  LDR_
-        proc    LDR_
-
+	global	LDR_
+LDR_:
         push    dword [eax]                 ; lsh
 	pop	dword reg_ra
         mov     eax,[eax+4]                     ; msh
 	mov	dword reg_ra+4, eax
 	ret
 
-        endp    LDR_
 ;
 ;----------
 ;
 ;       STR_ - store RA in real pointed to by eax
 ;
-        publab  STR_
-        proc    STR_
+	global	STR_
+STR_:
 
         push    dword reg_ra                ; lsh
 	pop	dword [eax]
@@ -1200,14 +1188,13 @@ RTI_1:  stc                             ; return C=1 for too large to convert
 	pop	dword [eax+4]
 	ret
 
-        endp    STR_
 ;
 ;----------
 ;
 ;       ADR_ - add real at [eax] to RA
 ;
-        publab  ADR_
-        proc    ADR_
+	global	ADR_
+ADR_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
@@ -1230,14 +1217,13 @@ RTI_1:  stc                             ; return C=1 for too large to convert
 %endif
 	ret
 
-        endp    ADR_
 ;
 ;----------
 ;
 ;       SBR_ - subtract real at [eax] from RA
 ;
-        publab  SBR_
-        proc    SBR_
+        global  SBR_
+SBR_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
@@ -1260,14 +1246,13 @@ RTI_1:  stc                             ; return C=1 for too large to convert
 %endif
 	ret
 
-        endp    SBR_
 ;
 ;----------
 ;
 ;       MLR_ - multiply real in RA by real at [eax]
 ;
-        publab  MLR_
-        proc    MLR_
+        global  MLR_
+MLR_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
@@ -1290,15 +1275,14 @@ RTI_1:  stc                             ; return C=1 for too large to convert
 %endif
 	ret
 
-        endp    MLR_
 ;
 ;----------
 ;
 ;       DVR_ - divide real in RA by real at [eax]
 ;
-        publab  DVR_
+        global  DVR_
 
-        proc    DVR_
+DVR_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
@@ -1321,15 +1305,13 @@ RTI_1:  stc                             ; return C=1 for too large to convert
 %endif
 	ret
 
-        endp    DVR_
 ;
 ;----------
 ;
 ;       NGR_ - negate real in RA
 ;
-        publab  NGR_
-
-        proc    NGR_
+        global  NGR_
+NGR_:
 	cmp	dword reg_ra, 0
 	jne	short ngr_1
 	cmp	dword reg_ra+4, 0
@@ -1337,15 +1319,14 @@ RTI_1:  stc                             ; return C=1 for too large to convert
 ngr_1:  xor     byte reg_ra+7, 0x80         ; complement mantissa sign
 ngr_2:	ret
 
-        endp    NGR_
 ;
 ;----------
 ;
 ;       ATN_ arctangent of real in RA
 ;
-        publab  ATN_
+        global  ATN_
 
-        proc    ATN_
+ATN_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
@@ -1366,15 +1347,14 @@ ngr_2:	ret
 %endif
 	ret
 
-        endp    ATN_
 ;
 ;----------
 ;
 ;       CHP_ chop fractional part of real in RA
 ;
-        publab  CHP_
+        global  CHP_
 
-        proc    CHP_
+CHP_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
@@ -1395,16 +1375,14 @@ ngr_2:	ret
 %endif
 	ret
 
-        endp    CHP_
 ;
 ;----------
 ;
 ;       COS_ cosine of real in RA
 ;
-        publab  COS_
+        global  COS_
 
-        proc    COS_
-
+COS_:
         push    ecx                             ; preserve regs for C
 	push	edx
         push    dword reg_ra+4              ; RA msh
@@ -1424,16 +1402,14 @@ ngr_2:	ret
 %endif
 	ret
 
-        endp    COS_
 ;
 ;----------
 ;
 ;       ETX_ exponential of real in RA
 ;
-        publab  ETX_
+        global  ETX_
 
-        proc    ETX_
-
+ETX_:
         push    ecx                             ; preserve regs for C
 	push	edx
         push    dword reg_ra+4              ; RA msh
@@ -1453,15 +1429,14 @@ ngr_2:	ret
 %endif
 	ret
 
-        endp    ETX_
 ;
 ;----------
 ;
 ;       LNF_ natural logarithm of real in RA
 ;
-        publab  LNF_
+        global  LNF_
 
-        proc    LNF_
+LNF_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
@@ -1482,15 +1457,14 @@ ngr_2:	ret
 %endif
 	ret
 
-        endp    LNF_
 ;
 ;----------
 ;
 ;       SIN_ arctangent of real in RA
 ;
-        publab  SIN_
+        global  SIN_
 
-        proc    SIN_
+SIN_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
@@ -1511,101 +1485,95 @@ ngr_2:	ret
 %endif
 	ret
 
-        endp    SIN_
 ;
 ;----------
 ;
 ;       SQR_ arctangent of real in RA
 ;
-        publab  SQR_
+        global  SQR_
 
-        proc    SQR_
 
+SQR_:
         push    ecx                             ; preserve regs for C
 	push	edx
-        push    dword reg_ra+4              ; RA msh
-        push    dword reg_ra                ; RA lsh
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
         callfar f_sqr,8                         ; perform op
 %if fretst0
-        fstp	qword reg_ra
+        fstp	qword [reg_ra]
         pop     edx                             ; restore regs
 	pop	ecx
 	fwait
 %endif
 %if freteax
-        mov     dword reg_ra+4, edx         ; result msh
-        mov     dword reg_ra, eax           ; result lsh
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
         pop     edx                             ; restore regs
 	pop	ecx
 %endif
 	ret
 
-        endp    SQR_
 ;
 ;----------
 ;
 ;       TAN_ arctangent of real in RA
 ;
-        publab  TAN_
+        global  TAN_
 
-        proc    TAN_
-
+TAN_:
         push    ecx                             ; preserve regs for C
 	push	edx
-        push    dword reg_ra+4              ; RA msh
-        push    dword reg_ra                ; RA lsh
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
         callfar f_tan,8                         ; perform op
 %if fretst0
-        fstp	qword reg_ra
+        fstp	qword [reg_ra]
         pop     edx                             ; restore regs
 	pop	ecx
 	fwait
 %endif
 %if freteax
-        mov     dword reg_ra+4, edx         ; result msh
-        mov     dword reg_ra, eax           ; result lsh
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
         pop     edx                             ; restore regs
 	pop	ecx
 %endif
 	ret
 
-        endp    TAN_
 ;
 ;----------
 ;
 ;       CPR_ compare real in RA to 0
 ;
-        publab  CPR_
+        global  CPR_
 
-        proc    CPR_
+CPR_:
 
-        mov     eax, dword reg_ra+4 ; fetch msh
+        mov     eax, dword [reg_ra+4] ; fetch msh
         cmp     eax, 0x80000000         ; test msh for -0.0
         je      short cpr050            ; possibly
         or      eax, eax                ; test msh for +0.0
         jnz     short cpr100            ; exit if non-zero for cc's set
-cpr050: cmp     dword reg_ra, 0     ; true zero, or denormalized number?
+cpr050: cmp     dword [reg_ra], 0     ; true zero, or denormalized number?
         jz      short cpr100            ; exit if true zero
 	mov	al, 1
         cmp     al, 0                   ; positive denormal, set cc
 cpr100:	ret
 
-        endp    CPR_
 ;
 ;----------
 ;
 ;       OVR_ test for overflow value in RA
 ;
-        publab  OVR_
+        global  OVR_
 
-OVR_:   proc    near
+OVR_: 
 
-        mov     ax, word reg_ra+6   ; get top 2 bytes
+        mov     ax, word [reg_ra+6]   ; get top 2 bytes
         and     ax, 0x7ff0              ; check for infinity or nan
         add     ax, 0x10                ; set/clear overflow accordingly
 	ret
 
-        endp    OVR_
 
 %if winnt
 ;
@@ -1651,10 +1619,10 @@ ctemp  equ      [ebp-zct]               ;temp on stack
 	extern	read
 %if winnt
         proc    cinreaddos
-	pubname  cinreaddos
+	global  cinreaddos
 %else
         proc    cinread
-	pubname	cinread
+	global	cinread
 %endif
         enter   zct,0                   ;enter and reserve space for ctemp
 	push	ebx
@@ -1755,11 +1723,6 @@ cinr5:	push	cin_siz[ebp]
 	callc	read,12
 	jmp	cinr2
 
-%if winnt
-        endp    cinreaddos
-%else
-        endp    cinread
-%endif
 %endif
 
 
@@ -1783,7 +1746,7 @@ chrdev_fdn:     dd      0
                 ends    chrdevarg
 
         proc    chrdevdos
-	pubname  chrdevdos
+	global  chrdevdos
 	enter	0,0
 	push	ebx
 
@@ -1799,7 +1762,6 @@ chrdev_fdn:     dd      0
 chrdev1: xor	eax,eax
 	leave
 	retc	4
-        endp    chrdevdos
 
 ;
 ;----------
@@ -1821,7 +1783,7 @@ rawmode_mode:   dd      0
                 ends    rawmodearg
 
         proc    rawmodedos
-	pubname  rawmodedos
+	global  rawmodedos
 	enter	0,0
 	push	ebx
 
@@ -1840,7 +1802,6 @@ rawmode0:
 rawmode1: pop	ebx
 	leave
 	retc	4
-        endp    rawmodedos
 %endif
 
 %if linux
@@ -1849,14 +1810,12 @@ rawmode1: pop	ebx
 ;
 ;  tryfpu - perform a floating point op to trigger a trap if no floating point hardware.
 ;
-  cproc   tryfpu
-	pubname tryfpu
+	global	tryfpu
+tryfpu:
 	push	ebp
 	fldz
 	pop	ebp
 	ret
-	cendp	tryfpu
 %endif
 
 
-  CSegEnd_

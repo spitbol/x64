@@ -49,10 +49,6 @@ direct equ 1
 fretst0 equ 1
 freteax equ 0
 
-; macros defining whether a leading underscore is required for public minimal
-; names that will be referenced from c.
-;
-underscore equ 0
 %macro  address 1
         dd   %1
 %endmacro

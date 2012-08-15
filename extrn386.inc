@@ -69,24 +69,7 @@ nearptr equ       1
 ;	fwait
 ;        %endmacro
 
-;        .macro          preamble segname1,segname2
-;        CSeg_
-;        CSegEnd_
-;        DSeg_
-;        DSegEnd_
-;        BSSSeg_
-;        BSSSegEnd_
-;        CSeg_
-;        %endmacro
-%macro   preamble 2
-        CSeg_
-        CSegEnd_
-        DSeg_
-        DSegEnd_
-        BSSSeg_
-        BSSSegEnd_
-        CSeg_
-%endmacro
+	segment	.data
 
 %define	cbrptr	4
 %define	scs	cs
@@ -182,6 +165,7 @@ o:      dd      0
 ; area is placed on the stack below the result area pointer.
 ;
 
+	segment	.data
         struc   misc
 vers:   dw      0               ;internal version number
 env:    db      0               ;host environment (t_pharlap, t_intel, t_os2)
@@ -284,6 +268,7 @@ BL_FX  equ      102                     ; Pointer to external block
 ;
 buflen equ      512
 
+i	segment	.text
 
 ; Vectors to real number functions.
 ;

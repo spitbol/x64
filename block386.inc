@@ -49,6 +49,7 @@
 ;       These blocks may appear in an argument list if left untranslated
 ;       by the LOAD function definition.
 ;
+	segment	.data
 BL_AR  equ      0               ;ARBLK  ARRAY
 BL_CD  equ      BL_AR+1         ;CDBLK  CODE
 BL_EX  equ      BL_CD+1         ;EXBLK  EXPRESSION
@@ -87,6 +88,7 @@ BL_FF  equ      BL_EV+1         ;FFBLK  FIELD FUNCTION
 BL_KV  equ      BL_FF+1         ;KVBLK  KEYWORD VARIABLE
 BL_PF  equ      BL_KV+1         ;PFBLK  PROGRAM-DEFINED FUNCTIN
 BL_TE  equ      BL_PF+1         ;TEBLK  TABLE ELEMENT
+
 ;
 ;
 ;
@@ -135,6 +137,7 @@ fxtyp:  dd      0               ;type word
 fxlen:  dd      0               ;external data length
 fxptr:  dd      0               ;near pointer to external data
         endstruc
+
 ;
 ;
 ;       FILE CONTROL BLOCK
@@ -162,7 +165,7 @@ fcbrsz: dd      0               ;SPITBOL record size and mode
                                 ;positive if text mode, negative if binary
 fcbiob: dd      0               ;pointer to IOBLK
 fcbmod: dd      0               ;1 if text mode, 0 if binary mode
-        endstuc
+        endstruc
 ;
 ;       I/O BLOCK
 ;
@@ -222,7 +225,7 @@ IO_FAIL_IF_EXISTS     equ  0x00
 IO_OPEN_IF_EXISTS     equ  0x01
 IO_REPLACE_IF_EXISTS  equ  0x02
 IO_FAIL_IF_NOT_EXIST  equ  0x00
-IO_CREATE_IF_NOT_EXISTequ  0x10
+IO_CREATE_IF_NOT_EXIST equ 0x10
 IO_EXIST_ACTION_MASK  equ  0x13  ;mask for above bits
 IO_WRITE_THRU         equ  0x20  ;writes complete before return
 

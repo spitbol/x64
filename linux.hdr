@@ -33,4 +33,3 @@
         extern          CPR_
 	%include	"globals.h"
 ; globals.h
-        CSegEnd_
