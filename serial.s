@@ -24,6 +24,7 @@
 
         segment		.data
         align         	4
+	global	hasfpu
 hasfpu:	dd	0
         global         cprtmsg
 cprtmsg:
