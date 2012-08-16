@@ -76,20 +76,14 @@ nearptr equ       1
 %define	ses	ds
 %define	sfs	ds
 %define	sgs	ds
-;       .equ    cbrptr,4
 
-;       .equ    scs,cs
-;       .equ    ses,ds
-;       .equ    sfs,ds
-;       .equ    sgs,ds
-
-        struc   dpt
-o:      dd      0
-        endstruc
-
-        struc   dps
-        dd      0
-        endstruc
+;        struc   dps
+;        dd      0
+;        endstruc
+;
+;        struc   dpt
+;o:      dd      0
+;        endstruc
 
 ;        .macro  procx procnm
 ;        %endmacro
@@ -165,20 +159,20 @@ o:      dd      0
 ; area is placed on the stack below the result area pointer.
 ;
 
-	segment	.data
-        struc   misc
-vers:   dw      0               ;internal version number
-env:    db      0               ;host environment (t_pharlap, t_intel, t_os2)
-        db      0               ;reserved
-nargs:  dd      0               ;number of arguments to function
-ptyptab:dd      0               ;pointer to table of data types
-pxnblk: dd      0               ;pointer to xnblk describing function
-pefblk: dd      0               ;pointer to efblk describing function
-pflttab:dd      0               ;pointer to floating point table
-spds:   dw      0               ;SPITBOL's DS
-spcs:   dw      0               ;SPITBOL's CS
-	endstruc
-
+	segment	.text
+;;        struc   misc
+;;vers:   dw      0               ;internal version number
+;;env:    db      0               ;host environment (t_pharlap, t_intel, t_os2)
+;;        db      0               ;reserved
+;;nargs:  dd      0               ;number of arguments to function
+;;ptyptab:dd      0               ;pointer to table of data types
+;;pxnblk: dd      0               ;pointer to xnblk describing function
+;;pefblk: dd      0               ;pointer to efblk describing function
+;;pflttab:dd      0               ;pointer to floating point table
+;;spds:   dw      0               ;SPITBOL's DS
+;;spcs:   dw      0               ;SPITBOL's CS
+;;	endstruc
+;;
 ; values in env word of misc structure.  Executing under:
 t_pharlap equ   0               ;PharLap DOS Extender
 t_intel  equ    1               ;Intel DOS Extender
@@ -268,7 +262,6 @@ BL_FX  equ      102                     ; Pointer to external block
 ;
 buflen equ      512
 
-i	segment	.text
 
 ; Vectors to real number functions.
 ;

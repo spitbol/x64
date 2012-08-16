@@ -399,12 +399,14 @@ readerr_end
 
 *  Putout label and compressed error message table
 *
+	outfile = tab 'global' tab 'errors'
 	outfile = 'errors:  db  0'
 	seq(" putout(err[i],i)", .i)
 
 *  Putout label and phrase table
 *
         outfile =
+	outfile = 	tab 'global' tab 'phrases'
 	outfile = 'phrases:   db   0'
 	seq(" putout(phrase[i],spread(i))", .i)
 

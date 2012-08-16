@@ -1,1957 +1,1957 @@
-       TTL  MINIMAL -- MACHINE INDEPENDENT MACRO ASSEMBLY LANG.
-       EJC
+       ttl  minimal -- machine independent macro assembly lang.
+       ejc
 *
-*      THE FOLLOWING SECTIONS DESCRIBE THE IMPLEMENTATION
-*      LANGUAGE ORIGINALLY DEVELOPED FOR SPITBOL BUT NOW MORE
-*      WIDELY USED. MINIMAL IS AN ASSEMBLY LANGUAGE
-*      FOR AN IDEALIZED MACHINE. THE FOLLOWING DESCRIBES THE
-*      BASIC CHARACTERISTICS OF THIS MACHINE.
+*      the following sections describe the implementation
+*      language originally developed for spitbol but now more
+*      widely used. minimal is an assembly language
+*      for an idealized machine. the following describes the
+*      basic characteristics of this machine.
 *
-*      SECTION 1 - CONFIGURATION PARAMETERS
+*      section 1 - configuration parameters
 *
-*      THERE ARE SEVERAL PARAMETERS WHICH MAY VARY WITH THE
-*      TARGET MACHINE. THE MACRO-PROGRAM IS INDEPENDENT OF THE
-*      ACTUAL DEFINITIONS OF THESE PARAMETERS.
+*      there are several parameters which may vary with the
+*      target machine. the macro-program is independent of the
+*      actual definitions of these parameters.
 *
-*      THE DEFINITIONS OF THESE PARAMETERS ARE SUPPLIED BY
-*      THE TRANSLATION PROGRAM TO MATCH THE TARGET MACHINE.
+*      the definitions of these parameters are supplied by
+*      the translation program to match the target machine.
 *
-*      CFP$A                 NUMBER OF DISTINCT CHARACTERS IN
-*                            INTERNAL ALPHABET IN THE RANGE
-*                            64 LE CFP$A LE MXLEN.
+*      cfp$a                 number of distinct characters in
+*                            internal alphabet in the range
+*                            64 le cfp$a le mxlen.
 *
-*      CFP$B                 NUMBER OF BYTES IN A WORD WHERE A
-*                            BYTE IS THE AMOUNT OF STORAGE
-*                            ADDRESSED BY THE LEAST SIGNIFICANT
-*                            ADDRESS BIT.
+*      cfp$b                 number of bytes in a word where a
+*                            byte is the amount of storage
+*                            addressed by the least significant
+*                            address bit.
 *
-*      CFP$C                 NUMBER OF CHARACTERS WHICH CAN
-*                            BE STORED IN A SINGLE WORD.
+*      cfp$c                 number of characters which can
+*                            be stored in a single word.
 *
-*      CFP$F                 BYTE OFFSET FROM START OF A STRING
-*                            BLOCK TO THE FIRST CHARACTER.
-*                            DEPENDS BOTH ON TARGET MACHINE AND
-*                            STRING DATA STRUCTURE. SEE PLC, PSC
+*      cfp$f                 byte offset from start of a string
+*                            block to the first character.
+*                            depends both on target machine and
+*                            string data structure. see plc, psc
 *
-*      CFP$I                 NUMBER OF WORDS IN A SIGNED
-*                            INTEGER CONSTANT
+*      cfp$i                 number of words in a signed
+*                            integer constant
 *
-*      CFP$L                 THE LARGEST UNSIGNED INTEGER
-*                            OF FORM 2**N - 1 WHICH CAN BE
-*                            STORED IN A SINGLE WORD.  N WILL
-*                            OFTEN BE CFP$N BUT NEED NOT BE.
+*      cfp$l                 the largest unsigned integer
+*                            of form 2**n - 1 which can be
+*                            stored in a single word.  n will
+*                            often be cfp$n but need not be.
 *
-*      CFP$M                 THE LARGEST POSITIVE SIGNED INTEGER
-*                            OF FORM 2**N - 1 WHICH CAN BE
-*                            STORED IN A SINGLE WORD.  N WILL
-*                            OFTEN BE CFP$N-1 BUT NEED NOT BE.
+*      cfp$m                 the largest positive signed integer
+*                            of form 2**n - 1 which can be
+*                            stored in a single word.  n will
+*                            often be cfp$n-1 but need not be.
 *
-*      CFP$N                 NUMBER OF BITS WHICH CAN BE STORED
-*                            IN A ONE WORD BIT STRING.
+*      cfp$n                 number of bits which can be stored
+*                            in a one word bit string.
 *
-*      CFP$R                 NUMBER OF WORDS IN A REAL CONSTANT
+*      cfp$r                 number of words in a real constant
 *
-*      CFP$S                 NUMBER OF SIGNIFICANT DIGITS TO
-*                            BE OUTPUT IN CONVERSION OF A REAL
-*                            QUANTITY.
-.IF    .CNCR
-.ELSE
-*                            THE INTEGER CONSISTING OF
-*                            THIS NUMBER OF 9S MUST NOT BE TOO
-*                            LARGE TO FIT IN THE INTEGER ACCUM.
-.FI
+*      cfp$s                 number of significant digits to
+*                            be output in conversion of a real
+*                            quantity.
+.if    .cncr
+.else
+*                            the integer consisting of
+*                            this number of 9s must not be too
+*                            large to fit in the integer accum.
+.fi
 *
-.IF    .CUCF
-*      CFP$U                 REALISTIC UPPER BOUND ON ALPHABET.
+.if    .cucf
+*      cfp$u                 realistic upper bound on alphabet.
 *
 *
-.FI
-*      CFP$X                 NUMBER OF DIGITS IN REAL EXPONENT
-       EJC
+.fi
+*      cfp$x                 number of digits in real exponent
+       ejc
 *
-*      SECTION 2 - MEMORY
+*      section 2 - memory
 *
-*      MEMORY IS ORGANIZED INTO WORDS WHICH EACH CONTAIN CFP$B
-*      BYTES. FOR WORD MACHINES CFP$B, WHICH IS A CONFIGURATION
-*      PARAMETER, MAY BE ONE IN WHICH CASE WORDS AND BYTES ARE
-*      IDENTICAL. TO EACH WORD CORRESPONDS AN ADDRESS WHICH IS
-*      A NON-NEGATIVE QUANTITY WHICH IS A MULTIPLE OF CFP$B.
-*      DATA IS ORGANIZED INTO WORDS AS FOLLOWS.
+*      memory is organized into words which each contain cfp$b
+*      bytes. for word machines cfp$b, which is a configuration
+*      parameter, may be one in which case words and bytes are
+*      identical. to each word corresponds an address which is
+*      a non-negative quantity which is a multiple of cfp$b.
+*      data is organized into words as follows.
 *
-*      1)   A SIGNED INTEGER VALUE OCCUPIES CFP$I CONSECUTIVE
-*           WORDS (CFP$I IS A CONFIGURATION PARAMETER).
-*           THE RANGE MAY INCLUDE MORE NEGATIVE NUMBERS THAN
-*           POSITIVE (E.G. THE TWOS COMPLEMENT REPRESENTATION).
+*      1)   a signed integer value occupies cfp$i consecutive
+*           words (cfp$i is a configuration parameter).
+*           the range may include more negative numbers than
+*           positive (e.g. the twos complement representation).
 *
-*      2)   A SIGNED REAL VALUE OCCUPIES CFP$R CONSECUTIVE
-*           WORDS. (CFP$R IS A CONFIGURATION PARAMETER).
+*      2)   a signed real value occupies cfp$r consecutive
+*           words. (cfp$r is a configuration parameter).
 *
-*      3)   CFP$C CHARACTERS MAY BE STORED IN A SINGLE WORD
-*           (CFP$C IS A CONFIGURATION PARAMETER).
+*      3)   cfp$c characters may be stored in a single word
+*           (cfp$c is a configuration parameter).
 *
-*      4)   A BIT STRING CONTAINING CFP$N BITS CAN BE STORED IN
-*           A SINGLE WORD (CFP$N IS A CONFIGURATION PARAMETER).
+*      4)   a bit string containing cfp$n bits can be stored in
+*           a single word (cfp$n is a configuration parameter).
 *
-*      5)   A WORD CAN CONTAIN A UNSIGNED INTEGER VALUE IN
-*           THE RANGE (0 LE N LE CFP$L). THESE INTEGER VALUES
-*           MAY REPRESENT ADDRESSES OF OTHER WORDS AND SOME OF
-*           THE INSTRUCTIONS USE THIS FACT TO PROVIDE INDEXING
-*           AND INDIRECTION FACILITIES.
+*      5)   a word can contain a unsigned integer value in
+*           the range (0 le n le cfp$l). these integer values
+*           may represent addresses of other words and some of
+*           the instructions use this fact to provide indexing
+*           and indirection facilities.
 *
-*      6)   PROGRAM INSTRUCTIONS OCCUPY WORDS IN AN UNDEFINED
-*           MANNER. DEPENDING ON THE ACTUAL IMPLEMENTATION,
-*           INSTRUCTIONS MAY OCCUPY SEVERAL WORDS, OR PART OF
-*           A WORD, OR EVEN BE SPLIT OVER WORD BOUNDARIES.
+*      6)   program instructions occupy words in an undefined
+*           manner. depending on the actual implementation,
+*           instructions may occupy several words, or part of
+*           a word, or even be split over word boundaries.
 *
-*      THE FOLLOWING REGIONS OF MEMORY ARE AVAILABLE TO THE
-*      PROGRAM. EACH REGION CONSISTS OF A SERIES OF WORDS WITH
-*      CONSECUTIVE ADDRESSES.
+*      the following regions of memory are available to the
+*      program. each region consists of a series of words with
+*      consecutive addresses.
 *
-*      1)   CONSTANT SECTION           ASSEMBLED CONSTANTS
-*      2)   WORKING STORAGE SECTION    ASSEMBLED WORK AREAS
-*      3)   PROGRAM SECTION            ASSEMBLED INSTRUCTIONS
-*      4)   STACK AREA                 ALLOCATED STACK AREA
-*      5)   DATA AREA                  ALLOCATED DATA AREA
-       EJC
+*      1)   constant section           assembled constants
+*      2)   working storage section    assembled work areas
+*      3)   program section            assembled instructions
+*      4)   stack area                 allocated stack area
+*      5)   data area                  allocated data area
+       ejc
 *
-*      SECTION 3 - REGISTERS
+*      section 3 - registers
 *
-*      THERE ARE THREE INDEX REGISTERS CALLED XR,XL,XS. IN
-*      ADDITION XL MAY SOMETIMES BE REFERRED TO BY THE ALIAS
-*      OF XT - SEE SECTION 4. ANY OF THE ABOVE REGISTERS
-*      MAY HOLD A POSITIVE UNSIGNED INTEGER IN THE RANGE
-*      (0 LE N LE CFP$L). WHEN THE INDEX REGISTER IS USED FOR
-*      INDEXING PURPOSES, THIS MUST BE AN APPROPRIATE ADDRESS.
-*      XS IS SPECIAL IN THAT IT IS USED TO POINT TO THE TOP
-*      ITEM OF A STACK IN MEMORY. THE STACK MAY BUILD UP OR
-*      DOWN IN MEMORY.SINCE IT IS REQUIRED THAT XS POINTS TO THE
-*      STACK TOP BUT ACCESS TO ITEMS BELOW THE TOP IS PERMITTED,
-*      REGISTERS XS AND XT MAY BE USED WITH SUITABLE OFFSETS
-*      TO INDEX STACKED ITEMS. ONLY XS AND XT MAY BE USED FOR
-*      THIS PURPOSE SINCE THE DIRECTION OF THE OFFSET IS
-*      TARGET MACHINE DEPENDENT. XT IS A SYNONYM FOR XL
-*      WHICH THEREFORE CANNOT BE USED IN CODE SEQUENCES
-*      REFERENCING XT.
+*      there are three index registers called xr,xl,xs. in
+*      addition xl may sometimes be referred to by the alias
+*      of xt - see section 4. any of the above registers
+*      may hold a positive unsigned integer in the range
+*      (0 le n le cfp$l). when the index register is used for
+*      indexing purposes, this must be an appropriate address.
+*      xs is special in that it is used to point to the top
+*      item of a stack in memory. the stack may build up or
+*      down in memory.since it is required that xs points to the
+*      stack top but access to items below the top is permitted,
+*      registers xs and xt may be used with suitable offsets
+*      to index stacked items. only xs and xt may be used for
+*      this purpose since the direction of the offset is
+*      target machine dependent. xt is a synonym for xl
+*      which therefore cannot be used in code sequences
+*      referencing xt.
 *
-*      THE STACK IS USED FOR S-R LINKAGE AND TEMPORARY
-*      DATA STORAGE FOR WHICH THE STACK ARRANGEMENT IS SUITABLE.
-*      XR,XL CAN ALSO CONTAIN A CHARACTER POINTER IN CONJUNCTION
-*      WITH THE CHARACTER INSTRUCTIONS (SEE DESCRIPTION OF PLC).
-       EJC
+*      the stack is used for s-r linkage and temporary
+*      data storage for which the stack arrangement is suitable.
+*      xr,xl can also contain a character pointer in conjunction
+*      with the character instructions (see description of plc).
+       ejc
 *
-*      THERE ARE THREE WORK REGISTERS CALLED WA,WB,WC WHICH
-*      CAN CONTAIN ANY DATA ITEM WHICH CAN BE STORED IN A
-*      SINGLE MEMORY WORD. IN FACT, THE WORK REGISTERS ARE JUST
-*      LIKE MEMORY LOCATIONS EXCEPT THAT THEY HAVE NO ADDRESSES
-*      AND ARE REFERENCED IN A SPECIAL WAY BY THE INSTRUCTIONS.
+*      there are three work registers called wa,wb,wc which
+*      can contain any data item which can be stored in a
+*      single memory word. in fact, the work registers are just
+*      like memory locations except that they have no addresses
+*      and are referenced in a special way by the instructions.
 *
-*      NOTE THAT REGISTERS WA,WB HAVE SPECIAL USES IN CONNECTION
-*      WITH THE CVD, CVM, MVC, MVW, MWB, CMC, TRC INSTRUCTIONS.
+*      note that registers wa,wb have special uses in connection
+*      with the cvd, cvm, mvc, mvw, mwb, cmc, trc instructions.
 *
-*      REGISTER WC MAY OVERLAP THE INTEGER ACCUMULATOR (IA) IN
-*      SOME IMPLEMENTATIONS. THUS ANY OPERATION CHANGING THE
-*      VALUE IN WC LEAVES (IA) UNDEFINED AND VICE VERSA
-*      EXCEPT AS NOTED IN THE FOLLOWING RESTRICTION ON SIMPLE
-*      DUMP/RESTORE OPERATIONS.
+*      register wc may overlap the integer accumulator (ia) in
+*      some implementations. thus any operation changing the
+*      value in wc leaves (ia) undefined and vice versa
+*      except as noted in the following restriction on simple
+*      dump/restore operations.
 *
-*          RESTRICTION
+*          restriction
 *          -----------
 *
-*      IF IA AND WC OVERLAP THEN
-*          STI  IASAV
-*          LDI  IASAV
-*      DOES NOT CHANGE WC, AND
-*          MOV  WC,WCSAV
-*          MOV  WCSAV,WC
-*      DOES NOT CHANGE IA.
+*      if ia and wc overlap then
+*          sti  iasav
+*          ldi  iasav
+*      does not change wc, and
+*          mov  wc,wcsav
+*          mov  wcsav,wc
+*      does not change ia.
 *
 *
 *
-*      THERE IS AN INTEGER ACCUMULATOR (IA) WHICH IS CAPABLE OF
-*      HOLDING A SIGNED INTEGER VALUE (CFP$I WORDS LONG).
-*      REGISTER WC MAY OVERLAP THE INTEGER ACCUMULATOR (IA) IN
-*      SOME IMPLEMENTATIONS. THUS ANY OPERATION CHANGING THE
-*      VALUE IN WC LEAVES (IA) UNDEFINED AND VICE VERSA
-*      EXCEPT AS NOTED IN THE ABOVE RESTRICTION ON SIMPLE
-*      DUMP/RESTORE OPERATIONS.
+*      there is an integer accumulator (ia) which is capable of
+*      holding a signed integer value (cfp$i words long).
+*      register wc may overlap the integer accumulator (ia) in
+*      some implementations. thus any operation changing the
+*      value in wc leaves (ia) undefined and vice versa
+*      except as noted in the above restriction on simple
+*      dump/restore operations.
 *
 *
 *
-*      THERE IS A SINGLE REAL ACCUMULATOR (RA) WHICH CAN HOLD
-*      ANY REAL VALUE AND IS COMPLETELY SEPARATE FROM ANY OF
-*      THE OTHER REGISTERS OR PROGRAM ACCESSIBLE LOCATIONS.
+*      there is a single real accumulator (ra) which can hold
+*      any real value and is completely separate from any of
+*      the other registers or program accessible locations.
 *
 *
 *
-*      THE CODE POINTER REGISTER (CP) IS A SPECIAL INDEX
-*      REGISTER FOR USE IN IMPLEMENTATIONS OF INTERPRETORS.
-*      IT IS USED TO CONTAIN A PSEUDO-CODE POINTER AND CAN
-*      ONLY BE AFFECTED BY ICP, LCP, SCP AND LCW INSTRUCTIONS.
-       EJC
-*      SECTION 4 - THE STACK
+*      the code pointer register (cp) is a special index
+*      register for use in implementations of interpretors.
+*      it is used to contain a pseudo-code pointer and can
+*      only be affected by icp, lcp, scp and lcw instructions.
+       ejc
+*      section 4 - the stack
 *
-*      THE FOLLOWING NOTES ARE TO GUIDE BOTH IMPLEMENTORS OF
-*      SYSTEMS WRITTEN IN MINIMAL AND MINIMAL PROGRAMMERS IN
-*      DEALING WITH STACK MANIPULATION. IMPLEMENTATION OF A
-*      DOWNWARDS BUILDING STACK IS EASIEST AND IN GENERAL IS
-*      TO BE PREFERRED, IN WHICH CASE IT IS MERELY NECESSARY TO
-*      CONSIDER XT AS AN ALTERNATIVE NAME FOR XL.
+*      the following notes are to guide both implementors of
+*      systems written in minimal and minimal programmers in
+*      dealing with stack manipulation. implementation of a
+*      downwards building stack is easiest and in general is
+*      to be preferred, in which case it is merely necessary to
+*      consider xt as an alternative name for xl.
 *
-*      THE MINIMAL VIRTUAL MACHINE INCLUDES A STACK AND HAS
-*      OPERAND FORMATS -(XS) AND (XS)+ FOR PUSHING AND POPPING
-*      ITEMS WITH AN IMPLICATION THAT THE STACK BUILDS DOWN IN
-*      MEMORY (A D-STACK). HOWEVER ON SOME TARGET MACHINES IT IS
-*      BETTER FOR THE STACK TO BUILD UP (A U-STACK).
-*      A STACK ADDRESSED ONLY BY PUSH AND POP OPERATIONS CAN
-*      BUILD IN EITHER DIRECTION WITH NO COMPLICATION BUT
-*      SUCH A PURE SCHEME OF STACK ACCESS PROVES RESTRICTIVE.
-*      HENCE IT IS PERMITTED TO ACCESS BURIED ITEMS USING AN
-*      INTEGER OFFSET PAST THE INDEX REGISTER POINTING TO THE
-*      STACK TOP. ON TARGET MACHINES THIS OFFSET WILL BE
-*      POSITIVE/NEGATIVE FOR D-STACKS/U-STACKS AND THIS MUST
-*      BE ALLOWED FOR IN THE TRANSLATION.
-*      A FURTHER RESTRICTION IS THAT AT NO TIME MAY AN ITEM BE
-*      PLACED ABOVE THE STACK TOP. FOR SOME OPERATIONS THIS
-*      MAKES IT CONVENIENT TO ADVANCE THE STACK POINTER AND THEN
-*      ADDRESS ITEMS BELOW IT USING A SECOND INDEX REGISTER.
-*      THE PROBLEM OF SIGNED OFFSETS PAST SUCH A REGISTER THEN
-*      ARISES. TO DISTINGUISH STACK OFFSETS, WHICH IN SOME
-*      IMPLEMENTATIONS MAY BE NEGATIVE, FROM NON-STACK OFFSETS
-*      WHICH ARE INVARIABLY POSITIVE, XT, AN ALIAS OR
-*      SYNONYM FOR XL IS USED. FOR A U-STACK IMPLEMENTATION, THE
-*      MINIMAL TRANSLATOR SHOULD NEGATE THE SIGN OF OFFSETS
-*      APPLIED TO BOTH (XS) AND (XT).
-*      PROGRAMMERS SHOULD NOTE THAT SINCE XT IS NOT A
-*      SEPARATE REGISTER, XL SHOULD NOT BE USED IN CODE WHERE
-*      XT IS REFERENCED. OTHER MODIFICATIONS NEEDED IN U-STACK
-*      TRANSLATIONS ARE IN THE ADD, SUB, ICA, DCA OPCODES
-*      APPLIED TO XS, XT. FOR EXAMPLE
+*      the minimal virtual machine includes a stack and has
+*      operand formats -(xs) and (xs)+ for pushing and popping
+*      items with an implication that the stack builds down in
+*      memory (a d-stack). however on some target machines it is
+*      better for the stack to build up (a u-stack).
+*      a stack addressed only by push and pop operations can
+*      build in either direction with no complication but
+*      such a pure scheme of stack access proves restrictive.
+*      hence it is permitted to access buried items using an
+*      integer offset past the index register pointing to the
+*      stack top. on target machines this offset will be
+*      positive/negative for d-stacks/u-stacks and this must
+*      be allowed for in the translation.
+*      a further restriction is that at no time may an item be
+*      placed above the stack top. for some operations this
+*      makes it convenient to advance the stack pointer and then
+*      address items below it using a second index register.
+*      the problem of signed offsets past such a register then
+*      arises. to distinguish stack offsets, which in some
+*      implementations may be negative, from non-stack offsets
+*      which are invariably positive, xt, an alias or
+*      synonym for xl is used. for a u-stack implementation, the
+*      minimal translator should negate the sign of offsets
+*      applied to both (xs) and (xt).
+*      programmers should note that since xt is not a
+*      separate register, xl should not be used in code where
+*      xt is referenced. other modifications needed in u-stack
+*      translations are in the add, sub, ica, dca opcodes
+*      applied to xs, xt. for example
 *
-*      MINIMAL           D-STACK TRANS.  U-STACK TRANS.
+*      minimal           d-stack trans.  u-stack trans.
 *
-*      MOV  WA,-(XS)     SBI  XS,1       ADI  XS,1
-*                        STO  WA,(XS)    STO  WA,(XS)
-*      MOV  (XT)+,WC     LOD  WC,(XL)    LOD  WC,(XL)
-*                        ADI  XL,1       SBI  XL,1
-*      ADD  =SEVEN,XS    ADI  XS,7       SBI  XS,7
-*      MOV  2(XT),WA     LOD  WA,2(XL)   LOD  WA,-2(XL)
-*      ICA  XS           ADI  XS,1       SBI  XS,1
+*      mov  wa,-(xs)     sbi  xs,1       adi  xs,1
+*                        sto  wa,(xs)    sto  wa,(xs)
+*      mov  (xt)+,wc     lod  wc,(xl)    lod  wc,(xl)
+*                        adi  xl,1       sbi  xl,1
+*      add  =seven,xs    adi  xs,7       sbi  xs,7
+*      mov  2(xt),wa     lod  wa,2(xl)   lod  wa,-2(xl)
+*      ica  xs           adi  xs,1       sbi  xs,1
 *
-*      NOTE THAT FORMS SUCH AS
-*      MOV  -(XS),WA
-*      ADD  WA,(XS)+
-*      ARE ILLEGAL, SINCE THEY ASSUME INFORMATION STORAGE
-*      ABOVE THE STACK TOP.
-       EJC
-*      SECTION 5 - INTERNAL CHARACTER SET
+*      note that forms such as
+*      mov  -(xs),wa
+*      add  wa,(xs)+
+*      are illegal, since they assume information storage
+*      above the stack top.
+       ejc
+*      section 5 - internal character set
 *
-*      THE INTERNAL CHARACTER SET IS REPRESENTED BY A SET OF
-*      CONTIGUOUS CODES FROM 0 TO CFP$A-1. THE CODES FOR THE
-*      DIGITS 0-9 MUST BE CONTIGUOUS AND IN SEQUENCE. OTHER
-*      THAN THIS, THERE ARE NO RESTRAINTS.
+*      the internal character set is represented by a set of
+*      contiguous codes from 0 to cfp$a-1. the codes for the
+*      digits 0-9 must be contiguous and in sequence. other
+*      than this, there are no restraints.
 *
-*      THE FOLLOWING SYMBOLS ARE AUTOMATICALLY DEFINED TO HAVE
-*      THE VALUE OF THE CORRESPONDING INTERNAL CHARACTER CODE.
+*      the following symbols are automatically defined to have
+*      the value of the corresponding internal character code.
 *
-*      CH$LA                 LETTER A
-*      CH$LB                 LETTER B
+*      ch$la                 letter a
+*      ch$lb                 letter b
 *      .                     .
-*      CH$L$                 LETTER Z
+*      ch$l$                 letter z
 *
-*      CH$D0                 DIGIT 0
+*      ch$d0                 digit 0
 *      .                     .
-*      CH$D9                 DIGIT 9
+*      ch$d9                 digit 9
 *
-*      CH$AM                 AMPERSAND
-*      CH$AS                 ASTERISK
-*      CH$AT                 AT
-*      CH$BB                 LEFT BRACKET
-*      CH$BL                 BLANK
-*      CH$BR                 VERTICAL BAR
-*      CH$CL                 COLON
-*      CH$CM                 COMMA
-*      CH$DL                 DOLLAR SIGN
-*      CH$DT                 DOT (PERIOD)
-*      CH$DQ                 DOUBLE QUOTE
-*      CH$EQ                 EQUAL SIGN
-*      CH$EX                 EXCLAMATION MARK
-*      CH$MN                 MINUS
-*      CH$NM                 NUMBER SIGN
-*      CH$NT                 NOT
-*      CH$PC                 PERCENT
-*      CH$PL                 PLUS
-*      CH$PP                 LEFT PAREN
-*      CH$RB                 RIGHT BRACKET
-*      CH$RP                 RIGHT PAREN
-*      CH$QU                 QUESTION MARK
-*      CH$SL                 SLASH
-*      CH$SM                 SEMI-COLON
-*      CH$SQ                 SINGLE QUOTE
-*      CH$UN                 UNDERLINE
+*      ch$am                 ampersand
+*      ch$as                 asterisk
+*      ch$at                 at
+*      ch$bb                 left bracket
+*      ch$bl                 blank
+*      ch$br                 vertical bar
+*      ch$cl                 colon
+*      ch$cm                 comma
+*      ch$dl                 dollar sign
+*      ch$dt                 dot (period)
+*      ch$dq                 double quote
+*      ch$eq                 equal sign
+*      ch$ex                 exclamation mark
+*      ch$mn                 minus
+*      ch$nm                 number sign
+*      ch$nt                 not
+*      ch$pc                 percent
+*      ch$pl                 plus
+*      ch$pp                 left paren
+*      ch$rb                 right bracket
+*      ch$rp                 right paren
+*      ch$qu                 question mark
+*      ch$sl                 slash
+*      ch$sm                 semi-colon
+*      ch$sq                 single quote
+*      ch$un                 underline
 *
-*      THE FOLLOWING OPTIONAL SYMBOLS ARE INCORPORATED
-*      BY DEFINING THE CONDITIONAL ASSEMBLY SYMBOL NAMED.
+*      the following optional symbols are incorporated
+*      by defining the conditional assembly symbol named.
 *
-*      26 SHIFTED LETTERS INCORPORATED BY DEFINING .CASL
+*      26 shifted letters incorporated by defining .casl
 *
-*      CH$$A                 SHIFTED A
-*      CH$$B                 SHIFTED B
+*      ch$$a                 shifted a
+*      ch$$b                 shifted b
 *      .                     .
-*      CH$$$                 SHIFTED Z
+*      ch$$$                 shifted z
 *
-*      CH$HT                 HORIZONTAL TAB - DEFINE .CAHT
-*      CH$VT                 VERTICAL TAB   - DEFINE .CAVT
-*      CH$EY                 UP ARROW       - DEFINE .CAEX
-       EJC
+*      ch$ht                 horizontal tab - define .caht
+*      ch$vt                 vertical tab   - define .cavt
+*      ch$ey                 up arrow       - define .caex
+       ejc
 *
-*      SECTION 6 - CONDITIONAL ASSEMBLY FEATURES
+*      section 6 - conditional assembly features
 *
-*      SOME FEATURES OF THE INTERPRETER ARE APPLICABLE TO ONLY
-*      CERTAIN TARGET MACHINES. THEY MAY BE INCORPORATED OR
-*      OMITTED BY USE OF CONDITIONAL ASSEMBLY. THE FULL
-*      FORM OF A CONDITION IS -
-*      .IF    CONDITIONAL ASSEMBLY SYMBOL    (CAS)
-*      .THEN
-*             MINIMAL STATEMENTS1   (MS1)
-*      .ELSE
-*             MINIMAL STATEMENTS2   (MS2)
-*      .FI
-*      THE FOLLOWING RULES APPLY
-*      1.   THE DIRECTIVES .IF, .THEN, .ELSE, .FI MUST
-*           START IN COLUMN 1.
-*      2.   THE CONDITIONAL ASSEMBLY SYMBOL MUST START WITH A
-*           DOT IN COLUMN 8 FOLLOWED BY 4 LETTERS OR DIGITS E.G.
-*              .CA$1
-*      3.   .THEN IS REDUNDANT AND MAY BE OMITTED IF WISHED.
-*      4.   MS1, MS2 ARE ARBITRARY SEQUENCES OF MINIMAL
-*           STATEMENTS EITHER OF WHICH MAY BE NULL OR MAY
-*           CONTAIN FURTHER CONDITIONS.
-*      5.   IF MS2 IS OMITTED, .ELSE MAY ALSO BE OMITTED.
-*      6.   .FI IS REQUIRED.
-*      7.   CONDITIONS MAY BE NESTED TO A DEPTH DETERMINED
-*           BY THE TRANSLATOR (NOT LESS THAN 20, SAY).
+*      some features of the interpreter are applicable to only
+*      certain target machines. they may be incorporated or
+*      omitted by use of conditional assembly. the full
+*      form of a condition is -
+*      .if    conditional assembly symbol    (cas)
+*      .then
+*             minimal statements1   (ms1)
+*      .else
+*             minimal statements2   (ms2)
+*      .fi
+*      the following rules apply
+*      1.   the directives .if, .then, .else, .fi must
+*           start in column 1.
+*      2.   the conditional assembly symbol must start with a
+*           dot in column 8 followed by 4 letters or digits e.g.
+*              .ca$1
+*      3.   .then is redundant and may be omitted if wished.
+*      4.   ms1, ms2 are arbitrary sequences of minimal
+*           statements either of which may be null or may
+*           contain further conditions.
+*      5.   if ms2 is omitted, .else may also be omitted.
+*      6.   .fi is required.
+*      7.   conditions may be nested to a depth determined
+*           by the translator (not less than 20, say).
 *
-*      SELECTION OF THE ALTERNATIVES MS1, MS2 IS BY MEANS OF THE
-*      DEFINE AND UNDEFINE DIRECTIVES OF FORM -
-*      .DEF   CAS
-*      .UNDEF CAS
-*      WHICH OBEY RULES 1. AND 2. ABOVE AND MAY OCCUR AT ANY
-*      POINT IN A MINIMAL PROGRAM, INCLUDING WITHIN A CONDITION.
-*      MULTIPLY DEFINING A SYMBOL IS AN ERROR.
-*      UNDEFINING A SYMBOL WHICH IS NOT DEFINED IS NOT AN ERROR.
+*      selection of the alternatives ms1, ms2 is by means of the
+*      define and undefine directives of form -
+*      .def   cas
+*      .undef cas
+*      which obey rules 1. and 2. above and may occur at any
+*      point in a minimal program, including within a condition.
+*      multiply defining a symbol is an error.
+*      undefining a symbol which is not defined is not an error.
 *
-*      THE EFFECT IS THAT IF A SYMBOL IS CURRENTLY DEFINED,
-*      THEN IN ANY CONDITION DEPENDING ON IT, MS1 WILL BE
-*      PROCESSED AND MS2 OMITTED. CONVERSELY IF IT IS UNDEFINED,
-*      MS1 WILL BE OMITTED AND MS2 PROCESSED.
+*      the effect is that if a symbol is currently defined,
+*      then in any condition depending on it, ms1 will be
+*      processed and ms2 omitted. conversely if it is undefined,
+*      ms1 will be omitted and ms2 processed.
 *
-*      NESTING OF CONDITIONS IS SUCH THAT CONDITIONS
-*      IN A SECTION NOT SELECTED FOR PROCESSING MUST NOT BE
-*      EVALUATED. NESTED CONDITIONS MUST REMEMBER THEIR
-*      ENVIRONMENT WHILST BEING PROCESSED. EFFECTIVELY THIS
-*      IMPLIES USE OF A SCHEME BASED ON A STACK WITH .IF, .FI
-*      MATCHING BY THE CONDITION PROCESSOR OF THE TRANSLATOR.
-       EJC
+*      nesting of conditions is such that conditions
+*      in a section not selected for processing must not be
+*      evaluated. nested conditions must remember their
+*      environment whilst being processed. effectively this
+*      implies use of a scheme based on a stack with .if, .fi
+*      matching by the condition processor of the translator.
+       ejc
 *
-*      SECTION 7 - OPERAND FORMATS
+*      section 7 - operand formats
 *
-*      THE FOLLOWING SECTION DESCRIBES THE VARIOUS POSSIBILITIES
-*      FOR OPERANDS OF INSTRUCTIONS AND ASSEMBLY OPERATIONS.
+*      the following section describes the various possibilities
+*      for operands of instructions and assembly operations.
 *
-*      01   INT              UNSIGNED INTEGER LE CFP$L
-*      02   DLBL             SYMBOL DEFINED IN DEFINITIONS SEC
-*      03   WLBL             LABEL IN WORKING STORAGE SECTION
-*      04   CLBL             LABEL IN CONSTANT SECTION
-*      05   ELBL             PROGRAM SECTION ENTRY LABEL
-*      06   PLBL             PROGRAM SECTION LABEL (NON-ENTRY)
-*      07   X                ONE OF THE THREE INDEX REGISTERS
-*      08   W                ONE OF THE THREE WORK REGISTERS
-*      09   (X)              LOCATION INDEXED BY X
-*      10   (X)+             LIKE (X) BUT POST INCREMENT X
-*      11   -(X)             LIKE (X) BUT PREDECREMENT X
-*      12   INT(X)           LOCATION INT WORDS BEYOND ADDR IN X
-*      13   DLBL(X)          LOCATION DLBL WORDS PAST ADDR IN X
-*      14   CLBL(X)          LOCATION (X) BYTES BEYOND CLBL
-*      15   WLBL(X)          LOCATION (X) BYTES BEYOND WLBL
-*      16   INTEGER          SIGNED INTEGER (DIC)
-*      17   REAL             SIGNED REAL (DRC)
-*      18   =DLBL            LOCATION CONTAINING DAC DLBL
-*      19   *DLBL            LOCATION CONTAINING DAC CFP$B*DLBL
-*      20   =WLBL            LOCATION CONTAINING DAC WLBL
-*      21   =CLBL            LOCATION CONTAINING DAC CLBL
-*      22   =ELBL            LOCATION CONTAINING DAC ELBL
-*      23   PNAM             PROCEDURE LABEL (ON PRC INSTRUC)
-*      24   EQOP             OPERAND FOR EQU INSTRUCTION
-*      25   PTYP             PROCEDURE TYPE (SEE PRC)
-*      26   TEXT             ARBITRARY TEXT (ERB,ERR,TTL)
-*      27   DTEXT            DELIMITED TEXT STRING (DTC)
+*      01   int              unsigned integer le cfp$l
+*      02   dlbl             symbol defined in definitions sec
+*      03   wlbl             label in working storage section
+*      04   clbl             label in constant section
+*      05   elbl             program section entry label
+*      06   plbl             program section label (non-entry)
+*      07   x                one of the three index registers
+*      08   w                one of the three work registers
+*      09   (x)              location indexed by x
+*      10   (x)+             like (x) but post increment x
+*      11   -(x)             like (x) but predecrement x
+*      12   int(x)           location int words beyond addr in x
+*      13   dlbl(x)          location dlbl words past addr in x
+*      14   clbl(x)          location (x) bytes beyond clbl
+*      15   wlbl(x)          location (x) bytes beyond wlbl
+*      16   integer          signed integer (dic)
+*      17   real             signed real (drc)
+*      18   =dlbl            location containing dac dlbl
+*      19   *dlbl            location containing dac cfp$b*dlbl
+*      20   =wlbl            location containing dac wlbl
+*      21   =clbl            location containing dac clbl
+*      22   =elbl            location containing dac elbl
+*      23   pnam             procedure label (on prc instruc)
+*      24   eqop             operand for equ instruction
+*      25   ptyp             procedure type (see prc)
+*      26   text             arbitrary text (erb,err,ttl)
+*      27   dtext            delimited text string (dtc)
 *
-*      THE NUMBERS IN THE ABOVE LIST ARE USED IN SUBSEQUENT
-*      DESCRIPTION AND IN SOME OF THE MINIMAL TRANSLATORS.
-       EJC
+*      the numbers in the above list are used in subsequent
+*      description and in some of the minimal translators.
+       ejc
 *
-*      OPERAND FORMATS (CONTINUED)
+*      operand formats (continued)
 *
-*      THE FOLLOWING SPECIAL SYMBOLS REFER TO A COLLECTION OF
-*      THE LISTED POSSIBILITIES
+*      the following special symbols refer to a collection of
+*      the listed possibilities
 *
-*      VAL  01,02                      PREDEFINED VALUE
+*      val  01,02                      predefined value
 *
-*           VAL IS USED TO REFER TO A PREDEFINED ONE WORD
-*           INTEGER VALUE IN THE RANGE 0 LE N LE CFP$L.
+*           val is used to refer to a predefined one word
+*           integer value in the range 0 le n le cfp$l.
 *
-*      REG  07,08                      REGISTER
+*      reg  07,08                      register
 *
-*           REG IS USED TO DESCRIBE AN OPERAND WHICH CAN BE
-*           ANY OF THE REGISTERS (XL,XR,XS,XT,WA,WB,WC). SUCH
-*           AN OPERAND CAN HOLD A ONE WORD INTEGER (ADDRESS).
+*           reg is used to describe an operand which can be
+*           any of the registers (xl,xr,xs,xt,wa,wb,wc). such
+*           an operand can hold a one word integer (address).
 *
-*      OPC  09,10,11                   CHARACTER
+*      opc  09,10,11                   character
 *
-*           OPC IS USED TO DESIGNATE A SPECIFIC CHARACTER
-*           OPERAND FOR USE IN THE LCH AND SCH INSTRUCTIONS.
-*           THE INDEX REGISTER REFERENCED MUST BE EITHER XR OR
-*           XL (NOT XS,XT). SEE SECTION ON CHARACTER OPERATIONS.
+*           opc is used to designate a specific character
+*           operand for use in the lch and sch instructions.
+*           the index register referenced must be either xr or
+*           xl (not xs,xt). see section on character operations.
 *
-*      OPS  03,04,09,12,13,14,15       MEMORY REFERENCE
+*      ops  03,04,09,12,13,14,15       memory reference
 *
-*           OPS IS USED TO DESCRIBE AN OPERAND WHICH IS IN
-*           MEMORY. THE OPERAND MAY BE ONE OR MORE WORDS LONG
-*           DEPENDING ON THE DATA TYPE. IN THE CASE OF MULTIWORD
-*           OPERANDS, THE ADDRESS GIVEN IS THE FIRST WORD.
+*           ops is used to describe an operand which is in
+*           memory. the operand may be one or more words long
+*           depending on the data type. in the case of multiword
+*           operands, the address given is the first word.
 *
-*      OPW  AS FOR OPS + 08,10,11      FULL WORD
+*      opw  as for ops + 08,10,11      full word
 *
-*           OPW IS USED TO REFER TO AN OPERAND WHOSE CAPACITY IS
-*           THAT OF A FULL MEMORY WORD. OPW INCLUDES ALL THE
-*           POSSIBILITIES FOR OPS (THE REFERENCED WORD IS USED)
-*           PLUS THE USE OF ONE OF THE THREE WORK REGISTERS
-*           (WA,WB,WC). IN ADDITION, THE FORMATS (X)+ AND -(X)
-*           ALLOW INDEXED OPERATIONS IN WHICH THE INDEX REGISTER
-*           IS POPPED BY ONE WORD AFTER THE REFERENCE (X)+,
-*           OR PUSHED BY ONE WORD BEFORE THE REFERENCE -(X)
-*           THESE LATTER TWO FORMATS PROVIDE A FACILITY FOR
-*           MANIPULATION OF STACKS. THE FORMAT DOES NOT IMPLY
-*           A PARTICULAR DIRECTION IN WHICH STACKS MUST BUILD -
-*           IT IS USED FOR COMPACTNESS. NOTE THAT THERE IS A
-*           RESTRICTION WHICH DISALLOWS AN INSTRUCTION TO USE
-*           AN INDEX REGISTER IN ONE OF THESE FORMATS
-*           IN SOME OTHER MANNER IN THE SAME INSTRUCTION.
-*           E.G.   MOV  XL,(XL)+   IS ILLEGAL.
-*           THE FORMATS -(X) AND (X)+ MAY ALSO BE USED IN
-*           PRE-DECREMENTATION, POST-INCREMENTATION TO ACCESS
-*           THE ADJACENT CHARACTER OF A STRING.
-       EJC
+*           opw is used to refer to an operand whose capacity is
+*           that of a full memory word. opw includes all the
+*           possibilities for ops (the referenced word is used)
+*           plus the use of one of the three work registers
+*           (wa,wb,wc). in addition, the formats (x)+ and -(x)
+*           allow indexed operations in which the index register
+*           is popped by one word after the reference (x)+,
+*           or pushed by one word before the reference -(x)
+*           these latter two formats provide a facility for
+*           manipulation of stacks. the format does not imply
+*           a particular direction in which stacks must build -
+*           it is used for compactness. note that there is a
+*           restriction which disallows an instruction to use
+*           an index register in one of these formats
+*           in some other manner in the same instruction.
+*           e.g.   mov  xl,(xl)+   is illegal.
+*           the formats -(x) and (x)+ may also be used in
+*           pre-decrementation, post-incrementation to access
+*           the adjacent character of a string.
+       ejc
 *
-*      OPERAND FORMATS (CONTINUED)
+*      operand formats (continued)
 *
-*      OPN  AS FOR OPW + 07            ONE WORD INTEGER
+*      opn  as for opw + 07            one word integer
 *
-*           OPN IS USED TO REPRESENT AN OPERAND LOCATION WHICH
-*           CAN CONTAIN A ONE WORD INTEGER (E.G. AN ADDRESS).
-*           THIS INCLUDES ALL THE POSSIBILITIES FOR OPW PLUS
-*           THE USE OF ONE OF THE INDEX REGISTERS (XL,XR,XT,
-*           XS). THE RANGE OF INTEGER VALUES IS 0 LE N LE CFP$L.
+*           opn is used to represent an operand location which
+*           can contain a one word integer (e.g. an address).
+*           this includes all the possibilities for opw plus
+*           the use of one of the index registers (xl,xr,xt,
+*           xs). the range of integer values is 0 le n le cfp$l.
 *
-*      OPV  AS FOR OPN + 18-22         ONE WORD INTEGER VALUE
+*      opv  as for opn + 18-22         one word integer value
 *
-*           OPV IS USED FOR AN OPERAND WHICH CAN YIELD A ONE
-*           WORD INTEGER VALUE (E.G. AN ADDRESS). IT INCLUDES
-*           ALL THE POSSIBILITIES FOR OPN (THE CURRENT VALUE OF
-*           THE LOCATION IS USED) PLUS THE USE OF LITERALS. NOTE
-*           THAT ALTHOUGH THE LITERAL FORMATS ARE DESCRIBED IN
-*           TERMS OF A REFERENCE TO A LOCATION CONTAINING AN
-*           ADDRESS CONSTANT, THIS LOCATION MAY NOT ACTUALLY
-*           EXIST IN SOME IMPLEMENTATIONS SINCE ONLY THE VALUE
-*           IS REQUIRED. A RESTRICTION IS PLACED ON LITERALS
-*           WHICH MAY CONSIST ONLY OF DEFINED SYMBOLS AND
-*           CERTAIN LABELS. CONSEQUENTLY SMALL INTEGERS TO BE
-*           USED AS LITERALS MUST BE PRE-DEFINED, A DISCIPLINE
-*           AIDING PROGRAM MAINTENANCE AND REVISION.
+*           opv is used for an operand which can yield a one
+*           word integer value (e.g. an address). it includes
+*           all the possibilities for opn (the current value of
+*           the location is used) plus the use of literals. note
+*           that although the literal formats are described in
+*           terms of a reference to a location containing an
+*           address constant, this location may not actually
+*           exist in some implementations since only the value
+*           is required. a restriction is placed on literals
+*           which may consist only of defined symbols and
+*           certain labels. consequently small integers to be
+*           used as literals must be pre-defined, a discipline
+*           aiding program maintenance and revision.
 *
-*      ADDR 01,02,03,04,05             ADDRESS
+*      addr 01,02,03,04,05             address
 *
-*           ADDR IS USED TO DESCRIBE AN EXPLICIT ADDRESS VALUE
-*           (ONE WORD INTEGER VALUE) FOR USE WITH DAC.
+*           addr is used to describe an explicit address value
+*           (one word integer value) for use with dac.
 *
 *
 *           ****************************************************
-*           *   IN THE FOLLOWING DESCRIPTIONS THE USAGE --     *
-*           *      (XL),(XR), ... ,(IA)                        *
-*           *   IN THE DESCRIPTIVE TEXT SIGNIFIES THE          +
-*           *   CONTENTS OF THE STATED REGISTER.               *
+*           *   in the following descriptions the usage --     *
+*           *      (xl),(xr), ... ,(ia)                        *
+*           *   in the descriptive text signifies the          +
+*           *   contents of the stated register.               *
 *           ****************************************************
-       EJC
+       ejc
 *
-*      SECTION 8 - LIST OF INSTRUCTION MNEMONICS
+*      section 8 - list of instruction mnemonics
 *
-*      THE FOLLOWING LIST INCLUDES ALL INSTRUCTION AND
-*      ASSEMBLY OPERATION MNEMONICS IN ALPHABETICAL ORDER.
-*      THE MNEMONICS ARE PRECEDED BY A NUMBER IDENTIFYING
-*      THE FOLLOWING SECTION WHERE THE INSTRUCTION IS DESCRIBED.
-*      A STAR (*) IS APPENDED TO THE MNEMONIC IF THE LAST
-*      OPERAND MAY OPTIONALLY BE OMITTED.
-*      SEE SECTION -15- FOR DETAILS OF STATEMENT FORMAT AND
-*      COMMENT CONVENTIONS.
+*      the following list includes all instruction and
+*      assembly operation mnemonics in alphabetical order.
+*      the mnemonics are preceded by a number identifying
+*      the following section where the instruction is described.
+*      a star (*) is appended to the mnemonic if the last
+*      operand may optionally be omitted.
+*      see section -15- for details of statement format and
+*      comment conventions.
 *
-*       2.1  ADD  OPV,OPN      ADD ADDRESS
-*       4.2  ADI  OPS          ADD INTEGER
-*       5.3  ADR  OPS          ADD REAL
-*       7.1  ANB  OPW,W        AND BIT STRING
-*       2.17 AOV  OPV,OPN,PLBL ADD ADDRESS, FAIL IF OVERFLOW
-*       5.16 ATN               ARCTANGENT OF REAL ACCUM
-*       2.16 BCT  W,PLBL       BRANCH AND COUNT
-*       2.5  BEQ  OPN,OPV,PLBL BRANCH IF ADDRESS EQUAL
-*       2.18 BEV  OPN,PLBL     BRANCH IF ADDRESS EVEN
-*       2.8  BGE  OPN,OPV,PLBL BRANCH IF ADDRESS GREATER OR EQUL
-*       2.7  BGT  OPN,OPV,PLBL BRANCH IF ADDRESS GREATER
-*       2.12 BHI  OPN,OPV,PLBL BRANCH IF ADDRESS HIGH
-*       2.10 BLE  OPN,OPV,PLBL BRANCH IF ADDRESS LESS OR EQUAL
-*       2.11 BLO  OPN,OPV,PLBL BRANCH IF ADDRESS LOW
-*       2.9  BLT  OPN,OPV,PLBL BRANCH IF ADDRESS LESS THAN
-*       2.6  BNE  OPN,OPV,PLBL BRANCH IF ADDRESS NOT EQUAL
-*       2.13 BNZ  OPN,PLBL     BRANCH IF ADDRESS NON-ZERO
-*       2.19 BOD  OPN,PLBL     BRANCH IF ADDRESS ODD
-*       1.2  BRN  PLBL         BRANCH UNCONDITIONAL
-*       1.7  BRI  OPN          BRANCH INDIRECT
-*       1.3  BSW* X,VAL,PLBL   BRANCH ON SWITCH VALUE
-*       8.2  BTW  REG          CONVERT BYTES TO WORDS
-*       2.14 BZE  OPN,PLBL     BRANCH IF ADDRESS ZERO
-*       6.6  CEQ  OPW,OPW,PLBL BRANCH IF CHARACTERS EQUAL
-*      10.1  CHK               CHECK STACK OVERFLOW
-*       5.17 CHP               INTEGER PORTION OF REAL ACCUM
-*       7.4  CMB  W            COMPLEMENT BIT STRING
-*       6.8  CMC  PLBL,PLBL    COMPARE CHARACTER STRINGS
-*       6.7  CNE  OPW,OPW,PLBL BRANCH IF CHARACTERS NOT EQUAL
-*       6.5  CSC  X            COMPLETE STORE CHARACTERS
-*       5.18 COS               COSINE OF REAL ACCUM
-*       8.8  CTB  W,VAL        CONVERT CHARACTER COUNT TO BYTES
-*       8.7  CTW  W,VAL        CONVERT CHARACTER COUNT TO WORDS
-*       8.10 CVD               CONVERT BY DIVISION
-*       8.9  CVM  PLBL         CONVERT BY MULTIPLICATION
-*      11.1  DAC  ADDR         DEFINE ADDRESS CONSTANT
-*      11.5  DBC  VAL          DEFINE BIT STRING CONSTANT
-*       2.4  DCA  OPN          DECREMENT ADDRESS BY ONE WORD
-*       1.17 DCV  OPN          DECREMENT VALUE BY ONE
-*      11.2  DIC  INTEGER      DEFINE INTEGER CONSTANT
-       EJC
+*       2.1  add  opv,opn      add address
+*       4.2  adi  ops          add integer
+*       5.3  adr  ops          add real
+*       7.1  anb  opw,w        and bit string
+*       2.17 aov  opv,opn,plbl add address, fail if overflow
+*       5.16 atn               arctangent of real accum
+*       2.16 bct  w,plbl       branch and count
+*       2.5  beq  opn,opv,plbl branch if address equal
+*       2.18 bev  opn,plbl     branch if address even
+*       2.8  bge  opn,opv,plbl branch if address greater or equl
+*       2.7  bgt  opn,opv,plbl branch if address greater
+*       2.12 bhi  opn,opv,plbl branch if address high
+*       2.10 ble  opn,opv,plbl branch if address less or equal
+*       2.11 blo  opn,opv,plbl branch if address low
+*       2.9  blt  opn,opv,plbl branch if address less than
+*       2.6  bne  opn,opv,plbl branch if address not equal
+*       2.13 bnz  opn,plbl     branch if address non-zero
+*       2.19 bod  opn,plbl     branch if address odd
+*       1.2  brn  plbl         branch unconditional
+*       1.7  bri  opn          branch indirect
+*       1.3  bsw* x,val,plbl   branch on switch value
+*       8.2  btw  reg          convert bytes to words
+*       2.14 bze  opn,plbl     branch if address zero
+*       6.6  ceq  opw,opw,plbl branch if characters equal
+*      10.1  chk               check stack overflow
+*       5.17 chp               integer portion of real accum
+*       7.4  cmb  w            complement bit string
+*       6.8  cmc  plbl,plbl    compare character strings
+*       6.7  cne  opw,opw,plbl branch if characters not equal
+*       6.5  csc  x            complete store characters
+*       5.18 cos               cosine of real accum
+*       8.8  ctb  w,val        convert character count to bytes
+*       8.7  ctw  w,val        convert character count to words
+*       8.10 cvd               convert by division
+*       8.9  cvm  plbl         convert by multiplication
+*      11.1  dac  addr         define address constant
+*      11.5  dbc  val          define bit string constant
+*       2.4  dca  opn          decrement address by one word
+*       1.17 dcv  opn          decrement value by one
+*      11.2  dic  integer      define integer constant
+       ejc
 *
-*      ALPHABETICAL LIST OF MNEMONICS (CONTINUED)
+*      alphabetical list of mnemonics (continued)
 *
-*      11.3  DRC  REAL         DEFINE REAL CONSTANT
-*      11.4  DTC  DTEXT        DEFINE TEXT (CHARACTER) CONSTANT
-*       4.5  DVI  OPS          DIVIDE INTEGER
-*       5.6  DVR  OPS          DIVIDE REAL
-*      13.1  EJC               EJECT ASSEMBLY LISTING
-*      14.2  END               END OF ASSEMBLY
-*       1.13 ENP               DEFINE END OF PROCEDURE
-*       1.6  ENT* VAL          DEFINE ENTRY POINT
-*      12.1  EQU  EQOP         DEFINE SYMBOLIC VALUE
-*       1.15 ERB  INT,TEXT     ASSEMBLE ERROR CODE AND BRANCH
-*       1.14 ERR  INT,TEXT     ASSEMBLE ERROR CODE
-*       1.5  ESW               END OF SWITCH LIST FOR BSW
-*       5.19 ETX               E TO THE POWER IN THE REAL ACCUM
-*       1.12 EXI* INT          EXIT FROM PROCEDURE
-*      12.2  EXP               DEFINE EXTERNAL PROCEDURE
-*       6.10 FLC  W            FOLD CHARACTER TO UPPER CASE
-*       2.3  ICA  OPN          INCREMENT ADDRESS BY ONE WORD
-*       3.4  ICP               INCREMENT CODE POINTER
-*       1.16 ICV  OPN          INCREMENT VALUE BY ONE
-*       4.11 IEQ  PLBL         JUMP IF INTEGER ZERO
-*       1.4  IFF  VAL,PLBL     SPECIFY BRANCH FOR BSW
-*       4.12 IGE  PLBL         JUMP IF INTEGER NON-NEGATIVE
-*       4.13 IGT  PLBL         JUMP IF INTEGER POSITIVE
-*       4.14 ILE  PLBL         JUMP IF INTEGER NEGATIVE OR ZERO
-*       4.15 ILT  PLBL         JUMP IF INTEGER NEGATIVE
-*       4.16 INE  PLBL         JUMP IF INTEGER NON-ZERO
-*       4.9  INO  PLBL         JUMP IF NO INTEGER OVERFLOW
-*      12.3  INP  PTYP,INT     INTERNAL PROCEDURE
-*      12.4  INR               INTERNAL ROUTINE
-*       4.10 IOV  PLBL         JUMP IF INTEGER OVERFLOW
-*       8.5  ITR               CONVERT INTEGER TO REAL
-*       1.9  JSR  PNAM         CALL PROCEDURE
-*       6.3  LCH  REG,OPC      LOAD CHARACTER
-*       2.15 LCT  W,OPV        LOAD COUNTER FOR LOOP
-*       3.1  LCP  REG          LOAD CODE POINTER REGISTER
-*       3.3  LCW  REG          LOAD NEXT CODE WORD
-*       4.1  LDI  OPS          LOAD INTEGER
-*       5.1  LDR  OPS          LOAD REAL
-*       1.8  LEI  X            LOAD ENTRY POINT ID
-*       5.20 LNF               NATURAL LOGORITHM OF REAL ACCUM
-*       7.6  LSH  W,VAL        LEFT SHIFT BIT STRING
-*       7.8  LSX  W,(X)        LEFT SHIFT INDEXED
-*       9.4  MCB               MOVE CHARACTERSWORDS BACKWARDS
-*       8.4  MFI* OPN,PLBL     CONVERT (IA) TO ADDRESS VALUE
-*       4.3  MLI  OPS          MULTIPLY INTEGER
-*       5.5  MLR  OPS          MULTIPLY REAL
-*       1.19 MNZ  OPN          MOVE NON-ZERO
-*       1.1  MOV  OPV,OPN      MOVE
-*       8.3  MTI  OPN          MOVE ADDRESS VALUE TO (IA)
-*       9.1  MVC               MOVE CHARACTERS
-*       9.2  MVW               MOVE WORDS
-*       9.3  MWB               MOVE WORDS BACKWARDS
-*       4.8  NGI               NEGATE INTEGER
-       EJC
+*      11.3  drc  real         define real constant
+*      11.4  dtc  dtext        define text (character) constant
+*       4.5  dvi  ops          divide integer
+*       5.6  dvr  ops          divide real
+*      13.1  ejc               eject assembly listing
+*      14.2  end               end of assembly
+*       1.13 enp               define end of procedure
+*       1.6  ent* val          define entry point
+*      12.1  equ  eqop         define symbolic value
+*       1.15 erb  int,text     assemble error code and branch
+*       1.14 err  int,text     assemble error code
+*       1.5  esw               end of switch list for bsw
+*       5.19 etx               e to the power in the real accum
+*       1.12 exi* int          exit from procedure
+*      12.2  exp               define external procedure
+*       6.10 flc  w            fold character to upper case
+*       2.3  ica  opn          increment address by one word
+*       3.4  icp               increment code pointer
+*       1.16 icv  opn          increment value by one
+*       4.11 ieq  plbl         jump if integer zero
+*       1.4  iff  val,plbl     specify branch for bsw
+*       4.12 ige  plbl         jump if integer non-negative
+*       4.13 igt  plbl         jump if integer positive
+*       4.14 ile  plbl         jump if integer negative or zero
+*       4.15 ilt  plbl         jump if integer negative
+*       4.16 ine  plbl         jump if integer non-zero
+*       4.9  ino  plbl         jump if no integer overflow
+*      12.3  inp  ptyp,int     internal procedure
+*      12.4  inr               internal routine
+*       4.10 iov  plbl         jump if integer overflow
+*       8.5  itr               convert integer to real
+*       1.9  jsr  pnam         call procedure
+*       6.3  lch  reg,opc      load character
+*       2.15 lct  w,opv        load counter for loop
+*       3.1  lcp  reg          load code pointer register
+*       3.3  lcw  reg          load next code word
+*       4.1  ldi  ops          load integer
+*       5.1  ldr  ops          load real
+*       1.8  lei  x            load entry point id
+*       5.20 lnf               natural logorithm of real accum
+*       7.6  lsh  w,val        left shift bit string
+*       7.8  lsx  w,(x)        left shift indexed
+*       9.4  mcb               move characterswords backwards
+*       8.4  mfi* opn,plbl     convert (ia) to address value
+*       4.3  mli  ops          multiply integer
+*       5.5  mlr  ops          multiply real
+*       1.19 mnz  opn          move non-zero
+*       1.1  mov  opv,opn      move
+*       8.3  mti  opn          move address value to (ia)
+*       9.1  mvc               move characters
+*       9.2  mvw               move words
+*       9.3  mwb               move words backwards
+*       4.8  ngi               negate integer
+       ejc
 *
-*      ALPHABETICAL LIST OF MNEMONICS (CONTINUED)
+*      alphabetical list of mnemonics (continued)
 *
-*       5.9  NGR               NEGATE REAL
-*       7.9  NZB  W,PLBL       JUMP IF NOT ALL ZERO BITS
-*       7.2  ORB  OPW,W        OR BIT STRINGS
-*       6.1  PLC* X,OPV        PREPARE TO LOAD CHARACTERS
-*       1.10 PPM* PLBL         PROVIDE PROCEDURE EXIT PARAMETER
-*       1.11 PRC  PTYP,VAL     DEFINE START OF PROCEDURE
-*       6.2  PSC* X,OPV        PREPARE TO STORE CHARACTERS
-*       5.10 REQ  PLBL         JUMP IF REAL ZERO
-*       5.11 RGE  PLBL         JUMP IF REAL POSITIVE OR ZERO
-*       5.12 RGT  PLBL         JUMP IF REAL POSITIVE
-*       5.13 RLE  PLBL         JUMP IF REAL NEGATIVE OR ZERO
-*       5.14 RLT  PLBL         JUMP IF REAL NEGATIVE
-*       4.6  RMI  OPS          REMAINDER INTEGER
-*       5.15 RNE  PLBL         JUMP IF REAL NON-ZERO
-*       5.8  RNO  PLBL         JUMP IF NO REAL OVERFLOW
-*       5.7  ROV  PLBL         JUMP IF REAL OVERFLOW
-*       7.5  RSH  W,VAL        RIGHT SHIFT BIT STRING
-*       7.7  RSX  W,(X)        RIGHT SHIFT INDEXED
-*       8.6  RTI* PLBL         CONVERT REAL TO INTEGER
-*       1.22 RTN               DEFINE START OF ROUTINE
-*       4.4  SBI  OPS          SUBTRACT INTEGER
-*       5.4  SBR  OPS          SUBTRACT REALS
-*       6.4  SCH  REG,OPC      STORE CHARACTER
-*       3.2  SCP  REG          STORE CODE POINTER
-*      14.1  SEC               DEFINE START OF ASSEMBLY SECTION
-*       5.21 SIN               SINE OF REAL ACCUM
-*       5.22 SQR               SQUARE ROOT OF REAL ACCUM
-*       1.20 SSL  OPW          SUBROUTINE STACK LOAD
-*       1.21 SSS  OPW          SUBROUTINE STACK STORE
-*       4.7  STI  OPS          STORE INTEGER
-*       5.2  STR  OPS          STORE REAL
-*       2.2  SUB  OPV,OPN      SUBTRACT ADDRESS
-*       5.23 TAN               TANGENT OF REAL ACCUM
-*       6.9  TRC               TRANSLATE CHARACTER STRING
-*      13.2  TTL  TEXT         SUPPLY ASSEMBLY TITLE
-*       8.1  WTB  REG          CONVERT WORDS TO BYTES
-*       7.3  XOB  OPW,W        EXCLUSIVE OR BIT STRINGS
-*       1.18 ZER  OPN          ZEROISE INTEGER LOCATION
-*       7.11 ZGB  OPN          ZEROISE GARBAGE BITS
-*       7.10 ZRB  W,PLBL       JUMP IF ALL ZERO BITS
-       EJC
+*       5.9  ngr               negate real
+*       7.9  nzb  w,plbl       jump if not all zero bits
+*       7.2  orb  opw,w        or bit strings
+*       6.1  plc* x,opv        prepare to load characters
+*       1.10 ppm* plbl         provide procedure exit parameter
+*       1.11 prc  ptyp,val     define start of procedure
+*       6.2  psc* x,opv        prepare to store characters
+*       5.10 req  plbl         jump if real zero
+*       5.11 rge  plbl         jump if real positive or zero
+*       5.12 rgt  plbl         jump if real positive
+*       5.13 rle  plbl         jump if real negative or zero
+*       5.14 rlt  plbl         jump if real negative
+*       4.6  rmi  ops          remainder integer
+*       5.15 rne  plbl         jump if real non-zero
+*       5.8  rno  plbl         jump if no real overflow
+*       5.7  rov  plbl         jump if real overflow
+*       7.5  rsh  w,val        right shift bit string
+*       7.7  rsx  w,(x)        right shift indexed
+*       8.6  rti* plbl         convert real to integer
+*       1.22 rtn               define start of routine
+*       4.4  sbi  ops          subtract integer
+*       5.4  sbr  ops          subtract reals
+*       6.4  sch  reg,opc      store character
+*       3.2  scp  reg          store code pointer
+*      14.1  sec               define start of assembly section
+*       5.21 sin               sine of real accum
+*       5.22 sqr               square root of real accum
+*       1.20 ssl  opw          subroutine stack load
+*       1.21 sss  opw          subroutine stack store
+*       4.7  sti  ops          store integer
+*       5.2  str  ops          store real
+*       2.2  sub  opv,opn      subtract address
+*       5.23 tan               tangent of real accum
+*       6.9  trc               translate character string
+*      13.2  ttl  text         supply assembly title
+*       8.1  wtb  reg          convert words to bytes
+*       7.3  xob  opw,w        exclusive or bit strings
+*       1.18 zer  opn          zeroise integer location
+*       7.11 zgb  opn          zeroise garbage bits
+*       7.10 zrb  w,plbl       jump if all zero bits
+       ejc
 *
-*      SECTION 9 - MINIMAL INSTRUCTIONS
+*      section 9 - minimal instructions
 *
-*      THE FOLLOWING DESCRIPTIONS ASSUME THE DEFINITIONS -
+*      the following descriptions assume the definitions -
 *
-*      ZEROE  EQU  0
-*      UNITY  EQU  1
+*      zeroe  equ  0
+*      unity  equ  1
 *
-*      -1-  BASIC INSTRUCTION SET
+*      -1-  basic instruction set
 *
-*      1.1  MOV  OPV,OPN     MOVE ONE WORD VALUE
+*      1.1  mov  opv,opn     move one word value
 *
-*           MOV CAUSES THE VALUE OF OPERAND OPV TO BE SET AS
-*           THE NEW CONTENTS OF OPERAND LOCATION OPN. IN THE
-*           CASE WHERE OPN IS NOT AN INDEX REGISTER, ANY VALUE
-*           WHICH CAN NORMALLY OCCUPY A MEMORY WORD (INCLUDING
-*           A PART OF A MULTIWORD REAL OR INTEGER VALUE)
-*           CAN BE TRANSFERRED USING MOV. IF THE TARGET LOCATION
-*           OPN IS AN INDEX REGISTER, THEN OPV MUST SPECIFY AN
-*           APPROPRIATE ONE WORD VALUE OR OPERAND CONTAINING
-*           SUCH AN APPROPRIATE VALUE.
+*           mov causes the value of operand opv to be set as
+*           the new contents of operand location opn. in the
+*           case where opn is not an index register, any value
+*           which can normally occupy a memory word (including
+*           a part of a multiword real or integer value)
+*           can be transferred using mov. if the target location
+*           opn is an index register, then opv must specify an
+*           appropriate one word value or operand containing
+*           such an appropriate value.
 *
-*      1.2  BRN  PLBL        UNCONDITIONAL BRANCH
+*      1.2  brn  plbl        unconditional branch
 *
-*           BRN CAUSES CONTROL TO BE PASSED TO THE INDICATED
-*           LABEL IN THE PROGRAM SECTION.
+*           brn causes control to be passed to the indicated
+*           label in the program section.
 *
-*      1.3  BSW  X,VAL,PLBL  BRANCH ON SWITCH VALUE
-*      1.4  IFF  VAL,PLBL    PROVIDE BRANCH FOR SWITCH
-*           IFF  VAL,PLBL     ...
+*      1.3  bsw  x,val,plbl  branch on switch value
+*      1.4  iff  val,plbl    provide branch for switch
+*           iff  val,plbl     ...
 *           ...
 *           ...
-*      1.5  ESW              END OF BRANCH SWITCH TABLE
+*      1.5  esw              end of branch switch table
 *
-*           BSW,IFF,ESW PROVIDE A CAPABILITY FOR A SWITCHED
-*           BRANCH SIMILAR TO A FORTRAN COMPUTED GOTO. THE
-*           VAL ON THE BSW INSTRUCTION IS THE MAXIMUM NUMBER
-*           OF BRANCHES. THE VALUE IN X RANGES FROM ZERO UP TO
-*           BUT NOT INCLUDING THIS MAXIMUM. EACH IFF PROVIDES A
-*           BRANCH. VAL MUST BE LESS THAN THAT GIVEN ON THE BSW
-*           AND CONTROL GOES TO PLBL IF THE VALUE IN X MATCHES.
-*           IF THE VALUE IN X DOES NOT CORRESPOND TO ANY OF THE
-*           IFF ENTRIES, THEN CONTROL PASSES TO THE PLBL ON THE
-*           BSW. THIS PLBL OPERAND MAY BE OMITTED IF THERE ARE
-*           NO VALUES MISSING FROM THE LIST.
+*           bsw,iff,esw provide a capability for a switched
+*           branch similar to a fortran computed goto. the
+*           val on the bsw instruction is the maximum number
+*           of branches. the value in x ranges from zero up to
+*           but not including this maximum. each iff provides a
+*           branch. val must be less than that given on the bsw
+*           and control goes to plbl if the value in x matches.
+*           if the value in x does not correspond to any of the
+*           iff entries, then control passes to the plbl on the
+*           bsw. this plbl operand may be omitted if there are
+*           no values missing from the list.
 *
-*           IFF AND ESW MAY ONLY BE USED IN THIS CONTEXT.
-*           EXECUTION OF BSW MAY DESTROY THE CONTENTS OF X.
-*           THE IFF ENTRIES MAY BE IN ANY ORDER AND SINCE
-*           A TRANSLATOR MAY THUS NEED TO STORE AND SORT THEM,
-*           THE COMMENT FIELD IS RESTRICTED IN LENGTH (SEC 11).
-       EJC
+*           iff and esw may only be used in this context.
+*           execution of bsw may destroy the contents of x.
+*           the iff entries may be in any order and since
+*           a translator may thus need to store and sort them,
+*           the comment field is restricted in length (sec 11).
+       ejc
 *
-*      -1-  BASIC INSTRUCTIONS (CONTINUED)
+*      -1-  basic instructions (continued)
 *
-*      1.6  ENT  VAL         DEFINE PROGRAM ENTRY POINT
+*      1.6  ent  val         define program entry point
 *
-*           THE SYMBOL APPEARING IN THE LABEL FIELD IS DEFINED
-*           TO BE A PROGRAM ENTRY POINT WHICH CAN SUBSEQUENTLY
-*           BE USED IN CONJUNCTION WITH THE BRI INSTRUCTION,
-*           WHICH PROVIDES THE ONLY MEANS OF ENTERING THE
-*           CODE. IT IS ILLEGAL TO FALL INTO CODE
-*           IDENTIFIED BY AN ENTRY POINT. THE
-*           ENTRY SYMBOL IS ASSIGNED AN ADDRESS WHICH NEED NOT
-*           BE A MULTIPLE OF CFP$B BUT WHICH MUST BE IN THE
-*           RANGE 0 LE CFP$L AND THE ADDRESS MUST NOT LIE WITHIN
-*           THE ADDRESS RANGE OF THE ALLOCATED DATA AREA.
-*           FURTHERMORE, ADDRESSES OF SUCCESSIVE ENTRY POINTS
-*           MUST BE ASSIGNED IN SOME ASCENDING SEQUENCE SO
-*           THAT THE ADDRESS COMPARISON INSTRUCTIONS CAN BE
-*           USED TO TEST THE ORDER IN WHICH TWO ENTRY POINTS
-*           OCCUR. THE SYMBOL VAL GIVES AN IDENTIFYING VALUE
-*           TO THE ENTRY POINT WHICH CAN BE ACCESSED WITH THE
-*           LEI INSTRUCTION.
+*           the symbol appearing in the label field is defined
+*           to be a program entry point which can subsequently
+*           be used in conjunction with the bri instruction,
+*           which provides the only means of entering the
+*           code. it is illegal to fall into code
+*           identified by an entry point. the
+*           entry symbol is assigned an address which need not
+*           be a multiple of cfp$b but which must be in the
+*           range 0 le cfp$l and the address must not lie within
+*           the address range of the allocated data area.
+*           furthermore, addresses of successive entry points
+*           must be assigned in some ascending sequence so
+*           that the address comparison instructions can be
+*           used to test the order in which two entry points
+*           occur. the symbol val gives an identifying value
+*           to the entry point which can be accessed with the
+*           lei instruction.
 *
-*           NOTE - SUBJECT TO THE RESTRICTION BELOW, VAL MAY
-*           BE OMITTED IF NO SUCH IDENTIFICATION IS NEEDED I.E.
-*           IF NO LEI REFERENCES THE ENTRY POINT. FOR THIS
-*           CASE, A TRANSLATION OPTIMISATION IS POSSIBLE IN
-*           WHICH NO MEMORY NEED BE RESERVED FOR A NULL
-*           IDENTIFICATION WHICH IS NEVER TO BE REFERENCED, BUT
-*           ONLY PROVIDED THIS IS DONE SO AS NOT TO INTERFERE
-*           WITH THE STRICTLY ASCENDING SEQUENCE OF ENTRY POINT
-*           ADDRESSES. TO SIMPLIFY THIS OPTIMISATION FOR ALL
-*           IMPLEMENTORS, THE FOLLOWING RESTRICTION IS OBSERVED
-*                VAL MAY ONLY BE OMITTED IF THE ENTRY POINT IS
-*                SEPARATED FROM A FOLLOWING ENTRY POINT BY A
-*                NON-NULL MINIMAL CODE SEQUENCE.
-*           ENTRY POINT ADDRESSES ARE ACCESSIBLE ONLY BY USE OF
-*           LITERALS (=ELBL, SECTION 7) OR DAC CONSTANTS
-*           (SECTION 8-11.1).
+*           note - subject to the restriction below, val may
+*           be omitted if no such identification is needed i.e.
+*           if no lei references the entry point. for this
+*           case, a translation optimisation is possible in
+*           which no memory need be reserved for a null
+*           identification which is never to be referenced, but
+*           only provided this is done so as not to interfere
+*           with the strictly ascending sequence of entry point
+*           addresses. to simplify this optimisation for all
+*           implementors, the following restriction is observed
+*                val may only be omitted if the entry point is
+*                separated from a following entry point by a
+*                non-null minimal code sequence.
+*           entry point addresses are accessible only by use of
+*           literals (=elbl, section 7) or dac constants
+*           (section 8-11.1).
 *
-*      1.7  BRI  OPN         BRANCH INDIRECT
+*      1.7  bri  opn         branch indirect
 *
-*           OPN CONTAINS THE ADDRESS OF A PROGRAM ENTRY POINT
-*           (SEE ENT). CONTROL IS PASSED TO THE EXECUTABLE
-*           CODE STARTING AT THE ENTRY POINT ADDRESS. OPN IS
-*           LEFT UNCHANGED.
+*           opn contains the address of a program entry point
+*           (see ent). control is passed to the executable
+*           code starting at the entry point address. opn is
+*           left unchanged.
 *
-*      1.8  LEI  X           LOAD ENTRY POINT IDENTIFICATION
+*      1.8  lei  x           load entry point identification
 *
-*           X CONTAINS THE ADDRESS OF AN ENTRY POINT FOR WHICH
-*           AN IDENTIFYING VALUE WAS GIVEN ON THE THE ENT LINE.
-*           LEI REPLACES THE CONTENTS OF X BY THIS VALUE.
-       EJC
+*           x contains the address of an entry point for which
+*           an identifying value was given on the the ent line.
+*           lei replaces the contents of x by this value.
+       ejc
 *
-*      -1-  BASIC INSTRUCTIONS (CONTINUED)
+*      -1-  basic instructions (continued)
 *
-*      1.9  JSR  PNAM        CALL PROCEDURE PNAM
-*      1.10 PPM  PLBL        PROVIDE EXIT PARAMETER
-*           PPM  PLBL         ...
+*      1.9  jsr  pnam        call procedure pnam
+*      1.10 ppm  plbl        provide exit parameter
+*           ppm  plbl         ...
 *           ...
-*           PPM  PLBL         ...
-*
-*           JSR CAUSES CONTROL TO BE PASSED TO THE NAMED
-*           PROCEDURE. PNAM IS THE LABEL ON A PRC STATEMENT
-*           ELSEWHERE IN THE PROGRAM SECTION (SEE PRC)
-*           OR HAS BEEN DEFINED USING AN EXP INSTRUCTION.
-*           THE PPM EXIT PARAMETERS FOLLOWING THE CALL GIVE
-*           NAMES OF PROGRAM LOCATIONS (PLBL-S) TO WHICH
-*           ALTERNATIVE EXI RETURNS OF THE CALLED PROCEDURE MAY
-*           PASS CONTROL. THEY MAY OPTIONALLY BE REPLACED BY
-*           ERROR RETURNS (SEE ERR). THE NUMBER OF EXIT
-*           PARAMETERS FOLLOWING A JSR MUST EQUAL THE INT IN THE
-*           PROCEDURE DEFINITION. THE OPERAND OF PPM MAY BE
-*           OMITTED IF THE CORRESPONDING EXI RETURN IS CERTAIN
-*           NOT TO BE TAKEN.
-*
-*      1.11 PRC  PTYP,INT    DEFINE START OF PROCEDURE
-*
-*           THE SYMBOL APPEARING IN THE LABEL FIELD IS DEFINED
-*           TO BE THE NAME OF A PROCEDURE FOR USE WITH JSR.
-*           A PROCEDURE IS A CONTIGUOUS SECTION OF INSTRUCTIONS
-*           TO WHICH CONTROL MAY BE PASSED WITH A JSR
-*           INSTRUCTION. THIS IS THE ONLY WAY IN WHICH THE
-*           INSTRUCTIONS IN A PROCEDURE MAY BE EXECUTED. IT IS
-*           NOT PERMITTED TO FALL INTO A PROCEDURE.
-*           ALL PROCEDURES SHOULD BE NAMED IN SECTION 0
-*           INP  STATEMENTS.
-*
-*           INT IS THE NUMBER OF EXIT PARAMETERS (PPM-S) TO
-*           BE USED IN JSR CALLS.
-*
-*           THERE ARE THREE POSSIBILITIES FOR PTYP, EACH
-*           CONSISTING OF A SINGLE LETTER AS FOLLOWS.
-*
-*           R                RECURSIVE
-*
-*           THE RETURN POINT (ONE OR MORE WORDS) IS STORED ON
-*           THE STACK AS THOUGH ONE OR MORE MOV ...,-(XS)
-*           INSTRUCTIONS WERE EXECUTED.
-       EJC
-*
-*      -1-  BASIC INSTRUCTIONS (CONTINUED)
-*
-*           N                NON-RECURSIVE
-*
-*           THE RETURN POINT IS TO BE STORED EITHER
-*           (1) IN A LOCAL STORAGE WORD ASSOCIATED
-*           WITH THE PROCEDURE AND NOT DIRECTLY
-*           AVAILABLE TO THE PROGRAM IN ANY OTHER MANNER OR
-*           (2) ON A SUBROUTINE LINK STACK QUITE DISTINCT FROM
-*           THE MINIMAL STACK ADDRESSED BY XS.
-*           IT IS AN ERROR TO USE THE STACK FOR N-LINKS, SINCE
-*           PROCEDURE PARAMETERS OR RESULTS MAY BE PASSED VIA
-*           THE STACK.
-*           IF METHOD (2) IS USED FOR LINKS, ERROR EXITS
-*           (ERB,ERR) FROM A PROCEDURE WILL NECESSITATE LINK
-*           STACK RESETTING. THE SSL AND SSS ORDERS PROVIDED
-*           FOR THIS MAY BE REGARDED AS NO-OPS FOR
-*           IMPLEMENTATIONS USING METHOD (1).
-*
-*           E                EITHER
-*
-*           THE RETURN POINT MAY BE STORED IN EITHER MANNER
-*           ACCORDING TO EFFICIENCY REQUIREMENTS OF THE ACTUAL
-*           PHYSICAL MACHINE USED FOR THE IMPLEMENTATION. NOTE
-*           THAT PROGRAMMING OF E TYPE PROCEDURES MUST BE
-*           INDEPENDENT OF THE ACTUAL IMPLEMENTATION.
-*
-*           THE ACTUAL FORM OF THE RETURN POINT IS UNDEFINED.
-*           HOWEVER, EACH WORD STORED ON THE STACK FOR AN
-*           R-TYPE CALL MUST MEET THE FOLLOWING REQUIREMENTS.
-*
-*           1)               IT CAN BE HANDLED AS AN ADDRESS
-*                            AND PLACED IN AN INDEX REGISTER.
-*
-*           2)               WHEN USED AS AN OPERAND IN AN
-*                            ADDRESS COMPARISON INSTRUCTION, IT
-*                            MUST NOT APPEAR TO LIE WITHIN
-*                            THE ALLOCATED DATA AREA.
-*
-*           3)               IT IS NOT REQUIRED TO APPEAR
-*                            TO LIE WITHIN THE PROGRAM SECTION.
-       EJC
-*
-*      -1-  BASIC INSTRUCTIONS (CONTINUED)
-*
-*      1.12 EXI  INT         EXIT FROM PROCEDURE
-*
-*           THE PPM AND ERR PARAMETERS FOLLOWING A JSR ARE
-*           NUMBERED STARTING FROM 1.  EXI  INT CAUSES CONTROL
-*           TO BE RETURNED TO THE INT-TH SUCH PARAM. EXI 1 GIVES
-*           CONTROL TO THE PLBL OF THE FIRST PPM AFTER THE JSR.
-*           IF INT IS OMITTED, CONTROL IS PASSED BACK PAST THE
-*           LAST EXIT PARAMETER (OR PAST THE JSR IF THERE ARE
-*           NONE). FOR R AND E TYPE PROCEDURES, THE
-*           STACK POINTER XS MUST BE SET TO ITS APPROPRIATE
-*           ENTRY VALUE BEFORE EXECUTING AN EXI INSTRUCTION.
-*           IN THIS CASE, EXI REMOVES RETURN POINTS FROM THE
-*           STACK IF ANY ARE STORED THERE SO THAT THE STACK
-*           POINTER IS RESTORED TO ITS CALLING VALUE.
-*
-*      1.13 ENP              DEFINE END OF PROCEDURE BODY
-*
-*           ENP DELIMITS A PROCEDURE BODY AND MAY NOT ACTUALLY
-*           BE EXECUTED, HENCE IT MUST HAVE NO LABEL.
-*
-*      1.14 ERR  INT,TEXT    PROVIDE ERROR RETURN
-*
-*           ERR MAY REPLACE AN EXIT PARAMETER (PPM) IN
-*           ANY PROCEDURE CALL. THE INT ARGUMENT IS A UNIQUE
-*           ERROR CODE IN 0 TO 899.
-*           THE TEXT SUPPLIED AS THE OTHER OPERAND IS
-*           ARBITRARY TEXT IN THE FORTRAN CHARACTER SET AND
-*           MAY BE USED IN CONSTRUCTING A FILE OF ERROR
-*           MESSAGES FOR DOCUMENTING PURPOSES OR FOR BUILDING
-*           A DIRECT ACCESS OR OTHER FILE OF MESSAGES TO BE
-*           USED BY THE ERROR HANDLING CODE.
-*           IN THE EVENT THAT AN EXI ATTEMPTS
-*           TO RETURN CONTROL VIA AN EXIT PARAMETER TO
-*           AN ERR, CONTROL IS INSTEAD PASSED TO THE FIRST
-*           INSTRUCTION IN THE ERROR SECTION (WHICH FOLLOWS THE
-*           PROGRAM SECTION) WITH THE ERROR CODE IN WA.
-*
-*      1.15 ERB  INT,TEXT    ERROR BRANCH
+*           ppm  plbl         ...
+*
+*           jsr causes control to be passed to the named
+*           procedure. pnam is the label on a prc statement
+*           elsewhere in the program section (see prc)
+*           or has been defined using an exp instruction.
+*           the ppm exit parameters following the call give
+*           names of program locations (plbl-s) to which
+*           alternative exi returns of the called procedure may
+*           pass control. they may optionally be replaced by
+*           error returns (see err). the number of exit
+*           parameters following a jsr must equal the int in the
+*           procedure definition. the operand of ppm may be
+*           omitted if the corresponding exi return is certain
+*           not to be taken.
+*
+*      1.11 prc  ptyp,int    define start of procedure
+*
+*           the symbol appearing in the label field is defined
+*           to be the name of a procedure for use with jsr.
+*           a procedure is a contiguous section of instructions
+*           to which control may be passed with a jsr
+*           instruction. this is the only way in which the
+*           instructions in a procedure may be executed. it is
+*           not permitted to fall into a procedure.
+*           all procedures should be named in section 0
+*           inp  statements.
+*
+*           int is the number of exit parameters (ppm-s) to
+*           be used in jsr calls.
+*
+*           there are three possibilities for ptyp, each
+*           consisting of a single letter as follows.
+*
+*           r                recursive
+*
+*           the return point (one or more words) is stored on
+*           the stack as though one or more mov ...,-(xs)
+*           instructions were executed.
+       ejc
+*
+*      -1-  basic instructions (continued)
+*
+*           n                non-recursive
+*
+*           the return point is to be stored either
+*           (1) in a local storage word associated
+*           with the procedure and not directly
+*           available to the program in any other manner or
+*           (2) on a subroutine link stack quite distinct from
+*           the minimal stack addressed by xs.
+*           it is an error to use the stack for n-links, since
+*           procedure parameters or results may be passed via
+*           the stack.
+*           if method (2) is used for links, error exits
+*           (erb,err) from a procedure will necessitate link
+*           stack resetting. the ssl and sss orders provided
+*           for this may be regarded as no-ops for
+*           implementations using method (1).
+*
+*           e                either
+*
+*           the return point may be stored in either manner
+*           according to efficiency requirements of the actual
+*           physical machine used for the implementation. note
+*           that programming of e type procedures must be
+*           independent of the actual implementation.
+*
+*           the actual form of the return point is undefined.
+*           however, each word stored on the stack for an
+*           r-type call must meet the following requirements.
+*
+*           1)               it can be handled as an address
+*                            and placed in an index register.
+*
+*           2)               when used as an operand in an
+*                            address comparison instruction, it
+*                            must not appear to lie within
+*                            the allocated data area.
+*
+*           3)               it is not required to appear
+*                            to lie within the program section.
+       ejc
+*
+*      -1-  basic instructions (continued)
+*
+*      1.12 exi  int         exit from procedure
+*
+*           the ppm and err parameters following a jsr are
+*           numbered starting from 1.  exi  int causes control
+*           to be returned to the int-th such param. exi 1 gives
+*           control to the plbl of the first ppm after the jsr.
+*           if int is omitted, control is passed back past the
+*           last exit parameter (or past the jsr if there are
+*           none). for r and e type procedures, the
+*           stack pointer xs must be set to its appropriate
+*           entry value before executing an exi instruction.
+*           in this case, exi removes return points from the
+*           stack if any are stored there so that the stack
+*           pointer is restored to its calling value.
+*
+*      1.13 enp              define end of procedure body
+*
+*           enp delimits a procedure body and may not actually
+*           be executed, hence it must have no label.
+*
+*      1.14 err  int,text    provide error return
+*
+*           err may replace an exit parameter (ppm) in
+*           any procedure call. the int argument is a unique
+*           error code in 0 to 899.
+*           the text supplied as the other operand is
+*           arbitrary text in the fortran character set and
+*           may be used in constructing a file of error
+*           messages for documenting purposes or for building
+*           a direct access or other file of messages to be
+*           used by the error handling code.
+*           in the event that an exi attempts
+*           to return control via an exit parameter to
+*           an err, control is instead passed to the first
+*           instruction in the error section (which follows the
+*           program section) with the error code in wa.
+*
+*      1.15 erb  int,text    error branch
 *
-*           THIS INSTRUCTION RESEMBLES ERR EXCEPT THAT IT MAY
-*           OCCUR AT ANY POINT WHERE A BRANCH IS PERMITTED.
-*           IT EFFECTS A TRANSFER OF CONTROL TO THE ERROR
-*           SECTION WITH THE ERROR CODE IN WA.
-*
-*      1.16 ICV  OPN         INCREMENT VALUE BY ONE
+*           this instruction resembles err except that it may
+*           occur at any point where a branch is permitted.
+*           it effects a transfer of control to the error
+*           section with the error code in wa.
+*
+*      1.16 icv  opn         increment value by one
 *
-*           ICV INCREMENTS THE VALUE OF THE OPERAND BY UNITY.
-*           IT IS EQUIVALENT TO   ADD  =UNITY,OPN
+*           icv increments the value of the operand by unity.
+*           it is equivalent to   add  =unity,opn
 *
-*      1.17 DCV  OPN         DECREMENT VALUE BY ONE
+*      1.17 dcv  opn         decrement value by one
 *
-*           DCV DECREMENTS THE VALUE OF THE OPERAND BY UNITY.
-*           IT IS EQUIVALENT TO   SUB  =UNITY,OPN
-       EJC
+*           dcv decrements the value of the operand by unity.
+*           it is equivalent to   sub  =unity,opn
+       ejc
 *
-*      BASIC INSTRUCTIONS (CONTINUED)
+*      basic instructions (continued)
 *
-*      1.18 ZER  OPN         ZEROISE OPN
+*      1.18 zer  opn         zeroise opn
 *
-*           ZER IS EQUIVALENT TO  MOV  =ZEROE,OPN
+*           zer is equivalent to  mov  =zeroe,opn
 *
-*      1.19 MNZ  OPN         MOVE NON-ZERO TO OPN
+*      1.19 mnz  opn         move non-zero to opn
 *
-*           ANY NON-ZERO COLLECTABLE VALUE MAY USED, FOR WHICH
-*           THE OPCODES BNZ/BZE WILL BRANCH/FAIL TO BRANCH.
+*           any non-zero collectable value may used, for which
+*           the opcodes bnz/bze will branch/fail to branch.
 *
-*      1.20 SSL  OPW         SUBROUTINE STACK LOAD
-*
-*      1.21 SSS  OPW         SUBROUTINE STACK STORE
-*
-*           THIS PAIR OF OPERATIONS IS PROVIDED TO MAKE POSSIBLE
-*           THE USE OF A LOCAL STACK TO HOLD SUBROUTINE (S-R)
-*           RETURN LINKS FOR N-TYPE PROCEDURES. SSS STORES THE
-*           S-R STACK POINTER IN OPW AND SSL LOADS THE S-R
-*           STACK POINTER FROM OPW. BY USING SSS IN THE MAIN
-*           PROGRAM OR ON ENTRY TO A PROCEDURE WHICH SHOULD
-*           REGAIN CONTROL ON OCCURRENCE OF AN ERR OR ERB AND BY
-*           USE OF SSL IN THE ERROR PROCESSING SECTIONS THE
-*           S-R STACK POINTER CAN BE RESTORED GIVING A LINK
-*           STACK CLEANED UP READY FOR RESUMED EXECUTION.
-*           THE FORM OF THE LINK STACK POINTER IS UNDEFINED IN
-*           MINIMAL (IT IS LIKELY TO BE A PRIVATE REGISTER
-*           KNOWN TO THE TRANSLATOR) AND THE ONLY REQUIREMENT
-*           IS THAT IT SHOULD FIT INTO A SINGLE FULL WORD.
-*           SSL AND SSS ARE NO-OPS IF A PRIVATE LINK STACK IS
-*           NOT USED.
-*
-*      1.22 RTN              DEFINE START OF ROUTINE
-*
-*           A ROUTINE IS A CODE CHUNK USED FOR SIMILAR PURPOSES
-*           TO A PROCEDURE. HOWEVER IT IS ENTERED BY ANY TYPE OF
-*           CONDITIONAL OR UNCONDITIONAL BRANCH (NOT BY JSR). ON
-*           TERMINATION IT PASSES CONTROL BY A BRANCH (OFTEN
-*           BRI THROUGH A CODE WORD) OR EVEN PERMITS CONTROL
-*           TO DROP THROUGH TO ANOTHER ROUTINE. NO RETURN LINK
-*           EXISTS AND THE END OF A ROUTINE IS NOT MARKED BY
-*           AN EXPLICIT OPCODE (COMPARE ENP).
-*           ALL ROUTINES SHOULD BE NAMED IN SECTION 0
-*           INR  STATEMENTS.
-       EJC
-*
-*      -2-  OPERATIONS ON ONE WORD INTEGER VALUES (ADDRESSES)
-*
-*      2.1  ADD  OPV,OPN     ADDS OPV TO THE VALUE IN OPN AND
-*                            STORES THE RESULT IN OPN. UNDEFINED
-*                            IF THE RESULT EXCEEDS CFP$L.
-*
-*      2.2  SUB  OPV,OPN     SUBTRACTS OPV FROM OPN. STORES THE
-*                            RESULT IN OPN. UNDEFINED IF THE
-*                            RESULT IS NEGATIVE.
-*
-*      2.3  ICA  OPN         INCREMENT ADDRESS IN OPN
-*                            EQUIVALENT TO ADD *UNITY,OPN
-*
-*      2.4  DCA  OPN         DECREMENT ADDRESS IN OPN
-*                            EQUIVALENT TO SUB *UNITY,OPN
-*
-*      2.5  BEQ  OPN,OPV,PLBL BRANCH TO PLBL IF OPN EQ OPV
-*      2.6  BNE  OPN,OPV,PLBL BRANCH TO PLBL IF OPN NE OPV
-*      2.7  BGT  OPN,OPV,PLBL BRANCH TO PLBL IF OPN GT OPV
-*      2.8  BGE  OPN,OPV,PLBL BRANCH TO PLBL IF OPN GE OPV
-*      2.9  BLT  OPN,OPV,PLBL BRANCH TO PLBL IF OPN LT OPV
-*      2.10 BLE  OPN,OPV,PLBL BRANCH TO PLBL IF OPN LE OPV
-*      2.11 BLO  OPN,OPV,PLBL EQUIVALENT TO BLT OR BLE
-*      2.12 BHI  OPN,OPV,PLBL EQUIVALENT TO BGT OR BGE
-*
-*           THE ABOVE INSTRUCTIONS COMPARE TWO ADDRESS
-*           VALUES AS UNSIGNED INTEGER VALUES.
-*           THE BLO AND BHI INSTRUCTIONS ARE USED IN CASES WHERE
-*           THE EQUAL CONDITION EITHER DOES NOT OCCUR OR CAN
-*           RESULT EITHER IN A BRANCH OR NO BRANCH. THIS AVOIDS
-*           INEFFICIENT TRANSLATIONS IN SOME IMPLEMENTATIONS.
-*
-*      2.13 BNZ  OPN,PLBL    EQUIVALENT TO BNE OPN,=ZEROE,PLBL
-*
-*      2.14 BZE  OPN,PLBL    EQUIVALENT TO BEQ OPN,=ZEROE,PLBL
-*
-*
-*      2.15 LCT  W,OPV       LOAD COUNTER FOR BCT
-*
-*           LCT LOADS A COUNTER VALUE FOR USE WITH THE BCT
-*           INSTRUCTION. THE VALUE IN OPV IS THE NUMBER OF LOOPS
-*           TO BE EXECUTED. THE VALUE IN W AFTER THIS OPERATION
-*           IS AN UNDEFINED ONE WORD INTEGER QUANTITY.
-*
-*      2.16 BCT  W,PLBL      BRANCH AND COUNT
-*
-*           BCT USES THE COUNTER VALUE IN W TO BRANCH THE
-*           REQUIRED NUMBER OF TIMES AND THEN FINALLY TO FALL
-*           THROUGH TO THE NEXT INSTRUCTION. BCT CAN ONLY BE
-*           USED FOLLOWING AN APPROPRIATE LCT INSTRUCTION.
-*           THE VALUE IN W AFTER EXECUTION OF BCT IS UNDEFINED.
-*
-*      2.17 AOV  OPV,OPN,PLBL ADD WITH CARRY TEST
-*
-*           ADDS OPV TO THE VALUE IN OPN AND STORES RESULT IN
-*           OPN. BRANCHES TO PLBL IF RESULT EXCEEDS CFP$L
-*           WITH RESULT IN OPN UNDEFINED. CF. ADD.
-*
-*      2.18 BEV  OPN,PLBL     BRANCH IF EVEN
-*      2.19 BOD  OPN,PLBL     BRANCH IF ODD
-*
-*           THESE OPERATIONS ARE USED ONLY IF .CEPP OR .CRPP IS
-*           DEFINED.  ON SOME IMPLEMENTATIONS, A MORE EFFICIENT
-*           IMPLEMENTATION IS POSSIBLE BY NOTING THAT ADDRESS OF
-*           BLOCKS MUST ALWAYS BE A MULTIPLE OF CFP$B. WE CALL
-*           SUCH ADDRESSES EVEN.  THUS RETURN ADDRESS ON THE
-*           STACK (.CRPP) AND ENTRY POINT ADDRESSES (.CEPP) CAN
-*           BE DISTINGUISHED FROM BLOCK ADDRESSES IF THEY ARE
-*           FORCED TO BE ODD (NOT A MULTIPLE OF CFP$B).
-*           BEV AND BOD BRANCH ACCORDING AS OPERAND IS EVEN
-*           OR ODD, RESPECTIVELY.
-       EJC
-*
-*      -3-  OPERATIONS ON THE CODE POINTER REGISTER (CP)
-*
-*           THE CODE POINTER REGISTER PROVIDES A PSUEDO
-*           INSTRUCTION COUNTER FOR USE IN AN INTERPRETOR. IT
-*           MAY BE IMPLEMENTED AS A REAL REGISTER OR AS A
-*           MEMORY LOCATION, BUT IN EITHER CASE IT IS SEPARATE
-*           FROM ANY OTHER REGISTER. THE VALUE IN THE CODE
-*           POINTER REGISTER IS ALWAYS A WORD ADDRESS (I.E.
-*           A ONE WORD INTEGER WHICH IS A MULTIPLE OF CFP$B).
-*
-*      3.1  LCP  REG         LOAD CODE POINTER REGISTER
-*                            THIS INSTRUCTION CAUSES THE CODE
-*                            POINTER REGISTER TO BE SET FROM
-*                            THE VALUE IN REG WHICH IS UNCHANGED
-*
-*      3.2  SCP  REG         STORE CODE POINTER REGISTER
-*                            THIS INSTRUCTION LOADS THE CURRENT
-*                            VALUE IN THE CODE POINTER REGISTER
-*                            INTO REG. (CP) IS UNCHANGED.
-*
-*      3.3  LCW  REG         LOAD NEXT CODE WORD
-*                            THIS INSTRUCTION CAUSES THE WORD
-*                            POINTED TO BY CP TO BE LOADED INTO
-*                            THE INDICATED REG. THE VALUE IN CP
-*                            IS THEN INCREMENTED BY ONE WORD.
-*                            EXECUTION OF LCW MAY DESTROY XL.
-*
-*      3.4  ICP              INCREMENT CP BY ONE WORD
-*
-*           ON MACHINES WITH MORE THAN THREE INDEX REGISTERS,
-*           CP CAN BE TREATED SIMPLY AS AN INDEX REGISTER.
-*           IN THIS CASE, THE FOLLOWING EQUIVALENCES APPLY.
-*
-*           LCP REG IS LIKE MOV REG,CP
-*           SCP REG IS LIKE MOV CP,REG
-*           LCW REG IS LIKE MOV (CP)+,REG
-*           ICP     IS LIKE ICA CP
-*
-*           SINCE LCW IS ALLOWED TO DESTROY XL, THE FOLLOWING
-*           IMPLEMENTATION USING A WORK LOCATION CP$$$ CAN
-*           ALSO BE USED.
-*
-*           LCP  REG         MOV  REG,CP$$$
-*
-*           SCP  REG         MOV  CP$$$,REG
-*
-*           LCW  REG         MOV  CP$$$,XL
-*                            MOV  (XL)+,REG
-*                            MOV  XL,CP$$$
-*
-*           ICP              ICA  CP$$$
-       EJC
-*
-*      -4-  OPERATIONS ON SIGNED INTEGER VALUES
-*
-*      4.1  LDI  OPS         LOAD INTEGER ACCUMULATOR FROM OPS
-*      4.2  ADI  OPS         ADD OPS TO INTEGER ACCUMULATOR
-*      4.3  MLI  OPS         MULTIPLY INTEGER ACCUMULATOR BY OPS
-*      4.4  SBI  OPS         SUBTRACT OPS FROM INT ACCUMULATOR
-*      4.5  DVI  OPS         DIVIDE INTEGER ACCUMULATOR BY OPS
-*      4.6  RMI  OPS         SET INT ACCUM TO MOD(INTACC,OPS)
-*      4.7  STI  OPS         STORE INTEGER ACCUMULATOR AT OPS
-*      4.8  NGI              NEGATE THE VALUE IN THE INTEGER
-*                            ACCUMULATOR (CHANGE ITS SIGN)
-*
-*           THE EQUATION SATISFIED BY OPERANDS AND RESULTS OF
-*           DVI AND RMI IS
-*                  DIV = QOT * OPS + REM          WHERE
-*           DIV = DIVIDEND IN INTEGER ACCUMULATOR
-*           QOT = QUOTIENT LEFT IN IA BY DIV
-*           OPS = THE DIVISOR
-*           REM = REMAINDER LEFT IN IA BY RMI
-*           THE SIGN OF THE RESULT OF DVI IS + IF (IA) AND (OPS)
-*           HAVE THE SAME SIGN AND IS - IF THEY HAVE OPPOSITE
-*           SIGNS. THE SIGN OF (IA) IS ALWAYS USED AS THE SIGN
-*           OF THE RESULT OF REM.
-*           ASSUMING IN EACH CASE THAT IA CONTAINS THE NUMBER
-*           SPECIFIED IN PARENTHESES AND THAT SEVEN AND MSEVN
-*           HOLD +7 AND -7 RESP. THE ALGORITHM IS ILLUSTRATED
-*           BELOW.
-*           (IA = 13)
-*           DVI  SEVEN       IA = 1
-*           RMI  SEVEN       IA = 6
-*           DVI  MSEVN       IA = -1
-*           RMI  MSEVN       IA = 6
-*           (IA = -13)
-*           DVI  SEVEN       IA = -1
-*           RMI  SEVEN       IA = -6
-*           DVI  MSEVN       IA = 1
-*           RMI  MSEVN       IA = -6
-       EJC
-*
-*           THE ABOVE INSTRUCTIONS OPERATE ON A FULL RANGE OF
-*           SIGNED INTEGER VALUES. WITH THE EXCEPTION OF LDI AND
-*           STI, THESE INSTRUCTIONS MAY CAUSE INTEGER OVERFLOW
-*           BY ATTEMPTING TO PRODUCE AN UNDEFINED OR OUT OF
-*           RANGE RESULT IN WHICH CASE INTEGER OVERFLOW IS SET,
-*           THE RESULT IN (IA) IS UNDEFINED AND THE FOLLOWING
-*           INSTRUCTION MUST BE IOV OR INO.
-*           PARTICULAR CARE MAY BE NEEDED ON TARGET MACHINES
-*           HAVING DISTINCT OVERFLOW AND DIVIDE BY ZERO
-*           CONDITIONS.
-*
-*      4.9  INO  PLBL        JUMP TO PLBL IF NO INTEGER OVERFLOW
-*      4.10 IOV  PLBL        JUMP TO PLBL IF INTEGER OVERFLOW
-*
-*           THESE INSTRUCTIONS CAN ONLY OCCUR IMMEDIATELY
-*           FOLLOWING AN INSTRUCTION WHICH CAN CAUSE INTEGER
-*           OVERFLOW (ADI, SBI, MLI, DVI, RMI, NGI) AND
-*           TEST THE RESULT OF THE PRECEDING INSTRUCTION.
-*           IOV AND INO MAY NOT HAVE LABELS.
-*
-*      4.11 IEQ  PLBL        JUMP TO PLBL IF (IA) EQ 0
-*      4.12 IGE  PLBL        JUMP TO PLBL IF (IA) GE 0
-*      4.13 IGT  PLBL        JUMP TO PLBL IF (IA) GT 0
-*      4.14 ILE  PLBL        JUMP TO PLBL IF (IA) LE 0
-*      4.15 ILT  PLBL        JUMP TO PLBL IF (IA) LT 0
-*      4.16 INE  PLBL        JUMP TO PLBL IF (IA) NE 0
-*
-*           THE ABOVE CONDITIONAL JUMP INSTRUCTIONS DO
-*           NOT CHANGE THE CONTENTS OF THE ACCUMULATOR.
-*           ON A ONES COMPLEMENT MACHINE, IT IS PERMISSIBLE TO
-*           PRODUCE NEGATIVE ZERO IN IA PROVIDED THESE
-*           INSTRUCTIONS OPERATE CORRECTLY WITH SUCH A VALUE.
-       EJC
-*
-*      -5-  OPERATIONS ON REAL VALUES
-*
-*      5.1  LDR  OPS         LOAD REAL ACCUMULATOR FROM OPS
-*      5.2  STR  OPS         STORE REAL ACCUMULATOR AT OPS
-*      5.3  ADR  OPS         ADD OPS TO REAL ACCUMULATOR
-*      5.4  SBR  OPS         SUBTRACT OPS FROM REAL ACCUMULATOR
-*      5.5  MLR  OPS         MULTIPLY REAL ACCUMULATOR BY OPS
-*      5.6  DVR  OPS         DIVIDE REAL ACCUMULATOR BY OPS
-*
-*           IF THE RESULT OF ANY OF THE ABOVE OPERATIONS CAUSES
-*           UNDERFLOW, THE RESULT YIELDED IS 0.0.
-*
-*           IF THE RESULT OF ANY OF THE ABOVE OPERATIONS IS
-*           UNDEFINED OR OUT OF RANGE, REAL OVERFLOW IS SET,
-*           THE CONTENTS OF (RA) ARE UNDEFINED AND THE FOLLOWING
-*           INSTRUCTION MUST BE EITHER ROV OR RNO.
-*           PARTICULAR CARE MAY BE NEEDED ON TARGET MACHINES
-*           HAVING DISTINCT OVERFLOW AND DIVIDE BY ZERO
-*           CONDITIONS.
-*
-*      5.7  ROV  PLBL        JUMP TO PLBL IF REAL OVERFLOW
-*      5.8  RNO  PLBL        JUMP TO PLBL IF NO REAL OVERFLOW
-*
-*           THESE INSTRUCTIONS CAN ONLY OCCUR IMMEDIATELY
-*           FOLLOWING AN INSTRUCTION WHICH CAN CAUSE REAL
-*           OVERFLOW (ADR,SBR,MLR,DVR).
-*
-*      5.9  NGR              NEGATE REAL ACCUM (CHANGE SIGN)
-*
-*      5.10 REQ  PLBL        JUMP TO PLBL IF (RA) EQ 0.0
-*      5.11 RGE  PLBL        JUMP TO PLBL IF (RA) GE 0.0
-*      5.12 RGT  PLBL        JUMP TO PLBL IF (RA) GT 0.0
-*      5.13 RLE  PLBL        JUMP TO PLBL IF (RA) LE 0.0
-*      5.14 RLT  PLBL        JUMP TO PLBL IF (RA) LT 0.0
-*      5.15 RNE  PLBL        JUMP TO PLBL IF (RA) NE 0.0
-*
-*           THE ABOVE CONDITIONAL INSTRUCTIONS DO NOT AFFECT
-*           THE VALUE STORED IN THE REAL ACCUMULATOR.
-*           ON A ONES COMPLEMENT MACHINE, IT IS PERMISSIBLE TO
-*           PRODUCE NEGATIVE ZERO IN RA PROVIDED THESE
-*           INSTRUCTIONS OPERATE CORRECTLY WITH SUCH A VALUE.
-.IF    .CMTH
-*
-*      5.16 ATN              ARCTANGENT OF REAL ACCUM
-*      5.17 CHP              INTEGER PORTION OF REAL ACCUM
-*      5.18 COS              COSINE OF REAL ACCUM
-*      5.19 ETX              E TO THE POWER IN THE REAL ACCUM
-*      5.20 LNF              NATURAL LOGORITHM OF REAL ACCUM
-*      5.21 SIN              SINE OF REAL ACCUM
-*      5.22 SQR              SQUARE ROOT OF REAL ACCUM
-*      5.23 TAN              TANGENT OF REAL ACCUM
-*
-*           THE ABOVE ORDERS OPERATE UPON THE REAL ACCUMULATOR,
-*           AND REPLACE THE CONTENTS OF THE ACCUMULATOR WITH THE
-*           RESULT.
-*
-*           IF THE RESULT OF ANY OF THE ABOVE OPERATIONS IS
-*           UNDEFINED OR OUT OF RANGE, REAL OVERFLOW IS SET,
-*           THE CONTENTS OF (RA) ARE UNDEFINED AND THE FOLLOWING
-*           INSTRUCTION MUST BE EITHER ROV OR RNO.
-.FI
-       EJC
-*
-*      -6-  OPERATIONS ON CHARACTER VALUES
-*
-*           CHARACTER OPERATIONS EMPLOY THE CONCEPT OF A
-*           CHARACTER POINTER WHICH USES EITHER
-*           INDEX REGISTER XR OR XL (NOT XS).
-*
-*           A CHARACTER POINTER POINTS TO A SPECIFIC CHARACTER
-*           IN A STRING OF CHARACTERS STORED CFP$C CHARS TO A
-*           WORD. THE ONLY OPERATIONS PERMITTED ON A CHARACTER
-*           POINTER ARE LCH AND SCH. IN PARTICULAR, A CHARACTER
-*           POINTER MAY NOT EVEN BE MOVED WITH MOV.
-*
-*              RESTRICTION 1.
+*      1.20 ssl  opw         subroutine stack load
+*
+*      1.21 sss  opw         subroutine stack store
+*
+*           this pair of operations is provided to make possible
+*           the use of a local stack to hold subroutine (s-r)
+*           return links for n-type procedures. sss stores the
+*           s-r stack pointer in opw and ssl loads the s-r
+*           stack pointer from opw. by using sss in the main
+*           program or on entry to a procedure which should
+*           regain control on occurrence of an err or erb and by
+*           use of ssl in the error processing sections the
+*           s-r stack pointer can be restored giving a link
+*           stack cleaned up ready for resumed execution.
+*           the form of the link stack pointer is undefined in
+*           minimal (it is likely to be a private register
+*           known to the translator) and the only requirement
+*           is that it should fit into a single full word.
+*           ssl and sss are no-ops if a private link stack is
+*           not used.
+*
+*      1.22 rtn              define start of routine
+*
+*           a routine is a code chunk used for similar purposes
+*           to a procedure. however it is entered by any type of
+*           conditional or unconditional branch (not by jsr). on
+*           termination it passes control by a branch (often
+*           bri through a code word) or even permits control
+*           to drop through to another routine. no return link
+*           exists and the end of a routine is not marked by
+*           an explicit opcode (compare enp).
+*           all routines should be named in section 0
+*           inr  statements.
+       ejc
+*
+*      -2-  operations on one word integer values (addresses)
+*
+*      2.1  add  opv,opn     adds opv to the value in opn and
+*                            stores the result in opn. undefined
+*                            if the result exceeds cfp$l.
+*
+*      2.2  sub  opv,opn     subtracts opv from opn. stores the
+*                            result in opn. undefined if the
+*                            result is negative.
+*
+*      2.3  ica  opn         increment address in opn
+*                            equivalent to add *unity,opn
+*
+*      2.4  dca  opn         decrement address in opn
+*                            equivalent to sub *unity,opn
+*
+*      2.5  beq  opn,opv,plbl branch to plbl if opn eq opv
+*      2.6  bne  opn,opv,plbl branch to plbl if opn ne opv
+*      2.7  bgt  opn,opv,plbl branch to plbl if opn gt opv
+*      2.8  bge  opn,opv,plbl branch to plbl if opn ge opv
+*      2.9  blt  opn,opv,plbl branch to plbl if opn lt opv
+*      2.10 ble  opn,opv,plbl branch to plbl if opn le opv
+*      2.11 blo  opn,opv,plbl equivalent to blt or ble
+*      2.12 bhi  opn,opv,plbl equivalent to bgt or bge
+*
+*           the above instructions compare two address
+*           values as unsigned integer values.
+*           the blo and bhi instructions are used in cases where
+*           the equal condition either does not occur or can
+*           result either in a branch or no branch. this avoids
+*           inefficient translations in some implementations.
+*
+*      2.13 bnz  opn,plbl    equivalent to bne opn,=zeroe,plbl
+*
+*      2.14 bze  opn,plbl    equivalent to beq opn,=zeroe,plbl
+*
+*
+*      2.15 lct  w,opv       load counter for bct
+*
+*           lct loads a counter value for use with the bct
+*           instruction. the value in opv is the number of loops
+*           to be executed. the value in w after this operation
+*           is an undefined one word integer quantity.
+*
+*      2.16 bct  w,plbl      branch and count
+*
+*           bct uses the counter value in w to branch the
+*           required number of times and then finally to fall
+*           through to the next instruction. bct can only be
+*           used following an appropriate lct instruction.
+*           the value in w after execution of bct is undefined.
+*
+*      2.17 aov  opv,opn,plbl add with carry test
+*
+*           adds opv to the value in opn and stores result in
+*           opn. branches to plbl if result exceeds cfp$l
+*           with result in opn undefined. cf. add.
+*
+*      2.18 bev  opn,plbl     branch if even
+*      2.19 bod  opn,plbl     branch if odd
+*
+*           these operations are used only if .cepp or .crpp is
+*           defined.  on some implementations, a more efficient
+*           implementation is possible by noting that address of
+*           blocks must always be a multiple of cfp$b. we call
+*           such addresses even.  thus return address on the
+*           stack (.crpp) and entry point addresses (.cepp) can
+*           be distinguished from block addresses if they are
+*           forced to be odd (not a multiple of cfp$b).
+*           bev and bod branch according as operand is even
+*           or odd, respectively.
+       ejc
+*
+*      -3-  operations on the code pointer register (cp)
+*
+*           the code pointer register provides a psuedo
+*           instruction counter for use in an interpretor. it
+*           may be implemented as a real register or as a
+*           memory location, but in either case it is separate
+*           from any other register. the value in the code
+*           pointer register is always a word address (i.e.
+*           a one word integer which is a multiple of cfp$b).
+*
+*      3.1  lcp  reg         load code pointer register
+*                            this instruction causes the code
+*                            pointer register to be set from
+*                            the value in reg which is unchanged
+*
+*      3.2  scp  reg         store code pointer register
+*                            this instruction loads the current
+*                            value in the code pointer register
+*                            into reg. (cp) is unchanged.
+*
+*      3.3  lcw  reg         load next code word
+*                            this instruction causes the word
+*                            pointed to by cp to be loaded into
+*                            the indicated reg. the value in cp
+*                            is then incremented by one word.
+*                            execution of lcw may destroy xl.
+*
+*      3.4  icp              increment cp by one word
+*
+*           on machines with more than three index registers,
+*           cp can be treated simply as an index register.
+*           in this case, the following equivalences apply.
+*
+*           lcp reg is like mov reg,cp
+*           scp reg is like mov cp,reg
+*           lcw reg is like mov (cp)+,reg
+*           icp     is like ica cp
+*
+*           since lcw is allowed to destroy xl, the following
+*           implementation using a work location cp$$$ can
+*           also be used.
+*
+*           lcp  reg         mov  reg,cp$$$
+*
+*           scp  reg         mov  cp$$$,reg
+*
+*           lcw  reg         mov  cp$$$,xl
+*                            mov  (xl)+,reg
+*                            mov  xl,cp$$$
+*
+*           icp              ica  cp$$$
+       ejc
+*
+*      -4-  operations on signed integer values
+*
+*      4.1  ldi  ops         load integer accumulator from ops
+*      4.2  adi  ops         add ops to integer accumulator
+*      4.3  mli  ops         multiply integer accumulator by ops
+*      4.4  sbi  ops         subtract ops from int accumulator
+*      4.5  dvi  ops         divide integer accumulator by ops
+*      4.6  rmi  ops         set int accum to mod(intacc,ops)
+*      4.7  sti  ops         store integer accumulator at ops
+*      4.8  ngi              negate the value in the integer
+*                            accumulator (change its sign)
+*
+*           the equation satisfied by operands and results of
+*           dvi and rmi is
+*                  div = qot * ops + rem          where
+*           div = dividend in integer accumulator
+*           qot = quotient left in ia by div
+*           ops = the divisor
+*           rem = remainder left in ia by rmi
+*           the sign of the result of dvi is + if (ia) and (ops)
+*           have the same sign and is - if they have opposite
+*           signs. the sign of (ia) is always used as the sign
+*           of the result of rem.
+*           assuming in each case that ia contains the number
+*           specified in parentheses and that seven and msevn
+*           hold +7 and -7 resp. the algorithm is illustrated
+*           below.
+*           (ia = 13)
+*           dvi  seven       ia = 1
+*           rmi  seven       ia = 6
+*           dvi  msevn       ia = -1
+*           rmi  msevn       ia = 6
+*           (ia = -13)
+*           dvi  seven       ia = -1
+*           rmi  seven       ia = -6
+*           dvi  msevn       ia = 1
+*           rmi  msevn       ia = -6
+       ejc
+*
+*           the above instructions operate on a full range of
+*           signed integer values. with the exception of ldi and
+*           sti, these instructions may cause integer overflow
+*           by attempting to produce an undefined or out of
+*           range result in which case integer overflow is set,
+*           the result in (ia) is undefined and the following
+*           instruction must be iov or ino.
+*           particular care may be needed on target machines
+*           having distinct overflow and divide by zero
+*           conditions.
+*
+*      4.9  ino  plbl        jump to plbl if no integer overflow
+*      4.10 iov  plbl        jump to plbl if integer overflow
+*
+*           these instructions can only occur immediately
+*           following an instruction which can cause integer
+*           overflow (adi, sbi, mli, dvi, rmi, ngi) and
+*           test the result of the preceding instruction.
+*           iov and ino may not have labels.
+*
+*      4.11 ieq  plbl        jump to plbl if (ia) eq 0
+*      4.12 ige  plbl        jump to plbl if (ia) ge 0
+*      4.13 igt  plbl        jump to plbl if (ia) gt 0
+*      4.14 ile  plbl        jump to plbl if (ia) le 0
+*      4.15 ilt  plbl        jump to plbl if (ia) lt 0
+*      4.16 ine  plbl        jump to plbl if (ia) ne 0
+*
+*           the above conditional jump instructions do
+*           not change the contents of the accumulator.
+*           on a ones complement machine, it is permissible to
+*           produce negative zero in ia provided these
+*           instructions operate correctly with such a value.
+       ejc
+*
+*      -5-  operations on real values
+*
+*      5.1  ldr  ops         load real accumulator from ops
+*      5.2  str  ops         store real accumulator at ops
+*      5.3  adr  ops         add ops to real accumulator
+*      5.4  sbr  ops         subtract ops from real accumulator
+*      5.5  mlr  ops         multiply real accumulator by ops
+*      5.6  dvr  ops         divide real accumulator by ops
+*
+*           if the result of any of the above operations causes
+*           underflow, the result yielded is 0.0.
+*
+*           if the result of any of the above operations is
+*           undefined or out of range, real overflow is set,
+*           the contents of (ra) are undefined and the following
+*           instruction must be either rov or rno.
+*           particular care may be needed on target machines
+*           having distinct overflow and divide by zero
+*           conditions.
+*
+*      5.7  rov  plbl        jump to plbl if real overflow
+*      5.8  rno  plbl        jump to plbl if no real overflow
+*
+*           these instructions can only occur immediately
+*           following an instruction which can cause real
+*           overflow (adr,sbr,mlr,dvr).
+*
+*      5.9  ngr              negate real accum (change sign)
+*
+*      5.10 req  plbl        jump to plbl if (ra) eq 0.0
+*      5.11 rge  plbl        jump to plbl if (ra) ge 0.0
+*      5.12 rgt  plbl        jump to plbl if (ra) gt 0.0
+*      5.13 rle  plbl        jump to plbl if (ra) le 0.0
+*      5.14 rlt  plbl        jump to plbl if (ra) lt 0.0
+*      5.15 rne  plbl        jump to plbl if (ra) ne 0.0
+*
+*           the above conditional instructions do not affect
+*           the value stored in the real accumulator.
+*           on a ones complement machine, it is permissible to
+*           produce negative zero in ra provided these
+*           instructions operate correctly with such a value.
+.if    .cmth
+*
+*      5.16 atn              arctangent of real accum
+*      5.17 chp              integer portion of real accum
+*      5.18 cos              cosine of real accum
+*      5.19 etx              e to the power in the real accum
+*      5.20 lnf              natural logorithm of real accum
+*      5.21 sin              sine of real accum
+*      5.22 sqr              square root of real accum
+*      5.23 tan              tangent of real accum
+*
+*           the above orders operate upon the real accumulator,
+*           and replace the contents of the accumulator with the
+*           result.
+*
+*           if the result of any of the above operations is
+*           undefined or out of range, real overflow is set,
+*           the contents of (ra) are undefined and the following
+*           instruction must be either rov or rno.
+.fi
+       ejc
+*
+*      -6-  operations on character values
+*
+*           character operations employ the concept of a
+*           character pointer which uses either
+*           index register xr or xl (not xs).
+*
+*           a character pointer points to a specific character
+*           in a string of characters stored cfp$c chars to a
+*           word. the only operations permitted on a character
+*           pointer are lch and sch. in particular, a character
+*           pointer may not even be moved with mov.
+*
+*              restriction 1.
 *              --------------
-*           IT IS IMPORTANT WHEN CODING IN MINIMAL TO ENSURE
-*           THAT NO ACTION OCCURRING BETWEEN THE INITIAL USE OF
-*           PLC OR PSC AND THE EVENTUAL CLEARING OF XL OR XR ON
-*           COMPLETION OF CHARACTER OPERATIONS CAN INITIATE A
-*           GARBAGE COLLECTION. THE LATTER OF COURSE COULD CAUSE
-*           THE ADDRESSED CHARACTERS TO BE MOVED LEAVING THE
-*           CHARACTER POINTERS POINTING TO RUBBISH.
+*           it is important when coding in minimal to ensure
+*           that no action occurring between the initial use of
+*           plc or psc and the eventual clearing of xl or xr on
+*           completion of character operations can initiate a
+*           garbage collection. the latter of course could cause
+*           the addressed characters to be moved leaving the
+*           character pointers pointing to rubbish.
 *
-*              RESTRICTION 2.
+*              restriction 2.
 *              --------------
-*           A FURTHER RESTRICTION TO BE OBSERVED IN CODE
-*           HANDLING CHARACTER STRINGS, IS THAT STRINGS BUILT
-*           DYNAMICALLY SHOULD BE RIGHT PADDED WITH ZERO
-*           CHARACTERS TO A FULL WORD BOUNDARY TO PERMIT EASY
-*           HASHING AND USE OF CEQ OR CNE IN TESTING STRINGS
-*           FOR EQUALITY.
-*
-*      6.1  PLC  X,OPV       PREPARE CH PTR FOR LCH,CMC,MVC,TRC,
-*                            MCB.
-*
-*      6.2  PSC  X,OPV       PREPARE CHAR. PTR FOR SCH,MVC,MCB.
-*
-*           OPV CAN BE OMITTED IF IT IS ZERO.
-*           THE CHAR. INITIALLY ADDRESSED IS DETERMINED BY THE
-*           WORD ADDRESS IN X AND THE INTEGER OFFSET OPV.
-*           THERE IS AN AUTOMATIC IMPLIED OFFSET OF CFP$F BYTES.
-*           CFP$F IS USED TO FORMALLY INTRODUCE INTO MINIMAL A
-*           VALUE NEEDED IN TRANSLATING THESE OPCODES WHICH,
-*           SINCE MINIMAL ITSELF DOES NOT PRESCRIBE A STRING
-*           STRUCTURE IN DETAIL, DEPENDS ON THE CHOICE OF A DATA
-*           STRUCTURE FOR STRINGS IN THE MINIMAL PROGRAM.
-*           E.G. IF CFP$B = CFP$C = 3, CFP$F = 6, NUM01 = 1, XL
-*           POINTS TO A SERIES OF 4 WORDS, ABC/DEF/GHI/JKL, THEN
-*               PLC  XL,=NUM01
-*           POINTS TO H.
-       EJC
-*
-*      -6- OPERATIONS ON CHARACTER VALUES (CONTINUED)
-*
-*      6.3  LCH  REG,OPC     LOAD CHARACTER INTO REG
-*
-*      6.4  SCH  REG,OPC     STORE CHARACTER FROM REG
-*
-*           THESE OPERATIONS ARE DEFINED SUCH THAT THE CHARACTER
-*           IS RIGHT JUSTIFIED IN REGISTER REG WITH ZERO BITS TO
-*           THE LEFT. AFTER LCH FOR EXAMPLE, IT IS LEGITIMATE
-*           TO REGARD REG AS CONTAINING THE ORDINAL INTEGER
-*           CORRESPONDING TO THE CHARACTER.
-*
-*           OPC IS ONE OF THE FOLLOWING THREE POSSIBILITIES.
-*
-*           (X)              THE CHARACTER POINTED TO BY THE
-*                            CHARACTER POINTER IN X. THE
-*                            CHARACTER POINTER IS NOT CHANGED.
-*
-*           (X)+             SAME CHARACTER AS (X) BUT THE
-*                            CHARACTER POINTER IS INCREMENTED
-*                            TO POINT TO THE NEXT CHARACTER
-*                            FOLLOWING EXECUTION.
-*
-*           -(X)             THE CHARACTER POINTER IS DECRE-
-*                            MENTED BEFORE ACCESSING THE
-*                            CHARACTER SO THAT THE PREVIOUS
-*                            CHARACTER IS REFERENCED.
-*
-*      6.5  CSC  X           COMPLETE STORE CHARACTERS
-*
-*           THIS INSTRUCTION MARKS COMPLETION OF A
-*           PSC,SCH,SCH,...,SCH SEQUENCE INITIATED BY
-*           A  PSC  X INSTRUCTION. NO MORE SCH INSTRUCTIONS
-*           USING  X  SHOULD BE OBEYED UNTIL ANOTHER PSC IS
-*           OBEYED. IT IS PROVIDED SOLELY AS AN EFFICIENCY AID
-*           ON MACHINES WITHOUT CHARACTER ORDERS SINCE IT
-*           PERMITS USE OF REGISTER BUFFERING OF CHARS IN SCH
-*           SEQUENCES. WHERE CSC IS NOT A NO-OP, IT MUST OBSERVE
-*           RESTRICTION 2. (E.G. IN SPITBOL, ALOCS ZEROISES THE
-*           LAST WORD OF A STRING FRAME PRIOR TO SCH SEQUENCE
-*           BEING STARTED SO CSC MUST NOT NULLIFY THIS ACTION.)
-*
-*           THE FOLLOWING INSTRUCTIONS ARE USED TO COMPARE
-*           TWO WORDS CONTAINING CFP$C CHARACTERS.
-*           COMPARISONS DISTINCT FROM BEQ,BNE ARE PROVIDED AS
-*           ON SOME TARGET MACHINES, THE POSSIBILITY OF THE SIGN
-*           BIT BEING SET MAY REQUIRE SPECIAL ACTION.
-*           NOTE THAT RESTRICTION 2 ABOVE, EASES USE OF THESE
-*           ORDERS IN TESTING COMPLETE STRINGS FOR EQUALITY,
-*           SINCE WHOLE WORD TESTS ARE POSSIBLE.
-*
-*      6.6  CEQ  OPW,OPW,PLBL JUMP TO PLBL IF OPW EQ OPW
-*      6.7  CNE  OPW,OPW,PLBL JUMP TO PLBL IF OPW NE OPW
-       EJC
-*
-*      -6- OPERATIONS ON CHARACTER VALUES (CONTINUED)
-*
-*      6.8  CMC  PLBL,PLBL   COMPARE CHARACTERS
-*
-*           CMC IS USED TO COMPARE TWO CHARACTER STRINGS. BEFORE
-*           EXECUTING CMC, REGISTERS ARE SET UP AS FOLLOWS.
-*           (XL)             CHARACTER PTR FOR FIRST STRING
-*           (XR)             CHARACTER POINTER FOR SECOND STRING
-*           (WA)             CHARACTER COUNT (MUST BE .GT. ZERO)
-*           XL AND XR SHOULD HAVE BEEN PREPARED BY PLC.
-*           CONTROL PASSES TO FIRST PLBL IF THE FIRST STRING
-*           IS LEXICALLY LESS THAN THE SECOND STRING, AND TO
-*           THE SECOND PLBL IF THE FIRST STRING IS LEXICALLY
-*           GREATER. CONTROL PASSES TO THE FOLLOWING INSTRUCTION
-*           IF THE STRINGS ARE IDENTICAL. AFTER EXECUTING THIS
-*           INSTRUCTION, THE VALUES OF XR AND XL ARE SET TO
-*           ZERO AND THE VALUE IN (WA) IS UNDEFINED.
-*           ARGUMENTS TO CMC MAY BE COMPLETE OR PARTIAL
-*           STRINGS, SO MAKING OPTIMISATION TO USE WHOLE WORD
-*           COMPARISONS DIFFICULT (DEPENDENT IN GENERAL ON
-*           SHIFTS AND MASKING).
-*
-*      6.9  TRC              TRANSLATE CHARACTERS
-*
-*           TRC IS USED TO TRANSLATE A CHARACTER STRING USING A
-*           SUPPLIED TRANSLATION TABLE. BEFORE EXECUTING TRC THE
-*           REGISTERS ARE SET AS FOLLOWS.
-*           (XL)             CHAR PTR TO STRING TO BE TRANSLATED
-*           (XR)             CHAR PTR TO TRANSLATE TABLE
-*           (WA)             LENGTH OF STRING TO BE TRANSLATED
-*           XL AND XR SHOULD HAVE BEEN PREPARED BY PLC.
-*           THE TRANSLATE TABLE CONSISTS OF CFP$A CONTIGUOUS
-*           CHARACTERS GIVING THE TRANSLATIONS OF THE CFP$A
-*           CHARACTERS IN THE ALPHABET. ON COMPLETION, (XR) AND
-*           (XL) ARE SET TO ZERO AND (WA) IS UNDEFINED.
-*
-*      6.10 FLC  W           FOLD CHARACTER TO UPPER CASE
-*           FLC IS USED ONLY IF .CULC IS DEFINED. THE CHARACTER
-*           CODE VALUE IN W IS TRANSLATED TO UPPER CASE IF IT
-*           CORRESPONDS TO A LOWER CASE CHARACTER.
-       EJC
-*
-*      -7-  OPERATIONS ON BIT STRING VALUES
-*
-*      7.1  ANB  OPW,W       AND BIT STRING VALUES
-*      7.2  ORB  OPW,W       OR BIT STRING VALUES
-*      7.3  XOB  OPW,W       EXCLUSIVE OR BIT STRING VALUES
-*
-*           IN THE ABOVE OPERATIONS, THE LOGICAL CONNECTIVE IS
-*           APPLIED SEPARATELY TO EACH OF THE CFP$N BITS.
-*           THE RESULT IS STORED IN THE SECOND OPERAND LOCATION.
-*
-*      7.4  CMB  W           COMPLEMENT ALL BITS IN OPW
-*
-*      7.5  RSH  W,VAL       RIGHT SHIFT BY VAL BITS
-*      7.6  LSH  W,VAL       LEFT SHIFT BY VAL BITS
-*      7.7  RSX  W,(X)       RIGHT SHIFT W NUMBER OF BITS IN X
-*      7.8  LSX  W,(X)       LEFT SHIFT W NUMBER OF BITS IN X
-*
-*           THE ABOVE SHIFTS ARE LOGICAL SHIFTS IN WHICH BITS
-*           SHIFTED OUT ARE LOST AND ZERO BITS SUPPLIED AS
-*           REQUIRED. THE SHIFT COUNT IS IN THE RANGE 0-CFP$N.
-*
-*      7.9  NZB  W,PLBL      JUMP TO PLBL IF W IS NOT
-*                            ALL ZERO BITS.
-*
-*      7.10 ZRB  W,PLBL      JUMP TO PLBL IF W IS ALL ZERO BITS
-*
-*      7.11 ZGB  OPN         ZEROISE GARBAGE BITS
-*
-*           OPN CONTAINS A BIT STRING REPRESENTING A WORD
-*           OF CHARACTERS FROM A STRING OR SOME FUNCTION
-*           FORMED FROM SUCH CHARACTERS (E.G. AS A RESULT OF
-*           HASHING). ON A MACHINE WHERE THE WORD SIZE IS NOT A
-*           MULTIPLE OF THE CHARACTER SIZE, SOME BITS IN REG MAY
-*           BE UNDEFINED. THIS OPCODE REPLACES SUCH BITS BY THE
-*           ZERO BIT. ZGB IS A NO-OP IF THE WORD SIZE IS A
-*           MULTIPLE OF THE CHARACTER SIZE.
-       EJC
-*
-*      -8-  CONVERSION INSTRUCTIONS
-*
-*           THE FOLLOWING INSTRUCTIONS PROVIDE FOR CONVERSION
-*           BETWEEN LENGTHS IN BYTES AND LENGTHS IN WORDS.
-*
-*      8.1  WTB  REG         CONVERT REG FROM WORDS TO BYTES.
-*                            THAT IS, MULTIPLY BY CFP$B. THIS IS
-*                            A NO-OP IF CFP$B IS ONE.
-*
-*      8.2  BTW  REG         CONVERT REG FROM BYTES TO WORDS
-*                            BY DIVIDING REG BY CFP$B DISCARDING
-*                            THE FRACTION. NO-OP IF CFP$B IS ONE
-*
-*           THE FOLLOWING INSTRUCTIONS PROVIDE FOR CONVERSION
-*           OF ONE WORD INTEGER VALUES (ADDRESSES) TO AND
-*           FROM THE FULL SIGNED INTEGER FORMAT.
-*
-*      8.3  MTI  OPN         THE VALUE OF OPN (AN ADDRESS)
-*                            IS MOVED AS A POSITIVE INTEGER
-*                            TO THE INTEGER ACCUMULATOR.
-*
-*      8.4  MFI  OPN,PLBL    THE VALUE CURRENTLY STORED IN THE
-*                            INTEGER ACCUMULATOR IS MOVED
-*                            TO OPN AS AN ADDRESS IF IT IS IN
-*                            THE RANGE 0 TO CFP$M INCLUSIVE.
-*                            IF THE ACCUMULATOR VALUE IS
-*                            OUTSIDE THIS RANGE, THEN THE RESULT
-*                            IN OPN IS UNDEFINED AND CONTROL IS
-*                            PASSED TO PLBL. MFI DESTROYS THE
-*                            VALUE OF (IA) WHETHER OR NOT
-*                            INTEGER OVERFLOW IS SIGNALLED.
-*                            PLBL MAY BE OMITTED IF OVERFLOW
-*                            IS IMPOSSIBLE.
-*
-*           THE FOLLOWING INSTRUCTIONS PROVIDE FOR CONVERSION
-*           BETWEEN REAL VALUES AND INTEGER VALUES.
-*
-*      8.5  ITR              CONVERT INTEGER VALUE IN INTEGER
-*                            ACCUMULATOR TO REAL AND STORE IN
-*                            REAL ACCUMULATOR (MAY LOSE
-*                            PRECISION IN SOME CASES)
-*
-*      8.6  RTI  PLBL        CONVERT THE REAL VALUE IN RA TO
-*                            AN INTEGER AND PLACE RESULT IN IA.
-*                            CONVERSION IS BY TRUNCATION OF THE
-*                            FRACTION - NO ROUNDING OCCURS.
-*                            JUMP TO PLBL IF OUT OF RANGE. (RA)
-*                            IS NOT CHANGED IN EITHER CASE.
-*                            PLBL MAY BE OMITTED IF OVERFLOW
-*                            IS IMPOSSIBLE.
-       EJC
-*
-*      -8-  CONVERSION INSTRUCTIONS (CONTINUED)
-*
-*           THE FOLLOWING INSTRUCTIONS PROVIDE FOR COMPUTING
-*           THE LENGTH OF STORAGE REQUIRED FOR A TEXT STRING.
-*
-*      8.7  CTW  W,VAL       THIS INSTRUCTION COMPUTES THE SUM
-*                            (NUMBER OF WORDS REQUIRED TO STORE
-*                            W CHARACTERS) + (VAL). THE SUM
-*                            IS STORED IN W.
-*                            FOR EXAMPLE, IF CFP$C IS 5, AND WA
-*                            CONTAINS 32, THEN CTW WA,2
-*                            GIVES A RESULT OF 9 IN WA.
-*
-*      8.8  CTB  W,VAL       CTB IS EXACTLY LIKE CTW EXCEPT THAT
-*                            THE RESULT IS IN BYTES. IT HAS THE
-*                            SAME EFFECT AS CTW W,VAL  WTB W
-*
-*           THE FOLLOWING INSTRUCTIONS PROVIDE FOR CONVERSION
-*           FROM INTEGERS TO AND FROM NUMERIC DIGIT CHARACTERS
-*           FOR USE IN NUMERIC CONVERSION ROUTINES. THEY EMPLOY
-*           NEGATIVE INTEGER VALUES TO ALLOW FOR PROPER
-*           CONVERSION OF NUMBERS WHICH CANNOT BE COMPLEMENTED.
-*
-*      8.9  CVM  PLBL        CONVERT BY MULTIPLICATION
-*
-*           THE INTEGER ACCUMULATOR, WHICH IS ZERO OR NEGATIVE,
-*           IS MULTIPLIED BY 10. WB CONTAINS THE CHARACTER
-*           CODE FOR A DIGIT. THE VALUE OF THIS DIGIT IS THEN
-*           SUBTRACTED FROM THE RESULT. IF THE RESULT IS OUT OF
-*           RANGE, THEN CONTROL IS PASSED TO PLBL WITH THE
-*           RESULT IN (IA) UNDEFINED. EXECUTION OF CVM LEAVES
-*           THE RESULT IN (WB) UNDEFINED.
-*
-*      8.10 CVD              CONVERT BY DIVISION
-*
-*           THE INTEGER ACCUMULATOR, WHICH IS ZERO OR NEGATIVE,
-*           IS DIVIDED BY 10. THE QUOTIENT (ZERO OR NEGATIVE)
-*           IS REPLACED IN THE ACCUMULATOR. THE REMAINDER IS
-*           CONVERTED TO THE CHARACTER CODE OF A DIGIT AND
-*           PLACED IN WA. FOR EXAMPLE, AN OPERAND OF -523 GIVES
-*           A QUOTIENT OF -52 AND A REMAINDER IN WA OF CH$D3.
-       EJC
-*
-*      -9-  BLOCK MOVE INSTRUCTIONS
-*
-*      THE FOLLOWING INSTRUCTIONS ARE USED FOR TRANSFERRING
-*      DATA FROM ONE AREA OF MEMORY TO ANOTHER IN BLOCKS.
-*      THEY CAN BE IMPLEMENTED WITH THE INDICATED SERIES OF
-*      OTHER MACRO-INSTRUCTIONS, BUT MORE EFFICIENT IMPLE-
-*      MENTATIONS WILL BE POSSIBLE ON MOST MACHINES.
-*
-*      NOTE THAT IN THE EQUIVALENT CODE SEQUENCE SHOWN BELOW, A
-*      ZERO VALUE IN WA WILL MOVE AT LEAST ONE ITEM, AND MAY
-*      MAY WRAP THE COUNTER CAUSING A CORE DUMP IN SOME IMPLE-
-*      MENTATIONS.  THUS WA SHOULD BE .GT. 0 PRIOR TO INVOKING
-*      ANY OF THESE BLOCK MOVE INSTRUCTIONS.
-*
-*      9.1  MVC              MOVE CHARACTERS
-*
-*           BEFORE OBEYING THIS ORDER WA,XL,XR SHOULD HAVE BEEN
-*           SET UP, THE LATTER TWO BY PLC, PSC RESP.
-*           MVC IS EQUIVALENT TO THE SEQUENCE
-*
-*                  MOV  WB,DUMPB
-*                  LCT  WA,WA
-*           LOOPC  LCH  WB,(XL)+
-*                  SCH  WB,(XR)+
-*                  BCT  WA,LOOPC
-*                  CSC  XR
-*                  MOV  DUMPB,WB
-*
-*           THE CHARACTER POINTERS ARE BUMPED AS INDICATED
-*           AND THE FINAL VALUE OF WA IS UNDEFINED.
-*
-*
-*      9.2  MVW              MOVE WORDS
-*
-*           MVW IS EQUIVALENT TO THE SEQUENCE
-*
-*           LOOPW  MOV  (XL)+,(XR)+
-*                  DCA  WA               WA = BYTES TO MOVE
-*                  BNZ  WA,LOOPW
-*
-*           NOTE THAT THIS IMPLIES THAT THE VALUE IN WA IS THE
-*           LENGTH IN BYTES WHICH IS A MULTIPLE OF CFP$B.
-*           THE INITIAL ADDRESSES IN XR,XL ARE WORD ADDRESSES.
-*           AS INDICATED, THE FINAL XR,XL VALUES POINT PAST THE
-*           NEW AND OLD REGIONS OF MEMORY RESPECTIVELY.
-*           THE FINAL VALUE OF WA IS UNDEFINED.
-*           WA,XL,XR MUST BE SET UP BEFORE OBEYING MVW.
-*
-*      9.3  MWB              MOVE WORDS BACKWARDS
-*
-*           MWB IS EQUIVALENT TO THE SEQUENCE
-*
-*           LOOPB  MOV  -(XL),-(XR)
-*                  DCA  WA               WA = BYTES TO MOVE
-*                  BNZ  WA,LOOPB
-*
-*           THERE IS A REQUIREMENT THAT THE INITIAL VALUE IN XL
-*           BE AT LEAST 256 LESS THAN THE VALUE IN XR. THIS
-*           ALLOWS AN IMPLEMENTATION IN WHICH CHUNKS OF 256
-*           BYTES ARE MOVED FORWARD (IBM 360, ICL 1900).
-*           THE FINAL VALUE OF WA IS UNDEFINED.
-*           WA,XL,XR MUST BE SET UP BEFORE OBEYING MWB.
-*
-*      9.4  MCB              MOVE CHARACTERS BACKWARDS
-*
-*           MCB IS EQUIVALENT TO THE SEQUENCE
-*
-*                  MOV  WB,DUMPB
-*                  LCT  WA,WA
-*           LOOPC  LCH  WB,-(XL)
-*                  SCH  WB,-(XR)
-*                  BCT  WA,LOOPC
-*                  CSC  XR
-*                  MOV  DUMPB,WB
-*
-*           THERE IS A REQUIREMENT THAT THE INITIAL VALUE IN XL
-*           BE AT LEAST 256 LESS THAN THE VALUE IN XR. THIS
-*           ALLOWS AN IMPLEMENTATION IN WHICH CHUNKS OF 256
-*           BYTES ARE MOVED FORWARD (IBM 360, ICL 1900).
-*           THE FINAL VALUE OF WA IS UNDEFINED.
-*           WA,XL,XR MUST BE SET UP BEFORE OBEYING MCB.
-       EJC
-*
-*      -10- OPERATIONS CONNECTED WITH THE STACK
-*
-*      THE STACK IS AN AREA IN MEMORY WHICH IS DEDICATED FOR USE
-*      IN CONJUNCTION WITH THE STACK POINTER REGISTER (XS). AS
-*      PREVIOUSLY DESCRIBED, IT IS USED BY THE JSR AND EXI
-*      INSTRUCTIONS AND MAY BE USED FOR STORAGE OF ANY OTHER
-*      DATA AS REQUIRED.
-*
-*      THE STACK BUILDS EITHER WAY IN MEMORY AND AN IMPORTANT
-*      RESTRICTION IS THAT THE VALUE IN (XS) MUST BE THE ADDRESS
-*      OF THE STACK FRONT AT ALL TIMES SINCE
-*      SOME IMPLEMENTATIONS MAY RANDOMLY DESTROY STACK LOCATIONS
-*      BEYOND (XS).
-*
-*      THE STARTING STACK BASE ADDRESS IS PASSED
-*      IN (XS) AT THE START OF EXECUTION. DURING EXECUTION IT
-*      IS NECESSARY TO MAKE SURE THAT THE STACK DOES NOT
-*      OVERFLOW. THIS IS ACHIEVED BY EXECUTING THE FOLLOWING
-*      INSTRUCTION PERIODICALLY.
-*
-*      10.1 CHK              CHECK STACK OVERFLOW
-*
-*      AFTER SUCCESSFULLY EXECUTING CHK, IT IS PERMISSIBLE TO
-*      USE UP TO 100 ADDITIONAL WORDS BEFORE ISSUING ANOTHER CHK
-*      THUS CHK NEED NOT BE ISSUED EVERY TIME THE STACK IS
-*      EXPANDED. IN SOME IMPLEMENTATIONS, THE CHECKING MAY BE
-*      AUTOMATIC AND CHK WILL HAVE NO EFFECT. FOLLOWING THE
-*      ABOVE RULE MAKES SURE THAT THE PROGRAM WILL OPERATE
-*      CORRECTLY IN IMPLEMENTATIONS WITH NO AUTOMATIC CHECK.
-*
-*      IF STACK OVERFLOW OCCURS (DETECTED EITHER AUTOMATICALLY
-*      OR BY A CHK INSTRUCTION), THEN CONTROL IS PASSED TO THE
-*      STACK OVERFLOW SECTION (SEE PROGRAM FORM). NOTE THAT THIS
-*      TRANSFER MAY TAKE PLACE FOLLOWING ANY INSTRUCTION WHICH
-*      STORES DATA AT A NEW LOCATION ON THE STACK.
-*      AFTER STACK OVERFLOW, STACK IS ARBITRARILY POPPED
-*      TO GIVE SOME SPACE IN WHICH THE ERROR PROCEDURE MAY
-*      OPERATE. OTHERWISE A LOOP OF STACK OVERFLOWS MAY OCCUR.
-       EJC
-*
-*      -11- DATA GENERATION INSTRUCTIONS
-*
-*      THE FOLLOWING INSTRUCTIONS ARE USED TO GENERATE CONSTANT
-*      VALUES IN THE CONSTANT SECTION AND ALSO TO ASSEMBLE
-*      INITIAL VALUES IN THE WORKING STORAGE SECTION. THEY
-*      MAY NOT APPEAR EXCEPT IN THESE TWO SECTIONS.
-*
-*      11.1 DAC  ADDR        ASSEMBLE ADDRESS CONSTANT.
-*                            GENERATES ONE WORD CONTAINING THE
-*                            SPECIFIED ONE WORD INTEGER
-*                            VALUE (ADDRESS).
-*
-*      11.2 DIC  INTEGER     GENERATES AN INTEGER VALUE WHICH
-*                            OCCUPIES CFP$I CONSECUTIVE WORDS.
-*                            THE OPERAND IS A DIGIT STRING WITH
-*                            A REQUIRED LEADING SIGN.
-*
-*      11.3 DRC  REAL        ASSEMBLES A REAL CONSTANT WHICH
-*                            OCCUPIES CFP$R CONSECUTIVE WORDS.
-*                            THE OPERAND FORM MUST OBEY THE
-*                            RULES FOR A FORTRAN REAL CONSTANT
-*                            WITH THE EXTRA REQUIREMENT THAT A
-*                            LEADING SIGN BE PRESENT.
-*
-*      11.4 DTC  DTEXT       DEFINE TEXT CONSTANT. DTEXT
-*                            IS STARTED AND ENDED WITH ANY
-*                            CHARACTER NOT CONTAINED IN THE
-*                            CHARACTERS TO BE ASSEMBLED. THE
-*                            CONSTANT OCCUPIES CONSECUTIVE WORDS
-*                            AS DICTATED BY THE CONFIGURATION
-*                            PARAMETER CFP$C. ANY UNUSED CHARS
-*                            IN THE LAST WORD ARE RIGHT FILLED
-*                            WITH ZEROS (I.E. THE CHARACTER
-*                            WHOSE INTERNAL CODE IS ZERO).
-*                            THE STRING CONTAINS A SEQUENCE OF
-*                            LETTERS, DIGITS, BLANKS AND ANY OF
-*                            THE FOLLOWING SPECIAL CHARACTERS.
+*           a further restriction to be observed in code
+*           handling character strings, is that strings built
+*           dynamically should be right padded with zero
+*           characters to a full word boundary to permit easy
+*           hashing and use of ceq or cne in testing strings
+*           for equality.
+*
+*      6.1  plc  x,opv       prepare ch ptr for lch,cmc,mvc,trc,
+*                            mcb.
+*
+*      6.2  psc  x,opv       prepare char. ptr for sch,mvc,mcb.
+*
+*           opv can be omitted if it is zero.
+*           the char. initially addressed is determined by the
+*           word address in x and the integer offset opv.
+*           there is an automatic implied offset of cfp$f bytes.
+*           cfp$f is used to formally introduce into minimal a
+*           value needed in translating these opcodes which,
+*           since minimal itself does not prescribe a string
+*           structure in detail, depends on the choice of a data
+*           structure for strings in the minimal program.
+*           e.g. if cfp$b = cfp$c = 3, cfp$f = 6, num01 = 1, xl
+*           points to a series of 4 words, abc/def/ghi/jkl, then
+*               plc  xl,=num01
+*           points to h.
+       ejc
+*
+*      -6- operations on character values (continued)
+*
+*      6.3  lch  reg,opc     load character into reg
+*
+*      6.4  sch  reg,opc     store character from reg
+*
+*           these operations are defined such that the character
+*           is right justified in register reg with zero bits to
+*           the left. after lch for example, it is legitimate
+*           to regard reg as containing the ordinal integer
+*           corresponding to the character.
+*
+*           opc is one of the following three possibilities.
+*
+*           (x)              the character pointed to by the
+*                            character pointer in x. the
+*                            character pointer is not changed.
+*
+*           (x)+             same character as (x) but the
+*                            character pointer is incremented
+*                            to point to the next character
+*                            following execution.
+*
+*           -(x)             the character pointer is decre-
+*                            mented before accessing the
+*                            character so that the previous
+*                            character is referenced.
+*
+*      6.5  csc  x           complete store characters
+*
+*           this instruction marks completion of a
+*           psc,sch,sch,...,sch sequence initiated by
+*           a  psc  x instruction. no more sch instructions
+*           using  x  should be obeyed until another psc is
+*           obeyed. it is provided solely as an efficiency aid
+*           on machines without character orders since it
+*           permits use of register buffering of chars in sch
+*           sequences. where csc is not a no-op, it must observe
+*           restriction 2. (e.g. in spitbol, alocs zeroises the
+*           last word of a string frame prior to sch sequence
+*           being started so csc must not nullify this action.)
+*
+*           the following instructions are used to compare
+*           two words containing cfp$c characters.
+*           comparisons distinct from beq,bne are provided as
+*           on some target machines, the possibility of the sign
+*           bit being set may require special action.
+*           note that restriction 2 above, eases use of these
+*           orders in testing complete strings for equality,
+*           since whole word tests are possible.
+*
+*      6.6  ceq  opw,opw,plbl jump to plbl if opw eq opw
+*      6.7  cne  opw,opw,plbl jump to plbl if opw ne opw
+       ejc
+*
+*      -6- operations on character values (continued)
+*
+*      6.8  cmc  plbl,plbl   compare characters
+*
+*           cmc is used to compare two character strings. before
+*           executing cmc, registers are set up as follows.
+*           (xl)             character ptr for first string
+*           (xr)             character pointer for second string
+*           (wa)             character count (must be .gt. zero)
+*           xl and xr should have been prepared by plc.
+*           control passes to first plbl if the first string
+*           is lexically less than the second string, and to
+*           the second plbl if the first string is lexically
+*           greater. control passes to the following instruction
+*           if the strings are identical. after executing this
+*           instruction, the values of xr and xl are set to
+*           zero and the value in (wa) is undefined.
+*           arguments to cmc may be complete or partial
+*           strings, so making optimisation to use whole word
+*           comparisons difficult (dependent in general on
+*           shifts and masking).
+*
+*      6.9  trc              translate characters
+*
+*           trc is used to translate a character string using a
+*           supplied translation table. before executing trc the
+*           registers are set as follows.
+*           (xl)             char ptr to string to be translated
+*           (xr)             char ptr to translate table
+*           (wa)             length of string to be translated
+*           xl and xr should have been prepared by plc.
+*           the translate table consists of cfp$a contiguous
+*           characters giving the translations of the cfp$a
+*           characters in the alphabet. on completion, (xr) and
+*           (xl) are set to zero and (wa) is undefined.
+*
+*      6.10 flc  w           fold character to upper case
+*           flc is used only if .culc is defined. the character
+*           code value in w is translated to upper case if it
+*           corresponds to a lower case character.
+       ejc
+*
+*      -7-  operations on bit string values
+*
+*      7.1  anb  opw,w       and bit string values
+*      7.2  orb  opw,w       or bit string values
+*      7.3  xob  opw,w       exclusive or bit string values
+*
+*           in the above operations, the logical connective is
+*           applied separately to each of the cfp$n bits.
+*           the result is stored in the second operand location.
+*
+*      7.4  cmb  w           complement all bits in opw
+*
+*      7.5  rsh  w,val       right shift by val bits
+*      7.6  lsh  w,val       left shift by val bits
+*      7.7  rsx  w,(x)       right shift w number of bits in x
+*      7.8  lsx  w,(x)       left shift w number of bits in x
+*
+*           the above shifts are logical shifts in which bits
+*           shifted out are lost and zero bits supplied as
+*           required. the shift count is in the range 0-cfp$n.
+*
+*      7.9  nzb  w,plbl      jump to plbl if w is not
+*                            all zero bits.
+*
+*      7.10 zrb  w,plbl      jump to plbl if w is all zero bits
+*
+*      7.11 zgb  opn         zeroise garbage bits
+*
+*           opn contains a bit string representing a word
+*           of characters from a string or some function
+*           formed from such characters (e.g. as a result of
+*           hashing). on a machine where the word size is not a
+*           multiple of the character size, some bits in reg may
+*           be undefined. this opcode replaces such bits by the
+*           zero bit. zgb is a no-op if the word size is a
+*           multiple of the character size.
+       ejc
+*
+*      -8-  conversion instructions
+*
+*           the following instructions provide for conversion
+*           between lengths in bytes and lengths in words.
+*
+*      8.1  wtb  reg         convert reg from words to bytes.
+*                            that is, multiply by cfp$b. this is
+*                            a no-op if cfp$b is one.
+*
+*      8.2  btw  reg         convert reg from bytes to words
+*                            by dividing reg by cfp$b discarding
+*                            the fraction. no-op if cfp$b is one
+*
+*           the following instructions provide for conversion
+*           of one word integer values (addresses) to and
+*           from the full signed integer format.
+*
+*      8.3  mti  opn         the value of opn (an address)
+*                            is moved as a positive integer
+*                            to the integer accumulator.
+*
+*      8.4  mfi  opn,plbl    the value currently stored in the
+*                            integer accumulator is moved
+*                            to opn as an address if it is in
+*                            the range 0 to cfp$m inclusive.
+*                            if the accumulator value is
+*                            outside this range, then the result
+*                            in opn is undefined and control is
+*                            passed to plbl. mfi destroys the
+*                            value of (ia) whether or not
+*                            integer overflow is signalled.
+*                            plbl may be omitted if overflow
+*                            is impossible.
+*
+*           the following instructions provide for conversion
+*           between real values and integer values.
+*
+*      8.5  itr              convert integer value in integer
+*                            accumulator to real and store in
+*                            real accumulator (may lose
+*                            precision in some cases)
+*
+*      8.6  rti  plbl        convert the real value in ra to
+*                            an integer and place result in ia.
+*                            conversion is by truncation of the
+*                            fraction - no rounding occurs.
+*                            jump to plbl if out of range. (ra)
+*                            is not changed in either case.
+*                            plbl may be omitted if overflow
+*                            is impossible.
+       ejc
+*
+*      -8-  conversion instructions (continued)
+*
+*           the following instructions provide for computing
+*           the length of storage required for a text string.
+*
+*      8.7  ctw  w,val       this instruction computes the sum
+*                            (number of words required to store
+*                            w characters) + (val). the sum
+*                            is stored in w.
+*                            for example, if cfp$c is 5, and wa
+*                            contains 32, then ctw wa,2
+*                            gives a result of 9 in wa.
+*
+*      8.8  ctb  w,val       ctb is exactly like ctw except that
+*                            the result is in bytes. it has the
+*                            same effect as ctw w,val  wtb w
+*
+*           the following instructions provide for conversion
+*           from integers to and from numeric digit characters
+*           for use in numeric conversion routines. they employ
+*           negative integer values to allow for proper
+*           conversion of numbers which cannot be complemented.
+*
+*      8.9  cvm  plbl        convert by multiplication
+*
+*           the integer accumulator, which is zero or negative,
+*           is multiplied by 10. wb contains the character
+*           code for a digit. the value of this digit is then
+*           subtracted from the result. if the result is out of
+*           range, then control is passed to plbl with the
+*           result in (ia) undefined. execution of cvm leaves
+*           the result in (wb) undefined.
+*
+*      8.10 cvd              convert by division
+*
+*           the integer accumulator, which is zero or negative,
+*           is divided by 10. the quotient (zero or negative)
+*           is replaced in the accumulator. the remainder is
+*           converted to the character code of a digit and
+*           placed in wa. for example, an operand of -523 gives
+*           a quotient of -52 and a remainder in wa of ch$d3.
+       ejc
+*
+*      -9-  block move instructions
+*
+*      the following instructions are used for transferring
+*      data from one area of memory to another in blocks.
+*      they can be implemented with the indicated series of
+*      other macro-instructions, but more efficient imple-
+*      mentations will be possible on most machines.
+*
+*      note that in the equivalent code sequence shown below, a
+*      zero value in wa will move at least one item, and may
+*      may wrap the counter causing a core dump in some imple-
+*      mentations.  thus wa should be .gt. 0 prior to invoking
+*      any of these block move instructions.
+*
+*      9.1  mvc              move characters
+*
+*           before obeying this order wa,xl,xr should have been
+*           set up, the latter two by plc, psc resp.
+*           mvc is equivalent to the sequence
+*
+*                  mov  wb,dumpb
+*                  lct  wa,wa
+*           loopc  lch  wb,(xl)+
+*                  sch  wb,(xr)+
+*                  bct  wa,loopc
+*                  csc  xr
+*                  mov  dumpb,wb
+*
+*           the character pointers are bumped as indicated
+*           and the final value of wa is undefined.
+*
+*
+*      9.2  mvw              move words
+*
+*           mvw is equivalent to the sequence
+*
+*           loopw  mov  (xl)+,(xr)+
+*                  dca  wa               wa = bytes to move
+*                  bnz  wa,loopw
+*
+*           note that this implies that the value in wa is the
+*           length in bytes which is a multiple of cfp$b.
+*           the initial addresses in xr,xl are word addresses.
+*           as indicated, the final xr,xl values point past the
+*           new and old regions of memory respectively.
+*           the final value of wa is undefined.
+*           wa,xl,xr must be set up before obeying mvw.
+*
+*      9.3  mwb              move words backwards
+*
+*           mwb is equivalent to the sequence
+*
+*           loopb  mov  -(xl),-(xr)
+*                  dca  wa               wa = bytes to move
+*                  bnz  wa,loopb
+*
+*           there is a requirement that the initial value in xl
+*           be at least 256 less than the value in xr. this
+*           allows an implementation in which chunks of 256
+*           bytes are moved forward (ibm 360, icl 1900).
+*           the final value of wa is undefined.
+*           wa,xl,xr must be set up before obeying mwb.
+*
+*      9.4  mcb              move characters backwards
+*
+*           mcb is equivalent to the sequence
+*
+*                  mov  wb,dumpb
+*                  lct  wa,wa
+*           loopc  lch  wb,-(xl)
+*                  sch  wb,-(xr)
+*                  bct  wa,loopc
+*                  csc  xr
+*                  mov  dumpb,wb
+*
+*           there is a requirement that the initial value in xl
+*           be at least 256 less than the value in xr. this
+*           allows an implementation in which chunks of 256
+*           bytes are moved forward (ibm 360, icl 1900).
+*           the final value of wa is undefined.
+*           wa,xl,xr must be set up before obeying mcb.
+       ejc
+*
+*      -10- operations connected with the stack
+*
+*      the stack is an area in memory which is dedicated for use
+*      in conjunction with the stack pointer register (xs). as
+*      previously described, it is used by the jsr and exi
+*      instructions and may be used for storage of any other
+*      data as required.
+*
+*      the stack builds either way in memory and an important
+*      restriction is that the value in (xs) must be the address
+*      of the stack front at all times since
+*      some implementations may randomly destroy stack locations
+*      beyond (xs).
+*
+*      the starting stack base address is passed
+*      in (xs) at the start of execution. during execution it
+*      is necessary to make sure that the stack does not
+*      overflow. this is achieved by executing the following
+*      instruction periodically.
+*
+*      10.1 chk              check stack overflow
+*
+*      after successfully executing chk, it is permissible to
+*      use up to 100 additional words before issuing another chk
+*      thus chk need not be issued every time the stack is
+*      expanded. in some implementations, the checking may be
+*      automatic and chk will have no effect. following the
+*      above rule makes sure that the program will operate
+*      correctly in implementations with no automatic check.
+*
+*      if stack overflow occurs (detected either automatically
+*      or by a chk instruction), then control is passed to the
+*      stack overflow section (see program form). note that this
+*      transfer may take place following any instruction which
+*      stores data at a new location on the stack.
+*      after stack overflow, stack is arbitrarily popped
+*      to give some space in which the error procedure may
+*      operate. otherwise a loop of stack overflows may occur.
+       ejc
+*
+*      -11- data generation instructions
+*
+*      the following instructions are used to generate constant
+*      values in the constant section and also to assemble
+*      initial values in the working storage section. they
+*      may not appear except in these two sections.
+*
+*      11.1 dac  addr        assemble address constant.
+*                            generates one word containing the
+*                            specified one word integer
+*                            value (address).
+*
+*      11.2 dic  integer     generates an integer value which
+*                            occupies cfp$i consecutive words.
+*                            the operand is a digit string with
+*                            a required leading sign.
+*
+*      11.3 drc  real        assembles a real constant which
+*                            occupies cfp$r consecutive words.
+*                            the operand form must obey the
+*                            rules for a fortran real constant
+*                            with the extra requirement that a
+*                            leading sign be present.
+*
+*      11.4 dtc  dtext       define text constant. dtext
+*                            is started and ended with any
+*                            character not contained in the
+*                            characters to be assembled. the
+*                            constant occupies consecutive words
+*                            as dictated by the configuration
+*                            parameter cfp$c. any unused chars
+*                            in the last word are right filled
+*                            with zeros (i.e. the character
+*                            whose internal code is zero).
+*                            the string contains a sequence of
+*                            letters, digits, blanks and any of
+*                            the following special characters.
 *                            =,$.(*)/+-
-*                            NO OTHER CHARACTERS
-*                            MAY BE USED IN A DTEXT OPERAND.
-*
-*      11.5 DBC  VAL         ASSEMBLE BIT STRING CONSTANT. THE
-*                            OPERAND IS A POSITIVE INTEGER
-*                            VALUE WHICH IS INTERPRETED IN
-*                            BINARY, RIGHT JUSTIFIED AND LEFT
-*                            FILLED WITH ZERO BITS. THUS 5 WOULD
-*                            IMPLY THE BIT STRING VALUE 00...101.
-       EJC
-*
-*      -12- SYMBOL DEFINITION INSTRUCTIONS
-*
-*      THE FOLLOWING INSTRUCTION IS USED TO DEFINE SYMBOLS
-*      IN THE DEFINITIONS SECTION. IT MAY NOT BE USED ELSEWHERE.
-*
-*      12.1 EQU  EQOP        DEFINE SYMBOL
-*
-*           THE SYMBOL WHICH APPEARS IN THE LABEL FIELD IS
-*           DEFINED TO HAVE THE ABSOLUTE VALUE GIVEN
-*           BY THE EQOP OPERAND. A GIVEN SYMBOL MAY BE DEFINED
-*           ONLY ONCE IN THIS MANNER, AND ANY SYMBOLS OCCURING
-*           IN EQOP MUST BE PREVIOUSLY DEFINED.
+*                            no other characters
+*                            may be used in a dtext operand.
+*
+*      11.5 dbc  val         assemble bit string constant. the
+*                            operand is a positive integer
+*                            value which is interpreted in
+*                            binary, right justified and left
+*                            filled with zero bits. thus 5 would
+*                            imply the bit string value 00...101.
+       ejc
+*
+*      -12- symbol definition instructions
+*
+*      the following instruction is used to define symbols
+*      in the definitions section. it may not be used elsewhere.
+*
+*      12.1 equ  eqop        define symbol
+*
+*           the symbol which appears in the label field is
+*           defined to have the absolute value given
+*           by the eqop operand. a given symbol may be defined
+*           only once in this manner, and any symbols occuring
+*           in eqop must be previously defined.
 *
-*           THE FOLLOWING ARE THE POSSIBILITIES FOR EQOP
+*           the following are the possibilities for eqop
 *
-*           VAL              THE INDICATED VALUE IS USED
+*           val              the indicated value is used
 *
-*           VAL+VAL          THE SUM OF THE TWO VALUES IS USED.
-*                            THIS SUM MUST NOT EXCEED CFP$M
+*           val+val          the sum of the two values is used.
+*                            this sum must not exceed cfp$m
 *
-*           VAL-VAL          THE DIFFERENCE BETWEEN THE TWO
-*                            VALUES (MUST BE POSITIVE) IS USED.
+*           val-val          the difference between the two
+*                            values (must be positive) is used.
 *
-*           *                THIS FORMAT DEFINES THE LABEL BY
-*                            USING A VALUE SUPPLIED BY THE
-*                            MINIMAL TRANSLATOR. VALUES ARE
-*                            REQUIRED FOR THE
-*           CFP$X            (CONFIGURATION PARAMETERS)
-*           E$XXX            (ENVIRONMENT PARAMETERS)
-*           CH$XX            (CHARACTER CODES).
-*                            IN ORDER FOR A TRANSLATOR TO
-*                            HANDLE THIS FORMAT CORRECTLY THE
-*                            DEFINITIONS SECTION MUST BE
-*                            CONSULTED FOR DETAILS OF REQUIRED
-*                            SYMBOLS AS LISTED AT THE FRONT OF
-*                            THE SECTION.
-       EJC
+*           *                this format defines the label by
+*                            using a value supplied by the
+*                            minimal translator. values are
+*                            required for the
+*           cfp$x            (configuration parameters)
+*           e$xxx            (environment parameters)
+*           ch$xx            (character codes).
+*                            in order for a translator to
+*                            handle this format correctly the
+*                            definitions section must be
+*                            consulted for details of required
+*                            symbols as listed at the front of
+*                            the section.
+       ejc
 *
-*      SYMBOL DEFINITION INSTRUCTIONS (CONTINUED)
+*      symbol definition instructions (continued)
 *
-*      THE FOLLOWING INSTRUCTIONS MAY BE USED TO DEFINE SYMBOLS
-*      IN THE PROCEDURE SECTION. THEY MAY NOT BE USED IN
-*      ANY OTHER PART OF THE PROGRAM.
+*      the following instructions may be used to define symbols
+*      in the procedure section. they may not be used in
+*      any other part of the program.
 *
-*      12.2 EXP              DEFINE EXTERNAL PROCEDURE
+*      12.2 exp              define external procedure
 *
-*           EXP DEFINES THE SYMBOL APPEARING IN THE LABEL FIELD
-*           TO BE THE NAME OF AN EXTERNAL PROCEDURE WHICH CAN BE
-*           REFERENCED IN A SUBSEQUENT JSR INSTRUCTION. THE
-*           CODING FOR THE PROCEDURE IS EXTERNAL TO THE
-*           CODING OF THE SOURCE PROGRAM IN THIS LANGUAGE.
-*           THE CODE FOR EXTERNAL PROCEDURES MAY BE
-*           REFERRED TO COLLECTIVELY AS THE OPERATING SYSTEM
-*           INTERFACE, OR MORE BRIEFLY, OSINT, AND WILL
-*           FREQUENTLY BE A SEPARATELY COMPILED SEGMENT OF CODE
-*           LOADED WITH SPITBOL TO PRODUCE A COMPLETE SYSTEM.
+*           exp defines the symbol appearing in the label field
+*           to be the name of an external procedure which can be
+*           referenced in a subsequent jsr instruction. the
+*           coding for the procedure is external to the
+*           coding of the source program in this language.
+*           the code for external procedures may be
+*           referred to collectively as the operating system
+*           interface, or more briefly, osint, and will
+*           frequently be a separately compiled segment of code
+*           loaded with spitbol to produce a complete system.
 *
-*      12.3 INP  PTYP,INT    DEFINE INTERNAL PROCEDURE
+*      12.3 inp  ptyp,int    define internal procedure
 *
-*           INP DEFINES THE SYMBOL APPEARING IN THE LABEL FIELD
-*           TO BE THE NAME OF AN INTERNAL PROCEDURE AND GIVES
-*           ITS TYPE AND NUMBER OF EXIT PARAMETERS. THE LABEL
-*           CAN BE REFERENCED IN JSR INSTRUCTIONS AND
-*           IT MUST APPEAR LABELLING A PRC INSTRUCTION IN THE
-*           PROGRAM SECTION.
+*           inp defines the symbol appearing in the label field
+*           to be the name of an internal procedure and gives
+*           its type and number of exit parameters. the label
+*           can be referenced in jsr instructions and
+*           it must appear labelling a prc instruction in the
+*           program section.
 *
-*      12.4 INR              DEFINE INTERNAL ROUTINE
+*      12.4 inr              define internal routine
 *
-*           INR DEFINES THE SYMBOL APPEARING IN THE LABEL
-*           FIELD TO BE THE NAME OF AN INTERNAL ROUTINE. THE
-*           LABEL MAY BE REFERENCED IN ANY TYPE OF BRANCH ORDER
-*           AND IT MUST APPEAR LABELLING A RTN INSTRUCTION IN
-*           THE PROGRAM SECTION.
-       EJC
+*           inr defines the symbol appearing in the label
+*           field to be the name of an internal routine. the
+*           label may be referenced in any type of branch order
+*           and it must appear labelling a rtn instruction in
+*           the program section.
+       ejc
 *
-*      -13- ASSEMBLY LISTING LAYOUT INSTRUCTIONS
+*      -13- assembly listing layout instructions
 *
-*      13.1 EJC              EJECT TO NEXT PAGE
+*      13.1 ejc              eject to next page
 *
-*      13.2 TTL  TEXT        SET NEW ASSEMBLY TITLE
+*      13.2 ttl  text        set new assembly title
 *
-*           TTL IMPLIES AN IMMEDIATE EJECT OF THE
-*           ASSEMBLY LISTING TO PRINT THE NEW TITLE.
+*           ttl implies an immediate eject of the
+*           assembly listing to print the new title.
 *
-*           THE USE OF TTL AND EJC CARDS IS SUCH THAT THE
-*           PROGRAM WILL LIST NEATLY IF THE PRINTER PRINTS
-*           AS MANY AS 58 LINES PER PAGE. IN THE EVENT THAT
-*           THE PRINTER DEPTH IS LESS THAN THIS, OR IF THE
-*           LISTING CONTAINS INTERSPERSED LINES (SUCH AS ACTUAL
-*           GENERATED CODE), THEN THE FORMAT MAY BE UPSET.
+*           the use of ttl and ejc cards is such that the
+*           program will list neatly if the printer prints
+*           as many as 58 lines per page. in the event that
+*           the printer depth is less than this, or if the
+*           listing contains interspersed lines (such as actual
+*           generated code), then the format may be upset.
 *
-*           LINES STARTING WITH AN ASTERISK ARE COMMENT LINES
-*           WHICH CAUSE NO CODE TO BE GENERATED AND MAY OCCUR
-*           FREELY ANYWHERE IN THE PROGRAM. THE FORMAT FOR
-*           COMMENT LINES IS GIVEN IN SECTION -15-.
-       EJC
+*           lines starting with an asterisk are comment lines
+*           which cause no code to be generated and may occur
+*           freely anywhere in the program. the format for
+*           comment lines is given in section -15-.
+       ejc
 *
-*      -14- PROGRAM FORM
+*      -14- program form
 *
-*           THE PROGRAM CONSISTS OF SEPARATE SECTIONS SEPARATED
-*           BY SEC OPERATIONS. THE SECTIONS MUST APPEAR IN THE
-*           FOLLOWING SPECIFIED ORDER.
+*           the program consists of separate sections separated
+*           by sec operations. the sections must appear in the
+*           following specified order.
 *
-*      14.1 SEC              START OF PROCEDURE SECTION
+*      14.1 sec              start of procedure section
 *
-*           (PROCEDURE SECTION)
+*           (procedure section)
 *
-*           SEC               START OF DEFINITIONS SECTION
+*           sec               start of definitions section
 *
-*           (DEFINITIONS SECTION)
+*           (definitions section)
 *
-*           SEC               START OF CONSTANT STORAGE SECTION
+*           sec               start of constant storage section
 *
-*           (CONSTANT STORAGE SECTION)
+*           (constant storage section)
 *
-*           SEC               START OF WORKING STORAGE SECTION
+*           sec               start of working storage section
 *
-*           (WORKING STORAGE SECTION)
+*           (working storage section)
 *
-*           SEC               START OF PROGRAM SECTION
+*           sec               start of program section
 *
-*           (PROGRAM SECTION)
+*           (program section)
 *
-*           SEC               START OF STACK OVERFLOW SECTION
+*           sec               start of stack overflow section
 *
-*           (STACK OVERFLOW SECTION)
+*           (stack overflow section)
 *
-*           SEC               START OF ERROR SECTION
+*           sec               start of error section
 *
-*           (ERROR SECTION)
+*           (error section)
 *
-*      14.2 END              END OF ASSEMBLY
-       EJC
+*      14.2 end              end of assembly
+       ejc
 *
-*      SECTION 10 - PROGRAM FORM
+*      section 10 - program form
 *
-*      PROCEDURE SECTION
+*      procedure section
 *
-*           THE PROCEDURE SECTION CONTAINS ALL THE EXP
-*           INSTRUCTIONS FOR EXTERNALLY AVAILABLE PROCEDURES
-*           AND INP,INR OPCODES FOR INTERNAL PROCEDURES,ROUTINES
-*           SO THAT A SINGLE PASS MINIMAL TRANSLATOR HAS ADVANCE
-*           KNOWLEDGE OF PROCEDURE TYPES WHEN TRANSLATING CALLS.
+*           the procedure section contains all the exp
+*           instructions for externally available procedures
+*           and inp,inr opcodes for internal procedures,routines
+*           so that a single pass minimal translator has advance
+*           knowledge of procedure types when translating calls.
 *
-*      DEFINITIONS SECTION
+*      definitions section
 *
-*           THE DEFINITIONS SECTION CONTAINS EQU INSTRUCTIONS
-*           WHICH DEFINE SYMBOLS REFERENCED LATER ON IN THE
-*           PROGRAM, CONSTANT AND WORK SECTIONS.
+*           the definitions section contains equ instructions
+*           which define symbols referenced later on in the
+*           program, constant and work sections.
 *
-*      CONSTANT STORAGE SECTION
+*      constant storage section
 *
-*           THE CONSTANT STORAGE SECTION CONSISTS ENTIRELY
-*           OF CONSTANTS ASSEMBLED WITH THE DAC,DIC,DRC,DTC,DBC
-*           ASSEMBLY OPERATIONS. THESE CONSTANTS CAN BE FREELY
-*           REFERENCED BY THE PROGRAM INSTRUCTIONS.
+*           the constant storage section consists entirely
+*           of constants assembled with the dac,dic,drc,dtc,dbc
+*           assembly operations. these constants can be freely
+*           referenced by the program instructions.
 *
-*      WORKING STORAGE SECTION
+*      working storage section
 *
-*           THE WORKING STORAGE SECTION CONSISTS ENTIRELY OF
-*           DAC,DIC,DRC,DBC,DTC INSTRUCTIONS TO DEFINE A FIXED
-*           LENGTH WORK AREA. THE WORK LOCATIONS IN THIS AREA
-*           CAN BE DIRECTLY REFERENCED IN PROGRAM INSTRUCTIONS.
-*           THE AREA IS INITIALIZED IN ACCORDANCE WITH THE
-*           VALUES ASSEMBLED IN THE INSTRUCTIONS.
+*           the working storage section consists entirely of
+*           dac,dic,drc,dbc,dtc instructions to define a fixed
+*           length work area. the work locations in this area
+*           can be directly referenced in program instructions.
+*           the area is initialized in accordance with the
+*           values assembled in the instructions.
 *
-*      PROGRAM SECTION
+*      program section
 *
-*           THE PROGRAM SECTION CONTAINS PROGRAM INSTRUCTIONS
-*           AND ASSOCIATED OPERATIONS (SUCH AS PRC, ENP, ENT).
-*           CONTROL IS PASSED TO THE FIRST INSTRUCTION IN THIS
-*           SECTION WHEN EXECUTION IS INITIATED.
+*           the program section contains program instructions
+*           and associated operations (such as prc, enp, ent).
+*           control is passed to the first instruction in this
+*           section when execution is initiated.
 *
-*      STACK OVERFLOW SECTION
+*      stack overflow section
 *
-*           THE STACK OVERFLOW SECTION CONTAINS INSTRUCTIONS
-*           LIKE THE PROGRAM SECTION. CONTROL IS PASSED TO THE
-*           FIRST INSTRUCTION IN THIS SECTION FOLLOWING THE
-*           OCCURRENCE OF STACK OVERFLOW, SEE CHK INSTRUCTION.
+*           the stack overflow section contains instructions
+*           like the program section. control is passed to the
+*           first instruction in this section following the
+*           occurrence of stack overflow, see chk instruction.
 *
-*      ERROR SECTION
+*      error section
 *
-*           THE ERROR SECTION CONTAINS INSTRUCTIONS LIKE THE
-*           PROGRAM SECTION. CONTROL IS PASSED TO THE FIRST
-*           INSTRUCTION IN THIS SECTION WHEN A PROCEDURE EXIT
-*           CORRESPONDS TO AN ERROR PARAMETER (SEE ERR)
-*           OR WHEN AN ERB OPCODE IS OBEYED. THE ERROR CODE
-*           MUST CLEAN UP THE MAIN STACK AND CATER FOR THE
-*           POSSIBILITY THAT A SUBROUTINE STACK MAY NEED CLEAN
-*           UP.
-       EJC
-*      OSINT
+*           the error section contains instructions like the
+*           program section. control is passed to the first
+*           instruction in this section when a procedure exit
+*           corresponds to an error parameter (see err)
+*           or when an erb opcode is obeyed. the error code
+*           must clean up the main stack and cater for the
+*           possibility that a subroutine stack may need clean
+*           up.
+       ejc
+*      osint
 *
-*           THOUGH NOT PART OF THE MINIMAL SOURCE, IT IS USEFUL
-*           TO REFER TO THE COLLECTION OF INITIALISATION AND
-*           EXP ROUTINES AS OSINT (OPERATING SYSTEM INTERFACE).
-*           ERRORS OCCURRING WITHIN OSINT PROCEDURES ARE
-*           USUALLY HANDLED BY MAKING AN ERROR RETURN. IF THIS
-*           IS NOT FEASIBLE OR APPROPRIATE, OSINT MAY USE THE
-*           MINIMAL ERROR SECTION TO REPORT ERRORS DIRECTLY BY
-*           BRANCHING TO IT WITH A SUITABLE NUMERIC ERROR
-*           CODE IN WA.
-       EJC
+*           though not part of the minimal source, it is useful
+*           to refer to the collection of initialisation and
+*           exp routines as osint (operating system interface).
+*           errors occurring within osint procedures are
+*           usually handled by making an error return. if this
+*           is not feasible or appropriate, osint may use the
+*           minimal error section to report errors directly by
+*           branching to it with a suitable numeric error
+*           code in wa.
+       ejc
 *
-*      SECTION 11 - STATEMENT FORMAT
+*      section 11 - statement format
 *
-*      ALL LABELS ARE EXACTLY FIVE CHARACTERS LONG AND START
-*      WITH THREE LETTERS (ABCDEFGHIJKLMNOPQRSTUVWXY$) FOLLOWED
-*      BY TWO LETTERS OR DIGITS.
-*      THE LETTER Z MAY NOT BE USED IN MINIMAL SYMBOLS BUT $ IS
-*      PERMITTED.
-*      FOR IMPLEMENTATIONS WHERE $ MAY NOT APPEAR IN THE
-*      TARGET CODE , A SIMPLE SUBSTITUTION OF Z FOR $
-*      MAY THUS BE MADE WITHOUT RISK OF PRODUCING NON-UNIQUE
-*      SYMBOLS.
-*      THE LETTER Z IS HOWEVER PERMITTED IN OPCODE MNEMONICS AND
-*      IN COMMENTS.
+*      all labels are exactly five characters long and start
+*      with three letters (abcdefghijklmnopqrstuvwxy$) followed
+*      by two letters or digits.
+*      the letter z may not be used in minimal symbols but $ is
+*      permitted.
+*      for implementations where $ may not appear in the
+*      target code , a simple substitution of z for $
+*      may thus be made without risk of producing non-unique
+*      symbols.
+*      the letter z is however permitted in opcode mnemonics and
+*      in comments.
 *
-*      MINIMAL STATEMENTS ARE IN A FIXED FORMAT AS FOLLOWS.
+*      minimal statements are in a fixed format as follows.
 *
-*      COLS 1-5              LABEL IF ANY (ELSE BLANK)
+*      cols 1-5              label if any (else blank)
 *
-*      COLS 6-7              ALWAYS BLANK
+*      cols 6-7              always blank
 *
-*      COLS 8-10             OPERATION MNEMONIC
+*      cols 8-10             operation mnemonic
 *
-*      COLS 11-12            BLANKS
+*      cols 11-12            blanks
 *
-*      COLS 13-28            OPERAND FIELD, TERMINATED BY A
-*                            BLANK. MAY OCCASIONALLY
-*                            EXTEND PAST COLUMN 28.
+*      cols 13-28            operand field, terminated by a
+*                            blank. may occasionally
+*                            extend past column 28.
 *
-*      COLS 30-64            COMMENT. ALWAYS SEPARATED FROM THE
-*                            OPERAND FIELD BY AT LEAST ONE BLANK
-*                            MAY OCCASIONALLY START AFTER COLUMN
-*                            30 IF THE OPERAND EXTENDS PAST 28.
-*                            A SPECIAL EXCEPTION OCCURS FOR THE
-*                            IFF INSTRUCTION, WHOSE COMMENT MAY
-*                            BE ONLY 20 CHARACTERS LONG (30-49).
+*      cols 30-64            comment. always separated from the
+*                            operand field by at least one blank
+*                            may occasionally start after column
+*                            30 if the operand extends past 28.
+*                            a special exception occurs for the
+*                            iff instruction, whose comment may
+*                            be only 20 characters long (30-49).
 *
-*      COLS 65 ON            UNUSED
+*      cols 65 on            unused
 *
 *
-*      COMMENT LINES HAVE THE FOLLOWING FORMAT
+*      comment lines have the following format
 *
-*      COL 1                 ASTERISK
+*      col 1                 asterisk
 *
-*      COLS 2-7              BLANK
+*      cols 2-7              blank
 *
-*      COLS 8-64             ARBITRARY TEXT, RESTRICTED TO THE
-*                            FORTRAN CHARACTER SET.
+*      cols 8-64             arbitrary text, restricted to the
+*                            fortran character set.
 *
 *
-*      THE FORTRAN CHARACTER SET IS A-Z 0-9 =,$.(*)-/+
-       EJC
+*      the fortran character set is a-z 0-9 =,$.(*)-/+
+       ejc
 *
-*      SECTION 12 - PROGRAM EXECUTION
+*      section 12 - program execution
 *
-*      EXECUTION OF THE PROGRAM BEGINS WITH THE FIRST
-*      INSTRUCTION IN THE PROGRAM SECTION.
+*      execution of the program begins with the first
+*      instruction in the program section.
 *
-*      IN ADDITION TO THE FIXED LENGTH MEMORY REGIONS DEFINED
-*      BY THE ASSEMBLY, THERE ARE TWO DYNAMICALLY ALLOCATED
-*      MEMORY REGIONS AS FOLLOWS.
+*      in addition to the fixed length memory regions defined
+*      by the assembly, there are two dynamically allocated
+*      memory regions as follows.
 *
-*      DATA AREA             THIS IS AN AREA AVAILABLE TO THE
-*                            PROGRAM FOR GENERAL STORAGE OF DATA
-*                            ANY DATA VALUE MAY BE STORED IN
-*                            THIS AREA EXCEPT INSTRUCTIONS.
-*                            IN SOME IMPLEMENTATIONS, IT MAY BE
-*                            POSSIBLE TO INCREASE THE SIZE OF
-*                            THIS AREA DYNAMICALLY BY ADDING
-*                            WORDS AT THE TOP END WITH A CALL
-*                            TO A SYSTEM PROCEDURE.
+*      data area             this is an area available to the
+*                            program for general storage of data
+*                            any data value may be stored in
+*                            this area except instructions.
+*                            in some implementations, it may be
+*                            possible to increase the size of
+*                            this area dynamically by adding
+*                            words at the top end with a call
+*                            to a system procedure.
 *
-*      STACK AREA            THIS REGION OF MEMORY HOLDS
-*                            THE STACK USED FOR SUBROUTINE CALLS
-*                            AND OTHER STORAGE OF ONE WORD
-*                            INTEGER VALUES (ADDRESSES). THIS
-*                            IS THE STACK ASSOCIATED WITH
-*                            INDEX REGISTER XS.
+*      stack area            this region of memory holds
+*                            the stack used for subroutine calls
+*                            and other storage of one word
+*                            integer values (addresses). this
+*                            is the stack associated with
+*                            index register xs.
 *
-*      THE LOCATIONS AND SIZES OF THESE AREAS ARE SPECIFIED
-*      BY THE VALUES IN THE REGISTERS AT THE START OF PROGRAM
-*      EXECUTION AS FOLLOWS.
+*      the locations and sizes of these areas are specified
+*      by the values in the registers at the start of program
+*      execution as follows.
 *
-*      (XS)                  ADDRESS ONE PAST THE STACK BASE.
-*                            E.G. IF XS IS 23456, A D-STACK WILL
-*                            OCCUPY WORDS 23455,23454,...
-*                            WHEREAS A U-STACK WILL OCCUPY
+*      (xs)                  address one past the stack base.
+*                            e.g. if xs is 23456, a d-stack will
+*                            occupy words 23455,23454,...
+*                            whereas a u-stack will occupy
 *                            23457,23458,...
 *
-*      (XR)                  ADDRESS OF THE FIRST WORD
-*                            IN THE DATA AREA
+*      (xr)                  address of the first word
+*                            in the data area
 *
-*      (XL)                  ADDRESS OF THE LAST WORD IN THE
-*                            DATA AREA.
+*      (xl)                  address of the last word in the
+*                            data area.
 *
-*      (WA)                  INITIAL STACK POINTER
+*      (wa)                  initial stack pointer
 *
-*      (WB,WC,IA,RA,CP)      ZERO
+*      (wb,wc,ia,ra,cp)      zero
 *
-*      THERE IS NO EXPLICIT WAY TO TERMINATE THE EXECUTION OF A
-*      PROGRAM. THIS FUNCTION IS PERFORMED BY AN APPROPRIATE
-*      SYSTEM PROCEDURE REFERENCED WITH THE SYSEJ INSTRUCTION.
+*      there is no explicit way to terminate the execution of a
+*      program. this function is performed by an appropriate
+*      system procedure referenced with the sysej instruction.

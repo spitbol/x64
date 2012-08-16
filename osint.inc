@@ -23,75 +23,6 @@
 	extern		reg_ia
 %endif
 
-;   Macros to load a compiler register into a machine register
-
-%macro          GET_CP 1
-        mov             %1, reg_cp
-%endmacro
-
-%macro          GET_IA 1
-        mov             %1, reg_ia
-%endmacro
-
-%macro          GET_WA 1
-        mov             %1, reg_wa
-%endmacro
-
-%macro          GET_WB 1
-        mov             %1, reg_wb
-%endmacro
-
-%macro          GET_WC 1
-        mov             %1, reg_wc
-%endmacro
-
-%macro          GET_XR 1
-        mov             %1, reg_xr
-%endmacro
-
-%macro          GET_XL 1
-        mov             %1, reg_xl
-%endmacro
-
-%macro          GET_XS 1
-        mov             %1, reg_xs
-%endmacro
-
-
-;   Macros to store a machine register into a compiler register.
-
-%macro          SET_CP 1
-        mov             reg_cp, %2
-%endmacro
-
-%macro          SET_IA 1
-        mov             reg_ia, %1
-%endmacro
-
-%macro          SET_WA 1
-        mov             reg_wa, %1
-%endmacro
-
-%macro          SET_WB 1
-        mov             reg_wb, %1
-%endmacro
-
-%macro          SET_WC 1
-        mov             reg_wc, %1
-%endmacro
-
-%macro          SET_XR 1
-        mov             reg_xr, %1
-%endmacro
-
-%macro          SET_XL 1
-        mov             reg_xl, %1
-%endmacro
-
-%macro          SET_XS 1
-        mov             reg_xs, %1
-%endmacro
-
 
 ;   Return values to take exit N from interface
 
@@ -150,7 +81,7 @@ ENGTS  equ      13
 %endmacro
 
 %macro          GETMIN 2
-        mov             %1,%2
+        mov             %1,dword [%2]
 %endmacro
 
 %macro          SETMIN 2
@@ -161,17 +92,17 @@ ENGTS  equ      13
         mov             %1,%2
 %endmacro
 
-%ifnmacro	access
-%macro          access 1
-        extern             %1
-%endmacro
-%endif
-
-%macro          access2 1
-%ifndef globals
-        extern            %1
-%endif
-%endmacro
+;;%ifnmacro	access
+;;%macro          access 1
+;;        extern             %1
+;;%endmacro
+;;%endif
+;;
+;;%macro          access2 1
+;;%ifndef globals
+;;        extern            %1
+;;%endif
+;;%endmacro
 
 	segment	.data
 %else                                       ; ][
@@ -235,62 +166,59 @@ ENGTS  equ      13
 ;   The structure vords and the access macro is merely a device to
 ;   produce an enumeration similar to an enum structure to C.
 ;
-        struct   vords
-%endif
-%ifnmacro access
-	dave shields
+;;        struct   vords
 %endif
 	segment	.text
-
-        access  GBCNT
-        access  HEADV
-        access  MXLEN
-        access  STAGE
-        access  TIMSX
-        access  DNAMB
-        access  DNAMP
-        access  STATE
-        access  B_EFC
-        access  B_ICL
-        access  B_SCL
-        access  B_VCT
-        access  B_XNT
-        access  B_XRT
-        access  STBAS
-        access  STATB
-        access  POLCT
-        access  TYPET
-        access  DFFNC
-        access  LOWSPMIN
-        access  FLPRT
-        access  FLPTR
-        access  GTCEF
-        access  HSHTB
-        access  PMHBS
-        access  R_FCB
-        access  C_AAA
-        access  C_YYY
-        access  G_AAA
-        access  W_YYY
-        access  S_AAA
-        access  S_YYY
-        access  R_COD
-        access  KVSTN
-        access  KVDMP
-        access  KVFTR
-        access  KVCOM
-        access  KVPFL
-        access  CSWFL
-        access  STMCS
-        access  STMCT
-        access2 TICBLK
-        access2 TSCBLK
-        access2 ID1
-        access2 ID2BLK
-        access2 INPBUF
-        access2 TTYBUF
-        access  B_RCL
-
+%ifndef globals
+        extern  GBCNT
+        extern  HEADV
+        extern  MXLEN
+        extern  STAGE
+        extern  TIMSX
+        extern  DNAMB
+        extern  DNAMP
+        extern  STATE
+        extern  B_EFC
+        extern  B_ICL
+        extern  B_SCL
+        extern  B_VCT
+        extern  B_XNT
+        extern  B_XRT
+        extern  STBAS
+        extern  STATB
+        extern  POLCT
+        extern  TYPET
+        extern  DFFNC
+        extern  LOWSPMIN
+        extern  FLPRT
+        extern  FLPTR
+        extern  GTCEF
+        extern  HSHTB
+        extern  PMHBS
+        extern  R_FCB
+        extern  C_AAA
+        extern  C_YYY
+        extern  G_AAA
+        extern  W_YYY
+        extern  S_AAA
+        extern  S_YYY
+        extern  R_COD
+        extern  KVSTN
+        extern  KVDMP
+        extern  KVFTR
+        extern  KVCOM
+        extern  KVPFL
+        extern  CSWFL
+        extern  STMCS
+        extern  STMCT
+        extern  TICBLK
+        extern  TSCBLK
+        extern  ID1
+        extern  ID2BLK
+        extern  INPBUF
+        extern  TTYBUF
+        extern  B_RCL
+%endif
 %if direct == 0
         ends    vords
 %endif

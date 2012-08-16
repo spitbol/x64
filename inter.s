@@ -22,9 +22,12 @@
 
 %define	globals	1
 
-	segment	.data
 	%include	"systype.ah"
-        %include        "osint.inc"
+	%include	"osint.inc"
+
+
+
+	segment	.data
 ;
 ;       File: inter.s           Version: 1.46
 ;       ---------------------------------------
@@ -135,6 +138,7 @@
 ;
         align 4
 
+	global	reg_wa
 	global	reg_wb
 	global	reg_ia
 	global	reg_wc
@@ -146,6 +150,8 @@
 	global	reg_pp
 	global	reg_xs
 
+	global	reg_block
+	global	reg_size
 reg_block:
 reg_wa:	dd	0     ; Register WA (ECX)
 reg_wb:	dd	0     ; Register WB (EBX)
@@ -173,6 +179,7 @@ reg_size	dd	r_size
 ;  Constants
 ;
 ten:    dd      10              ; constant 10
+	global	inf
 inf:	dd	0	
         dd      0x7ff00000      ; double precision infinity
 
@@ -190,6 +197,7 @@ osisp:  dd      0               ; 1.39 OSINT's stack pointer
 ;       Setup a number of internal ddes in the compiler that cannot
 ;       be directly accessed from within C because of naming difficulties.
 ;
+	global	ID1
 ID1	dd	0
 %ifdef SETREAL
         dd       2
@@ -199,15 +207,20 @@ ID1	dd	0
         db  "1x\x00\x00\x00"
 %endif
 ;
+	global	ID2BLK
 ID2BLK:	times	52 dd 0
+	global	TSCBLK
 
+	global	TICBLK
 TICBLK:	dd	0
         dd      0
 
+	global	TSCBLK
 TSCBLK:	times	512 dd 0
 
 ;       Standard input buffer block.
 ;
+	global	INPBUF
 INPBUF:	dd   	0     ; type word
         dd      0               ; block length
         dd      1024            ; buffer size
@@ -215,12 +228,13 @@ INPBUF:	dd   	0     ; type word
         dd      0               ; offset to next character to read
         dd      0               ; file position of buffer
         dd      0               ; physical position in file
-%if winnt && _MASM_ <> 0
+%if winnt
         dd      0               ; 64-bit offset
         dd      0               ; and current position
 %endif
 	times	1024 dd 0	; buffer
 ;
+	global	TTYBUF
 TTYBUF:	dd   0     ; type word
         dd      0               ; block length
         dd      260             ; buffer size  (260 OK in MS-DOS with cinread())
@@ -228,7 +242,7 @@ TTYBUF:	dd   0     ; type word
         dd      0               ; offset to next char to read
         dd      0               ; file position of buffer
         dd      0               ; physical position in file
-%if winnt && _MASM_ <> 0
+%if winnt 
         dd      0               ; 64-bit offset
         dd      0               ; and current position
 %endif
@@ -265,41 +279,40 @@ TTYBUF:	dd   0     ; type word
         					;bashes eax,ecx,esi
 pushregs:
 	pushad
-	lea	esi,reg_block
-	lea	edi,sav_block
+	lea	edi,[sav_block]
 	mov	ecx,r_size/4
 	cld
    rep	movsd
 
         mov     edi,compsp
         or      edi,edi                         ; 1.39 is there a compiler stack
-        je      short push1                     ; 1.39 jump if none yet
+        je      push1                     ; 1.39 jump if none yet
         sub     edi,4                           ;push onto compiler's stack
         mov     esi,reg_xl                      ;collectable XL
 	mov	[edi],esi
         mov     [compsp],edi                      ;smashed if call OSINT again (SYSGC)
-        mov     sav_compsp,edi                  ;used by popregs
+        mov     [sav_compsp],edi                  ;used by popregs
 
 push1:	popad
 	retc	0
 
 popregs:
 	pushad
-        mov     eax,reg_cp                      ;don't restore CP
+        mov     eax,[reg_cp]                      ;don't restore CP
 	cld
-	lea	esi,sav_block
-        lea     edi,reg_block                   ;unload saved registers
+	lea	esi,[sav_block]
+        lea     edi,[reg_block]                   ;unload saved registers
 	mov	ecx,r_size/4
    rep  movsd                                   ;restore from temp area
-	mov	reg_cp,eax
+	mov	[reg_cp],eax
 
-        mov     edi,sav_compsp                  ;saved compiler's stack
+        mov     edi,[sav_compsp]                  ;saved compiler's stack
         or      edi,edi                         ;1.39 is there one?
-        je      short pop1                      ;1.39 jump if none yet
+        je      pop1                      ;1.39 jump if none yet
         mov     esi,[edi]                       ;retrieve collectable XL
-        mov     [reg_xl],esi                      ;update XL
+        mov     dword [reg_xl],esi                      ;update XL
         add     edi,4                           ;update compiler's sp
-        mov     compsp,edi
+        mov     [compsp],edi
 
 pop1:	popad
 	retc	0
@@ -379,13 +392,13 @@ ccaller:
 ;       lodsd   cs:ccaller              ; point to C function entry point
         movzx   ebx,byte [esi]   ; save normal exit adjustment
 ;
-        mov     [reg_pp],ebx              ; in memory
-        pop     [reg_pc]                  ; save return PC past "CALL SYSXX"
+        mov     dword [reg_pp],ebx              ; in memory
+        pop     dword [reg_pc]                  ; save return PC past "CALL SYSXX"
 ;
 ;       (3a) Save compiler stack and switch to OSINT stack
 ;
-        mov     compsp,esp              ; 1.39 save compiler's stack pointer
-        mov     esp,osisp               ; 1.39 load OSINT's stack pointer
+        mov     dword [compsp],esp              ; 1.39 save compiler's stack pointer
+        mov     esp,[osisp]               ; 1.39 load OSINT's stack pointer
 ;
 ;       (3b) Make call to OSINT
 ;
@@ -394,14 +407,14 @@ ccaller:
 ;       (4) Restore registers after C function returns.
 ;
 
-cc1:    mov     osisp,esp               ; 1.39 save OSINT's stack pointer
-        mov     esp,compsp              ; 1.39 restore compiler's stack pointer
-        mov     ecx,[reg_wa]              ; restore registers
-	mov	ebx,[reg_wb]
-        mov     edx,[reg_wc]             ; (also reg_ia)
-	mov	edi,[reg_xr]
-	mov	esi,[reg_xl]
-	mov	ebp,[reg_cp]
+cc1:    mov     [osisp], esp               ; 1.39 save OSINT's stack pointer
+        mov     esp, dword [compsp]              ; 1.39 restore compiler's stack pointer
+        mov     ecx, dword [reg_wa]              ; restore registers
+	mov	ebx, dword [reg_wb]
+        mov     edx, dword [reg_wc]             ; (also reg_ia)
+	mov	edi, dword [reg_xr]
+	mov	esi, dword [reg_xl]
+	mov	ebp, dword [reg_cp]
 
 	cld
 ;
@@ -409,14 +422,14 @@ cc1:    mov     osisp,esp               ; 1.39 save OSINT's stack pointer
 ;           return or take a procedure exit.
 ;
         or      eax,eax         ; test if normal return ...
-        jns     short erexit    ; j. if >= 0 (take numbered exit)
-	mov	eax,[reg_pc]
-        add     eax,[reg_pp]      ; point to instruction following exits
+        jns     erexit    ; j. if >= 0 (take numbered exit)
+	mov	eax,dword [reg_pc]
+        add     eax,dword [reg_pp]      ; point to instruction following exits
         jmp     eax             ; bypass PPM exits
 
 ;                               ; else (take procedure exit n)
 erexit: shr     eax,1           ; divide by 2
-        add     eax,[reg_pc]      ;   get to dd of exit offset
+        add     eax,dword [reg_pc]      ;   get to dd of exit offset
 	movsx	eax,word [eax]
         add     eax,ppoff       ; bias to fit in 16-bit word
 	push	eax
@@ -688,13 +701,14 @@ startup:
         pop     eax                     ; discard dummy2
 	call	stackinit               ; initialize MINIMAL stack
         mov     eax,compsp              ; get MINIMAL's stack pointer
-        SET_WA  eax                     ; startup stack pointer
+        mov	dword [reg_wa],eax                     ; startup stack pointer
 
 	cld                             ; default to UP direction for string ops
-        GETOFF  eax,DFFNC               ; get dd of PPM offset
-        mov     ppoff,eax               ; save for use later
+	extern	DFFNC
+        GETOFF  eax,[DFFNC]               ; get dd of PPM offset
+        mov     dword [ppoff],eax               ; save for use later
 ;
-        mov     esp,osisp               ; switch to new C stack
+        mov     esp,dword [osisp]               ; switch to new C stack
         MINIMAL START                   ; load regs, switch stack, start compiler
 
 
@@ -730,11 +744,12 @@ startup:
 	global	stackinit
 stackinit:
 	mov	eax,esp
-        mov     compsp,eax              ; save as MINIMAL's stack pointer
-	sub	eax,stacksiz            ; end of MINIMAL stack is where C stack will start
-        mov     osisp,eax               ; save new C stack pointer
+        mov     dword [compsp],eax              ; save as MINIMAL's stack pointer
+	sub	eax,dword [stacksiz]     ; end of MINIMAL stack is where C stack will start
+        mov     dword [osisp],eax       ; save new C stack pointer
 	add	eax,4*100               ; 100 words smaller for CHK
-        SETMINR  LOWSPMIN,eax            ; Set LOWSPMIN
+	extern	LOWSPMIN
+        SETMINR  [LOWSPMIN],eax           ; Set LOWSPMIN
 	ret
 
 ;
@@ -759,17 +774,17 @@ stackinit:
 minimal:
 
         pushad                          ; save all registers for C
-        mov     eax,[esp+32+4]          ; get ordinal
-        mov     ecx,[reg_wa]              ; restore registers
-	mov	ebx,[reg_wb]
-        mov     edx,[reg_wc]              ; (also _reg_ia)
-	mov	edi,[reg_xr]
-	mov	esi,[reg_xl]
-	mov	ebp,[reg_cp]
+        mov     eax,dword[esp+32+4]          ; get ordinal
+        mov     ecx,dword[reg_wa]              ; restore registers
+	mov	ebx,dword[reg_wb]
+        mov     edx,dword[reg_wc]              ; (also _reg_ia)
+	mov	edi,dword[reg_xr]
+	mov	esi,dword[reg_xl]
+	mov	ebp,dword[reg_cp]
 
-        mov     osisp,esp               ; 1.39 save OSINT stack pointer
-        cmp     dword compsp,0      ; 1.39 is there a compiler stack?
-        je      short min1              ; 1.39 jump if none yet
+        mov     dword [osisp],esp               ; 1.39 save OSINT stack pointer
+        cmp     dword [compsp],0      ; 1.39 is there a compiler stack?
+        je      min1              ; 1.39 jump if none yet
         mov     esp,compsp              ; 1.39 switch to compiler stack
 
 min1:   callc   [calltab+eax*4],0        ; off to the Minimal code
@@ -879,7 +894,7 @@ minoff:
 	global	get_fp
 get_fp:
 
-        mov     eax,reg_xs      ; Minimal's XS
+        mov     eax,[reg_xs]      ; Minimal's XS
         add     eax,4           ; pop return from call to SYSBX or SYSXI
         retc    0               ; done
 
@@ -927,43 +942,45 @@ restart:
 	call	stackinit               ; initialize MINIMAL stack
 
                                         ; set up for stack relocation
-        lea     eax,TSCBLK+scstr        ; top of saved stack
-        mov     ebx,lmodstk             ; bottom of saved stack
-        GETMIN  ecx,STBAS               ; ecx = stbas from exit() time
+        lea     eax,[TSCBLK+scstr]        ; top of saved stack
+        mov     ebx,dword [lmodstk]             ; bottom of saved stack
+;;        GETMIN  ecx,[STBAS]               ; ecx = stbas from exit() time
+;DS TODO Review above line. commented out to get os x port going
         sub     ebx,eax                 ; ebx = size of saved stack
 	mov	edx,ecx
         sub     edx,ebx                 ; edx = stack bottom from exit() time
 	mov	ebx,ecx
         sub     ebx,esp                 ; ebx = old stbas - new stbas
-
-        SETMINR  STBAS,esp               ; save initial sp
-        GETOFF  eax,DFFNC               ; get dd of PPM offset
-        mov     ppoff,eax               ; save for use later
+	extern	STBAS
+        SETMINR  dword [STBAS],esp               ; save initial sp
+        GETOFF  eax,[DFFNC]               ; get dd of PPM offset
+        mov     dword [ppoff],eax               ; save for use later
 ;
 ;       restore stack from TSCBLK.
 ;
-        mov     esi,lmodstk             ; -> bottom word of stack in TSCBLK
-        lea     edi,TSCBLK+scstr        ; -> top word of stack
+        mov     esi,dword [lmodstk]             ; -> bottom word of stack in TSCBLK
+        lea     edi,[TSCBLK+scstr]        ; -> top word of stack
         cmp     esi,edi                 ; Any stack to transfer?
-        je      short re3               ;  skip if not
+        je      re3               ;  skip if not
 	sub	esi,4
 	std
 re1:    lodsd                           ; get old stack word to eax
         cmp     eax,edx                 ; below old stack bottom?
-        jb      short re2               ;   j. if eax < edx
+        jb      re2               ;   j. if eax < edx
         cmp     eax,ecx                 ; above old stack top?
-        ja      short re2               ;   j. if eax > ecx
+        ja      re2               ;   j. if eax > ecx
         sub     eax,ebx                 ; within old stack, perform relocation
 re2:    push    eax                     ; transfer word of stack
         cmp     esi,edi                 ; if not at end of relocation then
         jae     re1                     ;    loop back
 
 re3:	cld
-        mov     compsp,esp              ; 1.39 save compiler's stack pointer
-        mov     esp,osisp               ; 1.39 back to OSINT's stack pointer
+        mov     dword [compsp],esp              ; 1.39 save compiler's stack pointer
+        mov     esp,dword [osisp]               ; 1.39 back to OSINT's stack pointer
         callc   rereloc,0               ; V1.08 relocate compiler pointers into stack
-        GETMIN  eax,STATB               ; V1.34 start of static region to XR
-	SET_XR  eax
+;DS TODO Review above line. commented out to get os x port going
+;        GETMIN  eax,[STATB]               ; V1.34 start of static region to XR
+	mov	dword [reg_xr],  eax
         MINIMAL INSTA                   ; V1.34 initialize static region
 
 ;
@@ -986,14 +1003,12 @@ re3:	cld
 ;       simulates resumption just past the SYSBX call in the MINIMAL code.
 ;       We distinguish this case by noting the variable STAGE is 4.
 ;
-%if winnt
 	extern	startbrk
-%endif
         callc   startbrk,0              ; start control-C logic
-
-        GETMIN  eax,STAGE               ; is this a -w call?
+;DS TODO Review above line. commented out to get os x port going
+;        GETMIN  eax,STAGE               ; is this a -w call?
 	cmp	eax,4
-        je      short re4               ; yes, do a complete fudge
+        je      re4               ; yes, do a complete fudge
 
 ;
 ;       Jump back to cc1 with return value = NORMAL_RETURN
@@ -1004,15 +1019,19 @@ re3:	cld
 ;       would occur if we naively returned to sysbx.  Clear the stack and
 ;       go for it.
 ;
-re4:	GETMIN	eax,STBAS
-        mov     compsp,eax              ; 1.39 empty the stack
+re4:	
+;	GETMIN	eax,[STBAS]
+;DS TODO Review commented-out line. commented out to get os x port going
+        mov     dword [compsp],eax              ; 1.39 empty the stack
 
 ;       Code that would be executed if we had returned to makeexec:
 ;
-        SETMIN  GBCNT,0                 ; reset garbage collect count
+;DS TODO Review commented-out line. commented out to get os x port going
+;        SETMIN  dword [GBCNT],0                 ; reset garbage collect count
         callc   zystm,0                 ; Fetch execution time to reg_ia
-        mov     eax,[reg_ia]              ; Set time into compiler0
-	SETMINR	TIMSX,eax
+        mov     eax,dword [reg_ia]              ; Set time into compiler0
+	extern	TIMSX
+	SETMINR	dword [TIMSX],eax
 
 ;       Code that would be executed if we returned to sysbx:
 ;
@@ -1036,7 +1055,7 @@ re4:	GETMIN	eax,STBAS
 CVD_:
         xchg    eax,edx         ; IA to EAX
         cdq                     ; sign extend
-        idiv    dword ten   ; divide by 10. edx = remainder (negative)
+        idiv    dword [ten]   ; divide by 10. edx = remainder (negative)
         neg     edx             ; make remainder positive
         add     dl,0x30         ; convert remainder to ascii ('0')
         mov     ecx,edx         ; return remainder in WA
@@ -1052,7 +1071,7 @@ CVD_:
 DVI_:
 
         or      eax,eax         ; test for 0
-        jz      short setovr    ; jump if 0 divisor
+        jz      setovr    ; jump if 0 divisor
         push    ebp             ; preserve CP
         xchg    ebp,eax         ; divisor to ebp
         xchg    eax,edx         ; dividend in eax
@@ -1072,7 +1091,7 @@ DVI_:
 	global	RMI_
 RMI_:
              or      eax,eax         ; test for 0
-        jz      short setovr    ; jump if 0 divisor
+        jz      setovr    ; jump if 0 divisor
         push    ebp             ; preserve CP
         xchg    ebp,eax         ; divisor to ebp
         xchg    eax,edx         ; dividend in eax
@@ -1114,9 +1133,9 @@ RTI_:
 ; 41E00000 00200000 = 2147483649.0
         mov     eax, dword [reg_ra+4]   ; RA msh
         btr     eax,31          ; take absolute value, sign bit to carry flag
-        jc      short RTI_2     ; jump if negative real
+        jc      RTI_2     ; jump if negative real
         cmp     eax,0x41E00000  ; test against 2147483648
-        jae     short RTI_1     ; jump if >= +2147483648
+        jae     RTI_1     ; jump if >= +2147483648
 RTI_3:  push    ecx             ; protect against C routine usage.
         push    eax             ; push RA MSH
         push    dword [reg_ra]; push RA LSH
@@ -1128,10 +1147,10 @@ RTI_3:  push    ecx             ; protect against C routine usage.
 
 ; here to test negative number, made positive by the btr instruction
 RTI_2:  cmp     eax,0x41E00000          ; test against 2147483649
-        jb      short RTI_0             ; definately smaller
-        ja      short RTI_1             ; definately larger
+        jb      RTI_0             ; definately smaller
+        ja      RTI_1             ; definately larger
         cmp     dword [reg_ra+2], 0x0020
-        jae     short RTI_1
+        jae     RTI_1
 RTI_0:  btc     eax,31                  ; make negative again
         jmp     RTI_3
 RTI_1:  stc                             ; return C=1 for too large to convert
@@ -1156,7 +1175,7 @@ ITR_:
 %if freteax
         mov     dword [reg_ra],eax    ; return result in RA
 
-	mov	dword reg_ra+4,edx
+	mov	dword [reg_ra+4],edx
         pop     ecx             ; restore ecx
 %endif
 	ret
@@ -1169,9 +1188,9 @@ ITR_:
 	global	LDR_
 LDR_:
         push    dword [eax]                 ; lsh
-	pop	dword reg_ra
+	pop	dword [reg_ra]
         mov     eax,[eax+4]                     ; msh
-	mov	dword reg_ra+4, eax
+	mov	dword [reg_ra+4], eax
 	ret
 
 ;
@@ -1182,9 +1201,9 @@ LDR_:
 	global	STR_
 STR_:
 
-        push    dword reg_ra                ; lsh
+        push    dword [reg_ra]                ; lsh
 	pop	dword [eax]
-        push    dword reg_ra+4              ; msh
+        push    dword [reg_ra+4]              ; msh
 	pop	dword [eax+4]
 	ret
 
@@ -1198,20 +1217,20 @@ ADR_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
-        push    dword reg_ra+4              ; RA msh
-        push    dword reg_ra                ; RA lsh
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
         push    dword [eax+4]               ; arg msh
         push    dword [eax]                 ; arg lsh
         callfar f_add,16                        ; perform op
 %if fretst0
-	fstp	qword reg_ra
+	fstp	qword [reg_ra]
         pop     edx                             ; restore regs
 	pop	ecx
 	fwait
 %endif
 %if freteax
-        mov     dword reg_ra+4, edx         ; result msh
-        mov     dword reg_ra, eax           ; result lsh
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
         pop     edx                             ; restore regs
 	pop	ecx
 %endif
@@ -1227,20 +1246,20 @@ SBR_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
-        push    dword reg_ra+4              ; RA msh
-        push    dword reg_ra                ; RA lsh
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
         push    dword [eax+4]               ; arg msh
         push    dword [eax]                 ; arg lsh
         callfar f_sub,16                        ; perform op
 %if fretst0
-	fstp	qword reg_ra
+	fstp	qword [reg_ra]
         pop     edx                             ; restore regs
 	pop	ecx
 	fwait
 %endif
 %if freteax
-        mov     dword reg_ra+4, edx         ; result msh
-        mov     dword reg_ra, eax           ; result lsh
+        mov     dword [reg_ra+4, edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
         pop     edx                             ; restore regs
 	pop	ecx
 %endif
@@ -1256,20 +1275,20 @@ MLR_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
-        push    dword reg_ra+4              ; RA msh
-        push    dword reg_ra                ; RA lsh
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
         push    dword [eax+4]               ; arg msh
         push    dword [eax]                 ; arg lsh
         callfar f_mul,16                        ; perform op
 %if fretst0
-	fstp	qword reg_ra
+	fstp	qword [reg_ra]
         pop     edx                             ; restore regs
 	pop	ecx
 	fwait
 %endif
 %if freteax
-        mov     dword reg_ra+4, edx         ; result msh
-        mov     dword reg_ra, eax           ; result lsh
+        mov     dword [reg_ra+4,] edx         ; result msh
+        mov     dword [reg_ra,] eax           ; result lsh
         pop     edx                             ; restore regs
 	pop	ecx
 %endif
@@ -1286,20 +1305,20 @@ DVR_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
-        push    dword reg_ra+4              ; RA msh
-        push    dword reg_ra                ; RA lsh
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
         push    dword [eax+4]               ; arg msh
         push    dword [eax]                 ; arg lsh
         callfar f_div,16                        ; perform op
 %if fretst0
-        fstp	qword reg_ra
+        fstp	qword [reg_ra]
         pop     edx                             ; restore regs
 	pop	ecx
 	fwait
 %endif
 %if freteax
-        mov     dword reg_ra+4, edx         ; result msh
-        mov     dword reg_ra, eax           ; result lsh
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
         pop     edx                             ; restore regs
 	pop	ecx
 %endif
@@ -1312,11 +1331,11 @@ DVR_:
 ;
         global  NGR_
 NGR_:
-	cmp	dword reg_ra, 0
-	jne	short ngr_1
-	cmp	dword reg_ra+4, 0
-        je      short ngr_2                     ; if zero, leave alone
-ngr_1:  xor     byte reg_ra+7, 0x80         ; complement mantissa sign
+	cmp	dword [reg_ra], 0
+	jne	ngr_1
+	cmp	dword [reg_ra+4], 0
+        je      ngr_2                     ; if zero, leave alone
+ngr_1:  xor     byte [reg_ra+7], 0x80         ; complement mantissa sign
 ngr_2:	ret
 
 ;
@@ -1330,18 +1349,18 @@ ATN_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
-        push    dword reg_ra+4              ; RA msh
-        push    dword reg_ra                ; RA lsh
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
         callfar f_atn,8                         ; perform op
 %if fretst0
-        fstp	qword reg_ra
+        fstp	qword [reg_ra]
         pop     edx                             ; restore regs
 	pop	ecx
 	fwait
 %endif
 %if freteax
-        mov     dword reg_ra+4, edx         ; result msh
-        mov     dword reg_ra, eax           ; result lsh
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
         pop     edx                             ; restore regs
 	pop	ecx
 %endif
@@ -1358,18 +1377,18 @@ CHP_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
-        push    dword reg_ra+4              ; RA msh
-        push    dword reg_ra                ; RA lsh
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
         callfar f_chp,8                         ; perform op
 %if fretst0
-        fstp	qword reg_ra
+        fstp	qword [reg_ra]
         pop     edx                             ; restore regs
 	pop	ecx
 	fwait
 %endif
 %if freteax
-        mov     dword reg_ra+4, edx         ; result msh
-        mov     dword reg_ra, eax           ; result lsh
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
         pop     edx                             ; restore regs
 	pop	ecx
 %endif
@@ -1385,18 +1404,18 @@ CHP_:
 COS_:
         push    ecx                             ; preserve regs for C
 	push	edx
-        push    dword reg_ra+4              ; RA msh
-        push    dword reg_ra                ; RA lsh
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
         callfar f_cos,8                         ; perform op
 %if fretst0
-        fstp	qword reg_ra
+        fstp	qword [reg_ra]
         pop     edx                             ; restore regs
 	pop	ecx
 	fwait
 %endif
 %if freteax
-        mov     dword reg_ra+4, edx         ; result msh
-        mov     dword reg_ra, eax           ; result lsh
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
         pop     edx                             ; restore regs
 	pop	ecx
 %endif
@@ -1412,18 +1431,18 @@ COS_:
 ETX_:
         push    ecx                             ; preserve regs for C
 	push	edx
-        push    dword reg_ra+4              ; RA msh
-        push    dword reg_ra                ; RA lsh
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
         callfar f_etx,8                         ; perform op
 %if fretst0
-        fstp	qword reg_ra
+        fstp	qword [reg_ra]
         pop     edx                             ; restore regs
 	pop	ecx
 	fwait
 %endif
 %if freteax
-        mov     dword reg_ra+4, edx         ; result msh
-        mov     dword reg_ra, eax           ; result lsh
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
         pop     edx                             ; restore regs
 	pop	ecx
 %endif
@@ -1440,18 +1459,18 @@ LNF_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
-        push    dword reg_ra+4              ; RA msh
-        push    dword reg_ra                ; RA lsh
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
         callfar f_lnf,8                         ; perform op
 %if fretst0
-        fstp	qword reg_ra
+        fstp	qword [reg_ra]
         pop     edx                             ; restore regs
 	pop	ecx
 	fwait
 %endif
 %if freteax
-        mov     dword reg_ra+4, edx         ; result msh
-        mov     dword reg_ra, eax           ; result lsh
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
         pop     edx                             ; restore regs
 	pop	ecx
 %endif
@@ -1468,18 +1487,18 @@ SIN_:
 
         push    ecx                             ; preserve regs for C
 	push	edx
-        push    dword reg_ra+4              ; RA msh
-        push    dword reg_ra                ; RA lsh
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
         callfar f_sin,8                         ; perform op
 %if fretst0
-        fstp	qword reg_ra
+        fstp	qword [reg_ra]
         pop     edx                             ; restore regs
 	pop	ecx
 	fwait
 %endif
 %if freteax
-        mov     dword reg_ra+4, edx         ; result msh
-        mov     dword reg_ra, eax           ; result lsh
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
         pop     edx                             ; restore regs
 	pop	ecx
 %endif
@@ -1551,11 +1570,11 @@ CPR_:
 
         mov     eax, dword [reg_ra+4] ; fetch msh
         cmp     eax, 0x80000000         ; test msh for -0.0
-        je      short cpr050            ; possibly
+        je      cpr050            ; possibly
         or      eax, eax                ; test msh for +0.0
-        jnz     short cpr100            ; exit if non-zero for cc's set
+        jnz     cpr100            ; exit if non-zero for cc's set
 cpr050: cmp     dword [reg_ra], 0     ; true zero, or denormalized number?
-        jz      short cpr100            ; exit if true zero
+        jz      cpr100            ; exit if true zero
 	mov	al, 1
         cmp     al, 0                   ; positive denormal, set cc
 cpr100:	ret
@@ -1603,16 +1622,16 @@ OVR_:
 ;
 
         struc   cinarg
-cin_ebp: dd     0
-cin_ip:  dd     0
-cin_fdn: dd     0
-cin_buf: dd     0
-cin_siz: dd     0
-        ends    cinarg
+cin_ebp: resd     1
+cin_ip:  resd     1
+cin_fdn: resd     1
+cin_buf: resd     1
+cin_siz: resd     1
+        endstruc
 
         struc   ct                      ;cinread temps
-crbuf:  times   260 dd 0                ;keyboard buffer
-        ends    ct
+crbuf:  times   260 resd 0                ;keyboard buffer
+	endstruc
 zct    equ      260/4                   ;word aligned temp size
 ctemp  equ      [ebp-zct]               ;temp on stack
 
@@ -1644,7 +1663,7 @@ ctemp  equ      [ebp-zct]               ;temp on stack
         mov     ecx,ebx                 ;  get another handle
         mov     ah,0x45                 ; CX = STDOUT
         int     0x21
-        jc      short cinr4             ; Out of handles
+        jc      cinr4             ; Out of handles
 	push	ecx
         push    eax                     ; Save handle to old STDOUT
         mov     ebx,2                   ; Make STDOUT refer to STDERR
@@ -1654,7 +1673,7 @@ ctemp  equ      [ebp-zct]               ;temp on stack
 	mov	ecx,[ebp].cin_siz
         inc     ecx                     ; Allow for CR
 	cmp	ecx,255
-	jle	short cinr1
+	jle	cinr1
         mov     cl,255                  ; 255 is the max size for function 0Ah
 cinr1:  lea     edx,ctemp.crbuf         ; Buffer (DS=SS)
         mov     [edx],cl                ; Set up count
@@ -1684,11 +1703,11 @@ cinr1:  lea     edx,ctemp.crbuf         ; Buffer (DS=SS)
         lea     edx,[esi+ebx]           ; Point past CR
         mov     [edx],byte 10       ; Append LF after CR
         inc     ebx                     ; Include LF
-        cmp     ebx,cin_siz[ebp]        ; Compare with caller's buffer size
-	jle	short cinr3
-        mov     ebx,cin_siz[ebp]        ; Caller's buffer size limits us
+        cmp     ebx,[cin_siz+ebp]        ; Compare with caller's buffer size
+	jle	cinr3
+        mov     ebx,[cin_siz+ebp]        ; Caller's buffer size limits us
 cinr3:	mov	ecx,ebx
-        mov     edi,cin_buf[ebp]        ; Caller's buffer
+        mov     edi,[cin_buf+ebp]        ; Caller's buffer
   rep	movsb
 
         push    ebx                     ; Save count
@@ -1717,9 +1736,9 @@ cinr4:  xor     ecx,ecx                 ; CX = STDIN
 ; Here if insufficient handles to save standard in.
 ; Just fall back to read routine.
 ;
-cinr5:	push	cin_siz[ebp]
-	push	cin_buf[ebp]
-	push	cin_fdn[ebp]
+cinr5:	push	[cin_siz+ebp]
+	push	[cin_buf+ebp]
+	push	[cin_fdn+ebp]
 	callc	read,12
 	jmp	cinr2
 
@@ -1740,21 +1759,21 @@ cinr5:	push	cin_siz[ebp]
 ;
 
                 struc   chrdevarg
-chrdev_ebp:     dd      0
-chrdev_ip:      dd      0
-chrdev_fdn:     dd      0
-                ends    chrdevarg
+chrdev_ebp:     resd      1
+chrdev_ip:      resd      1
+chrdev_fdn:     resd      1
+                ends
 
         proc    chrdevdos
 	global  chrdevdos
 	enter	0,0
 	push	ebx
 
-        mov     ebx,chrdev_fdn[ebp]     ; Caller's fdn
+        mov     ebx,[chrdev_fdn+ebp]     ; Caller's fdn
         mov     ax,0x4400               ; IOCTL get status
         int     0x21
 	pop	ebx
-	jc	short chrdev1
+	jc	chrdev1
 	xor	eax,eax
 	mov	al,dl
 	leave
@@ -1776,23 +1795,23 @@ chrdev1: xor	eax,eax
 ;
 
                 struc   rawmodearg
-rawmode_ebp:    dd      0
-rawmode_ip:     dd      0
-rawmode_fdn:    dd      0
-rawmode_mode:   dd      0
-                ends    rawmodearg
+rawmode_ebp:    resd      1
+rawmode_ip:     resd      1
+rawmode_fdn:    resd      1
+rawmode_mode:   resd      1
+                endstruc
 
         proc    rawmodedos
 	global  rawmodedos
 	enter	0,0
 	push	ebx
 
-	push	rawmode_fdn[ebp]
+	push	[rawmode_fdn+ebp]
 	callc	chrdevdos,4
 	or	eax,eax
 	jz	rawmode1
         and     eax,0x0DF
-	cmp	rawmode_mode[ebp],0
+	cmp	[rawmode_mode+ebp],0
 	je	rawmode0
         or      al,0x20                 ; set raw bit
 rawmode0:
@@ -1819,3 +1838,9 @@ tryfpu:
 %endif
 
 
+;;: error: symbol `ID1' redefined
+;;: error: symbol `ID2BLK' redefined
+;;: error: symbol `TICBLK' redefined
+;;: error: symbol `TSCBLK' redefined
+;;: error: symbol `INPBUF' redefined
+;;: error: symbol `TTYBUF' redefined
