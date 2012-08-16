@@ -1,25 +1,25 @@
-* Platform-specific mods to codlinux.spt
+* platform-specific mods to codlinux.spt
 *
 
-* GNU C labels do not have an underscore prefix
-	C.OUT = ''
+* gnu c labels do not have an underscore prefix
+	c.out = ''
 
-* Number of statements within which a jump will be shortened.  Derived
-* empirically as follows for a specific Minimal program:
+* number of statements within which a jump will be shortened.  derived
+* empirically as follows for a specific minimal program:
 *
-* Set JUMP_N to a large value, then translate and assemble program.
-* The assembler will report a large number of jumps out of range.
-* Reduce JUMP_N until the number of errors is small (<10), and enter
+* set jump_n to a large value, then translate and assemble program.
+* the assembler will report a large number of jumps out of range.
+* reduce jump_n until the number of errors is small (<10), and enter
 * those as special cases below.
 *
-* These definitions are for Minimal file V37.MIN and the 80386 code generator.
+* these definitions are for minimal file v37.min and the 80386 code generator.
 
-	JUMP_N = 27
+	jump_n = 27
 *
 *
-* Specific statements not to shorten.  Derived empirically.
+* specific statements not to shorten.  derived empirically.
 *
-	NS1 = "JNZ" *WS "INIX0"
-	NS2 = "JE"  *WS "GTEX2"
-	NS_PAT = *WS (NS1 | NS2)
+	ns1 = "jnz" *ws "inix0"
+	ns2 = "je"  *ws "gtex2"
+	ns_pat = *ws (ns1 | ns2)
 

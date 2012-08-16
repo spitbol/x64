@@ -108,7 +108,7 @@ zysbx()
     /   Because we must allow for new versions with different
     /   size C code, the stacked return addresses are not valid.
     /   Therefore, inter.asm forces a jump to restart code that
-    /   eventually jumps to the MINIMAL code following the call
+    /   eventually jumps to the minimal code following the call
     /   the sysbx call.
     /
     / ***********************************************************

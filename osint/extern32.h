@@ -62,8 +62,8 @@ This file is part of Macro SPITBOL.
  */
 
 #include "system.h"
-typedef int mword;				/* MINIMAL word	*/
-typedef unsigned int muword;	/* MINIMAL unsigned word	*/
+typedef int mword;				/* minimal word	*/
+typedef unsigned int muword;	/* minimal unsigned word	*/
 #ifndef far
 #define far
 #endif

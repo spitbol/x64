@@ -1,4 +1,4 @@
-/*
+:*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 
 This file is part of Macro SPITBOL.
@@ -585,7 +585,7 @@ word *stkbase, stklen;
     result |= compress( (unsigned char FAR *)GET_MIN_VALUE(DNAMB,char *),
                         GET_MIN_VALUE(DNAMP,uword) - GET_MIN_VALUE(DNAMB,uword) );
 
-    /* write out MINIMAL register block */
+    /* write out minimal register block */
     result |= compress( (unsigned char FAR *)&reg_block, reg_size );
 #if EXTFUN
     scanef();			/* prepare to scan for external functions */
@@ -799,14 +799,14 @@ int fd;
             SET_XR(basemem);
             SET_CP(basemem+svfheader.dynoff);
             SET_XL(adjusts);
-            MINIMAL(RELCR);
-            MINIMAL(RELOC);
+            minimal(RELCR);
+            minimal(RELOC);
 
             /* Relocate any return addresses in stack */
             SET_WB(pTSCBLK->str);
             SET_WA(pTSCBLK->str + svfheader.stacklength);
             if (svfheader.stacklength)
-                MINIMAL(RELAJ);
+                minimal(RELAJ);
 
             /* Note: There are return addresses in the PRC_ variables
              * used by N-type Minimal procedures.  However, there does

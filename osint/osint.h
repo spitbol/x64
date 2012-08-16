@@ -115,18 +115,18 @@ extern void *mk_mp(void near *minp);
 #define NORMAL_RETURN	(-1)
 
 /*
-/	Function to call into MINIMAL code.
+/	Function to call into minimal code.
 /	The argument is an ordinal number defined below.
 */
 extern void minimal Params((word callno));
 extern void popregs Params((void));
 extern void pushregs Params((void));
-#define MINIMAL(cn) minimal(cn)
+#define minimal(cn) minimal(cn)
 #define MINSAVE() pushregs()
 #define MINRESTORE() popregs()
 
 /*
-/	Ordinals for MINIMAL calls from C.
+/	Ordinals for minimal calls from C.
 /
 /   The order of entries here must correspond to the order of
 /   table entries in the INTER assembly language module.
@@ -149,7 +149,7 @@ enum CALLS {
 };
 
 /*
-/	Function and macro to get/set value from/to MINIMAL dataspace.
+/	Function and macro to get/set value from/to minimal dataspace.
 /	The argument is an ordinal number defined below.
 /   GET_DATA_OFFSET returns the address of a Minimal data value.
 /   GET_CODE_OFFSET returns the address of a Minimal routine.
@@ -162,7 +162,7 @@ enum CALLS {
 #define GET_MIN_VALUE(vn,type) ((type)vn)
 #define SET_MIN_VALUE(vn,val,type) (*(type *)&vn = (type)(val))
 /*
-/   Names for accessing MINIMAL data values via GET_DATA_OFFSET macro.
+/   Names for accessing minimal data values via GET_DATA_OFFSET macro.
 */
 extern word
 GBCNT,
@@ -206,7 +206,7 @@ TTYBUF,
 END_MIN_DATA;
 
 /*
-/   Names for accessing MINIMAL code values via GET_CODE_OFFSET macro.
+/   Names for accessing minimal code values via GET_CODE_OFFSET macro.
 */
 extern void	B_EFC();
 extern void	B_ICL();
@@ -226,7 +226,7 @@ extern  word *minoff Params((word valno));
 #define GET_MIN_VALUE(vn,type)	((type)*minoff(vn))
 #define SET_MIN_VALUE(vn,val,type) (*(type *)minoff(vn) = (type)(val))
 /*
-/   Ordinals for accessing MINIMAL values.
+/   Ordinals for accessing minimal values.
 /
 /   The order of entries here must correspond to the order of
 /   valtab entries in the INTER assembly language module.
