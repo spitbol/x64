@@ -59,7 +59,7 @@ zyscm()
     register word result;
 
     if (!kvcom_ptr)							/* Cheap optimization to speed up */
-        kvcom_ptr = GET_DATA_OFFSET(KVCOM,long *);	/* &COMPARE consultation */
+        kvcom_ptr = GET_DATA_OFFSET(kvcom,long *);	/* &COMPARE consultation */
 
     result = gencmp(XL(char *), XR(char *), WA(word), WB(word), *kvcom_ptr);
 

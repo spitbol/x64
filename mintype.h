@@ -42,6 +42,7 @@ _masm_  equ     0
 ; the symbols public for direct access, zero to have access via
 ; a table of pointers and the minadr procedure.
 ;
+#define direct 1
 direct equ 1
 
 ; define how floating point results are returned from a function

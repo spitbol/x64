@@ -770,8 +770,8 @@ stackinit:
 ;       the osint stack.
 ;
 
-	global	minimal
-minimal:
+	global	Minimal
+Minimal:
 
         pushad                          ; save all registers for c
         mov     eax,dword[esp+32+4]          ; get ordinal

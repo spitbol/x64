@@ -35,7 +35,7 @@ This file is part of Macro SPITBOL.
 
 zysdc()
 {
-    struct scblk *pHEADV = GET_DATA_OFFSET(HEADV,struct scblk *);
+    struct scblk *pHEADV = GET_DATA_OFFSET(headv,struct scblk *);
     /* announce name and copyright */
     if (!dcdone && !(spitflag & NOBRAG))
     {

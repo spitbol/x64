@@ -121,7 +121,7 @@ extern void *mk_mp(void near *minp);
 extern void minimal Params((word callno));
 extern void popregs Params((void));
 extern void pushregs Params((void));
-#define minimal(cn) minimal(cn)
+#define MINIMAL(cn) minimal(cn)
 #define MINSAVE() pushregs()
 #define MINRESTORE() popregs()
 
@@ -156,7 +156,7 @@ enum CALLS {
 /	GET_MIN_VALUE returns the contents of an item of Minimal data.
 /	SET_MIN_VALUE sets the contents of an item of Minimal data.
 */
-#if DIRECT
+#if direcT
 #define GET_CODE_OFFSET(vn,type) ((type)vn)
 #define GET_DATA_OFFSET(vn,type) ((type)&vn)
 #define GET_MIN_VALUE(vn,type) ((type)vn)
@@ -165,45 +165,45 @@ enum CALLS {
 /   Names for accessing minimal data values via GET_DATA_OFFSET macro.
 */
 extern word
-GBCNT,
-HEADV,
-MXLEN,
-STAGE,
-TIMSX,
-DNAMB,
-DNAMP,
-STATE,
-STBAS,
-STATB,
-POLCT,
-TYPET,
-LOWSPMIN,
-FLPRT,
-FLPTR,
-GTCEF,
-HSHTB,
-PMHBS,
-R_FCB,
-C_AAA,
-C_YYY,
-G_AAA,
-W_YYY,
-R_COD,
-KVSTN,
-KVDMP,
-KVFTR,
-KVCOM,
-KVPFL,
-CSWFL,
-STMCS,
-STMCT,
-TICBLK,
-TSCBLK,
-ID1,
-ID2BLK,
-INPBUF,
-TTYBUF,
-END_MIN_DATA;
+gbcnt,
+headv,
+mxlen,
+stage,
+timsx,
+dnamb,
+dnamp,
+state,
+stbas,
+statb,
+polct,
+typet,
+lowspmin,
+flprt,
+flptr,
+gtcef,
+hshtb,
+pmhbs,
+r_fcb,
+c_aaa,
+c_yyy,
+g_aaa,
+w_yyy,
+r_cod,
+kvstn,
+kvdmp,
+kvftr,
+kvcom,
+kvpfl,
+cswfl,
+stmcs,
+stmct,
+ticblk,
+tscblk,
+id1,
+id2blk,
+inpbuf,
+ttybuf,
+end_min_data;
 
 /*
 /   Names for accessing minimal code values via GET_CODE_OFFSET macro.
@@ -231,73 +231,73 @@ extern  word *minoff Params((word valno));
 /   The order of entries here must correspond to the order of
 /   valtab entries in the INTER assembly language module.
 */
-enum VALS {
-    GBCNT,
-    HEADV,
-    MXLEN,
-    STAGE,
-    TIMSX,
-    DNAMB,
-    DNAMP,
-    STATE,
-    B_EFC,
-    B_ICL,
-    B_SCL,
-    B_VCT,
-    B_XNT,
-    B_XRT,
-    STBAS,
-    STATB,
-    POLCT,
-    TYPET,
-    DFFNC,
-    LOWSPMIN,
-    FLPRT,
-    FLPTR,
-    GTCEF,
-    HSHTB,
-    PMHBS,
-    R_FCB,
-    C_AAA,
-    C_YYY,
-    G_AAA,
-    W_YYY,
-    S_AAA,
-    S_YYY,
-    R_COD,
-    KVSTN,
-    KVDMP,
-    KVFTR,
-    KVCOM,
-    KVPFL,
-    CSWFL,
-    STMCS,
-    STMCT,
-    TICBLK,
-    TSCBLK,
-    ID1,
-    ID2BLK,
-    INPBUF,
-    TTYBUF,
-    B_RCL,
-    END_MIN_DATA
+enum vals {
+    gbcnt,
+    headv,
+    mxlen,
+    stage,
+    timsx,
+    dnamb,
+    dnamp,
+    state,
+    b_efc,
+    b_icl,
+    b_scl,
+    b_vct,
+    b_xnt,
+    b_xrt,
+    stbas,
+    statb,
+    polct,
+    typet,
+    dffnc,
+    lowspmin,
+    flprt,
+    flptr,
+    gtcef,
+    hshtb,
+    pmhbs,
+    r_fcb,
+    c_aaa,
+    c_yyy,
+    g_aaa,
+    w_yyy,
+    s_aaa,
+    s_yyy,
+    r_cod,
+    kvstn,
+    kvdmp,
+    kvftr,
+    kvcom,
+    kvpfl,
+    cswfl,
+    stmcs,
+    stmct,
+    ticblk,
+    tscblk,
+    id1,
+    id2blk,
+    inpbuf,
+    ttybuf,
+    b_rcl,
+    end_min_data
 };
 
 #endif					/* DIRECT */
 
 /* Some shorthand notations */
-#define pID1 GET_DATA_OFFSET(ID1,struct scblk *)
-#define pID2BLK GET_DATA_OFFSET(ID2BLK,struct scblk *)
-#define pINPBUF GET_DATA_OFFSET(INPBUF,struct bfblk *)
-#define pTTYBUF GET_DATA_OFFSET(TTYBUF,struct bfblk *)
-#define pTICBLK GET_DATA_OFFSET(TICBLK,struct icblk *)
-#define pTSCBLK GET_DATA_OFFSET(TSCBLK,struct scblk *)
+#define pID1 GET_DATA_OFFSET(id1,struct scblk *)
+#define pID2BLK GET_DATA_OFFSET(id2blk,struct scblk *)
+#define pINPBUF GET_DATA_OFFSET(inpbuf,struct bfblk *)
+#define pTTYBUF GET_DATA_OFFSET(ttybuf,struct bfblk *)
+#define pTICBLK GET_DATA_OFFSET(ticblk,struct icblk *)
+#define pTSCBLK GET_DATA_OFFSET(tscblk,struct scblk *)
 
-#define TYPE_EFC GET_CODE_OFFSET(B_EFC,word)
-#define TYPE_ICL GET_CODE_OFFSET(B_ICL,word)
-#define TYPE_SCL GET_CODE_OFFSET(B_SCL,word)
-#define TYPE_VCT GET_CODE_OFFSET(B_VCT,word)
-#define TYPE_XNT GET_CODE_OFFSET(B_XNT,word)
-#define TYPE_XRT GET_CODE_OFFSET(B_XRT,word)
-#define TYPE_RCL GET_CODE_OFFSET(B_RCL,word)
+#define TYPE_EFC GET_CODE_OFFSET(b_efc,word)
+#define TYPE_ICL GET_CODE_OFFSET(b_icl,word)
+#define TYPE_SCL GET_CODE_OFFSET(b_scl,word)
+#define TYPE_VCT GET_CODE_OFFSET(b_vct,word)
+#define TYPE_XNT GET_CODE_OFFSET(b_xnt,word)
+#define TYPE_XRT GET_CODE_OFFSET(b_xrt,word)
+#define TYPE_RCL GET_CODE_OFFSET(b_rcl,word)
 

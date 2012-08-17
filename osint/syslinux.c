@@ -1,4 +1,4 @@
-*
+/*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 
 This file is part of Macro SPITBOL.
@@ -136,7 +136,7 @@ mword nargs;
         return (union block *)-1L;
 
     if (!initsels) {						/* one-time initializations */
-        pTYPET = (mword (*)[])GET_DATA_OFFSET(TYPET,muword);
+        pTYPET = (mword (*)[])GET_DATA_OFFSET(typet,muword);
         miscinfo.ptyptab = pTYPET;		/* pointer to table of data types */
         initsels++;
     }
@@ -243,7 +243,7 @@ mword nargs;
             break;						/* return null string result */
         MINSAVE();
         SET_WA(length);
-        minimal(ALOCS);				/* allocate string storage */
+        MINIMAL(ALOCS);				/* allocate string storage */
         result = XR(union block *);
         MINRESTORE();
         q = result->scb.scstr;
@@ -254,14 +254,14 @@ mword nargs;
     case BL_FX:						/* pointer to external data at TSCBLK.str */
         length = ((result->fxb.fxlen + sizeof(mword) - 1) &
                   -sizeof(mword)) + FIELDOFFSET(struct xnblk, xnu.xndta[0]);
-        if (length > GET_MIN_VALUE(MXLEN,mword)) {
+        if (length > GET_MIN_VALUE(mxlen,mword)) {
             result = (union block *)0;
             break;
         }
         r = result->fxb.fxptr;
         MINSAVE();
         SET_WA(length);
-        minimal(ALLOC);				/* allocate block storage */
+        MINIMAL(ALLOC);				/* allocate block storage */
         result = XR(union block *);
         MINRESTORE();
         result->xnb.xnlen = length;
@@ -350,7 +350,7 @@ char *filename;
     else {
         MINSAVE();							/* No */
         SET_WA(sizeof(XFNode));
-        minimal(ALOST);						/* allocate from static region */
+        MINIMAL(ALOST);						/* allocate from static region */
         pnode = XR(pXFNode);					/* get node to hold information */
         MINRESTORE();
     }
@@ -409,18 +409,18 @@ unsigned char **bufp;
 int io;
 {
     union block *dnamp;
-    mword ef_type = GET_CODE_OFFSET(B_EFC,mword);
+    mword ef_type = GET_CODE_OFFSET(b_efc,mword);
     void *result = 0;
     mword type, blksize;
     pXFNode pnode;
 
     MINSAVE();
-    for (dnamp = GET_MIN_VALUE(DNAMP,union block *);
+    for (dnamp = GET_MIN_VALUE(dnamp,union block *);
             scanp < dnamp; scanp = MK_MP(MP_OFF(scanp,muword)+blksize, union block *)) {
         type = scanp->scb.sctyp;				/* any block type lets us access type word */
         SET_WA(type);
         SET_XR(scanp);
-        minimal(BLKLN);						/* get length of block in bytes */
+        MINIMAL(BLKLN);						/* get length of block in bytes */
         blksize = WA(mword);
         if (type != ef_type)					/* keep searching if not EFBLK */
             continue;
@@ -474,7 +474,7 @@ char *newname;
  */
 void scanef()
 {
-    scanp = GET_MIN_VALUE(DNAMB,union block *);
+    scanp = GET_MIN_VALUE(dnamb,union block *);
 }
 
 
@@ -826,7 +826,7 @@ int type;
     reg_xl = 0;
     reg_ia = type;
     reg_wb = 0;
-    reg_xr = GET_DATA_OFFSET(HEADV,word);
+    reg_xr = GET_DATA_OFFSET(headv,word);
 
     /*  -1 is the normal return, so result >= 0 is an error */
     result = zysxi() + 1;

@@ -45,11 +45,11 @@ normal_return  equ      -1
 ;       function and macro to call into minimal code.
 ;       the argument is an ordinal number defined below.
 %ifndef globals
-	extern		minimal
+	extern		Minimal
 %endif
 %macro          minimal 1
         push            %1
-	callc		minimal,4
+	callc		Minimal,4
 %endmacro
 
 ;   ordinals for minimal calls from assembly language.

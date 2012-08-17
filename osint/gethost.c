@@ -73,7 +73,7 @@ struct	scblk	*scptr;
 word	maxlen;
 
 {
-    struct scblk *pHEADV = GET_DATA_OFFSET(HEADV,struct scblk *);
+    struct scblk *pHEADV = GET_DATA_OFFSET(headv,struct scblk *);
     int cnt = 0;
     word fd;
 

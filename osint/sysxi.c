@@ -1,4 +1,4 @@
-:*
+/*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 
 This file is part of Macro SPITBOL.
@@ -113,7 +113,8 @@ char uargbuf[UargSize];
 static void hcopy Params((char *src, char *dst, int len, int max));
 #endif					/* SAVEFILE */
 
-#if SAVEFILE | EXECSAVE
+
+#if EXECFILE & !EXECSAVE
 extern word read Params((int F, void *Buf, unsigned Cnt));
 extern FILEPOS LSEEK Params((int F, FILEPOS Loc, int Method));
 #endif          /* EXECFILE  | SAVEFILE */
@@ -184,7 +185,7 @@ zysxi()
     /	Get current value of FP and compute length of current stack.
     */
     stackbase   = (word *)get_fp();
-    stacklength = GET_MIN_VALUE(STBAS,char *) - (char *)stackbase;
+    stacklength = GET_MIN_VALUE(stbas,char *) - (char *)stackbase;
     /*
     /	Close all files and flush buffers
     */
@@ -259,7 +260,7 @@ zysxi()
          * a smaller buffer.
          */
         bufsize = 4096;
-        bufp = GET_MIN_VALUE(DNAMP,char *);
+        bufp = GET_MIN_VALUE(dnamp,char *);
         size = topmem - bufp;			/* free space in heap */
         extra = bufsize - size;
         if (extra > 0) {				/* if not enough in heap */
@@ -314,7 +315,7 @@ zysxi()
         }
         srcptr = stackbase;
         dstptr = (word *)pTSCBLK->str;
-        i = GET_MIN_VALUE(STBAS,word *) - srcptr;
+        i = GET_MIN_VALUE(stbas,word *) - srcptr;
         while( i-- )
             *dstptr++ = *srcptr++;
         lmodstk = dstptr;		/* (also non-zero flag for restart) */
@@ -335,7 +336,7 @@ zysxi()
         */
         starttext	= (char *)T_START;  /*LAH*/
         startdata	= (char *)roundup((word)&etext);
-        endofmem	= GET_MIN_VALUE(DNAMP,char *);
+        endofmem	= GET_MIN_VALUE(dnamp,char *);
 
         header.a_magic	= NMAGIC;	/* Don't want demand loading of library */
         header.a_dynamic = 0;		/* No dynamic links */
@@ -401,7 +402,7 @@ fail:
  */
 void heapmove()
 {
-    unsigned long i = (GET_MIN_VALUE(DNAMP, char *) - basemem) / sizeof(word);
+    unsigned long i = (GET_MIN_VALUE(dnamp, char *) - basemem) / sizeof(word);
     word *from = (word *)&edata;
     word *to = (word *)basemem;
 
@@ -443,14 +444,14 @@ void unreloc()
 {
     register char *stbas;
 
-    stbas = GET_MIN_VALUE(STBAS,char *);
-    SET_MIN_VALUE(FLPTR,GET_MIN_VALUE(FLPTR,char *) - stbas,word);
-    SET_MIN_VALUE(FLPRT,GET_MIN_VALUE(FLPRT,char *) - stbas,word);
-    SET_MIN_VALUE(GTCEF,GET_MIN_VALUE(GTCEF,char *) - stbas,word);
-    SET_MIN_VALUE(PMHBS,GET_MIN_VALUE(PMHBS,char *) - stbas,word);
-    SET_CP(CP(char *) - GET_MIN_VALUE(DNAMB,char *));
-#if SPARC | WINNT
-    SET_PC(PC(char *) - GET_CODE_OFFSET(S_AAA,char *));
+    stbas = GET_MIN_VALUE(stbas,char *);
+    SET_MIN_VALUE(flptr,GET_MIN_VALUE(flptr,char *) - stbas,word);
+    SET_MIN_VALUE(flprt,GET_MIN_VALUE(flprt,char *) - stbas,word);
+    SET_MIN_VALUE(gtcef,GET_MIN_VALUE(gtcef,char *) - stbas,word);
+    SET_MIN_VALUE(pmhbs,GET_MIN_VALUE(pmhbs,char *) - stbas,word);
+    SET_CP(CP(char *) - GET_MIN_VALUE(dnamb,char *));
+#if winnT
+    SET_PC(PC(char *) - GET_CODE_OFFSET(s_aaa,char *));
 #endif
 }
 
@@ -464,14 +465,14 @@ void rereloc()
 {
     register char *stbas;
 
-    stbas = GET_MIN_VALUE(STBAS,char *);
-    SET_MIN_VALUE(FLPTR,GET_MIN_VALUE(FLPTR,word) + stbas,word);
-    SET_MIN_VALUE(FLPRT,GET_MIN_VALUE(FLPRT,word) + stbas,word);
-    SET_MIN_VALUE(GTCEF,GET_MIN_VALUE(GTCEF,word) + stbas,word);
-    SET_MIN_VALUE(PMHBS,GET_MIN_VALUE(PMHBS,word) + stbas,word);
-    SET_CP(CP(word) + GET_MIN_VALUE(DNAMB,char *));
+    stbas = GET_MIN_VALUE(stbas,char *);
+    SET_MIN_VALUE(flptr,GET_MIN_VALUE(flptr,word) + stbas,word);
+    SET_MIN_VALUE(flprt,GET_MIN_VALUE(flprt,word) + stbas,word);
+    SET_MIN_VALUE(gtcef,GET_MIN_VALUE(gtcef,word) + stbas,word);
+    SET_MIN_VALUE(pmhbs,GET_MIN_VALUE(pmhbs,word) + stbas,word);
+    SET_CP(CP(word) + GET_MIN_VALUE(dnamb,char *));
 #if SPARC | WINNT
-    SET_PC(PC(word) + GET_CODE_OFFSET(S_AAA,char *));
+    SET_PC(PC(word) + GET_CODE_OFFSET(s_aaa,char *));
 #endif          /* SPARC | WINNT */
 }
 #endif					/* EXECFILE | SAVEFILE */
@@ -535,21 +536,21 @@ word *stkbase, stklen;
     svfheader.flags = spitflag;
     svfheader.stacksiz = (uword)stacksiz;
     svfheader.stacklength = (uword)stklen;
-    svfheader.stbas = GET_MIN_VALUE(STBAS,char *);
-    svfheader.sec3size = (uword)(GET_DATA_OFFSET(C_YYY,char *) - GET_DATA_OFFSET(C_AAA,char *));
-    svfheader.sec3adr = GET_DATA_OFFSET(C_AAA,char *);
-    svfheader.sec4size = (uword)(GET_DATA_OFFSET(W_YYY,char *) - GET_DATA_OFFSET(G_AAA,char *));
-    svfheader.sec4adr = GET_DATA_OFFSET(G_AAA,char *);
-    svfheader.statoff = (uword)(GET_MIN_VALUE(HSHTB,char *) - basemem);	/* offset to saved static in heap */
-    svfheader.dynoff = (uword)(GET_MIN_VALUE(DNAMB,char *) - basemem);		/* offset to saved dynamic in heap */
-    svfheader.heapsize = (uword)(GET_MIN_VALUE(DNAMP,char *) - basemem);
+    svfheader.stbas = GET_MIN_VALUE(stbas,char *);
+    svfheader.sec3size = (uword)(GET_DATA_OFFSET(c_yyy,char *) - GET_DATA_OFFSET(c_aaa,char *));
+    svfheader.sec3adr = GET_DATA_OFFSET(c_aaa,char *);
+    svfheader.sec4size = (uword)(GET_DATA_OFFSET(w_yyy,char *) - GET_DATA_OFFSET(g_aaa,char *));
+    svfheader.sec4adr = GET_DATA_OFFSET(g_aaa,char *);
+    svfheader.statoff = (uword)(GET_MIN_VALUE(hshtb,char *) - basemem);	/* offset to saved static in heap */
+    svfheader.dynoff = (uword)(GET_MIN_VALUE(dnamb,char *) - basemem);		/* offset to saved dynamic in heap */
+    svfheader.heapsize = (uword)(GET_MIN_VALUE(dnamp,char *) - basemem);
     svfheader.heapadr = basemem;
     svfheader.topmem = topmem;
     svfheader.databts = (uword)databts;
     svfheader.memincb = (uword)memincb;
     svfheader.maxsize = (uword)maxsize;
-    svfheader.sec5size = (uword)(GET_CODE_OFFSET(S_YYY,char *) - GET_CODE_OFFSET(S_AAA,char *));
-    svfheader.sec5adr = GET_CODE_OFFSET(S_AAA,char *);
+    svfheader.sec5size = (uword)(GET_CODE_OFFSET(s_yyy,char *) - GET_CODE_OFFSET(s_aaa,char *));
+    svfheader.sec5adr = GET_CODE_OFFSET(s_aaa,char *);
     svfheader.compress = (uword)LZWBITS;
     svfheader.uarglen = uarg ? (uword)length(uarg) : 0;
     if (svfheader.uarglen >= UargSize)
@@ -578,19 +579,19 @@ word *stkbase, stklen;
     result |= compress( (unsigned char FAR *)svfheader.sec4adr, svfheader.sec4size );
 
     /* write out important portion of static region */
-    result |= compress( (unsigned char FAR *)GET_MIN_VALUE(HSHTB,char *),
-                        GET_MIN_VALUE(STATE,uword)-GET_MIN_VALUE(HSHTB,uword) );
+    result |= compress( (unsigned char FAR *)GET_MIN_VALUE(hshtb,char *),
+                        GET_MIN_VALUE(state,uword)-GET_MIN_VALUE(hshtb,uword) );
 
     /* write out dynamic portion of heap */
-    result |= compress( (unsigned char FAR *)GET_MIN_VALUE(DNAMB,char *),
-                        GET_MIN_VALUE(DNAMP,uword) - GET_MIN_VALUE(DNAMB,uword) );
+    result |= compress( (unsigned char FAR *)GET_MIN_VALUE(dnamb,char *),
+                        GET_MIN_VALUE(dnamp,uword) - GET_MIN_VALUE(dnamb,uword) );
 
     /* write out minimal register block */
     result |= compress( (unsigned char FAR *)&reg_block, reg_size );
 #if EXTFUN
     scanef();			/* prepare to scan for external functions */
     while ((textlen = (word)nextef(&bufp, 1)) != 0)
-#if SOLARIS | AIX | WINNT
+#if WINNT
         ;										/* can't save DLLs! */
 #else         /* SOLARIS */
         result |= compress( bufp, textlen );	/* write each function */
@@ -676,7 +677,7 @@ int fd;
 #endif					/* USEQUIT */
             }
 
-            if ( svfheader.sec3size != (GET_DATA_OFFSET(C_YYY,uword) - GET_DATA_OFFSET(C_AAA,uword)) )
+            if ( svfheader.sec3size != (GET_DATA_OFFSET(c_yyy,uword) - GET_DATA_OFFSET(c_aaa,uword)) )
             {
 #if USEQUIT
                 quit(362);
@@ -686,7 +687,7 @@ int fd;
 #endif					/* USEQUIT */
             }
 
-            if ( svfheader.sec4size != (GET_DATA_OFFSET(W_YYY,uword) - GET_DATA_OFFSET(G_AAA,uword)) )
+            if ( svfheader.sec4size != (GET_DATA_OFFSET(w_yyy,uword) - GET_DATA_OFFSET(g_aaa,uword)) )
             {
 #if USEQUIT
                 quit(363);
@@ -697,7 +698,7 @@ int fd;
             }
 
             if ( svfheader.sec5size !=
-                    (uword)((GET_CODE_OFFSET(S_YYY,char *)-GET_CODE_OFFSET(S_AAA,char *))) )
+                    (uword)((GET_CODE_OFFSET(s_yyy,char *)-GET_CODE_OFFSET(s_aaa,char *))) )
             {
 #if USEQUIT
                 quit(364);
@@ -774,22 +775,22 @@ int fd;
             if ( expand( fd, (unsigned char FAR *)pTSCBLK->str, svfheader.stacklength ) )
                 goto reload_ioerr;
 
-            SET_MIN_VALUE(STBAS, svfheader.stbas,word);
+            SET_MIN_VALUE(stbas, svfheader.stbas,word);
             lmodstk = (word *)(pTSCBLK->str + svfheader.stacklength);
             stacksiz = svfheader.stacksiz;
 
             /* Reload compiler working globals section */
-            if ( expand( fd, GET_DATA_OFFSET(G_AAA,unsigned char FAR *), svfheader.sec4size ) )
+            if ( expand( fd, GET_DATA_OFFSET(g_aaa,unsigned char FAR *), svfheader.sec4size ) )
                 goto reload_ioerr;
 
             /* Reload important portion of static region */
             if ( expand(fd, (unsigned char FAR *)basemem+svfheader.statoff,
-                        GET_MIN_VALUE(STATE,uword)-GET_MIN_VALUE(HSHTB,uword)) )
+                        GET_MIN_VALUE(state,uword)-GET_MIN_VALUE(hshtb,uword)) )
                 goto reload_ioerr;
 
             /* Reload heap */
             if ( expand(fd, (unsigned char FAR *)basemem+svfheader.dynoff,
-                        GET_MIN_VALUE(DNAMP,uword)-GET_MIN_VALUE(DNAMB,uword)) )
+                        GET_MIN_VALUE(dnamp,uword)-GET_MIN_VALUE(dnamb,uword)) )
                 goto reload_ioerr;
 
             /* Relocate all pointers because of different reload addresses */
@@ -799,14 +800,14 @@ int fd;
             SET_XR(basemem);
             SET_CP(basemem+svfheader.dynoff);
             SET_XL(adjusts);
-            minimal(RELCR);
-            minimal(RELOC);
+            MINIMAL(relcr);
+            MINIMAL(reloc);
 
             /* Relocate any return addresses in stack */
             SET_WB(pTSCBLK->str);
             SET_WA(pTSCBLK->str + svfheader.stacklength);
             if (svfheader.stacklength)
-                minimal(RELAJ);
+                MINIMAL(relaj);
 
             /* Note: There are return addresses in the PRC_ variables
              * used by N-type Minimal procedures.  However, there does
