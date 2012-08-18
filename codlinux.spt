@@ -80,7 +80,7 @@
 *
 *  useful constants
 *
-	letters = 'abcdefghijklmnopqrstuvwxyz'
+	letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 	ucase   = letters
 	lcase   = 'abcdefghijklmnopqrstuvwxyz'
 	nos     = '0123456789'
