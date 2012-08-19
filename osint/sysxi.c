@@ -114,7 +114,7 @@ static void hcopy Params((char *src, char *dst, int len, int max));
 #endif					/* SAVEFILE */
 
 
-#if EXECFILE & !EXECSAVE
+#if SAVEFILE | EXECSAVE
 extern word read Params((int F, void *Buf, unsigned Cnt));
 extern FILEPOS LSEEK Params((int F, FILEPOS Loc, int Method));
 #endif          /* EXECFILE  | SAVEFILE */
@@ -800,14 +800,14 @@ int fd;
             SET_XR(basemem);
             SET_CP(basemem+svfheader.dynoff);
             SET_XL(adjusts);
-            MINIMAL(relcr);
-            MINIMAL(reloc);
+            minimal_call(relcr_callid);
+            minimal_call(reloc_callid);
 
             /* Relocate any return addresses in stack */
             SET_WB(pTSCBLK->str);
             SET_WA(pTSCBLK->str + svfheader.stacklength);
             if (svfheader.stacklength)
-                MINIMAL(relaj);
+                minimal_call(relaj_callid);
 
             /* Note: There are return addresses in the PRC_ variables
              * used by N-type Minimal procedures.  However, there does

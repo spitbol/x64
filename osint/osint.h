@@ -118,10 +118,10 @@ extern void *mk_mp(void near *minp);
 /	Function to call into minimal code.
 /	The argument is an ordinal number defined below.
 */
-extern void minimal Params((word callno));
+extern void minimal_call Params((word callno));
 extern void popregs Params((void));
 extern void pushregs Params((void));
-#define MINIMAL(cn) minimal(cn)
+#define MINIMAL_CALL(cn) minimal_call(cn)
 #define MINSAVE() pushregs()
 #define MINRESTORE() popregs()
 
@@ -131,21 +131,21 @@ extern void pushregs Params((void));
 /   The order of entries here must correspond to the order of
 /   table entries in the INTER assembly language module.
 */
-enum CALLS {
-    RELAJ,
-    RELCR,
-    RELOC,
-    ALLOC,
-    ALOCS,
-    ALOST,
-    BLKLN,
-    INSTA,
-    RSTRT,
-    START,
-    FILNM,
-    DTYPE,
-    ENEVS,
-    ENGTS
+enum calltab {
+    relaj_callid,
+    relcr_callid,
+    reloc_callid,
+    alloc_callid,
+    alocs_callid,
+    alost_callid,
+    blkln_callid,
+    insta_callid,
+    rstrt_callid,
+    start_callid,
+    filnm_callid,
+    dtype_callid,
+    enevs_callid,
+    engts_callid
 };
 
 /*
@@ -231,7 +231,7 @@ extern  word *minoff Params((word valno));
 /   The order of entries here must correspond to the order of
 /   valtab entries in the INTER assembly language module.
 */
-enum vals {
+enum valtab {
     gbcnt,
     headv,
     mxlen,

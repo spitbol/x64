@@ -45,11 +45,11 @@ normal_return  equ      -1
 ;       function and macro to call into minimal code.
 ;       the argument is an ordinal number defined below.
 %ifndef globals
-	extern		Minimal
+	extern		minimal_call
 %endif
-%macro          minimal 1
+%macro          Zinimal 1
         push            %1
-	callc		Minimal,4
+	callc		minimal_call,4
 %endmacro
 
 ;   ordinals for minimal calls from assembly language.
@@ -57,20 +57,20 @@ normal_return  equ      -1
 ;   the order of entries here must correspond to the order of
 ;   calltab entries in the inter assembly language module.
 ;
-relaj  equ      0
-relcr  equ      1
-reloc  equ      2
-alloc  equ      3
-alocs  equ      4
-alost  equ      5
-blkln  equ      6
-insta  equ      7
-rstrt  equ      8
-start  equ      9
-filnm  equ      10
-dtype  equ      11
-enevs  equ      12
-engts  equ      13
+relaj_callid  equ      0
+relcr_callid  equ      1
+reloc_callid  equ      2
+alloc_callid  equ      3
+alocs_callid  equ      4
+alost_callid  equ      5
+blkln_callid  equ      6
+insta_callid  equ      7
+rstrt_callid  equ      8
+start_callid  equ      9
+filnm_callid  equ      10
+dtype_callid  equ      11
+enevs_callid  equ      12
+engts_callid  equ      13
 
 ;       function and macro to get/set value from/to minimal dataspace.
 ;       the argument is an ordinal number defined below.
@@ -107,7 +107,7 @@ engts  equ      13
 	segment	.data
 %else                                       ; ][
 %ifndef globals
-	extern		minoff
+;*DS TODO	extern		minoff
 %endif
 %macro          getoff 2
 %ifnidn %1,eax

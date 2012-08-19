@@ -60,6 +60,9 @@
     global  prtps
     global  prtsn
     global  prtst
+    global  relaj
+    global  relcr
+    global  reloc
     global  retrn
     global  start 
     global  stcov

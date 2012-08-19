@@ -25,8 +25,6 @@
 	%include	"systype.ah"
 	%include	"osint.inc"
 
-
-
 	segment	.data
 ;
 ;       file: inter.s           version: 1.46
@@ -126,7 +124,6 @@
 	extern	lmodstk
 	extern	lowsp
 	extern	outptr
-	extern	calltab
 %if direct == 0
         extern     valtab
 %endif
@@ -709,7 +706,8 @@ startup:
         mov     dword [ppoff],eax               ; save for use later
 ;
         mov     esp,dword [osisp]               ; switch to new c stack
-        minimal start                   ; load regs, switch stack, start compiler
+	push	start_callid
+	callc	minimal_call,4 			 ; load regs, switch stack, start compiler
 
 
 ;
@@ -755,9 +753,9 @@ stackinit:
 ;
 ;-----------
 ;
-;       mimimal -- call minimal function from c
+;       mimimal_call -- call minimal function from c
 ;
-;       usage:  extern void minimal(word callno)
+;       usage:  extern void minimal_call(word callno)
 ;
 ;       where:
 ;         callno is an ordinal defined in osint.h, osint.inc, and calltab.
@@ -770,8 +768,8 @@ stackinit:
 ;       the osint stack.
 ;
 
-	global	Minimal
-Minimal:
+	global	minimal_call
+minimal_call:
 
         pushad                          ; save all registers for c
         mov     eax,dword[esp+32+4]          ; get ordinal
@@ -787,6 +785,7 @@ Minimal:
         je      min1              ; 1.39 jump if none yet
         mov     esp,compsp              ; 1.39 switch to compiler stack
 
+	extern	calltab
 min1:   callc   [calltab+eax*4],0        ; off to the minimal code
 
         mov     esp,osisp               ; 1.39 switch to osint stack
@@ -802,7 +801,7 @@ min1:   callc   [calltab+eax*4],0        ; off to the minimal code
 
 
 
-%if direct = 0
+;;%if direct = 0
 ;
 ;-----------
 ;
@@ -814,6 +813,7 @@ min1:   callc   [calltab+eax*4],0        ; off to the minimal code
 ;         valno is an ordinal defined in osint.h, osint.inc and valtab.
 ;
 
+	extern	valtab
 	global 	minoff
 minoff:
 
@@ -821,7 +821,7 @@ minoff:
         mov     eax,[valtab+eax*4]       ; get dd of minimal value
 	retc	4
 
-%endif
+;;%endif
 
 
 ;
@@ -981,7 +981,8 @@ re3:	cld
 ;ds todo review above line. commented out to get os x port going
 ;        getmin  eax,[statb]               ; v1.34 start of static region to xr
 	mov	dword [reg_xr],  eax
-        minimal insta                   ; v1.34 initialize static region
+	push	insta_callid
+	callc	minimal_call,4 ; v1.34 initialize static region
 
 ;
 ;       now pretend that we're executing the following c statement from
@@ -1040,7 +1041,8 @@ re4:
 
 ;       jump to minimal code to restart a save file.
 
-        minimal rstrt                   ; no return
+	push	rstrt_callid
+	callc	minimal_call,4			; no return
 
 ;
 ;-----------

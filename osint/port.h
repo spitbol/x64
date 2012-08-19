@@ -171,7 +171,7 @@ This file is part of Macro SPITBOL.
 #define BSD43		0
 #endif
 #ifndef LINUX
-#define LINUX       0
+#define LINUX       1
 #endif
 #ifndef SOLARIS
 #define SOLARIS		0

@@ -43,7 +43,7 @@ _masm_  equ     0
 ; a table of pointers and the minadr procedure.
 ;
 #define direct 1
-direct equ 1
+/*direct equ 1  DS TODO 18 aug */
 
 ; define how floating point results are returned from a function
 ; (either in st(0) or in edx:eax.

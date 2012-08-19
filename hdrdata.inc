@@ -9,11 +9,7 @@
 ;        global %1
 ;%1:	%2	%3
 ;%endmacro
-%macro	pubdef1 1
-	global %1
-%1:
-%endmacro
-        pubdef1  typet
+        global  typet
         dd      b_art   ; arblk type word - 0
         dd      b_cdc   ; cdblk type word - 1
         dd      b_exl   ; exblk type word - 2
@@ -51,7 +47,8 @@
 ;   to the order of entries in the call enumeration in osint.h
 ;   and osint.inc.
 ;
-        pubdef1  calltab
+        global  calltab
+calltab:
         dd      relaj
         dd      relcr
         dd      reloc
@@ -90,8 +87,9 @@
         dd %1
         %endmacro
 
-        pubdef1  valtab
 %endif
+        global  valtab
+valtab:
 	access	gbcnt
 	access	headv
 	access	mxlen
