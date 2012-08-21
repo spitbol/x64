@@ -28,4 +28,5 @@
 hasfpu:	dd	0
         global         cprtmsg
 cprtmsg:
-	db              " copyright 1987-2012 robert b. k. dewar and mark emmer."
+	db              " Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer."
+	db		0
