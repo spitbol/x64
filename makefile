@@ -15,11 +15,13 @@ vpath %.c $(OSINT)
 
 
 AS=nasm
-CC=     gcc
+CC=     mcc/mcc -Imcc/include
 ifeq	($(DEBUG),0)
-CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
+#CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
+CFLAGS= -m32 
 else
-CFLAGS= -g -m32 -fno-leading-underscore -mfpmath=387
+#CFLAGS= -g -m32 -fno-leading-underscore -mfpmath=387
+CFLAGS= -g 
 endif
 
 # Assembler info -- Intel 32-bit syntax
