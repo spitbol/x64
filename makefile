@@ -15,11 +15,13 @@ vpath %.c $(OSINT)
 
 
 AS=nasm
-CC=     gcc
+CC=     tcc
 ifeq	($(DEBUG),0)
-CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
+#CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
+CFLAGS= 
 else
-CFLAGS= -g -m32 -fno-leading-underscore -mfpmath=387
+#CFLAGS= -g -m32 -fno-leading-underscore -mfpmath=387
+CFLAGS= -g 
 endif
 
 # Assembler info -- Intel 32-bit syntax
@@ -100,7 +102,7 @@ OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 
 # main program
 spitbol: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -lm  -ospitbol -Wl,-M,-Map,spitbol.map
+	$(CC) $(CFLAGS) $(OBJS) -lm  -ospitbol 
 
 # Assembly language dependencies:
 errors.o: errors.s
