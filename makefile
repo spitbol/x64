@@ -102,7 +102,7 @@ OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 
 # main program
 spitbol: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -lm  -ospitbol -Wl,-M,-Map,spitbol.map
+	$(CC) $(CFLAGS) $(OBJS) -lm  -ospitbol 
 
 # Assembly language dependencies:
 errors.o: errors.s

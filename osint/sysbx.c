@@ -43,15 +43,6 @@ This file is part of Macro SPITBOL.
             Nothing
         Exits:
             None
-
-    V1.07   02/03/97 - call swcinp to close input file
-
-    V1.06   05/12/92 - Remove nameblk.  Use TSCBLK instead.
-
-        V1.05   10/20/89 - Distinguish -w and -y options
-
-        V1.04   09/14/89 - Use input file name with RUNEXT extension
-                           for file name with -y option.
 */
 
 #include "port.h"

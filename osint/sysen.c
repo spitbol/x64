@@ -40,8 +40,6 @@ This file is part of Macro SPITBOL.
             1 - file does not exist
             2 - inappropriate file
             3 - i/o error
-
-        V1.02 29-Mar-91 Check for error after calling osclose().
 */
 
 #include "port.h"

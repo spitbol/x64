@@ -57,39 +57,6 @@ This file is part of Macro SPITBOL.
             1 - requested action not possible
             2 - action caused irrecoverable error
 
-
-   V1.10 12-Oct-87 MBE  <withdrawn>
-
-   V1.11 14-Dec-87 MBE  Close files *prior* to writing a.out file or chaining
-                        to another shell command.  This frees up the channel
-                        variables for reuse upon restart (EXIT(3) case), and
-                        flushing any output data still in Spitbol's buffers
-                        (EXIT("cmd string") case).
-
-   V1.12 01-Jan-88 MBE  Modified for HP
-
-   V1.13 02-Feb-88 MBE  Modified for Definicon.
-                        Use save0() before EXIT("cmd") call (all versions).
-
-   V1.14 13-Sep-89 MBE  Modified for DOS 386.  Supports EXIT(-3) only.
-                        Added optional second argument to EXIT to allow
-                        specifying file name of load module.
-
-   V1.15 16-Oct-89 MBE  Modified for SPARC.
-
-   V1.16 19-May-91 MBE  Write load modules for SPITBOL-386 with
-                        Intel DOS Extender.
-   V1.17 22-Aug-91 MBE  <withdrawn>.
-
-   V1.18 07-Nov-91 MBE  Start rework for relocatable Save files.
-                                                Restrict portion of Static region saved.
-                        Replace initsp with usage of STBAS in
-                        Minimal source.
-
-   V1.19 10-Dec-91 MBE  Add +4 and -4 case to allow execution to proceed.
-
-   V1.20 14-Oct-94 MBE  Call termhost *prior* to writing save or exec file.
-
 */
 
 #include "port.h"

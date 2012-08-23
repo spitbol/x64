@@ -18,16 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSCM.C          Version:  01.01
-        ---------------------------------------
-
-        zyscm - string compare
-
-        V1.01   Don't bother clearing XR.
-                Change definition of first/second string.
-*/
-
-/*
 
         zyscm is called to make either a strict ASCII or INTERNATIONAL comparison.
 

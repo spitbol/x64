@@ -43,13 +43,6 @@ This file is part of Macro SPITBOL.
            whose values are no longer valid, re-establish dynamic area
            and transfer control to function that returns control to
            suspended spitbol program
-
-        HISTORY
-
-   V1.00 04-Jun-92 Split off from OSINT as a front-end module.
-   V1.01 30-Dec-96 Call swcinp after reloading SPX file.
-   V1.02 18-Mar-00 Don't interpret parameters following .spx on command
-                   line as file names.
 */
 #define GLOBALS                 /* global variables will be defined in this module */
 #include "port.h"

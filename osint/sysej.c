@@ -36,17 +36,6 @@ This file is part of Macro SPITBOL.
             XL - pointer to FCBLK chain
         Returns:
             NO RETURN
-
-        HISTORY
-
-   V1.04 MBE 07-Aug-90  Avoid using heap data structures if aborted in
-                                the middle of a garbage collection.
-
-   V1.03 MBE 27-Nov-89  Call termhost() if 80386 version to clear any
-                        funny modes from screen host functions.
-
-   V1.02 MBE 14-Dec-87  Make file closing loop into function for access from
-                        sysxi.c.
 */
 
 #include "port.h"

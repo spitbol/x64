@@ -28,10 +28,6 @@ This file is part of Macro SPITBOL.
 /*
         This module contains the switch loop that processes command
         line options.
-
-        HISTORY
-
-   V1.00 30-Jul-92 Split off from OSINT as a separate module.
 */
 #include "port.h"
 

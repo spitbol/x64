@@ -34,10 +34,6 @@ This file is part of Macro SPITBOL.
         pid     prcoess id
     Returns:
     nothing
-
-    V1.01 MBE 07-29-91  <withdrawn>.
-    V1.02 MBE 12-31-96  Modify for WinNT.
-
 */
 
 #include "port.h"

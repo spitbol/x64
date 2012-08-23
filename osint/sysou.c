@@ -18,22 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSOU.C          Version:  01.03
-        ---------------------------------------
-
-        Contents:       Function zysou
-
-    V1.04       4-3-95
-                    Modified to accept BCBLKs (Buffers) as well as SCBLKs.
-
-        V1.03   New oswrite calling sequence with separate mode & line length.
-        V1.02   Reference to changes in compiler at ASG11,
-                this routine is now called for writes to OUTPUT
-                and TERMINAL.  WA contains a 0 or 1 instead of an
-                FCBLK.
-*/
-
-/*
         zysou - output a record
 
         zysou writes a record to a file.

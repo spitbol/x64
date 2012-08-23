@@ -91,19 +91,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  BREAK.C          Version:  01.00
-        ---------------------------------------
-
-        Contents:       Function endbrk
-                                Function startbrk
-                            Function rearmbrk
-
-        v1.00   02-Mar-91       Initial version for Unix.
-        V1.01   16-May-91       Initial version for MS-DOS using Intel compiler.
-*/
-
-/*
-    startbrk( )
 
     startbrk starts up the logic for trapping user keyboard interrupts.
 */
@@ -945,19 +932,6 @@ This file is part of Macro SPITBOL.
    whence   type of LSEEK to perform
     Returns:
    Value returned by LSEEK (-1 if error).
-
-    History:
-
-    v1.01  05-Feb-1991  Modified for read/write I/O.
-
-        v1.02  13-May-1992  Changed offset argument and result type from
-                                                word to long.
-
-        V1.03   01-Aug-93       Add IO_EOT flag to ignore EOT char in DOS-mode
-                                                 text files.
-
-        V1.04   04-Jun-95       No longer have to clear IO_LF since it is only
-                                                used on a non-seekable device like a pipe.
 */
 
 #include "port.h"
@@ -1336,16 +1310,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  FLUSH.C          Version:  01.02
-        ---------------------------------------
-
-        Contents:       Function flush
-
-    V1.02 05-Feb-91     Flush only if dirty.  Adjust file position in buffer.
-    v1.01               Ignore short count writes if MS-DOS and character device.
-*/
-
-/*
     flush( ioptr )
 
     flush() writes out any characters in the buffer associated with the
@@ -1451,10 +1415,6 @@ This file is part of Macro SPITBOL.
 /*
         This module contains the switch loop that processes command
         line options.
-
-        HISTORY
-
-   V1.00 30-Jul-92 Split off from OSINT as a separate module.
 */
 #include "port.h"
 
@@ -2045,23 +2005,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-        File:  GETSHELL.C       Version:  01.04
-        ---------------------------------------
-
-        Contents:       Function getshell
-
-        V1.04   18-Oct-90       Rewrite to use findenv().
-
-        V1.03   23-Jun-90       Move pathlast() to swcinp.c.
-
-        V1.02   03-Mar-88       Return in tscblk in all cases, so that
-                                there is room to append after command string.
-
-        V1.01   28-Feb-88       Remove usage of strlen and strcpy
-
-*/
-
 #include "port.h"
 
 /*
@@ -2347,13 +2290,6 @@ This file is part of Macro SPITBOL.
            whose values are no longer valid, re-establish dynamic area
            and transfer control to function that returns control to
            suspended spitbol program
-
-        HISTORY
-
-   V1.00 04-Jun-92 Split off from OSINT as a front-end module.
-   V1.01 30-Dec-96 Call swcinp after reloading SPX file.
-   V1.02 18-Mar-00 Don't interpret parameters following .spx on command
-                   line as file names.
 */
 #define GLOBALS                 /* global variables will be defined in this module */
 #include "port.h"
@@ -3506,18 +3442,6 @@ This file is part of Macro SPITBOL.
         >0      length of record read
         -1      EOF
         -2      I/O error
-
-        V1.08   01-Aug-93       Add IO_EOT flag to ignore EOT char in DOS-mode
-                                                 text files.
-        V1.07   01-Feb-93       Change definition of mode argument.
-        V1.06   05-Feb-91       Change for read/write files.
-        V1.05   29-Nov-89       Terminate host screen operation if HOST386.
-        V1.04   05-Mar-88       Changes for Definicon and carriage return/
-                                                line feed terminated records.
-                                                Also modified code so that an end of file
-                                                in a record with no record terminator returns
-                                                that record, rather than an I/O error.
-
 */
 
 #include "port.h"
@@ -3989,10 +3913,6 @@ This file is part of Macro SPITBOL.
         pid     prcoess id
     Returns:
     nothing
-
-    V1.01 MBE 07-29-91  <withdrawn>.
-    V1.02 MBE 12-31-96  Modify for WinNT.
-
 */
 
 #include "port.h"
@@ -4064,23 +3984,6 @@ This file is part of Macro SPITBOL.
 
     You should have received a copy of the GNU General Public License
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
-        File:  OSWRITE.C        Version:  01.11
-        ---------------------------------------
-
-        Contents:       Function oswrite
-
-        V1.11   Split mode and line length into two separate arguments.  1-Feb-93.
-        V1.10   Maintain IO_DIR.  Other changes for read/write I/O.
-        V1.09   Decrement cp when restore savech in case multiple records.  Advance
-                        cp when writing in unbuffered mode.
-        V1.08   Change modelen parameter from int to word.
-    V1.07   Fix binary writes to character device if MS-DOS.
-    V1.06   Ignore short writes to character device if MS-DOS.
-        V1.05   Terminate host screen operation if HOST386.
-        V1.04   Obey ioptr->len on line-mode output.
 */
 
 /*
@@ -4574,19 +4477,6 @@ This file is part of Macro SPITBOL.
         0 - options successfully processed / -1 - option error
     Side Effects:
         Modifies contents of passed IOBLK (ioptr).
-
-        V1.02   Distinguish default input/output record lengths
-        V1.03   Buffer size and record size must be less than
-                        maxsize to avoid garbage collector problems when
-                        these values are stored in fcblk and ioblk.
-        V1.04   Add i/o option -u for update mode.
-        V1.05   01-Aug-93. Add IO_EOT flag to ignore EOT char in
-                        DOS-mode text files.
-        V1.06   21-Oct-94. Use uppercase function to fold case letters.
-        V1.07   26-Oct-94. Added share field to ioblk and processing of
-                        -S option.
-                        In -B option, subtract BFSIZE from maxsize before comparison.
-        V1.08   18-Dec-94. Add -I and -X options.
 */
 
 #include "port.h"
@@ -5982,15 +5872,6 @@ This file is part of Macro SPITBOL.
             Nothing
         Exits:
             None
-
-    V1.07   02/03/97 - call swcinp to close input file
-
-    V1.06   05/12/92 - Remove nameblk.  Use TSCBLK instead.
-
-        V1.05   10/20/89 - Distinguish -w and -y options
-
-        V1.04   09/14/89 - Use input file name with RUNEXT extension
-                           for file name with -y option.
 */
 
 #include "port.h"
@@ -6091,16 +5972,6 @@ This file is part of Macro SPITBOL.
 
     You should have received a copy of the GNU General Public License
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
-        File:  SYSCM.C          Version:  01.01
-        ---------------------------------------
-
-        zyscm - string compare
-
-        V1.01   Don't bother clearing XR.
-                Change definition of first/second string.
 */
 
 /*
@@ -6593,17 +6464,6 @@ This file is part of Macro SPITBOL.
             XL - pointer to FCBLK chain
         Returns:
             NO RETURN
-
-        HISTORY
-
-   V1.04 MBE 07-Aug-90  Avoid using heap data structures if aborted in
-                                the middle of a garbage collection.
-
-   V1.03 MBE 27-Nov-89  Call termhost() if 80386 version to clear any
-                        funny modes from screen host functions.
-
-   V1.02 MBE 14-Dec-87  Make file closing loop into function for access from
-                        sysxi.c.
 */
 
 #include "port.h"
@@ -6859,8 +6719,6 @@ This file is part of Macro SPITBOL.
             1 - file does not exist
             2 - inappropriate file
             3 - i/o error
-
-        V1.02 29-Mar-91 Check for error after calling osclose().
 */
 
 #include "port.h"
@@ -7775,23 +7633,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-   File:  SYSIF.C    Version:  01.03
-        -----------------------------------
-
-        Contents:       Function zysif
-
-        V1.01   01-25-90
-                        If include file cannot be opened, restore fd 0.
-
-        V1.02   02-16-91
-                        Call clrbuf() after closing the existing file.
-
-   V1.03 04-27-97
-         Look for include file in the directory where SPITBOL resides, and
-         in the directory of the first source file.
-*/
-
-/*
         zysif - start/stop using include file
 
         zysif stacks the current input stream and opens a new include file.
@@ -7954,16 +7795,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSIL.C          Version:  01.03
-        ---------------------------------------
-
-        Contents:       Function zysil
-
-        V1.02   Return binary/text indication in WC
-        V1.03   Adjust to new fcb style with separate mode field.  1-Feb-93.
-*/
-
-/*
         zysil - get input record length
 
         Parameters:
@@ -8029,11 +7860,6 @@ This file is part of Macro SPITBOL.
             1 - EOF or file not available after SYSXI
             2 - i/o error
             3 - record format error
-
-        V1.02   05-Mar-88       When reading an EOF from fd 0, call swcinp()
-                                before calling it a true EOF.
-        V1.03   01-Feb-93       New osread calling sequence with separate mode and
-                                line length fields.
 */
 
 #include "port.h"
@@ -9373,12 +9199,6 @@ This file is part of Macro SPITBOL.
             XR - number of addtional words obtained
         Exits:
             None
-
-   V1.02 08/06/89 - if allocation fails, try smaller amounts within reason.
-   V1.03 11/07/89 - add sanity check to make sure new memory is contiguous
-                    with old end of heap.
-   V1.04 01/29/91 - remove else clause within moremem(), add comments.
-
 */
 
 #include "port.h"
@@ -9508,22 +9328,6 @@ This file is part of Macro SPITBOL.
 
     You should have received a copy of the GNU General Public License
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
-        File:  SYSOU.C          Version:  01.03
-        ---------------------------------------
-
-        Contents:       Function zysou
-
-    V1.04       4-3-95
-                    Modified to accept BCBLKs (Buffers) as well as SCBLKs.
-
-        V1.03   New oswrite calling sequence with separate mode & line length.
-        V1.02   Reference to changes in compiler at ASG11,
-                this routine is now called for writes to OUTPUT
-                and TERMINAL.  WA contains a 0 or 1 instead of an
-                FCBLK.
 */
 
 /*
@@ -10610,39 +10414,6 @@ This file is part of Macro SPITBOL.
         Exits:
             1 - requested action not possible
             2 - action caused irrecoverable error
-
-
-   V1.10 12-Oct-87 MBE  <withdrawn>
-
-   V1.11 14-Dec-87 MBE  Close files *prior* to writing a.out file or chaining
-                        to another shell command.  This frees up the channel
-                        variables for reuse upon restart (EXIT(3) case), and
-                        flushing any output data still in Spitbol's buffers
-                        (EXIT("cmd string") case).
-
-   V1.12 01-Jan-88 MBE  Modified for HP
-
-   V1.13 02-Feb-88 MBE  Modified for Definicon.
-                        Use save0() before EXIT("cmd") call (all versions).
-
-   V1.14 13-Sep-89 MBE  Modified for DOS 386.  Supports EXIT(-3) only.
-                        Added optional second argument to EXIT to allow
-                        specifying file name of load module.
-
-   V1.15 16-Oct-89 MBE  Modified for SPARC.
-
-   V1.16 19-May-91 MBE  Write load modules for SPITBOL-386 with
-                        Intel DOS Extender.
-   V1.17 22-Aug-91 MBE  <withdrawn>.
-
-   V1.18 07-Nov-91 MBE  Start rework for relocatable Save files.
-                                                Restrict portion of Static region saved.
-                        Replace initsp with usage of STBAS in
-                        Minimal source.
-
-   V1.19 10-Dec-91 MBE  Add +4 and -4 case to allow execution to proceed.
-
-   V1.20 14-Oct-94 MBE  Call termhost *prior* to writing save or exec file.
 
 */
 

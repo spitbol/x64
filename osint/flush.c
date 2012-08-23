@@ -18,16 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  FLUSH.C          Version:  01.02
-        ---------------------------------------
-
-        Contents:       Function flush
-
-    V1.02 05-Feb-91     Flush only if dirty.  Adjust file position in buffer.
-    v1.01               Ignore short count writes if MS-DOS and character device.
-*/
-
-/*
     flush( ioptr )
 
     flush() writes out any characters in the buffer associated with the

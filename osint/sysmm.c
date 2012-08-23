@@ -33,12 +33,6 @@ This file is part of Macro SPITBOL.
             XR - number of addtional words obtained
         Exits:
             None
-
-   V1.02 08/06/89 - if allocation fails, try smaller amounts within reason.
-   V1.03 11/07/89 - add sanity check to make sure new memory is contiguous
-                    with old end of heap.
-   V1.04 01/29/91 - remove else clause within moremem(), add comments.
-
 */
 
 #include "port.h"

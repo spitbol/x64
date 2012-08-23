@@ -25,35 +25,9 @@ This file is part of Macro SPITBOL.
 /*
    Definitions of SPITBOL data blocks available to C-language
    external functions to be called from 32-bit versions of SPITBOL.
- *
-   V1.00        02/17/90 01:53pm
-                        Initial version
-   V1.01        12-03-90 12:01pm
-                        To match release 1.08.  Split flags in IOBLK
-                        into to words to prevent flag bits from being
-                        mistaken for a relocatable value.
-   V1.02        03-11-91 15:00pm
-                        To match release 1.1.  Add new words to ioblk for end-
-                        of-line characters.  The bfblk has been completely
-                        reworked to accommodate read/write I/O.
-   V1.03        10-18-91 04:27pm
-          <withdrawn>.
-   V1.04        3-July-92
-                        Begin to customize for SPARC/Sun 4.
-   V1.05        09-12-94 07:13pm
-                        Add definitions for buffers
-   V1.06        04-25-95 10:07pm
-                        Customize for RS/6000.
-   V1.07    12-29-96 06:05pm
-            Customize for Windows NT
-   V1.08    03-04-97 01:45pm
-            Tweak for SPARC
-   V1.09 04-27-97
-            Add FILEPOS definition.
- *
- *
+
    SPITBOL BLOCKS
- *
+
    All SPITBOL objects are encapsulated into blocks of memory.
    The first word of each block identifies the block type in a
    curious way.  Rather than containing a simple integer type
@@ -61,24 +35,24 @@ This file is part of Macro SPITBOL.
    some particular action on the block, such as placing it on
    the stack.  Because each block type uses a different subroutine,
    the subroutine addresses serve as a type identifier.
- *
- *
+
+
    Each subroutine is proceeded in memory by a one-byte (Intel platforms)
    or one-word (all other platforms) integer type code (given below).
    Thus to obtain a simple ordinal type code for a block pointed to by an
    address in pblk, use the following:
- *
+
    block        *pblk;
    unsigned     typecode;
      ...
     typecode = *((unsigned char *)((long)pblk - 1)); (Intel platform)
     typecode = *((unsigned *)((long)pblk - 4));      (Sun, RS/6000, SGI, etc.)
- *
- *
+
+
    Here's a visualization of how SPITBOL stores data blocks and identifies
    their type by pointing to unique sections of code:
- *
- *
+
+
      In Data Space:                        In Code Space:
    +---------------------+               +-----------+
    |      Type Word      |----+          | Type code |
@@ -87,14 +61,14 @@ This file is part of Macro SPITBOL.
  *...                   ...              |   Block Type               |
    |                     |               |                            |
    +---------------------+               +----------------------------+
- *
- *
+
+
    Given an integer type, the Type Word can be obtained by
    looking it up in a table provided to external functions as ptyptab in
    the misc info structure.  For example, if the locator information
    structure is passed to the function as an argument called "info",
    use the following:
- *
+
    unsigned typecode;
    mword        typeword;
     ...
@@ -103,7 +77,7 @@ This file is part of Macro SPITBOL.
 
 /*
    BLOCK CODES FOR ACCESSIBLE DATATYPES
- *
+
    These blocks may appear in an argument list if left untranslated
    by the LOAD function definition.
  */
@@ -131,7 +105,7 @@ enum {
 
 /*
    OTHER BLOCK CODES
- *
+
    These blocks will never appear in an argument list, but are
    listed here for completeness.
  */
@@ -154,7 +128,7 @@ enum {
 /*
    Structure of common SPITBOL blocks:
             Integer, Real, String, and File blocks.
- *
+
         These structures are part of the "blocks" union that can be applied
             to the result area to determine where to store required return
         information.
@@ -181,20 +155,20 @@ struct icblk {
                 a four-word structure, instead of three. (A filler word is
                 inserted between rctyp and rcval).  But an rcblk really is a
                 three-word structure inside of SPITBOL.
- *
+
                 As a workaround, we define rcvals as a two word array, and use
                 an rcval macro to access the double value there.  The macro
                 is invoked with the rcblk as its argument.  For example,
                 suppose presult pointed to a union of all block types.  The
                 double value stored in an rcblk there would be accessed as
- *
+
                         rcval(presult->rcb)
- *
+
                 It may be necessary to use the -misalign command option with
                 cc to have the compiler generate the two single-precision loads
                 needed to access the real at rcvals.  The normal double-precision
                 load will fault because the operand is not aligned properly.
- *
+
         See function retreal in extrnlib.c for an example.
  */
 struct rcblk {
@@ -243,17 +217,17 @@ struct fxblk {
 
 /*
    FILE CONTROL BLOCK
- *
+
    The user may provide the word "FILE" for any argument in
    the LOAD function prototype.  When a call is made to the
    external function with an I/O associated variable in this argument
    position, SPITBOL will provide a pointer to the file control
    block instead of the value of the variable.
- *
+
    The file control block (FCB) points to an I/O block with
    additional information.  In turn, the I/O block points to any
    buffer used by the file.
- *
+
    This block is obtained for every file except those associated
    with INPUT, OUTPUT, or TERMINAL.  Note that these FCB's are
    unrelated to MS-DOS FCB's.  File control blocks do not have
@@ -273,7 +247,7 @@ struct fcblk {
 
 /*
      CHFCB - chain of FCBs block
- *
+
      For every FCB created by OSINT, the compiler creates a CHFCB pointing
      to the FCB and links it onto a chain of CHFCBs.  At EOJ the head of this
      CHFCB chain is passed to the interface function SYSEJ so that all files
@@ -291,7 +265,7 @@ struct  chfcb {
 
 /*
    I/O BLOCK
- *
+
    An I/O block is pointed to by the fcbiob field of a file control block.
  */
 
@@ -356,9 +330,9 @@ struct ioblk {
 
 /*
    I/O BUFFER BLOCK
- *
+
    An I/O buffer block (BFBBLK) is pointed to by an IOBLK.
- *
+
    Size of file position words in I/O buffer block
  */
 
@@ -411,11 +385,11 @@ struct efblk {
    Structure of XNBLK allocated for external function
    A pointer to this structure is passed to the external function
    in the stack in pxnblk.
- *
+
    This structure is used to ways:
      1.  As a general structure in which the user can place private
                  data and have it maintained by SPITBOL.
- *
+
      2.  As a particular structure in which information about each
                  external function is maintained.
  */
@@ -463,10 +437,10 @@ struct xnblk {
 
 /*
    Other selected blocks of interest:
- *
- *
+
+
    ARRAY BLOCK
- *
+
    An array block (ARBLK) represents an array value other than one
    with one dimension whose lower bound is one (see VCBLK).
  */
@@ -515,7 +489,7 @@ struct arblkn {                                         /* N-dimensional array  
 
 /*
         BUFFER CONTROL BLOCK
- *
+
         A buffer control block (BCBLK) is created by the BUFFER
         function, and serves as an indirect control header for the
         buffer. It contains the number of characters currently
@@ -531,7 +505,7 @@ struct bcblk {
 
 /*
         STRING BUFFER BLOCK
- *
+
         A string buffer block (BFBLK) contains the actual buffer
         memory area. It specifies the largest string that can be
         stored in the buffer.
@@ -545,7 +519,7 @@ struct bfblk {
 
 /*
    CODE BLOCK
- *
+
    A code block (CDBLK) is present for every source statement.
  */
 
@@ -566,7 +540,7 @@ struct cdblk {
 
 /*
    NAME BLOCK
- *
+
    A name block (NMBLK) is used whereever a name must be stored as
    a value following use of the unary dot operator.
  */
@@ -580,7 +554,7 @@ struct nmblk {
 
 /*
    TABLE BLOCK
- *
+
    A table block (TBBLK) is used to represent a table value.
    It comprises a list of buckets, each of which may point to
    a chain of TEBLKs.  TBBUK entries either point to the first
@@ -600,7 +574,7 @@ struct tbblk {
 
 /*
    TABLE ELEMENT BLOCK
- *
+
    A table element (TEBLK) is used to represent a single entry in
    a table.
  */
@@ -615,7 +589,7 @@ struct teblk {
 
 /*
    VARIABLE BLOCK
- *
+
    A variable block (VRBLK) is used to hold a program variable.
  */
 
@@ -634,7 +608,7 @@ struct vrblk {
 
 /*
    VECTOR BLOCK
- *
+
    A vector block (VCBLK) is used to represent an array value which has
    one dimension whose lower bound is one. All other arrays are
    represented by ARBLKs.  The number of elements can be deduced
@@ -651,9 +625,9 @@ struct vcblk {
 
 /*
    UNION OF ALL BLOCKS
- *
+
    A block is merely a union of all the block types enumerated here.
- *
+
  */
 
 union block {
@@ -708,41 +682,17 @@ This file is part of Macro SPITBOL.
 /*
     Definitions of routines and data available to C-language
     external function to be called from 32-bit versions of SPITBOL.
- *
-        V1.00  02/17/90 01:52pm
-                   Initial version
- *
-    V1.01  10-18-91 04:53pm
-           <withdrawn>.
- *
-    V1.02  03-29-92 09:11am
-         <withdrawn>.
- *
-    V1.03  07-28-92 06:56am
-                   Customize for SPARC.
- *
-        V1.04  09-12-94 07:13pm
-                   Add definitions for buffers
- *
-    V1.05  04-25-95 10:05pm
-                   Customize for RS/6000
- *
-    V1.06  12-29-96 06:05pm
-           Customize for Windows NT
- *
-    V1.07  03-04-97 12:45pm
-                          Tweak for SPARC.
- *
+
     Definition of information placed on stack prior to pushing arguments to
     an external function.
- *
+
     Many of these items can be ignored, and are provided only for the
     benefit of those wishing to operate directly on SPITBOL's internal
     data structures.
- *
+
     However, the pointer in presult *must* be used by the external
     function to locate the area in which results are returned.
- *
+
  */
 
 #include "system.h"
@@ -820,13 +770,13 @@ enum ext_type {                                         /* Executing under:     
 /*
    Sample usage.  Definition for function arguments, assuming
    calling function in SPITBOL with:
- *
+
          F(INTEGER,REAL,STRING)
- *
+
    Because SPITBOL pushes arguments left to right, a Pascal
    calling sequence should be used.  The could be supplied by
    adding the __pascal keyword to the entry macro.
- *
+
    However, because the SPARC and RS/6000 C compilers do not support
    Pascal calling sequences, and we would like to move external function
    source files easily between systems, the function definition will have
@@ -921,7 +871,7 @@ This file is part of Macro SPITBOL.
 
 /*
         Globals.h       All OSINT globals are defined in this file.
- *
+
         Define GLOBALS in the C module that wishes to have these
         variables defined.  All other modules will see them as externals.
  */
@@ -1101,7 +1051,7 @@ NoInit( word    *lmodstk);
 
 /*
    Globals found in assembly language modules.
- *
+
  */
 extern int  reg_size;
 extern int  hasfpu;
@@ -2012,7 +1962,7 @@ This file is part of Macro SPITBOL.
    |     IA size     |    WORD size    | Save File Version |
    |                 |                 |                   |
    +-----------------+-----------------+-------------------+
- *
+
    IA (integer accumulator) and Minimal Word Size:
     0 - 16 bits
     1 - 32 bits
@@ -2108,7 +2058,7 @@ This file is part of Macro SPITBOL.
 
 /*
         BUFFER CONTROL BLOCK
- *
+
         A buffer control block (BCBLK) is created by the BUFFER
         function, and serves as an indirect control header for the
         buffer. It contains the number of characters currently
@@ -2123,7 +2073,7 @@ struct bcblk {
 
 /*
         STRING BUFFER BLOCK
- *
+
         A string buffer block (BFBLK) contains the actual buffer
         memory area. It specifies the largest string that can be
         stored in the buffer.
@@ -2137,7 +2087,7 @@ struct bsblk {
 
 /*
    CODE BLOCK
- *
+
    A code block (CDBLK) is present for every source statement.
  */
 
@@ -2233,7 +2183,7 @@ struct  scblk {
 
 /*
    VARIABLE BLOCK
- *
+
    A variable block (VRBLK) is used to hold a program variable.
  */
 
@@ -2294,20 +2244,6 @@ This file is part of Macro SPITBOL.
     This header file defines the I/O control blocks used by the
     operating system interface for the Macro Spitbol compiler.
 
-   V1.09 27-Apr-97 Add FILEPOS definition.
-   V1.08 26-Oct-94 Add "share" word to ioblk to allow file sharing
-                        options.  Also, in the bfblk, change buf[1] to buf[sizeof(word)]
-                        so that BFSIZE is calculated properly with compilers that
-                        round-up the size of a structure to a word-multiple.
-        V1.07   01-Aug-93 Add IO_EOT flag to ignore EOT char in DOS-mode text files.
-        V1.06   01-Feb-93 Split record size into two fields (rsz and mode) in fcb, to
-                        prevent negative record size appearing to be a valid
-                        pointer in 8088 SPITBOL.
-        V1.05   Add IO_DIR, change definitions in bfblk to
-                        accommodate read/write files.
-        V1.04   Split IOBLK flags into two words
-        V1.03   Add IO_COT flag from MS-DOS
-        V1.02   Split RECSIZ into IRECSIZ and ORECSIZ
 */
 
 /* Size of file position words in I/O buffer block */
@@ -2396,7 +2332,7 @@ struct ioblk
 
 /*
     I/O flags within the flg1 and flg2 words of an IOBLK.
- *
+
     Caution:  Do not attempt to redefine as C bit fields.  Bit fields
     may be assigned to high-order bits on some systems, and this would
     produce values larger than MXLEN.

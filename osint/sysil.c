@@ -18,16 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSIL.C          Version:  01.03
-        ---------------------------------------
-
-        Contents:       Function zysil
-
-        V1.02   Return binary/text indication in WC
-        V1.03   Adjust to new fcb style with separate mode field.  1-Feb-93.
-*/
-
-/*
         zysil - get input record length
 
         Parameters:
