@@ -1,4 +1,0 @@
-v38.g is 3.8.1 spitbol v38.s. This is able to boostrap itself
-v38.s is latest s from head branch of nasm conversion.
-norm.spt normalizes a .s file to assist comparing two, one from gas, the other
-from nasm.
