@@ -19,9 +19,9 @@ This file is part of Macro SPITBOL.
 
 /*
 / File:  SYSFC.C    Version:  01.04
-/	---------------------------------------
+/       ---------------------------------------
 /
-/	Contents:	Function zysfc
+/       Contents:       Function zysfc
 */
 
 /*
@@ -32,39 +32,39 @@ This file is part of Macro SPITBOL.
 /   are needed.  There are a number of possiblities:
 /
 /   For the first call to zysfc that establishes an i/o channel, allocate:
-/	fcblk & ioblk & bfblk
+/       fcblk & ioblk & bfblk
 /
 /   For a second, third, ... call to zysfc that establishes a different type
 /   of access to an existing i/o association, allocate:
-/	fcblk
+/       fcblk
 /
 /   For a second, third, ... call to zysfc that does specify any arguments,
 /   allocate:
-/	nothing, use existing fcblk
+/       nothing, use existing fcblk
 /
 /   Notice that of the three blocks that are allocated, only the BFBLK
 /   has a varying size;  its size depends on the buffer size specified
 /   as an I/O argument.
 /
 /   Parameters:
-/	xl	pointer to scblk holding filearg1 (channel id)
-/	xr	pointer to scblk holding filearg2 (filename & args)
-/	wa	pointer to existing fcblk or 0
-/	wb	0/3 for input/output association
-/	wc	number of scblk pointers on stack (forced to zero by interface)
+/       xl      pointer to scblk holding filearg1 (channel id)
+/       xr      pointer to scblk holding filearg2 (filename & args)
+/       wa      pointer to existing fcblk or 0
+/       wb      0/3 for input/output association
+/       wc      number of scblk pointers on stack (forced to zero by interface)
 /   Returns:
-/	wa = xl = 0	Nothing to allocate
-/	wa > 0		Size of requested fcblk
-/	wa = 0, xl > 0	Private fcblk pointer in xl
-/	wc		0/1/2 for xrblk/xnblk/static allocation request
+/       wa = xl = 0     Nothing to allocate
+/       wa > 0          Size of requested fcblk
+/       wa = 0, xl > 0  Private fcblk pointer in xl
+/       wc              0/1/2 for xrblk/xnblk/static allocation request
 /
 /   Exits:
-/	1	invalid file argument
+/       1       invalid file argument
 / 2 channel already in use
 /
-/	1.03	If called first time with null filearg2, lookup filearg1
-/		in environment block, and use filename specified there
-/		instead.
+/       1.03    If called first time with null filearg2, lookup filearg1
+/               in environment block, and use filename specified there
+/               instead.
 /
 / 1.04  If called with filename or file descriptor and channel is
 /   already in use, take new exit number 2.
@@ -73,12 +73,12 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-struct ioblk	tioblk;			/* temporary ioblk		*/
+struct ioblk    tioblk;                 /* temporary ioblk              */
 
 zysfc()
 {
-    int	fd_spec, i;
-    word	allocsize, length_fname;
+    int fd_spec, i;
+    word        allocsize, length_fname;
     register struct scblk *scb1 = XL( struct scblk * );
     register struct scblk *scb2 = XR( struct scblk * );
     register struct fcblk *fcb  = WA( struct fcblk * );
@@ -123,9 +123,9 @@ again:
         /   Unopened FCB may be present if previous sysio failed
         /   on this channel.  V1.02 MBE
         /
-        /	Note that allocsize may exceed MXLEN, because ALLOC doesn't
-        /	check it, and we will carve the allocated block into three
-        /	chunks, each of which will be MXLEN or less.
+        /       Note that allocsize may exceed MXLEN, because ALLOC doesn't
+        /       check it, and we will carve the allocated block into three
+        /       chunks, each of which will be MXLEN or less.
         */
         if ( (length_fname && fd_spec) )
             return EXIT_1;
@@ -147,12 +147,12 @@ again:
     */
     else
     {
-        if ( !fcb )					/* if no FCB then error	*/
+        if ( !fcb )                                     /* if no FCB then error */
         {
             /*
-            	/ 1.03 - look up in environment block.  Filename
-            	/	 will be copied to tscblk.
-            	*/
+                / 1.03 - look up in environment block.  Filename
+                /        will be copied to tscblk.
+                */
             scb2 = pTSCBLK;
             if (!optfile(scb1, scb2) && !use_env)
             {
@@ -161,14 +161,14 @@ again:
             }
             return  EXIT_1;
         }
-        if ( tioblk.typ )		/* if args then		*/
+        if ( tioblk.typ )               /* if args then         */
         {
-            allocsize = FCSIZE;	/*    alloc new FCB	*/
+            allocsize = FCSIZE; /*    alloc new FCB     */
             /* BAD!! Garbage collect could move ioblk before sysio is called */
             save_iob = MK_MP(fcb->iob, struct ioblk *);
         }
-        else				/* if no args then	*/
-            allocsize = 0;		/*   no new FCB needed	*/
+        else                            /* if no args then      */
+            allocsize = 0;              /*   no new FCB needed  */
     }
 
     /*
@@ -176,8 +176,8 @@ again:
     */
     tioblk.flg2 |= use_env; /*  record use of environment for sysio */
     SET_WA( allocsize );  /*  size of block to alloc or 0   */
-    SET_WC( 0 );		/*  xrblk please			*/
-    SET_XL( 0 );		/*  no private fcblk			*/
+    SET_WC( 0 );                /*  xrblk please                        */
+    SET_XL( 0 );                /*  no private fcblk                    */
 
     return NORMAL_RETURN;
 }

@@ -18,30 +18,30 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  PROMPT.C		Version:  01.00
-/	---------------------------------------
+/       File:  PROMPT.C         Version:  01.00
+/       ---------------------------------------
 /
-/	Contents:	Function prompt
+/       Contents:       Function prompt
 */
 
 #include "port.h"
 
-/*	prompt() - used to give user usage info in command line versions.
+/*      prompt() - used to give user usage info in command line versions.
  *
  */
 void prompt()
 {
 #if RUNTIME
     wrterr("usage: spitrun [options] file[.spx] [program arguments]");
-#else					/* RUNTIME */
+#else                                   /* RUNTIME */
 
 #if SAVEFILE
     wrterr("usage: spitbol [options] files[.spt or .spx] [args to HOST(2)]");
-#else					/* SAVEFILE */
+#else                                   /* SAVEFILE */
     wrterr("usage: spitbol [options] files[.spt] [args to HOST(2)]");
-#endif					/* SAVEFILE */
+#endif                                  /* SAVEFILE */
 
-#endif					/* RUNTIME */
+#endif                                  /* RUNTIME */
 
 #if RUNTIME
 #if WINNT
@@ -51,7 +51,7 @@ void prompt()
 #endif               /* WINNT */
     wrterr("-u \"string\" data string available to program");
     wrterr("-#=file   associate file with I/O channel #");
-#else					/* RUNTIME */
+#else                                   /* RUNTIME */
     wrterr("source files are concatenated, filename '-' is standard input/output");
     wrterr("# is a decimal number.  Append \"k\" for kilobytes, \"m\" for megabytes.");
 #if WINNT
@@ -76,11 +76,11 @@ void prompt()
 #else             /* WINNT */
     wrterr("-w write load (.out) module    -y write save (.spx) file");
 #endif               /* WINNT */
-#endif					/* EXECFILE & SAVEFILE */
+#endif                                  /* EXECFILE & SAVEFILE */
 
 #if SAVEFILE & !EXECFILE
     wrterr("-y write save (.spx) file");
-#endif					/* SAVEFILE & !EXECFILE */
+#endif                                  /* SAVEFILE & !EXECFILE */
 
     wrterr("-r INPUT from source file following END statement");
     wrterr("-T=file  write TERMINAL output to file");
@@ -91,7 +91,7 @@ void prompt()
     wrterr("option defaults: -d64m -i128k -m64k -s128k -g60 -t120");
 #endif
 
-#endif					/* RUNTIME */
+#endif                                  /* RUNTIME */
 
     __exit(0);
 }

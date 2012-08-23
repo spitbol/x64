@@ -18,29 +18,29 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  SYSEA.C		Version:  01.00
-/	---------------------------------------
+/       File:  SYSEA.C          Version:  01.00
+/       ---------------------------------------
 /
-/	Contents:	Function zysea
+/       Contents:       Function zysea
 */
 
 /*
 /
-/	zysea - error advise
+/       zysea - error advise
 /
-/	Here we catch errors before they are printed.
+/       Here we catch errors before they are printed.
 /
-/	Parameters:
-/	    XR - Error stage
-/			if XR = STGIC, STGCE, STGXT then
-/				WA - error number (1-330)
-/				WB - column number
-/				WC - line number
-/				XL - scblk containing source file name
-/	Returns:
-/	    XR - SCBLK of message to print, or 0 if none
-/	Exits:
-/	    1 - suppress printing of error message
+/       Parameters:
+/           XR - Error stage
+/                       if XR = STGIC, STGCE, STGXT then
+/                               WA - error number (1-330)
+/                               WB - column number
+/                               WC - line number
+/                               XL - scblk containing source file name
+/       Returns:
+/           XR - SCBLK of message to print, or 0 if none
+/       Exits:
+/           1 - suppress printing of error message
 /
 /  1.30.20 3/18/2000 - fix bug displaying column number - 1
 */
@@ -64,14 +64,14 @@ int n;
  * Error stage states
  */
 enum stage {
-    STGIC=0,			/* Initial compile				*/
-    STGXC,				/* Execution compile (CODE)			*/
-    STGEV,				/* Expression eval during execution		*/
-    STGXT,				/* Execution time				*/
-    STGCE,				/* Initial compile after scanning END line	*/
-    STGXE,				/* Execute time compile after scanning END line	*/
-    STGEE,				/* EVAL evaluating expression			*/
-    STGNO				/* Number of codes				*/
+    STGIC=0,                    /* Initial compile                              */
+    STGXC,                              /* Execution compile (CODE)                     */
+    STGEV,                              /* Expression eval during execution             */
+    STGXT,                              /* Execution time                               */
+    STGCE,                              /* Initial compile after scanning END line      */
+    STGXE,                              /* Execute time compile after scanning END line */
+    STGEE,                              /* EVAL evaluating expression                   */
+    STGNO                               /* Number of codes                              */
 };
 
 zysea()
@@ -101,6 +101,6 @@ zysea()
         return NORMAL_RETURN;
     }
     SET_XR(0L);
-    return NORMAL_RETURN;	/* Other errors be processed normally */
+    return NORMAL_RETURN;       /* Other errors be processed normally */
 }
 

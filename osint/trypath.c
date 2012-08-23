@@ -19,9 +19,9 @@ This file is part of Macro SPITBOL.
 
 /*
 /  File: TRYPATH.C         Version 1.01
-/	--------------------------------------------
+/       --------------------------------------------
 /
-/	Contents:	Functions initpath, trypath.
+/       Contents:       Functions initpath, trypath.
 /
 /  V1.01 4-27-97 Fix bug in trypath that allowed it to search beyond the
 /                trailing '\0' in pathptr.
@@ -36,19 +36,19 @@ This file is part of Macro SPITBOL.
 
 /*
 /  initpath - initialize for a search by looking to see if there
-/	    is a search path.  Under Unix, the user could be running
-/		either the Korn shell or csh, implying two forms:
-/		VAR path:path:path
-/		var (path path path)
+/           is a search path.  Under Unix, the user could be running
+/               either the Korn shell or csh, implying two forms:
+/               VAR path:path:path
+/               var (path path path)
 /
-/		caller should call with the lowercase version of var.  We
-/		will try the uppercase version automatically.
+/               caller should call with the lowercase version of var.  We
+/               will try the uppercase version automatically.
 */
 void initpath(name)
 char *name;
 {
-    char	ucname[32];		/* only called with "snolib" and "path" */
-    int		i;
+    char        ucname[32];             /* only called with "snolib" and "path" */
+    int         i;
 
     pathptr = findenv(name,length(name));
     if (!pathptr)

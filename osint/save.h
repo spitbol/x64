@@ -18,18 +18,18 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:   SAVE.H           Version 1.01
-/	-------------------------------------
+/       File:   SAVE.H           Version 1.01
+/       -------------------------------------
 /
-/	This header file provides information for writing the impure
-/	portions of SPITBOL's data segments to a save file.
+/       This header file provides information for writing the impure
+/       portions of SPITBOL's data segments to a save file.
 /
 / v1.01 3-Jun-91 MBE
-/	Added memincb, maxsize, readshell0 & uarg to header, and
-/	additional argument to specify whether these values should
-/	override existing values, as would be the case for the
-/	Intel MS-DOS version, where Save files are used to simulate
-/	Exec files.
+/       Added memincb, maxsize, readshell0 & uarg to header, and
+/       additional argument to specify whether these values should
+/       override existing values, as would be the case for the
+/       Intel MS-DOS version, where Save files are used to simulate
+/       Exec files.
 /
 */
 #if SAVEFILE
@@ -87,15 +87,15 @@ struct svfilehdr {
 
 #define OURMAGIC1   0xfaa5a5fa
 #define OURMAGIC2   0x0d0a0d0a
-#endif					/* SAVEFILE */
+#endif                                  /* SAVEFILE */
 
 #if WINNT
-#define	PAGESIZE	4096
-#define L2PGSZ		12		/* Log base 2 of page size */
+#define PAGESIZE        4096
+#define L2PGSZ          12              /* Log base 2 of page size */
 #endif
 
 #if SUN4
-#define	PAGESIZE	PAGSIZ
+#define PAGESIZE        PAGSIZ
 #define T_START     SEGSIZ   /* N_MAGIC, no dynamic loading */
-#endif					/* SUN4 */
+#endif                                  /* SUN4 */
 

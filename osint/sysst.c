@@ -19,19 +19,19 @@ This file is part of Macro SPITBOL.
 
 /*
 /  File:  SYSST.C    Version:  01.07
-/	---------------------------------------
+/       ---------------------------------------
 /
-/	Contents:	Function zysst
+/       Contents:       Function zysst
 /
-/  01.02 10-Oct-87 MBE	Return EXIT_5 if I/O error.
-/			Return resulting file position in IA
-/			(requiring non-standard mod to V36A.MIN).
+/  01.02 10-Oct-87 MBE  Return EXIT_5 if I/O error.
+/                       Return resulting file position in IA
+/                       (requiring non-standard mod to V36A.MIN).
 /
-/  01.03 29-Nov-89 MBE	Allow SET of a system file.
+/  01.03 29-Nov-89 MBE  Allow SET of a system file.
 /
 /  01.04 18-May-92 MBE  Provide PC-SPITBOL-style support for SET.
 /
-/  01.05 01-Feb-93 MBE	fcb->rsz is always positive now.
+/  01.05 01-Feb-93 MBE  fcb->rsz is always positive now.
 /
 /  01.06 21-Oct-94 MBE  Use uppercase function to fold case letters.
 /
@@ -45,39 +45,39 @@ This file is part of Macro SPITBOL.
 /   zysst - set file position
 /
 /   Parameters:
-/	WA - FCBLK pointer
+/       WA - FCBLK pointer
 #if SETREAL
 /  RA - 2nd argument (real number), offset
 #else
-/	WB - 2nd argument (might require conversion), offset
+/       WB - 2nd argument (might require conversion), offset
 #endif
-/	WC - 3rd argument (might require conversion), whence
+/       WC - 3rd argument (might require conversion), whence
 /    Returns:
 #if SETREAL
 /  RA - File position
 #else
-/	IA - File position
+/       IA - File position
 #endif
 /    Exits:
-/	1 - invalid 2nd argument
-/	2 - invlaid 3rd argument
-/	3 - file does not exist
-/	4 - set not allowed
-/	5 - i/o error
+/       1 - invalid 2nd argument
+/       2 - invlaid 3rd argument
+/       3 - file does not exist
+/       4 - set not allowed
+/       5 - i/o error
 /
 /  PC-SPITBOL option form of SET:
 /    WB = 'P':
-/  		  set position to WC
+/                 set position to WC
 /    WB = 'H'
-/  		  set position to WC * 32768 + (current_position mod 32768)
+/                 set position to WC * 32768 + (current_position mod 32768)
 /    WB = 'R'
-/  		  set position to current_position + WC
+/                 set position to current_position + WC
 /    WB = 'E'
-/  		  set position to end_of_file + WC
+/                 set position to end_of_file + WC
 /    WB = 'C'
-/  		  set record length to WC for byte-stream file
+/                 set record length to WC for byte-stream file
 /    WB = 'D'
-/  		  delete record -- not supported
+/                 delete record -- not supported
 /
 */
 
@@ -86,7 +86,7 @@ This file is part of Macro SPITBOL.
 zysst()
 
 {
-    IATYPE	whence, temp;
+    IATYPE      whence, temp;
     FILEPOS  offset;
     register struct fcblk *fcb = WA (struct fcblk *);
     register struct ioblk *iob = MK_MP(fcb->iob, struct ioblk *);
@@ -100,7 +100,7 @@ zysst()
     /* not allowed to do a set of a pipe */
     if ( iob->flg2 & IO_PIP )
         return EXIT_4;
-#endif					/* PIPES */
+#endif                                  /* PIPES */
 
     /* whence may come in either integer or string form */
     icp = WC( struct icblk * );
@@ -141,7 +141,7 @@ zysst()
             if ( fcb->mode == 0 && temp > 0 && temp <= (word)maxsize ) {
                 fcb->rsz = temp;
                 temp = 0;
-                whence = 1;			/* return current position */
+                whence = 1;                     /* return current position */
                 break;
             }
             else {
@@ -152,7 +152,7 @@ zysst()
             }
 
         default:
-            return EXIT_1;		/* Unrecognised control */
+            return EXIT_1;              /* Unrecognised control */
         }
     }
     offset = (FILEPOS)temp;

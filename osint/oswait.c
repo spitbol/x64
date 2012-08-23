@@ -19,9 +19,9 @@ This file is part of Macro SPITBOL.
 
 /*
 /   File:  OSWAIT.C     Version:  01.02
-/	---------------------------------------
+/       ---------------------------------------
 /
-/	Contents:	Function oswait
+/       Contents:       Function oswait
 */
 
 
@@ -31,7 +31,7 @@ This file is part of Macro SPITBOL.
 /   oswait() waits for the termination of the process with id pid.
 /
 /   Parameters:
-/	pid	prcoess id
+/       pid     prcoess id
 /   Returns:
 /   nothing
 /
@@ -55,18 +55,18 @@ extern int wait(int *status);
 #endif
 
 void oswait( pid )
-int	pid;
+int     pid;
 {
-    int	deadpid, status;
+    int deadpid, status;
     struct  chfcb   *chptr;
 #if UNIX
     SigType (*hstat)Params((int)),
             (*istat)Params((int)),
             (*qstat)Params((int));
 
-    istat	= signal( SIGINT, SIG_IGN );
-    qstat	= signal( SIGQUIT ,SIG_IGN );
-    hstat	= signal( SIGHUP, SIG_IGN );
+    istat       = signal( SIGINT, SIG_IGN );
+    qstat       = signal( SIGQUIT ,SIG_IGN );
+    hstat       = signal( SIGHUP, SIG_IGN );
 #endif
 
     while ( (deadpid = wait( &status )) != pid  &&  deadpid != -1 )
@@ -90,4 +90,4 @@ int	pid;
     signal( SIGHUP,hstat );
 #endif                  /* UNIX */
 }
-#endif					/* PIPES */
+#endif                                  /* PIPES */

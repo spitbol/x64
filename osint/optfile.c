@@ -18,10 +18,10 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File: OPTFILE.C		Version: 1.00
-/	-------------------------------------
+/       File: OPTFILE.C         Version: 1.00
+/       -------------------------------------
 /
-/	Contents:	function optfile
+/       Contents:       function optfile
 /
 */
 
@@ -38,29 +38,29 @@ This file is part of Macro SPITBOL.
 /   on the command line.  If not found there, it looks in the environment block.
 /
 /   Parameters:
-/	varname	 pointer to SCBLK containing alias
-/	result   pointer to SCBLK that will receive any name found
+/       varname  pointer to SCBLK containing alias
+/       result   pointer to SCBLK that will receive any name found
 /   Returns:
 /       0  - success, result contains name
-/	-1 - failure
+/       -1 - failure
 /   Side Effects:
-/	none
+/       none
 */
 
 #include "port.h"
 
 int optfile( varname, result )
 
-struct	scblk	*varname, *result;
+struct  scblk   *varname, *result;
 
 {
-    word	i, j, n;
+    word        i, j, n;
     register char *p, *q;
 
     /* try to convert alias to an integer */
     i = 0;
     n = scnint( varname->str, varname->len, &i);
-    if (i == varname->len)		/* Consume all characters? */
+    if (i == varname->len)              /* Consume all characters? */
     {
         for (j = 0; j <= maxf; j++)
         {

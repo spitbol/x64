@@ -15,7 +15,7 @@ vpath %.c $(OSINT)
 
 
 AS=nasm
-CC=     mcc/mcc -Imcc/include
+CC=     tcc
 ifeq	($(DEBUG),0)
 #CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
 CFLAGS= -m32 

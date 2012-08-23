@@ -1,0 +1,18 @@
+* create archive from list of files
+
+    &anchor = 1
+    &stlimit = 1200000
+    files = host(0) ' '
+*    files break(' ') span(' ') =
+    terminal  = files
+loop
+    files break(' ') . filename span(' ') =     :f(end)
+    terminal = 'archiving ' filename
+    input(.file, 1, filename)
+    output = '!@#$' filename 
+copy
+    line = file                                 :f(done)
+    output = trim(line)                         :(copy)
+done
+    endfile(1)                                :(loop)
+end

@@ -18,26 +18,26 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  SYSID.C		Version:  01.02
-/	---------------------------------------
+/       File:  SYSID.C          Version:  01.02
+/       ---------------------------------------
 /
-/	Contents:	Function zysid
+/       Contents:       Function zysid
 /
-/	1.02	Move id2 string here.
+/       1.02    Move id2 string here.
 */
 
 /*
-/	zysid - identify system
+/       zysid - identify system
 /
-/	zysid returns two strings identifying the Spitbol system.
+/       zysid returns two strings identifying the Spitbol system.
 /
-/	Parameters:
-/	    None
-/	Returns:
-/	    XR - pointer to SCBLK containing suffix to Spitbol header
-/	    XL - pointer to SCBLK containing 2nd header line
-/	Exits:
-/	    None
+/       Parameters:
+/           None
+/       Returns:
+/           XR - pointer to SCBLK containing suffix to Spitbol header
+/           XL - pointer to SCBLK containing 2nd header line
+/       Exits:
+/           None
 */
 
 #include "port.h"
@@ -45,7 +45,7 @@ This file is part of Macro SPITBOL.
 /*
 /   define actual headers elsewhere to overcome problems in initializing
 /   the two SCBLKs.  Use id2blk instead of tscblk because tscblk may
-/	be active with an error message when zysid is called.
+/       be active with an error message when zysid is called.
 */
 
 zysid()

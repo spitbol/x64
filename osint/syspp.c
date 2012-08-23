@@ -18,10 +18,10 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  SYSPP.C		Version:  01.01
-/	---------------------------------------
+/       File:  SYSPP.C          Version:  01.01
+/       ---------------------------------------
 /
-/	Contents:	Function zyspp
+/       Contents:       Function zyspp
 */
 
 /*

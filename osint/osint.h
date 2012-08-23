@@ -18,7 +18,7 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   File:  OSINT.H		Version:  01.01
+/   File:  OSINT.H              Version:  01.01
 /   -------------------------------------------
 /
 /   This header file defines the interface between the Macro SPITBOL compiler
@@ -32,8 +32,8 @@ This file is part of Macro SPITBOL.
 /   Set up externals for all the compiler's registers.
 */
 
-extern word	reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs;
-extern IATYPE	reg_ia;
+extern word     reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs;
+extern IATYPE   reg_ia;
 extern double reg_ra;
 #if WINNT | SPARC
 extern word reg_pc;
@@ -50,73 +50,73 @@ extern word reg_pc;
 extern void *mk_mp(void near *minp);
 #define MK_MP(minp,type) ((type)mk_mp((void near *)(minp)))
 #define MP_OFF(cp,type) ((type)(void NEAR *)(cp))
-#else					/* __NEAR__ */
+#else                                   /* __NEAR__ */
 #define MK_MP(minp,type) ((type)(minp))
 #define MP_OFF(cp,type) ((type)cp)
-#endif					/* __NEAR__ */
+#endif                                  /* __NEAR__ */
 
 /*
 /   Macros to fetch a value of appropriate type from a compiler register
 */
 
 #if __NEAR__
-#define CP(type)	(sizeof(type) == 4 ? MK_MP(reg_cp,type) : ((type) reg_cp))
-#define IA(type)	((type) reg_ia)
-#define WA(type)	(sizeof(type) == 4 ? MK_MP(reg_wa,type) : ((type) reg_wa))
-#define WB(type)	(sizeof(type) == 4 ? MK_MP(reg_wb,type) : ((type) reg_wb))
-#define WC(type)	(sizeof(type) == 4 ? MK_MP(reg_wc,type) : ((type) reg_wc))
-#define XR(type)	(sizeof(type) == 4 ? MK_MP(reg_xr,type) : ((type) reg_xr))
-#define XL(type)	(sizeof(type) == 4 ? MK_MP(reg_xl,type) : ((type) reg_xl))
-#define PC(type)	(sizeof(type) == 4 ? MK_MP(reg_pc,type) : ((type) reg_pc))
-#define XS(type)	(sizeof(type) == 4 ? MK_MP(reg_xs,type) : ((type) reg_xs))
+#define CP(type)        (sizeof(type) == 4 ? MK_MP(reg_cp,type) : ((type) reg_cp))
+#define IA(type)        ((type) reg_ia)
+#define WA(type)        (sizeof(type) == 4 ? MK_MP(reg_wa,type) : ((type) reg_wa))
+#define WB(type)        (sizeof(type) == 4 ? MK_MP(reg_wb,type) : ((type) reg_wb))
+#define WC(type)        (sizeof(type) == 4 ? MK_MP(reg_wc,type) : ((type) reg_wc))
+#define XR(type)        (sizeof(type) == 4 ? MK_MP(reg_xr,type) : ((type) reg_xr))
+#define XL(type)        (sizeof(type) == 4 ? MK_MP(reg_xl,type) : ((type) reg_xl))
+#define PC(type)        (sizeof(type) == 4 ? MK_MP(reg_pc,type) : ((type) reg_pc))
+#define XS(type)        (sizeof(type) == 4 ? MK_MP(reg_xs,type) : ((type) reg_xs))
 #define RA(type)  (sizeof(type) == 8 ? MK_MP(reg_ra,type) : ((type) reg_ra))
 #else         /* __NEAR__ */
-#define CP(type)	((type) reg_cp)
-#define IA(type)	((type) reg_ia)
-#define WA(type)	((type) reg_wa)
-#define WB(type)	((type) reg_wb)
-#define WC(type)	((type) reg_wc)
-#define XR(type)	((type) reg_xr)
-#define XL(type)	((type) reg_xl)
-#define PC(type)	((type) reg_pc)
-#define XS(type)	((type) reg_xs)
+#define CP(type)        ((type) reg_cp)
+#define IA(type)        ((type) reg_ia)
+#define WA(type)        ((type) reg_wa)
+#define WB(type)        ((type) reg_wb)
+#define WC(type)        ((type) reg_wc)
+#define XR(type)        ((type) reg_xr)
+#define XL(type)        ((type) reg_xl)
+#define PC(type)        ((type) reg_pc)
+#define XS(type)        ((type) reg_xs)
 #define RA(type)  ((type) reg_ra)    /* v1.30.12 */
 #endif          /* __NEAR__ */
 /*
 /   Macros to set a value of appropriate type into a compiler register.
 */
-#define SET_CP(val)	(reg_cp = (word) (val))
-#define SET_IA(val)	(reg_ia = (val))
-#define SET_WA(val)	(reg_wa = (word) (val))
-#define SET_WB(val)	(reg_wb = (word) (val))
-#define SET_WC(val)	(reg_wc = (word) (val))
-#define SET_XR(val)	(reg_xr = (word) (val))
-#define SET_XL(val)	(reg_xl = (word) (val))
-#define SET_PC(val)	(reg_pc = (word) (val))
-#define SET_XS(val)	(reg_xs = (word) (val))
+#define SET_CP(val)     (reg_cp = (word) (val))
+#define SET_IA(val)     (reg_ia = (val))
+#define SET_WA(val)     (reg_wa = (word) (val))
+#define SET_WB(val)     (reg_wb = (word) (val))
+#define SET_WC(val)     (reg_wc = (word) (val))
+#define SET_XR(val)     (reg_xr = (word) (val))
+#define SET_XL(val)     (reg_xl = (word) (val))
+#define SET_PC(val)     (reg_pc = (word) (val))
+#define SET_XS(val)     (reg_xs = (word) (val))
 #define SET_RA(val)  (reg_ra = (double) (val))
 
 /*
 /   Return values to take exit N from interface
 */
-#define EXIT_1		0
-#define EXIT_2		4
-#define EXIT_3		8
-#define EXIT_4		12
-#define EXIT_5		16
-#define EXIT_6		20
-#define EXIT_7		24
-#define EXIT_8		28
-#define EXIT_9		32
+#define EXIT_1          0
+#define EXIT_2          4
+#define EXIT_3          8
+#define EXIT_4          12
+#define EXIT_5          16
+#define EXIT_6          20
+#define EXIT_7          24
+#define EXIT_8          28
+#define EXIT_9          32
 
 /*
 /    Return value to do a normal return from interface.
 */
-#define NORMAL_RETURN	(-1)
+#define NORMAL_RETURN   (-1)
 
 /*
-/	Function to call into minimal code.
-/	The argument is an ordinal number defined below.
+/       Function to call into minimal code.
+/       The argument is an ordinal number defined below.
 */
 extern void minimal_call Params((word callno));
 extern void popregs Params((void));
@@ -126,7 +126,7 @@ extern void pushregs Params((void));
 #define MINRESTORE() popregs()
 
 /*
-/	Ordinals for minimal calls from C.
+/       Ordinals for minimal calls from C.
 /
 /   The order of entries here must correspond to the order of
 /   table entries in the INTER assembly language module.
@@ -149,12 +149,12 @@ enum calltab {
 };
 
 /*
-/	Function and macro to get/set value from/to minimal dataspace.
-/	The argument is an ordinal number defined below.
+/       Function and macro to get/set value from/to minimal dataspace.
+/       The argument is an ordinal number defined below.
 /   GET_DATA_OFFSET returns the address of a Minimal data value.
 /   GET_CODE_OFFSET returns the address of a Minimal routine.
-/	GET_MIN_VALUE returns the contents of an item of Minimal data.
-/	SET_MIN_VALUE sets the contents of an item of Minimal data.
+/       GET_MIN_VALUE returns the contents of an item of Minimal data.
+/       SET_MIN_VALUE sets the contents of an item of Minimal data.
 */
 #if direcT
 #define GET_CODE_OFFSET(vn,type) ((type)vn)
@@ -208,22 +208,22 @@ end_min_data;
 /*
 /   Names for accessing minimal code values via GET_CODE_OFFSET macro.
 */
-extern void	B_EFC();
-extern void	B_ICL();
+extern void     B_EFC();
+extern void     B_ICL();
 extern void B_RCL();
 extern void B_SCL();
-extern void	B_VCT();
-extern void	B_XNT();
-extern void	B_XRT();
-extern void	DFFNC();
-extern void	S_AAA();
-extern void	S_YYY();
+extern void     B_VCT();
+extern void     B_XNT();
+extern void     B_XRT();
+extern void     DFFNC();
+extern void     S_AAA();
+extern void     S_YYY();
 
-#else					/* DIRECT */
+#else                                   /* DIRECT */
 extern  word *minoff Params((word valno));
 #define GET_CODE_OFFSET(vn,type) ((type)minoff(vn))
 #define GET_DATA_OFFSET(vn,type) ((type)minoff(vn))
-#define GET_MIN_VALUE(vn,type)	((type)*minoff(vn))
+#define GET_MIN_VALUE(vn,type)  ((type)*minoff(vn))
 #define SET_MIN_VALUE(vn,val,type) (*(type *)minoff(vn) = (type)(val))
 /*
 /   Ordinals for accessing minimal values.
@@ -283,7 +283,7 @@ enum valtab {
     end_min_data
 };
 
-#endif					/* DIRECT */
+#endif                                  /* DIRECT */
 
 /* Some shorthand notations */
 #define pID1 GET_DATA_OFFSET(id1,struct scblk *)

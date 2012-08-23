@@ -18,10 +18,10 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  FAKEXIT.C	Version:  01.00
-/	---------------------------------------
+/       File:  FAKEXIT.C        Version:  01.00
+/       ---------------------------------------
 /
-/	Contents:	Function exit
+/       Contents:       Function exit
 */
 
 /*
@@ -47,7 +47,7 @@ void __exit(code)
 int code;
 {
 #if WINNT | AIX
-    exit_custom(code);				/* Perform system specific shutdown */
+    exit_custom(code);                          /* Perform system specific shutdown */
 #endif
 
     _exit(code);

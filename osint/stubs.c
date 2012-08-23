@@ -18,17 +18,17 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  STUBS.C		Version:  01.02
-/	---------------------------------------
+/       File:  STUBS.C          Version:  01.02
+/       ---------------------------------------
 /
-/	Contents:	Function zysdc
-/			Function zysdm
-/			Function zystt
+/       Contents:       Function zysdc
+/                       Function zysdm
+/                       Function zystt
 */
 
 /*
-/	All functions are "dummy" functions not supported by this
-/	implementation.
+/       All functions are "dummy" functions not supported by this
+/       implementation.
 */
 
 #include "port.h"

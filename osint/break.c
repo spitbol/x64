@@ -18,15 +18,15 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  BREAK.C		Version:  01.00
-/	---------------------------------------
+/       File:  BREAK.C          Version:  01.00
+/       ---------------------------------------
 /
-/	Contents:	Function endbrk
-/				Function startbrk
-/			    Function rearmbrk
+/       Contents:       Function endbrk
+/                               Function startbrk
+/                           Function rearmbrk
 /
-/	v1.00	02-Mar-91	Initial version for Unix.
-/	V1.01	16-May-91	Initial version for MS-DOS using Intel compiler.
+/       v1.00   02-Mar-91       Initial version for Unix.
+/       V1.01   16-May-91       Initial version for MS-DOS using Intel compiler.
 */
 
 /*
@@ -38,7 +38,7 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 #if POLLING
-int	brkpnd;
+int     brkpnd;
 
 #if UNIX | WINNT
 #include <signal.h>
@@ -52,20 +52,20 @@ static SigType (*bstat)Params((int));
 void catchbrk Params((int sig));
 void rearmbrk Params((void));
 
-void startbrk()							/* start up break logic */
+void startbrk()                                                 /* start up break logic */
 {
     brkpnd = 0;
-    cstat = signal(SIGINT,catchbrk);	/* set to catch control-C */
+    cstat = signal(SIGINT,catchbrk);    /* set to catch control-C */
 #if WINNT
-    bstat = signal(SIGBREAK,catchbrk);	/* set to catch control-BREAK */
+    bstat = signal(SIGBREAK,catchbrk);  /* set to catch control-BREAK */
 #endif
 }
 
 
 
-void endbrk()							/* terminate break logic */
+void endbrk()                                                   /* terminate break logic */
 {
-    signal(SIGINT, cstat);				/* restore original trap value */
+    signal(SIGINT, cstat);                              /* restore original trap value */
 #if WINNT
     signal(SIGBREAK, bstat);
 #endif
@@ -84,17 +84,17 @@ int sig;
     stmcsv = GET_MIN_VALUE(stmcs,word);
     SET_MIN_VALUE(stmct,1,word);                /* force STMGO loop to check */
     SET_MIN_VALUE(stmcs,stmcsv- stmctv,word);    /* counters quickly */
-    SET_MIN_VALUE(polct,1,word);				/* force quick SYSPL call */
+    SET_MIN_VALUE(polct,1,word);                                /* force quick SYSPL call */
 }
 
 
-void rearmbrk()							/* rearm after a trap occurs */
+void rearmbrk()                                                 /* rearm after a trap occurs */
 {
-    signal(SIGINT,catchbrk);			/* set to catch traps */
+    signal(SIGINT,catchbrk);                    /* set to catch traps */
 #if WINNT
     signal(SIGBREAK,catchbrk);
 #endif
 }
 #endif
-#endif					/* POLLING */
+#endif                                  /* POLLING */
 

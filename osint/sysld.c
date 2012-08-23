@@ -18,37 +18,37 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  SYSLD.C		Version:  01.03
-/	---------------------------------------
+/       File:  SYSLD.C          Version:  01.03
+/       ---------------------------------------
 /
-/	Contents:	Function zysld
+/       Contents:       Function zysld
 /
 */
 
 /*
-/	zysld - load external function
+/       zysld - load external function
 /
-/	Parameters:
-/	    XR - pointer to SCBLK containing function name
-/	    XL - pointer to SCBLK containing library name
-/	Returns:
-/	    XR - pointer to code (or other data structure) to be stored in the EFBLK.
-/	Exits:
-/	    1 - function does not exist
-/	    2 - I/O error loading function
-/	    3 - insufficient memory
+/       Parameters:
+/           XR - pointer to SCBLK containing function name
+/           XL - pointer to SCBLK containing library name
+/       Returns:
+/           XR - pointer to code (or other data structure) to be stored in the EFBLK.
+/       Exits:
+/           1 - function does not exist
+/           2 - I/O error loading function
+/           3 - insufficient memory
 /
 /
-/	WARNING:  THIS FUNCTION CALLS A FUNCTION WHICH MAY INVOKE A GARBAGE
-/	COLLECTION.  STACK MUST REMAIN WORD ALIGNED AND COLLECTABLE.
+/       WARNING:  THIS FUNCTION CALLS A FUNCTION WHICH MAY INVOKE A GARBAGE
+/       COLLECTION.  STACK MUST REMAIN WORD ALIGNED AND COLLECTABLE.
 /
-/	V1.01 09/09/90	Rearrange so that dynamic variables are not
-/					on stack when loadef is called.  If they are, and
-/					a garbage collection is triggered, garbage text in
-/					dynamic area could foul up garbage collector.
-/					Fixed for SPITBOL-386 v1.08.
+/       V1.01 09/09/90  Rearrange so that dynamic variables are not
+/                                       on stack when loadef is called.  If they are, and
+/                                       a garbage collection is triggered, garbage text in
+/                                       dynamic area could foul up garbage collector.
+/                                       Fixed for SPITBOL-386 v1.08.
 /
-/	V1.02 11/25/90	Add exit 3 return for insufficient memory.
+/       V1.02 11/25/90  Add exit 3 return for insufficient memory.
 /
 /   V1.02 4-Sep-91  <withdrawn>.
 */
@@ -62,28 +62,28 @@ This file is part of Macro SPITBOL.
 #if EXTFUN
 static word openloadfile Params((char *namebuf));
 static void closeloadfile Params((word fd));
-#endif					/* EXTFUN */
+#endif                                  /* EXTFUN */
 
 zysld()
 {
 #if EXTFUN
-    word fd;					/* keep stack word-aligned */
+    word fd;                                    /* keep stack word-aligned */
     void *result = 0;
 
     fd = openloadfile(pTSCBLK->str);
-    if ( fd != -1 ) {			/* If file opened OK */
+    if ( fd != -1 ) {                   /* If file opened OK */
         result = loadef(fd, pTSCBLK->str); /* Invoke loader */
         closeloadfile(fd);
         switch ((word)result) {
         case (word)0:
-            return EXIT_2;			/* I/O error */
+            return EXIT_2;                      /* I/O error */
         case (word)-1:
-            return EXIT_1;			/* doesn't exist */
+            return EXIT_1;                      /* doesn't exist */
         case (word)-2:
-            return EXIT_3;			/* insufficient memory */
+            return EXIT_3;                      /* insufficient memory */
         default:
             SET_XR(result);
-            return NORMAL_RETURN;	/* Success, return pointer to stuff in EFBLK */
+            return NORMAL_RETURN;       /* Success, return pointer to stuff in EFBLK */
         }
     }
     else
@@ -132,10 +132,10 @@ char *file;
     if (lnscb->len >= 512)
         return -1;
 
-    savecp = fnscb->str + fnscb->len;		/* Make function name a C string for now. */
+    savecp = fnscb->str + fnscb->len;           /* Make function name a C string for now. */
     savechar = make_c_str(savecp);
 
-    if (lnscb->len == 0) {					/* If no library name, first try */
+    if (lnscb->len == 0) {                                      /* If no library name, first try */
         /* function name with ".slf" extension */
 #if SOLARIS
         /* force lookup in local directory */
@@ -147,27 +147,27 @@ char *file;
         appendext(fnscb->str,EFNEXT,file,1); /* append .slf extension to function name */
         fd = loadDll(file, fnscb->str, &pfn);
 #endif
-        if (fd == -1) {						/* if couldn't open in local directory */
+        if (fd == -1) {                                         /* if couldn't open in local directory */
             mystrcpy(file2,file);
-            initpath(SPITFILEPATH);			/* try alternate paths along SNOLIB */
+            initpath(SPITFILEPATH);                     /* try alternate paths along SNOLIB */
             while (trypath(file2,file)) {
                 fd = loadDll(file, fnscb->str, &pfn);
                 if (fd != -1)
                     break;
             }
-            if (fd == -1)					/* if not found as an .slf file */
+            if (fd == -1)                                       /* if not found as an .slf file */
                 fd = loadDll(fnscb->str, fnscb->str, &pfn);
         }
     }
-    else {							/* Explicit library name given */
+    else {                                                      /* Explicit library name given */
         char *savecp2;
         char savechar2;
-        savecp2 = lnscb->str + lnscb->len;	/* Make it a C string for now. */
+        savecp2 = lnscb->str + lnscb->len;      /* Make it a C string for now. */
         savechar2 = make_c_str(savecp2);
         fd = loadDll(lnscb->str, fnscb->str, &pfn);
         if (fd == -1)
         {
-            mystrcpy(file2,lnscb->str);		/* Try via SNOLIB */
+            mystrcpy(file2,lnscb->str);         /* Try via SNOLIB */
             initpath(SPITFILEPATH);
             while (trypath(file2,file))
             {
@@ -189,14 +189,14 @@ char *file;
         unmake_c_str(savecp2, savechar2);
     }
 
-    unmake_c_str(savecp, savechar);			/* Restore saved char in function name */
-    *(PFN *)file = pfn;			/* Return function address in file buffer */
+    unmake_c_str(savecp, savechar);                     /* Restore saved char in function name */
+    *(PFN *)file = pfn;                 /* Return function address in file buffer */
     return fd;
 #endif          /* SOLARIS | AIX | WINNT */
 }
 
 
-#else					/* EXTFUN */
+#else                                   /* EXTFUN */
     return EXIT_1;
 }
-#endif					/* EXTFUN */
+#endif                                  /* EXTFUN */

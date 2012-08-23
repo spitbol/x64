@@ -18,10 +18,10 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  RDENV.C		Version:  01.02
-/	---------------------------------------
+/       File:  RDENV.C          Version:  01.02
+/       ---------------------------------------
 /
-/	Contents:	Function rdenv
+/       Contents:       Function rdenv
 */
 
 /*
@@ -31,13 +31,13 @@ This file is part of Macro SPITBOL.
 /   be read, puts its value in "result.
 /
 /   Parameters:
-/	varname	pointer to character string containing variable name
-/	result	pointer to character string to receive result
+/       varname pointer to character string containing variable name
+/       result  pointer to character string to receive result
 /   Returns:
-/	0 if successful / -1 on failure
+/       0 if successful / -1 on failure
 /
-/	v1.02 02-Jan-91 Changed rdenv to use cpys2sc instead of mystrncpy.
-/					Add private getenv().
+/       v1.02 02-Jan-91 Changed rdenv to use cpys2sc instead of mystrncpy.
+/                                       Add private getenv().
 */
 
 #include "port.h"
@@ -55,7 +55,7 @@ int  vn;
     char *p;
 
     savech = make_c_str(&vq[vn]);
-    p = (char *)getenv(vq);			/* use library lookup routine */
+    p = (char *)getenv(vq);                     /* use library lookup routine */
     unmake_c_str(&vq[vn], savech);
     return p;
 #endif

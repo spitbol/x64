@@ -35,9 +35,9 @@ This file is part of Macro SPITBOL.
 #if FLTHDWR
 checkfpu()
 {
-    return -1;			/* Hardware flting pt always present */
+    return -1;                  /* Hardware flting pt always present */
 }
-#else					/* FLTHDWR */
+#else                                   /* FLTHDWR */
 
 #if LINUX | WINNT
 checkfpu()
@@ -50,14 +50,14 @@ checkfpu()
 #include <signal.h>
 #include <setjmp.h>
 
-static jmp_buf	env;
+static jmp_buf  env;
 
 void fputrap Params((int sig));
 
 void fputrap(sig)
 int sig;
 {
-    longjmp(env,1);			/* Here if trap occurs */
+    longjmp(env,1);                     /* Here if trap occurs */
 }
 
 checkfpu()
@@ -65,17 +65,17 @@ checkfpu()
     SigType (*fstat)Params((int));
     int result;
 
-    fstat = signal(SIGEMT,fputrap);	/* Set to trap floating op */
-    result = -1;					/* assume floating point present */
+    fstat = signal(SIGEMT,fputrap);     /* Set to trap floating op */
+    result = -1;                                        /* assume floating point present */
 
     if (!setjmp(env))
-        tryfpu();					/* Try a floating point op */
+        tryfpu();                                       /* Try a floating point op */
     else
-        result = 0;					/* floating point not present */
+        result = 0;                                     /* floating point not present */
 
-    signal(SIGEMT, fstat);			/* restore old trap value */
+    signal(SIGEMT, fstat);                      /* restore old trap value */
     return result;
 }
 #endif          /* SOLARIS */
-#endif					/* FLTHDWR */
-#endif					/* FLOAT */
+#endif                                  /* FLTHDWR */
+#endif                                  /* FLOAT */

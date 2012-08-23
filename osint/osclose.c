@@ -18,10 +18,10 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  OSCLOSE.C	Version:  01.00
-/	---------------------------------------
+/       File:  OSCLOSE.C        Version:  01.00
+/       ---------------------------------------
 /
-/	Contents:	Function osclose
+/       Contents:       Function osclose
 */
 
 /*
@@ -30,9 +30,9 @@ This file is part of Macro SPITBOL.
 /   osclose() closes the file represented by the passed IOBLK.
 /
 /   Parameters:
-/	ioptr	pointer to IOBLK
+/       ioptr   pointer to IOBLK
 /   Returns:
-/	Number of I/O errors, should be 0.
+/       Number of I/O errors, should be 0.
 */
 
 #include "port.h"
@@ -42,18 +42,18 @@ extern void kill(int pid);
 #endif
 
 osclose( ioptr )
-struct	ioblk	*ioptr;
+struct  ioblk   *ioptr;
 {
-    register int	errcnt = 0;
+    register int        errcnt = 0;
 
     /*
-    /	If not open, nothing to do.
+    /   If not open, nothing to do.
     */
     if ( !(ioptr->flg1 & IO_OPN) )
         return 0;
 
     /*
-    /	Flush buffer before closing output file.
+    /   Flush buffer before closing output file.
     */
     if ( ioptr->flg1 & IO_OUP )
         errcnt += flush( ioptr );
@@ -65,8 +65,8 @@ struct	ioblk	*ioptr;
         return errcnt;
 
     /*
-    /	Now we can reset open flag and close the file descriptor associated
-    /	with file/pipe.
+    /   Now we can reset open flag and close the file descriptor associated
+    /   with file/pipe.
     */
     ioptr->flg1 &= ~IO_OPN;
     if ( close(ioptr->fdn ) < 0 )
@@ -74,7 +74,7 @@ struct	ioblk	*ioptr;
 
 #if PIPES
     /*
-    /	For a pipe, must deal with process at other end.
+    /   For a pipe, must deal with process at other end.
     */
     if ( ioptr->flg2 & IO_PIP )
     {
@@ -100,10 +100,10 @@ struct	ioblk	*ioptr;
         else
             oswait( ioptr->pid );
     }
-#endif					/* PIPES */
+#endif                                  /* PIPES */
 
     /*
-    /	Return number of errors.
+    /   Return number of errors.
     */
     return errcnt;
 }

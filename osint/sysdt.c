@@ -18,24 +18,24 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  SYSDT.C		Version:  01.06
-/	---------------------------------------
+/       File:  SYSDT.C          Version:  01.06
+/       ---------------------------------------
 /
-/	Contents:	Function zysdt
-/			Function conv
+/       Contents:       Function zysdt
+/                       Function conv
 */
 
 /*
-/	zysdt - get current date
+/       zysdt - get current date
 /
-/	zysdt is called when executing a Spitbol date function.
+/       zysdt is called when executing a Spitbol date function.
 /
-/	Parameters:
+/       Parameters:
 /       XR - optional integer argument describing date format desired
-/	Returns:
-/	    XL - pointer to SCBLK containing date string
-/	Exits:
-/	    None
+/       Returns:
+/           XL - pointer to SCBLK containing date string
+/       Exits:
+/           None
 */
 
 #include "port.h"
@@ -70,8 +70,8 @@ zysdt()
  * Write date/time in SPITBOL form to a string
  */
 int storedate( cp, maxlen )
-char	*cp;
-word	maxlen;
+char    *cp;
+word    maxlen;
 {
     if (maxlen < 18)
         return 0;
@@ -83,7 +83,7 @@ word	maxlen;
  * Write date/time in several different forms to a string
  */
 int datecvt( cp, type )
-char	*cp;
+char    *cp;
 int     type;
 {
 

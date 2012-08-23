@@ -25,24 +25,24 @@ This file is part of Macro SPITBOL.
  * Definitions of SPITBOL data blocks available to C-language
  * external functions to be called from 32-bit versions of SPITBOL.
  *
- * V1.00	02/17/90 01:53pm
- *			Initial version
- * V1.01	12-03-90 12:01pm
- * 			To match release 1.08.  Split flags in IOBLK
- * 			into to words to prevent flag bits from being
- * 			mistaken for a relocatable value.
- * V1.02	03-11-91 15:00pm
- * 			To match release 1.1.  Add new words to ioblk for end-
- * 			of-line characters.  The bfblk has been completely
- * 			reworked to accommodate read/write I/O.
- * V1.03	10-18-91 04:27pm
+ * V1.00        02/17/90 01:53pm
+ *                      Initial version
+ * V1.01        12-03-90 12:01pm
+ *                      To match release 1.08.  Split flags in IOBLK
+ *                      into to words to prevent flag bits from being
+ *                      mistaken for a relocatable value.
+ * V1.02        03-11-91 15:00pm
+ *                      To match release 1.1.  Add new words to ioblk for end-
+ *                      of-line characters.  The bfblk has been completely
+ *                      reworked to accommodate read/write I/O.
+ * V1.03        10-18-91 04:27pm
  *        <withdrawn>.
- * V1.04	3-July-92
- * 			Begin to customize for SPARC/Sun 4.
- * V1.05	09-12-94 07:13pm
- *		 	Add definitions for buffers
- * V1.06	04-25-95 10:07pm
- *			Customize for RS/6000.
+ * V1.04        3-July-92
+ *                      Begin to customize for SPARC/Sun 4.
+ * V1.05        09-12-94 07:13pm
+ *                      Add definitions for buffers
+ * V1.06        04-25-95 10:07pm
+ *                      Customize for RS/6000.
  * V1.07    12-29-96 06:05pm
  *          Customize for Windows NT
  * V1.08    03-04-97 01:45pm
@@ -67,8 +67,8 @@ This file is part of Macro SPITBOL.
  * Thus to obtain a simple ordinal type code for a block pointed to by an
  * address in pblk, use the following:
  *
- * block	*pblk;
- * unsigned	typecode;
+ * block        *pblk;
+ * unsigned     typecode;
  *   ...
  *  typecode = *((unsigned char *)((long)pblk - 1)); (Intel platform)
  *  typecode = *((unsigned *)((long)pblk - 4));      (Sun, RS/6000, SGI, etc.)
@@ -95,7 +95,7 @@ This file is part of Macro SPITBOL.
  * use the following:
  *
  * unsigned typecode;
- * mword	typeword;
+ * mword        typeword;
  *  ...
  *   typeword = (*info.ptyptab)[typecode];
  */
@@ -108,24 +108,24 @@ This file is part of Macro SPITBOL.
  */
 
 enum {
-    BL_AR =	0,				/* ARBLK	ARRAY								*/
-    BL_CD,					/* CDBLK	CODE								*/
-    BL_EX,					/* EXBLK	EXPRESSION							*/
-    BL_IC,					/* ICBLK	INTEGER								*/
-    BL_NM,					/* NMBLK	NAME								*/
-    BL_P0,					/* P0BLK	PATTERN, 0 args						*/
-    BL_P1,					/* P1BLK	PATTERN, 1 arg						*/
-    BL_P2,					/* P2BLK	PATTERN, 2 args						*/
-    BL_RC,					/* RCBLK	REAL								*/
-    BL_SC,					/* SCBLK	STRING								*/
-    BL_SE,					/* SEBLK	EXPRESSION							*/
-    BL_TB,					/* TBBLK	TABLE								*/
-    BL_VC,					/* VCBLK	VECTOR (array)						*/
-    BL_XN,					/* XNBLK	EXTERNAL, non-relocatable contents	*/
-    BL_XR,					/* XRBLK	EXTERNAL, relocatable contents		*/
-    BL_BC,					/* BCBLK	BUFFER CONTROL						*/
-    BL_PD,					/* PDBLK	PROGRAM DEFINED DATATYPE			*/
-    BL__D					/* NUMBER OF BLOCK CODES FOR DATA				*/
+    BL_AR =     0,                              /* ARBLK        ARRAY                                                           */
+    BL_CD,                                      /* CDBLK        CODE                                                            */
+    BL_EX,                                      /* EXBLK        EXPRESSION                                                      */
+    BL_IC,                                      /* ICBLK        INTEGER                                                         */
+    BL_NM,                                      /* NMBLK        NAME                                                            */
+    BL_P0,                                      /* P0BLK        PATTERN, 0 args                                         */
+    BL_P1,                                      /* P1BLK        PATTERN, 1 arg                                          */
+    BL_P2,                                      /* P2BLK        PATTERN, 2 args                                         */
+    BL_RC,                                      /* RCBLK        REAL                                                            */
+    BL_SC,                                      /* SCBLK        STRING                                                          */
+    BL_SE,                                      /* SEBLK        EXPRESSION                                                      */
+    BL_TB,                                      /* TBBLK        TABLE                                                           */
+    BL_VC,                                      /* VCBLK        VECTOR (array)                                          */
+    BL_XN,                                      /* XNBLK        EXTERNAL, non-relocatable contents      */
+    BL_XR,                                      /* XRBLK        EXTERNAL, relocatable contents          */
+    BL_BC,                                      /* BCBLK        BUFFER CONTROL                                          */
+    BL_PD,                                      /* PDBLK        PROGRAM DEFINED DATATYPE                        */
+    BL__D                                       /* NUMBER OF BLOCK CODES FOR DATA                               */
 };
 
 /*
@@ -136,107 +136,107 @@ enum {
  */
 
 enum {
-    BL_TR = BL__D,			/* TRBLK	TRACE							*/
-    BL_BF,					/* BFBLK	BUFFER							*/
-    BL_CC,					/* CCBLK	CODE CONSTRUCTION				*/
-    BL_CM,					/* CMBLK	COMPILER TREE NODE				*/
-    BL_CT,					/* CTBLK	CHARACTER TABLE					*/
-    BL_DF,					/* DFBLK	DATATYPE FUNCTION				*/
-    BL_EF,					/* EFBLK	EXTERNAL FUNCTION				*/
-    BL_EV,					/* EVBLK	EXPRESSION VARIABLE				*/
-    BL_FF,					/* FFBLK	FIELD FUNCTION					*/
-    BL_KV,					/* KVBLK	KEYWORD VARIABLE				*/
-    BL_PF,					/* PFBLK	PROGRAM-DEFINED FUNCTION		*/
-    BL_TE					/* TEBLK	TABLE ELEMENT					*/
+    BL_TR = BL__D,                      /* TRBLK        TRACE                                                   */
+    BL_BF,                                      /* BFBLK        BUFFER                                                  */
+    BL_CC,                                      /* CCBLK        CODE CONSTRUCTION                               */
+    BL_CM,                                      /* CMBLK        COMPILER TREE NODE                              */
+    BL_CT,                                      /* CTBLK        CHARACTER TABLE                                 */
+    BL_DF,                                      /* DFBLK        DATATYPE FUNCTION                               */
+    BL_EF,                                      /* EFBLK        EXTERNAL FUNCTION                               */
+    BL_EV,                                      /* EVBLK        EXPRESSION VARIABLE                             */
+    BL_FF,                                      /* FFBLK        FIELD FUNCTION                                  */
+    BL_KV,                                      /* KVBLK        KEYWORD VARIABLE                                */
+    BL_PF,                                      /* PFBLK        PROGRAM-DEFINED FUNCTION                */
+    BL_TE                                       /* TEBLK        TABLE ELEMENT                                   */
 };
 
 /*
  * Structure of common SPITBOL blocks:
- * 	    Integer, Real, String, and File blocks.
+ *          Integer, Real, String, and File blocks.
  *
- *  	These structures are part of the "blocks" union that can be applied
- * 	    to the result area to determine where to store required return
+ *      These structures are part of the "blocks" union that can be applied
+ *          to the result area to determine where to store required return
  *      information.
  */
 
 /*
- *  	Structure of ICBLK (integers)
+ *      Structure of ICBLK (integers)
  */
 
 struct icblk {
-    mword 	ictyp;					/* type word						*/
-    mword 	icval;					/* integer value					*/
+    mword       ictyp;                                  /* type word                                            */
+    mword       icval;                                  /* integer value                                        */
 };
 
 
 /*
- * 		Structure of RCBLK (reals)
+ *              Structure of RCBLK (reals)
  */
 #if sparc
 /*
- * 		Note that the obvious declaration "double rcval" can not be
+ *              Note that the obvious declaration "double rcval" can not be
  *      used, because the SPARC C compiler insists on placing double
- * 		values on an 8-byte boundary, effectively making the rcblk into
- * 		a four-word structure, instead of three. (A filler word is
- * 		inserted between rctyp and rcval).  But an rcblk really is a
- * 		three-word structure inside of SPITBOL.
+ *              values on an 8-byte boundary, effectively making the rcblk into
+ *              a four-word structure, instead of three. (A filler word is
+ *              inserted between rctyp and rcval).  But an rcblk really is a
+ *              three-word structure inside of SPITBOL.
  *
- * 		As a workaround, we define rcvals as a two word array, and use
- * 		an rcval macro to access the double value there.  The macro
- * 		is invoked with the rcblk as its argument.  For example,
- * 		suppose presult pointed to a union of all block types.  The
- * 		double value stored in an rcblk there would be accessed as
+ *              As a workaround, we define rcvals as a two word array, and use
+ *              an rcval macro to access the double value there.  The macro
+ *              is invoked with the rcblk as its argument.  For example,
+ *              suppose presult pointed to a union of all block types.  The
+ *              double value stored in an rcblk there would be accessed as
  *
- * 			rcval(presult->rcb)
+ *                      rcval(presult->rcb)
  *
- * 		It may be necessary to use the -misalign command option with
- * 		cc to have the compiler generate the two single-precision loads
- * 		needed to access the real at rcvals.  The normal double-precision
- * 		load will fault because the operand is not aligned properly.
+ *              It may be necessary to use the -misalign command option with
+ *              cc to have the compiler generate the two single-precision loads
+ *              needed to access the real at rcvals.  The normal double-precision
+ *              load will fault because the operand is not aligned properly.
  *
- *  	See function retreal in extrnlib.c for an example.
+ *      See function retreal in extrnlib.c for an example.
  */
 struct rcblk {
-    mword	rctyp;					/* type word						*/
-    mword	rcvals[2];				/* real value (not 8-byte aligned!)	*/
+    mword       rctyp;                                  /* type word                                            */
+    mword       rcvals[2];                              /* real value (not 8-byte aligned!)     */
 };
-#define rcval(blk) (*(double *)blk.rcvals) /* access double at rcvals	*/
+#define rcval(blk) (*(double *)blk.rcvals) /* access double at rcvals   */
 #else
 struct rcblk {
-    mword	rctyp;					/* type word						*/
-    double	rcval;					/* real value (not 8-byte aligned!)	*/
+    mword       rctyp;                                  /* type word                                            */
+    double      rcval;                                  /* real value (not 8-byte aligned!)     */
 };
 #endif
 
 /*
- *  	Structure of SCBLK (strings)
+ *      Structure of SCBLK (strings)
  */
 
 struct scblk {
-    mword	sctyp;					/* type word						*/
-    mword	sclen;					/* string length					*/
-    char	scstr[1];				/* start of string					*/
+    mword       sctyp;                                  /* type word                                            */
+    mword       sclen;                                  /* string length                                        */
+    char        scstr[1];                               /* start of string                                      */
 };
 
 /*
- *   	Structure for returning a far string
+ *      Structure for returning a far string
  */
 
 struct fsblk {
-    mword	fstyp;					/* type word						*/
-    mword	fslen;					/* string length					*/
-    far char *fsptr;				/* far pointer to string				*/
+    mword       fstyp;                                  /* type word                                            */
+    mword       fslen;                                  /* string length                                        */
+    far char *fsptr;                            /* far pointer to string                                */
 };
 
 
 /*
- *   	Structure for returning a far external block
+ *      Structure for returning a far external block
  */
 
 struct fxblk {
-    mword	fxtyp;					/* type word						*/
-    mword	fxlen;					/* external data length				*/
-    far void *fxptr;				/* far pointer to external data			*/
+    mword       fxtyp;                                  /* type word                                            */
+    mword       fxlen;                                  /* external data length                         */
+    far void *fxptr;                            /* far pointer to external data                 */
 };
 
 
@@ -260,13 +260,13 @@ struct fxblk {
  */
 
 struct fcblk {
-    mword			fcbtyp;	 		/* type word (XRBLK)				*/
-    mword			fcblen;	 		/* size of block, in bytes			*/
-    mword			fcbrsz;	 		/* SPITBOL record size and mode
-									   positive if text mode,
-									   negative if binary.				*/
-    struct ioblk   *fcbiob;			/* pointer to IOBLK					*/
-    mword			fcbmod;			/* 1 if text mode, 0 if binary mode	*/
+    mword                       fcbtyp;                 /* type word (XRBLK)                            */
+    mword                       fcblen;                 /* size of block, in bytes                      */
+    mword                       fcbrsz;                 /* SPITBOL record size and mode
+                                                                           positive if text mode,
+                                                                           negative if binary.                          */
+    struct ioblk   *fcbiob;                     /* pointer to IOBLK                                     */
+    mword                       fcbmod;                 /* 1 if text mode, 0 if binary mode     */
 };
 
 
@@ -279,11 +279,11 @@ struct fcblk {
  *   can be closed.
  */
 
-struct	chfcb {
-    mword	typ;				/*  type word			*/
-    mword	len;				/*  block length		*/
-    struct	chfcb *nxt;			/*  pointer to next chfcb	*/
-    struct	fcblk *fcp;			/*  pointer to fcb		*/
+struct  chfcb {
+    mword       typ;                            /*  type word                   */
+    mword       len;                            /*  block length                */
+    struct      chfcb *nxt;                     /*  pointer to next chfcb       */
+    struct      fcblk *fcp;                     /*  pointer to fcb              */
 };
 
 
@@ -295,63 +295,63 @@ struct	chfcb {
  */
 
 struct ioblk {
-    mword			iobtyp;	   		/* type word (XRBLK)				*/
-    mword			ioblen;			/* size of IOBLK in bytes			*/
-    struct scblk   *iobfnm;			/* SCBLK holding filename			*/
-    mword			iobpid;			/* pipe id (not used for DOS)		*/
+    mword                       iobtyp;                 /* type word (XRBLK)                            */
+    mword                       ioblen;                 /* size of IOBLK in bytes                       */
+    struct scblk   *iobfnm;                     /* SCBLK holding filename                       */
+    mword                       iobpid;                 /* pipe id (not used for DOS)           */
     struct bfbblk  *iobbfb;         /* pointer to BFBBLK                */
-    mword			iobfdn;			/* O/S file descriptor number 		*/
-    mword			iobflg1;		/* flags 1 (see below)				*/
-    mword			iobflg2;		/* flags 2 (see below)				*/
-    mword			iobeol1;		/* end of line character 1			*/
-    mword			iobeol2;		/* end of line character 2			*/
-    mword			iobshare; 		/* sharing mode						*/
-    mword			iobaction;		/* file open actions				*/
+    mword                       iobfdn;                 /* O/S file descriptor number           */
+    mword                       iobflg1;                /* flags 1 (see below)                          */
+    mword                       iobflg2;                /* flags 2 (see below)                          */
+    mword                       iobeol1;                /* end of line character 1                      */
+    mword                       iobeol2;                /* end of line character 2                      */
+    mword                       iobshare;               /* sharing mode                                         */
+    mword                       iobaction;              /* file open actions                            */
 };
 
 /*
- * 	Bits in iobflg1 dword
+ *      Bits in iobflg1 dword
  */
-#define IO_INP	0x00000001			/* input file							*/
-#define IO_OUP	0x00000002			/* output file							*/
-#define IO_APP	0x00000004			/* append output to existing file		*/
-#define IO_OPN	0x00000008			/* file is open							*/
-#define IO_COT	0x00000010			/* console output to non-disk device	*/
-#define IO_CIN	0x00000020			/* console input from non-disk device	*/
-#define IO_SYS	0x00000040			/* -f option used instead of name		*/
-#define IO_WRC	0x00000080			/* output without buffering				*/
+#define IO_INP  0x00000001                      /* input file                                                   */
+#define IO_OUP  0x00000002                      /* output file                                                  */
+#define IO_APP  0x00000004                      /* append output to existing file               */
+#define IO_OPN  0x00000008                      /* file is open                                                 */
+#define IO_COT  0x00000010                      /* console output to non-disk device    */
+#define IO_CIN  0x00000020                      /* console input from non-disk device   */
+#define IO_SYS  0x00000040                      /* -f option used instead of name               */
+#define IO_WRC  0x00000080                      /* output without buffering                             */
 
 /*
- * 	Bits in iobflg2 dword
+ *      Bits in iobflg2 dword
  */
-#define IO_PIP	0x00000001			/* pipe (not used in MS-DOS)			*/
-#define IO_DED	0x00000002			/* dead pipe (not used in MS-DOS)		*/
-#define IO_ILL	0x00000004			/* illegal I/O association				*/
-#define IO_RAW	0x00000008			/* binary I/O to character device			*/
-#define IO_LF 	0x00000010			/* ignore line feed if next character	*/
-#define IO_NOE	0x00000020			/* no echo input						*/
-#define IO_ENV	0x00000040			/* filearg1 mapped via environment var	*/
-#define IO_DIR  0x00000080		    /* buffer is dirty (needs to be written)*/
-#define	IO_BIN	0x00000100			/* binary I/O */
+#define IO_PIP  0x00000001                      /* pipe (not used in MS-DOS)                    */
+#define IO_DED  0x00000002                      /* dead pipe (not used in MS-DOS)               */
+#define IO_ILL  0x00000004                      /* illegal I/O association                              */
+#define IO_RAW  0x00000008                      /* binary I/O to character device                       */
+#define IO_LF   0x00000010                      /* ignore line feed if next character   */
+#define IO_NOE  0x00000020                      /* no echo input                                                */
+#define IO_ENV  0x00000040                      /* filearg1 mapped via environment var  */
+#define IO_DIR  0x00000080                  /* buffer is dirty (needs to be written)*/
+#define IO_BIN  0x00000100                      /* binary I/O */
 
 /* Private flags used to convey sharing status when opening a file */
-#define IO_COMPATIBILITY	0x00
-#define IO_DENY_READWRITE	0x01
-#define IO_DENY_WRITE		0x02
-#define IO_DENY_READ		0x03
-#define IO_DENY_NONE		0x04
-#define IO_DENY_MASK		0x07		/* mask for above deny mode bits*/
-#define	IO_EXECUTABLE		0x40		/* file to be marked executable */
-#define IO_PRIVATE			0x80		/* file is private to current process */
+#define IO_COMPATIBILITY        0x00
+#define IO_DENY_READWRITE       0x01
+#define IO_DENY_WRITE           0x02
+#define IO_DENY_READ            0x03
+#define IO_DENY_NONE            0x04
+#define IO_DENY_MASK            0x07            /* mask for above deny mode bits*/
+#define IO_EXECUTABLE           0x40            /* file to be marked executable */
+#define IO_PRIVATE                      0x80            /* file is private to current process */
 
 /* Private flags used to convey file open actions */
-#define IO_FAIL_IF_EXISTS		0x00
-#define IO_OPEN_IF_EXISTS		0x01
-#define IO_REPLACE_IF_EXISTS	0x02
-#define IO_FAIL_IF_NOT_EXIST	0x00
-#define IO_CREATE_IF_NOT_EXIST	0x10
-#define IO_EXIST_ACTION_MASK	0x13	/* mask for above bits */
-#define IO_WRITE_THRU       	0x20	/* writes complete before return*/
+#define IO_FAIL_IF_EXISTS               0x00
+#define IO_OPEN_IF_EXISTS               0x01
+#define IO_REPLACE_IF_EXISTS    0x02
+#define IO_FAIL_IF_NOT_EXIST    0x00
+#define IO_CREATE_IF_NOT_EXIST  0x10
+#define IO_EXIST_ACTION_MASK    0x13    /* mask for above bits */
+#define IO_WRITE_THRU           0x20    /* writes complete before return*/
 
 /*
  * I/O BUFFER BLOCK
@@ -368,14 +368,14 @@ typedef long FILEPOS;       /* 32-bit file positions */
 #endif
 
 struct bfbblk {
-    mword	bfbtyp;					/* type word (XNBLK)					*/
-    mword	bfblen;					/* size of BFBBLK, in bytes				*/
-    mword	bfbsiz;					/* size of buffer in bytes				*/
-    mword	bfbfil;					/* number of bytes currently in buffer	*/
-    mword	bfbnxt;					/* offset of next buffer char to r/w	*/
+    mword       bfbtyp;                                 /* type word (XNBLK)                                    */
+    mword       bfblen;                                 /* size of BFBBLK, in bytes                             */
+    mword       bfbsiz;                                 /* size of buffer in bytes                              */
+    mword       bfbfil;                                 /* number of bytes currently in buffer  */
+    mword       bfbnxt;                                 /* offset of next buffer char to r/w    */
     FILEPOS bfboff;                 /* file position of first byte in buf   */
     FILEPOS bfbcur;                 /* physical file position               */
-    char	bfbbuf[1];				/* start of buffer						*/
+    char        bfbbuf[1];                              /* start of buffer                                              */
 };
 
 
@@ -385,25 +385,25 @@ struct bfbblk {
  */
 
 struct efblk {
-    mword			fcode;			/* type word							*/
-    mword   		fargs;			/* number of arguments					*/
-    mword			eflen;			/* block length							*/
-    mword			efuse;			/* usage count							*/
-    struct xnblk   *efcod;			/* pointer to XNBLK, see below			*/
-    struct vrblk   *efvar;			/* pointer to VRBLK with function name	*/
-    mword			efrsl;			/* result type  (see below)				*/
-    mword			eftar[1];		/* array of argument types, one per arg	*/
+    mword                       fcode;                  /* type word                                                    */
+    mword               fargs;                  /* number of arguments                                  */
+    mword                       eflen;                  /* block length                                                 */
+    mword                       efuse;                  /* usage count                                                  */
+    struct xnblk   *efcod;                      /* pointer to XNBLK, see below                  */
+    struct vrblk   *efvar;                      /* pointer to VRBLK with function name  */
+    mword                       efrsl;                  /* result type  (see below)                             */
+    mword                       eftar[1];               /* array of argument types, one per arg */
 };
 
 /*
  * efrsl and eftar[] contain small integer type codes as follows:
  */
 
-#define noconv	0					/* argument remains unconverted			*/
-#define constr	1					/* convert argument to string			*/
-#define conint	2					/* convert argument to integer			*/
-#define conreal	3					/* convert argument to real				*/
-#define confile	4					/* produce fcb associated with variable	*/
+#define noconv  0                                       /* argument remains unconverted                 */
+#define constr  1                                       /* convert argument to string                   */
+#define conint  2                                       /* convert argument to integer                  */
+#define conreal 3                                       /* convert argument to real                             */
+#define confile 4                                       /* produce fcb associated with variable */
 
 
 /*
@@ -412,40 +412,40 @@ struct efblk {
  * in the stack in pxnblk.
  *
  * This structure is used to ways:
- *   1.	 As a general structure in which the user can place private
- * 		 data and have it maintained by SPITBOL.
+ *   1.  As a general structure in which the user can place private
+ *               data and have it maintained by SPITBOL.
  *
  *   2.  As a particular structure in which information about each
- * 		 external function is maintained.
+ *               external function is maintained.
  */
 
 struct xnblk {
-    mword	xntyp;					/* type word							*/
-    mword	xnlen;					/* length of this block					*/
-    union {							/* two uses for rest of block:			*/
-        mword	xndta[1];			/* 1. user defined data starts here		*/
+    mword       xntyp;                                  /* type word                                                    */
+    mword       xnlen;                                  /* length of this block                                 */
+    union {                                                     /* two uses for rest of block:                  */
+        mword   xndta[1];                       /* 1. user defined data starts here             */
         struct ef {                 /* 2. external function info            */
 #if WINNT | sparc | aix
             void   *xnhand;         /*    module handle                     */
             mword  (*xnpfn) Params((void));  /*    pointer to function entry         */
-            mword	xn1st;			/*    non-zero = first-ever call		*/
-            mword	xnsave;			/*    non-zero = first call after reload*/
+            mword       xn1st;                  /*    non-zero = first-ever call                */
+            mword       xnsave;                 /*    non-zero = first call after reload*/
             void   (*xncbp) Params((void));  /*    callback function prior to exiting*/
 #else
             mword   xnoff;          /*    base offset of function image     */
             mword   xnsiz;          /*    size of function in bytes         */
             mword   xneip;          /*    transfer EIP                      */
-            short	xncs;			/*    transfer CS						*/
+            short       xncs;                   /*    transfer CS                                               */
             mword   xnesp;          /*    transfer ESP, 0 = SPITBOL's stack */
-            short	xnss;			/*	  transfer SS, 0 = SPITBOL's stack	*/
-            short	xnds;			/*	  transfer DS						*/
-            short	xnes;			/*	  transfer ES						*/
-            short	xnfs;			/*	  transfer FS						*/
-            short	xngs;			/*	  transfer GS						*/
-            short	xn1st;			/*    non-zero = first-ever call		*/
-            short	xnsave;			/*    non-zero = first call after reload*/
+            short       xnss;                   /*        transfer SS, 0 = SPITBOL's stack      */
+            short       xnds;                   /*        transfer DS                                           */
+            short       xnes;                   /*        transfer ES                                           */
+            short       xnfs;                   /*        transfer FS                                           */
+            short       xngs;                   /*        transfer GS                                           */
+            short       xn1st;                  /*    non-zero = first-ever call                */
+            short       xnsave;                 /*    non-zero = first call after reload*/
             far void (*xncbp)(void);/*    callback function prior to exiting*/
-            short	xnpad;			/*    pad to dword boundary				*/
+            short       xnpad;                  /*    pad to dword boundary                             */
 #endif
         } ef;
     } xnu;
@@ -470,75 +470,75 @@ struct xnblk {
  * with one dimension whose lower bound is one (see VCBLK).
  */
 
-struct arblk1 {	   					/* One dimensional array				*/
-    mword			arblk;			/* type word (ARBLK)                    */
-    mword			aridv;			/* identifier value						*/
-    mword			arlen;			/* length of ARBLK in bytes				*/
-    mword			arofs;			/* offset in arblk to arpro field		*/
-    mword			arndm;			/* number of dimensions					*/
-    mword			arlbd;			/* low bound (first subscript)			*/
-    mword			ardim;			/* dimension (first subscript)			*/
-    struct scblk   *arpro;			/* array prototype string				*/
-    union block	   *arvls[1];		/* start of values in row-wise order	*/
+struct arblk1 {                                         /* One dimensional array                                */
+    mword                       arblk;                  /* type word (ARBLK)                    */
+    mword                       aridv;                  /* identifier value                                             */
+    mword                       arlen;                  /* length of ARBLK in bytes                             */
+    mword                       arofs;                  /* offset in arblk to arpro field               */
+    mword                       arndm;                  /* number of dimensions                                 */
+    mword                       arlbd;                  /* low bound (first subscript)                  */
+    mword                       ardim;                  /* dimension (first subscript)                  */
+    struct scblk   *arpro;                      /* array prototype string                               */
+    union block    *arvls[1];           /* start of values in row-wise order    */
 };
 
-struct arblk2 {						/* Two dimensional array				*/
-    mword			arblk;	  		/* type word (ARBLK)                    */
-    mword			aridv;	  		/* identifier value						*/
-    mword			arlen;			/* length of ARBLK in bytes				*/
-    mword			arofs;			/* offset in arblk to arpro field		*/
-    mword			arndm;			/* number of dimensions					*/
-    mword			arlbd;			/* low bound (first subscript)			*/
-    mword			ardim;			/* dimension (first subscript)			*/
-    mword			arlb2;			/* low bound (second subscript)			*/
-    mword			ardm2;			/* dimension (second subscript)			*/
-    struct scblk   *arpro;			/* array prototype string				*/
-    union block	   *arvls[1];		/* start of values in row-wise order	*/
+struct arblk2 {                                         /* Two dimensional array                                */
+    mword                       arblk;                  /* type word (ARBLK)                    */
+    mword                       aridv;                  /* identifier value                                             */
+    mword                       arlen;                  /* length of ARBLK in bytes                             */
+    mword                       arofs;                  /* offset in arblk to arpro field               */
+    mword                       arndm;                  /* number of dimensions                                 */
+    mword                       arlbd;                  /* low bound (first subscript)                  */
+    mword                       ardim;                  /* dimension (first subscript)                  */
+    mword                       arlb2;                  /* low bound (second subscript)                 */
+    mword                       ardm2;                  /* dimension (second subscript)                 */
+    struct scblk   *arpro;                      /* array prototype string                               */
+    union block    *arvls[1];           /* start of values in row-wise order    */
 };
 
-#define ndim	3					/* For example, 3-dimensional array		*/
-struct arblkn {						/* N-dimensional array					*/
-    mword			arblk;			/* type word (ARBLK)                    */
-    mword			aridv;			/* identifier value						*/
-    mword			arlen;			/* length of ARBLK in bytes				*/
-    mword			arofs;			/* offset in arblk to arpro field		*/
-    mword			arndm;		  	/* number of dimensions					*/
+#define ndim    3                                       /* For example, 3-dimensional array             */
+struct arblkn {                                         /* N-dimensional array                                  */
+    mword                       arblk;                  /* type word (ARBLK)                    */
+    mword                       aridv;                  /* identifier value                                             */
+    mword                       arlen;                  /* length of ARBLK in bytes                             */
+    mword                       arofs;                  /* offset in arblk to arpro field               */
+    mword                       arndm;                  /* number of dimensions                                 */
     struct {
-        mword	arlbd;				/* low bound (first subscript)			*/
-        mword	ardim;				/* dimension (first subscript)			*/
-    } 			bounds[ndim]; 	/* adjust for number of dimensions		*/
-    struct scblk   *arpro;  		/* array prototype string				*/
-    union block	   *arvls[1];		/* start of values in row-wise order	*/
+        mword   arlbd;                          /* low bound (first subscript)                  */
+        mword   ardim;                          /* dimension (first subscript)                  */
+    }                   bounds[ndim];   /* adjust for number of dimensions              */
+    struct scblk   *arpro;              /* array prototype string                               */
+    union block    *arvls[1];           /* start of values in row-wise order    */
 };
 
 
 /*
- * 	BUFFER CONTROL BLOCK
+ *      BUFFER CONTROL BLOCK
  *
- *	A buffer control block (BCBLK) is created by the BUFFER
- *	function, and serves as an indirect control header for the
- *	buffer. It contains the number of characters currently
- *	stored in the buffer.
+ *      A buffer control block (BCBLK) is created by the BUFFER
+ *      function, and serves as an indirect control header for the
+ *      buffer. It contains the number of characters currently
+ *      stored in the buffer.
  */
 struct bcblk {
-    mword	bctyp;					/* type word							*/
-    mword	bcidv;					/* identifier value						*/
-    mword	bclen;					/* number of chars in use in bfblk		*/
-    mword	bcbuf;					/* pointer to bfblk						*/
+    mword       bctyp;                                  /* type word                                                    */
+    mword       bcidv;                                  /* identifier value                                             */
+    mword       bclen;                                  /* number of chars in use in bfblk              */
+    mword       bcbuf;                                  /* pointer to bfblk                                             */
 };
 
 
 /*
- * 	STRING BUFFER BLOCK
+ *      STRING BUFFER BLOCK
  *
- *	A string buffer block (BFBLK) contains the actual buffer
- *	memory area. It specifies the largest string that can be
- *	stored in the buffer.
+ *      A string buffer block (BFBLK) contains the actual buffer
+ *      memory area. It specifies the largest string that can be
+ *      stored in the buffer.
  */
 struct bfblk {
-    mword	bftyp;					/* type word							*/
-    mword	bfalc;					/* allocated size of buffer				*/
-    char	bfchr[1];				/* characters of string					*/
+    mword       bftyp;                                  /* type word                                                    */
+    mword       bfalc;                                  /* allocated size of buffer                             */
+    char        bfchr[1];                               /* characters of string                                 */
 };
 
 
@@ -549,17 +549,17 @@ struct bfblk {
  */
 
 struct cdblk {
-    mword			cdjmp;			/* ptr to routine to execute statement	*/
-    mword			cdstm;			/* statement number						*/
-    mword			cdsln;			/* source file line number				*/
-    mword			cdlen;			/* length of CDBLK in bytes				*/
+    mword                       cdjmp;                  /* ptr to routine to execute statement  */
+    mword                       cdstm;                  /* statement number                                             */
+    mword                       cdsln;                  /* source file line number                              */
+    mword                       cdlen;                  /* length of CDBLK in bytes                             */
     union {
-        struct cdblk *cdnxt;		/* if failure exit is next statement	*/
-        struct vrblk *cdlab;		/* if failure exit is a simple label	*/
-        char 		 *cdnof;		/* no failure exit (-NOFAIL mode)		*/
-        mword		  cddir;		/* failure exit is complex or direct	*/
-    }			cdfal;			/* Failure exit							*/
-    mword			cdcod[1];		/* executable pseudo-code				*/
+        struct cdblk *cdnxt;            /* if failure exit is next statement    */
+        struct vrblk *cdlab;            /* if failure exit is a simple label    */
+        char             *cdnof;                /* no failure exit (-NOFAIL mode)               */
+        mword             cddir;                /* failure exit is complex or direct    */
+    }                   cdfal;                  /* Failure exit                                                 */
+    mword                       cdcod[1];               /* executable pseudo-code                               */
 };
 
 
@@ -571,9 +571,9 @@ struct cdblk {
  */
 
 struct nmblk {
-    mword			nmtyp;		  	/* type word (NMBLK)					*/
-    union block	   *nmbas;			/* base pointer for variable			*/
-    mword			nmofs;			/* offset within block for variable		*/
+    mword                       nmtyp;                  /* type word (NMBLK)                                    */
+    union block    *nmbas;                      /* base pointer for variable                    */
+    mword                       nmofs;                  /* offset within block for variable             */
 };
 
 
@@ -589,11 +589,11 @@ struct nmblk {
  */
 
 struct tbblk {
-    mword			tbtyp;			/* type word (TBBLK)					*/
-    mword			tbidv;			/* identifier value						*/
-    mword			tblen;			/* length of TBBLK in bytes				*/
-    union block	   *tbinv; 			/* default initial lookup value			*/
-    struct teblk   *tbbuk[1];		/* start of hash bucket pointers		*/
+    mword                       tbtyp;                  /* type word (TBBLK)                                    */
+    mword                       tbidv;                  /* identifier value                                             */
+    mword                       tblen;                  /* length of TBBLK in bytes                             */
+    union block    *tbinv;                      /* default initial lookup value                 */
+    struct teblk   *tbbuk[1];           /* start of hash bucket pointers                */
 };
 
 
@@ -605,10 +605,10 @@ struct tbblk {
  */
 
 struct teblk {
-    mword			teblk;			/* type word (TEBLK)					*/
-    union block	   *tesub;			/* subscript value						*/
-    union block    *teval;			/* table element value					*/
-    struct teblk   *tenxt;			/* next TEBLK or TBBLK if end of chain	*/
+    mword                       teblk;                  /* type word (TEBLK)                                    */
+    union block    *tesub;                      /* subscript value                                              */
+    union block    *teval;                      /* table element value                                  */
+    struct teblk   *tenxt;                      /* next TEBLK or TBBLK if end of chain  */
 };
 
 
@@ -619,15 +619,15 @@ struct teblk {
  */
 
 struct vrblk {
-    mword			vrget;			/* routine to load variable onto stack	*/
-    mword			vrsto;			/* routine to store stack top into var.	*/
-    union block	    *vrval;			/* variable value						*/
-    mword			vrtra;			/* routine to transfer to label			*/
-    union block	   *vrlbl;			/* pointer to code for label			*/
-    union block	   *vrfnc;			/* function block if name is function	*/
-    struct vrblk   *vrnxt;			/* next vrblk on hash chain				*/
-    mword			vrlen;			/* length of name						*/
-    char			vrchs[1];		/* characters of name					*/
+    mword                       vrget;                  /* routine to load variable onto stack  */
+    mword                       vrsto;                  /* routine to store stack top into var. */
+    union block     *vrval;                     /* variable value                                               */
+    mword                       vrtra;                  /* routine to transfer to label                 */
+    union block    *vrlbl;                      /* pointer to code for label                    */
+    union block    *vrfnc;                      /* function block if name is function   */
+    struct vrblk   *vrnxt;                      /* next vrblk on hash chain                             */
+    mword                       vrlen;                  /* length of name                                               */
+    char                        vrchs[1];               /* characters of name                                   */
 };
 
 
@@ -641,10 +641,10 @@ struct vrblk {
  */
 
 struct vcblk {
-    mword			vctyp;			/* type word (VCBLK)					*/
-    mword			vcidv;			/* identifier value						*/
-    mword			vclen;			/* length of vcblk in bytes				*/
-    union block	   *vcvls[1];		/* start of vector values				*/
+    mword                       vctyp;                  /* type word (VCBLK)                                    */
+    mword                       vcidv;                  /* identifier value                                             */
+    mword                       vclen;                  /* length of vcblk in bytes                             */
+    union block    *vcvls[1];           /* start of vector values                               */
 };
 
 
@@ -656,26 +656,26 @@ struct vcblk {
  */
 
 union block {
-    struct arblk1	arb1;
-    struct arblk2	arb2;
-    struct arblkn	arbn;
-    struct bcblk	bcb;
-    struct bfblk	bfb;
-    struct cdblk	cdb;
-    struct efblk	efb;
-    struct fcblk	fcb;
-    struct fsblk	fsb;
-    struct fxblk	fxb;
-    struct icblk	icb;
-    struct ioblk	iob;
-    struct nmblk	nmb;
-    struct rcblk	rcb;
-    struct scblk	scb;
-    struct tbblk	tbb;
-    struct teblk	teb;
-    struct vcblk	vcb;
-    struct vrblk	vrb;
-    struct xnblk	xnb;
+    struct arblk1       arb1;
+    struct arblk2       arb2;
+    struct arblkn       arbn;
+    struct bcblk        bcb;
+    struct bfblk        bfb;
+    struct cdblk        cdb;
+    struct efblk        efb;
+    struct fcblk        fcb;
+    struct fsblk        fsb;
+    struct fxblk        fxb;
+    struct icblk        icb;
+    struct ioblk        iob;
+    struct nmblk        nmb;
+    struct rcblk        rcb;
+    struct scblk        scb;
+    struct tbblk        tbb;
+    struct teblk        teb;
+    struct vcblk        vcb;
+    struct vrblk        vrb;
+    struct xnblk        xnb;
 };
 
 #endif

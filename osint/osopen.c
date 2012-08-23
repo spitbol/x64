@@ -18,28 +18,28 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  OSOPEN		Version:  01.06
-/	---------------------------------------
+/       File:  OSOPEN           Version:  01.06
+/       ---------------------------------------
 /
-/	Contents:	Function osopen
+/       Contents:       Function osopen
 /
-/	Revision history:
+/       Revision history:
 /
-/	V01.01	Was testing for successful file open with (fd != 0) and
-/		(fd >0).  If user ever explicitly closed fd 0, fd 0 would
-/		be available for normal use by a file open.
+/       V01.01  Was testing for successful file open with (fd != 0) and
+/               (fd >0).  If user ever explicitly closed fd 0, fd 0 would
+/               be available for normal use by a file open.
 /
-/	V01.02	Look at flag IO_ENV, and if set, fnm string is the name
-/		of an environment variable pointing to the filename.
+/       V01.02  Look at flag IO_ENV, and if set, fnm string is the name
+/               of an environment variable pointing to the filename.
 /
-/	V01.03	For MS-DOS, remove trailing ':', if any, from file name.
-/		DOS does not like names like "CON:".
+/       V01.03  For MS-DOS, remove trailing ':', if any, from file name.
+/               DOS does not like names like "CON:".
 /
-/	V01.04	File name "-" attaches to standard input or output.
+/       V01.04  File name "-" attaches to standard input or output.
 /
-/	V01.05	For MS-DOS on 386, process IO_COT option.
+/       V01.05  For MS-DOS on 386, process IO_COT option.
 /
-/	V01.06	Handle files open for update.
+/       V01.06  Handle files open for update.
 */
 
 /*
@@ -50,9 +50,9 @@ This file is part of Macro SPITBOL.
 /   command.
 /
 /   Parameters:
-/	ioptr	pointer to IOBLK representing file
+/       ioptr   pointer to IOBLK representing file
 /   Returns:
-/	0 - file opened successfully / -1 - open failed
+/       0 - file opened successfully / -1 - open failed
 */
 
 #include "port.h"
@@ -61,53 +61,53 @@ This file is part of Macro SPITBOL.
 #include <fcntl.h>
 #endif
 
-int	osopen( ioptr )
-struct	ioblk	*ioptr;
+int     osopen( ioptr )
+struct  ioblk   *ioptr;
 
 {
-    word	fd;
-    char	savech;
-    word 	len;
-    char	*cp;
-    struct	scblk	*scptr;
+    word        fd;
+    char        savech;
+    word        len;
+    char        *cp;
+    struct      scblk   *scptr;
 
     /*
-    /	If file already open, return.
+    /   If file already open, return.
     */
     if ( ioptr->flg1 & IO_OPN )
         return 0;
 
     /*
-    /	Establish a few pointers and filename length.
+    /   Establish a few pointers and filename length.
     */
-    scptr	= MK_MP(ioptr->fnm, struct scblk *);	/* point to filename SCBLK	*/
+    scptr       = MK_MP(ioptr->fnm, struct scblk *);    /* point to filename SCBLK      */
     if (ioptr->flg2 & IO_ENV)
     {
         if (optfile(scptr, pTSCBLK))
             return -1;
         scptr = pTSCBLK;
-        pTSCBLK->len = lenfnm(scptr);	/* remove any options */
+        pTSCBLK->len = lenfnm(scptr);   /* remove any options */
     }
 
-    cp	= scptr->str;		/* point to filename string	*/
-    len	= lenfnm( scptr );	/* get length of filename	*/
+    cp  = scptr->str;           /* point to filename string     */
+    len = lenfnm( scptr );      /* get length of filename       */
 
 #if PIPES
     /*
-    /	Handle pipes here.
+    /   Handle pipes here.
     */
-    if ( cp[0] == '!' )		/* if pipe ...			*/
+    if ( cp[0] == '!' )         /* if pipe ...                  */
     {
-        ioptr -> flg2 |= IO_PIP;	/*   then set flag and		*/
-        fd = ospipe( ioptr );   /*      let ospipe() do work	*/
+        ioptr -> flg2 |= IO_PIP;        /*   then set flag and          */
+        fd = ospipe( ioptr );   /*      let ospipe() do work    */
     }
 
 
     /*
-    /	Handle files here.
+    /   Handle files here.
     */
     else
-#endif					/* PIPES */
+#endif                                  /* PIPES */
 
     {
 #if WINNT
@@ -116,10 +116,10 @@ struct	ioblk	*ioptr;
             len--;
 #endif               /* WINNT */
 
-        savech	= make_c_str(&cp[len]);	/*   else temporarily terminate	filename */
-        if ( ioptr->flg1 & IO_OUP ) /*  output file		*/
+        savech  = make_c_str(&cp[len]); /*   else temporarily terminate filename */
+        if ( ioptr->flg1 & IO_OUP ) /*  output file             */
         {
-            fd = -1;	/* force creat if not update or append	*/
+            fd = -1;    /* force creat if not update or append  */
 
             /* Look for "-" as a file name.  Assign to fd 1 */
             if (len == 1 && *cp == '-')
@@ -137,7 +137,7 @@ struct	ioblk	*ioptr;
                  *   if file is not buffered and not appending or updating,
                  *    use O_WRONLY instead of O_RDWR.
                  */
-                int mode = O_CREAT;		/* create file if it doesn't exist */
+                int mode = O_CREAT;             /* create file if it doesn't exist */
 
                 if (ioptr->flg1 & IO_WRC && !(ioptr->action & IO_OPEN_IF_EXISTS))
                     mode |= O_WRONLY;
@@ -146,13 +146,13 @@ struct	ioblk	*ioptr;
 
                 /* if not update or append mode */
                 if (!(ioptr->flg1 & (IO_INP|IO_APP)))
-                    mode |= O_TRUNC;			/* truncate existing file */
+                    mode |= O_TRUNC;                    /* truncate existing file */
 
                 fd = spit_open( cp, mode, ioptr->share /* 0666 */, ioptr->action);
             }
 
         }
-        else			/* input-only file		*/
+        else                    /* input-only file              */
         {
             /* Look for "-" as a file name.  Assign to fd 0 */
             if (len == 1 && *cp == '-')
@@ -163,19 +163,19 @@ struct	ioblk	*ioptr;
             else
                 fd = spit_open( cp, O_RDONLY, ioptr->share /* 0 */, ioptr->action);
         }
-        unmake_c_str(&cp[len], savech);	/* restore filename string	*/
+        unmake_c_str(&cp[len], savech); /* restore filename string      */
     }
 
     /*
-    /	If file/pipe opened successfully, then set
+    /   If file/pipe opened successfully, then set
     /
-    /	o  file descriptor number in IOBLK
-    /	o  open flag in IOBLK
-    /	o  if output file is a TTY device, set the IO_WRC flag (no buffering)
-    /	o  if IO_WRC flag set, throw away the buffer
-    /	o  if output, append and not pipe, seek to end of file.
+    /   o  file descriptor number in IOBLK
+    /   o  open flag in IOBLK
+    /   o  if output file is a TTY device, set the IO_WRC flag (no buffering)
+    /   o  if IO_WRC flag set, throw away the buffer
+    /   o  if output, append and not pipe, seek to end of file.
     /
-    /	and then do a normal return.
+    /   and then do a normal return.
     */
     if (fd != -1)
     {
@@ -193,7 +193,7 @@ struct	ioblk	*ioptr;
         /* Test for character output.  Definicon doesn't have screen functions */
         if ( ioptr->flg1 & IO_OUP && coutdev( ioptr->fdn ) == 0 )
             ioptr->flg1 |= IO_COT;
-#endif					/* HOST386 */
+#endif                                  /* HOST386 */
 
         if ( ioptr->flg1 & IO_WRC )
             ioptr->bfb = 0;
@@ -205,7 +205,7 @@ struct	ioblk	*ioptr;
     }
 
     /*
-    /	When control passes here the open/pipe has failed so return -1.
+    /   When control passes here the open/pipe has failed so return -1.
     */
     return  -1;
 }

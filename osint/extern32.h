@@ -25,8 +25,8 @@ This file is part of Macro SPITBOL.
  *  Definitions of routines and data available to C-language
  *  external function to be called from 32-bit versions of SPITBOL.
  *
- * 	V1.00  02/17/90 01:52pm
- * 		   Initial version
+ *      V1.00  02/17/90 01:52pm
+ *                 Initial version
  *
  *  V1.01  10-18-91 04:53pm
  *         <withdrawn>.
@@ -35,19 +35,19 @@ This file is part of Macro SPITBOL.
  *       <withdrawn>.
  *
  *  V1.03  07-28-92 06:56am
- * 		   Customize for SPARC.
+ *                 Customize for SPARC.
  *
- *	V1.04  09-12-94 07:13pm
- *		   Add definitions for buffers
+ *      V1.04  09-12-94 07:13pm
+ *                 Add definitions for buffers
  *
  *  V1.05  04-25-95 10:05pm
- *		   Customize for RS/6000
+ *                 Customize for RS/6000
  *
  *  V1.06  12-29-96 06:05pm
  *         Customize for Windows NT
  *
  *  V1.07  03-04-97 12:45pm
- *			  Tweak for SPARC.
+ *                        Tweak for SPARC.
  *
  *  Definition of information placed on stack prior to pushing arguments to
  *  an external function.
@@ -62,8 +62,8 @@ This file is part of Macro SPITBOL.
  */
 
 #include "system.h"
-typedef int mword;				/* minimal word	*/
-typedef unsigned int muword;	/* minimal unsigned word	*/
+typedef int mword;                              /* minimal word */
+typedef unsigned int muword;    /* minimal unsigned word        */
 #ifndef far
 #define far
 #endif
@@ -102,32 +102,32 @@ typedef double (*APDF[])();
  */
 
 typedef struct misc {
-    short			 vers;			/* version number of interface			*/
-    unsigned char	 ext;			/* host environment, see ext_type below	*/
-    unsigned char	 spare;			/* reserved 							*/
-    mword			 nargs;		    /* number of args to function			*/
-    mword		   (*ptyptab)[];	/* pointer to table of data types		*/
-    struct xnblk 	*pxnblk;	    /* ptr to xnblk describing function		*/
-    struct efblk 	*pefblk;		/* ptr to efblk describing function		*/
-    APDF            *pflttab;		/* ptr to array of floating point fncs	*/
+    short                        vers;                  /* version number of interface                  */
+    unsigned char        ext;                   /* host environment, see ext_type below */
+    unsigned char        spare;                 /* reserved                                                     */
+    mword                        nargs;             /* number of args to function                       */
+    mword                  (*ptyptab)[];        /* pointer to table of data types               */
+    struct xnblk        *pxnblk;            /* ptr to xnblk describing function         */
+    struct efblk        *pefblk;                /* ptr to efblk describing function             */
+    APDF            *pflttab;           /* ptr to array of floating point fncs  */
 #if WINNT
     short            spds;          /* SPITBOL's DS segment selector        */
-    short			 spcs;			/* SPITBOL's CS segment selector		*/
+    short                        spcs;                  /* SPITBOL's CS segment selector                */
 #endif
 } misc;
 
-enum ext_type {						/* Executing under:						*/
-    t_pharlap,						/*  PharLap DOS Extender				*/
-    t_intel,						/*  Intel DOS Extender					*/
-    t_os2,							/*  OS/2 2.0							*/
-    t_tc16,						 	/*  MS-DOS TurboC with 16-bit IA		*/
-    t_tc32,							/*  MS-DOS TurboC with 32-bit IA		*/
-    t_w1616,						/*  16-bit Windows, 16-bit SPITBOL		*/
-    t_w1632,						/*  16-bit Windows, 32-bit SPITBOL		*/
-    t_wnt8,							/*  Windows NT on 386/486				*/
-    t_sparc,						/*  Sun 4 / SPARC						*/
-    t_mac,							/*  Apple Macintosh						*/
-    t_mips,							/*  MIPS R3000							*/
+enum ext_type {                                         /* Executing under:                                             */
+    t_pharlap,                                          /*  PharLap DOS Extender                                */
+    t_intel,                                            /*  Intel DOS Extender                                  */
+    t_os2,                                                      /*  OS/2 2.0                                                    */
+    t_tc16,                                                     /*  MS-DOS TurboC with 16-bit IA                */
+    t_tc32,                                                     /*  MS-DOS TurboC with 32-bit IA                */
+    t_w1616,                                            /*  16-bit Windows, 16-bit SPITBOL              */
+    t_w1632,                                            /*  16-bit Windows, 32-bit SPITBOL              */
+    t_wnt8,                                                     /*  Windows NT on 386/486                               */
+    t_sparc,                                            /*  Sun 4 / SPARC                                               */
+    t_mac,                                                      /*  Apple Macintosh                                             */
+    t_mips,                                                     /*  MIPS R3000                                                  */
     t_rs6000,                       /*  IBM RS/6000                         */
     t_lnx8632,                      /*  Linux Intel x86 32-bit              */
     t_lnx8664                       /*  Linux Intel x86 64-bit              */
@@ -137,7 +137,7 @@ enum ext_type {						/* Executing under:						*/
  * Sample usage.  Definition for function arguments, assuming
  * calling function in SPITBOL with:
  *
- * 	 F(INTEGER,REAL,STRING)
+ *       F(INTEGER,REAL,STRING)
  *
  * Because SPITBOL pushes arguments left to right, a Pascal
  * calling sequence should be used.  The could be supplied by
@@ -148,12 +148,12 @@ enum ext_type {						/* Executing under:						*/
  * source files easily between systems, the function definition will have
  * to manually reverse the arguments:
  *   entry(F)(presult, pinfo, parg3, larg3, rarg2, iarg1)
- *     union block	   *presult;		 pointer to result area
- *     misc		   	   *pinfo;		     miscellaneous info
- *     char	   		   *parg3;			 pointer to arg3 string
- *     mword	 		larg3;			 arg3 length
- *     double		   	rarg2;			 arg2 real number
- *     mword	   		iarg1;			 arg1 integer
+ *     union block         *presult;             pointer to result area
+ *     misc                        *pinfo;                   miscellaneous info
+ *     char                        *parg3;                       pointer to arg3 string
+ *     mword                    larg3;                   arg3 length
+ *     double                   rarg2;                   arg2 real number
+ *     mword                    iarg1;                   arg1 integer
  * {
  *    ....  start of function body
  */
@@ -164,34 +164,34 @@ enum ext_type {						/* Executing under:						*/
  * table to fetch a 32-bit type word for specific data types.
  */
 
-#define ar	(*((*pinfo).ptyptab))[BL_AR]	/* Array		*/
-#define bc	(*((*pinfo).ptyptab))[BL_BC]	/* Buffer Control	*/
-#define bf	(*((*pinfo).ptyptab))[BL_BF]	/* String Buffer	*/
-#define cd	(*((*pinfo).ptyptab))[BL_CD]	/* Code			*/
-#define ex	(*((*pinfo).ptyptab))[BL_EX]	/* Expression	*/
-#define ic	(*((*pinfo).ptyptab))[BL_IC]	/* Integer		*/
-#define nm	(*((*pinfo).ptyptab))[BL_NM]	/* Name			*/
-#define rc	(*((*pinfo).ptyptab))[BL_RC]	/* Real			*/
-#define sc	(*((*pinfo).ptyptab))[BL_SC]	/* String		*/
-#define tb	(*((*pinfo).ptyptab))[BL_TB]	/* Table		*/
-#define vc	(*((*pinfo).ptyptab))[BL_VC]	/* Vector		*/
-#define xn	(*((*pinfo).ptyptab))[BL_XN]	/* External		*/
+#define ar      (*((*pinfo).ptyptab))[BL_AR]    /* Array                */
+#define bc      (*((*pinfo).ptyptab))[BL_BC]    /* Buffer Control       */
+#define bf      (*((*pinfo).ptyptab))[BL_BF]    /* String Buffer        */
+#define cd      (*((*pinfo).ptyptab))[BL_CD]    /* Code                 */
+#define ex      (*((*pinfo).ptyptab))[BL_EX]    /* Expression   */
+#define ic      (*((*pinfo).ptyptab))[BL_IC]    /* Integer              */
+#define nm      (*((*pinfo).ptyptab))[BL_NM]    /* Name                 */
+#define rc      (*((*pinfo).ptyptab))[BL_RC]    /* Real                 */
+#define sc      (*((*pinfo).ptyptab))[BL_SC]    /* String               */
+#define tb      (*((*pinfo).ptyptab))[BL_TB]    /* Table                */
+#define vc      (*((*pinfo).ptyptab))[BL_VC]    /* Vector               */
+#define xn      (*((*pinfo).ptyptab))[BL_XN]    /* External             */
 
 
 /*
  * Non-standard block-type values that may be returned as a result:
  */
 
-#define FAIL	(-1)			/* Signal function failure	*/
-#define	BL_NC	100				/* Unconverted result		*/
-#define BL_FS	101				/* Far string				*/
-#define	BL_FX	102				/* Far external block		*/
+#define FAIL    (-1)                    /* Signal function failure      */
+#define BL_NC   100                             /* Unconverted result           */
+#define BL_FS   101                             /* Far string                           */
+#define BL_FX   102                             /* Far external block           */
 
 /*
  * Length of string area in result buffer
  */
 
-#define	buflen	512
+#define buflen  512
 
 
 /*
