@@ -1,6 +1,6 @@
         .title "SPITBOL TRANSLATOR V38"
         .sbttl "V38"
-# MINIMAL/80386 Translator V1.12 08/07/12 21:06:33 for linux
+# MINIMAL/80386 Translator V1.12 08/19/12 13:16:15 for linux
         .psize          80,132
         .arch           pentium
         .include        "systype.ah"
@@ -7631,11 +7631,11 @@ LSTMS:  .long B_SCL         #PAGE} DAC B_SCL
 #
 HEADR:  .long B_SCL         #} DAC B_SCL
         .long 25            #} DAC 25
-        .ascii "Macro SPITBOL Version 3.8\x00\x00\x00" #} DTC /Macro SPITBOL Version 3.8/
+        .ascii "Macro SPITBOL Version 3.7\x00\x00\x00" #} DTC /Macro SPITBOL Version 3.7/
 #
 HEADV:  .long B_SCL         #FOR EXIT() VERSION NO. CHECK} DAC B_SCL
-        .long 5             #} DAC 5
-        .ascii "3.8.2\x00\x00\x00" #} DTC /3.8.2/
+        .long 4             #} DAC 4
+        .ascii "3.8.1\x00\x00\x00" #} DTC /3.8.1/
 #      FREE STORE PERCENTAGE (USED BY GBCOL)
 #
 GBSDP:  .long E_SED         #SEDIMENT PERCENTAGE} DAC E_SED

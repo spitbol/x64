@@ -17,19 +17,15 @@ vpath %.c $(OSINT)
 AS=nasm
 CC=     tcc
 ifeq	($(DEBUG),0)
-#CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
-CFLAGS= 
+CFLAGS= -m32 
 else
-#CFLAGS= -g -m32 -fno-leading-underscore -mfpmath=387
 CFLAGS= -g 
 endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
 ASFLAGS = -f elf
-#ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
 else
-#ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
 ASFLAGS = -f elf -g
 endif
 

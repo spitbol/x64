@@ -42,7 +42,7 @@ extern int errno; /* system error number */
 #endif
 #endif
 
-extern double inf;	/* infinity */
+extern double inf;      /* infinity */
 
 /*
  * f_atn - arctangent
@@ -139,4 +139,4 @@ double ra;
     return errno ? inf : result;
 }
 
-#endif					/* FLOAT & !MATHHDWR */
+#endif                                  /* FLOAT & !MATHHDWR */

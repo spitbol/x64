@@ -18,24 +18,24 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  GETHOST.C	Version:  01.05
-/	---------------------------------------
-/
-/	Contents:	Function gethost
+        File:  GETHOST.C        Version:  01.05
+        ---------------------------------------
+
+        Contents:       Function gethost
 */
 
 /*
-/   gethost( scptr, maxlen )
-/
-/   gethost() reads the first line from the host file into the passed SCBLK.
-/
-/   Parameters:
-/	scptr	pointer to SCBLK to receive host string
-/	maxlen	max length of string area in SCBLK
-/   Returns:
-/	Nothing.
-/   Side Effects:
-/	Modifies contents of passed SCBLK (scptr).
+    gethost( scptr, maxlen )
+
+    gethost() reads the first line from the host file into the passed SCBLK.
+
+    Parameters:
+        scptr   pointer to SCBLK to receive host string
+        maxlen  max length of string area in SCBLK
+    Returns:
+        Nothing.
+    Side Effects:
+        Modifies contents of passed SCBLK (scptr).
 */
 
 #include "port.h"
@@ -69,18 +69,18 @@ char osver[] = ":Solaris";
 #endif
 
 void gethost( scptr, maxlen )
-struct	scblk	*scptr;
-word	maxlen;
+struct  scblk   *scptr;
+word    maxlen;
 
 {
-    struct scblk *pHEADV = GET_DATA_OFFSET(HEADV,struct scblk *);
+    struct scblk *pHEADV = GET_DATA_OFFSET(headv,struct scblk *);
     int cnt = 0;
     word fd;
 
     if ( (fd = spit_open( HOST_FILE, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
                           IO_OPEN_IF_EXISTS )) >= 0 )
     {
-        cnt	= read( fd, scptr->str, maxlen );
+        cnt     = read( fd, scptr->str, maxlen );
         close( fd );
     }
 
@@ -90,12 +90,12 @@ word	maxlen;
         cnt--;
         scptr->str[--cnt] = 0;
     }
-#else					/* EOL2 */
+#else                                   /* EOL2 */
     if ( cnt > 0  &&  scptr->str[cnt-1] == EOL1 )
     {
         scptr->str[--cnt] = 0;
     }
-#endif					/* EOL2 */
+#endif                                  /* EOL2 */
 
     if ( cnt == 0 )
     {
@@ -123,8 +123,8 @@ word	maxlen;
  */
 void gettype( scptr, maxlen )
 
-struct	scblk	*scptr;
-word	maxlen;
+struct  scblk   *scptr;
+word    maxlen;
 {
-    cpys2sc( htype, scptr, maxlen );	/* Computer type */
+    cpys2sc( htype, scptr, maxlen );    /* Computer type */
 }

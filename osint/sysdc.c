@@ -18,28 +18,28 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	zysdc - check system expiration date
-/
-/	zysdc prints any header messages and may check
-/	the date to see if execution is allowed to proceed.
-/
-/	Parameters:
-/	    Nothing
-/	Returns
-/	    Nothing
-/	    No return if execution not permitted
-/
+        zysdc - check system expiration date
+
+        zysdc prints any header messages and may check
+        the date to see if execution is allowed to proceed.
+
+        Parameters:
+            Nothing
+        Returns
+            Nothing
+            No return if execution not permitted
+
 */
 
 #include "port.h"
 
 zysdc()
 {
-    struct scblk *pHEADV = GET_DATA_OFFSET(HEADV,struct scblk *);
+    struct scblk *pHEADV = GET_DATA_OFFSET(headv,struct scblk *);
     /* announce name and copyright */
     if (!dcdone && !(spitflag & NOBRAG))
     {
-        dcdone = 1;				/* Only do once per run */
+        dcdone = 1;                             /* Only do once per run */
 #if WINNT
         write( STDERRFD, "SPITBOL-386", 11);
 #endif
@@ -58,7 +58,7 @@ zysdc()
 
 #if RUNTIME
         write( STDERRFD, " Runtime", 8);
-#endif					/* RUNTIME */
+#endif                                  /* RUNTIME */
 
         write( STDERRFD, "  Release ", 10);
         write( STDERRFD, pHEADV->str, pHEADV->len );

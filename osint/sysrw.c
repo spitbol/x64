@@ -18,25 +18,25 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  SYSRW.C		Version:  01.01
-/	---------------------------------------
-/
-/	Contents:	Function zysrw
+        File:  SYSRW.C          Version:  01.01
+        ---------------------------------------
+
+        Contents:       Function zysrw
 */
 
 /*
-/   zysrw - rewind file
-/
-/	Parameters
-/	    WA - pointer to FCBLK or 0
-/	    XR - pointer to SCBLK containing rewind argument
-/	Returns:
-/	    Nothing
-/	Exits:
-/	    1 - file doesn't exit
-/	    2 - rewind not allowed on this device
-/	    3 - I/O error
-/
+    zysrw - rewind file
+
+        Parameters
+            WA - pointer to FCBLK or 0
+            XR - pointer to SCBLK containing rewind argument
+        Returns:
+            Nothing
+        Exits:
+            1 - file doesn't exit
+            2 - rewind not allowed on this device
+            3 - I/O error
+
 */
 
 #include "port.h"

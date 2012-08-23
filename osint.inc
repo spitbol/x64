@@ -1,15 +1,15 @@
-;   File:  osint.inc            Version:  01.00
+;   file:  osint.inc            version:  01.00
 ;   -------------------------------------------
 ;
-;   This header file defines the interface between the Macro SPITBOL compiler
-;   and any assembly-language OSINT modules.
-;   Communication between the two is handled via a set of global variables
+;   this header file defines the interface between the macro spitbol compiler
+;   and any assembly-language osint modules.
+;   communication between the two is handled via a set of global variables
 ;   defined as externals below.
 
-;  Copyright 1991 Robert Goldberg and Catspaw, Inc.
-;  Copyright 2012 David Shields
+;  copyright 1991 robert goldberg and catspaw, inc.
+;  copyright 2012 david shields
 
-;   Set up externals for all the compiler's registers.
+;   set up externals for all the compiler's registers.
 
 	segment	.data
 %ifndef globals
@@ -24,71 +24,71 @@
 %endif
 
 
-;   Return values to take exit N from interface
+;   return values to take exit n from interface
 
-EXIT_1 equ      0
-EXIT_2 equ      4
-EXIT_3 equ      8
-EXIT_4 equ      12
-EXIT_5 equ      16
-EXIT_6 equ      20
-EXIT_7 equ      24
-EXIT_8 equ      28
-EXIT_9 equ      32
+exit_1 equ      0
+exit_2 equ      4
+exit_3 equ      8
+exit_4 equ      12
+exit_5 equ      16
+exit_6 equ      20
+exit_7 equ      24
+exit_8 equ      28
+exit_9 equ      32
 
-;    Return value to do a normal return from interface.
+;    return value to do a normal return from interface.
 
-NORMAL_RETURN  equ      -1
+normal_return  equ      -1
 
 	segment	.text
 
-;       Function and macro to call into MINIMAL code.
-;       The argument is an ordinal number defined below.
+;       function and macro to call into minimal code.
+;       the argument is an ordinal number defined below.
 %ifndef globals
-	extern		minimal
+	extern		minimal_call
 %endif
-%macro          MINIMAL 1
+%macro          Zinimal 1
         push            %1
-	callc		minimal,4
+	callc		minimal_call,4
 %endmacro
 
-;   Ordinals for MINIMAL calls from assembly language.
+;   ordinals for minimal calls from assembly language.
 ;
-;   The order of entries here must correspond to the order of
-;   calltab entries in the INTER assembly language module.
+;   the order of entries here must correspond to the order of
+;   calltab entries in the inter assembly language module.
 ;
-RELAJ  equ      0
-RELCR  equ      1
-RELOC  equ      2
-ALLOC  equ      3
-ALOCS  equ      4
-ALOST  equ      5
-BLKLN  equ      6
-INSTA  equ      7
-RSTRT  equ      8
-START  equ      9
-FILNM  equ      10
-DTYPE  equ      11
-ENEVS  equ      12
-ENGTS  equ      13
+relaj_callid  equ      0
+relcr_callid  equ      1
+reloc_callid  equ      2
+alloc_callid  equ      3
+alocs_callid  equ      4
+alost_callid  equ      5
+blkln_callid  equ      6
+insta_callid  equ      7
+rstrt_callid  equ      8
+start_callid  equ      9
+filnm_callid  equ      10
+dtype_callid  equ      11
+enevs_callid  equ      12
+engts_callid  equ      13
 
-;       Function and macro to get/set value from/to MINIMAL dataspace.
-;       The argument is an ordinal number defined below.
-;       The macro GETOFF returns the address of the value.
+;       function and macro to get/set value from/to minimal dataspace.
+;       the argument is an ordinal number defined below.
+;       the macro getoff returns the address of the value.
 %if direct                                  ; [[
-%macro          GETOFF 2
+%macro          getoff 2
         lea             %1,%2
 %endmacro
 
-%macro          GETMIN 2
+%macro          getmin 2
         mov             %1,dword [%2]
 %endmacro
 
-%macro          SETMIN 2
+%macro          setmin 2
         mov             %1,dword [%2]
 %endmacro
 
-%macro          SETMINR 2
+%macro          setminr 2
         mov             %1,%2
 %endmacro
 
@@ -107,9 +107,9 @@ ENGTS  equ      13
 	segment	.data
 %else                                       ; ][
 %ifndef globals
-	extern		minoff
+;*DS TODO	extern		minoff
 %endif
-%macro          GETOFF 2
+%macro          getoff 2
 %ifnidn %1,eax
 	push		eax
 %endif
@@ -121,7 +121,7 @@ ENGTS  equ      13
 %endif
 %endmacro
 
-%macro          GETMIN 2
+%macro          getmin 2
 %ifnidn %1,eax
 	push		eax
 %endif
@@ -133,7 +133,7 @@ ENGTS  equ      13
 %endif
 %endmacro
 
-%macro          SETMIN 2
+%macro          setmin 2
 %ifidn %2,eax
 	push		eax
 %endif
@@ -158,66 +158,66 @@ ENGTS  equ      13
 %endmacro
 %endif
 
-;   Ordinals for transferring MINIMAL values to/from assembly language.
+;   ordinals for transferring minimal values to/from assembly language.
 ;
-;   The order of entries here must correspond to the order of
-;   valtab entries in the INTER assembly language module.
+;   the order of entries here must correspond to the order of
+;   valtab entries in the inter assembly language module.
 ;
-;   The structure vords and the access macro is merely a device to
-;   produce an enumeration similar to an enum structure to C.
+;   the structure vords and the access macro is merely a device to
+;   produce an enumeration similar to an enum structure to c.
 ;
 ;;        struct   vords
 %endif
 	segment	.text
 %ifndef globals
-        extern  GBCNT
-        extern  HEADV
-        extern  MXLEN
-        extern  STAGE
-        extern  TIMSX
-        extern  DNAMB
-        extern  DNAMP
-        extern  STATE
-        extern  B_EFC
-        extern  B_ICL
-        extern  B_SCL
-        extern  B_VCT
-        extern  B_XNT
-        extern  B_XRT
-        extern  STBAS
-        extern  STATB
-        extern  POLCT
-        extern  TYPET
-        extern  DFFNC
-        extern  LOWSPMIN
-        extern  FLPRT
-        extern  FLPTR
-        extern  GTCEF
-        extern  HSHTB
-        extern  PMHBS
-        extern  R_FCB
-        extern  C_AAA
-        extern  C_YYY
-        extern  G_AAA
-        extern  W_YYY
-        extern  S_AAA
-        extern  S_YYY
-        extern  R_COD
-        extern  KVSTN
-        extern  KVDMP
-        extern  KVFTR
-        extern  KVCOM
-        extern  KVPFL
-        extern  CSWFL
-        extern  STMCS
-        extern  STMCT
-        extern  TICBLK
-        extern  TSCBLK
-        extern  ID1
-        extern  ID2BLK
-        extern  INPBUF
-        extern  TTYBUF
-        extern  B_RCL
+        extern  gbcnt
+        extern  headv
+        extern  mxlen
+        extern  stage
+        extern  timsx
+        extern  dnamb
+        extern  dnamp
+        extern  state
+        extern  b_efc
+        extern  b_icl
+        extern  b_scl
+        extern  b_vct
+        extern  b_xnt
+        extern  b_xrt
+        extern  stbas
+        extern  statb
+        extern  polct
+        extern  typet
+        extern  dffnc
+        extern  lowspmin
+        extern  flprt
+        extern  flptr
+        extern  gtcef
+        extern  hshtb
+        extern  pmhbs
+        extern  r_fcb
+        extern  c_aaa
+        extern  c_yyy
+        extern  g_aaa
+        extern  w_yyy
+        extern  s_aaa
+        extern  s_yyy
+        extern  r_cod
+        extern  kvstn
+        extern  kvdmp
+        extern  kvftr
+        extern  kvcom
+        extern  kvpfl
+        extern  cswfl
+        extern  stmcs
+        extern  stmct
+        extern  ticblk
+        extern  tscblk
+        extern  id1
+        extern  id2blk
+        extern  inpbuf
+        extern  ttybuf
+        extern  b_rcl
 %endif
 %if direct == 0
         ends    vords

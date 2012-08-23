@@ -18,21 +18,21 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  SYSMX.C		Version:  01.01
-/	---------------------------------------
-/
-/	Contents:	Function zysmx
+        File:  SYSMX.C          Version:  01.01
+        ---------------------------------------
+
+        Contents:       Function zysmx
 */
 
 /*
-/	zysmx - return maximum size in bytes of any created object
-/
-/	Parameters:
-/	    XR - tentative end of static
-/	Returns:
-/	    WA - maximum created object size in bytes
-/	Exits:
-/	    None
+        zysmx - return maximum size in bytes of any created object
+
+        Parameters:
+            XR - tentative end of static
+        Returns:
+            WA - maximum created object size in bytes
+        Exits:
+            None
 */
 
 #include "port.h"

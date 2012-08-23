@@ -18,46 +18,34 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  OSREAD.C		Version:  01.08
-/	---------------------------------------
-/
-/	Contents:	Function osread
+        File:  OSREAD.C         Version:  01.08
+        ---------------------------------------
+
+        Contents:       Function osread
 */
 
 /*
-/   osread( mode, recsiz, ioptr, scptr )
-/
-/   osread()  reads the next record from the input file associated with
-/   the passed IOBLK into the passed SCBLK.  mode determines whether the
-/   read should be line or raw mode.
-/
-/	Line mode records are teminated with a new-line character (the
-/	new-line is not put in the scblk though).
-/
-/	Raw mode records are simply the next recsiz characters.
-/
-/   Parameters:
-/	mode	1=line mode / 0=raw mode
-/	recsiz	line mode:  max length of record to be read
-/		raw mode:   number of characters to be read
-/	ioptr	pointer to IOBLK associated with input file
-/	scptr	pointer to SCBLK to receive input record
-/   Returns:
-/	>0	length of record read
-/	-1	EOF
-/	-2	I/O error
-/
-/	V1.08	01-Aug-93	Add IO_EOT flag to ignore EOT char in DOS-mode
-/						 text files.
-/	V1.07	01-Feb-93	Change definition of mode argument.
-/	V1.06	05-Feb-91	Change for read/write files.
-/	V1.05	29-Nov-89	Terminate host screen operation if HOST386.
-/	V1.04	05-Mar-88	Changes for Definicon and carriage return/
-/						line feed terminated records.
-/						Also modified code so that an end of file
-/						in a record with no record terminator returns
-/			   			that record, rather than an I/O error.
-/
+    osread( mode, recsiz, ioptr, scptr )
+
+    osread()  reads the next record from the input file associated with
+    the passed IOBLK into the passed SCBLK.  mode determines whether the
+    read should be line or raw mode.
+
+        Line mode records are teminated with a new-line character (the
+        new-line is not put in the scblk though).
+
+        Raw mode records are simply the next recsiz characters.
+
+    Parameters:
+        mode    1=line mode / 0=raw mode
+        recsiz  line mode:  max length of record to be read
+                raw mode:   number of characters to be read
+        ioptr   pointer to IOBLK associated with input file
+        scptr   pointer to SCBLK to receive input record
+    Returns:
+        >0      length of record read
+        -1      EOF
+        -2      I/O error
 */
 
 #include "port.h"
@@ -69,26 +57,26 @@ This file is part of Macro SPITBOL.
 
 word osread( mode, recsiz, ioptr, scptr )
 
-word	mode;
-word	recsiz;
-struct	ioblk	*ioptr;
-struct	scblk	*scptr;
+word    mode;
+word    recsiz;
+struct  ioblk   *ioptr;
+struct  scblk   *scptr;
 
 {
-    register struct bfblk	*bfptr = MK_MP(ioptr->bfb, struct bfblk *);
-    register char	*cp = scptr->str;
+    register struct bfblk       *bfptr = MK_MP(ioptr->bfb, struct bfblk *);
+    register char       *cp = scptr->str;
     register char   *bp;
-    register word	cnt = 0;
+    register word       cnt = 0;
     register word fdn = ioptr->fdn;
-    register word	n;
+    register word       n;
 
 #if HOST386
-    if ( ioptr->flg1 & IO_CIN )			/* End any special screen modes */
+    if ( ioptr->flg1 & IO_CIN )                 /* End any special screen modes */
         termhost();
-#endif					/* HOST386 */
+#endif                                  /* HOST386 */
 
     /*
-    /	Distinguish buffered from unbuffered I/O.
+    /   Distinguish buffered from unbuffered I/O.
     */
     if ( ioptr->flg1 & IO_WRC || ioptr->flg2 & IO_RAW ) {
 
@@ -98,24 +86,24 @@ struct	scblk	*scptr;
          ********************
          */
 
-        if ( mode == 1 ) {				/* line mode */
+        if ( mode == 1 ) {                              /* line mode */
 
             /*
              * Unbuffered Line Mode
              */
-            register char	eol1 = ioptr->eol1;
-            register char	eol2 = ioptr->eol2;
+            register char       eol1 = ioptr->eol1;
+            register char       eol2 = ioptr->eol2;
 #ifdef EOT
             /* Ignore eot char if IO_EOT bit set */
-            register char	eot	 = (ioptr->flg1 & IO_EOT) ? eol1 : EOT;
+            register char       eot      = (ioptr->flg1 & IO_EOT) ? eol1 : EOT;
 #endif
             word i;
             char c;
 
 #if PIPES
-            if (ioptr->flg2 & IO_PIP) {				/* if pipe, read 1 char at a time */
+            if (ioptr->flg2 & IO_PIP) {                         /* if pipe, read 1 char at a time */
 
-                do {								/* because there's no chance to backup */
+                do {                                                            /* because there's no chance to backup */
                     n = read(fdn, &c, 1);
                     if (n > 0) {
                         if (ioptr->flg2 & IO_LF) {
@@ -126,7 +114,7 @@ struct	scblk	*scptr;
                         if (c == eol1) {
                             if (eol2)
                                 ioptr->flg2 |= IO_LF;
-                            break;							/* exit loop on eol */
+                            break;                                                      /* exit loop on eol */
                         }
 #ifdef EOT
                         if ( c == eot ) {
@@ -139,10 +127,10 @@ struct	scblk	*scptr;
                             *cp++ = c;
                         }
                     }
-                } while (n > 0);						/* loop until eol or eof */
+                } while (n > 0);                                                /* loop until eol or eof */
             }
             else
-#endif					/* PIPES */
+#endif                                  /* PIPES */
             {
                 char findeol = 1;
 
@@ -174,7 +162,7 @@ struct	scblk	*scptr;
                                 if (i && *cp == eol2)
                                     cp++;
                                 else if (testty(fdn) && read(fdn, &c, 1) == 1 && c != eol2)
-                                    doset(ioptr, -1L, 1);	/* back up over non-eol2 */
+                                    doset(ioptr, -1L, 1);       /* back up over non-eol2 */
                             }
                             if (testty(fdn))
                                 doset(ioptr, cp-scptr->str-n, 1);/* backup file to point following line */
@@ -193,7 +181,7 @@ struct	scblk	*scptr;
                     if (findeol) {                /* on block device, discard chars */
 #endif
 
-                        do {									/* until find eol */
+                        do {                                                                    /* until find eol */
                             i = read(fdn, &c, 1);
                             if (i > 0) {
 #ifdef EOT
@@ -203,12 +191,12 @@ struct	scblk	*scptr;
                                 if (c == eol1) {
                                     if (eol2 && read(fdn, &c, 1) == 1 && c != eol2)
 #endif
-                                        doset(ioptr, -1L, 1);	/* back up over non-eol2 */
-                                    break;						/* exit loop on eol */
+                                        doset(ioptr, -1L, 1);   /* back up over non-eol2 */
+                                    break;                                              /* exit loop on eol */
                                 }
                             }
                         }
-                        while (i > 0);					/* loop until eol or eof */
+                        while (i > 0);                                  /* loop until eol or eof */
                     }
                 }
             }
@@ -220,10 +208,10 @@ struct	scblk	*scptr;
              * Unbuffered Raw Mode
              */
             if ( ioptr->flg2 & IO_RAW )
-                ttyraw( fdn, 1 );	/* set RAW mode		*/
+                ttyraw( fdn, 1 );       /* set RAW mode         */
             do {
-                /*  loop till recsize satisfied		*/
-                /*  (read returns one or more chars per call)	*/
+                /*  loop till recsize satisfied         */
+                /*  (read returns one or more chars per call)   */
 #if WINNT
                 /* if reading from keyboard and input should be echoed... */
                 if (cindev(fdn) == 0 && ((ioptr->flg2 & IO_NOE) == 0)) {
@@ -244,20 +232,20 @@ struct	scblk	*scptr;
             if ( ioptr->flg2 & IO_RAW )
                 ttyraw( fdn, 0 );
 
-            /*  if no error, return aggregate count	*/
+            /*  if no error, return aggregate count     */
             if ( n >= 0 )
                 n = cnt;
         }
 
-        /*	if read error then take action	*/
+        /*      if read error then take action  */
         if ( n < 0 )
-            return	-2;
+            return      -2;
 
-        /*	check for eof with nothing read */
+        /*      check for eof with nothing read */
         if ( n == 0 && cnt == 0)
             return -1;
 
-        /*	everything ok, so return	*/
+        /*      everything ok, so return        */
         return cnt;
     }
 
@@ -268,39 +256,39 @@ struct	scblk	*scptr;
          ********************
          */
 
-        if ( mode == 1 ) {			/* line mode */
+        if ( mode == 1 ) {                      /* line mode */
 
             /*
              * Buffered Line Mode
              */
-            register char	eol1 = ioptr->eol1;
-            register char	eol2 = ioptr->eol2;
+            register char       eol1 = ioptr->eol1;
+            register char       eol2 = ioptr->eol2;
 #ifdef EOT
             /* Ignore eot char if IO_EOT bit set */
-            register char	eot	 = (ioptr->flg1 & IO_EOT) ? eol1 : EOT;
+            register char       eot      = (ioptr->flg1 & IO_EOT) ? eol1 : EOT;
 #endif
-            char	*savecp;
-            char	savechar;
+            char        *savecp;
+            char        savechar;
 
             /*
-             *	First phase:  copy characters to the result
-             *	buffer either until recsiz is exhausted or
-             *	we have copied the last character of a line.
-             *	This loop is speeded up by pretending that
-             *	the input line is no longer than the result.
+             *  First phase:  copy characters to the result
+             *  buffer either until recsiz is exhausted or
+             *  we have copied the last character of a line.
+             *  This loop is speeded up by pretending that
+             *  the input line is no longer than the result.
              */
             do {
-                register char	*oldbp;
+                register char   *oldbp;
 
                 /* if the buffer is exhausted, try to fill it */
                 if ( bfptr->next >= bfptr->fill ) {
-                    if (flush(ioptr))	/* flush any dirty buffer */
+                    if (flush(ioptr))   /* flush any dirty buffer */
                         return -2;
 
                     n = fillbuf(ioptr);
 
                     if ( n < 0 )
-                        return -2;			/* I/O error */
+                        return -2;                      /* I/O error */
 
                     /* true EOF only at the beginning of a line */
                     if ( !n )
@@ -323,10 +311,10 @@ struct	scblk	*scptr;
 #ifdef EOT
                 /* copy characters until we hit eol1 or EOT */
                 while ( *bp != eol1 && *bp != eot )
-#else					/* EOT */
+#else                                   /* EOT */
                 /* copy characters until we hit eol1 */
                 while ( *bp != eol1 )
-#endif					/* EOT */
+#endif                                  /* EOT */
 
                     *cp++ = *bp++;
 
@@ -342,25 +330,25 @@ struct	scblk	*scptr;
             } while ( bp == savecp  &&  cnt < recsiz );
 
             /*
-             *	Second phase: discard characters up to and
-             *	including the next EOL1 in the input.
-             *	This loop is optimized to miminize startup
-             *	overhead, because it will usually be executed
-             *	only once (but never less than once!)
+             *  Second phase: discard characters up to and
+             *  including the next EOL1 in the input.
+             *  This loop is optimized to miminize startup
+             *  overhead, because it will usually be executed
+             *  only once (but never less than once!)
              */
             do {
                 /*
-                 *	decrement count of characters remaining
-                 *	in the buffer, check for buffer underflow
+                 *      decrement count of characters remaining
+                 *      in the buffer, check for buffer underflow
                  */
                 if ( bfptr->next >= bfptr->fill ) {
-                    if (flush(ioptr))	/* flush any dirty buffer */
+                    if (flush(ioptr))   /* flush any dirty buffer */
                         return -2;
 
                     n = fillbuf(ioptr);
 
                     if ( n < 0 )
-                        return -2;			/* I/O error */
+                        return -2;                      /* I/O error */
 
                     /* true EOF only at the beginning of a line */
                     if ( !n )
@@ -368,8 +356,8 @@ struct	scblk	*scptr;
                 }
 
                 /*
-                 *	The buffer is guaranteed non-empty,
-                 *	Pick up a character and bump the offset.
+                 *      The buffer is guaranteed non-empty,
+                 *      Pick up a character and bump the offset.
                  */
 #ifdef EOT
                 /* loop until we see eol1 or end of text */
@@ -378,30 +366,30 @@ struct	scblk	*scptr;
 
             if ( !(ioptr->flg1 & IO_EOT) && savechar == EOT ) {
 #if WINNT
-                if (ioptr->flg1 & IO_CIN)		/* if character file */
-                    bfptr->fill = bfptr->next;	/* empty the buffer */
-                else							/* if disk device */
+                if (ioptr->flg1 & IO_CIN)               /* if character file */
+                    bfptr->fill = bfptr->next;  /* empty the buffer */
+                else                                                    /* if disk device */
 #endif               /* WINNT */
-                    bfptr->next--;				/* back up so see it repeatedly */
+                    bfptr->next--;                              /* back up so see it repeatedly */
                 return (cnt > 0 ? cnt: -1);
             }
-#else					/* EOT */
+#else                                   /* EOT */
                 /* loop until we see an eol1 */
             }
             while ( bfptr->buf[bfptr->next++] != eol1 );
-#endif					/* EOT */
+#endif                                  /* EOT */
 
-            /* if there is an eol2, look ahead for it	*/
+            /* if there is an eol2, look ahead for it   */
             if (eol2) {
                 if ( bfptr->next >= bfptr->fill && testty(fdn))
                 {
-                    if (flush(ioptr))	/* flush any dirty buffer */
+                    if (flush(ioptr))   /* flush any dirty buffer */
                         return -2;
                     fillbuf(ioptr);
                 }
 
                 if ( bfptr->next < bfptr->fill && (bfptr->buf[bfptr->next] == eol2) )
-                    bfptr->next++;	/* discard it if found	*/
+                    bfptr->next++;      /* discard it if found  */
             }
 
         }
@@ -414,7 +402,7 @@ struct	scblk	*scptr;
                 /* if the buffer is exhausted, try to fill it */
                 if ( bfptr->next >= bfptr->fill ) {
 
-                    if (flush(ioptr))	/* flush any dirty buffer */
+                    if (flush(ioptr))   /* flush any dirty buffer */
                         return -2;
 
                     fsyncio(ioptr);        /* synchronize file and buffer */
@@ -470,7 +458,7 @@ struct ioblk *ioptr;
     if ((ioptr->flg1 & IO_CIN) == 0) {
         n = read( ioptr->fdn, bfptr->buf, bfptr->size );
         if (!(ioptr->flg2 & IO_BIN) && !(ioptr->flg1 & IO_EOT)) {
-            while (n>0) {			/* remove trailing EOTs	*/
+            while (n>0) {                       /* remove trailing EOTs */
                 if (bfptr->buf[n-1] != EOT)
                     break;
                 else

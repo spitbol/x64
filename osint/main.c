@@ -18,44 +18,37 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  MAIN.C		Version:  01.00
-/	---------------------------------------
-/
-/	Contents:	Function main
+        File:  MAIN.C           Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function main
 */
 
 /*
-/	This module contains the main function that gets control when
-/	the spitbol compiler starts execution.  Responsibilities of
-/	this function:
-/
-/	o  Save argc and argv parameters in global storage.
-/
-/	o  Determine if this execution reflects the invocation of
-/	   of the compiler or of a load module and take appropriate
-/	   actions.
-/
-/	   If invoked as compiler:  process command line arguments,
-/	   set up input files, output file, initial memory allocation,
-/	   and transfer control to compiler
-/
-/	   If invoked as load module:  reset various compiler variables
-/	   whose values are no longer valid, re-establish dynamic area
-/	   and transfer control to function that returns control to
-/	   suspended spitbol program
-/
-/	HISTORY
-/
-/  V1.00 04-Jun-92 Split off from OSINT as a front-end module.
-/  V1.01 30-Dec-96 Call swcinp after reloading SPX file.
-/  V1.02 18-Mar-00 Don't interpret parameters following .spx on command
-/                  line as file names.
+        This module contains the main function that gets control when
+        the spitbol compiler starts execution.  Responsibilities of
+        this function:
+
+        o  Save argc and argv parameters in global storage.
+
+        o  Determine if this execution reflects the invocation of
+           of the compiler or of a load module and take appropriate
+           actions.
+
+           If invoked as compiler:  process command line arguments,
+           set up input files, output file, initial memory allocation,
+           and transfer control to compiler
+
+           If invoked as load module:  reset various compiler variables
+           whose values are no longer valid, re-establish dynamic area
+           and transfer control to function that returns control to
+           suspended spitbol program
 */
-#define GLOBALS			/* global variables will be defined in this module */
+#define GLOBALS                 /* global variables will be defined in this module */
 #include "port.h"
 
 #ifdef DEBUG
-#undef DEBUG			/* Change simple -DDEBUG on command line to -DDEBUG=1 */
+#undef DEBUG                    /* Change simple -DDEBUG on command line to -DDEBUG=1 */
 #define DEBUG 1
 #else
 #define DEBUG 0
@@ -64,11 +57,11 @@ This file is part of Macro SPITBOL.
 void setout Params(( void ));
 
 main( argc, argv )
-int	argc;
-char	*argv[];
+int     argc;
+char    *argv[];
 
 {
-    int		i;
+    int         i;
 
     /*
     /   Save command line parameters in global storage, in case they are needed
@@ -78,16 +71,16 @@ char	*argv[];
     gblargv = argv;
     lowsp = 0L;
 #if WINNT
-    init_custom();				/* Perform system specific initializations */
+    init_custom();                              /* Perform system specific initializations */
 #endif
 
     /*
-    /	Initialize buffers
+    /   Initialize buffers
     */
     stdioinit();
     ttyinit();
     /*
-    /	Make sure sysdc gets to output stuff at least once.
+    /   Make sure sysdc gets to output stuff at least once.
     */
     dcdone = 0;
 
@@ -111,47 +104,47 @@ char	*argv[];
          */
 #if USEFD0FD1
         originp = dup(0);
-#endif					/* USEFD0FD1 */
+#endif                                  /* USEFD0FD1 */
         readshell0 = 0;
-#else					/* EXECSAVE */
+#else                                   /* EXECSAVE */
     /*
     /   If this is a restart of this program from a load module, set things
     /   up for a restart.  Transfer control to function restart which actually
     /   resumes program execution.
     */
     if ( lmodstk ) {
-        if ( brk( (char *) topmem ) < 0 ) { /* restore topmem to its prior state	*/
+        if ( brk( (char *) topmem ) < 0 ) { /* restore topmem to its prior state        */
             wrterr( "Insufficient memory to load." );
             __exit(1);
         }
-#endif					/* EXECSAVE */
+#endif                                  /* EXECSAVE */
 
         cmdcnt = 1;       /* allow access to command line args  */
-        inpptr = 0;				/* no compilation input files		*/
-        inpcnt = 0;				/* ditto				*/
-        outptr = 0;				/* no compilation output file		*/
-        pathptr = (char *)-1L;	/* include paths unknown 	*/
-        clrbuf();				/* no chars left in std input buffer	*/
+        inpptr = 0;                             /* no compilation input files           */
+        inpcnt = 0;                             /* ditto                                */
+        outptr = 0;                             /* no compilation output file           */
+        pathptr = (char *)-1L;  /* include paths unknown        */
+        clrbuf();                               /* no chars left in std input buffer    */
         sfn = 0;
 #if FLOAT
-        hasfpu = checkfpu();	/* check for floating point hardware */
-#endif					/* FLOAT */
+        hasfpu = checkfpu();    /* check for floating point hardware */
+#endif                                  /* FLOAT */
 #if (SUN4 | LINUX) & !EXECSAVE
-        heapmove();				/* move the heap up					*/
-        malloc_empty();			/* mark the malloc region as empty	*/
-#endif					/* SUN4 | LINUX */
-        zysdc();							/* Brag if necessary */
+        heapmove();                             /* move the heap up                                     */
+        malloc_empty();                 /* mark the malloc region as empty      */
+#endif                                  /* SUN4 | LINUX */
+        zysdc();                                                        /* Brag if necessary */
         restart( (char *)0L, lowsp );       /* call restart to continue execution */
     }
-#endif					/* EXECFILE */
+#endif                                  /* EXECFILE */
 
     /*
-     * 	Process command line arguments
+     *  Process command line arguments
      */
     inpptr = getargs(argc, argv);
 
     if ( inpptr )
-        sfn = *inpptr;		/* pointer to first file name */
+        sfn = *inpptr;          /* pointer to first file name */
     else
     {
         zysdc();
@@ -169,36 +162,36 @@ char	*argv[];
      * test if floating point hardware present
      */
     hasfpu = checkfpu();
-#endif					/* FLOAT */
+#endif                                  /* FLOAT */
 
 #if SAVEFILE | EXECSAVE
     switch (getsave(getrdfd())) {
-    case 1:					/* save file loaded */
+    case 1:                                     /* save file loaded */
         inpcnt = 0;               /* v1.02 no more cmd line files */
         swcinp(inpcnt, inpptr );  /* v1.01 */
         restart( (char *)0L, lowsp );
 
-    case 0:					/* not a save file */
+    case 0:                                     /* not a save file */
 #if RUNTIME
         wrterr("SPITBOL save (.spx) file only!");
-#else					/* RUNTIME */
+#else                                   /* RUNTIME */
         break;
-#endif					/* RUNTIME */
+#endif                                  /* RUNTIME */
 
-    case -1:				/* error loading save file */
+    case -1:                            /* error loading save file */
         __exit(1);
     }
-#endif					/* SAVEFILE | EXECSAVE */
+#endif                                  /* SAVEFILE | EXECSAVE */
 
     /*
-    /	Setup output and issue brag message
+    /   Setup output and issue brag message
     */
     setout();
 
 #if !RUNTIME
 
     /*
-     *	Force the memory manager to initialize itself
+     *  Force the memory manager to initialize itself
      */
     if ((char *)sbrk(0) == (char *)-1) {
         wrterr( "Insufficient memory.  Try smaller -d, -m, or -s command line options." );
@@ -256,7 +249,7 @@ char	*argv[];
     /   Startup compiler.
     */
     startup( (char *)0L, lowsp );
-#endif					/* !RUNTIME */
+#endif                                  /* !RUNTIME */
 
     /*
     /   Never returns. exit is via exit().
@@ -266,54 +259,54 @@ char	*argv[];
 
 
 /*
-/	wrterr( s )
-/
-/	Write message to standard error, and append end-of-line.
+        wrterr( s )
+
+        Write message to standard error, and append end-of-line.
 */
 void wrterr(s)
-char	*s;
+char    *s;
 {
 #if EOL2
     static char eol[2] = {EOL1,EOL2};
 
-#else					/* EOL2 */
+#else                                   /* EOL2 */
     static char eol[1] = {EOL1};
-#endif					/* EOL2 */
+#endif                                  /* EOL2 */
     write( STDERRFD, s, length(s) );
     write( STDERRFD,  eol, sizeof(eol) );
 }
 
 void wrtint(n)
-int	n;
+int     n;
 {
 #if EOL2
     static char eol[2] = {EOL1,EOL2};
 
-#else					/* EOL2 */
+#else                                   /* EOL2 */
     static char eol[1] = {EOL1};
-#endif					/* EOL2 */
+#endif                                  /* EOL2 */
     /*
-    	char str[16];
-    	itoa(n,str);
-    	write( STDOUTFD, str, length(str) );
-    	write( STDOUTFD,  eol, sizeof(eol) );
+        char str[16];
+        itoa(n,str);
+        write( STDOUTFD, str, length(str) );
+        write( STDOUTFD,  eol, sizeof(eol) );
     */
 }
 
 /*
-/	wrtmsg( s )
-/
-/	Write message to standard output, and append end-of-line.
+        wrtmsg( s )
+
+        Write message to standard output, and append end-of-line.
 */
 void wrtmsg(s)
-char	*s;
+char    *s;
 {
 #if EOL2
     static char eol[2] = {EOL1,EOL2};
 
-#else					/* EOL2 */
+#else                                   /* EOL2 */
     static char eol[1] = {EOL1};
-#endif					/* EOL2 */
+#endif                                  /* EOL2 */
     write( STDOUTFD, s, length(s) );
     write( STDOUTFD,  eol, sizeof(eol) );
 }
@@ -329,7 +322,7 @@ char	*s;
 void setout()
 {
     /*
-     *	Brag prior to calling swcoup
+     *  Brag prior to calling swcoup
      */
     zysdc();
 

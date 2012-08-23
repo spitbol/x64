@@ -1,6 +1,6 @@
         ;    "SPITBOL TRANSLATOR V38"
         ;    "V38"
-; MINIMAL/80386 Translator V1.12 08/16/12 10:06:41 for linux
+; MINIMAL/80386 Translator V1.12 08/19/12 13:17:54 for linux
 ;        .psize          80,132
 ;        .arch           pentium
         %include        "systype.ah"

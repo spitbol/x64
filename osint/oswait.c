@@ -18,26 +18,22 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   File:  OSWAIT.C     Version:  01.02
-/	---------------------------------------
-/
-/	Contents:	Function oswait
+    File:  OSWAIT.C     Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function oswait
 */
 
 
 /*
-/   oswait( pid )
-/
-/   oswait() waits for the termination of the process with id pid.
-/
-/   Parameters:
-/	pid	prcoess id
-/   Returns:
-/   nothing
-/
-/   V1.01 MBE 07-29-91  <withdrawn>.
-/   V1.02 MBE 12-31-96  Modify for WinNT.
-/
+    oswait( pid )
+
+    oswait() waits for the termination of the process with id pid.
+
+    Parameters:
+        pid     prcoess id
+    Returns:
+    nothing
 */
 
 #include "port.h"
@@ -55,23 +51,23 @@ extern int wait(int *status);
 #endif
 
 void oswait( pid )
-int	pid;
+int     pid;
 {
-    int	deadpid, status;
+    int deadpid, status;
     struct  chfcb   *chptr;
 #if UNIX
     SigType (*hstat)Params((int)),
             (*istat)Params((int)),
             (*qstat)Params((int));
 
-    istat	= signal( SIGINT, SIG_IGN );
-    qstat	= signal( SIGQUIT ,SIG_IGN );
-    hstat	= signal( SIGHUP, SIG_IGN );
+    istat       = signal( SIGINT, SIG_IGN );
+    qstat       = signal( SIGQUIT ,SIG_IGN );
+    hstat       = signal( SIGHUP, SIG_IGN );
 #endif
 
     while ( (deadpid = wait( &status )) != pid  &&  deadpid != -1 )
     {
-        for ( chptr = GET_MIN_VALUE(R_FCB,struct chfcb *); chptr != 0;
+        for ( chptr = GET_MIN_VALUE(r_fcb,struct chfcb *); chptr != 0;
                 chptr = MK_MP(chptr->nxt, struct chfcb *) )
         {
             if ( deadpid == MK_MP(MK_MP(chptr->fcp, struct fcblk *)->iob,
@@ -90,4 +86,4 @@ int	pid;
     signal( SIGHUP,hstat );
 #endif                  /* UNIX */
 }
-#endif					/* PIPES */
+#endif                                  /* PIPES */

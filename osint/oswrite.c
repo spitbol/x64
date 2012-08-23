@@ -18,68 +18,51 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  OSWRITE.C	Version:  01.11
-/	---------------------------------------
-/
-/	Contents:	Function oswrite
-/
-/	V1.11	Split mode and line length into two separate arguments.  1-Feb-93.
-/	V1.10	Maintain IO_DIR.  Other changes for read/write I/O.
-/	V1.09	Decrement cp when restore savech in case multiple records.  Advance
-/			cp when writing in unbuffered mode.
-/	V1.08	Change modelen parameter from int to word.
-/   V1.07   Fix binary writes to character device if MS-DOS.
-/   V1.06   Ignore short writes to character device if MS-DOS.
-/	V1.05	Terminate host screen operation if HOST386.
-/	V1.04	Obey ioptr->len on line-mode output.
-*/
+    oswrite( mode, linesiz, recsiz, ioptr, scptr )
 
-/*
-/   oswrite( mode, linesiz, recsiz, ioptr, scptr )
-/
-/   oswrite() writes the record in the passed SCBLK to the file associated
-/   with the passed IOBLK.  There are two types of transfer:
-/
-/	unbuffered	write is done immediately
-/
-/	buffered	write is done into buffer
-/
-/   In either case, a new-line is appended to the record if in line mode
-/   (mode == 1).
-/
-/   Parameters:
-/	mode	1=line mode / 0=raw mode
-/	linesiz output record length
-/	recsiz	length of data being written
-/	ioptr	pointer to IOBLK associated with output file
-/	scptr	pointer to SCBLK to receive output record
-/   Returns:
-/	Number of I/O errors.  Should be 0.
+    oswrite() writes the record in the passed SCBLK to the file associated
+    with the passed IOBLK.  There are two types of transfer:
+
+        unbuffered      write is done immediately
+
+        buffered        write is done into buffer
+
+    In either case, a new-line is appended to the record if in line mode
+    (mode == 1).
+
+    Parameters:
+        mode    1=line mode / 0=raw mode
+        linesiz output record length
+        recsiz  length of data being written
+        ioptr   pointer to IOBLK associated with output file
+        scptr   pointer to SCBLK to receive output record
+    Returns:
+        Number of I/O errors.  Should be 0.
 */
 
 #include "port.h"
 
 word oswrite( mode, linesiz, recsiz, ioptr, scptr )
-word	mode;
-word	linesiz;
-register word	recsiz;
-struct	ioblk	*ioptr;
-struct	scblk	*scptr;
+word    mode;
+word    linesiz;
+register word   recsiz;
+struct  ioblk   *ioptr;
+struct  scblk   *scptr;
 
 {
-    char	*saveloc, savech;
-    char	savech2;
+    char        *saveloc, savech;
+    char        savech2;
 
-    register char	*cp = scptr->str;
+    register char       *cp = scptr->str;
     register struct bfblk *bfptr = MK_MP(ioptr->bfb, struct bfblk *);
     register word fdn = ioptr->fdn;
-    word	linelen;
-    int	ioerrcnt = 0;
+    word        linelen;
+    int ioerrcnt = 0;
 
 #if HOST386
-    if ( ioptr->flg1 & IO_COT ) 			/* End any special screen modes */
+    if ( ioptr->flg1 & IO_COT )                         /* End any special screen modes */
         termhost();
-#endif					/* HOST386 */
+#endif                                  /* HOST386 */
 
     do {
         /* If line mode, limit characters written on a line */
@@ -131,12 +114,12 @@ struct	scblk	*scptr;
                     ioerrcnt++;
                 /* short count on character device.  Ignore if not binary mode */
                 else if (ioptr->flg2 & IO_RAW) { /* if raw mode char device */
-                    ttyraw(fdn, 1);				/* set raw mode */
-                    write( fdn, cp+actcnt, 1 );	/* write the problem char */
-                    ttyraw(fdn, 0);				/* clear raw mode */
-                    linelen -= (++actcnt);		/* chars remaining after problem char */
-                    recsiz += linelen;			/*   "      "       "  "   "	*/
-                }							/* and go 'round again */
+                    ttyraw(fdn, 1);                             /* set raw mode */
+                    write( fdn, cp+actcnt, 1 ); /* write the problem char */
+                    ttyraw(fdn, 0);                             /* clear raw mode */
+                    linelen -= (++actcnt);              /* chars remaining after problem char */
+                    recsiz += linelen;                  /*   "      "       "  "   "    */
+                }                                                       /* and go 'round again */
 #else             /* WINNT */
                 ioerrcnt++;
 
@@ -198,12 +181,12 @@ struct	scblk	*scptr;
                             break;
                         }
 
-                    n = bfptr->size - bfptr->next;	/* space in buffer */
-                    if (n > linelen)				/* if don't need it all */
+                    n = bfptr->size - bfptr->next;      /* space in buffer */
+                    if (n > linelen)                            /* if don't need it all */
                         n = linelen;
                     linelen -= n;
 
-                    r = bfptr->buf + bfptr->next;	/* buffer write-in position */
+                    r = bfptr->buf + bfptr->next;       /* buffer write-in position */
                     bfptr->next += n;
 
                     /* copy n characters from *cp to *r */
@@ -221,7 +204,7 @@ struct	scblk	*scptr;
                         *r++ = *cp++;
                     }
 
-                    ioptr->flg2 |= IO_DIR;			/* mark buffer dirty */
+                    ioptr->flg2 |= IO_DIR;                      /* mark buffer dirty */
                     if ( bfptr->next > bfptr->fill )
                         bfptr->fill = bfptr->next;
                 }
@@ -233,11 +216,11 @@ struct	scblk	*scptr;
                  * the buffer and write as many multiples of the buffer
                  * as possible.
                  */
-                else {								/* n==bfptr->size means ignore buffer contents */
+                else {                                                          /* n==bfptr->size means ignore buffer contents */
                     register word n,m;
 
                     fsyncio(ioptr);              /* synchronize file and buffer */
-                    bfptr->fill = 0;				/* discard contents */
+                    bfptr->fill = 0;                            /* discard contents */
 
                     n = (linelen / bfptr->size) * bfptr->size;
                     m = write(fdn, cp, n);
@@ -277,7 +260,7 @@ struct	scblk	*scptr;
     } while (recsiz > 0 && !ioerrcnt);
 
     /*
-    /	Return number of errors.
+    /   Return number of errors.
     */
     return ioerrcnt;
 }

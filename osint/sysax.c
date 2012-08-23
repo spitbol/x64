@@ -18,25 +18,25 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  SYSAX.C		Version:  01.01
-/	---------------------------------------
-/
-/	Contents:	Function zysax
+        File:  SYSAX.C          Version:  01.01
+        ---------------------------------------
+
+        Contents:       Function zysax
 */
 
 /*
-/
-/	zysax - after execution cleanup
-/
-/	Here we just indicate that further output should go to the
-/	compiler output file, as opposed to stdout from executing program.
-/
-/	Parameters:
-/	    None
-/	Returns:
-/	    Nothing
-/	Exits:
-/	    None
+
+        zysax - after execution cleanup
+
+        Here we just indicate that further output should go to the
+        compiler output file, as opposed to stdout from executing program.
+
+        Parameters:
+            None
+        Returns:
+            Nothing
+        Exits:
+            None
 */
 
 #include "port.h"

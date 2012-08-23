@@ -18,30 +18,28 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  SYSEN.C		Version:  01.02
-/	---------------------------------------
-/
-/	Contents:	Function zysen
+        File:  SYSEN.C          Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function zysen
 */
 
 /*
-/	zysen - endfile
-/
-/	endfile is an artifact from the FORTRAN days and is supposed to
-/	close a file.  However, the file may be reopened, etc.  We just
-/	close it.
-/
-/	Parameters:
-/	    WA - FCBLK pointer or 0
-/	    XR - SCBLK pointer (ENDFILE argument)
-/	Returns:
-/	    Nothing
-/	Exits:
-/	    1 - file does not exist
-/	    2 - inappropriate file
-/	    3 - i/o error
-/
-/	V1.02 29-Mar-91	Check for error after calling osclose().
+        zysen - endfile
+
+        endfile is an artifact from the FORTRAN days and is supposed to
+        close a file.  However, the file may be reopened, etc.  We just
+        close it.
+
+        Parameters:
+            WA - FCBLK pointer or 0
+            XR - SCBLK pointer (ENDFILE argument)
+        Returns:
+            Nothing
+        Exits:
+            1 - file does not exist
+            2 - inappropriate file
+            3 - i/o error
 */
 
 #include "port.h"

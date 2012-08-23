@@ -18,100 +18,100 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/  File:  SYSHS.C    Version:  01.13
-/	---------------------------------------
-/
-/	Contents:	Function zyshs
-/
-/  1.13  21-Jun-97   Changed getint() to allow real argument.
-/
-/  1.12  15-Mar-97   Added HOST(-1) calls.
-/
-/	1.11	18-May-92	Change getint() to return value as IATYPE.
-/
-/   1.10    20-Jan-92   Soften check in restorestring to just verify
-/						that scp is non-zero.  Previously, we were
-/						checking for valid sc_type word at scp, which
-/						might not be true if two adjacent string arguments
-/						were used in the host call.  The zero byte from
-/						the first arg might be clobbering the type word
-/						of the second arg.  This was the case in the
-/						Mac implementation with a HOST(16) call.
-/
-/	1.09	03-Jul-90	Add functions for checking, converting, and
-/						restoring string arguments.  The technique
-/						of producing C-style strings by storing a zero
-/						beyond the end of a SPITBOL string fails when
-/						two string arguments are adjacent on the heap.
-/
-/						Storing a zero after the first string will bash
-/						the type word of the second string, and the
-/						subsequent conversion of the second string will fail.
-/
-/						To overcome this, we check all argument types first,
-/						and then convert strings without checking type words.
-/						If a sub-function contains both integer and string
-/						arguments, convert the integers first.
-/
-/	1.08	23-Jun-90	Add additional argument to HOST(1,"cmd","path")
-/						for MS-DOS hosts.
-/
-/	1.07	21-Nov-89	Add support for 386-specific hosts
-/
-/	1.06	21-Sep-88	Added fourth and fifth arguments to call.
-/
-/	1.05	04-Mar-88	Call save0() in swcinp.c to make sure fd 0
-/				properly connected prior to HOST(1,"cmd").
-/
-/
+   File:  SYSHS.C    Version:  01.13
+        ---------------------------------------
+
+        Contents:       Function zyshs
+
+   1.13  21-Jun-97   Changed getint() to allow real argument.
+
+   1.12  15-Mar-97   Added HOST(-1) calls.
+
+        1.11    18-May-92       Change getint() to return value as IATYPE.
+
+    1.10    20-Jan-92   Soften check in restorestring to just verify
+                                                that scp is non-zero.  Previously, we were
+                                                checking for valid sc_type word at scp, which
+                                                might not be true if two adjacent string arguments
+                                                were used in the host call.  The zero byte from
+                                                the first arg might be clobbering the type word
+                                                of the second arg.  This was the case in the
+                                                Mac implementation with a HOST(16) call.
+
+        1.09    03-Jul-90       Add functions for checking, converting, and
+                                                restoring string arguments.  The technique
+                                                of producing C-style strings by storing a zero
+                                                beyond the end of a SPITBOL string fails when
+                                                two string arguments are adjacent on the heap.
+
+                                                Storing a zero after the first string will bash
+                                                the type word of the second string, and the
+                                                subsequent conversion of the second string will fail.
+
+                                                To overcome this, we check all argument types first,
+                                                and then convert strings without checking type words.
+                                                If a sub-function contains both integer and string
+                                                arguments, convert the integers first.
+
+        1.08    23-Jun-90       Add additional argument to HOST(1,"cmd","path")
+                                                for MS-DOS hosts.
+
+        1.07    21-Nov-89       Add support for 386-specific hosts
+
+        1.06    21-Sep-88       Added fourth and fifth arguments to call.
+
+        1.05    04-Mar-88       Call save0() in swcinp.c to make sure fd 0
+                                properly connected prior to HOST(1,"cmd").
+
+
 */
 
 /*
-/	zyshs - host specific functions
-/
-/	zyshs is the catch-all function in the interface.  Any actions that
-/	are host specific should be placed here.
-/
-/	zyshs determines what function to preformed by examining the value
-/	of argument 1.  Current functions:
-/
-/	HOST()
-/		returns the host string identifying the host environment
-/
-/	HOST( 0 )
-/		returns -u argument from command line
-/
-/	HOST( 1, "command" )
-/		executes 2nd argument as a Unix command
-/
-/	HOST( 2, n )
-/		returns command line argument "n"
-/
-/	HOST( 3 )
-/		returns the command count
-/
-/	HOST( 4, "v" )
-/		returns the value of environment variable "v"
-/
-/	Other HOST functions may be provided by system specific modules.
-/
-/	Parameters:
-/	    WA - argument 1
-/	    XL - argument 2
-/	    XR - argument 3
-/	    WB - argument 4
-/	    WC - argument 5
-/	Returns:
-/	    See exits
-/	Exits:
-/	    1 - erroneous argument
-/	    2 - execution error
-/	    3 - pointer to SCBLK or 0 in XL
-/	    4 - return NULL string
-/	    5 - return result in XR
-/	    6 - cause statement failure
-/	    7 - return string in XL, length in WA (may be 0)
-/	    8 - return copy of result in XR
+        zyshs - host specific functions
+
+        zyshs is the catch-all function in the interface.  Any actions that
+        are host specific should be placed here.
+
+        zyshs determines what function to preformed by examining the value
+        of argument 1.  Current functions:
+
+        HOST()
+                returns the host string identifying the host environment
+
+        HOST( 0 )
+                returns -u argument from command line
+
+        HOST( 1, "command" )
+                executes 2nd argument as a Unix command
+
+        HOST( 2, n )
+                returns command line argument "n"
+
+        HOST( 3 )
+                returns the command count
+
+        HOST( 4, "v" )
+                returns the value of environment variable "v"
+
+        Other HOST functions may be provided by system specific modules.
+
+        Parameters:
+            WA - argument 1
+            XL - argument 2
+            XR - argument 3
+            WB - argument 4
+            WC - argument 5
+        Returns:
+            See exits
+        Exits:
+            1 - erroneous argument
+            2 - execution error
+            3 - pointer to SCBLK or 0 in XL
+            4 - return NULL string
+            5 - return result in XR
+            6 - cause statement failure
+            7 - return string in XL, length in WA (may be 0)
+            8 - return copy of result in XR
 */
 
 #include "port.h"
@@ -144,8 +144,8 @@ check2str()
 
 /*
  *  savestr - convert an scblk to a valid C string.  Returns pointer to
- *		start of string, or 0 if fail.  The char replaced by the
- *		'\0' terminator is returned in *cp.
+ *              start of string, or 0 if fail.  The char replaced by the
+ *              '\0' terminator is returned in *cp.
  */
 char *
 savestr(scp,cp)
@@ -247,18 +247,18 @@ IATYPE *pword;
         i = scp->len;
         p = scp->str;
         result = (IATYPE)0;
-        while (i && *p == ' ') {		/* remove leading blanks */
+        while (i && *p == ' ') {                /* remove leading blanks */
             p++;
             i--;
         }
-        if (i && (*p == '+' || *p == '-')) {	/* process optional sign char */
+        if (i && (*p == '+' || *p == '-')) {    /* process optional sign char */
             if (*p++ == '-')
                 sign = -1;
             i--;
         }
         while (i--) {
             c = *p++;
-            if ( c < '0' || c > '9' ) {	/* not handling trailing blanks */
+            if ( c < '0' || c > '9' ) { /* not handling trailing blanks */
                 return 0;
             }
             result = result * 10 + (c - '0');
@@ -272,8 +272,8 @@ IATYPE *pword;
 
 zyshs()
 {
-    word	retval;
-    IATYPE	val;
+    word        retval;
+    IATYPE      val;
     register struct icblk *icp = WA (struct icblk *);
     register struct scblk *scp;
 
@@ -317,9 +317,9 @@ zyshs()
                     pTICBLK->val = (IATYPE)topmem;
                     return EXIT_8;
                 case 4:
-                    pTICBLK->val = stacksiz - 400;	/* safety margin */
+                    pTICBLK->val = stacksiz - 400;      /* safety margin */
                     return EXIT_8;
-                case 5:							/* stack in use */
+                case 5:                                                 /* stack in use */
 #if WINNT | LINUX
                     pTICBLK->val = stacksiz - (XS(IATYPE) - (IATYPE)lowsp);
 #else
@@ -367,7 +367,7 @@ zyshs()
             if (!check2str())
                 return EXIT_1;
             save2str(&cmd,&path);
-            save0();		/* made sure fd 0 OK	*/
+            save0();            /* made sure fd 0 OK    */
             pTICBLK->val = dosys( cmd, path );
 
             pTICBLK->typ = TYPE_ICL;
@@ -412,7 +412,7 @@ zyshs()
 
             /*
             / HOST( 4, "env-var" ) returns the value of "env-var" from
-            /	    the environment.
+            /       the environment.
             */
         case 4:
             scp = XL( struct scblk * );
@@ -433,7 +433,7 @@ zyshs()
         */
 #if HOST386
         return host386( (int)val );
-#endif					/* HOST386 */
+#endif                                  /* HOST386 */
 
         /*
         /   Here if first argument wasn't an integer or was an illegal value.

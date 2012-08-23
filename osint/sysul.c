@@ -18,20 +18,20 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  SYSUL.C		Version:  01.00
-/	---------------------------------------
-/
-/	Contents:	Function zysul
-/
+        File:  SYSUL.C          Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function zysul
+
 */
 
 /*
-/	zysul - unload external function
-/
-/	Parameters:
-/	    XR - pointer to EFBLK
-/	Returns:
-/	    nothing
+        zysul - unload external function
+
+        Parameters:
+            XR - pointer to EFBLK
+        Returns:
+            nothing
 */
 
 #include "port.h"
@@ -41,6 +41,6 @@ zysul()
 {
 #if EXTFUN
     unldef(XR(struct efblk *));
-#endif					/* EXTFUN */
+#endif                                  /* EXTFUN */
     return NORMAL_RETURN;
 }

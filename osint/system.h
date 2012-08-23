@@ -20,7 +20,7 @@ This file is part of Macro SPITBOL.
 /* ------------------------- system.h ------------------------------- */
 
 /*
- * Define system type.
+   Define system type.
  */
 
 #define gcc32  1

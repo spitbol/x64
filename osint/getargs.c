@@ -18,20 +18,16 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  GETARGS.C		Version:  01.00
-/	---------------------------------------
-/
-/	Contents:	Function getargs
+        File:  GETARGS.C                Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function getargs
 */
 
 
 /*
-/	This module contains the switch loop that processes command
-/	line options.
-/
-/	HISTORY
-/
-/  V1.00 30-Jul-92 Split off from OSINT as a separate module.
+        This module contains the switch loop that processes command
+        line options.
 */
 #include "port.h"
 
@@ -75,8 +71,8 @@ static  char *cp;
 static char *filenamearg Params((int argc, char *argv[]));
 
 char **getargs( argc, argv )
-int		argc;
-char	*argv[];
+int             argc;
+char    *argv[];
 {
     register char **result;
 
@@ -88,17 +84,17 @@ char	*argv[];
     /
     /   spitbol is invoked as
     /
-    /	spitbol [options] [input-files]
+    /   spitbol [options] [input-files]
     /
     /   where each option string begins with a '-' (or '/' for WINNT)
     /
     /   A single '-' represents the standard file provided by the shell
     /   and is treated as an input-file or output file as appropriate.
     */
-    result = (char **)0;		/* no source file */
+    result = (char **)0;                /* no source file */
 
     for( i = 1 ; i < argc ; i++ ) {
-        cp = argv[i];			/* point to next cmd line argument	*/
+        cp = argv[i];                   /* point to next cmd line argument      */
 
         /*
          *   If this command line argument does not start with a '-
@@ -110,8 +106,8 @@ char	*argv[];
         if ( *cp != '-'  ||  !cp[1] ) {
 #endif          /* WINNT */
             if ( !result )
-                result = argv + i;	/* result -> first filename pointer	*/
-            break;		/* break out of for loop		*/
+                result = argv + i;      /* result -> first filename pointer     */
+            break;              /* break out of for loop                */
         }
 
         /*
@@ -123,35 +119,35 @@ char	*argv[];
         while( *cp )
             switch( *cp++ ) {
                 /*
-                /	-?  display option summary
+                /       -?  display option summary
                 */
             case '?':
                 prompt();
                 break;
 #if !RUNTIME
                 /*
-                /   -a	turn on all listing options except header
+                /   -a  turn on all listing options except header
                 */
             case 'a':
                 spitflag &= ~(NOLIST | NOCMPS | NOEXCS);
                 break;
 
                 /*
-                /   -b	suppress signon message when reloading save file
+                /   -b  suppress signon message when reloading save file
                 */
             case 'b':
                 spitflag |= NOBRAG;
                 break;
 
                 /*
-                /   -c	turn on compilation statistics
+                /   -c  turn on compilation statistics
                 */
             case 'c':
                 spitflag &= ~NOCMPS;
                 break;
 
                 /*
-                    /   -dnnn	set maximum size of dynamic area in bytes
+                    /   -dnnn   set maximum size of dynamic area in bytes
                     */
             case 'd':
                 cp = optnum( cp, &databts );
@@ -167,63 +163,63 @@ char	*argv[];
                 break;
 
                 /*
-                /   -f	don't fold lower case to upper case
+                /   -f  don't fold lower case to upper case
                 */
             case 'f':
                 spitflag &= ~CASFLD;
                 break;
 
                 /*
-                /   -gddd	set page length in lines  V1.08
+                /   -gddd       set page length in lines  V1.08
                 */
             case 'g':
                 cp = getnum( cp, &lnsppage );
                 break;
 
                 /*
-                /   -h	suppress version header in listing
+                /   -h  suppress version header in listing
                 */
             case 'h':
                 spitflag |= NOHEDR;
                 break;
 
                 /*
-                /   -iddd	set memory expansion increment (bytes)
+                /   -iddd       set memory expansion increment (bytes)
                 */
             case 'i':
                 cp = optnum( cp, &memincb );
                 break;
 
                 /*
-                /   -k	run inspite of compilation errors
+                /   -k  run inspite of compilation errors
                 */
             case 'k':
                 spitflag &= ~NOERRO;
                 break;
 
                 /*
-                /   -l	turn on compilation listing
+                /   -l  turn on compilation listing
                 */
             case 'l':
                 spitflag &= ~NOLIST;
                 break;
 
                 /*
-                /   -mddd	set maximum size of object in dynamic area
+                /   -mddd       set maximum size of object in dynamic area
                 */
             case 'm':
                 cp = optnum( cp, &maxsize );
                 break;
 
                 /*
-                /   -n	suppress program execution
+                /   -n  suppress program execution
                 */
             case 'n':
                 spitflag |= NOEXEC;
                 break;
 
                 /*
-                /   -o fff	set output file to fff
+                /   -o fff      set output file to fff
                 /   -o:fff & -o=fff also allowed.
                 */
             case 'o':
@@ -233,7 +229,7 @@ char	*argv[];
                 break;
 
                 /*
-                /   -p	turn on long listing format
+                /   -p  turn on long listing format
                 */
             case 'p':
                 spitflag |= LNGLST;
@@ -241,14 +237,14 @@ char	*argv[];
                 break;
 
                 /*
-                /   -r	read INPUT from source program file
+                /   -r  read INPUT from source program file
                 */
             case 'r':
                 readshell0 = 0;
                 break;
 
                 /*
-                /   -s	set stack size in bytes
+                /   -s  set stack size in bytes
                 */
             case 's': {
                 cp = optnum( cp, &stacksiz );
@@ -258,12 +254,12 @@ char	*argv[];
             break;
 
             /*
-            /   -tddd	set line width in characters  V1.08
+            /   -tddd   set line width in characters  V1.08
             */
             case 't':
                 cp = getnum( cp, &pagewdth );
                 break;
-#endif					/* !RUNTIME */
+#endif                                  /* !RUNTIME */
 
                 /*
                 /   -T fff  write TERMINAL output to file fff
@@ -287,28 +283,28 @@ char	*argv[];
             break;
 
             /*
-            /   -u aaa	set user argument accessible via host()
+            /   -u aaa  set user argument accessible via host()
             */
             case 'u':
                 uarg = argv[++i];
                 if ( i == argc )
-                    goto badopt;	/* V1.08 */
+                    goto badopt;        /* V1.08 */
                 break;
 
 
 #if !RUNTIME
 #if EXECFILE
                 /*
-                /   -w	write executable module after compilation
+                /   -w  write executable module after compilation
                 */
             case 'w':
                 spitflag |= WRTEXE;
                 break;
 
-#endif					/* EXECFILE */
+#endif                                  /* EXECFILE */
 
                 /*
-                /   -x	print execution statistics
+                /   -x  print execution statistics
                 */
             case 'x':
                 spitflag &= ~NOEXCS;
@@ -316,24 +312,24 @@ char	*argv[];
 
 #if SAVEFILE
                 /*
-                /   -y	write executable module after compilation
+                /   -y  write executable module after compilation
                 */
             case 'y':
                 spitflag |= WRTSAV;
                 break;
-#endif					/* SAVEFILE */
+#endif                                  /* SAVEFILE */
 
                 /*
-                /   -z	turn on standard listing options
+                /   -z  turn on standard listing options
                 */
             case 'z':
                 spitflag |= STDLST;
                 spitflag &= ~NOLIST;
                 break;
-#endif					/* !RUNTIME */
+#endif                                  /* !RUNTIME */
 
                 /*
-                / -# fff	associate file fff with channel #
+                / -# fff        associate file fff with channel #
                 */
             case '0':
             case '1':
@@ -363,11 +359,11 @@ badopt:
                 write( STDERRFD, "Illegal option -", 17 );
                 write( STDERRFD,  (cp - 1), 1 );
                 wrterr( "?" );
-                __exit(1);			/* V1.08 */
+                __exit(1);                      /* V1.08 */
             }
     }
 
-    inpcnt = argc - i;		/* inpcnt =  number of filenames	*/
+    inpcnt = argc - i;          /* inpcnt =  number of filenames        */
 
     /*
     /   Establish command counter for use by HOST(3) function
@@ -378,7 +374,7 @@ badopt:
 
 /* Collect filename following option */
 static char *filenamearg( argc, argv )
-int		argc;
+int             argc;
 char    *argv[];
 {
     char *result;
@@ -409,23 +405,23 @@ char    *argv[];
 
 
 /*
-/    getnum() converts an ASCII string to an integer AND returns a pointer
-/    to the character following the last valid digit.
-/
-/    Parameters:
-/		cp	pointer to character string
-/		ip	pointer to word receiving converted result
-/    Returns:
-/		Pointer to character following last valid digit in input string
-/    Side Effects:
-/		Modifies contents of integer pointed to by ip.
+     getnum() converts an ASCII string to an integer AND returns a pointer
+     to the character following the last valid digit.
+
+     Parameters:
+                cp      pointer to character string
+                ip      pointer to word receiving converted result
+     Returns:
+                Pointer to character following last valid digit in input string
+     Side Effects:
+                Modifies contents of integer pointed to by ip.
 */
 
-char	*getnum( cp, ip )
-char	*cp;
-uword	*ip;
+char    *getnum( cp, ip )
+char    *cp;
+uword   *ip;
 {
-    word	result = 0;
+    word        result = 0;
 
     while( *cp >= '0'  &&  *cp <= '9' )
         result = result * 10 + *cp++ - '0';
@@ -436,22 +432,22 @@ uword	*ip;
 
 
 /*
-/   optnum() converts an ASCII string to an integer AND returns a pointer
-/   to the character following the last valid digit.  optnum() is similar
-/   to getnum() except that optnum accepts a trailing 'k' or 'm' to indicate
-/   that the value should be scaled in units of 1,024 or 1,048,576.
-/
-/   Parameters:
-/		cp	pointer to character string
-/		ip	pointer to word receiving converted result
-/   Returns:
-/		Pointer to character following last valid digit in input string,
-/		including a trailing k.
-/   Side Effects:
-/		Modifies contents of integer pointed to by ip.
+    optnum() converts an ASCII string to an integer AND returns a pointer
+    to the character following the last valid digit.  optnum() is similar
+    to getnum() except that optnum accepts a trailing 'k' or 'm' to indicate
+    that the value should be scaled in units of 1,024 or 1,048,576.
+
+    Parameters:
+                cp      pointer to character string
+                ip      pointer to word receiving converted result
+    Returns:
+                Pointer to character following last valid digit in input string,
+                including a trailing k.
+    Side Effects:
+                Modifies contents of integer pointed to by ip.
 */
 
-char	*optnum( cp, ip )
+char    *optnum( cp, ip )
 char *cp;
 uword *ip;
 {

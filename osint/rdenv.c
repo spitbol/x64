@@ -18,33 +18,33 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  RDENV.C		Version:  01.02
-/	---------------------------------------
-/
-/	Contents:	Function rdenv
+        File:  RDENV.C          Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function rdenv
 */
 
 /*
-/   rdenv( varname, result )
-/
-/   rdenv() reads the environment variable named "varname", and if it can
-/   be read, puts its value in "result.
-/
-/   Parameters:
-/	varname	pointer to character string containing variable name
-/	result	pointer to character string to receive result
-/   Returns:
-/	0 if successful / -1 on failure
-/
-/	v1.02 02-Jan-91 Changed rdenv to use cpys2sc instead of mystrncpy.
-/					Add private getenv().
+    rdenv( varname, result )
+
+    rdenv() reads the environment variable named "varname", and if it can
+    be read, puts its value in "result.
+
+    Parameters:
+        varname pointer to character string containing variable name
+        result  pointer to character string to receive result
+    Returns:
+        0 if successful / -1 on failure
+
+        v1.02 02-Jan-91 Changed rdenv to use cpys2sc instead of mystrncpy.
+                                        Add private getenv().
 */
 
 #include "port.h"
 
 /*
-/   Find environment variable vq of length vn.  Return
-/   pointer to value (just past '='), or 0 if not found.
+    Find environment variable vq of length vn.  Return
+    pointer to value (just past '='), or 0 if not found.
 */
 char *findenv( vq, vn )
 char *vq;
@@ -55,7 +55,7 @@ int  vn;
     char *p;
 
     savech = make_c_str(&vq[vn]);
-    p = (char *)getenv(vq);			/* use library lookup routine */
+    p = (char *)getenv(vq);                     /* use library lookup routine */
     unmake_c_str(&vq[vn], savech);
     return p;
 #endif

@@ -92,4 +92,4 @@ double ra;
     return -ra;
 }
 
-#endif					/* (FLOAT & !FLTHDWR) | (EXTFUN & (SUN4 | AIX)) */
+#endif                                  /* (FLOAT & !FLTHDWR) | (EXTFUN & (SUN4 | AIX)) */

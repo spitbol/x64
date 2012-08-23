@@ -1,0 +1,23 @@
+
+  &stlimit = 1000000
+  &anchor = 1
+next
+ line = trim(input) 	:f(done)
+ lines = lines + 1
+ line pos(0) any('*;#') 	:f(notcomment)
+ comments = comments + 1	:s(next)
+notcomment
+ &anchor = 0
+ line '.long' = 'dd'
+ line '.byte' = 'db'
+ line ' ptr ' = ' '
+ &anchor = 1
+ line ? pos(0) break(';#') . text  any(';#') rem . rest  :f(copy)
+ internals = internals + 1
+ line = text
+copy
+ output = line :(next)
+done
+ terminal = 'internal ' internals
+ terminal = 'lines: ' lines '  comments: ' comments
+end

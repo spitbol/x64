@@ -18,38 +18,28 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  FLUSH.C		Version:  01.02
-/	---------------------------------------
-/
-/	Contents:	Function flush
-/
-/   V1.02 05-Feb-91	Flush only if dirty.  Adjust file position in buffer.
-/   v1.01		Ignore short count writes if MS-DOS and character device.
-*/
+    flush( ioptr )
 
-/*
-/   flush( ioptr )
-/
-/   flush() writes out any characters in the buffer associated with the
-/   passed IOBLK.
-/
-/   Parameters:
-/	ioptr	pointer to IOBLK representing file
-/   Returns:
-/	0 if flush successful / number of I/O errors
+    flush() writes out any characters in the buffer associated with the
+    passed IOBLK.
+
+    Parameters:
+        ioptr   pointer to IOBLK representing file
+    Returns:
+        0 if flush successful / number of I/O errors
 */
 
 #include "port.h"
 
 int flush( ioptr )
-struct	ioblk	*ioptr;
+struct  ioblk   *ioptr;
 {
-    register struct bfblk	*bfptr = MK_MP(ioptr->bfb, struct bfblk *);
-    register int	ioerrcnt = 0;
-    register word	n;
+    register struct bfblk       *bfptr = MK_MP(ioptr->bfb, struct bfblk *);
+    register int        ioerrcnt = 0;
+    register word       n;
 
-    if ( bfptr ) {							/* if buffer */
-        if ( ioptr->flg2 & IO_DIR ) {		/* if dirty */
+    if ( bfptr ) {                                                      /* if buffer */
+        if ( ioptr->flg2 & IO_DIR ) {           /* if dirty */
             ioerrcnt += fsyncio(ioptr);     /* synchronize file and buffer */
             if ( bfptr->fill ) {
                 n = write(ioptr->fdn, bfptr->buf, bfptr->fill);
@@ -66,8 +56,8 @@ struct	ioblk	*ioptr;
             }
             ioptr->flg2 &= ~IO_DIR;
         }
-        bfptr->offset += bfptr->fill;		/* advance file position */
-        bfptr->next = bfptr->fill = 0;		/* empty the buffer */
+        bfptr->offset += bfptr->fill;           /* advance file position */
+        bfptr->next = bfptr->fill = 0;          /* empty the buffer */
     }
     return ioerrcnt;
 }
@@ -85,7 +75,7 @@ struct	ioblk	*ioptr;
  * Returns 0 if no error, 1 if error.
  */
 int fsyncio( ioptr )
-struct	ioblk	*ioptr;
+struct  ioblk   *ioptr;
 {
     register struct bfblk *bfptr = MK_MP(ioptr->bfb, struct bfblk *);
     FILEPOS n;
@@ -96,7 +86,7 @@ struct	ioblk	*ioptr;
             if (n >= 0)
                 bfptr->curpos = n;
             else
-                return 1;			/* I/O error */
+                return 1;                       /* I/O error */
         }
     }
     return 0;
