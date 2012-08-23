@@ -18,10 +18,10 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  PROMPT.C         Version:  01.00
-/       ---------------------------------------
-/
-/       Contents:       Function prompt
+        File:  PROMPT.C         Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function prompt
 */
 
 #include "port.h"

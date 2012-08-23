@@ -18,46 +18,46 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  OSREAD.C         Version:  01.08
-/       ---------------------------------------
-/
-/       Contents:       Function osread
+        File:  OSREAD.C         Version:  01.08
+        ---------------------------------------
+
+        Contents:       Function osread
 */
 
 /*
-/   osread( mode, recsiz, ioptr, scptr )
-/
-/   osread()  reads the next record from the input file associated with
-/   the passed IOBLK into the passed SCBLK.  mode determines whether the
-/   read should be line or raw mode.
-/
-/       Line mode records are teminated with a new-line character (the
-/       new-line is not put in the scblk though).
-/
-/       Raw mode records are simply the next recsiz characters.
-/
-/   Parameters:
-/       mode    1=line mode / 0=raw mode
-/       recsiz  line mode:  max length of record to be read
-/               raw mode:   number of characters to be read
-/       ioptr   pointer to IOBLK associated with input file
-/       scptr   pointer to SCBLK to receive input record
-/   Returns:
-/       >0      length of record read
-/       -1      EOF
-/       -2      I/O error
-/
-/       V1.08   01-Aug-93       Add IO_EOT flag to ignore EOT char in DOS-mode
-/                                                text files.
-/       V1.07   01-Feb-93       Change definition of mode argument.
-/       V1.06   05-Feb-91       Change for read/write files.
-/       V1.05   29-Nov-89       Terminate host screen operation if HOST386.
-/       V1.04   05-Mar-88       Changes for Definicon and carriage return/
-/                                               line feed terminated records.
-/                                               Also modified code so that an end of file
-/                                               in a record with no record terminator returns
-/                                               that record, rather than an I/O error.
-/
+    osread( mode, recsiz, ioptr, scptr )
+
+    osread()  reads the next record from the input file associated with
+    the passed IOBLK into the passed SCBLK.  mode determines whether the
+    read should be line or raw mode.
+
+        Line mode records are teminated with a new-line character (the
+        new-line is not put in the scblk though).
+
+        Raw mode records are simply the next recsiz characters.
+
+    Parameters:
+        mode    1=line mode / 0=raw mode
+        recsiz  line mode:  max length of record to be read
+                raw mode:   number of characters to be read
+        ioptr   pointer to IOBLK associated with input file
+        scptr   pointer to SCBLK to receive input record
+    Returns:
+        >0      length of record read
+        -1      EOF
+        -2      I/O error
+
+        V1.08   01-Aug-93       Add IO_EOT flag to ignore EOT char in DOS-mode
+                                                 text files.
+        V1.07   01-Feb-93       Change definition of mode argument.
+        V1.06   05-Feb-91       Change for read/write files.
+        V1.05   29-Nov-89       Terminate host screen operation if HOST386.
+        V1.04   05-Mar-88       Changes for Definicon and carriage return/
+                                                line feed terminated records.
+                                                Also modified code so that an end of file
+                                                in a record with no record terminator returns
+                                                that record, rather than an I/O error.
+
 */
 
 #include "port.h"

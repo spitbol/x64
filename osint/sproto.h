@@ -18,11 +18,11 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SPROTO.H Version 1.02
-/       ----------------------------
-/
-/       Function prototypes for argument type checking.
-/       This files are unique to SPITBOL.
+        File:  SPROTO.H Version 1.02
+        ----------------------------
+
+        Function prototypes for argument type checking.
+        This files are unique to SPITBOL.
 */
 
 #ifndef _sproto_

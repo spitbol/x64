@@ -18,23 +18,23 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  TESTTY.C         Version:  01.04
-/       ---------------------------------------
-/
-/       Contents:       Function testty
-/                       Function ttyraw
+        File:  TESTTY.C         Version:  01.04
+        ---------------------------------------
+
+        Contents:       Function testty
+                        Function ttyraw
 */
 
 /*
-/   testty( fd )
-/
-/   testty() determines whether or not a file descriptor represents a
-/   teletype (non-block) device.
-/
-/   Parameters:
-/       fd      file descriptor to test
-/   Returns:
-/       0 if fd is a tty / -1 if fd is not a tty
+    testty( fd )
+
+    testty() determines whether or not a file descriptor represents a
+    teletype (non-block) device.
+
+    Parameters:
+        fd      file descriptor to test
+    Returns:
+        0 if fd is a tty / -1 if fd is not a tty
 */
 #include "port.h"
 
@@ -70,16 +70,16 @@ int     fd;
 
 
 /*
-/    ttyraw( fd, flag )
-/
-/    ttyraw() sets or clears the raw input mode in an teletype device.
-/
-/    Parameters:
-/       fd      file descriptor
-/       flag    0 to clear raw mode / non-zero to set raw mode
-/    Returns:
-/       none
-/
+     ttyraw( fd, flag )
+
+     ttyraw() sets or clears the raw input mode in an teletype device.
+
+     Parameters:
+        fd      file descriptor
+        flag    0 to clear raw mode / non-zero to set raw mode
+     Returns:
+        none
+
 */
 
 void ttyraw( fd, flag )

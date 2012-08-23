@@ -18,24 +18,24 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSDT.C          Version:  01.06
-/       ---------------------------------------
-/
-/       Contents:       Function zysdt
-/                       Function conv
+        File:  SYSDT.C          Version:  01.06
+        ---------------------------------------
+
+        Contents:       Function zysdt
+                        Function conv
 */
 
 /*
-/       zysdt - get current date
-/
-/       zysdt is called when executing a Spitbol date function.
-/
-/       Parameters:
-/       XR - optional integer argument describing date format desired
-/       Returns:
-/           XL - pointer to SCBLK containing date string
-/       Exits:
-/           None
+        zysdt - get current date
+
+        zysdt is called when executing a Spitbol date function.
+
+        Parameters:
+        XR - optional integer argument describing date format desired
+        Returns:
+            XL - pointer to SCBLK containing date string
+        Exits:
+            None
 */
 
 #include "port.h"

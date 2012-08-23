@@ -18,33 +18,33 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:   SAVE.H           Version 1.01
-/       -------------------------------------
-/
-/       This header file provides information for writing the impure
-/       portions of SPITBOL's data segments to a save file.
-/
-/ v1.01 3-Jun-91 MBE
-/       Added memincb, maxsize, readshell0 & uarg to header, and
-/       additional argument to specify whether these values should
-/       override existing values, as would be the case for the
-/       Intel MS-DOS version, where Save files are used to simulate
-/       Exec files.
-/
+        File:   SAVE.H           Version 1.01
+        -------------------------------------
+
+        This header file provides information for writing the impure
+        portions of SPITBOL's data segments to a save file.
+
+  v1.01 3-Jun-91 MBE
+        Added memincb, maxsize, readshell0 & uarg to header, and
+        additional argument to specify whether these values should
+        override existing values, as would be the case for the
+        Intel MS-DOS version, where Save files are used to simulate
+        Exec files.
+
 */
 #if SAVEFILE
 /*
- * +--------2--------+--------2--------+---------4---------+
- * |                 |                 |                   |
- * |     IA size     |    WORD size    | Save File Version |
- * |                 |                 |                   |
- * +-----------------+-----------------+-------------------+
+   +--------2--------+--------2--------+---------4---------+
+   |                 |                 |                   |
+   |     IA size     |    WORD size    | Save File Version |
+   |                 |                 |                   |
+   +-----------------+-----------------+-------------------+
  *
- * IA (integer accumulator) and Minimal Word Size:
- *  0 - 16 bits
- *  1 - 32 bits
- *  2 - 64 bits
- *  3 - 128 bits
+   IA (integer accumulator) and Minimal Word Size:
+    0 - 16 bits
+    1 - 32 bits
+    2 - 64 bits
+    3 - 128 bits
  */
 #define VWBSHFT     4
 #define VIASHFT     (VWBSHFT+2)

@@ -18,16 +18,16 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  WRTAOUT.C        Version:  01.02
-/       ---------------------------------------
-/
-/       Contents:       Function openaout
-/                       Function wrtaout
-/                       Function seekaout
-/                       Function closeaout
-/
-/   These functions are used to write an executable "a.out" file containing
-/   the currently executing spitbol program.
+        File:  WRTAOUT.C        Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function openaout
+                        Function wrtaout
+                        Function seekaout
+                        Function closeaout
+
+    These functions are used to write an executable "a.out" file containing
+    the currently executing spitbol program.
 */
 
 #include "port.h"
@@ -46,14 +46,14 @@ This file is part of Macro SPITBOL.
 #if SAVEFILE | EXECFILE
 
 /*  openaout(file, tmpfnbuf, exe)
-/
-/   Parameters:
-/       file = file name
-/       tmpfnbuf = buffer where we can build temp file name
-/       exe = IO_EXECUTABLE to mark file as executable, else 0
-/   Returns:
-/       0       successful. Variable aoutfd set to file descriptor.
-/       -1      create error for "a.out"
+
+    Parameters:
+        file = file name
+        tmpfnbuf = buffer where we can build temp file name
+        exe = IO_EXECUTABLE to mark file as executable, else 0
+    Returns:
+        0       successful. Variable aoutfd set to file descriptor.
+        -1      create error for "a.out"
 */
 int openaout(fn, tmpfnbuf, exe)
 char *fn;
@@ -88,16 +88,16 @@ int     exe;
 }
 
 /*
-/   wrtaout( startadr, size )
-/
-/   Parameters:
-/       startadr        FAR char pointer to first address to write
-/       size            number of bytes to write
-/   Returns:
-/       0       successful
-/       -2      error writing memory to a.out
-/
-/   Write data to a.out file.
+    wrtaout( startadr, size )
+
+    Parameters:
+        startadr        FAR char pointer to first address to write
+        size            number of bytes to write
+    Returns:
+        0       successful
+        -2      error writing memory to a.out
+
+    Write data to a.out file.
 */
 int wrtaout( startadr, size )
 unsigned char FAR *startadr;
@@ -112,16 +112,16 @@ uword size;
 
 #if EXECFILE
 /*
-/   seekaout( pagesize )
-/
-/   Parameters:
-/       pagesize        power of two (e.g. 1024)
-/   Returns:
-/       0       successful
-/  -3 LSEEK to pagesize-1 file position failed
-/       -4      forced write to pagesize boundary failed
-/
-/   Seek and extend file to power of two boundary.
+    seekaout( pagesize )
+
+    Parameters:
+        pagesize        power of two (e.g. 1024)
+    Returns:
+        0       successful
+   -3 LSEEK to pagesize-1 file position failed
+        -4      forced write to pagesize boundary failed
+
+    Seek and extend file to power of two boundary.
 */
 
 int seekaout( pagesize )
@@ -151,14 +151,14 @@ long pagesize;
 
 
 /*
-/   closeaout(filename)
-/
-/   Parameters
-/       filename
-/   Returns:
-/       none
-/
-/   Close "a.out" file and return.
+    closeaout(filename)
+
+    Parameters
+        filename
+    Returns:
+        none
+
+    Close "a.out" file and return.
 */
 
 word closeaout(fn, tmpfnbuf, errflag)
@@ -181,17 +181,17 @@ word errflag;
 
 #if SAVEFILE
 /*
-/   rdaout( fd, startadr, size ) - read in section of file created by wrtaout()
-/
-/   Parameters:
-/       fd              file descriptor
-/       startadr        char pointer to first address to read
-/       size            number of bytes to read
-/   Returns:
-/       0       successful
-/       -2      error reading from a.out
-/
-/   Read data from .spx file.
+    rdaout( fd, startadr, size ) - read in section of file created by wrtaout()
+
+    Parameters:
+        fd              file descriptor
+        startadr        char pointer to first address to read
+        size            number of bytes to read
+    Returns:
+        0       successful
+        -2      error reading from a.out
+
+    Read data from .spx file.
 */
 int rdaout( fd, startadr, size )
 int     fd;

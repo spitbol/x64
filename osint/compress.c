@@ -18,31 +18,31 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  COMPRESS.C       Version:  01.01
-/       ---------------------------------------
-/
-/       Contents:       Functions doexpand, docompress
-/                       Functions compress, expand
-/
-/       These functions are used to compress and expand a save file.
-/
-/       LZW data compression taken from an article by Mark R. Nelson in
-/       the October 1989 Dr. Dobbs magazine.
-/       Modified to flush table when full.
-/
-/       Note on memory allocation.  Both compression and decompression require
-/       substantial tables.  Because a program is garbage collected prior to
-/       being saved, there may exist a substantial block of memory between
-/       dnamp and topmem.  The docompress and doexpand routines accept a pointer
-/       to this block from the caller.  If the block provided is not large enough,
-/       we call sbrk to extend the block as needed.  This additional memory is
-/       released after the expansion/compression is completed.
-/
-/       IT IS ASSUMED THAT THE MEMORY PROVIDED BY THE CALLER IS THE LAST
-/       ALLOCATED BLOCK ON THE HEAP, AND THAT ADDITIONAL MEMORY PROVIDED
-/       BY SBRK() WILL BE CONTIGUOUS WITH THIS MEMORY.
-/
-/   v1.01 02-26-92      Correct input_code() to fill with zeros at end of file.
+        File:  COMPRESS.C       Version:  01.01
+        ---------------------------------------
+
+        Contents:       Functions doexpand, docompress
+                        Functions compress, expand
+
+        These functions are used to compress and expand a save file.
+
+        LZW data compression taken from an article by Mark R. Nelson in
+        the October 1989 Dr. Dobbs magazine.
+        Modified to flush table when full.
+
+        Note on memory allocation.  Both compression and decompression require
+        substantial tables.  Because a program is garbage collected prior to
+        being saved, there may exist a substantial block of memory between
+        dnamp and topmem.  The docompress and doexpand routines accept a pointer
+        to this block from the caller.  If the block provided is not large enough,
+        we call sbrk to extend the block as needed.  This additional memory is
+        released after the expansion/compression is completed.
+
+        IT IS ASSUMED THAT THE MEMORY PROVIDED BY THE CALLER IS THE LAST
+        ALLOCATED BLOCK ON THE HEAP, AND THAT ADDITIONAL MEMORY PROVIDED
+        BY SBRK() WILL BE CONTIGUOUS WITH THIS MEMORY.
+
+    v1.01 02-26-92      Correct input_code() to fill with zeros at end of file.
 */
 
 
@@ -142,7 +142,7 @@ uword size;
 
 
 /*
-/       The following two routines are used to output variable length codes.
+        The following two routines are used to output variable length codes.
 */
 static unsigned int input_code(fd)
 word fd;
@@ -195,9 +195,9 @@ unsigned int code;
 
 
 /*
-/       This routine simple decodes a string from the string table, storing
-/       it in a buffer.  The buffer can then be output in reverse order by
-/       the expansion program.
+        This routine simple decodes a string from the string table, storing
+        it in a buffer.  The buffer can then be output in reverse order by
+        the expansion program.
 */
 static unsigned char *decode_string(buffer, code)
 unsigned char *buffer;
@@ -226,18 +226,18 @@ unsigned int code;
 
 
 /*
-/   expand( fd, startadr, size ) - read in section of file created by wrtaout()
-/                                                                       with optional decompression.
-/
-/   Parameters:
-/       fd              file descriptor
-/       startadr        char pointer to first address to read
-/       size            number of bytes to read
-/   Returns:
-/       0       successful
-/       -2      error reading from a.out
-/
-/   Read data from .spx file.
+    expand( fd, startadr, size ) - read in section of file created by wrtaout()
+                                                                        with optional decompression.
+
+    Parameters:
+        fd              file descriptor
+        startadr        char pointer to first address to read
+        size            number of bytes to read
+    Returns:
+        0       successful
+        -2      error reading from a.out
+
+    Read data from .spx file.
 */
 int
 expand( fd, startadr, size )
@@ -315,10 +315,10 @@ uword size;
 
 
 /*
-/       This is the hashing routine.  It tries to find a match for the prefix+char
-/       string in the string table.  If it finds it, the index is returned.  If
-/       the string is not found, the first available index in the string table is
-/       returned instead.
+        This is the hashing routine.  It tries to find a match for the prefix+char
+        string in the string table.  If it finds it, the index is returned.  If
+        the string is not found, the first available index in the string table is
+        returned instead.
 */
 static int find_match(hash_prefix, hash_character)
 int hash_prefix;
@@ -347,7 +347,7 @@ unsigned int hash_character;
 
 
 /*
-/       docompress - initialize and terminate compression
+        docompress - initialize and terminate compression
 */
 int docompress(bits, freeptr, size)
 int     bits;
@@ -401,16 +401,16 @@ uword size;
 
 
 /*
-/   compress( startadr, size )
-/
-/   Parameters:
-/       startadr        char pointer to first address to write
-/       size            number of bytes to write
-/   Returns:
-/       0       successful
-/       -2      error writing memory to a.out
-/
-/   Write data to a.out file.
+    compress( startadr, size )
+
+    Parameters:
+        startadr        char pointer to first address to write
+        size            number of bytes to write
+    Returns:
+        0       successful
+        -2      error writing memory to a.out
+
+    Write data to a.out file.
 */
 int
 compress( startadr, size )

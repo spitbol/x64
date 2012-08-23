@@ -18,21 +18,21 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  OSCLOSE.C        Version:  01.00
-/       ---------------------------------------
-/
-/       Contents:       Function osclose
+        File:  OSCLOSE.C        Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function osclose
 */
 
 /*
-/   osclose( ioptr )
-/
-/   osclose() closes the file represented by the passed IOBLK.
-/
-/   Parameters:
-/       ioptr   pointer to IOBLK
-/   Returns:
-/       Number of I/O errors, should be 0.
+    osclose( ioptr )
+
+    osclose() closes the file represented by the passed IOBLK.
+
+    Parameters:
+        ioptr   pointer to IOBLK
+    Returns:
+        Number of I/O errors, should be 0.
 */
 
 #include "port.h"

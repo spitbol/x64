@@ -18,24 +18,24 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  GETHOST.C        Version:  01.05
-/       ---------------------------------------
-/
-/       Contents:       Function gethost
+        File:  GETHOST.C        Version:  01.05
+        ---------------------------------------
+
+        Contents:       Function gethost
 */
 
 /*
-/   gethost( scptr, maxlen )
-/
-/   gethost() reads the first line from the host file into the passed SCBLK.
-/
-/   Parameters:
-/       scptr   pointer to SCBLK to receive host string
-/       maxlen  max length of string area in SCBLK
-/   Returns:
-/       Nothing.
-/   Side Effects:
-/       Modifies contents of passed SCBLK (scptr).
+    gethost( scptr, maxlen )
+
+    gethost() reads the first line from the host file into the passed SCBLK.
+
+    Parameters:
+        scptr   pointer to SCBLK to receive host string
+        maxlen  max length of string area in SCBLK
+    Returns:
+        Nothing.
+    Side Effects:
+        Modifies contents of passed SCBLK (scptr).
 */
 
 #include "port.h"

@@ -19,56 +19,56 @@ This file is part of Macro SPITBOL.
 
 /*
 / File:  SYSFC.C    Version:  01.04
-/       ---------------------------------------
-/
-/       Contents:       Function zysfc
+        ---------------------------------------
+
+        Contents:       Function zysfc
 */
 
 /*
-/   zysfc - setup file control block
-/
-/   This is sort of a messy function that determines from the I/O association
-/   arguments, what type of I/O is to be done and which i/o control blocks
-/   are needed.  There are a number of possiblities:
-/
-/   For the first call to zysfc that establishes an i/o channel, allocate:
-/       fcblk & ioblk & bfblk
-/
-/   For a second, third, ... call to zysfc that establishes a different type
-/   of access to an existing i/o association, allocate:
-/       fcblk
-/
-/   For a second, third, ... call to zysfc that does specify any arguments,
-/   allocate:
-/       nothing, use existing fcblk
-/
-/   Notice that of the three blocks that are allocated, only the BFBLK
-/   has a varying size;  its size depends on the buffer size specified
-/   as an I/O argument.
-/
-/   Parameters:
-/       xl      pointer to scblk holding filearg1 (channel id)
-/       xr      pointer to scblk holding filearg2 (filename & args)
-/       wa      pointer to existing fcblk or 0
-/       wb      0/3 for input/output association
-/       wc      number of scblk pointers on stack (forced to zero by interface)
-/   Returns:
-/       wa = xl = 0     Nothing to allocate
-/       wa > 0          Size of requested fcblk
-/       wa = 0, xl > 0  Private fcblk pointer in xl
-/       wc              0/1/2 for xrblk/xnblk/static allocation request
-/
-/   Exits:
-/       1       invalid file argument
+    zysfc - setup file control block
+
+    This is sort of a messy function that determines from the I/O association
+    arguments, what type of I/O is to be done and which i/o control blocks
+    are needed.  There are a number of possiblities:
+
+    For the first call to zysfc that establishes an i/o channel, allocate:
+        fcblk & ioblk & bfblk
+
+    For a second, third, ... call to zysfc that establishes a different type
+    of access to an existing i/o association, allocate:
+        fcblk
+
+    For a second, third, ... call to zysfc that does specify any arguments,
+    allocate:
+        nothing, use existing fcblk
+
+    Notice that of the three blocks that are allocated, only the BFBLK
+    has a varying size;  its size depends on the buffer size specified
+    as an I/O argument.
+
+    Parameters:
+        xl      pointer to scblk holding filearg1 (channel id)
+        xr      pointer to scblk holding filearg2 (filename & args)
+        wa      pointer to existing fcblk or 0
+        wb      0/3 for input/output association
+        wc      number of scblk pointers on stack (forced to zero by interface)
+    Returns:
+        wa = xl = 0     Nothing to allocate
+        wa > 0          Size of requested fcblk
+        wa = 0, xl > 0  Private fcblk pointer in xl
+        wc              0/1/2 for xrblk/xnblk/static allocation request
+
+    Exits:
+        1       invalid file argument
 / 2 channel already in use
-/
-/       1.03    If called first time with null filearg2, lookup filearg1
-/               in environment block, and use filename specified there
-/               instead.
-/
+
+        1.03    If called first time with null filearg2, lookup filearg1
+                in environment block, and use filename specified there
+                instead.
+
 / 1.04  If called with filename or file descriptor and channel is
-/   already in use, take new exit number 2.
-/
+    already in use, take new exit number 2.
+
 */
 
 #include "port.h"

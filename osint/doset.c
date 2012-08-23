@@ -18,39 +18,39 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  DOSET.C          Version:  01.04
-/       ---------------------------------------
-/
-/       Contents:       Function doset
+        File:  DOSET.C          Version:  01.04
+        ---------------------------------------
+
+        Contents:       Function doset
 */
 
 /*
-/   doset( ioptr, offset, whence )
-/
-/   doset() does an "LSEEK" function call on the file described by ioptr.
-/   For output files, the buffer must be flushed before doing the LSEEK.
-/   For input file, any "unread" characters in the buffer must be seeked
-/   over as well.
-/
-/   Parameters:
-/       ioptr   pointer to IOBLK describing file
-/  offset   offset for LSEEK call
-/  whence   type of LSEEK to perform
-/   Returns:
-/  Value returned by LSEEK (-1 if error).
-/
-/   History:
-/
-/   v1.01  05-Feb-1991  Modified for read/write I/O.
-/
-/       v1.02  13-May-1992  Changed offset argument and result type from
-/                                               word to long.
-/
-/       V1.03   01-Aug-93       Add IO_EOT flag to ignore EOT char in DOS-mode
-/                                                text files.
-/
-/       V1.04   04-Jun-95       No longer have to clear IO_LF since it is only
-/                                               used on a non-seekable device like a pipe.
+    doset( ioptr, offset, whence )
+
+    doset() does an "LSEEK" function call on the file described by ioptr.
+    For output files, the buffer must be flushed before doing the LSEEK.
+    For input file, any "unread" characters in the buffer must be seeked
+    over as well.
+
+    Parameters:
+        ioptr   pointer to IOBLK describing file
+   offset   offset for LSEEK call
+   whence   type of LSEEK to perform
+    Returns:
+   Value returned by LSEEK (-1 if error).
+
+    History:
+
+    v1.01  05-Feb-1991  Modified for read/write I/O.
+
+        v1.02  13-May-1992  Changed offset argument and result type from
+                                                word to long.
+
+        V1.03   01-Aug-93       Add IO_EOT flag to ignore EOT char in DOS-mode
+                                                 text files.
+
+        V1.04   04-Jun-95       No longer have to clear IO_LF since it is only
+                                                used on a non-seekable device like a pipe.
 */
 
 #include "port.h"

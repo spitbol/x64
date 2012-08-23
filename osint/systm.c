@@ -18,27 +18,27 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSTM.C          Version:  01.03
-/       ---------------------------------------
-/
-/       Contents:       Function zystm
+        File:  SYSTM.C          Version:  01.03
+        ---------------------------------------
+
+        Contents:       Function zystm
 */
 
 /*
-/       zystm - get execution time so far
-/
-/       zystm is called to obtain the amount of execution time used so far
-/       since spitbol began execution.  The returned value is assumed to be
-/       in milliseonds, except for 16-bit implementations, which return deciseconds.
-/
-/       Parameters:
-/           None
-/       Returns:
-/           IA - execution time so far in milliseconds or deciseconds.
-/
-/       v1.03   27-May-95       For AIX, corrected use of tms_utime.  Was
-/                                               multiplying by 100 / 6.  Should be 1000/CLK_TCK.
-/                                               Was running fast by factor of 1.6.
+        zystm - get execution time so far
+
+        zystm is called to obtain the amount of execution time used so far
+        since spitbol began execution.  The returned value is assumed to be
+        in milliseonds, except for 16-bit implementations, which return deciseconds.
+
+        Parameters:
+            None
+        Returns:
+            IA - execution time so far in milliseconds or deciseconds.
+
+        v1.03   27-May-95       For AIX, corrected use of tms_utime.  Was
+                                                multiplying by 100 / 6.  Should be 1000/CLK_TCK.
+                                                Was running fast by factor of 1.6.
 */
 
 #include "port.h"

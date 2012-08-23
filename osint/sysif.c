@@ -18,38 +18,38 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/  File:  SYSIF.C    Version:  01.03
-/       -----------------------------------
-/
-/       Contents:       Function zysif
-/
-/       V1.01   01-25-90
-/                       If include file cannot be opened, restore fd 0.
-/
-/       V1.02   02-16-91
-/                       Call clrbuf() after closing the existing file.
-/
-/  V1.03 04-27-97
-/        Look for include file in the directory where SPITBOL resides, and
-/        in the directory of the first source file.
+   File:  SYSIF.C    Version:  01.03
+        -----------------------------------
+
+        Contents:       Function zysif
+
+        V1.01   01-25-90
+                        If include file cannot be opened, restore fd 0.
+
+        V1.02   02-16-91
+                        Call clrbuf() after closing the existing file.
+
+   V1.03 04-27-97
+         Look for include file in the directory where SPITBOL resides, and
+         in the directory of the first source file.
 */
 
 /*
-/       zysif - start/stop using include file
-/
-/       zysif stacks the current input stream and opens a new include file.
-/               It is also called when an EOF is read to restore the stacked file.
-/
-/       Parameters:
-/           XL   pointer to SCBLK with name of file.
-/                        0 to end use of file.
-/           XR - pointer to vacant SCBLK that will receive the name of the
-/                        file finally opened, after looking in other directories.
-/       Returns:
-/           XR - scblk filled in with full path name and length.
-/       Exits:
-/            1 - could not find file
-/
+        zysif - start/stop using include file
+
+        zysif stacks the current input stream and opens a new include file.
+                It is also called when an EOF is read to restore the stacked file.
+
+        Parameters:
+            XL   pointer to SCBLK with name of file.
+                         0 to end use of file.
+            XR - pointer to vacant SCBLK that will receive the name of the
+                         file finally opened, after looking in other directories.
+        Returns:
+            XR - scblk filled in with full path name and length.
+        Exits:
+             1 - could not find file
+
 */
 
 #include "port.h"
@@ -61,7 +61,7 @@ This file is part of Macro SPITBOL.
 static  void    openprev Params((void));
 
 /*
-/  Helper function to back up one file in the include nesting.
+   Helper function to back up one file in the include nesting.
 */
 
 static void openprev()

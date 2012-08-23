@@ -18,14 +18,14 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSPP.C          Version:  01.01
-/       ---------------------------------------
-/
-/       Contents:       Function zyspp
+        File:  SYSPP.C          Version:  01.01
+        ---------------------------------------
+
+        Contents:       Function zyspp
 */
 
 /*
-/   zyspp - obtain print parameters
+    zyspp - obtain print parameters
 */
 
 #include "port.h"

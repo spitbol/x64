@@ -19,31 +19,31 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  ARG2SCB.C        Version:  01.02
-/       ---------------------------------------
-/
-/       Contents:       Function arg2scb
-/
-/       1.02    Rewritten to append to scblk instead of copy to block.
+        File:  ARG2SCB.C        Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function arg2scb
+
+        1.02    Rewritten to append to scblk instead of copy to block.
 */
 
 /*
-/   arg2scb( req, argc, argv, scptr, maxs )
-/
-/   arg2scb() makes a copy of the req-th argument in the argv array.
-/   The copy is appended to the string in the SCBLK provided.
-/
-/   Parameters:
-/       req     number of argument to copy
-/       argc    number of arguments
-/       argv    pointer to array of pointers to strings (arguments)
-/       scptr   pointer to SCBLK to receive copy of argument
-/       maxs    maximum number of characters to append.
-/   Returns:
-/       Length of argument copied or -1 if req is out of range.
-/   Side Effects:
-/       Modifies contents of passed SCBLK (scptr).
-/       SCBLK length field is incremented.
+    arg2scb( req, argc, argv, scptr, maxs )
+
+    arg2scb() makes a copy of the req-th argument in the argv array.
+    The copy is appended to the string in the SCBLK provided.
+
+    Parameters:
+        req     number of argument to copy
+        argc    number of arguments
+        argv    pointer to array of pointers to strings (arguments)
+        scptr   pointer to SCBLK to receive copy of argument
+        maxs    maximum number of characters to append.
+    Returns:
+        Length of argument copied or -1 if req is out of range.
+    Side Effects:
+        Modifies contents of passed SCBLK (scptr).
+        SCBLK length field is incremented.
 */
 
 #include "port.h"
@@ -91,21 +91,21 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  BREAK.C          Version:  01.00
-/       ---------------------------------------
-/
-/       Contents:       Function endbrk
-/                               Function startbrk
-/                           Function rearmbrk
-/
-/       v1.00   02-Mar-91       Initial version for Unix.
-/       V1.01   16-May-91       Initial version for MS-DOS using Intel compiler.
+        File:  BREAK.C          Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function endbrk
+                                Function startbrk
+                            Function rearmbrk
+
+        v1.00   02-Mar-91       Initial version for Unix.
+        V1.01   16-May-91       Initial version for MS-DOS using Intel compiler.
 */
 
 /*
-/   startbrk( )
-/
-/   startbrk starts up the logic for trapping user keyboard interrupts.
+    startbrk( )
+
+    startbrk starts up the logic for trapping user keyboard interrupts.
 */
 
 #include "port.h"
@@ -274,31 +274,31 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  COMPRESS.C       Version:  01.01
-/       ---------------------------------------
-/
-/       Contents:       Functions doexpand, docompress
-/                       Functions compress, expand
-/
-/       These functions are used to compress and expand a save file.
-/
-/       LZW data compression taken from an article by Mark R. Nelson in
-/       the October 1989 Dr. Dobbs magazine.
-/       Modified to flush table when full.
-/
-/       Note on memory allocation.  Both compression and decompression require
-/       substantial tables.  Because a program is garbage collected prior to
-/       being saved, there may exist a substantial block of memory between
-/       dnamp and topmem.  The docompress and doexpand routines accept a pointer
-/       to this block from the caller.  If the block provided is not large enough,
-/       we call sbrk to extend the block as needed.  This additional memory is
-/       released after the expansion/compression is completed.
-/
-/       IT IS ASSUMED THAT THE MEMORY PROVIDED BY THE CALLER IS THE LAST
-/       ALLOCATED BLOCK ON THE HEAP, AND THAT ADDITIONAL MEMORY PROVIDED
-/       BY SBRK() WILL BE CONTIGUOUS WITH THIS MEMORY.
-/
-/   v1.01 02-26-92      Correct input_code() to fill with zeros at end of file.
+        File:  COMPRESS.C       Version:  01.01
+        ---------------------------------------
+
+        Contents:       Functions doexpand, docompress
+                        Functions compress, expand
+
+        These functions are used to compress and expand a save file.
+
+        LZW data compression taken from an article by Mark R. Nelson in
+        the October 1989 Dr. Dobbs magazine.
+        Modified to flush table when full.
+
+        Note on memory allocation.  Both compression and decompression require
+        substantial tables.  Because a program is garbage collected prior to
+        being saved, there may exist a substantial block of memory between
+        dnamp and topmem.  The docompress and doexpand routines accept a pointer
+        to this block from the caller.  If the block provided is not large enough,
+        we call sbrk to extend the block as needed.  This additional memory is
+        released after the expansion/compression is completed.
+
+        IT IS ASSUMED THAT THE MEMORY PROVIDED BY THE CALLER IS THE LAST
+        ALLOCATED BLOCK ON THE HEAP, AND THAT ADDITIONAL MEMORY PROVIDED
+        BY SBRK() WILL BE CONTIGUOUS WITH THIS MEMORY.
+
+    v1.01 02-26-92      Correct input_code() to fill with zeros at end of file.
 */
 
 
@@ -398,7 +398,7 @@ uword size;
 
 
 /*
-/       The following two routines are used to output variable length codes.
+        The following two routines are used to output variable length codes.
 */
 static unsigned int input_code(fd)
 word fd;
@@ -451,9 +451,9 @@ unsigned int code;
 
 
 /*
-/       This routine simple decodes a string from the string table, storing
-/       it in a buffer.  The buffer can then be output in reverse order by
-/       the expansion program.
+        This routine simple decodes a string from the string table, storing
+        it in a buffer.  The buffer can then be output in reverse order by
+        the expansion program.
 */
 static unsigned char *decode_string(buffer, code)
 unsigned char *buffer;
@@ -482,18 +482,18 @@ unsigned int code;
 
 
 /*
-/   expand( fd, startadr, size ) - read in section of file created by wrtaout()
-/                                                                       with optional decompression.
-/
-/   Parameters:
-/       fd              file descriptor
-/       startadr        char pointer to first address to read
-/       size            number of bytes to read
-/   Returns:
-/       0       successful
-/       -2      error reading from a.out
-/
-/   Read data from .spx file.
+    expand( fd, startadr, size ) - read in section of file created by wrtaout()
+                                                                        with optional decompression.
+
+    Parameters:
+        fd              file descriptor
+        startadr        char pointer to first address to read
+        size            number of bytes to read
+    Returns:
+        0       successful
+        -2      error reading from a.out
+
+    Read data from .spx file.
 */
 int
 expand( fd, startadr, size )
@@ -571,10 +571,10 @@ uword size;
 
 
 /*
-/       This is the hashing routine.  It tries to find a match for the prefix+char
-/       string in the string table.  If it finds it, the index is returned.  If
-/       the string is not found, the first available index in the string table is
-/       returned instead.
+        This is the hashing routine.  It tries to find a match for the prefix+char
+        string in the string table.  If it finds it, the index is returned.  If
+        the string is not found, the first available index in the string table is
+        returned instead.
 */
 static int find_match(hash_prefix, hash_character)
 int hash_prefix;
@@ -603,7 +603,7 @@ unsigned int hash_character;
 
 
 /*
-/       docompress - initialize and terminate compression
+        docompress - initialize and terminate compression
 */
 int docompress(bits, freeptr, size)
 int     bits;
@@ -657,16 +657,16 @@ uword size;
 
 
 /*
-/   compress( startadr, size )
-/
-/   Parameters:
-/       startadr        char pointer to first address to write
-/       size            number of bytes to write
-/   Returns:
-/       0       successful
-/       -2      error writing memory to a.out
-/
-/   Write data to a.out file.
+    compress( startadr, size )
+
+    Parameters:
+        startadr        char pointer to first address to write
+        size            number of bytes to write
+    Returns:
+        0       successful
+        -2      error writing memory to a.out
+
+    Write data to a.out file.
 */
 int
 compress( startadr, size )
@@ -752,30 +752,30 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  CPYS2SC.C        Version:  01.01
-/       ---------------------------------------
-/
-/       Contents:       Function cpy2sc
+        File:  CPYS2SC.C        Version:  01.01
+        ---------------------------------------
+
+        Contents:       Function cpy2sc
 */
 
 /*
-/   cpys2sc( cp, scptr, maxlen )
-/
-/   cpys2sc() copies a C style string pointed to by cp into the SCBLK
-/   pointed to by scptr.
-/
-/   Parameters:
-/       cp      pointer to C style string
-/       scptr   pointer to SCBLK to receive copy of string
-/       maxlen  maximum length of string area within SCBLK
-/   Returns:
-/       Nothing.
-/
-/   Side Effects:
-/       Modifies contents of passed SCBLK (scptr).
-/
-/   v1.01, 12/28/90 - pad last word in SCBLK with zeros to match behavior of ALOCS.
-/                       Eliminated termch argument,  since it was always zero.
+    cpys2sc( cp, scptr, maxlen )
+
+    cpys2sc() copies a C style string pointed to by cp into the SCBLK
+    pointed to by scptr.
+
+    Parameters:
+        cp      pointer to C style string
+        scptr   pointer to SCBLK to receive copy of string
+        maxlen  maximum length of string area within SCBLK
+    Returns:
+        Nothing.
+
+    Side Effects:
+        Modifies contents of passed SCBLK (scptr).
+
+    v1.01, 12/28/90 - pad last word in SCBLK with zeros to match behavior of ALOCS.
+                        Eliminated termch argument,  since it was always zero.
 */
 
 #include "port.h"
@@ -819,31 +819,31 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  DOEXEC.C         Version:  01.03
-/       ---------------------------------------
-/
-/       Contents:       Function doexec
+        File:  DOEXEC.C         Version:  01.03
+        ---------------------------------------
+
+        Contents:       Function doexec
 */
 
 /*
-/   doexec( scptr )
-/
-/   doexec() does an "execle" function call to invoke the shell on the
-/   command string contained in the passed SCBLK.
-/
-/   Parameters:
-/       scptr   pointer to SCBLK containing the command to execute
-/   Returns:
-/       No return if shell successfully executed
-/       Returns if could not execute command
-/
-/
-/       1.03    15-Oct-91       Intel bug in system() command.  Malloc must
-/                                               allocate out of high memory to allow spawn to
-/                                               work properly.  We set a global switch that
-/                                               tells malloc to use sbrk to satisfy memory
-/                                               request made by spawn() and system().
-/
+    doexec( scptr )
+
+    doexec() does an "execle" function call to invoke the shell on the
+    command string contained in the passed SCBLK.
+
+    Parameters:
+        scptr   pointer to SCBLK containing the command to execute
+    Returns:
+        No return if shell successfully executed
+        Returns if could not execute command
+
+
+        1.03    15-Oct-91       Intel bug in system() command.  Malloc must
+                                                allocate out of high memory to allow spawn to
+                                                work properly.  We set a global switch that
+                                                tells malloc to use sbrk to satisfy memory
+                                                request made by spawn() and system().
+
 
 */
 
@@ -925,39 +925,39 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  DOSET.C          Version:  01.04
-/       ---------------------------------------
-/
-/       Contents:       Function doset
+        File:  DOSET.C          Version:  01.04
+        ---------------------------------------
+
+        Contents:       Function doset
 */
 
 /*
-/   doset( ioptr, offset, whence )
-/
-/   doset() does an "LSEEK" function call on the file described by ioptr.
-/   For output files, the buffer must be flushed before doing the LSEEK.
-/   For input file, any "unread" characters in the buffer must be seeked
-/   over as well.
-/
-/   Parameters:
-/       ioptr   pointer to IOBLK describing file
-/  offset   offset for LSEEK call
-/  whence   type of LSEEK to perform
-/   Returns:
-/  Value returned by LSEEK (-1 if error).
-/
-/   History:
-/
-/   v1.01  05-Feb-1991  Modified for read/write I/O.
-/
-/       v1.02  13-May-1992  Changed offset argument and result type from
-/                                               word to long.
-/
-/       V1.03   01-Aug-93       Add IO_EOT flag to ignore EOT char in DOS-mode
-/                                                text files.
-/
-/       V1.04   04-Jun-95       No longer have to clear IO_LF since it is only
-/                                               used on a non-seekable device like a pipe.
+    doset( ioptr, offset, whence )
+
+    doset() does an "LSEEK" function call on the file described by ioptr.
+    For output files, the buffer must be flushed before doing the LSEEK.
+    For input file, any "unread" characters in the buffer must be seeked
+    over as well.
+
+    Parameters:
+        ioptr   pointer to IOBLK describing file
+   offset   offset for LSEEK call
+   whence   type of LSEEK to perform
+    Returns:
+   Value returned by LSEEK (-1 if error).
+
+    History:
+
+    v1.01  05-Feb-1991  Modified for read/write I/O.
+
+        v1.02  13-May-1992  Changed offset argument and result type from
+                                                word to long.
+
+        V1.03   01-Aug-93       Add IO_EOT flag to ignore EOT char in DOS-mode
+                                                 text files.
+
+        V1.04   04-Jun-95       No longer have to clear IO_LF since it is only
+                                                used on a non-seekable device like a pipe.
 */
 
 #include "port.h"
@@ -1118,37 +1118,37 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  DOSYS.C          Version:  01.04
-/       ---------------------------------------
-/
-/       Contents:       Function dosys
-/
-/       1.04    15-Oct-91       Intel bug in system() command.  Malloc must
-/                                               allocate out of high memory to allow spawn to
-/                                               work properly.  We set a global switch that
-/                                               tells malloc to use sbrk to satisfy memory
-/                                               request made by spawn() and system().
-/
-/   1.03  08-May-91 <withdrawn>.
-/
-/       1.02    23-Jun-90       Add second argument for optional path specification.
-/                               Change first argument to C-string, not SCBLK.
-/
-/       1.01    04-Mar-88       Changes for Definicon
-/
+        File:  DOSYS.C          Version:  01.04
+        ---------------------------------------
+
+        Contents:       Function dosys
+
+        1.04    15-Oct-91       Intel bug in system() command.  Malloc must
+                                                allocate out of high memory to allow spawn to
+                                                work properly.  We set a global switch that
+                                                tells malloc to use sbrk to satisfy memory
+                                                request made by spawn() and system().
+
+    1.03  08-May-91 <withdrawn>.
+
+        1.02    23-Jun-90       Add second argument for optional path specification.
+                                Change first argument to C-string, not SCBLK.
+
+        1.01    04-Mar-88       Changes for Definicon
+
 */
 
 /*
-/   dosys( cmd, path )
-/
-/   dosys() does a "system" function call with the string contained in cmd.
-/
-/   Parameters:
-/       cmd             C-string of command to execute
-/       path    C-string of optional pathspec of program to execute.
-/                       May be null string.
-/   Returns:
-/       code returned by system
+    dosys( cmd, path )
+
+    dosys() does a "system" function call with the string contained in cmd.
+
+    Parameters:
+        cmd             C-string of command to execute
+        path    C-string of optional pathspec of program to execute.
+                        May be null string.
+    Returns:
+        code returned by system
 */
 
 #include "port.h"
@@ -1185,18 +1185,18 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  FAKEXIT.C        Version:  01.00
-/       ---------------------------------------
-/
-/       Contents:       Function exit
+        File:  FAKEXIT.C        Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function exit
 */
 
 /*
-/   exit()
-/
-/   This is a "fake" exit() function that prevents the linker from linking
-/   in the standard C exit() function with all the associated stdio library
-/   functions.
+    exit()
+
+    This is a "fake" exit() function that prevents the linker from linking
+    in the standard C exit() function with all the associated stdio library
+    functions.
 */
 #include "port.h"
 #if !VCC
@@ -1336,25 +1336,25 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  FLUSH.C          Version:  01.02
-/       ---------------------------------------
-/
-/       Contents:       Function flush
-/
-/   V1.02 05-Feb-91     Flush only if dirty.  Adjust file position in buffer.
-/   v1.01               Ignore short count writes if MS-DOS and character device.
+        File:  FLUSH.C          Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function flush
+
+    V1.02 05-Feb-91     Flush only if dirty.  Adjust file position in buffer.
+    v1.01               Ignore short count writes if MS-DOS and character device.
 */
 
 /*
-/   flush( ioptr )
-/
-/   flush() writes out any characters in the buffer associated with the
-/   passed IOBLK.
-/
-/   Parameters:
-/       ioptr   pointer to IOBLK representing file
-/   Returns:
-/       0 if flush successful / number of I/O errors
+    flush( ioptr )
+
+    flush() writes out any characters in the buffer associated with the
+    passed IOBLK.
+
+    Parameters:
+        ioptr   pointer to IOBLK representing file
+    Returns:
+        0 if flush successful / number of I/O errors
 */
 
 #include "port.h"
@@ -1441,20 +1441,20 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  GETARGS.C                Version:  01.00
-/       ---------------------------------------
-/
-/       Contents:       Function getargs
+        File:  GETARGS.C                Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function getargs
 */
 
 
 /*
-/       This module contains the switch loop that processes command
-/       line options.
-/
-/       HISTORY
-/
-/  V1.00 30-Jul-92 Split off from OSINT as a separate module.
+        This module contains the switch loop that processes command
+        line options.
+
+        HISTORY
+
+   V1.00 30-Jul-92 Split off from OSINT as a separate module.
 */
 #include "port.h"
 
@@ -1832,16 +1832,16 @@ char    *argv[];
 
 
 /*
-/    getnum() converts an ASCII string to an integer AND returns a pointer
-/    to the character following the last valid digit.
-/
-/    Parameters:
-/               cp      pointer to character string
-/               ip      pointer to word receiving converted result
-/    Returns:
-/               Pointer to character following last valid digit in input string
-/    Side Effects:
-/               Modifies contents of integer pointed to by ip.
+     getnum() converts an ASCII string to an integer AND returns a pointer
+     to the character following the last valid digit.
+
+     Parameters:
+                cp      pointer to character string
+                ip      pointer to word receiving converted result
+     Returns:
+                Pointer to character following last valid digit in input string
+     Side Effects:
+                Modifies contents of integer pointed to by ip.
 */
 
 char    *getnum( cp, ip )
@@ -1859,19 +1859,19 @@ uword   *ip;
 
 
 /*
-/   optnum() converts an ASCII string to an integer AND returns a pointer
-/   to the character following the last valid digit.  optnum() is similar
-/   to getnum() except that optnum accepts a trailing 'k' or 'm' to indicate
-/   that the value should be scaled in units of 1,024 or 1,048,576.
-/
-/   Parameters:
-/               cp      pointer to character string
-/               ip      pointer to word receiving converted result
-/   Returns:
-/               Pointer to character following last valid digit in input string,
-/               including a trailing k.
-/   Side Effects:
-/               Modifies contents of integer pointed to by ip.
+    optnum() converts an ASCII string to an integer AND returns a pointer
+    to the character following the last valid digit.  optnum() is similar
+    to getnum() except that optnum accepts a trailing 'k' or 'm' to indicate
+    that the value should be scaled in units of 1,024 or 1,048,576.
+
+    Parameters:
+                cp      pointer to character string
+                ip      pointer to word receiving converted result
+    Returns:
+                Pointer to character following last valid digit in input string,
+                including a trailing k.
+    Side Effects:
+                Modifies contents of integer pointed to by ip.
 */
 
 char    *optnum( cp, ip )
@@ -1915,24 +1915,24 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  GETHOST.C        Version:  01.05
-/       ---------------------------------------
-/
-/       Contents:       Function gethost
+        File:  GETHOST.C        Version:  01.05
+        ---------------------------------------
+
+        Contents:       Function gethost
 */
 
 /*
-/   gethost( scptr, maxlen )
-/
-/   gethost() reads the first line from the host file into the passed SCBLK.
-/
-/   Parameters:
-/       scptr   pointer to SCBLK to receive host string
-/       maxlen  max length of string area in SCBLK
-/   Returns:
-/       Nothing.
-/   Side Effects:
-/       Modifies contents of passed SCBLK (scptr).
+    gethost( scptr, maxlen )
+
+    gethost() reads the first line from the host file into the passed SCBLK.
+
+    Parameters:
+        scptr   pointer to SCBLK to receive host string
+        maxlen  max length of string area in SCBLK
+    Returns:
+        Nothing.
+    Side Effects:
+        Modifies contents of passed SCBLK (scptr).
 */
 
 #include "port.h"
@@ -2046,33 +2046,33 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  GETSHELL.C       Version:  01.04
-/       ---------------------------------------
-/
-/       Contents:       Function getshell
-/
-/       V1.04   18-Oct-90       Rewrite to use findenv().
-/
-/       V1.03   23-Jun-90       Move pathlast() to swcinp.c.
-/
-/       V1.02   03-Mar-88       Return in tscblk in all cases, so that
-/                               there is room to append after command string.
-/
-/       V1.01   28-Feb-88       Remove usage of strlen and strcpy
-/
+        File:  GETSHELL.C       Version:  01.04
+        ---------------------------------------
+
+        Contents:       Function getshell
+
+        V1.04   18-Oct-90       Rewrite to use findenv().
+
+        V1.03   23-Jun-90       Move pathlast() to swcinp.c.
+
+        V1.02   03-Mar-88       Return in tscblk in all cases, so that
+                                there is room to append after command string.
+
+        V1.01   28-Feb-88       Remove usage of strlen and strcpy
+
 */
 
 #include "port.h"
 
 /*
-/   getshell()
-/
-/   Function getshell returns the path for the current shell.
-/
-/   Parameters:
-/       None
-/   Returns:
-/       Pointer to character string representing current shell path
+    getshell()
+
+    Function getshell returns the path for the current shell.
+
+    Parameters:
+        None
+    Returns:
+        Pointer to character string representing current shell path
 */
 
 char *getshell()
@@ -2167,59 +2167,59 @@ This file is part of Macro SPITBOL.
 
 /*
 / File:  LENFNM.C   Version:  01.02
-/       ---------------------------------------
-/
-/       Contents:       Function lenfnm
+        ---------------------------------------
+
+        Contents:       Function lenfnm
 */
 
 /*
-/   lenfnm( scptr )
-/
-/   lenfnm() examines the file argument within the passed SCBLK and returns
-/   the length of the filename contained within it.  This function will be
-/   called from any of the OSINT functions dealing with filenames or I/O
-/   options.
+    lenfnm( scptr )
+
+    lenfnm() examines the file argument within the passed SCBLK and returns
+    the length of the filename contained within it.  This function will be
+    called from any of the OSINT functions dealing with filenames or I/O
+    options.
 */
 
 /*  The file argument string will contain a filename and/or options with the
-/   options enclosed in "[" and "]", as in
-/
-/       "filename"
-/       "filename[options]"
-/       "[options]"
-/
-/  v1.02 23-Feb-96 - Check pipe syntax when bracketed options present.
+    options enclosed in "[" and "]", as in
+
+        "filename"
+        "filename[options]"
+        "[options]"
+
+   v1.02 23-Feb-96 - Check pipe syntax when bracketed options present.
 */
 
 #if !WINNT
 /*  The file argument can also contain options separated from the filename
-/       by a blank.
-/
-/       "filename options"
-/       " options"
-/
+        by a blank.
+
+        "filename options"
+        " options"
+
 */
 #endif          /* !WINNT */
 
 #if PIPES
 /*
-/   The file argument may instead be a command string with options as in
-/
-/       "!*commandstring"
-/       "!*commandstring*"
-/       "!*commandstring* options"
-/
-/   Notice that the character following the '!' serves as a delimiter to
-/   separate the end of the command string from the space preceding any
-/   options.
+    The file argument may instead be a command string with options as in
+
+        "!*commandstring"
+        "!*commandstring*"
+        "!*commandstring* options"
+
+    Notice that the character following the '!' serves as a delimiter to
+    separate the end of the command string from the space preceding any
+    options.
 */
 #endif                                  /* PIPES */
 
 /*  Parameters:
-/       scptr   pointer to SCBLK containg filename string
-/   Returns:
-/       length of filename (0 is possible)
-/       -1 if illegal name
+        scptr   pointer to SCBLK containg filename string
+    Returns:
+        length of filename (0 is possible)
+        -1 if illegal name
 */
 
 #include "port.h"
@@ -2322,38 +2322,38 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  MAIN.C           Version:  01.00
-/       ---------------------------------------
-/
-/       Contents:       Function main
+        File:  MAIN.C           Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function main
 */
 
 /*
-/       This module contains the main function that gets control when
-/       the spitbol compiler starts execution.  Responsibilities of
-/       this function:
-/
-/       o  Save argc and argv parameters in global storage.
-/
-/       o  Determine if this execution reflects the invocation of
-/          of the compiler or of a load module and take appropriate
-/          actions.
-/
-/          If invoked as compiler:  process command line arguments,
-/          set up input files, output file, initial memory allocation,
-/          and transfer control to compiler
-/
-/          If invoked as load module:  reset various compiler variables
-/          whose values are no longer valid, re-establish dynamic area
-/          and transfer control to function that returns control to
-/          suspended spitbol program
-/
-/       HISTORY
-/
-/  V1.00 04-Jun-92 Split off from OSINT as a front-end module.
-/  V1.01 30-Dec-96 Call swcinp after reloading SPX file.
-/  V1.02 18-Mar-00 Don't interpret parameters following .spx on command
-/                  line as file names.
+        This module contains the main function that gets control when
+        the spitbol compiler starts execution.  Responsibilities of
+        this function:
+
+        o  Save argc and argv parameters in global storage.
+
+        o  Determine if this execution reflects the invocation of
+           of the compiler or of a load module and take appropriate
+           actions.
+
+           If invoked as compiler:  process command line arguments,
+           set up input files, output file, initial memory allocation,
+           and transfer control to compiler
+
+           If invoked as load module:  reset various compiler variables
+           whose values are no longer valid, re-establish dynamic area
+           and transfer control to function that returns control to
+           suspended spitbol program
+
+        HISTORY
+
+   V1.00 04-Jun-92 Split off from OSINT as a front-end module.
+   V1.01 30-Dec-96 Call swcinp after reloading SPX file.
+   V1.02 18-Mar-00 Don't interpret parameters following .spx on command
+                   line as file names.
 */
 #define GLOBALS                 /* global variables will be defined in this module */
 #include "port.h"
@@ -2570,9 +2570,9 @@ char    *argv[];
 
 
 /*
-/       wrterr( s )
-/
-/       Write message to standard error, and append end-of-line.
+        wrterr( s )
+
+        Write message to standard error, and append end-of-line.
 */
 void wrterr(s)
 char    *s;
@@ -2605,9 +2605,9 @@ int     n;
 }
 
 /*
-/       wrtmsg( s )
-/
-/       Write message to standard output, and append end-of-line.
+        wrtmsg( s )
+
+        Write message to standard output, and append end-of-line.
 */
 void wrtmsg(s)
 char    *s;
@@ -2817,33 +2817,33 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File: OPTFILE.C         Version: 1.00
-/       -------------------------------------
-/
-/       Contents:       function optfile
-/
+        File: OPTFILE.C         Version: 1.00
+        -------------------------------------
+
+        Contents:       function optfile
+
 */
 
 /*
-/   optfile( varname, result )
-/
-/   optfile() looks for other, optional ways to supply a filename to
-/   the INPUT/OUTPUT functions.  Varname is an SCBLK containing the string
-/   used as an alias for the file name, and result is an SCBLK that will
-/   receive the aliased name.
-/
-/   optfile() looks in two places for the alias.  First, if the alias is
-/   a numeric string, it looks in the cfiles table to see if it was specified
-/   on the command line.  If not found there, it looks in the environment block.
-/
-/   Parameters:
-/       varname  pointer to SCBLK containing alias
-/       result   pointer to SCBLK that will receive any name found
-/   Returns:
-/       0  - success, result contains name
-/       -1 - failure
-/   Side Effects:
-/       none
+    optfile( varname, result )
+
+    optfile() looks for other, optional ways to supply a filename to
+    the INPUT/OUTPUT functions.  Varname is an SCBLK containing the string
+    used as an alias for the file name, and result is an SCBLK that will
+    receive the aliased name.
+
+    optfile() looks in two places for the alias.  First, if the alias is
+    a numeric string, it looks in the cfiles table to see if it was specified
+    on the command line.  If not found there, it looks in the environment block.
+
+    Parameters:
+        varname  pointer to SCBLK containing alias
+        result   pointer to SCBLK that will receive any name found
+    Returns:
+        0  - success, result contains name
+        -1 - failure
+    Side Effects:
+        none
 */
 
 #include "port.h"
@@ -2900,21 +2900,21 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  OSCLOSE.C        Version:  01.00
-/       ---------------------------------------
-/
-/       Contents:       Function osclose
+        File:  OSCLOSE.C        Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function osclose
 */
 
 /*
-/   osclose( ioptr )
-/
-/   osclose() closes the file represented by the passed IOBLK.
-/
-/   Parameters:
-/       ioptr   pointer to IOBLK
-/   Returns:
-/       Number of I/O errors, should be 0.
+    osclose( ioptr )
+
+    osclose() closes the file represented by the passed IOBLK.
+
+    Parameters:
+        ioptr   pointer to IOBLK
+    Returns:
+        Number of I/O errors, should be 0.
 */
 
 #include "port.h"
@@ -3010,41 +3010,41 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  OSOPEN           Version:  01.06
-/       ---------------------------------------
-/
-/       Contents:       Function osopen
-/
-/       Revision history:
-/
-/       V01.01  Was testing for successful file open with (fd != 0) and
-/               (fd >0).  If user ever explicitly closed fd 0, fd 0 would
-/               be available for normal use by a file open.
-/
-/       V01.02  Look at flag IO_ENV, and if set, fnm string is the name
-/               of an environment variable pointing to the filename.
-/
-/       V01.03  For MS-DOS, remove trailing ':', if any, from file name.
-/               DOS does not like names like "CON:".
-/
-/       V01.04  File name "-" attaches to standard input or output.
-/
-/       V01.05  For MS-DOS on 386, process IO_COT option.
-/
-/       V01.06  Handle files open for update.
+        File:  OSOPEN           Version:  01.06
+        ---------------------------------------
+
+        Contents:       Function osopen
+
+        Revision history:
+
+        V01.01  Was testing for successful file open with (fd != 0) and
+                (fd >0).  If user ever explicitly closed fd 0, fd 0 would
+                be available for normal use by a file open.
+
+        V01.02  Look at flag IO_ENV, and if set, fnm string is the name
+                of an environment variable pointing to the filename.
+
+        V01.03  For MS-DOS, remove trailing ':', if any, from file name.
+                DOS does not like names like "CON:".
+
+        V01.04  File name "-" attaches to standard input or output.
+
+        V01.05  For MS-DOS on 386, process IO_COT option.
+
+        V01.06  Handle files open for update.
 */
 
 /*
-/   osopen( ioptr )
-/
-/   osopen() opens the file represented by the passed ioblk.  If the file
-/   is actually a command, osopen() establishes a pipe to access the
-/   command.
-/
-/   Parameters:
-/       ioptr   pointer to IOBLK representing file
-/   Returns:
-/       0 - file opened successfully / -1 - open failed
+    osopen( ioptr )
+
+    osopen() opens the file represented by the passed ioblk.  If the file
+    is actually a command, osopen() establishes a pipe to access the
+    command.
+
+    Parameters:
+        ioptr   pointer to IOBLK representing file
+    Returns:
+        0 - file opened successfully / -1 - open failed
 */
 
 #include "port.h"
@@ -3222,32 +3222,32 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   File:  OSPIPE.C     Version:  01.06
-/       ---------------------------------------
-/
-/       Contents:       Function ospipe
-/
+    File:  OSPIPE.C     Version:  01.06
+        ---------------------------------------
+
+        Contents:       Function ospipe
+
 / 1.02  Use vfork() on BSD systems to avoid copying pages.  Parent is suspended
-/       by system until child execl's.
-/
+        by system until child execl's.
+
 / 1.03  Look at flag IO_ENV, and if set, fnm string is the name
-/       of an environment variable pointing to the filename.
-/
+        of an environment variable pointing to the filename.
+
 / 1.04  Check for update mode on file.
-/
+
 / 1.05  <withdrawn>
-/
+
 / 1.06  30-Dec-96 Create version of WinNT.  Save and restore characters
-/       at end of string in doshell().  Fix bug in Unix version:
-/       If child fork does not run to the point where it does the execcl call
-/       before the parent resumes, the parent could do a garbage collect and
-/       invalidate the string pointer that the child will use.  Use a poor
-/       man's interlock to keep the parent within ospipe until the child
-/       has captured what is needed.
-/
+        at end of string in doshell().  Fix bug in Unix version:
+        If child fork does not run to the point where it does the execcl call
+        before the parent resumes, the parent could do a garbage collect and
+        invalidate the string pointer that the child will use.  Use a poor
+        man's interlock to keep the parent within ospipe until the child
+        has captured what is needed.
+
 / 1.07  19-Feb-98 Interlock is not necessary under AIX because we use fork,
-/       not vfork.  vfork shares the parent's address space, whereas fork
-/       gives the child a complete new copy of the address space.
+        not vfork.  vfork shares the parent's address space, whereas fork
+        gives the child a complete new copy of the address space.
 */
 
 #include "port.h"
@@ -3276,14 +3276,14 @@ static int interlock;
 HFILE childfd, stdfd;           /* kludge to get info to syswinnt.c */
 #endif
 /*
-/   ospipe( ioptr )
-/
-/   ospipe() builds a pipe for the command associated with the passed IOBLK.
-/
-/   Parameters:
-/       ioptr   pointer to IOBLK for command
-/   Returns:
-/       file descriptor returned by pipe system call, -1 if error
+    ospipe( ioptr )
+
+    ospipe() builds a pipe for the command associated with the passed IOBLK.
+
+    Parameters:
+        ioptr   pointer to IOBLK for command
+    Returns:
+        file descriptor returned by pipe system call, -1 if error
 */
 
 int ospipe( ioptr )
@@ -3478,46 +3478,46 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  OSREAD.C         Version:  01.08
-/       ---------------------------------------
-/
-/       Contents:       Function osread
+        File:  OSREAD.C         Version:  01.08
+        ---------------------------------------
+
+        Contents:       Function osread
 */
 
 /*
-/   osread( mode, recsiz, ioptr, scptr )
-/
-/   osread()  reads the next record from the input file associated with
-/   the passed IOBLK into the passed SCBLK.  mode determines whether the
-/   read should be line or raw mode.
-/
-/       Line mode records are teminated with a new-line character (the
-/       new-line is not put in the scblk though).
-/
-/       Raw mode records are simply the next recsiz characters.
-/
-/   Parameters:
-/       mode    1=line mode / 0=raw mode
-/       recsiz  line mode:  max length of record to be read
-/               raw mode:   number of characters to be read
-/       ioptr   pointer to IOBLK associated with input file
-/       scptr   pointer to SCBLK to receive input record
-/   Returns:
-/       >0      length of record read
-/       -1      EOF
-/       -2      I/O error
-/
-/       V1.08   01-Aug-93       Add IO_EOT flag to ignore EOT char in DOS-mode
-/                                                text files.
-/       V1.07   01-Feb-93       Change definition of mode argument.
-/       V1.06   05-Feb-91       Change for read/write files.
-/       V1.05   29-Nov-89       Terminate host screen operation if HOST386.
-/       V1.04   05-Mar-88       Changes for Definicon and carriage return/
-/                                               line feed terminated records.
-/                                               Also modified code so that an end of file
-/                                               in a record with no record terminator returns
-/                                               that record, rather than an I/O error.
-/
+    osread( mode, recsiz, ioptr, scptr )
+
+    osread()  reads the next record from the input file associated with
+    the passed IOBLK into the passed SCBLK.  mode determines whether the
+    read should be line or raw mode.
+
+        Line mode records are teminated with a new-line character (the
+        new-line is not put in the scblk though).
+
+        Raw mode records are simply the next recsiz characters.
+
+    Parameters:
+        mode    1=line mode / 0=raw mode
+        recsiz  line mode:  max length of record to be read
+                raw mode:   number of characters to be read
+        ioptr   pointer to IOBLK associated with input file
+        scptr   pointer to SCBLK to receive input record
+    Returns:
+        >0      length of record read
+        -1      EOF
+        -2      I/O error
+
+        V1.08   01-Aug-93       Add IO_EOT flag to ignore EOT char in DOS-mode
+                                                 text files.
+        V1.07   01-Feb-93       Change definition of mode argument.
+        V1.06   05-Feb-91       Change for read/write files.
+        V1.05   29-Nov-89       Terminate host screen operation if HOST386.
+        V1.04   05-Mar-88       Changes for Definicon and carriage return/
+                                                line feed terminated records.
+                                                Also modified code so that an end of file
+                                                in a record with no record terminator returns
+                                                that record, rather than an I/O error.
+
 */
 
 #include "port.h"
@@ -3973,26 +3973,26 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   File:  OSWAIT.C     Version:  01.02
-/       ---------------------------------------
-/
-/       Contents:       Function oswait
+    File:  OSWAIT.C     Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function oswait
 */
 
 
 /*
-/   oswait( pid )
-/
-/   oswait() waits for the termination of the process with id pid.
-/
-/   Parameters:
-/       pid     prcoess id
-/   Returns:
-/   nothing
-/
-/   V1.01 MBE 07-29-91  <withdrawn>.
-/   V1.02 MBE 12-31-96  Modify for WinNT.
-/
+    oswait( pid )
+
+    oswait() waits for the termination of the process with id pid.
+
+    Parameters:
+        pid     prcoess id
+    Returns:
+    nothing
+
+    V1.01 MBE 07-29-91  <withdrawn>.
+    V1.02 MBE 12-31-96  Modify for WinNT.
+
 */
 
 #include "port.h"
@@ -4067,43 +4067,43 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  OSWRITE.C        Version:  01.11
-/       ---------------------------------------
-/
-/       Contents:       Function oswrite
-/
-/       V1.11   Split mode and line length into two separate arguments.  1-Feb-93.
-/       V1.10   Maintain IO_DIR.  Other changes for read/write I/O.
-/       V1.09   Decrement cp when restore savech in case multiple records.  Advance
-/                       cp when writing in unbuffered mode.
-/       V1.08   Change modelen parameter from int to word.
-/   V1.07   Fix binary writes to character device if MS-DOS.
-/   V1.06   Ignore short writes to character device if MS-DOS.
-/       V1.05   Terminate host screen operation if HOST386.
-/       V1.04   Obey ioptr->len on line-mode output.
+        File:  OSWRITE.C        Version:  01.11
+        ---------------------------------------
+
+        Contents:       Function oswrite
+
+        V1.11   Split mode and line length into two separate arguments.  1-Feb-93.
+        V1.10   Maintain IO_DIR.  Other changes for read/write I/O.
+        V1.09   Decrement cp when restore savech in case multiple records.  Advance
+                        cp when writing in unbuffered mode.
+        V1.08   Change modelen parameter from int to word.
+    V1.07   Fix binary writes to character device if MS-DOS.
+    V1.06   Ignore short writes to character device if MS-DOS.
+        V1.05   Terminate host screen operation if HOST386.
+        V1.04   Obey ioptr->len on line-mode output.
 */
 
 /*
-/   oswrite( mode, linesiz, recsiz, ioptr, scptr )
-/
-/   oswrite() writes the record in the passed SCBLK to the file associated
-/   with the passed IOBLK.  There are two types of transfer:
-/
-/       unbuffered      write is done immediately
-/
-/       buffered        write is done into buffer
-/
-/   In either case, a new-line is appended to the record if in line mode
-/   (mode == 1).
-/
-/   Parameters:
-/       mode    1=line mode / 0=raw mode
-/       linesiz output record length
-/       recsiz  length of data being written
-/       ioptr   pointer to IOBLK associated with output file
-/       scptr   pointer to SCBLK to receive output record
-/   Returns:
-/       Number of I/O errors.  Should be 0.
+    oswrite( mode, linesiz, recsiz, ioptr, scptr )
+
+    oswrite() writes the record in the passed SCBLK to the file associated
+    with the passed IOBLK.  There are two types of transfer:
+
+        unbuffered      write is done immediately
+
+        buffered        write is done into buffer
+
+    In either case, a new-line is appended to the record if in line mode
+    (mode == 1).
+
+    Parameters:
+        mode    1=line mode / 0=raw mode
+        linesiz output record length
+        recsiz  length of data being written
+        ioptr   pointer to IOBLK associated with output file
+        scptr   pointer to SCBLK to receive output record
+    Returns:
+        Number of I/O errors.  Should be 0.
 */
 
 #include "port.h"
@@ -4351,10 +4351,10 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  PROMPT.C         Version:  01.00
-/       ---------------------------------------
-/
-/       Contents:       Function prompt
+        File:  PROMPT.C         Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function prompt
 */
 
 #include "port.h"
@@ -4449,33 +4449,33 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  RDENV.C          Version:  01.02
-/       ---------------------------------------
-/
-/       Contents:       Function rdenv
+        File:  RDENV.C          Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function rdenv
 */
 
 /*
-/   rdenv( varname, result )
-/
-/   rdenv() reads the environment variable named "varname", and if it can
-/   be read, puts its value in "result.
-/
-/   Parameters:
-/       varname pointer to character string containing variable name
-/       result  pointer to character string to receive result
-/   Returns:
-/       0 if successful / -1 on failure
-/
-/       v1.02 02-Jan-91 Changed rdenv to use cpys2sc instead of mystrncpy.
-/                                       Add private getenv().
+    rdenv( varname, result )
+
+    rdenv() reads the environment variable named "varname", and if it can
+    be read, puts its value in "result.
+
+    Parameters:
+        varname pointer to character string containing variable name
+        result  pointer to character string to receive result
+    Returns:
+        0 if successful / -1 on failure
+
+        v1.02 02-Jan-91 Changed rdenv to use cpys2sc instead of mystrncpy.
+                                        Add private getenv().
 */
 
 #include "port.h"
 
 /*
-/   Find environment variable vq of length vn.  Return
-/   pointer to value (just past '='), or 0 if not found.
+    Find environment variable vq of length vn.  Return
+    pointer to value (just past '='), or 0 if not found.
 */
 char *findenv( vq, vn )
 char *vq;
@@ -4554,39 +4554,39 @@ This file is part of Macro SPITBOL.
 
 
 /*
-/       File:  SIOARG.C         Version:  01.07
-/       ---------------------------------------
-/
-/       Contents:       Function sioarg
+        File:  SIOARG.C         Version:  01.07
+        ---------------------------------------
+
+        Contents:       Function sioarg
 */
 
 /*
-/   sioarg( ioflg,ioptr,scptr )
-/
-/   sioarg() scans any arguments after the filename in the passed SCBLK and
-/   sets appropriate values in the passed ioblk.
-/
-/   Parameters:
-/       ioflg   0 - input association/ 3 - output association
-/       ioptr   pointer to IOBLK representing file
-/       scptr   pointer to SCBLK containing filename and args
-/   Returns:
-/       0 - options successfully processed / -1 - option error
-/   Side Effects:
-/       Modifies contents of passed IOBLK (ioptr).
-/
-/       V1.02   Distinguish default input/output record lengths
-/       V1.03   Buffer size and record size must be less than
-/                       maxsize to avoid garbage collector problems when
-/                       these values are stored in fcblk and ioblk.
-/       V1.04   Add i/o option -u for update mode.
-/       V1.05   01-Aug-93. Add IO_EOT flag to ignore EOT char in
-/                       DOS-mode text files.
-/       V1.06   21-Oct-94. Use uppercase function to fold case letters.
-/       V1.07   26-Oct-94. Added share field to ioblk and processing of
-/                       -S option.
-/                       In -B option, subtract BFSIZE from maxsize before comparison.
-/       V1.08   18-Dec-94. Add -I and -X options.
+    sioarg( ioflg,ioptr,scptr )
+
+    sioarg() scans any arguments after the filename in the passed SCBLK and
+    sets appropriate values in the passed ioblk.
+
+    Parameters:
+        ioflg   0 - input association/ 3 - output association
+        ioptr   pointer to IOBLK representing file
+        scptr   pointer to SCBLK containing filename and args
+    Returns:
+        0 - options successfully processed / -1 - option error
+    Side Effects:
+        Modifies contents of passed IOBLK (ioptr).
+
+        V1.02   Distinguish default input/output record lengths
+        V1.03   Buffer size and record size must be less than
+                        maxsize to avoid garbage collector problems when
+                        these values are stored in fcblk and ioblk.
+        V1.04   Add i/o option -u for update mode.
+        V1.05   01-Aug-93. Add IO_EOT flag to ignore EOT char in
+                        DOS-mode text files.
+        V1.06   21-Oct-94. Use uppercase function to fold case letters.
+        V1.07   26-Oct-94. Added share field to ioblk and processing of
+                        -S option.
+                        In -B option, subtract BFSIZE from maxsize before comparison.
+        V1.08   18-Dec-94. Add -I and -X options.
 */
 
 #include "port.h"
@@ -4881,19 +4881,19 @@ struct  scblk   *scptr;
 
 
 /*
-/   scnint( str, len, intptr )
-/
-/   scnint() scans and converts a decimal number at the front of a string.
-/   "len" specifies the maximum number of digits that can be scanned.
-/
-/    Parameters:
-/       str     pointer to string containing number at front
-/       len     maximum number of digits to scan
-/       intptr  pointer to integer to be adjusted by number of digits scanned
-/    Returns:
-/       Integer converted
-/    Side Effects:
-/       Modifies integer pointed to by intptr.
+    scnint( str, len, intptr )
+
+    scnint() scans and converts a decimal number at the front of a string.
+    "len" specifies the maximum number of digits that can be scanned.
+
+     Parameters:
+        str     pointer to string containing number at front
+        len     maximum number of digits to scan
+        intptr  pointer to integer to be adjusted by number of digits scanned
+     Returns:
+        Integer converted
+     Side Effects:
+        Modifies integer pointed to by intptr.
 */
 
 
@@ -5016,17 +5016,17 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  STUBS.C          Version:  01.02
-/       ---------------------------------------
-/
-/       Contents:       Function zysdc
-/                       Function zysdm
-/                       Function zystt
+        File:  STUBS.C          Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function zysdc
+                        Function zysdm
+                        Function zystt
 */
 
 /*
-/       All functions are "dummy" functions not supported by this
-/       implementation.
+        All functions are "dummy" functions not supported by this
+        implementation.
 */
 
 #include "port.h"
@@ -5063,96 +5063,96 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SWCINP.C         Version:  01.16
-/       ---------------------------------------
-/
-/       Contents:       Function swcinp
-/
-/       Revision history:
-/
-/       01.16   04-Apr-95 If no end statement after reading source files,
-/                                         alert user.
-/
+        File:  SWCINP.C         Version:  01.16
+        ---------------------------------------
+
+        Contents:       Function swcinp
+
+        Revision history:
+
+        01.16   04-Apr-95 If no end statement after reading source files,
+                                          alert user.
+
 / 01.15 18-Oct-90 <withdrawn>
-/
-/       01.14   23-Jun-90 Function pathlast() moved here from getshell.c
-/
-/       01.13   11-May-90 Close save_fd0 in restore0() after dup.  Omission
-/                       was leaving save_fd0 handle busy after each save/restore cycle.
-/
-/       01.12   Added sfn as a pointer to the source file name currently being read.
-/               Used by sysrd to pass file names to the compiler.
-/
-/       01.11   Moved curfile to osint for reinitialization when compiler serially reused.
-/
-/       01.10   As a result of using fd 0 to read both source files and
-/               keyboard input, the following anomally occurs:
-/
-/               After reading the END statement of a source file, execution
-/               begins with fd 0 connected to that source file (typically
-/               positioned at the EOF following the END statement.  When
-/               the user's program reads from INPUT, the EOF detected produces
-/               a call to swcinp(), and fd 0 is switched from the source file
-/               to the "true" standard input.
-/
-/               However, if prior to the first call to INPUT, the user
-/               invokes a shell call, using either EXIT("cmd") or HOST(1,"cmd"),
-/               execle() or the shell is invoked with fd 0 still attached to
-/               the source file, and will read an end of file on first read.
-/               This occurs because reading is outside the domain of
-/               Spitbol, and SWCINP is not called.
-/
-/               Note that a call to INPUT prior to EXIT() or HOST(1,) would
-/               mask the problem, because INPUT would switch us away from the
-/               source file (assuming an EOF following END).  If there was
-/               data following the END statement, things are even worse,
-/               because the Shell will start reading data from the source file.
-/
-/   This problem only occurs on systems using dup().
-/
-/               To fix the problem, two new routines are used by EXIT("cmd")
-/               and SHELL(1,"command") to bracket their operation.
-/
-/               save0() saves the current fd 0, and restores the original fd 0.
-/               restore0() restores the saved fd 0.
-/
-/       01.09   Recoded so that after receiving EOF from standard input
-/               and no more files on the command line, reconnect to stdin
-/               if appropriate.  This permits the user to continue to invoke
-/               INPUT after obtaining an EOF.  This behavior is consistant
-/               with reads from TERMINAL, which will go to keyboard
-/               regardless of results of previous read.
-/
-/               The usage of variables inpateof, no_more_input and proc_sh_fd0
-/               is thereby eliminated, and system behavior is consistent
-/               with other SNOBOL4 systems.
-/
-/               If file on command line cannot be opened, exit(1) after
-/               issuing error message, rather than continuing.
-/
-/   For systems that do not support dup(), we leave
-/               fd 0 open forever, and read command line files using a
-/               non-zero fd.
-/
-/               Some code rearranged and cleaned up too.  The changes of
-/               mod 01.08 are eliminated, having been recast in a
-/               different manner.  MBE 12/24/87
-/
-/       01.08   After receiving EOF from standard input and no more files
-/               on the command line, routine would exit with file descriptor
-/               0 closed.  If the user subsequently issued a regular INPUT
-/               function, osopen would obtain fd 0.  This was wrong in two
-/               respects:
-/                 1. osopen was testing for a successful open with fd > 0.
-/                 2. a subsequent INPUT function specifying ' -f0' should
-/                    attach to a file that returns a continuous EOF.
-/
-/               Solution: when exiting this routine without finding another
-/               file for standard input, open "/dev/null" as fd 0.
-/               MBE Nov. 9, 1987, per bug report from Kurt Gluck.
-/
-/       01.07   Every time a filename on the command line is accessed be
-/               sure to increment 'cmdcnt' too.
+
+        01.14   23-Jun-90 Function pathlast() moved here from getshell.c
+
+        01.13   11-May-90 Close save_fd0 in restore0() after dup.  Omission
+                        was leaving save_fd0 handle busy after each save/restore cycle.
+
+        01.12   Added sfn as a pointer to the source file name currently being read.
+                Used by sysrd to pass file names to the compiler.
+
+        01.11   Moved curfile to osint for reinitialization when compiler serially reused.
+
+        01.10   As a result of using fd 0 to read both source files and
+                keyboard input, the following anomally occurs:
+
+                After reading the END statement of a source file, execution
+                begins with fd 0 connected to that source file (typically
+                positioned at the EOF following the END statement.  When
+                the user's program reads from INPUT, the EOF detected produces
+                a call to swcinp(), and fd 0 is switched from the source file
+                to the "true" standard input.
+
+                However, if prior to the first call to INPUT, the user
+                invokes a shell call, using either EXIT("cmd") or HOST(1,"cmd"),
+                execle() or the shell is invoked with fd 0 still attached to
+                the source file, and will read an end of file on first read.
+                This occurs because reading is outside the domain of
+                Spitbol, and SWCINP is not called.
+
+                Note that a call to INPUT prior to EXIT() or HOST(1,) would
+                mask the problem, because INPUT would switch us away from the
+                source file (assuming an EOF following END).  If there was
+                data following the END statement, things are even worse,
+                because the Shell will start reading data from the source file.
+
+    This problem only occurs on systems using dup().
+
+                To fix the problem, two new routines are used by EXIT("cmd")
+                and SHELL(1,"command") to bracket their operation.
+
+                save0() saves the current fd 0, and restores the original fd 0.
+                restore0() restores the saved fd 0.
+
+        01.09   Recoded so that after receiving EOF from standard input
+                and no more files on the command line, reconnect to stdin
+                if appropriate.  This permits the user to continue to invoke
+                INPUT after obtaining an EOF.  This behavior is consistant
+                with reads from TERMINAL, which will go to keyboard
+                regardless of results of previous read.
+
+                The usage of variables inpateof, no_more_input and proc_sh_fd0
+                is thereby eliminated, and system behavior is consistent
+                with other SNOBOL4 systems.
+
+                If file on command line cannot be opened, exit(1) after
+                issuing error message, rather than continuing.
+
+    For systems that do not support dup(), we leave
+                fd 0 open forever, and read command line files using a
+                non-zero fd.
+
+                Some code rearranged and cleaned up too.  The changes of
+                mod 01.08 are eliminated, having been recast in a
+                different manner.  MBE 12/24/87
+
+        01.08   After receiving EOF from standard input and no more files
+                on the command line, routine would exit with file descriptor
+                0 closed.  If the user subsequently issued a regular INPUT
+                function, osopen would obtain fd 0.  This was wrong in two
+                respects:
+                  1. osopen was testing for a successful open with fd > 0.
+                  2. a subsequent INPUT function specifying ' -f0' should
+                     attach to a file that returns a continuous EOF.
+
+                Solution: when exiting this routine without finding another
+                file for standard input, open "/dev/null" as fd 0.
+                MBE Nov. 9, 1987, per bug report from Kurt Gluck.
+
+        01.07   Every time a filename on the command line is accessed be
+                sure to increment 'cmdcnt' too.
 */
 
 #include "port.h"
@@ -5162,25 +5162,25 @@ This file is part of Macro SPITBOL.
 #endif
 
 /*
-/   swcinp( filecnt, fileptr )
-/
-/   swcinp() handles the switching of input files whose concatenation
-/   represents standard input.  After all input is exhausted a -1 is
-/   returned to indicate EOF.
-/
-/   If no filenames were specified on the command line, all input is
-/   read from file descriptor 0 provided by the shell.
-/
-/   If filenames were specified on the command line all files are read
-/   in their order of appearance.  A filename consisting of a single hyphen
-/   '-' represents file descriptor 0 provided by the shell.
-/
-/   Parameters:
-/       filecnt number of filename specified on command line
-/       fileptr array of pointers to character strings (filenames)
-/   Returns:
-/       File descriptor to read from (always 0!) or -1 if could not switch
-/       to a new file.
+    swcinp( filecnt, fileptr )
+
+    swcinp() handles the switching of input files whose concatenation
+    represents standard input.  After all input is exhausted a -1 is
+    returned to indicate EOF.
+
+    If no filenames were specified on the command line, all input is
+    read from file descriptor 0 provided by the shell.
+
+    If filenames were specified on the command line all files are read
+    in their order of appearance.  A filename consisting of a single hyphen
+    '-' represents file descriptor 0 provided by the shell.
+
+    Parameters:
+        filecnt number of filename specified on command line
+        fileptr array of pointers to character strings (filenames)
+    Returns:
+        File descriptor to read from (always 0!) or -1 if could not switch
+        to a new file.
 */
 
 int     swcinp( filecnt, fileptr )
@@ -5338,9 +5338,9 @@ swci_exit:
 
 
 /*
-/       Save the current fd 0, and connect fd 0 to the original one.
-/       Used before EXIT("cmd") and HOST(1,"cmd")
-/
+        Save the current fd 0, and connect fd 0 to the original one.
+        Used before EXIT("cmd") and HOST(1,"cmd")
+
 */
 void save0()
 {
@@ -5358,9 +5358,9 @@ void save0()
 
 
 /*
-/       Restore the saved fd 0.
-/       Used after EXIT("cmd") and HOST(1,"cmd")
-/
+        Restore the saved fd 0.
+        Used after EXIT("cmd") and HOST(1,"cmd")
+
 */
 void restore0()
 {
@@ -5378,8 +5378,8 @@ void restore0()
 
 
 /*
-/   tryopen - try to open file for swcinp.
-/   returns -1 if fails, else file descriptor >= 0
+    tryopen - try to open file for swcinp.
+    returns -1 if fails, else file descriptor >= 0
 */
 int tryopen(cp)
 char *cp;
@@ -5404,15 +5404,15 @@ char *cp;
 
 
 /*
-/   pathlast()
-/
-/   Function pathlast returns the a pointer to the last component of a
-/   path.
-/
-/   Parameters:
-/       Pointer to path character string
-/   Returns:
-/       Pointer to last component in path character
+    pathlast()
+
+    Function pathlast returns the a pointer to the last component of a
+    path.
+
+    Parameters:
+        Pointer to path character string
+    Returns:
+        Pointer to last component in path character
 */
 
 
@@ -5509,8 +5509,8 @@ register char *p, *q;
 
 
 /*
-/       Return length of string argument.
-/       Identical to C strlen function.
+        Return length of string argument.
+        Identical to C strlen function.
 */
 int length(cp)
 char *cp;
@@ -5553,21 +5553,21 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SWCOUP.C         Version:  01.03
-/       ---------------------------------------
-/
-/       Contents:       Function swcoup
-/
-/       Revision History:
-/
-/       01.01   14-Jul-88
-/                       Moved errflag to osint.c so that it can be reinitialized as necessary.
-/
-/       01.02   12-Sep-89
-/                       Defaulted list file extension to .lst
-/
-/       01.03   24-Oct-89
-/                       File name '-' means file descriptor 1.
+        File:  SWCOUP.C         Version:  01.03
+        ---------------------------------------
+
+        Contents:       Function swcoup
+
+        Revision History:
+
+        01.01   14-Jul-88
+                        Moved errflag to osint.c so that it can be reinitialized as necessary.
+
+        01.02   12-Sep-89
+                        Defaulted list file extension to .lst
+
+        01.03   24-Oct-89
+                        File name '-' means file descriptor 1.
 */
 
 #include "port.h"
@@ -5577,46 +5577,46 @@ This file is part of Macro SPITBOL.
 #endif
 
 /*
-/   swcoup( oupptr )
-/
-/   swcoup() switches between two output files:  the standard output file
-/   provided by the shell and the optional output file provided by the
-/   -o option on the command line.
-/
-/   This switching is necessary so that we blend into the Un*x environment
-/   like other programs.  To this end output is routed to the appropriate
-/   output file:
-/
-/       program listing, compilation statisitics, execution statistics,
-/       and dump of variables at termination go to the -o file, if
-/       specified.
-/
-/       standard output produced by the executing program goes to the
-/       standard output file provided by the shell.
-/
-/   This routing insures that the ONLY standard output produced by the
-/   "spitbol" command is that generated by the spitbol program being
-/   executed!  Thus, spitbol can be used as a filter.
-/
-/
-/   There are three calls to swcoup() as described by this sequence of events
-/
-/          spitbol initialization
-/       0->swcoup() called prior to compilation
-/          compilation (with output routed to -o file)
-/       1->swcoup() called after compilation and prior to execution
-/          (with output routed to shell's standard output)
-/       2->swcoup() called after execution
-/          post mortem activities (with output routed to -o file)
-/
-/
-/   A filename consisting of a single hyphen '-' represents file
-/   descriptor 1 provided by the shell.
-/
-/   Parameters:
-/       oupptr  pointer to -o option argument from command line
-/   Returns:
-/       0 if switch successful / -1 if switch failed
+    swcoup( oupptr )
+
+    swcoup() switches between two output files:  the standard output file
+    provided by the shell and the optional output file provided by the
+    -o option on the command line.
+
+    This switching is necessary so that we blend into the Un*x environment
+    like other programs.  To this end output is routed to the appropriate
+    output file:
+
+        program listing, compilation statisitics, execution statistics,
+        and dump of variables at termination go to the -o file, if
+        specified.
+
+        standard output produced by the executing program goes to the
+        standard output file provided by the shell.
+
+    This routing insures that the ONLY standard output produced by the
+    "spitbol" command is that generated by the spitbol program being
+    executed!  Thus, spitbol can be used as a filter.
+
+
+    There are three calls to swcoup() as described by this sequence of events
+
+           spitbol initialization
+        0->swcoup() called prior to compilation
+           compilation (with output routed to -o file)
+        1->swcoup() called after compilation and prior to execution
+           (with output routed to shell's standard output)
+        2->swcoup() called after execution
+           post mortem activities (with output routed to -o file)
+
+
+    A filename consisting of a single hyphen '-' represents file
+    descriptor 1 provided by the shell.
+
+    Parameters:
+        oupptr  pointer to -o option argument from command line
+    Returns:
+        0 if switch successful / -1 if switch failed
 */
 
 int swcoup( oupptr )
@@ -5757,25 +5757,25 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSAX.C          Version:  01.01
-/       ---------------------------------------
-/
-/       Contents:       Function zysax
+        File:  SYSAX.C          Version:  01.01
+        ---------------------------------------
+
+        Contents:       Function zysax
 */
 
 /*
-/
-/       zysax - after execution cleanup
-/
-/       Here we just indicate that further output should go to the
-/       compiler output file, as opposed to stdout from executing program.
-/
-/       Parameters:
-/           None
-/       Returns:
-/           Nothing
-/       Exits:
-/           None
+
+        zysax - after execution cleanup
+
+        Here we just indicate that further output should go to the
+        compiler output file, as opposed to stdout from executing program.
+
+        Parameters:
+            None
+        Returns:
+            Nothing
+        Exits:
+            None
 */
 
 #include "port.h"
@@ -5807,32 +5807,32 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSBS.C          Version:  01.02
-/       ---------------------------------------
-/
-/       Contents:       Function zysbs
+        File:  SYSBS.C          Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function zysbs
 */
 
 /*
-/       zysbs - backspace file
-/
-/       zysbs move a file's position back one physical record.
-/
-/       Parameters:
-/           WA - FCBLK pointer or 0
-/           XR - SCBLK pointer (EJECT argument)
-/       Returns:
-/           Nothing
-/       Exits:
-/           1 - file does not exist
-/           2 - inappropriate file
-/           3 - i/o error
-/
+        zysbs - backspace file
+
+        zysbs move a file's position back one physical record.
+
+        Parameters:
+            WA - FCBLK pointer or 0
+            XR - SCBLK pointer (EJECT argument)
+        Returns:
+            Nothing
+        Exits:
+            1 - file does not exist
+            2 - inappropriate file
+            3 - i/o error
+
 / History:
 / v01.00        16-Feb-91       Initial version.
 / v01.01        01-Feb-93       Adjust for fcb->rsz now positive for raw mode.
 / v01.02        07-Jun-95       Disallow backspace if file is a pipe.
-/
+
 */
 
 #include "port.h"
@@ -5957,40 +5957,40 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSBX.C          Version:  01.06
-/       ---------------------------------------
-/
-/       Contents:       Function zysbx
+        File:  SYSBX.C          Version:  01.06
+        ---------------------------------------
+
+        Contents:       Function zysbx
 */
 
 /*
-/       zysbx - before execution setup
-/
-/       Setup here so that all further "standard output" goes to stdout.
-/       This allows us to separate compiler/interpreter generated output
-/       from output generated by the executing program.
-/
-/       If the -w command line option has been invoked, this module will
-/       write an executable module and terminate.
-/
-/       If the -y command line option has been invoked, this module will
-/       write a save (.spx) file and terminate.
+        zysbx - before execution setup
 
-/       Parameters:
-/           None
-/       Returns:
-/           Nothing
-/       Exits:
-/           None
-/
-/   V1.07   02/03/97 - call swcinp to close input file
-/
-/   V1.06   05/12/92 - Remove nameblk.  Use TSCBLK instead.
-/
-/       V1.05   10/20/89 - Distinguish -w and -y options
-/
-/       V1.04   09/14/89 - Use input file name with RUNEXT extension
-/                          for file name with -y option.
+        Setup here so that all further "standard output" goes to stdout.
+        This allows us to separate compiler/interpreter generated output
+        from output generated by the executing program.
+
+        If the -w command line option has been invoked, this module will
+        write an executable module and terminate.
+
+        If the -y command line option has been invoked, this module will
+        write a save (.spx) file and terminate.
+
+        Parameters:
+            None
+        Returns:
+            Nothing
+        Exits:
+            None
+
+    V1.07   02/03/97 - call swcinp to close input file
+
+    V1.06   05/12/92 - Remove nameblk.  Use TSCBLK instead.
+
+        V1.05   10/20/89 - Distinguish -w and -y options
+
+        V1.04   09/14/89 - Use input file name with RUNEXT extension
+                           for file name with -y option.
 */
 
 #include "port.h"
@@ -6094,36 +6094,36 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSCM.C          Version:  01.01
-/       ---------------------------------------
-/
-/       zyscm - string compare
-/
-/       V1.01   Don't bother clearing XR.
-/               Change definition of first/second string.
+        File:  SYSCM.C          Version:  01.01
+        ---------------------------------------
+
+        zyscm - string compare
+
+        V1.01   Don't bother clearing XR.
+                Change definition of first/second string.
 */
 
 /*
-/
-/       zyscm is called to make either a strict ASCII or INTERNATIONAL comparison.
-/
-/       This external routine is provided to allow conditional access to
-/       an alternate collation sequence.  Access is
-/       controlled by the global switch IUSTRG.
-/
-/       Parameters:
-/               XR - pointer to first string
-/               WB - first string length
-/               XL - pointer to second string
-/               WA - second string length
-/       Returns
-/               XL = 0
-/       Exits:
-/               1 - string length exceeded capability of international comparison routine
-/               2 - 2nd string < 1st string
-/               3 - 2nd string > 1st string
-/               normal exit - strings equal
-/
+
+        zyscm is called to make either a strict ASCII or INTERNATIONAL comparison.
+
+        This external routine is provided to allow conditional access to
+        an alternate collation sequence.  Access is
+        controlled by the global switch IUSTRG.
+
+        Parameters:
+                XR - pointer to first string
+                WB - first string length
+                XL - pointer to second string
+                WA - second string length
+        Returns
+                XL = 0
+        Exits:
+                1 - string length exceeded capability of international comparison routine
+                2 - 2nd string < 1st string
+                3 - 2nd string > 1st string
+                normal exit - strings equal
+
 */
 
 #include "port.h"
@@ -6172,17 +6172,17 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       zysdc - check system expiration date
-/
-/       zysdc prints any header messages and may check
-/       the date to see if execution is allowed to proceed.
-/
-/       Parameters:
-/           Nothing
-/       Returns
-/           Nothing
-/           No return if execution not permitted
-/
+        zysdc - check system expiration date
+
+        zysdc prints any header messages and may check
+        the date to see if execution is allowed to proceed.
+
+        Parameters:
+            Nothing
+        Returns
+            Nothing
+            No return if execution not permitted
+
 */
 
 #include "port.h"
@@ -6251,24 +6251,24 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSDT.C          Version:  01.06
-/       ---------------------------------------
-/
-/       Contents:       Function zysdt
-/                       Function conv
+        File:  SYSDT.C          Version:  01.06
+        ---------------------------------------
+
+        Contents:       Function zysdt
+                        Function conv
 */
 
 /*
-/       zysdt - get current date
-/
-/       zysdt is called when executing a Spitbol date function.
-/
-/       Parameters:
-/       XR - optional integer argument describing date format desired
-/       Returns:
-/           XL - pointer to SCBLK containing date string
-/       Exits:
-/           None
+        zysdt - get current date
+
+        zysdt is called when executing a Spitbol date function.
+
+        Parameters:
+        XR - optional integer argument describing date format desired
+        Returns:
+            XL - pointer to SCBLK containing date string
+        Exits:
+            None
 */
 
 #include "port.h"
@@ -6395,31 +6395,31 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSEA.C          Version:  01.00
-/       ---------------------------------------
-/
-/       Contents:       Function zysea
+        File:  SYSEA.C          Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function zysea
 */
 
 /*
-/
-/       zysea - error advise
-/
-/       Here we catch errors before they are printed.
-/
-/       Parameters:
-/           XR - Error stage
-/                       if XR = STGIC, STGCE, STGXT then
-/                               WA - error number (1-330)
-/                               WB - column number
-/                               WC - line number
-/                               XL - scblk containing source file name
-/       Returns:
-/           XR - SCBLK of message to print, or 0 if none
-/       Exits:
-/           1 - suppress printing of error message
-/
-/  1.30.20 3/18/2000 - fix bug displaying column number - 1
+
+        zysea - error advise
+
+        Here we catch errors before they are printed.
+
+        Parameters:
+            XR - Error stage
+                        if XR = STGIC, STGCE, STGXT then
+                                WA - error number (1-330)
+                                WB - column number
+                                WC - line number
+                                XL - scblk containing source file name
+        Returns:
+            XR - SCBLK of message to print, or 0 if none
+        Exits:
+            1 - suppress printing of error message
+
+   1.30.20 3/18/2000 - fix bug displaying column number - 1
 */
 
 #include "port.h"
@@ -6502,35 +6502,35 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSEF.C          Version:  01.02
-/       ---------------------------------------
-/
-/       Contents:       Function zysef
+        File:  SYSEF.C          Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function zysef
 */
 
 /*
-/       zysef - eject file
-/
-/       zysef writes an eject (form-feed) to a file.
-/
-/       Parameters:
-/           WA - FCBLK pointer or 0
-/           XR - SCBLK pointer (EJECT argument)
-/       Returns:
-/           Nothing
-/       Exits:
-/           1 - file does not exist
-/           2 - inappropriate file
-/           3 - i/o error
-/
-/       v1.02 1-Feb-93 Change oswrite calling sequence.
+        zysef - eject file
+
+        zysef writes an eject (form-feed) to a file.
+
+        Parameters:
+            WA - FCBLK pointer or 0
+            XR - SCBLK pointer (EJECT argument)
+        Returns:
+            Nothing
+        Exits:
+            1 - file does not exist
+            2 - inappropriate file
+            3 - i/o error
+
+        v1.02 1-Feb-93 Change oswrite calling sequence.
 */
 
 #include "port.h"
 
 /*
-/       ffscblk is one of the few SCBLKs that can be directly allocated
-/       using a C struct!
+        ffscblk is one of the few SCBLKs that can be directly allocated
+        using a C struct!
 */
 static struct scblk     ffscblk =
 {
@@ -6575,35 +6575,35 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSEJ.C          Version:  01.04
-/       ---------------------------------------
-/
-/       Contents:       Function zysej
+        File:  SYSEJ.C          Version:  01.04
+        ---------------------------------------
+
+        Contents:       Function zysej
 */
 
 /*
-/       zysej - end job
-/
-/       zysej is called to terminate spitbol's execution.  Any open files
-/       will be closed before calling __exit.
-/
-/       Parameters:
-/           WA - value of &ABEND keyword (always 0)
-/           WB - value of &CODE keyword
-/           XL - pointer to FCBLK chain
-/       Returns:
-/           NO RETURN
-/
-/       HISTORY
-/
-/  V1.04 MBE 07-Aug-90  Avoid using heap data structures if aborted in
-/                               the middle of a garbage collection.
-/
-/  V1.03 MBE 27-Nov-89  Call termhost() if 80386 version to clear any
-/                       funny modes from screen host functions.
-/
-/  V1.02 MBE 14-Dec-87  Make file closing loop into function for access from
-/                       sysxi.c.
+        zysej - end job
+
+        zysej is called to terminate spitbol's execution.  Any open files
+        will be closed before calling __exit.
+
+        Parameters:
+            WA - value of &ABEND keyword (always 0)
+            WB - value of &CODE keyword
+            XL - pointer to FCBLK chain
+        Returns:
+            NO RETURN
+
+        HISTORY
+
+   V1.04 MBE 07-Aug-90  Avoid using heap data structures if aborted in
+                                the middle of a garbage collection.
+
+   V1.03 MBE 27-Nov-89  Call termhost() if 80386 version to clear any
+                        funny modes from screen host functions.
+
+   V1.02 MBE 14-Dec-87  Make file closing loop into function for access from
+                        sysxi.c.
 */
 
 #include "port.h"
@@ -6614,14 +6614,14 @@ unsigned char FAR *bufp;
 
 
 /*
-/  close_all - Close all files.
-/
-/  Parameters:
-/       chfcb   pointer to FCBLK chain or 0
-/  Returns:
-/       Nothing
-/  Side Effects:
-/       All files on the chain are closed and buffers flushed.
+   close_all - Close all files.
+
+   Parameters:
+        chfcb   pointer to FCBLK chain or 0
+   Returns:
+        Nothing
+   Side Effects:
+        All files on the chain are closed and buffers flushed.
 */
 
 void close_all(chb)
@@ -6683,52 +6683,52 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSEM.C          Version:  2.01
-/       ---------------------------------------
-/
-/       Contents:       Function zysem
+        File:  SYSEM.C          Version:  2.01
+        ---------------------------------------
+
+        Contents:       Function zysem
 */
 
 /*
-/       zysem - get error message text
-/
-/       zysem returns the error message associated with an error number.
-/
-/       An assembly language file, errors.s contains a compressed form
-/       of the error messages.  On the Macintosh, error messages are
-/       in the resource fork of the application, uncompressed.  This
-/       allows the user to easily translate them into any language.
-/
-/       Error messages are compressed into two character arrays.  Segments
-/       within these arrays are delineated by \0 characters.  To find the
-/       Nth segment, it is necessary to scan the array for the Nth \0.  The
-/       segment begins at the next character position.
-/
-/       The first array, errors, contains 330 segments for the primary
-/       error messages.  Within a segment, there are ascii characters
-/       in the range 32-127, which are taken verbatim, and character
-/       values 1-31 and 128-255, which are special characters.
-/
-/       The special characters are mapped into the range [1-159], where
-/       they index segments in the second array, phrases.  Segments within
-/       phrases follow the same rules as those within arrays, and may
-/       contain special characters themself.
-/
-/       This expansion code is by necessity recursive.  This code and
-/       the data within errors.s were coded for minimum space, not speed,
-/       since it is used infrequently.
-/
-/       Parameters:
-/           WA - error number
-/       Returns:
-/           XR - pointer to SCBLK containing error message (null string is ok)
-/       Exits:
-/           None
-/
-/   V2.01 23-Dec-91
-/               Add ERRDIST to allow the errors and phrases arrays to be
-/       accessed as FAR pointers for those systems that point to them
-/               in another segment.
+        zysem - get error message text
+
+        zysem returns the error message associated with an error number.
+
+        An assembly language file, errors.s contains a compressed form
+        of the error messages.  On the Macintosh, error messages are
+        in the resource fork of the application, uncompressed.  This
+        allows the user to easily translate them into any language.
+
+        Error messages are compressed into two character arrays.  Segments
+        within these arrays are delineated by \0 characters.  To find the
+        Nth segment, it is necessary to scan the array for the Nth \0.  The
+        segment begins at the next character position.
+
+        The first array, errors, contains 330 segments for the primary
+        error messages.  Within a segment, there are ascii characters
+        in the range 32-127, which are taken verbatim, and character
+        values 1-31 and 128-255, which are special characters.
+
+        The special characters are mapped into the range [1-159], where
+        they index segments in the second array, phrases.  Segments within
+        phrases follow the same rules as those within arrays, and may
+        contain special characters themself.
+
+        This expansion code is by necessity recursive.  This code and
+        the data within errors.s were coded for minimum space, not speed,
+        since it is used infrequently.
+
+        Parameters:
+            WA - error number
+        Returns:
+            XR - pointer to SCBLK containing error message (null string is ok)
+        Exits:
+            None
+
+    V2.01 23-Dec-91
+                Add ERRDIST to allow the errors and phrases arrays to be
+        accessed as FAR pointers for those systems that point to them
+                in another segment.
 */
 
 #include "port.h"
@@ -6746,10 +6746,10 @@ zysem()
 }
 
 /*
-/       special(c)
-/
-/       Return 0 if argument character is normal ascii.
-/       Return index to phrase array if c is a special character.
+        special(c)
+
+        Return 0 if argument character is normal ascii.
+        Return index to phrase array if c is a special character.
 */
 word special(c)
 word c;
@@ -6764,13 +6764,13 @@ word c;
 }
 
 /*
-/       msgcopy(n, source, dest)
-/
-/       msgcopy() locates segment n in the source array, and copies its
-/       characters to the destination array.  If any special characters
-/       are encountered, msgcopy() is called recursively to expand them.
-/
-/       The function returns the number of characters copied.
+        msgcopy(n, source, dest)
+
+        msgcopy() locates segment n in the source array, and copies its
+        characters to the destination array.  If any special characters
+        are encountered, msgcopy() is called recursively to expand them.
+
+        The function returns the number of characters copied.
 */
 
 word msgcopy(n, source, dest )
@@ -6837,30 +6837,30 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSEN.C          Version:  01.02
-/       ---------------------------------------
-/
-/       Contents:       Function zysen
+        File:  SYSEN.C          Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function zysen
 */
 
 /*
-/       zysen - endfile
-/
-/       endfile is an artifact from the FORTRAN days and is supposed to
-/       close a file.  However, the file may be reopened, etc.  We just
-/       close it.
-/
-/       Parameters:
-/           WA - FCBLK pointer or 0
-/           XR - SCBLK pointer (ENDFILE argument)
-/       Returns:
-/           Nothing
-/       Exits:
-/           1 - file does not exist
-/           2 - inappropriate file
-/           3 - i/o error
-/
-/       V1.02 29-Mar-91 Check for error after calling osclose().
+        zysen - endfile
+
+        endfile is an artifact from the FORTRAN days and is supposed to
+        close a file.  However, the file may be reopened, etc.  We just
+        close it.
+
+        Parameters:
+            WA - FCBLK pointer or 0
+            XR - SCBLK pointer (ENDFILE argument)
+        Returns:
+            Nothing
+        Exits:
+            1 - file does not exist
+            2 - inappropriate file
+            3 - i/o error
+
+        V1.02 29-Mar-91 Check for error after calling osclose().
 */
 
 #include "port.h"
@@ -6901,23 +6901,23 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSEP.C          Version:  01.01
-/       ---------------------------------------
-/
-/       Contents:       Function zysep
+        File:  SYSEP.C          Version:  01.01
+        ---------------------------------------
+
+        Contents:       Function zysep
 */
 
 /*
-/       zysep - eject printer (standard output)
-/
-/       zysep writes an eject to the standard output.
-/
-/       Parameters:
-/           None
-/       Returns:
-/           Nothing
-/       Exits:
-/           None
+        zysep - eject printer (standard output)
+
+        zysep writes an eject to the standard output.
+
+        Parameters:
+            None
+        Returns:
+            Nothing
+        Exits:
+            None
 */
 
 #include "port.h"
@@ -6949,34 +6949,34 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSEX.C          Version:  01.01
-/       ---------------------------------------
-/
-/       Contents:       Function zysex
-/
+        File:  SYSEX.C          Version:  01.01
+        ---------------------------------------
+
+        Contents:       Function zysex
+
 */
 
 /*
-/       zysex - call external function
-/
-/       Parameters:
-/           XS - pointer to arguments
-/           XL - pointer to EFBLK
-/           WA - number of arguments
-/       Returns:
-/           XR - result
-/       Exits:
-/           1 - call fails
-/           2 - insufficient memory or function not found
-/           3 - improper argument type
-/
-/   WARNING!  THIS FUNCTION MAY CAUSE STORAGE ALLOCATION WHEN SAVING
-/       THE RETURNED VALUE FROM THE EXTERNAL FUNCTION.  THAT ALLOCATION MAY
-/       CAUSE A GARBAGE COLLECTION, THEREFORE IT IS IMPERATIVE THAT THE STACK
-/       BE CLEAN, COLLECTABLE, AND WORD ALIGNED.
-/
-/  v1.01 11/25/90 Add exit 2 - insufficient memory, exit 3 - improper argument.
-/
+        zysex - call external function
+
+        Parameters:
+            XS - pointer to arguments
+            XL - pointer to EFBLK
+            WA - number of arguments
+        Returns:
+            XR - result
+        Exits:
+            1 - call fails
+            2 - insufficient memory or function not found
+            3 - improper argument type
+
+    WARNING!  THIS FUNCTION MAY CAUSE STORAGE ALLOCATION WHEN SAVING
+        THE RETURNED VALUE FROM THE EXTERNAL FUNCTION.  THAT ALLOCATION MAY
+        CAUSE A GARBAGE COLLECTION, THEREFORE IT IS IMPERATIVE THAT THE STACK
+        BE CLEAN, COLLECTABLE, AND WORD ALIGNED.
+
+   v1.01 11/25/90 Add exit 2 - insufficient memory, exit 3 - improper argument.
+
 */
 
 #include "port.h"
@@ -7028,56 +7028,56 @@ This file is part of Macro SPITBOL.
 
 /*
 / File:  SYSFC.C    Version:  01.04
-/       ---------------------------------------
-/
-/       Contents:       Function zysfc
+        ---------------------------------------
+
+        Contents:       Function zysfc
 */
 
 /*
-/   zysfc - setup file control block
-/
-/   This is sort of a messy function that determines from the I/O association
-/   arguments, what type of I/O is to be done and which i/o control blocks
-/   are needed.  There are a number of possiblities:
-/
-/   For the first call to zysfc that establishes an i/o channel, allocate:
-/       fcblk & ioblk & bfblk
-/
-/   For a second, third, ... call to zysfc that establishes a different type
-/   of access to an existing i/o association, allocate:
-/       fcblk
-/
-/   For a second, third, ... call to zysfc that does specify any arguments,
-/   allocate:
-/       nothing, use existing fcblk
-/
-/   Notice that of the three blocks that are allocated, only the BFBLK
-/   has a varying size;  its size depends on the buffer size specified
-/   as an I/O argument.
-/
-/   Parameters:
-/       xl      pointer to scblk holding filearg1 (channel id)
-/       xr      pointer to scblk holding filearg2 (filename & args)
-/       wa      pointer to existing fcblk or 0
-/       wb      0/3 for input/output association
-/       wc      number of scblk pointers on stack (forced to zero by interface)
-/   Returns:
-/       wa = xl = 0     Nothing to allocate
-/       wa > 0          Size of requested fcblk
-/       wa = 0, xl > 0  Private fcblk pointer in xl
-/       wc              0/1/2 for xrblk/xnblk/static allocation request
-/
-/   Exits:
-/       1       invalid file argument
+    zysfc - setup file control block
+
+    This is sort of a messy function that determines from the I/O association
+    arguments, what type of I/O is to be done and which i/o control blocks
+    are needed.  There are a number of possiblities:
+
+    For the first call to zysfc that establishes an i/o channel, allocate:
+        fcblk & ioblk & bfblk
+
+    For a second, third, ... call to zysfc that establishes a different type
+    of access to an existing i/o association, allocate:
+        fcblk
+
+    For a second, third, ... call to zysfc that does specify any arguments,
+    allocate:
+        nothing, use existing fcblk
+
+    Notice that of the three blocks that are allocated, only the BFBLK
+    has a varying size;  its size depends on the buffer size specified
+    as an I/O argument.
+
+    Parameters:
+        xl      pointer to scblk holding filearg1 (channel id)
+        xr      pointer to scblk holding filearg2 (filename & args)
+        wa      pointer to existing fcblk or 0
+        wb      0/3 for input/output association
+        wc      number of scblk pointers on stack (forced to zero by interface)
+    Returns:
+        wa = xl = 0     Nothing to allocate
+        wa > 0          Size of requested fcblk
+        wa = 0, xl > 0  Private fcblk pointer in xl
+        wc              0/1/2 for xrblk/xnblk/static allocation request
+
+    Exits:
+        1       invalid file argument
 / 2 channel already in use
-/
-/       1.03    If called first time with null filearg2, lookup filearg1
-/               in environment block, and use filename specified there
-/               instead.
-/
+
+        1.03    If called first time with null filearg2, lookup filearg1
+                in environment block, and use filename specified there
+                instead.
+
 / 1.04  If called with filename or file descriptor and channel is
-/   already in use, take new exit number 2.
-/
+    already in use, take new exit number 2.
+
 */
 
 #include "port.h"
@@ -7211,30 +7211,30 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSGC.C          Version:  01.01
-/       ---------------------------------------
-/
-/       zysgc - notification of system garbage collection
-/
-/       zysgc is called before and after a garbage collection.
-/       Some systems may wish to take special action using this information.
-/
-/       Parameters:
-/           XR - flag for garbage collection
-/                <>0 garbage collection commencing
-/                =0  garbage collection concluding
-/               WA - starting location of dynamic area
-/               WB - next available location
-/               WC - last available location
-/       Returns
-/           Nothing
-/           Preserves all registers
-/
-/  Version history:
-/         v1.01 17-May-91 MBE
-/               Add arguments in WA, WB, WC for use in discarding page
-/       contents of freed memory on virtual memory systems.
-/
+        File:  SYSGC.C          Version:  01.01
+        ---------------------------------------
+
+        zysgc - notification of system garbage collection
+
+        zysgc is called before and after a garbage collection.
+        Some systems may wish to take special action using this information.
+
+        Parameters:
+            XR - flag for garbage collection
+                 <>0 garbage collection commencing
+                 =0  garbage collection concluding
+                WA - starting location of dynamic area
+                WB - next available location
+                WC - last available location
+        Returns
+            Nothing
+            Preserves all registers
+
+   Version history:
+          v1.01 17-May-91 MBE
+                Add arguments in WA, WB, WC for use in discarding page
+        contents of freed memory on virtual memory systems.
+
 */
 
 #include "port.h"
@@ -7266,100 +7266,100 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/  File:  SYSHS.C    Version:  01.13
-/       ---------------------------------------
-/
-/       Contents:       Function zyshs
-/
-/  1.13  21-Jun-97   Changed getint() to allow real argument.
-/
-/  1.12  15-Mar-97   Added HOST(-1) calls.
-/
-/       1.11    18-May-92       Change getint() to return value as IATYPE.
-/
-/   1.10    20-Jan-92   Soften check in restorestring to just verify
-/                                               that scp is non-zero.  Previously, we were
-/                                               checking for valid sc_type word at scp, which
-/                                               might not be true if two adjacent string arguments
-/                                               were used in the host call.  The zero byte from
-/                                               the first arg might be clobbering the type word
-/                                               of the second arg.  This was the case in the
-/                                               Mac implementation with a HOST(16) call.
-/
-/       1.09    03-Jul-90       Add functions for checking, converting, and
-/                                               restoring string arguments.  The technique
-/                                               of producing C-style strings by storing a zero
-/                                               beyond the end of a SPITBOL string fails when
-/                                               two string arguments are adjacent on the heap.
-/
-/                                               Storing a zero after the first string will bash
-/                                               the type word of the second string, and the
-/                                               subsequent conversion of the second string will fail.
-/
-/                                               To overcome this, we check all argument types first,
-/                                               and then convert strings without checking type words.
-/                                               If a sub-function contains both integer and string
-/                                               arguments, convert the integers first.
-/
-/       1.08    23-Jun-90       Add additional argument to HOST(1,"cmd","path")
-/                                               for MS-DOS hosts.
-/
-/       1.07    21-Nov-89       Add support for 386-specific hosts
-/
-/       1.06    21-Sep-88       Added fourth and fifth arguments to call.
-/
-/       1.05    04-Mar-88       Call save0() in swcinp.c to make sure fd 0
-/                               properly connected prior to HOST(1,"cmd").
-/
-/
+   File:  SYSHS.C    Version:  01.13
+        ---------------------------------------
+
+        Contents:       Function zyshs
+
+   1.13  21-Jun-97   Changed getint() to allow real argument.
+
+   1.12  15-Mar-97   Added HOST(-1) calls.
+
+        1.11    18-May-92       Change getint() to return value as IATYPE.
+
+    1.10    20-Jan-92   Soften check in restorestring to just verify
+                                                that scp is non-zero.  Previously, we were
+                                                checking for valid sc_type word at scp, which
+                                                might not be true if two adjacent string arguments
+                                                were used in the host call.  The zero byte from
+                                                the first arg might be clobbering the type word
+                                                of the second arg.  This was the case in the
+                                                Mac implementation with a HOST(16) call.
+
+        1.09    03-Jul-90       Add functions for checking, converting, and
+                                                restoring string arguments.  The technique
+                                                of producing C-style strings by storing a zero
+                                                beyond the end of a SPITBOL string fails when
+                                                two string arguments are adjacent on the heap.
+
+                                                Storing a zero after the first string will bash
+                                                the type word of the second string, and the
+                                                subsequent conversion of the second string will fail.
+
+                                                To overcome this, we check all argument types first,
+                                                and then convert strings without checking type words.
+                                                If a sub-function contains both integer and string
+                                                arguments, convert the integers first.
+
+        1.08    23-Jun-90       Add additional argument to HOST(1,"cmd","path")
+                                                for MS-DOS hosts.
+
+        1.07    21-Nov-89       Add support for 386-specific hosts
+
+        1.06    21-Sep-88       Added fourth and fifth arguments to call.
+
+        1.05    04-Mar-88       Call save0() in swcinp.c to make sure fd 0
+                                properly connected prior to HOST(1,"cmd").
+
+
 */
 
 /*
-/       zyshs - host specific functions
-/
-/       zyshs is the catch-all function in the interface.  Any actions that
-/       are host specific should be placed here.
-/
-/       zyshs determines what function to preformed by examining the value
-/       of argument 1.  Current functions:
-/
-/       HOST()
-/               returns the host string identifying the host environment
-/
-/       HOST( 0 )
-/               returns -u argument from command line
-/
-/       HOST( 1, "command" )
-/               executes 2nd argument as a Unix command
-/
-/       HOST( 2, n )
-/               returns command line argument "n"
-/
-/       HOST( 3 )
-/               returns the command count
-/
-/       HOST( 4, "v" )
-/               returns the value of environment variable "v"
-/
-/       Other HOST functions may be provided by system specific modules.
-/
-/       Parameters:
-/           WA - argument 1
-/           XL - argument 2
-/           XR - argument 3
-/           WB - argument 4
-/           WC - argument 5
-/       Returns:
-/           See exits
-/       Exits:
-/           1 - erroneous argument
-/           2 - execution error
-/           3 - pointer to SCBLK or 0 in XL
-/           4 - return NULL string
-/           5 - return result in XR
-/           6 - cause statement failure
-/           7 - return string in XL, length in WA (may be 0)
-/           8 - return copy of result in XR
+        zyshs - host specific functions
+
+        zyshs is the catch-all function in the interface.  Any actions that
+        are host specific should be placed here.
+
+        zyshs determines what function to preformed by examining the value
+        of argument 1.  Current functions:
+
+        HOST()
+                returns the host string identifying the host environment
+
+        HOST( 0 )
+                returns -u argument from command line
+
+        HOST( 1, "command" )
+                executes 2nd argument as a Unix command
+
+        HOST( 2, n )
+                returns command line argument "n"
+
+        HOST( 3 )
+                returns the command count
+
+        HOST( 4, "v" )
+                returns the value of environment variable "v"
+
+        Other HOST functions may be provided by system specific modules.
+
+        Parameters:
+            WA - argument 1
+            XL - argument 2
+            XR - argument 3
+            WB - argument 4
+            WC - argument 5
+        Returns:
+            See exits
+        Exits:
+            1 - erroneous argument
+            2 - execution error
+            3 - pointer to SCBLK or 0 in XL
+            4 - return NULL string
+            5 - return result in XR
+            6 - cause statement failure
+            7 - return string in XL, length in WA (may be 0)
+            8 - return copy of result in XR
 */
 
 #include "port.h"
@@ -7710,34 +7710,34 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSID.C          Version:  01.02
-/       ---------------------------------------
-/
-/       Contents:       Function zysid
-/
-/       1.02    Move id2 string here.
+        File:  SYSID.C          Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function zysid
+
+        1.02    Move id2 string here.
 */
 
 /*
-/       zysid - identify system
-/
-/       zysid returns two strings identifying the Spitbol system.
-/
-/       Parameters:
-/           None
-/       Returns:
-/           XR - pointer to SCBLK containing suffix to Spitbol header
-/           XL - pointer to SCBLK containing 2nd header line
-/       Exits:
-/           None
+        zysid - identify system
+
+        zysid returns two strings identifying the Spitbol system.
+
+        Parameters:
+            None
+        Returns:
+            XR - pointer to SCBLK containing suffix to Spitbol header
+            XL - pointer to SCBLK containing 2nd header line
+        Exits:
+            None
 */
 
 #include "port.h"
 
 /*
-/   define actual headers elsewhere to overcome problems in initializing
-/   the two SCBLKs.  Use id2blk instead of tscblk because tscblk may
-/       be active with an error message when zysid is called.
+    define actual headers elsewhere to overcome problems in initializing
+    the two SCBLKs.  Use id2blk instead of tscblk because tscblk may
+        be active with an error message when zysid is called.
 */
 
 zysid()
@@ -7775,38 +7775,38 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/  File:  SYSIF.C    Version:  01.03
-/       -----------------------------------
-/
-/       Contents:       Function zysif
-/
-/       V1.01   01-25-90
-/                       If include file cannot be opened, restore fd 0.
-/
-/       V1.02   02-16-91
-/                       Call clrbuf() after closing the existing file.
-/
-/  V1.03 04-27-97
-/        Look for include file in the directory where SPITBOL resides, and
-/        in the directory of the first source file.
+   File:  SYSIF.C    Version:  01.03
+        -----------------------------------
+
+        Contents:       Function zysif
+
+        V1.01   01-25-90
+                        If include file cannot be opened, restore fd 0.
+
+        V1.02   02-16-91
+                        Call clrbuf() after closing the existing file.
+
+   V1.03 04-27-97
+         Look for include file in the directory where SPITBOL resides, and
+         in the directory of the first source file.
 */
 
 /*
-/       zysif - start/stop using include file
-/
-/       zysif stacks the current input stream and opens a new include file.
-/               It is also called when an EOF is read to restore the stacked file.
-/
-/       Parameters:
-/           XL   pointer to SCBLK with name of file.
-/                        0 to end use of file.
-/           XR - pointer to vacant SCBLK that will receive the name of the
-/                        file finally opened, after looking in other directories.
-/       Returns:
-/           XR - scblk filled in with full path name and length.
-/       Exits:
-/            1 - could not find file
-/
+        zysif - start/stop using include file
+
+        zysif stacks the current input stream and opens a new include file.
+                It is also called when an EOF is read to restore the stacked file.
+
+        Parameters:
+            XL   pointer to SCBLK with name of file.
+                         0 to end use of file.
+            XR - pointer to vacant SCBLK that will receive the name of the
+                         file finally opened, after looking in other directories.
+        Returns:
+            XR - scblk filled in with full path name and length.
+        Exits:
+             1 - could not find file
+
 */
 
 #include "port.h"
@@ -7818,7 +7818,7 @@ This file is part of Macro SPITBOL.
 static  void    openprev Params((void));
 
 /*
-/  Helper function to back up one file in the include nesting.
+   Helper function to back up one file in the include nesting.
 */
 
 static void openprev()
@@ -7954,25 +7954,25 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSIL.C          Version:  01.03
-/       ---------------------------------------
-/
-/       Contents:       Function zysil
-/
-/       V1.02   Return binary/text indication in WC
-/       V1.03   Adjust to new fcb style with separate mode field.  1-Feb-93.
+        File:  SYSIL.C          Version:  01.03
+        ---------------------------------------
+
+        Contents:       Function zysil
+
+        V1.02   Return binary/text indication in WC
+        V1.03   Adjust to new fcb style with separate mode field.  1-Feb-93.
 */
 
 /*
-/       zysil - get input record length
-/
-/       Parameters:
-/           WA - pointer to FCBLK
-/       Returns:
-/           WA - length of next record to be read
-/           WC - 0 if binary file, 1 if text file
-/       Exits:
-/           None
+        zysil - get input record length
+
+        Parameters:
+            WA - pointer to FCBLK
+        Returns:
+            WA - length of next record to be read
+            WC - 0 if binary file, 1 if text file
+        Exits:
+            None
 */
 
 #include "port.h"
@@ -8009,31 +8009,31 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSIN.C          Version:  01.03
-/       ---------------------------------------
-/
-/       Contents:       Function zysin
+        File:  SYSIN.C          Version:  01.03
+        ---------------------------------------
+
+        Contents:       Function zysin
 */
 
 /*
-/       zysin - read input record
-/
-/       zysin reads and returns the next input record from a file.
-/
-/       Parameters:
-/           WA - pointer to FCBLK or 0
-/           XR - pointer to SCBLK containing buffer to receive record read
-/       Returns:
-/           Nothing
-/       Exits:
-/           1 - EOF or file not available after SYSXI
-/           2 - i/o error
-/           3 - record format error
-/
-/       V1.02   05-Mar-88       When reading an EOF from fd 0, call swcinp()
-/                               before calling it a true EOF.
-/       V1.03   01-Feb-93       New osread calling sequence with separate mode and
-/                               line length fields.
+        zysin - read input record
+
+        zysin reads and returns the next input record from a file.
+
+        Parameters:
+            WA - pointer to FCBLK or 0
+            XR - pointer to SCBLK containing buffer to receive record read
+        Returns:
+            Nothing
+        Exits:
+            1 - EOF or file not available after SYSXI
+            2 - i/o error
+            3 - record format error
+
+        V1.02   05-Mar-88       When reading an EOF from fd 0, call swcinp()
+                                before calling it a true EOF.
+        V1.03   01-Feb-93       New osread calling sequence with separate mode and
+                                line length fields.
 */
 
 #include "port.h"
@@ -8109,43 +8109,43 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSIO.C          Version:  01.07
-/       ---------------------------------------
-/
-/       Contents:       Function zysio
+        File:  SYSIO.C          Version:  01.07
+        ---------------------------------------
+
+        Contents:       Function zysio
 */
 
 /*
-/   zysio - fill in file control block
-/
-/   This function fills in the i/o control blocks requested by zysfc.
-/   Remember that spitbol compiler has allocated a single block of
-/   the requested length;  it is the responsibility of this function
-/   to divide this large block into smaller blocks as needed.
-/
-/   Parameters:
-/       xl      pointer to scblk holding filearg1 (channel id)
-/       xr      pointer to scblk holding filearg2 (filename & args)
-/       wa      pointer to fcblk or 0
-/       wb      0/3 for input/output association
-/   Returns:
-/       xl      fcblk pointer
-/       wc      maximum record length
-/   Exits:
-/       1       file does not exist
-/       2       I/O not allowed
-/
-/  1.04         If filearg2 is null, filearg1 can be an environment
-/               variable that points to the real filename.  Flag IO_ENV
-/               notes this case, and iob->fnm points to filearg1 instead
-/               of filearg 2.
-/
+    zysio - fill in file control block
+
+    This function fills in the i/o control blocks requested by zysfc.
+    Remember that spitbol compiler has allocated a single block of
+    the requested length;  it is the responsibility of this function
+    to divide this large block into smaller blocks as needed.
+
+    Parameters:
+        xl      pointer to scblk holding filearg1 (channel id)
+        xr      pointer to scblk holding filearg2 (filename & args)
+        wa      pointer to fcblk or 0
+        wb      0/3 for input/output association
+    Returns:
+        xl      fcblk pointer
+        wc      maximum record length
+    Exits:
+        1       file does not exist
+        2       I/O not allowed
+
+   1.04         If filearg2 is null, filearg1 can be an environment
+                variable that points to the real filename.  Flag IO_ENV
+                notes this case, and iob->fnm points to filearg1 instead
+                of filearg 2.
+
 / 1.05 06-Feb-91 Changed for read/write I/O.
-/
+
 / 1.06 01-Feb-93 Split record size into two fields (rsz and mode), to
-/                                prevent negative record size appearing to be a valid
-/                                pointer in 8088 SPITBOL.
-/
+                                 prevent negative record size appearing to be a valid
+                                 pointer in 8088 SPITBOL.
+
 / 1.07 26-Oct-94 Added share field to ioblk.
 */
 
@@ -8313,39 +8313,39 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSLD.C          Version:  01.03
-/       ---------------------------------------
-/
-/       Contents:       Function zysld
-/
+        File:  SYSLD.C          Version:  01.03
+        ---------------------------------------
+
+        Contents:       Function zysld
+
 */
 
 /*
-/       zysld - load external function
-/
-/       Parameters:
-/           XR - pointer to SCBLK containing function name
-/           XL - pointer to SCBLK containing library name
-/       Returns:
-/           XR - pointer to code (or other data structure) to be stored in the EFBLK.
-/       Exits:
-/           1 - function does not exist
-/           2 - I/O error loading function
-/           3 - insufficient memory
-/
-/
-/       WARNING:  THIS FUNCTION CALLS A FUNCTION WHICH MAY INVOKE A GARBAGE
-/       COLLECTION.  STACK MUST REMAIN WORD ALIGNED AND COLLECTABLE.
-/
-/       V1.01 09/09/90  Rearrange so that dynamic variables are not
-/                                       on stack when loadef is called.  If they are, and
-/                                       a garbage collection is triggered, garbage text in
-/                                       dynamic area could foul up garbage collector.
-/                                       Fixed for SPITBOL-386 v1.08.
-/
-/       V1.02 11/25/90  Add exit 3 return for insufficient memory.
-/
-/   V1.02 4-Sep-91  <withdrawn>.
+        zysld - load external function
+
+        Parameters:
+            XR - pointer to SCBLK containing function name
+            XL - pointer to SCBLK containing library name
+        Returns:
+            XR - pointer to code (or other data structure) to be stored in the EFBLK.
+        Exits:
+            1 - function does not exist
+            2 - I/O error loading function
+            3 - insufficient memory
+
+
+        WARNING:  THIS FUNCTION CALLS A FUNCTION WHICH MAY INVOKE A GARBAGE
+        COLLECTION.  STACK MUST REMAIN WORD ALIGNED AND COLLECTABLE.
+
+        V1.01 09/09/90  Rearrange so that dynamic variables are not
+                                        on stack when loadef is called.  If they are, and
+                                        a garbage collection is triggered, garbage text in
+                                        dynamic area could foul up garbage collector.
+                                        Fixed for SPITBOL-386 v1.08.
+
+        V1.02 11/25/90  Add exit 3 return for insufficient memory.
+
+    V1.02 4-Sep-91  <withdrawn>.
 */
 
 #include "port.h"
@@ -9358,27 +9358,27 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSMM.C          Version:  01.04
-/       ---------------------------------------
-/
-/       Contents:       Function zysmm
+        File:  SYSMM.C          Version:  01.04
+        ---------------------------------------
+
+        Contents:       Function zysmm
 */
 
 /*
-/       zysmm- get more memory
-/
-/       Parameters:
-/           None
-/       Returns:
-/           XR - number of addtional words obtained
-/       Exits:
-/           None
-/
-/  V1.02 08/06/89 - if allocation fails, try smaller amounts within reason.
-/  V1.03 11/07/89 - add sanity check to make sure new memory is contiguous
-/                   with old end of heap.
-/  V1.04 01/29/91 - remove else clause within moremem(), add comments.
-/
+        zysmm- get more memory
+
+        Parameters:
+            None
+        Returns:
+            XR - number of addtional words obtained
+        Exits:
+            None
+
+   V1.02 08/06/89 - if allocation fails, try smaller amounts within reason.
+   V1.03 11/07/89 - add sanity check to make sure new memory is contiguous
+                    with old end of heap.
+   V1.04 01/29/91 - remove else clause within moremem(), add comments.
+
 */
 
 #include "port.h"
@@ -9465,21 +9465,21 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSMX.C          Version:  01.01
-/       ---------------------------------------
-/
-/       Contents:       Function zysmx
+        File:  SYSMX.C          Version:  01.01
+        ---------------------------------------
+
+        Contents:       Function zysmx
 */
 
 /*
-/       zysmx - return maximum size in bytes of any created object
-/
-/       Parameters:
-/           XR - tentative end of static
-/       Returns:
-/           WA - maximum created object size in bytes
-/       Exits:
-/           None
+        zysmx - return maximum size in bytes of any created object
+
+        Parameters:
+            XR - tentative end of static
+        Returns:
+            WA - maximum created object size in bytes
+        Exits:
+            None
 */
 
 #include "port.h"
@@ -9511,34 +9511,34 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSOU.C          Version:  01.03
-/       ---------------------------------------
-/
-/       Contents:       Function zysou
-/
-/   V1.04       4-3-95
-/                   Modified to accept BCBLKs (Buffers) as well as SCBLKs.
-/
-/       V1.03   New oswrite calling sequence with separate mode & line length.
-/       V1.02   Reference to changes in compiler at ASG11,
-/               this routine is now called for writes to OUTPUT
-/               and TERMINAL.  WA contains a 0 or 1 instead of an
-/               FCBLK.
+        File:  SYSOU.C          Version:  01.03
+        ---------------------------------------
+
+        Contents:       Function zysou
+
+    V1.04       4-3-95
+                    Modified to accept BCBLKs (Buffers) as well as SCBLKs.
+
+        V1.03   New oswrite calling sequence with separate mode & line length.
+        V1.02   Reference to changes in compiler at ASG11,
+                this routine is now called for writes to OUTPUT
+                and TERMINAL.  WA contains a 0 or 1 instead of an
+                FCBLK.
 */
 
 /*
-/       zysou - output a record
-/
-/       zysou writes a record to a file.
-/
-/       Parameters:
-/           WA - pointer to FCBLK or 0 (TERMINAL) or 1 (OUTPUT)
-/           XR - pointer to BCBLK or SCBLK containing record to be written
-/       Returns:
-/           Nothing
-/       Exits:
-/           1 - file full or no file after SYSXI
-/           2 - i/o error
+        zysou - output a record
+
+        zysou writes a record to a file.
+
+        Parameters:
+            WA - pointer to FCBLK or 0 (TERMINAL) or 1 (OUTPUT)
+            XR - pointer to BCBLK or SCBLK containing record to be written
+        Returns:
+            Nothing
+        Exits:
+            1 - file full or no file after SYSXI
+            2 - i/o error
 */
 
 #include "port.h"
@@ -9608,31 +9608,31 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSPL.C          Version:  01.01
-/       ---------------------------------------
-/
-/       zyspl - interface polling from SPITBOL
-/
-/       zyspl is called before statement execution to allow the interface
-/         to regain control if desired.
-/       Parameters:
-/           WA - reason for call
-/                    =0  periodic polling
-/                    =1  breakpoint hit
-/                    =2  completion of statement stepping
-/     WB - current statement number
-/           XL - SCBLK of result if WA = 3.
-/       Normal Return
-/           WA - number of statements to elapse before calling SYSPL again.
-/       Exits:
-/           1 - set breakpoint
-/           2 - single step
-/           3 - evaluate expression
-/       normal exit - no special action
-/
-/  Version history:
-/
-/
+        File:  SYSPL.C          Version:  01.01
+        ---------------------------------------
+
+        zyspl - interface polling from SPITBOL
+
+        zyspl is called before statement execution to allow the interface
+          to regain control if desired.
+        Parameters:
+            WA - reason for call
+                     =0  periodic polling
+                     =1  breakpoint hit
+                     =2  completion of statement stepping
+      WB - current statement number
+            XL - SCBLK of result if WA = 3.
+        Normal Return
+            WA - number of statements to elapse before calling SYSPL again.
+        Exits:
+            1 - set breakpoint
+            2 - single step
+            3 - evaluate expression
+        normal exit - no special action
+
+   Version history:
+
+
 */
 
 #include "port.h"
@@ -9695,14 +9695,14 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSPP.C          Version:  01.01
-/       ---------------------------------------
-/
-/       Contents:       Function zyspp
+        File:  SYSPP.C          Version:  01.01
+        ---------------------------------------
+
+        Contents:       Function zyspp
 */
 
 /*
-/   zyspp - obtain print parameters
+    zyspp - obtain print parameters
 */
 
 #include "port.h"
@@ -9744,25 +9744,25 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSRW.C          Version:  01.01
-/       ---------------------------------------
-/
-/       Contents:       Function zysrw
+        File:  SYSRW.C          Version:  01.01
+        ---------------------------------------
+
+        Contents:       Function zysrw
 */
 
 /*
-/   zysrw - rewind file
-/
-/       Parameters
-/           WA - pointer to FCBLK or 0
-/           XR - pointer to SCBLK containing rewind argument
-/       Returns:
-/           Nothing
-/       Exits:
-/           1 - file doesn't exit
-/           2 - rewind not allowed on this device
-/           3 - I/O error
-/
+    zysrw - rewind file
+
+        Parameters
+            WA - pointer to FCBLK or 0
+            XR - pointer to SCBLK containing rewind argument
+        Returns:
+            Nothing
+        Exits:
+            1 - file doesn't exit
+            2 - rewind not allowed on this device
+            3 - I/O error
+
 */
 
 #include "port.h"
@@ -9807,67 +9807,67 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/  File:  SYSST.C    Version:  01.07
-/       ---------------------------------------
-/
-/       Contents:       Function zysst
-/
-/  01.02 10-Oct-87 MBE  Return EXIT_5 if I/O error.
-/                       Return resulting file position in IA
-/                       (requiring non-standard mod to V36A.MIN).
-/
-/  01.03 29-Nov-89 MBE  Allow SET of a system file.
-/
-/  01.04 18-May-92 MBE  Provide PC-SPITBOL-style support for SET.
-/
-/  01.05 01-Feb-93 MBE  fcb->rsz is always positive now.
-/
-/  01.06 21-Oct-94 MBE  Use uppercase function to fold case letters.
-/
-/  01.07 19-Jul-97 MBE  Add SETREAL support to force SET to use real for
-/                       offset argument and return value.  Used only for
-/                       special version for select customers.
-/
+   File:  SYSST.C    Version:  01.07
+        ---------------------------------------
+
+        Contents:       Function zysst
+
+   01.02 10-Oct-87 MBE  Return EXIT_5 if I/O error.
+                        Return resulting file position in IA
+                        (requiring non-standard mod to V36A.MIN).
+
+   01.03 29-Nov-89 MBE  Allow SET of a system file.
+
+   01.04 18-May-92 MBE  Provide PC-SPITBOL-style support for SET.
+
+   01.05 01-Feb-93 MBE  fcb->rsz is always positive now.
+
+   01.06 21-Oct-94 MBE  Use uppercase function to fold case letters.
+
+   01.07 19-Jul-97 MBE  Add SETREAL support to force SET to use real for
+                        offset argument and return value.  Used only for
+                        special version for select customers.
+
 */
 
 /*
-/   zysst - set file position
-/
-/   Parameters:
-/       WA - FCBLK pointer
+    zysst - set file position
+
+    Parameters:
+        WA - FCBLK pointer
 #if SETREAL
-/  RA - 2nd argument (real number), offset
+   RA - 2nd argument (real number), offset
 #else
-/       WB - 2nd argument (might require conversion), offset
+        WB - 2nd argument (might require conversion), offset
 #endif
-/       WC - 3rd argument (might require conversion), whence
-/    Returns:
+        WC - 3rd argument (might require conversion), whence
+     Returns:
 #if SETREAL
-/  RA - File position
+   RA - File position
 #else
-/       IA - File position
+        IA - File position
 #endif
-/    Exits:
-/       1 - invalid 2nd argument
-/       2 - invlaid 3rd argument
-/       3 - file does not exist
-/       4 - set not allowed
-/       5 - i/o error
-/
-/  PC-SPITBOL option form of SET:
-/    WB = 'P':
-/                 set position to WC
-/    WB = 'H'
-/                 set position to WC * 32768 + (current_position mod 32768)
-/    WB = 'R'
-/                 set position to current_position + WC
-/    WB = 'E'
-/                 set position to end_of_file + WC
-/    WB = 'C'
-/                 set record length to WC for byte-stream file
-/    WB = 'D'
-/                 delete record -- not supported
-/
+     Exits:
+        1 - invalid 2nd argument
+        2 - invlaid 3rd argument
+        3 - file does not exist
+        4 - set not allowed
+        5 - i/o error
+
+   PC-SPITBOL option form of SET:
+     WB = 'P':
+                  set position to WC
+     WB = 'H'
+                  set position to WC * 32768 + (current_position mod 32768)
+     WB = 'R'
+                  set position to current_position + WC
+     WB = 'E'
+                  set position to end_of_file + WC
+     WB = 'C'
+                  set record length to WC for byte-stream file
+     WB = 'D'
+                  delete record -- not supported
+
 */
 
 #include "port.h"
@@ -9984,56 +9984,56 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSSTDIO.C       Version:  01.09
-/       ---------------------------------------
-/
-/       Contents:       Function zyspr
-/                       Function zysrd
-/
-/       01.04   Removed usage of inpateof.  From disk files, OK to read
-/               from file again and get EOF.  From console, OK to request
-/               another line after EOF, if that is what user wants.  Makes
-/               behavior of INPUT similar to behavior of TERMINAL.
-/               MBE 12/24/87
-/
-/       01.05   Added getprfd() to provide current standard output fd to
-/               osint.
-/
-/       01.06   Added sfn to report source file name to compiler.  Definition of sysrd EXIT 1
-/               case expanded to handle both EOF and reporting of source file change.
-/               Use of first_record expanded to provide initial source file name to compiler.
-/
-/       01.07   Added input/output record sizes to ioblocks.  Note, as a
-/               result of changes in the compiler at ASG11, it is now
-/               possible for zyspr() to be called from zysou().  Previously,
-/               writes to OUTPUT were going through the PRTST logic, wasting
-/               time using the print buffer, and limiting the record length
-/               to the listing page width.  Instead, all output assignments
-/               go to zysou(), which now uses the FCB info in WA to decide
-/               if it is a special file (OUTPUT/TERMINAL), or a normal
-/               file.
-/
-/       01.08   Add end of line characters to IOBLKs.  Add clrbuf().
-/
-/       01.09   New oswrite calling sequence.  01-Feb-93.
+        File:  SYSSTDIO.C       Version:  01.09
+        ---------------------------------------
+
+        Contents:       Function zyspr
+                        Function zysrd
+
+        01.04   Removed usage of inpateof.  From disk files, OK to read
+                from file again and get EOF.  From console, OK to request
+                another line after EOF, if that is what user wants.  Makes
+                behavior of INPUT similar to behavior of TERMINAL.
+                MBE 12/24/87
+
+        01.05   Added getprfd() to provide current standard output fd to
+                osint.
+
+        01.06   Added sfn to report source file name to compiler.  Definition of sysrd EXIT 1
+                case expanded to handle both EOF and reporting of source file change.
+                Use of first_record expanded to provide initial source file name to compiler.
+
+        01.07   Added input/output record sizes to ioblocks.  Note, as a
+                result of changes in the compiler at ASG11, it is now
+                possible for zyspr() to be called from zysou().  Previously,
+                writes to OUTPUT were going through the PRTST logic, wasting
+                time using the print buffer, and limiting the record length
+                to the listing page width.  Instead, all output assignments
+                go to zysou(), which now uses the FCB info in WA to decide
+                if it is a special file (OUTPUT/TERMINAL), or a normal
+                file.
+
+        01.08   Add end of line characters to IOBLKs.  Add clrbuf().
+
+        01.09   New oswrite calling sequence.  01-Feb-93.
 */
 
 /*
-/   sysstdio module
-/
-/   The sysstdio module contains two functions, zyspr and zysrd, that
-/   perform standard input and output for the spitbol compiler.
-/
-/   During compilation zysrd is called to read lines of the program.  During
-/   program execution zysrd is called to read input via input associated
-/   variable INPUT.
-/
-/   During compilation zyspr is called to print header lines, the program
-/   listing, and compilation statistics.  During program execution zyspr
-/   is called to print output via output associated variable OUTPUT.
-/
-/   After program execution zyspr is called to print execution statistics
-/   and the variable post-mortem dump if requested.
+    sysstdio module
+
+    The sysstdio module contains two functions, zyspr and zysrd, that
+    perform standard input and output for the spitbol compiler.
+
+    During compilation zysrd is called to read lines of the program.  During
+    program execution zysrd is called to read input via input associated
+    variable INPUT.
+
+    During compilation zyspr is called to print header lines, the program
+    listing, and compilation statistics.  During program execution zyspr
+    is called to print output via output associated variable OUTPUT.
+
+    After program execution zyspr is called to print execution statistics
+    and the variable post-mortem dump if requested.
 */
 
 #include "port.h"
@@ -10044,19 +10044,19 @@ void stdioinit()
 }
 
 /*
-/   zyspr - print to standard output file
-/
-/   zyspr prints a line to the standard output file.  Note that the
-/   standard output is switched between two files.  See function swcoup
-/   for details.
-/
-/   Parameters:
-/       xr      pointer to SCBLK containing string to print
-/       wa      length of string
-/   Returns:
-/       Nothing
-/   Exits:
-/       1       failure
+    zyspr - print to standard output file
+
+    zyspr prints a line to the standard output file.  Note that the
+    standard output is switched between two files.  See function swcoup
+    for details.
+
+    Parameters:
+        xr      pointer to SCBLK containing string to print
+        wa      length of string
+    Returns:
+        Nothing
+    Exits:
+        1       failure
 */
 
 zyspr()
@@ -10073,23 +10073,23 @@ zyspr()
 
 
 /*
-/   zysrd - read from standard input
-/
-/   zysrd reads a line from standard input.  The file currently available
-/   for reading is setup by function swcinp.
-/
-/   IMPORTANT:  the spitbol compiler will attempt to read past EOF, so we
-/   must set our own internal "at EOF" flag and keep returning EOF until
-/   it is accepted.
-/
-/   Parameters:
-/       xr      pointer to SCBLK to receive line
-/       wc      length of string area in SCBLK
-/   Returns:
-/       Nothing
-/   Exits:
-/       1       EOF or switch to new file.  (Returns length=0 in SCBLK if EOF, else
-/               new file name in SCBLK and non-zero length.)
+    zysrd - read from standard input
+
+    zysrd reads a line from standard input.  The file currently available
+    for reading is setup by function swcinp.
+
+    IMPORTANT:  the spitbol compiler will attempt to read past EOF, so we
+    must set our own internal "at EOF" flag and keep returning EOF until
+    it is accepted.
+
+    Parameters:
+        xr      pointer to SCBLK to receive line
+        wc      length of string area in SCBLK
+    Returns:
+        Nothing
+    Exits:
+        1       EOF or switch to new file.  (Returns length=0 in SCBLK if EOF, else
+                new file name in SCBLK and non-zero length.)
 */
 
 zysrd()
@@ -10238,11 +10238,11 @@ void oupeof()
 
 #if !USEFD0FD1
 /*
-/    SETPRFD/SETRDFD  are used on systems that do not support the
-/    dup() system call.  On these systems, it is impossible to read/write
-/    through fd 0 and 1 at all times.  Disk files must be accessed through
-/    normal file descriptors.  These functions inform sysrd and syspr of
-/    the descriptor currently in use.
+     SETPRFD/SETRDFD  are used on systems that do not support the
+     dup() system call.  On these systems, it is impossible to read/write
+     through fd 0 and 1 at all times.  Disk files must be accessed through
+     normal file descriptors.  These functions inform sysrd and syspr of
+     the descriptor currently in use.
 */
 
 void setprfd( fd )
@@ -10280,27 +10280,27 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSTM.C          Version:  01.03
-/       ---------------------------------------
-/
-/       Contents:       Function zystm
+        File:  SYSTM.C          Version:  01.03
+        ---------------------------------------
+
+        Contents:       Function zystm
 */
 
 /*
-/       zystm - get execution time so far
-/
-/       zystm is called to obtain the amount of execution time used so far
-/       since spitbol began execution.  The returned value is assumed to be
-/       in milliseonds, except for 16-bit implementations, which return deciseconds.
-/
-/       Parameters:
-/           None
-/       Returns:
-/           IA - execution time so far in milliseconds or deciseconds.
-/
-/       v1.03   27-May-95       For AIX, corrected use of tms_utime.  Was
-/                                               multiplying by 100 / 6.  Should be 1000/CLK_TCK.
-/                                               Was running fast by factor of 1.6.
+        zystm - get execution time so far
+
+        zystm is called to obtain the amount of execution time used so far
+        since spitbol began execution.  The returned value is assumed to be
+        in milliseonds, except for 16-bit implementations, which return deciseconds.
+
+        Parameters:
+            None
+        Returns:
+            IA - execution time so far in milliseconds or deciseconds.
+
+        v1.03   27-May-95       For AIX, corrected use of tms_utime.  Was
+                                                multiplying by 100 / 6.  Should be 1000/CLK_TCK.
+                                                Was running fast by factor of 1.6.
 */
 
 #include "port.h"
@@ -10370,41 +10370,41 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSTTY.C         Version:  01.04
-/       ---------------------------------------
-/
-/       Contents:       Function zyspi
-/                       Function zysri
-/
+        File:  SYSTTY.C         Version:  01.04
+        ---------------------------------------
+
+        Contents:       Function zyspi
+                        Function zysri
+
 / 01.02         Added output record size to ioblock.  Note, as a
-/               result of changes in the compiler at ASG11, it is now
-/               possible for zyspi() to be called from zysou().  Previously,
-/               writes to TERMINAL were going through the PRTST logic, wasting
-/               time using the print buffer, and limiting the record length
-/               to the listing page width.  Instead, all output assignments
-/               go to zysou(), which now uses the FCB info in WA to decide
-/               if it is a special file (OUTPUT/TERMINAL), or a normal
-/               file.
-/
+                result of changes in the compiler at ASG11, it is now
+                possible for zyspi() to be called from zysou().  Previously,
+                writes to TERMINAL were going through the PRTST logic, wasting
+                time using the print buffer, and limiting the record length
+                to the listing page width.  Instead, all output assignments
+                go to zysou(), which now uses the FCB info in WA to decide
+                if it is a special file (OUTPUT/TERMINAL), or a normal
+                file.
+
 / 01.03 06-Feb-91 Changed for read/write I/O.  Add EOL chars to ioblk.
-/
+
 / 01.04 01-Feb-93 New oswrite calling sequence.
-/
+
 */
 
 /*
-/   The systty module contains two functions, zyspi and zysri, that
-/   perform terminal I/O.
-/
-/   During program execution assignment to variable TERMINAL causes a line
-/   to be printed on the terminal.  A call is made to zyspi to actually
-/   print the line.
-/
-/   During program execution a value reference to varible TERMINAL causes
-/   a line to be read from the terminal.  A call is made to zysri to actually
-/   read the line.
-/
-/   Under Un*x file descriptor 2 will be used for terminal access.
+    The systty module contains two functions, zyspi and zysri, that
+    perform terminal I/O.
+
+    During program execution assignment to variable TERMINAL causes a line
+    to be printed on the terminal.  A call is made to zyspi to actually
+    print the line.
+
+    During program execution a value reference to varible TERMINAL causes
+    a line to be read from the terminal.  A call is made to zysri to actually
+    read the line.
+
+    Under Un*x file descriptor 2 will be used for terminal access.
 */
 
 #include "port.h"
@@ -10415,17 +10415,17 @@ void ttyinit()
 }
 
 /*
-/   zyspi - print on interactive channel
-/
-/   zyspi prints a line on the user's terminal.
-/
-/   Parameters:
-/       xr      pointer to SCBLK containing string to print
-/       wa      length of string
-/   Returns:
-/       Nothing
-/   Exits:
-/       1       failure
+    zyspi - print on interactive channel
+
+    zyspi prints a line on the user's terminal.
+
+    Parameters:
+        xr      pointer to SCBLK containing string to print
+        wa      length of string
+    Returns:
+        Nothing
+    Exits:
+        1       failure
 */
 
 zyspi()
@@ -10446,16 +10446,16 @@ zyspi()
 
 
 /*
-/   zysri - read from interactive channel
-/
-/   zysri reads a line from the user's terminal.
-/
-/   Parameters:
-/       xr      pointer to SCBLK to receive line
-/   Returns:
-/       Nothing
-/   Exits:
-/       1       EOF
+    zysri - read from interactive channel
+
+    zysri reads a line from the user's terminal.
+
+    Parameters:
+        xr      pointer to SCBLK to receive line
+    Returns:
+        Nothing
+    Exits:
+        1       EOF
 */
 
 
@@ -10525,20 +10525,20 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSUL.C          Version:  01.00
-/       ---------------------------------------
-/
-/       Contents:       Function zysul
-/
+        File:  SYSUL.C          Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function zysul
+
 */
 
 /*
-/       zysul - unload external function
-/
-/       Parameters:
-/           XR - pointer to EFBLK
-/       Returns:
-/           nothing
+        zysul - unload external function
+
+        Parameters:
+            XR - pointer to EFBLK
+        Returns:
+            nothing
 */
 
 #include "port.h"
@@ -10572,78 +10572,78 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSXI.C          Version:  01.18
-/       ---------------------------------------
-/
-/       Contents:       Function zysxi
-/                       Function unreloc
-/                       Function rereloc
+        File:  SYSXI.C          Version:  01.18
+        ---------------------------------------
+
+        Contents:       Function zysxi
+                        Function unreloc
+                        Function rereloc
 */
 
 /*
-/       zysxi - exit to produce load module
-/
-/       zysxi is called to perform one of two actions:
-/
-/       o  "chain" to another program to execute
-/
-/       o  write a load module of the currently executing spitbol program
-/
-/       In either case the currently executing spitbol process is terminated,
-/   except if called with IA as +4 or -4, in which case execution
-/       continues.
-/
-/       Parameters:
-/           IA - integer argument if writing load module
-/                <0 - write only impure area of memory
-/                =0 - exit to command level
-/                >0 - write all of memory
-/        =4 or -4 - to continue execution after creating file
-/           WA - pointer to SCBLK for second argument
-/           WB - pointer to head of FCBLK chain (CHBLK)
-/           XL - pointer to SCBLK containing command to execute or 0
-/           XR - version number SCBLK.  Three char string of form "X.Y".
-/       Returns:
-/       WA   1 only when called with IA=4 or IA=-4 and we are
-/            continuing execution, else 0.
-/            values of IA do not elicit a return.
-/       Exits:
-/           1 - requested action not possible
-/           2 - action caused irrecoverable error
-/
-/
-/  V1.10 12-Oct-87 MBE  <withdrawn>
-/
-/  V1.11 14-Dec-87 MBE  Close files *prior* to writing a.out file or chaining
-/                       to another shell command.  This frees up the channel
-/                       variables for reuse upon restart (EXIT(3) case), and
-/                       flushing any output data still in Spitbol's buffers
-/                       (EXIT("cmd string") case).
-/
-/  V1.12 01-Jan-88 MBE  Modified for HP
-/
-/  V1.13 02-Feb-88 MBE  Modified for Definicon.
-/                       Use save0() before EXIT("cmd") call (all versions).
-/
-/  V1.14 13-Sep-89 MBE  Modified for DOS 386.  Supports EXIT(-3) only.
-/                       Added optional second argument to EXIT to allow
-/                       specifying file name of load module.
-/
-/  V1.15 16-Oct-89 MBE  Modified for SPARC.
-/
-/  V1.16 19-May-91 MBE  Write load modules for SPITBOL-386 with
-/                       Intel DOS Extender.
-/  V1.17 22-Aug-91 MBE  <withdrawn>.
-/
-/  V1.18 07-Nov-91 MBE  Start rework for relocatable Save files.
-/                                               Restrict portion of Static region saved.
-/                       Replace initsp with usage of STBAS in
-/                       Minimal source.
-/
-/  V1.19 10-Dec-91 MBE  Add +4 and -4 case to allow execution to proceed.
-/
-/  V1.20 14-Oct-94 MBE  Call termhost *prior* to writing save or exec file.
-/
+        zysxi - exit to produce load module
+
+        zysxi is called to perform one of two actions:
+
+        o  "chain" to another program to execute
+
+        o  write a load module of the currently executing spitbol program
+
+        In either case the currently executing spitbol process is terminated,
+    except if called with IA as +4 or -4, in which case execution
+        continues.
+
+        Parameters:
+            IA - integer argument if writing load module
+                 <0 - write only impure area of memory
+                 =0 - exit to command level
+                 >0 - write all of memory
+         =4 or -4 - to continue execution after creating file
+            WA - pointer to SCBLK for second argument
+            WB - pointer to head of FCBLK chain (CHBLK)
+            XL - pointer to SCBLK containing command to execute or 0
+            XR - version number SCBLK.  Three char string of form "X.Y".
+        Returns:
+        WA   1 only when called with IA=4 or IA=-4 and we are
+             continuing execution, else 0.
+             values of IA do not elicit a return.
+        Exits:
+            1 - requested action not possible
+            2 - action caused irrecoverable error
+
+
+   V1.10 12-Oct-87 MBE  <withdrawn>
+
+   V1.11 14-Dec-87 MBE  Close files *prior* to writing a.out file or chaining
+                        to another shell command.  This frees up the channel
+                        variables for reuse upon restart (EXIT(3) case), and
+                        flushing any output data still in Spitbol's buffers
+                        (EXIT("cmd string") case).
+
+   V1.12 01-Jan-88 MBE  Modified for HP
+
+   V1.13 02-Feb-88 MBE  Modified for Definicon.
+                        Use save0() before EXIT("cmd") call (all versions).
+
+   V1.14 13-Sep-89 MBE  Modified for DOS 386.  Supports EXIT(-3) only.
+                        Added optional second argument to EXIT to allow
+                        specifying file name of load module.
+
+   V1.15 16-Oct-89 MBE  Modified for SPARC.
+
+   V1.16 19-May-91 MBE  Write load modules for SPITBOL-386 with
+                        Intel DOS Extender.
+   V1.17 22-Aug-91 MBE  <withdrawn>.
+
+   V1.18 07-Nov-91 MBE  Start rework for relocatable Save files.
+                                                Restrict portion of Static region saved.
+                        Replace initsp with usage of STBAS in
+                        Minimal source.
+
+   V1.19 10-Dec-91 MBE  Add +4 and -4 case to allow execution to proceed.
+
+   V1.20 14-Oct-94 MBE  Call termhost *prior* to writing save or exec file.
+
 */
 
 #include "port.h"
@@ -10968,30 +10968,30 @@ void heapmove()
 
 #if EXECFILE | SAVEFILE
 /*
-/       The following two functions deal with the "unrelocation" and
-/       "re-relocation" of compiler variables that point into the stack.
-/       These actions must be taken so that these pointers into the
-/       stack can be adjusted every time that the load module is executed.
-/       Why?  Because there is no way to guarantee that the stack can be
-/       rebuilt during subsequent executions of the laod module at the
-/       same locations as when the load module was written.
-/
-/       So, function unreloc takes such variables and turns them into
-/       offsets into the stack.  Function rereloc converts stack offsets
-/       into stack pointers.
-/
-/   Register CP is "unrelocated" relative to the start of dynamic
-/   storage, in case it moves after a reload.
-/
-/   Register PC is "unrelocated" relative to the start of Minimal code.
+        The following two functions deal with the "unrelocation" and
+        "re-relocation" of compiler variables that point into the stack.
+        These actions must be taken so that these pointers into the
+        stack can be adjusted every time that the load module is executed.
+        Why?  Because there is no way to guarantee that the stack can be
+        rebuilt during subsequent executions of the laod module at the
+        same locations as when the load module was written.
+
+        So, function unreloc takes such variables and turns them into
+        offsets into the stack.  Function rereloc converts stack offsets
+        into stack pointers.
+
+    Register CP is "unrelocated" relative to the start of dynamic
+    storage, in case it moves after a reload.
+
+    Register PC is "unrelocated" relative to the start of Minimal code.
 */
 
 /*
-/       unreloc()
-/
-/       unreloc() "unrelocates" all compiler variables that point into
-/       the stack by subtracting the initial stack pointer value from them.
-/       This converts these stack pointers into offsets.
+        unreloc()
+
+        unreloc() "unrelocates" all compiler variables that point into
+        the stack by subtracting the initial stack pointer value from them.
+        This converts these stack pointers into offsets.
 */
 
 void unreloc()
@@ -11010,9 +11010,9 @@ void unreloc()
 }
 
 /*
-/       rereloc() "re-relocates" all compiler variables that pointer into
-/       the stack by adding the initial stack pointer value to them.  This
-/       action converts these offsets in the stack into real pointers.
+        rereloc() "re-relocates" all compiler variables that pointer into
+        the stack by adding the initial stack pointer value to them.  This
+        action converts these offsets in the stack into real pointers.
 */
 
 void rereloc()
@@ -11050,8 +11050,8 @@ int len, max;
 
 #if EXECFILE & !EXECSAVE
 /*
-/       Roundup the integer argument to be a multiple of the
-/       system page size.
+        Roundup the integer argument to be a multiple of the
+        system page size.
 */
 
 static word roundup(n)
@@ -11465,23 +11465,23 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  TESTTY.C         Version:  01.04
-/       ---------------------------------------
-/
-/       Contents:       Function testty
-/                       Function ttyraw
+        File:  TESTTY.C         Version:  01.04
+        ---------------------------------------
+
+        Contents:       Function testty
+                        Function ttyraw
 */
 
 /*
-/   testty( fd )
-/
-/   testty() determines whether or not a file descriptor represents a
-/   teletype (non-block) device.
-/
-/   Parameters:
-/       fd      file descriptor to test
-/   Returns:
-/       0 if fd is a tty / -1 if fd is not a tty
+    testty( fd )
+
+    testty() determines whether or not a file descriptor represents a
+    teletype (non-block) device.
+
+    Parameters:
+        fd      file descriptor to test
+    Returns:
+        0 if fd is a tty / -1 if fd is not a tty
 */
 #include "port.h"
 
@@ -11517,16 +11517,16 @@ int     fd;
 
 
 /*
-/    ttyraw( fd, flag )
-/
-/    ttyraw() sets or clears the raw input mode in an teletype device.
-/
-/    Parameters:
-/       fd      file descriptor
-/       flag    0 to clear raw mode / non-zero to set raw mode
-/    Returns:
-/       none
-/
+     ttyraw( fd, flag )
+
+     ttyraw() sets or clears the raw input mode in an teletype device.
+
+     Parameters:
+        fd      file descriptor
+        flag    0 to clear raw mode / non-zero to set raw mode
+     Returns:
+        none
+
 */
 
 void ttyraw( fd, flag )
@@ -11579,31 +11579,31 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/  File: TRYPATH.C         Version 1.01
-/       --------------------------------------------
-/
-/       Contents:       Functions initpath, trypath.
-/
-/  V1.01 4-27-97 Fix bug in trypath that allowed it to search beyond the
-/                trailing '\0' in pathptr.
+   File: TRYPATH.C         Version 1.01
+        --------------------------------------------
+
+        Contents:       Functions initpath, trypath.
+
+   V1.01 4-27-97 Fix bug in trypath that allowed it to search beyond the
+                 trailing '\0' in pathptr.
 */
 
 #include "port.h"
 
 /*
-/  Pointer to "SNOLIB" string
+   Pointer to "SNOLIB" string
 */
 
 
 /*
-/  initpath - initialize for a search by looking to see if there
-/           is a search path.  Under Unix, the user could be running
-/               either the Korn shell or csh, implying two forms:
-/               VAR path:path:path
-/               var (path path path)
-/
-/               caller should call with the lowercase version of var.  We
-/               will try the uppercase version automatically.
+   initpath - initialize for a search by looking to see if there
+            is a search path.  Under Unix, the user could be running
+                either the Korn shell or csh, implying two forms:
+                VAR path:path:path
+                var (path path path)
+
+                caller should call with the lowercase version of var.  We
+                will try the uppercase version automatically.
 */
 void initpath(name)
 char *name;
@@ -11629,8 +11629,8 @@ char *name;
 
 
 /*
-/  trypath - form a file name in file by concatenating name onto the
-/  next path element.
+   trypath - form a file name in file by concatenating name onto the
+   next path element.
 */
 int trypath(name,file)
 char *name, *file;
@@ -11694,16 +11694,16 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  WRTAOUT.C        Version:  01.02
-/       ---------------------------------------
-/
-/       Contents:       Function openaout
-/                       Function wrtaout
-/                       Function seekaout
-/                       Function closeaout
-/
-/   These functions are used to write an executable "a.out" file containing
-/   the currently executing spitbol program.
+        File:  WRTAOUT.C        Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function openaout
+                        Function wrtaout
+                        Function seekaout
+                        Function closeaout
+
+    These functions are used to write an executable "a.out" file containing
+    the currently executing spitbol program.
 */
 
 #include "port.h"
@@ -11722,14 +11722,14 @@ This file is part of Macro SPITBOL.
 #if SAVEFILE | EXECFILE
 
 /*  openaout(file, tmpfnbuf, exe)
-/
-/   Parameters:
-/       file = file name
-/       tmpfnbuf = buffer where we can build temp file name
-/       exe = IO_EXECUTABLE to mark file as executable, else 0
-/   Returns:
-/       0       successful. Variable aoutfd set to file descriptor.
-/       -1      create error for "a.out"
+
+    Parameters:
+        file = file name
+        tmpfnbuf = buffer where we can build temp file name
+        exe = IO_EXECUTABLE to mark file as executable, else 0
+    Returns:
+        0       successful. Variable aoutfd set to file descriptor.
+        -1      create error for "a.out"
 */
 int openaout(fn, tmpfnbuf, exe)
 char *fn;
@@ -11764,16 +11764,16 @@ int     exe;
 }
 
 /*
-/   wrtaout( startadr, size )
-/
-/   Parameters:
-/       startadr        FAR char pointer to first address to write
-/       size            number of bytes to write
-/   Returns:
-/       0       successful
-/       -2      error writing memory to a.out
-/
-/   Write data to a.out file.
+    wrtaout( startadr, size )
+
+    Parameters:
+        startadr        FAR char pointer to first address to write
+        size            number of bytes to write
+    Returns:
+        0       successful
+        -2      error writing memory to a.out
+
+    Write data to a.out file.
 */
 int wrtaout( startadr, size )
 unsigned char FAR *startadr;
@@ -11788,16 +11788,16 @@ uword size;
 
 #if EXECFILE
 /*
-/   seekaout( pagesize )
-/
-/   Parameters:
-/       pagesize        power of two (e.g. 1024)
-/   Returns:
-/       0       successful
-/  -3 LSEEK to pagesize-1 file position failed
-/       -4      forced write to pagesize boundary failed
-/
-/   Seek and extend file to power of two boundary.
+    seekaout( pagesize )
+
+    Parameters:
+        pagesize        power of two (e.g. 1024)
+    Returns:
+        0       successful
+   -3 LSEEK to pagesize-1 file position failed
+        -4      forced write to pagesize boundary failed
+
+    Seek and extend file to power of two boundary.
 */
 
 int seekaout( pagesize )
@@ -11827,14 +11827,14 @@ long pagesize;
 
 
 /*
-/   closeaout(filename)
-/
-/   Parameters
-/       filename
-/   Returns:
-/       none
-/
-/   Close "a.out" file and return.
+    closeaout(filename)
+
+    Parameters
+        filename
+    Returns:
+        none
+
+    Close "a.out" file and return.
 */
 
 word closeaout(fn, tmpfnbuf, errflag)
@@ -11857,17 +11857,17 @@ word errflag;
 
 #if SAVEFILE
 /*
-/   rdaout( fd, startadr, size ) - read in section of file created by wrtaout()
-/
-/   Parameters:
-/       fd              file descriptor
-/       startadr        char pointer to first address to read
-/       size            number of bytes to read
-/   Returns:
-/       0       successful
-/       -2      error reading from a.out
-/
-/   Read data from .spx file.
+    rdaout( fd, startadr, size ) - read in section of file created by wrtaout()
+
+    Parameters:
+        fd              file descriptor
+        startadr        char pointer to first address to read
+        size            number of bytes to read
+    Returns:
+        0       successful
+        -2      error reading from a.out
+
+    Read data from .spx file.
 */
 int rdaout( fd, startadr, size )
 int     fd;

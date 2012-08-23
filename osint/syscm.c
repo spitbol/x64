@@ -18,36 +18,36 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSCM.C          Version:  01.01
-/       ---------------------------------------
-/
-/       zyscm - string compare
-/
-/       V1.01   Don't bother clearing XR.
-/               Change definition of first/second string.
+        File:  SYSCM.C          Version:  01.01
+        ---------------------------------------
+
+        zyscm - string compare
+
+        V1.01   Don't bother clearing XR.
+                Change definition of first/second string.
 */
 
 /*
-/
-/       zyscm is called to make either a strict ASCII or INTERNATIONAL comparison.
-/
-/       This external routine is provided to allow conditional access to
-/       an alternate collation sequence.  Access is
-/       controlled by the global switch IUSTRG.
-/
-/       Parameters:
-/               XR - pointer to first string
-/               WB - first string length
-/               XL - pointer to second string
-/               WA - second string length
-/       Returns
-/               XL = 0
-/       Exits:
-/               1 - string length exceeded capability of international comparison routine
-/               2 - 2nd string < 1st string
-/               3 - 2nd string > 1st string
-/               normal exit - strings equal
-/
+
+        zyscm is called to make either a strict ASCII or INTERNATIONAL comparison.
+
+        This external routine is provided to allow conditional access to
+        an alternate collation sequence.  Access is
+        controlled by the global switch IUSTRG.
+
+        Parameters:
+                XR - pointer to first string
+                WB - first string length
+                XL - pointer to second string
+                WA - second string length
+        Returns
+                XL = 0
+        Exits:
+                1 - string length exceeded capability of international comparison routine
+                2 - 2nd string < 1st string
+                3 - 2nd string > 1st string
+                normal exit - strings equal
+
 */
 
 #include "port.h"

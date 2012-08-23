@@ -18,39 +18,39 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSLD.C          Version:  01.03
-/       ---------------------------------------
-/
-/       Contents:       Function zysld
-/
+        File:  SYSLD.C          Version:  01.03
+        ---------------------------------------
+
+        Contents:       Function zysld
+
 */
 
 /*
-/       zysld - load external function
-/
-/       Parameters:
-/           XR - pointer to SCBLK containing function name
-/           XL - pointer to SCBLK containing library name
-/       Returns:
-/           XR - pointer to code (or other data structure) to be stored in the EFBLK.
-/       Exits:
-/           1 - function does not exist
-/           2 - I/O error loading function
-/           3 - insufficient memory
-/
-/
-/       WARNING:  THIS FUNCTION CALLS A FUNCTION WHICH MAY INVOKE A GARBAGE
-/       COLLECTION.  STACK MUST REMAIN WORD ALIGNED AND COLLECTABLE.
-/
-/       V1.01 09/09/90  Rearrange so that dynamic variables are not
-/                                       on stack when loadef is called.  If they are, and
-/                                       a garbage collection is triggered, garbage text in
-/                                       dynamic area could foul up garbage collector.
-/                                       Fixed for SPITBOL-386 v1.08.
-/
-/       V1.02 11/25/90  Add exit 3 return for insufficient memory.
-/
-/   V1.02 4-Sep-91  <withdrawn>.
+        zysld - load external function
+
+        Parameters:
+            XR - pointer to SCBLK containing function name
+            XL - pointer to SCBLK containing library name
+        Returns:
+            XR - pointer to code (or other data structure) to be stored in the EFBLK.
+        Exits:
+            1 - function does not exist
+            2 - I/O error loading function
+            3 - insufficient memory
+
+
+        WARNING:  THIS FUNCTION CALLS A FUNCTION WHICH MAY INVOKE A GARBAGE
+        COLLECTION.  STACK MUST REMAIN WORD ALIGNED AND COLLECTABLE.
+
+        V1.01 09/09/90  Rearrange so that dynamic variables are not
+                                        on stack when loadef is called.  If they are, and
+                                        a garbage collection is triggered, garbage text in
+                                        dynamic area could foul up garbage collector.
+                                        Fixed for SPITBOL-386 v1.08.
+
+        V1.02 11/25/90  Add exit 3 return for insufficient memory.
+
+    V1.02 4-Sep-91  <withdrawn>.
 */
 
 #include "port.h"

@@ -18,23 +18,23 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSEP.C          Version:  01.01
-/       ---------------------------------------
-/
-/       Contents:       Function zysep
+        File:  SYSEP.C          Version:  01.01
+        ---------------------------------------
+
+        Contents:       Function zysep
 */
 
 /*
-/       zysep - eject printer (standard output)
-/
-/       zysep writes an eject to the standard output.
-/
-/       Parameters:
-/           None
-/       Returns:
-/           Nothing
-/       Exits:
-/           None
+        zysep - eject printer (standard output)
+
+        zysep writes an eject to the standard output.
+
+        Parameters:
+            None
+        Returns:
+            Nothing
+        Exits:
+            None
 */
 
 #include "port.h"

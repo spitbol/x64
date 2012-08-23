@@ -23,89 +23,89 @@ This file is part of Macro SPITBOL.
 #define __blocks32__
 
 /*
- * Definitions of SPITBOL data blocks available to C-language
- * external functions to be called from 32-bit versions of SPITBOL.
+   Definitions of SPITBOL data blocks available to C-language
+   external functions to be called from 32-bit versions of SPITBOL.
  *
- * V1.00        02/17/90 01:53pm
- *                      Initial version
- * V1.01        12-03-90 12:01pm
- *                      To match release 1.08.  Split flags in IOBLK
- *                      into to words to prevent flag bits from being
- *                      mistaken for a relocatable value.
- * V1.02        03-11-91 15:00pm
- *                      To match release 1.1.  Add new words to ioblk for end-
- *                      of-line characters.  The bfblk has been completely
- *                      reworked to accommodate read/write I/O.
- * V1.03        10-18-91 04:27pm
- *        <withdrawn>.
- * V1.04        3-July-92
- *                      Begin to customize for SPARC/Sun 4.
- * V1.05        09-12-94 07:13pm
- *                      Add definitions for buffers
- * V1.06        04-25-95 10:07pm
- *                      Customize for RS/6000.
- * V1.07    12-29-96 06:05pm
- *          Customize for Windows NT
- * V1.08    03-04-97 01:45pm
- *          Tweak for SPARC
- * V1.09 04-27-97
- *          Add FILEPOS definition.
- *
- *
- * SPITBOL BLOCKS
- *
- * All SPITBOL objects are encapsulated into blocks of memory.
- * The first word of each block identifies the block type in a
- * curious way.  Rather than containing a simple integer type
- * code, it contains the address of a subroutine that performs
- * some particular action on the block, such as placing it on
- * the stack.  Because each block type uses a different subroutine,
- * the subroutine addresses serve as a type identifier.
+   V1.00        02/17/90 01:53pm
+                        Initial version
+   V1.01        12-03-90 12:01pm
+                        To match release 1.08.  Split flags in IOBLK
+                        into to words to prevent flag bits from being
+                        mistaken for a relocatable value.
+   V1.02        03-11-91 15:00pm
+                        To match release 1.1.  Add new words to ioblk for end-
+                        of-line characters.  The bfblk has been completely
+                        reworked to accommodate read/write I/O.
+   V1.03        10-18-91 04:27pm
+          <withdrawn>.
+   V1.04        3-July-92
+                        Begin to customize for SPARC/Sun 4.
+   V1.05        09-12-94 07:13pm
+                        Add definitions for buffers
+   V1.06        04-25-95 10:07pm
+                        Customize for RS/6000.
+   V1.07    12-29-96 06:05pm
+            Customize for Windows NT
+   V1.08    03-04-97 01:45pm
+            Tweak for SPARC
+   V1.09 04-27-97
+            Add FILEPOS definition.
  *
  *
- * Each subroutine is proceeded in memory by a one-byte (Intel platforms)
- * or one-word (all other platforms) integer type code (given below).
- * Thus to obtain a simple ordinal type code for a block pointed to by an
- * address in pblk, use the following:
+   SPITBOL BLOCKS
  *
- * block        *pblk;
- * unsigned     typecode;
- *   ...
- *  typecode = *((unsigned char *)((long)pblk - 1)); (Intel platform)
- *  typecode = *((unsigned *)((long)pblk - 4));      (Sun, RS/6000, SGI, etc.)
- *
- *
- * Here's a visualization of how SPITBOL stores data blocks and identifies
- * their type by pointing to unique sections of code:
+   All SPITBOL objects are encapsulated into blocks of memory.
+   The first word of each block identifies the block type in a
+   curious way.  Rather than containing a simple integer type
+   code, it contains the address of a subroutine that performs
+   some particular action on the block, such as placing it on
+   the stack.  Because each block type uses a different subroutine,
+   the subroutine addresses serve as a type identifier.
  *
  *
- *   In Data Space:                        In Code Space:
- * +---------------------+               +-----------+
- * |      Type Word      |----+          | Type code |
- * +---------------------+    |          +-----------+----------------+
- * |      Block Data     |    +--------->|   Program Code for this    |
+   Each subroutine is proceeded in memory by a one-byte (Intel platforms)
+   or one-word (all other platforms) integer type code (given below).
+   Thus to obtain a simple ordinal type code for a block pointed to by an
+   address in pblk, use the following:
+ *
+   block        *pblk;
+   unsigned     typecode;
+     ...
+    typecode = *((unsigned char *)((long)pblk - 1)); (Intel platform)
+    typecode = *((unsigned *)((long)pblk - 4));      (Sun, RS/6000, SGI, etc.)
+ *
+ *
+   Here's a visualization of how SPITBOL stores data blocks and identifies
+   their type by pointing to unique sections of code:
+ *
+ *
+     In Data Space:                        In Code Space:
+   +---------------------+               +-----------+
+   |      Type Word      |----+          | Type code |
+   +---------------------+    |          +-----------+----------------+
+   |      Block Data     |    +--------->|   Program Code for this    |
  *...                   ...              |   Block Type               |
- * |                     |               |                            |
- * +---------------------+               +----------------------------+
+   |                     |               |                            |
+   +---------------------+               +----------------------------+
  *
  *
- * Given an integer type, the Type Word can be obtained by
- * looking it up in a table provided to external functions as ptyptab in
- * the misc info structure.  For example, if the locator information
- * structure is passed to the function as an argument called "info",
- * use the following:
+   Given an integer type, the Type Word can be obtained by
+   looking it up in a table provided to external functions as ptyptab in
+   the misc info structure.  For example, if the locator information
+   structure is passed to the function as an argument called "info",
+   use the following:
  *
- * unsigned typecode;
- * mword        typeword;
- *  ...
- *   typeword = (*info.ptyptab)[typecode];
+   unsigned typecode;
+   mword        typeword;
+    ...
+     typeword = (*info.ptyptab)[typecode];
  */
 
 /*
- * BLOCK CODES FOR ACCESSIBLE DATATYPES
+   BLOCK CODES FOR ACCESSIBLE DATATYPES
  *
- * These blocks may appear in an argument list if left untranslated
- * by the LOAD function definition.
+   These blocks may appear in an argument list if left untranslated
+   by the LOAD function definition.
  */
 
 enum {
@@ -130,10 +130,10 @@ enum {
 };
 
 /*
- * OTHER BLOCK CODES
+   OTHER BLOCK CODES
  *
- * These blocks will never appear in an argument list, but are
- * listed here for completeness.
+   These blocks will never appear in an argument list, but are
+   listed here for completeness.
  */
 
 enum {
@@ -152,16 +152,16 @@ enum {
 };
 
 /*
- * Structure of common SPITBOL blocks:
- *          Integer, Real, String, and File blocks.
+   Structure of common SPITBOL blocks:
+            Integer, Real, String, and File blocks.
  *
- *      These structures are part of the "blocks" union that can be applied
- *          to the result area to determine where to store required return
- *      information.
+        These structures are part of the "blocks" union that can be applied
+            to the result area to determine where to store required return
+        information.
  */
 
 /*
- *      Structure of ICBLK (integers)
+        Structure of ICBLK (integers)
  */
 
 struct icblk {
@@ -171,31 +171,31 @@ struct icblk {
 
 
 /*
- *              Structure of RCBLK (reals)
+                Structure of RCBLK (reals)
  */
 #if sparc
 /*
- *              Note that the obvious declaration "double rcval" can not be
- *      used, because the SPARC C compiler insists on placing double
- *              values on an 8-byte boundary, effectively making the rcblk into
- *              a four-word structure, instead of three. (A filler word is
- *              inserted between rctyp and rcval).  But an rcblk really is a
- *              three-word structure inside of SPITBOL.
+                Note that the obvious declaration "double rcval" can not be
+        used, because the SPARC C compiler insists on placing double
+                values on an 8-byte boundary, effectively making the rcblk into
+                a four-word structure, instead of three. (A filler word is
+                inserted between rctyp and rcval).  But an rcblk really is a
+                three-word structure inside of SPITBOL.
  *
- *              As a workaround, we define rcvals as a two word array, and use
- *              an rcval macro to access the double value there.  The macro
- *              is invoked with the rcblk as its argument.  For example,
- *              suppose presult pointed to a union of all block types.  The
- *              double value stored in an rcblk there would be accessed as
+                As a workaround, we define rcvals as a two word array, and use
+                an rcval macro to access the double value there.  The macro
+                is invoked with the rcblk as its argument.  For example,
+                suppose presult pointed to a union of all block types.  The
+                double value stored in an rcblk there would be accessed as
  *
- *                      rcval(presult->rcb)
+                        rcval(presult->rcb)
  *
- *              It may be necessary to use the -misalign command option with
- *              cc to have the compiler generate the two single-precision loads
- *              needed to access the real at rcvals.  The normal double-precision
- *              load will fault because the operand is not aligned properly.
+                It may be necessary to use the -misalign command option with
+                cc to have the compiler generate the two single-precision loads
+                needed to access the real at rcvals.  The normal double-precision
+                load will fault because the operand is not aligned properly.
  *
- *      See function retreal in extrnlib.c for an example.
+        See function retreal in extrnlib.c for an example.
  */
 struct rcblk {
     mword       rctyp;                                  /* type word                                            */
@@ -210,7 +210,7 @@ struct rcblk {
 #endif
 
 /*
- *      Structure of SCBLK (strings)
+        Structure of SCBLK (strings)
  */
 
 struct scblk {
@@ -220,7 +220,7 @@ struct scblk {
 };
 
 /*
- *      Structure for returning a far string
+        Structure for returning a far string
  */
 
 struct fsblk {
@@ -231,7 +231,7 @@ struct fsblk {
 
 
 /*
- *      Structure for returning a far external block
+        Structure for returning a far external block
  */
 
 struct fxblk {
@@ -242,22 +242,22 @@ struct fxblk {
 
 
 /*
- * FILE CONTROL BLOCK
+   FILE CONTROL BLOCK
  *
- * The user may provide the word "FILE" for any argument in
- * the LOAD function prototype.  When a call is made to the
- * external function with an I/O associated variable in this argument
- * position, SPITBOL will provide a pointer to the file control
- * block instead of the value of the variable.
+   The user may provide the word "FILE" for any argument in
+   the LOAD function prototype.  When a call is made to the
+   external function with an I/O associated variable in this argument
+   position, SPITBOL will provide a pointer to the file control
+   block instead of the value of the variable.
  *
- * The file control block (FCB) points to an I/O block with
- * additional information.  In turn, the I/O block points to any
- * buffer used by the file.
+   The file control block (FCB) points to an I/O block with
+   additional information.  In turn, the I/O block points to any
+   buffer used by the file.
  *
- * This block is obtained for every file except those associated
- * with INPUT, OUTPUT, or TERMINAL.  Note that these FCB's are
- * unrelated to MS-DOS FCB's.  File control blocks do not have
- * their own type word, but appear as XRBLKs with the following structure:
+   This block is obtained for every file except those associated
+   with INPUT, OUTPUT, or TERMINAL.  Note that these FCB's are
+   unrelated to MS-DOS FCB's.  File control blocks do not have
+   their own type word, but appear as XRBLKs with the following structure:
  */
 
 struct fcblk {
@@ -272,12 +272,12 @@ struct fcblk {
 
 
 /*
- *   CHFCB - chain of FCBs block
+     CHFCB - chain of FCBs block
  *
- *   For every FCB created by OSINT, the compiler creates a CHFCB pointing
- *   to the FCB and links it onto a chain of CHFCBs.  At EOJ the head of this
- *   CHFCB chain is passed to the interface function SYSEJ so that all files
- *   can be closed.
+     For every FCB created by OSINT, the compiler creates a CHFCB pointing
+     to the FCB and links it onto a chain of CHFCBs.  At EOJ the head of this
+     CHFCB chain is passed to the interface function SYSEJ so that all files
+     can be closed.
  */
 
 struct  chfcb {
@@ -290,9 +290,9 @@ struct  chfcb {
 
 
 /*
- * I/O BLOCK
+   I/O BLOCK
  *
- * An I/O block is pointed to by the fcbiob field of a file control block.
+   An I/O block is pointed to by the fcbiob field of a file control block.
  */
 
 struct ioblk {
@@ -311,7 +311,7 @@ struct ioblk {
 };
 
 /*
- *      Bits in iobflg1 dword
+        Bits in iobflg1 dword
  */
 #define IO_INP  0x00000001                      /* input file                                                   */
 #define IO_OUP  0x00000002                      /* output file                                                  */
@@ -323,7 +323,7 @@ struct ioblk {
 #define IO_WRC  0x00000080                      /* output without buffering                             */
 
 /*
- *      Bits in iobflg2 dword
+        Bits in iobflg2 dword
  */
 #define IO_PIP  0x00000001                      /* pipe (not used in MS-DOS)                    */
 #define IO_DED  0x00000002                      /* dead pipe (not used in MS-DOS)               */
@@ -355,11 +355,11 @@ struct ioblk {
 #define IO_WRITE_THRU           0x20    /* writes complete before return*/
 
 /*
- * I/O BUFFER BLOCK
+   I/O BUFFER BLOCK
  *
- * An I/O buffer block (BFBBLK) is pointed to by an IOBLK.
+   An I/O buffer block (BFBBLK) is pointed to by an IOBLK.
  *
- * Size of file position words in I/O buffer block
+   Size of file position words in I/O buffer block
  */
 
 #if SETREAL
@@ -381,8 +381,8 @@ struct bfbblk {
 
 
 /*
- * Structure of EFBLK (external function).  A pointer to this block
- * is passed to the external function in the stack in info.pefblk.
+   Structure of EFBLK (external function).  A pointer to this block
+   is passed to the external function in the stack in info.pefblk.
  */
 
 struct efblk {
@@ -397,7 +397,7 @@ struct efblk {
 };
 
 /*
- * efrsl and eftar[] contain small integer type codes as follows:
+   efrsl and eftar[] contain small integer type codes as follows:
  */
 
 #define noconv  0                                       /* argument remains unconverted                 */
@@ -408,16 +408,16 @@ struct efblk {
 
 
 /*
- * Structure of XNBLK allocated for external function
- * A pointer to this structure is passed to the external function
- * in the stack in pxnblk.
+   Structure of XNBLK allocated for external function
+   A pointer to this structure is passed to the external function
+   in the stack in pxnblk.
  *
- * This structure is used to ways:
- *   1.  As a general structure in which the user can place private
- *               data and have it maintained by SPITBOL.
+   This structure is used to ways:
+     1.  As a general structure in which the user can place private
+                 data and have it maintained by SPITBOL.
  *
- *   2.  As a particular structure in which information about each
- *               external function is maintained.
+     2.  As a particular structure in which information about each
+                 external function is maintained.
  */
 
 struct xnblk {
@@ -453,8 +453,8 @@ struct xnblk {
 };
 
 /*
- * Simplified access to xn1st and xnsave words in xnblk via pointer to
- * miscellaneous info area in pinfo.
+   Simplified access to xn1st and xnsave words in xnblk via pointer to
+   miscellaneous info area in pinfo.
  */
 
 #define first_call ((*((*pinfo).pxnblk)).xnu.ef.xn1st)
@@ -462,13 +462,13 @@ struct xnblk {
 
 
 /*
- * Other selected blocks of interest:
+   Other selected blocks of interest:
  *
  *
- * ARRAY BLOCK
+   ARRAY BLOCK
  *
- * An array block (ARBLK) represents an array value other than one
- * with one dimension whose lower bound is one (see VCBLK).
+   An array block (ARBLK) represents an array value other than one
+   with one dimension whose lower bound is one (see VCBLK).
  */
 
 struct arblk1 {                                         /* One dimensional array                                */
@@ -514,12 +514,12 @@ struct arblkn {                                         /* N-dimensional array  
 
 
 /*
- *      BUFFER CONTROL BLOCK
+        BUFFER CONTROL BLOCK
  *
- *      A buffer control block (BCBLK) is created by the BUFFER
- *      function, and serves as an indirect control header for the
- *      buffer. It contains the number of characters currently
- *      stored in the buffer.
+        A buffer control block (BCBLK) is created by the BUFFER
+        function, and serves as an indirect control header for the
+        buffer. It contains the number of characters currently
+        stored in the buffer.
  */
 struct bcblk {
     mword       bctyp;                                  /* type word                                                    */
@@ -530,11 +530,11 @@ struct bcblk {
 
 
 /*
- *      STRING BUFFER BLOCK
+        STRING BUFFER BLOCK
  *
- *      A string buffer block (BFBLK) contains the actual buffer
- *      memory area. It specifies the largest string that can be
- *      stored in the buffer.
+        A string buffer block (BFBLK) contains the actual buffer
+        memory area. It specifies the largest string that can be
+        stored in the buffer.
  */
 struct bfblk {
     mword       bftyp;                                  /* type word                                                    */
@@ -544,9 +544,9 @@ struct bfblk {
 
 
 /*
- * CODE BLOCK
+   CODE BLOCK
  *
- * A code block (CDBLK) is present for every source statement.
+   A code block (CDBLK) is present for every source statement.
  */
 
 struct cdblk {
@@ -565,10 +565,10 @@ struct cdblk {
 
 
 /*
- * NAME BLOCK
+   NAME BLOCK
  *
- * A name block (NMBLK) is used whereever a name must be stored as
- * a value following use of the unary dot operator.
+   A name block (NMBLK) is used whereever a name must be stored as
+   a value following use of the unary dot operator.
  */
 
 struct nmblk {
@@ -579,14 +579,14 @@ struct nmblk {
 
 
 /*
- * TABLE BLOCK
+   TABLE BLOCK
  *
- * A table block (TBBLK) is used to represent a table value.
- * It comprises a list of buckets, each of which may point to
- * a chain of TEBLKs.  TBBUK entries either point to the first
- * TEBLK on the chain or they point to the TBBLK itself to
- * indicate the end of the chain.  The number of buckets can
- * be deduced from tblen.
+   A table block (TBBLK) is used to represent a table value.
+   It comprises a list of buckets, each of which may point to
+   a chain of TEBLKs.  TBBUK entries either point to the first
+   TEBLK on the chain or they point to the TBBLK itself to
+   indicate the end of the chain.  The number of buckets can
+   be deduced from tblen.
  */
 
 struct tbblk {
@@ -599,10 +599,10 @@ struct tbblk {
 
 
 /*
- * TABLE ELEMENT BLOCK
+   TABLE ELEMENT BLOCK
  *
- * A table element (TEBLK) is used to represent a single entry in
- * a table.
+   A table element (TEBLK) is used to represent a single entry in
+   a table.
  */
 
 struct teblk {
@@ -614,9 +614,9 @@ struct teblk {
 
 
 /*
- * VARIABLE BLOCK
+   VARIABLE BLOCK
  *
- * A variable block (VRBLK) is used to hold a program variable.
+   A variable block (VRBLK) is used to hold a program variable.
  */
 
 struct vrblk {
@@ -633,12 +633,12 @@ struct vrblk {
 
 
 /*
- * VECTOR BLOCK
+   VECTOR BLOCK
  *
- * A vector block (VCBLK) is used to represent an array value which has
- * one dimension whose lower bound is one. All other arrays are
- * represented by ARBLKs.  The number of elements can be deduced
- * from vclen.
+   A vector block (VCBLK) is used to represent an array value which has
+   one dimension whose lower bound is one. All other arrays are
+   represented by ARBLKs.  The number of elements can be deduced
+   from vclen.
  */
 
 struct vcblk {
@@ -650,9 +650,9 @@ struct vcblk {
 
 
 /*
- * UNION OF ALL BLOCKS
+   UNION OF ALL BLOCKS
  *
- * A block is merely a union of all the block types enumerated here.
+   A block is merely a union of all the block types enumerated here.
  *
  */
 
@@ -706,42 +706,42 @@ This file is part of Macro SPITBOL.
 #define __extern32__
 
 /*
- *  Definitions of routines and data available to C-language
- *  external function to be called from 32-bit versions of SPITBOL.
+    Definitions of routines and data available to C-language
+    external function to be called from 32-bit versions of SPITBOL.
  *
- *      V1.00  02/17/90 01:52pm
- *                 Initial version
+        V1.00  02/17/90 01:52pm
+                   Initial version
  *
- *  V1.01  10-18-91 04:53pm
- *         <withdrawn>.
+    V1.01  10-18-91 04:53pm
+           <withdrawn>.
  *
- *  V1.02  03-29-92 09:11am
- *       <withdrawn>.
+    V1.02  03-29-92 09:11am
+         <withdrawn>.
  *
- *  V1.03  07-28-92 06:56am
- *                 Customize for SPARC.
+    V1.03  07-28-92 06:56am
+                   Customize for SPARC.
  *
- *      V1.04  09-12-94 07:13pm
- *                 Add definitions for buffers
+        V1.04  09-12-94 07:13pm
+                   Add definitions for buffers
  *
- *  V1.05  04-25-95 10:05pm
- *                 Customize for RS/6000
+    V1.05  04-25-95 10:05pm
+                   Customize for RS/6000
  *
- *  V1.06  12-29-96 06:05pm
- *         Customize for Windows NT
+    V1.06  12-29-96 06:05pm
+           Customize for Windows NT
  *
- *  V1.07  03-04-97 12:45pm
- *                        Tweak for SPARC.
+    V1.07  03-04-97 12:45pm
+                          Tweak for SPARC.
  *
- *  Definition of information placed on stack prior to pushing arguments to
- *  an external function.
+    Definition of information placed on stack prior to pushing arguments to
+    an external function.
  *
- *  Many of these items can be ignored, and are provided only for the
- *  benefit of those wishing to operate directly on SPITBOL's internal
- *  data structures.
+    Many of these items can be ignored, and are provided only for the
+    benefit of those wishing to operate directly on SPITBOL's internal
+    data structures.
  *
- *  However, the pointer in presult *must* be used by the external
- *  function to locate the area in which results are returned.
+    However, the pointer in presult *must* be used by the external
+    function to locate the area in which results are returned.
  *
  */
 
@@ -782,7 +782,7 @@ typedef double (*APDF[])();
 
 
 /*
- * Miscellaneous information provided by SPITBOL in pointer above the arguments.
+   Miscellaneous information provided by SPITBOL in pointer above the arguments.
  */
 
 typedef struct misc {
@@ -818,34 +818,34 @@ enum ext_type {                                         /* Executing under:     
 };
 
 /*
- * Sample usage.  Definition for function arguments, assuming
- * calling function in SPITBOL with:
+   Sample usage.  Definition for function arguments, assuming
+   calling function in SPITBOL with:
  *
- *       F(INTEGER,REAL,STRING)
+         F(INTEGER,REAL,STRING)
  *
- * Because SPITBOL pushes arguments left to right, a Pascal
- * calling sequence should be used.  The could be supplied by
- * adding the __pascal keyword to the entry macro.
+   Because SPITBOL pushes arguments left to right, a Pascal
+   calling sequence should be used.  The could be supplied by
+   adding the __pascal keyword to the entry macro.
  *
- * However, because the SPARC and RS/6000 C compilers do not support
- * Pascal calling sequences, and we would like to move external function
- * source files easily between systems, the function definition will have
- * to manually reverse the arguments:
- *   entry(F)(presult, pinfo, parg3, larg3, rarg2, iarg1)
- *     union block         *presult;             pointer to result area
- *     misc                        *pinfo;                   miscellaneous info
- *     char                        *parg3;                       pointer to arg3 string
- *     mword                    larg3;                   arg3 length
- *     double                   rarg2;                   arg2 real number
- *     mword                    iarg1;                   arg1 integer
- * {
- *    ....  start of function body
+   However, because the SPARC and RS/6000 C compilers do not support
+   Pascal calling sequences, and we would like to move external function
+   source files easily between systems, the function definition will have
+   to manually reverse the arguments:
+     entry(F)(presult, pinfo, parg3, larg3, rarg2, iarg1)
+       union block         *presult;             pointer to result area
+       misc                        *pinfo;                   miscellaneous info
+       char                        *parg3;                       pointer to arg3 string
+       mword                    larg3;                   arg3 length
+       double                   rarg2;                   arg2 real number
+       mword                    iarg1;                   arg1 integer
+   {
+      ....  start of function body
  */
 
 
 /*
- * Simple names for datatypes.  Performs a lookup in SPITBOL's type
- * table to fetch a 32-bit type word for specific data types.
+   Simple names for datatypes.  Performs a lookup in SPITBOL's type
+   table to fetch a 32-bit type word for specific data types.
  */
 
 #define ar      (*((*pinfo).ptyptab))[BL_AR]    /* Array                */
@@ -863,7 +863,7 @@ enum ext_type {                                         /* Executing under:     
 
 
 /*
- * Non-standard block-type values that may be returned as a result:
+   Non-standard block-type values that may be returned as a result:
  */
 
 #define FAIL    (-1)                    /* Signal function failure      */
@@ -872,20 +872,20 @@ enum ext_type {                                         /* Executing under:     
 #define BL_FX   102                             /* Far external block           */
 
 /*
- * Length of string area in result buffer
+   Length of string area in result buffer
  */
 
 #define buflen  512
 
 
 /*
- * SPITBOL's Real Number Functions are not available to external
- * functions coded in C.  Use the normal C floating point library
- * to provide such support.
+   SPITBOL's Real Number Functions are not available to external
+   functions coded in C.  Use the normal C floating point library
+   to provide such support.
  */
 
 /*
- * Function definitions for routines in extrnlib.c
+   Function definitions for routines in extrnlib.c
  */
 #if sparc | aix
 #include <memory.h>
@@ -920,10 +920,10 @@ This file is part of Macro SPITBOL.
 */
 
 /*
- *      Globals.h       All OSINT globals are defined in this file.
+        Globals.h       All OSINT globals are defined in this file.
  *
- *      Define GLOBALS in the C module that wishes to have these
- *      variables defined.  All other modules will see them as externals.
+        Define GLOBALS in the C module that wishes to have these
+        variables defined.  All other modules will see them as externals.
  */
 
 #ifndef Init
@@ -944,7 +944,7 @@ This file is part of Macro SPITBOL.
 
 
 /*
-/    Global data areas needed by compiler.
+     Global data areas needed by compiler.
 */
 NoInit( int             cmdcnt);                /*  command count                       */
 NoInit( int             gblargc);               /*  argc from command line              */
@@ -952,14 +952,14 @@ NoInit( char    **gblargv);             /*  argv from command line              
 Init(   char    *uarg, 0);              /*  -u argument from command line       */
 
 /*
-/   Information to be given to compiler
+    Information to be given to compiler
 */
 Init(   uword   lnsppage, PAGE_DEPTH);  /*  lines per page for listings                 */
 Init(   uword   pagewdth, PAGE_WIDTH);  /*  width of output line for listings   */
 Init(   long    spitflag, DFLT_FLAGS);  /*  flags to be given to compiler               */
 
 /*
-/   Memory variables that control compiler's dynamic area and stack.
+    Memory variables that control compiler's dynamic area and stack.
 */
 Init(   uword   memincb, CHUNK_B_SIZE); /*  meminc converted to bytes           */
 Init(   uword   databts, HEAP_SIZE * sizeof(word));     /*  max size in bytes of data area      */
@@ -971,7 +971,7 @@ Init(   uword   stacksiz, STACK_SIZE);  /*  maximum size of stack in bytes      
 NoInit( char    *lowsp);                        /*  lowest legal sp value               */
 
 /*
-/   Variables that describe access to standard input and output files.
+    Variables that describe access to standard input and output files.
 */
 Init(   int             inpcnt, 0);             /*  number of input files                       */
 Init(   char    **inpptr, 0);   /*  pointer to input file in argv array */
@@ -1005,8 +1005,8 @@ NoInit( FILEPOS inc_pos[INCLUDE_DEPTH]);/*      "        "       "              
 Init(   word    maxf, -1);              /* number of files specified this way -1 */
 
 /*
-/       Structure to record i/o files specified on command line
-/       with /#=filename.
+        Structure to record i/o files specified on command line
+        with /#=filename.
 */
 #define Ncmdf   12
 
@@ -1089,18 +1089,18 @@ NoInit(  FILEPOS  fp);
 #endif                                  /* SAVEFILE | EXECFILE */
 
 /*
-/   lmodstk is set when creating a load module.  On the subsequent
-/   execution of a load module, the presence of a non-zero value in
-/   lmodstk determines that the execution is indeed of a load module.
-/
-/   For Intel DOS Extender, lmodstk provides the file position within
-/       the execution module where a save file begins.
+    lmodstk is set when creating a load module.  On the subsequent
+    execution of a load module, the presence of a non-zero value in
+    lmodstk determines that the execution is indeed of a load module.
+
+    For Intel DOS Extender, lmodstk provides the file position within
+        the execution module where a save file begins.
 */
 NoInit( word    *lmodstk);
 
 
 /*
- * Globals found in assembly language modules.
+   Globals found in assembly language modules.
  *
  */
 extern int  reg_size;
@@ -1110,7 +1110,7 @@ extern word reg_block;
 
 #if ENGINE
 /*
- * Engine globals
+   Engine globals
  */
 NoInit( word lastError);
 #endif                                  /* ENGINE */
@@ -1135,18 +1135,18 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   File:  OSINT.H              Version:  01.01
-/   -------------------------------------------
-/
-/   This header file defines the interface between the Macro SPITBOL compiler
-/   written in assembly langauge and the OS interface written in C.
-/   Communication between the two is handled via a set of global variables
-/   defined as externals below.
+    File:  OSINT.H              Version:  01.01
+    -------------------------------------------
+
+    This header file defines the interface between the Macro SPITBOL compiler
+    written in assembly langauge and the OS interface written in C.
+    Communication between the two is handled via a set of global variables
+    defined as externals below.
 */
 
 
 /*
-/   Set up externals for all the compiler's registers.
+    Set up externals for all the compiler's registers.
 */
 
 extern word     reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs;
@@ -1157,11 +1157,11 @@ extern word reg_pc;
 #endif
 
 /*
- *  Macros to deal with converting pointers within the Minimal heap
- *  to pointers that the C code can deal with.  On most systems, the
- *  two types of pointers are equivalent.  But on machines like the
- *  8088 or under Windows, the near pointers within the heap need to
- *  be converted to and from far pointers in the C data space.
+    Macros to deal with converting pointers within the Minimal heap
+    to pointers that the C code can deal with.  On most systems, the
+    two types of pointers are equivalent.  But on machines like the
+    8088 or under Windows, the near pointers within the heap need to
+    be converted to and from far pointers in the C data space.
  */
 #if __NEAR__
 extern void *mk_mp(void near *minp);
@@ -1173,7 +1173,7 @@ extern void *mk_mp(void near *minp);
 #endif                                  /* __NEAR__ */
 
 /*
-/   Macros to fetch a value of appropriate type from a compiler register
+    Macros to fetch a value of appropriate type from a compiler register
 */
 
 #if __NEAR__
@@ -1200,7 +1200,7 @@ extern void *mk_mp(void near *minp);
 #define RA(type)  ((type) reg_ra)    /* v1.30.12 */
 #endif          /* __NEAR__ */
 /*
-/   Macros to set a value of appropriate type into a compiler register.
+    Macros to set a value of appropriate type into a compiler register.
 */
 #define SET_CP(val)     (reg_cp = (word) (val))
 #define SET_IA(val)     (reg_ia = (val))
@@ -1214,7 +1214,7 @@ extern void *mk_mp(void near *minp);
 #define SET_RA(val)  (reg_ra = (double) (val))
 
 /*
-/   Return values to take exit N from interface
+    Return values to take exit N from interface
 */
 #define EXIT_1          0
 #define EXIT_2          4
@@ -1227,13 +1227,13 @@ extern void *mk_mp(void near *minp);
 #define EXIT_9          32
 
 /*
-/    Return value to do a normal return from interface.
+     Return value to do a normal return from interface.
 */
 #define NORMAL_RETURN   (-1)
 
 /*
-/       Function to call into minimal code.
-/       The argument is an ordinal number defined below.
+        Function to call into minimal code.
+        The argument is an ordinal number defined below.
 */
 extern void minimal_call Params((word callno));
 extern void popregs Params((void));
@@ -1243,10 +1243,10 @@ extern void pushregs Params((void));
 #define MINRESTORE() popregs()
 
 /*
-/       Ordinals for minimal calls from C.
-/
-/   The order of entries here must correspond to the order of
-/   table entries in the INTER assembly language module.
+        Ordinals for minimal calls from C.
+
+    The order of entries here must correspond to the order of
+    table entries in the INTER assembly language module.
 */
 enum calltab {
     relaj_callid,
@@ -1266,12 +1266,12 @@ enum calltab {
 };
 
 /*
-/       Function and macro to get/set value from/to minimal dataspace.
-/       The argument is an ordinal number defined below.
-/   GET_DATA_OFFSET returns the address of a Minimal data value.
-/   GET_CODE_OFFSET returns the address of a Minimal routine.
-/       GET_MIN_VALUE returns the contents of an item of Minimal data.
-/       SET_MIN_VALUE sets the contents of an item of Minimal data.
+        Function and macro to get/set value from/to minimal dataspace.
+        The argument is an ordinal number defined below.
+    GET_DATA_OFFSET returns the address of a Minimal data value.
+    GET_CODE_OFFSET returns the address of a Minimal routine.
+        GET_MIN_VALUE returns the contents of an item of Minimal data.
+        SET_MIN_VALUE sets the contents of an item of Minimal data.
 */
 #if direcT
 #define GET_CODE_OFFSET(vn,type) ((type)vn)
@@ -1279,7 +1279,7 @@ enum calltab {
 #define GET_MIN_VALUE(vn,type) ((type)vn)
 #define SET_MIN_VALUE(vn,val,type) (*(type *)&vn = (type)(val))
 /*
-/   Names for accessing minimal data values via GET_DATA_OFFSET macro.
+    Names for accessing minimal data values via GET_DATA_OFFSET macro.
 */
 extern word
 gbcnt,
@@ -1323,7 +1323,7 @@ ttybuf,
 end_min_data;
 
 /*
-/   Names for accessing minimal code values via GET_CODE_OFFSET macro.
+    Names for accessing minimal code values via GET_CODE_OFFSET macro.
 */
 extern void     B_EFC();
 extern void     B_ICL();
@@ -1343,10 +1343,10 @@ extern  word *minoff Params((word valno));
 #define GET_MIN_VALUE(vn,type)  ((type)*minoff(vn))
 #define SET_MIN_VALUE(vn,val,type) (*(type *)minoff(vn) = (type)(val))
 /*
-/   Ordinals for accessing minimal values.
-/
-/   The order of entries here must correspond to the order of
-/   valtab entries in the INTER assembly language module.
+    Ordinals for accessing minimal values.
+
+    The order of entries here must correspond to the order of
+    valtab entries in the INTER assembly language module.
 */
 enum valtab {
     gbcnt,
@@ -1439,18 +1439,18 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   File:  PORT.H   (SPITBOL)   Version:  01.11
-/   ---------------------------------------------------
-/
-/   This header file contains manifest constants that describe system
-/   dependencies.  Many of these values will be changed when porting
-/   the OS interface to another machine/operating system.
+    File:  PORT.H   (SPITBOL)   Version:  01.11
+    ---------------------------------------------------
+
+    This header file contains manifest constants that describe system
+    dependencies.  Many of these values will be changed when porting
+    the OS interface to another machine/operating system.
 */
 #include "systype.h"
 
 /*
-/       Turn off system-specific features unless specifically called for
-/       in systype.h.
+        Turn off system-specific features unless specifically called for
+        in systype.h.
 */
 
 #ifndef ALTCOMP
@@ -1502,8 +1502,8 @@ This file is part of Macro SPITBOL.
 #endif
 
 /*
- *      Turn on system-specific features unless specifically turned off
- *      in systype.h
+        Turn on system-specific features unless specifically turned off
+        in systype.h
  */
 #ifndef DIRECT
 #define DIRECT          1       /* access Minimal data directly */
@@ -1542,7 +1542,7 @@ This file is part of Macro SPITBOL.
 #endif
 
 /*
- *  Other defaulted values that may be overridden in systype.h
+    Other defaulted values that may be overridden in systype.h
  */
 #ifndef INTBITS
 #define INTBITS         32                      /* assume int will be 32 bits */
@@ -1559,7 +1559,7 @@ This file is part of Macro SPITBOL.
 
 
 /*
- *  If not defined in systype.h, disable it here.
+    If not defined in systype.h, disable it here.
  */
 /* compiler defs */
 #ifndef BCC32
@@ -1660,8 +1660,8 @@ typedef long long IATYPE;
 #endif
 
 /*
-/   Define the default end of line characters.  Use Unix definitions
-/   as the default.  Override in systype.h.
+    Define the default end of line characters.  Use Unix definitions
+    as the default.  Override in systype.h.
 */
 #ifndef EOL1
 #define EOL1    '\n'
@@ -1672,7 +1672,7 @@ typedef long long IATYPE;
 #endif
 
 /*
- * Define the data type returned by a call to signal()
+   Define the data type returned by a call to signal()
  */
 #if UNIX
 #define SigType void
@@ -1681,19 +1681,19 @@ typedef long long IATYPE;
 #endif
 
 /*
-/   The following manifest constants define the page size used when the
-/   compiler produces a source listing.
-/
-/   PAGE_DEPTH          number of lines to print on a page
-/   PAGE_WIDTH          number of characters to print on a line
-/                                       also the default record length for OUTPUT, TERMINAL
+    The following manifest constants define the page size used when the
+    compiler produces a source listing.
+
+    PAGE_DEPTH          number of lines to print on a page
+    PAGE_WIDTH          number of characters to print on a line
+                                        also the default record length for OUTPUT, TERMINAL
 */
 #define PAGE_DEPTH  60
 #define PAGE_WIDTH      120
 
 /*
-/       The following constant defines the size of the code word for
-/       LZW compression of a save file.  See file compress.c.
+        The following constant defines the size of the code word for
+        LZW compression of a save file.  See file compress.c.
 */
 #if WORDBITS == 16
 #define LZWBITS 10
@@ -1702,26 +1702,26 @@ typedef long long IATYPE;
 #endif
 
 /*
-/   The following manifest contants describe the constraints on the heap
-/   managed by the spitbol compiler.
-/
-/   All values can be overriden via command line options.
-/
-/   CHUNK_SIZE          the size of an allocation unit (chunk) used to
-/                   create the heap.  Defined in WORDS!
-/
-/   CHUNK_B_SIZE        CHUNK_SIZE in bytes.
-/
-/   HEAP_SIZE           the maximum size that spitbol's heap (dynamic area)
-/                   can become.  Defined in WORDS!
-/
-/   OBJECT_SIZE         the maximum size of any object created in the heap.
-/                   Defined in WORDS!
-/       Note: It was necessary to reduce this value from 8M to 1M  because
-/   some DPMI hosts (like 386MAX) use much smaller
-/       starting address for data section.  4MB seems to be a good lowest
-/       common denominator so that Save files can move between all the
-/       different DPMI platforms.
+    The following manifest contants describe the constraints on the heap
+    managed by the spitbol compiler.
+
+    All values can be overriden via command line options.
+
+    CHUNK_SIZE          the size of an allocation unit (chunk) used to
+                    create the heap.  Defined in WORDS!
+
+    CHUNK_B_SIZE        CHUNK_SIZE in bytes.
+
+    HEAP_SIZE           the maximum size that spitbol's heap (dynamic area)
+                    can become.  Defined in WORDS!
+
+    OBJECT_SIZE         the maximum size of any object created in the heap.
+                    Defined in WORDS!
+        Note: It was necessary to reduce this value from 8M to 1M  because
+    some DPMI hosts (like 386MAX) use much smaller
+        starting address for data section.  4MB seems to be a good lowest
+        common denominator so that Save files can move between all the
+        different DPMI platforms.
 */
 
 #if LINUX | WINNT | AIX | SOLARIS
@@ -1740,13 +1740,13 @@ typedef long long IATYPE;
 #endif
 
 /*
- *  Define the maximum nesting allowed of INCLUDE files
+    Define the maximum nesting allowed of INCLUDE files
  */
 #define INCLUDE_DEPTH   9
 
 
 /*
- *  Define the standard file ids
+    Define the standard file ids
  */
 #ifndef STDINFD
 #define STDINFD 0
@@ -1759,11 +1759,11 @@ typedef long long IATYPE;
 #endif
 
 /*
- *   Define number of SPITBOL statements to be executed between
- *   interface polling intervals.  Only used if POLLING is 1.
- *   Unix systems can get away with an infinite polling interval,
- *   because their interrupts are asynchronous, and do not require
- *   true polling.
+     Define number of SPITBOL statements to be executed between
+     interface polling intervals.  Only used if POLLING is 1.
+     Unix systems can get away with an infinite polling interval,
+     because their interrupts are asynchronous, and do not require
+     true polling.
  */
 #ifndef PollCount
 #if UNIX
@@ -1775,7 +1775,7 @@ typedef long long IATYPE;
 
 
 /*
- *   Define Params macro to use or ignore function prototypes.
+     Define Params macro to use or ignore function prototypes.
  */
 #if PROTOTYPES
 #define Params(a) a
@@ -1785,14 +1785,14 @@ typedef long long IATYPE;
 
 
 /*
-/   The following manifest contant describes the constraints on the
-/   run-time stack.
-/
-/   The value can be overriden via command line option.
-/
-/   STACK_SIZE          the maximum size of the run-time stack.  Any attempt
-/                   to make the stack larger results in a stack overflow
-/                   error.  Defined in BYTES!
+    The following manifest contant describes the constraints on the
+    run-time stack.
+
+    The value can be overriden via command line option.
+
+    STACK_SIZE          the maximum size of the run-time stack.  Any attempt
+                    to make the stack larger results in a stack overflow
+                    error.  Defined in BYTES!
 */
 #if LINUX | WINNT | AIX | SOLARIS
 #define STACK_SIZE  (0x100000)      /* Set to 1MB 6/28/09 */
@@ -1800,20 +1800,20 @@ typedef long long IATYPE;
 
 
 /*
-/   The following manifest constant defines the location of the host file
-/   which contains a one line description of the system environment under
-/   which spitbol is running.
-/
-/   HOST_FILE           pathname for host text file used by function syshs
+    The following manifest constant defines the location of the host file
+    which contains a one line description of the system environment under
+    which spitbol is running.
+
+    HOST_FILE           pathname for host text file used by function syshs
 */
 #define HOST_FILE       "/usr/lib/spithost"
 
 /*
-/   The following manifest constant defines the names the files created
-/   by the EXIT(3) and EXIT(-3) function.
-/
-/   AOUT_FILE           pathname for load module created by sysxi
-/   SAVE_FILE           pathname for save file created by sysxi
+    The following manifest constant defines the names the files created
+    by the EXIT(3) and EXIT(-3) function.
+
+    AOUT_FILE           pathname for load module created by sysxi
+    SAVE_FILE           pathname for save file created by sysxi
 */
 #define SAVE_FILE       "a.spx"
 #if WINNT
@@ -1823,13 +1823,13 @@ typedef long long IATYPE;
 #endif
 
 /*
-/ PSEP is the separator between multiple paths.
-/ FSEP is the separator between directories in a path.
-/ EXT is separator between name and extension.
-/ COMPEXT is extension for source files.
-/ EFNEXT is extension for external functions.
-/ RUNEXT is extension for save files.
-/ BINEXT is extension for load modules
+  PSEP is the separator between multiple paths.
+  FSEP is the separator between directories in a path.
+  EXT is separator between name and extension.
+  COMPEXT is extension for source files.
+  EFNEXT is extension for external functions.
+  RUNEXT is extension for save files.
+  BINEXT is extension for load modules
 */
 
 #if UNIX
@@ -1857,31 +1857,31 @@ typedef long long IATYPE;
 #define SPITFILEPATH  "snolib"  /* path for include and external files */
 
 /*
-/   The following manifest constant determines the maximum number of
-/   files that can be open at a time.
-/
-/   OPEN_FILES          the maximum number of files that can be open at
-/                       a time.  Used by function ospipe to close files
-/                       given by a parent process to a child process.
+    The following manifest constant determines the maximum number of
+    files that can be open at a time.
+
+    OPEN_FILES          the maximum number of files that can be open at
+                        a time.  Used by function ospipe to close files
+                        given by a parent process to a child process.
 */
 #define OPEN_FILES      32
 
 /*
-/   The following manifest constants determines the size of the temporary
-/   SCBLKs defined by the interface.
-/
-/   TSCBLK_LENGTH       the maximum length of a string that can be stored
-/                   in structure 'tscblk'.  'tscblk' is defined in
-/                   file inter.s.
-/
-/   ID2BLK_LENGTH       the maximum length of a string that can be stored
-/                   in structure 'id2blk'.  'id2blk' is defined in
-/                   inter.c.  ID2BLK_LENGTH should be long enough
-/                   to hold the computer name type string (htype)
-/                   plus the date/time and a few blanks (typically
-/                   20 characters).  It should also be a multiple of
-/                   the word size.
-/
+    The following manifest constants determines the size of the temporary
+    SCBLKs defined by the interface.
+
+    TSCBLK_LENGTH       the maximum length of a string that can be stored
+                    in structure 'tscblk'.  'tscblk' is defined in
+                    file inter.s.
+
+    ID2BLK_LENGTH       the maximum length of a string that can be stored
+                    in structure 'id2blk'.  'id2blk' is defined in
+                    inter.c.  ID2BLK_LENGTH should be long enough
+                    to hold the computer name type string (htype)
+                    plus the date/time and a few blanks (typically
+                    20 characters).  It should also be a multiple of
+                    the word size.
+
 */
 #ifndef TSCBLK_LENGTH
 #define TSCBLK_LENGTH   512
@@ -1889,14 +1889,14 @@ typedef long long IATYPE;
 #define ID2BLK_LENGTH   52
 
 /*
-/   The following manifest constants determine the default environment
-/   variable name for the shell and it
-/
-/   SHELL_ENV_NAME      the name under which then shell path is stored
-/                   in the environment
-/
-/   SHELL_PATH          a default shell to use in event one cannot be
-/                   located in the environment
+    The following manifest constants determine the default environment
+    variable name for the shell and it
+
+    SHELL_ENV_NAME      the name under which then shell path is stored
+                    in the environment
+
+    SHELL_PATH          a default shell to use in event one cannot be
+                    located in the environment
 */
 
 #if WINNT             /* WINNT */
@@ -1910,24 +1910,24 @@ extern char isWin95;                  /* True if running under WinNT */
 #endif          /* WINNT */
 
 /*
-/   Compiler flags (see compiler listing for more details):
-/
-/   ERRORS      send errors to terminal
-/   PRTICH      terminal is standard output file
-/   NOLIST      suppress compilation listing
-/   NOCMPS      suppress compilation statistics
-/   NOEXCS      suppress execution statistics
-/   LNGLST      generate long listing (WITH page ejects)
-/   NOEXEC      suppress program execution
-/   TRMNAL      support terminal i/o association
-/   STDLST      standard listing (intermediate)
-/   NOHDER      suppress spitbol compiler header
-/   PRINTC      list control cards
-/   WRTEXE      write executable module after compilation
-/   CASFLD      fold upper and lower case names
-/   NOFAIL      no fail mode
-/
-/   DFLT_FLAGS  reasonable defaults for UN*X environment
+    Compiler flags (see compiler listing for more details):
+
+    ERRORS      send errors to terminal
+    PRTICH      terminal is standard output file
+    NOLIST      suppress compilation listing
+    NOCMPS      suppress compilation statistics
+    NOEXCS      suppress execution statistics
+    LNGLST      generate long listing (WITH page ejects)
+    NOEXEC      suppress program execution
+    TRMNAL      support terminal i/o association
+    STDLST      standard listing (intermediate)
+    NOHDER      suppress spitbol compiler header
+    PRINTC      list control cards
+    WRTEXE      write executable module after compilation
+    CASFLD      fold upper and lower case names
+    NOFAIL      no fail mode
+
+    DFLT_FLAGS  reasonable defaults for UN*X environment
 */
 
 #define ERRORS          0x00000001L
@@ -1991,33 +1991,33 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:   SAVE.H           Version 1.01
-/       -------------------------------------
-/
-/       This header file provides information for writing the impure
-/       portions of SPITBOL's data segments to a save file.
-/
-/ v1.01 3-Jun-91 MBE
-/       Added memincb, maxsize, readshell0 & uarg to header, and
-/       additional argument to specify whether these values should
-/       override existing values, as would be the case for the
-/       Intel MS-DOS version, where Save files are used to simulate
-/       Exec files.
-/
+        File:   SAVE.H           Version 1.01
+        -------------------------------------
+
+        This header file provides information for writing the impure
+        portions of SPITBOL's data segments to a save file.
+
+  v1.01 3-Jun-91 MBE
+        Added memincb, maxsize, readshell0 & uarg to header, and
+        additional argument to specify whether these values should
+        override existing values, as would be the case for the
+        Intel MS-DOS version, where Save files are used to simulate
+        Exec files.
+
 */
 #if SAVEFILE
 /*
- * +--------2--------+--------2--------+---------4---------+
- * |                 |                 |                   |
- * |     IA size     |    WORD size    | Save File Version |
- * |                 |                 |                   |
- * +-----------------+-----------------+-------------------+
+   +--------2--------+--------2--------+---------4---------+
+   |                 |                 |                   |
+   |     IA size     |    WORD size    | Save File Version |
+   |                 |                 |                   |
+   +-----------------+-----------------+-------------------+
  *
- * IA (integer accumulator) and Minimal Word Size:
- *  0 - 16 bits
- *  1 - 32 bits
- *  2 - 64 bits
- *  3 - 128 bits
+   IA (integer accumulator) and Minimal Word Size:
+    0 - 16 bits
+    1 - 32 bits
+    2 - 64 bits
+    3 - 128 bits
  */
 #define VWBSHFT     4
 #define VIASHFT     (VWBSHFT+2)
@@ -2093,26 +2093,26 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   File:  SPITBLKS.H           Version:  01.01
-/   -------------------------------------------
-/
-/   This header file defines structures used by the Macro SPITBOL compiler
-/   that are passed into the OS interface.
+    File:  SPITBLKS.H           Version:  01.01
+    -------------------------------------------
+
+    This header file defines structures used by the Macro SPITBOL compiler
+    that are passed into the OS interface.
 */
 
 /*
-/   First, define the C type word to be the same size as a word used
-/   by the Macro SPITBOL compiler.  The type of a word is a signed
-/   integer for now.
+    First, define the C type word to be the same size as a word used
+    by the Macro SPITBOL compiler.  The type of a word is a signed
+    integer for now.
 */
 
 /*
- *      BUFFER CONTROL BLOCK
+        BUFFER CONTROL BLOCK
  *
- *      A buffer control block (BCBLK) is created by the BUFFER
- *      function, and serves as an indirect control header for the
- *      buffer. It contains the number of characters currently
- *      stored in the buffer.
+        A buffer control block (BCBLK) is created by the BUFFER
+        function, and serves as an indirect control header for the
+        buffer. It contains the number of characters currently
+        stored in the buffer.
  */
 struct bcblk {
     word        typ;                                    /* type word                                                    */
@@ -2122,11 +2122,11 @@ struct bcblk {
 };
 
 /*
- *      STRING BUFFER BLOCK
+        STRING BUFFER BLOCK
  *
- *      A string buffer block (BFBLK) contains the actual buffer
- *      memory area. It specifies the largest string that can be
- *      stored in the buffer.
+        A string buffer block (BFBLK) contains the actual buffer
+        memory area. It specifies the largest string that can be
+        stored in the buffer.
  */
 struct bsblk {
     word        typ;                                    /* type word                                                    */
@@ -2136,9 +2136,9 @@ struct bsblk {
 
 
 /*
- * CODE BLOCK
+   CODE BLOCK
  *
- * A code block (CDBLK) is present for every source statement.
+   A code block (CDBLK) is present for every source statement.
  */
 
 struct cdblk {
@@ -2157,12 +2157,12 @@ struct cdblk {
 
 
 /*
-/   CHFCB - chain of FCBs block
-/
-/   For every FCB created by OSINT, the compiler creates a CHFCB pointing
-/   to the FCB and links it onto a chain of CHFCBs.  At EOJ the head of this
-/   CHFCB chain is passed to the interface function SYSEJ so that all files
-/   can be closed.
+    CHFCB - chain of FCBs block
+
+    For every FCB created by OSINT, the compiler creates a CHFCB pointing
+    to the FCB and links it onto a chain of CHFCBs.  At EOJ the head of this
+    CHFCB chain is passed to the interface function SYSEJ so that all files
+    can be closed.
 */
 
 struct  chfcb {
@@ -2174,8 +2174,8 @@ struct  chfcb {
 
 
 /*
-/   EFBLK - external function block
-/
+    EFBLK - external function block
+
 */
 
 struct  efblk {
@@ -2190,10 +2190,10 @@ struct  efblk {
 };
 
 /*
-/   ICBLK - integer block
-/
-/   Integer values are stored in ICBLKs.  Field icval should be defined
-/   to be the appropriate type for the implementation.
+    ICBLK - integer block
+
+    Integer values are stored in ICBLKs.  Field icval should be defined
+    to be the appropriate type for the implementation.
 */
 
 struct  icblk {
@@ -2202,10 +2202,10 @@ struct  icblk {
 };
 
 /*
-/       RCBLK - real block
-/
-/       Real values are stored in RCBLKs.  Field rcval should be defined
-/       to be the appropriate type for the implementation.
+        RCBLK - real block
+
+        Real values are stored in RCBLKs.  Field rcval should be defined
+        to be the appropriate type for the implementation.
 */
 
 struct  rcblk {
@@ -2214,14 +2214,14 @@ struct  rcblk {
 };
 
 /*
-/   SCBLK - string block
-/
-/   String values are stored in SCBLKs.  Notice that the scstr field
-/   is defined as an array of characters of length 1.  This is a slight
-/   kludge to side-step C's lack of support for varying length strings.
-/
-/   The actual length of a SCBLK is 2 words + the number of words necessary
-/   to hold a string of length sclen.
+    SCBLK - string block
+
+    String values are stored in SCBLKs.  Notice that the scstr field
+    is defined as an array of characters of length 1.  This is a slight
+    kludge to side-step C's lack of support for varying length strings.
+
+    The actual length of a SCBLK is 2 words + the number of words necessary
+    to hold a string of length sclen.
 */
 
 struct  scblk {
@@ -2232,9 +2232,9 @@ struct  scblk {
 
 
 /*
- * VARIABLE BLOCK
+   VARIABLE BLOCK
  *
- * A variable block (VRBLK) is used to hold a program variable.
+   A variable block (VRBLK) is used to hold a program variable.
  */
 
 struct vrblk {
@@ -2253,7 +2253,7 @@ struct vrblk {
 
 
 /*
-/       BLOCK - an arbitrary block
+        BLOCK - an arbitrary block
 */
 
 union block {
@@ -2288,26 +2288,26 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   File:  SPITIO.H     Version:  01.09
-/   -------------------------------------------
-/
-/   This header file defines the I/O control blocks used by the
-/   operating system interface for the Macro Spitbol compiler.
-/
-/  V1.09 27-Apr-97 Add FILEPOS definition.
-/  V1.08 26-Oct-94 Add "share" word to ioblk to allow file sharing
-/                       options.  Also, in the bfblk, change buf[1] to buf[sizeof(word)]
-/                       so that BFSIZE is calculated properly with compilers that
-/                       round-up the size of a structure to a word-multiple.
-/       V1.07   01-Aug-93 Add IO_EOT flag to ignore EOT char in DOS-mode text files.
-/       V1.06   01-Feb-93 Split record size into two fields (rsz and mode) in fcb, to
-/                       prevent negative record size appearing to be a valid
-/                       pointer in 8088 SPITBOL.
-/       V1.05   Add IO_DIR, change definitions in bfblk to
-/                       accommodate read/write files.
-/       V1.04   Split IOBLK flags into two words
-/       V1.03   Add IO_COT flag from MS-DOS
-/       V1.02   Split RECSIZ into IRECSIZ and ORECSIZ
+    File:  SPITIO.H     Version:  01.09
+    -------------------------------------------
+
+    This header file defines the I/O control blocks used by the
+    operating system interface for the Macro Spitbol compiler.
+
+   V1.09 27-Apr-97 Add FILEPOS definition.
+   V1.08 26-Oct-94 Add "share" word to ioblk to allow file sharing
+                        options.  Also, in the bfblk, change buf[1] to buf[sizeof(word)]
+                        so that BFSIZE is calculated properly with compilers that
+                        round-up the size of a structure to a word-multiple.
+        V1.07   01-Aug-93 Add IO_EOT flag to ignore EOT char in DOS-mode text files.
+        V1.06   01-Feb-93 Split record size into two fields (rsz and mode) in fcb, to
+                        prevent negative record size appearing to be a valid
+                        pointer in 8088 SPITBOL.
+        V1.05   Add IO_DIR, change definitions in bfblk to
+                        accommodate read/write files.
+        V1.04   Split IOBLK flags into two words
+        V1.03   Add IO_COT flag from MS-DOS
+        V1.02   Split RECSIZ into IRECSIZ and ORECSIZ
 */
 
 /* Size of file position words in I/O buffer block */
@@ -2318,15 +2318,15 @@ typedef long FILEPOS;       /* 32-bit file positions */
 #endif
 
 /*
-/   BLBLK - I/O buffer block
-/
-/   All buffered I/O is passed through a BFBLK.  This block is intentionally
-/   kept non-relocatable, so that it can be freely moved around the heap by
-/   the garbage collector.
-/
-/       WARNING:  INPBUF and TTYBUF are manually assembled into inter.asm and
-/                         inter.s, and must be changed in all versions if this structure
-/                         is altered.
+    BLBLK - I/O buffer block
+
+    All buffered I/O is passed through a BFBLK.  This block is intentionally
+    kept non-relocatable, so that it can be freely moved around the heap by
+    the garbage collector.
+
+        WARNING:  INPBUF and TTYBUF are manually assembled into inter.asm and
+                          inter.s, and must be changed in all versions if this structure
+                          is altered.
 */
 
 struct bfblk
@@ -2344,10 +2344,10 @@ struct bfblk
 #define BFSIZE          (sizeof( struct bfblk ) - sizeof( word ))
 
 /*
-/   FCBLK - file control block (type XRBLK)
-/
-/   For every I/O association a FCBLK is created.  All subsequent I/O
-/   operations are passed this block.
+    FCBLK - file control block (type XRBLK)
+
+    For every I/O association a FCBLK is created.  All subsequent I/O
+    operations are passed this block.
 */
 
 struct fcblk
@@ -2362,18 +2362,18 @@ struct fcblk
 #define FCSIZE          (sizeof( struct fcblk ))
 
 /*
-/   IOBLK - I/O control block (type XRBLK)
-/
-/   For every SPITBOL I/O channel there is one central IOBLK containing
-/   information about the channel:  filename, file descriptor, IOBLK
-/   pointer, etc.
-/
-/   Because IOBLK is an XRBLK, and hence relocatable, all words in
-/   the block must be relocatable pointers, or smaller than MXLEN.
-/   Systems using 16-bit words typically use small MXLENs, and
-/   may cause values in the flg word to be mis-interpreted as pointers.
-/   For this reason, I/O flags will be split across two words.
-/
+    IOBLK - I/O control block (type XRBLK)
+
+    For every SPITBOL I/O channel there is one central IOBLK containing
+    information about the channel:  filename, file descriptor, IOBLK
+    pointer, etc.
+
+    Because IOBLK is an XRBLK, and hence relocatable, all words in
+    the block must be relocatable pointers, or smaller than MXLEN.
+    Systems using 16-bit words typically use small MXLENs, and
+    may cause values in the flg word to be mis-interpreted as pointers.
+    For this reason, I/O flags will be split across two words.
+
 */
 
 struct ioblk
@@ -2395,11 +2395,11 @@ struct ioblk
 #define IOSIZE          (sizeof( struct ioblk ))
 
 /*
- *  I/O flags within the flg1 and flg2 words of an IOBLK.
+    I/O flags within the flg1 and flg2 words of an IOBLK.
  *
- *  Caution:  Do not attempt to redefine as C bit fields.  Bit fields
- *  may be assigned to high-order bits on some systems, and this would
- *  produce values larger than MXLEN.
+    Caution:  Do not attempt to redefine as C bit fields.  Bit fields
+    may be assigned to high-order bits on some systems, and this would
+    produce values larger than MXLEN.
  */
 /* Flags in flg1 */
 #define IO_INP          0x00000001      /* file open for reading */
@@ -2470,11 +2470,11 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SPROTO.H Version 1.02
-/       ----------------------------
-/
-/       Function prototypes for argument type checking.
-/       This files are unique to SPITBOL.
+        File:  SPROTO.H Version 1.02
+        ----------------------------
+
+        Function prototypes for argument type checking.
+        This files are unique to SPITBOL.
 */
 
 #ifndef _sproto_
@@ -2753,7 +2753,7 @@ This file is part of Macro SPITBOL.
 /* ------------------------- system.h ------------------------------- */
 
 /*
- * Define system type.
+   Define system type.
  */
 
 #define gcc32  1
@@ -2781,31 +2781,31 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   The following manifest constants define the target hardware platform
-/   and tool chain.
-/
-/               running on a:
-/   BCC32       Intel 32-bit x86, Borland C++ compiler (Windows command line)
-/   VCC         Intel 32-bit x86, Microsoft Visual C (Windows command line)
-/   GCCi32      Intel 32-bit x86, GNU GCC
-/   GCCi64      Intel 64-bit x86, GNU GCC
-/   RS6         IBM RS6000 (Power)
-/   SUN4        SPARC, SUN4
-/
-/   The following manifest constants define the target operating system.
-/
-/   AIX3        AIX version 3
-/   AIX4        AIX version 4
-/   BSD43       Berkeley release: BSD 4.3
-/   LINUX       Linux
-/   SOLARIS     Sun Solaris
-/   WINNT       Windows NT/XP/Vista
-/
+    The following manifest constants define the target hardware platform
+    and tool chain.
+
+                running on a:
+    BCC32       Intel 32-bit x86, Borland C++ compiler (Windows command line)
+    VCC         Intel 32-bit x86, Microsoft Visual C (Windows command line)
+    GCCi32      Intel 32-bit x86, GNU GCC
+    GCCi64      Intel 64-bit x86, GNU GCC
+    RS6         IBM RS6000 (Power)
+    SUN4        SPARC, SUN4
+
+    The following manifest constants define the target operating system.
+
+    AIX3        AIX version 3
+    AIX4        AIX version 4
+    BSD43       Berkeley release: BSD 4.3
+    LINUX       Linux
+    SOLARIS     Sun Solaris
+    WINNT       Windows NT/XP/Vista
+
 */
 
 /* Override default values in port.h.  It is necessary for a user configuring
- * SPITBOL to examine all the default values in port.h and override those
- * that need to be altered.
+   SPITBOL to examine all the default values in port.h and override those
+   that need to be altered.
  */
 /*  Values for x86 Linux 32-bit SPITBOL.
  */

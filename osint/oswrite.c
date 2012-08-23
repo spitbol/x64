@@ -18,43 +18,43 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  OSWRITE.C        Version:  01.11
-/       ---------------------------------------
-/
-/       Contents:       Function oswrite
-/
-/       V1.11   Split mode and line length into two separate arguments.  1-Feb-93.
-/       V1.10   Maintain IO_DIR.  Other changes for read/write I/O.
-/       V1.09   Decrement cp when restore savech in case multiple records.  Advance
-/                       cp when writing in unbuffered mode.
-/       V1.08   Change modelen parameter from int to word.
-/   V1.07   Fix binary writes to character device if MS-DOS.
-/   V1.06   Ignore short writes to character device if MS-DOS.
-/       V1.05   Terminate host screen operation if HOST386.
-/       V1.04   Obey ioptr->len on line-mode output.
+        File:  OSWRITE.C        Version:  01.11
+        ---------------------------------------
+
+        Contents:       Function oswrite
+
+        V1.11   Split mode and line length into two separate arguments.  1-Feb-93.
+        V1.10   Maintain IO_DIR.  Other changes for read/write I/O.
+        V1.09   Decrement cp when restore savech in case multiple records.  Advance
+                        cp when writing in unbuffered mode.
+        V1.08   Change modelen parameter from int to word.
+    V1.07   Fix binary writes to character device if MS-DOS.
+    V1.06   Ignore short writes to character device if MS-DOS.
+        V1.05   Terminate host screen operation if HOST386.
+        V1.04   Obey ioptr->len on line-mode output.
 */
 
 /*
-/   oswrite( mode, linesiz, recsiz, ioptr, scptr )
-/
-/   oswrite() writes the record in the passed SCBLK to the file associated
-/   with the passed IOBLK.  There are two types of transfer:
-/
-/       unbuffered      write is done immediately
-/
-/       buffered        write is done into buffer
-/
-/   In either case, a new-line is appended to the record if in line mode
-/   (mode == 1).
-/
-/   Parameters:
-/       mode    1=line mode / 0=raw mode
-/       linesiz output record length
-/       recsiz  length of data being written
-/       ioptr   pointer to IOBLK associated with output file
-/       scptr   pointer to SCBLK to receive output record
-/   Returns:
-/       Number of I/O errors.  Should be 0.
+    oswrite( mode, linesiz, recsiz, ioptr, scptr )
+
+    oswrite() writes the record in the passed SCBLK to the file associated
+    with the passed IOBLK.  There are two types of transfer:
+
+        unbuffered      write is done immediately
+
+        buffered        write is done into buffer
+
+    In either case, a new-line is appended to the record if in line mode
+    (mode == 1).
+
+    Parameters:
+        mode    1=line mode / 0=raw mode
+        linesiz output record length
+        recsiz  length of data being written
+        ioptr   pointer to IOBLK associated with output file
+        scptr   pointer to SCBLK to receive output record
+    Returns:
+        Number of I/O errors.  Should be 0.
 */
 
 #include "port.h"

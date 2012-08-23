@@ -18,10 +18,10 @@ This file is part of Macro SPITBOL.
 */
 
 /*
- *      Globals.h       All OSINT globals are defined in this file.
+        Globals.h       All OSINT globals are defined in this file.
  *
- *      Define GLOBALS in the C module that wishes to have these
- *      variables defined.  All other modules will see them as externals.
+        Define GLOBALS in the C module that wishes to have these
+        variables defined.  All other modules will see them as externals.
  */
 
 #ifndef Init
@@ -42,7 +42,7 @@ This file is part of Macro SPITBOL.
 
 
 /*
-/    Global data areas needed by compiler.
+     Global data areas needed by compiler.
 */
 NoInit( int             cmdcnt);                /*  command count                       */
 NoInit( int             gblargc);               /*  argc from command line              */
@@ -50,14 +50,14 @@ NoInit( char    **gblargv);             /*  argv from command line              
 Init(   char    *uarg, 0);              /*  -u argument from command line       */
 
 /*
-/   Information to be given to compiler
+    Information to be given to compiler
 */
 Init(   uword   lnsppage, PAGE_DEPTH);  /*  lines per page for listings                 */
 Init(   uword   pagewdth, PAGE_WIDTH);  /*  width of output line for listings   */
 Init(   long    spitflag, DFLT_FLAGS);  /*  flags to be given to compiler               */
 
 /*
-/   Memory variables that control compiler's dynamic area and stack.
+    Memory variables that control compiler's dynamic area and stack.
 */
 Init(   uword   memincb, CHUNK_B_SIZE); /*  meminc converted to bytes           */
 Init(   uword   databts, HEAP_SIZE * sizeof(word));     /*  max size in bytes of data area      */
@@ -69,7 +69,7 @@ Init(   uword   stacksiz, STACK_SIZE);  /*  maximum size of stack in bytes      
 NoInit( char    *lowsp);                        /*  lowest legal sp value               */
 
 /*
-/   Variables that describe access to standard input and output files.
+    Variables that describe access to standard input and output files.
 */
 Init(   int             inpcnt, 0);             /*  number of input files                       */
 Init(   char    **inpptr, 0);   /*  pointer to input file in argv array */
@@ -103,8 +103,8 @@ NoInit( FILEPOS inc_pos[INCLUDE_DEPTH]);/*      "        "       "              
 Init(   word    maxf, -1);              /* number of files specified this way -1 */
 
 /*
-/       Structure to record i/o files specified on command line
-/       with /#=filename.
+        Structure to record i/o files specified on command line
+        with /#=filename.
 */
 #define Ncmdf   12
 
@@ -187,18 +187,18 @@ NoInit(  FILEPOS  fp);
 #endif                                  /* SAVEFILE | EXECFILE */
 
 /*
-/   lmodstk is set when creating a load module.  On the subsequent
-/   execution of a load module, the presence of a non-zero value in
-/   lmodstk determines that the execution is indeed of a load module.
-/
-/   For Intel DOS Extender, lmodstk provides the file position within
-/       the execution module where a save file begins.
+    lmodstk is set when creating a load module.  On the subsequent
+    execution of a load module, the presence of a non-zero value in
+    lmodstk determines that the execution is indeed of a load module.
+
+    For Intel DOS Extender, lmodstk provides the file position within
+        the execution module where a save file begins.
 */
 NoInit( word    *lmodstk);
 
 
 /*
- * Globals found in assembly language modules.
+   Globals found in assembly language modules.
  *
  */
 extern int  reg_size;
@@ -208,7 +208,7 @@ extern word reg_block;
 
 #if ENGINE
 /*
- * Engine globals
+   Engine globals
  */
 NoInit( word lastError);
 #endif                                  /* ENGINE */

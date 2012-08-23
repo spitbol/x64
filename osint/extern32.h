@@ -22,42 +22,42 @@ This file is part of Macro SPITBOL.
 #define __extern32__
 
 /*
- *  Definitions of routines and data available to C-language
- *  external function to be called from 32-bit versions of SPITBOL.
+    Definitions of routines and data available to C-language
+    external function to be called from 32-bit versions of SPITBOL.
  *
- *      V1.00  02/17/90 01:52pm
- *                 Initial version
+        V1.00  02/17/90 01:52pm
+                   Initial version
  *
- *  V1.01  10-18-91 04:53pm
- *         <withdrawn>.
+    V1.01  10-18-91 04:53pm
+           <withdrawn>.
  *
- *  V1.02  03-29-92 09:11am
- *       <withdrawn>.
+    V1.02  03-29-92 09:11am
+         <withdrawn>.
  *
- *  V1.03  07-28-92 06:56am
- *                 Customize for SPARC.
+    V1.03  07-28-92 06:56am
+                   Customize for SPARC.
  *
- *      V1.04  09-12-94 07:13pm
- *                 Add definitions for buffers
+        V1.04  09-12-94 07:13pm
+                   Add definitions for buffers
  *
- *  V1.05  04-25-95 10:05pm
- *                 Customize for RS/6000
+    V1.05  04-25-95 10:05pm
+                   Customize for RS/6000
  *
- *  V1.06  12-29-96 06:05pm
- *         Customize for Windows NT
+    V1.06  12-29-96 06:05pm
+           Customize for Windows NT
  *
- *  V1.07  03-04-97 12:45pm
- *                        Tweak for SPARC.
+    V1.07  03-04-97 12:45pm
+                          Tweak for SPARC.
  *
- *  Definition of information placed on stack prior to pushing arguments to
- *  an external function.
+    Definition of information placed on stack prior to pushing arguments to
+    an external function.
  *
- *  Many of these items can be ignored, and are provided only for the
- *  benefit of those wishing to operate directly on SPITBOL's internal
- *  data structures.
+    Many of these items can be ignored, and are provided only for the
+    benefit of those wishing to operate directly on SPITBOL's internal
+    data structures.
  *
- *  However, the pointer in presult *must* be used by the external
- *  function to locate the area in which results are returned.
+    However, the pointer in presult *must* be used by the external
+    function to locate the area in which results are returned.
  *
  */
 
@@ -98,7 +98,7 @@ typedef double (*APDF[])();
 
 
 /*
- * Miscellaneous information provided by SPITBOL in pointer above the arguments.
+   Miscellaneous information provided by SPITBOL in pointer above the arguments.
  */
 
 typedef struct misc {
@@ -134,34 +134,34 @@ enum ext_type {                                         /* Executing under:     
 };
 
 /*
- * Sample usage.  Definition for function arguments, assuming
- * calling function in SPITBOL with:
+   Sample usage.  Definition for function arguments, assuming
+   calling function in SPITBOL with:
  *
- *       F(INTEGER,REAL,STRING)
+         F(INTEGER,REAL,STRING)
  *
- * Because SPITBOL pushes arguments left to right, a Pascal
- * calling sequence should be used.  The could be supplied by
- * adding the __pascal keyword to the entry macro.
+   Because SPITBOL pushes arguments left to right, a Pascal
+   calling sequence should be used.  The could be supplied by
+   adding the __pascal keyword to the entry macro.
  *
- * However, because the SPARC and RS/6000 C compilers do not support
- * Pascal calling sequences, and we would like to move external function
- * source files easily between systems, the function definition will have
- * to manually reverse the arguments:
- *   entry(F)(presult, pinfo, parg3, larg3, rarg2, iarg1)
- *     union block         *presult;             pointer to result area
- *     misc                        *pinfo;                   miscellaneous info
- *     char                        *parg3;                       pointer to arg3 string
- *     mword                    larg3;                   arg3 length
- *     double                   rarg2;                   arg2 real number
- *     mword                    iarg1;                   arg1 integer
- * {
- *    ....  start of function body
+   However, because the SPARC and RS/6000 C compilers do not support
+   Pascal calling sequences, and we would like to move external function
+   source files easily between systems, the function definition will have
+   to manually reverse the arguments:
+     entry(F)(presult, pinfo, parg3, larg3, rarg2, iarg1)
+       union block         *presult;             pointer to result area
+       misc                        *pinfo;                   miscellaneous info
+       char                        *parg3;                       pointer to arg3 string
+       mword                    larg3;                   arg3 length
+       double                   rarg2;                   arg2 real number
+       mword                    iarg1;                   arg1 integer
+   {
+      ....  start of function body
  */
 
 
 /*
- * Simple names for datatypes.  Performs a lookup in SPITBOL's type
- * table to fetch a 32-bit type word for specific data types.
+   Simple names for datatypes.  Performs a lookup in SPITBOL's type
+   table to fetch a 32-bit type word for specific data types.
  */
 
 #define ar      (*((*pinfo).ptyptab))[BL_AR]    /* Array                */
@@ -179,7 +179,7 @@ enum ext_type {                                         /* Executing under:     
 
 
 /*
- * Non-standard block-type values that may be returned as a result:
+   Non-standard block-type values that may be returned as a result:
  */
 
 #define FAIL    (-1)                    /* Signal function failure      */
@@ -188,20 +188,20 @@ enum ext_type {                                         /* Executing under:     
 #define BL_FX   102                             /* Far external block           */
 
 /*
- * Length of string area in result buffer
+   Length of string area in result buffer
  */
 
 #define buflen  512
 
 
 /*
- * SPITBOL's Real Number Functions are not available to external
- * functions coded in C.  Use the normal C floating point library
- * to provide such support.
+   SPITBOL's Real Number Functions are not available to external
+   functions coded in C.  Use the normal C floating point library
+   to provide such support.
  */
 
 /*
- * Function definitions for routines in extrnlib.c
+   Function definitions for routines in extrnlib.c
  */
 #if sparc | aix
 #include <memory.h>

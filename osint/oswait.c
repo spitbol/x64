@@ -18,26 +18,26 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   File:  OSWAIT.C     Version:  01.02
-/       ---------------------------------------
-/
-/       Contents:       Function oswait
+    File:  OSWAIT.C     Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function oswait
 */
 
 
 /*
-/   oswait( pid )
-/
-/   oswait() waits for the termination of the process with id pid.
-/
-/   Parameters:
-/       pid     prcoess id
-/   Returns:
-/   nothing
-/
-/   V1.01 MBE 07-29-91  <withdrawn>.
-/   V1.02 MBE 12-31-96  Modify for WinNT.
-/
+    oswait( pid )
+
+    oswait() waits for the termination of the process with id pid.
+
+    Parameters:
+        pid     prcoess id
+    Returns:
+    nothing
+
+    V1.01 MBE 07-29-91  <withdrawn>.
+    V1.02 MBE 12-31-96  Modify for WinNT.
+
 */
 
 #include "port.h"

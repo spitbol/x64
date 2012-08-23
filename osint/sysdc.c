@@ -18,17 +18,17 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       zysdc - check system expiration date
-/
-/       zysdc prints any header messages and may check
-/       the date to see if execution is allowed to proceed.
-/
-/       Parameters:
-/           Nothing
-/       Returns
-/           Nothing
-/           No return if execution not permitted
-/
+        zysdc - check system expiration date
+
+        zysdc prints any header messages and may check
+        the date to see if execution is allowed to proceed.
+
+        Parameters:
+            Nothing
+        Returns
+            Nothing
+            No return if execution not permitted
+
 */
 
 #include "port.h"

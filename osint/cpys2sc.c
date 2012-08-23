@@ -18,30 +18,30 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  CPYS2SC.C        Version:  01.01
-/       ---------------------------------------
-/
-/       Contents:       Function cpy2sc
+        File:  CPYS2SC.C        Version:  01.01
+        ---------------------------------------
+
+        Contents:       Function cpy2sc
 */
 
 /*
-/   cpys2sc( cp, scptr, maxlen )
-/
-/   cpys2sc() copies a C style string pointed to by cp into the SCBLK
-/   pointed to by scptr.
-/
-/   Parameters:
-/       cp      pointer to C style string
-/       scptr   pointer to SCBLK to receive copy of string
-/       maxlen  maximum length of string area within SCBLK
-/   Returns:
-/       Nothing.
-/
-/   Side Effects:
-/       Modifies contents of passed SCBLK (scptr).
-/
-/   v1.01, 12/28/90 - pad last word in SCBLK with zeros to match behavior of ALOCS.
-/                       Eliminated termch argument,  since it was always zero.
+    cpys2sc( cp, scptr, maxlen )
+
+    cpys2sc() copies a C style string pointed to by cp into the SCBLK
+    pointed to by scptr.
+
+    Parameters:
+        cp      pointer to C style string
+        scptr   pointer to SCBLK to receive copy of string
+        maxlen  maximum length of string area within SCBLK
+    Returns:
+        Nothing.
+
+    Side Effects:
+        Modifies contents of passed SCBLK (scptr).
+
+    v1.01, 12/28/90 - pad last word in SCBLK with zeros to match behavior of ALOCS.
+                        Eliminated termch argument,  since it was always zero.
 */
 
 #include "port.h"

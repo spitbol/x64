@@ -18,26 +18,26 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   File:  SPITIO.H     Version:  01.09
-/   -------------------------------------------
-/
-/   This header file defines the I/O control blocks used by the
-/   operating system interface for the Macro Spitbol compiler.
-/
-/  V1.09 27-Apr-97 Add FILEPOS definition.
-/  V1.08 26-Oct-94 Add "share" word to ioblk to allow file sharing
-/                       options.  Also, in the bfblk, change buf[1] to buf[sizeof(word)]
-/                       so that BFSIZE is calculated properly with compilers that
-/                       round-up the size of a structure to a word-multiple.
-/       V1.07   01-Aug-93 Add IO_EOT flag to ignore EOT char in DOS-mode text files.
-/       V1.06   01-Feb-93 Split record size into two fields (rsz and mode) in fcb, to
-/                       prevent negative record size appearing to be a valid
-/                       pointer in 8088 SPITBOL.
-/       V1.05   Add IO_DIR, change definitions in bfblk to
-/                       accommodate read/write files.
-/       V1.04   Split IOBLK flags into two words
-/       V1.03   Add IO_COT flag from MS-DOS
-/       V1.02   Split RECSIZ into IRECSIZ and ORECSIZ
+    File:  SPITIO.H     Version:  01.09
+    -------------------------------------------
+
+    This header file defines the I/O control blocks used by the
+    operating system interface for the Macro Spitbol compiler.
+
+   V1.09 27-Apr-97 Add FILEPOS definition.
+   V1.08 26-Oct-94 Add "share" word to ioblk to allow file sharing
+                        options.  Also, in the bfblk, change buf[1] to buf[sizeof(word)]
+                        so that BFSIZE is calculated properly with compilers that
+                        round-up the size of a structure to a word-multiple.
+        V1.07   01-Aug-93 Add IO_EOT flag to ignore EOT char in DOS-mode text files.
+        V1.06   01-Feb-93 Split record size into two fields (rsz and mode) in fcb, to
+                        prevent negative record size appearing to be a valid
+                        pointer in 8088 SPITBOL.
+        V1.05   Add IO_DIR, change definitions in bfblk to
+                        accommodate read/write files.
+        V1.04   Split IOBLK flags into two words
+        V1.03   Add IO_COT flag from MS-DOS
+        V1.02   Split RECSIZ into IRECSIZ and ORECSIZ
 */
 
 /* Size of file position words in I/O buffer block */
@@ -48,15 +48,15 @@ typedef long FILEPOS;       /* 32-bit file positions */
 #endif
 
 /*
-/   BLBLK - I/O buffer block
-/
-/   All buffered I/O is passed through a BFBLK.  This block is intentionally
-/   kept non-relocatable, so that it can be freely moved around the heap by
-/   the garbage collector.
-/
-/       WARNING:  INPBUF and TTYBUF are manually assembled into inter.asm and
-/                         inter.s, and must be changed in all versions if this structure
-/                         is altered.
+    BLBLK - I/O buffer block
+
+    All buffered I/O is passed through a BFBLK.  This block is intentionally
+    kept non-relocatable, so that it can be freely moved around the heap by
+    the garbage collector.
+
+        WARNING:  INPBUF and TTYBUF are manually assembled into inter.asm and
+                          inter.s, and must be changed in all versions if this structure
+                          is altered.
 */
 
 struct bfblk
@@ -74,10 +74,10 @@ struct bfblk
 #define BFSIZE          (sizeof( struct bfblk ) - sizeof( word ))
 
 /*
-/   FCBLK - file control block (type XRBLK)
-/
-/   For every I/O association a FCBLK is created.  All subsequent I/O
-/   operations are passed this block.
+    FCBLK - file control block (type XRBLK)
+
+    For every I/O association a FCBLK is created.  All subsequent I/O
+    operations are passed this block.
 */
 
 struct fcblk
@@ -92,18 +92,18 @@ struct fcblk
 #define FCSIZE          (sizeof( struct fcblk ))
 
 /*
-/   IOBLK - I/O control block (type XRBLK)
-/
-/   For every SPITBOL I/O channel there is one central IOBLK containing
-/   information about the channel:  filename, file descriptor, IOBLK
-/   pointer, etc.
-/
-/   Because IOBLK is an XRBLK, and hence relocatable, all words in
-/   the block must be relocatable pointers, or smaller than MXLEN.
-/   Systems using 16-bit words typically use small MXLENs, and
-/   may cause values in the flg word to be mis-interpreted as pointers.
-/   For this reason, I/O flags will be split across two words.
-/
+    IOBLK - I/O control block (type XRBLK)
+
+    For every SPITBOL I/O channel there is one central IOBLK containing
+    information about the channel:  filename, file descriptor, IOBLK
+    pointer, etc.
+
+    Because IOBLK is an XRBLK, and hence relocatable, all words in
+    the block must be relocatable pointers, or smaller than MXLEN.
+    Systems using 16-bit words typically use small MXLENs, and
+    may cause values in the flg word to be mis-interpreted as pointers.
+    For this reason, I/O flags will be split across two words.
+
 */
 
 struct ioblk
@@ -125,11 +125,11 @@ struct ioblk
 #define IOSIZE          (sizeof( struct ioblk ))
 
 /*
- *  I/O flags within the flg1 and flg2 words of an IOBLK.
+    I/O flags within the flg1 and flg2 words of an IOBLK.
  *
- *  Caution:  Do not attempt to redefine as C bit fields.  Bit fields
- *  may be assigned to high-order bits on some systems, and this would
- *  produce values larger than MXLEN.
+    Caution:  Do not attempt to redefine as C bit fields.  Bit fields
+    may be assigned to high-order bits on some systems, and this would
+    produce values larger than MXLEN.
  */
 /* Flags in flg1 */
 #define IO_INP          0x00000001      /* file open for reading */

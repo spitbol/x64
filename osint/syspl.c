@@ -18,31 +18,31 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSPL.C          Version:  01.01
-/       ---------------------------------------
-/
-/       zyspl - interface polling from SPITBOL
-/
-/       zyspl is called before statement execution to allow the interface
-/         to regain control if desired.
-/       Parameters:
-/           WA - reason for call
-/                    =0  periodic polling
-/                    =1  breakpoint hit
-/                    =2  completion of statement stepping
-/     WB - current statement number
-/           XL - SCBLK of result if WA = 3.
-/       Normal Return
-/           WA - number of statements to elapse before calling SYSPL again.
-/       Exits:
-/           1 - set breakpoint
-/           2 - single step
-/           3 - evaluate expression
-/       normal exit - no special action
-/
-/  Version history:
-/
-/
+        File:  SYSPL.C          Version:  01.01
+        ---------------------------------------
+
+        zyspl - interface polling from SPITBOL
+
+        zyspl is called before statement execution to allow the interface
+          to regain control if desired.
+        Parameters:
+            WA - reason for call
+                     =0  periodic polling
+                     =1  breakpoint hit
+                     =2  completion of statement stepping
+      WB - current statement number
+            XL - SCBLK of result if WA = 3.
+        Normal Return
+            WA - number of statements to elapse before calling SYSPL again.
+        Exits:
+            1 - set breakpoint
+            2 - single step
+            3 - evaluate expression
+        normal exit - no special action
+
+   Version history:
+
+
 */
 
 #include "port.h"

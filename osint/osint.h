@@ -18,18 +18,18 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   File:  OSINT.H              Version:  01.01
-/   -------------------------------------------
-/
-/   This header file defines the interface between the Macro SPITBOL compiler
-/   written in assembly langauge and the OS interface written in C.
-/   Communication between the two is handled via a set of global variables
-/   defined as externals below.
+    File:  OSINT.H              Version:  01.01
+    -------------------------------------------
+
+    This header file defines the interface between the Macro SPITBOL compiler
+    written in assembly langauge and the OS interface written in C.
+    Communication between the two is handled via a set of global variables
+    defined as externals below.
 */
 
 
 /*
-/   Set up externals for all the compiler's registers.
+    Set up externals for all the compiler's registers.
 */
 
 extern word     reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs;
@@ -40,11 +40,11 @@ extern word reg_pc;
 #endif
 
 /*
- *  Macros to deal with converting pointers within the Minimal heap
- *  to pointers that the C code can deal with.  On most systems, the
- *  two types of pointers are equivalent.  But on machines like the
- *  8088 or under Windows, the near pointers within the heap need to
- *  be converted to and from far pointers in the C data space.
+    Macros to deal with converting pointers within the Minimal heap
+    to pointers that the C code can deal with.  On most systems, the
+    two types of pointers are equivalent.  But on machines like the
+    8088 or under Windows, the near pointers within the heap need to
+    be converted to and from far pointers in the C data space.
  */
 #if __NEAR__
 extern void *mk_mp(void near *minp);
@@ -56,7 +56,7 @@ extern void *mk_mp(void near *minp);
 #endif                                  /* __NEAR__ */
 
 /*
-/   Macros to fetch a value of appropriate type from a compiler register
+    Macros to fetch a value of appropriate type from a compiler register
 */
 
 #if __NEAR__
@@ -83,7 +83,7 @@ extern void *mk_mp(void near *minp);
 #define RA(type)  ((type) reg_ra)    /* v1.30.12 */
 #endif          /* __NEAR__ */
 /*
-/   Macros to set a value of appropriate type into a compiler register.
+    Macros to set a value of appropriate type into a compiler register.
 */
 #define SET_CP(val)     (reg_cp = (word) (val))
 #define SET_IA(val)     (reg_ia = (val))
@@ -97,7 +97,7 @@ extern void *mk_mp(void near *minp);
 #define SET_RA(val)  (reg_ra = (double) (val))
 
 /*
-/   Return values to take exit N from interface
+    Return values to take exit N from interface
 */
 #define EXIT_1          0
 #define EXIT_2          4
@@ -110,13 +110,13 @@ extern void *mk_mp(void near *minp);
 #define EXIT_9          32
 
 /*
-/    Return value to do a normal return from interface.
+     Return value to do a normal return from interface.
 */
 #define NORMAL_RETURN   (-1)
 
 /*
-/       Function to call into minimal code.
-/       The argument is an ordinal number defined below.
+        Function to call into minimal code.
+        The argument is an ordinal number defined below.
 */
 extern void minimal_call Params((word callno));
 extern void popregs Params((void));
@@ -126,10 +126,10 @@ extern void pushregs Params((void));
 #define MINRESTORE() popregs()
 
 /*
-/       Ordinals for minimal calls from C.
-/
-/   The order of entries here must correspond to the order of
-/   table entries in the INTER assembly language module.
+        Ordinals for minimal calls from C.
+
+    The order of entries here must correspond to the order of
+    table entries in the INTER assembly language module.
 */
 enum calltab {
     relaj_callid,
@@ -149,12 +149,12 @@ enum calltab {
 };
 
 /*
-/       Function and macro to get/set value from/to minimal dataspace.
-/       The argument is an ordinal number defined below.
-/   GET_DATA_OFFSET returns the address of a Minimal data value.
-/   GET_CODE_OFFSET returns the address of a Minimal routine.
-/       GET_MIN_VALUE returns the contents of an item of Minimal data.
-/       SET_MIN_VALUE sets the contents of an item of Minimal data.
+        Function and macro to get/set value from/to minimal dataspace.
+        The argument is an ordinal number defined below.
+    GET_DATA_OFFSET returns the address of a Minimal data value.
+    GET_CODE_OFFSET returns the address of a Minimal routine.
+        GET_MIN_VALUE returns the contents of an item of Minimal data.
+        SET_MIN_VALUE sets the contents of an item of Minimal data.
 */
 #if direcT
 #define GET_CODE_OFFSET(vn,type) ((type)vn)
@@ -162,7 +162,7 @@ enum calltab {
 #define GET_MIN_VALUE(vn,type) ((type)vn)
 #define SET_MIN_VALUE(vn,val,type) (*(type *)&vn = (type)(val))
 /*
-/   Names for accessing minimal data values via GET_DATA_OFFSET macro.
+    Names for accessing minimal data values via GET_DATA_OFFSET macro.
 */
 extern word
 gbcnt,
@@ -206,7 +206,7 @@ ttybuf,
 end_min_data;
 
 /*
-/   Names for accessing minimal code values via GET_CODE_OFFSET macro.
+    Names for accessing minimal code values via GET_CODE_OFFSET macro.
 */
 extern void     B_EFC();
 extern void     B_ICL();
@@ -226,10 +226,10 @@ extern  word *minoff Params((word valno));
 #define GET_MIN_VALUE(vn,type)  ((type)*minoff(vn))
 #define SET_MIN_VALUE(vn,val,type) (*(type *)minoff(vn) = (type)(val))
 /*
-/   Ordinals for accessing minimal values.
-/
-/   The order of entries here must correspond to the order of
-/   valtab entries in the INTER assembly language module.
+    Ordinals for accessing minimal values.
+
+    The order of entries here must correspond to the order of
+    valtab entries in the INTER assembly language module.
 */
 enum valtab {
     gbcnt,

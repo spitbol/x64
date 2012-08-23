@@ -18,34 +18,34 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSEX.C          Version:  01.01
-/       ---------------------------------------
-/
-/       Contents:       Function zysex
-/
+        File:  SYSEX.C          Version:  01.01
+        ---------------------------------------
+
+        Contents:       Function zysex
+
 */
 
 /*
-/       zysex - call external function
-/
-/       Parameters:
-/           XS - pointer to arguments
-/           XL - pointer to EFBLK
-/           WA - number of arguments
-/       Returns:
-/           XR - result
-/       Exits:
-/           1 - call fails
-/           2 - insufficient memory or function not found
-/           3 - improper argument type
-/
-/   WARNING!  THIS FUNCTION MAY CAUSE STORAGE ALLOCATION WHEN SAVING
-/       THE RETURNED VALUE FROM THE EXTERNAL FUNCTION.  THAT ALLOCATION MAY
-/       CAUSE A GARBAGE COLLECTION, THEREFORE IT IS IMPERATIVE THAT THE STACK
-/       BE CLEAN, COLLECTABLE, AND WORD ALIGNED.
-/
-/  v1.01 11/25/90 Add exit 2 - insufficient memory, exit 3 - improper argument.
-/
+        zysex - call external function
+
+        Parameters:
+            XS - pointer to arguments
+            XL - pointer to EFBLK
+            WA - number of arguments
+        Returns:
+            XR - result
+        Exits:
+            1 - call fails
+            2 - insufficient memory or function not found
+            3 - improper argument type
+
+    WARNING!  THIS FUNCTION MAY CAUSE STORAGE ALLOCATION WHEN SAVING
+        THE RETURNED VALUE FROM THE EXTERNAL FUNCTION.  THAT ALLOCATION MAY
+        CAUSE A GARBAGE COLLECTION, THEREFORE IT IS IMPERATIVE THAT THE STACK
+        BE CLEAN, COLLECTABLE, AND WORD ALIGNED.
+
+   v1.01 11/25/90 Add exit 2 - insufficient memory, exit 3 - improper argument.
+
 */
 
 #include "port.h"

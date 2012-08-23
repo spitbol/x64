@@ -22,89 +22,89 @@ This file is part of Macro SPITBOL.
 #define __blocks32__
 
 /*
- * Definitions of SPITBOL data blocks available to C-language
- * external functions to be called from 32-bit versions of SPITBOL.
+   Definitions of SPITBOL data blocks available to C-language
+   external functions to be called from 32-bit versions of SPITBOL.
  *
- * V1.00        02/17/90 01:53pm
- *                      Initial version
- * V1.01        12-03-90 12:01pm
- *                      To match release 1.08.  Split flags in IOBLK
- *                      into to words to prevent flag bits from being
- *                      mistaken for a relocatable value.
- * V1.02        03-11-91 15:00pm
- *                      To match release 1.1.  Add new words to ioblk for end-
- *                      of-line characters.  The bfblk has been completely
- *                      reworked to accommodate read/write I/O.
- * V1.03        10-18-91 04:27pm
- *        <withdrawn>.
- * V1.04        3-July-92
- *                      Begin to customize for SPARC/Sun 4.
- * V1.05        09-12-94 07:13pm
- *                      Add definitions for buffers
- * V1.06        04-25-95 10:07pm
- *                      Customize for RS/6000.
- * V1.07    12-29-96 06:05pm
- *          Customize for Windows NT
- * V1.08    03-04-97 01:45pm
- *          Tweak for SPARC
- * V1.09 04-27-97
- *          Add FILEPOS definition.
- *
- *
- * SPITBOL BLOCKS
- *
- * All SPITBOL objects are encapsulated into blocks of memory.
- * The first word of each block identifies the block type in a
- * curious way.  Rather than containing a simple integer type
- * code, it contains the address of a subroutine that performs
- * some particular action on the block, such as placing it on
- * the stack.  Because each block type uses a different subroutine,
- * the subroutine addresses serve as a type identifier.
+   V1.00        02/17/90 01:53pm
+                        Initial version
+   V1.01        12-03-90 12:01pm
+                        To match release 1.08.  Split flags in IOBLK
+                        into to words to prevent flag bits from being
+                        mistaken for a relocatable value.
+   V1.02        03-11-91 15:00pm
+                        To match release 1.1.  Add new words to ioblk for end-
+                        of-line characters.  The bfblk has been completely
+                        reworked to accommodate read/write I/O.
+   V1.03        10-18-91 04:27pm
+          <withdrawn>.
+   V1.04        3-July-92
+                        Begin to customize for SPARC/Sun 4.
+   V1.05        09-12-94 07:13pm
+                        Add definitions for buffers
+   V1.06        04-25-95 10:07pm
+                        Customize for RS/6000.
+   V1.07    12-29-96 06:05pm
+            Customize for Windows NT
+   V1.08    03-04-97 01:45pm
+            Tweak for SPARC
+   V1.09 04-27-97
+            Add FILEPOS definition.
  *
  *
- * Each subroutine is proceeded in memory by a one-byte (Intel platforms)
- * or one-word (all other platforms) integer type code (given below).
- * Thus to obtain a simple ordinal type code for a block pointed to by an
- * address in pblk, use the following:
+   SPITBOL BLOCKS
  *
- * block        *pblk;
- * unsigned     typecode;
- *   ...
- *  typecode = *((unsigned char *)((long)pblk - 1)); (Intel platform)
- *  typecode = *((unsigned *)((long)pblk - 4));      (Sun, RS/6000, SGI, etc.)
- *
- *
- * Here's a visualization of how SPITBOL stores data blocks and identifies
- * their type by pointing to unique sections of code:
+   All SPITBOL objects are encapsulated into blocks of memory.
+   The first word of each block identifies the block type in a
+   curious way.  Rather than containing a simple integer type
+   code, it contains the address of a subroutine that performs
+   some particular action on the block, such as placing it on
+   the stack.  Because each block type uses a different subroutine,
+   the subroutine addresses serve as a type identifier.
  *
  *
- *   In Data Space:                        In Code Space:
- * +---------------------+               +-----------+
- * |      Type Word      |----+          | Type code |
- * +---------------------+    |          +-----------+----------------+
- * |      Block Data     |    +--------->|   Program Code for this    |
+   Each subroutine is proceeded in memory by a one-byte (Intel platforms)
+   or one-word (all other platforms) integer type code (given below).
+   Thus to obtain a simple ordinal type code for a block pointed to by an
+   address in pblk, use the following:
+ *
+   block        *pblk;
+   unsigned     typecode;
+     ...
+    typecode = *((unsigned char *)((long)pblk - 1)); (Intel platform)
+    typecode = *((unsigned *)((long)pblk - 4));      (Sun, RS/6000, SGI, etc.)
+ *
+ *
+   Here's a visualization of how SPITBOL stores data blocks and identifies
+   their type by pointing to unique sections of code:
+ *
+ *
+     In Data Space:                        In Code Space:
+   +---------------------+               +-----------+
+   |      Type Word      |----+          | Type code |
+   +---------------------+    |          +-----------+----------------+
+   |      Block Data     |    +--------->|   Program Code for this    |
  *...                   ...              |   Block Type               |
- * |                     |               |                            |
- * +---------------------+               +----------------------------+
+   |                     |               |                            |
+   +---------------------+               +----------------------------+
  *
  *
- * Given an integer type, the Type Word can be obtained by
- * looking it up in a table provided to external functions as ptyptab in
- * the misc info structure.  For example, if the locator information
- * structure is passed to the function as an argument called "info",
- * use the following:
+   Given an integer type, the Type Word can be obtained by
+   looking it up in a table provided to external functions as ptyptab in
+   the misc info structure.  For example, if the locator information
+   structure is passed to the function as an argument called "info",
+   use the following:
  *
- * unsigned typecode;
- * mword        typeword;
- *  ...
- *   typeword = (*info.ptyptab)[typecode];
+   unsigned typecode;
+   mword        typeword;
+    ...
+     typeword = (*info.ptyptab)[typecode];
  */
 
 /*
- * BLOCK CODES FOR ACCESSIBLE DATATYPES
+   BLOCK CODES FOR ACCESSIBLE DATATYPES
  *
- * These blocks may appear in an argument list if left untranslated
- * by the LOAD function definition.
+   These blocks may appear in an argument list if left untranslated
+   by the LOAD function definition.
  */
 
 enum {
@@ -129,10 +129,10 @@ enum {
 };
 
 /*
- * OTHER BLOCK CODES
+   OTHER BLOCK CODES
  *
- * These blocks will never appear in an argument list, but are
- * listed here for completeness.
+   These blocks will never appear in an argument list, but are
+   listed here for completeness.
  */
 
 enum {
@@ -151,16 +151,16 @@ enum {
 };
 
 /*
- * Structure of common SPITBOL blocks:
- *          Integer, Real, String, and File blocks.
+   Structure of common SPITBOL blocks:
+            Integer, Real, String, and File blocks.
  *
- *      These structures are part of the "blocks" union that can be applied
- *          to the result area to determine where to store required return
- *      information.
+        These structures are part of the "blocks" union that can be applied
+            to the result area to determine where to store required return
+        information.
  */
 
 /*
- *      Structure of ICBLK (integers)
+        Structure of ICBLK (integers)
  */
 
 struct icblk {
@@ -170,31 +170,31 @@ struct icblk {
 
 
 /*
- *              Structure of RCBLK (reals)
+                Structure of RCBLK (reals)
  */
 #if sparc
 /*
- *              Note that the obvious declaration "double rcval" can not be
- *      used, because the SPARC C compiler insists on placing double
- *              values on an 8-byte boundary, effectively making the rcblk into
- *              a four-word structure, instead of three. (A filler word is
- *              inserted between rctyp and rcval).  But an rcblk really is a
- *              three-word structure inside of SPITBOL.
+                Note that the obvious declaration "double rcval" can not be
+        used, because the SPARC C compiler insists on placing double
+                values on an 8-byte boundary, effectively making the rcblk into
+                a four-word structure, instead of three. (A filler word is
+                inserted between rctyp and rcval).  But an rcblk really is a
+                three-word structure inside of SPITBOL.
  *
- *              As a workaround, we define rcvals as a two word array, and use
- *              an rcval macro to access the double value there.  The macro
- *              is invoked with the rcblk as its argument.  For example,
- *              suppose presult pointed to a union of all block types.  The
- *              double value stored in an rcblk there would be accessed as
+                As a workaround, we define rcvals as a two word array, and use
+                an rcval macro to access the double value there.  The macro
+                is invoked with the rcblk as its argument.  For example,
+                suppose presult pointed to a union of all block types.  The
+                double value stored in an rcblk there would be accessed as
  *
- *                      rcval(presult->rcb)
+                        rcval(presult->rcb)
  *
- *              It may be necessary to use the -misalign command option with
- *              cc to have the compiler generate the two single-precision loads
- *              needed to access the real at rcvals.  The normal double-precision
- *              load will fault because the operand is not aligned properly.
+                It may be necessary to use the -misalign command option with
+                cc to have the compiler generate the two single-precision loads
+                needed to access the real at rcvals.  The normal double-precision
+                load will fault because the operand is not aligned properly.
  *
- *      See function retreal in extrnlib.c for an example.
+        See function retreal in extrnlib.c for an example.
  */
 struct rcblk {
     mword       rctyp;                                  /* type word                                            */
@@ -209,7 +209,7 @@ struct rcblk {
 #endif
 
 /*
- *      Structure of SCBLK (strings)
+        Structure of SCBLK (strings)
  */
 
 struct scblk {
@@ -219,7 +219,7 @@ struct scblk {
 };
 
 /*
- *      Structure for returning a far string
+        Structure for returning a far string
  */
 
 struct fsblk {
@@ -230,7 +230,7 @@ struct fsblk {
 
 
 /*
- *      Structure for returning a far external block
+        Structure for returning a far external block
  */
 
 struct fxblk {
@@ -241,22 +241,22 @@ struct fxblk {
 
 
 /*
- * FILE CONTROL BLOCK
+   FILE CONTROL BLOCK
  *
- * The user may provide the word "FILE" for any argument in
- * the LOAD function prototype.  When a call is made to the
- * external function with an I/O associated variable in this argument
- * position, SPITBOL will provide a pointer to the file control
- * block instead of the value of the variable.
+   The user may provide the word "FILE" for any argument in
+   the LOAD function prototype.  When a call is made to the
+   external function with an I/O associated variable in this argument
+   position, SPITBOL will provide a pointer to the file control
+   block instead of the value of the variable.
  *
- * The file control block (FCB) points to an I/O block with
- * additional information.  In turn, the I/O block points to any
- * buffer used by the file.
+   The file control block (FCB) points to an I/O block with
+   additional information.  In turn, the I/O block points to any
+   buffer used by the file.
  *
- * This block is obtained for every file except those associated
- * with INPUT, OUTPUT, or TERMINAL.  Note that these FCB's are
- * unrelated to MS-DOS FCB's.  File control blocks do not have
- * their own type word, but appear as XRBLKs with the following structure:
+   This block is obtained for every file except those associated
+   with INPUT, OUTPUT, or TERMINAL.  Note that these FCB's are
+   unrelated to MS-DOS FCB's.  File control blocks do not have
+   their own type word, but appear as XRBLKs with the following structure:
  */
 
 struct fcblk {
@@ -271,12 +271,12 @@ struct fcblk {
 
 
 /*
- *   CHFCB - chain of FCBs block
+     CHFCB - chain of FCBs block
  *
- *   For every FCB created by OSINT, the compiler creates a CHFCB pointing
- *   to the FCB and links it onto a chain of CHFCBs.  At EOJ the head of this
- *   CHFCB chain is passed to the interface function SYSEJ so that all files
- *   can be closed.
+     For every FCB created by OSINT, the compiler creates a CHFCB pointing
+     to the FCB and links it onto a chain of CHFCBs.  At EOJ the head of this
+     CHFCB chain is passed to the interface function SYSEJ so that all files
+     can be closed.
  */
 
 struct  chfcb {
@@ -289,9 +289,9 @@ struct  chfcb {
 
 
 /*
- * I/O BLOCK
+   I/O BLOCK
  *
- * An I/O block is pointed to by the fcbiob field of a file control block.
+   An I/O block is pointed to by the fcbiob field of a file control block.
  */
 
 struct ioblk {
@@ -310,7 +310,7 @@ struct ioblk {
 };
 
 /*
- *      Bits in iobflg1 dword
+        Bits in iobflg1 dword
  */
 #define IO_INP  0x00000001                      /* input file                                                   */
 #define IO_OUP  0x00000002                      /* output file                                                  */
@@ -322,7 +322,7 @@ struct ioblk {
 #define IO_WRC  0x00000080                      /* output without buffering                             */
 
 /*
- *      Bits in iobflg2 dword
+        Bits in iobflg2 dword
  */
 #define IO_PIP  0x00000001                      /* pipe (not used in MS-DOS)                    */
 #define IO_DED  0x00000002                      /* dead pipe (not used in MS-DOS)               */
@@ -354,11 +354,11 @@ struct ioblk {
 #define IO_WRITE_THRU           0x20    /* writes complete before return*/
 
 /*
- * I/O BUFFER BLOCK
+   I/O BUFFER BLOCK
  *
- * An I/O buffer block (BFBBLK) is pointed to by an IOBLK.
+   An I/O buffer block (BFBBLK) is pointed to by an IOBLK.
  *
- * Size of file position words in I/O buffer block
+   Size of file position words in I/O buffer block
  */
 
 #if SETREAL
@@ -380,8 +380,8 @@ struct bfbblk {
 
 
 /*
- * Structure of EFBLK (external function).  A pointer to this block
- * is passed to the external function in the stack in info.pefblk.
+   Structure of EFBLK (external function).  A pointer to this block
+   is passed to the external function in the stack in info.pefblk.
  */
 
 struct efblk {
@@ -396,7 +396,7 @@ struct efblk {
 };
 
 /*
- * efrsl and eftar[] contain small integer type codes as follows:
+   efrsl and eftar[] contain small integer type codes as follows:
  */
 
 #define noconv  0                                       /* argument remains unconverted                 */
@@ -407,16 +407,16 @@ struct efblk {
 
 
 /*
- * Structure of XNBLK allocated for external function
- * A pointer to this structure is passed to the external function
- * in the stack in pxnblk.
+   Structure of XNBLK allocated for external function
+   A pointer to this structure is passed to the external function
+   in the stack in pxnblk.
  *
- * This structure is used to ways:
- *   1.  As a general structure in which the user can place private
- *               data and have it maintained by SPITBOL.
+   This structure is used to ways:
+     1.  As a general structure in which the user can place private
+                 data and have it maintained by SPITBOL.
  *
- *   2.  As a particular structure in which information about each
- *               external function is maintained.
+     2.  As a particular structure in which information about each
+                 external function is maintained.
  */
 
 struct xnblk {
@@ -452,8 +452,8 @@ struct xnblk {
 };
 
 /*
- * Simplified access to xn1st and xnsave words in xnblk via pointer to
- * miscellaneous info area in pinfo.
+   Simplified access to xn1st and xnsave words in xnblk via pointer to
+   miscellaneous info area in pinfo.
  */
 
 #define first_call ((*((*pinfo).pxnblk)).xnu.ef.xn1st)
@@ -461,13 +461,13 @@ struct xnblk {
 
 
 /*
- * Other selected blocks of interest:
+   Other selected blocks of interest:
  *
  *
- * ARRAY BLOCK
+   ARRAY BLOCK
  *
- * An array block (ARBLK) represents an array value other than one
- * with one dimension whose lower bound is one (see VCBLK).
+   An array block (ARBLK) represents an array value other than one
+   with one dimension whose lower bound is one (see VCBLK).
  */
 
 struct arblk1 {                                         /* One dimensional array                                */
@@ -513,12 +513,12 @@ struct arblkn {                                         /* N-dimensional array  
 
 
 /*
- *      BUFFER CONTROL BLOCK
+        BUFFER CONTROL BLOCK
  *
- *      A buffer control block (BCBLK) is created by the BUFFER
- *      function, and serves as an indirect control header for the
- *      buffer. It contains the number of characters currently
- *      stored in the buffer.
+        A buffer control block (BCBLK) is created by the BUFFER
+        function, and serves as an indirect control header for the
+        buffer. It contains the number of characters currently
+        stored in the buffer.
  */
 struct bcblk {
     mword       bctyp;                                  /* type word                                                    */
@@ -529,11 +529,11 @@ struct bcblk {
 
 
 /*
- *      STRING BUFFER BLOCK
+        STRING BUFFER BLOCK
  *
- *      A string buffer block (BFBLK) contains the actual buffer
- *      memory area. It specifies the largest string that can be
- *      stored in the buffer.
+        A string buffer block (BFBLK) contains the actual buffer
+        memory area. It specifies the largest string that can be
+        stored in the buffer.
  */
 struct bfblk {
     mword       bftyp;                                  /* type word                                                    */
@@ -543,9 +543,9 @@ struct bfblk {
 
 
 /*
- * CODE BLOCK
+   CODE BLOCK
  *
- * A code block (CDBLK) is present for every source statement.
+   A code block (CDBLK) is present for every source statement.
  */
 
 struct cdblk {
@@ -564,10 +564,10 @@ struct cdblk {
 
 
 /*
- * NAME BLOCK
+   NAME BLOCK
  *
- * A name block (NMBLK) is used whereever a name must be stored as
- * a value following use of the unary dot operator.
+   A name block (NMBLK) is used whereever a name must be stored as
+   a value following use of the unary dot operator.
  */
 
 struct nmblk {
@@ -578,14 +578,14 @@ struct nmblk {
 
 
 /*
- * TABLE BLOCK
+   TABLE BLOCK
  *
- * A table block (TBBLK) is used to represent a table value.
- * It comprises a list of buckets, each of which may point to
- * a chain of TEBLKs.  TBBUK entries either point to the first
- * TEBLK on the chain or they point to the TBBLK itself to
- * indicate the end of the chain.  The number of buckets can
- * be deduced from tblen.
+   A table block (TBBLK) is used to represent a table value.
+   It comprises a list of buckets, each of which may point to
+   a chain of TEBLKs.  TBBUK entries either point to the first
+   TEBLK on the chain or they point to the TBBLK itself to
+   indicate the end of the chain.  The number of buckets can
+   be deduced from tblen.
  */
 
 struct tbblk {
@@ -598,10 +598,10 @@ struct tbblk {
 
 
 /*
- * TABLE ELEMENT BLOCK
+   TABLE ELEMENT BLOCK
  *
- * A table element (TEBLK) is used to represent a single entry in
- * a table.
+   A table element (TEBLK) is used to represent a single entry in
+   a table.
  */
 
 struct teblk {
@@ -613,9 +613,9 @@ struct teblk {
 
 
 /*
- * VARIABLE BLOCK
+   VARIABLE BLOCK
  *
- * A variable block (VRBLK) is used to hold a program variable.
+   A variable block (VRBLK) is used to hold a program variable.
  */
 
 struct vrblk {
@@ -632,12 +632,12 @@ struct vrblk {
 
 
 /*
- * VECTOR BLOCK
+   VECTOR BLOCK
  *
- * A vector block (VCBLK) is used to represent an array value which has
- * one dimension whose lower bound is one. All other arrays are
- * represented by ARBLKs.  The number of elements can be deduced
- * from vclen.
+   A vector block (VCBLK) is used to represent an array value which has
+   one dimension whose lower bound is one. All other arrays are
+   represented by ARBLKs.  The number of elements can be deduced
+   from vclen.
  */
 
 struct vcblk {
@@ -649,9 +649,9 @@ struct vcblk {
 
 
 /*
- * UNION OF ALL BLOCKS
+   UNION OF ALL BLOCKS
  *
- * A block is merely a union of all the block types enumerated here.
+   A block is merely a union of all the block types enumerated here.
  *
  */
 

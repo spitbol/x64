@@ -18,78 +18,78 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSXI.C          Version:  01.18
-/       ---------------------------------------
-/
-/       Contents:       Function zysxi
-/                       Function unreloc
-/                       Function rereloc
+        File:  SYSXI.C          Version:  01.18
+        ---------------------------------------
+
+        Contents:       Function zysxi
+                        Function unreloc
+                        Function rereloc
 */
 
 /*
-/       zysxi - exit to produce load module
-/
-/       zysxi is called to perform one of two actions:
-/
-/       o  "chain" to another program to execute
-/
-/       o  write a load module of the currently executing spitbol program
-/
-/       In either case the currently executing spitbol process is terminated,
-/   except if called with IA as +4 or -4, in which case execution
-/       continues.
-/
-/       Parameters:
-/           IA - integer argument if writing load module
-/                <0 - write only impure area of memory
-/                =0 - exit to command level
-/                >0 - write all of memory
-/        =4 or -4 - to continue execution after creating file
-/           WA - pointer to SCBLK for second argument
-/           WB - pointer to head of FCBLK chain (CHBLK)
-/           XL - pointer to SCBLK containing command to execute or 0
-/           XR - version number SCBLK.  Three char string of form "X.Y".
-/       Returns:
-/       WA   1 only when called with IA=4 or IA=-4 and we are
-/            continuing execution, else 0.
-/            values of IA do not elicit a return.
-/       Exits:
-/           1 - requested action not possible
-/           2 - action caused irrecoverable error
-/
-/
-/  V1.10 12-Oct-87 MBE  <withdrawn>
-/
-/  V1.11 14-Dec-87 MBE  Close files *prior* to writing a.out file or chaining
-/                       to another shell command.  This frees up the channel
-/                       variables for reuse upon restart (EXIT(3) case), and
-/                       flushing any output data still in Spitbol's buffers
-/                       (EXIT("cmd string") case).
-/
-/  V1.12 01-Jan-88 MBE  Modified for HP
-/
-/  V1.13 02-Feb-88 MBE  Modified for Definicon.
-/                       Use save0() before EXIT("cmd") call (all versions).
-/
-/  V1.14 13-Sep-89 MBE  Modified for DOS 386.  Supports EXIT(-3) only.
-/                       Added optional second argument to EXIT to allow
-/                       specifying file name of load module.
-/
-/  V1.15 16-Oct-89 MBE  Modified for SPARC.
-/
-/  V1.16 19-May-91 MBE  Write load modules for SPITBOL-386 with
-/                       Intel DOS Extender.
-/  V1.17 22-Aug-91 MBE  <withdrawn>.
-/
-/  V1.18 07-Nov-91 MBE  Start rework for relocatable Save files.
-/                                               Restrict portion of Static region saved.
-/                       Replace initsp with usage of STBAS in
-/                       Minimal source.
-/
-/  V1.19 10-Dec-91 MBE  Add +4 and -4 case to allow execution to proceed.
-/
-/  V1.20 14-Oct-94 MBE  Call termhost *prior* to writing save or exec file.
-/
+        zysxi - exit to produce load module
+
+        zysxi is called to perform one of two actions:
+
+        o  "chain" to another program to execute
+
+        o  write a load module of the currently executing spitbol program
+
+        In either case the currently executing spitbol process is terminated,
+    except if called with IA as +4 or -4, in which case execution
+        continues.
+
+        Parameters:
+            IA - integer argument if writing load module
+                 <0 - write only impure area of memory
+                 =0 - exit to command level
+                 >0 - write all of memory
+         =4 or -4 - to continue execution after creating file
+            WA - pointer to SCBLK for second argument
+            WB - pointer to head of FCBLK chain (CHBLK)
+            XL - pointer to SCBLK containing command to execute or 0
+            XR - version number SCBLK.  Three char string of form "X.Y".
+        Returns:
+        WA   1 only when called with IA=4 or IA=-4 and we are
+             continuing execution, else 0.
+             values of IA do not elicit a return.
+        Exits:
+            1 - requested action not possible
+            2 - action caused irrecoverable error
+
+
+   V1.10 12-Oct-87 MBE  <withdrawn>
+
+   V1.11 14-Dec-87 MBE  Close files *prior* to writing a.out file or chaining
+                        to another shell command.  This frees up the channel
+                        variables for reuse upon restart (EXIT(3) case), and
+                        flushing any output data still in Spitbol's buffers
+                        (EXIT("cmd string") case).
+
+   V1.12 01-Jan-88 MBE  Modified for HP
+
+   V1.13 02-Feb-88 MBE  Modified for Definicon.
+                        Use save0() before EXIT("cmd") call (all versions).
+
+   V1.14 13-Sep-89 MBE  Modified for DOS 386.  Supports EXIT(-3) only.
+                        Added optional second argument to EXIT to allow
+                        specifying file name of load module.
+
+   V1.15 16-Oct-89 MBE  Modified for SPARC.
+
+   V1.16 19-May-91 MBE  Write load modules for SPITBOL-386 with
+                        Intel DOS Extender.
+   V1.17 22-Aug-91 MBE  <withdrawn>.
+
+   V1.18 07-Nov-91 MBE  Start rework for relocatable Save files.
+                                                Restrict portion of Static region saved.
+                        Replace initsp with usage of STBAS in
+                        Minimal source.
+
+   V1.19 10-Dec-91 MBE  Add +4 and -4 case to allow execution to proceed.
+
+   V1.20 14-Oct-94 MBE  Call termhost *prior* to writing save or exec file.
+
 */
 
 #include "port.h"
@@ -414,30 +414,30 @@ void heapmove()
 
 #if EXECFILE | SAVEFILE
 /*
-/       The following two functions deal with the "unrelocation" and
-/       "re-relocation" of compiler variables that point into the stack.
-/       These actions must be taken so that these pointers into the
-/       stack can be adjusted every time that the load module is executed.
-/       Why?  Because there is no way to guarantee that the stack can be
-/       rebuilt during subsequent executions of the laod module at the
-/       same locations as when the load module was written.
-/
-/       So, function unreloc takes such variables and turns them into
-/       offsets into the stack.  Function rereloc converts stack offsets
-/       into stack pointers.
-/
-/   Register CP is "unrelocated" relative to the start of dynamic
-/   storage, in case it moves after a reload.
-/
-/   Register PC is "unrelocated" relative to the start of Minimal code.
+        The following two functions deal with the "unrelocation" and
+        "re-relocation" of compiler variables that point into the stack.
+        These actions must be taken so that these pointers into the
+        stack can be adjusted every time that the load module is executed.
+        Why?  Because there is no way to guarantee that the stack can be
+        rebuilt during subsequent executions of the laod module at the
+        same locations as when the load module was written.
+
+        So, function unreloc takes such variables and turns them into
+        offsets into the stack.  Function rereloc converts stack offsets
+        into stack pointers.
+
+    Register CP is "unrelocated" relative to the start of dynamic
+    storage, in case it moves after a reload.
+
+    Register PC is "unrelocated" relative to the start of Minimal code.
 */
 
 /*
-/       unreloc()
-/
-/       unreloc() "unrelocates" all compiler variables that point into
-/       the stack by subtracting the initial stack pointer value from them.
-/       This converts these stack pointers into offsets.
+        unreloc()
+
+        unreloc() "unrelocates" all compiler variables that point into
+        the stack by subtracting the initial stack pointer value from them.
+        This converts these stack pointers into offsets.
 */
 
 void unreloc()
@@ -456,9 +456,9 @@ void unreloc()
 }
 
 /*
-/       rereloc() "re-relocates" all compiler variables that pointer into
-/       the stack by adding the initial stack pointer value to them.  This
-/       action converts these offsets in the stack into real pointers.
+        rereloc() "re-relocates" all compiler variables that pointer into
+        the stack by adding the initial stack pointer value to them.  This
+        action converts these offsets in the stack into real pointers.
 */
 
 void rereloc()
@@ -496,8 +496,8 @@ int len, max;
 
 #if EXECFILE & !EXECSAVE
 /*
-/       Roundup the integer argument to be a multiple of the
-/       system page size.
+        Roundup the integer argument to be a multiple of the
+        system page size.
 */
 
 static word roundup(n)

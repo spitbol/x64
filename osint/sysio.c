@@ -18,43 +18,43 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSIO.C          Version:  01.07
-/       ---------------------------------------
-/
-/       Contents:       Function zysio
+        File:  SYSIO.C          Version:  01.07
+        ---------------------------------------
+
+        Contents:       Function zysio
 */
 
 /*
-/   zysio - fill in file control block
-/
-/   This function fills in the i/o control blocks requested by zysfc.
-/   Remember that spitbol compiler has allocated a single block of
-/   the requested length;  it is the responsibility of this function
-/   to divide this large block into smaller blocks as needed.
-/
-/   Parameters:
-/       xl      pointer to scblk holding filearg1 (channel id)
-/       xr      pointer to scblk holding filearg2 (filename & args)
-/       wa      pointer to fcblk or 0
-/       wb      0/3 for input/output association
-/   Returns:
-/       xl      fcblk pointer
-/       wc      maximum record length
-/   Exits:
-/       1       file does not exist
-/       2       I/O not allowed
-/
-/  1.04         If filearg2 is null, filearg1 can be an environment
-/               variable that points to the real filename.  Flag IO_ENV
-/               notes this case, and iob->fnm points to filearg1 instead
-/               of filearg 2.
-/
+    zysio - fill in file control block
+
+    This function fills in the i/o control blocks requested by zysfc.
+    Remember that spitbol compiler has allocated a single block of
+    the requested length;  it is the responsibility of this function
+    to divide this large block into smaller blocks as needed.
+
+    Parameters:
+        xl      pointer to scblk holding filearg1 (channel id)
+        xr      pointer to scblk holding filearg2 (filename & args)
+        wa      pointer to fcblk or 0
+        wb      0/3 for input/output association
+    Returns:
+        xl      fcblk pointer
+        wc      maximum record length
+    Exits:
+        1       file does not exist
+        2       I/O not allowed
+
+   1.04         If filearg2 is null, filearg1 can be an environment
+                variable that points to the real filename.  Flag IO_ENV
+                notes this case, and iob->fnm points to filearg1 instead
+                of filearg 2.
+
 / 1.05 06-Feb-91 Changed for read/write I/O.
-/
+
 / 1.06 01-Feb-93 Split record size into two fields (rsz and mode), to
-/                                prevent negative record size appearing to be a valid
-/                                pointer in 8088 SPITBOL.
-/
+                                 prevent negative record size appearing to be a valid
+                                 pointer in 8088 SPITBOL.
+
 / 1.07 26-Oct-94 Added share field to ioblk.
 */
 

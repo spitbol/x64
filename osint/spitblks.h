@@ -18,26 +18,26 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   File:  SPITBLKS.H           Version:  01.01
-/   -------------------------------------------
-/
-/   This header file defines structures used by the Macro SPITBOL compiler
-/   that are passed into the OS interface.
+    File:  SPITBLKS.H           Version:  01.01
+    -------------------------------------------
+
+    This header file defines structures used by the Macro SPITBOL compiler
+    that are passed into the OS interface.
 */
 
 /*
-/   First, define the C type word to be the same size as a word used
-/   by the Macro SPITBOL compiler.  The type of a word is a signed
-/   integer for now.
+    First, define the C type word to be the same size as a word used
+    by the Macro SPITBOL compiler.  The type of a word is a signed
+    integer for now.
 */
 
 /*
- *      BUFFER CONTROL BLOCK
+        BUFFER CONTROL BLOCK
  *
- *      A buffer control block (BCBLK) is created by the BUFFER
- *      function, and serves as an indirect control header for the
- *      buffer. It contains the number of characters currently
- *      stored in the buffer.
+        A buffer control block (BCBLK) is created by the BUFFER
+        function, and serves as an indirect control header for the
+        buffer. It contains the number of characters currently
+        stored in the buffer.
  */
 struct bcblk {
     word        typ;                                    /* type word                                                    */
@@ -47,11 +47,11 @@ struct bcblk {
 };
 
 /*
- *      STRING BUFFER BLOCK
+        STRING BUFFER BLOCK
  *
- *      A string buffer block (BFBLK) contains the actual buffer
- *      memory area. It specifies the largest string that can be
- *      stored in the buffer.
+        A string buffer block (BFBLK) contains the actual buffer
+        memory area. It specifies the largest string that can be
+        stored in the buffer.
  */
 struct bsblk {
     word        typ;                                    /* type word                                                    */
@@ -61,9 +61,9 @@ struct bsblk {
 
 
 /*
- * CODE BLOCK
+   CODE BLOCK
  *
- * A code block (CDBLK) is present for every source statement.
+   A code block (CDBLK) is present for every source statement.
  */
 
 struct cdblk {
@@ -82,12 +82,12 @@ struct cdblk {
 
 
 /*
-/   CHFCB - chain of FCBs block
-/
-/   For every FCB created by OSINT, the compiler creates a CHFCB pointing
-/   to the FCB and links it onto a chain of CHFCBs.  At EOJ the head of this
-/   CHFCB chain is passed to the interface function SYSEJ so that all files
-/   can be closed.
+    CHFCB - chain of FCBs block
+
+    For every FCB created by OSINT, the compiler creates a CHFCB pointing
+    to the FCB and links it onto a chain of CHFCBs.  At EOJ the head of this
+    CHFCB chain is passed to the interface function SYSEJ so that all files
+    can be closed.
 */
 
 struct  chfcb {
@@ -99,8 +99,8 @@ struct  chfcb {
 
 
 /*
-/   EFBLK - external function block
-/
+    EFBLK - external function block
+
 */
 
 struct  efblk {
@@ -115,10 +115,10 @@ struct  efblk {
 };
 
 /*
-/   ICBLK - integer block
-/
-/   Integer values are stored in ICBLKs.  Field icval should be defined
-/   to be the appropriate type for the implementation.
+    ICBLK - integer block
+
+    Integer values are stored in ICBLKs.  Field icval should be defined
+    to be the appropriate type for the implementation.
 */
 
 struct  icblk {
@@ -127,10 +127,10 @@ struct  icblk {
 };
 
 /*
-/       RCBLK - real block
-/
-/       Real values are stored in RCBLKs.  Field rcval should be defined
-/       to be the appropriate type for the implementation.
+        RCBLK - real block
+
+        Real values are stored in RCBLKs.  Field rcval should be defined
+        to be the appropriate type for the implementation.
 */
 
 struct  rcblk {
@@ -139,14 +139,14 @@ struct  rcblk {
 };
 
 /*
-/   SCBLK - string block
-/
-/   String values are stored in SCBLKs.  Notice that the scstr field
-/   is defined as an array of characters of length 1.  This is a slight
-/   kludge to side-step C's lack of support for varying length strings.
-/
-/   The actual length of a SCBLK is 2 words + the number of words necessary
-/   to hold a string of length sclen.
+    SCBLK - string block
+
+    String values are stored in SCBLKs.  Notice that the scstr field
+    is defined as an array of characters of length 1.  This is a slight
+    kludge to side-step C's lack of support for varying length strings.
+
+    The actual length of a SCBLK is 2 words + the number of words necessary
+    to hold a string of length sclen.
 */
 
 struct  scblk {
@@ -157,9 +157,9 @@ struct  scblk {
 
 
 /*
- * VARIABLE BLOCK
+   VARIABLE BLOCK
  *
- * A variable block (VRBLK) is used to hold a program variable.
+   A variable block (VRBLK) is used to hold a program variable.
  */
 
 struct vrblk {
@@ -178,7 +178,7 @@ struct vrblk {
 
 
 /*
-/       BLOCK - an arbitrary block
+        BLOCK - an arbitrary block
 */
 
 union block {

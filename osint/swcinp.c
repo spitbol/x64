@@ -18,96 +18,96 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SWCINP.C         Version:  01.16
-/       ---------------------------------------
-/
-/       Contents:       Function swcinp
-/
-/       Revision history:
-/
-/       01.16   04-Apr-95 If no end statement after reading source files,
-/                                         alert user.
-/
+        File:  SWCINP.C         Version:  01.16
+        ---------------------------------------
+
+        Contents:       Function swcinp
+
+        Revision history:
+
+        01.16   04-Apr-95 If no end statement after reading source files,
+                                          alert user.
+
 / 01.15 18-Oct-90 <withdrawn>
-/
-/       01.14   23-Jun-90 Function pathlast() moved here from getshell.c
-/
-/       01.13   11-May-90 Close save_fd0 in restore0() after dup.  Omission
-/                       was leaving save_fd0 handle busy after each save/restore cycle.
-/
-/       01.12   Added sfn as a pointer to the source file name currently being read.
-/               Used by sysrd to pass file names to the compiler.
-/
-/       01.11   Moved curfile to osint for reinitialization when compiler serially reused.
-/
-/       01.10   As a result of using fd 0 to read both source files and
-/               keyboard input, the following anomally occurs:
-/
-/               After reading the END statement of a source file, execution
-/               begins with fd 0 connected to that source file (typically
-/               positioned at the EOF following the END statement.  When
-/               the user's program reads from INPUT, the EOF detected produces
-/               a call to swcinp(), and fd 0 is switched from the source file
-/               to the "true" standard input.
-/
-/               However, if prior to the first call to INPUT, the user
-/               invokes a shell call, using either EXIT("cmd") or HOST(1,"cmd"),
-/               execle() or the shell is invoked with fd 0 still attached to
-/               the source file, and will read an end of file on first read.
-/               This occurs because reading is outside the domain of
-/               Spitbol, and SWCINP is not called.
-/
-/               Note that a call to INPUT prior to EXIT() or HOST(1,) would
-/               mask the problem, because INPUT would switch us away from the
-/               source file (assuming an EOF following END).  If there was
-/               data following the END statement, things are even worse,
-/               because the Shell will start reading data from the source file.
-/
-/   This problem only occurs on systems using dup().
-/
-/               To fix the problem, two new routines are used by EXIT("cmd")
-/               and SHELL(1,"command") to bracket their operation.
-/
-/               save0() saves the current fd 0, and restores the original fd 0.
-/               restore0() restores the saved fd 0.
-/
-/       01.09   Recoded so that after receiving EOF from standard input
-/               and no more files on the command line, reconnect to stdin
-/               if appropriate.  This permits the user to continue to invoke
-/               INPUT after obtaining an EOF.  This behavior is consistant
-/               with reads from TERMINAL, which will go to keyboard
-/               regardless of results of previous read.
-/
-/               The usage of variables inpateof, no_more_input and proc_sh_fd0
-/               is thereby eliminated, and system behavior is consistent
-/               with other SNOBOL4 systems.
-/
-/               If file on command line cannot be opened, exit(1) after
-/               issuing error message, rather than continuing.
-/
-/   For systems that do not support dup(), we leave
-/               fd 0 open forever, and read command line files using a
-/               non-zero fd.
-/
-/               Some code rearranged and cleaned up too.  The changes of
-/               mod 01.08 are eliminated, having been recast in a
-/               different manner.  MBE 12/24/87
-/
-/       01.08   After receiving EOF from standard input and no more files
-/               on the command line, routine would exit with file descriptor
-/               0 closed.  If the user subsequently issued a regular INPUT
-/               function, osopen would obtain fd 0.  This was wrong in two
-/               respects:
-/                 1. osopen was testing for a successful open with fd > 0.
-/                 2. a subsequent INPUT function specifying ' -f0' should
-/                    attach to a file that returns a continuous EOF.
-/
-/               Solution: when exiting this routine without finding another
-/               file for standard input, open "/dev/null" as fd 0.
-/               MBE Nov. 9, 1987, per bug report from Kurt Gluck.
-/
-/       01.07   Every time a filename on the command line is accessed be
-/               sure to increment 'cmdcnt' too.
+
+        01.14   23-Jun-90 Function pathlast() moved here from getshell.c
+
+        01.13   11-May-90 Close save_fd0 in restore0() after dup.  Omission
+                        was leaving save_fd0 handle busy after each save/restore cycle.
+
+        01.12   Added sfn as a pointer to the source file name currently being read.
+                Used by sysrd to pass file names to the compiler.
+
+        01.11   Moved curfile to osint for reinitialization when compiler serially reused.
+
+        01.10   As a result of using fd 0 to read both source files and
+                keyboard input, the following anomally occurs:
+
+                After reading the END statement of a source file, execution
+                begins with fd 0 connected to that source file (typically
+                positioned at the EOF following the END statement.  When
+                the user's program reads from INPUT, the EOF detected produces
+                a call to swcinp(), and fd 0 is switched from the source file
+                to the "true" standard input.
+
+                However, if prior to the first call to INPUT, the user
+                invokes a shell call, using either EXIT("cmd") or HOST(1,"cmd"),
+                execle() or the shell is invoked with fd 0 still attached to
+                the source file, and will read an end of file on first read.
+                This occurs because reading is outside the domain of
+                Spitbol, and SWCINP is not called.
+
+                Note that a call to INPUT prior to EXIT() or HOST(1,) would
+                mask the problem, because INPUT would switch us away from the
+                source file (assuming an EOF following END).  If there was
+                data following the END statement, things are even worse,
+                because the Shell will start reading data from the source file.
+
+    This problem only occurs on systems using dup().
+
+                To fix the problem, two new routines are used by EXIT("cmd")
+                and SHELL(1,"command") to bracket their operation.
+
+                save0() saves the current fd 0, and restores the original fd 0.
+                restore0() restores the saved fd 0.
+
+        01.09   Recoded so that after receiving EOF from standard input
+                and no more files on the command line, reconnect to stdin
+                if appropriate.  This permits the user to continue to invoke
+                INPUT after obtaining an EOF.  This behavior is consistant
+                with reads from TERMINAL, which will go to keyboard
+                regardless of results of previous read.
+
+                The usage of variables inpateof, no_more_input and proc_sh_fd0
+                is thereby eliminated, and system behavior is consistent
+                with other SNOBOL4 systems.
+
+                If file on command line cannot be opened, exit(1) after
+                issuing error message, rather than continuing.
+
+    For systems that do not support dup(), we leave
+                fd 0 open forever, and read command line files using a
+                non-zero fd.
+
+                Some code rearranged and cleaned up too.  The changes of
+                mod 01.08 are eliminated, having been recast in a
+                different manner.  MBE 12/24/87
+
+        01.08   After receiving EOF from standard input and no more files
+                on the command line, routine would exit with file descriptor
+                0 closed.  If the user subsequently issued a regular INPUT
+                function, osopen would obtain fd 0.  This was wrong in two
+                respects:
+                  1. osopen was testing for a successful open with fd > 0.
+                  2. a subsequent INPUT function specifying ' -f0' should
+                     attach to a file that returns a continuous EOF.
+
+                Solution: when exiting this routine without finding another
+                file for standard input, open "/dev/null" as fd 0.
+                MBE Nov. 9, 1987, per bug report from Kurt Gluck.
+
+        01.07   Every time a filename on the command line is accessed be
+                sure to increment 'cmdcnt' too.
 */
 
 #include "port.h"
@@ -117,25 +117,25 @@ This file is part of Macro SPITBOL.
 #endif
 
 /*
-/   swcinp( filecnt, fileptr )
-/
-/   swcinp() handles the switching of input files whose concatenation
-/   represents standard input.  After all input is exhausted a -1 is
-/   returned to indicate EOF.
-/
-/   If no filenames were specified on the command line, all input is
-/   read from file descriptor 0 provided by the shell.
-/
-/   If filenames were specified on the command line all files are read
-/   in their order of appearance.  A filename consisting of a single hyphen
-/   '-' represents file descriptor 0 provided by the shell.
-/
-/   Parameters:
-/       filecnt number of filename specified on command line
-/       fileptr array of pointers to character strings (filenames)
-/   Returns:
-/       File descriptor to read from (always 0!) or -1 if could not switch
-/       to a new file.
+    swcinp( filecnt, fileptr )
+
+    swcinp() handles the switching of input files whose concatenation
+    represents standard input.  After all input is exhausted a -1 is
+    returned to indicate EOF.
+
+    If no filenames were specified on the command line, all input is
+    read from file descriptor 0 provided by the shell.
+
+    If filenames were specified on the command line all files are read
+    in their order of appearance.  A filename consisting of a single hyphen
+    '-' represents file descriptor 0 provided by the shell.
+
+    Parameters:
+        filecnt number of filename specified on command line
+        fileptr array of pointers to character strings (filenames)
+    Returns:
+        File descriptor to read from (always 0!) or -1 if could not switch
+        to a new file.
 */
 
 int     swcinp( filecnt, fileptr )
@@ -293,9 +293,9 @@ swci_exit:
 
 
 /*
-/       Save the current fd 0, and connect fd 0 to the original one.
-/       Used before EXIT("cmd") and HOST(1,"cmd")
-/
+        Save the current fd 0, and connect fd 0 to the original one.
+        Used before EXIT("cmd") and HOST(1,"cmd")
+
 */
 void save0()
 {
@@ -313,9 +313,9 @@ void save0()
 
 
 /*
-/       Restore the saved fd 0.
-/       Used after EXIT("cmd") and HOST(1,"cmd")
-/
+        Restore the saved fd 0.
+        Used after EXIT("cmd") and HOST(1,"cmd")
+
 */
 void restore0()
 {
@@ -333,8 +333,8 @@ void restore0()
 
 
 /*
-/   tryopen - try to open file for swcinp.
-/   returns -1 if fails, else file descriptor >= 0
+    tryopen - try to open file for swcinp.
+    returns -1 if fails, else file descriptor >= 0
 */
 int tryopen(cp)
 char *cp;
@@ -359,15 +359,15 @@ char *cp;
 
 
 /*
-/   pathlast()
-/
-/   Function pathlast returns the a pointer to the last component of a
-/   path.
-/
-/   Parameters:
-/       Pointer to path character string
-/   Returns:
-/       Pointer to last component in path character
+    pathlast()
+
+    Function pathlast returns the a pointer to the last component of a
+    path.
+
+    Parameters:
+        Pointer to path character string
+    Returns:
+        Pointer to last component in path character
 */
 
 
@@ -464,8 +464,8 @@ register char *p, *q;
 
 
 /*
-/       Return length of string argument.
-/       Identical to C strlen function.
+        Return length of string argument.
+        Identical to C strlen function.
 */
 int length(cp)
 char *cp;

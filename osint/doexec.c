@@ -18,31 +18,31 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  DOEXEC.C         Version:  01.03
-/       ---------------------------------------
-/
-/       Contents:       Function doexec
+        File:  DOEXEC.C         Version:  01.03
+        ---------------------------------------
+
+        Contents:       Function doexec
 */
 
 /*
-/   doexec( scptr )
-/
-/   doexec() does an "execle" function call to invoke the shell on the
-/   command string contained in the passed SCBLK.
-/
-/   Parameters:
-/       scptr   pointer to SCBLK containing the command to execute
-/   Returns:
-/       No return if shell successfully executed
-/       Returns if could not execute command
-/
-/
-/       1.03    15-Oct-91       Intel bug in system() command.  Malloc must
-/                                               allocate out of high memory to allow spawn to
-/                                               work properly.  We set a global switch that
-/                                               tells malloc to use sbrk to satisfy memory
-/                                               request made by spawn() and system().
-/
+    doexec( scptr )
+
+    doexec() does an "execle" function call to invoke the shell on the
+    command string contained in the passed SCBLK.
+
+    Parameters:
+        scptr   pointer to SCBLK containing the command to execute
+    Returns:
+        No return if shell successfully executed
+        Returns if could not execute command
+
+
+        1.03    15-Oct-91       Intel bug in system() command.  Malloc must
+                                                allocate out of high memory to allow spawn to
+                                                work properly.  We set a global switch that
+                                                tells malloc to use sbrk to satisfy memory
+                                                request made by spawn() and system().
+
 
 */
 

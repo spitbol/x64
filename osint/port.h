@@ -18,18 +18,18 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   File:  PORT.H   (SPITBOL)   Version:  01.11
-/   ---------------------------------------------------
-/
-/   This header file contains manifest constants that describe system
-/   dependencies.  Many of these values will be changed when porting
-/   the OS interface to another machine/operating system.
+    File:  PORT.H   (SPITBOL)   Version:  01.11
+    ---------------------------------------------------
+
+    This header file contains manifest constants that describe system
+    dependencies.  Many of these values will be changed when porting
+    the OS interface to another machine/operating system.
 */
 #include "systype.h"
 
 /*
-/       Turn off system-specific features unless specifically called for
-/       in systype.h.
+        Turn off system-specific features unless specifically called for
+        in systype.h.
 */
 
 #ifndef ALTCOMP
@@ -81,8 +81,8 @@ This file is part of Macro SPITBOL.
 #endif
 
 /*
- *      Turn on system-specific features unless specifically turned off
- *      in systype.h
+        Turn on system-specific features unless specifically turned off
+        in systype.h
  */
 #ifndef DIRECT
 #define DIRECT          1       /* access Minimal data directly */
@@ -121,7 +121,7 @@ This file is part of Macro SPITBOL.
 #endif
 
 /*
- *  Other defaulted values that may be overridden in systype.h
+    Other defaulted values that may be overridden in systype.h
  */
 #ifndef INTBITS
 #define INTBITS         32                      /* assume int will be 32 bits */
@@ -138,7 +138,7 @@ This file is part of Macro SPITBOL.
 
 
 /*
- *  If not defined in systype.h, disable it here.
+    If not defined in systype.h, disable it here.
  */
 /* compiler defs */
 #ifndef BCC32
@@ -239,8 +239,8 @@ typedef long long IATYPE;
 #endif
 
 /*
-/   Define the default end of line characters.  Use Unix definitions
-/   as the default.  Override in systype.h.
+    Define the default end of line characters.  Use Unix definitions
+    as the default.  Override in systype.h.
 */
 #ifndef EOL1
 #define EOL1    '\n'
@@ -251,7 +251,7 @@ typedef long long IATYPE;
 #endif
 
 /*
- * Define the data type returned by a call to signal()
+   Define the data type returned by a call to signal()
  */
 #if UNIX
 #define SigType void
@@ -260,19 +260,19 @@ typedef long long IATYPE;
 #endif
 
 /*
-/   The following manifest constants define the page size used when the
-/   compiler produces a source listing.
-/
-/   PAGE_DEPTH          number of lines to print on a page
-/   PAGE_WIDTH          number of characters to print on a line
-/                                       also the default record length for OUTPUT, TERMINAL
+    The following manifest constants define the page size used when the
+    compiler produces a source listing.
+
+    PAGE_DEPTH          number of lines to print on a page
+    PAGE_WIDTH          number of characters to print on a line
+                                        also the default record length for OUTPUT, TERMINAL
 */
 #define PAGE_DEPTH  60
 #define PAGE_WIDTH      120
 
 /*
-/       The following constant defines the size of the code word for
-/       LZW compression of a save file.  See file compress.c.
+        The following constant defines the size of the code word for
+        LZW compression of a save file.  See file compress.c.
 */
 #if WORDBITS == 16
 #define LZWBITS 10
@@ -281,26 +281,26 @@ typedef long long IATYPE;
 #endif
 
 /*
-/   The following manifest contants describe the constraints on the heap
-/   managed by the spitbol compiler.
-/
-/   All values can be overriden via command line options.
-/
-/   CHUNK_SIZE          the size of an allocation unit (chunk) used to
-/                   create the heap.  Defined in WORDS!
-/
-/   CHUNK_B_SIZE        CHUNK_SIZE in bytes.
-/
-/   HEAP_SIZE           the maximum size that spitbol's heap (dynamic area)
-/                   can become.  Defined in WORDS!
-/
-/   OBJECT_SIZE         the maximum size of any object created in the heap.
-/                   Defined in WORDS!
-/       Note: It was necessary to reduce this value from 8M to 1M  because
-/   some DPMI hosts (like 386MAX) use much smaller
-/       starting address for data section.  4MB seems to be a good lowest
-/       common denominator so that Save files can move between all the
-/       different DPMI platforms.
+    The following manifest contants describe the constraints on the heap
+    managed by the spitbol compiler.
+
+    All values can be overriden via command line options.
+
+    CHUNK_SIZE          the size of an allocation unit (chunk) used to
+                    create the heap.  Defined in WORDS!
+
+    CHUNK_B_SIZE        CHUNK_SIZE in bytes.
+
+    HEAP_SIZE           the maximum size that spitbol's heap (dynamic area)
+                    can become.  Defined in WORDS!
+
+    OBJECT_SIZE         the maximum size of any object created in the heap.
+                    Defined in WORDS!
+        Note: It was necessary to reduce this value from 8M to 1M  because
+    some DPMI hosts (like 386MAX) use much smaller
+        starting address for data section.  4MB seems to be a good lowest
+        common denominator so that Save files can move between all the
+        different DPMI platforms.
 */
 
 #if LINUX | WINNT | AIX | SOLARIS
@@ -319,13 +319,13 @@ typedef long long IATYPE;
 #endif
 
 /*
- *  Define the maximum nesting allowed of INCLUDE files
+    Define the maximum nesting allowed of INCLUDE files
  */
 #define INCLUDE_DEPTH   9
 
 
 /*
- *  Define the standard file ids
+    Define the standard file ids
  */
 #ifndef STDINFD
 #define STDINFD 0
@@ -338,11 +338,11 @@ typedef long long IATYPE;
 #endif
 
 /*
- *   Define number of SPITBOL statements to be executed between
- *   interface polling intervals.  Only used if POLLING is 1.
- *   Unix systems can get away with an infinite polling interval,
- *   because their interrupts are asynchronous, and do not require
- *   true polling.
+     Define number of SPITBOL statements to be executed between
+     interface polling intervals.  Only used if POLLING is 1.
+     Unix systems can get away with an infinite polling interval,
+     because their interrupts are asynchronous, and do not require
+     true polling.
  */
 #ifndef PollCount
 #if UNIX
@@ -354,7 +354,7 @@ typedef long long IATYPE;
 
 
 /*
- *   Define Params macro to use or ignore function prototypes.
+     Define Params macro to use or ignore function prototypes.
  */
 #if PROTOTYPES
 #define Params(a) a
@@ -364,14 +364,14 @@ typedef long long IATYPE;
 
 
 /*
-/   The following manifest contant describes the constraints on the
-/   run-time stack.
-/
-/   The value can be overriden via command line option.
-/
-/   STACK_SIZE          the maximum size of the run-time stack.  Any attempt
-/                   to make the stack larger results in a stack overflow
-/                   error.  Defined in BYTES!
+    The following manifest contant describes the constraints on the
+    run-time stack.
+
+    The value can be overriden via command line option.
+
+    STACK_SIZE          the maximum size of the run-time stack.  Any attempt
+                    to make the stack larger results in a stack overflow
+                    error.  Defined in BYTES!
 */
 #if LINUX | WINNT | AIX | SOLARIS
 #define STACK_SIZE  (0x100000)      /* Set to 1MB 6/28/09 */
@@ -379,20 +379,20 @@ typedef long long IATYPE;
 
 
 /*
-/   The following manifest constant defines the location of the host file
-/   which contains a one line description of the system environment under
-/   which spitbol is running.
-/
-/   HOST_FILE           pathname for host text file used by function syshs
+    The following manifest constant defines the location of the host file
+    which contains a one line description of the system environment under
+    which spitbol is running.
+
+    HOST_FILE           pathname for host text file used by function syshs
 */
 #define HOST_FILE       "/usr/lib/spithost"
 
 /*
-/   The following manifest constant defines the names the files created
-/   by the EXIT(3) and EXIT(-3) function.
-/
-/   AOUT_FILE           pathname for load module created by sysxi
-/   SAVE_FILE           pathname for save file created by sysxi
+    The following manifest constant defines the names the files created
+    by the EXIT(3) and EXIT(-3) function.
+
+    AOUT_FILE           pathname for load module created by sysxi
+    SAVE_FILE           pathname for save file created by sysxi
 */
 #define SAVE_FILE       "a.spx"
 #if WINNT
@@ -402,13 +402,13 @@ typedef long long IATYPE;
 #endif
 
 /*
-/ PSEP is the separator between multiple paths.
-/ FSEP is the separator between directories in a path.
-/ EXT is separator between name and extension.
-/ COMPEXT is extension for source files.
-/ EFNEXT is extension for external functions.
-/ RUNEXT is extension for save files.
-/ BINEXT is extension for load modules
+  PSEP is the separator between multiple paths.
+  FSEP is the separator between directories in a path.
+  EXT is separator between name and extension.
+  COMPEXT is extension for source files.
+  EFNEXT is extension for external functions.
+  RUNEXT is extension for save files.
+  BINEXT is extension for load modules
 */
 
 #if UNIX
@@ -436,31 +436,31 @@ typedef long long IATYPE;
 #define SPITFILEPATH  "snolib"  /* path for include and external files */
 
 /*
-/   The following manifest constant determines the maximum number of
-/   files that can be open at a time.
-/
-/   OPEN_FILES          the maximum number of files that can be open at
-/                       a time.  Used by function ospipe to close files
-/                       given by a parent process to a child process.
+    The following manifest constant determines the maximum number of
+    files that can be open at a time.
+
+    OPEN_FILES          the maximum number of files that can be open at
+                        a time.  Used by function ospipe to close files
+                        given by a parent process to a child process.
 */
 #define OPEN_FILES      32
 
 /*
-/   The following manifest constants determines the size of the temporary
-/   SCBLKs defined by the interface.
-/
-/   TSCBLK_LENGTH       the maximum length of a string that can be stored
-/                   in structure 'tscblk'.  'tscblk' is defined in
-/                   file inter.s.
-/
-/   ID2BLK_LENGTH       the maximum length of a string that can be stored
-/                   in structure 'id2blk'.  'id2blk' is defined in
-/                   inter.c.  ID2BLK_LENGTH should be long enough
-/                   to hold the computer name type string (htype)
-/                   plus the date/time and a few blanks (typically
-/                   20 characters).  It should also be a multiple of
-/                   the word size.
-/
+    The following manifest constants determines the size of the temporary
+    SCBLKs defined by the interface.
+
+    TSCBLK_LENGTH       the maximum length of a string that can be stored
+                    in structure 'tscblk'.  'tscblk' is defined in
+                    file inter.s.
+
+    ID2BLK_LENGTH       the maximum length of a string that can be stored
+                    in structure 'id2blk'.  'id2blk' is defined in
+                    inter.c.  ID2BLK_LENGTH should be long enough
+                    to hold the computer name type string (htype)
+                    plus the date/time and a few blanks (typically
+                    20 characters).  It should also be a multiple of
+                    the word size.
+
 */
 #ifndef TSCBLK_LENGTH
 #define TSCBLK_LENGTH   512
@@ -468,14 +468,14 @@ typedef long long IATYPE;
 #define ID2BLK_LENGTH   52
 
 /*
-/   The following manifest constants determine the default environment
-/   variable name for the shell and it
-/
-/   SHELL_ENV_NAME      the name under which then shell path is stored
-/                   in the environment
-/
-/   SHELL_PATH          a default shell to use in event one cannot be
-/                   located in the environment
+    The following manifest constants determine the default environment
+    variable name for the shell and it
+
+    SHELL_ENV_NAME      the name under which then shell path is stored
+                    in the environment
+
+    SHELL_PATH          a default shell to use in event one cannot be
+                    located in the environment
 */
 
 #if WINNT             /* WINNT */
@@ -489,24 +489,24 @@ extern char isWin95;                  /* True if running under WinNT */
 #endif          /* WINNT */
 
 /*
-/   Compiler flags (see compiler listing for more details):
-/
-/   ERRORS      send errors to terminal
-/   PRTICH      terminal is standard output file
-/   NOLIST      suppress compilation listing
-/   NOCMPS      suppress compilation statistics
-/   NOEXCS      suppress execution statistics
-/   LNGLST      generate long listing (WITH page ejects)
-/   NOEXEC      suppress program execution
-/   TRMNAL      support terminal i/o association
-/   STDLST      standard listing (intermediate)
-/   NOHDER      suppress spitbol compiler header
-/   PRINTC      list control cards
-/   WRTEXE      write executable module after compilation
-/   CASFLD      fold upper and lower case names
-/   NOFAIL      no fail mode
-/
-/   DFLT_FLAGS  reasonable defaults for UN*X environment
+    Compiler flags (see compiler listing for more details):
+
+    ERRORS      send errors to terminal
+    PRTICH      terminal is standard output file
+    NOLIST      suppress compilation listing
+    NOCMPS      suppress compilation statistics
+    NOEXCS      suppress execution statistics
+    LNGLST      generate long listing (WITH page ejects)
+    NOEXEC      suppress program execution
+    TRMNAL      support terminal i/o association
+    STDLST      standard listing (intermediate)
+    NOHDER      suppress spitbol compiler header
+    PRINTC      list control cards
+    WRTEXE      write executable module after compilation
+    CASFLD      fold upper and lower case names
+    NOFAIL      no fail mode
+
+    DFLT_FLAGS  reasonable defaults for UN*X environment
 */
 
 #define ERRORS          0x00000001L

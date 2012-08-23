@@ -18,32 +18,32 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  SYSBS.C          Version:  01.02
-/       ---------------------------------------
-/
-/       Contents:       Function zysbs
+        File:  SYSBS.C          Version:  01.02
+        ---------------------------------------
+
+        Contents:       Function zysbs
 */
 
 /*
-/       zysbs - backspace file
-/
-/       zysbs move a file's position back one physical record.
-/
-/       Parameters:
-/           WA - FCBLK pointer or 0
-/           XR - SCBLK pointer (EJECT argument)
-/       Returns:
-/           Nothing
-/       Exits:
-/           1 - file does not exist
-/           2 - inappropriate file
-/           3 - i/o error
-/
+        zysbs - backspace file
+
+        zysbs move a file's position back one physical record.
+
+        Parameters:
+            WA - FCBLK pointer or 0
+            XR - SCBLK pointer (EJECT argument)
+        Returns:
+            Nothing
+        Exits:
+            1 - file does not exist
+            2 - inappropriate file
+            3 - i/o error
+
 / History:
 / v01.00        16-Feb-91       Initial version.
 / v01.01        01-Feb-93       Adjust for fcb->rsz now positive for raw mode.
 / v01.02        07-Jun-95       Disallow backspace if file is a pipe.
-/
+
 */
 
 #include "port.h"

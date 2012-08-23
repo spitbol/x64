@@ -18,21 +18,21 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  BREAK.C          Version:  01.00
-/       ---------------------------------------
-/
-/       Contents:       Function endbrk
-/                               Function startbrk
-/                           Function rearmbrk
-/
-/       v1.00   02-Mar-91       Initial version for Unix.
-/       V1.01   16-May-91       Initial version for MS-DOS using Intel compiler.
+        File:  BREAK.C          Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function endbrk
+                                Function startbrk
+                            Function rearmbrk
+
+        v1.00   02-Mar-91       Initial version for Unix.
+        V1.01   16-May-91       Initial version for MS-DOS using Intel compiler.
 */
 
 /*
-/   startbrk( )
-/
-/   startbrk starts up the logic for trapping user keyboard interrupts.
+    startbrk( )
+
+    startbrk starts up the logic for trapping user keyboard interrupts.
 */
 
 #include "port.h"

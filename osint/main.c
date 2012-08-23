@@ -18,38 +18,38 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  MAIN.C           Version:  01.00
-/       ---------------------------------------
-/
-/       Contents:       Function main
+        File:  MAIN.C           Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function main
 */
 
 /*
-/       This module contains the main function that gets control when
-/       the spitbol compiler starts execution.  Responsibilities of
-/       this function:
-/
-/       o  Save argc and argv parameters in global storage.
-/
-/       o  Determine if this execution reflects the invocation of
-/          of the compiler or of a load module and take appropriate
-/          actions.
-/
-/          If invoked as compiler:  process command line arguments,
-/          set up input files, output file, initial memory allocation,
-/          and transfer control to compiler
-/
-/          If invoked as load module:  reset various compiler variables
-/          whose values are no longer valid, re-establish dynamic area
-/          and transfer control to function that returns control to
-/          suspended spitbol program
-/
-/       HISTORY
-/
-/  V1.00 04-Jun-92 Split off from OSINT as a front-end module.
-/  V1.01 30-Dec-96 Call swcinp after reloading SPX file.
-/  V1.02 18-Mar-00 Don't interpret parameters following .spx on command
-/                  line as file names.
+        This module contains the main function that gets control when
+        the spitbol compiler starts execution.  Responsibilities of
+        this function:
+
+        o  Save argc and argv parameters in global storage.
+
+        o  Determine if this execution reflects the invocation of
+           of the compiler or of a load module and take appropriate
+           actions.
+
+           If invoked as compiler:  process command line arguments,
+           set up input files, output file, initial memory allocation,
+           and transfer control to compiler
+
+           If invoked as load module:  reset various compiler variables
+           whose values are no longer valid, re-establish dynamic area
+           and transfer control to function that returns control to
+           suspended spitbol program
+
+        HISTORY
+
+   V1.00 04-Jun-92 Split off from OSINT as a front-end module.
+   V1.01 30-Dec-96 Call swcinp after reloading SPX file.
+   V1.02 18-Mar-00 Don't interpret parameters following .spx on command
+                   line as file names.
 */
 #define GLOBALS                 /* global variables will be defined in this module */
 #include "port.h"
@@ -266,9 +266,9 @@ char    *argv[];
 
 
 /*
-/       wrterr( s )
-/
-/       Write message to standard error, and append end-of-line.
+        wrterr( s )
+
+        Write message to standard error, and append end-of-line.
 */
 void wrterr(s)
 char    *s;
@@ -301,9 +301,9 @@ int     n;
 }
 
 /*
-/       wrtmsg( s )
-/
-/       Write message to standard output, and append end-of-line.
+        wrtmsg( s )
+
+        Write message to standard output, and append end-of-line.
 */
 void wrtmsg(s)
 char    *s;

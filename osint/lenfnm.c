@@ -19,59 +19,59 @@ This file is part of Macro SPITBOL.
 
 /*
 / File:  LENFNM.C   Version:  01.02
-/       ---------------------------------------
-/
-/       Contents:       Function lenfnm
+        ---------------------------------------
+
+        Contents:       Function lenfnm
 */
 
 /*
-/   lenfnm( scptr )
-/
-/   lenfnm() examines the file argument within the passed SCBLK and returns
-/   the length of the filename contained within it.  This function will be
-/   called from any of the OSINT functions dealing with filenames or I/O
-/   options.
+    lenfnm( scptr )
+
+    lenfnm() examines the file argument within the passed SCBLK and returns
+    the length of the filename contained within it.  This function will be
+    called from any of the OSINT functions dealing with filenames or I/O
+    options.
 */
 
 /*  The file argument string will contain a filename and/or options with the
-/   options enclosed in "[" and "]", as in
-/
-/       "filename"
-/       "filename[options]"
-/       "[options]"
-/
-/  v1.02 23-Feb-96 - Check pipe syntax when bracketed options present.
+    options enclosed in "[" and "]", as in
+
+        "filename"
+        "filename[options]"
+        "[options]"
+
+   v1.02 23-Feb-96 - Check pipe syntax when bracketed options present.
 */
 
 #if !WINNT
 /*  The file argument can also contain options separated from the filename
-/       by a blank.
-/
-/       "filename options"
-/       " options"
-/
+        by a blank.
+
+        "filename options"
+        " options"
+
 */
 #endif          /* !WINNT */
 
 #if PIPES
 /*
-/   The file argument may instead be a command string with options as in
-/
-/       "!*commandstring"
-/       "!*commandstring*"
-/       "!*commandstring* options"
-/
-/   Notice that the character following the '!' serves as a delimiter to
-/   separate the end of the command string from the space preceding any
-/   options.
+    The file argument may instead be a command string with options as in
+
+        "!*commandstring"
+        "!*commandstring*"
+        "!*commandstring* options"
+
+    Notice that the character following the '!' serves as a delimiter to
+    separate the end of the command string from the space preceding any
+    options.
 */
 #endif                                  /* PIPES */
 
 /*  Parameters:
-/       scptr   pointer to SCBLK containg filename string
-/   Returns:
-/       length of filename (0 is possible)
-/       -1 if illegal name
+        scptr   pointer to SCBLK containg filename string
+    Returns:
+        length of filename (0 is possible)
+        -1 if illegal name
 */
 
 #include "port.h"

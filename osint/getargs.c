@@ -18,20 +18,20 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/       File:  GETARGS.C                Version:  01.00
-/       ---------------------------------------
-/
-/       Contents:       Function getargs
+        File:  GETARGS.C                Version:  01.00
+        ---------------------------------------
+
+        Contents:       Function getargs
 */
 
 
 /*
-/       This module contains the switch loop that processes command
-/       line options.
-/
-/       HISTORY
-/
-/  V1.00 30-Jul-92 Split off from OSINT as a separate module.
+        This module contains the switch loop that processes command
+        line options.
+
+        HISTORY
+
+   V1.00 30-Jul-92 Split off from OSINT as a separate module.
 */
 #include "port.h"
 
@@ -409,16 +409,16 @@ char    *argv[];
 
 
 /*
-/    getnum() converts an ASCII string to an integer AND returns a pointer
-/    to the character following the last valid digit.
-/
-/    Parameters:
-/               cp      pointer to character string
-/               ip      pointer to word receiving converted result
-/    Returns:
-/               Pointer to character following last valid digit in input string
-/    Side Effects:
-/               Modifies contents of integer pointed to by ip.
+     getnum() converts an ASCII string to an integer AND returns a pointer
+     to the character following the last valid digit.
+
+     Parameters:
+                cp      pointer to character string
+                ip      pointer to word receiving converted result
+     Returns:
+                Pointer to character following last valid digit in input string
+     Side Effects:
+                Modifies contents of integer pointed to by ip.
 */
 
 char    *getnum( cp, ip )
@@ -436,19 +436,19 @@ uword   *ip;
 
 
 /*
-/   optnum() converts an ASCII string to an integer AND returns a pointer
-/   to the character following the last valid digit.  optnum() is similar
-/   to getnum() except that optnum accepts a trailing 'k' or 'm' to indicate
-/   that the value should be scaled in units of 1,024 or 1,048,576.
-/
-/   Parameters:
-/               cp      pointer to character string
-/               ip      pointer to word receiving converted result
-/   Returns:
-/               Pointer to character following last valid digit in input string,
-/               including a trailing k.
-/   Side Effects:
-/               Modifies contents of integer pointed to by ip.
+    optnum() converts an ASCII string to an integer AND returns a pointer
+    to the character following the last valid digit.  optnum() is similar
+    to getnum() except that optnum accepts a trailing 'k' or 'm' to indicate
+    that the value should be scaled in units of 1,024 or 1,048,576.
+
+    Parameters:
+                cp      pointer to character string
+                ip      pointer to word receiving converted result
+    Returns:
+                Pointer to character following last valid digit in input string,
+                including a trailing k.
+    Side Effects:
+                Modifies contents of integer pointed to by ip.
 */
 
 char    *optnum( cp, ip )

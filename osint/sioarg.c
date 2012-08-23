@@ -19,39 +19,39 @@ This file is part of Macro SPITBOL.
 
 
 /*
-/       File:  SIOARG.C         Version:  01.07
-/       ---------------------------------------
-/
-/       Contents:       Function sioarg
+        File:  SIOARG.C         Version:  01.07
+        ---------------------------------------
+
+        Contents:       Function sioarg
 */
 
 /*
-/   sioarg( ioflg,ioptr,scptr )
-/
-/   sioarg() scans any arguments after the filename in the passed SCBLK and
-/   sets appropriate values in the passed ioblk.
-/
-/   Parameters:
-/       ioflg   0 - input association/ 3 - output association
-/       ioptr   pointer to IOBLK representing file
-/       scptr   pointer to SCBLK containing filename and args
-/   Returns:
-/       0 - options successfully processed / -1 - option error
-/   Side Effects:
-/       Modifies contents of passed IOBLK (ioptr).
-/
-/       V1.02   Distinguish default input/output record lengths
-/       V1.03   Buffer size and record size must be less than
-/                       maxsize to avoid garbage collector problems when
-/                       these values are stored in fcblk and ioblk.
-/       V1.04   Add i/o option -u for update mode.
-/       V1.05   01-Aug-93. Add IO_EOT flag to ignore EOT char in
-/                       DOS-mode text files.
-/       V1.06   21-Oct-94. Use uppercase function to fold case letters.
-/       V1.07   26-Oct-94. Added share field to ioblk and processing of
-/                       -S option.
-/                       In -B option, subtract BFSIZE from maxsize before comparison.
-/       V1.08   18-Dec-94. Add -I and -X options.
+    sioarg( ioflg,ioptr,scptr )
+
+    sioarg() scans any arguments after the filename in the passed SCBLK and
+    sets appropriate values in the passed ioblk.
+
+    Parameters:
+        ioflg   0 - input association/ 3 - output association
+        ioptr   pointer to IOBLK representing file
+        scptr   pointer to SCBLK containing filename and args
+    Returns:
+        0 - options successfully processed / -1 - option error
+    Side Effects:
+        Modifies contents of passed IOBLK (ioptr).
+
+        V1.02   Distinguish default input/output record lengths
+        V1.03   Buffer size and record size must be less than
+                        maxsize to avoid garbage collector problems when
+                        these values are stored in fcblk and ioblk.
+        V1.04   Add i/o option -u for update mode.
+        V1.05   01-Aug-93. Add IO_EOT flag to ignore EOT char in
+                        DOS-mode text files.
+        V1.06   21-Oct-94. Use uppercase function to fold case letters.
+        V1.07   26-Oct-94. Added share field to ioblk and processing of
+                        -S option.
+                        In -B option, subtract BFSIZE from maxsize before comparison.
+        V1.08   18-Dec-94. Add -I and -X options.
 */
 
 #include "port.h"
@@ -346,19 +346,19 @@ struct  scblk   *scptr;
 
 
 /*
-/   scnint( str, len, intptr )
-/
-/   scnint() scans and converts a decimal number at the front of a string.
-/   "len" specifies the maximum number of digits that can be scanned.
-/
-/    Parameters:
-/       str     pointer to string containing number at front
-/       len     maximum number of digits to scan
-/       intptr  pointer to integer to be adjusted by number of digits scanned
-/    Returns:
-/       Integer converted
-/    Side Effects:
-/       Modifies integer pointed to by intptr.
+    scnint( str, len, intptr )
+
+    scnint() scans and converts a decimal number at the front of a string.
+    "len" specifies the maximum number of digits that can be scanned.
+
+     Parameters:
+        str     pointer to string containing number at front
+        len     maximum number of digits to scan
+        intptr  pointer to integer to be adjusted by number of digits scanned
+     Returns:
+        Integer converted
+     Side Effects:
+        Modifies integer pointed to by intptr.
 */
 
 
