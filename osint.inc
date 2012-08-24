@@ -184,57 +184,6 @@ engts_callid  equ      13
         extern  inpbuf
         extern  ttybuf
         extern  b_rcl
-%else
-;	struc valtab
-;gbcnt:  db 0
-;headv:  db 0
-;mxlen:  db 0
-;stage:  db 0
-;timsx:  db 0
-;dnamb:  db 0
-;dnamp:  db 0
-;state:  db 0
-;b_efc:  db 0
-;b_icl:  db 0
-;b_scl:  db 0
-;b_vct:  db 0
-;b_xnt:  db 0
-;b_xrt:  db 0
-;stbas:  db 0
-;statb:  db 0
-;polct:  db 0
-;typet:  db 0
-;dffnc:  db 0
-;lowspmin:  db 0
-;flprt:  db 0
-;flptr:  db 0
-;gtcef:  db 0
-;hshtb:  db 0
-;pmhbs:  db 0
-;r_fcb:  db 0
-;c_aaa:  db 0
-;c_yyy:  db 0
-;g_aaa:  db 0
-;w_yyy:  db 0
-;s_aaa:  db 0
-;s_yyy:  db 0
-;r_cod:  db 0
-;kvstn:  db 0
-;kvdmp:  db 0
-;kvftr:  db 0
-;kvcom:  db 0
-;kvpfl:  db 0
-;cswfl:  db 0
-;stmcs:  db 0
-;stmct:  db 0
-;ticblk:  db 0
-;tscblk:  db 0
-;id1:  db 0
-;id2blk:  db 0
-;inpbuf:  db 0
-;ttybuf:  db 0
-;b_rcl:  db 0
-;	endstruc
 %endif
 %if direct == 0
         ends    vords
