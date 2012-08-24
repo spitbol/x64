@@ -57,11 +57,16 @@ zysdc ()
       write (STDERRFD, " Runtime", 8);
 #endif /* RUNTIME */
 
-      write (STDERRFD, "  Release ", 10);
-      char *s = pid1->str;
+      write (STDERRFD, " Release ", 9);
+
+/*
       int n = pid1->len;
+      if (n <= 0) write (STDERRFD, "KK",2);
+      char *s = pid1->str;
+	printf("n %d\n");
       write (STDERRFD, pheadv->str, pheadv->len);
       write (STDERRFD, pid1->str, pid1->len);
+*/
       wrterr (cprtmsg);
     }
 
