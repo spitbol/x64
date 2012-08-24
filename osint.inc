@@ -44,13 +44,6 @@ normal_return  equ      -1
 
 ;       function and macro to call into minimal code.
 ;       the argument is an ordinal number defined below.
-%ifndef globals
-	extern		minimal_call
-%endif
-%macro          Zinimal 1
-        push            %1
-	callc		minimal_call,4
-%endmacro
 
 ;   ordinals for minimal calls from assembly language.
 ;
@@ -76,33 +69,6 @@ engts_callid  equ      13
 ;       the argument is an ordinal number defined below.
 ;       the macro getoff returns the address of the value.
 %if direct                                  ; [[
-%macro          getoff 2
-        lea             %1,%2
-%endmacro
-
-%macro          getmin 2
-        mov             %1,dword [%2]
-%endmacro
-
-%macro          setmin 2
-        mov             %1,dword [%2]
-%endmacro
-
-%macro          setminr 2
-        mov             %1,%2
-%endmacro
-
-;;%ifnmacro	access
-;;%macro          access 1
-;;        extern             %1
-;;%endmacro
-;;%endif
-;;
-;;%macro          access2 1
-;;%ifndef globals
-;;        extern            %1
-;;%endif
-;;%endmacro
 
 	segment	.data
 %else                                       ; ][
@@ -218,6 +184,57 @@ engts_callid  equ      13
         extern  inpbuf
         extern  ttybuf
         extern  b_rcl
+%else
+;	struc valtab
+;gbcnt:  db 0
+;headv:  db 0
+;mxlen:  db 0
+;stage:  db 0
+;timsx:  db 0
+;dnamb:  db 0
+;dnamp:  db 0
+;state:  db 0
+;b_efc:  db 0
+;b_icl:  db 0
+;b_scl:  db 0
+;b_vct:  db 0
+;b_xnt:  db 0
+;b_xrt:  db 0
+;stbas:  db 0
+;statb:  db 0
+;polct:  db 0
+;typet:  db 0
+;dffnc:  db 0
+;lowspmin:  db 0
+;flprt:  db 0
+;flptr:  db 0
+;gtcef:  db 0
+;hshtb:  db 0
+;pmhbs:  db 0
+;r_fcb:  db 0
+;c_aaa:  db 0
+;c_yyy:  db 0
+;g_aaa:  db 0
+;w_yyy:  db 0
+;s_aaa:  db 0
+;s_yyy:  db 0
+;r_cod:  db 0
+;kvstn:  db 0
+;kvdmp:  db 0
+;kvftr:  db 0
+;kvcom:  db 0
+;kvpfl:  db 0
+;cswfl:  db 0
+;stmcs:  db 0
+;stmct:  db 0
+;ticblk:  db 0
+;tscblk:  db 0
+;id1:  db 0
+;id2blk:  db 0
+;inpbuf:  db 0
+;ttybuf:  db 0
+;b_rcl:  db 0
+;	endstruc
 %endif
 %if direct == 0
         ends    vords

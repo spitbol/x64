@@ -247,8 +247,52 @@ ttybuf:	dd   0     ; type word
 
 
         segment .text
+
+;       mimimal_call -- call minimal function from c
 ;
-;-----------
+;       usage:  extern void minimal_call(word callno)
+;
+;       where:
+;         callno is an ordinal defined in osint.h, osint.inc, and calltab.
+;
+;       minimal registers wa, wb, wc, xr, and xl are loaded and
+;       saved from/to the register block.
+;
+;       note that before restart is called, we do not yet have compiler
+;       stack to switch to.  in that case, just make the call on the
+;       the osint stack.
+
+	global	minimal_call
+minimal_call:
+
+        pushad                          ; save all registers for c
+        mov     eax,dword[esp+32+4]          ; get ordinal
+        mov     ecx,dword[reg_wa]              ; restore registers
+        mov     ebx,dword[reg_wb]
+        mov     edx,dword[reg_wc]              ; (also _reg_ia)
+        mov     edi,dword[reg_xr]
+        mov     esi,dword[reg_xl]
+        mov     ebp,dword[reg_cp]
+
+        mov     dword [osisp],esp               ; 1.39 save osint stack pointer
+        cmp     dword [compsp],0      ; 1.39 is there a compiler stack?
+        je      min1              ; 1.39 jump if none yet
+        mov     esp,dword [compsp]              ; 1.39 switch to compiler stack
+
+	extern	calltab
+min1:   callc   [calltab+eax*4],0        ; off to the minimal code
+
+        mov     esp,osisp               ; 1.39 switch to osint stack
+
+        mov     [reg_wa],ecx              ; save registers
+        mov     [reg_wb],ebx
+        mov     [reg_wc],edx
+        mov     [reg_xr],edi
+        mov     [reg_xl],esi
+        mov     [reg_cp],ebp
+        popad
+        retc    4
+
 ;
 ;       save and restore minimal and interface registers on stack.
 ;       used by any routine that needs to call back into the minimal
@@ -702,7 +746,7 @@ startup:
 
         cld                             ; default to UP direction for string ops
         extern  dffnc
-        getoff  eax,[dffnc]               ; get dd of PPM offset
+        lea     eax,[dffnc]               ; get dd of PPM offset
         mov     dword [ppoff],eax               ; save for use later
 ;
         mov     esp,dword [osisp]               ; switch to new c stack
@@ -713,14 +757,14 @@ startup:
 ;
 ;-----------
 ;
-;       stackinit  -- initialize LOWSPMIN from sp.
+;       stackinit  -- initialize lowspmin from sp.
 ;
 ;       Input:  sp - current C stack
 ;               stacksiz - size of desired Minimal stack in bytes
 ;
 ;       Uses:   eax
 ;
-;       Output: register WA, sp, LOWSPMIN, compsp, osisp set up per diagram:
+;       Output: register WA, sp, lowspmin, compsp, osisp set up per diagram:
 ;
 ;       (high)  +----------------+
 ;               |  old C stack   |
@@ -730,7 +774,7 @@ startup:
 ;               / stacksiz bytes /
 ;               |            |   |
 ;               |            |   |
-;               |----------- | --| <-- resultant LOWSPMIN
+;               |----------- | --| <-- resultant lowspmin
 ;               | 400 bytes  v   |
 ;               |----------------| <-- future C stack pointer, osisp
 ;               |  new C stack   |
@@ -744,8 +788,8 @@ stackinit:
         sub     eax,dword [stacksiz]     ; end of MINIMAL stack is where C stack will start
         mov     dword [osisp],eax       ; save new C stack pointer
         add     eax,4*100               ; 100 words smaller for CHK
-        extern  LOWSPMIN
-        setminr  [lowspmin],eax           ; Set LOWSPMIN
+        extern  lowspmin
+        mov	dword [lowspmin],eax           ; Set lowspmin
         ret
 	mov	eax,esp
         mov     dword [compsp],eax              ; save as minimal's stack pointer
@@ -753,57 +797,9 @@ stackinit:
         mov     dword [osisp],eax       ; save new c stack pointer
 	add	eax,4*100               ; 100 words smaller for chk
 	extern	lowspmin
-        setminr  [lowspmin],eax           ; set lowspmin
+        mov     dword [lowspmin],eax           ; set lowspmin
 	ret
 ;
-;-----------
-;
-;       mimimal_call -- call minimal function from c
-;
-;       usage:  extern void minimal_call(word callno)
-;
-;       where:
-;         callno is an ordinal defined in osint.h, osint.inc, and calltab.
-;
-;       minimal registers wa, wb, wc, xr, and xl are loaded and
-;       saved from/to the register block.
-;
-;       note that before restart is called, we do not yet have compiler
-;       stack to switch to.  in that case, just make the call on the
-;       the osint stack.
-;
-
-	global	minimal_call
-minimal_call:
-
-        pushad                          ; save all registers for c
-        mov     eax,dword[esp+32+4]          ; get ordinal
-        mov     ecx,dword[reg_wa]              ; restore registers
-        mov     ebx,dword[reg_wb]
-        mov     edx,dword[reg_wc]              ; (also _reg_ia)
-        mov     edi,dword[reg_xr]
-        mov     esi,dword[reg_xl]
-        mov     ebp,dword[reg_cp]
-
-        mov     dword [osisp],esp               ; 1.39 save osint stack pointer
-        cmp     dword [compsp],0      ; 1.39 is there a compiler stack?
-        je      min1              ; 1.39 jump if none yet
-        mov     esp,dword [compsp]              ; 1.39 switch to compiler stack
-
-	extern	calltab
-min1:   callc   [calltab+eax*4],0        ; off to the minimal code
-
-        mov     esp,osisp               ; 1.39 switch to osint stack
-
-        mov     [reg_wa],ecx              ; save registers
-        mov     [reg_wb],ebx
-        mov     [reg_wc],edx
-        mov     [reg_xr],edi
-        mov     [reg_xl],esi
-        mov     [reg_cp],ebp
-        popad
-        retc    4
-
 
 
 ;;%if direct = 0
@@ -817,7 +813,7 @@ min1:   callc   [calltab+eax*4],0        ; off to the minimal code
 ;       where:
 ;         valno is an ordinal defined in osint.h, osint.inc and valtab.
 ;
-
+	extern	valtab
         global  minoff
 minoff:
 
@@ -946,18 +942,18 @@ restart:
         call    stackinit               ; initialize MINIMAL stack
 
                                         ; set up for stack relocation
-        lea     eax,[TSCBLK+scstr]        ; top of saved stack
+        lea     eax,[tscblk+scstr]        ; top of saved stack
         mov     ebx,[lmodstk]             ; bottom of saved stack
-;;        GETMIN  ecx,[STBAS]               ; ecx = stbas from exit() time
-;DS TODO Review above line. commented out to get os x port going
+	extern	stbas
+        mov     ecx,dword [stbas]               ; ecx = stbas from exit() time
         sub     ebx,eax                 ; ebx = size of saved stack
         mov     edx,ecx
         sub     edx,ebx                 ; edx = stack bottom from exit() time
         mov     ebx,ecx
         sub     ebx,esp                 ; ebx = old stbas - new stbas
 	extern	stbas
-        setminr  dword [stbas],esp               ; save initial sp
-        getoff  eax,[dffnc]               ; get dd of ppm offset
+        mov     dword [stbas],esp               ; save initial sp
+        lea     eax,[dffnc]               ; get dd of ppm offset
         mov     dword [ppoff],eax               ; save for use later
 ;
 ;       restore stack from tscblk.
@@ -982,10 +978,11 @@ re3:    cld
         mov     dword [compsp],esp              ; 1.39 save compiler's stack pointer
         mov     esp,dword [osisp]               ; 1.39 back to OSINT's stack pointer
         callc   rereloc,0               ; V1.08 relocate compiler pointers into stack
-;DS TODO Review above line. commented out to get os x port going
-;        GETMIN  eax,[STATB]               ; V1.34 start of static region to XR
+	extern	statb
+        mov     dword [eax],statb               ; V1.34 start of static region to XR
         mov     dword [reg_xr],  eax
-        minimal insta_callid               ; V1.34 initialize static region
+	push	insta_callid
+        callc	minimal_call,4               ; V1.34 initialize static region
 
 ;
 ;       now pretend that we're executing the following c statement from
@@ -1009,8 +1006,8 @@ re3:    cld
 ;
         extern  startbrk
         callc   startbrk,0              ; start control-C logic
-;DS TODO Review above line. commented out to get os x port going
-;        GETMIN  eax,STAGE               ; is this a -w call?
+	extern	stage
+        mov     dword [eax],stage               ; is this a -w call?
         cmp     eax,4
         je      re4               ; yes, do a complete fudge
 
@@ -1024,18 +1021,17 @@ re3:    cld
 ;       go for it.
 ;
 re4:	
-;	getmin	eax,[stbas]
-;ds todo review commented-out line. commented out to get os x port going
+	mov	dword [eax],stbas
         mov     dword [compsp],eax              ; 1.39 empty the stack
 
 ;       code that would be executed if we had returned to makeexec:
 ;
-;ds todo review commented-out line. commented out to get os x port going
-;        setmin  dword [gbcnt],0                 ; reset garbage collect count
+	extern	gbcnt
+        mov     dword [gbcnt],0                 ; reset garbage collect count
         callc   zystm,0                 ; fetch execution time to reg_ia
         mov     eax,dword [reg_ia]              ; set time into compiler0
 	extern	timsx
-	setminr	dword [timsx],eax
+	mov	dword [timsx],eax
 
 ;       code that would be executed if we returned to sysbx:
 ;
