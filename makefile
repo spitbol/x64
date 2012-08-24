@@ -91,7 +91,7 @@ MOBJS=	main.o getargs.o
 AOBJS = $(CAOBJS)
 
 # Minimal source object file:
-VOBJS =	v38.o
+VOBJS =	spitbol.o
 
 # All objects:
 OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
@@ -102,19 +102,19 @@ spitbol: $(OBJS)
 
 # Assembly language dependencies:
 errors.o: errors.s
-v38.o: v38.s
+spitbol.o: spitbol.s
 
 # SPITBOL Minimal source
-v38.s:	v38.tok $(VHDRS) $(COD) systype.ah
-	  $(SPIT) -u "v38:$(VERS):comments" $(COD)
+spitbol.s:	spitbol.tok $(VHDRS) $(COD) systype.ah
+	  $(SPIT) -u "spitbol:$(VERS):comments" $(COD)
 
-v38.tok: $(MINPATH)v38.min $(VERS).cnd $(TOK)
-	 $(SPIT) -u "$(MINPATH)v38:$(VERS):v38" $(TOK)
+spitbol.tok: $(MINPATH)spitbol.min $(VERS).cnd $(TOK)
+	 $(SPIT) -u "$(MINPATH)spitbol:$(VERS):spitbol" $(TOK)
 
-v38.err: v38.s
+spitbol.err: spitbol.s
 
-errors.s: $(VERS).cnd $(ERR) v38.s
-	   $(SPIT) -1=v38.err -2=errors.s $(ERR)
+errors.s: $(VERS).cnd $(ERR) spitbol.s
+	   $(SPIT) -1=spitbol.err -2=errors.s $(ERR)
 
 inter.o: systype.ah osint.inc
 
@@ -131,9 +131,9 @@ sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
 
 boot:
-	cp -p bootstrap/v38.s bootstrap/v38.tok bootstrap/errors.s .
+	cp -p bootstrap/spitbol.s bootstrap/spitbol.tok bootstrap/errors.s .
 
 install:
 	sudo cp spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.lst *.map *.err v38.tok v38.tmp v38.s errors.s
+	rm -f $(OBJS) *.lst *.map *.err spitbol.tok spitbol.tmp spitbol.s errors.s
