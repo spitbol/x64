@@ -46,155 +46,156 @@ This file is part of Macro SPITBOL.
         to a new file.
 */
 
-int     swcinp( filecnt, fileptr )
-
-int     filecnt;
-char    **fileptr;
+int
+swcinp (filecnt, fileptr)
+     int filecnt;
+     char **fileptr;
 
 {
-    register char       *cp;
-    register int i;
+  register char *cp;
+  register int i;
 
-    static int lastfd = 0;
+  static int lastfd = 0;
 
 
-    /*
-    /  If first time through, make a duplicate of
-    /  shell's file descriptor 0, so that we can access it later.
-    */
-    sfn = "stdin";
+  /*
+     /  If first time through, make a duplicate of
+     /  shell's file descriptor 0, so that we can access it later.
+   */
+  sfn = "stdin";
 
 #if USEFD0FD1
-    if ( originp < 0 )
-        originp = dup( 0 );
+  if (originp < 0)
+    originp = dup (0);
 #endif
 
-    /*
-    /  Process files on command line, if any.
-    /  Read file descriptor 0 provided by the shell when a '-'
-    /  is encountered as a filename.
-    */
-    if ( curfile < filecnt )
+  /*
+     /  Process files on command line, if any.
+     /  Read file descriptor 0 provided by the shell when a '-'
+     /  is encountered as a filename.
+   */
+  if (curfile < filecnt)
     {
-        /*
-        /  Point to next entry.  (Bump cmdcnt too!)
-        */
-        cmdcnt++;
-        cp = fileptr[curfile++];
+      /*
+         /  Point to next entry.  (Bump cmdcnt too!)
+       */
+      cmdcnt++;
+      cp = fileptr[curfile++];
 
 #if USEFD0FD1
-        /*
-        /   Close fd 0 so subsequent open or dup will acquire fd 0.
-        */
-        close(0);
+      /*
+         /   Close fd 0 so subsequent open or dup will acquire fd 0.
+       */
+      close (0);
 #else
-        if (lastfd > 0)
-            close(lastfd);                              /* if second or subsequent call to swcinp */
+      if (lastfd > 0)
+	close (lastfd);		/* if second or subsequent call to swcinp */
 #endif
-        clrbuf();
-        /*
-        /   If next entry is '-' then read file descriptor
-        /   0 provided by the shell.
-        */
-        if ( *cp == '-' )
-        {
+      clrbuf ();
+      /*
+         /   If next entry is '-' then read file descriptor
+         /   0 provided by the shell.
+       */
+      if (*cp == '-')
+	{
 #if USEFD0FD1
-            dup( originp );             /* returns 0 */
+	  dup (originp);	/* returns 0 */
 #endif
-            lastfd = 0;
+	  lastfd = 0;
 #if WINNT
-            if ( cindev( lastfd ) == 0 )                /* Test for character input */
-                getrdiob()->flg1 |= IO_CIN;
-            else
-                getrdiob()->flg1 &= ~IO_CIN;
-#endif               /* WINNT */
-            goto swci_exit;
-        }
+	  if (cindev (lastfd) == 0)	/* Test for character input */
+	    getrdiob ()->flg1 |= IO_CIN;
+	  else
+	    getrdiob ()->flg1 &= ~IO_CIN;
+#endif /* WINNT */
+	  goto swci_exit;
+	}
 
-        /*
-        /   Attempt to open file for reading.
-        */
-        sfn = cp;
-        for ( i=0; ; i++ )
-        {
-            lastfd = -1;
-            switch (i)
-            {
-            case 0:             /* first pass, no alteration */
-                if ((lastfd = tryopen(cp)) >= 0 )
-                    goto swci_exit;
-                break;
+      /*
+         /   Attempt to open file for reading.
+       */
+      sfn = cp;
+      for (i = 0;; i++)
+	{
+	  lastfd = -1;
+	  switch (i)
+	    {
+	    case 0:		/* first pass, no alteration */
+	      if ((lastfd = tryopen (cp)) >= 0)
+		goto swci_exit;
+	      break;
 #if !RUNTIME
-            case 1:             /* try with .spt extension */
-                if (!executing && appendext(cp, COMPEXT, namebuf, 0))
-                    if ((lastfd = tryopen(namebuf)) >= 0 )
-                    {
-                        sfn = namebuf;
-                        goto swci_exit;
-                    }
-                break;
-#endif                                  /* !RUNTIME */
+	    case 1:		/* try with .spt extension */
+	      if (!executing && appendext (cp, COMPEXT, namebuf, 0))
+		if ((lastfd = tryopen (namebuf)) >= 0)
+		  {
+		    sfn = namebuf;
+		    goto swci_exit;
+		  }
+	      break;
+#endif /* !RUNTIME */
 
 #if SAVEFILE
-            case 2:             /* try with .spx extension */
-                if (!executing && curfile == 1 && appendext(cp, RUNEXT, namebuf, 0))
-                    if ((lastfd = tryopen(namebuf)) >= 0 )
-                    {
-                        sfn = namebuf;
-                        goto swci_exit;
-                    }
-                break;
-#endif                                  /* SAVEFILE */
-            case 3:
-                /*
-                /   Error opening file, so issue a message and exit
-                */
-                write( STDERRFD, "Can't open ", 11 );
-                write( STDERRFD, cp, length(cp) );
-                wrterr( "" );
-                __exit(1);
-            }
-        }
+	    case 2:		/* try with .spx extension */
+	      if (!executing && curfile == 1
+		  && appendext (cp, RUNEXT, namebuf, 0))
+		if ((lastfd = tryopen (namebuf)) >= 0)
+		  {
+		    sfn = namebuf;
+		    goto swci_exit;
+		  }
+	      break;
+#endif /* SAVEFILE */
+	    case 3:
+	      /*
+	         /   Error opening file, so issue a message and exit
+	       */
+	      write (STDERRFD, "Can't open ", 11);
+	      write (STDERRFD, cp, length (cp));
+	      wrterr ("");
+	      __exit (1);
+	    }
+	}
     }
-    else
-        lastfd = -1;            /* ATTEMPT TO FIX PIPE BUG FOR COPPEN 10-FEB-95 */
+  else
+    lastfd = -1;		/* ATTEMPT TO FIX PIPE BUG FOR COPPEN 10-FEB-95 */
 
 #if USEFD0FD1
-    sfn = "stdin";
+  sfn = "stdin";
 
-    if ( readshell0 )
+  if (readshell0)
     {
-        if (!executing && filecnt)
-        {
-            wrterr( "No END statement found in source file(s)." );   /* V1.16 */
-            __exit(1);
-        }
-        close(0);
-        clrbuf();
-        dup( originp );                 /* returns 0 */
-        readshell0 = 0;                 /* only do this once */
+      if (!executing && filecnt)
+	{
+	  wrterr ("No END statement found in source file(s).");	/* V1.16 */
+	  __exit (1);
+	}
+      close (0);
+      clrbuf ();
+      dup (originp);		/* returns 0 */
+      readshell0 = 0;		/* only do this once */
 #if WINNT
-        if ( cindev( 0 ) == 0 )         /* Test for character input */
-            getrdiob()->flg1 |= IO_CIN;
-        else
-            getrdiob()->flg1 &= ~IO_CIN;
-#endif               /* WINNT */
-        lastfd = 0;
+      if (cindev (0) == 0)	/* Test for character input */
+	getrdiob ()->flg1 |= IO_CIN;
+      else
+	getrdiob ()->flg1 &= ~IO_CIN;
+#endif /* WINNT */
+      lastfd = 0;
     }
 
-#endif                                  /* !USEFD0FD1 */
-    /*
-    /  Control comes here after all files specified on the command line
-    /  have been read.
-    /
-    /  FD 0 remains attached to the last file that returned an EOF, and
-    /  should continue to return EOFs.
-    */
+#endif /* !USEFD0FD1 */
+  /*
+     /  Control comes here after all files specified on the command line
+     /  have been read.
+     /
+     /  FD 0 remains attached to the last file that returned an EOF, and
+     /  should continue to return EOFs.
+   */
 swci_exit:
 #if !USEFD0FD1
-    setrdfd(lastfd);
+  setrdfd (lastfd);
 #endif
-    return lastfd;
+  return lastfd;
 }
 
 
@@ -205,15 +206,17 @@ swci_exit:
         Used before EXIT("cmd") and HOST(1,"cmd")
 
 */
-void save0()
+void
+save0 ()
 {
 #if USEFD0FD1
-    if ((save_fd0 = dup( 0 )) >= 0) {
-        close( 0 );
-        clrbuf();
-        dup( originp );
+  if ((save_fd0 = dup (0)) >= 0)
+    {
+      close (0);
+      clrbuf ();
+      dup (originp);
     }
-#endif                                  /* USEFD0FD1 */
+#endif /* USEFD0FD1 */
 }
 
 
@@ -225,16 +228,18 @@ void save0()
         Used after EXIT("cmd") and HOST(1,"cmd")
 
 */
-void restore0()
+void
+restore0 ()
 {
 #if USEFD0FD1
-    if (save_fd0 >= 0) {
-        close( 0 );
-        clrbuf();
-        dup( save_fd0 );
-        close( save_fd0 );              /* 1.13 for HOST(1,"cmd") */
+  if (save_fd0 >= 0)
+    {
+      close (0);
+      clrbuf ();
+      dup (save_fd0);
+      close (save_fd0);		/* 1.13 for HOST(1,"cmd") */
     }
-#endif                                  /* USEFD0FD1 */
+#endif /* USEFD0FD1 */
 }
 
 
@@ -244,22 +249,23 @@ void restore0()
     tryopen - try to open file for swcinp.
     returns -1 if fails, else file descriptor >= 0
 */
-int tryopen(cp)
-char *cp;
+int
+tryopen (cp)
+     char *cp;
 {
-    int fd;
-    if ( (fd = spit_open( cp, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
-                          IO_OPEN_IF_EXISTS )) >= 0 )
+  int fd;
+  if ((fd = spit_open (cp, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
+		       IO_OPEN_IF_EXISTS)) >= 0)
     {
 #if WINNT
-        if ( cindev( fd ) == 0 )                /* Test for character input */
-            getrdiob()->flg1 |= IO_CIN;
-        else
-            getrdiob()->flg1 &= ~IO_CIN;
-#endif               /* WINNT */
-        return fd;
+      if (cindev (fd) == 0)	/* Test for character input */
+	getrdiob ()->flg1 |= IO_CIN;
+      else
+	getrdiob ()->flg1 &= ~IO_CIN;
+#endif /* WINNT */
+      return fd;
     }
-    return -1;
+  return -1;
 }
 
 
@@ -279,40 +285,40 @@ char *cp;
 */
 
 
-char *pathlast( path )
-
-char    *path;
+char *
+pathlast (path)
+     char *path;
 
 {
-    char        *cp, c;
-    int         len;
+  char *cp, c;
+  int len;
 
-    /*
-    /   Scan the path from right-to-left looking for a slash.  Stop when
-    /   the front of the path is reached.
-    */
-    len = length(path);
-    cp = path + len;
+  /*
+     /   Scan the path from right-to-left looking for a slash.  Stop when
+     /   the front of the path is reached.
+   */
+  len = length (path);
+  cp = path + len;
 
-    /*
-    /   Loop either terminated by finding a slash or hitting the front
-    /   of the path.  If found a slash, the last component starts one
-    /   position to the right.
-    */
-    while( len--)
+  /*
+     /   Loop either terminated by finding a slash or hitting the front
+     /   of the path.  If found a slash, the last component starts one
+     /   position to the right.
+   */
+  while (len--)
     {
-        c = *--cp;
-        if (c == FSEP
+      c = *--cp;
+      if (c == FSEP
 #if WINNT
-                || c == FSEP2 || c == ':'
-#endif               /* WINNT */
-           )
-        {
-            ++cp;
-            break;
-        }
+	  || c == FSEP2 || c == ':'
+#endif /* WINNT */
+	)
+	{
+	  ++cp;
+	  break;
+	}
     }
-    return cp;
+  return cp;
 }
 
 #if !(RUNTIME)
@@ -329,45 +335,49 @@ char    *path;
  *         >0  - Success, length of name
  *         0   - Failure
  */
-int appendext(path, ext, result, force)
-char *path, *ext, *result;
-int  force;
+int
+appendext (path, ext, result, force)
+     char *path, *ext, *result;
+     int force;
 {
-    register char *p, *q, *r;
+  register char *p, *q, *r;
 
-    p = result;
-    q = pathlast(path);
-    r = (char *) 0;
-    do {
-        if (path >= q && *path == EXT)
-            r = p;
-    } while ((*p++ = *path++) != 0);
-
-    p--;
-    if ( r != (char *) 0)
+  p = result;
+  q = pathlast (path);
+  r = (char *) 0;
+  do
     {
-        if ( force )
-            p = r;                                      /* copy over old extension */
-        else
-            return 0;                           /* no force but extension present */
+      if (path >= q && *path == EXT)
+	r = p;
+    }
+  while ((*p++ = *path++) != 0);
+
+  p--;
+  if (r != (char *) 0)
+    {
+      if (force)
+	p = r;			/* copy over old extension */
+      else
+	return 0;		/* no force but extension present */
     }
 
-    p = mystrcpy(p, ext);
-    return p - result;
+  p = mystrcpy (p, ext);
+  return p - result;
 }
-#endif          /* !(RUNTIME) */
+#endif /* !(RUNTIME) */
 
 /*
  * mystrcpy(p,q)  - copy string q to string p.  Return pointer to '\0' in p;
  *
  * Note that this definition is NOT the same as standard strcpy.
  */
-char *mystrcpy(p, q)
-register char *p, *q;
+char *
+mystrcpy (p, q)
+     register char *p, *q;
 {
-    while ( (*p++ = *q++) != 0 )
-        ;
-    return p - 1;
+  while ((*p++ = *q++) != 0)
+    ;
+  return p - 1;
 }
 
 
@@ -375,23 +385,24 @@ register char *p, *q;
         Return length of string argument.
         Identical to C strlen function.
 */
-int length(cp)
-char *cp;
+int
+length (cp)
+     char *cp;
 {
-    register char *p = cp;
-    while (*p++)
-        ;
-    return p - cp - 1;
+  register char *p = cp;
+  while (*p++)
+    ;
+  return p - cp - 1;
 }
 
 
-int mystrncpy( p, q, i)
-register char *p, *q;
-int i;
+int
+mystrncpy (p, q, i)
+     register char *p, *q;
+     int i;
 {
-    register int j = i;
-    while (j--)
-        *p++ = *q++;
-    return i;
+  register int j = i;
+  while (j--)
+    *p++ = *q++;
+  return i;
 }
-

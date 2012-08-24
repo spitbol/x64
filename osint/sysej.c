@@ -36,7 +36,7 @@ This file is part of Macro SPITBOL.
 
 #if EXTFUN
 unsigned char FAR *bufp;
-#endif                                  /* EXTFUN */
+#endif /* EXTFUN */
 
 
 /*
@@ -50,41 +50,42 @@ unsigned char FAR *bufp;
         All files on the chain are closed and buffers flushed.
 */
 
-void close_all(chb)
-
-register struct chfcb *chb;
+void
+close_all (chb)
+     register struct chfcb *chb;
 
 {
-    while( chb != 0 )
+  while (chb != 0)
     {
-        osclose( MK_MP(MK_MP(chb->fcp, struct fcblk *)->iob, struct ioblk *) );
-        chb = MK_MP(chb->nxt, struct chfcb *);
+      osclose (MK_MP (MK_MP (chb->fcp, struct fcblk *)->iob, struct ioblk *));
+      chb = MK_MP (chb->nxt, struct chfcb *);
     }
 }
 
 
 
-void zysej()
+void
+zysej ()
 {
 #if HOST386
-    termhost();
-#endif                                  /* HOST386 */
+  termhost ();
+#endif /* HOST386 */
 
-    if (!in_gbcol) {            /* Only if not mid-garbage collection */
-        close_all( XL( struct chfcb * ) );
+  if (!in_gbcol)
+    {				/* Only if not mid-garbage collection */
+      close_all (XL (struct chfcb *));
 
 #if EXTFUN
-        scanef();                                       /* prepare to scan for external functions */
-        while (nextef(&bufp, 1))        /* perform closing callback to some               */
-            ;
-#endif                                  /* EXTFUN */
+      scanef ();		/* prepare to scan for external functions */
+      while (nextef (&bufp, 1))	/* perform closing callback to some               */
+	;
+#endif /* EXTFUN */
 
     }
-    /*
-    /   Pass &CODE to function __exit.  Don't call standard exit function,
-    /   because of its association with the stdio package.
-    */
-    __exit( WB(int) );
+  /*
+     /   Pass &CODE to function __exit.  Don't call standard exit function,
+     /   because of its association with the stdio package.
+   */
+  __exit (WB (int));
 
 }
-

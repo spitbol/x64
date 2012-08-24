@@ -35,25 +35,26 @@ This file is part of Macro SPITBOL.
                 caller should call with the lowercase version of var.  We
                 will try the uppercase version automatically.
 */
-void initpath(name)
-char *name;
+void
+initpath (name)
+     char *name;
 {
-    char        ucname[32];             /* only called with "snolib" and "path" */
-    int         i;
+  char ucname[32];		/* only called with "snolib" and "path" */
+  int i;
 
-    pathptr = findenv(name,length(name));
-    if (!pathptr)
+  pathptr = findenv (name, length (name));
+  if (!pathptr)
     {
-        for (i = 0; ; i++)
-            if ((ucname[i] = uppercase(name[i])) == '\0')
-                break;
-        pathptr = findenv(ucname, length(ucname));
+      for (i = 0;; i++)
+	if ((ucname[i] = uppercase (name[i])) == '\0')
+	  break;
+      pathptr = findenv (ucname, length (ucname));
     }
 
 #if UNIX
-    /* skip leading paren if present */
-    if (pathptr && *pathptr == '(')
-        pathptr++;
+  /* skip leading paren if present */
+  if (pathptr && *pathptr == '(')
+    pathptr++;
 #endif
 }
 
@@ -62,44 +63,45 @@ char *name;
    trypath - form a file name in file by concatenating name onto the
    next path element.
 */
-int trypath(name,file)
-char *name, *file;
+int
+trypath (name, file)
+     char *name, *file;
 {
-    char c;
+  char c;
 
-    /* return 0 if no search path or fully-qualified name */
-    if (pathptr == (char *)0L || name[0] == FSEP
+  /* return 0 if no search path or fully-qualified name */
+  if (pathptr == (char *) 0L || name[0] == FSEP
 #ifdef FSEP2
-            || name[0] == FSEP2
+      || name[0] == FSEP2
 #endif
-       )
-        return 0;
+    )
+    return 0;
 
-    while (*pathptr == ' ')    /* Skip initial blanks */
-        pathptr++;
-    if (!*pathptr)
-        return 0;
+  while (*pathptr == ' ')	/* Skip initial blanks */
+    pathptr++;
+  if (!*pathptr)
+    return 0;
 
-    do
+  do
     {
-        c = (*file++ = *pathptr++);
+      c = (*file++ = *pathptr++);
     }
 #ifdef PSEP2
-    while (c && c != PSEP && c != PSEP2 && c != ')' )
+  while (c && c != PSEP && c != PSEP2 && c != ')')
 #else
-    while (c && c != PSEP)
+  while (c && c != PSEP)
 #endif
-        ;
+  ;
 
-    if (!c)                     /* If exhausted the string, */
-        pathptr = (char *)0L;     /* clear pathptr so kick out on next call */
+  if (!c)			/* If exhausted the string, */
+    pathptr = (char *) 0L;	/* clear pathptr so kick out on next call */
 
-    file--;
-    *file++ = FSEP;
+  file--;
+  *file++ = FSEP;
 
-    while ((*file++ = *name++) != 0)
-        ;
+  while ((*file++ = *name++) != 0)
+    ;
 
-    *file = '\0';
-    return 1;
+  *file = '\0';
+  return 1;
 }

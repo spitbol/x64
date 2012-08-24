@@ -17,34 +17,13 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/* ------------------------- system.h ------------------------------- */
+
 /*
-    exit()
+   Define system type.
+ */
 
-    This is a "fake" exit() function that prevents the linker from linking
-    in the standard C exit() function with all the associated stdio library
-    functions.
-*/
-#include "port.h"
-#if !VCC
-void
-exit (status)
-     int status;
-{
-}
-#endif
+#define gcc32  1
+#define gcc64  0
+#define gcc    (gcc32 | gcc64)
 
-extern void _exit Params ((int status));
-#if WINNT | AIX
-extern void exit_custom Params ((int code));
-#endif
-
-void
-__exit (code)
-     int code;
-{
-#if WINNT | AIX
-  exit_custom (code);		/* Perform system specific shutdown */
-#endif
-
-  _exit (code);
-}

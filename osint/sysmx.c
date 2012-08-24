@@ -30,9 +30,8 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-zysmx()
-
+zysmx ()
 {
-    SET_WA( maxsize );
-    return NORMAL_RETURN;
+  SET_WA (maxsize);
+  return NORMAL_RETURN;
 }

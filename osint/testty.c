@@ -36,27 +36,27 @@ This file is part of Macro SPITBOL.
 
 #if UNIX
 #include <sys/stat.h>
-struct  stat    statbuf;
+struct stat statbuf;
 #if LINUX
 #include <termios.h>
 struct termios termiosbuf;
 #else
 #include <sgtty.h>
-struct  sgttyb  sgtbuf;
+struct sgttyb sgtbuf;
 #endif
 #endif
 
-int testty( fd )
-
-int     fd;
+int
+testty (fd)
+     int fd;
 
 {
 #if WINNT
-    return  chrdev( fd ) ? 0 : -1;
+  return chrdev (fd) ? 0 : -1;
 #else
-    if (fstat(fd, &statbuf))
-        return -1;
-    return      S_ISCHR(statbuf.st_mode) ? 0 : -1;
+  if (fstat (fd, &statbuf))
+    return -1;
+  return S_ISCHR (statbuf.st_mode) ? 0 : -1;
 #endif
 }
 
@@ -74,32 +74,34 @@ int     fd;
 
 */
 
-void ttyraw( fd, flag )
-
-int     fd;
-int     flag;
+void
+ttyraw (fd, flag)
+     int fd;
+     int flag;
 
 {
-    /* read current params      */
+  /* read current params      */
 #if WINNT
-    rawmode( fd, flag ? -1 : 0 );               /* Set or clear raw mode*/
+  rawmode (fd, flag ? -1 : 0);	/* Set or clear raw mode */
 #elif LINUX
-    if ( testty( fd ) ) return;     /* exit if not tty  */
-    tcgetattr( fd, &termiosbuf );
-    if ( flag )
-        termiosbuf.c_lflag &= ~(ICANON|ECHO); /* Setting      */
-    else
-        termiosbuf.c_lflag |= (ICANON|ECHO);    /* Clearing     */
+  if (testty (fd))
+    return;			/* exit if not tty  */
+  tcgetattr (fd, &termiosbuf);
+  if (flag)
+    termiosbuf.c_lflag &= ~(ICANON | ECHO);	/* Setting      */
+  else
+    termiosbuf.c_lflag |= (ICANON | ECHO);	/* Clearing     */
 
-    tcsetattr( fd, TCSANOW, &termiosbuf );     /* store device flags   */
+  tcsetattr (fd, TCSANOW, &termiosbuf);	/* store device flags   */
 #else
-    if ( testty( fd ) ) return;         /* exit if not tty      */
-    ioctl( fd, TIOCGETP, &sgtbuf );
-    if ( flag )
-        sgtbuf.sg_flags |= RAW_BIT;     /* Setting              */
-    else
-        sgtbuf.sg_flags &= ~RAW_BIT;    /* Clearing             */
+  if (testty (fd))
+    return;			/* exit if not tty      */
+  ioctl (fd, TIOCGETP, &sgtbuf);
+  if (flag)
+    sgtbuf.sg_flags |= RAW_BIT;	/* Setting              */
+  else
+    sgtbuf.sg_flags &= ~RAW_BIT;	/* Clearing             */
 
-    ioctl( fd, TIOCSETP, &sgtbuf );             /* store device flags   */
+  ioctl (fd, TIOCSETP, &sgtbuf);	/* store device flags   */
 #endif
 }

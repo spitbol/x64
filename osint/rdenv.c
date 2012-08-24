@@ -39,34 +39,35 @@ This file is part of Macro SPITBOL.
     Find environment variable vq of length vn.  Return
     pointer to value (just past '='), or 0 if not found.
 */
-char *findenv( vq, vn )
-char *vq;
-int  vn;
+char *
+findenv (vq, vn)
+     char *vq;
+     int vn;
 {
 #if WINNT | UNIX
-    char savech;
-    char *p;
+  char savech;
+  char *p;
 
-    savech = make_c_str(&vq[vn]);
-    p = (char *)getenv(vq);                     /* use library lookup routine */
-    unmake_c_str(&vq[vn], savech);
-    return p;
+  savech = make_c_str (&vq[vn]);
+  p = (char *) getenv (vq);	/* use library lookup routine */
+  unmake_c_str (&vq[vn], savech);
+  return p;
 #endif
 
 }
 
-rdenv( varname, result )
-register struct scblk *varname, *result;
+rdenv (varname, result)
+     register struct scblk *varname, *result;
 {
-    register char *p;
+  register char *p;
 
 
-    if ( (p = findenv(varname->str, varname->len)) == 0 )
-        return -1;
+  if ((p = findenv (varname->str, varname->len)) == 0)
+    return -1;
 
-    cpys2sc(p, result, TSCBLK_LENGTH);
+  cpys2sc (p, result, TSCBLK_LENGTH);
 
-    return 0;
+  return 0;
 }
 
 /* make a string into a C string by changing the last character to null,
@@ -74,23 +75,25 @@ register struct scblk *varname, *result;
  * If the old character was already null, no change is made, so that
  * this works if passed a read-only C-string.
  */
-char make_c_str(p)
-char *p;
+char
+make_c_str (p)
+     char *p;
 {
-    char rtn;
+  char rtn;
 
-    rtn = *p;
-    if (rtn)
-        *p = 0;
-    return rtn;
+  rtn = *p;
+  if (rtn)
+    *p = 0;
+  return rtn;
 }
 
 
 /* Intel compiler bug? */
-void unmake_c_str(p, savech)
-char *p;
-char savech;
+void
+unmake_c_str (p, savech)
+     char *p;
+     char savech;
 {
-    if (savech)
-        *p = savech;
+  if (savech)
+    *p = savech;
 }

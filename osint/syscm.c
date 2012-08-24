@@ -44,24 +44,25 @@ This file is part of Macro SPITBOL.
 #if ALTCOMP
 long *kvcom_ptr;
 
-zyscm()
+zyscm ()
 {
-    register word result;
+  register word result;
 
-    if (!kvcom_ptr)                                                     /* Cheap optimization to speed up */
-        kvcom_ptr = get_data_offset(kvcom,long *);      /* &COMPARE consultation */
+  if (!kvcom_ptr)		/* Cheap optimization to speed up */
+    kvcom_ptr = get_data_offset (kvcom, long *);	/* &COMPARE consultation */
 
-    result = gencmp(XL(char *), XR(char *), WA(word), WB(word), *kvcom_ptr);
+  result =
+    gencmp (XL (char *), XR (char *), WA (word), WB (word), *kvcom_ptr);
 
-    SET_XL(0);
+  SET_XL (0);
 
-    if (result == 0x80000000)
-        return EXIT_1;
-    else if (result == 0)
-        return NORMAL_RETURN;
-    else if (result < 0)
-        return EXIT_2;
-    else
-        return EXIT_3;
+  if (result == 0x80000000)
+    return EXIT_1;
+  else if (result == 0)
+    return NORMAL_RETURN;
+  else if (result < 0)
+    return EXIT_2;
+  else
+    return EXIT_3;
 }
-#endif                                  /* ALTCOMP */
+#endif /* ALTCOMP */

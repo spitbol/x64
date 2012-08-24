@@ -38,32 +38,34 @@ This file is part of Macro SPITBOL.
 #if LINUX
 int errno;
 #else
-extern int errno; /* system error number */
+extern int errno;		/* system error number */
 #endif
 #endif
 
-extern double inf;      /* infinity */
+extern double inf;		/* infinity */
 
 /*
    f_atn - arctangent
  */
-double f_atn(ra)
-double ra;
+double
+f_atn (ra)
+     double ra;
 {
-    return atan(ra);
+  return atan (ra);
 }
 
 
 /*
    f_chp - chop
  */
-double f_chp(ra)
-double ra;
+double
+f_chp (ra)
+     double ra;
 {
-    if (ra >= 0.0)
-        return floor(ra);
-    else
-        return ceil(ra);
+  if (ra >= 0.0)
+    return floor (ra);
+  else
+    return ceil (ra);
 }
 
 
@@ -71,10 +73,11 @@ double ra;
 /*
    f_cos - cosine
  */
-double f_cos(ra)
-double ra;
+double
+f_cos (ra)
+     double ra;
 {
-    return cos(ra);
+  return cos (ra);
 }
 
 
@@ -82,13 +85,14 @@ double ra;
 /*
    f_etx - e to the x
  */
-double f_etx(ra)
-double ra;
+double
+f_etx (ra)
+     double ra;
 {
-    double result;
-    errno = 0;
-    result = exp(ra);
-    return errno ? inf : result;
+  double result;
+  errno = 0;
+  result = exp (ra);
+  return errno ? inf : result;
 }
 
 
@@ -96,13 +100,14 @@ double ra;
 /*
    f_lnf - natural log
  */
-double f_lnf(ra)
-double ra;
+double
+f_lnf (ra)
+     double ra;
 {
-    double result;
-    errno = 0;
-    result = log(ra);
-    return errno ? inf : result;
+  double result;
+  errno = 0;
+  result = log (ra);
+  return errno ? inf : result;
 }
 
 
@@ -110,33 +115,36 @@ double ra;
 /*
    f_sin - sine
  */
-double f_sin(ra)
-double ra;
+double
+f_sin (ra)
+     double ra;
 {
-    return sin(ra);
+  return sin (ra);
 }
 
 
 /*
    f_sqr - square root  (range checked by caller)
  */
-double f_sqr(ra)
-double ra;
+double
+f_sqr (ra)
+     double ra;
 {
-    return sqrt(ra);
+  return sqrt (ra);
 }
 
 
 /*
    f_tan - tangent
  */
-double f_tan(ra)
-double ra;
+double
+f_tan (ra)
+     double ra;
 {
-    double result;
-    errno = 0;
-    result = tan(ra);
-    return errno ? inf : result;
+  double result;
+  errno = 0;
+  result = tan (ra);
+  return errno ? inf : result;
 }
 
-#endif                                  /* FLOAT & !MATHHDWR */
+#endif /* FLOAT & !MATHHDWR */

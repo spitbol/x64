@@ -29,10 +29,10 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 
-zysul()
+zysul ()
 {
 #if EXTFUN
-    unldef(XR(struct efblk *));
-#endif                                  /* EXTFUN */
-    return NORMAL_RETURN;
+  unldef (XR (struct efblk *));
+#endif /* EXTFUN */
+  return NORMAL_RETURN;
 }

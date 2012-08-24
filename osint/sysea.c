@@ -40,60 +40,64 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-static char *eacpy Params((char *s1, char *s2, int n));
+static char *eacpy Params ((char *s1, char *s2, int n));
 
-static char *eacpy(s1, s2, n)
-char *s1, *s2;
-int n;
+static char *
+eacpy (s1, s2, n)
+     char *s1, *s2;
+     int n;
 {
-    char *s0 = s1+n;
+  char *s0 = s1 + n;
 
-    while (n--)
-        *s1++ = *s2++;
-    return s0;
+  while (n--)
+    *s1++ = *s2++;
+  return s0;
 }
 
 /*
  * Error stage states
  */
-enum stage {
-    STGIC=0,                    /* Initial compile                              */
-    STGXC,                              /* Execution compile (CODE)                     */
-    STGEV,                              /* Expression eval during execution             */
-    STGXT,                              /* Execution time                               */
-    STGCE,                              /* Initial compile after scanning END line      */
-    STGXE,                              /* Execute time compile after scanning END line */
-    STGEE,                              /* EVAL evaluating expression                   */
-    STGNO                               /* Number of codes                              */
+enum stage
+{
+  STGIC = 0,			/* Initial compile                              */
+  STGXC,			/* Execution compile (CODE)                     */
+  STGEV,			/* Expression eval during execution             */
+  STGXT,			/* Execution time                               */
+  STGCE,			/* Initial compile after scanning END line      */
+  STGXE,			/* Execute time compile after scanning END line */
+  STGEE,			/* EVAL evaluating expression                   */
+  STGNO				/* Number of codes                              */
 };
 
-zysea()
+zysea ()
 {
-    register struct scblk *fnscblk = XL(struct scblk *);
-    register char *p;
+  register struct scblk *fnscblk = XL (struct scblk *);
+  register char *p;
 
 
-    /* Display file name if present */
-    if (fnscblk->len) {
-        p = ptscblk->str;
-        p = eacpy(p, fnscblk->str, (int)fnscblk->len);
-        /* Display line number if present */
-        if (WC(unsigned int)) {
-            *p++ = '(';
-            p += stcu_d(p, WC(unsigned int), 16);
-            /* Display character position if present */
-            if (WB(unsigned int)) {
-                *p++ = ',';
-                p += stcu_d(p, WB(unsigned int)+1, 16);
-            }
-            *p++ = ')';
-        }
-        p = eacpy(p, " : ", 3);
-        ptscblk->len = p - ptscblk->str;
-        SET_XR( ptscblk );
-        return NORMAL_RETURN;
+  /* Display file name if present */
+  if (fnscblk->len)
+    {
+      p = ptscblk->str;
+      p = eacpy (p, fnscblk->str, (int) fnscblk->len);
+      /* Display line number if present */
+      if (WC (unsigned int))
+	{
+	  *p++ = '(';
+	  p += stcu_d (p, WC (unsigned int), 16);
+	  /* Display character position if present */
+	  if (WB (unsigned int))
+	    {
+	      *p++ = ',';
+	      p += stcu_d (p, WB (unsigned int) + 1, 16);
+	    }
+	  *p++ = ')';
+	}
+      p = eacpy (p, " : ", 3);
+      ptscblk->len = p - ptscblk->str;
+      SET_XR (ptscblk);
+      return NORMAL_RETURN;
     }
-    SET_XR(0L);
-    return NORMAL_RETURN;       /* Other errors be processed normally */
+  SET_XR (0L);
+  return NORMAL_RETURN;		/* Other errors be processed normally */
 }
-

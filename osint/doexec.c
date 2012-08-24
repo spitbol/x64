@@ -47,52 +47,52 @@ This file is part of Macro SPITBOL.
 #endif
 
 #if UNIX
-char    *getshell();
-char    *pathlast();
-#endif                                  /* UNIX */
+char *getshell ();
+char *pathlast ();
+#endif /* UNIX */
 
-void doexec( scbptr )
-
-struct  scblk   *scbptr;
+void
+doexec (scbptr)
+     struct scblk *scbptr;
 
 {
-    word        length;
-    char        savech;
-    char        *cp;
+  word length;
+  char savech;
+  char *cp;
 #if UNIX
-    extern char **environ;
-    char        *shellpath;
-#endif                                  /* UNIX */
-    length      = scbptr->len;
-    cp  = scbptr->str;
+  extern char **environ;
+  char *shellpath;
+#endif /* UNIX */
+  length = scbptr->len;
+  cp = scbptr->str;
 
-    /*
-    /   Instead of copying the command string, temporarily save the character
-    /   following the string, replace it with a NUL, execute the command, and
-    /   then restore the original character.
-    */
-    savech      = make_c_str(&cp[length]);
+  /*
+     /   Instead of copying the command string, temporarily save the character
+     /   following the string, replace it with a NUL, execute the command, and
+     /   then restore the original character.
+   */
+  savech = make_c_str (&cp[length]);
 
 #if WINNT
-    /* system returns 0 if can run program */
-    mallocSys = 0;      /* Intel library bug */
-    if (dosys( cp, "" ) == 0)   /* Can't chain in DOS */
-    {   /* Have to run it, then exit */
-        SET_XL((struct chfcb *)0);
-        SET_WB(0);
-        SET_WA(0);
-        zysej();                        /* Terminate SPITBOL */
+  /* system returns 0 if can run program */
+  mallocSys = 0;		/* Intel library bug */
+  if (dosys (cp, "") == 0)	/* Can't chain in DOS */
+    {				/* Have to run it, then exit */
+      SET_XL ((struct chfcb *) 0);
+      SET_WB (0);
+      SET_WA (0);
+      zysej ();			/* Terminate SPITBOL */
     }
 #endif
 
 #if UNIX
-    /*
-    /   Use function getshell to get shell's path and function lastpath
-    /   to get the last component of the shell's path.
-    */
-    shellpath = getshell();
-    execle( shellpath, pathlast( shellpath ), "-c", cp, (char *)NULL, environ );        /* no return */
-#endif                                  /* UNIX */
+  /*
+     /   Use function getshell to get shell's path and function lastpath
+     /   to get the last component of the shell's path.
+   */
+  shellpath = getshell ();
+  execle (shellpath, pathlast (shellpath), "-c", cp, (char *) NULL, environ);	/* no return */
+#endif /* UNIX */
 
-    unmake_c_str(&cp[length], savech);
+  unmake_c_str (&cp[length], savech);
 }

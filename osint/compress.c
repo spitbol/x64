@@ -48,9 +48,9 @@ This file is part of Macro SPITBOL.
 #define max_code (MAX_VALUE - 1)
 
 #if LZWBITS == 14
-#define table_size 18041                /* The string table size needs to be a  */
-#endif                                                  /* prime number that is somewhat larger */
-#if LZWBITS == 13               /* than 2**LZWBITS       */
+#define table_size 18041	/* The string table size needs to be a  */
+#endif /* prime number that is somewhat larger */
+#if LZWBITS == 13		/* than 2**LZWBITS       */
 #define table_size 9029
 #endif
 #if LZWBITS == 12
@@ -75,10 +75,11 @@ This file is part of Macro SPITBOL.
 #define decode_size (4096*sizeof(unsigned char))
 #define buff_size (2048*sizeof(unsigned char))
 
-static unsigned int input_code Params((word fd));
-static void output_code Params((unsigned int code));
-static unsigned char *decode_string Params((unsigned char *buffer, unsigned int code));
-static int find_match Params((int hash_prefix, unsigned int hash_character));
+static unsigned int input_code Params ((word fd));
+static void output_code Params ((unsigned int code));
+static unsigned char *decode_string
+Params ((unsigned char *buffer, unsigned int code));
+static int find_match Params ((int hash_prefix, unsigned int hash_character));
 
 /*
 / Memory needed for tables for expansion (EMEMORY) and compression (CMEMORY)
@@ -89,47 +90,48 @@ static int find_match Params((int hash_prefix, unsigned int hash_character));
 /*
 / doexpand - initialize or terminate expansion
 */
-int doexpand(bits, freeptr, size)
-int     bits;
-char    *freeptr;
-uword size;
+int
+doexpand (bits, freeptr, size)
+     int bits;
+     char *freeptr;
+     uword size;
 {
-    if (!(bits | expanding))    /* If not expanding, nothing to do */
-        return 0;
+  if (!(bits | expanding))	/* If not expanding, nothing to do */
+    return 0;
 
-    if (!bits && expanding)             /* Turn off expansion */
+  if (!bits && expanding)	/* Turn off expansion */
     {
-        if (extra)
-            sbrk(-extra);               /* release any extra memory acquired */
-        extra = 0;
-        expanding = 0;
-        return 0;
+      if (extra)
+	sbrk (-extra);		/* release any extra memory acquired */
+      extra = 0;
+      expanding = 0;
+      return 0;
     }
 
-    if (bits == LZWBITS)          /* turn on expansion */
+  if (bits == LZWBITS)		/* turn on expansion */
     {
-        if (EMEMORY <= size)
-            extra = 0;  /* no extra memory needed */
-        else
-        {
-            extra = EMEMORY - size;     /* extra memory needed */
-            if ((char *)sbrk((uword)extra) == (char *) -1)
-                return 1;                       /* not available */
-        }
-        expanding = bits;
+      if (EMEMORY <= size)
+	extra = 0;		/* no extra memory needed */
+      else
+	{
+	  extra = EMEMORY - size;	/* extra memory needed */
+	  if ((char *) sbrk ((uword) extra) == (char *) -1)
+	    return 1;		/* not available */
+	}
+      expanding = bits;
 
-        /* initialize for expansion */
-        prefix_code = (short unsigned int *)freeptr;
-        append_character = (unsigned char *)prefix_code + prefix_size;
-        decode_stack = (unsigned char *)append_character + append_size;
-        buffer = decode_stack + decode_size;
-        bufcnt = 0;                             /* buffer is empty */
-        bit_buffer = 0L;
-        bit_count = 0;
-        return 0;
+      /* initialize for expansion */
+      prefix_code = (short unsigned int *) freeptr;
+      append_character = (unsigned char *) prefix_code + prefix_size;
+      decode_stack = (unsigned char *) append_character + append_size;
+      buffer = decode_stack + decode_size;
+      bufcnt = 0;		/* buffer is empty */
+      bit_buffer = 0L;
+      bit_count = 0;
+      return 0;
     }
 
-    return 1;                   /* failure */
+  return 1;			/* failure */
 
 }
 
@@ -137,52 +139,55 @@ uword size;
 /*
         The following two routines are used to output variable length codes.
 */
-static unsigned int input_code(fd)
-word fd;
+static unsigned int
+input_code (fd)
+     word fd;
 {
-    unsigned int return_value;
+  unsigned int return_value;
 
-    while (bit_count <= 24)
+  while (bit_count <= 24)
     {
-        if (bufcnt <= 0)
-        {
-            bufcnt = read( fd, buffer, buff_size);
-            if (bufcnt < 0)
-                return MAX_VALUE;
-            if (!bufcnt) {                              /* provide 0 at EOF until ... */
-                *buffer = 0;                    /* ... bit_buffer is shifted out */
-                bufcnt++;
-            }
-            bufptr = buffer;
-        }
-        bit_buffer |= (unsigned long)*bufptr++ << (24-bit_count);
-        bufcnt--;
-        bit_count += 8;
+      if (bufcnt <= 0)
+	{
+	  bufcnt = read (fd, buffer, buff_size);
+	  if (bufcnt < 0)
+	    return MAX_VALUE;
+	  if (!bufcnt)
+	    {			/* provide 0 at EOF until ... */
+	      *buffer = 0;	/* ... bit_buffer is shifted out */
+	      bufcnt++;
+	    }
+	  bufptr = buffer;
+	}
+      bit_buffer |= (unsigned long) *bufptr++ << (24 - bit_count);
+      bufcnt--;
+      bit_count += 8;
     }
-    return_value = (unsigned int)(bit_buffer >> (32-LZWBITS));
-    bit_buffer <<= LZWBITS;
-    bit_count -= LZWBITS;
-    return return_value;
+  return_value = (unsigned int) (bit_buffer >> (32 - LZWBITS));
+  bit_buffer <<= LZWBITS;
+  bit_count -= LZWBITS;
+  return return_value;
 }
 
-static void output_code(code)
-unsigned int code;
+static void
+output_code (code)
+     unsigned int code;
 {
-    bit_buffer |= (unsigned long)code << (32-LZWBITS-bit_count);
-    bit_count += LZWBITS;
+  bit_buffer |= (unsigned long) code << (32 - LZWBITS - bit_count);
+  bit_count += LZWBITS;
 
-    while (bit_count >= 8)
+  while (bit_count >= 8)
     {
-        if (bufcnt >= buff_size)
-        {
-            wrtaout((unsigned char FAR *) buffer, bufcnt);
-            bufptr = buffer;
-            bufcnt = 0;
-        }
-        *bufptr++ = (unsigned char)(bit_buffer >> 24);
-        bufcnt++;
-        bit_buffer <<= 8;
-        bit_count -= 8;
+      if (bufcnt >= buff_size)
+	{
+	  wrtaout ((unsigned char FAR *) buffer, bufcnt);
+	  bufptr = buffer;
+	  bufcnt = 0;
+	}
+      *bufptr++ = (unsigned char) (bit_buffer >> 24);
+      bufcnt++;
+      bit_buffer <<= 8;
+      bit_count -= 8;
     }
 }
 
@@ -192,29 +197,30 @@ unsigned int code;
         it in a buffer.  The buffer can then be output in reverse order by
         the expansion program.
 */
-static unsigned char *decode_string(buffer, code)
-unsigned char *buffer;
-unsigned int code;
+static unsigned char *
+decode_string (buffer, code)
+     unsigned char *buffer;
+     unsigned int code;
 {
-    register int i;
+  register int i;
 
-    i = 0;
-    while (code > 255)
+  i = 0;
+  while (code > 255)
     {
-        *buffer++ = append_character[code];
-        code = prefix_code[code];
-        if (i++ >= 4000)
-        {
+      *buffer++ = append_character[code];
+      code = prefix_code[code];
+      if (i++ >= 4000)
+	{
 #if USEQUIT
-            quit(356);
-#else                                   /* USEQUIT */
-            wrterr("Fatal error during save file expansion.");
-            __exit(1);
-#endif                                  /* USEQUIT */
-        }
+	  quit (356);
+#else /* USEQUIT */
+	  wrterr ("Fatal error during save file expansion.");
+	  __exit (1);
+#endif /* USEQUIT */
+	}
     }
-    *buffer = (unsigned char) code;
-    return buffer;
+  *buffer = (unsigned char) code;
+  return buffer;
 }
 
 
@@ -233,77 +239,77 @@ unsigned int code;
     Read data from .spx file.
 */
 int
-expand( fd, startadr, size )
-word    fd;
-unsigned char FAR *startadr;
-uword size;
+expand (fd, startadr, size)
+     word fd;
+     unsigned char FAR *startadr;
+     uword size;
 
 {
-    unsigned char *string;
-    unsigned int character;
-    unsigned int old_code;
-    unsigned int new_code;
-    unsigned int next_code;
+  unsigned char *string;
+  unsigned int character;
+  unsigned int old_code;
+  unsigned int new_code;
+  unsigned int next_code;
 
-    if (!expanding)
-        return rdaout( fd, startadr, size );
+  if (!expanding)
+    return rdaout (fd, startadr, size);
 
-    if (!size)
-        return 0;
+  if (!size)
+    return 0;
 
-    next_code = 256;                                    /* This is the next available code to define    */
-    old_code = input_code(fd);                  /* Read in the first code, initialize the       */
-    character = old_code;                               /* character variable, and send the first       */
-    *startadr++ = old_code;                             /* code to the output file.                                     */
-    size--;
+  next_code = 256;		/* This is the next available code to define    */
+  old_code = input_code (fd);	/* Read in the first code, initialize the       */
+  character = old_code;		/* character variable, and send the first       */
+  *startadr++ = old_code;	/* code to the output file.                                     */
+  size--;
 
-    /*
-    /   This is the main expansin loop.  It reads in characters from the LZW file
-    /   until it sees the special code used to indicate the end of the data.
-    */
-    while ((new_code=input_code(fd)) != MAX_VALUE)
+  /*
+     /   This is the main expansin loop.  It reads in characters from the LZW file
+     /   until it sees the special code used to indicate the end of the data.
+   */
+  while ((new_code = input_code (fd)) != MAX_VALUE)
     {
-        /*
-        /       This code checks for the special STRING+CHARACTER+STRING+CHARACTER+STRING
-        /       case, which generates an undefined code.  It handles it by decoding
-        /       the last code, adding a single character tothe end of the decode string
-        */
-        if (new_code >= next_code)
-        {
-            *decode_stack = character;
-            string = decode_string(decode_stack+1, old_code);
-        }
+      /*
+         /       This code checks for the special STRING+CHARACTER+STRING+CHARACTER+STRING
+         /       case, which generates an undefined code.  It handles it by decoding
+         /       the last code, adding a single character tothe end of the decode string
+       */
+      if (new_code >= next_code)
+	{
+	  *decode_stack = character;
+	  string = decode_string (decode_stack + 1, old_code);
+	}
 
-        /*
-        /       Otherwise we do a straight decode of the new code.
-        */
-        else
-            string = decode_string(decode_stack, new_code);
+      /*
+         /       Otherwise we do a straight decode of the new code.
+       */
+      else
+	string = decode_string (decode_stack, new_code);
 
-        /*
-        /       Now we output the decoded string in reverse order
-        */
-        character = *string;
-        while (string >= decode_stack)
-        {
-            *startadr++ = *string--;
-            size--;
-        }
+      /*
+         /       Now we output the decoded string in reverse order
+       */
+      character = *string;
+      while (string >= decode_stack)
+	{
+	  *startadr++ = *string--;
+	  size--;
+	}
 
-        /*
-        /       Finally, if possible, add a new code to the string table.
-        */
-        if (next_code <= max_code)
-        {
-            prefix_code[next_code] = old_code;
-            append_character[next_code] = character;
-            next_code++;
-        }
-        old_code = new_code;
-        if (next_code > max_code)
-            next_code = 256;                    /* Restart codes when it gets too big */
+      /*
+         /       Finally, if possible, add a new code to the string table.
+       */
+      if (next_code <= max_code)
+	{
+	  prefix_code[next_code] = old_code;
+	  append_character[next_code] = character;
+	  next_code++;
+	}
+      old_code = new_code;
+      if (next_code > max_code)
+	next_code = 256;	/* Restart codes when it gets too big */
     }
-    return (size == 0 ? 0 : -2);
+  return (size == 0 ? 0 : -2);
 }
 
 
@@ -313,28 +319,30 @@ uword size;
         the string is not found, the first available index in the string table is
         returned instead.
 */
-static int find_match(hash_prefix, hash_character)
-int hash_prefix;
-unsigned int hash_character;
+static int
+find_match (hash_prefix, hash_character)
+     int hash_prefix;
+     unsigned int hash_character;
 {
-    int index;
-    int offset;
+  int index;
+  int offset;
 
-    index = (hash_character << HASHING_SHIFT) ^ hash_prefix;
-    if (index == 0)
-        offset = 1;
-    else
-        offset = table_size - index;
+  index = (hash_character << HASHING_SHIFT) ^ hash_prefix;
+  if (index == 0)
+    offset = 1;
+  else
+    offset = table_size - index;
 
-    for (;;)
+  for (;;)
     {
-        if (code_value[index] == -1)
-            return index;
-        if (prefix_code[index] == hash_prefix && append_character[index] == hash_character)
-            return index;
-        index -= offset;
-        if (index < 0)
-            index += table_size;
+      if (code_value[index] == -1)
+	return index;
+      if (prefix_code[index] == hash_prefix
+	  && append_character[index] == hash_character)
+	return index;
+      index -= offset;
+      if (index < 0)
+	index += table_size;
     }
 }
 
@@ -342,53 +350,54 @@ unsigned int hash_character;
 /*
         docompress - initialize and terminate compression
 */
-int docompress(bits, freeptr, size)
-int     bits;
-char    *freeptr;
-uword size;
+int
+docompress (bits, freeptr, size)
+     int bits;
+     char *freeptr;
+     uword size;
 {
-    if (!(bits | compressing))  /* If not compressing, nothing to do */
-        return 0;
+  if (!(bits | compressing))	/* If not compressing, nothing to do */
+    return 0;
 
-    if (!bits && compressing)   /* Turn off compression */
+  if (!bits && compressing)	/* Turn off compression */
     {
-        output_code(0);                 /* This code flushes the output buffer  */
-        if (bufcnt)
-            wrtaout((unsigned char FAR *)buffer, bufcnt);
-        bufcnt = 0;
-        if (extra)
-            sbrk(-extra);               /* release any extra memory acquired */
-        extra = 0;
-        compressing = 0;
-        return 0;
+      output_code (0);		/* This code flushes the output buffer  */
+      if (bufcnt)
+	wrtaout ((unsigned char FAR *) buffer, bufcnt);
+      bufcnt = 0;
+      if (extra)
+	sbrk (-extra);		/* release any extra memory acquired */
+      extra = 0;
+      compressing = 0;
+      return 0;
     }
 
-    if (bits == LZWBITS)          /* turn on compression */
+  if (bits == LZWBITS)		/* turn on compression */
     {
-        if (CMEMORY <= size)
-            extra = 0;  /* no extra memory needed */
-        else
-        {
-            extra = CMEMORY - size;     /* extra memory needed */
-            if ((char *)sbrk((uword)extra) == (char *) -1)
-                return 1;                       /* not available */
-        }
-        compressing = bits;
+      if (CMEMORY <= size)
+	extra = 0;		/* no extra memory needed */
+      else
+	{
+	  extra = CMEMORY - size;	/* extra memory needed */
+	  if ((char *) sbrk ((uword) extra) == (char *) -1)
+	    return 1;		/* not available */
+	}
+      compressing = bits;
 
-        /* initialize for compression */
-        code_value = (short int *)freeptr;
-        prefix_code = (short unsigned int *)((char *)code_value + code_size);
-        append_character = (unsigned char *)prefix_code + prefix_size;
-        decode_stack = (unsigned char *)append_character + append_size;
-        buffer = decode_stack + decode_size;
-        bufcnt = 0;                             /* buffer is empty */
-        bufptr = buffer;
-        bit_buffer = 0L;
-        bit_count = 0;
-        return 0;
+      /* initialize for compression */
+      code_value = (short int *) freeptr;
+      prefix_code = (short unsigned int *) ((char *) code_value + code_size);
+      append_character = (unsigned char *) prefix_code + prefix_size;
+      decode_stack = (unsigned char *) append_character + append_size;
+      buffer = decode_stack + decode_size;
+      bufcnt = 0;		/* buffer is empty */
+      bufptr = buffer;
+      bit_buffer = 0L;
+      bit_count = 0;
+      return 0;
     }
 
-    return 1;                   /* failure */
+  return 1;			/* failure */
 
 }
 
@@ -406,65 +415,66 @@ uword size;
     Write data to a.out file.
 */
 int
-compress( startadr, size )
-unsigned char FAR *startadr;
-uword size;
+compress (startadr, size)
+     unsigned char FAR *startadr;
+     uword size;
 {
-    unsigned int index;
-    unsigned int string_code;
-    unsigned int character;
-    unsigned int next_code;
+  unsigned int index;
+  unsigned int string_code;
+  unsigned int character;
+  unsigned int next_code;
 
-    if (!compressing)
-        return wrtaout( startadr, size );
+  if (!compressing)
+    return wrtaout (startadr, size);
 
-    if (!size)
-        return 0;
+  if (!size)
+    return 0;
 
-    next_code = 256;                            /* next_code is the next available string code  */
+  next_code = 256;		/* next_code is the next available string code  */
 
-    /* Clear out the string hash table before starting */
-    memset((void *)code_value, -1, table_size*sizeof(short int));
+  /* Clear out the string hash table before starting */
+  memset ((void *) code_value, -1, table_size * sizeof (short int));
 
-    string_code = *startadr++;          /* Get the first code */
-    size--;
+  string_code = *startadr++;	/* Get the first code */
+  size--;
 
-    /*
-    /   This is the main loop where it all happens.  This loop runs until all of
-    /   the input has been exhausted.  Note that it clears the table and starts over
-    /   when all of the possible codes have been define.
-    */
-    while (size--)
+  /*
+     /   This is the main loop where it all happens.  This loop runs until all of
+     /   the input has been exhausted.  Note that it clears the table and starts over
+     /   when all of the possible codes have been define.
+   */
+  while (size--)
     {
-        character = *startadr++;
+      character = *startadr++;
 
-        index = find_match(string_code, character);     /* See if the string is in      */
-        if (code_value[index] != -1)                            /* the table.  If it is,        */
-            string_code = code_value[index];            /* get the code value.  If      */
-        else                                                                            /* the string is not in the     */
-        {   /* table, try to add it.    */
-            if (next_code <= max_code)
-            {
-                code_value[index] = next_code++;
-                prefix_code[index] = string_code;
-                append_character[index] = character;
-            }
-            output_code(string_code);                           /* When a string is found       */
-            string_code = character;                            /* that is not in the table,*/
-            if (next_code > max_code)                           /* output the last string       */
-            {   /* after adding the new one */
-                /* Clear out the string hash table and restart codes */
-                memset((void *)code_value, -1, table_size*sizeof(short int));
-                next_code = 256;
-            }
-        }
+      index = find_match (string_code, character);	/* See if the string is in      */
+      if (code_value[index] != -1)	/* the table.  If it is,        */
+	string_code = code_value[index];	/* get the code value.  If      */
+      else			/* the string is not in the     */
+	{			/* table, try to add it.    */
+	  if (next_code <= max_code)
+	    {
+	      code_value[index] = next_code++;
+	      prefix_code[index] = string_code;
+	      append_character[index] = character;
+	    }
+	  output_code (string_code);	/* When a string is found       */
+	  string_code = character;	/* that is not in the table, */
+	  if (next_code > max_code)	/* output the last string       */
+	    {			/* after adding the new one */
+	      /* Clear out the string hash table and restart codes */
+	      memset ((void *) code_value, -1,
+		      table_size * sizeof (short int));
+	      next_code = 256;
+	    }
+	}
     }
 
-    /*
-    /   End of the main loop
-    */
-    output_code(string_code);                                   /* Output the last code                 */
-    output_code(MAX_VALUE);                                             /* Output the buffer end code   */
-    return 0;
+  /*
+     /   End of the main loop
+   */
+  output_code (string_code);	/* Output the last code                 */
+  output_code (MAX_VALUE);	/* Output the buffer end code   */
+  return 0;
 }
-#endif                                  /* SAVEFILE */
+#endif /* SAVEFILE */

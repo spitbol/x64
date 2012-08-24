@@ -30,11 +30,12 @@ This file is part of Macro SPITBOL.
         Pointer to character string representing current shell path
 */
 
-char *getshell()
+char *
+getshell ()
 {
-    register char *p;
+  register char *p;
 
-    if ((p = findenv(SHELL_ENV_NAME, sizeof(SHELL_ENV_NAME))) == (char *)0)
-        p = SHELL_PATH;         /* failure -- use default */
-    return p;                   /* value (with a null terminator) */
+  if ((p = findenv (SHELL_ENV_NAME, sizeof (SHELL_ENV_NAME))) == (char *) 0)
+    p = SHELL_PATH;		/* failure -- use default */
+  return p;			/* value (with a null terminator) */
 }

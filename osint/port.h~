@@ -25,51 +25,51 @@ This file is part of Macro SPITBOL.
 */
 
 #ifndef ALTCOMP
-#define ALTCOMP         0	/* no alternate string comparison */
+#define ALTCOMP         0       /* no alternate string comparison */
 #endif
 
 #ifndef DATECHECK
-#define DATECHECK   0		/* no check for expiration date */
+#define DATECHECK   0   /* no check for expiration date */
 #endif
 
 #ifndef ENGINE
-#define ENGINE          0	/* not building engine version */
+#define ENGINE          0       /* not building engine version */
 #endif
 
 #ifndef EXECSAVE
-#define EXECSAVE        0	/* executable modules via save files */
+#define EXECSAVE        0       /* executable modules via save files */
 #endif
 
 #ifndef EXTFUN
-#define EXTFUN          0	/* no external functions */
+#define EXTFUN          0       /* no external functions */
 #endif
 
 #ifndef FLTHDWR
-#define FLTHDWR         0	/* floating point hardware not present */
+#define FLTHDWR         0       /* floating point hardware not present */
 #endif
 
 #ifndef HOST386
-#define HOST386         0	/* no 80386 host functions */
+#define HOST386         0       /* no 80386 host functions */
 #endif
 
 #ifndef MATHHDWR
-#define MATHHDWR        0	/* extended math hardware not present */
+#define MATHHDWR        0       /* extended math hardware not present */
 #endif
 
 #ifndef RUNTIME
-#define RUNTIME         0	/* not making runtime version */
+#define RUNTIME         0       /* not making runtime version */
 #endif
 
 #ifndef SAVEFILE
-#define SAVEFILE        0	/* can't create save files */
+#define SAVEFILE        0       /* can't create save files */
 #endif
 
 #ifndef SETREAL
-#define SETREAL     0		/* don't use reals for SET()  */
+#define SETREAL     0   /* don't use reals for SET()  */
 #endif
 
 #ifndef USEQUIT
-#define USEQUIT         0	/* use quit() to report errors instead of wrterr */
+#define USEQUIT         0       /* use quit() to report errors instead of wrterr */
 #endif
 
 /*
@@ -77,54 +77,54 @@ This file is part of Macro SPITBOL.
         in systype.h
  */
 #ifndef DIRECT
-#define DIRECT          1	/* access Minimal data directly */
+#define DIRECT          1       /* access Minimal data directly */
 #endif
 
 #ifndef EXECFILE
-#define EXECFILE        1	/* create executable modules */
+#define EXECFILE        1       /* create executable modules */
 #endif
 
 #ifndef FLOAT
-#define FLOAT           1	/* include floating point code */
+#define FLOAT           1       /* include floating point code */
 #endif
 
 #ifndef IO
-#define IO                      1	/* include input/output code */
+#define IO                      1       /* include input/output code */
 #endif
 
 #ifndef MATH
-#define MATH            1	/* include extended math (i.e., trig) code */
+#define MATH            1       /* include extended math (i.e., trig) code */
 #endif
 
 #ifndef PIPES
-#define PIPES           1	/* include pipe code */
+#define PIPES           1       /* include pipe code */
 #endif
 
 #ifndef POLLING
-#define POLLING         1	/* enable polling of operating system */
+#define POLLING         1       /* enable polling of operating system */
 #endif
 
 #ifndef PROTOTYPES
-#define PROTOTYPES      1	/* assume compiler can handle prototypes */
+#define PROTOTYPES      1       /* assume compiler can handle prototypes */
 #endif
 
 #ifndef USEFD0FD1
-#define USEFD0FD1       1	/* use file descriptor 0 & 1 for stdio  */
+#define USEFD0FD1       1       /* use file descriptor 0 & 1 for stdio  */
 #endif
 
 /*
     Other defaulted values that may be overridden in systype.h
  */
 #ifndef INTBITS
-#define INTBITS         32	/* assume int will be 32 bits */
-#define MAXINT          0x7FFFFFFFL	/* maximum positive value in int */
+#define INTBITS         32                      /* assume int will be 32 bits */
+#define MAXINT          0x7FFFFFFFL     /* maximum positive value in int */
 #endif
 #ifndef WORDBITS
-#define WORDBITS        32	/* assume word will be 32 bits */
-#define MAXPOSWORD      0x7FFFFFFFL	/* maximum positive value in word */
+#define WORDBITS        32                      /* assume word will be 32 bits */
+#define MAXPOSWORD      0x7FFFFFFFL     /* maximum positive value in word */
 #endif
 #ifndef IABITS
-#define IABITS      32		/* Integer accumulator (IA) width */
+#define IABITS      32          /* Integer accumulator (IA) width */
 #endif
 
 
@@ -134,10 +134,10 @@ This file is part of Macro SPITBOL.
  */
 /* compiler defs */
 #ifndef BCC32
-#define BCC32           0	/* 32-bit Borland C++ 4.x */
+#define BCC32           0                       /* 32-bit Borland C++ 4.x */
 #endif
 #ifndef VCC
-#define VCC         0		/* 32-bit Microsoft Visual C++ */
+#define VCC         0           /* 32-bit Microsoft Visual C++ */
 #endif
 #ifndef GCCi32
 #define GCCi32      0
@@ -176,7 +176,7 @@ This file is part of Macro SPITBOL.
 #define SYSVERSION 255
 #endif
 
-#if EXECSAVE			/* EXECSAVE requires EXECFILE & SAVEFILE on */
+#if EXECSAVE                    /* EXECSAVE requires EXECFILE & SAVEFILE on */
 #undef EXECFILE
 #undef SAVEFILE
 #define EXECFILE        1
@@ -208,7 +208,7 @@ This file is part of Macro SPITBOL.
 
 #define UNIX (LINUX)
 
-typedef int word;
+typedef int   word;
 typedef unsigned int uword;
 
 /* Size of integer accumulator */
@@ -286,10 +286,10 @@ typedef long long IATYPE;
 #if LINUX | WINNT
 #define CHUNK_SIZE      32768
 #define CHUNK_B_SIZE    (CHUNK_SIZE * sizeof(word))
-#define HEAP_SIZE       16777216	/* 16Mwords = 64Mbytes */
+#define HEAP_SIZE       16777216        /* 16Mwords = 64Mbytes */
 #if SUN4 | LINUX | WINNT | AIX
-#define OBJECT_SIZE     1048576	/* 1 Mword = 4 Mbytes */
-#else /* SUN4 */
+#define OBJECT_SIZE     1048576         /* 1 Mword = 4 Mbytes */
+#else         /* SUN4 */
 #define OBJECT_SIZE     16384
 #endif
 #endif
@@ -327,10 +327,10 @@ typedef long long IATYPE;
 #ifndef PollCount
 #if UNIX
 #define PollCount MAXPOSWORD
-#else /* UNIX */
+#else         /* UNIX */
 #define PollCount 2500
-#endif /* UNIX */
-#endif /* PollCount */
+#endif          /* UNIX */
+#endif                                  /* PollCount */
 
 
 /*
@@ -354,7 +354,7 @@ typedef long long IATYPE;
                     error.  Defined in BYTES!
 */
 #if LINUX | WINNT
-#define STACK_SIZE  (0x100000)	/* Set to 1MB 6/28/09 */
+#define STACK_SIZE  (0x100000)      /* Set to 1MB 6/28/09 */
 #endif
 
 
@@ -401,7 +401,7 @@ typedef long long IATYPE;
 #define PSEP ';'
 #define FSEP '\\'
 #define FSEP2 '/'
-#endif /* WINNT */
+#endif          /* WINNT */
 
 #define EXT '.'
 #if WINNT
@@ -413,7 +413,7 @@ typedef long long IATYPE;
 #define EFNEXT ".slf"
 #define LISTEXT ".lst"
 #define RUNEXT ".spx"
-#define SPITFILEPATH  "snolib"	/* path for include and external files */
+#define SPITFILEPATH  "snolib"  /* path for include and external files */
 
 /*
     The following manifest constant determines the maximum number of
@@ -458,15 +458,15 @@ typedef long long IATYPE;
                     located in the environment
 */
 
-#if WINNT			/* WINNT */
-extern char borland32rtm;	/* True if using DOS Extender */
-extern char isWin95;		/* True if running under WinNT */
+#if WINNT             /* WINNT */
+extern char borland32rtm;             /* True if using DOS Extender */
+extern char isWin95;                  /* True if running under WinNT */
 #define SHELL_ENV_NAME  "COMSPEC"
 #define SHELL_PATH  ((borland32rtm || isWin95) ? "command.com" : "cmd.exe")
-#else /* WINNT */
+#else                   /* WINNT */
 #define SHELL_ENV_NAME  "SHELL"
 #define SHELL_PATH      "/bin/sh"
-#endif /* WINNT */
+#endif          /* WINNT */
 
 /*
     Compiler flags (see compiler listing for more details):
@@ -506,7 +506,7 @@ extern char isWin95;		/* True if running under WinNT */
 #define WRTEXE          0x00004000L
 #define WRTSAV          0x00008000L
 
-#define NOBRAG          0x02000000L	/*      No signon header when loading save file */
+#define NOBRAG          0x02000000L     /*      No signon header when loading save file */
 
 #define DFLT_FLAGS  (ERRORS+PRTICH+NOLIST+NOCMPS+NOEXCS+TRMNAL+PRINTC+CASFLD+NOERRO)
 
@@ -519,12 +519,13 @@ extern char isWin95;		/* True if running under WinNT */
 #ifdef PRIVATEBLOCKS
 #if WINNT | SUN4 | AIX | LINUX
 #include "extern32.h"
-#endif /* WINNT | SUN4 */
-#else /* PRIVATEBLOCKS */
+#endif          /* WINNT | SUN4 */
+#else                                   /* PRIVATEBLOCKS */
 #include "spitblks.h"
 #include "spitio.h"
-#endif /* PRIVATEBLOCKS */
+#endif                                  /* PRIVATEBLOCKS */
 
 
 #include "globals.h"
 #include "sproto.h"
+

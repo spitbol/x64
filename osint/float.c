@@ -30,66 +30,73 @@ This file is part of Macro SPITBOL.
 /*
    f_2_i - float to integer
  */
-IATYPE f_2_i(ra)
-double ra;
+IATYPE
+f_2_i (ra)
+     double ra;
 {
-    return (IATYPE)ra;
+  return (IATYPE) ra;
 }
 
 
 /*
    i_2_f - integer to float
  */
-double i_2_f(ia)
-IATYPE ia;
+double
+i_2_f (ia)
+     IATYPE ia;
 {
-    return ia;
+  return ia;
 }
 
 /*
    f_add - floating add to accumulator
  */
-double f_add(arg, ra)
-double arg,ra;
+double
+f_add (arg, ra)
+     double arg, ra;
 {
-    return ra+arg;
+  return ra + arg;
 }
 
 /*
    f_sub - floating subtract from accumulator
  */
-double f_sub(arg, ra)
-double arg,ra;
+double
+f_sub (arg, ra)
+     double arg, ra;
 {
-    return ra-arg;
+  return ra - arg;
 }
 
 /*
    f_mul - floating multiply to accumulator
  */
-double f_mul(arg, ra)
-double arg,ra;
+double
+f_mul (arg, ra)
+     double arg, ra;
 {
-    return ra*arg;
+  return ra * arg;
 }
 
 
 /*
    f_div - floating divide into accumulator
  */
-double f_div(arg, ra)
-double arg,ra;
+double
+f_div (arg, ra)
+     double arg, ra;
 {
-    return ra/arg;
+  return ra / arg;
 }
 
 /*
    f_neg - negate accumulator
  */
-double f_neg(ra)
-double ra;
+double
+f_neg (ra)
+     double ra;
 {
-    return -ra;
+  return -ra;
 }
 
-#endif                                  /* (FLOAT & !FLTHDWR) | (EXTFUN & (SUN4 | AIX)) */
+#endif /* (FLOAT & !FLTHDWR) | (EXTFUN & (SUN4 | AIX)) */

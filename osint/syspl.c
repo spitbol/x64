@@ -47,38 +47,39 @@ This file is part of Macro SPITBOL.
 
 #if POLLING & (UNIX | WINNT)
 #if WINNT
-int     pollevent Params((void));
+int pollevent Params ((void));
 #endif
 #if UNIX
 #define pollevent()
-#endif          /* UNIX */
-extern  rearmbrk Params((void));
-extern  int     brkpnd;
+#endif /* UNIX */
+extern rearmbrk Params ((void));
+extern int brkpnd;
 #define stmtDelay PollCount
 #endif
 
 
-zyspl()
+zyspl ()
 {
 #if POLLING
 
-    /* Make simple polling case the fastest by avoiding switch statement */
-    if (WA(word) == 0) {
+  /* Make simple polling case the fastest by avoiding switch statement */
+  if (WA (word) == 0)
+    {
 #if !ENGINE
-        pollevent();
-#endif                                  /* !ENGINE */
-        SET_WA(stmtDelay);      /* Poll finished or Continue */
+      pollevent ();
+#endif /* !ENGINE */
+      SET_WA (stmtDelay);	/* Poll finished or Continue */
 #if !ENGINE & (WINNT | UNIX)
-        if (brkpnd) {
-            brkpnd = 0;         /* User interrupt */
-            rearmbrk();         /* allow breaks again */
-            return EXIT_1;
-        }
+      if (brkpnd)
+	{
+	  brkpnd = 0;		/* User interrupt */
+	  rearmbrk ();		/* allow breaks again */
+	  return EXIT_1;
+	}
 #endif
     }
-#else                                   /* POLLING */
-    SET_WA((word)MAXPOSWORD);                   /* Effectively shut off polling */
-#endif                                  /* POLLING */
-    return NORMAL_RETURN;
+#else /* POLLING */
+  SET_WA ((word) MAXPOSWORD);	/* Effectively shut off polling */
+#endif /* POLLING */
+  return NORMAL_RETURN;
 }
-

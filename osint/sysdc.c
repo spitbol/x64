@@ -33,45 +33,45 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-zysdc()
+zysdc ()
 {
-    struct scblk *pheadv = get_data_offset(headv,struct scblk *);
-    /* announce name and copyright */
-    if (!dcdone && !(spitflag & NOBRAG))
+  struct scblk *pheadv = get_data_offset (headv, struct scblk *);
+  /* announce name and copyright */
+  if (!dcdone && !(spitflag & NOBRAG))
     {
-        dcdone = 1;                             /* Only do once per run */
+      dcdone = 1;		/* Only do once per run */
 #if WINNT
-        write( STDERRFD, "SPITBOL-386", 11);
+      write (STDERRFD, "SPITBOL-386", 11);
 #endif
 
 
 #if LINUX
-        write( STDERRFD, "LINUX SPITBOL", 13);
+      write (STDERRFD, "LINUX SPITBOL", 13);
 #endif
 
 #if AIX
-        write( STDERRFD, "AIX SPITBOL", 11);
+      write (STDERRFD, "AIX SPITBOL", 11);
 #endif
 
 #if RUNTIME
-        write( STDERRFD, " Runtime", 8);
-#endif                                  /* RUNTIME */
+      write (STDERRFD, " Runtime", 8);
+#endif /* RUNTIME */
 
-        write( STDERRFD, "  Release ", 10);
-	char * s = pid1->str;
-	int  n = pid1->len;
-        write( STDERRFD, pheadv->str, pheadv->len );
-        write( STDERRFD, pid1->str, pid1->len );
-        wrterr( cprtmsg );
+      write (STDERRFD, "  Release ", 10);
+      char *s = pid1->str;
+      int n = pid1->len;
+      write (STDERRFD, pheadv->str, pheadv->len);
+      write (STDERRFD, pid1->str, pid1->len);
+      wrterr (cprtmsg);
     }
 
 #if DATECHECK
 #if WINNT
-    {
-        extern void date_check(void);
-        date_check();
-    }
+  {
+    extern void date_check (void);
+    date_check ();
+  }
 #endif
 #endif
-    return NORMAL_RETURN;
+  return NORMAL_RETURN;
 }

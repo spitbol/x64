@@ -36,10 +36,10 @@ This file is part of Macro SPITBOL.
 #include <stdlib.h>
 #endif
 
-int dosys( cmd, path )
-char    *cmd;
-char    *path;
+int
+dosys (cmd, path)
+     char *cmd;
+     char *path;
 {
-    return system( cmd );
+  return system (cmd);
 }
-
