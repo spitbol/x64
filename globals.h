@@ -28,6 +28,7 @@
     global  filnm
     global  flpop
     global  flstg
+    global  gbcnt
     global  gbcol
     global  gbcpf
     global  gtarr
@@ -64,7 +65,10 @@
     global  relcr
     global  reloc
     global  retrn
+    global  stage
     global  start 
+    global  statb
+    global  stbas
     global  stcov
     global  stgcc
     global  stmgo
@@ -74,6 +78,7 @@
     global  sysab
     global  systu
     global  tfind
+    global  timsx
     global  tmake
     global  trace
     global  trbld

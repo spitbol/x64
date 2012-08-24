@@ -44,13 +44,6 @@ normal_return  equ      -1
 
 ;       function and macro to call into minimal code.
 ;       the argument is an ordinal number defined below.
-%ifndef globals
-	extern		minimal_call
-%endif
-%macro          Zinimal 1
-        push            %1
-	callc		minimal_call,4
-%endmacro
 
 ;   ordinals for minimal calls from assembly language.
 ;
@@ -76,33 +69,6 @@ engts_callid  equ      13
 ;       the argument is an ordinal number defined below.
 ;       the macro getoff returns the address of the value.
 %if direct                                  ; [[
-%macro          getoff 2
-        lea             %1,%2
-%endmacro
-
-%macro          getmin 2
-        mov             %1,dword [%2]
-%endmacro
-
-%macro          setmin 2
-        mov             %1,dword [%2]
-%endmacro
-
-%macro          setminr 2
-        mov             %1,%2
-%endmacro
-
-;;%ifnmacro	access
-;;%macro          access 1
-;;        extern             %1
-;;%endmacro
-;;%endif
-;;
-;;%macro          access2 1
-;;%ifndef globals
-;;        extern            %1
-;;%endif
-;;%endmacro
 
 	segment	.data
 %else                                       ; ][
