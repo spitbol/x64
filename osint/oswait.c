@@ -67,7 +67,7 @@ int     pid;
 
     while ( (deadpid = wait( &status )) != pid  &&  deadpid != -1 )
     {
-        for ( chptr = GET_MIN_VALUE(r_fcb,struct chfcb *); chptr != 0;
+        for ( chptr = get_min_value(r_fcb,struct chfcb *); chptr != 0;
                 chptr = MK_MP(chptr->nxt, struct chfcb *) )
         {
             if ( deadpid == MK_MP(MK_MP(chptr->fcp, struct fcblk *)->iob,

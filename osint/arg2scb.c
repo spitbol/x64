@@ -18,15 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  ARG2SCB.C        Version:  01.02
-        ---------------------------------------
-
-        Contents:       Function arg2scb
-
-        1.02    Rewritten to append to scblk instead of copy to block.
-*/
-
-/*
     arg2scb( req, argc, argv, scptr, maxs )
 
     arg2scb() makes a copy of the req-th argument in the argv array.

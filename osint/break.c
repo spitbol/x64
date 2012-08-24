@@ -67,11 +67,11 @@ int sig;
 {
     word    stmctv, stmcsv;
     brkpnd++;
-    stmctv = GET_MIN_VALUE(stmct,word) - 1;
-    stmcsv = GET_MIN_VALUE(stmcs,word);
-    SET_MIN_VALUE(stmct,1,word);                /* force STMGO loop to check */
-    SET_MIN_VALUE(stmcs,stmcsv- stmctv,word);    /* counters quickly */
-    SET_MIN_VALUE(polct,1,word);                                /* force quick SYSPL call */
+    stmctv = get_min_value(stmct,word) - 1;
+    stmcsv = get_min_value(stmcs,word);
+    set_min_value(stmct,1,word);                /* force STMGO loop to check */
+    set_min_value(stmcs,stmcsv- stmctv,word);    /* counters quickly */
+    set_min_value(polct,1,word);                                /* force quick SYSPL call */
 }
 
 

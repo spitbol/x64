@@ -149,20 +149,20 @@ enum calltab {
 };
 
 /*
-        Function and macro to get/set value from/to minimal dataspace.
-        The argument is an ordinal number defined below.
-    GET_DATA_OFFSET returns the address of a Minimal data value.
-    GET_CODE_OFFSET returns the address of a Minimal routine.
-        GET_MIN_VALUE returns the contents of an item of Minimal data.
-        SET_MIN_VALUE sets the contents of an item of Minimal data.
+Function and macro to get/set value from/to minimal dataspace.
+The argument is an ordinal number defined below.
+get_data_offset returns the address of a Minimal data value.
+get_code_offset returns the address of a Minimal routine.
+get_min_value returns the contents of an item of Minimal data.
+set_min_value sets the contents of an item of Minimal data.
 */
-#if direcT
-#define GET_CODE_OFFSET(vn,type) ((type)vn)
-#define GET_DATA_OFFSET(vn,type) ((type)&vn)
-#define GET_MIN_VALUE(vn,type) ((type)vn)
-#define SET_MIN_VALUE(vn,val,type) (*(type *)&vn = (type)(val))
+#if direct
+#define get_code_offset(vn,type) ((type)vn)
+#define get_data_offset(vn,type) ((type)&vn)
+#define get_min_value(vn,type) ((type)vn)
+#define set_min_value(vn,val,type) (*(type *)&vn = (type)(val))
 /*
-    Names for accessing minimal data values via GET_DATA_OFFSET macro.
+    Names for accessing minimal data values via get_data_offset macro.
 */
 extern word
 gbcnt,
@@ -206,25 +206,25 @@ ttybuf,
 end_min_data;
 
 /*
-    Names for accessing minimal code values via GET_CODE_OFFSET macro.
+    Names for accessing minimal code values via get_code_offset macro.
 */
-extern void     B_EFC();
-extern void     B_ICL();
+extern void B_EFC();
+extern void B_ICL();
 extern void B_RCL();
 extern void B_SCL();
-extern void     B_VCT();
-extern void     B_XNT();
-extern void     B_XRT();
-extern void     DFFNC();
-extern void     S_AAA();
-extern void     S_YYY();
+extern void B_VCT();
+extern void B_XNT();
+extern void B_XRT();
+extern void DFFNC();
+extern void S_AAA();
+extern void S_YYY();
 
 #else                                   /* DIRECT */
 extern  word *minoff Params((word valno));
-#define GET_CODE_OFFSET(vn,type) ((type)minoff(vn))
-#define GET_DATA_OFFSET(vn,type) ((type)minoff(vn))
-#define GET_MIN_VALUE(vn,type)  ((type)*minoff(vn))
-#define SET_MIN_VALUE(vn,val,type) (*(type *)minoff(vn) = (type)(val))
+#define get_code_offset(vn,type) ((type)minoff(vn))
+#define get_data_offset(vn,type) ((type)minoff(vn))
+#define get_min_value(vn,type)  ((type)*minoff(vn))
+#define set_min_value(vn,val,type) (*(type *)minoff(vn) = (type)(val))
 /*
     Ordinals for accessing minimal values.
 
@@ -286,18 +286,18 @@ enum valtab {
 #endif                                  /* DIRECT */
 
 /* Some shorthand notations */
-#define pid1 GET_DATA_OFFSET(id1,struct scblk *)
-#define pID2BLK GET_DATA_OFFSET(id2blk,struct scblk *)
-#define pINPBUF GET_DATA_OFFSET(inpbuf,struct bfblk *)
-#define pTTYBUF GET_DATA_OFFSET(ttybuf,struct bfblk *)
-#define pTICBLK GET_DATA_OFFSET(ticblk,struct icblk *)
-#define pTSCBLK GET_DATA_OFFSET(tscblk,struct scblk *)
+#define pid1 get_data_offset(id1,struct scblk *)
+#define pID2BLK get_data_offset(id2blk,struct scblk *)
+#define pINPBUF get_data_offset(inpbuf,struct bfblk *)
+#define pTTYBUF get_data_offset(ttybuf,struct bfblk *)
+#define pTICBLK get_data_offset(ticblk,struct icblk *)
+#define pTSCBLK get_data_offset(tscblk,struct scblk *)
 
-#define TYPE_EFC GET_CODE_OFFSET(b_efc,word)
-#define TYPE_ICL GET_CODE_OFFSET(b_icl,word)
-#define TYPE_SCL GET_CODE_OFFSET(b_scl,word)
-#define TYPE_VCT GET_CODE_OFFSET(b_vct,word)
-#define TYPE_XNT GET_CODE_OFFSET(b_xnt,word)
-#define TYPE_XRT GET_CODE_OFFSET(b_xrt,word)
-#define TYPE_RCL GET_CODE_OFFSET(b_rcl,word)
+#define TYPE_EFC get_code_offset(b_efc,word)
+#define TYPE_ICL get_code_offset(b_icl,word)
+#define TYPE_SCL get_code_offset(b_scl,word)
+#define TYPE_VCT get_code_offset(b_vct,word)
+#define TYPE_XNT get_code_offset(b_xnt,word)
+#define TYPE_XRT get_code_offset(b_xrt,word)
+#define TYPE_RCL get_code_offset(b_rcl,word)
 

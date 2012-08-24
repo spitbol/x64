@@ -52,22 +52,22 @@ This file is part of Macro SPITBOL.
 
 #define HASHING_SHIFT (LZWBITS-8)
 #define MAX_VALUE ((1L << LZWBITS) - 1)
-#define MAX_CODE (MAX_VALUE - 1)
+#define max_code (MAX_VALUE - 1)
 
 #if LZWBITS == 14
-#define TABLE_SIZE 18041                /* The string table size needs to be a  */
+#define table_size 18041                /* The string table size needs to be a  */
 #endif                                                  /* prime number that is somewhat larger */
 #if LZWBITS == 13               /* than 2**LZWBITS       */
-#define TABLE_SIZE 9029
+#define table_size 9029
 #endif
 #if LZWBITS == 12
-#define TABLE_SIZE 5021
+#define table_size 5021
 #endif
 #if LZWBITS == 11
-#define TABLE_SIZE 2551
+#define table_size 2551
 #endif
 #if LZWBITS <= 10
-#define TABLE_SIZE 1223
+#define table_size 1223
 #endif
 
 #if SAVEFILE
@@ -76,11 +76,11 @@ This file is part of Macro SPITBOL.
 #include <string.h>
 #endif
 
-#define CODE_SIZE   (TABLE_SIZE*sizeof(short int))
-#define PREFIX_SIZE (TABLE_SIZE*sizeof(short unsigned int))
-#define APPEND_SIZE (TABLE_SIZE*sizeof(unsigned char))
-#define DECODE_SIZE (4096*sizeof(unsigned char))
-#define BUFF_SIZE (2048*sizeof(unsigned char))
+#define code_size   (table_size*sizeof(short int))
+#define prefix_size (table_size*sizeof(short unsigned int))
+#define append_size (table_size*sizeof(unsigned char))
+#define decode_size (4096*sizeof(unsigned char))
+#define buff_size (2048*sizeof(unsigned char))
 
 static unsigned int input_code Params((word fd));
 static void output_code Params((unsigned int code));
@@ -90,8 +90,8 @@ static int find_match Params((int hash_prefix, unsigned int hash_character));
 /*
 / Memory needed for tables for expansion (EMEMORY) and compression (CMEMORY)
 */
-#define EMEMORY (PREFIX_SIZE + APPEND_SIZE + DECODE_SIZE + BUFF_SIZE)
-#define CMEMORY (CODE_SIZE + PREFIX_SIZE + APPEND_SIZE + DECODE_SIZE + BUFF_SIZE)
+#define EMEMORY (prefix_size + append_size + decode_size + buff_size)
+#define CMEMORY (code_size + prefix_size + append_size + decode_size + buff_size)
 
 /*
 / doexpand - initialize or terminate expansion
@@ -127,9 +127,9 @@ uword size;
 
         /* initialize for expansion */
         prefix_code = (short unsigned int *)freeptr;
-        append_character = (unsigned char *)prefix_code + PREFIX_SIZE;
-        decode_stack = (unsigned char *)append_character + APPEND_SIZE;
-        buffer = decode_stack + DECODE_SIZE;
+        append_character = (unsigned char *)prefix_code + prefix_size;
+        decode_stack = (unsigned char *)append_character + append_size;
+        buffer = decode_stack + decode_size;
         bufcnt = 0;                             /* buffer is empty */
         bit_buffer = 0L;
         bit_count = 0;
@@ -153,7 +153,7 @@ word fd;
     {
         if (bufcnt <= 0)
         {
-            bufcnt = read( fd, buffer, BUFF_SIZE);
+            bufcnt = read( fd, buffer, buff_size);
             if (bufcnt < 0)
                 return MAX_VALUE;
             if (!bufcnt) {                              /* provide 0 at EOF until ... */
@@ -180,7 +180,7 @@ unsigned int code;
 
     while (bit_count >= 8)
     {
-        if (bufcnt >= BUFF_SIZE)
+        if (bufcnt >= buff_size)
         {
             wrtaout((unsigned char FAR *) buffer, bufcnt);
             bufptr = buffer;
@@ -300,14 +300,14 @@ uword size;
         /*
         /       Finally, if possible, add a new code to the string table.
         */
-        if (next_code <= MAX_CODE)
+        if (next_code <= max_code)
         {
             prefix_code[next_code] = old_code;
             append_character[next_code] = character;
             next_code++;
         }
         old_code = new_code;
-        if (next_code > MAX_CODE)
+        if (next_code > max_code)
             next_code = 256;                    /* Restart codes when it gets too big */
     }
     return (size == 0 ? 0 : -2);
@@ -331,7 +331,7 @@ unsigned int hash_character;
     if (index == 0)
         offset = 1;
     else
-        offset = TABLE_SIZE - index;
+        offset = table_size - index;
 
     for (;;)
     {
@@ -341,7 +341,7 @@ unsigned int hash_character;
             return index;
         index -= offset;
         if (index < 0)
-            index += TABLE_SIZE;
+            index += table_size;
     }
 }
 
@@ -384,10 +384,10 @@ uword size;
 
         /* initialize for compression */
         code_value = (short int *)freeptr;
-        prefix_code = (short unsigned int *)((char *)code_value + CODE_SIZE);
-        append_character = (unsigned char *)prefix_code + PREFIX_SIZE;
-        decode_stack = (unsigned char *)append_character + APPEND_SIZE;
-        buffer = decode_stack + DECODE_SIZE;
+        prefix_code = (short unsigned int *)((char *)code_value + code_size);
+        append_character = (unsigned char *)prefix_code + prefix_size;
+        decode_stack = (unsigned char *)append_character + append_size;
+        buffer = decode_stack + decode_size;
         bufcnt = 0;                             /* buffer is empty */
         bufptr = buffer;
         bit_buffer = 0L;
@@ -431,7 +431,7 @@ uword size;
     next_code = 256;                            /* next_code is the next available string code  */
 
     /* Clear out the string hash table before starting */
-    memset((void *)code_value, -1, TABLE_SIZE*sizeof(short int));
+    memset((void *)code_value, -1, table_size*sizeof(short int));
 
     string_code = *startadr++;          /* Get the first code */
     size--;
@@ -450,7 +450,7 @@ uword size;
             string_code = code_value[index];            /* get the code value.  If      */
         else                                                                            /* the string is not in the     */
         {   /* table, try to add it.    */
-            if (next_code <= MAX_CODE)
+            if (next_code <= max_code)
             {
                 code_value[index] = next_code++;
                 prefix_code[index] = string_code;
@@ -458,10 +458,10 @@ uword size;
             }
             output_code(string_code);                           /* When a string is found       */
             string_code = character;                            /* that is not in the table,*/
-            if (next_code > MAX_CODE)                           /* output the last string       */
+            if (next_code > max_code)                           /* output the last string       */
             {   /* after adding the new one */
                 /* Clear out the string hash table and restart codes */
-                memset((void *)code_value, -1, TABLE_SIZE*sizeof(short int));
+                memset((void *)code_value, -1, table_size*sizeof(short int));
                 next_code = 256;
             }
         }
