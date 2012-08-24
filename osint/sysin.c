@@ -35,53 +35,54 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-word wabs(x)
-word x;
+word
+wabs (x)
+     word x;
 {
-    return (x >= 0) ? x : -x;
+  return (x >= 0) ? x : -x;
 }
 
-zysin()
+zysin ()
 {
-    register word       reclen;
-    register struct fcblk *fcb = WA (struct fcblk *);
-    register struct scblk *scb = XR (struct scblk *);
-    register struct ioblk *ioptr = MK_MP(fcb->iob, struct ioblk *);
+  register word reclen;
+  register struct fcblk *fcb = WA (struct fcblk *);
+  register struct scblk *scb = XR (struct scblk *);
+  register struct ioblk *ioptr = MK_MP (fcb->iob, struct ioblk *);
 
-    /* ensure iob is open, fail if unsuccessful */
-    if ( !(ioptr->flg1 & IO_OPN) )
-        return EXIT_3;
+  /* ensure iob is open, fail if unsuccessful */
+  if (!(ioptr->flg1 & IO_OPN))
+    return EXIT_3;
 
-    /* read the data, fail if unsuccessful */
-    while( (reclen = osread( fcb->mode, fcb->rsz, ioptr, scb )) < 0)
+  /* read the data, fail if unsuccessful */
+  while ((reclen = osread (fcb->mode, fcb->rsz, ioptr, scb)) < 0)
     {
-        if ( reclen == (word)-1 )               /* EOF?                 */
-        {
-            if ( ioptr->fdn )   /* If not fd 0, true EOF*/
-                return EXIT_1;
-            else                        /* Fd 0 - try to switch files */
-                if ( swcinp( inpcnt, inpptr ) < 0 )
-                    return EXIT_1;     /* If can't switch      */
+      if (reclen == (word) - 1)	/* EOF?                 */
+	{
+	  if (ioptr->fdn)	/* If not fd 0, true EOF */
+	    return EXIT_1;
+	  else /* Fd 0 - try to switch files */ if (swcinp (inpcnt, inpptr) <
+						    0)
+	    return EXIT_1;	/* If can't switch      */
 
-            ioptr->flg2 &= ~IO_RAW; /* Switched. Set IO_RAW */
-            if ( (testty( ioptr->fdn ) == 0 ) && /* If TTY */
-                    ( fcb->mode == 0 ) )        /* and raw mode,   */
-                ioptr->flg2 |= IO_RAW;   /* then set IO_RAW */
+	  ioptr->flg2 &= ~IO_RAW;	/* Switched. Set IO_RAW */
+	  if ((testty (ioptr->fdn) == 0) &&	/* If TTY */
+	      (fcb->mode == 0))	/* and raw mode,   */
+	    ioptr->flg2 |= IO_RAW;	/* then set IO_RAW */
 #if WINNT
-            if ( cindev( ioptr->fdn ) == 0 )    /* Test for character input */
-                ioptr->flg1 |= IO_CIN;
-            if ( fcb->mode == 0 )                                       /* set/clear binary bit for doset */
-                ioptr->flg2 |= IO_BIN;
-            else
-                ioptr->flg2 &= ~IO_BIN;
-#endif               /* WINNT */
+	  if (cindev (ioptr->fdn) == 0)	/* Test for character input */
+	    ioptr->flg1 |= IO_CIN;
+	  if (fcb->mode == 0)	/* set/clear binary bit for doset */
+	    ioptr->flg2 |= IO_BIN;
+	  else
+	    ioptr->flg2 &= ~IO_BIN;
+#endif /* WINNT */
 
-        }
-        else                            /* I/O Error            */
-            return EXIT_2;
+	}
+      else			/* I/O Error            */
+	return EXIT_2;
     }
-    scb->len = reclen;          /* set record length    */
+  scb->len = reclen;		/* set record length    */
 
-    /* normal return */
-    return NORMAL_RETURN;
+  /* normal return */
+  return NORMAL_RETURN;
 }

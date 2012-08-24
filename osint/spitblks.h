@@ -32,11 +32,12 @@ This file is part of Macro SPITBOL.
         buffer. It contains the number of characters currently
         stored in the buffer.
  */
-struct bcblk {
-    word        typ;                                    /* type word                                                    */
-    word        idv;                                    /* identifier value                                             */
-    word        len;                                    /* number of chars in use in bfblk              */
-    struct bsblk *bcbuf;                        /* pointer to bfblk                                             */
+struct bcblk
+{
+  word typ;			/* type word                                                    */
+  word idv;			/* identifier value                                             */
+  word len;			/* number of chars in use in bfblk              */
+  struct bsblk *bcbuf;		/* pointer to bfblk                                             */
 };
 
 /*
@@ -46,10 +47,11 @@ struct bcblk {
         memory area. It specifies the largest string that can be
         stored in the buffer.
  */
-struct bsblk {
-    word        typ;                                    /* type word                                                    */
-    word        bsalc;                                  /* allocated size of buffer                             */
-    char        bschr[1];                               /* characters of string                                 */
+struct bsblk
+{
+  word typ;			/* type word                                                    */
+  word bsalc;			/* allocated size of buffer                             */
+  char bschr[1];		/* characters of string                                 */
 };
 
 
@@ -59,18 +61,20 @@ struct bsblk {
    A code block (CDBLK) is present for every source statement.
  */
 
-struct cdblk {
-    word                        cdjmp;                  /* ptr to routine to execute statement  */
-    word                        cdstm;                  /* statement number                                             */
-    word                        cdsln;                  /* source file line number                              */
-    word                        cdlen;                  /* length of CDBLK in bytes                             */
-    union {
-        struct cdblk NEAR *cdnxt;       /* if failure exit is next statement    */
-        struct vrblk NEAR *cdlab;       /* if failure exit is a simple label    */
-        char             NEAR *cdnof;   /* no failure exit (-NOFAIL mode)               */
-        word              cddir;                /* failure exit is complex or direct    */
-    }                   cdfal;                  /* Failure exit                                                 */
-    word                        cdcod[1];               /* executable pseudo-code                               */
+struct cdblk
+{
+  word cdjmp;			/* ptr to routine to execute statement  */
+  word cdstm;			/* statement number                                             */
+  word cdsln;			/* source file line number                              */
+  word cdlen;			/* length of CDBLK in bytes                             */
+  union
+  {
+    struct cdblk NEAR *cdnxt;	/* if failure exit is next statement    */
+    struct vrblk NEAR *cdlab;	/* if failure exit is a simple label    */
+    char NEAR *cdnof;		/* no failure exit (-NOFAIL mode)               */
+    word cddir;			/* failure exit is complex or direct    */
+  } cdfal;			/* Failure exit                                                 */
+  word cdcod[1];		/* executable pseudo-code                               */
 };
 
 
@@ -83,11 +87,12 @@ struct cdblk {
     can be closed.
 */
 
-struct  chfcb {
-    word        typ;                            /*  type word                   */
-    word        len;                            /*  block length                */
-    struct      chfcb NEAR *nxt;        /*  pointer to next chfcb       */
-    struct      fcblk NEAR *fcp;        /*  pointer to fcb              */
+struct chfcb
+{
+  word typ;			/*  type word                   */
+  word len;			/*  block length                */
+  struct chfcb NEAR *nxt;	/*  pointer to next chfcb       */
+  struct fcblk NEAR *fcp;	/*  pointer to fcb              */
 };
 
 
@@ -96,15 +101,16 @@ struct  chfcb {
 
 */
 
-struct  efblk {
-    word        fcode;                          /*  type word                   */
-    word        fargs;                          /*  number of arguments */
-    word        eflen;                          /*  block length                */
-    word        efuse;                          /*  usage count                 */
-    void NEAR *efcod;                   /*  pointer to XNBLK    */
-    struct vrblk NEAR *efvar;   /*  pointer to VRBLK    */
-    word        efrsl;                          /*  result type                 */
-    word        eftar[1];                       /*  argument types              */
+struct efblk
+{
+  word fcode;			/*  type word                   */
+  word fargs;			/*  number of arguments */
+  word eflen;			/*  block length                */
+  word efuse;			/*  usage count                 */
+  void NEAR *efcod;		/*  pointer to XNBLK    */
+  struct vrblk NEAR *efvar;	/*  pointer to VRBLK    */
+  word efrsl;			/*  result type                 */
+  word eftar[1];		/*  argument types              */
 };
 
 /*
@@ -114,9 +120,10 @@ struct  efblk {
     to be the appropriate type for the implementation.
 */
 
-struct  icblk {
-    word        typ;            /*  type word - b$icl           */
-    IATYPE      val;
+struct icblk
+{
+  word typ;			/*  type word - b$icl           */
+  IATYPE val;
 };
 
 /*
@@ -126,9 +133,10 @@ struct  icblk {
         to be the appropriate type for the implementation.
 */
 
-struct  rcblk {
-    word        typ;            /*      type word - b$rcl */
-    double      rcval;          /*      real value */
+struct rcblk
+{
+  word typ;			/*      type word - b$rcl */
+  double rcval;			/*      real value */
 };
 
 /*
@@ -142,10 +150,11 @@ struct  rcblk {
     to hold a string of length sclen.
 */
 
-struct  scblk {
-    word        typ;            /*  type word - b$scl           */
-    word        len;            /*  string length               */
-    char        str[1];         /*  string characters           */
+struct scblk
+{
+  word typ;			/*  type word - b$scl           */
+  word len;			/*  string length               */
+  char str[1];			/*  string characters           */
 };
 
 
@@ -155,16 +164,17 @@ struct  scblk {
    A variable block (VRBLK) is used to hold a program variable.
  */
 
-struct vrblk {
-    word                        vrget;                  /* routine to load variable onto stack  */
-    word                        vrsto;                  /* routine to store stack top into var. */
-    union block  NEAR *vrval;           /* variable value                                               */
-    word                        vrtra;                  /* routine to transfer to label                 */
-    union block  NEAR *vrlbl;           /* pointer to code for label                    */
-    union block  NEAR *vrfnc;           /* function block if name is function   */
-    struct vrblk NEAR *vrnxt;           /* next vrblk on hash chain                             */
-    word                        vrlen;                  /* length of name                                               */
-    char                        vrchs[1];               /* characters of name                                   */
+struct vrblk
+{
+  word vrget;			/* routine to load variable onto stack  */
+  word vrsto;			/* routine to store stack top into var. */
+  union block NEAR *vrval;	/* variable value                                               */
+  word vrtra;			/* routine to transfer to label                 */
+  union block NEAR *vrlbl;	/* pointer to code for label                    */
+  union block NEAR *vrfnc;	/* function block if name is function   */
+  struct vrblk NEAR *vrnxt;	/* next vrblk on hash chain                             */
+  word vrlen;			/* length of name                                               */
+  char vrchs[1];		/* characters of name                                   */
 };
 
 
@@ -174,14 +184,15 @@ struct vrblk {
         BLOCK - an arbitrary block
 */
 
-union block {
-    struct bcblk        bcb;
-    struct bsblk        bsb;
-    struct cdblk        cdb;
-    struct chfcb        fcb;
-    struct efblk        efb;
-    struct icblk        icb;
-    struct rcblk        rcb;
-    struct scblk        scb;
-    struct vrblk        vrb;
+union block
+{
+  struct bcblk bcb;
+  struct bsblk bsb;
+  struct cdblk cdb;
+  struct chfcb fcb;
+  struct efblk efb;
+  struct icblk icb;
+  struct rcblk rcb;
+  struct scblk scb;
+  struct vrblk vrb;
 };

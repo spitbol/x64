@@ -25,36 +25,39 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 #if POLLING
-int     brkpnd;
+int brkpnd;
 
 #if UNIX | WINNT
 #include <signal.h>
 #undef SigType
 #define SigType void
 
-static SigType (*cstat)Params((int));
+static
+SigType (*cstat)
+Params ((int));
 #if WINNT
-static SigType (*bstat)Params((int));
+     static SigType (*bstat) Params ((int));
 #endif
-void catchbrk Params((int sig));
-void rearmbrk Params((void));
+     void catchbrk Params ((int sig));
+     void rearmbrk Params ((void));
 
-void startbrk()                                                 /* start up break logic */
+     void startbrk ()		/* start up break logic */
 {
-    brkpnd = 0;
-    cstat = signal(SIGINT,catchbrk);    /* set to catch control-C */
+  brkpnd = 0;
+  cstat = signal (SIGINT, catchbrk);	/* set to catch control-C */
 #if WINNT
-    bstat = signal(SIGBREAK,catchbrk);  /* set to catch control-BREAK */
+  bstat = signal (SIGBREAK, catchbrk);	/* set to catch control-BREAK */
 #endif
 }
 
 
 
-void endbrk()                                                   /* terminate break logic */
+void
+endbrk ()			/* terminate break logic */
 {
-    signal(SIGINT, cstat);                              /* restore original trap value */
+  signal (SIGINT, cstat);	/* restore original trap value */
 #if WINNT
-    signal(SIGBREAK, bstat);
+  signal (SIGBREAK, bstat);
 #endif
 }
 
@@ -62,26 +65,27 @@ void endbrk()                                                   /* terminate bre
 /*
  *  catchbrk() - come here when a user interrupt occurs
  */
-SigType catchbrk(sig)
-int sig;
+SigType
+catchbrk (sig)
+     int sig;
 {
-    word    stmctv, stmcsv;
-    brkpnd++;
-    stmctv = get_min_value(stmct,word) - 1;
-    stmcsv = get_min_value(stmcs,word);
-    set_min_value(stmct,1,word);                /* force STMGO loop to check */
-    set_min_value(stmcs,stmcsv- stmctv,word);    /* counters quickly */
-    set_min_value(polct,1,word);                                /* force quick SYSPL call */
+  word stmctv, stmcsv;
+  brkpnd++;
+  stmctv = get_min_value (stmct, word) - 1;
+  stmcsv = get_min_value (stmcs, word);
+  set_min_value (stmct, 1, word);	/* force STMGO loop to check */
+  set_min_value (stmcs, stmcsv - stmctv, word);	/* counters quickly */
+  set_min_value (polct, 1, word);	/* force quick SYSPL call */
 }
 
 
-void rearmbrk()                                                 /* rearm after a trap occurs */
+void
+rearmbrk ()			/* rearm after a trap occurs */
 {
-    signal(SIGINT,catchbrk);                    /* set to catch traps */
+  signal (SIGINT, catchbrk);	/* set to catch traps */
 #if WINNT
-    signal(SIGBREAK,catchbrk);
+  signal (SIGBREAK, catchbrk);
 #endif
 }
 #endif
-#endif                                  /* POLLING */
-
+#endif /* POLLING */

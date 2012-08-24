@@ -22,8 +22,8 @@ This file is part of Macro SPITBOL.
     Set up externals for all the compiler's registers.
 */
 
-extern word     reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs;
-extern IATYPE   reg_ia;
+extern word reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs;
+extern IATYPE reg_ia;
 extern double reg_ra;
 #if WINNT | SPARC
 extern word reg_pc;
@@ -37,13 +37,13 @@ extern word reg_pc;
     be converted to and from far pointers in the C data space.
  */
 #if __NEAR__
-extern void *mk_mp(void near *minp);
+extern void *mk_mp (void near * minp);
 #define MK_MP(minp,type) ((type)mk_mp((void near *)(minp)))
 #define MP_OFF(cp,type) ((type)(void NEAR *)(cp))
-#else                                   /* __NEAR__ */
+#else /* __NEAR__ */
 #define MK_MP(minp,type) ((type)(minp))
 #define MP_OFF(cp,type) ((type)cp)
-#endif                                  /* __NEAR__ */
+#endif /* __NEAR__ */
 
 /*
     Macros to fetch a value of appropriate type from a compiler register
@@ -60,7 +60,7 @@ extern void *mk_mp(void near *minp);
 #define PC(type)        (sizeof(type) == 4 ? MK_MP(reg_pc,type) : ((type) reg_pc))
 #define XS(type)        (sizeof(type) == 4 ? MK_MP(reg_xs,type) : ((type) reg_xs))
 #define RA(type)  (sizeof(type) == 8 ? MK_MP(reg_ra,type) : ((type) reg_ra))
-#else         /* __NEAR__ */
+#else /* __NEAR__ */
 #define CP(type)        ((type) reg_cp)
 #define IA(type)        ((type) reg_ia)
 #define WA(type)        ((type) reg_wa)
@@ -70,8 +70,8 @@ extern void *mk_mp(void near *minp);
 #define XL(type)        ((type) reg_xl)
 #define PC(type)        ((type) reg_pc)
 #define XS(type)        ((type) reg_xs)
-#define RA(type)  ((type) reg_ra)    /* v1.30.12 */
-#endif          /* __NEAR__ */
+#define RA(type)  ((type) reg_ra)	/* v1.30.12 */
+#endif /* __NEAR__ */
 /*
     Macros to set a value of appropriate type into a compiler register.
 */
@@ -108,9 +108,9 @@ extern void *mk_mp(void near *minp);
         Function to call into minimal code.
         The argument is an ordinal number defined below.
 */
-extern void minimal_call Params((word callno));
-extern void popregs Params((void));
-extern void pushregs Params((void));
+extern void minimal_call Params ((word callno));
+extern void popregs Params ((void));
+extern void pushregs Params ((void));
 #define MINIMAL_CALL(cn) minimal_call(cn)
 #define MINSAVE() pushregs()
 #define MINRESTORE() popregs()
@@ -121,21 +121,22 @@ extern void pushregs Params((void));
     The order of entries here must correspond to the order of
     table entries in the INTER assembly language module.
 */
-enum calltab {
-    relaj_callid,
-    relcr_callid,
-    reloc_callid,
-    alloc_callid,
-    alocs_callid,
-    alost_callid,
-    blkln_callid,
-    insta_callid,
-    rstrt_callid,
-    start_callid,
-    filnm_callid,
-    dtype_callid,
-    enevs_callid,
-    engts_callid
+enum calltab
+{
+  relaj_callid,
+  relcr_callid,
+  reloc_callid,
+  alloc_callid,
+  alocs_callid,
+  alost_callid,
+  blkln_callid,
+  insta_callid,
+  rstrt_callid,
+  start_callid,
+  filnm_callid,
+  dtype_callid,
+  enevs_callid,
+  engts_callid
 };
 
 /*
@@ -155,62 +156,54 @@ set_min_value sets the contents of an item of Minimal data.
     Names for accessing minimal data values via get_data_offset macro.
 */
 extern word
-gbcnt,
-headv,
-mxlen,
-stage,
-timsx,
-dnamb,
-dnamp,
-state,
-stbas,
-statb,
-polct,
-typet,
-lowspmin,
-flprt,
-flptr,
-gtcef,
-hshtb,
-pmhbs,
-r_fcb,
-c_aaa,
-c_yyy,
-g_aaa,
-w_yyy,
-r_cod,
-kvstn,
-kvdmp,
-kvftr,
-kvcom,
-kvpfl,
-cswfl,
-stmcs,
-stmct,
-ticblk,
-tscblk,
-id1,
-id2blk,
-inpbuf,
-ttybuf,
-end_min_data;
+  gbcnt,
+  headv,
+  mxlen,
+  stage,
+  timsx,
+  dnamb,
+  dnamp,
+  state,
+  stbas,
+  statb,
+  polct,
+  typet,
+  lowspmin,
+  flprt,
+  flptr,
+  gtcef,
+  hshtb,
+  pmhbs,
+  r_fcb,
+  c_aaa,
+  c_yyy,
+  g_aaa,
+  w_yyy,
+  r_cod,
+  kvstn,
+  kvdmp,
+  kvftr,
+  kvcom,
+  kvpfl,
+  cswfl,
+  stmcs, stmct, ticblk, tscblk, id1, id2blk, inpbuf, ttybuf, end_min_data;
 
 /*
     Names for accessing minimal code values via get_code_offset macro.
 */
-extern void B_EFC();
-extern void B_ICL();
-extern void B_RCL();
-extern void B_SCL();
-extern void B_VCT();
-extern void B_XNT();
-extern void B_XRT();
-extern void DFFNC();
-extern void S_AAA();
-extern void S_YYY();
+extern void B_EFC ();
+extern void B_ICL ();
+extern void B_RCL ();
+extern void B_SCL ();
+extern void B_VCT ();
+extern void B_XNT ();
+extern void B_XRT ();
+extern void DFFNC ();
+extern void S_AAA ();
+extern void S_YYY ();
 
-#else                                   /* DIRECT */
-extern  word *minoff Params((word valno));
+#else /* DIRECT */
+extern word *minoff Params ((word valno));
 #define get_code_offset(vn,type) ((type)minoff(vn))
 #define get_data_offset(vn,type) ((type)minoff(vn))
 #define get_min_value(vn,type)  ((type)*minoff(vn))
@@ -221,59 +214,60 @@ extern  word *minoff Params((word valno));
     The order of entries here must correspond to the order of
     valtab entries in the INTER assembly language module.
 */
-enum valtab {
-    gbcnt,
-    headv,
-    mxlen,
-    stage,
-    timsx,
-    dnamb,
-    dnamp,
-    state,
-    b_efc,
-    b_icl,
-    b_scl,
-    b_vct,
-    b_xnt,
-    b_xrt,
-    stbas,
-    statb,
-    polct,
-    typet,
-    dffnc,
-    lowspmin,
-    flprt,
-    flptr,
-    gtcef,
-    hshtb,
-    pmhbs,
-    r_fcb,
-    c_aaa,
-    c_yyy,
-    g_aaa,
-    w_yyy,
-    s_aaa,
-    s_yyy,
-    r_cod,
-    kvstn,
-    kvdmp,
-    kvftr,
-    kvcom,
-    kvpfl,
-    cswfl,
-    stmcs,
-    stmct,
-    ticblk,
-    tscblk,
-    id1,
-    id2blk,
-    inpbuf,
-    ttybuf,
-    b_rcl,
-    end_min_data
+enum valtab
+{
+  gbcnt,
+  headv,
+  mxlen,
+  stage,
+  timsx,
+  dnamb,
+  dnamp,
+  state,
+  b_efc,
+  b_icl,
+  b_scl,
+  b_vct,
+  b_xnt,
+  b_xrt,
+  stbas,
+  statb,
+  polct,
+  typet,
+  dffnc,
+  lowspmin,
+  flprt,
+  flptr,
+  gtcef,
+  hshtb,
+  pmhbs,
+  r_fcb,
+  c_aaa,
+  c_yyy,
+  g_aaa,
+  w_yyy,
+  s_aaa,
+  s_yyy,
+  r_cod,
+  kvstn,
+  kvdmp,
+  kvftr,
+  kvcom,
+  kvpfl,
+  cswfl,
+  stmcs,
+  stmct,
+  ticblk,
+  tscblk,
+  id1,
+  id2blk,
+  inpbuf,
+  ttybuf,
+  b_rcl,
+  end_min_data
 };
 
-#endif                                  /* DIRECT */
+#endif /* DIRECT */
 
 /* Some shorthand notations */
 #define pid1 get_data_offset(id1,struct scblk *)
@@ -290,4 +284,3 @@ enum valtab {
 #define type_xnt get_code_offset(b_xnt,word)
 #define type_xrt get_code_offset(b_xrt,word)
 #define type_rcl get_code_offset(b_rcl,word)
-

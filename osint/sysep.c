@@ -32,9 +32,8 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-zysep()
+zysep ()
 {
-    write( 1, "\f", 1 );
-    return NORMAL_RETURN;
+  write (1, "\f", 1);
+  return NORMAL_RETURN;
 }
-

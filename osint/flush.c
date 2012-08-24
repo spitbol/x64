@@ -31,35 +31,39 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-int flush( ioptr )
-struct  ioblk   *ioptr;
+int
+flush (ioptr)
+     struct ioblk *ioptr;
 {
-    register struct bfblk       *bfptr = MK_MP(ioptr->bfb, struct bfblk *);
-    register int        ioerrcnt = 0;
-    register word       n;
+  register struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
+  register int ioerrcnt = 0;
+  register word n;
 
-    if ( bfptr ) {                                                      /* if buffer */
-        if ( ioptr->flg2 & IO_DIR ) {           /* if dirty */
-            ioerrcnt += fsyncio(ioptr);     /* synchronize file and buffer */
-            if ( bfptr->fill ) {
-                n = write(ioptr->fdn, bfptr->buf, bfptr->fill);
+  if (bfptr)
+    {				/* if buffer */
+      if (ioptr->flg2 & IO_DIR)
+	{			/* if dirty */
+	  ioerrcnt += fsyncio (ioptr);	/* synchronize file and buffer */
+	  if (bfptr->fill)
+	    {
+	      n = write (ioptr->fdn, bfptr->buf, bfptr->fill);
 #if WINNT
-                /* ignore short writes on character device */
-                if ( n != bfptr->fill && testty(ioptr->fdn) )
+	      /* ignore short writes on character device */
+	      if (n != bfptr->fill && testty (ioptr->fdn))
 #else
-                if ( n != bfptr->fill)
+	      if (n != bfptr->fill)
 #endif
-                    ioerrcnt++;
+		ioerrcnt++;
 
-                if (n > 0)
-                    bfptr->curpos += n;
-            }
-            ioptr->flg2 &= ~IO_DIR;
-        }
-        bfptr->offset += bfptr->fill;           /* advance file position */
-        bfptr->next = bfptr->fill = 0;          /* empty the buffer */
+	      if (n > 0)
+		bfptr->curpos += n;
+	    }
+	  ioptr->flg2 &= ~IO_DIR;
+	}
+      bfptr->offset += bfptr->fill;	/* advance file position */
+      bfptr->next = bfptr->fill = 0;	/* empty the buffer */
     }
-    return ioerrcnt;
+  return ioerrcnt;
 }
 
 /*
@@ -74,21 +78,23 @@ struct  ioblk   *ioptr;
 
    Returns 0 if no error, 1 if error.
  */
-int fsyncio( ioptr )
-struct  ioblk   *ioptr;
+int
+fsyncio (ioptr)
+     struct ioblk *ioptr;
 {
-    register struct bfblk *bfptr = MK_MP(ioptr->bfb, struct bfblk *);
-    FILEPOS n;
+  register struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
+  FILEPOS n;
 
-    if (bfptr) {
-        if (bfptr->offset != bfptr->curpos) {
-            n = LSEEK(ioptr->fdn, bfptr->offset, 0);
-            if (n >= 0)
-                bfptr->curpos = n;
-            else
-                return 1;                       /* I/O error */
-        }
+  if (bfptr)
+    {
+      if (bfptr->offset != bfptr->curpos)
+	{
+	  n = LSEEK (ioptr->fdn, bfptr->offset, 0);
+	  if (n >= 0)
+	    bfptr->curpos = n;
+	  else
+	    return 1;		/* I/O error */
+	}
     }
-    return 0;
+  return 0;
 }
-
