@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSIO.C          Version:  01.07
-        ---------------------------------------
-
-        Contents:       Function zysio
-*/
-
-/*
     zysio - fill in file control block
 
     This function fills in the i/o control blocks requested by zysfc.

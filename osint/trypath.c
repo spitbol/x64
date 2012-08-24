@@ -17,15 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-   File: TRYPATH.C         Version 1.01
-        --------------------------------------------
-
-        Contents:       Functions initpath, trypath.
-
-   V1.01 4-27-97 Fix bug in trypath that allowed it to search beyond the
-                 trailing '\0' in pathptr.
-*/
 
 #include "port.h"
 

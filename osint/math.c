@@ -19,9 +19,9 @@ This file is part of Macro SPITBOL.
 
 /*
  * math.c - extended math support for spitbol
- *
+
  * Routines not provided by hardware floating point.
- *
+
  * These routines are not called from other C routines.  Rather they
  * are called by inter.*, and by external functions.
  */
@@ -45,7 +45,7 @@ extern int errno; /* system error number */
 extern double inf;      /* infinity */
 
 /*
- * f_atn - arctangent
+   f_atn - arctangent
  */
 double f_atn(ra)
 double ra;
@@ -55,7 +55,7 @@ double ra;
 
 
 /*
- * f_chp - chop
+   f_chp - chop
  */
 double f_chp(ra)
 double ra;
@@ -69,7 +69,7 @@ double ra;
 
 
 /*
- * f_cos - cosine
+   f_cos - cosine
  */
 double f_cos(ra)
 double ra;
@@ -80,7 +80,7 @@ double ra;
 
 
 /*
- * f_etx - e to the x
+   f_etx - e to the x
  */
 double f_etx(ra)
 double ra;
@@ -94,7 +94,7 @@ double ra;
 
 
 /*
- * f_lnf - natural log
+   f_lnf - natural log
  */
 double f_lnf(ra)
 double ra;
@@ -108,7 +108,7 @@ double ra;
 
 
 /*
- * f_sin - sine
+   f_sin - sine
  */
 double f_sin(ra)
 double ra;
@@ -118,7 +118,7 @@ double ra;
 
 
 /*
- * f_sqr - square root  (range checked by caller)
+   f_sqr - square root  (range checked by caller)
  */
 double f_sqr(ra)
 double ra;
@@ -128,7 +128,7 @@ double ra;
 
 
 /*
- * f_tan - tangent
+   f_tan - tangent
  */
 double f_tan(ra)
 double ra;

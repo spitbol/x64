@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSIN.C          Version:  01.03
-        ---------------------------------------
-
-        Contents:       Function zysin
-*/
-
-/*
         zysin - read input record
 
         zysin reads and returns the next input record from a file.

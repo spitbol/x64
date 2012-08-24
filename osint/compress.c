@@ -18,12 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  COMPRESS.C       Version:  01.01
-        ---------------------------------------
-
-        Contents:       Functions doexpand, docompress
-                        Functions compress, expand
-
         These functions are used to compress and expand a save file.
 
         LZW data compression taken from an article by Mark R. Nelson in
@@ -42,7 +36,6 @@ This file is part of Macro SPITBOL.
         ALLOCATED BLOCK ON THE HEAP, AND THAT ADDITIONAL MEMORY PROVIDED
         BY SBRK() WILL BE CONTIGUOUS WITH THIS MEMORY.
 
-    v1.01 02-26-92      Correct input_code() to fill with zeros at end of file.
 */
 
 

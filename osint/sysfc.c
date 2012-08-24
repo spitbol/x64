@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/ File:  SYSFC.C    Version:  01.04
-        ---------------------------------------
-
-        Contents:       Function zysfc
-*/
-
-/*
     zysfc - setup file control block
 
     This is sort of a messy function that determines from the I/O association

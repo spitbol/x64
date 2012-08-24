@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  DOSET.C          Version:  01.04
-        ---------------------------------------
-
-        Contents:       Function doset
-*/
-
-/*
     doset( ioptr, offset, whence )
 
     doset() does an "LSEEK" function call on the file described by ioptr.

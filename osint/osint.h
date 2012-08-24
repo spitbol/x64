@@ -17,16 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-    File:  OSINT.H              Version:  01.01
-    -------------------------------------------
-
-    This header file defines the interface between the Macro SPITBOL compiler
-    written in assembly langauge and the OS interface written in C.
-    Communication between the two is handled via a set of global variables
-    defined as externals below.
-*/
-
 
 /*
     Set up externals for all the compiler's registers.

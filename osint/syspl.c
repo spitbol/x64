@@ -17,10 +17,8 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-        File:  SYSPL.C          Version:  01.01
-        ---------------------------------------
 
+/*
         zyspl - interface polling from SPITBOL
 
         zyspl is called before statement execution to allow the interface

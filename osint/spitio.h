@@ -17,29 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-    File:  SPITIO.H     Version:  01.09
-    -------------------------------------------
-
-    This header file defines the I/O control blocks used by the
-    operating system interface for the Macro Spitbol compiler.
-
-   V1.09 27-Apr-97 Add FILEPOS definition.
-   V1.08 26-Oct-94 Add "share" word to ioblk to allow file sharing
-                        options.  Also, in the bfblk, change buf[1] to buf[sizeof(word)]
-                        so that BFSIZE is calculated properly with compilers that
-                        round-up the size of a structure to a word-multiple.
-        V1.07   01-Aug-93 Add IO_EOT flag to ignore EOT char in DOS-mode text files.
-        V1.06   01-Feb-93 Split record size into two fields (rsz and mode) in fcb, to
-                        prevent negative record size appearing to be a valid
-                        pointer in 8088 SPITBOL.
-        V1.05   Add IO_DIR, change definitions in bfblk to
-                        accommodate read/write files.
-        V1.04   Split IOBLK flags into two words
-        V1.03   Add IO_COT flag from MS-DOS
-        V1.02   Split RECSIZ into IRECSIZ and ORECSIZ
-*/
-
 /* Size of file position words in I/O buffer block */
 #if SETREAL
 typedef double FILEPOS;     /* real file positions */

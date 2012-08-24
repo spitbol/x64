@@ -18,14 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  TESTTY.C         Version:  01.04
-        ---------------------------------------
-
-        Contents:       Function testty
-                        Function ttyraw
-*/
-
-/*
     testty( fd )
 
     testty() determines whether or not a file descriptor represents a
@@ -38,7 +30,7 @@ This file is part of Macro SPITBOL.
 */
 #include "port.h"
 
-#if AIX | SOLARIS | LINUX
+#if LINUX
 #define RAW_BIT RAW
 #endif
 

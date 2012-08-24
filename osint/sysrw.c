@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSRW.C          Version:  01.01
-        ---------------------------------------
-
-        Contents:       Function zysrw
-*/
-
-/*
     zysrw - rewind file
 
         Parameters

@@ -37,7 +37,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if AIX | SOLARIS | LINUX
+#if  LINUX
 #include <fcntl.h>
 #endif
 

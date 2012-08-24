@@ -17,19 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-        File:  WRTAOUT.C        Version:  01.02
-        ---------------------------------------
-
-        Contents:       Function openaout
-                        Function wrtaout
-                        Function seekaout
-                        Function closeaout
-
-    These functions are used to write an executable "a.out" file containing
-    the currently executing spitbol program.
-*/
-
 #include "port.h"
 
 #if WINNT
@@ -39,7 +26,7 @@ This file is part of Macro SPITBOL.
 #include <sys/times.h>
 #endif
 
-#if AIX | SOLARIS  | LINUX
+#if LINUX
 #include <fcntl.h>
 #endif
 

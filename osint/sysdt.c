@@ -17,13 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-        File:  SYSDT.C          Version:  01.06
-        ---------------------------------------
-
-        Contents:       Function zysdt
-                        Function conv
-*/
 
 /*
         zysdt - get current date

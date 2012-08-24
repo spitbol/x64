@@ -24,41 +24,41 @@ This file is part of Macro SPITBOL.
 /*
     Definitions of routines and data available to C-language
     external function to be called from 32-bit versions of SPITBOL.
- *
+
         V1.00  02/17/90 01:52pm
                    Initial version
- *
+
     V1.01  10-18-91 04:53pm
            <withdrawn>.
- *
+
     V1.02  03-29-92 09:11am
          <withdrawn>.
- *
+
     V1.03  07-28-92 06:56am
                    Customize for SPARC.
- *
+
         V1.04  09-12-94 07:13pm
                    Add definitions for buffers
- *
+
     V1.05  04-25-95 10:05pm
                    Customize for RS/6000
- *
+
     V1.06  12-29-96 06:05pm
            Customize for Windows NT
- *
+
     V1.07  03-04-97 12:45pm
                           Tweak for SPARC.
- *
+
     Definition of information placed on stack prior to pushing arguments to
     an external function.
- *
+
     Many of these items can be ignored, and are provided only for the
     benefit of those wishing to operate directly on SPITBOL's internal
     data structures.
- *
+
     However, the pointer in presult *must* be used by the external
     function to locate the area in which results are returned.
- *
+
  */
 
 #include "system.h"
@@ -136,13 +136,13 @@ enum ext_type {                                         /* Executing under:     
 /*
    Sample usage.  Definition for function arguments, assuming
    calling function in SPITBOL with:
- *
+
          F(INTEGER,REAL,STRING)
- *
+
    Because SPITBOL pushes arguments left to right, a Pascal
    calling sequence should be used.  The could be supplied by
    adding the __pascal keyword to the entry macro.
- *
+
    However, because the SPARC and RS/6000 C compilers do not support
    Pascal calling sequences, and we would like to move external function
    source files easily between systems, the function definition will have

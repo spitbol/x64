@@ -17,13 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-        File:  SYSLD.C          Version:  01.03
-        ---------------------------------------
-
-        Contents:       Function zysld
-
-*/
 
 /*
         zysld - load external function
@@ -55,7 +48,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if AIX | SOLARIS | LINUX
+#if LINUX
 #include <fcntl.h>
 #endif
 
@@ -137,16 +130,8 @@ char *file;
 
     if (lnscb->len == 0) {                                      /* If no library name, first try */
         /* function name with ".slf" extension */
-#if SOLARIS
-        /* force lookup in local directory */
-        file2[0] = '.';
-        file2[1] = '/';
-        appendext(fnscb->str,EFNEXT,&file2[2],1);
-        fd = loadDll(file2, fnscb->str, &pfn);
-#else
         appendext(fnscb->str,EFNEXT,file,1); /* append .slf extension to function name */
         fd = loadDll(file, fnscb->str, &pfn);
-#endif
         if (fd == -1) {                                         /* if couldn't open in local directory */
             mystrcpy(file2,file);
             initpath(SPITFILEPATH);                     /* try alternate paths along SNOLIB */
@@ -175,16 +160,6 @@ char *file;
                 if (fd != -1)
                     break;
             }
-#if SOLARIS | AIX
-            if (fd == -1)
-            {
-                /* force lookup in local directory */
-                file2[0] = '.';
-                file2[1] = '/';
-                mystrcpy(&file2[2],lnscb->str);
-                fd = loadDll(file2, fnscb->str, &pfn);
-            }
-#endif
         }
         unmake_c_str(savecp2, savechar2);
     }
@@ -192,7 +167,7 @@ char *file;
     unmake_c_str(savecp, savechar);                     /* Restore saved char in function name */
     *(PFN *)file = pfn;                 /* Return function address in file buffer */
     return fd;
-#endif          /* SOLARIS | AIX | WINNT */
+#endif          /* WINNT */
 }
 
 

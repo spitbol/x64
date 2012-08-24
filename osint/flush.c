@@ -63,16 +63,16 @@ struct  ioblk   *ioptr;
 }
 
 /*
- * fsyncio - bring file into sync with buffer.  A brute force
- * approach is to always LSEEK to bfptr->offset, but this slows down
- * SPITBOL's I/O with many unnecessary LSEEKs when the file is already
- * properly positioned.  Instead, we remember the current physical file
- * position in bfptr->curpos, and only LSEEK if it is different
- * from bfptr->offset.
- *
- * For unbuffered files, the file position is always correct.
- *
- * Returns 0 if no error, 1 if error.
+   fsyncio - bring file into sync with buffer.  A brute force
+   approach is to always LSEEK to bfptr->offset, but this slows down
+   SPITBOL's I/O with many unnecessary LSEEKs when the file is already
+   properly positioned.  Instead, we remember the current physical file
+   position in bfptr->curpos, and only LSEEK if it is different
+   from bfptr->offset.
+
+   For unbuffered files, the file position is always correct.
+
+   Returns 0 if no error, 1 if error.
  */
 int fsyncio( ioptr )
 struct  ioblk   *ioptr;

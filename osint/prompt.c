@@ -17,13 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-        File:  PROMPT.C         Version:  01.00
-        ---------------------------------------
-
-        Contents:       Function prompt
-*/
-
 #include "port.h"
 
 /*      prompt() - used to give user usage info in command line versions.
@@ -85,7 +78,7 @@ void prompt()
     wrterr("-r INPUT from source file following END statement");
     wrterr("-T=file  write TERMINAL output to file");
     wrterr("-#=file[options]  associate file with I/O channel #");
-#if SOLARIS | LINUX | WINNT
+#if LINUX | WINNT
     wrterr("option defaults: -d64m -i128k -m4m -s128k -g60 -t120");
 #else
     wrterr("option defaults: -d64m -i128k -m64k -s128k -g60 -t120");

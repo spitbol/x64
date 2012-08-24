@@ -31,11 +31,7 @@ This file is part of Macro SPITBOL.
 
     The following manifest constants define the target operating system.
 
-    AIX3        AIX version 3
-    AIX4        AIX version 4
-    BSD43       Berkeley release: BSD 4.3
     LINUX       Linux
-    SOLARIS     Sun Solaris
     WINNT       Windows NT/XP/Vista
 
 */

@@ -18,11 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSGC.C          Version:  01.01
-        ---------------------------------------
-
-        zysgc - notification of system garbage collection
-
         zysgc is called before and after a garbage collection.
         Some systems may wish to take special action using this information.
 

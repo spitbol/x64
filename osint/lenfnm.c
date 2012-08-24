@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/ File:  LENFNM.C   Version:  01.02
-        ---------------------------------------
-
-        Contents:       Function lenfnm
-*/
-
-/*
     lenfnm( scptr )
 
     lenfnm() examines the file argument within the passed SCBLK and returns
@@ -88,7 +81,7 @@ struct  scblk   *scptr;
 #endif                                  /* PIPES */
 
     /*
-    /   Null strings have filenames with lengths of 0.
+        Null strings have filenames with lengths of 0.
     */
     len = len2 = scptr->len;
     if ( len == 0 )
@@ -145,8 +138,8 @@ struct  scblk   *scptr;
     return len;
 #else           /* WINNT */
     /*
-    /   Here for a normal filename.  Just count the number of characters
-    /   up to the first blank or end of string, whichever occurs first.
+        Here for a normal filename.  Just count the number of characters
+        up to the first blank or end of string, whichever occurs first.
     */
     for ( cnt = 0; cnt < len  &&  *cp++ != ' '; cnt++ )
         ;

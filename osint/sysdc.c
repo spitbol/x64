@@ -44,9 +44,6 @@ zysdc()
         write( STDERRFD, "SPITBOL-386", 11);
 #endif
 
-#if SUN4
-        write( STDERRFD, "SPARC SPITBOL", 13);
-#endif          /* SUN4 */
 
 #if LINUX
         write( STDERRFD, "LINUX SPITBOL", 13);
@@ -61,6 +58,8 @@ zysdc()
 #endif                                  /* RUNTIME */
 
         write( STDERRFD, "  Release ", 10);
+	char * s = pid1->str;
+	int  n = pid1->len;
         write( STDERRFD, pheadv->str, pheadv->len );
         write( STDERRFD, pid1->str, pid1->len );
         wrterr( cprtmsg );

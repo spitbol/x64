@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSEM.C          Version:  2.01
-        ---------------------------------------
-
-        Contents:       Function zysem
-*/
-
-/*
         zysem - get error message text
 
         zysem returns the error message associated with an error number.

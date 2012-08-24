@@ -18,29 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSTTY.C         Version:  01.04
-        ---------------------------------------
-
-        Contents:       Function zyspi
-                        Function zysri
-
-/ 01.02         Added output record size to ioblock.  Note, as a
-                result of changes in the compiler at ASG11, it is now
-                possible for zyspi() to be called from zysou().  Previously,
-                writes to TERMINAL were going through the PRTST logic, wasting
-                time using the print buffer, and limiting the record length
-                to the listing page width.  Instead, all output assignments
-                go to zysou(), which now uses the FCB info in WA to decide
-                if it is a special file (OUTPUT/TERMINAL), or a normal
-                file.
-
-/ 01.03 06-Feb-91 Changed for read/write I/O.  Add EOL chars to ioblk.
-
-/ 01.04 01-Feb-93 New oswrite calling sequence.
-
-*/
-
-/*
     The systty module contains two functions, zyspi and zysri, that
     perform terminal I/O.
 

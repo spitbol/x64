@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  FAKEXIT.C        Version:  01.00
-        ---------------------------------------
-
-        Contents:       Function exit
-*/
-
-/*
     exit()
 
     This is a "fake" exit() function that prevents the linker from linking

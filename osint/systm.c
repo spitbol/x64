@@ -17,29 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-        File:  SYSTM.C          Version:  01.03
-        ---------------------------------------
-
-        Contents:       Function zystm
-*/
-
-/*
-        zystm - get execution time so far
-
-        zystm is called to obtain the amount of execution time used so far
-        since spitbol began execution.  The returned value is assumed to be
-        in milliseonds, except for 16-bit implementations, which return deciseconds.
-
-        Parameters:
-            None
-        Returns:
-            IA - execution time so far in milliseconds or deciseconds.
-
-        v1.03   27-May-95       For AIX, corrected use of tms_utime.  Was
-                                                multiplying by 100 / 6.  Should be 1000/CLK_TCK.
-                                                Was running fast by factor of 1.6.
-*/
 
 #include "port.h"
 
@@ -50,10 +27,6 @@ extern long msec( void );
 #include <sys/times.h>
 #if AIX
 #include <time.h>               /* pick up CLK_TCK definition (100) */
-#endif
-#if SOLARIS
-#include <sys/param.h>          /* pick up HZ definition (60) */
-#define CLK_TCK HZ
 #endif
 #endif          /* WINNT */
 #if LINUX

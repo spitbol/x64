@@ -151,29 +151,29 @@ struct  scblk   *scptr;
                     ioerrcnt += flush(ioptr);
 
                 /*
-                 *   If the current buffer write-in position is non-zero,
-                 * there is something in the buffer to be retained.  Copy
-                 * new stuff to the buffer.
-                 *
-                 *   If the current buffer write-in position is zero, there
-                 * may or may not be something in the buffer that needs to
-                 * be maintained.  If the amount of data being written
-                 * exceeds the size of the buffer, any present contents of
-                 * the buffer can be ignored (it will be overwritten in the
-                 * file).  If the amount to be written is less than a buffer
-                 * load, then it must be copied to the buffer.
-                 *
-                 */
+                     If the current buffer write-in position is non-zero,
+                   there is something in the buffer to be retained.  Copy
+                   new stuff to the buffer.
+
+                     If the current buffer write-in position is zero, there
+                   may or may not be something in the buffer that needs to
+                   be maintained.  If the amount of data being written
+                   exceeds the size of the buffer, any present contents of
+                   the buffer can be ignored (it will be overwritten in the
+                   file).  If the amount to be written is less than a buffer
+                   load, then it must be copied to the buffer.
+
+                  */
                 else if (bfptr->next || linelen < bfptr->size) {
                     register char *r;
                     register word n;
 
                     /*
-                     *   If the buffer is truly empty, and the file is opened
-                     * for input as well as output, and it is not a character
-                     * device, then it must be filled prior to copying in the
-                     * characters being written.
-                     *
+                         If the buffer is truly empty, and the file is opened
+                       for input as well as output, and it is not a character
+                       device, then it must be filled prior to copying in the
+                       characters being written.
+
                      */
                     if (!bfptr->fill && ioptr->flg1 & IO_INP && testty(fdn))
                         if (fillbuf(ioptr) < 0) {
@@ -210,11 +210,11 @@ struct  scblk   *scptr;
                 }
 
                 /*
-                 *   Here if the current buffer write-in position is zero
-                 * and the number of characters being written exceeds the
-                 * size of the buffer.  For efficiency, we will bypass
-                 * the buffer and write as many multiples of the buffer
-                 * as possible.
+                     Here if the current buffer write-in position is zero
+                   and the number of characters being written exceeds the
+                   size of the buffer.  For efficiency, we will bypass
+                   the buffer and write as many multiples of the buffer
+                   as possible.
                  */
                 else {                                                          /* n==bfptr->size means ignore buffer contents */
                     register word n,m;

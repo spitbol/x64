@@ -17,34 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-    File:  OSPIPE.C     Version:  01.06
-        ---------------------------------------
-
-        Contents:       Function ospipe
-
-/ 1.02  Use vfork() on BSD systems to avoid copying pages.  Parent is suspended
-        by system until child execl's.
-
-/ 1.03  Look at flag IO_ENV, and if set, fnm string is the name
-        of an environment variable pointing to the filename.
-
-/ 1.04  Check for update mode on file.
-
-/ 1.05  <withdrawn>
-
-/ 1.06  30-Dec-96 Create version of WinNT.  Save and restore characters
-        at end of string in doshell().  Fix bug in Unix version:
-        If child fork does not run to the point where it does the execcl call
-        before the parent resumes, the parent could do a garbage collect and
-        invalidate the string pointer that the child will use.  Use a poor
-        man's interlock to keep the parent within ospipe until the child
-        has captured what is needed.
-
-/ 1.07  19-Feb-98 Interlock is not necessary under AIX because we use fork,
-        not vfork.  vfork shares the parent's address space, whereas fork
-        gives the child a complete new copy of the address space.
-*/
 
 #include "port.h"
 #if PIPES
@@ -64,9 +36,6 @@ char    *getshell();
 char    *lastpath();
 
 static int doshell Params((struct ioblk *ioptr));
-#if SOLARIS
-static int interlock;
-#endif
 
 #if WINNT
 HFILE childfd, stdfd;           /* kludge to get info to syswinnt.c */
@@ -96,14 +65,14 @@ struct  ioblk   *ioptr;
     if ( (ioptr->flg1 & (IO_INP | IO_OUP)) == (IO_INP | IO_OUP) )
         return -1;              /* can't open read/write pipe */
     /*
-    /   Fail if system call to create pipe fails.
+        Fail if system call to create pipe fails.
     */
     if ( pipe( fd ) < 0 )
         return -1;
 
     /*
-    /   Set up file descriptors properly based on whose reading from pipe/
-    /   writing to pipe.
+        Set up file descriptors properly based on whose reading from pipe/
+        writing to pipe.
     */
     if ( ioptr->flg1 & IO_INP ) {
         parentfd = fd[0];       /* parent reads from fd[0]      */
@@ -118,19 +87,14 @@ struct  ioblk   *ioptr;
 
 #if UNIX
     /*
-    /   Execute the proper code based on whose process is the parent and
+        Execute the proper code based on whose process is the parent and
     /   whose is the child.
     */
-#if SOLARIS
-    interlock = 0;
-    switch ( childpid = vfork() ) {
-#else
     switch ( childpid = fork() ) {
-#endif
         int n;
     case -1:
         /*
-        /   Fork failed, so close up files and return -1.
+            Fork failed, so close up files and return -1.
         */
         close( parentfd );
         close( childfd );
@@ -139,23 +103,23 @@ struct  ioblk   *ioptr;
 
     case 0:
         /*
-        /   Child executes here.  Set up file descriptors 0 & 1 properly
-        /   and close any file descriptors open above 2.
-        /
-        /    If parent is expecting to read from us, we must write
-        /    via file descriptor 1 to childfd.
-        /    If parent is expecting to write to us, we must read via
-        /    file descriptor 0 from childfd.
+            Child executes here.  Set up file descriptors 0 & 1 properly
+            and close any file descriptors open above 2.
+
+             If parent is expecting to read from us, we must write
+             via file descriptor 1 to childfd.
+             If parent is expecting to write to us, we must read via
+             file descriptor 0 from childfd.
         */
         close( stdfd );
 
         /*
-        /   Duplicate childfd to be either child's (our) fd 0 or 1.
+            Duplicate childfd to be either child's (our) fd 0 or 1.
         */
         dup( childfd );
 
         /*
-        /   Close all unnecessary file descriptors.
+            Close all unnecessary file descriptors.
         */
         for ( n=3 ; n<=OPEN_FILES ; close( n++ ) )
             ;
@@ -166,16 +130,11 @@ struct  ioblk   *ioptr;
 
     default:
         /*
-        /   Parent executes here.  Remember process id of child and close
-        /   its file descriptor.
+            Parent executes here.  Remember process id of child and close
+            its file descriptor.
         */
         ioptr->pid = childpid;
         close( childfd );
-#if SOLARIS
-        /* Need to wait here until child says that is has copied data */
-        while (!interlock)
-            usleep(100);                       /* Yield to other tasks */
-#endif
         break;
     }
 #endif                                  /* UNIX */
@@ -218,11 +177,11 @@ struct  ioblk   *ioptr;
     int     len;
 
     /*
-    /   Set up to execute command.
-    /
-    /   Be sure to point properly at start of command and to
-    /   terminate it with a Nul character.  Remember that
-    /   command is in string with form "!*command* options".
+        Set up to execute command.
+
+        Be sure to point properly at start of command and to
+        terminate it with a Nul character.  Remember that
+        command is in string with form "!*command* options".
     */
     scptr = MK_MP(ioptr->fnm,struct scblk *);   /* point to cmd scblk   */
     if (ioptr->flg2 & IO_ENV) {
@@ -244,9 +203,6 @@ struct  ioblk   *ioptr;
 #endif                  /* WINNT */
 #if UNIX
     shellpath = getshell();         /* get shell's path     */
-#if SOLARIS
-    interlock = 1;                  /* release parent */
-#endif
     execl( shellpath, pathlast( shellpath ), "-c", cmdbuf, (char *)NULL );
     return -1;                                  /* should not get here */
 #endif                                  /* UNIX */

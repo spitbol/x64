@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  OSREAD.C         Version:  01.08
-        ---------------------------------------
-
-        Contents:       Function osread
-*/
-
-/*
     osread( mode, recsiz, ioptr, scptr )
 
     osread()  reads the next record from the input file associated with

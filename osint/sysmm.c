@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSMM.C          Version:  01.04
-        ---------------------------------------
-
-        Contents:       Function zysmm
-*/
-
-/*
         zysmm- get more memory
 
         Parameters:

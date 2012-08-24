@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  RDENV.C          Version:  01.02
-        ---------------------------------------
-
-        Contents:       Function rdenv
-*/
-
-/*
     rdenv( varname, result )
 
     rdenv() reads the environment variable named "varname", and if it can

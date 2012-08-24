@@ -17,12 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-        File:  SYSEN.C          Version:  01.02
-        ---------------------------------------
-
-        Contents:       Function zysen
-*/
 
 /*
         zysen - endfile

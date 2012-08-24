@@ -18,15 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSID.C          Version:  01.02
-        ---------------------------------------
-
-        Contents:       Function zysid
-
-        1.02    Move id2 string here.
-*/
-
-/*
         zysid - identify system
 
         zysid returns two strings identifying the Spitbol system.

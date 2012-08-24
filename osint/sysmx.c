@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSMX.C          Version:  01.01
-        ---------------------------------------
-
-        Contents:       Function zysmx
-*/
-
-/*
         zysmx - return maximum size in bytes of any created object
 
         Parameters:

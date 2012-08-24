@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  DOEXEC.C         Version:  01.03
-        ---------------------------------------
-
-        Contents:       Function doexec
-*/
-
-/*
     doexec( scptr )
 
     doexec() does an "execle" function call to invoke the shell on the

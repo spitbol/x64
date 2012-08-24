@@ -18,14 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-    File:  OSWAIT.C     Version:  01.02
-        ---------------------------------------
-
-        Contents:       Function oswait
-*/
-
-
-/*
     oswait( pid )
 
     oswait() waits for the termination of the process with id pid.

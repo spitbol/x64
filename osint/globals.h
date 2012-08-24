@@ -19,7 +19,7 @@ This file is part of Macro SPITBOL.
 
 /*
         Globals.h       All OSINT globals are defined in this file.
- *
+
         Define GLOBALS in the C module that wishes to have these
         variables defined.  All other modules will see them as externals.
  */
@@ -199,7 +199,7 @@ NoInit( word    *lmodstk);
 
 /*
    Globals found in assembly language modules.
- *
+
  */
 extern int  reg_size;
 extern int  hasfpu;

@@ -17,14 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-    File:  PORT.H   (SPITBOL)   Version:  01.11
-    ---------------------------------------------------
-
-    This header file contains manifest constants that describe system
-    dependencies.  Many of these values will be changed when porting
-    the OS interface to another machine/operating system.
-*/
 #include "systype.h"
 
 /*
@@ -161,20 +153,8 @@ This file is part of Macro SPITBOL.
 #endif
 
 /* operating system defs */
-#ifndef AIX3
-#define AIX3            0
-#endif
-#ifndef AIX4
-#define AIX4            0
-#endif
-#ifndef BSD43
-#define BSD43           0
-#endif
 #ifndef LINUX
 #define LINUX       1
-#endif
-#ifndef SOLARIS
-#define SOLARIS         0
 #endif
 #ifndef WINNT
 #define WINNT           0
@@ -226,7 +206,7 @@ This file is part of Macro SPITBOL.
 
 #define SUN SUN4
 
-#define UNIX (AIX | BSD43 | LINUX | SOLARIS)
+#define UNIX (LINUX)
 
 typedef int   word;
 typedef unsigned int uword;
@@ -303,7 +283,7 @@ typedef long long IATYPE;
         different DPMI platforms.
 */
 
-#if LINUX | WINNT | AIX | SOLARIS
+#if LINUX | WINNT
 #define CHUNK_SIZE      32768
 #define CHUNK_B_SIZE    (CHUNK_SIZE * sizeof(word))
 #define HEAP_SIZE       16777216        /* 16Mwords = 64Mbytes */
@@ -373,7 +353,7 @@ typedef long long IATYPE;
                     to make the stack larger results in a stack overflow
                     error.  Defined in BYTES!
 */
-#if LINUX | WINNT | AIX | SOLARIS
+#if LINUX | WINNT
 #define STACK_SIZE  (0x100000)      /* Set to 1MB 6/28/09 */
 #endif
 

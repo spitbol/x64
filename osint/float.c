@@ -18,17 +18,17 @@ This file is part of Macro SPITBOL.
 */
 
 /*
- * float.c - floating point support for spitbol
- *
- * These routines are not called from other C routines.  Rather they
- * are called by inter.*, and by external functions.
+   float.c - floating point support for spitbol
+
+   These routines are not called from other C routines.  Rather they
+   are called by inter.*, and by external functions.
  */
 
 #include "port.h"
 #if (FLOAT & !FLTHDWR) | (EXTFUN & (SUN4 | AIX))
 
 /*
- * f_2_i - float to integer
+   f_2_i - float to integer
  */
 IATYPE f_2_i(ra)
 double ra;
@@ -38,7 +38,7 @@ double ra;
 
 
 /*
- * i_2_f - integer to float
+   i_2_f - integer to float
  */
 double i_2_f(ia)
 IATYPE ia;
@@ -47,7 +47,7 @@ IATYPE ia;
 }
 
 /*
- * f_add - floating add to accumulator
+   f_add - floating add to accumulator
  */
 double f_add(arg, ra)
 double arg,ra;
@@ -56,7 +56,7 @@ double arg,ra;
 }
 
 /*
- * f_sub - floating subtract from accumulator
+   f_sub - floating subtract from accumulator
  */
 double f_sub(arg, ra)
 double arg,ra;
@@ -65,7 +65,7 @@ double arg,ra;
 }
 
 /*
- * f_mul - floating multiply to accumulator
+   f_mul - floating multiply to accumulator
  */
 double f_mul(arg, ra)
 double arg,ra;
@@ -75,7 +75,7 @@ double arg,ra;
 
 
 /*
- * f_div - floating divide into accumulator
+   f_div - floating divide into accumulator
  */
 double f_div(arg, ra)
 double arg,ra;
@@ -84,7 +84,7 @@ double arg,ra;
 }
 
 /*
- * f_neg - negate accumulator
+   f_neg - negate accumulator
  */
 double f_neg(ra)
 double ra;

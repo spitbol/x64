@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  MAIN.C           Version:  01.00
-        ---------------------------------------
-
-        Contents:       Function main
-*/
-
-/*
         This module contains the main function that gets control when
         the spitbol compiler starts execution.  Responsibilities of
         this function:
@@ -64,8 +57,8 @@ char    *argv[];
     int         i;
 
     /*
-    /   Save command line parameters in global storage, in case they are needed
-    /   later.
+        Save command line parameters in global storage, in case they are needed
+        later.
     */
     gblargc = argc;
     gblargv = argv;
@@ -75,12 +68,12 @@ char    *argv[];
 #endif
 
     /*
-    /   Initialize buffers
+        Initialize buffers
     */
     stdioinit();
     ttyinit();
     /*
-    /   Make sure sysdc gets to output stuff at least once.
+        Make sure sysdc gets to output stuff at least once.
     */
     dcdone = 0;
 
@@ -108,9 +101,9 @@ char    *argv[];
         readshell0 = 0;
 #else                                   /* EXECSAVE */
     /*
-    /   If this is a restart of this program from a load module, set things
-    /   up for a restart.  Transfer control to function restart which actually
-    /   resumes program execution.
+        If this is a restart of this program from a load module, set things
+        up for a restart.  Transfer control to function restart which actually
+        resumes program execution.
     */
     if ( lmodstk ) {
         if ( brk( (char *) topmem ) < 0 ) { /* restore topmem to its prior state        */
@@ -139,7 +132,7 @@ char    *argv[];
 #endif                                  /* EXECFILE */
 
     /*
-     *  Process command line arguments
+        Process command line arguments
      */
     inpptr = getargs(argc, argv);
 
@@ -153,13 +146,13 @@ char    *argv[];
     }
 
     /*
-    /   Switch to proper input file.
+        Switch to proper input file.
     */
     swcinp( inpcnt, inpptr );
 
 #if FLOAT
     /*
-     * test if floating point hardware present
+       test if floating point hardware present
      */
     hasfpu = checkfpu();
 #endif                                  /* FLOAT */
@@ -184,14 +177,14 @@ char    *argv[];
 #endif                                  /* SAVEFILE | EXECSAVE */
 
     /*
-    /   Setup output and issue brag message
+        Setup output and issue brag message
     */
     setout();
 
 #if !RUNTIME
 
     /*
-     *  Force the memory manager to initialize itself
+        Force the memory manager to initialize itself
      */
     if ((char *)sbrk(0) == (char *)-1) {
         wrterr( "Insufficient memory.  Try smaller -d, -m, or -s command line options." );
@@ -200,7 +193,7 @@ char    *argv[];
 
 #if WINNT | LINUX
     /*
-    /   Allocate stack
+        Allocate stack
     */
     if ((lowsp = sbrk((uword)stacksiz)) == (char *) -1) {
         wrterr( "Stack memory unavailable." );
@@ -209,15 +202,15 @@ char    *argv[];
 #endif
 
     /*
-    /   Allocate initial increment of dynamic memory.
-    /
+        Allocate initial increment of dynamic memory.
+
     */
 #if SUN4
     /* Allocate a buffer for mallocs.  Use the space between the
-     * end of data and the start of Minimal's static and dynamic
-     * area.  Because of virtual memory, we can use almost 4 megabytes
-     * for this region, and it has the secondary benefit of letting
-     * us have object sizes greater than the previous 64K.
+       end of data and the start of Minimal's static and dynamic
+       area.  Because of virtual memory, we can use almost 4 megabytes
+       for this region, and it has the secondary benefit of letting
+       us have object sizes greater than the previous 64K.
      */
     if (malloc_init( maxsize )) {
         wrterr( "Malloc initialization failure, contact Catspaw." );
@@ -234,8 +227,8 @@ char    *argv[];
 
 
     /*
-    /   All compiler registers are initially zero, except for XL and XR which
-    /   are set to top and bottom of heap.
+        All compiler registers are initially zero, except for XL and XR which
+        are set to top and bottom of heap.
     */
     SET_CP( 0 );
     SET_IA( 0 );
@@ -246,13 +239,13 @@ char    *argv[];
     SET_XL( topmem - sizeof(word) );
 
     /*
-    /   Startup compiler.
+        Startup compiler.
     */
     startup( (char *)0L, lowsp );
 #endif                                  /* !RUNTIME */
 
     /*
-    /   Never returns. exit is via exit().
+        Never returns. exit is via exit().
     */
 }
 
@@ -312,27 +305,27 @@ char    *s;
 }
 
 /*
- * Setup output file.
- * Issue brag message if approriate
- *
- * This rather clumsy routine was placed here because of sequencing
- * concerns -- it can't be called with a save file until spitflag
- * has been reloaded.
+   Setup output file.
+   Issue brag message if approriate
+
+   This rather clumsy routine was placed here because of sequencing
+   concerns -- it can't be called with a save file until spitflag
+   has been reloaded.
  */
 void setout()
 {
     /*
-     *  Brag prior to calling swcoup
+        Brag prior to calling swcoup
      */
     zysdc();
 
     /*
-    /   Switch to proper output file.
+        Switch to proper output file.
     */
     swcoup( outptr );
 
     /*
-    /   Determine if standard output is a tty or not, and if it is be sure to
+        Determine if standard output is a tty or not, and if it is be sure to
     /   inform compiler and turn off header.
     */
     spitflag &= ~PRTICH;

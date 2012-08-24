@@ -18,14 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File: OPTFILE.C         Version: 1.00
-        -------------------------------------
-
-        Contents:       function optfile
-
-*/
-
-/*
     optfile( varname, result )
 
     optfile() looks for other, optional ways to supply a filename to

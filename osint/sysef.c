@@ -17,12 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-        File:  SYSEF.C          Version:  01.02
-        ---------------------------------------
-
-        Contents:       Function zysef
-*/
 
 /*
         zysef - eject file

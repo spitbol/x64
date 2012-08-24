@@ -18,41 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSSTDIO.C       Version:  01.09
-        ---------------------------------------
-
-        Contents:       Function zyspr
-                        Function zysrd
-
-        01.04   Removed usage of inpateof.  From disk files, OK to read
-                from file again and get EOF.  From console, OK to request
-                another line after EOF, if that is what user wants.  Makes
-                behavior of INPUT similar to behavior of TERMINAL.
-                MBE 12/24/87
-
-        01.05   Added getprfd() to provide current standard output fd to
-                osint.
-
-        01.06   Added sfn to report source file name to compiler.  Definition of sysrd EXIT 1
-                case expanded to handle both EOF and reporting of source file change.
-                Use of first_record expanded to provide initial source file name to compiler.
-
-        01.07   Added input/output record sizes to ioblocks.  Note, as a
-                result of changes in the compiler at ASG11, it is now
-                possible for zyspr() to be called from zysou().  Previously,
-                writes to OUTPUT were going through the PRTST logic, wasting
-                time using the print buffer, and limiting the record length
-                to the listing page width.  Instead, all output assignments
-                go to zysou(), which now uses the FCB info in WA to decide
-                if it is a special file (OUTPUT/TERMINAL), or a normal
-                file.
-
-        01.08   Add end of line characters to IOBLKs.  Add clrbuf().
-
-        01.09   New oswrite calling sequence.  01-Feb-93.
-*/
-
-/*
     sysstdio module
 
     The sysstdio module contains two functions, zyspr and zysrd, that

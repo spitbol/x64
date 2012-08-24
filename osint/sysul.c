@@ -18,14 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSUL.C          Version:  01.00
-        ---------------------------------------
-
-        Contents:       Function zysul
-
-*/
-
-/*
         zysul - unload external function
 
         Parameters:

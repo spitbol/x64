@@ -19,13 +19,6 @@ This file is part of Macro SPITBOL.
 
 
 /*
-        File:  SIOARG.C         Version:  01.07
-        ---------------------------------------
-
-        Contents:       Function sioarg
-*/
-
-/*
     sioarg( ioflg,ioptr,scptr )
 
     sioarg() scans any arguments after the filename in the passed SCBLK and

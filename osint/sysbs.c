@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSBS.C          Version:  01.02
-        ---------------------------------------
-
-        Contents:       Function zysbs
-*/
-
-/*
         zysbs - backspace file
 
         zysbs move a file's position back one physical record.

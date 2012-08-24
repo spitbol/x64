@@ -17,14 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-        File:  SPROTO.H Version 1.02
-        ----------------------------
-
-        Function prototypes for argument type checking.
-        This files are unique to SPITBOL.
-*/
-
 #ifndef _sproto_
 #define _sproto_
 

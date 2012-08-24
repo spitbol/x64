@@ -17,13 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-    File:  SPITBLKS.H           Version:  01.01
-    -------------------------------------------
-
-    This header file defines structures used by the Macro SPITBOL compiler
-    that are passed into the OS interface.
-*/
 
 /*
     First, define the C type word to be the same size as a word used

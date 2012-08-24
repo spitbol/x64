@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSEA.C          Version:  01.00
-        ---------------------------------------
-
-        Contents:       Function zysea
-*/
-
-/*
 
         zysea - error advise
 

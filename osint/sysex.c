@@ -18,14 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  SYSEX.C          Version:  01.01
-        ---------------------------------------
-
-        Contents:       Function zysex
-
-*/
-
-/*
         zysex - call external function
 
         Parameters:

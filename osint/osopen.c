@@ -18,31 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  OSOPEN           Version:  01.06
-        ---------------------------------------
-
-        Contents:       Function osopen
-
-        Revision history:
-
-        V01.01  Was testing for successful file open with (fd != 0) and
-                (fd >0).  If user ever explicitly closed fd 0, fd 0 would
-                be available for normal use by a file open.
-
-        V01.02  Look at flag IO_ENV, and if set, fnm string is the name
-                of an environment variable pointing to the filename.
-
-        V01.03  For MS-DOS, remove trailing ':', if any, from file name.
-                DOS does not like names like "CON:".
-
-        V01.04  File name "-" attaches to standard input or output.
-
-        V01.05  For MS-DOS on 386, process IO_COT option.
-
-        V01.06  Handle files open for update.
-*/
-
-/*
     osopen( ioptr )
 
     osopen() opens the file represented by the passed ioblk.  If the file
@@ -57,7 +32,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if AIX | SOLARIS | LINUX
+#if LINUX
 #include <fcntl.h>
 #endif
 
@@ -72,14 +47,14 @@ struct  ioblk   *ioptr;
     struct      scblk   *scptr;
 
     /*
-    /   If file already open, return.
+        If file already open, return.
     */
     if ( ioptr->flg1 & IO_OPN )
         return 0;
 
     /*
-    /   Establish a few pointers and filename length.
-    */
+        Establish a few pointers and filename length.
+     /
     scptr       = MK_MP(ioptr->fnm, struct scblk *);    /* point to filename SCBLK      */
     if (ioptr->flg2 & IO_ENV)
     {

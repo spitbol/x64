@@ -19,7 +19,7 @@ This file is part of Macro SPITBOL.
 
 /*
  * int.c - integer support for SPITBOL.
- *
+
  * Needed for RISC systems that do not provide integer multiply/
  * divide in hardware.
  */

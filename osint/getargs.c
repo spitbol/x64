@@ -17,13 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-        File:  GETARGS.C                Version:  01.00
-        ---------------------------------------
-
-        Contents:       Function getargs
-*/
-
 
 /*
         This module contains the switch loop that processes command
@@ -35,36 +28,36 @@ This file is part of Macro SPITBOL.
 #include <string.h>
 #endif
 
-#if AIX | SOLARIS | LINUX
+#if LINUX
 #include <fcntl.h>
 #endif
 
 
 /*
- * getargs
- *
- * Input:
- *   argc:  count of argument strings
- *   argv:  array of argument string pointers
- *
- * Output:
- *   pointer to pointer to string of source file name, or NULL if none.
- *
- * Globals modified:
- *   cfiles[]
- *   cmdcnt
- *   databts
- *   inpcnt
- *   lnsppage
- *   maxf
- *   maxsize
- *   memincb
- *   outptr
- *   pagewdth
- *   readshell0
- *   spitflags
- *   stacksiz
- *   uarg
+   getargs
+
+   Input:
+     argc:  count of argument strings
+     argv:  array of argument string pointers
+
+   Output:
+     pointer to pointer to string of source file name, or NULL if none.
+
+   Globals modified:
+     cfiles[]
+     cmdcnt
+     databts
+     inpcnt
+     lnsppage
+     maxf
+     maxsize
+     memincb
+     outptr
+     pagewdth
+     readshell0
+     spitflags
+     stacksiz
+     uarg
  */
 static  int i;
 static  char *cp;
@@ -77,19 +70,19 @@ char    *argv[];
     register char **result;
 
     /*
-    /   Process all command line options.
-    /
-    /   NOTE:  the value of the loop control variable
-    /   i is modified within the loop.
-    /
-    /   spitbol is invoked as
-    /
-    /   spitbol [options] [input-files]
-    /
-    /   where each option string begins with a '-' (or '/' for WINNT)
-    /
-    /   A single '-' represents the standard file provided by the shell
-    /   and is treated as an input-file or output file as appropriate.
+        Process all command line options.
+
+        NOTE:  the value of the loop control variable
+        i is modified within the loop.
+
+        spitbol is invoked as
+
+        spitbol [options] [input-files]
+
+        where each option string begins with a '-' (or '/' for WINNT)
+
+        A single '-' represents the standard file provided by the shell
+        and is treated as an input-file or output file as appropriate.
     */
     result = (char **)0;                /* no source file */
 
@@ -97,8 +90,8 @@ char    *argv[];
         cp = argv[i];                   /* point to next cmd line argument      */
 
         /*
-         *   If this command line argument does not start with a '-
-         *   OR is a single '-', treat is as the first filename.
+             If this command line argument does not start with a '-
+             OR is a single '-', treat is as the first filename.
          */
 #if WINNT
         if ( (*cp != '-' && *cp != '/')  ||  (*cp == '-' && !cp[1]) ) {
@@ -111,116 +104,87 @@ char    *argv[];
         }
 
         /*
-        /   Here to process option string.  Allow more than one option
-        /   to be specified after the '-'.  For example, "-aez" and
-        /    "-s24kae"
+            Here to process option string.  Allow more than one option
+            to be specified after the '-'.  For example, "-aez" and
+             "-s24kae"
         */
         ++cp;
         while( *cp )
             switch( *cp++ ) {
-                /*
-                /       -?  display option summary
-                */
+                /* -?  display option summary */
             case '?':
                 prompt();
                 break;
 #if !RUNTIME
-                /*
-                /   -a  turn on all listing options except header
-                */
+                /* -a  turn on all listing options except header */
             case 'a':
                 spitflag &= ~(NOLIST | NOCMPS | NOEXCS);
                 break;
 
-                /*
-                /   -b  suppress signon message when reloading save file
-                */
+                /* -b  suppress signon message when reloading save file */
             case 'b':
                 spitflag |= NOBRAG;
                 break;
 
-                /*
-                /   -c  turn on compilation statistics
-                */
+                /* -c  turn on compilation statistics */
             case 'c':
                 spitflag &= ~NOCMPS;
                 break;
 
-                /*
-                    /   -dnnn   set maximum size of dynamic area in bytes
-                    */
+                /* -dnnn   set maximum size of dynamic area in bytes */
             case 'd':
                 cp = optnum( cp, &databts );
                 /* round up to machine word boundary */
                 databts = (databts + sizeof(int) - 1)  & ~(sizeof(int) - 1);
                 break;
 
-                /*
-                /   -e don't send errors to terminal
-                */
+                /* -e don't send errors to terminal */
             case 'e':
                 spitflag &= ~ERRORS;
                 break;
 
-                /*
-                /   -f  don't fold lower case to upper case
-                */
+                /* -f  don't fold lower case to upper case */
             case 'f':
                 spitflag &= ~CASFLD;
                 break;
 
-                /*
-                /   -gddd       set page length in lines  V1.08
-                */
+                /* -gddd       set page length in lines  V1.08 */
             case 'g':
                 cp = getnum( cp, &lnsppage );
                 break;
 
-                /*
-                /   -h  suppress version header in listing
-                */
+                /* -h  suppress version header in listing */
             case 'h':
                 spitflag |= NOHEDR;
                 break;
 
-                /*
-                /   -iddd       set memory expansion increment (bytes)
-                */
+                /* -iddd       set memory expansion increment (bytes) */
             case 'i':
                 cp = optnum( cp, &memincb );
                 break;
 
-                /*
-                /   -k  run inspite of compilation errors
-                */
-            case 'k':
+                /* -k  run inspite of compilation errors */ case 'k':
                 spitflag &= ~NOERRO;
                 break;
 
-                /*
-                /   -l  turn on compilation listing
-                */
+                /* -l  turn on compilation listing */
             case 'l':
                 spitflag &= ~NOLIST;
                 break;
 
-                /*
-                /   -mddd       set maximum size of object in dynamic area
-                */
+                /* -mddd       set maximum size of object in dynamic area */
             case 'm':
                 cp = optnum( cp, &maxsize );
                 break;
 
-                /*
-                /   -n  suppress program execution
-                */
+                /* -n  suppress program execution */
             case 'n':
                 spitflag |= NOEXEC;
                 break;
 
                 /*
-                /   -o fff      set output file to fff
-                /   -o:fff & -o=fff also allowed.
+                    -o fff      set output file to fff
+                /   -k  run inspite of compilation errors
                 */
             case 'o':
                 outptr = filenamearg(argc, argv);
@@ -228,24 +192,18 @@ char    *argv[];
                     goto badopt;
                 break;
 
-                /*
-                /   -p  turn on long listing format
-                */
+                /* -p  turn on long listing format */
             case 'p':
                 spitflag |= LNGLST;
                 spitflag &= ~NOLIST;
                 break;
 
-                /*
-                /   -r  read INPUT from source program file
-                */
+                /* -r  read INPUT from source program file */
             case 'r':
                 readshell0 = 0;
                 break;
 
-                /*
-                /   -s  set stack size in bytes
-                */
+                /* -s  set stack size in bytes */
             case 's': {
                 cp = optnum( cp, &stacksiz );
                 /* round up to machine word boundary */
@@ -253,17 +211,15 @@ char    *argv[];
             }
             break;
 
-            /*
-            /   -tddd   set line width in characters  V1.08
-            */
+            /* -tddd   set line width in characters  V1.08 */
             case 't':
                 cp = getnum( cp, &pagewdth );
                 break;
 #endif                                  /* !RUNTIME */
 
                 /*
-                /   -T fff  write TERMINAL output to file fff
-                /   -T:fff & -T=fff also allowed.
+                    -T fff  write TERMINAL output to file fff
+                    -T:fff & -T=fff also allowed.
                 */
             case 'T':
             {
@@ -282,9 +238,7 @@ char    *argv[];
             }
             break;
 
-            /*
-            /   -u aaa  set user argument accessible via host()
-            */
+            /* /   -u aaa  set user argument accessible via host() */
             case 'u':
                 uarg = argv[++i];
                 if ( i == argc )
@@ -294,43 +248,33 @@ char    *argv[];
 
 #if !RUNTIME
 #if EXECFILE
-                /*
-                /   -w  write executable module after compilation
-                */
+                /* -w  write executable module after compilation */
             case 'w':
                 spitflag |= WRTEXE;
                 break;
 
 #endif                                  /* EXECFILE */
 
-                /*
-                /   -x  print execution statistics
-                */
+                /* -x  print execution statistics */
             case 'x':
                 spitflag &= ~NOEXCS;
                 break;
 
 #if SAVEFILE
-                /*
-                /   -y  write executable module after compilation
-                */
+                /* -y  write executable module after compilation */
             case 'y':
                 spitflag |= WRTSAV;
                 break;
 #endif                                  /* SAVEFILE */
 
-                /*
-                /   -z  turn on standard listing options
-                */
+                /* -z  turn on standard listing options */
             case 'z':
                 spitflag |= STDLST;
                 spitflag &= ~NOLIST;
                 break;
 #endif                                  /* !RUNTIME */
 
-                /*
-                / -# fff        associate file fff with channel #
-                */
+                /* -# fff        associate file fff with channel # */
             case '0':
             case '1':
             case '2':
@@ -351,9 +295,7 @@ char    *argv[];
                     goto badopt;
                 break;
 
-                /*
-                /   anything else is an error
-                */
+                /* anything else is an error */
             default:
 badopt:
                 write( STDERRFD, "Illegal option -", 17 );
@@ -365,9 +307,7 @@ badopt:
 
     inpcnt = argc - i;          /* inpcnt =  number of filenames        */
 
-    /*
-    /   Establish command counter for use by HOST(3) function
-    */
+    /* Establish command counter for use by HOST(3) function */
     cmdcnt = i;
     return result;
 }

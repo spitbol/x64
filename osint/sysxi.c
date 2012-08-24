@@ -288,53 +288,6 @@ zysxi()
         lmodstk = dstptr;               /* (also non-zero flag for restart) */
 #endif                                  /* EXECSAVE */
 
-#if SOLARIS & !EXECSAVE
-        /*
-        /       Create a.out header.
-        /       First address of text section 0x2000 (SEGSIZ)
-        /       Data section starts at next segment.
-        /       Note that there is a gap between the end of C data and the
-        /       start of the heap.  The data section is written out followed
-        /       by the heap.  Whoever reloads it will have to physically move
-        /       the heap up in memory.
-        /
-        /       Note that NO part of the malloc region is saved.
-        /
-        */
-        starttext       = (char *)T_START;  /*LAH*/
-        startdata       = (char *)roundup((word)&etext);
-        endofmem        = get_min_value(dnamp,char *);
-
-        header.a_magic  = NMAGIC;       /* Don't want demand loading of library */
-        header.a_dynamic = 0;           /* No dynamic links */
-        header.a_toolversion = 1;       /* Unsure of meaning of this guy */
-        header.a_machtype = M_SPARC;
-
-        header.a_text   = (int)((char *)&etext - starttext);
-        header.a_data = (int)(endofmem - basemem) +
-                        (int)((char *)&edata - startdata);
-        header.a_bss  = 0;
-        header.a_syms   = 0;
-        header.a_entry  = T_START; /*LAH*/
-        header.a_trsize = 0;
-        header.a_drsize = 0;
-
-        /*
-        /       Let function wrtaout write the a.out file.  Hold off checking for
-        /       errors until stack position sensitive pointers have been readjusted.
-        */
-        unreloc();
-
-        if ( retval == 0 )
-            retval = wrtaout( (unsigned char FAR *)&header, sizeof( struct exec ) );
-        if ( retval == 0 )
-            retval = wrtaout( (unsigned char FAR *)starttext, header.a_text );
-        /* new system with gap between heap and  C data */
-        if ( retval == 0 )
-            retval = wrtaout( (unsigned char FAR *)startdata, (int)((char *)&edata - startdata) );
-        if ( retval == 0 )
-            retval = wrtaout( (unsigned char FAR *)basemem, (int)(endofmem - basemem) );
-#endif          /* SOLARIS */
 
     }
 #endif                                  /* EXECFILE */
@@ -361,7 +314,7 @@ fail:
 #endif                                  /* EXECFILE | SAVEFILE */
 }
 
-#if (SOLARIS | LINUX) & EXECFILE & !EXECSAVE
+#if (LINUX) & EXECFILE & !EXECSAVE
 /* heapmove
  *
  * perform upward copy of heap from where it was stored in the execfile
@@ -796,7 +749,7 @@ int fd;
 
 #if EXTFUN
             scanef();           /* prepare to scan for external functions */
-#if SOLARIS | AIX | WINNT
+#if WINNT
             while (nextef(&bufp, -1) != (void *)0)
                 ((struct efblk *)bufp)->efcod = 0;      /* wipe out each function */
 #else         /* SOLARIS */

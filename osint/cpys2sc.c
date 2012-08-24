@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  CPYS2SC.C        Version:  01.01
-        ---------------------------------------
-
-        Contents:       Function cpy2sc
-*/
-
-/*
     cpys2sc( cp, scptr, maxlen )
 
     cpys2sc() copies a C style string pointed to by cp into the SCBLK

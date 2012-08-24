@@ -18,13 +18,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        File:  GETHOST.C        Version:  01.05
-        ---------------------------------------
-
-        Contents:       Function gethost
-*/
-
-/*
     gethost( scptr, maxlen )
 
     gethost() reads the first line from the host file into the passed SCBLK.
@@ -50,21 +43,7 @@ char htype[] = "80386";
 char osver[] = ":Linux ";
 #endif
 
-#if AIX3
-char htype[] = "RS/6000";
-char osver[] = ":AIX V3";
-#endif
-#if AIX4
-char htype[] = "RS/6000";
-char osver[] = ":AIX V4";
-#endif
-
-#if SUN4 & SOLARIS
-char htype[] = "SPARC";
-char osver[] = ":Solaris";
-#endif
-
-#if AIX | SOLARIS | LINUX
+#if  LINUX
 #include <fcntl.h>
 #endif
 
