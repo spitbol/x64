@@ -54,11 +54,11 @@ zysid()
     register char *cp;
 
     SET_XR( pid1 );
-    gettype( pID2BLK, ID2BLK_LENGTH );
-    cp = pID2BLK->str + pID2BLK->len;
+    gettype( pid2blk, ID2BLK_LENGTH );
+    cp = pid2blk->str + pid2blk->len;
     *cp++ = ' ';
     *cp++ = ' ';
-    pID2BLK->len += 2 + storedate(cp, ID2BLK_LENGTH - pID2BLK->len);
-    SET_XL( pID2BLK );
+    pid2blk->len += 2 + storedate(cp, ID2BLK_LENGTH - pid2blk->len);
+    SET_XL( pid2blk );
     return NORMAL_RETURN;
 }

@@ -41,7 +41,7 @@ zysou()
     register union block  *blk = XR (union block *);
     int result;
 
-    if (blk->scb.typ == TYPE_SCL)
+    if (blk->scb.typ == type_scl)
     {
         /* called with string, get length from SCBLK */
         SET_WA(blk->scb.len);

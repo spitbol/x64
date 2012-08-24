@@ -115,7 +115,7 @@ zysxi()
     */
     if ( scb != 0 )
     {
-        if ( scb->typ == TYPE_SCL )             /* must be SCBLK!       */
+        if ( scb->typ == type_scl )             /* must be SCBLK!       */
         {
             close_all( WB( struct chfcb * ) );  /* V1.11*/
 #if HOST386
@@ -281,7 +281,7 @@ zysxi()
             goto fail;
         }
         srcptr = stackbase;
-        dstptr = (word *)pTSCBLK->str;
+        dstptr = (word *)ptscblk->str;
         i = get_min_value(stbas,word *) - srcptr;
         while( i-- )
             *dstptr++ = *srcptr++;
@@ -739,11 +739,11 @@ int fd;
                     goto reload_ioerr;
 
             /* Read saved stack from save file into tscblk */
-            if ( expand( fd, (unsigned char FAR *)pTSCBLK->str, svfheader.stacklength ) )
+            if ( expand( fd, (unsigned char FAR *)ptscblk->str, svfheader.stacklength ) )
                 goto reload_ioerr;
 
             set_min_value(stbas, svfheader.stbas,word);
-            lmodstk = (word *)(pTSCBLK->str + svfheader.stacklength);
+            lmodstk = (word *)(ptscblk->str + svfheader.stacklength);
             stacksiz = svfheader.stacksiz;
 
             /* Reload compiler working globals section */
@@ -771,8 +771,8 @@ int fd;
             minimal_call(reloc_callid);
 
             /* Relocate any return addresses in stack */
-            SET_WB(pTSCBLK->str);
-            SET_WA(pTSCBLK->str + svfheader.stacklength);
+            SET_WB(ptscblk->str);
+            SET_WA(ptscblk->str + svfheader.stacklength);
             if (svfheader.stacklength)
                 minimal_call(relaj_callid);
 
@@ -819,10 +819,10 @@ int fd;
 
             LSEEK(fd, (FILEPOS)0, 2); /* advance to EOF should be a nop */
             pathptr = (char *)-1L;  /* include paths unknown  */
-            pINPBUF->next = 0;  /* no chars left in std input buffer  */
-            pINPBUF->fill = 0;  /* ditto                                */
-            pINPBUF->offset = (FILEPOS)0;
-            pINPBUF->curpos = (FILEPOS)0;
+            pinpbuf->next = 0;  /* no chars left in std input buffer  */
+            pinpbuf->fill = 0;  /* ditto                                */
+            pinpbuf->offset = (FILEPOS)0;
+            pinpbuf->curpos = (FILEPOS)0;
             if (uargbuf[0] && !uarg)            /* if uarg in save file and none */
                 uarg = uargbuf;                         /* on command line, use saved version */
             provide_name = 0;   /* no need to provide filename in sysrd */

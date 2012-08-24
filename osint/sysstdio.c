@@ -74,7 +74,7 @@ This file is part of Macro SPITBOL.
 
 void stdioinit()
 {
-    inpiob.bfb = MP_OFF(pINPBUF, struct bfblk NEAR *);
+    inpiob.bfb = MP_OFF(pinpbuf, struct bfblk NEAR *);
 }
 
 /*

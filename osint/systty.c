@@ -59,7 +59,7 @@ This file is part of Macro SPITBOL.
 
 void ttyinit()
 {
-    ttyiobin.bfb = MP_OFF(pTTYBUF, struct bfblk NEAR *);
+    ttyiobin.bfb = MP_OFF(pttybuf, struct bfblk NEAR *);
 }
 
 /*

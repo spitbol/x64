@@ -115,7 +115,7 @@ zysio()
             /*
             /   Fill in IOBLK.
             */
-            iob->typ = TYPE_XRT;        /* type: external reloc */
+            iob->typ = type_xrt;        /* type: external reloc */
             iob->len = IOSIZE;          /* length               */
             iob->fnm = MP_OFF((tioblk.flg2 & IO_ENV) ?
                               XL( struct scblk *) :  /* filearg 1       */
@@ -141,7 +141,7 @@ zysio()
                 switch( iob->fdn )
                 {
                 case 0:
-                    iob->bfb = MP_OFF(pINPBUF, struct bfblk NEAR *);
+                    iob->bfb = MP_OFF(pinpbuf, struct bfblk NEAR *);
                     break;
                 case 1:
                     iob->bfb = 0;
@@ -155,7 +155,7 @@ zysio()
             /*
             /   Fill in BFBLK.
             */
-            bfb->typ = TYPE_XNT;        /* type: external nonreloc */
+            bfb->typ = type_xnt;        /* type: external nonreloc */
             bfb->len = bfblksize;       /* length               */
             bfb->size = tioblk.pid;     /* buffer size          */
             bfb->fill = 0;              /* chars in buffer      */

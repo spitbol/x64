@@ -56,7 +56,7 @@ word    maxlen;
     register word       i;
     register char       *scbcp;
 
-    scptr->typ = TYPE_SCL;
+    scptr->typ = type_scl;
     scbcp       = scptr->str;
     for( i = 0 ; i < maxlen  &&  ((*scbcp++ = *cp++) != 0) ; i++ )
         ;

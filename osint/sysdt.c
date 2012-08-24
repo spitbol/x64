@@ -61,8 +61,8 @@ zysdt()
 {
     struct icblk *dtscb = XR (struct icblk *);
 
-    pTSCBLK->len = datecvt( pTSCBLK->str, dtscb->val );
-    SET_XL( pTSCBLK );
+    ptscblk->len = datecvt( ptscblk->str, dtscb->val );
+    SET_XL( ptscblk );
     return NORMAL_RETURN;
 }
 

@@ -153,7 +153,7 @@ again:
                 / 1.03 - look up in environment block.  Filename
                 /        will be copied to tscblk.
                 */
-            scb2 = pTSCBLK;
+            scb2 = ptscblk;
             if (!optfile(scb1, scb2) && !use_env)
             {
                 use_env = IO_ENV;

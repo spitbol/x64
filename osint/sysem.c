@@ -75,8 +75,8 @@ word special Params((word c));
 
 zysem()
 {
-    pTSCBLK->len = msgcopy( WA(word), errors, pTSCBLK->str );
-    SET_XR( pTSCBLK );
+    ptscblk->len = msgcopy( WA(word), errors, ptscblk->str );
+    SET_XR( ptscblk );
     return NORMAL_RETURN;
 }
 

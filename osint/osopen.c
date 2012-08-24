@@ -83,10 +83,10 @@ struct  ioblk   *ioptr;
     scptr       = MK_MP(ioptr->fnm, struct scblk *);    /* point to filename SCBLK      */
     if (ioptr->flg2 & IO_ENV)
     {
-        if (optfile(scptr, pTSCBLK))
+        if (optfile(scptr, ptscblk))
             return -1;
-        scptr = pTSCBLK;
-        pTSCBLK->len = lenfnm(scptr);   /* remove any options */
+        scptr = ptscblk;
+        ptscblk->len = lenfnm(scptr);   /* remove any options */
     }
 
     cp  = scptr->str;           /* point to filename string     */

@@ -1451,7 +1451,7 @@ word    maxlen;
     register word       i;
     register char       *scbcp;
 
-    scptr->typ = TYPE_SCL;
+    scptr->typ = type_scl;
     scbcp       = scptr->str;
     for( i = 0 ; i < maxlen  &&  ((*scbcp++ = *cp++) != 0) ; i++ )
         ;
@@ -4322,19 +4322,19 @@ enum valtab {
 
 /* Some shorthand notations */
 #define pid1 get_data_offset(id1,struct scblk *)
-#define pID2BLK get_data_offset(id2blk,struct scblk *)
-#define pINPBUF get_data_offset(inpbuf,struct bfblk *)
-#define pTTYBUF get_data_offset(ttybuf,struct bfblk *)
-#define pTICBLK get_data_offset(ticblk,struct icblk *)
-#define pTSCBLK get_data_offset(tscblk,struct scblk *)
+#define pid2blk get_data_offset(id2blk,struct scblk *)
+#define pinpbuf get_data_offset(inpbuf,struct bfblk *)
+#define pttybuf get_data_offset(ttybuf,struct bfblk *)
+#define pticblk get_data_offset(ticblk,struct icblk *)
+#define ptscblk get_data_offset(tscblk,struct scblk *)
 
-#define TYPE_EFC get_code_offset(b_efc,word)
-#define TYPE_ICL get_code_offset(b_icl,word)
-#define TYPE_SCL get_code_offset(b_scl,word)
-#define TYPE_VCT get_code_offset(b_vct,word)
-#define TYPE_XNT get_code_offset(b_xnt,word)
-#define TYPE_XRT get_code_offset(b_xrt,word)
-#define TYPE_RCL get_code_offset(b_rcl,word)
+#define type_efc get_code_offset(b_efc,word)
+#define type_icl get_code_offset(b_icl,word)
+#define type_scl get_code_offset(b_scl,word)
+#define type_vct get_code_offset(b_vct,word)
+#define type_xnt get_code_offset(b_xnt,word)
+#define type_xrt get_code_offset(b_xrt,word)
+#define type_rcl get_code_offset(b_rcl,word)
 
 !@#$osopen.c
 /*
@@ -4422,10 +4422,10 @@ struct  ioblk   *ioptr;
     scptr       = MK_MP(ioptr->fnm, struct scblk *);    /* point to filename SCBLK      */
     if (ioptr->flg2 & IO_ENV)
     {
-        if (optfile(scptr, pTSCBLK))
+        if (optfile(scptr, ptscblk))
             return -1;
-        scptr = pTSCBLK;
-        pTSCBLK->len = lenfnm(scptr);   /* remove any options */
+        scptr = ptscblk;
+        ptscblk->len = lenfnm(scptr);   /* remove any options */
     }
 
     cp  = scptr->str;           /* point to filename string     */
@@ -4777,10 +4777,10 @@ struct  ioblk   *ioptr;
     */
     scptr = MK_MP(ioptr->fnm,struct scblk *);   /* point to cmd scblk   */
     if (ioptr->flg2 & IO_ENV) {
-        if (optfile(scptr, pTSCBLK))
+        if (optfile(scptr, ptscblk))
             return -1;
-        scptr = pTSCBLK;
-        pTSCBLK->len = lenfnm(scptr);   /* remove any options   */
+        scptr = ptscblk;
+        ptscblk->len = lenfnm(scptr);   /* remove any options   */
     }
     len   = lenfnm( scptr ) - 2;        /* length of cmd without ! & delimiter */
     if (len >= CMDBUFLEN)
@@ -8618,9 +8618,9 @@ zysbx()
     */
     if ( spitflag & WRTEXE)
     {
-        pTSCBLK->len = appendext( *inpptr, BINEXT, pTSCBLK->str, 1 );
+        ptscblk->len = appendext( *inpptr, BINEXT, ptscblk->str, 1 );
 
-        if ( makeexec( pTSCBLK, spitflag & NOEXEC ? 3 : 4 ) )
+        if ( makeexec( ptscblk, spitflag & NOEXEC ? 3 : 4 ) )
         {
             wrterr( "Error writing load module." );
             zysej();
@@ -8635,8 +8635,8 @@ zysbx()
     */
     if ( spitflag & WRTSAV)
     {
-        pTSCBLK->len = appendext( *inpptr, RUNEXT, pTSCBLK->str, 1 );
-        if ( makeexec( pTSCBLK, spitflag & NOEXEC ? -3 : -4 ) )
+        ptscblk->len = appendext( *inpptr, RUNEXT, ptscblk->str, 1 );
+        if ( makeexec( ptscblk, spitflag & NOEXEC ? -3 : -4 ) )
         {
 #if USEQUIT
             quit(357);
@@ -8888,8 +8888,8 @@ zysdt()
 {
     struct icblk *dtscb = XR (struct icblk *);
 
-    pTSCBLK->len = datecvt( pTSCBLK->str, dtscb->val );
-    SET_XL( pTSCBLK );
+    ptscblk->len = datecvt( ptscblk->str, dtscb->val );
+    SET_XL( ptscblk );
     return NORMAL_RETURN;
 }
 
@@ -9053,7 +9053,7 @@ zysea()
 
     /* Display file name if present */
     if (fnscblk->len) {
-        p = pTSCBLK->str;
+        p = ptscblk->str;
         p = eacpy(p, fnscblk->str, (int)fnscblk->len);
         /* Display line number if present */
         if (WC(unsigned int)) {
@@ -9067,8 +9067,8 @@ zysea()
             *p++ = ')';
         }
         p = eacpy(p, " : ", 3);
-        pTSCBLK->len = p - pTSCBLK->str;
-        SET_XR( pTSCBLK );
+        ptscblk->len = p - ptscblk->str;
+        SET_XR( ptscblk );
         return NORMAL_RETURN;
     }
     SET_XR(0L);
@@ -9323,8 +9323,8 @@ word special Params((word c));
 
 zysem()
 {
-    pTSCBLK->len = msgcopy( WA(word), errors, pTSCBLK->str );
-    SET_XR( pTSCBLK );
+    ptscblk->len = msgcopy( WA(word), errors, ptscblk->str );
+    SET_XR( ptscblk );
     return NORMAL_RETURN;
 }
 
@@ -9743,7 +9743,7 @@ again:
                 / 1.03 - look up in environment block.  Filename
                 /        will be copied to tscblk.
                 */
-            scb2 = pTSCBLK;
+            scb2 = ptscblk;
             if (!optfile(scb1, scb2) && !use_env)
             {
                 use_env = IO_ENV;
@@ -9957,7 +9957,7 @@ checkstr(scp)
 struct scblk *scp;
 {
     return scp != (struct scblk *)0L &&
-           scp->typ == TYPE_SCL && scp->len < TSCBLK_LENGTH;
+           scp->typ == type_scl && scp->len < TSCBLK_LENGTH;
 }
 
 /*  check2str - check first two argument strings in XL, XR.
@@ -10053,9 +10053,9 @@ IATYPE *pword;
     int sign;
 
     sign = 1;
-    if ( icp->typ == TYPE_ICL)
+    if ( icp->typ == type_icl)
         result = icp->val;
-    else if (icp->typ == TYPE_RCL)
+    else if (icp->typ == type_rcl)
     {
 #if sparc
         union {
@@ -10110,12 +10110,12 @@ zyshs()
     /   if argument one is null...
     */
     scp = WA (struct scblk *);
-    if (scp->typ == TYPE_SCL && !scp->len)
+    if (scp->typ == type_scl && !scp->len)
     {
-        gethost( pTSCBLK, TSCBLK_LENGTH );
-        if ( pTSCBLK->len == 0 )
+        gethost( ptscblk, TSCBLK_LENGTH );
+        if ( ptscblk->len == 0 )
             return EXIT_4;
-        SET_XL( pTSCBLK );
+        SET_XL( ptscblk );
         return EXIT_3;
     }
 
@@ -10130,33 +10130,33 @@ zyshs()
         case -1:
             icp = XL( struct icblk * );
             if ( getint(icp,&val) ) {
-                pTICBLK->typ = TYPE_ICL;
-                SET_XR( pTICBLK );
+                pticblk->typ = type_icl;
+                SET_XR( pticblk );
                 switch ( (int)val ) {
                 case 0:
-                    pTICBLK->val = memincb;
+                    pticblk->val = memincb;
                     return EXIT_8;
                 case 1:
-                    pTICBLK->val = databts;
+                    pticblk->val = databts;
                     return EXIT_8;
                 case 2:
-                    pTICBLK->val = (IATYPE)basemem;
+                    pticblk->val = (IATYPE)basemem;
                     return EXIT_8;
                 case 3:
-                    pTICBLK->val = (IATYPE)topmem;
+                    pticblk->val = (IATYPE)topmem;
                     return EXIT_8;
                 case 4:
-                    pTICBLK->val = stacksiz - 400;      /* safety margin */
+                    pticblk->val = stacksiz - 400;      /* safety margin */
                     return EXIT_8;
                 case 5:                                                 /* stack in use */
 #if WINNT | LINUX
-                    pTICBLK->val = stacksiz - (XS(IATYPE) - (IATYPE)lowsp);
+                    pticblk->val = stacksiz - (XS(IATYPE) - (IATYPE)lowsp);
 #else
-                    pTICBLK->val = stacksiz - (XS(IATYPE) - ((IATYPE)lowxs-400));
+                    pticblk->val = stacksiz - (XS(IATYPE) - ((IATYPE)lowxs-400));
 #endif
                     return EXIT_8;
                 case 6:
-                    pTICBLK->val = sizeof(IATYPE);
+                    pticblk->val = sizeof(IATYPE);
                     return EXIT_8;
                 default:
                     return EXIT_1;
@@ -10170,19 +10170,19 @@ zyshs()
             */
         case 0:
             if ( uarg ) {
-                cpys2sc( uarg, pTSCBLK, TSCBLK_LENGTH );
-                SET_XL( pTSCBLK );
+                cpys2sc( uarg, ptscblk, TSCBLK_LENGTH );
+                SET_XL( ptscblk );
                 return EXIT_3;
             }
             else if ((val = cmdcnt) != 0) {
-                pTSCBLK->len = 0;
-                while (pTSCBLK->len < TSCBLK_LENGTH - 2 &&
+                ptscblk->len = 0;
+                while (ptscblk->len < TSCBLK_LENGTH - 2 &&
                         arg2scb( (int) val++, gblargc, gblargv,
-                                 pTSCBLK, TSCBLK_LENGTH - pTSCBLK->len ) > 0)
-                    pTSCBLK->str[pTSCBLK->len++] = ' ';
-                if (pTSCBLK->len)
-                    --pTSCBLK->len;
-                SET_XL( pTSCBLK );
+                                 ptscblk, TSCBLK_LENGTH - ptscblk->len ) > 0)
+                    ptscblk->str[ptscblk->len++] = ' ';
+                if (ptscblk->len)
+                    --ptscblk->len;
+                SET_XL( ptscblk );
                 return EXIT_3;
             }
             else
@@ -10197,14 +10197,14 @@ zyshs()
                 return EXIT_1;
             save2str(&cmd,&path);
             save0();            /* made sure fd 0 OK    */
-            pTICBLK->val = dosys( cmd, path );
+            pticblk->val = dosys( cmd, path );
 
-            pTICBLK->typ = TYPE_ICL;
+            pticblk->typ = type_icl;
             restore2str();
             restore0();
-            if (pTICBLK->val < 0)
+            if (pticblk->val < 0)
                 return EXIT_6;
-            SET_XR( pTICBLK );
+            SET_XR( pticblk );
             return EXIT_8;
         }
 
@@ -10214,13 +10214,13 @@ zyshs()
         case 2:
             icp = XL( struct icblk * );
             if ( getint(icp,&val) ) {
-                pTSCBLK->len = 0;
-                retval = arg2scb( (int) val, gblargc, gblargv, pTSCBLK, TSCBLK_LENGTH );
+                ptscblk->len = 0;
+                retval = arg2scb( (int) val, gblargc, gblargv, ptscblk, TSCBLK_LENGTH );
                 if ( retval < 0 )
                     return EXIT_6;
                 if ( retval == 0 )
                     return EXIT_1;
-                SET_XL( pTSCBLK );
+                SET_XL( ptscblk );
                 return EXIT_3;
             }
             else
@@ -10231,9 +10231,9 @@ zyshs()
             */
         case 3:
             if ( cmdcnt ) {
-                pTICBLK->typ = TYPE_ICL;
-                pTICBLK->val = cmdcnt;
-                SET_XR( pTICBLK );
+                pticblk->typ = type_icl;
+                pticblk->val = cmdcnt;
+                SET_XR( pticblk );
                 return EXIT_8;
             }
             else
@@ -10245,12 +10245,12 @@ zyshs()
             */
         case 4:
             scp = XL( struct scblk * );
-            if ( scp->typ == TYPE_SCL ) {
+            if ( scp->typ == type_scl ) {
                 if ( scp->len == 0 )
                     return EXIT_1;
-                if ( rdenv( scp, pTSCBLK ) < 0 )
+                if ( rdenv( scp, ptscblk ) < 0 )
                     return EXIT_6;
-                SET_XL( pTSCBLK );
+                SET_XL( ptscblk );
                 return EXIT_3;
             }
             else
@@ -10327,12 +10327,12 @@ zysid()
     register char *cp;
 
     SET_XR( pid1 );
-    gettype( pID2BLK, ID2BLK_LENGTH );
-    cp = pID2BLK->str + pID2BLK->len;
+    gettype( pid2blk, ID2BLK_LENGTH );
+    cp = pid2blk->str + pid2blk->len;
     *cp++ = ' ';
     *cp++ = ' ';
-    pID2BLK->len += 2 + storedate(cp, ID2BLK_LENGTH - pID2BLK->len);
-    SET_XL( pID2BLK );
+    pid2blk->len += 2 + storedate(cp, ID2BLK_LENGTH - pid2blk->len);
+    SET_XL( pid2blk );
     return NORMAL_RETURN;
 }
 !@#$sysif.c
@@ -10755,7 +10755,7 @@ zysio()
             /*
             /   Fill in IOBLK.
             */
-            iob->typ = TYPE_XRT;        /* type: external reloc */
+            iob->typ = type_xrt;        /* type: external reloc */
             iob->len = IOSIZE;          /* length               */
             iob->fnm = MP_OFF((tioblk.flg2 & IO_ENV) ?
                               XL( struct scblk *) :  /* filearg 1       */
@@ -10781,7 +10781,7 @@ zysio()
                 switch( iob->fdn )
                 {
                 case 0:
-                    iob->bfb = MP_OFF(pINPBUF, struct bfblk NEAR *);
+                    iob->bfb = MP_OFF(pinpbuf, struct bfblk NEAR *);
                     break;
                 case 1:
                     iob->bfb = 0;
@@ -10795,7 +10795,7 @@ zysio()
             /*
             /   Fill in BFBLK.
             */
-            bfb->typ = TYPE_XNT;        /* type: external nonreloc */
+            bfb->typ = type_xnt;        /* type: external nonreloc */
             bfb->len = bfblksize;       /* length               */
             bfb->size = tioblk.pid;     /* buffer size          */
             bfb->fill = 0;              /* chars in buffer      */
@@ -10914,9 +10914,9 @@ zysld()
     word fd;                                    /* keep stack word-aligned */
     void *result = 0;
 
-    fd = openloadfile(pTSCBLK->str);
+    fd = openloadfile(ptscblk->str);
     if ( fd != -1 ) {                   /* If file opened OK */
-        result = loadef(fd, pTSCBLK->str); /* Invoke loader */
+        result = loadef(fd, ptscblk->str); /* Invoke loader */
         closeloadfile(fd);
         switch ((word)result) {
         case (word)0:
@@ -11255,7 +11255,7 @@ mword nargs;
 
     type = callextfun(efb, sp-1, nargs, SA(nbytes));    /* make call with Stack Aligned nbytes */
 
-    result = (union block *)pTSCBLK;
+    result = (union block *)ptscblk;
     switch (type) {
 
     case BL_XN:                                         /* XNBLK    external block                                              */
@@ -11402,7 +11402,7 @@ char *filename;
         MINRESTORE();
     }
 
-    pnode->xntyp = TYPE_XNT;                                    /* B_XNT type word */
+    pnode->xntyp = type_xnt;                                    /* B_XNT type word */
     pnode->xnlen = sizeof(XFNode);                      /* length of this block */
     pnode->xnu.ef.xnhand = handle;                      /* record DLL handle */
     pnode->xnu.ef.xnpfn = pfn;                          /* record function entry address */
@@ -12077,7 +12077,7 @@ zysou()
     register union block  *blk = XR (union block *);
     int result;
 
-    if (blk->scb.typ == TYPE_SCL)
+    if (blk->scb.typ == type_scl)
     {
         /* called with string, get length from SCBLK */
         SET_WA(blk->scb.len);
@@ -12567,7 +12567,7 @@ This file is part of Macro SPITBOL.
 
 void stdioinit()
 {
-    inpiob.bfb = MP_OFF(pINPBUF, struct bfblk NEAR *);
+    inpiob.bfb = MP_OFF(pinpbuf, struct bfblk NEAR *);
 }
 
 /*
@@ -12968,7 +12968,7 @@ This file is part of Macro SPITBOL.
 
 void ttyinit()
 {
-    ttyiobin.bfb = MP_OFF(pTTYBUF, struct bfblk NEAR *);
+    ttyiobin.bfb = MP_OFF(pttybuf, struct bfblk NEAR *);
 }
 
 /*
@@ -13282,7 +13282,7 @@ zysxi()
     */
     if ( scb != 0 )
     {
-        if ( scb->typ == TYPE_SCL )             /* must be SCBLK!       */
+        if ( scb->typ == type_scl )             /* must be SCBLK!       */
         {
             close_all( WB( struct chfcb * ) );  /* V1.11*/
 #if HOST386
@@ -13448,7 +13448,7 @@ zysxi()
             goto fail;
         }
         srcptr = stackbase;
-        dstptr = (word *)pTSCBLK->str;
+        dstptr = (word *)ptscblk->str;
         i = get_min_value(stbas,word *) - srcptr;
         while( i-- )
             *dstptr++ = *srcptr++;
@@ -13906,11 +13906,11 @@ int fd;
                     goto reload_ioerr;
 
             /* Read saved stack from save file into tscblk */
-            if ( expand( fd, (unsigned char FAR *)pTSCBLK->str, svfheader.stacklength ) )
+            if ( expand( fd, (unsigned char FAR *)ptscblk->str, svfheader.stacklength ) )
                 goto reload_ioerr;
 
             set_min_value(stbas, svfheader.stbas,word);
-            lmodstk = (word *)(pTSCBLK->str + svfheader.stacklength);
+            lmodstk = (word *)(ptscblk->str + svfheader.stacklength);
             stacksiz = svfheader.stacksiz;
 
             /* Reload compiler working globals section */
@@ -13938,8 +13938,8 @@ int fd;
             minimal_call(reloc_callid);
 
             /* Relocate any return addresses in stack */
-            SET_WB(pTSCBLK->str);
-            SET_WA(pTSCBLK->str + svfheader.stacklength);
+            SET_WB(ptscblk->str);
+            SET_WA(ptscblk->str + svfheader.stacklength);
             if (svfheader.stacklength)
                 minimal_call(relaj_callid);
 
@@ -13986,10 +13986,10 @@ int fd;
 
             LSEEK(fd, (FILEPOS)0, 2); /* advance to EOF should be a nop */
             pathptr = (char *)-1L;  /* include paths unknown  */
-            pINPBUF->next = 0;  /* no chars left in std input buffer  */
-            pINPBUF->fill = 0;  /* ditto                                */
-            pINPBUF->offset = (FILEPOS)0;
-            pINPBUF->curpos = (FILEPOS)0;
+            pinpbuf->next = 0;  /* no chars left in std input buffer  */
+            pinpbuf->fill = 0;  /* ditto                                */
+            pinpbuf->offset = (FILEPOS)0;
+            pinpbuf->curpos = (FILEPOS)0;
             if (uargbuf[0] && !uarg)            /* if uarg in save file and none */
                 uarg = uargbuf;                         /* on command line, use saved version */
             provide_name = 0;   /* no need to provide filename in sysrd */

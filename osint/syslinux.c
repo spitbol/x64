@@ -208,7 +208,7 @@ mword nargs;
 
     type = callextfun(efb, sp-1, nargs, SA(nbytes));    /* make call with Stack Aligned nbytes */
 
-    result = (union block *)pTSCBLK;
+    result = (union block *)ptscblk;
     switch (type) {
 
     case BL_XN:                                         /* XNBLK    external block                                              */
@@ -355,7 +355,7 @@ char *filename;
         MINRESTORE();
     }
 
-    pnode->xntyp = TYPE_XNT;                                    /* B_XNT type word */
+    pnode->xntyp = type_xnt;                                    /* B_XNT type word */
     pnode->xnlen = sizeof(XFNode);                      /* length of this block */
     pnode->xnu.ef.xnhand = handle;                      /* record DLL handle */
     pnode->xnu.ef.xnpfn = pfn;                          /* record function entry address */
