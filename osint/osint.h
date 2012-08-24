@@ -286,7 +286,7 @@ enum valtab {
 #endif                                  /* DIRECT */
 
 /* Some shorthand notations */
-#define pID1 GET_DATA_OFFSET(id1,struct scblk *)
+#define pid1 GET_DATA_OFFSET(id1,struct scblk *)
 #define pID2BLK GET_DATA_OFFSET(id2blk,struct scblk *)
 #define pINPBUF GET_DATA_OFFSET(inpbuf,struct bfblk *)
 #define pTTYBUF GET_DATA_OFFSET(ttybuf,struct bfblk *)

@@ -53,7 +53,7 @@ zysid()
 {
     register char *cp;
 
-    SET_XR( pID1 );
+    SET_XR( pid1 );
     gettype( pID2BLK, ID2BLK_LENGTH );
     cp = pID2BLK->str + pID2BLK->len;
     *cp++ = ' ';
