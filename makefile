@@ -9,7 +9,7 @@ DEBUG=	1
 # Minimal source directory.
 MINPATH=./
 
-OSINT=./osint
+OSINT=./os
 
 vpath %.c $(OSINT)
 
@@ -46,7 +46,7 @@ SPIT=   ./bootstrap/spitbol
 	$(AS) -o $@ $(ASFLAGS) $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
-CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h
+CHDRS =	$(OSINT)/os.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h
 
 # C Headers unique to this version of SPITBOL:
 UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/system.h
@@ -116,9 +116,9 @@ spitbol.err: spitbol.s
 errors.s: $(VERS).cnd $(ERR) spitbol.s
 	   $(SPIT) -1=spitbol.err -2=errors.s $(ERR)
 
-inter.o: systype.ah osint.inc
+inter.o: systype.ah os.inc
 
-# make osint objects
+# make os objects
 cobjs:	$(COBJS)
 
 # C language header dependencies:

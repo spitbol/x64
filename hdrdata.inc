@@ -44,8 +44,8 @@
 ;   via the minimal function (see inter.asm).
 ;
 ;   note that the order of entries in this table must correspond
-;   to the order of entries in the call enumeration in osint.h
-;   and osint.inc.
+;   to the order of entries in the call enumeration in os.h
+;   and os.inc.
 ;
         global  calltab
 calltab:
@@ -72,11 +72,11 @@ calltab:
 ;   non-zero, the symbols are declared public and accessed directly.
 ;   if direct is zero, access is via the function minadr in inter.asm.
 ;
-;   the macros getoff, getptr, getmin, and setmin in osint.h and osint.inc
+;   the macros getoff, getptr, getmin, and setmin in os.h and os.inc
 ;   must be adjusted when direct is changed.
 ;
 ;   note that the order of entries in this table must correspond to the
-;   order of entries in the val enumeration in osint.h and osint.inc.
+;   order of entries in the val enumeration in os.h and os.inc.
 ;
 %if  direct
 %macro  access 1

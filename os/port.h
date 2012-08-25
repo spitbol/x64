@@ -514,7 +514,7 @@ extern char isWin95;		/* True if running under WinNT */
 
 #define const
 
-#include "osint.h"
+#include "os.h"
 
 #ifdef PRIVATEBLOCKS
 #if WINNT | SUN4 | AIX | LINUX

@@ -23,7 +23,7 @@
 %define globals 1
 
         %include        "systype.ah"
-        %include        "osint.inc"
+        %include        "os.inc"
 
         segment .data
 ;
