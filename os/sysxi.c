@@ -453,7 +453,7 @@ putsave (stkbase, stklen)
   word result = 0;
   struct scblk *vscb = XR (struct scblk *);
 #if EXTFUN
-  unsigned char FAR *bufp;
+  unsigned char *bufp;
   word textlen;
 #endif /* EXTFUN */
 
@@ -509,30 +509,30 @@ putsave (stkbase, stklen)
 
   /* write out header */
   result |=
-    wrtaout ((unsigned char FAR *) &svfheader, sizeof (struct svfilehdr));
+    wrtaout ((unsigned char *) &svfheader, sizeof (struct svfilehdr));
 
   /* write out -u command line string if there is one */
-  result |= compress ((unsigned char FAR *) uarg, svfheader.uarglen);
+  result |= compress ((unsigned char *) uarg, svfheader.uarglen);
 
   /* write out stack */
-  result |= compress ((unsigned char FAR *) stkbase, stklen);
+  result |= compress ((unsigned char *) stkbase, stklen);
 
   /* write out working section */
   result |=
-    compress ((unsigned char FAR *) svfheader.sec4adr, svfheader.sec4size);
+    compress ((unsigned char *) svfheader.sec4adr, svfheader.sec4size);
 
   /* write out important portion of static region */
-  result |= compress ((unsigned char FAR *) get_min_value (hshtb, char *),
+  result |= compress ((unsigned char *) get_min_value (hshtb, char *),
 		      get_min_value (state, uword) - get_min_value (hshtb,
 								    uword));
 
   /* write out dynamic portion of heap */
-  result |= compress ((unsigned char FAR *) get_min_value (dnamb, char *),
+  result |= compress ((unsigned char *) get_min_value (dnamb, char *),
 		      get_min_value (dnamp, uword) - get_min_value (dnamb,
 								    uword));
 
   /* write out minimal register block */
-  result |= compress ((unsigned char FAR *) &reg_block, reg_size);
+  result |= compress ((unsigned char *) &reg_block, reg_size);
 #if EXTFUN
   scanef ();			/* prepare to scan for external functions */
   while ((textlen = (word) nextef (&bufp, 1)) != 0)
@@ -565,7 +565,7 @@ getsave (fd)
   FILEPOS pos;
   char *cp;
 #if EXTFUN
-  unsigned char FAR *bufp;
+  unsigned char *bufp;
   int textlen;
 #endif /* EXTFUN */
   word adjusts[15];		/* structure to hold adjustments */
@@ -592,7 +592,7 @@ getsave (fd)
 
 	  doexpand (0, (char *) 0, 0);	/* turn off expansion for header */
 	  if (expand
-	      (fd, (unsigned char FAR *) &svfheader,
+	      (fd, (unsigned char *) &svfheader,
 	       sizeof (struct svfilehdr)))
 	    goto reload_ioerr;
 
@@ -721,12 +721,12 @@ getsave (fd)
 
 	  /* Read saved -u command string if present */
 	  if (svfheader.uarglen)
-	    if (expand (fd, (unsigned char FAR *) uargbuf, svfheader.uarglen))
+	    if (expand (fd, (unsigned char *) uargbuf, svfheader.uarglen))
 	      goto reload_ioerr;
 
 	  /* Read saved stack from save file into tscblk */
 	  if (expand
-	      (fd, (unsigned char FAR *) ptscblk->str, svfheader.stacklength))
+	      (fd, (unsigned char *) ptscblk->str, svfheader.stacklength))
 	    goto reload_ioerr;
 
 	  set_min_value (stbas, svfheader.stbas, word);
@@ -735,18 +735,18 @@ getsave (fd)
 
 	  /* Reload compiler working globals section */
 	  if (expand
-	      (fd, get_data_offset (g_aaa, unsigned char FAR *),
+	      (fd, get_data_offset (g_aaa, unsigned char *),
 	       svfheader.sec4size))
 	      goto reload_ioerr;
 
 	  /* Reload important portion of static region */
-	  if (expand (fd, (unsigned char FAR *) basemem + svfheader.statoff,
+	  if (expand (fd, (unsigned char *) basemem + svfheader.statoff,
 		      get_min_value (state, uword) - get_min_value (hshtb,
 								    uword)))
 	    goto reload_ioerr;
 
 	  /* Reload heap */
-	  if (expand (fd, (unsigned char FAR *) basemem + svfheader.dynoff,
+	  if (expand (fd, (unsigned char *) basemem + svfheader.dynoff,
 		      get_min_value (dnamp, uword) - get_min_value (dnamb,
 								    uword)))
 	    goto reload_ioerr;
@@ -778,7 +778,7 @@ getsave (fd)
 	   * The only Minimal register in need of relocation is CP,
 	   * and this is handled by the rereloc routine.
 	   */
-	  if (expand (fd, (unsigned char FAR *) &reg_block, reg_size))
+	  if (expand (fd, (unsigned char *) &reg_block, reg_size))
 	    goto reload_ioerr;
 
 	  /* No Minimal calls past this point should be done if it

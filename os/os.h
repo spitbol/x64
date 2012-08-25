@@ -37,9 +37,9 @@ extern word reg_pc;
     be converted to and from far pointers in the C data space.
  */
 #if __NEAR__
-extern void *mk_mp (void near * minp);
-#define MK_MP(minp,type) ((type)mk_mp((void near *)(minp)))
-#define MP_OFF(cp,type) ((type)(void NEAR *)(cp))
+extern void *mk_mp (void * minp);
+#define MK_MP(minp,type) ((type)mk_mp((void *)(minp)))
+#define MP_OFF(cp,type) ((type)(void *)(cp))
 #else /* __NEAR__ */
 #define MK_MP(minp,type) ((type)(minp))
 #define MP_OFF(cp,type) ((type)cp)

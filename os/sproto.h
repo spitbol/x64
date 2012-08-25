@@ -46,7 +46,7 @@ extern int cinread Params ((File_handle fd, char *buf, int size));
 extern void close_all Params ((struct chfcb * chb));
 extern word closeaout Params ((char *filename, char *tmpfnbuf, word errflag));
 extern void clrbuf Params ((void));
-extern int compress Params ((unsigned char FAR * startadr, uword size));
+extern int compress Params ((unsigned char * startadr, uword size));
 extern void conv Params ((char *dest, int value));
 extern int coutdev Params ((File_handle F));
 extern void cpys2sc Params ((char *cp, struct scblk * scptr, word maxlen));
@@ -65,7 +65,7 @@ extern void exephase Params ((void));
 extern void exeinput Params ((void));
 extern void __exit Params ((int code));
 extern int expand
-Params ((File_handle fd, unsigned char FAR * startadr, uword size));
+Params ((File_handle fd, unsigned char * startadr, uword size));
 extern word fillbuf Params ((struct ioblk * ioptr));
 extern char *findenv Params ((char *vq, int vn));
 extern int flush Params ((struct ioblk * ioptr));
@@ -106,7 +106,7 @@ extern int malloc_init Params ((word endadr));
 extern long moremem Params ((long n, char **pp));
 extern char *mystrcpy Params ((char *p, char *q));
 extern int mystrncpy Params ((char *p, char *q, int i));
-extern void *nextef Params ((unsigned char FAR ** bufp, int io));
+extern void *nextef Params ((unsigned char ** bufp, int io));
 extern void numout Params ((unsigned n));
 extern int openaout Params ((char *fn, char *tmpfnbuf, int exe));
 extern int openexe Params ((char *name));
@@ -128,10 +128,10 @@ extern word putsave Params ((word * stkbase, word stklen));
 extern void quit Params ((int errno));
 extern void rawmode Params ((File_handle F, int mode));
 extern int rdaout
-Params ((File_handle fd, unsigned char FAR * startadr, uword size));
+Params ((File_handle fd, unsigned char * startadr, uword size));
 extern int rdenv Params ((struct scblk * varname, struct scblk * result));
 #ifndef readfar
-extern uword readfar Params ((File_handle fd, void FAR * Buf, uword Cnt));
+extern uword readfar Params ((File_handle fd, void * Buf, uword Cnt));
 #endif
 extern int renames Params ((char *oldname, char *newname));
 extern void rereloc Params ((void));
@@ -182,9 +182,9 @@ extern void unreloc Params ((void));
 extern word uppercase Params ((word c));
 extern word wabs Params ((word x));
 #ifndef writefar
-extern uword writefar Params ((File_handle fd, void FAR * Buf, uword Cnt));
+extern uword writefar Params ((File_handle fd, void * Buf, uword Cnt));
 #endif
-extern int wrtaout Params ((unsigned char FAR * startadr, uword size));
+extern int wrtaout Params ((unsigned char * startadr, uword size));
 extern void wrterr Params ((char *s));
 extern void wrtint Params ((int));
 extern void wrtmsg Params ((char *s));

@@ -35,7 +35,7 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 #if EXTFUN
-unsigned char FAR *bufp;
+unsigned char *bufp;
 #endif /* EXTFUN */
 
 

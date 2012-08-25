@@ -69,9 +69,9 @@ struct cdblk
   word cdlen;			/* length of CDBLK in bytes                             */
   union
   {
-    struct cdblk NEAR *cdnxt;	/* if failure exit is next statement    */
-    struct vrblk NEAR *cdlab;	/* if failure exit is a simple label    */
-    char NEAR *cdnof;		/* no failure exit (-NOFAIL mode)               */
+    struct cdblk *cdnxt;	/* if failure exit is next statement    */
+    struct vrblk *cdlab;	/* if failure exit is a simple label    */
+    char *cdnof;		/* no failure exit (-NOFAIL mode)               */
     word cddir;			/* failure exit is complex or direct    */
   } cdfal;			/* Failure exit                                                 */
   word cdcod[1];		/* executable pseudo-code                               */
@@ -91,8 +91,8 @@ struct chfcb
 {
   word typ;			/*  type word                   */
   word len;			/*  block length                */
-  struct chfcb NEAR *nxt;	/*  pointer to next chfcb       */
-  struct fcblk NEAR *fcp;	/*  pointer to fcb              */
+  struct chfcb *nxt;	/*  pointer to next chfcb       */
+  struct fcblk *fcp;	/*  pointer to fcb              */
 };
 
 
@@ -107,8 +107,8 @@ struct efblk
   word fargs;			/*  number of arguments */
   word eflen;			/*  block length                */
   word efuse;			/*  usage count                 */
-  void NEAR *efcod;		/*  pointer to XNBLK    */
-  struct vrblk NEAR *efvar;	/*  pointer to VRBLK    */
+  void *efcod;		/*  pointer to XNBLK    */
+  struct vrblk *efvar;	/*  pointer to VRBLK    */
   word efrsl;			/*  result type                 */
   word eftar[1];		/*  argument types              */
 };
@@ -168,11 +168,11 @@ struct vrblk
 {
   word vrget;			/* routine to load variable onto stack  */
   word vrsto;			/* routine to store stack top into var. */
-  union block NEAR *vrval;	/* variable value                                               */
+  union block *vrval;	/* variable value                                               */
   word vrtra;			/* routine to transfer to label                 */
-  union block NEAR *vrlbl;	/* pointer to code for label                    */
-  union block NEAR *vrfnc;	/* function block if name is function   */
-  struct vrblk NEAR *vrnxt;	/* next vrblk on hash chain                             */
+  union block *vrlbl;	/* pointer to code for label                    */
+  union block *vrfnc;	/* function block if name is function   */
+  struct vrblk *vrnxt;	/* next vrblk on hash chain                             */
   word vrlen;			/* length of name                                               */
   char vrchs[1];		/* characters of name                                   */
 };

@@ -180,7 +180,7 @@ output_code (code)
     {
       if (bufcnt >= buff_size)
 	{
-	  wrtaout ((unsigned char FAR *) buffer, bufcnt);
+	  wrtaout ((unsigned char *) buffer, bufcnt);
 	  bufptr = buffer;
 	  bufcnt = 0;
 	}
@@ -241,7 +241,7 @@ decode_string (buffer, code)
 int
 expand (fd, startadr, size)
      word fd;
-     unsigned char FAR *startadr;
+     unsigned char *startadr;
      uword size;
 
 {
@@ -363,7 +363,7 @@ docompress (bits, freeptr, size)
     {
       output_code (0);		/* This code flushes the output buffer  */
       if (bufcnt)
-	wrtaout ((unsigned char FAR *) buffer, bufcnt);
+	wrtaout ((unsigned char *) buffer, bufcnt);
       bufcnt = 0;
       if (extra)
 	sbrk (-extra);		/* release any extra memory acquired */
@@ -416,7 +416,7 @@ docompress (bits, freeptr, size)
 */
 int
 compress (startadr, size)
-     unsigned char FAR *startadr;
+     unsigned char *startadr;
      uword size;
 {
   unsigned int index;

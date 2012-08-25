@@ -55,7 +55,7 @@ This file is part of Macro SPITBOL.
 
     V2.01 23-Dec-91
                 Add ERRDIST to allow the errors and phrases arrays to be
-        accessed as FAR pointers for those systems that point to them
+        accessed as pointers for those systems that point to them
                 in another segment.
 */
 

@@ -62,7 +62,7 @@ struct fcblk
   word typ;			/*  type word                                   */
   word len;			/*  length of fcblk                             */
   word rsz;			/*  record size                                 */
-  struct ioblk NEAR *iob;	/*  pointer to IOBLK                    */
+  struct ioblk *iob;	/*  pointer to IOBLK                    */
   word mode;			/*  1=line mode, 0 = raw mode   */
 };
 
@@ -87,9 +87,9 @@ struct ioblk
 {
   word typ;			/*  type word                           */
   word len;			/*  length of IOBLK                     */
-  struct scblk NEAR *fnm;	/*  pointer to SCBLK holding filename   */
+  struct scblk *fnm;	/*  pointer to SCBLK holding filename   */
   word pid;			/*  process id for pipe                 */
-  struct bfblk NEAR *bfb;	/*  pointer to BFBLK (type XNBLK)       */
+  struct bfblk *bfb;	/*  pointer to BFBLK (type XNBLK)       */
   word fdn;			/*  file descriptor number              */
   word flg1;			/*  first nine flags                    */
   word flg2;			/*  second nine flags                   */
