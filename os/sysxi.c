@@ -404,9 +404,6 @@ rereloc ()
   set_min_value (gtcef, get_min_value (gtcef, word) + stbas, word);
   set_min_value (pmhbs, get_min_value (pmhbs, word) + stbas, word);
   SET_CP (CP (word) + get_min_value (dnamb, char *));
-#if SPARC | WINNT
-  SET_PC (PC (word) + get_code_offset (s_aaa, char *));
-#endif /* SPARC | WINNT */
 }
 #endif /* EXECFILE | SAVEFILE */
 
@@ -536,11 +533,7 @@ putsave (stkbase, stklen)
 #if EXTFUN
   scanef ();			/* prepare to scan for external functions */
   while ((textlen = (word) nextef (&bufp, 1)) != 0)
-#if WINNT
-    ;				/* can't save DLLs! */
-#else /* SOLARIS */
     result |= compress (bufp, textlen);	/* write each function */
-#endif /* SOLARIS */
 #endif /* EXTFUN */
   docompress (0, (char *) 0, 0);	/* turn off compression */
   return result;
@@ -661,36 +654,10 @@ getsave (fd)
 #endif /* USEQUIT */
 	    }
 
-#if WINNT
-	  /*
-	   * Allocate stack on DOS systems
-	   */
-	  lowsp = (char *) sbrk ((uword) svfheader.stacksiz);
-	  if (lowsp == (char *) -1 ||
-	      svfheader.stacksiz < svfheader.stacklength + 400)
-	    {
-	      cp = "Stack memory unavailable, file ";
-	      goto reload_err;
-	    }
-#else
 	  /* build onto existing stack */
 	  lowsp = (char *) &fd - svfheader.stacksiz - 100;
-#endif
 
 	  s = svfheader.maxsize - svfheader.dynoff;	/* Minimum load address */
-#if SUN4
-	  /* Allocate a buffer for mallocs.  Use the space between the
-	   * end of data and the start of Minimal's static and dynamic
-	   * area.  Because of virtual memory, we can use almost 32 megabytes
-	   * for this region, and it has the secondary benefit of letting
-	   * us have object sizes greater than the previous 64K.
-	   */
-	  if (malloc_init (svfheader.maxsize))
-	    {
-	      cp = "Malloc initialization failure reloading ";
-	      goto reload_err;
-	    }
-#endif /* SUN4 */
 
 	  cp = "Insufficient memory to load ";
 	  if ((unsigned long) sbrk (0) < s)	/* If DNAMB will be below old MXLEN, */
@@ -787,10 +754,6 @@ getsave (fd)
 
 #if EXTFUN
 	  scanef ();		/* prepare to scan for external functions */
-#if WINNT
-	  while (nextef (&bufp, -1) != (void *) 0)
-	    ((struct efblk *) bufp)->efcod = 0;	/* wipe out each function */
-#else /* SOLARIS */
 	  while ((textlen = (word) nextef (&bufp, 0)) > 0)	/* read each function */
 	    if (expand (fd, bufp, textlen))
 	      goto reload_ioerr;
@@ -803,7 +766,6 @@ getsave (fd)
 	      goto reload_err;
 #endif /* USEQUIT */
 	    }
-#endif /* SOLARIS */
 #endif /* EXTFUN */
 
 	  doexpand (0, (char *) 0, 0);	/* turn off compression */

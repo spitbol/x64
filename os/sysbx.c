@@ -105,9 +105,7 @@ zysbx ()
   /*  execution resumes here when a.out file created with             */
   /*  the -w option is reloaded.                                      */
 
-#if UNIX | WINNT
   startbrk ();			/* turn on Control-C checking */
-#endif /* UNIX | WINNT */
 
   /*  swcoup does real work  */
   swcoup (outptr);

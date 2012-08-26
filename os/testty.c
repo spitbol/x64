@@ -51,13 +51,9 @@ testty (fd)
      int fd;
 
 {
-#if WINNT
-  return chrdev (fd) ? 0 : -1;
-#else
   if (fstat (fd, &statbuf))
     return -1;
   return S_ISCHR (statbuf.st_mode) ? 0 : -1;
-#endif
 }
 
 
