@@ -130,9 +130,6 @@ extern void rawmode Params ((File_handle F, int mode));
 extern int rdaout
 Params ((File_handle fd, unsigned char * startadr, uword size));
 extern int rdenv Params ((struct scblk * varname, struct scblk * result));
-#ifndef readfar
-extern uword readfar Params ((File_handle fd, void * Buf, uword Cnt));
-#endif
 extern int renames Params ((char *oldname, char *newname));
 extern void rereloc Params ((void));
 extern int resaout Params ((char *filename));
@@ -181,9 +178,6 @@ extern void unmake_c_str Params ((char *p, char saved_c));
 extern void unreloc Params ((void));
 extern word uppercase Params ((word c));
 extern word wabs Params ((word x));
-#ifndef writefar
-extern uword writefar Params ((File_handle fd, void * Buf, uword Cnt));
-#endif
 extern int wrtaout Params ((unsigned char * startadr, uword size));
 extern void wrterr Params ((char *s));
 extern void wrtint Params ((int));

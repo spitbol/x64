@@ -95,7 +95,7 @@ wrtaout (startadr, size)
      unsigned char *startadr;
      uword size;
 {
-  if ((uword) writefar (aoutfd, startadr, size) != size)
+  if ((uword) write (aoutfd, startadr, size) != size)
     return -2;
 
   fp += size;			/*   advance file position      */
@@ -193,7 +193,7 @@ rdaout (fd, startadr, size)
      unsigned char *startadr;
      uword size;
 {
-  if ((uword) readfar (fd, startadr, size) != size)
+  if ((uword) read (fd, startadr, size) != size)
     return -2;
 
   fp += size;			/*   advance file position      */
