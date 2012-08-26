@@ -27,7 +27,6 @@ This file is part of Macro SPITBOL.
 #if POLLING
 int brkpnd;
 
-#if UNIX | WINNT
 #include <signal.h>
 #undef SigType
 #define SigType void
@@ -35,9 +34,6 @@ int brkpnd;
 static
 SigType (*cstat)
 Params ((int));
-#if WINNT
-     static SigType (*bstat) Params ((int));
-#endif
      void catchbrk Params ((int sig));
      void rearmbrk Params ((void));
 
@@ -45,9 +41,6 @@ Params ((int));
 {
   brkpnd = 0;
   cstat = signal (SIGINT, catchbrk);	/* set to catch control-C */
-#if WINNT
-  bstat = signal (SIGBREAK, catchbrk);	/* set to catch control-BREAK */
-#endif
 }
 
 
@@ -56,9 +49,6 @@ void
 endbrk ()			/* terminate break logic */
 {
   signal (SIGINT, cstat);	/* restore original trap value */
-#if WINNT
-  signal (SIGBREAK, bstat);
-#endif
 }
 
 
@@ -83,9 +73,5 @@ void
 rearmbrk ()			/* rearm after a trap occurs */
 {
   signal (SIGINT, catchbrk);	/* set to catch traps */
-#if WINNT
-  signal (SIGBREAK, catchbrk);
-#endif
 }
-#endif
 #endif /* POLLING */

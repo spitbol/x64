@@ -32,10 +32,6 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if WINNT
-#include <stdlib.h>
-#endif
-
 int
 dosys (cmd, path)
      char *cmd;

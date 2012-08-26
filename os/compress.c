@@ -65,9 +65,7 @@ This file is part of Macro SPITBOL.
 
 #if SAVEFILE
 
-#if WINNT
 #include <string.h>
-#endif
 
 #define code_size   (table_size*sizeof(short int))
 #define prefix_size (table_size*sizeof(short unsigned int))

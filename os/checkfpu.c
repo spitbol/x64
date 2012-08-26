@@ -39,12 +39,10 @@ checkfpu ()
 }
 #else /* FLTHDWR */
 
-#if LINUX | WINNT
 checkfpu ()
 {
   return -1;			/* Assume all modern machines have FPU (excludes 80386 without 80387) */
 }
-#endif
 
 #endif /* FLTHDWR */
 #endif /* FLOAT */
