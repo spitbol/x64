@@ -63,10 +63,6 @@ main (argc, argv)
   gblargc = argc;
   gblargv = argv;
   lowsp = 0L;
-#if WINNT
-  init_custom ();		/* Perform system specific initializations */
-#endif
-
   /*
      Initialize buffers
    */
@@ -125,7 +121,7 @@ main (argc, argv)
 #if FLOAT
       hasfpu = checkfpu ();	/* check for floating point hardware */
 #endif /* FLOAT */
-#if (SUN4 | LINUX) & !EXECSAVE
+#if !EXECSAVE
       heapmove ();		/* move the heap up                                     */
       malloc_empty ();		/* mark the malloc region as empty      */
 #endif /* SUN4 | LINUX */
@@ -197,7 +193,6 @@ main (argc, argv)
       __exit (1);
     }
 
-#if WINNT | LINUX
   /*
      Allocate stack
    */
@@ -206,8 +201,6 @@ main (argc, argv)
       wrterr ("Stack memory unavailable.");
       __exit (1);
     }
-#endif
-
   /*
      Allocate initial increment of dynamic memory.
 

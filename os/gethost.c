@@ -33,19 +33,10 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if WINNT
-char htype[] = "80386";
-char osver[] = ":Windows";
-#endif
-
-#if LINUX
 char htype[] = "80386";
 char osver[] = ":Linux ";
-#endif
 
-#if  LINUX
 #include <fcntl.h>
-#endif
 
 void
 gethost (scptr, maxlen)

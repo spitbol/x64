@@ -151,13 +151,6 @@ This file is part of Macro SPITBOL.
 #endif
 
 /* operating system defs */
-#ifndef LINUX
-#define LINUX       1
-#endif
-#ifndef WINNT
-#define WINNT           0
-#endif
-
 
 #if EXECSAVE			/* EXECSAVE requires EXECFILE & SAVEFILE on */
 #undef EXECFILE
@@ -170,13 +163,6 @@ This file is part of Macro SPITBOL.
 #ifndef ERRDIST
 #define ERRDIST
 #endif
-
-#define GCCx86 (GCCi32 | GCCi64)
-#define AIX (AIX3 | AIX4)
-
-#define SUN SUN4
-
-#define UNIX (LINUX)
 
 typedef int word;
 typedef unsigned int uword;
@@ -203,11 +189,7 @@ typedef long long IATYPE;
 /*
    Define the data type returned by a call to signal()
  */
-#if UNIX
 #define SigType void
-#else
-#define SigType int
-#endif
 
 /*
     The following manifest constants define the page size used when the
@@ -285,11 +267,7 @@ typedef long long IATYPE;
      true polling.
  */
 #ifndef PollCount
-#if UNIX
-#define PollCount MAXPOSWORD
-#else /* UNIX */
 #define PollCount 2500
-#endif /* UNIX */
 #endif /* PollCount */
 
 /*

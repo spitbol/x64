@@ -38,8 +38,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-int
-arg2scb (req, argc, argv, scptr, maxs)
+int arg2scb (req, argc, argv, scptr, maxs)
      int req;
      int argc;
      char *argv[];

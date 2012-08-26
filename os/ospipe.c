@@ -22,24 +22,11 @@ This file is part of Macro SPITBOL.
 #if PIPES
 typedef int HFILE;
 
-#if WINNT
-#include <process.h>
-extern int dup2 (File_handle from, int to);
-extern int pipe (File_handle fd[2]);
-#define privatize(F) make_private(&(F));
-extern void make_private (File_handle * f);
-extern int spawnl (int mode, char *path, char *arg0, ...);
-#define EXEC_ASYNC P_NOWAIT	/* must match definition in syswinnt */
-#endif
-
 char *getshell ();
 char *lastpath ();
 
 static int doshell (struct ioblk * ioptr);
 
-#if WINNT
-HFILE childfd, stdfd;		/* kludge to get info to syswinnt.c */
-#endif
 /*
     ospipe( ioptr )
 
@@ -57,11 +44,7 @@ ospipe (ioptr)
 
 {
   int childpid;
-#if WINNT
-  HFILE parentfd, savefd, fd[2];
-#else
   HFILE childfd, parentfd, savefd, stdfd, fd[2];
-#endif
 
   if ((ioptr->flg1 & (IO_INP | IO_OUP)) == (IO_INP | IO_OUP))
     return -1;			/* can't open read/write pipe */
@@ -88,7 +71,6 @@ ospipe (ioptr)
       stdfd = 0;
     }
 
-#if UNIX
   /*
      Execute the proper code based on whose process is the parent and
      /   whose is the child.
@@ -141,32 +123,7 @@ ospipe (ioptr)
       close (childfd);
       break;
     }
-#endif /* UNIX */
 
-#if WINNT
-  savefd = dup (stdfd);		/* prepare to set up child's stdout */
-  if (savefd == -1)
-    {
-      close (parentfd);
-      close (childfd);
-      parentfd = -1;
-    }
-  else
-    {
-      dup2 (childfd, stdfd);	/* close stdfd, make it same a childfd */
-      privatize (parentfd);	/* don't let child inherit this fd */
-      childpid = doshell (ioptr);
-      close (childfd);
-      dup2 (savefd, stdfd);	/* bring back our standard file */
-      if (childpid == -1)
-	{
-	  close (parentfd);
-	  parentfd = -1;
-	}
-      else
-	ioptr->pid = childpid;
-    }
-#endif /* WINNT */
   /*
      /   Control comes here ONLY in parent process. Return the file descriptor
      /   to be used for communication with child process or -1 if error.
@@ -206,15 +163,9 @@ doshell (ioptr)
   if (cmdbuf[len - 1] == scptr->str[1])	/* if necessary         */
     len--;			/*   zap 2nd delimiter  */
   cmdbuf[len] = '\0';		/* Nul terminate cmd    */
-#if WINNT
-  shellpath = getshell ();	/* get shell's path     */
-  return spawnl (EXEC_ASYNC, shellpath, pathlast (shellpath), "/c", cmdbuf);
-#endif /* WINNT */
-#if UNIX
   shellpath = getshell ();	/* get shell's path     */
   execl (shellpath, pathlast (shellpath), "-c", cmdbuf, (char *) NULL);
   return -1;			/* should not get here */
-#endif /* UNIX */
 }
 
 #endif /* PIPES */

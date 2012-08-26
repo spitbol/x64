@@ -44,10 +44,6 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #include <string.h>
 
-#if WINNT
-#define EOT 26			/* Windows End of Text character  */
-#endif /* WINNT */
-
 word
 osread (mode, recsiz, ioptr, scptr)
      word mode;
@@ -137,14 +133,7 @@ osread (mode, recsiz, ioptr, scptr)
 	    {
 	      char findeol = 1;
 
-#if WINNT
-	      if ((ioptr->flg1 & IO_CIN) == 0)
-		n = read (fdn, cp, recsiz);
-	      else
-		n = cinread (fdn, cp, recsiz);
-#else
 	      n = read (fdn, cp, recsiz);
-#endif
 
 	      if (n > 0)
 		{
@@ -179,14 +168,8 @@ osread (mode, recsiz, ioptr, scptr)
 		   * read a line at time (through eol) automatically, then we have
 		   * to keep reading one character at time until we find the eol.
 		   */
-#if WINNT
-		  if (findeol && !(ioptr->flg1 & IO_CIN) && borland32rtm)
-		    {		/* on non-console, discard chars */
-#else
 		  if (findeol)
 		    {		/* on block device, discard chars */
-#endif
-
 		      do
 			{	/* until find eol */
 			  i = read (fdn, &c, 1);
@@ -226,19 +209,7 @@ osread (mode, recsiz, ioptr, scptr)
 	    {
 	      /*  loop till recsize satisfied         */
 	      /*  (read returns one or more chars per call)   */
-#if WINNT
-	      /* if reading from keyboard and input should be echoed... */
-	      if (cindev (fdn) == 0 && ((ioptr->flg2 & IO_NOE) == 0))
-		{
-		  n = read (fdn, cp, 1);
-		  if (n)
-		    write (STDERRFD, cp, 1);
-		}
-	      else
-		n = read (fdn, cp, recsiz);
-#else
 	      n = read (fdn, cp, recsiz);
-#endif
 	      cp += n;
 	      cnt += n;
 	      recsiz -= n;
@@ -390,11 +361,6 @@ osread (mode, recsiz, ioptr, scptr)
 
 	  if (!(ioptr->flg1 & IO_EOT) && savechar == EOT)
 	    {
-#if WINNT
-	      if (ioptr->flg1 & IO_CIN)	/* if character file */
-		bfptr->fill = bfptr->next;	/* empty the buffer */
-	      else		/* if disk device */
-#endif /* WINNT */
 		bfptr->next--;	/* back up so see it repeatedly */
 	      return (cnt > 0 ? cnt : -1);
 	    }
@@ -485,26 +451,7 @@ fillbuf (ioptr)
 
   fsyncio (ioptr);		/* synchronize file and buffer */
 
-#if WINNT
-  if ((ioptr->flg1 & IO_CIN) == 0)
-    {
-      n = read (ioptr->fdn, bfptr->buf, bfptr->size);
-      if (!(ioptr->flg2 & IO_BIN) && !(ioptr->flg1 & IO_EOT))
-	{
-	  while (n > 0)
-	    {			/* remove trailing EOTs */
-	      if (bfptr->buf[n - 1] != EOT)
-		break;
-	      else
-		n--;
-	    }
-	}
-    }
-  else
-    n = cinread (ioptr->fdn, bfptr->buf, bfptr->size);
-#else
   n = read (ioptr->fdn, bfptr->buf, bfptr->size);
-#endif
 
   if (n >= 0)
     {

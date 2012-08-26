@@ -1428,10 +1428,8 @@ doexec (scbptr)
   word length;
   char savech;
   char *cp;
-#if UNIX
   extern char **environ;
   char *shellpath;
-#endif /* UNIX */
   length = scbptr->len;
   cp = scbptr->str;
 
@@ -1888,7 +1886,7 @@ This file is part of Macro SPITBOL.
  */
 
 #include "port.h"
-#if (FLOAT & !FLTHDWR) | (EXTFUN & (SUN4 | AIX))
+#if (FLOAT & !FLTHDWR) | EXTFUN 
 
 /*
    f_2_i - float to integer
@@ -1962,7 +1960,7 @@ f_neg (ra)
   return -ra;
 }
 
-#endif /* (FLOAT & !FLTHDWR) | (EXTFUN & (SUN4 | AIX)) */
+#endif 
 !@#$flush.c
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
@@ -2013,12 +2011,7 @@ flush (ioptr)
 	  if (bfptr->fill)
 	    {
 	      n = write (ioptr->fdn, bfptr->buf, bfptr->fill);
-#if WINNT
-	      /* ignore short writes on character device */
-	      if (n != bfptr->fill && testty (ioptr->fdn))
-#else
 	      if (n != bfptr->fill)
-#endif
 		ioerrcnt++;
 
 	      if (n > 0)
@@ -2091,14 +2084,7 @@ This file is part of Macro SPITBOL.
 */
 #include "port.h"
 
-#if WINNT
-#include <string.h>
-#endif
-
-#if LINUX
 #include <fcntl.h>
-#endif
-
 
 /*
    getargs
@@ -2162,13 +2148,8 @@ getargs (argc, argv)
          If this command line argument does not start with a '-
          OR is a single '-', treat is as the first filename.
        */
-#if WINNT
-      if ((*cp != '-' && *cp != '/') || (*cp == '-' && !cp[1]))
-	{
-#else /* WINNT */
       if (*cp != '-' || !cp[1])
 	{
-#endif /* WINNT */
 	  if (!result)
 	    result = argv + i;	/* result -> first filename pointer     */
 	  break;		/* break out of for loop                */
@@ -2409,9 +2390,6 @@ filenamearg (argc, argv)
     {
       result = argv[++i];
       if (i == argc || (result[0] == '-' && result[1] != '\0')
-#if WINNT
-	  || (result[0] == '/')
-#endif /* WINNT */
 	)
 	return (char *) 0;	/* V1.08 */
     }
@@ -2522,19 +2500,10 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if WINNT
-char htype[] = "80386";
-char osver[] = ":Windows";
-#endif
-
-#if LINUX
 char htype[] = "80386";
 char osver[] = ":Linux ";
-#endif
 
-#if  LINUX
 #include <fcntl.h>
-#endif
 
 void
 gethost (scptr, maxlen)
@@ -2959,16 +2928,6 @@ This file is part of Macro SPITBOL.
    v1.02 23-Feb-96 - Check pipe syntax when bracketed options present.
 */
 
-#if !WINNT
-/*  The file argument can also contain options separated from the filename
-        by a blank.
-
-        "filename options"
-        " options"
-
-*/
-#endif /* !WINNT */
-
 #if PIPES
 /*
     The file argument may instead be a command string with options as in
@@ -3055,11 +3014,6 @@ lenfnm (scptr)
     }
 #endif /* PIPES */
 
-#if WINNT
-  /* WIN NT NTFS permit blanks within file names.
-   */
-  return len;
-#else /* WINNT */
   /*
      Here for a normal filename.  Just count the number of characters
      up to the first blank or end of string, whichever occurs first.
@@ -3067,7 +3021,6 @@ lenfnm (scptr)
   for (cnt = 0; cnt < len && *cp++ != ' '; cnt++)
     ;
   return cnt;
-#endif /* WINNT */
 }
 !@#$main.c
 /*
@@ -3135,10 +3088,6 @@ main (argc, argv)
   gblargc = argc;
   gblargv = argv;
   lowsp = 0L;
-#if WINNT
-  init_custom ();		/* Perform system specific initializations */
-#endif
-
   /*
      Initialize buffers
    */
@@ -3269,7 +3218,6 @@ main (argc, argv)
       __exit (1);
     }
 
-#if WINNT | LINUX
   /*
      Allocate stack
    */
@@ -3278,8 +3226,6 @@ main (argc, argv)
       wrterr ("Stack memory unavailable.");
       __exit (1);
     }
-#endif
-
   /*
      Allocate initial increment of dynamic memory.
 
@@ -3677,10 +3623,6 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-
-#if WINNT
-extern void kill (int pid);
-#endif
 
 osclose (ioptr)
      struct ioblk *ioptr;
@@ -4095,11 +4037,6 @@ osopen (ioptr)
 #endif /* PIPES */
 
     {
-#if WINNT
-      /* Check for CON:, AUX:, LPT1:, etc., and remove colon */
-      if ((len == 4 || len == 5) && cp[len - 1] == ':')
-	len--;
-#endif /* WINNT */
 
       savech = make_c_str (&cp[len]);	/*   else temporarily terminate filename */
       if (ioptr->flg1 & IO_OUP)	/*  output file             */
@@ -4171,12 +4108,6 @@ osopen (ioptr)
       ioptr->flg1 |= IO_OPN;
       if (ioptr->flg1 & IO_OUP && testty (fd) == 0)
 	ioptr->flg1 |= IO_WRC;
-#if WINNT
-      /* Test for character input */
-      if (ioptr->flg1 & IO_INP && cindev (ioptr->fdn) == 0)
-	ioptr->flg1 |= IO_CIN;
-#endif /* WINNT */
-
 #if HOST386
       /* Test for character output.  Definicon doesn't have screen functions */
       if (ioptr->flg1 & IO_OUP && coutdev (ioptr->fdn) == 0)
@@ -4222,24 +4153,11 @@ This file is part of Macro SPITBOL.
 #if PIPES
 typedef int HFILE;
 
-#if WINNT
-#include <process.h>
-extern int dup2 (File_handle from, int to);
-extern int pipe (File_handle fd[2]);
-#define privatize(F) make_private(&(F));
-extern void make_private (File_handle * f);
-extern int spawnl (int mode, char *path, char *arg0, ...);
-#define EXEC_ASYNC P_NOWAIT	/* must match definition in syswinnt */
-#endif
-
 char *getshell ();
 char *lastpath ();
 
 static int doshell (struct ioblk * ioptr);
 
-#if WINNT
-HFILE childfd, stdfd;		/* kludge to get info to syswinnt.c */
-#endif
 /*
     ospipe( ioptr )
 
@@ -4257,11 +4175,7 @@ ospipe (ioptr)
 
 {
   int childpid;
-#if WINNT
-  HFILE parentfd, savefd, fd[2];
-#else
   HFILE childfd, parentfd, savefd, stdfd, fd[2];
-#endif
 
   if ((ioptr->flg1 & (IO_INP | IO_OUP)) == (IO_INP | IO_OUP))
     return -1;			/* can't open read/write pipe */
@@ -4288,7 +4202,6 @@ ospipe (ioptr)
       stdfd = 0;
     }
 
-#if UNIX
   /*
      Execute the proper code based on whose process is the parent and
      /   whose is the child.
@@ -4341,32 +4254,7 @@ ospipe (ioptr)
       close (childfd);
       break;
     }
-#endif /* UNIX */
 
-#if WINNT
-  savefd = dup (stdfd);		/* prepare to set up child's stdout */
-  if (savefd == -1)
-    {
-      close (parentfd);
-      close (childfd);
-      parentfd = -1;
-    }
-  else
-    {
-      dup2 (childfd, stdfd);	/* close stdfd, make it same a childfd */
-      privatize (parentfd);	/* don't let child inherit this fd */
-      childpid = doshell (ioptr);
-      close (childfd);
-      dup2 (savefd, stdfd);	/* bring back our standard file */
-      if (childpid == -1)
-	{
-	  close (parentfd);
-	  parentfd = -1;
-	}
-      else
-	ioptr->pid = childpid;
-    }
-#endif /* WINNT */
   /*
      /   Control comes here ONLY in parent process. Return the file descriptor
      /   to be used for communication with child process or -1 if error.
@@ -4406,15 +4294,9 @@ doshell (ioptr)
   if (cmdbuf[len - 1] == scptr->str[1])	/* if necessary         */
     len--;			/*   zap 2nd delimiter  */
   cmdbuf[len] = '\0';		/* Nul terminate cmd    */
-#if WINNT
-  shellpath = getshell ();	/* get shell's path     */
-  return spawnl (EXEC_ASYNC, shellpath, pathlast (shellpath), "/c", cmdbuf);
-#endif /* WINNT */
-#if UNIX
   shellpath = getshell ();	/* get shell's path     */
   execl (shellpath, pathlast (shellpath), "-c", cmdbuf, (char *) NULL);
   return -1;			/* should not get here */
-#endif /* UNIX */
 }
 
 #endif /* PIPES */
@@ -4464,10 +4346,6 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 #include <string.h>
-
-#if WINNT
-#define EOT 26			/* Windows End of Text character  */
-#endif /* WINNT */
 
 word
 osread (mode, recsiz, ioptr, scptr)
@@ -4558,14 +4436,7 @@ osread (mode, recsiz, ioptr, scptr)
 	    {
 	      char findeol = 1;
 
-#if WINNT
-	      if ((ioptr->flg1 & IO_CIN) == 0)
-		n = read (fdn, cp, recsiz);
-	      else
-		n = cinread (fdn, cp, recsiz);
-#else
 	      n = read (fdn, cp, recsiz);
-#endif
 
 	      if (n > 0)
 		{
@@ -4600,14 +4471,8 @@ osread (mode, recsiz, ioptr, scptr)
 		   * read a line at time (through eol) automatically, then we have
 		   * to keep reading one character at time until we find the eol.
 		   */
-#if WINNT
-		  if (findeol && !(ioptr->flg1 & IO_CIN) && borland32rtm)
-		    {		/* on non-console, discard chars */
-#else
 		  if (findeol)
 		    {		/* on block device, discard chars */
-#endif
-
 		      do
 			{	/* until find eol */
 			  i = read (fdn, &c, 1);
@@ -4647,19 +4512,7 @@ osread (mode, recsiz, ioptr, scptr)
 	    {
 	      /*  loop till recsize satisfied         */
 	      /*  (read returns one or more chars per call)   */
-#if WINNT
-	      /* if reading from keyboard and input should be echoed... */
-	      if (cindev (fdn) == 0 && ((ioptr->flg2 & IO_NOE) == 0))
-		{
-		  n = read (fdn, cp, 1);
-		  if (n)
-		    write (STDERRFD, cp, 1);
-		}
-	      else
-		n = read (fdn, cp, recsiz);
-#else
 	      n = read (fdn, cp, recsiz);
-#endif
 	      cp += n;
 	      cnt += n;
 	      recsiz -= n;
@@ -4811,11 +4664,6 @@ osread (mode, recsiz, ioptr, scptr)
 
 	  if (!(ioptr->flg1 & IO_EOT) && savechar == EOT)
 	    {
-#if WINNT
-	      if (ioptr->flg1 & IO_CIN)	/* if character file */
-		bfptr->fill = bfptr->next;	/* empty the buffer */
-	      else		/* if disk device */
-#endif /* WINNT */
 		bfptr->next--;	/* back up so see it repeatedly */
 	      return (cnt > 0 ? cnt : -1);
 	    }
@@ -4906,26 +4754,7 @@ fillbuf (ioptr)
 
   fsyncio (ioptr);		/* synchronize file and buffer */
 
-#if WINNT
-  if ((ioptr->flg1 & IO_CIN) == 0)
-    {
-      n = read (ioptr->fdn, bfptr->buf, bfptr->size);
-      if (!(ioptr->flg2 & IO_BIN) && !(ioptr->flg1 & IO_EOT))
-	{
-	  while (n > 0)
-	    {			/* remove trailing EOTs */
-	      if (bfptr->buf[n - 1] != EOT)
-		break;
-	      else
-		n--;
-	    }
-	}
-    }
-  else
-    n = cinread (ioptr->fdn, bfptr->buf, bfptr->size);
-#else
   n = read (ioptr->fdn, bfptr->buf, bfptr->size);
-#endif
 
   if (n >= 0)
     {
@@ -4970,16 +4799,7 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #if PIPES
 
-#if UNIX
 #include <signal.h>
-#endif /* UNIX */
-
-#if WINNT
-#include <process.h>
-#if _MSC_VER
-extern int wait (int *status);
-#endif
-#endif
 
 void
 oswait (pid)
@@ -4987,13 +4807,11 @@ oswait (pid)
 {
   int deadpid, status;
   struct chfcb *chptr;
-#if UNIX
-  SigType (*hstat) (int), (*istat) (int), (*qstat) (int));
+  SigType (*hstat) (int), (*istat) (int), (*qstat) (int);
 
   istat = signal (SIGINT, SIG_IGN);
   qstat = signal (SIGQUIT, SIG_IGN);
   hstat = signal (SIGHUP, SIG_IGN);
-#endif
 
   while ((deadpid = wait (&status)) != pid && deadpid != -1)
     {
@@ -5010,11 +4828,9 @@ oswait (pid)
 	}
     }
 
-#if UNIX
   signal (SIGINT, istat);
   signal (SIGQUIT, qstat);
   signal (SIGHUP, hstat);
-#endif /* UNIX */
 }
 #endif /* PIPES */
 !@#$oswrite.c
@@ -5121,36 +4937,6 @@ oswrite (mode, linesiz, recsiz, ioptr, scptr)
 	  actcnt = write (fdn, cp, linelen);
 	  if (actcnt != linelen)
 	    {
-#if WINNT
-	      /*
-	       * Problem/feature in MS-DOS.  Writes to a character device
-	       * stop-short on control-Z.  This is fine in normal text mode,
-	       * because it allows the user to suppress SPITBOL's CR/LF chars.
-	       * But in binary mode, it doesn't let the program deliberately
-	       * output a control-Z. Setting binary mode in the device doesn't
-	       * work in general, because DOS starts appending a CR/LF after
-	       * each character.  Solution: Set binary mode just for the
-	       * character that caused the problem.
-	       */
-	      if (testty (fdn)	/* if block device, short count is an error */
-#if WINNT
-		  || !borland32rtm	/* or char device but not DOS */
-#endif
-		)
-		ioerrcnt++;
-	      /* short count on character device.  Ignore if not binary mode */
-	      else if (ioptr->flg2 & IO_RAW)
-		{		/* if raw mode char device */
-		  ttyraw (fdn, 1);	/* set raw mode */
-		  write (fdn, cp + actcnt, 1);	/* write the problem char */
-		  ttyraw (fdn, 0);	/* clear raw mode */
-		  linelen -= (++actcnt);	/* chars remaining after problem char */
-		  recsiz += linelen;	/*   "      "       "  "   "    */
-		}		/* and go 'round again */
-#else /* WINNT */
-	      ioerrcnt++;
-
-#endif /* WINNT */
 	    }
 	  cp += actcnt;
 	}
@@ -5259,11 +5045,6 @@ oswrite (mode, linesiz, recsiz, ioptr, scptr)
 		  n = (linelen / bfptr->size) * bfptr->size;
 		  m = write (fdn, cp, n);
 		  if (m != n
-#if WINNT
-		      && (testty (fdn)	/* ignore short counts on character device */
-			  && borland32rtm	/* if MS-DOS */
-		      )
-#endif /* WINNT */
 		    )
 		    ioerrcnt++;
 
@@ -5327,6 +5108,8 @@ This file is part of Macro SPITBOL.
         Turn off system-specific features unless specifically called for
         in systype.h.
 */
+
+#define SYSVERSION	1
 
 #ifndef ALTCOMP
 #define ALTCOMP         0	/* no alternate string comparison */
@@ -5453,13 +5236,6 @@ This file is part of Macro SPITBOL.
 #endif
 
 /* operating system defs */
-#ifndef LINUX
-#define LINUX       1
-#endif
-#ifndef WINNT
-#define WINNT           0
-#endif
-
 
 #if EXECSAVE			/* EXECSAVE requires EXECFILE & SAVEFILE on */
 #undef EXECFILE
@@ -5472,13 +5248,6 @@ This file is part of Macro SPITBOL.
 #ifndef ERRDIST
 #define ERRDIST
 #endif
-
-#define GCCx86 (GCCi32 | GCCi64)
-#define AIX (AIX3 | AIX4)
-
-#define SUN SUN4
-
-#define UNIX (LINUX)
 
 typedef int word;
 typedef unsigned int uword;
@@ -5505,11 +5274,7 @@ typedef long long IATYPE;
 /*
    Define the data type returned by a call to signal()
  */
-#if UNIX
 #define SigType void
-#else
-#define SigType int
-#endif
 
 /*
     The following manifest constants define the page size used when the
@@ -5587,11 +5352,7 @@ typedef long long IATYPE;
      true polling.
  */
 #ifndef PollCount
-#if UNIX
-#define PollCount MAXPOSWORD
-#else /* UNIX */
 #define PollCount 2500
-#endif /* UNIX */
 #endif /* PollCount */
 
 /*
@@ -5879,7 +5640,6 @@ findenv (vq, vn)
      char *vq;
      int vn;
 {
-#if WINNT | UNIX
   char savech;
   char *p;
 
@@ -5887,7 +5647,6 @@ findenv (vq, vn)
   p = (char *) getenv (vq);	/* use library lookup routine */
   unmake_c_str (&vq[vn], savech);
   return p;
-#endif
 
 }
 
@@ -6191,10 +5950,6 @@ sioarg (ioflg, ioptr, scptr)
 	    ioptr->flg1 |= IO_COT;
 #endif /* HOST386 */
 
-#if WINNT
-	  if (!ioflg && !cindev (v))	/* Test for character input */
-	    ioptr->flg1 |= IO_CIN;
-#endif /* WINNT */
 
 	  break;
 
@@ -6975,7 +6730,7 @@ extern int zysxi (void);
 extern int brkx (void *addr);
 extern void *sbrkx (long incr);
 
-/*extern int access (char *Name, int mode);*/
+/* DS TODO: extern int access (char *Name, int mode);*/
 extern int brk (void *addr);
 extern int close (File_handle F);
 extern File_handle dup (File_handle F);
@@ -6983,8 +6738,8 @@ extern char *_Optlink getenv (char *name);
 extern FILEPOS LSEEK (File_handle F, FILEPOS Loc, int Method);
 extern word read (File_handle F, void *Buf, uword Cnt);
 extern void *sbrk (long incr);
-extern int unlink (char *Name);
-extern word write (File_handle F, void *Buf, uword Cnt);
+/* DS TODO extern int unlink (char *Name); */
+/* DS TODO extern word write (File_handle F, void *Buf, uword Cnt);*/
 #endif
 !@#$st2d.c
 /*
@@ -7201,12 +6956,6 @@ swcinp (filecnt, fileptr)
 	  dup (originp);	/* returns 0 */
 #endif
 	  lastfd = 0;
-#if WINNT
-	  if (cindev (lastfd) == 0)	/* Test for character input */
-	    getrdiob ()->flg1 |= IO_CIN;
-	  else
-	    getrdiob ()->flg1 &= ~IO_CIN;
-#endif /* WINNT */
 	  goto swci_exit;
 	}
 
@@ -7273,12 +7022,6 @@ swcinp (filecnt, fileptr)
       clrbuf ();
       dup (originp);		/* returns 0 */
       readshell0 = 0;		/* only do this once */
-#if WINNT
-      if (cindev (0) == 0)	/* Test for character input */
-	getrdiob ()->flg1 |= IO_CIN;
-      else
-	getrdiob ()->flg1 &= ~IO_CIN;
-#endif /* WINNT */
       lastfd = 0;
     }
 
@@ -7356,12 +7099,6 @@ tryopen (cp)
   if ((fd = spit_open (cp, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
 		       IO_OPEN_IF_EXISTS)) >= 0)
     {
-#if WINNT
-      if (cindev (fd) == 0)	/* Test for character input */
-	getrdiob ()->flg1 |= IO_CIN;
-      else
-	getrdiob ()->flg1 &= ~IO_CIN;
-#endif /* WINNT */
       return fd;
     }
   return -1;
@@ -7408,9 +7145,6 @@ pathlast (path)
     {
       c = *--cp;
       if (c == FSEP
-#if WINNT
-	  || c == FSEP2 || c == ':'
-#endif /* WINNT */
 	)
 	{
 	  ++cp;
@@ -9691,17 +9425,6 @@ zysif ()
 	}
     }
 
-#if WINNT
-#if USEFD0FD1
-  if (cindev (0) == 0)		/* Test for character input */
-#else
-  if (cindev (getrdfd ()) == 0)	/* Test for character input */
-#endif
-    getrdiob ()->flg1 |= IO_CIN;
-  else
-    getrdiob ()->flg1 &= ~IO_CIN;
-#endif /* WINNT */
-
   return NORMAL_RETURN;
 }
 !@#$sysil.c
@@ -9819,15 +9542,6 @@ zysin ()
 	  if ((testty (ioptr->fdn) == 0) &&	/* If TTY */
 	      (fcb->mode == 0))	/* and raw mode,   */
 	    ioptr->flg2 |= IO_RAW;	/* then set IO_RAW */
-#if WINNT
-	  if (cindev (ioptr->fdn) == 0)	/* Test for character input */
-	    ioptr->flg1 |= IO_CIN;
-	  if (fcb->mode == 0)	/* set/clear binary bit for doset */
-	    ioptr->flg2 |= IO_BIN;
-	  else
-	    ioptr->flg2 &= ~IO_BIN;
-#endif /* WINNT */
-
 	}
       else			/* I/O Error            */
 	return EXIT_2;
@@ -10008,10 +9722,6 @@ zysio ()
     {
       if (osopen (iob) != 0)
 	return EXIT_1;
-#if WINNT
-      if (fcb->mode == 0)	/* set binary bit for doset */
-	iob->flg2 |= IO_BIN;	/*  only on initial open */
-#endif /* WINNT */
     }
 
   /*
@@ -10022,11 +9732,6 @@ zysio ()
   if ((testty (iob->fdn) == 0) &&	/* If TTY device        */
       (fcb->mode == 0))		/* and raw mode file    */
     iob->flg2 |= IO_RAW;	/* then set IO_RAW bit  */
-
-#if WINNT
-  if (iob->flg1 & IO_INP && cindev (iob->fdn) == 0)	/* Test for character input */
-    iob->flg1 |= IO_CIN;
-#endif /* WINNT */
 
   /*
      /   Normal return.
@@ -10140,80 +9845,6 @@ openloadfile (file)
   char *savecp;
   char savechar;
 
-#if  | AIX | WINNT
-  /* Kludge for DLLs:  openloadfile returns TWO pieces of information:
-   *   The handle for the DLL file is returned as the function result.
-   *   The address of the DLL function is returned as a word in the
-   *   beginning of the the filename buffer passed in as an argument.
-   */
-  typedef int (*PFN) ();
-  word fd;
-  char file2[512];
-  PFN pfn;
-  extern word loadDll (char *dllName, char *fcnName, PFN * pfn);
-
-  /* Search strategy for DLLs:
-   *  If explicit library name given, then
-   *     use it.
-   *  Else
-   *     Append .slf extension to filename.
-   *     Use initpath and trypath to find it in SNOLIB.
-   *     If not found, then
-   *        Use unmodified function name.  Note:  This may
-   *        not include a search of the current directory, unless
-   *        LIBPATH includes ".\"!
-   */
-
-  if (lnscb->len >= 512)
-    return -1;
-
-  savecp = fnscb->str + fnscb->len;	/* Make function name a C string for now. */
-  savechar = make_c_str (savecp);
-
-  if (lnscb->len == 0)
-    {				/* If no library name, first try */
-      /* function name with ".slf" extension */
-      appendext (fnscb->str, EFNEXT, file, 1);	/* append .slf extension to function name */
-      fd = loadDll (file, fnscb->str, &pfn);
-      if (fd == -1)
-	{			/* if couldn't open in local directory */
-	  mystrcpy (file2, file);
-	  initpath (SPITFILEPATH);	/* try alternate paths along SNOLIB */
-	  while (trypath (file2, file))
-	    {
-	      fd = loadDll (file, fnscb->str, &pfn);
-	      if (fd != -1)
-		break;
-	    }
-	  if (fd == -1)		/* if not found as an .slf file */
-	    fd = loadDll (fnscb->str, fnscb->str, &pfn);
-	}
-    }
-  else
-    {				/* Explicit library name given */
-      char *savecp2;
-      char savechar2;
-      savecp2 = lnscb->str + lnscb->len;	/* Make it a C string for now. */
-      savechar2 = make_c_str (savecp2);
-      fd = loadDll (lnscb->str, fnscb->str, &pfn);
-      if (fd == -1)
-	{
-	  mystrcpy (file2, lnscb->str);	/* Try via SNOLIB */
-	  initpath (SPITFILEPATH);
-	  while (trypath (file2, file))
-	    {
-	      fd = loadDll (file, fnscb->str, &pfn);
-	      if (fd != -1)
-		break;
-	    }
-	}
-      unmake_c_str (savecp2, savechar2);
-    }
-
-  unmake_c_str (savecp, savechar);	/* Restore saved char in function name */
-  *(PFN *) file = pfn;		/* Return function address in file buffer */
-  return fd;
-#endif /* WINNT */
 }
 
 
@@ -11355,17 +10986,10 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if POLLING & (UNIX | WINNT)
-#if WINNT
-int pollevent (void);
-#endif
-#if UNIX
 #define pollevent()
-#endif /* UNIX */
 extern rearmbrk (void);
 extern int brkpnd;
 #define stmtDelay PollCount
-#endif
 
 
 zyspl ()
@@ -11379,7 +11003,7 @@ zyspl ()
       pollevent ();
 #endif /* !ENGINE */
       SET_WA (stmtDelay);	/* Poll finished or Continue */
-#if !ENGINE & (WINNT | UNIX)
+#if !ENGINE
       if (brkpnd)
 	{
 	  brkpnd = 0;		/* User interrupt */
@@ -11786,7 +11410,6 @@ zysrd ()
     }
   scb->len = length;		/* line read, so set line length        */
 
-#if UNIX
   /*
      /   Special check for '#!' invocation.
    */
@@ -11815,7 +11438,6 @@ zysrd ()
 	  scb->len = length;
 	}
     }
-#endif /* UNIX */
 
   return NORMAL_RETURN;
 }
@@ -11850,20 +11472,6 @@ getrdiob ()
 {
   return &inpiob;
 }
-
-
-#if WINNT
-/*
- /    Return iob for standard output channel.
-*/
-
-struct ioblk *
-getpriob ()
-{
-  return &oupiob;
-}
-#endif /* WINNT */
-
 
 /*
  * CLRBUF - clear input buffer
@@ -11965,19 +11573,10 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if WINNT
-extern long msec (void);
-#else /* WINNT */
 #include <sys/types.h>
 #include <sys/times.h>
-#if AIX
-#include <time.h>		/* pick up CLK_TCK definition (100) */
-#endif
-#endif /* WINNT */
-#if LINUX
 #include <sys/times.h>
 #define CLK_TCK sysconf(_SC_CLK_TCK)
-#endif
 
 zystm ()
 {
@@ -11985,9 +11584,6 @@ zystm ()
      /   process times are in 60ths of second, multiply by 100
      /   to get 6000ths of second, divide by 6 to get 100ths
    */
-#if WINNT
-  SET_IA (msec ());
-#else
   struct tms timebuf;
 
   timebuf.tms_utime = 0;	/* be sure to init in case failure      */
@@ -12157,25 +11753,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-    The following manifest constants define the target hardware platform
-    and tool chain.
-
-                running on a:
-    BCC32       Intel 32-bit x86, Borland C++ compiler (Windows command line)
-    VCC         Intel 32-bit x86, Microsoft Visual C (Windows command line)
-    GCCi32      Intel 32-bit x86, GNU GCC
-    GCCi64      Intel 64-bit x86, GNU GCC
-    RS6         IBM RS6000 (Power)
-    SUN4        SPARC, SUN4
-
-    The following manifest constants define the target operating system.
-
-    LINUX       Linux
-    WINNT       Windows NT/XP/Vista
-
-*/
-
 /* Override default values in port.h.  It is necessary for a user configuring
    SPITBOL to examine all the default values in port.h and override those
    that need to be altered.
@@ -12290,9 +11867,9 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if UNIX & EXECFILE & !EXECSAVE
+#if EXECFILE & !EXECSAVE
 #include <a.out.h>
-#endif /* UNIX */
+#endif
 
 #include "save.h"
 
@@ -12443,11 +12020,9 @@ zysxi ()
       fromfd = openexe (gblargv[0]);
       if (fromfd == -1)
 	{
-#if UNIX
 	  write (STDERRFD, "To create an executable, the file ", 34);
 	  write (STDERRFD, gblargv[0], length (gblargv[0]));
 	  wrterr (" must have read (-r) privilege.");
-#endif
 	  retval = -1;
 	  goto fail;
 	}
@@ -13077,17 +12652,10 @@ This file is part of Macro SPITBOL.
 #define RAW_BIT RAW
 #endif
 
-#if UNIX
 #include <sys/stat.h>
 struct stat statbuf;
-#if LINUX
 #include <termios.h>
 struct termios termiosbuf;
-#else
-#include <sgtty.h>
-struct sgttyb sgtbuf;
-#endif
-#endif
 
 int
 testty (fd)
@@ -13120,9 +12688,6 @@ ttyraw (fd, flag)
 
 {
   /* read current params      */
-#if WINNT
-  rawmode (fd, flag ? -1 : 0);	/* Set or clear raw mode */
-#elif LINUX
   if (testty (fd))
     return;			/* exit if not tty  */
   tcgetattr (fd, &termiosbuf);
@@ -13132,7 +12697,6 @@ ttyraw (fd, flag)
     termiosbuf.c_lflag |= (ICANON | ECHO);	/* Clearing     */
 
   tcsetattr (fd, TCSANOW, &termiosbuf);	/* store device flags   */
-#else
   if (testty (fd))
     return;			/* exit if not tty      */
   ioctl (fd, TIOCGETP, &sgtbuf);
@@ -13142,7 +12706,6 @@ ttyraw (fd, flag)
     sgtbuf.sg_flags &= ~RAW_BIT;	/* Clearing             */
 
   ioctl (fd, TIOCSETP, &sgtbuf);	/* store device flags   */
-#endif
 }
 !@#$trypath.c
 /*
@@ -13198,11 +12761,9 @@ initpath (name)
       pathptr = findenv (ucname, length (ucname));
     }
 
-#if UNIX
   /* skip leading paren if present */
   if (pathptr && *pathptr == '(')
     pathptr++;
-#endif
 }
 
 
