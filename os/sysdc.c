@@ -40,18 +40,7 @@ zysdc ()
   if (!dcdone && !(spitflag & NOBRAG))
     {
       dcdone = 1;		/* Only do once per run */
-#if WINNT
-      write (STDERRFD, "SPITBOL-386", 11);
-#endif
-
-
-#if LINUX
       write (STDERRFD, "LINUX SPITBOL", 13);
-#endif
-
-#if AIX
-      write (STDERRFD, "AIX SPITBOL", 11);
-#endif
 
 #if RUNTIME
       write (STDERRFD, " Runtime", 8);
@@ -70,13 +59,5 @@ zysdc ()
       wrterr (cprtmsg);
     }
 
-#if DATECHECK
-#if WINNT
-  {
-    extern void date_check (void);
-    date_check ();
-  }
-#endif
-#endif
   return NORMAL_RETURN;
 }

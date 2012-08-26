@@ -34,8 +34,6 @@ This file is part of Macro SPITBOL.
             XR - SCBLK of message to print, or 0 if none
         Exits:
             1 - suppress printing of error message
-
-   1.30.20 3/18/2000 - fix bug displaying column number - 1
 */
 
 #include "port.h"
