@@ -31,16 +31,7 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #if PIPES
 
-#if UNIX
 #include <signal.h>
-#endif /* UNIX */
-
-#if WINNT
-#include <process.h>
-#if _MSC_VER
-extern int wait (int *status);
-#endif
-#endif
 
 void
 oswait (pid)
@@ -48,14 +39,11 @@ oswait (pid)
 {
   int deadpid, status;
   struct chfcb *chptr;
-#if UNIX
-  SigType (*hstat) Params ((int)),
-    (*istat) Params ((int)), (*qstat) Params ((int));
+  SigType (*hstat) (int), (*istat) (int), (*qstat) (int);
 
   istat = signal (SIGINT, SIG_IGN);
   qstat = signal (SIGQUIT, SIG_IGN);
   hstat = signal (SIGHUP, SIG_IGN);
-#endif
 
   while ((deadpid = wait (&status)) != pid && deadpid != -1)
     {
@@ -72,10 +60,8 @@ oswait (pid)
 	}
     }
 
-#if UNIX
   signal (SIGINT, istat);
   signal (SIGQUIT, qstat);
   signal (SIGHUP, hstat);
-#endif /* UNIX */
 }
 #endif /* PIPES */

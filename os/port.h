@@ -24,6 +24,8 @@ This file is part of Macro SPITBOL.
         in systype.h.
 */
 
+#define SYSVERSION	1
+
 #ifndef ALTCOMP
 #define ALTCOMP         0	/* no alternate string comparison */
 #endif
@@ -104,10 +106,6 @@ This file is part of Macro SPITBOL.
 #define POLLING         1	/* enable polling of operating system */
 #endif
 
-#ifndef PROTOTYPES
-#define PROTOTYPES      1	/* assume compiler can handle prototypes */
-#endif
-
 #ifndef USEFD0FD1
 #define USEFD0FD1       1	/* use file descriptor 0 & 1 for stdio  */
 #endif
@@ -160,21 +158,6 @@ This file is part of Macro SPITBOL.
 #define WINNT           0
 #endif
 
-#if WINNT | GCCi32
-#define SYSVERSION 0
-#endif
-#if SUN4
-#define SYSVERSION 3
-#endif
-#if AIX3 | AIX4
-#define SYSVERSION 6
-#endif
-#if GCCi64
-#define SYSVERSION 7
-#endif
-#ifndef SYSVERSION
-#define SYSVERSION 255
-#endif
 
 #if EXECSAVE			/* EXECSAVE requires EXECFILE & SAVEFILE on */
 #undef EXECFILE
@@ -270,20 +253,10 @@ typedef long long IATYPE;
         different DPMI platforms.
 */
 
-#if LINUX | WINNT
 #define CHUNK_SIZE      32768
 #define CHUNK_B_SIZE    (CHUNK_SIZE * sizeof(word))
 #define HEAP_SIZE       16777216	/* 16Mwords = 64Mbytes */
-#if SUN4 | LINUX | WINNT | AIX
 #define OBJECT_SIZE     1048576	/* 1 Mword = 4 Mbytes */
-#else /* SUN4 */
-#define OBJECT_SIZE     16384
-#endif
-#endif
-
-#if SUN
-#define TEXT_START      8192
-#endif
 
 /*
     Define the maximum nesting allowed of INCLUDE files
@@ -319,17 +292,6 @@ typedef long long IATYPE;
 #endif /* UNIX */
 #endif /* PollCount */
 
-
-/*
-     Define Params macro to use or ignore function prototypes.
- */
-#if PROTOTYPES
-#define Params(a) a
-#else
-#define Params(a) ()
-#endif
-
-
 /*
     The following manifest contant describes the constraints on the
     run-time stack.
@@ -340,9 +302,7 @@ typedef long long IATYPE;
                     to make the stack larger results in a stack overflow
                     error.  Defined in BYTES!
 */
-#if LINUX | WINNT
 #define STACK_SIZE  (0x100000)	/* Set to 1MB 6/28/09 */
-#endif
 
 
 /*
@@ -362,11 +322,7 @@ typedef long long IATYPE;
     SAVE_FILE           pathname for save file created by sysxi
 */
 #define SAVE_FILE       "a.spx"
-#if WINNT
-#define AOUT_FILE       "a.exe"
-#else
 #define AOUT_FILE       "a.out"
-#endif
 
 /*
   PSEP is the separator between multiple paths.
@@ -378,24 +334,11 @@ typedef long long IATYPE;
   BINEXT is extension for load modules
 */
 
-#if UNIX
 #define PSEP  ':'
 #define PSEP2 ' '
 #define FSEP '/'
-#endif
-
-#if WINNT
-#define PSEP ';'
-#define FSEP '\\'
-#define FSEP2 '/'
-#endif /* WINNT */
-
 #define EXT '.'
-#if WINNT
-#define BINEXT ".exe"
-#else
 #define BINEXT ".out"
-#endif
 #define COMPEXT ".spt"
 #define EFNEXT ".slf"
 #define LISTEXT ".lst"
@@ -445,15 +388,8 @@ typedef long long IATYPE;
                     located in the environment
 */
 
-#if WINNT			/* WINNT */
-extern char borland32rtm;	/* True if using DOS Extender */
-extern char isWin95;		/* True if running under WinNT */
-#define SHELL_ENV_NAME  "COMSPEC"
-#define SHELL_PATH  ((borland32rtm || isWin95) ? "command.com" : "cmd.exe")
-#else /* WINNT */
-#define SHELL_ENV_NAME  "SHELL"
+#define SHELL_ENV_NAME	"SHELL"
 #define SHELL_PATH      "/bin/sh"
-#endif /* WINNT */
 
 /*
     Compiler flags (see compiler listing for more details):
@@ -504,9 +440,7 @@ extern char isWin95;		/* True if running under WinNT */
 #include "os.h"
 
 #ifdef PRIVATEBLOCKS
-#if WINNT | SUN4 | AIX | LINUX
 #include "extern32.h"
-#endif /* WINNT | SUN4 */
 #else /* PRIVATEBLOCKS */
 #include "spitblks.h"
 #include "spitio.h"

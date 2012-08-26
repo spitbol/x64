@@ -35,7 +35,7 @@ extern int spawnl (int mode, char *path, char *arg0, ...);
 char *getshell ();
 char *lastpath ();
 
-static int doshell Params ((struct ioblk * ioptr));
+static int doshell (struct ioblk * ioptr);
 
 #if WINNT
 HFILE childfd, stdfd;		/* kludge to get info to syswinnt.c */

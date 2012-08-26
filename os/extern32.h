@@ -25,30 +25,6 @@ This file is part of Macro SPITBOL.
     Definitions of routines and data available to C-language
     external function to be called from 32-bit versions of SPITBOL.
 
-        V1.00  02/17/90 01:52pm
-                   Initial version
-
-    V1.01  10-18-91 04:53pm
-           <withdrawn>.
-
-    V1.02  03-29-92 09:11am
-         <withdrawn>.
-
-    V1.03  07-28-92 06:56am
-                   Customize for SPARC.
-
-        V1.04  09-12-94 07:13pm
-                   Add definitions for buffers
-
-    V1.05  04-25-95 10:05pm
-                   Customize for RS/6000
-
-    V1.06  12-29-96 06:05pm
-           Customize for Windows NT
-
-    V1.07  03-04-97 12:45pm
-                          Tweak for SPARC.
-
     Definition of information placed on stack prior to pushing arguments to
     an external function.
 
@@ -58,40 +34,14 @@ This file is part of Macro SPITBOL.
 
     However, the pointer in presult *must* be used by the external
     function to locate the area in which results are returned.
-
  */
 
 #include "system.h"
 typedef int mword;		/* minimal word */
 typedef unsigned int muword;	/* minimal unsigned word        */
-#ifndef far
-#define far
-#endif
-
-#ifndef near
-#define near
-#endif
-
-#ifndef Params
-#if PROTOTYPES
-#define Params(a) a
-#else
-#define Params(a) ()
-#endif
-#endif
-
-#define _pascal			/* Available under Borland, but don't use it now. */
-#if WINNT && __BORLANDC__
-#define entry(x) mword _pascal __export x
-#elif WINNT && _MSC_VER
-#define entry(x) mword _pascal __declspec(dllexport) x
-#else
-#define entry(x) mword _pascal x
-#endif
 
 #include "blocks32.h"
 #include <string.h>
-
 
 /* array of pointers to double functions */
 typedef double (*APDF[]) ();
@@ -111,10 +61,6 @@ typedef struct misc
   struct xnblk *pxnblk;		/* ptr to xnblk describing function         */
   struct efblk *pefblk;		/* ptr to efblk describing function             */
   APDF *pflttab;		/* ptr to array of floating point fncs  */
-#if WINNT
-  short spds;			/* SPITBOL's DS segment selector        */
-  short spcs;			/* SPITBOL's CS segment selector                */
-#endif
 } misc;
 
 enum ext_type
@@ -205,15 +151,12 @@ enum ext_type
 /*
    Function definitions for routines in extrnlib.c
  */
-#if sparc | aix
-#include <memory.h>
-#endif
 
-mword retint Params ((int val, union block * presult));
-mword retnstrt Params ((char *s, size_t n, union block * presult));
-mword retnxdtf Params ((void *s, size_t n, union block * presult));
-mword retreal Params ((double val, union block * presult));
-mword retstrt Params ((char *s, union block * presult));
+mword retint (int val, union block * presult);
+mword retnstrt (char *s, size_t n, union block * presult);
+mword retnxdtf (void *s, size_t n, union block * presult);
+mword retreal (double val, union block * presult);
+mword retstrt (char *s, union block * presult);
 
 #endif /* __extern32__ */
 /*-------------------------- end of extern32.h ------------------------*/

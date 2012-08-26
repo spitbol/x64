@@ -32,10 +32,9 @@ int brkpnd;
 #define SigType void
 
 static
-SigType (*cstat)
-Params ((int));
-     void catchbrk Params ((int sig));
-     void rearmbrk Params ((void));
+SigType (*cstat) (int);
+     void catchbrk (int sig);
+     void rearmbrk (void);
 
      void startbrk ()		/* start up break logic */
 {

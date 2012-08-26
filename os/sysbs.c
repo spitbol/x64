@@ -35,7 +35,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-static int back Params ((struct ioblk * iob));
+static int back (struct ioblk * iob);
 
 #define RET_BIAS 100
 

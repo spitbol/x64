@@ -149,43 +149,11 @@ struct icblk
 /*
                 Structure of RCBLK (reals)
  */
-#if sparc
-/*
-                Note that the obvious declaration "double rcval" can not be
-        used, because the SPARC C compiler insists on placing double
-                values on an 8-byte boundary, effectively making the rcblk into
-                a four-word structure, instead of three. (A filler word is
-                inserted between rctyp and rcval).  But an rcblk really is a
-                three-word structure inside of SPITBOL.
-
-                As a workaround, we define rcvals as a two word array, and use
-                an rcval macro to access the double value there.  The macro
-                is invoked with the rcblk as its argument.  For example,
-                suppose presult pointed to a union of all block types.  The
-                double value stored in an rcblk there would be accessed as
-
-                        rcval(presult->rcb)
-
-                It may be necessary to use the -misalign command option with
-                cc to have the compiler generate the two single-precision loads
-                needed to access the real at rcvals.  The normal double-precision
-                load will fault because the operand is not aligned properly.
-
-        See function retreal in extrnlib.c for an example.
- */
-struct rcblk
-{
-  mword rctyp;			/* type word                                            */
-  mword rcvals[2];		/* real value (not 8-byte aligned!)     */
-};
-#define rcval(blk) (*(double *)blk.rcvals)	/* access double at rcvals   */
-#else
 struct rcblk
 {
   mword rctyp;			/* type word                                            */
   double rcval;			/* real value (not 8-byte aligned!)     */
 };
-#endif
 
 /*
         Structure of SCBLK (strings)
@@ -199,26 +167,26 @@ struct scblk
 };
 
 /*
-        Structure for returning a far string
+        Structure for returning a string
  */
 
 struct fsblk
 {
   mword fstyp;			/* type word                                            */
   mword fslen;			/* string length                                        */
-  far char *fsptr;		/* far pointer to string                                */
+  char *fsptr;		/* pointer to string                                */
 };
 
 
 /*
-        Structure for returning a far external block
+        Structure for returning a external block
  */
 
 struct fxblk
 {
   mword fxtyp;			/* type word                                            */
   mword fxlen;			/* external data length                         */
-  far void *fxptr;		/* far pointer to external data                 */
+  void *fxptr;		/* pointer to external data                 */
 };
 
 
@@ -415,13 +383,6 @@ struct xnblk
     mword xndta[1];		/* 1. user defined data starts here             */
     struct ef
     {				/* 2. external function info            */
-#if WINNT | sparc | aix
-      void *xnhand;		/*    module handle                     */
-        mword (*xnpfn) Params ((void));	/*    pointer to function entry         */
-      mword xn1st;		/*    non-zero = first-ever call                */
-      mword xnsave;		/*    non-zero = first call after reload */
-      void (*xncbp) Params ((void));	/*    callback function prior to exiting */
-#else
       mword xnoff;		/*    base offset of function image     */
       mword xnsiz;		/*    size of function in bytes         */
       mword xneip;		/*    transfer EIP                      */
@@ -434,9 +395,8 @@ struct xnblk
       short xngs;		/*        transfer GS                                           */
       short xn1st;		/*    non-zero = first-ever call                */
       short xnsave;		/*    non-zero = first call after reload */
-      far void (*xncbp) (void);	/*    callback function prior to exiting */
+      void (*xncbp) (void);	/*    callback function prior to exiting */
       short xnpad;		/*    pad to dword boundary                             */
-#endif
     } ef;
   } xnu;
 };

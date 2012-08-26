@@ -47,12 +47,12 @@ This file is part of Macro SPITBOL.
 
 #if POLLING & (UNIX | WINNT)
 #if WINNT
-int pollevent Params ((void));
+int pollevent (void);
 #endif
 #if UNIX
 #define pollevent()
 #endif /* UNIX */
-extern rearmbrk Params ((void));
+extern rearmbrk (void);
 extern int brkpnd;
 #define stmtDelay PollCount
 #endif

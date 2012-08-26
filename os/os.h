@@ -25,42 +25,14 @@ This file is part of Macro SPITBOL.
 extern word reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs;
 extern IATYPE reg_ia;
 extern double reg_ra;
-#if WINNT | SPARC
-extern word reg_pc;
-#endif
 
-/*
-    Macros to deal with converting pointers within the Minimal heap
-    to pointers that the C code can deal with.  On most systems, the
-    two types of pointers are equivalent.  But on machines like the
-    8088 or under Windows, the near pointers within the heap need to
-    be converted to and from far pointers in the C data space.
- */
-#if __NEAR__
-extern void *mk_mp (void * minp);
-#define MK_MP(minp,type) ((type)mk_mp((void *)(minp)))
-#define MP_OFF(cp,type) ((type)(void *)(cp))
-#else /* __NEAR__ */
 #define MK_MP(minp,type) ((type)(minp))
 #define MP_OFF(cp,type) ((type)cp)
-#endif /* __NEAR__ */
 
 /*
     Macros to fetch a value of appropriate type from a compiler register
 */
 
-#if __NEAR__
-#define CP(type)        (sizeof(type) == 4 ? MK_MP(reg_cp,type) : ((type) reg_cp))
-#define IA(type)        ((type) reg_ia)
-#define WA(type)        (sizeof(type) == 4 ? MK_MP(reg_wa,type) : ((type) reg_wa))
-#define WB(type)        (sizeof(type) == 4 ? MK_MP(reg_wb,type) : ((type) reg_wb))
-#define WC(type)        (sizeof(type) == 4 ? MK_MP(reg_wc,type) : ((type) reg_wc))
-#define XR(type)        (sizeof(type) == 4 ? MK_MP(reg_xr,type) : ((type) reg_xr))
-#define XL(type)        (sizeof(type) == 4 ? MK_MP(reg_xl,type) : ((type) reg_xl))
-#define PC(type)        (sizeof(type) == 4 ? MK_MP(reg_pc,type) : ((type) reg_pc))
-#define XS(type)        (sizeof(type) == 4 ? MK_MP(reg_xs,type) : ((type) reg_xs))
-#define RA(type)  (sizeof(type) == 8 ? MK_MP(reg_ra,type) : ((type) reg_ra))
-#else /* __NEAR__ */
 #define CP(type)        ((type) reg_cp)
 #define IA(type)        ((type) reg_ia)
 #define WA(type)        ((type) reg_wa)
@@ -71,7 +43,6 @@ extern void *mk_mp (void * minp);
 #define PC(type)        ((type) reg_pc)
 #define XS(type)        ((type) reg_xs)
 #define RA(type)  ((type) reg_ra)	/* v1.30.12 */
-#endif /* __NEAR__ */
 /*
     Macros to set a value of appropriate type into a compiler register.
 */
@@ -108,9 +79,9 @@ extern void *mk_mp (void * minp);
         Function to call into minimal code.
         The argument is an ordinal number defined below.
 */
-extern void minimal_call Params ((word callno));
-extern void popregs Params ((void));
-extern void pushregs Params ((void));
+extern void minimal_call (word callno);
+extern void popregs (void);
+extern void pushregs (void);
 #define MINIMAL_CALL(cn) minimal_call(cn)
 #define MINSAVE() pushregs()
 #define MINRESTORE() popregs()
@@ -203,7 +174,7 @@ extern void S_AAA ();
 extern void S_YYY ();
 
 #else /* DIRECT */
-extern word *minoff Params ((word valno));
+extern word *minoff (word valno);
 #define get_code_offset(vn,type) ((type)minoff(vn))
 #define get_data_offset(vn,type) ((type)minoff(vn))
 #define get_min_value(vn,type)  ((type)*minoff(vn))

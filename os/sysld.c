@@ -53,8 +53,8 @@ This file is part of Macro SPITBOL.
 #endif
 
 #if EXTFUN
-static word openloadfile Params ((char *namebuf));
-static void closeloadfile Params ((word fd));
+static word openloadfile (char *namebuf);
+static void closeloadfile (word fd);
 #endif /* EXTFUN */
 
 zysld ()
@@ -112,7 +112,7 @@ openloadfile (file)
   word fd;
   char file2[512];
   PFN pfn;
-  extern word loadDll Params ((char *dllName, char *fcnName, PFN * pfn));
+  extern word loadDll (char *dllName, char *fcnName, PFN * pfn);
 
   /* Search strategy for DLLs:
    *  If explicit library name given, then

@@ -77,13 +77,13 @@ extern word *etext;
 struct svfilehdr svfheader;
 char uargbuf[UargSize];
 
-static void hcopy Params ((char *src, char *dst, int len, int max));
+static void hcopy (char *src, char *dst, int len, int max);
 #endif /* SAVEFILE */
 
 
 #if SAVEFILE | EXECSAVE
-extern word read Params ((int F, void *Buf, unsigned Cnt));
-extern FILEPOS LSEEK Params ((int F, FILEPOS Loc, int Method));
+extern word read (int F, void *Buf, unsigned Cnt);
+extern FILEPOS LSEEK (int F, FILEPOS Loc, int Method);
 #endif /* EXECFILE  | SAVEFILE */
 
 zysxi ()
