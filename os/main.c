@@ -63,10 +63,6 @@ main (argc, argv)
   gblargc = argc;
   gblargv = argv;
   lowsp = 0L;
-#if WINNT
-  init_custom ();		/* Perform system specific initializations */
-#endif
-
   /*
      Initialize buffers
    */
@@ -197,7 +193,6 @@ main (argc, argv)
       __exit (1);
     }
 
-#if WINNT | LINUX
   /*
      Allocate stack
    */
@@ -206,8 +201,6 @@ main (argc, argv)
       wrterr ("Stack memory unavailable.");
       __exit (1);
     }
-#endif
-
   /*
      Allocate initial increment of dynamic memory.
 

@@ -30,21 +30,12 @@ This file is part of Macro SPITBOL.
 */
 #include "port.h"
 
-#if LINUX
 #define RAW_BIT RAW
-#endif
 
-#if UNIX
 #include <sys/stat.h>
 struct stat statbuf;
-#if LINUX
 #include <termios.h>
 struct termios termiosbuf;
-#else
-#include <sgtty.h>
-struct sgttyb sgtbuf;
-#endif
-#endif
 
 int
 testty (fd)
@@ -77,9 +68,6 @@ ttyraw (fd, flag)
 
 {
   /* read current params      */
-#if WINNT
-  rawmode (fd, flag ? -1 : 0);	/* Set or clear raw mode */
-#elif LINUX
   if (testty (fd))
     return;			/* exit if not tty  */
   tcgetattr (fd, &termiosbuf);
@@ -89,15 +77,4 @@ ttyraw (fd, flag)
     termiosbuf.c_lflag |= (ICANON | ECHO);	/* Clearing     */
 
   tcsetattr (fd, TCSANOW, &termiosbuf);	/* store device flags   */
-#else
-  if (testty (fd))
-    return;			/* exit if not tty      */
-  ioctl (fd, TIOCGETP, &sgtbuf);
-  if (flag)
-    sgtbuf.sg_flags |= RAW_BIT;	/* Setting              */
-  else
-    sgtbuf.sg_flags &= ~RAW_BIT;	/* Clearing             */
-
-  ioctl (fd, TIOCSETP, &sgtbuf);	/* store device flags   */
-#endif
 }

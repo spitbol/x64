@@ -44,7 +44,6 @@ findenv (vq, vn)
      char *vq;
      int vn;
 {
-#if WINNT | UNIX
   char savech;
   char *p;
 
@@ -52,7 +51,6 @@ findenv (vq, vn)
   p = (char *) getenv (vq);	/* use library lookup routine */
   unmake_c_str (&vq[vn], savech);
   return p;
-#endif
 
 }
 

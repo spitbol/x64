@@ -17,25 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-    The following manifest constants define the target hardware platform
-    and tool chain.
-
-                running on a:
-    BCC32       Intel 32-bit x86, Borland C++ compiler (Windows command line)
-    VCC         Intel 32-bit x86, Microsoft Visual C (Windows command line)
-    GCCi32      Intel 32-bit x86, GNU GCC
-    GCCi64      Intel 64-bit x86, GNU GCC
-    RS6         IBM RS6000 (Power)
-    SUN4        SPARC, SUN4
-
-    The following manifest constants define the target operating system.
-
-    LINUX       Linux
-    WINNT       Windows NT/XP/Vista
-
-*/
-
 /* Override default values in port.h.  It is necessary for a user configuring
    SPITBOL to examine all the default values in port.h and override those
    that need to be altered.

@@ -157,16 +157,5 @@ zysif ()
 	}
     }
 
-#if WINNT
-#if USEFD0FD1
-  if (cindev (0) == 0)		/* Test for character input */
-#else
-  if (cindev (getrdfd ()) == 0)	/* Test for character input */
-#endif
-    getrdiob ()->flg1 |= IO_CIN;
-  else
-    getrdiob ()->flg1 &= ~IO_CIN;
-#endif /* WINNT */
-
   return NORMAL_RETURN;
 }

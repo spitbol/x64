@@ -51,11 +51,9 @@ initpath (name)
       pathptr = findenv (ucname, length (ucname));
     }
 
-#if UNIX
   /* skip leading paren if present */
   if (pathptr && *pathptr == '(')
     pathptr++;
-#endif
 }
 
 

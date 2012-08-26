@@ -30,10 +30,6 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if WINNT
-extern void kill (int pid);
-#endif
-
 osclose (ioptr)
      struct ioblk *ioptr;
 {

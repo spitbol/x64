@@ -36,16 +36,6 @@ This file is part of Macro SPITBOL.
    v1.02 23-Feb-96 - Check pipe syntax when bracketed options present.
 */
 
-#if !WINNT
-/*  The file argument can also contain options separated from the filename
-        by a blank.
-
-        "filename options"
-        " options"
-
-*/
-#endif /* !WINNT */
-
 #if PIPES
 /*
     The file argument may instead be a command string with options as in
@@ -132,11 +122,6 @@ lenfnm (scptr)
     }
 #endif /* PIPES */
 
-#if WINNT
-  /* WIN NT NTFS permit blanks within file names.
-   */
-  return len;
-#else /* WINNT */
   /*
      Here for a normal filename.  Just count the number of characters
      up to the first blank or end of string, whichever occurs first.
@@ -144,5 +129,4 @@ lenfnm (scptr)
   for (cnt = 0; cnt < len && *cp++ != ' '; cnt++)
     ;
   return cnt;
-#endif /* WINNT */
 }

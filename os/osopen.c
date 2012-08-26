@@ -86,11 +86,6 @@ osopen (ioptr)
 #endif /* PIPES */
 
     {
-#if WINNT
-      /* Check for CON:, AUX:, LPT1:, etc., and remove colon */
-      if ((len == 4 || len == 5) && cp[len - 1] == ':')
-	len--;
-#endif /* WINNT */
 
       savech = make_c_str (&cp[len]);	/*   else temporarily terminate filename */
       if (ioptr->flg1 & IO_OUP)	/*  output file             */
@@ -162,12 +157,6 @@ osopen (ioptr)
       ioptr->flg1 |= IO_OPN;
       if (ioptr->flg1 & IO_OUP && testty (fd) == 0)
 	ioptr->flg1 |= IO_WRC;
-#if WINNT
-      /* Test for character input */
-      if (ioptr->flg1 & IO_INP && cindev (ioptr->fdn) == 0)
-	ioptr->flg1 |= IO_CIN;
-#endif /* WINNT */
-
 #if HOST386
       /* Test for character output.  Definicon doesn't have screen functions */
       if (ioptr->flg1 & IO_OUP && coutdev (ioptr->fdn) == 0)
