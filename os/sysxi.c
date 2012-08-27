@@ -322,7 +322,7 @@ fail:
 #endif /* EXECFILE | SAVEFILE */
 }
 
-#if (LINUX) & EXECFILE & !EXECSAVE
+#if EXECFILE & !EXECSAVE
 /* heapmove
  *
  * perform upward copy of heap from where it was stored in the execfile
@@ -380,9 +380,6 @@ unreloc ()
   set_min_value (gtcef, get_min_value (gtcef, char *) - stbas, word);
   set_min_value (pmhbs, get_min_value (pmhbs, char *) - stbas, word);
   SET_CP (CP (char *) - get_min_value (dnamb, char *));
-#if winnT
-  SET_PC (PC (char *) - get_code_offset (s_aaa, char *));
-#endif
 }
 
 /*
