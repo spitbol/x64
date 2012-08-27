@@ -596,5 +596,14 @@ ovr_:
         and     ax, 0x7ff0              ; check for infinity or nan
         add     ax, 0x10                ; set/clear overflow accordingly
         ret
-
-
+;
+;----------
+;
+;  tryfpu - perform a floating point op to trigger a trap if no floating point hardware.
+;
+        global  tryfpu
+tryfpu:
+        push    ebp
+        fldz
+        pop     ebp
+        ret
