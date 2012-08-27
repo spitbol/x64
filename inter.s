@@ -16,9 +16,6 @@
 ; 
 ;     you should have received a copy of the gnu general public license
 ;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
-;
-;        .psize          80,132
-;        .arch           pentium
 
 %define globals 1
 
@@ -26,10 +23,7 @@
         %include        "os.inc"
 
         segment .data
-;
-;       file: inter.s           version: 1.46
-;       ---------------------------------------
-;
+
 ;       this file contains the assembly language routines that interface
 ;       the macro spitbol compiler written in 80386 assembly language to its
 ;       operating system interface functions written in c.
@@ -135,29 +129,29 @@
 ;
         align 4
 
-        global  reg_wa
-        global  reg_wb
-        global  reg_ia
-        global  reg_wc
-        global  reg_xr
-        global  reg_xl
         global  reg_cp
-        global  reg_ra
+        global  reg_ia
         global  reg_pc
         global  reg_pp
+        global  reg_ra
+        global  reg_xl
+        global  reg_xr
         global  reg_xs
+        global  reg_wa
+        global  reg_wb
+        global  reg_wc
 
         global  reg_block
         global  reg_size
 reg_block:
-reg_wa: dd      0     ; Register WA (ECX)
-reg_wb: dd      0     ; Register WB (EBX)
+reg_wa: dd      0     		; Register WA (ECX)
+reg_wb: dd      0     		; Register WB (EBX)
 reg_ia:
-reg_wc: dd   0     ; Register WC & IA (EDX)
-reg_xr: dd   0     ; Register XR (EDI)
-reg_xl: dd   0     ; Register XL (ESI)
-reg_cp: dd   0     ; Register CP
-reg_ra: dd      0e  ; Register RA
+reg_wc: dd   	0     		; Register WC & IA (EDX)
+reg_xr: dd   	0     		; Register XR (EDI)
+reg_xl: dd   	0     		; Register XL (ESI)
+reg_cp: dd   	0     		; Register CP
+reg_ra: dd   	0e    		; Register RA
 ;
 ; these locations save information needed to return after calling osint
 ; and after a restart from exit()
@@ -167,27 +161,18 @@ reg_pp: dd      0               ; number of bytes of ppms
 reg_xs:	dd   	0  		; minimal stack pointer
 ;
 r_size equ      $-reg_block
-reg_size        dd      r_size
+reg_size        db      r_size
 ;
 ; end of words saved during exit(-3)
 ;
-
-;
-;  constants
-;
-ten:    dd      10              ; constant 10
-        global  inf
-inf:    dd      0       
-        dd      0x7ff00000      ; double precision infinity
-
 sav_block: times r_size dd 0    ; save minimal registers during push/pop reg
 ;
         align 4
 ppoff:  dd      0               ; offset for ppm exits
-compsp: dd      0               ; 1.39 compiler's stack pointer
+compsp: dd      0               ; compiler's stack pointer
 sav_compsp:
         dd      0               ; save compsp here
-osisp:  dd      0               ; 1.39 osint's stack pointer
+osisp:  dd      0               ; osint's stack pointer
 
 
 ;
@@ -218,31 +203,22 @@ tscblk:	times	512 dd 0
 ;       standard input buffer block.
 ;
 	global	inpbuf
-inpbuf:	dd   	0     ; type word
         dd      0               ; block length
         dd      1024            ; buffer size
         dd      0               ; remaining chars to read
         dd      0               ; offset to next character to read
         dd      0               ; file position of buffer
         dd      0               ; physical position in file
-%if winnt
-        dd      0               ; 64-bit offset
-        dd      0               ; and current position
-%endif
         times   1024 dd 0       ; buffer
 ;
 	global	ttybuf
-ttybuf:	dd   0     ; type word
+ttybuf:	dd   	0     		; type word
         dd      0               ; block length
         dd      260             ; buffer size  (260 ok in ms-dos with cinread())
         dd      0               ; remaining chars to read
         dd      0               ; offset to next char to read
         dd      0               ; file position of buffer
         dd      0               ; physical position in file
-%if winnt 
-        dd      0               ; 64-bit offset
-        dd      0               ; and current position
-%endif
         times   260 dd 0        ; buffer
 
 
@@ -265,24 +241,24 @@ ttybuf:	dd   0     ; type word
 	global	minimal_call
 minimal_call:
 
-        pushad                          ; save all registers for c
-        mov     eax,dword[esp+32+4]          ; get ordinal
-        mov     ecx,dword[reg_wa]              ; restore registers
+        pushad                          	; save all registers for c
+        mov     eax,dword[esp+32+4]          	; get ordinal
+        mov     ecx,dword[reg_wa]              	; restore registers
         mov     ebx,dword[reg_wb]
-        mov     edx,dword[reg_wc]              ; (also _reg_ia)
+        mov     edx,dword[reg_wc]              	; (also _reg_ia)
         mov     edi,dword[reg_xr]
         mov     esi,dword[reg_xl]
         mov     ebp,dword[reg_cp]
 
-        mov     dword [osisp],esp               ; 1.39 save osint stack pointer
-        cmp     dword [compsp],0      ; 1.39 is there a compiler stack?
-        je      min1              ; 1.39 jump if none yet
-        mov     esp,dword [compsp]              ; 1.39 switch to compiler stack
+        mov     dword [osisp],esp               ; save osint stack pointer
+        cmp     dword [compsp],0      ; is there a compiler stack?
+        je      min1              ; jump if none yet
+        mov     esp,dword [compsp]              ; switch to compiler stack
 
 	extern	calltab
 min1:   callc   [calltab+eax*4],0        ; off to the minimal code
 
-        mov     esp,osisp               ; 1.39 switch to osint stack
+        mov     esp,osisp               ; switch to osint stack
 
         mov     [reg_wa],ecx              ; save registers
         mov     [reg_wb],ebx
@@ -327,32 +303,32 @@ pushregs:
    rep  movsd
 
         mov     edi,dword [compsp]
-        or      edi,edi                         ; 1.39 is there a compiler stack
-        je      push1                     ; 1.39 jump if none yet
+        or      edi,edi                         ; is there a compiler stack
+        je      push1                     	; jump if none yet
         sub     edi,4                           ;push onto compiler's stack
-        mov     esi,dword [reg_xl]                      ;collectable XL
+        mov     esi,dword [reg_xl]              ;collectable XL
         mov     dword [edi],esi
-        mov     dword [compsp],edi                      ;smashed if call OSINT again (SYSGC)
-        mov     dword [sav_compsp],edi                  ;used by popregs
+        mov     dword [compsp],edi              ;smashed if call OSINT again (SYSGC)
+        mov     dword [sav_compsp],edi          ;used by popregs
 
 push1:  popad
         retc    0
 
 popregs:
         pushad
-        mov     eax,dword [reg_cp]                      ;don't restore CP
+        mov     eax,dword [reg_cp]              ;don't restore CP
         cld
         lea     esi,[sav_block]
-        lea     edi,[reg_block]                   ;unload saved registers
+        lea     edi,[reg_block]                 ;unload saved registers
         mov     ecx,r_size/4
    rep  movsd                                   ;restore from temp area
         mov     dword [reg_cp],eax
 
-        mov     edi,dword [sav_compsp]                  ;saved compiler's stack
-        or      edi,edi                         ;1.39 is there one?
-        je      pop1                      ;1.39 jump if none yet
-        mov     esi,dword [edi]                       ;retrieve collectable XL
-        mov     dword [reg_xl],esi                      ;update XL
+        mov     edi,dword [sav_compsp]          ;saved compiler's stack
+        or      edi,edi                         ;is there one?
+        je      pop1                      	;jump if none yet
+        mov     esi,dword [edi]                 ;retrieve collectable XL
+        mov     dword [reg_xl],esi              ;update XL
         add     edi,4                           ;update compiler's sp
         mov     dword [compsp],edi
 
@@ -377,15 +353,15 @@ pop1:   popad
 ;       representing sysxx is named _zysxx.  this renaming should satisfy
 ;       all c compilers.
 ;
-;       important  one interface routine, sysfc, is passed arguments on
+;       important:  one interface routine, sysfc, is passed arguments on
 ;       the stack.  these items are removed from the stack before calling
 ;       ccaller, as they are not needed by this implementation.
 ;
 ;
 ;-----------
 ;
-;       ccaller is called by the os interface routines to call the
-;       real c os interface function.
+;       ccaller is called by the os interface routines to 
+;	call the real c os interface function.
 ;
 ;       general calling sequence is
 ;
@@ -439,8 +415,8 @@ ccaller:
 ;
 ;       (3a) save compiler stack and switch to osint stack
 ;
-        mov     dword [compsp],esp              ; 1.39 save compiler's stack pointer
-        mov     esp,[osisp]               ; 1.39 load osint's stack pointer
+        mov     dword [compsp],esp              ; save compiler's stack pointer
+        mov     esp,[osisp]               ; load osint's stack pointer
 ;
 ;       (3b) make call to osint
 ;
@@ -449,8 +425,8 @@ ccaller:
 ;       (4) restore registers after c function returns.
 ;
 
-cc1:    mov     dword [osisp], esp               ; 1.39 save OSINT's stack pointer
-        mov     esp, dword [compsp]              ; 1.39 restore compiler's stack pointer
+cc1:    mov     dword [osisp], esp               ; save OSINT's stack pointer
+        mov     esp, dword [compsp]              ; restore compiler's stack pointer
         mov     ecx, dword [reg_wa]              ; restore registers
         mov     ebx, dword [reg_wb]
         mov     edx, dword [reg_wc]             ; (also reg_ia)
@@ -975,8 +951,8 @@ re2:    push    eax                     ; transfer word of stack
         jae     re1                     ;    loop back
 
 re3:    cld
-        mov     dword [compsp],esp              ; 1.39 save compiler's stack pointer
-        mov     esp,dword [osisp]               ; 1.39 back to OSINT's stack pointer
+        mov     dword [compsp],esp              ; save compiler's stack pointer
+        mov     esp,dword [osisp]               ; back to OSINT's stack pointer
         callc   rereloc,0               ; V1.08 relocate compiler pointers into stack
 	extern	statb
         mov     dword [eax],statb               ; V1.34 start of static region to XR
@@ -1022,7 +998,7 @@ re3:    cld
 ;
 re4:	
 	mov	dword [eax],stbas
-        mov     dword [compsp],eax              ; 1.39 empty the stack
+        mov     dword [compsp],eax              ; empty the stack
 
 ;       code that would be executed if we had returned to makeexec:
 ;
@@ -1043,787 +1019,7 @@ re4:
 	push	rstrt_callid
 	callc	minimal_call,4			; no return
 
-;
-;-----------
-;
-;       cvd_ - convert by division
-;
-;       input   ia (edx) = number <=0 to convert
-;       output  ia / 10
-;               wa (ecx) = remainder + '0'
-;
-	global	cvd_
-cvd_:
-        xchg    eax,edx         ; ia to eax
-        cdq                     ; sign extend
-        idiv    dword [ten]   ; divide by 10. edx = remainder (negative)
-        neg     edx             ; make remainder positive
-        add     dl,0x30         ; convert remainder to ascii ('0')
-        mov     ecx,edx         ; return remainder in WA
-        xchg    edx,eax         ; return quotient in IA
-        ret
 
-;
-;-----------
-;
-;       dvi_ - divide ia (edx) by long in eax
-;
-	global	dvi_
-dvi_:
-
-        or      eax,eax         ; test for 0
-        jz      setovr    ; jump if 0 divisor
-        push    ebp             ; preserve cp
-        xchg    ebp,eax         ; divisor to ebp
-        xchg    eax,edx         ; dividend in eax
-        cdq                     ; extend dividend
-        idiv    ebp             ; perform division. eax=quotient, edx=remainder
-        xchg    edx,eax         ; place quotient in edx (ia)
-        pop     ebp             ; restore cp
-        xor     eax,eax         ; clear overflow indicator
-        ret
-
-
-;
-;-----------
-;
-;       rmi_ - remainder of ia (edx) divided by long in eax
-;
-	global	rmi_
-rmi_:
-             or      eax,eax         ; test for 0
-        jz      setovr    ; jump if 0 divisor
-        push    ebp             ; preserve cp
-        xchg    ebp,eax         ; divisor to ebp
-        xchg    eax,edx         ; dividend in eax
-        cdq                     ; extend dividend
-        idiv    ebp             ; perform division. eax=quotient, edx=remainder
-        pop     ebp             ; restore cp
-        xor     eax,eax         ; clear overflow indicator
-        ret                     ; return remainder in edx (ia)
-setovr: mov     al,0x80         ; set overflow indicator
-        dec     al
-        ret
-
-
-
-;----------
-;
-;    calls to c
-;
-;       the calling convention of the various compilers:
-;
-;       integer results returned in eax.
-;       float results returned in st0 for intel.
-;       see conditional switches fretst0 and
-;       freteax in systype.ah for each compiler.
-;
-;       c function preserves ebp, ebx, esi, edi.
-;
-
-
-;----------
-;
-;       rti_ - convert real in ra to integer in ia
-;               returns c=0 if fit ok, c=1 if too large to convert
-;
-	global	rti_
-rti_:
-
-; 41e00000 00000000 = 2147483648.0
-; 41e00000 00200000 = 2147483649.0
-        mov     eax, dword [reg_ra+4]   ; ra msh
-        btr     eax,31          ; take absolute value, sign bit to carry flag
-        jc      rti_2     ; jump if negative real
-        cmp     eax,0x41e00000  ; test against 2147483648
-        jae     rti_1     ; jump if >= +2147483648
-rti_3:  push    ecx             ; protect against c routine usage.
-        push    eax             ; push ra msh
-        push    dword [reg_ra]; push ra lsh
-        callfar f_2_i,8         ; float to integer
-        xchg    eax,edx         ; return integer in edx (ia)
-        pop     ecx             ; restore ecx
-        clc
-        ret
-
-; here to test negative number, made positive by the btr instruction
-rti_2:  cmp     eax,0x41e00000          ; test against 2147483649
-        jb      rti_0             ; definately smaller
-        ja      rti_1             ; definately larger
-        cmp     dword [reg_ra+2], 0x0020
-        jae     rti_1
-rti_0:  btc     eax,31                  ; make negative again
-        jmp     rti_3
-rti_1:  stc                             ; return c=1 for too large to convert
-        ret
-
-;
-;----------
-;
-;       itr_ - convert integer in ia to real in ra
-;
-	global	itr_
-itr_:
-
-        push    ecx             ; preserve
-        push    edx             ; push ia
-        callfar i_2_f,4         ; integer to float
-%if fretst0
-        fstp    dword [reg_ra]
-        pop     ecx             ; restore ecx
-        fwait
-%endif
-%if freteax
-        mov     dword [reg_ra],eax    ; return result in ra
-
-        mov     dword [reg_ra+4],edx
-        pop     ecx             ; restore ecx
-%endif
-        ret
-
-;
-;----------
-;
-;       ldr_ - load real pointed to by eax to ra
-;
-	global	ldr_
-ldr_:
-        push    dword [eax]                 ; lsh
-        pop     dword [reg_ra]
-        mov     eax,dword [eax+4]                     ; msh
-        mov     dword [reg_ra+4], eax
-        ret
-
-;
-;----------
-;
-;       str_ - store ra in real pointed to by eax
-;
-	global	str_
-str_:
-
-        push    dword [reg_ra]                ; lsh
-        pop     dword [eax]
-        push    dword [reg_ra+4]              ; msh
-        pop     dword [eax+4]
-        ret
-
-;
-;----------
-;
-;       adr_ - add real at [eax] to ra
-;
-	global	adr_
-adr_:
-
-        push    ecx                             ; preserve regs for c
-	push	edx
-        push    dword [reg_ra+4]              ; ra msh
-        push    dword [reg_ra]                ; ra lsh
-        push    dword [eax+4]               ; arg msh
-        push    dword [eax]                 ; arg lsh
-        callfar f_add,16                        ; perform op
-%if fretst0
-        fstp    dword [reg_ra]
-        pop     edx                             ; restore regs
-        pop     ecx
-        fwait
-%endif
-%if freteax
-        mov     dword [reg_ra+4], edx         ; result msh
-        mov     dword [reg_ra], eax           ; result lsh
-        pop     edx                             ; restore regs
-        pop     ecx
-%endif
-        ret
-
-;
-;----------
-;
-;       sbr_ - subtract real at [eax] from ra
-;
-        global  sbr_
-sbr_:
-
-        push    ecx                             ; preserve regs for C
-        push    edx
-        push    dword [reg_ra+4]              ; RA msh
-        push    dword [reg_ra]                ; RA lsh
-        push    dword [eax+4]               ; arg msh
-        push    dword [eax]                 ; arg lsh
-        callfar f_sub,16                        ; perform op
-%if fretst0
-        fstp    dword [reg_ra]
-        pop     edx                             ; restore regs
-        pop     ecx
-        fwait
-%endif
-%if freteax
-        mov     dword [reg_ra+4, edx         ; result msh
-        mov     dword [reg_ra], eax           ; result lsh
-        pop     edx                             ; restore regs
-        pop     ecx
-%endif
-        ret
-
-;
-;----------
-;
-;       mlr_ - multiply real in ra by real at [eax]
-;
-        global  mlr_
-mlr_:
-
-        push    ecx                             ; preserve regs for C
-        push    edx
-        push    dword [reg_ra+4]              ; RA msh
-        push    dword [reg_ra]                ; RA lsh
-        push    dword [eax+4]               ; arg msh
-        push    dword [eax]                 ; arg lsh
-        callfar f_mul,16                        ; perform op
-%if fretst0
-        fstp    dword [reg_ra]
-        pop     edx                             ; restore regs
-        pop     ecx
-        fwait
-%endif
-%if freteax
-        mov     dword [reg_ra+4,] edx         ; result msh
-        mov     dword [reg_ra,] eax           ; result lsh
-        pop     edx                             ; restore regs
-        pop     ecx
-%endif
-        ret
-
-;
-;----------
-;
-;       dvr_ - divide real in ra by real at [eax]
-;
-        global  dvr_
-
-dvr_:
-
-        push    ecx                             ; preserve regs for C
-        push    edx
-        push    dword [reg_ra+4]              ; RA msh
-        push    dword [reg_ra]                ; RA lsh
-        push    dword [eax+4]               ; arg msh
-        push    dword [eax]                 ; arg lsh
-        callfar f_div,16                        ; perform op
-%if fretst0
-        fstp    dword [reg_ra]
-        pop     edx                             ; restore regs
-        pop     ecx
-        fwait
-%endif
-%if freteax
-        mov     dword [reg_ra+4], edx         ; result msh
-        mov     dword [reg_ra], eax           ; result lsh
-        pop     edx                             ; restore regs
-        pop     ecx
-%endif
-        ret
-
-;
-;----------
-;
-;       ngr_ - negate real in ra
-;
-        global  ngr_
-ngr_:
-	cmp	dword [reg_ra], 0
-	jne	ngr_1
-	cmp	dword [reg_ra+4], 0
-        je      ngr_2                     ; if zero, leave alone
-ngr_1:  xor     byte [reg_ra+7], 0x80         ; complement mantissa sign
-ngr_2:  ret
-
-;
-;----------
-;
-;       atn_ arctangent of real in ra
-;
-        global  atn_
-
-atn_:
-
-        push    ecx                             ; preserve regs for C
-        push    edx
-        push    dword [reg_ra+4]              ; RA msh
-        push    dword [reg_ra]                ; RA lsh
-        callfar f_atn,8                         ; perform op
-%if fretst0
-        fstp    dword [reg_ra]
-        pop     edx                             ; restore regs
-        pop     ecx
-        fwait
-%endif
-%if freteax
-        mov     dword [reg_ra+4], edx         ; result msh
-        mov     dword [reg_ra], eax           ; result lsh
-        pop     edx                             ; restore regs
-        pop     ecx
-%endif
-        ret
-
-;
-;----------
-;
-;       chp_ chop fractional part of real in ra
-;
-        global  chp_
-
-chp_:
-
-        push    ecx                             ; preserve regs for C
-        push    edx
-        push    dword [reg_ra+4]              ; RA msh
-        push    dword [reg_ra]                ; RA lsh
-        callfar f_chp,8                         ; perform op
-%if fretst0
-        fstp    dword [reg_ra]
-        pop     edx                             ; restore regs
-        pop     ecx
-        fwait
-%endif
-%if freteax
-        mov     dword [reg_ra+4], edx         ; result msh
-        mov     dword [reg_ra], eax           ; result lsh
-        pop     edx                             ; restore regs
-        pop     ecx
-%endif
-        ret
-
-;
-;----------
-;
-;       cos_ cosine of real in ra
-;
-        global  cos_
-
-cos_:
-        push    ecx                             ; preserve regs for C
-        push    edx
-        push    dword [reg_ra+4]              ; RA msh
-        push    dword [reg_ra]                ; RA lsh
-        callfar f_cos,8                         ; perform op
-%if fretst0
-        fstp    dword [reg_ra]
-        pop     edx                             ; restore regs
-        pop     ecx
-        fwait
-%endif
-%if freteax
-        mov     dword [reg_ra+4], edx         ; result msh
-        mov     dword [reg_ra], eax           ; result lsh
-        pop     edx                             ; restore regs
-        pop     ecx
-%endif
-        ret
-
-;
-;----------
-;
-;       etx_ exponential of real in ra
-;
-        global  etx_
-
-etx_:
-        push    ecx                             ; preserve regs for c
-	push	edx
-        push    dword [reg_ra+4]              ; ra msh
-        push    dword [reg_ra]                ; ra lsh
-        callfar f_etx,8                         ; perform op
-%if fretst0
-        fstp    dword [reg_ra]
-        pop     edx                             ; restore regs
-        pop     ecx
-        fwait
-%endif
-%if freteax
-        mov     dword [reg_ra+4], edx         ; result msh
-        mov     dword [reg_ra], eax           ; result lsh
-        pop     edx                             ; restore regs
-        pop     ecx
-%endif
-        ret
-
-;
-;----------
-;
-;       lnf_ natural logarithm of real in ra
-;
-        global  lnf_
-
-lnf_:
-
-        push    ecx                             ; preserve regs for C
-        push    edx
-        push    dword [reg_ra+4]              ; RA msh
-        push    dword [reg_ra]                ; RA lsh
-        callfar f_lnf,8                         ; perform op
-%if fretst0
-        fstp    dword [reg_ra]
-        pop     edx                             ; restore regs
-        pop     ecx
-        fwait
-%endif
-%if freteax
-        mov     dword [reg_ra+4], edx         ; result msh
-        mov     dword [reg_ra], eax           ; result lsh
-        pop     edx                             ; restore regs
-        pop     ecx
-%endif
-        ret
-
-;
-;----------
-;
-;       sin_ arctangent of real in ra
-;
-        global  sin_
-
-sin_:
-
-        push    ecx                             ; preserve regs for C
-        push    edx
-        push    dword [reg_ra+4]              ; RA msh
-        push    dword [reg_ra]                ; RA lsh
-        callfar f_sin,8                         ; perform op
-%if fretst0
-        fstp    dword [reg_ra]
-        pop     edx                             ; restore regs
-        pop     ecx
-        fwait
-%endif
-%if freteax
-        mov     dword [reg_ra+4], edx         ; result msh
-        mov     dword [reg_ra], eax           ; result lsh
-        pop     edx                             ; restore regs
-        pop     ecx
-%endif
-        ret
-
-;
-;----------
-;
-;       sqr_ arctangent of real in ra
-;
-        global  sqr_
-
-
-sqr_:
-        push    ecx                             ; preserve regs for C
-        push    edx
-        push    dword [reg_ra+4]              ; RA msh
-        push    dword [reg_ra]                ; RA lsh
-        callfar f_sqr,8                         ; perform op
-%if fretst0
-        fstp    dword [reg_ra]
-        pop     edx                             ; restore regs
-        pop     ecx
-        fwait
-%endif
-%if freteax
-        mov     dword [reg_ra+4], edx         ; result msh
-        mov     dword [reg_ra], eax           ; result lsh
-        pop     edx                             ; restore regs
-        pop     ecx
-%endif
-        ret
-
-;
-;----------
-;
-;       tan_ arctangent of real in ra
-;
-        global  tan_
-
-tan_:
-        push    ecx                             ; preserve regs for C
-        push    edx
-        push    dword [reg_ra+4]              ; RA msh
-        push    dword [reg_ra]                ; RA lsh
-        callfar f_tan,8                         ; perform op
-%if fretst0
-        fstp    dword [reg_ra]
-        pop     edx                             ; restore regs
-        pop     ecx
-        fwait
-%endif
-%if freteax
-        mov     dword [reg_ra+4], edx         ; result msh
-        mov     dword [reg_ra], eax           ; result lsh
-        pop     edx                             ; restore regs
-        pop     ecx
-%endif
-        ret
-
-;
-;----------
-;
-;       cpr_ compare real in ra to 0
-;
-        global  cpr_
-
-cpr_:
-
-        mov     eax, dword [reg_ra+4] ; fetch msh
-        cmp     eax, 0x80000000         ; test msh for -0.0
-        je      cpr050            ; possibly
-        or      eax, eax                ; test msh for +0.0
-        jnz     cpr100            ; exit if non-zero for cc's set
-cpr050: cmp     dword [reg_ra], 0     ; true zero, or denormalized number?
-        jz      cpr100            ; exit if true zero
-        mov     al, 1
-        cmp     al, 0                   ; positive denormal, set cc
-cpr100: ret
-
-;
-;----------
-;
-;       ovr_ test for overflow value in ra
-;
-        global  ovr_
-
-ovr_: 
-
-        mov     ax, word [reg_ra+6]   ; get top 2 bytes
-        and     ax, 0x7ff0              ; check for infinity or nan
-        add     ax, 0x10                ; set/clear overflow accordingly
-        ret
-
-
-%if winnt
-;
-;----------
-;
-;       cinread(fdn, buffer, size)      do buffered console input
-;
-;       input:  fdn     = file descriptor in case can't use dos function 0a
-;               buffer  = buffer
-;               size    = buffer size
-;       output: eax    = number of bytes transferred if no error
-;               = -1 if error
-;
-;       preserves ds, es, esi, edi, ebx
-;
-;       uses dos function 0a because that is the function intercepted by
-;       various keyboard editing programs, such as dos edit.
-;
-;       if a program has redirected standard output, function 0a's echos
-;       will go to the redirected file, instead of the screen.  to overcome
-;       this, we save standard out's handle, and force it to be the console
-;       (stderr).  similarly, function 0ah reads from handle 0, and we
-;       force it to the console to preclude reading from a file.
-;
-;       if insufficient handles remain in the system to do this little
-;       shuffle, we simple fall back to the normal dos read routine.
-;
-
-        struc   cinarg
-cin_ebp: resd     1
-cin_ip:  resd     1
-cin_fdn: resd     1
-cin_buf: resd     1
-cin_siz: resd     1
-        endstruc
-
-        struc   ct                      ;cinread temps
-crbuf:  times   260 resd 0                ;keyboard buffer
-        endstruc
-zct    equ      260/4                   ;word aligned temp size
-ctemp  equ      [ebp-zct]               ;temp on stack
-
-        extern  read
-%if winnt
-        proc    cinreaddos
-        global  cinreaddos
-%else
-        proc    cinread
-        global  cinread
-%endif
-        enter   zct,0                   ;enter and reserve space for ctemp
-        push    ebx
-        push    esi
-        push    edi
-
-        xor     ebx,ebx                 ; save stdin by duplicating to
-        mov     ecx,ebx                 ;  get another handle
-        xor     eax,eax
-        mov     ah,0x45                 ; CX = STDIN
-        int     0x21
-        jc      cinr5                   ; out of handles
-        push    eax                     ; save handle to old stdin
-        mov     ebx,2                   ; make stdin refer to stderr
-        mov     ah,0x46                 ; so dos's input comes from keyboard
-        int     0x21
-
-        mov     ebx,1                   ; save stdout by duplicating to
-        mov     ecx,ebx                 ;  get another handle
-        mov     ah,0x45                 ; cx = stdout
-        int     0x21
-        jc      cinr4             ; Out of handles
-        push    ecx
-        push    eax                     ; Save handle to old STDOUT
-        mov     ebx,2                   ; Make STDOUT refer to STDERR
-        mov     ah,0x46                 ; so DOS' echo goes to screen
-        int     0x21
-
-        mov     ecx,dword [ebp].cin_siz
-        inc     ecx                     ; Allow for CR
-        cmp     ecx,255
-        jle     cinr1
-        mov     cl,255                  ; 255 is the max size for function 0Ah
-cinr1:  lea     edx,ctemp.crbuf         ; Buffer (DS=SS)
-        mov     dword [edx],cl                ; Set up count
-        mov     ah,0x0a
-        int     0x21                    ; do buffered input into [edx+2]
-
-        pop     ebx
-        pop     ecx                     ; (CX = STDOUT)
-        mov     ah,0x46                 ; Restore STDOUT to original file
-        int     0x21
-        mov     ah,0x3e                 ; discard dup'ed handle
-        int     0x21
-
-        xor     ecx,ecx                 ; CX = STDIN
-        pop     ebx
-        mov     ah,0x46                 ; Restore STDIN to original file
-        int     0x21
-        mov     ah,0x3e                 ; discard dup'ed handle
-        int     0x21
-
-        mov     esi,edx
-        inc     esi                     ; Point to number of bytes read
-        movzx   ebx,byte [esi]      ; Char count
-        inc     ebx                     ; Include CR
-        inc     esi                     ; Point to first char
-        lea     edx,[esi+ebx]           ; Point past CR
-        mov     [edx],byte 10       ; Append LF after CR
-        inc     ebx                     ; Include LF
-        cmp     ebx,[cin_siz+ebp]        ; Compare with caller's buffer size
-        jle     cinr3
-        mov     ebx,[cin_siz+ebp]        ; Caller's buffer size limits us
-cinr3:  mov     ecx,ebx
-        mov     edi,[cin_buf+ebp]        ; Caller's buffer
-  rep   movsb
-
-        push    ebx                     ; Save count
-        mov     ebx,2                   ; Force LF echo to screen
-        mov     ah,0x40                 ; edx points to LF
-        mov     ecx,1
-        int     0x21
-        pop     eax
-
-cinr2:  pop     edi
-        pop     esi
-        pop     ebx
-        leave
-        retc    12
-
-; here if insufficient handles to save standard out.
-; release standard in.
-;
-cinr4:  xor     ecx,ecx                 ; CX = STDIN
-        pop     ebx
-        mov     ah,0x46                 ; Restore STDIN to original file
-        int     0x21
-        mov     ah,0x3e                 ; discard dup'ed handle
-        int     0x21
-
-; here if insufficient handles to save standard in.
-; just fall back to read routine.
-;
-cinr5:  push    dcin_siz+ebp]
-        push    [cin_buf+ebp]
-        push    [cin_fdn+ebp]
-        callc   read,12
-        jmp     cinr2
-
-%endif
-
-
-
-%if winnt
-;
-;----------
-;
-;       chrdevdos(fdn)  do ioctl to see if character device.
-;
-;       input:  fdn     = file descriptor
-;       output: eax     = 81h/82h if input/output char dev, else 0
-;
-;       preserves ds, es, esi, edi, ebx
-;
-
-                struc   chrdevarg
-chrdev_ebp:     resd      1
-chrdev_ip:      resd      1
-chrdev_fdn:     resd      1
-                ends
-
-        proc    chrdevdos
-        global  chrdevdos
-        enter   0,0
-        push    ebx
-
-        mov     ebx,dword [chrdev_fdn+ebp]     ; Caller's fdn
-        mov     ax,0x4400               ; IOCTL get status
-        int     0x21
-        pop     ebx
-        jc      chrdev1
-        xor     eax,eax
-        mov     al,dl
-        leave
-        retc    4
-chrdev1: xor    eax,eax
-        leave
-        retc    4
-
-;
-;----------
-;
-;       rawmodedos(fdn,mode)    set console to raw/cooked mode
-;
-;       input:  fdn     = file descriptor
-;               mode    = 0 = cooked, 1 = raw
-;       output: none
-;
-;       preserves ds, es, esi, edi, ebx
-;
-
-                struc   rawmodearg
-rawmode_ebp:    resd      1
-rawmode_ip:     resd      1
-rawmode_fdn:    resd      1
-rawmode_mode:   resd      1
-                endstruc
-
-        proc    rawmodedos
-	global  rawmodedos
-	enter	0,0
-	push	ebx
-
-	push	[rawmode_fdn+ebp]
-	callc	chrdevdos,4
-	or	eax,eax
-	jz	rawmode1
-        and     eax,0x0df
-	cmp	[rawmode_mode+ebp],0
-	je	rawmode0
-        or      al,0x20                 ; set raw bit
-rawmode0:
-        mov     edx,eax
-        mov     ax,0x4401
-        int     0x21
-rawmode1: pop   ebx
-        leave
-        retc    4
-%endif
-
-%if linux
 ;
 ;----------
 ;
@@ -1835,4 +1031,3 @@ tryfpu:
         fldz
         pop     ebp
         ret
-%endif

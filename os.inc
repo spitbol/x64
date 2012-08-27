@@ -87,31 +87,6 @@ engts_callid  equ      13
 %endif
 %endmacro
 
-; %macro          getmin 2
-; %ifnidn %1,eax
-; 	push		eax
-; %endif
-;         push            %2
-; 	callc		minoff,4
-;         mov             %1,[eax]
-; %ifnidn %1,eax
-; 	pop		eax
-; %endif
-; %endmacro
-; 
-; %macro          setmin 2
-; %ifidn %2,eax
-; 	push		eax
-; %endif
-;         push            %1
-; 	callc		minoff,4
-; %ifidn %2,eax
-; 	pop		[eax]
-; %else
-;         mov             [eax],%2
-; %endif
-; %endmacro
-
 ;   ordinals for transferring minimal values to/from assembly language.
 ;
 ;   the order of entries here must correspond to the order of
