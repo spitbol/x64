@@ -106,10 +106,6 @@ This file is part of Macro SPITBOL.
 #define POLLING         1	/* enable polling of operating system */
 #endif
 
-#ifndef USEFD0FD1
-#define USEFD0FD1       1	/* use file descriptor 0 & 1 for stdio  */
-#endif
-
 /*
     Other defaulted values that may be overridden in systype.h
  */
