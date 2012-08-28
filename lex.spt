@@ -1,4 +1,4 @@
--title mintok: phase 1 translation from minimal to tokens
+-title lex: phase 1 translation from minimal to lexemes (tokens)
 -stitl initialization
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
 * 
@@ -20,19 +20,19 @@
 *
 *	usage:
 *
-*	spitbol -u "infile<sep>condfile<sep>outfile" token
+*	spitbol -u "infile<sep>condfile<sep>outfile" lex
 *
 *	where:
 *	 infile    - minimal file name, less .min extension
 *	 condfiile - conditional file name, less .cnd extension
-*	 outfile   - output file name, less .tok extension.
-*		     default is infile.tok.
+*	 outfile   - output file name, less .lex extension.
+*		     default is infile.lex.
 *	 <sep>	   - ; or :
 *
 *	note: <sep>outfile component is optional.
 *
 *  this program takes minimal statements and parses them up into
-*  a stream of tokens. it performs equ * substitution and
+*  a stream of lexemes (tokens). it performs equ * substitution and
 *  conditional assembly.
 *
 *  it is based on earlier translators written by david shields,
@@ -396,7 +396,7 @@
 
 *  start execution
 *
-*	reads for xxx.min, writes to xxx.tok, where xxx is a command line parameter.
+*	reads for xxx.min, writes to xxx.lex, where xxx is a command line parameter.
 *	the command line parameter may optionally be expressed as xxx;yyy, where
 *	yyy.cnd is the name of a file containing .defs to override those in
 *	file xxx.min.
@@ -412,20 +412,20 @@
 *
 	parms ? break(';:') . parms len(1) (break(';:') | rem) . filenamc
 .		(len(1) | null) rem . filenamo
-	filenamc = differ(filenamc) filenamc '.cnd'
+	filenamc = differ(filenamc) filenamc '/' filenamc '.cnd'
         output = ident(parms) "need file name (.min)" :s(end)
 
         output = 'minimal translator, pass 1 ' version
 .		' ' trandate
 	filenami = parms '.min'
         output = 'input minimal file: ' filenami
-	filenamo = (ident(filenamo) parms, filenamo) '.tok'
-        output = 'output token file: ' filenamo
+	filenamo = (ident(filenamo) parms, filenamo) '.lex'
+        output = 'output lexeme file: ' filenamo
         output = differ(filenamc) 'condition definition file: ' filenamc
 *   flcflag  = replace( input,'y','y' )
 	flcflag = 'n'
 	flcflag = 'y'
-*  output = 'full line comments passed to token file? ' flcflag
+*  output = 'full line comments passed to lexeme file? ' flcflag
 *
 *  no page ejects without full line comments
 *
@@ -433,7 +433,7 @@
 *   ejcflag  = replace( (differ(flcflag,'n') input, 'n'),'y','y' )
 	ejcflag = 'n'
 	ejcflag = 'y'
-*  output = 'ejcs passed to token file? ' ejcflag
+*  output = 'ejcs passed to lexeme file? ' ejcflag
 *
 *  associate input file to lu1.  if a conditional file was specified,
 *  read it first.
@@ -447,7 +447,7 @@
 *  associate output file
 *
 main1	output(.outfile,2,filenamo)		:s(main2)
-        output = "cannot open token file: " filenamo  :(end)
+        output = "cannot open lex file: " filenamo  :(end)
 main2
 
 *  patterns used by dostmt
@@ -499,7 +499,7 @@ dos05
 *  here if bad opcode
 ds01	error('bad op-code')			:(dsout)
 
-*  generate tokens.
+*  generate lexemes.
 *
 ds.typerr
 	error('operand type zero')		:(dsout)

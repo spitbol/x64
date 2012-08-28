@@ -1,4 +1,4 @@
--title mincod: phase 2 translation from minimal tokens to x86 code
+-title mincod: phase 2 translation from minimal lexemes to x86 code
 -stitl description
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
 * 
@@ -18,13 +18,13 @@
 *     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 *
 *
-*  this program takes input file in minimal token form and
+*  this program takes input file in minimal lexeme form and
 *  produces assembly code for intel x86 processor.
 *  the program obtains the name of the file to be translated from the
 *  command line string in host(0).  options relating to the processing
 *  of comments can be changed by modifying the source.
 *
-*  in addition to the minimal token file, the program requires the
+*  in addition to the minimal lexeme file, the program requires the
 *  name of a "machine definition file" that contains code specific
 *  to a particular x86 assembler.
 *
@@ -50,7 +50,7 @@
 *  to run under spitbol:
 *       spitbol -u "<file>:<machine>[:flag:...:flag]" codlinux.spt
 *
-*	reads <file>.tok	containing tokenized source code
+*	reads <file>.lex	containing lexemeized source code
 *       writes <file>.s         with x86 assembly code
 *	also writes <file>.err	with err and erb error messages
 *	using <machine>.def	to provide machine-specific information
@@ -76,7 +76,8 @@
 *
 *  keyword initialization
 *
-	&anchor = 1;	&stlimit = 10000000;	&trim	= 1;  &dump = 1
+	&anchor = 1;	&stlimit = 10000000;	&trim	= 1;  
+	&dump = 1
 *
 *  useful constants
 *
@@ -167,7 +168,7 @@
 *
 *  initial patterns
 *
-*  p.csparse parses tokenized line
+*  p.csparse parses lexemeized line
 	p.csparse = '|' break('|') . inlabel
 .	'|' break('|') . incode
 .	'|' break('|') . iarg1
@@ -235,10 +236,11 @@
 *  default the parameter string if none present
 *
         parms = (differ(host(0)) host(0), "v37:linux:compress")
-        output = ident(parms) "filename (.tok) required" :s(end)
+	output = "DS parms:" parms ":"
+        output = ident(parms) "filename (.lex) required" :s(end)
 
 *
-* get machine definition file name following token file name, and flags.
+* get machine definition file name following lexeme file name, and flags.
 *
 	parms ? break(';:') . parms len(1) (break(';:') | rem) . machine
 +		((len(1) rem . flags) | '')
@@ -256,7 +258,7 @@ flgs	flags ? ((len(1) break(';:')) . flag len(1)) |
 *
 *  open machine definition file
 *
-flgs2	filenamd = machine '.def'
+flgs2	filenamd = machine '/' machine '.def'
 	input(.deffile,1,filenamd)			:s(defok)
         output = "cannot open machine definition file: " filenamd :(end)
 *
@@ -408,10 +410,10 @@ compdone defs =
 *
 	strip_comment = (differ(comments) 'n', 'y')
 
-	filenami = parms '.tok'
-        input(.infile,1,filenami)                     :s(inputok)
-        output = 'cannot open token file: ' filenami  :(end)
-inputok output = 'input token file: ' filenami
+	filenami = parms '.lex'
+        input(.infile,1,filenami)                     :s(inpulex)
+        output = 'cannot open lexeme file: ' filenami  :(end)
+inpulex output = 'input lexeme file: ' filenami
 *
 *
 *
@@ -419,15 +421,17 @@ inputok output = 'input token file: ' filenami
 *  will subsequently be rewound and reread for jump optimization.
 *
 	filenamo = parms '.tmp'
-        output(.outfile,2,filenamo)                 :s(outputok)
+	output = 'temporary file ' filenamo
+        output(.outfile,2,filenamo)                 :s(outpulex)
         output = 'cannot open temp file: ' filenamo :(end)
-outputok
+outpulex
         output = 'output temp file: ' filenamo
 
 *
 * open file for compilation of minimal err and erb messages
 *
         output(.errfile,3, parms ".err")             :s(err_ok)
+	output = 'error file ' parms ".err"
         output = "cannot open error message file: " parms ".err" :(end)
 err_ok
 
@@ -441,10 +445,11 @@ err_ok
 	outfile = comment.delim ' minimal/x86 translator ' version
 +		  ' ' transdate ' for ' machine
 	noutlines = noutlines + 1
+	output = 'machine is ' machine
 
-	input(.hdrfile,4,machine '.hdr')	:f(nohdr)
+	input(.hdrfile,4,machine '/' machine '.hdr')	:f(nohdr)
 	havehdr = 1
-        output = 'input header file: ' machine '.hdr'
+        output = 'input header file:  machine ' machine '/' machine '.hdr'
 hdrcopy line = hdrfile				:f(hdrend)
 	ident(line,'end')			:s(nohdr)
 	outfile = line
@@ -486,7 +491,7 @@ opnext	thisline = readline()
 *  here if bad opcode
 ds01	error('bad op-code')			:(dsout)
 
-*  generate tokens.
+*  generate lexemes.
 *
 ds.typerr
 	error('operand type zero')		:(dsout)
@@ -1629,7 +1634,8 @@ opdone.6 astmts.n = bstmts.n = cstmts.n =	:(return)
 flush_end
 
 g.end
-	&dump = 0
+* DS END 
+	&dump = 1
 	ident(havehdr)				:s(g.end.2)
 *  here to copy remaining part from hdr file
 g.end.1	line = hdrfile				:f(g.end.2)
@@ -1650,6 +1656,9 @@ g.end.2
         output = 'cannot reopen temp file: ' filenamo :(end)
 
 g.end.3 filenamo = parms ".s"
+	output = 'filenamo ' filenamo
+	output = "g.end.3 " filenamo
+	output = "outfile name<" filenamo '[-m10 -n0]' '>'
         output(.outfile,2,filenamo '[-m10 -n0]')            :s(g.end.4)
         output = 'cannot open assembly file: ' filenamo :(end)
 g.end.4 output = 'output assembly file: ' filenamo

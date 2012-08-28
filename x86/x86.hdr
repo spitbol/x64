@@ -4,8 +4,8 @@
 
 	segment		.text
 
-        %include        "hdrcode.inc"
-        %include        "hdrdata.inc"
+        %include        "x86/hdrcode.inc"
+        %include        "x86/hdrdata.inc"
 
         extern         ldr_
         extern         str_

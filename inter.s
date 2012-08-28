@@ -121,7 +121,7 @@
         extern     valtab
 %endif
 
-        %include "extern-x86.inc"
+        %include "x86/extern-x86.inc"
 
 
 ; words saved during exit(-3)

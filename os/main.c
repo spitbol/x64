@@ -122,7 +122,7 @@ main (argc, argv)
 #if !EXECSAVE
       heapmove ();		/* move the heap up                                     */
       malloc_empty ();		/* mark the malloc region as empty      */
-#endif /* SUN4 | LINUX */
+#endif
       zysdc ();			/* Brag if necessary */
       restart ((char *) 0L, lowsp);	/* call restart to continue execution */
     }

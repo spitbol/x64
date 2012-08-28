@@ -33,8 +33,8 @@ endif
 
 # Tools for processing Minimal source file.
 LEX=	lex.spt
-TRANS=    $(TARGET).spt
-ERR=    err$(TARGET).spt
+TRANS=    $(TARGET)/$(TARGET).spt
+ERR=    $(TARGET)/err-$(TARGET).spt
 SPIT=   ./bootstrap/spitbol
 
 # Implicit rule for building objects from C files.
@@ -57,7 +57,7 @@ UHDRS=	$(OS)/systype.h $(OS)/extern32.h $(OS)/blocks32.h $(OS)/system.h
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	$(TARGET).cnd $(TARGET).def $(TARGET).hdr hdrdata.inc hdrcode.inc
+VHDRS=	$(TARGET)/$(TARGET).cnd $(TARGET)/$(TARGET).def $(TARGET)/$(TARGET).hdr $(TARGET)/hdrdata.inc $(TARGET)/hdrcode.inc
 
 # OS objects:
 SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
@@ -107,15 +107,15 @@ errors.o: errors.s
 spitbol.o: spitbol.s
 
 # SPITBOL Minimal source
-spitbol.s:	spitbol.tok $(VHDRS) $(TRANS) mintype.h
+spitbol.s:	spitbol.lex $(VHDRS) $(TRANS) mintype.h
 	  $(SPIT) -u "spitbol:$(TARGET):comments" $(TRANS)
 
-spitbol.tok: $(MINPATH)spitbol.min $(TARGET).cnd $(LEX)
+spitbol.lex: $(MINPATH)spitbol.min $(TARGET)/$(TARGET).cnd $(LEX)
 	 $(SPIT) -u "$(MINPATH)spitbol:$(TARGET):spitbol" $(LEX)
 
 spitbol.err: spitbol.s
 
-errors.s: $(TARGET).cnd $(ERR) spitbol.s
+errors.s: $(TARGET)/$(TARGET).cnd $(ERR) spitbol.s
 	   $(SPIT) -1=spitbol.err -2=errors.s $(ERR)
 
 inter.o: mintype.h os.inc
@@ -137,9 +137,9 @@ sysxi.o: $(OS)/save.h
 dlfcn.o: dlfcn.h
 
 boot:
-	cp -p bootstrap/spitbol.s bootstrap/spitbol.tok bootstrap/errors.s .
+	cp -p bootstrap/spitbol.s bootstrap/spitbol.lex bootstrap/errors.s .
 
 install:
 	sudo cp spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.lst *.map *.err spitbol.tok spitbol.tmp spitbol.s errors.s
+	rm -f $(OBJS) *.lst *.map *.err spitbol.lex spitbol.tmp spitbol.s errors.s

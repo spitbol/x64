@@ -1,4 +1,3 @@
-;--------------------------  extrn386.inc -------------------------------------
 ; equates of routines and data available to external function from spitbol-386
 
 nearptr equ       1
@@ -11,7 +10,6 @@ nearptr equ       1
 ;
 ; os/2 external functions are reached via near calls, and use near
 ; pointers to spitbol data.
-;------------------------------------------------------------------
 ;
 ; macro glossary:
 ; entry     entry name          define main procedure for this function.
@@ -124,7 +122,7 @@ nearptr equ       1
 
 ;.list
 
-        %include         "block-x86.inc"
+        %include         "x86/block-x86.inc"
 
 ;       (c) copyright 1990 - catspaw, incorporated
 ;
@@ -369,4 +367,3 @@ buflen equ      512
         call    [ebx+14*cbrptr]           ; real tangent           r = r_tan(r)
 %endmacro
 
-;-------------------------- end of extrn386.inc -----------------------------

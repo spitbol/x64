@@ -20,7 +20,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if LINUX
+#if UNIX
 #include <fcntl.h>
 #endif
 
