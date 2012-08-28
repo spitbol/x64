@@ -3,28 +3,29 @@
 ;
 ;   table to recover type word from type ordinal
 ;
-	%include	"systype.ah"
+	%include	"mintype.h"
 
 ;%macro  pubdef 3
 ;        global %1
 ;%1:	%2	%3
 ;%endmacro
         global  typet
+typet:
         dd      b_art   ; arblk type word - 0
         dd      b_cdc   ; cdblk type word - 1
         dd      b_exl   ; exblk type word - 2
-        dd b_icl   ; icblk type word - 3
+        dd 	b_icl   ; icblk type word - 3
         dd      b_nml   ; nmblk type word - 4
         dd      p_aba   ; p0blk type word - 5
         dd      p_alt   ; p1blk type word - 6
         dd      p_any   ; p2blk type word - 7
-        dd b_rcl   ; rcblk type word - 8
-        dd b_scl   ; scblk type word - 9
+        dd 	b_rcl   ; rcblk type word - 8
+        dd 	b_scl   ; scblk type word - 9
         dd      b_sel   ; seblk type word - 10
         dd      b_tbt   ; tbblk type word - 11
-        dd b_vct   ; vcblk type word - 12
-        dd b_xnt   ; xnblk type word - 13
-        dd b_xrt   ; xrblk type word - 14
+        dd 	b_vct   ; vcblk type word - 12
+        dd 	b_xnt   ; xnblk type word - 13
+        dd 	b_xrt   ; xrblk type word - 14
         dd      b_bct   ; bcblk type word - 15
         dd      b_pdt   ; pdblk type word - 16
         dd      b_trt   ; trblk type word - 17
@@ -33,7 +34,7 @@
         dd      b_cmt   ; cmblk type word - 20
         dd      b_ctt   ; ctblk type word - 21
         dd      b_dfc   ; dfblk type word - 22
-        dd b_efc   ; efblk type word - 23
+        dd 	b_efc   ; efblk type word - 23
         dd      b_evt   ; evblk type word - 24
         dd      b_ffc   ; ffblk type word - 25
         dd      b_kvt   ; kvblk type word - 26
@@ -107,9 +108,9 @@ valtab:
 	dd	stbas
 	dd	statb
 	dd	polct
-%if 	direct = 0
-	dd  typet
-%endif
+;%if 	direct = 0
+	dd  	typet
+;%endif
 	dd	lowspmin
 	dd	flprt
 	dd	flptr

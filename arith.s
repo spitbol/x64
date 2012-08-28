@@ -18,7 +18,7 @@
 
 %define globals 1
 
-        %include        "systype.ah"
+        %include        "mintype.h"
         %include        "os.inc"
 
 	segment		.data
@@ -118,7 +118,7 @@ setovr: mov     al,0x80         ; set overflow indicator
 ;       integer results returned in eax.
 ;       float results returned in st0 for intel.
 ;       see conditional switches fretst0 and
-;       freteax in systype.ah for each compiler.
+;       freteax in mintype.h for each compiler.
 ;
 ;       c function preserves ebp, ebx, esi, edi.
 ;

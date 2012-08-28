@@ -95,59 +95,12 @@ engts_callid  equ      13
 ;   the structure vords and the access macro is merely a device to
 ;   produce an enumeration similar to an enum structure to c.
 ;
-;;        struct   vords
+        struc   vords
 %endif
 	segment	.text
 %ifndef globals
-        extern  gbcnt
-        extern  headv
-        extern  mxlen
-        extern  stage
-        extern  timsx
-        extern  dnamb
-        extern  dnamp
-        extern  state
-        extern  b_efc
-        extern  b_icl
-        extern  b_scl
-        extern  b_vct
-        extern  b_xnt
-        extern  b_xrt
-        extern  stbas
-        extern  statb
-        extern  polct
-        extern  typet
-        extern  dffnc
-        extern  lowspmin
-        extern  flprt
-        extern  flptr
-        extern  gtcef
-        extern  hshtb
-        extern  pmhbs
-        extern  r_fcb
-        extern  c_aaa
-        extern  c_yyy
-        extern  g_aaa
-        extern  w_yyy
-        extern  s_aaa
-        extern  s_yyy
-        extern  r_cod
-        extern  kvstn
-        extern  kvdmp
-        extern  kvftr
-        extern  kvcom
-        extern  kvpfl
-        extern  cswfl
-        extern  stmcs
-        extern  stmct
-        extern  ticblk
-        extern  tscblk
-        extern  id1
-        extern  id2blk
-        extern  inpbuf
-        extern  ttybuf
-        extern  b_rcl
+	%include	"extern.h"
 %endif
-%if direct == 0
-        ends    vords
-%endif
+;%if direct == 0
+        endstruc
+;%endif

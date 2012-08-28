@@ -1,6 +1,7 @@
     global  b_scl
     global  arref
     global  cfunc
+    global  compsp
     global  dffnc
     global  dtype
     global  dumpr
@@ -44,6 +45,7 @@
     global  pbild
     global  pconc
     global  pcopy
+    global  ppoff
     global  prflr
     global  prflu
     global  prpar

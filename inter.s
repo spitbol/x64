@@ -19,7 +19,7 @@
 
 %define globals 1
 
-        %include        "systype.ah"
+        %include        "mintype.h"
         %include        "os.inc"
 
         segment .data
@@ -167,10 +167,13 @@ reg_size        db      r_size
 sav_block: times r_size dd 0    ; save minimal registers during push/pop reg
 ;
         align 4
+	global	ppoff
 ppoff:  dd      0               ; offset for ppm exits
+	global	compsp
 compsp: dd      0               ; compiler's stack pointer
 sav_compsp:
         dd      0               ; save compsp here
+	global	osisp
 osisp:  dd      0               ; osint's stack pointer
 
 

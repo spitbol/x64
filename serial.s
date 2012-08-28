@@ -20,7 +20,7 @@
 ; function will appear in this segment as well, placed here
 ; by the code in load.asm.
 ;
-        %include	"systype.ah"
+        %include	"mintype.h"
 
         segment		.data
         align         	4

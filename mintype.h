@@ -1,5 +1,5 @@
-%ifndef systype_included
-%define systype_included        1
+%ifndef mintype_included
+%define mintype_included        1
 ; 
 ; this file is part of macro spitbol.
 ; 
@@ -42,8 +42,7 @@ _masm_  equ     0
 ; the symbols public for direct access, zero to have access via
 ; a table of pointers and the minadr procedure.
 ;
-%define direct 0
-;direct equ 1  DS TODO 18 aug */
+direct equ 0
 
 ; define how floating point results are returned from a function
 ; (either in st(0) or in edx:eax.
