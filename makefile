@@ -73,7 +73,7 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 	trypath.o wrtaout.o
 
 # Assembly langauge objects common to all versions:
-CAOBJS = errors.o serial.o inter.o arith.o
+CAOBJS = errors.o serial.o inter.o arith.o mtoc.o
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
@@ -119,6 +119,8 @@ errors.s: $(VERS).cnd $(ERR) spitbol.s
 inter.o: systype.ah os.inc
 
 arith.o: systype.ah os.inc
+
+mtoc.o: systype.ah os.inc
 
 # make os objects
 cobjs:	$(COBJS)

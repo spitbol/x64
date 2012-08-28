@@ -147,241 +147,79 @@ erexit: shr     eax,1           ; divide by 2
         xor     eax,eax         ; in case branch to error cascade
         ret                     ;   take procedure exit via ppm dd
 
+	%macro	mtoc.1	2
+	global	%1
+	extern	%2
+%1:
+	%endmacro
 
-	global	sysax
-	extern	zysax
-sysax:	call	ccaller
-        dd   zysax
-        db      0
-;
-	global	sysbs
-	extern	zysbs
-sysbs:	call	ccaller
-        dd   zysbs
-        db      3*2
-;
-        global	 sysbx
-	extern	zysbx
-sysbx:	mov	[reg_xs],esp
-	call	ccaller
-        dd zysbx
-        db      0
-;
-%ifdef setreal
-        global syscr
-	extern	zyscr
-syscr:  call    ccaller
-        dd zyscr
-        db      0
-;
-%endif
-        global sysdc
-	extern	zysdc
-sysdc:	call	ccaller
-        dd zysdc
-        db      0
-;
-        global sysdm
-	extern	zysdm
-sysdm:	call	ccaller
-        dd zysdm
-        db      0
-;
-        global sysdt
-	extern	zysdt
-sysdt:	call	ccaller
-        dd zysdt
-        db      0
-;
-        global sysea
-	extern	zysea
-sysea:	call	ccaller
-        dd zysea
-        db      1*2
-;
-        global sysef
-	extern	zysef
-sysef:	call	ccaller
-        dd zysef
-        db      3*2
-;
-        global sysej
-	extern	zysej
-sysej:	call	ccaller
-        dd zysej
-        db      0
-;
-        global sysem
-	extern	zysem
-sysem:	call	ccaller
-        dd zysem
-        db      0
-;
-        global sysen
-	extern	zysen
-sysen:	call	ccaller
-        dd zysen
-        db      3*2
-;
-        global sysep
-	extern	zysep
-sysep:	call	ccaller
-        dd zysep
-        db      0
-;
-        global sysex
-	extern	zysex
-sysex:	mov	[reg_xs],esp
-	call	ccaller
-        dd zysex
-        db      3*2
-;
-        global sysfc
-	extern	zysfc
-sysfc:  pop     eax             ; <<<<remove stacked scblk>>>>
+	%macro	mtoc.2  2
+	call	cccaller
+	dd	%1
+	db	%2 * 2
+	%endmacro
+
+	%macro	mtoc	3
+	mtoc.1	%1,%2
+	mtoc.2	%2,%3
+	%endmacro
+
+	mtoc	sysax,zysax,0
+	mtoc	sysbs,zysbs,3
+
+	mtoc.1	sysbx,zysbx
+	mov	[reg_xs],esp
+	mtoc.2	zysbx,0
+
+	mtoc	syscr,zyscr,0
+	mtoc	sysdc,zysdc,0
+	mtoc	sysdm,zysdm,0
+	mtoc	sysdt,zysdt,0
+	mtoc	sysea,zysea,1
+	mtoc	sysef,zysef,3
+	mtoc	sysej,zysej,0
+	mtoc	sysem,zysem,0
+	mtoc	sysen,zysen,3
+;	mtoc	sysep,zysep,0
+
+	mtoc.1	sysex,zysex
+	mov	[reg_xs],esp
+	mtoc.2	zysex,3
+ 
+	mtoc.1	sysfc,zysfc
+	pop     eax             ; <<<<remove stacked scblk>>>>
 	lea	esp,[esp+edx*4]
 	push	eax
-	call	ccaller
-        dd zysfc
-        db      2*2
-;
-        global sysgc
-	extern	zysgc
-sysgc:	call	ccaller
-        dd zysgc
-        db      0
-;
-        global syshs
-	extern	zyshs
-syshs:	mov	[reg_xs],esp
-	call	ccaller
-        dd zyshs
-        db      8*2
-;
-        global sysid
-	extern	zysid
-sysid:	call	ccaller
-        dd zysid
-        db      0
-;
-        global sysif
-	extern	zysif
-sysif:	call	ccaller
-        dd zysif
-        db      1*2
-;
-        global sysil
-	extern	zysil
-sysil:  call    ccaller
-        dd zysil
-        db      0
-;
-        global sysin
-	extern	zysin
-sysin:	call	ccaller
-        dd zysin
-        db      3*2
-;
-        global sysio
-	extern	zysio
-sysio:	call	ccaller
-        dd zysio
-        db      2*2
-;
-        global sysld
-	extern	zysld
-sysld:  call    ccaller
-        dd zysld
-        db      3*2
-;
-        global sysmm
-	extern	zysmm
-sysmm:	call	ccaller
-        dd zysmm
-        db      0
-;
-        global sysmx
-	extern	zysmx
-sysmx:	call	ccaller
-        dd zysmx
-        db      0
-;
-        global sysou
-	extern	zysou
-sysou:	call	ccaller
-        dd zysou
-        db      2*2
-;
-        global syspi
-	extern	zyspi
-syspi:	call	ccaller
-        dd zyspi
-        db      1*2
-;
-        global syspl
-	extern	zyspl
-syspl:	call	ccaller
-        dd zyspl
-        db      3*2
-;
-        global syspp
-	extern	zyspp
-syspp:	call	ccaller
-        dd zyspp
-        db      0
-;
-        global syspr
-	extern	zyspr
-syspr:	call	ccaller
-        dd zyspr
-        db      1*2
-;
-        global sysrd
-	extern	zysrd
-sysrd:	call	ccaller
-        dd zysrd
-        db      1*2
-;
-        global sysri
-	extern	zysri
-sysri:	call	ccaller
-        dd zysri
-        db      1*2
-;
-        global sysrw
-	extern	zysrw
-sysrw:	call	ccaller
-        dd zysrw
-        db      3*2
-;
-        global sysst
-	extern	zysst
-sysst:	call	ccaller
-        dd zysst
-        db      5*2
-;
-        global systm
-	extern	zystm
-systm:	call	ccaller
-systm_p: dd zystm
-        db      0
-;
-        global systt
-	extern	zystt
-systt:	call	ccaller
-        dd zystt
-        db      0
-;
-        global sysul
-	extern	zysul
-sysul:	call	ccaller
-        dd zysul
-        db      0
-;
-        global sysxi
-	extern	zysxi
-sysxi:	mov	[reg_xs],esp
-	call	ccaller
-sysxi_p: dd zysxi
-        db      2*2
+	mtoc.2	zysfc,2
+
+	mtoc	sysgc,zysgc,0
+
+	mtoc.1	syshs,zyshs
+	mov	[reg_xs],esp
+	mtoc.2	zyshs,8
+
+	mtoc	sysid,zysid,0
+	mtoc	sysif,zysif,1
+	mtoc	sysil,zysil,0
+	mtoc	sysin,zysin,3
+	mtoc	sysio,zysio,2
+	mtoc	sysld,zysld,3
+	mtoc	sysmm,zysmm,0
+	mtoc	sysmx,zysmx,0
+	mtoc	sysou,zysou,2
+	mtoc	syspi,zyspi,1
+	mtoc	syspl,zyspl,3
+	mtoc	syspp,zyspp,0
+	mtoc	syspr,zyspr,1
+	mtoc	sysrd,zysrd,1
+	mtoc	sysri,zysri,1
+	mtoc	sysrw,zysrw,3
+	mtoc	sysst,zysst,5
+	mtoc	systm,zystm,0
+	mtoc	systt,zystt,0
+	mtoc	sysul,zysul,0
+        
+	mtoc.1	sysxi,zysxi
+	mov	[reg_xs],esp
+	mtoc.2  zysci,2
 
