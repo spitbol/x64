@@ -3,7 +3,7 @@
 
 
 # SPITBOL Version:
-VERS=   linux
+VERS=   x86
 DEBUG=	1
 
 # Minimal source directory.
@@ -105,7 +105,7 @@ errors.o: errors.s
 spitbol.o: spitbol.s
 
 # SPITBOL Minimal source
-spitbol.s:	spitbol.tok $(VHDRS) $(COD) systype.ah
+spitbol.s:	spitbol.tok $(VHDRS) $(COD) mintype.h
 	  $(SPIT) -u "spitbol:$(VERS):comments" $(COD)
 
 spitbol.tok: $(MINPATH)spitbol.min $(VERS).cnd $(TOK)
@@ -116,11 +116,11 @@ spitbol.err: spitbol.s
 errors.s: $(VERS).cnd $(ERR) spitbol.s
 	   $(SPIT) -1=spitbol.err -2=errors.s $(ERR)
 
-inter.o: systype.ah os.inc
+inter.o: mintype.h os.inc
 
-arith.o: systype.ah os.inc
+arith.o: mintype.h os.inc
 
-mtoc.o: systype.ah os.inc
+mtoc.o: mintype.h os.inc
 
 # make os objects
 cobjs:	$(COBJS)

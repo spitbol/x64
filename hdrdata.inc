@@ -3,7 +3,7 @@
 ;
 ;   table to recover type word from type ordinal
 ;
-;	%include	"systype.ah"
+	%include	"systype.ah"
 
 ;%macro  pubdef 3
 ;        global %1

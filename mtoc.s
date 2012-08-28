@@ -17,17 +17,36 @@
 ;     you should have received a copy of the gnu general public license
 ;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 
-%define globals 1
+%define globals 0
 
         %include        "systype.ah"
         %include        "os.inc"
 
-        segment .data
+	segment	.text
+
+        align 4
+
+        extern  reg_cp
+        extern  reg_ia
+        extern  reg_pc
+        extern  reg_pp
+        extern  reg_ra
+        extern  reg_xl
+        extern  reg_xr
+        extern  reg_xs
+        extern  reg_wa
+        extern  reg_wb
+        extern  reg_wc
+
+        extern  reg_block
+        extern  reg_size
+	extern	compsp
+	extern	osisp
+	extern	ppoff
 
 ; this file defines interface routines for calling procedures written in c from
 ; within the minimal code.
 ;
-	segment	.text
 
 ;-----------
 ;
@@ -80,6 +99,7 @@
 ;                     8         take procedure exit 3
 ;                    ...        ...
 ;
+	global	ccaller
 ccaller:
 
 ;       (1) save registers in global variables
@@ -93,15 +113,14 @@ ccaller:
 
 ;       (2) get pointer to arg list
 ;
-        pop     esi                     ; point to arg list
+        pop     esi                     	; point to arg list
 ;
 ;       (3) fetch dd of c function, fetch offset to  instruction
 ;           past last procedure exit, and call c function.
 ;
-        cs                              ; cs segment override
-        lodsd                           ; point to c function entry point
-;       lodsd   cs:ccaller              ; point to c function entry point
-        movzx   ebx,byte [esi]   ; save normal exit adjustment
+        cs                              	; cs segment override
+        lodsd                           	; point to c function entry point
+        movzx   ebx,byte [esi]   		; save normal exit adjustment
 ;
         mov     dword [reg_pp],ebx              ; in memory
         pop     dword [reg_pc]                  ; save return pc past "call sysxx"
@@ -109,18 +128,18 @@ ccaller:
 ;       (3a) save compiler stack and switch to osint stack
 ;
         mov     dword [compsp],esp              ; save compiler's stack pointer
-        mov     esp,[osisp]               ; load osint's stack pointer
+        mov     esp,[osisp]               	; load osint's stack pointer
 ;
 ;       (3b) make call to osint
 ;
-        call    eax                     ; call c interface function
+        call    eax                     	; call c interface function
 ;
 ;       (4) restore registers after c function returns.
 ;
 	global	cc1
-cc1:    mov     dword [osisp], esp               ; save OSINT's stack pointer
-        mov     esp, dword [compsp]              ; restore compiler's stack pointer
-        mov     ecx, dword [reg_wa]              ; restore registers
+cc1:    mov     dword [osisp], esp              ; save OSINT's stack pointer
+        mov     esp, dword [compsp]             ; restore compiler's stack pointer
+        mov     ecx, dword [reg_wa]             ; restore registers
         mov     ebx, dword [reg_wb]
         mov     edx, dword [reg_wc]             ; (also reg_ia)
         mov     edi, dword [reg_xr]
@@ -180,7 +199,7 @@ erexit: shr     eax,1           ; divide by 2
 	mtoc	sysej,zysej,0
 	mtoc	sysem,zysem,0
 	mtoc	sysen,zysen,3
-;	mtoc	sysep,zysep,0
+	mtoc	sysep,zysep,0
 
 	mtoc.1	sysex,zysex
 	mov	[reg_xs],esp
@@ -221,5 +240,5 @@ erexit: shr     eax,1           ; divide by 2
         
 	mtoc.1	sysxi,zysxi
 	mov	[reg_xs],esp
-	mtoc.2  zysci,2
+	mtoc.2  zysxi,2
 
