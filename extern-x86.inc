@@ -124,7 +124,7 @@ nearptr equ       1
 
 ;.list
 
-        %include         "block386.inc"
+        %include         "block-x86.inc"
 
 ;       (c) copyright 1990 - catspaw, incorporated
 ;

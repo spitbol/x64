@@ -22,7 +22,7 @@ Changes include
 
 3.8.3	July 25, 2012
 This is the last version of "classic" SPITBOL dating back to the 1980's.
-The only recent changes relate to the Linux port.
+The only recent changes relate to the Unix port.
 
 3.8.1	June 2012
-This version completed the Linux port started by Mark Emmer in 2009.
+This version completed the Unix port started by Mark Emmer in 2009.

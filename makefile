@@ -1,4 +1,4 @@
-# Linux/386 SPITBOL
+# Unix/x86 SPITBOL
 #
 
 
