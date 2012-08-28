@@ -46,7 +46,7 @@ doset (ioptr, offset, whence)
      int whence;
 
 {
-  register struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
+  REGISTER struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
   FILEPOS target, newoffset;
 
   if (ioptr->flg2 & IO_PIP)
@@ -138,7 +138,7 @@ FILEPOS
 geteof (ioptr)
      struct ioblk *ioptr;
 {
-  register struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
+  REGISTER struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
   FILEPOS eofpos, curpos;
 
   if (!bfptr)			/* if unbuffered file */

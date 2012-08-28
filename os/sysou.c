@@ -36,8 +36,8 @@ This file is part of Macro SPITBOL.
 
 zysou ()
 {
-  register struct fcblk *fcb = WA (struct fcblk *);
-  register union block *blk = XR (union block *);
+  REGISTER struct fcblk *fcb = WA (struct fcblk *);
+  REGISTER union block *blk = XR (union block *);
   int result;
 
   if (blk->scb.typ == type_scl)

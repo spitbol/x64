@@ -44,10 +44,10 @@ wabs (x)
 
 zysin ()
 {
-  register word reclen;
-  register struct fcblk *fcb = WA (struct fcblk *);
-  register struct scblk *scb = XR (struct scblk *);
-  register struct ioblk *ioptr = MK_MP (fcb->iob, struct ioblk *);
+  REGISTER word reclen;
+  REGISTER struct fcblk *fcb = WA (struct fcblk *);
+  REGISTER struct scblk *scb = XR (struct scblk *);
+  REGISTER struct ioblk *ioptr = MK_MP (fcb->iob, struct ioblk *);
 
   /* ensure iob is open, fail if unsuccessful */
   if (!(ioptr->flg1 & IO_OPN))

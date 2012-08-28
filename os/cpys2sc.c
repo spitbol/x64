@@ -46,8 +46,8 @@ cpys2sc (cp, scptr, maxlen)
      word maxlen;
 
 {
-  register word i;
-  register char *scbcp;
+  REGISTER  word i;
+  REGISTER  char *scbcp;
 
   scptr->typ = type_scl;
   scbcp = scptr->str;

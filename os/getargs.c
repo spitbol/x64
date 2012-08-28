@@ -61,7 +61,7 @@ getargs (argc, argv)
      int argc;
      char *argv[];
 {
-  register char **result;
+  REGISTER  char **result;
 
   /*
      Process all command line options.

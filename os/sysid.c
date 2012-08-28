@@ -41,7 +41,7 @@ This file is part of Macro SPITBOL.
 
 zysid ()
 {
-  register char *cp;
+  REGISTER char *cp;
 
   SET_XR (pid1);
   gettype (pid2blk, ID2BLK_LENGTH);

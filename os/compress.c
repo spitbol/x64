@@ -199,7 +199,7 @@ decode_string (buffer, code)
      unsigned char *buffer;
      unsigned int code;
 {
-  register int i;
+  REGISTER int i;
 
   i = 0;
   while (code > 255)

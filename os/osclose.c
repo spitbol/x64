@@ -33,7 +33,7 @@ This file is part of Macro SPITBOL.
 osclose (ioptr)
      struct ioblk *ioptr;
 {
-  register int errcnt = 0;
+  REGISTER  int errcnt = 0;
 
   /*
      If not open, nothing to do.

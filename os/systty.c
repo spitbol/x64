@@ -87,9 +87,9 @@ zyspi ()
 
 zysri ()
 {
-  register word length;
-  register struct scblk *scb = XR (struct scblk *);
-  register char *saveptr, savechr;
+  REGISTER word length;
+  REGISTER struct scblk *scb = XR (struct scblk *);
+  REGISTER char *saveptr, savechr;
 
   /*
      /   Read a line specified by length of scblk.  If EOF take exit 1.

@@ -47,7 +47,7 @@ optfile (varname, result)
 
 {
   word i, j, n;
-  register char *p, *q;
+  REGISTER  char *p, *q;
 
   /* try to convert alias to an integer */
   i = 0;

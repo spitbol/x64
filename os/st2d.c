@@ -25,14 +25,14 @@ static int stc_d (char *out, unsigned int in, int outlen, int signflag);
 
 static int
 stc_d (out, in, outlen, signflag)
-     register char *out;
-     register unsigned int in;
-     register int outlen;
+     REGISTER char *out;
+     REGISTER unsigned int in;
+     REGISTER int outlen;
      int signflag;
 {
   char revnum[20];
-  register int i = 0;
-  register char *out0 = out;
+  REGISTER int i = 0;
+  REGISTER char *out0 = out;
 
   if (outlen <= 0)
     return (0);

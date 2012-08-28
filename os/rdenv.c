@@ -55,9 +55,9 @@ findenv (vq, vn)
 }
 
 rdenv (varname, result)
-     register struct scblk *varname, *result;
+     REGISTER struct scblk *varname, *result;
 {
-  register char *p;
+  REGISTER char *p;
 
 
   if ((p = findenv (varname->str, varname->len)) == 0)

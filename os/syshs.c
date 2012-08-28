@@ -167,7 +167,7 @@ getint (icp, pword)
      struct icblk *icp;
      IATYPE *pword;
 {
-  register char *p, c;
+  REGISTER char *p, c;
   struct scblk *scp;
   word i;
   IATYPE result;
@@ -230,8 +230,8 @@ zyshs ()
 {
   word retval;
   IATYPE val;
-  register struct icblk *icp = WA (struct icblk *);
-  register struct scblk *scp;
+  REGISTER struct icblk *icp = WA (struct icblk *);
+  REGISTER struct scblk *scp;
 
   /*
      /   if argument one is null...

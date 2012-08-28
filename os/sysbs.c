@@ -41,9 +41,9 @@ static int back (struct ioblk * iob);
 
 zysbs ()
 {
-  register int c;
-  register struct fcblk *fcb = WA (struct fcblk *);
-  register struct ioblk *iob = MK_MP (fcb->iob, struct ioblk *);
+  REGISTER int c;
+  REGISTER struct fcblk *fcb = WA (struct fcblk *);
+  REGISTER struct ioblk *iob = MK_MP (fcb->iob, struct ioblk *);
 
   /* ensure the file is open */
   if (!(iob->flg1 & IO_OPN))
@@ -117,7 +117,7 @@ static int
 back (ioptr)
      struct ioblk *ioptr;
 {
-  register struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
+  REGISTER struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
   unsigned char c;
 
   while (bfptr)

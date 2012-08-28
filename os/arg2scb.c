@@ -46,8 +46,8 @@ int arg2scb (req, argc, argv, scptr, maxs)
      int maxs;
 
 {
-  register word i;
-  register char *argcp, *scbcp;
+  REGISTER  word i;
+  REGISTER  char *argcp, *scbcp;
 
   if (req < 0 || req >= argc)
     return -1;

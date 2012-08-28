@@ -349,9 +349,9 @@ scnint (str, len, intptr)
      word *intptr;
 
 {
-  register word i = 0;
-  register word n = 0;
-  register char ch;
+  REGISTER word i = 0;
+  REGISTER word n = 0;
+  REGISTER char ch;
 
   while (i < len)
     {

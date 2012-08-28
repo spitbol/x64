@@ -61,9 +61,9 @@ openprev ()
 
 zysif ()
 {
-  register struct scblk *fnscb = XL (struct scblk *);
-  register struct scblk *pnscb = XR (struct scblk *);
-  register char *savecp;
+  REGISTER struct scblk *fnscb = XL (struct scblk *);
+  REGISTER struct scblk *pnscb = XR (struct scblk *);
+  REGISTER char *savecp;
   char savechar, filebuf[256];
   char *file;
 

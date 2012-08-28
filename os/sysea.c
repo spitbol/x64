@@ -69,8 +69,8 @@ enum stage
 
 zysea ()
 {
-  register struct scblk *fnscblk = XL (struct scblk *);
-  register char *p;
+  REGISTER struct scblk *fnscblk = XL (struct scblk *);
+  REGISTER char *p;
 
 
   /* Display file name if present */

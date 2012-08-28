@@ -89,7 +89,7 @@ extern FILEPOS LSEEK (int F, FILEPOS Loc, int Method);
 zysxi ()
 {
 #if EXECFILE & !EXECSAVE
-  register word *srcptr, *dstptr;
+  REGISTER word *srcptr, *dstptr;
   char *endofmem;
   char *starttext;
   char *startdata;
@@ -372,7 +372,7 @@ heapmove ()
 void
 unreloc ()
 {
-  register char *stbas;
+  REGISTER char *stbas;
 
   stbas = get_min_value (stbas, char *);
   set_min_value (flptr, get_min_value (flptr, char *) - stbas, word);
@@ -391,7 +391,7 @@ unreloc ()
 void
 rereloc ()
 {
-  register char *stbas;
+  REGISTER char *stbas;
 
   stbas = get_min_value (stbas, char *);
   set_min_value (flptr, get_min_value (flptr, word) + stbas, word);
@@ -523,7 +523,7 @@ putsave (stkbase, stklen)
 		      get_min_value (dnamp, uword) - get_min_value (dnamb,
 								    uword));
 
-  /* write out minimal register block */
+  /* write out minimal REGISTER block */
   result |= compress ((unsigned char *) &reg_block, reg_size);
 #if EXTFUN
   scanef ();			/* prepare to scan for external functions */

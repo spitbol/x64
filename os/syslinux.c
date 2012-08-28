@@ -118,7 +118,7 @@ callef (efb, sp, nargs)
      union block **sp;
      mword nargs;
 {
-  register pXFNode pnode;
+  REGISTER pXFNode pnode;
   union block *result;
   static initsels = 0;
   static mword (*pTYPET)[];
@@ -347,7 +347,7 @@ loadef (fd, filename)
 {
   void *handle = (void *) fd;
   PFN pfn = *(PFN *) filename;
-  register pXFNode pnode;
+  REGISTER pXFNode pnode;
 
   if (xnfree)
     {				/* Are these any free nodes to use? */

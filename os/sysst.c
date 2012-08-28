@@ -64,9 +64,9 @@ zysst ()
 {
   IATYPE whence, temp;
   FILEPOS offset;
-  register struct fcblk *fcb = WA (struct fcblk *);
-  register struct ioblk *iob = MK_MP (fcb->iob, struct ioblk *);
-  register struct icblk *icp;
+  REGISTER struct fcblk *fcb = WA (struct fcblk *);
+  REGISTER struct ioblk *iob = MK_MP (fcb->iob, struct ioblk *);
+  REGISTER struct icblk *icp;
 
   /* ensure iob is open, fail if unsuccessful */
   if (!(iob->flg1 & IO_OPN))

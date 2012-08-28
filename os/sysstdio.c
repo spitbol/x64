@@ -204,7 +204,7 @@ getrdiob ()
 void
 clrbuf ()
 {
-  register struct bfblk *bfptr;
+  REGISTER struct bfblk *bfptr;
 
   bfptr = MK_MP (inpiob.bfb, struct bfblk *);
   bfptr->next = bfptr->fill = 0;

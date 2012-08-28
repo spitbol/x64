@@ -64,10 +64,10 @@ lenfnm (scptr)
      struct scblk *scptr;
 
 {
-  register word cnt, len, len2;
-  register char *cp;
+  REGISTER  word cnt, len, len2;
+  REGISTER  char *cp;
 #if PIPES
-  register char delim;
+  REGISTER  char delim;
 #endif /* PIPES */
 
   /*

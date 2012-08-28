@@ -52,12 +52,12 @@ osread (mode, recsiz, ioptr, scptr)
      struct scblk *scptr;
 
 {
-  register struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
-  register char *cp = scptr->str;
-  register char *bp;
-  register word cnt = 0;
-  register word fdn = ioptr->fdn;
-  register word n;
+  REGISTER struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
+  REGISTER char *cp = scptr->str;
+  REGISTER char *bp;
+  REGISTER word cnt = 0;
+  REGISTER word fdn = ioptr->fdn;
+  REGISTER word n;
 
 #if HOST386
   if (ioptr->flg1 & IO_CIN)	/* End any special screen modes */
@@ -82,11 +82,11 @@ osread (mode, recsiz, ioptr, scptr)
 	  /*
 	   * Unbuffered Line Mode
 	   */
-	  register char eol1 = ioptr->eol1;
-	  register char eol2 = ioptr->eol2;
+	  REGISTER char eol1 = ioptr->eol1;
+	  REGISTER char eol2 = ioptr->eol2;
 #ifdef EOT
 	  /* Ignore eot char if IO_EOT bit set */
-	  register char eot = (ioptr->flg1 & IO_EOT) ? eol1 : EOT;
+	  REGISTER char eot = (ioptr->flg1 & IO_EOT) ? eol1 : EOT;
 #endif
 	  word i;
 	  char c;
@@ -250,11 +250,11 @@ osread (mode, recsiz, ioptr, scptr)
 	  /*
 	   * Buffered Line Mode
 	   */
-	  register char eol1 = ioptr->eol1;
-	  register char eol2 = ioptr->eol2;
+	  REGISTER char eol1 = ioptr->eol1;
+	  REGISTER char eol2 = ioptr->eol2;
 #ifdef EOT
 	  /* Ignore eot char if IO_EOT bit set */
-	  register char eot = (ioptr->flg1 & IO_EOT) ? eol1 : EOT;
+	  REGISTER char eot = (ioptr->flg1 & IO_EOT) ? eol1 : EOT;
 #endif
 	  char *savecp;
 	  char savechar;
@@ -268,7 +268,7 @@ osread (mode, recsiz, ioptr, scptr)
 	   */
 	  do
 	    {
-	      register char *oldbp;
+	      REGISTER char *oldbp;
 
 	      /* if the buffer is exhausted, try to fill it */
 	      if (bfptr->next >= bfptr->fill)
@@ -446,7 +446,7 @@ word
 fillbuf (ioptr)
      struct ioblk *ioptr;
 {
-  register struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
+  REGISTER struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
   word n;
 
   fsyncio (ioptr);		/* synchronize file and buffer */

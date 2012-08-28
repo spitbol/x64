@@ -52,8 +52,8 @@ swcinp (filecnt, fileptr)
      char **fileptr;
 
 {
-  register char *cp;
-  register int i;
+  REGISTER char *cp;
+  REGISTER int i;
 
   static int lastfd = 0;
 
@@ -300,7 +300,7 @@ appendext (path, ext, result, force)
      char *path, *ext, *result;
      int force;
 {
-  register char *p, *q, *r;
+  REGISTER char *p, *q, *r;
 
   p = result;
   q = pathlast (path);
@@ -333,7 +333,7 @@ appendext (path, ext, result, force)
  */
 char *
 mystrcpy (p, q)
-     register char *p, *q;
+     REGISTER char *p, *q;
 {
   while ((*p++ = *q++) != 0)
     ;
@@ -349,7 +349,7 @@ int
 length (cp)
      char *cp;
 {
-  register char *p = cp;
+  REGISTER char *p = cp;
   while (*p++)
     ;
   return p - cp - 1;
@@ -358,10 +358,10 @@ length (cp)
 
 int
 mystrncpy (p, q, i)
-     register char *p, *q;
+     REGISTER char *p, *q;
      int i;
 {
-  register int j = i;
+  REGISTER int j = i;
   while (j--)
     *p++ = *q++;
   return i;

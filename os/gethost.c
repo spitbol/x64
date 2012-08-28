@@ -71,7 +71,7 @@ gethost (scptr, maxlen)
   if (cnt == 0)
     {
       /* Could not read spithost file.  Construct string instead */
-      register char *scp;
+      REGISTER  char *scp;
 
       gettype (scptr, maxlen);
       scp = scptr->str + scptr->len;

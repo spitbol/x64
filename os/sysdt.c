@@ -40,11 +40,11 @@ static int timeconv (char *tp, struct tm * tm);
 /* conv() rewritten to avoid dependence on library remainder routine */
 void
 conv (dest, value)
-     register char *dest;
-     register int value;
+     REGISTER char *dest;
+     REGISTER int value;
 
 {
-  register short int i;
+  REGISTER short int i;
   i = value / 10;
   dest[0] = i + '0';
   dest[1] = value - i * 10 + '0';
@@ -84,7 +84,7 @@ datecvt (cp, type)
 
   time_t tod;
 
-  register struct tm *tm;
+  REGISTER struct tm *tm;
   time (&tod);
 
   tm = localtime (&tod);

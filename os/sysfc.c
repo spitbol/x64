@@ -72,9 +72,9 @@ zysfc ()
 {
   int fd_spec, i;
   word allocsize, length_fname;
-  register struct scblk *scb1 = XL (struct scblk *);
-  register struct scblk *scb2 = XR (struct scblk *);
-  register struct fcblk *fcb = WA (struct fcblk *);
+  REGISTER struct scblk *scb1 = XL (struct scblk *);
+  REGISTER struct scblk *scb2 = XR (struct scblk *);
+  REGISTER struct fcblk *fcb = WA (struct fcblk *);
   word use_env = 0;		/* Initially, flag that not using environment block */
 
   /*

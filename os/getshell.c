@@ -33,7 +33,7 @@ This file is part of Macro SPITBOL.
 char *
 getshell ()
 {
-  register char *p;
+  REGISTER char *p;
 
   if ((p = findenv (SHELL_ENV_NAME, sizeof (SHELL_ENV_NAME))) == (char *) 0)
     p = SHELL_PATH;		/* failure -- use default */

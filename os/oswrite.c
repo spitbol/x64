@@ -46,7 +46,7 @@ word
 oswrite (mode, linesiz, recsiz, ioptr, scptr)
      word mode;
      word linesiz;
-     register word recsiz;
+     REGISTER word recsiz;
      struct ioblk *ioptr;
      struct scblk *scptr;
 
@@ -54,9 +54,9 @@ oswrite (mode, linesiz, recsiz, ioptr, scptr)
   char *saveloc, savech;
   char savech2;
 
-  register char *cp = scptr->str;
-  register struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
-  register word fdn = ioptr->fdn;
+  REGISTER char *cp = scptr->str;
+  REGISTER struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
+  REGISTER word fdn = ioptr->fdn;
   word linelen;
   int ioerrcnt = 0;
 
@@ -145,8 +145,8 @@ oswrite (mode, linesiz, recsiz, ioptr, scptr)
 	       */
 	      else if (bfptr->next || linelen < bfptr->size)
 		{
-		  register char *r;
-		  register word n;
+		  REGISTER char *r;
+		  REGISTER word n;
 
 		  /*
 		     If the buffer is truly empty, and the file is opened
@@ -201,7 +201,7 @@ oswrite (mode, linesiz, recsiz, ioptr, scptr)
 	       */
 	      else
 		{		/* n==bfptr->size means ignore buffer contents */
-		  register word n, m;
+		  REGISTER word n, m;
 
 		  fsyncio (ioptr);	/* synchronize file and buffer */
 		  bfptr->fill = 0;	/* discard contents */

@@ -52,7 +52,7 @@ unsigned char *bufp;
 
 void
 close_all (chb)
-     register struct chfcb *chb;
+     REGISTER struct chfcb *chb;
 
 {
   while (chb != 0)

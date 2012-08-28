@@ -57,10 +57,10 @@ extern struct ioblk tioblk;
 
 zysio ()
 {
-  register char *charptr = WA (char *);
-  register struct fcblk *fcb;
-  register struct ioblk *iob;
-  register struct bfblk *bfb;
+  REGISTER char *charptr = WA (char *);
+  REGISTER struct fcblk *fcb;
+  REGISTER struct ioblk *iob;
+  REGISTER struct bfblk *bfb;
 
   /*
      /   If zysfc() marked this I/O association as illegal, return an error

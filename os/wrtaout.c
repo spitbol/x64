@@ -113,7 +113,7 @@ int
 seekaout (pagesize)
      long pagesize;
 {
-  register long excess;
+  REGISTER long excess;
 
   /*
      /   If fp not multiple of pagesize, force file size up to multiple.

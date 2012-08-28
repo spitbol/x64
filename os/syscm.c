@@ -46,7 +46,7 @@ long *kvcom_ptr;
 
 zyscm ()
 {
-  register word result;
+  REGISTER word result;
 
   if (!kvcom_ptr)		/* Cheap optimization to speed up */
     kvcom_ptr = get_data_offset (kvcom, long *);	/* &COMPARE consultation */

@@ -22,6 +22,7 @@ This file is part of Macro SPITBOL.
     Set up externals for all the compiler's registers.
 */
 
+#define REGISTER
 extern word reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs;
 extern IATYPE reg_ia;
 extern double reg_ra;

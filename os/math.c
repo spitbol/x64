@@ -35,7 +35,7 @@ This file is part of Macro SPITBOL.
 #include <math.h>
 
 #ifndef errno
-#if LINUX
+#if UNIX
 int errno;
 #else
 extern int errno;		/* system error number */

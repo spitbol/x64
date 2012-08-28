@@ -35,9 +35,9 @@ int
 flush (ioptr)
      struct ioblk *ioptr;
 {
-  register struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
-  register int ioerrcnt = 0;
-  register word n;
+  REGISTER  struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
+  REGISTER  int ioerrcnt = 0;
+  REGISTER  word n;
 
   if (bfptr)
     {				/* if buffer */
@@ -77,7 +77,7 @@ int
 fsyncio (ioptr)
      struct ioblk *ioptr;
 {
-  register struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
+  REGISTER  struct bfblk *bfptr = MK_MP (ioptr->bfb, struct bfblk *);
   FILEPOS n;
 
   if (bfptr)
