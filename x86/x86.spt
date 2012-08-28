@@ -1,6 +1,7 @@
 -title mincod: phase 2 translation from minimal lexemes to x86 code
 -stitl description
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
+* copyright 2012 david shields
 * 
 * this file is part of macro spitbol.
 * 
@@ -236,7 +237,6 @@
 *  default the parameter string if none present
 *
         parms = (differ(host(0)) host(0), "v37:linux:compress")
-	output = "DS parms:" parms ":"
         output = ident(parms) "filename (.lex) required" :s(end)
 
 *
@@ -1656,9 +1656,6 @@ g.end.2
         output = 'cannot reopen temp file: ' filenamo :(end)
 
 g.end.3 filenamo = parms ".s"
-	output = 'filenamo ' filenamo
-	output = "g.end.3 " filenamo
-	output = "outfile name<" filenamo '[-m10 -n0]' '>'
         output(.outfile,2,filenamo '[-m10 -n0]')            :s(g.end.4)
         output = 'cannot open assembly file: ' filenamo :(end)
 g.end.4 output = 'output assembly file: ' filenamo
