@@ -1,5 +1,6 @@
 
         %include        "mintype.h"
+	%include	"globals.h"
 
 	segment		.text
 

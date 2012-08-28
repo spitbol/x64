@@ -1,4 +1,4 @@
-* platform-specific mods to minimal-x86.spt
+* platform-specific mods for x86
 *
 
 * gnu c labels do not have an underscore prefix

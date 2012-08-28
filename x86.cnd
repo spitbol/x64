@@ -1,4 +1,4 @@
-*      spitbol conditional assembly symbols for use by token.spt
+*      spitbol conditional assembly symbols for use by lex.spt
 *      ---------------------------------------------------------
 *
 *      this file of conditional symbols will override the conditional

@@ -3,15 +3,15 @@
 
 
 # SPITBOL Version:
-VERS=   x86
+TARGET=   x86
 DEBUG=	1
 
 # Minimal source directory.
 MINPATH=./
 
-OSINT=./os
+OS=./os
 
-vpath %.c $(OSINT)
+vpath %.c $(OS)
 
 
 AS=nasm
@@ -32,15 +32,15 @@ ASFLAGS = -f elf
 endif
 
 # Tools for processing Minimal source file.
-TOK=	token.spt
-COD=    codlinux.spt
-ERR=    err386.spt
+LEX=	lex.spt
+TRANS=    $(TARGET).spt
+ERR=    err$(TARGET).spt
 SPIT=   ./bootstrap/spitbol
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
 #.c.o:
-	$(CC) -c $(CFLAGS) -o$@ $(OSINT)/$*.c
+	$(CC) -c $(CFLAGS) -o$@ $(OS)/$*.c
 
 # Implicit rule for building objects from assembly language files.
 .s.o:
@@ -48,18 +48,18 @@ SPIT=   ./bootstrap/spitbol
 	$(AS) -o $@ $(ASFLAGS) $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
-CHDRS =	$(OSINT)/os.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h
+CHDRS =	$(OS)/os.h $(OS)/port.h $(OS)/sproto.h $(OS)/spitio.h $(OS)/spitblks.h $(OS)/globals.h
 
 # C Headers unique to this version of SPITBOL:
-UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/system.h
+UHDRS=	$(OS)/systype.h $(OS)/extern32.h $(OS)/blocks32.h $(OS)/system.h
 
 # Headers common to all C files.
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	$(VERS).cnd $(VERS).def $(VERS).hdr hdrdata.inc hdrcode.inc
+VHDRS=	$(TARGET).cnd $(TARGET).def $(TARGET).hdr hdrdata.inc hdrcode.inc
 
-# OSINT objects:
+# OS objects:
 SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	sysef.o sysej.o sysem.o sysen.o sysep.o sysex.o sysfc.o \
 	sysgc.o syshs.o sysid.o sysif.o sysil.o sysin.o sysio.o \
@@ -107,15 +107,15 @@ errors.o: errors.s
 spitbol.o: spitbol.s
 
 # SPITBOL Minimal source
-spitbol.s:	spitbol.tok $(VHDRS) $(COD) mintype.h
-	  $(SPIT) -u "spitbol:$(VERS):comments" $(COD)
+spitbol.s:	spitbol.tok $(VHDRS) $(TRANS) mintype.h
+	  $(SPIT) -u "spitbol:$(TARGET):comments" $(TRANS)
 
-spitbol.tok: $(MINPATH)spitbol.min $(VERS).cnd $(TOK)
-	 $(SPIT) -u "$(MINPATH)spitbol:$(VERS):spitbol" $(TOK)
+spitbol.tok: $(MINPATH)spitbol.min $(TARGET).cnd $(LEX)
+	 $(SPIT) -u "$(MINPATH)spitbol:$(TARGET):spitbol" $(LEX)
 
 spitbol.err: spitbol.s
 
-errors.s: $(VERS).cnd $(ERR) spitbol.s
+errors.s: $(TARGET).cnd $(ERR) spitbol.s
 	   $(SPIT) -1=spitbol.err -2=errors.s $(ERR)
 
 inter.o: mintype.h os.inc
@@ -131,9 +131,9 @@ cobjs:	$(COBJS)
 $(COBJS): $(HDRS)
 $(MOBJS): $(HDRS)
 $(SYSOBJS): $(HDRS)
-main.o: $(OSINT)/save.h
-sysgc.o: $(OSINT)/save.h
-sysxi.o: $(OSINT)/save.h
+main.o: $(OS)/save.h
+sysgc.o: $(OS)/save.h
+sysxi.o: $(OS)/save.h
 dlfcn.o: dlfcn.h
 
 boot:
