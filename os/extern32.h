@@ -37,8 +37,10 @@ This file is part of Macro SPITBOL.
  */
 
 #include "system.h"
-typedef int mword;		/* minimal word */
-typedef unsigned int muword;	/* minimal unsigned word        */
+/*typedef int mword;*/		/* minimal word */
+typedef long mword;		/* minimal word */
+/*typedef unsigned int muword;*/	/* minimal unsigned word        */
+typedef unsigned long  muword;	/* minimal unsigned word        */
 
 #include "blocks32.h"
 #include <string.h>

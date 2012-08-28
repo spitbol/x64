@@ -160,8 +160,10 @@ This file is part of Macro SPITBOL.
 #define ERRDIST
 #endif
 
-typedef int word;
-typedef unsigned int uword;
+/* DS TODO typedef int word;*/
+typedef long word;
+/*typedef unsigned int uword;*/
+typedef unsigned long uword;
 
 /* Size of integer accumulator */
 #if IABITS==32
