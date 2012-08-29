@@ -25,6 +25,7 @@ This file is part of Macro SPITBOL.
     functions.
 */
 #include "port.h"
+#include "globals.ext"
 #if !VCC
 void
 exit (status)

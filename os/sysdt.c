@@ -32,6 +32,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include "globals.ext"
 #include <time.h>
 
 static int datecvt (char *cp, int type);

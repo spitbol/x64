@@ -18,6 +18,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include "globals.ext"
 
 /*      prompt() - used to give user usage info in command line versions.
  *

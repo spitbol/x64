@@ -23,6 +23,7 @@ This file is part of Macro SPITBOL.
         line options.
 */
 #include "port.h"
+#include "globals.ext"
 
 #include <fcntl.h>
 

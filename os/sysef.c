@@ -37,6 +37,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include "globals.ext"
 
 /*
         ffscblk is one of the few SCBLKs that can be directly allocated

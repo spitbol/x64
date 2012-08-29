@@ -38,6 +38,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include "globals.ext"
 
 void
 cpys2sc (cp, scptr, maxlen)

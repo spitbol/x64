@@ -423,5 +423,4 @@ typedef long long IATYPE;
 #endif /* PRIVATEBLOCKS */
 
 
-#include "globals.h"
 #include "sproto.h"

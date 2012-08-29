@@ -37,7 +37,9 @@ This file is part of Macro SPITBOL.
            and transfer control to function that returns control to
            suspended spitbol program
 */
-#define GLOBALS			/* global variables will be defined in this module */
+
+#include "globals.init"
+
 #include "port.h"
 
 #ifdef DEBUG

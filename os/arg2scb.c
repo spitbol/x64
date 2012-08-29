@@ -37,6 +37,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include "globals.ext"
 
 int arg2scb (req, argc, argv, scptr, maxs)
      int req;
