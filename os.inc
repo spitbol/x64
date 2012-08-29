@@ -101,58 +101,55 @@ engts_callid  equ      13
 %ifndef globals
 	%include	"extern.h"
 %endif
-;%if direct == 0
-        endstruc
-;%endif
 ; list below produced by program test/equ.spt.
 ; The order of entries here must agree with order in inter.s
-; assembly language module.
+XS; assembly language module.
 
-gbcnt equ  0
-headv equ  1
-mxlen equ  2
-stage equ  3
-timsx equ  4
-dnamb equ  5
-dnamp equ  6
-state equ  7
-b_efc equ  8
-b_icl equ  9
-b_scl equ 10
-b_vct equ 11
-b_xnt equ 12
-b_xrt equ 13
-stbas equ 14
-statb equ 15
-polct equ 16
-typet equ 17
-dffnc equ 18
-lowspmin equ 19
-flprt equ 20
-flptr equ 21
-gtcef equ 22
-hshtb equ 23
-pmhbs equ 24
-r_fcb equ 25
-c_aaa equ 26
-c_yyy equ 27
-g_aaa equ 28
-w_yyy equ 29
-s_aaa equ 30
-s_yyy equ 31
-r_cod equ 32
-kvstn equ 33
-kvdmp equ 34
-kvftr equ 35
-kvcom equ 36
-kvpfl equ 37
-cswfl equ 38
-stmcs equ 39
-stmct equ 40
-ticblk equ 41
-tscblk equ 42
-id1 equ 43
-id2blk equ 44
-inpbuf equ 45
-ttybuf equ 46
-b_rcl equ 47
+GBCNT equ  0
+HEADV equ  1
+MXLEN equ  2
+STAGE equ  3
+TIMSX equ  4
+DNAMB equ  5
+DNAMP equ  6
+STATE equ  7
+B_EFC equ  8
+B_ICL equ  9
+B_SCL equ 10
+B_VCT equ 11
+B_XNT equ 12
+B_XRT equ 13
+STBAS equ 14
+STATB equ 15
+POLCT equ 16
+TYPET equ 17
+DFFNC equ 18
+LOWSPMIN equ 19
+FLPRT equ 20
+FLPTR equ 21
+GTCEF equ 22
+HSHTB equ 23
+PMHBS equ 24
+R_FCB equ 25
+C_AAA equ 26
+C_YYY equ 27
+G_AAA equ 28
+W_YYY equ 29
+S_AAA equ 30
+S_YYY equ 31
+R_COD equ 32
+KVSTN equ 33
+KVDMP equ 34
+KVFTR equ 35
+KVCOM equ 36
+KVPFL equ 37
+CSWFL equ 38
+STMCS equ 39
+STMCT equ 40
+TICBLK equ 41
+TSCBLK equ 42
+ID1 equ 43
+ID2BLK equ 44
+INPBUF equ 45
+TTYBUF equ 46
+B_RCL equ 47

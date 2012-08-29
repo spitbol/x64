@@ -136,7 +136,7 @@ callef (efb, sp, nargs)
 
   if (!initsels)
     {				/* one-time initializations */
-      pTYPET = (mword (*)[])get_data_offset (typet, muword);
+      pTYPET = (mword (*)[])get_data_offset (TYPET, muword);
       miscinfo.ptyptab = pTYPET;	/* pointer to table of data types */
       initsels++;
     }
@@ -256,7 +256,7 @@ callef (efb, sp, nargs)
     case BL_FX:		/* pointer to external data at TSCBLK.str */
       length = ((result->fxb.fxlen + sizeof (mword) - 1) &
 		-sizeof (mword)) + FIELDOFFSET (struct xnblk, xnu.xndta[0]);
-      if (length > get_min_value (mxlen, mword))
+      if (length > get_min_value (MXLEN, mword))
 	{
 	  result = (union block *) 0;
 	  break;
@@ -425,7 +425,7 @@ nextef (bufp, io)
   pXFNode pnode;
 
   MINSAVE ();
-  for (dnamp = get_min_value (dnamp, union block *);
+  for (dnamp = get_min_value (DNAMP, union block *);
        scanp < dnamp;
        scanp = MK_MP (MP_OFF (scanp, muword) + blksize, union block *))
     {
@@ -490,7 +490,7 @@ renames (oldname, newname)
 void
 scanef ()
 {
-  scanp = get_min_value (dnamb, union block *);
+  scanp = get_min_value (DNAMB, union block *);
 }
 
 
@@ -853,7 +853,7 @@ makeexec (scptr, type)
   reg_xl = 0;
   reg_ia = type;
   reg_wb = 0;
-  reg_xr = get_data_offset (headv, word);
+  reg_xr = get_data_offset (HEADV, word);
 
   /*  -1 is the normal return, so result >= 0 is an error */
   result = zysxi () + 1;

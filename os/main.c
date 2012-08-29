@@ -38,9 +38,9 @@ This file is part of Macro SPITBOL.
            suspended spitbol program
 */
 
-#include "globals.init"
-
 #include "port.h"
+
+#include "globals.init"
 
 #ifdef DEBUG
 #undef DEBUG			/* Change simple -DDEBUG on command line to -DDEBUG=1 */

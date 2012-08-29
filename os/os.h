@@ -128,37 +128,37 @@ set_min_value sets the contents of an item of Minimal data.
     Names for accessing minimal data values via get_data_offset macro.
 */
 extern word
-  gbcnt,
-  headv,
-  mxlen,
-  stage,
-  timsx,
-  dnamb,
-  dnamp,
-  state,
-  stbas,
-  statb,
-  polct,
-  typet,
-  lowspmin,
-  flprt,
-  flptr,
-  gtcef,
-  hshtb,
-  pmhbs,
-  r_fcb,
-  c_aaa,
-  c_yyy,
-  g_aaa,
-  w_yyy,
-  r_cod,
-  kvstn,
-  kvdmp,
-  kvftr,
-  kvcom,
-  kvpfl,
-  cswfl,
-  stmcs, stmct, ticblk, tscblk, id1, id2blk, inpbuf, ttybuf, end_min_data;
+  GBCNT,
+  HEADV,
+  MXLEN,
+  STAGE,
+  TIMSX,
+  DNAMB,
+  DNAMP,
+  STATE,
+  STBAS,
+  STATB,
+  POLCT,
+  TYPET,
+  LOWSPMIN,
+  FLPRT,
+  FLPTR,
+  GTCEF,
+  HSHTB,
+  PMHBS,
+  R_FCB,
+  C_AAA,
+  C_YYY,
+  G_AAA,
+  W_YYY,
+  R_COD,
+  KVSTN,
+  KVDMP,
+  KVFTR,
+  KVCOM,
+  KVPFL,
+  CSWFL,
+  STMCS, STMCT, TICBLK, TSCBLK, ID1, ID2BLK, INPBUF, TTYBUF, END_MIN_DATA;
 
 /*
     Names for accessing minimal code values via get_code_offset macro.
@@ -188,71 +188,71 @@ extern word *minoff (word valno);
 */
 enum valtab
 {
-  gbcnt,
-  headv,
-  mxlen,
-  stage,
-  timsx,
-  dnamb,
-  dnamp,
-  state,
-  b_efc,
-  b_icl,
-  b_scl,
-  b_vct,
-  b_xnt,
-  b_xrt,
-  stbas,
-  statb,
-  polct,
-  typet,
-  dffnc,
-  lowspmin,
-  flprt,
-  flptr,
-  gtcef,
-  hshtb,
-  pmhbs,
-  r_fcb,
-  c_aaa,
-  c_yyy,
-  g_aaa,
-  w_yyy,
-  s_aaa,
-  s_yyy,
-  r_cod,
-  kvstn,
-  kvdmp,
-  kvftr,
-  kvcom,
-  kvpfl,
-  cswfl,
-  stmcs,
-  stmct,
-  ticblk,
-  tscblk,
-  id1,
-  id2blk,
-  inpbuf,
-  ttybuf,
-  b_rcl,
-  end_min_data
+  GBCNT,
+  HEADV,
+  MXLEN,
+  STAGE,
+  TIMSX,
+  DNAMB,
+  DNAMP,
+  STATE,
+  B_EFC,
+  B_ICL,
+  B_SCL,
+  B_VCT,
+  B_XNT,
+  B_XRT,
+  STBAS,
+  STATB,
+  POLCT,
+  TYPET,
+  DFFNC,
+  LOWSPMIN,
+  FLPRT,
+  FLPTR,
+  GTCEF,
+  HSHTB,
+  PMHBS,
+  R_FCB,
+  C_AAA,
+  C_YYY,
+  G_AAA,
+  W_YYY,
+  S_AAA,
+  S_YYY,
+  R_COD,
+  KVSTN,
+  KVDMP,
+  KVFTR,
+  KVCOM,
+  KVPFL,
+  CSWFL,
+  STMCS,
+  STMCT,
+  TICBLK,
+  TSCBLK,
+  ID1,
+  ID2BLK,
+  INPBUF,
+  TTYBUF,
+  B_RCL,
+  END_MIN_DATA
 };
 
 #endif /* DIRECT */
 
 /* Some shorthand notations */
-#define pid1 get_data_offset(id1,struct scblk *)
-#define pid2blk get_data_offset(id2blk,struct scblk *)
-#define pinpbuf get_data_offset(inpbuf,struct bfblk *)
-#define pttybuf get_data_offset(ttybuf,struct bfblk *)
-#define pticblk get_data_offset(ticblk,struct icblk *)
-#define ptscblk get_data_offset(tscblk,struct scblk *)
+#define pid1 get_data_offset(ID1,struct scblk *)
+#define pid2blk get_data_offset(ID2BLK,struct scblk *)
+#define pinpbuf get_data_offset(INPBUF,struct bfblk *)
+#define pttybuf get_data_offset(TTYBUF,struct bfblk *)
+#define pticblk get_data_offset(TICBLK,struct icblk *)
+#define ptscblk get_data_offset(TSCBLK,struct scblk *)
 
-#define type_efc get_code_offset(b_efc,word)
-#define type_icl get_code_offset(b_icl,word)
-#define type_scl get_code_offset(b_scl,word)
-#define type_vct get_code_offset(b_vct,word)
-#define type_xnt get_code_offset(b_xnt,word)
-#define type_xrt get_code_offset(b_xrt,word)
-#define type_rcl get_code_offset(b_rcl,word)
+#define type_efc get_code_offset(B_EFC,word)
+#define type_icl get_code_offset(B_ICL,word)
+#define type_scl get_code_offset(B_SCL,word)
+#define type_vct get_code_offset(B_VCT,word)
+#define type_xnt get_code_offset(B_XNT,word)
+#define type_xrt get_code_offset(B_XRT,word)
+#define type_rcl get_code_offset(B_RCL,word)

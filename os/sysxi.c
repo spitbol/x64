@@ -152,7 +152,7 @@ zysxi ()
      /   Get current value of FP and compute length of current stack.
    */
   stackbase = (word *) get_fp ();
-  stacklength = get_min_value (stbas, char *) -(char *) stackbase;
+  stacklength = get_min_value (STBAS, char *) -(char *) stackbase;
   /*
      /   Close all files and flush buffers
    */
@@ -228,7 +228,7 @@ zysxi ()
        * a smaller buffer.
        */
       bufsize = 4096;
-      bufp = get_min_value (dnamp, char *);
+      bufp = get_min_value (DNAMP, char *);
       size = topmem - bufp;	/* free space in heap */
       extra = bufsize - size;
       if (extra > 0)
@@ -290,7 +290,7 @@ zysxi ()
 	}
       srcptr = stackbase;
       dstptr = (word *) ptscblk->str;
-      i = get_min_value (stbas, word *) - srcptr;
+      i = get_min_value (STBAS, word *) - srcptr;
       while (i--)
 	*dstptr++ = *srcptr++;
       lmodstk = dstptr;		/* (also non-zero flag for restart) */
@@ -332,7 +332,7 @@ fail:
 void
 heapmove ()
 {
-  unsigned long i = (get_min_value (dnamp, char *) - basemem) / sizeof (word);
+  unsigned long i = (get_min_value (DNAMP, char *) - basemem) / sizeof (word);
   word *from = (word *) & edata;
   word *to = (word *) basemem;
 
@@ -375,12 +375,12 @@ unreloc ()
 {
   REGISTER char *stbas;
 
-  stbas = get_min_value (stbas, char *);
-  set_min_value (flptr, get_min_value (flptr, char *) - stbas, word);
-  set_min_value (flprt, get_min_value (flprt, char *) - stbas, word);
-  set_min_value (gtcef, get_min_value (gtcef, char *) - stbas, word);
-  set_min_value (pmhbs, get_min_value (pmhbs, char *) - stbas, word);
-  SET_CP (CP (char *) - get_min_value (dnamb, char *));
+  stbas = get_min_value (STBAS, char *);
+  set_min_value (FLPTR, get_min_value (FLPTR, char *) - stbas, word);
+  set_min_value (FLPRT, get_min_value (FLPRT, char *) - stbas, word);
+  set_min_value (GTCEF, get_min_value (GTCEF, char *) - stbas, word);
+  set_min_value (PMHBS, get_min_value (PMHBS, char *) - stbas, word);
+  SET_CP (CP (char *) - get_min_value (DNAMB, char *));
 }
 
 /*
@@ -394,12 +394,12 @@ rereloc ()
 {
   REGISTER char *stbas;
 
-  stbas = get_min_value (stbas, char *);
-  set_min_value (flptr, get_min_value (flptr, word) + stbas, word);
-  set_min_value (flprt, get_min_value (flprt, word) + stbas, word);
-  set_min_value (gtcef, get_min_value (gtcef, word) + stbas, word);
-  set_min_value (pmhbs, get_min_value (pmhbs, word) + stbas, word);
-  SET_CP (CP (word) + get_min_value (dnamb, char *));
+  stbas = get_min_value (STBAS, char *);
+  set_min_value (FLPTR, get_min_value (FLPTR, word) + stbas, word);
+  set_min_value (FLPRT, get_min_value (FLPRT, word) + stbas, word);
+  set_min_value (GTCEF, get_min_value (GTCEF, word) + stbas, word);
+  set_min_value (PMHBS, get_min_value (PMHBS, word) + stbas, word);
+  SET_CP (CP (word) + get_min_value (DNAMB, char *));
 }
 #endif /* EXECFILE | SAVEFILE */
 
@@ -465,27 +465,27 @@ putsave (stkbase, stklen)
   svfheader.flags = spitflag;
   svfheader.stacksiz = (uword) stacksiz;
   svfheader.stacklength = (uword) stklen;
-  svfheader.stbas = get_min_value (stbas, char *);
+  svfheader.stbas = get_min_value (STBAS, char *);
   svfheader.sec3size =
-    (uword) (get_data_offset (c_yyy, char *) -
-	     get_data_offset (c_aaa, char *));
-  svfheader.sec3adr = get_data_offset (c_aaa, char *);
+    (uword) (get_data_offset (C_YYY, char *) -
+	     get_data_offset (C_AAA, char *));
+  svfheader.sec3adr = get_data_offset (C_AAA, char *);
   svfheader.sec4size =
-    (uword) (get_data_offset (w_yyy, char *) -
-	     get_data_offset (g_aaa, char *));
-  svfheader.sec4adr = get_data_offset (g_aaa, char *);
-  svfheader.statoff = (uword) (get_min_value (hshtb, char *) - basemem);	/* offset to saved static in heap */
-  svfheader.dynoff = (uword) (get_min_value (dnamb, char *) - basemem);	/* offset to saved dynamic in heap */
-  svfheader.heapsize = (uword) (get_min_value (dnamp, char *) - basemem);
+    (uword) (get_data_offset (W_YYY, char *) -
+	     get_data_offset (G_AAA, char *));
+  svfheader.sec4adr = get_data_offset (G_AAA, char *);
+  svfheader.statoff = (uword) (get_min_value (HSHTB, char *) - basemem);	/* offset to saved static in heap */
+  svfheader.dynoff = (uword) (get_min_value (DNAMB, char *) - basemem);	/* offset to saved dynamic in heap */
+  svfheader.heapsize = (uword) (get_min_value (DNAMP, char *) - basemem);
   svfheader.heapadr = basemem;
   svfheader.topmem = topmem;
   svfheader.databts = (uword) databts;
   svfheader.memincb = (uword) memincb;
   svfheader.maxsize = (uword) maxsize;
   svfheader.sec5size =
-    (uword) (get_code_offset (s_yyy, char *) -
-	     get_code_offset (s_aaa, char *));
-  svfheader.sec5adr = get_code_offset (s_aaa, char *);
+    (uword) (get_code_offset (S_YYY, char *) -
+	     get_code_offset (S_AAA, char *));
+  svfheader.sec5adr = get_code_offset (S_AAA, char *);
   svfheader.compress = (uword) LZWBITS;
   svfheader.uarglen = uarg ? (uword) length (uarg) : 0;
   if (svfheader.uarglen >= UargSize)
@@ -515,13 +515,13 @@ putsave (stkbase, stklen)
     compress ((unsigned char *) svfheader.sec4adr, svfheader.sec4size);
 
   /* write out important portion of static region */
-  result |= compress ((unsigned char *) get_min_value (hshtb, char *),
-		      get_min_value (state, uword) - get_min_value (hshtb,
+  result |= compress ((unsigned char *) get_min_value (HSHTB, char *),
+		      get_min_value (STATE, uword) - get_min_value (HSHTB,
 								    uword));
 
   /* write out dynamic portion of heap */
-  result |= compress ((unsigned char *) get_min_value (dnamb, char *),
-		      get_min_value (dnamp, uword) - get_min_value (dnamb,
+  result |= compress ((unsigned char *) get_min_value (DNAMB, char *),
+		      get_min_value (DNAMP, uword) - get_min_value (DNAMB,
 								    uword));
 
   /* write out minimal REGISTER block */
@@ -615,8 +615,8 @@ getsave (fd)
 	    }
 
 	  if (svfheader.sec3size !=
-	      (get_data_offset (c_yyy, uword) -
-	       get_data_offset (c_aaa, uword)))
+	      (get_data_offset (C_YYY, uword) -
+	       get_data_offset (C_AAA, uword)))
 	    {
 #if USEQUIT
 	      quit (362);
@@ -627,8 +627,8 @@ getsave (fd)
 	    }
 
 	  if (svfheader.sec4size !=
-	      (get_data_offset (w_yyy, uword) -
-	       get_data_offset (g_aaa, uword)))
+	      (get_data_offset (W_YYY, uword) -
+	       get_data_offset (G_AAA, uword)))
 	    {
 #if USEQUIT
 	      quit (363);
@@ -639,8 +639,8 @@ getsave (fd)
 	    }
 
 	  if (svfheader.sec5size !=
-	      (uword) ((get_code_offset (s_yyy, char *) -
-			get_code_offset (s_aaa, char *))))
+	      (uword) ((get_code_offset (S_YYY, char *) -
+			get_code_offset (S_AAA, char *))))
 	    {
 #if USEQUIT
 	      quit (364);
@@ -692,25 +692,25 @@ getsave (fd)
 	      (fd, (unsigned char *) ptscblk->str, svfheader.stacklength))
 	    goto reload_ioerr;
 
-	  set_min_value (stbas, svfheader.stbas, word);
+	  set_min_value (STBAS, svfheader.stbas, word);
 	  lmodstk = (word *) (ptscblk->str + svfheader.stacklength);
 	  stacksiz = svfheader.stacksiz;
 
 	  /* Reload compiler working globals section */
 	  if (expand
-	      (fd, get_data_offset (g_aaa, unsigned char *),
+	      (fd, get_data_offset (G_AAA, unsigned char *),
 	       svfheader.sec4size))
 	      goto reload_ioerr;
 
 	  /* Reload important portion of static region */
 	  if (expand (fd, (unsigned char *) basemem + svfheader.statoff,
-		      get_min_value (state, uword) - get_min_value (hshtb,
+		      get_min_value (STATE, uword) - get_min_value (HSHTB,
 								    uword)))
 	    goto reload_ioerr;
 
 	  /* Reload heap */
 	  if (expand (fd, (unsigned char *) basemem + svfheader.dynoff,
-		      get_min_value (dnamp, uword) - get_min_value (dnamb,
+		      get_min_value (DNAMP, uword) - get_min_value (DNAMB,
 								    uword)))
 	    goto reload_ioerr;
 

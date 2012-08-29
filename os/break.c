@@ -61,11 +61,11 @@ catchbrk (sig)
 {
   word stmctv, stmcsv;
   brkpnd++;
-  stmctv = get_min_value (stmct, word) - 1;
-  stmcsv = get_min_value (stmcs, word);
-  set_min_value (stmct, 1, word);	/* force STMGO loop to check */
-  set_min_value (stmcs, stmcsv - stmctv, word);	/* counters quickly */
-  set_min_value (polct, 1, word);	/* force quick SYSPL call */
+  stmctv = get_min_value (STMCT, word) - 1;
+  stmcsv = get_min_value (STMCS, word);
+  set_min_value (STMCT, 1, word);	/* force STMGO loop to check */
+  set_min_value (STMCS, stmcsv - stmctv, word);	/* counters quickly */
+  set_min_value (POLCT, 1, word);	/* force quick SYSPL call */
 }
 
 

@@ -88,7 +88,7 @@ typedef struct
   word filenum;
   char *fileptr;
 } CFile;
-CFile cfiles[Ncmdf];	/* Array of structures to record info */
+extern CFile cfiles[Ncmdf];	/* Array of structures to record info */
 
 extern	struct ioblk ttyiobin;
 #define ttyiobininit {0,    /* type word */ \

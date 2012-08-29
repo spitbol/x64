@@ -45,7 +45,7 @@ gethost (scptr, maxlen)
      word maxlen;
 
 {
-  struct scblk *pheadv = get_data_offset (headv, struct scblk *);
+  struct scblk *pheadv = get_data_offset (HEADV, struct scblk *);
   int cnt = 0;
   word fd;
 

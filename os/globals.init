@@ -23,7 +23,6 @@ This file is part of Macro SPITBOL.
         Define GLOBALS in the C module that wishes to have these
         variables defined.  All other modules will see them as externals.
  */
-#include	"port.h"
 /*
      Global data areas needed by compiler.
 */
