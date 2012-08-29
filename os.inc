@@ -95,7 +95,7 @@ engts_callid  equ      13
 ;   the structure vords and the access macro is merely a device to
 ;   produce an enumeration similar to an enum structure to c.
 ;
-        struc   vords
+;        struc   vords
 %endif
 	segment	.text
 %ifndef globals
@@ -104,3 +104,55 @@ engts_callid  equ      13
 ;%if direct == 0
         endstruc
 ;%endif
+; list below produced by program test/equ.spt.
+; The order of entries here must agree with order in inter.s
+; assembly language module.
+
+gbcnt equ  0
+headv equ  1
+mxlen equ  2
+stage equ  3
+timsx equ  4
+dnamb equ  5
+dnamp equ  6
+state equ  7
+b_efc equ  8
+b_icl equ  9
+b_scl equ 10
+b_vct equ 11
+b_xnt equ 12
+b_xrt equ 13
+stbas equ 14
+statb equ 15
+polct equ 16
+typet equ 17
+dffnc equ 18
+lowspmin equ 19
+flprt equ 20
+flptr equ 21
+gtcef equ 22
+hshtb equ 23
+pmhbs equ 24
+r_fcb equ 25
+c_aaa equ 26
+c_yyy equ 27
+g_aaa equ 28
+w_yyy equ 29
+s_aaa equ 30
+s_yyy equ 31
+r_cod equ 32
+kvstn equ 33
+kvdmp equ 34
+kvftr equ 35
+kvcom equ 36
+kvpfl equ 37
+cswfl equ 38
+stmcs equ 39
+stmct equ 40
+ticblk equ 41
+tscblk equ 42
+id1 equ 43
+id2blk equ 44
+inpbuf equ 45
+ttybuf equ 46
+b_rcl equ 47
