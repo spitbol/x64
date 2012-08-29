@@ -15,19 +15,19 @@ vpath %.c $(OS)
 
 
 AS=nasm
-CC=     tcc
+CC=     ./usr/local/bin/tcc
 ifeq	($(DEBUG),0)
-CFLAGS= -m32 
+CFLAGS= --oformat,elf32  -I./tcc/include 
 else
-CFLAGS= -g 
+CFLAGS=  -g  --oformat,elf32 -I./tcc/include 
 endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASFLAGS = -f elf
+ASFLAGS = -f elf32 
 #ASFLAGS = -f macho
 else
-ASFLAGS = -f elf
+ASFLAGS = -f elf32
 #ASFLAGS = -f macho -g
 endif
 
@@ -100,7 +100,9 @@ OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 
 # main program
 spitbol: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -lm  -ospitbol 
+	ld -o spitbol -lm  $(OBJS) 
+#	$(CC) -o spitbol -M -L/usr/lib/x86_64_linux_gnu $(CFLAGS) $(OBJS)  > spitbol.map
+#	$(CC) -o spitbol -lm  -L/usr/lib32 -L/usr/lib/x86_64_linux_gnu $(CFLAGS) $(OBJS) 
 
 # Assembly language dependencies:
 errors.o: errors.s

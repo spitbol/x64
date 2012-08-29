@@ -39,7 +39,7 @@ extern int check2str (void);
 extern int check3str (void);
 extern int chrdev (File_handle F);
 extern int cindev (File_handle F);
-extern int cinread (File_handle fd, char *buf, int size);
+/* DS 08/29 extern int cinread (File_handle fd, char *buf, int size);*/
 extern void close_all (struct chfcb * chb);
 extern word closeaout (char *filename, char *tmpfnbuf, word errflag);
 extern void clrbuf (void);
@@ -237,7 +237,7 @@ extern int close (File_handle F);
 extern File_handle dup (File_handle F);
 extern char *_Optlink getenv (char *name);
 extern FILEPOS LSEEK (File_handle F, FILEPOS Loc, int Method);
-extern word read (File_handle F, void *Buf, uword Cnt);
+/* DS 08/29/12 extern word read (File_handle F, void *Buf, uword Cnt);*/
 extern void *sbrk (long incr);
 /* DS TODO extern int unlink (char *Name); */
 /* DS TODO extern word write (File_handle F, void *Buf, uword Cnt);*/

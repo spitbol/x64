@@ -42,6 +42,7 @@ This file is part of Macro SPITBOL.
 
 #include "globals.init"
 
+void wrterr(char * s);
 #ifdef DEBUG
 #undef DEBUG			/* Change simple -DDEBUG on command line to -DDEBUG=1 */
 #define DEBUG 1
