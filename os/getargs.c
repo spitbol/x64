@@ -22,6 +22,7 @@ This file is part of Macro SPITBOL.
         This module contains the switch loop that processes command
         line options.
 */
+
 #include "port.h"
 #include "globals.ext"
 

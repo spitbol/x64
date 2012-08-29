@@ -37,14 +37,9 @@ This file is part of Macro SPITBOL.
             2 - single step
             3 - evaluate expression
         normal exit - no special action
-
-   Version history:
-
-
 */
 
 #include "port.h"
-#include "globals.ext"
 
 #define pollevent()
 extern rearmbrk (void);

@@ -32,7 +32,6 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-#include "globals.ext"
 
 /*
     define actual headers elsewhere to overcome problems in initializing

@@ -35,7 +35,8 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-#include "globals.ext"
+
+extern uword maxsize;
 
 /*  uppercase( word )
  *

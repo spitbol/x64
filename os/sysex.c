@@ -35,13 +35,9 @@ This file is part of Macro SPITBOL.
         THE RETURNED VALUE FROM THE EXTERNAL FUNCTION.  THAT ALLOCATION MAY
         CAUSE A GARBAGE COLLECTION, THEREFORE IT IS IMPERATIVE THAT THE STACK
         BE CLEAN, COLLECTABLE, AND WORD ALIGNED.
-
-   v1.01 11/25/90 Add exit 2 - insufficient memory, exit 3 - improper argument.
-
 */
 
 #include "port.h"
-#include "globals.ext"
 
 zysex ()
 {

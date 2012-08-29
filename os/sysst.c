@@ -55,11 +55,11 @@ This file is part of Macro SPITBOL.
                   set record length to WC for byte-stream file
      WB = 'D'
                   delete record -- not supported
-
 */
 
 #include "port.h"
-#include "globals.ext"
+
+extern uword maxsize;
 
 zysst ()
 {

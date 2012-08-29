@@ -20,7 +20,6 @@ This file is part of Macro SPITBOL.
 /* st2d.c - convert integer to decimal string */
 
 #include "port.h"
-#include "globals.ext"
 
 static int stc_d (char *out, unsigned int in, int outlen, int signflag);
 

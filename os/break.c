@@ -17,13 +17,9 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-
-    startbrk starts up the logic for trapping user keyboard interrupts.
-*/
+/* startbrk starts up the logic for trapping user keyboard interrupts. */
 
 #include "port.h"
-#include "globals.ext"
 
 #if POLLING
 int brkpnd;

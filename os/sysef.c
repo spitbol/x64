@@ -32,12 +32,9 @@ This file is part of Macro SPITBOL.
             1 - file does not exist
             2 - inappropriate file
             3 - i/o error
-
-        v1.02 1-Feb-93 Change oswrite calling sequence.
 */
 
 #include "port.h"
-#include "globals.ext"
 
 /*
         ffscblk is one of the few SCBLKs that can be directly allocated

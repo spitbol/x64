@@ -41,7 +41,6 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-#include "globals.ext"
 
 word
 oswrite (mode, linesiz, recsiz, ioptr, scptr)

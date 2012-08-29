@@ -34,24 +34,13 @@ This file is part of Macro SPITBOL.
 
         WARNING:  THIS FUNCTION CALLS A FUNCTION WHICH MAY INVOKE A GARBAGE
         COLLECTION.  STACK MUST REMAIN WORD ALIGNED AND COLLECTABLE.
-
-        V1.01 09/09/90  Rearrange so that dynamic variables are not
-                                        on stack when loadef is called.  If they are, and
-                                        a garbage collection is triggered, garbage text in
-                                        dynamic area could foul up garbage collector.
-                                        Fixed for SPITBOL-386 v1.08.
-
-        V1.02 11/25/90  Add exit 3 return for insufficient memory.
-
-    V1.02 4-Sep-91  <withdrawn>.
 */
 
-#include "port.h"
-#include "globals.ext"
 
-#if UNIX
+
+#include "port.h"
+
 #include <fcntl.h>
-#endif
 
 #if EXTFUN
 static word openloadfile (char *namebuf);

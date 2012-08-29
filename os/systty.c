@@ -33,7 +33,9 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-#include "globals.ext"
+
+extern struct ioblk ttyiobin;
+extern struct ioblk ttyiobout;
 
 void
 ttyinit ()

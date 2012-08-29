@@ -29,7 +29,10 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-#include "globals.ext"
+
+extern char * topmem;
+extern char * maxmem;
+extern uword memincb;
 
 zysmm ()
 {

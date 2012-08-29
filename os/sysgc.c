@@ -40,8 +40,9 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-#include "globals.ext"
 #include "save.h"
+
+extern word in_gbcol;
 
 zysgc ()
 {

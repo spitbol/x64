@@ -30,19 +30,18 @@ This file is part of Macro SPITBOL.
 
 
 #include "port.h"
-#include "globals.ext"
 
 #if FLOAT
 #if FLTHDWR
 checkfpu ()
 {
-  return -1;			/* Hardware flting pt always present */
+  return -1;	/* Hardware flting pt always present */
 }
 #else /* FLTHDWR */
 
 checkfpu ()
 {
-  return -1;			/* Assume all modern machines have FPU (excludes 80386 without 80387) */
+  return -1;	/* Assume all modern machines have FPU (excludes 80386 without 80387) */
 }
 
 #endif /* FLTHDWR */

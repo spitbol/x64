@@ -32,13 +32,9 @@ This file is part of Macro SPITBOL.
 
     Side Effects:
         Modifies contents of passed SCBLK (scptr).
-
-    v1.01, 12/28/90 - pad last word in SCBLK with zeros to match behavior of ALOCS.
-                        Eliminated termch argument,  since it was always zero.
 */
 
 #include "port.h"
-#include "globals.ext"
 
 void
 cpys2sc (cp, scptr, maxlen)

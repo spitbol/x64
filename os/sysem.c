@@ -52,15 +52,9 @@ This file is part of Macro SPITBOL.
             XR - pointer to SCBLK containing error message (null string is ok)
         Exits:
             None
-
-    V2.01 23-Dec-91
-                Add ERRDIST to allow the errors and phrases arrays to be
-        accessed as pointers for those systems that point to them
-                in another segment.
 */
 
 #include "port.h"
-#include "globals.ext"
 
 extern unsigned char ERRDIST errors[];
 extern unsigned char ERRDIST phrases[];

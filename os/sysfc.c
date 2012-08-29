@@ -65,7 +65,9 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-#include "globals.ext"
+
+extern struct ioblk *save_iob;
+extern word bfblksize;
 
 struct ioblk tioblk;		/* temporary ioblk              */
 

@@ -29,12 +29,9 @@ This file is part of Macro SPITBOL.
     Returns:
         0 if successful / -1 on failure
 
-        v1.02 02-Jan-91 Changed rdenv to use cpys2sc instead of mystrncpy.
-                                        Add private getenv().
 */
 
 #include "port.h"
-#include "globals.ext"
 
 /*
     Find environment variable vq of length vn.  Return

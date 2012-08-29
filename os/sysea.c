@@ -37,7 +37,6 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-#include "globals.ext"
 
 static char *eacpy (char *s1, char *s2, int n);
 

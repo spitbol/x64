@@ -29,7 +29,6 @@ This file is part of Macro SPITBOL.
         0 if fd is a tty / -1 if fd is not a tty
 */
 #include "port.h"
-#include "globals.ext"
 
 #define RAW_BIT RAW
 
