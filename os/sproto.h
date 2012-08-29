@@ -236,7 +236,7 @@ extern int brk (void *addr);
 extern int close (File_handle F);
 extern File_handle dup (File_handle F);
 extern char *_Optlink getenv (char *name);
-extern FILEPOS LSEEK (File_handle F, FILEPOS Loc, int Method);
+/*extern FILEPOS LSEEK (File_handle F, FILEPOS Loc, int Method);*/
 /* DS 08/29/12 extern word read (File_handle F, void *Buf, uword Cnt);*/
 extern void *sbrk (long incr);
 /* DS TODO extern int unlink (char *Name); */

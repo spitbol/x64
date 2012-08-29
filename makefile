@@ -16,10 +16,9 @@ vpath %.c $(OS)
 
 AS=nasm
 CC=     ./usr/local/bin/tcc
-ifeq	($(DEBUG),0)
-CFLAGS= --oformat,elf32  -I./tcc/include 
-else
-CFLAGS=  -g  --oformat,elf32 -I./tcc/include 
+INCDIRS = -I./musl/include
+ifeq	($(DEBUG),1)
+CFLAGS =  -g  $(INCDIRS)
 endif
 
 # Assembler info -- Intel 32-bit syntax
@@ -69,13 +68,16 @@ SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 # Other C objects:
 COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 	doset.o dosys.o fakexit.o float.o flush.o gethost.o getshell.o \
-	int.o lenfnm.o math.o optfile.o osclose.o \
+	int.o lenfnm.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	sioarg.o st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
 	trypath.o wrtaout.o
 
+# need include real-arith.s if support real arithmetic
+# need include math.s if supporting math functions (sin,cos, etc.)
 # Assembly langauge objects common to all versions:
-CAOBJS = errors.o serial.o inter.o arith.o mtoc.o
+CAOBJS = errors.o serial.o inter.o mtoc.o int-arith.o
+#arith.o
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
@@ -99,8 +101,11 @@ VOBJS =	spitbol.o
 OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 
 # main program
+LIBS = -L./tcc/lib -L./musl/crt -L./musl/lib 
 spitbol: $(OBJS)
-	ld -o spitbol -lm  $(OBJS) 
+	tcc -o spitbol $(LIBS) ./musl/lib/libm.a $(OBJS)  
+#	ld -o spitbol -$(LIBS) $(OBJS) 
+#	ld -o spitbol -L./tcc/lib -L./musl/lib -lm  $(OBJS) 
 #	$(CC) -o spitbol -M -L/usr/lib/x86_64_linux_gnu $(CFLAGS) $(OBJS)  > spitbol.map
 #	$(CC) -o spitbol -lm  -L/usr/lib32 -L/usr/lib/x86_64_linux_gnu $(CFLAGS) $(OBJS) 
 
@@ -122,7 +127,7 @@ errors.s: $(TARGET)/$(TARGET).cnd $(ERR) spitbol.s
 
 inter.o: mintype.h os.inc
 
-arith.o: mintype.h os.inc
+int-arith.o: mintype.h os.inc
 
 mtoc.o: mintype.h os.inc
 

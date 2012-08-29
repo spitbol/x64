@@ -40,7 +40,7 @@
 .def   .cicc                 define to ignore unrecognised control card
 .def   .cinc                 define to include -include control card
 .def   .ciod                 if defined, default delimiter is
-.def   .cmth                 define to include extended math functions
+*      .cmth                 define to include extended math functions
 .def   .cnbf                 define to omit buffer extension
 .def   .cnbt                 define to omit batch initialisation
 *      .cnci                 define to enable sysci routine
@@ -49,7 +49,7 @@
 *      .cnld                 define to omit load() code.
 .def   .cnlf                 define to support file type for load()
 *      .cnpf                 define to omit profile stuff
-*      .cnra                 define to omit all real arithmetic
+.def   .cnra                 define to omit all real arithmetic
 .def   .cnsc                 define to omit numeric-string compare in sort
 *      .cnsr                 define to omit sort, rsort
 .def   .csou                 define if output, terminal go to sysou

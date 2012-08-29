@@ -546,6 +546,7 @@ get_fp:
 ;       not saved in the save file.  these values were not saved so as
 ;       to minimize the size of the save file.
 ;
+%ifdef LOAD_MODULE
         extern  rereloc
 
        global   restart
@@ -664,4 +665,5 @@ re4:
 	push	rstrt_callid
 	callc	minimal_call,4			; no return
 
+%endif
 

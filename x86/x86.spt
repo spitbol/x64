@@ -301,7 +301,8 @@ compdone defs =
           c_labels['state'] = c.out 'state'
           c_labels['b$efc'] = c.out 'b_efc'
           c_labels['b$icl'] = c.out 'b_icl'
-          c_labels['b$rcl'] = c.out 'b_rcl'
+* cl is used for real arithmetic
+*          c_labels['b$rcl'] = c.out 'b_rcl'
           c_labels['b$scl'] = c.out 'b_scl'
           c_labels['b$vct'] = c.out 'b_vct'
           c_labels['b$xnt'] = c.out 'b_xnt'
