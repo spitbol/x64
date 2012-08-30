@@ -147,4 +147,4 @@ boot:
 install:
 	sudo cp spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.lst *.map *.err spitbol.lex spitbol.tmp spitbol.s errors.s
+	rm -f ao $(OBJS) *.lst *.map *.err spitbol.lex spitbol.tmp spitbol.s errors.s
