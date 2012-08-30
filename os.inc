@@ -103,7 +103,6 @@ engts_callid  equ      13
 %endif
 ; list below produced by program test/equ.spt.
 ; The order of entries here must agree with order in inter.s
-XS; assembly language module.
 
 GBCNT equ  0
 HEADV equ  1

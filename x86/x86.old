@@ -418,15 +418,19 @@ inpulex output = 'input lexeme file: ' filenami
 *
 *
 *
-*  associate output files.  
+*  associate output files.  code is written to a temp file, which
+*  will subsequently be rewound and reread for jump optimization.
 *
+	filenamo = parms '.tmp'
+	output = 'temporary file ' filenamo
+        output(.outfile,2,filenamo)                 :s(outpulex)
+        output = 'cannot open temp file: ' filenamo :(end)
+outpulex
+        output = 'output temp file: ' filenamo
 
 *
 * open file for compilation of minimal err and erb messages
 *
-	filenamo = parms ".s"
-	output = 'output file is ' filenamo
-        output(.outfile,2,filenamo '[-m10 -n0]')
         output(.errfile,3, parms ".err")             :s(err_ok)
 	output = 'error file ' parms ".err"
         output = "cannot open error message file: " parms ".err" :(end)
@@ -1642,18 +1646,61 @@ g.end.2
         outstmt(tstmt(,,,,,comment))
 
 
+* here at end of code generation.  close the temp file, and reread
+* it to perform jump optimization.
 	endfile(1)
+	endfile(2)
+        output = "code generation complete, begin jump optimization"
 
-g.end.3 
-g.end.4 
-	output = 'output assembly file: ' filenamo
-	endfile(1)
+	input(.infile,1,filenamo)			:s(g.end.3)
+        output = 'cannot reopen temp file: ' filenamo :(end)
+
+g.end.3 filenamo = parms ".s"
+        output(.outfile,2,filenamo '[-m10 -n0]')            :s(g.end.4)
+        output = 'cannot open assembly file: ' filenamo :(end)
+g.end.4 output = 'output assembly file: ' filenamo
+
+***************************************************************************
+* jump optimization
+*
+* forward jumps to target labels within jump_n lines of the jump receive
+* a short.  exception is made for those lines that match ns_pat.
+*
+* jump_n and ns_pat are defined in the <machine>.def file.
+*
+***************************************************************************
+*
+	n = jump_n			;* # lines allowed for shortening
+	jump = "j" span(&ucase)
+	ws = span(" " char(9))
+	lets = &ucase "_0123456789"
+	l_pat = span(lets)
+	l_patc = l_pat label.delim
+	l_pat2 = l_pat . label label.delim
+	stmt = ((l_patc | "") ws jump ws) . first (l_pat . label rem) . rest
+
+	lno = 0
+g.end.5	line = infile					:f(g.end.7)
+	lno = lno + 1
+	line ? stmt					:f(g.end.6)
+	(ident(label,""), ident(labtab<label>))	:s(g.end.6)
+	distance = labtab<label> - lno
+	(gt(distance,0) le(distance,n))			:f(g.end.6)
+	line ? ns_pat					:s(g.end.6)
+	noptim2 = noptim2 + 1
+g.end.6	outfile = line					:(g.end.5)
+
+g.end.7 endfile(1)
+	endfile(2)
+	endfile(3)
 	host(1,"touch " parms ".err")
+	host(1,"del " parms ".tmp")
         output = '*** translation complete ***'
         output = nlines ' lines read.'
         output = nstmts ' statements processed.'
         output = ntarget ' target code lines produced.'
         output = noptim1 ' "or" optimizations performed.'
+        output = noptim2 ' jumps shortened.'
         output = max.err ' maximum err/erb number.'
         output = prc.count1 ' prc count.'
         output = gt(prc.count,prc.count1)
