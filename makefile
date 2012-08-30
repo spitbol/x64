@@ -3,7 +3,6 @@
 
 
 # SPITBOL Version:
-ROOT=..
 TARGET=   x86
 DEBUG=	1
 
@@ -17,7 +16,7 @@ vpath %.c $(OS)
 
 AS=nasm
 CC=     bin/tcc
-INCDIRS = -I$(ROOT)/musl/include
+INCDIRS = -Imusl/include
 ifeq	($(DEBUG),1)
 CFLAGS =  -g  $(INCDIRS)
 endif
@@ -100,12 +99,9 @@ VOBJS =	spitbol.o
 OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 
 # main program
-LIBS = -L$(ROOT)/musl/lib/crt -L$(ROOT)/musl/lib 
+LIBS = -Lmusl/lib/crt -Lmusl/lib 
 spitbol: $(OBJS)
-	tcc -o spitbol $(LIBS) $(ROOT)/usr/lib/libm.a $(OBJS)  
-#	ld -o spitbol -$(LIBS) $(OBJS) 
-#	ld -o spitbol -L./tcc/lib -L./musl/lib -lm  $(OBJS) 
-#	$(CC) -o spitbol -M -L/usr/lib/x86_64_linux_gnu $(CFLAGS) $(OBJS)  > spitbol.map
+	tcc -o spitbol $(LIBS) musl/lib/libm.a $(OBJS)  
 #	$(CC) -o spitbol -lm  -L/usr/lib32 -L/usr/lib/x86_64_linux_gnu $(CFLAGS) $(OBJS) 
 
 # Assembly language dependencies:
