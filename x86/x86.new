@@ -424,9 +424,6 @@ inpulex output = 'input lexeme file: ' filenami
 *
 * open file for compilation of minimal err and erb messages
 *
-	filenamo = parms ".s"
-	output = 'output file is ' filenamo
-        output(.outfile,2,filenamo '[-m10 -n0]')
         output(.errfile,3, parms ".err")             :s(err_ok)
 	output = 'error file ' parms ".err"
         output = "cannot open error message file: " parms ".err" :(end)
@@ -1644,10 +1641,16 @@ g.end.2
 
 	endfile(1)
 
-g.end.3 
-g.end.4 
-	output = 'output assembly file: ' filenamo
+g.end.3 filenamo = parms ".s"
+        output(.outfile,2,filenamo '[-m10 -n0]')            :s(g.end.4)
+        output = 'cannot open assembly file: ' filenamo :(end)
+g.end.4 output = 'output assembly file: ' filenamo
+
+	endfile(1)
+	endfile(2)
+	endfile(3)
 	host(1,"touch " parms ".err")
+	host(1,"del " parms ".tmp")
         output = '*** translation complete ***'
         output = nlines ' lines read.'
         output = nstmts ' statements processed.'
