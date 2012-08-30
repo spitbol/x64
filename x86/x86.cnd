@@ -49,7 +49,7 @@
 *      .cnld                 define to omit load() code.
 .def   .cnlf                 define to support file type for load()
 *      .cnpf                 define to omit profile stuff
-.def   .cnra                 define to omit all real arithmetic
+*      .cnra                 define to omit all real arithmetic
 .def   .cnsc                 define to omit numeric-string compare in sort
 *      .cnsr                 define to omit sort, rsort
 .def   .csou                 define if output, terminal go to sysou

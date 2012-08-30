@@ -66,15 +66,13 @@ SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 # Other C objects:
 COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 	doset.o dosys.o fakexit.o float.o flush.o gethost.o getshell.o \
-	int.o lenfnm.o optfile.o osclose.o \
+	int.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	sioarg.o st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
 	trypath.o wrtaout.o
 
-# need include real-arith.s if support real arithmetic
-# need include math.s if supporting math functions (sin,cos, etc.)
-# Assembly langauge objects common to all versions:
-CAOBJS = errors.o serial.o inter.o mtoc.o int-arith.o
+# Assembly language objects common to all versions:
+CAOBJS = errors.o serial.o inter.o mtoc.o int-arith.o real-arith.o math-lib.o
 #arith.o
 
 # Objects for SPITBOL's HOST function:
@@ -101,7 +99,8 @@ OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 # main program
 LIBS = -Lmusl/lib/crt -Lmusl/lib 
 spitbol: $(OBJS)
-	tcc -o spitbol $(LIBS) musl/lib/libm.a $(OBJS)  
+	tcc -o spitbol $(LIBS) -lm  $(OBJS)  
+#	tcc -o spitbol $(LIBS) musl/lib/libm.a $(OBJS)  
 #	$(CC) -o spitbol -lm  -L/usr/lib32 -L/usr/lib/x86_64_linux_gnu $(CFLAGS) $(OBJS) 
 
 # Assembly language dependencies:
@@ -123,6 +122,10 @@ errors.s: $(TARGET)/$(TARGET).cnd $(ERR) spitbol.s
 inter.o: mintype.h os.inc
 
 int-arith.o: mintype.h os.inc
+
+real-arith.o: mintype.h os.inc
+
+math-lib.o: mintype.h os.inc
 
 mtoc.o: mintype.h os.inc
 

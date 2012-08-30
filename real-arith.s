@@ -44,29 +44,6 @@ inf:    dd      0
         dd      0x7ff00000      ; double precision infinity
 
 	segment		.text
-;
-;-----------
-;
-;       rmi_ - remainder of ia (edx) divided by long in eax
-;
-	global	rmi_
-rmi_:
-             or      eax,eax         ; test for 0
-        jz      setovr    ; jump if 0 divisor
-        push    ebp             ; preserve cp
-        xchg    ebp,eax         ; divisor to ebp
-        xchg    eax,edx         ; dividend in eax
-        cdq                     ; extend dividend
-        idiv    ebp             ; perform division. eax=quotient, edx=remainder
-        pop     ebp             ; restore cp
-        xor     eax,eax         ; clear overflow indicator
-        ret                     ; return remainder in edx (ia)
-setovr: mov     al,0x80         ; set overflow indicator
-        dec     al
-        ret
-
-
-
 ;----------
 ;
 ;    calls to c
@@ -298,35 +275,6 @@ ngr_:
         je      ngr_2                     ; if zero, leave alone
 ngr_1:  xor     byte [reg_ra+7], 0x80         ; complement mantissa sign
 ngr_2:  ret
-
-;
-;----------
-;
-;       atn_ arctangent of real in ra
-;
-        global  atn_
-
-atn_:
-
-        push    ecx                             ; preserve regs for C
-        push    edx
-        push    dword [reg_ra+4]              ; RA msh
-        push    dword [reg_ra]                ; RA lsh
-	extern	f_atn
-        callfar f_atn,8                         ; perform op
-%if fretst0
-        fstp    dword [reg_ra]
-        pop     edx                             ; restore regs
-        pop     ecx
-        fwait
-%endif
-%if freteax
-        mov     dword [reg_ra+4], edx         ; result msh
-        mov     dword [reg_ra], eax           ; result lsh
-        pop     edx                             ; restore regs
-        pop     ecx
-%endif
-        ret
 
 ;
 ;----------

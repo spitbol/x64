@@ -7,25 +7,25 @@
         %include        "x86/hdrcode.inc"
         %include        "x86/hdrdata.inc"
 
-;       extern         ldr_
-;       extern         str_
-;       extern         ovr_
+        extern         ldr_
+        extern         str_
+        extern         ovr_
         extern         dvi_
         extern         rmi_
         extern         cvd_
-;       extern         rti_
-;       extern         itr_
-;       extern         adr_
-;       extern         sbr_
-;       extern         mlr_
-;       extern         dvr_
-;       extern         ngr_
-;       extern         atn_
-;       extern         chp_
-;       extern         cos_
-;       extern         etx_
-;       extern         lnf_
-;       extern         sin_
-;       extern         sqr_
-;       extern         tan_
-;       extern         cpr_
+        extern         rti_
+        extern         itr_
+        extern         adr_
+        extern         sbr_
+        extern         mlr_
+        extern         dvr_
+        extern         ngr_
+        extern         atn_
+        extern         chp_
+        extern         cos_
+        extern         etx_
+        extern         lnf_
+        extern         sin_
+        extern         sqr_
+        extern         tan_
+        extern         cpr_

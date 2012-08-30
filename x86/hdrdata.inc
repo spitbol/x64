@@ -10,7 +10,6 @@
 ;%1:	%2	%3
 ;%endmacro
         global  typet
-b_rcl:	dd	0
 typet:
         dd      b_art   ; arblk type word - 0
         dd      b_cdc   ; cdblk type word - 1

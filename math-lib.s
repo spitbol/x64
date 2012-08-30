@@ -44,7 +44,6 @@ inf:    dd      0
         dd      0x7ff00000      ; double precision infinity
 
 	segment		.text
-;----------
 ;
 ;       atn_ arctangent of real in ra
 ;
@@ -73,36 +72,6 @@ atn_:
         ret
 
 ;
-;----------
-;
-;       chp_ chop fractional part of real in ra
-;
-        global  chp_
-
-chp_:
-
-        push    ecx                             ; preserve regs for C
-        push    edx
-        push    dword [reg_ra+4]              ; RA msh
-        push    dword [reg_ra]                ; RA lsh
-        callfar f_chp,8                         ; perform op
-%if fretst0
-        fstp    dword [reg_ra]
-        pop     edx                             ; restore regs
-        pop     ecx
-        fwait
-%endif
-%if freteax
-        mov     dword [reg_ra+4], edx         ; result msh
-        mov     dword [reg_ra], eax           ; result lsh
-        pop     edx                             ; restore regs
-        pop     ecx
-%endif
-        ret
-
-;
-;----------
-;
 ;       cos_ cosine of real in ra
 ;
         global  cos_
@@ -127,13 +96,7 @@ cos_:
 %endif
         ret
 
-;
-;----------
-;
-;       etx_ exponential of real in ra
-;
         global  etx_
-
 etx_:
         push    ecx                             ; preserve regs for c
 	push	edx
@@ -154,13 +117,7 @@ etx_:
 %endif
         ret
 
-;
-;----------
-;
-;       lnf_ natural logarithm of real in ra
-;
         global  lnf_
-
 lnf_:
 
         push    ecx                             ; preserve regs for C
@@ -182,13 +139,7 @@ lnf_:
 %endif
         ret
 
-;
-;----------
-;
-;       sin_ arctangent of real in ra
-;
         global  sin_
-
 sin_:
 
         push    ecx                             ; preserve regs for C
@@ -210,14 +161,7 @@ sin_:
 %endif
         ret
 
-;
-;----------
-;
-;       sqr_ arctangent of real in ra
-;
         global  sqr_
-
-
 sqr_:
         push    ecx                             ; preserve regs for C
         push    edx
@@ -238,13 +182,7 @@ sqr_:
 %endif
         ret
 
-;
-;----------
-;
-;       tan_ arctangent of real in ra
-;
         global  tan_
-
 tan_:
         push    ecx                             ; preserve regs for C
         push    edx
@@ -265,13 +203,7 @@ tan_:
 %endif
         ret
 
-;
-;----------
-;
-;       cpr_ compare real in ra to 0
-;
         global  cpr_
-
 cpr_:
 
         mov     eax, dword [reg_ra+4] ; fetch msh
@@ -285,11 +217,8 @@ cpr050: cmp     dword [reg_ra], 0     ; true zero, or denormalized number?
         cmp     al, 0                   ; positive denormal, set cc
 cpr100: ret
 
-;
-;----------
-;
 ;       ovr_ test for overflow value in ra
-;
+
         global  ovr_
 
 ovr_: 
