@@ -99,9 +99,11 @@ OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 # main program
 LIBS = -Lmusl/lib/crt -Lmusl/lib 
 spitbol: $(OBJS)
-	tcc -o spitbol $(LIBS) -lm  $(OBJS)  
-#	tcc -o spitbol $(LIBS) musl/lib/libm.a $(OBJS)  
-#	$(CC) -o spitbol -lm  -L/usr/lib32 -L/usr/lib/x86_64_linux_gnu $(CFLAGS) $(OBJS) 
+ifeq	($(DEBUG),0)
+	$(CC) -o spitbol $(LIBS) -lm  $(OBJS)  
+else
+	$(CC) -g -o spitbol $(LIBS) -lm  $(OBJS)  
+endif
 
 # Assembly language dependencies:
 errors.o: errors.s
