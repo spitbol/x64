@@ -33,6 +33,8 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include "os.h"
+#include "sproto.h"
 
 extern struct ioblk ttyiobin;
 extern struct ioblk ttyiobout;

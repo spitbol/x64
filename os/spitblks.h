@@ -17,12 +17,7 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-/*
-    First, define the C type word to be the same size as a word used
-    by the Macro SPITBOL compiler.  The type of a word is a signed
-    integer for now.
-*/
+#include "typedef.h"
 
 /*
         BUFFER CONTROL BLOCK

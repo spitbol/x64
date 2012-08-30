@@ -33,6 +33,7 @@ This file is part of Macro SPITBOL.
             3 - i/o error
 */
 
+#include "os.h"
 #include "port.h"
 
 static int back(struct ioblk *iob);

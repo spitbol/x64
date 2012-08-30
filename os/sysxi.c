@@ -59,7 +59,9 @@ This file is part of Macro SPITBOL.
 
 */
 
+#include "systype.h"
 #include "port.h"
+#include "os.h"
 #include "globals.ext"
 
 #if EXECFILE & !EXECSAVE

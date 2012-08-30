@@ -17,6 +17,11 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "systype.h"
+#include "os.h"
+#include "port.h"
+#include <fcntl.h>
+
 /*
     osopen( ioptr )
 
@@ -30,11 +35,6 @@ This file is part of Macro SPITBOL.
         0 - file opened successfully / -1 - open failed
 */
 
-#include "port.h"
-
-#if UNIX
-#include <fcntl.h>
-#endif
 
 int
 osopen(ioptr)

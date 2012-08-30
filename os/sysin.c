@@ -34,6 +34,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include "os.h"
 
 extern int inpcnt;
 extern char **inpptr;

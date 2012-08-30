@@ -19,6 +19,7 @@ This file is part of Macro SPITBOL.
 
 
 #include "port.h"
+#include "sproto.h"
 #include "globals.ext"
 #include <fcntl.h>
 

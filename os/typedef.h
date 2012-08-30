@@ -19,27 +19,30 @@ This file is part of Macro SPITBOL.
 
 
 /*
-    zyspp - obtain print parameters
+    Define the C type word to be the same size as a word used
+    by the Macro SPITBOL compiler.  The type of a word is a signed
+    integer for now.
 */
 
-#include "port.h"
-#include "os.h"
 
-extern uword pagewdth, lnsppage;
-extern long spitflag;
+typedef long word;
+typedef unsigned long uword;
 
-zyspp()
-{
-    /*
-       /   Set default case flag here; cannot set before starting up
-       /   compiler because of its clearing of its local data.
-     */
-    /*
-       /   Set page width, lines per page, and compiler flags.
-     */
-    SET_WA(pagewdth);
-    SET_WB(lnsppage);
-    SET_WC(spitflag);
+/* Size of integer accumulator */
+#define IABITS 32
 
-    return NORMAL_RETURN;
-}
+#if IABITS==32
+typedef long IATYPE;
+#elif IABITS==64
+typedef long long IATYPE;
+#endif
+
+/*
+    Some procedures use register to provide better code. Though
+    gains are dubious, the uses remain, but with the name REGISTER.
+    This permits avoid use of 'register' when debugging code, since
+    all declared variables have associated storage.
+*/
+
+#define REGISTER
+

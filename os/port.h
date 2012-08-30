@@ -17,7 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "systype.h"
 
 /*
         Turn off system-specific features unless specifically called for
@@ -160,17 +159,6 @@ This file is part of Macro SPITBOL.
 #define ERRDIST
 #endif
 
-/* DS TODO typedef int word;*/
-typedef long word;
-/*typedef unsigned int uword;*/
-typedef unsigned long uword;
-
-/* Size of integer accumulator */
-#if IABITS==32
-typedef long IATYPE;
-#elif IABITS==64
-typedef long long IATYPE;
-#endif
 
 /*
     Define the default end of line characters.  Use Unix definitions
@@ -413,8 +401,6 @@ typedef long long IATYPE;
 
 #define const
 
-#include "os.h"
-
 #ifdef PRIVATEBLOCKS
 #include "extern32.h"
 #else				/* PRIVATEBLOCKS */
@@ -423,4 +409,4 @@ typedef long long IATYPE;
 #endif				/* PRIVATEBLOCKS */
 
 
-#include "sproto.h"
+#define LSEEK lseek

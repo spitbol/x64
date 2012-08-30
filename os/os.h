@@ -23,12 +23,14 @@ This file is part of Macro SPITBOL.
 */
 
 #define REGISTER
+
+#include "typedef.h"
+#define MK_MP(minp,type) ((type)(minp))
+#define MP_OFF(cp,type) ((type)cp)
+
 extern word reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs;
 extern IATYPE reg_ia;
 extern double reg_ra;
-
-#define MK_MP(minp,type) ((type)(minp))
-#define MP_OFF(cp,type) ((type)cp)
 
 /*
     Macros to fetch a value of appropriate type from a compiler register

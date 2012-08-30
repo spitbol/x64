@@ -20,6 +20,7 @@ This file is part of Macro SPITBOL.
 /* startbrk starts up the logic for trapping user keyboard interrupts. */
 
 #include "port.h"
+#include "os.h"
 
 #if POLLING
 int brkpnd;

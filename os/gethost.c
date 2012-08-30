@@ -32,6 +32,8 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include "os.h"
+#include "sproto.h"
 
 char htype[] = "80386";
 char osver[] = ":Linux ";

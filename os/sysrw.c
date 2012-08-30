@@ -1,4 +1,5 @@
 /*
+#include "os.h"
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 
 This file is part of Macro SPITBOL.
@@ -33,6 +34,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include "os.h"
 
 zysrw()
 {

@@ -41,7 +41,9 @@ This file is part of Macro SPITBOL.
         -2      I/O error
 */
 
+#include "typedef.h"
 #include "port.h"
+#include "os.h"
 #include <string.h>
 
 word

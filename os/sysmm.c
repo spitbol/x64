@@ -29,6 +29,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include "os.h"
 
 extern char *topmem;
 extern char *maxmem;

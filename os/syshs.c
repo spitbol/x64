@@ -66,6 +66,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include "os.h"
 #include "globals.ext"
 
 extern uword lowxs;

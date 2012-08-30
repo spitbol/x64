@@ -32,6 +32,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include "sproto.h"
 
 /*
     Find environment variable vq of length vn.  Return

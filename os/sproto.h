@@ -20,6 +20,8 @@ This file is part of Macro SPITBOL.
 #ifndef _sproto_
 #define _sproto_
 
+#include "typedef.h"
+
 typedef int File_handle;
 typedef int File_mode;
 typedef int Open_method;

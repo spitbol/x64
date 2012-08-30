@@ -34,6 +34,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include "os.h"
 
 #if SETREAL
 #include <math.h>		/* for floor() */

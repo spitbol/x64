@@ -38,8 +38,9 @@ This file is part of Macro SPITBOL.
            suspended spitbol program
 */
 
+#include "systype.h"
 #include "port.h"
-
+#include "os.h"
 #include "globals.init"
 
 void wrterr(char *s);
