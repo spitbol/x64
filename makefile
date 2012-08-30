@@ -3,6 +3,7 @@
 
 
 # SPITBOL Version:
+ROOT=..
 TARGET=   x86
 DEBUG=	1
 
@@ -15,8 +16,8 @@ vpath %.c $(OS)
 
 
 AS=nasm
-CC=     ./usr/local/bin/tcc
-INCDIRS = -I./musl/include
+CC=     $(ROOT)/usr/local/bin/tcc
+INCDIRS = -I$(ROOT)/musl/include
 ifeq	($(DEBUG),1)
 CFLAGS =  -g  $(INCDIRS)
 endif
@@ -101,9 +102,9 @@ VOBJS =	spitbol.o
 OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 
 # main program
-LIBS = -L./tcc/lib -L./musl/crt -L./musl/lib 
+LIBS = -L$(ROOT)/musl/lib/crt -L$(ROOT)/musl/lib 
 spitbol: $(OBJS)
-	tcc -o spitbol $(LIBS) ./musl/lib/libm.a $(OBJS)  
+	tcc -o spitbol $(LIBS) $(ROOT)/usr/lib/libm.a $(OBJS)  
 #	ld -o spitbol -$(LIBS) $(OBJS) 
 #	ld -o spitbol -L./tcc/lib -L./musl/lib -lm  $(OBJS) 
 #	$(CC) -o spitbol -M -L/usr/lib/x86_64_linux_gnu $(CFLAGS) $(OBJS)  > spitbol.map
