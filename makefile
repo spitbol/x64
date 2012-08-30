@@ -15,17 +15,20 @@ vpath %.c $(OS)
 
 
 AS=nasm
-CC=     bin/tcc
-INCDIRS = -Imusl/include
+CC=     tcc
+#CC=     bin/tcc
+INCDIRS = -I../tcc/include -Imusl/include
 ifeq	($(DEBUG),1)
 CFLAGS =  -g  $(INCDIRS)
+else
+CFLAGS =  $(INCDIRS)
 endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASFLAGS = -f elf32 
+ASFLAGS = -f elf 
 else
-ASFLAGS = -f elf32 -g
+ASFLAGS = -f elf -g
 endif
 
 # Tools for processing Minimal source file.
@@ -97,12 +100,16 @@ VOBJS =	spitbol.o
 OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 
 # main program
-LIBS = -Lmusl/lib/crt -Lmusl/lib 
+LIBS = -Lmusl/lib  -Lmusl/crt -L/usr/lib
+#LIBS = -Lmusl/lib/crt -Lmusl/lib  -Lmusl/crt -L/usr/lib
+#LIBS = -Lmusl/lib -Llib
 spitbol: $(OBJS)
 ifeq	($(DEBUG),0)
-	$(CC) -o spitbol $(LIBS) -lm  $(OBJS)  
+ 	$(CC) -o spitbol $(LIBS) -lm  $(OBJS)  
+#	$(CC) -o spitbol $(LIBS) $(OBJS)  
 else
-	$(CC) -g -o spitbol $(LIBS) -lm  $(OBJS)  
+	$(CC) -g -o spitbol -lm  $(LIBS) $(OBJS)  
+#	$(CC) -g -o spitbol /musl/lib/crt1.o $(LIBS) $(OBJS)  
 endif
 
 # Assembly language dependencies:
