@@ -40,80 +40,74 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #include "globals.ext"
 
-zysbx ()
+zysbx()
 {
 #if !RUNTIME
 
-  executing = 1;
+    executing = 1;
 
-  if (readshell0)
-    {
-      doset (getrdiob (), 0L, 2);	/* bypass rest of source file */
-      curfile = inpcnt;		/* skip rest of cmd line files */
-      swcinp (inpcnt, inpptr);	/* v1.07 switch away from source file */
+    if (readshell0) {
+	doset(getrdiob(), 0L, 2);	/* bypass rest of source file */
+	curfile = inpcnt;	/* skip rest of cmd line files */
+	swcinp(inpcnt, inpptr);	/* v1.07 switch away from source file */
     }
-
 #if EXECFILE
-  /*
-     /   do we need to write an executable module, and if
-     /   so does writing it produce an error?
-   */
-  if (spitflag & WRTEXE)
-    {
-      ptscblk->len = appendext (*inpptr, BINEXT, ptscblk->str, 1);
+    /*
+       /   do we need to write an executable module, and if
+       /   so does writing it produce an error?
+     */
+    if (spitflag & WRTEXE) {
+	ptscblk->len = appendext(*inpptr, BINEXT, ptscblk->str, 1);
 
-      if (makeexec (ptscblk, spitflag & NOEXEC ? 3 : 4))
-	{
-	  wrterr ("Error writing load module.");
-	  zysej ();
+	if (makeexec(ptscblk, spitflag & NOEXEC ? 3 : 4)) {
+	    wrterr("Error writing load module.");
+	    zysej();
 	}
     }
-#endif /* EXECFILE */
+#endif				/* EXECFILE */
 
 #if SAVEFILE
-  /*
-     /   do we need to write a save (.spx) file, and if
-     /   so does writing it produce an error?
-   */
-  if (spitflag & WRTSAV)
-    {
-      ptscblk->len = appendext (*inpptr, RUNEXT, ptscblk->str, 1);
-      if (makeexec (ptscblk, spitflag & NOEXEC ? -3 : -4))
-	{
+    /*
+       /   do we need to write a save (.spx) file, and if
+       /   so does writing it produce an error?
+     */
+    if (spitflag & WRTSAV) {
+	ptscblk->len = appendext(*inpptr, RUNEXT, ptscblk->str, 1);
+	if (makeexec(ptscblk, spitflag & NOEXEC ? -3 : -4)) {
 #if USEQUIT
-	  quit (357);
-#else /* USEQUIT */
-	  wrterr ("Error writing save file.");
-	  zysej ();
-#endif /* USEQUIT */
+	    quit(357);
+#else				/* USEQUIT */
+	    wrterr("Error writing save file.");
+	    zysej();
+#endif				/* USEQUIT */
 	}
     }
-  /*
-     /   Execution does not resume here for dirty load modules.
-     /   Because we must allow for new versions with different
-     /   size C code, the stacked return addresses are not valid.
-     /   Therefore, inter.asm forces a jump to restart code that
-     /   eventually jumps to the minimal code following the call
-     /   the sysbx call.
-     /
-     / ***********************************************************
-     / * WE DO NOT RETURN HERE.  ANY NEW CODE ADDED HERE MUST BE *
-     / * DUPLICATED IN THE RESTART CODE                          *
-     / ***********************************************************
-   */
-#endif /* SAVEFILE */
+    /*
+       /   Execution does not resume here for dirty load modules.
+       /   Because we must allow for new versions with different
+       /   size C code, the stacked return addresses are not valid.
+       /   Therefore, inter.asm forces a jump to restart code that
+       /   eventually jumps to the minimal code following the call
+       /   the sysbx call.
+       /
+       / ***********************************************************
+       / * WE DO NOT RETURN HERE.  ANY NEW CODE ADDED HERE MUST BE *
+       / * DUPLICATED IN THE RESTART CODE                          *
+       / ***********************************************************
+     */
+#endif				/* SAVEFILE */
 
-  /*  execution resumes here when a.out file created with             */
-  /*  the -w option is reloaded.                                      */
+    /*  execution resumes here when a.out file created with             */
+    /*  the -w option is reloaded.                                      */
 
-  startbrk ();			/* turn on Control-C checking */
+    startbrk();			/* turn on Control-C checking */
 
-  /*  swcoup does real work  */
-  swcoup (outptr);
+    /*  swcoup does real work  */
+    swcoup(outptr);
 
-#else /* !RUNTIME */
-  __exit (1);
-#endif /* !RUNTIME */
+#else				/* !RUNTIME */
+    __exit(1);
+#endif				/* !RUNTIME */
 
-  return NORMAL_RETURN;
+    return NORMAL_RETURN;
 }

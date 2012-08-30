@@ -36,16 +36,15 @@ typedef long FILEPOS;		/* 32-bit file positions */
                           is altered.
 */
 
-struct bfblk
-{
-  word typ;			/*  type word           */
-  word len;			/*  length of bfblk        */
-  word size;			/*  size of buffer in bytes      */
-  word fill;			/*  number of bytes currently in buffer   */
-  word next;			/*  next buffer position to read/write */
-  FILEPOS offset;		/*  file position of first byte in buf */
-  FILEPOS curpos;		/*  physical file position    */
-  char buf[sizeof (word)];	/* buffer ([sizeof(word)] is kludge for C) */
+struct bfblk {
+    word typ;			/*  type word           */
+    word len;			/*  length of bfblk        */
+    word size;			/*  size of buffer in bytes      */
+    word fill;			/*  number of bytes currently in buffer   */
+    word next;			/*  next buffer position to read/write */
+    FILEPOS offset;		/*  file position of first byte in buf */
+    FILEPOS curpos;		/*  physical file position    */
+    char buf[sizeof(word)];	/* buffer ([sizeof(word)] is kludge for C) */
 };
 
 #define BFSIZE          (sizeof( struct bfblk ) - sizeof( word ))
@@ -57,13 +56,12 @@ struct bfblk
     operations are passed this block.
 */
 
-struct fcblk
-{
-  word typ;			/*  type word                                   */
-  word len;			/*  length of fcblk                             */
-  word rsz;			/*  record size                                 */
-  struct ioblk *iob;	/*  pointer to IOBLK                    */
-  word mode;			/*  1=line mode, 0 = raw mode   */
+struct fcblk {
+    word typ;			/*  type word                                   */
+    word len;			/*  length of fcblk                             */
+    word rsz;			/*  record size                                 */
+    struct ioblk *iob;		/*  pointer to IOBLK                    */
+    word mode;			/*  1=line mode, 0 = raw mode   */
 };
 
 #define FCSIZE          (sizeof( struct fcblk ))
@@ -83,20 +81,19 @@ struct fcblk
 
 */
 
-struct ioblk
-{
-  word typ;			/*  type word                           */
-  word len;			/*  length of IOBLK                     */
-  struct scblk *fnm;	/*  pointer to SCBLK holding filename   */
-  word pid;			/*  process id for pipe                 */
-  struct bfblk *bfb;	/*  pointer to BFBLK (type XNBLK)       */
-  word fdn;			/*  file descriptor number              */
-  word flg1;			/*  first nine flags                    */
-  word flg2;			/*  second nine flags                   */
-  word eol1;			/*  end of line character 1             */
-  word eol2;			/*  end of line character 2             */
-  word share;			/*      sharing mode                            */
-  word action;			/*  file open actions                   */
+struct ioblk {
+    word typ;			/*  type word                           */
+    word len;			/*  length of IOBLK                     */
+    struct scblk *fnm;		/*  pointer to SCBLK holding filename   */
+    word pid;			/*  process id for pipe                 */
+    struct bfblk *bfb;		/*  pointer to BFBLK (type XNBLK)       */
+    word fdn;			/*  file descriptor number              */
+    word flg1;			/*  first nine flags                    */
+    word flg2;			/*  second nine flags                   */
+    word eol1;			/*  end of line character 1             */
+    word eol2;			/*  end of line character 2             */
+    word share;			/*      sharing mode                            */
+    word action;		/*  file open actions                   */
 };
 
 #define IOSIZE          (sizeof( struct ioblk ))

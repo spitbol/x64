@@ -33,9 +33,9 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 int
-dosys (cmd, path)
-     char *cmd;
-     char *path;
+dosys(cmd, path)
+char *cmd;
+char *path;
 {
-  return system (cmd);
+    return system(cmd);
 }

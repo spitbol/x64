@@ -43,59 +43,56 @@ This file is part of Macro SPITBOL.
 #include <fcntl.h>
 
 #if EXTFUN
-static word openloadfile (char *namebuf);
-static void closeloadfile (word fd);
-#endif /* EXTFUN */
+static word openloadfile(char *namebuf);
+static void closeloadfile(word fd);
+#endif				/* EXTFUN */
 
-zysld ()
+zysld()
 {
 #if EXTFUN
-  word fd;			/* keep stack word-aligned */
-  void *result = 0;
+    word fd;			/* keep stack word-aligned */
+    void *result = 0;
 
-  fd = openloadfile (ptscblk->str);
-  if (fd != -1)
-    {				/* If file opened OK */
-      result = loadef (fd, ptscblk->str);	/* Invoke loader */
-      closeloadfile (fd);
-      switch ((word) result)
-	{
+    fd = openloadfile(ptscblk->str);
+    if (fd != -1) {		/* If file opened OK */
+	result = loadef(fd, ptscblk->str);	/* Invoke loader */
+	closeloadfile(fd);
+	switch ((word) result) {
 	case (word) 0:
-	  return EXIT_2;	/* I/O error */
+	    return EXIT_2;	/* I/O error */
 	case (word) - 1:
-	  return EXIT_1;	/* doesn't exist */
+	    return EXIT_1;	/* doesn't exist */
 	case (word) - 2:
-	  return EXIT_3;	/* insufficient memory */
+	    return EXIT_3;	/* insufficient memory */
 	default:
-	  SET_XR (result);
-	  return NORMAL_RETURN;	/* Success, return pointer to stuff in EFBLK */
+	    SET_XR(result);
+	    return NORMAL_RETURN;	/* Success, return pointer to stuff in EFBLK */
 	}
-    }
-  else
-    return EXIT_1;
+    } else
+	return EXIT_1;
 }
 
 
 static void
-closeloadfile (fd)
-     word fd;
+closeloadfile(fd)
+word fd;
 {
 }
 
 static word
-openloadfile (file)
-     char *file;
+openloadfile(file)
+char *file;
 {
 
-  REGISTER struct scblk *lnscb = XL (struct scblk *);
-  REGISTER struct scblk *fnscb = XR (struct scblk *);
-  char *savecp;
-  char savechar;
+    REGISTER struct scblk *lnscb = XL(struct scblk *);
+    REGISTER struct scblk *fnscb = XR(struct scblk *);
+    char *savecp;
+    char savechar;
 
 }
 
 
-#else /* EXTFUN */
-  return EXIT_1;
+#else				/* EXTFUN */
+    return EXIT_1;
 }
-#endif /* EXTFUN */
+#endif				/* EXTFUN */

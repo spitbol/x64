@@ -23,58 +23,59 @@ This file is part of Macro SPITBOL.
  *
  */
 void
-prompt ()
+prompt()
 {
 #if RUNTIME
-  wrterr ("usage: spitrun [options] file[.spx] [program arguments]");
-#else /* RUNTIME */
+    wrterr("usage: spitrun [options] file[.spx] [program arguments]");
+#else				/* RUNTIME */
 
 #if SAVEFILE
-  wrterr ("usage: spitbol [options] files[.spt or .spx] [args to HOST(2)]");
-#else /* SAVEFILE */
-  wrterr ("usage: spitbol [options] files[.spt] [args to HOST(2)]");
-#endif /* SAVEFILE */
+    wrterr
+	("usage: spitbol [options] files[.spt or .spx] [args to HOST(2)]");
+#else				/* SAVEFILE */
+    wrterr("usage: spitbol [options] files[.spt] [args to HOST(2)]");
+#endif				/* SAVEFILE */
 
-#endif /* RUNTIME */
+#endif				/* RUNTIME */
 
 #if RUNTIME
-  wrterr ("options: (# is a decimal number)");
-  wrterr ("-u \"string\" data string available to program");
-  wrterr ("-#=file   associate file with I/O channel #");
-#else /* RUNTIME */
-  wrterr
-    ("source files are concatenated, filename '-' is standard input/output");
-  wrterr
-    ("# is a decimal number.  Append \"k\" for kilobytes, \"m\" for megabytes.");
-  wrterr ("options:");
-  wrterr
-    ("-d# #bytes max heap            -i# #bytes initial heap size & enlarge amount");
-  wrterr ("-m# #bytes max object size     -s# #bytes stack size");
-  wrterr ("-c compiler statistics         -x execution statistics");
-  wrterr ("-a same as -lcx                -l normal listing");
-  wrterr ("-p listing with wide titles    -z listing with form feeds");
-  wrterr
-    ("-o=file[.lst]  listing file    -h suppress version ID/date in listing");
-  wrterr ("-g# lines per page             -t# line width in characters");
-  wrterr ("-b suppress signon message     -e errors to list file only");
-  wrterr ("-k run with compilation error  -n suppress execution");
-  wrterr
-    ("-f no case-folding             -u \"string\" data passed to HOST(0)");
+    wrterr("options: (# is a decimal number)");
+    wrterr("-u \"string\" data string available to program");
+    wrterr("-#=file   associate file with I/O channel #");
+#else				/* RUNTIME */
+    wrterr
+	("source files are concatenated, filename '-' is standard input/output");
+    wrterr
+	("# is a decimal number.  Append \"k\" for kilobytes, \"m\" for megabytes.");
+    wrterr("options:");
+    wrterr
+	("-d# #bytes max heap            -i# #bytes initial heap size & enlarge amount");
+    wrterr("-m# #bytes max object size     -s# #bytes stack size");
+    wrterr("-c compiler statistics         -x execution statistics");
+    wrterr("-a same as -lcx                -l normal listing");
+    wrterr("-p listing with wide titles    -z listing with form feeds");
+    wrterr
+	("-o=file[.lst]  listing file    -h suppress version ID/date in listing");
+    wrterr("-g# lines per page             -t# line width in characters");
+    wrterr("-b suppress signon message     -e errors to list file only");
+    wrterr("-k run with compilation error  -n suppress execution");
+    wrterr
+	("-f no case-folding             -u \"string\" data passed to HOST(0)");
 
 #if EXECFILE & SAVEFILE
-  wrterr ("-w write load (.out) module    -y write save (.spx) file");
-#endif /* EXECFILE & SAVEFILE */
+    wrterr("-w write load (.out) module    -y write save (.spx) file");
+#endif				/* EXECFILE & SAVEFILE */
 
 #if SAVEFILE & !EXECFILE
-  wrterr ("-y write save (.spx) file");
-#endif /* SAVEFILE & !EXECFILE */
+    wrterr("-y write save (.spx) file");
+#endif				/* SAVEFILE & !EXECFILE */
 
-  wrterr ("-r INPUT from source file following END statement");
-  wrterr ("-T=file  write TERMINAL output to file");
-  wrterr ("-#=file[options]  associate file with I/O channel #");
-  wrterr ("option defaults: -d64m -i128k -m4m -s128k -g60 -t120");
+    wrterr("-r INPUT from source file following END statement");
+    wrterr("-T=file  write TERMINAL output to file");
+    wrterr("-#=file[options]  associate file with I/O channel #");
+    wrterr("option defaults: -d64m -i128k -m4m -s128k -g60 -t120");
 
-#endif /* RUNTIME */
+#endif				/* RUNTIME */
 
-  __exit (0);
+    __exit(0);
 }

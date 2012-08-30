@@ -38,32 +38,32 @@ This file is part of Macro SPITBOL.
     pointer to value (just past '='), or 0 if not found.
 */
 char *
-findenv (vq, vn)
-     char *vq;
-     int vn;
+findenv(vq, vn)
+char *vq;
+int vn;
 {
-  char savech;
-  char *p;
+    char savech;
+    char *p;
 
-  savech = make_c_str (&vq[vn]);
-  p = (char *) getenv (vq);	/* use library lookup routine */
-  unmake_c_str (&vq[vn], savech);
-  return p;
+    savech = make_c_str(&vq[vn]);
+    p = (char *) getenv(vq);	/* use library lookup routine */
+    unmake_c_str(&vq[vn], savech);
+    return p;
 
 }
 
-rdenv (varname, result)
-     REGISTER struct scblk *varname, *result;
+rdenv(varname, result)
+REGISTER struct scblk *varname, *result;
 {
-  REGISTER char *p;
+    REGISTER char *p;
 
 
-  if ((p = findenv (varname->str, varname->len)) == 0)
-    return -1;
+    if ((p = findenv(varname->str, varname->len)) == 0)
+	return -1;
 
-  cpys2sc (p, result, TSCBLK_LENGTH);
+    cpys2sc(p, result, TSCBLK_LENGTH);
 
-  return 0;
+    return 0;
 }
 
 /* make a string into a C string by changing the last character to null,
@@ -72,24 +72,24 @@ rdenv (varname, result)
  * this works if passed a read-only C-string.
  */
 char
-make_c_str (p)
-     char *p;
+make_c_str(p)
+char *p;
 {
-  char rtn;
+    char rtn;
 
-  rtn = *p;
-  if (rtn)
-    *p = 0;
-  return rtn;
+    rtn = *p;
+    if (rtn)
+	*p = 0;
+    return rtn;
 }
 
 
 /* Intel compiler bug? */
 void
-unmake_c_str (p, savech)
-     char *p;
-     char savech;
+unmake_c_str(p, savech)
+char *p;
+char savech;
 {
-  if (savech)
-    *p = savech;
+    if (savech)
+	*p = savech;
 }

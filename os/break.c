@@ -29,22 +29,23 @@ int brkpnd;
 #define SigType void
 
 static
-SigType (*cstat) (int);
-     void catchbrk (int sig);
-     void rearmbrk (void);
+ SigType(*cstat) (int);
+void catchbrk(int sig);
+void rearmbrk(void);
 
-     void startbrk ()		/* start up break logic */
-{
-  brkpnd = 0;
-  cstat = signal (SIGINT, catchbrk);	/* set to catch control-C */
+void
+startbrk()
+{				/* start up break logic */
+    brkpnd = 0;
+    cstat = signal(SIGINT, catchbrk);	/* set to catch control-C */
 }
 
 
 
 void
-endbrk ()			/* terminate break logic */
-{
-  signal (SIGINT, cstat);	/* restore original trap value */
+endbrk()
+{				/* terminate break logic */
+    signal(SIGINT, cstat);	/* restore original trap value */
 }
 
 
@@ -52,22 +53,22 @@ endbrk ()			/* terminate break logic */
  *  catchbrk() - come here when a user interrupt occurs
  */
 SigType
-catchbrk (sig)
-     int sig;
+catchbrk(sig)
+int sig;
 {
-  word stmctv, stmcsv;
-  brkpnd++;
-  stmctv = get_min_value (STMCT, word) - 1;
-  stmcsv = get_min_value (STMCS, word);
-  set_min_value (STMCT, 1, word);	/* force STMGO loop to check */
-  set_min_value (STMCS, stmcsv - stmctv, word);	/* counters quickly */
-  set_min_value (POLCT, 1, word);	/* force quick SYSPL call */
+    word stmctv, stmcsv;
+    brkpnd++;
+    stmctv = get_min_value(STMCT, word) - 1;
+    stmcsv = get_min_value(STMCS, word);
+    set_min_value(STMCT, 1, word);	/* force STMGO loop to check */
+    set_min_value(STMCS, stmcsv - stmctv, word);	/* counters quickly */
+    set_min_value(POLCT, 1, word);	/* force quick SYSPL call */
 }
 
 
 void
-rearmbrk ()			/* rearm after a trap occurs */
-{
-  signal (SIGINT, catchbrk);	/* set to catch traps */
+rearmbrk()
+{				/* rearm after a trap occurs */
+    signal(SIGINT, catchbrk);	/* set to catch traps */
 }
-#endif /* POLLING */
+#endif				/* POLLING */

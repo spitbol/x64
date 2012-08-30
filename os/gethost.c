@@ -39,52 +39,47 @@ char osver[] = ":Linux ";
 #include <fcntl.h>
 
 void
-gethost (scptr, maxlen)
-     struct scblk *scptr;
-     word maxlen;
+gethost(scptr, maxlen)
+struct scblk *scptr;
+word maxlen;
 
 {
-  struct scblk *pheadv = get_data_offset (HEADV, struct scblk *);
-  int cnt = 0;
-  word fd;
+    struct scblk *pheadv = get_data_offset(HEADV, struct scblk *);
+    int cnt = 0;
+    word fd;
 
-  if ((fd = spit_open (HOST_FILE, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
-		       IO_OPEN_IF_EXISTS)) >= 0)
-    {
-      cnt = read (fd, scptr->str, maxlen);
-      close (fd);
+    if ((fd = spit_open(HOST_FILE, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
+			IO_OPEN_IF_EXISTS)) >= 0) {
+	cnt = read(fd, scptr->str, maxlen);
+	close(fd);
     }
-
 #if EOL2
-  if (cnt > 0 && scptr->str[cnt - 2] == EOL1)
-    {
-      cnt--;
-      scptr->str[--cnt] = 0;
+    if (cnt > 0 && scptr->str[cnt - 2] == EOL1) {
+	cnt--;
+	scptr->str[--cnt] = 0;
     }
-#else /* EOL2 */
-  if (cnt > 0 && scptr->str[cnt - 1] == EOL1)
-    {
-      scptr->str[--cnt] = 0;
+#else				/* EOL2 */
+    if (cnt > 0 && scptr->str[cnt - 1] == EOL1) {
+	scptr->str[--cnt] = 0;
     }
-#endif /* EOL2 */
+#endif				/* EOL2 */
 
-  if (cnt == 0)
-    {
-      /* Could not read spithost file.  Construct string instead */
-      REGISTER  char *scp;
+    if (cnt == 0) {
+	/* Could not read spithost file.  Construct string instead */
+	REGISTER char *scp;
 
-      gettype (scptr, maxlen);
-      scp = scptr->str + scptr->len;
-      scp = mystrcpy (scp, osver);
-      scp = mystrcpy (scp, ":Macro SPITBOL ");
-      scp += mystrncpy (scp, pheadv->str, pheadv->len);
-      scp += mystrncpy (scp, pid1->str, (int) pid1->len);
-      *scp++ = ' ';
-      *scp++ = '#';
-      cnt = scp - scptr->str;
+	gettype(scptr, maxlen);
+	scp = scptr->str + scptr->len;
+	scp = mystrcpy(scp, osver);
+	scp = mystrcpy(scp, ":Macro SPITBOL ");
+	scp += mystrncpy(scp, pheadv->str, pheadv->len);
+	scp += mystrncpy(scp, pid1->str, (int) pid1->len);
+	*scp++ = ' ';
+	*scp++ = '#';
+	cnt = scp - scptr->str;
     }
 
-  scptr->len = cnt;
+    scptr->len = cnt;
 }
 
 
@@ -93,9 +88,9 @@ gethost (scptr, maxlen)
  * Get type of host computer
  */
 void
-gettype (scptr, maxlen)
-     struct scblk *scptr;
-     word maxlen;
+gettype(scptr, maxlen)
+struct scblk *scptr;
+word maxlen;
 {
-  cpys2sc (htype, scptr, maxlen);	/* Computer type */
+    cpys2sc(htype, scptr, maxlen);	/* Computer type */
 }

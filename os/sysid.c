@@ -39,16 +39,16 @@ This file is part of Macro SPITBOL.
         be active with an error message when zysid is called.
 */
 
-zysid ()
+zysid()
 {
-  REGISTER char *cp;
+    REGISTER char *cp;
 
-  SET_XR (pid1);
-  gettype (pid2blk, ID2BLK_LENGTH);
-  cp = pid2blk->str + pid2blk->len;
-  *cp++ = ' ';
-  *cp++ = ' ';
-  pid2blk->len += 2 + storedate (cp, ID2BLK_LENGTH - pid2blk->len);
-  SET_XL (pid2blk);
-  return NORMAL_RETURN;
+    SET_XR(pid1);
+    gettype(pid2blk, ID2BLK_LENGTH);
+    cp = pid2blk->str + pid2blk->len;
+    *cp++ = ' ';
+    *cp++ = ' ';
+    pid2blk->len += 2 + storedate(cp, ID2BLK_LENGTH - pid2blk->len);
+    SET_XL(pid2blk);
+    return NORMAL_RETURN;
 }

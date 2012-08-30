@@ -34,10 +34,10 @@ typedef long i;
  * i_mli - multiply to accumulator
  */
 i
-i_mli (arg, ia)
-     i arg, ia;
+i_mli(arg, ia)
+i arg, ia;
 {
-  return ia * arg;
+    return ia * arg;
 }
 
 
@@ -45,20 +45,20 @@ i_mli (arg, ia)
  * i_dvi - divide into accumulator
  */
 i
-i_dvi (arg, ia)
-     i arg, ia;
+i_dvi(arg, ia)
+i arg, ia;
 {
-  return ia / arg;
+    return ia / arg;
 }
 
 /*
  * i_rmi - remainder after division into accumulator
  */
 i
-i_rmi (arg, ia)
-     i arg, ia;
+i_rmi(arg, ia)
+i arg, ia;
 {
-  return ia % arg;
+    return ia % arg;
 }
 
-#endif /* SUN4 */
+#endif				/* SUN4 */

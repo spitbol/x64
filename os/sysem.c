@@ -58,14 +58,14 @@ This file is part of Macro SPITBOL.
 
 extern unsigned char ERRDIST errors[];
 extern unsigned char ERRDIST phrases[];
-word msgcopy (word n, unsigned char ERRDIST * source, char *dest);
-word special (word c);
+word msgcopy(word n, unsigned char ERRDIST * source, char *dest);
+word special(word c);
 
-zysem ()
+zysem()
 {
-  ptscblk->len = msgcopy (WA (word), errors, ptscblk->str);
-  SET_XR (ptscblk);
-  return NORMAL_RETURN;
+    ptscblk->len = msgcopy(WA(word), errors, ptscblk->str);
+    SET_XR(ptscblk);
+    return NORMAL_RETURN;
 }
 
 /*
@@ -75,16 +75,16 @@ zysem ()
         Return index to phrase array if c is a special character.
 */
 word
-special (c)
-     word c;
+special(c)
+word c;
 {
-  if (c == 0)
-    return 0;
-  if (c < 32)
-    return c;
-  if (c < 128)
-    return 0;
-  return (c - 96);
+    if (c == 0)
+	return 0;
+    if (c < 32)
+	return c;
+    if (c < 128)
+	return 0;
+    return (c - 96);
 }
 
 /*
@@ -98,45 +98,42 @@ special (c)
 */
 
 word
-msgcopy (n, source, dest)
-     word n;
-     unsigned char ERRDIST *source;
-     char *dest;
+msgcopy(n, source, dest)
+word n;
+unsigned char ERRDIST *source;
+char *dest;
 {
-  word k;
-  unsigned char c;
-  char *dstart;
+    word k;
+    unsigned char c;
+    char *dstart;
 
-  /*
-     /   Save starting destination pointer
-   */
-  dstart = dest;
+    /*
+       /   Save starting destination pointer
+     */
+    dstart = dest;
 
-  /*
-     /   Scan to first character of Nth string
-   */
-  for (; n--;)
-    {
-      for (; *source++;)
-	;
+    /*
+       /   Scan to first character of Nth string
+     */
+    for (; n--;) {
+	for (; *source++;);
     }
 
-  /*
-     /   Examine next character of string.
-     /   If it is a special character, recurse to unpack it
-     /      from phrases array.
-     /   If normal character, just copy it.
-   */
-  for (; (c = *source++) != 0;)
-    {
-      if ((k = special (c)) != 0)
-	dest += msgcopy (k, phrases, dest);
-      else
-	*dest++ = c;
+    /*
+       /   Examine next character of string.
+       /   If it is a special character, recurse to unpack it
+       /      from phrases array.
+       /   If normal character, just copy it.
+     */
+    for (; (c = *source++) != 0;) {
+	if ((k = special(c)) != 0)
+	    dest += msgcopy(k, phrases, dest);
+	else
+	    *dest++ = c;
     }
 
-  /*
-     /   Return number of characters transferred.
-   */
-  return dest - dstart;
+    /*
+       /   Return number of characters transferred.
+     */
+    return dest - dstart;
 }

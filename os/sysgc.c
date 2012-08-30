@@ -44,8 +44,8 @@ This file is part of Macro SPITBOL.
 
 extern word in_gbcol;
 
-zysgc ()
+zysgc()
 {
-  in_gbcol = XR (word);		/* retain information */
-  return NORMAL_RETURN;
+    in_gbcol = XR(word);	/* retain information */
+    return NORMAL_RETURN;
 }

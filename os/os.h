@@ -80,9 +80,9 @@ extern double reg_ra;
         Function to call into minimal code.
         The argument is an ordinal number defined below.
 */
-extern void minimal_call (word callno);
-extern void popregs (void);
-extern void pushregs (void);
+extern void minimal_call(word callno);
+extern void popregs(void);
+extern void pushregs(void);
 #define MINIMAL_CALL(cn) minimal_call(cn)
 #define MINSAVE() pushregs()
 #define MINRESTORE() popregs()
@@ -93,22 +93,21 @@ extern void pushregs (void);
     The order of entries here must correspond to the order of
     table entries in the INTER assembly language module.
 */
-enum calltab
-{
-  relaj_callid,
-  relcr_callid,
-  reloc_callid,
-  alloc_callid,
-  alocs_callid,
-  alost_callid,
-  blkln_callid,
-  insta_callid,
-  rstrt_callid,
-  start_callid,
-  filnm_callid,
-  dtype_callid,
-  enevs_callid,
-  engts_callid
+enum calltab {
+    relaj_callid,
+    relcr_callid,
+    reloc_callid,
+    alloc_callid,
+    alocs_callid,
+    alost_callid,
+    blkln_callid,
+    insta_callid,
+    rstrt_callid,
+    start_callid,
+    filnm_callid,
+    dtype_callid,
+    enevs_callid,
+    engts_callid
 };
 
 /*
@@ -128,54 +127,55 @@ set_min_value sets the contents of an item of Minimal data.
     Names for accessing minimal data values via get_data_offset macro.
 */
 extern word
-  GBCNT,
-  HEADV,
-  MXLEN,
-  STAGE,
-  TIMSX,
-  DNAMB,
-  DNAMP,
-  STATE,
-  STBAS,
-  STATB,
-  POLCT,
-  TYPET,
-  LOWSPMIN,
-  FLPRT,
-  FLPTR,
-  GTCEF,
-  HSHTB,
-  PMHBS,
-  R_FCB,
-  C_AAA,
-  C_YYY,
-  G_AAA,
-  W_YYY,
-  R_COD,
-  KVSTN,
-  KVDMP,
-  KVFTR,
-  KVCOM,
-  KVPFL,
-  CSWFL,
-  STMCS, STMCT, TICBLK, TSCBLK, ID1, ID2BLK, INPBUF, TTYBUF, END_MIN_DATA;
+    GBCNT,
+    HEADV,
+    MXLEN,
+    STAGE,
+    TIMSX,
+    DNAMB,
+    DNAMP,
+    STATE,
+    STBAS,
+    STATB,
+    POLCT,
+    TYPET,
+    LOWSPMIN,
+    FLPRT,
+    FLPTR,
+    GTCEF,
+    HSHTB,
+    PMHBS,
+    R_FCB,
+    C_AAA,
+    C_YYY,
+    G_AAA,
+    W_YYY,
+    R_COD,
+    KVSTN,
+    KVDMP,
+    KVFTR,
+    KVCOM,
+    KVPFL,
+    CSWFL,
+    STMCS, STMCT, TICBLK, TSCBLK, ID1, ID2BLK, INPBUF, TTYBUF,
+    END_MIN_DATA;
 
 /*
     Names for accessing minimal code values via get_code_offset macro.
 */
-extern void B_EFC ();
-extern void B_ICL ();
-extern void B_RCL ();
-extern void B_SCL ();
-extern void B_VCT ();
-extern void B_XNT ();
-extern void B_XRT ();
-extern void DFFNC ();
-extern void S_AAA ();
-extern void S_YYY ();
+extern void B_EFC();
+extern void B_ICL();
+extern void B_RCL();
+extern void B_SCL();
+extern void B_VCT();
+extern void B_XNT();
+extern void B_XRT();
+extern void DFFNC();
+extern void S_AAA();
+extern void S_YYY();
 
-#else /* DIRECT */
-extern word *minoff (word valno);
+#else				/* DIRECT */
+extern word *minoff(word valno);
 #define get_code_offset(vn,type) ((type)minoff(vn))
 #define get_data_offset(vn,type) ((type)minoff(vn))
 #define get_min_value(vn,type)  ((type)*minoff(vn))
@@ -186,60 +186,59 @@ extern word *minoff (word valno);
     The order of entries here must correspond to the order of
     valtab entries in the INTER assembly language module.
 */
-enum valtab
-{
-  GBCNT,
-  HEADV,
-  MXLEN,
-  STAGE,
-  TIMSX,
-  DNAMB,
-  DNAMP,
-  STATE,
-  B_EFC,
-  B_ICL,
-  B_SCL,
-  B_VCT,
-  B_XNT,
-  B_XRT,
-  STBAS,
-  STATB,
-  POLCT,
-  TYPET,
-  DFFNC,
-  LOWSPMIN,
-  FLPRT,
-  FLPTR,
-  GTCEF,
-  HSHTB,
-  PMHBS,
-  R_FCB,
-  C_AAA,
-  C_YYY,
-  G_AAA,
-  W_YYY,
-  S_AAA,
-  S_YYY,
-  R_COD,
-  KVSTN,
-  KVDMP,
-  KVFTR,
-  KVCOM,
-  KVPFL,
-  CSWFL,
-  STMCS,
-  STMCT,
-  TICBLK,
-  TSCBLK,
-  ID1,
-  ID2BLK,
-  INPBUF,
-  TTYBUF,
-  B_RCL,
-  END_MIN_DATA
+enum valtab {
+    GBCNT,
+    HEADV,
+    MXLEN,
+    STAGE,
+    TIMSX,
+    DNAMB,
+    DNAMP,
+    STATE,
+    B_EFC,
+    B_ICL,
+    B_SCL,
+    B_VCT,
+    B_XNT,
+    B_XRT,
+    STBAS,
+    STATB,
+    POLCT,
+    TYPET,
+    DFFNC,
+    LOWSPMIN,
+    FLPRT,
+    FLPTR,
+    GTCEF,
+    HSHTB,
+    PMHBS,
+    R_FCB,
+    C_AAA,
+    C_YYY,
+    G_AAA,
+    W_YYY,
+    S_AAA,
+    S_YYY,
+    R_COD,
+    KVSTN,
+    KVDMP,
+    KVFTR,
+    KVCOM,
+    KVPFL,
+    CSWFL,
+    STMCS,
+    STMCT,
+    TICBLK,
+    TSCBLK,
+    ID1,
+    ID2BLK,
+    INPBUF,
+    TTYBUF,
+    B_RCL,
+    END_MIN_DATA
 };
 
-#endif /* DIRECT */
+#endif				/* DIRECT */
 
 /* Some shorthand notations */
 #define pid1 get_data_offset(ID1,struct scblk *)

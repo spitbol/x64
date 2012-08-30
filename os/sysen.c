@@ -38,18 +38,18 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-zysen ()
+zysen()
 {
-  REGISTER struct fcblk *fcb = WA (struct fcblk *);
-  REGISTER struct ioblk *iob = MK_MP (fcb->iob, struct ioblk *);
+    REGISTER struct fcblk *fcb = WA(struct fcblk *);
+    REGISTER struct ioblk *iob = MK_MP(fcb->iob, struct ioblk *);
 
-  /* ensure the file is open */
-  if (!(iob->flg1 & IO_OPN))
-    return EXIT_1;
+    /* ensure the file is open */
+    if (!(iob->flg1 & IO_OPN))
+	return EXIT_1;
 
-  /* now close it */
-  if (osclose (iob))
-    return EXIT_3;
+    /* now close it */
+    if (osclose(iob))
+	return EXIT_3;
 
-  return NORMAL_RETURN;
+    return NORMAL_RETURN;
 }

@@ -37,20 +37,19 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 void
-cpys2sc (cp, scptr, maxlen)
-     char *cp;
-     struct scblk *scptr;
-     word maxlen;
+cpys2sc(cp, scptr, maxlen)
+char *cp;
+struct scblk *scptr;
+word maxlen;
 
 {
-  REGISTER  word i;
-  REGISTER  char *scbcp;
+    REGISTER word i;
+    REGISTER char *scbcp;
 
-  scptr->typ = type_scl;
-  scbcp = scptr->str;
-  for (i = 0; i < maxlen && ((*scbcp++ = *cp++) != 0); i++)
-    ;
-  scptr->len = i;
-  while (i++ & (sizeof (word) - 1))
-    *scbcp++ = 0;
+    scptr->typ = type_scl;
+    scbcp = scptr->str;
+    for (i = 0; i < maxlen && ((*scbcp++ = *cp++) != 0); i++);
+    scptr->len = i;
+    while (i++ & (sizeof(word) - 1))
+	*scbcp++ = 0;
 }

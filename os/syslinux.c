@@ -42,58 +42,59 @@ This file is part of Macro SPITBOL.
 #include <dlfcn.h>
 
 typedef struct xnblk XFNode, *pXFNode;
-typedef mword (*PFN) ();	/* pointer to function */
+typedef mword(*PFN) ();		/* pointer to function */
 
 static union block *scanp;	/* used by scanef/nextef */
 static pXFNode xnfree = (pXFNode) 0;	/* list of freed blocks */
 
-extern IATYPE f_2_i (double ra);
-extern double i_2_f (IATYPE ia);
-extern double f_add (double arg, double ra);
-extern double f_sub (double arg, double ra);
-extern double f_mul (double arg, double ra);
-extern double f_div (double arg, double ra);
-extern double f_neg (double ra);
-extern double f_atn (double ra);
-extern double f_chp (double ra);
-extern double f_cos (double ra);
-extern double f_etx (double ra);
-extern double f_lnf (double ra);
-extern double f_sin (double ra);
-extern double f_sqr (double ra);
-extern double f_tan (double ra);
+extern IATYPE f_2_i(double ra);
+extern double i_2_f(IATYPE ia);
+extern double f_add(double arg, double ra);
+extern double f_sub(double arg, double ra);
+extern double f_mul(double arg, double ra);
+extern double f_div(double arg, double ra);
+extern double f_neg(double ra);
+extern double f_atn(double ra);
+extern double f_chp(double ra);
+extern double f_cos(double ra);
+extern double f_etx(double ra);
+extern double f_lnf(double ra);
+extern double f_sin(double ra);
+extern double f_sqr(double ra);
+extern double f_tan(double ra);
 
 static APDF flttab = {
-  (double (*)()) f_2_i,		/* float to integer */
-  i_2_f,			/* integer to float */
-  f_add,			/* floating add */
-  f_sub,			/* floating subtract */
-  f_mul,			/* floating multiply */
-  f_div,			/* floating divide */
-  f_neg,			/* floating negage */
-  f_atn,			/* arc tangent */
-  f_chp,			/* chop */
-  f_cos,			/* cosine */
-  f_etx,			/* exponential */
-  f_lnf,			/* natural log */
-  f_sin,			/* sine */
-  f_sqr,			/* square root */
-  f_tan				/* tangent */
+    (double (*)()) f_2_i,	/* float to integer */
+    i_2_f,			/* integer to float */
+    f_add,			/* floating add */
+    f_sub,			/* floating subtract */
+    f_mul,			/* floating multiply */
+    f_div,			/* floating divide */
+    f_neg,			/* floating negage */
+    f_atn,			/* arc tangent */
+    f_chp,			/* chop */
+    f_cos,			/* cosine */
+    f_etx,			/* exponential */
+    f_lnf,			/* natural log */
+    f_sin,			/* sine */
+    f_sqr,			/* square root */
+    f_tan			/* tangent */
 };
 
 misc miscinfo = { 0x105,	/* internal version number */
-  GCCi32 ? t_lnx8632 : t_lnx8664,	/* environment */
-  0,				/* spare */
-  0,				/* number of arguments */
-  0,				/* pointer to type table */
-  0,				/* pointer to XNBLK */
-  0,				/* pointer to EFBLK */
-  (APDF *) flttab,		/* pointer to flttab */
+    GCCi32 ? t_lnx8632 : t_lnx8664,	/* environment */
+    0,				/* spare */
+    0,				/* number of arguments */
+    0,				/* pointer to type table */
+    0,				/* pointer to XNBLK */
+    0,				/* pointer to EFBLK */
+    (APDF *) flttab,		/* pointer to flttab */
 };
 
 /* Assembly-language helper needed for final linkage to function:
  */
-extern mword callextfun (struct efblk * efb, union block ** sp, mword nargs, mword nbytes);
+extern mword callextfun(struct efblk *efb, union block **sp, mword nargs,
+			mword nbytes);
 
 
 /*
@@ -114,107 +115,105 @@ extern mword callextfun (struct efblk * efb, union block ** sp, mword nargs, mwo
  *
  */
 union block *
-callef (efb, sp, nargs)
-     struct efblk *efb;
-     union block **sp;
-     mword nargs;
+callef(efb, sp, nargs)
+struct efblk *efb;
+union block **sp;
+mword nargs;
 {
-  REGISTER pXFNode pnode;
-  union block *result;
-  static initsels = 0;
-  static mword (*pTYPET)[];
-  mword type, length;
-  mword nbytes, i;
-  char *p;
-  char *q;
-  mword *r;
-  mword *s;
+    REGISTER pXFNode pnode;
+    union block *result;
+    static initsels = 0;
+    static mword(*pTYPET)[];
+    mword type, length;
+    mword nbytes, i;
+    char *p;
+    char *q;
+    mword *r;
+    mword *s;
 
-  pnode = MK_MP (efb->efcod, pXFNode);
-  if (pnode == NULL)
-    return (union block *) -1L;
+    pnode = MK_MP(efb->efcod, pXFNode);
+    if (pnode == NULL)
+	return (union block *) -1L;
 
-  if (!initsels)
-    {				/* one-time initializations */
-      pTYPET = (mword (*)[])get_data_offset (TYPET, muword);
-      miscinfo.ptyptab = pTYPET;	/* pointer to table of data types */
-      initsels++;
+    if (!initsels) {		/* one-time initializations */
+	pTYPET = (mword(*)[])get_data_offset(TYPET, muword);
+	miscinfo.ptyptab = pTYPET;	/* pointer to table of data types */
+	initsels++;
     }
 
-  miscinfo.pefblk = efb;	/* save efblk ptr in misc area */
-  miscinfo.pxnblk = pnode;
-  miscinfo.nargs = nargs;
+    miscinfo.pefblk = efb;	/* save efblk ptr in misc area */
+    miscinfo.pxnblk = pnode;
+    miscinfo.nargs = nargs;
 
-  /* Fiddle the xn1st and xnsave words in the xnblk.  If either is zero,
-   * it is left alone.  If either is non-zero, it is decremented.  This
-   * has the effect of providing the function with a 1 or a 0 if this is
-   * the first call or a subsequent call respectively.
-   */
-  if (pnode->xnu.ef.xn1st)
-    pnode->xnu.ef.xn1st--;
-  if (pnode->xnu.ef.xnsave)
-    pnode->xnu.ef.xnsave--;
+    /* Fiddle the xn1st and xnsave words in the xnblk.  If either is zero,
+     * it is left alone.  If either is non-zero, it is decremented.  This
+     * has the effect of providing the function with a 1 or a 0 if this is
+     * the first call or a subsequent call respectively.
+     */
+    if (pnode->xnu.ef.xn1st)
+	pnode->xnu.ef.xn1st--;
+    if (pnode->xnu.ef.xnsave)
+	pnode->xnu.ef.xnsave--;
 
-  /* Count number of stack words needed for arguments during actual call.
-   * No Convert (type 0), Integer (type 2), and File (type 4) need one mword,
-   * String (type 1) and Real (type 3) need two words.
-   * While a switch statement would be a cleaner way to write the following
-   * code, for speed reasons, we directly take advantage of the fact that
-   * only odd-numbered argument types need two words.
-   */
-  nbytes = (nargs + 2) * sizeof (mword) +	/* presult, pinfo + args (1 mword each) */
-    MINFRAME - ARGPUSHSIZE;	/* in/local save area + struct-ret adr */
+    /* Count number of stack words needed for arguments during actual call.
+     * No Convert (type 0), Integer (type 2), and File (type 4) need one mword,
+     * String (type 1) and Real (type 3) need two words.
+     * While a switch statement would be a cleaner way to write the following
+     * code, for speed reasons, we directly take advantage of the fact that
+     * only odd-numbered argument types need two words.
+     */
+    nbytes = (nargs + 2) * sizeof(mword) +	/* presult, pinfo + args (1 mword each) */
+	MINFRAME - ARGPUSHSIZE;	/* in/local save area + struct-ret adr */
 
-  for (i = nargs; i--;)
-    if (efb->eftar[i] & 1)	/* type 1 and type 3 require */
-      nbytes += sizeof (mword);	/* two words each on stack       */
+    for (i = nargs; i--;)
+	if (efb->eftar[i] & 1)	/* type 1 and type 3 require */
+	    nbytes += sizeof(mword);	/* two words each on stack       */
 
-  /* For SPARC, the number of words reserved for arguments on the stack
-   * must be six or greater, and must be even (stack pointer must be
-   * 8-byte aligned).  (Note that real args occupy two stack words.)
-   *
-   *  high memory     |                                                       |
-   *                          |---------------------------|
-   *                          |        arg n-6 (if needed)    |
-   *                          |---------------------------|
-   *  arg i           |        arg n-5 (if needed)    |
-   *  refers          |---------------------------|  -------------------------
-   *  to SPITBOL      |        arg n-4 (if needed)    |                    ^
-   *  arguments       |===========================|  ---------         |
-   *  in the          |  arg n-3 = %i5 dump word      |      ^             |
-   *  external        |---------------------------|      |             |
-   *  function        |  arg n-2 = %i4 dump word      |      |             |
-   *  call            |---------------------------|      |
-   *                          |  arg n-1 = %i3 dump word      |      |         minimum to
-   *                          |---------------------------|      |      preserve 8-byte
-   *                          |    arg n = %i2 dump word      |      |         alignment
-   *                          |---------------------------|      |
-   *                          | &miscinf = %i1 dump word  |                    |
-   *                          |---------------------------|   required         |
-   *                          |  &result = %i0 dump word  |                    |
-   *                          |---------------------------|      |             |
-   *                          | struct-ret adr (not used) |      |             |
-   *                          |---------------------------|      |             |
-   *                          |                                                       |      |             |
-   *                          |        16 words to save               |      |             |
-   *                          |       in/local regs when              |      |             |
-   *                          |         save overflows                |      |             |
-   *                          |                                                       |      v             v
-   *  low memory      |===========================| --------------------------
-   *
-   */
-  if (nbytes < MINFRAME)
-    nbytes = MINFRAME;
+    /* For SPARC, the number of words reserved for arguments on the stack
+     * must be six or greater, and must be even (stack pointer must be
+     * 8-byte aligned).  (Note that real args occupy two stack words.)
+     *
+     *  high memory     |                                                       |
+     *                          |---------------------------|
+     *                          |        arg n-6 (if needed)    |
+     *                          |---------------------------|
+     *  arg i           |        arg n-5 (if needed)    |
+     *  refers          |---------------------------|  -------------------------
+     *  to SPITBOL      |        arg n-4 (if needed)    |                    ^
+     *  arguments       |===========================|  ---------         |
+     *  in the          |  arg n-3 = %i5 dump word      |      ^             |
+     *  external        |---------------------------|      |             |
+     *  function        |  arg n-2 = %i4 dump word      |      |             |
+     *  call            |---------------------------|      |
+     *                          |  arg n-1 = %i3 dump word      |      |         minimum to
+     *                          |---------------------------|      |      preserve 8-byte
+     *                          |    arg n = %i2 dump word      |      |         alignment
+     *                          |---------------------------|      |
+     *                          | &miscinf = %i1 dump word  |                    |
+     *                          |---------------------------|   required         |
+     *                          |  &result = %i0 dump word  |                    |
+     *                          |---------------------------|      |             |
+     *                          | struct-ret adr (not used) |      |             |
+     *                          |---------------------------|      |             |
+     *                          |                                                       |      |             |
+     *                          |        16 words to save               |      |             |
+     *                          |       in/local regs when              |      |             |
+     *                          |         save overflows                |      |             |
+     *                          |                                                       |      v             v
+     *  low memory      |===========================| --------------------------
+     *
+     */
+    if (nbytes < MINFRAME)
+	nbytes = MINFRAME;
 
-  type = callextfun (efb, sp - 1, nargs, SA (nbytes));	/* make call with Stack Aligned nbytes */
+    type = callextfun(efb, sp - 1, nargs, SA(nbytes));	/* make call with Stack Aligned nbytes */
 
-  result = (union block *) ptscblk;
-  switch (type)
-    {
+    result = (union block *) ptscblk;
+    switch (type) {
 
     case BL_XN:		/* XNBLK    external block                                              */
-      result->xnb.xnlen = ((result->xnb.xnlen + sizeof (mword) - 1) &
-			   -sizeof (mword)) + FIELDOFFSET (struct xnblk,
+	result->xnb.xnlen = ((result->xnb.xnlen + sizeof(mword) - 1) &
+			     -sizeof(mword)) + FIELDOFFSET(struct xnblk,
 							   xnu.xndta[0]);
     case BL_AR:		/* ARBLK        array                                                           */
     case BL_CD:		/* CDBLK        code                                                            */
@@ -231,57 +230,58 @@ callef (efb, sp, nargs)
     case BL_VC:		/* VCBLK        vector (array)                                          */
     case BL_XR:		/* XRBLK        external, relocatable contents          */
     case BL_PD:		/* PDBLK        program defined datatype                        */
-      result->scb.sctyp = (*pTYPET)[type];
-      break;
+	result->scb.sctyp = (*pTYPET)[type];
+	break;
 
     case BL_NC:		/* return result block unchanged */
-      break;
+	break;
 
     case BL_FS:		/* string pointer at TSCBLK.str */
-      result->fsb.fstyp = (*pTYPET)[BL_SC];
-      p = result->fsb.fsptr;
-      length = result->fsb.fslen;
-      if (!length)
-	break;			/* return null string result */
-      MINSAVE ();
-      SET_WA (length);
-      minimal_call (alocs_callid);	/* allocate string storage */
-      result = XR (union block *);
-      MINRESTORE ();
-      q = result->scb.scstr;
-      while (length--)
-	*q++ = *p++;
-      break;
+	result->fsb.fstyp = (*pTYPET)[BL_SC];
+	p = result->fsb.fsptr;
+	length = result->fsb.fslen;
+	if (!length)
+	    break;		/* return null string result */
+	MINSAVE();
+	SET_WA(length);
+	minimal_call(alocs_callid);	/* allocate string storage */
+	result = XR(union block *);
+	MINRESTORE();
+	q = result->scb.scstr;
+	while (length--)
+	    *q++ = *p++;
+	break;
 
     case BL_FX:		/* pointer to external data at TSCBLK.str */
-      length = ((result->fxb.fxlen + sizeof (mword) - 1) &
-		-sizeof (mword)) + FIELDOFFSET (struct xnblk, xnu.xndta[0]);
-      if (length > get_min_value (MXLEN, mword))
-	{
-	  result = (union block *) 0;
-	  break;
+	length = ((result->fxb.fxlen + sizeof(mword) - 1) &
+		  -sizeof(mword)) + FIELDOFFSET(struct xnblk,
+						xnu.xndta[0]);
+	if (length > get_min_value(MXLEN, mword)) {
+	    result = (union block *) 0;
+	    break;
 	}
-      r = result->fxb.fxptr;
-      MINSAVE ();
-      SET_WA (length);
-      minimal_call (alloc_callid);	/* allocate block storage */
-      result = XR (union block *);
-      MINRESTORE ();
-      result->xnb.xnlen = length;
-      result->xnb.xntyp = (*pTYPET)[BL_XN];
-      s = result->xnb.xnu.xndta;
-      length =
-	(length - FIELDOFFSET (struct xnblk, xnu.xndta[0])) / sizeof (mword);
-      while (length--)
-	*s++ = *r++;
-      break;
+	r = result->fxb.fxptr;
+	MINSAVE();
+	SET_WA(length);
+	minimal_call(alloc_callid);	/* allocate block storage */
+	result = XR(union block *);
+	MINRESTORE();
+	result->xnb.xnlen = length;
+	result->xnb.xntyp = (*pTYPET)[BL_XN];
+	s = result->xnb.xnu.xndta;
+	length =
+	    (length -
+	     FIELDOFFSET(struct xnblk, xnu.xndta[0])) / sizeof(mword);
+	while (length--)
+	    *s++ = *r++;
+	break;
 
     case FAIL:			/* fail */
     default:
-      result = (union block *) 0;
-      break;
+	result = (union block *) 0;
+	break;
     }
-  return result;
+    return result;
 }
 
 /* Attempt to load a DLL into memory using the name provided.
@@ -297,33 +297,31 @@ callef (efb, sp, nargs)
  *
  */
 mword
-loadDll (dllName, fcnName, ppfnProcAddress)
-     char *dllName;
-     char *fcnName;
-     PFN *ppfnProcAddress;
+loadDll(dllName, fcnName, ppfnProcAddress)
+char *dllName;
+char *fcnName;
+PFN *ppfnProcAddress;
 {
-  void *handle;
-  PFN pfn;
+    void *handle;
+    PFN pfn;
 
 #ifdef RTLD_NOW
-  handle = dlopen (dllName, RTLD_NOW);
+    handle = dlopen(dllName, RTLD_NOW);
 #else
-  handle = dlopen (dllName, RTLD_LAZY);
+    handle = dlopen(dllName, RTLD_LAZY);
 #endif
-  if (!handle)
-    {
-      fcnName = dlerror ();
-      return -1;
+    if (!handle) {
+	fcnName = dlerror();
+	return -1;
     }
 
-  *ppfnProcAddress = (PFN) dlsym (handle, fcnName);
-  if (!*ppfnProcAddress)
-    {
-      dlclose (handle);
-      return -1;
+    *ppfnProcAddress = (PFN) dlsym(handle, fcnName);
+    if (!*ppfnProcAddress) {
+	dlclose(handle);
+	return -1;
     }
 
-  return (mword) handle;
+    return (mword) handle;
 }
 
 /*
@@ -342,36 +340,33 @@ loadDll (dllName, fcnName, ppfnProcAddress)
  *                              to the loaded code (here as void *).
  */
 void *
-loadef (fd, filename)
-     mword fd;
-     char *filename;
+loadef(fd, filename)
+mword fd;
+char *filename;
 {
-  void *handle = (void *) fd;
-  PFN pfn = *(PFN *) filename;
-  REGISTER pXFNode pnode;
+    void *handle = (void *) fd;
+    PFN pfn = *(PFN *) filename;
+    REGISTER pXFNode pnode;
 
-  if (xnfree)
-    {				/* Are these any free nodes to use? */
-      pnode = xnfree;		/* Yes, seize one */
-      xnfree = (pXFNode) pnode->xnu.ef.xnpfn;
-    }
-  else
-    {
-      MINSAVE ();		/* No */
-      SET_WA (sizeof (XFNode));
-      minimal_call (alost_callid);	/* allocate from static region */
-      pnode = XR (pXFNode);	/* get node to hold information */
-      MINRESTORE ();
+    if (xnfree) {		/* Are these any free nodes to use? */
+	pnode = xnfree;		/* Yes, seize one */
+	xnfree = (pXFNode) pnode->xnu.ef.xnpfn;
+    } else {
+	MINSAVE();		/* No */
+	SET_WA(sizeof(XFNode));
+	minimal_call(alost_callid);	/* allocate from static region */
+	pnode = XR(pXFNode);	/* get node to hold information */
+	MINRESTORE();
     }
 
-  pnode->xntyp = type_xnt;	/* B_XNT type word */
-  pnode->xnlen = sizeof (XFNode);	/* length of this block */
-  pnode->xnu.ef.xnhand = handle;	/* record DLL handle */
-  pnode->xnu.ef.xnpfn = pfn;	/* record function entry address */
-  pnode->xnu.ef.xn1st = 2;	/* flag first call to function */
-  pnode->xnu.ef.xnsave = 0;	/* not reload from save file */
-  pnode->xnu.ef.xncbp = (void far (*)()) 0;	/* no callback  declared */
-  return (void *) pnode;	/* Return node to store in EFBLK */
+    pnode->xntyp = type_xnt;	/* B_XNT type word */
+    pnode->xnlen = sizeof(XFNode);	/* length of this block */
+    pnode->xnu.ef.xnhand = handle;	/* record DLL handle */
+    pnode->xnu.ef.xnpfn = pfn;	/* record function entry address */
+    pnode->xnu.ef.xn1st = 2;	/* flag first call to function */
+    pnode->xnu.ef.xnsave = 0;	/* not reload from save file */
+    pnode->xnu.ef.xncbp = (void far(*)()) 0;	/* no callback  declared */
+    return (void *) pnode;	/* Return node to store in EFBLK */
 }
 
 /*
@@ -414,73 +409,68 @@ loadef (fd, filename)
  * The current scan point is in scanp, established by scanef.
  */
 void *
-nextef (bufp, io)
-     unsigned char **bufp;
-     int io;
+nextef(bufp, io)
+unsigned char **bufp;
+int io;
 {
-  union block *dnamp;
-  mword ef_type = get_code_offset (b_efc, mword);
-  void *result = 0;
-  mword type, blksize;
-  pXFNode pnode;
+    union block *dnamp;
+    mword ef_type = get_code_offset(b_efc, mword);
+    void *result = 0;
+    mword type, blksize;
+    pXFNode pnode;
 
-  MINSAVE ();
-  for (dnamp = get_min_value (DNAMP, union block *);
-       scanp < dnamp;
-       scanp = MK_MP (MP_OFF (scanp, muword) + blksize, union block *))
-    {
-      type = scanp->scb.sctyp;	/* any block type lets us access type word */
-      SET_WA (type);
-      SET_XR (scanp);
-      minimal_call (blkln_callid);	/* get length of block in bytes */
-      blksize = WA (mword);
-      if (type != ef_type)	/* keep searching if not EFBLK */
-	continue;
-      pnode = MK_MP (scanp->efb.efcod, pXFNode);	/* it's an EFBLK; get address of XNBLK */
-      if (!pnode)		/* keep searching if no longer in use */
-	continue;
+    MINSAVE();
+    for (dnamp = get_min_value(DNAMP, union block *);
+	 scanp < dnamp;
+	 scanp = MK_MP(MP_OFF(scanp, muword) + blksize, union block *)) {
+	type = scanp->scb.sctyp;	/* any block type lets us access type word */
+	SET_WA(type);
+	SET_XR(scanp);
+	minimal_call(blkln_callid);	/* get length of block in bytes */
+	blksize = WA(mword);
+	if (type != ef_type)	/* keep searching if not EFBLK */
+	    continue;
+	pnode = MK_MP(scanp->efb.efcod, pXFNode);	/* it's an EFBLK; get address of XNBLK */
+	if (!pnode)		/* keep searching if no longer in use */
+	    continue;
 
-      switch (io)
-	{
+	switch (io) {
 	case -1:
-	  result = (void *) pnode;	/* return pointer to XNBLK      */
-	  *bufp = (unsigned char *) scanp;	/* return pointer to EFBLK      */
-	  break;
+	    result = (void *) pnode;	/* return pointer to XNBLK      */
+	    *bufp = (unsigned char *) scanp;	/* return pointer to EFBLK      */
+	    break;
 	case 0:
-	  result = (void *) -1;	/* can't reload DLL */
-	  break;
+	    result = (void *) -1;	/* can't reload DLL */
+	    break;
 	case 1:
-	  if (pnode->xnu.ef.xncbp)	/* is there a callback routine? */
-	    if (pnode->xnu.ef.xnsave >= 0)
-	      {
-		(pnode->xnu.ef.xncbp) ();
-		pnode->xnu.ef.xnsave = -1;
-	      }
-	  *bufp = (unsigned char *) pnode->xnu.ef.xnpfn;
-	  result = (void *) 1;	/* phony non-zero size of code */
-	  break;
+	    if (pnode->xnu.ef.xncbp)	/* is there a callback routine? */
+		if (pnode->xnu.ef.xnsave >= 0) {
+		    (pnode->xnu.ef.xncbp) ();
+		    pnode->xnu.ef.xnsave = -1;
+		}
+	    *bufp = (unsigned char *) pnode->xnu.ef.xnpfn;
+	    result = (void *) 1;	/* phony non-zero size of code */
+	    break;
 	}
-      /* point to next block */
-      scanp = MK_MP (MP_OFF (scanp, muword) + blksize, union block *);
-      break;			/* break out of for loop */
+	/* point to next block */
+	scanp = MK_MP(MP_OFF(scanp, muword) + blksize, union block *);
+	break;			/* break out of for loop */
     }
-  MINRESTORE ();
-  return result;
+    MINRESTORE();
+    return result;
 }
 
 /* Rename a file.  Return 0 if OK */
 int
-renames (oldname, newname)
-     char *oldname;
-     char *newname;
+renames(oldname, newname)
+char *oldname;
+char *newname;
 {
-  if (link (oldname, newname) == 0)
-    {
-      unlink (oldname);
-      return 0;
-    }
-  else
-    return -1;
+    if (link(oldname, newname) == 0) {
+	unlink(oldname);
+	return 0;
+    } else
+	return -1;
 }
 
 
@@ -488,9 +478,9 @@ renames (oldname, newname)
  * scanef - prepare to scan memory for external function blocks.
  */
 void
-scanef ()
+scanef()
 {
-  scanp = get_min_value (DNAMB, union block *);
+    scanp = get_min_value(DNAMB, union block *);
 }
 
 
@@ -498,31 +488,30 @@ scanef ()
  * unldef - unload an external function
  */
 void
-unldef (efb)
-     struct efblk *efb;
+unldef(efb)
+struct efblk *efb;
 {
-  pXFNode pnode, pnode2;
-  unsigned char *bufp;
+    pXFNode pnode, pnode2;
+    unsigned char *bufp;
 
-  pnode = MK_MP (efb->efcod, pXFNode);
-  if (pnode == NULL)
-    return;
+    pnode = MK_MP(efb->efcod, pXFNode);
+    if (pnode == NULL)
+	return;
 
-  if (pnode->xnu.ef.xncbp)	/* is there a callback routine? */
-    if (pnode->xnu.ef.xnsave >= 0)
-      {
-	(pnode->xnu.ef.xncbp) ();
-	pnode->xnu.ef.xnsave = -1;
-      }
+    if (pnode->xnu.ef.xncbp)	/* is there a callback routine? */
+	if (pnode->xnu.ef.xnsave >= 0) {
+	    (pnode->xnu.ef.xncbp) ();
+	    pnode->xnu.ef.xnsave = -1;
+	}
 
-  efb->efcod = 0;		/* remove pointer to XNBLK */
-  dlclose (pnode->xnu.ef.xnhand);	/* close use of handle */
+    efb->efcod = 0;		/* remove pointer to XNBLK */
+    dlclose(pnode->xnu.ef.xnhand);	/* close use of handle */
 
-  pnode->xnu.ef.xnpfn = (PFN) xnfree;	/* put back on free list */
-  xnfree = pnode;
+    pnode->xnu.ef.xnpfn = (PFN) xnfree;	/* put back on free list */
+    xnfree = pnode;
 }
 
-#endif /* EXTFUN */
+#endif				/* EXTFUN */
 
 /* Open file "Name" for reading, writing, or updating.
  * Method is O_RDONLY, O_WRONLY, O_RDWR, O_CREAT, O_TRUNC.
@@ -551,82 +540,80 @@ unldef (efb)
 #define IO_WRITE_THRU                   0x20	/* writes complete before return */
 
 File_handle
-spit_open (Name, Method, Mode, Action)
-     char *Name;
-     Open_method Method;
-     File_mode Mode;
-     int Action;
+spit_open(Name, Method, Mode, Action)
+char *Name;
+Open_method Method;
+File_mode Mode;
+int Action;
 {
-  if ((Method & MethodMask) == O_RDONLY)	/* if opening for read only */
-    Method &= ~(O_CREAT | O_TRUNC);	/* guarantee these bits off */
-  else if (Action & IO_WRITE_THRU)	/* else must be a write       */
-    Method |= O_SYNC;
+    if ((Method & MethodMask) == O_RDONLY)	/* if opening for read only */
+	Method &= ~(O_CREAT | O_TRUNC);	/* guarantee these bits off */
+    else if (Action & IO_WRITE_THRU)	/* else must be a write       */
+	Method |= O_SYNC;
 
-  if ((Method & O_CREAT) & (Action & IO_FAIL_IF_EXISTS))
-    Method |= O_EXCL;
+    if ((Method & O_CREAT) & (Action & IO_FAIL_IF_EXISTS))
+	Method |= O_EXCL;
 
-  return open (Name, Method, (Mode & IO_EXECUTABLE) ? 0777 : 0666);
+    return open(Name, Method, (Mode & IO_EXECUTABLE) ? 0777 : 0666);
 }
 
 
 void *
-sbrkx (long incr)
+sbrkx(long incr)
 {
-  static char *base = 0;	/* base of the sbrk region */
-  static char *endofmem;
-  static char *curr;
-  void *result;
+    static char *base = 0;	/* base of the sbrk region */
+    static char *endofmem;
+    static char *curr;
+    void *result;
 
-  if (!base)
-    {				/* if need to initialize   */
-      char *first_base;
-      unsigned long size;
+    if (!base) {		/* if need to initialize   */
+	char *first_base;
+	unsigned long size;
 
-      /* Allocate but do not commit a chunk of linear address space.
-       * This allows dlopen and any loaded external functions to use
-       * the system malloc and sbrk to obtain memory beyond SPITBOL's
-       * heap.
-       */
-      size = databts;
+	/* Allocate but do not commit a chunk of linear address space.
+	 * This allows dlopen and any loaded external functions to use
+	 * the system malloc and sbrk to obtain memory beyond SPITBOL's
+	 * heap.
+	 */
+	size = databts;
 
-      do
-	{
-	  first_base = (char *) malloc (size);
-	  if (first_base != 0)
-	    break;
+	do {
+	    first_base = (char *) malloc(size);
+	    if (first_base != 0)
+		break;
 
-	  size -= (1 * 1024 * 1024);
+	    size -= (1 * 1024 * 1024);
 	}
-      while (size >= (20 * maxsize));	/* arbitrary lower limit */
+	while (size >= (20 * maxsize));	/* arbitrary lower limit */
 
-      if (!first_base)
-	return (void *) -1;
+	if (!first_base)
+	    return (void *) -1;
 
-      base = first_base;
+	base = first_base;
 
-      /* To satisfy SPITBOL's requirement that the heap begin at an address
-       * numerically larger than the largest object size, we force base
-       * up to that value.  Note three things:  Since Linux memory is a sparse
-       * array, this doesn't waste any physical memory.  And if by some
-       * chance the user has specified a different object size value on
-       * the command line, there is no harm in doing this.  It also starts
-       * the heap at a nice high address that isn't likely to change as
-       * the size of the SPITBOL system changes.
-       */
-      if (base < (char *) maxsize)
-	base = (char *) maxsize;
+	/* To satisfy SPITBOL's requirement that the heap begin at an address
+	 * numerically larger than the largest object size, we force base
+	 * up to that value.  Note three things:  Since Linux memory is a sparse
+	 * array, this doesn't waste any physical memory.  And if by some
+	 * chance the user has specified a different object size value on
+	 * the command line, there is no harm in doing this.  It also starts
+	 * the heap at a nice high address that isn't likely to change as
+	 * the size of the SPITBOL system changes.
+	 */
+	if (base < (char *) maxsize)
+	    base = (char *) maxsize;
 
-      curr = base;
-      endofmem = first_base + size;
+	curr = base;
+	endofmem = first_base + size;
     }
 
-  if (curr + incr > endofmem)
-    return (void *) -1;
+    if (curr + incr > endofmem)
+	return (void *) -1;
 
-  result = curr;
-  curr += incr;
+    result = curr;
+    curr += incr;
 
-  return result;
+    return result;
 }
 
 
@@ -634,9 +621,10 @@ sbrkx (long incr)
  *  returns 0 if successful, -1 if not.
  */
 int
-brkx (void *addr)
+brkx(void *addr)
 {
-  return sbrkx ((char *) addr - (char *) sbrkx (0)) == (void *) -1 ? -1 : 0;
+    return sbrkx((char *) addr - (char *) sbrkx(0)) ==
+	(void *) -1 ? -1 : 0;
 }
 
 
@@ -654,50 +642,44 @@ extern int aoutfd;
  * positioned to the first byte of the save information.
  */
 int
-checksave (char *namep)
+checksave(char *namep)
 {
-  int fd;
-  uword w, size;
-  struct exec e;
-  long position;
+    int fd;
+    uword w, size;
+    struct exec e;
+    long position;
 
-  fd = openexe (namep);
-  if (fd == -1)
-    return 0;
+    fd = openexe(namep);
+    if (fd == -1)
+	return 0;
 
-  size = read (fd, (void *) &e, sizeof (struct exec));
+    size = read(fd, (void *) &e, sizeof(struct exec));
 
-  if (size == sizeof (struct exec))
-    {
-      position = N_STROFF (e);
-      if (lseek (fd, position, 0) == position)
-	{
-	  size = read (fd, (void *) &w, sizeof (w));
-	  if (size == sizeof (w))
-	    {
-	      if (w == OURMAGIC1)
-		{
-		  /* no string section, and save file present */
-		  lseek (fd, position, 0);	/* back up over first 4 bytes */
-		  return fd;
+    if (size == sizeof(struct exec)) {
+	position = N_STROFF(e);
+	if (lseek(fd, position, 0) == position) {
+	    size = read(fd, (void *) &w, sizeof(w));
+	    if (size == sizeof(w)) {
+		if (w == OURMAGIC1) {
+		    /* no string section, and save file present */
+		    lseek(fd, position, 0);	/* back up over first 4 bytes */
+		    return fd;
 		}
-	      position = lseek (fd, 0, 1) + w;	/* move to end of string section */
-	      if (lseek (fd, position, 0) == position)
-		{
-		  /* read first word of save file if present */
-		  size = read (fd, (void *) &w, sizeof (w));
-		  if (size == sizeof (w) && w == OURMAGIC1)
-		    {
-		      lseek (fd, position, 0);	/* back up over first 4 bytes */
-		      return fd;
+		position = lseek(fd, 0, 1) + w;	/* move to end of string section */
+		if (lseek(fd, position, 0) == position) {
+		    /* read first word of save file if present */
+		    size = read(fd, (void *) &w, sizeof(w));
+		    if (size == sizeof(w) && w == OURMAGIC1) {
+			lseek(fd, position, 0);	/* back up over first 4 bytes */
+			return fd;
 		    }
 		}
 	    }
 	}
     }
 
-  close (fd);			/* Failure */
-  return 0;
+    close(fd);			/* Failure */
+    return 0;
 }
 
 
@@ -706,24 +688,22 @@ checksave (char *namep)
  *                       for read-only input.
  */
 int
-openexe (char *name)
+openexe(char *name)
 {
-  int fd;
-  fd = spit_open (name, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
-		  IO_OPEN_IF_EXISTS);
-  if (fd == -1)
-    {
-      char filebuf[1000];
-      initpath ("path");	/* try alternate paths */
-      while (trypath (name, filebuf))
-	{
-	  fd = spit_open (filebuf, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
-			  IO_OPEN_IF_EXISTS);
-	  if (fd != -1)
-	    break;
+    int fd;
+    fd = spit_open(name, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
+		   IO_OPEN_IF_EXISTS);
+    if (fd == -1) {
+	char filebuf[1000];
+	initpath("path");	/* try alternate paths */
+	while (trypath(name, filebuf)) {
+	    fd = spit_open(filebuf, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
+			   IO_OPEN_IF_EXISTS);
+	    if (fd != -1)
+		break;
 	}
     }
-  return fd;
+    return fd;
 }
 
 /*
@@ -738,12 +718,12 @@ openexe (char *name)
  *
  */
 word
-saveend (word * stkbase, word stklen)
+saveend(word * stkbase, word stklen)
 {
-  word result;
+    word result;
 
-  result = putsave (stkbase, stklen);	/* append save file */
-  return result;
+    result = putsave(stkbase, stklen);	/* append save file */
+    return result;
 }
 
 
@@ -768,42 +748,38 @@ saveend (word * stkbase, word stklen)
  *
  */
 long
-savestart (int fd, char *bufp, unsigned int size)
+savestart(int fd, char *bufp, unsigned int size)
 {
-  struct exec *ep;
-  long fpos, position;
-  long imagesize;
-  uword w, s;
+    struct exec *ep;
+    long fpos, position;
+    long imagesize;
+    uword w, s;
 
-  ep = (struct exec *) (bufp);
+    ep = (struct exec *) (bufp);
 
-  /* get overall size of file by positioning to end of string section,
-   * then restoring position
-   */
-  fpos = lseek (fd, 0, 1);	/* record current position */
-  position = N_STROFF (*ep);
-  if (lseek (fd, position, 0) == position)
-    {
-      s = read (fd, (void *) &w, sizeof (w));
-      if (s == sizeof (w))
-	{
-	  if (w == OURMAGIC1)
-	    lseek (fd, position, 0);	/* back up over start of old save file */
-	  else
-	    {
-	      position = lseek (fd, 0, 1) + w;	/* move to end of string section */
-	      lseek (fd, position, 0);
+    /* get overall size of file by positioning to end of string section,
+     * then restoring position
+     */
+    fpos = lseek(fd, 0, 1);	/* record current position */
+    position = N_STROFF(*ep);
+    if (lseek(fd, position, 0) == position) {
+	s = read(fd, (void *) &w, sizeof(w));
+	if (s == sizeof(w)) {
+	    if (w == OURMAGIC1)
+		lseek(fd, position, 0);	/* back up over start of old save file */
+	    else {
+		position = lseek(fd, 0, 1) + w;	/* move to end of string section */
+		lseek(fd, position, 0);
 	    }
 	}
-      imagesize = lseek (fd, 0, 1);	/* how much to copy */
-    }
-  else
-    imagesize = 0L;
+	imagesize = lseek(fd, 0, 1);	/* how much to copy */
+    } else
+	imagesize = 0L;
 
-  lseek (fd, fpos, 0);		/* restore position */
-  return imagesize;
+    lseek(fd, fpos, 0);		/* restore position */
+    return imagesize;
 }
-#endif /* EXECSAVE */
+#endif				/* EXECSAVE */
 
 #if EXECFILE | SAVEFILE
 /*
@@ -836,32 +812,32 @@ savestart (int fd, char *bufp, unsigned int size)
  *
  */
 int
-makeexec (scptr, type)
-     struct scblk *scptr;
-     int type;
+makeexec(scptr, type)
+struct scblk *scptr;
+int type;
 {
-  word save_wa, save_wb, save_ia, save_xr;
-  int result;
+    word save_wa, save_wb, save_ia, save_xr;
+    int result;
 
-  /* save zysxi()'s argument registers (but not XL)  */
-  save_wa = reg_wa;
-  save_wb = reg_wb;
-  save_ia = reg_ia;
-  save_xr = reg_xr;
+    /* save zysxi()'s argument registers (but not XL)  */
+    save_wa = reg_wa;
+    save_wb = reg_wb;
+    save_ia = reg_ia;
+    save_xr = reg_xr;
 
-  reg_wa = (word) scptr;
-  reg_xl = 0;
-  reg_ia = type;
-  reg_wb = 0;
-  reg_xr = get_data_offset (HEADV, word);
+    reg_wa = (word) scptr;
+    reg_xl = 0;
+    reg_ia = type;
+    reg_wb = 0;
+    reg_xr = get_data_offset(HEADV, word);
 
-  /*  -1 is the normal return, so result >= 0 is an error */
-  result = zysxi () + 1;
+    /*  -1 is the normal return, so result >= 0 is an error */
+    result = zysxi() + 1;
 
-  reg_wa = save_wa;
-  reg_wb = save_wb;
-  reg_ia = save_ia;
-  reg_xr = save_xr;
-  return result;
+    reg_wa = save_wa;
+    reg_wb = save_wb;
+    reg_ia = save_ia;
+    reg_xr = save_xr;
+    return result;
 }
-#endif /* EXECFILE | SAVEFILE */
+#endif				/* EXECFILE | SAVEFILE */

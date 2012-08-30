@@ -33,31 +33,31 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 
-char *getshell ();
-char *pathlast ();
+char *getshell();
+char *pathlast();
 
 void
-doexec (scbptr)
-     struct scblk *scbptr;
+doexec(scbptr)
+struct scblk *scbptr;
 
 {
-  word length;
-  char savech;
-  char *cp;
-  extern char **environ;
-  char *shellpath;
-  length = scbptr->len;
-  cp = scbptr->str;
+    word length;
+    char savech;
+    char *cp;
+    extern char **environ;
+    char *shellpath;
+    length = scbptr->len;
+    cp = scbptr->str;
 
-  /* Instead of copying the command string, temporarily save the character
-     following the string, replace it with a NUL, execute the command, 
-     and then restore the original character. */
-  savech = make_c_str (&cp[length]);
+    /* Instead of copying the command string, temporarily save the character
+       following the string, replace it with a NUL, execute the command, 
+       and then restore the original character. */
+    savech = make_c_str(&cp[length]);
 
-  /* Use function getshell to get shell's path and function lastpath
-     to get the last component of the shell's path.  */
-  shellpath = getshell ();
-  execle (shellpath, pathlast (shellpath), "-c", cp, (char *) NULL, environ);	/* no return */
+    /* Use function getshell to get shell's path and function lastpath
+       to get the last component of the shell's path.  */
+    shellpath = getshell();
+    execle(shellpath, pathlast(shellpath), "-c", cp, (char *) NULL, environ);	/* no return */
 
-  unmake_c_str (&cp[length], savech);
+    unmake_c_str(&cp[length], savech);
 }

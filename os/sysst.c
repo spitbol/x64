@@ -61,97 +61,92 @@ This file is part of Macro SPITBOL.
 
 extern uword maxsize;
 
-zysst ()
+zysst()
 {
-  IATYPE whence, temp;
-  FILEPOS offset;
-  REGISTER struct fcblk *fcb = WA (struct fcblk *);
-  REGISTER struct ioblk *iob = MK_MP (fcb->iob, struct ioblk *);
-  REGISTER struct icblk *icp;
+    IATYPE whence, temp;
+    FILEPOS offset;
+    REGISTER struct fcblk *fcb = WA(struct fcblk *);
+    REGISTER struct ioblk *iob = MK_MP(fcb->iob, struct ioblk *);
+    REGISTER struct icblk *icp;
 
-  /* ensure iob is open, fail if unsuccessful */
-  if (!(iob->flg1 & IO_OPN))
-    return EXIT_3;
+    /* ensure iob is open, fail if unsuccessful */
+    if (!(iob->flg1 & IO_OPN))
+	return EXIT_3;
 
 #if PIPES
-  /* not allowed to do a set of a pipe */
-  if (iob->flg2 & IO_PIP)
-    return EXIT_4;
-#endif /* PIPES */
+    /* not allowed to do a set of a pipe */
+    if (iob->flg2 & IO_PIP)
+	return EXIT_4;
+#endif				/* PIPES */
 
-  /* whence may come in either integer or string form */
-  icp = WC (struct icblk *);
-  if (!getint (icp, &whence))
-    return EXIT_1;
+    /* whence may come in either integer or string form */
+    icp = WC(struct icblk *);
+    if (!getint(icp, &whence))
+	return EXIT_1;
 
 #if SETREAL
-  /* offset comes in as a real in RA */
-  offset = RA (FILEPOS);
+    /* offset comes in as a real in RA */
+    offset = RA(FILEPOS);
 #else
-  /* offset may come in either integer or string form */
-  icp = WB (struct icblk *);
-  if (!getint (icp, &temp))
-    {
-      struct scblk *scp;
-      scp = (struct scblk *) icp;
-      if (!checkstr (scp) || scp->len != 1)
-	return EXIT_1;
-      temp = whence;
-      switch (uppercase (scp->str[0]))
-	{
+    /* offset may come in either integer or string form */
+    icp = WB(struct icblk *);
+    if (!getint(icp, &temp)) {
+	struct scblk *scp;
+	scp = (struct scblk *) icp;
+	if (!checkstr(scp) || scp->len != 1)
+	    return EXIT_1;
+	temp = whence;
+	switch (uppercase(scp->str[0])) {
 	case 'P':
-	  whence = 0;
-	  break;
+	    whence = 0;
+	    break;
 
 	case 'H':
-	  temp = (whence << 15) + ((int) doset (iob, 0, 1) & 0x7FFFL);
-	  whence = 0;
-	  break;
+	    temp = (whence << 15) + ((int) doset(iob, 0, 1) & 0x7FFFL);
+	    whence = 0;
+	    break;
 
 	case 'R':
-	  whence = 1;
-	  break;
+	    whence = 1;
+	    break;
 
 	case 'E':
-	  whence = 2;
-	  break;
+	    whence = 2;
+	    break;
 
 	case 'C':
-	  if (fcb->mode == 0 && temp > 0 && temp <= (word) maxsize)
-	    {
-	      fcb->rsz = temp;
-	      temp = 0;
-	      whence = 1;	/* return current position */
-	      break;
-	    }
-	  else
-	    {
-	      if (temp < 0 || temp > (word) maxsize)
-		return EXIT_2;
-	      else
-		return EXIT_1;
+	    if (fcb->mode == 0 && temp > 0 && temp <= (word) maxsize) {
+		fcb->rsz = temp;
+		temp = 0;
+		whence = 1;	/* return current position */
+		break;
+	    } else {
+		if (temp < 0 || temp > (word) maxsize)
+		    return EXIT_2;
+		else
+		    return EXIT_1;
 	    }
 
 	default:
-	  return EXIT_1;	/* Unrecognised control */
+	    return EXIT_1;	/* Unrecognised control */
 	}
     }
-  offset = (FILEPOS) temp;
+    offset = (FILEPOS) temp;
 #endif
-  /*  finally, set the file position  */
-  offset = doset (iob, offset, (int) whence);
+    /*  finally, set the file position  */
+    offset = doset(iob, offset, (int) whence);
 
-  /*  test for error.  01.02 */
-  if (offset < (FILEPOS) 0)
-    return EXIT_5;
+    /*  test for error.  01.02 */
+    if (offset < (FILEPOS) 0)
+	return EXIT_5;
 #if SETREAL
-  /*  return resulting position in RA.  01.07  */
-  SET_RA (offset);
+    /*  return resulting position in RA.  01.07  */
+    SET_RA(offset);
 #else
-  /*  return resulting position in IA.  01.02  */
-  SET_IA ((IATYPE) offset);
+    /*  return resulting position in IA.  01.02  */
+    SET_IA((IATYPE) offset);
 #endif
 
-  /* normal return */
-  return NORMAL_RETURN;
+    /* normal return */
+    return NORMAL_RETURN;
 }

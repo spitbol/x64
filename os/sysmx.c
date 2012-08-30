@@ -32,8 +32,8 @@ This file is part of Macro SPITBOL.
 
 extern uword maxsize;
 
-zysmx ()
+zysmx()
 {
-  SET_WA (maxsize);
-  return NORMAL_RETURN;
+    SET_WA(maxsize);
+    return NORMAL_RETURN;
 }

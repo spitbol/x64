@@ -25,24 +25,24 @@ This file is part of Macro SPITBOL.
 #include <sys/times.h>
 #define CLK_TCK sysconf(_SC_CLK_TCK)
 
-zystm ()
+zystm()
 {
-  /*
-     /   process times are in 60ths of second, multiply by 100
-     /   to get 6000ths of second, divide by 6 to get 100ths
-   */
-  struct tms timebuf;
+    /*
+       /   process times are in 60ths of second, multiply by 100
+       /   to get 6000ths of second, divide by 6 to get 100ths
+     */
+    struct tms timebuf;
 
-  timebuf.tms_utime = 0;	/* be sure to init in case failure      */
-  times (&timebuf);		/* get process times                    */
+    timebuf.tms_utime = 0;	/* be sure to init in case failure      */
+    times(&timebuf);		/* get process times                    */
 
-  /* CLK_TCK is clock ticks/second:
-   * # of seconds = tms_utime / CLK_TCK
-   * # of milliseconds = tms_utime * 1000 / CLK_TCK
-   *
-   * To avoid overflow, use
-   * # of milliseconds = tms_utime * (1000/10) / (CLK_TCK / 10)
-   */
-  SET_IA ((timebuf.tms_utime * (1000 / 10)) / (CLK_TCK / 10));
-  return NORMAL_RETURN;
+    /* CLK_TCK is clock ticks/second:
+     * # of seconds = tms_utime / CLK_TCK
+     * # of milliseconds = tms_utime * 1000 / CLK_TCK
+     *
+     * To avoid overflow, use
+     * # of milliseconds = tms_utime * (1000/10) / (CLK_TCK / 10)
+     */
+    SET_IA((timebuf.tms_utime * (1000 / 10)) / (CLK_TCK / 10));
+    return NORMAL_RETURN;
 }

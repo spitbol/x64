@@ -266,7 +266,7 @@ typedef long long IATYPE;
  */
 #ifndef PollCount
 #define PollCount 2500
-#endif /* PollCount */
+#endif				/* PollCount */
 
 /*
     The following manifest contant describes the constraints on the
@@ -417,10 +417,10 @@ typedef long long IATYPE;
 
 #ifdef PRIVATEBLOCKS
 #include "extern32.h"
-#else /* PRIVATEBLOCKS */
+#else				/* PRIVATEBLOCKS */
 #include "spitblks.h"
 #include "spitio.h"
-#endif /* PRIVATEBLOCKS */
+#endif				/* PRIVATEBLOCKS */
 
 
 #include "sproto.h"

@@ -34,20 +34,19 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #include "globals.ext"
 
-zysdc ()
+zysdc()
 {
-  struct scblk *pheadv = get_data_offset (HEADV, struct scblk *);
-  /* announce name and copyright */
-  if (!dcdone && !(spitflag & NOBRAG))
-    {
-      dcdone = 1;		/* Only do once per run */
-      write (STDERRFD, "Unix SPITBOL", 13);
+    struct scblk *pheadv = get_data_offset(HEADV, struct scblk *);
+    /* announce name and copyright */
+    if (!dcdone && !(spitflag & NOBRAG)) {
+	dcdone = 1;		/* Only do once per run */
+	write(STDERRFD, "Unix SPITBOL", 13);
 
 #if RUNTIME
-      write (STDERRFD, " Runtime", 8);
-#endif /* RUNTIME */
+	write(STDERRFD, " Runtime", 8);
+#endif				/* RUNTIME */
 
-      write (STDERRFD, " Release ", 9);
+	write(STDERRFD, " Release ", 9);
 
 /*
       int n = pid1->len;
@@ -57,8 +56,8 @@ zysdc ()
       write (STDERRFD, pheadv->str, pheadv->len);
       write (STDERRFD, pid1->str, pid1->len);
 */
-      wrterr (cprtmsg);
+	wrterr(cprtmsg);
     }
 
-  return NORMAL_RETURN;
+    return NORMAL_RETURN;
 }

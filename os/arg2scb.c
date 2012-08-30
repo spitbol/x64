@@ -38,24 +38,24 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-int arg2scb (req, argc, argv, scptr, maxs)
-     int req;
-     int argc;
-     char *argv[];
-     struct scblk *scptr;
-     int maxs;
+int
+arg2scb(req, argc, argv, scptr, maxs)
+int req;
+int argc;
+char *argv[];
+struct scblk *scptr;
+int maxs;
 
 {
-  REGISTER  word i;
-  REGISTER  char *argcp, *scbcp;
+    REGISTER word i;
+    REGISTER char *argcp, *scbcp;
 
-  if (req < 0 || req >= argc)
-    return -1;
+    if (req < 0 || req >= argc)
+	return -1;
 
-  argcp = argv[req];
-  scbcp = scptr->str + scptr->len;
-  for (i = 0; i < maxs && ((*scbcp++ = *argcp++) != 0); i++)
-    ;
-  scptr->len += i;
-  return i;
+    argcp = argv[req];
+    scbcp = scptr->str + scptr->len;
+    for (i = 0; i < maxs && ((*scbcp++ = *argcp++) != 0); i++);
+    scptr->len += i;
+    return i;
 }

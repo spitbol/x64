@@ -38,13 +38,13 @@ struct stat statbuf;
 struct termios termiosbuf;
 
 int
-testty (fd)
-     int fd;
+testty(fd)
+int fd;
 
 {
-  if (fstat (fd, &statbuf))
-    return -1;
-  return S_ISCHR (statbuf.st_mode) ? 0 : -1;
+    if (fstat(fd, &statbuf))
+	return -1;
+    return S_ISCHR(statbuf.st_mode) ? 0 : -1;
 }
 
 
@@ -62,19 +62,19 @@ testty (fd)
 */
 
 void
-ttyraw (fd, flag)
-     int fd;
-     int flag;
+ttyraw(fd, flag)
+int fd;
+int flag;
 
 {
-  /* read current params      */
-  if (testty (fd))
-    return;			/* exit if not tty  */
-  tcgetattr (fd, &termiosbuf);
-  if (flag)
-    termiosbuf.c_lflag &= ~(ICANON | ECHO);	/* Setting      */
-  else
-    termiosbuf.c_lflag |= (ICANON | ECHO);	/* Clearing     */
+    /* read current params      */
+    if (testty(fd))
+	return;			/* exit if not tty  */
+    tcgetattr(fd, &termiosbuf);
+    if (flag)
+	termiosbuf.c_lflag &= ~(ICANON | ECHO);	/* Setting      */
+    else
+	termiosbuf.c_lflag |= (ICANON | ECHO);	/* Clearing     */
 
-  tcsetattr (fd, TCSANOW, &termiosbuf);	/* store device flags   */
+    tcsetattr(fd, TCSANOW, &termiosbuf);	/* store device flags   */
 }

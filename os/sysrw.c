@@ -34,22 +34,22 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-zysrw ()
+zysrw()
 {
-  REGISTER struct fcblk *fcb = WA (struct fcblk *);
-  REGISTER struct ioblk *iob = MK_MP (fcb->iob, struct ioblk *);
+    REGISTER struct fcblk *fcb = WA(struct fcblk *);
+    REGISTER struct ioblk *iob = MK_MP(fcb->iob, struct ioblk *);
 
-  /* ensure the file is open */
-  if (!(iob->flg1 & IO_OPN))
-    return EXIT_1;
+    /* ensure the file is open */
+    if (!(iob->flg1 & IO_OPN))
+	return EXIT_1;
 
-  /* see if this file can be LSEEK'ed */
-  if (LSEEK (iob->fdn, (FILEPOS) 0, 1) < (FILEPOS) 0)
-    return EXIT_2;
+    /* see if this file can be LSEEK'ed */
+    if (LSEEK(iob->fdn, (FILEPOS) 0, 1) < (FILEPOS) 0)
+	return EXIT_2;
 
-  /* seek to the beginning */
-  if (doset (iob, 0L, 0) == (FILEPOS) - 1)
-    return EXIT_3;
+    /* seek to the beginning */
+    if (doset(iob, 0L, 0) == (FILEPOS) - 1)
+	return EXIT_3;
 
-  return NORMAL_RETURN;
+    return NORMAL_RETURN;
 }

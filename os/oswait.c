@@ -34,34 +34,31 @@ This file is part of Macro SPITBOL.
 #include <signal.h>
 
 void
-oswait (pid)
-     int pid;
+oswait(pid)
+int pid;
 {
-  int deadpid, status;
-  struct chfcb *chptr;
-  SigType (*hstat) (int), (*istat) (int), (*qstat) (int);
+    int deadpid, status;
+    struct chfcb *chptr;
+    SigType(*hstat) (int), (*istat) (int), (*qstat) (int);
 
-  istat = signal (SIGINT, SIG_IGN);
-  qstat = signal (SIGQUIT, SIG_IGN);
-  hstat = signal (SIGHUP, SIG_IGN);
+    istat = signal(SIGINT, SIG_IGN);
+    qstat = signal(SIGQUIT, SIG_IGN);
+    hstat = signal(SIGHUP, SIG_IGN);
 
-  while ((deadpid = wait (&status)) != pid && deadpid != -1)
-    {
-      for (chptr = get_min_value (R_FCB, struct chfcb *); chptr != 0;
-	   chptr = MK_MP (chptr->nxt, struct chfcb *))
-	{
-	  if (deadpid == MK_MP (MK_MP (chptr->fcp, struct fcblk *)->iob,
-				struct ioblk *)->pid)
-	    {
-	      MK_MP (MK_MP (chptr->fcp, struct fcblk *)->iob,
-		     struct ioblk *)->flg2 |= IO_DED;
-	      break;
+    while ((deadpid = wait(&status)) != pid && deadpid != -1) {
+	for (chptr = get_min_value(R_FCB, struct chfcb *); chptr != 0;
+	     chptr = MK_MP(chptr->nxt, struct chfcb *)) {
+	    if (deadpid == MK_MP(MK_MP(chptr->fcp, struct fcblk *)->iob,
+				 struct ioblk *)->pid) {
+		MK_MP(MK_MP(chptr->fcp, struct fcblk *)->iob,
+		      struct ioblk *)->flg2 |= IO_DED;
+		break;
 	    }
 	}
     }
 
-  signal (SIGINT, istat);
-  signal (SIGQUIT, qstat);
-  signal (SIGHUP, hstat);
+    signal(SIGINT, istat);
+    signal(SIGQUIT, qstat);
+    signal(SIGHUP, hstat);
 }
-#endif /* PIPES */
+#endif				/* PIPES */

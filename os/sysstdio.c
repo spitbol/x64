@@ -39,9 +39,9 @@ This file is part of Macro SPITBOL.
 #include "globals.ext"
 
 void
-stdioinit ()
+stdioinit()
 {
-  inpiob.bfb = MP_OFF (pinpbuf, struct bfblk *);
+    inpiob.bfb = MP_OFF(pinpbuf, struct bfblk *);
 }
 
 /*
@@ -60,15 +60,15 @@ stdioinit ()
         1       failure
 */
 
-zyspr ()
+zyspr()
 {
-  /*
-     /   Do writes in line mode.
-   */
-  if (oswrite (1, oupiob.len, WA (word), &oupiob, XR (struct scblk *)) < 0)
-      return EXIT_1;
+    /*
+       /   Do writes in line mode.
+     */
+    if (oswrite(1, oupiob.len, WA(word), &oupiob, XR(struct scblk *)) < 0)
+	 return EXIT_1;
 
-  return NORMAL_RETURN;
+    return NORMAL_RETURN;
 }
 
 
@@ -92,80 +92,68 @@ zyspr ()
                 new file name in SCBLK and non-zero length.)
 */
 
-zysrd ()
+zysrd()
 {
 
-  word length;
-  struct scblk *scb = XR (struct scblk *);
+    word length;
+    struct scblk *scb = XR(struct scblk *);
 
-  if (provide_name)
-    {
-      /* Provide compiler with name of source file, if desired. */
-      provide_name = 0;
-      if (sfn && sfn[0])
-	{
-	  cpys2sc (sfn, scb, WC (word));
-	  return EXIT_1;
+    if (provide_name) {
+	/* Provide compiler with name of source file, if desired. */
+	provide_name = 0;
+	if (sfn && sfn[0]) {
+	    cpys2sc(sfn, scb, WC(word));
+	    return EXIT_1;
 	}
     }
 
 
-  /*
-     /   Read a line from standard input.  If EOF on current standard input
-     /   file, call function swcinp to switch to the next file, if any, except
-     /       if within an include file.
-   */
-  while ((length = osread (1, WC (word), &inpiob, scb)) < 0)
-    {
-      if (nesting || swcinp (inpcnt, inpptr) < 0)
-	{
-	  /* EOF */
-	  scb->len = 0;
-	  return EXIT_1;
-	}
-      else
-	{
-	  /* Successful switch, report new file name if still in compilation phase */
-	  if (!executing && sfn && sfn[0])
-	    {
-	      cpys2sc (sfn, scb, WC (word));
-	      return EXIT_1;
+    /*
+       /   Read a line from standard input.  If EOF on current standard input
+       /   file, call function swcinp to switch to the next file, if any, except
+       /       if within an include file.
+     */
+    while ((length = osread(1, WC(word), &inpiob, scb)) < 0) {
+	if (nesting || swcinp(inpcnt, inpptr) < 0) {
+	    /* EOF */
+	    scb->len = 0;
+	    return EXIT_1;
+	} else {
+	    /* Successful switch, report new file name if still in compilation phase */
+	    if (!executing && sfn && sfn[0]) {
+		cpys2sc(sfn, scb, WC(word));
+		return EXIT_1;
 	    }
 	}
 
     }
-  scb->len = length;		/* line read, so set line length        */
+    scb->len = length;		/* line read, so set line length        */
 
-  /*
-     /   Special check for '#!' invocation.
-   */
-  if (first_record && inpptr)
-    {
-      first_record = 0;
-      if (scb->str[0] == '#' && scb->str[1] == '!')
-	{
-	  cmdcnt = gblargc - inpcnt + 1;
-	  inpcnt = 1;
-	  while ((length = osread (1, WC (word), &inpiob, scb)) < 0)
-	    {
-	      if (swcinp (inpcnt, inpptr) < 0)
-		{
-		  scb->len = 0;
-		  return EXIT_1;
+    /*
+       /   Special check for '#!' invocation.
+     */
+    if (first_record && inpptr) {
+	first_record = 0;
+	if (scb->str[0] == '#' && scb->str[1] == '!') {
+	    cmdcnt = gblargc - inpcnt + 1;
+	    inpcnt = 1;
+	    while ((length = osread(1, WC(word), &inpiob, scb)) < 0) {
+		if (swcinp(inpcnt, inpptr) < 0) {
+		    scb->len = 0;
+		    return EXIT_1;
 		}
-	      /* Successful switch, report new file name */
-	      if (sfn && sfn[0])
-		{
-		  cpys2sc (sfn, scb, WC (word));
-		  return EXIT_1;
+		/* Successful switch, report new file name */
+		if (sfn && sfn[0]) {
+		    cpys2sc(sfn, scb, WC(word));
+		    return EXIT_1;
 		}
 
 	    }
-	  scb->len = length;
+	    scb->len = length;
 	}
     }
 
-  return NORMAL_RETURN;
+    return NORMAL_RETURN;
 }
 
 /*
@@ -173,9 +161,9 @@ zysrd ()
 */
 
 int
-getrdfd ()
+getrdfd()
 {
-  return inpiob.fdn;
+    return inpiob.fdn;
 }
 
 /*
@@ -183,9 +171,9 @@ getrdfd ()
 */
 
 int
-getprfd ()
+getprfd()
 {
-  return oupiob.fdn;
+    return oupiob.fdn;
 }
 
 
@@ -194,33 +182,33 @@ getprfd ()
 */
 
 struct ioblk *
-getrdiob ()
+getrdiob()
 {
-  return &inpiob;
+    return &inpiob;
 }
 
 /*
  * CLRBUF - clear input buffer
  */
 void
-clrbuf ()
+clrbuf()
 {
-  REGISTER struct bfblk *bfptr;
+    REGISTER struct bfblk *bfptr;
 
-  bfptr = MK_MP (inpiob.bfb, struct bfblk *);
-	int val = (int)(bfptr);
-	printf("%d \n",val);
-  bfptr->next = bfptr->fill = 0;
-  bfptr->offset = (FILEPOS) 0;
-  bfptr->curpos = (FILEPOS) - 1;
-  inpiob.flg2 &= ~IO_LF;
+    bfptr = MK_MP(inpiob.bfb, struct bfblk *);
+    int val = (int) (bfptr);
+    printf("%d \n", val);
+    bfptr->next = bfptr->fill = 0;
+    bfptr->offset = (FILEPOS) 0;
+    bfptr->curpos = (FILEPOS) - 1;
+    inpiob.flg2 &= ~IO_LF;
 }
 
 /*
  *  OUPEOF - advance output file to EOF
  */
 void
-oupeof ()
+oupeof()
 {
-  doset (&oupiob, 0L, 2);
+    doset(&oupiob, 0L, 2);
 }

@@ -27,16 +27,17 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #if !VCC
 void
-exit (status)
-     int status;
+exit(status)
+int status;
 {
 }
 #endif
 
-extern void _exit (int status);
+extern void _exit(int status);
 
-void __exit (code)
-     int code;
+void
+__exit(code)
+int code;
 {
-  _exit (code);
+    _exit(code);
 }
