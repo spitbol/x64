@@ -1636,7 +1636,6 @@ flush_end
 
 g.end
 * DS END 
-	&dump = 1
 	ident(havehdr)				:s(g.end.2)
 *  here to copy remaining part from hdr file
 g.end.1	line = hdrfile				:f(g.end.2)
@@ -1714,5 +1713,6 @@ g.end.7 endfile(1)
 .		differ(lasterror) 'the last error was in line ' lasterror
 	&code   = ne(nerrors) 2001
         output = collect() ' free words'
+	&dump = 0
 	:(end)
 end
