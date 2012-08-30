@@ -16,7 +16,7 @@ vpath %.c $(OS)
 
 
 AS=nasm
-CC=     $(ROOT)/usr/local/bin/tcc
+CC=     bin/tcc
 INCDIRS = -I$(ROOT)/musl/include
 ifeq	($(DEBUG),1)
 CFLAGS =  -g  $(INCDIRS)
@@ -25,17 +25,15 @@ endif
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
 ASFLAGS = -f elf32 
-#ASFLAGS = -f macho
 else
-ASFLAGS = -f elf32
-#ASFLAGS = -f macho -g
+ASFLAGS = -f elf32 -g
 endif
 
 # Tools for processing Minimal source file.
 LEX=	lex.spt
 TRANS=    $(TARGET)/$(TARGET).spt
 ERR=    $(TARGET)/err-$(TARGET).spt
-SPIT=   ./bootstrap/spitbol
+SPIT=   ./bin/spitbol
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
