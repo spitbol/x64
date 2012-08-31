@@ -36,16 +36,14 @@ This file is part of Macro SPITBOL.
    the subroutine addresses serve as a type identifier.
 
 
-   Each subroutine is proceeded in memory by a one-byte (Intel platforms)
-   or one-word (all other platforms) integer type code (given below).
-   Thus to obtain a simple ordinal type code for a block pointed to by an
-   address in pblk, use the following:
+   Each subroutine is proceeded in memory by a one-word  integer type 
+   code (given below).  Thus to obtain a simple ordinal type code for 
+   a block pointed to by an address in pblk, use the following:
 
    block        *pblk;
    unsigned     typecode;
      ...
-    typecode = *((unsigned char *)((long)pblk - 1)); (Intel platform)
-    typecode = *((unsigned *)((long)pblk - 4));      (Sun, RS/6000, SGI, etc.)
+    typecode = *((unsigned *)((long)pblk - 4)); 
 
 
    Here's a visualization of how SPITBOL stores data blocks and identifies
