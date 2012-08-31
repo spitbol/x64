@@ -38,6 +38,7 @@ This file is part of Macro SPITBOL.
            suspended spitbol program
 */
 
+    struct bfblk *bfptr;
 #include "systype.h"
 #include "port.h"
 #include "os.h"
@@ -133,8 +134,9 @@ char *argv[];
      */
     inpptr = getargs(argc, argv);
 
-    if (inpptr)
+    if (inpptr) {
 	sfn = *inpptr;		/* pointer to first file name */
+    }
     else {
 	zysdc();
 	wrterr("");
@@ -147,7 +149,7 @@ char *argv[];
 #define NASTY
 #ifdef NASTY
 
-    struct bfblk *bfptr;
+/*    struct bfblk *bfptr;*/
 
     printf("->1\n");
     printf("address inpiob.bfb %ld\n",(long) inpiob.bfb);

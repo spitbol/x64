@@ -54,31 +54,21 @@ typedef double (*APDF[]) ();
  */
 
 typedef struct misc {
-    short vers;			/* version number of interface                  */
+    short vers;			/* version number of interface */
     unsigned char ext;		/* host environment, see ext_type below */
-    unsigned char spare;	/* reserved                                                     */
-    mword nargs;		/* number of args to function                       */
-     mword(*ptyptab)[];		/* pointer to table of data types               */
-    struct xnblk *pxnblk;	/* ptr to xnblk describing function         */
-    struct efblk *pefblk;	/* ptr to efblk describing function             */
+    unsigned char spare;	/* reserved */
+    mword nargs;		/* number of args to function */
+     mword(*ptyptab)[];		/* pointer to table of data types */
+    struct xnblk *pxnblk;	/* ptr to xnblk describing function */
+    struct efblk *pefblk;	/* ptr to efblk describing function */
     APDF *pflttab;		/* ptr to array of floating point fncs  */
 } misc;
-
-enum ext_type {			/* Executing under:                                             */
-    t_pharlap,			/*  PharLap DOS Extender                                */
-    t_intel,			/*  Intel DOS Extender                                  */
-    t_os2,			/*  OS/2 2.0                                                    */
-    t_tc16,			/*  MS-DOS TurboC with 16-bit IA                */
-    t_tc32,			/*  MS-DOS TurboC with 32-bit IA                */
-    t_w1616,			/*  16-bit Windows, 16-bit SPITBOL              */
-    t_w1632,			/*  16-bit Windows, 32-bit SPITBOL              */
-    t_wnt8,			/*  Windows NT on 386/486                               */
-    t_sparc,			/*  Sun 4 / SPARC                                               */
-    t_mac,			/*  Apple Macintosh                                             */
-    t_mips,			/*  MIPS R3000                                                  */
-    t_rs6000,			/*  IBM RS/6000                         */
-    t_lnx8632,			/*  Linux Intel x86 32-bit              */
-    t_lnx8664			/*  Linux Intel x86 64-bit              */
+enum ext_type {			/* Executing under: */
+    t_lnx8632,			/*  Linux Intel x86 32-bit */
+    t_lnx8664,			/*  Linux Intel x86 64-bit */
+    t_osx,			/*  Apple OSX */
+    t_mips,			/*  MIPS R3000 */
+    t_arm			/*  ARM */
 };
 
 /*

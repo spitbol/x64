@@ -41,7 +41,7 @@ zysdc()
     /* announce name and copyright */
     if (!dcdone && !(spitflag & NOBRAG)) {
 	dcdone = 1;		/* Only do once per run */
-	write(STDERRFD, "Unix SPITBOL", 13);
+	write(STDERRFD, "SPITBOL", 7);
 
 #if RUNTIME
 	write(STDERRFD, " Runtime", 8);
