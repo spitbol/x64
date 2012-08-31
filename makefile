@@ -1,4 +1,4 @@
-# Unix/x86 SPITBOL
+-i# Unix/x86 SPITBOL
 #
 
 
@@ -44,8 +44,9 @@ SPIT=   ./bin/spitbol
 
 # Implicit rule for building objects from assembly language files.
 .s.o:
+	$(AS) -l $*.lst -o $@ $(ASFLAGS) $*.s
 #	$(AS) -a=$*.lst -o $@ $(ASFLAGS) $*.s
-	$(AS) -o $@ $(ASFLAGS) $*.s
+#	$(AS) -o $@ $(ASFLAGS) $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
 CHDRS =	$(OS)/os.h $(OS)/port.h $(OS)/sproto.h $(OS)/spitio.h $(OS)/spitblks.h $(OS)/globals.init
