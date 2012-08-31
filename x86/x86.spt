@@ -66,13 +66,6 @@
 *  revision history:
 *
         version = 'v1.12'
-*  note: as an experiment, we tried aligning all ent and prc's on
-*  a dword boundary, in an attempt to minimize instruction stall time
-*  on the first opcode of a procedure.  the resultant exe file was
-*  larger by 592 bytes, and actually ran 0.1% slower.  we will continue
-*  to use odd alignment of block entry routines so that the .cepp
-*  conditional may be used.
-*
 -eject
 *
 *  keyword initialization
