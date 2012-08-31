@@ -11,7 +11,7 @@ nearptr equ       1
 ; os/2 external functions are reached via near calls, and use near
 ; pointers to spitbol data.
 ;
-; macro glossary:
+; macro glossary 
 ; entry     entry name          define main procedure for this function.
 ;
 ; fstore    fstore arg          store floating point result after call to
@@ -32,23 +32,23 @@ nearptr equ       1
 ; spush     spush sreg          push segment register.
 ;
 ;
-; equate glossary:
+; equate glossary 
 ;
 ; name      usage               purpose
 ; --------  -----------------   -------------------------------------------
 ;
 ; cbrptr    cbrptr              size of pointer in bytes.
 ;
-; scs       op  reg, scs:arg    code segment override.
+; scs       op  reg, scs arg    code segment override.
 ;
-; ses       op  reg, ses:arg    es segment override.
+; ses       op  reg, ses arg    es segment override.
 ;
-; sfs       op  reg, sfs:arg    fs segment override.
+; sfs       op  reg, sfs arg    fs segment override.
 ;
-; sgs       op  reg, sgs:arg    gs segment override.
+; sgs       op  reg, sgs arg    gs segment override.
 ;
 ;
-; structure glossary:
+; structure glossary 
 ;
 ; name      usage               purpose
 ; --------  -----------------   -------------------------------------------
@@ -76,12 +76,10 @@ nearptr equ       1
 %define	sgs	ds
 
 ;        struc   dps
-;        dd      0
-;        endstruc
+;        equ     0
 ;
 ;        struc   dpt
-;o:      dd      0
-;        endstruc
+;         equ     0
 
 ;        .macro  procx procnm
 ;        %endmacro
@@ -127,10 +125,10 @@ nearptr equ       1
 ;       (c) copyright 1990 - catspaw, incorporated
 ;
 ;
-; at function entry, the stack looks like this:
+; at function entry, the stack looks like this 
 ;
 ;               +-----------------------+
-; ss:esp -----> |     return offset     |
+; ss esp -----> |     return offset     |
 ;               |-----------------------|
 ;               |  result area offset   |
 ;               |-----------------------|
@@ -157,21 +155,19 @@ nearptr equ       1
 ; area is placed on the stack below the result area pointer.
 ;
 
-	segment	.text
-;;        struc   misc
-;;vers:   dw      0               ;internal version number
-;;env:    db      0               ;host environment (t_pharlap, t_intel, t_os2)
-;;        db      0               ;reserved
-;;nargs:  dd      0               ;number of arguments to function
-;;ptyptab:dd      0               ;pointer to table of data types
-;;pxnblk: dd      0               ;pointer to xnblk describing function
-;;pefblk: dd      0               ;pointer to efblk describing function
-;;pflttab:dd      0               ;pointer to floating point table
-;;spds:   dw      0               ;spitbol's ds
-;;spcs:   dw      0               ;spitbol's cs
-;;	endstruc
-;;
-; values in env word of misc structure.  executing under:
+;	segment	.text
+vers    equ     0               ;internal version number
+env     equ     2               ;host environment (t_pharlap, t_intel, t_os2)
+;       equ     3               ;reserved
+nargs   equ     4               ;number of arguments to function
+ptyptab equ     8               ;pointer to table of data types
+pxnblk  equ     12              ;pointer to xnblk describing function
+pefblk  equ     16              ;pointer to efblk describing function
+pflttab equ     20              ;pointer to floating point table
+spds    equ     24              ;spitbol's ds
+spcs    equ     26              ;spitbol's cs
+
+; values in env word of misc structure.  executing under 
 t_pharlap equ   0               ;pharlap dos extender
 t_intel  equ    1               ;intel dos extender
 t_os2    equ    2               ;os/2 2.0
@@ -190,28 +186,28 @@ t_lnx8664 equ  13               ;linux intel x86 64-bit
 ; sample usage.  example stack frame for function arguments, assuming
 ;                the execution of an enter instruction to put the stack
 ;                pointer in ebp.  this example assumes the function is
-;                called with three arguments of type (integer, real, string):
+;                called with three arguments of type (integer, real, string) 
 ;
 ;               struc
-;       stk_ebp dd         0               ;save ebp
-;       stk_ret dd         0               ;return pointer
-;       presult dd         0               ;pointer to result area
-;       pmisc   dd         0               ;pointer to miscinfo area
-;       parg3   dd         0               ;pointer to arg 3 string
-;       larg3   dd         0               ;length of arg 3 string
-;       rarg2   dq         0               ;real arg 2
-;       iarg1   dd         0               ;integer arg 1
+;       stk_ebp equ        0               ;save ebp
+;       stk_ret equ        4               ;return pointer
+;       presult equ        8               ;pointer to result area
+;       pmisc   equ        12              ;pointer to miscinfo area
+;       parg3   equ        16              ;pointer to arg 3 string
+;       larg3   equ        20              ;length of arg 3 string
+;       rarg2   dq         24              ;real arg 2
+;       iarg1   equ        28              ;integer arg 1
 ;               ends
 ;
-;               the pointer to the result area could be loaded with:
+;               the pointer to the result area could be loaded with 
 ;
 ;               sload   fs, edi, [ebp].presult
 ;
 ;               the pointer to the type table would be loaded by
-;               double indexing:
+;               double indexing 
 ;
 ;               sload   fs, ecx, [ebp].pmisc
-;               sload   fs, ecx, sfs:[ecx].ptyptab
+;               sload   fs, ecx, sfs [ecx].ptyptab
 ;
 
 
@@ -222,18 +218,18 @@ t_lnx8664 equ  13               ;linux intel x86 64-bit
 ; the address of spitbol's type table is passed to the function on the
 ; stack in ptyptab (see above).  prior to using these symbols, a
 ; pointer to this table must be loaded into the registers.  these equates
-; assume that the pointer has been loaded into ds:[ecx].  there is nothing
+; assume that the pointer has been loaded into ds [ecx].  there is nothing
 ; special about these registers, and any others could be used
 ; provided the equates are modified.
 ;
-; note:  this does not work in the gnu assembler.  it generates the error message
-;         error: can't make global register symbol `xx'
+; note   this does not work in the gnu assembler.  it generates the error message
+;         error  can't make global register symbol `xx'
 ;        for each line.  nor can it be made into a macro, because macro expansion only
 ;        occurs for macros that appear in the opcode field.
 ;
 ;        users will just have to use the expansion expression explicitly in code.
 ;
-                                         ;data types in type table at ds:[ecx]
+                                         ;data types in type table at ds [ecx]
 ;ar     equ      [ecx+bl_ar*4]           ; array
 ;bc     equ      [ecx+bl_bc*4]           ; buffer control
 ;bf     equ      [ecx+bl_bf*4]           ; string buffer
@@ -271,7 +267,7 @@ buflen equ      512
 ; differs from standard c calling conventions.
 ;
 ; integer results are returned in eax.  real results are returned in
-; edx:eax  (edx = msh, eax = lsh).
+; edx eax  (edx = msh, eax = lsh).
 ;
 ; the caller is responsible for removing arguments from the stack
 ; after the function returns.
@@ -281,9 +277,9 @@ buflen equ      512
 ;
 ; the address of a table of dispatch vectors is passed to the external
 ; function on the stack in pflttab (see above).  these =  ates assume
-; that a pointer to the table has been loaded into ds:[ebx] by your code.
+; that a pointer to the table has been loaded into ds [ebx] by your code.
 ;
-; using the example above, this might be done with the following:
+; using the example above, this might be done with the following 
 ;
 ;                       sload   ds, ebx, [ebp].pmisc
 ;                       sload   ds, ebx, [ebx].pflttab
@@ -293,7 +289,7 @@ buflen equ      512
 ; eax, ecx, and edx.
 ;
 ; example.  divide the real number in location r1 by the number in r2, and
-;           store the result in r3:
+;           store the result in r3 
 ;
 ;       spush   ds                      ;save our ds
 ;       push    dword ptr r1+4          ;push first arg, msh
@@ -303,7 +299,7 @@ buflen equ      512
 ;       sload   ds,ebx,[ebp].pmisc      ;get address of miscinfo area
 ;       sload   ds,ebx,[ebx].pflttab    ;get address of vector table
 ;       r_div                           ;perform division
-;       add     esp, 2*8                ;remove arguments
+;       aequ    esp, 2*8                ;remove arguments
 ;       spop    ds                      ;restore our ds
 ;       mov     dword ptr r3, eax       ;store result lsh
 ;       mov     dword ptr r3+4, edx     ;store result msh

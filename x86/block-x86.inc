@@ -15,14 +15,14 @@
 ;       each subroutine is proceeded in memory by a one-byte integer
 ;       type code (given below).  thus to obtain a simple ordinal
 ;       type code for a block pointed to by an address in ebx, the following
-;       code sequence will load the ordinal value into register al:
+;       code sequence will load the ordinal value into register al 
 ;
 ;       ....                    block pointer in ebx
 ;       mov     eax,[ebx]       type word (subroutine pointer) to eax
 ;       mov     al,[eax-1]      load integer type code to al
 ;
 ;       to obtain the type code as a full 32-bit integer, replace the last
-;       instruction with:
+;       instruction with 
 ;
 ;       movzx   eax,byte ptr [eax-1]    load integer type code to eax
 ;
@@ -38,10 +38,10 @@
 ;       given an integer type, the type word can be obtained by
 ;       looking it up in a table provided to external functions in ptyptab
 ;       (provided in the miscellaneous area).
-;       for example, if the ptyptab pointer is loaded into es:ecx, then given
-;       a small integer type code in eax, the type word is obtained with:
+;       for example, if the ptyptab pointer is loaded into es ecx, then given
+;       a small integer type code in eax, the type word is obtained with 
 ;
-;       mov     eax,es:[ecx+eax*4]     obtain type word
+;       mov     eax,es [ecx+eax*4]     obtain type word
 ;
 ;
 ;       block codes for accessible datatypes
@@ -49,7 +49,7 @@
 ;       these blocks may appear in an argument list if left untranslated
 ;       by the load function definition.
 ;
-	segment	.data
+;	segment	.data
 bl_ar  equ      0               ;arblk  array
 bl_cd  equ      bl_ar+1         ;cdblk  code
 bl_ex  equ      bl_cd+1         ;exblk  expression
@@ -92,7 +92,7 @@ bl_te  equ      bl_pf+1         ;teblk  table element
 ;
 ;
 ;
-;       structure of common spitbol blocks:
+;       structure of common spitbol blocks 
 ;         integer, real, string, and file blocks.
 ;
 ;       these structures can be applied to the result area to determine
@@ -101,95 +101,80 @@ bl_te  equ      bl_pf+1         ;teblk  table element
 ;
 ;       structure of icblk (integers)
 ;
-;	segment	.text
-;;	segment	.data
-        struc   icblk
-ictyp:  resd      1               ;type word
-icval:  resd      1               ;integer value
-;;        endstruc
+	segment	.data
+
+ictyp   equ       0               ;type word
+icval   equ       4               ;integer value
 ;
 ;
 ;       structure of rcblk (reals)
 ;
-        struc   rcblk
-rctyp:  resd      1               ;type word
-rcval:  resd      1               ;real value
-        endstruc
-;;;
-;;;       structure of scblk (strings)
-;;;
-	section	.data
-        struc   scblk
-sctyp:  resd      1               ;type word
-sclen:  resd      1               ;string length
-scstr:  resb      1               ;start of string
-        endstruc
-;;;
-;;;       structure for returning a string via a pointer
-;;;
-        struc   fsblk
-fstyp:  resd      1               ;type word
-fslen:  resd      1               ;string length
-fsptr:  resd      1               ;near pointer to string
-        endstruc
-;;;
-;;;       structure for returning an external block via a pointer
-;;;
-;;        struc   fxblk
-;;fxtyp:  dd      0               ;type word
-;;fxlen:  dd      0               ;external data length
-;;fxptr:  dd      0               ;near pointer to external data
-;;        endstruc
-;;
-;;;
-;;;
-;;;       file control block
-;;;
-;;;       the user may provide the word "file" for any argument in
-;;;       the load function prototype.  when a call is made to the
-;;;       external function with an i/o associated variable in this argument
-;;;       position, spitbol will provide a pointer to the file control
-;;;       block instead of the value of the variable.
-;;;
-;;;       the file control block (fcb) points to an i/o block with
-;;;       additional information.  in turn, the i/o block points to any
-;;;       buffer used by the file.
-;;;
-;;;       this block is obtained for every file except those associated
-;;;       with input, output, or terminal.  note that these fcb's are
-;;;       unrelated to ms-dos fcb's.  file control blocks do not have
-;;;       their own type word, but appear as xrblks with the following structure:
-;;
-;;;
-;;        struc   fcblk
-;;fcbtyp: dd      0               ;type word (xrblk)
-;;fcblen: dd      0               ;size of block, in bytes
-;;fcbrsz: dd      0               ;spitbol record size and mode
-;;                                ;positive if text mode, negative if binary
-;;fcbiob: dd      0               ;pointer to ioblk
-;;fcbmod: dd      0               ;1 if text mode, 0 if binary mode
-;;        endstruc
-;;;
-;;;       i/o block
-;;;
-;;;       an i/o block is pointed to by the fcbiob field of a file control block.
-;;;
-;;        struc   ioblk
-;;iobtyp: dd      0               ;type word (xrblk)
-;;ioblen: dd      0               ;size of ioblk in bytes
-;;iobfnm: dd      0               ;pointer to scblk holding filename
-;;iobpid: dd      0               ;process id for pipe (not used for dos)
-;;iobbfb: dd      0               ;pointer to bfbblk
-;;iobfdn: dd      0               ;o/s file descriptor number
-;;iobflg1:dd      0               ;flags 1 (see below)
-;;iobflg2:dd      0               ;flags 2 (see below)
-;;iobeol1:dd      0               ;end of line character 1
-;;iobeol2:dd      0               ;end of line character 2
-;;iobshare:dd     0               ;sharing mode
-;;iobaction:dd    0               ;file open actions
-;;        endstruc
-;;
-;       bits in iobflg1 dword:
+rctyp   equ       0               ;type word
+rcval   equ       4               ;real value
+;
+;       structure of scblk (strings)
+;
+sctyp   equ       0               ;type word
+sclen   equ       4               ;string length
+scstr   equ       8               ;start of string
+;
+;       structure for returning a string via a pointer
+;
+fstyp   equ       0               ;type word
+fslen   equ       4               ;string length
+fsptr   equ       8               ;near pointer to string
+;
+;       structure for returning an external block via a pointer
+;
+fxtyp   equ     0               ;type word
+fxlen   equ     4               ;external data length
+fxptr   equ     8               ;near pointer to external data
+
+;
+;
+;       file control block
+;
+;       the user may provide the word "file" for any argument in
+;       the load function prototype.  when a call is made to the
+;       external function with an i/o associated variable in this argument
+;       position, spitbol will provide a pointer to the file control
+;       block instead of the value of the variable.
+;
+;       the file control block (fcb) points to an i/o block with
+;       additional information.  in turn, the i/o block points to any
+;       buffer used by the file.
+;
+;       this block is obtained for every file except those associated
+;       with input, output, or terminal.  note that these fcb's are
+;       unrelated to ms-dos fcb's.  file control blocks do not have
+;       their own type word, but appear as xrblks with the following structure 
+
+;
+fcbtyp  equ     0               ;type word (xrblk)
+fcblen  equ     4               ;size of block, in bytes
+fcbrsz  equ     8               ;spitbol record size and mode
+                                ;positive if text mode, negative if binary
+fcbiob  equ     12               ;pointer to ioblk
+fcbmod  equ     16               ;1 if text mode, 0 if binary mode
+;
+;       i/o block
+;
+;       an i/o block is pointed to by the fcbiob field of a file control block.
+;
+iobtyp  equ     0               ;type word (xrblk)
+ioblen  equ     4               ;size of ioblk in bytes
+iobfnm  equ     8               ;pointer to scblk holding filename
+iobpid  equ     12               ;process id for pipe (not used for dos)
+iobbfb  equ     16               ;pointer to bfbblk
+iobfdn  equ     20               ;o/s file descriptor number
+iobflg1 equ     24               ;flags 1 (see below)
+iobflg2 equ     28               ;flags 2 (see below)
+iobeol1 equ     32               ;end of line character 1
+iobeol2 equ     36               ;end of line character 2
+iobshare equ    40               ;sharing mode
+iobaction equ   44               ;file open actions
+
+;       bits in iobflg1 dword 
 ;
 io_inp equ      0x00000001       ;input file
 io_oup equ      0x00000002       ;output file
@@ -201,7 +186,7 @@ io_sys equ      0x00000040       ;system file descriptor used instead of name
 io_wrc equ      0x00000080       ;output without buffering
 io_eot equ      0x00000100       ;ignore end-of-text (control-z) character
 
-;       bits in iobflg2 dword:
+;       bits in iobflg2 dword 
 ;
 io_pip equ      0x00000001       ;pipe (not used in ms-dos)
 io_ded equ      0x00000002       ;dead pipe (not used in ms-dos)
@@ -213,7 +198,7 @@ io_env equ      0x00000040       ;filearg1 maps to filename thru environment var
 io_dir equ      0x00000080       ;buffer is dirty (needs to be written)
 io_bin equ      0x00000100       ;binary i/o
 
-;       bits in iobshare dword:
+;       bits in iobshare dword 
 io_compatibility  equ      0x00
 io_deny_readwrite equ      0x01
 io_deny_write     equ      0x02
@@ -223,7 +208,7 @@ io_deny_mask      equ      0x07  ;mask for above deny mode bits
 io_executable     equ      0x40  ;file to be marked executable
 io_private        equ      0x80  ;file is private to current process
 
-;       bits in iobaction dword:
+;       bits in iobaction dword 
 io_fail_if_exists     equ  0x00
 io_open_if_exists     equ  0x01
 io_replace_if_exists  equ  0x02
@@ -237,175 +222,153 @@ io_write_thru         equ  0x20  ;writes complete before return
 ;
 ;       an i/o buffer block (bfbblk) is pointed to by an ioblk.
 ;
-;;        struc   bfbblk
-;;bfbtyp: dd      0               ;type word (xnblk)
-;;bfblen: dd      0               ;size of bfbblk, in bytes
-;;bfbsiz: dd      0               ;size of buffer in bytes
-;;bfbfil: dd      0               ;number of bytes currently in buffer
-;;bfbnxt: dd      0               ;offset of next buffer char to r/w
-;;bfboff: dd      0               ;file position of first byte in buf
-;;bfbcur: dd      0               ;physical file position
-;;bfbbuf: db      0               ;start of buffer
-;;        endstruc
-;;;
-;;;
-;;;       structure of efblk (external function).  a pointer to this block
-;;;       is passed to the external function in the miscellaneous area
-;;;       in pefblk.
-;;;
-;;        struc   efblk
-;;fcode:  dd      0               ;type word
-;;fargs:  dd      0               ;number of arguments
-;;eflen:  dd      0               ;block length
-;;efuse:  dd      0               ;usage count
-;;efcod:  dd      0               ;pointer to xnblk, see below
-;;efvar:  dd      0               ;pointer to vrblk with function name
-;;efrsl:  dd      0               ;result type  (see below)
-;;eftar:  dd      0               ;argument types, one dword per arg (see below)
-;;        endstruc
-;;;
-;;;  efrsl and eftar[] dwords contain small integer type codes as follows:
-;;;  0 - unconverted
-;;;  1 - convert to string
-;;;  2 - convert to integer
-;;;  3 - convert to real
-;;;  4 - produce as file control block associated with variable
-;;;
-;;;
-;;;       structure of xnblk allocated for external function
-;;;       a pointer to this structure is passed to the external function
-;;;       in the miscellaneous area in pxnblk.
-;;;
-;;
-;;        struc   xnblk           ;keep as multiple of dwords
-;;xntyp:  dd      0               ;type word
-;;xnlen:  dd      0               ;length of this block
-;;xnhand: dd      0               ;module handle
-;;xnpfn:  dd      0               ;pointer to function
-;;xn1st:  dd      0               ;non-zero means first-ever call
-;;xnsave: dd      0               ;non-zero means first call after reload of save file
-;;xncbp:  dd      0               ;call back address prior to saving or exiting
-;;        endstruc
-;;xndta  equ      (xnlen+4)       ;start of user data region in xnblk
-;;;
-;;
-;;;
-;;;  other selected blocks of interest:
-;;;
-;;;
-;;;       array block
-;;;
-;;;       an array block (arblk) represents an array value other than one
-;;;       with one dimension whose lower bound is one (see vcblk).
-;;;
-;;        struc   arblk
-;;artyp:  dd      0               ;type word (arblk)
-;;aridv:  dd      0               ;identifier value
-;;arlen:  dd      0               ;length of arblk in bytes
-;;arofs:  dd      0               ;offset in arblk to arpro field
-;;arndm:  dd      0               ;number of dimensions
-;;arlbd:  dd      0               ;low bound (first subscript)
-;;ardim:  dd      0               ;dimension (first subscript)
-;;; above two dwords are repeated for each additional dimension
-;;arpro:  dd      0               ;array prototype string
-;;arvls:  dd      0               ;start of values in row-wise order
-;;        endstruc
-;;
-;;;       buffer control block
-;;;
-;;;       a buffer control block (bcblk) is created by the buffer
-;;;       function, and serves as an indirect control header for the
-;;;       buffer. it contains the number of characters currently
-;;;       stored in the buffer.
-;;;
-;;        struc   bcblk
-;;bctyp:  dd      0               ;type word (bcblk)
-;;bcidv:  dd      0               ;identifier value
-;;bclen:  dd      0               ;number of chars in use in bfblk
-;;bcbuf:  dd      0               ;pointer to bfblk
-;;        endstruc
-;;
-;;;       string buffer block
-;;;
-;;;       a string buffer block (bfblk) contains the actual buffer
-;;;       memory area. it specifies the largest string that can be
-;;;       stored in the buffer.
-;;;
-;;        struc   bfblk
-;;bftyp:  dd      0               ;type word (bfblk)
-;;bfalc:  dd      0               ;allocated size of buffer
-;;bfchr:  db      0               ;characters of string
-;;        endstruc
-;;
-;;;
-;;;       code block
-;;;
-;;;       a code block (cdblk) is present for every source statement.
-;;;
-;;        struc   cdblk
-;;cdjmp:  dd      0               ;ptr to routine to execute statement
-;;cdstm:  dd      0               ;statement number
-;;cdsln:  dd      0               ;source file line number
-;;cdlen:  dd      0               ;length of cdblk in bytes
-;;cdfal:  dd      0               ;failure exit
-;;cdcod:  dd      0               ;start of executable pseudo-code
-;;        endstruc
-;;
-;;;
-;;;       name block
-;;;
-;;;       a name block (nmblk) is used whereever a name must be stored as
-;;;       a value following use of the unary dot operator.
-;;;
-;;        struc   nmblk
-;;nmtyp:  dd      0               ;type word (nmblk)
-;;nmbas:  dd      0               ;base pointer for variable
-;;nmofs:  dd      0               ;offset for variable
-;;        endstruc
-;;
-;;;
-;;;       table block
-;;;
-;;;       a table block (tbblk) is used to represent a table value.
-;;;       it comprises a list of buckets, each of which may point to
-;;;       a chain of teblks.  tbbuk entries either point to the first
-;;;       teblk on the chain or they point to the tbblk itself to
-;;;       indicate the end of the chain.  the number of buckets can
-;;;       be deduced from tblen.
-;;;
-;;        struc   tbblk
-;;tbtyp:  dd      0               ;type word (tbblk)
-;;tbidv:  dd      0               ;identifier value
-;;tblen:  dd      0               ;length of tbblk in bytes
-;;tbinv:  dd      0               ;default initial lookup value
-;;tbbuk:  dd      0               ;start of hash bucket pointers
-;;        endstruc
-;;
-;;;
-;;;       table element block
-;;;
-;;;       a table element (teblk) is used to represent a single entry in
-;;;       a table.
-;;;
-;;        struc   teblk
-;;tetyp:  dd      0               ;type word (teblk)
-;;tesub:  dd      0               ;subscript value
-;;teval:  dd      0               ;table element value
-;;tenxt:  dd      0               ;link to next teblk or tbblk if end of chain
-;;        endstruc
-;;
-;;;       vector block
-;;;
-;;;       a vector block (vcblk) is used to represent an array value which has
-;;;       one dimension whose lower bound is one. all other arrays are
-;;;       represented by arblks.  the number of elements can be deduced
-;;;       from vclen.
-;;;
-;;        struc   vcblk
-;;vctyp:  dd      0               ;type word (vcblk)
-;;vcidv:  dd      0               ;identifier value
-;;vclen:  dd      0               ;length of vcblk in bytes
-;;vcvls:  dd      0               ;start of vector values
-;;        endstruc
-;;
+bfbtyp  equ     0               ;type word (xnblk)
+bfblen  equ     4               ;size of bfbblk, in bytes
+bfbsiz  equ     8               ;size of buffer in bytes
+bfbfil  equ     12              ;number of bytes currently in buffer
+bfbnxt  equ     16              ;offset of next buffer char to r/w
+bfboff  equ     24              ;file position of first byte in buf
+bfbcur  equ     28              ;physical file position
+bfbbuf  equ     32              ;start of buffer
+;
+;
+;       structure of efblk (external function).  a pointer to this block
+;       is passed to the external function in the miscellaneous area
+;       in pefblk.
+;
+fcode   equ     0               ;type word
+fargs   equ     4               ;number of arguments
+eflen   equ     8               ;block length
+efuse   equ     12              ;usage count
+efcod   equ     16              ;pointer to xnblk, see below
+efvar   equ     20              ;pointer to vrblk with function name
+efrsl   equ     24              ;result type  (see below)
+eftar   equ     28              ;argument types, one dword per arg (see below)
+;
+;  efrsl and eftar[] dwords contain small integer type codes as follows 
+;  0 - unconverted
+;  1 - convert to string
+;  2 - convert to integer
+;  3 - convert to real
+;  4 - produce as file control block associated with variable
+;
+;
+;       structure of xnblk allocated for external function
+;       a pointer to this structure is passed to the external function
+;       in the miscellaneous area in pxnblk.
+;
+
+xntyp   equ     0               ;type word
+xnlen   equ     4               ;length of this block
+xnhand  equ     8               ;module handle
+xnpfn   equ     12              ;pointer to function
+xn1st   equ     16              ;non-zero means first-ever call
+xnsave  equ     20              ;non-zero means first call after reload of save file
+xncbp   equ     24              ;call back address prior to saving or exiting
+xndta  equ      (xnlen+4)       ;start of user data region in xnblk
+;
+
+;
+;  other selected blocks of interest 
+;
+;
+;       array block
+;
+;       an array block (arblk) represents an array value other than one
+;       with one dimension whose lower bound is one (see vcblk).
+;
+artyp   equ     0               ;type word (arblk)
+aridv   equ     4               ;identifier value
+arlen   equ     8               ;length of arblk in bytes
+arofs   equ     12              ;offset in arblk to arpro field
+arndm   equ     16              ;number of dimensions
+arlbd   equ     20              ;low bound (first subscript)
+ardim   equ     24              ;dimension (first subscript)
+; above two dwords are repeated for each additional dimension
+arpro   equ     28              ;array prototype string
+arvls   equ     32              ;start of values in row-wise order
+
+;       buffer control block
+;
+;       a buffer control block (bcblk) is created by the buffer
+;       function, and serves as an indirect control header for the
+;       buffer. it contains the number of characters currently
+;       stored in the buffer.
+;
+bctyp   equ     0               ;type word (bcblk)
+bcidv   equ     4               ;identifier value
+bclen   equ     8               ;number of chars in use in bfblk
+bcbuf   equ     12              ;pointer to bfblk
+
+;       string buffer block
+;
+;       a string buffer block (bfblk) contains the actual buffer
+;       memory area. it specifies the largest string that can be
+;       stored in the buffer.
+;
+bftyp   equ     0               ;type word (bfblk)
+bfalc   equ     4               ;allocated size of buffer
+bfchr   equ     8               ;characters of string
+
+;
+;       code block
+;
+;       a code block (cdblk) is present for every source statement.
+;
+cdjmp   equ     0               ;ptr to routine to execute statement
+cdstm   equ     4               ;statement number
+cdsln   equ     8               ;source file line number
+cdlen   equ     12              ;length of cdblk in bytes
+cdfal   equ     16              ;failure exit
+cdcod   equ     20              ;start of executable pseudo-code
+
+;
+;       name block
+;
+;       a name block (nmblk) is used whereever a name must be stored as
+;       a value following use of the unary dot operator.
+;
+nmtyp   equ     0               ;type word (nmblk)
+nmbas   equ     4               ;base pointer for variable
+nmofs   equ     8               ;offset for variable
+
+;
+;       table block
+;
+;       a table block (tbblk) is used to represent a table value.
+;       it comprises a list of buckets, each of which may point to
+;       a chain of teblks.  tbbuk entries either point to the first
+;       teblk on the chain or they point to the tbblk itself to
+;       indicate the end of the chain.  the number of buckets can
+;       be deduced from tblen.
+;
+tbtyp   equ     0               ;type word (tbblk)
+tbidv   equ     4               ;identifier value
+tblen   equ     8               ;length of tbblk in bytes
+tbinv   equ     12              ;default initial lookup value
+tbbuk   equ     16              ;start of hash bucket pointers
+
+;
+;       table element block
+;
+;       a table element (teblk) is used to represent a single entry in
+;       a table.
+;
+tetyp   equ     0               ;type word (teblk)
+tesub   equ     4               ;subscript value
+teval   equ     8               ;table element value
+tenxt   equ     12              ;link to next teblk or tbblk if end of chain
+
+;       vector block
+;
+;       a vector block (vcblk) is used to represent an array value which has
+;       one dimension whose lower bound is one. all other arrays are
+;       represented by arblks.  the number of elements can be deduced
+;       from vclen.
+;
+vctyp   equ     0               ;type word (vcblk)
+vcidv   equ     4               ;identifier value
+vclen   equ     8               ;length of vcblk in bytes
+vcvls   equ     12              ;start of vector values
+
 ;---------------------  end of block386.inc -----------------------

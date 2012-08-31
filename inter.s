@@ -123,7 +123,7 @@
 
         %include "x86/extern-x86.inc"
 
-
+	segment	.data
 ; words saved during exit(-3)
 ;
         align 4
