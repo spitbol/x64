@@ -192,19 +192,21 @@ id1	dd	0
 %endif
 ;
 	global	id2blk
+	dd	0
 id2blk:	times	52 dd 0
 	global	tscblk
 
 	global	ticblk
 ticblk:	dd	0
-        dd      0
 
 	global	tscblk
+        dd      0
 tscblk:	times	512 dd 0
 
 ;       standard input buffer block.
 ;
 	global	inpbuf
+        dd      0               ; type work
         dd      0               ; block length
         dd      1024            ; buffer size
         dd      0               ; remaining chars to read
