@@ -181,8 +181,8 @@ osisp:  dd      0               ; osint's stack pointer
 ;       setup a number of internal ddes in the compiler that cannot
 ;       be directly accessed from within c because of naming difficulties.
 ;
-	global	id1
-id1	dd	0
+	global	ID1
+ID1	dd	0
 %ifdef setreal
         dd       2
         db  "1x\x00\x00"
@@ -191,21 +191,22 @@ id1	dd	0
         db  "1x\x00\x00\x00"
 %endif
 ;
-	global	id2blk
+	global	ID2BLK
 	dd	0
-id2blk:	times	52 dd 0
-	global	tscblk
+ID2BLK:	times	52 dd 0
+	global	TSCBLK
 
-	global	ticblk
-ticblk:	dd	0
+	global	TICBLK
+TICBLK:	dd	0
 
-	global	tscblk
+	global	TSCBLk
         dd      0
-tscblk:	times	512 dd 0
+TSCBLK:	times	512 dd 0
 
 ;       standard input buffer block.
 ;
-	global	inpbuf
+	global	INPBUF
+INPBUF:
         dd      0               ; type work
         dd      0               ; block length
         dd      1024            ; buffer size
@@ -215,8 +216,8 @@ tscblk:	times	512 dd 0
         dd      0               ; physical position in file
         times   1024 dd 0       ; buffer
 ;
-	global	ttybuf
-ttybuf:	dd   	0     		; type word
+	global	TTYBUF
+TTYBUF:	dd   	0     		; type word
         dd      0               ; block length
         dd      260             ; buffer size  (260 ok in ms-dos with cinread())
         dd      0               ; remaining chars to read
@@ -366,8 +367,8 @@ startup:
         mov     dword [reg_wa],eax                     ; startup stack pointer
 
         cld                             ; default to UP direction for string ops
-        extern  dffnc
-        lea     eax,[dffnc]               ; get dd of PPM offset
+        extern  DFFNC
+        lea     eax,[DFFNC]               ; get dd of PPM offset
         mov     dword [ppoff],eax               ; save for use later
 ;
         mov     esp,dword [osisp]               ; switch to new c stack
@@ -409,16 +410,16 @@ stackinit:
         sub     eax,dword [stacksiz]     ; end of MINIMAL stack is where C stack will start
         mov     dword [osisp],eax       ; save new C stack pointer
         add     eax,4*100               ; 100 words smaller for CHK
-        extern  lowspmin
-        mov	dword [lowspmin],eax           ; Set lowspmin
+        extern  LOWSPMIN
+        mov	dword [LOWSPMIN],eax           ; Set lowspmin
         ret
 	mov	eax,esp
         mov     dword [compsp],eax              ; save as minimal's stack pointer
 	sub	eax,dword [stacksiz]     ; end of minimal stack is where c stack will start
         mov     dword [osisp],eax       ; save new c stack pointer
 	add	eax,4*100               ; 100 words smaller for chk
-	extern	lowspmin
-        mov     dword [lowspmin],eax           ; set lowspmin
+	extern	LOWSPMIN
+        mov     dword [LOWSPMIN],eax           ; set lowspmin
 	ret
 ;
 

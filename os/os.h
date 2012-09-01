@@ -178,7 +178,6 @@ set_min_value sets the contents of an item of Minimal data.
 	extern	word TYPET;
 	extern	word W_YYY;
 
-
 /* Some shorthand notations */
 #define pid1 get_data_offset(ID1,struct scblk *)
 #define pid2blk get_data_offset(ID2BLK,struct scblk *)
