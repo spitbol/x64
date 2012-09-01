@@ -7653,7 +7653,6 @@ relws  prc  e,0              entry point
 *
 start  prc  e,0              entry point
        mov  wa,xs            discard return
-       jsr  sysbp            DS breakpoint test
        jsr  systm            initialise timer
 .if    .cnbt
        sti  timsx            store time

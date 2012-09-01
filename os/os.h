@@ -120,7 +120,6 @@ get_code_offset returns the address of a Minimal routine.
 get_min_value returns the contents of an item of Minimal data.
 set_min_value sets the contents of an item of Minimal data.
 */
-#if direct
 #define get_code_offset(vn,type) ((type)vn)
 #define get_data_offset(vn,type) ((type)&vn)
 #define get_min_value(vn,type) ((type)vn)
@@ -159,75 +158,6 @@ extern word
     KVCOM,
     KVPFL,
     CSWFL,
-    STMCS, STMCT, TICBLK, TSCBLK, ID1, ID2BLK, INPBUF, TTYBUF,
-    END_MIN_DATA;
-
-/*
-    Names for accessing minimal code values via get_code_offset macro.
-*/
-extern void B_EFC();
-extern void B_ICL();
-extern void B_RCL();
-extern void B_SCL();
-extern void B_VCT();
-extern void B_XNT();
-extern void B_XRT();
-extern void DFFNC();
-extern void S_AAA();
-extern void S_YYY();
-
-#else				/* DIRECT */
-extern word *minoff(word valno);
-#define get_code_offset(vn,type) ((type)minoff(vn))
-#define get_data_offset(vn,type) ((type)minoff(vn))
-#define get_min_value(vn,type)  ((type)*minoff(vn))
-#define set_min_value(vn,val,type) (*(type *)minoff(vn) = (type)(val))
-/*
-    Ordinals for accessing minimal values.
-
-    The order of entries here must correspond to the order of
-    valtab entries in the INTER assembly language module.
-*/
-enum valtab {
-    GBCNT,
-    HEADV,
-    MXLEN,
-    STAGE,
-    TIMSX,
-    DNAMB,
-    DNAMP,
-    STATE,
-    B_EFC,
-    B_ICL,
-    B_SCL,
-    B_VCT,
-    B_XNT,
-    B_XRT,
-    STBAS,
-    STATB,
-    POLCT,
-    TYPET,
-    DFFNC,
-    LOWSPMIN,
-    FLPRT,
-    FLPTR,
-    GTCEF,
-    HSHTB,
-    PMHBS,
-    R_FCB,
-    C_AAA,
-    C_YYY,
-    G_AAA,
-    W_YYY,
-    S_AAA,
-    S_YYY,
-    R_COD,
-    KVSTN,
-    KVDMP,
-    KVFTR,
-    KVCOM,
-    KVPFL,
-    CSWFL,
     STMCS,
     STMCT,
     TICBLK,
@@ -236,12 +166,7 @@ enum valtab {
     ID2BLK,
     INPBUF,
     TTYBUF,
-    B_RCL,
-    END_MIN_DATA
-};
-
-#endif				/* DIRECT */
-
+    END_MIN_DATA;
 /* Some shorthand notations */
 #define pid1 get_data_offset(ID1,struct scblk *)
 #define pid2blk get_data_offset(ID2BLK,struct scblk *)
