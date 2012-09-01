@@ -150,7 +150,7 @@ reg_wc: dd   	0     		; Register WC & IA (EDX)
 reg_xr: dd   	0     		; Register XR (EDI)
 reg_xl: dd   	0     		; Register XL (ESI)
 reg_cp: dd   	0     		; Register CP
-reg_ra: dd   	0e    		; Register RA
+reg_ra: dq   	0e    		; Register RA
 ;
 ; these locations save information needed to return after calling osint
 ; and after a restart from exit()

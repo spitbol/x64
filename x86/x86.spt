@@ -1380,7 +1380,7 @@ g.dic   genopl(tlabel,'dd',i.text(i1))               :(decend)
 *
 *
 g.drc   genop('align','4')
-        genop('dd', i.text(i1))
+        genop('dq', i.text(i1))
 *  note that want to attach label to last instruction
 	t.label(cstmts[cstmts.n]) = tlabel
 	tlabel =					:(opdone)
