@@ -591,6 +591,15 @@ sysbs  exp                   define external entry point
        ejc
 .fi
 *
+*      sysbp -- breakpoint
+*
+sysbp  exp                   define external entry point
+*
+*      sysbp is not required in normal operation. it is called
+*      as a breakpoint to assist in debugging.
+*
+*      jsr  sysbp            call to breakpoint
+       ejc
 *      sysbx -- before execution
 *
 sysbx  exp                   define external entry point
@@ -7644,6 +7653,7 @@ relws  prc  e,0              entry point
 *
 start  prc  e,0              entry point
        mov  wa,xs            discard return
+       jsr  sysbp            DS breakpoint test
        jsr  systm            initialise timer
 .if    .cnbt
        sti  timsx            store time
