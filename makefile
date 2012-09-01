@@ -58,7 +58,7 @@ UHDRS=	$(OS)/systype.h $(OS)/extern32.h $(OS)/blocks32.h $(OS)/system.h
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	$(TARGET)/$(TARGET).cnd $(TARGET)/$(TARGET).def $(TARGET)/$(TARGET).hdr $(TARGET)/hdrdata.inc $(TARGET)/hdrcode.inc
+VHDRS=	$(TARGET)/$(TARGET).cnd $(TARGET)/$(TARGET).hdr 
 
 # OS objects:
 SYSOBJS=sysax.o sysbp.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \

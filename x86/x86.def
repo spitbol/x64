@@ -1,6 +1,0 @@
-* platform-specific mods for x86
-*
-
-* gnu c labels do not have an underscore prefix
-	c.out = ''
-
