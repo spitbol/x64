@@ -38,7 +38,6 @@ This file is part of Macro SPITBOL.
            suspended spitbol program
 */
 
-    struct bfblk *bfptr;
 #include "systype.h"
 #include "port.h"
 #include "os.h"
@@ -146,27 +145,6 @@ char *argv[];
     /*
        Switch to proper input file.
      */
-#define NASTY
-#ifdef NASTY
-
-/*    struct bfblk *bfptr;*/
-
-    printf("->1\n");
-    printf("address inpiob.bfb %ld\n",(long) inpiob.bfb);
-    bfptr = MK_MP(inpiob.bfb, struct bfblk *);
-printf("->2\n");
-    long val = (long) (bfptr);
-    printf("->%ld \n", val);
-printf("->3\n");
-    bfptr->next = bfptr->fill = 0;
-printf("->4\n");
-    bfptr->offset = (FILEPOS) 0;
-printf("->5\n");
-    bfptr->curpos = (FILEPOS) - 1;
-printf("->6\n");
-    inpiob.flg2 &= ~IO_LF;
-printf("->ok\n");
-#endif
     swcinp(inpcnt, inpptr);
 
 #if FLOAT

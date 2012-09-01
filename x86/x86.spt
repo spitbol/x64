@@ -249,7 +249,6 @@ flgs	flags ? ((len(1) break(';:')) . flag len(1)) |
 	$flag = 1					:(flgs)
 *
 flgs2	
-
 * various constants
 *
         comment.delim = ';'

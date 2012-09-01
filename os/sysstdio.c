@@ -197,8 +197,6 @@ clrbuf()
     REGISTER struct bfblk *bfptr;
 
     bfptr = MK_MP(inpiob.bfb, struct bfblk *);
-    int val = (int) (bfptr);
-    printf("%d \n", val);
     bfptr->next = bfptr->fill = 0;
     bfptr->offset = (FILEPOS) 0;
     bfptr->curpos = (FILEPOS) - 1;

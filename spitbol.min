@@ -593,7 +593,7 @@ sysbs  exp                   define external entry point
 *
 *      sysbp -- breakpoint
 *
-sysbp  exp                   define external entry point
+*sysbp  exp                   define external entry point
 *
 *      sysbp is not required in normal operation. it is called
 *      as a breakpoint to assist in debugging.
