@@ -84,7 +84,7 @@
 *  data structures
 *
 	data('minarg(i.type,i.text)')
-	data('tstmt(t.label,t.opc,t.op1,t.op2,t.op3,t.comment)')
+	data('stmt(t.label,t.opc,t.op1,t.op2,t.op3,t.comment)')
 
 	sectnow = 0
 *
@@ -114,10 +114,10 @@
 	define('prsarg(iarg)l1,l2')
 	define('tblini(str)pos,cnt,index,val,lastval')
 
-*  outstmt is used to send a target statement to the target code
+*  oustmt is used to send a target statement to the target code
 *  output file outfile
 *
-	define('outstmt(ostmt)label,opcode,op1,op2,op3,comment,t,stmtout')
+	define('oustmt(ostmt)label,opcode,op1,op2,op3,comment,t,stmtout')
 
 *  readline is called to return the next non-comment line from
 *  the minimal input file (infile <=> lu1).   note that it will
@@ -214,7 +214,7 @@
 *  the generators all have entry points beginning
 *  with "g.", and can be considered a logical extension of the
 *  opnext routine.  the generators have the choice of branching back
-*  to dsgen to cause the thisstmt plex to be sent to outstmt, or
+*  to dsgen to cause the thisstmt plex to be sent to oustmt, or
 *  or branching to dsout, in which case the generator must output
 *  all needed code itself.
 *
@@ -269,7 +269,7 @@ flgs2
 	branchtab['bhi'] = 'ja'
 
 *  optim.tab flags opcodes capable of participating in or optimization
-*		in outstmt routine
+*		in oustmt routine
 *
 	optim.tab = table(10)
 	optim.tab<"and"> = 1
@@ -314,9 +314,9 @@ flgs2
 *  machine definition file, and cannot be built until after the definition
 *  file has been read in.
 *
-*  p.outstmt examines output lines for certain types of comment contructions
+*  p.oustmt examines output lines for certain types of comment contructions
 	fillc	  = (ident(compress) " ",tab)
-	p.outstmt = (break(fillc) . label span(fillc)) . leader
+	p.oustmt = (break(fillc) . label span(fillc)) . leader
 +			comment.delim rem . comment
 	p.alltabs = span(tab) rpos(0)
 
@@ -346,8 +346,8 @@ inpulex output = 'input lexeme file: ' filenami
 err_ok
 
 * begin with standard preamble
-        outstmt(tstmt(,';','"spitbol translator ' replace(parms,lcase,ucase) '"'))
-        outstmt(tstmt(,';','"' replace(parms,lcase,ucase) '"'))
+        oustmt(stmt(,';','"spitbol translator ' replace(parms,lcase,ucase) '"'))
+        oustmt(stmt(,';','"' replace(parms,lcase,ucase) '"'))
 
 *  then copy contents of <machine>.hdr (if it exists) to outfile
 *  stop at line with just 'end' or end of file
@@ -452,8 +452,15 @@ genlab	genlab = 'l' lpad(genlabels = genlabels + 1,4,'0') :(return)
 
 -stitl genopl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
-genopl	cstmts[cstmts.n = cstmts.n + 1] =
-.		tstmt(gopl,gopc,gop1,gop2,gop3)		:(return)
+genopl	
+	cstmts[cstmts.n = cstmts.n + 1] = stmt(gopl,gopc,gop1,gop2,gop3)		
+		:(genopl.1)
+	ident(gopl) differ(sectnow,5)		:s(genopl.1)
+	cstmts[cstmts.n = cstmts.n + 1] = 
+		stmt(,'mov  ' nlines ',dword [nlines]')		
+	cstmts[cstmts.n = cstmts.n + 1] = stmt(,'jsr atlin')
+genopl.1
+						:(return)
 
 -stitl genop(gopc,gop1,gop2,gop3)
 *  generate operation with no label
@@ -498,14 +505,14 @@ getarg.c.10
 	l1 = substr(l1,2,2)
 	t1 = regmap[l1]
 	getarg = 'dword [' t1 ']'
-	(ident(l1,'xs') genaop(tstmt(,'add',t1,'4'))) :s(return)
-	genaop(tstmt(,'lea',t1,'[' t1 '+4]'))	:(return)
+	(ident(l1,'xs') genaop(stmt(,'add',t1,'4'))) :s(return)
+	genaop(stmt(,'lea',t1,'[' t1 '+4]'))	:(return)
 
 *  -(x), register indirect, pre decrement
 getarg.c.11
 	t1 = regmap[substr(l1,3,2)]
 	getarg = 'dword [' t1 ']'
-	genbop(tstmt(,'lea',t1,'[' t1 '-4]'))	:(return)
+	genbop(stmt(,'lea',t1,'[' t1 '-4]'))	:(return)
 
 * int(x)
 * dlbl(x)
@@ -570,35 +577,35 @@ memmem
 -stitl prcent(n)
 prcent prcent = 'prc$' '+'  (4 * ( n - 1)) :(return)
 
--stitl outstmt(ostmt)label,opcode,op1,op2,op3,comment)
+-stitl oustmt(ostmt)label,opcode,op1,op2,op3,comment)
 *  this module writes the components of the statement
 *  passed in the argument list to the formatted .s file
 *
-outstmt	label = t.label(ostmt)
+oustmt	label = t.label(ostmt)
 *  attach source label to first generated instruction
-	differ(label)				:s(outstmt1)
-	ident(tlabel)				:s(outstmt1)
+	differ(label)				:s(oustmt1)
+	ident(tlabel)				:s(oustmt1)
 	label = tlabel; tlabel =
 
-outstmt1
+oustmt1
 	comment = t.comment(ostmt)
 *  attach source comment to first generated instruction
-	differ(comment)				:s(outstmt2)
-	ident(tcomment)				:s(outstmt2)
+	differ(comment)				:s(oustmt2)
+	ident(tcomment)				:s(oustmt2)
 	comment = tcomment; tcomment =
-outstmt2
+oustmt2
 	opcode = t.opc(ostmt)
 	op1 = t.op1(ostmt)
 	op2 = t.op2(ostmt)
 	op3 = t.op3(ostmt)
-	differ(compress)			:s(outstmt6)
+	differ(compress)			:s(oustmt6)
 	stmtout = rpad( rpad(label,7) ' ' rpad(opcode,4) ' '
 .		  (ident(op1), op1
 .			(ident(op2), ',' op2
 .				(ident(op3), ',' op3))) ,27)
 .       (ident(strip_comment,'y'), ' ' (ident(comment), ';') comment)
-.						:(outstmt7)
-outstmt6
+.						:(oustmt7)
+oustmt6
 	stmtout = label tab opcode tab
 .		  (ident(op1), op1
 .		    (ident(op2), ',' op2
@@ -616,13 +623,13 @@ outstmt6
 *   and 3) last opcode was and, add, sub, neg, or, xor, shr, shl, inc or dec.
 *   and	4) last op1 = current op1
 *
-outstmt7 (
+oustmt7 (
 .	ident(label)
 .	  (ident(opcode,"or") ident(op1,op2),
 .	   ident(opcode,"cmp") ident(op2,"0"))
 .	      differ(optim.tab<lastopc>)
 .	        ident(lastop1,op1)
-.		)				:f(outstmt4)
+.		)				:f(oustmt4)
 *
 *  criteria satisfied.  make current line into a comment.
 *
@@ -631,7 +638,7 @@ outstmt7 (
 *
 *  record this statement's components for next time
 *
-outstmt4
+oustmt4
 	lastopc = opcode
 	lastop1 = op1
 	lastop2 = op2
@@ -1489,7 +1496,7 @@ g.sec.7
 *  loop to emit inc eax for each possible error code
 	i1 = max.err
 g.sec.7.1
-	ge(i1 = i1 - 1) outstmt(tstmt(,'inc','eax'))	:s(g.sec.7.1)
+	ge(i1 = i1 - 1) oustmt(stmt(,'inc','eax'))	:s(g.sec.7.1)
         genopl('err$' label.delim,'xchg',reg.wa,'eax')
         genop('global','sec07')
         genopl('sec07' label.delim)             :(opdone)
@@ -1506,17 +1513,17 @@ flush	eq(astmts.n) eq(bstmts.n) eq(cstmts.n)	:f(opdone1)
 *  here if no statements, so output single 'null' statement to get label
 *  and comment field right.
 *
-	outstmt(tstmt())			:(opdone.6)
+	oustmt(stmt())			:(opdone.6)
 opdone1	eq(bstmts.n)				:s(opdone.2)
 	i = 1
 opdone.1
-	outstmt(bstmts[i])
+	oustmt(bstmts[i])
 	le(i = i + 1, bstmts.n)			:s(opdone.1)
 
 opdone.2	eq(cstmts.n)			:s(opdone.4)
 	i = 1
 opdone.3
-	outstmt(cstmts[i])
+	oustmt(cstmts[i])
 	le(i = i + 1, cstmts.n)			:s(opdone.3)
 
 opdone.4	eq(astmts.n)			:s(opdone.6)
@@ -1524,7 +1531,7 @@ opdone.4	eq(astmts.n)			:s(opdone.6)
 	ident(pifatal[incode])			:s(opdone.5)
 *  here if post incrementing code not allowed
 	error('post increment not allowed for op ' incode)
-opdone.5	outstmt(astmts[i])
+opdone.5	oustmt(astmts[i])
 	le(i = i + 1, astmts.n)			:s(opdone.5)
 opdone.6 astmts.n = bstmts.n = cstmts.n =	:(return)
 flush_end
@@ -1538,7 +1545,7 @@ g.end.1	line = hdrfile				:f(g.end.2)
 	noutlines = noutlines + 1
 	outfile = line				:(g.end.1)
 g.end.2
-        outstmt(tstmt(,,,,,comment))
+        oustmt(stmt(,,,,,comment))
 
 
 	endfile(1)

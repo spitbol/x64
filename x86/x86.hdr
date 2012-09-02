@@ -106,10 +106,6 @@
 ;   table to recover type word from type ordinal
 ;
 
-;%macro  pubdef 3
-;        global %1
-;%1:	%2	%3
-;%endmacro
 TYPET:
         dd      b_art   ; arblk type word - 0
         dd      b_cdc   ; cdblk type word - 1
@@ -155,16 +151,6 @@ TYPET:
 ;   note that the order of entries in this table must correspond to the
 ;   order of entries in the val enumeration in os.h and os.inc.
 ;
-%if  direct
-%macro  access 1
-        global %1
-        %endmacro
-%else
-%macro  access 1
-        dd %1
-        %endmacro
-
-%endif
 
 ;   hdrcode.inc
 ;
@@ -177,12 +163,6 @@ TYPET:
 ;   table to recover type word from type ordinal
 ;
 
-;%macro  pubdef 3
-;        global %1
-;%1:	%2	%3
-;%endmacro
-;        global  typet
-;typet:
         dd      b_art   ; arblk type word - 0
         dd      b_cdc   ; cdblk type word - 1
         dd      b_exl   ; exblk type word - 2
@@ -251,16 +231,6 @@ calltab:
 ;   note that the order of entries in this table must correspond to the
 ;   order of entries in the val enumeration in os.h and os.inc.
 ;
-%if  direct
-%macro  access 1
-        global %1
-        %endmacro
-%else
-%macro  access 1
-        dd %1
-        %endmacro
-
-%endif
         global  valtab
 valtab:
 	dd	gbcnt
