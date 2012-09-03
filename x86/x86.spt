@@ -116,7 +116,6 @@
 	define('genbop(stmt)')
         define('gennewlab()')
         define('asm(label,op,opnd)')
-        define('asm(label,op,val)')
 	define('genop(gopc,gop1,gop2,gop3)')
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
 	define('getarg(iarg,iacc)l1,l2,t1,t2')
@@ -130,8 +129,6 @@
 *  output file outfile
 *
 	define('outstmt(ostmt)label,opcode,op1,op2,op3,comment,t,stmtout')
-	define('asm(gopl,gop,gop1,gop2,gop2)')
-
 *  readline is called to return the next non-comment line from
 *  the minimal input file (infile <=> lu1).   note that it will
 *  not fail on eof, but it will return a minimal end statement
@@ -486,10 +483,9 @@ genbop
 
 -stitl (label,op,val)
 *      generate data delcaration
-asm(
+asm
        asm(label,op,val)
 						:(return)
-
 -stitl gennewlab()
 *  generate unique labels for use in generated code
 gennewlab	gennewlab = 'l' lpad(gennewlabels = gennewlabels + 1,4,'0') :(return)
@@ -500,6 +496,26 @@ genopl
 	asm(gopl)
 	cstmts[cstmts.n = cstmts.n + 1] = tstmt(,gopc,gop1,gop2,gop3)
 						:(return);
+	cstmts[cstmts.n = cstmts.n + 1] = tstmt(gopl)
+	
+*	:(genopl.1)
+	ident(generating_code)			:s(genopl.1)
+ 	ident(gopl) 				:s(genopl.1)
+ 	ident(gopc) 				:s(genopl.1)
+	trapped_stmts[nlines] = gopl '.' gopc
+* 	here if at label in code section, generate call to atlin with line #
+*	if the operation is executable
+	genop(,'atn',gopc,gopl)
+	ident(is_executable[opc])		:s(genopl.1)
+
+	cstmts[cstmts.n = cstmts.n + 1] = 
+		tstmt(,'mov', nlines ',dword [nlines]')		
+	cstmts[cstmts.n = cstmts.n + 1] = 
+		tstmt(,'jsr','atlin')
+	output = 'generated atlin call at ' nlines
+genopl.1
+	cstmts[cstmts.n = cstmts.n + 1] = tstmt(gopl,gopc,gop1,gop2,gop3)		
+						:(return)
 
 -stitl genop(gopc,gop1,gop2,gop3)
 *  generate operation with no label
@@ -852,7 +868,6 @@ g.bsw1	asm(,'jmp', 'dword  [' t2 '+' t1 '*4]')
 g.iff   asm(,'dd',getarg(i2))               :(opdone)
 
 g.esw  						
-	asm(,'segment','.text')
 	generating_code = 1
 
 						:(opdone)
