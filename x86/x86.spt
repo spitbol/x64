@@ -481,6 +481,7 @@ genaop
 genbop
 	bstmts[bstmts.n = bstmts.n + 1] = stmt	:(return)
 
+						:(return)
 -stitl gennewlab()
 *  generate unique labels for use in generated code
 gennewlab	gennewlab = 'l' lpad(gennewlabels = gennewlabels + 1,4,'0') :(return)
