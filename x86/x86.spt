@@ -70,8 +70,11 @@
 *
 *  keyword initialization
 *
-	&anchor = 1;	&stlimit = 10000000;	&trim	= 1;  
+	&anchor = 1;	
 	&dump = 1
+	&dump = 2
+	&stlimit = 10000000;	
+	&trim	= 1;  
 *
 *  useful constants
 *
@@ -84,9 +87,15 @@
 *  data structures
 *
 	data('minarg(i.type,i.text)')
-	data('stmt(t.label,t.opc,t.op1,t.op2,t.op3,t.comment)')
+	data('tstmt(t.label,t.opc,t.op1,t.op2,t.op3,t.comment)')
 
 	sectnow = 0
+
+*	set generating_code whilst generating executable code
+
+	generating_code =
+
+	trapped_stmts = table(100)
 *
 *  function definitions
 *
@@ -104,7 +113,7 @@
 	define('flush()')
 	define('genaop(stmt)')
 	define('genbop(stmt)')
-        define('genlab()')
+        define('gennewlab()')
 	define('genop(gopc,gop1,gop2,gop3)')
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
 	define('getarg(iarg,iacc)l1,l2,t1,t2')
@@ -114,10 +123,10 @@
 	define('prsarg(iarg)l1,l2')
 	define('tblini(str)pos,cnt,index,val,lastval')
 
-*  oustmt is used to send a target statement to the target code
+*  outstmt is used to send a target statement to the target code
 *  output file outfile
 *
-	define('oustmt(ostmt)label,opcode,op1,op2,op3,comment,t,stmtout')
+	define('outstmt(ostmt)label,opcode,op1,op2,op3,comment,t,stmtout')
 
 *  readline is called to return the next non-comment line from
 *  the minimal input file (infile <=> lu1).   note that it will
@@ -146,9 +155,9 @@
 	bstmts = array(10,'')
 	cstmts = array(20,'')
 *
-*  genlabels is count of generated labels (cf. genlab)
+*  gennewlabels is count of generated labels (cf. gennewlab)
 *
-	genlabels = 0
+	gennewlabels = 0
 
 *
 *  initialize variables
@@ -199,6 +208,23 @@
 *
 *
 
+* create map of executable statements (needed when instrumenting code)
+
+	is_executable = table(100)
+	s = 
++       'add adi adr anb aov atn '
++       'brn bri bsw btw bze ceq chk chp cmb cmc cne csc '
++       'cos ctb ctw cvd cvm dca dcv eti dvi dvr erb esw etx flc '
++       'ica icp icv ieq ige igt ile ilt ine ino iov itr '
++       'jsr lch lct lcp lcw ldi ldr lei lnf lsh lsx mcb mfi mli mlr '
++       'mnz mov mti mvc mvw mwb ngi eti ngr nzb orb plc psc '
++       'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
++       'sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer'
++       'zgb zrb'
+is_exec.1
+	s len(3) . opc ' ' =				:f(is_exec.2)
+	is_executable[opc] = 1				:(is_exec.1)
+is_exec.2
 
 
 -stitl main program
@@ -214,7 +240,7 @@
 *  the generators all have entry points beginning
 *  with "g.", and can be considered a logical extension of the
 *  opnext routine.  the generators have the choice of branching back
-*  to dsgen to cause the thisstmt plex to be sent to oustmt, or
+*  to dsgen to cause the thisstmt plex to be sent to outstmt, or
 *  or branching to dsout, in which case the generator must output
 *  all needed code itself.
 *
@@ -269,7 +295,7 @@ flgs2
 	branchtab['bhi'] = 'ja'
 
 *  optim.tab flags opcodes capable of participating in or optimization
-*		in oustmt routine
+*		in outstmt routine
 *
 	optim.tab = table(10)
 	optim.tab<"and"> = 1
@@ -314,9 +340,9 @@ flgs2
 *  machine definition file, and cannot be built until after the definition
 *  file has been read in.
 *
-*  p.oustmt examines output lines for certain types of comment contructions
+*  p.outstmt examines output lines for certain types of comment contructions
 	fillc	  = (ident(compress) " ",tab)
-	p.oustmt = (break(fillc) . label span(fillc)) . leader
+	p.outstmt = (break(fillc) . label span(fillc)) . leader
 +			comment.delim rem . comment
 	p.alltabs = span(tab) rpos(0)
 
@@ -346,8 +372,8 @@ inpulex output = 'input lexeme file: ' filenami
 err_ok
 
 * begin with standard preamble
-        oustmt(stmt(,';','"spitbol translator ' replace(parms,lcase,ucase) '"'))
-        oustmt(stmt(,';','"' replace(parms,lcase,ucase) '"'))
+        outstmt(tstmt(,';','"spitbol translator ' replace(parms,lcase,ucase) '"'))
+        outstmt(tstmt(,';','"' replace(parms,lcase,ucase) '"'))
 
 *  then copy contents of <machine>.hdr (if it exists) to outfile
 *  stop at line with just 'end' or end of file
@@ -446,20 +472,32 @@ genaop
 genbop
 	bstmts[bstmts.n = bstmts.n + 1] = stmt	:(return)
 
--stitl genlab()
+-stitl gennewlab()
 *  generate unique labels for use in generated code
-genlab	genlab = 'l' lpad(genlabels = genlabels + 1,4,'0') :(return)
+gennewlab	gennewlab = 'l' lpad(gennewlabels = gennewlabels + 1,4,'0') :(return)
 
 -stitl genopl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
 genopl	
-	cstmts[cstmts.n = cstmts.n + 1] = stmt(gopl,gopc,gop1,gop2,gop3)		
-		:(genopl.1)
-	ident(gopl) differ(sectnow,5)		:s(genopl.1)
+	cstmts[cstmts.n = cstmts.n + 1] = tstmt(gopl)
+	
+*	:(genopl.1)
+	ident(generating_code)			:s(genopl.1)
+ 	ident(gopl) 				:s(genopl.1)
+ 	ident(gopc) 				:s(genopl.1)
+	trapped_stmts[nlines] = gopl '.' gopc
+* 	here if at label in code section, generate call to atlin with line #
+*	if the operation is executable
+	genop(,'atn',gopc,gopl)
+	ident(is_executable[opc])		:s(genopl.1)
+
 	cstmts[cstmts.n = cstmts.n + 1] = 
-		stmt(,'mov  ' nlines ',dword [nlines]')		
-	cstmts[cstmts.n = cstmts.n + 1] = stmt(,'jsr atlin')
+		tstmt(,'mov', nlines ',dword [nlines]')		
+	cstmts[cstmts.n = cstmts.n + 1] = 
+		tstmt(,'jsr','atlin')
+	output = 'generated atlin call at ' nlines
 genopl.1
+	cstmts[cstmts.n = cstmts.n + 1] = tstmt(gopl,gopc,gop1,gop2,gop3)		
 						:(return)
 
 -stitl genop(gopc,gop1,gop2,gop3)
@@ -505,14 +543,14 @@ getarg.c.10
 	l1 = substr(l1,2,2)
 	t1 = regmap[l1]
 	getarg = 'dword [' t1 ']'
-	(ident(l1,'xs') genaop(stmt(,'add',t1,'4'))) :s(return)
-	genaop(stmt(,'lea',t1,'[' t1 '+4]'))	:(return)
+	(ident(l1,'xs') genaop(tstmt(,'add',t1,'4'))) :s(return)
+	genaop(tstmt(,'lea',t1,'[' t1 '+4]'))	:(return)
 
 *  -(x), register indirect, pre decrement
 getarg.c.11
 	t1 = regmap[substr(l1,3,2)]
 	getarg = 'dword [' t1 ']'
-	genbop(stmt(,'lea',t1,'[' t1 '-4]'))	:(return)
+	genbop(tstmt(,'lea',t1,'[' t1 '-4]'))	:(return)
 
 * int(x)
 * dlbl(x)
@@ -577,35 +615,37 @@ memmem
 -stitl prcent(n)
 prcent prcent = 'prc$' '+'  (4 * ( n - 1)) :(return)
 
--stitl oustmt(ostmt)label,opcode,op1,op2,op3,comment)
+-stitl outstmt(ostmt)label,opcode,op1,op2,op3,comment)
 *  this module writes the components of the statement
 *  passed in the argument list to the formatted .s file
 *
-oustmt	label = t.label(ostmt)
+outstmt	
+	thistmt = ostmt
+	label = t.label(ostmt)
 *  attach source label to first generated instruction
-	differ(label)				:s(oustmt1)
-	ident(tlabel)				:s(oustmt1)
+	differ(label)				:s(outstmt1)
+	ident(tlabel)				:s(outstmt1)
 	label = tlabel; tlabel =
 
-oustmt1
+outstmt1
 	comment = t.comment(ostmt)
 *  attach source comment to first generated instruction
-	differ(comment)				:s(oustmt2)
-	ident(tcomment)				:s(oustmt2)
+	differ(comment)				:s(outstmt2)
+	ident(tcomment)				:s(outstmt2)
 	comment = tcomment; tcomment =
-oustmt2
+outstmt2
 	opcode = t.opc(ostmt)
 	op1 = t.op1(ostmt)
 	op2 = t.op2(ostmt)
 	op3 = t.op3(ostmt)
-	differ(compress)			:s(oustmt6)
+	differ(compress)			:s(outstmt6)
 	stmtout = rpad( rpad(label,7) ' ' rpad(opcode,4) ' '
 .		  (ident(op1), op1
 .			(ident(op2), ',' op2
 .				(ident(op3), ',' op3))) ,27)
 .       (ident(strip_comment,'y'), ' ' (ident(comment), ';') comment)
-.						:(oustmt7)
-oustmt6
+.						:(outstmt7)
+outstmt6
 	stmtout = label tab opcode tab
 .		  (ident(op1), op1
 .		    (ident(op2), ',' op2
@@ -623,13 +663,13 @@ oustmt6
 *   and 3) last opcode was and, add, sub, neg, or, xor, shr, shl, inc or dec.
 *   and	4) last op1 = current op1
 *
-oustmt7 (
+outstmt7 (
 .	ident(label)
 .	  (ident(opcode,"or") ident(op1,op2),
 .	   ident(opcode,"cmp") ident(op2,"0"))
 .	      differ(optim.tab<lastopc>)
 .	        ident(lastop1,op1)
-.		)				:f(oustmt4)
+.		)				:f(outstmt4)
 *
 *  criteria satisfied.  make current line into a comment.
 *
@@ -638,7 +678,7 @@ oustmt7 (
 *
 *  record this statement's components for next time
 *
-oustmt4
+outstmt4
 	lastopc = opcode
 	lastop1 = op1
 	lastop2 = op2
@@ -717,13 +757,14 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 
 g.flc
 	t1 = substr(getarg(i1),2,1) 'l'
-	t2 = genlab()
+	t2 = gennewlab()
 	genop('cmp',t1,"'a'")
 	genop('jb', t2)
 	genop('cmp',t1,"'z'")
 	genop('ja', t2)
 	genop('sub',t1,'32')
-        genopl(t2 label.delim)                  :(opdone)
+        genlab(t2 label.delim)                  
+						:(opdone)
 
 g.mov
 *  perhaps change mov x,(xr)+ to
@@ -777,18 +818,25 @@ g.bev	t1 = getarg(i1)
 g.brn   genop('jmp',getarg(i1))			:(opdone)
 
 g.bsw	t1 = getarg(i1)
-	t2 = genlab()
+	t2 = gennewlab()
 	ident(i.text(i3))			:s(g.bsw1)
 	genop('cmp',t1,getarg(i2))
 	genop('jge',getarg(i3))
 * here after default case.
 g.bsw1	genop('jmp', 'dword  [' t2 '+' t1 '*4]')
+*	indicate now generating data
+
+	generating_code =
         genop('segment','.data')
-        genopl(t2 label.delim)                  :(opdone)
+        genlab(t2 label.delim)                  :(opdone)
 
 g.iff   genop('dd',getarg(i2))               :(opdone)
 
-g.esw  						:(opdone)
+g.esw  						
+	genop('segment','.text')
+	generating_code = 1
+
+						:(opdone)
 
 g.ent
 *
@@ -1204,7 +1252,8 @@ g.trc
 *	xor	esi,esi			;set xl to zero
 *	xor	edi,edi			;v1.02  xr also
 	genop('xchg','esi','edi')
-        genopl((t1 = genlab()) label.delim,'movzx','eax','byte [edi]')
+        genopl((t1 = gennewlab()) label.delim)
+	genop('movzx','eax','byte [edi]')
 	genop('mov','al','[esi+eax]')
 	genop('stosb')
 	genop('loop',t1)
@@ -1323,12 +1372,14 @@ g.mvc
 *  tmp2 rep	movsd	; move string as double words
 *
 *	genop('shr','ecx','1')
-*	genop('jnc','short ' (t1 = genlab()))
+*	genop('jnc','short ' (t1 = gennewlab()))
 *	genop('movsb')
-*       genopl(t1 label.delim,'shr','ecx','1')
-*	genop('jnc','short ' (t1 = genlab()))
+*       genopl(t1 label.delim)
+*       genop('shr','ecx','1')
+*	genop('jnc','short ' (t1 = gennewlab()))
 *	genop('movsw')
-*       genopl(t1 label.delim,'rep','movsd')        :(opdone)
+*       genopl(t1 label.delim)
+*       genop('rep','movsd')        :(opdone)
 *
 *  new method:
 *	shrd	eax,ecx,1 ; preserve ecx[0] in eax[31]
@@ -1404,7 +1455,8 @@ g.dtc
         genopl(tlabel,'dd',t2)              :(opdone)
 g.dbc   genopl(tlabel,'dd',getarg(i1))       :(opdone)
 g.equ   genop('equ',i.text(i1))			:(opdone)
-g.exp   genop('extern',tlabel)
+g.exp  	
+	genop('extern',tlabel)
 	tlabel =				:(opdone)
 
 g.inp	prc.count1 = ident(i.text(i1),'n') prc.count1 + 1
@@ -1426,26 +1478,26 @@ g.sec	genop('')
 g.sec.1 
         genop('segment','.text')
         genop('global','sec01')
-        genopl('sec01' label.delim)             :(opdone)
+        genlab('sec01' label.delim)             :(opdone)
 
 * definitions section
 g.sec.2 
         genop('segment','.data')
         genop('global','sec02')
-        genopl('sec02' label.delim)             :(opdone)
+        genlab('sec02' label.delim)             :(opdone)
 
 * constants section
 g.sec.3 
         genop('segment','.data')
         genop('global','sec03')
-        genopl('sec03' label.delim)     :(opdone)
+        genlab('sec03' label.delim)     :(opdone)
 
 * working variables section
 g.sec.4 genop('global','esec03')
-        genopl('esec03' label.delim)
+        genlab('esec03' label.delim)
         genop('segment','.data')
         genop('global','sec04')
-        genopl('sec04' label.delim)     :(opdone)
+        genlab('sec04' label.delim)     :(opdone)
 
 *  here at start of program section.  if any n type procedures,
 *  put out entry-word block declaration at end of working storage
@@ -1453,15 +1505,17 @@ g.sec.5
 *  emit code to indicate in code section
 *  get direction set to up.
         genop('global','esec04')
-        genopl('esec04' label.delim)
+        genlab('esec04' label.delim)
         (gt(prc.count1) genopl('prc$' label.delim,'times', prc.count1 ' dd 0'))
         genop('global','lowspmin')
         genopl('lowspmin' label.delim,'dd','0')
-        genop('global','end$min$data')
-        genopl('end$min$data' label.delim)
+        genop('global','end_min_data')
+        genlab('end_min_data' label.delim)
         genop('segment','.text')
         genop('global','sec05')
-        genopl('sec05' label.delim)     :(opdone)
+        genlab('sec05' label.delim)     
+	generating_code = 1
+						:(opdone)
 
 *  stack overflow section.  output exi__n tail code
 g.sec.6	i1 = 1
@@ -1478,7 +1532,7 @@ g.sec.6.1
 
 * now being the stack overflow section
         genop('global','sec06')
-        genopl('sec06' label.delim)             :(opdone)
+        genlab('sec06' label.delim)             :(opdone)
 
 *  error section.  produce code to receive erb's
 g.sec.7
@@ -1496,10 +1550,10 @@ g.sec.7
 *  loop to emit inc eax for each possible error code
 	i1 = max.err
 g.sec.7.1
-	ge(i1 = i1 - 1) oustmt(stmt(,'inc','eax'))	:s(g.sec.7.1)
+	ge(i1 = i1 - 1) outstmt(tstmt(,'inc','eax'))	:s(g.sec.7.1)
         genopl('err$' label.delim,'xchg',reg.wa,'eax')
         genop('global','sec07')
-        genopl('sec07' label.delim)             :(opdone)
+        genlab('sec07' label.delim)             :(opdone)
 
 
 
@@ -1513,17 +1567,17 @@ flush	eq(astmts.n) eq(bstmts.n) eq(cstmts.n)	:f(opdone1)
 *  here if no statements, so output single 'null' statement to get label
 *  and comment field right.
 *
-	oustmt(stmt())			:(opdone.6)
+	outstmt(tstmt())			:(opdone.6)
 opdone1	eq(bstmts.n)				:s(opdone.2)
 	i = 1
 opdone.1
-	oustmt(bstmts[i])
+	outstmt(bstmts[i])
 	le(i = i + 1, bstmts.n)			:s(opdone.1)
 
 opdone.2	eq(cstmts.n)			:s(opdone.4)
 	i = 1
 opdone.3
-	oustmt(cstmts[i])
+	outstmt(cstmts[i])
 	le(i = i + 1, cstmts.n)			:s(opdone.3)
 
 opdone.4	eq(astmts.n)			:s(opdone.6)
@@ -1531,7 +1585,7 @@ opdone.4	eq(astmts.n)			:s(opdone.6)
 	ident(pifatal[incode])			:s(opdone.5)
 *  here if post incrementing code not allowed
 	error('post increment not allowed for op ' incode)
-opdone.5	oustmt(astmts[i])
+opdone.5	outstmt(astmts[i])
 	le(i = i + 1, astmts.n)			:s(opdone.5)
 opdone.6 astmts.n = bstmts.n = cstmts.n =	:(return)
 flush_end
@@ -1545,7 +1599,7 @@ g.end.1	line = hdrfile				:f(g.end.2)
 	noutlines = noutlines + 1
 	outfile = line				:(g.end.1)
 g.end.2
-        oustmt(stmt(,,,,,comment))
+        outstmt(tstmt(,,,,,comment))
 
 
 	endfile(1)
@@ -1571,6 +1625,7 @@ g.end.4
 .		differ(lasterror) 'the last error was in line ' lasterror
 	&code   = ne(nerrors) 2001
         output = collect() ' free words'
-	&dump = 0
+	labtab =
+	&dump = 2
 	:(end)
 end
