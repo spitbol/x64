@@ -109,11 +109,13 @@
 *
 *  error is used to report an error for current statement
 *
+	define('asm(aopl,aopc,aop1,aop2,aop3)')
 	define('cstmt(gopc,gop1,gop2,gop3)')
 	define('error(text)')
-        define('gennewlab()')
-        define('asm(label,op,opnd)')
-	define('genop(gopc,gop1,gop2,gop3)')
+	define('flush()')
+	define('genaop(stmt)')
+	define('genbop(stmt)')
+        define('genlab()')
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
 	define('getarg(iarg,iacc)l1,l2,t1,t2')
 	define('ifreg(iarg)')
@@ -145,10 +147,17 @@
 *  for each statement, code in generated into three
 *  arrays of statements:
 *
+*	astmts:	statements after opcode (()+, etc.)
+*	bstmts: statements before code (-(), etc)
+*	cstmts: generated code proper
 *
-*  gennewlabels is count of generated labels (cf. gennewlab)
+	astmts = array(20,'')
+	bstmts = array(10,'')
+	cstmts = array(20,'')
 *
-	gennewlabels = 0
+*  genlabels is count of generated labels (cf. genlab)
+*
+	genlabels = 0
 
 *
 *  initialize variables
@@ -331,11 +340,7 @@ flgs2
 *  machine definition file, and cannot be built until after the definition
 *  file has been read in.
 *
-*  p.outstmt examines output lines for certain types of comment contructions
 	fillc	  = (ident(compress) " ",tab)
-	p.outstmt = (break(fillc) . label span(fillc)) . leader
-+			comment.delim rem . comment
-	p.alltabs = span(tab) rpos(0)
 
 *  strip end of comments if y
 *
@@ -402,13 +407,8 @@ nopub
   &ftrace = 1000
 *  &profile = 1
 dsout
-opnext	
-	thisline = readline()
+opnext	thisline = readline()
 	crack(thisline)				:f(dsout)
-*
-* append label.delim after label if in code or data.
-*
-        tlabel = inlabel (differ(inlabel) ge(sectnow,3) label.delim, )
 	i1 = prsarg(iarg1)
 	i2 = prsarg(iarg2)
 	i3 = prsarg(iarg3)
@@ -423,9 +423,9 @@ ds01	error('bad op-code')			:(dsout)
 *
 ds.typerr
 	error('operand type zero')		:(dsout)
--stitl	asm(label,op,opnd)
+-stitl	asm(aopl,aopc,aop,aop2,aop3)
 asm	
-	outstmt(Tstmt(label,op,opnd)) :(return)
+	outstmt(Tstmt(aopl,aopc,aop1,aop2,aop3)) :(return)
 
 -stitl comregs(line)t,pre,word
 comregs
@@ -465,18 +465,25 @@ error   outfile = '* *???* ' thisline
 	noutlines = noutlines + 2
 	le(nerrors = nerrors + 1, 10)		:s(dsout)
         output = 'too many errors, quitting'  :(end)
-						:(return)
--stitl gennewlab()
+-stitl genaop(stmt)
+genaop
+	astmts[astmts.n = astmts.n + 1] = stmt	:(return)
+-stitl genbop(stmt)
+genbop
+	bstmts[bstmts.n = bstmts.n + 1] = stmt	:(return)
+
+-stitl genlab()
 *  generate unique labels for use in generated code
-gennewlab	gennewlab = 'l' lpad(gennewlabels = gennewlabels + 1,4,'0') :(return)
+genlab	genlab = 'l' lpad(genlabels = genlabels + 1,4,'0') :(return)
 
 -stitl genopl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
 genopl	
+	:(genopl.1)
 	asm(gopl)
-	Tstmt(,gopc,gop1,gop2,gop3)
+	cstmts[cstmts.n = cstmts.n + 1] = Tstmt(,gopc,gop1,gop2,gop3)
 						:(return);
-	Tstmt(gopl)
+	cstmts[cstmts.n = cstmts.n + 1] = Tstmt(gopl)
 	
 *	:(genopl.1)
 	ident(generating_code)			:s(genopl.1)
@@ -485,16 +492,20 @@ genopl
 	trapped_stmts[nlines] = gopl '.' gopc
 * 	here if at label in code section, generate call to atlin with line #
 *	if the operation is executable
-	genop(,'atn',gopc,gopl)
+	asm(,,'atn',gopc,gopl)
 	ident(is_executable[opc])		:s(genopl.1)
-	Tstmt(,'mov', nlines ',dword [nlines]')		
-	Tstmt(,'jsr','atlin')
+
+	cstmts[cstmts.n = cstmts.n + 1] = 
+		Tstmt(,'mov', nlines ',dword [nlines]')		
+	cstmts[cstmts.n = cstmts.n + 1] = 
+		Tstmt(,'jsr','atlin')
 	output = 'generated atlin call at ' nlines
 genopl.1
-	Tstmt(gopl,gopc,gop1,gop2,gop3)		
+	asm(gopl ':')
+	cstmts[cstmts.n = cstmts.n + 1] = Tstmt(,gopc,gop1,gop2,gop3)		
 						:(return)
 
--stitl genop(gopc,gop1,gop2,gop3)
+-stitl asm(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with no label
 genop   
 *	:(genopl.1)
@@ -504,14 +515,16 @@ genop
 	trapped_stmts[nlines] =  gopc
 * 	here if at label in code section, generate call to atlin with line #
 *	if the operation is executable
-	genop('atn',gopc,gopl)
+	asm(,'atn',gopc,gopl)
 	ident(is_executable[opc])		:s(genopl.1)
 
-	Tstmt(,'mov', nlines ',dword [nlines]')		
-	Tstmt(,'jsr','atlin')
+	cstmts[cstmts.n = cstmts.n + 1] = 
+		Tstmt(,'mov', nlines ',dword [nlines]')		
+	cstmts[cstmts.n = cstmts.n + 1] = 
+		Tstmt(,'jsr','atlin')
 	output = 'generated atlin call at ' nlines
 genop.1
-	Tstmt(,gopc,gop1,gop2,gop3)		
+	cstmts[cstmts.n = cstmts.n + 1] = Tstmt(gopl,gopc,gop1,gop2,gop3)		
 						:(return)
 
 -stitl getarg(iarg,iacc)
@@ -550,11 +563,17 @@ getarg.c.9
 * actually, lea reg,[reg+4] and add reg,4 are both 2 cycles and 3 bytes
 * for all the other regs, and either could be used.
 getarg.c.10
-	getarg = '(' regmap[substr(l1,2,2)] ')+'		:(return)
+	l1 = substr(l1,2,2)
+	t1 = regmap[l1]
+	getarg = 'dword [' t1 ']'
+	(ident(l1,'xs') genaop(Tstmt(,'add',t1,'4'))) :s(return)
+	genaop(Tstmt(,'lea',t1,'[' t1 '+4]'))	:(return)
 
 *  -(x), register indirect, pre decrement
 getarg.c.11
-	getarg = '-(' regmap[substr(l1,3,2)] ')'	:(return)
+	t1 = regmap[substr(l1,3,2)]
+	getarg = 'dword [' t1 ']'
+	genbop(Tstmt(,'lea',t1,'[' t1 '-4]'))	:(return)
 
 * int(x)
 * dlbl(x)
@@ -628,8 +647,8 @@ outstmt
 	label = t.label(ostmt)
 *  attach source label to first generated instruction
 	differ(label)				:s(outstmt1)
-	ident(tlabel)				:s(outstmt1)
-	label = tlabel; tlabel =
+*	ident(tlabel)				:s(outstmt1)
+*	label = tlabel; tlabel =
 
 outstmt1
 	comment = t.comment(ostmt)
@@ -638,6 +657,11 @@ outstmt1
 	ident(tcomment)				:s(outstmt2)
 	comment = tcomment; tcomment =
 outstmt2
+	ident(label)				:s(outstmt3)
+	le(sectnow,2)				:s(outstmt3)
+*	here if label requires delimiter
+	label = label label.delim
+outstmt3
 	opcode = t.opc(ostmt)
 	op1 = t.op1(ostmt)
 	op2 = t.op2(ostmt)
@@ -712,6 +736,7 @@ prsarg	prsarg = minarg(0)
 *
 readline readline = infile                      :f(rl02)
 	nlines  = nlines + 1
+*DS	output = lpad(nlines,6) ' ' readline
 	ident( readline )			:s(readline)
 	leq( substr( readline,1,1 ),'*' )       :f(rl01)
 *
@@ -760,7 +785,7 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 
 g.flc
 	t1 = substr(getarg(i1),2,1) 'l'
-	t2 = gennewlab()
+	t2 = genlab()
 	asm(,'cmp',t1,"'a'")
 	asm(,'jb', t2)
 	asm(,'cmp',t1,"'z'")
@@ -782,24 +807,20 @@ g.mov
 *  need to process memory-memory case
 *  change 'mov (xs)+,a' to 'pop a'
 *  change 'mov a,-(xs)' to 'push a'
-	
-	output = 'stat move ' nlines
 	t1 = i.text(i1); t2 = i.text(i2)
-*	output = 'g.mov ' t1 ':' t2 ':'
 	ident(t1,'(xl)+')			:s(mov.xlp)
 	ident(t1,'(xt)+')			:s(mov.xtp)
 	ident(t1,'(xs)+')			:s(mov.xsp)
 	ident(t2,'(xr)+')			:s(mov.xrp)
 	ident(t2,'-(xs)')			:s(mov.2)
-	output = '  ordinary move ' nlines
 	memmem()
 	asm(,'mov',getarg(i2),getarg(i1))
 						:(opdone)
 mov.xtp
 mov.xlp
-	ident(t2,'(xr)+') genop('movsd')	:s(opdone)
+	ident(t2,'(xr)+') asm(,'movsd')	:s(opdone)
 	asm(,'lodsd')
-	ident(t2,'-(xs)') genop('push','eax')	:s(opdone)
+	ident(t2,'-(xs)') asm(,'push','eax')	:s(opdone)
 	asm(,'mov',getarg(i2),'eax')		:(opdone)
 mov.xsp
 	ident(i.text(i2),'(xr)+')		:s(mov.xsprp)
@@ -820,16 +841,16 @@ g.bod	t1 = getarg(i1)
 
 g.bev	t1 = getarg(i1)
 	t1 = eq(i.type(i1),8) substr(t1,2,1) 'l'
-	genop('test',t1,'1')
-	genop('je',getarg(i2))			:(opdone)
+	asm(,'test',t1,'1')
+	asm(,'je',getarg(i2))			:(opdone)
 
-g.brn   genop('jmp',getarg(i1))			:(opdone)
+g.brn   asm(,'jmp',getarg(i1))			:(opdone)
 
 g.bsw	t1 = getarg(i1)
-	t2 = gennewlab()
+	t2 = genlab()
 	ident(i.text(i3))			:s(g.bsw1)
-	genop('cmp',t1,getarg(i2))
-	genop('jge',getarg(i3))
+	asm(,'cmp',t1,getarg(i2))
+	asm(,'jge',getarg(i3))
 * here after default case.
 g.bsw1	asm(,'jmp', 'dword  [' t2 '+' t1 '*4]')
 *	indicate now generating data
@@ -859,16 +880,15 @@ g.ent
 *  is a simple odd/even, least significant bit definition.
 *  that is, for us, 1 and 3 are odd, 2 and 4 are even.
 *
-	t1 = i.text(i1)
         asm(,'align',2)
-        (differ(t1) asm(,'db',t1), genop('nop'))
+        (differ(i.text(i1)) asm(,'db',i.text(i1)), asm(,'nop'))
 	asm()
 *  here to see if want label made public
-	tlabel ? rtab(1) . tlabel label.delim
-*        (differ(pubtab[tlabel]), differ(debug)) asm(,'global',tlabel)
-	tlabel =				:(opdone)
+*	tlabel ? rtab(1) . tlabel label.delim
+        (differ(pubtab[inlabel]), differ(debug)) asm(,'global',inlabel)
+	asm(inlabel) 				:(opdone)
 
-g.bri	genop('jmp',getarg(i1))			:(opdone)
+g.bri	asm(,'jmp',getarg(i1))			:(opdone)
 
 g.lei	t1 = regmap[i.text(i1)]
 	asm(,'movzx',t1,'byte [' t1 '-1]')	:(opdone)
@@ -888,10 +908,10 @@ g.ppm1
 
 g.prc
 *	generate public declaration and then generate label again
-	t1 = tlabel
-	t1 ? rtab(1) . t1 label.delim
+*	t1 = tlabel
+*	t1 ? rtab(1) . t1 label.delim
+        asm(,'global',inlabel)
 	asm()
-*        genop('global',t1)
 	prc.args = getarg(i2)
 	max_exi = gt(prc.args,max_exi) prc.args
 	prc.type = i.text(i1)		:($('g.prc.' prc.type))
@@ -901,7 +921,7 @@ g.prc.r						:(opdone)
 g.prc.n
 *  store return address in reserved location
 	prc.count = prc.count + 1
-	genop('pop','dword [' prcent(prc.count) ']')	:(opdone)
+	asm(,'pop','dword [' prcent(prc.count) ']')	:(opdone)
 
 g.exi	t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
 	ident(t2,'n')				:s(g.exin)
@@ -969,8 +989,8 @@ g.sss   asm()					:(opdone)
 
 g.rtn
 *	generate public declaration and then regenerate label
-	t1 = tlabel
-	t1 ? rtab(1) . t1 label.delim
+*	t1 = tlabel
+*	t1 ? rtab(1) . t1 label.delim
 	asm()
 						:(opdone)
 
@@ -1023,7 +1043,7 @@ g.lct
 *
 	differ(i.text(i1),i.text(i2))		:s(g.lct.1)
 *  here if operands same. emit no code if no label, else emit null
-	ident(tlabel)				:s(opnext)
+*	ident(tlabel)				:s(opnext)
 	asm()					:(opdone)
 
 g.lct.1	asm(,'mov', getarg(i1), getarg(i2))	:(opdone)
@@ -1221,7 +1241,8 @@ g.scg.w.pxr
 g.scg.w.xrp
 	asm(,'mov','al',t1)
 	asm(,'stosb')				:(opdone)
-g.csc  	ident(tlabel)				:s(opnext)
+g.csc  	
+*	ident(tlabel)				:s(opnext)
 	asm()					:(opdone)
 
 g.ceq
@@ -1256,7 +1277,7 @@ g.trc
 *	xor	esi,esi			;set xl to zero
 *	xor	edi,edi			;v1.02  xr also
 	asm(,'xchg','esi','edi')
-        asm(gennewlab())
+        asm(genlab())
 	asm(,'movzx','eax','byte [edi]')
 	asm(,'mov','al','[esi+eax]')
 	asm(,'stosb')
@@ -1297,16 +1318,16 @@ g.lsx.c	asm(,'xchg',t1,'ecx')
 	asm(,'xchg',t1,'ecx')				:(opdone)
 
 g.nzb	ifreg(i1)				:s(g.nzb1)
-	genop('cmp',getarg(i1),'0')
-	genop('jnz',getarg(i2))			:(opdone)
-g.nzb1	genop('or',getarg(i1),getarg(i1))
-	genop('jnz',getarg(i2))			:(opdone)
+	asm(,,'cmp',getarg(i1),'0')
+	asm(,'jnz',getarg(i2))			:(opdone)
+g.nzb1	asm(,'or',getarg(i1),getarg(i1))
+	asm(,'jnz',getarg(i2))			:(opdone)
 
 g.zrb	ifreg(i1)				:s(g.zrb1)
-	genop('cmp',getarg(i1),'0')
-	genop('jz',getarg(i2))			:(opdone)
-g.zrb1	genop('or',getarg(i1),getarg(i1))
-	genop('jz',getarg(i2))			:(opdone)
+	asm(,'cmp',getarg(i1),'0')
+	asm(,'jz',getarg(i2))			:(opdone)
+g.zrb1	asm(,'or',getarg(i1),getarg(i1))
+	asm(,'jz',getarg(i2))			:(opdone)
 
 * x86 is a little-endian machine, so zgb must swap bytes.
 *
@@ -1324,7 +1345,7 @@ g.zgb	t1 = getarg(i1)			;* 32-bit register name, e.g., edx
 g.wtb   asm(,'sal',getarg(i1),'2')		:(opdone)
 g.btw   asm(,'shr',getarg(i1),'2')		:(opdone)
 
-g.mti	(ident(i.text(i1),'(xs)+') genop('pop',reg.ia)) :s(opdone)
+g.mti	(ident(i.text(i1),'(xs)+') asm(,'pop',reg.ia)) :s(opdone)
 	asm(,'mov',reg.ia,getarg(i1))		:(opdone)
 
 g.mfi
@@ -1334,8 +1355,8 @@ g.mfi
 *  here if label given, branch if wc not in range (ie, negative)
 	asm(,'or',reg.ia,reg.ia)
 	asm(,'js',getarg(i2))
-g.mfi1	ident(i.text(i1),'wc') genop()		:s(opdone)
-	ident(i.text(i1),'-(xs)') genop('push',reg.ia)	:s(opdone)
+g.mfi1	ident(i.text(i1),'wc') asm(,)		:s(opdone)
+	ident(i.text(i1),'-(xs)') asm(,'push',reg.ia)	:s(opdone)
 	asm(,'mov',getarg(i1),reg.ia)		:(opdone)
 
 g.ctw
@@ -1376,11 +1397,11 @@ g.mvc
 *  tmp2 rep	movsd	; move string as double words
 *
 *	asm(,'shr','ecx','1')
-*	asm(,'jnc','short ' (t1 = gennewlab()))
+*	asm(,'jnc','short ' (t1 = genlab()))
 *	asm(,'movsb')
 *       asm(t1)
 *       asm(,'shr','ecx','1')
-*	asm(,'jnc','short ' (t1 = gennewlab()))
+*	asm(,'jnc','short ' (t1 = genlab()))
 *	asm(,'movsw')
 *       asm(t1)
 *       asm(,'rep','movsd')        :(opdone)
@@ -1428,15 +1449,16 @@ g.chk   asm(,'cmp','esp','lowspmin')
 
 decend
 *  here at end of dic or dac to see if want label made public
-	tlabel ? rtab(1) . tlabel label.delim
-*        differ(pubtab[tlabel]) asm(,'global',tlabel)  
+*	tlabel ? rtab(1) . tlabel label.delim
+*        differ(pubtab[tlabel]) asm(,'global',label)  
 						:(opdone)
 
-g.dac	t1 = i.type(i1)
+g.dac	
+	t1 = i.type(i1)
         t2 = "" ;*(le(t1,2) "", le(t1,4) " ", le(t1,6) " ", "")
-        asm(tlabel,'dd',t2 i.text(i1))		:(decend)
+        asm(inlabel,'dd',t2 i.text(i1))		:(decend)
 g.dic   
-	asm(tlabel,'dd',i.text(i1))		:(decend)
+	asm(inlabel,'dd',i.text(i1))		:(decend)
 
 *
 * make sure don't attach label to the align.
@@ -1445,6 +1467,7 @@ g.dic
 g.drc   asm(,'align','4')
         asm(,'dq', i.text(i1))
 *  note that want to attach label to last instruction
+	t.label(cstmts[cstmts.n]) = inlabel
 						:(opdone)
 
 g.dtc
@@ -1456,16 +1479,14 @@ g.dtc
 *  append "\x00" if string has odd length to complete last dword
         t2 = ne(t3) t2 dupl('\x00',4 - t3)
         t2 = t2  '"'
-        (tlabel,'dd',t2)              :(opdone)
-g.dbc   (tlabel,'dd',getarg(i1))       :(opdone)
+        asm(label,'dd',t2)              :(opdone)
+g.dbc   asm(label,'dd',getarg(i1))       :(opdone)
 
-g.equ   asm(,'equ',i.text(i1))			:(opdone)
+g.equ   asm(inlabel,'equ',i.text(i1))			:(opdone)
 
 g.exp  	
-	label = tlabel
-	tlabel = 
-	asm(,'extern',label)
-						:(opdone)
+	asm(,'extern',inlabel)
+					:(opnext)
 
 g.inp	prc.count1 = ident(i.text(i1),'n') prc.count1 + 1
 +						:(opnext)
@@ -1496,8 +1517,8 @@ g.sec.2
 
 * constants section
 g.sec.3 
-        asm('segment','.data')
-        asm('global','sec03')
+        asm(,'segment','.data')
+        asm(,'global','sec03')
         asm('sec03')     :(opdone)
 
 * working variables section
@@ -1517,7 +1538,7 @@ g.sec.5
         asm('esec04')
         (gt(prc.count1) asm('prc$','times', prc.count1 ' dd 0'))
         asm(,'global','lowspmin')
-        asm('lowspmin' label.delim,'dd','0')
+        asm('lowspmin','dd','0')
         asm(,'global','end_min_data')
         asm('end_min_data')
         asm(,'segment','.text')
@@ -1536,6 +1557,7 @@ g.sec.6.1
 	asm(,'push','eax')
 	asm(,'xor','eax','eax')
 	asm(,'ret')
+	flush()
 	i1 = lt(i1,max_exi) i1 + 1		:s(g.sec.6.1)
 
 * now being the stack overflow section
@@ -1554,6 +1576,7 @@ g.sec.7
 	asm(,'movzx','eax','byte [eax]')
 	asm(,'add','eax','256')
         asm('err_1a','jmp','err$')
+	flush()
 
 *  loop to emit inc eax for each possible error code
 	i1 = max.err
@@ -1565,8 +1588,39 @@ g.sec.7.1
 
 
 
-opdone						:(opnext)
- 
+opdone	flush()					:(opnext)
+*
+*  here to emit bstmts, cstmts, astmts. attach input label and
+*  comment to first instruction generated.
+*
+flush	eq(astmts.n) eq(bstmts.n) eq(cstmts.n)	:f(opdone1)
+*
+*  here if no statements, so output single 'null' statement to get label
+*  and comment field right.
+*
+	outstmt(Tstmt())			:(opdone.6)
+opdone1	eq(bstmts.n)				:s(opdone.2)
+	i = 1
+opdone.1
+	outstmt(bstmts[i])
+	le(i = i + 1, bstmts.n)			:s(opdone.1)
+
+opdone.2	eq(cstmts.n)			:s(opdone.4)
+	i = 1
+opdone.3
+	outstmt(cstmts[i])
+	le(i = i + 1, cstmts.n)			:s(opdone.3)
+
+opdone.4	eq(astmts.n)			:s(opdone.6)
+	i = 1
+	ident(pifatal[incode])			:s(opdone.5)
+*  here if post incrementing code not allowed
+	error('post increment not allowed for op ' incode)
+opdone.5	outstmt(astmts[i])
+	le(i = i + 1, astmts.n)			:s(opdone.5)
+opdone.6 astmts.n = bstmts.n = cstmts.n =	:(return)
+flush_end
+
 g.end
 * DS END 
 	ident(havehdr)				:s(g.end.2)
