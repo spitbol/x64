@@ -1237,7 +1237,6 @@ g.scg.w.xrp
 	asm(,'mov','al',t1)
 	asm(,'stosb')				:(opdone)
 g.csc  	
-*	ident(inlabel)				:s(opnext)
 	asm()					:(opdone)
 
 g.ceq
@@ -1449,7 +1448,6 @@ decend
 						:(opdone)
 
 g.dac	
-	output = differ(inlabel) 'dac ' inlines ' ' nlabel
 	t1 = i.type(i1)
         t2 = "" ;*(le(t1,2) "", le(t1,4) " ", le(t1,6) " ", "")
         asm(inlabel,'dd',t2 i.text(i1))		:(decend)
