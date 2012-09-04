@@ -87,7 +87,7 @@
 *  data structures
 *
 	data('minarg(i.type,i.text)')
-	data('Tstmt(t.label,t.opc,t.op1,t.op2,t.op3,t.comment)')
+	data('stmt(s.label,s.opc,s.op1,s.op2,s.op3,s.comment)')
 
 	sectnow = 0
 
@@ -109,8 +109,9 @@
 *
 *  error is used to report an error for current statement
 *
-	define('asm(aopl,aopc,aop1,aop2,aop3)')
+	define('asm(aopc,aop1,aop2,aop3)')
 	define('cstmt(gopc,gop1,gop2,gop3)')
+	define('deflabel(label)')
 	define('error(text)')
 	define('flush()')
 	define('genaop(stmt)')
@@ -122,6 +123,7 @@
 	define('memmem()t1')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
+	define('pseudo(aopl,aopc,aop1,aop2,aop3)')
 	define('tblini(str)pos,cnt,index,val,lastval')
 
 *  outstmt is used to send a target statement to the target code
@@ -370,8 +372,8 @@ inpulex output = 'input lexeme file: ' filenami
 err_ok
 
 * begin with standard preamble
-        asm(,';','"spitbol translator ' replace(parms,lcase,ucase) '"')
-        asm(,';','"' replace(parms,lcase,ucase) '"')
+        pseudo(,';','"spitbol translator ' replace(parms,lcase,ucase) '"')
+        pseudo(,';','"' replace(parms,lcase,ucase) '"')
 
 *  then copy contents of <machine>.hdr (if it exists) to outfile
 *  stop at line with just 'end' or end of file
@@ -422,7 +424,7 @@ opnext
 *	output = 'input line ' nlines ' label ' inlabel
 *	emit label here for an executable instruction
 	ident(is_executable[incode])		:s(opnext.1)
-	asm(inlabel)
+	deflabel(inlabel)
 	inlabel =
 opnext.1
 *	branch via opcode to the generator for this operation
@@ -435,7 +437,11 @@ opnext.2
 *
 -stitl	asm(aopl,aopc,aop,aop2,aop3)
 asm	
-	outstmt(Tstmt(aopl,aopc,aop1,aop2,aop3)) :(return)
+	outstmt(stmt(,aopc,aop1,aop2,aop3)) :(return)
+
+-stitl	pseudo(aopl,aopc,aop,aop2,aop3)
+pseudo	
+	outstmt(stmt(aopl,aopc,aop1,aop2,aop3)) :(return)
 
 -stitl comregs(line)t,pre,word
 comregs
@@ -460,7 +466,12 @@ crack   nstmts  = nstmts + 1
 	error('source line syntax error')	:(freturn)
 -stitl cstmt(gopc,gop1,gop2,gop3)
 cstmt
-	cstmts[cstmt.n = cstmt.n + 1] = Tstmt(,gopc,gop1,gop2,gop3)
+	cstmts[cstmt.n = cstmt.n + 1] = stmt(,gopc,gop1,gop2,gop3)
+						:(return)
+-stitl deflabel(label)
+*	define a label
+deflabel
+	pseudo(label)
 						:(return)
 -stitl error(text)
 *  this module handles reporting of errors with the offending
@@ -490,10 +501,10 @@ genlab	genlab = 'l' lpad(genlabels = genlabels + 1,4,'0') :(return)
 *  generate operation with label
 genopl	
 	:(genopl.1)
-	asm(gopl)
-	cstmts[cstmts.n = cstmts.n + 1] = Tstmt(,gopc,gop1,gop2,gop3)
+	deflabel(gopl)
+	cstmts[cstmts.n = cstmts.n + 1] = stmt(,gopc,gop1,gop2,gop3)
 						:(return);
-	cstmts[cstmts.n = cstmts.n + 1] = Tstmt(gopl)
+	cstmts[cstmts.n = cstmts.n + 1] = stmt(gopl)
 	
 *	:(genopl.1)
 	ident(generating_code)			:s(genopl.1)
@@ -502,17 +513,17 @@ genopl
 	trapped_stmts[nlines] = gopl '.' gopc
 * 	here if at label in code section, generate call to atlin with line #
 *	if the operation is executable
-	asm(,,'atn',gopc,gopl)
+	asm('atn',gopc,gopl)
 	ident(is_executable[opc])		:s(genopl.1)
 
 	cstmts[cstmts.n = cstmts.n + 1] = 
-		Tstmt(,'mov', nlines ',dword [nlines]')		
+		stmt(,'mov', nlines ',dword [nlines]')		
 	cstmts[cstmts.n = cstmts.n + 1] = 
-		Tstmt(,'jsr','atlin')
+		stmt(,'jsr','atlin')
 	output = 'generated atlin call at ' nlines
 genopl.1
-	asm(gopl ':')
-	cstmts[cstmts.n = cstmts.n + 1] = Tstmt(,gopc,gop1,gop2,gop3)		
+	deflabel(gopl ':')
+	cstmts[cstmts.n = cstmts.n + 1] = stmt(,gopc,gop1,gop2,gop3)		
 						:(return)
 
 -stitl asm(gopl,gopc,gop1,gop2,gop3)
@@ -525,16 +536,16 @@ genop
 	trapped_stmts[nlines] =  gopc
 * 	here if at label in code section, generate call to atlin with line #
 *	if the operation is executable
-	asm(,'atn',gopc,gopl)
+	asm('atn',gopc,gopl)
 	ident(is_executable[opc])		:s(genopl.1)
 
 	cstmts[cstmts.n = cstmts.n + 1] = 
-		Tstmt(,'mov', nlines ',dword [nlines]')		
+		stmt(,'mov', nlines ',dword [nlines]')		
 	cstmts[cstmts.n = cstmts.n + 1] = 
-		Tstmt(,'jsr','atlin')
+		stmt(,'jsr','atlin')
 	output = 'generated atlin call at ' nlines
 genop.1
-	cstmts[cstmts.n = cstmts.n + 1] = Tstmt(gopl,gopc,gop1,gop2,gop3)		
+	cstmts[cstmts.n = cstmts.n + 1] = stmt(gopl,gopc,gop1,gop2,gop3)		
 						:(return)
 
 -stitl getarg(iarg,iacc)
@@ -576,14 +587,14 @@ getarg.c.10
 	l1 = substr(l1,2,2)
 	t1 = regmap[l1]
 	getarg = 'dword [' t1 ']'
-	(ident(l1,'xs') genaop(Tstmt(,'add',t1,'4'))) :s(return)
-	genaop(Tstmt(,'lea',t1,'[' t1 '+4]'))	:(return)
+	(ident(l1,'xs') genaop(stmt(,'add',t1,'4'))) :s(return)
+	genaop(stmt(,'lea',t1,'[' t1 '+4]'))	:(return)
 
 *  -(x), register indirect, pre decrement
 getarg.c.11
 	t1 = regmap[substr(l1,3,2)]
 	getarg = 'dword [' t1 ']'
-	genbop(Tstmt(,'lea',t1,'[' t1 '-4]'))	:(return)
+	genbop(stmt(,'lea',t1,'[' t1 '-4]'))	:(return)
 
 * int(x)
 * dlbl(x)
@@ -643,7 +654,7 @@ memmem
 *  here if memory-memory case, load first argument
   t1 = getarg(i1)
   i1 = minarg(8,'w0')
-  asm(,'mov','eax',t1)				:(return)
+  asm('mov','eax',t1)				:(return)
 
 -stitl prcent(n)
 prcent prcent = 'prc$' '+'  (4 * ( n - 1)) :(return)
@@ -653,11 +664,12 @@ prcent prcent = 'prc$' '+'  (4 * ( n - 1)) :(return)
 *  passed in the argument list to the formatted .s file
 *
 outstmt	
+	ident(ostmt)				:s(return)
 	thistmt = ostmt
-	label = t.label(ostmt)
+	label = s.label(ostmt)
 *	output = differ(label) 'outstmt ' nlines ' ' label
 *  attach source label to first generated instruction
-	comment = t.comment(ostmt)
+	comment = s.comment(ostmt)
 *  attach source comment to first generated instruction
 	differ(comment)				:s(outstmt2)
 	ident(tcomment)				:s(outstmt2)
@@ -668,10 +680,10 @@ outstmt2
 *	here if label requires delimiter
 	label = label label.delim
 outstmt3
-	opcode = t.opc(ostmt)
-	op1 = t.op1(ostmt)
-	op2 = t.op2(ostmt)
-	op3 = t.op3(ostmt)
+	opcode = s.opc(ostmt)
+	op1 = s.op1(ostmt)
+	op2 = s.op2(ostmt)
+	op3 = s.op3(ostmt)
 	differ(compress)			:s(outstmt6)
 	stmtout = rpad( rpad(label,7) ' ' rpad(opcode,4) ' '
 .		  (ident(op1), op1
@@ -792,12 +804,12 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 g.flc
 	t1 = substr(getarg(i1),2,1) 'l'
 	label = genlab()
-	asm(,'cmp',t1,"'a'")
-	asm(,'jb', label)
-	asm(,'cmp',t1,"'z'")
-	asm(,'ja', label)
-	asm(,'sub',t1,'32')
-        asm(label)                  
+	asm('cmp',t1,"'a'")
+	asm('jb', label)
+	asm('cmp',t1,"'z'")
+	asm('ja', label)
+	asm('sub',t1,'32')
+        deflabel(label)                  
 						:(opdone)
 
 g.mov
@@ -820,53 +832,53 @@ g.mov
 	ident(t2,'(xr)+')			:s(mov.xrp)
 	ident(t2,'-(xs)')			:s(mov.2)
 	memmem()
-	asm(,'mov',getarg(i2),getarg(i1))
+	asm('mov',getarg(i2),getarg(i1))
 						:(opdone)
 mov.xtp
 mov.xlp
-	ident(t2,'(xr)+') asm(,'movsd')	:s(opdone)
-	asm(,'lodsd')
-	ident(t2,'-(xs)') asm(,'push','eax')	:s(opdone)
-	asm(,'mov',getarg(i2),'eax')		:(opdone)
+	ident(t2,'(xr)+') asm('movsd')	:s(opdone)
+	asm('lodsd')
+	ident(t2,'-(xs)') asm('push','eax')	:s(opdone)
+	asm('mov',getarg(i2),'eax')		:(opdone)
 mov.xsp
 	ident(i.text(i2),'(xr)+')		:s(mov.xsprp)
-	asm(,'pop', 'dword ' getarg(i2))	:(opdone)
+	asm('pop', 'dword ' getarg(i2))	:(opdone)
 mov.xsprp 
-	asm(,'pop','eax')
-	asm(,'stosd')				:(opdone)
-mov.xrp asm(,'mov','eax',getarg(i1))
-	asm(,'stosd')				:(opdone)
+	asm('pop','eax')
+	asm('stosd')				:(opdone)
+mov.xrp asm('mov','eax',getarg(i1))
+	asm('stosd')				:(opdone)
 mov.2
-	asm(,'push',getarg(i1))		:(opdone)
+	asm('push',getarg(i1))		:(opdone)
 
 * odd/even tests.  if w reg, use low byte of register.
 g.bod	t1 = getarg(i1)
 	t1 = eq(i.type(i1),8) substr(t1,2,1) 'l'
-	asm(,'test',t1,'1')
-	asm(,'jne',getarg(i2))			:(opdone)
+	asm('test',t1,'1')
+	asm('jne',getarg(i2))			:(opdone)
 
 g.bev	t1 = getarg(i1)
 	t1 = eq(i.type(i1),8) substr(t1,2,1) 'l'
-	asm(,'test',t1,'1')
-	asm(,'je',getarg(i2))			:(opdone)
+	asm('test',t1,'1')
+	asm('je',getarg(i2))			:(opdone)
 
-g.brn   asm(,'jmp',getarg(i1))			:(opdone)
+g.brn   asm('jmp',getarg(i1))			:(opdone)
 
 g.bsw	
 	t1 = getarg(i1)
 	bsw.label = genlab()
 	ident(i.text(i3))			:s(g.bsw1)
-	asm(,'cmp',t1,getarg(i2))
-	asm(,'jge',getarg(i3))
+	asm('cmp',t1,getarg(i2))
+	asm('jge',getarg(i3))
 * here after default case.
-g.bsw1	asm(,'jmp', 'dword  [' bsw.label '+' t1 '*4]')
+g.bsw1	asm('jmp', 'dword  [' bsw.label '+' t1 '*4]')
 *	indicate now generating data
 
 	generating_code =
-        asm(,'segment','.data')
-        asm(bsw.label)		                  :(opdone)
+        pseudo(,'segment','.data')
+        deflabel(bsw.label)		                  :(opdone)
 
-g.iff   asm(,'dd',getarg(i2))               :(opdone)
+g.iff   pseudo(,'dd',getarg(i2))               :(opdone)
 
 g.esw  						
 	generating_code = 1
@@ -887,24 +899,23 @@ g.ent
 *  is a simple odd/even, least significant bit definition.
 *  that is, for us, 1 and 3 are odd, 2 and 4 are even.
 *
-        asm(,'align',2)
-        (differ(i.text(i1)) asm(,'db',i.text(i1)), asm(,'nop'))
-	asm()
+        pseudo(,'align',2)
+        (differ(i.text(i1)) pseudo(,'db',i.text(i1)), asm('nop'))
 *  here to see if want label made public
-        (differ(pubtab[inlabel]), differ(debug)) asm(,'global',inlabel)
-	asm(inlabel) 				:(opdone)
+        (differ(pubtab[inlabel]), differ(debug)) pseudo(,'global',inlabel)
+	deflabel(inlabel) 				:(opdone)
 
-g.bri	asm(,'jmp',getarg(i1))			:(opdone)
+g.bri	asm('jmp',getarg(i1))			:(opdone)
 
 g.lei	t1 = regmap[i.text(i1)]
-	asm(,'movzx',t1,'byte [' t1 '-1]')	:(opdone)
+	asm('movzx',t1,'byte [' t1 '-1]')	:(opdone)
 
-g.jsr	asm(,'call',getarg(i1))		:(opdone)
+g.jsr	asm('call',getarg(i1))		:(opdone)
 
 g.ppm
 *  last arg is optional. generate two bytes
 	ident(i.text(i1))			:s(g.ppm1)
-        asm(,'dw',getarg(i1) '-' 'dffnc')        :(opdone)
+        pseudo(,'dw',getarg(i1) '-' 'dffnc')        :(opdone)
 g.ppm1
 *  a ppm with no arguments, which should never be executed, is
 *  translated to err 299,internal logic error: unexpected ppm branch
@@ -914,8 +925,8 @@ g.ppm1
 
 g.prc
 *	generate public declaration and then generate label again
-        asm(,'global',inlabel)
-	asm(inlabel)
+        pseudo(,'global',inlabel)
+	deflabel(inlabel)
 	prc.args = getarg(i2)
 	max_exi = gt(prc.args,max_exi) prc.args
 	prc.type = i.text(i1)		:($('g.prc.' prc.type))
@@ -925,30 +936,30 @@ g.prc.r						:(opdone)
 g.prc.n
 *  store return address in reserved location
 	prc.count = prc.count + 1
-	asm(,'pop','dword [' prcent(prc.count) ']')	:(opdone)
+	asm('pop','dword [' prcent(prc.count) ']')	:(opdone)
 
 g.exi	t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
 	ident(t2,'n')				:s(g.exin)
 *  here if r or e, with return address on stack.
-	ident(t3) eq(prc.args) asm(,'ret')	:s(opdone)
+	ident(t3) eq(prc.args) asm('ret')	:s(opdone)
 	differ(t3)				:s(g.exire)
 *  here if normal return.
-	asm(,'pop','eax')
-g.exir0	ge(prc.args,1) asm(,'lea','eax','[eax+' 2 * prc.args ']')
-	asm(,'jmp','eax')			:(opdone)
+	asm('pop','eax')
+g.exir0	ge(prc.args,1) asm('lea','eax','[eax+' 2 * prc.args ']')
+	asm('jmp','eax')			:(opdone)
 g.exire;* here if error return
-	asm(,'pop','eax')
-g.exir1	asm(,'jmp','exi__' t1)			:(opdone)
+	asm('pop','eax')
+g.exir1	asm('jmp','exi__' t1)			:(opdone)
 g.exin;* here if n type procedure
 	differ(t3)				:s(g.exine)
 *  here if normal n return.  if no args, we can jump
 *  directly through the return link cell.
-	(eq(prc.args,0) asm(,'jmp', '[' prcent(prc.count) ']')) :s(opdone)
-	asm(,'mov','eax', prcent(prc.count))	:(g.exir0)
+	(eq(prc.args,0) asm('jmp', '[' prcent(prc.count) ']')) :s(opdone)
+	asm('mov','eax', prcent(prc.count))	:(g.exir0)
 g.exine;* here if error return from n procedure
-	asm(,'mov','eax',prcent(prc.count))	:(g.exir1)
+	asm('mov','eax',prcent(prc.count))	:(g.exir1)
 
-g.enp   asm()					:(opdone)
+g.enp   					:(opdone)
 
 g.err
 *  assume ax is zero, then err nnn,text is translated to
@@ -964,46 +975,46 @@ g.err
 	errfile =  i.text(i1) ' ' i.text(i2)
 	t1 = getarg(i1)
 g.err1	max.err = gt(t1,max.err) t1
-        asm(,'dw','err$' '-' +t1 '-' 'dffnc') :(opdone)
+        pseudo(,'dw','err$' '-' +t1 '-' 'dffnc') :(opdone)
 
 g.erb	errfile =  i.text(i1) ' ' i.text(i2)
 	t1 = getarg(i1)
 	max.err = gt(t1,max.err) t1
-	asm(,'call','err_' (lt(t1,256) '0','1'))
-        asm(,'db',(lt(t1,256) +t1,t1 - 256)) :(opdone)
+	asm('call','err_' (lt(t1,256) '0','1'))
+        asm('db',(lt(t1,256) +t1,t1 - 256)) :(opdone)
 
 
-g.icv   asm(,'inc',getarg(i1))    :(opdone)
-g.dcv   asm(,'dec',getarg(i1))    :(opdone)
+g.icv   asm('inc',getarg(i1))    :(opdone)
+g.dcv   asm('dec',getarg(i1))    :(opdone)
 
-g.zer	ident(i.text(i1),'(xr)+') asm(,'xor','eax','eax')
-+		asm(,'stosd')			:s(opdone)
+g.zer	ident(i.text(i1),'(xr)+') asm('xor','eax','eax')
++		asm('stosd')			:s(opdone)
 	ifreg(i1)				:s(g.zer1)
 	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
-	asm(,'xor','eax','eax')
-	asm(,'mov',getarg(i1),'eax')		:(opdone)
+	asm('xor','eax','eax')
+	asm('mov',getarg(i1),'eax')		:(opdone)
 g.zer1	t1 = getarg(i1)
-	asm(,'xor',t1,t1)			:(opdone)
-g.zer.xs asm(,'push','0')			:(opdone)
+	asm('xor',t1,t1)			:(opdone)
+g.zer.xs asm('push','0')			:(opdone)
 
-g.mnz   asm(,'mov',getarg(i1),'esp')		:(opdone)
+g.mnz   asm('mov',getarg(i1),'esp')		:(opdone)
 
-g.ssl   asm()					:(opdone)
-g.sss   asm()					:(opdone)
+g.ssl   					:(opdone)
+g.sss   					:(opdone)
 
 g.rtn
 *	generate public declaration and then regenerate label
-	asm()
+	
 						:(opdone)
 
 g.add	memmem()
-	asm(,'add',getarg(i2),getarg(i1))	:(opdone)
+	asm('add',getarg(i2),getarg(i1))	:(opdone)
 
 g.sub	memmem()
-	asm(,'sub',getarg(i2),getarg(i1))	:(opdone)
+	asm('sub',getarg(i2),getarg(i1))	:(opdone)
 
-g.ica   asm(,'add',getarg(i1),'4')		:(opdone)
-g.dca   asm(,'sub',getarg(i1),'4')		:(opdone)
+g.ica   asm('add',getarg(i1),'4')		:(opdone)
+g.dca   asm('sub',getarg(i1),'4')		:(opdone)
 
 g.beq
 g.bne
@@ -1019,25 +1030,25 @@ g.bhi
 *
 	memmem()
 	t1 = branchtab[incode]
-	asm(,'cmp',getarg(i1),getarg(i2))
-	asm(,branchtab[incode],getarg(i3))
+	asm('cmp',getarg(i1),getarg(i2))
+	asm(branchtab[incode],getarg(i3))
 .						:(opdone)
 
 g.bnz
 	ifreg(i1)				:s(g.bnz1)
-        asm(,'cmp', getarg(i1), '0')
-	asm(,'jnz',getarg(i2))			:(opdone)
+        asm('cmp', getarg(i1), '0')
+	asm('jnz',getarg(i2))			:(opdone)
 g.bnz1	
-	asm(,'or',getarg(i1), getarg(i1))
-	asm(,'jnz',getarg(i2))			:(opdone)
+	asm('or',getarg(i1), getarg(i1))
+	asm('jnz',getarg(i2))			:(opdone)
 
 g.bze   ifreg(i1)				:s(g.bze1)
-        asm(,'cmp', getarg(i1), '0')
-	asm(,'jz', getarg(i2))			:(opdone)
+        asm('cmp', getarg(i1), '0')
+	asm('jz', getarg(i2))			:(opdone)
 g.bze1
 	t1 = getarg(i1)
-	asm(,'or', t1,t1)
-	asm(,'jz', getarg(i2))			:(opdone)
+	asm('or', t1,t1)
+	asm('jz', getarg(i2))			:(opdone)
 
 g.lct
 *
@@ -1046,79 +1057,79 @@ g.lct
 	differ(i.text(i1),i.text(i2))		:s(g.lct.1)
 *  here if operands same. emit no code if no label, else emit null
 	ident(inlabel)				:s(opnext)
-	asm()					:(opdone)
+						:(opdone)
 
-g.lct.1	asm(,'mov', getarg(i1), getarg(i2))	:(opdone)
+g.lct.1	asm('mov', getarg(i1), getarg(i2))	:(opdone)
 
 g.bct
 *  can issue loop if target register is cx.
 	t1 = getarg(i1)
 	t2 = getarg(i2)
 	ident(t1,'ecx')				:s(g.bct1)
-g.bct2	asm(,'dec',t1)
-	asm(,'jnz',t2)				:(opdone)
-g.bct1	asm(,'loop',t2)			:(opdone)
+g.bct2	asm('dec',t1)
+	asm('jnz',t2)				:(opdone)
+g.bct1	asm('loop',t2)			:(opdone)
 
-g.aov   asm(,'add',getarg(i2),getarg(i1))
-	asm(,'jc',getarg(i3))			:(opdone)
+g.aov   asm('add',getarg(i2),getarg(i1))
+	asm('jc',getarg(i3))			:(opdone)
 g.lcp
 *  use cp for code pointer.
-	asm(,'mov',reg.cp,getarg(i1))		:(opdone)
-g.scp   asm(,'mov',getarg(i1),reg.cp)		:(opdone)
+	asm('mov',reg.cp,getarg(i1))		:(opdone)
+g.scp   asm('mov',getarg(i1),reg.cp)		:(opdone)
 g.lcw
 *  should be able to get lodsd; xchg eax,getarg(i1)
-	asm(,'mov',getarg(i1),'[' reg.cp ']')
-	asm(,'add',reg.cp,'4')			:(opdone)
+	asm('mov',getarg(i1),'[' reg.cp ']')
+	asm('add',reg.cp,'4')			:(opdone)
 
 
-g.icp   asm(,'add',reg.cp,'4')			:(opdone)
+g.icp   asm('add',reg.cp,'4')			:(opdone)
 
 *  integer accumulator kept in wdx (wc)
-g.ldi	asm(,'mov',reg.ia,getarg(i1))		:(opdone)
+g.ldi	asm('mov',reg.ia,getarg(i1))		:(opdone)
 
-g.adi   asm(,'add',reg.ia,getarg(i1))		:(opdone)
+g.adi   asm('add',reg.ia,getarg(i1))		:(opdone)
 
-g.mli	asm(,'imul',reg.ia,getarg(i1))		:(opdone)
+g.mli	asm('imul',reg.ia,getarg(i1))		:(opdone)
 
-g.sbi   asm(,'sub',reg.ia,getarg(i1))		:(opdone)
+g.sbi   asm('sub',reg.ia,getarg(i1))		:(opdone)
 
 g.dvi
 g.rmi
 *	move argument to eax, call procedure
-	asm(,'mov','eax',getarg(i1))
-	asm(,'call', incode '_')	:(opdone)
+	asm('mov','eax',getarg(i1))
+	asm('call', incode '_')	:(opdone)
 
-g.sti   asm(,'mov',getarg(i1),reg.ia)		:(opdone)
+g.sti   asm('mov',getarg(i1),reg.ia)		:(opdone)
 
-g.ngi   asm(,'neg',reg.ia)			:(opdone)
+g.ngi   asm('neg',reg.ia)			:(opdone)
 
-g.ino   asm(,'jno',getarg(i1))			:(opdone)
-g.iov   asm(,'jo',getarg(i1))			:(opdone)
+g.ino   asm('jno',getarg(i1))			:(opdone)
+g.iov   asm('jo',getarg(i1))			:(opdone)
 
-g.ieq	asm(,'or',reg.ia,reg.ia)
-	asm(,'je',getarg(i1))			:(opdone)
-g.ige   asm(,'or',reg.ia,reg.ia)
-	asm(,'jge',getarg(i1))			:(opdone)
-g.igt   asm(,'or',reg.ia,reg.ia)
-	asm(,'jg',getarg(i1))			:(opdone)
-g.ile   asm(,'or',reg.ia,reg.ia)
-	asm(,'jle',getarg(i1))			:(opdone)
-g.ilt   asm(,'or',reg.ia,reg.ia)
-	asm(,'jl',getarg(i1))			:(opdone)
-g.ine   asm(,'or',reg.ia,reg.ia)
-	asm(,'jne',getarg(i1))			:(opdone)
+g.ieq	asm('or',reg.ia,reg.ia)
+	asm('je',getarg(i1))			:(opdone)
+g.ige   asm('or',reg.ia,reg.ia)
+	asm('jge',getarg(i1))			:(opdone)
+g.igt   asm('or',reg.ia,reg.ia)
+	asm('jg',getarg(i1))			:(opdone)
+g.ile   asm('or',reg.ia,reg.ia)
+	asm('jle',getarg(i1))			:(opdone)
+g.ilt   asm('or',reg.ia,reg.ia)
+	asm('jl',getarg(i1))			:(opdone)
+g.ine   asm('or',reg.ia,reg.ia)
+	asm('jne',getarg(i1))			:(opdone)
 
 
 
 *
 *  real operations
 *
-g.itr	asm(,'call','itr_')	:(opdone)
+g.itr	asm('call','itr_')	:(opdone)
 
-g.rti	asm(,'call','rti_')
+g.rti	asm('call','rti_')
 	eq(i.type(i1))				:s(opdone)
 *  here if label given, branch if real too large
-        asm(,'jc',getarg(i1))                 :(opdone)
+        asm('jc',getarg(i1))                 :(opdone)
 
 g.ldr
 g.str
@@ -1128,9 +1139,9 @@ g.mlr
 g.dvr	t1 = i.type(i1)
 	leaarg = getarg(i1)
 	leaarg 'dword ' =
-	(ge(t1,9) le(t1,15) asm(,'lea','eax',leaarg),
-+               asm(,'mov','eax', getarg(i1)))
-	asm(,'call',incode '_')		:(opdone)
+	(ge(t1,9) le(t1,15) asm('lea','eax',leaarg),
++               asm('mov','eax', getarg(i1)))
+	asm('call',incode '_')		:(opdone)
 
 g.ngr
 g.atn
@@ -1140,13 +1151,13 @@ g.etx
 g.lnf
 g.sin
 g.sqr
-g.tan	asm(,'call',incode '_')		:(opdone)
+g.tan	asm('call',incode '_')		:(opdone)
 
 
 g.rno	t1 = 'jno'				:(g.rov1)
 g.rov	t1 = 'jo'
-g.rov1  asm(,'call','ovr_')
-	asm(,t1,getarg(i1))			:(opdone)
+g.rov1  asm('call','ovr_')
+	asm(t1,getarg(i1))			:(opdone)
 
 g.req	t1 = 'je'				:(g.r1)
 g.rne	t1 = 'jne'				:(g.r1)
@@ -1154,8 +1165,8 @@ g.rge	t1 = 'jge'				:(g.r1)
 g.rgt	t1 = 'jg'				:(g.r1)
 g.rle	t1 = 'jle'				:(g.r1)
 g.rlt	t1 = 'jl'
-g.r1	asm(,'call','cpr_')
-	asm(,t1,getarg(i1))			:(opdone)
+g.r1	asm('call','cpr_')
+	asm(t1,getarg(i1))			:(opdone)
 
 g.plc
 g.psc
@@ -1165,13 +1176,13 @@ g.psc
 	t1 = getarg(i1)
 	t2 = i.type(i2)
 	((ifreg(i2), ge(t2,1) le(t2,2))
-+	asm(,'lea',t1,'[cfp$f+' t1 '+' getarg(i2) ']')) :s(opdone)
-	asm(,'add',t1,'cfp$f')
++	asm('lea',t1,'[cfp$f+' t1 '+' getarg(i2) ']')) :s(opdone)
+	asm('add',t1,'cfp$f')
 	eq(i.type(i2))				:s(opdone)
 *
 *  here if offset given (in a variable), so add it in.
 *
-	asm(,'add',t1,getarg(i2))		:(opdone)
+	asm('add',t1,getarg(i2))		:(opdone)
 *
 *  lch requires separate cases for each first operand possibility.
 *
@@ -1182,14 +1193,14 @@ g.lch
 *  see if predecrement.
 	leq('-',substr(t2,1,1))			:f(g.lcg.1)
 	t2 break('(') len(1) len(2) . t3
-	asm(,'dec',regmap[t3])
+	asm('dec',regmap[t3])
 g.lcg.1
 	t2 break('(') len(1) len(2) . t3
-	asm(,'movzx',t1,'byte [' regmap[t3] ']')
+	asm('movzx',t1,'byte [' regmap[t3] ']')
 
 *  see if postincrement needed
 	t2 rtab(1) '+'				:f(g.lcg.2)
-	asm(,'inc',regmap[t3])
+	asm('inc',regmap[t3])
 g.lcg.2						:(opdone)
 
 g.sch
@@ -1200,20 +1211,20 @@ g.sch
 *
 *  here if can use stosb.
 *
-	asm(,'mov','al',getarg(i1))
-	asm(,'stosb')				:(opdone)
+	asm('mov','al',getarg(i1))
+	asm('stosb')				:(opdone)
 
 g.scg.0
 	leq('-',substr(t2,1,1))			:f(g.scg.1)
 	t2 break('(') len(1) len(2) . t3
-	asm(,'dec',regmap[t3])
+	asm('dec',regmap[t3])
 g.scg.1
 	t2 break('(') len(1) len(2) . t3
-	asm(,'mov','eax',t1,)
-	asm(,'mov','[' regmap[t3] ']','al')
+	asm('mov','eax',t1,)
+	asm('mov','[' regmap[t3] ']','al')
 *  see if postincrement needed.
 	t2 rtab(1) '+'				:f(g.scg.2)
-	asm(,'inc',regmap[t3])
+	asm('inc',regmap[t3])
 g.scg.2						:(opdone)
 g.scg.w
 *
@@ -1228,46 +1239,46 @@ g.scg.w
 	ident(t2,'-(xr)')			:s(g.scg.w.pxr)
 	ident(t2,'(xr)+')			:s(g.scg.w.xrp)
 g.scg.w.xl
-	asm(,'mov','[esi]',t1)			:(opdone)
+	asm('mov','[esi]',t1)			:(opdone)
 g.scg.w.pxl
-	asm(,'dec','esi')
-	asm(,'mov','[esi]',t1)			:(opdone)
+	asm('dec','esi')
+	asm('mov','[esi]',t1)			:(opdone)
 g.scg.w.xlp
-	asm(,'mov','[esi]',t1)
-	asm(,'inc','esi')			:(opdone)
+	asm('mov','[esi]',t1)
+	asm('inc','esi')			:(opdone)
 g.scg.w.xr
-	asm(,'mov','[edi]',t1)			:(opdone)
+	asm('mov','[edi]',t1)			:(opdone)
 g.scg.w.pxr
-	asm(,'dec','edi')
-	asm(,'mov','[edi]',t1)			:(opdone)
+	asm('dec','edi')
+	asm('mov','[edi]',t1)			:(opdone)
 g.scg.w.xrp
-	asm(,'mov','al',t1)
-	asm(,'stosb')				:(opdone)
+	asm('mov','al',t1)
+	asm('stosb')				:(opdone)
 g.csc  	
-	asm()					:(opdone)
+						:(opdone)
 
 g.ceq
 	memmem()
-	asm(,'cmp',getarg(i1),getarg(i2))
-	asm(,'je',getarg(i3))			:(opdone)
+	asm('cmp',getarg(i1),getarg(i2))
+	asm('je',getarg(i3))			:(opdone)
 
 g.cne   memmem()
-	asm(,'cmp',getarg(i1),getarg(i2))
-	asm(,'jnz',getarg(i3))			:(opdone)
+	asm('cmp',getarg(i1),getarg(i2))
+	asm('jnz',getarg(i3))			:(opdone)
 
 g.cmc
 *	repe	cmpsb		;compare strings
 *	mov	esi,0		;clear xl (without changing flags)
 *	mov	edi,esi		;v1.02  xr also
 *
-	asm(,'repe','cmpsb')
-	asm(,'mov','esi','0')
-	asm(,'mov','edi','esi')
+	asm('repe','cmpsb')
+	asm('mov','esi','0')
+	asm('mov','edi','esi')
 	t1 = getarg(i1)
 	t2 = getarg(i2)
-	(ident(t1,t2) asm(,'jnz',t1))		:s(opdone)
-	asm(,'ja',t2)
-	asm(,'jb',t1)				:(opdone)
+	(ident(t1,t2) asm('jnz',t1))		:s(opdone)
+	asm('ja',t2)
+	asm('jb',t1)				:(opdone)
 
 g.trc
 *	xchg	esi,edi
@@ -1277,59 +1288,60 @@ g.trc
 *	loop	tmp
 *	xor	esi,esi			;set xl to zero
 *	xor	edi,edi			;v1.02  xr also
-	asm(,'xchg','esi','edi')
+	asm('xchg','esi','edi')
         label = genlab()
-	asm(label,'movzx','eax','byte [edi]')
-	asm(,'mov','al','byte [esi+eax]')
-	asm(,'stosb')
-	asm(,'loop',label)
-	asm(,'xor','esi','esi')
-	asm(,'xor','edi','edi')		
+	deflabel(label)
+	asm('movzx','eax','byte [edi]')
+	asm('mov','al','byte [esi+eax]')
+	asm('stosb')
+	asm('loop',label)
+	asm('xor','esi','esi')
+	asm('xor','edi','edi')		
 						:(opdone)
 
 
-g.anb   asm(,'and',getarg(i2),getarg(i1))	:(opdone)
-g.orb   asm(,'or',getarg(i2),getarg(i1))	:(opdone)
-g.xob   asm(,'xor',getarg(i2),getarg(i1))	:(opdone)
-g.cmb   asm(,'not',getarg(i1))			:(opdone)
+g.anb   asm('and',getarg(i2),getarg(i1))	:(opdone)
+g.orb   asm('or',getarg(i2),getarg(i1))	:(opdone)
+g.xob   asm('xor',getarg(i2),getarg(i1))	:(opdone)
+g.cmb   asm('not',getarg(i1))			:(opdone)
 
 g.rsh
-	asm(,'shr',getarg(i1),getarg(i2))		:(opdone)
+	asm('shr',getarg(i1),getarg(i2))		:(opdone)
 
 g.lsh
-	asm(,'shl',getarg(i1),getarg(i2))		:(opdone)
+	asm('shl',getarg(i1),getarg(i2))		:(opdone)
 
 g.rsx	t1 = regmap[substr(i.text(i2),2,2)]
 	ident(i.text(i1),'wa')				:s(g.rsx.c)
-	asm(,'xchg',t1,'ecx')
-	asm(,'shr',getarg(i1),'cl')
-	asm(,'xchg',t1,'ecx')				:(opdone)
+	asm('xchg',t1,'ecx')
+	asm('shr',getarg(i1),'cl')
+	asm('xchg',t1,'ecx')				:(opdone)
 
-g.rsx.c	asm(,'xchg',t1,'ecx')
-	asm(,'shr',t1,'cl')
-	asm(,'xchg',t1,'ecx')				:(opdone)
+g.rsx.c	asm('xchg',t1,'ecx')
+	asm('shr',t1,'cl')
+	asm('xchg',t1,'ecx')				:(opdone)
 
 g.lsx	t1 = regmap[substr(i.text(i2),2,2)]
 	ident(i.text(i1),'wa')				:s(g.lsx.c)
-	asm(,'xchg',t1,'ecx')
-	asm(,'shl',getarg(i1),'cl')
-	asm(,'xchg',t1,'ecx')				:(opdone)
+	asm('xchg',t1,'ecx')
+	asm('shl',getarg(i1),'cl')
+	asm('xchg',t1,'ecx')				:(opdone)
 
-g.lsx.c	asm(,'xchg',t1,'ecx')
-	asm(,'shl',t1,'cl')
-	asm(,'xchg',t1,'ecx')				:(opdone)
+g.lsx.c	asm('xchg',t1,'ecx')
+	asm('shl',t1,'cl')
+	asm('xchg',t1,'ecx')				:(opdone)
 
 g.nzb	ifreg(i1)				:s(g.nzb1)
-	asm(,,'cmp',getarg(i1),'0')
-	asm(,'jnz',getarg(i2))			:(opdone)
-g.nzb1	asm(,'or',getarg(i1),getarg(i1))
-	asm(,'jnz',getarg(i2))			:(opdone)
+	asm('cmp',getarg(i1),'0')
+	asm('jnz',getarg(i2))			:(opdone)
+g.nzb1	asm('or',getarg(i1),getarg(i1))
+	asm('jnz',getarg(i2))			:(opdone)
 
 g.zrb	ifreg(i1)				:s(g.zrb1)
-	asm(,'cmp',getarg(i1),'0')
-	asm(,'jz',getarg(i2))			:(opdone)
-g.zrb1	asm(,'or',getarg(i1),getarg(i1))
-	asm(,'jz',getarg(i2))			:(opdone)
+	asm('cmp',getarg(i1),'0')
+	asm('jz',getarg(i2))			:(opdone)
+g.zrb1	asm('or',getarg(i1),getarg(i1))
+	asm('jz',getarg(i2))			:(opdone)
 
 * x86 is a little-endian machine, so zgb must swap bytes.
 *
@@ -1339,48 +1351,48 @@ g.zrb1	asm(,'or',getarg(i1),getarg(i1))
 g.zgb	t1 = getarg(i1)			;* 32-bit register name, e.g., edx
         t2 = substr(t1,2,1) 'l'         ;* 8-bit low register name, e.g., dl
 	t3 = substr(t1,2,1) 'h'		;* 8-bit high register name, e.g., dh
-	asm(,'xchg',t2,t3)		;* e.g., xchg dl,dh
-	asm(,'rol',t1,16)		;* e.g., rol edx,16
-	asm(,'xchg',t2,t3)		;* e.g., xchg dl,dh
+	asm('xchg',t2,t3)		;* e.g., xchg dl,dh
+	asm('rol',t1,16)		;* e.g., rol edx,16
+	asm('xchg',t2,t3)		;* e.g., xchg dl,dh
 						:(opdone)
 
-g.wtb   asm(,'sal',getarg(i1),'2')		:(opdone)
-g.btw   asm(,'shr',getarg(i1),'2')		:(opdone)
+g.wtb   asm('sal',getarg(i1),'2')		:(opdone)
+g.btw   asm('shr',getarg(i1),'2')		:(opdone)
 
-g.mti	(ident(i.text(i1),'(xs)+') asm(,'pop',reg.ia)) :s(opdone)
-	asm(,'mov',reg.ia,getarg(i1))		:(opdone)
+g.mti	(ident(i.text(i1),'(xs)+') asm('pop',reg.ia)) :s(opdone)
+	asm('mov',reg.ia,getarg(i1))		:(opdone)
 
 g.mfi
 *  last arg is optional
 *  compare with cfp$m, branching if result negative
 	eq(i.type(i2))				:s(g.mfi1)
 *  here if label given, branch if wc not in range (ie, negative)
-	asm(,'or',reg.ia,reg.ia)
-	asm(,'js',getarg(i2))
-g.mfi1	ident(i.text(i1),'wc') asm(,)		:s(opdone)
-	ident(i.text(i1),'-(xs)') asm(,'push',reg.ia)	:s(opdone)
-	asm(,'mov',getarg(i1),reg.ia)		:(opdone)
+	asm('or',reg.ia,reg.ia)
+	asm('js',getarg(i2))
+g.mfi1	ident(i.text(i1),'wc') 		:s(opdone)
+	ident(i.text(i1),'-(xs)') asm('push',reg.ia)	:s(opdone)
+	asm('mov',getarg(i1),reg.ia)		:(opdone)
 
 g.ctw
 *  assume four chars per word
 	t1 = getarg(i1)
-	asm(,'add',t1,'3+4*' i.text(i2))
-	asm(,'shr',t1,'2')		:(opdone)
+	asm('add',t1,'3+4*' i.text(i2))
+	asm('shr',t1,'2')		:(opdone)
 
 g.ctb
 *  use add w,val*cfp.b+3; and w,-4
 	t1 = getarg(i1)
-	asm(,'add',t1,'3+4*' i.text(i2))
-	asm(,'and',t1,'-4')	:(opdone)
+	asm('add',t1,'3+4*' i.text(i2))
+	asm('and',t1,'-4')	:(opdone)
 
 g.cvm	t1 = getarg(i1)
-	asm(,'imul',reg.ia,'10')
-	asm(,'jo',t1)
-	asm(,'sub',regmap['wb'],'ch$d0')
-	asm(,'sub',reg.ia,regmap['wb'])
-	asm(,'jo',t1)				:(opdone)
+	asm('imul',reg.ia,'10')
+	asm('jo',t1)
+	asm('sub',regmap['wb'],'ch$d0')
+	asm('sub',reg.ia,regmap['wb'])
+	asm('jo',t1)				:(opdone)
 
-g.cvd	asm(,'call','cvd_')			:(opdone)
+g.cvd	asm('call','cvd_')			:(opdone)
 
 g.mvc
 *	move chars from xl (esi) to xr (edi), count in wa (ecx)
@@ -1398,15 +1410,15 @@ g.mvc
 *	movsw		; move odd word
 *  tmp2 rep	movsd	; move string as double words
 *
-*	asm(,'shr','ecx','1')
-*	asm(,'jnc','short ' (t1 = genlab()))
-*	asm(,'movsb')
+*	asm('shr','ecx','1')
+*	asm('jnc','short ' (t1 = genlab()))
+*	asm('movsb')
 *       asm(t1)
-*       asm(,'shr','ecx','1')
-*	asm(,'jnc','short ' (t1 = genlab()))
-*	asm(,'movsw')
+*       asm('shr','ecx','1')
+*	asm('jnc','short ' (t1 = genlab()))
+*	asm('movsw')
 *       asm(t1)
-*       asm(,'rep','movsd')        :(opdone)
+*       asm('rep','movsd')        :(opdone)
 *
 *  new method:
 *	shrd	eax,ecx,1 ; preserve ecx[0] in eax[31]
@@ -1417,57 +1429,58 @@ g.mvc
 *	shld	ecx,eax,1 ; copy eax[31] to ecx[0]
 *	rep	movsb	  ; copy 1 or 0 bytes
 *
-	asm(,'shrd','eax','ecx','1')
-	asm(,'shr','ecx','2')
-	asm(,'rep','movsd')
-	asm(,'adc','ecx','ecx')
-	asm(,'rep','movsw')
-	asm(,'shld','ecx','eax','1')
-	asm(,'rep','movsb')			:(opdone)
+	asm('shrd','eax','ecx','1')
+	asm('shr','ecx','2')
+	asm('rep','movsd')
+	asm('adc','ecx','ecx')
+	asm('rep','movsw')
+	asm('shld','ecx','eax','1')
+	asm('rep','movsb')			:(opdone)
 
 g.mvw
-	asm(,'shr','ecx','2')
-	asm(,'rep','movsd')			:(opdone)
+	asm('shr','ecx','2')
+	asm('rep','movsd')			:(opdone)
 
 g.mwb
 *   move words backwards
-	asm(,'shr','ecx','2')
-	asm(,'std')
-	asm(,'lea','esi','[esi-4]')
-	asm(,'lea','edi','[edi-4]')
-	asm(,'rep','movsd')
-	asm(,'cld')				:(opdone)
+	asm('shr','ecx','2')
+	asm('std')
+	asm('lea','esi','[esi-4]')
+	asm('lea','edi','[edi-4]')
+	asm('rep','movsd')
+	asm('cld')				:(opdone)
 
 g.mcb
 *   move characters backwards
-	asm(,'std')
-	asm(,'dec','esi')
-	asm(,'dec','edi')
-	asm(,'rep','movsb')
-	asm(,'cld')				:(opdone)
+	asm('std')
+	asm('dec','esi')
+	asm('dec','edi')
+	asm('rep','movsb')
+	asm('cld')				:(opdone)
 
-g.chk   asm(,'cmp','esp','lowspmin')
-	asm(,'jb','sec06')			:(opdone)
+g.chk   asm('cmp','esp','lowspmin')
+	asm('jb','sec06')			:(opdone)
 
 decend
 *  here at end of dic or dac to see if want label made public
 *	tlabel ? rtab(1) . tlabel label.delim
-*        differ(pubtab[tlabel]) asm(,'global',label)  
+*        differ(pubtab[tlabel]) asm('global',label)  
 						:(opdone)
 
 g.dac	
 	t1 = i.type(i1)
         t2 = "" ;*(le(t1,2) "", le(t1,4) " ", le(t1,6) " ", "")
-        asm(inlabel,'dd',t2 i.text(i1))		:(decend)
+        pseudo(inlabel,'dd',t2 i.text(i1))		:(decend)
+
 g.dic   
-	asm(inlabel,'dd',i.text(i1))		:(decend)
+	pseudo(inlabel,'dd',i.text(i1))		:(decend)
 
 *
 * make sure don't attach label to the align.
 *
 *
-g.drc   asm(,'align','4')
-        asm(inlabel,'dq', i.text(i1))
+g.drc   pseudo(,'align','4')
+        pseudo(inlabel,'dq', i.text(i1))
 						:(opdone)
 
 g.dtc
@@ -1479,14 +1492,14 @@ g.dtc
 *  append "\x00" if string has odd length to complete last dword
         t2 = ne(t3) t2 dupl('\x00',4 - t3)
         t2 = t2  '"'
-        asm(inlabel,'dd',t2)              :(opdone)
+        pseudo(inlabel,'dd',t2)              :(opdone)
 
-g.dbc   asm(inlabel,'dd',getarg(i1))       :(opdone)
+g.dbc   pseudo(inlabel,'dd',getarg(i1))       :(opdone)
 
-g.equ   asm(inlabel,'equ',i.text(i1))			:(opdone)
+g.equ   pseudo(inlabel,'equ',i.text(i1))			:(opdone)
 
 g.exp  	
-	asm(,'extern',inlabel)
+	pseudo(,'extern',inlabel)
 					:(opnext)
 
 g.inp	prc.count1 = ident(i.text(i1),'n') prc.count1 + 1
@@ -1494,98 +1507,101 @@ g.inp	prc.count1 = ident(i.text(i1),'n') prc.count1 + 1
 
 g.inr						:(opnext)
 
-g.ejc	asm()
+g.ejc	
 						:(opdone)
 
-g.ttl	asm()
-        asm(';','"' i.text(i1) '"')      
+g.ttl	
+        pseudo(';','"' i.text(i1) '"')      
 						:(opdone)
 
-g.sec	asm()
+g.sec	
 	sectnow = sectnow + 1			:($("g.sec." sectnow))
 
 * procedure declaration section
 g.sec.1 
-        asm(,'segment','.text')
-        asm(,'global','sec01')
-        asm('sec01:')             :(opdone)
+        pseudo(,'segment','.text')
+        pseudo(,'global','sec01')
+        pseudo('sec01:')             :(opdone)
 
 * definitions section
 g.sec.2 
-        asm(,'segment','.data')
-        asm(,'global','sec02')
-        asm('sec02:')             :(opdone)
+        pseudo(,'segment','.data')
+        pseudo(,'global','sec02')
+        pseudo('sec02:')             :(opdone)
 
 * constants section
 g.sec.3 
-        asm(,'segment','.data')
-        asm(,'global','sec03')
-        asm('sec03')     :(opdone)
+        pseudo(,'segment','.data')
+        pseudo(,'global','sec03')
+        pseudo('sec03')     :(opdone)
 
 * working variables section
 g.sec.4 
-	asm(,'global','esec03')
-        asm('esec03')
-        asm(,'segment','.data')
-        asm(,'global','sec04')
-        asm('sec04')     :(opdone)
+	pseudo(,'global','esec03')
+        pseudo('esec03')
+        pseudo(,'segment','.data')
+        pseudo(,'global','sec04')
+        pseudo('sec04')     :(opdone)
 
 *  here at start of program section.  if any n type procedures,
 *  put out entry-word block declaration at end of working storage
 g.sec.5
 *  emit code to indicate in code section
 *  get direction set to up.
-        asm(,'global','esec04')
-        asm('esec04')
-        (gt(prc.count1) asm('prc$','times', prc.count1 ' dd 0'))
-        asm(,'global','lowspmin')
-        asm('lowspmin','dd','0')
-        asm(,'global','end_min_data')
-        asm('end_min_data')
-        asm(,'segment','.text')
-        asm(,'global','sec05')
-        asm('sec05')     
+        pseudo(,'global','esec04')
+        pseudo('esec04')
+        (gt(prc.count1) pseudo('prc$','times', prc.count1 ' dd 0'))
+        pseudo(,'global','lowspmin')
+        pseudo('lowspmin','dd','0')
+        pseudo(,'global','end_min_data')
+        pseudo('end_min_data')
+        pseudo(,'segment','.text')
+        pseudo(,'global','sec05')
+        pseudo('sec05')     
 	generating_code = 1
 						:(opdone)
 
 *  stack overflow section.  output exi__n tail code
 g.sec.6	i1 = 1
 g.sec.6.1
-        (differ(debug) asm(,'global','exi__' i1))
-        asm('exi__' i1, 'movsx', 'eax',
-+		'word [eax+' (2 * (i1 - 1)) ']')
-        asm(,'add','eax', 'dffnc')
-	asm(,'push','eax')
-	asm(,'xor','eax','eax')
-	asm(,'ret')
+        (differ(debug) pseudo(,'global','exi__' i1))
+        deflabel('exi__' i1)
+	asm( 'movsx', 'eax','word [eax+' (2 * (i1 - 1)) ']')
+        asm('add','eax', 'dffnc')
+	asm('push','eax')
+	asm('xor','eax','eax')
+	asm('ret')
 	flush()
 	i1 = lt(i1,max_exi) i1 + 1		:s(g.sec.6.1)
 
 * now being the stack overflow section
-        asm(,'global','sec06')
-        asm('sec06')             :(opdone)
+        pseudo(,'global','sec06')
+        pseudo('sec06')             :(opdone)
 
 *  error section.  produce code to receive erb's
 g.sec.7
-        (differ(debug) asm(,'global','err_0'))
-        asm('err_0')
-	asm(,'pop','eax')
-	asm(,'movzx','eax','byte [eax]')
-	asm(,'jmp',' err_1a')
-        (differ(debug) asm(,'global','err_1'))
-        asm('err_1','pop','eax')
-	asm(,'movzx','eax','byte [eax]')
-	asm(,'add','eax','256')
-        asm('err_1a','jmp','err$')
+        (differ(debug) pseudo(,'global','err_0'))
+        deflabel('err_0')
+	asm('pop','eax')
+	asm('movzx','eax','byte [eax]')
+	asm('jmp',' err_1a')
+        (differ(debug) pseudo(,'global','err_1'))
+        deflabel('err_1')
+	asm('pop','eax')
+	asm('movzx','eax','byte [eax]')
+	asm('add','eax','256')
+        deflabel('err_1a')
+	asm('jmp','err$')
 	flush()
 
 *  loop to emit inc eax for each possible error code
 	i1 = max.err
 g.sec.7.1
-	ge(i1 = i1 - 1) asm(,'inc','eax')	:s(g.sec.7.1)
-        asm('err$','xchg',reg.wa,'eax')
-        asm(,'global','sec07')
-        asm('sec07')             :(opdone)
+	ge(i1 = i1 - 1) asm('inc','eax')	:s(g.sec.7.1)
+        pseudo('err$')
+	asm('xchg',reg.wa,'eax')
+        pseudo(,'global','sec07')
+        pseudo('sec07')             :(opdone)
 
 
 
@@ -1599,7 +1615,7 @@ flush	eq(astmts.n) eq(bstmts.n) eq(cstmts.n)	:f(opdone1)
 *  here if no statements, so output single 'null' statement to get label
 *  and comment field right.
 *
-	outstmt(Tstmt())			:(opdone.6)
+	outstmt(stmt())			:(opdone.6)
 opdone1	eq(bstmts.n)				:s(opdone.2)
 	i = 1
 opdone.1
@@ -1631,7 +1647,7 @@ g.end.1	line = hdrfile				:f(g.end.2)
 	noutlines = noutlines + 1
 	outfile = line				:(g.end.1)
 g.end.2
-        outstmt(Tstmt(,,,,,comment))
+        outstmt(stmt(,,,,,comment))
 
 
 	endfile(1)
