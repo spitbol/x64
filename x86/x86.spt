@@ -213,13 +213,14 @@
 	is_executable = table(100)
 	s = 
 +       'add adi adr anb aov atn '
-+       'brn bri bsw btw bze ceq chk chp cmb cmc cne csc '
-+       'cos ctb ctw cvd cvm dca dcv eti dvi dvr erb esw etx flc '
++	'bct beq bev bge bgt bhi ble blo blt bne bnz bod '
++       'brn bri bsw btw bze ceq chk chp cmb cmc cmp cne csc '
++       'cos ctb ctw cvd cvm dca dcv eti dvi dvr erb esw etx exi flc '
 +       'ica icp icv ieq ige igt ile ilt ine ino iov itr '
 +       'jsr lch lct lcp lcw ldi ldr lei lnf lsh lsx mcb mfi mli mlr '
 +       'mnz mov mti mvc mvw mwb ngi eti ngr nzb orb plc psc '
 +       'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
-+       'sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer'
++       'sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer '
 +       'zgb zrb'
 is_exec.1
 	s len(3) . opc ' ' =				:f(is_exec.2)
@@ -241,7 +242,7 @@ is_exec.2
 *  with "g.", and can be considered a logical extension of the
 *  opnext routine.  the generators have the choice of branching back
 *  to dsgen to cause the thisstmt plex to be sent to outstmt, or
-*  or branching to dsout, in which case the generator must output
+*  or branching to opnext, in which case the generator must output
 *  all needed code itself.
 *
 *  the generators are listed in a separate section below.
@@ -345,6 +346,7 @@ flgs2
 *  strip end of comments if y
 *
 	strip_comment = (differ(comments) 'n', 'y')
+	strip_comment = 'y'
 
 	filenami = parms '.lex'
         input(.infile,1,filenami)                     :s(inpulex)
@@ -402,29 +404,35 @@ pubcopy	line = pubfile				:f(pubend)
 pubend	endfile(5)
 nopub
 
-						:(dsout)
+						:(opnext)
   &trace = 2000
   &ftrace = 1000
 *  &profile = 1
-dsout
-opnext	thisline = readline()
-	crack(thisline)				:f(dsout)
+
+opnext	
+	thisline = readline()
+	crack(thisline)				:f(opnext.2)
 	i1 = prsarg(iarg1)
 	i2 = prsarg(iarg2)
 	i3 = prsarg(iarg3)
 	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' '
 .		i.text(i2) ' ' i.text(i3)
 	argerrs = 0
-	output = differ(inlabel) 'input line ' nlines ' label ' inlabel
+*	output = differ(inlabel) 'input line ' nlines ' label ' inlabel
 *	output = 'input line ' nlines ' label ' inlabel
+*	emit label here for an executable instruction
+	ident(is_executable[incode])		:s(opnext.1)
+	asm(inlabel)
+	inlabel =
+opnext.1
+*	branch via opcode to the generator for this operation
 						:($('g.' incode))
+opnext.2
 *  here if bad opcode
-ds01	error('bad op-code')			:(dsout)
+	error('bad op-code')			:(opnext)
 
 *  generate lexemes.
 *
-ds.typerr
-	error('operand type zero')		:(dsout)
 -stitl	asm(aopl,aopc,aop,aop2,aop3)
 asm	
 	outstmt(Tstmt(aopl,aopc,aop1,aop2,aop3)) :(return)
@@ -465,7 +473,7 @@ error   outfile = '* *???* ' thisline
 .	          (ident(lasterror),'. last error was line ' lasterror)
 	lasterror = noutlines
 	noutlines = noutlines + 2
-	le(nerrors = nerrors + 1, 10)		:s(dsout)
+	le(nerrors = nerrors + 1, 10)		:s(opnext)
         output = 'too many errors, quitting'  :(end)
 -stitl genaop(stmt)
 genaop
@@ -647,7 +655,7 @@ prcent prcent = 'prc$' '+'  (4 * ( n - 1)) :(return)
 outstmt	
 	thistmt = ostmt
 	label = t.label(ostmt)
-	output = differ(label) 'outstmt ' nlines ' ' label
+*	output = differ(label) 'outstmt ' nlines ' ' label
 *  attach source label to first generated instruction
 	comment = t.comment(ostmt)
 *  attach source comment to first generated instruction
@@ -783,18 +791,16 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 
 g.flc
 	t1 = substr(getarg(i1),2,1) 'l'
-	t2 = genlab()
+	label = genlab()
 	asm(,'cmp',t1,"'a'")
-	asm(,'jb', t2)
+	asm(,'jb', label)
 	asm(,'cmp',t1,"'z'")
-	asm(,'ja', t2)
+	asm(,'ja', label)
 	asm(,'sub',t1,'32')
-        asm(t2)                  
+        asm(label)                  
 						:(opdone)
 
 g.mov
-	output = differ(inlabel) ' mov ' inlabel
-	differ(inlabel) asm(inlabel)
 *  perhaps change mov x,(xr)+ to
 *	mov ax,x; stows
 *
@@ -846,18 +852,19 @@ g.bev	t1 = getarg(i1)
 
 g.brn   asm(,'jmp',getarg(i1))			:(opdone)
 
-g.bsw	t1 = getarg(i1)
-	t2 = genlab()
+g.bsw	
+	t1 = getarg(i1)
+	bsw.label = genlab()
 	ident(i.text(i3))			:s(g.bsw1)
 	asm(,'cmp',t1,getarg(i2))
 	asm(,'jge',getarg(i3))
 * here after default case.
-g.bsw1	asm(,'jmp', 'dword  [' t2 '+' t1 '*4]')
+g.bsw1	asm(,'jmp', 'dword  [' bsw.label '+' t1 '*4]')
 *	indicate now generating data
 
 	generating_code =
         asm(,'segment','.data')
-        asm(t2)		                  :(opdone)
+        asm(bsw.label)		                  :(opdone)
 
 g.iff   asm(,'dd',getarg(i2))               :(opdone)
 
@@ -908,7 +915,7 @@ g.ppm1
 g.prc
 *	generate public declaration and then generate label again
         asm(,'global',inlabel)
-	asm()
+	asm(inlabel)
 	prc.args = getarg(i2)
 	max_exi = gt(prc.args,max_exi) prc.args
 	prc.type = i.text(i1)		:($('g.prc.' prc.type))
@@ -1271,13 +1278,14 @@ g.trc
 *	xor	esi,esi			;set xl to zero
 *	xor	edi,edi			;v1.02  xr also
 	asm(,'xchg','esi','edi')
-        asm(genlab())
-	asm(,'movzx','eax','byte [edi]')
-	asm(,'mov','al','[esi+eax]')
+        label = genlab()
+	asm(label,'movzx','eax','byte [edi]')
+	asm(,'mov','al','byte [esi+eax]')
 	asm(,'stosb')
-	asm(,'loop',t1)
+	asm(,'loop',label)
 	asm(,'xor','esi','esi')
-	asm(,'xor','edi','edi')		:(opdone)
+	asm(,'xor','edi','edi')		
+						:(opdone)
 
 
 g.anb   asm(,'and',getarg(i2),getarg(i1))	:(opdone)
@@ -1459,9 +1467,7 @@ g.dic
 *
 *
 g.drc   asm(,'align','4')
-        asm(,'dq', i.text(i1))
-*  note that want to attach label to last instruction
-	t.label(cstmts[cstmts.n]) = inlabel
+        asm(inlabel,'dq', i.text(i1))
 						:(opdone)
 
 g.dtc
@@ -1473,8 +1479,9 @@ g.dtc
 *  append "\x00" if string has odd length to complete last dword
         t2 = ne(t3) t2 dupl('\x00',4 - t3)
         t2 = t2  '"'
-        asm(label,'dd',t2)              :(opdone)
-g.dbc   asm(label,'dd',getarg(i1))       :(opdone)
+        asm(inlabel,'dd',t2)              :(opdone)
+
+g.dbc   asm(inlabel,'dd',getarg(i1))       :(opdone)
 
 g.equ   asm(inlabel,'equ',i.text(i1))			:(opdone)
 
@@ -1487,27 +1494,27 @@ g.inp	prc.count1 = ident(i.text(i1),'n') prc.count1 + 1
 
 g.inr						:(opnext)
 
-g.ejc	asm('')
+g.ejc	asm()
 						:(opdone)
 
-g.ttl	asm('')
+g.ttl	asm()
         asm(';','"' i.text(i1) '"')      
 						:(opdone)
 
-g.sec	asm('')
+g.sec	asm()
 	sectnow = sectnow + 1			:($("g.sec." sectnow))
 
 * procedure declaration section
 g.sec.1 
         asm(,'segment','.text')
         asm(,'global','sec01')
-        asm('sec01')             :(opdone)
+        asm('sec01:')             :(opdone)
 
 * definitions section
 g.sec.2 
         asm(,'segment','.data')
         asm(,'global','sec02')
-        asm('sec02')             :(opdone)
+        asm('sec02:')             :(opdone)
 
 * constants section
 g.sec.3 
