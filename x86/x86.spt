@@ -228,6 +228,19 @@ is_exec.1
 	is_executable[opc] = 1				:(is_exec.1)
 is_exec.2
 
+* create map of branch statements (needed when instrumenting code)
+
+	is_branch = table(100)
+	s = 
++	'bct beq bev bge bgt bhi ble blo blt bne bnz bod '
++       'brn bri bsw btw bze ceq cmc cne '
++       'ieq ige igt ile ilt ine ino iov '
++       'jsr lch lct lcp lcw ldi ldr lei lnf lsh lsx mcb mfi mli mlr '
+is_branch.1
+	s len(3) . opc ' ' =				:f(is_branch.2)
+	is_branch[opc] = 1				:(is_branch.1)
+is_branch.2
+
 
 -stitl main program
 *  here follows the driver code for the "main" program.
@@ -423,8 +436,14 @@ opnext
 *	output = 'input line ' nlines ' label ' inlabel
 *	emit label here for an executable instruction
 	ident(is_executable[incode])		:s(opnext.1)
+	ident(inlabel)				:s(opnext.1)
 	deflabel(inlabel)
 	inlabel =
+	cstmts[cstmts.n = cstmts.n + 1] = 
+		stmt(,'mov', nlines ',dword [nlines]')		
+	cstmts[cstmts.n = cstmts.n + 1] = 
+		stmt(,'jsr','atlin')
+	output = 'generated atlin call at ' nlines
 opnext.1
 *	branch via opcode to the generator for this operation
 						:($('g.' incode))
