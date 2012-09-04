@@ -117,7 +117,6 @@
 	define('genaop(stmt)')
 	define('genbop(stmt)')
         define('genlab()')
-	define('genopl(gopl,gopc,gop1,gop2,gop3)')
 	define('getarg(iarg,iacc)l1,l2,t1,t2')
 	define('ifreg(iarg)')
 	define('memmem()t1')
@@ -497,57 +496,6 @@ genbop
 -stitl genlab()
 *  generate unique labels for use in generated code
 genlab	genlab = 'l' lpad(genlabels = genlabels + 1,4,'0') :(return)
-
--stitl genopl(gopl,gopc,gop1,gop2,gop3)
-*  generate operation with label
-genopl	
-	:(genopl.1)
-	deflabel(gopl)
-	cstmts[cstmts.n = cstmts.n + 1] = stmt(,gopc,gop1,gop2,gop3)
-						:(return);
-	cstmts[cstmts.n = cstmts.n + 1] = stmt(gopl)
-	
-*	:(genopl.1)
-	ident(generating_code)			:s(genopl.1)
- 	ident(gopl) 				:s(genopl.1)
- 	ident(gopc) 				:s(genopl.1)
-	trapped_stmts[nlines] = gopl '.' gopc
-* 	here if at label in code section, generate call to atlin with line #
-*	if the operation is executable
-	asm('atn',gopc,gopl)
-	ident(is_executable[opc])		:s(genopl.1)
-
-	cstmts[cstmts.n = cstmts.n + 1] = 
-		stmt(,'mov', nlines ',dword [nlines]')		
-	cstmts[cstmts.n = cstmts.n + 1] = 
-		stmt(,'jsr','atlin')
-	output = 'generated atlin call at ' nlines
-genopl.1
-	deflabel(gopl ':')
-	cstmts[cstmts.n = cstmts.n + 1] = stmt(,gopc,gop1,gop2,gop3)		
-						:(return)
-
--stitl asm(gopl,gopc,gop1,gop2,gop3)
-*  generate operation with no label
-genop   
-*	:(genopl.1)
-	ident(generating_code)			:s(genop.1)
- 	ident(gopl) 				:s(genop.1)
- 	ident(gopc) 				:s(genop.1)
-	trapped_stmts[nlines] =  gopc
-* 	here if at label in code section, generate call to atlin with line #
-*	if the operation is executable
-	asm('atn',gopc,gopl)
-	ident(is_executable[opc])		:s(genopl.1)
-
-	cstmts[cstmts.n = cstmts.n + 1] = 
-		stmt(,'mov', nlines ',dword [nlines]')		
-	cstmts[cstmts.n = cstmts.n + 1] = 
-		stmt(,'jsr','atlin')
-	output = 'generated atlin call at ' nlines
-genop.1
-	cstmts[cstmts.n = cstmts.n + 1] = stmt(gopl,gopc,gop1,gop2,gop3)		
-						:(return)
 
 -stitl getarg(iarg,iacc)
 getarg	l1 = i.text(iarg)
