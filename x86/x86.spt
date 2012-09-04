@@ -435,7 +435,7 @@ opnext.2
 
 *  generate lexemes.
 *
--stitl	asm(aopl,aopc,aop,aop2,aop3)
+-stitl	asm(aopc,aop,aop2,aop3)
 asm	
 	outstmt(stmt(,aopc,aop1,aop2,aop3)) :(return)
 
@@ -472,6 +472,7 @@ cstmt
 *	define a label
 deflabel
 	pseudo(label)
+						:(return)
 						:(return)
 -stitl error(text)
 *  this module handles reporting of errors with the offending
