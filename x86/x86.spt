@@ -111,6 +111,7 @@
 *
 	define('asm(aopl,aopc,aop1,aop2,aop3)')
 	define('cstmt(gopc,gop1,gop2,gop3)')
+	define('deflabel(label)')
 	define('error(text)')
 	define('flush()')
 	define('genaop(stmt)')
@@ -122,6 +123,7 @@
 	define('memmem()t1')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
+	define('pseudo(aopl,aopc,aop1,aop2,aop3)')
 	define('tblini(str)pos,cnt,index,val,lastval')
 
 *  outstmt is used to send a target statement to the target code
@@ -370,8 +372,8 @@ inpulex output = 'input lexeme file: ' filenami
 err_ok
 
 * begin with standard preamble
-        asm(,';','"spitbol translator ' replace(parms,lcase,ucase) '"')
-        asm(,';','"' replace(parms,lcase,ucase) '"')
+        pseudo(,';','"spitbol translator ' replace(parms,lcase,ucase) '"')
+        pseudo(,';','"' replace(parms,lcase,ucase) '"')
 
 *  then copy contents of <machine>.hdr (if it exists) to outfile
 *  stop at line with just 'end' or end of file
@@ -422,7 +424,7 @@ opnext
 *	output = 'input line ' nlines ' label ' inlabel
 *	emit label here for an executable instruction
 	ident(is_executable[incode])		:s(opnext.1)
-	asm(inlabel)
+	deflabel(inlabel)
 	inlabel =
 opnext.1
 *	branch via opcode to the generator for this operation
@@ -435,6 +437,10 @@ opnext.2
 *
 -stitl	asm(aopl,aopc,aop,aop2,aop3)
 asm	
+	outstmt(Tstmt(aopl,aopc,aop1,aop2,aop3)) :(return)
+
+-stitl	pseudo(aopl,aopc,aop,aop2,aop3)
+pseudo	
 	outstmt(Tstmt(aopl,aopc,aop1,aop2,aop3)) :(return)
 
 -stitl comregs(line)t,pre,word
@@ -461,6 +467,11 @@ crack   nstmts  = nstmts + 1
 -stitl cstmt(gopc,gop1,gop2,gop3)
 cstmt
 	cstmts[cstmt.n = cstmt.n + 1] = Tstmt(,gopc,gop1,gop2,gop3)
+						:(return)
+-stitl deflabel(label)
+*	define a label
+deflabel
+	pseudo(label)
 						:(return)
 -stitl error(text)
 *  this module handles reporting of errors with the offending
@@ -490,7 +501,7 @@ genlab	genlab = 'l' lpad(genlabels = genlabels + 1,4,'0') :(return)
 *  generate operation with label
 genopl	
 	:(genopl.1)
-	asm(gopl)
+	deflabel(gopl)
 	cstmts[cstmts.n = cstmts.n + 1] = Tstmt(,gopc,gop1,gop2,gop3)
 						:(return);
 	cstmts[cstmts.n = cstmts.n + 1] = Tstmt(gopl)
@@ -511,7 +522,7 @@ genopl
 		Tstmt(,'jsr','atlin')
 	output = 'generated atlin call at ' nlines
 genopl.1
-	asm(gopl ':')
+	deflabel(gopl ':')
 	cstmts[cstmts.n = cstmts.n + 1] = Tstmt(,gopc,gop1,gop2,gop3)		
 						:(return)
 
@@ -653,6 +664,7 @@ prcent prcent = 'prc$' '+'  (4 * ( n - 1)) :(return)
 *  passed in the argument list to the formatted .s file
 *
 outstmt	
+	ident(ostmt)				:s(return)
 	thistmt = ostmt
 	label = t.label(ostmt)
 *	output = differ(label) 'outstmt ' nlines ' ' label
@@ -863,10 +875,10 @@ g.bsw1	asm(,'jmp', 'dword  [' bsw.label '+' t1 '*4]')
 *	indicate now generating data
 
 	generating_code =
-        asm(,'segment','.data')
-        asm(bsw.label)		                  :(opdone)
+        pseudo(,'segment','.data')
+        deflabel(bsw.label)		                  :(opdone)
 
-g.iff   asm(,'dd',getarg(i2))               :(opdone)
+g.iff   pseudo(,'dd',getarg(i2))               :(opdone)
 
 g.esw  						
 	generating_code = 1
@@ -887,11 +899,10 @@ g.ent
 *  is a simple odd/even, least significant bit definition.
 *  that is, for us, 1 and 3 are odd, 2 and 4 are even.
 *
-        asm(,'align',2)
-        (differ(i.text(i1)) asm(,'db',i.text(i1)), asm(,'nop'))
-	asm()
+        pseudo(,'align',2)
+        (differ(i.text(i1)) pseudo(,'db',i.text(i1)), asm(,'nop'))
 *  here to see if want label made public
-        (differ(pubtab[inlabel]), differ(debug)) asm(,'global',inlabel)
+        (differ(pubtab[inlabel]), differ(debug)) pseudo(,'global',inlabel)
 	asm(inlabel) 				:(opdone)
 
 g.bri	asm(,'jmp',getarg(i1))			:(opdone)
@@ -904,7 +915,7 @@ g.jsr	asm(,'call',getarg(i1))		:(opdone)
 g.ppm
 *  last arg is optional. generate two bytes
 	ident(i.text(i1))			:s(g.ppm1)
-        asm(,'dw',getarg(i1) '-' 'dffnc')        :(opdone)
+        pseudo(,'dw',getarg(i1) '-' 'dffnc')        :(opdone)
 g.ppm1
 *  a ppm with no arguments, which should never be executed, is
 *  translated to err 299,internal logic error: unexpected ppm branch
@@ -914,8 +925,8 @@ g.ppm1
 
 g.prc
 *	generate public declaration and then generate label again
-        asm(,'global',inlabel)
-	asm(inlabel)
+        pseudo(,'global',inlabel)
+	deflabel(inlabel)
 	prc.args = getarg(i2)
 	max_exi = gt(prc.args,max_exi) prc.args
 	prc.type = i.text(i1)		:($('g.prc.' prc.type))
@@ -948,7 +959,7 @@ g.exin;* here if n type procedure
 g.exine;* here if error return from n procedure
 	asm(,'mov','eax',prcent(prc.count))	:(g.exir1)
 
-g.enp   asm()					:(opdone)
+g.enp   					:(opdone)
 
 g.err
 *  assume ax is zero, then err nnn,text is translated to
@@ -964,7 +975,7 @@ g.err
 	errfile =  i.text(i1) ' ' i.text(i2)
 	t1 = getarg(i1)
 g.err1	max.err = gt(t1,max.err) t1
-        asm(,'dw','err$' '-' +t1 '-' 'dffnc') :(opdone)
+        pseudo(,'dw','err$' '-' +t1 '-' 'dffnc') :(opdone)
 
 g.erb	errfile =  i.text(i1) ' ' i.text(i2)
 	t1 = getarg(i1)
@@ -988,12 +999,12 @@ g.zer.xs asm(,'push','0')			:(opdone)
 
 g.mnz   asm(,'mov',getarg(i1),'esp')		:(opdone)
 
-g.ssl   asm()					:(opdone)
-g.sss   asm()					:(opdone)
+g.ssl   					:(opdone)
+g.sss   					:(opdone)
 
 g.rtn
 *	generate public declaration and then regenerate label
-	asm()
+	
 						:(opdone)
 
 g.add	memmem()
@@ -1046,7 +1057,7 @@ g.lct
 	differ(i.text(i1),i.text(i2))		:s(g.lct.1)
 *  here if operands same. emit no code if no label, else emit null
 	ident(inlabel)				:s(opnext)
-	asm()					:(opdone)
+						:(opdone)
 
 g.lct.1	asm(,'mov', getarg(i1), getarg(i2))	:(opdone)
 
@@ -1244,7 +1255,7 @@ g.scg.w.xrp
 	asm(,'mov','al',t1)
 	asm(,'stosb')				:(opdone)
 g.csc  	
-	asm()					:(opdone)
+						:(opdone)
 
 g.ceq
 	memmem()
@@ -1279,7 +1290,8 @@ g.trc
 *	xor	edi,edi			;v1.02  xr also
 	asm(,'xchg','esi','edi')
         label = genlab()
-	asm(label,'movzx','eax','byte [edi]')
+	deflabel(label)
+	asm(,'movzx','eax','byte [edi]')
 	asm(,'mov','al','byte [esi+eax]')
 	asm(,'stosb')
 	asm(,'loop',label)
@@ -1320,7 +1332,7 @@ g.lsx.c	asm(,'xchg',t1,'ecx')
 	asm(,'xchg',t1,'ecx')				:(opdone)
 
 g.nzb	ifreg(i1)				:s(g.nzb1)
-	asm(,,'cmp',getarg(i1),'0')
+	asm(,'cmp',getarg(i1),'0')
 	asm(,'jnz',getarg(i2))			:(opdone)
 g.nzb1	asm(,'or',getarg(i1),getarg(i1))
 	asm(,'jnz',getarg(i2))			:(opdone)
@@ -1357,7 +1369,7 @@ g.mfi
 *  here if label given, branch if wc not in range (ie, negative)
 	asm(,'or',reg.ia,reg.ia)
 	asm(,'js',getarg(i2))
-g.mfi1	ident(i.text(i1),'wc') asm(,)		:s(opdone)
+g.mfi1	ident(i.text(i1),'wc') 		:s(opdone)
 	ident(i.text(i1),'-(xs)') asm(,'push',reg.ia)	:s(opdone)
 	asm(,'mov',getarg(i1),reg.ia)		:(opdone)
 
@@ -1458,16 +1470,17 @@ decend
 g.dac	
 	t1 = i.type(i1)
         t2 = "" ;*(le(t1,2) "", le(t1,4) " ", le(t1,6) " ", "")
-        asm(inlabel,'dd',t2 i.text(i1))		:(decend)
+        pseudo(inlabel,'dd',t2 i.text(i1))		:(decend)
+
 g.dic   
-	asm(inlabel,'dd',i.text(i1))		:(decend)
+	pseudo(inlabel,'dd',i.text(i1))		:(decend)
 
 *
 * make sure don't attach label to the align.
 *
 *
-g.drc   asm(,'align','4')
-        asm(inlabel,'dq', i.text(i1))
+g.drc   pseudo(,'align','4')
+        pseudo(inlabel,'dq', i.text(i1))
 						:(opdone)
 
 g.dtc
@@ -1479,14 +1492,14 @@ g.dtc
 *  append "\x00" if string has odd length to complete last dword
         t2 = ne(t3) t2 dupl('\x00',4 - t3)
         t2 = t2  '"'
-        asm(inlabel,'dd',t2)              :(opdone)
+        pseudo(inlabel,'dd',t2)              :(opdone)
 
-g.dbc   asm(inlabel,'dd',getarg(i1))       :(opdone)
+g.dbc   pseudo(inlabel,'dd',getarg(i1))       :(opdone)
 
-g.equ   asm(inlabel,'equ',i.text(i1))			:(opdone)
+g.equ   pseudo(inlabel,'equ',i.text(i1))			:(opdone)
 
 g.exp  	
-	asm(,'extern',inlabel)
+	pseudo(,'extern',inlabel)
 					:(opnext)
 
 g.inp	prc.count1 = ident(i.text(i1),'n') prc.count1 + 1
@@ -1494,64 +1507,64 @@ g.inp	prc.count1 = ident(i.text(i1),'n') prc.count1 + 1
 
 g.inr						:(opnext)
 
-g.ejc	asm()
+g.ejc	
 						:(opdone)
 
-g.ttl	asm()
-        asm(';','"' i.text(i1) '"')      
+g.ttl	
+        pseudo(';','"' i.text(i1) '"')      
 						:(opdone)
 
-g.sec	asm()
+g.sec	
 	sectnow = sectnow + 1			:($("g.sec." sectnow))
 
 * procedure declaration section
 g.sec.1 
-        asm(,'segment','.text')
-        asm(,'global','sec01')
-        asm('sec01:')             :(opdone)
+        pseudo(,'segment','.text')
+        pseudo(,'global','sec01')
+        pseudo('sec01:')             :(opdone)
 
 * definitions section
 g.sec.2 
-        asm(,'segment','.data')
-        asm(,'global','sec02')
-        asm('sec02:')             :(opdone)
+        pseudo(,'segment','.data')
+        pseudo(,'global','sec02')
+        pseudo('sec02:')             :(opdone)
 
 * constants section
 g.sec.3 
-        asm(,'segment','.data')
-        asm(,'global','sec03')
-        asm('sec03')     :(opdone)
+        pseudo(,'segment','.data')
+        pseudo(,'global','sec03')
+        pseudo('sec03')     :(opdone)
 
 * working variables section
 g.sec.4 
-	asm(,'global','esec03')
-        asm('esec03')
-        asm(,'segment','.data')
-        asm(,'global','sec04')
-        asm('sec04')     :(opdone)
+	pseudo(,'global','esec03')
+        pseudo('esec03')
+        pseudo(,'segment','.data')
+        pseudo(,'global','sec04')
+        pseudo('sec04')     :(opdone)
 
 *  here at start of program section.  if any n type procedures,
 *  put out entry-word block declaration at end of working storage
 g.sec.5
 *  emit code to indicate in code section
 *  get direction set to up.
-        asm(,'global','esec04')
-        asm('esec04')
-        (gt(prc.count1) asm('prc$','times', prc.count1 ' dd 0'))
-        asm(,'global','lowspmin')
-        asm('lowspmin','dd','0')
-        asm(,'global','end_min_data')
-        asm('end_min_data')
-        asm(,'segment','.text')
-        asm(,'global','sec05')
-        asm('sec05')     
+        pseudo(,'global','esec04')
+        pseudo('esec04')
+        (gt(prc.count1) pseudo('prc$','times', prc.count1 ' dd 0'))
+        pseudo(,'global','lowspmin')
+        pseudo('lowspmin','dd','0')
+        pseudo(,'global','end_min_data')
+        pseudo('end_min_data')
+        pseudo(,'segment','.text')
+        pseudo(,'global','sec05')
+        pseudo('sec05')     
 	generating_code = 1
 						:(opdone)
 
 *  stack overflow section.  output exi__n tail code
 g.sec.6	i1 = 1
 g.sec.6.1
-        (differ(debug) asm(,'global','exi__' i1))
+        (differ(debug) pseudo(,'global','exi__' i1))
         asm('exi__' i1, 'movsx', 'eax',
 +		'word [eax+' (2 * (i1 - 1)) ']')
         asm(,'add','eax', 'dffnc')
@@ -1562,17 +1575,17 @@ g.sec.6.1
 	i1 = lt(i1,max_exi) i1 + 1		:s(g.sec.6.1)
 
 * now being the stack overflow section
-        asm(,'global','sec06')
-        asm('sec06')             :(opdone)
+        pseudo(,'global','sec06')
+        pseudo('sec06')             :(opdone)
 
 *  error section.  produce code to receive erb's
 g.sec.7
-        (differ(debug) asm(,'global','err_0'))
-        asm('err_0')
+        (differ(debug) pseudo(,'global','err_0'))
+        pseudo('err_0')
 	asm(,'pop','eax')
 	asm(,'movzx','eax','byte [eax]')
 	asm(,'jmp',' err_1a')
-        (differ(debug) asm(,'global','err_1'))
+        (differ(debug) pseudo(,'global','err_1'))
         asm('err_1','pop','eax')
 	asm(,'movzx','eax','byte [eax]')
 	asm(,'add','eax','256')
@@ -1583,9 +1596,10 @@ g.sec.7
 	i1 = max.err
 g.sec.7.1
 	ge(i1 = i1 - 1) asm(,'inc','eax')	:s(g.sec.7.1)
-        asm('err$','xchg',reg.wa,'eax')
-        asm(,'global','sec07')
-        asm('sec07')             :(opdone)
+        pseudo('err$')
+	asm(,'xchg',reg.wa,'eax')
+        pseudo(,'global','sec07')
+        pseudo('sec07')             :(opdone)
 
 
 
