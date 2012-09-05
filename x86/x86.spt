@@ -338,13 +338,26 @@ flgs2
 *  register/memory-location name.
 *
 	regmap = table(30)
-	regmap['xl'] = 'esi';  regmap['xt'] = 'esi'
-	regmap['xr'] = 'edi';  regmap['xs'] = 'esp'
-	regmap['wa'] = 'ecx';  regmap['wb'] = 'ebx'
-	regmap['wc'] = 'edx';  regmap['ia'] = 'edx'
-	regmap['cp'] = 'ebp'
+*	regmap['xl'] = 'esi';  regmap['xt'] = 'esi'
+*	regmap['xr'] = 'edi';  regmap['xs'] = 'esp'
+*	regmap['wa'] = 'ecx';  regmap['wb'] = 'ebx'
+*	regmap['wc'] = 'edx';  regmap['ia'] = 'edx'
+*	regmap['cp'] = 'ebp'
+**	w0*is temp register
+*	regmap['w0'] = 'eax'
+
+*  quick reference:
+*	reg.ia = regmap['ia']
+*	reg.wa = regmap['wa']
+*	reg.cp = regmap['cp']
+
+	regmap['xl'] = 'XL';  regmap['xt'] = 'XT'
+	regmap['xr'] = 'XR';  regmap['xs'] = 'XS'
+	regmap['wa'] = 'WA';  regmap['wb'] = 'WB'
+	regmap['wc'] = 'WC';  regmap['ia'] = 'IA'
+	regmap['cp'] = 'CP'
 *	w0 is temp register
-	regmap['w0'] = 'eax'
+	regmap['w0'] = 'W0'
 
 *  quick reference:
 	reg.ia = regmap['ia']
@@ -437,14 +450,13 @@ opnext
 *	output = 'input line ' nlines ' label ' inlabel
 	ident(is_executable[incode])		:s(opnext.2)
 *	emit label here for an executable instruction
+	atlabel = (differ(inlabel) 1, 0)
 *	output = 'defining label for exec. instr' inlabel ' ' incode
 	deflabel()
-*	(differ(is_executable[incode] deflabel())
-*	ident(is_executable[incode])		:s(opnext.2)
-*	here if executable statement. Issue label definition
-	deflabel()
- :(opnext.2)
-	differ(is_branch[incode])		:s(opnext.2)
+	eq(atlabel,0)				:s(opnext.2)
+*	here if executing statement with label
+*	issue trace call to atlin
+*	differ(is_branch[incode])		:s(opnext.2)
 	outfile = '  mov dword [nlines],'   nlines 
 	outfile = '  call  atlin'
 opnext.2
