@@ -163,10 +163,39 @@ reg_ra: dq   	0e    		; Register RA
 reg_pc:	dd	0		; return pc from caller
 reg_pp: dd      0               ; number of bytes of ppms
 reg_xs:	dd   	0  		; minimal stack pointer
+
 ;
 r_size equ      $-reg_block
 reg_size        db      r_size
 ;
+;	reg_dump is used to retrieve the register values for
+;	use during debugging
+	global	reg_dump
+
+	global	dump_wa
+	global	dump_wb
+	global	dump_wc
+	global	dump_w0
+	global	dump_xl
+	global	dump_xr
+	global 	dump_xs
+	global	dump_cp
+	global	dump_pp
+
+dump_wa: dd      0     		; Register WA (ECX)
+dump_wb: dd      0     		; Register WB (EBX)
+dump_ia:
+dump_wc: dd   	0     		; Register WC & IA (EDX)
+dump_xl: dd   	0     		; Register XL (ESI)
+dump_xr: dd   	0     		; Register XR (EDI)
+dump_xs:	dd   	0  		; minimal stack pointer
+dump_cp: dd   	0     		; Register CP
+dump_ra: dq   	0e    		; Register RA
+dump_pc: dd	0		; return pc from caller
+dump_pp: dd      0               ; number of bytes of ppms
+dump_w0: dd	0
+
+
 ; end of words saved during exit(-3)
 ;
 sav_block: times r_size dd 0    ; save minimal registers during push/pop reg
@@ -247,6 +276,20 @@ TTYBUF:	dd   	0     		; type word
 ;       note that before restart is called, we do not yet have compiler
 ;       stack to switch to.  in that case, just make the call on the
 ;       the osint stack.
+
+	global	dump_regs
+dump_regs:
+	mov	ecx,[dump_wa]
+	mov	ebx,[dump_wb]
+	mov	edx,[dump_wc]
+	mov	edi,[dump_xr]
+	mov	esi,[dump_xl]
+	mov	esp,[dump_xs]
+	mov	ebp,[dump_cp]
+;	mov	cpx,[dump_ra]
+;	mov	xxx,[dump_pc]
+	mov	eax,[dump_w0]
+	ret
 
 	global	minimal_call
 minimal_call:
