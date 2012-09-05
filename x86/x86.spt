@@ -437,14 +437,13 @@ opnext
 *	output = 'input line ' nlines ' label ' inlabel
 	ident(is_executable[incode])		:s(opnext.2)
 *	emit label here for an executable instruction
+	atlabel = (differ(inlabel) 1, 0)
 *	output = 'defining label for exec. instr' inlabel ' ' incode
 	deflabel()
-*	(differ(is_executable[incode] deflabel())
-*	ident(is_executable[incode])		:s(opnext.2)
-*	here if executable statement. Issue label definition
-	deflabel()
- :(opnext.2)
-	differ(is_branch[incode])		:s(opnext.2)
+	eq(atlabel,0)				:s(opnext.2)
+*	here if executing statement with label
+*	issue trace call to atlin
+*	differ(is_branch[incode])		:s(opnext.2)
 	outfile = '  mov dword [nlines],'   nlines 
 	outfile = '  call  atlin'
 opnext.2
