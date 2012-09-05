@@ -111,7 +111,7 @@
 *
 	define('asm(aopc,aop1,aop2,aop3)')
 	define('cstmt(gopc,gop1,gop2,gop3)')
-	define('deflabel(label)')
+	define('deflabel(dlabel)')
 	define('error(text)')
 	define('flush()')
 	define('genaop(stmt)')
@@ -217,9 +217,9 @@
 +	'bct beq bev bge bgt bhi ble blo blt bne bnz bod '
 +       'brn bri bsw btw bze ceq chk chp cmb cmc cmp cne csc '
 +       'cos ctb ctw cvd cvm dca dcv eti dvi dvr erb esw etx exi flc '
-+       'ica icp icv ieq ige igt ile ilt ine ino iov itr '
++       'ica icp icv ieq ige igt ile ilt ine ino iov itr jmp '
 +       'jsr lch lct lcp lcw ldi ldr lei lnf lsh lsx mcb mfi mli mlr '
-+       'mnz mov mti mvc mvw mwb ngi eti ngr nzb orb plc psc '
++       'mnz mov mti mvc mvw mwb ngi eti ngr nzb orb plc prc psc '
 +       'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
 +       'sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer '
 +       'zgb zrb'
@@ -425,29 +425,32 @@ nopub
 
 opnext	
 	thisline = readline()
-	crack(thisline)				:f(opnext.2)
+	inlabel = incode = iarg1 = iarg2 = iarg2 = incomment =
+	crack(thisline)				:f(opnext.3)
 	i1 = prsarg(iarg1)
 	i2 = prsarg(iarg2)
 	i3 = prsarg(iarg3)
 	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' '
 .		i.text(i2) ' ' i.text(i3)
 	argerrs = 0
-*	output = differ(inlabel) 'input line ' nlines ' label ' inlabel
+* 	output = differ(inlabel) 'input line ' nlines ' label ' inlabel
 *	output = 'input line ' nlines ' label ' inlabel
+	ident(is_executable[incode])		:s(opnext.2)
 *	emit label here for an executable instruction
-	ident(is_executable[incode])		:s(opnext.1)
-	ident(inlabel)				:s(opnext.1)
-	deflabel(inlabel)
-	inlabel =
-	cstmts[cstmts.n = cstmts.n + 1] = 
-		stmt(,'mov', nlines ',dword [nlines]')		
-	cstmts[cstmts.n = cstmts.n + 1] = 
-		stmt(,'jsr','atlin')
-	output = 'generated atlin call at ' nlines
-opnext.1
+*	output = 'defining label for exec. instr' inlabel ' ' incode
+	deflabel()
+*	(differ(is_executable[incode] deflabel())
+*	ident(is_executable[incode])		:s(opnext.2)
+*	here if executable statement. Issue label definition
+	deflabel()
+ :(opnext.2)
+	differ(is_branch[incode])		:s(opnext.2)
+	outfile = '  mov dword [nlines],'   nlines 
+	outfile = '  call  atlin'
+opnext.2
 *	branch via opcode to the generator for this operation
 						:($('g.' incode))
-opnext.2
+opnext.3
 *  here if bad opcode
 	error('bad op-code')			:(opnext)
 
@@ -477,7 +480,7 @@ comregs1 comregs = comregs line			:(return)
 *  crack will print an error and fail if a syntax error occurs.
 *
 crack   nstmts  = nstmts + 1
-	op1 = op2 = op3 = typ1 = typ2 = typ3 =
+	op1 = op2 = op3 = typ1 = typ2 = typ3 = 
 	line    p.csparse			:s(return)
 *  here on syntax error
 *
@@ -489,8 +492,15 @@ cstmt
 -stitl deflabel(label)
 *	define a label
 deflabel
-	pseudo(label)
-						:(return)
+	differ(dlabel)				:s(deflabel.1)
+*	here if null argument indicating defining label of current statement
+	dlabel = inlabel
+	inlabel =
+
+deflabel.1
+	ident(dlabel)				:s(return)
+	
+	pseudo(dlabel)
 						:(return)
 -stitl error(text)
 *  this module handles reporting of errors with the offending
@@ -771,13 +781,13 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 
 g.flc
 	t1 = substr(getarg(i1),2,1) 'l'
-	label = genlab()
+	flc.label = genlab()
 	asm('cmp',t1,"'a'")
-	asm('jb', label)
+	asm('jb', flc.label)
 	asm('cmp',t1,"'z'")
-	asm('ja', label)
+	asm('ja', flc.label)
 	asm('sub',t1,'32')
-        deflabel(label)                  
+        deflabel(flc.label)                  
 						:(opdone)
 
 g.mov
@@ -870,8 +880,10 @@ g.ent
         pseudo(,'align',2)
         (differ(i.text(i1)) pseudo(,'db',i.text(i1)), asm('nop'))
 *  here to see if want label made public
-        (differ(pubtab[inlabel]), differ(debug)) pseudo(,'global',inlabel)
-	deflabel(inlabel) 				:(opdone)
+*	output = 'g.ent label ' inlabel
+*        (differ(pubtab[inlabel]), differ(debug)) pseudo(,'global',inlabel)
+        pseudo(,'global',inlabel)
+	deflabel() 				:(opdone)
 
 g.bri	asm('jmp',getarg(i1))			:(opdone)
 
@@ -892,9 +904,12 @@ g.ppm1
 						:(g.err1)
 
 g.prc
+*	output = 'prc ' thisline
+	prc_label = inlabel
+*	output = 'prc ' inlabel ':'
 *	generate public declaration and then generate label again
-        pseudo(,'global',inlabel)
-	deflabel(inlabel)
+*        pseudo(,'global',prc_label)
+	deflabel(prc_label)
 	prc.args = getarg(i2)
 	max_exi = gt(prc.args,max_exi) prc.args
 	prc.type = i.text(i1)		:($('g.prc.' prc.type))
@@ -943,7 +958,7 @@ g.err
 	errfile =  i.text(i1) ' ' i.text(i2)
 	t1 = getarg(i1)
 g.err1	max.err = gt(t1,max.err) t1
-        pseudo(,'dw','err$' '-' +t1 '-' 'dffnc') :(opdone)
+        pseudo(,'dw','err_' '-' +t1 '-' 'dffnc') :(opdone)
 
 g.erb	errfile =  i.text(i1) ' ' i.text(i2)
 	t1 = getarg(i1)
@@ -1257,12 +1272,12 @@ g.trc
 *	xor	esi,esi			;set xl to zero
 *	xor	edi,edi			;v1.02  xr also
 	asm('xchg','esi','edi')
-        label = genlab()
-	deflabel(label)
+        trc.label = genlab()
+	deflabel(trc.label)
 	asm('movzx','eax','byte [edi]')
 	asm('mov','al','byte [esi+eax]')
 	asm('stosb')
-	asm('loop',label)
+	asm('loop',trc.label)
 	asm('xor','esi','esi')
 	asm('xor','edi','edi')		
 						:(opdone)
@@ -1489,19 +1504,19 @@ g.sec
 g.sec.1 
         pseudo(,'segment','.text')
         pseudo(,'global','sec01')
-        pseudo('sec01:')             :(opdone)
+        deflabel('sec01:')             :(opdone)
 
 * definitions section
 g.sec.2 
         pseudo(,'segment','.data')
         pseudo(,'global','sec02')
-        pseudo('sec02:')             :(opdone)
+        deflabel('sec02:')             :(opdone)
 
 * constants section
 g.sec.3 
         pseudo(,'segment','.data')
         pseudo(,'global','sec03')
-        pseudo('sec03')     :(opdone)
+        deflabel('sec03')     :(opdone)
 
 * working variables section
 g.sec.4 
@@ -1509,7 +1524,7 @@ g.sec.4
         pseudo('esec03')
         pseudo(,'segment','.data')
         pseudo(,'global','sec04')
-        pseudo('sec04')     :(opdone)
+        deflabel('sec04')     :(opdone)
 
 *  here at start of program section.  if any n type procedures,
 *  put out entry-word block declaration at end of working storage
@@ -1525,14 +1540,15 @@ g.sec.5
         pseudo('end_min_data')
         pseudo(,'segment','.text')
         pseudo(,'global','sec05')
-        pseudo('sec05')     
+        deflabel('sec05')     
 	generating_code = 1
 						:(opdone)
 
 *  stack overflow section.  output exi__n tail code
 g.sec.6	i1 = 1
 g.sec.6.1
-        (differ(debug) pseudo(,'global','exi__' i1))
+*        (differ(debug) pseudo(,'global','exi__' i1))
+        pseudo(,'global','exi__' i1)
         deflabel('exi__' i1)
 	asm( 'movsx', 'eax','word [eax+' (2 * (i1 - 1)) ']')
         asm('add','eax', 'dffnc')
@@ -1544,32 +1560,35 @@ g.sec.6.1
 
 * now being the stack overflow section
         pseudo(,'global','sec06')
-        pseudo('sec06')             :(opdone)
+        deflabel('sec06')             :(opdone)
 
 *  error section.  produce code to receive erb's
 g.sec.7
-        (differ(debug) pseudo(,'global','err_0'))
+
+        pseudo(,'global','sec07')
+        deflabel('sec07') 
+*        (differ(debug) pseudo(,'global','err_0'))
+        pseudo(,'global','err_0')
         deflabel('err_0')
 	asm('pop','eax')
 	asm('movzx','eax','byte [eax]')
 	asm('jmp',' err_1a')
-        (differ(debug) pseudo(,'global','err_1'))
+*        (differ(debug) pseudo(,'global','err_1'))
+        pseudo(,'global','err_1')
         deflabel('err_1')
 	asm('pop','eax')
 	asm('movzx','eax','byte [eax]')
 	asm('add','eax','256')
         deflabel('err_1a')
-	asm('jmp','err$')
+	asm('jmp','err_')
 	flush()
 
 *  loop to emit inc eax for each possible error code
-	i1 = max.err
+	n1 = max.err
 g.sec.7.1
-	ge(i1 = i1 - 1) asm('inc','eax')	:s(g.sec.7.1)
-        pseudo('err$')
+	ge(n1 = n1 - 1) asm('inc','eax')	:s(g.sec.7.1)
+        deflabel('err_')
 	asm('xchg',reg.wa,'eax')
-        pseudo(,'global','sec07')
-        pseudo('sec07')             :(opdone)
 
 
 

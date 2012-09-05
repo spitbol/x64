@@ -1,4 +1,9 @@
 
+		extern	atlin
+
+	segment	.data
+	global	nlines
+nlines:	dd	0
 
 %define		XL	esi
 %define		XR	edi
