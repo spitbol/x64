@@ -61,7 +61,7 @@ HDRS=	$(CHDRS) $(UHDRS)
 VHDRS=	$(TARGET)/$(TARGET).cnd $(TARGET)/$(TARGET).hdr 
 
 # OS objects:
-SYSOBJS=atlin.o sysax.o sysbp.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
+SYSOBJS=atlin.o regdump.o sysax.o sysbp.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	sysef.o sysej.o sysem.o sysen.o sysep.o sysex.o sysfc.o \
 	sysgc.o syshs.o sysid.o sysif.o sysil.o sysin.o sysio.o \
 	sysld.o sysmm.o sysmx.o sysou.o syspl.o syspp.o sysrw.o \
