@@ -21,6 +21,10 @@
 
         %include        "mintype.h"
         %include        "os.inc"
+	%macro	atline 1
+	mov	dword [nlines],%1
+	call	atlin
+	%endmacro
 
         segment .data
 
@@ -112,7 +116,8 @@
 ;       global variables
 ;
         extern  swcoup
-
+	extern	atlin
+	extern	nlines
 	extern	stacksiz
 	extern	lmodstk
 	extern	lowsp
@@ -358,7 +363,7 @@ pop1:   popad
         
         global  startup
 startup:
-
+	atline	-1
         pop     eax                     ; discard return
         pop     eax                     ; discard dummy1
         pop     eax                     ; discard dummy2
@@ -370,9 +375,10 @@ startup:
         extern  DFFNC
         lea     eax,[DFFNC]               ; get dd of PPM offset
         mov     dword [ppoff],eax               ; save for use later
-;
         mov     esp,dword [osisp]               ; switch to new c stack
 	push	start_callid
+	atline	-9
+; DS start doesn't return, crash happens there
 	callc	minimal_call,4 			 ; load regs, switch stack, start compiler
 
 
