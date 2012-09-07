@@ -18,8 +18,10 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-        regdump - list minimal register value
+        zysdc - check system expiration date
 
+        zysdc prints any header messages and may check
+        the date to see if execution is allowed to proceed.
 
         Parameters:
             Nothing
@@ -36,12 +38,37 @@ This file is part of Macro SPITBOL.
 #include <stdio.h>
 
 extern int nlines;
-#ifdef REDUMP
-extern	struct regs reg_block;
-#endif
+
+atlin()
+{
+	printf( "at line %d\n",nlines);
+	regdump();
+}
+
+rp(unsigned int reg, char * name)
+/* print register name and vaue */
+{
+	printf(" %s %-8d ",name, reg);
+}
+
 regdump()
 {
+	
+	rp("WA", WA(int));
+	rp("WB", WB(int));
+	rp("WC", WC(int));
+	rp("XL", XL(int));
+	rp("XR", XR(int));
+	rp("XS", XS(int));
+	rp("CP", CP(int));
+	rp("IA", IA(int));
+	printf("\n");
+}
 #ifdef REGDUMP
+extern int nlines;
+extern	struct regs reg_block;
+regdump()
+{
 	struct regs {
 	unsigned int	reg_wa,
 	unsigned int 	reg_wb,
@@ -54,10 +81,8 @@ regdump()
 	unsigned int	reg_pp,
 	unsigned int	reg_xs
 	};
-#endif
 	
     printf( "mininal registers line %d\n",nlines);
-#ifdef REGDUMP
   	struct regs *rp;  
 
 	rp = &reg_block
