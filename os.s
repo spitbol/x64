@@ -419,6 +419,7 @@ startup:
         call    stackinit               ; initialize MINIMAL stack
 	atline	-3
         mov     eax,dword [compsp]              ; get MINIMAL's stack pointer
+	atline	-31
         mov     dword [reg_wa],eax                     ; startup stack pointer
 
 	atline	-4
@@ -428,7 +429,7 @@ startup:
         lea     eax,[DFFNC]               ; get dd of PPM offset
  	atline	-6
         mov     dword [ppoff],eax               ; save for use later
- 	atline	-61
+; 	atline	-61
         mov     esp,dword [osisp]               ; switch to new c stack
 ;	atline	-7
 	push	start_callid
