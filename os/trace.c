@@ -40,22 +40,23 @@ This file is part of Macro SPITBOL.
 extern int nlines;
 extern int compsp;
 extern int osisp;
+extern int LOWSPMIN;
 
 atlin()
 {
-	printf( "at line %d\n",nlines);
+	fprintf(stderr, "at line %d\n",nlines);
 	regdump();
 }
 
 rp(char * name,uword reg)
 /* print register name and vaue */
 {
-	printf(" %s %u ",name, reg);
+	fprintf(stderr," %s %u ",name, reg);
 }
 
 regdump()
 {
-	
+	fprintf(stderr," start regdump\n");
 	rp("WA", WA(int));
 	rp("WB", WB(int));
 	rp("WC", WC(int));
@@ -64,10 +65,11 @@ regdump()
 	rp("XS", XS(int));
 	rp("CP", CP(int));
 	rp("IA", IA(int));
-	printf("\n");
-	printf("compsp %u",compsp);
-	printf("  osisp %u", osisp);
-	printf("\n");
+	fprintf(stderr,"\n");
+	fprintf(stderr,"compsp %u\n",compsp);
+	fprintf(stderr,"  osisp %u\n", osisp);
+	fprintf(stderr," LOWSPMIN %u\n", LOWSPMIN);
+	fprintf(stderr,"  end  regdump\n");
 }
 #ifdef REGDUMP
 extern int nlines;
@@ -87,10 +89,10 @@ reGdump()
 	unsigned int	reg_xs
 	};
 	
-    printf( "mininal registers line %d\n",nlines);
+    fprintf(stderr, "mininal registers line %d\n",nlines);
   	struct regs *rp;  
 
 	rp = &reg_block
-	printf("wa \ud\n",	rp->reg_wa);
+	fprintf(stderr,"wa \ud\n",	rp->reg_wa);
 }
 #endif
