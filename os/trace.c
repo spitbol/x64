@@ -38,6 +38,8 @@ This file is part of Macro SPITBOL.
 #include <stdio.h>
 
 extern int nlines;
+extern int compsp;
+extern int osisp;
 
 atlin()
 {
@@ -45,10 +47,10 @@ atlin()
 	regdump();
 }
 
-rp(unsigned int reg, char * name)
+rp(char * name,uword reg)
 /* print register name and vaue */
 {
-	printf(" %s %-8d ",name, reg);
+	printf(" %s %u ",name, reg);
 }
 
 regdump()
@@ -63,11 +65,14 @@ regdump()
 	rp("CP", CP(int));
 	rp("IA", IA(int));
 	printf("\n");
+	printf("compsp %u",compsp);
+	printf("  osisp %u", osisp);
+	printf("\n");
 }
 #ifdef REGDUMP
 extern int nlines;
 extern	struct regs reg_block;
-regdump()
+reGdump()
 {
 	struct regs {
 	unsigned int	reg_wa,
@@ -87,5 +92,5 @@ regdump()
 
 	rp = &reg_block
 	printf("wa \ud\n",	rp->reg_wa);
-#endif
 }
+#endif

@@ -303,15 +303,19 @@ minimal_call:
         mov     esi,dword[reg_xl]
         mov     ebp,dword[reg_cp]
 
+	atline	-100
         mov     dword [osisp],esp               ; save osint stack pointer
+	atline	-101
         cmp     dword [compsp],0      ; is there a compiler stack?
         je      min1              ; jump if none yet
         mov     esp,dword [compsp]              ; switch to compiler stack
+	atline	-102
 
 	extern	calltab
 min1:   callc   [calltab+eax*4],0        ; off to the minimal code
-
+	atline	-201
         mov     esp,osisp               ; switch to osint stack
+	atline	-202
 
         mov     [reg_wa],ecx              ; save registers
         mov     [reg_wb],ebx
@@ -319,6 +323,7 @@ min1:   callc   [calltab+eax*4],0        ; off to the minimal code
         mov     [reg_xr],edi
         mov     [reg_xl],esi
         mov     [reg_cp],ebp
+	atline	-203
         popad
         retc    4
 
@@ -410,15 +415,22 @@ startup:
         pop     eax                     ; discard return
         pop     eax                     ; discard dummy1
         pop     eax                     ; discard dummy2
+	atline	-2
         call    stackinit               ; initialize MINIMAL stack
+	atline	-3
         mov     eax,dword [compsp]              ; get MINIMAL's stack pointer
         mov     dword [reg_wa],eax                     ; startup stack pointer
 
+	atline	-4
         cld                             ; default to UP direction for string ops
         extern  DFFNC
+	atline	-5
         lea     eax,[DFFNC]               ; get dd of PPM offset
+ 	atline	-6
         mov     dword [ppoff],eax               ; save for use later
+ 	atline	-61
         mov     esp,dword [osisp]               ; switch to new c stack
+;	atline	-7
 	push	start_callid
 	atline	-9
 ; DS start doesn't return, crash happens there
@@ -454,21 +466,16 @@ startup:
 
         global  stackinit
 stackinit:
+	atline	-10
         mov     eax,esp
         mov     dword [compsp],eax              ; save as MINIMAL's stack pointer
         sub     eax,dword [stacksiz]     ; end of MINIMAL stack is where C stack will start
+	atline	-11
         mov     dword [osisp],eax       ; save new C stack pointer
         add     eax,4*100               ; 100 words smaller for CHK
         extern  LOWSPMIN
         mov	dword [LOWSPMIN],eax           ; Set lowspmin
-        ret
-	mov	eax,esp
-        mov     dword [compsp],eax              ; save as minimal's stack pointer
-	sub	eax,dword [stacksiz]     ; end of minimal stack is where c stack will start
-        mov     dword [osisp],eax       ; save new c stack pointer
-	add	eax,4*100               ; 100 words smaller for chk
-	extern	LOWSPMIN
-        mov     dword [LOWSPMIN],eax           ; set lowspmin
+	atline	-99
 	ret
 ;
 
