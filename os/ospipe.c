@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -48,13 +49,18 @@ struct ioblk *ioptr;
     int childpid;
     HFILE childfd, parentfd, savefd, stdfd, fd[2];
 
-    if ((ioptr->flg1 & (IO_INP | IO_OUP)) == (IO_INP | IO_OUP))
+    Enter("ospipe");
+    if ((ioptr->flg1 & (IO_INP | IO_OUP)) == (IO_INP | IO_OUP)) {
+	Exit("ospipe");
 	return -1;		/* can't open read/write pipe */
+    }
     /*
        Fail if system call to create pipe fails.
      */
-    if (pipe(fd) < 0)
+    if (pipe(fd) < 0) {
+	Exit("ospipe");
 	return -1;
+    }
 
     /*
        Set up file descriptors properly based on whose reading from pipe/
@@ -125,6 +131,7 @@ struct ioblk *ioptr;
        /   Control comes here ONLY in parent process. Return the file descriptor
        /   to be used for communication with child process or -1 if error.
      */
+    Exit("ospipe");
     return parentfd;
 }
 
@@ -138,6 +145,7 @@ struct ioblk *ioptr;
     char *shellpath, cmdbuf[CMDBUFLEN];
     int len;
 
+    Enter("doshell");
     /*
        Set up to execute command.
 
@@ -147,20 +155,25 @@ struct ioblk *ioptr;
      */
     scptr = MK_MP(ioptr->fnm, struct scblk *);	/* point to cmd scblk   */
     if (ioptr->flg2 & IO_ENV) {
-	if (optfile(scptr, ptscblk))
+	if (optfile(scptr, ptscblk)) {
+	    Exit("doshell");
 	    return -1;
+ 	}
 	scptr = ptscblk;
 	ptscblk->len = lenfnm(scptr);	/* remove any options   */
     }
     len = lenfnm(scptr) - 2;	/* length of cmd without ! & delimiter */
-    if (len >= CMDBUFLEN)
+    if (len >= CMDBUFLEN) {
+	Exit("doshell");
 	return -1;
+    }
     mystrncpy(cmdbuf, &scptr->str[2], len);	/* get command */
     if (cmdbuf[len - 1] == scptr->str[1])	/* if necessary         */
 	len--;			/*   zap 2nd delimiter  */
     cmdbuf[len] = '\0';		/* Nul terminate cmd    */
     shellpath = getshell();	/* get shell's path     */
-    execl(shellpath, pathlast(shellpath), "-c", cmdbuf, (char *) NULL);
+    execl   (shellpath, pathlast(shellpath), "-c", cmdbuf, (char *) NULL);
+    Exit("doshell");
     return -1;			/* should not get here */
 }
 

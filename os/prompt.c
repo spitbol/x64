@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -25,6 +26,7 @@ This file is part of Macro SPITBOL.
 void
 prompt()
 {
+    Enter("prompt");
 #if RUNTIME
     wrterr("usage: spitrun [options] file[.spx] [program arguments]");
 #else				/* RUNTIME */
@@ -77,5 +79,6 @@ prompt()
 
 #endif				/* RUNTIME */
 
+    Exit("oswrite");
     __exit(0);
 }

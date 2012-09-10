@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -55,8 +56,10 @@ zysdt()
 {
     struct icblk *dtscb = XR(struct icblk *);
 
+    Enter("zysdt");
     ptscblk->len = datecvt(ptscblk->str, dtscb->val);
     SET_XL(ptscblk);
+    Exit("zysdt");
     return NORMAL_RETURN;
 }
 
@@ -71,7 +74,9 @@ word maxlen;
     if (maxlen < 18)
 	return 0;
 
+    Enter("storedate");
     return datecvt(cp, 0);
+    Exit("storedate");
 }
 
 /*
@@ -85,6 +90,7 @@ int type;
 
     time_t tod;
 
+    Enter("datecvt");
     REGISTER struct tm *tm;
     time(&tod);
 
@@ -98,6 +104,7 @@ int type;
 	conv(cp + 3, tm->tm_mday);
 	cp[5] = '/';
 	conv(cp + 6, tm->tm_year % 100);	/* Prepare for year 2000! */
+        Exit("datecvt");
 	return 8 + timeconv(&cp[8], tm);
 
     case 1:			/* "MM/DD/YYYY hh:mm:ss" */
@@ -107,6 +114,7 @@ int type;
 	cp[5] = '/';
 	conv(cp + 6, (tm->tm_year + 1900) / 100);
 	conv(cp + 8, tm->tm_year % 100);	/* Prepare for year 2000! */
+        Exit("datecvt");
 	return 10 + timeconv(&cp[10], tm);
 
     case 2:			/* "YYYY-MM-DD/YYYY hh:mm:ss" */
@@ -116,8 +124,10 @@ int type;
 	conv(cp + 5, tm->tm_mon + 1);
 	cp[7] = '-';
 	conv(cp + 8, tm->tm_mday);
+        Exit("datecvt");
 	return 10 + timeconv(&cp[10], tm);
     }
+    Exit("datecvt");
 }
 
 static int
@@ -125,6 +135,7 @@ timeconv(tp, tm)
 char *tp;
 struct tm *tm;
 {
+    Enter("timeconv");
     tp[0] = ' ';
     conv(tp + 1, tm->tm_hour);
     tp[3] = ':';
@@ -132,5 +143,6 @@ struct tm *tm;
     tp[6] = ':';
     conv(tp + 7, tm->tm_sec);
     *(tp + 9) = '\0';
+    Exit("timeconv");
     return 9;
 }

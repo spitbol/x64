@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -45,6 +46,7 @@ zysbx()
 {
 #if !RUNTIME
 
+    Enter("zysbx");
     executing = 1;
 
     if (readshell0) {
@@ -110,5 +112,6 @@ zysbx()
     __exit(1);
 #endif				/* !RUNTIME */
 
+    Exit("zysbx");
     return NORMAL_RETURN;
 }

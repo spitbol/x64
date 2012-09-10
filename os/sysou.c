@@ -1,6 +1,7 @@
 /*
 #include "os.h"
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -42,6 +43,7 @@ zysou()
     REGISTER union block *blk = XR(union block *);
     int result;
 
+    Enter("zysou");
     if (blk->scb.typ == type_scl) {
 	/* called with string, get length from SCBLK */
 	SET_WA(blk->scb.len);
@@ -58,22 +60,30 @@ zysou()
 	    result = zyspi();
 	else
 	    result = zyspr();
-	if (result == NORMAL_RETURN)
+	if (result == NORMAL_RETURN) {
+    	    Exit("zysou");
 	    return NORMAL_RETURN;
-	else
+	}
+	else {
+    	    Exit("zysou");
 	    return EXIT_2;
+        }
     }
 
     /* ensure iob is open, fail if unsuccessful */
-    if (!(MK_MP(fcb->iob, struct ioblk *)->flg1 & IO_OPN))
+    if (!(MK_MP(fcb->iob, struct ioblk *)->flg1 & IO_OPN)) {
+    	 Exit("zysou");
 	 return EXIT_1;
+    }
 
     /* write the data, fail if unsuccessful */
     if (oswrite
 	(fcb->mode, fcb->rsz, WA(word), MK_MP(fcb->iob, struct ioblk *),
 	 XR(struct scblk *)) != 0)
+    	 Exit("zysou");
 	 return EXIT_2;
 
     /* normal return */
+    Exit("zysou");
     return NORMAL_RETURN;
 }

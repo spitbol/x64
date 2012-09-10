@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -36,9 +37,11 @@ zysil()
 {
     register struct fcblk *fcb = WA(struct fcblk *);
 
+    Enter("zysil");
     SET_WA(fcb->rsz);
     SET_WC(fcb->mode);
 
     /* normal return */
+    Exit("zysil");
     return NORMAL_RETURN;
 }

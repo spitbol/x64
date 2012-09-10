@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -61,6 +62,7 @@ struct scblk *scptr;
     REGISTER word fdn = ioptr->fdn;
     REGISTER word n;
 
+    Enter("osread");
 #if HOST386
     if (ioptr->flg1 & IO_CIN)	/* End any special screen modes */
 	termhost();
@@ -209,14 +211,19 @@ struct scblk *scptr;
 	}
 
 	/*      if read error then take action  */
-	if (n < 0)
+	if (n < 0) {
+    	    Exit("osread");
 	    return -2;
+	}
 
 	/*      check for eof with nothing read */
-	if (n == 0 && cnt == 0)
+	if (n == 0 && cnt == 0) {
+    	    Exit("osread");
 	    return -1;
+	}
 
 	/*      everything ok, so return        */
+    	Exit("osread");
 	return cnt;
     }
 
@@ -258,12 +265,16 @@ struct scblk *scptr;
 
 		    n = fillbuf(ioptr);
 
-		    if (n < 0)
+		    if (n < 0) {
+    			Exit("osread");
 			return -2;	/* I/O error */
+		    }
 
 		    /* true EOF only at the beginning of a line */
-		    if (!n)
+		    if (!n) {
+    			Exit("osread");
 			return cnt > 0 ? cnt : -1;	/* 1.04 */
+		    }
 		}
 
 		/* set n to max # chars we can process this time */
@@ -314,17 +325,23 @@ struct scblk *scptr;
 		 *      in the buffer, check for buffer underflow
 		 */
 		if (bfptr->next >= bfptr->fill) {
-		    if (flush(ioptr))	/* flush any dirty buffer */
+		    if (flush(ioptr)) {	/* flush any dirty buffer */
+    			Exit("osread");
 			return -2;
+		    }
 
 		    n = fillbuf(ioptr);
 
-		    if (n < 0)
+		    if (n < 0) {
+    			Exit("osread");
 			return -2;	/* I/O error */
+		    }
 
 		    /* true EOF only at the beginning of a line */
-		    if (!n)
+		    if (!n) {
+    			Exit("osread");
 			return cnt > 0 ? cnt : -1;	/* 1.04 */
+		    }
 		}
 
 		/*
@@ -339,6 +356,7 @@ struct scblk *scptr;
 
 	    if (!(ioptr->flg1 & IO_EOT) && savechar == EOT) {
 		bfptr->next--;	/* back up so see it repeatedly */
+    		Exit("osread");
 		return (cnt > 0 ? cnt : -1);
 	    }
 #else				/* EOT */
@@ -370,16 +388,20 @@ struct scblk *scptr;
 		/* if the buffer is exhausted, try to fill it */
 		if (bfptr->next >= bfptr->fill) {
 
-		    if (flush(ioptr))	/* flush any dirty buffer */
+		    if (flush(ioptr)) {	/* flush any dirty buffer */
+    			Exit("osread");
 			return -2;
+		    }
 
 		    fsyncio(ioptr);	/* synchronize file and buffer */
 
 		    n = read(fdn, bfptr->buf, bfptr->size);
 
 		    /* input error, no good */
-		    if (n < 0)
+		    if (n < 0) {
+    			Exit("osread");
 			return -2;
+		    }
 
 		    /* eof, return what we got so far */
 		    if (n == 0)
@@ -407,9 +429,12 @@ struct scblk *scptr;
 	    }
 
 	    /* if we couldn't make any progress, signal end of file */
-	    if (cnt == 0)
+	    if (cnt == 0) {
+    		Exit("osread");
 		return -1;
+	    }
 	}
+    	Exit("osread");
 	return cnt;
     }
 }
@@ -423,6 +448,7 @@ struct ioblk *ioptr;
 
     fsyncio(ioptr);		/* synchronize file and buffer */
 
+    Enter("fillbuf");
     n = read(ioptr->fdn, bfptr->buf, bfptr->size);
 
     if (n >= 0) {
@@ -431,5 +457,6 @@ struct ioblk *ioptr;
 	bfptr->curpos += n;
     }
 
+    Exit("fillbuf");
     return n;
 }

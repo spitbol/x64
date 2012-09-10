@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -61,6 +62,7 @@ struct scblk *scptr;
     word linelen;
     int ioerrcnt = 0;
 
+    Enter("oswrite");
 #if HOST386
     if (ioptr->flg1 & IO_COT)	/* End any special screen modes */
 	termhost();
@@ -230,5 +232,6 @@ struct scblk *scptr;
     /*
        /   Return number of errors.
      */
+    Exit("oswrite");
     return ioerrcnt;
 }

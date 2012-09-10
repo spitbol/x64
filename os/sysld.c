@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -49,6 +50,7 @@ static void closeloadfile(word fd);
 
 zysld()
 {
+    Enter("zysld");
 #if EXTFUN
     word fd;			/* keep stack word-aligned */
     void *result = 0;
@@ -59,17 +61,24 @@ zysld()
 	closeloadfile(fd);
 	switch ((word) result) {
 	case (word) 0:
+    	    Exit("zysld");
 	    return EXIT_2;	/* I/O error */
 	case (word) - 1:
+    	    Exit("zysld");
 	    return EXIT_1;	/* doesn't exist */
 	case (word) - 2:
+    	    Exit("zysld");
 	    return EXIT_3;	/* insufficient memory */
 	default:
 	    SET_XR(result);
+    	    Exit("zysld");
 	    return NORMAL_RETURN;	/* Success, return pointer to stuff in EFBLK */
 	}
-    } else
+    } else {
+    	Exit("zysld");
 	return EXIT_1;
+    }
+    Exit("zysld");
 }
 
 

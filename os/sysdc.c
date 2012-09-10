@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -39,6 +40,7 @@ zysdc()
 {
     struct scblk *pheadv = get_data_offset(HEADV, struct scblk *);
     /* announce name and copyright */
+    Enter("zysdc");
     if (!dcdone && !(spitflag & NOBRAG)) {
 	dcdone = 1;		/* Only do once per run */
 	write(STDERRFD, "SPITBOL", 7);
@@ -60,5 +62,6 @@ zysdc()
 	wrterr(cprtmsg);
     }
 
+    Exit("zysdc");
     return NORMAL_RETURN;
 }

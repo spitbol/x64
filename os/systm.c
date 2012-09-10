@@ -36,6 +36,7 @@ zystm()
 	printf("enter systm\n");
     struct tms timebuf;
 
+    Enter("zystm");
     timebuf.tms_utime = 0;	/* be sure to init in case failure      */
     times(&timebuf);		/* get process times                    */
 
@@ -47,5 +48,6 @@ zystm()
      * # of milliseconds = tms_utime * (1000/10) / (CLK_TCK / 10)
      */
     SET_IA((timebuf.tms_utime * (1000 / 10)) / (CLK_TCK / 10));
+    Exit("zystm");
     return NORMAL_RETURN;
 }

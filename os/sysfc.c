@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -81,18 +82,23 @@ zysfc()
     REGISTER struct fcblk *fcb = WA(struct fcblk *);
     word use_env = 0;		/* Initially, flag that not using environment block */
 
+    Enter("zysfc");
     /*
        /   Bad filearg2 or NULL filearg1 is an error
      */
   again:
-    if ((length_fname = lenfnm(scb2)) < 0 || !scb1->len)
+    if ((length_fname = lenfnm(scb2)) < 0 || !scb1->len) {
+        Exit("zysfc");
 	return EXIT_1;
+    }
 
     /*
        /   Scan out I/O arguments and build temporary ioblk.
      */
-    if (sioarg(WB(int), &tioblk, scb2) < 0)
+    if (sioarg(WB(int), &tioblk, scb2) < 0) {
+        Exit("zysfc");
 	 return EXIT_1;
+    }
 
     /*
        /   If previous I/O association on this channel, be sure that type
@@ -122,10 +128,14 @@ zysfc()
 	   /       check it, and we will carve the allocated block into three
 	   /       chunks, each of which will be MXLEN or less.
 	 */
-	if ((length_fname && fd_spec))
+	if ((length_fname && fd_spec)) {
+            Exit("zysfc");
 	    return EXIT_1;
-	if ((fcb && (MK_MP(fcb->iob, struct ioblk *)->flg1 & IO_OPN)))
+	}
+	if ((fcb && (MK_MP(fcb->iob, struct ioblk *)->flg1 & IO_OPN))) {
+            Exit("zysfc");
 	     return EXIT_2;
+	}
 
 	save_iob = 0;
 	bfblksize = (BFSIZE + tioblk.pid + sizeof(word) - 1)
@@ -151,6 +161,7 @@ zysfc()
 		use_env = IO_ENV;
 		goto again;
 	    }
+            Exit("zysfc");
 	    return EXIT_1;
 	}
 	if (tioblk.typ) {	/* if args then         */
@@ -169,5 +180,6 @@ zysfc()
     SET_WC(0);			/*  xrblk please                        */
     SET_XL(0);			/*  no private fcblk                    */
 
+    Exit("zysfc");
     return NORMAL_RETURN;
 }

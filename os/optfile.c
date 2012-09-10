@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -51,6 +52,7 @@ struct scblk *varname, *result;
     word i, j, n;
     REGISTER char *p, *q;
 
+    Enter("optfile");
     /* try to convert alias to an integer */
     i = 0;
     n = scnint(varname->str, varname->len, &i);
@@ -61,11 +63,13 @@ struct scblk *varname, *result;
 		q = result->str;
 		while ((*q++ = *p++) != 0);
 		result->len = q - result->str - 1;
+    		Exit("optfile");
 		return 0;
 	    }
 	}
     }
 
     /* didn't find it on the command line.  Check environment */
+    Exit("optfile");
     return rdenv(varname, result);
 }

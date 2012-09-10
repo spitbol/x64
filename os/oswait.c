@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -42,6 +43,7 @@ int pid;
     struct chfcb *chptr;
     SigType(*hstat) (int), (*istat) (int), (*qstat) (int);
 
+    Enter("oswait");
     istat = signal(SIGINT, SIG_IGN);
     qstat = signal(SIGQUIT, SIG_IGN);
     hstat = signal(SIGHUP, SIG_IGN);
@@ -61,5 +63,6 @@ int pid;
     signal(SIGINT, istat);
     signal(SIGQUIT, qstat);
     signal(SIGHUP, hstat);
+    Exit("oswait");
 }
 #endif				/* PIPES */

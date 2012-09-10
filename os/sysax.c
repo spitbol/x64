@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -40,6 +41,8 @@ extern char *outptr;
 zysax()
 {
     /*  swcoup does real work  */
+    Enter("zysax");
     swcoup(outptr);
+    Exit("zysax");
     return NORMAL_RETURN;
 }

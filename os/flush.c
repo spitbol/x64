@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -36,6 +37,7 @@ int
 flush(ioptr)
 struct ioblk *ioptr;
 {
+    Enter("flush");
     REGISTER struct bfblk *bfptr = MK_MP(ioptr->bfb, struct bfblk *);
     REGISTER int ioerrcnt = 0;
     REGISTER word n;
@@ -56,6 +58,7 @@ struct ioblk *ioptr;
 	bfptr->offset += bfptr->fill;	/* advance file position */
 	bfptr->next = bfptr->fill = 0;	/* empty the buffer */
     }
+    Exit("flush");
     return ioerrcnt;
 }
 
@@ -77,15 +80,18 @@ struct ioblk *ioptr;
 {
     REGISTER struct bfblk *bfptr = MK_MP(ioptr->bfb, struct bfblk *);
     FILEPOS n;
-
+    Enter("ioptr");
     if (bfptr) {
 	if (bfptr->offset != bfptr->curpos) {
 	    n = LSEEK(ioptr->fdn, bfptr->offset, 0);
 	    if (n >= 0)
 		bfptr->curpos = n;
-	    else
+	    else {
+		Exit("flush");
 		return 1;	/* I/O error */
+            }
 	}
     }
+    Exit("flush");
     return 0;
 }

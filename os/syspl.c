@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -50,6 +51,7 @@ extern int brkpnd;
 
 zyspl()
 {
+   Enter("zyspl");
 #if POLLING
 
     /* Make simple polling case the fastest by avoiding switch statement */
@@ -62,6 +64,7 @@ zyspl()
 	if (brkpnd) {
 	    brkpnd = 0;		/* User interrupt */
 	    rearmbrk();		/* allow breaks again */
+   	    Exit("zyspl");
 	    return EXIT_1;
 	}
 #endif
@@ -69,5 +72,6 @@ zyspl()
 #else				/* POLLING */
     SET_WA((word) MAXPOSWORD);	/* Effectively shut off polling */
 #endif				/* POLLING */
+    Exit("zyspl");
     return NORMAL_RETURN;
 }

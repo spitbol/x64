@@ -230,12 +230,16 @@ zyshs()
     /*
        /   if argument one is null...
      */
+    Enter("zyshs");
     scp = WA(struct scblk *);
     if (scp->typ == type_scl && !scp->len) {
 	gethost(ptscblk, TSCBLK_LENGTH);
-	if (ptscblk->len == 0)
+	if (ptscblk->len == 0) {
+    	    Exit("zyshs");
 	    return EXIT_4;
+	}
 	SET_XL(ptscblk);
+    	Exit("zyshs");
 	return EXIT_3;
     }
 
@@ -255,31 +259,41 @@ zyshs()
 		switch ((int) val) {
 		case 0:
 		    pticblk->val = memincb;
+    		    Exit("zyshs");
 		    return EXIT_8;
 		case 1:
 		    pticblk->val = databts;
+    		    Exit("zyshs");
 		    return EXIT_8;
 		case 2:
 		    pticblk->val = (IATYPE) basemem;
+    		    Exit("zyshs");
 		    return EXIT_8;
 		case 3:
 		    pticblk->val = (IATYPE) topmem;
+    		    Exit("zyshs");
 		    return EXIT_8;
 		case 4:
 		    pticblk->val = stacksiz - 400;	/* safety margin */
+    		    Exit("zyshs");
 		    return EXIT_8;
 		case 5:	/* stack in use */
 		    pticblk->val =
 			stacksiz - (XS(IATYPE) - (IATYPE) lowsp);
+    		    Exit("zyshs");
 		    return EXIT_8;
 		case 6:
 		    pticblk->val = sizeof(IATYPE);
+    		    Exit("zyshs");
 		    return EXIT_8;
 		default:
+    		    Exit("zyshs");
 		    return EXIT_1;
 		}
-	    } else
+	    } else {
+    		Exit("zyshs");
 		return EXIT_1;
+              }
 
 	    /*
 	       /  HOST( 0 ) returns the -u command line option argument
@@ -288,6 +302,7 @@ zyshs()
 	    if (uarg) {
 		cpys2sc(uarg, ptscblk, TSCBLK_LENGTH);
 		SET_XL(ptscblk);
+    		Exit("zyshs");
 		return EXIT_3;
 	    } else if ((val = cmdcnt) != 0) {
 		ptscblk->len = 0;
@@ -298,9 +313,12 @@ zyshs()
 		if (ptscblk->len)
 		    --ptscblk->len;
 		SET_XL(ptscblk);
+    		Exit("zyshs");
 		return EXIT_3;
-	    } else
+	    } else {
+    		Exit("zyshs");
 		return EXIT_4;
+            }
 	    /*
 	       / HOST( 1, "command", "path" ) executes "command" using "path"
 	     */
@@ -317,9 +335,12 @@ zyshs()
 		pticblk->typ = type_icl;
 		restore2str();
 		restore0();
-		if (pticblk->val < 0)
+		if (pticblk->val < 0) {
+    		    Exit("zyshs");
 		    return EXIT_6;
+		}
 		SET_XR(pticblk);
+    		Exit("zyshs");
 		return EXIT_8;
 	    }
 
@@ -333,14 +354,21 @@ zyshs()
 		retval =
 		    arg2scb((int) val, gblargc, gblargv, ptscblk,
 			    TSCBLK_LENGTH);
-		if (retval < 0)
+		if (retval < 0) {
+    		    Exit("zyshs");
 		    return EXIT_6;
-		if (retval == 0)
+		}
+		if (retval == 0) {
+    		    Exit("zyshs");
 		    return EXIT_1;
+		}
 		SET_XL(ptscblk);
+    		Exit("zyshs");
 		return EXIT_3;
-	    } else
+	    } else {   
+		Exit("zyshs");
 		return EXIT_1;
+	      }
 
 	    /*
 	       /  HOST( 3 ) returns the command count
@@ -350,9 +378,12 @@ zyshs()
 		pticblk->typ = type_icl;
 		pticblk->val = cmdcnt;
 		SET_XR(pticblk);
+		Exit("zyshs");
 		return EXIT_8;
-	    } else
+	    } else {
+		Exit("zyshs");
 		return EXIT_6;
+              }
 
 	    /*
 	       / HOST( 4, "env-var" ) returns the value of "env-var" from
@@ -361,20 +392,28 @@ zyshs()
 	case 4:
 	    scp = XL(struct scblk *);
 	    if (scp->typ == type_scl) {
-		if (scp->len == 0)
+		if (scp->len == 0) {
+		    Exit("zyshs");
 		    return EXIT_1;
-		if (rdenv(scp, ptscblk) < 0)
+		}
+		if (rdenv(scp, ptscblk) < 0) {
+		    Exit("zyshs");
 		    return EXIT_6;
+		}
 		SET_XL(ptscblk);
+		Exit("zyshs");
 		return EXIT_3;
-	    } else
+	    } else {
+		Exit("zyshs");
 		return EXIT_1;
+              }
 	}			/* end switch */
 
 	/*
 	   / Any other integer value is processed by the system-specific functions
 	 */
 #if HOST386
+	Exit("zyshs");
 	return host386((int) val);
 #endif				/* HOST386 */
 
@@ -382,5 +421,6 @@ zyshs()
 	   /   Here if first argument wasn't an integer or was an illegal value.
 	 */
     }
+    Exit("zyshs");
     return EXIT_1;
 }

@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -64,8 +65,10 @@ word special(word c);
 
 zysem()
 {
+    Enter("zysem");
     ptscblk->len = msgcopy(WA(word), errors, ptscblk->str);
     SET_XR(ptscblk);
+    Exit("zysem");
     return NORMAL_RETURN;
 }
 

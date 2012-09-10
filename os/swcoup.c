@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -81,8 +82,11 @@ char *oupptr;
      */
     char namebuf[256];
 
-    if (errflag)
+    Enter("swcoup");
+    if (errflag) {
+        Exit("swcoup");
 	return 0;
+    }
 
     /* if no output file specified, but listing requested, use input name */
     if (oupptr == 0) {
@@ -166,5 +170,6 @@ char *oupptr;
 	getpriob()->flg1 &= ~IO_COT;
 #endif				/* HOST386 */
 
+    Exit("swcoup");
     return retval;
 }

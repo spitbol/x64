@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -63,6 +64,7 @@ char *argv[];
        Save command line parameters in global storage, in case they are needed
        later.
      */
+    Enter("main");
     gblargc = argc;
     gblargv = argv;
     lowsp = 0L;
@@ -316,6 +318,7 @@ char *s;
 void
 setout()
 {
+    Enter("setout");
     /*
        Brag prior to calling swcoup
      */
@@ -335,4 +338,5 @@ setout()
 	lnsppage = 0;
 	spitflag |= (PRTICH | NOHEDR);
     }
+    Exit("setout");
 }

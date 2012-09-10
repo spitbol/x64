@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -47,19 +48,24 @@ struct ioblk *ioptr;
     char *cp;
     struct scblk *scptr;
 
+    Enter("osopen");
     /*
        If file already open, return.
      */
-    if (ioptr->flg1 & IO_OPN)
+    if (ioptr->flg1 & IO_OPN) {
+        Exit("osopen");
 	return 0;
+    }
 
     /*
        Establish a few pointers and filename length.
        /
        scptr       = MK_MP(ioptr->fnm, struct scblk *);    /* point to filename SCBLK      */
     if (ioptr->flg2 & IO_ENV) {
-	if (optfile(scptr, ptscblk))
+	if (optfile(scptr, ptscblk)) {
+            Exit("osopen");
 	    return -1;
+	}
 	scptr = ptscblk;
 	ptscblk->len = lenfnm(scptr);	/* remove any options */
     }
@@ -159,11 +165,13 @@ struct ioblk *ioptr;
 	if ((ioptr->flg1 & (IO_OUP | IO_APP)) == (IO_OUP | IO_APP) &&
 	    !(ioptr->flg2 & IO_PIP))
 	    doset(ioptr, 0L, 2);
+        Exit("osopen");
 	return 0;
     }
 
     /*
        /   When control passes here the open/pipe has failed so return -1.
      */
+    Exit("osopen");
     return -1;
 }

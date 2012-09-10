@@ -67,10 +67,13 @@ zysif()
     char savechar, filebuf[256];
     char *file;
 
+    Enter("zysif");
     if (fnscb) {
 	/* Here to nest another include file */
-	if (nesting == INCLUDE_DEPTH)	/* Is there room in array? */
+	if (nesting == INCLUDE_DEPTH) {	/* Is there room in array? */
+    	    Exit("zysif");
 	    return EXIT_1;
+	}
 
 	inc_pos[nesting] = doset(getrdiob(), 0L, 1);	/* Record current position */
 	inc_fd[nesting++] = dup(0);	/* Save current input file */
@@ -120,6 +123,7 @@ zysif()
 	} else {		/* Couldn't open file */
 	    *savecp = savechar;	/* Restore saved char */
 	    openprev();		/* Restore input file we just closed */
+    	    Exit("zysif");
 	    return EXIT_1;	/* Fail */
 	}
     }
@@ -133,5 +137,6 @@ zysif()
 	}
     }
 
+    Exit("zysif");
     return NORMAL_RETURN;
 }

@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -40,6 +41,7 @@ zysmm()
     long n;
     char *dummy;
 
+    Enter("zysmm");
     SET_XR(0);			/* Assume allocation will fail */
 
     /*
@@ -50,6 +52,7 @@ zysmm()
 	topmem += n;		/*  adjust current top address  */
 	SET_XR(n / sizeof(word));	/*  set # of words obtained */
     }
+    Exit("zysmm");
     return NORMAL_RETURN;
 }
 
@@ -72,6 +75,7 @@ char **pp;
     long start, result;
     char *p;
 
+    Enter("moremem");
     n &= -(int) sizeof(word);	/* multiple of word size only */
     start = n;			/* initial request size */
     result = 0;			/* nothing obtained yet */
@@ -84,6 +88,7 @@ char **pp;
 	    if (*pp == (char *) 0) {	/* First success? */
 		if (p != topmem) {
 		    wrterr("Internal system error--SYSMM");
+    		    Exit("moremem");
 		    __exit(1);
 		}
 		*pp = p;	/* record first allocation */
@@ -94,5 +99,6 @@ char **pp;
 	n >>= 1;		/* Continue with smaller request size */
 	n &= -(int) sizeof(word);	/* Always keeping it a word multiple */
     }
+    Exit("moremem");
     return result;
 }

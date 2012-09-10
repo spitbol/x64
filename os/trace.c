@@ -99,3 +99,9 @@ reGdump()
 	fprintf(stderr,"wa \ud\n",	rp->reg_wa);
 }
 #endif
+void Enter(char *s) {
+    fprintf(stderr,"Enter %s\n",s);
+}
+void Exit(char *s) {
+    fprintf(stderr,"Exit %s\n",s);
+}

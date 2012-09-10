@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -44,13 +45,18 @@ zysen()
     REGISTER struct fcblk *fcb = WA(struct fcblk *);
     REGISTER struct ioblk *iob = MK_MP(fcb->iob, struct ioblk *);
 
+    Enter("zysen");
     /* ensure the file is open */
-    if (!(iob->flg1 & IO_OPN))
+    if (!(iob->flg1 & IO_OPN)) {
+        Exit("zysen");
 	return EXIT_1;
+    }
 
     /* now close it */
-    if (osclose(iob))
+    if (osclose(iob)) {
+        Exit("zysen");
 	return EXIT_3;
-
+    }
+    Exit("zysen");
     return NORMAL_RETURN;
 }

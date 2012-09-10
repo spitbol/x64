@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -51,7 +52,7 @@ struct scblk *scbptr;
     cp = scbptr->str;
 
     /* Instead of copying the command string, temporarily save the character
-       following the string, replace it with a NUL, execute the command, 
+       following the string, replace it with a NUL, execute the command,
        and then restore the original character. */
     savech = make_c_str(&cp[length]);
 

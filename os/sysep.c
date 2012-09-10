@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -35,6 +36,8 @@ This file is part of Macro SPITBOL.
 
 zysep()
 {
+    Enter("zysep");
     write(1, "\f", 1);
+    Exit("zysep");
     return NORMAL_RETURN;
 }

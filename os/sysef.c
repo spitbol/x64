@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -52,13 +53,19 @@ zysef()
     REGISTER struct fcblk *fcb = WA(struct fcblk *);
     REGISTER struct ioblk *iob = MK_MP(fcb->iob, struct ioblk *);
 
+    Enter("zysef");
     /* ensure the file is open */
-    if (!(iob->flg1 & IO_OPN))
+    if (!(iob->flg1 & IO_OPN)) {
+        Exit("zysef");
 	return EXIT_1;
+    }
 
     /* write the data, fail if unsuccessful */
-    if (oswrite(fcb->mode, fcb->rsz, ffscblk.len, iob, &ffscblk) != 0)
+    if (oswrite(fcb->mode, fcb->rsz, ffscblk.len, iob, &ffscblk) != 0) {
+        Exit("zysef");
 	return EXIT_2;
+    }
 
+    Exit("zysef");
     return NORMAL_RETURN;
 }

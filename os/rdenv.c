@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -46,9 +47,11 @@ int vn;
     char savech;
     char *p;
 
+    Enter("findenv");
     savech = make_c_str(&vq[vn]);
     p = (char *) getenv(vq);	/* use library lookup routine */
     unmake_c_str(&vq[vn], savech);
+    Exit("findenv");
     return p;
 
 }
@@ -58,12 +61,15 @@ REGISTER struct scblk *varname, *result;
 {
     REGISTER char *p;
 
-
-    if ((p = findenv(varname->str, varname->len)) == 0)
+    Enter("rdenv");
+    if ((p = findenv(varname->str, varname->len)) == 0) {
+        Exit("rdenv");
 	return -1;
+    }
 
     cpys2sc(p, result, TSCBLK_LENGTH);
 
+    Exit("rdenv");
     return 0;
 }
 

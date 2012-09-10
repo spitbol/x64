@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -73,6 +74,7 @@ zysea()
     REGISTER char *p;
 
 
+    Enter("zysea");
     /* Display file name if present */
     if (fnscblk->len) {
 	p = ptscblk->str;
@@ -91,8 +93,10 @@ zysea()
 	p = eacpy(p, " : ", 3);
 	ptscblk->len = p - ptscblk->str;
 	SET_XR(ptscblk);
+        Exit("zysea");
 	return NORMAL_RETURN;
     }
     SET_XR(0L);
+    Exit("zysea");
     return NORMAL_RETURN;	/* Other errors be processed normally */
 }

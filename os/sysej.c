@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -56,13 +57,14 @@ unsigned char *bufp;
 void
 close_all(chb)
 REGISTER struct chfcb *chb;
-
 {
+    Enter("closeall");
     while (chb != 0) {
 	osclose(MK_MP
 		(MK_MP(chb->fcp, struct fcblk *)->iob, struct ioblk *));
 	chb = MK_MP(chb->nxt, struct chfcb *);
     }
+    Exit("closeall");
 }
 
 
@@ -74,6 +76,7 @@ zysej()
     termhost();
 #endif				/* HOST386 */
 
+    Enter("zysej");
     if (!in_gbcol) {		/* Only if not mid-garbage collection */
 	close_all(XL(struct chfcb *));
 
@@ -88,6 +91,7 @@ zysej()
        /   Pass &CODE to function __exit.  Don't call standard exit function,
        /   because of its association with the stdio package.
      */
+    Exit("zysej");
     __exit(WB(int));
 
 }

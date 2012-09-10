@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -71,12 +72,15 @@ struct scblk *scptr;
     REGISTER char delim;
 #endif				/* PIPES */
 
+    Enter("lenfnm");
     /*
        Null strings have filenames with lengths of 0.
      */
     len = len2 = scptr->len;
-    if (len == 0)
+    if (len == 0) {
+        Enter("lenfnm");
 	return 0L;
+    }
 
     /*
        /   Here to examine end of string for "[option]".
@@ -105,15 +109,20 @@ struct scblk *scptr;
        /   character.  lenfnm( "!!foo goo!" ) = 10
      */
     if (*cp == '!') {
-	if (len < 3L)		/* "!!" clearly invalid         */
+	if (len < 3L) {		/* "!!" clearly invalid         */
+            Exit("lenfnm");
 	    return -1L;
+        }
 	delim = *++cp;		/*  pick up delimiter           */
-	if (*++cp == delim)	/* "!!!" also invalid           */
+	if (*++cp == delim) {	/* "!!!" also invalid           */
+            Exit("lenfnm");
 	    return -1L;
+        }
 	/*  count chars up to delim     */
 	for (cnt = 2; cnt < len && *cp++ != delim; cnt++);
 	if (*--cp == delim)	/* if last char is delim then */
 	    ++cnt;		/*   include it in the count  */
+        Exit("lenfnm");
 	return cnt;
     }
 #endif				/* PIPES */
@@ -123,5 +132,6 @@ struct scblk *scptr;
        up to the first blank or end of string, whichever occurs first.
      */
     for (cnt = 0; cnt < len && *cp++ != ' '; cnt++);
+    Exit("lenfnm");
     return cnt;
 }

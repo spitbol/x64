@@ -5,7 +5,7 @@
     &dump = 2
     files = 0
 loop
-    line = trim(input)			:f(end) 
+    line = trim(input)			:f(atend) 
     line '!@#$'				:f(copy)
     line len(4) rem . filename
     filename = trim(filename)
@@ -19,4 +19,6 @@ copy
     file = trim(line)                         :(loop)
 done
     endfile(1)                                :(loop)
+atend
+	&dump = 0
 end

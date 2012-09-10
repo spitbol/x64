@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -20,7 +21,7 @@ This file is part of Macro SPITBOL.
 /*
         syspb - system breakpoint procedure
 
-        
+
 
         Parameters:
             Nothing
@@ -36,7 +37,8 @@ This file is part of Macro SPITBOL.
 
 zysbp()
 {
+    Enter("zysbp");
     printf("ENTER SYSBP\n");
-
+    Exit("zysbp");
     return NORMAL_RETURN;
 }

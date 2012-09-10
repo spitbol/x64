@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -82,6 +83,7 @@ char *argv[];
        A single '-' represents the standard file provided by the shell
        and is treated as an input-file or output file as appropriate.
      */
+    Enter("getargs");
     result = (char **) 0;	/* no source file */
 
     for (i = 1; i < argc; i++) {
@@ -306,6 +308,7 @@ char *argv[];
 
     /* Establish command counter for use by HOST(3) function */
     cmdcnt = i;
+    Exit("getargs");
     return result;
 }
 
@@ -316,19 +319,24 @@ int argc;
 char *argv[];
 {
     char *result;
+    Enter("filenamearg");
 
     if (*cp == ':' || *cp == '=') {
 	if (*(cp + 1)) {
 	    result = ++cp;
 	    while (*++cp);
-	} else
+	} else {
+	    Exit("filenamearg");
 	    return (char *) 0;
+        }
     } else {
 	result = argv[++i];
 	if (i == argc || (result[0] == '-' && result[1] != '\0')
 	    )
+	    Exit("filenamearg");
 	    return (char *) 0;	/* V1.08 */
     }
+    Exit("filenamearg");
     return result;
 }
 
@@ -351,12 +359,14 @@ getnum(cp, ip)
 char *cp;
 uword *ip;
 {
+    Enter("getnum");
     word result = 0;
 
     while (*cp >= '0' && *cp <= '9')
 	result = result * 10 + *cp++ - '0';
 
     *ip = result;
+    Exit("getnum");
     return cp;
 }
 
@@ -385,6 +395,7 @@ uword *ip;
     char c;
     cp = getnum(cp, ip);
 
+    Enter("optnum");
     c = *cp;
     if (c == 'k' || c == 'K') {
 	++cp;
@@ -396,5 +407,6 @@ uword *ip;
 	*ip <<= 20;
     }
 
+    Exit("optnum");
     return cp;
 }

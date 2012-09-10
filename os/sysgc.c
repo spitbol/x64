@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -47,6 +48,8 @@ extern word in_gbcol;
 
 zysgc()
 {
+    Enter("sysgc");
     in_gbcol = XR(word);	/* retain information */
+    Exit("sysgc");
     return NORMAL_RETURN;
 }

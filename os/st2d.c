@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -30,12 +31,15 @@ REGISTER unsigned int in;
 REGISTER int outlen;
 int signflag;
 {
+    Enter("st2d");
     char revnum[20];
     REGISTER int i = 0;
     REGISTER char *out0 = out;
 
-    if (outlen <= 0)
+    if (outlen <= 0) {
+        Exit("st2d");
 	return (0);
+    }
 
     if (in == 0)
 	revnum[i++] = 0;
@@ -55,6 +59,7 @@ int signflag;
 
     *out = '\0';
 
+    Exit("st2d");
     return (out - out0);
 
 }

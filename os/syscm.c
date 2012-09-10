@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -49,6 +50,7 @@ zyscm()
 {
     REGISTER word result;
 
+    Enter("zysbm");
     if (!kvcom_ptr)		/* Cheap optimization to speed up */
 	kvcom_ptr = get_data_offset(KVCOM, long *);	/* &COMPARE consultation */
 
@@ -57,13 +59,22 @@ zyscm()
 
     SET_XL(0);
 
-    if (result == 0x80000000)
+    if (result == 0x80000000) {
+        Exit("zysbm");
 	return EXIT_1;
-    else if (result == 0)
+    }
+    else if (result == 0) {
+        Exit("zysbm");
 	return NORMAL_RETURN;
-    else if (result < 0)
+    }
+    else if (result < 0) {
+        Exit("zysbm");
 	return EXIT_2;
-    else
+    }
+    else {
+        Exit("zysbm");
 	return EXIT_3;
+    }
+    Exit("zysbm");
 }
 #endif				/* ALTCOMP */

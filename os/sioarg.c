@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -58,6 +59,7 @@ struct ioblk *ioptr;
 struct scblk *scptr;
 
 {
+    Enter("sioarg");
     int lastdash = 0;
     word cnt, v, share;
     char ch, *cp;
@@ -97,8 +99,10 @@ struct scblk *scptr;
     /*
        /   If lenfnm() fails so shall we.
      */
-    if ((cnt = lenfnm(scptr)) < 0)
+    if ((cnt = lenfnm(scptr)) < 0) {
+        Exit("sioarg");
 	return -1;
+    }
 
     /*
        /   One iteration per character.  Note that scanning an integer causes
@@ -141,8 +145,10 @@ struct scblk *scptr;
 		((v + sizeof(word) - 1) & ~(sizeof(word) - 1)) <=
 		(maxsize - BFSIZE))
 		ioptr->pid = v;
-	    else
+	    else {
+        	Exit("sioarg");
 		return -1;
+	    }
 	    break;
 
 	    /*
@@ -192,8 +198,10 @@ struct scblk *scptr;
 	    v = scnint(cp + cnt, scptr->len - cnt, &cnt);
 	    if (v > 0 && (uword) v <= maxsize)
 		ioptr->len = v;
-	    else
+	    else {
+        	Exit("sioarg");
 		return -1;
+	    }
 	    break;
 
 	    /*
@@ -210,8 +218,10 @@ struct scblk *scptr;
 		    ioptr->eol1 = v;
 		else
 		    ioptr->eol2 = v;
-	    } else
+	    } else {
+        	Exit("sioarg");
 		return -1;
+	    }
 	    break;
 
 	    /*
@@ -237,8 +247,10 @@ struct scblk *scptr;
 	     */
 	case 'S':
 	    ch = uppercase(*(cp + cnt++));	/* get next character           */
-	    if (ch != 'D')
+	    if (ch != 'D') {
+        	Exit("sioarg");
 		return -1;
+	    }
 	    ch = uppercase(*(cp + cnt++));	/* get next character           */
 	    switch (ch) {
 	    case 'N':
@@ -255,11 +267,14 @@ struct scblk *scptr;
 		share = IO_DENY_WRITE;
 		break;
 	    default:
+        	Exit("sioarg");
 		return -1;
 	    }
 
-	    if (cnt >= scptr->len)
+	    if (cnt >= scptr->len) {
+        	Exit("sioarg");
 		return -1;
+	    }
 	    ioptr->share = (ioptr->share & ~IO_DENY_MASK) | share;
 	    break;
 
@@ -300,6 +315,7 @@ struct scblk *scptr;
 	       /   Unknown argument.
 	     */
 	default:
+            Exit("sioarg");
 	    return -1;
 	}
 
@@ -313,6 +329,7 @@ struct scblk *scptr;
     /*
        /   Return successful scanning.
      */
+    Exit("sioarg");
     return 0;
 }
 
@@ -345,6 +362,7 @@ word *intptr;
     REGISTER word n = 0;
     REGISTER char ch;
 
+    Enter("scnint");
     while (i < len) {
 	ch = str[i++];
 	if (ch >= '0' && ch <= '9')
@@ -355,5 +373,6 @@ word *intptr;
 	}
     }
     *intptr += i;
+    Exit("scnint");
     return n;
 }

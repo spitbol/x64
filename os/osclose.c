@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -36,11 +37,14 @@ struct ioblk *ioptr;
 {
     REGISTER int errcnt = 0;
 
+    Enter("osclose");
     /*
        If not open, nothing to do.
      */
-    if (!(ioptr->flg1 & IO_OPN))
+    if (!(ioptr->flg1 & IO_OPN)) {
+        Exit("osclose");
 	return 0;
+    }
 
     /*
        Flush buffer before closing output file.
@@ -51,8 +55,10 @@ struct ioblk *ioptr;
     /*
        DO NOT CLOSE SYSTEM FILE 0, 1 or 2; file was opened by shell.
      */
-    if ((ioptr->flg1 & IO_SYS) && ioptr->fdn >= 0 && ioptr->fdn <= 2)
+    if ((ioptr->flg1 & IO_SYS) && ioptr->fdn >= 0 && ioptr->fdn <= 2) {
+        Exit("osclose");
 	return errcnt;
+    }
 
     /*
        Now we can reset open flag and close the file descriptor associated
@@ -93,5 +99,6 @@ struct ioblk *ioptr;
     /*
        Return number of errors.
      */
+    Exit("osclose");
     return errcnt;
 }

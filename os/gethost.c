@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -50,6 +51,7 @@ word maxlen;
     int cnt = 0;
     word fd;
 
+    Enter("gethost");
     if ((fd = spit_open(HOST_FILE, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
 			IO_OPEN_IF_EXISTS)) >= 0) {
 	cnt = read(fd, scptr->str, maxlen);
@@ -82,6 +84,7 @@ word maxlen;
     }
 
     scptr->len = cnt;
+    Exit("gethost");
 }
 
 
@@ -94,5 +97,7 @@ gettype(scptr, maxlen)
 struct scblk *scptr;
 word maxlen;
 {
+    Enter("gettype");
     cpys2sc(htype, scptr, maxlen);	/* Computer type */
+    Exit("gettype");
 }

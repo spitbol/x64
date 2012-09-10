@@ -22,8 +22,11 @@
         %include        "mintype.h"
         %include        "os.inc"
 	%macro	atline 1
+%ifdef TRACE
 	mov	dword [nlines],%1
 	call	atlin
+
+%endif
 	%endmacro
 
         segment .data

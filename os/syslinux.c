@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -133,9 +134,12 @@ mword nargs;
     mword *r;
     mword *s;
 
+    Enter("syslinux");
     pnode = MK_MP(efb->efcod, pXFNode);
-    if (pnode == NULL)
+    if (pnode == NULL) {
+	Exit("syslinux");
 	return (union block *) -1L;
+    }
 
     if (!initsels) {		/* one-time initializations */
 	pTYPET = (mword(*)[])get_data_offset(TYPET, muword);
@@ -283,6 +287,7 @@ mword nargs;
 	result = (union block *) 0;
 	break;
     }
+    Exit("syslinux");
     return result;
 }
 
@@ -307,22 +312,27 @@ PFN *ppfnProcAddress;
     void *handle;
     PFN pfn;
 
+    Enter("loaDll");
 #ifdef RTLD_NOW
     handle = dlopen(dllName, RTLD_NOW);
 #else
     handle = dlopen(dllName, RTLD_LAZY);
 #endif
     if (!handle) {
-	fcnName = dlerror();
+	fcnName = dlerror(); {
+    	Exit("loaDll");
 	return -1;
+	}
     }
 
     *ppfnProcAddress = (PFN) dlsym(handle, fcnName);
     if (!*ppfnProcAddress) {
 	dlclose(handle);
+    	Exit("loaDll");
 	return -1;
     }
 
+    Exit("loaDll");
     return (mword) handle;
 }
 
@@ -346,6 +356,7 @@ loadef(fd, filename)
 mword fd;
 char *filename;
 {
+    Enter("loadef"):;
     void *handle = (void *) fd;
     PFN pfn = *(PFN *) filename;
     REGISTER pXFNode pnode;
@@ -368,6 +379,7 @@ char *filename;
     pnode->xnu.ef.xn1st = 2;	/* flag first call to function */
     pnode->xnu.ef.xnsave = 0;	/* not reload from save file */
     pnode->xnu.ef.xncbp = (void far(*)()) 0;	/* no callback  declared */
+    Exit("loadef"):;
     return (void *) pnode;	/* Return node to store in EFBLK */
 }
 
@@ -421,6 +433,7 @@ int io;
     mword type, blksize;
     pXFNode pnode;
 
+    Enter("nextef");
     MINSAVE();
     for (dnamp = get_min_value(DNAMP, union block *);
 	 scanp < dnamp;
@@ -459,6 +472,7 @@ int io;
 	break;			/* break out of for loop */
     }
     MINRESTORE();
+    Exit("nextef");
     return result;
 }
 
@@ -468,11 +482,16 @@ renames(oldname, newname)
 char *oldname;
 char *newname;
 {
+    Enter("renames");
     if (link(oldname, newname) == 0) {
 	unlink(oldname);
+        Exit("renames");
 	return 0;
-    } else
+    } else {
+        Exit("renames");
 	return -1;
+    }
+    Exit("renames");
 }
 
 
@@ -482,7 +501,9 @@ char *newname;
 void
 scanef()
 {
+    Enter("scanef");
     scanp = get_min_value(DNAMB, union block *);
+    Exit("scanef");
 }
 
 
@@ -496,9 +517,12 @@ struct efblk *efb;
     pXFNode pnode, pnode2;
     unsigned char *bufp;
 
+    Enter("unldef");
     pnode = MK_MP(efb->efcod, pXFNode);
-    if (pnode == NULL)
+    if (pnode == NULL) {
+        Exit("unldef");
 	return;
+    }
 
     if (pnode->xnu.ef.xncbp)	/* is there a callback routine? */
 	if (pnode->xnu.ef.xnsave >= 0) {
@@ -511,6 +535,7 @@ struct efblk *efb;
 
     pnode->xnu.ef.xnpfn = (PFN) xnfree;	/* put back on free list */
     xnfree = pnode;
+    Exit("unldef");
 }
 
 #endif				/* EXTFUN */
@@ -548,6 +573,7 @@ Open_method Method;
 File_mode Mode;
 int Action;
 {
+    Enter("spit_open");
     if ((Method & MethodMask) == O_RDONLY)	/* if opening for read only */
 	Method &= ~(O_CREAT | O_TRUNC);	/* guarantee these bits off */
     else if (Action & IO_WRITE_THRU)	/* else must be a write       */
@@ -556,6 +582,7 @@ int Action;
     if ((Method & O_CREAT) & (Action & IO_FAIL_IF_EXISTS))
 	Method |= O_EXCL;
 
+    Exit("spit_open");
     return open(Name, Method, (Mode & IO_EXECUTABLE) ? 0777 : 0666);
 }
 
@@ -568,6 +595,7 @@ sbrkx(long incr)
     static char *curr;
     void *result;
 
+    Enter("sbrkx");
     if (!base) {		/* if need to initialize   */
 	char *first_base;
 	unsigned long size;
@@ -588,8 +616,10 @@ sbrkx(long incr)
 	}
 	while (size >= (20 * maxsize));	/* arbitrary lower limit */
 
-	if (!first_base)
+	if (!first_base) {
+    	    Exit("sbrkx");
 	    return (void *) -1;
+	}
 
 	base = first_base;
 
@@ -609,12 +639,15 @@ sbrkx(long incr)
 	endofmem = first_base + size;
     }
 
-    if (curr + incr > endofmem)
+    if (curr + incr > endofmem) {
+    	Exit("sbrkx");
 	return (void *) -1;
+    }
 
     result = curr;
     curr += incr;
 
+    Exit("sbrkx");
     return result;
 }
 
@@ -625,6 +658,8 @@ sbrkx(long incr)
 int
 brkx(void *addr)
 {
+    Enter("brkx");
+    Exit("brkx");
     return sbrkx((char *) addr - (char *) sbrkx(0)) ==
 	(void *) -1 ? -1 : 0;
 }
@@ -651,9 +686,12 @@ checksave(char *namep)
     struct exec e;
     long position;
 
+    Enter("checksave");
     fd = openexe(namep);
-    if (fd == -1)
+    if (fd == -1) {
+        Exit("checksave");
 	return 0;
+    }
 
     size = read(fd, (void *) &e, sizeof(struct exec));
 
@@ -665,6 +703,7 @@ checksave(char *namep)
 		if (w == OURMAGIC1) {
 		    /* no string section, and save file present */
 		    lseek(fd, position, 0);	/* back up over first 4 bytes */
+        	    Exit("checksave");
 		    return fd;
 		}
 		position = lseek(fd, 0, 1) + w;	/* move to end of string section */
@@ -673,6 +712,7 @@ checksave(char *namep)
 		    size = read(fd, (void *) &w, sizeof(w));
 		    if (size == sizeof(w) && w == OURMAGIC1) {
 			lseek(fd, position, 0);	/* back up over first 4 bytes */
+        	        Exit("checksave");
 			return fd;
 		    }
 		}
@@ -681,6 +721,7 @@ checksave(char *namep)
     }
 
     close(fd);			/* Failure */
+    Exit("checksave");
     return 0;
 }
 
@@ -693,6 +734,7 @@ int
 openexe(char *name)
 {
     int fd;
+    Enter("openexe");
     fd = spit_open(name, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
 		   IO_OPEN_IF_EXISTS);
     if (fd == -1) {
@@ -705,6 +747,7 @@ openexe(char *name)
 		break;
 	}
     }
+    Exit("openexe");
     return fd;
 }
 
@@ -724,7 +767,9 @@ saveend(word * stkbase, word stklen)
 {
     word result;
 
+    Enter("saveend");
     result = putsave(stkbase, stklen);	/* append save file */
+    Exit("saveend");
     return result;
 }
 
@@ -757,6 +802,7 @@ savestart(int fd, char *bufp, unsigned int size)
     long imagesize;
     uword w, s;
 
+    Enter("savestart");
     ep = (struct exec *) (bufp);
 
     /* get overall size of file by positioning to end of string section,
@@ -779,6 +825,7 @@ savestart(int fd, char *bufp, unsigned int size)
 	imagesize = 0L;
 
     lseek(fd, fpos, 0);		/* restore position */
+    Exit("savestart");
     return imagesize;
 }
 #endif				/* EXECSAVE */
@@ -821,6 +868,7 @@ int type;
     word save_wa, save_wb, save_ia, save_xr;
     int result;
 
+    Enter("makeexec");
     /* save zysxi()'s argument registers (but not XL)  */
     save_wa = reg_wa;
     save_wb = reg_wb;
@@ -840,6 +888,7 @@ int type;
     reg_wb = save_wb;
     reg_ia = save_ia;
     reg_xr = save_xr;
+    Exit("makeexec");
     return result;
 }
 #endif				/* EXECFILE | SAVEFILE */

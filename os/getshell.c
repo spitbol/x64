@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -35,9 +36,10 @@ char *
 getshell()
 {
     REGISTER char *p;
-
+    Enter("getshell");
     if ((p =
 	 findenv(SHELL_ENV_NAME, sizeof(SHELL_ENV_NAME))) == (char *) 0)
 	p = SHELL_PATH;		/* failure -- use default */
+    Exit("getshell");
     return p;			/* value (with a null terminator) */
 }

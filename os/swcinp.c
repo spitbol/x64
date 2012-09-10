@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -57,6 +58,7 @@ char **fileptr;
     static int lastfd = 0;
 
 
+    Enter("swcinp");
     /*
        /  If first time through, make a duplicate of
        /  shell's file descriptor 0, so that we can access it later.
@@ -131,6 +133,7 @@ char **fileptr;
 		write(STDERRFD, "Can't open ", 11);
 		write(STDERRFD, cp, length(cp));
 		wrterr("");
+    		Exit("swcinp");
 		__exit(1);
 	    }
 	}
@@ -142,6 +145,7 @@ char **fileptr;
     if (readshell0) {
 	if (!executing && filecnt) {
 	    wrterr("No END statement found in source file(s).");	/* V1.16 */
+    	     Exit("swcinp");
 	    __exit(1);
 	}
 	close(0);
@@ -158,11 +162,9 @@ char **fileptr;
        /  should continue to return EOFs.
      */
   swci_exit:
+    Exit("swcinp");
     return lastfd;
 }
-
-
-
 
 /*
         Save the current fd 0, and connect fd 0 to the original one.
@@ -172,11 +174,13 @@ char **fileptr;
 void
 save0()
 {
+    Enter("save0");
     if ((save_fd0 = dup(0)) >= 0) {
 	close(0);
 	clrbuf();
 	dup(originp);
     }
+    Exit("save0");
 }
 
 
@@ -191,12 +195,14 @@ save0()
 void
 restore0()
 {
+    Enter("restore0");
     if (save_fd0 >= 0) {
 	close(0);
 	clrbuf();
 	dup(save_fd0);
 	close(save_fd0);	/* 1.13 for HOST(1,"cmd") */
     }
+    Exit("restore0");
 }
 
 
@@ -211,16 +217,15 @@ tryopen(cp)
 char *cp;
 {
     int fd;
+    Enter("tryopen");
     if ((fd = spit_open(cp, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
 			IO_OPEN_IF_EXISTS)) >= 0) {
+        Exit("tryopen");
 	return fd;
     }
+    Exit("tryopen");
     return -1;
 }
-
-
-
-
 
 /*
     pathlast()
@@ -243,6 +248,7 @@ char *path;
     char *cp, c;
     int len;
 
+    Enter("pathlast");
     /*
        /   Scan the path from right-to-left looking for a slash.  Stop when
        /   the front of the path is reached.
@@ -262,6 +268,7 @@ char *path;
 	    break;
 	}
     }
+    Exit("pathlast");
     return cp;
 }
 
@@ -286,6 +293,7 @@ int force;
 {
     REGISTER char *p, *q, *r;
 
+    Enter("appendext");
     p = result;
     q = pathlast(path);
     r = (char *) 0;
@@ -299,11 +307,14 @@ int force;
     if (r != (char *) 0) {
 	if (force)
 	    p = r;		/* copy over old extension */
-	else
+	else {
+    	    Exit("appendext");
 	    return 0;		/* no force but extension present */
+	}
     }
 
     p = mystrcpy(p, ext);
+    Exit("appendext");
     return p - result;
 }
 #endif				/* !(RUNTIME) */

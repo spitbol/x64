@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -42,6 +43,7 @@ This file is part of Macro SPITBOL.
 
 zysex()
 {
+    Enter("zysex");
 #if EXTFUN
     struct efblk *efb = XL(struct efblk *);
     word nargs = WA(word);
@@ -52,16 +54,22 @@ zysex()
 			       + sizeof(word), union block **), nargs);
     switch ((word) result) {
     case (word) 0:
+	Exit("zysex");
 	return EXIT_1;		/* fail */
     case (word) - 1:
+	Exit("zysex");
 	return EXIT_2;		/* insufficient memory */
     case (word) - 2:
+	Exit("zysex");
 	return EXIT_3;		/* improper argument */
     default:
 	SET_XR(result);
+	Exit("zysex");
 	return NORMAL_RETURN;	/* Success, return pointer to stuff in EFBLK */
     }
 #else				/* EXTFUN */
+    Exit("zysex");
     return EXIT_1;
 #endif				/* EXTFUN */
+    Exit("zysex");
 }
