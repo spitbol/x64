@@ -1,6 +1,7 @@
 ;        .title          "spitbol assembly-language to c-language o/s interface"
 ;        .sbttl          "inter"
-; copyright 1987-2012 robert b. k. dewar and mark emmer.
+; copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+; copyright 2012 David Shields
 ; 
 ; this file is part of macro spitbol.
 ; 
@@ -209,11 +210,16 @@ dump_pc: dd	0		; return pc from caller
 dump_pp: dd      0               ; number of bytes of ppms
 dump_w0: dd	0
 
+	global	koshka
+koshka:	dd	-123
 
 ; end of words saved during exit(-3)
 ;
 sav_block: times r_size dd 0    ; save minimal registers during push/pop reg
 ;
+	dd	0
+	dd	0
+
         align 4
 	global	ppoff
 ppoff:  dd      0               ; offset for ppm exits
@@ -881,14 +887,13 @@ itr_:
 ldr_:
 	atline  -200
         push    dword [eax]                 ; lsh
-	atline  -201
+;	atline  -201
         pop     dword [reg_ra]
-	atline  -202
+;	atline  -202
         mov     eax,dword [eax+4]                     ; msh
-	atline  -203
+;	atline  -203
         mov     dword [reg_ra+4], eax
 	atline  -204
-	atline  -400
         ret
 
 ;

@@ -37,6 +37,7 @@ This file is part of Macro SPITBOL.
 
 #include <stdio.h>
 
+extern int koshka;
 extern int nlines;
 extern int compsp;
 extern int osisp;
@@ -44,6 +45,7 @@ extern int LOWSPMIN;
 
 atlin()
 {
+#define TRACE
 #ifdef TRACE
 	fprintf(stderr, "at line %d\n",nlines);
 	regdump();
@@ -61,6 +63,8 @@ rp(char * name,uword reg)
 regdump()
 {
 #ifdef TRACE
+	fprintf(stderr," nlines %d\n",nlines);
+	fprintf(stderr, "koshka %d\n",koshka);
 	rp("WA", WA(int));
 	rp("WB", WB(int));
 	rp("WC", WC(int));
@@ -74,7 +78,14 @@ regdump()
 	fprintf(stderr,"  osisp %u", osisp);
 	fprintf(stderr," LOWSPMIN %u\n", LOWSPMIN);
 	fprintf(stderr," saved registers:\n");
-	fprintf(  cp ", save_oc);
+	fprintf(stderr, " cp=%u", save_cp);
+	fprintf(stderr, " xl=%u", save_xl);
+	fprintf(stderr, " xr=%u", save_xr);
+	fprintf(stderr, " xs=%u", save_xs);
+	fprintf(stderr, " wa=%u", save_wa);
+	fprintf(stderr, " wb=%u", save_wb);
+	fprintf(stderr, " wc=%u", save_wc);
+	fprintf(stderr, "\n");
 #endif
 }
 void Trace(char * type, char * text) 
@@ -100,31 +111,3 @@ void Exit(char * text)
 	Trace("Exit", text);
 #endif
 }
-
-#ifdef REGDUMP
-extern int nlines;
-extern	struct regs reg_block;
-reGdump()
-{
-#ifdef TRACE
-	struct regs {
-	unsigned int	reg_wa,
-	unsigned int 	reg_wb,
-	unsigned int 	reg_wc,
-	unsigned int 	reg_xr,
-	unsigned int 	reg_xl,
-	unsigned int 	reg_cp,
-	double 		reg_ra,
-	unsigned int	reg_pc,
-	unsigned int	reg_pp,
-	unsigned int	reg_xs
-	};
-	
-    fprintf(stderr, "mininal registers line %d\n",nlines);
-  	struct regs *rp;  
-
-	rp = &reg_block
-	fprintf(stderr,"wa \ud\n",	rp->reg_wa);
-#endif
-}
-#endif

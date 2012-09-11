@@ -83,13 +83,13 @@ extern void Exit(char * s);
 */
 #define NORMAL_RETURN   (-1)
 
-extern save_cp;
-extern save_xl;
-extern save_xr;
-extern save_xs;
-extern save_wa;
-extern save_wb;
-extern save_wc;
+extern int save_cp;
+extern int save_xl;
+extern int save_xr;
+extern int save_xs;
+extern int save_wa;
+extern int save_wb;
+extern int save_wc;
 
 /*
         Function to call into minimal code.

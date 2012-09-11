@@ -239,8 +239,6 @@ char *argv[];
        Startup compiler.
      */
 	At("starting compiler");
-    printf("sizeof word %d\n", sizeof(word));
-    printf("sizeof uword %d\n", sizeof(uword));
     startup((char *) 0L, lowsp);
 
 	At("back from compiler");

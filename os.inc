@@ -14,19 +14,18 @@
 	extern	atlin
 	extern	nlines
 
-%define TRACE
-%ifdef TRACE
+;%define TRACE
 	%macro	atline 1
-	cmp	dword [save_cp],-10
-	je	atn_
-	mov	dword [save_cp],ebp
-	mov	dword [save_wa],ecx
-	mov	dword [save_wb],ebx
-	mov	dword [save_wc],edx
-	mov	dword [save_xl],esi
-	mov	dword [save_xr],edi
-	mov	dword [save_xs],esp
-  	mov	dword [nlines],%1
+%ifdef TRACE
+	mov	DWORD [koshka],1944
+   	mov	dword [nlines],%1
+ 	mov	dword [save_cp],ebp
+ 	mov	dword [save_wa],ecx
+ 	mov	dword [save_wb],ebx
+ 	mov	dword [save_wc],edx
+ 	mov	dword [save_xl],esi
+ 	mov	dword [save_xr],edi
+ 	mov	dword [save_xs],esp
 	call	atlin
    	mov	ebp,dword [save_cp]
    	mov	ecx,dword [save_wa]
@@ -35,8 +34,8 @@
    	mov	esi,dword [save_xl]
    	mov	edi,dword [save_xr]
    	mov	esp,dword [save_xs]
-	%endmacro
 %endif
+	%endmacro
 
 	segment	.data
 %ifndef globals
@@ -226,4 +225,5 @@ engts_callid  equ      13
 	extern	save_wa
 	extern	save_wb
 	extern	save_wc
+	extern	koshka
 %endif
