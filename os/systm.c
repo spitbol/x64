@@ -33,7 +33,6 @@ zystm()
        /   process times are in 60ths of second, multiply by 100
        /   to get 6000ths of second, divide by 6 to get 100ths
      */
-	printf("enter systm\n");
     struct tms timebuf;
 
     Enter("zystm");

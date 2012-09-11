@@ -143,6 +143,15 @@
 
         global  reg_block
         global  reg_size
+
+	global	save_cp
+	global	save_xl
+	global	save_xr
+	global	save_xs
+	global	save_wa
+	global	save_wb
+	global	save_wc
+
 reg_block:
 reg_wa: dd      0     		; Register WA (ECX)
 reg_wb: dd      0     		; Register WB (EBX)
@@ -159,6 +168,15 @@ reg_ra: dq   	0e    		; Register RA
 reg_pc:	dd	0		; return pc from caller
 reg_pp: dd      0               ; number of bytes of ppms
 reg_xs:	dd   	0  		; minimal stack pointer
+
+; locations used to save registers before call to atline
+save_cp:	dd	0
+save_wa:	dd	0
+save_wb:	dd	0
+save_wc:	dd	0
+save_xl:	dd	0
+save_xr:	dd	0
+save_xs:	dd	0
 
 ;
 r_size equ      $-reg_block
@@ -299,19 +317,14 @@ minimal_call:
         mov     esi,dword[reg_xl]
         mov     ebp,dword[reg_cp]
 
-	atline	-100
         mov     dword [osisp],esp               ; save osint stack pointer
-	atline	-101
         cmp     dword [compsp],0      ; is there a compiler stack?
         je      min1              ; jump if none yet
         mov     esp,dword [compsp]              ; switch to compiler stack
-	atline	-102
 
 	extern	calltab
 min1:   callc   [calltab+eax*4],0        ; off to the minimal code
-	atline	-201
         mov     esp,osisp               ; switch to osint stack
-	atline	-202
 
         mov     [reg_wa],ecx              ; save registers
         mov     [reg_wb],ebx
@@ -319,7 +332,6 @@ min1:   callc   [calltab+eax*4],0        ; off to the minimal code
         mov     [reg_xr],edi
         mov     [reg_xl],esi
         mov     [reg_cp],ebp
-	atline	-203
         popad
         retc    4
 
@@ -407,33 +419,20 @@ pop1:   popad
         
         global  startup
 startup:
-	atline	-1
         pop     eax                     ; discard return
         pop     eax                     ; discard dummy1
         pop     eax                     ; discard dummy2
-	atline	-2
         call    stackinit               ; initialize MINIMAL stack
-	atline	-3
         mov     eax,dword [compsp]              ; get MINIMAL's stack pointer
-	atline	-31
         mov     dword [reg_wa],eax                     ; startup stack pointer
 
-	atline	-4
         cld                             ; default to UP direction for string ops
         extern  DFFNC
-	atline	-5
         lea     eax,[DFFNC]               ; get dd of PPM offset
         mov     dword [ppoff],eax               ; save for use later
-; The next instruction is the source of the crash. So osisp is wrong...
         mov     esp,dword [osisp]               ; switch to new c stack
-%ifdef XXX
-%endif
-	atline	-7
 	push	start_callid
-; DS start doesn't return, crash happens there
 	callc	minimal_call,4 			 ; load regs, switch stack, start compiler
-	atline	-9
-
 
 ;
 ;-----------
@@ -464,16 +463,13 @@ startup:
 
         global  stackinit
 stackinit:
-	atline	-10
         mov     eax,esp
         mov     dword [compsp],eax              ; save as MINIMAL's stack pointer
         sub     eax,dword [stacksiz]     ; end of MINIMAL stack is where C stack will start
-	atline	-11
         mov     dword [osisp],eax       ; save new C stack pointer
         add     eax,4*100               ; 100 words smaller for CHK
         extern  LOWSPMIN
         mov	dword [LOWSPMIN],eax           ; Set lowspmin
-	atline	-99
 	ret
 ;
 

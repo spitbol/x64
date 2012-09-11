@@ -89,3 +89,12 @@
     extern  vmake
     extern  xscan
     extern  xscni
+
+
+	extern	save_cp
+	extern	save_xl
+	extern	save_xr
+	extern	save_xs
+	extern	save_wa
+	extern	save_wb
+	extern	save_wc
