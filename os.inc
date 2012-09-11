@@ -17,15 +17,8 @@
 %define TRACE
 %ifdef TRACE
 	%macro	atline 1
-	mov	dword [nlines],%1
-	mov	ebp,dword [save_cp]
-	mov	ecx,dword [save_wa]
-	mov	ebx,dword [save_wb]
-	mov	edx,dword [save_wc]
-	mov	esi,dword [save_xl]
-	mov	edi,dword [save_xr]
-	mov	esp,dword [save_xs]
-	call	atlin
+	cmp	dword [save_cp],-10
+	je	atn_
 	mov	dword [save_cp],ebp
 	mov	dword [save_wa],ecx
 	mov	dword [save_wb],ebx
@@ -33,6 +26,15 @@
 	mov	dword [save_xl],esi
 	mov	dword [save_xr],edi
 	mov	dword [save_xs],esp
+  	mov	dword [nlines],%1
+	call	atlin
+   	mov	ebp,dword [save_cp]
+   	mov	ecx,dword [save_wa]
+   	mov	ebx,dword [save_wb]
+   	mov	edx,dword [save_wc]
+   	mov	esi,dword [save_xl]
+   	mov	edi,dword [save_xr]
+   	mov	esp,dword [save_xs]
 	%endmacro
 %endif
 

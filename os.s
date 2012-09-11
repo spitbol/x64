@@ -881,9 +881,13 @@ itr_:
 ldr_:
 	atline  -200
         push    dword [eax]                 ; lsh
+	atline  -201
         pop     dword [reg_ra]
+	atline  -202
         mov     eax,dword [eax+4]                     ; msh
+	atline  -203
         mov     dword [reg_ra+4], eax
+	atline  -204
 	atline  -400
         ret
 

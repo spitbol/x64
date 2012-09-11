@@ -83,6 +83,14 @@ extern void Exit(char * s);
 */
 #define NORMAL_RETURN   (-1)
 
+extern save_cp;
+extern save_xl;
+extern save_xr;
+extern save_xs;
+extern save_wa;
+extern save_wb;
+extern save_wc;
+
 /*
         Function to call into minimal code.
         The argument is an ordinal number defined below.

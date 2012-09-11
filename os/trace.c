@@ -73,6 +73,8 @@ regdump()
 	fprintf(stderr,"compsp %u",compsp);
 	fprintf(stderr,"  osisp %u", osisp);
 	fprintf(stderr," LOWSPMIN %u\n", LOWSPMIN);
+	fprintf(stderr," saved registers:\n");
+	fprintf(  cp ", save_oc);
 #endif
 }
 void Trace(char * type, char * text) 
