@@ -125,10 +125,12 @@ itr_:
 ;
 	global	ldr_
 ldr_:
+	atline  -200
         push    dword [eax]                 ; lsh
         pop     dword [reg_ra]
         mov     eax,dword [eax+4]                     ; msh
         mov     dword [reg_ra+4], eax
+	atline  -400
         ret
 
 ;

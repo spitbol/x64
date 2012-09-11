@@ -11,6 +11,22 @@
 
 ;   set up externals for all the compiler's registers.
 
+	extern	atlin
+	extern	nlines
+
+%define TRACE
+%ifdef TRACE
+	%macro	atline 1
+	mov	dword [nlines],%1
+	call	atlin
+	%endmacro
+%endif
+
+	%macro	atline 1
+	mov	dword [nlines],%1
+	call	atlin
+	%endmacro
+
 	segment	.data
 %ifndef globals
 	extern		reg_cp

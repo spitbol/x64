@@ -181,7 +181,6 @@ char *argv[];
     setout();
 
 #if !RUNTIME
-
     /*
        Force the memory manager to initialize itself
      */
@@ -194,6 +193,8 @@ char *argv[];
     /*
        Allocate stack
      */
+	At("allocate stack");
+    printf("allocated sbrk lowsp, stacksiz %u %u\n",lowsp,stacksiz);
     if ((lowsp = sbrk((uword) stacksiz)) == (char *) -1) {
 	wrterr("Stack memory unavailable.");
 	__exit(1);
@@ -222,7 +223,6 @@ char *argv[];
     topmem = basemem + memincb;
     maxmem = basemem + databts;
 
-
     /*
        All compiler registers are initially zero, except for XL and XR which
        are set to top and bottom of heap.
@@ -238,9 +238,13 @@ char *argv[];
     /*
        Startup compiler.
      */
+	At("starting compiler");
     printf("sizeof word %d\n", sizeof(word));
     printf("sizeof uword %d\n", sizeof(uword));
     startup((char *) 0L, lowsp);
+
+	At("back from compiler");
+
     atlin();
 #endif				/* !RUNTIME */
 

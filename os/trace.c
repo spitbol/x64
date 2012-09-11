@@ -44,22 +44,23 @@ extern int LOWSPMIN;
 
 atlin()
 {
-	return;
+#ifdef TRACE
 	fprintf(stderr, "at line %d\n",nlines);
 	regdump();
+#endif
 }
 
 rp(char * name,uword reg)
 /* print register name and vaue */
 {
-	return;
+#ifdef TRACE
 	fprintf(stderr," %s %u ",name, reg);
+#endif
 }
 
 regdump()
 {
-	return;
-	fprintf(stderr," start regdump\n");
+#ifdef TRACE
 	rp("WA", WA(int));
 	rp("WB", WB(int));
 	rp("WC", WC(int));
@@ -69,16 +70,41 @@ regdump()
 	rp("CP", CP(int));
 	rp("IA", IA(int));
 	fprintf(stderr,"\n");
-	fprintf(stderr,"compsp %u\n",compsp);
-	fprintf(stderr,"  osisp %u\n", osisp);
+	fprintf(stderr,"compsp %u",compsp);
+	fprintf(stderr,"  osisp %u", osisp);
 	fprintf(stderr," LOWSPMIN %u\n", LOWSPMIN);
-	fprintf(stderr,"  end  regdump\n");
+#endif
 }
+void Trace(char * type, char * text) 
+{
+#ifdef TRACE
+	fprintf(stderr,"%s %s\n", type, text);
+#endif
+}
+void At(char * text)
+{
+#ifdef TRACE
+	Trace("At", text);
+#endif
+}
+void Enter(char * text) {
+#ifdef TRACE
+	Trace("Enter", text);
+#endif
+}
+void Exit(char * text) 
+{
+#ifdef TRACE
+	Trace("Exit", text);
+#endif
+}
+
 #ifdef REGDUMP
 extern int nlines;
 extern	struct regs reg_block;
 reGdump()
 {
+#ifdef TRACE
 	struct regs {
 	unsigned int	reg_wa,
 	unsigned int 	reg_wb,
@@ -97,11 +123,6 @@ reGdump()
 
 	rp = &reg_block
 	fprintf(stderr,"wa \ud\n",	rp->reg_wa);
+#endif
 }
 #endif
-void Enter(char *s) {
-    fprintf(stderr,"Enter %s\n",s);
-}
-void Exit(char *s) {
-    fprintf(stderr,"Exit %s\n",s);
-}

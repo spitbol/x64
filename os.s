@@ -21,13 +21,6 @@
 
         %include        "mintype.h"
         %include        "os.inc"
-	%macro	atline 1
-%ifdef TRACE
-	mov	dword [nlines],%1
-	call	atlin
-
-%endif
-	%endmacro
 
         segment .data
 
@@ -430,15 +423,16 @@ startup:
         extern  DFFNC
 	atline	-5
         lea     eax,[DFFNC]               ; get dd of PPM offset
- 	atline	-6
         mov     dword [ppoff],eax               ; save for use later
-; 	atline	-61
+; The next instruction is the source of the crash. So osisp is wrong...
         mov     esp,dword [osisp]               ; switch to new c stack
-;	atline	-7
+%ifdef XXX
+%endif
+	atline	-7
 	push	start_callid
-	atline	-9
 ; DS start doesn't return, crash happens there
 	callc	minimal_call,4 			 ; load regs, switch stack, start compiler
+	atline	-9
 
 
 ;

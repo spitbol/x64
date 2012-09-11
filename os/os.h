@@ -22,6 +22,7 @@ This file is part of Macro SPITBOL.
     Set up externals for all the compiler's registers.
 */
 
+#define TRACE
 #define REGISTER
 
 #include "typedef.h"
@@ -32,6 +33,7 @@ extern word reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs;
 extern IATYPE reg_ia;
 extern double reg_ra;
 
+extern void At(char * s);
 extern void Enter(char * s);
 extern void Exit(char * s);
 
