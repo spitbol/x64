@@ -488,82 +488,173 @@ erexit: shr     eax,1           ; divide by 2
 ; this file defines interface routines for calling procedures written in c from
 ; within the minimal code.
  
-	%macro	mtoc.1	2
+	%macro	mtoc	2
 	global	%1
 	extern	%2
 %1:
 	%endmacro
 
-	%macro	mtoc.2  2
+	mtoc	sysax,zysax
 	call	ccaller
-	dd	%1
-	db	%2
-	%endmacro
+	db	0
 
-	%macro	mtoc	3
-	mtoc.1	%1,%2
-	mtoc.2	%2,%3
-	%endmacro
+	mtoc	sysbs,zysbs
+	call	ccaller
+	db	6
 
-	mtoc	sysax,zysax,0
-	mtoc	sysbs,zysbs,6
-
-	mtoc.1	sysbx,zysbx
+	mtoc	sysbx,zysbx
 	mov	[reg_xs],esp
-	mtoc.2	zysbx,0
+	call	ccaller
+	db	0
+
 %if setreal == 1
-	mtoc	syscr,zyscr,0
+	mtoc	syscr,zyscr
+	call	ccaller
+	db	0
 %endif
-	mtoc	sysdc,zysdc,0
-	mtoc	sysdm,zysdm,0
-	mtoc	sysdt,zysdt,0
-	mtoc	sysea,zysea,2
-	mtoc	sysef,zysef,6
-	mtoc	sysej,zysej,0
-	mtoc	sysem,zysem,0
-	mtoc	sysen,zysen,6
-	mtoc	sysep,zysep,0
+	mtoc	sysdc,zysdc
+	call	ccaller
+	db	0
 
-	mtoc.1	sysex,zysex
+	mtoc	sysdm,zysdm
+	call	ccaller
+	db	0
+
+	mtoc	sysdt,zysdt
+	call	ccaller
+	db	0
+
+	mtoc	sysea,zysea
+	call	ccaller
+	db	2
+
+	mtoc	sysef,zysef
+	call	ccaller
+	db	6
+
+	mtoc	sysej,zysej
+	call	ccaller
+	db	0
+
+	mtoc	sysem,zysem
+	call	ccaller
+	db	0
+
+	
+	mtoc	sysen,zysen
+	call	ccaller
+	db	0
+
+	mtoc	sysep,zysep
+	call	ccaller
+	db	6
+
+	mtoc	sysex,zysex
 	mov	[reg_xs],esp
-	mtoc.2	zysex,6
+	call	ccaller
+	db	6
  
-	mtoc.1	sysfc,zysfc
+	mtoc	sysfc,zysfc
 	pop     eax             ; <<<<remove stacked scblk>>>>
 	lea	esp,[esp+edx*4]
 	push	eax
-	mtoc.2	zysfc,4
+	call	ccaller
+	db	4
 
-	mtoc	sysgc,zysgc,0
+	mtoc	sysgc,zysgc
+	call	ccaller
+	db	0
 
-	mtoc.1	syshs,zyshs
+	mtoc	syshs,zyshs
 	mov	[reg_xs],esp
-	mtoc.2	zyshs,16
+	call	ccaller
+	db	16
 
-	mtoc	sysid,zysid,0
-	mtoc	sysif,zysif,2
-	mtoc	sysil,zysil,0
-	mtoc	sysin,zysin,6
-	mtoc	sysio,zysio,4
-	mtoc	sysld,zysld,6
-	mtoc	sysmm,zysmm,0
-	mtoc	sysmx,zysmx,0
-	mtoc	sysou,zysou,4
-	mtoc	syspi,zyspi,2
-	mtoc	syspl,zyspl,6
-	mtoc	syspp,zyspp,0
-	mtoc	syspr,zyspr,2
-	mtoc	sysrd,zysrd,2
-	mtoc	sysri,zysri,2
-	mtoc	sysrw,zysrw,6
-	mtoc	sysst,zysst,10
-	mtoc	systm,zystm,0
-	mtoc	systt,zystt,0
-	mtoc	sysul,zysul,0
+	mtoc	sysid,zysid
+	call	ccaller
+	db	0
+
+	mtoc	sysif,zysif
+	call	ccaller
+	db	2
+
+	mtoc	sysil,zysil
+	call	ccaller
+	db	0
+
+	mtoc	sysin,zysin
+	call	ccaller
+	db	6
+
+	mtoc	sysio,zysio
+	call	ccaller
+	db	4
+
+	mtoc	sysld,zysld
+	call	ccaller
+	db	0
+
+	mtoc	sysmm,zysmm
+	call	ccaller
+	db	0
+
+	mtoc	sysmx,zysmx
+	call	ccaller
+	db	0
+
+	mtoc	sysou,zysou
+	call	ccaller
+	db	4
+
+	mtoc	syspi,zyspi
+	call	ccaller
+	db	2
+
+	mtoc	syspl,zyspl
+	call	ccaller
+	db	6
+
+	mtoc	syspp,zyspp
+	call	ccaller
+	db	0
+
+	mtoc	syspr,zyspr
+	call	ccaller
+	db	2
+
+	mtoc	sysrd,zysrd
+	call	ccaller
+	db	2
+
+	mtoc	sysri,zysri
+	call	ccaller
+	db	2
+
+	mtoc	sysrw,zysrw
+	call	ccaller
+	db	6
+
+	mtoc	sysst,zysst
+	call	ccaller
+	db	10
+
+	mtoc	systm,zystm
+	call	ccaller
+	db	0
+
+	mtoc	systt,zystt
+	call	ccaller
+	db	0
+
+	mtoc	sysul,zysul
+	call	ccaller
+	db	0
+
         
-	mtoc.1	sysxi,zysxi
+	mtoc	sysxi,zysxi
 	mov	[reg_xs],esp
-	mtoc.2  zysxi,4
+	call	ccaller
+	db	4
 
 ;
 ;-----------
