@@ -40,6 +40,9 @@
 *  steve duff and robert goldberg.
 *
         version = 'v1.14'
+
+*  generate dump if abnormal termination
+	&dump = 1
 -eject
 *  keyword initialization
 
@@ -339,6 +342,7 @@
 *  ends wit the first following line with '*/' in columns 1-2.
 *
 	comment.block = 
+
 -stitl machine-dependent initializations
 *  following values for 68000, a 32-bit machine
 *  some definitions appear in limited form in cod.spt
@@ -432,8 +436,8 @@
         output = 'output lexeme file: ' filenamo
         output = differ(filenamc) 'condition definition file: ' filenamc
 *   flcflag  = replace( input,'y','y' )
-	flcflag = 'n'
 	flcflag = 'y'
+	flcflag = 'n'
 *  output = 'full line comments passed to lexeme file? ' flcflag
 *
 *  no page ejects without full line comments
@@ -636,6 +640,7 @@ error
 	outfile = '* *???* ' thisline
 	outfile = '*       ' text
 .	          (ident(lasterror),'. last error was line ' lasterror)
+	output = 'error at line ' nlines ' ' thisline
 	lasterror = noutlines
 	noutlines = noutlines + 2
 	nerrors = nerrors + 1
@@ -680,43 +685,72 @@ rdline	rdline = infile				:f(rdline.eof)
 	nlines  = nlines + 1
 	ident( rdline )				:s(rdline)
 	rdline.first = substr(rdline,1,1)
-*  see if within block comment
-	ident(comment.block)			:s(rdline.2)
-*  here if inside comment block. First, look for closer
-	leq(rdline,first, '}') 		:s(rdline.1)
-*  here for line within block comment. Change first character
-*  to the comment delimiter and process as usual.
-
-	substr(rdline,1,1) = comment.char	 :(rdline.4)
-*
-rdline.1
-* here at end of comment block here at end of comment block
-* insert comment char at start of line, and indicate not currently
-* in comment block
-	substr(rdline,1,1) = comment.char
-	comment.block = 
-
-rdline.2
-*  look for start of block comment
-	leq(rdline.first,'{')			:f(rdline.3)
-*  here at start of comment block, 
-	comment_block = 1
-	substr(rdline,1,1) = comment.char
-rdline.3
 *  transfer control to appropriate conditional assembly
 *  directive generator or other statement generator.
 *
-	leq( rdline.first,'.' )		:f(other)
+	leq(rdline.first, '.')			:f(other)
 	rdline ? p.condasm			:s( $catab[condcmd] )
-rdline.4	leq(rdline.first,comment.char ):f(rdline.5)
+	leq(rdline.first, comment.char)		:f(rdline.5);
 
+*  here if comment
+*	output = 'rdline rdline.first ' rdline.first
+*  look for start of block comment
+	leq(rdline.first,'{')			:s(rdline.2)
+
+*  see if within block comment
+	ident(comment.block)			:s(rdline.3a)
+*	output  = 'inside comment ' nlines ' ' rdline
+*  here if inside comment block. First, look for closer
+	leq(rdline.first, '}') 		:s(rdline.1)
+*  here for line within block comment. Change first character
+*  to the comment delimiter and process as usual.
+
+	rdline = (eq(size(rdline),1) '* ')
+	rdline len(1) . first rem . last = comment.char last 
+	rdline = trim(rdline)
+*	output = 'at end of comment block ' rdline
+						:(rdline.3)
+*
+rdline.1
+* here at end of comment block 
+* insert comment char at start of line, and indicate not currently
+* in comment block
+	output = 'end comment block ' nlines ' ' rdline
+	rdline = (eq(size(rdline),1) '* ')
+	rdline len(1) . first rem . last = comment.char last
+	rdline.first = '*'
+	rdline = trim(rdline)
+*	output = 'end block ' rdline ';'
+	comment.block =
+*	output = 'comment.block ' comment.block ';'
+			 			:(rdline.3a)
+						
+rdline.2
+*  here at start of comment block, 
+	output  = 'start comment block ' nlines ' ' rdline
+	rdline len(1) . first rem . last = comment.char last
+	rdline.first = '*'
+	rdline = trim(rdline)
+*	output = 'start block ' rdline
+	comment.block = 1
+*	output = 'comment.block ' comment.block ';'
+						:(rdline.3a)
+rdline.3
+*	output = 'rdline.3 ' rdline
+*	output = 'rdline.3 rdline.first ' rdline.first
+	
+	leq(rdline.first, '*')		:f(rdline.4);
+rdline.3a
+*  here if comment
+* 	output = 'comment ' nlines ' ' rdline
 *
 *  only print comment if requested.
 *
-	outfile = ident(flcflag,'y') rdline	:f(rdline)
+*	outfile = ident(flcflag,'y') rdline	:f(rdline)
+	outfile = rdline
 	noutlines = noutlines + 1		:(rdline)
-*
-*  here if not a comment line
+
+rdline.4
 *
 rdline.5 leq(rdline.first,'>')		:f(return)
 
@@ -730,6 +764,7 @@ rdline.5 leq(rdline.first,'>')		:f(return)
 *  here on eof.  filenamc is non-null if we were reading from it.
 *
 rdline.eof	
+	output = 'at rdline.eof'
 	ident(filenamc)				:s(rdline.6)
 	filenamc =
 	ignore_defs = 1
@@ -797,8 +832,8 @@ fiop	differ(condvar)				:s(synerr)
 *
 *  process statements other than conditional directives.
 *
-other	eq( level )				:s(rdline.4)
-	eq( processrec[result(top),mode(top)] )	:s(rdline)f(rdline.4)
+other	eq( level )				:s(rdline.3)
+	eq( processrec[result(top),mode(top)] )	:s(rdline)f(rdline.3)
 -stitl	tblini(str)pos,cnt,index,val,lastval
 *  this routine is called to initialize a table from a string of
 *  index/value pairs.
@@ -904,7 +939,7 @@ g.end   outstmt(,'end',,,,comment)
 g.end.1 output = t[i,1] ' ' t[i,2]            :f(g.end.2)
 	i = i + 1				:(g.end.1)
 g.end.2
-						:(end)
+						:(finis)
 g.ent
 *  note program entry labels
 *	entfile = label ',' op1
@@ -932,4 +967,7 @@ g.prc
 	ident(t = prctab[label]) error('missing inp')
 	differ(t,op1) error('inconsistent inp/prc')
 	prctab[label] =				:(dsgen)
+finis
+	output = '***finis***'
+	&dump = 0
 end
