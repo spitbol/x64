@@ -451,7 +451,9 @@
 *  associate input file to lu1.  if a conditional file was specified,
 *  read it first.
 *
-	input(.infile,1,(differ(filenamc) filenamc,filenami))	:s(main1)
+	fname = (differ(filenamc) filenamc,filenami)
+	output = 'infile name ' fname ';'
+	input(.infile,1,fname)	:s(main1)
         output = differ(filenamc) "cannot open conditional file: " filenamc
 +						:s(end)
         output = "cannot open minimal file: " filenami        :(end)
@@ -681,68 +683,68 @@ outstmt
 *  lines beginning with ">" are treated as snobol4 statements
 *  and immediately executed.
 *
-rdline	rdline = infile				:f(rdline.eof)
+rdline	rdline = infile				:f(rdline.7)
 	nlines  = nlines + 1
 	ident( rdline )				:s(rdline)
 	rdline.first = substr(rdline,1,1)
+*	ouput = 'rdline ' rdline.first ' ' nlines ' ' rdline
 *  transfer control to appropriate conditional assembly
 *  directive generator or other statement generator.
 *
 	leq(rdline.first, '.')			:f(other)
 	rdline ? p.condasm			:s( $catab[condcmd] )
+
+rdline.1
+	differ(comment.block)			:s(rdline.2)
 	leq(rdline.first, comment.char)		:f(rdline.5);
-
-*  here if comment
-*	output = 'rdline rdline.first ' rdline.first
+*  here if comment and not within comment block
 *  look for start of block comment
-	leq(rdline.first,'{')			:s(rdline.2)
-
-*  see if within block comment
-	ident(comment.block)			:s(rdline.3a)
+	leq(rdline.first,'{')			:s(rdline.4)
+rdline.2
 *	output  = 'inside comment ' nlines ' ' rdline
 *  here if inside comment block. First, look for closer
-	leq(rdline.first, '}') 		:s(rdline.1)
+	leq(rdline.first, '}') 		:s(rdline.3)
 *  here for line within block comment. Change first character
 *  to the comment delimiter and process as usual.
 
 	rdline = (eq(size(rdline),1) '* ')
 	rdline len(1) . first rem . last = comment.char last 
+	rdline.first = comment.char
 	rdline = trim(rdline)
-*	output = 'at end of comment block ' rdline
-						:(rdline.3)
+* 	output = 'at end of comment block ' rdline
+						:(rdline.5)
 *
-rdline.1
+rdline.3
 * here at end of comment block 
-* insert comment char at start of line, and indicate not currently
+* insert comment char at start of line, and indicate no longer
 * in comment block
-	output = 'end comment block ' nlines ' ' rdline
+*	output = 'end comment block ' nlines ' ' rdline
 	rdline = (eq(size(rdline),1) '* ')
 	rdline len(1) . first rem . last = comment.char last
-	rdline.first = '*'
+	rdline.first = comment.char
 	rdline = trim(rdline)
-*	output = 'end block ' rdline ';'
+* 	output = 'end block ' rdline ';'
 	comment.block =
-*	output = 'comment.block ' comment.block ';'
-			 			:(rdline.3a)
+* 	output = 'comment.block ' comment.block ';'
+			 			:(rdline.5)
 						
-rdline.2
+rdline.4
 *  here at start of comment block, 
-	output  = 'start comment block ' nlines ' ' rdline
+*	output  = 'start comment block ' nlines ' ' rdline
 	rdline len(1) . first rem . last = comment.char last
-	rdline.first = '*'
+	rdline.first = comment.char
 	rdline = trim(rdline)
-*	output = 'start block ' rdline
+* 	output = 'start block ' rdline
 	comment.block = 1
-*	output = 'comment.block ' comment.block ';'
-						:(rdline.3a)
-rdline.3
-*	output = 'rdline.3 ' rdline
-*	output = 'rdline.3 rdline.first ' rdline.first
+* 	output = 'comment.block ' comment.block ';'
+
+rdline.5
+	leq(rdline.first, comment.char)		:f(rdline.6);
+* 	output = 'rdline.5 rdline.first ' rdline.first ' ' rdline
 	
-	leq(rdline.first, '*')		:f(rdline.4);
-rdline.3a
-*  here if comment
-* 	output = 'comment ' nlines ' ' rdline
+*  here if comment. First character will have been set to
+*  the comment character if inside comment block.
+  	output = 'comment ' nlines ' ' rdline
 *
 *  only print comment if requested.
 *
@@ -750,39 +752,43 @@ rdline.3a
 	outfile = rdline
 	noutlines = noutlines + 1		:(rdline)
 
-rdline.4
-*
-rdline.5 leq(rdline.first,'>')		:f(return)
+
+rdline.6 leq(rdline.first,'>')		:f(return)
 
 *
 *  here with snobol4 line to execute
 *
 	c = code(substr( rdline, 2 ) "; :(rdline)") :s<c>
         output = "error compiling snobol4 statement"
-  						:(rdline.6)
+  						:(rdline.8)
 *
 *  here on eof.  filenamc is non-null if we were reading from it.
 *
-rdline.eof	
-	output = 'at rdline.eof'
-	ident(filenamc)				:s(rdline.6)
+rdline.7	
+*	output = 'at rdline.eof'
+*	output = 'filenamc ' filenamc ';'
+	ident(filenamc)				:s(rdline.8)
 	filenamc =
 	ignore_defs = 1
 	endfile(1)
+*	output = 'rdline.7 filenami ' filenami ';'
+*	output = 'now reading from ' filenami ';'
 	input(.infile,1,filenami)		:s(rdline)
         output = "cannot open minimal file: " filenami        :(end)
 
-rdline.6
-	output = 'at rdline.6'
-	rdline = '       end'			:(end)
-*
+rdline.8
+*	output = 'at rdline.8'
+	rdline = '       end'			:(rdline.6)
+
 *  syntax error handler.
 *
 synerr output = incnt '(syntax error):' rdline            :(rdline)
 *
 *  process define
 *
-defop  ident( condvar )				:s(synerr)
+defop  
+	output = '.def ' rdline
+	ident( condvar )				:s(synerr)
        differ( ignore_defs )			:s(rdline)
        eq( level )				:s(defok)
        eq( processrec[result(top),mode(top)] )	:s(rdline)
@@ -791,6 +797,7 @@ defok  symtbl[condvar] = 1			:(rdline)
 *  process undefine
 *
 undefop
+	output = '.undef ' rdline
        ident( condvar )				:s(synerr)
        eq( level )				:s(undok)
        eq( processrec[result(top),mode(top)] )	:s(rdline)
@@ -798,7 +805,9 @@ undok  symtbl[condvar] =			:(rdline)
 *
 *  process if
 *
-ifop   ident( condvar )				:s(synerr)
+ifop   
+	output = '.if ' rdline
+	ident( condvar )				:s(synerr)
        eq( level )				:s(ifok)
 *
 *  here for .if encountered during bypass state.
@@ -816,24 +825,30 @@ ifok   level    = level + 1
 *
 *  process .then
 *
-thenop	differ(condvar)				:s(synerr)
+thenop	
+	output = '.then ' rdline
+	differ(condvar)				:s(synerr)
 	eq(level)				:s(synerr)f(rdline)
 *
 *  process .else
 *
-elseop	differ(condvar)				:s(synerr)
+elseop	
+	output = '.else ' rdline
+	differ(condvar)				:s(synerr)
 	mode(top) = ne( level ) else		:s(rdline)f(synerr)
 *
 *  process .fi
 *
-fiop	differ(condvar)				:s(synerr)
+fiop	
+	output = '.fi ' rdline
+	differ(condvar)				:s(synerr)
 	level = ne( level ) level - 1		:f(synerr)
 	top   = ( ne( level ) statestk[level],'' )     :(rdline)
 *
 *  process statements other than conditional directives.
 *
-other	eq( level )				:s(rdline.3)
-	eq( processrec[result(top),mode(top)] )	:s(rdline)f(rdline.3)
+other	eq( level )				:s(rdline.5)
+	eq( processrec[result(top),mode(top)] )	:s(rdline)f(rdline.5)
 -stitl	tblini(str)pos,cnt,index,val,lastval
 *  this routine is called to initialize a table from a string of
 *  index/value pairs.
