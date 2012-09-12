@@ -676,39 +676,39 @@ outstmt
 *  lines beginning with ">" are treated as snobol4 statements
 *  and immediately executed.
 *
-rdline	rdline = infile				:f(readline.eof)
+rdline	rdline = infile				:f(rdline.eof)
 	nlines  = nlines + 1
 	ident( rdline )				:s(rdline)
-	readline.first = substr(readline,1,1)
+	rdline.first = substr(rdline,1,1)
 *  see if within block comment
-	ident(comment.block)			:s(readline.2)
+	ident(comment.block)			:s(rdline.2)
 *  here if inside comment block. First, look for closer
-	leq(readline,first, '}') 		:s(rdline.1)
+	leq(rdline,first, '}') 		:s(rdline.1)
 *  here for line within block comment. Change first character
 *  to the comment delimiter and process as usual.
 
-	substr(rdline,1,1) = comment.char	 :(readline.4)
+	substr(rdline,1,1) = comment.char	 :(rdline.4)
 *
-readline.1
+rdline.1
 * here at end of comment block here at end of comment block
 * insert comment char at start of line, and indicate not currently
 * in comment block
 	substr(rdline,1,1) = comment.char
 	comment.block = 
 
-readline.2
+rdline.2
 *  look for start of block comment
-	leq(rdline.first,'{')			:f(readline.3)
+	leq(rdline.first,'{')			:f(rdline.3)
 *  here at start of comment block, 
 	comment_block = 1
 	substr(rdline,1,1) = comment.char
-readline.3
+rdline.3
 *  transfer control to appropriate conditional assembly
 *  directive generator or other statement generator.
 *
-	leq( substr( rdline,1,1 ),'.' )		:f(other)
+	leq( rdline.first,'.' )		:f(other)
 	rdline ? p.condasm			:s( $catab[condcmd] )
-readline.4	leq( substr( rdline,1,1 ),comment.char ):f(readline.5)
+rdline.4	leq(rdline.first,comment.char ):f(rdline.5)
 
 *
 *  only print comment if requested.
@@ -718,27 +718,28 @@ readline.4	leq( substr( rdline,1,1 ),comment.char ):f(readline.5)
 *
 *  here if not a comment line
 *
-readline.5 leq( substr( rdline,1,1 ),'>' )		:f(return)
+rdline.5 leq(rdline.first,'>')		:f(return)
 
 *
 *  here with snobol4 line to execute
 *
 	c = code(substr( rdline, 2 ) "; :(rdline)") :s<c>
         output = "error compiling snobol4 statement"
-  						:(readline.6)
+  						:(rdline.6)
 *
 *  here on eof.  filenamc is non-null if we were reading from it.
 *
-readline.eof	
-	ident(filenamc)				:s(readline.6)
+rdline.eof	
+	ident(filenamc)				:s(rdline.6)
 	filenamc =
 	ignore_defs = 1
 	endfile(1)
 	input(.infile,1,filenami)		:s(rdline)
         output = "cannot open minimal file: " filenami        :(end)
 
-readline.6
-	rdline = '       end'			:(readline.5)
+rdline.6
+	output = 'at rdline.6'
+	rdline = '       end'			:(end)
 *
 *  syntax error handler.
 *
@@ -796,8 +797,8 @@ fiop	differ(condvar)				:s(synerr)
 *
 *  process statements other than conditional directives.
 *
-other	eq( level )				:s(readline.4)
-	eq( processrec[result(top),mode(top)] )	:s(rdline)f(readline.4)
+other	eq( level )				:s(rdline.4)
+	eq( processrec[result(top),mode(top)] )	:s(rdline)f(rdline.4)
 -stitl	tblini(str)pos,cnt,index,val,lastval
 *  this routine is called to initialize a table from a string of
 *  index/value pairs.
