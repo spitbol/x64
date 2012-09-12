@@ -1,7 +1,7 @@
 -title lex: phase 1 translation from minimal to lexemes (tokens)
 -stitl initialization
-* copyright 1987-2012 robert b. k. dewar and mark emmer.
-* copyright 2012 david shields
+* copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+* copyright 2012 David Shields
 * 
 * this file is part of macro spitbol.
 * 
@@ -330,7 +330,15 @@
 *  is being processed.
 *
 	bsw	= 0
-
+*
+*  comment.char is character indicating comment
+	comment.char = '*'
+*
+*  comment.block is set when inside multi-line comment.
+*  A multi-line comment begins with '/*' in columns 1-2, and
+*  ends wit the first following line with '*/' in columns 1-2.
+*
+	comment.block = 
 -stitl machine-dependent initializations
 *  following values for 68000, a 32-bit machine
 *  some definitions appear in limited form in cod.spt
@@ -668,16 +676,39 @@ outstmt
 *  lines beginning with ">" are treated as snobol4 statements
 *  and immediately executed.
 *
-rdline	rdline = infile				:f(rl02)
+rdline	rdline = infile				:f(readline.eof)
 	nlines  = nlines + 1
 	ident( rdline )				:s(rdline)
+	readline.first = substr(readline,1,1)
+*  see if within block comment
+	ident(comment.block)			:s(readline.2)
+*  here if inside comment block. First, look for closer
+	leq(readline,first, '}') 		:s(rdline.1)
+*  here for line within block comment. Change first character
+*  to the comment delimiter and process as usual.
+
+	substr(rdline,1,1) = comment.char	 :(readline.4)
 *
+readline.1
+* here at end of comment block here at end of comment block
+* insert comment char at start of line, and indicate not currently
+* in comment block
+	substr(rdline,1,1) = comment.char
+	comment.block = 
+
+readline.2
+*  look for start of block comment
+	leq(rdline.first,'{')			:f(readline.3)
+*  here at start of comment block, 
+	comment_block = 1
+	substr(rdline,1,1) = comment.char
+readline.3
 *  transfer control to appropriate conditional assembly
 *  directive generator or other statement generator.
 *
 	leq( substr( rdline,1,1 ),'.' )		:f(other)
 	rdline ? p.condasm			:s( $catab[condcmd] )
-rl00	leq( substr( rdline,1,1 ),'*' )		:f(rl01)
+readline.4	leq( substr( rdline,1,1 ),comment.char ):f(readline.5)
 
 *
 *  only print comment if requested.
@@ -687,25 +718,27 @@ rl00	leq( substr( rdline,1,1 ),'*' )		:f(rl01)
 *
 *  here if not a comment line
 *
-rl01	leq( substr( rdline,1,1 ),'>' )		:f(return)
+readline.5 leq( substr( rdline,1,1 ),'>' )		:f(return)
 
 *
 *  here with snobol4 line to execute
 *
 	c = code(substr( rdline, 2 ) "; :(rdline)") :s<c>
         output = "error compiling snobol4 statement"
-  						:(rl03)
+  						:(readline.6)
 *
 *  here on eof.  filenamc is non-null if we were reading from it.
 *
-rl02	ident(filenamc)				:s(rl03)
+readline.eof	
+	ident(filenamc)				:s(readline.6)
 	filenamc =
 	ignore_defs = 1
 	endfile(1)
 	input(.infile,1,filenami)		:s(rdline)
         output = "cannot open minimal file: " filenami        :(end)
 
-rl03	rdline = '       end'			:(rl01)
+readline.6
+	rdline = '       end'			:(readline.5)
 *
 *  syntax error handler.
 *
@@ -763,8 +796,8 @@ fiop	differ(condvar)				:s(synerr)
 *
 *  process statements other than conditional directives.
 *
-other	eq( level )				:s(rl00)
-	eq( processrec[result(top),mode(top)] )	:s(rdline)f(rl00)
+other	eq( level )				:s(readline.4)
+	eq( processrec[result(top),mode(top)] )	:s(rdline)f(readline.4)
 -stitl	tblini(str)pos,cnt,index,val,lastval
 *  this routine is called to initialize a table from a string of
 *  index/value pairs.
