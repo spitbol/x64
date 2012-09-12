@@ -497,7 +497,7 @@ erexit: shr     eax,1           ; divide by 2
 	%macro	mtoc.2  2
 	call	ccaller
 	dd	%1
-	db	%2 * 2
+	db	%2
 	%endmacro
 
 	%macro	mtoc	3
@@ -506,7 +506,7 @@ erexit: shr     eax,1           ; divide by 2
 	%endmacro
 
 	mtoc	sysax,zysax,0
-	mtoc	sysbs,zysbs,3
+	mtoc	sysbs,zysbs,6
 
 	mtoc.1	sysbx,zysbx
 	mov	[reg_xs],esp
@@ -517,53 +517,53 @@ erexit: shr     eax,1           ; divide by 2
 	mtoc	sysdc,zysdc,0
 	mtoc	sysdm,zysdm,0
 	mtoc	sysdt,zysdt,0
-	mtoc	sysea,zysea,1
-	mtoc	sysef,zysef,3
+	mtoc	sysea,zysea,2
+	mtoc	sysef,zysef,6
 	mtoc	sysej,zysej,0
 	mtoc	sysem,zysem,0
-	mtoc	sysen,zysen,3
+	mtoc	sysen,zysen,6
 	mtoc	sysep,zysep,0
 
 	mtoc.1	sysex,zysex
 	mov	[reg_xs],esp
-	mtoc.2	zysex,3
+	mtoc.2	zysex,6
  
 	mtoc.1	sysfc,zysfc
 	pop     eax             ; <<<<remove stacked scblk>>>>
 	lea	esp,[esp+edx*4]
 	push	eax
-	mtoc.2	zysfc,2
+	mtoc.2	zysfc,4
 
 	mtoc	sysgc,zysgc,0
 
 	mtoc.1	syshs,zyshs
 	mov	[reg_xs],esp
-	mtoc.2	zyshs,8
+	mtoc.2	zyshs,16
 
 	mtoc	sysid,zysid,0
-	mtoc	sysif,zysif,1
+	mtoc	sysif,zysif,2
 	mtoc	sysil,zysil,0
-	mtoc	sysin,zysin,3
-	mtoc	sysio,zysio,2
-	mtoc	sysld,zysld,3
+	mtoc	sysin,zysin,6
+	mtoc	sysio,zysio,4
+	mtoc	sysld,zysld,6
 	mtoc	sysmm,zysmm,0
 	mtoc	sysmx,zysmx,0
-	mtoc	sysou,zysou,2
-	mtoc	syspi,zyspi,1
-	mtoc	syspl,zyspl,3
+	mtoc	sysou,zysou,4
+	mtoc	syspi,zyspi,2
+	mtoc	syspl,zyspl,6
 	mtoc	syspp,zyspp,0
-	mtoc	syspr,zyspr,1
-	mtoc	sysrd,zysrd,1
-	mtoc	sysri,zysri,1
-	mtoc	sysrw,zysrw,3
-	mtoc	sysst,zysst,5
+	mtoc	syspr,zyspr,2
+	mtoc	sysrd,zysrd,2
+	mtoc	sysri,zysri,2
+	mtoc	sysrw,zysrw,6
+	mtoc	sysst,zysst,10
 	mtoc	systm,zystm,0
 	mtoc	systt,zystt,0
 	mtoc	sysul,zysul,0
         
 	mtoc.1	sysxi,zysxi
 	mov	[reg_xs],esp
-	mtoc.2  zysxi,2
+	mtoc.2  zysxi,4
 
 ;
 ;-----------
