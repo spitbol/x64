@@ -424,7 +424,6 @@
 *
 	parms ? break(';:') . parms len(1) (break(';:') | rem) . filenamc
 .		(len(1) | null) rem . filenamo
-	filenamc = differ(filenamc) filenamc '/' filenamc '.cnd'
         output = ident(parms) "need file name (.min)" :s(end)
 
         output = 'minimal translator, pass 1 ' version
@@ -433,7 +432,6 @@
         output = 'input minimal file: ' filenami
 	filenamo = (ident(filenamo) parms, filenamo) '.lex'
         output = 'output lexeme file: ' filenamo
-        output = differ(filenamc) 'condition definition file: ' filenamc
 *   flcflag  = replace( input,'y','y' )
 	flcflag = 'n'
 	flcflag = 'y'
@@ -450,11 +448,8 @@
 *  associate input file to lu1.  if a conditional file was specified,
 *  read it first.
 *
-	fname = (differ(filenamc) filenamc,filenami)
-	output = 'infile name ' fname ';'
-	input(.infile,1,fname)	:s(main1)
-        output = differ(filenamc) "cannot open conditional file: " filenamc
-+						:s(end)
+	output = 'infile name ' filenami ';'
+	input(.infile,1,filenami)	:s(main1)
         output = "cannot open minimal file: " filenami        :(end)
 *
 *
@@ -638,14 +633,16 @@ cs03	error('source line syntax error')	:(freturn)
 *  the appropriate counts are updated.
 *
 error
+	output = 'error ' text '  at line ' nlines ' ' thisline
 	outfile = '* *???* ' thisline
 	outfile = '*       ' text
 .	          (ident(lasterror),'. last error was line ' lasterror)
-	output = 'error at line ' nlines ' ' thisline
 	lasterror = noutlines
 	noutlines = noutlines + 2
 	nerrors = nerrors + 1
-.	              			:(dsout)
+	&dump = 2
+						:(end)
+*					:(dsout)
 -stitl labenter()tlab
 *  labenter is called to make entry in labtab for a label
 *  current classification is 3 for wlbl, 4 for clbl and 5 for
@@ -675,15 +672,12 @@ outstmt
 *  comments are passed through to the output file directly.
 *  conditional assembly is performed here.
 *
-*  if we were reading from filenamc (conditional defs), then the
-*  input stream is switched to filenami, and the flag ignore_defs
-*  is set.
-*
 *  lines beginning with ">" are treated as snobol4 statements
 *  and immediately executed.
 *
 rdline	rdline = infile				:f(rdline.5)
 	nlines  = nlines + 1
+	output = 'rdline ' nlines ' ' rdline ';'
 	ident(comment.block)			:s(rdline.1)
 *  here if inside comment block
 	rdline = '*' (gt(size(rdline),1), substr(rdline,2))
@@ -703,7 +697,10 @@ rdline.2
 *  transfer control to appropriate conditional assembly
 *  directive generator or other statement generator.
 *
-	leq(substr(rdline,1,1), '.')			:f(other)
+	leq(substr(rdline,1,1), '.')			:s(rdline.2A)
+other	eq( level )				:s(rdline.3)
+	eq( processrec[result(top),mode(top)] )	:s(rdline)f(rdline.3)
+rdline.2A
 	rdline ? p.condasm			:s( $catab[condcmd] )
 
 rdline.3
@@ -726,18 +723,12 @@ rdline.4 leq(substr(rdline,1,1),'>')		:f(return)
         output = "error compiling snobol4 statement"
   						:(rdline.6)
 *
-*  here on eof.  filenamc is non-null if we were reading from it.
+*  here on eof.  
 *
 rdline.5	
-	ident(filenamc)				:s(rdline.6)
-	filenamc =
-	ignore_defs = 1
-	endfile(1)
-	input(.infile,1,filenami)		:s(rdline)
-        output = "cannot open minimal file: " filenami        :(end)
 
 rdline.6
-*	output = 'at rdline.8'
+*	output = 'at rdline.6'
 	rdline = '       end'			:(rdline.4)
 
 *  syntax error handler.
@@ -801,8 +792,6 @@ fiop
 *
 *  process statements other than conditional directives.
 *
-other	eq( level )				:s(rdline.4)
-	eq( processrec[result(top),mode(top)] )	:s(rdline)f(rdline.4)
 -stitl	tblini(str)pos,cnt,index,val,lastval
 *  this routine is called to initialize a table from a string of
 *  index/value pairs.

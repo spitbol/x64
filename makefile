@@ -58,7 +58,7 @@ UHDRS=	$(OS)/systype.h $(OS)/extern32.h $(OS)/blocks32.h $(OS)/system.h
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	$(TARGET)/$(TARGET).cnd $(TARGET)/$(TARGET).hdr 
+VHDRS=	$(TARGET)/$(TARGET).hdr 
 
 # OS objects:
 SYSOBJS=trace.o sysax.o sysbp.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
@@ -121,12 +121,12 @@ spitbol.o: spitbol.s
 spitbol.s:	spitbol.lex $(VHDRS) $(TRANS) mintype.h
 	  $(SPIT) -u "spitbol:$(TARGET):comments" $(TRANS)
 
-spitbol.lex: $(MINPATH)spitbol.min $(TARGET)/$(TARGET).cnd $(LEX)
+spitbol.lex: $(MINPATH)spitbol.min $(LEX)
 	 $(SPIT) -u "$(MINPATH)spitbol:$(TARGET):spitbol" $(LEX)
 
 spitbol.err: spitbol.s
 
-errors.s: $(TARGET)/$(TARGET).cnd $(ERR) spitbol.s
+errors.s: $(ERR) spitbol.s
 	   $(SPIT) -1=spitbol.err -2=errors.s $(ERR)
 
 os.o: mintype.h os.inc
