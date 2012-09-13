@@ -76,7 +76,10 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 	trypath.o wrtaout.o
 
 # Assembly language objects common to all versions:
-CAOBJS = errors.o os.o sys.o
+CAOBJS = errors.o x86/x86.o x86/sys.o
+
+# machine-dependent object
+#XAOBJS = x86/x86.s x86/sys.o
 #arith.o
 
 # Objects for SPITBOL's HOST function:
