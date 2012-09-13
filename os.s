@@ -248,7 +248,7 @@ cvd_:
         push    edx             ; push ia
         callfar i_2_f,4         ; integer to float
 %if fretst0
-        fstp    dword [reg_ra]
+        fstp    qword [reg_ra]
         pop     ecx             ; restore ecx
         fwait
 %endif
@@ -306,7 +306,7 @@ str_:
         push    dword [eax]                 ; arg lsh
         callfar f_add,16                        ; perform op
 %if fretst0
-        fstp    dword [reg_ra]
+        fstp    qword [reg_ra]
         pop     edx                             ; restore regs
         pop     ecx
         fwait
@@ -325,7 +325,33 @@ str_:
 ;       sbr_ - subtract real at [eax] from ra
 ;
         %macro  sbr_	0
-sbr_:
+        push    ecx                             ; preserve regs for C
+        push    edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+        push    dword [eax+4]               ; arg msh
+        push    dword [eax]                 ; arg lsh
+        callfar f_sub,16                        ; perform op
+%if fretst0
+        fstp    qword [reg_ra]
+        pop     edx                             ; restore regs
+        pop     ecx
+        fwait
+%endif
+%if freteax
+        mov     dword [reg_ra+4, edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
+        pop     edx                             ; restore regs
+        pop     ecx
+%endif
+        %endmacro
+
+;
+;----------
+;
+;       mlr_ - multiply real in ra by real at [eax]
+;
+        %macro  mlr_	0
 
         push    ecx                             ; preserve regs for C
         push    edx
@@ -335,12 +361,13 @@ sbr_:
         push    dword [eax]                 ; arg lsh
         callfar f_sub,16                        ; perform op
 %if fretst0
-        fstp    dword [reg_ra]
+        fstp    qword [reg_ra]
         pop     edx                             ; restore regs
         pop     ecx
         fwait
 %endif
 %if freteax
+<<<<<<< HEAD
         mov     dword [reg_ra+4, edx         ; result msh
         mov     dword [reg_ra], eax           ; result lsh
         pop     edx                             ; restore regs
@@ -364,7 +391,7 @@ mlr_:
         push    dword [eax]                 ; arg lsh
         callfar f_mul,16                        ; perform op
 %if fretst0
-        fstp    dword [reg_ra]
+        fstp    qword [reg_ra]
         pop     edx                             ; restore regs
         pop     ecx
         fwait
@@ -393,7 +420,68 @@ mlr_:
         push    dword [eax]                 ; arg lsh
         callfar f_div,16                        ; perform op
 %if fretst0
-        fstp    dword [reg_ra]
+        fstp    qword [reg_ra]
+        pop     edx                             ; restore regs
+        pop     ecx
+        fwait
+%endif
+%if freteax
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
+        pop     edx                             ; restore regs
+        pop     ecx
+%endif
+       %endmacro
+
+;
+;----------
+;
+;       ngr_ - negate real in ra
+;
+        %macro  ngr_	0
+ngr_:
+	cmp	dword [reg_ra], 0
+	jne	%%ngr_1
+	cmp	dword [reg_ra+4], 0
+        je      %%ngr_2                     ; if zero, leave alone
+%%ngr_1:  xor     byte [reg_ra+7], 0x80         ; complement mantissa sign
+%%ngr_2:  
+	%endmacro
+
+
+
+; MATH-LIB
+;	segment		.text
+	%macro	atn_	0
+;
+;       atn_ arctangent of real in ra
+;
+
+=======
+        mov     dword [reg_ra+4,] edx         ; result msh
+        mov     dword [reg_ra,] eax           ; result lsh
+        pop     edx                             ; restore regs
+        pop     ecx
+%endif
+       %endmacro
+
+;
+;----------
+;
+;       dvr_ - divide real in ra by real at [eax]
+;
+        %macro  dvr_	0
+
+
+        push    ecx                             ; preserve regs for C
+        push    edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+        push    dword [eax+4]               ; arg msh
+        push    dword [eax]                 ; arg lsh
+        callfar f_div,16                        ; perform op
+%if fretst0
+        fstp    qword [reg_ra]
         pop     edx                             ; restore regs
         pop     ecx
         fwait
@@ -437,7 +525,7 @@ ngr_:
 	extern	f_atn
         callfar f_atn,8                         ; perform op
 %if fretst0
-        fstp    dword [reg_ra]
+        fstp    qword [reg_ra]
         pop     edx                             ; restore regs
         pop     ecx
         fwait
@@ -463,7 +551,7 @@ ngr_:
         push    dword [reg_ra]                ; RA lsh
         callfar f_chp,8                         ; perform op
 %if fretst0
-        fstp    dword [reg_ra]
+        fstp    qword [reg_ra]
         pop     edx                             ; restore regs
         pop     ecx
         fwait
@@ -486,7 +574,33 @@ ngr_:
         push    dword [reg_ra]                ; RA lsh
         callfar f_cos,8                         ; perform op
 %if fretst0
-        fstp    dword [reg_ra]
+        fstp    qword [reg_ra]
+        pop     edx                             ; restore regs
+        pop     ecx
+        fwait
+%endif
+%if freteax
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
+        pop     edx                             ; restore regs
+        pop     ecx
+%endif
+	%endmacro
+
+;
+;----------
+;
+;       chp_ chop fractional part of real in ra
+;
+	%macro	chp_	0
+
+        push    ecx                             ; preserve regs for C
+        push    edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+        callfar f_chp,8                         ; perform op
+%if fretst0
+        fstp    qword [reg_ra]
         pop     edx                             ; restore regs
         pop     ecx
         fwait
@@ -506,7 +620,7 @@ ngr_:
         push    dword [reg_ra]                ; ra lsh
         callfar f_etx,8                         ; perform op
 %if fretst0
-        fstp    dword [reg_ra]
+        fstp    qword [reg_ra]
         pop     edx                             ; restore regs
         pop     ecx
         fwait
@@ -527,7 +641,89 @@ ngr_:
         push    dword [reg_ra]                ; RA lsh
         callfar f_lnf,8                         ; perform op
 %if fretst0
-        fstp    dword [reg_ra]
+        fstp    qword [reg_ra]
+        pop     edx                             ; restore regs
+        pop     ecx
+        fwait
+%endif
+%if freteax
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
+        pop     edx                             ; restore regs
+        pop     ecx
+%endif
+	%endmacro
+
+        %macro  etx_	0
+        push    ecx                             ; preserve regs for c
+	push	edx
+        push    dword [reg_ra+4]              ; ra msh
+        push    dword [reg_ra]                ; ra lsh
+        callfar f_etx,8                         ; perform op
+.if fretst0
+        fstp	qword ptr reg_ra
+        pop     edx                             # restore regs
+	pop	ecx
+	fwait
+.endif
+.if freteax
+        mov     dword ptr reg_ra+4, edx         # result msh
+        mov     dword ptr reg_ra, eax           # result lsh
+        pop     edx                             # restore regs
+	pop	ecx
+.endif
+	%endmacro
+
+	%macro	sin_	0
+
+        push    ecx                             ; preserve regs for C
+        push    edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+        callfar f_sin,8                         ; perform op
+%if fretst0
+        fstp    qword [reg_ra]
+        pop     edx                             ; restore regs
+        pop     ecx
+        fwait
+%endif
+%if freteax
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
+        pop     edx                             ; restore regs
+        pop     ecx
+%endif
+	%endmacro
+
+        %macro sqr_	0
+        push    ecx                             ; preserve regs for C
+        push    edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+        callfar f_sqr,8                         ; perform op
+%if fretst0
+        fstp    qword [reg_ra]
+        pop     edx                             ; restore regs
+        pop     ecx
+        fwait
+%endif
+%if freteax
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
+        pop     edx                             ; restore regs
+        pop     ecx
+%endif
+	%endmacro
+
+	%macro  lnf_	0
+
+        push    ecx                             ; preserve regs for C
+        push    edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+        callfar f_lnf,8                         ; perform op
+%if fretst0
+        fstp    qword [reg_ra]
         pop     edx                             ; restore regs
         pop     ecx
         fwait
@@ -548,7 +744,7 @@ ngr_:
         push    dword [reg_ra]                ; RA lsh
         callfar f_sin,8                         ; perform op
 %if fretst0
-        fstp    dword [reg_ra]
+        fstp    qword [reg_ra]
         pop     edx                             ; restore regs
         pop     ecx
         fwait
@@ -559,7 +755,6 @@ ngr_:
         pop     edx                             ; restore regs
         pop     ecx
 %endif
-        ret
 	%endmacro
 
         %macro sqr_	0
@@ -569,7 +764,7 @@ ngr_:
         push    dword [reg_ra]                ; RA lsh
         callfar f_sqr,8                         ; perform op
 %if fretst0
-        fstp    dword [reg_ra]
+        fstp    qword [reg_ra]
         pop     edx                             ; restore regs
         pop     ecx
         fwait
@@ -589,7 +784,71 @@ ngr_:
         push    dword [reg_ra]                ; RA lsh
         callfar f_tan,8                         ; perform op
 %if fretst0
-        fstp    dword [reg_ra]
+        fstp    qword [reg_ra]
+        pop     edx                             ; restore regs
+        pop     ecx
+        fwait
+%endif
+%if freteax
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [reg_ra], eax           ; result lsh
+        pop     edx                             ; restore regs
+        pop     ecx
+%endif
+	%endmacro
+
+        %macro cpr_	0
+
+        mov     eax, dword [reg_ra+4] ; fetch msh
+        cmp     eax, 0x80000000         ; test msh for -0.0
+        je      cpr050            ; possibly
+        or      eax, eax                ; test msh for +0.0
+        jnz     %%cpr100            ; exit if non-zero for cc's set
+%%cpr050: cmp     dword [reg_ra], 0     ; true zero, or denormalized number?
+        jz      cpr100            ; exit if true zero
+        mov     al, 1
+        cmp     al, 0                   ; positive denormal, set cc
+%%cpr100: 
+	%endmacro
+
+;       ovr_ test for overflow value in ra
+
+        %macro ovr_	0
+
+
+        mov     ax, word [reg_ra+6]   ; get top 2 bytes
+        and     ax, 0x7ff0              ; check for infinity or nan
+        add     ax, 0x10                ; set/clear overflow accordingly
+	%endmacro
+
+	segment	.data
+; words saved during exit(-3)
+;
+        align 4
+
+        global  reg_cp
+        global  reg_ia
+        global  reg_pc
+        global  reg_pp
+        global  reg_ra
+        global  reg_xl
+        global  reg_xr
+        global  reg_xs
+        global  reg_wa
+        global  reg_wb
+        global  reg_wc
+
+        global  reg_block
+        global  reg_size
+
+        %macro tan_	0
+        push    ecx                             ; preserve regs for C
+        push    edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+        callfar f_tan,8                         ; perform op
+%if fretst0
+        fstp    qword [reg_ra]
         pop     edx                             ; restore regs
         pop     ecx
         fwait
@@ -867,7 +1126,92 @@ popregs:
 pop1:   popad
         retc    0
 
+	global	save_cp
+	global	save_xl
+	global	save_xr
+	global	save_xs
+	global	save_wa
+	global	save_wb
+	global	save_wc
 
+
+	global	osisp
+osisp:  dd      0               ; osint's stack pointer
+
+
+
+        segment .text
+
+
+;-----------
+;
+;       interface routines
+;
+;       each interface routine takes the following form:
+;
+;               sysxx   call    ccaller         ; call common interface
+;                       dd      zysxx           ; dd of c osint function
+;                       db      n               ; offset to instruction after
+;                                               ;   last procedure exit
+;
+;       in an effort to achieve portability of c osint functions, we
+;       do not take take advantage of any "internal" to "external"
+;       transformation of names by c compilers.  so, a c osint function
+;       representing sysxx is named _zysxx.  this renaming should satisfy
+;       all c compilers.
+;
+;       important:  one interface routine, sysfc, is passed arguments on
+;       the stack.  these items are removed from the stack before calling
+;       ccaller, as they are not needed by this implementation.
+;
+;
+;-----------
+;
+;       ccaller is called by the os interface routines to 
+;	call the real c os interface function.
+;
+;       general calling sequence is
+;
+;               call    ccaller
+;               dd      dd_of_c_function
+;               db      2*number_of_exit_points
+;
+;       control is never returned to a interface routine.  instead, control
+;       is returned to the compiler (the caller of the interface routine).
+;
+;       the c function that is called must always return an integer
+;       indicating the procedure exit to take or that a normal return
+;       is to be performed.
+;
+;               c function      interpretation
+;               return value
+;               ------------    -------------------------------------------
+;                    <0         do normal return to instruction past
+;                               last procedure exit (distance passed
+;                               in by dummy routine and saved on stack)
+;                     0         take procedure exit 1
+;                     4         take procedure exit 2
+;                     8         take procedure exit 3
+;                    ...        ...
+;
+;ccaller:
+
+;       (1) save registers in global variables
+;
+ccaller:        mov     dword [reg_wa],ecx              ; save registers
+        mov     dword [reg_wb],ebx
+        mov     dword [reg_wc],edx              ; (also _reg_ia)
+        mov     dword [reg_xr],edi
+        mov     dword [reg_xl],esi
+        mov     dword [reg_cp],ebp              ; Needed in image saved by sysxi
+
+;       (2) get pointer to arg list
+;
+        pop     esi                     	; point to arg list
+;
+;       (3) fetch dd of c function, fetch offset to  instruction
+;           past last procedure exit, and call c function.
+=======
 ;-----------
 ;
 ;       interface routines
@@ -984,6 +1328,229 @@ erexit: shr     eax,1           ; divide by 2
         push    eax
         xor     eax,eax         ; in case branch to error cascade
         ret                     ;   take procedure exit via ppm dd
+
+  
+; this file defines interface routines for calling procedures written in c from
+; within the minimal code.
+ 
+	%macro	mtoc	2
+	global	%1
+	extern	%2
+%1:
+	%endmacro
+
+	mtoc	sysax,zysax
+	call	ccaller
+	db	0
+
+	mtoc	sysbs,zysbs
+	call	ccaller
+	db	6
+
+	mtoc	sysbx,zysbx
+	mov	[reg_xs],esp
+	call	ccaller
+	db	0
+
+%if setreal == 1
+	mtoc	syscr,zyscr
+	call	ccaller
+	db	0
+%endif
+	mtoc	sysdc,zysdc
+	call	ccaller
+	db	0
+
+	mtoc	sysdm,zysdm
+	call	ccaller
+	db	0
+
+	mtoc	sysdt,zysdt
+	call	ccaller
+	db	0
+
+	mtoc	sysea,zysea
+	call	ccaller
+	db	2
+
+	mtoc	sysef,zysef
+	call	ccaller
+	db	6
+
+	mtoc	sysej,zysej
+	call	ccaller
+	db	0
+
+	mtoc	sysem,zysem
+	call	ccaller
+	db	0
+
+	
+	mtoc	sysen,zysen
+	call	ccaller
+	db	0
+
+	mtoc	sysep,zysep
+	call	ccaller
+	db	6
+
+	mtoc	sysex,zysex
+	mov	[reg_xs],esp
+	call	ccaller
+	db	6
+ 
+	mtoc	sysfc,zysfc
+	pop     eax             ; <<<<remove stacked scblk>>>>
+	lea	esp,[esp+edx*4]
+	push	eax
+	call	ccaller
+	db	4
+
+	mtoc	sysgc,zysgc
+	call	ccaller
+	db	0
+
+	mtoc	syshs,zyshs
+	mov	[reg_xs],esp
+	call	ccaller
+	db	16
+
+	mtoc	sysid,zysid
+	call	ccaller
+	db	0
+
+	mtoc	sysif,zysif
+	call	ccaller
+	db	2
+
+	mtoc	sysil,zysil
+	call	ccaller
+	db	0
+
+	mtoc	sysin,zysin
+	call	ccaller
+	db	6
+
+	mtoc	sysio,zysio
+	call	ccaller
+	db	4
+
+	mtoc	sysld,zysld
+	call	ccaller
+	db	0
+
+	mtoc	sysmm,zysmm
+	call	ccaller
+	db	0
+
+	mtoc	sysmx,zysmx
+	call	ccaller
+	db	0
+
+	mtoc	sysou,zysou
+	call	ccaller
+	db	4
+
+	mtoc	syspi,zyspi
+	call	ccaller
+	db	2
+
+	mtoc	syspl,zyspl
+	call	ccaller
+	db	6
+
+	mtoc	syspp,zyspp
+	call	ccaller
+	db	0
+
+	mtoc	syspr,zyspr
+	call	ccaller
+	db	2
+
+	mtoc	sysrd,zysrd
+	call	ccaller
+	db	2
+
+	mtoc	sysri,zysri
+	call	ccaller
+	db	2
+
+	mtoc	sysrw,zysrw
+	call	ccaller
+	db	6
+
+	mtoc	sysst,zysst
+	call	ccaller
+	db	10
+
+	mtoc	systm,zystm
+	call	ccaller
+	db	0
+
+	mtoc	systt,zystt
+	call	ccaller
+	db	0
+
+	mtoc	sysul,zysul
+	call	ccaller
+	db	0
+
+        
+	mtoc	sysxi,zysxi
+	mov	[reg_xs],esp
+	call	ccaller
+	db	4
+
+>>>>>>> 5eef6135a3d408b2d425f51bbf706911451ac0b2
+;
+        cs                              	; cs segment override
+        lodsd                           	; point to c function entry point
+        movzx   ebx,byte [esi]   		; save normal exit adjustment
+;
+<<<<<<< HEAD
+        mov     dword [reg_pp],ebx              ; in memory
+        pop     dword [reg_pc]                  ; save return pc past "call sysxx"
+;
+;       (3a) save compiler stack and switch to osint stack
+;
+        mov     dword [compsp],esp              ; save compiler's stack pointer
+        mov     esp,[osisp]               	; load osint's stack pointer
+;
+;       (3b) make call to osint
+;
+        call    eax                     	; call c interface function
+;
+;       (4) restore registers after c function returns.
+;
+	global	cc1
+cc1:    mov     dword [osisp], esp              ; save OSINT's stack pointer
+        mov     esp, dword [compsp]             ; restore compiler's stack pointer
+        mov     ecx, dword [reg_wa]             ; restore registers
+        mov     ebx, dword [reg_wb]
+        mov     edx, dword [reg_wc]             ; (also reg_ia)
+        mov     edi, dword [reg_xr]
+        mov     esi, dword [reg_xl]
+        mov     ebp, dword [reg_cp]
+
+        cld
+;
+;       (5) based on returned value from c function (in eax) either do a normal
+;           return or take a procedure exit.
+;
+        or      eax,eax         ; test if normal return ...
+        jns     erexit    ; j. if >= 0 (take numbered exit)
+        mov     eax,dword [reg_pc]
+        add     eax,dword [reg_pp]      ; point to instruction following exits
+        jmp     eax             ; bypass ppm exits
+
+;                               ; else (take procedure exit n)
+erexit: shr     eax,1           ; divide by 2
+        add     eax,dword [reg_pc]      ;   get to dd of exit offset
+        movsx   eax,word [eax]
+        add     eax,ppoff       ; bias to fit in 16-bit word
+        push    eax
+        xor     eax,eax         ; in case branch to error cascade
+        ret                     ;   take procedure exit via ppm dd
 ;
 ;       startup( char *dummy1, char *dummy2) - startup compiler
 ;
@@ -993,6 +1560,16 @@ erexit: shr     eax,1           ; divide by 2
 ;       (xr) = basemem
 ;       (xl) = topmem - sizeof(word)
 ;
+=======
+;       startup( char *dummy1, char *dummy2) - startup compiler
+;
+;       an osint c function calls startup to transfer control
+;       to the compiler.
+;
+;       (xr) = basemem
+;       (xl) = topmem - sizeof(word)
+;
+>>>>>>> 5eef6135a3d408b2d425f51bbf706911451ac0b2
 ;       Note: This function never returns.
 
         
