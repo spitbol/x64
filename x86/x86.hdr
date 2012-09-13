@@ -1,4 +1,4 @@
-
+	%include	"os.s"
 		extern	atlin
 
 	segment	.data
@@ -292,26 +292,3 @@ valtab:
 	dd	b_rcl
 	dd	end_min_data
 
-
-        extern         ldr_
-        extern         str_
-        extern         ovr_
-        extern         dvi_
-        extern         rmi_
-        extern         cvd_
-        extern         rti_
-        extern         itr_
-        extern         adr_
-        extern         sbr_
-        extern         mlr_
-        extern         dvr_
-        extern         ngr_
-        extern         atn_
-        extern         chp_
-        extern         cos_
-        extern         etx_
-        extern         lnf_
-        extern         sin_
-        extern         sqr_
-        extern         tan_
-        extern         cpr_

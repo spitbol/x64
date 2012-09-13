@@ -1092,7 +1092,7 @@ g.dvi
 g.rmi
 *	move argument to eax, call procedure
 	asm('mov','eax',getarg(i1))
-	asm('call', incode '_')	:(opdone)
+	asm('rmi_')	:(opdone)
 
 g.sti   asm('mov',getarg(i1),reg.ia)		:(opdone)
 
@@ -1119,9 +1119,9 @@ g.ine   asm('or',reg.ia,reg.ia)
 *
 *  real operations
 *
-g.itr	asm('call','itr_')	:(opdone)
+g.itr	asm('itr_')	:(opdone)
 
-g.rti	asm('call','rti_')
+g.rti	asm('rti_')
 	eq(i.type(i1))				:s(opdone)
 *  here if label given, branch if real too large
         asm('jc',getarg(i1))                 :(opdone)
@@ -1136,7 +1136,7 @@ g.dvr	t1 = i.type(i1)
 	leaarg 'dword ' =
 	(ge(t1,9) le(t1,15) asm('lea','eax',leaarg),
 +               asm('mov','eax', getarg(i1)))
-	asm('call',incode '_')		:(opdone)
+	asm('dvr_')		:(opdone)
 
 g.ngr
 g.atn
@@ -1146,12 +1146,12 @@ g.etx
 g.lnf
 g.sin
 g.sqr
-g.tan	asm('call',incode '_')		:(opdone)
+g.tan	asm('tan_')		:(opdone)
 
 
 g.rno	t1 = 'jno'				:(g.rov1)
 g.rov	t1 = 'jo'
-g.rov1  asm('call','ovr_')
+g.rov1  asm('ovr_')
 	asm(t1,getarg(i1))			:(opdone)
 
 g.req	t1 = 'je'				:(g.r1)
@@ -1160,7 +1160,7 @@ g.rge	t1 = 'jge'				:(g.r1)
 g.rgt	t1 = 'jg'				:(g.r1)
 g.rle	t1 = 'jle'				:(g.r1)
 g.rlt	t1 = 'jl'
-g.r1	asm('call','cpr_')
+g.r1	asm('cpr_')
 	asm(t1,getarg(i1))			:(opdone)
 
 g.plc
@@ -1387,7 +1387,7 @@ g.cvm	t1 = getarg(i1)
 	asm('sub',reg.ia,regmap['wb'])
 	asm('jo',t1)				:(opdone)
 
-g.cvd	asm('call','cvd_')			:(opdone)
+g.cvd	asm('cvd_')			:(opdone)
 
 g.mvc
 *	move chars from xl (esi) to xr (edi), count in wa (ecx)

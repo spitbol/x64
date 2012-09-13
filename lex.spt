@@ -677,7 +677,7 @@ outstmt
 *
 rdline	rdline = infile				:f(rdline.5)
 	nlines  = nlines + 1
-	output = 'rdline ' nlines ' ' rdline ';'
+*	output = 'rdline ' nlines ' ' rdline ';'
 	ident(comment.block)			:s(rdline.1)
 *  here if inside comment block
 	rdline = '*' (gt(size(rdline),1), substr(rdline,2))
