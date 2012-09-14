@@ -1,9 +1,9 @@
-# Unix/x86 SPITBOL
+# Unix/x32 SPITBOL
 #
 
 
 # SPITBOL Version:
-TARGET=   x86
+TARGET=   x32
 DEBUG=	1
 
 # Minimal source directory.
@@ -76,10 +76,10 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 	trypath.o wrtaout.o
 
 # Assembly language objects common to all versions:
-CAOBJS = errors.o x86/x86.o x86/sys.o
+CAOBJS = errors.o x32/x32.o x32/sys.o
 
 # machine-dependent object
-#XAOBJS = x86/x86.s x86/sys.o
+#XAOBJS = x32/x32.s x32/sys.o
 #arith.o
 
 # Objects for SPITBOL's HOST function:
@@ -121,7 +121,7 @@ errors.o: errors.s
 spitbol.o: spitbol.s
 
 # SPITBOL Minimal source
-spitbol.s:	spitbol.lex $(VHDRS) $(TRANS) mintype.h
+spitbol.s:	spitbol.lex $(VHDRS) $(TRANS) x32/mintype.h
 	  $(SPIT) -u "spitbol:$(TARGET):comments" $(TRANS)
 
 spitbol.lex: $(MINPATH)spitbol.min $(LEX)
@@ -132,9 +132,9 @@ spitbol.err: spitbol.s
 errors.s: $(ERR) spitbol.s
 	   $(SPIT) -1=spitbol.err -2=errors.s $(ERR)
 
-os.o: mintype.h os.inc
+os.o: x32/mintype.h x32/os.inc
 
-sys.o: mintype.h os.inc
+sys.o: x32/mintype.h x32/os.inc
 
 
 

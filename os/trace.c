@@ -43,9 +43,9 @@ extern int compsp;
 extern int osisp;
 extern int LOWSPMIN;
 
+#define TRACE
 atlin()
 {
-#define TRACE
 #ifdef TRACE
 	fprintf(stderr, "at line %d\n",nlines);
 	regdump();
@@ -111,3 +111,8 @@ void Exit(char * text)
 	Trace("Exit", text);
 #endif
 }
+#ifdef TRACE
+void shields() 
+{
+}
+#endif

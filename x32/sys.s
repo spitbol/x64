@@ -109,8 +109,8 @@
 
 %define globals 1
 
-        %include        "mintype.h"
-        %include        "os.inc"
+        %include        "x32/mintype.h"
+        %include        "x32/os.inc"
 
         extern  swcoup
 	extern	atlin
