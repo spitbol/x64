@@ -514,7 +514,8 @@ ccaller:        mov     dword [reg_wa],ecx              ; save registers
 ;       (4) restore registers after c function returns.
 ;
 	global	cc1
-cc1:    mov     dword [osisp], esp              ; save OSINT's stack pointer
+
+cc1:    mov     osisp, esp              ; save OSINT's stack pointer
 ;        mov     esp, dword [compsp]             ; restore compiler's stack pointer
         mov     esp,compsp             ; restore compiler's stack pointer
         mov     ecx, dword [reg_wa]             ; restore registers
