@@ -711,13 +711,20 @@ Memory is organized into words which each contain cfp$b
  
             brn causes control to be passed to the indicated
             label in the program section.
+<dt>1.3  bsw  x,val,plbl  
+
+<dd>
+branch on switch value
+<dt> 1.4  iff  val,plbl 
+<dd>provide branch for switch
 <pre>
-       1.3  bsw  x,val,plbl  branch on switch value
-       1.4  iff  val,plbl    provide branch for switch
             iff  val,plbl     ...
             ...
             ...
-       1.5  esw              end of branch switch table
+</pre>
+<dt>1.5  esw 
+<dd>end of branch switch table
+<p>
  
             bsw,iff,esw provide a capability for a switched
             branch similar to a fortran computed goto. the
@@ -730,18 +737,16 @@ Memory is organized into words which each contain cfp$b
             iff entries, then control passes to the plbl on the
             bsw. this plbl operand may be omitted if there are
             no values missing from the list.
+<p>
  
             iff and esw may only be used in this context.
             execution of bsw may destroy the contents of x.
             the iff entries may be in any order and since
             a translator may thus need to store and sort them,
             the comment field is restricted in length (sec 11).
-       ejc
- 
-       -1-  basic instructions (continued)
- 
-       1.6  ent  val         define program entry point
- 
+<dt>1.6  ent  val
+<dd>define program entry point
+<p>
             the symbol appearing in the label field is defined
             to be a program entry point which can subsequently
             be used in conjunction with the bri instruction,
@@ -759,7 +764,7 @@ Memory is organized into words which each contain cfp$b
             occur. the symbol val gives an identifying value
             to the entry point which can be accessed with the
             lei instruction.
- 
+<p> 
             note - subject to the restriction below, val may
             be omitted if no such identification is needed i.e.
             if no lei references the entry point. for this
@@ -770,34 +775,44 @@ Memory is organized into words which each contain cfp$b
             with the strictly ascending sequence of entry point
             addresses. to simplify this optimisation for all
             implementors, the following restriction is observed
+<blockquote>
                  val may only be omitted if the entry point is
                  separated from a following entry point by a
                  non-null minimal code sequence.
+<blockquote>
+<p>
             entry point addresses are accessible only by use of
             literals (=elbl, section 7) or dac constants
             (section 8-11.1).
- 
-       1.7  bri  opn         branch indirect
- 
+<dt>1.7  bri  opn
+
+<dd>         branch indirect
+<p> 
             opn contains the address of a program entry point
             (see ent). control is passed to the executable
             code starting at the entry point address. opn is
             left unchanged.
  
-       1.8  lei  x           load entry point identification
+<dt>1.8  lei  x
+
+<dd>           load entry point identification
+<p>
  
             x contains the address of an entry point for which
             an identifying value was given on the the ent line.
             lei replaces the contents of x by this value.
-       ejc
- 
-       -1-  basic instructions (continued)
- 
-       1.9  jsr  pnam        call procedure pnam
-       1.10 ppm  plbl        provide exit parameter
+<dt>1.9  jsr  pnam 
+
+<dd>       call procedure pnam
+<dt>1.10 ppm  plbl
+
+<dd>        provide exit parameter
+<pre>
             ppm  plbl         ...
             ...
             ppm  plbl         ...
+</pre>
+<p>
  
             jsr causes control to be passed to the named
             procedure. pnam is the label on a prc statement
@@ -812,8 +827,9 @@ Memory is organized into words which each contain cfp$b
             procedure definition. the operand of ppm may be
             omitted if the corresponding exi return is certain
             not to be taken.
- 
-       1.11 prc  ptyp,int    define start of procedure
+<dt>1.11 prc  ptyp,int
+<dd>    define start of procedure
+<p>
  
             the symbol appearing in the label field is defined
             to be the name of a procedure for use with jsr.
@@ -825,22 +841,25 @@ Memory is organized into words which each contain cfp$b
             all procedures should be named in section 0
             inp  statements.
  
+<p>
             int is the number of exit parameters (ppm-s) to
             be used in jsr calls.
  
+<p>
             there are three possibilities for ptyp, each
             consisting of a single letter as follows.
- 
-            r                recursive
+<dl> 
+<dt>r 
+
+<dd>               recursive
+<p>
  
             the return point (one or more words) is stored on
             the stack as though one or more mov ...,-(xs)
-            instructions were executed.
-       ejc
- 
-       -1-  basic instructions (continued)
- 
-            n                non-recursive
+<dt>n
+
+<dd>                non-recursive
+<p>
  
             the return point is to be stored either
             (1) in a local storage word associated
@@ -851,13 +870,16 @@ Memory is organized into words which each contain cfp$b
             it is an error to use the stack for n-links, since
             procedure parameters or results may be passed via
             the stack.
+<p>
             if method (2) is used for links, error exits
             (erb,err) from a procedure will necessitate link
             stack resetting. the ssl and sss orders provided
             for this may be regarded as no-ops for
             implementations using method (1).
  
-            e                either
+<dt>e 
+<dd>               either
+<p>
  
             the return point may be stored in either manner
             according to efficiency requirements of the actual
@@ -865,25 +887,27 @@ Memory is organized into words which each contain cfp$b
             that programming of e type procedures must be
             independent of the actual implementation.
  
+<p>
             the actual form of the return point is undefined.
             however, each word stored on the stack for an
             r-type call must meet the following requirements.
  
-            1)               it can be handled as an address
+<ol>
+<li>it can be handled as an address
                              and placed in an index register.
  
-            2)               when used as an operand in an
+<li>when used as an operand in an
                              address comparison instruction, it
                              must not appear to lie within
                              the allocated data area.
- 
-            3)               it is not required to appear
+<li>it is not required to appear
                              to lie within the program section.
-       ejc
+</ol>
  
-       -1-  basic instructions (continued)
- 
-       1.12 exi  int         exit from procedure
+<dt>1.12 exi  int
+
+<dd>         exit from procedure
+<p>
  
             the ppm and err parameters following a jsr are
             numbered starting from 1.  exi  int causes control
@@ -898,12 +922,18 @@ Memory is organized into words which each contain cfp$b
             stack if any are stored there so that the stack
             pointer is restored to its calling value.
  
-       1.13 enp              define end of procedure body
+<dt>1.13 enp
+
+<dd>              define end of procedure body
+<p>
  
             enp delimits a procedure body and may not actually
             be executed, hence it must have no label.
  
-       1.14 err  int,text    provide error return
+<dt>1.14 err  int,text
+
+<dd>    provide error return
+<p>
  
             err may replace an exit parameter (ppm) in
             any procedure call. the int argument is a unique
@@ -920,38 +950,52 @@ Memory is organized into words which each contain cfp$b
             instruction in the error section (which follows the
             program section) with the error code in wa.
  
-       1.15 erb  int,text    error branch
+<dt>1.15 erb  int,text
+
+<dd>    error branch
+<p>
  
             this instruction resembles err except that it may
             occur at any point where a branch is permitted.
             it effects a transfer of control to the error
             section with the error code in wa.
  
-       1.16 icv  opn         increment value by one
+<dt>1.16 icv  opn
+
+<dd>         increment value by one
+<p>
  
             icv increments the value of the operand by unity.
             it is equivalent to   add  =unity,opn
- 
-       1.17 dcv  opn         decrement value by one
+<dt>1.17 dcv  opn
+
+<dd>         decrement value by one
+<p>
  
             dcv decrements the value of the operand by unity.
             it is equivalent to   sub  =unity,opn
-       ejc
- 
-       basic instructions (continued)
- 
-       1.18 zer  opn         zeroise opn
+<dt>1.18 zer  opn
+
+<dd>         zeroise opn
+<p>
  
             zer is equivalent to  mov  =zeroe,opn
  
-       1.19 mnz  opn         move non-zero to opn
+<dt>1.19 mnz  opn
+
+<dd>         move non-zero to opn
+<p>
  
             any non-zero collectable value may used, for which
             the opcodes bnz/bze will branch/fail to branch.
- 
-       1.20 ssl  opw         subroutine stack load
- 
-       1.21 sss  opw         subroutine stack store
+<dt>1.20 ssl  opw
+
+<dd>         subroutine stack load
+
+<dt>1.21 sss  opw
+
+<dd>         subroutine stack store
+<p>
  
             this pair of operations is provided to make possible
             the use of a local stack to hold subroutine (s-r)
@@ -969,8 +1013,10 @@ Memory is organized into words which each contain cfp$b
             is that it should fit into a single full word.
             ssl and sss are no-ops if a private link stack is
             not used.
- 
-       1.22 rtn              define start of routine
+<dt>1.22 rtn
+
+<dd>              define start of routine
+<p>
  
             a routine is a code chunk used for similar purposes
             to a procedure. however it is entered by any type of
@@ -982,32 +1028,56 @@ Memory is organized into words which each contain cfp$b
             an explicit opcode (compare enp).
             all routines should be named in section 0
             inr  statements.
-       ejc
  
-       -2-  operations on one word integer values (addresses)
+<h3>2-  operations on one word integer values (addresses)</h3?
  
-       2.1  add  opv,opn     adds opv to the value in opn and
+<dt>2.1  add  opv,op
+
+<dd>
+
+    adds opv to the value in opn and
                              stores the result in opn. undefined
                              if the result exceeds cfp$l.
  
-       2.2  sub  opv,opn     subtracts opv from opn. stores the
+<dt>2.2  sub  opv,opn
+
+<dd>     subtracts opv from opn. stores the
                              result in opn. undefined if the
                              result is negative.
  
-       2.3  ica  opn         increment address in opn
+<dt>2.3  ica  opn
+
+<dd>         increment address in opn
+<p>
                              equivalent to add *unity,opn
  
-       2.4  dca  opn         decrement address in opn
+<dt>2.4  dca  opn
+
+<dd>         decrement address in opn
                              equivalent to sub *unity,opn
  
-       2.5  beq  opn,opv,plbl branch to plbl if opn eq opv
-       2.6  bne  opn,opv,plbl branch to plbl if opn ne opv
-       2.7  bgt  opn,opv,plbl branch to plbl if opn gt opv
-       2.8  bge  opn,opv,plbl branch to plbl if opn ge opv
-       2.9  blt  opn,opv,plbl branch to plbl if opn lt opv
-       2.10 ble  opn,opv,plbl branch to plbl if opn le opv
-       2.11 blo  opn,opv,plbl equivalent to blt or ble
-       2.12 bhi  opn,opv,plbl equivalent to bgt or bge
+<dt>2.5  beq  opn,opv,plbl
+
+<dd> branch to plbl if opn eq opv
+
+<dt>2.6  bne  opn,opv,plbl 
+
+<dd>branch to plbl if opn ne opv
+<dt>2.7  bgt  opn,opv,plbl
+
+<dd> branch to plbl if opn gt opv
+<dt>2.8  bge  opn,opv,plbl
+
+<dd> branch to plbl if opn ge opv
+<dt>2.9  blt  opn,opv,plbl 
+<dd>branch to plbl if opn lt opv
+<dt>2.10 ble  opn,opv,plbl
+<dd> branch to plbl if opn le opv
+<dt>2.11 blo  opn,opv,plbl
+<dd> equivalent to blt or ble
+<dt>2.12 bhi  opn,opv,plbl
+<dd> equivalent to bgt or bge
+<p>
  
             the above instructions compare two address
             values as unsigned integer values.
@@ -1015,20 +1085,25 @@ Memory is organized into words which each contain cfp$b
             the equal condition either does not occur or can
             result either in a branch or no branch. this avoids
             inefficient translations in some implementations.
- 
-       2.13 bnz  opn,plbl    equivalent to bne opn,=zeroe,plbl
- 
-       2.14 bze  opn,plbl    equivalent to beq opn,=zeroe,plbl
- 
- 
-       2.15 lct  w,opv       load counter for bct
+<dt>2.13 bnz  opn,plbl
+<dd>    equivalent to bne opn,=zeroe,plbl
+<dt>2.14 bze  opn,plbl
+<dd>    equivalent to beq opn,=zeroe,plbl
+
+<dt>2.15 lct  w,opv
+
+<dd>       load counter for bct
+<p>
  
             lct loads a counter value for use with the bct
             instruction. the value in opv is the number of loops
             to be executed. the value in w after this operation
             is an undefined one word integer quantity.
  
-       2.16 bct  w,plbl      branch and count
+<dt>2.16 bct  w,plbl
+
+<dd>      branch and count
+<p>
  
             bct uses the counter value in w to branch the
             required number of times and then finally to fall
@@ -1036,14 +1111,22 @@ Memory is organized into words which each contain cfp$b
             used following an appropriate lct instruction.
             the value in w after execution of bct is undefined.
  
-       2.17 aov  opv,opn,plbl add with carry test
- 
-            adds opv to the value in opn and stores result in
+<dt>2.17 aov  opv,opn,plbl
+
+<dd> add with carry test
+
+<p> adds opv to the value in opn and stores result in
             opn. branches to plbl if result exceeds cfp$l
             with result in opn undefined. cf. add.
  
-       2.18 bev  opn,plbl     branch if even
-       2.19 bod  opn,plbl     branch if odd
+<dt>2.18 bev  opn,plbl
+
+<dd>     branch if even
+
+<dt>2.19 bod  opn,plbl
+
+<dd>     branch if odd
+<p>
  
             these operations are used only if .cepp or .crpp is
             defined.  on some implementations, a more efficient
@@ -1055,9 +1138,8 @@ Memory is organized into words which each contain cfp$b
             forced to be odd (not a multiple of cfp$b).
             bev and bod branch according as operand is even
             or odd, respectively.
-       ejc
- 
-       -3-  operations on the code pointer register (cp)
+<h3>3-  operations on the code pointer register (cp)</h3>
+<p>
  
             the code pointer register provides a psuedo
             instruction counter for use in an interpretor. it
@@ -1067,38 +1149,53 @@ Memory is organized into words which each contain cfp$b
             pointer register is always a word address (i.e.
             a one word integer which is a multiple of cfp$b).
  
-       3.1  lcp  reg         load code pointer register
-                             this instruction causes the code
+<dt>3.1  lcp  reg
+
+<dd>         load code pointer register
+
+<p> this instruction causes the code
                              pointer register to be set from
                              the value in reg which is unchanged
- 
-       3.2  scp  reg         store code pointer register
+
+<dt>3.2  scp  reg
+
+<dd>         store code pointer register
                              this instruction loads the current
                              value in the code pointer register
                              into reg. (cp) is unchanged.
  
-       3.3  lcw  reg         load next code word
+<dt>3.3  lcw  reg
+
+<dd>         load next code word
+
+<p>
                              this instruction causes the word
                              pointed to by cp to be loaded into
                              the indicated reg. the value in cp
                              is then incremented by one word.
                              execution of lcw may destroy xl.
  
-       3.4  icp              increment cp by one word
+<dt>3.4  icp
+
+<dd>              increment cp by one word
+<p>
  
             on machines with more than three index registers,
             cp can be treated simply as an index register.
             in this case, the following equivalences apply.
+<pre>
  
             lcp reg is like mov reg,cp
             scp reg is like mov cp,reg
             lcw reg is like mov (cp)+,reg
             icp     is like ica cp
  
+</pre>
             since lcw is allowed to destroy xl, the following
             implementation using a work location cp$$$ can
             also be used.
  
+<pre>
             lcp  reg         mov  reg,cp$$$
  
             scp  reg         mov  cp$$$,reg
@@ -1108,35 +1205,65 @@ Memory is organized into words which each contain cfp$b
                              mov  xl,cp$$$
  
             icp              ica  cp$$$
-       ejc
+</pre>
  
-       -4-  operations on signed integer values
+<h3>4-  operations on signed integer values</h3>
  
-       4.1  ldi  ops         load integer accumulator from ops
-       4.2  adi  ops         add ops to integer accumulator
-       4.3  mli  ops         multiply integer accumulator by ops
-       4.4  sbi  ops         subtract ops from int accumulator
-       4.5  dvi  ops         divide integer accumulator by ops
-       4.6  rmi  ops         set int accum to mod(intacc,ops)
-       4.7  sti  ops         store integer accumulator at ops
-       4.8  ngi              negate the value in the integer
+<dt>4.1  ldi  ops
+
+<dd>         load integer accumulator from ops
+
+<dt>4.2  adi  ops
+
+<dd>         add ops to integer accumulator
+
+<dt>4.3  mli  ops
+
+<dd>         multiply integer accumulator by ops
+
+<dt>4.4  sbi  ops
+
+<dd>
+subtract ops from int accumulator
+
+<dt>4.5  dvi  ops
+
+<dd>         divide integer accumulator by ops
+
+<dt>4.6  rmi  ops
+
+<dd>         set int accum to mod(intacc,ops)
+
+<dt>4.7  sti  ops
+
+<dd>         store integer accumulator at ops
+
+<dt>4.8  ngi
+
+<dd>              negate the value in the integer
                              accumulator (change its sign)
  
+<p>
             the equation satisfied by operands and results of
             dvi and rmi is
+<pre>
                    div = qot * ops + rem          where
             div = dividend in integer accumulator
             qot = quotient left in ia by div
             ops = the divisor
             rem = remainder left in ia by rmi
+</pre>
+<p>
             the sign of the result of dvi is + if (ia) and (ops)
             have the same sign and is - if they have opposite
             signs. the sign of (ia) is always used as the sign
             of the result of rem.
+<p>
             assuming in each case that ia contains the number
             specified in parentheses and that seven and msevn
             hold +7 and -7 resp. the algorithm is illustrated
             below.
+<pre>
             (ia = 13)
             dvi  seven       ia = 1
             rmi  seven       ia = 6
@@ -1147,8 +1274,9 @@ Memory is organized into words which each contain cfp$b
             rmi  seven       ia = -6
             dvi  msevn       ia = 1
             rmi  msevn       ia = -6
-       ejc
+</pre>
  
+<p>
             the above instructions operate on a full range of
             signed integer values. with the exception of ldi and
             sti, these instructions may cause integer overflow
@@ -1160,41 +1288,84 @@ Memory is organized into words which each contain cfp$b
             having distinct overflow and divide by zero
             conditions.
  
-       4.9  ino  plbl        jump to plbl if no integer overflow
-       4.10 iov  plbl        jump to plbl if integer overflow
+<dt>4.9  ino  plbl
+
+<dd>        jump to plbl if no integer overflow
+
+<dt>4.10 iov  plbl
+
+<dd>        jump to plbl if integer overflow
+<p>
  
             these instructions can only occur immediately
             following an instruction which can cause integer
             overflow (adi, sbi, mli, dvi, rmi, ngi) and
             test the result of the preceding instruction.
             iov and ino may not have labels.
- 
-       4.11 ieq  plbl        jump to plbl if (ia) eq 0
-       4.12 ige  plbl        jump to plbl if (ia) ge 0
-       4.13 igt  plbl        jump to plbl if (ia) gt 0
-       4.14 ile  plbl        jump to plbl if (ia) le 0
-       4.15 ilt  plbl        jump to plbl if (ia) lt 0
-       4.16 ine  plbl        jump to plbl if (ia) ne 0
+<dt>4.11 ieq  plbl
+
+<dd>        jump to plbl if (ia) eq 0
+
+
+<dt>4.12 ige  plbl
+
+<dd>        jump to plbl if (ia) ge 0
+
+<dt>4.13 igt  plbl
+
+<dd>        jump to plbl if (ia) gt 0
+
+<dt>4.14 ile  plbl
+
+<dd>        jump to plbl if (ia) le 0
+
+
+<dt>4.15 ilt  plbl
+
+<dd>        jump to plbl if (ia) lt 0
+
+<dt>4.16 ine  plbl
+
+<dd>        jump to plbl if (ia) ne 0
+
+<p>
  
             the above conditional jump instructions do
             not change the contents of the accumulator.
             on a ones complement machine, it is permissible to
             produce negative zero in ia provided these
             instructions operate correctly with such a value.
-       ejc
- 
-       -5-  operations on real values
- 
-       5.1  ldr  ops         load real accumulator from ops
-       5.2  str  ops         store real accumulator at ops
-       5.3  adr  ops         add ops to real accumulator
-       5.4  sbr  ops         subtract ops from real accumulator
-       5.5  mlr  ops         multiply real accumulator by ops
-       5.6  dvr  ops         divide real accumulator by ops
- 
-            if the result of any of the above operations causes
+<h3>5-  operations on real values</h3>
+
+<dt>5.1  ldr  ops
+
+<dd>         load real accumulator from ops
+
+<dt>5.2  str  ops
+
+<dd>         store real accumulator at ops
+
+
+<dt>5.3  adr  ops
+
+<dd>         add ops to real accumulator
+
+<dt>5.4  sbr  ops
+
+<dd>         subtract ops from real accumulator
+
+
+<dt>5.5  mlr  ops
+
+<dd>         multiply real accumulator by ops
+
+<dt>5.6  dvr  ops
+
+<dd>         divide real accumulator by ops
+
+<p>If the result of any of the above operations causes
             underflow, the result yielded is 0.0.
- 
+<p> 
             if the result of any of the above operations is
             undefined or out of range, real overflow is set,
             the contents of (ra) are undefined and the following
@@ -1203,33 +1374,73 @@ Memory is organized into words which each contain cfp$b
             having distinct overflow and divide by zero
             conditions.
  
-       5.7  rov  plbl        jump to plbl if real overflow
-       5.8  rno  plbl        jump to plbl if no real overflow
+<dt>5.7  rov  plbl
+
+<dd>        jump to plbl if real overflow
+
+<dt>5.8  rno  plbl
+
+<dd>        jump to plbl if no real overflow
  
+<p>
             these instructions can only occur immediately
             following an instruction which can cause real
             overflow (adr,sbr,mlr,dvr).
- 
-       5.9  ngr              negate real accum (change sign)
- 
-       5.10 req  plbl        jump to plbl if (ra) eq 0.0
-       5.11 rge  plbl        jump to plbl if (ra) ge 0.0
-       5.12 rgt  plbl        jump to plbl if (ra) gt 0.0
-       5.13 rle  plbl        jump to plbl if (ra) le 0.0
-       5.14 rlt  plbl        jump to plbl if (ra) lt 0.0
-       5.15 rne  plbl        jump to plbl if (ra) ne 0.0
+<dt>5.9  ngr
+
+<dd>              negate real accum (change sign)
+
+<dt>5.10 req  plbl
+
+<dd>        jump to plbl if (ra) eq 0.0
+
+
+<dt>5.11 rge  plbl
+
+<dd>        jump to plbl if (ra) ge 0.0
+
+<dt>5.12 rgt  plbl
+
+<dd>        jump to plbl if (ra) gt 0.0
+
+
+<dt>5.13 rle  plbl
+
+<dd>        jump to plbl if (ra) le 0.0
+
+<dt>5.14 rlt  plbl
+
+<dd>        jump to plbl if (ra) lt 0.0
+
+<dt>5.15 rne  plbl
+
+<dd>        jump to plbl if (ra) ne 0.0
+
+<p>
  
             the above conditional instructions do not affect
             the value stored in the real accumulator.
             on a ones complement machine, it is permissible to
             produce negative zero in ra provided these
             instructions operate correctly with such a value.
-.if    .cmth
- 
-       5.16 atn              arctangent of real accum
-       5.17 chp              integer portion of real accum
-       5.18 cos              cosine of real accum
-       5.19 etx              e to the power in the real accum
+
+<dt>5.16 atn
+
+<dd>              arctangent of real accum
+
+
+<dt>5.17 chp
+
+<dd>              integer portion of real accum
+
+<dt>5.18 cos
+
+<dd>              cosine of real accum
+
+<dt>5.19 etx
+
+<dd>              e to the power in the real accum
+
        5.20 lnf              natural logorithm of real accum
        5.21 sin              sine of real accum
        5.22 sqr              square root of real accum
