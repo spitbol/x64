@@ -130,7 +130,7 @@ nomachine
 *  data and public definitions
 *
 	data = tab 'segment' tab '.data'
-        include = tab '%include' tab '"mintype.h"'
+        include = tab '%include' tab '"x32/mintype.h"'
 
 *  setup keywords
 *
