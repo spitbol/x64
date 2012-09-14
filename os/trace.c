@@ -56,7 +56,8 @@ rp(char * name,uword reg)
 /* print register name and vaue */
 {
 #ifdef TRACE
-	fprintf(stderr," %s %u ",name, reg);
+	fprintf(stderr," %s %8u ",name, reg);
+	fprintf(stderr," %s %8u ",name, reg);
 #endif
 }
 
@@ -65,27 +66,31 @@ regdump()
 #ifdef TRACE
 	fprintf(stderr," nlines %d\n",nlines);
 	fprintf(stderr, "koshka %d\n",koshka);
-	rp("WA", WA(int));
-	rp("WB", WB(int));
-	rp("WC", WC(int));
-	rp("XL", XL(int));
-	rp("XR", XR(int));
-	rp("XS", XS(int));
-	rp("CP", CP(int));
-	rp("IA", IA(int));
+	fprintf(stderr," %s %10u ","CP", CP(int));
+	fprintf(stderr," %s %10u ","IA", IA(int));
 	fprintf(stderr,"\n");
-	fprintf(stderr,"compsp %u",compsp);
-	fprintf(stderr,"  osisp %u", osisp);
+	fprintf(stderr," %s %10u ","WA", WA(int));
+	fprintf(stderr," %s %10u ","WB", WB(int));
+	fprintf(stderr," %s %10u ","WC", WC(int));
+	fprintf(stderr,"\n");
+	fprintf(stderr," %s %10u ","XL", XL(int));
+	fprintf(stderr," %s %10u ","XR", XR(int));
+	fprintf(stderr," %s %10u ","XS", XS(int));
+	fprintf(stderr,"\n");
+	fprintf(stderr," %s %10lX ","CP", CP(int));
+	fprintf(stderr," %s %10lX ","IA", IA(int));
+	fprintf(stderr,"\n");
+	fprintf(stderr," %s %10lX ","WA", WA(int));
+	fprintf(stderr," %s %10lX ","WB", WB(int));
+	fprintf(stderr," %s %10lX ","WC", WC(int));
+	fprintf(stderr,"\n");
+	fprintf(stderr," %s %10lX ","XL", XL(int));
+	fprintf(stderr," %s %10lX ","XR", XR(int));
+	fprintf(stderr," %s %10lX ","XS", XS(int));
+	fprintf(stderr,"\n");
+	fprintf(stderr,"compsp %10u",compsp);
+	fprintf(stderr,"  osisp %10u", osisp);
 	fprintf(stderr," LOWSPMIN %u\n", LOWSPMIN);
-	fprintf(stderr," saved registers:\n");
-	fprintf(stderr, " cp=%u", save_cp);
-	fprintf(stderr, " xl=%u", save_xl);
-	fprintf(stderr, " xr=%u", save_xr);
-	fprintf(stderr, " xs=%u", save_xs);
-	fprintf(stderr, " wa=%u", save_wa);
-	fprintf(stderr, " wb=%u", save_wb);
-	fprintf(stderr, " wc=%u", save_wc);
-	fprintf(stderr, "\n");
 #endif
 }
 void Trace(char * type, char * text) 

@@ -331,7 +331,7 @@ pushregs:
         cld
    rep  movsd
 
-        mov     edi,dword [compsp]
+        mov     edi,compsp
         or      edi,edi                         ; is there a compiler stack
         je      push1                     	; jump if none yet
         sub     edi,4                           ;push onto compiler's stack
@@ -353,7 +353,8 @@ popregs:
    rep  movsd                                   ;restore from temp area
         mov     dword [reg_cp],eax
 
-        mov     edi,dword [sav_compsp]          ;saved compiler's stack
+;        mov     edi,dword [sav_compsp]          ;saved compiler's stack
+        mov     edi,sav_compsp          ;saved compiler's stack
         or      edi,edi                         ;is there one?
         je      pop1                      	;jump if none yet
         mov     esi,dword [edi]                 ;retrieve collectable XL
@@ -504,7 +505,7 @@ ccaller:        mov     dword [reg_wa],ecx              ; save registers
 ;       (3a) save compiler stack and switch to osint stack
 ;
         mov     dword [compsp],esp              ; save compiler's stack pointer
-        mov     esp,[osisp]               	; load osint's stack pointer
+        mov     esp,osisp               	; load osint's stack pointer
 ;
 ;       (3b) make call to osint
 ;
@@ -514,7 +515,8 @@ ccaller:        mov     dword [reg_wa],ecx              ; save registers
 ;
 	global	cc1
 cc1:    mov     dword [osisp], esp              ; save OSINT's stack pointer
-        mov     esp, dword [compsp]             ; restore compiler's stack pointer
+;        mov     esp, dword [compsp]             ; restore compiler's stack pointer
+        mov     esp,compsp             ; restore compiler's stack pointer
         mov     ecx, dword [reg_wa]             ; restore registers
         mov     ebx, dword [reg_wb]
         mov     edx, dword [reg_wc]             ; (also reg_ia)
@@ -721,14 +723,14 @@ startup:
         pop     eax                     ; discard dummy1
         pop     eax                     ; discard dummy2
         call    stackinit               ; initialize MINIMAL stack
-        mov     eax,dword [compsp]              ; get MINIMAL's stack pointer
+        lea     eax,[compsp]              ; get MINIMAL's stack pointer
         mov     dword [reg_wa],eax                     ; startup stack pointer
 
         cld                             ; default to UP direction for string ops
         extern  DFFNC
         lea     eax,[DFFNC]               ; get dd of PPM offset
         mov     dword [ppoff],eax               ; save for use later
-        mov     esp,dword [osisp]               ; switch to new c stack
+        mov     esp,osisp               ; switch to new c stack
 	push	start_callid
 	callc	minimal_call,4 			 ; load regs, switch stack, start compiler
 
@@ -796,21 +798,21 @@ minimal_call:
         mov     esi,dword[reg_xl]
         mov     ebp,dword[reg_cp]
 
-        mov     dword [osisp],esp               ; save osint stack pointer
+        mov     [osisp],esp               ; save osint stack pointer
         cmp     dword [compsp],0      ; is there a compiler stack?
         je      min1              ; jump if none yet
-        mov     esp,dword [compsp]              ; switch to compiler stack
+        mov     esp,compsp              ; switch to compiler stack
 
 	extern	calltab
 min1:   callc   [calltab+eax*4],0        ; off to the minimal code
         mov     esp,osisp               ; switch to osint stack
 
-        mov     [reg_wa],ecx              ; save registers
-        mov     [reg_wb],ebx
-        mov     [reg_wc],edx
-        mov     [reg_xr],edi
-        mov     [reg_xl],esi
-        mov     [reg_cp],ebp
+        mov     dword [reg_wa],ecx              ; save registers
+        mov     dword [reg_wb],ebx
+        mov     dword [reg_wc],edx
+        mov     dword [reg_xr],edi
+        mov     dword [reg_xl],esi
+        mov     dword [reg_cp],ebp
         popad
         retc    4
 
