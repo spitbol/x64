@@ -152,7 +152,7 @@ Memory is organized into words which each contain <code>cfp$b</code>
        addition <code>XL</code> may sometimes be referred to by the alias
        of xt - see section 4. any of the above registers
        may hold a positive unsigned integer in the range
-       (0 le n le <code>cfp$l</em). when the index register is used for
+       (0 le n le <code>cfp$l</code>). when the index register is used for
        indexing purposes, this must be an appropriate address.
        <code>XS</code> is special in that it is used to point to the top
        item of a stack in memory. the stack may build up or
@@ -219,7 +219,7 @@ Memory is organized into words which each contain <code>cfp$b</code>
        the code pointer register (<code>CP</code>) is a special index
        register for use in implementations of interpretors.
        it is used to contain a pseudo-code pointer and can
-       only be affected by i<code>CP</code>, l<code>CP</code>, s<code>CP</code> and lcw instructions.
+       only be affected by i<code>CP</code>, <code>CP</code>, s<code>CP</code> and lcw instructions.
 
 <h2>section 4 - the stack</h2>
 <p> 
@@ -402,7 +402,7 @@ Memory is organized into words which each contain <code>cfp$b</code>
        for operands of instructions and assembly operations.
 <pre>
  
-       01   int              unsigned integer le <code>cfp$l</em
+       01   int              unsigned integer le <code>cfp$l</code>
        02   dlbl             symbol defined in definitions sec
        03   wlbl             label in working storage section
        04   clbl             label in constant section
@@ -445,7 +445,7 @@ Memory is organized into words which each contain <code>cfp$b</code>
  
 <p>
             val is used to refer to a predefined one word
-            integer value in the range 0 le n le <code>cfp$l</em.
+            integer value in the range 0 le n le <code>cfp$l</code>
  
 <dt>reg  07,08
 
@@ -453,7 +453,12 @@ Memory is organized into words which each contain <code>cfp$b</code>
  
 <p>
             reg is used to describe an operand which can be
-            any of the registers (<code>XL</code>,<code>XR</code>,<code>XS</code>,xt,wa,<code>WB</code>,<code>WC</code>). such
+            any of the registers (<code>XL</code>,
+<code>XR</code>,
+<code>XS</code>,<code>XT</code>,
+<code>WA</code>,
+<code>WB</code>,
+<code>WC</code>). Such
             an operand can hold a one word integer (address).
  
 <dt>opc  09,10,11
@@ -475,13 +480,13 @@ Memory is organized into words which each contain <code>cfp$b</code>
             depending on the data type. in the case of multiword
             operands, the address given is the first word.
  
-<dt>opw  as for ops + 08,10,11
+<dt><em>opw</em>  as for ops + 08,10,11
 
 <dd>      full word
  
 <p>
-            opw is used to refer to an operand whose capacity is
-            that of a full memory word. opw includes all the
+            <em>opw</em> is used to refer to an operand whose capacity is
+            that of a full memory word. <em>opw</em> includes all the
             possibilities for ops (the referenced word is used)
             plus the use of one of the three work registers
             (wa,<code>WB</code>,<code>WC</code>). in addition, the formats (x)+ and -(x)
@@ -499,16 +504,19 @@ Memory is organized into words which each contain <code>cfp$b</code>
             the formats -(x) and (x)+ may also be used in
             pre-decrementation, post-incrementation to access
             the adjacent character of a string.
-<dt>opn  as for opw + 07
+<dt>opn  as for <em>opw</em> + 07
 
 <dd>            one word integer
  
 <p>
             opn is used to represent an operand location which
             can contain a one word integer (e.g. an address).
-            this includes all the possibilities for opw plus
-            the use of one of the index registers (<code>XL</code>,<code>XR</code>,xt,
-            <code>XS</code>). the range of integer values is 0 le n le <code>cfp$l</em.
+            this includes all the possibilities for <em>opw</em> plus
+            the use of one of the index registers 
+(<code>XL</code>,<code>XR</code>,
+<code>XT</code>,
+            <code>XS</code>). the range of integer 
+values is 0 le n le <code>cfp$l</code>
  
 <dt>opv  as for opn + 18-22
 
@@ -561,7 +569,7 @@ Memory is organized into words which each contain <code>cfp$b</code>
         2.1  add  opv,opn      add address
         4.2  adi  ops          add integer
         5.3  adr  ops          add real
-        7.1  anb  opw,w        and bit string
+        7.1  anb  <em>opw</em>,w        and bit string
         2.17 aov  opv,opn,plbl add address, fail if overflow
         5.16 atn               arctangent of real accum
         2.16 bct  w,plbl       branch and count
@@ -581,12 +589,12 @@ Memory is organized into words which each contain <code>cfp$b</code>
         1.3  bsw* x,val,plbl   branch on switch value
         8.2  btw  reg          convert bytes to words
         2.14 bze  opn,plbl     branch if address zero
-        6.6  ceq  opw,opw,plbl branch if characters equal
+        6.6  ceq  <em>opw</em>,<em>opw</em>,plbl branch if characters equal
        10.1  chk               check stack overflow
         5.17 chp               integer portion of real accum
         7.4  cmb  w            complement bit string
         6.8  cmc  plbl,plbl    compare character strings
-        6.7  cne  opw,opw,plbl branch if characters not equal
+        6.7  cne  <em>opw</em>,<em>opw</em>,plbl branch if characters not equal
         6.5  csc  x            complete store characters
         5.18 cos               cosine of real accum
         8.8  ctb  w,val        convert character count to bytes
@@ -632,7 +640,7 @@ Memory is organized into words which each contain <code>cfp$b</code>
         1.9  jsr  pnam         call procedure
         6.3  lch  reg,opc      load character
         2.15 lct  w,opv        load counter for loop
-        3.1  l<code>CP</code>  reg          load code pointer register
+        3.1  <code>CP</code>  reg          load code pointer register
         3.3  lcw  reg          load next code word
         4.1  ldi  ops          load integer
         5.1  ldr  ops          load real
@@ -653,7 +661,7 @@ Memory is organized into words which each contain <code>cfp$b</code>
         4.8  ngi               negate integer
         5.9  ngr               negate real
         7.9  nzb  w,plbl       jump if not all zero bits
-        7.2  orb  opw,w        or bit strings
+        7.2  orb  <em>opw</em>,w        or bit strings
         6.1  plc* x,opv        prepare to load characters
         1.10 ppm* plbl         provide procedure exit parameter
         1.11 prc  ptyp,val     define start of procedure
@@ -678,8 +686,8 @@ Memory is organized into words which each contain <code>cfp$b</code>
        14.1  sec               define start of assembly section
         5.21 sin               sine of real accum
         5.22 sqr               square root of real accum
-        1.20 ssl  opw          subroutine stack load
-        1.21 sss  opw          subroutine stack store
+        1.20 ssl  <em>opw</em>          subroutine stack load
+        1.21 sss  <em>opw</em>          subroutine stack store
         4.7  sti  ops          store integer
         5.2  str  ops          store real
         2.2  sub  opv,opn      subtract address
@@ -687,7 +695,7 @@ Memory is organized into words which each contain <code>cfp$b</code>
         6.9  trc               translate character string
        13.2  ttl  text         supply assembly title
         8.1  wtb  reg          convert words to bytes
-        7.3  xob  opw,w        exclusive or bit strings
+        7.3  xob  <em>opw</em>,w        exclusive or bit strings
         1.18 zer  opn          zeroise integer location
         7.11 zgb  opn          zeroise garbage bits
         7.10 zrb  w,plbl       jump if all zero bits
@@ -771,7 +779,8 @@ branch on switch value
             identified by an entry point. the
             entry symbol is assigned an address which need not
             be a multiple of <code>cfp$b</code> but which must be in the
-            range 0 le <code>cfp$l</em and the address must not lie within
+            range 0 le <code>cfp$l</code>
+ and the address must not lie within
             the address range of the allocated data area.
             furthermore, addresses of successive entry points
             must be assigned in some ascending sequence so
@@ -795,7 +804,7 @@ branch on switch value
                  val may only be omitted if the entry point is
                  separated from a following entry point by a
                  non-null minimal code sequence.
-<blockquote>
+</blockquote>
 <p>
             entry point addresses are accessible only by use of
             literals (=elbl, section 7) or dac constants
@@ -865,7 +874,7 @@ branch on switch value
             there are three possibilities for ptyp, each
             consisting of a single letter as follows.
 <dl> 
-<dt>r 
+<dt> 
 
 <dd>               recursive
 <p>
@@ -893,8 +902,9 @@ branch on switch value
             for this may be regarded as no-ops for
             implementations using method (1).
  
-<dt>e 
+<dt> 
 <dd>               either
+</dl>
 <p>
  
             the return point may be stored in either manner
@@ -1004,11 +1014,11 @@ branch on switch value
  
             any non-zero collectable value may used, for which
             the opcodes bnz/bze will branch/fail to branch.
-<dt>1.20 ssl  opw
+<dt>1.20 ssl  <em>opw</em>
 
 <dd>         subroutine stack load
 
-<dt>1.21 sss  opw
+<dt>1.21 sss  <em>opw</em>
 
 <dd>         subroutine stack store
 <p>
@@ -1016,8 +1026,8 @@ branch on switch value
             this pair of operations is provided to make possible
             the use of a local stack to hold subroutine (s-r)
             return links for n-type procedures. sss stores the
-            s-r stack pointer in opw and ssl loads the s-r
-            stack pointer from opw. by using sss in the main
+            s-r stack pointer in <em>opw</em> and ssl loads the s-r
+            stack pointer from <em>opw</em>. by using sss in the main
             program or on entry to a procedure which should
             regain control on occurrence of an err or erb and by
             use of ssl in the error processing sections the
@@ -1044,8 +1054,11 @@ branch on switch value
             an explicit opcode (compare enp).
             all routines should be named in section 0
             inr  statements.
+</dl>
  
 <h3>2-  operations on one word integer values (addresses)</h3>
+
+<dl>
  
 <dt>2.1  add  opv,op
 
@@ -1053,7 +1066,7 @@ branch on switch value
 
     adds opv to the value in opn and
                              stores the result in opn. undefined
-                             if the result exceeds <code>cfp$l</em.
+                             if the result exceeds <code>cfp$l</code>.
  
 <dt>2.2  sub  opv,opn
 
@@ -1132,7 +1145,7 @@ branch on switch value
 <dd> add with carry test
 
 <p> adds opv to the value in opn and stores result in
-            opn. branches to plbl if result exceeds <code>cfp$l</em
+            opn. branches to plbl if result exceeds <code>cfp$l</code>
             with result in opn undefined. cf. add.
  
 <dt>2.18 bev  opn,plbl
@@ -1154,6 +1167,7 @@ branch on switch value
             forced to be odd (not a multiple of <code>cfp$b</code>).
             bev and bod branch according as operand is even
             or odd, respectively.
+</dl>
 <h3>3-  operations on the code pointer register (<code>CP</code>)</h3>
 <p>
  
@@ -1165,7 +1179,8 @@ branch on switch value
             pointer register is always a word address (i.e.
             a one word integer which is a multiple of <code>cfp$b</code>).
  
-<dt>3.1  l<code>CP</code>  reg
+<dl>
+<dt>3.1  <code>CP</code>  reg
 
 <dd>         load code pointer register
 
@@ -1191,7 +1206,7 @@ branch on switch value
                              is then incremented by one word.
                              execution of lcw may destroy <code>XL</code>.
  
-<dt>3.4  i<code>CP</code>
+<dt>3.4  <code>CP</code>
 
 <dd>              increment <code>CP</code> by one word
 <p>
@@ -1201,10 +1216,10 @@ branch on switch value
             in this case, the following equivalences apply.
 <pre>
  
-            l<code>CP</code> reg is like mov reg,<code>CP</code>
-            s<code>CP</code> reg is like mov <code>CP</code>,reg
+            <code>CP</code> reg is like mov reg,<code>CP</code>
+            <code>CP</code> reg is like mov <code>CP</code>,reg
             lcw reg is like mov (<code>CP</code>)+,reg
-            i<code>CP</code>     is like ica <code>CP</code>
+            <code>CP</code>     is like ica <code>CP</code>
  
 </pre>
             since lcw is allowed to destroy <code>XL</code>, the following
@@ -1212,9 +1227,9 @@ branch on switch value
             also be used.
  
 <pre>
-            l<code>CP</code>  reg         mov  reg,<code>CP</code>$$$
+            <code>CP</code>  reg         mov  reg,<code>CP</code>$$$
  
-            s<code>CP</code>  reg         mov  <code>CP</code>$$$,reg
+            <code>CP</code>  reg         mov  <code>CP</code>$$$,reg
  
             lcw  reg         mov  <code>CP</code>$$$,<code>XL</code>
                              mov  (<code>XL</code>)+,reg
@@ -1222,8 +1237,11 @@ branch on switch value
  
             i<code>CP</code>              ica  <code>CP</code>$$$
 </pre>
+</dl>
  
 <h3>4-  operations on signed integer values</h3>
+
+<dl>
  
 <dt>4.1  ldi  ops
 
@@ -1351,7 +1369,9 @@ subtract ops from int accumulator
             on a ones complement machine, it is permissible to
             produce negative zero in <code>IA</code> provided these
             instructions operate correctly with such a value.
+</dl>
 <h3>5-  operations on real values</h3>
+<dl>
 
 <dt>5.1  ldr  ops
 
@@ -1483,7 +1503,10 @@ subtract ops from int accumulator
             the contents of (ra) are undefined and the following
             instruction must be either rov or rno.
  
+</dl>
 <h3>-6-  operations on character values</h3>
+
+<dl>
 
 <p>
  
@@ -1614,13 +1637,13 @@ subtract ops from int accumulator
             orders in testing complete strings for equality,
             since whole word tests are possible.
  
-<dt>6.6  ceq  opw,opw,plbl
+<dt>6.6  ceq  <em>opw</em>,<em>opw</em>,plbl
 
-<dd> jump to plbl if opw eq opw
+<dd> jump to plbl if <em>opw</em> eq <em>opw</em>
 
-<dt>6.7  cne  opw,opw,plbl
+<dt>6.7  cne  <em>opw</em>,<em>opw</em>,plbl
 
-<dd> jump to plbl if opw ne opw
+<dd> jump to plbl if <em>opw</em> ne <em>opw</em>
  
 <dt>6.8  cmc  plbl,plbl
 
@@ -1679,19 +1702,22 @@ subtract ops from int accumulator
             flc is used only if .culc is defined. the character
             code value in w is translated to upper case if it
             corresponds to a lower case character.
+</dl>
 <h3>7-  operations on bit string values</h3>
 
-<dt>7.1  anb  opw,w
+<dl>
+
+<dt>7.1  anb  <em>opw</em>,w
 
 <dd>       and bit string values
 
 
-<dt>7.2  orb  opw,w
+<dt>7.2  orb  <em>opw</em>,w
 
 <dd>       or bit string values
 
 
-<dt>7.3  xob  opw,w
+<dt>7.3  xob  <em>opw</em>,w
 
 <dd>       exclusive or bit string values
 
@@ -1702,7 +1728,7 @@ subtract ops from int accumulator
  
 <dt>7.4  cmb  w
 
-<dd>           complement all bits in opw
+<dd>           complement all bits in <em>opw</em>
 
 
 <dt>7.5  rsh  w,val
@@ -1752,7 +1778,11 @@ subtract ops from int accumulator
             zero bit. zgb is a no-op if the word size is a
             multiple of the character size.
 
+</dl>
+
 <h3>8-  conversion instructions</h3>
+
+<dl>
  
 <p>
             the following instructions provide for conversion
@@ -1878,7 +1908,10 @@ subtract ops from int accumulator
             placed in wa. for example, an operand of -523 gives
             a quotient of -52 and a remainder in wa of ch$d3.
  
+</dl>
 <h3>9-  block move instructions</h3>
+
+<dl>
 
 <p>
  
@@ -1930,9 +1963,9 @@ implementations will be possible on most machines.
             mvw is equivalent to the sequence
  
 <pre>
-            loopw  mov  (<code>XL</code>)+,(<code>XR</code>)+
+            <em>opw</em>  mov  (<code>XL</code>)+,(<code>XR</code>)+
                    dca  wa               wa = bytes to move
-                   bnz  wa,loopw
+                   bnz  wa,lo<em>opw</em>
  
 </pre>
 
@@ -1965,7 +1998,8 @@ implementations will be possible on most machines.
             allows an implementation in which chunks of 256
             bytes are moved forward (ibm 360, icl 1900).
             the final value of wa is undefined.
-            wa,<code>XL</code>,<code>XR</code> must be set up before obeying m<code>WB</code>.
+            <code>WA</code>,<code>XL</code>,
+<code>XR</code> must be set up before obeying m<code>WB</code>.
  
 <dt>9.4  mcb
 
@@ -1995,7 +2029,11 @@ implementations will be possible on most machines.
             the final value of wa is undefined.
             wa,<code>XL</code>,<code>XR</code> must be set up before obeying mcb.
  
+</dl>
+
 <h3>10- operations connected with the stack</h3>
+
+<dl>
 
 <p>
  
@@ -2020,7 +2058,11 @@ implementations will be possible on most machines.
        instruction periodically.
  
 
+</dl>
+
 <dt>10.1 chk
+
+<dl>
 
 <dd>              check stack overflow
  
@@ -2043,8 +2085,10 @@ implementations will be possible on most machines.
        to give some space in which the error procedure may
        operate. otherwise a loop of stack overflows may occur.
  
+</dl>
 <h3>11- data generation instructions</h3>
 
+<dl>
 <p>
  
        the following instructions are used to generate constant
@@ -2108,8 +2152,11 @@ text is started and ended with any character not contained in the
                              binary, right justified and left
                              filled with zero bits. thus 5 would
                              imply the bit string value 00...101.
+</dl>
 
 <h3>12- symbol definition instructions</h3>
+
+<dl>
  
 <p>
        the following instruction is used to define symbols
@@ -2214,11 +2261,15 @@ text is started and ended with any character not contained in the
             label may be referenced in any type of branch order
             and it must appear labelling a rtn instruction in
             the program section.
+</dl>
 <h3>13- assembly listing layout instructions</h3>
 
+<dl>
 <dt>13.1 ejc
 
 <dd>              eject to next page
+
+
 
 
 <dt>13.2 ttl  text
@@ -2249,8 +2300,11 @@ text is started and ended with any character not contained in the
             by sec operations. the sections must appear in the
             following specified order.
  
+</dl>
 
 <dt>14.1 sec
+
+<dl>
 
 <pre>
             start of procedure section
@@ -2358,8 +2412,11 @@ text is started and ended with any character not contained in the
             minimal error section to report errors directly by
             branching to it with a suitable numeric error
             code in wa.
+</dl>
  
 <h2>section 11 - statement format</h2>
+
+<dl>
  
 <p>All labels are exactly five characters long and start
        with three letters (abcdefghijklmnopqrstuvwxy$) followed
@@ -2413,8 +2470,10 @@ text is started and ended with any character not contained in the
  
        the fortran character set is a-z 0-9 =,$.(*)-/+
 </pre>
- 
+</dl> 
 <h2>section 12 - program execution</h2>
+
+<dl>
  
 <p>Execution of the program begins with the first
        instruction in the program section.
