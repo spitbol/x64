@@ -219,7 +219,7 @@ Memory is organized into words which each contain <code>cfp$b</code>
        the code pointer register (<code>CP</code>) is a special index
        register for use in implementations of interpretors.
        it is used to contain a pseudo-code pointer and can
-       only be affected by i<code>CP</code>, l<code>CP</code>, s<code>CP</code> and lcw instructions.
+       only be affected by i<code>CP</code>, <code>CP</code>, s<code>CP</code> and lcw instructions.
 
 <h2>section 4 - the stack</h2>
 <p> 
@@ -632,7 +632,7 @@ Memory is organized into words which each contain <code>cfp$b</code>
         1.9  jsr  pnam         call procedure
         6.3  lch  reg,opc      load character
         2.15 lct  w,opv        load counter for loop
-        3.1  l<code>CP</code>  reg          load code pointer register
+        3.1  <code>CP</code>  reg          load code pointer register
         3.3  lcw  reg          load next code word
         4.1  ldi  ops          load integer
         5.1  ldr  ops          load real
@@ -1165,7 +1165,7 @@ branch on switch value
             pointer register is always a word address (i.e.
             a one word integer which is a multiple of <code>cfp$b</code>).
  
-<dt>3.1  l<code>CP</code>  reg
+<dt>3.1  <code>CP</code>  reg
 
 <dd>         load code pointer register
 
@@ -1191,7 +1191,7 @@ branch on switch value
                              is then incremented by one word.
                              execution of lcw may destroy <code>XL</code>.
  
-<dt>3.4  i<code>CP</code>
+<dt>3.4  <code>CP</code>
 
 <dd>              increment <code>CP</code> by one word
 <p>
@@ -1201,10 +1201,10 @@ branch on switch value
             in this case, the following equivalences apply.
 <pre>
  
-            l<code>CP</code> reg is like mov reg,<code>CP</code>
-            s<code>CP</code> reg is like mov <code>CP</code>,reg
+            <code>CP</code> reg is like mov reg,<code>CP</code>
+            <code>CP</code> reg is like mov <code>CP</code>,reg
             lcw reg is like mov (<code>CP</code>)+,reg
-            i<code>CP</code>     is like ica <code>CP</code>
+            <code>CP</code>     is like ica <code>CP</code>
  
 </pre>
             since lcw is allowed to destroy <code>XL</code>, the following
@@ -1212,9 +1212,9 @@ branch on switch value
             also be used.
  
 <pre>
-            l<code>CP</code>  reg         mov  reg,<code>CP</code>$$$
+            <code>CP</code>  reg         mov  reg,<code>CP</code>$$$
  
-            s<code>CP</code>  reg         mov  <code>CP</code>$$$,reg
+            <code>CP</code>  reg         mov  <code>CP</code>$$$,reg
  
             lcw  reg         mov  <code>CP</code>$$$,<code>XL</code>
                              mov  (<code>XL</code>)+,reg
