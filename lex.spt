@@ -87,7 +87,7 @@
 *  the minimal input file (infile <=> lu1).   note that it will
 *  not fail on eof, but it will return a minimal end statement
 *
-	define('rdline()')
+	define('rdline()first,last')
 * 	conditional assembly initialization
 
 	define('tblini(str)pos,cnt,index,val,lastval')
@@ -678,40 +678,36 @@ outstmt
 rdline	rdline = infile				:f(rdline.5)
 	nlines  = nlines + 1
 *	output = 'rdline ' nlines ' ' rdline ';'
-	ident(comment.block)			:s(rdline.1)
-*  here if inside comment block
-	rdline = '*' (gt(size(rdline),1), substr(rdline,2))
-	leq(substr(rdline,1,1), '}') 		:f(rdline.1)
-	comment.block =
 
-rdline.1
+*  blank line is comment
 
-	ident(rdline)				:s(rdline)
-	ident(substr(rdline,1,1),'{')			:f(rdline.2)
-	comment.block = 1
-	rdline = '*' (gt(size(rdline),1), substr(rdline,2))
+	rdline = ident(rdline) '*'
 
-rdline.2
-	ident( rdline )				:s(rdline)
 
 *  transfer control to appropriate conditional assembly
 *  directive generator or other statement generator.
 *
-	leq(substr(rdline,1,1), '.')			:s(rdline.2A)
-other	eq( level )				:s(rdline.3)
+	leq(substr(rdline,1,1), '.')			:s(rdline.2)
+rdline.1	eq( level )				:s(rdline.3)
 	eq( processrec[result(top),mode(top)] )	:s(rdline)f(rdline.3)
-rdline.2A
+rdline.2
 	rdline ? p.condasm			:s( $catab[condcmd] )
 
 rdline.3
-	leq(substr(rdline,1,1), '*')		:f(rdline.4)
- 
+   	first = substr(rdline,1,1)
+   	comment.block = leq(first, '{') 1
+   	comment.block = leq(first, '}') 0
+	rdline any('*{}')			:f(rdline.4)
+	rdline len(1) . first rem . last = '*' last
+
 *  only print comment if requested.
  
 *	outfile = ident(flcflag,'y') rdline	:f(rdline)
 
+rdline.out
 	outfile = rdline
 	noutlines = noutlines + 1		:(rdline)
+
 
 
 rdline.4 leq(substr(rdline,1,1),'>')		:f(return)
@@ -721,14 +717,13 @@ rdline.4 leq(substr(rdline,1,1),'>')		:f(return)
 *
 	c = code(substr( rdline, 2 ) "; :(rdline)") :s<c>
         output = "error compiling snobol4 statement"
-  						:(rdline.6)
+  						:(rdline.5)
 *
 *  here on eof.  
 *
 rdline.5	
 
-rdline.6
-*	output = 'at rdline.6'
+*	output = 'at rdline.5'
 	rdline = '       end'			:(rdline.4)
 
 *  syntax error handler.

@@ -515,7 +515,7 @@ ccaller:        mov     dword [reg_wa],ecx              ; save registers
 ;
 	global	cc1
 
-cc1:    mov     osisp, esp              ; save OSINT's stack pointer
+cc1:    mov     dword [osisp], esp              ; save OSINT's stack pointer
 ;        mov     esp, dword [compsp]             ; restore compiler's stack pointer
         mov     esp,compsp             ; restore compiler's stack pointer
         mov     ecx, dword [reg_wa]             ; restore registers
@@ -724,14 +724,14 @@ startup:
         pop     eax                     ; discard dummy1
         pop     eax                     ; discard dummy2
         call    stackinit               ; initialize MINIMAL stack
-        lea     eax,[compsp]              ; get MINIMAL's stack pointer
+        mov     eax,dword [compsp]              ; get MINIMAL's stack pointer
         mov     dword [reg_wa],eax                     ; startup stack pointer
 
         cld                             ; default to UP direction for string ops
         extern  DFFNC
         lea     eax,[DFFNC]               ; get dd of PPM offset
         mov     dword [ppoff],eax               ; save for use later
-        mov     esp,osisp               ; switch to new c stack
+        mov     esp,dword [osisp]               ; switch to new c stack
 	push	start_callid
 	callc	minimal_call,4 			 ; load regs, switch stack, start compiler
 
