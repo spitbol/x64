@@ -331,7 +331,7 @@ pushregs:
         cld
    rep  movsd
 
-        mov     edi,compsp
+        mov     edi,dword [compsp]
         or      edi,edi                         ; is there a compiler stack
         je      push1                     	; jump if none yet
         sub     edi,4                           ;push onto compiler's stack
@@ -353,8 +353,8 @@ popregs:
    rep  movsd                                   ;restore from temp area
         mov     dword [reg_cp],eax
 
-;        mov     edi,dword [sav_compsp]          ;saved compiler's stack
-        mov     edi,sav_compsp          ;saved compiler's stack
+        mov     edi,dword [sav_compsp]          ;saved compiler's stack
+;        mov     edi,sav_compsp          ;saved compiler's stack
         or      edi,edi                         ;is there one?
         je      pop1                      	;jump if none yet
         mov     esi,dword [edi]                 ;retrieve collectable XL
@@ -802,11 +802,11 @@ minimal_call:
         mov     [osisp],esp               ; save osint stack pointer
         cmp     dword [compsp],0      ; is there a compiler stack?
         je      min1              ; jump if none yet
-        mov     esp,compsp              ; switch to compiler stack
+        mov     esp,dword [compsp]              ; switch to compiler stack
 
 	extern	calltab
 min1:   callc   [calltab+eax*4],0        ; off to the minimal code
-        mov     esp,osisp               ; switch to osint stack
+        mov     esp,dword [osisp]               ; switch to osint stack
 
         mov     dword [reg_wa],ecx              ; save registers
         mov     dword [reg_wb],ebx
@@ -836,9 +836,9 @@ min1:   callc   [calltab+eax*4],0        ; off to the minimal code
         global  minoff
 minoff:
 
-        mov     eax,dword [esp+4]             ; get ordinal
-        mov     eax,dword [valtab+eax*4]       ; get dd of Minimal value
-        retc    4
+;;        mov     eax,dword [esp+4]             ; get ordinal
+ ;;       mov     eax,dword [valtab+eax*4]       ; get dd of Minimal value
+  ;;      retc    4
 
 ;;%endif
 
