@@ -787,11 +787,13 @@ stackinit:
 ;       stack to switch to.  in that case, just make the call on the
 ;       the osint stack.
 
+	extern	id_call
 	global	minimal_call
 minimal_call:
 
         pushad                          	; save all registers for c
         mov     eax,dword[esp+32+4]          	; get ordinal
+	mov	dword [id_call], eax
         mov     ecx,dword[reg_wa]              	; restore registers
         mov     ebx,dword[reg_wb]
         mov     edx,dword[reg_wc]              	; (also _reg_ia)

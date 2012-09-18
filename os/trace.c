@@ -39,6 +39,7 @@ This file is part of Macro SPITBOL.
 
 extern int koshka;
 extern int nlines;
+extern int id_call;
 extern int compsp;
 extern int osisp;
 extern int LOWSPMIN;
@@ -119,5 +120,14 @@ void Exit(char * text)
 #ifdef TRACE
 void shields() 
 {
+}
+void tracer()
+{
+	fprintf(stderr, "Tracer \n");
+	fprintf(stderr, "nlines %8d " , nlines);
+	fprintf(stderr, "call_id %5d ", id_call);
+	fprintf(stderr,"compsp %10u",compsp);
+	fprintf(stderr,"  osisp %10u", osisp);
+	fprintf(stderr," LOWSPMIN %u\n", LOWSPMIN);
 }
 #endif
