@@ -1,0 +1,287 @@
+	&trim = 1
+
+	&anchor = 0
+loop
+	line = input	:f(finis)
+* "opc"
+  line   any(' .,') . sep1  'flc' any(' .,') . sep2  =  sep1 '{' 'flc' '}'
+* "opc"
+  line   any(' .,') . sep1  'add' any(' .,') . sep2  =  sep1 '{' 'add' '}'
+* "opc"
+  line   any(' .,') . sep1  'adi' any(' .,') . sep2  =  sep1 '{' 'adi' '}'
+* "opc"
+  line   any(' .,') . sep1  'adr' any(' .,') . sep2  =  sep1 '{' 'adr' '}'
+* "opc"
+  line   any(' .,') . sep1  'anb' any(' .,') . sep2  =  sep1 '{' 'anb' '}'
+* "opc"
+  line   any(' .,') . sep1  'aov' any(' .,') . sep2  =  sep1 '{' 'aov' '}'
+* "opc"
+  line   any(' .,') . sep1  'atn' any(' .,') . sep2  =  sep1 '{' 'atn' '}'
+* "opc"
+  line   any(' .,') . sep1  'bod' any(' .,') . sep2  =  sep1 '{' 'bod' '}'
+* "opc"
+  line   any(' .,') . sep1  'bev' any(' .,') . sep2  =  sep1 '{' 'bev' '}'
+* "opc"
+  line   any(' .,') . sep1  'bct' any(' .,') . sep2  =  sep1 '{' 'bct' '}'
+* "opc"
+  line   any(' .,') . sep1  'beq' any(' .,') . sep2  =  sep1 '{' 'beq' '}'
+* "opc"
+  line   any(' .,') . sep1  'bge' any(' .,') . sep2  =  sep1 '{' 'bge' '}'
+* "opc"
+  line   any(' .,') . sep1  'bgt' any(' .,') . sep2  =  sep1 '{' 'bgt' '}'
+* "opc"
+  line   any(' .,') . sep1  'bhi' any(' .,') . sep2  =  sep1 '{' 'bhi' '}'
+* "opc"
+  line   any(' .,') . sep1  'ble' any(' .,') . sep2  =  sep1 '{' 'ble' '}'
+* "opc"
+  line   any(' .,') . sep1  'blo' any(' .,') . sep2  =  sep1 '{' 'blo' '}'
+* "opc"
+  line   any(' .,') . sep1  'blt' any(' .,') . sep2  =  sep1 '{' 'blt' '}'
+* "opc"
+  line   any(' .,') . sep1  'bne' any(' .,') . sep2  =  sep1 '{' 'bne' '}'
+* "opc"
+  line   any(' .,') . sep1  'bnz' any(' .,') . sep2  =  sep1 '{' 'bnz' '}'
+* "opc"
+  line   any(' .,') . sep1  'brn' any(' .,') . sep2  =  sep1 '{' 'brn' '}'
+* "opc"
+  line   any(' .,') . sep1  'bri' any(' .,') . sep2  =  sep1 '{' 'bri' '}'
+* "opc"
+  line   any(' .,') . sep1  'bsw' any(' .,') . sep2  =  sep1 '{' 'bsw' '}'
+* "opc"
+  line   any(' .,') . sep1  'btw' any(' .,') . sep2  =  sep1 '{' 'btw' '}'
+* "opc"
+  line   any(' .,') . sep1  'bze' any(' .,') . sep2  =  sep1 '{' 'bze' '}'
+* "opc"
+  line   any(' .,') . sep1  'ceq' any(' .,') . sep2  =  sep1 '{' 'ceq' '}'
+* "opc"
+  line   any(' .,') . sep1  'chk' any(' .,') . sep2  =  sep1 '{' 'chk' '}'
+* "opc"
+  line   any(' .,') . sep1  'chp' any(' .,') . sep2  =  sep1 '{' 'chp' '}'
+* "opc"
+  line   any(' .,') . sep1  'cmb' any(' .,') . sep2  =  sep1 '{' 'cmb' '}'
+* "opc"
+  line   any(' .,') . sep1  'cmc' any(' .,') . sep2  =  sep1 '{' 'cmc' '}'
+* "opc"
+  line   any(' .,') . sep1  'cne' any(' .,') . sep2  =  sep1 '{' 'cne' '}'
+* "opc"
+  line   any(' .,') . sep1  'cos' any(' .,') . sep2  =  sep1 '{' 'cos' '}'
+* "opc"
+  line   any(' .,') . sep1  'csc' any(' .,') . sep2  =  sep1 '{' 'csc' '}'
+* "opc"
+  line   any(' .,') . sep1  'ctb' any(' .,') . sep2  =  sep1 '{' 'ctb' '}'
+* "opc"
+  line   any(' .,') . sep1  'ctw' any(' .,') . sep2  =  sep1 '{' 'ctw' '}'
+* "opc"
+  line   any(' .,') . sep1  'cvd' any(' .,') . sep2  =  sep1 '{' 'cvd' '}'
+* "opc"
+  line   any(' .,') . sep1  'cvm' any(' .,') . sep2  =  sep1 '{' 'cvm' '}'
+* "opc"
+  line   any(' .,') . sep1  'dac' any(' .,') . sep2  =  sep1 '{' 'dac' '}'
+* "opc"
+  line   any(' .,') . sep1  'dbc' any(' .,') . sep2  =  sep1 '{' 'dbc' '}'
+* "opc"
+  line   any(' .,') . sep1  'dca' any(' .,') . sep2  =  sep1 '{' 'dca' '}'
+* "opc"
+  line   any(' .,') . sep1  'dcv' any(' .,') . sep2  =  sep1 '{' 'dcv' '}'
+* "opc"
+  line   any(' .,') . sep1  'def' any(' .,') . sep2  =  sep1 '{' 'def' '}'
+* "opc"
+  line   any(' .,') . sep1  'dic' any(' .,') . sep2  =  sep1 '{' 'dic' '}'
+* "opc"
+  line   any(' .,') . sep1  'drc' any(' .,') . sep2  =  sep1 '{' 'drc' '}'
+* "opc"
+  line   any(' .,') . sep1  'dtc' any(' .,') . sep2  =  sep1 '{' 'dtc' '}'
+* "opc"
+  line   any(' .,') . sep1  'dvi' any(' .,') . sep2  =  sep1 '{' 'dvi' '}'
+* "opc"
+  line   any(' .,') . sep1  'dvr' any(' .,') . sep2  =  sep1 '{' 'dvr' '}'
+* "opc"
+  line   any(' .,') . sep1  'ejc' any(' .,') . sep2  =  sep1 '{' 'ejc' '}'
+* "opc"
+  line   any(' .,') . sep1  'else' any(' .,') . sep2  =  sep1 '{' 'else' '}'
+* "opc"
+  line   any(' .,') . sep1  'end' any(' .,') . sep2  =  sep1 '{' 'end' '}'
+* "opc"
+  line   any(' .,') . sep1  'enp' any(' .,') . sep2  =  sep1 '{' 'enp' '}'
+* "opc"
+  line   any(' .,') . sep1  'ent' any(' .,') . sep2  =  sep1 '{' 'ent' '}'
+* "opc"
+  line   any(' .,') . sep1  'equ' any(' .,') . sep2  =  sep1 '{' 'equ' '}'
+* "opc"
+  line   any(' .,') . sep1  'erb' any(' .,') . sep2  =  sep1 '{' 'erb' '}'
+* "opc"
+  line   any(' .,') . sep1  'err' any(' .,') . sep2  =  sep1 '{' 'err' '}'
+* "opc"
+  line   any(' .,') . sep1  'esw' any(' .,') . sep2  =  sep1 '{' 'esw' '}'
+* "opc"
+  line   any(' .,') . sep1  'etx' any(' .,') . sep2  =  sep1 '{' 'etx' '}'
+* "opc"
+  line   any(' .,') . sep1  'exi' any(' .,') . sep2  =  sep1 '{' 'exi' '}'
+* "opc"
+  line   any(' .,') . sep1  'exp' any(' .,') . sep2  =  sep1 '{' 'exp' '}'
+* "opc"
+  line   any(' .,') . sep1  'fi' any(' .,') . sep2  =  sep1 '{' 'fi' '}'
+* "opc"
+  line   any(' .,') . sep1  'ica' any(' .,') . sep2  =  sep1 '{' 'ica' '}'
+* "opc"
+  line   any(' .,') . sep1  'icp' any(' .,') . sep2  =  sep1 '{' 'icp' '}'
+* "opc"
+  line   any(' .,') . sep1  'icv' any(' .,') . sep2  =  sep1 '{' 'icv' '}'
+* "opc"
+  line   any(' .,') . sep1  'ieq' any(' .,') . sep2  =  sep1 '{' 'ieq' '}'
+* "opc"
+  line   any(' .,') . sep1  'if' any(' .,') . sep2  =  sep1 '{' 'if' '}'
+* "opc"
+  line   any(' .,') . sep1  'iff' any(' .,') . sep2  =  sep1 '{' 'iff' '}'
+* "opc"
+  line   any(' .,') . sep1  'ige' any(' .,') . sep2  =  sep1 '{' 'ige' '}'
+* "opc"
+  line   any(' .,') . sep1  'igt' any(' .,') . sep2  =  sep1 '{' 'igt' '}'
+* "opc"
+  line   any(' .,') . sep1  'ile' any(' .,') . sep2  =  sep1 '{' 'ile' '}'
+* "opc"
+  line   any(' .,') . sep1  'ilt' any(' .,') . sep2  =  sep1 '{' 'ilt' '}'
+* "opc"
+  line   any(' .,') . sep1  'ine' any(' .,') . sep2  =  sep1 '{' 'ine' '}'
+* "opc"
+  line   any(' .,') . sep1  'ino' any(' .,') . sep2  =  sep1 '{' 'ino' '}'
+* "opc"
+  line   any(' .,') . sep1  'inp' any(' .,') . sep2  =  sep1 '{' 'inp' '}'
+* "opc"
+  line   any(' .,') . sep1  'inr' any(' .,') . sep2  =  sep1 '{' 'inr' '}'
+* "opc"
+  line   any(' .,') . sep1  'iov' any(' .,') . sep2  =  sep1 '{' 'iov' '}'
+* "opc"
+  line   any(' .,') . sep1  'itr' any(' .,') . sep2  =  sep1 '{' 'itr' '}'
+* "opc"
+  line   any(' .,') . sep1  'jsr' any(' .,') . sep2  =  sep1 '{' 'jsr' '}'
+* "opc"
+  line   any(' .,') . sep1  'lch' any(' .,') . sep2  =  sep1 '{' 'lch' '}'
+* "opc"
+  line   any(' .,') . sep1  'lct' any(' .,') . sep2  =  sep1 '{' 'lct' '}'
+* "opc"
+  line   any(' .,') . sep1  'lcp' any(' .,') . sep2  =  sep1 '{' 'lcp' '}'
+* "opc"
+  line   any(' .,') . sep1  'lcw' any(' .,') . sep2  =  sep1 '{' 'lcw' '}'
+* "opc"
+  line   any(' .,') . sep1  'ldi' any(' .,') . sep2  =  sep1 '{' 'ldi' '}'
+* "opc"
+  line   any(' .,') . sep1  'ldr' any(' .,') . sep2  =  sep1 '{' 'ldr' '}'
+* "opc"
+  line   any(' .,') . sep1  'lei' any(' .,') . sep2  =  sep1 '{' 'lei' '}'
+* "opc"
+  line   any(' .,') . sep1  'lnf' any(' .,') . sep2  =  sep1 '{' 'lnf' '}'
+* "opc"
+  line   any(' .,') . sep1  'lsh' any(' .,') . sep2  =  sep1 '{' 'lsh' '}'
+* "opc"
+  line   any(' .,') . sep1  'lsx' any(' .,') . sep2  =  sep1 '{' 'lsx' '}'
+* "opc"
+  line   any(' .,') . sep1  'mcb' any(' .,') . sep2  =  sep1 '{' 'mcb' '}'
+* "opc"
+  line   any(' .,') . sep1  'mfi' any(' .,') . sep2  =  sep1 '{' 'mfi' '}'
+* "opc"
+  line   any(' .,') . sep1  'mli' any(' .,') . sep2  =  sep1 '{' 'mli' '}'
+* "opc"
+  line   any(' .,') . sep1  'mlr' any(' .,') . sep2  =  sep1 '{' 'mlr' '}'
+* "opc"
+  line   any(' .,') . sep1  'mnz' any(' .,') . sep2  =  sep1 '{' 'mnz' '}'
+* "opc"
+  line   any(' .,') . sep1  'mov' any(' .,') . sep2  =  sep1 '{' 'mov' '}'
+* "opc"
+  line   any(' .,') . sep1  'mti' any(' .,') . sep2  =  sep1 '{' 'mti' '}'
+* "opc"
+  line   any(' .,') . sep1  'mvc' any(' .,') . sep2  =  sep1 '{' 'mvc' '}'
+* "opc"
+  line   any(' .,') . sep1  'mvw' any(' .,') . sep2  =  sep1 '{' 'mvw' '}'
+* "opc"
+  line   any(' .,') . sep1  'mwb' any(' .,') . sep2  =  sep1 '{' 'mwb' '}'
+* "opc"
+  line   any(' .,') . sep1  'ngi' any(' .,') . sep2  =  sep1 '{' 'ngi' '}'
+* "opc"
+  line   any(' .,') . sep1  'ngr' any(' .,') . sep2  =  sep1 '{' 'ngr' '}'
+* "opc"
+  line   any(' .,') . sep1  'nzb' any(' .,') . sep2  =  sep1 '{' 'nzb' '}'
+* "opc"
+  line   any(' .,') . sep1  'orb' any(' .,') . sep2  =  sep1 '{' 'orb' '}'
+* "opc"
+  line   any(' .,') . sep1  'plc' any(' .,') . sep2  =  sep1 '{' 'plc' '}'
+* "opc"
+  line   any(' .,') . sep1  'ppm' any(' .,') . sep2  =  sep1 '{' 'ppm' '}'
+* "opc"
+  line   any(' .,') . sep1  'prc' any(' .,') . sep2  =  sep1 '{' 'prc' '}'
+* "opc"
+  line   any(' .,') . sep1  'psc' any(' .,') . sep2  =  sep1 '{' 'psc' '}'
+* "opc"
+  line   any(' .,') . sep1  'req' any(' .,') . sep2  =  sep1 '{' 'req' '}'
+* "opc"
+  line   any(' .,') . sep1  'rge' any(' .,') . sep2  =  sep1 '{' 'rge' '}'
+* "opc"
+  line   any(' .,') . sep1  'rgt' any(' .,') . sep2  =  sep1 '{' 'rgt' '}'
+* "opc"
+  line   any(' .,') . sep1  'rle' any(' .,') . sep2  =  sep1 '{' 'rle' '}'
+* "opc"
+  line   any(' .,') . sep1  'rlt' any(' .,') . sep2  =  sep1 '{' 'rlt' '}'
+* "opc"
+  line   any(' .,') . sep1  'rmi' any(' .,') . sep2  =  sep1 '{' 'rmi' '}'
+* "opc"
+  line   any(' .,') . sep1  'rne' any(' .,') . sep2  =  sep1 '{' 'rne' '}'
+* "opc"
+  line   any(' .,') . sep1  'rno' any(' .,') . sep2  =  sep1 '{' 'rno' '}'
+* "opc"
+  line   any(' .,') . sep1  'rov' any(' .,') . sep2  =  sep1 '{' 'rov' '}'
+* "opc"
+  line   any(' .,') . sep1  'rsh' any(' .,') . sep2  =  sep1 '{' 'rsh' '}'
+* "opc"
+  line   any(' .,') . sep1  'rsx' any(' .,') . sep2  =  sep1 '{' 'rsx' '}'
+* "opc"
+  line   any(' .,') . sep1  'rti' any(' .,') . sep2  =  sep1 '{' 'rti' '}'
+* "opc"
+  line   any(' .,') . sep1  'rtn' any(' .,') . sep2  =  sep1 '{' 'rtn' '}'
+* "opc"
+  line   any(' .,') . sep1  'sbi' any(' .,') . sep2  =  sep1 '{' 'sbi' '}'
+* "opc"
+  line   any(' .,') . sep1  'sbr' any(' .,') . sep2  =  sep1 '{' 'sbr' '}'
+* "opc"
+  line   any(' .,') . sep1  'sch' any(' .,') . sep2  =  sep1 '{' 'sch' '}'
+* "opc"
+  line   any(' .,') . sep1  'scp' any(' .,') . sep2  =  sep1 '{' 'scp' '}'
+* "opc"
+  line   any(' .,') . sep1  'sec' any(' .,') . sep2  =  sep1 '{' 'sec' '}'
+* "opc"
+  line   any(' .,') . sep1  'sin' any(' .,') . sep2  =  sep1 '{' 'sin' '}'
+* "opc"
+  line   any(' .,') . sep1  'sqr' any(' .,') . sep2  =  sep1 '{' 'sqr' '}'
+* "opc"
+  line   any(' .,') . sep1  'ssl' any(' .,') . sep2  =  sep1 '{' 'ssl' '}'
+* "opc"
+  line   any(' .,') . sep1  'sss' any(' .,') . sep2  =  sep1 '{' 'sss' '}'
+* "opc"
+  line   any(' .,') . sep1  'sti' any(' .,') . sep2  =  sep1 '{' 'sti' '}'
+* "opc"
+  line   any(' .,') . sep1  'str' any(' .,') . sep2  =  sep1 '{' 'str' '}'
+* "opc"
+  line   any(' .,') . sep1  'sub' any(' .,') . sep2  =  sep1 '{' 'sub' '}'
+* "opc"
+  line   any(' .,') . sep1  'tan' any(' .,') . sep2  =  sep1 '{' 'tan' '}'
+* "opc"
+  line   any(' .,') . sep1  'then' any(' .,') . sep2  =  sep1 '{' 'then' '}'
+* "opc"
+  line   any(' .,') . sep1  'trc' any(' .,') . sep2  =  sep1 '{' 'trc' '}'
+* "opc"
+  line   any(' .,') . sep1  'ttl' any(' .,') . sep2  =  sep1 '{' 'ttl' '}'
+* "opc"
+  line   any(' .,') . sep1  'undef' any(' .,') . sep2  =  sep1 '{' 'undef' '}'
+* "opc"
+  line   any(' .,') . sep1  'wtb' any(' .,') . sep2  =  sep1 '{' 'wtb' '}'
+* "opc"
+  line   any(' .,') . sep1  'xob' any(' .,') . sep2  =  sep1 '{' 'xob' '}'
+* "opc"
+  line   any(' .,') . sep1  'zer' any(' .,') . sep2  =  sep1 '{' 'zer' '}'
+* "opc"
+  line   any(' .,') . sep1  'zgb' any(' .,') . sep2  =  sep1 '{' 'zgb' '}'
+* "opc"
+  line   any(' .,') . sep1  'zrb' any(' .,') . sep2  =  sep1 '{' 'zrb' '}'
+
+	output = line	:(loop)
+finis
+end
