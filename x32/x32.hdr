@@ -5,16 +5,16 @@
 
 	segment	.data
 
-%define		XL	esi
-%define		XR	edi
-%define		XS	esp
-%define		XT	esp
-%define		WA	ecx
-%define		WB	ebx
-%define		WC	edx
-%define		IA	edx
-%define		CP	ebp
-%define		W0	eax
+%define		XL.esi	esi
+%define		XR.edi	edi
+%define		XS.esp	esp
+%define		XT.esi	esi
+%define		WA.ecx	ecx
+%define		WB.ebx	ebx
+%define		WC.edx	edx
+%define		IA.edx	edx
+%define		CP.ebp	ebp
+%define		W0.eax	eax
 
 	extern	reg_ra
 
