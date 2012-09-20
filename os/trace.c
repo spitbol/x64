@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2912 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -37,6 +38,7 @@ This file is part of Macro SPITBOL.
 
 #include <stdio.h>
 
+int id_call;
 extern int koshka;
 extern int nlines;
 extern int id_call;
