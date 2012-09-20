@@ -14,7 +14,7 @@
 	extern	atlin
 	extern	nlines
 
-;%define TRACE
+%define TRACE
 	%macro	atline 1
 %ifdef TRACE
 	mov	DWORD [koshka],1944

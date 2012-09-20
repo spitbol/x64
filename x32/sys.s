@@ -732,6 +732,8 @@ startup:
         lea     eax,[DFFNC]               ; get dd of PPM offset
         mov     dword [ppoff],eax               ; save for use later
         mov     esp,dword [osisp]               ; switch to new c stack
+; DEBUG
+	mov	dword [id_call],start_callid
 	push	start_callid
 	callc	minimal_call,4 			 ; load regs, switch stack, start compiler
 
