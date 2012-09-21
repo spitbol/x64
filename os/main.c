@@ -245,6 +245,7 @@ char *argv[];
        Startup compiler.
      */
 	At("starting compiler");
+	tracer();
     startup((char *) 0L, lowsp);
 
 	At("back from compiler");

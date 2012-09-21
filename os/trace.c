@@ -94,6 +94,7 @@ regdump()
 	fprintf(stderr,"compsp %10u",compsp);
 	fprintf(stderr,"  osisp %10u", osisp);
 	fprintf(stderr," LOWSPMIN %u\n", LOWSPMIN);
+	tracer();
 #endif
 }
 void Trace(char * type, char * text) 

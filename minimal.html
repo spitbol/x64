@@ -7,80 +7,82 @@
 </head>
 
 <body>
-<h1>ttl  minimal -- machine independent macro assembly lang.</h1>
-<p>
-Test paragraph:
-<br>
-<strong>This text is em</strong> 
-<br>
-<strong>This text is em </strong> 
-<br>
-<strong>this text is code</strong> 
-<br>
-<p>This is normal text.
+
+<h1>MINIMAL -- Machine INdependent Macro Assembly Language</h1>
+
 <p>
 
-The following sections describe the implementation
-       language originally developed for spitbol but now more
-       widely used. minimal is an assembly language
-       for an idealized machine. the following describes the
-       basic characteristics of this machine.
+The following sections describe the implementation language originally
+developed for SPITBOL but now more widely used. MINIMAL is an assembly
+language for an idealized machine. the following describes the basic
+characteristics of this machine.
 
-<h2>section 1 - configuration parameters</h2>
+<h2>Configuration Parameters</h2>
 
-<p>Tthere are several parameters which may vary with the
-       target machine. the macro-program is independent of the
-       actual definitions of these parameters.
- <p>The definitions of these parameters are supplied by
-       the translation program to match the target machine.
- <dl>
+<p>
+
+There are several parameters which may vary with the target machine.
+the macro-program is independent of the actual definitions of these
+parameters.
+
+<p>
+ 
+The definitions of these parameters are supplied by the translation
+program to match the target machine.
+
+<dl>
 <dt><strong>cfp$a</strong> 
-<dd>number of distinct characters in
+
+<dd>Number of distinct characters in
                              internal alphabet in the range
                              64 le <strong>cfp$a</strong>  le m<strong>XL</strong> en.
 <dt><strong>cfp$b</strong> 
 
-<dd>number of bytes in a word where a byte is the amount of storage
-addressed by the least significant address bit.  </dl>
+<dd>Number of bytes in a word where a byte is the amount of storage
+addressed by the least significant address bit.  
 
 <dt> <strong>cfp$c</strong> 
-<dd> number of characters which can be stored in a single word.
+
+<dd> Number of characters which can be stored in a single word.
 
 <dt><strong>cfp$f</strong> 
 
-<dd> byte offset from start of a string block to the first character.
+<dd> Byte offset from start of a string block to the first character.
 depends both on target machine and string data structure. see <strong>plc</strong>  psc
 
 <dt><strong>cfp$i</strong> 
 
-<dd> number of words in a signed integer constant
+<dd> Number of words in a signed integer constant
 
 <dt><strong>cfp$l</strong> 
 
-<dd> the largest unsigned integer of form 2**n - 1 which can be stored
+<dd> The largest unsigned integer of form 2**n - 1 which can be stored
 in a single word.  n will often be <strong>cfp$n</strong>  but need not be.
 
 <dt><strong>cfp$m</strong> 
 
-<dd> the largest positive signed integer of form 2**n - 1 which can be
+<dd> The largest positive signed integer of form 2**n - 1 which can be
 stored in a single word.  n will often be <strong>cfp$n</strong> -1 but need not be.
 
 <dt><strong>cfp$n</strong> 
 
-<dd> number of bits which can be stored in a one word bit string.
+<dd> Number of bits which can be stored in a one word bit string.
 
 <dt><strong>cfp$r</strong> 
 
-<dd> number of words in a real constant
+<dd> Number of words in a real constant
 
 <dt><strong>cfp$s</strong> 
 
-<dd> number of significant digits to be output in conversion of a real
+<dd> 
+
+Number of significant digits to be output in conversion of a real
 quantity.  .if .cncr .else the integer consisting of this number of 9s
 must not be too large to fit in the integer accum.  .fi
-</dl>
 
 <pre>
+
+
 
 .if    .cucf
        <strong>cfp$u</strong>                  realistic upper bound on alphabet.
@@ -90,95 +92,128 @@ must not be too large to fit in the integer accum.  .fi
        <strong>cfp$x</strong>                  number of digits in real exponent
 </pre>
 
-<h2>section 2 - memory</h2>
+</dl>
+
+<h2>Memory</h2>
 
 <p>
-Memory is organized into words which each contain <strong>cfp$b</strong> 
-       bytes. for word machines <strong>cfp$b</strong> , which is a configuration
-       parameter, may be one in which case words and bytes are
-       identical. to each word corresponds an address which is
-       a non-negative quantity which is a multiple of <strong>cfp$b</strong> .
-       data is organized into words as follows.
+
+Memory is organized into words which each contain
+<strong>cfp$b</strong> bytes. for word machines <strong>cfp$b</strong>
+, which is a configuration parameter, may be one in which case words
+and bytes are identical. To each word corresponds an address which is
+a non-negative quantity which is a multiple of <strong>cfp$b</strong>
+.  data is organized into words as follows.
+
 
 <ol>
-<li>a signed integer value occupies <strong>cfp$i</strong>  consecutive
-            words (<strong>cfp$i</strong>  is a configuration parameter).
-            the range may include more negative numbers than
-            positive (e.g. the twos complement representation).
 
-<li>a signed real value occupies <strong>cfp$r</strong>  consecutive
-            words. (<strong>cfp$r</strong>  is a configuration parameter).
-<li><strong>cfp$c</strong>  characters may be stored in a single word
-            (<strong>cfp$c</strong>  is a configuration parameter).
+   <li>
 
-<li>a bit string containing <strong>cfp$n</strong>  bits can be stored in
-            a single word (<strong>cfp$n</strong>  is a configuration parameter).
+A signed integer value occupies <strong>cfp$i</strong> consecutive
+words (<strong>cfp$i</strong> is a configuration parameter).  The
+range may include more negative numbers than positive (e.g. the twos
+complement representation).
 
-<li>a word can contain a unsigned integer value in
-            the range (0 le n le <strong>cfp$l</strong> . These integer values
-            may represent addresses of other words and some of
-            the instructions use this fact to provide indexing
-            and indirection facilities.
-<li>program instructions occupy words in an undefined
-            manner. depending on the actual implementation,
-            instructions may occupy several words, or part of
-            a word, or even be split over word boundaries.
+
+<li>A signed real value occupies <strong>cfp$r</strong> consecutive
+words. (<strong>cfp$r</strong> is a configuration parameter).
+
+<li><strong>cfp$c</strong> characters may be stored in a single word
+(<strong>cfp$c</strong> is a configuration parameter).
+
+<li>
+
+A bit string containing <strong>cfp$n</strong> bits can be stored in a
+single word (<strong>cfp$n</strong> is a configuration parameter).
+
+<li>
+
+A word can contain a unsigned integer value in the range (0 le n le
+<strong>cfp$l</strong> . These integer values may represent addresses
+of other words and some of the instructions use this fact to provide
+indexing and indirection facilities.  
+
+<li>Program instructions occupy
+words in an undefined manner. Depending on the actual implementation,
+instructions may occupy several words, or part of a word, or even be
+split over word boundaries.
 
 </ol>
 </pre>
 
-<p>The following regions of memory are available to the
-       program. each region consists of a series of words with
-       consecutive addresses.
+<p>
+
+The following regions of memory are available to the program. each
+region consists of a series of words with consecutive addresses.
 
 <ol>
-<li>constant section ---            assembled constants
+
+   <li>constant section ---            assembled constants
+
 <li> working storage section ---    assembled work areas
+
 <li>program section ---            assembled instructions
+
 <li>stack area ---                 allocated stack area
+
 <li>data area ---                  allocated data area
+
+
 </ol>
 
-<h2>section 3 - registers</h2>
+<h2>Registers</h2>
 
-<p>There are three index registers called <strong>XR</strong> ,<strong>XL</strong> ,<strong>XS</strong> . in
-       addition <strong>XL</strong>  may sometimes be referred to by the alias
-       of xt - see section 4. any of the above registers
-       may hold a positive unsigned integer in the range
-       (0 le n le <strong>cfp$l</strong> ). when the index register is used for
-       indexing purposes, this must be an appropriate address.
-       <strong>XS</strong>  is special in that it is used to point to the top
-       item of a stack in memory. the stack may build up or
-       down in memory.since it is required that <strong>XS</strong>  points to the
-       stack top but access to items below the top is permitted,
-       registers <strong>XS</strong>  and xt may be used with suitable offsets
-       to index stacked items. only <strong>XS</strong>  and xt may be used for
-       this purpose since the direction of the offset is
-       target machine dependent. xt is a synonym for <strong>XL</strong> 
-       which therefore cannot be used in code sequences
-       referencing xt.
 <p>
-       the stack is used for s-r linkage and temporary
-       data storage for which the stack arrangement is suitable.
-       <strong>XR</strong> ,<strong>XL</strong>  can also contain a character pointer in conjunction
-       with the character instructions (see description of plc).
-       ejc
-<p>
-       there are three work registers called wa,<strong>WB</strong> ,<strong>WC</strong>  which
-       can contain any data item which can be stored in a
-       single memory word. in fact, the work registers are just
-       like memory locations except that they have no addresses
-       and are referenced in a special way by the instructions.
-<p>
-       note that registers wa,<strong>WB</strong>  have special uses in connection
-       with the <strong>cvd</strong>  <strong>cvm</strong>  <strong>mvc</strong>  <strong>mvw</strong>  m<strong>WB</strong> , <strong>cmc</strong>  <strong>trc</strong> instructions.
-<p>
-       register <strong>WC</strong>  may overlap the integer accumulator (<strong>IA</strong> ) in
-       some implementations. thus any operation changing the
-       value in <strong>WC</strong>  leaves (<strong>IA</strong> ) undefined and vice versa
-       except as noted in the following restriction on simple
-       dump/restore operations.
-<p>
+
+There are three index registers called <strong>XR</strong>
+,<strong>XL</strong> ,<strong>XS</strong> . In addition
+<strong>XL</strong> may sometimes be referred to by the alias of xt -
+see section 4. any of the above registers may hold a positive unsigned
+integer in the range (0 le n le <strong>cfp$l</strong> ). When the
+index register is used for indexing purposes, this must be an
+appropriate address.  <strong>XS</strong> is special in that it is
+used to point to the top item of a stack in memory. the stack may
+build up or down in memory.since it is required that
+<strong>XS</strong> points to the stack top but access to items below
+the top is permitted, registers <strong>XS</strong> and xt may be used
+with suitable offsets to index stacked items. only <strong>XS</strong>
+and xt may be used for this purpose since the direction of the offset
+is target machine dependent. xt is a synonym for <strong>XL</strong>
+which therefore cannot be used in code sequences referencing xt.
+
+       <p>
+
+The stack is used for s-r linkage and temporary data storage for which
+the stack arrangement is suitable.  <strong>XR</strong>
+,<strong>XL</strong> can also contain a character pointer in
+conjunction with the character instructions (see description of plc).
+
+
+       <p>
+
+There are three work registers called wa,<strong>WB</strong>
+,<strong>WC</strong> which can contain any data item which can be
+stored in a single memory word. In fact, the work registers are just
+like memory locations except that they have no addresses and are
+referenced in a special way by the instructions.
+
+       <p>
+
+Note that registers wa,<strong>WB</strong> have special uses in
+connection with the <strong>cvd</strong> <strong>cvm</strong>
+<strong>mvc</strong> <strong>mvw</strong> m<strong>WB</strong> ,
+<strong>cmc</strong> <strong>trc</strong> instructions.
+
+       <p>
+
+Register <strong>WC</strong> may overlap the integer accumulator
+(<strong>IA</strong> ) in some implementations. thus any operation
+changing the value in <strong>WC</strong> leaves (<strong>IA</strong>
+) undefined and vice versa except as noted in the following
+restriction on simple dump/restore operations.
+
+       <p>
 <pre>
            restriction
            -----------
@@ -193,67 +228,71 @@ Memory is organized into words which each contain <strong>cfp$b</strong>
 </pre>
 
 <p>
-       there is an integer accumulator (<strong>IA</strong> ) which is capable of
-       holding a signed integer value (<strong>cfp$i</strong>  words long).
-       register <strong>WC</strong>  may overlap the integer accumulator (<strong>IA</strong> ) in
-       some implementations. thus any operation changing the
-       value in <strong>WC</strong>  leaves (<strong>IA</strong> ) undefined and vice versa
-       except as noted in the above restriction on simple
-       dump/restore operations.
+
+There is an integer accumulator (<strong>IA</strong> ) which is
+capable of holding a signed integer value (<strong>cfp$i</strong>
+words long).  register <strong>WC</strong> may overlap the integer
+accumulator (<strong>IA</strong> ) in some implementations. thus any
+operation changing the value in <strong>WC</strong> leaves
+(<strong>IA</strong> ) undefined and vice versa except as noted in the
+above restriction on simple dump/restore operations.
 
 <p>
 
-       there is a single real accumulator (<strong>RA</strong> ) which can hold
-       any real value and is completely separate from any of
-       the other registers or program accessible locations.
+
+There is a single real accumulator (<strong>RA</strong> ) which can
+hold any real value and is completely separate from any of the other
+registers or program accessible locations.
 
 
 <p>
-       the code pointer register (<strong>CP</strong> ) is a special index
-       register for use in implementations of interpretors.
-       it is used to contain a pseudo-code pointer and can
-       only be affected by i<strong>CP</strong> , <strong>CP</strong> , s<strong>CP</strong>  and <strong>lcw</strong> instructions.
 
-<h2>section 4 - the stack</h2>
+The code pointer register (<strong>CP</strong> ) is a special index
+register for use in implementations of interpretors.  it is used to
+contain a pseudo-code pointer and can only be affected by
+i<strong>CP</strong> , <strong>CP</strong> , s<strong>CP</strong> and
+<strong>lcw</strong> instructions.
+
+<h2>The Stack</h2>
+
 <p>
-       the following notes are to guide both implementors of
-       systems written in minimal and minimal programmers in
-       dealing with stack manipulation. implementation of a
-       downwards building stack is easiest and in general is
-       to be preferred, in which case it is merely necessary to
-       consider xt as an alternative name for <strong>XL</strong> .
-<p>
-       the minimal virtual machine includes a stack and has
-       operand formats -(<strong>XS</strong> ) and (<strong>XS</strong> )+ for pushing and popping
-       items with an implication that the stack builds down in
-       memory (a d-stack). however on some target machines it is
-       better for the stack to build up (a u-stack).
-       a stack addressed only by push and pop operations can
-       build in either direction with no complication but
-       such a pure scheme of stack access proves restrictive.
-       hence it is permitted to access buried items using an
-       integer offset past the index register pointing to the
-       stack top. on target machines this offset will be
-       positive/negative for d-stacks/u-stacks and this must
-       be allowed for in the translation.
-       a further restriction is that at no time may an item be
-       placed above the stack top. for some operations this
-       makes it convenient to advance the stack pointer and then
-       address items below it using a second index register.
-       the problem of signed offsets past such a register then
-       arises. to distinguish stack offsets, which in some
-       implementations may be negative, from non-stack offsets
-       which are invariably positive, xt, an alias or
-       synonym for <strong>XL</strong>  is used. for a u-stack implementation, the
-       minimal translator should negate the sign of offsets
-       applied to both (<strong>XS</strong> ) and (xt).
-       programmers should note that since xt is not a
-       separate register, <strong>XL</strong>  should not be used in code where
-       xt is referenced. other modifications needed in u-stack
-       translations are in the <strong>add</strong>  <strong>sub</strong>  <strong>ica</strong>  <strong>dca</strong> opcodes
-       applied to <strong>XS</strong> , xt. for example
-<pre>
-       minimal           d-stack trans.  u-stack trans.
+
+The following notes are to guide both implementors of systems written
+in MINIMAL and MINIMAL programmers in dealing with stack manipulation.
+implementation of a downwards building stack is easiest and in general
+is to be preferred, in which case it is merely necessary to consider
+xt as an alternative name for <strong>XL</strong> .
+
+       <p>
+
+The MINIMAL virtual machine includes a stack and has operand formats
+-(<strong>XS</strong> ) and (<strong>XS</strong> )+ for pushing and
+popping items with an implication that the stack builds down in memory
+(a d-stack). however on some target machines it is better for the
+stack to build up (a u-stack).  a stack addressed only by push and pop
+operations can build in either direction with no complication but such
+a pure scheme of stack access proves restrictive.  hence it is
+permitted to access buried items using an integer offset past the
+index register pointing to the stack top. on target machines this
+offset will be positive/negative for d-stacks/u-stacks and this must
+be allowed for in the translation.  a further restriction is that at
+no time may an item be placed above the stack top. for some operations
+this makes it convenient to advance the stack pointer and then address
+items below it using a second index register.  the problem of signed
+offsets past such a register then arises. to distinguish stack
+offsets, which in some implementations may be negative, from non-stack
+offsets which are invariably positive, xt, an alias or synonym for
+<strong>XL</strong> is used. for a u-stack implementation, the MINIMAL
+translator should negate the sign of offsets applied to both
+(<strong>XS</strong> ) and (xt).  programmers should note that since
+xt is not a separate register, <strong>XL</strong> should not be used
+in code where xt is referenced. other modifications needed in u-stack
+translations are in the <strong>add</strong> <strong>sub</strong>
+<strong>ica</strong> <strong>dca</strong> opcodes applied to
+<strong>XS</strong> , xt. for example
+
+       <pre>
+       MINIMAL           d-stack trans.  u-stack trans.
 
        <strong>mov</strong>  wa,-(<strong>XS</strong> )     <strong>sbi</strong>  <strong>XS</strong> ,1       <strong>adi</strong>  <strong>XS</strong> ,1
                          sto  wa,(<strong>XS</strong> )    sto  wa,(<strong>XS</strong> )
@@ -269,15 +308,22 @@ Memory is organized into words which each contain <strong>cfp$b</strong>
        are illegal, since they assume information storage
        above the stack top.
 </pre>
-<h2>section 5 - internal character set</h2>
-<p>The internal character set is represented by a set of
-       contiguous codes from 0 to <strong>cfp$a</strong> -1. the codes for the
-       digits 0-9 must be contiguous and in sequence. other
-       than this, there are no restraints.
+
+<h2>Internal Character Set</h2>
+
 <p>
-       the following symbols are automatically defined to have
-       the value of the corresponding internal character code.
-<pre>
+
+The internal character set is represented by a set of contiguous codes
+from 0 to <strong>cfp$a</strong> -1. the codes for the digits 0-9 must
+be contiguous and in sequence. other than this, there are no
+restraints.
+
+       <p>
+
+The following symbols are automatically defined to have the value of
+the corresponding internal character code.
+
+       <pre>
        ch$la                 letter a
        ch$lb                 letter b
        .                     .
@@ -314,8 +360,10 @@ Memory is organized into words which each contain <strong>cfp$b</strong>
        ch$sq                 single quote
        ch$un                 underline
 </pre>
-<p>The following optional symbols are incorporated
-       by defining the conditional assembly symbol named.
+<p>
+
+The following optional symbols are incorporated by defining the
+conditional assembly symbol named.
 
 <pre>
        26 shifted letters incorporated by defining .casl
@@ -330,13 +378,15 @@ Memory is organized into words which each contain <strong>cfp$b</strong>
        ch$ey                 up arrow       - define .caex
 </pre>
 
-<h2>section 6 - conditional assembly features</h2>
+<h2>Conditional Assembly Features</h2>
 
-<p>Some features of the interpreter are applicable to only
-       certain target machines. they may be incorporated or
-       omitted by use of conditional assembly. the full
-       form of a condition is -
-<pre>
+<p>
+
+Some features of the interpreter are applicable to only certain target
+machines. they may be incorporated or omitted by use of conditional
+assembly. the full form of a condition is -
+
+       <pre>
        .if    conditional assembly symbol    (cas)
        .then
               minimal statements1   (ms1)
@@ -355,11 +405,15 @@ Memory is organized into words which each contain <strong>cfp$b</strong>
                .ca$1
 </pre>
        <li>.<strong>then</strong> is redundant and may be omitted if wished.
-<li>ms1, ms2 are arbitrary sequences of minimal
+
+       <li>ms1, ms2 are arbitrary sequences of MINIMAL
             statements either of which may be null or may
             contain further conditions.
+
 <li>if ms2 is omitted, .<strong>else</strong> may also be omitted.
+
 <li>.<strong>fi</strong> is required.
+
 <li>conditions may be nested to a depth determined
             by the translator (not less than 20, say).
 </ol>
@@ -371,29 +425,34 @@ Memory is organized into words which each contain <strong>cfp$b</strong>
        .<strong>undef</strong> cas
 </pre>
 <p>
-       which obey rules 1. and 2. above and may occur at any
-       point in a minimal program, including within a condition.
-       multiply defining a symbol is an error.
-       undefining a symbol which is not defined is not an error.
-<p>
-       the effect is that if a symbol is currently defined,
-       <strong>then</strong> in any condition depending on it, ms1 will be
-       processed and ms2 omitted. conversely if it is undefined,
-       ms1 will be omitted and ms2 processed.
-<p>
-       nesting of conditions is such that conditions
-       in a section not selected for processing must not be
-       evaluated. nested conditions must remember their
-       environment whilst being processed. effectively this
-       implies use of a scheme based on a stack with if  .fi
-       matching by the condition processor of the translator.
-       ejc
 
-  <h2>section 7 - operand formats</h2>
+Which obey rules 1. and 2. above and may occur at any point in a
+MINIMAL program, including within a condition.  multiply defining a
+symbol is an error.  undefining a symbol which is not defined is not
+an error.
+
+       <p>
+
+The effect is that if a symbol is currently defined,
+<strong>then</strong> in any condition depending on it, ms1 will be
+processed and ms2 omitted. conversely if it is undefined, ms1 will be
+omitted and ms2 processed.
+
+       <p>
+
+Nesting of conditions is such that conditions in a section not
+selected for processing must not be evaluated. nested conditions must
+remember their environment whilst being processed. effectively this
+implies use of a scheme based on a stack with if .fi matching by the
+condition processor of the translator.  ejc
+
+  <h2>Operand Formats</h2>
 <p>
-       the following section describes the various possibilities
-       for operands of instructions and assembly operations.
-<pre>
+
+The following section describes the various possibilities for operands
+of instructions and assembly operations.
+
+       <pre>
 
        01   int              unsigned integer le <strong>cfp$l</strong> 
        02   <em>dlbl</em>             symbol defined in definitions sec
@@ -424,117 +483,125 @@ Memory is organized into words which each contain <strong>cfp$b</strong>
        27   <em>dtext</em>            delimited text string (dtc)
 </pre>
 <p>
-       the numbers in the above list are used in subsequent
-       description and in some of the minimal translators.
-<p>
+
+The numbers in the above list are used in subsequent description and
+in some of the MINIMAL translators.
+
+       <p>
+
        operand formats (continued)
-<p>
-       the following special symbols refer to a collection of
-       the listed possibilities
-<dl>
-<dt>       val  01,02
+
+       <p>
+
+The following special symbols refer to a collection of the listed
+possibilities
+
+       <dl>
+
+   <dt>       val  01,02
 
 <dd>predefined value
 
 <p>
-            val is used to refer to a predefined one word
-            integer value in the range 0 le n le <strong>cfp$l</strong> 
+
+val is used to refer to a predefined one word integer value in the
+range 0 le n le <strong>cfp$l</strong> 
 
 <dt>reg  07,08
 
 <dd>register
 
 <p>
-             <em>reg</em> is used to describe an operand which can be
-            any of the registers (<strong>XL</strong> ,
-<strong>XR</strong> ,
-<strong>XS</strong> ,<strong>XT</strong> ,
-<strong>WA</strong> ,
-<strong>WB</strong> ,
-<strong>WC</strong> ). Such
-            an operand can hold a one word integer (address).
+
+<em>reg</em> is used to describe an operand which can be any of the
+registers (<strong>XL</strong> , <strong>XR</strong> ,
+<strong>XS</strong> ,<strong>XT</strong> , <strong>WA</strong> ,
+<strong>WB</strong> , <strong>WC</strong> ). Such an operand can hold
+a one word integer (address).
 
 <dt> <em>opc</em>  09,10,11
+
 <dd>                   character
 
 <p>
-             <em>opc</em> is used to designate a specific character
-            operand for use in the <strong>lch</strong> and <strong>sch</strong> instructions.
-            the index register referenced must be either <strong>XR</strong>  or
-            <strong>XL</strong>  (not <strong>XS</strong> ,xt). see section on character operations.
+
+<em>opc</em> is used to designate a specific character operand for use
+in the <strong>lch</strong> and <strong>sch</strong> instructions.
+the index register referenced must be either <strong>XR</strong> or
+<strong>XL</strong> (not <strong>XS</strong> ,xt). see section on
+character operations.
 
 <dt> <em>ops</em>  03,04,09,12,13,14,15
 
 <dd>       memory reference
 
 <p>
-             <em>ops</em> is used to describe an operand which is in
-            memory. the operand may be one or more words long
-            depending on the data type. in the case of multiword
-            operands, the address given is the first word.
+
+<em>ops</em> is used to describe an operand which is in memory. the
+operand may be one or more words long depending on the data type. in
+the case of multiword operands, the address given is the first word.
 
 <dt> <em>opw</em>  as for  <em>ops</em> + 08,10,11
 
 <dd>      full word
 
 <p>
-             <em>opw</em> is used to refer to an operand whose capacity is
-            that of a full memory word.  <em>opw</em> includes all the
-            possibilities for  <em>ops</em> (the referenced word is used)
-            plus the use of one of the three work registers
-            (wa,<strong>WB</strong> ,<strong>WC</strong> ). in addition, the formats (x)+ and -(x)
-            allow indexed operations in which the index register
-            is popped by one word after the reference (x)+,
-            or pushed by one word before the reference -(x)
-            these latter two formats provide a facility for
-            manipulation of stacks. the format does not imply
-            a particular direction in which stacks must build -
-            it is used for compactness. note that there is a
-            restriction which disallows an instruction to use
-            an index register in one of these formats
-            in some other manner in the same instruction.
-            e.g.   <strong>mov</strong>  <strong>XL</strong> ,(<strong>XL</strong> )+   is illegal.
-            the formats -(x) and (x)+ may also be used in
-            pre-decrementation, post-incrementation to access
-            the adjacent character of a string.
+
+<em>opw</em> is used to refer to an operand whose capacity is that of
+a full memory word.  <em>opw</em> includes all the possibilities for
+<em>ops</em> (the referenced word is used) plus the use of one of the
+three work registers (wa,<strong>WB</strong> ,<strong>WC</strong> ).
+in addition, the formats (x)+ and -(x) allow indexed operations in
+which the index register is popped by one word after the reference
+(x)+, or pushed by one word before the reference -(x) these latter two
+formats provide a facility for manipulation of stacks. the format does
+not imply a particular direction in which stacks must build - it is
+used for compactness. note that there is a restriction which disallows
+an instruction to use an index register in one of these formats in
+some other manner in the same instruction.  e.g.  <strong>mov</strong>
+<strong>XL</strong> ,(<strong>XL</strong> )+ is illegal.  the formats
+-(x) and (x)+ may also be used in pre-decrementation,
+post-incrementation to access the adjacent character of a string.
+
 <dt> <em>opn</em>  as for  <em>opw</em> + 07
 
 <dd>            one word integer
 
 <p>
-             <em>opn</em> is used to represent an operand location which
-            can contain a one word integer (e.g. an address).
-            this includes all the possibilities for  <em>opw</em> plus
-            the use of one of the index registers
-(<strong>XL</strong> ,<strong>XR</strong> ,
-<strong>XT</strong> ,
-            <strong>XS</strong> ). the range of integer
+
+<em>opn</em> is used to represent an operand location which can
+contain a one word integer (e.g. an address).  this includes all the
+possibilities for <em>opw</em> plus the use of one of the index
+registers (<strong>XL</strong> ,<strong>XR</strong> ,
+<strong>XT</strong> , <strong>XS</strong> ). the range of integer
 values is 0 le n le <strong>cfp$l</strong> 
 
 <dt> <em>opv</em>  as for  <em>opn</em> + 18-22
 
 <dd>         one word integer value
+
 <p>
-             <em>opv</em> is used for an operand which can yield a one
-            word integer value (e.g. an address). it includes
-            all the possibilities for  <em>opn</em> (the current value of
-            the location is used) plus the use of literals. note
-            that although the literal formats are described in
-            terms of a reference to a location containing an
-            address constant, this location may not actually
-            exist in some implementations since only the value
-            is required. a restriction is placed on literals
-            which may consist only of defined symbols and
-            certain labels. consequently small integers to be
-            used as literals must be pre-defined, a discipline
-            aiding program maintenance and revision.
+
+<em>opv</em> is used for an operand which can yield a one word integer
+value (e.g. an address). it includes all the possibilities for
+<em>opn</em> (the current value of the location is used) plus the use
+of literals. note that although the literal formats are described in
+terms of a reference to a location containing an address constant,
+this location may not actually exist in some implementations since
+only the value is required. a restriction is placed on literals which
+may consist only of defined symbols and certain labels. consequently
+small integers to be used as literals must be pre-defined, a
+discipline aiding program maintenance and revision.
+
 
 <dt>addr 01,02,03,04,05
 
 <dd>             address
+
 <p>
-            addr is used to describe an explicit address value
-            (one word integer value) for use with <strong>dac</strong> 
+
+addr is used to describe an explicit address value (one word integer
+value) for use with <strong>dac</strong> 
 
 <pre>
 
@@ -546,155 +613,157 @@ values is 0 le n le <strong>cfp$l</strong>
             ****************************************************
 </pre>
 
-<h2>section 8 - list of instruction mnemonics</h2>
+<h2>Instruction Mnemonics</h2>
 
 <p>
 
-       the following list includes all instruction and
-       assembly operation mnemonics in alphabetical order.
-       the mnemonics are preceded by a number identifying
-       the following section where the instruction is described.
-       a star (*) is appended to the mnemonic if the last
-       operand may optionally be omitted.
-       see section -15- for details of statement format and
-       comment conventions.
-<pre>
-        2.1  <strong>add</strong>   <em>opv</em>, <em>opn</em>      add address
-        4.2  <strong>adi</strong>   <em>ops</em>          add integer
-        5.3  <strong>adr</strong>   <em>ops</em>          add real
-        7.1  <strong>anb</strong>   <em>opw</em>,w        and bit string
-        2.17 <strong>aov</strong>   <em>opv</em>, <em>opn</em>,<em>plbl</em> add address, fail if overflow
-        5.16 <strong>atn</strong>               arctangent of real accum
-        2.16 <strong>bct</strong>  w,<em>plbl</em>       branch and count
-        2.5  <strong>beq</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address equal
-        2.18 <strong>bev</strong>   <em>opn</em>,<em>plbl</em>     branch if address even
-        2.8  <strong>bge</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address greater or equl
-        2.7  <strong>bgt</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address greater
-        2.12 <strong>bhi</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address high
-        2.10 <strong>ble</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address less or equal
-        2.11 <strong>blo</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address low
-        2.9  <strong>blt</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address less than
-        2.6  <strong>bne</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address not equal
-        2.13 <strong>bnz</strong>   <em>opn</em>,<em>plbl</em>     branch if address non-zero
-        2.19 <strong>bod</strong>   <em>opn</em>,<em>plbl</em>     branch if address odd
-        1.2  <strong>brn</strong>  <em>plbl</em>         branch unconditional
-        1.7  <strong>bri</strong>   <em>opn</em>          branch indirect
-        1.3  <strong>bsw</strong> * x,val,<em>plbl</em>   branch on switch value
-        8.2  <strong>btw</strong>   <em>reg</em>          convert bytes to words
-        2.14 <strong>bze</strong>   <em>opn</em>,<em>plbl</em>     branch if address zero
-        6.6  <strong>ceq</strong>  opw,opw,<em>plbl</em> branch if characters equal
-       10.1  <strong>chk</strong>               check stack overflow
-        5.17 <strong>chp</strong>               integer portion of real accum
-        7.4  <strong>cmb</strong>  w            complement bit string
-        6.8  <strong>cmc</strong>  <em>plbl</em>,<em>plbl</em>    compare character strings
-        6.7  <strong>cne</strong>  opw,opw,<em>plbl</em> branch if characters not equal
-        6.5  <strong>csc</strong>  x            complete store characters
-        5.18 <strong>cos</strong>               cosine of real accum
-        8.8  <strong>ctb</strong>  w,val        convert character count to bytes
-        8.7  <strong>ctw</strong>  w,val        convert character count to words
-        8.10 <strong>cvd</strong>               convert by division
-        8.9  <strong>cvm</strong>  <em>plbl</em>         convert by multiplication
-       11.1  <strong>dac</strong>  addr         define address constant
-       11.5  <strong>dbc</strong>  val          define bit string constant
-        2.4  <strong>dca</strong>   <em>opn</em>          decrement address by one word
-        1.17 <strong>dcv</strong>   <em>opn</em>          decrement value by one
-       11.2  <strong>dic</strong>  integer      define integer constant
-       11.3  <strong>drc</strong>  real         define real constant
-       11.4  <strong>dtc</strong>  <em>dtext</em>        define text (character) constant
-        4.5  <strong>dvi</strong>   <em>ops</em>          divide integer
-        5.6  <strong>dvr</strong>   <em>ops</em>          divide real
-       13.1  <strong>ejc</strong>               eject assembly listing
-       14.2  <strong>end</strong>               end of assembly
-        1.13 <strong>enp</strong>               define end of procedure
-        1.6  <strong>ent</strong> * val          define entry point
-       12.1  <strong>equ</strong>  <em>eqop</em>         define symbolic value
-        1.15 <strong>erb</strong>  int,text     assemble error code and branch
-        1.14 <strong>err</strong>  int,text     assemble error code
-        1.5  <strong>esw</strong>               end of switch list for bsw
-        5.19 <strong>etx</strong>               e to the power in the real accum
-        1.12 <strong>exi</strong> * int         exit from procedure
-       12.2  <strong>exp</strong>               define external procedure
-        6.10 <strong>flc</strong>  w            fold character to upper case
-        2.3  <strong>ica</strong>   <em>opn</em>          increment address by one word
-        3.4  <strong>icp</strong>               increment code pointer
-        1.16 <strong>icv</strong>   <em>opn</em>          increment value by one
-        4.11 <strong>ieq</strong>  <em>plbl</em>         jump if integer zero
-        1.4  <strong>iff</strong>  val,<em>plbl</em>     specify branch for bsw
-        4.12 <strong>ige</strong>  <em>plbl</em>         jump if integer non-negative
-        4.13 <strong>igt</strong>  <em>plbl</em>         jump if integer positive
-        4.14 <strong>ile</strong>  <em>plbl</em>         jump if integer negative or zero
-        4.15 <strong>ilt</strong>  <em>plbl</em>         jump if integer negative
-        4.16 <strong>ine</strong>  <em>plbl</em>         jump if integer non-zero
-        4.9  <strong>ino</strong>  <em>plbl</em>         jump if no integer overflow
-       12.3  <strong>inp</strong>  <em>ptyp</em>,int     internal procedure
-       12.4  <strong>inr</strong>               internal routine
-        4.10 <strong>iov</strong>  <em>plbl</em>         jump if integer overflow
-        8.5  <strong>itr</strong>               convert integer to real
-        1.9  <strong>jsr</strong>  <em>pnam</em>         call procedure
-        6.3  <strong>lch</strong>  reg, <em>opc</em>      load character
-        2.15 <strong>lct</strong>  w, <em>opv</em>        load counter for loop
-        3.1  <strong>lcp</strong>   <em>reg</em>          load code pointer register
-        3.3  <strong>lcw</strong>   <em>reg</em>          load next code word
-        4.1  <strong>ldi</strong>   <em>ops</em>          load integer
-        5.1  <strong>ldr</strong>   <em>ops</em>          load real
-        1.8  <strong>lei</strong>  x            load entry point id
-        5.20 <strong>lnf</strong>               natural logorithm of real accum
-        7.6  <strong>lsh</strong>  w,val        left shift bit string
-        7.8  <strong>lsx</strong>  w,(x)        left shift indexed
-        9.4  <strong>mcb</strong>               move characterswords backwards
-        8.4  <strong>mfi</strong> *  <em>opn</em>,<em>plbl</em>    convert (<strong>IA</strong> ) to address value
-        4.3  <strong>mli</strong>   <em>ops</em>          multiply integer
-        5.5  <strong>mlr</strong>   <em>ops</em>          multiply real
-        1.19 <strong>mnz</strong>   <em>opn</em>          move non-zero
-        1.1  <strong>mov</strong>   <em>opv</em>, <em>opn</em>      move
-        8.3  <strong>mti</strong>   <em>opn</em>          move address value to (<strong>IA</strong> )
-        9.1  <strong>mvc</strong>               move characters
-        9.2  <strong>mvw</strong>               move words
-        9.3  <strong>mwb</strong>               move words backwards
-        4.8  <strong>ngi</strong>               negate integer
-        5.9  <strong>ngr</strong>               negate real
-        7.9  <strong>nzb</strong>  w,<em>plbl</em>       jump if not all zero bits
-        7.2  <strong>orb</strong>  opw,w        or bit strings
-        6.1  <strong>plc</strong> * x, <em>opv</em>       prepare to load characters
-        1.10 <strong>ppm*</strong>  <em>plbl</em>        provide procedure exit parameter
-        1.11 <strong>prc</strong>  <em>ptyp</em>,val     define start of procedure
-        6.2  <strong>psc</strong> * x, <em>opv</em>       prepare to store characters
-        5.10 <strong>req</strong>  <em>plbl</em>         jump if real zero
-        5.11 <strong>rge</strong>  <em>plbl</em>         jump if real positive or zero
-        5.12 <strong>rgt</strong>  <em>plbl</em>         jump if real positive
-        5.13 <strong>rle</strong>  <em>plbl</em>         jump if real negative or zero
-        5.14 <strong>rlt</strong>  <em>plbl</em>         jump if real negative
-        4.6  <strong>rmi</strong>   <em>ops</em>          remainder integer
-        5.15 <strong>rne</strong>  <em>plbl</em>         jump if real non-zero
-        5.8  <strong>rno</strong>  <em>plbl</em>         jump if no real overflow
-        5.7  <strong>rov</strong>  <em>plbl</em>         jump if real overflow
-        7.5  <strong>rsh</strong>  w,val        right shift bit string
-        7.7  <strong>rsx</strong>  w,(x)        right shift indexed
-        8.6  <strong>rti</strong> * <em>plbl</em>        convert real to integer
-        1.22 <strong>rtn</strong>               define start of routine
-        4.4  <strong>sbi</strong>   <em>ops</em>          subtract integer
-        5.4  <strong>sbr</strong>   <em>ops</em>          subtract reals
-        6.4  <strong>sch</strong>  reg, <em>opc</em>      store character
-        3.2  <strong>scp</strong>   <em>reg</em>          store code pointer
-       14.1  <strong>sec</strong>               define start of assembly section
-        5.21 <strong>sin</strong>               sine of real accum
-        5.22 <strong>sqr</strong>               square root of real accum
-        1.20 <strong>ssl</strong>  opw          subroutine stack load
-        1.21 <strong>sss</strong>  opw          subroutine stack store
-        4.7  <strong>sti</strong>   <em>ops</em>          store integer
-        5.2  <strong>str</strong>   <em>ops</em>          store real
-        2.2  <strong>sub</strong>   <em>opv</em>, <em>opn</em>      subtract address
-        5.23 <strong>tan</strong>               tangent of real accum
-        6.9  <strong>trc</strong>               translate character string
-       13.2  <strong>ttl</strong>  text         supply assembly title
-        8.1  <strong>wtb</strong>   <em>reg</em>          convert words to bytes
-        7.3  <strong>xob</strong>  opw,w        exclusive or bit strings
-        1.18 <strong>zer</strong>   <em>opn</em>          zeroise integer location
-        7.11 <strong>zgb</strong>   <em>opn</em>          zeroise garbage bits
-        7.10 <strong>zrb</strong>  w,<em>plbl</em>       jump if all zero bits
+
+The following list includes all instruction and assembly operation
+mnemonics in alphabetical order.  the mnemonics are preceded by a
+number identifying the following section where the instruction is
+described.  a star (*) is appended to the mnemonic if the last operand
+may optionally be omitted.  see section -15- for details of statement
+format and comment conventions.
+
+       <pre>
+
+2.1  <strong>add</strong>   <em>opv</em>, <em>opn</em>      add address
+4.2  <strong>adi</strong>   <em>ops</em>          add integer
+5.3  <strong>adr</strong>   <em>ops</em>          add real
+7.1  <strong>anb</strong>   <em>opw</em>,w        and bit string
+2.17 <strong>aov</strong>   <em>opv</em>, <em>opn</em>,<em>plbl</em> add address, fail if overflow
+5.16 <strong>atn</strong>               arctangent of real accum
+2.16 <strong>bct</strong>  w,<em>plbl</em>       branch and count
+2.5  <strong>beq</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address equal
+2.18 <strong>bev</strong>   <em>opn</em>,<em>plbl</em>     branch if address even
+2.8  <strong>bge</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address greater or equl
+2.7  <strong>bgt</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address greater
+2.12 <strong>bhi</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address high
+2.10 <strong>ble</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address less or equal
+2.11 <strong>blo</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address low
+2.9  <strong>blt</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address less than
+2.6  <strong>bne</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address not equal
+2.13 <strong>bnz</strong>   <em>opn</em>,<em>plbl</em>     branch if address non-zero
+2.19 <strong>bod</strong>   <em>opn</em>,<em>plbl</em>     branch if address odd
+1.2  <strong>brn</strong>  <em>plbl</em>         branch unconditional
+1.7  <strong>bri</strong>   <em>opn</em>          branch indirect
+1.3  <strong>bsw</strong> * x,val,<em>plbl</em>   branch on switch value
+8.2  <strong>btw</strong>   <em>reg</em>          convert bytes to words
+2.14 <strong>bze</strong>   <em>opn</em>,<em>plbl</em>     branch if address zero
+6.6  <strong>ceq</strong>  opw,opw,<em>plbl</em> branch if characters equal
+10.1  <strong>chk</strong>               check stack overflow
+5.17 <strong>chp</strong>               integer portion of real accum
+7.4  <strong>cmb</strong>  w            complement bit string
+6.8  <strong>cmc</strong>  <em>plbl</em>,<em>plbl</em>    compare character strings
+6.7  <strong>cne</strong>  opw,opw,<em>plbl</em> branch if characters not equal
+6.5  <strong>csc</strong>  x            complete store characters
+5.18 <strong>cos</strong>               cosine of real accum
+8.8  <strong>ctb</strong>  w,val        convert character count to bytes
+8.7  <strong>ctw</strong>  w,val        convert character count to words
+8.10 <strong>cvd</strong>               convert by division
+8.9  <strong>cvm</strong>  <em>plbl</em>         convert by multiplication
+11.1  <strong>dac</strong>  addr         define address constant
+11.5  <strong>dbc</strong>  val          define bit string constant
+2.4  <strong>dca</strong>   <em>opn</em>          decrement address by one word
+1.17 <strong>dcv</strong>   <em>opn</em>          decrement value by one
+11.2  <strong>dic</strong>  integer      define integer constant
+11.3  <strong>drc</strong>  real         define real constant
+11.4  <strong>dtc</strong>  <em>dtext</em>        define text (character) constant
+4.5  <strong>dvi</strong>   <em>ops</em>          divide integer
+5.6  <strong>dvr</strong>   <em>ops</em>          divide real
+13.1  <strong>ejc</strong>               eject assembly listing
+14.2  <strong>end</strong>               end of assembly
+1.13 <strong>enp</strong>               define end of procedure
+1.6  <strong>ent</strong> * val          define entry point
+12.1  <strong>equ</strong>  <em>eqop</em>         define symbolic value
+1.15 <strong>erb</strong>  int,text     assemble error code and branch
+1.14 <strong>err</strong>  int,text     assemble error code
+1.5  <strong>esw</strong>               end of switch list for bsw
+5.19 <strong>etx</strong>               e to the power in the real accum
+1.12 <strong>exi</strong> * int         exit from procedure
+12.2  <strong>exp</strong>               define external procedure
+6.10 <strong>flc</strong>  w            fold character to upper case
+2.3  <strong>ica</strong>   <em>opn</em>          increment address by one word
+3.4  <strong>icp</strong>               increment code pointer
+1.16 <strong>icv</strong>   <em>opn</em>          increment value by one
+4.11 <strong>ieq</strong>  <em>plbl</em>         jump if integer zero
+1.4  <strong>iff</strong>  val,<em>plbl</em>     specify branch for bsw
+4.12 <strong>ige</strong>  <em>plbl</em>         jump if integer non-negative
+4.13 <strong>igt</strong>  <em>plbl</em>         jump if integer positive
+4.14 <strong>ile</strong>  <em>plbl</em>         jump if integer negative or zero
+4.15 <strong>ilt</strong>  <em>plbl</em>         jump if integer negative
+4.16 <strong>ine</strong>  <em>plbl</em>         jump if integer non-zero
+4.9  <strong>ino</strong>  <em>plbl</em>         jump if no integer overflow
+12.3  <strong>inp</strong>  <em>ptyp</em>,int     internal procedure
+12.4  <strong>inr</strong>               internal routine
+4.10 <strong>iov</strong>  <em>plbl</em>         jump if integer overflow
+8.5  <strong>itr</strong>               convert integer to real
+1.9  <strong>jsr</strong>  <em>pnam</em>         call procedure
+6.3  <strong>lch</strong>  reg, <em>opc</em>      load character
+2.15 <strong>lct</strong>  w, <em>opv</em>        load counter for loop
+3.1  <strong>lcp</strong>   <em>reg</em>          load code pointer register
+3.3  <strong>lcw</strong>   <em>reg</em>          load next code word
+4.1  <strong>ldi</strong>   <em>ops</em>          load integer
+5.1  <strong>ldr</strong>   <em>ops</em>          load real
+1.8  <strong>lei</strong>  x            load entry point id
+5.20 <strong>lnf</strong>               natural logorithm of real accum
+7.6  <strong>lsh</strong>  w,val        left shift bit string
+7.8  <strong>lsx</strong>  w,(x)        left shift indexed
+9.4  <strong>mcb</strong>               move characterswords backwards
+8.4  <strong>mfi</strong> *  <em>opn</em>,<em>plbl</em>    convert (<strong>IA</strong> ) to address value
+4.3  <strong>mli</strong>   <em>ops</em>          multiply integer
+5.5  <strong>mlr</strong>   <em>ops</em>          multiply real
+1.19 <strong>mnz</strong>   <em>opn</em>          move non-zero
+1.1  <strong>mov</strong>   <em>opv</em>, <em>opn</em>      move
+8.3  <strong>mti</strong>   <em>opn</em>          move address value to (<strong>IA</strong> )
+9.1  <strong>mvc</strong>               move characters
+9.2  <strong>mvw</strong>               move words
+9.3  <strong>mwb</strong>               move words backwards
+4.8  <strong>ngi</strong>               negate integer
+5.9  <strong>ngr</strong>               negate real
+7.9  <strong>nzb</strong>  w,<em>plbl</em>       jump if not all zero bits
+7.2  <strong>orb</strong>  opw,w        or bit strings
+6.1  <strong>plc</strong> * x, <em>opv</em>       prepare to load characters
+1.10 <strong>ppm*</strong>  <em>plbl</em>        provide procedure exit parameter
+1.11 <strong>prc</strong>  <em>ptyp</em>,val     define start of procedure
+6.2  <strong>psc</strong> * x, <em>opv</em>       prepare to store characters
+5.10 <strong>req</strong>  <em>plbl</em>         jump if real zero
+5.11 <strong>rge</strong>  <em>plbl</em>         jump if real positive or zero
+5.12 <strong>rgt</strong>  <em>plbl</em>         jump if real positive
+5.13 <strong>rle</strong>  <em>plbl</em>         jump if real negative or zero
+5.14 <strong>rlt</strong>  <em>plbl</em>         jump if real negative
+4.6  <strong>rmi</strong>   <em>ops</em>          remainder integer
+5.15 <strong>rne</strong>  <em>plbl</em>         jump if real non-zero
+5.8  <strong>rno</strong>  <em>plbl</em>         jump if no real overflow
+5.7  <strong>rov</strong>  <em>plbl</em>         jump if real overflow
+7.5  <strong>rsh</strong>  w,val        right shift bit string
+7.7  <strong>rsx</strong>  w,(x)        right shift indexed
+8.6  <strong>rti</strong> * <em>plbl</em>        convert real to integer
+1.22 <strong>rtn</strong>               define start of routine
+4.4  <strong>sbi</strong>   <em>ops</em>          subtract integer
+5.4  <strong>sbr</strong>   <em>ops</em>          subtract reals
+6.4  <strong>sch</strong>  reg, <em>opc</em>      store character
+3.2  <strong>scp</strong>   <em>reg</em>          store code pointer
+14.1  <strong>sec</strong>               define start of assembly section
+5.21 <strong>sin</strong>               sine of real accum
+5.22 <strong>sqr</strong>               square root of real accum
+1.20 <strong>ssl</strong>  opw          subroutine stack load
+1.21 <strong>sss</strong>  opw          subroutine stack store
+4.7  <strong>sti</strong>   <em>ops</em>          store integer
+5.2  <strong>str</strong>   <em>ops</em>          store real
+2.2  <strong>sub</strong>   <em>opv</em>, <em>opn</em>      subtract address
+5.23 <strong>tan</strong>               tangent of real accum
+6.9  <strong>trc</strong>               translate character string
+13.2  <strong>ttl</strong>  text         supply assembly title
+8.1  <strong>wtb</strong>   <em>reg</em>          convert words to bytes
+7.3  <strong>xob</strong>  opw,w        exclusive or bit strings
+1.18 <strong>zer</strong>   <em>opn</em>          zeroise integer location
+7.11 <strong>zgb</strong>   <em>opn</em>          zeroise garbage bits
+7.10 <strong>zrb</strong>  w,<em>plbl</em>       jump if all zero bits
 </pre>
 
-<h2>section 9 - minimal instructions</h2>
+
+<h2>MINIMAL Instructions</h2>
 
 <p>
 
@@ -705,220 +774,264 @@ values is 0 le n le <strong>cfp$l</strong>
        unity  <strong>equ</strong>  1
 </pre>
 
-<h3>1-  basic instruction set</h3>
+<h3>1-  Basic Instruction Set</h3>
 
 <dl>1.1  <br>mov   <em>opv</em>, <em>opn</em>
 
 <dd>     move one word value
-<p>
 
-            <strong>mov</strong> causes the value of operand  <em>opv</em> to be set as
-            the new contents of operand location  <em>opn</em>. in the
-            case where  <em>opn</em> is not an index register, any value
-            which can normally occupy a memory word (including
-            a part of a multiword real or integer value)
-            can be transferred using <strong>mov</strong>  if the target location
-             <em>opn</em> is an index register, <strong>then</strong>  <em>opv</em> must specify an
-            appropriate one word value or operand containing
-            such an appropriate value.
+   <p>
+
+
+<strong>mov</strong> causes the value of operand <em>opv</em> to be
+set as the new contents of operand location <em>opn</em>. in the case
+where <em>opn</em> is not an index register, any value which can
+normally occupy a memory word (including a part of a multiword real or
+integer value) can be transferred using <strong>mov</strong> if the
+target location <em>opn</em> is an index register,
+<strong>then</strong> <em>opv</em> must specify an appropriate one
+word value or operand containing such an appropriate value.
+
 <dt> 1.2  <strong>brn</strong>  <em>plbl</em>
 
 <dd>        unconditional branch
+
 <p>
 
-            <strong>brn</strong> causes control to be passed to the indicated
-            label in the program section.
+
+<strong>brn</strong> causes control to be passed to the indicated
+label in the program section.
+
 <dt>1.3  <strong>bsw</strong>  x,val,<em>plbl</em>
 
 <dd>
 branch on switch value
+
 <dt> 1.4  <strong>iff</strong>  val,<em>plbl</em>
+
 <dd>provide branch for switch
+
 <pre>
             <strong>iff</strong>  val,<em>plbl</em>     ...
             ...
             ...
 </pre>
+
 <dt>1.5  esw
+
 <dd>end of branch switch table
+
 <p>
 
-            <strong>bsw</strong> iff,<strong>esw</strong> provide a capability for a switched
-            branch similar to a fortran computed goto. the
-            val on the <strong>bsw</strong> instruction is the maximum number
-            of branches. the value in x ranges from zero up to
-            but not including this maximum. each <strong>iff</strong> provides a
-            branch. val must be less than that given on the bsw
-            and control goes to <em>plbl</em> if the value in x matches.
-            if the value in x does not correspond to any of the
-            <strong>iff</strong> entries, <strong>then</strong> control passes to the <em>plbl</em> on the
-            <strong>bsw</strong>  this <em>plbl</em> operand may be omitted if there are
-            no values missing from the list.
-<p>
 
-            <strong>iff</strong> and <strong>esw</strong> may only be used in this context.
-            execution of <strong>bsw</strong> may destroy the contents of x.
-            the <strong>iff</strong> entries may be in any order and since
-            a translator may thus need to store and sort them,
-            the comment field is restricted in length (sec 11).
+<strong>bsw</strong> iff,<strong>esw</strong> provide a capability for
+a switched branch similar to a fortran computed goto. the val on the
+<strong>bsw</strong> instruction is the maximum number of branches.
+the value in x ranges from zero up to but not including this maximum.
+each <strong>iff</strong> provides a branch. val must be less than
+that given on the bsw and control goes to <em>plbl</em> if the value
+in x matches.  if the value in x does not correspond to any of the
+<strong>iff</strong> entries, <strong>then</strong> control passes to
+the <em>plbl</em> on the <strong>bsw</strong> this <em>plbl</em>
+operand may be omitted if there are no values missing from the list.
+
+	    <p>
+
+
+<strong>iff</strong> and <strong>esw</strong> may only be used in this
+context.  execution of <strong>bsw</strong> may destroy the contents
+of x.  the <strong>iff</strong> entries may be in any order and since
+a translator may thus need to store and sort them, the comment field
+is restricted in length (sec 11).
+
+
+
+	    
 <dt>1.6  <strong>ent</strong>  val
+
 <dd>define program entry point
+
 <p>
-            the symbol appearing in the label field is defined
-            to be a program entry point which can subsequently
-            be used in conjunction with the <strong>bri</strong> instruction,
-            which provides the only means of entering the
-            code. it is illegal to fall into code
-            identified by an entry point. the
-            entry symbol is assigned an address which need not
-            be a multiple of <strong>cfp$b</strong>  but which must be in the
-            range 0 le <strong>cfp$l</strong> 
- and the address must not lie within
-            the address range of the allocated data area.
-            furthermore, addresses of successive entry points
-            must be assigned in some ascending sequence so
-            that the address comparison instructions can be
-            used to test the order in which two entry points
-            occur. the symbol val gives an identifying value
-            to the entry point which can be accessed with the
-            <strong>lei</strong> instruction.
-<p>
-            note - subject to the restriction below, val may
-            be omitted if no such identification is needed i.e.
-            if no <strong>lei</strong> references the entry point. for this
-            case, a translation optimisation is possible in
-            which no memory need be reserved for a null
-            identification which is never to be referenced, but
-            only provided this is done so as not to interfere
-            with the strictly ascending sequence of entry point
-            addresses. to simplify this optimisation for all
-            implementors, the following restriction is observed
-<blockquote>
+
+the symbol appearing in the label field is defined to be a program
+entry point which can subsequently be used in conjunction with the
+<strong>bri</strong> instruction, which provides the only means of
+entering the code. it is illegal to fall into code identified by an
+entry point. the entry symbol is assigned an address which need not be
+a multiple of <strong>cfp$b</strong> but which must be in the range 0
+le <strong>cfp$l</strong> and the address must not lie within the
+address range of the allocated data area.  furthermore, addresses of
+successive entry points must be assigned in some ascending sequence so
+that the address comparison instructions can be used to test the order
+in which two entry points occur. the symbol val gives an identifying
+value to the entry point which can be accessed with the
+<strong>lei</strong> instruction.
+
+	    <p>
+
+Note - subject to the restriction below, val may be omitted if no such
+identification is needed i.e.  if no <strong>lei</strong> references
+the entry point. for this case, a translation optimisation is possible
+in which no memory need be reserved for a null identification which is
+never to be referenced, but only provided this is done so as not to
+interfere with the strictly ascending sequence of entry point
+addresses. To simplify this optimisation for all implementors, the
+following restriction is observed
+
+	    <blockquote>
                  val may only be omitted if the entry point is
                  separated from a following entry point by a
-                 non-null minimal code sequence.
+                 non-null MINIMAL code sequence.
 </blockquote>
+
 <p>
-            entry point addresses are accessible only by use of
-            literals (=<em>elbl</em>, section 7) or <strong>dac</strong> constants
-            (section 8-11.1).
+
+Entry point addresses are accessible only by use of literals
+(=<em>elbl</em>, section 7) or <strong>dac</strong> constants (section
+8-11.1).
+
 <dt>1.7  <strong>bri</strong>   <em>opn</em>
 
 <dd>         branch indirect
+
 <p>
-             <em>opn</em> contains the address of a program entry point
-            (see ent). control is passed to the executable
-            code starting at the entry point address.  <em>opn</em> is
-            left unchanged.
+
+<em>opn</em> contains the address of a program entry point (see ent).
+control is passed to the executable code starting at the entry point
+address.  <em>opn</em> is left unchanged.
 
 <dt>1.8  <strong>lei</strong>  x
 
 <dd>           load entry point identification
+
 <p>
 
-            x contains the address of an entry point for which
-            an identifying value was given on the the <strong>ent</strong> line.
-            <strong>lei</strong> replaces the contents of x by this value.
+
+X contains the address of an entry point for which an identifying
+value was given on the the <strong>ent</strong> line.
+<strong>lei</strong> replaces the contents of x by this value.
+
 <dt>1.9  <strong>jsr</strong>  <em>pnam</em>
 
 <dd>       call procedure <em>pnam</em>
+
 <dt>1.10 <strong>ppm</strong>  <em>plbl</em>
 
 <dd>        provide exit parameter
+
 <pre>
             <strong>ppm</strong>  <em>plbl</em>         ...
             ...
             <strong>ppm</strong>  <em>plbl</em>         ...
 </pre>
+
 <p>
 
-            <strong>jsr</strong> causes control to be passed to the named
-            procedure. <em>pnam</em> is the label on a <strong>prc</strong> statement
-            elsewhere in the program section (see prc)
-            or has been defined using an <strong>exp</strong> instruction.
-            the <strong>ppm</strong> exit parameters following the call give
-            names of program locations (<em>plbl</em>-s) to which
-            alternative <strong>exi</strong> returns of the called procedure may
-            pass control. they may optionally be replaced by
-            error returns (see err). the number of exit
-            parameters following a <strong>jsr</strong> must equal the int in the
-            procedure definition. the operand of <strong>ppm</strong> may be
-            omitted if the corresponding <strong>exi</strong> return is certain
-            not to be taken.
+
+<strong>jsr</strong> causes control to be passed to the named
+procedure. <em>pnam</em> is the label on a <strong>prc</strong>
+statement elsewhere in the program section (see prc) or has been
+defined using an <strong>exp</strong> instruction.  the
+<strong>ppm</strong> exit parameters following the call give names of
+program locations (<em>plbl</em>-s) to which alternative
+<strong>exi</strong> returns of the called procedure may pass control.
+they may optionally be replaced by error returns (see err). the number
+of exit parameters following a <strong>jsr</strong> must equal the int
+in the procedure definition. the operand of <strong>ppm</strong> may
+be omitted if the corresponding <strong>exi</strong> return is certain
+not to be taken.
+
 <dt>1.11 <strong>prc</strong>  <em>ptyp</em>,int
+
 <dd>    define start of procedure
-<p>
-
-            the symbol appearing in the label field is defined
-            to be the name of a procedure for use with <strong>jsr</strong> 
-            a procedure is a contiguous section of instructions
-            to which control may be passed with a jsr
-            instruction. this is the only way in which the
-            instructions in a procedure may be executed. it is
-            not permitted to fall into a procedure.
-            all procedures should be named in section 0
-            <strong>inp</strong>  statements.
 
 <p>
-            int is the number of exit parameters (ppm-s) to
-            be used in <strong>jsr</strong> calls.
+
+
+The symbol appearing in the label field is defined to be the name of a
+procedure for use with <strong>jsr</strong> a procedure is a
+contiguous section of instructions to which control may be passed with
+a jsr instruction. this is the only way in which the instructions in a
+procedure may be executed. it is not permitted to fall into a
+procedure.  all procedures should be named in section 0
+<strong>inp</strong> statements.
 
 <p>
-            there are three possibilities for <em>ptyp</em>, each
-            consisting of a single letter as follows.
-<dl>
-<dt>
+
+int is the number of exit parameters (ppm-s) to be used in
+<strong>jsr</strong> calls.
+
+<p>
+
+There are three possibilities for <em>ptyp</em>, each consisting of a
+single letter as follows.
+
+	    <dl>
+
+   <dt>r
 
 <dd>               recursive
+
 <p>
 
-            the return point (one or more words) is stored on
-            the stack as though one or more <strong>mov</strong> ...,-(<strong>XS</strong> )
+
+
+The return point (one or more words) is stored on the stack as though
+one or more <strong>mov</strong> ...,-(<strong>XS</strong> )
+
 <dt>n
 
 <dd>                non-recursive
+
 <p>
 
-            the return point is to be stored either
-            (1) in a local storage word associated
-            with the procedure and not directly
-            available to the program in any other manner or
-            (2) on a subroutine link stack quite distinct from
-            the minimal stack addressed by <strong>XS</strong> .
-            it is an error to use the stack for n-links, since
-            procedure parameters or results may be passed via
-            the stack.
-<p>
-            if method (2) is used for links, error exits
-            (erb,err) from a procedure will necessitate link
-            stack resetting. the <strong>ssl</strong> and <strong>sss</strong> orders provided
-            for this may be regarded as no- <em>ops</em> for
-            implementations using method (1).
+
+The return point is to be stored either (1) in a local storage word
+associated with the procedure and not directly available to the
+program in any other manner or (2) on a subroutine link stack quite
+distinct from the MINIMAL stack addressed by <strong>XS</strong> .  It
+is an error to use the stack for n-links, since procedure parameters
+or results may be passed via the stack.
+
+	    <p>
+
+If method (2) is used for links, error exits (erb,err) from a
+procedure will necessitate link stack resetting. the
+<strong>ssl</strong> and <strong>sss</strong> orders provided for this
+may be regarded as no- <em>ops</em> for implementations using method
+(1).
+
 
 <dt>
+
 <dd>               either
+
 </dl>
-<p>
-
-            the return point may be stored in either manner
-            according to efficiency requirements of the actual
-            physical machine used for the implementation. note
-            that programming of e type procedures must be
-            independent of the actual implementation.
 
 <p>
-            the actual form of the return point is undefined.
-            however, each word stored on the stack for an
-            r-type call must meet the following requirements.
 
-<ol>
+
+The return point may be stored in either manner according to
+efficiency requirements of the actual physical machine used for the
+implementation. note that programming of e type procedures must be
+independent of the actual implementation.
+
+<p>
+
+The actual form of the return point is undefined.  however, each word
+stored on the stack for an r-type call must meet the following
+requirements.
+
+
+	    <ol>
 <li>it can be handled as an address
                              and placed in an index register.
 
-<li>when used as an operand in an
-                             address comparison instruction, it
-                             must not appear to lie within
-                             the allocated data area.
+<li>
+
+When used as an operand in an address comparison instruction, it must
+not appear to lie within the allocated data area.
+
 <li>it is not required to appear
                              to lie within the program section.
 </ol>
@@ -928,85 +1041,93 @@ branch on switch value
 <dd>         exit from procedure
 <p>
 
-            the <strong>ppm</strong> and <strong>err</strong> parameters following a <strong>jsr</strong> are
-            numbered starting from 1.  <strong>exi</strong>  int causes control
-            to be returned to the int-th such param. <strong>exi</strong> 1 gives
-            control to the <em>plbl</em> of the first <strong>ppm</strong> after the <strong>jsr</strong> 
-            if int is omitted, control is passed back past the
-            last exit parameter (or past the <strong> jsr</strong> if there are
-            none). for r and e type procedures, the
-            stack pointer <strong>XS</strong>  must be set to its appropriate
-            entry value before executing an <strong>exi</strong> instruction.
-            in this case, <strong>exi</strong> removes return points from the
-            stack if any are stored there so that the stack
-            pointer is restored to its calling value.
+
+The <strong>ppm</strong> and <strong>err</strong> parameters following
+a <strong>jsr</strong> are numbered starting from 1.
+<strong>exi</strong> int causes control to be returned to the int-th
+such param. <strong>exi</strong> 1 gives control to the <em>plbl</em>
+of the first <strong>ppm</strong> after the <strong>jsr</strong> if
+int is omitted, control is passed back past the last exit parameter
+(or past the <strong> jsr</strong> if there are none). for r and e
+type procedures, the stack pointer <strong>XS</strong> must be set to
+its appropriate entry value before executing an <strong>exi</strong>
+instruction.  in this case, <strong>exi</strong> removes return points
+from the stack if any are stored there so that the stack pointer is
+restored to its calling value.
 
 <dt>1.13 enp
 
 <dd>              define end of procedure body
 <p>
 
-            <strong>enp</strong> delimits a procedure body and may not actually
-            be executed, hence it must have no label.
+
+<strong>enp</strong> delimits a procedure body and may not actually be
+executed, hence it must have no label.
 
 <dt>1.14 <strong>err</strong>  int,text
 
 <dd>    provide error return
 <p>
 
-            <strong>err</strong> may replace an exit parameter (ppm) in
-            any procedure call. the int argument is a unique
-            error code in 0 to 899.
-            the text supplied as the other operand is
-            arbitrary text in the fortran character set and
-            may be used in constructing a file of error
-            messages for documenting purposes or for building
-            a direct access or other file of messages to be
-            used by the error handling code.
-            in the event that an <strong>exi</strong> attempts
-            to return control via an exit parameter to
-            an <strong>err</strong>  control is instead passed to the first
-            instruction in the error section (which follows the
-            program section) with the error code in wa.
+
+<strong>err</strong> may replace an exit parameter (ppm) in any
+procedure call. the int argument is a unique error code in 0 to 899.
+the text supplied as the other operand is arbitrary text in the
+fortran character set and may be used in constructing a file of error
+messages for documenting purposes or for building a direct access or
+other file of messages to be used by the error handling code.  in the
+event that an <strong>exi</strong> attempts to return control via an
+exit parameter to an <strong>err</strong> control is instead passed to
+the first instruction in the error section (which follows the program
+section) with the error code in wa.
 
 <dt>1.15 <strong>erb</strong>  int,text
 
 <dd>    error branch
 <p>
 
-            this instruction resembles <strong>err</strong> except that it may
-            occur at any point where a branch is permitted.
-            it effects a transfer of control to the error
-            section with the error code in wa.
+
+This instruction resembles <strong>err</strong> except that it may
+occur at any point where a branch is permitted.  it effects a transfer
+of control to the error section with the error code in wa.
 
 <dt>1.16 <strong>icv</strong>   <em>opn</em>
 
 <dd>         increment value by one
 <p>
 
-            <strong>icv</strong> increments the value of the operand by unity.
-            it is equivalent to   <strong>add</strong>  =unity, <em>opn</em>
+
+<strong>icv</strong> increments the value of the operand by unity.  it
+is equivalent to <strong>add</strong> =unity, <em>opn</em>
+
 <dt>1.17 <strong>dcv</strong>   <em>opn</em>
 
 <dd>         decrement value by one
 <p>
 
-            <strong>dcv</strong> decrements the value of the operand by unity.
-            it is equivalent to   <strong>sub</strong>  =unity, <em>opn</em>
+
+<strong>dcv</strong> decrements the value of the operand by unity.  it
+is equivalent to <strong>sub</strong> =unity, <em>opn</em>
+
 <dt>1.18 <strong>zer</strong>   <em>opn</em>
 
 <dd>         zeroise  <em>opn</em>
 <p>
 
-            <strong>zer</strong> is equivalent to  <strong>mov</strong>  =zeroe, <em>opn</em>
+
+<strong>zer</strong> is equivalent to <strong>mov</strong> =zeroe,
+<em>opn</em>
 
 <dt>1.19 <strong>mnz</strong>   <em>opn</em>
 
 <dd>         move non-zero to  <em>opn</em>
 <p>
 
-            any non-zero collectable value may used, for which
-            the opcodes bnz/bze will branch/fail to branch.
+
+Any non-zero collectable value may used, for which the opcodes bnz/bze
+will branch/fail to branch.
+
+
 <dt>1.20 <strong>ssl</strong>   <em>opw</em>
 
 <dd>         subroutine stack load
@@ -1016,40 +1137,38 @@ branch on switch value
 <dd>         subroutine stack store
 <p>
 
-            this pair of operations is provided to make possible
-            the use of a local stack to hold subroutine (s-r)
-            return links for n-type procedures. <strong>sss</strong> stores the
-            s-r stack pointer in  <em>opw</em> and <strong>ssl</strong> loads the s-r
-            stack pointer from  <em>opw</em>. by using <strong>sss</strong> in the main
-            program or on entry to a procedure which should
-            regain control on occurrence of an <strong>err</strong> or <strong>erb</strong> and by
-            use of <strong>ssl</strong> in the error processing sections the
-            s-r stack pointer can be restored giving a link
-            stack cleaned up ready for resumed execution.
-            the form of the link stack pointer is undefined in
-            minimal (it is likely to be a private register
-            known to the translator) and the only requirement
-            is that it should fit into a single full word.
-            <strong>ssl</strong> and <strong>sss</strong> are no- <em>ops</em> if no private link stack is
-            not used.
+
+This pair of operations is provided to make possible the use of a
+local stack to hold subroutine (s-r) return links for n-type
+procedures. <strong>sss</strong> stores the s-r stack pointer in
+<em>opw</em> and <strong>ssl</strong> loads the s-r stack pointer from
+<em>opw</em>. by using <strong>sss</strong> in the main program or on
+entry to a procedure which should regain control on occurrence of an
+<strong>err</strong> or <strong>erb</strong> and by use of
+<strong>ssl</strong> in the error processing sections the s-r stack
+pointer can be restored giving a link stack cleaned up ready for
+resumed execution.  the form of the link stack pointer is undefined in
+MINIMAL (it is likely to be a private register known to the
+translator) and the only requirement is that it should fit into a
+single full word.  <strong>ssl</strong> and <strong>sss</strong> are
+no- <em>ops</em> if no private link stack is not used.
+
 <dt>1.22 rtn
 
 <dd>              define start of routine
 <p>
 
-            a routine is a code chunk used for similar purposes
-            to a procedure. however it is entered by any type of
-            conditional or unconditional branch (not by jsr). on
-            termination it passes control by a branch (often
-            <strong>bri</strong> through a code word) or even permits control
-            to drop through to another routine. no return link
-            exists and the end of a routine is not marked by
-            an explicit opcode (compare <code>enp</code> ).
-            all routines should be named in section 0
-            <strong>inr</strong>  statements.
-</dl>
 
-<h3>2-  operations on one word integer values (addresses)</h3>
+A routine is a code chunk used for similar purposes to a procedure.
+however it is entered by any type of conditional or unconditional
+branch (not by jsr). on termination it passes control by a branch
+(often <strong>bri</strong> through a code word) or even permits
+control to drop through to another routine. no return link exists and
+the end of a routine is not marked by an explicit opcode (compare
+<code>enp</code> ).  All routines should be named in section 0
+<strong>inr</strong> statements.  </dl>
+
+<h3>2-  Operations on One Word Integer Values (addresses)</h3>
 
 <dl>
 
@@ -1063,53 +1182,78 @@ branch on switch value
 
 <dt>2.2  <strong>sub</strong>   <em>opv</em>, <em>opn</em>
 
-<dd>     subtracts  <em>opv</em> from  <em>opn</em>. stores the
-                             result in  <em>opn</em>. undefined if the
-                             result is negative.
+<dd>
+
+subtracts <em>opv</em> from <em>opn</em>. stores the result in
+<em>opn</em>. undefined if the result is negative.
 
 <dt>2.3  <strong>ica</strong>   <em>opn</em>
 
 <dd>         increment address in  <em>opn</em>
 <p>
-                             equivalent to <strong>add</strong> *unity, <em>opn</em>
+
+
+
+equivalent to <strong>add</strong> *unity, <em>opn</em>
 
 <dt>2.4  <strong>dca</strong>   <em>opn</em>
 
-<dd>         decrement address in  <em>opn</em>
-                             equivalent to <strong>sub</strong> *unity, <em>opn</em>
+<dd>
+
+Decrement address in <em>opn</em> equivalent to <strong>sub</strong>
+*unity, <em>opn</em>
 
 <dt>2.5  <strong>beq</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
 
 <dd> branch to <em>plbl</em>  <em>opn</em> eq  <em>opv</em>
 
+
 <dt>2.6  <strong>bne</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
 
+
 <dd>branch to <em>plbl</em>  <em>opn</em> ne  <em>opv</em>
+
 <dt>2.7  <strong>bgt</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
 
+
 <dd> branch to <em>plbl</em>  <em>opn</em> gt  <em>opv</em>
+
 <dt>2.8  <strong>bge</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
 
+
 <dd> branch to <em>plbl</em>  <em>opn</em> ge  <em>opv</em>
+
 <dt>2.9  <strong>blt</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
+
 <dd>branch to <em>plbl</em>  <em>opn</em> lt  <em>opv</em>
+
 <dt>2.10 <strong>ble</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
+
 <dd> branch to <em>plbl</em>  <em>opn</em> le  <em>opv</em>
+
 <dt>2.11 <strong>blo</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
+
 <dd> equivalent to <strong>blt</strong> or ble
+
 <dt>2.12 <strong>bhi</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
+
 <dd> equivalent to <strong>bgt</strong> or bge
+
 <p>
 
-            the above instructions compare two address
-            values as unsigned integer values.
-            the <strong>blo</strong> and <strong>bhi</strong> instructions are used in cases where
-            the equal condition either does not occur or can
-            result either in a branch or no branch. this avoids
-            inefficient translations in some implementations.
+
+The above instructions compare two address values as unsigned integer
+values.  the <strong>blo</strong> and <strong>bhi</strong>
+instructions are used in cases where the equal condition either does
+not occur or can result either in a branch or no branch. This avoids
+inefficient translations in some implementations.
+
 <dt>2.13 <strong>bnz</strong>   <em>opn</em>,<em>plbl</em>
+
 <dd>    equivalent to <strong>bne</strong>  <em>opn</em>,=zeroe,<em>plbl</em>
+
 <dt>2.14 <strong>bze</strong>   <em>opn</em>,<em>plbl</em>
+
 <dd>    equivalent to <strong>beq</strong>  <em>opn</em>,=zeroe,<em>plbl</em>
 
 <dt>2.15 <strong>lct</strong>  w, <em>opv</em>
@@ -1117,21 +1261,24 @@ branch on switch value
 <dd>       load counter for bct
 <p>
 
-            <strong>lct</strong> loads a counter value for use with the bct
-            instruction. the value in  <em>opv</em> is the number of lo <em>ops</em>
-            to be executed. the value in w after this operation
-            is an undefined one word integer quantity.
+
+<strong>lct</strong> loads a counter value for use with the bct
+instruction. the value in <em>opv</em> is the number of lo
+<em>ops</em> to be executed. the value in w after this operation is an
+undefined one word integer quantity.
 
 <dt>2.16 <strong>bct</strong>  w,<em>plbl</em>
 
 <dd>      branch and count
 <p>
 
-            <strong>bct</strong> uses the counter value in w to branch the
-            required number of times and <strong>then</strong> finally to fall
-            through to the next instruction. <strong>bct</strong> can only be
-            used following an appropriate <strong>lct</strong> instruction.
-            the value in w after execution of <strong>bct</strong> is undefined.
+
+
+<strong>bct</strong> uses the counter value in w to branch the
+required number of times and <strong>then</strong> finally to fall
+through to the next instruction. <strong>bct</strong> can only be used
+following an appropriate <strong>lct</strong> instruction.  the value
+in w after execution of <strong>bct</strong> is undefined.
 
 <dt>2.17 <strong>aov</strong>   <em>opv</em>, <em>opn</em>,<em>plbl</em>
 
@@ -1150,64 +1297,68 @@ branch on switch value
 <dd>     branch odd
 <p>
 
-            these operations are used only .cepp or .crpp is
-            defined.  on some implementations, a more efficient
-            implementation is possible by noting that address of
-            blocks must always be a multiple of <strong>cfp$b</strong> . we call
-            such addresses even.  thus return address on the
-            stack (.crpp) and entry point addresses (.cepp) can
-            be distinguished from block addresses they are
-            forced to be odd (not a multiple of <strong>cfp$b</strong> ).
-            <strong>bev</strong> and <strong>bod</strong> branch according as operand is even
-            or odd, respectively.
-</dl>
-<h3>3-  operations on the code pointer register (<strong>CP</strong> )</h3>
-<p>
 
-            the code pointer register provides a psuedo
-            instruction counter for use in an interpretor. it
-            may be implemented as a real register or as a
-            memory location, but in either case it is separate
-            from any other register. the value in the code
-            pointer register is always a word address (i.e.
-            a one word integer which is a multiple of <strong>cfp$b</strong> ).
+These operations are used only .cepp or .crpp is defined.  On some
+implementations, a more efficient implementation is possible by noting
+that address of blocks must always be a multiple of
+<strong>cfp$b</strong> . We call such addresses even.  Thus return
+address on the stack (.crpp) and entry point addresses (.cepp) can be
+distinguished from block addresses they are forced to be odd (not a
+multiple of <strong>cfp$b</strong> ).  <strong>bev</strong> and
+<strong>bod</strong> branch according as operand is even or odd,
+respectively.  </dl>
+
+ <h3>3- Operations on the Code Pointer Register
+(<strong>CP</strong> )</h3> <p>
+
+
+The code pointer register provides a psuedo instruction counter for
+use in an interpretor. It may be implemented as a real register or as
+a memory location, but in either case it is separate from any other
+register. the value in the code pointer register is always a word
+address (i.e.  a one word integer which is a multiple of
+<strong>cfp$b</strong> ).
 
 <dl>
 <dt>3.1  <strong>CP</strong>   reg
 
 <dd>         load code pointer register
 
-<p> this instruction causes the code
-                             pointer register to be set from
-                             the value in  <em>reg</em> which is unchanged
+<p>
+
+This instruction causes the code pointer register to be set from the
+value in <em>reg</em> which is unchanged
 
 <dt>3.2  s<strong>CP</strong>   reg
 
-<dd>         store code pointer register
-                             this instruction loads the current
-                             value in the code pointer register
-                             into reg. (<strong>CP</strong> ) is unchanged.
+<dd>
+
+Store code pointer register this instruction loads the current value
+in the code pointer register into reg. (<strong>CP</strong> ) is
+unchanged.
 
 <dt>3.3  <strong>lcw</strong>  reg
 
 <dd>         load next code word
 
 <p>
-                             this instruction causes the word
-                             pointed to by <strong>CP</strong>  to be loaded into
-                             the indicated reg. the value in <strong>CP</strong> 
-                             is <strong>then</strong> incremented by one word.
-                             execution of <strong>lcw</strong> may destroy <strong>XL</strong> .
+
+This instruction causes the word pointed to by <strong>CP</strong> to
+be loaded into the indicated reg. the value in <strong>CP</strong> is
+<strong>then</strong> incremented by one word.  execution of
+<strong>lcw</strong> may destroy <strong>XL</strong> .
 
 <dt>3.4  <strong>CP</strong> 
 
 <dd>              increment <strong>CP</strong>  by one word
 <p>
 
-            on machines with more than three index registers,
-            <strong>CP</strong>  can be treated simply as an index register.
-            in this case, the following equivalences apply.
-<pre>
+
+On machines with more than three index registers, <strong>CP</strong>
+can be treated simply as an index register.  in this case, the
+following equivalences apply.
+
+	    <pre>
 
             <strong>CP</strong>   <em>reg</em> is like <strong>mov</strong> reg,<strong>CP</strong> 
             <strong>CP</strong>   <em>reg</em> is like <strong>mov</strong> <strong>CP</strong> ,reg
@@ -1215,9 +1366,10 @@ branch on switch value
             <strong>CP</strong>      is like <strong>ica</strong> <strong>CP</strong> 
 
 </pre>
-            since <strong>lcw</strong> is allowed to destroy <strong>XL</strong> , the following
-            implementation using a work location <strong>CP</strong> $$$ can
-            also be used.
+
+Since <strong>lcw</strong> is allowed to destroy <strong>XL</strong> ,
+the following implementation using a work location <strong>CP</strong>
+$$$ can also be used.
 
 <pre>
             <strong>CP</strong>    <em>reg</em>         <strong>mov</strong>  reg,<strong>CP</strong> $$$
@@ -1232,7 +1384,7 @@ branch on switch value
 </pre>
 </dl>
 
-<h3>4-  operations on signed integer values</h3>
+<h3>4-  Operations on Signed Integer Values</h3>
 
 <dl>
 
@@ -1271,9 +1423,11 @@ subtract  <em>ops</em> from int accumulator
                              accumulator (change its sign)
 
 <p>
-            the equation satisfied by operands and results of
-            <strong>dvi</strong> and <strong>rmi</strong> is
-<pre>
+
+The equation satisfied by operands and results of <strong>dvi</strong>
+and <strong>rmi</strong> is
+
+	    <pre>
                    div = qot *  <em>ops</em> + rem          where
             div = dividend in integer accumulator
             qot = quotient left in <strong>IA</strong>  by div
@@ -1281,16 +1435,19 @@ subtract  <em>ops</em> from int accumulator
             rem = remainder left in <strong>IA</strong>  by rmi
 </pre>
 <p>
-            the sign of the result of <strong>dvi</strong> is + (<strong>IA</strong> ) and ( <em>ops</em>)
-            have the same sign and is - they have opposite
-            signs. the sign of (<strong>IA</strong> ) is always used as the sign
-            of the result of rem.
-<p>
-            assuming in each case that <strong>IA</strong>  contains the number
-            specified in parentheses and that seven and msevn
-            hold +7 and -7 resp. the algorithm is illustrated
-            below.
-<pre>
+
+The sign of the result of <strong>dvi</strong> is +
+(<strong>IA</strong> ) and ( <em>ops</em>) have the same sign and is -
+they have opposite signs. the sign of (<strong>IA</strong> ) is always
+used as the sign of the result of rem.
+
+	    <p>
+
+Assuming in each case that <strong>IA</strong> contains the number
+specified in parentheses and that seven and msevn hold +7 and -7 resp.
+the algorithm is illustrated below.
+
+	    <pre>
             (<strong>IA</strong>  = 13)
             <strong>dvi</strong>  seven       <strong>IA</strong>  = 1
             <strong>rmi</strong>  seven       <strong>IA</strong>  = 6
@@ -1304,16 +1461,15 @@ subtract  <em>ops</em> from int accumulator
 </pre>
 
 <p>
-            the above instructions operate on a full range of
-            signed integer values. with the exception of <strong>ldi</strong> and
-            <strong>sti</strong>  these instructions may cause integer overflow
-            by attempting to produce an undefined or out of
-            range result in which case integer overflow is set,
-            the result in (<strong>IA</strong> ) is undefined and the following
-            instruction must be <strong>iov</strong> or <strong>ino</strong> 
-            particular care may be needed on target machines
-            having distinct overflow and divide by zero
-            conditions.
+
+The above instructions operate on a full range of signed integer
+values. with the exception of <strong>ldi</strong> and
+<strong>sti</strong> these instructions may cause integer overflow by
+attempting to produce an undefined or out of range result in which
+case integer overflow is set, the result in (<strong>IA</strong> ) is
+undefined and the following instruction must be <strong>iov</strong>
+or <strong>ino</strong> particular care may be needed on target
+machines having distinct overflow and divide by zero conditions.
 
 <dt>4.9  <strong>ino</strong>  <em>plbl</em>
 
@@ -1324,11 +1480,13 @@ subtract  <em>ops</em> from int accumulator
 <dd>        jump to <em>plbl</em> integer overflow
 <p>
 
-            these instructions can only occur immediately
-            following an instruction which can cause integer
-            overflow (adi, <strong>sbi</strong>  <strong>mli</strong>  <strong>dvi</strong>  <strong>rmi</strong>  ngi) and
-            test the result of the preceding instruction.
-            <strong>iov</strong> and <strong>ino</strong> may not have labels.
+
+These instructions can only occur immediately following an instruction
+which can cause integer overflow (adi, <strong>sbi</strong>
+<strong>mli</strong> <strong>dvi</strong> <strong>rmi</strong> ngi)
+and test the result of the preceding instruction.
+<strong>iov</strong> and <strong>ino</strong> may not have labels.
+
 <dt>4.11 <strong>ieq</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> (<strong>IA</strong> ) eq 0
@@ -1357,14 +1515,13 @@ subtract  <em>ops</em> from int accumulator
 
 <p>
 
-            the above conditional jump instructions do
-            not change the contents of the accumulator.
-            on a ones complement machine, it is permissible to
-            produce negative zero in <strong>IA</strong>  provided these
-            instructions operate correctly with such a value.
-</dl>
-<h3>5-  operations on real values</h3>
-<dl>
+
+The above conditional jump instructions do not change the contents of
+the accumulator.  On a ones complement machine, it is permissible to
+produce negative zero in <strong>IA</strong> provided these
+instructions operate correctly with such a value.  </dl>
+
+ <h3>5- Operations on Real Values</h3> <dl>
 
 <dt>5.1  <strong>ldr</strong>   <em>ops</em>
 
@@ -1395,13 +1552,12 @@ subtract  <em>ops</em> from int accumulator
 <p>If the result of any of the above operations causes
             underflow, the result yielded is 0.0.
 <p>
-            the result of any of the above operations is
-            undefined or out of range, real overflow is set,
-            the contents of (ra) are undefined and the following
-            instruction must be either <strong>rov</strong> or <strong>rno</strong> 
-            particular care may be needed on target machines
-            having distinct overflow and divide by zero
-            conditions.
+
+The result of any of the above operations is undefined or out of
+range, real overflow is set, the contents of (ra) are undefined and
+the following instruction must be either <strong>rov</strong> or
+<strong>rno</strong> Particular care may be needed on target machines
+having distinct overflow and divide by zero conditions.
 
 <dt>5.7  <strong>rov</strong>  <em>plbl</em>
 
@@ -1412,10 +1568,10 @@ subtract  <em>ops</em> from int accumulator
 <dd>        jump to <em>plbl</em> no real overflow
 
 <p>
-            these instructions can only occur immediately
-            following an instruction which can cause real
-            overflow (adr,<strong>sbr</strong> <strong>mlr</strong> dvr).
-<dt>5.9  ngr
+
+These instructions can only occur immediately following an instruction
+which can cause real overflow (adr,<strong>sbr</strong>
+<strong>mlr</strong> dvr).  <dt>5.9 ngr
 
 <dd>              negate real accum (change sign)
 
@@ -1447,9 +1603,9 @@ subtract  <em>ops</em> from int accumulator
 
 <p>
 
-            the above conditional instructions do not affect
+            The above conditional instructions do not affect
             the value stored in the real accumulator.
-            on a ones complement machine, it is permissible to
+            On a ones complement machine, it is permissible to
             produce negative zero in <strong>RA</strong>  provided these
             instructions operate correctly with such a value.
 
@@ -1487,33 +1643,36 @@ subtract  <em>ops</em> from int accumulator
 <dd>              tangent of real accum
 
 
-<p>The above orders operate upon the real accumulator,
-            and replace the contents of the accumulator with the
-            result.
 <p>
-            the result of any of the above operations is
-            undefined or out of range, real overflow is set,
-            the contents of (ra) are undefined and the following
-            instruction must be either <strong>rov</strong> or <strong>rno</strong> 
+
+The above orders operate upon the real accumulator, and replace the
+contents of the accumulator with the result.  <p>
+
+The result of any of the above operations is undefined or out of
+range, real overflow is set, the contents of (ra) are undefined and
+the following instruction must be either <strong>rov</strong> or
+<strong>rno</strong> 
 
 </dl>
-<h3>-6-  operations on character values</h3>
+<h3>-6-  Operations on Character Values</h3>
 
 <dl>
 
 <p>
 
-            characte:1r operations employ the concept of a
-            character pointer which uses either
-            index register <strong>XR</strong>  or <strong>XL</strong>  (not <strong>XS</strong> ).
+
+Character operations employ the concept of a character pointer which
+uses either index register <strong>XR</strong> or <strong>XL</strong>
+(not <strong>XS</strong> ).
 
 
 <p>
-            a character pointer points to a specific character
-            in a string of characters stored <strong>cfp$c</strong>  chars to a
-            word. the only operations permitted on a character
-            pointer are <strong>lch</strong> and <strong>sch</strong>  in particular, a character
-            pointer may not even be moved with <strong>mov</strong> 
+
+A character pointer points to a specific character in a string of
+characters stored <strong>cfp$c</strong> chars to a word. the only
+operations permitted on a character pointer are <strong>lch</strong>
+and <strong>sch</strong> in particular, a character pointer may not
+even be moved with <strong>mov</strong> 
 
 
 <p>
@@ -1521,23 +1680,24 @@ subtract  <em>ops</em> from int accumulator
 <dt>restriction 1
 
 <dd>
-            it is important when coding in minimal to ensure
-            that no action occurring between the initial use of
-            <strong>plc</strong> or <strong>psc</strong> and the eventual clearing of <strong>XL</strong>  or <strong>XR</strong>  on
-            completion of character operations can initiate a
-            garbage collection. the latter of course could cause
-            the addressed characters to be moved leaving the
-            character pointers pointing to rubbish.
+
+It is important when coding in MINIMAL to ensure that no action
+occurring between the initial use of <strong>plc</strong> or
+<strong>psc</strong> and the eventual clearing of <strong>XL</strong>
+or <strong>XR</strong> on completion of character operations can
+initiate a garbage collection. the latter of course could cause the
+addressed characters to be moved leaving the character pointers
+pointing to rubbish.
 
 <dt>restriction 2.
 
 <dd>
-            a further restriction to be observed in code
-            handling character strings, is that strings built
-            dynamically should be right padded with zero
-            characters to a full word boundary to permit easy
-            hashing and use of <strong>ceq</strong> or <strong>cne</strong> in testing strings
-            for equality.
+
+A further restriction to be observed in code handling character
+strings, is that strings built dynamically should be right padded with
+zero characters to a full word boundary to permit easy hashing and use
+of <strong>ceq</strong> or <strong>cne</strong> in testing strings for
+equality.
 
 </dl>
 
@@ -1552,21 +1712,19 @@ subtract  <em>ops</em> from int accumulator
 
 <p>
 
-             <em>opv</em> can be omitted it is zero.
-            the char. initially addressed is determined by the
-            word address in x and the integer offset  <em>opv</em>.
-            there is an automatic implied offset of <strong>cfp$f</strong>  bytes.
-            <strong>cfp$f</strong>  is used to formally introduce into minimal a
-            value needed in translating these opcodes which,
-            since minimal itself does not prescribe a string
-            structure in detail, depends on the choice of a data
-            structure for strings in the minimal program.
-            e.g. <strong>cfp$b</strong>  = <strong>cfp$c</strong>  = 3, <strong>cfp$f</strong>  = 6, num01 = 1, <strong>XL</strong> 
-            points to a series of 4 words, abc/def/ghi/jkl, then
-<pre>
-                <strong>plc</strong>  <strong>XL</strong> ,=num01
-</pre>
-            points to h.
+
+<em>opv</em> can be omitted it is zero.  the char. initially addressed
+is determined by the word address in x and the integer offset
+<em>opv</em>.  there is an automatic implied offset of
+<strong>cfp$f</strong> bytes.  <strong>cfp$f</strong> is used to
+formally introduce into MINIMAL a value needed in translating these
+opcodes which, since MINIMAL itself does not prescribe a string
+structure in detail, depends on the choice of a data structure for
+strings in the MINIMAL program.  e.g. <strong>cfp$b</strong> =
+<strong>cfp$c</strong> = 3, <strong>cfp$f</strong> = 6, num01 = 1,
+<strong>XL</strong> points to a series of 4 words, abc/def/ghi/jkl,
+then <pre> <strong>plc</strong> <strong>XL</strong> ,=num01 </pre>
+points to h.
 
 
 <dt>6.3  <strong>lch</strong>  reg, <em>opc</em>
@@ -1578,11 +1736,12 @@ subtract  <em>ops</em> from int accumulator
 <dd>     store character from reg
 
 <p>
-            these operations are defined such that the character
-            is right justified in register  <em>reg</em> with zero bits to
-            the left. after <strong>lch</strong> for example, it is legitimate
-            to regard  <em>reg</em> as containing the ordinal integer
-            corresponding to the character.
+
+These operations are defined such that the character is right
+justified in register <em>reg</em> with zero bits to the left. after
+<strong>lch</strong>. For example, it is legitimate to regard
+<em>reg</em> as containing the ordinal integer corresponding to the
+character.
 
              <em>opc</em> is one of the following three possibilities.
 
@@ -1608,27 +1767,27 @@ subtract  <em>ops</em> from int accumulator
 
 
 <p>
-            this instruction marks completion of a
-            <strong>psc</strong> sch,<strong>sch</strong> ...,sch sequence initiated by
-            a  <strong>psc</strong>  x instruction. no more <strong>sch</strong> instructions
-            using  x  should be obeyed until another <strong>psc</strong> is
-            obeyed. it is provided solely as an efficiency aid
-            on machines without character orders since it
-            permits use of register buffering of chars in sch
-            sequences. where <strong>csc</strong> is not a no-op, it must observe
-            restriction 2. (e.g. in spitbol, alocs zeroises the
-            last word of a string frame prior to <strong>sch</strong> sequence
-            being started so <strong>csc</strong> must not nullify this action.)
+
+This instruction marks completion of a <strong>psc</strong>
+sch,<strong>sch</strong> ...,sch sequence initiated by a
+<strong>psc</strong> x instruction. no more <strong>sch</strong>
+instructions using x should be obeyed until another
+<strong>psc</strong> is obeyed. It is provided solely as an efficiency
+aid on machines without character orders since it permits use of
+register buffering of chars in sch sequences. where
+<strong>csc</strong> is not a no-op, it must observe restriction 2.
+(e.g. in SPITBOL, alocs zeroises the last word of a string frame prior
+to <strong>sch</strong> sequence being started so <strong>csc</strong>
+must not nullify this action.)
 
 <p>
-            the following instructions are used to compare
-            two words containing <strong>cfp$c</strong>  characters.
-            comparisons distinct from <strong>beq</strong> bne are provided as
-            on some target machines, the possibility of the sign
-            bit being set may require special action.
-            note that restriction 2 above, eases use of these
-            orders in testing complete strings for equality,
-            since whole word tests are possible.
+
+The following instructions are used to compare two words containing
+<strong>cfp$c</strong> characters.  comparisons distinct from
+<strong>beq</strong> bne are provided as on some target machines, the
+possibility of the sign bit being set may require special action.
+note that restriction 2 above, eases use of these orders in testing
+complete strings for equality, since whole word tests are possible.
 
 <dt>6.6  <strong>ceq</strong>   <em>opw</em>, <em>opw</em>,<em>plbl</em>
 
@@ -1652,18 +1811,18 @@ subtract  <em>ops</em> from int accumulator
 </pre>
 
 <p>
-            <strong>XL</strong>  and <strong>XR</strong>  should have been prepared by <strong>plc</strong> 
-            control passes to first <em>plbl</em> the first string
-            is lexically less than the second string, and to
-            the second <em>plbl</em> the first string is lexically
-            greater. control passes to the following instruction
-            the strings are identical. after executing this
-            instruction, the values of <strong>XR</strong>  and <strong>XL</strong>  are set to
-            zero and the value in (wa) is undefined.
-            arguments to <strong>cmc</strong> may be complete or partial
-            strings, so making optimisation to use whole word
-            comparisons difficult (dependent in general on
-            shifts and masking).
+
+
+<strong>XL</strong> and <strong>XR</strong> should have been prepared
+by <strong>plc</strong> control passes to first <em>plbl</em> the
+first string is lexically less than the second string, and to the
+second <em>plbl</em> the first string is lexically greater. control
+passes to the following instruction the strings are identical. after
+executing this instruction, the values of <strong>XR</strong> and
+<strong>XL</strong> are set to zero and the value in (wa) is
+undefined.  arguments to <strong>cmc</strong> may be complete or
+partial strings, so making optimisation to use whole word comparisons
+difficult (dependent in general on shifts and masking).
 
 <dt>6.9  trc
 
@@ -1681,22 +1840,25 @@ subtract  <em>ops</em> from int accumulator
 </pre>
 
 <p>
-            <strong>XL</strong>  and <strong>XR</strong>  should have been prepared by <strong>plc</strong> 
-            the translate table consists of <strong>cfp$a</strong>  contiguous
-            characters giving the translations of the <strong>cfp$a</strong> 
-            characters in the alphabet. on completion, (<strong>XR</strong> ) and
-            (<strong>XL</strong> ) are set to zero and (wa) is undefined.
+
+<strong>XL</strong> and <strong>XR</strong> should have been prepared
+by <strong>plc</strong> the translate table consists of
+<strong>cfp$a</strong> contiguous characters giving the translations
+of the <strong>cfp$a</strong> characters in the alphabet. on
+completion, (<strong>XR</strong> ) and (<strong>XL</strong> ) are set
+to zero and (wa) is undefined.
 
 <dt>6.10 <strong>flc</strong>  w
 
 <dd>           fold character to upper case
 
 <p>
-            <strong>flc</strong> is used only .culc is defined. the character
-            code value in w is translated to upper case it
-            corresponds to a lower case character.
-</dl>
-<h3>7-  operations on bit string values</h3>
+
+<strong>flc</strong> is used only .culc is defined. the character code
+value in w is translated to upper case it corresponds to a lower case
+character.  </dl> 
+
+<h3>7- Operations on Bit String Values</h3>
 
 <dl>
 
@@ -1715,9 +1877,11 @@ subtract  <em>ops</em> from int accumulator
 <dd>       exclusive or bit string values
 
 
-<p> in the above operations, the logical connective is
-            applied separately to each of the <strong>cfp$n</strong>  bits.
-            the result is stored in the second operand location.
+<p>
+
+In the above operations, the logical connective is applied separately
+to each of the <strong>cfp$n</strong> bits.  The result is stored in
+the second operand location.
 
 <dt>7.4  <strong>cmb</strong>  w
 
@@ -1743,9 +1907,11 @@ subtract  <em>ops</em> from int accumulator
 
 <dd>       left shift w number of bits in x
 
-<p> the above shifts are logical shifts in which bits
-            shifted out are lost and zero bits supplied as
-            required. the shift count is in the range 0-<strong>cfp$n</strong> .
+<p>
+
+The above shifts are logical shifts in which bits shifted out are lost
+and zero bits supplied as required. the shift count is in the range
+0-<strong>cfp$n</strong> .
 
 
 <dt>7.9  <strong>nzb</strong>  w,<em>plbl</em>
@@ -1762,24 +1928,24 @@ subtract  <em>ops</em> from int accumulator
 <dd>         zeroise garbage bits
 
 <p>
-             <em>opn</em> contains a bit string representing a word
-            of characters from a string or some function
-            formed from such characters (e.g. as a result of
-            hashing). on a machine where the word size is not a
-            multiple of the character size, some bits in  <em>reg</em> may
-            be undefined. this opcode replaces such bits by the
-            zero bit. <strong>zgb</strong> is a no-op the word size is a
-            multiple of the character size.
+
+<em>opn</em> contains a bit string representing a word of characters
+from a string or some function formed from such characters (e.g. as a
+result of hashing). on a machine where the word size is not a multiple
+of the character size, some bits in <em>reg</em> may be undefined.
+this opcode replaces such bits by the zero bit. <strong>zgb</strong>
+is a no-op the word size is a multiple of the character size.
 
 </dl>
 
-<h3>8-  conversion instructions</h3>
+<h3>8-  Conversion Instructions</h3>
 
 <dl>
 
 <p>
-            the following instructions provide for conversion
-            between lengths in bytes and lengths in words.
+
+The following instructions provide for conversion between lengths in
+bytes and lengths in words.
 
 
 <dt>8.1  <strong>wtb</strong>  reg
@@ -1787,41 +1953,41 @@ subtract  <em>ops</em> from int accumulator
 <dd>         convert  <em>reg</em> from words to bytes.
 
 
-<p>that is, multiply by <strong>cfp$b</strong> . this is
+<p>That is, multiply by <strong>cfp$b</strong> . this is
                              a no-op <strong>cfp$b</strong>  is one.
 
 <dt>8.2  <strong>btw</strong>  reg
 
 <dd>         convert  <em>reg</em> from bytes to words
 
-<p> by dividing  <em>reg</em> by <strong>cfp$b</strong>  discarding
-                             the fraction. no-op <strong>cfp$b</strong>  is one
+<p>
+
+By dividing <em>reg</em> by <strong>cfp$b</strong> discarding the
+fraction. no-op <strong>cfp$b</strong> is one
 
 <p>
-            the following instructions provide for conversion
-            of one word integer values (addresses) to and
-            from the full signed integer format.
+
+The following instructions provide for conversion of one word integer
+values (addresses) to and from the full signed integer format.
 
 <dt>8.3  <strong>mti</strong>   <em>opn</em>
 
-<dd>         the value of  <em>opn</em> (an address)
-                             is moved as a positive integer
-                             to the integer accumulator.
+<dd>
+
+The value of <em>opn</em> (an address) is moved as a positive integer
+to the integer accumulator.
 
 <dt>8.4  <strong>mfi</strong>   <em>opn</em>,<em>plbl</em>
 
-<dd>    the value currently stored in the
-                             integer accumulator is moved
-                             to  <em>opn</em> as an address it is in
-                             the range 0 to <strong>cfp$m</strong>  inclusive.
-                             the accumulator value is
-                             outside this range, <strong>then</strong> the result
-                             in  <em>opn</em> is undefined and control is
-                             passed to <em>plbl</em>. <strong>mfi</strong> destroys the
-                             value of (ia) whether or not
-                             integer overflow is signalled.
-                             <em>plbl</em> may be omitted overflow
-                             is impossible.
+<dd>
+
+The value currently stored in the integer accumulator is moved to
+<em>opn</em> as an address it is in the range 0 to
+<strong>cfp$m</strong> inclusive.  the accumulator value is outside
+this range, <strong>then</strong> the result in <em>opn</em> is
+undefined and control is passed to <em>plbl</em>. <strong>mfi</strong>
+destroys the value of (ia) whether or not integer overflow is
+signalled.  <em>plbl</em> may be omitted overflow is impossible.
 
 <p>
             the following instructions provide for conversion
@@ -1829,35 +1995,34 @@ subtract  <em>ops</em> from int accumulator
 
 <dt>8.5  itr
 
-<dd>              convert integer value in integer
-                             accumulator to real and store in
-                             real accumulator (may lose
-                             precision in some cases)
+<dd>
+
+Convert integer value in integer accumulator to real and store in real
+accumulator (may lose precision in some cases)
 
 <dt>8.6  <strong>rti</strong>  <em>plbl</em>
 
-<dd>        convert the real value in ra to
-                             an integer and place result in <strong>IA</strong> .
-                             conversion is by truncation of the
-                             fraction - no rounding occurs.
-                             jump to <em>plbl</em> out of range. (ra)
-                             is not changed in either case.
-                             <em>plbl</em> may be omitted overflow
-                             is impossible.
+<dd>
+
+Convert the real value in ra to an integer and place result in
+<strong>IA</strong> .  Conversion is by truncation of the fraction -
+no rounding occurs.  Jump to <em>plbl</em> out of range. (ra) is not
+changed in either case.  <em>plbl</em> may be omitted overflow is
+impossible.
 
 <p>
-            the following instructions provide for computing
-            the length of storage required for a text string.
+
+The following instructions provide for computing the length of storage
+required for a text string.
 
 <dt>8.7  <strong>ctw</strong>  w,val
 
-<dd>       this instruction computes the sum
-                             (number of words required to store
-                             w characters) + (val). the sum
-                             is stored in w.
-                             for example, <strong>cfp$c</strong>  is 5, and wa
-                             contains 32, <strong>then</strong> <strong>ctw</strong> wa,2
-                             gives a result of 9 in wa.
+<dd>
+
+This instruction computes the sum (number of words required to store w
+characters) + (val). the sum is stored in w.  for example,
+<strong>cfp$c</strong> is 5, and wa contains 32, <strong>then</strong>
+<strong>ctw</strong> wa,2 gives a result of 9 in wa.
 
 <dt>8.8  <strong>ctb</strong>  w,val
 
@@ -1866,11 +2031,10 @@ subtract  <em>ops</em> from int accumulator
                              same effect as <strong>ctw</strong> w,val  <strong>wtb</strong> w
 <p>
 
-            the following instructions provide for conversion
-            from integers to and from numeric digit characters
-            for use in numeric conversion routines. they employ
-            negative integer values to allow for proper
-            conversion of numbers which cannot be complemented.
+The following instructions provide for conversion from
+integers to and from numeric digit characters for use in numeric
+conversion routines. They employ negative integer values to allow for
+proper conversion of numbers which cannot be complemented.
 
 
 <dt>8.9  <strong>cvm</strong>  <em>plbl</em>
@@ -1879,13 +2043,14 @@ subtract  <em>ops</em> from int accumulator
 
 <p>
 
-            the integer accumulator, which is zero or negative,
-            is multiplied by 10. <strong>WB</strong>  contains the character
-            code for a digit. the value of this digit is then
-            subtracted from the result. the result is out of
-            range, <strong>then</strong> control is passed to <em>plbl</em> with the
-            result in (<strong>IA</strong> ) undefined. execution of <strong>cvm</strong> leaves
-            the result in (<strong>WB</strong> ) undefined.
+
+The integer accumulator, which is zero or negative, is multiplied by
+10. <strong>WB</strong> contains the character code for a digit. the
+value of this digit is then subtracted from the result. the result is
+out of range, <strong>then</strong> control is passed to <em>plbl</em>
+with the result in (<strong>IA</strong> ) undefined. execution of
+<strong>cvm</strong> leaves the result in (<strong>WB</strong> )
+undefined.
 
 
 <dte>8.10 cvd
@@ -1894,33 +2059,32 @@ subtract  <em>ops</em> from int accumulator
 
 <p>
 
-            the integer accumulator, which is zero or negative,
-            is divided by 10. the quotient (zero or negative)
-            is replaced in the accumulator. the remainder is
-            converted to the character code of a digit and
-            placed in wa. for example, an operand of -523 gives
-            a quotient of -52 and a remainder in wa of ch$d3.
+
+The integer accumulator, which is zero or negative, is divided by 10.
+the quotient (zero or negative) is replaced in the accumulator. The
+remainder is converted to the character code of a digit and placed in
+wa. For example, an operand of -523 gives a quotient of -52 and a
+remainder in wa of ch$d3.
 
 </dl>
-<h3>9-  block move instructions</h3>
+<h3>9-  Block Move Instructions</h3>
 
 <dl>
 
 <p>
 
-       the following instructions are used for transferring
-       data from one area of memory to another in blocks.
-       they can be implemented with the indicated series of
-       other macro-instructions, but more efficient
+The following instructions are used for transferring data from one
+area of memory to another in blocks.  they can be implemented with the
+indicated series of other macro-instructions, but more efficient
 implementations will be possible on most machines.
+
 
 <p>
 
-       note that in the equivalent code sequence shown below, a
-       zero value in wa will move at least one item, and may
-       may wrap the counter causing a core dump in some imple-
-       mentations.  thus wa should be .gt. 0 prior to invoking
-       any of these block move instructions.
+Note that in the equivalent code sequence shown below, a zero
+value in wa will move at least one item, and may may wrap the counter
+causing a core dump in some imple- mentations.  Thus wa should be .gt.
+0 prior to invoking any of these block move instructions.
 
 <dt>9.1  mvc
 
@@ -1928,9 +2092,12 @@ implementations will be possible on most machines.
 
 <p>
 
-            before obeying this order wa,<strong>XL</strong> ,<strong>XR</strong>  should have been
-            set up, the latter two by <strong>plc</strong>  <strong>psc</strong> resp.
-            <strong>mvc</strong> is equivalent to the sequence
+
+Before obeying this order wa,<strong>XL</strong> ,<strong>XR</strong>
+should have been set up, the latter two by <strong>plc</strong>
+<strong>psc</strong> resp.  <strong>mvc</strong> is equivalent to the
+sequence
+	    
 <pre>
                    <strong>mov</strong>  <strong>WB</strong> ,dumpb
                    <strong>lct</strong>  wa,wa
@@ -1943,8 +2110,9 @@ implementations will be possible on most machines.
 </pre>
 
 <p>
-            the character pointers are bumped as indicated
-            and the final value of wa is undefined.
+
+The character pointers are bumped as indicated and the final value of
+wa is undefined.
 
 
 <dt>9.2  mvw
@@ -1963,13 +2131,14 @@ implementations will be possible on most machines.
 </pre>
 
 <p>
-            note that this implies that the value in wa is the
-            length in bytes which is a multiple of <strong>cfp$b</strong> .
-            the initial addresses in <strong>XR</strong> ,<strong>XL</strong>  are word addresses.
-            as indicated, the final <strong>XR</strong> ,<strong>XL</strong>  values point past the
-            new and old regions of memory respectively.
-            the final value of wa is undefined.
-            wa,<strong>XL</strong> ,<strong>XR</strong>  must be set up before obeying <strong>mvw</strong> 
+
+Note that this implies that the value in wa is the length in bytes
+which is a multiple of <strong>cfp$b</strong> .  the initial addresses
+in <strong>XR</strong> ,<strong>XL</strong> are word addresses.  as
+indicated, the final <strong>XR</strong> ,<strong>XL</strong> values
+point past the new and old regions of memory respectively.  The final
+value of wa is undefined.  wa,<strong>XL</strong> ,<strong>XR</strong>
+must be set up before obeying <strong>mvw</strong> 
 
 <dt>9.3  m<strong>WB</strong> 
 
@@ -1986,13 +2155,13 @@ implementations will be possible on most machines.
 </pre>
 
 <p>
-            there is a requirement that the initial value in <strong>XL</strong> 
-            be at least 256 less than the value in <strong>XR</strong> . this
-            allows an implementation in which chunks of 256
-            bytes are moved forward (ibm 360, icl 1900).
-            the final value of wa is undefined.
-            <strong>WA</strong> ,<strong>XL</strong> ,
-<strong>XR</strong>  must be set up before obeying m<strong>WB</strong> .
+
+There is a requirement that the initial value in <strong>XL</strong>
+be at least 256 less than the value in <strong>XR</strong> . this
+allows an implementation in which chunks of 256 bytes are moved
+forward (ibm 360, icl 1900).  The final value of wa is undefined.
+<strong>WA</strong> ,<strong>XL</strong> , <strong>XR</strong> must be
+set up before obeying m<strong>WB</strong> .
 
 <dt>9.4  mcb
 
@@ -2015,40 +2184,42 @@ implementations will be possible on most machines.
 </pre>
 
 <p>
-            there is a requirement that the initial value in <strong>XL</strong> 
-            be at least 256 less than the value in <strong>XR</strong> . this
-            allows an implementation in which chunks of 256
-            bytes are moved forward (ibm 360, icl 1900).
-            the final value of wa is undefined.
-            wa,<strong>XL</strong> ,<strong>XR</strong>  must be set up before obeying <strong>mcb</strong> 
+
+
+There is a requirement that the initial value in <strong>XL</strong>
+be at least 256 less than the value in <strong>XR</strong> . this
+allows an implementation in which chunks of 256 bytes are moved
+forward (ibm 360, icl 1900).  The final value of wa is undefined.
+wa,<strong>XL</strong> ,<strong>XR</strong> must be set up before
+obeying <strong>mcb</strong> 
 
 </dl>
 
-<h3>10- operations connected with the stack</h3>
+<h3>10- Operations Connected with the Stack</h3>
 
 <dl>
 
 <p>
 
-       the stack is an area in memory which is dedicated for use
-       in conjunction with the stack pointer register (<strong>XS</strong> ). as
-       previously described, it is used by the <strong>jsr</strong> and exi
-       instructions and may be used for storage of any other
-       data as required.
+
+The stack is an area in memory which is dedicated for use in
+conjunction with the stack pointer register (<strong>XS</strong> ). As
+previously described, it is used by the <strong>jsr</strong> and exi
+instructions and may be used for storage of any other data as
+required.
 
 <p>
-       the stack builds either way in memory and an important
-       restriction is that the value in (<strong>XS</strong> ) must be the address
-       of the stack front at all times since
-       some implementations may randomly destroy stack locations
-       beyond (<strong>XS</strong> ).
-<p>
 
-       the starting stack base address is passed
-       in (<strong>XS</strong> ) at the start of execution. during execution it
-       is necessary to make sure that the stack does not
-       overflow. this is achieved by executing the following
-       instruction periodically.
+The stack builds either way in memory and an important restriction is
+that the value in (<strong>XS</strong> ) must be the address of the
+stack front at all times since some implementations may randomly
+destroy stack locations beyond (<strong>XS</strong> ).  <p>
+
+
+The starting stack base address is passed in (<strong>XS</strong> ) at
+The start of execution. During execution it is necessary to make sure
+that the stack does not overflow. This is achieved by executing the
+following instruction periodically.
 
 
 </dl>
@@ -2060,34 +2231,35 @@ implementations will be possible on most machines.
 <dd>              check stack overflow
 
 <p>
-       after successfully executing <strong>chk</strong>  it is permissible to
-       use up to 100 additional words before issuing another chk
-       thus <strong>chk</strong> need not be issued every time the stack is
-       expanded. in some implementations, the checking may be
-       automatic and <strong>chk</strong> will have no effect. following the
-       above rule makes sure that the program will operate
-       correctly in implementations with no automatic check.
+
+After successfully executing <strong>chk</strong> it is permissible to
+use up to 100 additional words before issuing another chk thus
+<strong>chk</strong> need not be issued every time the stack is
+expanded. In some implementations, the checking may be automatic and
+<strong>chk</strong> will have no effect. Following the above rule
+makes sure that the program will operate correctly in implementations
+with no automatic check.
 
 <p>
-       stack overflow occurs (detected either automatically
-       or by a <strong>chk</strong> instruction), <strong>then</strong> control is passed to the
-       stack overflow section (see program form). note that this
-       transfer may take place following any instruction which
-       stores data at a new location on the stack.
-       after stack overflow, stack is arbitrarily popped
-       to give some space in which the error procedure may
-       operate. otherwise a loop of stack overflows may occur.
+
+Stack overflow occurs (detected either automatically or by a
+<strong>chk</strong> instruction), <strong>then</strong> control is
+passed to the stack overflow section (see program form). Note that
+this transfer may take place following any instruction which stores
+data at a new location on the stack.  After stack overflow, stack is
+arbitrarily popped to give some space in which the error procedure may
+operate. otherwise a loop of stack overflows may occur.
 
 </dl>
-<h3>11- data generation instructions</h3>
+<h3>11- Data Generation Instructions</h3>
 
 <dl>
 <p>
 
-       the following instructions are used to generate constant
-       values in the constant section and also to assemble
-       initial values in the working storage section. they
-       may not appear except in these two sections.
+
+The following instructions are used to generate constant values in the
+constant section and also to assemble initial values in the working
+storage section. They may not appear except in these two sections.
 
 <dt>11.1 <strong>dac</strong>  addr
 
@@ -2095,44 +2267,45 @@ implementations will be possible on most machines.
 
 
 <p>
-                             generates one word containing the
-                             specified one word integer
-                             value (address).
+
+Generates one word containing the specified one word integer value
+(address).
 
 
 <dt>11.2 <strong>dic</strong>  integer
 
-<dd>     generates an integer value which
-                             occupies <strong>cfp$i</strong>  consecutive words.
-                             the operand is a digit string with
-                             a required leading sign.
+<dd>
+
+Generates an integer value which occupies <strong>cfp$i</strong>
+consecutive words.  The operand is a digit string with a required
+leading sign.
 
 <dt>11.3 <strong>drc</strong>  real
 
-<dd>        assembles a real constant which
-                             occupies <strong>cfp$r</strong>  consecutive words.
-                             the operand form must obey the
-                             rules for a fortran real constant
-                             with the extra requirement that a
-                             leading sign be present.
+<dd>
+
+Assembles a real constant which occupies <strong>cfp$r</strong>
+consecutive words.  The operand form must obey the rules for a fortran
+real constant with the extra requirement that a leading sign be
+present.
+
+
 <dt>11.4 <strong>dtc</strong>  <em>dtext</em>
 
 <dd>       define text constant.
 
 <p>
-text is started and ended with any character not contained in the
-                             characters to be assembled. the
-                             constant occupies consecutive words
-                             as dictated by the configuration
-                             parameter <strong>cfp$c</strong> . any unused chars
-                             in the last word are right filled
-                             with zeros (i.e. the character
-                             whose internal code is zero).
-                             the string contains a sequence of
-                             letters, digits, blanks and any of
-                             the following special characters.
-                             =,$.(*)/+-
-<p>
+
+
+Text is started and ended with any character not contained in the
+characters to be assembled. The constant occupies consecutive words as
+dictated by the configuration parameter <strong>cfp$c</strong> . Any
+unused chars in the last word are right filled with zeros (i.e. the
+character whose internal code is zero).  The string contains a
+sequence of letters, digits, blanks and any of the following special
+characters.  =,$.(*)/+-
+
+			     <p>
                              no other characters
                              may be used in a <em>dtext</em> operand.
 
@@ -2140,32 +2313,32 @@ text is started and ended with any character not contained in the
 
 <dd>         assemble bit string constant.
 
-<p>the operand is a positive integer
-                             value which is interpreted in
-                             binary, right justified and left
-                             filled with zero bits. thus 5 would
-                             imply the bit string value 00...101.
-</dl>
+<p>
 
-<h3>12- symbol definition instructions</h3>
+The operand is a positive integer value which is interpreted in
+binary, right justified and left filled with zero bits. Thus 5 would
+imply the bit string value 00...101.  </dl>
+
+<h3>12- Symbol Definition Instructions</h3>
 
 <dl>
 
 <p>
-       the following instruction is used to define symbols
-       in the definitions section. it may not be used elsewhere.
+
+The following instruction is used to define symbols in the definitions
+section. It may not be used elsewhere.
 
 <dt>12.1 <strong>equ</strong>  <em>eqop</em>
 
 <dd>        define symbol
 
 <p>
-            the symbol which appears in the label field is
-            defined to have the absolute value given
-            by the <em>eqop</em> operand. a given symbol may be defined
-            only once in this manner, and any symbols occuring
-            in <em>eqop</em> must be previously defined.
-<p>
+
+
+The symbol which appears in the label field is defined to
+have the absolute value given by the <em>eqop</em> operand. A given
+symbol may be defined only once in this manner, and any symbols
+occuring in <em>eqop</em> must be previously defined.  <p>
 
             the following are the possibilities for <em>eqop</em>
 
@@ -2178,38 +2351,41 @@ text is started and ended with any character not contained in the
 
 <dt> val+val
 
-<dd>          the sum of the two values is used.
-                             this sum must not exceed <strong>cfp$m</strong> 
+<dd>
+
+The sum of the two values is used.  This sum must not exceed
+<strong>cfp$m</strong> 
 
 <dt>val-val
 
-<dd>          the difference between the two
-                             values (must be positive) is used.
+<dd>
+
+The difference between the two values (must be positive) is used.
 
 <dt>*
 
-<dd>                this format defines the label by
-                             using a value supplied by the
-                             minimal translator. values are
-                             required for the
-<pre>
+<dd>
+
+This format defines the label by using a value supplied by the MINIMAL
+translator. Values are required for the
+
+			     <pre>
             <strong>cfp$x</strong>             (configuration parameters)
             e$xxx            (environment parameters)
             ch$xx            (character codes).
 </pre>
 
 <p>
-                             in order for a translator to
-                             handle this format correctly the
-                             definitions section must be
-                             consulted for details of required
-                             symbols as listed at the front of
-                             the section.
+
+In order for a translator to handle this format correctly the
+definitions section must be consulted for details of required symbols
+as listed at the front of the section.
 
 <p>
-       the following instructions may be used to define symbols
-       in the procedure section. they may not be used in
-       any other part of the program.
+
+The following instructions may be used to define symbols in the
+procedure section. They may not be used in any other part of the
+program.
 
 
 <dt>12.2 exp
@@ -2218,16 +2394,14 @@ text is started and ended with any character not contained in the
 
 <p>
 
-            <strong>exp</strong> defines the symbol appearing in the label field
-            to be the name of an external procedure which can be
-            referenced in a subsequent <strong>jsr</strong> instruction. the
-            coding for the procedure is external to the
-            coding of the source program in this language.
-            the code for external procedures may be
-            referred to collectively as the operating system
-            interface, or more briefly, osint, and will
-            frequently be a separately compiled segment of code
-            loaded with spitbol to produce a complete system.
+            <strong>exp</strong> defines the symbol appearing in the
+label field to be the name of an external procedure which can be
+referenced in a subsequent <strong>jsr</strong> instruction. The
+coding for the procedure is external to the coding of the source
+program in this language.  The code for external procedures may be
+referred to collectively as the operating system interface, or more
+briefly, osint, and will frequently be a separately compiled segment
+of code loaded with SPITBOL to produce a complete system.
 
 <dt>12.3 <strong>inp</strong>  <em>ptyp</em>,int
 
@@ -2236,12 +2410,12 @@ text is started and ended with any character not contained in the
 
 <p>
 
-            <strong>inp</strong> defines the symbol appearing in the label field
-            to be the name of an internal procedure and gives
-            its type and number of exit parameters. the label
-            can be referenced in <strong>jsr</strong> instructions and
-            it must appear labelling a <strong>prc</strong> instruction in the
-            program section.
+
+            <strong>inp</strong> defines the symbol appearing in the
+label field to be the name of an internal procedure and gives its type
+and number of exit parameters. the label can be referenced in
+<strong>jsr</strong> instructions and it must appear labelling a
+<strong>prc</strong> instruction in the program section.
 
 <dt>12.4 inr
 
@@ -2249,13 +2423,12 @@ text is started and ended with any character not contained in the
 
 <p>
 
-            <strong>inr</strong> defines the symbol appearing in the label
-            field to be the name of an internal routine. the
-            label may be referenced in any type of branch order
-            and it must appear labelling a <strong>rtn</strong> instruction in
-            the program section.
-</dl>
-<h3>13- assembly listing layout instructions</h3>
+            <strong>inr</strong> defines the symbol appearing in the
+label field to be the name of an internal routine. the label may be
+referenced in any type of branch order and it must appear labelling a
+<strong>rtn</strong> instruction in the program section.  </dl>
+
+<h3>13- Assembly Listing Layout Instruction</h3>
 
 <dl>
 <dt>13.1 ejc
@@ -2270,28 +2443,37 @@ text is started and ended with any character not contained in the
 <dd>        set new assembly title
 
 
-<p> <strong>ttl</strong> implies an immediate eject of the
-            assembly listing to print the new title.
 <p>
-            the use of <strong>ttl</strong> and <strong>ejc</strong> cards is such that the
-            program will list neatly the printer prints
-            as many as 58 lines per page. in the event that
-            the printer depth is less than this, or the
-            listing contains interspersed lines (such as actual
-            generated code), <strong>then</strong> the format may be upset.
-<p>
-            lines starting with an asterisk are comment lines
-            which cause no code to be generated and may occur
-            freely anywhere in the program. the format for
-            comment lines is given in section -15-.
 
-<h3>14- program form</h3>
+<strong>ttl</strong> implies an immediate eject of the assembly
+listing to print the new title.  <p>
+
+The use of <strong>ttl</strong> and <strong>ejc</strong> cards is such
+that the program will list neatly the printer prints as many as 58
+lines per page. In the event that the printer depth is less than this,
+or the listing contains interspersed lines (such as actual generated
+code), <strong>then</strong> the format may be upset.  <p>
+
+Lines starting with an asterisk are comment lines which cause no code
+to be generated and may occur freely anywhere in the program. The
+format for comment lines is given in section -15-.
 
 <p>
 
-            the program consists of separate sections separated
-            by <strong>sec</strong> operations. the sections must appear in the
-            following specified order.
+Lines starting with left set brace, '{', begin a block comment that
+continues up to and includind the first following line that begins
+with a right set brace, '}'. Any statements such as instructions or
+conditional assembly within the body of the block comment will not be
+recognized as such.
+
+
+<h3>14- Program Form</h3>
+
+<p>
+
+The program consists of separate sections separated by
+<strong>sec</strong> operations. The sections must appear in the
+following specified order.
 
 </dl>
 
@@ -2337,96 +2519,107 @@ text is started and ended with any character not contained in the
 
 </dl>
 
-<h2>section 10 - program form</h2>
+<h2>section 10 - Program Form</h2>
 
 <dl>
 <dt>procedure section
 
-<dd>The procedure section contains all the exp
-            instructions for externally available procedures
-            and <strong>inp</strong> inr opcodes for internal procedures,routines
-            so that a single pass minimal translator has advance
-            knowledge of procedure types when translating calls.
-<p>
+<dd>
+
+The procedure section contains all the exp instructions for externally
+available procedures and <strong>inp</strong> inr opcodes for internal
+procedures,routines so that a single pass MINIMAL translator has
+advance knowledge of procedure types when translating calls.
+
+	    <p>
 <dt>definitions section
 
-<dd>The definitions section contains <strong>equ</strong> instructions
-            which define symbols referenced later on in the
-            program, constant and work sections.
-<br>
-<dt>constant storage section
-<dd>The constant storage section consists entirely
-            of constants assembled with the <strong>dac</strong> dic,<strong>drc</strong> dtc,dbc
-            assembly operations. these constants can be freely
-            referenced by the program instructions.
-<br>
-<dt>working storage section
+<dd>
 
-<dd>The working storage section consists entirely of
-            <strong>dac</strong> dic,<strong>drc</strong> <strong>dbc</strong> dtc instructions to define a fixed
-            length work area. The work locations in this area
-            can be directly referenced in program instructions.
-            The area is initialized in accordance with the
-            values assembled in the instructions.
-<br>
+The definitions section contains <strong>equ</strong> instructions
+which define symbols referenced later on in the program, constant and
+work sections.
+
+<br> <dt>constant storage section
+
+<dd>
+
+The constant storage section consists entirely of constants assembled
+with the <strong>dac</strong> dic,<strong>drc</strong> dtc,dbc
+assembly operations. these constants can be freely referenced by the
+program instructions.  <br> <dt>working storage section
+
+<dd>
+
+The working storage section consists entirely of <strong>dac</strong>
+dic,<strong>drc</strong> <strong>dbc</strong> dtc instructions to
+define a fixed length work area. The work locations in this area can
+be directly referenced in program instructions.  The area is
+initialized in accordance with the values assembled in the
+instructions.  
+
+<br> 
+
 <dt>program section
 
-<dd>The program section contains program instructions
-            and associated operations (such as <strong>prc</strong>  <strong>enp</strong>  ent).
-            control is passed to the first instruction in this
-            section when execution is initiated.
+<dd>
+
+The program section contains program instructions and associated
+operations (such as <strong>prc</strong> <strong>enp</strong> ent).
+Control is passed to the first instruction in this section when
+execution is initiated.
 
 <dt>stack overflow section
 
 <p>
-<dd>The stack overflow section contains instructions
-            like the program section. Control is passed to the
-            first instruction in this section following the
-            occurrence of stack overflow, see <strong>chk</strong> instruction.
-<dt>error section
+<dd>
 
-<dd>The error section contains instructions like the
-            program section. control is passed to the first
-            instruction in this section when a procedure exit
-            corresponds to an error parameter (see err)
-            or when an <strong>erb</strong> opcode is obeyed. the error code
-            must clean up the main stack and cater for the
-            possibility that a subroutine stack may need clean
-            up.
+The stack overflow section contains instructions like the program
+section. Control is passed to the first instruction in this section
+following the occurrence of stack overflow, see <strong>chk</strong>
+instruction.  <dt>error section
+
+<dd>
+
+The error section contains instructions like the program section.
+control is passed to the first instruction in this section when a
+procedure exit corresponds to an error parameter (see err) or when an
+<strong>erb</strong> opcode is obeyed. The error code must clean up
+The main stack and cater for the possibility that a subroutine stack
+may need clean up.
 
 <dt>osint
 
-<dd>Though not part of the minimal source, it is useful
-            to refer to the collection of initialisation and
-            <strong>exp</strong> routines as osint (operating system interface).
-            errors occurring within osint procedures are
-            usually handled by making an error return. If this
-            is not feasible or appropriate, osint may use the
-            minimal error section to report errors directly by
-            branching to it with a suitable numeric error
-            code in wa.
-</dl>
+<dd>
 
-<h2>section 11 - statement format</h2>
+Though not part of the MINIMAL source, it is useful to refer to the
+collection of initialisation and <strong>exp</strong> routines as
+osint (operating system interface).  Errors occurring within osint
+procedures are usually handled by making an error return. If this is
+not feasible or appropriate, osint may use the MINIMAL error section
+to report errors directly by branching to it with a suitable numeric
+error code in wa.  </dl>
+
+<h2>section 11 - Statement Format</h2>
 
 <dl>
 
-<p>All labels are exactly five characters long and start
-       with three letters (abcdefghijklmnopqrstuvwxy$) followed
-       by two letters or digits.
 <p>
-       The letter z may not be used in minimal symbols but $ is
-       permitted.
-<p>
-       For implementations where $ may not appear in the
-       target code , a simple substitution of z for $
-       may thus be made without risk of producing non-unique
-       symbols.
-<p>
-       The letter z is however permitted in opcode mnemonics and
-       in comments.
 
-<p>Minimal statements are in a fixed format as follows.
+All labels are exactly five characters long and start with three
+letters (abcdefghijklmnopqrstuvwxy$) followed by two letters or
+digits.  <p>
+
+The letter z may not be used in MINIMAL symbols but $ is permitted.
+<p>
+
+For implementations where $ may not appear in the target code , a
+simple substitution of z for $ may thus be made without risk of
+producing non-unique symbols.  <p>
+
+The letter z is however permitted in opcode mnemonics and in comments.
+
+<p>MINIMAL statements are in a fixed format as follows.
 <pre>
        cols 1-5              label any (else blank)
 
@@ -2464,54 +2657,56 @@ text is started and ended with any character not contained in the
        the fortran character set is a-z 0-9 =,$.(*)-/+
 </pre>
 </dl>
-<h2>section 12 - program execution</h2>
+<h2>section 12 - Program Execution</h2>
 
 <dl>
 
-<p>Execution of the program begins with the first
-       instruction in the program section.
+<p>
 
-<p>In addition to the fixed length memory regions defined
-       by the assembly, there are two dynamically allocated
-       memory regions as follows.
+Execution of the program begins with the first instruction in the
+program section.
+
+<p>
+
+In addition to the fixed length memory regions defined by the
+assembly, there are two dynamically allocated memory regions as
+follows.
 
 <dl>
 
 <dt>data area
 
-<dd>This is an area available to the
-                             program for general storage of data
-                             any data value may be stored in
-                             this area except instructions.
-                             in some implementations, it may be
-                             possible to increase the size of
-                             this area dynamically by adding
-                             words at the top end with a call
-                             to a system procedure.
-<dt>stack area
-<dd>This region of memory holds
-                             the stack used for subroutine calls
-                             and other storage of one word
-                             integer values (addresses). this
-                             is the stack associated with
-                             index register <strong>XS</strong> .
-<p>The locations and sizes of these areas are specified
-       by the values in the registers at the start of program
-       execution as follows.
+<dd>
+
+This is an area available to the program for general storage of data
+any data value may be stored in this area except instructions.  In
+some implementations, it may be possible to increase the size of this
+area dynamically by adding words at the top end with a call to a
+system procedure.  
+
+<dt>stack area <dd>
+
+This region of memory holds the stack used for subroutine calls and
+other storage of one word integer values (addresses). This is the
+stack associated with index register <strong>XS</strong> .  <p>
+
+The locations and sizes of these areas are specified by the values in
+the registers at the start of program execution as follows.
 
 <dl>
 
 <dt>(<strong>XS</strong> )
 
-<dd>Address one past the stack base.
-                             e.g. <strong>if <strong>XS</strong>  is 23456, a d-stack will
-                             occupy words 23455,23454,...
-                             whereas a u-stack will occupy
-                             23457,23458,...
+<dd>
+
+Address one past the stack base.  For example, if  <strong>XS</strong>
+is 23456, a d-stack will occupy words 23455,23454,...  whereas a
+u-stack will occupy 23457,23458,...
 
 <dt>(<strong>XR</strong> )
 
 <dd>Address of the first word in the data area
+
 <dt>(<strong>XL</strong> )
 
 <dd>Address of the last word in the data area.
@@ -2525,9 +2720,12 @@ text is started and ended with any character not contained in the
 <dd>zero
 </dl>
 <dl>
+
 <p>
-       there is no explicit way to terminate the execution of a
-       program. this function is performed by an appropriate
-       system procedure referenced with the sysej instruction.
+
+There is no explicit way to terminate the execution of a program. This
+function is performed by an appropriate system procedure referenced
+with the sysej instruction.
+
 </body>
 </html>
