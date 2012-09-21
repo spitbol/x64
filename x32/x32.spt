@@ -351,13 +351,13 @@ flgs2
 *	reg.wa = regmap['wa']
 *	reg.cp = regmap['cp']
 
-	regmap['xl'] = 'XL.esi';  regmap['xt'] = 'XT.esi'
-	regmap['xr'] = 'XR.edi';  regmap['xs'] = 'XS.esp'
-	regmap['wa'] = 'WA.ecx';  regmap['wb'] = 'WB.ebx'
-	regmap['wc'] = 'WC.edx';  regmap['ia'] = 'IA.edx'
-	regmap['cp'] = 'CP.ebp'
+	regmap['xl'] = 'esi.xl';  regmap['xt'] = 'esi.xt'
+	regmap['xr'] = 'edi.xr';  regmap['xs'] = 'esp.xs'
+	regmap['wa'] = 'ecx.wa';  regmap['wb'] = 'ebx.wb'
+	regmap['wc'] = 'edx.wc';  regmap['ia'] = 'edx.ia'
+	regmap['cp'] = 'ebp.cp'
 *	w0 is temp register
-	regmap['w0'] = 'W0.eax'
+	regmap['w0'] = 'eax.w0'
 
 *  quick reference:
 	reg.ia = regmap['ia']
