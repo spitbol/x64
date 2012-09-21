@@ -1,6 +1,6 @@
 	%include	"x32/x32.s"
 		extern	atlin
-		extern	tracer
+;		extern	tracer
 		extern	id_call
 
 	segment	.data

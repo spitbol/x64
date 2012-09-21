@@ -234,23 +234,31 @@ char *argv[];
     SET_WB(0);
     SET_WC(0);
     SET_XR(basemem);
+/*
 	fprintf(stderr,"startup XR %8u  ",basemem);
 	fprintf(stderr,"startup XR %8u  ",XR(int));
+*/
     SET_XL(topmem - sizeof(word));
+/*
 	fprintf(stderr,"startup XL %8u"  ,topmem - sizeof(word));
 	fprintf(stderr,"startup XL %8u",XL(int));
 	fprintf(stderr,"\n");
+*/
 
     /*
        Startup compiler.
      */
+/*
 	At("starting compiler");
 	tracer();
+*/
     startup((char *) 0L, lowsp);
 
 	At("back from compiler");
 
+/*
     atlin();
+*/
 #endif				/* !RUNTIME */
 
     /*

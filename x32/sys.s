@@ -112,7 +112,7 @@
         %include        "x32/mintype.h"
         %include        "x32/os.inc"
 
-	extern  tracer
+;	extern  tracer
         extern  swcoup
 	extern	atlin
 	extern	stacksiz
@@ -721,15 +721,15 @@ erexit: shr     eax,1           ; divide by 2
 
         global  startup
 startup:
-	call	tracer
-	call	tracer
+;	call	tracer
+;	call	tracer
         pop     eax                     ; discard return
         pop     eax                     ; discard dummy1
         pop     eax                     ; discard dummy2
         call    stackinit               ; initialize MINIMAL stack
         mov     eax,dword [compsp]              ; get MINIMAL's stack pointer
         mov     dword [reg_wa],eax                     ; startup stack pointer
-	call	tracer
+;	call	tracer
 
         cld                             ; default to UP direction for string ops
         extern  DFFNC
