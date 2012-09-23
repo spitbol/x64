@@ -19,11 +19,7 @@ This file is part of Macro SPITBOL.
 */
 
 /* Size of file position words in I/O buffer block */
-#if SETREAL
-typedef double FILEPOS;		/* real file positions */
-#else
 typedef long FILEPOS;		/* 32-bit file positions */
-#endif
 
 /*
     BLBLK - I/O buffer block

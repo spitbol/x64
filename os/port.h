@@ -30,10 +30,6 @@ This file is part of Macro SPITBOL.
 #define ALTCOMP         0	/* no alternate string comparison */
 #endif
 
-#ifndef DATECHECK
-#define DATECHECK   0		/* no check for expiration date */
-#endif
-
 #ifndef ENGINE
 #define ENGINE          0	/* not building engine version */
 #endif
@@ -64,10 +60,6 @@ This file is part of Macro SPITBOL.
 
 #ifndef SAVEFILE
 #define SAVEFILE        0	/* can't create save files */
-#endif
-
-#ifndef SETREAL
-#define SETREAL     0		/* don't use reals for SET()  */
 #endif
 
 #ifndef USEQUIT

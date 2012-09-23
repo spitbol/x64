@@ -303,11 +303,7 @@ struct ioblk {
    Size of file position words in I/O buffer block
  */
 
-#if SETREAL
-typedef double FILEPOS;		/* real file positions */
-#else
 typedef long FILEPOS;		/* 32-bit file positions */
-#endif
 
 struct bfbblk {
     mword bfbtyp;		/* type word (XNBLK)                                    */

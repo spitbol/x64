@@ -37,9 +37,6 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #include "os.h"
 
-#if SETREAL
-#include <math.h>		/* for floor() */
-#endif
 
 FILEPOS
 doset(ioptr, offset, whence)
@@ -93,11 +90,7 @@ int whence;
 	/*
 	   /       Seek to a position that is a multiple of the buffer size.
 	 */
-#if SETREAL
-	newoffset = floor(target / bfptr->size) * bfptr->size;
-#else
 	newoffset = (target / bfptr->size) * bfptr->size;
-#endif
 	if (newoffset != bfptr->curpos) {
 	    /* physical file position differs from desired new offset */
 	    FILEPOS newcurrent;
