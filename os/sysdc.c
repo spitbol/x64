@@ -35,11 +35,14 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #include "os.h"
 #include "globals.ext"
+extern int id_call;
 
 zysdc()
 {
     struct scblk *pheadv = get_data_offset(HEADV, struct scblk *);
     /* announce name and copyright */
+ printf("eter zysdc\n");
+ printf("id_call %d\n",id_call);
     Enter("zysdc");
     if (!dcdone && !(spitflag & NOBRAG)) {
 	dcdone = 1;		/* Only do once per run */

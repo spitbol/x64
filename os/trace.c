@@ -46,8 +46,8 @@ extern int compsp;
 extern int osisp;
 extern int LOWSPMIN;
 
-#undef TRACE
-#define NOTRACE
+#undef NOTRACE
+#define TRACE
 atlin()
 {
 #ifdef TRACE

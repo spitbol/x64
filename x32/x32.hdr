@@ -227,6 +227,20 @@ TYPET:
 ;   to the order of entries in the call enumeration in os.h
 ;   and os.inc.
 ;
+
+        global  relaj
+        global  relcr
+        global  reloc
+        global  alloc
+        global  alocs
+        global  alost
+        global  blkln
+        global  insta
+        global  rstrt
+        global  start
+        global  filnm
+
+        global  dtype
         global  calltab
 calltab:
         dd      relaj

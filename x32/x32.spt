@@ -457,8 +457,9 @@ opnext
 *	here if executing statement with label
 *	issue trace call to atlin
 *	differ(is_branch[incode])		:s(opnext.2)
-  	outfile = '  mov dword [nlines],'   nlines 
-*  	outfile = '  call  atlin'
+
+   	outfile = '  mov dword [nlines],'   nlines 
+   	outfile = '  call  atlin'
 opnext.2
 *	branch via opcode to the generator for this operation
 						:($('g.' incode))

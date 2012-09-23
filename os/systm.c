@@ -26,6 +26,7 @@ This file is part of Macro SPITBOL.
 #include <sys/types.h>
 #include <sys/times.h>
 #include <sys/times.h>
+#include <stdio.h>
 #define CLK_TCK sysconf(_SC_CLK_TCK)
 
 zystm()
@@ -35,6 +36,7 @@ zystm()
        /   to get 6000ths of second, divide by 6 to get 100ths
      */
     struct tms timebuf;
+sprintf(stderr,"enter zystm\n");
 
     Enter("zystm");
     timebuf.tms_utime = 0;	/* be sure to init in case failure      */

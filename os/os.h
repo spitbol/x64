@@ -106,25 +106,24 @@ extern void pushregs(void);
 /*
         Ordinals for minimal calls from C.
 
-    The order of entries here must correspond to the order of
+    The order of entries below must correspond to the order of
     table entries in the INTER assembly language module.
 */
-enum calltab {
-    relaj_callid,
-    relcr_callid,
-    reloc_callid,
-    alloc_callid,
-    alocs_callid,
-    alost_callid,
-    blkln_callid,
-    insta_callid,
-    rstrt_callid,
-    start_callid,
-    filnm_callid,
-    dtype_callid,
-    enevs_callid,
-    engts_callid
-};
+
+#define relaj_callid  0
+#define relcr_callid  1
+#define reloc_callid  2
+#define alloc_callid  3
+#define alocs_callid  4
+#define alost_callid  5
+#define blkln_callid  6
+#define insta_callid  7
+#define rstrt_callid  8
+#define start_callid  9
+#define filnm_callid  10
+#define dtype_callid  11
+#define enevs_callid  12
+#define engts_callid  13
 
 /*
 Function and macro to get/set value from/to minimal dataspace.
