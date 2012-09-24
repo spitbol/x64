@@ -11,14 +11,10 @@ OS=./os
 
 vpath %.c $(OS)
 
-MUSL=../musl
-TCC=../tcc/install/
-#TCCLIB=$(TCC)/lib
-TCCLIB=/home/daveshields/tcc/install/lib/tcc
-TCCLIB=$(TCC)/lib
-CC=     $(TCC)/bin/tcc
+MUSL=musl
+CC=     tcc/bin/tcc
 AS=nasm
-INCDIRS = -I$(TCC)/include -I$(MUSL)/include
+INCDIRS = -Itcc/include -I$(MUSL)/include
 ifeq	($(DEBUG),1)
 CFLAGS =  -g  $(INCDIRS)
 else
@@ -105,7 +101,8 @@ VOBJS =	spitbol.o
 OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 
 # main program
-LIBS = -L$(MUSL)/lib  $(HOME)/h/tcc/install/lib/tcc/libtcc1.a -L$(MUSL)/lib/libm.a
+#LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a -L$(MUSL)/lib/libm.a
+LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/ -L$(MUSL)/lib/libm.a -static
 spitbol: $(OBJS)
 ifeq	($(DEBUG),0)
  	$(CC) -o spitbol $(LIBS) $(OBJS)  
