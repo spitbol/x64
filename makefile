@@ -3,8 +3,6 @@
 # SPITBOL Version:
 TARGET=   x32
 DEBUG=	1
-MUSL=../musl
-TCC=../tcc/install
 
 # Minimal source directory.
 MINPATH=./
@@ -13,8 +11,13 @@ OS=./os
 
 vpath %.c $(OS)
 
-AS=nasm
+MUSL=../musl
+TCC=../tcc/install/
+#TCCLIB=$(TCC)/lib
+TCCLIB=/home/daveshields/tcc/install/lib/tcc
+TCCLIB=$(TCC)/lib
 CC=     $(TCC)/bin/tcc
+AS=nasm
 INCDIRS = -I$(TCC)/include -I$(MUSL)/include
 ifeq	($(DEBUG),1)
 CFLAGS =  -g  $(INCDIRS)
@@ -24,7 +27,7 @@ endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASFLAGS = -f elf -L
+ASFLAGS = -f elf 
 else
 ASFLAGS = -f elf -g
 endif
@@ -102,12 +105,12 @@ VOBJS =	spitbol.o
 OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 
 # main program
-LIBS = -L$(MUSL)/lib  -L$(TCC)/lib/
+LIBS = -L$(MUSL)/lib  $(HOME)/h/tcc/install/lib/tcc/libtcc1.a -L$(MUSL)/lib/libm.a
 spitbol: $(OBJS)
 ifeq	($(DEBUG),0)
- 	$(CC) -o spitbol $(LIBS) -L$(MUSL)/lib/libm.a  $(OBJS)  
+ 	$(CC) -o spitbol $(LIBS) $(OBJS)  
 else
-	$(CC) -g -o spitbol $(LIBS) -L$(MUSL)/lib/libm.a  $(OBJS)  
+	$(CC) -g -o spitbol $(LIBS) $(OBJS)  
 endif
 
 # Assembly language dependencies:
