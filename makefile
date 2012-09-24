@@ -1,11 +1,10 @@
 # Unix/x32 SPITBOL
-#
-
 
 # SPITBOL Version:
 TARGET=   x32
 DEBUG=	1
 MUSL=../musl
+TCC=../tcc
 
 # Minimal source directory.
 MINPATH=./
@@ -14,11 +13,9 @@ OS=./os
 
 vpath %.c $(OS)
 
-
 AS=nasm
-CC=     tcc
-#CC=     bin/tcc
-INCDIRS = -I../tcc/include -I$(MUSL)/include
+CC=     $(TCC)/tcc
+INCDIRS = -I$(TCC)/tcc/include -I$(MUSL)/include
 ifeq	($(DEBUG),1)
 CFLAGS =  -g  $(INCDIRS)
 else
@@ -87,7 +84,7 @@ CAOBJS = errors.o x32/x32.o x32/sys.o
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
 HOBJS=
 
-# Objects for SPITBOL's LOAD function.  AIX 4 has dlxxx function library.
+# Objects for SPITBOL's LOAD function.  
 #LOBJS=  load.o
 #LOBJS=  dlfcn.o load.o
 LOBJS=
@@ -105,16 +102,14 @@ VOBJS =	spitbol.o
 OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 
 # main program
-LIBS = -L$(MUSL)/lib  -L/usr/lib
-#LIBS = -L$(MUSL)/lib  -L/usr/lib
+LIBS = -L$(MUSL)/lib  -L$(TCC)/
+#LIBS = -L$(MUSL)/lib  
 #LIBS = -L$(MUSL)/lib -Llib
 spitbol: $(OBJS)
 ifeq	($(DEBUG),0)
-# 	$(CC) -o spitbol $(LIBS) -lm  $(OBJS)  
-	$(CC) -o spitbol $(LIBS) $(OBJS)  
+ 	$(CC) -o spitbol $(LIBS) -L$(MUSL)/lib/libm.a  $(OBJS)  
 else
-#	$(CC) -g -o spitbol -lm  $(LIBS) $(OBJS)  
-	$(CC) -g -o spitbol $(LIBS) $(OBJS)  
+	$(CC) -g -o spitbol $(LIBS) -L$(MUSL)/lib/libm.a  $(OBJS)  
 endif
 
 # Assembly language dependencies:
@@ -136,8 +131,6 @@ errors.s: $(ERR) spitbol.s
 os.o: x32/mintype.h x32/os.inc
 
 sys.o: x32/mintype.h x32/os.inc
-
-
 
 # make os objects
 cobjs:	$(COBJS)
