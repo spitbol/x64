@@ -5,6 +5,7 @@
 # SPITBOL Version:
 TARGET=   x32
 DEBUG=	1
+MUSL=../musl
 
 # Minimal source directory.
 MINPATH=./
@@ -17,7 +18,7 @@ vpath %.c $(OS)
 AS=nasm
 CC=     tcc
 #CC=     bin/tcc
-INCDIRS = -I../tcc/include -Imusl/include
+INCDIRS = -I../tcc/include -I$(MUSL)/include
 ifeq	($(DEBUG),1)
 CFLAGS =  -g  $(INCDIRS)
 else
@@ -104,16 +105,16 @@ VOBJS =	spitbol.o
 OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 
 # main program
-LIBS = -Lmusl/lib  -Lmusl/crt -L/usr/lib
-#LIBS = -Lmusl/lib/crt -Lmusl/lib  -Lmusl/crt -L/usr/lib
-#LIBS = -Lmusl/lib -Llib
+LIBS = -L$(MUSL)/lib  -L/usr/lib
+#LIBS = -L$(MUSL)/lib  -L/usr/lib
+#LIBS = -L$(MUSL)/lib -Llib
 spitbol: $(OBJS)
 ifeq	($(DEBUG),0)
- 	$(CC) -o spitbol $(LIBS) -lm  $(OBJS)  
-#	$(CC) -o spitbol $(LIBS) $(OBJS)  
+# 	$(CC) -o spitbol $(LIBS) -lm  $(OBJS)  
+	$(CC) -o spitbol $(LIBS) $(OBJS)  
 else
-	$(CC) -g -o spitbol -lm  $(LIBS) $(OBJS)  
-#	$(CC) -g -o spitbol /musl/lib/crt1.o $(LIBS) $(OBJS)  
+#	$(CC) -g -o spitbol -lm  $(LIBS) $(OBJS)  
+	$(CC) -g -o spitbol $(LIBS) $(OBJS)  
 endif
 
 # Assembly language dependencies:
