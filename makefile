@@ -4,7 +4,7 @@
 TARGET=   x32
 DEBUG=	1
 MUSL=../musl
-TCC=../tcc
+TCC=../tcc/install
 
 # Minimal source directory.
 MINPATH=./
@@ -14,8 +14,8 @@ OS=./os
 vpath %.c $(OS)
 
 AS=nasm
-CC=     $(TCC)/tcc
-INCDIRS = -I$(TCC)/tcc/include -I$(MUSL)/include
+CC=     $(TCC)/bin/tcc
+INCDIRS = -I$(TCC)/include -I$(MUSL)/include
 ifeq	($(DEBUG),1)
 CFLAGS =  -g  $(INCDIRS)
 else
@@ -102,9 +102,7 @@ VOBJS =	spitbol.o
 OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 
 # main program
-LIBS = -L$(MUSL)/lib  -L$(TCC)/
-#LIBS = -L$(MUSL)/lib  
-#LIBS = -L$(MUSL)/lib -Llib
+LIBS = -L$(MUSL)/lib  -L$(TCC)/lib/
 spitbol: $(OBJS)
 ifeq	($(DEBUG),0)
  	$(CC) -o spitbol $(LIBS) -L$(MUSL)/lib/libm.a  $(OBJS)  
