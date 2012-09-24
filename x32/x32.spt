@@ -458,8 +458,8 @@ opnext
 *	issue trace call to atlin
 *	differ(is_branch[incode])		:s(opnext.2)
 
-   	outfile = '  mov dword [nlines],'   nlines 
-   	outfile = '  call  atlin'
+*   	outfile = '  mov dword [nlines],'   nlines 
+*   	outfile = '  call  atlin'
 opnext.2
 *	branch via opcode to the generator for this operation
 						:($('g.' incode))
@@ -1137,7 +1137,7 @@ g.dvr	t1 = i.type(i1)
 	leaarg 'dword ' =
 	(ge(t1,9) le(t1,15) asm('lea','eax',leaarg),
 +               asm('mov','eax', getarg(i1)))
-	asm('dvr_')		:(opdone)
+	asm(incode '_')		:(opdone)
 
 g.ngr
 g.atn
@@ -1147,7 +1147,8 @@ g.etx
 g.lnf
 g.sin
 g.sqr
-g.tan	asm('tan_')		:(opdone)
+g.tan	asm(incode '_')
+						:(opdone)
 
 
 g.rno	t1 = 'jno'				:(g.rov1)

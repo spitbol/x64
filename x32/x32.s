@@ -130,15 +130,10 @@
 ;       ldr_ - load real pointed to by eax to ra
 
 	%macro	ldr_ 0
-	atline  -200
         push    dword [eax]                 ; lsh
-;	atline  -201
         pop     dword [reg_ra]
-;	atline  -202
         mov     eax,dword [eax+4]                     ; msh
-;	atline  -203
         mov     dword [reg_ra+4], eax
-	atline  -204
         %endmacro
 
 
@@ -146,7 +141,6 @@
 ;       str_ - store ra in real pointed to by eax
 
 	%macro	str_ 0
-str_:
 
         push    dword [reg_ra]                ; lsh
         pop     dword [eax]
@@ -208,8 +202,6 @@ str_:
 ;       mlr_ - multiply real in ra by real at [eax]
 
         %macro  mlr_	0
-mlr_:
-
         push    ecx                             ; preserve regs for C
         push    edx
         push    dword [reg_ra+4]              ; RA msh
@@ -262,7 +254,6 @@ mlr_:
 ;       ngr_ - negate real in ra
 
         %macro  ngr_	0
-ngr_:
 	cmp	dword [reg_ra], 0
 	jne	%%ngr_1
 	cmp	dword [reg_ra+4], 0

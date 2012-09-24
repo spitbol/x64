@@ -12,7 +12,8 @@ OS=./os
 vpath %.c $(OS)
 
 MUSL=musl
-CC=     tcc/bin/tcc
+#CC=     tcc/bin/tcc
+CC=     tcc
 AS=nasm
 INCDIRS = -Itcc/include -I$(MUSL)/include
 ifeq	($(DEBUG),1)
@@ -65,9 +66,10 @@ SYSOBJS=trace.o sysax.o sysbp.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o 
 	sysst.o sysstdio.o systm.o systty.o sysul.o sysxi.o
 
 # Other C objects:
+# Don't use math.o for now since not supporting math functions
 COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 	doset.o dosys.o fakexit.o float.o flush.o gethost.o getshell.o \
-	int.o lenfnm.o math.o optfile.o osclose.o \
+	int.o lenfnm.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	sioarg.o st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
 	trypath.o wrtaout.o
@@ -101,8 +103,9 @@ VOBJS =	spitbol.o
 OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 
 # main program
-#LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a -L$(MUSL)/lib/libm.a
-LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/ -L$(MUSL)/lib/libm.a -static
+LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a $(MUSL)/lib/libc.a
+#LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/ -L$(MUSL)/lib/libm.a -static
+#LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/ -L$(MUSL)/lib/libm.a -L/usr/lib/i386-linux-gnu/
 spitbol: $(OBJS)
 ifeq	($(DEBUG),0)
  	$(CC) -o spitbol $(LIBS) $(OBJS)  
