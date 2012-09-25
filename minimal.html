@@ -298,13 +298,13 @@ translations are in the <strong>add</strong> <strong>sub</strong>
                          sto  wa,(<strong>XS</strong> )    sto  wa,(<strong>XS</strong> )
        <strong>mov</strong>  (xt)+,<strong>WC</strong>      lod  <strong>WC</strong> ,(<strong>XL</strong> )    lod  <strong>WC</strong> ,(<strong>XL</strong> )
                          <strong>adi</strong>  <strong>XL</strong> ,1       <strong>sbi</strong>  <strong>XL</strong> ,1
-       <strong>add</strong>  =seven,<strong>XS</strong>     <strong>adi</strong>  <strong>XS</strong> ,7       <strong>sbi</strong>  <strong>XS</strong> ,7
+       <strong>add</strong>XS</strong>,=seven     <strong>adi</strong>  <strong>XS</strong> ,7       <strong>sbi</strong>  <strong>XS</strong> ,7
        <strong>mov</strong>  2(xt),wa     lod  wa,2(<strong>XL</strong> )   lod  wa,-2(<strong>XL</strong> )
        <strong>ica</strong>  <strong>XS</strong>            <strong>adi</strong>  <strong>XS</strong> ,1       <strong>sbi</strong>  <strong>XS</strong> ,1
 
        note that forms such as
        <strong>mov</strong>  -(<strong>XS</strong> ),wa
-       <strong>add</strong>  wa,(<strong>XS</strong> )+
+       <strong>add</strong>  (<strong>XS</strong> ),wa
        are illegal, since they assume information storage
        above the stack top.
 </pre>
@@ -627,22 +627,22 @@ format and comment conventions.
 
        <pre>
 
-2.1  <strong>add</strong>   <em>opv</em>, <em>opn</em>      add address
+2.1  <strong>add</strong>   <em>opn</em>,<em>opv</em>      add address <em>opv</em> to <em>opn</em> 
 4.2  <strong>adi</strong>   <em>ops</em>          add integer
 5.3  <strong>adr</strong>   <em>ops</em>          add real
-7.1  <strong>anb</strong>   <em>opw</em>,w        and bit string
-2.17 <strong>aov</strong>   <em>opv</em>, <em>opn</em>,<em>plbl</em> add address, fail if overflow
+7.1  <strong>anb</strong>   <em>w</em>,<em>opw</em>        and bit string
+2.17 <strong>aov</strong>   <em>opv</em>,<em>opn</em>,<em>plbl</em> add address, fail if overflow
 5.16 <strong>atn</strong>               arctangent of real accum
 2.16 <strong>bct</strong>  w,<em>plbl</em>       branch and count
-2.5  <strong>beq</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address equal
+2.5  <strong>beq</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em> branch if address equal
 2.18 <strong>bev</strong>   <em>opn</em>,<em>plbl</em>     branch if address even
-2.8  <strong>bge</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address greater or equl
-2.7  <strong>bgt</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address greater
-2.12 <strong>bhi</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address high
-2.10 <strong>ble</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address less or equal
-2.11 <strong>blo</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address low
-2.9  <strong>blt</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address less than
-2.6  <strong>bne</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em> branch if address not equal
+2.8  <strong>bge</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em> branch if address greater or equl
+2.7  <strong>bgt</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em> branch if address greater
+2.12 <strong>bhi</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em> branch if address high
+2.10 <strong>ble</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em> branch if address less or equal
+2.11 <strong>blo</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em> branch if address low
+2.9  <strong>blt</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em> branch if address less than
+2.6  <strong>bne</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em> branch if address not equal
 2.13 <strong>bnz</strong>   <em>opn</em>,<em>plbl</em>     branch if address non-zero
 2.19 <strong>bod</strong>   <em>opn</em>,<em>plbl</em>     branch if address odd
 1.2  <strong>brn</strong>  <em>plbl</em>         branch unconditional
@@ -699,8 +699,8 @@ format and comment conventions.
 4.10 <strong>iov</strong>  <em>plbl</em>         jump if integer overflow
 8.5  <strong>itr</strong>               convert integer to real
 1.9  <strong>jsr</strong>  <em>pnam</em>         call procedure
-6.3  <strong>lch</strong>  reg, <em>opc</em>      load character
-2.15 <strong>lct</strong>  w, <em>opv</em>        load counter for loop
+6.3  <strong>lch</strong>  reg,<em>opc</em>      load character
+2.15 <strong>lct</strong>  <em>w</em>,<em>opv</em>        load counter for loop
 3.1  <strong>lcp</strong>   <em>reg</em>          load code pointer register
 3.3  <strong>lcw</strong>   <em>reg</em>          load next code word
 4.1  <strong>ldi</strong>   <em>ops</em>          load integer
@@ -709,12 +709,12 @@ format and comment conventions.
 5.20 <strong>lnf</strong>               natural logorithm of real accum
 7.6  <strong>lsh</strong>  w,val        left shift bit string
 7.8  <strong>lsx</strong>  w,(x)        left shift indexed
-9.4  <strong>mcb</strong>               move characterswords backwards
+9.4  <strong>mcb</strong>               move characters/words backwards
 8.4  <strong>mfi</strong> *  <em>opn</em>,<em>plbl</em>    convert (<strong>IA</strong> ) to address value
 4.3  <strong>mli</strong>   <em>ops</em>          multiply integer
 5.5  <strong>mlr</strong>   <em>ops</em>          multiply real
 1.19 <strong>mnz</strong>   <em>opn</em>          move non-zero
-1.1  <strong>mov</strong>   <em>opv</em>, <em>opn</em>      move
+1.1  <strong>mov</strong>   <em>opn</em>,<em>opn</em>     move <em>opn</em> to <em>opv</em>
 8.3  <strong>mti</strong>   <em>opn</em>          move address value to (<strong>IA</strong> )
 9.1  <strong>mvc</strong>               move characters
 9.2  <strong>mvw</strong>               move words
@@ -722,11 +722,11 @@ format and comment conventions.
 4.8  <strong>ngi</strong>               negate integer
 5.9  <strong>ngr</strong>               negate real
 7.9  <strong>nzb</strong>  w,<em>plbl</em>       jump if not all zero bits
-7.2  <strong>orb</strong>  opw,w        or bit strings
-6.1  <strong>plc</strong> * x, <em>opv</em>       prepare to load characters
+7.2  <strong>orb</strong>  o,opw        or bit strings
+6.1  <strong>plc</strong> *<em>x</em>,<em>opv</em>       prepare to load characters
 1.10 <strong>ppm*</strong>  <em>plbl</em>        provide procedure exit parameter
 1.11 <strong>prc</strong>  <em>ptyp</em>,val     define start of procedure
-6.2  <strong>psc</strong> * x, <em>opv</em>       prepare to store characters
+6.2  <strong>psc</strong> *<em>x</em>,<em>opv</em>       prepare to store characters
 5.10 <strong>req</strong>  <em>plbl</em>         jump if real zero
 5.11 <strong>rge</strong>  <em>plbl</em>         jump if real positive or zero
 5.12 <strong>rgt</strong>  <em>plbl</em>         jump if real positive
@@ -742,7 +742,7 @@ format and comment conventions.
 1.22 <strong>rtn</strong>               define start of routine
 4.4  <strong>sbi</strong>   <em>ops</em>          subtract integer
 5.4  <strong>sbr</strong>   <em>ops</em>          subtract reals
-6.4  <strong>sch</strong>  reg, <em>opc</em>      store character
+6.4  <strong>sch</strong>  reg,<em>opc</em>      store character
 3.2  <strong>scp</strong>   <em>reg</em>          store code pointer
 14.1  <strong>sec</strong>               define start of assembly section
 5.21 <strong>sin</strong>               sine of real accum
@@ -751,7 +751,7 @@ format and comment conventions.
 1.21 <strong>sss</strong>  opw          subroutine stack store
 4.7  <strong>sti</strong>   <em>ops</em>          store integer
 5.2  <strong>str</strong>   <em>ops</em>          store real
-2.2  <strong>sub</strong>   <em>opv</em>, <em>opn</em>      subtract address
+2.2  <strong>sub</strong>   <em>opn</em>,<em>opv</em>      subtract address <em>opv</em> from <em>opn</em>
 5.23 <strong>tan</strong>               tangent of real accum
 6.9  <strong>trc</strong>               translate character string
 13.2  <strong>ttl</strong>  text         supply assembly title
@@ -776,15 +776,15 @@ format and comment conventions.
 
 <h3>1-  Basic Instruction Set</h3>
 
-<dl>1.1  <br>mov   <em>opv</em>, <em>opn</em>
+<dl>1.1  <br>mov   <em>opn</em>,<em>opn</em>
 
 <dd>     move one word value
 
    <p>
 
 
-<strong>mov</strong> causes the value of operand <em>opv</em> to be
-set as the new contents of operand location <em>opn</em>. in the case
+<strong>mov</strong> causes the value of operand <em>opn</em> to be
+set as the new contents of operand location <em>opv</em>. in the case
 where <em>opn</em> is not an index register, any value which can
 normally occupy a memory word (including a part of a multiword real or
 integer value) can be transferred using <strong>mov</strong> if the
@@ -1098,7 +1098,7 @@ of control to the error section with the error code in wa.
 
 
 <strong>icv</strong> increments the value of the operand by unity.  it
-is equivalent to <strong>add</strong> =unity, <em>opn</em>
+is equivalent to <strong>add</strong> <em>opn</em>,=unity
 
 <dt>1.17 <strong>dcv</strong>   <em>opn</em>
 
@@ -1107,7 +1107,7 @@ is equivalent to <strong>add</strong> =unity, <em>opn</em>
 
 
 <strong>dcv</strong> decrements the value of the operand by unity.  it
-is equivalent to <strong>sub</strong> =unity, <em>opn</em>
+is equivalent to <strong>sub</strong> <em>opn</em>, =unity
 
 <dt>1.18 <strong>zer</strong>   <em>opn</em>
 
@@ -1180,7 +1180,7 @@ the end of a routine is not marked by an explicit opcode (compare
                              stores the result in  <em>opn</em>. undefined
                              if the result exceeds <strong>cfp$l</strong> .
 
-<dt>2.2  <strong>sub</strong>   <em>opv</em>, <em>opn</em>
+<dt>2.2  <strong>sub</strong>   <em>opn</em>,<em>opv</em>
 
 <dd>
 
@@ -1194,48 +1194,48 @@ subtracts <em>opv</em> from <em>opn</em>. stores the result in
 
 
 
-equivalent to <strong>add</strong> *unity, <em>opn</em>
+equivalent to <strong>add</strong>  <em>opn</em>,*unity
 
 <dt>2.4  <strong>dca</strong>   <em>opn</em>
 
 <dd>
 
 Decrement address in <em>opn</em> equivalent to <strong>sub</strong>
-*unity, <em>opn</em>
+*unity,<em>opn</em>
 
-<dt>2.5  <strong>beq</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
+<dt>2.5  <strong>beq</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 <dd> branch to <em>plbl</em>  <em>opn</em> eq  <em>opv</em>
 
 
-<dt>2.6  <strong>bne</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
+<dt>2.6  <strong>bne</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 
 <dd>branch to <em>plbl</em>  <em>opn</em> ne  <em>opv</em>
 
-<dt>2.7  <strong>bgt</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
+<dt>2.7  <strong>bgt</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 
 <dd> branch to <em>plbl</em>  <em>opn</em> gt  <em>opv</em>
 
-<dt>2.8  <strong>bge</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
+<dt>2.8  <strong>bge</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 
 <dd> branch to <em>plbl</em>  <em>opn</em> ge  <em>opv</em>
 
-<dt>2.9  <strong>blt</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
+<dt>2.9  <strong>blt</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 <dd>branch to <em>plbl</em>  <em>opn</em> lt  <em>opv</em>
 
-<dt>2.10 <strong>ble</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
+<dt>2.10 <strong>ble</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 <dd> branch to <em>plbl</em>  <em>opn</em> le  <em>opv</em>
 
-<dt>2.11 <strong>blo</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
+<dt>2.11 <strong>blo</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 <dd> equivalent to <strong>blt</strong> or ble
 
-<dt>2.12 <strong>bhi</strong>   <em>opn</em>, <em>opv</em>,<em>plbl</em>
+<dt>2.12 <strong>bhi</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 <dd> equivalent to <strong>bgt</strong> or bge
 
@@ -1256,7 +1256,7 @@ inefficient translations in some implementations.
 
 <dd>    equivalent to <strong>beq</strong>  <em>opn</em>,=zeroe,<em>plbl</em>
 
-<dt>2.15 <strong>lct</strong>  w, <em>opv</em>
+<dt>2.15 <strong>lct</strong>  <em>w</em>,<em>opv</em>
 
 <dd>       load counter for bct
 <p>
@@ -1280,7 +1280,7 @@ through to the next instruction. <strong>bct</strong> can only be used
 following an appropriate <strong>lct</strong> instruction.  the value
 in w after execution of <strong>bct</strong> is undefined.
 
-<dt>2.17 <strong>aov</strong>   <em>opv</em>, <em>opn</em>,<em>plbl</em>
+<dt>2.17 <strong>aov</strong>   <em>opv</em>,<em>opn</em>,<em>plbl</em>
 
 <dd> <strong>add</strong> with carry test
 
@@ -1411,7 +1411,7 @@ subtract  <em>ops</em> from int accumulator
 
 <dt>4.6  <strong>rmi</strong>   <em>ops</em>
 
-<dd>         set int accum to mod(intacc, <em>ops</em>)
+<dd>         set int accum to mod(intacc,<em>ops</em>)
 
 <dt>4.7  <strong>sti</strong>   <em>ops</em>
 
@@ -1701,12 +1701,12 @@ equality.
 
 </dl>
 
-<dt>6.1  <strong>plc</strong>  x, <em>opv</em>
+<dt>6.1  <strong>plc</strong>  <em>x</em>,<em>opv</em>
 
 <dd>       prepare ch ptr for <strong>lch</strong> <strong>cmc</strong> mvc,<strong>trc</strong> 
                              <strong>mcb</strong> 
 
-<dt>6.2  <strong>psc</strong>  x, <em>opv</em>
+<dt>6.2  <strong>psc</strong>  <em>x</em>,<em>opv</em>
 
 <dd>       prepare char. ptr for <strong>sch</strong> <strong>mvc</strong> <strong>mcb</strong> 
 
@@ -1727,13 +1727,13 @@ then <pre> <strong>plc</strong> <strong>XL</strong> ,=num01 </pre>
 points to h.
 
 
-<dt>6.3  <strong>lch</strong>  reg, <em>opc</em>
+<dt>6.3  <strong>lch</strong>  <em>reg</em>,<em>opc</em>
 
 <dd>     load character into reg
 
-<dt>6.4  <strong>sch</strong>  reg, <em>opc</em>
+<dt>6.4  <strong>sch</strong>  <em>reg</em>,<em>opc</em>
 
-<dd>     store character from reg
+<dd>     store character from <em>reg</em>
 
 <p>
 
@@ -1789,11 +1789,11 @@ possibility of the sign bit being set may require special action.
 note that restriction 2 above, eases use of these orders in testing
 complete strings for equality, since whole word tests are possible.
 
-<dt>6.6  <strong>ceq</strong>   <em>opw</em>, <em>opw</em>,<em>plbl</em>
+<dt>6.6  <strong>ceq</strong>   <em>opw</em>,<em>opw</em>,<em>plbl</em>
 
 <dd> jump to <em>plbl</em>  <em>opw</em> eq  <em>opw</em>
 
-<dt>6.7  <strong>cne</strong>   <em>opw</em>, <em>opw</em>,<em>plbl</em>
+<dt>6.7  <strong>cne</strong>   <em>opw</em>,<em>opw</em>,<em>plbl</em>
 
 <dd> jump to <em>plbl</em>  <em>opw</em> ne  <em>opw</em>
 
@@ -1862,17 +1862,17 @@ character.  </dl>
 
 <dl>
 
-<dt>7.1  <strong>anb</strong>   <em>opw</em>,w
+<dt>7.1  <strong>anb</strong>   <em>w</em>,<em>opw</em>
 
 <dd>       and bit string values
 
 
-<dt>7.2  <strong>orb</strong>   <em>opw</em>,w
+<dt>7.2  <strong>orb</strong>   <emp>w</em>,<em>opw</em>
 
 <dd>       or bit string values
 
 
-<dt>7.3  <strong>xob</strong>   <em>opw</em>,w
+<dt>7.3  <strong>xob</strong>   <em>w</em>,<em>opw</em>
 
 <dd>       exclusive or bit string values
 
