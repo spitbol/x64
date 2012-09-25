@@ -318,4 +318,3 @@ valtab:
         dd  stmct
 	dd	b_rcl
 	dd	end_min_data
-

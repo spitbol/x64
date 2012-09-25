@@ -697,12 +697,15 @@ rdline.3
    	first = substr(rdline,1,1)
    	comment.block = leq(first, '{') 1
    	comment.block = leq(first, '}') 0
+* output = lpad(nlines,5) ' ' comment.block ' ' rdline
+*  continue on if inside comment block
+	eq(comment.block,1)			:s(rdline)
 	rdline any('*{}')			:f(rdline.4)
 	rdline len(1) . first rem . last = '*' last
 
 *  only print comment if requested.
  
-*	outfile = ident(flcflag,'y') rdline	:f(rdline)
+ 	outfile = ident(flcflag,'y') rdline	:f(rdline)
 
 rdline.out
 	outfile = rdline
