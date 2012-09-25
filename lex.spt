@@ -288,7 +288,7 @@
 *  types and is used for argument checking and processing.
 	optab = tblini(
 . 'flc[w]'
-. 'add[opv,opn]adi[ops]adr[ops]anb[opw,w]aov[opv,opn,plbl]atn[none]'
+. 'add[opn,opv]adi[ops]adr[ops]anb[w,opw]aov[opv,opn,plbl]atn[none]'
 . 'bod[opn,plbl]bev[opn,plbl]'
 . 'bct[w,plbl]beq[opn,opv,plbl]bge[opn,opv,plbl]bgt[opn,opv,plbl]'
 . 'bhi[opn,opv,plbl]ble[opn,opv,plbl]blo[opn,opv,plbl]'
@@ -304,14 +304,14 @@
 . 'igt[plbl]ile[plbl]ilt[plbl]ine[plbl]ino[plbl]inp[ptyp,int inp]'
 . 'inr[none]iov[plbl]itr[none]jsr[pnam]lch[reg,opc]lct[w,opv]lcp[reg]'
 . 'lcw[reg]ldi[ops]ldr[ops]lei[x]lnf[none]lsh[w,val]lsx[w,(x)]mcb[none]'
-. 'mfi[opn,*plbl]mli[ops]mlr[ops]mnz[opn]mov[opv,opn]mti[opn]'
+. 'mfi[opn,*plbl]mli[ops]mlr[ops]mnz[opn]mov[opn,opv]mti[opn]'
 . 'mvc[none]mvw[none]mwb[none]ngi[none]ngr[none]nzb[w,plbl]'
-. 'orb[opw,w]plc[x,*opv]ppm[*plbl]prc[ptyp,val prc]psc[x,*opv]req[plbl]'
+. 'orb[w,opw]plc[x,*opv]ppm[*plbl]prc[ptyp,val prc]psc[x,*opv]req[plbl]'
 . 'rge[plbl]rgt[plbl]rle[plbl]rlt[plbl]rmi[ops]rne[plbl]rno[plbl]'
 . 'rov[plbl]rsh[w,val]rsx[w,(x)]rti[*plbl]rtn[none]sbi[ops]'
 . 'sbr[ops]sch[reg,opc]scp[reg]sec[none sec]sin[none]sqr[none]ssl[opw]sss[opw]'
-. 'sti[ops]str[ops]sub[opv,opn]tan[none]then[then]trc[none]ttl[none ttl]'
-. 'undef[undef]wtb[reg]xob[opw,w]zer[opn]zgb[opn]zrb[w,plbl]' )
+. 'sti[ops]str[ops]sub[opn,opv]tan[none]then[then]trc[none]ttl[none ttl]'
+. 'undef[undef]wtb[reg]xob[w,opw]zer[opn]zgb[opn]zrb[w,plbl]' )
 
 
 *  prctab is table of procedures declared in inp that is used to

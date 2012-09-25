@@ -818,13 +818,13 @@ g.mov
 *  change 'mov (xs)+,a' to 'pop a'
 *  change 'mov a,-(xs)' to 'push a'
 	t1 = i.text(i1); t2 = i.text(i2)
-	ident(t1,'(xl)+')			:s(mov.xlp)
-	ident(t1,'(xt)+')			:s(mov.xtp)
-	ident(t1,'(xs)+')			:s(mov.xsp)
-	ident(t2,'(xr)+')			:s(mov.xrp)
-	ident(t2,'-(xs)')			:s(mov.2)
+	ident(t2,'(xl)+')			:s(mov.xlp)
+	ident(t2,'(xt)+')			:s(mov.xtp)
+	ident(t2,'(xs)+')			:s(mov.xsp)
+	ident(t1,'(xr)+')			:s(mov.xrp)
+	ident(t1,'-(xs)')			:s(mov.2)
 	memmem()
-	asm('mov',getarg(i2),getarg(i1))
+	asm('mov',getarg(i1),getarg(i2))
 						:(opdone)
 mov.xtp
 mov.xlp
@@ -1005,12 +1005,13 @@ g.rtn
 						:(opdone)
 
 g.add	memmem()
-	asm('add',getarg(i2),getarg(i1))	:(opdone)
+	asm('add',getarg(i1),getarg(i2))	:(opdone)
 
 g.sub	memmem()
-	asm('sub',getarg(i2),getarg(i1))	:(opdone)
+	asm('sub',getarg(i1),getarg(i2))	:(opdone)
 
 g.ica   asm('add',getarg(i1),'4')		:(opdone)
+
 g.dca   asm('sub',getarg(i1),'4')		:(opdone)
 
 g.beq
@@ -1298,9 +1299,12 @@ g.trc
 						:(opdone)
 
 
-g.anb   asm('and',getarg(i2),getarg(i1))	:(opdone)
-g.orb   asm('or',getarg(i2),getarg(i1))	:(opdone)
-g.xob   asm('xor',getarg(i2),getarg(i1))	:(opdone)
+g.anb   asm('and',getarg(i1),getarg(i2))	:(opdone)
+
+g.orb   asm('or',getarg(i1),getarg(i2))	:(opdone)
+
+g.xob   asm('xor',getarg(i1),getarg(i2))	:(opdone)
+
 g.cmb   asm('not',getarg(i1))			:(opdone)
 
 g.rsh
