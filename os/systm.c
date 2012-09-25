@@ -38,7 +38,10 @@ zystm()
     struct tms timebuf;
 sprintf(stderr,"enter zystm\n");
 
+/* fixed result for debugging DS 21 Sep 2012 */
     Enter("zystm");
+    SET_IA(1000);
+    return;
     timebuf.tms_utime = 0;	/* be sure to init in case failure      */
     times(&timebuf);		/* get process times                    */
 

@@ -200,6 +200,8 @@ char *argv[];
 	wrterr("Stack memory unavailable.");
 	__exit(1);
     }
+
+    printf("allocated sbrk %u\n",lowsp);
     /*
        Allocate initial increment of dynamic memory.
 
@@ -217,13 +219,17 @@ char *argv[];
     }
 #endif				/* SUN4 */
 
+    basemem = sbrk(0);
+    printf("sbrk(0) %u\n",basemem);
     if ((basemem = (char *) sbrk((uword) memincb)) == (char *) -1) {
 	wrterr("Workspace memory unavailable.");
 	__exit(1);
     }
+    printf("basemem %d  memincb %d\n",basemem, memincb);
     topmem = basemem + memincb;
     maxmem = basemem + databts;
 
+    printf("topmem %u maxmem %u\n",topmem, maxmem);
     /*
        All compiler registers are initially zero, except for XL and XR which
        are set to top and bottom of heap.
