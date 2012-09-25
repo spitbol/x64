@@ -18,14 +18,16 @@ loop
 	line '{'				:s(block)
 	line ? len(7) . p1 len(3) . opc '  ' break(',') . a1 ',' break(' ') . a2 ' ' rem . rest :f(stmt1)
 	ident(optab[opc])			:s(copy)
-*	output = 'old' char(9) line
-*	output = 'new ' char(9) p1 opc '  ' a2 ',' a1 ' ' rest
 	output = p1 opc '  ' a2 ',' a1 ' ' rest
 						:(loop)
 stmt1
 *	look for operation with no trailing comment
 	line ? len(7) . p1 len(3) . opc '  ' break(',') . a1 ',' rem . a2 :f(copy)
-	output = p1 opc '  ' a2 ',' a1 
+	ident(optab[opc])			:s(copy)
+*	output = 'no comment'
+*	output = 'old' char(9) line
+*	output = 'new ' char(9) p1 opc '  ' a2 ',' a1 
+	output = p1 opc '  ' a2 ',' a1 		:(loop)
 block
 *	here in block comment, just copy until closer seen
  	output = line
