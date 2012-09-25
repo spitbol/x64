@@ -111,9 +111,11 @@
 
         %include        "x32/mintype.h"
         %include        "x32/os.inc"
+	%include	"x32/at.s"
 
 ;	extern  tracer
         extern  swcoup
+	extern	atmsg
 	extern	atlin
 	extern	stacksiz
 	extern	lmodstk
@@ -546,7 +548,6 @@ erexit: shr     eax,1           ; divide by 2
         xor     eax,eax         ; in case branch to error cascade
         ret                     ;   take procedure exit via ppm dd
 
-  
 ; define interface routines for calling procedures written in c from
 ; within the minimal code.
  
@@ -723,26 +724,38 @@ erexit: shr     eax,1           ; divide by 2
 startup:
 ;	call	tracer
 ;	call	tracer
+	call	atmsg
+	ati	1
         pop     eax                     ; discard return
         pop     eax                     ; discard dummy1
         pop     eax                     ; discard dummy2
+	ati	2
         call    stackinit               ; initialize MINIMAL stack
+	ati	3
         mov     eax,dword [compsp]              ; get MINIMAL's stack pointer
+	ati	4
         mov     dword [reg_wa],eax                     ; startup stack pointer
+	ati	5
 ;	call	tracer
 
         cld                             ; default to UP direction for string ops
         extern  DFFNC
+	ati	6
         lea     eax,[DFFNC]               ; get dd of PPM offset
+	ati	7
         mov     dword [ppoff],eax               ; save for use later
+	ati	8
         mov     esp,dword [osisp]               ; switch to new c stack
+	ati	9
 ; DEBUG
 	mov	dword [id_call],start_callid
+	ati	10
 ;	start doesn't return, so there is no need to save or restore registers.
 ;	push	start_callid
 ;	callc	minimal_call,4 			 ; load regs, switch stack, start compiler
 	extern	start
 	call	start
+	ati	11
 	add	esp,4
 
 ;
@@ -774,6 +787,7 @@ startup:
 
         global  stackinit
 stackinit:
+	ati	100
         mov     eax,esp
         mov     dword [compsp],eax              ; save as MINIMAL's stack pointer
         sub     eax,dword [stacksiz]     ; end of MINIMAL stack is where C stack will start

@@ -60,6 +60,7 @@ int argc;
 char *argv[];
 
 {
+	atmsg();
     int i;
     /*
        Save command line parameters in global storage, in case they are needed

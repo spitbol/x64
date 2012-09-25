@@ -453,6 +453,7 @@ opnext
 	atlabel = (differ(inlabel) 1, 0)
 *	output = 'defining label for exec. instr' inlabel ' ' incode
 	deflabel()
+	outfile = '      ' 'ati' '   ' nlines
 	eq(atlabel,0)				:s(opnext.2)
 *	here if executing statement with label
 *	issue trace call to atlin
@@ -906,9 +907,9 @@ g.lei	t1 = regmap[i.text(i1)]
 g.jsr	asm('call',getarg(i1))		:(opdone)
 
 g.ppm
-*  last arg is optional. generate two bytes
+*  last arg is optional. generate four bytes
 	ident(i.text(i1))			:s(g.ppm1)
-        pseudo(,'dw',getarg(i1) '-' 'dffnc')        :(opdone)
+        pseudo(,'dd',getarg(i1) '-' 'dffnc')        :(opdone)
 g.ppm1
 *  a ppm with no arguments, which should never be executed, is
 *  translated to err 299,internal logic error: unexpected ppm branch
@@ -971,7 +972,7 @@ g.err
 	errfile =  i.text(i1) ' ' i.text(i2)
 	t1 = getarg(i1)
 g.err1	max.err = gt(t1,max.err) t1
-        pseudo(,'dw','err_' '-' +t1 '-' 'dffnc') :(opdone)
+        pseudo(,'dd','err_' '-' +t1 '-' 'dffnc') :(opdone)
 
 g.erb	errfile =  i.text(i1) ' ' i.text(i2)
 	t1 = getarg(i1)

@@ -1,4 +1,22 @@
 
+;	%include "x32/at.s"
+ 
+;	;macro	at	1
+;; save flags, save registers, put ip on top of stack, and call 'at' procedure
+;	pushf
+;	pushad
+;; there is no explicit instruction to save ip, so just do call that has the
+;; effect of pushing ip onto the stack
+;	push	;1
+;	call	;%at
+;;%at:
+;	call	at
+;; back from at, pop arguments, restore registers, restore flags
+;	pop	ax
+;	pop	ax
+;	popad
+;	popf
+;	;endmacro
 ;----------
 
 ;    Calls to C
