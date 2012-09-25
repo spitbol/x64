@@ -789,12 +789,18 @@ startup:
 stackinit:
 	ati	100
         mov     eax,esp
+	ati	101
         mov     dword [compsp],eax              ; save as MINIMAL's stack pointer
+	ati	102
         sub     eax,dword [stacksiz]     ; end of MINIMAL stack is where C stack will start
+	ati	103
         mov     dword [osisp],eax       ; save new C stack pointer
+	ati	103
         add     eax,4*100               ; 100 words smaller for CHK
+	ati	104
         extern  LOWSPMIN
         mov	dword [LOWSPMIN],eax           ; Set lowspmin
+	ati	105
 	ret
 ;
 ;       mimimal_call -- call minimal function from c
@@ -816,31 +822,54 @@ stackinit:
 minimal_call:
 
         pushad                          	; save all registers for c
+	ati	201
         mov     eax,dword[esp+32+4]          	; get ordinal
+	ati	202
 	mov	dword [id_call], eax
+	ati	203
         mov     ecx,dword[reg_wa]              	; restore registers
+	ati	204
         mov     ebx,dword[reg_wb]
+	ati	205
         mov     edx,dword[reg_wc]              	; (also _reg_ia)
+	ati	206
         mov     edi,dword[reg_xr]
+	ati	207
         mov     esi,dword[reg_xl]
+	ati	208
         mov     ebp,dword[reg_cp]
+	ati	209
 
+	ati	210
         mov     [osisp],esp               ; save osint stack pointer
+	ati	211
         cmp     dword [compsp],0      ; is there a compiler stack?
+	ati	212
         je      min1              ; jump if none yet
+	ati	213
         mov     esp,dword [compsp]              ; switch to compiler stack
+	ati	214
 
 	extern	calltab
+	ati	215
 min1:   callc   [calltab+eax*4],0        ; off to the minimal code
+	ati	216
         mov     esp,dword [osisp]               ; switch to osint stack
-
+	ati	217
         mov     dword [reg_wa],ecx              ; save registers
+	ati	218
         mov     dword [reg_wb],ebx
+	ati	219
         mov     dword [reg_wc],edx
+	ati	220
         mov     dword [reg_xr],edi
+	ati	221
         mov     dword [reg_xl],esi
+	ati	222
         mov     dword [reg_cp],ebp
+	ati	223
         popad
+	ati	224
         retc    4
 
 ;
