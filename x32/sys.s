@@ -107,11 +107,25 @@
 ;
 
 
+	extern	reg_ra
+	extern	atlin
+;	extern	tracer
+	extern	id_call
+
+	extern	at_xl;
+	extern	at_xr;
+	extern	at_xs;
+	extern	at_wa;
+	extern	at_wb;
+	extern	at_wc;
+	extern	at_cp;
+	extern	atip;
+
 %define globals 1
 
+	%include	"x32/x.h"
         %include        "x32/mintype.h"
         %include        "x32/os.inc"
-	%include	"x32/at.s"
 
 ;	extern  tracer
         extern  swcoup
@@ -289,16 +303,16 @@ TTYBUF:	dd   	0     		; type word
 
 	global	dump_regs
 dump_regs:
-	mov	ecx,[dump_wa]
-	mov	ebx,[dump_wb]
-	mov	edx,[dump_wc]
-	mov	edi,[dump_xr]
-	mov	esi,[dump_xl]
-	mov	esp,[dump_xs]
-	mov	ebp,[dump_cp]
-;	mov	cpx,[dump_ra]
-;	mov	xxx,[dump_pc]
-	mov	eax,[dump_w0]
+	mov	ecx,dword [dump_wa]
+	mov	ebx,dword [dump_wb]
+	mov	edx,dword [dump_wc]
+	mov	edi,dword [dump_xr]
+	mov	esi,dword [dump_xl]
+	mov	esp,dword [dump_xs]
+	mov	ebp,dword [dump_cp]
+;	mov	cpx,dword [dump_ra]
+;	mov	xxx,dword [dump_pc]
+	mov	eax,dword [dump_w0]
 	ret
 
 ;
@@ -1131,11 +1145,9 @@ re4:
 
 ;  constants
 ;
-	global	ten
-ten:    dd      10              ; constant 10
-        global  inf
-inf:    dd      0       
-        dd      0x7ff00000      ; double precision infinity
+;;ten:    dd      10              ; constant 10
+;;inf:    dd      0       
+;;        dd      0x7ff00000      ; double precision infinity
 
 	segment		.text
 ;----------

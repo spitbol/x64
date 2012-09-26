@@ -6,8 +6,8 @@
 ;   communication between the two is handled via a set of global variables
 ;   defined as externals below.
 
-;  copyright 1991 robert goldberg and catspaw, inc.
-;  copyright 2012 david shields
+;  copyright 1991 Robert Goldberg and Catspaw, Inc.
+;  copyright 2012 David Shields
 
 ;   set up externals for all the compiler's registers.
 

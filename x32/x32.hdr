@@ -1,23 +1,19 @@
-	%include	"x32/x32.s"
-	%include	"x32/at.s"
-		extern	atlin
-;		extern	tracer
-		extern	id_call
-
-	segment	.data
-
-%define		esi.xl	esi
-%define		edi.xr	edi
-%define		esp.xs	esp
-%define		esi.xt	esi
-%define		ecx.wa	ecx
-%define		ebx.wb	ebx
-%define		edx.wc	edx
-%define		edx.ia	edx
-%define		ebp.cp	ebp
-%define		eax.w0	eax
+	%include	"x32/x.h"
 
 	extern	reg_ra
+	extern	atlin
+;	extern	tracer
+	extern	id_call
+
+	extern	at_xl;
+	extern	at_xr;
+	extern	at_xs;
+	extern	at_wa;
+	extern	at_wb;
+	extern	at_wc;
+	extern	at_cp;
+	extern	atip;
+	segment	.data
 
 direct equ 0
 

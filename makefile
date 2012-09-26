@@ -31,7 +31,7 @@ endif
 
 # Tools for processing Minimal source file.
 LEX=	lex.spt
-TRANS=    $(TARGET)/$(TARGET).spt
+TRANS=    $(TARGET)/x.spt
 ERR=    $(TARGET)/err-$(TARGET).spt
 SPIT=   ./bin/spitbol
 
@@ -75,10 +75,10 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 	trypath.o wrtaout.o
 
 # Assembly language objects common to all versions:
-CAOBJS = errors.o x32/x32.o x32/sys.o
+CAOBJS = errors.o x32/sys.o
 
 # machine-dependent object
-#XAOBJS = x32/x32.s x32/sys.o
+#XAOBJS = x32/sys.o
 #arith.o
 
 # Objects for SPITBOL's HOST function:

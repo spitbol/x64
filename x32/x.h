@@ -1,23 +1,42 @@
 
-;	%include "x32/at.s"
+%define		esi.xl	esi
+%define		edi.xr	edi
+%define		esp.xs	esp
+%define		esi.xt	esi
+%define		ecx.wa	ecx
+%define		ebx.wb	ebx
+%define		edx.wc	edx
+%define		edx.ia	edx
+%define		ebp.cp	ebp
+%define		eax.w0	eax
+
+
+; at is used to trace instruction pointer
+%macro	ati	1
+; save flags, save registers, put ip on top of stack, and call 'at' procedure
+	pushf
+	pushad
+	mov	dword [at_xl],esi
+	mov	dword [at_xr],edi
+	mov	dword [at_xs],esp
+	mov	dword [at_wa],ecx
+	mov	dword [at_wb],ebx
+	mov	dword [at_wc],edx
+	mov	dword [at_cp],ebp
+
+; there is no explicit instruction to save ip, so just do call that has the
+; effect of pushing ip onto the stack
+	push	%1
+	call	%%ati
+%%ati:
+	call	atip
+; back from at, pop arguments, restore registers, restore flags
+	pop	ax
+	pop	ax
+	popad
+	popf
+%endmacro
  
-;	;macro	at	1
-;; save flags, save registers, put ip on top of stack, and call 'at' procedure
-;	pushf
-;	pushad
-;; there is no explicit instruction to save ip, so just do call that has the
-;; effect of pushing ip onto the stack
-;	push	;1
-;	call	;%at
-;;%at:
-;	call	at
-;; back from at, pop arguments, restore registers, restore flags
-;	pop	ax
-;	pop	ax
-;	popad
-;	popf
-;	;endmacro
-;----------
 
 ;    Calls to C
 
@@ -31,21 +50,14 @@
 ;       C function preserves EBP, EBX, ESI, EDI.
 
 
-; call c function.  intel follows standard c conventions, and
-; caller pops arguments.
 
-%macro  callc 2
+
+%macro  Call    2
+        extern     %1
         call    %1
 %if %2
         add     esp,%2
 %endif
-%endmacro
-
-; intel runs in one flat segment.  far calls are the same as near calls.
-
-%macro  callfar 2
-        extern     %1
-        callc   %1,%2
 %endmacro
 
 	extern ten
@@ -61,7 +73,7 @@
 	%macro	cvd_ 0
         xchg    eax,edx         ; ia to eax
         cdq                     ; sign extend
-        idiv    dword [ten]   ; divide by 10. edx = remainder (negative)
+        idiv     dword [ten]   ; divide by 10. edx = remainder (negative)
         neg     edx             ; make remainder positive
         add     dl,0x30         ; convert remainder to ascii ('0')
         mov     ecx,edx         ; return remainder in WA
@@ -94,7 +106,7 @@
 ; 41E00000 00000000 = 2147483648.0
 ; 41E00000 00200000 = 2147483649.0
 	%macro	rti_	0
-        mov     eax, dword [reg_ra+4]   ; RA msh
+        mov     eax,dword [reg_ra+4]   ; RA msh
         btr     eax,31          ; take absolute value, sign bit to carry flag
         jc      %%rti_2     ; jump if negative real
         cmp     eax,0x41E00000  ; test against 2147483648
@@ -103,7 +115,7 @@
 	push    ecx             ; protect against C routine usage.
         push    eax             ; push RA MSH
         push    dword [reg_ra]; push RA LSH
-        callfar f_2_i,8         ; float to integer
+        Call    f_2_i,8         ; float to integer
         xchg    eax,edx         ; return integer in edx (IA)
         pop     ecx             ; restore ecx
         clc
@@ -129,7 +141,7 @@
 
         push    ecx             ; preserve
         push    edx             ; push ia
-        callfar i_2_f,4         ; integer to float
+        Call    i_2_f,4         ; integer to float
 %if fretst0
         fstp    qword [reg_ra]
         pop     ecx             ; restore ecx
@@ -177,7 +189,7 @@
         push    dword [reg_ra]                ; ra lsh
         push    dword [eax+4]               ; arg msh
         push    dword [eax]                 ; arg lsh
-        callfar f_add,16                        ; perform op
+        Call    f_add,16                        ; perform op
 %if fretst0
         fstp    qword [reg_ra]
         pop     edx                             ; restore regs
@@ -202,7 +214,7 @@
         push    dword [reg_ra]                ; RA lsh
         push    dword [eax+4]               ; arg msh
         push    dword [eax]                 ; arg lsh
-        callfar f_sub,16                        ; perform op
+        Call    f_sub,16                        ; perform op
 %if fretst0
         fstp    qword [reg_ra]
         pop     edx                             ; restore regs
@@ -226,7 +238,7 @@
         push    dword [reg_ra]                ; RA lsh
         push    dword [eax+4]               ; arg msh
         push    dword [eax]                 ; arg lsh
-        callfar f_mul,16                        ; perform op
+        Call    f_mul,16                        ; perform op
 %if fretst0
         fstp    qword [reg_ra]
         pop     edx                             ; restore regs
@@ -253,7 +265,7 @@
         push    dword [reg_ra]                ; RA lsh
         push    dword [eax+4]               ; arg msh
         push    dword [eax]                 ; arg lsh
-        callfar f_div,16                        ; perform op
+        Call    f_div,16                        ; perform op
 %if fretst0
         fstp    qword [reg_ra]
         pop     edx                             ; restore regs
@@ -297,7 +309,7 @@
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]                ; RA lsh
 	extern	f_atn
-        callfar f_atn,8                         ; perform op
+        Call    f_atn,8                         ; perform op
 %if fretst0
         fstp    qword [reg_ra]
         pop     edx                             ; restore regs
@@ -321,7 +333,7 @@
         push    edx
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]                ; RA lsh
-        callfar f_chp,8                         ; perform op
+        Call    f_chp,8                         ; perform op
 %if fretst0
         fstp    qword [reg_ra]
         pop     edx                             ; restore regs
@@ -344,7 +356,7 @@
         push    edx
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]                ; RA lsh
-        callfar f_cos,8                         ; perform op
+        Call    f_cos,8                         ; perform op
 %if fretst0
         fstp    qword [reg_ra]
         pop     edx                             ; restore regs
@@ -364,7 +376,7 @@
 	push	edx
         push    dword [reg_ra+4]              ; ra msh
         push    dword [reg_ra]                ; ra lsh
-        callfar f_etx,8                         ; perform op
+        Call    f_etx,8                         ; perform op
 %if fretst0
         fstp    qword [reg_ra]
         pop     edx                             ; restore regs
@@ -385,7 +397,7 @@
         push    edx
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]                ; RA lsh
-        callfar f_lnf,8                         ; perform op
+        Call    f_lnf,8                         ; perform op
 %if fretst0
         fstp    qword [reg_ra]
         pop     edx                             ; restore regs
@@ -406,7 +418,7 @@
         push    edx
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]                ; RA lsh
-        callfar f_sin,8                         ; perform op
+        Call    f_sin,8                         ; perform op
 %if fretst0
         fstp    qword [reg_ra]
         pop     edx                             ; restore regs
@@ -426,7 +438,7 @@
         push    edx
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]                ; RA lsh
-        callfar f_sqr,8                         ; perform op
+        Call    f_sqr,8                         ; perform op
 %if fretst0
         fstp    qword [reg_ra]
         pop     edx                             ; restore regs
@@ -446,7 +458,7 @@
         push    edx
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]                ; RA lsh
-        callfar f_tan,8                         ; perform op
+        Call    f_tan,8                         ; perform op
 %if fretst0
         fstp    qword [reg_ra]
         pop     edx                             ; restore regs
@@ -463,22 +475,22 @@
 
         %macro cpr_	0
 
-        mov     eax, dword [reg_ra+4] ; fetch msh
-        cmp     eax, 0x80000000         ; test msh for -0.0
+        mov     eax,dword [reg_ra+4] ; fetch msh
+        cmp     eax,0x80000000         ; test msh for -0.0
         je      %%cpr050            ; possibly
-        or      eax, eax                ; test msh for +0.0
+        or      eax,eax                ; test msh for +0.0
         jnz     %%cpr100            ; exit if non-zero for cc's set
 %%cpr050: cmp     dword [reg_ra], 0     ; true zero, or denormalized number?
         jz      %%cpr100            ; exit if true zero
-        mov     al, 1
-        cmp     al, 0                   ; positive denormal, set cc
+        mov     al,1
+        cmp     al,0                   ; positive denormal, set cc
 %%cpr100: 
 	%endmacro
 
 ;       ovr_ test for overflow value in ra
 
         %macro ovr_	0
-        mov     ax, word [reg_ra+6]   ; get top 2 bytes
-        and     ax, 0x7ff0              ; check for infinity or nan
-        add     ax, 0x10                ; set/clear overflow accordingly
+        mov     ax,word [reg_ra+6]   ; get top 2 bytes
+        and     ax,0x7ff0              ; check for infinity or nan
+        add     ax,0x10                ; set/clear overflow accordingly
 	%endmacro
