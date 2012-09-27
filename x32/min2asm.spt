@@ -119,7 +119,7 @@
         define('genlab()')
 	define('getarg(iarg,iacc)l1,l2,t1,t2')
 	define('ifreg(iarg)')
-	define('memmem()t1')
+	define('memmem(argnum)t1')
 	define('mov()dst,src,r.dst,r.src')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
@@ -626,7 +626,7 @@ getarg.c.25
 getarg.c.26
 getarg.c.27 getarg = l1				:(return)
 
--stitl memmem()t1
+-stitl memmem(argnum)t1
 memmem
 *  memmem is called for those ops for which both operands may be
 *  in memory, in which case, we generate code to load second operand
@@ -637,8 +637,9 @@ memmem
   eq(ismem[i.type(i2)])				:s(return)
 *  here if memory-memory case, load second argument
 *  outfile = 'MEMMEM ' getarg(i1) ' ' getarg(i2)
-  t1 = getarg(i2)
-  i2 = minarg(8,'w0')
+  t1 = (eq(argnum, 1) getarg(i1), getarg(i2))
+  i2 = eq(argnum,2) minarg(8,'w0')
+  i1 = eq(argnum,1) minarg(8,'w0')
   asm('mov','eax',t1)				:(return)
 
 mov
@@ -661,8 +662,8 @@ mov
 	ident(src,'(xs)+')			:s(mov.xsp)
 	ident(dst,'(xr)+')			:s(mov.xrp)
 	ident(dst,'-(xs)')			:s(mov.mxs)
-*  here if memory to memory
-	memmem()
+*  here if memory to memory. Bring second argument, the source, to register
+	memmem(2)
 	asm('mov',getarg(i1),getarg(i2))
 						:(return)
 mov.xtp
@@ -1003,11 +1004,15 @@ g.rtn
 	
 						:(opdone)
 
-g.add	memmem()
+g.add
+*	bring second argument to register	
+	memmem(2)
 *	outfile = 'ADD ' nlines ' ' getarg(i1) ' ' getarg(i2)
 	asm('add',getarg(i1),getarg(i2))	:(opdone)
 
-g.sub	memmem()
+g.sub	
+*	bring second argument to register	
+	memmem()
 	asm('sub',getarg(i1),getarg(i2))	:(opdone)
 
 g.ica   asm('add',getarg(i1),'4')		:(opdone)
@@ -1026,7 +1031,8 @@ g.bhi
 *  these operators all have two operands, memmem may apply
 *  issue target opcode by table lookup.
 *
-	memmem()
+*	bring first argument to work register
+	memmem(1)
 	t1 = branchtab[incode]
 	asm('cmp',getarg(i1),getarg(i2))
 	asm(branchtab[incode],getarg(i3))
@@ -1257,11 +1263,14 @@ g.csc
 						:(opdone)
 
 g.ceq
-	memmem()
+*	bring first argument to register
+	memmem(1)
 	asm('cmp',getarg(i1),getarg(i2))
 	asm('je',getarg(i3))			:(opdone)
 
-g.cne   memmem()
+g.cne   
+*	bring first argument to register
+	memmem(1)
 	asm('cmp',getarg(i1),getarg(i2))
 	asm('jnz',getarg(i3))			:(opdone)
 
