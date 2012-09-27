@@ -288,7 +288,7 @@
 *  types and is used for argument checking and processing.
 	optab = tblini(
 . 'flc[w]'
-. 'add[opn,opv]adi[ops]adr[ops]anb[w,opw]aov[opv,opn,plbl]atn[none]'
+. 'add[opn,opv]adi[ops]adr[ops]anb[w,opw]aov[opn,opv,plbl]atn[none]'
 . 'bod[opn,plbl]bev[opn,plbl]'
 . 'bct[w,plbl]beq[opn,opv,plbl]bge[opn,opv,plbl]bgt[opn,opv,plbl]'
 . 'bhi[opn,opv,plbl]ble[opn,opv,plbl]blo[opn,opv,plbl]'

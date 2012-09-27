@@ -631,7 +631,7 @@ format and comment conventions.
 4.2  <strong>adi</strong>   <em>ops</em>          add integer
 5.3  <strong>adr</strong>   <em>ops</em>          add real
 7.1  <strong>anb</strong>   <em>w</em>,<em>opw</em>        and bit string
-2.17 <strong>aov</strong>   <em>opv</em>,<em>opn</em>,<em>plbl</em> add address, fail if overflow
+2.17 <strong>aov</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em> add address, fail if overflow
 5.16 <strong>atn</strong>               arctangent of real accum
 2.16 <strong>bct</strong>  w,<em>plbl</em>       branch and count
 2.5  <strong>beq</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em> branch if address equal
@@ -1280,7 +1280,7 @@ through to the next instruction. <strong>bct</strong> can only be used
 following an appropriate <strong>lct</strong> instruction.  the value
 in w after execution of <strong>bct</strong> is undefined.
 
-<dt>2.17 <strong>aov</strong>   <em>opv</em>,<em>opn</em>,<em>plbl</em>
+<dt>2.17 <strong>aov</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 <dd> <strong>add</strong> with carry test
 
