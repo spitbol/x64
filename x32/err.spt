@@ -392,7 +392,7 @@ readerr_end
         outfile = comment
         outfile = name
         outfile = model
-        outfile = include
+*        outfile = include
         outfile = group
         outfile = data
         outfile =

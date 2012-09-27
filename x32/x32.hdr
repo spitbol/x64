@@ -1,4 +1,4 @@
-	%include	"x32/x.h"
+	%include	"x32/x32.h"
 
 	extern	reg_ra
 	extern	atlin
@@ -15,7 +15,9 @@
 	extern	atip;
 	segment	.data
 
-direct equ 0
+ten:	dd	10
+
+%define direct 0
 
 ; define how floating point results are returned from a function
 ; (either in st(0) or in edx:eax.

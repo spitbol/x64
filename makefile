@@ -31,8 +31,8 @@ endif
 
 # Tools for processing Minimal source file.
 LEX=	lex.spt
-TRANS=    $(TARGET)/x.spt
-ERR=    $(TARGET)/err-$(TARGET).spt
+TRANS=    $(TARGET)/min2asm.spt
+ERR=    $(TARGET)/err.spt
 SPIT=   ./bin/spitbol
 
 # Implicit rule for building objects from C files.
@@ -118,7 +118,7 @@ errors.o: errors.s
 spitbol.o: spitbol.s
 
 # SPITBOL Minimal source
-spitbol.s:	spitbol.lex $(VHDRS) $(TRANS) x32/mintype.h
+spitbol.s:	spitbol.lex $(VHDRS) $(TRANS) 
 	  $(SPIT) -u "spitbol:$(TARGET):comments" $(TRANS)
 
 spitbol.lex: $(MINPATH)spitbol.min $(LEX)
@@ -129,9 +129,9 @@ spitbol.err: spitbol.s
 errors.s: $(ERR) spitbol.s
 	   $(SPIT) -1=spitbol.err -2=errors.s $(ERR)
 
-os.o: x32/mintype.h x32/os.inc
+os.o: x32/os.inc
 
-sys.o: x32/mintype.h x32/os.inc
+sys.o: x32/os.inc
 
 # make os objects
 cobjs:	$(COBJS)

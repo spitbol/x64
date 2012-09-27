@@ -1,4 +1,13 @@
 
+; define how data locations in the minimal code are accessed from
+; assembly-language and c routines.  "direct" is non-zero to make
+; the symbols public for direct access, zero to have access via
+; a table of pointers and the minadr procedure.
+;
+%define	direct	0
+
+%define	setreal	0
+
 %define		esi.xl	esi
 %define		edi.xr	edi
 %define		esp.xs	esp
@@ -60,7 +69,6 @@
 %endif
 %endmacro
 
-	extern ten
 ;
 ;-----------
 ;

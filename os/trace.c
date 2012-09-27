@@ -58,11 +58,31 @@ int at_cp;
 void atmsg() {
 	fprintf(stderr,"atmsg\n");
 }
+void 
+rp(char *s, int reg) {
+	if (reg < 1000000 && reg > -1000000) {
+		fprintf(stderr,"%+8d", reg);
+	}
+	else {
+		fprintf(stderr,"%8x", reg);
+	}
+	fprintf(stderr, " %s  ", s);
+}
 void
-atip(unsigned int ip,int line) {
-	fprintf(stderr, "ip=0x%x line %d\n",ip,line);
-	fprintf(stderr,"xl %8x  xr %8x  xs %8x  wa %8x wb %8x wc %8x cp %8x\n",
-	 at_xl,at_xr,at_xs,at_wa,at_wb,at_wc,at_cp);
+atip(unsigned int ip,int line)
+{
+	fprintf(stderr, "\nline %d  ip=0x%x\n",line,ip);
+	rp("esi.xl", at_xl);
+	rp("edi.xr", at_xl);
+	rp("esp.xs", at_xs);
+	rp("ecx.wa", at_wa);
+	fprintf(stderr,"\n");
+	rp("ebx.wa", at_wb);
+	rp("edx.wa", at_wc);
+	rp("ebp.cp", at_cp);
+	fprintf(stderr,"\n");
+
+
 }
 atlin()
 {
@@ -72,14 +92,6 @@ atlin()
 #endif
 }
 
-rp(char * name,uword reg)
-/* print register name and vaue */
-{
-#ifdef TRACE
-	fprintf(stderr," %s %8u ",name, reg);
-	fprintf(stderr," %s %8u ",name, reg);
-#endif
-}
 
 regdump()
 {

@@ -815,9 +815,15 @@ g.mov
 *	lodsw
 *	mov name,eax
 *  need to process memory-memory case
+*  OLD
 *  change 'mov (xs)+,a' to 'pop a'
 *  change 'mov a,-(xs)' to 'push a'
-	t1 = i.text(i1); t2 = i.text(i2)
+*  NEW
+*  change 'mov a,(xs)+' to 'pop a'
+*  change 'mov -(xs),a' to 'push a'
+*  note that operands of 'mov' now reversed
+*  t1 is source, t2 is destination
+	t1 = i.text(i2); t2 = i.text(i1)
 	ident(t2,'(xl)+')			:s(mov.xlp)
 	ident(t2,'(xt)+')			:s(mov.xtp)
 	ident(t2,'(xs)+')			:s(mov.xsp)

@@ -107,7 +107,6 @@
 ;
 
 
-	extern	reg_ra
 	extern	atlin
 ;	extern	tracer
 	extern	id_call
@@ -123,8 +122,7 @@
 
 %define globals 1
 
-	%include	"x32/x.h"
-        %include        "x32/mintype.h"
+	%include	"x32/x32.h"
         %include        "x32/os.inc"
 
 ;	extern  tracer
@@ -358,7 +356,7 @@ pushregs:
         mov     dword [sav_compsp],edi          ;used by popregs
 
 push1:  popad
-        retc    0
+        ret
 
 popregs:
         pushad
@@ -380,7 +378,7 @@ popregs:
         mov     dword [compsp],edi
 
 pop1:   popad
-        retc    0
+        ret 
 
 	global	save_cp
 	global	save_xl
@@ -866,7 +864,7 @@ minimal_call:
 
 	extern	calltab
 	ati	215
-min1:   callc   [calltab+eax*4],0        ; off to the minimal code
+min1:   call   [calltab+eax*4]          ; off to the minimal code
 	ati	216
         mov     esp,dword [osisp]               ; switch to osint stack
 	ati	217
@@ -884,7 +882,7 @@ min1:   callc   [calltab+eax*4],0        ; off to the minimal code
 	ati	223
         popad
 	ati	224
-        retc    4
+        ret
 
 ;
 
@@ -907,7 +905,7 @@ minoff:
 
 ;;        mov     eax,dword [esp+4]             ; get ordinal
  ;;       mov     eax,dword [valtab+eax*4]       ; get dd of Minimal value
-  ;;      retc    4
+  ;;      ret
 
 ;;%endif
 
@@ -984,7 +982,7 @@ get_fp:
 
         mov     eax,dword [reg_xs]      ; Minimal's XS
         add     eax,4           ; pop return from call to SYSBX or SYSXI
-        retc    0               ; done
+        ret			; done
 
 
 ;
@@ -1145,7 +1143,7 @@ re4:
 
 ;  constants
 ;
-;;ten:    dd      10              ; constant 10
+Ten:    dd      10              ; constant 10
 ;;inf:    dd      0       
 ;;        dd      0x7ff00000      ; double precision infinity
 
