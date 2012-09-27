@@ -15398,7 +15398,7 @@ alloc  prc  e,0              entry point
 *      common exit point
 
 aloc1  mov  xr,dnamp         point to next available loc
-       aov  wa,xr,aloc2      point past allocated block
+       aov  xr,wa,aloc2      point past allocated block
        bgt  xr,dname,aloc2   jump if not enough room
        mov  dnamp,xr         store new pointer
        sub  xr,wa            point back to start of allocated bk
@@ -15416,7 +15416,7 @@ alc2a  zer  wb               set no upward move for gbcol
 *      see if room after gbcol or sysmm call
 
 aloc3  mov  xr,dnamp         point to first available loc
-       aov  wa,xr,alc3a      point past new block
+       aov  xr,wa,alc3a      point past new block
        blo  xr,dname,aloc4   jump if there is room now
 
 *      failed again, see if we can get more core
@@ -15531,7 +15531,7 @@ alocs  prc  e,0              entry point
        mov  wc,wa            else copy length
        ctb  wa,scsi_         compute length of scblk in bytes
        mov  xr,dnamp         point to next available location
-       aov  wa,xr,alcs0      point past block
+       aov  xr,wa,alcs0      point past block
        blo  xr,dname,alcs1   jump if there is room
 
 *      insufficient memory
@@ -15571,7 +15571,7 @@ alost  prc  e,0              entry point
 *      merge back here after allocating new chunk
 
 alst1  mov  xr,state         point to current end of area
-       aov  wa,xr,alst2      point beyond proposed block
+       aov  xr,wa,alst2      point beyond proposed block
        bge  xr,dnamb,alst2   jump if overlap with dynamic area
        mov  state,xr         else store new pointer
        sub  xr,wa            point back to start of block

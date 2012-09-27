@@ -1068,7 +1068,7 @@ g.bct2	asm('dec',t1)
 	asm('jnz',t2)				:(opdone)
 g.bct1	asm('loop',t2)			:(opdone)
 
-g.aov   asm('add',getarg(i2),getarg(i1))
+g.aov   asm('add',getarg(i1),getarg(i2))
 	asm('jc',getarg(i3))			:(opdone)
 g.lcp
 *  use cp for code pointer.
