@@ -120,6 +120,7 @@
 	define('getarg(iarg,iacc)l1,l2,t1,t2')
 	define('ifreg(iarg)')
 	define('memmem()t1')
+	define('mov()dst,src,r.dst,r.src')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
 	define('pseudo(aopl,aopc,aop1,aop2,aop3)')
@@ -338,15 +339,6 @@ flgs2
 *  register/memory-location name.
 *
 	regmap = table(30)
-*	regmap['xl'] = 'esi';  regmap['xt'] = 'esi'
-*	regmap['xr'] = 'edi';  regmap['xs'] = 'esp'
-*	regmap['wa'] = 'ecx';  regmap['wb'] = 'ebx'
-*	regmap['wc'] = 'edx';  regmap['ia'] = 'edx'
-*	regmap['cp'] = 'ebp'
-**	w0*is temp register
-*	regmap['w0'] = 'eax'
-
-*  quick reference:
 *	reg.ia = regmap['ia']
 *	reg.wa = regmap['wa']
 *	reg.cp = regmap['cp']
@@ -357,7 +349,7 @@ flgs2
 	regmap['wc'] = 'edx.wc';  regmap['ia'] = 'edx.ia'
 	regmap['cp'] = 'ebp.cp'
 *	w0 is temp register
-	regmap['w0'] = 'eax.w0'
+ 	regmap['w0'] = 'eax.w0'
 
 *  quick reference:
 	reg.ia = regmap['ia']
@@ -637,16 +629,59 @@ getarg.c.27 getarg = l1				:(return)
 -stitl memmem()t1
 memmem
 *  memmem is called for those ops for which both operands may be
-*  in memory, in which case, we generate code to load first operand
-*  to pseudo-register 'w0', and then modify the first argument
+*  in memory, in which case, we generate code to load second operand
+*  to pseudo-register 'w0', and then modify the second argument
 *  to reference this register
 *
   eq(ismem[i.type(i1)])				:s(return)
   eq(ismem[i.type(i2)])				:s(return)
-*  here if memory-memory case, load first argument
-  t1 = getarg(i1)
-  i1 = minarg(8,'w0')
+*  here if memory-memory case, load second argument
+*  outfile = 'MEMMEM ' getarg(i1) ' ' getarg(i2)
+  t1 = getarg(i2)
+  i2 = minarg(8,'w0')
   asm('mov','eax',t1)				:(return)
+
+mov
+   dst = i.text(i1)
+   src = i.text(i2)  
+*  perhaps change mov x,(xr)+ to
+*	mov ax,x; stows
+*
+*  perhaps do  mov (xl)+,wx as
+*	lodsw
+*	xchg ax,tx
+*  and also mov (xl)+,name as
+*	lodsw
+*	mov name,eax
+*  need to process memory-memory case
+*  change 'mov a,(xs)+' to 'pop a'
+*  change 'mov -(xs),a' to 'push a'
+	ident(src,'(xl)+')			:s(mov.xlp)
+	ident(src,'(xt)+')			:s(mov.xtp)
+	ident(src,'(xs)+')			:s(mov.xsp)
+	ident(dst,'(xr)+')			:s(mov.xrp)
+	ident(dst,'-(xs)')			:s(mov.mxs)
+*  here if memory to memory
+	memmem()
+	asm('mov',getarg(i1),getarg(i2))
+						:(return)
+mov.xtp
+mov.xlp
+	ident(src,'(xr)+') asm('movsd')	:s(return)
+	asm('lodsd')
+	ident(src,'-(xs)') asm('push','eax')	:s(return)
+	asm('mov',getarg(i1),'eax')		:(return)
+mov.xsp
+	ident(src,'(xr)+')		:s(mov.xsprp)
+	asm('pop', 'dword ' getarg(i1))	:(return)
+mov.xsprp 
+	asm('pop','eax')
+	asm('stosd')				:(return)
+mov.xrp asm('mov','eax',getarg(i2))
+	asm('stosd')				:(return)
+mov.mxs
+	asm('push',getarg(i2))		:(return)
+
 
 -stitl prcent(n)
 prcent prcent = 'prc$' '+'  (4 * ( n - 1)) :(return)
@@ -805,49 +840,7 @@ g.flc
 						:(opdone)
 
 g.mov
-*  perhaps change mov x,(xr)+ to
-*	mov ax,x; stows
-*
-*  perhaps do  mov (xl)+,wx as
-*	lodsw
-*	xchg ax,tx
-*  and also mov (xl)+,name as
-*	lodsw
-*	mov name,eax
-*  need to process memory-memory case
-*  OLD
-*  change 'mov (xs)+,a' to 'pop a'
-*  change 'mov a,-(xs)' to 'push a'
-*  NEW
-*  change 'mov a,(xs)+' to 'pop a'
-*  change 'mov -(xs),a' to 'push a'
-*  note that operands of 'mov' now reversed
-*  t1 is source, t2 is destination
-	t1 = i.text(i2); t2 = i.text(i1)
-	ident(t2,'(xl)+')			:s(mov.xlp)
-	ident(t2,'(xt)+')			:s(mov.xtp)
-	ident(t2,'(xs)+')			:s(mov.xsp)
-	ident(t1,'(xr)+')			:s(mov.xrp)
-	ident(t1,'-(xs)')			:s(mov.2)
-	memmem()
-	asm('mov',getarg(i1),getarg(i2))
-						:(opdone)
-mov.xtp
-mov.xlp
-	ident(t2,'(xr)+') asm('movsd')	:s(opdone)
-	asm('lodsd')
-	ident(t2,'-(xs)') asm('push','eax')	:s(opdone)
-	asm('mov',getarg(i2),'eax')		:(opdone)
-mov.xsp
-	ident(i.text(i2),'(xr)+')		:s(mov.xsprp)
-	asm('pop', 'dword ' getarg(i2))	:(opdone)
-mov.xsprp 
-	asm('pop','eax')
-	asm('stosd')				:(opdone)
-mov.xrp asm('mov','eax',getarg(i1))
-	asm('stosd')				:(opdone)
-mov.2
-	asm('push',getarg(i1))		:(opdone)
+	mov(i.text(i1),i.text(i2))		:(opdone)
 
 * odd/even tests.  if w reg, use low byte of register.
 g.bod	t1 = getarg(i1)
@@ -1011,6 +1004,7 @@ g.rtn
 						:(opdone)
 
 g.add	memmem()
+*	outfile = 'ADD ' nlines ' ' getarg(i1) ' ' getarg(i2)
 	asm('add',getarg(i1),getarg(i2))	:(opdone)
 
 g.sub	memmem()
