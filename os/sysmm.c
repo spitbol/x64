@@ -89,7 +89,7 @@ char **pp;
 		if (p != topmem) {
 		    wrterr("Internal system error--SYSMM");
     		    Exit("moremem");
-		    __exit(1);
+		    exit(1);
 		}
 		*pp = p;	/* record first allocation */
 	    }

@@ -92,7 +92,7 @@ char *argv[];
     if (i) {
 	inpptr = gblargv;
 	if (getsave(i) != 1)
-	    __exit(1);
+	    exit(1);
 	close(i);
 
 	/* set up things that normally would be retained in the
@@ -109,7 +109,7 @@ char *argv[];
     if (lmodstk) {
 	if (brk((char *) topmem) < 0) {	/* restore topmem to its prior state        */
 	    wrterr("Insufficient memory to load.");
-	    __exit(1);
+	    exit(1);
 	}
 #endif				/* EXECSAVE */
 
@@ -173,7 +173,7 @@ char *argv[];
 #endif				/* RUNTIME */
 
     case -1:			/* error loading save file */
-	__exit(1);
+	exit(1);
     }
 #endif				/* SAVEFILE | EXECSAVE */
 
@@ -189,7 +189,7 @@ char *argv[];
     if ((char *) sbrk(0) == (char *) -1) {
 	wrterr
 	    ("Insufficient memory.  Try smaller -d, -m, or -s command line options.");
-	__exit(1);
+	exit(1);
     }
 
     /*
@@ -199,7 +199,7 @@ char *argv[];
     printf("allocated sbrk lowsp, stacksiz %u %u\n",lowsp,stacksiz);
     if ((lowsp = sbrk((uword) stacksiz)) == (char *) -1) {
 	wrterr("Stack memory unavailable.");
-	__exit(1);
+	exit(1);
     }
 
     printf("allocated sbrk %u\n",lowsp);
@@ -216,7 +216,7 @@ char *argv[];
      */
     if (malloc_init(maxsize)) {
 	wrterr("Malloc initialization failure, contact Catspaw.");
-	__exit(1);
+	exit(1);
     }
 #endif				/* SUN4 */
 
@@ -224,7 +224,7 @@ char *argv[];
     printf("sbrk(0) %u\n",basemem);
     if ((basemem = (char *) sbrk((uword) memincb)) == (char *) -1) {
 	wrterr("Workspace memory unavailable.");
-	__exit(1);
+	exit(1);
     }
     printf("basemem %d  memincb %d\n",basemem, memincb);
     topmem = basemem + memincb;

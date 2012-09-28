@@ -23,7 +23,7 @@ This file is part of Macro SPITBOL.
         zysej - end job
 
         zysej is called to terminate spitbol's execution.  Any open files
-        will be closed before calling __exit.
+        will be closed before calling exit.
 
         Parameters:
             WA - value of &ABEND keyword (always 0)
@@ -87,11 +87,7 @@ zysej()
 #endif				/* EXTFUN */
 
     }
-    /*
-       /   Pass &CODE to function __exit.  Don't call standard exit function,
-       /   because of its association with the stdio package.
-     */
     Exit("zysej");
-    __exit(WB(int));
+    exit(WB(int));
 
 }

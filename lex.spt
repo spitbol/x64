@@ -1,5 +1,5 @@
 
--title lex: phase 1 translation from minimal to lexemes (tokens)
+-title lex:  translate minimal to lexemes (tokens)
 -stitl initialization
 * copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 * copyright 2012 David Shields
@@ -426,12 +426,10 @@
 .		(len(1) | null) rem . filenamo
         output = ident(parms) "need file name (.min)" :s(end)
 
-        output = 'minimal translator, pass 1 ' version
-.		' ' trandate
 	filenami = parms '.min'
-        output = 'input minimal file: ' filenami
+        output = rpad('input minimal file:',24)  filenami
 	filenamo = (ident(filenamo) parms, filenamo) '.lex'
-        output = 'output lexeme file: ' filenamo
+        output = rpad('output lexeme file:',24)	 filenamo
 *   flcflag  = replace( input,'y','y' )
 	flcflag = 'n'
 	flcflag = 'y'
@@ -448,7 +446,6 @@
 *  associate input file to lu1.  if a conditional file was specified,
 *  read it first.
 *
-	output = 'infile name ' filenami ';'
 	input(.infile,1,filenami)	:s(main1)
         output = "cannot open minimal file: " filenami        :(end)
 *
@@ -879,15 +876,14 @@ g.esw2  iffar =					:(dsgen)
 *
 g.end   outstmt(,'end',,,,comment)
 	(ne(level) error("unclosed if conditional clause"))
-        output = '*** translation complete ***'
-        output = nlines ' lines read.'
-        output = nstmts ' statements processed.'
-        output = ntarget ' target code lines produced.'
-        output = nerrors ' errors occurred.'
+        output = rpad('lines read:',24)  		nlines 
+        output = rpad('statements processed:',24) 	nstmts 
+        output = rpad('lines written:', 24) 		ntarget 
+        output = ne(nerrors) nerrors 'errors occurred: '
         output =
 .	  differ(lasterror) 'the last error was in line ' lasterror
 	&code   = ne(nerrors) 2001
-        output = collect() * 5 ' free bytes'
+*        output = collect() * 5 ' free bytes'
 	t = convert(prctab,'array')		:f(g.end.2)
 *  here if procedures declared by inp but not by prc
         output = 'procedures with inp, no prc'
@@ -924,6 +920,5 @@ g.prc
 	differ(t,op1) error('inconsistent inp/prc')
 	prctab[label] =				:(dsgen)
 finis
-	output = '***finis***'
 	&dump = 0
 end

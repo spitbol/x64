@@ -80,5 +80,5 @@ prompt()
 #endif				/* RUNTIME */
 
     Exit("oswrite");
-    __exit(0);
+    exit(0);
 }

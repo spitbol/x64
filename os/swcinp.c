@@ -134,7 +134,7 @@ char **fileptr;
 		write(STDERRFD, cp, length(cp));
 		wrterr("");
     		Exit("swcinp");
-		__exit(1);
+		exit(1);
 	    }
 	}
     } else
@@ -146,7 +146,7 @@ char **fileptr;
 	if (!executing && filecnt) {
 	    wrterr("No END statement found in source file(s).");	/* V1.16 */
     	     Exit("swcinp");
-	    __exit(1);
+	    exit(1);
 	}
 	close(0);
 	clrbuf();

@@ -26,7 +26,7 @@ This file is part of Macro SPITBOL.
 */
 
 
-typedef long word;
+typedef long  word;
 typedef unsigned long uword;
 
 /* Size of integer accumulator */

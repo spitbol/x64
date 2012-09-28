@@ -205,7 +205,7 @@ unsigned int code;
 	    quit(356);
 #else				/* USEQUIT */
 	    wrterr("Fatal error during save file expansion.");
-	    __exit(1);
+	    exit(1);
 #endif				/* USEQUIT */
 	}
     }
