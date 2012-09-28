@@ -80,7 +80,6 @@ atip(unsigned int ip)
 	else if (ati_line == -1) {
 		ati_trace = 1;
 	}
-
 	fprintf(stderr, "\nline %d  ip=0x%x\n",ati_line,ip);
 	rp("esi.xl", at_xl);
 	rp("edi.xr", at_xr);
