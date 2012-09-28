@@ -418,9 +418,9 @@ readerr_end
 
 *  print statistics
 *
-        output = "input message length = " insize
-        output = "output string size = " outsize
-        output = "savings = " insize - outsize
+        output = rpad("input message length:",24)	insize
+        output = rpad("output string size:",24)	 	outsize
+        output = rpad("savings:",24)			insize - outsize
 
 *  clear error indicator for successful return
 *

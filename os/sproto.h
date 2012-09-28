@@ -64,7 +64,6 @@ extern struct scblk *endtp(union block *inBlkPtr);
 extern struct scblk *engts(union block *inBlkPtr);
 extern void exephase(void);
 extern void exeinput(void);
-extern void __exit(int code);
 extern int expand(File_handle fd, unsigned char *startadr, uword size);
 extern word fillbuf(struct ioblk *ioptr);
 extern char *findenv(char *vq, int vn);

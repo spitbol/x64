@@ -125,6 +125,7 @@
 	%include	"x32/x32.h"
         %include        "x32/os.inc"
 
+
 ;	extern  tracer
         extern  swcoup
 	extern	atmsg
@@ -158,14 +159,6 @@
         global  reg_block
         global  reg_size
 
-	global	save_cp
-	global	save_xl
-	global	save_xr
-	global	save_xs
-	global	save_wa
-	global	save_wb
-	global	save_wc
-
 reg_block:
 reg_wa: dd      0     		; Register WA (ECX)
 reg_wb: dd      0     		; Register WB (EBX)
@@ -186,47 +179,8 @@ reg_xs:	dd   	0  		; minimal stack pointer
 r_size equ      $-reg_block
 reg_size        db      r_size
 
-
-
-; locations used to save registers before call to atline
-save_cp:	dd	0
-save_wa:	dd	0
-save_wb:	dd	0
-save_wc:	dd	0
-save_xl:	dd	0
-save_xr:	dd	0
-save_xs:	dd	0
-
-;
 ;	reg_dump is used to retrieve the register values for
 ;	use during debugging
-	global	reg_dump
-
-	global	dump_wa
-	global	dump_wb
-	global	dump_wc
-	global	dump_w0
-	global	dump_xl
-	global	dump_xr
-	global 	dump_xs
-	global	dump_cp
-	global	dump_pp
-
-dump_wa: dd      0     		; Register WA (ECX)
-dump_wb: dd      0     		; Register WB (EBX)
-dump_ia:
-dump_wc: dd   	0     		; Register WC & IA (EDX)
-dump_xl: dd   	0     		; Register XL (ESI)
-dump_xr: dd   	0     		; Register XR (EDI)
-dump_xs:	dd   	0  		; minimal stack pointer
-dump_cp: dd   	0     		; Register CP
-dump_ra: dq   	0e    		; Register RA
-dump_pc: dd	0		; return pc from caller
-dump_pp: dd      0               ; number of bytes of ppms
-dump_w0: dd	0
-
-	global	koshka
-koshka:	dd	-123
 
 ; end of words saved during exit(-3)
 ;
@@ -299,20 +253,20 @@ TTYBUF:	dd   	0     		; type word
         segment .text
 
 
-	global	dump_regs
-dump_regs:
-	mov	ecx,dword [dump_wa]
-	mov	ebx,dword [dump_wb]
-	mov	edx,dword [dump_wc]
-	mov	edi,dword [dump_xr]
-	mov	esi,dword [dump_xl]
-	mov	esp,dword [dump_xs]
-	mov	ebp,dword [dump_cp]
-;	mov	cpx,dword [dump_ra]
-;	mov	xxx,dword [dump_pc]
-	mov	eax,dword [dump_w0]
-	ret
-
+;	global	dump_regs
+;dump_regs:
+;	mov	ecx,dword [dump_wa]
+;	mov	ebx,dword [dump_wb]
+;	mov	edx,dword [dump_wc]
+;	mov	edi,dword [dump_xr]
+;	mov	esi,dword [dump_xl]
+;	mov	esp,dword [dump_xs]
+;	mov	ebp,dword [dump_cp]
+;;	mov	cpx,dword [dump_ra]
+;;	mov	xxx,dword [dump_pc]
+;	mov	eax,dword [dump_w0]
+;	ret
+;
 ;
 ;       save and restore minimal and interface registers on stack.
 ;       used by any routine that needs to call back into the minimal
@@ -734,8 +688,6 @@ erexit: shr     eax,1           ; divide by 2
 
         global  startup
 startup:
-;	call	tracer
-;	call	tracer
 	call	atmsg
 	ati	1
         pop     eax                     ; discard return
@@ -748,7 +700,6 @@ startup:
 	ati	4
         mov     dword [reg_wa],eax                     ; startup stack pointer
 	ati	5
-;	call	tracer
 
         cld                             ; default to UP direction for string ops
         extern  DFFNC
@@ -763,11 +714,8 @@ startup:
 	mov	dword [id_call],start_callid
 	ati	10
 ;	start doesn't return, so there is no need to save or restore registers.
-;	push	start_callid
-;	callc	minimal_call,4 			 ; load regs, switch stack, start compiler
-	extern	start
-	call	start
-	ati	11
+	push	start_callid
+	call 	minimal_call   			 ; load regs, switch stack, start compiler
 	add	esp,4
 
 ;
@@ -853,7 +801,7 @@ minimal_call:
 	ati	209
 
 	ati	210
-        mov     [osisp],esp               ; save osint stack pointer
+        mov     dword [osisp],esp               ; save osint stack pointer
 	ati	211
         cmp     dword [compsp],0      ; is there a compiler stack?
 	ati	212
@@ -890,28 +838,6 @@ min1:   call   [calltab+eax*4]          ; off to the minimal code
 
 ;;%if direct = 0
 ;
-;-----------
-;
-;       minoff -- obtain dd of minimal variable
-;
-;       usage:  extern word *minoff(word valno)
-;
-;       where:
-;         valno is an ordinal defined in osint.h, osint.inc and valtab.
-;
-	extern	valtab
-        global  minoff
-minoff:
-
-;;        mov     eax,dword [esp+4]             ; get ordinal
- ;;       mov     eax,dword [valtab+eax*4]       ; get dd of Minimal value
-  ;;      ret
-
-;;%endif
-
-
-;
-;-----------
 ;
 ;       get_fp  - get c caller's fp (frame pointer)
 ;
@@ -1069,7 +995,8 @@ re3:    cld
         mov     dword [eax],statb               ; V1.34 start of static region to XR
         mov     dword [reg_xr],  eax
 	push	insta_callid
-        callc	minimal_call,4               ; V1.34 initialize static region
+	call	minimal_call
+	add	esp,4
 
 ;
 ;       now pretend that we're executing the following c statement from
@@ -1130,7 +1057,8 @@ re4:
 ;       jump to minimal code to restart a save file.
 
 	push	rstrt_callid
-	callc	minimal_call,4			; no return
+	call 	minimal_call  			; no return
+	add	esp,4
 
 %endif
 

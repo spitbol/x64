@@ -109,7 +109,7 @@ zysbx()
     swcoup(outptr);
 
 #else				/* !RUNTIME */
-    __exit(1);
+    exit(1);
 #endif				/* !RUNTIME */
 
     Exit("zysbx");

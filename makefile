@@ -68,7 +68,7 @@ SYSOBJS=trace.o sysax.o sysbp.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o 
 # Other C objects:
 # Don't use math.o for now since not supporting math functions
 COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
-	doset.o dosys.o fakexit.o float.o flush.o gethost.o getshell.o \
+	doset.o dosys.o float.o flush.o gethost.o getshell.o \
 	int.o lenfnm.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	sioarg.o st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\

@@ -1,4 +1,4 @@
--title mincod: phase 2 translation from minimal lexemes to x86 code
+-title min2asm: translation from minimal lexemes to x86 assembly code
 -stitl description
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
 * copyright 2012 david shields
@@ -266,7 +266,6 @@ is_branch.2
 *  get file name
 *
 	transdate = date()
-        output = 'minimal to x86 translator'
 *
 *  default the parameter string if none present
 *
@@ -370,7 +369,7 @@ flgs2
 	filenami = parms '.lex'
         input(.infile,1,filenami)                     :s(inpulex)
         output = 'cannot open lexeme file: ' filenami  :(end)
-inpulex output = 'input lexeme file: ' filenami
+inpulex 
 *
 *
 *
@@ -381,7 +380,6 @@ inpulex output = 'input lexeme file: ' filenami
 * open file for compilation of minimal err and erb messages
 *
 	filenamo = parms ".s"
-	output = 'output file is ' filenamo
         output(.outfile,2,filenamo '[-m10 -n0]')
         output(.errfile,3, parms ".err")             :s(err_ok)
 	output = 'error file ' parms ".err"
@@ -402,12 +400,17 @@ err_ok
 
 	input(.hdrfile,4,machine '/' machine '.hdr')	:f(nohdr)
 	havehdr = 1
-        output = 'input header file:  machine ' machine '/' machine '.hdr'
+        output = rpad('input header file:',24) machine '/' machine '.hdr'
+	output = rpad('input lexeme file:',24) filenami
+	output = rpad('output assembly file:',24) filenamo
 hdrcopy line = hdrfile				:f(hdrend)
 	ident(line,'end')			:s(nohdr)
 	outfile = line
 	noutlines = noutlines + 1		:(hdrcopy)
 hdrend	havehdr =
+*	outfile = '	section .data'
+*	outfile = '      global atiline'
+*	outfile = 'atline: dd	0'
 nohdr
 *
 *  will have havehdr non-null if more remains to copy out at end.
@@ -445,7 +448,7 @@ opnext
 	atlabel = (differ(inlabel) 1, 0)
 *	output = 'defining label for exec. instr' inlabel ' ' incode
 	deflabel()
-	outfile = '      ' 'ati' '   ' nlines
+ 	outfile = '      ' 'ati' '   ' nlines
 	eq(atlabel,0)				:s(opnext.2)
 *	here if executing statement with label
 *	issue trace call to atlin
@@ -1669,25 +1672,22 @@ g.end.2
 
 g.end.3 
 g.end.4 
-	output = 'output assembly file: ' filenamo
 	host(1,"touch " parms ".err")
-        output = '*** translation complete ***'
-        output = nlines ' lines read.'
-        output = nstmts ' statements processed.'
-        output = ntarget ' target code lines produced.'
-        output = noptim1 ' "or" optimizations performed.'
-        output = max.err ' maximum err/erb number.'
-        output = prc.count1 ' prc count.'
+        output = rpad('lines read:',24)		 	nlines 
+        output = rpad('minimal statements:',24)	 nstmts 
+        output = rpad('assembly lines written:',24)	 ntarget 
+        output = ne(noptim1) ' "or" optimizations:' noptim1 
+        output = rpad('maximum err/erb number',24)	 max.err 
+        output = rpad('prc count:',24)			 prc.count1 
         output = gt(prc.count,prc.count1)
 .	  'differing counts for n-procedures:'
 .	  ' inp ' prc.count1 ' prc ' prc.count
-        output = nerrors ' errors occurred.'
-        output =
-	errfile = '* ' max.err ' maximum err/erb number'
-	errfile  = '* ' prc.count ' prc count'
+        output = ne(nerrors) 'errors detected: '  nerrors 
+	errfile = '* ' max.err ' maximum err/erb number: '
+	errfile  = '* ' prc.count ' prc count: '
 .		differ(lasterror) 'the last error was in line ' lasterror
 	&code   = ne(nerrors) 2001
-        output = collect() ' free words'
+*        output = collect() ' free words'
 	labtab =
 	&dump = 0
 	:(end)

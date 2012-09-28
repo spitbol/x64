@@ -19,6 +19,7 @@
 %define		ebp.cp	ebp
 %define		eax.w0	eax
 
+	extern	atiline
 
 ; at is used to trace instruction pointer
 %macro	ati	1
@@ -35,7 +36,7 @@
 
 ; there is no explicit instruction to save ip, so just do call that has the
 ; effect of pushing ip onto the stack
-	push	%1
+	mov	dword [atiline],%1
 	call	%%ati
 %%ati:
 	call	atip

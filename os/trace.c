@@ -39,12 +39,14 @@ This file is part of Macro SPITBOL.
 #include <stdio.h>
 
 int id_call;
-extern int koshka;
 extern int nlines;
 extern int id_call;
 extern int compsp;
 extern int osisp;
 extern int LOWSPMIN;
+
+/* set ati_trace to zero to disable tracing, to -1 to resume it. */
+int ati_trace = 1;
 
 int at_xl;
 int at_xr;
@@ -64,23 +66,48 @@ rp(char *s, int reg) {
 		fprintf(stderr,"%+8d", reg);
 	}
 	else {
-		fprintf(stderr,"%8x", reg);
+		fprintf(stderr,"%08x", reg);
 	}
 	fprintf(stderr, " %s  ", s);
 }
+int atiline;
 void
-atip(unsigned int ip,int line)
+atip(unsigned int ip)
 {
-	fprintf(stderr, "\nline %d  ip=0x%x\n",line,ip);
+	if (atiline == 0) {
+		return;
+	}
+	else if (atiline == -1) {
+		ati_trace = 1;
+	}
+
+	fprintf(stderr, "\nline %d  ip=0x%x\n",atiline,ip);
 	rp("esi.xl", at_xl);
-	rp("edi.xr", at_xl);
+	rp("edi.xr", at_xr);
 	rp("esp.xs", at_xs);
-	rp("ecx.wa", at_wa);
 	fprintf(stderr,"\n");
-	rp("ebx.wa", at_wb);
-	rp("edx.wa", at_wc);
+	rp("reg_xl", reg_xl);
+	rp("reg_xr", reg_xr);
+	rp("reg_xs", reg_xs);
+	fprintf(stderr,"\n");
+	rp("ecx.wa", at_wa);
+	rp("ebx.wb", at_wb);
+	rp("edx.wc", at_wc);
 	rp("ebp.cp", at_cp);
 	fprintf(stderr,"\n");
+	rp("reg_wa", reg_wa);
+	rp("reg_wb", reg_wb);
+	rp("reg_wc", reg_wc);
+	rp("ebp.cp", reg_cp);
+	fprintf(stderr,"\nset:");
+	if (reg_xl != 0) fprintf(stderr, " xl");
+	if (reg_xr != 0) fprintf(stderr, " xr");
+	if (reg_xs != 0) fprintf(stderr, " xs");
+	if (reg_wa != 0) fprintf(stderr, " wa");
+	if (reg_wb != 0) fprintf(stderr, " wb");
+	if (reg_wc != 0) fprintf(stderr, " wc");
+	if (reg_cp != 0) fprintf(stderr, " cp");
+	fprintf(stderr,"\n\n");
 
 
 }
@@ -97,7 +124,6 @@ regdump()
 {
 #ifdef TRACE
 	fprintf(stderr," nlines %d\n",nlines);
-	fprintf(stderr, "koshka %d\n",koshka);
 	fprintf(stderr," %s %10u ","CP", CP(int));
 	fprintf(stderr," %s %10u ","IA", IA(int));
 	fprintf(stderr,"\n");
