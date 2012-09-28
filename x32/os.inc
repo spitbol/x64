@@ -43,6 +43,7 @@
 	extern		reg_wa
 	extern		reg_wb
 	extern		reg_wc
+	extern		reg_w0
 	extern		reg_xr
 	extern		reg_xl
 	extern		reg_xs

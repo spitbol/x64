@@ -11,6 +11,7 @@
 	extern	at_wa;
 	extern	at_wb;
 	extern	at_wc;
+	extern	at_w0;
 	extern	at_cp;
 	extern	atip;
 	segment	.data

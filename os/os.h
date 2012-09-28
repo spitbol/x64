@@ -30,7 +30,7 @@ This file is part of Macro SPITBOL.
 #define MK_MP(minp,type) ((type)(minp))
 #define MP_OFF(cp,type) ((type)cp)
 
-extern word reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs;
+extern word reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs,reg_w0;
 extern IATYPE reg_ia;
 extern double reg_ra;
 

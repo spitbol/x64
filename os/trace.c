@@ -54,6 +54,7 @@ int at_xs;
 int at_wa;
 int at_wb;
 int at_wc;
+int at_w0;
 int at_cp;
 #undef NOTRACE
 #define TRACE
@@ -61,12 +62,12 @@ void atmsg() {
 	fprintf(stderr,"atmsg\n");
 }
 void 
-rp(char *s, int reg) {
+rp(char *s, long reg) {
 	if (reg < 1000000 && reg > -1000000) {
 		fprintf(stderr,"%+8d", reg);
 	}
 	else {
-		fprintf(stderr,"%08x", reg);
+		fprintf(stderr,"%8x", reg);
 	}
 	fprintf(stderr, " %s  ", s);
 }
@@ -84,6 +85,7 @@ atip(unsigned int ip)
 	rp("esi.xl", at_xl);
 	rp("edi.xr", at_xr);
 	rp("esp.xs", at_xs);
+	fprintf(stderr, " compsp %8x",compsp);
 	fprintf(stderr,"\n");
 	rp("reg_xl", reg_xl);
 	rp("reg_xr", reg_xr);
@@ -92,11 +94,13 @@ atip(unsigned int ip)
 	rp("ecx.wa", at_wa);
 	rp("ebx.wb", at_wb);
 	rp("edx.wc", at_wc);
+	rp("eax.w0", at_w0);
 	rp("ebp.cp", at_cp);
 	fprintf(stderr,"\n");
 	rp("reg_wa", reg_wa);
 	rp("reg_wb", reg_wb);
 	rp("reg_wc", reg_wc);
+	rp("reg_w0", reg_w0);
 	rp("ebp.cp", reg_cp);
 	fprintf(stderr,"\nset:");
 	if (reg_xl != 0) fprintf(stderr, " xl");

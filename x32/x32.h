@@ -33,6 +33,7 @@
 	mov	dword [at_wb],ebx
 	mov	dword [at_wc],edx
 	mov	dword [at_cp],ebp
+	mov	dword [at_w0],eax
 
 ; there is no explicit instruction to save ip, so just do call that has the
 ; effect of pushing ip onto the stack
