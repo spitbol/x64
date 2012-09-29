@@ -36,12 +36,7 @@ zystm()
        /   to get 6000ths of second, divide by 6 to get 100ths
      */
     struct tms timebuf;
-sprintf(stderr,"enter zystm\n");
-
-/* fixed result for debugging DS 21 Sep 2012 */
     Enter("zystm");
-    SET_IA(1000);
-    return;
     timebuf.tms_utime = 0;	/* be sure to init in case failure      */
     times(&timebuf);		/* get process times                    */
 

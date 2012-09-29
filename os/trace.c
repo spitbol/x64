@@ -42,8 +42,6 @@ int id_call;
 extern int nlines;
 extern int id_call;
 extern int compsp;
-extern int osisp;
-extern int LOWSPMIN;
 
 /* set ati_trace to zero to disable tracing, to -1 to resume it. */
 int ati_trace = 1;
@@ -150,8 +148,6 @@ regdump()
 	fprintf(stderr," %s %10lX ","XS", XS(int));
 	fprintf(stderr,"\n");
 	fprintf(stderr,"compsp %10u",compsp);
-	fprintf(stderr,"  osisp %10u", osisp);
-	fprintf(stderr," LOWSPMIN %u\n", LOWSPMIN);
 	/*tracer();*/
 #endif
 }
@@ -167,14 +163,15 @@ void At(char * text)
 	Trace("At", text);
 #endif
 }
-void Enter(char * text) {
-#ifdef TRACE
+void 
+Enter(char * text) {
+#ifdef TRACE_ENTER
 	Trace("Enter", text);
 #endif
 }
 void Exit(char * text) 
 {
-#ifdef TRACE
+#ifdef TRACE_ENTER
 	Trace("Exit", text);
 #endif
 }
@@ -187,8 +184,5 @@ void tracer()
 	fprintf(stderr, "Tracer \n");
 	fprintf(stderr, "nlines %8d " , nlines);
 	fprintf(stderr, "call_id %5d ", id_call);
-	fprintf(stderr,"compsp %10u",compsp);
-	fprintf(stderr,"  osisp %10u", osisp);
-	fprintf(stderr," LOWSPMIN %u\n", LOWSPMIN);
 }
 #endif

@@ -60,7 +60,6 @@ int argc;
 char *argv[];
 
 {
-	atmsg();
     int i;
     /*
        Save command line parameters in global storage, in case they are needed
@@ -196,7 +195,7 @@ char *argv[];
        Allocate stack
      */
 	At("allocate stack");
-    printf("allocated sbrk lowsp, stacksiz %u %u\n",lowsp,stacksiz);
+    printf("allocated sbrk lowsp, stacksiz %8x %8x\n",lowsp,stacksiz);
     if ((lowsp = sbrk((uword) stacksiz)) == (char *) -1) {
 	wrterr("Stack memory unavailable.");
 	exit(1);
@@ -226,40 +225,15 @@ char *argv[];
 	wrterr("Workspace memory unavailable.");
 	exit(1);
     }
-    printf("basemem %d  memincb %d\n",basemem, memincb);
+    printf("basemem %8x  memincb %8x\n",basemem, memincb);
     topmem = basemem + memincb;
     maxmem = basemem + databts;
 
-    printf("topmem %u maxmem %u\n",topmem, maxmem);
-    /*
-       All compiler registers are initially zero, except for XL and XR which
-       are set to top and bottom of heap.
-     */
-    SET_CP(0);
-    SET_IA(0);
-    SET_WA(0);
-    SET_WB(0);
-    SET_WC(0);
-    SET_XR(basemem);
-/*
-	fprintf(stderr,"startup XR %8u  ",basemem);
-	fprintf(stderr,"startup XR %8u  ",XR(int));
-*/
-    SET_XL(topmem - sizeof(word));
-/*
-	fprintf(stderr,"startup XL %8u"  ,topmem - sizeof(word));
-	fprintf(stderr,"startup XL %8u",XL(int));
-	fprintf(stderr,"\n");
-*/
-
-    /*
-       Startup compiler.
-     */
-/*
-	At("starting compiler");
-	tracer();
-*/
-    startup((char *) 0L, lowsp);
+    printf("topmem %8x maxmem %8x\n",topmem, maxmem);
+    reg_xr = basemem;
+    reg_xl =  topmem - sizeof(word);
+    zystm();
+    startup();
 
 	At("back from compiler");
 

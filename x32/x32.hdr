@@ -1,5 +1,6 @@
 	%include	"x32/x32.h"
 
+	extern	stack_low
 	extern	reg_ra
 	extern	atlin
 ;	extern	tracer
@@ -88,7 +89,7 @@ nlines	dd	0
 	global	KVSTN
 %define	kvstn	KVSTN
 	global	LOWSPMIN
-%define	lowspmin	LOWSPMIN
+;%define	lowspmin	LOWSPMIN
 	global	MXLEN
 %define	mxlen	MXLEN
 	global	PMHBS
@@ -294,7 +295,8 @@ valtab:
 ;%if 	direct = 0
 	dd  	typet
 ;%endif
-	dd	lowspmin
+	dd	0 ; lowspmin substitute
+;	dd	lowspmin
 	dd	flprt
 	dd	flptr
 	dd	gtcef

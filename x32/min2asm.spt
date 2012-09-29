@@ -448,7 +448,7 @@ opnext
 	atlabel = (differ(inlabel) 1, 0)
 *	output = 'defining label for exec. instr' inlabel ' ' incode
 	deflabel()
- 	outfile = '      ' 'ati' '   ' nlines
+* 	outfile = '      ' 'ati' '   ' nlines
 	eq(atlabel,0)				:s(opnext.2)
 *	here if executing statement with label
 *	issue trace call to atlin
@@ -1472,7 +1472,9 @@ g.mcb
 	asm('rep','movsb')
 	asm('cld')				:(opdone)
 
-g.chk   asm('cmp','esp','lowspmin')
+g.chk   
+*	asm('cmp','esp'lowspmin')
+	asm('cmp','esp','dword [stack_low]')
 	asm('jb','sec06')			:(opdone)
 
 decend
@@ -1565,8 +1567,13 @@ g.sec.5
         pseudo(,'global','esec04')
         pseudo('esec04')
         (gt(prc.count1) pseudo('prc$','times', prc.count1 ' dd 0'))
-        pseudo(,'global','lowspmin')
-        pseudo('lowspmin','dd','0')
+*       pseudo(,'global','lowspmin')
+*       pseudo('lowspmin','dd','0')
+	pseudo(,'global','stack.low')
+	pseudo(,'global','stack.top')
+	pseudo('stack.low','dd','0')
+	pseudo('','times 500 dd','0')
+	pseudo('stack.top','dd','0')
         pseudo(,'global','end_min_data')
         pseudo('end_min_data')
         pseudo(,'segment','.text')
