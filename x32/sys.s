@@ -349,6 +349,131 @@ startup:
 ;
 ; define interface routines for calling procedures written in c from
 ; within the minimal code.
+
+;-----------
+;
+;       ccaller is called by the os interface routines to 
+;	call the real c os interface function.
+;
+;       general calling sequence is
+;
+;               call    ccaller
+;               dd      dd_of_c_function
+;               db      2*number_of_exit_points
+;
+;       control is never returned to a interface routine.  instead, control
+;       is returned to the compiler (the caller of the interface routine).
+;
+;       the c function that is called must always return an integer
+;       indicating the procedure exit to take or that a normal return
+;       is to be performed.
+;
+;               c function      interpretation
+;               return value
+;               ------------    -------------------------------------------
+;                    <0         do normal return to instruction past
+;                               last procedure exit (distance passed
+;                               in by dummy routine and saved on stack)
+;                     0         take procedure exit 1
+;                     4         take procedure exit 2
+;                     8         take procedure exit 3
+;                    ...        ...
+;
+;ccaller:
+
+;       (1) save registers in global variables
+;
+ccaller:        
+	ati	100
+	mov     dword [reg_wa],ecx              ; save registers
+	ati	101
+        mov     dword [reg_wb],ebx
+	ati	102
+        mov     dword [reg_wc],edx              ; (also _reg_ia)
+	ati	103
+        mov     dword [reg_xr],edi
+	ati	104
+        mov     dword [reg_xl],esi
+	ati	105
+        mov     dword [reg_cp],ebp              ; Needed in image saved by sysxi
+	ati	106
+
+;       (2) get pointer to arg list
+;
+        pop     esi                     	; point to arg list
+;
+;       (3) fetch dd of c function, fetch offset to  instruction
+;           past last procedure exit, and call c function.
+;
+        cs                              	; cs segment override
+        lodsd                           	; point to c function entry point
+	ati	107
+        movzx   ebx,byte [esi]   		; save normal exit adjustment
+;
+	ati	108
+        mov     dword [reg_pp],ebx              ; in memory
+        pop     dword [reg_pc]                  ; save return pc past "call sysxx"
+	ati	109
+;
+;       (3a) save compiler stack and switch to osint stack
+;
+;        mov     dword [compsp],esp              ; save compiler's stack pointer
+;        mov     esp,osisp               	; load osint's stack pointer
+;
+;       (3b) make call to osint
+;
+	ati	110
+        call    eax                     	; call c interface function
+;
+;       (4) restore registers after c function returns.
+;
+	global	cc1
+
+cc1:    
+;	mov     dword [osisp], esp              ; save OSINT's stack pointer
+;        mov     esp, dword [compsp]             ; restore compiler's stack pointer
+;       mov     esp,compsp             ; restore compiler's stack pointer
+	ati	111
+        mov     ecx, dword [reg_wa]             ; restore registers
+	ati	112
+        mov     ebx, dword [reg_wb]
+	ati	113
+        mov     edx, dword [reg_wc]             ; (also reg_ia)
+	ati	114
+        mov     edi, dword [reg_xr]
+	ati	115
+        mov     esi, dword [reg_xl]
+	ati	116
+        mov     ebp, dword [reg_cp]
+	ati	117
+
+        cld
+;
+;       (5) based on returned value from c function (in eax) either do a normal
+;           return or take a procedure exit.
+;
+	ati	110
+        or      eax,eax         ; test if normal return ...
+	ati	110
+        jns     erexit    ; j. if >= 0 (take numbered exit)
+	ati	110
+        mov     eax,dword [reg_pc]
+	ati	110
+        add     eax,dword [reg_pp]      ; point to instruction following exits
+	ati	110
+        jmp     eax             ; bypass ppm exits
+	ati	110
+
+;                               ; else (take procedure exit n)
+erexit: shr     eax,1           ; divide by 2
+        add     eax,dword [reg_pc]      ;   get to dd of exit offset
+        movsx   eax,word [eax]
+        add     eax,ppoff       ; bias to fit in 16-bit word
+        push    eax
+        xor     eax,eax         ; in case branch to error cascade
+        ret                     ;   take procedure exit via ppm dd
+
+
  
 	%macro	mtoc	2
 	global	%1
@@ -517,105 +642,6 @@ startup:
 	mov	[reg_xs],esp
 	call	ccaller
 	db	4
-
-
-;-----------
-;
-;       ccaller is called by the os interface routines to 
-;	call the real c os interface function.
-;
-;       general calling sequence is
-;
-;               call    ccaller
-;               dd      dd_of_c_function
-;               db      2*number_of_exit_points
-;
-;       control is never returned to a interface routine.  instead, control
-;       is returned to the compiler (the caller of the interface routine).
-;
-;       the c function that is called must always return an integer
-;       indicating the procedure exit to take or that a normal return
-;       is to be performed.
-;
-;               c function      interpretation
-;               return value
-;               ------------    -------------------------------------------
-;                    <0         do normal return to instruction past
-;                               last procedure exit (distance passed
-;                               in by dummy routine and saved on stack)
-;                     0         take procedure exit 1
-;                     4         take procedure exit 2
-;                     8         take procedure exit 3
-;                    ...        ...
-;
-;ccaller:
-
-;       (1) save registers in global variables
-;
-ccaller:        mov     dword [reg_wa],ecx              ; save registers
-        mov     dword [reg_wb],ebx
-        mov     dword [reg_wc],edx              ; (also _reg_ia)
-        mov     dword [reg_xr],edi
-        mov     dword [reg_xl],esi
-        mov     dword [reg_cp],ebp              ; Needed in image saved by sysxi
-
-;       (2) get pointer to arg list
-;
-        pop     esi                     	; point to arg list
-;
-;       (3) fetch dd of c function, fetch offset to  instruction
-;           past last procedure exit, and call c function.
-;
-        cs                              	; cs segment override
-        lodsd                           	; point to c function entry point
-        movzx   ebx,byte [esi]   		; save normal exit adjustment
-;
-        mov     dword [reg_pp],ebx              ; in memory
-        pop     dword [reg_pc]                  ; save return pc past "call sysxx"
-;
-;       (3a) save compiler stack and switch to osint stack
-;
-;        mov     dword [compsp],esp              ; save compiler's stack pointer
-;        mov     esp,osisp               	; load osint's stack pointer
-;
-;       (3b) make call to osint
-;
-        call    eax                     	; call c interface function
-;
-;       (4) restore registers after c function returns.
-;
-	global	cc1
-
-cc1:    
-;	mov     dword [osisp], esp              ; save OSINT's stack pointer
-;        mov     esp, dword [compsp]             ; restore compiler's stack pointer
-;       mov     esp,compsp             ; restore compiler's stack pointer
-        mov     ecx, dword [reg_wa]             ; restore registers
-        mov     ebx, dword [reg_wb]
-        mov     edx, dword [reg_wc]             ; (also reg_ia)
-        mov     edi, dword [reg_xr]
-        mov     esi, dword [reg_xl]
-        mov     ebp, dword [reg_cp]
-
-        cld
-;
-;       (5) based on returned value from c function (in eax) either do a normal
-;           return or take a procedure exit.
-;
-        or      eax,eax         ; test if normal return ...
-        jns     erexit    ; j. if >= 0 (take numbered exit)
-        mov     eax,dword [reg_pc]
-        add     eax,dword [reg_pp]      ; point to instruction following exits
-        jmp     eax             ; bypass ppm exits
-
-;                               ; else (take procedure exit n)
-erexit: shr     eax,1           ; divide by 2
-        add     eax,dword [reg_pc]      ;   get to dd of exit offset
-        movsx   eax,word [eax]
-        add     eax,ppoff       ; bias to fit in 16-bit word
-        push    eax
-        xor     eax,eax         ; in case branch to error cascade
-        ret                     ;   take procedure exit via ppm dd
 
 
 

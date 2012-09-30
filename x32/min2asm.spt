@@ -912,6 +912,7 @@ g.jsr	asm('call',getarg(i1))		:(opdone)
 g.ppm
 *  last arg is optional. generate four bytes
 	ident(i.text(i1))			:s(g.ppm1)
+	count.ppm = count.ppm + 1
         pseudo(,'dd',getarg(i1) '-' 'dffnc')        :(opdone)
 g.ppm1
 *  a ppm with no arguments, which should never be executed, is
@@ -972,12 +973,15 @@ g.err
 *	jmp	sec07
 *  is defined elsewhere.
 *  remove '0' prefix from t1 so it's not perceived as an octal constant by assembler.
+	count.err = count.err + 1
 	errfile =  i.text(i1) ' ' i.text(i2)
 	t1 = getarg(i1)
 g.err1	max.err = gt(t1,max.err) t1
         pseudo(,'dd','err_' '-' +t1 '-' 'dffnc') :(opdone)
 
-g.erb	errfile =  i.text(i1) ' ' i.text(i2)
+g.erb
+	count.erb = count.erb + 1	
+	errfile =  i.text(i1) ' ' i.text(i2)
 	t1 = getarg(i1)
 	max.err = gt(t1,max.err) t1
 	asm('call','err_' (lt(t1,256) '0','1'))
@@ -1687,6 +1691,8 @@ g.end.4
         output = rpad('maximum err/erb number',24)	 max.err 
         output = rpad('prc count:',24)			 prc.count1 
         output = gt(prc.count,prc.count1)
+	output = rpad('erb,err,ppm counts:',24) ' ' count.err ' ' count.err 
++		' ' count.ppm
 .	  'differing counts for n-procedures:'
 .	  ' inp ' prc.count1 ' prc ' prc.count
         output = ne(nerrors) 'errors detected: '  nerrors 
