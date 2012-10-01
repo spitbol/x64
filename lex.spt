@@ -299,7 +299,7 @@
 . 'ctw[w,val]cvd[none]cvm[plbl]dac[addr]dbc[val]dca[opn]dcv[opn]'
 . 'def[def]dic[integer]drc[real]dtc[dtext]dvi[ops]dvr[ops]ejc[none]'
 . 'else[else]end[none end]enp[none]ent[*val ent]equ[eqop equ]'
-. 'erb[int,text erb]err[int,text err]esw[none esw]etx[none]exi[*int]exp[none]fi[fi]'
+. 'erb[int,text erb]err[int,text err]esw[none esw]etx[none]exi[*int]exp[int]fi[fi]'
 . 'ica[opn]icp[none]icv[opn]ieq[plbl]if[if]iff[val,plbl iff]ige[plbl]'
 . 'igt[plbl]ile[plbl]ilt[plbl]ine[plbl]ino[plbl]inp[ptyp,int inp]'
 . 'inr[none]iov[plbl]itr[none]jsr[pnam]lch[reg,opc]lct[w,opv]lcp[reg]'

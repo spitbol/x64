@@ -620,7 +620,7 @@
 
 *      sysax -- after execution
 
-sysax  exp                   define external entry point
+sysax  exp  0                define external entry point
 {
        if the conditional assembly symbol .csax is defined,
        this routine is called immediately after execution and
@@ -636,7 +636,7 @@ sysax  exp                   define external entry point
 
 *      sysbs -- backspace file
 
-sysbs  exp                   define external entry point
+sysbs  exp  3                define external entry point
 {
        sysbs is used to implement the snobol4 function backspace
        if the conditional assembly symbol .cbsp is defined.
@@ -661,7 +661,7 @@ sysbs  exp                   define external entry point
 
 *      sysbp -- breakpoint
 
-*sysbp  exp                   define external entry point
+*sysbp  exp  0                define external entry point
 {
        sysbp is not required in normal operation. it is called
        as a breakpoint to assist in debugging.
@@ -669,7 +669,7 @@ sysbs  exp                   define external entry point
        jsr  sysbp            call to breakpoint
        sysbx -- before execution
 }
-sysbx  exp                   define external entry point
+sysbx  exp  0                define external entry point
 {
        called after initial spitbol compilation and before
        commencing execution in case osint needs
@@ -682,7 +682,7 @@ sysbx  exp                   define external entry point
 .if    .cnci
 *      sysci -- convert integer
 
-sysci  exp
+sysci  exp  0
 {
        sysci is an optional osint routine that causes spitbol to
        call sysci to convert integer values to strings, rather
@@ -709,7 +709,7 @@ sysci  exp
 
 *      syscm -- general string comparison function
 
-syscm  exp                   define external entry point
+syscm  exp  3                define external entry point
 {
        provides string comparison determined by interface.
        used for international string comparison.
@@ -734,7 +734,7 @@ syscm  exp                   define external entry point
 
 *      syscr -- convert real
 
-syscr  exp
+syscr  exp  0
 {
        syscr is an optional osint routine that causes spitbol to
        call syscr to convert real values to strings, rather
@@ -770,7 +770,7 @@ syscr  exp
 
 *      sysdc -- date check
 
-sysdc  exp                   define external entry point
+sysdc  exp  0                define external entry point
 {
        sysdc is called to check that the expiry date for a trial
        version of spitbol is unexpired.
@@ -780,7 +780,7 @@ sysdc  exp                   define external entry point
 
        sysdm  -- dump core
 }
-sysdm  exp                   define external entry point
+sysdm  exp  0                define external entry point
 {
        sysdm is called by a spitbol program call of dump(n) with
        n ge 4.  its purpose is to provide a core dump.
@@ -793,7 +793,7 @@ sysdm  exp                   define external entry point
 
        sysdt -- get current date
 }
-sysdt  exp                   define external entry point
+sysdt  exp  0                define external entry point
 {
        sysdt is used to obtain the current date. the date is
        returned as a character string in any format appropriate
@@ -813,7 +813,7 @@ sysdt  exp                   define external entry point
 
 *      sysea -- inform osint of compilation and runtime errors
 
-sysea  exp                   define external entry point
+sysea  exp  0                define external entry point
 {
        provides means for interface to take special actions on
        errors
@@ -840,7 +840,7 @@ sysea  exp                   define external entry point
 
 *      sysef -- eject file
 
-sysef  exp                   define external entry point
+sysef  exp  3                define external entry point
 {
        sysef is used to write a page eject to a named file. it
        may only be used for files where this concept makes
@@ -856,7 +856,7 @@ sysef  exp                   define external entry point
 
        sysej -- end of job
 }
-sysej  exp                   define external entry point
+sysej  exp  0                define external entry point
 {
        sysej is called once at the end of execution to
        terminate the run. the significance of the abend and
@@ -879,7 +879,7 @@ sysej  exp                   define external entry point
 
        sysem -- get error message text
 }
-sysem  exp                   define external entry point
+sysem  exp  0                define external entry point
 {
        sysem is used to obtain the text of err, erb calls in the
        source program given the error code number. it is allowed
@@ -899,7 +899,7 @@ sysem  exp                   define external entry point
 }
 *      sysen -- endfile
 
-sysen  exp                   define external entry point
+sysen  exp  3                define external entry point
 {
        sysen is used to implement the snobol4 function endfile.
        the meaning is system dependent. in general, endfile
@@ -924,7 +924,7 @@ sysen  exp                   define external entry point
 
        sysep -- eject printer page
 }
-sysep  exp                   define external entry point
+sysep  exp  0                define external entry point
 {
        sysep is called to perform a page eject on the standard
        printer output file (corresponding to syspr output).
@@ -933,7 +933,7 @@ sysep  exp                   define external entry point
 
 *      sysex -- call external function
 
-sysex  exp                   define external entry point
+sysex  exp  3                define external entry point
 {
        sysex is called to pass control to an external function
        previously loaded with a call to sysld.
@@ -982,7 +982,7 @@ sysex  exp                   define external entry point
 }
 *      sysfc -- file control block routine
 
-sysfc  exp                   define external entry point
+sysfc  exp  2                define external entry point
 {
        see also sysio
        input and output have 3 arguments referred to as shown
@@ -1086,7 +1086,7 @@ sysfc  exp                   define external entry point
 
 *      sysgc -- inform interface of garbage collections
 
-sysgc  exp                   define external entry point
+sysgc  exp  0                define external entry point
 {
        provides means for interface to take special actions
        prior to and after a garbage collection.
@@ -1114,7 +1114,7 @@ sysgc  exp                   define external entry point
 
 *      syshs -- give access to host computer features
 
-syshs  exp                   define external entry point
+syshs  exp  8                define external entry point
 {
        provides means for implementing special features
        on different host computers. the only defined entry is
@@ -1156,7 +1156,7 @@ syshs  exp                   define external entry point
 
        sysid -- return system identification
 }
-sysid  exp                   define external entry point
+sysid  exp  0                define external entry point
 {
        this routine should return strings to head the standard
        printer output. the first string will be appended to
@@ -1186,7 +1186,7 @@ sysid  exp                   define external entry point
 
 *      sysif -- switch to new include file
 
-sysif  exp                   define external entry point
+sysif  exp  1                define external entry point
 {
        sysif is used for include file processing, both to inform
        the interface when a new include file is desired, and
@@ -1224,7 +1224,7 @@ sysif  exp                   define external entry point
 
 *      sysil -- get input record length
 
-sysil  exp                   define external entry point
+sysil  exp  0                define external entry point
 {
        sysil is used to get the length of the next input record
        from a file previously input associated with a sysio
@@ -1246,7 +1246,7 @@ sysil  exp                   define external entry point
 
        sysin -- read input record
 }
-sysin  exp                   define external entry point
+sysin  exp  3                define external entry point
 {
        sysin is used to read a record from the file which was
        referenced in a prior call to sysil (i.e. these calls
@@ -1268,7 +1268,7 @@ sysin  exp                   define external entry point
 
        sysio -- input/output file association
 }
-sysio  exp                   define external entry point
+sysio  exp  2                define external entry point
 {
        see also sysfc.
        sysio is called in response to a snobol4 input or output
@@ -1306,7 +1306,7 @@ sysio  exp                   define external entry point
 
        sysld -- load external function
 }
-sysld  exp                   define external entry point
+sysld  exp  3                define external entry point
 {
        sysld is called in response to the use of the snobol4
        load function. the named function is loaded (whatever
@@ -1328,7 +1328,7 @@ sysld  exp                   define external entry point
 
        sysmm -- get more memory
 }
-sysmm  exp                   define external entry point
+sysmm  exp  0                define external entry point
 {
        sysmm is called in an attempt to allocate more dynamic
        memory. this memory must be allocated contiguously with
@@ -1343,7 +1343,7 @@ sysmm  exp                   define external entry point
 
        sysmx -- supply mxlen
 }
-sysmx  exp                   define external entry point
+sysmx  exp  0                define external entry point
 {
        because of the method of garbage collection, no spitbol
        object is allowed to occupy more bytes of memory than
@@ -1372,7 +1372,7 @@ sysmx  exp                   define external entry point
 
        sysou -- output record
 }
-sysou  exp                   define external entry point
+sysou  exp  2                  define external entry point
 {
        sysou is used to write a record to a file previously
        associated with a sysio call.
@@ -1397,7 +1397,7 @@ sysou  exp                   define external entry point
 
        syspi -- print on interactive channel
 }
-syspi  exp                   define external entry point
+syspi  exp  1                define external entry point
 {
        if spitbol is run from an online terminal, osint can
        request that messages such as copies of compilation
@@ -1417,7 +1417,7 @@ syspi  exp                   define external entry point
 
 *      syspl -- provide interactive control of spitbol
 
-syspl  exp                   define external entry point
+syspl  exp  3                define external entry point
 {
        provides means for interface to take special actions,
        such as interrupting execution, breakpointing, stepping,
@@ -1443,7 +1443,7 @@ syspl  exp                   define external entry point
 
 *      syspp -- obtain print parameters
 
-syspp  exp                   define external entry point
+syspp  exp  0                define external entry point
 {
        syspp is called once during compilation to obtain
        parameters required for correct printed output format
@@ -1509,7 +1509,7 @@ syspp  exp                   define external entry point
 
 *      syspr -- print line on standard output file
 
-syspr  exp                   define external entry point
+syspr  exp  1                define external entry point
 {
        syspr is used to print a single line on the standard
        output file.
@@ -1538,7 +1538,7 @@ syspr  exp                   define external entry point
 
        sysrd -- read record from standard input file
 }
-sysrd  exp                   define external entry point
+sysrd  exp  1                define external entry point
 {
        sysrd is used to read a record from the standard input
        file. the buffer provided is an scblk for a string the
@@ -1575,7 +1575,7 @@ sysrd  exp                   define external entry point
 
 *      sysri -- read record from interactive channel
 
-sysri  exp                   define external entry point
+sysri  exp  1                define external entry point
 {
        reads a record from online terminal for spitbol variable,
        terminal. if online terminal is unavailable then code the
@@ -1597,7 +1597,7 @@ sysri  exp                   define external entry point
 
        sysrw -- rewind file
 }
-sysrw  exp                   define external entry point
+sysrw  exp  3                define external entry point
 {
        sysrw is used to rewind a file i.e. reposition the file
        at the start before the first record. the file should be
@@ -1615,7 +1615,7 @@ sysrw  exp                   define external entry point
 
 *      sysst -- set file pointer
 
-sysst  exp                   define external entry point
+sysst  exp  5                define external entry point
 {
        sysst is called to change the position of a file
        pointer. this is accomplished in a system dependent
@@ -1636,7 +1636,7 @@ sysst  exp                   define external entry point
 
 *      systm -- get execution time so far
 
-systm  exp                   define external entry point
+systm  exp  0                define external entry point
 {
        systm is used to obtain the amount of execution time
        used so far since spitbol was given control. the units
@@ -1653,7 +1653,7 @@ systm  exp                   define external entry point
 
        systt -- trace toggle
 }
-systt  exp                   define external entry point
+systt  exp  0                define external entry point
 {
        called by spitbol function trace() with no args to
        toggle the system trace switch.  this permits tracing of
@@ -1663,7 +1663,7 @@ systt  exp                   define external entry point
 
        sysul -- unload external function
 }
-sysul  exp                   define external entry point
+sysul  exp  0                define external entry point
 {
        sysul is used to unload a function previously
        loaded with a call to sysld.
@@ -1683,7 +1683,7 @@ sysul  exp                   define external entry point
 
 *      sysxi -- exit to produce load module
 
-sysxi  exp                   define external entry point
+sysxi  exp  2                  define external entry point
 {
        when sysxi is called, xl contains either a string pointer
        or zero. in the former case, the string gives the
@@ -6740,6 +6740,7 @@ erich  dac  0                copy error reports to int.chan if 1
 erlst  dac  0                for listr when errors go to int.ch.
 errft  dac  0                fatal error flag
 errsp  dac  0                error suppression flag
+errno  dic  +0                error number for erb
 
 *      global flag for suppression of execution stats
 

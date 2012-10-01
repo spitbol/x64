@@ -96,6 +96,11 @@
 	generating_code =
 
 	trapped_stmts = table(100)
+
+*	ppm_cases gives count of ppm/err statments that must follow call to
+*	a procedure
+	
+	ppm_cases = table(50,,0)
 *
 *  function definitions
 *
@@ -242,6 +247,8 @@ is_branch.1
 	is_branch[opc] = 1				:(is_branch.1)
 is_branch.2
 
+*  is_exp_procedure is a table list of procedures declared with 'exp' intruction
+	is_exp_procedure = table()
 
 -stitl main program
 *  here follows the driver code for the "main" program.
@@ -441,7 +448,7 @@ opnext
 	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' '
 .		i.text(i2) ' ' i.text(i3)
 	argerrs = 0
-* 	output = differ(inlabel) 'input line ' nlines ' label ' inlabel
+*  	output = differ(inlabel) 'input line ' nlines ' label ' inlabel
 *	output = 'input line ' nlines ' label ' inlabel
 	ident(is_executable[incode])		:s(opnext.2)
 *	emit label here for an executable instruction
@@ -517,7 +524,8 @@ deflabel.1
 *  the error are written to the listing (including error chain), and
 *  the appropriate counts are updated.
 *
-error   outfile = '* *???* ' thisline
+error   
+	outfile = '* *???* ' thisline
 	outfile = '*       ' text
 .	          (ident(lasterror),'. last error was line ' lasterror)
 	lasterror = noutlines
@@ -643,7 +651,7 @@ memmem
   t1 = (eq(argnum, 1) getarg(i1), getarg(i2))
   i2 = eq(argnum,2) minarg(8,'w0')
   i1 = eq(argnum,1) minarg(8,'w0')
-  asm('mov','eax',t1)				:(return)
+  asm('mov','eax.w0',t1)				:(return)
 
 mov
    dst = i.text(i1)
@@ -900,20 +908,41 @@ g.ent
 *	output = 'g.ent label ' inlabel
 *        (differ(pubtab[inlabel]), differ(debug)) pseudo(,'global',inlabel)
         pseudo(,'global',inlabel)
-	deflabel() 				:(opdone)
-
-g.bri	asm('jmp',getarg(i1))			:(opdone)
-
+	deflabel() 				
+						:(opdone)
+g.bri	
+	asm('jmp',getarg(i1))			
+						:(opdone)
 g.lei	t1 = regmap[i.text(i1)]
-	asm('movzx',t1,'byte [' t1 '-1]')	:(opdone)
-
-g.jsr	asm('call',getarg(i1))		:(opdone)
-
+	asm('movzx',t1,'byte [' t1 '-1]')	
+						:(opdone)
+g.jsr	
+	jsr_calls = jsr_calls +  1
+	jsr_proc = getarg(i1)
+	asm('call',jsr_proc)		
+*	get count of following ppm statements
+	jsr_count = ppm_cases[jsr_proc]
+*	output = ne(jsr_count) nlines ' ' ' jsr ' getarg(i1) ' ' jsr_count
+	jsr_label = 'jsr_' jsr_calls
+	jsr_label_ret = jsr_label '_ret'
+	jsr_label_exi = jsr_label '_exi'
+	eq(jsr_count)				:s(opdone)
+*	generate branch around for ppms that will follow
+*	take the branch if normal return (eax==0)
+	deflabel(jsr_label_exi)
+	asm('dec','eax.w0')
+*`	l1 = genlabel()
+	asm('jz',jsr_label_ret)
+						:(opdone)
 g.ppm
 *  last arg is optional. generate four bytes
 	ident(i.text(i1))			:s(g.ppm1)
 	count.ppm = count.ppm + 1
-        pseudo(,'dd',getarg(i1) '-' 'dffnc')        :(opdone)
+	asm('dec','eax')
+	asm('js',	getarg(i1))
+	jsr_count = jsr_count - 1
+	eq(jsr_count) pseudo(jsr_label_ret)
+						:(opdone)
 g.ppm1
 *  a ppm with no arguments, which should never be executed, is
 *  translated to err 299,internal logic error: unexpected ppm branch
@@ -922,23 +951,20 @@ g.ppm1
 						:(g.err1)
 
 g.prc
-*	output = 'prc ' thisline
-	prc_label = inlabel
-*	output = 'prc ' inlabel ':'
-*	generate public declaration and then generate label again
-*        pseudo(,'global',prc_label)
 	deflabel(prc_label)
 	prc.args = getarg(i2)
 	max_exi = gt(prc.args,max_exi) prc.args
 	prc.type = i.text(i1)		:($('g.prc.' prc.type))
-g.prc.e
-g.prc.r						:(opdone)
 
+g.prc.e
+
+g.prc.r						
+						:(opdone)
 g.prc.n
 *  store return address in reserved location
 	prc.count = prc.count + 1
-	asm('pop','dword [' prcent(prc.count) ']')	:(opdone)
-
+	asm('pop','dword [' prcent(prc.count) ']')	
+						:(opdone)
 g.exi	t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
 	ident(t2,'n')				:s(g.exin)
 *  here if r or e, with return address on stack.
@@ -946,7 +972,8 @@ g.exi	t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
 	differ(t3)				:s(g.exire)
 *  here if normal return.
 	asm('pop','eax')
-g.exir0	ge(prc.args,1) asm('lea','eax','[eax+' 2 * prc.args ']')
+g.exir0	
+	ge(prc.args,1) asm('lea','eax','[eax+' 2 * prc.args ']')
 	asm('jmp','eax')			:(opdone)
 g.exire;* here if error return
 	asm('pop','eax')
@@ -976,35 +1003,44 @@ g.err
 	count.err = count.err + 1
 	errfile =  i.text(i1) ' ' i.text(i2)
 	t1 = getarg(i1)
-g.err1	max.err = gt(t1,max.err) t1
-        pseudo(,'dd','err_' '-' +t1 '-' 'dffnc') :(opdone)
-
+g.err1	
+	max.err = gt(t1,max.err) t1
+	asm('dec','eax')
+ 	asm('js','error_' lpad(t1,3,'0'))
+	jsr_count = jsr_count - 1
+	eq(jsr_count) deflabel(jsr_label_ret)
+						:(opdone)
 g.erb
 	count.erb = count.erb + 1	
 	errfile =  i.text(i1) ' ' i.text(i2)
 	t1 = getarg(i1)
-	max.err = gt(t1,max.err) t1
-	asm('call','err_' (lt(t1,256) '0','1'))
-        asm('db',(lt(t1,256) +t1,t1 - 256)) :(opdone)
-
-
-g.icv   asm('inc',getarg(i1))    :(opdone)
-g.dcv   asm('dec',getarg(i1))    :(opdone)
-
+	asm('mov','dword [errno]',t1)
+						:(opdone)
+g.icv   asm('inc',getarg(i1))    		
+						:(opdone)
+g.dcv   asm('dec',getarg(i1))
+						:(opdone) 
 g.zer	ident(i.text(i1),'(xr)+') asm('xor','eax','eax')
 +		asm('stosd')			:s(opdone)
 	ifreg(i1)				:s(g.zer1)
 	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
 	asm('xor','eax','eax')
-	asm('mov',getarg(i1),'eax')		:(opdone)
-g.zer1	t1 = getarg(i1)
-	asm('xor',t1,t1)			:(opdone)
-g.zer.xs asm('push','0')			:(opdone)
-
-g.mnz   asm('mov',getarg(i1),'esp')		:(opdone)
-
-g.ssl   					:(opdone)
-g.sss   					:(opdone)
+	asm('mov',getarg(i1),'eax')		
+						:(opdone)
+g.zer1	
+	t1 = getarg(i1)
+	asm('xor',t1,t1)			
+						:(opdone)
+g.zer.xs 
+	asm('push','0')			
+						:(opdone)
+g.mnz   
+	asm('mov',getarg(i1),'esp')		
+						:(opdone)
+g.ssl   					
+						:(opdone)
+g.sss   					
+						:(opdone)
 
 g.rtn
 *	generate public declaration and then regenerate label
@@ -1048,14 +1084,17 @@ g.bhi
 g.bnz
 	ifreg(i1)				:s(g.bnz1)
         asm('cmp', getarg(i1), '0')
-	asm('jnz',getarg(i2))			:(opdone)
+	asm('jnz',getarg(i2))			
+						:(opdone)
 g.bnz1	
 	asm('or',getarg(i1), getarg(i1))
-	asm('jnz',getarg(i2))			:(opdone)
-
-g.bze   ifreg(i1)				:s(g.bze1)
+	asm('jnz',getarg(i2))			
+						:(opdone)
+g.bze   
+	ifreg(i1)				:s(g.bze1)
         asm('cmp', getarg(i1), '0')
-	asm('jz', getarg(i2))			:(opdone)
+	asm('jz', getarg(i2))			
+						:(opdone)
 g.bze1
 	t1 = getarg(i1)
 	asm('or', t1,t1)
@@ -1514,15 +1553,23 @@ g.dtc
         t2 = t2  '"'
         pseudo(inlabel,'dd',t2)              :(opdone)
 
-g.dbc   pseudo(inlabel,'dd',getarg(i1))       :(opdone)
-
-g.equ   pseudo(inlabel,'equ',i.text(i1))			:(opdone)
-
+g.dbc   
+	pseudo(inlabel,'dd',getarg(i1))       
+						:(opdone)
+g.equ   
+	pseudo(inlabel,'equ',i.text(i1))			
+						:(opdone)
 g.exp  	
+
+	is_exp_procedure[inlabel] = 1
+*	output = 'g.exp setting ppm_cases <' inlabel '> to ' i.text(i1)
+	ppm_cases[inlabel] = i.text(i1)
 	pseudo(,'extern',inlabel)
 					:(opnext)
 
-g.inp	prc.count1 = ident(i.text(i1),'n') prc.count1 + 1
+g.inp	
+	prc.count1 = ident(i.text(i1),'n') prc.count1 + 1
+	ppm_cases[inlabel] = i.text(i2)
 +						:(opnext)
 
 g.inr						:(opnext)
@@ -1610,24 +1657,27 @@ g.sec.7
         pseudo(,'global','sec07')
         deflabel('sec07') 
 *        (differ(debug) pseudo(,'global','err_0'))
-        pseudo(,'global','err_0')
-        deflabel('err_0')
-	asm('pop','eax')
-	asm('movzx','eax','byte [eax]')
-	asm('jmp',' err_1a')
-*        (differ(debug) pseudo(,'global','err_1'))
-        pseudo(,'global','err_1')
-        deflabel('err_1')
-	asm('pop','eax')
-	asm('movzx','eax','byte [eax]')
-	asm('add','eax','256')
-        deflabel('err_1a')
-	asm('jmp','err_')
-	flush()
+*        pseudo(,'global','err_0')
+*	deflabel('ererb')
+*	asm('mov','eax.wa','dwords [errno]')
+*        deflabel('err_0')
+*	asm('pop','eax')
+*	asm('movzx','eax','byte [eax]')
+*	asm('jmp',' err_1a')
+**        (differ(debug) pseudo(,'global','err_1'))
+*        pseudo(,'global','err_1')
+*        deflabel('err_1')
+*	asm('pop','eax')
+*	asm('movzx','eax','byte [eax]')
+*	asm('add','eax','256')
+*        deflabel('err_1a')
+*	asm('jmp','err_')
+*	flush()
 
 *  loop to emit inc eax for each possible error code
 	n1 = max.err
 g.sec.7.1
+	deflabel('error_' lpad(n1,3,'0'))
 	ge(n1 = n1 - 1) asm('inc','eax')	:s(g.sec.7.1)
         deflabel('err_')
 	asm('xchg',reg.wa,'eax')
@@ -1690,8 +1740,8 @@ g.end.4
         output = ne(noptim1) ' "or" optimizations:' noptim1 
         output = rpad('maximum err/erb number',24)	 max.err 
         output = rpad('prc count:',24)			 prc.count1 
-        output = gt(prc.count,prc.count1)
 	output = rpad('erb,err,ppm counts:',24) ' ' count.err ' ' count.err 
+        output = gt(prc.count,prc.count1)
 +		' ' count.ppm
 .	  'differing counts for n-procedures:'
 .	  ' inp ' prc.count1 ' prc ' prc.count
