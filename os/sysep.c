@@ -39,5 +39,5 @@ zysep()
     Enter("zysep");
     write(1, "\f", 1);
     Exit("zysep");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

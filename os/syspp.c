@@ -42,5 +42,5 @@ zyspp()
     SET_WB(lnsppage);
     SET_WC(spitflag);
 
-    return NORMAL_RETURN;
+    return EXI_0;
 }

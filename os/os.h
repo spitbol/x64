@@ -68,16 +68,18 @@ extern void Exit(char * s);
 
 /*
     Return values to take exit N from interface
+    EXI_0 is normal return (no errors detected)
 */
-#define EXIT_1          0
-#define EXIT_2          4
-#define EXIT_3          8
-#define EXIT_4          12
-#define EXIT_5          16
-#define EXIT_6          20
-#define EXIT_7          24
-#define EXIT_8          28
-#define EXIT_9          32
+#define EXI_0          0
+#define EXI_1          1
+#define EXI_2          2
+#define EXI_3          3
+#define EXI_4          4
+#define EXI_5          5
+#define EXI_6          6
+#define EXI_7          7
+#define EXI_8          8
+#define EXI_9          9
 
 /*
      Return value to do a normal return from interface.

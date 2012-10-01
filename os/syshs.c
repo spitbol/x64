@@ -237,11 +237,11 @@ zyshs()
 	gethost(ptscblk, TSCBLK_LENGTH);
 	if (ptscblk->len == 0) {
     	    Exit("zyshs");
-	    return EXIT_4;
+	    return EXI_4;
 	}
 	SET_XL(ptscblk);
     	Exit("zyshs");
-	return EXIT_3;
+	return EXI_3;
     }
 
     /*
@@ -261,39 +261,39 @@ zyshs()
 		case 0:
 		    pticblk->val = memincb;
     		    Exit("zyshs");
-		    return EXIT_8;
+		    return EXI_8;
 		case 1:
 		    pticblk->val = databts;
     		    Exit("zyshs");
-		    return EXIT_8;
+		    return EXI_8;
 		case 2:
 		    pticblk->val = (IATYPE) basemem;
     		    Exit("zyshs");
-		    return EXIT_8;
+		    return EXI_8;
 		case 3:
 		    pticblk->val = (IATYPE) topmem;
     		    Exit("zyshs");
-		    return EXIT_8;
+		    return EXI_8;
 		case 4:
 		    pticblk->val = stacksiz - 400;	/* safety margin */
     		    Exit("zyshs");
-		    return EXIT_8;
+		    return EXI_8;
 		case 5:	/* stack in use */
 		    pticblk->val =
 			stacksiz - (XS(IATYPE) - (IATYPE) lowsp);
     		    Exit("zyshs");
-		    return EXIT_8;
+		    return EXI_8;
 		case 6:
 		    pticblk->val = sizeof(IATYPE);
     		    Exit("zyshs");
-		    return EXIT_8;
+		    return EXI_8;
 		default:
     		    Exit("zyshs");
-		    return EXIT_1;
+		    return EXI_1;
 		}
 	    } else {
     		Exit("zyshs");
-		return EXIT_1;
+		return EXI_1;
               }
 
 	    /*
@@ -304,7 +304,7 @@ zyshs()
 		cpys2sc(uarg, ptscblk, TSCBLK_LENGTH);
 		SET_XL(ptscblk);
     		Exit("zyshs");
-		return EXIT_3;
+		return EXI_3;
 	    } else if ((val = cmdcnt) != 0) {
 		ptscblk->len = 0;
 		while (ptscblk->len < TSCBLK_LENGTH - 2 &&
@@ -315,10 +315,10 @@ zyshs()
 		    --ptscblk->len;
 		SET_XL(ptscblk);
     		Exit("zyshs");
-		return EXIT_3;
+		return EXI_3;
 	    } else {
     		Exit("zyshs");
-		return EXIT_4;
+		return EXI_4;
             }
 	    /*
 	       / HOST( 1, "command", "path" ) executes "command" using "path"
@@ -328,7 +328,7 @@ zyshs()
 		char *cmd, *path;
 
 		if (!check2str())
-		    return EXIT_1;
+		    return EXI_1;
 		save2str(&cmd, &path);
 		save0();	/* made sure fd 0 OK    */
 		pticblk->val = dosys(cmd, path);
@@ -338,11 +338,11 @@ zyshs()
 		restore0();
 		if (pticblk->val < 0) {
     		    Exit("zyshs");
-		    return EXIT_6;
+		    return EXI_6;
 		}
 		SET_XR(pticblk);
     		Exit("zyshs");
-		return EXIT_8;
+		return EXI_8;
 	    }
 
 	    /*
@@ -357,18 +357,18 @@ zyshs()
 			    TSCBLK_LENGTH);
 		if (retval < 0) {
     		    Exit("zyshs");
-		    return EXIT_6;
+		    return EXI_6;
 		}
 		if (retval == 0) {
     		    Exit("zyshs");
-		    return EXIT_1;
+		    return EXI_1;
 		}
 		SET_XL(ptscblk);
     		Exit("zyshs");
-		return EXIT_3;
-	    } else {   
+		return EXI_3;
+	    } else {
 		Exit("zyshs");
-		return EXIT_1;
+		return EXI_1;
 	      }
 
 	    /*
@@ -380,10 +380,10 @@ zyshs()
 		pticblk->val = cmdcnt;
 		SET_XR(pticblk);
 		Exit("zyshs");
-		return EXIT_8;
+		return EXI_8;
 	    } else {
 		Exit("zyshs");
-		return EXIT_6;
+		return EXI_6;
               }
 
 	    /*
@@ -395,18 +395,18 @@ zyshs()
 	    if (scp->typ == type_scl) {
 		if (scp->len == 0) {
 		    Exit("zyshs");
-		    return EXIT_1;
+		    return EXI_1;
 		}
 		if (rdenv(scp, ptscblk) < 0) {
 		    Exit("zyshs");
-		    return EXIT_6;
+		    return EXI_6;
 		}
 		SET_XL(ptscblk);
 		Exit("zyshs");
-		return EXIT_3;
+		return EXI_3;
 	    } else {
 		Exit("zyshs");
-		return EXIT_1;
+		return EXI_1;
               }
 	}			/* end switch */
 
@@ -423,5 +423,5 @@ zyshs()
 	 */
     }
     Exit("zyshs");
-    return EXIT_1;
+    return EXI_1;
 }

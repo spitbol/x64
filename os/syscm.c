@@ -61,19 +61,19 @@ zyscm()
 
     if (result == 0x80000000) {
         Exit("zysbm");
-	return EXIT_1;
+	return EXI_1;
     }
     else if (result == 0) {
         Exit("zysbm");
-	return NORMAL_RETURN;
+	return EXI_0;
     }
     else if (result < 0) {
         Exit("zysbm");
-	return EXIT_2;
+	return EXI_2;
     }
     else {
         Exit("zysbm");
-	return EXIT_3;
+	return EXI_3;
     }
     Exit("zysbm");
 }

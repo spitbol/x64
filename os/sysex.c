@@ -55,21 +55,21 @@ zysex()
     switch ((word) result) {
     case (word) 0:
 	Exit("zysex");
-	return EXIT_1;		/* fail */
+	return EXI_1;		/* fail */
     case (word) - 1:
 	Exit("zysex");
-	return EXIT_2;		/* insufficient memory */
+	return EXI_2;		/* insufficient memory */
     case (word) - 2:
 	Exit("zysex");
-	return EXIT_3;		/* improper argument */
+	return EXI_3;		/* improper argument */
     default:
 	SET_XR(result);
 	Exit("zysex");
-	return NORMAL_RETURN;	/* Success, return pointer to stuff in EFBLK */
+	return EXI_0;	/* Success, return pointer to stuff in EFBLK */
     }
 #else				/* EXTFUN */
     Exit("zysex");
-    return EXIT_1;
+    return EXI_1;
 #endif				/* EXTFUN */
     Exit("zysex");
 }

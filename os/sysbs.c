@@ -49,14 +49,14 @@ zysbs()
 
     /* ensure the file is open */
     if (!(iob->flg1 & IO_OPN))
-	return EXIT_1;
+	return EXI_1;
 
     if (!testty(iob->fdn)
 #if PIPES
 	|| iob->flg2 & IO_PIP	/* not allowed on pipes */
 #endif
 	)
-	return EXIT_2;		/* character device */
+	return EXI_2;		/* character device */
 
     if (fcb->mode) {		/* if line mode */
 
@@ -98,18 +98,18 @@ zysbs()
 
     else {			/* if raw mode */
 	if (doset(iob, -fcb->rsz, 1) < 0L)	/* just move back record length */
-	    return EXIT_1;	/* I/O error */
+	    return EXI_1;	/* I/O error */
     }
 
-    return NORMAL_RETURN;
+    return EXI_0;
 }
 
 
 /*
  * BACK - helper function to backup one position in file.
  *
- * returns character found at that position, or NORMAL_RETURN-RET_BIAS
- * if at beginning of file, or EXIT_3-RET_BIAS if I/O error.
+ * returns character found at that position, or EXI_0-RET_BIAS
+ * if at beginning of file, or EXI_3-RET_BIAS if I/O error.
  * Non-character returns are guaranteed to be negative.
  */
 static int
@@ -124,17 +124,17 @@ struct ioblk *ioptr;
 	    return (unsigned int) (unsigned char) bfptr->buf[--bfptr->
 							     next];
 	if (!bfptr->offset)	/* if at beginning of file */
-	    return NORMAL_RETURN - RET_BIAS;
+	    return EXI_0 - RET_BIAS;
 	if (doset(ioptr, -1L, 1) < 0L)	/* seek back one position */
-	    return EXIT_3 - RET_BIAS;	/* if I/O error */
+	    return EXI_3 - RET_BIAS;	/* if I/O error */
 	bfptr->next++;		/* setup to return character */
     }
 
     /* Unbuffered file.  Use disgusting code */
     if (!doset(ioptr, 0L, 1))
-	return NORMAL_RETURN - RET_BIAS;
+	return EXI_0 - RET_BIAS;
     if (doset(ioptr, -1L, 1) < 0L || read(ioptr->fdn, &c, 1) != 1)
-	return EXIT_3 - RET_BIAS;	/* if I/O error */
+	return EXI_3 - RET_BIAS;	/* if I/O error */
     doset(ioptr, -1L, 1);
     return (unsigned int) c;
 }

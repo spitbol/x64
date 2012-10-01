@@ -60,7 +60,7 @@ zysdt()
     ptscblk->len = datecvt(ptscblk->str, dtscb->val);
     SET_XL(ptscblk);
     Exit("zysdt");
-    return NORMAL_RETURN;
+    return EXI_0;
 }
 
 /*

@@ -51,5 +51,5 @@ zysgc()
     Enter("sysgc");
     in_gbcol = XR(word);	/* retain information */
     Exit("sysgc");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

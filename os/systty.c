@@ -72,9 +72,9 @@ zyspi()
        /   Return error if oswrite fails.
      */
     if (retval != 0)
-	return EXIT_1;
+	return EXI_1;
 
-    return NORMAL_RETURN;
+    return EXI_0;
 }
 
 
@@ -112,13 +112,13 @@ zysri()
     *saveptr = savechr;		/* Restore saved char */
 
     if (length < 0)
-	return EXIT_1;
+	return EXI_1;
 
     /*
        /   Line read OK, so set string length and return normally.
      */
     scb->len = length;
-    return NORMAL_RETURN;
+    return EXI_0;
 }
 
 

@@ -57,15 +57,15 @@ zysef()
     /* ensure the file is open */
     if (!(iob->flg1 & IO_OPN)) {
         Exit("zysef");
-	return EXIT_1;
+	return EXI_1;
     }
 
     /* write the data, fail if unsuccessful */
     if (oswrite(fcb->mode, fcb->rsz, ffscblk.len, iob, &ffscblk) != 0) {
         Exit("zysef");
-	return EXIT_2;
+	return EXI_2;
     }
 
     Exit("zysef");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

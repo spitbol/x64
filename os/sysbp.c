@@ -40,5 +40,5 @@ zysbp()
     Enter("zysbp");
     printf("ENTER SYSBP\n");
     Exit("zysbp");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

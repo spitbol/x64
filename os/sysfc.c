@@ -89,7 +89,7 @@ zysfc()
   again:
     if ((length_fname = lenfnm(scb2)) < 0 || !scb1->len) {
         Exit("zysfc");
-	return EXIT_1;
+	return EXI_1;
     }
 
     /*
@@ -97,7 +97,7 @@ zysfc()
      */
     if (sioarg(WB(int), &tioblk, scb2) < 0) {
         Exit("zysfc");
-	 return EXIT_1;
+	 return EXI_1;
     }
 
     /*
@@ -130,11 +130,11 @@ zysfc()
 	 */
 	if ((length_fname && fd_spec)) {
             Exit("zysfc");
-	    return EXIT_1;
+	    return EXI_1;
 	}
 	if ((fcb && (MK_MP(fcb->iob, struct ioblk *)->flg1 & IO_OPN))) {
             Exit("zysfc");
-	     return EXIT_2;
+	     return EXI_2;
 	}
 
 	save_iob = 0;
@@ -162,7 +162,7 @@ zysfc()
 		goto again;
 	    }
             Exit("zysfc");
-	    return EXIT_1;
+	    return EXI_1;
 	}
 	if (tioblk.typ) {	/* if args then         */
 	    allocsize = FCSIZE;	/*    alloc new FCB     */
@@ -181,5 +181,5 @@ zysfc()
     SET_XL(0);			/*  no private fcblk                    */
 
     Exit("zysfc");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

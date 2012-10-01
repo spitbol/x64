@@ -43,5 +43,5 @@ zysil()
 
     /* normal return */
     Exit("zysil");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

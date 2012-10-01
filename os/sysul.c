@@ -35,5 +35,5 @@ zysul()
 #if EXTFUN
     unldef(XR(struct efblk *));
 #endif				/* EXTFUN */
-    return NORMAL_RETURN;
+    return EXI_0;
 }

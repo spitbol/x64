@@ -65,7 +65,7 @@ zyspl()
 	    brkpnd = 0;		/* User interrupt */
 	    rearmbrk();		/* allow breaks again */
    	    Exit("zyspl");
-	    return EXIT_1;
+	    return EXI_1;
 	}
 #endif
     }
@@ -73,5 +73,5 @@ zyspl()
     SET_WA((word) MAXPOSWORD);	/* Effectively shut off polling */
 #endif				/* POLLING */
     Exit("zyspl");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

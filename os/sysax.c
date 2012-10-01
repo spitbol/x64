@@ -44,5 +44,5 @@ zysax()
     Enter("zysax");
     swcoup(outptr);
     Exit("zysax");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

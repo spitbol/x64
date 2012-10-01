@@ -94,9 +94,9 @@ zysea()
 	ptscblk->len = p - ptscblk->str;
 	SET_XR(ptscblk);
         Exit("zysea");
-	return NORMAL_RETURN;
+	return EXI_0;
     }
     SET_XR(0L);
     Exit("zysea");
-    return NORMAL_RETURN;	/* Other errors be processed normally */
+    return EXI_0;	/* Other errors be processed normally */
 }

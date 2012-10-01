@@ -68,9 +68,9 @@ zyspr()
        /   Do writes in line mode.
      */
     if (oswrite(1, oupiob.len, WA(word), &oupiob, XR(struct scblk *)) < 0)
-	 return EXIT_1;
+	 return EXI_1;
 
-    return NORMAL_RETURN;
+    return EXI_0;
 }
 
 
@@ -105,7 +105,7 @@ zysrd()
 	provide_name = 0;
 	if (sfn && sfn[0]) {
 	    cpys2sc(sfn, scb, WC(word));
-	    return EXIT_1;
+	    return EXI_1;
 	}
     }
 
@@ -119,12 +119,12 @@ zysrd()
 	if (nesting || swcinp(inpcnt, inpptr) < 0) {
 	    /* EOF */
 	    scb->len = 0;
-	    return EXIT_1;
+	    return EXI_1;
 	} else {
 	    /* Successful switch, report new file name if still in compilation phase */
 	    if (!executing && sfn && sfn[0]) {
 		cpys2sc(sfn, scb, WC(word));
-		return EXIT_1;
+		return EXI_1;
 	    }
 	}
 
@@ -142,12 +142,12 @@ zysrd()
 	    while ((length = osread(1, WC(word), &inpiob, scb)) < 0) {
 		if (swcinp(inpcnt, inpptr) < 0) {
 		    scb->len = 0;
-		    return EXIT_1;
+		    return EXI_1;
 		}
 		/* Successful switch, report new file name */
 		if (sfn && sfn[0]) {
 		    cpys2sc(sfn, scb, WC(word));
-		    return EXIT_1;
+		    return EXI_1;
 		}
 
 	    }
@@ -155,7 +155,7 @@ zysrd()
 	}
     }
 
-    return NORMAL_RETURN;
+    return EXI_0;
 }
 
 /*

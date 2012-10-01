@@ -49,5 +49,5 @@ zystm()
      */
     SET_IA((timebuf.tms_utime * (1000 / 10)) / (CLK_TCK / 10));
     Exit("zystm");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

@@ -54,5 +54,5 @@ zysid()
     pid2blk->len += 2 + storedate(cp, ID2BLK_LENGTH - pid2blk->len);
     SET_XL(pid2blk);
     Exit("zysid");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

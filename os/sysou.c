@@ -60,20 +60,20 @@ zysou()
 	    result = zyspi();
 	else
 	    result = zyspr();
-	if (result == NORMAL_RETURN) {
+	if (result == EXI_0) {
     	    Exit("zysou");
-	    return NORMAL_RETURN;
+	    return EXI_0;
 	}
 	else {
     	    Exit("zysou");
-	    return EXIT_2;
+	    return EXI_2;
         }
     }
 
     /* ensure iob is open, fail if unsuccessful */
     if (!(MK_MP(fcb->iob, struct ioblk *)->flg1 & IO_OPN)) {
     	 Exit("zysou");
-	 return EXIT_1;
+	 return EXI_1;
     }
 
     /* write the data, fail if unsuccessful */
@@ -81,9 +81,9 @@ zysou()
 	(fcb->mode, fcb->rsz, WA(word), MK_MP(fcb->iob, struct ioblk *),
 	 XR(struct scblk *)) != 0)
     	 Exit("zysou");
-	 return EXIT_2;
+	 return EXI_2;
 
     /* normal return */
     Exit("zysou");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

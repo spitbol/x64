@@ -277,63 +277,11 @@ startup:
 
 	segment	.text
 
-
-
-;
 ;       interface routines
 ;
 ;       each interface routine takes the following form:
 ;
 ;               sysxx   call    ccaller         ; call common interface
-;                       dd      zysxx           ; dd of c osint function
-;                       db      n               ; offset to instruction after
-;                                               ;   last procedure exit
-;
-;       in an effort to achieve portability of c osint functions, we
-;       do not take take advantage of any "internal" to "external"
-;       transformation of names by c compilers.  so, a c osint function
-;       representing sysxx is named _zysxx.  this renaming should satisfy
-;       all c compilers.
-;
-;       important:  one interface routine, sysfc, is passed arguments on
-;       the stack.  these items are removed from the stack before calling
-;       ccaller, as they are not needed by this implementation.
-;
-;       ccaller is called by the os interface routines to 
-;	call the real c os interface function.
-;
-;       general calling sequence is
-;
-;               call    ccaller
-;               dd      dd_of_c_function
-;               db      2*number_of_exit_points
-;
-;       control is never returned to a interface routine.  instead, control
-;       is returned to the compiler (the caller of the interface routine).
-;
-;       the c function that is called must always return an integer
-;       indicating the procedure exit to take or that a normal return
-;       is to be performed.
-;
-;               c function      interpretation
-;               return value
-;               ------------    -------------------------------------------
-;                    <0         do normal return to instruction past
-;                               last procedure exit (distance passed
-;                               in by dummy routine and saved on stack)
-;                     0         take procedure exit 1
-;                     4         take procedure exit 2
-;                     8         take procedure exit 3
-;                    ...        ...
-;
-;
-;       interface routines
-;
-;       each interface routine takes the following form:
-;
-;               sysxx   call    ccaller         ; call common interface
-;                       dd      zysxx           ; dd of c osint function
-;                       db      n               ; offset to instruction after
 ;                                               ;   last procedure exit
 ;
 ;       in an effort to achieve portability of c osint functions, we
@@ -347,7 +295,7 @@ startup:
 ;       ccaller, as they are not needed by this implementation.
 ;
 ;
-; define interface routines for calling procedures written in c from
+; define interface macro for calling procedures written in c from
 ; within the minimal code.
 
 ;-----------
@@ -358,8 +306,6 @@ startup:
 ;       general calling sequence is
 ;
 ;               call    ccaller
-;               dd      dd_of_c_function
-;               db      2*number_of_exit_points
 ;
 ;       control is never returned to a interface routine.  instead, control
 ;       is returned to the compiler (the caller of the interface routine).
@@ -368,283 +314,194 @@ startup:
 ;       indicating the procedure exit to take or that a normal return
 ;       is to be performed.
 ;
-;               c function      interpretation
-;               return value
-;               ------------    -------------------------------------------
-;                    <0         do normal return to instruction past
-;                               last procedure exit (distance passed
-;                               in by dummy routine and saved on stack)
-;                     0         take procedure exit 1
-;                     4         take procedure exit 2
-;                     8         take procedure exit 3
-;                    ...        ...
-;
-;ccaller:
+;       c function      interpretation
+;       return value
+;       ------------    -------------------------------------------
+;       0         do normal return to next instruction after call
+;       1         take procedure exit 1
+;       2         take procedure exit 2
+;       3         take procedure exit 3
+;	... 
 
-;       (1) save registers in global variables
-;
-ccaller:        
-	ati	100
-	mov     dword [reg_wa],ecx              ; save registers
-	ati	101
+	%macro	mtoc	1
+	extern	%1
+	; save minimal registers to make their values availale to called procedure
+	mov     dword [reg_wa],ecx     
         mov     dword [reg_wb],ebx
-	ati	102
-        mov     dword [reg_wc],edx              ; (also _reg_ia)
-	ati	103
+        mov     dword [reg_wc],edx	; (also reg_ia)
         mov     dword [reg_xr],edi
-	ati	104
         mov     dword [reg_xl],esi
-	ati	105
-        mov     dword [reg_cp],ebp              ; Needed in image saved by sysxi
-	ati	106
-
-;       (2) get pointer to arg list
-;
-        pop     esi                     	; point to arg list
-;
-;       (3) fetch dd of c function, fetch offset to  instruction
-;           past last procedure exit, and call c function.
-;
-        cs                              	; cs segment override
-        lodsd                           	; point to c function entry point
-	ati	107
-        movzx   ebx,byte [esi]   		; save normal exit adjustment
-;
-	ati	108
-        mov     dword [reg_pp],ebx              ; in memory
-        pop     dword [reg_pc]                  ; save return pc past "call sysxx"
-	ati	109
-;
-;       (3a) save compiler stack and switch to osint stack
-;
-;        mov     dword [compsp],esp              ; save compiler's stack pointer
-;        mov     esp,osisp               	; load osint's stack pointer
-;
-;       (3b) make call to osint
-;
-	ati	110
-        call    eax                     	; call c interface function
-;
-;       (4) restore registers after c function returns.
-;
-	global	cc1
-
-cc1:    
-;	mov     dword [osisp], esp              ; save OSINT's stack pointer
-;        mov     esp, dword [compsp]             ; restore compiler's stack pointer
-;       mov     esp,compsp             ; restore compiler's stack pointer
-	ati	111
-        mov     ecx, dword [reg_wa]             ; restore registers
-	ati	112
+        mov     dword [reg_cp],ebp	; Needed in image saved by sysxi
+        call    %1			; call c interface function
+;       restore minimal registers since called procedure  may have changed them
+        mov     ecx, dword [reg_wa]	; restore registers
         mov     ebx, dword [reg_wb]
-	ati	113
-        mov     edx, dword [reg_wc]             ; (also reg_ia)
-	ati	114
+        mov     edx, dword [reg_wc]	; (also reg_ia)
         mov     edi, dword [reg_xr]
-	ati	115
         mov     esi, dword [reg_xl]
-	ati	116
         mov     ebp, dword [reg_cp]
-	ati	117
-
+;	restore direction flag in (the unlikeley) case callee changed it
         cld
-;
-;       (5) based on returned value from c function (in eax) either do a normal
-;           return or take a procedure exit.
-;
-	ati	110
-        or      eax,eax         ; test if normal return ...
-	ati	110
-        jns     erexit    ; j. if >= 0 (take numbered exit)
-	ati	110
-        mov     eax,dword [reg_pc]
-	ati	110
-        add     eax,dword [reg_pp]      ; point to instruction following exits
-	ati	110
-        jmp     eax             ; bypass ppm exits
-	ati	110
-
-;                               ; else (take procedure exit n)
-erexit: shr     eax,1           ; divide by 2
-        add     eax,dword [reg_pc]      ;   get to dd of exit offset
-        movsx   eax,word [eax]
-        add     eax,ppoff       ; bias to fit in 16-bit word
-        push    eax
-        xor     eax,eax         ; in case branch to error cascade
-        ret                     ;   take procedure exit via ppm dd
-
-
- 
-	%macro	mtoc	2
-	global	%1
-	extern	%2
-%1:
+;	note that the called procedure must return exi action in eax
+	ret
 	%endmacro
 
-	mtoc	sysax,zysax
-	call	ccaller
-	db	0
+	global	sysax
+sysax:
+	mtoc	zysax
 
-	mtoc	sysbs,zysbs
-	call	ccaller
-	db	6
+	global	sysbs
+sysbs:
+	mtoc	zysbs
 
-	mtoc	sysbx,zysbx
-	mov	[reg_xs],esp
-	call	ccaller
-	db	0
+	global	sysbx
+sysbx:
+	mtoc	zysbx
 
 %if setreal == 1
-	mtoc	syscr,zyscr
-	call	ccaller
-	db	0
+	global	syscr
+syscr:
+	mtoc	zyscr
 %endif
-	mtoc	sysdc,zysdc
-	call	ccaller
-	db	0
 
-	mtoc	sysdm,zysdm
-	call	ccaller
-	db	0
+	global	sysdc
+sysdc:
+	mtoc	zysdc
 
-	mtoc	sysdt,zysdt
-	call	ccaller
-	db	0
+	global	sysdm
+sysdm:
+	mtoc	zysdm
 
-	mtoc	sysea,zysea
-	call	ccaller
-	db	2
+	global	sysdt
+sysdt:
+	mtoc	zysdt
 
-	mtoc	sysef,zysef
-	call	ccaller
-	db	6
+	global	sysea
+sysea:
+	mtoc	zysea
 
-	mtoc	sysej,zysej
-	call	ccaller
-	db	0
+	global	sysef
+sysef:
+	mtoc	zysef
 
-	mtoc	sysem,zysem
-	call	ccaller
-	db	0
+	global	sysej
+sysej:
+	mtoc	zysej
 
-	
-	mtoc	sysen,zysen
-	call	ccaller
-	db	0
+	global	sysem
+sysem:
+	mtoc	zysem
 
-	mtoc	sysep,zysep
-	call	ccaller
-	db	6
+	global	sysen
+sysen:
+	mtoc	zysen
 
-	mtoc	sysex,zysex
-	mov	[reg_xs],esp
-	call	ccaller
-	db	6
+	global	sysep
+sysep:
+	mtoc	zysep
+
+	global	sysex
+sysex:
+	mtoc	zysex
  
-	mtoc	sysfc,zysfc
+	global	sysfc
+sysfc:
+	mtoc	zysfc
 	pop     eax             ; <<<<remove stacked scblk>>>>
 	lea	esp,[esp+edx*4]
 	push	eax
-	call	ccaller
-	db	4
 
-	mtoc	sysgc,zysgc
-	call	ccaller
-	db	0
+	global	sysgc
+sysgc:
+	mtoc	zysgc
 
-	mtoc	syshs,zyshs
-	mov	[reg_xs],esp
-	call	ccaller
-	db	16
+	global	syshs
+syshs:
+	mtoc	zyshs
 
-	mtoc	sysid,zysid
-	call	ccaller
-	db	0
+	global	sysid
+sysid:
+	mtoc	zysid
 
-	mtoc	sysif,zysif
-	call	ccaller
-	db	2
+	global	sysif
+sysif:
+	mtoc	zysif
 
-	mtoc	sysil,zysil
-	call	ccaller
-	db	0
+	global	sysil
+sysil:
+	mtoc	zysil
 
-	mtoc	sysin,zysin
-	call	ccaller
-	db	6
+	global	sysin
+sysin:
+	mtoc	zysin
 
-	mtoc	sysio,zysio
-	call	ccaller
-	db	4
+	global	sysio
+sysio:
+	mtoc	zysio
 
-	mtoc	sysld,zysld
-	call	ccaller
-	db	0
+	global	sysld
+sysld:
+	mtoc	zysld
 
-	mtoc	sysmm,zysmm
-	call	ccaller
-	db	0
+	global	sysmm
+sysmm:
+	mtoc	zysmm
 
-	mtoc	sysmx,zysmx
-	call	ccaller
-	db	0
+	global	sysmx
+sysmx:
+	mtoc	zysmx
 
-	mtoc	sysou,zysou
-	call	ccaller
-	db	4
+	global	sysou
+sysou:
+	mtoc	zysou
 
-	mtoc	syspi,zyspi
-	call	ccaller
-	db	2
+	global	syspi
+syspi:
+	mtoc	zyspi
 
-	mtoc	syspl,zyspl
-	call	ccaller
-	db	6
+	global	syspl
+syspl:
+	mtoc	zyspl
 
-	mtoc	syspp,zyspp
-	call	ccaller
-	db	0
+	global	syspp
+syspp:
+	mtoc	zyspp
 
-	mtoc	syspr,zyspr
-	call	ccaller
-	db	2
+	global	syspr
+syspr:
+	mtoc	zyspr
 
-	mtoc	sysrd,zysrd
-	call	ccaller
-	db	2
+	global	sysrd
+sysrd:
+	mtoc	zysrd
 
-	mtoc	sysri,zysri
-	call	ccaller
-	db	2
+	global	sysri
+sysri:
+	mtoc	zysri
 
-	mtoc	sysrw,zysrw
-	call	ccaller
-	db	6
+	global	sysrw
+sysrw:
+	mtoc	zysrw
 
-	mtoc	sysst,zysst
-	call	ccaller
-	db	10
+	global	sysst
+sysst:
+	mtoc	zysst
 
-	mtoc	systm,zystm
-	call	ccaller
-	db	0
+	global	systm
+systm:
+	mtoc	zystm
 
-	mtoc	systt,zystt
-	call	ccaller
-	db	0
+	global	systt
+systt:
+	mtoc	zystt
 
-	mtoc	sysul,zysul
-	call	ccaller
-	db	0
-
+	global	sysul
+sysul:
+	mtoc	zysul
         
-	mtoc	sysxi,zysxi
-	mov	[reg_xs],esp
-	call	ccaller
-	db	4
-
-
-
+	global	sysxi
+sysxi:
+	mtoc	zysxi
 
 
 ; INCLUDE INT-ARITH

@@ -66,5 +66,5 @@ zysdc()
     }
 
     Exit("zysdc");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

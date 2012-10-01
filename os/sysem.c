@@ -69,7 +69,7 @@ zysem()
     ptscblk->len = msgcopy(WA(word), errors, ptscblk->str);
     SET_XR(ptscblk);
     Exit("zysem");
-    return NORMAL_RETURN;
+    return EXI_0;
 }
 
 /*

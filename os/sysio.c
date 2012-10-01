@@ -58,7 +58,7 @@ zysio()
      */
     if (tioblk.flg2 & IO_ILL) {
 	Exit("zysio");
-	return EXIT_2;
+	return EXI_2;
     }
 
     fcb = (struct fcblk *) charptr;	/* 1.03 MBE     */
@@ -154,7 +154,7 @@ zysio()
     if (!(iob->flg1 & IO_OPN)) {
 	if (osopen(iob) != 0) {
 	    Exit("zysio");
-	    return EXIT_1;
+	    return EXI_1;
 	}
     }
 
@@ -173,5 +173,5 @@ zysio()
     SET_WC(0);
     SET_XL(WA(word));
     Exit("zysio");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

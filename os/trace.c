@@ -59,7 +59,7 @@ int at_cp;
 void atmsg() {
 	fprintf(stderr,"atmsg\n");
 }
-void 
+void
 rp(char *s, long reg) {
 	if (reg < 1000000 && reg > -1000000) {
 		fprintf(stderr,"%+8d", reg);
@@ -151,7 +151,7 @@ regdump()
 	/*tracer();*/
 #endif
 }
-void Trace(char * type, char * text) 
+void Trace(char * type, char * text)
 {
 #ifdef TRACE
 	fprintf(stderr,"%s %s\n", type, text);
@@ -163,20 +163,20 @@ void At(char * text)
 	Trace("At", text);
 #endif
 }
-void 
+void
 Enter(char * text) {
 #ifdef TRACE_ENTER
 	Trace("Enter", text);
 #endif
 }
-void Exit(char * text) 
+void Exit(char * text)
 {
 #ifdef TRACE_ENTER
 	Trace("Exit", text);
 #endif
 }
 #ifdef TRACE
-void shields() 
+void shields()
 {
 }
 void tracer()

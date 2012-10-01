@@ -125,9 +125,9 @@ zysxi()
 	    save0();		/* V1.14 make sure fd 0 OK */
 	    doexec(scb);	/* execute command      */
 	    restore0();		/* just in case         */
-	    return EXIT_2;	/* Couldn't chain */
+	    return EXI_2;	/* Couldn't chain */
 	}
-	return EXIT_1;		/* not a SCBLK          */
+	return EXI_1;		/* not a SCBLK          */
     }
 
     /*
@@ -139,13 +139,13 @@ zysxi()
 #if !EXECFILE
     /*  Don't accept request to write executable files. */
     if (IA(IATYPE) >= 0)
-	return EXIT_1;
+	return EXI_1;
 #endif				/* !EXECFILE */
 
 #if !SAVEFILE
     /*  Don't accept request except to write save file. */
     if (IA(IATYPE) <= 0)
-	return EXIT_1;
+	return EXI_1;
 #endif				/* !SAVEFILE */
 
 #if SAVEFILE | EXECFILE
@@ -297,7 +297,7 @@ zysxi()
   fail:
     retval |= closeaout(fileName, tmpfnbuf, retval);
     if (retval < 0)
-	return EXIT_2;
+	return EXI_2;
 
     /*
        /   load module or save file has been successfully written.
@@ -305,13 +305,13 @@ zysxi()
      */
     if (IA(IATYPE) == 4 || IA(IATYPE) == -4) {
 	SET_WA(1);		/* flag continuation to caller */
-	return NORMAL_RETURN;
+	return EXI_0;
     }
 
     SET_XL(0);			/* files already closed V1.11 */
     SET_WB(0);
     zysej();			/* NO RETURN */
-    return EXIT_1;
+    return EXI_1;
 #endif				/* EXECFILE | SAVEFILE */
 }
 

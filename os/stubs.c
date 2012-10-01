@@ -28,11 +28,11 @@ This file is part of Macro SPITBOL.
 
 zysdm()
 {
-    return NORMAL_RETURN;
+    return EXI_0;
 }
 
 
 zystt()
 {
-    return NORMAL_RETURN;
+    return EXI_0;
 }

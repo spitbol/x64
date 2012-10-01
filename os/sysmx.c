@@ -39,5 +39,5 @@ zysmx()
     Enter("zysmx");
     SET_WA(maxsize);
     Exit("zysmx");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

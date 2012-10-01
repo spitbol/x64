@@ -73,18 +73,18 @@ zysst()
 
     /* ensure iob is open, fail if unsuccessful */
     if (!(iob->flg1 & IO_OPN))
-	return EXIT_3;
+	return EXI_3;
 
 #if PIPES
     /* not allowed to do a set of a pipe */
     if (iob->flg2 & IO_PIP)
-	return EXIT_4;
+	return EXI_4;
 #endif				/* PIPES */
 
     /* whence may come in either integer or string form */
     icp = WC(struct icblk *);
     if (!getint(icp, &whence))
-	return EXIT_1;
+	return EXI_1;
 
 #if SETREAL
     /* offset comes in as a real in RA */
@@ -96,7 +96,7 @@ zysst()
 	struct scblk *scp;
 	scp = (struct scblk *) icp;
 	if (!checkstr(scp) || scp->len != 1)
-	    return EXIT_1;
+	    return EXI_1;
 	temp = whence;
 	switch (uppercase(scp->str[0])) {
 	case 'P':
@@ -124,13 +124,13 @@ zysst()
 		break;
 	    } else {
 		if (temp < 0 || temp > (word) maxsize)
-		    return EXIT_2;
+		    return EXI_2;
 		else
-		    return EXIT_1;
+		    return EXI_1;
 	    }
 
 	default:
-	    return EXIT_1;	/* Unrecognised control */
+	    return EXI_1;	/* Unrecognised control */
 	}
     }
     offset = (FILEPOS) temp;
@@ -140,7 +140,7 @@ zysst()
 
     /*  test for error.  01.02 */
     if (offset < (FILEPOS) 0)
-	return EXIT_5;
+	return EXI_5;
 #if SETREAL
     /*  return resulting position in RA.  01.07  */
     SET_RA(offset);
@@ -150,5 +150,5 @@ zysst()
 #endif
 
     /* normal return */
-    return NORMAL_RETURN;
+    return EXI_0;
 }

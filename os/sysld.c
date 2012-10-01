@@ -62,21 +62,21 @@ zysld()
 	switch ((word) result) {
 	case (word) 0:
     	    Exit("zysld");
-	    return EXIT_2;	/* I/O error */
+	    return EXI_2;	/* I/O error */
 	case (word) - 1:
     	    Exit("zysld");
-	    return EXIT_1;	/* doesn't exist */
+	    return EXI_1;	/* doesn't exist */
 	case (word) - 2:
     	    Exit("zysld");
-	    return EXIT_3;	/* insufficient memory */
+	    return EXI_3;	/* insufficient memory */
 	default:
 	    SET_XR(result);
     	    Exit("zysld");
-	    return NORMAL_RETURN;	/* Success, return pointer to stuff in EFBLK */
+	    return EXI_0;	/* Success, return pointer to stuff in EFBLK */
 	}
     } else {
     	Exit("zysld");
-	return EXIT_1;
+	return EXI_1;
     }
     Exit("zysld");
 }
@@ -102,6 +102,6 @@ char *file;
 
 
 #else				/* EXTFUN */
-    return EXIT_1;
+    return EXI_1;
 }
 #endif				/* EXTFUN */

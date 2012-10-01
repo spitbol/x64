@@ -53,7 +53,7 @@ zysmm()
 	SET_XR(n / sizeof(word));	/*  set # of words obtained */
     }
     Exit("zysmm");
-    return NORMAL_RETURN;
+    return EXI_0;
 }
 
 /*

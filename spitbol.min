@@ -4828,14 +4828,23 @@ gbsdp  dac  e_sed            sediment percentage
 .fi
 
 *      integer constants for general use
-*      icbld optimisation uses the first three.
 
+intv0  dic  +0
+intv1  dic  +1
+intv2  dic  +2
+intv3  dic  +3
+intv4  dic  +4
+intv5  dic  +5
+intv6  dic  +6
+intv7  dic  +7
+intv8  dic  +8
+intv9  dic  +9
 int_r  dac  b_icl
-intv0  dic  +0               0
+       dic  +0               0
 inton  dac  b_icl
-intv1  dic  +1               1
+       dic  +1               1
 inttw  dac  b_icl
-intv2  dic  +2               2
+       dic  +2               2
 intvt  dic  +10              10
 intvh  dic  +100             100
 intth  dic  +1000            1000

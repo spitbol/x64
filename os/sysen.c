@@ -49,14 +49,14 @@ zysen()
     /* ensure the file is open */
     if (!(iob->flg1 & IO_OPN)) {
         Exit("zysen");
-	return EXIT_1;
+	return EXI_1;
     }
 
     /* now close it */
     if (osclose(iob)) {
         Exit("zysen");
-	return EXIT_3;
+	return EXI_3;
     }
     Exit("zysen");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

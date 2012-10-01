@@ -113,5 +113,5 @@ zysbx()
 #endif				/* !RUNTIME */
 
     Exit("zysbx");
-    return NORMAL_RETURN;
+    return EXI_0;
 }

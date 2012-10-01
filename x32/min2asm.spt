@@ -917,22 +917,22 @@ g.lei	t1 = regmap[i.text(i1)]
 	asm('movzx',t1,'byte [' t1 '-1]')	
 						:(opdone)
 g.jsr	
-	jsr_calls = jsr_calls +  1
 	jsr_proc = getarg(i1)
 	asm('call',jsr_proc)		
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
 *	output = ne(jsr_count) nlines ' ' ' jsr ' getarg(i1) ' ' jsr_count
-	jsr_label = 'jsr_' jsr_calls
-	jsr_label_ret = jsr_label '_ret'
-	jsr_label_exi = jsr_label '_exi'
 	eq(jsr_count)				:s(opdone)
+	jsr_calls = jsr_calls +  1
+	jsr_label = 'call_' jsr_calls
+	jsr_label_ok = jsr_label '_ok'
+	jsr_label_exi = jsr_label '_exi'
 *	generate branch around for ppms that will follow
 *	take the branch if normal return (eax==0)
 	deflabel(jsr_label_exi)
 	asm('dec','eax.w0')
 *`	l1 = genlabel()
-	asm('jz',jsr_label_ret)
+	asm('js',jsr_label_ok)
 						:(opdone)
 g.ppm
 *  last arg is optional. generate four bytes
@@ -941,7 +941,7 @@ g.ppm
 	asm('dec','eax')
 	asm('js',	getarg(i1))
 	jsr_count = jsr_count - 1
-	eq(jsr_count) pseudo(jsr_label_ret)
+	eq(jsr_count) pseudo(jsr_label_ok)
 						:(opdone)
 g.ppm1
 *  a ppm with no arguments, which should never be executed, is
@@ -965,27 +965,24 @@ g.prc.n
 	prc.count = prc.count + 1
 	asm('pop','dword [' prcent(prc.count) ']')	
 						:(opdone)
+
 g.exi	t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
-	ident(t2,'n')				:s(g.exin)
+	ident(t2,'n')				:s(g.exir)
 *  here if r or e, with return address on stack.
-	ident(t3) eq(prc.args) asm('ret')	:s(opdone)
+	ident(t3) eq(prc.args) asm('ret')
+						:s(opdone)
 	differ(t3)				:s(g.exire)
+
 *  here if normal return.
-	asm('pop','eax')
-g.exir0	
-	ge(prc.args,1) asm('lea','eax','[eax+' 2 * prc.args ']')
-	asm('jmp','eax')			:(opdone)
-g.exire;* here if error return
-	asm('pop','eax')
-g.exir1	asm('jmp','exi__' t1)			:(opdone)
-g.exin;* here if n type procedure
-	differ(t3)				:s(g.exine)
-*  here if normal n return.  if no args, we can jump
-*  directly through the return link cell.
-	(eq(prc.args,0) asm('jmp', '[' prcent(prc.count) ']')) :s(opdone)
-	asm('mov','eax', prcent(prc.count))	:(g.exir0)
-g.exine;* here if error return from n procedure
-	asm('mov','eax',prcent(prc.count))	:(g.exir1)
+	asm('pop','eax')			:(g.exir)
+
+g.exire
+*  here if error return
+	asm('pop','eax')			:(g.exir)
+
+g.exir
+*	here to store exit value in eax
+	asm('mov','eax','0')			:(opdone)
 
 g.enp   					:(opdone)
 
@@ -1006,15 +1003,15 @@ g.err
 g.err1	
 	max.err = gt(t1,max.err) t1
 	asm('dec','eax')
- 	asm('js','error_' lpad(t1,3,'0'))
+ 	asm('js','err_' lpad(t1,3,'0'))
 	jsr_count = jsr_count - 1
-	eq(jsr_count) deflabel(jsr_label_ret)
+	eq(jsr_count) deflabel(jsr_label_ok)
 						:(opdone)
 g.erb
 	count.erb = count.erb + 1	
 	errfile =  i.text(i1) ' ' i.text(i2)
 	t1 = getarg(i1)
-	asm('mov','dword [errno]',t1)
+ 	asm('js','err_' lpad(t1,3,'0'))
 						:(opdone)
 g.icv   asm('inc',getarg(i1))    		
 						:(opdone)
@@ -1656,28 +1653,13 @@ g.sec.7
 
         pseudo(,'global','sec07')
         deflabel('sec07') 
-*        (differ(debug) pseudo(,'global','err_0'))
-*        pseudo(,'global','err_0')
-*	deflabel('ererb')
-*	asm('mov','eax.wa','dwords [errno]')
-*        deflabel('err_0')
-*	asm('pop','eax')
-*	asm('movzx','eax','byte [eax]')
-*	asm('jmp',' err_1a')
-**        (differ(debug) pseudo(,'global','err_1'))
-*        pseudo(,'global','err_1')
-*        deflabel('err_1')
-*	asm('pop','eax')
-*	asm('movzx','eax','byte [eax]')
-*	asm('add','eax','256')
-*        deflabel('err_1a')
-*	asm('jmp','err_')
 *	flush()
 
 *  loop to emit inc eax for each possible error code
-	n1 = max.err
+*	allow for some extra cases in case of max.err bad estimate
+	n1 = max.err +8
 g.sec.7.1
-	deflabel('error_' lpad(n1,3,'0'))
+	deflabel('err_' lpad(n1,3,'0'))
 	ge(n1 = n1 - 1) asm('inc','eax')	:s(g.sec.7.1)
         deflabel('err_')
 	asm('xchg',reg.wa,'eax')

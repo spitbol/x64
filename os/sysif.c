@@ -73,7 +73,7 @@ zysif()
 	/* Here to nest another include file */
 	if (nesting == INCLUDE_DEPTH) {	/* Is there room in array? */
     	    Exit("zysif");
-	    return EXIT_1;
+	    return EXI_1;
 	}
 
 	inc_pos[nesting] = doset(getrdiob(), 0L, 1);	/* Record current position */
@@ -125,7 +125,7 @@ zysif()
 	    *savecp = savechar;	/* Restore saved char */
 	    openprev();		/* Restore input file we just closed */
     	    Exit("zysif");
-	    return EXIT_1;	/* Fail */
+	    return EXI_1;	/* Fail */
 	}
     }
     /*
@@ -139,5 +139,5 @@ zysif()
     }
 
     Exit("zysif");
-    return NORMAL_RETURN;
+    return EXI_0;
 }
