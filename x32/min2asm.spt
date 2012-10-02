@@ -967,10 +967,12 @@ g.prc.n
 						:(opdone)
 
 g.exi	t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
+	t3 = ident(t3) '0'
 	ident(t2,'n')				:s(g.exir)
 *  here if r or e, with return address on stack.
-	ident(t3) eq(prc.args) asm('ret')
-						:s(opdone)
+	differ(t3)
+	ident(t3) eq(prc.args) asm('ret')	:f(g.exir)
+	ZZ
 	differ(t3)				:s(g.exire)
 
 *  here if normal return.
