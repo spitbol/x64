@@ -48,6 +48,8 @@ zystm()
      * # of milliseconds = tms_utime * (1000/10) / (CLK_TCK / 10)
      */
     SET_IA((timebuf.tms_utime * (1000 / 10)) / (CLK_TCK / 10));
+    fprintf("systm returns %u\n",
+	((timebuf.tms_utime * (1000 / 10)) / (CLK_TCK / 10)));
     Exit("zystm");
     return EXI_0;
 }

@@ -41,8 +41,7 @@
 	call	%%ati
 %%ati:
 	call	atip
-; back from at, pop arguments, restore registers, restore flags
-	pop	ax
+; back from at, pop argument, restore registers, restore flags
 	pop	ax
 	popad
 	popf
@@ -95,7 +94,7 @@
 ;
 	%macro	rmi_ 0
         or      eax,eax         ; test for 0
-        jz      %%setovr    ; jump if 0 divisor
+        jz      %%rmi_div_0     ; jump if 0 divisor
         push    ebp             ; preserve cp
         xchg    ebp,eax         ; divisor to ebp
         xchg    eax,edx         ; dividend in eax
@@ -103,7 +102,7 @@
         idiv    ebp             ; perform division. eax=quotient, edx=remainder
         pop     ebp             ; restore cp
         xor     eax,eax         ; clear overflow indicator
-%%setovr: 
+%%rmi_div_0: 
 	mov     al,0x80         ; set overflow indicator
         dec     al
 	%endmacro

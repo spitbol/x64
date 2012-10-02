@@ -75,10 +75,10 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 	trypath.o wrtaout.o
 
 # Assembly language objects common to all versions:
-CAOBJS = errors.o x32/sys.o
+CAOBJS = errors.o $(TARGET)/sys.o
 
 # machine-dependent object
-#XAOBJS = x32/sys.o
+#XAOBJS = $(TARGET)/sys.o
 #arith.o
 
 # Objects for SPITBOL's HOST function:
@@ -103,7 +103,7 @@ VOBJS =	spitbol.o
 OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
 
 # main program
-LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a $(MUSL)/lib/libc.a
+LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a $(MUSL)/lib/libc.a 
 #LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/ -L$(MUSL)/lib/libm.a -static
 #LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/ -L$(MUSL)/lib/libm.a -L/usr/lib/i386-linux-gnu/
 spitbol: $(OBJS)
@@ -129,9 +129,12 @@ spitbol.err: spitbol.s
 errors.s: $(ERR) spitbol.s
 	   $(SPIT) -1=spitbol.err -2=errors.s $(ERR)
 
-os.o: x32/os.inc
+os.o: $(TARGET)/os.inc
 
-sys.o: x32/os.inc
+sys.o: $(TARGET)/os.inc $(TARGET)/$(TARGET).h
+
+x32.o: $(TARGET)/os.inc $(TARGET)/$(TARGET).h
+
 
 # make os objects
 cobjs:	$(COBJS)

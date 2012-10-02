@@ -455,7 +455,7 @@ opnext
 	atlabel = (differ(inlabel) 1, 0)
 *	output = 'defining label for exec. instr' inlabel ' ' incode
 	deflabel()
-* 	outfile = '      ' 'ati' '   ' nlines
+*  	outfile = '      ' 'ati' '   ' nlines
 	eq(atlabel,0)				:s(opnext.2)
 *	here if executing statement with label
 *	issue trace call to atlin

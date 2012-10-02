@@ -55,7 +55,7 @@
 ;
 	%macro	rmi_ 0
         or      eax,eax         ; test for 0
-        jz      %%setovr    ; jump if 0 divisor
+        jz      %%rmi_div_0         ; jump if 0 divisor
         push    ebp             ; preserve cp
         xchg    ebp,eax         ; divisor to ebp
         xchg    eax,edx         ; dividend in eax
@@ -63,11 +63,10 @@
         idiv    ebp             ; perform division. eax=quotient, edx=remainder
         pop     ebp             ; restore cp
         xor     eax,eax         ; clear overflow indicator
-%%setovr: 
+%%rmi_div_0: 
 	mov     al,0x80         ; set overflow indicator
         dec     al
 	%endmacro
-
 
 ;       RTI_ - convert real in RA to integer in IA
 ;               returns C=0 if fit OK, C=1 if too large to convert
@@ -103,8 +102,6 @@
 %%rti_r: 
 	%endmacro
 
-
-
 ;       itr_ - convert integer in ia to real in ra
 
 	%macro	itr_ 0
@@ -125,23 +122,19 @@
 %endif
 	%endmacro
 
-
-
 ;       ldr_ - load real pointed to by eax to ra
 
 	%macro	ldr_ 0
-	atline  -200
+;	atline  -200
         push    dword [eax]                 ; lsh
-;	atline  -201
+; 	atline  -201
         pop     dword [reg_ra]
-;	atline  -202
+; 	atline  -202
         mov     eax,dword [eax+4]                     ; msh
-;	atline  -203
+; 	atline  -203
         mov     dword [reg_ra+4], eax
-	atline  -204
+;	atline  -204
         %endmacro
-
-
 
 ;       str_ - store ra in real pointed to by eax
 
@@ -179,8 +172,6 @@ str_:
         pop     ecx
 %endif
 	%endmacro
-
-
 ;       sbr_ - subtract real at [eax] from ra
 
         %macro  sbr_	0
@@ -230,8 +221,6 @@ mlr_:
         pop     ecx
 %endif
        %endmacro
-
-
 ;       dvr_ - divide real in ra by real at [eax]
 
         %macro  dvr_	0
@@ -258,7 +247,6 @@ mlr_:
 %endif
        %endmacro
 
-
 ;       ngr_ - negate real in ra
 
         %macro  ngr_	0
@@ -271,8 +259,6 @@ ngr_:
 %%ngr_2:  
 	%endmacro
 
-
-
 ; MATH-LIB
 ;	segment		.text
 
@@ -281,8 +267,6 @@ ngr_:
 	%macro	atn_	0
 
 ;       atn_ arctangent of real in ra
-
-
         push    ecx                             ; preserve regs for C
         push    edx
         push    dword [reg_ra+4]              ; RA msh
@@ -302,7 +286,6 @@ ngr_:
         pop     ecx
 %endif
 	%endmacro
-
 
 ;       chp_ chop fractional part of real in ra
 
@@ -326,7 +309,6 @@ ngr_:
         pop     ecx
 %endif
 	%endmacro
-
 
 ;       cos_ cosine of real in ra
 
