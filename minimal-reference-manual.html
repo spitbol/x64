@@ -3,8 +3,9 @@
 
 <html>
 <head>
-<title>README</title>
+<title>MINIMAL Reference Manual 1.0</title>
 </head>
+
 
 <body>
 
@@ -31,12 +32,24 @@ support for calling C procedures from MINIMAL, for calling MINIMAL
 procedures from C, for creating save files and load modules, and for
 resuming execution from save files or loand load modules.
 
-<p>The remainder of this document consists of text that was formerly
-part of the source code for the MACRO SPITBOL compiler.
+<p>To give some idea of the flavor of the code, consider the following simple
+SPITBOL program that copies standard input to standard output.
 
-<p>To give some idea of the code, here is an excerpt from the code for <strong>sysou</strong>, the procedure used to write an output record (line).
+<pre>
+loop output = input :s(loop)
+end
+</pre>
 
-<p>From the MINIMAL source:
+<p>By default, the variable <em>input</em> is input-associated to standard input, so each attempt to get its value results in reading in a line from standard input and returning the line as a string.
+The read fails if there are no more lines, and succeeds otherwise.
+
+
+<p>Similarly, the variable <em>output</em> is output-associated with standard
+output, so each assignment to <em>output</em> causes the assigned value to be
+written to the standard output file.
+
+<p>The osint procedure for writing a line is <strong>SYSOU</strong>. It is called from within SPITBOL as part of assignment, as shown in the follwing excerpt
+from the MINIMAL source:
 
 <pre>
 *      here for output association
@@ -96,14 +109,10 @@ zysou()
 	    result = zyspi();
 	else
 	    result = zyspr();
-	if (result == EXI_0) {
-    	    Exit("zysou");
+	if (result == EXI_0) 
 	    return EXI_0;
-	}
-	else {
-    	    Exit("zysou");
+	else 
 	    return EXI_2;
-        }
     }
 
     /* ensure iob is open, fail if unsuccessful */
@@ -122,8 +131,9 @@ zysou()
 }
 </pre>
 
-<p>Here is a fragment of the assembly code in Nasm for X86 that is
- used to call a C procedure from MINIMAL:
+<p>Here is a fragment of the assembly code that is used to 
+call a C procedure from MINIMAL. The code is  for 32-bit X86 
+and is written using NASM (Netwide Assembler) syntax.
 
 <pre>
 	%macro	mtoc	1
@@ -143,7 +153,7 @@ zysou()
         mov     edi, dword [reg_xr]
         mov     esi, dword [reg_xl]
         mov     ebp, dword [reg_cp]
-;	restore direction flag in (the unlikely) case callee changed it
+;	restore direction flag in (the unlikely) case that it was changed
         cld
 ;	note that the called procedure must return exi action in eax
 	ret
@@ -156,12 +166,17 @@ sysou:
 	mtoc	zysou
 </pre>
 
-<h1>MINIMAL -- Machine INdependent Macro Assembly Language</h1>
+<p>The remainder of this document consists of text that was formerly
+part of the source code for the MACRO SPITBOL compiler. It was converted
+from plain text to HTML by Dave Shields.
+
+<h1>MINIMAL -- Machine Independent Macro Assembly Language</h1>
 
 <p>
 
 The following sections describe the implementation language originally
-developed for SPITBOL but now more widely used. MINIMAL is an assembly
+developed for SPITBOL but now more widely used. 
+MINIMAL (Machine Independent Macro Assembly Language) is an assembly
 language for an idealized machine. The following describes the basic
 characteristics of this machine.
 
@@ -182,7 +197,8 @@ program to match the target machine.
 <dt><strong>cfp$a</strong> 
 
 <dd>Number of distinct characters in internal alphabet in the range 64
-le <strong>cfp$a</strong> le m<strong>XL</strong> en.
+le <strong>cfp$a</strong> le <strong>MAXLEN</strong>.
+
 <dt><strong>cfp$b</strong> 
 
 <dd>Number of bytes in a word where a byte is the amount of storage
