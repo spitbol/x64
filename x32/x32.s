@@ -68,12 +68,13 @@
         dec     al
 	%endmacro
 
-;       RTI_ - convert real in RA to integer in IA
+;       rti_ - convert real in RA to integer in IA
 ;               returns C=0 if fit OK, C=1 if too large to convert
 
 
 ; 41E00000 00000000 = 2147483648.0
 ; 41E00000 00200000 = 2147483649.0
+
 	%macro	rti_	0
         mov     eax, dword [reg_ra+4]   ; RA msh
         btr     eax,31          ; take absolute value, sign bit to carry flag

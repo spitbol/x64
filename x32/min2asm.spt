@@ -1143,6 +1143,10 @@ g.mli	asm('imul',reg.ia,getarg(i1))		:(opdone)
 g.sbi   asm('sub',reg.ia,getarg(i1))		:(opdone)
 
 g.dvi
+*	move argument to eax, call procedure
+	asm('mov','eax',getarg(i1))
+	asm('dvi_')	:(opdone)
+
 g.rmi
 *	move argument to eax, call procedure
 	asm('mov','eax',getarg(i1))
@@ -1187,9 +1191,11 @@ g.sbr
 g.mlr
 g.dvr	t1 = i.type(i1)
 	leaarg = getarg(i1)
+	output = 'g.rop before dword test ' leaarg
 	leaarg 'dword ' =
+	output = 'g.rop after dword test ' leaarg
 	(ge(t1,9) le(t1,15) asm('lea','eax',leaarg),
-+               asm('mov','eax', getarg(i1)))
++               asm('mov','eax', leaarg))
 	asm(incode '_')		:(opdone)
 
 g.ngr

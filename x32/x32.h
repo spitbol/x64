@@ -89,12 +89,31 @@
         xchg    edx,eax         ; return quotient in IA
 	%endmacro
 
-;
-;       rmi_ - remainder of ia (edx) divided by long in eax
-;
-	%macro	rmi_ 0
+;       dvi_ - divide IA (edx) by long in EAX
+
+	%macro	dvi_	0
         or      eax,eax         ; test for 0
-        jz      %%rmi_div_0     ; jump if 0 divisor
+        jz      %%dvi_0		; jump if 0 divisor
+        push    ebp             ; preserve CP
+        xchg    ebp,eax         ; divisor to ebp
+        xchg    eax,edx         ; dividend in eax
+        cdq                     ; extend dividend
+        idiv    ebp             ; perform division. eax=quotient, edx=remainder
+        xchg    edx,eax         ; place quotient in edx (IA)
+        pop     ebp             ; restore CP
+        xor     eax,eax         ; clear overflow indicator
+	jmp	%%dvi_1
+%%dvi_0: 
+	mov     al,0x80         ; set overflow indicator
+        dec     al
+%%dvi_1:
+	%endmacro
+
+;       rmi_ - remainder of IA (edx) divided by long in eax
+
+	%macro	rmi_	0
+        or      eax,eax         ; test for 0
+        jz      %%rmi_0		; jump if 0 divisor
         push    ebp             ; preserve cp
         xchg    ebp,eax         ; divisor to ebp
         xchg    eax,edx         ; dividend in eax
@@ -102,13 +121,15 @@
         idiv    ebp             ; perform division. eax=quotient, edx=remainder
         pop     ebp             ; restore cp
         xor     eax,eax         ; clear overflow indicator
-%%rmi_div_0: 
+	jmp	%%rmi_1		; jump to next instruction
+%%rmi_0: 
 	mov     al,0x80         ; set overflow indicator
         dec     al
+%%rmi_1:
 	%endmacro
 
 
-;       RTI_ - convert real in RA to integer in IA
+;       rti_ - convert real in RA to integer in IA
 ;               returns C=0 if fit OK, C=1 if too large to convert
 
 
