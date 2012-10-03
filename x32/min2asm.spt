@@ -1143,6 +1143,10 @@ g.mli	asm('imul',reg.ia,getarg(i1))		:(opdone)
 g.sbi   asm('sub',reg.ia,getarg(i1))		:(opdone)
 
 g.dvi
+*	move argument to eax, call procedure
+	asm('mov','eax',getarg(i1))
+	asm('dvi_')	:(opdone)
+
 g.rmi
 *	move argument to eax, call procedure
 	asm('mov','eax',getarg(i1))
