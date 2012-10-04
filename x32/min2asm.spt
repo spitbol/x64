@@ -124,7 +124,7 @@
         define('genlab()')
 	define('getarg(iarg,iacc)l1,l2,t1,t2')
 	define('ifreg(iarg)')
-	define('memmem(argnum)t1')
+	define('memmem(iarg)')
 	define('mov()dst,src,r.dst,r.src')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
@@ -169,7 +169,7 @@
 *
 *  initialize variables
 *
-	labcnt = noutlines = nlines = nstmts = ntarget = nerrors = 0
+	labcnt = olines = ilines = nstmts = ntarget = nerrors = 0
 	noptim1 = noptim2 = 0
 	lastopc = lastop1 = lastop2 =
 	data_lc = 0
@@ -402,7 +402,7 @@ err_ok
 *
 	outfile = comment.delim ' minimal/x86 translator ' version
 +		  ' ' transdate ' for ' machine
-	noutlines = noutlines + 1
+	olines = olines + 1
 	output = 'machine is ' machine
 
 	input(.hdrfile,4,machine '/' machine '.hdr')	:f(nohdr)
@@ -413,7 +413,7 @@ err_ok
 hdrcopy line = hdrfile				:f(hdrend)
 	ident(line,'end')			:s(nohdr)
 	outfile = line
-	noutlines = noutlines + 1		:(hdrcopy)
+	olines = olines + 1		:(hdrcopy)
 hdrend	havehdr =
 *	outfile = '	section .data'
 *	outfile = '      global ati_line'
@@ -448,20 +448,20 @@ opnext
 	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' '
 .		i.text(i2) ' ' i.text(i3)
 	argerrs = 0
-*  	output = differ(inlabel) 'input line ' nlines ' label ' inlabel
-*	output = 'input line ' nlines ' label ' inlabel
+*  	output = differ(inlabel) 'input line ' ilines ' label ' inlabel
+*	output = 'input line ' ilines ' label ' inlabel
 	ident(is_executable[incode])		:s(opnext.2)
 *	emit label here for an executable instruction
 	atlabel = (differ(inlabel) 1, 0)
 *	output = 'defining label for exec. instr' inlabel ' ' incode
 	deflabel()
-*  	outfile = '      ' 'ati' '   ' nlines
+*  	outfile = '      ' 'ati' '   ' ilines
 	eq(atlabel,0)				:s(opnext.2)
 *	here if executing statement with label
 *	issue trace call to atlin
 *	differ(is_branch[incode])		:s(opnext.2)
 
-*   	outfile = '  mov dword [nlines],'   nlines 
+*   	outfile = '  mov dword [ilines],'   ilines 
 *   	outfile = '  call  atlin'
 opnext.2
 *	branch via opcode to the generator for this operation
@@ -528,8 +528,8 @@ error
 	outfile = '* *???* ' thisline
 	outfile = '*       ' text
 .	          (ident(lasterror),'. last error was line ' lasterror)
-	lasterror = noutlines
-	noutlines = noutlines + 2
+	lasterror = olines
+	olines = olines + 2
 	le(nerrors = nerrors + 1, 10)		:s(opnext)
         output = 'too many errors, quitting'  :(end)
 -stitl genaop(stmt)
@@ -637,21 +637,16 @@ getarg.c.25
 getarg.c.26
 getarg.c.27 getarg = l1				:(return)
 
--stitl memmem(argnum)t1
+-stitl memmem(iarg)
 memmem
 *  memmem is called for those ops for which both operands may be
-*  in memory, in which case, we generate code to load second operand
-*  to pseudo-register 'w0', and then modify the second argument
-*  to reference this register
+*  in memory, in which case, we generate code to load the specified
+*  operand to work register 'w0', which then replaces the argument.
 *
-  eq(ismem[i.type(i1)])				:s(return)
-  eq(ismem[i.type(i2)])				:s(return)
-*  here if memory-memory case, load second argument
-*  outfile = 'MEMMEM ' getarg(i1) ' ' getarg(i2)
-  t1 = (eq(argnum, 1) getarg(i1), getarg(i2))
-  i2 = eq(argnum,2) minarg(8,'w0')
-  i1 = eq(argnum,1) minarg(8,'w0')
-  asm('mov','eax.w0',t1)				:(return)
+  ne(ismem[i.type(i1)]) ne(ismem[i.type(i2)])		:f(freturn)
+  memmem = minarg(8,'w0')
+  asm('mov','eax.w0', getarg(iarg))				:(return)
+
 
 mov
    dst = i.text(i1)
@@ -674,7 +669,9 @@ mov
 	ident(dst,'(xr)+')			:s(mov.xrp)
 	ident(dst,'-(xs)')			:s(mov.mxs)
 *  here if memory to memory. Bring second argument, the source, to register
-	memmem(2)
+*	output = ilines ' before move ' getarg(i1) ':' getarg(i2)
+	i2 = memmem(i2)
+*	output = ilines ' after  move ' getarg(i1) ':' getarg(i2)
 	asm('mov',getarg(i1),getarg(i2))
 						:(return)
 mov.xtp
@@ -685,7 +682,7 @@ mov.xlp
 	asm('mov',getarg(i1),'eax')		:(return)
 mov.xsp
 	ident(src,'(xr)+')		:s(mov.xsprp)
-	asm('pop', 'dword ' getarg(i1))	:(return)
+	asm('pop',  getarg(i1))	:(return)
 mov.xsprp 
 	asm('pop','eax')
 	asm('stosd')				:(return)
@@ -706,7 +703,7 @@ outstmt
 	ident(ostmt)				:s(return)
 	thistmt = ostmt
 	label = s.label(ostmt)
-*	output = differ(label) 'outstmt ' nlines ' ' label
+*	output = differ(label) 'outstmt ' ilines ' ' label
 *  attach source label to first generated instruction
 	comment = s.comment(ostmt)
 *  attach source comment to first generated instruction
@@ -774,12 +771,12 @@ outstmt4
 	ident(stmtout)				:s(return)
 	outfile = stmtout
 	ntarget	= ntarget + 1
-	noutlines = noutlines + 1
+	olines = olines + 1
 *
 *  record code labels in table with delimiter removed.
 	(ge(sectnow,5) differ(label))		:f(return)
 	label ? break(label.delim) . label	:f(return)
-	labtab<label> = noutlines		:(return)
+	labtab<label> = olines		:(return)
 -stitl prsarg(iarg)
 prsarg	prsarg = minarg(0)
 	iarg break(',') . l1 ',' rem . l2	:f(return)
@@ -792,8 +789,8 @@ prsarg	prsarg = minarg(0)
 *
 *
 readline readline = infile                      :f(rl02)
-	nlines = nlines + 1
-*DS	output = lpad(nlines,6) ' ' readline
+	ilines = ilines + 1
+*DS	output = lpad(ilines,6) ' ' readline
 	ident(readline )			:s(readline)
 	leq( substr(readline,1,1 ),'*' )       :f(rl01)
 *
@@ -802,7 +799,7 @@ readline readline = infile                      :f(rl02)
 	ident(strip_comment,'n')		:f(readline)
         readline len(1) = ';'
 	outfile = readline
-	noutlines = noutlines + 1               :(readline)
+	olines = olines + 1               :(readline)
 *
 *  here if not a comment line
 *
@@ -921,7 +918,7 @@ g.jsr
 	asm('call',jsr_proc)		
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
-*	output = ne(jsr_count) nlines ' ' ' jsr ' getarg(i1) ' ' jsr_count
+*	output = ne(jsr_count) ilines ' ' ' jsr ' getarg(i1) ' ' jsr_count
 	eq(jsr_count)				:s(opdone)
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
@@ -967,13 +964,12 @@ g.prc.n
 						:(opdone)
 
 g.exi	t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
-	t3 = ident(t3) '0'
+ 	t3 = ident(t3) '0'
+ 	output = ilines ':' olines ' :' i.text(i1) ':' prc.type  ':' prc.args
 	ident(t2,'n')				:s(g.exir)
 *  here if r or e, with return address on stack.
-	differ(t3)
-	ident(t3) eq(prc.args) asm('ret')	:f(g.exir)
-	ZZ
-	differ(t3)				:s(g.exire)
+	eq(t3) 					:s(g.exirp)
+*	differ(t3)				:s(g.exire)
 
 *  here if normal return.
 	asm('pop','eax')			:(g.exir)
@@ -982,6 +978,13 @@ g.exire
 *  here if error return
 	asm('pop','eax')			:(g.exir)
 
+g.exirp
+*  here for normal return, return after indicating normal return
+ 	output = 'g.exirp'
+	asm('mov','eax','0')
+	asm('ret')
+						:(opdone)
+	
 g.exir
 *	here to store exit value in eax
 	asm('mov','eax','0')			:(opdone)
@@ -1048,13 +1051,13 @@ g.rtn
 
 g.add
 *	bring second argument to register	
-	memmem(2)
-*	outfile = 'ADD ' nlines ' ' getarg(i1) ' ' getarg(i2)
+	i2 = memmem(i2)
+*	outfile = 'ADD ' ilines ' ' getarg(i1) ' ' getarg(i2)
 	asm('add',getarg(i1),getarg(i2))	:(opdone)
 
 g.sub	
 *	bring second argument to register	
-	memmem()
+	i2 = memmem(i2)
 	asm('sub',getarg(i1),getarg(i2))	:(opdone)
 
 g.ica   asm('add',getarg(i1),'4')		:(opdone)
@@ -1074,7 +1077,7 @@ g.bhi
 *  issue target opcode by table lookup.
 *
 *	bring first argument to work register
-	memmem(1)
+	i1 = memmem(i1)
 	t1 = branchtab[incode]
 	asm('cmp',getarg(i1),getarg(i2))
 	asm(branchtab[incode],getarg(i3))
@@ -1189,13 +1192,21 @@ g.str
 g.adr
 g.sbr
 g.mlr
-g.dvr	t1 = i.type(i1)
-	leaarg = getarg(i1)
-	output = 'g.rop before dword test ' leaarg
-	leaarg 'dword ' =
-	output = 'g.rop after dword test ' leaarg
-	(ge(t1,9) le(t1,15) asm('lea','eax',leaarg),
-+               asm('mov','eax', leaarg))
+g.dvr	
+*  unlike the other minimal registers, ra is maintained not as a single
+*  storage location, but as two successive 32-bit words, due to the x86
+*  architecture. The consequence here is that we must deal with the address
+*  of the ra, not its value.
+	t1 = getarg(i1)
+	typ1 = i.type(i1)
+* 	output = 'g.rop before dword test ' t1 ' ' typ1
+*	t1 'dword [' break(']') . leaarg rem
+	t1 'dword' =
+	t1 = trim(t1)
+*	output = 'g.rop after dword test ' t1 ' leaarg ' leaarg
+	(ge(typ1,9) le(typ1,15) asm('lea','eax', t1),
++	 ge(typ1,3) le(typ1,4)  asm('lea','eax', t1),
++               asm('mov','eax', getarg(i1)))
 	asm(incode '_')		:(opdone)
 
 g.ngr
@@ -1315,13 +1326,13 @@ g.csc
 
 g.ceq
 *	bring first argument to register
-	memmem(1)
+	i1 = memmem(i1)
 	asm('cmp',getarg(i1),getarg(i2))
 	asm('je',getarg(i3))			:(opdone)
 
 g.cne   
 *	bring first argument to register
-	memmem(1)
+	i1 = memmem(i1)
 	asm('cmp',getarg(i1),getarg(i2))
 	asm('jnz',getarg(i3))			:(opdone)
 
@@ -1713,7 +1724,7 @@ g.end
 *  here to copy remaining part from hdr file
 g.end.1	line = hdrfile				:f(g.end.2)
 	ntarget = ntarget + 1
-	noutlines = noutlines + 1
+	olines = olines + 1
 	outfile = line				:(g.end.1)
 g.end.2
         outstmt(stmt(,,,,,comment))
@@ -1724,7 +1735,7 @@ g.end.2
 g.end.3 
 g.end.4 
 	host(1,"touch " parms ".err")
-        output = rpad('lines read:',24)		 	nlines 
+        output = rpad('lines read:',24)		 	ilines 
         output = rpad('minimal statements:',24)	 nstmts 
         output = rpad('assembly lines written:',24)	 ntarget 
         output = ne(noptim1) ' "or" optimizations:' noptim1 
