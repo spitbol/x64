@@ -770,6 +770,7 @@ outstmt4
 	stmtout = replace(trim(stmtout),'$','_')
 	ident(stmtout)				:s(return)
 	outfile = stmtout
+*	output = olines ':' stmtout
 	ntarget	= ntarget + 1
 	olines = olines + 1
 *
@@ -962,34 +963,14 @@ g.prc.n
 	prc.count = prc.count + 1
 	asm('pop','dword [' prcent(prc.count) ']')	
 						:(opdone)
+g.enp   					:(opdone)
 
-g.exi	t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
- 	t3 = ident(t3) '0'
- 	output = ilines ':' olines ' :' i.text(i1) ':' prc.type  ':' prc.args
-	ident(t2,'n')				:s(g.exir)
-*  here if r or e, with return address on stack.
-	eq(t3) 					:s(g.exirp)
-*	differ(t3)				:s(g.exire)
-
-*  here if normal return.
-	asm('pop','eax')			:(g.exir)
-
-g.exire
-*  here if error return
-	asm('pop','eax')			:(g.exir)
-
-g.exirp
-*  here for normal return, return after indicating normal return
- 	output = 'g.exirp'
-	asm('mov','eax','0')
+g.exi	
+	t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
+	t3 = ident(t3) '0'
+	asm('mov','eax',t3)
 	asm('ret')
 						:(opdone)
-	
-g.exir
-*	here to store exit value in eax
-	asm('mov','eax','0')			:(opdone)
-
-g.enp   					:(opdone)
 
 g.err
 *  assume ax is zero, then err nnn,text is translated to
@@ -1299,6 +1280,7 @@ g.scg.w
 *  to name of low part.
 *
 	t1 = substr(regmap[i.text(i1)],2,1) 'l'
+	output = 'scg.w ' i.text(i1) ':' t1 ':'
 	ident(t2,'(xl)')			:s(g.scg.w.xl)
 	ident(t2,'-(xl)')			:s(g.scg.w.pxl)
 	ident(t2,'(xl)+')			:s(g.scg.w.xlp)
@@ -1308,16 +1290,16 @@ g.scg.w
 g.scg.w.xl
 	asm('mov','[esi]',t1)			:(opdone)
 g.scg.w.pxl
-	asm('dec','esi')
-	asm('mov','[esi]',t1)			:(opdone)
+	asm('dec','esi.xl')
+	asm('mov','[esi.xl]',t1)			:(opdone)
 g.scg.w.xlp
-	asm('mov','[esi]',t1)
+	asm('mov','[esi.xl]',t1)
 	asm('inc','esi')			:(opdone)
 g.scg.w.xr
-	asm('mov','[edi]',t1)			:(opdone)
+	asm('mov','[edi.xr]',t1)			:(opdone)
 g.scg.w.pxr
-	asm('dec','edi')
-	asm('mov','[edi]',t1)			:(opdone)
+	asm('dec','edi.xr')
+	asm('mov','[edi.xr]',t1)			:(opdone)
 g.scg.w.xrp
 	asm('mov','al',t1)
 	asm('stosb')				:(opdone)
