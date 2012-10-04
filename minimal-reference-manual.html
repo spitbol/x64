@@ -1617,7 +1617,7 @@ label in the program section.
 
 <dd>
 branch on switch value
-
+<p>
 <dt> 1.4  <strong>iff</strong>  val,<em>plbl</em>
 
 <dd>provide branch for switch
@@ -1628,7 +1628,7 @@ branch on switch value
             ...
 </pre>
 
-<dt>1.5  <strong>esw</strong>
+<p><dt>1.5  <strong>esw</strong>
 
 <dd>end of branch switch table
 
@@ -1656,7 +1656,7 @@ of x.  The <strong>iff</strong> entries may be in any order and since
 a translator may thus need to store and sort them, the comment field
 is restricted in length (sec 11).
 	    
-<dt>1.6  <strong>ent</strong>  val
+<p><dt>1.6  <strong>ent</strong>  val
 
 <dd>define program entry point
 
@@ -1700,7 +1700,7 @@ Entry point addresses are accessible only by use of literals
 (=<em>elbl</em>, section 7) or <strong>dac</strong> constants (section
 8-11.1).
 
-<dt>1.7  <strong>bri</strong>   <em>opn</em>
+<p><dt>1.7  <strong>bri</strong>   <em>opn</em>
 
 <dd>         branch indirect
 
@@ -1710,7 +1710,7 @@ Entry point addresses are accessible only by use of literals
 control is passed to the executable code starting at the entry point
 address.  <em>opn</em> is left unchanged.
 
-<dt>1.8  <strong>lei</strong>  x
+<p><dt>1.8  <strong>lei</strong>  x
 
 <dd>           load entry point identification
 
@@ -1721,11 +1721,11 @@ X contains the address of an entry point for which an identifying
 value was given on the the <strong>ent</strong> line.
 <strong>lei</strong> replaces the contents of x by this value.
 
-<dt>1.9  <strong>jsr</strong>  <em>pnam</em>
+<p><dt>1.9  <strong>jsr</strong>  <em>pnam</em>
 
 <dd>       call procedure <em>pnam</em>
 
-<dt>1.10 <strong>ppm</strong>  <em>plbl</em>
+<p><dt>1.10 <strong>ppm</strong>  <em>plbl</em>
 
 <dd>        provide exit parameter
 
@@ -1753,7 +1753,7 @@ in the procedure definition.
 be omitted if the corresponding <strong>exi</strong> return is certain
 not to be taken.
 
-<dt>1.11 <strong>prc</strong>  <em>ptyp</em>,int
+<p><dt>1.11 <strong>prc</strong>  <em>ptyp</em>,int
 
 <dd>    define start of procedure
 
@@ -1851,7 +1851,7 @@ not appear to lie within the allocated data area.
                              to lie within the program section.
 </ol>
 
-<dt>1.12 <strong>exi</strong>  int
+<p><dt>1.12 <strong>exi</strong>  int
 
 <dd>         exit from procedure
 <p>
@@ -1870,7 +1870,7 @@ instruction.  In this case, <strong>exi</strong> removes return points
 from the stack if any are stored there so that the stack pointer is
 restored to its calling value.
 
-<dt>1.13 <strong>enp</strong>
+<p><dt>1.13 <strong>enp</strong>
 
 <dd>              define end of procedure body
 <p>
@@ -1879,7 +1879,7 @@ restored to its calling value.
 <strong>enp</strong> delimits a procedure body and may not actually be
 executed, hence it must have no label.
 
-<dt>1.14 <strong>err</strong>  int,te<strong>xt</strong>
+<p><dt>1.14 <strong>err</strong>  int,te<strong>xt</strong>
 
 <dd>    provide error return
 <p>
@@ -1897,7 +1897,7 @@ exit parameter to an <strong>err</strong> control is instead passed to
 the first instruction in the error section (which follows the program
 section) with the error code in <strong>WA</strong>.
 
-<dt>1.15 <strong>erb</strong>  int,te<strong>xt</strong>
+<p><dt>1.15 <strong>erb</strong>  int,te<strong>xt</strong>
 
 <dd>    error branch
 <p>
@@ -1907,7 +1907,7 @@ This instruction resembles <strong>err</strong> except that it may
 occur at any point where a branch is permitted.  It effects a transfer
 of control to the error section with the error code in <strong>WA</strong>.
 
-<dt>1.16 <strong>icv</strong>   <em>opn</em>
+<p><dt>1.16 <strong>icv</strong>   <em>opn</em>
 
 <dd>         increment value by one
 <p>
@@ -1916,7 +1916,7 @@ of control to the error section with the error code in <strong>WA</strong>.
 <strong>icv</strong> increments the value of the operand by unity.  it
 is equivalent to <strong>add</strong> <em>opn</em>,=unity
 
-<dt>1.17 <strong>dcv</strong>   <em>opn</em>
+<p><dt>1.17 <strong>dcv</strong>   <em>opn</em>
 
 <dd>         decrement value by one
 <p>
@@ -1925,7 +1925,7 @@ is equivalent to <strong>add</strong> <em>opn</em>,=unity
 <strong>dcv</strong> decrements the value of the operand by unity.  It
 is equivalent to <strong>sub</strong> <em>opn=unity</em>
 
-<dt>1.18 <strong>zer</strong>   <em>opn</em>
+<p><dt>1.18 <strong>zer</strong>   <em>opn</em>
 
 <dd>         zeroise  <em>opn</em>
 <p>
@@ -1934,7 +1934,7 @@ is equivalent to <strong>sub</strong> <em>opn=unity</em>
 <strong>zer</strong> is equivalent to <strong>mov</strong> =zeroe,
 <em>opn</em>
 
-<dt>1.19 <strong>mnz</strong>   <em>opn</em>
+<p><dt>1.19 <strong>mnz</strong>   <em>opn</em>
 
 <dd>         move non-zero to  <em>opn</em>
 <p>
@@ -1944,11 +1944,11 @@ Any non-zero collectable value may used, for which the opcodes <strong>bnz/bze</
 will branch/fail to branch.
 
 
-<dt>1.20 <strong>ssl</strong>   <em>opw</em>
+<p><dt>1.20 <strong>ssl</strong>   <em>opw</em>
 
 <dd>         subroutine stack load
 
-<dt>1.21 <strong>sss</strong>   <em>opw</em>
+<p><dt>1.21 <strong>sss</strong>   <em>opw</em>
 
 <dd>         subroutine stack store
 <p>
@@ -1970,7 +1970,7 @@ translator) and the only requirement is that it should fit into a
 single full word.  <strong>ssl</strong> and <strong>sss</strong> are
 no- <em>ops</em> if no private link stack is not used.
 
-<dt>1.22 <strong>rtn</strong>
+<p><dt>1.22 <strong>rtn</strong>
 
 <dd>              define start of routine
 <p>
@@ -1989,7 +1989,7 @@ the end of a routine is not marked by an explicit opcode (compare
 
 <dl>
 
-<dt>2.1  <strong>add</strong>   <em>opv</em>,op
+<p><dt>2.1  <strong>add</strong>   <em>opv</em>,op
 
 <dd>
 
@@ -1997,14 +1997,14 @@ the end of a routine is not marked by an explicit opcode (compare
                              stores the result in  <em>opn</em>. undefined
                              if the result exceeds <strong>cfp$l</strong> .
 
-<dt>2.2  <strong>sub</strong>   <em>opn</em>,<em>opv</em>
+<p><dt>2.2  <strong>sub</strong>   <em>opn</em>,<em>opv</em>
 
 <dd>
 
 subtracts <em>opv</em> from <em>opn</em>. stores the result in
 <em>opn</em>. Undefined if the result is negative.
 
-<dt>2.3  <strong>ica</strong>   <em>opn</em>
+<p><dt>2.3  <strong>ica</strong>   <em>opn</em>
 
 <dd>         increment address in  <em>opn</em>
 <p>
@@ -2013,46 +2013,46 @@ subtracts <em>opv</em> from <em>opn</em>. stores the result in
 
 equivalent to <strong>add</strong>  <em>opn</em>,*unity
 
-<dt>2.4  <strong>dca</strong>   <em>opn</em>
+<p><dt>2.4  <strong>dca</strong>   <em>opn</em>
 
 <dd>
 
 Decrement address in <em>opn</em> equivalent to <strong>sub</strong>
 *unity,<em>opn</em>
 
-<dt>2.5  <strong>beq</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.5  <strong>beq</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 <dd> branch to <em>plbl</em>  <em>opn</em> eq  <em>opv</em>
 
 
-<dt>2.6  <strong>bne</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.6  <strong>bne</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 
 <dd>branch to <em>plbl</em>  <em>opn</em> ne  <em>opv</em>
 
-<dt>2.7  <strong>bgt</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.7  <strong>bgt</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 
 <dd> branch to <em>plbl</em>  <em>opn</em> gt  <em>opv</em>
 
-<dt>2.8  <strong>bge</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.8  <strong>bge</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 
 <dd> branch to <em>plbl</em>  <em>opn</em> ge  <em>opv</em>
 
-<dt>2.9  <strong>blt</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.9  <strong>blt</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 <dd>branch to <em>plbl</em>  <em>opn</em> lt  <em>opv</em>
 
-<dt>2.10 <strong>ble</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.10 <strong>ble</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 <dd> branch to <em>plbl</em>  <em>opn</em> le  <em>opv</em>
 
-<dt>2.11 <strong>blo</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.11 <strong>blo</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 <dd> equivalent to <strong>blt</strong> or ble
 
-<dt>2.12 <strong>bhi</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.12 <strong>bhi</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 <dd> equivalent to <strong>bgt</strong> or bge
 
@@ -2065,15 +2065,15 @@ instructions are used in cases where the equal condition either does
 not occur or can result either in a branch or no branch. This avoids
 inefficient translations in some implementations.
 
-<dt>2.13 <strong>bnz</strong>   <em>opn</em>,<em>plbl</em>
+<p><dt>2.13 <strong>bnz</strong>   <em>opn</em>,<em>plbl</em>
 
 <dd>    Equivalent to <strong>bne</strong>  <em>opn</em>,=zeroe,<em>plbl</em>
 
-<dt>2.14 <strong>bze</strong>   <em>opn</em>,<em>plbl</em>
+<p><dt>2.14 <strong>bze</strong>   <em>opn</em>,<em>plbl</em>
 
 <dd>    equivalent to <strong>beq</strong>  <em>opn</em>,=zeroe,<em>plbl</em>
 
-<dt>2.15 <strong>lct</strong>  <em>w</em>,<em>opv</em>
+<p><dt>2.15 <strong>lct</strong>  <em>w</em>,<em>opv</em>
 
 <dd>       load counter for bct
 <p>
@@ -2085,7 +2085,7 @@ instruction. the value in <em>opv</em> is the number of lo
 <p>The value in <em>w</em> after this operation is an
 undefined one word integer quantity.
 
-<dt>2.16 <strong>bct</strong>  w,<em>plbl</em>
+<p><dt>2.16 <strong>bct</strong>  w,<em>plbl</em>
 
 <dd>      branch and count
 <p>
@@ -2098,7 +2098,7 @@ through to the ne<strong>xt</strong> instruction. <strong>bct</strong> can only 
 following an appropriate <strong>lct</strong> instruction.  The value
 in <em>w</em> after execution of <strong>bct</strong> is undefined.
 
-<dt>2.17 <strong>aov</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.17 <strong>aov</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
 
 <dd> <strong>add</strong> with carry test
 
@@ -2106,11 +2106,11 @@ in <em>w</em> after execution of <strong>bct</strong> is undefined.
              <em>opn</em>. Branches to <em>plbl</em> result exceeds <strong>cfp$l</strong> 
             with result in  <em>opn</em> undefined. cf. <strong>add</strong> 
 
-<dt>2.18 <strong>bev</strong>   <em>opn</em>,<em>plbl</em>
+<p><dt>2.18 <strong>bev</strong>   <em>opn</em>,<em>plbl</em>
 
 <dd>     branch even
 
-<dt>2.19 <strong>bod</strong>   <em>opn</em>,<em>plbl</em>
+<p><dt>2.19 <strong>bod</strong>   <em>opn</em>,<em>plbl</em>
 
 <dd>     branch odd
 <p>
@@ -2138,7 +2138,7 @@ address (i.e.  a one word integer which is a multiple of
 <strong>cfp$b</strong> ).
 
 <dl>
-<dt>3.1  <strong>lcp</strong>   reg
+<p><dt>3.1  <strong>lcp</strong>   reg
 
 <dd>         load code pointer register
 
@@ -2147,7 +2147,7 @@ address (i.e.  a one word integer which is a multiple of
 This instruction causes the code pointer register to be set from the
 value in <em>reg</em> which is unchanged
 
-<dt>3.2  <strong>scp</strong>   reg
+<p><dt>3.2  <strong>scp</strong>   reg
 
 <dd>
 
@@ -2155,7 +2155,7 @@ Store code pointer register this instruction loads the current value
 in the code pointer register into reg. (<strong>CP</strong> ) is
 unchanged.
 
-<dt>3.3  <strong>lcw</strong>  reg
+<p><dt>3.3  <strong>lcw</strong>  reg
 
 <dd>load next code word
 
@@ -2166,7 +2166,7 @@ be loaded into the indicated reg. The value in <strong>CP</strong> is
 <strong>then</strong> incremented by one word.  Execution of
 <strong>lcw</strong> may destroy <strong>XL</strong> .
 
-<dt>3.4  <strong>icp</strong> 
+<p><dt>3.4  <strong>icp</strong> 
 
 <dd>              increment <strong>CP</strong>  by one word
 <p>
@@ -2206,36 +2206,36 @@ $$$ can also be used.
 
 <dl>
 
-<dt>4.1  <strong>ldi</strong>   <em>ops</em>
+<p><dt>4.1  <strong>ldi</strong>   <em>ops</em>
 
 <dd>         load integer accumulator from  <em>ops</em>
 
-<dt>4.2  <strong>adi</strong>   <em>ops</em>
+<p><dt>4.2  <strong>adi</strong>   <em>ops</em>
 
 <dd>         <strong>add</strong>  <em>ops</em> to integer accumulator
 
-<dt>4.3  <strong>mli</strong>   <em>ops</em>
+<p><dt>4.3  <strong>mli</strong>   <em>ops</em>
 
 <dd>         multiply integer accumulator by  <em>ops</em>
 
-<dt>4.4  <strong>sbi</strong>   <em>ops</em>
+<p><dt>4.4  <strong>sbi</strong>   <em>ops</em>
 
 <dd>
 subtract  <em>ops</em> from int accumulator
 
-<dt>4.5  <strong>dvi</strong>   <em>ops</em>
+<p><dt>4.5  <strong>dvi</strong>   <em>ops</em>
 
 <dd>         divide integer accumulator by  <em>ops</em>
 
-<dt>4.6  <strong>rmi</strong>   <em>ops</em>
+<p><dt>4.6  <strong>rmi</strong>   <em>ops</em>
 
 <dd>         set int accum to mod(intacc,<em>ops</em>)
 
-<dt>4.7  <strong>sti</strong>   <em>ops</em>
+<p><dt>4.7  <strong>sti</strong>   <em>ops</em>
 
 <dd>         store integer accumulator at  <em>ops</em>
 
-<dt>4.8  <strong>ngi</strong>
+<p><dt>4.8  <strong>ngi</strong>
 
 <dd>              negate the value in the integer
                              accumulator (change its sign)
@@ -2290,11 +2290,11 @@ or <strong>ino</strong>.
 <p>Particular care may be needed on target
 machines having distinct overflow and divide by zero conditions.
 
-<dt>4.9  <strong>ino</strong>  <em>plbl</em>
+<p><dt>4.9  <strong>ino</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> no integer overflow
 
-<dt>4.10 <strong>iov</strong>  <em>plbl</em>
+<p><dt>4.10 <strong>iov</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> integer overflow
 <p>
@@ -2306,29 +2306,29 @@ which can cause integer overflow (<strong>adi</strong>, <strong>sbi</strong>
 and test the result of the preceding instruction.
 <strong>iov</strong> and <strong>ino</strong> may not have labels.
 
-<dt>4.11 <strong>ieq</strong>  <em>plbl</em>
+<p><dt>4.11 <strong>ieq</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> (<strong>IA</strong> ) eq 0
 
 
-<dt>4.12 <strong>ige</strong>  <em>plbl</em>
+<p><dt>4.12 <strong>ige</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> (<strong>IA</strong> ) ge 0
 
-<dt>4.13 <strong>igt</strong>  <em>plbl</em>
+<p><dt>4.13 <strong>igt</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> (<strong>IA</strong> ) gt 0
 
-<dt>4.14 <strong>ile</strong>  <em>plbl</em>
+<p><dt>4.14 <strong>ile</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> (<strong>IA</strong> ) le 0
 
 
-<dt>4.15 <strong>ilt</strong>  <em>plbl</em>
+<p><dt>4.15 <strong>ilt</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> (<strong>IA</strong> ) lt 0
 
-<dt>4.16 <strong>ine</strong>  <em>plbl</em>
+<p><dt>4.16 <strong>ine</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> (<strong>IA</strong> ) ne 0
 
@@ -2343,29 +2343,29 @@ instructions operate correctly with such a value.  </dl>
 
  <h3>5- Operations on Real Values</h3> <dl>
 
-<dt>5.1  <strong>ldr</strong>   <em>ops</em>
+<p><dt>5.1  <strong>ldr</strong>   <em>ops</em>
 
 <dd>         load real accumulator from  <em>ops</em>
 
-<dt>5.2  <strong>str</strong>   <em>ops</em>
+<p><dt>5.2  <strong>str</strong>   <em>ops</em>
 
 <dd>         store real accumulator at  <em>ops</em>
 
 
-<dt>5.3  <strong>adr</strong>   <em>ops</em>
+<p><dt>5.3  <strong>adr</strong>   <em>ops</em>
 
 <dd>         <strong>add</strong>  <em>ops</em> to real accumulator
 
-<dt>5.4  <strong>sbr</strong>   <em>ops</em>
+<p><dt>5.4  <strong>sbr</strong>   <em>ops</em>
 
 <dd>         subtract  <em>ops</em> from real accumulator
 
 
-<dt>5.5  <strong>mlr</strong>   <em>ops</em>
+<p><dt>5.5  <strong>mlr</strong>   <em>ops</em>
 
 <dd>         multiply real accumulator by  <em>ops</em>
 
-<dt>5.6  <strong>dvr</strong>   <em>ops</em>
+<p><dt>5.6  <strong>dvr</strong>   <em>ops</em>
 
 <dd>         divide real accumulator by  <em>ops</em>
 
@@ -2381,11 +2381,11 @@ the following instruction must be either <strong>rov</strong> or
 <p>Particular care may be needed on target machines
 having distinct overflow and divide by zero conditions.
 
-<dt>5.7  <strong>rov</strong>  <em>plbl</em>
+<p><dt>5.7  <strong>rov</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> real overflow
 
-<dt>5.8  <strong>rno</strong>  <em>plbl</em>
+<p><dt>5.8  <strong>rno</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> no real overflow
 
@@ -2395,33 +2395,33 @@ These instructions can only occur immediately following an instruction
 which can cause real overflow (<strong>adr</strong>,<strong>sbr</strong>
 <strong>mlr</strong> <strong>dvr</strong>.
 
-<dt>5.9 <strong>ngr</strong>
+<p><dt>5.9 <strong>ngr</strong>
 
 <dd>              negate real accum (change sign)
 
-<dt>5.10 <strong>req</strong>  <em>plbl</em>
+<p><dt>5.10 <strong>req</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> (<strong>RA</strong> ) eq 0.0
 
 
-<dt>5.11 <strong>rge</strong>  <em>plbl</em>
+<p><dt>5.11 <strong>rge</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> (<strong>RA</strong> ) ge 0.0
 
-<dt>5.12 <strong>rgt</strong>  <em>plbl</em>
+<p><dt>5.12 <strong>rgt</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> (<strong>RA</strong> ) gt 0.0
 
 
-<dt>5.13 <strong>rle</strong>  <em>plbl</em>
+<p><dt>5.13 <strong>rle</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> (<strong>RA</strong> ) le 0.0
 
-<dt>5.14 <strong>rlt</strong>  <em>plbl</em>
+<p><dt>5.14 <strong>rlt</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> (<strong>RA</strong> ) lt 0.0
 
-<dt>5.15 <strong>rne</strong>  <em>plbl</em>
+<p><dt>5.15 <strong>rne</strong>  <em>plbl</em>
 
 <dd>        jump to <em>plbl</em> (<strong>RA</strong> ) ne 0.0
 
@@ -2434,36 +2434,36 @@ which can cause real overflow (<strong>adr</strong>,<strong>sbr</strong>
             produce negative zero in <strong>RA</strong>  provided these
             instructions operate correctly with such a value.
 
-<dt>5.16 <strong>atn</strong>
+<p><dt>5.16 <strong>atn</strong>
 
 <dd>              arctangent of real accum
 
 
-<dt>5.17 <strong>chp</strong>
+<p><dt>5.17 <strong>chp</strong>
 
 <dd>              integer portion of real accum
 
-<dt>5.18 <strong>cos</strong>
+<p><dt>5.18 <strong>cos</strong>
 
 <dd>              cosine of real accum
 
-<dt>5.19 <strong>etx</strong>
+<p><dt>5.19 <strong>etx</strong>
 
 <dd>              e to the power in the real accum
 
-<dt>5.20 <strong>lnf</strong>
+<p><dt>5.20 <strong>lnf</strong>
 
 <dd>              natural logorithm of real accum
 
-<dt>5.21 <strong>sin</strong>
+<p><dt>5.21 <strong>sin</strong>
 
 <dd>              sine of real accum
 
-<dt>5.22 <strong>sqr</strong>
+<p><dt>5.22 <strong>sqr</strong>
 
 <dd>              square root of real accum
 
-<dt>5.23 <strong>tan</strong>
+<p><dt>5.23 <strong>tan</strong>
 
 <dd>              tangent of real accum
 
@@ -2528,12 +2528,12 @@ equality.
 
 </dl>
 
-<dt>6.1  <strong>plc</strong>  <em>x</em>,<em>opv</em>
+<p><dt>6.1  <strong>plc</strong>  <em>x</em>,<em>opv</em>
 
 <dd>       prepare ch ptr for <strong>lch</strong> <strong>cmc</strong> mvc,<strong>trc</strong> 
                              <strong>mcb</strong> 
 
-<dt>6.2  <strong>psc</strong>  <em>x</em>,<em>opv</em>
+<p><dt>6.2  <strong>psc</strong>  <em>x</em>,<em>opv</em>
 
 <dd>       prepare char. ptr for <strong>sch</strong> <strong>mvc</strong> <strong>mcb</strong> 
 
@@ -2554,11 +2554,11 @@ then <pre> <strong>plc</strong> <strong>XL</strong> ,=num01 </pre>
 points to h.
 
 
-<dt>6.3  <strong>lch</strong>  <em>reg</em>,<em>opc</em>
+<p><dt>6.3  <strong>lch</strong>  <em>reg</em>,<em>opc</em>
 
 <dd>     load character into reg
 
-<dt>6.4  <strong>sch</strong>  <em>reg</em>,<em>opc</em>
+<p><dt>6.4  <strong>sch</strong>  <em>reg</em>,<em>opc</em>
 
 <dd>     store character from <em>reg</em>
 
@@ -2590,7 +2590,7 @@ character.
                              character is referenced.
 </ul>
 
-<dt>6.5  <strong>csc</strong>  x
+<p><dt>6.5  <strong>csc</strong>  x
 
 <dd>           complete store characters
 
@@ -2620,15 +2620,15 @@ possibility of the sign bit being set may require special action.
 Note that restriction 2 above, eases use of these orders in testing
 complete strings for equality, since whole word tests are possible.
 
-<dt>6.6  <strong>ceq</strong>   <em>opw</em>,<em>opw</em>,<em>plbl</em>
+<p><dt>6.6  <strong>ceq</strong>   <em>opw</em>,<em>opw</em>,<em>plbl</em>
 
 <dd> jump to <em>plbl</em>  <em>opw</em> eq  <em>opw</em>
 
-<dt>6.7  <strong>cne</strong>   <em>opw</em>,<em>opw</em>,<em>plbl</em>
+<p><dt>6.7  <strong>cne</strong>   <em>opw</em>,<em>opw</em>,<em>plbl</em>
 
 <dd> jump to <em>plbl</em>  <em>opw</em> ne  <em>opw</em>
 
-<dt>6.8  <strong>cmc</strong>  <em>plbl</em>,<em>plbl</em>
+<p><dt>6.8  <strong>cmc</strong>  <em>plbl</em>,<em>plbl</em>
 
 <dd>   compare characters
 
@@ -2658,7 +2658,7 @@ undefined.
 partial strings, so making optimisation to use whole word comparisons
 difficult (dependent in general on shifts and masking).
 
-<dt>6.9  <strong>trc</strong>
+<p><dt>6.9  <strong>trc</strong>
 
 <dd>              translate characters
 
@@ -2684,7 +2684,7 @@ of the <strong>cfp$a</strong> characters in the alphabet.
 completion, (<strong>XR</strong> ) and (<strong>XL</strong> ) are set
 to zero and (<strong>WA</strong>) is undefined.
 
-<dt>6.10 <strong>flc</strong>  w
+<p><dt>6.10 <strong>flc</strong>  w
 
 <dd>           fold character to upper case
 
@@ -2698,17 +2698,17 @@ character.  </dl>
 
 <dl>
 
-<dt>7.1  <strong>anb</strong>   <em>w</em>,<em>opw</em>
+<p><dt>7.1  <strong>anb</strong>   <em>w</em>,<em>opw</em>
 
 <dd>       and bit string values
 
 
-<dt>7.2  <strong>orb</strong>   <emp>w</em>,<em>opw</em>
+<p><dt>7.2  <strong>orb</strong>   <emp>w</em>,<em>opw</em>
 
 <dd>       or bit string values
 
 
-<dt>7.3  <strong>xob</strong>   <em>w</em>,<em>opw</em>
+<p><dt>7.3  <strong>xob</strong>   <em>w</em>,<em>opw</em>
 
 <dd>       exclusive or bit string values
 
@@ -2719,27 +2719,27 @@ In the above operations, the logical connective is applied separately
 to each of the <strong>cfp$n</strong> bits.  The result is stored in
 the second operand location.
 
-<dt>7.4  <strong>cmb</strong>  w
+<p><dt>7.4  <strong>cmb</strong>  w
 
 <dd>           complement all bits in  <em>opw</em>
 
 
-<dt>7.5  <strong>rsh</strong>  w,val
+<p><dt>7.5  <strong>rsh</strong>  w,val
 
 <dd>       right shift by <em>val</em> bits
 
 
-<dt>7.6  <strong>lsh</strong>  w,val
+<p><dt>7.6  <strong>lsh</strong>  w,val
 
 <dd>       left shift by <em>val</em> bits
 
 
-<dt>7.7  <strong>rsx</strong>  w,(dx)
+<p><dt>7.7  <strong>rsx</strong>  w,(dx)
 
 <dd>       right shift w number of bits in x
 
 
-<dt>7.8  <strong>lsx</strong>  w,(x)
+<p><dt>7.8  <strong>lsx</strong>  w,(x)
 
 <dd>       left shift w number of bits in x
 
@@ -2750,16 +2750,16 @@ and zero bits supplied as required. The shift count is in the range
 0-<strong>cfp$n</strong> .
 
 
-<dt>7.9  <strong>nzb</strong>  w,<em>plbl</em>
+<p><dt>7.9  <strong>nzb</strong>  w,<em>plbl</em>
 
 <dd>      jump to <em>plbl</em> w is not all zero bits.
 
-<dt>7.10 <strong>zrb</strong>  w,<em>plbl</em>
+<p><dt>7.10 <strong>zrb</strong>  w,<em>plbl</em>
 
 <dd>      jump to <em>plbl</em> w is all zero bits
 
 
-<dt>7.11 <strong>zgb</strong>   <em>opn</em>
+<p><dt>7.11 <strong>zgb</strong>   <em>opn</em>
 
 <dd>         zeroise garbage bits
 
@@ -2785,7 +2785,7 @@ The following instructions provide for conversion between lengths in
 bytes and lengths in words.
 
 
-<dt>8.1  <strong>wtb</strong>  reg
+<p><dt>8.1  <strong>wtb</strong>  reg
 
 <dd>         convert  <em>reg</em> from words to bytes.
 
@@ -2793,7 +2793,7 @@ bytes and lengths in words.
 <p>That is, multiply by <strong>cfp$b</strong> . this is
                              a no-op <strong>cfp$b</strong>  is one.
 
-<dt>8.2  <strong>btw</strong>  reg
+<p><dt>8.2  <strong>btw</strong>  reg
 
 <dd>         convert  <em>reg</em> from bytes to words
 
@@ -2807,14 +2807,14 @@ fraction. no-op <strong>cfp$b</strong> is one
 The following instructions provide for conversion of one word integer
 values (addresses) to and from the full signed integer format.
 
-<dt>8.3  <strong>mti</strong>   <em>opn</em>
+<p><dt>8.3  <strong>mti</strong>   <em>opn</em>
 
 <dd>
 
 The value of <em>opn</em> (an address) is moved as a positive integer
 to the integer accumulator.
 
-<dt>8.4  <strong>mfi</strong>   <em>opn</em>,<em>plbl</em>
+<p><dt>8.4  <strong>mfi</strong>   <em>opn</em>,<em>plbl</em>
 
 <dd>
 
@@ -2830,14 +2830,14 @@ signalled.  <em>plbl</em> may be omitted overflow is impossible.
             The following instructions provide for conversion
             between real values and integer values.
 
-<dt>8.5  <strong>itr</strong>
+<p><dt>8.5  <strong>itr</strong>
 
 <dd>
 
 Convert integer value in integer accumulator to real and store in real
 accumulator (may lose precision in some cases)
 
-<dt>8.6  <strong>rti</strong>  <em>plbl</em>
+<p><dt>8.6  <strong>rti</strong>  <em>plbl</em>
 
 <dd>
 
@@ -2855,7 +2855,7 @@ changed in either case.
 The following instructions provide for computing the length of storage
 required for a te<strong>xt</strong> string.
 
-<dt>8.7  <strong>ctw</strong>  w,val
+<p><dt>8.7  <strong>ctw</strong>  w,val
 
 <dd>
 
@@ -2866,7 +2866,7 @@ characters) + (val). the sum is stored in w.
 <strong>cfp$c</strong> is 5, and <strong>WA</strong> contains 32, <strong>then</strong>
 <strong>ctw</strong> <strong>WA</strong>,2 gives a result of 9 in <strong>WA</strong>.
 
-<dt>8.8  <strong>ctb</strong>  w,val
+<p><dt>8.8  <strong>ctb</strong>  w,val
 
 <dd>       <strong>ctb</strong> is exactly like <strong>ctw</strong> except that
                              the result is in bytes. it has the
@@ -2879,7 +2879,7 @@ conversion routines. They employ negative integer values to allow for
 proper conversion of numbers which cannot be complemented.
 
 
-<dt>8.9  <strong>cvm</strong>  <em>plbl</em>
+<p><dt>8.9  <strong>cvm</strong>  <em>plbl</em>
 
 <dd>        convert by multiplication
 
@@ -2895,7 +2895,7 @@ with the result in (<strong>IA</strong> ) undefined. execution of
 undefined.
 
 
-<dte>8.10 cvd
+<p><dte>8.10 cvd
 
 <dd>              convert by division
 
@@ -2928,7 +2928,7 @@ value in <strong>WA</strong> will move at least one item, and may may wrap the c
 causing a core dump in some imple- mentations.  Thus <strong>WA</strong> should be .gt.
 0 prior to invoking any of these block move instructions.
 
-<dt>9.1  <strong>mvc</strong>
+<p><dt>9.1  <strong>mvc</strong>
 
 <dd>              move characters
 
@@ -2957,7 +2957,7 @@ The character pointers are bumped as indicated and the final value of
 <strong>WA</strong> is undefined.
 
 
-<dt>9.2  <strong>mvw</strong>
+<p><dt>9.2  <strong>mvw</strong>
 
 <dd>              move words
 
@@ -2983,7 +2983,7 @@ point past the new and old regions of memory respectively.
 <p>The final value of <strong>WA</strong> is undefined.  <strong>WA</strong>,<strong>XL</strong> ,<strong>XR</strong>
 must be set up before obeying <strong>mvw</strong> 
 
-<dt>9.3  <strong>mwb</strong> 
+<p><dt>9.3  <strong>mwb</strong> 
 
 <dd>              move words backwards
 
@@ -3010,7 +3010,7 @@ forward (IBM 360, ICL 1900).
 <strong>WA</strong> ,<strong>XL</strong> , <strong>XR</strong> must be
 set up before obeying <strong>MWB</strong> .
 
-<dt>9.4  <strong>mcb</strong>
+<p><dt>9.4  <strong>mcb</strong>
 
 <dd>
 
@@ -3073,7 +3073,7 @@ following instruction periodically.
 
 </dl>
 
-<dt>10.1 <strong>chk</strong>
+<p><dt>10.1 <strong>chk</strong>
 
 <dl>
 
@@ -3112,7 +3112,7 @@ The following instructions are used to generate constant values in the
 constant section and also to assemble initial values in the working
 storage section. They may not appear except in these two sections.
 
-<dt>11.1 <strong>dac</strong>  addr
+<p><dt>11.1 <strong>dac</strong>  addr
 
 <dd>        assemble address constant.
 
@@ -3123,7 +3123,7 @@ Generates one word containing the specified one word integer value
 (address).
 
 
-<dt>11.2 <strong>dic</strong>  integer
+<p><dt>11.2 <strong>dic</strong>  integer
 
 <dd>
 
@@ -3131,7 +3131,7 @@ Generates an integer value which occupies <strong>cfp$i</strong>
 consecutive words.  The operand is a digit string with a required
 leading sign.
 
-<dt>11.3 <strong>drc</strong>  real
+<p><dt>11.3 <strong>drc</strong>  real
 
 <dd>
 
@@ -3141,7 +3141,7 @@ real constant with the extra requirement that a leading sign be
 present.
 
 
-<dt>11.4 <strong>dtc</strong>  <em>dte<strong>xt</strong></em>
+<p><dt>11.4 <strong>dtc</strong>  <em>dte<strong>xt</strong></em>
 
 <dd>       define <em>text</em> constant.
 
@@ -3161,7 +3161,7 @@ characters.  =,$.(*)/+-
                              no other characters
                              may be used in a <em>dte<strong>xt</strong></em> operand.
 
-<dt>11.5 <strong>dbc</strong>  val
+<p><dt>11.5 <strong>dbc</strong>  val
 
 <dd>         assemble bit string constant.
 
@@ -3180,7 +3180,7 @@ imply the bit string value 00...101.  </dl>
 The following instruction is used to define symbols in the definitions
 section. It may not be used elsewhere.
 
-<dt>12.1 <strong>equ</strong>  <em>eqop</em>
+<p><dt>12.1 <strong>equ</strong>  <em>eqop</em>
 
 <dd>        define symbol
 
@@ -3240,7 +3240,7 @@ procedure section. They may not be used in any other part of the
 program.
 
 
-<dt>12.2 <strong>exp</strong>
+<p><dt>12.2 <strong>exp</strong>
 
 <dd>              define e<strong>xt</strong>ernal procedure
 
@@ -3255,7 +3255,7 @@ referred to collectively as the operating system interface, or more
 briefly, osint, and will frequently be a separately compiled segment
 of code loaded with SPITBOL to produce a complete system.
 
-<dt>12.3 <strong>inp</strong>  <em>ptyp</em>,int
+<p><dt>12.3 <strong>inp</strong>  <em>ptyp</em>,int
 
 <dd>    define internal procedure
 
@@ -3269,7 +3269,7 @@ and number of exit parameters. the label can be referenced in
 <strong>jsr</strong> instructions and it must appear labelling a
 <strong>prc</strong> instruction in the program section.
 
-<dt>12.4 <strong>inr</strong>
+<p><dt>12.4 <strong>inr</strong>
 
 <dd>              define internal routine
 
@@ -3286,14 +3286,14 @@ label field to be the name of an internal routine.
 <h2>13 - Assembly Listing Layout Instruction</h2>
 
 <dl>
-<dt>13.1 <strong>ejc</strong>
+<p><dt>13.1 <strong>ejc</strong>
 
 <dd>              eject to ne<strong>xt</strong> page
 
 
 
 
-<dt>13.2 <strong>ttl</strong>  te<strong>xt</strong>
+<p><dt>13.2 <strong>ttl</strong>  te<strong>xt</strong>
 
 <dd>        set new assembly title
 
@@ -3333,7 +3333,7 @@ following specified order.
 
 </dl>
 
-<dt>14.1 <strong>sec</strong>
+<p><dt>14.1 <strong>sec</strong>
 
 <dl>
 
@@ -3368,7 +3368,7 @@ following specified order.
 
 </pre>
 
-<dt>14.2 <strong>end</strong>
+<p><dt>14.2 <strong>end</strong>
 
 <dd>              end of assembly
 
