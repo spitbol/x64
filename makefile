@@ -33,7 +33,7 @@ endif
 TOK=	token.spt
 COD=    codlinux.spt
 ERR=    err386.spt
-SPIT=   ./bootstrap/spitbol
+SPIT=   ./bin/spitbol
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
