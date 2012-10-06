@@ -1,91 +1,84 @@
-# Unix/x32 SPITBOL
+# Linux/386 SPITBOL
+#
+
 
 # SPITBOL Version:
-TARGET=   x32
-DEBUG=	1
+VERS=   linux
+DEBUG=	0
 
 # Minimal source directory.
 MINPATH=./
 
-OS=./os
+OSINT=./osint
 
-vpath %.c $(OS)
+vpath %.c $(OSINT)
 
-MUSL=musl
-#CC=     tcc/bin/tcc
-CC=     tcc
-AS=nasm
-INCDIRS = -Itcc/include -I$(MUSL)/include
-ifeq	($(DEBUG),1)
-CFLAGS =  -g  $(INCDIRS)
+
+
+CC=     gcc
+ifeq	($(DEBUG),0)
+CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
 else
-CFLAGS =  $(INCDIRS)
+CFLAGS= -g -m32 -fno-leading-underscore -mfpmath=387
 endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASFLAGS = -f elf 
+ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
 else
-ASFLAGS = -f elf -g
+ASFLAGS = --32 -g -gstabs+ -msyntax=intel -mmnemonic=intel -mnaked-reg
 endif
 
 # Tools for processing Minimal source file.
-LEX=	lex.spt
-TRANS=    $(TARGET)/min2asm.spt
-ERR=    $(TARGET)/err.spt
-SPIT=   ./bin/spitbol
+TOK=	token.spt
+COD=    codlinux.spt
+ERR=    err386.spt
+SPIT=   ./bootstrap/spitbol
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
 #.c.o:
-	$(CC) -c $(CFLAGS) -o$@ $(OS)/$*.c
+	$(CC) -c $(CFLAGS) -o$@ $(OSINT)/$*.c
 
 # Implicit rule for building objects from assembly language files.
 .s.o:
-	$(AS) -l $*.lst -o $@ $(ASFLAGS) $*.s
-#	$(AS) -o $@ $(ASFLAGS) $*.s
-#	$(AS) -a=$*.lst -o $@ $(ASFLAGS) $*.s
+	$(AS) -a=$*.lst -o $@ $(ASFLAGS) $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
-CHDRS =	$(OS)/os.h $(OS)/port.h $(OS)/sproto.h $(OS)/spitio.h $(OS)/spitblks.h $(OS)/globals.init
+CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h
 
 # C Headers unique to this version of SPITBOL:
-UHDRS=	$(OS)/systype.h $(OS)/extern32.h $(OS)/blocks32.h $(OS)/system.h
+UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/system.h
 
 # Headers common to all C files.
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	$(TARGET)/$(TARGET).hdr 
+VHDRS=	$(VERS).cnd $(VERS).def $(VERS).hdr hdrdata.inc hdrcode.inc
 
-# OS objects:
-SYSOBJS=trace.o sysax.o sysbp.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
+# OSINT objects:
+SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	sysef.o sysej.o sysem.o sysen.o sysep.o sysex.o sysfc.o \
 	sysgc.o syshs.o sysid.o sysif.o sysil.o sysin.o sysio.o \
 	sysld.o sysmm.o sysmx.o sysou.o syspl.o syspp.o sysrw.o \
-	sysst.o sysstdio.o systm.o systty.o sysul.o sysxi.o
+	sysst.o sysstdio.o systm.o systty.o sysul.o sysxi.o trace.o
 
 # Other C objects:
-# Don't use math.o for now since not supporting math functions
 COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
-	doset.o dosys.o float.o flush.o gethost.o getshell.o \
-	int.o lenfnm.o optfile.o osclose.o \
+	doset.o dosys.o fakexit.o float.o flush.o gethost.o getshell.o \
+	int.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	sioarg.o st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
 	trypath.o wrtaout.o
 
-# Assembly language objects common to all versions:
-CAOBJS = errors.o $(TARGET)/sys.o
-
-# machine-dependent object
-#XAOBJS = $(TARGET)/sys.o
-#arith.o
+# Assembly langauge objects common to all versions:
+CAOBJS = errors.o serial.o inter.o
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
 HOBJS=
 
-# Objects for SPITBOL's LOAD function.  
+# Objects for SPITBOL's LOAD function.  AIX 4 has dlxxx function library.
 #LOBJS=  load.o
 #LOBJS=  dlfcn.o load.o
 LOBJS=
@@ -97,61 +90,49 @@ MOBJS=	main.o getargs.o
 AOBJS = $(CAOBJS)
 
 # Minimal source object file:
-VOBJS =	spitbol.o
+VOBJS =	v38.o
 
 # All objects:
-OBJS=	$(MOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(AOBJS)
+OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS)
 
 # main program
-LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a $(MUSL)/lib/libc.a 
-#LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/ -L$(MUSL)/lib/libm.a -static
-#LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/ -L$(MUSL)/lib/libm.a -L/usr/lib/i386-linux-gnu/
 spitbol: $(OBJS)
-ifeq	($(DEBUG),0)
- 	$(CC) -o spitbol $(LIBS) $(OBJS)  
-else
-	$(CC) -g -o spitbol $(LIBS) $(OBJS)  
-endif
+	$(CC) $(CFLAGS) $(OBJS) -lm  -ospitbol -Wl,-M,-Map,spitbol.map
 
 # Assembly language dependencies:
 errors.o: errors.s
-spitbol.o: spitbol.s
+v38.o: v38.s
 
 # SPITBOL Minimal source
-spitbol.s:	spitbol.lex $(VHDRS) $(TRANS) 
-	  $(SPIT) -u "spitbol:$(TARGET):comments" $(TRANS)
+v38.s:	v38.tok $(VHDRS) $(COD) systype.ah
+	  $(SPIT) -u "v38:$(VERS):comments" $(COD)
 
-spitbol.lex: $(MINPATH)spitbol.min $(LEX)
-	 $(SPIT) -u "$(MINPATH)spitbol:$(TARGET):spitbol" $(LEX)
+v38.tok: $(MINPATH)v38.min $(VERS).cnd $(TOK)
+	 $(SPIT) -u "$(MINPATH)v38:$(VERS):v38" $(TOK)
 
-spitbol.err: spitbol.s
+v38.err: v38.s
 
-errors.s: $(ERR) spitbol.s
-	   $(SPIT) -1=spitbol.err -2=errors.s $(ERR)
+errors.s: $(VERS).cnd $(ERR) v38.s
+	   $(SPIT) -1=v38.err -2=errors.s $(ERR)
 
-os.o: $(TARGET)/os.inc
+inter.o: systype.ah osint.inc
 
-sys.o: $(TARGET)/os.inc $(TARGET)/$(TARGET).h
-
-x32.o: $(TARGET)/os.inc $(TARGET)/$(TARGET).h
-
-
-# make os objects
+# make osint objects
 cobjs:	$(COBJS)
 
 # C language header dependencies:
 $(COBJS): $(HDRS)
 $(MOBJS): $(HDRS)
 $(SYSOBJS): $(HDRS)
-main.o: $(OS)/save.h
-sysgc.o: $(OS)/save.h
-sysxi.o: $(OS)/save.h
+main.o: $(OSINT)/save.h
+sysgc.o: $(OSINT)/save.h
+sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
 
 boot:
-	cp -p bootstrap/spitbol.s bootstrap/spitbol.lex bootstrap/errors.s .
+	cp -p bootstrap/v38.s bootstrap/v38.tok bootstrap/errors.s .
 
 install:
 	sudo cp spitbol /usr/local/bin
 clean:
-	rm -f ao $(OBJS) *.lst *.map *.err spitbol.lex spitbol.tmp spitbol.s errors.s */*.lst spitbol
+	rm -f $(OBJS) *.lst *.map *.err v38.tok v38.tmp v38.s errors.s

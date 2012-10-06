@@ -1,0 +1,231 @@
+diff --git a/codlinux.spt b/codlinux.spt
+index 06f9d2f..774c089 100755
+--- a/codlinux.spt
++++ b/codlinux.spt
+@@ -249,6 +249,25 @@
+ *
+ *
+ 
++* create map of executable statements (needed when instrumenting code)
++
++	IS_EXECUTABLE = TABLE(100)
++	s = 
+++       'ADD ADI ADR ANB AOV ATN '
+++	'BCT BEQ BEV BGE BGT BHI BLE BLO BLT BNE BNZ BOD '
+++       'BRN BRI BSW BTW BZE CEQ CHK CHP CMB CMC CMP CNE CSC '
+++       'COS CTB CTW CVD CVM DCA DCV ETI DVI DVR ERB ESW ETX EXI FLC '
+++       'ICA ICP ICV IEQ IGE IGT ILE ILT INE INO IOV ITR JMP '
+++       'JSR LCH LCT LCP LCW LDI LDR LEI LNF LSH LSX MCB MFI MLI MLR '
+++       'MNZ MOV MTI MVC MVW MWB NGI ETI NGR NZB ORB PLC PRC PSC '
+++       'REQ RGE RGT RLE RLT RMI RNE RNO ROV RSH RSX RTI RTN SBI SBR '
+++       'SCH SCP SIN SQR SSL SSS STI STR SUB TAN TRC WTB XOB ZER '
+++       'ZGB ZRB'
++IS_EXEC.1
++	S LEN(3) . OPC ' ' =				:F(IS_EXEC.2)
++	IS_EXECUTABLE[OPC] = 1				:(IS_EXEC.1)
++IS_EXEC.2
++
+ 
+ 
+ -STITL MAIN PROGRAM
+@@ -526,6 +545,8 @@ OPNEXT	THISLINE = READLINE()
+ 	TCOMMENT = COMREGS(INCOMMENT) '} ' INCODE ' ' I.TEXT(I1) ' '
+ .		I.TEXT(I2) ' ' I.TEXT(I3)
+ 	ARGERRS = 0
++
++
+ 						:($('G.' INCODE))
+ *  Here if bad opcode
+ DS01	ERROR('BAD OP-CODE')			:(DSOUT)
+@@ -777,10 +798,21 @@ OUTSTMT4
+ *
+ 	STMTOUT = REPLACE(TRIM(STMTOUT),'$','_')
+ 	IDENT(STMTOUT)				:S(RETURN)
++	IDENT(LABEL)				:S(OUTSTMT4A)
+ 	OUTFILE = STMTOUT
+ 	NTARGET	= NTARGET + 1
+ 	NOUTLINES = NOUTLINES + 1
+ *
++		:(OUTSTMT4A)
++	IDENT(IS_EXECUTABLE[OPCODE])		:S(OUTSTMT4A)
++*	emit label here for an executable instruction
++*	here if executing statement with label
++*	issue trace call to atlin
++	OUTFILE = '  MOV DWORD PTR  nlines,'   NLINES 
++	OUTFILE = '  call  atlin'
++
++OUTSTMT4A
++
+ *  Record code labels in table with delimiter removed.
+ 	(GE(SECTNOW,5) DIFFER(LABEL))		:F(RETURN)
+ 	LABEL ? BREAK(LABEL.DELIM) . LABEL	:F(RETURN)
+diff --git a/makefile b/makefile
+index 56e44a7..5fb47f3 100755
+--- a/makefile
++++ b/makefile
+@@ -9,7 +9,7 @@ DEBUG=	0
+ # Minimal source directory.
+ MINPATH=./
+ 
+-OSINT=./osint
++OSINT=./os
+ 
+ vpath %.c $(OSINT)
+ 
+@@ -57,7 +57,7 @@ HDRS=	$(CHDRS) $(UHDRS)
+ VHDRS=	$(VERS).cnd $(VERS).def $(VERS).hdr hdrdata.inc hdrcode.inc
+ 
+ # OSINT objects:
+-SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
++SYSOBJS=trace.o sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
+ 	sysef.o sysej.o sysem.o sysen.o sysep.o sysex.o sysfc.o \
+ 	sysgc.o syshs.o sysid.o sysif.o sysil.o sysin.o sysio.o \
+ 	sysld.o sysmm.o sysmx.o sysou.o syspl.o syspp.o sysrw.o \
+@@ -72,7 +72,7 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
+ 	trypath.o wrtaout.o
+ 
+ # Assembly langauge objects common to all versions:
+-CAOBJS = errors.o serial.o inter.o
++CAOBJS = errors.o serial.o os.o
+ 
+ # Objects for SPITBOL's HOST function:
+ #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
+@@ -115,7 +115,7 @@ v38.err: v38.s
+ errors.s: $(VERS).cnd $(ERR) v38.s
+ 	   $(SPIT) -1=v38.err -2=errors.s $(ERR)
+ 
+-inter.o: systype.ah osint.inc
++os.o: systype.ah osint.inc
+ 
+ # make osint objects
+ cobjs:	$(COBJS)
+diff --git a/os.s b/os.s
+index 2b8797f..365071b 100755
+--- a/os.s
++++ b/os.s
+@@ -108,99 +108,6 @@ globals =               1                       #ASM globals defined here
+ #       of the internal name.  Thus, the function name 'osopen' becomes
+ #       '_osopen'.  However, not all C compilers follow this convention.
+ #
+-#       Acknowledgement:
+-#
+-#       This interfacing scheme is based on an idea put forth by Andy Koenig.
+-#
+-#       V1.0    10/21/86 Robert E. Goldberg, DISC.  VAX version
+-#       V1.01   10/23/86 Mark B. Emmer, Catspaw.  AT&T 7300 version
+-#       V1.02   01/07/87   "  "    "      "   Generic 68000 version
+-#       V1.03   01/15/87 Revised to match new VAXINTER, V1.03.  MBE
+-#       V1.04   01/23/87 Adjust pointers within stack during restart.
+-#                        Add function makeexec to write a.out file when
+-#                        requested with -w command option.  MBE
+-#       V1.05   02/04/87 <withdrawn>
+-#       V1.06   02/14/87 <withdrawn>
+-#       V1.07   02/21/87 <withdrawn>
+-#       V1.08   05/18/87 <withdrawn>
+-#       V1.10   06/03/87 Changed compiler to use A6 as pointer to constant
+-#                        and working storage, rather than A5.
+-#       V1.11   10/11/87 Added conditional 68020 opcodes for multiply,
+-#                        divide and remainder.
+-#                        Corrected bug in makeexec added when moved DB
+-#                        from A5 to A6.
+-#       V1.12   11/16/87 <withdrawn>
+-#       V1.13   01/15/88 Version for HP.  Initialize 68881 if present
+-#       V1.14   02/27/88 Version for Definicon.
+-#       V1.15   03/03/88 Added SYSGC call.
+-#       V1.16   05/09/88 Split off 80386 version
+-#       V1.17   09/12/89 Add support for keyboard polling and keyboard editing.
+-#                        Makeexec accepts file name scblk.
+-#       V1.18   10/27/89 <withdrawn>
+-#       V1.19   12/16/89 Add pushregs, popregs
+-#       V1.20   07/21/90 Modify pushregs/popregs to save/restore EBP and
+-#                        load it with reg_cp, so that any MINIMAL routine
+-#                        call between adjusts CP properly.
+-#                        Change ccaller to clear EBP, so CP (which points
+-#                        within a SPITBOL block) isn't placed on stack when
+-#                        C routine pushes EBP.  This is not a legimate
+-#                        collectable value, and will crash if a garbage
+-#                        collect occurs (as within callef). 2.43 I/O.
+-#       V1.21   09/09/90 Modify pushregs to return zero in ESI (XL), so
+-#                        that a safe, collectable value is there for any
+-#                        subsequent call to a memory allocation routine.
+-#       V1.22   10/31/90 Remove SYSGC call.
+-#       V1.23   11/08/90 Update I/O version number to 2.45.
+-#       V1.24   11/17/90 Modify push/pop regs to put reg_xl on stack,
+-#                        other regs into a temp area.
+-#       V1.25   12/04/90 Mark SYSEX for 3 exits.
+-#       V1.26   01/21/91 Update I/O version number to 2.46.
+-#       V1.27   02/07/91 Add Control-C checking.
+-#       V1.28   02/16/91 Add BACKSPACE function via SYSBS.
+-#       V1.29   02/22/91 Rewrite CINREAD to allocate buffer on stack.
+-#       V1.30   05/12/91 Add include of systype.ah to assemble different
+-#                        versions for use with HighC and Intel compilers.
+-#                        Move break logic to break.c for Intel version.
+-#       V1.31   06/09/91 <withdrawn>.
+-#       V1.32   06/21/91 Add routines for Intel version to allow C code
+-#                        to manage an LDT, including transitions to and
+-#                        from protection ring 0.  Update version number
+-#                        to 2.47 for 1.20 release.
+-#       V1.33   10/17/91 Update to 2.48 for 1.21 release.
+-#       V1.34   11/07/91 Add call to INSTA to initialize static
+-#                        region after reloading save file.
+-#       V1.35   11/30/91 Add MINIMAL function to allow calls into
+-#                        MINIMAL code from C.
+-#       V1.36   12/17/91 Update to 2.49 for 1.22 release.
+-#       V1.37   01/23/92 Update to 2.50 for 1.23 release.
+-#       V1.38   03/06/92 Update to 2.51 for 1.24 release.
+-#       V1.39   03/13/92 Fix pushregs and popregs to not save and
+-#                        restore REG_CP.  It is necessary for GBCOL
+-#                        to be able to modify REG_CP and have its
+-#                        change stick.  We also go to a dual stack
+-#                        approach like the Macintosh, with the compiler's
+-#                        stack and the OSINT stack keep seperate.  This
+-#                        is necessary because if an OSINT return calls into
+-#                        Minimal and triggers a garbage collect, anything on
+-#                        the stack from OSINT could be fatal to GBCOL.
+-#       V1.40   03/29/92 Update to 2.52 for 1.25 release.
+-#       V1.41   10/11/95 Redid overflow detection logic to check for infinity
+-#                        in RA, relying on masked exceptions to produce infinity
+-#                        from basic math ops.
+-#       V1.42   10/08/96 Increased number of exits for SYSFC from 1 to 2.
+-#       V1.43   03/31/97 Added sav_compsp for use by push/popregs.  Call to
+-#                        SYSLD would save esp in compsp (at ccaller), then
+-#                        loadef calls ALOST which may call GBCOL, which calls
+-#                        SYSGC and clobbers compsp with this nested cccaller call.
+-#                        pushregs saves compsp in sav_compsp, and popregs
+-#                        restores it.
+-#       V1.44   06/20/99 Fix bug in RTI_ when negative number was not pushing
+-#                        ecx.
+-#       V1.45   11/26/99 Fix bug in CPR_ not detecting -0.0 as true zero.  (-0.0
+-#                        results from -1.0 * 0.0 and 0.0 / -1.0.
+-#       V1.46   06/17/09 Modify for Linux "as" assembler.
+-#
+-#------------
+ #
+ #       Global Variables
+ #
+@@ -209,6 +116,8 @@ globals =               1                       #ASM globals defined here
+         CSegEnd_
+ 
+         DSeg_
++	.global	nlines
++nlines:	.long	0
+ 	cext	stacksiz,dword
+ 	cext	lmodstk,dword
+ 	ext	lowsp,dword
+diff --git a/os/trace.c b/os/trace.c
+index 0ee7045..8c15fd4 100644
+--- a/os/trace.c
++++ b/os/trace.c
+@@ -32,8 +32,6 @@ This file is part of Macro SPITBOL.
+ */
+ 
+ #include "port.h"
+-#include "os.h"
+-#include "globals.ext"
+ 
+ #include <stdio.h>
+ 
+diff --git a/spitbol b/spitbol
+deleted file mode 100755
+index 079d14a..0000000
+Binary files a/spitbol and /dev/null differ
