@@ -55,6 +55,10 @@ void wrterr(char *s);
 
 void setout(void);
 
+extern long stklo;
+extern long print_sp();
+extern long stkhi;
+
 main(argc, argv)
 int argc;
 char *argv[];
@@ -66,6 +70,7 @@ char *argv[];
        later.
      */
     Enter("main");
+	fprintf(stderr,"stklo %8x stkhi %8x\n",&stklo, &stkhi);
     gblargc = argc;
     gblargv = argv;
     lowsp = 0L;
@@ -194,52 +199,36 @@ char *argv[];
     /*
        Allocate stack
      */
+	stacksiz = 400*4;
 	At("allocate stack");
-    printf("allocated sbrk lowsp, stacksiz %8x %8x\n",lowsp,stacksiz);
     if ((lowsp = sbrk((uword) stacksiz)) == (char *) -1) {
 	wrterr("Stack memory unavailable.");
 	exit(1);
     }
 
-    printf("allocated sbrk %u\n",lowsp);
-    /*
-       Allocate initial increment of dynamic memory.
-
-     */
-#if SUN4
-    /* Allocate a buffer for mallocs.  Use the space between the
-       end of data and the start of Minimal's static and dynamic
-       area.  Because of virtual memory, we can use almost 4 megabytes
-       for this region, and it has the secondary benefit of letting
-       us have object sizes greater than the previous 64K.
-     */
-    if (malloc_init(maxsize)) {
-	wrterr("Malloc initialization failure, contact Catspaw.");
-	exit(1);
-    }
-#endif				/* SUN4 */
-
+    printf("allocated sbrk lowsp, stacksiz 0x%8x 0x%8x\n",lowsp,stacksiz);
+    /* Allocate initial increment of dynamic memory.  */
     basemem = sbrk(0);
-    printf("sbrk(0) %u\n",basemem);
+    printf("sbrk(0) 0x%8x\n",basemem);
     if ((basemem = (char *) sbrk((uword) memincb)) == (char *) -1) {
 	wrterr("Workspace memory unavailable.");
 	exit(1);
     }
-    printf("basemem %8x  memincb %8x\n",basemem, memincb);
+    printf("basemem 0x%8x  memincb 0x%8x\n",basemem, memincb);
     topmem = basemem + memincb;
     maxmem = basemem + databts;
 
-    printf("topmem %8x maxmem %8x\n",topmem, maxmem);
+    printf("topmem 0x%8x maxmem 0x%8x\n",topmem, maxmem);
     reg_xr = basemem;
     reg_xl =  topmem - sizeof(word);
+    reg_xs = &stkhi;
     zystm();
+    print_sp();
     startup();
 
 	At("back from compiler");
 
-/*
-    atlin();
-*/
+/* atlin(); */
 #endif				/* !RUNTIME */
 
     /*

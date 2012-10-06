@@ -94,8 +94,14 @@
 ;
 ;       this interfacing scheme is based on an idea put forth by andy koenig.
 ;
-;------------
-;
+
+	segment	.data
+	global	stklo
+	global	stkhi
+
+stklo:	times 1024 	dd	0
+stkhi:			dd	0
+
 ;       global variables
 
 	extern	atlin
@@ -129,7 +135,6 @@
 %endif
 
 
-	segment	.data
 ;
         align 4
 
@@ -148,12 +153,13 @@
 
         global  reg_block
         global  reg_size
-	global	stack_low
-	global	stack_top
 
-stack_low:	times 500 	dd	0
-stack_top:			dd	0
+	segment	.data
 
+	global	lowspmin:
+lowspmin:	dd	0
+	global	osisp
+osisp:	dd	0
 
 
 reg_block:
@@ -192,8 +198,6 @@ sav_block: times r_size dd 0    ; save minimal registers during push/pop reg
 ppoff:  dd      0               ; offset for ppm exits
 	global	compsp
 compsp: dd      0               ; compiler's stack pointer
-sav_compsp:
-        dd      0               ; save compsp here
 
 ;
 ;       setup a number of internal ddes in the compiler that cannot
@@ -250,32 +254,74 @@ TTYBUF:	dd   	0     		; type word
 ; start is main entry point in minimal source
 	extern	start
 
+;	stackinit  -- initialize lowspmin from sp.
+;
+;	Input:  sp - current C stack
+;		stacksiz - size of desired Minimal stack in bytes
+;
+;	Uses:	eax
+;
+;	Output: register WA, sp, lowspmin, compsp, osisp set up per diagram:
+;
+;	(high)	+----------------+
+;		|  old C stack   |
+;	  	|----------------| <-- incoming sp, resultant WA (future XS)
+;		|	     ^	 |
+;		|	     |	 |
+;		/ stacksiz bytes /
+;		|	     |	 |
+;		|            |	 |
+;		|----------- | --| <-- resultant lowspmin
+;		| 400 bytes  v   |
+;	  	|----------------| <-- future C stack pointer, osisp
+;		|  new C stack	 |
+;	(low)	|                |
+	global	read_sp
+read_sp:
+	mov	eax,esp
+	ret
+
+	extern	print_sp
         global  startup
+
 startup:
-	mov 	esp,stack_top
-	mov	ecx.wa,esp
-	sub	ecx,500
-	mov	dword[stack_low],ecx
+	mov	eax,1
+ 	mov	esi.xl,16
+ 	mov	edi.xr,32
+ 	mov	ecx.wa,48
+ 	mov	ebx.wb,256
+ 	mov	edx.wc,512
+ 	mov	ebp.cp,1024
+	ati	2048
+	ati	4097
+
+	mov	dword [osisp],esp	; save location of c stack
+	mov	ecx,esp
+	mov	eax,stkhi
+;	sub	eax,edx	            ; end of MINIMAL stack is where C stack will start
+;        mov     dword [osisp],eax               ; save new C stack pointer
+;	add	eax,4*1024               ; 100 words smaller for CHK
+;	mov	dword [lowspmin],eax	; set lowspmin
+;	mov	eax,dword [compsp]
+;	mov	ecx,eax
+        cld			; default to UP direction for string ops
+;	minimal wants (wa)=sp (xr)=first data word (xl)=last data word
+;	mov	ecx.wa,stkhi
 	mov	edi.xr,dword [reg_xr]
 	mov	esi.xl,dword [reg_xl]
-;	ati	10
-        cld                             ; default to UP direction for string ops
 ;	start doesn't return, so there is no need to save or restore registers.
-;	ati	20
+	call	print_sp
+	mov	esp,stkhi
+	call	print_sp
 	call	start
 	add	esp,4
 
-;	global	save_cp
-;	global	save_xl
-;	global	save_xr
-;	global	save_xs
-;	global	save_wa
-;	global	save_wb
-;	global	save_wc
-;
-;	global	osisp
 
-	segment	.text
+;
+;
+;
+
+
 
 ;       interface routines
 ;

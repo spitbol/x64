@@ -1,6 +1,7 @@
 	%include	"x32/x32.h"
 
-	extern	stack_low
+%define direct 0
+
 	extern	reg_ra
 	extern	atlin
 ;	extern	tracer
@@ -15,18 +16,19 @@
 	extern	at_w0;
 	extern	at_cp;
 	extern	atip;
-	segment	.data
-
-ten:	dd	10
-
-%define direct 0
 
 ; define how floating point results are returned from a function
 ; (either in st(0) or in edx:eax.
 fretst0 equ 1
 freteax equ 0
 
-	segment		.data
+	extern	stklo
+	extern	stkhi
+
+	segment	.data
+
+ten:	dd	10
+
 	global	nlines
 nlines	dd	0
 
@@ -88,8 +90,6 @@ nlines	dd	0
 %define	kvpfl	KVPFL
 	global	KVSTN
 %define	kvstn	KVSTN
-	global	LOWSPMIN
-;%define	lowspmin	LOWSPMIN
 	global	MXLEN
 %define	mxlen	MXLEN
 	global	PMHBS
@@ -295,8 +295,6 @@ valtab:
 ;%if 	direct = 0
 	dd  	typet
 ;%endif
-	dd	0 ; lowspmin substitute
-;	dd	lowspmin
 	dd	flprt
 	dd	flptr
 	dd	gtcef

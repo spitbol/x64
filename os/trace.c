@@ -69,49 +69,6 @@ rp(char *s, long reg) {
 	}
 	fprintf(stderr, " %s  ", s);
 }
-int ati_line;
-void
-atip(unsigned int ip)
-{
-	if (ati_line == 0) {
-		return;
-	}
-	else if (ati_line == -1) {
-		ati_trace = 1;
-	}
-	fprintf(stderr, "\nline %d  ip=0x%x\n",ati_line,ip);
-	rp("esi.xl", at_xl);
-	rp("edi.xr", at_xr);
-	rp("esp.xs", at_xs);
-	fprintf(stderr, " compsp %8x",compsp);
-	fprintf(stderr,"\n");
-	rp("reg_xl", reg_xl);
-	rp("reg_xr", reg_xr);
-	rp("reg_xs", reg_xs);
-	fprintf(stderr,"\n");
-	rp("ecx.wa", at_wa);
-	rp("ebx.wb", at_wb);
-	rp("edx.wc", at_wc);
-	rp("eax.w0", at_w0);
-	rp("ebp.cp", at_cp);
-	fprintf(stderr,"\n");
-	rp("reg_wa", reg_wa);
-	rp("reg_wb", reg_wb);
-	rp("reg_wc", reg_wc);
-	rp("reg_w0", reg_w0);
-	rp("ebp.cp", reg_cp);
-	fprintf(stderr,"\nset:");
-	if (reg_xl != 0) fprintf(stderr, " xl");
-	if (reg_xr != 0) fprintf(stderr, " xr");
-	if (reg_xs != 0) fprintf(stderr, " xs");
-	if (reg_wa != 0) fprintf(stderr, " wa");
-	if (reg_wb != 0) fprintf(stderr, " wb");
-	if (reg_wc != 0) fprintf(stderr, " wc");
-	if (reg_cp != 0) fprintf(stderr, " cp");
-	fprintf(stderr,"\n\n");
-
-
-}
 atlin()
 {
 #ifdef TRACE
@@ -186,3 +143,47 @@ void tracer()
 	fprintf(stderr, "call_id %5d ", id_call);
 }
 #endif
+extern long read_sp();
+long print_sp() {
+	long sp = read_sp();
+	fprintf(stderr,"sp now %x\n",sp);
+}
+
+struct regs {
+	/* begin part of struct set and restored by pushad/popad */
+	unsigned long r_edi;
+	unsigned long r_esi;
+	unsigned long r_ebp;
+	unsigned long r_esp;
+	unsigned long r_ebx;
+	unsigned long r_edx;
+	unsigned long r_ecx;
+	unsigned long r_eax;
+	/* end the pushad/popad part */
+	unsigned long r_ip; /* return address from caller */
+};
+
+int ati_line;
+void
+atip(struct regs r)
+{
+#ifdef CONTRL
+	if (ati_line == 0) {
+		return;
+	}
+	else if (ati_line == -1) {
+		ati_trace = 1;
+	}
+#endif
+/* print regs as saved by pushad instruction */
+	fprintf(stderr, " %8x eax.w0",   r.r_eax);
+	fprintf(stderr, " %8x ip",       r.r_ip);
+	fprintf(stderr, " %8x line\n",   ati_line);
+	fprintf(stderr, " %8x esi.xl",   r.r_esi);
+	fprintf(stderr, " %8x edi.xr",   r.r_edi);
+	fprintf(stderr, " %8x esp.xs",   r.r_esp);
+	fprintf(stderr, " %8x ebp.cp\n", r.r_ebp);
+	fprintf(stderr, " %8x ecx.wa",   r.r_ecx);
+	fprintf(stderr, " %8x ebx.wb",   r.r_ebx);
+	fprintf(stderr, " %8x edx.wc\n", r.r_edx);
+}

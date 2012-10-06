@@ -474,10 +474,12 @@ opnext.3
 *
 -stitl	asm(aopc,aop,aop2,aop3)
 asm	
+	asm_count = asm_count + 1
 	outstmt(stmt(,aopc,aop1,aop2,aop3)) :(return)
 
 -stitl	pseudo(aopl,aopc,aop,aop2,aop3)
 pseudo	
+	asm_pseudo = asm_pseudo + 1
 	outstmt(stmt(aopl,aopc,aop1,aop2,aop3)) :(return)
 
 -stitl comregs(line)t,pre,word
@@ -1514,8 +1516,7 @@ g.mcb
 	asm('cld')				:(opdone)
 
 g.chk   
-*	asm('cmp','esp'lowspmin')
-	asm('cmp','esp','dword [stack_low]')
+ 	asm('cmp', 'esp', 'stklo')
 	asm('jb','sec06')			:(opdone)
 
 decend
@@ -1719,8 +1720,10 @@ g.end.4
 	host(1,"touch " parms ".err")
         output = rpad('lines read:',24)		 	ilines 
         output = rpad('minimal statements:',24)	 nstmts 
-        output = rpad('assembly lines written:',24)	 ntarget 
-        output = ne(noptim1) ' "or" optimizations:' noptim1 
+        output = rpad('assembler statements:',24)	 asm_count 
+        output = rpad('assembler instructions:',24)	 ntarget 
+        output = rpad('assembly declarations:',24)	 asm_pseudo
+        output = ne(noptim1) ' "or" optimizations:' 	 noptim1 
         output = rpad('maximum err/erb number',24)	 max.err 
         output = rpad('prc count:',24)			 prc.count1 
 	output = rpad('erb,err,ppm counts:',24) ' ' count.err ' ' count.err 
