@@ -20,21 +20,18 @@
 # function will appear in this segment as well, placed here
 # by the code in load.asm.
 #
-        .sbttl          "SERIAL"
-        .psize          80,132
-        .arch           pentium
-        .include        "systype.ah"
-
-        Header_
-        DSeg_
-        .balign         4
-        pubdef          hasfpu,.long,0               #-1 if 80x87 present, else 0
-        pubname         cprtmsg
-.ifne  underscore
-_cprtmsg:
-.else
-cprtmsg:
-.endif
-				.asciz          " Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer."
-        DSegEnd_
-        .end
+#         .sbttl          "SERIAL"
+#         .psize          80,132
+#         .arch           pentium
+#         .include        "systype.ah"
+# #ifdef IGNOREZZ
+#         Header_
+#         DSeg_
+#         .balign         4
+#         pubdef          hasfpu,.long,0               #-1 if 80x87 present, else 0
+#         pubname         cprtmsg
+# cprtmsg:
+# 				.asciz          " Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer."
+#         DSegEnd_
+#         .end
+# #endif

@@ -36,6 +36,7 @@ ERR=    err386.spt
 SPIT=   ./bin/spitbol
 
 # Implicit rule for building objects from C files.
+
 ./%.o: %.c
 #.c.o:
 	$(CC) -c $(CFLAGS) -o$@ $(OSINT)/$*.c
@@ -69,10 +70,10 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 	int.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	sioarg.o st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
-	trypath.o wrtaout.o
+	trypath.o wrtaout.o 
 
 # Assembly langauge objects common to all versions:
-CAOBJS = errors.o serial.o inter.o
+CAOBJS = errors.o inter.o n.o
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
@@ -136,3 +137,6 @@ install:
 	sudo cp spitbol /usr/local/bin
 clean:
 	rm -f $(OBJS) *.lst *.map *.err v38.tok v38.tmp v38.s errors.s
+n.o:
+#nasm -f elf -o$@ $*.asm
+	nasm -f elf -on.o n.asm
