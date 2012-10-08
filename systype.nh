@@ -117,7 +117,7 @@
 	%macro	procname 0
 	%endmacro
 
-	%macro	cproc 1
+	%macro	cproc 0
 %1:
 	%endmacro
 
@@ -140,7 +140,7 @@
 
 ; Intel runs in one flat segment.  Far calls are the same as near calls.
 	%macro	callfar 1
-	ext	%1
+	extern	%1
 	callc	%1
 	%endmacro
 

@@ -28,3 +28,69 @@
 hasfpu:	dd	0
 	global	cprtmsg
 cprtmsg: db " Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer."
+
+
+;#       TAN_ arctangent of real in RA
+
+        global  TAN_
+
+TAN_:
+
+        push    ecx                             ; preserve regs for C
+	push	edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+        callfar f_tan                         ; perform op
+%if fretst0
+        fstp	qword [reg_ra]
+        pop     edx                             ; restore regs
+	pop	ecx
+	fwait
+%endif
+%if freteax
+        mov     dword [reg_ra+4], edx         ; result msh
+        mov     dword [ reg_ra], eax           ; result lsh
+        pop     edx                             ; restore regs
+	pop	ecx
+%endif
+	ret
+
+
+
+;       CPR_ compare real in RA to 0
+
+        global  CPR_
+
+CPR_:
+        mov     eax, dword [reg_ra+4] ; fetch msh
+        cmp     eax, 0x80000000         ; test msh for -0.0
+        je       cpr050            ; possibly
+        or      eax, eax                ; test msh for +0.0
+        jnz      cpr100            ; exit if non-zero for cc's set
+cpr050: cmp     dword [reg_ra], 0     ; true zero, or denormalized number?
+        jz       cpr100            ; exit if true zero
+	mov	al, 1
+        cmp     al, 0                   ; positive denormal, set cc
+cpr100:	ret
+
+;       OVR_ test for overflow value in RA
+
+        global  OVR_
+
+OVR_:
+
+        mov     ax, dword [reg_ra+6]   ; get top 2 bytes
+        and     ax, 0x7ff0              ; check for infinity or nan
+        add     ax, 0x10                ; set/clear overflow accordingly
+	ret
+
+
+;  tryfpu - perform a floating point op to trigger a trap if no floating point hardware.
+	global		tryfpu
+tryfpu:
+
+	push	ebp
+	fldz
+	pop	ebp
+	ret
+

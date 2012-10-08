@@ -139,4 +139,4 @@ clean:
 	rm -f $(OBJS) *.lst *.map *.err v38.tok v38.tmp v38.s errors.s
 n.o:
 #nasm -f elf -o$@ $*.asm
-	nasm -f elf -on.o n.asm
+	nasm -f elf -l n.lst -on.o n.asm
