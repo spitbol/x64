@@ -21,14 +21,22 @@
 ; by the code in load.asm.
 ;
         %include        "systype.nh"
+	extern	reg_ra
 
+%define KEEP
         segment	.data
+
         align         4
+ten:	dd	10
 	global	hasfpu
 hasfpu:	dd	0
 	global	cprtmsg
 cprtmsg: db " Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer."
 
+	segment	.text
+
+
+%ifdef SKIP
 
 ;#       TAN_ arctangent of real in RA
 
@@ -56,7 +64,6 @@ TAN_:
 	ret
 
 
-
 ;       CPR_ compare real in RA to 0
 
         global  CPR_
@@ -79,7 +86,7 @@ cpr100:	ret
 
 OVR_:
 
-        mov     ax, dword [reg_ra+6]   ; get top 2 bytes
+        mov     ax, word [reg_ra+6]   ; get top 2 bytes
         and     ax, 0x7ff0              ; check for infinity or nan
         add     ax, 0x10                ; set/clear overflow accordingly
 	ret
@@ -93,4 +100,6 @@ tryfpu:
 	fldz
 	pop	ebp
 	ret
+; next is end of SKIP
+%endif
 

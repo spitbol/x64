@@ -17,7 +17,7 @@
 
 ; configuration information for inter.s
 ;
-;j%define linux 1
+;%define linux 1
 ;define winnt 0
 
 ;        Segment Declarations Macros
@@ -89,9 +89,9 @@
 	extern	%1:%2
 	%endmacro
 	
-	%macro	ext	2
-	extern	%1:%2
-	%endmacro
+;	%macro	ext	2
+;	extern	%1:%2
+;	%endmacro
 
 	%macro	cext  2
 	ext	%1,%2
@@ -141,7 +141,7 @@
 ; Intel runs in one flat segment.  Far calls are the same as near calls.
 	%macro	callfar 1
 	extern	%1
-	callc	%1
+	call 	%1
 	%endmacro
 
 ; Return from an assembly-language function that will be called by C.

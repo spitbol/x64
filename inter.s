@@ -223,7 +223,6 @@ osisp:  .long   0               # 1.39 OSINT's stack pointer
 
   DSegEnd_
 
-  CSeg_
 #
 #-----------
 #
@@ -250,6 +249,8 @@ osisp:  .long   0               # 1.39 OSINT's stack pointer
 #       reloading a save file.
 #
 #
+
+	CSeg_
         proc    pushregs,near                   #bashes eax,ecx,esi
 	publab	pushregs
 	pushad
@@ -671,7 +672,7 @@ sysxi_p: address zysxi
 #	Note: This function never returns.
 
 
-        cproc    startup
+        cproc   startup,near
 	pubname	startup
         pop     eax                     # discard return
         pop     eax                     # discard dummy1
@@ -749,7 +750,7 @@ sysxi_p: address zysxi
 #       the OSINT stack.
 #
 
-        cproc    minimal
+        cproc    minimal,near
 	pubname	minimal
 
         pushad                          # save all registers for C
@@ -872,7 +873,7 @@ min1:   callc   calltab[eax*4],0        # off to the Minimal code
 #       size of the stack.
 
 
-        cproc    get_fp
+        cproc    get_fp,near
 	pubname	get_fp
 
         mov     eax,reg_xs      # Minimal's XS
@@ -911,7 +912,7 @@ min1:   callc   calltab[eax*4],0        # off to the Minimal code
 #
 	ext	rereloc,near
 
-        cproc   restart
+        cproc   restart,near
 	pubname	restart
 
         pop     eax                     # discard return
@@ -1532,6 +1533,93 @@ ngr_2:	ret
 	ret
 
         endp    SQR_
+#
+#----------
+#
+#       TAN_ arctangent of real in RA
+#
+        publab  TAN_
+
+        proc    TAN_,near
+
+        push    ecx                             # preserve regs for C
+	push	edx
+        push    dword ptr reg_ra+4              # RA msh
+        push    dword ptr reg_ra                # RA lsh
+        callfar f_tan,8                         # perform op
+.if fretst0
+        fstp	qword ptr reg_ra
+        pop     edx                             # restore regs
+	pop	ecx
+	fwait
+.endif
+.if freteax
+        mov     dword ptr reg_ra+4, edx         # result msh
+        mov     dword ptr reg_ra, eax           # result lsh
+        pop     edx                             # restore regs
+	pop	ecx
+.endif
+	ret
+
+        endp    TAN_
+
+#
+#----------
+#
+#       CPR_ compare real in RA to 0
+#
+        publab  CPR_
+
+        proc    CPR_,near
+
+        mov     eax, dword ptr reg_ra+4 # fetch msh
+        cmp     eax, 0x80000000         # test msh for -0.0
+        je      short cpr050            # possibly
+        or      eax, eax                # test msh for +0.0
+        jnz     short cpr100            # exit if non-zero for cc's set
+cpr050: cmp     dword ptr reg_ra, 0     # true zero, or denormalized number?
+        jz      short cpr100            # exit if true zero
+	mov	al, 1
+        cmp     al, 0                   # positive denormal, set cc
+cpr100:	ret
+
+        endp    CPR_
+
+#
+#----------
+#
+#       OVR_ test for overflow value in RA
+#
+        publab  OVR_
+
+OVR_:   proc    near
+
+        mov     ax, word ptr reg_ra+6   # get top 2 bytes
+        and     ax, 0x7ff0              # check for infinity or nan
+        add     ax, 0x10                # set/clear overflow accordingly
+	ret
+
+        endp    OVR_
+
+
+
+.if linux
+#
+#----------
+#
+#  tryfpu - perform a floating point op to trigger a trap if no floating point hardware.
+#
+  cproc   tryfpu,near
+	pubname tryfpu
+	push	ebp
+	fldz
+	pop	ebp
+	ret
+	cendp	tryfpu
+.endif
+
+#endif
+
 
   CSegEnd_
         .end
