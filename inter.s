@@ -1316,21 +1316,5 @@ RTI_1:  stc                             # return C=1 for too large to convert
 	ret
 
         endp    DVR_
-#
-#----------
-#
-#       NGR_ - negate real in RA
-#
-        publab  NGR_
-
-        proc    NGR_,near
-	cmp	dword ptr reg_ra, 0
-	jne	short ngr_1
-	cmp	dword ptr reg_ra+4, 0
-        je      short ngr_2                     # if zero, leave alone
-ngr_1:  xor     byte ptr reg_ra+7, 0x80         # complement mantissa sign
-ngr_2:	ret
-
-        endp    NGR_
   CSegEnd_
         .end
