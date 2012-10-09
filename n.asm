@@ -115,7 +115,7 @@ RTI_:
 RTI_3:  push    ecx             ; protect against C routine usage.
         push    eax             ; push RA MSH
         push    dword [reg_ra]; push RA LSH
-        callfar f_2_i           ; float to integer
+        callfar f_2_i,8         ; float to integer
         xchg    eax,edx         ; return integer in edx (IA)
         pop     ecx             ; restore ecx
         clc
@@ -138,7 +138,7 @@ RTI_1:  stc                             ; return C=1 for too large to convert
 ITR_:
         push    ecx             ; preserve
         push    edx             ; push IA
-        callfar i_2_f           ; integer to float
+        callfar i_2_f,4         ; integer to float
 %if fretst0
 	fstp	qword [reg_ra]
         pop     ecx             ; restore ecx
@@ -181,7 +181,7 @@ ADR_:
         push    dword [reg_ra]               ; RA lsh
         push    dword [eax+4]               ; arg msh
         push    dword [eax]                 ; arg lsh
-        callfar f_add                           ; perform op
+        callfar f_add,16                        ; perform op
 %if fretst0
 	fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -208,7 +208,7 @@ SBR_:
         push    dword [reg_ra]               ; RA lsh
         push    dword [eax+4]               ; arg msh
         push    dword [eax]                 ; arg lsh
-        callfar f_sub                           ; perform op
+        callfar f_sub,16                        ; perform op
 %if fretst0
 	fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -233,7 +233,7 @@ MLR_:
         push    dword [reg_ra]         	; RA lsh
         push    dword [eax+4]                ; arg msh
         push    dword [eax]                  ; arg lsh
-        callfar f_mul                        ; perform op
+        callfar f_mul,16                     ; perform op
 %if fretst0
 	fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -248,10 +248,11 @@ MLR_:
 %endif
 	ret
 
-;
-;
+; next is end of SKIP DS
+%endif
+
 ;       DVR_ - divide real in RA by real at [eax]
-;
+
         global  DVR_
 DVR_:
         push    ecx                             ; preserve regs for C
@@ -260,7 +261,7 @@ DVR_:
         push    dword [reg_ra]               ; RA lsh
         push    dword [eax+4]                ; arg msh
         push    dword [eax]                  ; arg lsh
-        callfar f_div                           ; perform op
+        callfar f_div,16                        ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -275,8 +276,6 @@ DVR_:
 %endif
 	ret
 
-; next is end of SKIP DS
-%endif
 ;       NGR_ - negate real in RA
 
         global  NGR_
@@ -296,7 +295,7 @@ ATN_:
 	push	edx
         push    dword [reg_ra+4]             ; RA msh
         push    dword [reg_ra]               ; RA lsh
-        callfar f_atn                           ; perform op
+        callfar f_atn,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -321,7 +320,7 @@ CHP_:
 	push	edx
         push    dword [reg_ra+4]             ; RA msh
         push    dword [reg_ra]               ; RA lsh
-        callfar f_chp                           ; perform op
+        callfar f_chp,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -345,7 +344,7 @@ COS_:
 	push	edx
         push    dword [reg_ra+4]             ; RA msh
         push    dword [reg_ra]               ; RA lsh
-        callfar f_cos                           ; perform op
+        callfar f_cos,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -367,7 +366,7 @@ ETX_:
 	push	edx
         push    dword [reg_ra+4]             ; RA msh
         push    dword [reg_ra]               ; RA lsh
-        callfar f_etx                           ; perform op
+        callfar f_etx,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -391,7 +390,7 @@ LNF_:
 	push	edx
         push    dword [reg_ra+4]             ; RA msh
         push    dword [reg_ra]               ; RA lsh
-        callfar f_lnf                           ; perform op
+        callfar f_lnf,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -416,7 +415,7 @@ SIN_:
 	push	edx
         push    dword [reg_ra+4]             ; RA msh
         push    dword [reg_ra]               ; RA lsh
-        callfar f_sin                           ; perform op
+        callfar f_sin,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -440,7 +439,7 @@ SQR_:
 	push	edx
         push    dword [reg_ra+4]             ; RA msh
         push    dword [reg_ra]                ; RA lsh
-        callfar f_sqr                           ; perform op
+        callfar f_sqr,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -467,7 +466,7 @@ TAN_:
 	push	edx
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]                ; RA lsh
-        callfar f_tan                         ; perform op
+        callfar f_tan,8                       ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs

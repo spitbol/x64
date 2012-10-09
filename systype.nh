@@ -133,15 +133,15 @@
 
 	%macro	callc 2
 	call	%1
-#ifne	%2
+%if  	%2
 	add	esp,%2
-#endif
+%endif
 	%endmacro
 
 ; Intel runs in one flat segment.  Far calls are the same as near calls.
-	%macro	callfar 1
+	%macro	callfar 2
 	extern	%1
-	call 	%1
+	callc 	%1,%2
 	%endmacro
 
 ; Return from an assembly-language function that will be called by C.

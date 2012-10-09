@@ -1290,30 +1290,30 @@ RTI_1:  stc                             # return C=1 for too large to convert
 #
 #       DVR_ - divide real in RA by real at [eax]
 #
-        publab  DVR_
-
-        proc    DVR_,near
-
-        push    ecx                             # preserve regs for C
-	push	edx
-        push    dword ptr reg_ra+4              # RA msh
-        push    dword ptr reg_ra                # RA lsh
-        push    dword ptr [eax+4]               # arg msh
-        push    dword ptr [eax]                 # arg lsh
-        callfar f_div,16                        # perform op
-.if fretst0
-        fstp	qword ptr reg_ra
-        pop     edx                             # restore regs
-	pop	ecx
-	fwait
-.endif
-.if freteax
-        mov     dword ptr reg_ra+4, edx         # result msh
-        mov     dword ptr reg_ra, eax           # result lsh
-        pop     edx                             # restore regs
-	pop	ecx
-.endif
-	ret
+##        publab  DVR_
+##
+##        proc    DVR_,near
+##
+##        push    ecx                             # preserve regs for C
+##	push	edx
+##        push    dword ptr reg_ra+4              # RA msh
+##        push    dword ptr reg_ra                # RA lsh
+##        push    dword ptr [eax+4]               # arg msh
+##        push    dword ptr [eax]                 # arg lsh
+##        callfar f_div,16                        # perform op
+##.if fretst0
+##        fstp	qword ptr reg_ra
+##        pop     edx                             # restore regs
+##	pop	ecx
+##	fwait
+##.endif
+##.if freteax
+##        mov     dword ptr reg_ra+4, edx         # result msh
+##        mov     dword ptr reg_ra, eax           # result lsh
+##        pop     edx                             # restore regs
+##	pop	ecx
+##.endif
+##	ret
 
         endp    DVR_
   CSegEnd_
