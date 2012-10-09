@@ -89,12 +89,12 @@
 	extern	%1:%2
 	%endmacro
 	
-;	%macro	ext	2
-;	extern	%1:%2
-;	%endmacro
+; 	%macro	ext	2
+; 	extern	%1
+; 	%endmacro
 
-	%macro	cext  2
-	ext	%1,%2
+	%macro	cext  1
+	extern	%1
 	%endmacro
 
 	%macro	def 3
@@ -117,7 +117,7 @@
 	%macro	procname 0
 	%endmacro
 
-	%macro	cproc 0
+	%macro	cproc 1
 %1:
 	%endmacro
 

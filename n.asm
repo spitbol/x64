@@ -1,4 +1,3 @@
-; Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 ; 
 ; This file is part of Macro SPITBOL.
 ; 
@@ -21,7 +20,190 @@
 ; by the code in load.asm.
 ;
         %include        "systype.nh"
+        %include        "nosint.inc"
 	extern	reg_ra
+	extern	osisp
+
+;	addresses defined by minimal source
+	extern	TSCBLK
+	extern	STBAS
+	extern	DFFNC
+	extern	TSCBLK
+	extern	STATB
+	extern	STAGE
+	extern	STBAS
+	extern	GBCNT
+	extern	TIMSX
+	extern	LOWSPMIN
+
+        Header_
+;
+;       File: inter.s           Version: 1.46
+;       ---------------------------------------
+;
+;       This file contains the assembly language routines that interface
+;       the Macro SPITBOL compiler written in 80386 assembly language to its
+;       operating system interface functions written in C.
+;
+;       Contents:
+;
+;       o Overview
+;       o Global variables accessed by OSINT functions
+;       o Interface routines between compiler and OSINT functions
+;       o C callable function startup
+;       o C callable function get_fp
+;       o C callable function restart
+;       o C callable function makeexec
+;       o Routines for Minimal opcodes CHK and CVD
+;       o Math functions for integer multiply, divide, and remainder
+;       o Math functions for real operation
+;
+;-----------
+;
+;       Overview
+;
+;       The Macro SPITBOL compiler relies on a set of operating system
+;       interface functions to provide all interaction with the host
+;       operating system.  These functions are referred to as OSINT
+;       functions.  A typical call to one of these OSINT functions takes
+;       the following form in the 80386 version of the compiler:
+;
+;               ...code to put arguments in registers...
+;               call    SYSXX           # call osint function
+;               dd      EXIT_1          # address of exit point 1
+;               dd      EXIT_2          # address of exit point 2
+;               ...     ...             # ...
+;               dd      EXIT_n          # address of exit point n
+;               ...instruction following call...
+;
+;       The OSINT function 'SYSXX' can then return in one of n+1 ways:
+;       to one of the n exit points or to the instruction following the
+;       last exit.  This is not really very complicated - the call places
+;       the return address on the stack, so all the interface function has
+;       to do is add the appropriate offset to the return address and then
+;       pick up the exit address and jump to it OR do a normal return via
+;       an ret instruction.
+;
+;       Unfortunately, a C function cannot handle this scheme.  So, an
+;       intermediary set of routines have been established to allow the
+;       interfacing of C functions.  The mechanism is as follows:
+;
+;       (1) The compiler calls OSINT functions as described above.
+;
+;       (2) A set of assembly language interface routines is established,
+;           one per OSINT function, named accordingly.  Each interface
+;           routine ...
+;
+;           (a) saves all compiler registers in global variables
+;               accessible by C functions
+;           (b) calls the OSINT function written in C
+;           (c) restores all compiler registers from the global variables
+;           (d) inspects the OSINT function's return value to determine
+;               which of the n+1 returns should be taken and does so
+;
+;       (3) A set of C language OSINT functions is established, one per
+;           OSINT function, named differently than the interface routines.
+;           Each OSINT function can access compiler registers via global
+;           variables.  NO arguments are passed via the call.
+;
+;           When an OSINT function returns, it must return a value indicating
+;           which of the n+1 exits should be taken.  These return values are
+;           defined in header file 'inter.h'.
+;
+;       Note:  in the actual implementation below, the saving and restoring
+;       of registers is actually done in one common routine accessed by all
+;       interface routines.
+;
+;       Other notes:
+;
+;       Some C ompilers transform "internal" global names to
+;       "external" global names by adding a leading underscore at the front
+;       of the internal name.  Thus, the function name 'osopen' becomes
+;       '_osopen'.  However, not all C compilers follow this convention.
+;
+;
+;       Global Variables
+;
+        CSeg_
+	extern	swcoup
+        CSegEnd_
+
+        DSeg_
+	global	nlines
+nlines:	dd   	0
+	extern	stacksiz
+	extern	lmodstk
+	extern	lowsp
+	extern	outptr
+	extern	calltab
+%if direct = 0
+        extern     valtab
+%endif
+
+        %include "nextrn386.inc"
+
+
+; Words saved during exit(-3)
+;
+        align 4
+;;	global	reg_block
+;;	global	reg_wa
+;;	global	reg_wb
+;;	global	reg_ia
+;;	global	reg_wc
+;;	global	reg_xr
+;;	global	reg_xl
+;;	global	reg_cp
+;;	global	reg_ra
+;;reg_block:
+;;reg_wa:	dd	0	; register WA (ECX)
+;;reg_wb:	dd	0	; register WB (EBC)	
+;;reg_ia:
+;;reg_wc:	dd	0	; register WC&IA (EDX)
+;;reg_xr:	dd	0	; register XR (EDI)
+;;reg_xl:	dd	0	; register XL (EDI)
+;;reg_cp:	dd	0	; register CP
+;;reg_ra:	dq	0e	; register RA
+;;;
+;;; These locations save information needed to return after calling OSINT
+;;; and after a restart from EXIT()
+;;;
+;;	global	reg_pc
+;;	global	reg_pp
+;;reg_pc:        dd   ,0  ; Return PC from ccaller
+;;reg_pp: dd      0               ; Number of bytes of PPMs
+;;	global	reg_xs
+;;reg_xs:	dd   0  ; Minimal stack pointer
+;;;
+;;%define r_size         $-reg_block
+;;	gloal	reg_size
+;;reg_size	dd	r_size
+;
+; end of words saved during exit(-3)
+;
+
+;
+;  Constants
+;
+;;ten:    dd      10              ; constant 10
+;;        pubdef  inf,dd   ,0
+;;        dd      0x7ff00000      ; double precision infinity
+;;
+;;sav_block	times rsize dd 0 ; Save Minimal registers during push/pop reg
+;;;
+;;        align 4
+;;ppoff:  dd      0               ; offset for ppm exits
+;;	
+;;	global	compsp
+;;	global	osisp
+;;compsp: dd      0               ; 1.39 compiler's stack pointer
+;;sav_compsp:
+;;        dd      0               ; save compsp here
+;;osisp:  dd      0               ; 1.39 OSINT's stack pointer
+;;
+;;
+
+
 
 %define KEEP
         segment	.data
@@ -36,6 +218,148 @@ cprtmsg: db " Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer."
 	segment	.text
 
 %ifdef SKIP
+; next is end of SKIP DS
+%endif
+;
+;-----------
+;
+;       restart - restart for load module
+;
+;       restart( char *dummy, char *stackbase ) - startup compiler
+;
+;       The OSINT main function calls restart when resuming execution
+;       of a program from a load module.  The OSINT main function has
+;       reset global variables except for the stack and any associated
+;       variables.
+;
+;       Before restoring stack, set up values for proper checking of
+;       stack overflow. (initial sp here will most likely differ
+;       from initial sp when compile was done.)
+;
+;       It is also necessary to relocate any addresses in the the stack
+;       that point within the stack itself.  An adjustment factor is
+;       calculated as the difference between the STBAS at exit() time,
+;       and STBAS at restart() time.  As the stack is transferred from
+;       TSCBLK to the active stack, each word is inspected to see if it
+;       points within the old stack boundaries.  If so, the adjustment
+;       factor is subtracted from it.
+;
+;       We use Minimal's INSTA routine to initialize static variables
+;       not saved in the Save file.  These values were not saved so as
+;       to minimize the size of the Save file.
+;
+	extern	rereloc
+	extern	compsp
+	extern	ppoff
+
+	global	restart
+        cproc   restart
+
+        pop     eax                     ; discard return
+        pop     eax                     ; discard dummy
+        pop     eax                     ; get lowest legal stack value
+
+        add     eax,dword [stacksiz]            ; top of compiler's stack
+        mov     esp,eax                 ; switch to this stack
+	call	stackinit               ; initialize MINIMAL stack
+
+                                        ; set up for stack relocation
+        lea     eax,[TSCBLK+scstr]        ; top of saved stack
+        mov     ebx,dword [lmodstk]             ; bottom of saved stack
+        GETMIN  ecx,STBAS               ; ecx = stbas from exit() time
+        sub     ebx,eax                 ; ebx = size of saved stack
+	mov	edx,ecx
+        sub     edx,ebx                 ; edx = stack bottom from exit() time
+	mov	ebx,ecx
+        sub     ebx,esp                 ; ebx = old stbas - new stbas
+
+        SETMINR  STBAS,esp               ; save initial sp
+        GETOFF  eax,DFFNC               ; get address of PPM offset
+        mov     dword [ppoff],eax               ; save for use later
+;
+;       restore stack from TSCBLK.
+;
+        mov     esi,dword [lmodstk]             ; -> bottom word of stack in TSCBLK
+        lea     edi,[TSCBLK+scstr]        ; -> top word of stack
+        cmp     esi,edi                 ; Any stack to transfer?
+        je      re3               ;  skip if not
+	sub	esi,4
+	std
+re1:    lodsd                           ; get old stack word to eax
+        cmp     eax,edx                 ; below old stack bottom?
+        jb      re2               ;   j. if eax < edx
+        cmp     eax,ecx                 ; above old stack top?
+        ja      re2               ;   j. if eax > ecx
+        sub     eax,ebx                 ; within old stack, perform relocation
+re2:    push    eax                     ; transfer word of stack
+        cmp     esi,edi                 ; if not at end of relocation then
+        jae     re1                     ;    loop back
+
+re3:	cld
+        mov     dword [compsp],esp              ; 1.39 save compiler's stack pointer
+        mov     esp,dword [osisp]               ; 1.39 back to OSINT's stack pointer
+        callc   rereloc,0               ; V1.08 relocate compiler pointers into stack
+        GETMIN  eax,STATB               ; V1.34 start of static region to XR
+	SET_XR  eax
+        MINIMAL INSTA                   ; V1.34 initialize static region
+
+;
+;       Now pretend that we're executing the following C statement from
+;       function zysxi:
+;
+;               return  NORMAL_RETURN#
+;
+;       If the load module was invoked by EXIT(), the return path is
+;       as follows:  back to ccaller, back to S$EXT following SYSXI call,
+;       back to user program following EXIT() call.
+;
+;       Alternately, the user specified -w as a command line option, and
+;       SYSBX called MAKEEXEC, which in turn called SYSXI.  The return path
+;       should be:  back to ccaller, back to MAKEEXEC following SYSXI call,
+;       back to SYSBX, back to MINIMAL code.  If we allowed this to happen,
+;       then it would require that stacked return address to SYSBX still be
+;       valid, which may not be true if some of the C programs have changed
+;       size.  Instead, we clear the stack and execute the restart code that
+;       simulates resumption just past the SYSBX call in the MINIMAL code.
+;       We distinguish this case by noting the variable STAGE is 4.
+;
+	extern	startbrk
+        callc   startbrk,0              ; start control-C logic
+
+        GETMIN  eax,STAGE               ; is this a -w call?
+	cmp	eax,4
+        je      re4               	; yes, do a complete fudge
+
+	extern	cc1
+;
+;       Jump back to cc1 with return value = NORMAL_RETURN
+	mov	eax,-1
+        jmp     cc1                     ; jump back
+
+;       Here if -w produced load module.  simulate all the code that
+;       would occur if we naively returned to sysbx.  Clear the stack and
+;       go for it.
+;
+re4:	GETMIN	eax,STBAS
+        mov     dword [compsp],eax              ; 1.39 empty the stack
+
+;       Code that would be executed if we had returned to makeexec:
+;
+	extern	zystm
+        SETMIN  GBCNT,0                 ; reset garbage collect count
+        callc   zystm,0                 ; Fetch execution time to reg_ia
+        mov     eax,dword [reg_ia]              ; Set time into compiler
+	SETMINR	TIMSX,eax
+
+;       Code that would be executed if we returned to sysbx:
+;
+        push    outptr                  ; swcoup(outptr)
+	callc	swcoup,4
+
+;       Jump to Minimal code to restart a save file.
+
+        MINIMAL RSTRT                   ; no return
+
 ;
 ;       CVD_ - convert by division
 ;       Input   IA (EDX) = number <=0 to convert
@@ -139,7 +463,7 @@ ITR_:
         push    ecx             ; preserve
         push    edx             ; push IA
         callfar i_2_f,4         ; integer to float
-%if fretst0
+%if fretst0 
 	fstp	qword [reg_ra]
         pop     ecx             ; restore ecx
 	fwait
@@ -248,8 +572,6 @@ MLR_:
 %endif
 	ret
 
-; next is end of SKIP DS
-%endif
 
 ;       DVR_ - divide real in RA by real at [eax]
 
@@ -518,4 +840,228 @@ tryfpu:
 	fldz
 	pop	ebp
 	ret
+
+;
+;-----------
+;
+;       get_fp  - get C caller's FP (frame pointer)
+;
+;       get_fp() returns the frame pointer for the C function that called
+;       this function.  HOWEVER, THIS FUNCTION IS ONLY CALLED BY ZYSXI.
+;
+;       C function zysxi calls this function to determine the lowest USEFUL
+;       word on the stack, so that only the useful part of the stack will be
+;       saved in the load module.
+;
+;       The flow goes like this:
+;
+;       (1) User's spitbol program calls EXIT function
+;
+;       (2) spitbol compiler calls interface routine sysxi to handle exit
+;
+;       (3) Interface routine sysxi passes control to ccaller which then
+;           calls C function zysxi
+;
+;       (4) C function zysxi will write a load module, but needs to save
+;           a copy of the current stack in the load module.  The base of
+;           the part of the stack to be saved begins with the frame of our
+;           caller, so that the load module can execute a return to ccaller.
+;
+;           This will allow the load module to pretend to be returning from
+;           C function zysxi.  So, C function zysxi calls this function,
+;           get_fp, to determine the BASE OF THE USEFUL PART OF THE STACK.
+;
+;           We cheat just a little bit here.  C function zysxi can (and does)
+;           have local variables, but we won't save them in the load module.
+;           Only the portion of the frame established by the 80386 call
+;           instruction, from BP up, is saved.  These local variables
+;           aren't needed, because the load module will not be going back
+;           to C function zysxi.  Instead when function restart returns, it
+;           will act as if C function zysxi is returning.
+;
+;       (5) After writing the load module, C function zysxi calls C function
+;           zysej to terminate spitbol's execution.
+;
+;       (6) When the resulting load module is executed, C function main
+;           calls function restart.  Function restart restores the stack
+;           and then does a return.  This return will act as if it is
+;           C function zysxi doing the return and the user's program will
+;           continue execution following its call to EXIT.
+;
+;       On entry to _get_fp, the stack looks like
+;
+;               /      ...      /
+;       (high)  |               |
+;               |---------------|
+;       ZYSXI   |    old PC     |  --> return point in CCALLER
+;         +     |---------------|  USEFUL part of stack
+;       frame   |    old BP     |  <<<<-- BP of get_fp's caller
+;               |---------------|     -
+;               |     ZYSXI's   |     -
+;               /     locals    /     - NON-USEFUL part of stack
+;               |               |     ------
+;       ======= |---------------|
+;       SP-->   |    old PC     |  --> return PC in C function ZYSXI
+;       (low)   +---------------+
+;
+;       On exit, return EBP in EAX. This is the lower limit on the
+;       size of the stack.
+
+
+	global	get_fp
+get_fp:
+
+        mov     eax,dword [reg_xs]      ; Minimal's XS
+        add     eax,4           ; pop return from call to SYSBX or SYSXI
+        ret                     ; done
+
+;
+;-----------
+;
+;       mimimal -- call MINIMAL function from C
+;
+;       Usage:  extern void minimal(WORD callno)
+;
+;       where:
+;         callno is an ordinal defined in osint.h, osint.inc, and calltab.
+;
+;       Minimal registers WA, WB, WC, XR, and XL are loaded and
+;       saved from/to the register block.
+;
+;       Note that before restart is called, we do not yet have compiler
+;       stack to switch to.  In that case, just make the call on the
+;       the OSINT stack.
+;
+
+	global	minimal
+minimal:
+
+
+        pushad                          ; save all registers for C
+        mov     eax, dword [esp+32+4]          ; get ordinal
+        mov     ecx, dword [reg_wa]              ; restore registers
+	mov	ebx, dword [reg_wb]
+        mov     edx, dword [reg_wc ]             ; (also _reg_ia)
+	mov	edi, dword [reg_xr]
+	mov	esi, dword [reg_xl]
+	mov	ebp, dword [reg_cp]
+
+        mov     dword [osisp],esp               ; 1.39 save OSINT stack pointer
+        cmp     dword [compsp],0      ; 1.39 is there a compiler stack?
+        je      min1              ; 1.39 jump if none yet
+        mov     esp,dword [compsp]              ; 1.39 switch to compiler stack
+
+min1:   call   dword [calltab+eax*4]          ; off to the Minimal code
+
+        mov     esp,dword [osisp]               ; 1.39 switch to OSINT stack
+
+        mov     dword [reg_wa],ecx              ; save registers
+	mov	dword [reg_wb],ebx
+	mov	dword [reg_wc],edx
+	mov	dword [reg_xr],edi
+	mov	dword [reg_xl],esi
+	mov	dword [reg_cp],ebp
+	popad
+	ret
+
+
+
+%if direct = 0
+;
+;-----------
+;
+;       minoff -- obtain address of MINIMAL variable
+;
+;       Usage:  extern WORD *minoff(WORD valno)
+;
+;       where:
+;         valno is an ordinal defined in osint.h, osint.inc and valtab.
+;
+
+        proc    minoff,near
+	pubname	minoff
+
+	global	minoff
+minoff:
+        mov     eax,dword [esp+4]             ; get ordinal
+        mov     eax,dword [valtab+eax*4]       ; get address of Minimal value
+	ret
+
+%endif
+
+
+;
+;-----------
+;
+;	stackinit  -- initialize LOWSPMIN from sp.
+;
+;	Input:  sp - current C stack
+;		stacksiz - size of desired Minimal stack in bytes
+;
+;	Uses:	eax
+;
+;	Output: register WA, sp, LOWSPMIN, compsp, osisp set up per diagram:
+;
+;	(high)	+----------------+
+;		|  old C stack   |
+;	  	|----------------| <-- incoming sp, resultant WA (future XS)
+;		|	     ^	 |
+;		|	     |	 |
+;		/ stacksiz bytes /
+;		|	     |	 |
+;		|            |	 |
+;		|----------- | --| <-- resultant LOWSPMIN
+;		| 400 bytes  v   |
+;	  	|----------------| <-- future C stack pointer, osisp
+;		|  new C stack	 |
+;	(low)	|                |
+;
+;
+;
+	global	stackinit
+stackinit:
+
+	mov	eax,esp
+        mov     dword [compsp],eax              ; save as MINIMAL's stack pointer
+	sub	eax,dword [stacksiz]            ; end of MINIMAL stack is where C stack will start
+        mov     dword [osisp],eax               ; save new C stack pointer
+	add	eax,4*100               ; 100 words smaller for CHK
+	mov	dword [LOWSPMIN],eax	; set LOWSPMIN
+	ret
+
+
+
+;
+;-----------
+;
+;       startup( char *dummy1, char *dummy2) - startup compiler
+;
+;       An OSINT C function calls startup to transfer control
+;       to the compiler.
+;
+;       (XR) = basemem
+;       (XL) = topmem - sizeof(WORD)
+;
+;	Note: This function never returns.
+
+
+	global	startup
+startup:
+        pop     eax                     ; discard return
+        pop     eax                     ; discard dummy1
+        pop     eax                     ; discard dummy2
+	call	stackinit               ; initialize MINIMAL stack
+        mov     eax,dword [compsp]              ; get MINIMAL's stack pointer
+	mov	dword [reg_wa],eax
+;        SET_WA  eax                     ; startup stack pointer
+
+	cld                             ; default to UP direction for string ops
+	lea	eax, [DFFNC]
+;        GETOFF  eax,DFFNC               ; get address of PPM offset
+        mov     dword [ppoff],eax               ; save for use later
+        mov     esp,dword [osisp]               ; switch to new C stack
+;        MINIMAL START                   # load regs, switch stack, start compiler
+        push START
+        callc minimal,4
+
 
