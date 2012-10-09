@@ -286,6 +286,8 @@ NGR_:
 ngr_1:  xor     byte [reg_ra+7], 0x80         ; complement mantissa sign
 ngr_2:	ret
 
+; next is end of SKIP
+%endif
 ;       ATN_ arctangent of real in RA
 
         global  ATN_
@@ -358,8 +360,6 @@ COS_:
 %endif
 	ret
 
-; next is end of SKIP
-%endif
 ;       ETX_ exponential of real in RA
         global  ETX_
 ETX_:
