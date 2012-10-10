@@ -21,8 +21,6 @@
 ;
         %include        "systype.nh"
         %include        "nosint.inc"
-	extern	reg_ra
-	extern	osisp
 
 ;	addresses defined by minimal source
 	extern	TSCBLK
@@ -144,72 +142,67 @@ nlines:	dd   	0
 
 
 ; Words saved during exit(-3)
-;
-        align 4
-;;	global	reg_block
-;;	global	reg_wa
-;;	global	reg_wb
-;;	global	reg_ia
-;;	global	reg_wc
-;;	global	reg_xr
-;;	global	reg_xl
-;;	global	reg_cp
-;;	global	reg_ra
-;;reg_block:
-;;reg_wa:	dd	0	; register WA (ECX)
-;;reg_wb:	dd	0	; register WB (EBC)	
-;;reg_ia:
-;;reg_wc:	dd	0	; register WC&IA (EDX)
-;;reg_xr:	dd	0	; register XR (EDI)
-;;reg_xl:	dd	0	; register XL (EDI)
-;;reg_cp:	dd	0	; register CP
-;;reg_ra:	dq	0e	; register RA
-;;;
-;;; These locations save information needed to return after calling OSINT
-;;; and after a restart from EXIT()
-;;;
-	extern	reg_pc
-	extern	reg_pp
-;;reg_pc:        dd   ,0  ; Return PC from ccaller
-;;reg_pp: dd      0               ; Number of bytes of PPMs
-;;	global	reg_xs
-;;reg_xs:	dd   0  ; Minimal stack pointer
-;;;
-;;%define r_size         $-reg_block
-;;	gloal	reg_size
-;;reg_size	dd	r_size
+ 
+       	align 4
+	global	reg_block
+	global	reg_wa
+	global	reg_wb
+	global	reg_wc
+	global	reg_xr
+	global	reg_xl
+	global	reg_xs
+	global	reg_cp
+	global	reg_ia
+reg_block:
+reg_wa:		dd	0	; WA (ECX)
+reg_wb:		dd	0	; WB (EBC)
+reg_ia:		
+reg_wc:		dd	0	; WC and IC (EBX)
+reg_xr:		dd	0	; XR (EDI)
+reg_xl:		dd	0	; XL (ESI)
+reg_cp:		dd	0	; CP
+reg_ra:		dq	0e	; RA
+ 
+; These locations save information needed to return after calling OSINT
+; and after a restart from EXIT()
+ 
+	global	reg_pc
+reg_pc:		dd	0	; return PC from caller
+	global	reg_xs
+reg_xs:		dd	0	; Minimal stack pointer
+	global	reg_pp
+reg_pp:		dd	0	; number of bytes of PPM's
+ 
+r_size  equ       $-reg_block
+	global	reg_size
+reg_size:	dd	r_size
 ;
 ; end of words saved during exit(-3)
-;
-
-;
+ 
 ;  Constants
+ 
+ten:    dd      10              ; constant 10
+	global	inf
+inf:	dd	0
+        dd      0x7ff00000      ; double precision infinity
+
+sav_block	times r_size dd 0 ; Save Minimal registers during push/pop reg
 ;
-;;ten:    dd      10              ; constant 10
-;;        pubdef  inf,dd   ,0
-;;        dd      0x7ff00000      ; double precision infinity
-;;
-;;sav_block	times rsize dd 0 ; Save Minimal registers during push/pop reg
-;;;
-;;        align 4
-;;ppoff:  dd      0               ; offset for ppm exits
-;;	
-;;	global	compsp
-;;	global	osisp
-;;compsp: dd      0               ; 1.39 compiler's stack pointer
-;;sav_compsp:
-;;        dd      0               ; save compsp here
-;;osisp:  dd      0               ; 1.39 OSINT's stack pointer
-;;
-;;
+        align 4
+ppoff:  dd      0               ; offset for ppm exits
+	
+	global	compsp
+compsp:	dd	0
+	global	osisp
+osisp: dd	0
+
+sav_compsp:
+        dd      0               ; save compsp here
 
 
-
-%define KEEP
         segment	.data
 
         align         4
-ten:	dd	10
 	global	hasfpu
 hasfpu:	dd	0
 	global	cprtmsg
@@ -249,12 +242,9 @@ cprtmsg: db " Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer."
 ;       to minimize the size of the Save file.
 ;
 	extern	rereloc
-	extern	compsp
-	extern	ppoff
 
 	global	restart
-        cproc   restart
-
+restart:
         pop     eax                     ; discard return
         pop     eax                     ; discard dummy
         pop     eax                     ; get lowest legal stack value
@@ -1202,15 +1192,16 @@ SYSBX:	mov	dword [reg_xs],esp
 	call	ccaller
         dd      zysbx
         db     0
-;
-;%if SETREAL = 1
-;        global SYSCR
-;	extern	zyscr
-;SYSCR:  call    ccaller
-;        dd      zyscr
-;        db     0
-;;
-;%endif
+SERIAL	equ	0
+%define SETREAL 0
+%if SETREAL = 1
+         global SYSCR
+ 	extern	zyscr
+SYSCR:  call    ccaller
+         dd      zyscr
+         db     0
+
+%endif
         global SYSDC
 	extern	zysdc
 SYSDC:	call	ccaller
@@ -1420,5 +1411,75 @@ SYSXI:	mov	dword [reg_xs],esp
 	call	ccaller
 sysxi_p: dd      zysxi
         db     2*2
+
+
+;
+;-----------
+;
+;       Save and restore MINIMAL and interface registers on stack.
+;       Used by any routine that needs to call back into the MINIMAL
+;       code in such a way that the MINIMAL code might trigger another
+;       SYSxx call before returning.
+;
+;       Note 1:  pushregs returns a collectable value in XL, safe
+;       for subsequent call to memory allocation routine.
+;
+;       Note 2:  these are not recursive routines.  Only reg_xl is
+;       saved on the stack, where it is accessible to the garbage
+;       collector.  Other registers are just moved to a temp area.
+;
+;       Note 3:  popregs does not restore REG_CP, because it may have
+;       been modified by the Minimal routine called between pushregs
+;       and popregs as a result of a garbage collection.  Calling of
+;       another SYSxx routine in between is not a problem, because
+;       CP will have been preserved by Minimal.
+;
+;       Note 4:  if there isn't a compiler stack yet, we don't bother
+;       saving XL.  This only happens in call of nextef from sysxi when
+;       reloading a save file.
+;
+;
+	global	pushregs
+pushregs:
+	pushad
+	lea	esi,[reg_block]
+	lea	edi,[sav_block]
+	mov	ecx,r_size/4
+	cld
+   rep	movsd
+
+        mov     edi,dword [compsp]
+        or      edi,edi                         ; 1.39 is there a compiler stack
+        je      push1                     
+        sub     edi,4                           ;push onto compiler's stack
+        mov     esi,dword [reg_xl]              ;collectable XL
+	mov	[edi],esi
+        mov     dword [compsp],edi		;smashed if call OSINT again (SYSGC)
+        mov     dword [sav_compsp],edi		;used by popregs
+
+push1:	popad
+	ret
+
+	global	popregs
+popregs:
+	pushad
+        mov     eax,dword [reg_cp]		;don't restore CP
+	cld
+	lea	esi,[sav_block]
+        lea     edi,[reg_block]                   ;unload saved registers
+	mov	ecx,r_size/4
+   rep  movsd                                   ;restore from temp area
+	mov	dword [reg_cp],eax
+
+        mov     edi,dword [sav_compsp]		;saved compiler's stack
+        or      edi,edi                         ;is there one?
+        je      pop1                      	;jump if none yet
+        mov     esi,dword [edi]			;retrieve collectable XL
+        mov     dword [reg_xl],esi		;update XL
+        add     edi,4                           ;update compiler's sp
+        mov     dword [compsp],edi
+
+pop1:	popad
+	ret
 
 

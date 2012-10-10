@@ -45,54 +45,9 @@ globals =               1                       #ASM globals defined here
         .include "extrn386.inc"
 
 
-# Words saved during exit(-3)
-#
-        .balign 4
-        pubdef  reg_block
-        pubdef  reg_wa,.long,0     # Register WA (ECX)
-        pubdef  reg_wb,.long,0     # Register WB (EBX)
-        pubdef  reg_ia
-        pubdef  reg_wc,.long,0     # Register WC & IA (EDX)
-        pubdef  reg_xr,.long,0     # Register XR (EDI)
-        pubdef  reg_xl,.long,0     # Register XL (ESI)
-        pubdef  reg_cp,.long,0     # Register CP
-        pubdef  reg_ra,.double,0e  # Register RA
-#
-# These locations save information needed to return after calling OSINT
-# and after a restart from EXIT()
-#
-        pubdef  reg_pc,.long,0  # Return PC from ccaller
-	.global	reg_pp
-
-reg_pp: .long   0               # Number of bytes of PPMs
-        pubdef  reg_xs,.long,0  # Minimal stack pointer
-#
-r_size  =       .-reg_block
-        pubdef  reg_size,.long,r_size
-#
-# end of words saved during exit(-3)
-#
-
 #
 #  Constants
 #
-ten:    .long   10              # constant 10
-        pubdef  inf,.long,0
-        .long   0x7ff00000      # double precision infinity
-
-sav_block: .fill r_size,1,0     # Save Minimal registers during push/pop reg
-#
-        .balign 4
-	.global	ppoff
-ppoff:  .long   0               # offset for ppm exits
-	
-	.global	compsp
-	.global	osisp
-compsp: .long   0               # 1.39 compiler's stack pointer
-sav_compsp:
-        .long   0               # save compsp here
-osisp:  .long   0               # 1.39 OSINT's stack pointer
-
 
 #
 #       Setup a number of internal addresses in the compiler that cannot
@@ -140,80 +95,6 @@ osisp:  .long   0               # 1.39 OSINT's stack pointer
         .fill   260,1,0         # buffer
 
   DSegEnd_
-
-#
-#-----------
-#
-#       Save and restore MINIMAL and interface registers on stack.
-#       Used by any routine that needs to call back into the MINIMAL
-#       code in such a way that the MINIMAL code might trigger another
-#       SYSxx call before returning.
-#
-#       Note 1:  pushregs returns a collectable value in XL, safe
-#       for subsequent call to memory allocation routine.
-#
-#       Note 2:  these are not recursive routines.  Only reg_xl is
-#       saved on the stack, where it is accessible to the garbage
-#       collector.  Other registers are just moved to a temp area.
-#
-#       Note 3:  popregs does not restore REG_CP, because it may have
-#       been modified by the Minimal routine called between pushregs
-#       and popregs as a result of a garbage collection.  Calling of
-#       another SYSxx routine in between is not a problem, because
-#       CP will have been preserved by Minimal.
-#
-#       Note 4:  if there isn't a compiler stack yet, we don't bother
-#       saving XL.  This only happens in call of nextef from sysxi when
-#       reloading a save file.
-#
-#
-
-	CSeg_
-        proc    pushregs,near                   #bashes eax,ecx,esi
-	publab	pushregs
-	pushad
-	lea	esi,reg_block
-	lea	edi,sav_block
-	mov	ecx,r_size/4
-	cld
-   rep	movsd
-
-        mov     edi,compsp
-        or      edi,edi                         # 1.39 is there a compiler stack
-        je      short push1                     # 1.39 jump if none yet
-        sub     edi,4                           #push onto compiler's stack
-        mov     esi,reg_xl                      #collectable XL
-	mov	[edi],esi
-        mov     compsp,edi                      #smashed if call OSINT again (SYSGC)
-        mov     sav_compsp,edi                  #used by popregs
-
-push1:	popad
-	retc	0
-        endp    pushregs
-
-        proc    popregs,near                    #bashes eax,ebx,ecx
-	publab	popregs
-	pushad
-        mov     eax,reg_cp                      #don't restore CP
-	cld
-	lea	esi,sav_block
-        lea     edi,reg_block                   #unload saved registers
-	mov	ecx,r_size/4
-   rep  movsd                                   #restore from temp area
-	mov	reg_cp,eax
-
-        mov     edi,sav_compsp                  #saved compiler's stack
-        or      edi,edi                         #1.39 is there one?
-        je      short pop1                      #1.39 jump if none yet
-        mov     esi,[edi]                       #retrieve collectable XL
-        mov     reg_xl,esi                      #update XL
-        add     edi,4                           #update compiler's sp
-        mov     compsp,edi
-
-pop1:	popad
-	retc	0
-        endp    popregs
-
 
   CSegEnd_
         .end

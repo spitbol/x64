@@ -12,14 +12,14 @@
 
         DSeg_
 %ifndef globals
-	extern		reg_cp
-	extern		reg_wa
-	extern		reg_wb
-	extern		reg_wc
-	extern		reg_xr
-	extern		reg_xl
-	extern		reg_xs
-	extern		reg_ia
+;	extern		reg_cp
+;	extern		reg_wa
+;	extern		reg_wb
+;	extern		reg_wc
+;	extern		reg_xr
+;	extern		reg_xl
+;	extern		reg_xs
+;	extern		reg_ia
 %endif
         DSegEnd_
 
@@ -80,7 +80,7 @@
         mov             dword [reg_wb], %1
         %endmacro
 
-        %macro          vSET_WC 1
+        %macro          SET_WC 1
         mov             dword [reg_wc], %1
         %endmacro
 
