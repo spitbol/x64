@@ -126,26 +126,20 @@ nomachine
 *
 *
 *  Comma delimited string of decimal bytes:
-        db      = '.byte'
+        db      = 'db'
 	byte	= tab db tab
 
 *  Delim delimited string of 'normal' ascii characters (32-127)
 	delim	= '"'
-        ascii   = tab '.ascii' tab
+        ascii   = tab 'db' tab
 
 *  Comment lead-in character
 *
-        comment = '#'
+        comment = ';'
 
 *  Data and public definitions
 *
-        name    = tab '.sbttl' tab '"errors"'
-        model   = tab '.arch' tab 'pentium'
-        data    = tab 'DSeg_'
-        enddata = tab 'DSegEnd_'
-        endstmt = tab '.end'
-	public	= tab 'pubdef' tab
-        include = tab '.include' tab '"systype.ah"'
+        data    = tab 'segment'	tab	'.data'
 
 *  Setup keywords
 *
@@ -404,30 +398,26 @@ readerr_end
 *  Putout title and header information
 *
         outfile = comment ' COMPRESSED SPITBOL ERROR MESSAGES ' DATE()
-        outfile = comment
-        outfile = name
-        outfile = model
-        outfile = include
-        outfile = group
+        outfile = 
         outfile = data
         outfile =
 
 *  Putout label and compressed error message table
 *
-        outfile = public 'errors,' db ',0'
+	outfile = '	global	errors'
+	outfile = 'errors:'
 	seq(" putout(err[i],i)", .i)
 
 *  Putout label and phrase table
 *
         outfile =
-        outfile = public 'phrases,' db ',0'
+	outfile = tab	'global' tab	'phrases'
+	outfile	= 'phrases:'	tab	'db'	tab	'0'
 	seq(" putout(phrase[i],spread(i))", .i)
 
 *  Finish up the output file
 *
         outfile =
-        outfile = enddata
-        outfile = endstmt
 
 *  Print statistics
 *

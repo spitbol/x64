@@ -16,6 +16,7 @@ vpath %.c $(OSINT)
 
 
 CC=     gcc
+AS=	as
 ifeq	($(DEBUG),0)
 CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
 else
@@ -26,7 +27,7 @@ endif
 ifeq	($(DEBUG),0)
 ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
 else
-ASFLAGS = --32 -g -gstabs+ -msyntax=intel -mmnemonic=intel -mnaked-reg
+ASFLAGS = --32 -g -msyntax=intel -mmnemonic=intel -mnaked-reg
 endif
 
 # Tools for processing Minimal source file.
@@ -73,7 +74,7 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 	trypath.o wrtaout.o 
 
 # Assembly langauge objects common to all versions:
-CAOBJS = errors.o inter.o n.o
+CAOBJS = errors.o n.o
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
@@ -116,8 +117,6 @@ v38.err: v38.s
 errors.s: $(VERS).cnd $(ERR) v38.s
 	   $(SPIT) -1=v38.err -2=errors.s $(ERR)
 
-inter.o: systype.ah osint.inc
-
 # make osint objects
 cobjs:	$(COBJS)
 
@@ -140,3 +139,6 @@ clean:
 n.o:
 #nasm -f elf -o$@ $*.asm
 	nasm -f elf -l n.lst -on.o n.asm
+errors.o:
+#nasm -f elf -o$@ $*.asm
+	nasm -f elf -l errors.lst -oerrors.o errors.s
