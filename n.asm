@@ -23,10 +23,8 @@
         %include        "nosint.inc"
 
 ;	addresses defined by minimal source
-	extern	TSCBLK
 	extern	STBAS
 	extern	DFFNC
-	extern	TSCBLK
 	extern	STATB
 	extern	STAGE
 	extern	STBAS
@@ -199,6 +197,59 @@ osisp: dd	0
 sav_compsp:
         dd      0               ; save compsp here
 
+
+;
+;       Setup a number of internal addresses in the compiler that cannot
+;       be directly accessed from within C because of naming difficulties.
+;
+%define	SETREAL 0
+%if SETREAL = 1
+        dd      2
+        db      "1x\x00\x00"
+%else
+        dd      1
+        db      "1x\x00\x00\x00"
+%endif
+
+	global	ID1
+ID1:	dd	0
+
+	global	ID2BLK
+ID2BLK:	dd	52
+        dd     0
+	times	52 dd 0
+
+	global 	TICBLK
+TICBLK:	dd	0
+        dd     0
+
+	global	TSCBLK
+TSCBLK:	dd	5120
+        dd     0
+	times	512	dd	0
+
+;
+;       Standard input buffer block.
+;
+	global	INPBUF
+INPBUF:	dd	0		; type word
+        dd     0               ; block length
+        dd     1024            ; buffer size
+        dd     0               ; remaining chars to read
+        dd     0               ; offset to next character to read
+        dd     0               ; file position of buffer
+        dd     0               ; physical position in file
+	times	1024	dd 0	; buffer
+
+	global	TTYBUF
+TTYBUF:	dd	0		; type word
+        dd     0               ; block length
+        dd     260             ; buffer size  (260 OK in MS-DOS with cinread())
+        dd     0               ; remaining chars to read
+        dd     0               ; offset to next char to read
+        dd     0               ; file position of buffer
+        dd     0               ; physical position in file
+	times 260	dd 0   ; buffer
 
         segment	.data
 
