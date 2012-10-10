@@ -4,7 +4,7 @@
 
 # SPITBOL Version:
 VERS=   linux
-DEBUG=	0
+DEBUG=	1
 
 # Minimal source directory.
 MINPATH=./
@@ -16,7 +16,7 @@ vpath %.c $(OSINT)
 
 
 CC=     gcc
-AS=	as
+AS=nasm
 ifeq	($(DEBUG),0)
 CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
 else
@@ -25,14 +25,14 @@ endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
+ASFLAGS = -f elf
 else
-ASFLAGS = --32 -g -msyntax=intel -mmnemonic=intel -mnaked-reg
+ASFLAGS = -f elf -g
 endif
 
 # Tools for processing Minimal source file.
 TOK=	token.spt
-COD=    codlinux.spt
+COD=    ncodlinux.spt
 ERR=    err386.spt
 SPIT=   ./bin/spitbol
 
@@ -44,7 +44,7 @@ SPIT=   ./bin/spitbol
 
 # Implicit rule for building objects from assembly language files.
 .s.o:
-	$(AS) -a=$*.lst -o $@ $(ASFLAGS) $*.s
+	$(AS) -l=$*.lst -o $@ $(ASFLAGS) $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
 CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h
@@ -74,7 +74,7 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 	trypath.o wrtaout.o 
 
 # Assembly langauge objects common to all versions:
-CAOBJS = errors.o n.o
+CAOBJS = errors.o ninter.o 
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
@@ -92,7 +92,7 @@ MOBJS=	main.o getargs.o
 AOBJS = $(CAOBJS)
 
 # Minimal source object file:
-VOBJS =	v38.o
+VOBJS =	v38.o 
 
 # All objects:
 OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS)
@@ -102,11 +102,9 @@ spitbol: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -lm  -ospitbol -Wl,-M,-Map,spitbol.map
 
 # Assembly language dependencies:
-errors.o: errors.s
-v38.o: v38.s
 
 # SPITBOL Minimal source
-v38.s:	v38.tok $(VHDRS) $(COD) systype.ah
+v38.s:	v38.tok $(VHDRS) $(COD) 
 	  $(SPIT) -u "v38:$(VERS):comments" $(COD)
 
 v38.tok: $(MINPATH)v38.min $(VERS).cnd $(TOK)
@@ -136,9 +134,3 @@ install:
 	sudo cp spitbol /usr/local/bin
 clean:
 	rm -f $(OBJS) *.lst *.map *.err v38.tok v38.tmp v38.s errors.s
-n.o:
-#nasm -f elf -o$@ $*.asm
-	nasm -f elf -l n.lst -on.o n.asm
-errors.o:
-#nasm -f elf -o$@ $*.asm
-	nasm -f elf -l errors.lst -oerrors.o errors.s

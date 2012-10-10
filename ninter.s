@@ -258,6 +258,7 @@ TTYBUF:	dd	0		; type word
 hasfpu:	dd	0
 	global	cprtmsg
 cprtmsg: db " Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer."
+	db	0
 
 	segment	.text
 
