@@ -41,6 +41,7 @@ This file is part of Macro SPITBOL.
 #define	B_SCL	b_scl
 #define	B_RCL	b_rcl
 #define	B_XRT	b_xrt
+#define	B_XNT	b_xnt
 #define	ID2BLK	id2blk
 #define	INPBUF	inpbuf
 #define	XNT	b_xnt

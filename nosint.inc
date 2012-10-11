@@ -1,16 +1,16 @@
-;   File:  osint.inc            Version:  01.00
+;   file:  osint.inc            version:  01.00
 ;   -------------------------------------------
 ;
-;   This header file defines the interface between the Macro SPITBOL compiler
-;   and any assembly-language OSINT modules.
-;   Communication between the two is handled via a set of global variables
+;   this header file defines the interface between the macro spitbol compiler
+;   and any assembly-language osint modules.
+;   communication between the two is handled via a set of global variables
 ;   defined as externals below.
 
-;  Copyright 1991 Robert Goldberg and Catspaw, Inc.
+;  copyright 1991 robert goldberg and catspaw, inc.
 
-;   Set up externals for all the compiler's registers.
+;   set up externals for all the compiler's registers.
 
-        DSeg_
+        dseg_
 %ifndef globals
 ;	extern		reg_cp
 ;	extern		reg_wa
@@ -21,146 +21,146 @@
 ;	extern		reg_xs
 ;	extern		reg_ia
 %endif
-        DSegEnd_
+        dsegend_
 
-;   Macros to load a compiler register into a machine register
+;   macros to load a compiler register into a machine register
 	%macro		atline 1
 	mov	dword [nlines],%1
 	call	atlin
 	%endmacro
 
-        %macro          GET_CP 1
+        %macro          get_cp 1
         mov             %1, dword [reg_cp]
         %endmacro
 
-        %macro          GET_IA 1
+        %macro          get_ia 1
         mov             %1, dword [reg_ia]
         %endmacro
 
-        %macro          GET_WA 1
+        %macro          get_wa 1
         mov             %1, dword [reg_wa]
         %endmacro
 
-        %macro          GET_WB 1
+        %macro          get_wb 1
         mov             %1, dword [reg_wb]
         %endmacro
 
-        %macro          GET_WC 1
+        %macro          get_wc 1
         mov             %1, dword [reg_wc]
         %endmacro
 
-        %macro          GET_XR 1
+        %macro          get_xr 1
         mov             %1, dword [reg_xr]
         %endmacro
 
-        %macro          GET_XL 1
+        %macro          get_xl 1
         mov             %1, dword [reg_xl]
         %endmacro
 
-        %macro          GET_XS 1
+        %macro          get_xs 1
         mov             %1, dword [reg_xs]
         %endmacro
 
 
-;   Macros to store a machine register into a compiler register.
+;   macros to store a machine register into a compiler register.
 
-        %macro          SET_CP  1
+        %macro          set_cp  1
         mov             dword [reg_cp], %1
         %endmacro
 
-        %macro          SET_IA 1
+        %macro          set_ia 1
         mov             dword [reg_ia], %1
         %endmacro
 
-        %macro          SET_WA 1
+        %macro          set_wa 1
         mov             dword [reg_wa], %1
         %endmacro
 
-        %macro          SET_WB 1
+        %macro          set_wb 1
         mov             dword [reg_wb], %1
         %endmacro
 
-        %macro          SET_WC 1
+        %macro          set_wc 1
         mov             dword [reg_wc], %1
         %endmacro
 
-        %macro          SET_XR 1
+        %macro          set_xr 1
         mov             dword [reg_xr], %1
         %endmacro
 
-        %macro          SET_XL 1
+        %macro          set_xl 1
         mov             dword [reg_xl], %1
         %endmacro
 
-        %macro          SET_XS 1
+        %macro          set_xs 1
         mov             dword [reg_xs], %1
         %endmacro
 
 
-;   Return values to take exit N from interface
+;   return values to take exit n from interface
 
-%define	EXIT_1         0
-%define	EXIT_2         4
-%define	EXIT_3         8
-%define	EXIT_4         12
-%define	EXIT_5         16
-%define	EXIT_6         20
-%define	EXIT_7         24
-%define	EXIT_8         28
-%define	EXIT_9         32
-;    Return value to do a normal return from interface.
+%define	exit_1         0
+%define	exit_2         4
+%define	exit_3         8
+%define	exit_4         12
+%define	exit_5         16
+%define	exit_6         20
+%define	exit_7         24
+%define	exit_8         28
+%define	exit_9         32
+;    return value to do a normal return from interface.
 
-%define NORMAL_RETURN   -1
+%define normal_return   -1
 
-        CSeg_
+        cseg_
 
-;       Function and macro to call into MINIMAL code.
-;       The argument is an ordinal number defined below.
+;       function and macro to call into minimal code.
+;       the argument is an ordinal number defined below.
 ;%ifndef globals
 ;	extern		minimal
 ;%endif
-        %macro          MINIMAL 1
+        %macro          minimal 1
         push            %1
-	callc		minimal,4
+	callc		call_minimal,4
         %endmacro
 
-;   Ordinals for MINIMAL calls from assembly language.
+;   ordinals for minimal calls from assembly language.
 ;
-;   The order of entries here must correspond to the order of
-;   calltab entries in the INTER assembly language module.
+;   the order of entries here must correspond to the order of
+;   calltab entries in the inter assembly language module.
 ;
-%define  RELAJ          0
-%define  RELCR          1
-%define  RELOC          2
-%define  ALLOC          3
-%define  ALOCS          4
-%define  ALOST          5
-%define  BLKLN          6
-%define  INSTA          7
-%define  RSTRT          8
-%define  START          9
-%define  FILNM          10
-%define  DTYPE          11
-%define  ENEVS          12
-%define  ENGTS          13
+%define  relaj          0
+%define  relcr          1
+%define  reloc          2
+%define  alloc          3
+%define  alocs          4
+%define  alost          5
+%define  blkln          6
+%define  insta          7
+%define  rstrt          8
+%define  start          9
+%define  filnm          10
+%define  dtype          11
+%define  enevs          12
+%define  engts          13
 
-;       Function and macro to get/set value from/to MINIMAL dataspace.
-;       The argument is an ordinal number defined below.
-;       The macro GETOFF returns the address of the value.
+;       function and macro to get/set value from/to minimal dataspace.
+;       the argument is an ordinal number defined below.
+;       the macro getoff returns the address of the value.
 %if direct                                  ; [[
-        %macro          GETOFF 2
+        %macro          getoff 2
 	lea		%1,[%2]
         %endmacro
 
-        %macro          GETMIN 2
+        %macro          getmin 2
         mov             %1,%2
         %endmacro
 
-        %macro          SETMIN 2
+        %macro          setmin 2
 	mov		dword [%1],%2
         %endmacro
 
-        %macro          SETMINR 2
+        %macro          setminr 2
 	mov		dword [%1],%2
         %endmacro
 
@@ -174,12 +174,12 @@
 %endif
         %endmacro
 
-        DSeg_
+        dseg_
 %else                                       ; ][
 %ifndef globals
 	ext		minoff,near
 %endif
-        %macro          GETOFF 2
+        %macro          getoff 2
 %ifidn %1,eax
 %else
 	push	dave
@@ -194,7 +194,7 @@
 %endif
         %endmacro
 
-        %macro          GETMIN 2
+        %macro          getmin 2
 %ifidn	%1,eax
 %else
 	push		eax
@@ -208,7 +208,7 @@
 %endif
         %endmacro
 
-        %macro          SETMIN 2
+        %macro          setmin 2
 %ifidn %1,eax
 	push		eax
 %endif
@@ -229,70 +229,70 @@
 %1:  db              0
         %endmacro
 
-;   Ordinals for transferring MINIMAL values to/from assembly language.
+;   ordinals for transferring minimal values to/from assembly language.
 ;
-;   The order of entries here must correspond to the order of
-;   valtab entries in the INTER assembly language module.
+;   the order of entries here must correspond to the order of
+;   valtab entries in the inter assembly language module.
 ;
-;   The structure vords and the access macro is merely a device to
-;   produce an enumeration similar to an enum structure to C.
+;   the structure vords and the access macro is merely a device to
+;   produce an enumeration similar to an enum structure to c.
 ;
 ;        struc   vords
 %endif                                      ; ]]
 
-;        %define   GBCNT 1
-;        %define   HEADV 2
-;        %define   MXLEN 3
-;        %define   STAGE 4
-;        %define   TIMSX 5
-;        %define   DNAMB 6
-;        %define   DNAMP 7
-;        %define   STATE 8
-;        %define   B_EFC 9
-;        %define   B_ICL 10
-;        %define   B_SCL 11
-;        %define   B_VCT 12
-;        %define   B_XNT 13
-;        %define   B_XRT 14
-;        %define   STBAS 15
-;        %define   STATB 16
-;        %define   POLCT 17
-;        %define   TYPET 18
-;        %define   DFFNC 19
-;        %define   LOWSPMIN 20
-;        %define   FLPRT 21
-;        %define   FLPTR 22
-;        %define   GTCEF 23
-;        %define   HSHTB 24
-;        %define   PMHBS 25
-;        %define   R_FCB 26
-;        %define   C_AAA 27
-;        %define   C_YYY 28
-;        %define   G_AAA 29
-;        %define   W_YYY 30
-;        %define   S_AAA 31
-;        %define   S_YYY 32
-;        %define   R_COD 33
-;        %define   KVSTN 34
-;        %define   KVDMP 35
-;        %define   KVFTR 36
-;        %define   KVCOM 37
-;        %define   KVPFL 38
-;        %define   CSWFL 39
-;        %define   STMCS 40
-;        %define   STMCT 41
-;        %define   TICBLK   42
-;        %define   TSCBLK   43
-;        %define   ID1   44
-;        %define   ID2BLK   45
-;        %define   INPBUF   46
-;        %define   TTYBUF   47
-;        %define   B_RCL   48
+;        %define   gbcnt 1
+;        %define   headv 2
+;        %define   mxlen 3
+;        %define   stage 4
+;        %define   timsx 5
+;        %define   dnamb 6
+;        %define   dnamp 7
+;        %define   state 8
+;        %define   b_efc 9
+;        %define   b_icl 10
+;        %define   b_scl 11
+;        %define   b_vct 12
+;        %define   b_xnt 13
+;        %define   b_xrt 14
+;        %define   stbas 15
+;        %define   statb 16
+;        %define   polct 17
+;        %define   typet 18
+;        %define   dffnc 19
+;        %define   lowspmin 20
+;        %define   flprt 21
+;        %define   flptr 22
+;        %define   gtcef 23
+;        %define   hshtb 24
+;        %define   pmhbs 25
+;        %define   r_fcb 26
+;        %define   c_aaa 27
+;        %define   c_yyy 28
+;        %define   g_aaa 29
+;        %define   w_yyy 30
+;        %define   s_aaa 31
+;        %define   s_yyy 32
+;        %define   r_cod 33
+;        %define   kvstn 34
+;        %define   kvdmp 35
+;        %define   kvftr 36
+;        %define   kvcom 37
+;        %define   kvpfl 38
+;        %define   cswfl 39
+;        %define   stmcs 40
+;        %define   stmct 41
+;        %define   ticblk   42
+;        %define   tscblk   43
+;        %define   id1   44
+;        %define   id2blk   45
+;        %define   inpbuf   46
+;        %define   ttybuf   47
+;        %define   b_rcl   48
 ;
 %if direct
-        DSegEnd_
+        dsegend_
 %else
 ;        ends    vords
 %endif
 
-        CSegEnd_
+        csegend_

@@ -1,78 +1,78 @@
-;   HDRDATA.INC
+;   hdrdata.inc
 ;
 ;
-;   Table to recover type word from type ordinal
+;   table to recover type word from type ordinal
 ;
 
-	global	TYPET
-TYPET:
-        dd      B_ART   ; ARBLK type word - 0
-        dd      B_CDC   ; CDBLK type word - 1
-        dd      B_EXL   ; EXBLK type word - 2
-        dd 	B_ICL   ; ICBLK type word - 3
-        dd      B_NML   ; NMBLK type word - 4
-        dd      P_ABA   ; P0BLK type word - 5
-        dd      P_ALT   ; P1BLK type word - 6
-        dd      P_ANY   ; P2BLK type word - 7
-        dd	 B_RCL   ; RCBLK type word - 8
-        dd	 B_SCL   ; SCBLK type word - 9
-        dd      B_SEL   ; SEBLK type word - 10
-        dd      B_TBT   ; TBBLK type word - 11
-        dd	 B_VCT   ; VCBLK type word - 12
-        dd	 B_XNT   ; XNBLK type word - 13
-        dd	 B_XRT   ; XRBLK type word - 14
-        dd      B_BCT   ; BCBLK type word - 15
-        dd      B_PDT   ; PDBLK type word - 16
-        dd      B_TRT   ; TRBLK type word - 17
-        dd      B_BFT   ; BFBLK type word   18
-        dd      B_CCT   ; CCBLK type word - 19
-        dd      B_CMT   ; CMBLK type word - 20
-        dd      B_CTT   ; CTBLK type word - 21
-        dd      B_DFC   ; DFBLK type word - 22
-        dd	 B_EFC   ; EFBLK type word - 23
-        dd      B_EVT   ; EVBLK type word - 24
-        dd      B_FFC   ; FFBLK type word - 25
-        dd      B_KVT   ; KVBLK type word - 26
-        dd      B_PFC   ; PFBLK type word - 27
-        dd      B_TET   ; TEBLK type word - 28
+	global	typet
+typet:
+        dd      b_art   ; arblk type word - 0
+        dd      b_cdc   ; cdblk type word - 1
+        dd      b_exl   ; exblk type word - 2
+        dd 	b_icl   ; icblk type word - 3
+        dd      b_nml   ; nmblk type word - 4
+        dd      p_aba   ; p0blk type word - 5
+        dd      p_alt   ; p1blk type word - 6
+        dd      p_any   ; p2blk type word - 7
+        dd	 b_rcl   ; rcblk type word - 8
+        dd	 b_scl   ; scblk type word - 9
+        dd      b_sel   ; seblk type word - 10
+        dd      b_tbt   ; tbblk type word - 11
+        dd	 b_vct   ; vcblk type word - 12
+        dd	 b_xnt   ; xnblk type word - 13
+        dd	 b_xrt   ; xrblk type word - 14
+        dd      b_bct   ; bcblk type word - 15
+        dd      b_pdt   ; pdblk type word - 16
+        dd      b_trt   ; trblk type word - 17
+        dd      b_bft   ; bfblk type word   18
+        dd      b_cct   ; ccblk type word - 19
+        dd      b_cmt   ; cmblk type word - 20
+        dd      b_ctt   ; ctblk type word - 21
+        dd      b_dfc   ; dfblk type word - 22
+        dd	 b_efc   ; efblk type word - 23
+        dd      b_evt   ; evblk type word - 24
+        dd      b_ffc   ; ffblk type word - 25
+        dd      b_kvt   ; kvblk type word - 26
+        dd      b_pfc   ; pfblk type word - 27
+        dd      b_tet   ; teblk type word - 28
 ;
-;   Table of MINIMAL entry points that can be accessed from C
+;   table of minimal entry points that can be accessed from c
 ;   via the minimal function (see inter.asm).
 ;
-;   Note that the order of entries in this table must correspond
-;   to the order of entries in the CALL enumeration in osint.h
+;   note that the order of entries in this table must correspond
+;   to the order of entries in the call enumeration in osint.h
 ;   and osint.inc.
 ;
 	global	calltab
 calltab:
-        dd      RELAJ
-        dd      RELCR
-        dd      RELOC
-        dd      ALLOC
-        dd      ALOCS
-        dd      ALOST
-        dd      BLKLN
-        dd      INSTA
-        dd      RSTRT
-        dd      START
-        dd      FILNM
-        dd      DTYPE
-;       dd      ENEVS #  Engine words
-;       dd      ENGTS #   not used
+        dd      relaj
+        dd      relcr
+        dd      reloc
+        dd      alloc
+        dd      alocs
+        dd      alost
+        dd      blkln
+        dd      insta
+        dd      rstrt
+        dd      start
+        dd      filnm
+        dd      dtype
+;       dd      enevs #  engine words
+;       dd      engts #   not used
 
 ;
-;   Table of MINIMAL variables that can be accessed from C
-;   and assembly-language via macros GETOFF, GETPTR, GETMIN, and SETMIN.
+;   table of minimal variables that can be accessed from c
+;   and assembly-language via macros getoff, getptr, getmin, and setmin.
 ;
-;   There are two ways of setting this up.  If the symbol "direct" is
+;   there are two ways of setting this up.  if the symbol "direct" is
 ;   non-zero, the symbols are declared public and accessed directly.
-;   If direct is zero, access is via the function minadr in inter.asm.
+;   if direct is zero, access is via the function minadr in inter.asm.
 ;
-;   The macros GETOFF, GETPTR, GETMIN, and SETMIN in osint.h and osint.inc
+;   the macros getoff, getptr, getmin, and setmin in osint.h and osint.inc
 ;   must be adjusted when direct is changed.
 ;
-;   Note that the order of entries in this table must correspond to the
-;   order of entries in the VAL enumeration in osint.h and osint.inc.
+;   note that the order of entries in this table must correspond to the
+;   order of entries in the val enumeration in osint.h and osint.inc.
 ;
 ;%if	 direct != 0
 ;        .macro  access name
@@ -85,48 +85,48 @@ calltab:
 ;
 ;        pubdef  valtab
 ;.endif
-	global	GBCNT
-	global	HEADV
-	global	MXLEN
-	global	STAGE
-	global	TIMSX
-	global	DNAMB
-	global	DNAMP
-	global	STATE
-	global	B_EFC
-	global	B_ICL
-	global	B_SCL
-	global	B_VCT
-	global	B_XNT
-	global	B_XRT
-	global	STBAS
-	global	STATB
-	global	POLCT
+	global	gbcnt
+	global	headv
+	global	mxlen
+	global	stage
+	global	timsx
+	global	dnamb
+	global	dnamp
+	global	state
+	global	b_efc
+	global	b_icl
+	global	b_scl
+	global	b_vct
+	global	b_xnt
+	global	b_xrt
+	global	stbas
+	global	statb
+	global	polct
 ;.ifeq direct
- 	global  TYPET
+ 	global  typet
 ;.endif
-	global	LOWSPMIN
-	global	FLPRT
-	global	FLPTR
-	global	GTCEF
-	global	HSHTB
-	global	PMHBS
-	global	R_FCB
-	global	C_AAA
-	global	C_YYY
-	global	G_AAA
-	global	W_YYY
-	global	S_AAA
-	global	S_YYY
-	global	R_COD
-	global	KVSTN
-	global	KVDMP
-	global	KVFTR
-	global	KVCOM
-	global	KVPFL
-	global	CSWFL
-        global  STMCS
-        global  STMCT
-	global	B_RCL
-	global	END_MIN_DATA
+	global	lowspmin
+	global	flprt
+	global	flptr
+	global	gtcef
+	global	hshtb
+	global	pmhbs
+	global	r_fcb
+	global	c_aaa
+	global	c_yyy
+	global	g_aaa
+	global	w_yyy
+	global	s_aaa
+	global	s_yyy
+	global	r_cod
+	global	kvstn
+	global	kvdmp
+	global	kvftr
+	global	kvcom
+	global	kvpfl
+	global	cswfl
+        global  stmcs
+        global  stmct
+	global	b_rcl
+	global	end_min_data
 

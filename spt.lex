@@ -1,6 +1,8 @@
--title mintok: phase 1 translation from minimal to tokens
+
+-title lex:  translate minimal to lexemes (tokens)
 -stitl initialization
-* copyright 1987-2012 robert b. k. dewar and mark emmer.
+* copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+* copyright 2012 David Shields
 * 
 * this file is part of macro spitbol.
 * 
@@ -20,38 +22,39 @@
 *
 *	usage:
 *
-*	spitbol -u "infile<sep>condfile<sep>outfile" token
+*	spitbol -u "infile<sep>condfile<sep>outfile" lex
 *
 *	where:
 *	 infile    - minimal file name, less .min extension
 *	 condfiile - conditional file name, less .cnd extension
-*	 outfile   - output file name, less .tok extension.
-*		     default is infile.tok.
+*	 outfile   - output file name, less .lex extension.
+*		     default is infile.lex.
 *	 <sep>	   - ; or :
 *
 *	note: <sep>outfile component is optional.
 *
 *  this program takes minimal statements and parses them up into
-*  a stream of tokens. it performs equ * substitution and
+*  a stream of lexemes (tokens). it performs equ * substitution and
 *  conditional assembly.
 *
 *  it is based on earlier translators written by david shields,
 *  steve duff and robert goldberg.
 *
         version = 'v1.14'
-	&dump = 0
-*
+
+*  generate dump if abnormal termination
+	&dump = 1
 -eject
 *  keyword initialization
 
         &anchor = 1;    &stlimit = -1;  &trim   = 1
 *  useful constants
 
-	minlets = 'abcdefghijklmnopqrstuvwxy$'
+	minlets = 'abcdefghijklmnopqrstuvwxy_'
 	nos     = '0123456789'
-	p.nos	= SPAN(nos) rpos(0)
-	p.exp	= 'e' any('+-') SPAN(nos)
-	p.real	= SPAN(nos) '.' (SPAN(nos) | null) (p.exp | null) rpos(0)
+	p.nos	= span(nos) rpos(0)
+	p.exp	= 'e' any('+-') span(nos)
+	p.real	= span(nos) '.' (span(nos) | null) (p.exp | null) rpos(0)
 	tab	= char(9)
 
 *  argform classifies arguments
@@ -84,17 +87,17 @@
 *  the minimal input file (infile <=> lu1).   note that it will
 *  not fail on eof, but it will return a minimal end statement
 *
-	define('rdline()')
+	define('rdline()first,last')
 * 	conditional assembly initialization
 
 	define('tblini(str)pos,cnt,index,val,lastval')
 *  catab is the transfer vector for routing control to generators
 *  for conditional assembly directives.
 *
-       catab = table( 11,,.badop )
-       catab['.def']   = .defop; catab['.undef'] = .undefop
-       catab['.if']    = .ifop; catab['.then']  = .thenop
-       catab['.else']  = .elseop; catab['.fi']    = .fiop
+	catab = table(11,,.badop)
+	catab['.def'] = .defop; catab['.undef'] = .undefop
+	catab['.if']   = .ifop; catab['.then']  = .thenop
+	catab['.else']  = .elseop; catab['.fi']    = .fiop
 
 *  symtbl tracks defined conditional symbols.  (undefined symbols
 *  are assigned null values in symtbl.)
@@ -136,13 +139,13 @@
 *  p.condasm breaks up conditional assembly directives.
 *
        sep      = ' '
-       p.condasm      = ( BREAK(sep) | REM ) . condcmd
-.	          ( SPAN(sep) | '' )
-.	          ( BREAK(sep) | REM ) . condvar
+       p.condasm      = ( break(sep) | rem ) . condcmd
+.	          ( span(sep) | '' )
+.	          ( break(sep) | rem ) . condvar
 *
 *
-	p.argskel1 = FENCE(BREAK(',') | REM) $ argthis *differ(argthis)
-	p.argskel2 = LEN(1) FENCE(BREAK(',') | REM) $ argthis *differ(argthis)
+	p.argskel1 = fence(break(',') | rem) $ argthis *differ(argthis)
+	p.argskel2 = len(1) fence(break(',') | rem) $ argthis *differ(argthis)
 
 *  ityptab is table mapping from common operands to gross type
 
@@ -253,39 +256,39 @@
 *  and puts them into the locals: label, opcode, operands, comment
 *
 	p.csparse = (((p.minlabel . label) | ('     '  '' . label)) '  '
-.	  LEN(3) . opcode
-.	  (('  ' (BREAK(' ') | rtab(0)) . operands
-.	      (SPAN(' ') | '') rtab(0) . comment)  |
+.	  len(3) . opcode
+.	  (('  ' (break(' ') | rtab(0)) . operands
+.	      (span(' ') | '') rtab(0) . comment)  |
 .	      (rpos(0) . operands . comment)))  |
 .	     ('.'  '' . label  mincond . opcode
-.	       ((tab(7)  '.'  LEN(4) . operands) | (rpos(0) . operands))
+.	       ((tab(7)  '.'  len(4) . operands) | (rpos(0) . operands))
 .	           '' . comment)
 *
 *  p.csoperand breaks out the next operand in the operands string.
 *
-	p.csoperand = (BREAK(',') . operand  ',')  |
-.			((LEN(1) rtab(0)) . operand)
+	p.csoperand = (break(',') . operand  ',')  |
+.			((len(1) rtab(0)) . operand)
 *
 *  p.csdtc is a pattern that handles the special case of the
 *  minimal dtc op
 *
 	p.csdtc   = ((p.minlabel . label)  |  ('     '  '' . label))
-.	          LEN(7) (LEN(1) $ char  BREAK(*char)  LEN(1)) . operand
-.	          (SPAN(' ') | '')  rtab(0) . comment
+.	          len(7) (len(1) $ char  break(*char)  len(1)) . operand
+.	          (span(' ') | '')  rtab(0) . comment
 *
 *  p.equ.rip is a pattern that parses out the components of an equ
 *  expression.
 *
-	p.equ.rip  = ( SPAN(nos) . num1 | p.minlabel . sym1 )
+	p.equ.rip  = ( span(nos) . num1 | p.minlabel . sym1 )
 .		   ( any('+-') . oprtr | '' )
-.		   ( SPAN(nos) . num2 | p.minlabel . sym2 | '' )
+.		   ( span(nos) . num2 | p.minlabel . sym2 | '' )
 .		   rpos(0)
 
 *  optab is a table that maps opcodes into their argument
 *  types and is used for argument checking and processing.
 	optab = tblini(
 . 'flc[w]'
-. 'add[opv,opn]adi[ops]adr[ops]anb[opw,w]aov[opv,opn,plbl]atn[none]'
+. 'add[opn,opv]adi[ops]adr[ops]anb[w,opw]aov[opn,opv,plbl]atn[none]'
 . 'bod[opn,plbl]bev[opn,plbl]'
 . 'bct[w,plbl]beq[opn,opv,plbl]bge[opn,opv,plbl]bgt[opn,opv,plbl]'
 . 'bhi[opn,opv,plbl]ble[opn,opv,plbl]blo[opn,opv,plbl]'
@@ -296,19 +299,19 @@
 . 'ctw[w,val]cvd[none]cvm[plbl]dac[addr]dbc[val]dca[opn]dcv[opn]'
 . 'def[def]dic[integer]drc[real]dtc[dtext]dvi[ops]dvr[ops]ejc[none]'
 . 'else[else]end[none end]enp[none]ent[*val ent]equ[eqop equ]'
-. 'erb[int,text erb]err[int,text err]esw[none esw]etx[none]exi[*int]exp[none]fi[fi]'
+. 'erb[int,text erb]err[int,text err]esw[none esw]etx[none]exi[*int]exp[int]fi[fi]'
 . 'ica[opn]icp[none]icv[opn]ieq[plbl]if[if]iff[val,plbl iff]ige[plbl]'
 . 'igt[plbl]ile[plbl]ilt[plbl]ine[plbl]ino[plbl]inp[ptyp,int inp]'
 . 'inr[none]iov[plbl]itr[none]jsr[pnam]lch[reg,opc]lct[w,opv]lcp[reg]'
 . 'lcw[reg]ldi[ops]ldr[ops]lei[x]lnf[none]lsh[w,val]lsx[w,(x)]mcb[none]'
-. 'mfi[opn,*plbl]mli[ops]mlr[ops]mnz[opn]mov[opv,opn]mti[opn]'
+. 'mfi[opn,*plbl]mli[ops]mlr[ops]mnz[opn]mov[opn,opv]mti[opn]'
 . 'mvc[none]mvw[none]mwb[none]ngi[none]ngr[none]nzb[w,plbl]'
-. 'orb[opw,w]plc[x,*opv]ppm[*plbl]prc[ptyp,val prc]psc[x,*opv]req[plbl]'
+. 'orb[w,opw]plc[x,*opv]ppm[*plbl]prc[ptyp,val prc]psc[x,*opv]req[plbl]'
 . 'rge[plbl]rgt[plbl]rle[plbl]rlt[plbl]rmi[ops]rne[plbl]rno[plbl]'
 . 'rov[plbl]rsh[w,val]rsx[w,(x)]rti[*plbl]rtn[none]sbi[ops]'
 . 'sbr[ops]sch[reg,opc]scp[reg]sec[none sec]sin[none]sqr[none]ssl[opw]sss[opw]'
-. 'sti[ops]str[ops]sub[opv,opn]tan[none]then[then]trc[none]ttl[none ttl]'
-. 'undef[undef]wtb[reg]xob[opw,w]zer[opn]zgb[opn]zrb[w,plbl]' )
+. 'sti[ops]str[ops]sub[opn,opv]tan[none]then[then]trc[none]ttl[none ttl]'
+. 'undef[undef]wtb[reg]xob[w,opw]zer[opn]zgb[opn]zrb[w,plbl]' )
 
 
 *  prctab is table of procedures declared in inp that is used to
@@ -331,49 +334,56 @@
 *  is being processed.
 *
 	bsw	= 0
+*
+*
+*  comment.block is set when inside multi-line comment.
+*  A multi-line comment begins (ends)  with '{' ('}') in the
+*  first column, respectivey. 
+*
+	comment.block = 
 
 -stitl machine-dependent initializations
 *  following values for 68000, a 32-bit machine
 *  some definitions appear in limited form in cod.spt
 *
        g.equ.defs = tblini(
-. 'cfp$a[256]'
-. 'cfp$b[4]'
-. 'cfp$c[4]'
-. 'cfp$f[8]'
-. 'cfp$i[1]'
-. 'cfp$l[4294967295]'
-. 'cfp$m[2147483647]'
-. 'cfp$n[32]'
-. 'cfp$u[128]'
+. 'cfp_a[256]'
+. 'cfp_b[4]'
+. 'cfp_c[4]'
+. 'cfp_f[8]'
+. 'cfp_i[1]'
+. 'cfp_l[4294967295]'
+. 'cfp_m[2147483647]'
+. 'cfp_n[32]'
+. 'cfp_u[128]'
 . 'nstmx[10]'
-. 'cfp$r[2]'
-. 'cfp$s[9]'
-. 'cfp$x[3]'
-. 'e$srs[100]'
-. 'e$sts[1000]'
-. 'e$cbs[500]'
-. 'e$hnb[257]'
-. 'e$hnw[6]'
-. 'e$fsp[15]'
-. 'e$sed[25]'
-. 'ch$la[065]ch$lb[066]ch$lc[067]ch$ld[068]ch$le[069]ch$lf[070]'
-. 'ch$lg[071]ch$lh[072]ch$li[073]ch$lj[074]ch$lk[075]ch$ll[076]'
-. 'ch$lm[077]ch$ln[078]ch$lo[079]ch$lp[080]ch$lq[081]ch$lr[082]'
-. 'ch$ls[083]ch$lt[084]ch$lu[085]ch$lv[086]ch$lw[087]ch$lx[088]'
-. 'ch$ly[089]ch$l$[090]'
-. 'ch$d0[048]ch$d1[049]ch$d2[050]ch$d3[051]ch$d4[052]ch$d5[053]'
-. 'ch$d6[054]ch$d7[055]ch$d8[056]ch$d9[057]ch$$a[097]ch$$b[098]'
-. 'ch$$c[099]ch$$d[100]ch$$e[101]ch$$f[102]ch$$g[103]ch$$h[104]'
-. 'ch$$i[105]ch$$j[106]ch$$k[107]ch$$l[108]ch$$m[109]ch$$n[110]'
-. 'ch$$o[111]ch$$p[112]ch$$q[113]ch$$r[114]ch$$s[115]ch$$t[116]'
-. 'ch$$u[117]ch$$v[118]ch$$w[119]ch$$x[120]ch$$y[121]ch$$$[122]'
-. 'ch$am[038]ch$as[042]ch$at[064]ch$bb[060]ch$bl[032]ch$br[124]'
-. 'ch$cl[058]ch$cm[044]ch$dl[036]ch$dt[046]ch$dq[034]ch$eq[061]'
-. 'ch$ex[033]ch$mn[045]ch$nm[035]ch$nt[126]ch$pc[037]ch$pl[043]'
-. 'ch$pp[040]ch$rb[062]ch$rp[041]ch$qu[063]ch$sl[047]ch$sm[059]'
-. 'ch$sq[039]ch$un[095]ch$ob[091]ch$cb[093]ch$ht[009]ch$vt[011]'
-. 'ch$ey[094]iodel[032]' )
+. 'cfp_r[2]'
+. 'cfp_s[9]'
+. 'cfp_x[3]'
+. 'e_srs[100]'
+. 'e_sts[1000]'
+. 'e_cbs[500]'
+. 'e_hnb[257]'
+. 'e_hnw[6]'
+. 'e_fsp[15]'
+. 'e_sed[25]'
+. 'ch_la[065]ch_lb[066]ch_lc[067]ch_ld[068]ch_le[069]ch_lf[070]'
+. 'ch_lg[071]ch_lh[072]ch_li[073]ch_lj[074]ch_lk[075]ch_ll[076]'
+. 'ch_lm[077]ch_ln[078]ch_lo[079]ch_lp[080]ch_lq[081]ch_lr[082]'
+. 'ch_ls[083]ch_lt[084]ch_lu[085]ch_lv[086]ch_lw[087]ch_lx[088]'
+. 'ch_ly[089]ch_l_[090]'
+. 'ch_d0[048]ch_d1[049]ch_d2[050]ch_d3[051]ch_d4[052]ch_d5[053]'
+. 'ch_d6[054]ch_d7[055]ch_d8[056]ch_d9[057]ch__a[097]ch__b[098]'
+. 'ch__c[099]ch__d[100]ch__e[101]ch__f[102]ch__g[103]ch__h[104]'
+. 'ch__i[105]ch__j[106]ch__k[107]ch__l[108]ch__m[109]ch__n[110]'
+. 'ch__o[111]ch__p[112]ch__q[113]ch__r[114]ch__s[115]ch__t[116]'
+. 'ch__u[117]ch__v[118]ch__w[119]ch__x[120]ch__y[121]ch___[122]'
+. 'ch_am[038]ch_as[042]ch_at[064]ch_bb[060]ch_bl[032]ch_br[124]'
+. 'ch_cl[058]ch_cm[044]ch_dl[036]ch_dt[046]ch_dq[034]ch_eq[061]'
+. 'ch_ex[033]ch_mn[045]ch_nm[035]ch_nt[126]ch_pc[037]ch_pl[043]'
+. 'ch_pp[040]ch_rb[062]ch_rp[041]ch_qu[063]ch_sl[047]ch_sm[059]'
+. 'ch_sq[039]ch_un[095]ch_ob[091]ch_cb[093]ch_ht[009]ch_vt[011]'
+. 'ch_ey[094]iodel[032]' )
 *
 -stitl main program
 *  here follows the driver code for the "main" program.
@@ -398,7 +408,7 @@
 
 *  start execution
 *
-*	reads for xxx.min, writes to xxx.tok, where xxx is a command line parameter.
+*	reads for xxx.min, writes to xxx.lex, where xxx is a command line parameter.
 *	the command line parameter may optionally be expressed as xxx;yyy, where
 *	yyy.cnd is the name of a file containing .defs to override those in
 *	file xxx.min.
@@ -412,22 +422,18 @@
 *
 *  get file name
 *
-	parms ? BREAK(';:') . parms LEN(1) (break(';:') | REM) . filenamc
-.		(LEN(1) | null) REM . filenamo
-	filenamc = differ(filenamc) filenamc '.cnd'
+	parms ? break(';:') . parms len(1) (break(';:') | rem) . filenamc
+.		(len(1) | null) rem . filenamo
         output = ident(parms) "need file name (.min)" :s(end)
 
-        output = 'minimal translator, pass 1 ' version
-.		' ' trandate
 	filenami = parms '.min'
-        output = 'input minimal file: ' filenami
-	filenamo = (ident(filenamo) parms, filenamo) '.tok'
-        output = 'output token file: ' filenamo
-        output = differ(filenamc) 'condition definition file: ' filenamc
+        output = rpad('input minimal file:',24)  filenami
+	filenamo = (ident(filenamo) parms, filenamo) '.lex'
+        output = rpad('output lexeme file:',24)	 filenamo
 *   flcflag  = replace( input,'y','y' )
-	flcflag = 'y'
 	flcflag = 'n'
-*  output = 'full line comments passed to token file? ' flcflag
+	flcflag = 'y'
+*  output = 'full line comments passed to lexeme file? ' flcflag
 *
 *  no page ejects without full line comments
 *
@@ -435,25 +441,23 @@
 *   ejcflag  = replace( (differ(flcflag,'n') input, 'n'),'y','y' )
 	ejcflag = 'n'
 	ejcflag = 'y'
-*  output = 'ejcs passed to token file? ' ejcflag
+*  output = 'ejcs passed to lexeme file? ' ejcflag
 *
 *  associate input file to lu1.  if a conditional file was specified,
 *  read it first.
 *
-	INPUT(.infile,1,(differ(filenamc) filenamc,filenami))	:s(main1)
-        output = differ(filenamc) "cannot open conditional file: " filenamc
-+						:s(end)
+	input(.infile,1,filenami)	:s(main1)
         output = "cannot open minimal file: " filenami        :(end)
 *
 *
 *  associate output file
 *
-main1	OUTPUT(.outfile,2,filenamo)		:s(main2)
-        output = "cannot open token file: " filenamo  :(end)
+main1	output(.outfile,2,filenamo)		:s(main2)
+        output = "cannot open lex file: " filenamo  :(end)
 main2
 
 *  patterns used by dostmt
-	p.opsk1 = (BREAK(' ') | REM) . argskel
+	p.opsk1 = (break(' ') | rem) . argskel
 
   :(dsout)
   &trace = 4000
@@ -501,7 +505,7 @@ dos05
 *  here if bad opcode
 ds01	error('bad op-code')			:(dsout)
 
-*  generate tokens.
+*  generate lexemes.
 *
 ds.typerr
 	error('operand type zero')		:(dsout)
@@ -520,7 +524,7 @@ argform1
 	arg '='					:s(argform.eq)
 	arg '*'					:s(argform.star)
 	arg any('+-')				:s(argform.snum)
-	arg BREAK('(')				:s(argform.index)
+	arg break('(')				:s(argform.index)
 *  here if the only possibility remaining is a name which must be lbl
 *  if the label not yet known, assume it is a plbl
 	ident(t = labtab[arg])			:s(argform.plbl)
@@ -528,7 +532,7 @@ argform1
 argform.plbl labtab[arg] = 6
 	argform = 6				:(return)
 argform.eq
-	arg LEN(1) REM . itypa
+	arg len(1) rem . itypa
 	itypa = labtab[itypa]
 	argform = (eq(itypa,2) 18, eq(itypa,6) 22,
 .	gt(itypa,2) itypa + 17) :s(return)
@@ -536,15 +540,15 @@ argform.eq
 	argform = 22
 	labtab[itypa] = 5			:(return)
 argform.star
-	arg LEN(1) REM . t			:f(return)
+	arg len(1) rem . t			:f(return)
 	eq(labtab[t],2)				:f(return)
 	argform = 19				:(return)
 argform.int	argform = 1			:(return)
-argform.snum	arg LEN(1) p.nos		:f(argform.sreal)
+argform.snum	arg len(1) p.nos		:f(argform.sreal)
 		argform = 16			:(return)
-argform.sreal	arg LEN(1) p.real		:f(return)
+argform.sreal	arg len(1) p.real		:f(return)
 		argform = 17			:(return)
-argform.index	arg BREAK('(') . t '(x' any('lrst') ')' rpos(0)
+argform.index	arg break('(') . t '(x' any('lrst') ')' rpos(0)
 .						:f(return)
 	t p.nos					:f(argform.index1)
 *  here if int(x)
@@ -626,13 +630,16 @@ cs03	error('source line syntax error')	:(freturn)
 *  the appropriate counts are updated.
 *
 error
+	output = 'error ' text '  at line ' nlines ' ' thisline
 	outfile = '* *???* ' thisline
 	outfile = '*       ' text
 .	          (ident(lasterror),'. last error was line ' lasterror)
 	lasterror = noutlines
 	noutlines = noutlines + 2
 	nerrors = nerrors + 1
-.	              			:(dsout)
+	&dump = 2
+						:(end)
+*					:(dsout)
 -stitl labenter()tlab
 *  labenter is called to make entry in labtab for a label
 *  current classification is 3 for wlbl, 4 for clbl and 5 for
@@ -647,13 +654,11 @@ outstmt
 *
 *  send text to outfile
 *
-* DS skip all comments
-	comment =
-	outfile = '{' label '{' opcode '{'
-.	(ident(typ1), typ1 ',') op1 '{'
-.	(ident(typ2), typ2 ',') op2 '{'
-.	(ident(typ3), typ3 ',') op3 '{' comment
-.	'{' nlines.0
+	outfile = '|' label '|' opcode '|'
+.	(ident(typ1), typ1 ',') op1 '|'
+.	(ident(typ2), typ2 ',') op2 '|'
+.	(ident(typ3), typ3 ',') op3 '|' comment
+.	'|' nlines
 	ntarget = ntarget + 1
 	noutlines = noutlines + 1
 .						:(return)
@@ -664,60 +669,71 @@ outstmt
 *  comments are passed through to the output file directly.
 *  conditional assembly is performed here.
 *
-*  if we were reading from filenamc (conditional defs), then the
-*  input stream is switched to filenami, and the flag ignore_defs
-*  is set.
-*
 *  lines beginning with ">" are treated as snobol4 statements
 *  and immediately executed.
 *
-rdline	rdline = infile				:f(rl02)
+rdline	rdline = infile				:f(rdline.5)
 	nlines  = nlines + 1
-*	output = lpad(nlines,6) ':' rdline
-	ident( rdline )				:s(rdline)
-*
+*	output = 'rdline ' nlines ' ' rdline ';'
+
+*  blank line is comment
+
+	rdline = ident(rdline) '*'
+
+
 *  transfer control to appropriate conditional assembly
 *  directive generator or other statement generator.
 *
-	leq( substr( rdline,1,1 ),'.' )		:f(other)
+	leq(substr(rdline,1,1), '.')			:s(rdline.2)
+rdline.1	eq( level )				:s(rdline.3)
+	eq( processrec[result(top),mode(top)] )	:s(rdline)f(rdline.3)
+rdline.2
 	rdline ? p.condasm			:s( $catab[condcmd] )
-rl00	leq( substr( rdline,1,1 ),'*' )		:f(rl01)
 
-*
+rdline.3
+   	first = substr(rdline,1,1)
+   	comment.block = leq(first, '{') 1
+   	comment.block = leq(first, '}') 0
+* output = lpad(nlines,5) ' ' comment.block ' ' rdline
+*  continue on if inside comment block
+	eq(comment.block,1)			:s(rdline)
+	rdline any('*{}')			:f(rdline.4)
+	rdline len(1) . first rem . last = '*' last
+
 *  only print comment if requested.
-*
-	outfile = ident(flcflag,'y') rdline	:f(rdline)
+ 
+ 	outfile = ident(flcflag,'y') rdline	:f(rdline)
+
+rdline.out
+	outfile = rdline
 	noutlines = noutlines + 1		:(rdline)
-*
-*  here if not a comment line
-*
-rl01	leq( substr( rdline,1,1 ),'>' )		:f(return)
+
+
+
+rdline.4 leq(substr(rdline,1,1),'>')		:f(return)
 
 *
 *  here with snobol4 line to execute
 *
 	c = code(substr( rdline, 2 ) "; :(rdline)") :s<c>
         output = "error compiling snobol4 statement"
-  						:(rl03)
+  						:(rdline.5)
 *
-*  here on eof.  filenamc is non-null if we were reading from it.
+*  here on eof.  
 *
-rl02	ident(filenamc)				:s(rl03)
-	filenamc =
-	ignore_defs = 1
-	endfile(1)
-	INPUT(.infile,1,filenami)		:s(rdline)
-        output = "cannot open minimal file: " filenami        :(end)
+rdline.5	
 
-rl03	rdline = '       end'			:(rl01)
-*
+*	output = 'at rdline.5'
+	rdline = '       end'			:(rdline.4)
+
 *  syntax error handler.
 *
 synerr output = incnt '(syntax error):' rdline            :(rdline)
 *
 *  process define
 *
-defop  ident( condvar )				:s(synerr)
+defop  
+	ident( condvar )				:s(synerr)
        differ( ignore_defs )			:s(rdline)
        eq( level )				:s(defok)
        eq( processrec[result(top),mode(top)] )	:s(rdline)
@@ -733,7 +749,8 @@ undok  symtbl[condvar] =			:(rdline)
 *
 *  process if
 *
-ifop   ident( condvar )				:s(synerr)
+ifop   
+	ident( condvar )				:s(synerr)
        eq( level )				:s(ifok)
 *
 *  here for .if encountered during bypass state.
@@ -751,24 +768,25 @@ ifok   level    = level + 1
 *
 *  process .then
 *
-thenop	differ(condvar)				:s(synerr)
+thenop	
+	differ(condvar)				:s(synerr)
 	eq(level)				:s(synerr)f(rdline)
 *
 *  process .else
 *
-elseop	differ(condvar)				:s(synerr)
+elseop	
+	differ(condvar)				:s(synerr)
 	mode(top) = ne( level ) else		:s(rdline)f(synerr)
 *
 *  process .fi
 *
-fiop	differ(condvar)				:s(synerr)
+fiop	
+	differ(condvar)				:s(synerr)
 	level = ne( level ) level - 1		:f(synerr)
 	top   = ( ne( level ) statestk[level],'' )     :(rdline)
 *
 *  process statements other than conditional directives.
 *
-other	eq( level )				:s(rl00)
-	eq( processrec[result(top),mode(top)] )	:s(rdline)f(rl00)
 -stitl	tblini(str)pos,cnt,index,val,lastval
 *  this routine is called to initialize a table from a string of
 *  index/value pairs.
@@ -778,7 +796,7 @@ tblini	pos     = 0
 *  count the number of "[" symbols to get an assessment of the table
 *  size we need.
 *
-tin01   str     (tab(*pos) BREAK('[') break(']') *?(cnt = cnt + 1) @pos)
+tin01   str     (tab(*pos) break('[') break(']') *?(cnt = cnt + 1) @pos)
 .	                              	:s(tin01)
 *
 *  allocate the table, and then fill it. note that a small memory
@@ -786,7 +804,7 @@ tin01   str     (tab(*pos) BREAK('[') break(']') *?(cnt = cnt + 1) @pos)
 *  value string if it is the same as the present one.
 *
 	tblini   = table(cnt)
-tin02   str     (BREAK('[') $ index LEN(1) break(']') $ val LEN(1)) =
+tin02   str     (break('[') $ index len(1) break(']') $ val len(1)) =
 .	                              	:f(return)
 	val     = convert( val,'integer' )
 	val     = ident(val,lastval) lastval
@@ -801,7 +819,7 @@ g.bsw
 *  save prior vms code in case needed
 	ub = ( integer( op2 ) op2, equates[op2] )
 	iffar = integer( ub )
-.		array( '0:' ub - 1,'{{' )	:f(g.bsw1)
+.		array( '0:' ub - 1,'||' )	:f(g.bsw1)
 	dplbl = op3
 	bsw   = 1				:(dsgen)
 g.bsw1	error("non-integer upper bound for bsw")
@@ -815,7 +833,7 @@ g.iff
 	ifftyp = ( integer(op1) '1', '2')
 	iffval = ( integer( op1 ) op1, equates[op1] )
 	iffar[iffval] = integer( iffval )
-.		ifftyp ',' op1 '{' typ2 ',' op2 '{'  comment
+.		ifftyp ',' op1 '|' typ2 ',' op2 '|'  comment
 .						:s(dsout)
 	error("non-integer iff value")
 *
@@ -842,8 +860,8 @@ g.equ3	error("equ evaluation failed: " num1 ' ' oprtr ' ' num2 ' "' op1 '"' )
 g.esw
 	(eq(bsw) error("esw without bsw"))
 	iffindx = 0
-g.esw1	iffar[iffindx] BREAK('{') $ val LEN(1)
-.		BREAK( '{' ) $ plbl LEN(1)
+g.esw1	iffar[iffindx] break('|') $ val len(1)
+.		break( '|' ) $ plbl len(1)
 .		rem $ cmnt
 .						:f(g.esw2)
 	val = ident( val ) '1,' iffindx
@@ -858,15 +876,14 @@ g.esw2  iffar =					:(dsgen)
 *
 g.end   outstmt(,'end',,,,comment)
 	(ne(level) error("unclosed if conditional clause"))
-        output = '*** translation complete ***'
-        output = nlines ' lines read.'
-        output = nstmts ' statements processed.'
-        output = ntarget ' target code lines produced.'
-        output = nerrors ' errors occurred.'
+        output = rpad('lines read:',24)  		nlines 
+        output = rpad('statements processed:',24) 	nstmts 
+        output = rpad('lines written:', 24) 		ntarget 
+        output = ne(nerrors) nerrors 'errors occurred: '
         output =
 .	  differ(lasterror) 'the last error was in line ' lasterror
 	&code   = ne(nerrors) 2001
-        output = collect() * 5 ' free bytes'
+*        output = collect() * 5 ' free bytes'
 	t = convert(prctab,'array')		:f(g.end.2)
 *  here if procedures declared by inp but not by prc
         output = 'procedures with inp, no prc'
@@ -874,7 +891,7 @@ g.end   outstmt(,'end',,,,comment)
 g.end.1 output = t[i,1] ' ' t[i,2]            :f(g.end.2)
 	i = i + 1				:(g.end.1)
 g.end.2
-						:(end)
+						:(finis)
 g.ent
 *  note program entry labels
 *	entfile = label ',' op1
@@ -885,11 +902,11 @@ g.h						:(dsgen)
 
 g.sec	sectnow = sectnow + 1  		:(dsgen)
 g.ttl
-	thisline LEN(10) REM . t
-	t SPAN(' ') =
+	thisline len(10) rem . t
+	t span(' ') =
 	outstmt(,'ttl','27,' t)			:(dsout)
 g.erb
-g.err	thisline BREAK(',') LEN(1) REM . t
+g.err	thisline break(',') len(1) rem . t
 	outstmt(label,opcode,op1, t)		:(dsout)
 
 g.inp
@@ -902,4 +919,6 @@ g.prc
 	ident(t = prctab[label]) error('missing inp')
 	differ(t,op1) error('inconsistent inp/prc')
 	prctab[label] =				:(dsgen)
+finis
+	&dump = 0
 end

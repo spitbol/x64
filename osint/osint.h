@@ -118,10 +118,10 @@ extern void *mk_mp(void near *minp);
 /	Function to call into MINIMAL code.
 /	The argument is an ordinal number defined below.
 */
-extern void minimal Params((word callno));
+extern void call_minimal Params((word callno));
 extern void popregs Params((void));
 extern void pushregs Params((void));
-#define MINIMAL(cn) minimal(cn)
+#define MINIMAL(cn) call_minimal(cn)
 #define MINSAVE() pushregs()
 #define MINRESTORE() popregs()
 
