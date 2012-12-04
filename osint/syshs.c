@@ -226,6 +226,7 @@ IATYPE *pword;
     sign = 1;
     if ( icp->typ == TYPE_ICL)
         result = icp->val;
+#ifdef REAL_ARITH
     else if (icp->typ == TYPE_RCL)
     {
 #if sparc
@@ -240,6 +241,7 @@ IATYPE *pword;
         result = (IATYPE)(((struct rcblk *)icp)->rcval);
 #endif
     }
+#endif
     else {
         scp = (struct scblk *)icp;
         if (!checkstr(scp))

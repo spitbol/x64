@@ -3735,7 +3735,7 @@ trailing zeros in the fractional part.  conversion cannot fail.
                      negative for e-type conversion
                      zero for g-type conversion
                      positive for f-type conversion
-       (<strong>ws</strong>)                  character positions in result <strong>scblk</strong>
+       (<strong>wc</strong>)                  character positions in result <strong>scblk</strong>
        (<strong>xr</strong>)                  <strong>scblk</strong> for result
        jsr  <strong>syscr</strong>            call to convert real value
        (<strong>xr</strong>)                  result <strong>scblk</strong>
@@ -3791,7 +3791,7 @@ of compilation and runtime errors</h4>
 <pre>
        (<strong>wa</strong>)                  error code
        (<strong>wb</strong>)                  line number
-       (<strong>ws</strong>)                  column number
+       (<strong>wc</strong>)                  column number
        (<strong>xr</strong>)                  system stage
        (<strong>xl</strong>)                  file name (<strong>scblk</strong>)<
        jsr  <strong>sysea</strong>            call to <strong>sysea</strong> function
@@ -4090,7 +4090,7 @@ with file name, _f_ (otherwise null) extracted and stacked first.
 
 <p>The other fields, if any, are extracted as substrings, pointers to
 them are stacked and a count of all items stacked is placed in
-<strong>ws</strong>.
+<strong>wc</strong>.
 
 <p>If an <strong>fcblk</strong> was earlier
 allocated and pointed to via file <em>arg1</em>,
@@ -4099,18 +4099,18 @@ allocated and pointed to via file <em>arg1</em>,
 <em>arg1</em> <strong>scblk</strong> pointer (2nd arg)
 (<strong>xr</strong>) file<em>arg2</em> (3rd arg) or null
 -(<strong>xs</strong>)...-(<strong>xs</strong>)
-<strong>scblk</strong>s for _f_,_r_,_c_,...  (<strong>ws</strong>) no.
+<strong>scblk</strong>s for _f_,_r_,_c_,...  (<strong>wc</strong>) no.
 of stacked <strong>scblk</strong>s above (<strong>wa</strong>)
 existing file <em>arg1</em> <strong>fcblk</strong> pointer or 0
 (<strong>wb</strong>) 0/3 for input/output assocn jsr
 <strong>sysfc</strong> call to check need for <strong>fcblk</strong>
 ppm loc invalid file argument ppm loc <strong>fcblk</strong> already
-in use (<strong>xs</strong>) popped (<strong>ws</strong>) times
+in use (<strong>xs</strong>) popped (<strong>wc</strong>) times
 (<strong>wa</strong> non zero) byte size of requested
 <strong>fcblk</strong> (<strong>wa</strong>=0,<strong>xl</strong> non
 zero) private <strong>fcblk</strong> pointer in <strong>xl</strong>
 (<strong>wa</strong>=<strong>xl</strong>=0) no <strong>fcblk</strong>
-wanted, no private <strong>fcblk</strong> (<strong>ws</strong>) 0/1/2
+wanted, no private <strong>fcblk</strong> (<strong>wc</strong>) 0/1/2
 request alloc of <strong><strong>xr</strong>blk</strong> /static block
 for use as <strong>fcblk</strong> (<strong>wb</strong>) destroyed
 </pre> <h4><strong>sysgc</strong> -- inform interface of garbage
@@ -4128,7 +4128,7 @@ memory freed by garbage collection can be discarded.</li> </ol> <pre>
 (<strong>xr</strong>) non-zero if beginning gc, =0 if completing gc
 (<strong>wa</strong>) dnamb=start of dynamic area
 (<strong>wb</strong>) dnamp=next available location
-(<strong>ws</strong>) dname=last available location + 1 jsr
+(<strong>wc</strong>) dname=last available location + 1 jsr
 <strong>sysgc</strong> call to <strong>sysgc</strong> function
 
        all registers preserved
@@ -4169,7 +4169,7 @@ return.
        (<strong>xl</strong>)                  argument 2
        (<strong>xr</strong>)                  argument 3
        (<strong>wb</strong>)                  argument 4
-       (<strong>ws</strong>)                  argument 5
+       (<strong>wc</strong>)                  argument 5
        jsr  <strong>syshs</strong>            call to get host information
        ppm  loc1             erroneous arg
        ppm  loc2             execution error
@@ -4258,7 +4258,7 @@ binary or text file.
        (<strong>wa</strong>)                  pointer to <strong>fcblk</strong> or zero
        jsr  <strong>sysil</strong>            call to get record length
        (<strong>wa</strong>)                  length or zero if file closed
-       (<strong>ws</strong>)                  zero if binary, non-zero if text
+       (<strong>wc</strong>)                  zero if binary, non-zero if text
 </pre>
 
 <p>No harm is done if the value returned is too long since unused
@@ -4288,7 +4288,7 @@ before returning unless buffer is right padded with zeroes.
        ppm  loc              endfile or no i/p file after <strong>sysxi</strong>
        ppm  loc              return here if i/o error
        ppm  loc              return here if record format error
-       (<strong>wa</strong>,<strong>wb</strong>,<strong>ws</strong>)            destroyed
+       (<strong>wa</strong>,<strong>wb</strong>,<strong>wc</strong>)            destroyed
 </pre>
 
 <h4><strong>sysio</strong> -- input/output file association</h4>
@@ -4301,8 +4301,8 @@ output function call except when file <em>arg1</em> and file
 after a call of <strong>sysfc</strong>. If <strong>sysfc</strong>
 requested allocation of an <strong>fcblk</strong>, its address will be
 in <strong>wa</strong>.  for input files, non-zero values of _r_
-should be copied to <strong>ws</strong> for use in allocating input
-buffers. If _r_ is defaulted or not implemented, <strong>ws</strong>
+should be copied to <strong>wc</strong> for use in allocating input
+buffers. If _r_ is defaulted or not implemented, <strong>wc</strong>
 should be zeroised.
 
 <p>Once a file has been opened, subsequent input(),output() calls in
@@ -4322,7 +4322,7 @@ file and do not result in re-opening the file.
        ppm  loc              return here if file does not exist
        ppm  loc              return if input/output not allowed
        (<strong>xl</strong>)                  <strong>fcblk</strong> pointer (0 if none)
-       (<strong>ws</strong>)                  0 (for default) or max record lngth
+       (<strong>wc</strong>)                  0 (for default) or max record lngth
        (<strong>wa</strong>,<strong>wb</strong>)               destroyed
 </pre>
 
@@ -4407,7 +4407,7 @@ associated with a <strong>sysio</strong> call.
        jsr  <strong>sysou</strong>            call to output record
        ppm  loc              file full or no file after <strong>sysxi</strong>
        ppm  loc              return here if i/o error
-       (<strong>wa</strong>,<strong>wb</strong>,<strong>ws</strong>)            destroyed
+       (<strong>wa</strong>,<strong>wb</strong>,<strong>wc</strong>)            destroyed
 </pre>
 
 <p>Note that it is the <strong>sysou</strong> call (not the
@@ -4507,7 +4507,7 @@ but partially extends compact option.</li>
        jsr  <strong>syspp</strong>            call to get print parameters
        (<strong>wa</strong>)                  print line length in chars
        (<strong>wb</strong>)                  number of lines/page
-       (<strong>ws</strong>)                  bits value ...mlkjihgfedcba where
+       (<strong>wc</strong>)                  bits value ...mlkjihgfedcba where
                      a = 1 to send error copy to int.ch.
                      b = 1 means std printer is int. ch.
                      c = 1 for -nolist option
@@ -4563,13 +4563,13 @@ file</h4>
 <p><strong>sysrd</strong> is used to read a record from the standard
 input file. the buffer provided is an <strong>scblk</strong> for a
 string the length of which in characters is given in
-<strong>ws</strong>, this corresponding to the maximum length of
+<strong>wc</strong>, this corresponding to the maximum length of
 string which SPITBOL is prepared to receive. at compile time it
 corresponds to xxx in the most recent -inxxx card (default 72) and at
 execution time to the most recent ,r_r_ (record length) in the third
 arg of an input() statement for the standard input file (default 80).
 
-<p>If fewer than (<strong>ws</strong>) characters are read, the
+<p>If fewer than (<strong>wc</strong>) characters are read, the
 length field of the <strong>scblk</strong> must be adjusted before
 returning unless the buffer is right padded with zeroes.
 
@@ -4581,7 +4581,7 @@ routine should be prepared to make repeated endfile returns.
 
 <pre>
        (<strong>xr</strong>)                  pointer to buffer (<strong>scblk</strong> pointer)
-       (<strong>ws</strong>)                  length of buffer in characters
+       (<strong>wc</strong>)                  length of buffer in characters
        jsr  <strong>sysrd</strong>            call to read line
        ppm  loc              endfile or no i/p file after <strong>sysxi</strong>
                             or input file name change.  if
@@ -4589,7 +4589,7 @@ routine should be prepared to make repeated endfile returns.
                             if input file name change, length
                             is non-zero. caller should re-issue
                             <strong>sysrd</strong> to obtain input record.
-       (<strong>wa</strong>,<strong>wb</strong>,<strong>ws</strong>)            destroyed
+       (<strong>wa</strong>,<strong>wb</strong>,<strong>wc</strong>)            destroyed
 </pre>
 
 <h4><strong>sysri</strong> -- read record from interactive channel</h4>
@@ -4614,7 +4614,7 @@ eof character.)
        (<strong>xr</strong>)                  pointer to 258 char buffer (<strong>scblk</strong> pointer)
        jsr  <strong>sysri</strong>            call to read line from terminal
        ppm  loc              end of file return
-       (<strong>wa</strong>,<strong>wb</strong>,<strong>ws</strong>)            may be destroyed
+       (<strong>wa</strong>,<strong>wb</strong>,<strong>wc</strong>)            may be destroyed
 </pre>
 
 <h4> <strong>sysrw</strong> -- rewind file</h4>
@@ -4641,7 +4641,7 @@ the 2nd and 3rd arguments are passed unconverted.
 <pre>
        (<strong>wa</strong>)                  <strong>fcblk</strong> pointer
        (<strong>wb</strong>)                  2nd argument
-       (<strong>ws</strong>)                  3rd argument
+       (<strong>wc</strong>)                  3rd argument
        jsr  <strong>sysst</strong>            call to set file pointer
        ppm  loc              return here if invalid 2nd arg
        ppm  loc              return here if invalid 3rd arg
@@ -4767,7 +4767,7 @@ fourth word contains a <strong>fcblk</strong> pointer.
        jsr  <strong>sysxi</strong>            call to exit
        ppm  loc              requested action not possible
        ppm  loc              action caused irrecoverable error
-       (<strong>wb</strong>,<strong>ws</strong>,ia,<strong>xr</strong>,<strong>xl</strong>,cp)   should be preserved over call
+       (<strong>wb</strong>,<strong>wc</strong>,ia,<strong>xr</strong>,<strong>xl</strong>,cp)   should be preserved over call
        (<strong>wa</strong>)                  0 in all cases except sucessful
                             performance of exit(4) or exit(-4),
                             in which case 1 should be returned.

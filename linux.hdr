@@ -1,31 +1,30 @@
-        %include        "systype.nh"
+        %include "systype.nh"
 
 
-	segment	.text
+        section	.text
 
         %include        "hdrcode.inc"
         %include        "hdrdata.inc"
 
-        extern         ldr_
-        extern         str_
-        extern         ovr_
-        extern         dvi_
-        extern         rmi_
-        extern         cvd_
-        extern         rti_
-        extern         itr_
-        extern         adr_
-        extern         sbr_
-        extern         mlr_
-        extern         dvr_
-        extern         ngr_
-        extern         atn_
-        extern         chp_
-        extern         cos_
-        extern         etx_
-        extern         lnf_
-        extern         sin_
-        extern         sqr_
-        extern         tan_
-        extern         cpr_
-
+        extern LDR_
+        extern STR_
+        extern OVR_
+        extern DVI_
+        extern RMI_
+        extern CVD_
+        extern RTI_
+        extern ITR_
+        extern ADR_
+        extern SBR_
+        extern MLR_
+        extern DVR_
+        extern NGR_
+        extern ATN_
+        extern CHP_
+        extern COS_
+        extern ETX_
+        extern LNF_
+        extern SIN_
+        extern SQR_
+        extern TAN_
+        extern CPR_

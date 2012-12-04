@@ -99,29 +99,29 @@ extern void *mk_mp(void near *minp);
 /*
 /   Return values to take exit N from interface
 */
-#define EXIT_1		0
-#define EXIT_2		4
-#define EXIT_3		8
-#define EXIT_4		12
-#define EXIT_5		16
-#define EXIT_6		20
-#define EXIT_7		24
-#define EXIT_8		28
-#define EXIT_9		32
+#define EXIT_1		1
+#define EXIT_2		2
+#define EXIT_3		3
+#define EXIT_4		4
+#define EXIT_5		5
+#define EXIT_6		6
+#define EXIT_7		7
+#define EXIT_8		8
+#define EXIT_9		9
 
 /*
 /    Return value to do a normal return from interface.
 */
-#define NORMAL_RETURN	(-1)
+#define NORMAL_RETURN	0
 
 /*
 /	Function to call into MINIMAL code.
 /	The argument is an ordinal number defined below.
 */
-extern void call_minimal Params((word callno));
+extern void minimal Params((word callno));
 extern void popregs Params((void));
 extern void pushregs Params((void));
-#define MINIMAL(cn) call_minimal(cn)
+#define MINIMAL(cn) minimal(cn)
 #define MINSAVE() pushregs()
 #define MINRESTORE() popregs()
 

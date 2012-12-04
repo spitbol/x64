@@ -27,44 +27,10 @@ This file is part of Macro SPITBOL.
 */
 #include "systype.h"
 
-/* Map some names used to refer to labels in the Minimal soure to
-   the actual names used in the source.
+/*
+/	Turn off system-specific features unless specifically called for
+/	in systype.h.
 */
-
-#define	STMCT 	stmct
-#define	STMCS	stmcs
-#define	POLCT	polct
-#define	HEADV	headv
-#define	ID1	id1
-#define	TSCBLK	tscblk
-#define	R_FCB	r_fcb
-#define	B_SCL	b_scl
-#define	B_RCL	b_rcl
-#define	B_XRT	b_xrt
-#define	B_XNT	b_xnt
-#define	ID2BLK	id2blk
-#define	INPBUF	inpbuf
-#define	XNT	b_xnt
-#define	TTYBUF	ttybuf
-#define	STBAS	stbas
-#define	FLPRT	flprt
-#define	FLPTR	flptr
-#define	GTCEF	gtcef
-#define	PMHBS	pmhbs
-#define	DNAMB	dnamb
-#define	DNAMP	dnamp
-#define	C_YYY	c_yyy
-#define	STATE	state
-#define	C_AAA	c_aaa
-#define	S_YYY	s_yyy
-#define	S_AAA	s_aaa
-#define	HSHTB	hshtb
-#define	G_AAA	g_aaa
-#define	W_YYY	w_yyy
-#define	TICBLK	ticblk
-#define	B_ICL	b_icl
-	
-/* Turn off system-specific features unless specifically called for in systype.h.  */
 
 #ifndef	ALTCOMP
 #define	ALTCOMP		0	/* no alternate string comparison */

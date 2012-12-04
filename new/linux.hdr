@@ -1,0 +1,127 @@
+;        .psize          80,132
+;        .arch           pentium
+        %include        "systype.nh"
+
+%define	OR1	or
+%define	OR2	or
+%define	OR3	or
+%define	OR4	or
+%define	OR5	or
+%define	OR6	or
+%define	OR7	or
+%define	OR8	or
+%define	OR9	or
+%define	OR10	or
+%define	OR11	or
+%define	OR12	or
+
+	extern		AT_
+
+	%macro	AT	1
+	segment	.data
+%%desc:
+	db	%1
+	db	0	; terminate string
+	segment	.text
+	pushf	;save flags
+	pushad	;save registers
+	mov	dword [at_xl],esi
+	mov	dword [at_xr],edi
+	mov	dword [at_xs],esp
+	mov	dword [at_wa],ecx
+	mov	dword [at_wb],ebx
+	mov	dword [at_wc],edx
+	mov	dword [at_cp],ebp
+	mov	dword [at_w0],eax
+	push	%%desc	; push description address
+; there is no instruction to explicitly save ip, so do call which
+; results in storing the value of ip in eax, and so setting the
+; first argument.
+	call	%%puship
+%%puship:
+	call	AT_
+	; pop arguments
+	pop	eax
+	pop	eax
+	popad	;restore registers
+	popf	;restore flags
+	%endmacro
+
+	%macro	AT_NEW	1
+	segment	.data
+%%desc:
+	db	%1
+	db	0
+	segment	.text
+	pushf	;save flags
+; the following instructions up to the call to AT_ can be
+; represented as a C structure.
+	pushad	;save registers
+	push	%%desc	; push descriptive text address
+; there is no instruction to explicitly save ip, so do call which
+; results in storing the value of ip in eax.
+	call	%%at
+%%at:
+	call	AT_
+	pop	ax	; pop ip argument
+	pop	ax	; pop desc argument
+	popad	;restore registers
+	popf	;restore flags
+	%endmacro
+
+	segment	.text
+
+        %include        "hdrcode.inc"
+        %include        "hdrdata.inc"
+
+;	extern		atlin
+        extern         LDR_
+        extern         STR_
+        extern         OVR_
+        extern         DVI_
+        extern         RMI_
+        extern         CVD_
+        extern         RTI_
+        extern         ITR_
+        extern         ADR_
+        extern         SBR_
+        extern         MLR_
+        extern         DVR_
+        extern         NGR_
+        extern         ATN_
+        extern         CHP_
+        extern         COS_
+        extern         ETX_
+        extern         LNF_
+        extern         SIN_
+        extern         SQR_
+        extern         TAN_
+        extern         CPR_
+	extern		at_line
+	extern		at_ip
+	extern	at_xl
+	extern	at_xr
+	extern	at_xs
+	extern	at_cp
+	extern	at_wa
+	extern	at_wb
+	extern	at_wc
+	extern	at_w0
+
+
+; 	%macro	at	1
+; 	pushf	;save flags
+; 	pushad	;save registers
+; 	mov	eax,%1
+; 	mov	dword [at_line],eax
+; ; there is no instruction to explicitly save ip, so do call which
+; ; results in storing the value of ip in eax, and so setting the
+; ; first argument.
+; 	call	%%at
+; %%at:
+; 	pop	eax
+; 	mov	dword [at_ip],eax
+; 	call	at_
+; 	popad	;restore registers
+; 	popf	;restore flags
+; 	%endmacro

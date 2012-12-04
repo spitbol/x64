@@ -1546,10 +1546,10 @@ g.dtc
 	t1 = i.text(i1)
 	t1 tab(1) rtab(1) . t2
 	t3 = remdr(size(t2),4)
-        t2 = '"' t2
-*  append "\x00" if string has odd length to complete last dword
-        t2 = ne(t3) t2 dupl('\x00',4 - t3)
-        t2 = t2  '"'
+        t2 = "'" t2 ";"
+*  append nulls to make length of constant a multiple of word size, to
+*  maintain alignment.
+        t2 = ne(t3) t2 dupl(',0',4 - t3)
         pseudo(inlabel,'dd',t2)              :(opdone)
 
 g.dbc   

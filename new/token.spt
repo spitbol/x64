@@ -49,7 +49,7 @@
 *  V1.12 10-Sep-94
 *	Add CFP_L.
 *  V1.11 20-Sep-91
-*       Increase E_STS to 1000
+*       Increase E$STS to 1000
 *  V1.10 15-Dec-90
 *	Increase hash table size from 127 to 257.
 *
@@ -89,9 +89,9 @@
 *  V1.04 23-May-83
 *	Withdraw ENT file feature, since no longer needed.
 *	Replace BRP by (new) BEV and BOD opcodes.
-*	Use smaller values for E_ values since memory scarce.
+*	Use smaller values for E$ values since memory scarce.
 *  V1.03 17-May-83
-*	Restore E_HNB to 127, default suggested by McCann.
+*	Restore E$HNB to 127, default suggested by McCann.
 *	Generate ENT file with list of ENT instructions so that
 *	these can be placed at start of code section and thus
 *	give ENT addresses low values.
@@ -106,6 +106,7 @@
 *  Keyword initialization
 
         &ANCHOR = 1;    &STLIMIT = -1;  &TRIM   = 1
+	&DUMP = 0
 *  Useful constants
 
 	MINLETS = 'ABCDEFGHIJKLMNOPQRSTUVWXY_'
@@ -357,7 +358,7 @@
 . 'CTW[W,VAL]CVD[NONE]CVM[PLBL]DAC[ADDR]DBC[VAL]DCA[OPN]DCV[OPN]'
 . 'DEF[DEF]DIC[INTEGER]DRC[REAL]DTC[DTEXT]DVI[OPS]DVR[OPS]EJC[NONE]'
 . 'ELSE[ELSE]END[NONE END]ENP[NONE]ENT[*VAL ENT]EQU[EQOP EQU]'
-. 'ERB[INT,TEXT ERB]ERR[INT,TEXT ERR]ESW[NONE ESW]ETX[NONE]EXI[*INT]EXP[INT]FI[FI]'
+. 'ERB[INT,TEXT ERB]ERR[INT,TEXT ERR]ESW[NONE ESW]ETX[NONE]EXI[*INT]EXP[NONE]FI[FI]'
 . 'ICA[OPN]ICP[NONE]ICV[OPN]IEQ[PLBL]IF[IF]IFF[VAL,PLBL IFF]IGE[PLBL]'
 . 'IGT[PLBL]ILE[PLBL]ILT[PLBL]INE[PLBL]INO[PLBL]INP[PTYP,INT INP]'
 . 'INR[NONE]IOV[PLBL]ITR[NONE]JSR[PNAM]LCH[REG,OPC]LCT[W,OPV]LCP[REG]'
@@ -369,7 +370,7 @@
 . 'ROV[PLBL]RSH[W,VAL]RSX[W,(X)]RTI[*PLBL]RTN[NONE]SBI[OPS]'
 . 'SBR[OPS]SCH[REG,OPC]SCP[REG]SEC[NONE SEC]SIN[NONE]SQR[NONE]SSL[OPW]SSS[OPW]'
 . 'STI[OPS]STR[OPS]SUB[OPV,OPN]TAN[NONE]THEN[THEN]TRC[NONE]TTL[NONE TTL]'
-. 'UNDEF[UNDEF]WTB[REG]XOB[OPW,W]ZER[OPN]ZGB[OPN]ZRB[W,PLBL]ZZZ[INT]' )
+. 'UNDEF[UNDEF]WTB[REG]XOB[OPW,W]ZER[OPN]ZGB[OPN]ZRB[W,PLBL]' )
 
 
 *  PRCTAB is table of procedures declared in INP that is used to
@@ -501,10 +502,10 @@
 *  Associate input file to LU1.  If a conditional file was specified,
 *  read it first.
 *
-	INPUT(.INFILE,1,(DIFFER(FILENAMC) FILENAMC,FILENAMI))	:S(MAIN1)
-        OUTPUT = DIFFER(FILENAMC) "Cannot open CONDITIONAL file: " FILENAMC
-+						:S(END)
-        OUTPUT = "Cannot open MINIMAL file: " FILENAMI        :(END)
+	INPUT(.INFILE,1,FILENAMI)	:S(MAIN1)
+*        OUTPUT = DIFFER(FILENAMC) "Cannot open CONDITIONAL file: " FILENAMC
+*+						:S(END)
+*        OUTPUT = "Cannot open MINIMAL file: " FILENAMI        :(END)
 *
 *
 *  Associate output file
@@ -708,11 +709,13 @@ OUTSTMT
 *
 *  Send text to OUTFILE
 *
+* DS drop comments
+	COMMENT =
 	OUTFILE = '{' LABEL '{' OPCODE '{'
 .	(IDENT(TYP1), TYP1 ',') OP1 '{'
 .	(IDENT(TYP2), TYP2 ',') OP2 '{'
 .	(IDENT(TYP3), TYP3 ',') OP3 '{' COMMENT
-.	'{' NLINES
+.	'{' NLINES '{'
 	NTARGET = NTARGET + 1
 	NOUTLINES = NOUTLINES + 1
 .						:(RETURN)
@@ -744,7 +747,9 @@ RL00	LEQ( SUBSTR( RDLINE,1,1 ),'*' )		:F(RL01)
 *
 *  Only print comment if requested.
 *
-	OUTFILE = IDENT(FLCFLAG,'Y') RDLINE	:F(RDLINE)
+* DS skip comments
+						:(RDLINE)
+*	OUTFILE = IDENT(FLCFLAG,'Y') RDLINE	:F(RDLINE)
 	NOUTLINES = NOUTLINES + 1		:(RDLINE)
 *
 *  Here if not a comment line
@@ -760,7 +765,11 @@ RL01	LEQ( SUBSTR( RDLINE,1,1 ),'>' )		:F(RETURN)
 *
 *  Here on EOF.  FILENAMC is non-null if we were reading from it.
 *
-RL02	IDENT(FILENAMC)				:S(RL03)
+RL02	
+*  DS Explicitly include LINUX.CND at start of v38.min so line numbers are correct
+*     Do this by jumpting directly to RL03
+						:(RLO3)
+	IDENT(FILENAMC)				:S(RL03)
 	FILENAMC =
 	IGNORE_DEFS = 1
 	ENDFILE(1)
@@ -779,7 +788,9 @@ DEFOP  IDENT( CONDVAR )				:S(SYNERR)
        DIFFER( IGNORE_DEFS )			:S(RDLINE)
        EQ( LEVEL )				:S(DEFOK)
        EQ( PROCESSREC[RESULT(TOP),MODE(TOP)] )	:S(RDLINE)
-DEFOK  SYMTBL[CONDVAR] = 1			:(RDLINE)
+DEFOK  
+	OUTPUT = ".DEF " CONDVAR
+	SYMTBL[CONDVAR] = 1			:(RDLINE)
 *
 *  process undefine
 *
