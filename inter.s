@@ -172,7 +172,7 @@ sav_compsp:
 osisp:  .long   0               # 1.39 OSINT's stack pointer
 	pubdef	_rc_,.long,0	# return code from osint procedure
 
-
+SETREAL=0
 #
 #       Setup a number of internal addresses in the compiler that cannot
 #       be directly accessed from within C because of naming difficulties.
@@ -207,10 +207,6 @@ osisp:  .long   0               # 1.39 OSINT's stack pointer
         .long   0               # offset to next character to read
         .long   0               # file position of buffer
         .long   0               # physical position in file
-.if winnt && _MASM_ <> 0
-        .long   0               # 64-bit offset
-        .long   0               # and current position
-.endif
         .fill   1024,1,0        # buffer
 #
         pubdef  TTYBUF,.long,0     # type word
@@ -220,10 +216,6 @@ osisp:  .long   0               # 1.39 OSINT's stack pointer
         .long   0               # offset to next char to read
         .long   0               # file position of buffer
         .long   0               # physical position in file
-.if winnt && _MASM_ <> 0
-        .long   0               # 64-bit offset
-        .long   0               # and current position
-.endif
         .fill   260,1,0         # buffer
 
   DSegEnd_
@@ -977,9 +969,6 @@ re3:	cld
 #       simulates resumption just past the SYSBX call in the MINIMAL code.
 #       We distinguish this case by noting the variable STAGE is 4.
 #
-.if winnt
-	ext	startbrk,near
-.endif
         callc   startbrk,0              # start control-C logic
 
         GETMIN  eax,STAGE               # is this a -w call?
@@ -1596,241 +1585,6 @@ OVR_:   proc    near
 
         endp    OVR_
 
-.if winnt
-#
-#----------
-#
-#       cinread(fdn, buffer, size)      Do buffered console input
-#
-#       Input:  fdn     = file descriptor in case can't use DOS function 0A
-#               buffer  = buffer
-#               size    = buffer size
-#       Output: eax    = number of bytes transferred if no error
-#               = -1 if error
-#
-#       Preserves ds, es, esi, edi, ebx
-#
-#       Uses DOS function 0A because that is the function intercepted by
-#       various keyboard editing programs, such as DOS Edit.
-#
-#       If a program has redirected standard output, function 0A's echos
-#       will go to the redirected file, instead of the screen.  To overcome
-#       this, we save standard out's handle, and force it to be the console
-#       (stderr).  Similarly, function 0Ah reads from handle 0, and we
-#       force it to the console to preclude reading from a file.
-#
-#       If insufficient handles remain in the system to do this little
-#       shuffle, we simple fall back to the normal DOS read routine.
-#
-
-        struc   cinarg
-cin_ebp: .long  0
-cin_ip:  .long  0
-cin_fdn: .long  0
-cin_buf: .long  0
-cin_siz: .long  0
-        ends    cinarg
-
-        struc   ct                      #cinread temps
-crbuf:  .fill   260,1,0                 #keyboard buffer
-        ends    ct
-zct     =       260/4                   #word aligned temp size
-ctemp   =       [ebp-zct]               #temp on stack
-
-	ext	read,near
-.if winnt
-        proc    cinreaddos,near
-	pubname  cinreaddos
-.else
-        proc    cinread,near
-	pubname	cinread
-.endif
-        enter   zct,0                   #enter and reserve space for ctemp
-	push	ebx
-	push	esi
-	push	edi
-
-        xor     ebx,ebx                 # Save STDIN by duplicating to
-        mov     ecx,ebx                 #  get another handle
-	xor	eax,eax
-        mov     ah,0x45                 # CX = STDIN
-        int     0x21
-        jc      cinr5                   # Out of handles
-        push    eax                     # Save handle to old STDIN
-        mov     ebx,2                   # Make STDIN refer to STDERR
-        mov     ah,0x46                 # so DOS's input comes from keyboard
-        int     0x21
-
-        mov     ebx,1                   # Save STDOUT by duplicating to
-        mov     ecx,ebx                 #  get another handle
-        mov     ah,0x45                 # CX = STDOUT
-        int     0x21
-        jc      short cinr4             # Out of handles
-	push	ecx
-        push    eax                     # Save handle to old STDOUT
-        mov     ebx,2                   # Make STDOUT refer to STDERR
-        mov     ah,0x46                 # so DOS' echo goes to screen
-        int     0x21
-
-	mov	ecx,[ebp].cin_siz
-        inc     ecx                     # Allow for CR
-	cmp	ecx,255
-	jle	short cinr1
-        mov     cl,255                  # 255 is the max size for function 0Ah
-cinr1:  lea     edx,ctemp.crbuf         # Buffer (DS=SS)
-        mov     [edx],cl                # Set up count
-
-        mov     ah,0x0a
-        int     0x21                    # Do buffered input into [edx+2]
-
-	pop	ebx
-        pop     ecx                     # (CX = STDOUT)
-        mov     ah,0x46                 # Restore STDOUT to original file
-        int     0x21
-        mov     ah,0x3e                 # Discard dup'ed handle
-        int     0x21
-
-        xor     ecx,ecx                 # CX = STDIN
-	pop	ebx
-        mov     ah,0x46                 # Restore STDIN to original file
-        int     0x21
-        mov     ah,0x3e                 # Discard dup'ed handle
-        int     0x21
-
-	mov	esi,edx
-        inc     esi                     # Point to number of bytes read
-        movzx   ebx,byte ptr [esi]      # Char count
-        inc     ebx                     # Include CR
-        inc     esi                     # Point to first char
-        lea     edx,[esi+ebx]           # Point past CR
-        mov     [edx],byte ptr 10       # Append LF after CR
-        inc     ebx                     # Include LF
-        cmp     ebx,cin_siz[ebp]        # Compare with caller's buffer size
-	jle	short cinr3
-        mov     ebx,cin_siz[ebp]        # Caller's buffer size limits us
-cinr3:	mov	ecx,ebx
-        mov     edi,cin_buf[ebp]        # Caller's buffer
-  rep	movsb
-
-        push    ebx                     # Save count
-        mov     ebx,2                   # Force LF echo to screen
-        mov     ah,0x40                 # edx points to LF
-	mov	ecx,1
-        int     0x21
-	pop	eax
-
-cinr2:	pop	edi
-	pop	esi
-	pop	ebx
-	leave
-	retc	12
-
-# Here if insufficient handles to save standard out.
-# Release standard in.
-#
-cinr4:  xor     ecx,ecx                 # CX = STDIN
-	pop	ebx
-        mov     ah,0x46                 # Restore STDIN to original file
-        int     0x21
-        mov     ah,0x3e                 # Discard dup'ed handle
-        int     0x21
-
-# Here if insufficient handles to save standard in.
-# Just fall back to read routine.
-#
-cinr5:	push	cin_siz[ebp]
-	push	cin_buf[ebp]
-	push	cin_fdn[ebp]
-	callc	read,12
-	jmp	cinr2
-
-.if winnt
-        endp    cinreaddos
-.else
-        endp    cinread
-.endif
-.endif
-
-
-
-.if winnt
-#
-#----------
-#
-#       chrdevdos(fdn)  Do ioctl to see if character device.
-#
-#       Input:  fdn     = file descriptor
-#       Output: eax     = 81h/82h if input/output char dev, else 0
-#
-#       Preserves ds, es, esi, edi, ebx
-#
-
-                struc   chrdevarg
-chrdev_ebp:     .long   0
-chrdev_ip:      .long   0
-chrdev_fdn:     .long   0
-                ends    chrdevarg
-
-        proc    chrdevdos,near
-	pubname  chrdevdos
-	enter	0,0
-	push	ebx
-
-        mov     ebx,chrdev_fdn[ebp]     # Caller's fdn
-        mov     ax,0x4400               # IOCTL get status
-        int     0x21
-	pop	ebx
-	jc	short chrdev1
-	xor	eax,eax
-	mov	al,dl
-	leave
-	retc	4
-chrdev1: xor	eax,eax
-	leave
-	retc	4
-        endp    chrdevdos
-
-#
-#----------
-#
-#       rawmodedos(fdn,mode)    Set console to raw/cooked mode
-#
-#       Input:  fdn     = file descriptor
-#               mode    = 0 = cooked, 1 = raw
-#       Output: none
-#
-#       Preserves ds, es, esi, edi, ebx
-#
-
-                struc   rawmodearg
-rawmode_ebp:    .long   0
-rawmode_ip:     .long   0
-rawmode_fdn:    .long   0
-rawmode_mode:   .long   0
-                ends    rawmodearg
-
-        proc    rawmodedos,near
-	pubname  rawmodedos
-	enter	0,0
-	push	ebx
-
-	push	rawmode_fdn[ebp]
-	callc	chrdevdos,4
-	or	eax,eax
-	jz	rawmode1
-        and     eax,0x0DF
-	cmp	rawmode_mode[ebp],0
-	je	rawmode0
-        or      al,0x20                 # set raw bit
-rawmode0:
-	mov	edx,eax
-        mov     ax,0x4401
-        int     0x21
-rawmode1: pop	ebx
-	leave
-	retc	4
-        endp    rawmodedos
-.endif
 
 .if linux
 #

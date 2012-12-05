@@ -15,11 +15,12 @@ vpath %.c $(OSINT)
 
 
 
-CC=     gcc
+CC=     tcc
+INCDIRS = -I../tcc/include -Imusl/include
 ifeq	($(DEBUG),0)
-CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
+CFLAGS= -f $(INCDIRS)
 else
-CFLAGS= -g -m32 -fno-leading-underscore -mfpmath=387
+CFLAGS= $(INCDIRS)
 endif
 
 # Assembler info -- Intel 32-bit syntax
@@ -98,8 +99,7 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS)
 
 # main program
 spitbol: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
-	cp	spitbol sbl
+	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol
 
 # Assembly language dependencies:
 errors.o: errors.s

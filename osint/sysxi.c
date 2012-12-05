@@ -115,7 +115,7 @@ static void hcopy Params((char *src, char *dst, int len, int max));
 
 #if SAVEFILE | EXECSAVE
 extern word read Params((int F, void *Buf, unsigned Cnt));
-extern FILEPOS LSEEK Params((int F, FILEPOS Loc, int Method));
+/*extern off_t LSEEK Params((int F, FILEPOS Loc, int Method));*/
 #endif          /* EXECFILE  | SAVEFILE */
 
 zysxi()
