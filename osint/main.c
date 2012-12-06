@@ -54,6 +54,7 @@ This file is part of Macro SPITBOL.
 #define GLOBALS			/* global variables will be defined in this module */
 #include "port.h"
 #include <stdio.h>
+#include <stdio.h>
 
 #ifdef DEBUG
 #undef DEBUG			/* Change simple -DDEBUG on command line to -DDEBUG=1 */
@@ -482,3 +483,6 @@ void at_note() {
 	fprintf(stderr, "at_note\n");
 }
 #endif
+void restart(char *p, char * q) {
+ fprintf(stderr,"restart not supported\n");
+}

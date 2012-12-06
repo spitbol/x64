@@ -121,6 +121,9 @@ extern word read Params((int F, void *Buf, unsigned Cnt));
 zysxi()
 
 {
+/* sysxi not supported for now */
+#if TBSL
+	return EXIT_1;
 #if EXECFILE & !EXECSAVE
     register word	*srcptr, *dstptr;
     char	*endofmem;
@@ -391,6 +394,7 @@ fail:
     zysej();			/* NO RETURN */
     return EXIT_1;
 #endif					/* EXECFILE | SAVEFILE */
+#endif
 }
 
 #if (SOLARIS | LINUX) & EXECFILE & !EXECSAVE
