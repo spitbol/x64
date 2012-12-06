@@ -74,7 +74,9 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 	trypath.o wrtaout.o
 
 # Assembly langauge objects common to all versions:
-CAOBJS = errors.o serial.o inter.o
+# CAOBJS is for gas, NAOBJS for nasm
+CAOBJS = errors.o inter.o 
+NAOBJS = arith.o serial.o
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
@@ -95,7 +97,7 @@ AOBJS = $(CAOBJS)
 VOBJS =	v38.o
 
 # All objects:
-OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS)
+OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 
 # main program
 spitbol: $(OBJS)
@@ -106,6 +108,14 @@ errors.o: errors.s
 v38.o: v38.s
 v38.o:
 	nasm -f elf -l v38.lst -ov38.o v38.s
+
+arith.o: arith.s
+arith.o:
+	nasm -f elf -l arith.lst -oarith.o arith.s
+
+serial.o: serial.s
+serial.o:
+	nasm -f elf -l serial.lst -oserial.o serial.s
 
 # SPITBOL Minimal source
 v38.s:	v38.tok $(VHDRS) $(COD) systype.ah
@@ -124,6 +134,8 @@ errors.s: $(VERS).cnd $(ERR) v38.s
 	   $(SPIT) -1=v38.err -2=errors.s $(ERR)
 
 inter.o: systype.ah osint.inc
+
+arith.o: systype.ah osint.inc
 
 # make osint objects
 cobjs:	$(COBJS)
