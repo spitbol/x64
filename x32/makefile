@@ -17,11 +17,18 @@ vpath %.c $(OSINT)
 
 CC=     tcc
 INCDIRS = -I../tcc/include -Imusl/include
+# next is for tcc
 ifeq	($(DEBUG),0)
-CFLAGS= -f $(INCDIRS)
-else
 CFLAGS= $(INCDIRS)
+else
+CFLAGS= -g  $(INCDIRS)
 endif
+# next is for gcc
+#ifeq	($(DEBUG),0)
+#CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
+#else
+#CFLAGS= -g -m32 -fno-leading-underscore -mfpmath=387
+#endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
@@ -40,7 +47,7 @@ SBL=./sbl
 # Implicit rule for building objects from C files.
 ./%.o: %.c
 #.c.o:
-	$(CC) -c $(CFLAGS) -o$@ $(OSINT)/$*.c
+	$(CC)  $(CFLAGS) -c  -o$@ $(OSINT)/$*.c
 
 # Implicit rule for building objects from assembly language files.
 .s.o:

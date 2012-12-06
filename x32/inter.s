@@ -141,7 +141,9 @@ globals =               1                       #ASM globals defined here
 # These locations save information needed to return after calling OSINT
 # and after a restart from EXIT()
 #
-        pubdef  reg_pc,.long,0  # Return PC from ccaller
+	.global	reg_pc
+reg_pc: .long   0               # return PC from caller
+	.global	reg_pp
 reg_pp: .long   0               # Number of bytes of PPMs
         pubdef  reg_xs,.long,0  # Minimal stack pointer
 #
