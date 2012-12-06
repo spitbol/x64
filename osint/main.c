@@ -482,6 +482,9 @@ void strt1()
 void at_note() {
 	fprintf(stderr, "at_note\n");
 }
+void at_note1() {
+	fprintf(stderr, "at_note1\n");
+}
 #endif
 void restart(char *p, char * q) {
  fprintf(stderr,"restart not supported\n");

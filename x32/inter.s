@@ -163,9 +163,11 @@ sav_block: .fill r_size,1,0     # Save Minimal registers during push/pop reg
 #
         .balign 4
 ppoff:  .long   0               # offset for ppm exits
+	.global	compsp
 compsp: .long   0               # 1.39 compiler's stack pointer
 sav_compsp:
         .long   0               # save compsp here
+	.global	osisp
 osisp:  .long   0               # 1.39 OSINT's stack pointer
 	pubdef	_rc_,.long,0	# return code from osint procedure
 

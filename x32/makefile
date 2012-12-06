@@ -107,19 +107,19 @@ spitbol: $(OBJS)
 errors.o: errors.s
 v38.o: v38.s
 v38.o:
-	nasm -f elf -l v38.lst -ov38.o v38.s
+	nasm -g -f elf -l v38.lst -ov38.o v38.s
 
 arith.o: arith.s
 arith.o:
-	nasm -f elf -l arith.lst -oarith.o arith.s
+	nasm -g -f elf -l arith.lst -oarith.o arith.s
 
 sio.o: sio.s
 sio.o:
-	nasm -f elf -l sio.lst -osio.o sio.s
+	nasm -g -f elf -l sio.lst -osio.o sio.s
 
 serial.o: serial.s
 serial.o:
-	nasm -f elf -l serial.lst -oserial.o serial.s
+	nasm -g -f elf -l serial.lst -oserial.o serial.s
 
 # SPITBOL Minimal source
 v38.s:	v38.tok $(VHDRS) $(COD) systype.ah
