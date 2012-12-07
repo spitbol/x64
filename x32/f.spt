@@ -1,4 +1,0 @@
-	output(.ovar,1,"dave")
-	ovar = 'dave'
-	ovar = 'shields'
-end
