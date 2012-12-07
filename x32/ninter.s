@@ -1,3 +1,17 @@
+
+ 	global	minimal
+	extern	reg_wa
+	extern	reg_wb
+	extern	reg_wc
+	extern	reg_xr
+	extern	reg_xl
+	extern	reg_xs
+	extern	reg_cp
+	extern	compsp
+	extern	osisp
+	extern	calltab
+	extern	stacksiz
+ 
 ; ; Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 ; ; 
 ; ; This file is part of Macro SPITBOL.
@@ -367,17 +381,17 @@
 ; ;
 ; ;
 ; 
-; 	global	stackinit
-; stackinit:
-; 	mov	eax,esp
-;         mov     dword [compsp],eax              ; save as MINIMAL's stack pointer
-; 	sub	eax,dword [stacksiz]            ; end of MINIMAL stack is where C stack will start
-;         mov     dword [osisp],eax               ; save new C stack pointer
-; 	add	eax,4*100               ; 100 words smaller for CHK
-; 	extern	LOWSPMIN
-; 	mov	dword [LOWSPMIN],eax
-; 	ret
-; 
+	global	stackinit
+stackinit:
+	mov	eax,esp
+        mov     dword [compsp],eax              ; save as MINIMAL's stack pointer
+	sub	eax,dword [stacksiz]            ; end of MINIMAL stack is where C stack will start
+        mov     dword [osisp],eax               ; save new C stack pointer
+	add	eax,4*100               ; 100 words smaller for CHK
+	extern	LOWSPMIN
+	mov	dword [LOWSPMIN],eax
+	ret
+
 ; ;
 ; ;-----------
 ; ;
@@ -396,34 +410,32 @@
 ; ;       the OSINT stack.
 ; ;
 ; 
-; 	global	minimal
-; 
-; minimal:
-;         pushad                          ; save all registers for C
-;         mov     eax,dword [esp+32+4]          ; get ordinal
-;         mov     ecx,dword [reg_wa]              ; restore registers
-; 	mov	ebx,dword [reg_wb]
-;         mov     edx,dword [reg_wc]              ; (also _reg_ia)
-; 	mov	edi,dword [reg_xr]
-; 	mov	esi,dword [reg_xl]
-; 	mov	ebp,dword [reg_cp]
-; 
-;         mov     dword [osisp],esp               ; 1.39 save OSINT stack pointer
-;         cmp     dword [compsp],0      ; 1.39 is there a compiler stack?
-;         je      min1              ; 1.39 jump if none yet
-;         mov     esp,dword [compsp]              ; 1.39 switch to compiler stack
-; 
-; min1:   call   dword [calltab+eax*4]        ; off to the Minimal code
-; 
-;         mov     esp,dword [osisp]               ; 1.39 switch to OSINT stack
-; 
-;         mov     dword [reg_wa],ecx              ; save registers
-; 	mov	dword [reg_wb],ebx
-; 	mov	dword [reg_wc],edx
-; 	mov	dword [reg_xr],edi
-; 	mov	dword [reg_xl],esi
-; 	mov	dword [reg_cp],ebp
-; 	popad
-; 	ret
-; 
-; 
+ minimal:
+         pushad                          ; save all registers for C
+         mov     eax,dword [esp+32+4]          ; get ordinal
+         mov     ecx,dword [reg_wa]              ; restore registers
+ 	mov	ebx,dword [reg_wb]
+         mov     edx,dword [reg_wc]              ; (also _reg_ia)
+ 	mov	edi,dword [reg_xr]
+ 	mov	esi,dword [reg_xl]
+ 	mov	ebp,dword [reg_cp]
+ 
+         mov     dword [osisp],esp               ; 1.39 save OSINT stack pointer
+         cmp     dword [compsp],0      ; 1.39 is there a compiler stack?
+         je      min1              ; 1.39 jump if none yet
+         mov     esp,dword [compsp]              ; 1.39 switch to compiler stack
+ 
+ min1:   call   dword [calltab+eax*4]        ; off to the Minimal code
+ 
+         mov     esp,dword [osisp]               ; 1.39 switch to OSINT stack
+ 
+         mov     dword [reg_wa],ecx              ; save registers
+ 	mov	dword [reg_wb],ebx
+ 	mov	dword [reg_wc],edx
+ 	mov	dword [reg_xr],edi
+ 	mov	dword [reg_xl],esi
+ 	mov	dword [reg_cp],ebp
+ 	popad
+ 	ret
+ 
+ 

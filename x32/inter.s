@@ -183,48 +183,4 @@ pop1:	popad
 
 
 
-
-	proc	stackinit,near
-	mov	eax,esp
-        mov     compsp,eax              # save as MINIMAL's stack pointer
-	sub	eax,stacksiz            # end of MINIMAL stack is where C stack will start
-        mov     osisp,eax               # save new C stack pointer
-	add	eax,4*100               # 100 words smaller for CHK
-        SETMINR  LOWSPMIN,eax            # Set LOWSPMIN
-	ret
-	endp	stackinit
-
-
-        cproc    minimal,near
-	pubname	minimal
-
-        pushad                          # save all registers for C
-        mov     eax,[esp+32+4]          # get ordinal
-        mov     ecx,reg_wa              # restore registers
-	mov	ebx,reg_wb
-        mov     edx,reg_wc              # (also _reg_ia)
-	mov	edi,reg_xr
-	mov	esi,reg_xl
-	mov	ebp,reg_cp
-
-        mov     osisp,esp               # 1.39 save OSINT stack pointer
-        cmp     dword ptr compsp,0      # 1.39 is there a compiler stack?
-        je      short min1              # 1.39 jump if none yet
-        mov     esp,compsp              # 1.39 switch to compiler stack
-
-min1:   callc   calltab[eax*4],0        # off to the Minimal code
-
-        mov     esp,osisp               # 1.39 switch to OSINT stack
-
-        mov     reg_wa,ecx              # save registers
-	mov	reg_wb,ebx
-	mov	reg_wc,edx
-	mov	reg_xr,edi
-	mov	reg_xl,esi
-	mov	reg_cp,ebp
-	popad
-	retc	4
-
-        cendp    minimal
-
-
+	.extern	stackinit
