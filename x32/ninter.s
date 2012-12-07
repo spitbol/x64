@@ -157,7 +157,7 @@
 ;         global  reg_cp,
 ; reg_cp:	dd	0        ; Register CP
 ;         global  reg_ra
-; reg_ra	dd 	0.0  ; Register RA
+; reg_ra	dq 	0.0  ; Register RA
 ; ;
 ; ; These locations save information needed to return after calling OSINT
 ; ; and after a restart from EXIT()
