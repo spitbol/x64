@@ -63,7 +63,7 @@ extern long msec( void );
 #endif
 
 zystm() {
-	fprintf(stderr,"enter systm\n");
+	/*fprintf(stderr,"enter systm\n");*/
 
     /*
     /	process times are in 60ths of second, multiply by 100

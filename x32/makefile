@@ -83,7 +83,7 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 # Assembly langauge objects common to all versions:
 # CAOBJS is for gas, NAOBJS for nasm
 CAOBJS = errors.o inter.o 
-NAOBJS = arith.o serial.o sio.o
+NAOBJS = arith.o serial.o sio.o ninter.o
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
@@ -119,6 +119,10 @@ v38.o:
 arith.o: arith.s
 arith.o:
 	nasm -g -f elf -l arith.lst -oarith.o arith.s
+
+ninter.o: ninter.s
+ninter.o:
+	nasm -g -f elf -l ninter.lst -oninter.o ninter.s
 
 sio.o: sio.s
 sio.o:

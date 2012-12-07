@@ -163,9 +163,7 @@ char	*argv[];
     /*
     /   Switch to proper input file.
     */
-	fprintf(stderr,"before swcinp\n");
     swcinp( inpcnt, inpptr );
-	fprintf(stderr,"after swcinp\n");
 
 #if FLOAT
     /*

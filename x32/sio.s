@@ -96,9 +96,9 @@ ccaller:
         mov     dword [reg_pp],ebx              ; in memory
         pop     dword [reg_pc]                  ; save return PC past "CALL SYSXX"
 
-	push	dword [reg_pp]
-	call	at_note3
-	pop	eax
+;;	push	dword [reg_pp]
+;;	call	at_note3
+;;	pop	eax
 
 ;       (3a) Save compiler stack and switch to OSINT stack
 
@@ -113,9 +113,9 @@ ccaller:
 
 	mov	dword [_rc_],eax		; save return code from function
 
-	push	eax
-	call	at_note3
-	pop	eax
+;;	push	eax
+;;	call	at_note3
+;;	pop	eax
 
 ;       (4) Restore registers after C function returns.
 
