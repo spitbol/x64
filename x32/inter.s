@@ -27,37 +27,39 @@ globals =               1                       #ASM globals defined here
 # These locations save information needed to return after calling OSINT
 # and after a restart from EXIT()
 #
-        pubdef  reg_block
-        pubdef  reg_wa,.long,0     # Register WA (ECX)
-        pubdef  reg_wb,.long,0     # Register WB (EBX)
-        pubdef  reg_ia
-        pubdef  reg_wc,.long,0     # Register WC & IA (EDX)
-        pubdef  reg_xr,.long,0     # Register XR (EDI)
-        pubdef  reg_xl,.long,0     # Register XL (ESI)
-        pubdef  reg_cp,.long,0     # Register CP
-        pubdef  reg_ra,.double,0e  # Register RA
+#       pubdef  reg_block
+#       pubdef  reg_wa,.long,0     # Register WA (ECX)
+#       pubdef  reg_wb,.long,0     # Register WB (EBX)
+#       pubdef  reg_ia
+#       pubdef  reg_wc,.long,0     # Register WC & IA (EDX)
+#       pubdef  reg_xr,.long,0     # Register XR (EDI)
+#       pubdef  reg_xl,.long,0     # Register XL (ESI)
+#       pubdef  reg_cp,.long,0     # Register CP
+#       pubdef  reg_ra,.double,0e  # Register RA
 	.global	reg_pc
-reg_pc: .long   0               # return PC from caller
-	.global	reg_pp
-reg_pp: .long   0               # Number of bytes of PPMs
-        pubdef  reg_xs,.long,0  # Minimal stack pointer
+#reg_pc: .long   0               # return PC from caller
+#	.global	reg_pp
+#reg_pp: .long   0               # Number of bytes of PPMs
+#       pubdef  reg_xs,.long,0  # Minimal stack pointer
 #
 #r_size  =       .-reg_block
-#	.extern reg_block
-#	.extern reg_wa
-#	.extern reg_wb
-#	.extern reg_ia
-#	.extern reg_wc
-#	.extern reg_xr
-#	.extern reg_xl
-#	.extern reg_cp
-#	.extern reg_ra
-#	.extern	reg_pc
-#	.extern reg_pp
-#	.extern reg_xs
+	.extern reg_block
+	.extern reg_wa
+	.extern reg_wb
+	.extern reg_ia
+	.extern reg_wc
+	.extern reg_xr
+	.extern reg_xl
+	.extern reg_cp
+	.extern reg_ra
+	.extern	reg_pc
+	.extern reg_pp
+	.extern reg_xs
 #r_size	= .-reg_block
+	
  r_size = 44
-        pubdef  reg_size,.long,r_size
+	.extern	reg_size
+#        pubdef  reg_size,.long,r_size
 #
 # end of words saved during exit(-3)
 #
@@ -80,7 +82,10 @@ sav_compsp:
         .long   0               # save compsp here
 	.global	osisp
 osisp:  .long   0               # 1.39 OSINT's stack pointer
-	pubdef	_rc_,.long,0	# return code from osint procedure
+
+	.extern	_rc_
+#	.global	 _rc_
+# 	pubdef	_rc_,.long,0	# return code from osint procedure
 
 SETREAL=0
 #

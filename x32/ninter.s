@@ -1,14 +1,16 @@
-	extern	reg_block
-	extern	reg_wa
-	extern	reg_wb
-	extern	reg_ia
-	extern	reg_wc
-	extern	reg_xr
-	extern	reg_xl
-	extern	reg_cp
-	extern	reg_ra
-	extern	reg_pp
-	extern	reg_xs
+	global	reg_block
+	global	reg_wa
+	global	reg_wb
+	global	reg_ia
+	global	reg_wc
+	global	reg_xr
+	global	reg_xl
+	global	reg_cp
+	global	reg_ra
+	global	reg_pp
+	global	reg_pc
+	global	reg_xs
+	global	reg_size
 
  	global	minimal
 	extern	compsp
@@ -126,7 +128,7 @@
 ; ;
 ; ;       Global Variables
 ; ;
-;         segment	.data
+        segment	.data
 ; 	extern	swcoup
 ; 
 ; 	extern	stacksiz
@@ -144,41 +146,28 @@
 ; ; Words saved during exit(-3)
 ; ;
         align 4
-;         global  reg_block
-; reg_block:
-;         global  reg_wa
-; reg_wa:	dd	0        ; Register WA (ECX)
-;         global  reg_wb
-; reg_wb:	dd 	0        ; Register WB (EBX)
-;         global  reg_ia
-; reg_ia:
-;         global  reg_wc
-; reg_wc:	dd	0		; Register WC & IA (EDX)
-;         global  reg_xr
-; reg_xr:	dd	0        ; Register XR (EDI)
-;         global  reg_xl,
-; reg_xl:	dd	0        ; Register XL (ESI)
-;         global  reg_cp,
-; reg_cp:	dd	0        ; Register CP
-;         global  reg_ra
-; reg_ra	dq 	0.0  ; Register RA
-; ;
-; ; These locations save information needed to return after calling OSINT
-; ; and after a restart from EXIT()
-; ;
-; 	global	reg_pc
-; reg_pc: dd      0               ; return PC from caller
-; 	global	reg_pp
-; reg_pp: dd      0               ; Number of bytes of PPMs
-;         global  reg_xs
-; reg_xs:	dd	0;		 Minimal stack pointer
-; ;
-; ;	r_size  equ       $-reg_block
-; ; use computed value for nasm conversion, put back proper code later
-; r_size	equ	44
-;         global  reg_size
-; reg_size:	dd   r_size
-; 
+reg_block:
+reg_wa:	dd	0        ; Register WA (ECX)
+reg_wb:	dd 	0        ; Register WB (EBX)
+reg_ia:
+reg_wc:	dd	0		; Register WC & IA (EDX)
+reg_xr:	dd	0        ; Register XR (EDI)
+reg_xl:	dd	0        ; Register XL (ESI)
+reg_cp:	dd	0        ; Register CP
+reg_ra	dq 	0.0  ; Register RA
+;
+; These locations save information needed to return after calling OSINT
+; and after a restart from EXIT()
+;
+reg_pc: dd      0               ; return PC from caller
+reg_pp: dd      0               ; Number of bytes of PPMs
+reg_xs:	dd	0;		 Minimal stack pointer
+;
+;	r_size  equ       $-reg_block
+; use computed value for nasm conversion, put back proper code later
+r_size	equ	44
+reg_size:	dd   r_size
+
 ;
 ; end of words saved during exit(-3)
 ;
@@ -202,8 +191,8 @@
 ;         dd      0               ; save compsp here
 ; 	global	osisp
 ; osisp:  dd      0               ; 1.39 OSINT's stack pointer
-; 	global	_rc_
-; _rc_:	dd   0	; return code from osint procedure
+	global	_rc_
+_rc_:	dd   0	; return code from osint procedure
 ; 
 ; %define SETREAL 0
 ; ;
