@@ -13,8 +13,6 @@
 	global	reg_size
 
  	global	minimal
-	extern	compsp
-	extern	osisp
 	extern	calltab
 	extern	stacksiz
  
@@ -172,25 +170,29 @@ reg_size:	dd   r_size
 ; end of words saved during exit(-3)
 ;
 
-; ;
-; ;  Constants
-; ;
-; 	global	ten
-; ten:    dd      10              ; constant 10
-;         global  inf
-; inf:	dd	0   
-;         dd      0x7ff00000      ; double precision infinity
-; 
-; sav_block: times r_size db 0     ; Save Minimal registers during push/pop reg
-; ;
-;         align 4
-; ppoff:  dd      0               ; offset for ppm exits
-; 	global	compsp
-; compsp: dd      0               ; 1.39 compiler's stack pointer
-; sav_compsp:
-;         dd      0               ; save compsp here
-; 	global	osisp
-; osisp:  dd      0               ; 1.39 OSINT's stack pointer
+;
+;  Constants
+;
+	global	ten
+ten:    dd      10              ; constant 10
+        global  inf
+inf:	dd	0   
+        dd      0x7ff00000      ; double precision infinity
+
+	global	sav_block
+;sav_block: times r_size db 0     ; Save Minimal registers during push/pop reg
+sav_block: times 44 db 0     ; Save Minimal registers during push/pop reg
+;
+        align 4
+	global	ppoff
+ppoff:  dd      0               ; offset for ppm exits
+	global	compsp
+compsp: dd      0               ; 1.39 compiler's stack pointer
+	global	sav_compsp
+sav_compsp:
+        dd      0               ; save compsp here
+	global	osisp
+osisp:  dd      0               ; 1.39 OSINT's stack pointer
 	global	_rc_
 _rc_:	dd   0	; return code from osint procedure
 ; 
@@ -269,49 +271,49 @@ _rc_:	dd   0	; return code from osint procedure
 ; ;       reloading a save file.
 ; ;
 ; ;
-; 	global	pushregs
-; pushregs:
-; 	pushad
-; 	lea	esi,[reg_block]
-; 	lea	edi,[sav_block]
-; 	mov	ecx,r_size/4
-; 	cld
-;    rep	movsd
-; 
-;         mov     edi,dword [compsp]
-;         or      edi,edi                         ; 1.39 is there a compiler stack
-;         je      push1                     ; 1.39 jump if none yet
-;         sub     edi,4                           ;push onto compiler's stack
-;         mov     esi,dword [reg_xl]                      ;collectable XL
-; 	mov	[edi],esi
-;         mov     dword [compsp],edi                      ;smashed if call OSINT again (SYSGC)
-;         mov     dword [sav_compsp],edi                  ;used by popregs
-; 
-; push1:	popad
-; 	ret
-; 
-; 	global	popregs
-; popregs:
-; 	pushad
-;         mov     eax,dword [reg_cp]                      ;don't restore CP
-; 	cld
-; 	lea	esi,[sav_block]
-;         lea     edi,[reg_block]                   ;unload saved registers
-; 	mov	ecx,r_size/4
-;    rep  movsd                                   ;restore from temp area
-; 	mov	dword [reg_cp],eax
-; 
-;         mov     edi,dword [sav_compsp]                  ;saved compiler's stack
-;         or      edi,edi                         ;1.39 is there one?
-;         je      pop1                      ;1.39 jump if none yet
-;         mov     esi,dword [edi]                       ;retrieve collectable XL
-;         mov     dword [reg_xl],esi                      ;update XL
-;         add     edi,4                           ;update compiler's sp
-;         mov     dword [compsp],edi
-; 
-; pop1:	popad
-; 	ret
-; 
+	global	pushregs
+pushregs:
+	pushad
+	lea	esi,[reg_block]
+	lea	edi,[sav_block]
+	mov	ecx,r_size/4
+	cld
+   rep	movsd
+
+        mov     edi,dword [compsp]
+        or      edi,edi                         ; 1.39 is there a compiler stack
+        je      push1                     ; 1.39 jump if none yet
+        sub     edi,4                           ;push onto compiler's stack
+        mov     esi,dword [reg_xl]                      ;collectable XL
+	mov	[edi],esi
+        mov     dword [compsp],edi                      ;smashed if call OSINT again (SYSGC)
+        mov     dword [sav_compsp],edi                  ;used by popregs
+
+push1:	popad
+	ret
+
+	global	popregs
+popregs:
+	pushad
+        mov     eax,dword [reg_cp]                      ;don't restore CP
+	cld
+	lea	esi,[sav_block]
+        lea     edi,[reg_block]                   ;unload saved registers
+	mov	ecx,r_size/4
+   rep  movsd                                   ;restore from temp area
+	mov	dword [reg_cp],eax
+
+        mov     edi,dword [sav_compsp]                  ;saved compiler's stack
+        or      edi,edi                         ;1.39 is there one?
+        je      pop1                      ;1.39 jump if none yet
+        mov     esi,dword [edi]                       ;retrieve collectable XL
+        mov     dword [reg_xl],esi                      ;update XL
+        add     edi,4                           ;update compiler's sp
+        mov     dword [compsp],edi
+
+pop1:	popad
+	ret
+
 ; ;
 ; ;
 ; ;-----------
@@ -327,24 +329,44 @@ _rc_:	dd   0	; return code from osint procedure
 ; ;	Note: This function never returns.
 ; ;
 ; 
-; 	global	startup
-; 
-; startup:
-;         pop     eax                     ; discard return
-;         pop     eax                     ; discard dummy1
-;         pop     eax                     ; discard dummy2
-; 	call	stackinit               ; initialize MINIMAL stack
-;         mov     eax,dword [compsp]              ; get MINIMAL's stack pointer
-;         mov dword[reg_wa],eax                     ; startup stack pointer
-; 
-; 	cld                             ; default to UP direction for string ops
-; ;        GETOFF  eax,DFFNC               # get address of PPM offset
-;         mov     dword [ppoff],eax               ; save for use later
-; ;
-;         mov     esp,dword [osisp]               ; switch to new C stack
-; 	extern	START
-; 	call	START			 ; load regs, switch stack, start compiler
-; 
+	global	startup
+;   Ordinals for MINIMAL calls from assembly language.
+;
+;   The order of entries here must correspond to the order of
+;   calltab entries in the INTER assembly language module.
+;
+CALLTAB_RELAJ equ   0
+CALLTAB_RELCR equ   1
+CALLTAB_RELOC equ   2
+CALLTAB_ALLOC equ   3
+CALLTAB_ALOCS equ   4
+CALLTAB_ALOST equ   5
+CALLTAB_BLKLN equ   6
+CALLTAB_INSTA equ   7
+CALLTAB_RSTRT equ   8
+CALLTAB_START equ   9
+CALLTAB_FILNM equ   10
+CALLTAB_DTYPE equ   11
+CALLTAB_ENEVS equ   12
+CALLTAB_ENGTS equ   13
+
+
+startup:
+        pop     eax                     ; discard return
+        pop     eax                     ; discard dummy1
+        pop     eax                     ; discard dummy2
+	call	stackinit               ; initialize MINIMAL stack
+        mov     eax,dword [compsp]              ; get MINIMAL's stack pointer
+        mov dword[reg_wa],eax                     ; startup stack pointer
+
+	cld                             ; default to UP direction for string ops
+;        GETOFF  eax,DFFNC               # get address of PPM offset
+        mov     dword [ppoff],eax               ; save for use later
+;
+        mov     esp,dword [osisp]               ; switch to new C stack
+	push	CALLTAB_START
+	call	minimal			; load regs, switch stack, start compiler
+
 ; 
 ; 
 ; 

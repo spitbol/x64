@@ -18,31 +18,8 @@ globals =               1                       #ASM globals defined here
 .endif
 
         .include "extrn386.inc"
-
-
-# Words saved during exit(-3)
 #
         .balign 4
-#
-# These locations save information needed to return after calling OSINT
-# and after a restart from EXIT()
-#
-#       pubdef  reg_block
-#       pubdef  reg_wa,.long,0     # Register WA (ECX)
-#       pubdef  reg_wb,.long,0     # Register WB (EBX)
-#       pubdef  reg_ia
-#       pubdef  reg_wc,.long,0     # Register WC & IA (EDX)
-#       pubdef  reg_xr,.long,0     # Register XR (EDI)
-#       pubdef  reg_xl,.long,0     # Register XL (ESI)
-#       pubdef  reg_cp,.long,0     # Register CP
-#       pubdef  reg_ra,.double,0e  # Register RA
-	.global	reg_pc
-#reg_pc: .long   0               # return PC from caller
-#	.global	reg_pp
-#reg_pp: .long   0               # Number of bytes of PPMs
-#       pubdef  reg_xs,.long,0  # Minimal stack pointer
-#
-#r_size  =       .-reg_block
 	.extern reg_block
 	.extern reg_wa
 	.extern reg_wb
@@ -55,37 +32,17 @@ globals =               1                       #ASM globals defined here
 	.extern	reg_pc
 	.extern reg_pp
 	.extern reg_xs
+	.extern	ten
+	.extern	inf
+	.extern	sav_block
+	.extern	ppoff
+	.extern compsp	
+	.extern sav_compsp
+	.extern	.osisp
 #r_size	= .-reg_block
 	
  r_size = 44
 	.extern	reg_size
-#        pubdef  reg_size,.long,r_size
-#
-# end of words saved during exit(-3)
-#
-
-#
-#  Constants
-#
-	.global	ten
-ten:    .long   10              # constant 10
-        pubdef  inf,.long,0
-        .long   0x7ff00000      # double precision infinity
-
-sav_block: .fill r_size,1,0     # Save Minimal registers during push/pop reg
-#
-        .balign 4
-ppoff:  .long   0               # offset for ppm exits
-	.global	compsp
-compsp: .long   0               # 1.39 compiler's stack pointer
-sav_compsp:
-        .long   0               # save compsp here
-	.global	osisp
-osisp:  .long   0               # 1.39 OSINT's stack pointer
-
-	.extern	_rc_
-#	.global	 _rc_
-# 	pubdef	_rc_,.long,0	# return code from osint procedure
 
 SETREAL=0
 #
@@ -133,72 +90,24 @@ SETREAL=0
         .long   0               # physical position in file
         .fill   260,1,0         # buffer
 
-  DSegEnd_
 
-  CSeg_
-        proc    pushregs,near                   #bashes eax,ecx,esi
-	publab	pushregs
-	pushad
-	lea	esi,reg_block
-	lea	edi,sav_block
-	mov	ecx,r_size/4
-	cld
-   rep	movsd
+#         cproc   startup,near
+# 	pubname	startup
+# 
+#         pop     eax                     # discard return
+#         pop     eax                     # discard dummy1
+#         pop     eax                     # discard dummy2
+# 	call	stackinit               # initialize MINIMAL stack
+#         mov     eax,compsp              # get MINIMAL's stack pointer
+#         SET_WA  eax                     # startup stack pointer
+# 
+# 	cld                             # default to UP direction for string ops
+# #        GETOFF  eax,DFFNC               # get address of PPM offset
+#         mov     ppoff,eax               # save for use later
+# #
+#         mov     esp,osisp               # switch to new C stack
+#         MINIMAL START                   # load regs, switch stack, start compiler
 
-        mov     edi,compsp
-        or      edi,edi                         # 1.39 is there a compiler stack
-        je      short push1                     # 1.39 jump if none yet
-        sub     edi,4                           #push onto compiler's stack
-        mov     esi,reg_xl                      #collectable XL
-	mov	[edi],esi
-        mov     compsp,edi                      #smashed if call OSINT again (SYSGC)
-        mov     sav_compsp,edi                  #used by popregs
-
-push1:	popad
-	retc	0
-        endp    pushregs
-
-        proc    popregs,near                    #bashes eax,ebx,ecx
-	publab	popregs
-	pushad
-        mov     eax,reg_cp                      #don't restore CP
-	cld
-	lea	esi,sav_block
-        lea     edi,reg_block                   #unload saved registers
-	mov	ecx,r_size/4
-   rep  movsd                                   #restore from temp area
-	mov	reg_cp,eax
-
-        mov     edi,sav_compsp                  #saved compiler's stack
-        or      edi,edi                         #1.39 is there one?
-        je      short pop1                      #1.39 jump if none yet
-        mov     esi,[edi]                       #retrieve collectable XL
-        mov     reg_xl,esi                      #update XL
-        add     edi,4                           #update compiler's sp
-        mov     compsp,edi
-
-pop1:	popad
-	retc	0
-        endp    popregs
-
-        cproc   startup,near
-	pubname	startup
-
-        pop     eax                     # discard return
-        pop     eax                     # discard dummy1
-        pop     eax                     # discard dummy2
-	call	stackinit               # initialize MINIMAL stack
-        mov     eax,compsp              # get MINIMAL's stack pointer
-        SET_WA  eax                     # startup stack pointer
-
-	cld                             # default to UP direction for string ops
-#        GETOFF  eax,DFFNC               # get address of PPM offset
-        mov     ppoff,eax               # save for use later
-#
-        mov     esp,osisp               # switch to new C stack
-        MINIMAL START                   # load regs, switch stack, start compiler
-
-        cendp   startup
 
 
 
