@@ -43,7 +43,20 @@ reg_pp: .long   0               # Number of bytes of PPMs
         pubdef  reg_xs,.long,0  # Minimal stack pointer
 #
 #r_size  =       .-reg_block
-r_size = 40
+#	.extern reg_block
+#	.extern reg_wa
+#	.extern reg_wb
+#	.extern reg_ia
+#	.extern reg_wc
+#	.extern reg_xr
+#	.extern reg_xl
+#	.extern reg_cp
+#	.extern reg_ra
+#	.extern	reg_pc
+#	.extern reg_pp
+#	.extern reg_xs
+#r_size	= .-reg_block
+ r_size = 44
         pubdef  reg_size,.long,r_size
 #
 # end of words saved during exit(-3)

@@ -1,12 +1,16 @@
-
- 	global	minimal
+	extern	reg_block
 	extern	reg_wa
 	extern	reg_wb
+	extern	reg_ia
 	extern	reg_wc
 	extern	reg_xr
 	extern	reg_xl
-	extern	reg_xs
 	extern	reg_cp
+	extern	reg_ra
+	extern	reg_pp
+	extern	reg_xs
+
+ 	global	minimal
 	extern	compsp
 	extern	osisp
 	extern	calltab
@@ -139,7 +143,7 @@
 ; 
 ; ; Words saved during exit(-3)
 ; ;
-;         align 4
+        align 4
 ;         global  reg_block
 ; reg_block:
 ;         global  reg_wa
@@ -169,13 +173,16 @@
 ;         global  reg_xs
 ; reg_xs:	dd	0;		 Minimal stack pointer
 ; ;
-; r_size  equ       $-reg_block
+; ;	r_size  equ       $-reg_block
+; ; use computed value for nasm conversion, put back proper code later
+; r_size	equ	44
 ;         global  reg_size
 ; reg_size:	dd   r_size
-; ;
-; ; end of words saved during exit(-3)
-; ;
 ; 
+;
+; end of words saved during exit(-3)
+;
+
 ; ;
 ; ;  Constants
 ; ;
