@@ -71,7 +71,6 @@ char	*argv[];
 
 {
     int		i;
-
     /*
     /   Save command line parameters in global storage, in case they are needed
     /   later.
@@ -164,7 +163,9 @@ char	*argv[];
     /*
     /   Switch to proper input file.
     */
+	fprintf(stderr,"before swcinp\n");
     swcinp( inpcnt, inpptr );
+	fprintf(stderr,"after swcinp\n");
 
 #if FLOAT
     /*
@@ -257,6 +258,7 @@ char	*argv[];
     /*
     /   Startup compiler.
     */
+/*	fprintf(stderr,"calling startup\n");*/
     startup( (char *)0L, lowsp );
 #endif					/* !RUNTIME */
 

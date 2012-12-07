@@ -65,6 +65,10 @@
 	extern at_note1
 	extern at_note2
 	extern at_note3
+	extern at_note3
+	segment	.data
+call_adr:	dd	0
+	segment	.text
 
 ccaller:
 ;       (1) Save registers in global variables
@@ -85,11 +89,16 @@ ccaller:
 
         cs                              ; CS segment override
         lodsd                           ; point to C function entry point
+	mov	dword [call_adr],eax
 ;       lodsd   cs:ccaller              ; point to C function entry point
-        movzx   ebx,byte [esi]   ; save normal exit adjustment
-
+;	word after callee address used to be ppm count. Now used for debug
+	mov	ebx,dword[esi]
         mov     dword [reg_pp],ebx              ; in memory
         pop     dword [reg_pc]                  ; save return PC past "CALL SYSXX"
+
+	push	dword [reg_pp]
+	call	at_note3
+	pop	eax
 
 ;       (3a) Save compiler stack and switch to OSINT stack
 
@@ -99,10 +108,14 @@ ccaller:
          mov     esp,dword [osisp]               ; 1.39 load OSINT's stack pointer
 
 ;       (3b) Make call to OSINT
-
+	mov	eax,dword [call_adr]
         call    eax                     ; call C interface function
 
 	mov	dword [_rc_],eax		; save return code from function
+
+	push	eax
+	call	at_note3
+	pop	eax
 
 ;       (4) Restore registers after C function returns.
 
@@ -131,87 +144,87 @@ cc1:
 	extern	zysax
 SYSAX:	call	ccaller
         dd        zysax
-        db   0
+        dd   1
 
         global SYSBS
 	extern	zysbs
 SYSBS:	call	ccaller
         dd        zysbs
-        db   0
+        dd   2
 
         global SYSBX
 	extern	zysbx
 SYSBX:	mov	dword [reg_xs],esp
 	call	ccaller
         dd      zysbx
-        db   0
+        dd   2
 
 ;        global SYSCR
 ;	extern	zyscr
 ;SYSCR:  call    ccaller
 ;        dd      zyscr
-;        db   0
+;        dd   0
 ;
         global SYSDC
 	extern	zysdc
 SYSDC:	call	ccaller
         dd      zysdc
-        db   0
+        dd   4
 
         global SYSDM
 	extern	zysdm
 SYSDM:	call	ccaller
         dd      zysdm
-        db   0
+        dd   5
 
         global SYSDT
 	extern	zysdt
 SYSDT:	call	ccaller
         dd      zysdt
-        db   0
+        dd   6
 
         global SYSEA
 	extern	zysea
 SYSEA:	call	ccaller
         dd      zysea
-        db   0
+        dd   7
 
         global SYSEF
 	extern	zysef
 SYSEF:	call	ccaller
         dd      zysef
-        db   0
+        dd   8
 
         global SYSEJ
 	extern	zysej
 SYSEJ:	call	ccaller
         dd      zysej
-        db   0
+        dd   9
 
         global SYSEM
 	extern	zysem
 SYSEM:	call	ccaller
         dd      zysem
-        db   0
+        dd   10
 
         global SYSEN
 	extern	zysen
 SYSEN:	call	ccaller
         dd      zysen
-        db   0
+        dd   11
 
         global SYSEP
 	extern	zysep
 SYSEP:	call	ccaller
         dd      zysep
-        db   0
+        dd  	12
 
         global SYSEX
 	extern	zysex
 SYSEX:	mov	dword [reg_xs],esp
 	call	ccaller
         dd      zysex
-        db   0
+        dd   13
 
         global SYSFC
 	extern	zysfc
@@ -220,144 +233,144 @@ SYSFC:  pop     eax             ; <<<<remove stacked SCBLK>>>>
 	push	eax
 	call	ccaller
         dd      zysfc
-        db   0
+        dd   14
 
         global SYSGC
 	extern	zysgc
 SYSGC:	call	ccaller
         dd      zysgc
-        db   0
+        dd   15
 
         global SYSHS
 	extern	zyshs
 SYSHS:	mov	dword [reg_xs],esp
 	call	ccaller
         dd      zyshs
-        db   0
+        dd   16
 
         global SYSID
 	extern	zysid
 SYSID:	call	ccaller
         dd      zysid
-        db   0
+        dd   17
 
         global SYSIF
 	extern	zysif
 SYSIF:	call	ccaller
         dd      zysif
-        db   0
+        dd   18
 
         global SYSIL
 	extern	zysil
 SYSIL:  call    ccaller
         dd      zysil
-        db   0
+        dd   19
 
         global SYSIN
 	extern	zysin
 SYSIN:	call	ccaller
         dd      zysin
-        db   0
+        dd   20
 
         global SYSIO
 	extern	zysio
 SYSIO:	call	ccaller
         dd      zysio
-        db   0
+        dd   21
 
         global SYSLD
 	extern	zysld
 SYSLD:  call    ccaller
         dd      zysld
-        db   0
+        dd   22
 
         global SYSMM
 	extern	zysmm
 SYSMM:	call	ccaller
         dd      zysmm
-        db   0
+        dd   23
 
         global SYSMX
 	extern	zysmx
 SYSMX:	call	ccaller
         dd      zysmx
-        db   0
+        dd   24
 
         global SYSOU
 	extern	zysou
 SYSOU:	call	ccaller
         dd      zysou
-        db   0
+        dd   25
 
         global SYSPI
 	extern	zyspi
 SYSPI:	call	ccaller
         dd      zyspi
-        db   0
+        dd   26
 
         global SYSPL
 	extern	zyspl
 SYSPL:	call	ccaller
         dd      zyspl
-        db   0
+        dd   27
 
         global SYSPP
 	extern	zyspp
 SYSPP:	call	ccaller
         dd      zyspp
-        db   0
+        dd   28
 
         global SYSPR
 	extern	zyspr
 SYSPR:	call	ccaller
         dd      zyspr
-        db   0
+        dd   29
 
         global SYSRD
 	extern	zysrd
 SYSRD:	call	ccaller
         dd      zysrd
-        db   0
+        dd   30
 
         global SYSRI
 	extern	zysri
 SYSRI:	call	ccaller
         dd      zysri
-        db   0
+        dd   32
 
         global SYSRW
 	extern	zysrw
 SYSRW:	call	ccaller
         dd      zysrw
-        db   0
+        dd   33
 
         global SYSST
 	extern	zysst
 SYSST:	call	ccaller
         dd      zysst
-        db   0
+        dd   34
 
         global SYSTM
 	extern	zystm
 SYSTM:	call	ccaller
 systm_p: dd      zystm
-        db   0
+        dd   35
 
         global SYSTT
 	extern	zystt
 SYSTT:	call	ccaller
         dd      zystt
-        db   0
+        dd   36
 
         global SYSUL
 	extern	zysul
 SYSUL:	call	ccaller
         dd      zysul
-        db   0
+        dd   37
 
         global SYSXI
 	extern	zysxi
 SYSXI:	mov	dword [reg_xs],esp
 	call	ccaller
 sysxi_p: dd      zysxi
-        db   0
+        dd   38

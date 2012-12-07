@@ -42,6 +42,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include <stdio.h>
 
 #if WINNT
 extern long msec( void );
@@ -61,8 +62,9 @@ extern long msec( void );
 #define CLK_TCK sysconf(_SC_CLK_TCK)
 #endif
 
-zystm()
-{
+zystm() {
+	fprintf(stderr,"enter systm\n");
+
     /*
     /	process times are in 60ths of second, multiply by 100
     /	to get 6000ths of second, divide by 6 to get 100ths

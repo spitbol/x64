@@ -21,6 +21,8 @@
 	extern	at_wc
 	extern	at_w0
 	extern	at_zz
+	extern	at_note
+	global	START
 
 	%macro	ZZZ	1
 	pushf
