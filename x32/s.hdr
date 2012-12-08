@@ -1,13 +1,59 @@
+
+        section	.text
+
+;
+;  No header code in 386 version.
+;
+%define XL.ESI ESI
+%define XT.ESI ESI
+%define XR.EDI EDI
+%define XS.ESP ESP
+%define WA.ECX ECX
+%define WB.EBX EBX
+%define WC.EDX EDX
+%define IA.EDX EDX
+%define CP.EBP EBP
+%define W0.EAX EAX
+	extern	_rc_
+%ifdef AT_TRACE
+	extern	at_xl
+	extern	at_xr
+	extern	at_xs
+	extern	at_wa
+	extern	at_wb
+	extern	at_wc
+	extern	at_w0
+	extern	at_zz
+%endif
+	global	START
+
+	%macro	ZZZ	1
+	pushf
+	pushad
+%ifdef AT_TRACE
+	mov	dword [at_zz],%1
+	mov	dword [at_xl],esi
+	mov	dword [at_xr],edi
+	mov	dword [at_xs],esp
+	mov	dword [at_wa],ecx
+	mov	dword [at_wb],ebx
+	mov	dword [at_wc],edx
+	mov	dword [at_w0],eax
+%endif
+;	push	%1
+;	pop	eax
+	popad
+	popf
+	%endmacro
+
 ;
 ;
 ;   Table to recover type word from type ordinal
 ;
 
-%ifndef HDRDATA_INCLUDED
-%define HDRDATA_INCLUDED
-;   HDRDATA.INC
 	extern	_rc_
 	global	TYPET
+	section .data
 	
         dd B_ART   ; ARBLK type word - 0
         dd B_CDC   ; CDBLK type word - 1
@@ -106,4 +152,26 @@ calltab:
         global  STMCT
 	global	B_RCL
 	global	END_MIN_DATA
-%endif
+
+        extern LDR_
+        extern STR_
+        extern OVR_
+        extern DVI_
+        extern RMI_
+        extern CVD_
+        extern RTI_
+        extern ITR_
+        extern ADR_
+        extern SBR_
+        extern MLR_
+        extern DVR_
+        extern NGR_
+        extern ATN_
+        extern CHP_
+        extern COS_
+        extern ETX_
+        extern LNF_
+        extern SIN_
+        extern SQR_
+        extern TAN_
+        extern CPR_

@@ -18,15 +18,15 @@
 *     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 *
 *
-*  This program takes input file in MINIMAL token form and
-*  produces assembly code for x32 processor.
+*  This program takes input file in MINIMAL lexeme form and
+*  produces assembly code for an x32 processor.
 *  The program obtains the name of the file to be translated from the
 *  command line string in HOST(0).  Options relating to the processing
 *  of comments can be changed by modifying the source.
 *
-*  In addition to the MINIMAL token file, the program requires the
-*  name of a "machine definition file" that contains code specific
-*  to a particular x32 assembler.
+*  In addition to the MINIMAL lexeme file, the program requires the
+*  name of a "system definition file" that contains code specific
+*  to a particular version.
 *
 *  You may also specify option flags on the command line to control the
 *  code generation.  The following flags are processed:
@@ -50,7 +50,7 @@
 *  To run under Spitbol:
 *       spitbol -u "<file>:<machine>[:flag:...:flag]" asm.spt
 *
-*	reads <file>.tok	containing tokenized source code
+*	reads <file>.lex	containing tokenized source code
 *       writes <file>.s         with x32 assembly code
 *	also writes <file>.err	with ERR and ERB error messages
 *	using <machine>.def	to provide machine-specific information
@@ -236,11 +236,11 @@
 *
 *  Default the parameter string if none present
 *
-        PARMS = (DIFFER(HOST(0)) HOST(0), "v37:linux:compress")
-        OUTPUT = IDENT(PARMS) "Filename (.tok) required" :S(END)
+        PARMS = (DIFFER(HOST(0)) HOST(0), "s:s:compress")
+        OUTPUT = IDENT(PARMS) "Filename (.lex) required" :S(END)
 
 *
-* Get machine definition file name following token file name, and flags.
+* Get machine definition file name following lexeme file name, and flags.
 *
 	PARMS ? BREAK(';:') . PARMS LEN(1) (BREAK(';:') | REM) . MACHINE
 +		((LEN(1) REM . FLAGS) | '')
@@ -356,7 +356,7 @@ COMPDONE DEFS =
 *
 	STRIP_COMMENT = (DIFFER(COMMENTS) 'N', 'Y')
 
-	FILENAMI = PARMS '.tok'
+	FILENAMI = PARMS '.lex'
         INPUT(.INFILE,1,FILENAMI)                     :S(INPUTOK)
         OUTPUT = 'Cannot open TOKEN file: ' FILENAMI  :(END)
 INPUTOK OUTPUT = 'Input TOKEN file: ' FILENAMI

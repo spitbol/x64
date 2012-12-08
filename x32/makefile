@@ -1,9 +1,9 @@
-# Linux/386 SPITBOL
+# X32 SPITBOL
 #
 
 
 # SPITBOL Version:
-VERS=   linux
+MIN=   s
 DEBUG=	1
 
 # Minimal source directory.
@@ -63,7 +63,7 @@ UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/syste
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	$(VERS).cnd $(VERS).def $(VERS).hdr hdrdata.inc hdrcode.inc
+VHDRS=	$(MIN).hdr
 
 # OSINT objects:
 SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
@@ -101,7 +101,7 @@ MOBJS=	main.o getargs.o
 AOBJS = $(CAOBJS)
 
 # Minimal source object file:
-VOBJS =	v38.o
+VOBJS =	s.o
 
 # All objects:
 OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
@@ -112,9 +112,9 @@ spitbol: $(OBJS)
 
 # Assembly language dependencies:
 errors.o: errors.s
-v38.o: v38.s
-v38.o:
-	nasm -g -f elf -l v38.lst -ov38.o v38.s
+s.o: s.s
+s.o:
+	nasm -g -f elf -l s.lst -os.o s.s
 
 x32.o: x32.s
 x32.o:
@@ -126,19 +126,19 @@ errors.o:
 
 
 # SPITBOL Minimal source
-v38.s:	v38.tok $(VHDRS) $(COD) 
-	$(SPIT) -u "v38:$(VERS):comments" $(COD)
-#	cp	v38.s	v38.S
-#	$(SPIT) san.spt <v38.s >v38.t
-#	cp	v38.t v38.s
+s.s:	s.tok $(VHDRS) $(COD) 
+	$(SPIT) -u "s:$(MIN):comments" $(COD)
+#	cp	s.s	s.S
+#	$(SPIT) san.spt <s.s >s.t
+#	cp	s.t s.s
 
-v38.tok: $(MINPATH)v38.min $(VERS).cnd $(LEX)
-	 $(SPIT) -u "$(MINPATH)v38:$(VERS):v38" $(LEX)
+s.tok: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
+	 $(SPIT) -u "$(MINPATH)s:$(MIN):s" $(LEX)
 
-v38.err: v38.s
+s.err: s.s
 
-errors.s: $(VERS).cnd $(ERR) v38.s
-	   $(SPIT) -1=v38.err -2=errors.s $(ERR)
+errors.s: $(MIN).cnd $(ERR) s.s
+	   $(SPIT) -1=s.err -2=errors.s $(ERR)
 
 
 # make osint objects
@@ -154,9 +154,9 @@ sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
 
 boot:
-	cp -p bootstrap/v38.s bootstrap/v38.tok bootstrap/errors.s .
+	cp -p bootstrap/s.s bootstrap/s.tok bootstrap/errors.s .
 
 install:
 	sudo cp spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o *.lst *.map *.err v38.tok v38.tmp v38.s errors.s
+	rm -f $(OBJS) *.o *.lst *.map *.err s.tok s.tmp s.s errors.s

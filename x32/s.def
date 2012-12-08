@@ -1,0 +1,5 @@
+* Platform-specific mods to codlinux.spt
+*
+
+* GNU C labels do not have an underscore prefix
+	C.OUT = ''
