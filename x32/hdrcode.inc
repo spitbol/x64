@@ -13,6 +13,7 @@
 %define CP.EBP EBP
 %define W0.EAX EAX
 	extern	_rc_
+%ifdef AT_TRACE
 	extern	at_xl
 	extern	at_xr
 	extern	at_xs
@@ -21,12 +22,13 @@
 	extern	at_wc
 	extern	at_w0
 	extern	at_zz
-	extern	at_note
+%endif
 	global	START
 
 	%macro	ZZZ	1
 	pushf
 	pushad
+%ifdef AT_TRACE
 	mov	dword [at_zz],%1
 	mov	dword [at_xl],esi
 	mov	dword [at_xr],edi
@@ -35,8 +37,8 @@
 	mov	dword [at_wb],ebx
 	mov	dword [at_wc],edx
 	mov	dword [at_w0],eax
+%endif
 ;	push	%1
-	call	zzz
 ;	pop	eax
 	popad
 	popf

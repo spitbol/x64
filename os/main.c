@@ -43,7 +43,7 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #include "os.h"
 #include "globals.init"
-#include <stdio.h>
+/*#include <stdio.h>*/
 
 void wrterr(char *s);
 #ifdef DEBUG
@@ -55,9 +55,6 @@ void wrterr(char *s);
 
 void setout(void);
 
-extern long stklo;
-extern long print_sp();
-extern long stkhi;
 
 main(argc, argv)
 int argc;
@@ -70,7 +67,6 @@ char *argv[];
        later.
      */
     Enter("main");
-	fprintf(stderr,"stklo %8x stkhi %8x\n",&stklo, &stkhi);
     gblargc = argc;
     gblargv = argv;
     lowsp = 0L;
@@ -200,7 +196,6 @@ char *argv[];
        Allocate stack
      */
 	stacksiz = 400*4;
-	At("allocate stack");
     if ((lowsp = sbrk((uword) stacksiz)) == (char *) -1) {
 	wrterr("Stack memory unavailable.");
 	exit(1);
@@ -225,8 +220,6 @@ char *argv[];
     zystm();
     print_sp();
     startup();
-
-	At("back from compiler");
 
 /* atlin(); */
 #endif				/* !RUNTIME */

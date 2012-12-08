@@ -34,7 +34,6 @@ extern word reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs,reg_w0;
 extern IATYPE reg_ia;
 extern double reg_ra;
 
-extern void At(char * s);
 extern void Enter(char * s);
 extern void Exit(char * s);
 
@@ -84,7 +83,7 @@ extern void Exit(char * s);
 /*
      Return value to do a normal return from interface.
 */
-#define NORMAL_RETURN   (-1)
+#define NORMAL_RETURN   0
 
 extern int save_cp;
 extern int save_xl;

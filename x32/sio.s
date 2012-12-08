@@ -61,11 +61,6 @@
 	extern	reg_pp
 	extern	osisp
 	extern	compsp
-	extern at_note
-	extern at_note1
-	extern at_note2
-	extern at_note3
-	extern at_note3
 	segment	.data
 call_adr:	dd	0
 	segment	.text
@@ -96,10 +91,6 @@ ccaller:
         mov     dword [reg_pp],ebx              ; in memory
         pop     dword [reg_pc]                  ; save return PC past "CALL SYSXX"
 
-;;	push	dword [reg_pp]
-;;	call	at_note3
-;;	pop	eax
-
 ;       (3a) Save compiler stack and switch to OSINT stack
 
 ; DS 12/22/12 Note that needn't save and restore stack ptrs if not using
@@ -112,10 +103,6 @@ ccaller:
         call    eax                     ; call C interface function
 
 	mov	dword [_rc_],eax		; save return code from function
-
-;;	push	eax
-;;	call	at_note3
-;;	pop	eax
 
 ;       (4) Restore registers after C function returns.
 

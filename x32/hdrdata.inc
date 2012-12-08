@@ -7,7 +7,6 @@
 %define HDRDATA_INCLUDED
 ;   HDRDATA.INC
 	extern	_rc_
-	extern	zzz
         ;pubdef  TYPET
 	global	TYPET
 	
