@@ -39,11 +39,10 @@ ASFLAGS = -g
 endif
 
 # Tools for processing Minimal source file.
-TOK=	token.spt
-COD=    codlinux.spt
+LEX=	lex.spt
+COD=    asm.spt
 ERR=    err.spt
 SPIT=   ../bootstrap/spitbol
-SBL=./sbl
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
@@ -117,25 +116,14 @@ v38.o: v38.s
 v38.o:
 	nasm -g -f elf -l v38.lst -ov38.o v38.s
 
-arith.o: arith.s
-arith.o:
-	nasm -g -f elf -l arith.lst -oarith.o arith.s
-
 x32.o: x32.s
 x32.o:
 	nasm -g -f elf -l x32.lst -ox32.o x32.s
-
-sio.o: sio.s
-sio.o:
-	nasm -g -f elf -l sio.lst -osio.o sio.s
 
 errors.o: errors.s
 errors.o:
 	nasm -g -f elf -l errors.lst -oerrors.o errors.s
 
-serial.o: serial.s
-serial.o:
-	nasm -g -f elf -l serial.lst -oserial.o serial.s
 
 # SPITBOL Minimal source
 v38.s:	v38.tok $(VHDRS) $(COD) 
@@ -144,9 +132,8 @@ v38.s:	v38.tok $(VHDRS) $(COD)
 #	$(SPIT) san.spt <v38.s >v38.t
 #	cp	v38.t v38.s
 
-v38.tok: $(MINPATH)v38.min $(VERS).cnd $(TOK)
-	 $(SPIT) -u "$(MINPATH)v38:$(VERS):v38" $(TOK)
-#	$(SBL) -u "$(MINPATH)v38:$(VERS):v38" $(TOK)
+v38.tok: $(MINPATH)v38.min $(VERS).cnd $(LEX)
+	 $(SPIT) -u "$(MINPATH)v38:$(VERS):v38" $(LEX)
 
 v38.err: v38.s
 

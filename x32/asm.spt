@@ -1,4 +1,4 @@
--TITLE MINCOD: PHASE 2 TRANSLATION FROM MINIMAL TOKENS TO 80386 CODE
+-TITLE ASM: PHASE 2 TRANSLATION FROM MINIMAL TOKENS TO X32 ASSEMBLY
 -STITL Description
 * Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 * 
@@ -19,14 +19,14 @@
 *
 *
 *  This program takes input file in MINIMAL token form and
-*  produces assembly code for INTEL 80386 processor.
+*  produces assembly code for x32 processor.
 *  The program obtains the name of the file to be translated from the
 *  command line string in HOST(0).  Options relating to the processing
 *  of comments can be changed by modifying the source.
 *
 *  In addition to the MINIMAL token file, the program requires the
 *  name of a "machine definition file" that contains code specific
-*  to a particular 80386 assembler.
+*  to a particular x32 assembler.
 *
 *  You may also specify option flags on the command line to control the
 *  code generation.  The following flags are processed:
@@ -48,10 +48,10 @@
 *  PC-SPITBOL translator by David Shields.
 *
 *  To run under Spitbol:
-*       spitbol -u "<file>:<machine>[:flag:...:flag]" codlinux.spt
+*       spitbol -u "<file>:<machine>[:flag:...:flag]" asm.spt
 *
 *	reads <file>.tok	containing tokenized source code
-*       writes <file>.s         with 80386 assembly code
+*       writes <file>.s         with x32 assembly code
 *	also writes <file>.err	with ERR and ERB error messages
 *	using <machine>.def	to provide machine-specific information
 *       parts of <machine>.hdr  are prepended and appended to <file>.s
@@ -59,7 +59,7 @@
 *	also reads <file>.pub	for debug symbols to be declared public
 *
 *  Example:
-*       spitbol -u v37:dos:compress codlinux.spt
+*       spitbol -u v37:dos:compress asm.spt
 *
 *
 *  Revision History:
@@ -232,7 +232,7 @@
 *  Get file name
 *
 	TRANSDATE = DATE()
-        OUTPUT = 'MINIMAL to 80386 Translator'
+        OUTPUT = 'MINIMAL to x32 translator'
 *
 *  Default the parameter string if none present
 *
@@ -1291,10 +1291,8 @@ G.ZRB	IFREG(I1)				:S(G.ZRB1)
 G.ZRB1	GENOP('OR',GETARG(I1),GETARG(I1))
 	GENOP('JZ',GETARG(I2))			:(OPDONE)
 
-* 80386 is a Little-Endian machine, so ZGB must swap bytes.
+* x32 is a Little-Endian machine, so ZGB must swap bytes.
 *
-* NOTE THAT ON A 486 AND LATER CPU, THIS CAN BE DONE WITH ONE INSTRUCTION, BSWAP.
-* SHOULD CONSIDER ABANDONING THE 80386 SO CAN USE BSWAP.
 *
 G.ZGB	T1 = GETARG(I1)			;* 32-bit register name, e.g., EDX
         T2 = SUBSTR(T1,2,1) 'L'         ;* 8-bit low register name, e.g., DL
