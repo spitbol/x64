@@ -171,4 +171,4 @@ boot:
 install:
 	sudo cp spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.lst *.map *.err v38.tok v38.tmp v38.s errors.s
+	rm -f $(OBJS) *.o *.lst *.map *.err v38.tok v38.tmp v38.s errors.s
