@@ -7,7 +7,6 @@
 %define HDRDATA_INCLUDED
 ;   HDRDATA.INC
 	extern	_rc_
-        ;pubdef  TYPET
 	global	TYPET
 	
         dd B_ART   ; ARBLK type word - 0
@@ -48,7 +47,6 @@
 ;   to the order of entries in the CALL enumeration in osint.h
 ;   and osint.inc.
 ;
-       ; pubdef  calltab
 	global calltab
 calltab:
         dd   RELAJ
@@ -66,72 +64,46 @@ calltab:
 ;       dd   ENEVS ;  Engine words
 ;       dd   ENGTS ;   not used
 
-;
-;   Table of MINIMAL variables that can be dded from C
-;   and assembly-language via macros GETOFF, GETPTR, GETMIN, and SETMIN.
-;
-;   There are two ways of setting this up.  If the symbol "direct" is
-;   non-zero, the symbols are declared public and dded directly.
-;   If direct is zero, dd is via the function minadr in inter.asm.
-;
-;   The macros GETOFF, GETPTR, GETMIN, and SETMIN in osint.h and osint.inc
-;   must be adjusted when direct is changed.
-;
-;   Note that the order of entries in this table must correspond to the
-;   order of entries in the VAL enumeration in osint.h and osint.inc.
-;
-        %macro  DD_ENT 1
-%if direct
-        global %1
-%else
-        dd %1
-%endif
-        %endmacro
-
-        ;pubdef  valtab
-	global	valtab
-valtab:
-	DD_ENT	GBCNT
-	DD_ENT	HEADV
-	DD_ENT	MXLEN
-	DD_ENT	STAGE
-	DD_ENT	TIMSX
-	DD_ENT	DNAMB
-	DD_ENT	DNAMP
-	DD_ENT	STATE
-	DD_ENT	B_EFC
-	DD_ENT	B_ICL
-	DD_ENT	B_SCL
-	DD_ENT	B_VCT
-	DD_ENT	B_XNT
-	DD_ENT	B_XRT
-	DD_ENT	STBAS
-	DD_ENT	STATB
-	DD_ENT	POLCT
-	DD_ENT  	TYPET
-	DD_ENT	LOWSPMIN
-	DD_ENT	FLPRT
-	DD_ENT	FLPTR
-	DD_ENT	GTCEF
-	DD_ENT	HSHTB
-	DD_ENT	PMHBS
-	DD_ENT	R_FCB
-	DD_ENT	C_AAA
-	DD_ENT	C_YYY
-	DD_ENT	G_AAA
-	DD_ENT	W_YYY
-	DD_ENT	S_AAA
-	DD_ENT	S_YYY
-	DD_ENT	R_COD
-	DD_ENT	KVSTN
-	DD_ENT	KVDMP
-	DD_ENT	KVFTR
-	DD_ENT	KVCOM
-	DD_ENT	KVPFL
-	DD_ENT	CSWFL
-        DD_ENT  	STMCS
-        DD_ENT  	STMCT
-	DD_ENT	B_RCL
-	DD_ENT	END_MIN_DATA
-        %unmacro  DD_ENT 1
+	global	GBCNT
+	global	HEADV
+	global	MXLEN
+	global	STAGE
+	global	TIMSX
+	global	DNAMB
+	global	DNAMP
+	global	STATE
+	global	B_EFC
+	global	B_ICL
+	global	B_SCL
+	global	B_VCT
+	global	B_XNT
+	global	B_XRT
+	global	STBAS
+	global	STATB
+	global	POLCT
+	global  TYPET
+	global	LOWSPMIN
+	global	FLPRT
+	global	FLPTR
+	global	GTCEF
+	global	HSHTB
+	global	PMHBS
+	global	R_FCB
+	global	C_AAA
+	global	C_YYY
+	global	G_AAA
+	global	W_YYY
+	global	S_AAA
+	global	S_YYY
+	global	R_COD
+	global	KVSTN
+	global	KVDMP
+	global	KVFTR
+	global	KVCOM
+	global	KVPFL
+	global	CSWFL
+        global  STMCS
+        global  STMCT
+	global	B_RCL
+	global	END_MIN_DATA
 %endif

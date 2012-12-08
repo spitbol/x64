@@ -1,10 +1,14 @@
 ; SPITBOL math routine interface 
-        %include        "systype.nh"
-;        %include        "osint.inc"
 
 	extern	ten
 	extern	reg_ra
-;
+
+	%macro	callext	2
+	extern	%1
+	call	%1
+	add	esp,%2	; pop arguments
+	%endmacro
+
 ;-----------
 ;
 ;       CVD_ - convert by division
@@ -78,11 +82,15 @@ setovr: mov     al,0x80         ; set overflow indicator
 ;       Integer results returned in EAX.
 ;       Float results returned in ST0 for Intel.
 ;       See conditional switches fretst0 and
-;       freteax in systype.ah for each compiler.
+;       freteax. 
 ;
 ;       C function preserves EBP, EBX, ESI, EDI.
 ;
 
+; define how floating point results are returned from a function
+; (either in ST(0) or in EDX:EAX.
+%define fretst0 1
+%define freteax 0
 
 ;----------
 ;
@@ -101,7 +109,7 @@ RTI_:
 RTI_3:  push    ecx             ; protect against C routine usage.
         push    eax             ; push RA MSH
         push    dword [reg_ra]  ; push RA LSH
-        callfar f_2_i,8         ; float to integer
+        callext f_2_i,8         ; float to integer
         xchg    eax,edx         ; return integer in edx (IA)
         pop     ecx             ; restore ecx
         clc
@@ -128,7 +136,7 @@ ITR_:
 
         push    ecx             ; preserve
         push    edx             ; push IA
-        callfar i_2_f,4         ; integer to float
+        callext i_2_f,4         ; integer to float
 %if fretst0
 	fstp	qword [reg_ra]
         pop     ecx             ; restore ecx
@@ -183,7 +191,7 @@ ADR_:
         push    dword [reg_ra]               ; RA lsh
         push    dword [eax+4]               ; arg msh
         push    dword [eax]                 ; arg lsh
-        callfar f_add,16                        ; perform op
+        callext f_add,16                        ; perform op
 %if fretst0
 	fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -212,7 +220,7 @@ SBR_:
         push    dword [reg_ra]               ; RA lsh
         push    dword [eax+4]               ; arg msh
         push    dword [eax]                 ; arg lsh
-        callfar f_sub,16                        ; perform op
+        callext f_sub,16                        ; perform op
 %if fretst0
 	fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -241,7 +249,7 @@ MLR_:
         push    dword [reg_ra]                ; RA lsh
         push    dword [eax+4]               ; arg msh
         push    dword [eax]                 ; arg lsh
-        callfar f_mul,16                        ; perform op
+        callext f_mul,16                        ; perform op
 %if fretst0
 	fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -270,7 +278,7 @@ DVR_:
         push    dword [reg_ra]                ; RA lsh
         push    dword [eax+4]               ; arg msh
         push    dword [eax]                 ; arg lsh
-        callfar f_div,16                        ; perform op
+        callext f_div,16                        ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -312,7 +320,7 @@ ATN_:
 	push	edx
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]                ; RA lsh
-        callfar f_atn,8                         ; perform op
+        callext f_atn,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -340,7 +348,7 @@ CHP_:
 	push	edx
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]                ; RA lsh
-        callfar f_chp,8                         ; perform op
+        callext f_chp,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -367,7 +375,7 @@ COS_:
 	push	edx
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]                ; RA lsh
-        callfar f_cos,8                         ; perform op
+        callext f_cos,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -394,7 +402,7 @@ ETX_:
 	push	edx
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]                ; RA lsh
-        callfar f_etx,8                         ; perform op
+        callext f_etx,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -421,7 +429,7 @@ LNF_:
 	push	edx
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]                ; RA lsh
-        callfar f_lnf,8                         ; perform op
+        callext f_lnf,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -449,7 +457,7 @@ SIN_:
 	push	edx
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]               ; RA lsh
-        callfar f_sin,8                         ; perform op
+        callext f_sin,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -476,7 +484,7 @@ SQR_:
 	push	edx
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]                ; RA lsh
-        callfar f_sqr,8                         ; perform op
+        callext f_sqr,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -490,7 +498,6 @@ SQR_:
 	pop	ecx
 %endif
 	ret
-
 ;
 ;----------
 ;
@@ -503,7 +510,7 @@ TAN_:
 	push	edx
         push    dword [reg_ra+4]              ; RA msh
         push    dword [reg_ra]                ; RA lsh
-        callfar f_tan,8                         ; perform op
+        callext f_tan,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     edx                             ; restore regs
@@ -560,4 +567,5 @@ tryfpu:
 	fldz
 	pop	ebp
 	ret
+
 

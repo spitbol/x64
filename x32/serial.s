@@ -20,8 +20,6 @@
 ; function will appear in this segment as well, placed here
 ; by the code in load.asm.
 ;
-        %include        "systype.nh"
-
         section		.data
         align         4
 	global	hasfpu
