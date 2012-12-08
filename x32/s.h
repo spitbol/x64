@@ -14,16 +14,13 @@
 ; 
 ;     You should have received a copy of the GNU General Public License
 ;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+
+; configuration information for inter.s
 ;
-; First segment in program.  Contains serial number string.
-; If external functions are included, a call to the external
-; function will appear in this segment as well, placed here
-; by the code in load.asm.
+; define how data locations in the Minimal code are accessed from
+; assembly-language and C routines.  "direct" is non-zero to make
+; the symbols public for direct access, zero to have access via
+; a table of pointers and the minadr procedure.
 ;
-        section		.data
-        align         4
-	global	hasfpu
-hasfpu:	dd	0
-	global	cprtmsg
-cprtmsg:
-	db          ' Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.',0,0
+%define direct 1
+

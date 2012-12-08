@@ -1,4 +1,4 @@
-        %include "systype.nh"
+        %include "s.h"
 
 
         section	.text

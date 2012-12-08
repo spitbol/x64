@@ -16,116 +16,114 @@
 	extern	calltab
 	extern	stacksiz
  
-; ; Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
-; ; 
-; ; This file is part of Macro SPITBOL.
-; ; 
-; ;     Macro SPITBOL is free software: you can redistribute it and/or modify
-; ;     it under the terms of the GNU General Public License as published by
-; ;     the Free Software Foundation, either version 3 of the License, or
-; ;     (at your option) any later version.
-; ; 
-; ;     Macro SPITBOL is distributed in the hope that it will be useful,
-; ;     but WITHOUT ANY WARRANTY; without even the implied warranty of
-; ;     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-; ;     GNU General Public License for more details.
-; ; 
-; ;     You should have received a copy of the GNU General Public License
-; ;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
-; ;
-; %define	direct	0
-; %define globals 1                       ;ASM globals defined here
-; ;       %include        "systype.ah"
-; ;       %include        "osint.inc"
+; Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 ; 
-; ;
-; ;       File: inter.s           Version: 1.46
-; ;       ---------------------------------------
-; ;
-; ;       This file contains the assembly language routines that interface
-; ;       the Macro SPITBOL compiler written in 80386 assembly language to its
-; ;       operating system interface functions written in C.
-; ;
-; ;       Contents:
-; ;
-; ;       o Overview
-; ;       o Global variables accessed by OSINT functions
-; ;       o Interface routines between compiler and OSINT functions
-; ;       o C callable function startup
-; ;       o C callable function get_fp
-; ;       o C callable function restart
-; ;       o C callable function makeexec
-; ;       o Routines for Minimal opcodes CHK and CVD
-; ;       o Math functions for integer multiply, divide, and remainder
-; ;       o Math functions for real operation
-; ;
-; ;-----------
-; ;
-; ;       Overview
-; ;
-; ;       The Macro SPITBOL compiler relies on a set of operating system
-; ;       interface functions to provide all interaction with the host
-; ;       operating system.  These functions are referred to as OSINT
-; ;       functions.  A typical call to one of these OSINT functions takes
-; ;       the following form in the 80386 version of the compiler:
-; ;
-; ;               ...code to put arguments in registers...
-; ;               call    SYSXX           # call osint function
-; ;               dd      EXIT_1          # address of exit point 1
-; ;               dd      EXIT_2          # address of exit point 2
-; ;               ...     ...             # ...
-; ;               dd      EXIT_n          # address of exit point n
-; ;               ...instruction following call...
-; ;
-; ;       The OSINT function 'SYSXX' can then return in one of n+1 ways:
-; ;       to one of the n exit points or to the instruction following the
-; ;       last exit.  This is not really very complicated - the call places
-; ;       the return address on the stack, so all the interface function has
-; ;       to do is add the appropriate offset to the return address and then
-; ;       pick up the exit address and jump to it OR do a normal return via
-; ;       an ret instruction.
-; ;
-; ;       Unfortunately, a C function cannot handle this scheme.  So, an
-; ;       intermediary set of routines have been established to allow the
-; ;       interfacing of C functions.  The mechanism is as follows:
-; ;
-; ;       (1) The compiler calls OSINT functions as described above.
-; ;
-; ;       (2) A set of assembly language interface routines is established,
-; ;           one per OSINT function, named accordingly.  Each interface
-; ;           routine ...
-; ;
-; ;           (a) saves all compiler registers in global variables
-; ;               accessible by C functions
-; ;           (b) calls the OSINT function written in C
-; ;           (c) restores all compiler registers from the global variables
-; ;           (d) inspects the OSINT function's return value to determine
-; ;               which of the n+1 returns should be taken and does so
-; ;
-; ;       (3) A set of C language OSINT functions is established, one per
-; ;           OSINT function, named differently than the interface routines.
-; ;           Each OSINT function can access compiler registers via global
-; ;           variables.  NO arguments are passed via the call.
-; ;
-; ;           When an OSINT function returns, it must return a value indicating
-; ;           which of the n+1 exits should be taken.  These return values are
-; ;           defined in header file 'inter.h'.
-; ;
-; ;       Note:  in the actual implementation below, the saving and restoring
-; ;       of registers is actually done in one common routine accessed by all
-; ;       interface routines.
-; ;
-; ;       Other notes:
-; ;
-; ;       Some C ompilers transform "internal" global names to
-; ;       "external" global names by adding a leading underscore at the front
-; ;       of the internal name.  Thus, the function name 'osopen' becomes
-; ;       '_osopen'.  However, not all C compilers follow this convention.
-; ;
-; ;------------
-; ;
-; ;       Global Variables
-; ;
+; This file is part of Macro SPITBOL.
+; 
+;     Macro SPITBOL is free software: you can redistribute it and/or modify
+;     it under the terms of the GNU General Public License as published by
+;     the Free Software Foundation, either version 3 of the License, or
+;     (at your option) any later version.
+; 
+;     Macro SPITBOL is distributed in the hope that it will be useful,
+;     but WITHOUT ANY WARRANTY; without even the implied warranty of
+;     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;     GNU General Public License for more details.
+; 
+;     You should have received a copy of the GNU General Public License
+;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+;
+%define	direct	0
+%define globals 1                       ;ASM globals defined here
+
+;
+;       File: inter.s           Version: 1.46
+;       ---------------------------------------
+;
+;       This file contains the assembly language routines that interface
+;       the Macro SPITBOL compiler written in 80386 assembly language to its
+;       operating system interface functions written in C.
+;
+;       Contents:
+;
+;       o Overview
+;       o Global variables accessed by OSINT functions
+;       o Interface routines between compiler and OSINT functions
+;       o C callable function startup
+;       o C callable function get_fp
+;       o C callable function restart
+;       o C callable function makeexec
+;       o Routines for Minimal opcodes CHK and CVD
+;       o Math functions for integer multiply, divide, and remainder
+;       o Math functions for real operation
+;
+;-----------
+;
+;       Overview
+;
+;       The Macro SPITBOL compiler relies on a set of operating system
+;       interface functions to provide all interaction with the host
+;       operating system.  These functions are referred to as OSINT
+;       functions.  A typical call to one of these OSINT functions takes
+;       the following form in the 80386 version of the compiler:
+;
+;               ...code to put arguments in registers...
+;               call    SYSXX           # call osint function
+;               dd      EXIT_1          # address of exit point 1
+;               dd      EXIT_2          # address of exit point 2
+;               ...     ...             # ...
+;               dd      EXIT_n          # address of exit point n
+;               ...instruction following call...
+;
+;       The OSINT function 'SYSXX' can then return in one of n+1 ways:
+;       to one of the n exit points or to the instruction following the
+;       last exit.  This is not really very complicated - the call places
+;       the return address on the stack, so all the interface function has
+;       to do is add the appropriate offset to the return address and then
+;       pick up the exit address and jump to it OR do a normal return via
+;       an ret instruction.
+;
+;       Unfortunately, a C function cannot handle this scheme.  So, an
+;       intermediary set of routines have been established to allow the
+;       interfacing of C functions.  The mechanism is as follows:
+;
+;       (1) The compiler calls OSINT functions as described above.
+;
+;       (2) A set of assembly language interface routines is established,
+;           one per OSINT function, named accordingly.  Each interface
+;           routine ...
+;
+;           (a) saves all compiler registers in global variables
+;               accessible by C functions
+;           (b) calls the OSINT function written in C
+;           (c) restores all compiler registers from the global variables
+;           (d) inspects the OSINT function's return value to determine
+;               which of the n+1 returns should be taken and does so
+;
+;       (3) A set of C language OSINT functions is established, one per
+;           OSINT function, named differently than the interface routines.
+;           Each OSINT function can access compiler registers via global
+;           variables.  NO arguments are passed via the call.
+;
+;           When an OSINT function returns, it must return a value indicating
+;           which of the n+1 exits should be taken.  These return values are
+;           defined in header file 'inter.h'.
+;
+;       Note:  in the actual implementation below, the saving and restoring
+;       of registers is actually done in one common routine accessed by all
+;       interface routines.
+;
+;       Other notes:
+;
+;       Some C ompilers transform "internal" global names to
+;       "external" global names by adding a leading underscore at the front
+;       of the internal name.  Thus, the function name 'osopen' becomes
+;       '_osopen'.  However, not all C compilers follow this convention.
+;
+;------------
+;
+;       Global Variables
+;
         segment	.data
 ; 	extern	swcoup
 ; 
@@ -134,9 +132,6 @@
 ; 	extern	lowsp
 ; 	extern	outptr
 ; 	extern	calltab
-; %if	direct == 0
-;         extern     valtab
-; %endif
 ; 
 ; ;       .include "extrn386.inc"
 ; 
@@ -370,35 +365,35 @@ startup:
 ; 
 ; 
 ; 
-; ;
-; ;-----------
-; ;
-; ;	stackinit  -- initialize LOWSPMIN from sp.
-; ;
-; ;	Input:  sp - current C stack
-; ;		stacksiz - size of desired Minimal stack in bytes
-; ;
-; ;	Uses:	eax
-; ;
-; ;	Output: register WA, sp, LOWSPMIN, compsp, osisp set up per diagram:
-; ;
-; ;	(high)	+----------------+
-; ;		|  old C stack   |
-; ;	  	|----------------| <-- incoming sp, resultant WA (future XS)
-; ;		|	     ^	 |
-; ;		|	     |	 |
-; ;		/ stacksiz bytes /
-; ;		|	     |	 |
-; ;		|            |	 |
-; ;		|----------- | --| <-- resultant LOWSPMIN
-; ;		| 400 bytes  v   |
-; ;	  	|----------------| <-- future C stack pointer, osisp
-; ;		|  new C stack	 |
-; ;	(low)	|                |
-; ;
-; ;
-; ;
-; 
+;
+;-----------
+;
+;	stackinit  -- initialize LOWSPMIN from sp.
+;
+;	Input:  sp - current C stack
+;		stacksiz - size of desired Minimal stack in bytes
+;
+;	Uses:	eax
+;
+;	Output: register WA, sp, LOWSPMIN, compsp, osisp set up per diagram:
+;
+;	(high)	+----------------+
+;		|  old C stack   |
+;	  	|----------------| <-- incoming sp, resultant WA (future XS)
+;		|	     ^	 |
+;		|	     |	 |
+;		/ stacksiz bytes /
+;		|	     |	 |
+;		|            |	 |
+;		|----------- | --| <-- resultant LOWSPMIN
+;		| 400 bytes  v   |
+;	  	|----------------| <-- future C stack pointer, osisp
+;		|  new C stack	 |
+;	(low)	|                |
+;
+;
+;
+
 	global	stackinit
 stackinit:
 	mov	eax,esp
@@ -410,24 +405,24 @@ stackinit:
 	mov	dword [LOWSPMIN],eax
 	ret
 
-; ;
-; ;-----------
-; ;
-; ;       mimimal -- call MINIMAL function from C
-; ;
-; ;       Usage:  extern void minimal(WORD callno)
-; ;
-; ;       where:
-; ;         callno is an ordinal defined in osint.h, osint.inc, and calltab.
-; ;
-; ;       Minimal registers WA, WB, WC, XR, and XL are loaded and
-; ;       saved from/to the register block.
-; ;
-; ;       Note that before restart is called, we do not yet have compiler
-; ;       stack to switch to.  In that case, just make the call on the
-; ;       the OSINT stack.
-; ;
-; 
+;
+;-----------
+;
+;       mimimal -- call MINIMAL function from C
+;
+;       Usage:  extern void minimal(WORD callno)
+;
+;       where:
+;         callno is an ordinal defined in osint.h, osint.inc, and calltab.
+;
+;       Minimal registers WA, WB, WC, XR, and XL are loaded and
+;       saved from/to the register block.
+;
+;       Note that before restart is called, we do not yet have compiler
+;       stack to switch to.  In that case, just make the call on the
+;       the OSINT stack.
+;
+
  minimal:
          pushad                          ; save all registers for C
          mov     eax,dword [esp+32+4]          ; get ordinal
