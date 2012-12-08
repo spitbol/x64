@@ -1,5 +1,5 @@
 -IN80
--TITLE ERR386.SPT:  COMPRESS SPITBOL ERROR MESSAGES for 80386
+-TITLE ERR.SPT:  COMPRESS SPITBOL ERROR MESSAGES
 -STITLE Initialization
 * Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 * 
@@ -23,7 +23,7 @@
 *
 *  Find a near optimum compression for a Spitbol error message file.
 *
-*  SPITBOL -u "machine" -1<input file> -2<output file> err386
+*  SPITBOL -u "machine" -1<input file> -2<output file> err
 *
 *  The variable MACHINE is set equal to the uppercase name of the machine
 *  being processed.  Usage is optional.
@@ -92,16 +92,6 @@
 *	minutes with 68K Spitbol on a Unix PC, 22 hours with SNOBOL4+ on
 *	a PC/XT).
 *
-*	History:
-*	  1.00	01/24/87	MBE - Initial version
-*	  1.01  01/26/87	MBE - Generate generic M68K pseudo-ops
-*	  1.02  08/06/89	MBE - 80386 version
-*	  1.03	04/17/90	MBE - Read channel 1, write channel 2
-*	  1.04  06/09/91	MBE - Added machine definition -u param
-*	  1.05  09/13/92	MBE - Test for inconsistent re-use of error
-*				      numbers.
-*         1.06  06/27/09        MBE - Modified for Linux 386 SPITBOL.
-*
 *	Note: Moving the lower case characters (64-95) from the normal
 *	      character set to the special set (thus providing for 191
 *	      phrases instead of 159), only saved 40 bytes in the output
@@ -122,8 +112,6 @@ nomachine
 * Tab character
 	tab	= char(9)
 
-* Definitions for 80386 assembler:
-*
 *
 *  Comma delimited string of decimal bytes:
         db      = 'db'

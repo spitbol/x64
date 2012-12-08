@@ -15,7 +15,8 @@ vpath %.c $(OSINT)
 
 
 
-CC=     tcc
+CC	=	tcc
+AS	=	nasm
 INCDIRS = -I../tcc/include -Imusl/include
 # next is for tcc
 ifeq	($(DEBUG),0)
@@ -32,15 +33,15 @@ endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASFLAGS = --32 -msyntax=intel -mmnemonic=intel -mnaked-reg
+ASFLAGS = 
 else
-ASFLAGS = --32 -g -gstabs+ -msyntax=intel -mmnemonic=intel -mnaked-reg
+ASFLAGS = -g
 endif
 
 # Tools for processing Minimal source file.
 TOK=	token.spt
 COD=    codlinux.spt
-ERR=    err386.spt
+ERR=    err.spt
 SPIT=   ../bootstrap/spitbol
 SBL=./sbl
 
@@ -83,7 +84,7 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 # Assembly langauge objects common to all versions:
 # CAOBJS is for gas, NAOBJS for nasm
 CAOBJS = 
-NAOBJS = arith.o serial.o sio.o inter.o errors.o
+NAOBJS = x32.o errors.o
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
@@ -120,9 +121,9 @@ arith.o: arith.s
 arith.o:
 	nasm -g -f elf -l arith.lst -oarith.o arith.s
 
-inter.o: inter.s
-inter.o:
-	nasm -g -f elf -l inter.lst -ointer.o inter.s
+x32.o: x32.s
+x32.o:
+	nasm -g -f elf -l x32.lst -ox32.o x32.s
 
 sio.o: sio.s
 sio.o:
