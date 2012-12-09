@@ -9,7 +9,7 @@ DEBUG=	1
 # Minimal source directory.
 MINPATH=./
 
-OSINT=/osint
+OSINT=./osint
 
 vpath %.c $(OSINT)
 
