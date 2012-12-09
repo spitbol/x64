@@ -47,13 +47,6 @@ This file is part of Macro SPITBOL.
 #include <signal.h>
 #endif                  /* UNIX */
 
-#if WINNT
-#include <process.h>
-#if _MSC_VER
-extern int wait(int *status);
-#endif
-#endif
-
 void oswait( pid )
 int	pid;
 {

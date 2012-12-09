@@ -90,10 +90,6 @@ int     type;
     time_t      tod;
 
     register struct tm *tm;
-#if !WINNT
-    time( &tod );
-#endif          /* !WINNT */
-
     tm = localtime( &tod );
 
     switch (type)

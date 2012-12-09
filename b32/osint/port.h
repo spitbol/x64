@@ -173,9 +173,6 @@ This file is part of Macro SPITBOL.
 #ifndef LINUX
 #define LINUX       0
 #endif
-#ifndef SOLARIS
-#define SOLARIS		0
-#endif
 #ifndef WINNT
 #define WINNT  		0
 #endif
@@ -226,7 +223,7 @@ This file is part of Macro SPITBOL.
 
 #define SUN SUN4
 
-#define UNIX (AIX | BSD43 | LINUX | SOLARIS)
+#define UNIX (AIX | BSD43 | LINUX)
 
 typedef int   word;
 typedef unsigned int uword;
@@ -303,21 +300,10 @@ typedef long long IATYPE;
 /	different DPMI platforms.
 */
 
-#if LINUX | WINNT | AIX | SOLARIS
 #define CHUNK_SIZE	32768
 #define CHUNK_B_SIZE	(CHUNK_SIZE * sizeof(word))
 #define HEAP_SIZE	16777216	/* 16Mwords = 64Mbytes */
-#if SUN4 | LINUX | WINNT | AIX
 #define OBJECT_SIZE	1048576		/* 1 Mword = 4 Mbytes */
-#else         /* SUN4 */
-#define OBJECT_SIZE	16384
-#endif
-#endif
-
-#if SUN
-#define TEXT_START      8192
-#endif
-
 /*
  *  Define the maximum nesting allowed of INCLUDE files
  */
@@ -373,9 +359,7 @@ typedef long long IATYPE;
 /                   to make the stack larger results in a stack overflow
 /                   error.  Defined in BYTES!
 */
-#if LINUX | WINNT | AIX | SOLARIS
 #define STACK_SIZE  (0x100000)      /* Set to 1MB 6/28/09 */
-#endif
 
 
 /*
@@ -395,11 +379,7 @@ typedef long long IATYPE;
 /   SAVE_FILE		pathname for save file created by sysxi
 */
 #define SAVE_FILE	"a.spx"
-#if WINNT
-#define AOUT_FILE	"a.exe"
-#else
 #define AOUT_FILE	"a.out"
-#endif
 
 /*
 / PSEP is the separator between multiple paths.
@@ -411,24 +391,12 @@ typedef long long IATYPE;
 / BINEXT is extension for load modules
 */
 
-#if UNIX
 #define PSEP  ':'
 #define PSEP2 ' '
 #define FSEP '/'
-#endif
-
-#if WINNT
-#define PSEP ';'
-#define FSEP '\\'
-#define FSEP2 '/'
-#endif          /* WINNT */
 
 #define EXT '.'
-#if WINNT
-#define	BINEXT ".exe"
-#else
 #define	BINEXT ".out"
-#endif
 #define COMPEXT ".spt"
 #define EFNEXT ".slf"
 #define LISTEXT ".lst"
@@ -478,15 +446,8 @@ typedef long long IATYPE;
 /                   located in the environment
 */
 
-#if WINNT             /* WINNT */
-extern char borland32rtm;             /* True if using DOS Extender */
-extern char isWin95;                  /* True if running under WinNT */
-#define SHELL_ENV_NAME  "COMSPEC"
-#define SHELL_PATH  ((borland32rtm || isWin95) ? "command.com" : "cmd.exe")
-#else                   /* WINNT */
 #define SHELL_ENV_NAME	"SHELL"
 #define SHELL_PATH      "/bin/sh"
-#endif          /* WINNT */
 
 /*
 /   Compiler flags (see compiler listing for more details):
@@ -537,9 +498,7 @@ extern char isWin95;                  /* True if running under WinNT */
 #include "osint.h"
 
 #ifdef PRIVATEBLOCKS
-#if WINNT | SUN4 | AIX | LINUX
 #include "extern32.h"
-#endif          /* WINNT | SUN4 */
 #else					/* PRIVATEBLOCKS */
 #include "spitblks.h"
 #include "spitio.h"

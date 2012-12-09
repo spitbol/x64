@@ -40,33 +40,10 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if WINNT
-char htype[] = "80386";
-char osver[] = ":Windows";
-#endif
-
-#if LINUX
 char htype[] = "80386";
 char osver[] = ":Linux ";
-#endif
 
-#if AIX3
-char htype[] = "RS/6000";
-char osver[] = ":AIX V3";
-#endif
-#if AIX4
-char htype[] = "RS/6000";
-char osver[] = ":AIX V4";
-#endif
-
-#if SUN4 & SOLARIS
-char htype[] = "SPARC";
-char osver[] = ":Solaris";
-#endif
-
-#if AIX | SOLARIS | LINUX
 #include <fcntl.h>
-#endif
 
 void gethost( scptr, maxlen )
 struct	scblk	*scptr;

@@ -44,21 +44,13 @@ void prompt()
 #endif					/* RUNTIME */
 
 #if RUNTIME
-#if WINNT
-    wrterr("options (use - or / to specify):   (# is a decimal number)");
-#else             /* WINNT */
     wrterr("options: (# is a decimal number)");
-#endif               /* WINNT */
     wrterr("-u \"string\" data string available to program");
     wrterr("-#=file   associate file with I/O channel #");
 #else					/* RUNTIME */
     wrterr("source files are concatenated, filename '-' is standard input/output");
     wrterr("# is a decimal number.  Append \"k\" for kilobytes, \"m\" for megabytes.");
-#if WINNT
-    wrterr("options (use - or /  to specify):");
-#else             /* WINNT */
     wrterr("options:");
-#endif               /* WINNT */
     wrterr("-d# #bytes max heap            -i# #bytes initial heap size & enlarge amount");
     wrterr("-m# #bytes max object size     -s# #bytes stack size");
     wrterr("-c compiler statistics         -x execution statistics");
@@ -71,11 +63,7 @@ void prompt()
     wrterr("-f no case-folding             -u \"string\" data passed to HOST(0)");
 
 #if EXECFILE & SAVEFILE
-#if WINNT
-    wrterr("-w write execution (.exe) file -y write save (.spx) file");
-#else             /* WINNT */
     wrterr("-w write load (.out) module    -y write save (.spx) file");
-#endif               /* WINNT */
 #endif					/* EXECFILE & SAVEFILE */
 
 #if SAVEFILE & !EXECFILE
@@ -85,11 +73,7 @@ void prompt()
     wrterr("-r INPUT from source file following END statement");
     wrterr("-T=file  write TERMINAL output to file");
     wrterr("-#=file[options]  associate file with I/O channel #");
-#if SOLARIS | LINUX | WINNT
     wrterr("option defaults: -d64m -i128k -m4m -s128k -g60 -t120");
-#else
-    wrterr("option defaults: -d64m -i128k -m64k -s128k -g60 -t120");
-#endif
 
 #endif					/* RUNTIME */
 

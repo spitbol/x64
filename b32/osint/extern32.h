@@ -80,15 +80,6 @@ typedef unsigned int muword;	/* MINIMAL unsigned word	*/
 #endif
 #endif
 
-#define _pascal           /* Available under Borland, but don't use it now. */
-#if WINNT && __BORLANDC__
-#define entry(x) mword _pascal __export x
-#elif WINNT && _MSC_VER
-#define entry(x) mword _pascal __declspec(dllexport) x
-#else
-#define entry(x) mword _pascal x
-#endif
-
 #include "blocks32.h"
 #include <string.h>
 
@@ -110,10 +101,6 @@ typedef struct misc {
     struct xnblk 	*pxnblk;	    /* ptr to xnblk describing function		*/
     struct efblk 	*pefblk;		/* ptr to efblk describing function		*/
     APDF            *pflttab;		/* ptr to array of floating point fncs	*/
-#if WINNT
-    short            spds;          /* SPITBOL's DS segment selector        */
-    short			 spcs;			/* SPITBOL's CS segment selector		*/
-#endif
 } misc;
 
 enum ext_type {						/* Executing under:						*/

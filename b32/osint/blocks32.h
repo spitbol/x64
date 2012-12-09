@@ -425,13 +425,6 @@ struct xnblk {
     union {							/* two uses for rest of block:			*/
         mword	xndta[1];			/* 1. user defined data starts here		*/
         struct ef {                 /* 2. external function info            */
-#if WINNT | sparc | aix
-            void   *xnhand;         /*    module handle                     */
-            mword  (*xnpfn) Params((void));  /*    pointer to function entry         */
-            mword	xn1st;			/*    non-zero = first-ever call		*/
-            mword	xnsave;			/*    non-zero = first call after reload*/
-            void   (*xncbp) Params((void));  /*    callback function prior to exiting*/
-#else
             mword   xnoff;          /*    base offset of function image     */
             mword   xnsiz;          /*    size of function in bytes         */
             mword   xneip;          /*    transfer EIP                      */
@@ -446,7 +439,6 @@ struct xnblk {
             short	xnsave;			/*    non-zero = first call after reload*/
             far void (*xncbp)(void);/*    callback function prior to exiting*/
             short	xnpad;			/*    pad to dword boundary				*/
-#endif
         } ef;
     } xnu;
 };

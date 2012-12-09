@@ -72,10 +72,6 @@ This file is part of Macro SPITBOL.
 
 #if SAVEFILE
 
-#if WINNT
-#include <string.h>
-#endif
-
 #define CODE_SIZE   (TABLE_SIZE*sizeof(short int))
 #define PREFIX_SIZE (TABLE_SIZE*sizeof(short unsigned int))
 #define APPEND_SIZE (TABLE_SIZE*sizeof(unsigned char))

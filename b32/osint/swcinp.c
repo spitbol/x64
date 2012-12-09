@@ -112,7 +112,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if AIX | SOLARIS | LINUX
+#if AIX | LINUX
 #include <fcntl.h>
 #endif
 
@@ -194,12 +194,6 @@ char	**fileptr;
             dup( originp );		/* returns 0 */
 #endif
             lastfd = 0;
-#if WINNT
-            if ( cindev( lastfd ) == 0 )		/* Test for character input */
-                getrdiob()->flg1 |= IO_CIN;
-            else
-                getrdiob()->flg1 &= ~IO_CIN;
-#endif               /* WINNT */
             goto swci_exit;
         }
 
@@ -265,12 +259,6 @@ char	**fileptr;
         clrbuf();
         dup( originp );			/* returns 0 */
         readshell0 = 0;			/* only do this once */
-#if WINNT
-        if ( cindev( 0 ) == 0 )		/* Test for character input */
-            getrdiob()->flg1 |= IO_CIN;
-        else
-            getrdiob()->flg1 &= ~IO_CIN;
-#endif               /* WINNT */
         lastfd = 0;
     }
 
@@ -343,12 +331,6 @@ char *cp;
     if ( (fd = spit_open( cp, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
                           IO_OPEN_IF_EXISTS )) >= 0 )
     {
-#if WINNT
-        if ( cindev( fd ) == 0 )		/* Test for character input */
-            getrdiob()->flg1 |= IO_CIN;
-        else
-            getrdiob()->flg1 &= ~IO_CIN;
-#endif               /* WINNT */
         return fd;
     }
     return -1;
@@ -395,9 +377,6 @@ char	*path;
     {
         c = *--cp;
         if (c == FSEP
-#if WINNT
-                || c == FSEP2 || c == ':'
-#endif               /* WINNT */
            )
         {
             ++cp;

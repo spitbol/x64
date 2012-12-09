@@ -55,9 +55,6 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if WINNT
-#define EOT 26      /* Windows End of Text character  */
-#endif               /* WINNT */
 
 #if SETREAL
 #include <math.h>       /* for floor() */
@@ -164,20 +161,6 @@ struct ioblk *ioptr;
         curpos = LSEEK(ioptr->fdn, (FILEPOS)0, 1);   /*  record current position */
 
     eofpos = LSEEK(ioptr->fdn, (FILEPOS)0, 2);      /* get eof position */
-
-#if WINNT
-    /* If end-of-file seek on text file, back up over any EOT characters */
-    if (!(ioptr->flg2 & IO_BIN) && !(ioptr->flg1 & IO_EOT) && eofpos > 0) {
-        char c;
-        do {
-            if (LSEEK(ioptr->fdn, --eofpos, 0) == -1)
-                break;
-            if (read(ioptr->fdn, &c, 1) != 1)
-                break;
-        } while (c == EOT && eofpos > 0);
-        eofpos++;
-    }
-#endif               /* WINNT */
 
     if (bfptr) {
         bfptr->curpos = eofpos;				/* buffered - record position */

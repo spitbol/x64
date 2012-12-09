@@ -265,11 +265,7 @@ extern	int 		brk Params(( void *addr ));
 extern	int 		close Params(( File_handle F ));
 extern	File_handle	dup Params(( File_handle F ));
 extern	char * _Optlink	getenv Params(( char *name ));
-#if WINNT && _MSC_VER
-#define LSEEK lseeki64
-#else
 #define LSEEK lseek
-#endif
 extern   FILEPOS  LSEEK Params(( File_handle F, FILEPOS Loc, int Method ));
 extern	word		read Params(( File_handle F, void *Buf, uword Cnt ));
 extern	void		*sbrk Params(( long incr ));

@@ -53,12 +53,7 @@ struct	ioblk	*ioptr;
             ioerrcnt += fsyncio(ioptr);     /* synchronize file and buffer */
             if ( bfptr->fill ) {
                 n = write(ioptr->fdn, bfptr->buf, bfptr->fill);
-#if WINNT
-                /* ignore short writes on character device */
-                if ( n != bfptr->fill && testty(ioptr->fdn) )
-#else
                 if ( n != bfptr->fill)
-#endif
                     ioerrcnt++;
 
                 if (n > 0)

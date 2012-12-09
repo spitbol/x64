@@ -43,7 +43,6 @@ This file is part of Macro SPITBOL.
 /  v1.02 23-Feb-96 - Check pipe syntax when bracketed options present.
 */
 
-#if !WINNT
 /*  The file argument can also contain options separated from the filename
 /	by a blank.
 /
@@ -51,7 +50,6 @@ This file is part of Macro SPITBOL.
 /	" options"
 /
 */
-#endif          /* !WINNT */
 
 #if PIPES
 /*
@@ -139,11 +137,6 @@ struct	scblk	*scptr;
     }
 #endif					/* PIPES */
 
-#if WINNT
-    /* WIN NT NTFS permit blanks within file names.
-     */
-    return len;
-#else           /* WINNT */
     /*
     /	Here for a normal filename.  Just count the number of characters
     /	up to the first blank or end of string, whichever occurs first.
@@ -151,5 +144,4 @@ struct	scblk	*scptr;
     for ( cnt = 0; cnt < len  &&  *cp++ != ' '; cnt++ )
         ;
     return cnt;
-#endif          /* WINNT */
 }

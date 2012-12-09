@@ -78,10 +78,6 @@ char	*argv[];
     gblargc = argc;
     gblargv = argv;
     lowsp = 0L;
-#if WINNT
-    init_custom();				/* Perform system specific initializations */
-#endif
-
     /*
     /	Initialize buffers
     */
@@ -206,7 +202,6 @@ char	*argv[];
         __exit( 1 );
     }
 
-#if WINNT | LINUX
     /*
     /   Allocate stack
     */
@@ -214,24 +209,11 @@ char	*argv[];
         wrterr( "Stack memory unavailable." );
         __exit( 1 );
     }
-#endif
 
     /*
     /   Allocate initial increment of dynamic memory.
     /
     */
-#if SUN4
-    /* Allocate a buffer for mallocs.  Use the space between the
-     * end of data and the start of Minimal's static and dynamic
-     * area.  Because of virtual memory, we can use almost 4 megabytes
-     * for this region, and it has the secondary benefit of letting
-     * us have object sizes greater than the previous 64K.
-     */
-    if (malloc_init( maxsize )) {
-        wrterr( "Malloc initialization failure, contact Catspaw." );
-        __exit( 1 );
-    }
-#endif          /* SUN4 */
 
     if ((basemem = (char *)sbrk((uword)memincb)) == (char *) -1) {
         wrterr( "Workspace memory unavailable." );
@@ -380,7 +362,7 @@ void prtnl() {
 	fprintf(stderr,"\n");
 }
 void prtval(int reg) {
-	if (reg < 100000 && reg >= 0) 
+	if (reg < 100000 && reg >= 0)
 		fprintf(stderr," %8d ", reg);
 	else
 		/*fprintf(stderr," %8xx", reg);*/
@@ -425,21 +407,21 @@ void zzz() {
 /* marked changed Minimal registers with "!" to make it easy to search
    backward for last statement that changed a register. */
 		prtnl();
-		if (at_xl != last_xl)	
+		if (at_xl != last_xl)
 			{ prtdif("xl.esi", last_xl, at_xl, listed); listed += 1; }
-		if (at_xr != last_xr)	
+		if (at_xr != last_xr)
 			{ prtdif("xr.edi", last_xr, at_xr, listed); listed += 1; }
-		if (at_xs != last_xs)	
+		if (at_xs != last_xs)
 			{ prtdif("xs.esp", last_xs, at_xs, listed); listed += 1; }
-		if (at_cp != last_cp)	
+		if (at_cp != last_cp)
 			{ prtdif("cp.ebp", last_cp, at_cp, listed); listed += 1; }
-		if (at_wa != last_wa)	
+		if (at_wa != last_wa)
 			{ prtdif("wa.ecx", last_wa, at_wa, listed); listed += 1; }
-		if (at_wb != last_wb)	
+		if (at_wb != last_wb)
 			{ prtdif("wb.ebx", last_wb, at_wb, listed); listed += 1; }
-		if (at_wc != last_wc)	
+		if (at_wc != last_wc)
 			{ prtdif("wc.edx", last_wc, at_wc, listed); listed += 1; }
-		if (at_w0 != last_w0)	
+		if (at_w0 != last_w0)
 			{ prtdif("w0.eax", last_w0, at_w0, listed); listed += 1; }
 		prtnl();
 	}

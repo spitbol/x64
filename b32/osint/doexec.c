@@ -48,15 +48,8 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if WINNT
-#undef sbrk
-#include <stdlib.h>
-#endif
-
-#if UNIX
 char	*getshell();
 char	*pathlast();
-#endif					/* UNIX */
 
 void doexec( scbptr )
 
@@ -80,26 +73,12 @@ struct	scblk	*scbptr;
     */
     savech	= make_c_str(&cp[length]);
 
-#if WINNT
-    /* system returns 0 if can run program */
-    mallocSys = 0;      /* Intel library bug */
-    if (dosys( cp, "" ) == 0)	/* Can't chain in DOS */
-    {   /* Have to run it, then exit */
-        SET_XL((struct chfcb *)0);
-        SET_WB(0);
-        SET_WA(0);
-        zysej();			/* Terminate SPITBOL */
-    }
-#endif
-
-#if UNIX
     /*
     /	Use function getshell to get shell's path and function lastpath
     /	to get the last component of the shell's path.
     */
     shellpath = getshell();
     execle( shellpath, pathlast( shellpath ), "-c", cp, (char *)NULL, environ );	/* no return */
-#endif					/* UNIX */
 
     unmake_c_str(&cp[length], savech);
 }

@@ -35,13 +35,7 @@ This file is part of Macro SPITBOL.
 */
 #include "port.h"
 
-#if WINNT
-#include <string.h>
-#endif
-
-#if AIX | SOLARIS | LINUX
 #include <fcntl.h>
-#endif
 
 
 /*
@@ -90,7 +84,7 @@ char	*argv[];
     /
     /	spitbol [options] [input-files]
     /
-    /   where each option string begins with a '-' (or '/' for WINNT)
+    /   where each option string begins with a '-'
     /
     /   A single '-' represents the standard file provided by the shell
     /   and is treated as an input-file or output file as appropriate.
@@ -104,11 +98,7 @@ char	*argv[];
          *   If this command line argument does not start with a '-
          *   OR is a single '-', treat is as the first filename.
          */
-#if WINNT
-        if ( (*cp != '-' && *cp != '/')  ||  (*cp == '-' && !cp[1]) ) {
-#else         /* WINNT */
         if ( *cp != '-'  ||  !cp[1] ) {
-#endif          /* WINNT */
             if ( !result )
                 result = argv + i;	/* result -> first filename pointer	*/
             break;		/* break out of for loop		*/
@@ -398,9 +388,6 @@ char    *argv[];
     {
         result = argv[++i];
         if ( i == argc || (result[0] == '-' && result[1] != '\0')
-#if WINNT
-                || (result[0] == '/')
-#endif          /* WINNT */
            )
             return (char *)0;    /* V1.08 */
     }

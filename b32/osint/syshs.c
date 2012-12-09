@@ -116,10 +116,6 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if !WINNT
-extern uword lowxs;
-#endif
-
 /*
  *  checkstr - check if scblk is a valid string.  Returns 1 if so, else 0.
  */
@@ -322,11 +318,7 @@ zyshs()
                     pTICBLK->val = stacksiz - 400;	/* safety margin */
                     return EXIT_8;
                 case 5:							/* stack in use */
-#if WINNT | LINUX
                     pTICBLK->val = stacksiz - (XS(IATYPE) - (IATYPE)lowsp);
-#else
-                    pTICBLK->val = stacksiz - (XS(IATYPE) - ((IATYPE)lowxs-400));
-#endif
                     return EXIT_8;
                 case 6:
                     pTICBLK->val = sizeof(IATYPE);
