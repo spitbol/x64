@@ -57,9 +57,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if AIX | LINUX
 #include <fcntl.h>
-#endif
 
 int	osopen( ioptr )
 struct	ioblk	*ioptr;

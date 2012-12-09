@@ -25,7 +25,7 @@ This file is part of Macro SPITBOL.
  */
 
 #include "port.h"
-#if (FLOAT & !FLTHDWR) | (EXTFUN & (AIX))
+#if (FLOAT & !FLTHDWR) | EXTFUN)
 
 /*
  * f_2_i - float to integer
@@ -92,4 +92,4 @@ double ra;
     return -ra;
 }
 
-#endif					/* (FLOAT & !FLTHDWR) | (EXTFUN & (AIX)) */
+#endif					/* (FLOAT & !FLTHDWR) | EXTFUN */

@@ -17,34 +17,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-/   File:  OSPIPE.C     Version:  01.06
-/	---------------------------------------
-/
-/	Contents:	Function ospipe
-/
-/ 1.02	Use vfork() on BSD systems to avoid copying pages.  Parent is suspended
-/	by system until child execl's.
-/
-/ 1.03	Look at flag IO_ENV, and if set, fnm string is the name
-/ 	of an environment variable pointing to the filename.
-/
-/ 1.04	Check for update mode on file.
-/
-/ 1.05  <withdrawn>
-/
-/ 1.06  30-Dec-96 Create version of WinNT.  Save and restore characters
-/       at end of string in doshell().  Fix bug in Unix version:
-/       If child fork does not run to the point where it does the execcl call
-/       before the parent resumes, the parent could do a garbage collect and
-/       invalidate the string pointer that the child will use.  Use a poor
-/       man's interlock to keep the parent within ospipe until the child
-/       has captured what is needed.
-/
-/ 1.07  19-Feb-98 Interlock is not necessary under AIX because we use fork,
-/       not vfork.  vfork shares the parent's address space, whereas fork
-/       gives the child a complete new copy of the address space.
-*/
 
 #include "port.h"
 #if PIPES
