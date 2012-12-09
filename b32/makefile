@@ -9,7 +9,7 @@ DEBUG=	1
 # Minimal source directory.
 MINPATH=./
 
-OSINT=../osint
+OSINT=/osint
 
 vpath %.c $(OSINT)
 
@@ -42,7 +42,7 @@ endif
 LEX=	lex.spt
 COD=    asm.spt
 ERR=    err.spt
-SPIT=   ../bootstrap/spitbol
+SPIT=   bootstrap/spitbol
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
