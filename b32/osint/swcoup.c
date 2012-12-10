@@ -37,9 +37,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if AIX | LINUX
 #include <fcntl.h>
-#endif
 
 /*
 /   swcoup( oupptr )

@@ -91,9 +91,9 @@ reGdump()
 	unsigned int	reg_pp,
 	unsigned int	reg_xs
 	};
-	
+
     fprintf(stderr, "mininal registers line %d\n",nlines);
-  	struct regs *rp;  
+  	struct regs *rp;
 
 	rp = &reg_block
 	fprintf(stderr,"wa \ud\n",	rp->reg_wa);

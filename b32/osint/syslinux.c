@@ -39,9 +39,6 @@ This file is part of Macro SPITBOL.
 
 #if EXTFUN
 #include <dlfcn.h>
-#if SOLARIS
-#include <sys/asm_linkage.h>
-#endif
 
 typedef struct xnblk XFNode, *pXFNode;
 typedef mword (*PFN)();				/* pointer to function */

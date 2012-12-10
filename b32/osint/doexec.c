@@ -59,10 +59,8 @@ struct	scblk	*scbptr;
     word	length;
     char	savech;
     char	*cp;
-#if UNIX
     extern char **environ;
     char	*shellpath;
-#endif					/* UNIX */
     length	= scbptr->len;
     cp	= scbptr->str;
 

@@ -94,9 +94,9 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if UNIX & EXECFILE & !EXECSAVE
+#if EXECFILE & !EXECSAVE
 #include <a.out.h>
-#endif					/* UNIX */
+#endif
 
 #include "save.h"
 
@@ -247,11 +247,9 @@ zysxi()
 
         fromfd = openexe( gblargv[0] );
         if (fromfd == -1) {
-#if UNIX
             write( STDERRFD, "To create an executable, the file ", 34);
             write( STDERRFD, gblargv[0], length(gblargv[0]));
             wrterr( " must have read (-r) privilege." );
-#endif
             retval = -1;
             goto fail;
         }
@@ -323,53 +321,6 @@ zysxi()
         lmodstk = dstptr;		/* (also non-zero flag for restart) */
 #endif					/* EXECSAVE */
 
-#if SOLARIS & !EXECSAVE
-        /*
-        /	Create a.out header.
-        /	First address of text section 0x2000 (SEGSIZ)
-        /	Data section starts at next segment.
-        /	Note that there is a gap between the end of C data and the
-        /	start of the heap.  The data section is written out followed
-        /	by the heap.  Whoever reloads it will have to physically move
-        /	the heap up in memory.
-        /
-        /	Note that NO part of the malloc region is saved.
-        /
-        */
-        starttext	= (char *)T_START;  /*LAH*/
-        startdata	= (char *)roundup((word)&etext);
-        endofmem	= GET_MIN_VALUE(DNAMP,char *);
-
-        header.a_magic	= NMAGIC;	/* Don't want demand loading of library */
-        header.a_dynamic = 0;		/* No dynamic links */
-        header.a_toolversion = 1;	/* Unsure of meaning of this guy */
-        header.a_machtype = M_SPARC;
-
-        header.a_text	= (int)((char *)&etext - starttext);
-        header.a_data = (int)(endofmem - basemem) +
-                        (int)((char *)&edata - startdata);
-        header.a_bss  = 0;
-        header.a_syms	= 0;
-        header.a_entry	= T_START; /*LAH*/
-        header.a_trsize	= 0;
-        header.a_drsize	= 0;
-
-        /*
-        /	Let function wrtaout write the a.out file.  Hold off checking for
-        /	errors until stack position sensitive pointers have been readjusted.
-        */
-        unreloc();
-
-        if ( retval == 0 )
-            retval = wrtaout( (unsigned char FAR *)&header, sizeof( struct exec ) );
-        if ( retval == 0 )
-            retval = wrtaout( (unsigned char FAR *)starttext, header.a_text );
-        /* new system with gap between heap and  C data */
-        if ( retval == 0 )
-            retval = wrtaout( (unsigned char FAR *)startdata, (int)((char *)&edata - startdata) );
-        if ( retval == 0 )
-            retval = wrtaout( (unsigned char FAR *)basemem, (int)(endofmem - basemem) );
-#endif          /* SOLARIS */
 
     }
 #endif					/* EXECFILE */
@@ -397,7 +348,7 @@ fail:
 #endif
 }
 
-#if (SOLARIS | LINUX) & EXECFILE & !EXECSAVE
+#if EXECFILE & !EXECSAVE
 /* heapmove
  *
  * perform upward copy of heap from where it was stored in the execfile
@@ -453,9 +404,6 @@ void unreloc()
     SET_MIN_VALUE(GTCEF,GET_MIN_VALUE(GTCEF,char *) - stbas,word);
     SET_MIN_VALUE(PMHBS,GET_MIN_VALUE(PMHBS,char *) - stbas,word);
     SET_CP(CP(char *) - GET_MIN_VALUE(DNAMB,char *));
-#if SPARC | WINNT
-    SET_PC(PC(char *) - GET_CODE_OFFSET(S_AAA,char *));
-#endif
 }
 
 /*
@@ -474,9 +422,6 @@ void rereloc()
     SET_MIN_VALUE(GTCEF,GET_MIN_VALUE(GTCEF,word) + stbas,word);
     SET_MIN_VALUE(PMHBS,GET_MIN_VALUE(PMHBS,word) + stbas,word);
     SET_CP(CP(word) + GET_MIN_VALUE(DNAMB,char *));
-#if SPARC | WINNT
-    SET_PC(PC(word) + GET_CODE_OFFSET(S_AAA,char *));
-#endif          /* SPARC | WINNT */
 }
 #endif					/* EXECFILE | SAVEFILE */
 
@@ -594,11 +539,7 @@ word *stkbase, stklen;
 #if EXTFUN
     scanef();			/* prepare to scan for external functions */
     while ((textlen = (word)nextef(&bufp, 1)) != 0)
-#if SOLARIS | AIX | WINNT
-        ;										/* can't save DLLs! */
-#else         /* SOLARIS */
         result |= compress( bufp, textlen );	/* write each function */
-#endif          /* SOLARIS */
 #endif					/* EXTFUN */
     docompress(0, (char *)0, 0);	/* turn off compression */
     return result;
@@ -711,37 +652,10 @@ int fd;
 #endif					/* USEQUIT */
             }
 
-#if WINNT
-            /*
-             * Allocate stack on DOS systems
-             */
-            lowsp = (char *)sbrk((uword)svfheader.stacksiz);
-            if (lowsp == (char *) -1 ||
-                    svfheader.stacksiz < svfheader.stacklength + 400)
-            {
-                cp = "Stack memory unavailable, file ";
-                goto reload_err;
-            }
-#else
             /* build onto existing stack */
             lowsp = (char *)&fd - svfheader.stacksiz - 100;
-#endif
 
             s = svfheader.maxsize - svfheader.dynoff; /* Minimum load address */
-#if SUN4
-            /* Allocate a buffer for mallocs.  Use the space between the
-             * end of data and the start of Minimal's static and dynamic
-             * area.  Because of virtual memory, we can use almost 32 megabytes
-             * for this region, and it has the secondary benefit of letting
-             * us have object sizes greater than the previous 64K.
-             */
-            if (malloc_init( svfheader.maxsize ))
-            {
-                cp = "Malloc initialization failure reloading ";
-                goto reload_err;
-            }
-#endif					/* SUN4 */
-
             cp = "Insufficient memory to load ";
             if ((unsigned long)sbrk(0) < s )    /* If DNAMB will be below old MXLEN, */
                 if (brk((char *)s))             /*  try to move basemem up. */
@@ -832,10 +746,6 @@ int fd;
 
 #if EXTFUN
             scanef();           /* prepare to scan for external functions */
-#if SOLARIS | AIX | WINNT
-            while (nextef(&bufp, -1) != (void *)0)
-                ((struct efblk *)bufp)->efcod = 0;      /* wipe out each function */
-#else         /* SOLARIS */
             while ((textlen = (word)nextef(&bufp, 0)) > 0)  /* read each function */
                 if ( expand( fd, bufp, textlen ) )
                     goto reload_ioerr;
@@ -848,7 +758,6 @@ int fd;
                 goto reload_err;
 #endif					/* USEQUIT */
             }
-#endif          /* SOLARIS */
 #endif					/* EXTFUN */
 
             doexpand(0, (char *)0, 0);	/* turn off compression */

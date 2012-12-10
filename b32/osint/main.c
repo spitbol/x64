@@ -133,10 +133,10 @@ char	*argv[];
 #if FLOAT
         hasfpu = checkfpu();	/* check for floating point hardware */
 #endif					/* FLOAT */
-#if (SUN4 | LINUX) & !EXECSAVE
+#if !EXECSAVE
         heapmove();				/* move the heap up					*/
         malloc_empty();			/* mark the malloc region as empty	*/
-#endif					/* SUN4 | LINUX */
+#endif
         zysdc();							/* Brag if necessary */
         restart( (char *)0L, lowsp );       /* call restart to continue execution */
     }

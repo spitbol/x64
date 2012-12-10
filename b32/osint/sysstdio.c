@@ -170,8 +170,6 @@ zysrd()
 
     }
     scb->len = length;	/* line read, so set line length	*/
-
-#if UNIX
     /*
     /	Special check for '#!' invocation.
     */
@@ -200,7 +198,6 @@ zysrd()
             scb->len = length;
         }
     }
-#endif					/* UNIX */
 
     return NORMAL_RETURN;
 }
@@ -233,19 +230,6 @@ getrdiob()
 {
     return &inpiob;
 }
-
-
-#if WINNT
-/*
- /    Return iob for standard output channel.
-*/
-
-struct ioblk *
-getpriob()
-{
-    return &oupiob;
-}
-#endif               /* WINNT */
 
 
 /*

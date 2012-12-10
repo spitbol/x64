@@ -197,10 +197,6 @@ struct	scblk	*scptr;
                 ioptr->flg1 |= IO_COT;
 #endif					/* HOST386 */
 
-#if WINNT
-            if ( !ioflg && !cindev( v ) )		/* Test for character input */
-                ioptr->flg1 |= IO_CIN;
-#endif               /* WINNT */
 
             break;
 

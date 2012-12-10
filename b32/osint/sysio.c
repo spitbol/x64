@@ -174,10 +174,6 @@ zysio()
     if ( !(iob->flg1 & IO_OPN) ) {
         if ( osopen(iob) != 0 )
             return EXIT_1;
-#if WINNT
-        if ( fcb->mode == 0 )				/* set binary bit for doset */
-            iob->flg2 |= IO_BIN;		/*  only on initial open */
-#endif               /* WINNT */
     }
 
     /*
@@ -189,10 +185,6 @@ zysio()
             ( fcb->mode == 0 ) )			/* and raw mode file	*/
         iob->flg2 |= IO_RAW;		/* then set IO_RAW bit	*/
 
-#if WINNT
-    if ( iob->flg1 & IO_INP && cindev( iob->fdn ) == 0 )	/* Test for character input */
-        iob->flg1 |= IO_CIN;
-#endif               /* WINNT */
 
     /*
     /	Normal return.

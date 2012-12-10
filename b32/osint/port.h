@@ -141,53 +141,9 @@ This file is part of Macro SPITBOL.
  *  If not defined in systype.h, disable it here.
  */
 /* compiler defs */
-#ifndef BCC32
-#define BCC32		0			/* 32-bit Borland C++ 4.x */
-#endif
-#ifndef VCC
-#define VCC         0           /* 32-bit Microsoft Visual C++ */
-#endif
-#ifndef GCCi32
-#define GCCi32      0
-#endif
-#ifndef GCCi64
-#define GCCi64      0
-#endif
-#ifndef RS6
-#define RS6			0
-#endif
-#ifndef SUN4
-#define SUN4		0
-#endif
-
 /* operating system defs */
-#ifndef AIX3
-#define AIX3		0
-#endif
-#ifndef AIX4
-#define AIX4		0
-#endif
-#ifndef BSD43
-#define BSD43		0
-#endif
 #ifndef LINUX
 #define LINUX       0
-#endif
-#ifndef WINNT
-#define WINNT  		0
-#endif
-
-#if WINNT | GCCi32
-#define SYSVERSION 0
-#endif
-#if SUN4
-#define SYSVERSION 3
-#endif
-#if AIX3 | AIX4
-#define SYSVERSION 6
-#endif
-#if GCCi64
-#define SYSVERSION 7
 #endif
 #ifndef SYSVERSION
 #define SYSVERSION 255
@@ -219,11 +175,8 @@ This file is part of Macro SPITBOL.
 #endif
 
 #define GCCx86 (GCCi32 | GCCi64)
-#define AIX (AIX3 | AIX4)
 
-#define SUN SUN4
-
-#define UNIX (AIX | BSD43 | LINUX)
+#define UNIX  LINUX
 
 typedef int   word;
 typedef unsigned int uword;
@@ -250,11 +203,7 @@ typedef long long IATYPE;
 /*
  * Define the data type returned by a call to signal()
  */
-#if UNIX
 #define SigType void
-#else
-#define	SigType int
-#endif
 
 /*
 /   The following manifest constants define the page size used when the
@@ -331,11 +280,7 @@ typedef long long IATYPE;
  *   true polling.
  */
 #ifndef PollCount
-#if UNIX
 #define PollCount MAXPOSWORD
-#else         /* UNIX */
-#define PollCount 2500
-#endif          /* UNIX */
 #endif					/* PollCount */
 
 

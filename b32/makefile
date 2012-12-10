@@ -126,13 +126,13 @@ errors.o:
 
 
 # SPITBOL Minimal source
-s.s:	s.tok $(VHDRS) $(COD) 
+s.s:	s.lex $(VHDRS) $(COD) 
 	$(SPIT) -u "s:$(MIN):comments" $(COD)
 #	cp	s.s	s.S
 #	$(SPIT) san.spt <s.s >s.t
 #	cp	s.t s.s
 
-s.tok: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
+s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
 	 $(SPIT) -u "$(MINPATH)s:$(MIN):s" $(LEX)
 
 s.err: s.s
@@ -154,9 +154,9 @@ sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
 
 boot:
-	cp -p bootstrap/s.s bootstrap/s.tok bootstrap/errors.s .
+	cp -p bootstrap/s.s bootstrap/s.lex bootstrap/errors.s .
 
 install:
 	sudo cp spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o *.lst *.map *.err s.tok s.tmp s.s errors.s
+	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s errors.s

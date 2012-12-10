@@ -67,7 +67,6 @@ struct	ioblk	*ioptr;
         stdfd = 0;
     }
 
-#if UNIX
     /*
     /	Execute the proper code based on whose process is the parent and
     /	whose is the child.
@@ -119,7 +118,6 @@ struct	ioblk	*ioptr;
         close( childfd );
         break;
     }
-#endif					/* UNIX */
     /*
     /	Control comes here ONLY in parent process. Return the file descriptor
     /	to be used for communication with child process or -1 if error.
@@ -157,11 +155,9 @@ struct	ioblk	*ioptr;
     if ( cmdbuf[len-1] == scptr->str[1] )   /* if necessary         */
         len--;                              /*   zap 2nd delimiter  */
     cmdbuf[len] = '\0';                     /* Nul terminate cmd    */
-#if UNIX
     shellpath = getshell();         /* get shell's path     */
     execl( shellpath, pathlast( shellpath ), "-c", cmdbuf, (char *)NULL );
     return -1;					/* should not get here */
-#endif					/* UNIX */
 }
 
 #endif					/* PIPES */

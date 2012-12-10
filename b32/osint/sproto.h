@@ -237,19 +237,10 @@ extern	int			zysxi Params(( void ));
 #define sbrk sbrkx
 #endif          /* _MSC_VER */
 
-#if AIX
-/* Redefine sbrk and brk to use custom routines in sysrs6.c */
-#undef sbrk
-#undef brk
-#define sbrk sbrkx
-#define brk  brkx
-#endif
-
 #if UNIX
 #include <unistd.h>
 #define LSEEK lseek
 
-#if LINUX
 /* Redefine sbrk and brk to use custom routines in syslinux.c */
 #undef sbrk
 #undef brk
@@ -257,7 +248,6 @@ extern	int			zysxi Params(( void ));
 #define brk  brkx
 extern	int 		brkx Params(( void *addr ));
 extern	void		*sbrkx Params(( long incr ));
-#endif
 
 #else
 extern  int         access Params((char *Name, int mode));

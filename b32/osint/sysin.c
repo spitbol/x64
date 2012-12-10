@@ -79,14 +79,6 @@ zysin()
             if ( (testty( ioptr->fdn ) == 0 ) && /* If TTY */
                     ( fcb->mode == 0 ) )	/* and raw mode,   */
                 ioptr->flg2 |= IO_RAW;   /* then set IO_RAW */
-#if WINNT
-            if ( cindev( ioptr->fdn ) == 0 )	/* Test for character input */
-                ioptr->flg1 |= IO_CIN;
-            if ( fcb->mode == 0 )					/* set/clear binary bit for doset */
-                ioptr->flg2 |= IO_BIN;
-            else
-                ioptr->flg2 &= ~IO_BIN;
-#endif               /* WINNT */
 
         }
         else				/* I/O Error		*/

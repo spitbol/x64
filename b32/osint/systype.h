@@ -27,16 +27,10 @@ This file is part of Macro SPITBOL.
 /   GCCi32      Intel 32-bit x86, GNU GCC
 /   GCCi64      Intel 64-bit x86, GNU GCC
 /   RS6         IBM RS6000 (Power)
-/   SUN4        SPARC, SUN4
 /
 /   The following manifest constants define the target operating system.
 /
-/   AIX3        AIX version 3
-/   AIX4        AIX version 4
-/   BSD43       Berkeley release: BSD 4.3
 /   LINUX       Linux
-/   SOLARIS     Sun Solaris
-/   WINNT       Windows NT/XP/Vista
 /
 */
 

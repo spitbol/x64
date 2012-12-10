@@ -32,16 +32,10 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if WINNT
-#include <time.h>
-#else
 #include <sys/types.h>
 #include <sys/times.h>
-#endif
 
-#if AIX | SOLARIS  | LINUX
 #include <fcntl.h>
-#endif
 
 #if SAVEFILE | EXECFILE
 

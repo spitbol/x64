@@ -40,7 +40,6 @@ This file is part of Macro SPITBOL.
 #if POLLING
 int	brkpnd;
 
-#if UNIX
 #include <signal.h>
 #undef SigType
 #define SigType void
@@ -83,6 +82,5 @@ void rearmbrk()							/* rearm after a trap occurs */
 {
     signal(SIGINT,catchbrk);			/* set to catch traps */
 }
-#endif
 #endif					/* POLLING */
 
