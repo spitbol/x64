@@ -7,7 +7,7 @@ specifying the -w command line option.
 Load modules may also be written during program execution by calling EXIT(3,filename).
 
 Since load modules contain a copy of the entire SPITBOL system, they
-are subject to the terms of the GPLv3 license. You must meet the terms
+are subject to the terms of the GPLv2 (or later) license. You must meet the terms
 of the GPLv3 license if you distribute a load module.
 
 If a load module is created after you have used SPITBOL's LOAD
