@@ -5,7 +5,7 @@ This file is part of Macro SPITBOL.
 
     Macro SPITBOL is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free Software Foundation, either version 2 of the License, or
     (at your option) any later version.
 
     Macro SPITBOL is distributed in the hope that it will be useful,
@@ -197,10 +197,6 @@ struct	scblk	*scptr;
                 ioptr->flg1 |= IO_COT;
 #endif					/* HOST386 */
 
-#if WINNT
-            if ( !ioflg && !cindev( v ) )		/* Test for character input */
-                ioptr->flg1 |= IO_CIN;
-#endif               /* WINNT */
 
             break;
 

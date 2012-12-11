@@ -336,16 +336,16 @@
 *
        G.EQU.DEFS = TBLINI(
 . 'CFP_A[256]'
-. 'CFP_B[4]'
-. 'CFP_C[4]'
+. 'CFP_B[8]'
+. 'CFP_C[8]'
 . 'CFP_F[8]'
 . 'CFP_I[1]'
-. 'CFP_L[4294967295]'
-. 'CFP_M[2147483647]'
-. 'CFP_N[32]'
+. 'CFP_L[18446744073709551616]'
+. 'CFP_M[18446744073709551615]'
+. 'CFP_N[64]'
 . 'CFP_U[128]'
 . 'NSTMX[10]'
-. 'CFP_R[2]'
+. 'CFP_R[1]'
 . 'CFP_S[9]'
 . 'CFP_X[3]'
 . 'E_SRS[100]'
@@ -824,7 +824,8 @@ G.EQU
 	OP1 P.EQU.RIP				:F(G.EQU2)
 	NUM1    = DIFFER(SYM1) EQUATES[SYM1]
 	NUM2    = DIFFER(SYM2) EQUATES[SYM2]
-	VAL     = EVAL( NUM1 ' ' OPRTR ' ' NUM2 )	:F(G.EQU3)
+*  Only evaluate if there is operator. Otherwise value is just first (and only) operand
+	VAL     = (DIFFER(OPPTR),EVAL( NUM1 ' ' OPRTR ' ' NUM2 ),NUM1)	:F(G.EQU3)
 G.EQU1	EQUATES[LABEL] = VAL				:(DSGEN)
 G.EQU2	ERROR("EQU OPERAND SYNTAX ERROR")
 G.EQU3	ERROR("EQU EVALUATION FAILED: " NUM1 ' ' OPRTR ' ' NUM2 ' "' OP1 '"' )

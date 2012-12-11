@@ -5,7 +5,7 @@ This file is part of Macro SPITBOL.
 
     Macro SPITBOL is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free Software Foundation, either version 2 of the License, or
     (at your option) any later version.
 
     Macro SPITBOL is distributed in the hope that it will be useful,
@@ -79,14 +79,6 @@ zysin()
             if ( (testty( ioptr->fdn ) == 0 ) && /* If TTY */
                     ( fcb->mode == 0 ) )	/* and raw mode,   */
                 ioptr->flg2 |= IO_RAW;   /* then set IO_RAW */
-#if WINNT
-            if ( cindev( ioptr->fdn ) == 0 )	/* Test for character input */
-                ioptr->flg1 |= IO_CIN;
-            if ( fcb->mode == 0 )					/* set/clear binary bit for doset */
-                ioptr->flg2 |= IO_BIN;
-            else
-                ioptr->flg2 &= ~IO_BIN;
-#endif               /* WINNT */
 
         }
         else				/* I/O Error		*/

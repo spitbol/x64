@@ -5,7 +5,7 @@ This file is part of Macro SPITBOL.
 
     Macro SPITBOL is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free Software Foundation, either version 2 of the License, or
     (at your option) any later version.
 
     Macro SPITBOL is distributed in the hope that it will be useful,
@@ -27,16 +27,10 @@ This file is part of Macro SPITBOL.
 /   GCCi32      Intel 32-bit x86, GNU GCC
 /   GCCi64      Intel 64-bit x86, GNU GCC
 /   RS6         IBM RS6000 (Power)
-/   SUN4        SPARC, SUN4
 /
 /   The following manifest constants define the target operating system.
 /
-/   AIX3        AIX version 3
-/   AIX4        AIX version 4
-/   BSD43       Berkeley release: BSD 4.3
 /   LINUX       Linux
-/   SOLARIS     Sun Solaris
-/   WINNT       Windows NT/XP/Vista
 /
 */
 

@@ -5,7 +5,7 @@ This file is part of Macro SPITBOL.
 
     Macro SPITBOL is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free Software Foundation, either version 2 of the License, or
     (at your option) any later version.
 
     Macro SPITBOL is distributed in the hope that it will be useful,
@@ -174,10 +174,6 @@ zysio()
     if ( !(iob->flg1 & IO_OPN) ) {
         if ( osopen(iob) != 0 )
             return EXIT_1;
-#if WINNT
-        if ( fcb->mode == 0 )				/* set binary bit for doset */
-            iob->flg2 |= IO_BIN;		/*  only on initial open */
-#endif               /* WINNT */
     }
 
     /*
@@ -189,10 +185,6 @@ zysio()
             ( fcb->mode == 0 ) )			/* and raw mode file	*/
         iob->flg2 |= IO_RAW;		/* then set IO_RAW bit	*/
 
-#if WINNT
-    if ( iob->flg1 & IO_INP && cindev( iob->fdn ) == 0 )	/* Test for character input */
-        iob->flg1 |= IO_CIN;
-#endif               /* WINNT */
 
     /*
     /	Normal return.

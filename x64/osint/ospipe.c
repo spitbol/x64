@@ -5,7 +5,7 @@ This file is part of Macro SPITBOL.
 
     Macro SPITBOL is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free Software Foundation, either version 2 of the License, or
     (at your option) any later version.
 
     Macro SPITBOL is distributed in the hope that it will be useful,
@@ -67,7 +67,6 @@ struct	ioblk	*ioptr;
         stdfd = 0;
     }
 
-#if UNIX
     /*
     /	Execute the proper code based on whose process is the parent and
     /	whose is the child.
@@ -119,7 +118,6 @@ struct	ioblk	*ioptr;
         close( childfd );
         break;
     }
-#endif					/* UNIX */
     /*
     /	Control comes here ONLY in parent process. Return the file descriptor
     /	to be used for communication with child process or -1 if error.
@@ -157,11 +155,9 @@ struct	ioblk	*ioptr;
     if ( cmdbuf[len-1] == scptr->str[1] )   /* if necessary         */
         len--;                              /*   zap 2nd delimiter  */
     cmdbuf[len] = '\0';                     /* Nul terminate cmd    */
-#if UNIX
     shellpath = getshell();         /* get shell's path     */
     execl( shellpath, pathlast( shellpath ), "-c", cmdbuf, (char *)NULL );
     return -1;					/* should not get here */
-#endif					/* UNIX */
 }
 
 #endif					/* PIPES */

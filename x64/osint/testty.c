@@ -5,7 +5,7 @@ This file is part of Macro SPITBOL.
 
     Macro SPITBOL is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free Software Foundation, either version 2 of the License, or
     (at your option) any later version.
 
     Macro SPITBOL is distributed in the hope that it will be useful,
@@ -38,20 +38,13 @@ This file is part of Macro SPITBOL.
 */
 #include "port.h"
 
-#if AIX | SOLARIS | LINUX
 #define RAW_BIT RAW
-#endif
 
 #if UNIX
 #include <sys/stat.h>
 struct  stat	statbuf;
-#if LINUX
 #include <termios.h>
 struct termios termiosbuf;
-#else
-#include <sgtty.h>
-struct  sgttyb  sgtbuf;
-#endif
 #endif
 
 int testty( fd )
@@ -59,13 +52,9 @@ int testty( fd )
 int	fd;
 
 {
-#if WINNT
-    return  chrdev( fd ) ? 0 : -1;
-#else
     if (fstat(fd, &statbuf))
         return -1;
     return	S_ISCHR(statbuf.st_mode) ? 0 : -1;
-#endif
 }
 
 
@@ -89,9 +78,6 @@ int	flag;
 
 {
     /* read current params	*/
-#if WINNT
-    rawmode( fd, flag ? -1 : 0 );		/* Set or clear raw mode*/
-#elif LINUX
     if ( testty( fd ) ) return;     /* exit if not tty  */
     tcgetattr( fd, &termiosbuf );
     if ( flag )
@@ -100,14 +86,4 @@ int	flag;
         termiosbuf.c_lflag |= (ICANON|ECHO);    /* Clearing     */
 
     tcsetattr( fd, TCSANOW, &termiosbuf );     /* store device flags   */
-#else
-    if ( testty( fd ) ) return;		/* exit if not tty	*/
-    ioctl( fd, TIOCGETP, &sgtbuf );
-    if ( flag )
-        sgtbuf.sg_flags |= RAW_BIT;	/* Setting		*/
-    else
-        sgtbuf.sg_flags &= ~RAW_BIT;	/* Clearing		*/
-
-    ioctl( fd, TIOCSETP, &sgtbuf );		/* store device flags	*/
-#endif
 }

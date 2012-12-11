@@ -5,7 +5,7 @@ This file is part of Macro SPITBOL.
 
     Macro SPITBOL is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free Software Foundation, either version 2 of the License, or
     (at your option) any later version.
 
     Macro SPITBOL is distributed in the hope that it will be useful,
@@ -32,16 +32,10 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if WINNT
-#include <time.h>
-#else
 #include <sys/types.h>
 #include <sys/times.h>
-#endif
 
-#if AIX | SOLARIS  | LINUX
 #include <fcntl.h>
-#endif
 
 #if SAVEFILE | EXECFILE
 

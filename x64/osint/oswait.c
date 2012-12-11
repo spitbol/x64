@@ -5,7 +5,7 @@ This file is part of Macro SPITBOL.
 
     Macro SPITBOL is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free Software Foundation, either version 2 of the License, or
     (at your option) any later version.
 
     Macro SPITBOL is distributed in the hope that it will be useful,
@@ -43,16 +43,13 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #if PIPES
 
-#if UNIX
 #include <signal.h>
-#endif                  /* UNIX */
 
 void oswait( pid )
 int	pid;
 {
     int	deadpid, status;
     struct  chfcb   *chptr;
-#if UNIX
     SigType (*hstat)Params((int)),
             (*istat)Params((int)),
             (*qstat)Params((int));
@@ -60,7 +57,6 @@ int	pid;
     istat	= signal( SIGINT, SIG_IGN );
     qstat	= signal( SIGQUIT ,SIG_IGN );
     hstat	= signal( SIGHUP, SIG_IGN );
-#endif
 
     while ( (deadpid = wait( &status )) != pid  &&  deadpid != -1 )
     {
@@ -77,10 +73,8 @@ int	pid;
         }
     }
 
-#if UNIX
     signal( SIGINT,istat );
     signal( SIGQUIT,qstat );
     signal( SIGHUP,hstat );
-#endif                  /* UNIX */
 }
 #endif					/* PIPES */

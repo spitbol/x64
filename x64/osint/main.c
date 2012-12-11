@@ -5,7 +5,7 @@ This file is part of Macro SPITBOL.
 
     Macro SPITBOL is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free Software Foundation, either version 2 of the License, or
     (at your option) any later version.
 
     Macro SPITBOL is distributed in the hope that it will be useful,
@@ -133,10 +133,10 @@ char	*argv[];
 #if FLOAT
         hasfpu = checkfpu();	/* check for floating point hardware */
 #endif					/* FLOAT */
-#if (SUN4 | LINUX) & !EXECSAVE
+#if !EXECSAVE
         heapmove();				/* move the heap up					*/
         malloc_empty();			/* mark the malloc region as empty	*/
-#endif					/* SUN4 | LINUX */
+#endif
         zysdc();							/* Brag if necessary */
         restart( (char *)0L, lowsp );       /* call restart to continue execution */
     }

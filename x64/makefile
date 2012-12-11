@@ -16,7 +16,7 @@ vpath %.c $(OSINT)
 
 
 CC	=	tcc
-AS	=	nasm
+ASM	=	nasm
 INCDIRS = -I../tcc/include -Imusl/include
 # next is for tcc
 ifeq	($(DEBUG),0)
@@ -33,9 +33,9 @@ endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASFLAGS = 
+ASMFLAGS = -f elf64
 else
-ASFLAGS = -g
+ASMFLAGS = -g -f elf64
 endif
 
 # Tools for processing Minimal source file.
@@ -51,7 +51,7 @@ SPIT=   ./bootbol
 
 # Implicit rule for building objects from assembly language files.
 .s.o:
-	$(AS) -a=$*.lst -o $@ $(ASFLAGS) $*.s
+	$(ASM) $(ASMFLAGS) -l $*.lst -o$@ $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
 CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h
@@ -83,7 +83,7 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 # Assembly langauge objects common to all versions:
 # CAOBJS is for gas, NAOBJS for nasm
 CAOBJS = 
-NAOBJS = x32.o errors.o
+NAOBJS = x64.o errors.o
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
@@ -113,26 +113,18 @@ spitbol: $(OBJS)
 # Assembly language dependencies:
 errors.o: errors.s
 s.o: s.s
-s.o:
-	nasm -g -f elf -l s.lst -os.o s.s
-
-x32.o: x32.s
-x32.o:
-	nasm -g -f elf -l x32.lst -ox32.o x32.s
 
 errors.o: errors.s
-errors.o:
-	nasm -g -f elf -l errors.lst -oerrors.o errors.s
 
 
 # SPITBOL Minimal source
-s.s:	s.tok $(VHDRS) $(COD) 
+s.s:	s.lex $(VHDRS) $(COD) 
 	$(SPIT) -u "s:$(MIN):comments" $(COD)
 #	cp	s.s	s.S
 #	$(SPIT) san.spt <s.s >s.t
 #	cp	s.t s.s
 
-s.tok: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
+s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
 	 $(SPIT) -u "$(MINPATH)s:$(MIN):s" $(LEX)
 
 s.err: s.s
@@ -154,9 +146,9 @@ sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
 
 boot:
-	cp -p bootstrap/s.s bootstrap/s.tok bootstrap/errors.s .
+	cp -p bootstrap/s.s bootstrap/s.lex bootstrap/errors.s .
 
 install:
 	sudo cp spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o *.lst *.map *.err s.tok s.tmp s.s errors.s
+	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s errors.s

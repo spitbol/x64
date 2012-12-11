@@ -5,7 +5,7 @@ This file is part of Macro SPITBOL.
 
     Macro SPITBOL is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free Software Foundation, either version 2 of the License, or
     (at your option) any later version.
 
     Macro SPITBOL is distributed in the hope that it will be useful,
@@ -55,9 +55,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if AIX | SOLARIS | LINUX
 #include <fcntl.h>
-#endif
 
 #if EXTFUN
 static word openloadfile Params((char *namebuf));
@@ -104,98 +102,6 @@ char *file;
     register struct scblk *fnscb = XR (struct scblk *);
     char *savecp;
     char savechar;
-
-#if  | AIX | WINNT
-    /* Kludge for DLLs:  openloadfile returns TWO pieces of information:
-     *   The handle for the DLL file is returned as the function result.
-     *   The address of the DLL function is returned as a word in the
-     *   beginning of the the filename buffer passed in as an argument.
-     */
-    typedef int (*PFN)();
-    word fd;
-    char file2[512];
-    PFN pfn;
-    extern word loadDll Params((char *dllName, char *fcnName, PFN *pfn));
-
-    /* Search strategy for DLLs:
-     *  If explicit library name given, then
-     *     use it.
-     *  Else
-     *     Append .slf extension to filename.
-     *     Use initpath and trypath to find it in SNOLIB.
-     *     If not found, then
-    *        Use unmodified function name.  Note:  This may
-     *        not include a search of the current directory, unless
-     *        LIBPATH includes ".\"!
-     */
-
-    if (lnscb->len >= 512)
-        return -1;
-
-    savecp = fnscb->str + fnscb->len;		/* Make function name a C string for now. */
-    savechar = make_c_str(savecp);
-
-    if (lnscb->len == 0) {					/* If no library name, first try */
-        /* function name with ".slf" extension */
-#if SOLARIS
-        /* force lookup in local directory */
-        file2[0] = '.';
-        file2[1] = '/';
-        appendext(fnscb->str,EFNEXT,&file2[2],1);
-        fd = loadDll(file2, fnscb->str, &pfn);
-#else
-        appendext(fnscb->str,EFNEXT,file,1); /* append .slf extension to function name */
-        fd = loadDll(file, fnscb->str, &pfn);
-#endif
-        if (fd == -1) {						/* if couldn't open in local directory */
-            mystrcpy(file2,file);
-            initpath(SPITFILEPATH);			/* try alternate paths along SNOLIB */
-            while (trypath(file2,file)) {
-                fd = loadDll(file, fnscb->str, &pfn);
-                if (fd != -1)
-                    break;
-            }
-            if (fd == -1)					/* if not found as an .slf file */
-                fd = loadDll(fnscb->str, fnscb->str, &pfn);
-        }
-    }
-    else {							/* Explicit library name given */
-        char *savecp2;
-        char savechar2;
-        savecp2 = lnscb->str + lnscb->len;	/* Make it a C string for now. */
-        savechar2 = make_c_str(savecp2);
-        fd = loadDll(lnscb->str, fnscb->str, &pfn);
-        if (fd == -1)
-        {
-            mystrcpy(file2,lnscb->str);		/* Try via SNOLIB */
-            initpath(SPITFILEPATH);
-            while (trypath(file2,file))
-            {
-                fd = loadDll(file, fnscb->str, &pfn);
-                if (fd != -1)
-                    break;
-            }
-#if SOLARIS | AIX
-            if (fd == -1)
-            {
-                /* force lookup in local directory */
-                file2[0] = '.';
-                file2[1] = '/';
-                mystrcpy(&file2[2],lnscb->str);
-                fd = loadDll(file2, fnscb->str, &pfn);
-            }
-#endif
-        }
-        unmake_c_str(savecp2, savechar2);
-    }
-
-    unmake_c_str(savecp, savechar);			/* Restore saved char in function name */
-    *(PFN *)file = pfn;			/* Return function address in file buffer */
-    return fd;
-#endif          /* SOLARIS | AIX | WINNT */
-}
-
-
 #else					/* EXTFUN */
     return EXIT_1;
 }

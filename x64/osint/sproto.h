@@ -5,7 +5,7 @@ This file is part of Macro SPITBOL.
 
     Macro SPITBOL is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free Software Foundation, either version 2 of the License, or
     (at your option) any later version.
 
     Macro SPITBOL is distributed in the hope that it will be useful,
@@ -237,19 +237,10 @@ extern	int			zysxi Params(( void ));
 #define sbrk sbrkx
 #endif          /* _MSC_VER */
 
-#if AIX
-/* Redefine sbrk and brk to use custom routines in sysrs6.c */
-#undef sbrk
-#undef brk
-#define sbrk sbrkx
-#define brk  brkx
-#endif
-
 #if UNIX
 #include <unistd.h>
 #define LSEEK lseek
 
-#if LINUX
 /* Redefine sbrk and brk to use custom routines in syslinux.c */
 #undef sbrk
 #undef brk
@@ -257,7 +248,6 @@ extern	int			zysxi Params(( void ));
 #define brk  brkx
 extern	int 		brkx Params(( void *addr ));
 extern	void		*sbrkx Params(( long incr ));
-#endif
 
 #else
 extern  int         access Params((char *Name, int mode));

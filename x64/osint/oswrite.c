@@ -5,7 +5,7 @@ This file is part of Macro SPITBOL.
 
     Macro SPITBOL is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free Software Foundation, either version 2 of the License, or
     (at your option) any later version.
 
     Macro SPITBOL is distributed in the hope that it will be useful,
@@ -112,35 +112,7 @@ struct	scblk	*scptr;
             int actcnt;
             actcnt = write( fdn, cp, linelen );
             if ( actcnt != linelen ) {
-#if WINNT
-                /*
-                 * Problem/feature in MS-DOS.  Writes to a character device
-                 * stop-short on control-Z.  This is fine in normal text mode,
-                 * because it allows the user to suppress SPITBOL's CR/LF chars.
-                 * But in binary mode, it doesn't let the program deliberately
-                 * output a control-Z. Setting binary mode in the device doesn't
-                 * work in general, because DOS starts appending a CR/LF after
-                 * each character.  Solution: Set binary mode just for the
-                 * character that caused the problem.
-                 */
-                if (testty(fdn)  /* if block device, short count is an error */
-#if WINNT
-                        || !borland32rtm     /* or char device but not DOS */
-#endif
-                   )
-                    ioerrcnt++;
-                /* short count on character device.  Ignore if not binary mode */
-                else if (ioptr->flg2 & IO_RAW) { /* if raw mode char device */
-                    ttyraw(fdn, 1);				/* set raw mode */
-                    write( fdn, cp+actcnt, 1 );	/* write the problem char */
-                    ttyraw(fdn, 0);				/* clear raw mode */
-                    linelen -= (++actcnt);		/* chars remaining after problem char */
-                    recsiz += linelen;			/*   "      "       "  "   "	*/
-                }							/* and go 'round again */
-#else             /* WINNT */
                 ioerrcnt++;
-
-#endif            /* WINNT */
             }
             cp += actcnt;
         }
@@ -242,11 +214,6 @@ struct	scblk	*scptr;
                     n = (linelen / bfptr->size) * bfptr->size;
                     m = write(fdn, cp, n);
                     if ( m != n
-#if WINNT
-                            && (testty(fdn)   /* ignore short counts on character device */
-                                && borland32rtm /* if MS-DOS */
-                               )
-#endif               /* WINNT */
 
                        )
                         ioerrcnt++;

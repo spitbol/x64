@@ -51,10 +51,10 @@
 *       spitbol -u "<file>:<machine>[:flag:...:flag]" asm.spt
 *
 *	reads <file>.lex	containing tokenized source code
-*       writes <file>.s         with x32 assembly code
+*       writes <file>.s       with assembly code
 *	also writes <file>.err	with ERR and ERB error messages
 *	using <machine>.def	to provide machine-specific information
-*       parts of <machine>.hdr  are prepended and appended to <file>.s
+*       parts of <machine>.hdr  are prepended and appended to <file>..s
 *	also sets flags		to 1 after converting names to upper case
 *	also reads <file>.pub	for debug symbols to be declared public
 *
@@ -139,7 +139,7 @@
 *
 	EXTTAB = TABLE(50)
 
-*  LABTAB records labels in the code section, and their line numbers
+*  LABTAB records labels in the code segment, and their line numbers
 *
 	LABTAB = TABLE(500)
 
@@ -226,7 +226,7 @@
 *  or branching to DSOUT, in which case the generator must output
 *  all needed code itself.
 *
-*  The generators are listed in a separate section below.
+*  The generators are listed in a separate segment below.
 *
 *
 *  Get file name
@@ -501,7 +501,7 @@ GETARG.C.2 GETARG = L1			:(RETURN)
 
 * WLBL, CLBL
 GETARG.C.3
-GETARG.C.4 GETARG = 'DWORD [' L1 ']'     :(RETURN)
+GETARG.C.4 GETARG = 'QWORD [' L1 ']'     :(RETURN)
 
 * ELBL, PLBL
 GETARG.C.5
@@ -516,37 +516,34 @@ GETARG.C.8
 GETARG.C.9
 	L1 LEN(1) LEN(2) . L2
 	L2 = REGMAP[L2]
-	GETARG = 'DWORD [' L2 ']'		:(RETURN)
+	GETARG = 'QWORD [' L2 ']'		:(RETURN)
 
 * (X)+, Register indirect, post increment
-* Use lea reg,[reg+4] unless reg is esp, since it takes an extra byte.
-* Actually, lea reg,[reg+4] and add reg,4 are both 2 cycles and 3 bytes
-* for all the other regs, and either could be used.
 GETARG.C.10
 	L1 = SUBSTR(L1,2,2)
 	T1 = REGMAP[L1]
-	GETARG = 'DWORD [' T1 ']'
-	(IDENT(L1,'XS') GENAOP(TSTMT(,'ADD',T1,'4'))) :S(RETURN)
-	GENAOP(TSTMT(,'LEA',T1,'[' T1 '+4]'))	:(RETURN)
+	GETARG = 'QWORD [' T1 ']'
+	(IDENT(L1,'XS') GENAOP(TSTMT(,'ADD',T1,'8'))) :S(RETURN)
+	GENAOP(TSTMT(,'LEA',T1,'[' T1 '+8]'))	:(RETURN)
 
 *  -(X), Register indirect, pre decrement
 GETARG.C.11
 	T1 = REGMAP[SUBSTR(L1,3,2)]
-	GETARG = 'DWORD [' T1 ']'
-	GENBOP(TSTMT(,'LEA',T1,'[' T1 '-4]'))	:(RETURN)
+	GETARG = 'QWORD [' T1 ']'
+	GENBOP(TSTMT(,'LEA',T1,'[' T1 '-8]'))	:(RETURN)
 
 * INT(X)
 * DLBL(X)
 GETARG.C.12
 GETARG.C.13
 	L1 BREAK('(') . T1 '(' LEN(2) . T2
-	GETARG = 'DWORD [(4*' T1 ')+' REGMAP[T2] ']'   	:(RETURN)
+	GETARG = 'QWORD [(8*' T1 ')+' REGMAP[T2] ']'   	:(RETURN)
 
 *  NAME(X), WHERE NAME IS IN WORKING SECTION
 GETARG.C.14
 GETARG.C.15
 	L1 BREAK('(') . T1 '(' LEN(2) . T2
-	GETARG = 'DWORD [' T1 '+'  REGMAP[T2] ']'	:(RETURN)
+	GETARG = 'QWORD [' T1 '+'  REGMAP[T2] ']'	:(RETURN)
 
 * Signed Integer
 GETARG.C.16 GETARG = L1				:(RETURN)
@@ -560,14 +557,14 @@ GETARG.C.18
 
 *  *DLBL
 GETARG.C.19
-	GETARG = '4*' SUBSTR(L1,2)	:(RETURN)
+	GETARG = '8*' SUBSTR(L1,2)	:(RETURN)
 
-*  =NAME (Data section)
+*  =NAME (Data segment)
 GETARG.C.20
 GETARG.C.21
         GETARG =  SUBSTR(L1,2) :(RETURN)
 
-*  =NAME (Program section)
+*  =NAME (Program segment)
 GETARG.C.22
         GETARG =  SUBSTR(L1,2)   :(RETURN)
 
@@ -595,7 +592,7 @@ MEMMEM
   GENOP('MOV','EAX',T1)				:(RETURN)
 
 -STITL PRCENT(N)
-PRCENT PRCENT = 'PRC_' '+'  (4 * ( N - 1)) :(RETURN)
+PRCENT PRCENT = 'PRC_' '+'  (8 * ( N - 1)) :(RETURN)
 
 -STITL OUTSTMT(OSTMT)LABEL,OPCODE,OP1,OP2,OP3,COMMENT)
 *  This module writes the components of the statement
@@ -779,11 +776,11 @@ G.BSW	T1 = GETARG(I1)
 	GENOP('CMP',T1,GETARG(I2))
 	GENOP('JGE',GETARG(I3))
 * Here after default case.
-G.BSW1	GENOP('JMP', 'DWORD [' T2 '+' T1 '*4]') 
+G.BSW1	GENOP('JMP', 'QWORD [' T2 '+' T1 '*8]') 
         GENOP('segment .data')
         GENOPL(T2 ':')                  :(OPDONE)
 
-G.IFF   GENOP('dd',GETARG(I2))               :(OPDONE)
+G.IFF   GENOP('dq',GETARG(I2))               :(OPDONE)
 
 G.ESW   
         GENOP('segment .text')                          :(OPDONE)
@@ -796,7 +793,7 @@ G.ENT
 *
 *  Note that this address of odd/even is less restrictive than
 *  the MINIMAL definition, which defines an even address as being
-*  a multiple of CFP_B (4), and an odd address as one that is not
+*  a multiple of CFP_B (8), and an odd address as one that is not
 *  a multiple of CFP_B (ends in 1, 2, or 3).  The definition here
 *  is a simple odd/even, least significant bit definition.
 *  That is, for us, 1 and 3 are odd, 2 and 4 are even.
@@ -830,7 +827,7 @@ G.JSR
 	JSR_CALLS = JSR_CALLS +  1
 	JSR_LABEL = 'CALL_' JSR_CALLS
 	JSR_LABEL_NORM = JSR_LABEL 
-	GENOP('DEC','DWORD [' RCODE ']')
+	GENOP('DEC','QWORD [' RCODE ']')
 	GENOP('JS',JSR_LABEL_NORM)
 
 *	generate branch around for ppms that will follow
@@ -862,13 +859,13 @@ G.PPM.LOOP.NEXT
 	EQ(JSR_COUNT) GENOPL(JSR_LABEL_NORM ':') :(OPDONE)
 G.PPM.LOOP
 	LAB_NEXT = GENLAB()
-	GENOP('DEC','DWORD [' RCODE ']')
+	GENOP('DEC','QWORD [' RCODE ']')
 	GENOP('JNS',LAB_NEXT)
 	IDENT(INCODE,'PPM')			:S(G.PPM.LOOP.PPM)
 *  Here if error exit via EXI. Set RCODE to exit code and jump 
 *  to error handler with error code in RCODE
 G.PPM.LOOP.ERR
-	GENOP('MOV','DWORD [' RCODE ']', +T1)
+	GENOP('MOV','QWORD [' RCODE ']', +T1)
 	GENOP('JMP','ERR_')
 						:(G.PPM.LOOP.NEXT)
 G.PPM.LOOP.PPM
@@ -899,19 +896,19 @@ G.PRC.R						:(OPDONE)
 G.PRC.N
 *  Store return address in reserved location
 	PRC.COUNT = PRC.COUNT + 1
-	GENOP('POP', 'DWORD [' PRCENT(PRC.COUNT) ']')		:(OPDONE)
+	GENOP('POP', 'QWORD [' PRCENT(PRC.COUNT) ']')		:(OPDONE)
 
 G.EXI	
         T1 = GETARG(I1); T2 = PRC.TYPE; T3 = I.TEXT(I1)
 *  If type R or E, and no exit parameters, just return
  	DIFFER(T2,'N') EQ(PRC.ARGS)	GENOP('RET')	:S(OPDONE)
         T3 = IDENT(T3) '0'
-    	GENOP('MOV','DWORD [' RCODE ']',+T3)
+    	GENOP('MOV','QWORD [' RCODE ']',+T3)
 	IDENT(T2,'N')				:S(G.EXI.1)
 	GENOP('RET')				:(OPDONE)
 G.EXI.1
 
-	GENOP('MOV','EAX', 'DWORD ['  PRCENT(PRC.COUNT) ']' )
+	GENOP('MOV','EAX', 'QWORD ['  PRCENT(PRC.COUNT) ']' )
 	GENOP('JMP','EAX')
 						:(OPDONE)
 G.ENP   GENOP()					:(OPDONE)
@@ -919,7 +916,7 @@ G.ENP   GENOP()					:(OPDONE)
 G.ERB
 	ERRFILE =  I.TEXT(I1) ' ' I.TEXT(I2)
 *	Set RCODE to error code and branch to error handler
-	GENOP('MOV', 'DWORD [' RCODE ']',  +(I.TEXT(I1)))
+	GENOP('MOV', 'QWORD [' RCODE ']',  +(I.TEXT(I1)))
  	GENOP('JMP','ERR_')
 						:(OPDONE)
 
@@ -952,8 +949,8 @@ G.ADD	MEMMEM()
 G.SUB	MEMMEM()
 	GENOP('SUB',GETARG(I2),GETARG(I1))	:(OPDONE)
 
-G.ICA   GENOP('ADD',GETARG(I1),'4')		:(OPDONE)
-G.DCA   GENOP('SUB',GETARG(I1),'4')		:(OPDONE)
+G.ICA   GENOP('ADD',GETARG(I1),'8')		:(OPDONE)
+G.DCA   GENOP('SUB',GETARG(I1),'8')		:(OPDONE)
 
 G.BEQ
 G.BNE
@@ -1018,10 +1015,10 @@ G.SCP   GENOP('MOV',GETARG(I1),REG.CP)		:(OPDONE)
 G.LCW
 *  Should be able to get LODSD; XCHG EAX,GETARG(I1)
 	GENOP('MOV',GETARG(I1),'[' REG.CP ']')
-	GENOP('ADD',REG.CP,'4')			:(OPDONE)
+	GENOP('ADD',REG.CP,'8')			:(OPDONE)
 
 
-G.ICP   GENOP('ADD',REG.CP,'4')			:(OPDONE)
+G.ICP   GENOP('ADD',REG.CP,'8')			:(OPDONE)
 
 *  INTEGER ACCUMULATOR KEPT IN WDX (WC)
 G.LDI	GENOP('MOV',REG.IA,GETARG(I1))		:(OPDONE)
@@ -1082,11 +1079,11 @@ G.DVR
 *  of the ra, not its value.
 	T1 = GETARG(I1)
 	TYP1 = I.TYPE(I1)
-* 	OUTPUT = 'g.rop before dword test ' t1 ' ' typ1
-*	t1 'dword [' break(']') . leaarg rem
-*	T1 'DWORD' =
+* 	OUTPUT = 'g.rop before qword test ' t1 ' ' typ1
+*	t1 'qword [' break(']') . leaarg rem
+*	T1 'QWORD' =
 	T1 = TRIM(T1)
-*	OUTPUT = 'g.rop after dword test ' t1 ' leaarg ' leaarg
+*	OUTPUT = 'g.rop after qword test ' t1 ' leaarg ' leaarg
 *	(GE(TYP1,9) LE(TYP1,15) GENOP('LEA','EAX', T1),
 *+	 GE(TYP1,3) LE(TYP1,4)  GENOP('LEA','EAX', T1),
 *+                GENOP('MOV','EAX', GETARG(I1)))
@@ -1325,14 +1322,14 @@ G.MFI1	IDENT(I.TEXT(I1),'WC') GENOP()		:S(OPDONE)
 G.CTW
 *  assume four chars per word
 	T1 = GETARG(I1)
-	GENOP('ADD',T1,'3+4*' I.TEXT(I2))
+	GENOP('ADD',T1,'3+8*' I.TEXT(I2))
 	GENOP('SHR',T1,'2')		:(OPDONE)
 
 G.CTB
-*  use add w,val*CFP.B+3; and w,-4
+*  use add w,val*CFP.B+3; and w,-8
 	T1 = GETARG(I1)
-	GENOP('ADD',T1,'3+4*' I.TEXT(I2))
-	GENOP('AND',T1,'-4')	:(OPDONE)
+	GENOP('ADD',T1,'7+8*' I.TEXT(I2))
+	GENOP('AND',T1,'-8')	:(OPDONE)
 
 G.CVM	T1 = GETARG(I1)
 	GENOP('IMUL',REG.IA,'10')
@@ -1363,8 +1360,8 @@ G.MWB
 *   move words backwards
 	GENOP('SHR','ECX','2')
 	GENOP('STD')
-	GENOP('LEA','ESI','[ESI-4]')
-	GENOP('LEA','EDI','[EDI-4]')
+	GENOP('LEA','ESI','[ESI-8]')
+	GENOP('LEA','EDI','[EDI-8]')
  	GENREP('MOVSD')
 *	GENOP('REP','MOVSD')
 	GENOP('CLD')				:(OPDONE)
@@ -1399,9 +1396,9 @@ DECEND
         DIFFER(PUBTAB[TLABEL]) GENOP('global',TLABEL)  :(OPDONE)
 
 G.DAC	T1 = I.TYPE(I1)
-        T2 = "" ;*(LE(T1,2) "", LE(T1,4) "D_OFFSET_(", LE(T1,6) "D_OFFSET_(", "")
-        GENOPL(TLABEL,'dd',T2 I.TEXT(I1))    :(DECEND)
-G.DIC   GENOPL(TLABEL,'dd',I.TEXT(I1))               :(DECEND)
+        T2 = "" ;*(LE(T1,2) "", LE(T1,8) "D_OFFSET_(", LE(T1,6) "D_OFFSET_(", "")
+        GENOPL(TLABEL,'dq',T2 I.TEXT(I1))    :(DECEND)
+G.DIC   GENOPL(TLABEL,'dq',I.TEXT(I1))               :(DECEND)
 
 *
 * Make sure don't attach label to the align.
@@ -1410,10 +1407,10 @@ G.DIC   GENOPL(TLABEL,'dd',I.TEXT(I1))               :(DECEND)
 * Microsoft MASM 6.0, it treats "+0.0" as an expression, and
 * then says that real-valued expressions are illegal.
 *
-G.DRC   GENOP('align','4')
+G.DRC   GENOP('align','8')
 	T1 = I.TEXT(I1)
 	T1 ? FENCE "+" = ""
-        GENOP('dd',T1)
+        GENOP('dq',T1)
 *  Note that want to attach label to last instruction
 	T.LABEL(CSTMTS[CSTMTS.N]) = TLABEL
 	TLABEL =					:(OPDONE)
@@ -1422,13 +1419,13 @@ G.DTC
 *  CHANGE FIRST AND LAST CHARS TO " (ASSUME / USED IN SOURCE)
 	T1 = I.TEXT(I1)
 	T1 TAB(1) RTAB(1) . T2
-	T3 = REMDR(SIZE(T2),4)
+	T3 = REMDR(SIZE(T2),8)
         T2 = "'" T2 "'"
 *  Append nulls to complete last word so constant length is multiple
 *  of word word
-        T2 = NE(T3) T2 DUPL(',0',4 - T3)
+        T2 = NE(T3) T2 DUPL(',0',8 - T3)
         GENOPL(TLABEL,'db',T2)              :(OPDONE)
-G.DBC   GENOPL(TLABEL,'dd',GETARG(I1))       :(OPDONE)
+G.DBC   GENOPL(TLABEL,'dq',GETARG(I1))       :(OPDONE)
 G.EQU   GENOP('equ',I.TEXT(I1))			:(OPDONE)
 G.EXP   
 	PPM_CASES[INLABEL] = I.TEXT(I1)
@@ -1451,64 +1448,64 @@ G.TTL	GENOP('')
 G.SEC	GENOP('')
 	SECTNOW = SECTNOW + 1			:($("G.SEC." SECTNOW))
 
-* Procedure declaration section
+* Procedure declaration segment
 G.SEC.1 GENOP('segment .text')
         GENOP('global','SEC01')
         GENOPL('SEC01' ':')             :(OPDONE)
 
-* Definitions section
+* Definitions segment
 G.SEC.2 
         GENOP('segment .data')
         GENOP('global','SEC02')
         GENOPL('SEC02' ':')             :(OPDONE)
 
-* Constants section
+* Constants segment
 G.SEC.3 
         GENOP('segment .data')
         GENOP('global','SEC03')
         GENOPL('SEC03' ':')     :(OPDONE)
 
-* Working variables section
+* Working variables segment
 G.SEC.4 GENOP('global','ESEC03')
         GENOPL('ESEC03' ':')
         GENOP('segment .data')
         GENOP('global','SEC04')
         GENOPL('SEC04' ':')     :(OPDONE)
 
-*  Here at start of program section.  If any N type procedures,
+*  Here at start of program segment.  If any N type procedures,
 *  put out entry-word block declaration at end of working storage
 G.SEC.5
-*  Emit code to indicate in code section
+*  Emit code to indicate in code segment
 *  Get direction set to up.
         GENOP('global','ESEC04')
         GENOPL('ESEC04' ':')
 *        (GT(PRC.COUNT1) GENOPL('PRC$' ':','times', PRC.COUNT1 ' dd 0'))
 	GENOP('PRC_: times ' PRC.COUNT1 ' dd 0')
         GENOP('global','LOWSPMIN')
-        GENOPL('LOWSPMIN' ':','dd','0')
+        GENOPL('LOWSPMIN' ':','dq','0')
         GENOP('global','END_MIN_DATA')
         GENOPL('END_MIN_DATA' ':')
         GENOP('segment .text')
         GENOP('global','SEC05')
         GENOPL('SEC05' ':')     :(OPDONE)
 
-*  Stack overflow section.  Output EXI__n tail code
+*  Stack overflow segment.  Output EXI__n tail code
 G.SEC.6	
         GENOP('global','SEC06')
         GENOPL('SEC06'  ':', 'NOP')
 				             :(OPDONE)
 
-*  Error section.  Produce code to receive ERB's
+*  Error segment.  Produce code to receive ERB's
 G.SEC.7
         GENOP('global','SEC07')
         GENOPL('SEC07' ':')
 	FLUSH()
-*  Error section.  Produce code to receive ERB's
+*  Error segment.  Produce code to receive ERB's
 
 *	allow for some extra cases in case of max.err bad estimate
 	N1 = MAX.ERR + 8
 	OUTPUT = 'MAX.ERR ' MAX.ERR
-	GENOPL('ERR_:','xchg',REG.WA,'DWORD [' RCODE ']')
+	GENOPL('ERR_:','xchg',REG.WA,'QWORD [' RCODE ']')
 						:(OPDONE)
 
 
