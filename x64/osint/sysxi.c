@@ -114,7 +114,8 @@ static void hcopy Params((char *src, char *dst, int len, int max));
 #endif					/* SAVEFILE */
 
 #if SAVEFILE | EXECSAVE
-extern word read Params((int F, void *Buf, unsigned Cnt));
+/* TODO - DS commented out next line to get clean x64 compile 12/11/12 */
+/*extern word read Params((int F, void *Buf, unsigned Cnt)); */
 /*extern off_t LSEEK Params((int F, FILEPOS Loc, int Method));*/
 #endif          /* EXECFILE  | SAVEFILE */
 

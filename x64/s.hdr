@@ -32,16 +32,16 @@
 	pushad
 %ifdef AT_TRACE
 	mov	qword [at_zz],%1
-	mov	qword [at_xl],esi
-	mov	qword [at_xr],edi
-	mov	qword [at_xs],esp
-	mov	qword [at_wa],ecx
-	mov	qword [at_wb],ebx
-	mov	qword [at_wc],edx
-	mov	qword [at_w0],eax
+	mov	qword [at_xl],rsi
+	mov	qword [at_xr],rdi
+	mov	qword [at_xs],rsp
+	mov	qword [at_wa],rcx
+	mov	qword [at_wb],rbx
+	mov	qword [at_wc],rdx
+	mov	qword [at_w0],rax
 %endif
 ;	push	%1
-;	pop	eax
+;	pop	rax
 	popad
 	popf
 	%endmacro
@@ -65,6 +65,7 @@
         dq P_ANY   ; P2BLK type word - 7
 ; next needed only if support real arithmetic CNRA
 ;        dq B_RCL   ; RCBLK type word - 8
+	dq	0   ; temporary replacement for B_RCL (used in real arithmetic)
         dq B_SCL   ; SCBLK type word - 9
         dq B_SEL   ; SEBLK type word - 10
         dq B_TBT   ; TBBLK type word - 11

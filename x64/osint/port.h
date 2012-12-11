@@ -44,13 +44,16 @@ This file is part of Macro SPITBOL.
 #define ENGINE		0	/* not building engine version */
 #endif
 
+/*
 #ifndef EXECSAVE
-#define EXECSAVE	0	/* executable modules via save files */
+#define EXECSAVE	0	/ * executable modules via save files * /
 #endif
-
+*/
+/*
 #ifndef	EXTFUN
-#define EXTFUN		0	/* no external functions */
+#define EXTFUN		0	/ * no external functions * /
 #endif
+*/
 
 #ifndef	FLTHDWR
 #define	FLTHDWR		0	/* floating point hardware not present */
@@ -68,9 +71,11 @@ This file is part of Macro SPITBOL.
 #define	RUNTIME		0	/* not making runtime version */
 #endif
 
+/*
 #ifndef	SAVEFILE
-#define	SAVEFILE	0	/* can't create save files */
+#define	SAVEFILE	0	/ * can't create save files * /
 #endif
+*/
 
 #ifndef SETREAL
 #define SETREAL     0   /* don't use reals for SET()  */
@@ -88,9 +93,11 @@ This file is part of Macro SPITBOL.
 #define	DIRECT		1	/* access Minimal data directly */
 #endif
 
+/*
 #ifndef EXECFILE
-#define	EXECFILE	1	/* create executable modules */
+#define	EXECFILE	1	/ * create executable modules * /
 #endif
+*/
 
 #ifndef	FLOAT
 #define	FLOAT		1	/* include floating point code */
@@ -100,9 +107,11 @@ This file is part of Macro SPITBOL.
 #define	IO			1	/* include input/output code */
 #endif
 
+/*
 #ifndef	MATH
-#define	MATH		1	/* include extended math (i.e., trig) code */
+#define	MATH		1	/ * include extended math (i.e., trig) code * /
 #endif
+*/
 
 #ifndef PIPES
 #define	PIPES		1	/* include pipe code */
@@ -124,15 +133,15 @@ This file is part of Macro SPITBOL.
  *  Other defaulted values that may be overridden in systype.h
  */
 #ifndef INTBITS
-#define INTBITS		32			/* assume int will be 32 bits */
-#define MAXINT		0x7FFFFFFFL	/* maximum positive value in int */
+#define INTBITS		64			/* assume int will be 32 bits */
+#define MAXINT		18446744073709551615 /* maximum positive value in int */
 #endif
 #ifndef WORDBITS
-#define WORDBITS	32			/* assume word will be 32 bits */
-#define MAXPOSWORD	0x7FFFFFFFL	/* maximum positive value in word */
+#define WORDBITS	64			/* assume word will be 32 bits */
+#define MAXPOSWORD	18446744073709551615 /* maximum positive value in word */
 #endif
 #ifndef IABITS
-#define IABITS      32          /* Integer accumulator (IA) width */
+#define IABITS      64          /* Integer accumulator (IA) width */
 #endif
 
 
@@ -149,12 +158,14 @@ This file is part of Macro SPITBOL.
 #define SYSVERSION 255
 #endif
 
-#if EXECSAVE			/* EXECSAVE requires EXECFILE & SAVEFILE on */
+/*
+#if EXECSAVE			/ * EXECSAVE requires EXECFILE & SAVEFILE on * /
 #undef EXECFILE
 #undef SAVEFILE
 #define EXECFILE	1
 #define SAVEFILE	1
 #endif
+*/
 
 /* Define how the errors and phrases arrays will be accessed (see sysem.c) */
 #ifndef ERRDIST
@@ -178,8 +189,8 @@ This file is part of Macro SPITBOL.
 
 #define UNIX  LINUX
 
-typedef int   word;
-typedef unsigned int uword;
+typedef long long word;
+typedef unsigned long long uword;
 
 /* Size of integer accumulator */
 #if IABITS==32
