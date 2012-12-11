@@ -15,6 +15,8 @@
  	global	minimal
 	extern	calltab
 	extern	stacksiz
+	extern	at_note
+	extern	at_note2
  
 ; Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 ; 
@@ -396,6 +398,7 @@ startup:
         mov     qword [ppoff],rax               ; save for use later
 ;
         mov     rsp,qword [osisp]               ; switch to new C stack
+	call	at_note
 	push	CALLTAB_START
 	call	minimal			; load regs, switch stack, start compiler
 
@@ -462,6 +465,7 @@ stackinit:
 
  minimal:
          pushaq                          ; save all registers for C
+	call	at_note2
          mov     rax,qword [rsp+32+8]          ; get ordinal
          mov     rcx,qword [reg_wa]              ; restore registers
  	mov	rbx,qword [reg_wb]
@@ -474,8 +478,12 @@ stackinit:
          cmp     qword [compsp],0      ; 1.39 is there a compiler stack?
          je      min1              ; 1.39 jump if none yet
          mov     rsp,qword [compsp]              ; 1.39 switch to compiler stack
+	call	at_note
  
- min1:   call   qword [calltab+rax*8]        ; off to the Minimal code
+ min1:   
+	extern	START
+	call	START
+;		call   qword [calltab+rax*8]        ; off to the Minimal code
  
          mov     rsp,qword [osisp]               ; 1.39 switch to OSINT stack
  

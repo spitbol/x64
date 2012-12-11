@@ -234,6 +234,9 @@ char	*argv[];
     SET_WC( 0 );
     SET_XR( basemem );
     SET_XL( topmem - sizeof(word) );
+    fprintf(stderr,"basemem %d\n",basemem);
+    fprintf(stderr,"sizeof word %d\n",sizeof(word));
+    fprintf(stderr,"topmem -sizeof(word) %u\n",topmem - sizeof(word));
 
     /*
     /   Startup compiler.

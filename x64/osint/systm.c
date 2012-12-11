@@ -45,7 +45,7 @@ This file is part of Macro SPITBOL.
 #define CLK_TCK sysconf(_SC_CLK_TCK)
 
 zystm() {
-	/*fprintf(stderr,"enter systm\n");*/
+	fprintf(stderr,"enter systm\n");
 
     /*
     /	process times are in 60ths of second, multiply by 100
