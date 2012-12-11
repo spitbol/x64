@@ -17,131 +17,131 @@
 	extern	stacksiz
 	extern	at_note
 	extern	at_note2
- 
-; Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
-; 
-; This file is part of Macro SPITBOL.
-; 
-;     Macro SPITBOL is free software: you can rrdistribute it and/or modify
-;     it under the terms of the GNU General Public License as published by
-;     the Free Software Foundation, either version 2 of the License, or
-;     (at your option) any later version.
-; 
-;     Macro SPITBOL is distributed in the hope that it will be useful,
-;     but WITHOUT ANY WARRANTY; without even the implied warranty of
-;     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;     GNU General Public License for more details.
-; 
-;     You should have received a copy of the GNU General Public License
-;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+
+; copyright 1987-2012 robert b. k. dewar and mark emmer.
 ;
-%define globals 1                       ;ASM globals defined here
+; this file is part of macro spitbol.
+;
+;     macro spitbol is free software: you can rrdistribute it and/or modify
+;     it under the terms of the gnu general public license as published by
+;     the free software foundation, either version 2 of the license, or
+;     (at your option) any later version.
+;
+;     macro spitbol is distributed in the hope that it will be useful,
+;     but without any warranty; without even the implied warranty of
+;     merchantability or fitness for a particular purpose.  see the
+;     gnu general public license for more details.
+;
+;     you should have received a copy of the gnu general public license
+;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+;
+%define globals 1                       ;asm globals defined here
 
 ;
 ;       ---------------------------------------
 ;
-;       This file contains the assembly language routines that interface
-;       the Macro SPITBOL compiler written in 80386 assembly language to its
-;       operating system interface functions written in C.
+;       this file contains the assembly language routines that interface
+;       the macro spitbol compiler written in 80386 assembly language to its
+;       operating system interface functions written in c.
 ;
-;       Contents:
+;       contents:
 ;
-;       o Overview
-;       o Global variables accessed by OSINT functions
-;       o Interface routines between compiler and OSINT functions
-;       o C callable function startup
-;       o C callable function get_fp
-;       o C callable function restart
-;       o C callable function makeexec
-;       o Routines for Minimal opcodes CHK and CVD
-;       o Math functions for integer multiply, divide, and remainder
-;       o Math functions for real operation
+;       o overview
+;       o global variables accessed by osint functions
+;       o interface routines between compiler and osint functions
+;       o c callable function startup
+;       o c callable function get_fp
+;       o c callable function restart
+;       o c callable function makeexec
+;       o routines for minimal opcodes chk and cvd
+;       o math functions for integer multiply, divide, and remainder
+;       o math functions for real operation
 ;
 ;-----------
 ;
-;       Overview
+;       overview
 ;
-;       The Macro SPITBOL compiler relies on a set of operating system
+;       the macro spitbol compiler relies on a set of operating system
 ;       interface functions to provide all interaction with the host
-;       operating system.  These functions are referred to as OSINT
-;       functions.  A typical call to one of these OSINT functions takes
+;       operating system.  these functions are referred to as osint
+;       functions.  a typical call to one of these osint functions takes
 ;       the following form in the 80386 version of the compiler:
 ;
 ;               ...code to put arguments in registers...
-;               call    SYSXX           # call osint function
-;               dq      EXIT_1          # address of exit point 1
-;               dq      EXIT_2          # address of exit point 2
+;               call    sysxx           # call osint function
+;               dq      exit_1          # address of exit point 1
+;               dq      exit_2          # address of exit point 2
 ;               ...     ...             # ...
-;               dq      EXIT_n          # address of exit point n
+;               dq      exit_n          # address of exit point n
 ;               ...instruction following call...
 ;
-;       The OSINT function 'SYSXX' can then return in one of n+1 ways:
+;       the osint function 'sysxx' can then return in one of n+1 ways:
 ;       to one of the n exit points or to the instruction following the
-;       last exit.  This is not really very complicated - the call places
+;       last exit.  this is not really very complicated - the call places
 ;       the return address on the stack, so all the interface function has
 ;       to do is add the appropriate offset to the return address and then
-;       pick up the exit address and jump to it OR do a normal return via
+;       pick up the exit address and jump to it or do a normal return via
 ;       an ret instruction.
 ;
-;       Unfortunately, a C function cannot handle this scheme.  So, an
+;       unfortunately, a c function cannot handle this scheme.  so, an
 ;       intermrdiary set of routines have been established to allow the
-;       interfacing of C functions.  The mechanism is as follows:
+;       interfacing of c functions.  the mechanism is as follows:
 ;
-;       (1) The compiler calls OSINT functions as described above.
+;       (1) the compiler calls osint functions as described above.
 ;
-;       (2) A set of assembly language interface routines is established,
-;           one per OSINT function, named accordingly.  Each interface
+;       (2) a set of assembly language interface routines is established,
+;           one per osint function, named accordingly.  each interface
 ;           routine ...
 ;
 ;           (a) saves all compiler registers in global variables
-;               accessible by C functions
-;           (b) calls the OSINT function written in C
+;               accessible by c functions
+;           (b) calls the osint function written in c
 ;           (c) restores all compiler registers from the global variables
-;           (d) inspects the OSINT function's return value to determine
+;           (d) inspects the osint function's return value to determine
 ;               which of the n+1 returns should be taken and does so
 ;
-;       (3) A set of C language OSINT functions is established, one per
-;           OSINT function, named differently than the interface routines.
-;           Each OSINT function can access compiler registers via global
-;           variables.  NO arguments are passed via the call.
+;       (3) a set of c language osint functions is established, one per
+;           osint function, named differently than the interface routines.
+;           each osint function can access compiler registers via global
+;           variables.  no arguments are passed via the call.
 ;
-;           When an OSINT function returns, it must return a value indicating
-;           which of the n+1 exits should be taken.  These return values are
+;           when an osint function returns, it must return a value indicating
+;           which of the n+1 exits should be taken.  these return values are
 ;           defined in header file 'inter.h'.
 ;
-;       Note:  in the actual implementation below, the saving and restoring
+;       note:  in the actual implementation below, the saving and restoring
 ;       of registers is actually done in one common routine accessed by all
 ;       interface routines.
 ;
-;       Other notes:
+;       other notes:
 ;
-;       Some C ompilers transform "internal" global names to
+;       some c ompilers transform "internal" global names to
 ;       "external" global names by adding a leading underscore at the front
-;       of the internal name.  Thus, the function name 'osopen' becomes
-;       '_osopen'.  However, not all C compilers follow this convention.
+;       of the internal name.  thus, the function name 'osopen' becomes
+;       '_osopen'.  however, not all c compilers follow this convention.
 ;
 ;------------
 ;
-;       Global Variables
+;       global variables
 ;
         segment	.data
 ; 	extern	swcoup
-; 
+;
 ; 	extern	stacksiz
 ; 	extern	lmodstk
 ; 	extern	lowsp
 ; 	extern	outptr
 ; 	extern	calltab
-; 
+;
 ; ;       .include "extrn386.inc"
-; 
-; 
-; ; Words saved during exit(-3)
+;
+;
+; ; words saved during exit(-3)
 ;  ;
 
 
 ; x86 doesn't have instructions equivalent to
-; x32 pushad and popad, so use macros to 
+; x32 pushad and popad, so use macros to
 ; provide the desired function
 	align	8
 	segment	.data
@@ -179,21 +179,21 @@ rsp_save:	dq	0
 	%endmacro
         align 8
 reg_block:
-reg_wa:	dq	0        ; Register WA (ECX)
-reg_wb:	dq 	0        ; Register WB (EBX)
+reg_wa:	dq	0        ; register wa (ecx)
+reg_wb:	dq 	0        ; register wb (ebx)
 reg_ia:
-reg_wc:	dq	0		; Register WC & IA (EDX)
-reg_xr:	dq	0        ; Register XR (EDI)
-reg_xl:	dq	0        ; Register XL (ESI)
-reg_cp:	dq	0        ; Register CP
-reg_ra	dq 	0.0  ; Register RA
+reg_wc:	dq	0		; register wc & ia (edx)
+reg_xr:	dq	0        ; register xr (edi)
+reg_xl:	dq	0        ; register xl (esi)
+reg_cp:	dq	0        ; register cp
+reg_ra	dq 	0.0  ; register ra
 ;
-; These locations save information needed to return after calling OSINT
-; and after a restart from EXIT()
+; these locations save information needed to return after calling osint
+; and after a restart from exit()
 ;
-reg_pc: dq      0               ; return PC from caller
-reg_pp: dq      0               ; Number of bytes of PPMs
-reg_xs:	dq	0;		 Minimal stack pointer
+reg_pc: dq      0               ; return pc from caller
+reg_pp: dq      0               ; number of bytes of ppms
+reg_xs:	dq	0;		 minimal stack pointer
 ;
 ;	r_size  equ       $-reg_block
 ; use computed value for nasm conversion, put back proper code later
@@ -205,17 +205,17 @@ reg_size:	dq   r_size
 ;
 
 ;
-;  Constants
+;  constants
 ;
 	global	ten
 ten:    dq      10              ; constant 10
         global  inf
-inf:	dq	0   
+inf:	dq	0
         dq      0x7ff00000      ; double precision infinity
 
 	global	sav_block
-;sav_block: times r_size db 0     ; Save Minimal registers during push/pop reg
-sav_block: times 88 db 0     ; Save Minimal registers during push/pop reg
+;sav_block: times r_size db 0     ; save minimal registers during push/pop reg
+sav_block: times 88 db 0     ; save minimal registers during push/pop reg
 ;
         align 8
 	global	ppoff
@@ -226,18 +226,18 @@ compsp: dq      0               ; 1.39 compiler's stack pointer
 sav_compsp:
         dq      0               ; save compsp here
 	global	osisp
-osisp:  dq      0               ; 1.39 OSINT's stack pointer
+osisp:  dq      0               ; 1.39 osint's stack pointer
 	global	_rc_
 _rc_:	dq   0	; return code from osint procedure
-; 
-%define SETREAL 0
 ;
-;       Setup a number of internal addresses in the compiler that cannot
-;       be directly accessed from within C because of naming difficulties.
+%define setreal 0
+;
+;       setup a number of internal addresses in the compiler that cannot
+;       be directly accessed from within c because of naming difficulties.
 ;
         global  ID1
 ID1:	dq   0
-%if SETREAL == 1
+%if setreal == 1
         dq       2
 
         dq       1
@@ -245,7 +245,7 @@ ID1:	dq   0
 %endif
 ;
         global  ID2BLK
-ID2BLK	dq   52
+ID2BLK:	dq   52
         dq      0
         times   52 db 0
 
@@ -259,7 +259,7 @@ TSCBLK:	 dq   512
         times   512 db 0
 
 ;
-;       Standard input buffer block.
+;       standard input buffer block.
 ;
         global  INPBUF
 INPBUF:	dq	0		; type word
@@ -274,7 +274,7 @@ INPBUF:	dq	0		; type word
         global  TTYBUF
 TTYBUF:	dq   0     ; type word
         dq      0               ; block length
-        dq      260             ; buffer size  (260 OK in MS-DOS with cinread())
+        dq      260             ; buffer size  (260 ok in ms-dos with cinread())
         dq      0               ; remaining chars to read
         dq      0               ; offset to next char to read
         dq      0               ; file position of buffer
@@ -282,26 +282,26 @@ TTYBUF:	dq   0     ; type word
         times   260 db 0         ; buffer
 ; ;-----------
 ; ;
-; ;       Save and restore MINIMAL and interface registers on stack.
-; ;       Used by any routine that needs to call back into the MINIMAL
-; ;       code in such a way that the MINIMAL code might trigger another
-; ;       SYSxx call before returning.
+; ;       save and restore minimal and interface registers on stack.
+; ;       used by any routine that needs to call back into the minimal
+; ;       code in such a way that the minimal code might trigger another
+; ;       sysxx call before returning.
 ; ;
-; ;       Note 1:  pushregs returns a collectable value in XL, safe
+; ;       note 1:  pushregs returns a collectable value in xl, safe
 ; ;       for subsequent call to memory allocation routine.
 ; ;
-; ;       Note 2:  these are not recursive routines.  Only reg_xl is
+; ;       note 2:  these are not recursive routines.  only reg_xl is
 ; ;       saved on the stack, where it is accessible to the garbage
-; ;       collector.  Other registers are just moved to a temp area.
+; ;       collector.  other registers are just moved to a temp area.
 ; ;
-; ;       Note 3:  popregs does not restore REG_CP, because it may have
-; ;       been modified by the Minimal routine called between pushregs
-; ;       and popregs as a result of a garbage collection.  Calling of
-; ;       another SYSxx routine in between is not a problem, because
-; ;       CP will have been preserved by Minimal.
+; ;       note 3:  popregs does not restore reg_cp, because it may have
+; ;       been modified by the minimal routine called between pushregs
+; ;       and popregs as a result of a garbage collection.  calling of
+; ;       another sysxx routine in between is not a problem, because
+; ;       cp will have been preserved by minimal.
 ; ;
-; ;       Note 4:  if there isn't a compiler stack yet, we don't bother
-; ;       saving XL.  This only happens in call of nextef from sysxi when
+; ;       note 4:  if there isn't a compiler stack yet, we don't bother
+; ;       saving xl.  this only happens in call of nextef from sysxi when
 ; ;       reloading a save file.
 ; ;
 ; ;
@@ -318,9 +318,9 @@ pushregs:
         or      rdi,rdi                         ; 1.39 is there a compiler stack
         je      push1                     ; 1.39 jump if none yet
         sub     rdi,8                           ;push onto compiler's stack
-        mov     rsi,qword [reg_xl]                      ;collectable XL
+        mov     rsi,qword [reg_xl]                      ;collectable xl
 	mov	[rdi],rsi
-        mov     qword [compsp],rdi                      ;smashed if call OSINT again (SYSGC)
+        mov     qword [compsp],rdi                      ;smashed if call osint again (sysgc)
         mov     qword [sav_compsp],rdi                  ;used by popregs
 
 push1:	popaq
@@ -329,7 +329,7 @@ push1:	popaq
 	global	popregs
 popregs:
 	pushaq
-        mov     rax,qword [reg_cp]                      ;don't restore CP
+        mov     rax,qword [reg_cp]                      ;don't restore cp
 	cld
 	lea	rsi,[sav_block]
         lea     rdi,[reg_block]                   ;unload saved registers
@@ -340,8 +340,8 @@ popregs:
         mov     rdi,qword [sav_compsp]                  ;saved compiler's stack
         or      rdi,rdi                         ;1.39 is there one?
         je      pop1                      ;1.39 jump if none yet
-        mov     rsi,qword [rdi]                       ;retrieve collectable XL
-        mov     qword [reg_xl],rsi                      ;update XL
+        mov     rsi,qword [rdi]                       ;retrieve collectable xl
+        mov     qword [reg_xl],rsi                      ;update xl
         add     rdi,8                           ;update compiler's sp
         mov     qword [compsp],rdi
 
@@ -354,81 +354,81 @@ pop1:	popaq
 ; ;
 ; ;       startup( char *dummy1, char *dummy2) - startup compiler
 ; ;
-; ;       An OSINT C function calls startup to transfer control
+; ;       an osint c function calls startup to transfer control
 ; ;       to the compiler.
 ; ;
-; ;       (XR) = basemem
-; ;       (XL) = topmem - sizeof(WORD)
+; ;       (xr) = basemem
+; ;       (xl) = topmem - sizeof(word)
 ; ;
-; ;	Note: This function never returns.
+; ;	note: this function never returns.
 ; ;
-; 
+;
 	global	startup
-;   Ordinals for MINIMAL calls from assembly language.
+;   ordinals for minimal calls from assembly language.
 ;
-;   The order of entries here must corrrspond to the order of
-;   calltab entries in the INTER assembly language module.
+;   the order of entries here must corrrspond to the order of
+;   calltab entries in the inter assembly language module.
 ;
-CALLTAB_RELAJ equ   0
-CALLTAB_RELCR equ   1
-CALLTAB_RELOC equ   2
-CALLTAB_ALLOC equ   3
-CALLTAB_ALOCS equ   4
-CALLTAB_ALOST equ   5
-CALLTAB_BLKLN equ   6
-CALLTAB_INSTA equ   7
-CALLTAB_RSTRT equ   8
-CALLTAB_START equ   9
-CALLTAB_FILNM equ   10
-CALLTAB_DTYPE equ   11
-CALLTAB_ENEVS equ   12
-CALLTAB_ENGTS equ   13
+calltab_relaj equ   0
+calltab_relcr equ   1
+calltab_reloc equ   2
+calltab_alloc equ   3
+calltab_alocs equ   4
+calltab_alost equ   5
+calltab_blkln equ   6
+calltab_insta equ   7
+calltab_rstrt equ   8
+calltab_start equ   9
+calltab_filnm equ   10
+calltab_dtype equ   11
+calltab_enevs equ   12
+calltab_engts equ   13
 
 
 startup:
         pop     rax                     ; discard return
         pop     rax                     ; discard dummy1
         pop     rax                     ; discard dummy2
-	call	stackinit               ; initialize MINIMAL stack
-        mov     rax,qword [compsp]              ; get MINIMAL's stack pointer
+	call	stackinit               ; initialize minimal stack
+        mov     rax,qword [compsp]              ; get minimal's stack pointer
         mov qword[reg_wa],rax                     ; startup stack pointer
 
-	cld                             ; default to UP direction for string ops
-;        GETOFF  rax,DFFNC               # get address of PPM offset
+	cld                             ; default to up direction for string ops
+;        getoff  rax,dffnc               # get address of ppm offset
         mov     qword [ppoff],rax               ; save for use later
 ;
-        mov     rsp,qword [osisp]               ; switch to new C stack
+        mov     rsp,qword [osisp]               ; switch to new c stack
 	call	at_note
-	push	CALLTAB_START
+	push	calltab_start
 	call	minimal			; load regs, switch stack, start compiler
 
-; 
-; 
-; 
+;
+;
+;
 ;
 ;-----------
 ;
-;	stackinit  -- initialize LOWSPMIN from sp.
+;	stackinit  -- initialize lowspmin from sp.
 ;
-;	Input:  sp - current C stack
-;		stacksiz - size of drsired Minimal stack in bytes
+;	input:  sp - current c stack
+;		stacksiz - size of drsired minimal stack in bytes
 ;
-;	Uses:	rax
+;	uses:	rax
 ;
-;	Output: register WA, sp, LOWSPMIN, compsp, osisp set up per diagram:
+;	output: register wa, sp, lowspmin, compsp, osisp set up per diagram:
 ;
 ;	(high)	+----------------+
-;		|  old C stack   |
-;	  	|----------------| <-- incoming sp, resultant WA (future XS)
+;		|  old c stack   |
+;	  	|----------------| <-- incoming sp, resultant wa (future xs)
 ;		|	     ^	 |
 ;		|	     |	 |
 ;		/ stacksiz bytes /
 ;		|	     |	 |
 ;		|            |	 |
-;		|----------- | --| <-- resultant LOWSPMIN
+;		|----------- | --| <-- resultant lowspmin
 ;		| 400 bytes  v   |
-;	  	|----------------| <-- future C stack pointer, osisp
-;		|  new C stack	 |
+;	  	|----------------| <-- future c stack pointer, osisp
+;		|  new c stack	 |
 ;	(low)	|                |
 ;
 ;
@@ -437,34 +437,34 @@ startup:
 	global	stackinit
 stackinit:
 	mov	rax,rsp
-        mov     qword [compsp],rax              ; save as MINIMAL's stack pointer
-	sub	rax,qword [stacksiz]            ; end of MINIMAL stack is where C stack will start
-        mov     qword [osisp],rax               ; save new C stack pointer
-	add	rax,8*100               ; 100 words smaller for CHK
-	extern	LOWSPMIN
-	mov	qword [LOWSPMIN],rax
+        mov     qword [compsp],rax              ; save as minimal's stack pointer
+	sub	rax,qword [stacksiz]            ; end of minimal stack is where c stack will start
+        mov     qword [osisp],rax               ; save new c stack pointer
+	add	rax,8*100               ; 100 words smaller for chk
+	extern	lowspmin
+	mov	qword [lowspmin],rax
 	ret
 
 ;
 ;-----------
 ;
-;       mimimal -- call MINIMAL function from C
+;       mimimal -- call minimal function from c
 ;
-;       Usage:  extern void minimal(WORD callno)
+;       usage:  extern void minimal(word callno)
 ;
 ;       where:
 ;         callno is an ordinal defined in osint.h, osint.inc, and calltab.
 ;
-;       Minimal registers WA, WB, WC, XR, and XL are loaded and
+;       minimal registers wa, wb, wc, xr, and xl are loaded and
 ;       saved from/to the register block.
 ;
-;       Note that before restart is called, we do not yet have compiler
-;       stack to switch to.  In that case, just make the call on the
-;       the OSINT stack.
+;       note that before restart is called, we do not yet have compiler
+;       stack to switch to.  in that case, just make the call on the
+;       the osint stack.
 ;
 
  minimal:
-         pushaq                          ; save all registers for C
+         pushaq                          ; save all registers for c
 	call	at_note2
          mov     rax,qword [rsp+32+8]          ; get ordinal
          mov     rcx,qword [reg_wa]              ; restore registers
@@ -473,20 +473,20 @@ stackinit:
  	mov	rdi,qword [reg_xr]
  	mov	rsi,qword [reg_xl]
  	mov	rbp,qword [reg_cp]
- 
-         mov     qword [osisp],rsp               ; 1.39 save OSINT stack pointer
+
+         mov     qword [osisp],rsp               ; 1.39 save osint stack pointer
          cmp     qword [compsp],0      ; 1.39 is there a compiler stack?
          je      min1              ; 1.39 jump if none yet
          mov     rsp,qword [compsp]              ; 1.39 switch to compiler stack
 	call	at_note
- 
- min1:   
-	extern	START
-	call	START
-;		call   qword [calltab+rax*8]        ; off to the Minimal code
- 
-         mov     rsp,qword [osisp]               ; 1.39 switch to OSINT stack
- 
+
+ min1:
+	extern	start
+	call	start
+;		call   qword [calltab+rax*8]        ; off to the minimal code
+
+         mov     rsp,qword [osisp]               ; 1.39 switch to osint stack
+
          mov     qword [reg_wa],rcx              ; save registers
  	mov	qword [reg_wb],rbx
  	mov	qword [reg_wc],rdx
@@ -495,64 +495,64 @@ stackinit:
  	mov	qword [reg_cp],rbp
  	popaq
  	ret
- 
- 
+
+
         section		.data
         align         8
 	global	hasfpu
 hasfpu:	dq	0
 	global	cprtmsg
 cprtmsg:
-	db          ' Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.',0,0
+	db          ' copyright 1987-2012 robert b. k. dewar and mark emmer.',0,0
 
 
-;       Interface routines
+;       interface routines
 
-;       Each interface routine takes the following form:
+;       each interface routine takes the following form:
 
-;               SYSXX   call    ccaller         ; call common interface
-;                       dq      zysxx           ; dq      of C OSINT function
+;               sysxx   call    ccaller         ; call common interface
+;                       dq      zysxx           ; dq      of c osint function
 ;                       db      n               ; offset to instruction after
 ;                                               ;   last procedure exit
 
-;       In an effort to achieve portability of C OSINT functions, we
+;       in an effort to achieve portability of c osint functions, we
 ;       do not take take advantage of any "internal" to "external"
-;       transformation of names by C compilers.  So, a C OSINT function
-;       representing sysxx is named _zysxx.  This renaming should satisfy
-;       all C compilers.
+;       transformation of names by c compilers.  so, a c osint function
+;       representing sysxx is named _zysxx.  this renaming should satisfy
+;       all c compilers.
 
-;       IMPORTANT  ONE interface routine, SYSFC, is passed arguments on
-;       the stack.  These items are removed from the stack before calling
+;       important  one interface routine, sysfc, is passed arguments on
+;       the stack.  these items are removed from the stack before calling
 ;       ccaller, as they are not needed by this implementation.
 
 
 ;-----------
 
-;       CCALLER is called by the OS interface routines to call the
-;       real C OS interface function.
+;       ccaller is called by the os interface routines to call the
+;       real c os interface function.
 
-;       General calling sequence is
+;       general calling sequence is
 
 ;               call    ccaller
-;               dq      address_of_C_function
+;               dq      address_of_c_function
 ;               db      2*number_of_exit_points
 
-;       Control IS NEVER returned to a interface routine.  Instead, control
-;       is returned to the compiler (THE caller of the interface routine).
+;       control is never returned to a interface routine.  instead, control
+;       is returned to the compiler (the caller of the interface routine).
 
-;       The C function that is called MUST ALWAYS return an integer
+;       the c function that is called must always return an integer
 ;       indicating the procedure exit to take or that a normal return
 ;       is to be performed.
 
-;               C function      Interpretation
+;               c function      interpretation
 ;               return value
 ;               ------------    -------------------------------------------
-;                    <0         Do normal return to instruction past
+;                    <0         do normal return to instruction past
 ;                               last procedure exit (distance passed
 ;                               in by dummy routine and saved on stack)
-;                     0         Take procedure exit 1
-;                     4         Take procedure exit 2
-;                     8         Take procedure exit 3
+;                     0         take procedure exit 1
+;                     4         take procedure exit 2
+;                     8         take procedure exit 3
 ;                    ...        ...
 
 
@@ -561,49 +561,49 @@ call_adr:	dq	0
 	segment	.text
 
 ccaller:
-;       (1) Save registers in global variables
+;       (1) save registers in global variables
 
         mov     qword [reg_wa],rcx              ; save registers
 	mov	qword [reg_wb],rbx
         mov     qword [reg_wc],rdx              ; (also _reg_ia)
 	mov	qword [reg_xr],rdi
 	mov	qword [reg_xl],rsi
-        mov     qword [reg_cp],rbp              ; Needed in image saved by sysxi
+        mov     qword [reg_cp],rbp              ; needed in image saved by sysxi
 
-;       (2) Get pointer to arg list
+;       (2) get pointer to arg list
 
         pop     rsi                     ; point to arg list
 
-;       (3) Fetch dq      of C function], fetch offset to 1st instruction
-;           past last procedure exit], and call C function.
+;       (3) fetch dq      of c function], fetch offset to 1st instruction
+;           past last procedure exit], and call c function.
 
-        cs                              ; CS segment override
-        lodsd                           ; point to C function entry point
+        cs                              ; cs segment override
+        lodsd                           ; point to c function entry point
 	mov	qword [call_adr],rax
-;       lodsd   cs:ccaller              ; point to C function entry point
-;	word after callee address used to be ppm count. Now used for debug
+;       lodsd   cs:ccaller              ; point to c function entry point
+;	word after callee address used to be ppm count. now used for debug
 	mov	rbx,qword[rsi]
         mov     qword [reg_pp],rbx              ; in memory
-        pop     qword [reg_pc]                  ; save return PC past "CALL SYSXX"
+        pop     qword [reg_pc]                  ; save return pc past "call sysxx"
 
-;       (3a) Save compiler stack and switch to OSINT stack
+;       (3a) save compiler stack and switch to osint stack
 
-; DS 12/22/12 Note that needn't save and restore stack ptrs if not using
+; ds 12/22/12 note that needn't save and restore stack ptrs if not using
 ; 	save files or load modules
          mov     qword [compsp],rsp              ; 1.39 save compiler's stack pointer
-         mov     rsp,qword [osisp]               ; 1.39 load OSINT's stack pointer
+         mov     rsp,qword [osisp]               ; 1.39 load osint's stack pointer
 
-;       (3b) Make call to OSINT
+;       (3b) make call to osint
 	mov	rax,qword [call_adr]
-        call    rax                     ; call C interface function
+        call    rax                     ; call c interface function
 
 	mov	qword [_rc_],rax		; save return code from function
 
-;       (4) Restore registers after C function returns.
+;       (4) restore registers after c function returns.
 
 
-cc1:    
- 	mov     qword [osisp],rsp               ; 1.39 save OSINT's stack pointer
+cc1:
+ 	mov     qword [osisp],rsp               ; 1.39 save osint's stack pointer
         mov     rsp,qword [compsp]              ; 1.39 restore compiler's stack pointer
         mov     rcx,qword [reg_wa]              ; restore registers
 	mov	rbx,qword [reg_wb]
@@ -620,243 +620,243 @@ cc1:
 
 ;---------------
 
-;       Individual OSINT routine entry points
+;       individual osint routine entry points
 
-        global SYSAX
+        global sysax
 	extern	zysax
-SYSAX:	call	ccaller
+sysax:	call	ccaller
         dq        zysax
         dq   1
 
-        global SYSBS
+        global sysbs
 	extern	zysbs
-SYSBS:	call	ccaller
+sysbs:	call	ccaller
         dq        zysbs
         dq   2
 
-        global SYSBX
+        global sysbx
 	extern	zysbx
-SYSBX:	mov	qword [reg_xs],rsp
+sysbx:	mov	qword [reg_xs],rsp
 	call	ccaller
         dq      zysbx
         dq   2
 
-;        global SYSCR
+;        global syscr
 ;	extern	zyscr
-;SYSCR:  call    ccaller
+;syscr:  call    ccaller
 ;        dq      zyscr
 ;        dq   0
 ;
-        global SYSDC
+        global sysdc
 	extern	zysdc
-SYSDC:	call	ccaller
+sysdc:	call	ccaller
         dq      zysdc
         dq   4
 
-        global SYSDM
+        global sysdm
 	extern	zysdm
-SYSDM:	call	ccaller
+sysdm:	call	ccaller
         dq      zysdm
         dq   5
 
-        global SYSDT
+        global sysdt
 	extern	zysdt
-SYSDT:	call	ccaller
+sysdt:	call	ccaller
         dq      zysdt
         dq   6
 
-        global SYSEA
+        global sysea
 	extern	zysea
-SYSEA:	call	ccaller
+sysea:	call	ccaller
         dq      zysea
         dq   7
 
-        global SYSEF
+        global sysef
 	extern	zysef
-SYSEF:	call	ccaller
+sysef:	call	ccaller
         dq      zysef
         dq   8
 
-        global SYSEJ
+        global sysej
 	extern	zysej
-SYSEJ:	call	ccaller
+sysej:	call	ccaller
         dq      zysej
         dq   9
 
-        global SYSEM
+        global sysem
 	extern	zysem
-SYSEM:	call	ccaller
+sysem:	call	ccaller
         dq      zysem
         dq   10
 
-        global SYSEN
+        global sysen
 	extern	zysen
-SYSEN:	call	ccaller
+sysen:	call	ccaller
         dq      zysen
         dq   11
 
-        global SYSEP
+        global sysep
 	extern	zysep
-SYSEP:	call	ccaller
+sysep:	call	ccaller
         dq      zysep
         dq  	12
 
-        global SYSEX
+        global sysex
 	extern	zysex
-SYSEX:	mov	qword [reg_xs],rsp
+sysex:	mov	qword [reg_xs],rsp
 	call	ccaller
         dq      zysex
         dq   13
 
-        global SYSFC
+        global sysfc
 	extern	zysfc
-SYSFC:  pop     rax             ; <<<<remove stacked SCBLK>>>>
+sysfc:  pop     rax             ; <<<<remove stacked scblk>>>>
 	lea	rsp,[rsp+rdx*8]
 	push	rax
 	call	ccaller
         dq      zysfc
         dq   14
 
-        global SYSGC
+        global sysgc
 	extern	zysgc
-SYSGC:	call	ccaller
+sysgc:	call	ccaller
         dq      zysgc
         dq   15
 
-        global SYSHS
+        global syshs
 	extern	zyshs
-SYSHS:	mov	qword [reg_xs],rsp
+syshs:	mov	qword [reg_xs],rsp
 	call	ccaller
         dq      zyshs
         dq   16
 
-        global SYSID
+        global sysid
 	extern	zysid
-SYSID:	call	ccaller
+sysid:	call	ccaller
         dq      zysid
         dq   17
 
-        global SYSIF
+        global sysif
 	extern	zysif
-SYSIF:	call	ccaller
+sysif:	call	ccaller
         dq      zysif
         dq   18
 
-        global SYSIL
+        global sysil
 	extern	zysil
-SYSIL:  call    ccaller
+sysil:  call    ccaller
         dq      zysil
         dq   19
 
-        global SYSIN
+        global sysin
 	extern	zysin
-SYSIN:	call	ccaller
+sysin:	call	ccaller
         dq      zysin
         dq   20
 
-        global SYSIO
+        global sysio
 	extern	zysio
-SYSIO:	call	ccaller
+sysio:	call	ccaller
         dq      zysio
         dq   21
 
-        global SYSLD
+        global sysld
 	extern	zysld
-SYSLD:  call    ccaller
+sysld:  call    ccaller
         dq      zysld
         dq   22
 
-        global SYSMM
+        global sysmm
 	extern	zysmm
-SYSMM:	call	ccaller
+sysmm:	call	ccaller
         dq      zysmm
         dq   23
 
-        global SYSMX
+        global sysmx
 	extern	zysmx
-SYSMX:	call	ccaller
+sysmx:	call	ccaller
         dq      zysmx
         dq   24
 
-        global SYSOU
+        global sysou
 	extern	zysou
-SYSOU:	call	ccaller
+sysou:	call	ccaller
         dq      zysou
         dq   25
 
-        global SYSPI
+        global syspi
 	extern	zyspi
-SYSPI:	call	ccaller
+syspi:	call	ccaller
         dq      zyspi
         dq   26
 
-        global SYSPL
+        global syspl
 	extern	zyspl
-SYSPL:	call	ccaller
+syspl:	call	ccaller
         dq      zyspl
         dq   27
 
-        global SYSPP
+        global syspp
 	extern	zyspp
-SYSPP:	call	ccaller
+syspp:	call	ccaller
         dq      zyspp
         dq   28
 
-        global SYSPR
+        global syspr
 	extern	zyspr
-SYSPR:	call	ccaller
+syspr:	call	ccaller
         dq      zyspr
         dq   29
 
-        global SYSRD
+        global sysrd
 	extern	zysrd
-SYSRD:	call	ccaller
+sysrd:	call	ccaller
         dq      zysrd
         dq   30
 
-        global SYSRI
+        global sysri
 	extern	zysri
-SYSRI:	call	ccaller
+sysri:	call	ccaller
         dq      zysri
         dq   32
 
-        global SYSRW
+        global sysrw
 	extern	zysrw
-SYSRW:	call	ccaller
+sysrw:	call	ccaller
         dq      zysrw
         dq   33
 
-        global SYSST
+        global sysst
 	extern	zysst
-SYSST:	call	ccaller
+sysst:	call	ccaller
         dq      zysst
         dq   34
 
-        global SYSTM
+        global systm
 	extern	zystm
-SYSTM:	call	ccaller
+systm:	call	ccaller
 systm_p: dq      zystm
         dq   35
 
-        global SYSTT
+        global systt
 	extern	zystt
-SYSTT:	call	ccaller
+systt:	call	ccaller
         dq      zystt
         dq   36
 
-        global SYSUL
+        global sysul
 	extern	zysul
-SYSUL:	call	ccaller
+sysul:	call	ccaller
         dq      zysul
         dq   37
 
-        global SYSXI
+        global sysxi
 	extern	zysxi
-SYSXI:	mov	qword [reg_xs],rsp
+sysxi:	mov	qword [reg_xs],rsp
 	call	ccaller
 sysxi_p: dq      zysxi
         dq   38
-; SPITBOL math routine interface 
+; spitbol math routine interface
 
 	%macro	callext	2
 	extern	%1
@@ -866,41 +866,41 @@ sysxi_p: dq      zysxi
 
 ;-----------
 ;
-;       CVD_ - convert by division
+;       cvd_ - convert by division
 ;
-;       Input   IA (EDX) = number <=0 to convert
-;       Output  IA / 10
-;               WA (ECX) = remainder + '0'
+;       input   ia (edx) = number <=0 to convert
+;       output  ia / 10
+;               wa (ecx) = remainder + '0'
 ;
-        global  CVD_
+        global  cvd_
 
-CVD_:
-        xchg    rax,rdx         ; IA to EAX
+cvd_:
+        xchg    rax,rdx         ; ia to eax
         cdq                     ; sign extend
         idiv    qword [ten]   ; divide by 10. rdx = remainder (negative)
         neg     rdx             ; make remainder positive
         add     dl,0x30         ; convert remainder to ascii ('0')
-        mov     rcx,rdx         ; return remainder in WA
-        xchg    rdx,rax         ; return quotient in IA
+        mov     rcx,rdx         ; return remainder in wa
+        xchg    rdx,rax         ; return quotient in ia
 	ret
 
 ;
 ;-----------
 ;
-;       DVI_ - divide IA (EDX) by long in EAX
+;       dvi_ - divide ia (edx) by long in eax
 ;
-        global  DVI_
+        global  dvi_
 
-DVI_:
+dvi_:
         or      rax,rax         ; test for 0
         jz      setovr    	; jump if 0 divisor
-        push    rbp             ; preserve CP
+        push    rbp             ; preserve cp
         xchg    rbp,rax         ; divisor to rbp
         xchg    rax,rdx         ; dividend in rax
         cdq                     ; extend dividend
         idiv    rbp             ; perform division. rax=quotient, rdx=remainder
-        xchg    rdx,rax         ; place quotient in rdx (IA)
-        pop     rbp             ; restore CP
+        xchg    rdx,rax         ; place quotient in rdx (ia)
+        pop     rbp             ; restore cp
         xor     rax,rax         ; clear overflow indicator
 	ret
 
@@ -908,20 +908,20 @@ DVI_:
 ;
 ;-----------
 ;
-;       RMI_ - remainder of IA (EDX) divided by long in EAX
+;       rmi_ - remainder of ia (edx) divided by long in eax
 ;
-        global  RMI_
-RMI_:
+        global  rmi_
+rmi_:
         or      rax,rax         ; test for 0
         jz      setovr    ; jump if 0 divisor
-        push    rbp             ; preserve CP
+        push    rbp             ; preserve cp
         xchg    rbp,rax         ; divisor to rbp
         xchg    rax,rdx         ; dividend in rax
         cdq                     ; extend dividend
         idiv    rbp             ; perform division. rax=quotient, rdx=remainder
-        pop     rbp             ; restore CP
+        pop     rbp             ; restore cp
         xor     rax,rax         ; clear overflow indicator
-        ret                     ; return remainder in rdx (IA)
+        ret                     ; return remainder in rdx (ia)
 setovr: mov     al,0x80         ; set overflow indicator
 	dec	al
 	ret
@@ -930,67 +930,67 @@ setovr: mov     al,0x80         ; set overflow indicator
 
 ;----------
 ;
-;    Calls to C
+;    calls to c
 ;
-;       The calling convention of the various compilers:
+;       the calling convention of the various compilers:
 ;
-;       Integer results returned in EAX.
-;       Float results returned in ST0 for Intel.
-;       See conditional switches fretst0 and
-;       fretrax. 
+;       integer results returned in eax.
+;       float results returned in st0 for intel.
+;       see conditional switches fretst0 and
+;       fretrax.
 ;
-;       C function preserves EBP, EBX, ESI, EDI.
+;       c function preserves ebp, ebx, esi, edi.
 ;
 
 ; define how floating point results are returned from a function
-; (either in ST(0) or in EDX:EAX.
+; (either in st(0) or in edx:eax.
 %define fretst0 1
 %define fretrax 0
 
 ;----------
 ;
-;       RTI_ - convert real in RA to integer in IA
-;               returns C=0 if fit OK, C=1 if too large to convert
+;       rti_ - convert real in ra to integer in ia
+;               returns c=0 if fit ok, c=1 if too large to convert
 ;
-        global  RTI_
-RTI_:
-; 41E00000 00000000 = 2147483648.0
-; 41E00000 00200000 = 2147483649.0
-        mov     rax, qword [reg_ra+4]  ; RA msh
+        global  rti_
+rti_:
+; 41e00000 00000000 = 2147483648.0
+; 41e00000 00200000 = 2147483649.0
+        mov     rax, qword [reg_ra+4]  ; ra msh
         btr     rax,31          ; take absolute value, sign bit to carry flag
-        jc      RTI_2     ; jump if negative real
-        cmp     rax,0x41E00000  ; test against 2147483648
-        jae     RTI_1     ; jump if >= +2147483648
-RTI_3:  push    rcx             ; protect against C routine usage.
-        push    rax             ; push RA MSH
-        push    qword [reg_ra]  ; push RA LSH
+        jc      rti_2     ; jump if negative real
+        cmp     rax,0x41e00000  ; test against 2147483648
+        jae     rti_1     ; jump if >= +2147483648
+rti_3:  push    rcx             ; protect against c routine usage.
+        push    rax             ; push ra msh
+        push    qword [reg_ra]  ; push ra lsh
         callext f_2_i,8         ; float to integer
-        xchg    rax,rdx         ; return integer in rdx (IA)
+        xchg    rax,rdx         ; return integer in rdx (ia)
         pop     rcx             ; restore rcx
         clc
 	ret
 
 ; here to test negative number, made positive by the btr instruction
-RTI_2:  cmp     rax,0x41E00000          ; test against 2147483649
-        jb      RTI_0             ; definately smaller
-        ja      RTI_1             ; definately larger
+rti_2:  cmp     rax,0x41e00000          ; test against 2147483649
+        jb      rti_0             ; definately smaller
+        ja      rti_1             ; definately larger
         cmp     word [reg_ra+2], 0x0020
-        jae     RTI_1
-RTI_0:  btc     rax,31                  ; make negative again
-        jmp     RTI_3
-RTI_1:  stc                             ; return C=1 for too large to convert
+        jae     rti_1
+rti_0:  btc     rax,31                  ; make negative again
+        jmp     rti_3
+rti_1:  stc                             ; return c=1 for too large to convert
         ret
 
 ;
 ;----------
 ;
-;       ITR_ - convert integer in IA to real in RA
+;       itr_ - convert integer in ia to real in ra
 ;
-        global  ITR_
-ITR_:
+        global  itr_
+itr_:
 
         push    rcx             ; preserve
-        push    rdx             ; push IA
+        push    rdx             ; push ia
         callext i_2_f,4         ; integer to float
 %if fretst0
 	fstp	qword [reg_ra]
@@ -998,7 +998,7 @@ ITR_:
 	fwait
 %endif
 %if fretrax
-        mov     qword [reg_ra,rax    ; return result in RA
+        mov     qword [reg_ra,rax    ; return result in ra
 	mov	qword [reg_ra+4,rdx
         pop     rcx             ; restore rcx
 %endif
@@ -1007,10 +1007,10 @@ ITR_:
 ;
 ;----------
 ;
-;       LDR_ - load real pointed to by rax to RA
+;       ldr_ - load real pointed to by rax to ra
 ;
-        global  LDR_
-LDR_:
+        global  ldr_
+ldr_:
 
         push    qword [rax]                 ; lsh
 	pop	qword [reg_ra]
@@ -1021,10 +1021,10 @@ LDR_:
 ;
 ;----------
 ;
-;       STR_ - store RA in real pointed to by rax
+;       str_ - store ra in real pointed to by rax
 ;
-        global  STR_
-STR_:
+        global  str_
+str_:
 
         push    qword [reg_ra]               ; lsh
 	pop	qword [rax]
@@ -1035,15 +1035,15 @@ STR_:
 ;
 ;----------
 ;
-;       ADR_ - add real at [rax] to RA
+;       adr_ - add real at [rax] to ra
 ;
-        global  ADR_
-ADR_:
+        global  adr_
+adr_:
 
-        push    rcx                             ; preserve regs for C
+        push    rcx                             ; preserve regs for c
 	push	rdx
-        push    qword [reg_ra+4]             ; RA msh
-        push    qword [reg_ra]               ; RA lsh
+        push    qword [reg_ra+4]             ; ra msh
+        push    qword [reg_ra]               ; ra lsh
         push    qword [rax+4]               ; arg msh
         push    qword [rax]                 ; arg lsh
         callext f_add,16                        ; perform op
@@ -1064,15 +1064,15 @@ ADR_:
 ;
 ;----------
 ;
-;       SBR_ - subtract real at [rax] from RA
+;       sbr_ - subtract real at [rax] from ra
 ;
-        global  SBR_
+        global  sbr_
 
-SBR_:
-        push    rcx                             ; preserve regs for C
+sbr_:
+        push    rcx                             ; preserve regs for c
 	push	rdx
-        push    qword [reg_ra+4]             ; RA msh
-        push    qword [reg_ra]               ; RA lsh
+        push    qword [reg_ra+4]             ; ra msh
+        push    qword [reg_ra]               ; ra lsh
         push    qword [rax+4]               ; arg msh
         push    qword [rax]                 ; arg lsh
         callext f_sub,16                        ; perform op
@@ -1093,15 +1093,15 @@ SBR_:
 ;
 ;----------
 ;
-;       MLR_ - multiply real in RA by real at [rax]
+;       mlr_ - multiply real in ra by real at [rax]
 ;
-        global  MLR_
+        global  mlr_
 
-MLR_:
-        push    rcx                             ; preserve regs for C
+mlr_:
+        push    rcx                             ; preserve regs for c
 	push	rdx
-        push    qword [reg_ra+4]              ; RA msh
-        push    qword [reg_ra]                ; RA lsh
+        push    qword [reg_ra+4]              ; ra msh
+        push    qword [reg_ra]                ; ra lsh
         push    qword [rax+4]               ; arg msh
         push    qword [rax]                 ; arg lsh
         callext f_mul,16                        ; perform op
@@ -1122,15 +1122,15 @@ MLR_:
 ;
 ;----------
 ;
-;       DVR_ - divide real in RA by real at [rax]
+;       dvr_ - divide real in ra by real at [rax]
 ;
-        global  DVR_
+        global  dvr_
 
-DVR_:
-        push    rcx                             ; preserve regs for C
+dvr_:
+        push    rcx                             ; preserve regs for c
 	push	rdx
-        push    qword [reg_ra+4]              ; RA msh
-        push    qword [reg_ra]                ; RA lsh
+        push    qword [reg_ra+4]              ; ra msh
+        push    qword [reg_ra]                ; ra lsh
         push    qword [rax+4]               ; arg msh
         push    qword [rax]                 ; arg lsh
         callext f_div,16                        ; perform op
@@ -1151,11 +1151,11 @@ DVR_:
 ;
 ;----------
 ;
-;       NGR_ - negate real in RA
+;       ngr_ - negate real in ra
 ;
-        global  NGR_
+        global  ngr_
 
-NGR_:
+ngr_:
 	cmp	qword [reg_ra], 0
 	jne	ngr_1
 	cmp	qword [reg_ra+4], 0
@@ -1166,15 +1166,15 @@ ngr_2:	ret
 ;
 ;----------
 ;
-;       ATN_ arctangent of real in RA
+;       atn_ arctangent of real in ra
 ;
-        global  ATN_
+        global  atn_
 
-ATN_:
-        push    rcx                             ; preserve regs for C
+atn_:
+        push    rcx                             ; preserve regs for c
 	push	rdx
-        push    qword [reg_ra+4]              ; RA msh
-        push    qword [reg_ra]                ; RA lsh
+        push    qword [reg_ra+4]              ; ra msh
+        push    qword [reg_ra]                ; ra lsh
         callext f_atn,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
@@ -1193,16 +1193,16 @@ ATN_:
 ;
 ;----------
 ;
-;       CHP_ chop fractional part of real in RA
+;       chp_ chop fractional part of real in ra
 ;
-        global  CHP_
+        global  chp_
 
 
-CHP_:
-        push    rcx                             ; preserve regs for C
+chp_:
+        push    rcx                             ; preserve regs for c
 	push	rdx
-        push    qword [reg_ra+4]              ; RA msh
-        push    qword [reg_ra]                ; RA lsh
+        push    qword [reg_ra+4]              ; ra msh
+        push    qword [reg_ra]                ; ra lsh
         callext f_chp,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
@@ -1221,15 +1221,15 @@ CHP_:
 ;
 ;----------
 ;
-;       COS_ cosine of real in RA
+;       cos_ cosine of real in ra
 ;
-        global  COS_
+        global  cos_
 
-COS_:
-        push    rcx                             ; preserve regs for C
+cos_:
+        push    rcx                             ; preserve regs for c
 	push	rdx
-        push    qword [reg_ra+4]              ; RA msh
-        push    qword [reg_ra]                ; RA lsh
+        push    qword [reg_ra+4]              ; ra msh
+        push    qword [reg_ra]                ; ra lsh
         callext f_cos,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
@@ -1248,15 +1248,15 @@ COS_:
 ;
 ;----------
 ;
-;       ETX_ exponential of real in RA
+;       etx_ exponential of real in ra
 ;
-        global  ETX_
+        global  etx_
 
-ETX_:
-        push    rcx                             ; preserve regs for C
+etx_:
+        push    rcx                             ; preserve regs for c
 	push	rdx
-        push    qword [reg_ra+4]              ; RA msh
-        push    qword [reg_ra]                ; RA lsh
+        push    qword [reg_ra+4]              ; ra msh
+        push    qword [reg_ra]                ; ra lsh
         callext f_etx,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
@@ -1275,15 +1275,15 @@ ETX_:
 ;
 ;----------
 ;
-;       LNF_ natural logarithm of real in RA
+;       lnf_ natural logarithm of real in ra
 ;
-        global  LNF_
+        global  lnf_
 
-LNF_:
-        push    rcx                             ; preserve regs for C
+lnf_:
+        push    rcx                             ; preserve regs for c
 	push	rdx
-        push    qword [reg_ra+4]              ; RA msh
-        push    qword [reg_ra]                ; RA lsh
+        push    qword [reg_ra+4]              ; ra msh
+        push    qword [reg_ra]                ; ra lsh
         callext f_lnf,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
@@ -1302,16 +1302,16 @@ LNF_:
 ;
 ;----------
 ;
-;       SIN_ arctangent of real in RA
+;       sin_ arctangent of real in ra
 ;
-        global  SIN_
+        global  sin_
 
-SIN_:
+sin_:
 
-        push    rcx                             ; preserve regs for C
+        push    rcx                             ; preserve regs for c
 	push	rdx
-        push    qword [reg_ra+4]              ; RA msh
-        push    qword [reg_ra]               ; RA lsh
+        push    qword [reg_ra+4]              ; ra msh
+        push    qword [reg_ra]               ; ra lsh
         callext f_sin,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
@@ -1330,15 +1330,15 @@ SIN_:
 ;
 ;----------
 ;
-;       SQR_ arctangent of real in RA
+;       sqr_ arctangent of real in ra
 ;
-        global  SQR_
+        global  sqr_
 
-SQR_:
-        push    rcx                             ; preserve regs for C
+sqr_:
+        push    rcx                             ; preserve regs for c
 	push	rdx
-        push    qword [reg_ra+4]              ; RA msh
-        push    qword [reg_ra]                ; RA lsh
+        push    qword [reg_ra+4]              ; ra msh
+        push    qword [reg_ra]                ; ra lsh
         callext f_sqr,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
@@ -1356,15 +1356,15 @@ SQR_:
 ;
 ;----------
 ;
-;       TAN_ arctangent of real in RA
+;       tan_ arctangent of real in ra
 ;
-        global  TAN_
+        global  tan_
 
-TAN_:
-        push    rcx                             ; preserve regs for C
+tan_:
+        push    rcx                             ; preserve regs for c
 	push	rdx
-        push    qword [reg_ra+4]              ; RA msh
-        push    qword [reg_ra]                ; RA lsh
+        push    qword [reg_ra+4]              ; ra msh
+        push    qword [reg_ra]                ; ra lsh
         callext f_tan,8                         ; perform op
 %if fretst0
         fstp	qword [reg_ra]
@@ -1383,10 +1383,10 @@ TAN_:
 ;
 ;----------
 ;
-;       CPR_ compare real in RA to 0
+;       cpr_ compare real in ra to 0
 ;
-        global  CPR_
-CPR_:
+        global  cpr_
+cpr_:
         mov     rax, qword [reg_ra+4] ; fetch msh
         cmp     rax, 0x8000000000000000         ; test msh for -0.0
         je      cpr050            ; possibly
@@ -1401,11 +1401,11 @@ cpr100:	ret
 
 ;----------
 ;
-;       OVR_ test for overflow value in RA
+;       ovr_ test for overflow value in ra
 
-	global	OVR_
+	global	ovr_
 
-OVR_:   
+ovr_:
         mov     ax, word [reg_ra+6]   ; get top 2 bytes
         and     ax, 0x7ff0              ; check for infinity or nan
         add     ax, 0x10                ; set/clear overflow accordingly
@@ -1425,83 +1425,83 @@ tryfpu:
 
 
 ; # procedures needed for save file / load module support -- debug later
-; 
+;
 ; #
 ; #-----------
 ; #
-; #       get_fp  - get C caller's FP (frame pointer)
+; #       get_fp  - get c caller's fp (frame pointer)
 ; #
-; #       get_fp() returns the frame pointer for the C function that called
-; #       this function.  HOWEVER, THIS FUNCTION IS ONLY CALLED BY ZYSXI.
+; #       get_fp() returns the frame pointer for the c function that called
+; #       this function.  however, this function is only called by zysxi.
 ; #
-; #       C function zysxi calls this function to determine the lowest USEFUL
+; #       c function zysxi calls this function to determine the lowest useful
 ; #       word on the stack, so that only the useful part of the stack will be
 ; #       saved in the load module.
 ; #
-; #       The flow goes like this:
+; #       the flow goes like this:
 ; #
-; #       (1) User's spitbol program calls EXIT function
+; #       (1) user's spitbol program calls exit function
 ; #
 ; #       (2) spitbol compiler calls interface routine sysxi to handle exit
 ; #
-; #       (3) Interface routine sysxi passes control to ccaller which then
-; #           calls C function zysxi
+; #       (3) interface routine sysxi passes control to ccaller which then
+; #           calls c function zysxi
 ; #
-; #       (4) C function zysxi will write a load module, but needs to save
-; #           a copy of the current stack in the load module.  The base of
+; #       (4) c function zysxi will write a load module, but needs to save
+; #           a copy of the current stack in the load module.  the base of
 ; #           the part of the stack to be saved begins with the frame of our
 ; #           caller, so that the load module can execute a return to ccaller.
 ; #
-; #           This will allow the load module to pretend to be returning from
-; #           C function zysxi.  So, C function zysxi calls this function,
-; #           get_fp, to determine the BASE OF THE USEFUL PART OF THE STACK.
+; #           this will allow the load module to pretend to be returning from
+; #           c function zysxi.  so, c function zysxi calls this function,
+; #           get_fp, to determine the base of the useful part of the stack.
 ; #
-; #           We cheat just a little bit here.  C function zysxi can (and does)
+; #           we cheat just a little bit here.  c function zysxi can (and does)
 ; #           have local variables, but we won't save them in the load module.
-; #           Only the portion of the frame established by the 80386 call
-; #           instruction, from BP up, is saved.  These local variables
+; #           only the portion of the frame established by the 80386 call
+; #           instruction, from bp up, is saved.  these local variables
 ; #           aren't needed, because the load module will not be going back
-; #           to C function zysxi.  Instead when function restart returns, it
-; #           will act as if C function zysxi is returning.
+; #           to c function zysxi.  instead when function restart returns, it
+; #           will act as if c function zysxi is returning.
 ; #
-; #       (5) After writing the load module, C function zysxi calls C function
+; #       (5) after writing the load module, c function zysxi calls c function
 ; #           zysej to terminate spitbol's execution.
 ; #
-; #       (6) When the resulting load module is executed, C function main
-; #           calls function restart.  Function restart restores the stack
-; #           and then does a return.  This return will act as if it is
-; #           C function zysxi doing the return and the user's program will
-; #           continue execution following its call to EXIT.
+; #       (6) when the resulting load module is executed, c function main
+; #           calls function restart.  function restart restores the stack
+; #           and then does a return.  this return will act as if it is
+; #           c function zysxi doing the return and the user's program will
+; #           continue execution following its call to exit.
 ; #
-; #       On entry to _get_fp, the stack looks like
+; #       on entry to _get_fp, the stack looks like
 ; #
 ; #               /      ...      /
 ; #       (high)  |               |
 ; #               |---------------|
-; #       ZYSXI   |    old PC     |  --> return point in CCALLER
-; #         +     |---------------|  USEFUL part of stack
-; #       frame   |    old BP     |  <<<<-- BP of get_fp's caller
+; #       zysxi   |    old pc     |  --> return point in ccaller
+; #         +     |---------------|  useful part of stack
+; #       frame   |    old bp     |  <<<<-- bp of get_fp's caller
 ; #               |---------------|     -
-; #               |     ZYSXI's   |     -
-; #               /     locals    /     - NON-USEFUL part of stack
+; #               |     zysxi's   |     -
+; #               /     locals    /     - non-useful part of stack
 ; #               |               |     ------
 ; #       ======= |---------------|
-; #       SP-->   |    old PC     |  --> return PC in C function ZYSXI
+; #       sp-->   |    old pc     |  --> return pc in c function zysxi
 ; #       (low)   +---------------+
 ; #
-; #       On exit, return EBP in EAX. This is the lower limit on the
+; #       on exit, return ebp in eax. this is the lower limit on the
 ; #       size of the stack.
-; 
-; 
+;
+;
 ;         cproc    get_fp,near
 ; 	pubname	get_fp
-; 
-;         mov     rax,reg_xs      # Minimal's XS
-;         add     rax,4           # pop return from call to SYSBX or SYSXI
+;
+;         mov     rax,reg_xs      # minimal's xs
+;         add     rax,4           # pop return from call to sysbx or sysxi
 ;         retc    0               # done
-; 
+;
 ;         cendp    get_fp
-; 
+;
 ; #
 ; #-----------
 ; #
@@ -1509,59 +1509,59 @@ tryfpu:
 ; #
 ; #       restart( char *dummy, char *stackbase ) - startup compiler
 ; #
-; #       The OSINT main function calls restart when resuming execution
-; #       of a program from a load module.  The OSINT main function has
+; #       the osint main function calls restart when resuming execution
+; #       of a program from a load module.  the osint main function has
 ; #       reset global variables except for the stack and any associated
 ; #       variables.
 ; #
-; #       Before restoring stack, set up values for proper checking of
+; #       before restoring stack, set up values for proper checking of
 ; #       stack overflow. (initial sp here will most likely differ
 ; #       from initial sp when compile was done.)
 ; #
-; #       It is also necessary to relocate any addresses in the the stack
-; #       that point within the stack itself.  An adjustment factor is
-; #       calculated as the difference between the STBAS at exit() time,
-; #       and STBAS at restart() time.  As the stack is transferred from
-; #       TSCBLK to the active stack, each word is inspected to see if it
-; #       points within the old stack boundaries.  If so, the adjustment
+; #       it is also necessary to relocate any addresses in the the stack
+; #       that point within the stack itself.  an adjustment factor is
+; #       calculated as the difference between the stbas at exit() time,
+; #       and stbas at restart() time.  as the stack is transferred from
+; #       tscblk to the active stack, each word is inspected to see if it
+; #       points within the old stack boundaries.  if so, the adjustment
 ; #       factor is subtracted from it.
 ; #
-; #       We use Minimal's INSTA routine to initialize static variables
-; #       not saved in the Save file.  These values were not saved so as
-; #       to minimize the size of the Save file.
+; #       we use minimal's insta routine to initialize static variables
+; #       not saved in the save file.  these values were not saved so as
+; #       to minimize the size of the save file.
 ; #
 ; 	ext	rereloc,near
-; 
+;
 ;         cproc   restart,near
 ; 	pubname	restart
-; 
+;
 ;         pop     rax                     # discard return
 ;         pop     rax                     # discard dummy
 ;         pop     rax                     # get lowest legal stack value
-; 
+;
 ;         add     rax,stacksiz            # top of compiler's stack
 ;         mov     rsp,rax                 # switch to this stack
-; 	call	stackinit               # initialize MINIMAL stack
-; 
+; 	call	stackinit               # initialize minimal stack
+;
 ;                                         # set up for stack relocation
-;         lea     rax,TSCBLK+scstr        # top of saved stack
+;         lea     rax,tscblk+scstr        # top of saved stack
 ;         mov     rbx,lmodstk             # bottom of saved stack
-;         GETMIN  rcx,STBAS               # rcx = stbas from exit() time
+;         getmin  rcx,stbas               # rcx = stbas from exit() time
 ;         sub     rbx,rax                 # rbx = size of saved stack
 ; 	mov	rdx,rcx
 ;         sub     rdx,rbx                 # rdx = stack bottom from exit() time
 ; 	mov	rbx,rcx
 ;         sub     rbx,rsp                 # rbx = old stbas - new stbas
-; 
-;         SETMINR  STBAS,rsp               # save initial sp
-; #        GETOFF  rax,DFFNC               # get address of PPM offset
+;
+;         setminr  stbas,rsp               # save initial sp
+; #        getoff  rax,dffnc               # get address of ppm offset
 ;         mov     ppoff,rax               # save for use later
 ; #
-; #       restore stack from TSCBLK.
+; #       restore stack from tscblk.
 ; #
-;         mov     rsi,lmodstk             # -> bottom word of stack in TSCBLK
-;         lea     rdi,TSCBLK+scstr        # -> top word of stack
-;         cmp     rsi,rdi                 # Any stack to transfer?
+;         mov     rsi,lmodstk             # -> bottom word of stack in tscblk
+;         lea     rdi,tscblk+scstr        # -> top word of stack
+;         cmp     rsi,rdi                 # any stack to transfer?
 ;         je      short re3               #  skip if not
 ; 	sub	rsi,4
 ; 	std
@@ -1574,68 +1574,68 @@ tryfpu:
 ; re2:    push    rax                     # transfer word of stack
 ;         cmp     rsi,rdi                 # if not at end of relocation then
 ;         jae     re1                     #    loop back
-; 
+;
 ; re3:	cld
 ;         mov     compsp,rsp              # 1.39 save compiler's stack pointer
-;         mov     rsp,osisp               # 1.39 back to OSINT's stack pointer
-;         callc   rereloc,0               # V1.08 relocate compiler pointers into stack
-;         GETMIN  rax,STATB               # V1.34 start of static region to XR
-; 	SET_XR  rax
-;         MINIMAL INSTA                   # V1.34 initialize static region
-; 
+;         mov     rsp,osisp               # 1.39 back to osint's stack pointer
+;         callc   rereloc,0               # v1.08 relocate compiler pointers into stack
+;         getmin  rax,statb               # v1.34 start of static region to xr
+; 	set_xr  rax
+;         minimal insta                   # v1.34 initialize static region
+;
 ; #
-; #       Now pretend that we're executing the following C statement from
+; #       now pretend that we're executing the following c statement from
 ; #       function zysxi:
 ; #
-; #               return  NORMAL_RETURN#
+; #               return  normal_return#
 ; #
-; #       If the load module was invoked by EXIT(), the return path is
-; #       as follows:  back to ccaller, back to S$EXT following SYSXI call,
-; #       back to user program following EXIT() call.
+; #       if the load module was invoked by exit(), the return path is
+; #       as follows:  back to ccaller, back to s$ext following sysxi call,
+; #       back to user program following exit() call.
 ; #
-; #       Alternately, the user specified -w as a command line option, and
-; #       SYSBX called MAKEEXEC, which in turn called SYSXI.  The return path
-; #       should be:  back to ccaller, back to MAKEEXEC following SYSXI call,
-; #       back to SYSBX, back to MINIMAL code.  If we allowed this to happen,
-; #       then it would require that stacked return address to SYSBX still be
-; #       valid, which may not be true if some of the C programs have changed
-; #       size.  Instead, we clear the stack and execute the restart code that
-; #       simulates resumption just past the SYSBX call in the MINIMAL code.
-; #       We distinguish this case by noting the variable STAGE is 4.
+; #       alternately, the user specified -w as a command line option, and
+; #       sysbx called makeexec, which in turn called sysxi.  the return path
+; #       should be:  back to ccaller, back to makeexec following sysxi call,
+; #       back to sysbx, back to minimal code.  if we allowed this to happen,
+; #       then it would require that stacked return address to sysbx still be
+; #       valid, which may not be true if some of the c programs have changed
+; #       size.  instead, we clear the stack and execute the restart code that
+; #       simulates resumption just past the sysbx call in the minimal code.
+; #       we distinguish this case by noting the variable stage is 4.
 ; #
-;         callc   startbrk,0              # start control-C logic
-; 
-;         GETMIN  rax,STAGE               # is this a -w call?
+;         callc   startbrk,0              # start control-c logic
+;
+;         getmin  rax,stage               # is this a -w call?
 ; 	cmp	rax,4
 ;         je      short re4               # yes, do a complete fudge
-; 
+;
 ; #
-; #       Jump back to cc1 with return value = NORMAL_RETURN
+; #       jump back to cc1 with return value = normal_return
 ; 	mov	rax,-1
 ;         jmp     cc1                     # jump back
-; 
-; #       Here if -w produced load module.  simulate all the code that
-; #       would occur if we naively returned to sysbx.  Clear the stack and
+;
+; #       here if -w produced load module.  simulate all the code that
+; #       would occur if we naively returned to sysbx.  clear the stack and
 ; #       go for it.
 ; #
-; re4:	GETMIN	rax,STBAS
+; re4:	getmin	rax,stbas
 ;         mov     compsp,rax              # 1.39 empty the stack
-; 
-; #       Code that would be executed if we had returned to makeexec:
+;
+; #       code that would be executed if we had returned to makeexec:
 ; #
-;         SETMIN  GBCNT,0                 # reset garbage collect count
-;         callc   zystm,0                 # Fetch execution time to reg_ia
-;         mov     rax,reg_ia              # Set time into compiler
-; 	SETMINR	TIMSX,rax
-; 
-; #       Code that would be executed if we returned to sysbx:
+;         setmin  gbcnt,0                 # reset garbage collect count
+;         callc   zystm,0                 # fetch execution time to reg_ia
+;         mov     rax,reg_ia              # set time into compiler
+; 	setminr	timsx,rax
+;
+; #       code that would be executed if we returned to sysbx:
 ; #
 ;         push    outptr                  # swcoup(outptr)
 ; 	callc	swcoup,4
-; 
-; #       Jump to Minimal code to restart a save file.
-; 
-;         MINIMAL RSTRT                   # no return
-; 
+;
+; #       jump to minimal code to restart a save file.
+;
+;         minimal rstrt                   # no return
+;
 ;         cendp    restart
-; 
+;

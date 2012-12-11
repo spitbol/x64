@@ -1,76 +1,76 @@
-*      SPITBOL CONDITIONAL ASSEMBLY SYMBOLS FOR USE BY TOKEN.SPT
+*      spitbol conditional assembly symbols for use by token.spt
 *      ---------------------------------------------------------
 *
-*      THIS FILE OF CONDITIONAL SYMBOLS WILL OVERRIDE THE CONDITIONAL
-*      DEFINITIONS CONTAINED IN THE SPITBOL MINIMAL FILE.   IN ADDITION,
-*      LINES BEGINNING WITH ">" ARE TREATED AS SPITBOL STATEMENTS AND
-*      IMMEDIATELY EXECUTED.
+*      this file of conditional symbols will override the conditional
+*      definitions contained in the spitbol minimal file.   in addition,
+*      lines beginning with ">" are treated as spitbol statements and
+*      immediately executed.
 *
-*      FOR Linux SPITBOL-x86
+*      for linux spitbol-x86
 *
-*      IN THE SPITBOL TRANSLATOR, THE FOLLOWING CONDITIONAL
-*      ASSEMBLY SYMBOLS ARE REFERRED TO. TO INCORPORATE THE
-*      FEATURES REFERRED TO, THE MINIMAL SOURCE SHOULD BE
-*      PREFACED BY SUITABLE CONDITIONAL ASSEMBLY SYMBOL
-*      DEFINITIONS.
-*      IN ALL CASES IT IS PERMISSIBLE TO DEFAULT THE DEFINITIONS
-*      IN WHICH CASE THE ADDITIONAL FEATURES WILL BE OMITTED
-*      FROM THE TARGET CODE.
+*      in the spitbol translator, the following conditional
+*      assembly symbols are referred to. to incorporate the
+*      features referred to, the minimal source should be
+*      prefaced by suitable conditional assembly symbol
+*      definitions.
+*      in all cases it is permissible to default the definitions
+*      in which case the additional features will be omitted
+*      from the target code.
 *
 *
-*                            CONDITIONAL OPTIONS
-*                            SINCE .UNDEF NOT ALLOWED IF SYMBOL NOT
-*                            DEFINED, A FULL COMMENT LINE INDICATES
-*                            SYMBOL INITIALLY NOT DEFINED.
+*                            conditional options
+*                            since .undef not allowed if symbol not
+*                            defined, a full comment line indicates
+*                            symbol initially not defined.
 *
-.DEF   .CAEX                 DEFINE TO ALLOW UP ARROW FOR EXPONENTIATION
-.DEF   .CAHT                 DEFINE TO INCLUDE HORIZONTAL TAB
-.DEF   .CASL                 DEFINE TO INCLUDE 26 SHIFTED LETTRS
-*      .CAVT                 DEFINE TO INCLUDE VERTICAL TAB
-.DEF   .CBSP                 DEFINE TO INCLUDE BACKSPACE FUNCTION
-.DEF   .CBYT                 DEFINE FOR STATISTICS IN BYTES
-*      .CCMC                 DEFINE TO INCLUDE SYSCM FUNCTION
-.DEF   .CCMK                 DEFINE TO INCLUDE COMPARE KEYWORD
-*      .CENG                 DEFINE TO INCLUDE ENGINE FEATURES
-.DEF   .CEPP                 DEFINE IF ENTRY POINTS HAVE ODD PARITY
-.DEF   .CERA                 DEFINE TO INCLUDE SYSEA FUNCTION
-.DEF   .CEVB                 DEFINE TO FIX EVAL BUG
-.DEF   .CEXP                 DEFINE TO HAVE SPITBOL POP SYSEX ARGUMENTS
-.DEF   .CGBC                 DEFINE TO INCLUDE SYSGC FUNCTION
-.DEF   .CICC                 DEFINE TO IGNORE UNRECOGNISED CONTROL CARD
-.DEF   .CINC                 DEFINE TO INCLUDE -INCLUDE CONTROL CARD
-.DEF   .CIOD                 IF DEFINED, DEFAULT DELIMITER IS
-*DEF   .CMTH                 DEFINE TO INCLUDE EXTENDED MATH FUNCTIONS
-.DEF   .CNBF                 DEFINE TO OMIT BUFFER EXTENSION
-.DEF   .CNBT                 DEFINE TO OMIT BATCH INITIALISATION
-*      .CNCI                 DEFINE TO ENABLE SYSCI ROUTINE
-*      .CNCR                 DEFINE TO ENABLE SYSCR ROUTINE
-*      .CNEX                 DEFINE TO OMIT EXIT() CODE.
-*      .CNLD                 DEFINE TO OMIT LOAD() CODE.
-.DEF   .CNLF                 DEFINE TO SUPPORT FILE TYPE FOR LOAD()
-*      .CNPF                 DEFINE TO OMIT PROFILE STUFF
-.DEF   .CNRA                 DEFINE TO OMIT ALL REAL ARITHMETIC
-.DEF   .CNSC                 DEFINE TO OMIT NUMERIC-STRING COMPARE IN SORT
-*      .CNSR                 DEFINE TO OMIT SORT, RSORT
-.DEF   .CSOU                 DEFINE IF OUTPUT, TERMINAL GO TO SYSOU
-.DEF   .CPOL                 DEFINE IF INTERFACE POLLING DESIRED
-.DEF   .CREL                 DEFINE TO INCLUDE RELOC ROUTINES
-*      .CRPP                 DEFINE IF RETURN POINTS HAVE ODD PARITY
-*      .CS16                 DEFINE TO INITIALIZE STLIM TO 32767
-.DEF   .CS32                 DEFINE TO INITIALIZE STLIM TO 2147483647
-.DEF   .CSAX                 DEFINE IF SYSAX IS TO BE CALLED
-.DEF   .CSED                 DEFINE TO USE SEDIMENT IN GARBAGE COLLECTOR
-.DEF   .CSFN                 DEFINE TO TRACK SOURCE FILE NAMES
-.DEF   .CSLN                 DEFINE TO PUT SOURCE LINE NUMBER IN CODE BLOCKS
-*      .CSN5                 DEFINE TO PAD STMT NOS TO 5 CHARS
-*      .CSN6                 DEFINE TO PAD STMT NOS TO 6 CHARS
-.DEF   .CSN8                 DEFINE TO PAD STMT NOS TO 8 CHARS
-*      .CTMD                 DEFINE IF SYSTM UNIT IS DECISECOND
-.DEF   .CUCF                 DEFINE TO INCLUDE CFP$U
-.DEF   .CUEJ                 DEFINE TO SUPPRESS NEEDLESS EJECTS
-.DEF   .CULC                 DEFINE TO INCLUDE &CASE (LC NAMES)
-.DEF   .CULK                 DEFINE TO INCLUDE &LCASE, &UCASE KEYWORDS
-.DEF   .CUST                 DEFINE TO INCLUDE SET() CODE
-*      .CUSR                 DEFINE TO HAVE SET() USE REAL VALUES
-*                             (MUST ALSO #DEFINE SETREAL 1 IN SYSTYPE.H)
+.def   .caex                 define to allow up arrow for exponentiation
+.def   .caht                 define to include horizontal tab
+.def   .casl                 define to include 26 shifted lettrs
+*      .cavt                 define to include vertical tab
+.def   .cbsp                 define to include backspace function
+.def   .cbyt                 define for statistics in bytes
+*      .ccmc                 define to include syscm function
+.def   .ccmk                 define to include compare keyword
+*      .ceng                 define to include engine features
+.def   .cepp                 define if entry points have odd parity
+.def   .cera                 define to include sysea function
+.def   .cevb                 define to fix eval bug
+.def   .cexp                 define to have spitbol pop sysex arguments
+.def   .cgbc                 define to include sysgc function
+.def   .cicc                 define to ignore unrecognised control card
+.def   .cinc                 define to include -include control card
+.def   .ciod                 if defined, default delimiter is
+*def   .cmth                 define to include extended math functions
+.def   .cnbf                 define to omit buffer extension
+.def   .cnbt                 define to omit batch initialisation
+*      .cnci                 define to enable sysci routine
+*      .cncr                 define to enable syscr routine
+*      .cnex                 define to omit exit() code.
+*      .cnld                 define to omit load() code.
+.def   .cnlf                 define to support file type for load()
+*      .cnpf                 define to omit profile stuff
+.def   .cnra                 define to omit all real arithmetic
+.def   .cnsc                 define to omit numeric-string compare in sort
+*      .cnsr                 define to omit sort, rsort
+.def   .csou                 define if output, terminal go to sysou
+.def   .cpol                 define if interface polling desired
+.def   .crel                 define to include reloc routines
+*      .crpp                 define if return points have odd parity
+*      .cs16                 define to initialize stlim to 32767
+.def   .cs32                 define to initialize stlim to 2147483647
+.def   .csax                 define if sysax is to be called
+.def   .csed                 define to use sediment in garbage collector
+.def   .csfn                 define to track source file names
+.def   .csln                 define to put source line number in code blocks
+*      .csn5                 define to pad stmt nos to 5 chars
+*      .csn6                 define to pad stmt nos to 6 chars
+.def   .csn8                 define to pad stmt nos to 8 chars
+*      .ctmd                 define if systm unit is decisecond
+.def   .cucf                 define to include cfp$u
+.def   .cuej                 define to suppress needless ejects
+.def   .culc                 define to include &case (lc names)
+.def   .culk                 define to include &lcase, &ucase keywords
+.def   .cust                 define to include set() code
+*      .cusr                 define to have set() use real values
+*                             (must also #define setreal 1 in systype.h)
 *

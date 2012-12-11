@@ -2,21 +2,21 @@
         section	.text
 
 ;
-;  No header code in 386 version.
+;  no header code in 386 version.
 ;
-%define XL.ESI ESI
-%define XT.ESI ESI
-%define XR.EDI EDI
-%define XS.ESP ESP
-%define WA.ECX ECX
-%define WB.EBX EBX
-%define WC.EDX EDX
-%define IA.EDX EDX
-%define CP.EBP EBP
-%define W0.EAX EAX
+%define xl.esi esi
+%define xt.esi esi
+%define xr.edi edi
+%define xs.esp esp
+%define wa.ecx ecx
+%define wb.ebx ebx
+%define wc.edx edx
+%define ia.edx edx
+%define cp.ebp ebp
+%define w0.eax eax
 	extern	_rc_
-%define AT_TRACE
-%ifdef AT_TRACE
+%define at_trace
+%ifdef at_trace
 	extern	at_xl
 	extern	at_xr
 	extern	at_xs
@@ -30,12 +30,12 @@
 	extern	at_note2
 	extern	at_note3
 %endif
-	global	START
+	global	start
 
-	%macro	ZZZ	1
+	%macro	zzz	1
 	pushf
 	pushad
-%ifdef AT_TRACE
+%ifdef at_trace
 	mov	qword [at_zz],%1
 	mov	qword [at_xl],rsi
 	mov	qword [at_xr],rdi
@@ -53,131 +53,131 @@
 
 ;
 ;
-;   Table to recover type word from type ordinal
+;   table to recover type word from type ordinal
 ;
 
 	extern	_rc_
-	global	TYPET
+	global	typet
 	section .data
-	
-        dq B_ART   ; ARBLK type word - 0
-        dq B_CDC   ; CDBLK type word - 1
-        dq B_EXL   ; EXBLK type word - 2
-        dq B_ICL   ; ICBLK type word - 3
-        dq B_NML   ; NMBLK type word - 4
-        dq P_ABA   ; P0BLK type word - 5
-        dq P_ALT   ; P1BLK type word - 6
-        dq P_ANY   ; P2BLK type word - 7
-; next needed only if support real arithmetic CNRA
-;        dq B_RCL   ; RCBLK type word - 8
-	dq	0   ; temporary replacement for B_RCL (used in real arithmetic)
-        dq B_SCL   ; SCBLK type word - 9
-        dq B_SEL   ; SEBLK type word - 10
-        dq B_TBT   ; TBBLK type word - 11
-        dq B_VCT   ; VCBLK type word - 12
-        dq B_XNT   ; XNBLK type word - 13
-        dq B_XRT   ; XRBLK type word - 14
-        dq B_BCT   ; BCBLK type word - 15
-        dq B_PDT   ; PDBLK type word - 16
-        dq B_TRT   ; TRBLK type word - 17
-        dq B_BFT   ; BFBLK type word   18
-        dq B_CCT   ; CCBLK type word - 19
-        dq B_CMT   ; CMBLK type word - 20
-        dq B_CTT   ; CTBLK type word - 21
-        dq B_DFC   ; DFBLK type word - 22
-        dq B_EFC   ; EFBLK type word - 23
-        dq B_EVT   ; EVBLK type word - 24
-        dq B_FFC   ; FFBLK type word - 25
-        dq B_KVT   ; KVBLK type word - 26
-        dq B_PFC   ; PFBLK type word - 27
-        dq B_TET   ; TEBLK type word - 28
+
+        dq b_art   ; arblk type word - 0
+        dq b_cdc   ; cdblk type word - 1
+        dq b_exl   ; exblk type word - 2
+        dq b_icl   ; icblk type word - 3
+        dq b_nml   ; nmblk type word - 4
+        dq p_aba   ; p0blk type word - 5
+        dq p_alt   ; p1blk type word - 6
+        dq p_any   ; p2blk type word - 7
+; next needed only if support real arithmetic cnra
+;        dq b_rcl   ; rcblk type word - 8
+	dq	0   ; temporary replacement for b_rcl (used in real arithmetic)
+        dq b_scl   ; scblk type word - 9
+        dq b_sel   ; seblk type word - 10
+        dq b_tbt   ; tbblk type word - 11
+        dq b_vct   ; vcblk type word - 12
+        dq b_xnt   ; xnblk type word - 13
+        dq b_xrt   ; xrblk type word - 14
+        dq b_bct   ; bcblk type word - 15
+        dq b_pdt   ; pdblk type word - 16
+        dq b_trt   ; trblk type word - 17
+        dq b_bft   ; bfblk type word   18
+        dq b_cct   ; ccblk type word - 19
+        dq b_cmt   ; cmblk type word - 20
+        dq b_ctt   ; ctblk type word - 21
+        dq b_dfc   ; dfblk type word - 22
+        dq b_efc   ; efblk type word - 23
+        dq b_evt   ; evblk type word - 24
+        dq b_ffc   ; ffblk type word - 25
+        dq b_kvt   ; kvblk type word - 26
+        dq b_pfc   ; pfblk type word - 27
+        dq b_tet   ; teblk type word - 28
 ;
-;   Table of MINIMAL entry points that can be dded from C
+;   table of minimal entry points that can be dded from c
 ;   via the minimal function (see inter.asm).
 ;
-;   Note that the order of entries in this table must correspond
-;   to the order of entries in the CALL enumeration in osint.h
+;   note that the order of entries in this table must correspond
+;   to the order of entries in the call enumeration in osint.h
 ;   and osint.inc.
 ;
 	global calltab
 calltab:
-        dq   RELAJ
-        dq   RELCR
-        dq   RELOC
-        dq   ALLOC
-        dq   ALOCS
-        dq   ALOST
-        dq   BLKLN
-        dq   INSTA
-        dq   RSTRT
-        dq   START
-        dq   FILNM
-        dq   DTYPE
-;       dq   ENEVS ;  Engine words
-;       dq   ENGTS ;   not used
+        dq   relaj
+        dq   relcr
+        dq   reloc
+        dq   alloc
+        dq   alocs
+        dq   alost
+        dq   blkln
+        dq   insta
+        dq   rstrt
+        dq   start
+        dq   filnm
+        dq   dtype
+;       dq   enevs ;  engine words
+;       dq   engts ;   not used
 
-	global	GBCNT
-	global	HEADV
-	global	MXLEN
-	global	STAGE
-	global	TIMSX
-	global	DNAMB
-	global	DNAMP
-	global	STATE
-	global	B_EFC
-	global	B_ICL
-	global	B_SCL
-	global	B_VCT
-	global	B_XNT
-	global	B_XRT
-	global	STBAS
-	global	STATB
-	global	POLCT
-	global  TYPET
-	global	LOWSPMIN
-	global	FLPRT
-	global	FLPTR
-	global	GTCEF
-	global	HSHTB
-	global	PMHBS
-	global	R_FCB
-	global	C_AAA
-	global	C_YYY
-	global	G_AAA
-	global	W_YYY
-	global	S_AAA
-	global	S_YYY
-	global	R_COD
-	global	KVSTN
-	global	KVDMP
-	global	KVFTR
-	global	KVCOM
-	global	KVPFL
-	global	CSWFL
-        global  STMCS
-        global  STMCT
-	global	B_RCL
-	global	END_MIN_DATA
+	global	gbcnt
+	global	headv
+	global	mxlen
+	global	stage
+	global	timsx
+	global	dnamb
+	global	dnamp
+	global	state
+	global	b_efc
+	global	b_icl
+	global	b_scl
+	global	b_vct
+	global	b_xnt
+	global	b_xrt
+	global	stbas
+	global	statb
+	global	polct
+	global  typet
+	global	lowspmin
+	global	flprt
+	global	flptr
+	global	gtcef
+	global	hshtb
+	global	pmhbs
+	global	r_fcb
+	global	c_aaa
+	global	c_yyy
+	global	g_aaa
+	global	w_yyy
+	global	s_aaa
+	global	s_yyy
+	global	r_cod
+	global	kvstn
+	global	kvdmp
+	global	kvftr
+	global	kvcom
+	global	kvpfl
+	global	cswfl
+        global  stmcs
+        global  stmct
+	global	b_rcl
+	global	end_min_data
 
-        extern LDR_
-        extern STR_
-        extern OVR_
-        extern DVI_
-        extern RMI_
-        extern CVD_
-        extern RTI_
-        extern ITR_
-        extern ADR_
-        extern SBR_
-        extern MLR_
-        extern DVR_
-        extern NGR_
-        extern ATN_
-        extern CHP_
-        extern COS_
-        extern ETX_
-        extern LNF_
-        extern SIN_
-        extern SQR_
-        extern TAN_
-        extern CPR_
+        extern ldr_
+        extern str_
+        extern ovr_
+        extern dvi_
+        extern rmi_
+        extern cvd_
+        extern rti_
+        extern itr_
+        extern adr_
+        extern sbr_
+        extern mlr_
+        extern dvr_
+        extern ngr_
+        extern atn_
+        extern chp_
+        extern cos_
+        extern etx_
+        extern lnf_
+        extern sin_
+        extern sqr_
+        extern tan_
+        extern cpr_
