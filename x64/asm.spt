@@ -661,7 +661,6 @@ outstmt4
 *	use by osint procedure
 	ident(label)				:s(outstmt5)
 	ident(oslabels[label])		:s(outstmt5)
-	output = 'oslabel ' label
 	outfile = tab 'global' tab upper(substr(label,1,size(label) - 1))
 	outfile = upper(label)
 	noutlines = noutlines + 2
