@@ -212,8 +212,7 @@
 	oslabels = table(30)
 	s  = 'b_icl b_scl b_xnt b_xrt c_aaa c_yyy dnamb dnamp flprt flptr '
 +	' g_aaa gtcef headv hshtb id1 id2blk inpbuf pmhbs polct r_fcb s_aaa '
-+	'state stbas stmcs stmct s_yyy ticblk tscblk'
-+	'ttybuf w_yyy '
++	'start state stbas stmcs stmct s_yyy ticblk tscblk ttybuf w_yyy '
 oslabels.init
 	s break(' ') . oslabel span(' ') =		:f(oslabels.init.end)
 	oslabels[oslabel ':'] = 1				:(oslabels.init)
@@ -661,6 +660,7 @@ outstmt4
 *	use by osint procedure
 	ident(label)				:s(outstmt5)
 	ident(oslabels[label])		:s(outstmt5)
+	output = 'oslabel ' label
 	outfile = tab 'global' tab upper(substr(label,1,size(label) - 1))
 	outfile = upper(label)
 	noutlines = noutlines + 2
