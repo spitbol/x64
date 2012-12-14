@@ -209,7 +209,7 @@ char	*argv[];
         wrterr( "Stack memory unavailable." );
         __exit( 1 );
     }
-
+	fprintf(stderr,"lowsp\t%16llx\n",lowsp);
     /*
     /   Allocate initial increment of dynamic memory.
     /
@@ -221,6 +221,8 @@ char	*argv[];
     }
     topmem = basemem + memincb;
     maxmem = basemem + databts;
+	fprintf(stderr,"topmem\t%16llx\n",topmem);
+	fprintf(stderr,"basemem\t%16llx\n",basemem);
 
 
     /*
@@ -234,15 +236,15 @@ char	*argv[];
     SET_WC( 0 );
     SET_XR( basemem );
     SET_XL( topmem - sizeof(word) );
-    fprintf(stderr,"basemem %d\n",basemem);
+    fprintf(stderr,"basemem %16llx\n",basemem);
     fprintf(stderr,"sizeof word %d\n",sizeof(word));
-    fprintf(stderr,"topmem -sizeof(word) %u\n",topmem - sizeof(word));
+    fprintf(stderr,"topmem -sizeof(word)\t%16llx\n",topmem - sizeof(word));
 
     /*
     /   Startup compiler.
     */
 /*	fprintf(stderr,"calling startup\n");*/
-    startup( (char *)0L, lowsp );
+    startup();
 #endif					/* !RUNTIME */
 
     /*
@@ -473,8 +475,9 @@ void at_note1() {
 void at_note2() {
 	fprintf(stderr, "at_note2\n");
 }
-void at_note3(int num) {
-	fprintf(stderr, "at_note3 %d\n",num);
+uword at_arg;
+void at_num() {
+	fprintf(stderr, "at_num\t%16llx\n",at_arg);
 }
 #endif
 void restart(char *p, char * q) {

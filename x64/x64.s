@@ -16,7 +16,10 @@
 	extern	calltab
 	extern	stacksiz
 	extern	at_note
+	extern	at_note1
 	extern	at_note2
+	extern	at_arg
+	extern	at_num
 
 ; copyright 1987-2012 robert b. k. dewar and mark emmer.
 ;
@@ -386,19 +389,21 @@ calltab_engts equ   13
 
 
 startup:
-        pop     rax                     ; discard return
-        pop     rax                     ; discard dummy1
-        pop     rax                     ; discard dummy2
+        pop     rax                     ; pop return address (this procedure never returns)
+	call	at_note1
+	mov	qword[at_arg],rsp
+	call	at_num
+	call	at_note1
 	call	stackinit               ; initialize minimal stack
         mov     rax,qword [compsp]              ; get minimal's stack pointer
         mov qword[reg_wa],rax                     ; startup stack pointer
 
 	cld                             ; default to up direction for string ops
 ;        getoff  rax,dffnc               # get address of ppm offset
-        mov     qword [ppoff],rax               ; save for use later
+;        mov     qword [ppoff],rax               ; save for use later
 ;
+	mov	rcx,qword [compsp]
         mov     rsp,qword [osisp]               ; switch to new c stack
-	call	at_note
 	push	calltab_start
 	call	minimal			; load regs, switch stack, start compiler
 
@@ -410,12 +415,12 @@ startup:
 ;
 ;	stackinit  -- initialize lowspmin from sp.
 ;
-;	input:  sp - current c stack
+;	input:  rsp - current c stack
 ;		stacksiz - size of drsired minimal stack in bytes
 ;
 ;	uses:	rax
 ;
-;	output: register wa, sp, lowspmin, compsp, osisp set up per diagram:
+;	output: register wa, rsp, lowspmin, compsp, osisp set up per diagram:
 ;
 ;	(high)	+----------------+
 ;		|  old c stack   |
@@ -464,8 +469,7 @@ stackinit:
 ;
 
  minimal:
-         pushaq                          ; save all registers for c
-	call	at_note2
+;         pushaq                          ; save all registers for c
          mov     rax,qword [rsp+32+8]          ; get ordinal
          mov     rcx,qword [reg_wa]              ; restore registers
  	mov	rbx,qword [reg_wb]
@@ -478,12 +482,13 @@ stackinit:
          cmp     qword [compsp],0      ; 1.39 is there a compiler stack?
          je      min1              ; 1.39 jump if none yet
          mov     rsp,qword [compsp]              ; 1.39 switch to compiler stack
-	call	at_note
 
  min1:
-	extern	start
-	call	start
-;		call   qword [calltab+rax*8]        ; off to the minimal code
+;	extern	start
+;	call	start
+	call	at_note2
+	call   qword [calltab+rax*8]        ; off to the minimal code
+; code should never reach here after calling start
 
          mov     rsp,qword [osisp]               ; 1.39 switch to osint stack
 
@@ -493,7 +498,7 @@ stackinit:
  	mov	qword [reg_xr],rdi
  	mov	qword [reg_xl],rsi
  	mov	qword [reg_cp],rbp
- 	popaq
+; 	popaq
  	ret
 
 

@@ -158,7 +158,7 @@ extern	void		setrdfd Params(( File_handle fd ));
 extern	int			sioarg Params(( int ioflg, struct ioblk *ioptr, struct scblk *scptr ));
 extern	File_handle	spit_open Params(( char *Name, Open_method Method, File_mode Mode, int Access ));
 extern	void		startbrk Params(( void ));
-extern	void		startup Params(( char *code, char *stack ));
+extern	void		startup Params((void));
 extern	int			storedate Params(( char *cp, word maxlen ));
 extern	int			stcu_d Params(( char *out, unsigned int in, int outlen ));
 extern	void		stdioinit Params(( void ));

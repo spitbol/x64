@@ -28,7 +28,8 @@
 	extern	at_note
 	extern	at_note1
 	extern	at_note2
-	extern	at_note3
+	extern	at_arg
+	extern	at_num
 %endif
 	global	start
 
