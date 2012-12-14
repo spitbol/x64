@@ -4,16 +4,26 @@
 ;
 ;  no header code in 386 version.
 ;
-%define xl.esi esi
-%define xt.esi esi
-%define xr.edi edi
-%define xs.esp esp
-%define wa.ecx ecx
-%define wb.ebx ebx
-%define wc.edx edx
-%define ia.edx edx
-%define cp.ebp ebp
-%define w0.eax eax
+	%define	IA	r14
+	%define	WA	r12
+	%define	WB	r13
+	%define	WC	r14
+	%define	IA	r14
+	%define	XS	r15
+	%define	XL	rbx
+	%define XR	rbp
+	%define XT	r15
+	%define	W0	r11
+; %define xl.esi esi
+; %define xt.esi esi
+; %define xr.edi edi
+; %define xs.esp esp
+; %define wa.ecx ecx
+; %define wb.ebx ebx
+; %define wc.edx edx
+; %define ia.edx edx
+; %define cp.ebp ebp
+; %define w0.eax eax
 	extern	_rc_
 %define at_trace
 %ifdef at_trace

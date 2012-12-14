@@ -1,3 +1,12 @@
+	%define	IA	r14
+	%define	WA	r12
+	%define	WB	r13
+	%define	WC	r14
+	%define	IA	r14
+	%define	XS	r15
+	%define	XL	rbx
+	%define XR	rbp
+	%define	W0	r11
 	global	reg_block
 	global	reg_wa
 	global	reg_wb
@@ -149,36 +158,36 @@
 	align	8
 	segment	.data
 
-rax_save:	dq	0
+W0_save:	dq	0
 rbp_save:	dq	0
-rbx_save:	dq	0
-rcx_save:	dq	0
+WB_save:	dq	0
+WA_save:	dq	0
 rdi_save:	dq	0
-rdx_save:	dq	0
+WC_save:	dq	0
 rsi_save:	dq	0
-rsp_save:	dq	0
+XS_save:	dq	0
 
 	%macro	pushaq	0
-	mov	qword [rax_save],rax
+	mov	qword [W0_save],W0
 	mov	qword [rbp_save],rbp
-	mov	qword [rbx_save],rcx
-	mov	qword [rcx_save],rcx
+	mov	qword [WB_save],WA
+	mov	qword [WA_save],WA
 	mov	qword [rdi_save],rdi
-	mov	qword [rdx_save],rdx
+	mov	qword [WC_save],WC
 	mov	qword [rsi_save],rsi
-	mov	qword [rsp_save],rsp
+	mov	qword [XS_save],XS
 	%endmacro
 
 
 	%macro	popaq 0
-	mov	rax,qword [rax_save]
+	mov	W0,qword [W0_save]
 	mov	rbp,qword [rbp_save]
-	mov	rbx,qword [rbx_save]
-	mov	rcx,qword [rcx_save]
+	mov	WB,qword [WB_save]
+	mov	WA,qword [WA_save]
 	mov	rdi,qword [rdi_save]
-	mov	rdx,qword [rdx_save]
+	mov	WC,qword [WC_save]
 	mov	rsi,qword [rsi_save]
-	mov	rsp,qword [rsp_save]
+	mov	XS,qword [XS_save]
 	%endmacro
         align 8
 reg_block:
@@ -313,7 +322,7 @@ pushregs:
 	pushaq
 	lea	rsi,[reg_block]
 	lea	rdi,[sav_block]
-	mov	rcx,r_size/8
+	mov	WA,r_size/8
 	cld
    rep	movsd
 
@@ -332,13 +341,13 @@ push1:	popaq
 	global	popregs
 popregs:
 	pushaq
-        mov     rax,qword [reg_cp]                      ;don't restore cp
+        mov     W0,qword [reg_cp]                      ;don't restore cp
 	cld
 	lea	rsi,[sav_block]
         lea     rdi,[reg_block]                   ;unload saved registers
-	mov	rcx,r_size/8
+	mov	WA,r_size/8
    rep  movsd                                   ;restore from temp area
-	mov	qword [reg_cp],rax
+	mov	qword [reg_cp],W0
 
         mov     rdi,qword [sav_compsp]                  ;saved compiler's stack
         or      rdi,rdi                         ;1.39 is there one?
@@ -395,15 +404,15 @@ startup:
 	call	at_num
 	call	at_note1
 	call	stackinit               ; initialize minimal stack
-        mov     rax,qword [compsp]              ; get minimal's stack pointer
-        mov qword[reg_wa],rax                     ; startup stack pointer
+        mov     W0,qword [compsp]              ; get minimal's stack pointer
+        mov qword[reg_wa],W0                     ; startup stack pointer
 
 	cld                             ; default to up direction for string ops
-;        getoff  rax,dffnc               # get address of ppm offset
-;        mov     qword [ppoff],rax               ; save for use later
+;        getoff  W0,dffnc               # get address of ppm offset
+        mov     qword [ppoff],W0               ; save for use later
 ;
-	mov	rcx,qword [compsp]
-        mov     rsp,qword [osisp]               ; switch to new c stack
+        mov     XS,qword [osisp]               ; switch to new c stack
+	call	at_note
 	push	calltab_start
 	call	minimal			; load regs, switch stack, start compiler
 
@@ -418,7 +427,7 @@ startup:
 ;	input:  rsp - current c stack
 ;		stacksiz - size of drsired minimal stack in bytes
 ;
-;	uses:	rax
+;	uses:	W0
 ;
 ;	output: register wa, rsp, lowspmin, compsp, osisp set up per diagram:
 ;
@@ -441,13 +450,13 @@ startup:
 
 	global	stackinit
 stackinit:
-	mov	rax,rsp
-        mov     qword [compsp],rax              ; save as minimal's stack pointer
-	sub	rax,qword [stacksiz]            ; end of minimal stack is where c stack will start
-        mov     qword [osisp],rax               ; save new c stack pointer
-	add	rax,8*100               ; 100 words smaller for chk
+	mov	W0,XS
+        mov     qword [compsp],W0              ; save as minimal's stack pointer
+	sub	W0,qword [stacksiz]            ; end of minimal stack is where c stack will start
+        mov     qword [osisp],W0               ; save new c stack pointer
+	add	W0,8*100               ; 100 words smaller for chk
 	extern	lowspmin
-	mov	qword [lowspmin],rax
+	mov	qword [lowspmin],W0
 	ret
 
 ;
@@ -469,32 +478,32 @@ stackinit:
 ;
 
  minimal:
-;         pushaq                          ; save all registers for c
-         mov     rax,qword [rsp+32+8]          ; get ordinal
-         mov     rcx,qword [reg_wa]              ; restore registers
- 	mov	rbx,qword [reg_wb]
-         mov     rdx,qword [reg_wc]              ; (also _reg_ia)
+         pushaq                          ; save all registers for c
+	call	at_note2
+         mov     W0,qword [XS+32+8]          ; get ordinal
+         mov     WA,qword [reg_wa]              ; restore registers
+ 	mov	WB,qword [reg_wb]
+         mov     WC,qword [reg_wc]              ; (also _reg_ia)
  	mov	rdi,qword [reg_xr]
  	mov	rsi,qword [reg_xl]
  	mov	rbp,qword [reg_cp]
 
-         mov     qword [osisp],rsp               ; 1.39 save osint stack pointer
+         mov     qword [osisp],XS               ; 1.39 save osint stack pointer
          cmp     qword [compsp],0      ; 1.39 is there a compiler stack?
          je      min1              ; 1.39 jump if none yet
-         mov     rsp,qword [compsp]              ; 1.39 switch to compiler stack
+         mov     XS,qword [compsp]              ; 1.39 switch to compiler stack
+	call	at_note
 
  min1:
-;	extern	start
-;	call	start
-	call	at_note2
-	call   qword [calltab+rax*8]        ; off to the minimal code
-; code should never reach here after calling start
+	extern	start
+	call	start
+;		call   qword [calltab+W0*8]        ; off to the minimal code
 
-         mov     rsp,qword [osisp]               ; 1.39 switch to osint stack
+         mov     XS,qword [osisp]               ; 1.39 switch to osint stack
 
-         mov     qword [reg_wa],rcx              ; save registers
- 	mov	qword [reg_wb],rbx
- 	mov	qword [reg_wc],rdx
+         mov     qword [reg_wa],WA              ; save registers
+ 	mov	qword [reg_wb],WB
+ 	mov	qword [reg_wc],WC
  	mov	qword [reg_xr],rdi
  	mov	qword [reg_xl],rsi
  	mov	qword [reg_cp],rbp
@@ -568,9 +577,9 @@ call_adr:	dq	0
 ccaller:
 ;       (1) save registers in global variables
 
-        mov     qword [reg_wa],rcx              ; save registers
-	mov	qword [reg_wb],rbx
-        mov     qword [reg_wc],rdx              ; (also _reg_ia)
+        mov     qword [reg_wa],WA              ; save registers
+	mov	qword [reg_wb],WB
+        mov     qword [reg_wc],WC              ; (also _reg_ia)
 	mov	qword [reg_xr],rdi
 	mov	qword [reg_xl],rsi
         mov     qword [reg_cp],rbp              ; needed in image saved by sysxi
@@ -584,43 +593,43 @@ ccaller:
 
         cs                              ; cs segment override
         lodsd                           ; point to c function entry point
-	mov	qword [call_adr],rax
+	mov	qword [call_adr],W0
 ;       lodsd   cs:ccaller              ; point to c function entry point
 ;	word after callee address used to be ppm count. now used for debug
-	mov	rbx,qword[rsi]
-        mov     qword [reg_pp],rbx              ; in memory
+	mov	WB,qword[rsi]
+        mov     qword [reg_pp],WB              ; in memory
         pop     qword [reg_pc]                  ; save return pc past "call sysxx"
 
 ;       (3a) save compiler stack and switch to osint stack
 
 ; ds 12/22/12 note that needn't save and restore stack ptrs if not using
 ; 	save files or load modules
-         mov     qword [compsp],rsp              ; 1.39 save compiler's stack pointer
-         mov     rsp,qword [osisp]               ; 1.39 load osint's stack pointer
+         mov     qword [compsp],XS              ; 1.39 save compiler's stack pointer
+         mov     XS,qword [osisp]               ; 1.39 load osint's stack pointer
 
 ;       (3b) make call to osint
-	mov	rax,qword [call_adr]
-        call    rax                     ; call c interface function
+	mov	W0,qword [call_adr]
+        call    W0                     ; call c interface function
 
-	mov	qword [_rc_],rax		; save return code from function
+	mov	qword [_rc_],W0		; save return code from function
 
 ;       (4) restore registers after c function returns.
 
 
 cc1:
- 	mov     qword [osisp],rsp               ; 1.39 save osint's stack pointer
-        mov     rsp,qword [compsp]              ; 1.39 restore compiler's stack pointer
-        mov     rcx,qword [reg_wa]              ; restore registers
-	mov	rbx,qword [reg_wb]
-        mov     rdx,qword [reg_wc]              ; (also reg_ia)
+ 	mov     qword [osisp],XS               ; 1.39 save osint's stack pointer
+        mov     XS,qword [compsp]              ; 1.39 restore compiler's stack pointer
+        mov     WA,qword [reg_wa]              ; restore registers
+	mov	WB,qword [reg_wb]
+        mov     WC,qword [reg_wc]              ; (also reg_ia)
 	mov	rdi,qword [reg_xr]
 	mov	rsi,qword [reg_xl]
 	mov	rbp,qword [reg_cp]
 
 	cld
 
-	mov	rax,qword [reg_pc]
-	jmp	rax
+	mov	W0,qword [reg_pc]
+	jmp	W0
 
 
 ;---------------
@@ -641,7 +650,7 @@ sysbs:	call	ccaller
 
         global sysbx
 	extern	zysbx
-sysbx:	mov	qword [reg_xs],rsp
+sysbx:	mov	qword [reg_xs],XS
 	call	ccaller
         dq      zysbx
         dq   2
@@ -708,16 +717,16 @@ sysep:	call	ccaller
 
         global sysex
 	extern	zysex
-sysex:	mov	qword [reg_xs],rsp
+sysex:	mov	qword [reg_xs],XS
 	call	ccaller
         dq      zysex
         dq   13
 
         global sysfc
 	extern	zysfc
-sysfc:  pop     rax             ; <<<<remove stacked scblk>>>>
-	lea	rsp,[rsp+rdx*8]
-	push	rax
+sysfc:  pop     W0             ; <<<<remove stacked scblk>>>>
+	lea	XS,[XS+WC*8]
+	push	W0
 	call	ccaller
         dq      zysfc
         dq   14
@@ -730,7 +739,7 @@ sysgc:	call	ccaller
 
         global syshs
 	extern	zyshs
-syshs:	mov	qword [reg_xs],rsp
+syshs:	mov	qword [reg_xs],XS
 	call	ccaller
         dq      zyshs
         dq   16
@@ -857,7 +866,7 @@ sysul:	call	ccaller
 
         global sysxi
 	extern	zysxi
-sysxi:	mov	qword [reg_xs],rsp
+sysxi:	mov	qword [reg_xs],XS
 	call	ccaller
 sysxi_p: dq      zysxi
         dq   38
@@ -866,7 +875,7 @@ sysxi_p: dq      zysxi
 	%macro	callext	2
 	extern	%1
 	call	%1
-	add	rsp,%2	; pop arguments
+	add	XS,%2	; pop arguments
 	%endmacro
 
 ;-----------
@@ -880,13 +889,13 @@ sysxi_p: dq      zysxi
         global  cvd_
 
 cvd_:
-        xchg    rax,rdx         ; ia to eax
+        xchg    W0,WC         ; ia to eax
         cdq                     ; sign extend
-        idiv    qword [ten]   ; divide by 10. rdx = remainder (negative)
-        neg     rdx             ; make remainder positive
+        idiv    qword [ten]   ; divide by 10. IA = remainder (negative)
+        neg     IA             ; make remainder positive
         add     dl,0x30         ; convert remainder to ascii ('0')
-        mov     rcx,rdx         ; return remainder in wa
-        xchg    rdx,rax         ; return quotient in ia
+        mov     WA,IA         ; return remainder in wa
+        xchg    IA,W0         ; return quotient in ia
 	ret
 
 ;
@@ -897,16 +906,16 @@ cvd_:
         global  dvi_
 
 dvi_:
-        or      rax,rax         ; test for 0
+        or      W0,W0         ; test for 0
         jz      setovr    	; jump if 0 divisor
         push    rbp             ; preserve cp
-        xchg    rbp,rax         ; divisor to rbp
-        xchg    rax,rdx         ; dividend in rax
+        xchg    rbp,W0         ; divisor to rbp
+        xchg    W0,IA         ; dividend in W0
         cdq                     ; extend dividend
-        idiv    rbp             ; perform division. rax=quotient, rdx=remainder
-        xchg    rdx,rax         ; place quotient in rdx (ia)
+        idiv    rbp             ; perform division. W0=quotient, IA=remainder
+        xchg    IA,W0         ; place quotient in IA (ia)
         pop     rbp             ; restore cp
-        xor     rax,rax         ; clear overflow indicator
+        xor     W0,W0         ; clear overflow indicator
 	ret
 
 
@@ -917,16 +926,16 @@ dvi_:
 ;
         global  rmi_
 rmi_:
-        or      rax,rax         ; test for 0
+        or      W0,W0         ; test for 0
         jz      setovr    ; jump if 0 divisor
         push    rbp             ; preserve cp
-        xchg    rbp,rax         ; divisor to rbp
-        xchg    rax,rdx         ; dividend in rax
+        xchg    rbp,W0         ; divisor to rbp
+        xchg    W0,IA         ; dividend in W0
         cdq                     ; extend dividend
-        idiv    rbp             ; perform division. rax=quotient, rdx=remainder
+        idiv    rbp             ; perform division. W0=quotient, IA=remainder
         pop     rbp             ; restore cp
-        xor     rax,rax         ; clear overflow indicator
-        ret                     ; return remainder in rdx (ia)
+        xor     W0,W0         ; clear overflow indicator
+        ret                     ; return remainder in IA (ia)
 setovr: mov     al,0x80         ; set overflow indicator
 	dec	al
 	ret
@@ -942,7 +951,7 @@ setovr: mov     al,0x80         ; set overflow indicator
 ;       integer results returned in eax.
 ;       float results returned in st0 for intel.
 ;       see conditional switches fretst0 and
-;       fretrax.
+;       fretW0.
 ;
 ;       c function preserves ebp, ebx, esi, edi.
 ;
@@ -950,7 +959,7 @@ setovr: mov     al,0x80         ; set overflow indicator
 ; define how floating point results are returned from a function
 ; (either in st(0) or in edx:eax.
 %define fretst0 1
-%define fretrax 0
+%define fretW0 0
 
 ;----------
 ;
@@ -961,27 +970,27 @@ setovr: mov     al,0x80         ; set overflow indicator
 rti_:
 ; 41e00000 00000000 = 2147483648.0
 ; 41e00000 00200000 = 2147483649.0
-        mov     rax, qword [reg_ra+4]  ; ra msh
-        btr     rax,31          ; take absolute value, sign bit to carry flag
+        mov     W0, qword [reg_ra+4]  ; ra msh
+        btr     W0,31          ; take absolute value, sign bit to carry flag
         jc      rti_2     ; jump if negative real
-        cmp     rax,0x41e00000  ; test against 2147483648
+        cmp     W0,0x41e00000  ; test against 2147483648
         jae     rti_1     ; jump if >= +2147483648
-rti_3:  push    rcx             ; protect against c routine usage.
-        push    rax             ; push ra msh
+rti_3:  push    WA             ; protect against c routine usage.
+        push    W0             ; push ra msh
         push    qword [reg_ra]  ; push ra lsh
         callext f_2_i,8         ; float to integer
-        xchg    rax,rdx         ; return integer in rdx (ia)
-        pop     rcx             ; restore rcx
+        xchg    W0,IA         ; return integer in IA (ia)
+        pop     WA             ; restore WA
         clc
 	ret
 
 ; here to test negative number, made positive by the btr instruction
-rti_2:  cmp     rax,0x41e00000          ; test against 2147483649
+rti_2:  cmp     W0,0x41e00000          ; test against 2147483649
         jb      rti_0             ; definately smaller
         ja      rti_1             ; definately larger
         cmp     word [reg_ra+2], 0x0020
         jae     rti_1
-rti_0:  btc     rax,31                  ; make negative again
+rti_0:  btc     W0,31                  ; make negative again
         jmp     rti_3
 rti_1:  stc                             ; return c=1 for too large to convert
         ret
@@ -994,162 +1003,162 @@ rti_1:  stc                             ; return c=1 for too large to convert
         global  itr_
 itr_:
 
-        push    rcx             ; preserve
-        push    rdx             ; push ia
+        push    WA             ; preserve
+        push    IA             ; push ia
         callext i_2_f,4         ; integer to float
 %if fretst0
 	fstp	qword [reg_ra]
-        pop     rcx             ; restore rcx
+        pop     WA             ; restore WA
 	fwait
 %endif
-%if fretrax
-        mov     qword [reg_ra,rax    ; return result in ra
-	mov	qword [reg_ra+4,rdx
-        pop     rcx             ; restore rcx
+%if fretW0
+        mov     qword [reg_ra,W0    ; return result in ra
+	mov	qword [reg_ra+4,IA
+        pop     WA             ; restore WA
 %endif
 	ret
 
 ;
 ;----------
 ;
-;       ldr_ - load real pointed to by rax to ra
+;       ldr_ - load real pointed to by W0 to ra
 ;
         global  ldr_
 ldr_:
 
-        push    qword [rax]                 ; lsh
+        push    qword [W0]                 ; lsh
 	pop	qword [reg_ra]
-        mov     rax,[rax+4]                     ; msh
-	mov	qword [reg_ra+4], rax
+        mov     W0,[W0+4]                     ; msh
+	mov	qword [reg_ra+4], W0
 	ret
 
 ;
 ;----------
 ;
-;       str_ - store ra in real pointed to by rax
+;       str_ - store ra in real pointed to by W0
 ;
         global  str_
 str_:
 
         push    qword [reg_ra]               ; lsh
-	pop	qword [rax]
+	pop	qword [W0]
         push    qword [reg_ra+4]              ; msh
-	pop	qword [rax+4]
+	pop	qword [W0+4]
 	ret
 
 ;
 ;----------
 ;
-;       adr_ - add real at [rax] to ra
+;       adr_ - add real at [W0] to ra
 ;
         global  adr_
 adr_:
 
-        push    rcx                             ; preserve regs for c
+        push    WA                             ; preserve regs for c
 	push	rdx
         push    qword [reg_ra+4]             ; ra msh
         push    qword [reg_ra]               ; ra lsh
-        push    qword [rax+4]               ; arg msh
-        push    qword [rax]                 ; arg lsh
+        push    qword [W0+4]               ; arg msh
+        push    qword [W0]                 ; arg lsh
         callext f_add,16                        ; perform op
 %if fretst0
 	fstp	qword [reg_ra]
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 	fwait
 %endif
-%if fretrax
+%if fretW0
         mov     qword [reg_ra+4], rdx         ; result msh
-        mov     qword [reg_ra], rax           ; result lsh
+        mov     qword [reg_ra], W0           ; result lsh
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 %endif
 	ret
 
 ;
 ;----------
 ;
-;       sbr_ - subtract real at [rax] from ra
+;       sbr_ - subtract real at [W0] from ra
 ;
         global  sbr_
 
 sbr_:
-        push    rcx                             ; preserve regs for c
+        push    WA                             ; preserve regs for c
 	push	rdx
         push    qword [reg_ra+4]             ; ra msh
         push    qword [reg_ra]               ; ra lsh
-        push    qword [rax+4]               ; arg msh
-        push    qword [rax]                 ; arg lsh
+        push    qword [W0+4]               ; arg msh
+        push    qword [W0]                 ; arg lsh
         callext f_sub,16                        ; perform op
 %if fretst0
 	fstp	qword [reg_ra]
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 	fwait
 %endif
-%if fretrax
+%if fretW0
         mov     qword [reg_ra+4, rdx         ; result msh
-        mov     qword [reg_ra, rax           ; result lsh
+        mov     qword [reg_ra, W0           ; result lsh
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 %endif
 	ret
 
 ;
 ;----------
 ;
-;       mlr_ - multiply real in ra by real at [rax]
+;       mlr_ - multiply real in ra by real at [W0]
 ;
         global  mlr_
 
 mlr_:
-        push    rcx                             ; preserve regs for c
+        push    WA                             ; preserve regs for c
 	push	rdx
         push    qword [reg_ra+4]              ; ra msh
         push    qword [reg_ra]                ; ra lsh
-        push    qword [rax+4]               ; arg msh
-        push    qword [rax]                 ; arg lsh
+        push    qword [W0+4]               ; arg msh
+        push    qword [W0]                 ; arg lsh
         callext f_mul,16                        ; perform op
 %if fretst0
 	fstp	qword [reg_ra]
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 	fwait
 %endif
-%if fretrax
+%if fretW0
         mov     qword [reg_ra+4], rdx         ; result msh
-        mov     qword [reg_ra], rax           ; result lsh
+        mov     qword [reg_ra], W0           ; result lsh
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 %endif
 	ret
 
 ;
 ;----------
 ;
-;       dvr_ - divide real in ra by real at [rax]
+;       dvr_ - divide real in ra by real at [W0]
 ;
         global  dvr_
 
 dvr_:
-        push    rcx                             ; preserve regs for c
+        push    WA                             ; preserve regs for c
 	push	rdx
         push    qword [reg_ra+4]              ; ra msh
         push    qword [reg_ra]                ; ra lsh
-        push    qword [rax+4]               ; arg msh
-        push    qword [rax]                 ; arg lsh
+        push    qword [W0+4]               ; arg msh
+        push    qword [W0]                 ; arg lsh
         callext f_div,16                        ; perform op
 %if fretst0
         fstp	qword [reg_ra]
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 	fwait
 %endif
-%if fretrax
+%if fretW0
         mov     qword [reg_ra+4], rdx         ; result msh
-        mov     qword [reg_ra], rax           ; result lsh
+        mov     qword [reg_ra], W0           ; result lsh
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 %endif
 	ret
 
@@ -1176,7 +1185,7 @@ ngr_2:	ret
         global  atn_
 
 atn_:
-        push    rcx                             ; preserve regs for c
+        push    WA                             ; preserve regs for c
 	push	rdx
         push    qword [reg_ra+4]              ; ra msh
         push    qword [reg_ra]                ; ra lsh
@@ -1184,14 +1193,14 @@ atn_:
 %if fretst0
         fstp	qword [reg_ra]
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 	fwait
 %endif
-%if fretrax
+%if fretW0
         mov     qword [reg_ra+4], rdx         ; result msh
-        mov     qword [reg_ra], rax           ; result lsh
+        mov     qword [reg_ra], W0           ; result lsh
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 %endif
 	ret
 
@@ -1204,7 +1213,7 @@ atn_:
 
 
 chp_:
-        push    rcx                             ; preserve regs for c
+        push    WA                             ; preserve regs for c
 	push	rdx
         push    qword [reg_ra+4]              ; ra msh
         push    qword [reg_ra]                ; ra lsh
@@ -1212,14 +1221,14 @@ chp_:
 %if fretst0
         fstp	qword [reg_ra]
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 	fwait
 %endif
-%if fretrax
+%if fretW0
         mov     qword [reg_ra+4], rdx         ; result msh
-        mov     qword [reg_ra], rax           ; result lsh
+        mov     qword [reg_ra], W0           ; result lsh
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 %endif
 	ret
 
@@ -1231,7 +1240,7 @@ chp_:
         global  cos_
 
 cos_:
-        push    rcx                             ; preserve regs for c
+        push    WA                             ; preserve regs for c
 	push	rdx
         push    qword [reg_ra+4]              ; ra msh
         push    qword [reg_ra]                ; ra lsh
@@ -1239,14 +1248,14 @@ cos_:
 %if fretst0
         fstp	qword [reg_ra]
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 	fwait
 %endif
-%if fretrax
+%if fretW0
         mov     qword [reg_ra+4], rdx         ; result msh
-        mov     qword [reg_ra], rax           ; result lsh
+        mov     qword [reg_ra], W0           ; result lsh
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 %endif
 	ret
 
@@ -1258,7 +1267,7 @@ cos_:
         global  etx_
 
 etx_:
-        push    rcx                             ; preserve regs for c
+        push    WA                             ; preserve regs for c
 	push	rdx
         push    qword [reg_ra+4]              ; ra msh
         push    qword [reg_ra]                ; ra lsh
@@ -1266,14 +1275,14 @@ etx_:
 %if fretst0
         fstp	qword [reg_ra]
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 	fwait
 %endif
-%if fretrax
+%if fretW0
         mov     qword [reg_ra+4], rdx         ; result msh
-        mov     qword [reg_ra], rax           ; result lsh
+        mov     qword [reg_ra], W0           ; result lsh
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 %endif
 	ret
 
@@ -1285,7 +1294,7 @@ etx_:
         global  lnf_
 
 lnf_:
-        push    rcx                             ; preserve regs for c
+        push    WA                             ; preserve regs for c
 	push	rdx
         push    qword [reg_ra+4]              ; ra msh
         push    qword [reg_ra]                ; ra lsh
@@ -1293,14 +1302,14 @@ lnf_:
 %if fretst0
         fstp	qword [reg_ra]
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 	fwait
 %endif
-%if fretrax
+%if fretW0
         mov     qword [reg_ra+4], rdx         ; result msh
-        mov     qword [reg_ra], rax           ; result lsh
+        mov     qword [reg_ra], W0           ; result lsh
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 %endif
 	ret
 
@@ -1313,7 +1322,7 @@ lnf_:
 
 sin_:
 
-        push    rcx                             ; preserve regs for c
+        push    WA                             ; preserve regs for c
 	push	rdx
         push    qword [reg_ra+4]              ; ra msh
         push    qword [reg_ra]               ; ra lsh
@@ -1321,14 +1330,14 @@ sin_:
 %if fretst0
         fstp	qword [reg_ra]
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 	fwait
 %endif
-%if fretrax
+%if fretW0
         mov     qword [reg_ra+4], rdx         ; result msh
-        mov     qword [reg_ra], rax           ; result lsh
+        mov     qword [reg_ra], W0           ; result lsh
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 %endif
 	ret
 
@@ -1340,7 +1349,7 @@ sin_:
         global  sqr_
 
 sqr_:
-        push    rcx                             ; preserve regs for c
+        push    WA                             ; preserve regs for c
 	push	rdx
         push    qword [reg_ra+4]              ; ra msh
         push    qword [reg_ra]                ; ra lsh
@@ -1348,14 +1357,14 @@ sqr_:
 %if fretst0
         fstp	qword [reg_ra]
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 	fwait
 %endif
-%if fretrax
+%if fretW0
         mov     qword [reg_ra+4], rdx         ; result msh
-        mov     qword [reg_ra], rax           ; result lsh
+        mov     qword [reg_ra], W0           ; result lsh
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 %endif
 	ret
 ;
@@ -1366,7 +1375,7 @@ sqr_:
         global  tan_
 
 tan_:
-        push    rcx                             ; preserve regs for c
+        push    WA                             ; preserve regs for c
 	push	rdx
         push    qword [reg_ra+4]              ; ra msh
         push    qword [reg_ra]                ; ra lsh
@@ -1374,14 +1383,14 @@ tan_:
 %if fretst0
         fstp	qword [reg_ra]
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 	fwait
 %endif
-%if fretrax
+%if fretW0
         mov     qword [reg_ra+4], rdx         ; result msh
-        mov     qword [reg_ra], rax           ; result lsh
+        mov     qword [reg_ra], W0           ; result lsh
         pop     rdx                             ; restore regs
-	pop	rcx
+	pop	WA
 %endif
 	ret
 
@@ -1392,10 +1401,10 @@ tan_:
 ;
         global  cpr_
 cpr_:
-        mov     rax, qword [reg_ra+4] ; fetch msh
-        cmp     rax, 0x8000000000000000         ; test msh for -0.0
+        mov     W0, qword [reg_ra+4] ; fetch msh
+        cmp     W0, 0x8000000000000000         ; test msh for -0.0
         je      cpr050            ; possibly
-        or      rax, rax                ; test msh for +0.0
+        or      W0, W0                ; test msh for +0.0
         jnz     cpr100            ; exit if non-zero for cc's set
 cpr050: cmp     qword [reg_ra], 0     ; true zero, or denormalized number?
         jz      cpr100            ; exit if true zero
@@ -1501,8 +1510,8 @@ tryfpu:
 ;         cproc    get_fp,near
 ; 	pubname	get_fp
 ;
-;         mov     rax,reg_xs      # minimal's xs
-;         add     rax,4           # pop return from call to sysbx or sysxi
+;         mov     W0,reg_xs      # minimal's xs
+;         add     W0,4           # pop return from call to sysbx or sysxi
 ;         retc    0               # done
 ;
 ;         cendp    get_fp
@@ -1540,27 +1549,27 @@ tryfpu:
 ;         cproc   restart,near
 ; 	pubname	restart
 ;
-;         pop     rax                     # discard return
-;         pop     rax                     # discard dummy
-;         pop     rax                     # get lowest legal stack value
+;         pop     W0                     # discard return
+;         pop     W0                     # discard dummy
+;         pop     W0                     # get lowest legal stack value
 ;
-;         add     rax,stacksiz            # top of compiler's stack
-;         mov     rsp,rax                 # switch to this stack
+;         add     W0,stacksiz            # top of compiler's stack
+;         mov     XS,W0                 # switch to this stack
 ; 	call	stackinit               # initialize minimal stack
 ;
 ;                                         # set up for stack relocation
-;         lea     rax,tscblk+scstr        # top of saved stack
-;         mov     rbx,lmodstk             # bottom of saved stack
-;         getmin  rcx,stbas               # rcx = stbas from exit() time
-;         sub     rbx,rax                 # rbx = size of saved stack
-; 	mov	rdx,rcx
-;         sub     rdx,rbx                 # rdx = stack bottom from exit() time
-; 	mov	rbx,rcx
-;         sub     rbx,rsp                 # rbx = old stbas - new stbas
+;         lea     W0,tscblk+scstr        # top of saved stack
+;         mov     WB,lmodstk             # bottom of saved stack
+;         getmin  WA,stbas               # WA = stbas from exit() time
+;         sub     WB,W0                 # WB = size of saved stack
+; 	mov	rdx,WA
+;         sub     rdx,WB                 # rdx = stack bottom from exit() time
+; 	mov	WB,WA
+;         sub     WB,XS                 # WB = old stbas - new stbas
 ;
-;         setminr  stbas,rsp               # save initial sp
-; #        getoff  rax,dffnc               # get address of ppm offset
-;         mov     ppoff,rax               # save for use later
+;         setminr  stbas,XS               # save initial sp
+; #        getoff  W0,dffnc               # get address of ppm offset
+;         mov     ppoff,W0               # save for use later
 ; #
 ; #       restore stack from tscblk.
 ; #
@@ -1570,22 +1579,22 @@ tryfpu:
 ;         je      short re3               #  skip if not
 ; 	sub	rsi,4
 ; 	std
-; re1:    lodsd                           # get old stack word to rax
-;         cmp     rax,rdx                 # below old stack bottom?
-;         jb      short re2               #   j. if rax < rdx
-;         cmp     rax,rcx                 # above old stack top?
-;         ja      short re2               #   j. if rax > rcx
-;         sub     rax,rbx                 # within old stack, perform relocation
-; re2:    push    rax                     # transfer word of stack
+; re1:    lodsd                           # get old stack word to W0
+;         cmp     W0,rdx                 # below old stack bottom?
+;         jb      short re2               #   j. if W0 < rdx
+;         cmp     W0,WA                 # above old stack top?
+;         ja      short re2               #   j. if W0 > WA
+;         sub     W0,WB                 # within old stack, perform relocation
+; re2:    push    W0                     # transfer word of stack
 ;         cmp     rsi,rdi                 # if not at end of relocation then
 ;         jae     re1                     #    loop back
 ;
 ; re3:	cld
-;         mov     compsp,rsp              # 1.39 save compiler's stack pointer
-;         mov     rsp,osisp               # 1.39 back to osint's stack pointer
+;         mov     compsp,XS              # 1.39 save compiler's stack pointer
+;         mov     XS,osisp               # 1.39 back to osint's stack pointer
 ;         callc   rereloc,0               # v1.08 relocate compiler pointers into stack
-;         getmin  rax,statb               # v1.34 start of static region to xr
-; 	set_xr  rax
+;         getmin  W0,statb               # v1.34 start of static region to xr
+; 	set_xr  W0
 ;         minimal insta                   # v1.34 initialize static region
 ;
 ; #
@@ -1610,28 +1619,28 @@ tryfpu:
 ; #
 ;         callc   startbrk,0              # start control-c logic
 ;
-;         getmin  rax,stage               # is this a -w call?
-; 	cmp	rax,4
+;         getmin  W0,stage               # is this a -w call?
+; 	cmp	W0,4
 ;         je      short re4               # yes, do a complete fudge
 ;
 ; #
 ; #       jump back to cc1 with return value = normal_return
-; 	mov	rax,-1
+; 	mov	W0,-1
 ;         jmp     cc1                     # jump back
 ;
 ; #       here if -w produced load module.  simulate all the code that
 ; #       would occur if we naively returned to sysbx.  clear the stack and
 ; #       go for it.
 ; #
-; re4:	getmin	rax,stbas
-;         mov     compsp,rax              # 1.39 empty the stack
+; re4:	getmin	W0,stbas
+;         mov     compsp,W0              # 1.39 empty the stack
 ;
 ; #       code that would be executed if we had returned to makeexec:
 ; #
 ;         setmin  gbcnt,0                 # reset garbage collect count
 ;         callc   zystm,0                 # fetch execution time to reg_ia
-;         mov     rax,reg_ia              # set time into compiler
-; 	setminr	timsx,rax
+;         mov     W0,reg_ia              # set time into compiler
+; 	setminr	timsx,W0
 ;
 ; #       code that would be executed if we returned to sysbx:
 ; #

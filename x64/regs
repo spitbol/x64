@@ -1,0 +1,22 @@
+X32 register mapping
+CP EBP
+IA EDX
+XL ESI 
+XR EDI 
+XS ESP
+W0 EAX
+WA ECX 
+WB EBX
+WC EDX 
+
+X64 register mapping (all preserved across C call)
+CP *memory* (MINCP)
+IA r14 (overlaps WC)
+XL rbx 
+XR rbp 
+XS r15
+W0 r11	(not preserved over C call - no problem)
+WA r12 
+WB r13
+WC r14 
+
