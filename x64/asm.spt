@@ -337,14 +337,25 @@ compdone defs =
 *  regmap maps minimal register name to target machine
 *  register/memory-location name.
 *
+*  these registers are preserved over a call to
+*  an osint procedure, except for w0, which 
+*  need not be preserved
 	regmap = table(30)
-	regmap['xl'] = 'rsi';  regmap['xt'] = 'rsi'
-	regmap['xr'] = 'rdi';  regmap['xs'] = 'rsp'
-	regmap['wa'] = 'rcx';  regmap['wb'] = 'rbx'
-	regmap['wc'] = 'rdx';  regmap['ia'] = 'rdx'
-	regmap['cp'] = 'rbp'
+	regmap['xl'] = 'XL';  regmap['xt'] = 'XT'
+	regmap['xr'] = 'XR';  regmap['xs'] = 'XS'
+	regmap['wa'] = 'WA';  regmap['wb'] = 'WB'
+	regmap['wc'] = 'WC';  regmap['ia'] = 'IA'
+	regmap['cp'] = 'CP'
 *	w0 is temp register
-	regmap['w0'] = 'rax'
+	regmap['w0'] = 'W0'
+
+*	regmap['xl'] = 'rbx';  regmap['xt'] = 'rsi'
+*	regmap['xr'] = 'rbp';  regmap['xs'] = 'rsp'
+*	regmap['wa'] = 'r12';  regmap['wb'] = 'r13'
+*	regmap['wc'] = 'r14';  regmap['ia'] = 'r14'
+*	regmap['cp'] = 'rbp'
+**	w0 is temp register
+*	regmap['w0'] = 'r11'
 
 *  quick reference:
 	reg.ia = regmap['ia']
