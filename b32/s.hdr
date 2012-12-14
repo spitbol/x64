@@ -33,6 +33,7 @@
 %define W0.EAX EAX
 	extern	_rc_
 %ifdef AT_TRACE
+	extern	MINCP
 	extern	at_xl
 	extern	at_xr
 	extern	at_xs
@@ -192,3 +193,7 @@ calltab:
         extern SQR_
         extern TAN_
         extern CPR_
+
+	global	MINCP
+; MINCP - Minimal Code Pointer Register (CP)
+MINCP:	dd	0
