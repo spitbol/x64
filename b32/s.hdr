@@ -33,7 +33,6 @@
 %define W0.EAX EAX
 	extern	_rc_
 %ifdef AT_TRACE
-	extern	MINCP
 	extern	at_xl
 	extern	at_xr
 	extern	at_xs
