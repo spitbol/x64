@@ -68,8 +68,12 @@
 ;
 
 	extern	_rc_
-	global	typet
 	section .data
+
+	global	mincp
+mincp:	dq	0	; Minimal code pointer (CP), maintained in memory for x64
+
+	global	typet
 
         dq b_art   ; arblk type word - 0
         dq b_cdc   ; cdblk type word - 1

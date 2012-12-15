@@ -1043,19 +1043,31 @@ g.bct1	genop('loop',t2)			:(opdone)
 
 g.aov   genop('add',getarg(i2),getarg(i1))
 	genop('jc',getarg(i3))			:(opdone)
-g.lcp
-*  use cp for code pointer.
-	genop('mov',reg.cp,getarg(i1))		:(opdone)
-g.scp   genop('mov',getarg(i1),reg.cp)		:(opdone)
-g.lcw
-*  should be able to get lodsd; xchg rax,getarg(i1)
-	genop('mov',getarg(i1),'[' reg.cp ']')
-	genop('add',reg.cp,'8')			:(opdone)
-
-
-g.icp   genop('add',reg.cp,'8')			:(opdone)
 
 *  integer accumulator kept in wdx (wc)
+
+g.lcp
+*  use cp for code pointer.
+	genop('mov','qword [mincp]',getarg(i1))		
+						:(opdone)
+
+g.scp   
+	genop('mov','qword [mincp]',getarg(i1))
+						:(opdone)
+g.lcw
+	genop('mov',w0,'qword [mincp]')
+	genop('mov',getarg(i1),'[' w0 ']')
+	genop('add',w0,'4')			
+	genop('mov','qword [mincp]',w0)
+						:(opdone)
+
+
+g.icp   	
+	genop('mov',w0,'qword [mincp]')
+	genop('add',w0,'4')
+	genop('mov','qword [mincp]',w0)
+						:(opdone)
+
 g.ldi	genop('mov',reg.ia,getarg(i1))		:(opdone)
 
 g.adi   genop('add',reg.ia,getarg(i1))		:(opdone)
