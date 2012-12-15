@@ -1,4 +1,5 @@
 
+	bits	64
         section	.text
 
 ;
@@ -24,6 +25,7 @@
 ; %define ia.edx edx
 ; %define cp.ebp ebp
 ; %define w0.eax eax
+	%define	Qword dword
 	extern	_rc_
 %define at_trace
 %ifdef at_trace
