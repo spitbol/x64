@@ -1,3 +1,4 @@
+	bits	64
 	%define	IA	r14
 	%define	WA	r12
 	%define	WB	r13
