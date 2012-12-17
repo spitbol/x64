@@ -1,0 +1,17 @@
+!/bin/bash --verbose
+echo "start bootstrap test"
+cp bootbol savebol
+make clean>/dev/null
+make
+cp spitbol bootbol
+make clean>/dev/null
+make
+cp s.s s.1
+cp spitbol bootbol
+make clean>/dev/null
+make
+mv s.s s.2
+echo "comparing generated .s files"
+diff s.1 s.2
+cp savebol bootbol
+echo "end bootstrap test"
