@@ -269,7 +269,7 @@ Memory is organized into words which each contain
 , which is a configuration parameter, may be one in which case words
 and bytes are identical. To each word corresponds an address which is
 a non-negative quantity which is a multiple of <strong>cfp$b</strong>
-.  data is organized into words as follows.
+.  Data is organized into words as follows.
 
 
 <ol>
@@ -295,8 +295,8 @@ single word (<strong>cfp$n</strong> is a configuration parameter).
 
 <li>
 
-A word can contain a unsigned integer value in the range (0 le n le
-<strong>cfp$l</strong> . These integer values may represent addresses
+A word can contain a unsigned integer value in the range (<strong>0 le n le
+cfp$l</strong> . These integer values may represent addresses
 of other words and some of the instructions use this fact to provide
 indexing and indirection facilities.  
 
@@ -334,19 +334,19 @@ region consists of a series of words with consecutive addresses.
 
 There are three index registers called <strong>XR</strong>
 ,<strong>XL</strong> ,<strong>XS</strong> . In addition
-<strong>XL</strong> may sometimes be referred to by the alias of <strong>xt</strong> -
-see section 4. any of the above registers may hold a positive unsigned
-integer in the range (0 le n le <strong>cfp$l</strong> ). When the
-index register is used for indexing purposes, this must be an
-appropriate address.  <strong>XS</strong> is special in that it is
-used to point to the top item of a stack in memory. the stack may
+<strong>XL</strong> may sometimes be referred to by the alias of <strong>XT</strong> -
+see section 4. Any of the above registers may hold a positive unsigned
+integer in the range (<strong>0 le n le cfp$l</strong> ). When the
+index register is used for indexing purposes, this must be an appropriate address.  
+<strong>XS</strong> is special in that it is
+used to point to the top item of a stack in memory. The stack may
 build up or down in memory.since it is required that
 <strong>XS</strong> points to the stack top but access to items below
-the top is permitted, registers <strong>XS</strong> and <strong>xt</strong> may be used
+the top is permitted, registers <strong>XS</strong> and <strong>XT</strong> may be used
 with suitable offsets to index stacked items. only <strong>XS</strong>
-and <strong>xt</strong> may be used for this purpose since the direction of the offset
-is target machine dependent. <strong>xt</strong> is a synonym for <strong>XL</strong>
-which therefore cannot be used in code sequences referencing <strong>xt</strong>.
+and <strong>XT</strong> may be used for this purpose since the direction of the offset
+is target machine dependent. <strong>XT</strong> is a synonym for <strong>XL</strong>
+which therefore cannot be used in code sequences referencing <strong>XT</strong>.
 
        <p>
 
@@ -384,13 +384,13 @@ restriction on simple dump/restore operations.
            restriction
            -----------
 
-       if <strong>IA</strong>  and <strong>WC</strong>  overlap then
-           <strong>sti</strong>  iasav
-           <strong>ldi</strong>  iasav
-       does not change <strong>WC</strong> , and
-           <strong>mov</strong>  <strong>WC</strong> ,<strong>WC</strong> sav
-           <strong>mov</strong>  <strong>WC</strong> sav,<strong>WC</strong> 
-       does not change <strong>IA</strong> .
+       if IA  and WC  overlap then
+           sti  iasav
+           ldi  iasav
+       does not change WC , and
+           mov  WC ,WC sav
+           mov  WC sav,WC 
+       does not change IA .
 </pre>
 
 <p>
@@ -416,10 +416,10 @@ registers or program accessible locations.
 The code pointer register (<strong>CP</strong> ) is a special index
 register for use in implementations of interpretors.  it is used to
 contain a pseudo-code pointer and can only be affected by
-i<strong>CP</strong> , <strong>CP</strong> , s<strong>CP</strong> and
-<strong>lcw</strong> instructions.
+<strong>ICP</strong> , <strong>LCP</strong> , <strong>SCP</strong> and
+<strong>LCW</strong> instructions.
 
-<h2>The Stack</h2>
+<h2>The StaC</h2>
 
 <p>
 
@@ -427,7 +427,7 @@ The following notes are to guide both implementors of systems written
 in MINIMAL and MINIMAL programmers in dealing with stack manipulation.
 implementation of a downwards building stack is easiest and in general
 is to be preferred, in which case it is merely necessary to consider
-<strong>xt</strong> as an alternative name for <strong>XL</strong> .
+<strong>XT</strong> as an alternative name for <strong>XL</strong> .
 
        <p>
 
@@ -449,33 +449,34 @@ this makes it convenient to advance the stack pointer and then address
 items below it using a second index register.  The problem of signed
 offsets past such a register then arises. to distinguish stack
 offsets, which in some implementations may be negative, from non-stack
-offsets which are invariably positive, <strong>xt</strong>, an alias or synonym for
+offsets which are invariably positive, <strong>XT</strong>, an alias or synonym for
 <strong>XL</strong> is used. 
 <p>For a u-stack implementation, the MINIMAL
 translator should negate the sign of offsets applied to both
-(<strong>XS</strong> ) and (<strong>xt</strong>).  Programmers should note that since
-<strong>xt</strong> is not a separate register, <strong>XL</strong> should not be used
-in code where <strong>xt</strong> is referenced. Other modifications needed in u-stack
+(<strong>XS</strong> ) and (<strong>XT</strong>).  Programmers should note that since
+<strong>XT</strong> is not a separate register, <strong>XL</strong> should not be used
+in code where <strong>XT</strong> is referenced. Other modifications needed in u-stack
 translations are in the <strong>add</strong> <strong>sub</strong>
 <strong>ica</strong> <strong>dca</strong> opcodes applied to
-<strong>XS</strong> , <strong>xt</strong>. For example
+<strong>XS</strong> , <strong>XT</strong>. For example
 
        <pre>
        MINIMAL           d-stack trans.  u-stack trans.
 
-       <strong>mov</strong>  <strong>WA</strong>,-(<strong>XS</strong> )     <strong>sbi</strong>  <strong>XS</strong> ,1       <strong>adi</strong>  <strong>XS</strong> ,1
-                         sto  <strong>WA</strong>,(<strong>XS</strong> )    sto  <strong>WA</strong>,(<strong>XS</strong> )
-       <strong>mov</strong>  (<strong>xt</strong>)+,<strong>WC</strong>      lod  <strong>WC</strong> ,(<strong>XL</strong> )    lod  <strong>WC</strong> ,(<strong>XL</strong> )
-                         <strong>adi</strong>  <strong>XL</strong> ,1       <strong>sbi</strong>  <strong>XL</strong> ,1
-       <strong>add</strong>XS</strong>,=seven     <strong>adi</strong>  <strong>XS</strong> ,7       <strong>sbi</strong>  <strong>XS</strong> ,7
-       <strong>mov</strong>  2(<strong>xt</strong>),<strong>WA</strong>     lod  <strong>WA</strong>,2(<strong>XL</strong> )   lod  <strong>WA</strong>,-2(<strong>XL</strong> )
-       <strong>ica</strong>  <strong>XS</strong>            <strong>adi</strong>  <strong>XS</strong> ,1       <strong>sbi</strong>  <strong>XS</strong> ,1
+       mov  WA,-(XS)     sbi  XS ,1       adi  XS ,1
+                         sto  WA,(XS)     sto  WA,(XS)
+       mov  (xt)+,WC     lod  WC ,(XL)    lod  WC ,(XL)
+                         adi  XL ,1       sbi  XL ,1
+       add  XS,=seven      adi  XS ,7     sbi  XS ,7
+       mov  2(xt),WA     lod  WA,2(XL)    lod  WA,-2(XL)
+       ica  XS           adi  XS ,1       sbi  XS ,1
 
-       note that forms such as
-       <strong>mov</strong>  -(<strong>XS</strong> ),<strong>WA</strong>
-       <strong>add</strong>  (<strong>XS</strong> ),<strong>WA</strong>
-       are illegal, since they assume information storage
-       above the stack top.
+       Note that forms such as
+
+       mov  -(XS),WA
+       add  (XS),WA
+
+are illegal, since they assume information storage above the stack top.
 </pre>
 
 <h2>Internal Character Set</h2>
@@ -483,7 +484,7 @@ translations are in the <strong>add</strong> <strong>sub</strong>
 <p>
 
 The internal character set is represented by a set of contiguous codes
-from 0 to <strong>cfp$a</strong> -1. The codes for the digits 0-9 must
+from 0 to <strong>cfp$a-1</strong> . The codes for the digits 0-9 must
 be contiguous and in sequence. Other than this, there are no
 restraints.
 
@@ -575,11 +576,11 @@ assembly. The full form of a condition is -
 </pre>
        <li>.<strong>then</strong> is redundant and may be omitted if wished.
 
-       <li>ms1, ms2 are arbitrary sequences of MINIMAL
+       <li><em>ms1</em>, <em>ms2</em> are arbitrary sequences of MINIMAL
             statements either of which may be null or may
             contain further conditions.
 
-<li>If ms2 is omitted, .<strong>else</strong> may also be omitted.
+<li>If <em>ms2</em> is omitted, .<strong>else</strong> may also be omitted.
 
 <li>.<strong>fi</strong> is required.
 
@@ -587,11 +588,11 @@ assembly. The full form of a condition is -
             by the translator (not less than 20, say).
 </ol>
 <pr>
-       Selection of the alternatives ms1, ms2 is by means of the
+       Selection of the alternatives <em>ms1</em>, <em>ms2</em> is by means of the
        define and undefine directives of form -
 <pre>
-       .<strong>def</strong>   cas
-       .<strong>undef</strong> cas
+       .<strong>def</strong>   <em>cas</em>
+       .<strong>undef</strong> <em>cas</em>
 </pre>
 <p>
 
@@ -603,16 +604,16 @@ an error.
        <p>
 
 The effect is that if a symbol is currently defined,
-<strong>then</strong> in any condition depending on it, ms1 will be
-processed and ms2 omitted. Conversely if it is undefined, ms1 will be
-omitted and ms2 processed.
+<strong>then</strong> in any condition depending on it, <em>ms1</em> will be
+processed and <em>ms2</em> omitted. Conversely if it is undefined, <em>ms1</em> will be
+omitted and <em>ms2</em> processed.
 
        <p>
 
 Nesting of conditions is such that conditions in a section not
 selected for processing must not be evaluated. nested conditions must
 remember their environment whilst being processed. Effectively this
-implies use of a scheme based on a stack with if .fi matching by the
+implies use of a scheme based on a stack with if <strong>.fi</strong> matching by the
 condition processor of the translator.
 
 <h2>Operand Formats</h2>
@@ -684,9 +685,9 @@ the case of multiword operands, the address given is the first word.
 a full memory word.  <em>opw</em> includes all the possibilities for
 <em>ops</em> (the referenced word is used) plus the use of one of the
 three work registers (<strong>WA</strong>,<strong>WB</strong> ,<strong>WC</strong> ).
-in addition, the formats (x)+ and -(x) allow indexed operations in
+in addition, the formats (X)+ and -(X) allow indexed operations in
 which the index register is popped by one word after the reference
-(x)+, or pushed by one word before the reference -(x) these latter two
+(X)+, or pushed by one word before the reference -(X) these latter two
 formats provide a facility for manipulation of stacks. the format does
 not imply a particular direction in which stacks must build - it is
 used for compactness.
@@ -694,7 +695,7 @@ used for compactness.
 an instruction to use an index register in one of these formats in
 some other manner in the same instruction.  e.g.  <strong>mov</strong>
 <strong>XL</strong> ,(<strong>XL</strong> )+ is illegal.  The formats
--(x) and (x)+ may also be used in pre-decrementation,
+-(X) and (X)+ may also be used in pre-decrementation,
 post-incrementation to access the adjacent character of a string.
 
 <dt> <em>opn</em>  as for  <em>opw</em> + 07
@@ -708,7 +709,7 @@ contain a one word integer (e.g. an address).  This includes all the
 possibilities for <em>opw</em> plus the use of one of the index
 registers (<strong>XL</strong> ,<strong>XR</strong> ,
 <strong>XT</strong> , <strong>XS</strong> ). The range of integer
-values is 0 le n le <strong>cfp$l</strong> 
+values is <strong>0 le n le cfp$l</strong> 
 
 <dt> <em>opv</em>  as for  <em>opn</em> + 18-22
 
@@ -807,8 +808,8 @@ format and comment conventions.
 <tr>
 <td>5.16</td>
 <td><strong>atn</strong></td>
-<td>arctangent</td>
-<td>of real accum</td>
+<td align="left"></td>
+<td align="left">arctangent of real accum</td>
 </tr>
 <tr>
 <td>2.16</td>
@@ -957,8 +958,8 @@ format and comment conventions.
 <tr>
 <td>5.18</td>
 <td><strong>cos</strong></td>
-<td>cosine</td>
-<td>of real accum</td>
+<td align="left"></td>
+<td>cosine of real accum</td>
 </tr>
 <tr>
 <td>8.8</td>
@@ -1581,8 +1582,8 @@ format and comment conventions.
        the following descriptions assume the definitions -
 
 <pre>
-       zeroe  <strong>equ</strong>  0
-       unity  <strong>equ</strong>  1
+       zeroe  equ 0
+       unity  equ 1
 </pre>
 
 <h3>1-  Basic Instruction Set</h3>
@@ -1635,20 +1636,17 @@ branch on switch value
 <p>
 
 
-<strong>bsw</strong> iff,<strong>esw</strong> provide a capability for
+<strong>bsw</strong> <strong>iff</strong>,<strong>esw</strong> provide a capability for
 a switched branch similar to a fortran computed goto. The <em>val</em> on the
 <strong>bsw</strong> instruction is the maximum number of branches.
 the value in x ranges from zero up to but not including this maximum.
 each <strong>iff</strong> provides a branch. <em>val</em> must be less than
 that given on the bsw and control goes to <em>plbl</em> if the value
 in x matches.  If the value in x does not correspond to any of the
-<strong>iff</strong> entries, <strong>then</strong> control passes to
+<strong>iff</strong> entries, then control passes to
 the <em>plbl</em> on the <strong>bsw</strong>.
-<p> This <em>plbl</em>
-operand may be omitted if there are no values missing from the list.
-
-	    <p>
-
+<p> This <em>plbl</em> operand may be omitted if there are no values missing from the list.
+<p>
 
 <strong>iff</strong> and <strong>esw</strong> may only be used in this
 contextxt.  Execution of <strong>bsw</strong> may destroy the contents
@@ -1710,7 +1708,7 @@ Entry point addresses are accessible only by use of literals
 control is passed to the executable code starting at the entry point
 address.  <em>opn</em> is left unchanged.
 
-<p><dt>1.8  <strong>lei</strong>  x
+<p><dt>1.8  <strong>lei</strong>  <em>x</em>
 
 <dd>           load entry point identification
 
@@ -1719,7 +1717,7 @@ address.  <em>opn</em> is left unchanged.
 
 X contains the address of an entry point for which an identifying
 value was given on the the <strong>ent</strong> line.
-<strong>lei</strong> replaces the contents of x by this value.
+<strong>lei</strong> replaces the contents of <em>x</em> by this value.
 
 <p><dt>1.9  <strong>jsr</strong>  <em>pnam</em>
 
@@ -2317,20 +2315,20 @@ and test the result of the preceding instruction.
 
 <p><dt>4.13 <strong>igt</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>IA</strong> ) gt 0
+<dd>        jump to <em>plbl</em> (<strong>IA) gt 0</strong> 
 
 <p><dt>4.14 <strong>ile</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>IA</strong> ) le 0
+<dd>        jump to <em>plbl</em> (<strong>IA) le 0</strong> 
 
 
 <p><dt>4.15 <strong>ilt</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>IA</strong> ) lt 0
+<dd>        jump to <em>plbl</em> (<strong>IA) lt 0</strong> 
 
 <p><dt>4.16 <strong>ine</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>IA</strong> ) ne 0
+<dd>        jump to <em>plbl</em> (<strong>IA) ne 0</strong> 
 
 <p>
 
