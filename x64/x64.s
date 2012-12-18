@@ -1,13 +1,4 @@
 	bits	64
-	%define	IA	r14
-	%define	WA	r12
-	%define	WB	r13
-	%define	WC	r14
-	%define	IA	r14
-	%define	XS	r15
-	%define	XL	rbx
-	%define XR	rbp
-	%define	W0	r11
 	global	reg_block
 	global	reg_wa
 	global	reg_wb
@@ -521,358 +512,183 @@ cprtmsg:
 	db          ' copyright 1987-2012 robert b. k. dewar and mark emmer.',0,0
 
 
-;       interface routines
+;       SYSCALL macro provides the inteface for calling OSINT procedures from Minimal.
 
-;       each interface routine takes the following form:
+;       Control IS NEVER returned to a interface routine.  Instead, control
+;       is returned to the compiler (THE caller of the interface routine).
 
-;               sysxx   call    ccaller         ; call common interface
-;                       dq      zysxx           ; dq      of c osint function
-;                       db      n               ; offset to instruction after
-;                                               ;   last procedure exit
+;       The C function that is called MUST ALWAYS return an integer
+;	in EAX giving the exit (PPM) value, which is zero for normal return, or else
+;	the number of the PPM branch to be taken.
 
-;       in an effort to achieve portability of c osint functions, we
-;       do not take take advantage of any "internal" to "external"
-;       transformation of names by c compilers.  so, a c osint function
-;       representing sysxx is named _zysxx.  this renaming should satisfy
-;       all c compilers.
-
-;       important  one interface routine, sysfc, is passed arguments on
-;       the stack.  these items are removed from the stack before calling
-;       ccaller, as they are not needed by this implementation.
-
-
-;-----------
-
-;       ccaller is called by the os interface routines to call the
-;       real c os interface function.
-
-;       general calling sequence is
-
-;               call    ccaller
-;               dq      address_of_c_function
-;               db      2*number_of_exit_points
-
-;       control is never returned to a interface routine.  instead, control
-;       is returned to the compiler (the caller of the interface routine).
-
-;       the c function that is called must always return an integer
-;       indicating the procedure exit to take or that a normal return
-;       is to be performed.
-
-;               c function      interpretation
-;               return value
-;               ------------    -------------------------------------------
-;                    <0         do normal return to instruction past
-;                               last procedure exit (distance passed
-;                               in by dummy routine and saved on stack)
-;                     0         take procedure exit 1
-;                     4         take procedure exit 2
-;                     8         take procedure exit 3
-;                    ...        ...
-
-
-	segment	.data
-call_adr:	dq	0
 	segment	.text
 
-ccaller:
-;       (1) save registers in global variables
+syscall_init:
+X32 register mapping
+CP EBP
+IA EDX
+XL ESI 
+XR EDI 
+XS ESP
+W0 EAX
+WA ECX 
+WB EBX
+WC EDX 
+;       save registers in global variables
 
         mov     qword [reg_wa],WA              ; save registers
 	mov	qword [reg_wb],WB
         mov     qword [reg_wc],WC              ; (also _reg_ia)
-	mov	qword [reg_xr],rdi
-	mov	qword [reg_xl],rsi
-        mov     qword [reg_cp],rbp              ; needed in image saved by sysxi
+	mov	qword [reg_xr],XR
+	mov	qword [reg_xl],XL
+	ret
 
-;       (2) get pointer to arg list
-
-        pop     rsi                     ; point to arg list
-
-;       (3) fetch dq      of c function], fetch offset to 1st instruction
-;           past last procedure exit], and call c function.
-
-        cs                              ; cs segment override
-        lodsd                           ; point to c function entry point
-	mov	qword [call_adr],W0
-;       lodsd   cs:ccaller              ; point to c function entry point
-;	word after callee address used to be ppm count. now used for debug
-	mov	WB,qword[rsi]
-        mov     qword [reg_pp],WB              ; in memory
-        pop     qword [reg_pc]                  ; save return pc past "call sysxx"
-
-;       (3a) save compiler stack and switch to osint stack
-
-; ds 12/22/12 note that needn't save and restore stack ptrs if not using
-; 	save files or load modules
-         mov     qword [compsp],XS              ; 1.39 save compiler's stack pointer
-         mov     XS,qword [osisp]               ; 1.39 load osint's stack pointer
-
-;       (3b) make call to osint
-	mov	W0,qword [call_adr]
-        call    W0                     ; call c interface function
-
-	mov	qword [_rc_],W0		; save return code from function
-
-;       (4) restore registers after c function returns.
-
-
-cc1:
- 	mov     qword [osisp],XS               ; 1.39 save osint's stack pointer
-        mov     XS,qword [compsp]              ; 1.39 restore compiler's stack pointer
+syscall_exit:
+	mov	qword [_rc_],rax		; save return code from function
+ 	mov     qword [osisp],XS               ; save OSINT's stack pointer
+        mov     XS,qword [compsp]              ; restore compiler's stack pointer
         mov     WA,qword [reg_wa]              ; restore registers
 	mov	WB,qword [reg_wb]
         mov     WC,qword [reg_wc]              ; (also reg_ia)
-	mov	rdi,qword [reg_xr]
-	mov	rsi,qword [reg_xl]
-	mov	rbp,qword [reg_cp]
-
+	mov	XR,qword [reg_xr]
+	mov	XL,qword [reg_xl]
 	cld
-
-	mov	W0,qword [reg_pc]
-	jmp	W0
-
-
-;---------------
-
-;       individual osint routine entry points
+	mov	rax,qword [reg_pc]
+	jmp	rax
+	
+	%macro	syscall	2
+        pop     rax                     ; pop return address
+	mov	qword [reg_pc],rax
+	call	syscall_init
+;       save compiler stack and switch to OSINT stack
+        mov     qword [compsp],rsp              ; save compiler's stack pointer
+        mov     rsp,qword [osisp]               ; load OSINT's stack pointer
+	extern	%1
+	call	%1
+	call	syscall_exit
+	%endmacro
 
         global sysax
-	extern	zysax
-sysax:	call	ccaller
-        dq        zysax
-        dq   1
+sysax:	syscall	  zysax,1
 
         global sysbs
-	extern	zysbs
-sysbs:	call	ccaller
-        dq        zysbs
-        dq   2
+sysbs:	syscall	  zysbs,2
 
         global sysbx
-	extern	zysbx
-sysbx:	mov	qword [reg_xs],XS
-	call	ccaller
-        dq      zysbx
-        dq   2
+sysbx:	mov	qword [reg_xs],rsp
+	syscall	zysbx,2
 
 ;        global syscr
-;	extern	zyscr
-;syscr:  call    ccaller
-;        dq      zyscr
-;        dq   0
+;SYSCR:  syscall    zyscr ;    ,0
 ;
         global sysdc
-	extern	zysdc
-sysdc:	call	ccaller
-        dq      zysdc
-        dq   4
+sysdc:	syscall	zysdc,4
 
         global sysdm
-	extern	zysdm
-sysdm:	call	ccaller
-        dq      zysdm
-        dq   5
+sysdm:	syscall	zysdm,5
 
         global sysdt
-	extern	zysdt
-sysdt:	call	ccaller
-        dq      zysdt
-        dq   6
+sysdt:	syscall	zysdt,6
 
         global sysea
-	extern	zysea
-sysea:	call	ccaller
-        dq      zysea
-        dq   7
+sysea:	syscall	zysea,7
 
         global sysef
-	extern	zysef
-sysef:	call	ccaller
-        dq      zysef
-        dq   8
+sysef:	syscall	zysef,8
 
         global sysej
-	extern	zysej
-sysej:	call	ccaller
-        dq      zysej
-        dq   9
+sysej:	syscall	zysej,9
 
         global sysem
-	extern	zysem
-sysem:	call	ccaller
-        dq      zysem
-        dq   10
+sysem:	syscall	zysem,10
 
         global sysen
-	extern	zysen
-sysen:	call	ccaller
-        dq      zysen
-        dq   11
+sysen:	syscall	zysen,11
 
         global sysep
-	extern	zysep
-sysep:	call	ccaller
-        dq      zysep
-        dq  	12
+sysep:	syscall	zysep,12
 
         global sysex
-	extern	zysex
-sysex:	mov	qword [reg_xs],XS
-	call	ccaller
-        dq      zysex
-        dq   13
+sysex:	mov	qword [reg_xs],rsp
+	syscall	zysex,13
 
         global sysfc
-	extern	zysfc
-sysfc:  pop     W0             ; <<<<remove stacked scblk>>>>
-	lea	XS,[XS+WC*8]
-	push	W0
-	call	ccaller
-        dq      zysfc
-        dq   14
+sysfc:  pop     rax             ; <<<<remove stacked SCBLK>>>>
+	lea	rsp,[rsp+edx*4]
+	push	rax
+	syscall	zysfc,14
 
         global sysgc
-	extern	zysgc
-sysgc:	call	ccaller
-        dq      zysgc
-        dq   15
+sysgc:	syscall	zysgc,15
 
         global syshs
-	extern	zyshs
-syshs:	mov	qword [reg_xs],XS
-	call	ccaller
-        dq      zyshs
-        dq   16
+syshs:	mov	qword [reg_xs],rsp
+	syscall	zyshs,16
 
         global sysid
-	extern	zysid
-sysid:	call	ccaller
-        dq      zysid
-        dq   17
+sysid:	syscall	zysid,17
 
         global sysif
-	extern	zysif
-sysif:	call	ccaller
-        dq      zysif
-        dq   18
+sysif:	syscall	zysif,18
 
         global sysil
-	extern	zysil
-sysil:  call    ccaller
-        dq      zysil
-        dq   19
+sysil:  call    	zysil,19
 
         global sysin
-	extern	zysin
-sysin:	call	ccaller
-        dq      zysin
-        dq   20
+sysin:	syscall	zysin,20
 
         global sysio
-	extern	zysio
-sysio:	call	ccaller
-        dq      zysio
-        dq   21
+sysio:	syscall	zysio,21
 
         global sysld
-	extern	zysld
-sysld:  call    ccaller
-        dq      zysld
-        dq   22
+sysld:  syscall    	zysld,22
 
         global sysmm
-	extern	zysmm
-sysmm:	call	ccaller
-        dq      zysmm
-        dq   23
+sysmm:	syscall	zysmm,23
 
         global sysmx
-	extern	zysmx
-sysmx:	call	ccaller
-        dq      zysmx
-        dq   24
+sysmx:	syscall	zysmx,24
 
         global sysou
-	extern	zysou
-sysou:	call	ccaller
-        dq      zysou
-        dq   25
+sysou:	syscall	zysou,25
 
         global syspi
-	extern	zyspi
-syspi:	call	ccaller
-        dq      zyspi
-        dq   26
+syspi:	syscall	zyspi,26
 
         global syspl
-	extern	zyspl
-syspl:	call	ccaller
-        dq      zyspl
-        dq   27
+syspl:	syscall	zyspl,27
 
         global syspp
-	extern	zyspp
-syspp:	call	ccaller
-        dq      zyspp
-        dq   28
+syspp:	syscall	zyspp,28
 
         global syspr
-	extern	zyspr
-syspr:	call	ccaller
-        dq      zyspr
-        dq   29
+syspr:	syscall	zyspr,29
 
         global sysrd
-	extern	zysrd
-sysrd:	call	ccaller
-        dq      zysrd
-        dq   30
+sysrd:	syscall	zysrd,30
 
         global sysri
-	extern	zysri
-sysri:	call	ccaller
-        dq      zysri
-        dq   32
+sysri:	syscall	zysri,32
 
         global sysrw
-	extern	zysrw
-sysrw:	call	ccaller
-        dq      zysrw
-        dq   33
+sysrw:	syscall	zysrw,33
 
         global sysst
-	extern	zysst
-sysst:	call	ccaller
-        dq      zysst
-        dq   34
+sysst:	syscall	zysst,34
 
         global systm
-	extern	zystm
-systm:	call	ccaller
-systm_p: dq      zystm
-        dq   35
+systm:	syscall	zystm,35
 
         global systt
-	extern	zystt
-systt:	call	ccaller
-        dq      zystt
-        dq   36
+systt:	syscall	zystt,36
 
         global sysul
-	extern	zysul
-sysul:	call	ccaller
-        dq      zysul
-        dq   37
+sysul:	syscall	zysul,37
 
         global sysxi
-	extern	zysxi
-sysxi:	mov	qword [reg_xs],XS
-	call	ccaller
-sysxi_p: dq      zysxi
-        dq   38
-; spitbol math routine interface
+sysxi:	mov	qword [reg_xs],rsp
 
+	syscall	zysxi,38
 	%macro	callext	2
 	extern	%1
 	call	%1
