@@ -1,4 +1,17 @@
 	bits	64
+;	register assignments (all are preserved over call to C procedure, except for W0, which
+;	is only used very locally, and so can be destroyed by C procedure).
+	%define	IA	r14
+	%define	WA	r12
+	%define	WB	r13
+	%define	WC	r14
+	%define	IA	r14
+	%define	XS	r15
+	%define	XL	rbx
+	%define XR	rbp
+	%define XT	r15
+	%define	W0	r11
+
 	global	reg_block
 	global	reg_wa
 	global	reg_wb
@@ -151,7 +164,7 @@
 	segment	.data
 
 W0_save:	dq	0
-rbp_save:	dq	0
+XR_save:	dq	0
 WB_save:	dq	0
 WA_save:	dq	0
 rdi_save:	dq	0
@@ -161,7 +174,7 @@ XS_save:	dq	0
 
 	%macro	pushaq	0
 	mov	qword [W0_save],W0
-	mov	qword [rbp_save],rbp
+	mov	qword [XR_save],XR
 	mov	qword [WB_save],WA
 	mov	qword [WA_save],WA
 	mov	qword [rdi_save],rdi
@@ -173,7 +186,7 @@ XS_save:	dq	0
 
 	%macro	popaq 0
 	mov	W0,qword [W0_save]
-	mov	rbp,qword [rbp_save]
+	mov	XR,qword [XR_save]
 	mov	WB,qword [WB_save]
 	mov	WA,qword [WA_save]
 	mov	rdi,qword [rdi_save]
@@ -370,7 +383,7 @@ pop1:	popaq
 	global	startup
 ;   ordinals for minimal calls from assembly language.
 ;
-;   the order of entries here must corrrspond to the order of
+;   the order of entries here must corrXSond to the order of
 ;   calltab entries in the inter assembly language module.
 ;
 calltab_relaj equ   0
@@ -390,9 +403,9 @@ calltab_engts equ   13
 
 
 startup:
-        pop     rax                     ; pop return address (this procedure never returns)
+        pop     W0                     ; pop return address (this procedure never returns)
 	call	at_note1
-	mov	qword[at_arg],rsp
+	mov	qword[at_arg],XS
 	call	at_num
 	call	at_note1
 	call	stackinit               ; initialize minimal stack
@@ -416,12 +429,12 @@ startup:
 ;
 ;	stackinit  -- initialize lowspmin from sp.
 ;
-;	input:  rsp - current c stack
+;	input:  XS - current c stack
 ;		stacksiz - size of drsired minimal stack in bytes
 ;
 ;	uses:	W0
 ;
-;	output: register wa, rsp, lowspmin, compsp, osisp set up per diagram:
+;	output: register wa, XS, lowspmin, compsp, osisp set up per diagram:
 ;
 ;	(high)	+----------------+
 ;		|  old c stack   |
@@ -478,7 +491,7 @@ stackinit:
          mov     WC,qword [reg_wc]              ; (also _reg_ia)
  	mov	rdi,qword [reg_xr]
  	mov	rsi,qword [reg_xl]
- 	mov	rbp,qword [reg_cp]
+ 	mov	XR,qword [reg_cp]
 
          mov     qword [osisp],XS               ; 1.39 save osint stack pointer
          cmp     qword [compsp],0      ; 1.39 is there a compiler stack?
@@ -498,7 +511,7 @@ stackinit:
  	mov	qword [reg_wc],WC
  	mov	qword [reg_xr],rdi
  	mov	qword [reg_xl],rsi
- 	mov	qword [reg_cp],rbp
+ 	mov	qword [reg_cp],XR
 ; 	popaq
  	ret
 
@@ -524,16 +537,6 @@ cprtmsg:
 	segment	.text
 
 syscall_init:
-X32 register mapping
-CP EBP
-IA EDX
-XL ESI 
-XR EDI 
-XS ESP
-W0 EAX
-WA ECX 
-WB EBX
-WC EDX 
 ;       save registers in global variables
 
         mov     qword [reg_wa],WA              ; save registers
@@ -544,7 +547,7 @@ WC EDX
 	ret
 
 syscall_exit:
-	mov	qword [_rc_],rax		; save return code from function
+	mov	qword [_rc_],W0		; save return code from function
  	mov     qword [osisp],XS               ; save OSINT's stack pointer
         mov     XS,qword [compsp]              ; restore compiler's stack pointer
         mov     WA,qword [reg_wa]              ; restore registers
@@ -553,16 +556,16 @@ syscall_exit:
 	mov	XR,qword [reg_xr]
 	mov	XL,qword [reg_xl]
 	cld
-	mov	rax,qword [reg_pc]
-	jmp	rax
+	mov	W0,qword [reg_pc]
+	jmp	W0
 	
 	%macro	syscall	2
-        pop     rax                     ; pop return address
-	mov	qword [reg_pc],rax
+        pop     W0                     ; pop return address
+	mov	qword [reg_pc],W0
 	call	syscall_init
 ;       save compiler stack and switch to OSINT stack
-        mov     qword [compsp],rsp              ; save compiler's stack pointer
-        mov     rsp,qword [osisp]               ; load OSINT's stack pointer
+        mov     qword [compsp],XS              ; save compiler's stack pointer
+        mov     XS,qword [osisp]               ; load OSINT's stack pointer
 	extern	%1
 	call	%1
 	call	syscall_exit
@@ -575,7 +578,7 @@ sysax:	syscall	  zysax,1
 sysbs:	syscall	  zysbs,2
 
         global sysbx
-sysbx:	mov	qword [reg_xs],rsp
+sysbx:	mov	qword [reg_xs],XS
 	syscall	zysbx,2
 
 ;        global syscr
@@ -609,20 +612,20 @@ sysen:	syscall	zysen,11
 sysep:	syscall	zysep,12
 
         global sysex
-sysex:	mov	qword [reg_xs],rsp
+sysex:	mov	qword [reg_xs],XS
 	syscall	zysex,13
 
         global sysfc
-sysfc:  pop     rax             ; <<<<remove stacked SCBLK>>>>
-	lea	rsp,[rsp+edx*4]
-	push	rax
+sysfc:  pop     W0             ; <<<<remove stacked SCBLK>>>>
+	lea	XS,[XS+WC*4]
+	push	W0
 	syscall	zysfc,14
 
         global sysgc
 sysgc:	syscall	zysgc,15
 
         global syshs
-syshs:	mov	qword [reg_xs],rsp
+syshs:	mov	qword [reg_xs],XS
 	syscall	zyshs,16
 
         global sysid
@@ -632,7 +635,7 @@ sysid:	syscall	zysid,17
 sysif:	syscall	zysif,18
 
         global sysil
-sysil:  call    	zysil,19
+sysil:  syscall zysil,19
 
         global sysin
 sysin:	syscall	zysin,20
@@ -686,7 +689,7 @@ systt:	syscall	zystt,36
 sysul:	syscall	zysul,37
 
         global sysxi
-sysxi:	mov	qword [reg_xs],rsp
+sysxi:	mov	qword [reg_xs],XS
 
 	syscall	zysxi,38
 	%macro	callext	2
@@ -706,7 +709,7 @@ sysxi:	mov	qword [reg_xs],rsp
         global  cvd_
 
 cvd_:
-        xchg    W0,WC         ; ia to eax
+        xchg    W0,WC         ; ia to W0
         cdq                     ; sign extend
         idiv    qword [ten]   ; divide by 10. IA = remainder (negative)
         neg     IA             ; make remainder positive
@@ -718,20 +721,20 @@ cvd_:
 ;
 ;-----------
 ;
-;       dvi_ - divide ia (edx) by long in eax
+;       dvi_ - divide ia (edx) by long in W0
 ;
         global  dvi_
 
 dvi_:
         or      W0,W0         ; test for 0
         jz      setovr    	; jump if 0 divisor
-        push    rbp             ; preserve cp
-        xchg    rbp,W0         ; divisor to rbp
+        push    XR             ; preserve cp
+        xchg    XR,W0         ; divisor to XR
         xchg    W0,IA         ; dividend in W0
         cdq                     ; extend dividend
-        idiv    rbp             ; perform division. W0=quotient, IA=remainder
+        idiv    XR             ; perform division. W0=quotient, IA=remainder
         xchg    IA,W0         ; place quotient in IA (ia)
-        pop     rbp             ; restore cp
+        pop     XR             ; restore cp
         xor     W0,W0         ; clear overflow indicator
 	ret
 
@@ -739,18 +742,18 @@ dvi_:
 ;
 ;-----------
 ;
-;       rmi_ - remainder of ia (edx) divided by long in eax
+;       rmi_ - remainder of ia (edx) divided by long in W0
 ;
         global  rmi_
 rmi_:
         or      W0,W0         ; test for 0
         jz      setovr    ; jump if 0 divisor
-        push    rbp             ; preserve cp
-        xchg    rbp,W0         ; divisor to rbp
+        push    XR             ; preserve cp
+        xchg    XR,W0         ; divisor to XR
         xchg    W0,IA         ; dividend in W0
         cdq                     ; extend dividend
-        idiv    rbp             ; perform division. W0=quotient, IA=remainder
-        pop     rbp             ; restore cp
+        idiv    XR             ; perform division. W0=quotient, IA=remainder
+        pop     XR             ; restore cp
         xor     W0,W0         ; clear overflow indicator
         ret                     ; return remainder in IA (ia)
 setovr: mov     al,0x80         ; set overflow indicator
@@ -765,7 +768,7 @@ setovr: mov     al,0x80         ; set overflow indicator
 ;
 ;       the calling convention of the various compilers:
 ;
-;       integer results returned in eax.
+;       integer results returned in W0.
 ;       float results returned in st0 for intel.
 ;       see conditional switches fretst0 and
 ;       fretW0.
@@ -774,7 +777,7 @@ setovr: mov     al,0x80         ; set overflow indicator
 ;
 
 ; define how floating point results are returned from a function
-; (either in st(0) or in edx:eax.
+; (either in st(0) or in edx:W0.
 %define fretst0 1
 %define fretW0 0
 
@@ -1219,7 +1222,8 @@ tan_:
         global  cpr_
 cpr_:
         mov     W0, qword [reg_ra+4] ; fetch msh
-        cmp     W0, 0x8000000000000000         ; test msh for -0.0
+; DS Need to fix next line, won't assemble for x64.
+;        cmp     W0, 0x8000000000000000         ; test msh for -0.0
         je      cpr050            ; possibly
         or      W0, W0                ; test msh for +0.0
         jnz     cpr100            ; exit if non-zero for cc's set
@@ -1249,9 +1253,9 @@ ovr_:
 
 	global	tryfpu
 tryfpu:
-	push	rbp
+	push	XR
 	fldz
-	pop	rbp
+	pop	XR
 	ret
 
 
@@ -1320,7 +1324,7 @@ tryfpu:
 ; #       sp-->   |    old pc     |  --> return pc in c function zysxi
 ; #       (low)   +---------------+
 ; #
-; #       on exit, return ebp in eax. this is the lower limit on the
+; #       on exit, return ebp in W0. this is the lower limit on the
 ; #       size of the stack.
 ;
 ;
