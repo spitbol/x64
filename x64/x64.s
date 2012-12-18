@@ -10,7 +10,7 @@
 	%define	XL	rbx
 	%define XR	rbp
 	%define XT	r15
-	%define	W0	r11
+	%define	W0	rax
 
 	global	reg_block
 	global	reg_wa
@@ -85,11 +85,11 @@
 ;       the following form in the 80386 version of the compiler:
 ;
 ;               ...code to put arguments in registers...
-;               call    sysxx           # call osint function
-;               dq      exit_1          # address of exit point 1
-;               dq      exit_2          # address of exit point 2
-;               ...     ...             # ...
-;               dq      exit_n          # address of exit point n
+;               call    sysxx            call osint function
+;               dq      exit_1           address of exit point 1
+;               dq      exit_2           address of exit point 2
+;               ...     ...              ...
+;               dq      exit_n           address of exit point n
 ;               ...instruction following call...
 ;
 ;       the osint function 'sysxx' can then return in one of n+1 ways:
@@ -150,12 +150,9 @@
 ; 	extern	outptr
 ; 	extern	calltab
 ;
-; ;       .include "extrn386.inc"
-;
-;
-; ; words saved during exit(-3)
-;  ;
+;       .include "extrn386.inc"
 
+; ; words saved during exit(-3)
 
 ; x86 doesn't have instructions equivalent to
 ; x32 pushad and popad, so use macros to
@@ -163,35 +160,32 @@
 	align	8
 	segment	.data
 
-W0_save:	dq	0
+XL_save:	dq	0
 XR_save:	dq	0
-WB_save:	dq	0
+W0_save:	dq	0
 WA_save:	dq	0
-rdi_save:	dq	0
+WB_save:	dq	0
 WC_save:	dq	0
-rsi_save:	dq	0
 XS_save:	dq	0
 
 	%macro	pushaq	0
 	mov	qword [W0_save],W0
 	mov	qword [XR_save],XR
-	mov	qword [WB_save],WA
+	mov	qword [XL_save],XL
+	mov	qword [WB_save],WB
 	mov	qword [WA_save],WA
-	mov	qword [rdi_save],rdi
 	mov	qword [WC_save],WC
-	mov	qword [rsi_save],rsi
 	mov	qword [XS_save],XS
 	%endmacro
 
 
 	%macro	popaq 0
-	mov	W0,qword [W0_save]
+	mov	XL,qword [XL_save]
 	mov	XR,qword [XR_save]
-	mov	WB,qword [WB_save]
+	mov	W0,qword [W0_save]
 	mov	WA,qword [WA_save]
-	mov	rdi,qword [rdi_save]
+	mov	WB,qword [WB_save]
 	mov	WC,qword [WC_save]
-	mov	rsi,qword [rsi_save]
 	mov	XS,qword [XS_save]
 	%endmacro
         align 8
@@ -413,12 +407,14 @@ startup:
         mov qword[reg_wa],W0                     ; startup stack pointer
 
 	cld                             ; default to up direction for string ops
-;        getoff  W0,dffnc               # get address of ppm offset
+;        getoff  W0,dffnc                get address of ppm offset
         mov     qword [ppoff],W0               ; save for use later
 ;
         mov     XS,qword [osisp]               ; switch to new c stack
 	call	at_note
 	push	calltab_start
+	mov	WA,qword [compsp]
+	mov	rsp,WA
 	call	minimal			; load regs, switch stack, start compiler
 
 ;
@@ -485,10 +481,10 @@ stackinit:
  minimal:
          pushaq                          ; save all registers for c
 	call	at_note2
-         mov     W0,qword [XS+32+8]          ; get ordinal
-         mov     WA,qword [reg_wa]              ; restore registers
+         mov    W0,qword [XS+32+8]          ; get ordinal
+         mov    WA,qword [reg_wa]              ; restore registers
  	mov	WB,qword [reg_wb]
-         mov     WC,qword [reg_wc]              ; (also _reg_ia)
+         mov    WC,qword [reg_wc]              ; (also _reg_ia)
  	mov	rdi,qword [reg_xr]
  	mov	rsi,qword [reg_xl]
  	mov	XR,qword [reg_cp]
@@ -497,16 +493,15 @@ stackinit:
          cmp     qword [compsp],0      ; 1.39 is there a compiler stack?
          je      min1              ; 1.39 jump if none yet
          mov     XS,qword [compsp]              ; 1.39 switch to compiler stack
-	call	at_note
+	call	 at_note
 
  min1:
 	extern	start
 	call	start
 ;		call   qword [calltab+W0*8]        ; off to the minimal code
 
-         mov     XS,qword [osisp]               ; 1.39 switch to osint stack
-
-         mov     qword [reg_wa],WA              ; save registers
+        mov     XS,qword [osisp]               ; 1.39 switch to osint stack
+        mov     qword [reg_wa],WA              ; save registers
  	mov	qword [reg_wb],WB
  	mov	qword [reg_wc],WC
  	mov	qword [reg_xr],rdi
@@ -644,7 +639,7 @@ sysin:	syscall	zysin,20
 sysio:	syscall	zysio,21
 
         global sysld
-sysld:  syscall    	zysld,22
+sysld:  syscall zysld,22
 
         global sysmm
 sysmm:	syscall	zysmm,23
@@ -1259,218 +1254,218 @@ tryfpu:
 	ret
 
 
-; # procedures needed for save file / load module support -- debug later
+;  procedures needed for save file / load module support -- debug later
 ;
-; #
-; #-----------
-; #
-; #       get_fp  - get c caller's fp (frame pointer)
-; #
-; #       get_fp() returns the frame pointer for the c function that called
-; #       this function.  however, this function is only called by zysxi.
-; #
-; #       c function zysxi calls this function to determine the lowest useful
-; #       word on the stack, so that only the useful part of the stack will be
-; #       saved in the load module.
-; #
-; #       the flow goes like this:
-; #
-; #       (1) user's spitbol program calls exit function
-; #
-; #       (2) spitbol compiler calls interface routine sysxi to handle exit
-; #
-; #       (3) interface routine sysxi passes control to ccaller which then
-; #           calls c function zysxi
-; #
-; #       (4) c function zysxi will write a load module, but needs to save
-; #           a copy of the current stack in the load module.  the base of
-; #           the part of the stack to be saved begins with the frame of our
-; #           caller, so that the load module can execute a return to ccaller.
-; #
-; #           this will allow the load module to pretend to be returning from
-; #           c function zysxi.  so, c function zysxi calls this function,
-; #           get_fp, to determine the base of the useful part of the stack.
-; #
-; #           we cheat just a little bit here.  c function zysxi can (and does)
-; #           have local variables, but we won't save them in the load module.
-; #           only the portion of the frame established by the 80386 call
-; #           instruction, from bp up, is saved.  these local variables
-; #           aren't needed, because the load module will not be going back
-; #           to c function zysxi.  instead when function restart returns, it
-; #           will act as if c function zysxi is returning.
-; #
-; #       (5) after writing the load module, c function zysxi calls c function
-; #           zysej to terminate spitbol's execution.
-; #
-; #       (6) when the resulting load module is executed, c function main
-; #           calls function restart.  function restart restores the stack
-; #           and then does a return.  this return will act as if it is
-; #           c function zysxi doing the return and the user's program will
-; #           continue execution following its call to exit.
-; #
-; #       on entry to _get_fp, the stack looks like
-; #
-; #               /      ...      /
-; #       (high)  |               |
-; #               |---------------|
-; #       zysxi   |    old pc     |  --> return point in ccaller
-; #         +     |---------------|  useful part of stack
-; #       frame   |    old bp     |  <<<<-- bp of get_fp's caller
-; #               |---------------|     -
-; #               |     zysxi's   |     -
-; #               /     locals    /     - non-useful part of stack
-; #               |               |     ------
-; #       ======= |---------------|
-; #       sp-->   |    old pc     |  --> return pc in c function zysxi
-; #       (low)   +---------------+
-; #
-; #       on exit, return ebp in W0. this is the lower limit on the
-; #       size of the stack.
+; 
+; -----------
+; 
+;        get_fp  - get c caller's fp (frame pointer)
+; 
+;        get_fp() returns the frame pointer for the c function that called
+;        this function.  however, this function is only called by zysxi.
+; 
+;        c function zysxi calls this function to determine the lowest useful
+;        word on the stack, so that only the useful part of the stack will be
+;        saved in the load module.
+; 
+;        the flow goes like this:
+; 
+;        (1) user's spitbol program calls exit function
+; 
+;        (2) spitbol compiler calls interface routine sysxi to handle exit
+; 
+;        (3) interface routine sysxi passes control to ccaller which then
+;            calls c function zysxi
+; 
+;        (4) c function zysxi will write a load module, but needs to save
+;            a copy of the current stack in the load module.  the base of
+;            the part of the stack to be saved begins with the frame of our
+;            caller, so that the load module can execute a return to ccaller.
+; 
+;            this will allow the load module to pretend to be returning from
+;            c function zysxi.  so, c function zysxi calls this function,
+;            get_fp, to determine the base of the useful part of the stack.
+; 
+;            we cheat just a little bit here.  c function zysxi can (and does)
+;            have local variables, but we won't save them in the load module.
+;            only the portion of the frame established by the 80386 call
+;            instruction, from bp up, is saved.  these local variables
+;            aren't needed, because the load module will not be going back
+;            to c function zysxi.  instead when function restart returns, it
+;            will act as if c function zysxi is returning.
+; 
+;        (5) after writing the load module, c function zysxi calls c function
+;            zysej to terminate spitbol's execution.
+; 
+;        (6) when the resulting load module is executed, c function main
+;            calls function restart.  function restart restores the stack
+;            and then does a return.  this return will act as if it is
+;            c function zysxi doing the return and the user's program will
+;            continue execution following its call to exit.
+; 
+;        on entry to _get_fp, the stack looks like
+; 
+;                /      ...      /
+;        (high)  |               |
+;                |---------------|
+;        zysxi   |    old pc     |  --> return point in ccaller
+;          +     |---------------|  useful part of stack
+;        frame   |    old bp     |  <<<<-- bp of get_fp's caller
+;                |---------------|     -
+;                |     zysxi's   |     -
+;                /     locals    /     - non-useful part of stack
+;                |               |     ------
+;        ======= |---------------|
+;        sp-->   |    old pc     |  --> return pc in c function zysxi
+;        (low)   +---------------+
+; 
+;        on exit, return ebp in W0. this is the lower limit on the
+;        size of the stack.
 ;
 ;
 ;         cproc    get_fp,near
 ; 	pubname	get_fp
 ;
-;         mov     W0,reg_xs      # minimal's xs
-;         add     W0,4           # pop return from call to sysbx or sysxi
-;         retc    0               # done
+;         mov     W0,reg_xs       minimal's xs
+;         add     W0,4            pop return from call to sysbx or sysxi
+;         retc    0                done
 ;
 ;         cendp    get_fp
 ;
-; #
-; #-----------
-; #
-; #       restart - restart for load module
-; #
-; #       restart( char *dummy, char *stackbase ) - startup compiler
-; #
-; #       the osint main function calls restart when resuming execution
-; #       of a program from a load module.  the osint main function has
-; #       reset global variables except for the stack and any associated
-; #       variables.
-; #
-; #       before restoring stack, set up values for proper checking of
-; #       stack overflow. (initial sp here will most likely differ
-; #       from initial sp when compile was done.)
-; #
-; #       it is also necessary to relocate any addresses in the the stack
-; #       that point within the stack itself.  an adjustment factor is
-; #       calculated as the difference between the stbas at exit() time,
-; #       and stbas at restart() time.  as the stack is transferred from
-; #       tscblk to the active stack, each word is inspected to see if it
-; #       points within the old stack boundaries.  if so, the adjustment
-; #       factor is subtracted from it.
-; #
-; #       we use minimal's insta routine to initialize static variables
-; #       not saved in the save file.  these values were not saved so as
-; #       to minimize the size of the save file.
-; #
+; 
+; -----------
+; 
+;        restart - restart for load module
+; 
+;        restart( char *dummy, char *stackbase ) - startup compiler
+; 
+;        the osint main function calls restart when resuming execution
+;        of a program from a load module.  the osint main function has
+;        reset global variables except for the stack and any associated
+;        variables.
+; 
+;        before restoring stack, set up values for proper checking of
+;        stack overflow. (initial sp here will most likely differ
+;        from initial sp when compile was done.)
+; 
+;        it is also necessary to relocate any addresses in the the stack
+;        that point within the stack itself.  an adjustment factor is
+;        calculated as the difference between the stbas at exit() time,
+;        and stbas at restart() time.  as the stack is transferred from
+;        tscblk to the active stack, each word is inspected to see if it
+;        points within the old stack boundaries.  if so, the adjustment
+;        factor is subtracted from it.
+; 
+;        we use minimal's insta routine to initialize static variables
+;        not saved in the save file.  these values were not saved so as
+;        to minimize the size of the save file.
+; 
 ; 	ext	rereloc,near
 ;
 ;         cproc   restart,near
 ; 	pubname	restart
 ;
-;         pop     W0                     # discard return
-;         pop     W0                     # discard dummy
-;         pop     W0                     # get lowest legal stack value
+;         pop     W0                      discard return
+;         pop     W0                      discard dummy
+;         pop     W0                      get lowest legal stack value
 ;
-;         add     W0,stacksiz            # top of compiler's stack
-;         mov     XS,W0                 # switch to this stack
-; 	call	stackinit               # initialize minimal stack
+;         add     W0,stacksiz             top of compiler's stack
+;         mov     XS,W0                  switch to this stack
+; 	call	stackinit                initialize minimal stack
 ;
-;                                         # set up for stack relocation
-;         lea     W0,tscblk+scstr        # top of saved stack
-;         mov     WB,lmodstk             # bottom of saved stack
-;         getmin  WA,stbas               # WA = stbas from exit() time
-;         sub     WB,W0                 # WB = size of saved stack
+;                                          set up for stack relocation
+;         lea     W0,tscblk+scstr         top of saved stack
+;         mov     WB,lmodstk              bottom of saved stack
+;         getmin  WA,stbas                WA = stbas from exit() time
+;         sub     WB,W0                  WB = size of saved stack
 ; 	mov	rdx,WA
-;         sub     rdx,WB                 # rdx = stack bottom from exit() time
+;         sub     rdx,WB                  rdx = stack bottom from exit() time
 ; 	mov	WB,WA
-;         sub     WB,XS                 # WB = old stbas - new stbas
+;         sub     WB,XS                  WB = old stbas - new stbas
 ;
-;         setminr  stbas,XS               # save initial sp
-; #        getoff  W0,dffnc               # get address of ppm offset
-;         mov     ppoff,W0               # save for use later
-; #
-; #       restore stack from tscblk.
-; #
-;         mov     rsi,lmodstk             # -> bottom word of stack in tscblk
-;         lea     rdi,tscblk+scstr        # -> top word of stack
-;         cmp     rsi,rdi                 # any stack to transfer?
-;         je      short re3               #  skip if not
+;         setminr  stbas,XS                save initial sp
+;         getoff  W0,dffnc                get address of ppm offset
+;         mov     ppoff,W0                save for use later
+; 
+;        restore stack from tscblk.
+; 
+;         mov     rsi,lmodstk              -> bottom word of stack in tscblk
+;         lea     rdi,tscblk+scstr         -> top word of stack
+;         cmp     rsi,rdi                  any stack to transfer?
+;         je      short re3                 skip if not
 ; 	sub	rsi,4
 ; 	std
-; re1:    lodsd                           # get old stack word to W0
-;         cmp     W0,rdx                 # below old stack bottom?
-;         jb      short re2               #   j. if W0 < rdx
-;         cmp     W0,WA                 # above old stack top?
-;         ja      short re2               #   j. if W0 > WA
-;         sub     W0,WB                 # within old stack, perform relocation
-; re2:    push    W0                     # transfer word of stack
-;         cmp     rsi,rdi                 # if not at end of relocation then
-;         jae     re1                     #    loop back
+; re1:    lodsd                            get old stack word to W0
+;         cmp     W0,rdx                  below old stack bottom?
+;         jb      short re2                  j. if W0 < rdx
+;         cmp     W0,WA                  above old stack top?
+;         ja      short re2                  j. if W0 > WA
+;         sub     W0,WB                  within old stack, perform relocation
+; re2:    push    W0                      transfer word of stack
+;         cmp     rsi,rdi                  if not at end of relocation then
+;         jae     re1                         loop back
 ;
 ; re3:	cld
-;         mov     compsp,XS              # 1.39 save compiler's stack pointer
-;         mov     XS,osisp               # 1.39 back to osint's stack pointer
-;         callc   rereloc,0               # v1.08 relocate compiler pointers into stack
-;         getmin  W0,statb               # v1.34 start of static region to xr
+;         mov     compsp,XS               1.39 save compiler's stack pointer
+;         mov     XS,osisp                1.39 back to osint's stack pointer
+;         callc   rereloc,0                v1.08 relocate compiler pointers into stack
+;         getmin  W0,statb                v1.34 start of static region to xr
 ; 	set_xr  W0
-;         minimal insta                   # v1.34 initialize static region
+;         minimal insta                    v1.34 initialize static region
 ;
-; #
-; #       now pretend that we're executing the following c statement from
-; #       function zysxi:
-; #
-; #               return  normal_return#
-; #
-; #       if the load module was invoked by exit(), the return path is
-; #       as follows:  back to ccaller, back to s$ext following sysxi call,
-; #       back to user program following exit() call.
-; #
-; #       alternately, the user specified -w as a command line option, and
-; #       sysbx called makeexec, which in turn called sysxi.  the return path
-; #       should be:  back to ccaller, back to makeexec following sysxi call,
-; #       back to sysbx, back to minimal code.  if we allowed this to happen,
-; #       then it would require that stacked return address to sysbx still be
-; #       valid, which may not be true if some of the c programs have changed
-; #       size.  instead, we clear the stack and execute the restart code that
-; #       simulates resumption just past the sysbx call in the minimal code.
-; #       we distinguish this case by noting the variable stage is 4.
-; #
-;         callc   startbrk,0              # start control-c logic
+; 
+;        now pretend that we're executing the following c statement from
+;        function zysxi:
+; 
+;                return  normal_return
+; 
+;        if the load module was invoked by exit(), the return path is
+;        as follows:  back to ccaller, back to s$ext following sysxi call,
+;        back to user program following exit() call.
+; 
+;        alternately, the user specified -w as a command line option, and
+;        sysbx called makeexec, which in turn called sysxi.  the return path
+;        should be:  back to ccaller, back to makeexec following sysxi call,
+;        back to sysbx, back to minimal code.  if we allowed this to happen,
+;        then it would require that stacked return address to sysbx still be
+;        valid, which may not be true if some of the c programs have changed
+;        size.  instead, we clear the stack and execute the restart code that
+;        simulates resumption just past the sysbx call in the minimal code.
+;        we distinguish this case by noting the variable stage is 4.
+; 
+;         callc   startbrk,0               start control-c logic
 ;
-;         getmin  W0,stage               # is this a -w call?
+;         getmin  W0,stage                is this a -w call?
 ; 	cmp	W0,4
-;         je      short re4               # yes, do a complete fudge
+;         je      short re4                yes, do a complete fudge
 ;
-; #
-; #       jump back to cc1 with return value = normal_return
+; 
+;        jump back to cc1 with return value = normal_return
 ; 	mov	W0,-1
-;         jmp     cc1                     # jump back
+;         jmp     cc1                      jump back
 ;
-; #       here if -w produced load module.  simulate all the code that
-; #       would occur if we naively returned to sysbx.  clear the stack and
-; #       go for it.
-; #
+;        here if -w produced load module.  simulate all the code that
+;        would occur if we naively returned to sysbx.  clear the stack and
+;        go for it.
+; 
 ; re4:	getmin	W0,stbas
-;         mov     compsp,W0              # 1.39 empty the stack
+;         mov     compsp,W0               1.39 empty the stack
 ;
-; #       code that would be executed if we had returned to makeexec:
-; #
-;         setmin  gbcnt,0                 # reset garbage collect count
-;         callc   zystm,0                 # fetch execution time to reg_ia
-;         mov     W0,reg_ia              # set time into compiler
+;        code that would be executed if we had returned to makeexec:
+; 
+;         setmin  gbcnt,0                  reset garbage collect count
+;         callc   zystm,0                  fetch execution time to reg_ia
+;         mov     W0,reg_ia               set time into compiler
 ; 	setminr	timsx,W0
 ;
-; #       code that would be executed if we returned to sysbx:
-; #
-;         push    outptr                  # swcoup(outptr)
+;        code that would be executed if we returned to sysbx:
+; 
+;         push    outptr                   swcoup(outptr)
 ; 	callc	swcoup,4
 ;
-; #       jump to minimal code to restart a save file.
+;        jump to minimal code to restart a save file.
 ;
-;         minimal rstrt                   # no return
+;         minimal rstrt                    no return
 ;
 ;         cendp    restart
 ;

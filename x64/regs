@@ -1,3 +1,6 @@
+register mappings
+XL=ESI  XR=EDI W0=EAX WA=ECX WB=EBX WC=EDX IA=EDX XS=ESP CP=EBP   
+XL=rbx  XR=rbp W0=r11 WA=r12 WB=r13 WC=r14 IA=r14 XS=r15 CP=mem
 X64 register assignments
 
 	%define	IA	r14
@@ -21,15 +24,4 @@ WA r12
 WB r13
 WC r14 
 
-
-X32 register mapping
-CP EBP
-IA EDX
-XL ESI 
-XR EDI 
-XS ESP
-W0 EAX
-WA ECX 
-WB EBX
-WC EDX 
 

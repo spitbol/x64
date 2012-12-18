@@ -14,7 +14,7 @@
 	%define	XL	rbx
 	%define XR	rbp
 	%define XT	r15
-	%define	W0	r11
+	%define	W0	rax
 ; %define xl.esi esi
 ; %define xt.esi esi
 ; %define xr.edi edi

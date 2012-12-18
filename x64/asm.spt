@@ -39,7 +39,7 @@
 *  file if possible.
 *
 *  in addition to the normal minimal register complement, one scratch
-*  work register, w0 is defined.
+*  work register, 'W0' is defined.
 *  see the register map below for specific allocations.
 *
 *  this program is based in part on earlier translators for the
@@ -346,16 +346,16 @@ compdone defs =
 	regmap['wa'] = 'WA';  regmap['wb'] = 'WB'
 	regmap['wc'] = 'WC';  regmap['ia'] = 'IA'
 	regmap['cp'] = 'CP'
-*	w0 is temp register
+*	W0 is temp register
 	regmap['w0'] = 'W0'
 
-*	regmap['xl'] = 'rbx';  regmap['xt'] = 'rsi'
+*	regmap['xl'] = 'WB';  regmap['xt'] = 'XL'
 *	regmap['xr'] = 'rbp';  regmap['xs'] = 'rsp'
 *	regmap['wa'] = 'r12';  regmap['wb'] = 'r13'
 *	regmap['wc'] = 'r14';  regmap['ia'] = 'r14'
 *	regmap['cp'] = 'rbp'
 **	w0 is temp register
-*	regmap['w0'] = 'r11'
+*	regmap['w0'] = 'rax'
 
 *  quick reference:
 	reg.ia = regmap['ia']
@@ -615,7 +615,7 @@ memmem
 *  here if memory-memory case, load first argument
   t1 = getarg(i1)
   i1 = minarg(8,'w0')
-  genop('mov','rax',t1)				:(return)
+  genop('mov','W0',t1)				:(return)
 
 -stitl prcent(n)
 prcent prcent = 'prc_' '+'  (8 * ( n - 1)) :(return)
@@ -780,14 +780,14 @@ mov.xtp
 mov.xlp
 	ident(t2,'(xr)+') genop('movsd')	:s(opdone)
 	genop('lodsd')
-	ident(t2,'-(xs)') genop('push','rax')	:s(opdone)
-	genop('mov',getarg(i2),'rax')		:(opdone)
+	ident(t2,'-(xs)') genop('push','W0')	:s(opdone)
+	genop('mov',getarg(i2),'W0')		:(opdone)
 mov.xsp
 	ident(i.text(i2),'(xr)+')		:s(mov.xsprp)
 	genop('pop',getarg(i2))			:(opdone)
-mov.xsprp genop('pop','rax')
+mov.xsprp genop('pop','W0')
 	genop('stosd')				:(opdone)
-mov.xrp genop('mov','rax',getarg(i1))
+mov.xrp genop('mov','W0',getarg(i1))
 	genop('stosd')				:(opdone)
 mov.2
 	genop('push',getarg(i1))		:(opdone)
@@ -943,8 +943,8 @@ g.exi
 	genop('ret')				:(opdone)
 g.exi.1
 
-	genop('mov','rax', 'qword ['  prcent(prc.count) ']' )
-	genop('jmp','rax')
+	genop('mov','W0', 'qword ['  prcent(prc.count) ']' )
+	genop('jmp','W0')
 						:(opdone)
 g.enp   genop()					:(opdone)
 
@@ -959,17 +959,17 @@ g.erb
 g.icv   genop('inc',getarg(i1))    :(opdone)
 g.dcv   genop('dec',getarg(i1))    :(opdone)
 
-g.zer	ident(i.text(i1),'(xr)+') genop('xor','rax','rax')
+g.zer	ident(i.text(i1),'(xr)+') genop('xor','W0','W0')
 +		genop('stosd')			:s(opdone)
 	ifreg(i1)				:s(g.zer1)
 	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
-	genop('xor','rax','rax')
-	genop('mov',getarg(i1),'rax')		:(opdone)
+	genop('xor','W0','W0')
+	genop('mov',getarg(i1),'W0')		:(opdone)
 g.zer1	t1 = getarg(i1)
 	genop('xor',t1,t1)			:(opdone)
 g.zer.xs genop('push','0')			:(opdone)
 
-g.mnz   genop('mov',getarg(i1),'rsp')		:(opdone)
+g.mnz   genop('mov',getarg(i1),'XS')		:(opdone)
 
 g.ssl   genop()					:(opdone)
 g.sss   genop()					:(opdone)
@@ -1036,7 +1036,7 @@ g.bct
 	t1 = getarg(i1)
 	t2 = getarg(i2)
 	:(g.bct2)
-	ident(t1,'rcx')				:s(g.bct1)
+	ident(t1,'WA')				:s(g.bct1)
 g.bct2	genop('dec',t1)
 	genop('jnz',t2)				:(opdone)
 g.bct1	genop('loop',t2)			:(opdone)
@@ -1055,17 +1055,17 @@ g.scp
 	genop('mov','qword [mincp]',getarg(i1))
 						:(opdone)
 g.lcw
-	genop('mov',w0,'qword [mincp]')
-	genop('mov',getarg(i1),'[' w0 ']')
-	genop('add',w0,'4')			
-	genop('mov','qword [mincp]',w0)
+	genop('mov','W0','qword [mincp]')
+	genop('mov',getarg(i1),'[W0]')
+	genop('add','W0','4')			
+	genop('mov','qword [mincp]','W0')
 						:(opdone)
 
 
 g.icp   	
-	genop('mov',w0,'qword [mincp]')
-	genop('add',w0,'4')
-	genop('mov','qword [mincp]',w0)
+	genop('mov','W0','qword [mincp]')
+	genop('add','W0','4')
+	genop('mov','qword [mincp]','W0')
 						:(opdone)
 
 g.ldi	genop('mov',reg.ia,getarg(i1))		:(opdone)
@@ -1079,7 +1079,7 @@ g.sbi   genop('sub',reg.ia,getarg(i1))		:(opdone)
 g.dvi
 g.rmi
 *	move argument to rax, call procedure
-	genop('mov','rax',getarg(i1))
+	genop('mov','W0',getarg(i1))
 	genop('call', incode '_')	:(opdone)
 
 g.sti   genop('mov',getarg(i1),reg.ia)		:(opdone)
@@ -1131,10 +1131,10 @@ g.dvr
 *	t1 'qword' =
 	t1 = trim(t1)
 *	output = 'g.rop after qword test ' t1 ' leaarg ' leaarg
-*	(ge(typ1,9) le(typ1,15) genop('lea','rax', t1),
-*+	 ge(typ1,3) le(typ1,4)  genop('lea','rax', t1),
-*+                genop('mov','rax', getarg(i1)))
-                genop('mov','rax', getarg(i1))
+*	(ge(typ1,9) le(typ1,15) genop('lea','W0', t1),
+*+	 ge(typ1,3) le(typ1,4)  genop('lea','W0', t1),
+*+                genop('mov','W0', getarg(i1)))
+                genop('mov','W0', getarg(i1))
 	genop('call',incode '_')		:(opdone)
 
 
@@ -1215,7 +1215,7 @@ g.scg.0
 	genop('dec',regmap[t3])
 g.scg.1
 	t2 break('(') len(1) len(2) . t3
-	genop('mov','rax',t1,)
+	genop('mov','W0',t1,)
 	genop('mov','[' regmap[t3] ']','al')
 *  see if postincrement needed.
 	t2 rtab(1) '+'				:f(g.scg.2)
@@ -1236,15 +1236,15 @@ g.scg.w
 g.scg.w.xl
 	genop('mov','[rsi]',t1)			:(opdone)
 g.scg.w.pxl
-	genop('dec','rsi')
+	genop('dec','XL')
 	genop('mov','[rsi]',t1)			:(opdone)
 g.scg.w.xlp
 	genop('mov','[rsi]',t1)
-	genop('inc','rsi')			:(opdone)
+	genop('inc','XL')			:(opdone)
 g.scg.w.xr
 	genop('mov','[rdi]',t1)			:(opdone)
 g.scg.w.pxr
-	genop('dec','rdi')
+	genop('dec','XR')
 	genop('mov','[rdi]',t1)			:(opdone)
 g.scg.w.xrp
 	genop('mov','al',t1)
@@ -1267,8 +1267,8 @@ g.cmc
 *	mov	edi,esi		;v1.02  xr also
 *
 	genop('repe','cmpsb')
-	genop('mov','rsi','0')
-	genop('mov','rdi','rsi')
+	genop('mov','XL','0')
+	genop('mov','XR','XL')
 	t1 = getarg(i1)
 	t2 = getarg(i2)
 	(ident(t1,t2) genop('jnz',t1))		:s(opdone)
@@ -1283,13 +1283,13 @@ g.trc
 *	loop	tmp
 *	xor	esi,esi			;set xl to zero
 *	xor	edi,edi			;v1.02  xr also
-	genop('xchg','rsi','rdi')
-        genopl((t1 = genlab()) ':','movzx','rax','byte [rdi]')
+	genop('xchg','XL','XR')
+        genopl((t1 = genlab()) ':','movzx','W0','byte [rdi]')
 	genop('mov','al','[rsi+rax]')
 	genop('stosb')
 	genop('loop',t1)
-	genop('xor','rsi','rsi')
-	genop('xor','rdi','rdi')		:(opdone)
+	genop('xor','XL','XL')
+	genop('xor','XR','XR')		:(opdone)
 
 
 g.anb   genop('and',getarg(i2),getarg(i1))	:(opdone)
@@ -1305,23 +1305,23 @@ g.lsh
 
 g.rsx	t1 = regmap[substr(i.text(i2),2,2)]
 	ident(i.text(i1),'wa')				:s(g.rsx.c)
-	genop('xchg',t1,'rcx')
+	genop('xchg',t1,'WA')
 	genop('shr',getarg(i1),'cl')
-	genop('xchg',t1,'rcx')				:(opdone)
+	genop('xchg',t1,'WA')				:(opdone)
 
-g.rsx.c	genop('xchg',t1,'rcx')
+g.rsx.c	genop('xchg',t1,'WA')
 	genop('shr',t1,'cl')
-	genop('xchg',t1,'rcx')				:(opdone)
+	genop('xchg',t1,'WA')				:(opdone)
 
 g.lsx	t1 = regmap[substr(i.text(i2),2,2)]
 	ident(i.text(i1),'wa')				:s(g.lsx.c)
-	genop('xchg',t1,'rcx')
+	genop('xchg',t1,'WA')
 	genop('shl',getarg(i1),'cl')
-	genop('xchg',t1,'rcx')				:(opdone)
+	genop('xchg',t1,'WA')				:(opdone)
 
-g.lsx.c	genop('xchg',t1,'rcx')
+g.lsx.c	genop('xchg',t1,'WA')
 	genop('shl',t1,'cl')
-	genop('xchg',t1,'rcx')				:(opdone)
+	genop('xchg',t1,'WA')				:(opdone)
 
 g.nzb	ifreg(i1)				:s(g.nzb1)
 	genop('cmp',getarg(i1),'0')
@@ -1394,21 +1394,21 @@ g.mvc
 	t1 = genlab()
 	genopl(t1 ':', 'lodsb')
 	genop('stosb')
-	genop('dec', 'rcx')
+	genop('dec', 'WA')
 	genop('jnz',t1)
 
 g.mvw
-	genop('shr','rcx','2')
+	genop('shr','WA','2')
  	genrep('movsd')
 * 	genop('rep','movsd')
 					:(opdone)
 
 g.mwb
 *   move words backwards
-	genop('shr','rcx','2')
+	genop('shr','WA','2')
 	genop('std')
-	genop('lea','rsi','[rsi-8]')
-	genop('lea','rdi','[rdi-8]')
+	genop('lea','XL','[rsi-8]')
+	genop('lea','XR','[rdi-8]')
  	genrep('movsd')
 *	genop('rep','movsd')
 	genop('cld')				:(opdone)
@@ -1416,8 +1416,8 @@ g.mwb
 g.mcb
 *   move characters backwards
 	genop('std')
-	genop('dec','rsi')
-	genop('dec','rdi')
+	genop('dec','XL')
+	genop('dec','XR')
  	genrep('movsb')
 *	genop('rep','movsb')
 	genop('cld')				:(opdone)
@@ -1426,15 +1426,15 @@ genrep
 	l1 = genlab()
 	l2 = genlab()
 	genopl(l1 ':')
-	genop('or','rcx','rcx')
+	genop('or','WA','WA')
 	genop('jz',l2)
 	genop(op)
-	genop('dec','rcx')
+	genop('dec','WA')
 	genop('jmp',l1)
 	genopl(l2 ':')
 						:(return)
 
-g.chk   genop('cmp','rsp','lowspmin')
+g.chk   genop('cmp','XS','lowspmin')
 	genop('jb','sec06')			:(opdone)
 
 decend
