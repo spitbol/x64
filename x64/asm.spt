@@ -349,6 +349,14 @@ compdone defs =
 *	W0 is temp register
 	regmap['w0'] = 'W0'
 
+* REGLOW maps register to identify target, so
+* can extract 'L' part.
+	reglow = TABLE(4)
+	reglow['WA'] = 'WA_L'
+	reglow['WB'] = 'WB_L'
+	reglow['WC'] = 'WC_L'
+	reglow['W0'] = 'WA_L'
+
 *	regmap['xl'] = 'WB';  regmap['xt'] = 'XL'
 *	regmap['xr'] = 'rbp';  regmap['xs'] = 'rsp'
 *	regmap['wa'] = 'r12';  regmap['wb'] = 'r13'
@@ -794,12 +802,12 @@ mov.2
 
 * odd/even tests.  if w reg, use low byte of register.
 g.bod	t1 = getarg(i1)
-	t1 = eq(i.type(i1),8) substr(t1,2,1) 'l'
+	t1 = eq(i.type(i1),8) reglow[t1]
 	genop('test',t1,'1')
 	genop('jne',getarg(i2))			:(opdone)
 
 g.bev	t1 = getarg(i1)
-	t1 = eq(i.type(i1),8) substr(t1,2,1) 'l'
+	t1 = eq(i.type(i1),8) reglow[t1]
 	genop('test',t1,'1')
 	genop('je',getarg(i2))			:(opdone)
 
@@ -1226,7 +1234,7 @@ g.scg.w
 *  here if moving character from work register, convert t1
 *  to name of low part.
 *
-	t1 = substr(regmap[i.text(i1)],2,1) 'l'
+	t1 = reglow[i.text(i1)]
 	ident(t2,'(xl)')			:s(g.scg.w.xl)
 	ident(t2,'-(xl)')			:s(g.scg.w.pxl)
 	ident(t2,'(xl)+')			:s(g.scg.w.xlp)
