@@ -636,7 +636,7 @@ SYSIF:	syscall	zysif,18
 
         global SYSIL
 	extern	zysil
-SYSIL:  call    	zysil,19
+SYSIL:  syscall zysil,19
 
         global SYSIN
 	extern	zysin
@@ -648,7 +648,7 @@ SYSIO:	syscall	zysio,21
 
         global SYSLD
 	extern	zysld
-SYSLD:  call    	zysld,22
+SYSLD:  syscall zysld,22
 
         global SYSMM
 	extern	zysmm
