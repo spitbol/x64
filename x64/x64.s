@@ -6,15 +6,17 @@
 ;XL=rbx  XR=rbp W0=r11 WA=r12 WB=r13 WC=r14 IA=r14 XS=r15 CP=mem
 
 
-	%define	IA	rdx
-	%define	WA	rcx
-	%define	WB	rbx
-	%define	WC	rdx
-	%define	XS	rsp
-	%define	XL	rsi
-	%define XR	rdi
-	%define XT	rsp
-	%define	W0	rax
+	%define	XL	RSI
+	%define	XR	RDI
+	%define	WA	RCX
+	%define WA_L	CL
+	%define	WB	RBX
+	%define WB_L    BL
+	%define	WC	RDX
+	%define WC_L    DL
+	%define	XS	RSP
+	%define	W0	RAX
+	%define	W0_L	AL
 
 ;	%define	IA	r14
 ;	%define	WA	r12
