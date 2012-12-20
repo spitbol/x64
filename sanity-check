@@ -1,5 +1,7 @@
 !/bin/bash --verbose
+rm s.1 s.2
 echo "start bootstrap test"
+git checkout bootbol
 cp bootbol savebol
 make clean>/dev/null
 make
