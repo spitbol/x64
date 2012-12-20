@@ -13,6 +13,7 @@
 	%define	WB	RBX
 	%define WB_L    BL
 	%define	WC	RDX
+	%define	IA	RDX
 	%define WC_L    DL
 	%define	XS	RSP
 	%define	W0	RAX

@@ -16,6 +16,8 @@
 	%define	XS	RSP
 	%define	W0	RAX
 	%define	W0_L	AL
+	%define	IA	RDX
+	%define	XT	RSP
 
 	%define	Qword dword
 	extern	_rc_

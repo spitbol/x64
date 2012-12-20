@@ -351,11 +351,15 @@ compdone defs =
 
 * REGLOW maps register to identify target, so
 * can extract 'L' part.
-	reglow = TABLE(4)
+	reglow = TABLE()
+	reglow['wa'] = 'WA_L'
+	reglow['wb'] = 'WB_L'
+	reglow['wc'] = 'WC_L'
+	reglow['w0'] = 'W0_L'
 	reglow['WA'] = 'WA_L'
 	reglow['WB'] = 'WB_L'
 	reglow['WC'] = 'WC_L'
-	reglow['W0'] = 'WA_L'
+	reglow['W0'] = 'W0_L'
 
 *	regmap['xl'] = 'WB';  regmap['xt'] = 'XL'
 *	regmap['xr'] = 'rbp';  regmap['xs'] = 'rsp'
@@ -1235,6 +1239,7 @@ g.scg.w
 *  to name of low part.
 *
 	t1 = reglow[i.text(i1)]
+	output = 'g.sch  reglow ' 
 	ident(t2,'(xl)')			:s(g.scg.w.xl)
 	ident(t2,'-(xl)')			:s(g.scg.w.pxl)
 	ident(t2,'(xl)+')			:s(g.scg.w.xlp)
