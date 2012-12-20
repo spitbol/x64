@@ -370,8 +370,8 @@ void prtval(int reg) {
 	if (reg < 100000 && reg >= 0)
 		fprintf(stderr," %8d ", reg);
 	else
-		/*fprintf(stderr," %8xx", reg);*/
-		fprintf(stderr," ---------", reg);
+		fprintf(stderr," %8xx", reg);
+//		fprintf(stderr," ---------", reg);
 }
 void prtreg(char * name, int val) {
 	prtval(val);
@@ -387,6 +387,7 @@ void prtdif(char* name, int old, int new, int listed)
 
 unsigned long at_off;
 int zzz_calls=0;
+int zzz_id=0;
 /*void at_(long at_ip,char * at_desc) {*/
 void zzz() {
 
@@ -394,7 +395,7 @@ void zzz() {
 	int listed = 0;
 
 	if(at_zz>0) zzz_calls++;
-	fprintf(stderr, "zzz %d %d\n",zzz_calls, at_zz);
+	fprintf(stderr, "ZZZ %d %d %d\n",zzz_calls, at_zz, zzz_id);
 
 	/* print registers that have changed since last statement */
 
@@ -476,8 +477,16 @@ void at_note2() {
 	fprintf(stderr, "at_note2\n");
 }
 uword at_arg;
+uword at_id;
 void at_num() {
 	fprintf(stderr, "at_num\t%16llx\n",at_arg);
+}
+uword at_num_id;
+uword at_sys_id;
+uword at_sys_calls=0;
+void at_sys() {
+	at_sys_calls++;
+	fprintf(stderr, "at_sys %d %d\n",at_sys_calls,at_sys_id);
 }
 #endif
 void restart(char *p, char * q) {

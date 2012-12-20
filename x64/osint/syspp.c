@@ -29,6 +29,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include <stdio.h>
 
 zyspp()
 
@@ -40,9 +41,12 @@ zyspp()
     /*
     /   Set page width, lines per page, and compiler flags.
     */
+	fprintf(stderr,"enter syspp\n");
+
     SET_WA( pagewdth );
     SET_WB( lnsppage );
     SET_WC( spitflag );
+	fprintf(stderr,"leave syspp\n");
 
     return NORMAL_RETURN;
 }
