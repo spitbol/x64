@@ -189,8 +189,9 @@ This file is part of Macro SPITBOL.
 
 #define UNIX  LINUX
 
-typedef long long word;
-typedef unsigned long long uword;
+// long is 64-bits on 64-bit machine
+typedef long word;
+typedef unsigned long uword;
 
 /* Size of integer accumulator */
 #if IABITS==32

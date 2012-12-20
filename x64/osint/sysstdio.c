@@ -71,6 +71,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include <stdio.h>
 
 void stdioinit()
 {
@@ -99,8 +100,16 @@ zyspr()
     /*
     /	Do writes in line mode.
     */
-    if ( oswrite( 1, oupiob.len, WA(word), &oupiob, XR( struct scblk * ) ) < 0 )
+    fprintf(stderr,"enter syspr\n");
+	fprintf(stderr,"pr WA %d\n",WA(word));
+	fprintf(stderr,"pt XR %u\n",XR(struct scblk *));
+	fprintf(stderr,"reg_xr %u\n",XR(char *));
+
+    if ( oswrite( 1, oupiob.len, WA(word), &oupiob, XR( struct scblk * ) ) < 0 ) {
+        fprintf(stderr,"leave syspr exit 1\n");
         return  EXIT_1;
+    }
+    fprintf(stderr,"leave syspr exit 0\n");
 
     return NORMAL_RETURN;
 }

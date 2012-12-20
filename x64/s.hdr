@@ -10,9 +10,10 @@
 	%define	WB	r13
 	%define	WC	r14
 	%define	IA	r14
-	%define	XS	r15
+	%define	XS	rsp
 	%define	XL	rbx
 	%define XR	rbp
+	%define XS	rsp
 	%define XT	r15
 	%define	W0	rax
 ; %define xl.esi esi
@@ -27,6 +28,28 @@
 ; %define w0.eax eax
 	%define	Qword dword
 	extern	_rc_
+	extern	zzz
+	extern	osisp
+	extern	compsp
+
+	%macro	ZZZ	1
+	mov	qword [at_zz],%1
+	mov	qword [at_xl],XL
+	mov	qword [at_xr],XR
+	mov	qword [at_xs],XS
+	mov	qword [at_wa],WA
+	mov	qword [at_wb],WB
+	mov	qword [at_wc],WC
+	mov	qword [at_w0],W0
+; switch to C's stack
+	mov	qword [compsp],rsp
+	mov	rsp,qword [osisp]
+ 	call	zzz
+;	save C's stack pointer
+	mov	qword [osisp],rsp
+;	restore compiler stack pointer
+	mov	rsp,qword [compsp]
+	%endmacro
 %define at_trace
 %ifdef at_trace
 	extern	at_xl
@@ -45,29 +68,7 @@
 %endif
 	global	start
 
-	%macro	zzz	1
-	pushf
-	pushad
-%ifdef at_trace
-	mov	qword [at_zz],%1
-	mov	qword [at_xl],rsi
-	mov	qword [at_xr],rdi
-	mov	qword [at_xs],rsp
-	mov	qword [at_wa],rcx
-	mov	qword [at_wb],rbx
-	mov	qword [at_wc],rdx
-	mov	qword [at_w0],rax
-%endif
-;	push	%1
-;	pop	rax
-	popad
-	popf
-	%endmacro
-
-;
-;
 ;   table to recover type word from type ordinal
-;
 
 	extern	_rc_
 	section .data

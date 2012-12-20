@@ -1,16 +1,31 @@
 	bits	64
+
 ;	register assignments (all are preserved over call to C procedure, except for W0, which
 ;	is only used very locally, and so can be destroyed by C procedure).
-	%define	IA	r14
-	%define	WA	r12
-	%define	WB	r13
-	%define	WC	r14
-	%define	IA	r14
-	%define	XS	r15
-	%define	XL	rbx
-	%define XR	rbp
-	%define XT	r15
+;XL=ESI  XR=EDI W0=EAX WA=ECX WB=EBX WC=EDX IA=EDX XS=ESP CP=EBP   
+;XL=rbx  XR=rbp W0=r11 WA=r12 WB=r13 WC=r14 IA=r14 XS=r15 CP=mem
+
+
+	%define	IA	rdx
+	%define	WA	rcx
+	%define	WB	rbx
+	%define	WC	rdx
+	%define	XS	rsp
+	%define	XL	rsi
+	%define XR	rdi
+	%define XT	rsp
 	%define	W0	rax
+
+;	%define	IA	r14
+;	%define	WA	r12
+;	%define	WB	r13
+;	%define	WC	r14
+;	%define	IA	r14
+;	%define	XS	rsp
+;	%define	XL	rbx
+;	%define XR	rbp
+;	%define XT	r15
+;	%define	W0	rax
 
 	global	reg_block
 	global	reg_wa
@@ -34,6 +49,9 @@
 	extern	at_note2
 	extern	at_arg
 	extern	at_num
+	extern	at_num_id
+	extern	at_sys_id
+	extern	at_sys
 
 ; copyright 1987-2012 robert b. k. dewar and mark emmer.
 ;
@@ -160,32 +178,32 @@
 	align	8
 	segment	.data
 
-XL_save:	dq	0
-XR_save:	dq	0
 W0_save:	dq	0
 WA_save:	dq	0
 WB_save:	dq	0
 WC_save:	dq	0
+XL_save:	dq	0
+XR_save:	dq	0
 XS_save:	dq	0
 
 	%macro	pushaq	0
 	mov	qword [W0_save],W0
-	mov	qword [XR_save],XR
-	mov	qword [XL_save],XL
 	mov	qword [WB_save],WB
 	mov	qword [WA_save],WA
 	mov	qword [WC_save],WC
+	mov	qword [XR_save],XR
+	mov	qword [XL_save],XL
 	mov	qword [XS_save],XS
 	%endmacro
 
 
 	%macro	popaq 0
-	mov	XL,qword [XL_save]
-	mov	XR,qword [XR_save]
 	mov	W0,qword [W0_save]
 	mov	WA,qword [WA_save]
 	mov	WB,qword [WB_save]
 	mov	WC,qword [WC_save]
+	mov	XL,qword [XL_save]
+	mov	XR,qword [XR_save]
 	mov	XS,qword [XS_save]
 	%endmacro
         align 8
@@ -198,6 +216,7 @@ reg_xr:	dq	0        ; register xr (edi)
 reg_xl:	dq	0        ; register xl (esi)
 reg_cp:	dq	0        ; register cp
 reg_ra	dq 	0.0  ; register ra
+reg_w0	dq	0	; register w0
 ;
 ; these locations save information needed to return after calling osint
 ; and after a restart from exit()
@@ -229,15 +248,13 @@ inf:	dq	0
 sav_block: times 88 db 0     ; save minimal registers during push/pop reg
 ;
         align 8
-	global	ppoff
-ppoff:  dq      0               ; offset for ppm exits
 	global	compsp
-compsp: dq      0               ; 1.39 compiler's stack pointer
+compsp: dq      0               ; compiler's stack pointer
 	global	sav_compsp
 sav_compsp:
         dq      0               ; save compsp here
 	global	osisp
-osisp:  dq      0               ; 1.39 osint's stack pointer
+osisp:  dq      0               ; osint's stack pointer
 	global	_rc_
 _rc_:	dq   0	; return code from osint procedure
 ;
@@ -305,13 +322,7 @@ TTYBUF:	dq   0     ; type word
 ; ;       saved on the stack, where it is accessible to the garbage
 ; ;       collector.  other registers are just moved to a temp area.
 ; ;
-; ;       note 3:  popregs does not restore reg_cp, because it may have
-; ;       been modified by the minimal routine called between pushregs
-; ;       and popregs as a result of a garbage collection.  calling of
-; ;       another sysxx routine in between is not a problem, because
-; ;       cp will have been preserved by minimal.
-; ;
-; ;       note 4:  if there isn't a compiler stack yet, we don't bother
+; ;       note 3:  if there isn't a compiler stack yet, we don't bother
 ; ;       saving xl.  this only happens in call of nextef from sysxi when
 ; ;       reloading a save file.
 ; ;
@@ -326,8 +337,8 @@ pushregs:
    rep	movsd
 
         mov     rdi,qword [compsp]
-        or      rdi,rdi                         ; 1.39 is there a compiler stack
-        je      push1                     ; 1.39 jump if none yet
+        or      rdi,rdi                         ; is there a compiler stack
+        je      push1                     ; jump if none yet
         sub     rdi,8                           ;push onto compiler's stack
         mov     rsi,qword [reg_xl]                      ;collectable xl
 	mov	[rdi],rsi
@@ -340,17 +351,15 @@ push1:	popaq
 	global	popregs
 popregs:
 	pushaq
-        mov     W0,qword [reg_cp]                      ;don't restore cp
 	cld
 	lea	rsi,[sav_block]
         lea     rdi,[reg_block]                   ;unload saved registers
 	mov	WA,r_size/8
    rep  movsd                                   ;restore from temp area
-	mov	qword [reg_cp],W0
 
         mov     rdi,qword [sav_compsp]                  ;saved compiler's stack
-        or      rdi,rdi                         ;1.39 is there one?
-        je      pop1                      ;1.39 jump if none yet
+        or      rdi,rdi                         ;is there one?
+        je      pop1                      ;jump if none yet
         mov     rsi,qword [rdi]                       ;retrieve collectable xl
         mov     qword [reg_xl],rsi                      ;update xl
         add     rdi,8                           ;update compiler's sp
@@ -398,23 +407,18 @@ calltab_engts equ   13
 
 startup:
         pop     W0                     ; pop return address (this procedure never returns)
-	call	at_note1
 	mov	qword[at_arg],XS
 	call	at_num
-	call	at_note1
 	call	stackinit               ; initialize minimal stack
         mov     W0,qword [compsp]              ; get minimal's stack pointer
         mov qword[reg_wa],W0                     ; startup stack pointer
 
 	cld                             ; default to up direction for string ops
 ;        getoff  W0,dffnc                get address of ppm offset
-        mov     qword [ppoff],W0               ; save for use later
-;
         mov     XS,qword [osisp]               ; switch to new c stack
-	call	at_note
-	push	calltab_start
 	mov	WA,qword [compsp]
 	mov	rsp,WA
+	push	calltab_start
 	call	minimal			; load regs, switch stack, start compiler
 
 ;
@@ -479,35 +483,29 @@ stackinit:
 ;
 
  minimal:
-         pushaq                          ; save all registers for c
-	call	at_note2
-         mov    W0,qword [XS+32+8]          ; get ordinal
-         mov    WA,qword [reg_wa]              ; restore registers
+        mov     W0,qword [XS+32+8]          ; get ordinal
+        mov     WA,qword [reg_wa]              ; restore registers
  	mov	WB,qword [reg_wb]
-         mov    WC,qword [reg_wc]              ; (also _reg_ia)
+        mov     WC,qword [reg_wc]              ; (also _reg_ia)
  	mov	rdi,qword [reg_xr]
  	mov	rsi,qword [reg_xl]
- 	mov	XR,qword [reg_cp]
-
-         mov     qword [osisp],XS               ; 1.39 save osint stack pointer
-         cmp     qword [compsp],0      ; 1.39 is there a compiler stack?
-         je      min1              ; 1.39 jump if none yet
-         mov     XS,qword [compsp]              ; 1.39 switch to compiler stack
-	call	 at_note
+        mov     qword [osisp],XS               ; save osint stack pointer
+        cmp     qword [compsp],0      ; is there a compiler stack?
+        je      min1              ; jump if none yet
+        mov     XS,qword [compsp]              ; switch to compiler stack
 
  min1:
 	extern	start
 	call	start
 ;		call   qword [calltab+W0*8]        ; off to the minimal code
 
-        mov     XS,qword [osisp]               ; 1.39 switch to osint stack
+        mov     XS,qword [osisp]               ; switch to osint stack
+ 	mov	qword [reg_xl],XL
+ 	mov	qword [reg_xr],XR
         mov     qword [reg_wa],WA              ; save registers
  	mov	qword [reg_wb],WB
  	mov	qword [reg_wc],WC
- 	mov	qword [reg_xr],rdi
- 	mov	qword [reg_xl],rsi
- 	mov	qword [reg_cp],XR
-; 	popaq
+	mov	qword [reg_w0],W0
  	ret
 
 
@@ -542,14 +540,14 @@ syscall_init:
 	ret
 
 syscall_exit:
-	mov	qword [_rc_],W0		; save return code from function
+	mov	qword [_rc_],rax		; save return code from function
  	mov     qword [osisp],XS               ; save OSINT's stack pointer
-        mov     XS,qword [compsp]              ; restore compiler's stack pointer
         mov     WA,qword [reg_wa]              ; restore registers
 	mov	WB,qword [reg_wb]
         mov     WC,qword [reg_wc]              ; (also reg_ia)
-	mov	XR,qword [reg_xr]
 	mov	XL,qword [reg_xl]
+	mov	XR,qword [reg_xr]
+        mov     XS,qword [compsp]              ; restore compiler's stack pointer
 	cld
 	mov	W0,qword [reg_pc]
 	jmp	W0
@@ -562,6 +560,8 @@ syscall_exit:
         mov     qword [compsp],XS              ; save compiler's stack pointer
         mov     XS,qword [osisp]               ; load OSINT's stack pointer
 	extern	%1
+	mov	qword [at_sys_id],%2
+	call	at_sys
 	call	%1
 	call	syscall_exit
 	%endmacro
@@ -1385,8 +1385,6 @@ tryfpu:
 ;
 ;         setminr  stbas,XS                save initial sp
 ;         getoff  W0,dffnc                get address of ppm offset
-;         mov     ppoff,W0                save for use later
-; 
 ;        restore stack from tscblk.
 ; 
 ;         mov     rsi,lmodstk              -> bottom word of stack in tscblk
@@ -1406,8 +1404,8 @@ tryfpu:
 ;         jae     re1                         loop back
 ;
 ; re3:	cld
-;         mov     compsp,XS               1.39 save compiler's stack pointer
-;         mov     XS,osisp                1.39 back to osint's stack pointer
+;         mov     compsp,XS               save compiler's stack pointer
+;         mov     XS,osisp                back to osint's stack pointer
 ;         callc   rereloc,0                v1.08 relocate compiler pointers into stack
 ;         getmin  W0,statb                v1.34 start of static region to xr
 ; 	set_xr  W0
@@ -1449,7 +1447,7 @@ tryfpu:
 ;        go for it.
 ; 
 ; re4:	getmin	W0,stbas
-;         mov     compsp,W0               1.39 empty the stack
+;         mov     compsp,W0               empty the stack
 ;
 ;        code that would be executed if we had returned to makeexec:
 ; 
