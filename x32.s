@@ -516,7 +516,7 @@ cprtmsg:
 call_adr:	dd	0
 	segment	.text
 
-syscall_ent:
+syscall_init:
 ;       save registers in global variables
 
         mov     dword [reg_wa],ecx              ; save registers
@@ -525,19 +525,9 @@ syscall_ent:
 	mov	dword [reg_xr],edi
 	mov	dword [reg_xl],esi
         mov     dword [reg_cp],ebp              ; Needed in image saved by sysxi
-
-;       get pointer to arg list
-
-        pop     eax                     ; pop return address
-	mov	dword [reg_pc],eax
-
-
-
 	ret
 
-
-
-syscall_exi:
+syscall_exit:
 	mov	dword [_rc_],eax		; save return code from function
  	mov     dword [osisp],esp               ; save OSINT's stack pointer
         mov     esp,dword [compsp]              ; restore compiler's stack pointer
@@ -547,20 +537,19 @@ syscall_exi:
 	mov	edi,dword [reg_xr]
 	mov	esi,dword [reg_xl]
 	mov	ebp,dword [reg_cp]
-
 	cld
-
 	mov	eax,dword [reg_pc]
 	jmp	eax
 	
 	%macro	syscall	2
-	call	syscall_ent
-
+        pop     eax                     ; pop return address
+	mov	dword [reg_pc],eax
+	call	syscall_init
 ;       save compiler stack and switch to OSINT stack
         mov     dword [compsp],esp              ; save compiler's stack pointer
         mov     esp,dword [osisp]               ; load OSINT's stack pointer
 	call	%1
-	call	syscall_exi
+	call	syscall_exit
 	%endmacro
 
         global SYSAX
