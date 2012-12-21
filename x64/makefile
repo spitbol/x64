@@ -70,7 +70,7 @@ SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	sysef.o sysej.o sysem.o sysen.o sysep.o sysex.o sysfc.o \
 	sysgc.o syshs.o sysid.o sysif.o sysil.o sysin.o sysio.o \
 	sysld.o sysmm.o sysmx.o sysou.o syspl.o syspp.o sysrw.o \
-	sysst.o sysstdio.o systm.o systty.o sysul.o sysxi.o
+	sysst.o sysstdio.o systm.o systty.o sysul.o sysxi.o 
 
 # Other C objects:
 COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
@@ -78,7 +78,7 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 	int.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	sioarg.o st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
-	trypath.o wrtaout.o
+	trypath.o wrtaout.o zz.o
 
 # Assembly langauge objects common to all versions:
 # CAOBJS is for gas, NAOBJS for nasm
@@ -95,7 +95,7 @@ HOBJS=
 LOBJS=
 
 # main objects:
-MOBJS=	main.o getargs.o
+MOBJS=	getargs.o main.o
 
 # All assembly language objects
 AOBJS = $(CAOBJS)

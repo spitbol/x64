@@ -827,7 +827,12 @@ g.bsw1	genop('jmp', 'qword [' t2 '+' t1 '*8]')
         genop('segment .data')
         genopl(t2 ':')                  :(opdone)
 
-g.iff   genop('dq',getarg(i2))               :(opdone)
+g.iff   
+* if target unresolved, just emit '0' which should cause a crash.
+* this presently only happens when trying to build with float support disabled.
+* don't let this linger too long (ds, 20 dec 2012).
+	t1 = getarg(i2)
+	genop('dq',(differ(t2) t2, '0'))               :(opdone)
 
 g.esw
         genop('segment .text')                          :(opdone)
@@ -1360,7 +1365,7 @@ g.zgb	t1 = getarg(i1)			;* 32-bit register name, e.g., rdx
 						:(opdone)
 
 g.zzz
- 	genop('zzz',getarg(i1))
+ 	genop('zz',getarg(i1))
 						:(opdone)
 g.wtb   genop('sal',getarg(i1),'2')		:(opdone)
 g.btw   genop('shr',getarg(i1),'2')		:(opdone)
