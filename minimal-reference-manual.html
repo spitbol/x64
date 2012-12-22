@@ -619,9 +619,38 @@ condition processor of the translator.
 <h2>Operand Formats</h2>
 <p>
 
-The following section describes the various possibilities for operands
+<p>The following section describes the various possibilities for operands
 of instructions and assembly operations.
-
+</p>
+<pre>
+      01   int              unsigned integer le cfp$l
+      02   dlbl             symbol defined in definitions sec
+      03   wlbl             label in working storage section
+      04   clbl             label in constant section
+      05   elbl             program section entry label
+      06   plbl             program section label (non-entry)
+      07   x                one of the three index registers
+      08   w                one of the three work registers
+      09   (x)              location indexed by x
+      10   (x)+             like (x) but post increment x
+      11   -(x)             like (x) but predecrement x
+      12   int(x)           location int words beyond addr in x
+      13   dlbl(x)          location dlbl words past addr in x
+      14   clbl(x)          location (x) bytes beyond clbl
+      15   wlbl(x)          location (x) bytes beyond wlbl
+      16   integer          signed integer (dic)
+      17   real             signed real (drc)
+      18   =dlbl            location containing dac dlbl
+      19   *dlbl            location containing dac cfp$b*dlbl
+      20   =wlbl            location containing dac wlbl
+      21   =clbl            location containing dac clbl
+      22   =elbl            location containing dac elbl
+      23   pnam             procedure label (on prc instruc)
+      24   eqop             operand for equ instruction
+      25   ptyp             procedure type (see prc)
+      26   text             arbitrary text (erb,err,ttl)
+      27   dtext            delimited text string (dtc)
+</pre>
 <p>
 The numbers in the above list are used in subsequent description and
 in some of the MINIMAL translators.
