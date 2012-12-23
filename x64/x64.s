@@ -386,7 +386,7 @@ startup:
         mov     XS,qword [osisp]               ; switch to new c stack
 	mov	WA,qword [compsp]
 ;	Minimal start expects inital stack pointer (SP) to be in WA.
-	mov	rsp,WA
+	mov	WA,rsp
 	push	calltab_start
 	call	minimal			; load regs, switch stack, start compiler
 
