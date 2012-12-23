@@ -158,7 +158,7 @@ void zz_3() {
 }
 uword zz_arg;
 void zz_num() {
-	fprintf(stderr, "zz_num\t%lx\n",zz_arg);
+	fprintf(stderr, "zz_num\t%x\n",zz_arg);
 }
 uword zz_num_id;
 uword zz_sys_id;

@@ -6,6 +6,7 @@
 ;  no header code in 386 version.
 ;
 	%define	XL	RSI
+	%define	XT	RSI
 	%define	XR	RDI
 	%define	WA	RCX
 	%define WA_L	CL
@@ -17,7 +18,6 @@
 	%define	W0	RAX
 	%define	W0_L	AL
 	%define	IA	RDX
-	%define	XT	RSP
 
 	%define	Qword dword
 	extern	_rc_

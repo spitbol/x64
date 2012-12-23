@@ -114,15 +114,15 @@ spitbol: $(OBJS)
 errors.o: errors.s
 s.o: s.s
 s.o:
-	nasm -g -f elf -l s.lst -os.o s.s
+	nasm -g -f elf32 -l s.lst -os.o s.s
 
 x32.o: x32.s
 x32.o:
-	nasm -g -f elf -l x32.lst -ox32.o x32.s
+	nasm -g -f elf32 -l x32.lst -ox32.o x32.s
 
 errors.o: errors.s
 errors.o:
-	nasm -g -f elf -l errors.lst -oerrors.o errors.s
+	nasm -g -f elf32 -l errors.lst -oerrors.o errors.s
 
 
 # SPITBOL Minimal source
