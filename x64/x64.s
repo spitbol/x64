@@ -17,6 +17,7 @@
 ;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 ;
 	%define	XL	RSI
+	%define	XT	RSI
 	%define	XR	RDI
 	%define	WA	RCX
 	%define WA_L	CL
@@ -28,7 +29,6 @@
 	%define	W0	RAX
 	%define	W0_L	AL
 	%define	IA	RDX
-	%define	XT	RSP
 	global	reg_block
 	extern	lowspmin
 
@@ -375,18 +375,18 @@ calltab_engts equ   13
 ; 
 startup:
         pop     W0                     ; pop return address (this procedure never returns)
-	mov	qword[zz_arg],XS
+	mov	[zz_arg],XS
 	call	zz_num
 	call	stackinit               ; initialize minimal stack
-        mov     W0,qword [compsp]              ; get minimal's stack pointer
-        mov qword[reg_wa],W0                     ; startup stack pointer
+        mov     W0,[compsp]              ; get minimal's stack pointer
+        mov 	[reg_wa],W0                     ; startup stack pointer
 
 	cld                             ; default to up direction for string ops
 ;        getoff  W0,dffnc                get address of ppm offset
-        mov     XS,qword [osisp]               ; switch to new c stack
-	mov	WA,qword [compsp]
+        mov     XS,[osisp]               ; switch to new c stack
+	mov	WA,[compsp]
 ;	Minimal start expects inital stack pointer (SP) to be in WA.
-	mov	rsp,WA
+	mov	WA,rsp
 	push	calltab_start
 	call	minimal			; load regs, switch stack, start compiler
 
@@ -424,12 +424,12 @@ startup:
 	global	stackinit
 stackinit:
 	mov	W0,rsp
-        mov     qword [compsp],W0              ; save as MINIMAL's stack pointer
-	sub	W0,qword [stacksiz]            ; end of MINIMAL stack is where C stack will start
-        mov     qword [osisp],W0               ; save new C stack pointer
+        mov     [compsp],W0              ; save as MINIMAL's stack pointer
+	sub	W0,[stacksiz]            ; end of MINIMAL stack is where C stack will start
+        mov     [osisp],W0               ; save new C stack pointer
 	add	W0,8*100               ; 100 words smaller for CHK
 	extern	lowspmin
-	mov	qword [lowspmin],W0
+	mov	[lowspmin],W0
 	ret
 
 ;
@@ -549,7 +549,6 @@ syscall_init:
         mov     qword [reg_wc],WC
 	mov	qword [reg_xr],XR
 	mov	qword [reg_xl],XL
-        mov     qword [reg_cp],rbp              ; Needed in image saved by sysxi
 	ret
 
 syscall_exit:
@@ -561,7 +560,6 @@ syscall_exit:
         mov     WC,qword [reg_wc]              ; (also reg_ia)
 	mov	XR,qword [reg_xr]
 	mov	XL,qword [reg_xl]
-	mov	rbp,qword [reg_cp]
 	cld
 	mov	W0,qword [reg_pc]
 	jmp	W0
@@ -574,7 +572,7 @@ syscall_exit:
         mov     qword [compsp],rsp              ; save compiler's stack pointer
         mov     rsp,qword [osisp]               ; load OSINT's stack pointer
 	call	%1
-	call	syscall_exit
+	jmp	syscall_exit
 	%endmacro
 
         global sysax
