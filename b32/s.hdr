@@ -33,6 +33,7 @@
 	%define	W0	EAX
 	%define	W0_L	AL
 	extern	_rc_
+	%define AT_TRACE
 %ifdef AT_TRACE
 	extern	at_xl
 	extern	at_xr
@@ -42,6 +43,9 @@
 	extern	at_wc
 	extern	at_w0
 	extern	at_zz
+	extern at_note
+	extern at_num
+	extern at_note3
 %endif
 	global	START
 

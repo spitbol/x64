@@ -470,8 +470,9 @@ void at_note1() {
 void at_note2() {
 	fprintf(stderr, "at_note2\n");
 }
-void at_note3(int num) {
-	fprintf(stderr, "at_note3 %d\n",num);
+int at_num;
+void at_note3() {
+	fprintf(stderr, "at_note3 %d\n",at_num);
 }
 #endif
 void restart(char *p, char * q) {

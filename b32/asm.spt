@@ -725,6 +725,8 @@ IFREG	GE(I.TYPE(IARG),7) LE(I.TYPE(IARG),8)
 G.FLC
 	T1 = SUBSTR(GETARG(I1),2,1) 'L'
 	T2 = GENLAB()
+	GENOP('MOV','DWORD[at_num]','EAX')
+	GENOP('CALL','at_note3')
 	GENOP('CMP',T1,"'a'")
 	GENOP('JB', T2 )
 	GENOP('CMP',T1,"'z'")
@@ -1447,12 +1449,32 @@ G.DTC
 *  CHANGE FIRST AND LAST CHARS TO " (ASSUME / USED IN SOURCE)
 	T1 = I.TEXT(I1)
 	T1 TAB(1) RTAB(1) . T2
-	T3 = REMDR(SIZE(T2),4)
-        T2 = "'" T2 "'"
+	T1 = REMDR(SIZE(T2),4)
+	DTC_LEN = SIZE(T2)
+	DTC_MAX = GT(SIZE(T2),DTC_MAX) SIZE(T2)
+*        T2 = "'" T2 "'"
 *  Append nulls to complete last word so constant length is multiple
 *  of word word
-        T2 = NE(T3) T2 DUPL(',0',4 - T3)
+*        T2 = NE(T3) T2 DUPL(',0',4 - T3)
+	T3 = ''
+	T4 = 1
+G.DTC.1
+
+	T3 = T3 "'"  SUBSTR(T2,T4,1) "',"
+	LE(T4 = T4 + 1, DTC_LEN)  :S(G.DTC.1)
+	T1 = REMDR(SIZE(T2),4)
+	EQ(T1)			:S(G.DTC.DONE)
+*  Here to pad out to multiple of word size
+	T1 = 4 - T1
+
+G.DTC.2
+	T3 = T3 "0,"
+	GT(T1 = T1 - 1, 0)		:S(G.DTC.2)
+G.DTC.DONE
+	GENOPL(TLABEL,'db',SUBSTR(T3,1,SIZE(T3) - 1))
+					:(OPDONE)
         GENOPL(TLABEL,'db',T2)              :(OPDONE)
+
 G.DBC   GENOPL(TLABEL,'dd',GETARG(I1))       :(OPDONE)
 G.EQU   GENOP('equ',I.TEXT(I1))			:(OPDONE)
 G.EXP   
@@ -1640,6 +1662,7 @@ G.END.7 ENDFILE(1)
         OUTPUT = NOPTIM2 ' jumps shortened.'
         OUTPUT = MAX.ERR ' MAXIMUM ERR/ERB NUMBER.'
         OUTPUT = PRC.COUNT1 ' PRC COUNT.'
+	OUTPUT = DTC_MAX ' MAXIMUM DTC LENGTH'
         OUTPUT = GT(PRC.COUNT,PRC.COUNT1)
 .	  'DIFFERING COUNTS FOR N-PROCEDURES:'
 .	  ' INP ' PRC.COUNT1 ' PRC ' PRC.COUNT
