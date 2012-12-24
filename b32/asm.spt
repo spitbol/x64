@@ -725,8 +725,8 @@ IFREG	GE(I.TYPE(IARG),7) LE(I.TYPE(IARG),8)
 G.FLC
 	T1 = SUBSTR(GETARG(I1),2,1) 'L'
 	T2 = GENLAB()
-	GENOP('MOV','DWORD[at_num]','EAX')
-	GENOP('CALL','at_note3')
+*	GENOP('MOV','DWORD[at_num]','EAX')
+* 	GENOP('CALL','at_note3')
 	GENOP('CMP',T1,"'a'")
 	GENOP('JB', T2 )
 	GENOP('CMP',T1,"'z'")
