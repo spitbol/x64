@@ -241,7 +241,7 @@ char	*argv[];
     /*
     /   Startup compiler.
     */
-/*	fprintf(stderr,"calling startup\n");*/
+	fprintf(stderr,"calling startup\n");
     startup();
 #endif					/* !RUNTIME */
 

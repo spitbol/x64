@@ -57,6 +57,7 @@
 	extern	zz_1
 	extern	zz_2
 	extern	zz_3
+	extern	zz_4
 	extern	zz_arg
 	extern	zz_num
 %endif
@@ -107,6 +108,7 @@
 ;   to the order of entries in the CALL enumeration in osint.h
 ;   and osint.inc.
 ;
+	global	START
 	global calltab
 calltab:
         dq   RELAJ

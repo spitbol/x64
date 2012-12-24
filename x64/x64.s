@@ -34,6 +34,12 @@
  	global	minimal
 	extern	calltab
 	extern	stacksiz
+
+	extern	zz_1
+	extern	zz_2
+	extern	zz_3
+	extern	zz_arg
+	extern	zz_num
  
 %define globals 1                       ;ASM globals defined here
 
@@ -350,9 +356,7 @@ CALLTAB_ENGTS equ   13
 
 
 startup:
-        pop     rax                     ; discard return
-        pop     rax                     ; discard dummy1
-        pop     rax                     ; discard dummy2
+        pop     rax                     ; discard return address since never return
 	call	stackinit               ; initialize MINIMAL stack
         mov     rax,qword [compsp]              ; get MINIMAL's stack pointer
         mov qword[reg_wa],rax                     ; startup stack pointer
@@ -363,6 +367,7 @@ startup:
 ;
         mov     rsp,qword [osisp]               ; switch to new C stack
 	push	CALLTAB_START
+	mov	rcx,rsp	;set WA to initial stack pointer for use by Minimal
 	call	minimal			; load regs, switch stack, start compiler
 
 ; 
@@ -428,20 +433,27 @@ stackinit:
 
  minimal:
 ;         pushad                          ; save all registers for C
-         mov     rax,qword [esp+32+4]          ; get ordinal
+	call	zz_1
+	call	zz_1
+         mov     rax,qword [rsp+32+4]          ; get ordinal
          mov     rcx,qword [reg_wa]              ; restore registers
  	 mov	 rbx,qword [reg_wb]
          mov     rdx,qword [reg_wc]              ; (also _reg_ia)
  	 mov	 rdi,qword [reg_xr]
  	 mov	 rsi,qword [reg_xl]
  	 mov	 rbp,qword [reg_cp]
+	call	zz_1
  
          mov     qword [osisp],rsp               ; 1.39 save OSINT stack pointer
          cmp     qword [compsp],0      ; 1.39 is there a compiler stack?
          je      min1              ; 1.39 jump if none yet
-         mov     rsp,qword [compsp]              ; 1.39 switch to compiler stack
+;         mov     rsp,qword [compsp]              ; 1.39 switch to compiler stack
  
- min1:   call   qword [calltab+eax*4]        ; off to the Minimal code
+ min1:
+	call	zz_1
+;	   call   qword [calltab+eax*4]        ; off to the Minimal code
+	extern	START
+	call	START
  
          mov     rsp,qword [osisp]               ; 1.39 switch to OSINT stack
  

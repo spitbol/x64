@@ -1266,7 +1266,9 @@ G.TRC
         GENOPL((T1 = GENLAB()) ':','MOVZX','W0','BYTE [XR]') 
 	GENOP('MOV','AL','[XL+W0]')
 	GENOP('STOSB')
-	GENOP('LOOP',T1)
+	GENOP('DEC','RCX')
+	GENOP('JNZ',T1)
+*	GENOP('LOOP',T1)
 	GENOP('XOR','XL','XL')
 	GENOP('XOR','XR','XR')		:(OPDONE)
 

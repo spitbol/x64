@@ -154,7 +154,10 @@ void zz_2() {
 	fprintf(stderr, "zz_2\n");
 }
 void zz_3() {
-	fprintf(stderr, "zz_2\n");
+	fprintf(stderr, "zz_3\n");
+}
+void zz_4() {
+	fprintf(stderr, "zz_4\n");
 }
 uword zz_arg;
 void zz_num() {
