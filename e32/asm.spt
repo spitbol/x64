@@ -330,7 +330,7 @@ COMPDONE DEFS =
 	REGMAP = TABLE(30)
 	REGMAP['XL'] = 'XL';  REGMAP['XT'] = 'XT'
 	REGMAP['XR'] = 'XR';  REGMAP['XS'] = 'XS'
-	REGMAP['WA'] = 'ECX';  REGMAP['WB'] = 'EBX'
+	REGMAP['WA'] = 'ECX';  REGMAP['WB'] = 'WB'
 	REGMAP['WC'] = 'WC';  REGMAP['IA'] = 'IA'
 	REGMAP['CP'] = 'EBP'
 *	W0 is temp register
@@ -346,7 +346,7 @@ COMPDONE DEFS =
 * can extract 'L' part.
 	REGLOW = TABLE(4)
 	REGLOW['ECX'] = 'CL'
-	REGLOW['EBX'] = 'BL'
+	REGLOW['WB'] = 'BL'
 	REGLOW['WC'] = 'DL'
 	REGLOW['EAX'] = 'AL'
 
