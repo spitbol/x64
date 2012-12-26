@@ -18,6 +18,8 @@
 	%define	W0	RAX
 	%define	W0_L	AL
 	%define	IA	RDX
+	%define M_WORD  QWORD
+	%define D_WORD	DQ
 
 	%define	Qword dword
 	extern	_rc_

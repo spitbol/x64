@@ -511,7 +511,7 @@ GETARG.C.2 GETARG = L1			:(RETURN)
 
 * WLBL, CLBL
 GETARG.C.3
-GETARG.C.4 GETARG = 'QWORD [' L1 ']'     :(RETURN)
+GETARG.C.4 GETARG = 'M_WORD [' L1 ']'     :(RETURN)
 
 * ELBL, PLBL
 GETARG.C.5
@@ -526,7 +526,7 @@ GETARG.C.8
 GETARG.C.9
 	L1 LEN(1) LEN(2) . L2
 	L2 = REGMAP[L2]
-	GETARG = 'QWORD [' L2 ']'		:(RETURN)
+	GETARG = 'M_WORD [' L2 ']'		:(RETURN)
 
 * (X)+, Register indirect, post increment
 * Use lea reg,[reg+8] unless reg is esp, since it takes an extra byte.
@@ -535,14 +535,14 @@ GETARG.C.9
 GETARG.C.10
 	L1 = SUBSTR(L1,2,2)
 	T1 = REGMAP[L1]
-	GETARG = 'QWORD [' T1 ']'
+	GETARG = 'M_WORD [' T1 ']'
 	(IDENT(L1,'XS') GENAOP(TSTMT(,'ADD',T1,'8'))) :S(RETURN)
 	GENAOP(TSTMT(,'LEA',T1,'[' T1 '+8]'))	:(RETURN)
 
 *  -(X), Register indirect, pre decrement
 GETARG.C.11
 	T1 = REGMAP[SUBSTR(L1,3,2)]
-	GETARG = 'QWORD [' T1 ']'
+	GETARG = 'M_WORD [' T1 ']'
 	GENBOP(TSTMT(,'LEA',T1,'[' T1 '-8]'))	:(RETURN)
 
 * INT(X)
@@ -550,13 +550,13 @@ GETARG.C.11
 GETARG.C.12
 GETARG.C.13
 	L1 BREAK('(') . T1 '(' LEN(2) . T2
-	GETARG = 'QWORD [(8*' T1 ')+' REGMAP[T2] ']'   	:(RETURN)
+	GETARG = 'M_WORD [(8*' T1 ')+' REGMAP[T2] ']'   	:(RETURN)
 
 *  NAME(X), WHERE NAME IS IN WORKING SECTION
 GETARG.C.14
 GETARG.C.15
 	L1 BREAK('(') . T1 '(' LEN(2) . T2
-	GETARG = 'QWORD [' T1 '+'  REGMAP[T2] ']'	:(RETURN)
+	GETARG = 'M_WORD [' T1 '+'  REGMAP[T2] ']'	:(RETURN)
 
 * Signed Integer
 GETARG.C.16 GETARG = L1				:(RETURN)
@@ -725,7 +725,7 @@ IFREG	GE(I.TYPE(IARG),7) LE(I.TYPE(IARG),8)
 G.FLC
 	T1 = SUBSTR(GETARG(I1),2,1) 'L'
 	T2 = GENLAB()
-*	GENOP('MOV','QWORD[at_num]','EAX')
+*	GENOP('MOV','M_WORD[at_num]','EAX')
 * 	GENOP('CALL','at_note3')
 	GENOP('CMP',T1,"'a'")
 	GENOP('JB', T2 )
@@ -791,11 +791,11 @@ G.BSW	T1 = GETARG(I1)
 	GENOP('CMP',T1,GETARG(I2))
 	GENOP('JGE',GETARG(I3))
 * Here after default case.
-G.BSW1	GENOP('JMP', 'QWORD [' T2 '+' T1 '*8]') 
+G.BSW1	GENOP('JMP', 'M_WORD [' T2 '+' T1 '*8]') 
         GENOP('segment .data')
         GENOPL(T2 ':')                  :(OPDONE)
 
-G.IFF   GENOP('dq',GETARG(I2))               :(OPDONE)
+G.IFF   GENOP('D_WORD',GETARG(I2))               :(OPDONE)
 
 G.ESW   
         GENOP('segment .text')                          :(OPDONE)
@@ -842,7 +842,7 @@ G.JSR
 	JSR_CALLS = JSR_CALLS +  1
 	JSR_LABEL = 'CALL_' JSR_CALLS
 	JSR_LABEL_NORM = JSR_LABEL 
-	GENOP('DEC','QWORD [' RCODE ']')
+	GENOP('DEC','M_WORD [' RCODE ']')
 	GENOP('JS',JSR_LABEL_NORM)
 
 *	generate branch around for ppms that will follow
@@ -874,13 +874,13 @@ G.PPM.LOOP.NEXT
 	EQ(JSR_COUNT) GENOPL(JSR_LABEL_NORM ':') :(OPDONE)
 G.PPM.LOOP
 	LAB_NEXT = GENLAB()
-	GENOP('DEC','QWORD [' RCODE ']')
+	GENOP('DEC','M_WORD [' RCODE ']')
 	GENOP('JNS',LAB_NEXT)
 	IDENT(INCODE,'PPM')			:S(G.PPM.LOOP.PPM)
 *  Here if error exit via EXI. Set RCODE to exit code and jump 
 *  to error handler with error code in RCODE
 G.PPM.LOOP.ERR
-	GENOP('MOV','QWORD [' RCODE ']', +T1)
+	GENOP('MOV','M_WORD [' RCODE ']', +T1)
 	GENOP('JMP','ERR_')
 						:(G.PPM.LOOP.NEXT)
 G.PPM.LOOP.PPM
@@ -911,19 +911,19 @@ G.PRC.R						:(OPDONE)
 G.PRC.N
 *  Store return address in reserved location
 	PRC.COUNT = PRC.COUNT + 1
-	GENOP('POP', 'QWORD [' PRCENT(PRC.COUNT) ']')		:(OPDONE)
+	GENOP('POP', 'M_WORD [' PRCENT(PRC.COUNT) ']')		:(OPDONE)
 
 G.EXI	
         T1 = GETARG(I1); T2 = PRC.TYPE; T3 = I.TEXT(I1)
 *  If type R or E, and no exit parameters, just return
  	DIFFER(T2,'N') EQ(PRC.ARGS)	GENOP('RET')	:S(OPDONE)
         T3 = IDENT(T3) '0'
-    	GENOP('MOV','QWORD [' RCODE ']',+T3)
+    	GENOP('MOV','M_WORD [' RCODE ']',+T3)
 	IDENT(T2,'N')				:S(G.EXI.1)
 	GENOP('RET')				:(OPDONE)
 G.EXI.1
 
-	GENOP('MOV','W0', 'QWORD ['  PRCENT(PRC.COUNT) ']' )
+	GENOP('MOV','W0', 'M_WORD ['  PRCENT(PRC.COUNT) ']' )
 	GENOP('JMP','W0')
 						:(OPDONE)
 G.ENP   GENOP()					:(OPDONE)
@@ -931,7 +931,7 @@ G.ENP   GENOP()					:(OPDONE)
 G.ERB
 	ERRFILE =  I.TEXT(I1) ' ' I.TEXT(I2)
 *	Set RCODE to error code and branch to error handler
-	GENOP('MOV', 'QWORD [' RCODE ']',  +(I.TEXT(I1)))
+	GENOP('MOV', 'M_WORD [' RCODE ']',  +(I.TEXT(I1)))
  	GENOP('JMP','ERR_')
 						:(OPDONE)
 
@@ -1025,25 +1025,25 @@ G.AOV   GENOP('ADD',GETARG(I2),GETARG(I1))
 	GENOP('JC',GETARG(I3))			:(OPDONE)
 G.LCP
 *  Use CP for code pointer.
-	GENOP('MOV','QWORD [MINCP]',GETARG(I1))		
+	GENOP('MOV','M_WORD [MINCP]',GETARG(I1))		
 						:(OPDONE)
 
 G.SCP   
-	GENOP('MOV',GETARG(I1),'QWORD [MINCP]')
+	GENOP('MOV',GETARG(I1),'M_WORD [MINCP]')
 						:(OPDONE)
 G.LCW
 *  Should be able to get LODSD; XCHG W0,GETARG(I1)
-	GENOP('MOV',W0,'QWORD [MINCP]')
+	GENOP('MOV',W0,'M_WORD [MINCP]')
 	GENOP('MOV',GETARG(I1),'[' W0 ']')
 	GENOP('ADD',W0,'8')			
-	GENOP('MOV','QWORD [MINCP]',W0)
+	GENOP('MOV','M_WORD [MINCP]',W0)
 						:(OPDONE)
 
 
 G.ICP   	
-	GENOP('MOV',W0,'QWORD [MINCP]')
+	GENOP('MOV',W0,'M_WORD [MINCP]')
 	GENOP('ADD',W0,'8')
-	GENOP('MOV','QWORD [MINCP]',W0)
+	GENOP('MOV','M_WORD [MINCP]',W0)
 						:(OPDONE)
 
 *  INTEGER ACCUMULATOR KEPT IN WDX (WC)
@@ -1107,7 +1107,7 @@ G.DVR
 	TYP1 = I.TYPE(I1)
 * 	OUTPUT = 'g.rop before dword test ' t1 ' ' typ1
 *	t1 'dword [' break(']') . leaarg rem
-*	T1 'QWORD' =
+*	T1 'M_WORD' =
 	T1 = TRIM(T1)
 *	OUTPUT = 'g.rop after dword test ' t1 ' leaarg ' leaarg
 *	(GE(TYP1,9) LE(TYP1,15) GENOP('LEA','W0', T1),
@@ -1266,7 +1266,7 @@ G.TRC
         GENOPL((T1 = GENLAB()) ':','MOVZX','W0','BYTE [XR]') 
 	GENOP('MOV','AL','[XL+W0]')
 	GENOP('STOSB')
-	GENOP('DEC','RCX')
+	GENOP('DEC','WA')
 	GENOP('JNZ',T1)
 *	GENOP('LOOP',T1)
 	GENOP('XOR','XL','XL')
@@ -1429,8 +1429,8 @@ DECEND
 
 G.DAC	T1 = I.TYPE(I1)
         T2 = "" ;*(LE(T1,2) "", LE(T1,4) "D_OFFSET_(", LE(T1,6) "D_OFFSET_(", "")
-        GENOPL(TLABEL,'dq',T2 I.TEXT(I1))    :(DECEND)
-G.DIC   GENOPL(TLABEL,'dq',I.TEXT(I1))               :(DECEND)
+        GENOPL(TLABEL,'D_WORD',T2 I.TEXT(I1))    :(DECEND)
+G.DIC   GENOPL(TLABEL,'D_WORD',I.TEXT(I1))               :(DECEND)
 
 *
 * Make sure don't attach label to the align.
@@ -1442,7 +1442,7 @@ G.DIC   GENOPL(TLABEL,'dq',I.TEXT(I1))               :(DECEND)
 G.DRC   GENOP('align','8')
 	T1 = I.TEXT(I1)
 	T1 ? FENCE "+" = ""
-        GENOP('dq',T1)
+        GENOP('D_WORD',T1)
 *  Note that want to attach label to last instruction
 	T.LABEL(CSTMTS[CSTMTS.N]) = TLABEL
 	TLABEL =					:(OPDONE)
@@ -1477,7 +1477,7 @@ G.DTC.DONE
 					:(OPDONE)
         GENOPL(TLABEL,'db',T2)              :(OPDONE)
 
-G.DBC   GENOPL(TLABEL,'dq',GETARG(I1))       :(OPDONE)
+G.DBC   GENOPL(TLABEL,'D_WORD',GETARG(I1))       :(OPDONE)
 G.EQU   GENOP('equ',I.TEXT(I1))			:(OPDONE)
 G.EXP   
 	PPM_CASES[INLABEL] = I.TEXT(I1)
@@ -1534,7 +1534,7 @@ G.SEC.5
 *        (GT(PRC.COUNT1) GENOPL('PRC$' ':','times', PRC.COUNT1 ' dd 0'))
 	GENOP('PRC_: times ' PRC.COUNT1 ' dd 0')
         GENOP('global','LOWSPMIN')
-        GENOPL('LOWSPMIN' ':','dq','0')
+        GENOPL('LOWSPMIN' ':','D_WORD','0')
         GENOP('global','END_MIN_DATA')
         GENOPL('END_MIN_DATA' ':')
         GENOP('segment .text')
@@ -1557,7 +1557,7 @@ G.SEC.7
 *	allow for some extra cases in case of max.err bad estimate
 	N1 = MAX.ERR + 8
 	OUTPUT = 'MAX.ERR ' MAX.ERR
-	GENOPL('ERR_:','xchg',REG.WA,'QWORD [' RCODE ']')
+	GENOPL('ERR_:','xchg',REG.WA,'M_WORD [' RCODE ']')
 						:(OPDONE)
 
 
