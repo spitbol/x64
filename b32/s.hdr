@@ -21,17 +21,20 @@
 ;
 ;  No header code in 386 version.
 ;
+	%define CP	EBP
 	%define	XL	ESI
-	%define	XR	EDI
-	%define	WA	ECX
-	%define WA_L	CL
-	%define	WB	EBX
-	%define WB_L    BL
-	%define	WC	EDX
-	%define WC_L    DL
-	%define	XS	ESP
-	%define	W0	EAX
-	%define	W0_L	AL
+	%define	XT	ESI
+	%define XR	EDI
+	%define XS	ESP
+	%define WA	ECX
+	%define WA_L     CL
+	%define WB	EBX
+	%define WB_L  	 BL
+	%define WC	EDX
+	%define WC_L  	 DL
+	%define IA	EDX
+	%define W0	EAX
+
 	extern	_rc_
 	%define AT_TRACE
 %ifdef AT_TRACE

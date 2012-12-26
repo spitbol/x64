@@ -1,13 +1,12 @@
--TITLE LEX: PHASE 1 TRANSLATION FROM MINIMAL TO LEXEMES (LEXEMES)
+-TITLE MINTOK: PHASE 1 TRANSLATION FROM MINIMAL TO TOKENS
 -STITL Initialization
 * Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
-* Copyright 2012 David Shields
 * 
 * This file is part of Macro SPITBOL.
 * 
 *     Macro SPITBOL is free software: you can redistribute it and/or modify
 *     it under the terms of the GNU General Public License as published by
-*     the Free Software Foundation, either version 2 of the License, or
+*     the Free Software Foundation, either version 3 of the License, or
 *     (at your option) any later version.
 * 
 *     Macro SPITBOL is distributed in the hope that it will be useful,
@@ -21,7 +20,7 @@
 *
 *	Usage:
 *
-*	SPITBOL -u "infile<sep>condfile<sep>outfile" lex
+*	SPITBOL -u "infile<sep>condfile<sep>outfile" token
 *
 *	where:
 *	 infile    - Minimal file name, less .min extension
@@ -33,12 +32,75 @@
 *	note: <sep>outfile component is optional.
 *
 *  This program takes MINIMAL statements and parses them up into
-*  a stream of lexemes, or lexemes. It performs EQU * substitution and
+*  a stream of tokens. It performs EQU * substitution and
 *  conditional assembly.
 *
 *  It is based on earlier translators written by David Shields,
 *  Steve Duff and Robert Goldberg.
 *
+        VERSION = 'V1.14'
+*
+*  Revision History:
+*
+*  V1.14 25-Dec-95
+*       Changed TERMINAL to OUTPUT for use in Microsoft build program.
+*  V1.13 07-Jun-95
+*	Check for missing IFF case with no default PLBL on BSW.
+*  V1.12 10-Sep-94
+*	Add CFP_L.
+*  V1.11 20-Sep-91
+*       Increase E_STS to 1000
+*  V1.10 15-Dec-90
+*	Increase hash table size from 127 to 257.
+*
+*  V1.09 30-Oct-90
+*	Allowed optional specification of output file as third argument.
+*
+*  V1.08 10-Oct-89
+*	Corrected Validforms array for (X) row.
+*
+*  V1.07 05-Jul-89
+*	Add ':' as separator on command line.
+*
+*  V1.06 17-Sep-88
+*	Enable ValidForms table to check argument type of operands against
+*	requirements of opcode.  This is not quite rigorous for PNAME
+*	arguments to JSR, which are treated as as PLBL.
+*  V1.05E 20-Jun-88
+*	Read optional file containing .DEF conditional assignments.  If found,
+*	.DEFs within the main Minimal file are ignored.  This file
+*       has a filename extension of .cnd.
+*  V1.05D 09-Sep-87
+*	Correct bug in TBLINI
+*  V1.05C 28-Oct-86
+*	Converted back to Spitbol to run on 68000
+*  V1.05B 17-Aug-86
+*	Optimised for SNOBOL4+
+*	Added source line numbers for use with symbolic debugger
+*  V1.05A 04-Aug-86
+*	Converted to SNOBOL4+:
+*		Changed file specification to use /1, /2 on command line
+*		Changed TERMINAL to SCREEN
+*		Explicitly set FULLSCAN
+*		Rewrote two patterns which used FENCE function
+*		Removed use of third argument in table function for .BADOP
+*  V1.05 09-Oct-83
+*	Correct CFP_M to be 32767, not 65535.
+*  V1.04 23-May-83
+*	Withdraw ENT file feature, since no longer needed.
+*	Replace BRP by (new) BEV and BOD opcodes.
+*	Use smaller values for E_ values since memory scarce.
+*  V1.03 17-May-83
+*	Restore E_HNB to 127, default suggested by McCann.
+*	Generate ENT file with list of ENT instructions so that
+*	these can be placed at start of code section and thus
+*	give ENT addresses low values.
+*  V1.02 25-Nov-82
+*	Modify to process BSW/IFF/ESW by sorting IFF's to be
+*	in order. Revive machinery used in original Duff code.
+*
+*  V1.01 15-Nov-82
+*	First release, assuming 8088 target machine.
 *
 -EJECT
 *  Keyword initialization
@@ -417,14 +479,14 @@
         OUTPUT = IDENT(PARMS) "Need file name (.min)" :S(END)
 
 	FILENAMI = PARMS '.min'
-        OUTPUT = 'Input MINIMAL file: ' FILENAMI
+        OUTPUT = '  Input MINIMAL file: ' FILENAMI
 	FILENAMO = (IDENT(FILENAMO) PARMS, FILENAMO) '.lex'
-        OUTPUT = 'Output LEXEME file: ' FILENAMO
-        OUTPUT = DIFFER(FILENAMC) 'Condition definition file: ' FILENAMC
+        OUTPUT = '  Output TOKEN file: ' FILENAMO
+        OUTPUT = DIFFER(FILENAMC) '  Condition definition file: ' FILENAMC
 *   FLCFLAG  = REPLACE( INPUT,'y','Y' )
 	FLCFLAG = 'N'
 	FLCFLAG = 'Y'
-*  OUTPUT = 'Full line comments passed to LEXEME file? ' FLCFLAG
+*  OUTPUT = 'Full line comments passed to TOKEN file? ' FLCFLAG
 *
 *  No page ejects without full line comments
 *
@@ -432,7 +494,7 @@
 *   EJCFLAG  = REPLACE( (DIFFER(FLCFLAG,'N') INPUT, 'N'),'y','Y' )
 	EJCFLAG = 'N'
 	EJCFLAG = 'Y'
-*  OUTPUT = 'EJCs passed to LEXEME file? ' EJCFLAG
+*  OUTPUT = 'EJCs passed to TOKEN file? ' EJCFLAG
 *
 *  Associate input file to LU1.  If a conditional file was specified,
 *  read it first.
@@ -446,7 +508,7 @@
 *  Associate output file
 *
 MAIN1	OUTPUT(.OUTFILE,2,FILENAMO)		:S(MAIN2)
-        OUTPUT = "Cannot open LEXEME file: " FILENAMO  :(END)
+        OUTPUT = "Cannot open TOKEN file: " FILENAMO  :(END)
 MAIN2
 
 *  Patterns used by DOSTMT
@@ -498,7 +560,7 @@ DOS05
 *  Here if bad opcode
 DS01	ERROR('BAD OP-CODE')			:(DSOUT)
 
-*  GENERATE LEXEMES.
+*  GENERATE TOKENS.
 *
 DS.TYPERR
 	ERROR('OPERAND TYPE ZERO')		:(DSOUT)
@@ -852,18 +914,18 @@ G.ESW2  IFFAR =					:(DSGEN)
 *
 G.END   OUTSTMT(,'END',,,,COMMENT)
 	(NE(LEVEL) ERROR("Unclosed IF conditional clause"))
-        OUTPUT = '*** TRANSLATION COMPLETE ***'
-        OUTPUT = NLINES ' LINES READ.'
-        OUTPUT = NSTMTS ' STATEMENTS PROCESSED.'
-        OUTPUT = NTARGET ' TARGET CODE LINES PRODUCED.'
-        OUTPUT = NERRORS ' ERRORS OCCURRED.'
+        OUTPUT = '  *** TRANSLATION COMPLETE ***'
+        OUTPUT = '  ' NLINES ' LINES READ.'
+        OUTPUT = '  ' NSTMTS ' STATEMENTS PROCESSED.'
+        OUTPUT = '  ' NTARGET ' TARGET CODE LINES PRODUCED.'
+        OUTPUT = '  ' NERRORS ' ERRORS OCCURRED.'
         OUTPUT =
-.	  DIFFER(LASTERROR) 'THE LAST ERROR WAS IN LINE ' LASTERROR
+.	  DIFFER(LASTERROR) '  THE LAST ERROR WAS IN LINE ' LASTERROR
 	&CODE   = NE(NERRORS) 2001
-        OUTPUT = COLLECT() * 5 ' FREE BYTES'
+        OUTPUT = '  ' COLLECT() * 5 ' FREE BYTES'
 	T = CONVERT(PRCTAB,'ARRAY')		:F(G.END.2)
 *  Here if procedures declared by INP but not by PRC
-        OUTPUT = 'Procedures with INP, no PRC'
+        OUTPUT = '  Procedures with INP, no PRC'
 	I = 1
 G.END.1 OUTPUT = T[I,1] ' ' T[I,2]            :F(G.END.2)
 	I = I + 1				:(G.END.1)
