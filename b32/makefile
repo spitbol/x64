@@ -17,7 +17,7 @@ vpath %.c $(OSINT)
 
 CC	=	tcc
 AS	=	nasm
-INCDIRS = -I../tcc/include -Imusl/include
+INCDIRS = -I../tcc/include -I../musl/include
 # next is for tcc
 ifeq	($(DEBUG),0)
 CFLAGS= $(INCDIRS)
@@ -108,7 +108,9 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 
 # main program
 spitbol: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol
+	$(CC) $(CFLAGS) $(OBJS) -L ../musl/lib -ospitbol
+	cp spitbol sbl
+#	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol
 
 # Assembly language dependencies:
 errors.o: errors.s
@@ -159,4 +161,4 @@ boot:
 install:
 	sudo cp spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s errors.s
+	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s errors.s ./sbl
