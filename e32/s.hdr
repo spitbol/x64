@@ -11,8 +11,11 @@
 	%define XR	EDI
 	%define XS	ESP
 	%define WA	ECX
+	%define WA_L     CL
 	%define WB	EBX
+	%define WB_L  	 BL
 	%define WC	EDX
+	%define WC_L  	 DL
 	%define IA	EDX
 	%define W0	EAX
 

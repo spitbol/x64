@@ -334,7 +334,7 @@ COMPDONE DEFS =
 	REGMAP['WC'] = 'WC';  REGMAP['IA'] = 'IA'
 	REGMAP['CP'] = 'EBP'
 *	W0 is temp register
-	REGMAP['W0'] = 'EAX'
+	REGMAP['W0'] = 'W0'
 
 *  Quick reference:
 	REG.IA = REGMAP['IA']
@@ -345,10 +345,9 @@ COMPDONE DEFS =
 * REGLOW maps register to identify target, so
 * can extract 'L' part.
 	REGLOW = TABLE(4)
-	REGLOW['WA'] = 'CL'
-	REGLOW['WB'] = 'BL'
-	REGLOW['WC'] = 'DL'
-	REGLOW['EAX'] = 'AL'
+	REGLOW['WA'] = 'WA_L'
+	REGLOW['WB'] = 'WB_L'
+	REGLOW['WC'] = 'WC_L'
 
 *  Other definitions that are dependent upon things defined in the
 *  machine definition file, and cannot be built until after the definition
@@ -600,7 +599,7 @@ MEMMEM
 *  here if memory-memory case, load first argument
   T1 = GETARG(I1)
   I1 = MINARG(8,'W0')
-  GENOP('MOV','EAX',T1)				:(RETURN)
+  GENOP('MOV','W0',T1)				:(RETURN)
 
 -STITL PRCENT(N)
 PRCENT PRCENT = 'PRC_' '+'  (4 * ( N - 1)) :(RETURN)
@@ -739,7 +738,7 @@ G.MOV
 *	xchg ax,Tx
 *  and also MOV (XL)+,NAME as
 *	lodsw
-*	mov NAME,EAX
+*	mov NAME,W0
 *  NEED TO PROCESS MEMORY-MEMORY CASE
 *  CHANGE 'MOV (XS)+,A' TO 'POP A'
 *  CHANGE 'MOV A,-(XS)' TO 'PUSH A'
@@ -756,14 +755,14 @@ MOV.XTP
 MOV.XLP
 	IDENT(T2,'(XR)+') GENOP('MOVSD')	:S(OPDONE)
 	GENOP('LODSD')
-	IDENT(T2,'-(XS)') GENOP('PUSH','EAX')	:S(OPDONE)
-	GENOP('MOV',GETARG(I2),'EAX')		:(OPDONE)
+	IDENT(T2,'-(XS)') GENOP('PUSH','W0')	:S(OPDONE)
+	GENOP('MOV',GETARG(I2),'W0')		:(OPDONE)
 MOV.XSP
 	IDENT(I.TEXT(I2),'(XR)+')		:S(MOV.XSPRP)
 	GENOP('POP',GETARG(I2))			:(OPDONE)
-MOV.XSPRP GENOP('POP','EAX')
+MOV.XSPRP GENOP('POP','W0')
 	GENOP('STOSD')				:(OPDONE)
-MOV.XRP GENOP('MOV','EAX',GETARG(I1))
+MOV.XRP GENOP('MOV','W0',GETARG(I1))
 	GENOP('STOSD')				:(OPDONE)
 MOV.2
 	GENOP('PUSH',GETARG(I1))		:(OPDONE)
@@ -919,8 +918,8 @@ G.EXI
 	GENOP('RET')				:(OPDONE)
 G.EXI.1
 
-	GENOP('MOV','EAX', 'DWORD ['  PRCENT(PRC.COUNT) ']' )
-	GENOP('JMP','EAX')
+	GENOP('MOV','W0', 'DWORD ['  PRCENT(PRC.COUNT) ']' )
+	GENOP('JMP','W0')
 						:(OPDONE)
 G.ENP   GENOP()					:(OPDONE)
 
@@ -935,12 +934,12 @@ G.ERB
 G.ICV   GENOP('INC',GETARG(I1))    :(OPDONE)
 G.DCV   GENOP('DEC',GETARG(I1))    :(OPDONE)
 
-G.ZER	IDENT(I.TEXT(I1),'(XR)+') GENOP('XOR','EAX','EAX')
+G.ZER	IDENT(I.TEXT(I1),'(XR)+') GENOP('XOR','W0','W0')
 +		GENOP('STOSD')			:S(OPDONE)
 	IFREG(I1)				:S(G.ZER1)
 	IDENT(I.TEXT(I1),'-(XS)')		:S(G.ZER.XS)
-	GENOP('XOR','EAX','EAX')
-	GENOP('MOV',GETARG(I1),'EAX')		:(OPDONE)
+	GENOP('XOR','W0','W0')
+	GENOP('MOV',GETARG(I1),'W0')		:(OPDONE)
 G.ZER1	T1 = GETARG(I1)
 	GENOP('XOR',T1,T1)			:(OPDONE)
 G.ZER.XS GENOP('PUSH','0')			:(OPDONE)
@@ -1024,7 +1023,7 @@ G.LCP
 	GENOP('MOV',REG.CP,GETARG(I1))		:(OPDONE)
 G.SCP   GENOP('MOV',GETARG(I1),REG.CP)		:(OPDONE)
 G.LCW
-*  Should be able to get LODSD; XCHG EAX,GETARG(I1)
+*  Should be able to get LODSD; XCHG W0,GETARG(I1)
 	GENOP('MOV',GETARG(I1),'[' REG.CP ']')
 	GENOP('ADD',REG.CP,'4')			:(OPDONE)
 
@@ -1042,8 +1041,8 @@ G.SBI   GENOP('SUB',REG.IA,GETARG(I1))		:(OPDONE)
 
 G.DVI
 G.RMI
-*	Move argument to EAX, call procedure
-	GENOP('MOV','EAX',GETARG(I1))
+*	Move argument to W0, call procedure
+	GENOP('MOV','W0',GETARG(I1))
 	GENOP('CALL', INCODE '_')	:(OPDONE)
 
 G.STI   GENOP('MOV',GETARG(I1),REG.IA)		:(OPDONE)
@@ -1095,10 +1094,10 @@ G.DVR
 *	T1 'DWORD' =
 	T1 = TRIM(T1)
 *	OUTPUT = 'g.rop after dword test ' t1 ' leaarg ' leaarg
-*	(GE(TYP1,9) LE(TYP1,15) GENOP('LEA','EAX', T1),
-*+	 GE(TYP1,3) LE(TYP1,4)  GENOP('LEA','EAX', T1),
-*+                GENOP('MOV','EAX', GETARG(I1)))
-                GENOP('MOV','EAX', GETARG(I1))
+*	(GE(TYP1,9) LE(TYP1,15) GENOP('LEA','W0', T1),
+*+	 GE(TYP1,3) LE(TYP1,4)  GENOP('LEA','W0', T1),
+*+                GENOP('MOV','W0', GETARG(I1)))
+                GENOP('MOV','W0', GETARG(I1))
 	GENOP('CALL',INCODE '_')		:(OPDONE)
 
 
@@ -1179,7 +1178,7 @@ G.SCG.0
 	GENOP('DEC',REGMAP[T3])
 G.SCG.1
 	T2 BREAK('(') LEN(1) LEN(2) . T3
-	GENOP('MOV','EAX',T1,)
+	GENOP('MOV','W0',T1,)
 	GENOP('MOV','[' REGMAP[T3] ']','AL')
 *  See if postincrement needed.
 	T2 RTAB(1) '+'				:F(G.SCG.2)
@@ -1249,8 +1248,8 @@ G.TRC
 *	xor	esi,esi			;set XL to zero
 *	xor	edi,edi			;v1.02  XR also
 	GENOP('XCHG','XL','XR')
-        GENOPL((T1 = GENLAB()) ':','MOVZX','EAX','BYTE [XR]') 
-	GENOP('MOV','AL','[XL+EAX]')
+        GENOPL((T1 = GENLAB()) ':','MOVZX','W0','BYTE [XR]') 
+	GENOP('MOV','AL','[XL+W0]')
 	GENOP('STOSB')
 	GENOP('LOOP',T1)
 	GENOP('XOR','XL','XL')
