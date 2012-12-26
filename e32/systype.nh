@@ -1,0 +1,113 @@
+; Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+; 
+; This file is part of Macro SPITBOL.
+; 
+;     Macro SPITBOL is free software: you can redistribute it and/or modify
+;     it under the terms of the GNU General Public License as published by
+;     the Free Software Foundation, either version 3 of the License, or
+;     (at your option) any later version.
+; 
+;     Macro SPITBOL is distributed in the hope that it will be useful,
+;     but WITHOUT ANY WARRANTY; without even the implied warranty of
+;     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;     GNU General Public License for more details.
+; 
+;     You should have received a copy of the GNU General Public License
+;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+
+; configuration information for inter.s
+;
+%ifndef SYSTYPE_NH_INCLUDED
+%define SYSTYPE_NH_INCLUDED
+%define linux 1
+%define winnt 0
+
+; Structure definition %macros
+;
+;        %macro  struc name
+;        .struct 0
+;        %endmacro
+
+;        %macro  ends name
+;        DSeg_
+;        %endmacro
+
+; define how data locations in the Minimal code are accessed from
+; assembly-language and C routines.  "direct" is non-zero to make
+; the symbols public for direct access, zero to have access via
+; a table of pointers and the minadr procedure.
+;
+%define direct 1
+
+; define how floating point results are returned from a function
+; (either in ST(0) or in EDX:EAX.
+%define fretst0 1
+%define freteax 0
+
+; Macros defining whether a leading underscore is required for public Minimal
+; names that will be referenced from C.
+;
+%define underscore 0
+        %macro  address 1
+        dd   %1
+        %endmacro
+
+        %macro  ext 1
+        extern %1
+        %endmacro
+
+        %macro  cext 2
+        ext     %1
+        %endmacro
+
+        %macro  def 3
+        %endmacro
+
+        %macro  pubdef 3
+        global %1
+%1:	%2	%3
+        %endmacro
+
+        %macro  pubname 1
+        global %1
+        %endmacro
+
+        %macro  proc 2
+%1:
+        %endmacro
+
+        %macro  endp 1
+        %endmacro
+
+        %macro  cproc 2
+%1:
+        %endmacro
+
+        %macro  cendp 1
+        %endmacro
+
+        %macro  publab 1
+        global %1
+        %endmacro
+
+; Call C function.  Intel follows standard C conventions, and
+; caller pops arguments.
+        %macro  callc 2
+        call    %1
+%if	%2
+        add     esp,%2
+%endif
+        %endmacro
+
+; Intel runs in one flat segment.  Far calls are the same as near calls.
+        %macro  callfar 2
+        ext     %1
+        callc   %1,%2
+        %endmacro
+
+; Return from an assembly-language function that will be called by C.
+; Caller pops arguments
+        %macro  retc 1
+	ret
+        %endmacro
+%endif
