@@ -5,6 +5,7 @@
 ;
 ;  no header code in 386 version.
 ;
+	%define CP	RBP
 	%define	XL	RSI
 	%define	XT	RSI
 	%define	XR	RDI
