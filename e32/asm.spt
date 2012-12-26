@@ -50,7 +50,7 @@
 *  To run under Spitbol:
 *       spitbol -u "<file>:<machine>[:flag:...:flag]" codlinux.spt
 *
-*	reads <file>.tok	containing tokenized source code
+*	reads <file>.lex	containing tokenized source code
 *       writes <file>.s         with 80386 assembly code
 *	also writes <file>.err	with ERR and ERB error messages
 *	using <machine>.def	to provide machine-specific information
@@ -237,7 +237,7 @@
 *  Default the parameter string if none present
 *
         PARMS = (DIFFER(HOST(0)) HOST(0), "v37:linux:compress")
-        OUTPUT = IDENT(PARMS) "Filename (.tok) required" :S(END)
+        OUTPUT = IDENT(PARMS) "Filename (.lex) required" :S(END)
 
 *
 * Get machine definition file name following token file name, and flags.
@@ -342,6 +342,15 @@ COMPDONE DEFS =
 	REG.WA = REGMAP['WA']
 	REG.CP = REGMAP['CP']
 	W0 = REGMAP['W0']
+
+* REGLOW maps register to identify target, so
+* can extract 'L' part.
+	REGLOW = TABLE(4)
+	REGLOW['WA'] = 'CL'
+	REGLOW['WB'] = 'BL'
+	REGLOW['WC'] = 'DL'
+	REGLOW['W0'] = 'AL'
+
 *  Other definitions that are dependent upon things defined in the
 *  machine definition file, and cannot be built until after the definition
 *  file has been read in.
@@ -356,7 +365,7 @@ COMPDONE DEFS =
 *
 	STRIP_COMMENT = (DIFFER(COMMENTS) 'N', 'Y')
 
-	FILENAMI = PARMS '.tok'
+	FILENAMI = PARMS '.lex'
         INPUT(.INFILE,1,FILENAMI)                     :S(INPUTOK)
         OUTPUT = 'Cannot open TOKEN file: ' FILENAMI  :(END)
 INPUTOK OUTPUT = 'Input TOKEN file: ' FILENAMI
@@ -762,12 +771,12 @@ MOV.2
 
 * Odd/Even tests.  If W reg, use low byte of register.
 G.BOD	T1 = GETARG(I1)
-	T1 = EQ(I.TYPE(I1),8) SUBSTR(T1,2,1) 'L'
+	T1 = EQ(I.TYPE(I1),8) REGLOW[T1]
 	GENOP('TEST',T1,'1')
 	GENOP('JNE',GETARG(I2))			:(OPDONE)
 
 G.BEV	T1 = GETARG(I1)
-	T1 = EQ(I.TYPE(I1),8) SUBSTR(T1,2,1) 'L'
+	T1 = EQ(I.TYPE(I1),8) REGLOW[T1]
 	GENOP('TEST',T1,'1')
 	GENOP('JE',GETARG(I2))			:(OPDONE)
 
@@ -1182,7 +1191,7 @@ G.SCG.W
 *  Here if moving character from work register, convert T1
 *  to name of low part.
 *
-	T1 = SUBSTR(REGMAP[I.TEXT(I1)],2,1) 'L'
+	T1 = REGLOW[I.TEXT(I1)]
 	IDENT(T2,'(XL)')			:S(G.SCG.W.XL)
 	IDENT(T2,'-(XL)')			:S(G.SCG.W.PXL)
 	IDENT(T2,'(XL)+')			:S(G.SCG.W.XLP)

@@ -3,7 +3,6 @@
 
 
 # SPITBOL Version:
-VERS=   linux
 DEBUG=	1
 
 # Minimal source directory.
@@ -30,8 +29,8 @@ ASFLAGS = --32 -g -gstabs+ -msyntax=intel -mmnemonic=intel -mnaked-reg
 endif
 
 # Tools for processing Minimal source file.
-TOK=	token.spt
-COD=    codlinux.spt
+LEX=	lex.spt
+ASM=    asm.spt
 ERR=    err386.spt
 BOOTBOL=   ./bootbol
 SBL=./sbl
@@ -55,7 +54,7 @@ UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/syste
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	$(VERS).cnd $(VERS).def $(VERS).hdr hdrdata.inc hdrcode.inc
+VHDRS=	s.cnd s.def s.hdr hdrdata.inc hdrcode.inc
 
 # OSINT objects:
 SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
@@ -91,7 +90,7 @@ MOBJS=	main.o getargs.o
 AOBJS = $(CAOBJS)
 
 # Minimal source object file:
-VOBJS =	v38.o
+VOBJS =	s.o
 
 # All objects:
 OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS)
@@ -99,32 +98,33 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS)
 # main program
 spitbol: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
-#	nm -n v38.o >v38.nm
-#	$(BOOTBOL) ../map.spt <v38.nm >v38.dic
-#	$(BOOTBOL) ../map.spt <v38.nm >v38.dic
+	cp	spitbol sbl
+#	nm -n s.o >s.nm
+#	$(BOOTBOL) ../map.spt <s.nm >s.dic
+#	$(BOOTBOL) ../map.spt <s.nm >s.dic
 #	cp	spitbol sbl
 
 # Assembly language dependencies:
 errors.o: errors.s
-v38.o: v38.s
-v38.o:
-	nasm -f elf -l v38.lst -ov38.o v38.s
+s.o: s.s
+s.o:
+	nasm -f elf -l s.lst -os.o s.s
 
 # SPITBOL Minimal source
-v38.s:	v38.tok $(VHDRS) $(COD) systype.ah
-	$(BOOTBOL) -u "v38:$(VERS):comments" $(COD)
-#	cp	v38.s	v38.S
-#	$(BOOTBOL) san.spt <v38.s >v38.t
-#	cp	v38.t v38.s
+s.s:	s.lex $(VHDRS) $(ASM) systype.ah
+	$(BOOTBOL) -u "s:s:comments" $(ASM)
+#	cp	s.s	s.S
+#	$(BOOTBOL) san.spt <s.s >s.t
+#	cp	s.t s.s
 
-v38.tok: $(MINPATH)v38.min $(VERS).cnd $(TOK)
-	 $(BOOTBOL) -u "$(MINPATH)v38:$(VERS):v38" $(TOK)
-#	$(SBL) -u "$(MINPATH)v38:$(VERS):v38" $(TOK)
+s.lex: $(MINPATH)s.min s.cnd $(LEX)
+	 $(BOOTBOL) -u "$(MINPATH)s:s:s" $(LEX)
+#	$(SBL) -u "$(MINPATH)s:s:s" $(LEX)
 
-v38.err: v38.s
+s.err: s.s
 
-errors.s: $(VERS).cnd $(ERR) v38.s
-	   $(BOOTBOL) -1=v38.err -2=errors.s $(ERR)
+errors.s: s.cnd $(ERR) s.s
+	   $(BOOTBOL) -1=s.err -2=errors.s $(ERR)
 
 inter.o: systype.ah osint.inc
 
@@ -141,9 +141,9 @@ sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
 
 boot:
-	cp -p bootstrap/v38.s bootstrap/v38.tok bootstrap/errors.s .
+	cp -p bootstrap/s.s bootstrap/s.lex bootstrap/errors.s .
 
 install:
 	sudo cp spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.lst *.map *.err v38.tok v38.tmp v38.s errors.s
+	rm -f $(OBJS) *.lst *.map *.err s.lex s.tmp s.s errors.s
