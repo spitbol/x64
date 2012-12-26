@@ -1,0 +1,3 @@
+    exit(-3,'module.out')
+    OUTPUT = "Resuming execution of saved module"
+END

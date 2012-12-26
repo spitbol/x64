@@ -1,0 +1,62 @@
+* normalze assembler file 
+	&stlimit = 700000
+
+	:(loop)
+copy
+	output = line
+loop
+	line = input	:f(end)
+	&ANCHOR = 1
+ 	line '#'	:s(loop)
+ 	line ';'	:s(loop)
+*	line break('#') . first '#' rem . rest :f(a.1)
+*	line = first	:(a.2)
+*a.1	 line break(';') . first ';' rem . rest :f(a.2)
+*	line = first
+*a.2
+	line = trim(line)
+ 	ident(line)		:s(loop)
+*	line = replace(line,'ABCDEFGHIJKLMNOPQRSTUVWXYZ$',
+*+			    'abcdefghijklmnopqrstuvwxyz_')
+	line '.eject'		:s(loop)
+	line '.sbttl'		:s(loop)
+*	line ':near' = 
+	&ANCHOR = 0
+*	output = 'pre ' line
+	preline = line
+	line 'D_ASCII_' = '.ascii'
+	line 'D_ALIGN_' = '.balign'
+	line 'D_DB_' = '.byte'
+	line 'D_DD_' = '.long'
+	line 'D_DOUBLE__' = '.double'
+	line 'D_DW_' = '.short'
+ 	line 'D_EXTERN_' = '.extern'
+ 	line 'D_GLOBAL_' = '.global'
+	line 'D_SHORT_' = '.short'
+	line 'D_EQU_' = ' = '
+
+*	line 'D_OFFSET_' = 'offset'
+*	line '.balign' = 'align'
+loop.0
+	line  'D_OFFSET_('  BREAK(')') . arg1 ')' =	'offset ' arg1  :s(loop.0)
+
+	line  'BYTE_PTR('  BREAK(')') . arg1 ')' = 'BYTE PTR ['  arg1 ']'   :s(loop.0)		
+	line 'DWORD_PTR('  BREAK(')') . arg1 ')'  = 'DWORD PTR [' arg1 ']'  :s(loop.0)
+	
+
+	line 'WORD_PTR('  BREAK(')') . arg1 ')'  = 'WORD PTR [' arg1  ']'  :s(loop.0)
+
+	arg1 = arg2 = 
+
+	line  'DWORD_PTR2('  BREAK(',') . arg1 ',' 
++	BREAK(')') . arg2 ')'   = 'DWORD PTR [' arg1 '+'  arg2  ']' :s(loop.0)
+
+
+loop.1							
+	:(copy)
+	postline = line
+	output = ident(preline,postline)	:s(copy)
+	output = 'input  ' preline
+	output = 'output ' postline
+		:(copy)
+end
