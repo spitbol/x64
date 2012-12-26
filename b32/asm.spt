@@ -81,6 +81,11 @@
 	LCASE   = 'abcdefghijklmnopqrstuvwxyz'
 	NOS     = '0123456789'
 	TAB	= CHAR(9)
+
+*	CFP_B is bytes per word, CFP_C is characters per word
+*       These should agree with values used in translator	
+	CFP_B = 4
+	CFP_C = 4
 *
 *  Data structures
 *
@@ -526,28 +531,28 @@ GETARG.C.9
 	GETARG = 'DWORD [' L2 ']'		:(RETURN)
 
 * (X)+, Register indirect, post increment
-* Use lea reg,[reg+4] unless reg is esp, since it takes an extra byte.
-* Actually, lea reg,[reg+4] and add reg,4 are both 2 cycles and 3 bytes
+* Use lea reg,[reg+CFP_B] unless reg is esp, since it takes an extra byte.
+* Actually, lea reg,[reg+CFP_B] and add reg,CFP_B are both 2 cycles and 3 bytes
 * for all the other regs, and either could be used.
 GETARG.C.10
 	L1 = SUBSTR(L1,2,2)
 	T1 = REGMAP[L1]
 	GETARG = 'DWORD [' T1 ']'
-	(IDENT(L1,'XS') GENAOP(TSTMT(,'ADD',T1,'4'))) :S(RETURN)
-	GENAOP(TSTMT(,'LEA',T1,'[' T1 '+4]'))	:(RETURN)
+	(IDENT(L1,'XS') GENAOP(TSTMT(,'ADD',T1,'CFP_B'))) :S(RETURN)
+	GENAOP(TSTMT(,'LEA',T1,'[' T1 '+CFP_B]'))	:(RETURN)
 
 *  -(X), Register indirect, pre decrement
 GETARG.C.11
 	T1 = REGMAP[SUBSTR(L1,3,2)]
 	GETARG = 'DWORD [' T1 ']'
-	GENBOP(TSTMT(,'LEA',T1,'[' T1 '-4]'))	:(RETURN)
+	GENBOP(TSTMT(,'LEA',T1,'[' T1 '-CFP_B]'))	:(RETURN)
 
 * INT(X)
 * DLBL(X)
 GETARG.C.12
 GETARG.C.13
 	L1 BREAK('(') . T1 '(' LEN(2) . T2
-	GETARG = 'DWORD [(4*' T1 ')+' REGMAP[T2] ']'   	:(RETURN)
+	GETARG = 'DWORD [(CFP_B*' T1 ')+' REGMAP[T2] ']'   	:(RETURN)
 
 *  NAME(X), WHERE NAME IS IN WORKING SECTION
 GETARG.C.14
@@ -567,7 +572,7 @@ GETARG.C.18
 
 *  *DLBL
 GETARG.C.19
-	GETARG = '4*' SUBSTR(L1,2)	:(RETURN)
+	GETARG = 'CFP_B*' SUBSTR(L1,2)	:(RETURN)
 
 *  =NAME (Data section)
 GETARG.C.20
@@ -602,7 +607,7 @@ MEMMEM
   GENOP('MOV','W0',T1)				:(RETURN)
 
 -STITL PRCENT(N)
-PRCENT PRCENT = 'PRC_' '+'  (4 * ( N - 1)) :(RETURN)
+PRCENT PRCENT = 'PRC_' '+'  (CFP_B * ( N - 1)) :(RETURN)
 
 -STITL OUTSTMT(OSTMT)LABEL,OPCODE,OP1,OP2,OP3,COMMENT)
 *  This module writes the components of the statement
@@ -786,7 +791,7 @@ G.BSW	T1 = GETARG(I1)
 	GENOP('CMP',T1,GETARG(I2))
 	GENOP('JGE',GETARG(I3))
 * Here after default case.
-G.BSW1	GENOP('JMP', 'DWORD [' T2 '+' T1 '*4]') 
+G.BSW1	GENOP('JMP', 'DWORD [' T2 '+' T1 '*CFP_B]') 
         GENOP('segment .data')
         GENOPL(T2 ':')                  :(OPDONE)
 
@@ -959,8 +964,8 @@ G.ADD	MEMMEM()
 G.SUB	MEMMEM()
 	GENOP('SUB',GETARG(I2),GETARG(I1))	:(OPDONE)
 
-G.ICA   GENOP('ADD',GETARG(I1),'4')		:(OPDONE)
-G.DCA   GENOP('SUB',GETARG(I1),'4')		:(OPDONE)
+G.ICA   GENOP('ADD',GETARG(I1),'CFP_B')		:(OPDONE)
+G.DCA   GENOP('SUB',GETARG(I1),'CFP_B')		:(OPDONE)
 
 G.BEQ
 G.BNE
@@ -1025,10 +1030,10 @@ G.SCP   GENOP('MOV',GETARG(I1),REG.CP)		:(OPDONE)
 G.LCW
 *  Should be able to get LODSD; XCHG W0,GETARG(I1)
 	GENOP('MOV',GETARG(I1),'[' REG.CP ']')
-	GENOP('ADD',REG.CP,'4')			:(OPDONE)
+	GENOP('ADD',REG.CP,'CFP_B')			:(OPDONE)
 
 
-G.ICP   GENOP('ADD',REG.CP,'4')			:(OPDONE)
+G.ICP   GENOP('ADD',REG.CP,'CFP_B')			:(OPDONE)
 
 *  INTEGER ACCUMULATOR KEPT IN WDX (WC)
 G.LDI	GENOP('MOV',REG.IA,GETARG(I1))		:(OPDONE)
@@ -1334,19 +1339,19 @@ G.MFI1	IDENT(I.TEXT(I1),'WC') GENOP()		:S(OPDONE)
 G.CTW
 *  assume four chars per word
 	T1 = GETARG(I1)
-	GENOP('ADD',T1,'3+4*' I.TEXT(I2))
+	GENOP('ADD',T1,'(CFP_B-1)+CFP_B*' I.TEXT(I2))
 	GENOP('SHR',T1,'2')		:(OPDONE)
 
 G.CTB
-*  use add w,val*CFP.B+3; and w,-4
+*  use add w,val*CFP.B+3; and w,-CFP_B
 	T1 = GETARG(I1)
-	GENOP('ADD',T1,'3+4*' I.TEXT(I2))
-	GENOP('AND',T1,'-4')	:(OPDONE)
+	GENOP('ADD',T1,'(CFP_B-1)+CFP_B*' I.TEXT(I2))
+	GENOP('AND',T1,'-CFP_B')	:(OPDONE)
 
 G.CVM	T1 = GETARG(I1)
 	GENOP('IMUL',REG.IA,'10')
 	GENOP('JO',T1)
-	GENOP('SUB',REGMAP['WB'],'CH$D0')
+	GENOP('SUB',REGMAP['WB'],'CH_D0')
 	GENOP('SUB',REG.IA,REGMAP['WB'])
 	GENOP('JO',T1)				:(OPDONE)
 
@@ -1372,8 +1377,8 @@ G.MWB
 *   move words backwards
 	GENOP('SHR','WA','2')
 	GENOP('STD')
-	GENOP('LEA','XL','[XL-4]')
-	GENOP('LEA','XR','[XR-4]')
+	GENOP('LEA','XL','[XL-CFP_B]')
+	GENOP('LEA','XR','[XR-CFP_B]')
  	GENREP('MOVSD')
 *	GENOP('REP','MOVSD')
 	GENOP('CLD')				:(OPDONE)
@@ -1419,7 +1424,7 @@ G.DIC   GENOPL(TLABEL,'dd',I.TEXT(I1))               :(DECEND)
 * Microsoft MASM 6.0, it treats "+0.0" as an expression, and
 * then says that real-valued expressions are illegal.
 *
-G.DRC   GENOP('align','4')
+G.DRC   GENOP('align','CFP_B')
 	T1 = I.TEXT(I1)
 	T1 ? FENCE "+" = ""
         GENOP('dd',T1)
@@ -1431,11 +1436,11 @@ G.DTC
 *  CHANGE FIRST AND LAST CHARS TO " (ASSUME / USED IN SOURCE)
 	T1 = I.TEXT(I1)
 	T1 TAB(1) RTAB(1) . T2
-	T3 = REMDR(SIZE(T2),4)
+	T3 = REMDR(SIZE(T2),CFP_C)
         T2 = "'" T2 "'"
 *  Append nulls to complete last word so constant length is multiple
 *  of word word
-        T2 = NE(T3) T2 DUPL(',0',4 - T3)
+        T2 = NE(T3) T2 DUPL(',0',CFP_C - T3)
         GENOPL(TLABEL,'db',T2)              :(OPDONE)
 G.DBC   GENOPL(TLABEL,'dd',GETARG(I1))       :(OPDONE)
 G.EQU   GENOP('equ',I.TEXT(I1))			:(OPDONE)
