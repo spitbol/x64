@@ -435,7 +435,7 @@ stackinit:
 ;         pushad                          ; save all registers for C
 	call	zz_1
 	call	zz_1
-         mov     rax,qword [rsp+32+4]          ; get ordinal
+         mov     rax,qword [rsp+64+4]          ; get ordinal
          mov     rcx,qword [reg_wa]              ; restore registers
  	 mov	 rbx,qword [reg_wb]
          mov     rdx,qword [reg_wc]              ; (also _reg_ia)
