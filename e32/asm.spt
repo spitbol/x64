@@ -330,7 +330,7 @@ COMPDONE DEFS =
 	REGMAP = TABLE(30)
 	REGMAP['XL'] = 'XL';  REGMAP['XT'] = 'XT'
 	REGMAP['XR'] = 'XR';  REGMAP['XS'] = 'XS'
-	REGMAP['WA'] = 'ECX';  REGMAP['WB'] = 'WB'
+	REGMAP['WA'] = 'WA';  REGMAP['WB'] = 'WB'
 	REGMAP['WC'] = 'WC';  REGMAP['IA'] = 'IA'
 	REGMAP['CP'] = 'EBP'
 *	W0 is temp register
@@ -345,7 +345,7 @@ COMPDONE DEFS =
 * REGLOW maps register to identify target, so
 * can extract 'L' part.
 	REGLOW = TABLE(4)
-	REGLOW['ECX'] = 'CL'
+	REGLOW['WA'] = 'CL'
 	REGLOW['WB'] = 'BL'
 	REGLOW['WC'] = 'DL'
 	REGLOW['EAX'] = 'AL'
@@ -721,7 +721,7 @@ IFREG	GE(I.TYPE(IARG),7) LE(I.TYPE(IARG),8)
 .						:F(FRETURN)S(RETURN)
 
 G.FLC
-	T1 = SUBSTR(GETARG(I1),2,1) 'L'
+	T1 = REGLOW[GETARG(I1)]
 	T2 = GENLAB()
 	GENOP('CMP',T1,"'a'")
 	GENOP('JB', T2 )
@@ -1012,7 +1012,7 @@ G.BCT
 	T1 = GETARG(I1)
 	T2 = GETARG(I2)
 	:(G.BCT2)
-	IDENT(T1,'ECX')				:S(G.BCT1)
+	IDENT(T1,'WA')				:S(G.BCT1)
 G.BCT2	GENOP('DEC',T1)
 	GENOP('JNZ',T2)				:(OPDONE)
 G.BCT1	GENOP('LOOP',T2)			:(OPDONE)
@@ -1191,6 +1191,7 @@ G.SCG.W
 *  to name of low part.
 *
 	T1 = REGLOW[GETARG(I1)]
+	OUTPUT = '  G.SCG.W:' GETARG(I1) ':' T1 ':'
 	IDENT(T2,'(XL)')			:S(G.SCG.W.XL)
 	IDENT(T2,'-(XL)')			:S(G.SCG.W.PXL)
 	IDENT(T2,'(XL)+')			:S(G.SCG.W.XLP)
@@ -1269,23 +1270,23 @@ G.LSH
 
 G.RSX	T1 = REGMAP[SUBSTR(I.TEXT(I2),2,2)]
 	IDENT(I.TEXT(I1),'WA')				:S(G.RSX.C)
-	GENOP('XCHG',T1,'ECX')
+	GENOP('XCHG',T1,'WA')
 	GENOP('SHR',GETARG(I1),'CL')
-	GENOP('XCHG',T1,'ECX')				:(OPDONE)
+	GENOP('XCHG',T1,'WA')				:(OPDONE)
 
-G.RSX.C	GENOP('XCHG',T1,'ECX')
+G.RSX.C	GENOP('XCHG',T1,'WA')
 	GENOP('SHR',T1,'CL')
-	GENOP('XCHG',T1,'ECX')				:(OPDONE)
+	GENOP('XCHG',T1,'WA')				:(OPDONE)
 
 G.LSX	T1 = REGMAP[SUBSTR(I.TEXT(I2),2,2)]
 	IDENT(I.TEXT(I1),'WA')				:S(G.LSX.C)
-	GENOP('XCHG',T1,'ECX')
+	GENOP('XCHG',T1,'WA')
 	GENOP('SHL',GETARG(I1),'CL')
-	GENOP('XCHG',T1,'ECX')				:(OPDONE)
+	GENOP('XCHG',T1,'WA')				:(OPDONE)
 
-G.LSX.C	GENOP('XCHG',T1,'ECX')
+G.LSX.C	GENOP('XCHG',T1,'WA')
 	GENOP('SHL',T1,'CL')
-	GENOP('XCHG',T1,'ECX')				:(OPDONE)
+	GENOP('XCHG',T1,'WA')				:(OPDONE)
 
 G.NZB	IFREG(I1)				:S(G.NZB1)
 	GENOP('CMP',GETARG(I1),'0')
@@ -1360,18 +1361,18 @@ G.MVC
 	T1 = GENLAB()
 	GENOPL(T1 ':', 'LODSB')
 	GENOP('STOSB')
-	GENOP('DEC', 'ECX')
+	GENOP('DEC', 'WA')
 	GENOP('JNZ',T1)
 
 G.MVW
-	GENOP('SHR','ECX','2')
+	GENOP('SHR','WA','2')
  	GENREP('MOVSD')
 * 	GENOP('REP','MOVSD')		
 					:(OPDONE)
 
 G.MWB
 *   move words backwards
-	GENOP('SHR','ECX','2')
+	GENOP('SHR','WA','2')
 	GENOP('STD')
 	GENOP('LEA','XL','[XL-4]')
 	GENOP('LEA','XR','[XR-4]')
@@ -1392,10 +1393,10 @@ GENREP
 	L1 = GENLAB()
 	L2 = GENLAB()
 	GENOPL(L1 ':')
-	GENOP('OR','ECX','ECX')
+	GENOP('OR','WA','WA')
 	GENOP('JZ',L2)
 	GENOP(OP)
-	GENOP('DEC','ECX')
+	GENOP('DEC','WA')
 	GENOP('JMP',L1)
 	GENOPL(L2 ':')
 						:(RETURN)

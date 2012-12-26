@@ -10,6 +10,11 @@
 	%define	XT	ESI
 	%define XR	EDI
 	%define XS	ESP
+	%define WA	ECX
+	%define WB	EBX
+	%define WC	EDX
+	%define IA	EDX
+	%define W0	EAX
 
         extern LDR_
         extern STR_
