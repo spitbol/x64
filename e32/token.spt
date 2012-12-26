@@ -25,8 +25,8 @@
 *	where:
 *	 infile    - Minimal file name, less .min extension
 *	 condfiile - Conditional file name, less .cnd extension
-*	 outfile   - Output file name, less .lex extension.
-*		     Default is infile.lex.
+*	 outfile   - Output file name, less .tok extension.
+*		     Default is infile.tok.
 *	 <sep>	   - ; or :
 *
 *	note: <sep>outfile component is optional.
@@ -459,7 +459,7 @@
 
 *  START EXECUTION
 *
-*	Reads for xxx.min, writes to xxx.lex, where xxx is a command line parameter.
+*	Reads for xxx.min, writes to xxx.tok, where xxx is a command line parameter.
 *	The command line parameter may optionally be expressed as xxx;yyy, where
 *	yyy.cnd is the name of a file containing .DEFs to override those in
 *	file xxx.min.
@@ -478,11 +478,13 @@
 	FILENAMC = DIFFER(FILENAMC) FILENAMC '.cnd'
         OUTPUT = IDENT(PARMS) "Need file name (.min)" :S(END)
 
+        OUTPUT = 'MINIMAL translator, pass 1 ' VERSION
+.		' ' TRANDATE
 	FILENAMI = PARMS '.min'
-        OUTPUT = '  Input MINIMAL file: ' FILENAMI
-	FILENAMO = (IDENT(FILENAMO) PARMS, FILENAMO) '.lex'
-        OUTPUT = '  Output TOKEN file: ' FILENAMO
-        OUTPUT = DIFFER(FILENAMC) '  Condition definition file: ' FILENAMC
+        OUTPUT = 'Input MINIMAL file: ' FILENAMI
+	FILENAMO = (IDENT(FILENAMO) PARMS, FILENAMO) '.tok'
+        OUTPUT = 'Output TOKEN file: ' FILENAMO
+        OUTPUT = DIFFER(FILENAMC) 'Condition definition file: ' FILENAMC
 *   FLCFLAG  = REPLACE( INPUT,'y','Y' )
 	FLCFLAG = 'N'
 	FLCFLAG = 'Y'
@@ -914,18 +916,18 @@ G.ESW2  IFFAR =					:(DSGEN)
 *
 G.END   OUTSTMT(,'END',,,,COMMENT)
 	(NE(LEVEL) ERROR("Unclosed IF conditional clause"))
-        OUTPUT = '  *** TRANSLATION COMPLETE ***'
-        OUTPUT = '  ' NLINES ' LINES READ.'
-        OUTPUT = '  ' NSTMTS ' STATEMENTS PROCESSED.'
-        OUTPUT = '  ' NTARGET ' TARGET CODE LINES PRODUCED.'
-        OUTPUT = '  ' NERRORS ' ERRORS OCCURRED.'
+        OUTPUT = '*** TRANSLATION COMPLETE ***'
+        OUTPUT = NLINES ' LINES READ.'
+        OUTPUT = NSTMTS ' STATEMENTS PROCESSED.'
+        OUTPUT = NTARGET ' TARGET CODE LINES PRODUCED.'
+        OUTPUT = NERRORS ' ERRORS OCCURRED.'
         OUTPUT =
-.	  DIFFER(LASTERROR) '  THE LAST ERROR WAS IN LINE ' LASTERROR
+.	  DIFFER(LASTERROR) 'THE LAST ERROR WAS IN LINE ' LASTERROR
 	&CODE   = NE(NERRORS) 2001
-        OUTPUT = '  ' COLLECT() * 5 ' FREE BYTES'
+        OUTPUT = COLLECT() * 5 ' FREE BYTES'
 	T = CONVERT(PRCTAB,'ARRAY')		:F(G.END.2)
 *  Here if procedures declared by INP but not by PRC
-        OUTPUT = '  Procedures with INP, no PRC'
+        OUTPUT = 'Procedures with INP, no PRC'
 	I = 1
 G.END.1 OUTPUT = T[I,1] ' ' T[I,2]            :F(G.END.2)
 	I = I + 1				:(G.END.1)

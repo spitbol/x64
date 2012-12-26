@@ -50,7 +50,7 @@
 *  To run under Spitbol:
 *       spitbol -u "<file>:<machine>[:flag:...:flag]" codlinux.spt
 *
-*	reads <file>.lex	containing tokenized source code
+*	reads <file>.tok	containing tokenized source code
 *       writes <file>.s         with 80386 assembly code
 *	also writes <file>.err	with ERR and ERB error messages
 *	using <machine>.def	to provide machine-specific information
@@ -232,11 +232,12 @@
 *  Get file name
 *
 	TRANSDATE = DATE()
+        OUTPUT = 'MINIMAL to 80386 Translator'
 *
 *  Default the parameter string if none present
 *
-        PARMS = (DIFFER(HOST(0)) HOST(0), "s:s:compress")
-        OUTPUT = IDENT(PARMS) "Filename (.lex) required" :S(END)
+        PARMS = (DIFFER(HOST(0)) HOST(0), "v37:linux:compress")
+        OUTPUT = IDENT(PARMS) "Filename (.tok) required" :S(END)
 
 *
 * Get machine definition file name following token file name, and flags.
@@ -252,7 +253,7 @@
 FLGS	FLAGS ? ((LEN(1) BREAK(';:')) . FLAG LEN(1)) |
 +	 ((LEN(1) REM) . FLAG) =			:F(FLGS2)
 	FLAG = REPLACE(FLAG,LCASE,UCASE)
-        OUTPUT = "  Flag: " FLAG
+        OUTPUT = "Flag: " FLAG
 	$FLAG = 1					:(FLGS)
 *
 *  Open machine definition file
@@ -266,7 +267,7 @@ FLGS2	FILENAMD = MACHINE '.def'
 *  statements and comments only.  Continuation lines are not processed
 *  by this code (but could be easily handled).
 *
-DEFOK   OUTPUT = "  Machine definition file: " FILENAMD
+DEFOK   OUTPUT = "Machine definition file: " FILENAMD
 	DEFS =
 DEFLOOP	LINE = DEFFILE					:F(DEFCOMP)
 	LINE '*'					:S(DEFLOOP)
@@ -341,15 +342,6 @@ COMPDONE DEFS =
 	REG.WA = REGMAP['WA']
 	REG.CP = REGMAP['CP']
 	W0 = REGMAP['W0']
-
-* REGLOW maps register to identify target, so
-* can extract 'L' part.
-	REGLOW = TABLE(4)
-	REGLOW['ECX'] = 'CL'
-	REGLOW['EBX'] = 'BL'
-	REGLOW['EDX'] = 'DL'
-	REGLOW['EAX'] = 'AL'
-
 *  Other definitions that are dependent upon things defined in the
 *  machine definition file, and cannot be built until after the definition
 *  file has been read in.
@@ -364,10 +356,10 @@ COMPDONE DEFS =
 *
 	STRIP_COMMENT = (DIFFER(COMMENTS) 'N', 'Y')
 
-	FILENAMI = PARMS '.lex'
+	FILENAMI = PARMS '.tok'
         INPUT(.INFILE,1,FILENAMI)                     :S(INPUTOK)
-        OUTPUT = '  Cannot open TOKEN file: ' FILENAMI  :(END)
-INPUTOK OUTPUT = '  Input LEX file: ' FILENAMI
+        OUTPUT = 'Cannot open TOKEN file: ' FILENAMI  :(END)
+INPUTOK OUTPUT = 'Input TOKEN file: ' FILENAMI
 *
 *
 *
@@ -770,12 +762,12 @@ MOV.2
 
 * Odd/Even tests.  If W reg, use low byte of register.
 G.BOD	T1 = GETARG(I1)
- 	T1 = EQ(I.TYPE(I1),8) REGLOW[T1]
+	T1 = EQ(I.TYPE(I1),8) SUBSTR(T1,2,1) 'L'
 	GENOP('TEST',T1,'1')
 	GENOP('JNE',GETARG(I2))			:(OPDONE)
 
 G.BEV	T1 = GETARG(I1)
-	T1 = EQ(I.TYPE(I1),8) REGLOW[T1]
+	T1 = EQ(I.TYPE(I1),8) SUBSTR(T1,2,1) 'L'
 	GENOP('TEST',T1,'1')
 	GENOP('JE',GETARG(I2))			:(OPDONE)
 
@@ -1190,7 +1182,7 @@ G.SCG.W
 *  Here if moving character from work register, convert T1
 *  to name of low part.
 *
-	T1 = REGLOW[GETARG(I1)]
+	T1 = SUBSTR(REGMAP[I.TEXT(I1)],2,1) 'L'
 	IDENT(T2,'(XL)')			:S(G.SCG.W.XL)
 	IDENT(T2,'-(XL)')			:S(G.SCG.W.PXL)
 	IDENT(T2,'(XL)+')			:S(G.SCG.W.XLP)
@@ -1517,7 +1509,7 @@ G.SEC.7
 
 *	allow for some extra cases in case of max.err bad estimate
 	N1 = MAX.ERR + 8
-	OUTPUT = '  MAX.ERR ' MAX.ERR
+	OUTPUT = 'MAX.ERR ' MAX.ERR
 	GENOPL('ERR_:','xchg',REG.WA,'DWORD [' RCODE ']')
 						:(OPDONE)
 
@@ -1570,7 +1562,7 @@ G.END.2
 * it to perform jump optimization.
 	ENDFILE(1)
 	ENDFILE(2)
-        OUTPUT = "  Code generation complete, begin jump optimization"
+        OUTPUT = "Code generation complete, begin jump optimization"
 
 	INPUT(.INFILE,1,FILENAMO)			:S(G.END.3)
         OUTPUT = 'Cannot reopen TEMP file: ' FILENAMO :(END)
@@ -1578,7 +1570,7 @@ G.END.2
 G.END.3 FILENAMO = PARMS ".s"
         OUTPUT(.OUTFILE,2,FILENAMO '[-m10 -n0]')            :S(G.END.4)
         OUTPUT = 'Cannot open ASSEMBLY file: ' FILENAMO :(END)
-G.END.4 OUTPUT = '  Output ASSEMBLY file: ' FILENAMO
+G.END.4 OUTPUT = 'Output ASSEMBLY file: ' FILENAMO
 
 ***************************************************************************
 * Jump optimization
@@ -1615,23 +1607,25 @@ G.END.6	OUTFILE = LINE					:(G.END.5)
 G.END.7 ENDFILE(1)
 	ENDFILE(2)
 	ENDFILE(3)
-        OUTPUT = '  ' '*** TRANSLATION COMPLETE ***'
-        OUTPUT = '  ' NLINES ' LINES READ.'
-        OUTPUT = '  ' NSTMTS ' STATEMENTS PROCESSED.'
-        OUTPUT = '  ' NTARGET ' TARGET CODE LINES PRODUCED.'
-        OUTPUT = '  ' NOPTIM1 ' "OR" optimizations performed.'
-        OUTPUT = '  ' NOPTIM2 ' jumps shortened.'
-        OUTPUT = '  ' MAX.ERR ' MAXIMUM ERR/ERB NUMBER.'
-        OUTPUT = '  ' PRC.COUNT1 ' PRC COUNT.'
-        OUTPUT = '  ' GT(PRC.COUNT,PRC.COUNT1)
+	HOST(1,"touch " PARMS ".err")
+	HOST(1,"del " PARMS ".tmp")
+        OUTPUT = '*** TRANSLATION COMPLETE ***'
+        OUTPUT = NLINES ' LINES READ.'
+        OUTPUT = NSTMTS ' STATEMENTS PROCESSED.'
+        OUTPUT = NTARGET ' TARGET CODE LINES PRODUCED.'
+        OUTPUT = NOPTIM1 ' "OR" optimizations performed.'
+        OUTPUT = NOPTIM2 ' jumps shortened.'
+        OUTPUT = MAX.ERR ' MAXIMUM ERR/ERB NUMBER.'
+        OUTPUT = PRC.COUNT1 ' PRC COUNT.'
+        OUTPUT = GT(PRC.COUNT,PRC.COUNT1)
 .	  'DIFFERING COUNTS FOR N-PROCEDURES:'
 .	  ' INP ' PRC.COUNT1 ' PRC ' PRC.COUNT
-        OUTPUT = '  ' NERRORS ' ERRORS OCCURRED.'
+        OUTPUT = NERRORS ' ERRORS OCCURRED.'
         OUTPUT =
 	ERRFILE = '* ' MAX.ERR ' MAXIMUM ERR/ERB NUMBER'
 	ERRFILE  = '* ' PRC.COUNT ' PRC COUNT'
 .		DIFFER(LASTERROR) 'THE LAST ERROR WAS IN LINE ' LASTERROR
 	&CODE   = NE(NERRORS) 2001
-        OUTPUT = '  ' COLLECT() ' FREE WORDS'
+        OUTPUT = COLLECT() ' FREE WORDS'
 	:(END)
 END
