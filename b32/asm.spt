@@ -86,6 +86,8 @@
 *       These should agree with values used in translator	
 	CFP_B = 4
 	CFP_C = 4
+	LOG_CFP_B = '2'
+	LOG_CFP_C = '2'
 *
 *  Data structures
 *
@@ -513,7 +515,7 @@ GETARG.C.2 GETARG = L1			:(RETURN)
 
 * WLBL, CLBL
 GETARG.C.3
-GETARG.C.4 GETARG = 'DWORD [' L1 ']'     :(RETURN)
+GETARG.C.4 GETARG = 'M_WORD [' L1 ']'     :(RETURN)
 
 * ELBL, PLBL
 GETARG.C.5
@@ -528,7 +530,7 @@ GETARG.C.8
 GETARG.C.9
 	L1 LEN(1) LEN(2) . L2
 	L2 = REGMAP[L2]
-	GETARG = 'DWORD [' L2 ']'		:(RETURN)
+	GETARG = 'M_WORD [' L2 ']'		:(RETURN)
 
 * (X)+, Register indirect, post increment
 * Use lea reg,[reg+CFP_B] unless reg is esp, since it takes an extra byte.
@@ -537,14 +539,14 @@ GETARG.C.9
 GETARG.C.10
 	L1 = SUBSTR(L1,2,2)
 	T1 = REGMAP[L1]
-	GETARG = 'DWORD [' T1 ']'
+	GETARG = 'M_WORD [' T1 ']'
 	(IDENT(L1,'XS') GENAOP(TSTMT(,'ADD',T1,'CFP_B'))) :S(RETURN)
 	GENAOP(TSTMT(,'LEA',T1,'[' T1 '+CFP_B]'))	:(RETURN)
 
 *  -(X), Register indirect, pre decrement
 GETARG.C.11
 	T1 = REGMAP[SUBSTR(L1,3,2)]
-	GETARG = 'DWORD [' T1 ']'
+	GETARG = 'M_WORD [' T1 ']'
 	GENBOP(TSTMT(,'LEA',T1,'[' T1 '-CFP_B]'))	:(RETURN)
 
 * INT(X)
@@ -552,13 +554,13 @@ GETARG.C.11
 GETARG.C.12
 GETARG.C.13
 	L1 BREAK('(') . T1 '(' LEN(2) . T2
-	GETARG = 'DWORD [(CFP_B*' T1 ')+' REGMAP[T2] ']'   	:(RETURN)
+	GETARG = 'M_WORD [(CFP_B*' T1 ')+' REGMAP[T2] ']'   	:(RETURN)
 
 *  NAME(X), WHERE NAME IS IN WORKING SECTION
 GETARG.C.14
 GETARG.C.15
 	L1 BREAK('(') . T1 '(' LEN(2) . T2
-	GETARG = 'DWORD [' T1 '+'  REGMAP[T2] ']'	:(RETURN)
+	GETARG = 'M_WORD [' T1 '+'  REGMAP[T2] ']'	:(RETURN)
 
 * Signed Integer
 GETARG.C.16 GETARG = L1				:(RETURN)
@@ -791,7 +793,7 @@ G.BSW	T1 = GETARG(I1)
 	GENOP('CMP',T1,GETARG(I2))
 	GENOP('JGE',GETARG(I3))
 * Here after default case.
-G.BSW1	GENOP('JMP', 'DWORD [' T2 '+' T1 '*CFP_B]') 
+G.BSW1	GENOP('JMP', 'M_WORD [' T2 '+' T1 '*CFP_B]') 
         GENOP('segment .data')
         GENOPL(T2 ':')                  :(OPDONE)
 
@@ -842,7 +844,7 @@ G.JSR
 	JSR_CALLS = JSR_CALLS +  1
 	JSR_LABEL = 'CALL_' JSR_CALLS
 	JSR_LABEL_NORM = JSR_LABEL 
-	GENOP('DEC','DWORD [' RCODE ']')
+	GENOP('DEC','M_WORD [' RCODE ']')
 	GENOP('JS',JSR_LABEL_NORM)
 
 *	generate branch around for ppms that will follow
@@ -874,13 +876,13 @@ G.PPM.LOOP.NEXT
 	EQ(JSR_COUNT) GENOPL(JSR_LABEL_NORM ':') :(OPDONE)
 G.PPM.LOOP
 	LAB_NEXT = GENLAB()
-	GENOP('DEC','DWORD [' RCODE ']')
+	GENOP('DEC','M_WORD [' RCODE ']')
 	GENOP('JNS',LAB_NEXT)
 	IDENT(INCODE,'PPM')			:S(G.PPM.LOOP.PPM)
 *  Here if error exit via EXI. Set RCODE to exit code and jump 
 *  to error handler with error code in RCODE
 G.PPM.LOOP.ERR
-	GENOP('MOV','DWORD [' RCODE ']', +T1)
+	GENOP('MOV','M_WORD [' RCODE ']', +T1)
 	GENOP('JMP','ERR_')
 						:(G.PPM.LOOP.NEXT)
 G.PPM.LOOP.PPM
@@ -911,19 +913,19 @@ G.PRC.R						:(OPDONE)
 G.PRC.N
 *  Store return address in reserved location
 	PRC.COUNT = PRC.COUNT + 1
-	GENOP('POP', 'DWORD [' PRCENT(PRC.COUNT) ']')		:(OPDONE)
+	GENOP('POP', 'M_WORD [' PRCENT(PRC.COUNT) ']')		:(OPDONE)
 
 G.EXI	
         T1 = GETARG(I1); T2 = PRC.TYPE; T3 = I.TEXT(I1)
 *  If type R or E, and no exit parameters, just return
  	DIFFER(T2,'N') EQ(PRC.ARGS)	GENOP('RET')	:S(OPDONE)
         T3 = IDENT(T3) '0'
-    	GENOP('MOV','DWORD [' RCODE ']',+T3)
+    	GENOP('MOV','M_WORD [' RCODE ']',+T3)
 	IDENT(T2,'N')				:S(G.EXI.1)
 	GENOP('RET')				:(OPDONE)
 G.EXI.1
 
-	GENOP('MOV','W0', 'DWORD ['  PRCENT(PRC.COUNT) ']' )
+	GENOP('MOV','W0', 'M_WORD ['  PRCENT(PRC.COUNT) ']' )
 	GENOP('JMP','W0')
 						:(OPDONE)
 G.ENP   GENOP()					:(OPDONE)
@@ -931,7 +933,7 @@ G.ENP   GENOP()					:(OPDONE)
 G.ERB
 	ERRFILE =  I.TEXT(I1) ' ' I.TEXT(I2)
 *	Set RCODE to error code and branch to error handler
-	GENOP('MOV', 'DWORD [' RCODE ']',  +(I.TEXT(I1)))
+	GENOP('MOV', 'M_WORD [' RCODE ']',  +(I.TEXT(I1)))
  	GENOP('JMP','ERR_')
 						:(OPDONE)
 
@@ -1096,7 +1098,7 @@ G.DVR
 	TYP1 = I.TYPE(I1)
 * 	OUTPUT = 'g.rop before dword test ' t1 ' ' typ1
 *	t1 'dword [' break(']') . leaarg rem
-*	T1 'DWORD' =
+*	T1 'M_WORD' =
 	T1 = TRIM(T1)
 *	OUTPUT = 'g.rop after dword test ' t1 ' leaarg ' leaarg
 *	(GE(TYP1,9) LE(TYP1,15) GENOP('LEA','W0', T1),
@@ -1271,7 +1273,9 @@ G.RSH
 G.LSH
 	GENOP('SHL',GETARG(I1),GETARG(I2))		:(OPDONE)
 
-G.RSX	T1 = REGMAP[SUBSTR(I.TEXT(I2),2,2)]
+G.RSX	
+	ERROR('RSX NOT SUPPORTED')
+	T1 = REGMAP[SUBSTR(I.TEXT(I2),2,2)]
 	IDENT(I.TEXT(I1),'WA')				:S(G.RSX.C)
 	GENOP('XCHG',T1,'WA')
 	GENOP('SHR',GETARG(I1),'CL')
@@ -1281,7 +1285,9 @@ G.RSX.C	GENOP('XCHG',T1,'WA')
 	GENOP('SHR',T1,'CL')
 	GENOP('XCHG',T1,'WA')				:(OPDONE)
 
-G.LSX	T1 = REGMAP[SUBSTR(I.TEXT(I2),2,2)]
+G.LSX	
+	ERROR('LSX NOT SUPPORTED')
+	T1 = REGMAP[SUBSTR(I.TEXT(I2),2,2)]
 	IDENT(I.TEXT(I1),'WA')				:S(G.LSX.C)
 	GENOP('XCHG',T1,'WA')
 	GENOP('SHL',GETARG(I1),'CL')
@@ -1319,8 +1325,10 @@ G.ZGB	T1 = GETARG(I1)			;* 32-bit register name, e.g., EDX
 G.ZZZ
  	GENOP('ZZZ',GETARG(I1))
 						:(OPDONE)
-G.WTB   GENOP('SAL',GETARG(I1),'2')		:(OPDONE)
-G.BTW   GENOP('SHR',GETARG(I1),'2')		:(OPDONE)
+G.WTB   GENOP('SAL',GETARG(I1),LOG_CFP_B)	
+						:(OPDONE)
+G.BTW   GENOP('SHR',GETARG(I1),LOG_CFP_B)
+						:(OPDONE)
 
 G.MTI	(IDENT(I.TEXT(I1),'(XS)+') GENOP('POP',REG.IA)) :S(OPDONE)
 	GENOP('MOV',REG.IA,GETARG(I1))		:(OPDONE)
@@ -1337,10 +1345,10 @@ G.MFI1	IDENT(I.TEXT(I1),'WC') GENOP()		:S(OPDONE)
 	GENOP('MOV',GETARG(I1),REG.IA)		:(OPDONE)
 
 G.CTW
-*  assume four chars per word
+*  assume CFP_C chars per word
 	T1 = GETARG(I1)
-	GENOP('ADD',T1,'(CFP_B-1)+CFP_B*' I.TEXT(I2))
-	GENOP('SHR',T1,'2')		:(OPDONE)
+	GENOP('ADD',T1,'(CFP_C-1)+CFP_C*' I.TEXT(I2))
+	GENOP('SHR',T1,LOG_CFP_C)		:(OPDONE)
 
 G.CTB
 *  use add w,val*CFP.B+3; and w,-CFP_B
@@ -1368,14 +1376,14 @@ G.MVC
 	GENOP('JNZ',T1)
 
 G.MVW
-	GENOP('SHR','WA','2')
+	GENOP('SHR','WA',LOG_CFP_B)
  	GENREP('MOVSD')
 * 	GENOP('REP','MOVSD')		
 					:(OPDONE)
 
 G.MWB
 *   move words backwards
-	GENOP('SHR','WA','2')
+	GENOP('SHR','WA',LOG_CFP_B)
 	GENOP('STD')
 	GENOP('LEA','XL','[XL-CFP_B]')
 	GENOP('LEA','XR','[XR-CFP_B]')
@@ -1522,7 +1530,7 @@ G.SEC.7
 *	allow for some extra cases in case of max.err bad estimate
 	N1 = MAX.ERR + 8
 	OUTPUT = '  MAX.ERR ' MAX.ERR
-	GENOPL('ERR_:','xchg',REG.WA,'DWORD [' RCODE ']')
+	GENOPL('ERR_:','xchg',REG.WA,'M_WORD [' RCODE ']')
 						:(OPDONE)
 
 

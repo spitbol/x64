@@ -34,6 +34,7 @@
 	%define WC_L  	 DL
 	%define IA	EDX
 	%define W0	EAX
+	%define M_WORD	DWORD
 
 	extern	_rc_
 	%define AT_TRACE
