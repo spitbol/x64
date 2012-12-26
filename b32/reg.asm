@@ -1,12 +1,13 @@
--TITLE MINCOD: PHASE 2 TRANSLATION FROM MINIMAL TOKENS TO 80386 CODE
+-TITLE ASM: PHASE 2 TRANSLATION FROM MINIMAL TOKENS TO X32 ASSEMBLY
 -STITL Description
 * Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+* Copyright 2012 David Shields
 * 
 * This file is part of Macro SPITBOL.
 * 
 *     Macro SPITBOL is free software: you can redistribute it and/or modify
 *     it under the terms of the GNU General Public License as published by
-*     the Free Software Foundation, either version 3 of the License, or
+*     the Free Software Foundation, either version 2 of the License, or
 *     (at your option) any later version.
 * 
 *     Macro SPITBOL is distributed in the hope that it will be useful,
@@ -18,15 +19,15 @@
 *     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 *
 *
-*  This program takes input file in MINIMAL token form and
-*  produces assembly code for INTEL 80386 processor.
+*  This program takes input file in MINIMAL lexeme form and
+*  produces assembly code for an x32 processor.
 *  The program obtains the name of the file to be translated from the
 *  command line string in HOST(0).  Options relating to the processing
 *  of comments can be changed by modifying the source.
 *
-*  In addition to the MINIMAL token file, the program requires the
-*  name of a "machine definition file" that contains code specific
-*  to a particular 80386 assembler.
+*  In addition to the MINIMAL lexeme file, the program requires the
+*  name of a "system definition file" that contains code specific
+*  to a particular version.
 *
 *  You may also specify option flags on the command line to control the
 *  code generation.  The following flags are processed:
@@ -48,10 +49,10 @@
 *  PC-SPITBOL translator by David Shields.
 *
 *  To run under Spitbol:
-*       spitbol -u "<file>:<machine>[:flag:...:flag]" codlinux.spt
+*       spitbol -u "<file>:<machine>[:flag:...:flag]" asm.spt
 *
 *	reads <file>.lex	containing tokenized source code
-*       writes <file>.s         with 80386 assembly code
+*       writes <file>.s         with x32 assembly code
 *	also writes <file>.err	with ERR and ERB error messages
 *	using <machine>.def	to provide machine-specific information
 *       parts of <machine>.hdr  are prepended and appended to <file>.s
@@ -59,7 +60,7 @@
 *	also reads <file>.pub	for debug symbols to be declared public
 *
 *  Example:
-*       spitbol -u v37:dos:compress codlinux.spt
+*       spitbol -u v37:dos:compress asm.spt
 *
 *
 *  Revision History:
@@ -232,6 +233,7 @@
 *  Get file name
 *
 	TRANSDATE = DATE()
+        OUTPUT = 'MINIMAL to x32 translator'
 *
 *  Default the parameter string if none present
 *
@@ -239,7 +241,7 @@
         OUTPUT = IDENT(PARMS) "Filename (.lex) required" :S(END)
 
 *
-* Get machine definition file name following token file name, and flags.
+* Get machine definition file name following lexeme file name, and flags.
 *
 	PARMS ? BREAK(';:') . PARMS LEN(1) (BREAK(';:') | REM) . MACHINE
 +		((LEN(1) REM . FLAGS) | '')
@@ -252,7 +254,7 @@
 FLGS	FLAGS ? ((LEN(1) BREAK(';:')) . FLAG LEN(1)) |
 +	 ((LEN(1) REM) . FLAG) =			:F(FLGS2)
 	FLAG = REPLACE(FLAG,LCASE,UCASE)
-        OUTPUT = "  Flag: " FLAG
+        OUTPUT = "Flag: " FLAG
 	$FLAG = 1					:(FLGS)
 *
 *  Open machine definition file
@@ -266,7 +268,7 @@ FLGS2	FILENAMD = MACHINE '.def'
 *  statements and comments only.  Continuation lines are not processed
 *  by this code (but could be easily handled).
 *
-DEFOK   OUTPUT = "  Machine definition file: " FILENAMD
+DEFOK   OUTPUT = "Machine definition file: " FILENAMD
 	DEFS =
 DEFLOOP	LINE = DEFFILE					:F(DEFCOMP)
 	LINE '*'					:S(DEFLOOP)
@@ -328,28 +330,28 @@ COMPDONE DEFS =
 *  register/memory-location name.
 *
 	REGMAP = TABLE(30)
-	REGMAP['XL'] = 'ESI';  REGMAP['XT'] = 'ESI'
-	REGMAP['XR'] = 'EDI';  REGMAP['XS'] = 'ESP'
-	REGMAP['WA'] = 'ECX';  REGMAP['WB'] = 'EBX'
-	REGMAP['WC'] = 'EDX';  REGMAP['IA'] = 'EDX'
+	REGMAP['XL'] = 'XL';  REGMAP['XT'] = 'XL'
+	REGMAP['XR'] = 'XR';  REGMAP['XS'] = 'ESP'
+	REGMAP['WA'] = 'WA';  REGMAP['WB'] = 'WB'
+	REGMAP['WC'] = 'WC';  REGMAP['IA'] = 'WC'
 	REGMAP['CP'] = 'EBP'
 *	W0 is temp register
-	REGMAP['W0'] = 'EAX'
+	REGMAP['W0'] = 'W0'
+
+* REGLOW maps register to identify target, so
+* can extract 'L' part.
+	REGLOW = TABLE(3)
+	REGLOW['WA'] = 'WA_L'
+	REGLOW['WB'] = 'WB_L'
+	REGLOW['WC'] = 'WC_L'
+	REGLOW['W0'] = 'WA_L'
+
 
 *  Quick reference:
 	REG.IA = REGMAP['IA']
 	REG.WA = REGMAP['WA']
 	REG.CP = REGMAP['CP']
 	W0 = REGMAP['W0']
-
-* REGLOW maps register to identify target, so
-* can extract 'L' part.
-	REGLOW = TABLE(4)
-	REGLOW['ECX'] = 'CL'
-	REGLOW['EBX'] = 'BL'
-	REGLOW['EDX'] = 'DL'
-	REGLOW['EAX'] = 'AL'
-
 *  Other definitions that are dependent upon things defined in the
 *  machine definition file, and cannot be built until after the definition
 *  file has been read in.
@@ -366,8 +368,8 @@ COMPDONE DEFS =
 
 	FILENAMI = PARMS '.lex'
         INPUT(.INFILE,1,FILENAMI)                     :S(INPUTOK)
-        OUTPUT = '  Cannot open TOKEN file: ' FILENAMI  :(END)
-INPUTOK OUTPUT = '  Input LEX file: ' FILENAMI
+        OUTPUT = 'Cannot open TOKEN file: ' FILENAMI  :(END)
+INPUTOK OUTPUT = 'Input TOKEN file: ' FILENAMI
 *
 *
 *
@@ -600,7 +602,7 @@ MEMMEM
 *  here if memory-memory case, load first argument
   T1 = GETARG(I1)
   I1 = MINARG(8,'W0')
-  GENOP('MOV','EAX',T1)				:(RETURN)
+  GENOP('MOV','W0',T1)				:(RETURN)
 
 -STITL PRCENT(N)
 PRCENT PRCENT = 'PRC_' '+'  (4 * ( N - 1)) :(RETURN)
@@ -723,6 +725,8 @@ IFREG	GE(I.TYPE(IARG),7) LE(I.TYPE(IARG),8)
 G.FLC
 	T1 = SUBSTR(GETARG(I1),2,1) 'L'
 	T2 = GENLAB()
+*	GENOP('MOV','DWORD[at_num]','EAX')
+* 	GENOP('CALL','at_note3')
 	GENOP('CMP',T1,"'a'")
 	GENOP('JB', T2 )
 	GENOP('CMP',T1,"'z'")
@@ -739,7 +743,7 @@ G.MOV
 *	xchg ax,Tx
 *  and also MOV (XL)+,NAME as
 *	lodsw
-*	mov NAME,EAX
+*	mov NAME,W0
 *  NEED TO PROCESS MEMORY-MEMORY CASE
 *  CHANGE 'MOV (XS)+,A' TO 'POP A'
 *  CHANGE 'MOV A,-(XS)' TO 'PUSH A'
@@ -756,21 +760,21 @@ MOV.XTP
 MOV.XLP
 	IDENT(T2,'(XR)+') GENOP('MOVSD')	:S(OPDONE)
 	GENOP('LODSD')
-	IDENT(T2,'-(XS)') GENOP('PUSH','EAX')	:S(OPDONE)
-	GENOP('MOV',GETARG(I2),'EAX')		:(OPDONE)
+	IDENT(T2,'-(XS)') GENOP('PUSH','W0')	:S(OPDONE)
+	GENOP('MOV',GETARG(I2),'W0')		:(OPDONE)
 MOV.XSP
 	IDENT(I.TEXT(I2),'(XR)+')		:S(MOV.XSPRP)
 	GENOP('POP',GETARG(I2))			:(OPDONE)
-MOV.XSPRP GENOP('POP','EAX')
+MOV.XSPRP GENOP('POP','W0')
 	GENOP('STOSD')				:(OPDONE)
-MOV.XRP GENOP('MOV','EAX',GETARG(I1))
+MOV.XRP GENOP('MOV','W0',GETARG(I1))
 	GENOP('STOSD')				:(OPDONE)
 MOV.2
 	GENOP('PUSH',GETARG(I1))		:(OPDONE)
 
 * Odd/Even tests.  If W reg, use low byte of register.
 G.BOD	T1 = GETARG(I1)
- 	T1 = EQ(I.TYPE(I1),8) REGLOW[T1]
+	T1 = EQ(I.TYPE(I1),8) REGLOW[T1]
 	GENOP('TEST',T1,'1')
 	GENOP('JNE',GETARG(I2))			:(OPDONE)
 
@@ -919,8 +923,8 @@ G.EXI
 	GENOP('RET')				:(OPDONE)
 G.EXI.1
 
-	GENOP('MOV','EAX', 'DWORD ['  PRCENT(PRC.COUNT) ']' )
-	GENOP('JMP','EAX')
+	GENOP('MOV','W0', 'DWORD ['  PRCENT(PRC.COUNT) ']' )
+	GENOP('JMP','W0')
 						:(OPDONE)
 G.ENP   GENOP()					:(OPDONE)
 
@@ -935,12 +939,12 @@ G.ERB
 G.ICV   GENOP('INC',GETARG(I1))    :(OPDONE)
 G.DCV   GENOP('DEC',GETARG(I1))    :(OPDONE)
 
-G.ZER	IDENT(I.TEXT(I1),'(XR)+') GENOP('XOR','EAX','EAX')
+G.ZER	IDENT(I.TEXT(I1),'(XR)+') GENOP('XOR','W0','W0')
 +		GENOP('STOSD')			:S(OPDONE)
 	IFREG(I1)				:S(G.ZER1)
 	IDENT(I.TEXT(I1),'-(XS)')		:S(G.ZER.XS)
-	GENOP('XOR','EAX','EAX')
-	GENOP('MOV',GETARG(I1),'EAX')		:(OPDONE)
+	GENOP('XOR','W0','W0')
+	GENOP('MOV',GETARG(I1),'W0')		:(OPDONE)
 G.ZER1	T1 = GETARG(I1)
 	GENOP('XOR',T1,T1)			:(OPDONE)
 G.ZER.XS GENOP('PUSH','0')			:(OPDONE)
@@ -1012,7 +1016,7 @@ G.BCT
 	T1 = GETARG(I1)
 	T2 = GETARG(I2)
 	:(G.BCT2)
-	IDENT(T1,'ECX')				:S(G.BCT1)
+	IDENT(T1,'WA')				:S(G.BCT1)
 G.BCT2	GENOP('DEC',T1)
 	GENOP('JNZ',T2)				:(OPDONE)
 G.BCT1	GENOP('LOOP',T2)			:(OPDONE)
@@ -1021,15 +1025,26 @@ G.AOV   GENOP('ADD',GETARG(I2),GETARG(I1))
 	GENOP('JC',GETARG(I3))			:(OPDONE)
 G.LCP
 *  Use CP for code pointer.
-	GENOP('MOV',REG.CP,GETARG(I1))		:(OPDONE)
-G.SCP   GENOP('MOV',GETARG(I1),REG.CP)		:(OPDONE)
+	GENOP('MOV','DWORD [MINCP]',GETARG(I1))		
+						:(OPDONE)
+
+G.SCP   
+	GENOP('MOV',GETARG(I1),'DWORD [MINCP]')
+						:(OPDONE)
 G.LCW
-*  Should be able to get LODSD; XCHG EAX,GETARG(I1)
-	GENOP('MOV',GETARG(I1),'[' REG.CP ']')
-	GENOP('ADD',REG.CP,'4')			:(OPDONE)
+*  Should be able to get LODSD; XCHG W0,GETARG(I1)
+	GENOP('MOV',W0,'DWORD [MINCP]')
+	GENOP('MOV',GETARG(I1),'[' W0 ']')
+	GENOP('ADD',W0,'4')			
+	GENOP('MOV','DWORD [MINCP]',W0)
+						:(OPDONE)
 
 
-G.ICP   GENOP('ADD',REG.CP,'4')			:(OPDONE)
+G.ICP   	
+	GENOP('MOV',W0,'DWORD [MINCP]')
+	GENOP('ADD',W0,'4')
+	GENOP('MOV','DWORD [MINCP]',W0)
+						:(OPDONE)
 
 *  INTEGER ACCUMULATOR KEPT IN WDX (WC)
 G.LDI	GENOP('MOV',REG.IA,GETARG(I1))		:(OPDONE)
@@ -1043,7 +1058,7 @@ G.SBI   GENOP('SUB',REG.IA,GETARG(I1))		:(OPDONE)
 G.DVI
 G.RMI
 *	Move argument to EAX, call procedure
-	GENOP('MOV','EAX',GETARG(I1))
+	GENOP('MOV','W0',GETARG(I1))
 	GENOP('CALL', INCODE '_')	:(OPDONE)
 
 G.STI   GENOP('MOV',GETARG(I1),REG.IA)		:(OPDONE)
@@ -1095,10 +1110,10 @@ G.DVR
 *	T1 'DWORD' =
 	T1 = TRIM(T1)
 *	OUTPUT = 'g.rop after dword test ' t1 ' leaarg ' leaarg
-*	(GE(TYP1,9) LE(TYP1,15) GENOP('LEA','EAX', T1),
-*+	 GE(TYP1,3) LE(TYP1,4)  GENOP('LEA','EAX', T1),
-*+                GENOP('MOV','EAX', GETARG(I1)))
-                GENOP('MOV','EAX', GETARG(I1))
+*	(GE(TYP1,9) LE(TYP1,15) GENOP('LEA','W0', T1),
+*+	 GE(TYP1,3) LE(TYP1,4)  GENOP('LEA','W0', T1),
+*+                GENOP('MOV','W0', GETARG(I1)))
+                GENOP('MOV','W0', GETARG(I1))
 	GENOP('CALL',INCODE '_')		:(OPDONE)
 
 
@@ -1179,7 +1194,7 @@ G.SCG.0
 	GENOP('DEC',REGMAP[T3])
 G.SCG.1
 	T2 BREAK('(') LEN(1) LEN(2) . T3
-	GENOP('MOV','EAX',T1,)
+	GENOP('MOV','W0',T1,)
 	GENOP('MOV','[' REGMAP[T3] ']','AL')
 *  See if postincrement needed.
 	T2 RTAB(1) '+'				:F(G.SCG.2)
@@ -1190,7 +1205,7 @@ G.SCG.W
 *  Here if moving character from work register, convert T1
 *  to name of low part.
 *
-	T1 = REGLOW[GETARG(I1)]
+	T1 = REGLOW[I.TEXT(I1)]
 	IDENT(T2,'(XL)')			:S(G.SCG.W.XL)
 	IDENT(T2,'-(XL)')			:S(G.SCG.W.PXL)
 	IDENT(T2,'(XL)+')			:S(G.SCG.W.XLP)
@@ -1198,18 +1213,18 @@ G.SCG.W
 	IDENT(T2,'-(XR)')			:S(G.SCG.W.PXR)
 	IDENT(T2,'(XR)+')			:S(G.SCG.W.XRP)
 G.SCG.W.XL
-	GENOP('MOV','[ESI]',T1)			:(OPDONE)
+	GENOP('MOV','[XL]',T1)			:(OPDONE)
 G.SCG.W.PXL
-	GENOP('DEC','ESI')
-	GENOP('MOV','[ESI]',T1)			:(OPDONE)
+	GENOP('DEC','XL')
+	GENOP('MOV','[XL]',T1)			:(OPDONE)
 G.SCG.W.XLP
-	GENOP('MOV','[ESI]',T1)
-	GENOP('INC','ESI')			:(OPDONE)
+	GENOP('MOV','[XL]',T1)
+	GENOP('INC','XL')			:(OPDONE)
 G.SCG.W.XR
-	GENOP('MOV','[EDI]',T1)			:(OPDONE)
+	GENOP('MOV','[XR]',T1)			:(OPDONE)
 G.SCG.W.PXR
-	GENOP('DEC','EDI')
-	GENOP('MOV','[EDI]',T1)			:(OPDONE)
+	GENOP('DEC','XR')
+	GENOP('MOV','[XR]',T1)			:(OPDONE)
 G.SCG.W.XRP
 	GENOP('MOV','AL',T1)
 	GENOP('STOSB')				:(OPDONE)
@@ -1231,8 +1246,8 @@ G.CMC
 *	mov	edi,esi		;v1.02  XR also
 *
 	GENOP('REPE','CMPSB')
-	GENOP('MOV','ESI','0')
-	GENOP('MOV','EDI','ESI')
+	GENOP('MOV','XL','0')
+	GENOP('MOV','XR','XL')
 	T1 = GETARG(I1)
 	T2 = GETARG(I2)
 	(IDENT(T1,T2) GENOP('JNZ',T1))		:S(OPDONE)
@@ -1247,13 +1262,15 @@ G.TRC
 *	loop	tmp
 *	xor	esi,esi			;set XL to zero
 *	xor	edi,edi			;v1.02  XR also
-	GENOP('XCHG','ESI','EDI')
-        GENOPL((T1 = GENLAB()) ':','MOVZX','EAX','BYTE [EDI]') 
-	GENOP('MOV','AL','[ESI+EAX]')
+	GENOP('XCHG','XL','XR')
+        GENOPL((T1 = GENLAB()) ':','MOVZX','W0','BYTE [XR]') 
+	GENOP('MOV','AL','[XL+W0]')
 	GENOP('STOSB')
-	GENOP('LOOP',T1)
-	GENOP('XOR','ESI','ESI')
-	GENOP('XOR','EDI','EDI')		:(OPDONE)
+	GENOP('DEC','ECX')
+	GENOP('JNZ',T1)
+*	GENOP('LOOP',T1)
+	GENOP('XOR','XL','XL')
+	GENOP('XOR','XR','XR')		:(OPDONE)
 
 
 G.ANB   GENOP('AND',GETARG(I2),GETARG(I1))	:(OPDONE)
@@ -1267,25 +1284,29 @@ G.RSH
 G.LSH
 	GENOP('SHL',GETARG(I1),GETARG(I2))		:(OPDONE)
 
-G.RSX	T1 = REGMAP[SUBSTR(I.TEXT(I2),2,2)]
+G.RSX	
+	ERROR('RSX NOT SUPPORTED')
+	T1 = REGMAP[SUBSTR(I.TEXT(I2),2,2)]
 	IDENT(I.TEXT(I1),'WA')				:S(G.RSX.C)
-	GENOP('XCHG',T1,'ECX')
+	GENOP('XCHG',T1,'WA')
 	GENOP('SHR',GETARG(I1),'CL')
-	GENOP('XCHG',T1,'ECX')				:(OPDONE)
+	GENOP('XCHG',T1,'WA')				:(OPDONE)
 
-G.RSX.C	GENOP('XCHG',T1,'ECX')
+G.RSX.C	GENOP('XCHG',T1,'WA')
 	GENOP('SHR',T1,'CL')
-	GENOP('XCHG',T1,'ECX')				:(OPDONE)
+	GENOP('XCHG',T1,'WA')				:(OPDONE)
 
-G.LSX	T1 = REGMAP[SUBSTR(I.TEXT(I2),2,2)]
+G.LSX	
+	ERROR('LSX NOT SUPPORTED')
+	T1 = REGMAP[SUBSTR(I.TEXT(I2),2,2)]
 	IDENT(I.TEXT(I1),'WA')				:S(G.LSX.C)
-	GENOP('XCHG',T1,'ECX')
+	GENOP('XCHG',T1,'WA')
 	GENOP('SHL',GETARG(I1),'CL')
-	GENOP('XCHG',T1,'ECX')				:(OPDONE)
+	GENOP('XCHG',T1,'WA')				:(OPDONE)
 
-G.LSX.C	GENOP('XCHG',T1,'ECX')
+G.LSX.C	GENOP('XCHG',T1,'WA')
 	GENOP('SHL',T1,'CL')
-	GENOP('XCHG',T1,'ECX')				:(OPDONE)
+	GENOP('XCHG',T1,'WA')				:(OPDONE)
 
 G.NZB	IFREG(I1)				:S(G.NZB1)
 	GENOP('CMP',GETARG(I1),'0')
@@ -1299,10 +1320,8 @@ G.ZRB	IFREG(I1)				:S(G.ZRB1)
 G.ZRB1	GENOP('OR',GETARG(I1),GETARG(I1))
 	GENOP('JZ',GETARG(I2))			:(OPDONE)
 
-* 80386 is a Little-Endian machine, so ZGB must swap bytes.
+* x32 is a Little-Endian machine, so ZGB must swap bytes.
 *
-* NOTE THAT ON A 486 AND LATER CPU, THIS CAN BE DONE WITH ONE INSTRUCTION, BSWAP.
-* SHOULD CONSIDER ABANDONING THE 80386 SO CAN USE BSWAP.
 *
 G.ZGB	T1 = GETARG(I1)			;* 32-bit register name, e.g., EDX
         T2 = SUBSTR(T1,2,1) 'L'         ;* 8-bit low register name, e.g., DL
@@ -1360,21 +1379,21 @@ G.MVC
 	T1 = GENLAB()
 	GENOPL(T1 ':', 'LODSB')
 	GENOP('STOSB')
-	GENOP('DEC', 'ECX')
+	GENOP('DEC', 'WA')
 	GENOP('JNZ',T1)
 
 G.MVW
-	GENOP('SHR','ECX','2')
+	GENOP('SHR','WA','2')
  	GENREP('MOVSD')
 * 	GENOP('REP','MOVSD')		
 					:(OPDONE)
 
 G.MWB
 *   move words backwards
-	GENOP('SHR','ECX','2')
+	GENOP('SHR','WA','2')
 	GENOP('STD')
-	GENOP('LEA','ESI','[ESI-4]')
-	GENOP('LEA','EDI','[EDI-4]')
+	GENOP('LEA','XL','[XL-4]')
+	GENOP('LEA','XR','[XR-4]')
  	GENREP('MOVSD')
 *	GENOP('REP','MOVSD')
 	GENOP('CLD')				:(OPDONE)
@@ -1382,8 +1401,8 @@ G.MWB
 G.MCB
 *   move characters backwards
 	GENOP('STD')
-	GENOP('DEC','ESI')
-	GENOP('DEC','EDI')
+	GENOP('DEC','XL')
+	GENOP('DEC','XR')
  	GENREP('MOVSB')
 *	GENOP('REP','MOVSB')
 	GENOP('CLD')				:(OPDONE)
@@ -1392,10 +1411,10 @@ GENREP
 	L1 = GENLAB()
 	L2 = GENLAB()
 	GENOPL(L1 ':')
-	GENOP('OR','ECX','ECX')
+	GENOP('OR','WA','WA')
 	GENOP('JZ',L2)
 	GENOP(OP)
-	GENOP('DEC','ECX')
+	GENOP('DEC','WA')
 	GENOP('JMP',L1)
 	GENOPL(L2 ':')
 						:(RETURN)
@@ -1432,12 +1451,32 @@ G.DTC
 *  CHANGE FIRST AND LAST CHARS TO " (ASSUME / USED IN SOURCE)
 	T1 = I.TEXT(I1)
 	T1 TAB(1) RTAB(1) . T2
-	T3 = REMDR(SIZE(T2),4)
-        T2 = "'" T2 "'"
+	T1 = REMDR(SIZE(T2),4)
+	DTC_LEN = SIZE(T2)
+	DTC_MAX = GT(SIZE(T2),DTC_MAX) SIZE(T2)
+*        T2 = "'" T2 "'"
 *  Append nulls to complete last word so constant length is multiple
 *  of word word
-        T2 = NE(T3) T2 DUPL(',0',4 - T3)
+*        T2 = NE(T3) T2 DUPL(',0',4 - T3)
+	T3 = ''
+	T4 = 1
+G.DTC.1
+
+	T3 = T3 "'"  SUBSTR(T2,T4,1) "',"
+	LE(T4 = T4 + 1, DTC_LEN)  :S(G.DTC.1)
+	T1 = REMDR(SIZE(T2),4)
+	EQ(T1)			:S(G.DTC.DONE)
+*  Here to pad out to multiple of word size
+	T1 = 4 - T1
+
+G.DTC.2
+	T3 = T3 "0,"
+	GT(T1 = T1 - 1, 0)		:S(G.DTC.2)
+G.DTC.DONE
+	GENOPL(TLABEL,'db',SUBSTR(T3,1,SIZE(T3) - 1))
+					:(OPDONE)
         GENOPL(TLABEL,'db',T2)              :(OPDONE)
+
 G.DBC   GENOPL(TLABEL,'dd',GETARG(I1))       :(OPDONE)
 G.EQU   GENOP('equ',I.TEXT(I1))			:(OPDONE)
 G.EXP   
@@ -1517,7 +1556,7 @@ G.SEC.7
 
 *	allow for some extra cases in case of max.err bad estimate
 	N1 = MAX.ERR + 8
-	OUTPUT = '  MAX.ERR ' MAX.ERR
+	OUTPUT = 'MAX.ERR ' MAX.ERR
 	GENOPL('ERR_:','xchg',REG.WA,'DWORD [' RCODE ']')
 						:(OPDONE)
 
@@ -1570,7 +1609,7 @@ G.END.2
 * it to perform jump optimization.
 	ENDFILE(1)
 	ENDFILE(2)
-        OUTPUT = "  Code generation complete, begin jump optimization"
+        OUTPUT = "Code generation complete, begin jump optimization"
 
 	INPUT(.INFILE,1,FILENAMO)			:S(G.END.3)
         OUTPUT = 'Cannot reopen TEMP file: ' FILENAMO :(END)
@@ -1578,7 +1617,7 @@ G.END.2
 G.END.3 FILENAMO = PARMS ".s"
         OUTPUT(.OUTFILE,2,FILENAMO '[-m10 -n0]')            :S(G.END.4)
         OUTPUT = 'Cannot open ASSEMBLY file: ' FILENAMO :(END)
-G.END.4 OUTPUT = '  Output ASSEMBLY file: ' FILENAMO
+G.END.4 OUTPUT = 'Output ASSEMBLY file: ' FILENAMO
 
 ***************************************************************************
 * Jump optimization
@@ -1615,23 +1654,26 @@ G.END.6	OUTFILE = LINE					:(G.END.5)
 G.END.7 ENDFILE(1)
 	ENDFILE(2)
 	ENDFILE(3)
-        OUTPUT = '  ' '*** TRANSLATION COMPLETE ***'
-        OUTPUT = '  ' NLINES ' LINES READ.'
-        OUTPUT = '  ' NSTMTS ' STATEMENTS PROCESSED.'
-        OUTPUT = '  ' NTARGET ' TARGET CODE LINES PRODUCED.'
-        OUTPUT = '  ' NOPTIM1 ' "OR" optimizations performed.'
-        OUTPUT = '  ' NOPTIM2 ' jumps shortened.'
-        OUTPUT = '  ' MAX.ERR ' MAXIMUM ERR/ERB NUMBER.'
-        OUTPUT = '  ' PRC.COUNT1 ' PRC COUNT.'
-        OUTPUT = '  ' GT(PRC.COUNT,PRC.COUNT1)
+	HOST(1,"touch " PARMS ".err")
+	HOST(1,"del " PARMS ".tmp")
+        OUTPUT = '*** TRANSLATION COMPLETE ***'
+        OUTPUT = NLINES ' LINES READ.'
+        OUTPUT = NSTMTS ' STATEMENTS PROCESSED.'
+        OUTPUT = NTARGET ' TARGET CODE LINES PRODUCED.'
+        OUTPUT = NOPTIM1 ' "OR" optimizations performed.'
+        OUTPUT = NOPTIM2 ' jumps shortened.'
+        OUTPUT = MAX.ERR ' MAXIMUM ERR/ERB NUMBER.'
+        OUTPUT = PRC.COUNT1 ' PRC COUNT.'
+	OUTPUT = DTC_MAX ' MAXIMUM DTC LENGTH'
+        OUTPUT = GT(PRC.COUNT,PRC.COUNT1)
 .	  'DIFFERING COUNTS FOR N-PROCEDURES:'
 .	  ' INP ' PRC.COUNT1 ' PRC ' PRC.COUNT
-        OUTPUT = '  ' NERRORS ' ERRORS OCCURRED.'
+        OUTPUT = NERRORS ' ERRORS OCCURRED.'
         OUTPUT =
 	ERRFILE = '* ' MAX.ERR ' MAXIMUM ERR/ERB NUMBER'
 	ERRFILE  = '* ' PRC.COUNT ' PRC COUNT'
 .		DIFFER(LASTERROR) 'THE LAST ERROR WAS IN LINE ' LASTERROR
 	&CODE   = NE(NERRORS) 2001
-        OUTPUT = '  ' COLLECT() ' FREE WORDS'
+        OUTPUT = COLLECT() ' FREE WORDS'
 	:(END)
 END
