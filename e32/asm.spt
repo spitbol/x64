@@ -332,7 +332,7 @@ COMPDONE DEFS =
 	REGMAP['XR'] = 'XR';  REGMAP['XS'] = 'XS'
 	REGMAP['WA'] = 'WA';  REGMAP['WB'] = 'WB'
 	REGMAP['WC'] = 'WC';  REGMAP['IA'] = 'IA'
-	REGMAP['CP'] = 'EBP'
+	REGMAP['CP'] = 'CP'
 *	W0 is temp register
 	REGMAP['W0'] = 'W0'
 
@@ -377,7 +377,7 @@ INPUTOK OUTPUT = '  Input LEX file: ' FILENAMI
         OUTPUT(.OUTFILE,2,FILENAMO)                 :S(OUTPUTOK)
         OUTPUT = 'Cannot open TEMP file: ' FILENAMO :(END)
 OUTPUTOK
-        OUTPUT = 'Output TEMP file: ' FILENAMO
+        OUTPUT = '  Output TEMP file: ' FILENAMO
 
 *
 * Open file for compilation of Minimal ERR and ERB messages
@@ -394,7 +394,7 @@ ERR_OK
 
 	INPUT(.HDRFILE,4,MACHINE '.hdr')	:F(NOHDR)
 	HAVEHDR = 1
-        OUTPUT = 'Input HEADER file: ' MACHINE '.hdr'
+        OUTPUT = '  Input HEADER file: ' MACHINE '.hdr'
 HDRCOPY LINE = HDRFILE				:F(HDREND)
 	IDENT(LINE,'END')			:S(NOHDR)
 	OUTFILE = LINE
@@ -1190,7 +1190,6 @@ G.SCG.W
 *  to name of low part.
 *
 	T1 = REGLOW[GETARG(I1)]
-	OUTPUT = '  G.SCG.W:' GETARG(I1) ':' T1 ':'
 	IDENT(T2,'(XL)')			:S(G.SCG.W.XL)
 	IDENT(T2,'-(XL)')			:S(G.SCG.W.PXL)
 	IDENT(T2,'(XL)+')			:S(G.SCG.W.XLP)

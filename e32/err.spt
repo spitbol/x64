@@ -116,7 +116,6 @@
 *
 	ident(host(0))				:s(nomachine)
 	$replace(host(0),&lcase,&ucase) = 1
-        output = "Machine: " host(0)
 nomachine
 
 * Tab character
@@ -431,9 +430,9 @@ readerr_end
 
 *  Print statistics
 *
-        output = "Input message length = " insize
-        output = "Output string size = " outsize
-        output = "Savings = " insize - outsize
+        output = "  Input message length = " insize
+        output = "  Output string size = " outsize
+        output = "  Savings = " insize - outsize
 
 *  Clear error indicator for successful return
 *

@@ -136,3 +136,5 @@ valtab:
 	DD_ENT	END_MIN_DATA
         %unmacro  DD_ENT 1
 %endif
+	global	MINCP
+MINCP:	dd	0	; Minimal Code Pointer (CP)

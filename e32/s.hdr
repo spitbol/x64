@@ -6,6 +6,7 @@
         %include        "hdrcode.inc"
         %include        "hdrdata.inc"
 
+	%define CP	EBP
 	%define	XL	ESI
 	%define	XT	ESI
 	%define XR	EDI

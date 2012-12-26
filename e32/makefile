@@ -31,7 +31,7 @@ endif
 # Tools for processing Minimal source file.
 LEX=	lex.spt
 ASM=    asm.spt
-ERR=    err386.spt
+ERR=    err.spt
 BOOTBOL=   ./bootbol
 SBL=./sbl
 
