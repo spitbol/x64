@@ -6,6 +6,11 @@
         %include        "hdrcode.inc"
         %include        "hdrdata.inc"
 
+	%define	XL	ESI
+	%define	XT	ESI
+	%define XR	EDI
+	%define XS	ESP
+
         extern LDR_
         extern STR_
         extern OVR_

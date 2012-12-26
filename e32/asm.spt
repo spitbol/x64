@@ -328,8 +328,8 @@ COMPDONE DEFS =
 *  register/memory-location name.
 *
 	REGMAP = TABLE(30)
-	REGMAP['XL'] = 'ESI';  REGMAP['XT'] = 'ESI'
-	REGMAP['XR'] = 'EDI';  REGMAP['XS'] = 'ESP'
+	REGMAP['XL'] = 'XL';  REGMAP['XT'] = 'XT'
+	REGMAP['XR'] = 'XR';  REGMAP['XS'] = 'XS'
 	REGMAP['WA'] = 'ECX';  REGMAP['WB'] = 'EBX'
 	REGMAP['WC'] = 'EDX';  REGMAP['IA'] = 'EDX'
 	REGMAP['CP'] = 'EBP'
@@ -945,7 +945,7 @@ G.ZER1	T1 = GETARG(I1)
 	GENOP('XOR',T1,T1)			:(OPDONE)
 G.ZER.XS GENOP('PUSH','0')			:(OPDONE)
 
-G.MNZ   GENOP('MOV',GETARG(I1),'ESP')		:(OPDONE)
+G.MNZ   GENOP('MOV',GETARG(I1),'XS')		:(OPDONE)
 
 G.SSL   GENOP()					:(OPDONE)
 G.SSS   GENOP()					:(OPDONE)
@@ -1198,18 +1198,18 @@ G.SCG.W
 	IDENT(T2,'-(XR)')			:S(G.SCG.W.PXR)
 	IDENT(T2,'(XR)+')			:S(G.SCG.W.XRP)
 G.SCG.W.XL
-	GENOP('MOV','[ESI]',T1)			:(OPDONE)
+	GENOP('MOV','[XL]',T1)			:(OPDONE)
 G.SCG.W.PXL
-	GENOP('DEC','ESI')
-	GENOP('MOV','[ESI]',T1)			:(OPDONE)
+	GENOP('DEC','XL')
+	GENOP('MOV','[XL]',T1)			:(OPDONE)
 G.SCG.W.XLP
-	GENOP('MOV','[ESI]',T1)
-	GENOP('INC','ESI')			:(OPDONE)
+	GENOP('MOV','[XL]',T1)
+	GENOP('INC','XL')			:(OPDONE)
 G.SCG.W.XR
-	GENOP('MOV','[EDI]',T1)			:(OPDONE)
+	GENOP('MOV','[XR]',T1)			:(OPDONE)
 G.SCG.W.PXR
-	GENOP('DEC','EDI')
-	GENOP('MOV','[EDI]',T1)			:(OPDONE)
+	GENOP('DEC','XR')
+	GENOP('MOV','[XR]',T1)			:(OPDONE)
 G.SCG.W.XRP
 	GENOP('MOV','AL',T1)
 	GENOP('STOSB')				:(OPDONE)
@@ -1231,8 +1231,8 @@ G.CMC
 *	mov	edi,esi		;v1.02  XR also
 *
 	GENOP('REPE','CMPSB')
-	GENOP('MOV','ESI','0')
-	GENOP('MOV','EDI','ESI')
+	GENOP('MOV','XL','0')
+	GENOP('MOV','XR','XL')
 	T1 = GETARG(I1)
 	T2 = GETARG(I2)
 	(IDENT(T1,T2) GENOP('JNZ',T1))		:S(OPDONE)
@@ -1247,13 +1247,13 @@ G.TRC
 *	loop	tmp
 *	xor	esi,esi			;set XL to zero
 *	xor	edi,edi			;v1.02  XR also
-	GENOP('XCHG','ESI','EDI')
-        GENOPL((T1 = GENLAB()) ':','MOVZX','EAX','BYTE [EDI]') 
-	GENOP('MOV','AL','[ESI+EAX]')
+	GENOP('XCHG','XL','XR')
+        GENOPL((T1 = GENLAB()) ':','MOVZX','EAX','BYTE [XR]') 
+	GENOP('MOV','AL','[XL+EAX]')
 	GENOP('STOSB')
 	GENOP('LOOP',T1)
-	GENOP('XOR','ESI','ESI')
-	GENOP('XOR','EDI','EDI')		:(OPDONE)
+	GENOP('XOR','XL','XL')
+	GENOP('XOR','XR','XR')		:(OPDONE)
 
 
 G.ANB   GENOP('AND',GETARG(I2),GETARG(I1))	:(OPDONE)
@@ -1354,7 +1354,7 @@ G.CVM	T1 = GETARG(I1)
 G.CVD	GENOP('CALL','CVD_')			:(OPDONE)
 
 G.MVC
-*	move chars from XL (ESI) to XR (EDI), count in WA (ECX)
+*	move chars from XL to XR, count in WA 
 *	Use Minimal specification
 *
 	T1 = GENLAB()
@@ -1373,8 +1373,8 @@ G.MWB
 *   move words backwards
 	GENOP('SHR','ECX','2')
 	GENOP('STD')
-	GENOP('LEA','ESI','[ESI-4]')
-	GENOP('LEA','EDI','[EDI-4]')
+	GENOP('LEA','XL','[XL-4]')
+	GENOP('LEA','XR','[XR-4]')
  	GENREP('MOVSD')
 *	GENOP('REP','MOVSD')
 	GENOP('CLD')				:(OPDONE)
@@ -1382,8 +1382,8 @@ G.MWB
 G.MCB
 *   move characters backwards
 	GENOP('STD')
-	GENOP('DEC','ESI')
-	GENOP('DEC','EDI')
+	GENOP('DEC','XL')
+	GENOP('DEC','XR')
  	GENREP('MOVSB')
 *	GENOP('REP','MOVSB')
 	GENOP('CLD')				:(OPDONE)
@@ -1400,7 +1400,7 @@ GENREP
 	GENOPL(L2 ':')
 						:(RETURN)
 
-G.CHK   GENOP('CMP','ESP','LOWSPMIN')
+G.CHK   GENOP('CMP','XS','LOWSPMIN')
 	GENOP('JB','SEC06')			:(OPDONE)
 
 DECEND
