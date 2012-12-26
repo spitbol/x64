@@ -17,6 +17,24 @@
 ;     You should have received a copy of the GNU General Public License
 ;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 ;
+	; These definitions MUST agree with those in s.hdr
+	%define CP	RBP
+	%define	XL	RSI
+	%define	XT	RSI
+	%define	XR	RDI
+	%define	WA	RCX
+	%define WA_L	CL
+	%define	WB	RBX
+	%define WB_L    BL
+	%define	WC	RDX
+	%define WC_L    DL
+	%define	XS	RSP
+	%define	W0	RAX
+	%define	W0_L	AL
+	%define	IA	RDX
+	%define M_WORD  QWORD
+	%define D_WORD	DQ
+
 	global	reg_block
 	global	reg_wa
 	global	reg_wb
@@ -64,10 +82,9 @@
 ;       o Math functions for integer multiply, divide, and remainder
 ;       o Math functions for real operation
 ;
-;-----------
 ;
 ;       Overview
-;
+
 ;       The Macro SPITBOL compiler relies on a set of operating system
 ;       interface functions to provide all interaction with the host
 ;       operating system.  These functions are referred to as OSINT
@@ -127,13 +144,12 @@
 ;       of the internal name.  Thus, the function name 'osopen' becomes
 ;       '_osopen'.  However, not all C compilers follow this convention.
 ;
-;------------
-;
+
 ;       Global Variables
-;
+
         segment	.data
 ; 	extern	swcoup
-; 
+
 ; 	extern	stacksiz
 ; 	extern	lmodstk
 ; 	extern	lowsp
@@ -172,6 +188,25 @@ reg_size:	dq   r_size
 ;
 ; end of words saved during exit(-3)
 ;
+
+	global	save_cp
+	global	save_xl
+	global	save_xr
+	global	save_xs
+	global	save_wa
+	global	save_wb
+	global	save_wc
+	global	save_w0
+save_cp:	dq	0	; saved CP value
+save_xl:	dq	0	; saved XL value
+save_xr:	dq	0	; saved XR value
+save_xs:	dq	0	; saved SP value
+save_wa:	dq	0	; saved WA value
+save_wb:	dq	0	; saved WB value
+save_wc:	dq	0	; saved WC value
+save_w0:	dq	0	; saved W0 value
+
+minimal_id:	dq	0	; id for call to minimal from C. See proc minimal below.
 
 ;
 ;  Constants
@@ -250,7 +285,6 @@ TTYBUF:	dq   0     ; type word
         dq      0               ; file position of buffer
         dq      0               ; physical position in file
         times   260 db 0         ; buffer
-; ;-----------
 ; ;
 ; ;       Save and restore MINIMAL and interface registers on stack.
 ; ;       Used by any routine that needs to call back into the MINIMAL
@@ -318,9 +352,32 @@ TTYBUF:	dq   0     ; type word
 ; pop1:	popad
 ; 	ret
 
+	global	save_regs
+save_regs:
+	mov	qword [save_cp],WA
+	mov	qword [save_xl],XL
+	mov	qword [save_xr],XR
+	mov	qword [save_xs],XS
+	mov	qword [save_wa],WA
+	mov	qword [save_wb],WB
+	mov	qword [save_wc],WC
+	mov	qword [save_w0],W0
+	ret
+
+	global	restore_regs
+restore_regs:
+	;	Restore regs, except for SP. That is caller's responsibility
+	mov	XL,qword [save_xl]
+	mov	XR,qword [save_xr]
+;	mov	XS,qword [save_xs	; caller restores SP]
+	mov	WA,qword [save_cp]
+	mov	WA,qword [save_wa]
+	mov	WB,qword [save_wb]
+	mov	WC,qword [save_wc]
+	mov	W0,qword [save_w0]
+	ret
 ; ;
 ; ;
-; ;-----------
 ; ;
 ; ;       startup( char *dummy1, char *dummy2) - startup compiler
 ; ;
@@ -366,23 +423,17 @@ startup:
         mov     qword [ppoff],rax               ; save for use later
 ;
         mov     rsp,qword [osisp]               ; switch to new C stack
-	push	CALLTAB_START
+	mov	qword [minimal_id],CALLTAB_START
 	mov	rcx,rsp	;set WA to initial stack pointer for use by Minimal
 	call	minimal			; load regs, switch stack, start compiler
 
-; 
-; 
-; 
-;
-;-----------
-;
 ;	stackinit  -- initialize LOWSPMIN from sp.
-;
+
 ;	Input:  sp - current C stack
 ;		stacksiz - size of desired Minimal stack in bytes
-;
+
 ;	Uses:	eax
-;
+
 ;	Output: register WA, sp, LOWSPMIN, compsp, osisp set up per diagram:
 ;
 ;	(high)	+----------------+
@@ -413,9 +464,6 @@ stackinit:
 	mov	qword [LOWSPMIN],rax
 	ret
 
-;
-;-----------
-;
 ;       mimimal -- call MINIMAL function from C
 ;
 ;       Usage:  extern void minimal(WORD callno)
@@ -431,29 +479,30 @@ stackinit:
 ;       the OSINT stack.
 ;
 
- minimal:
-;         pushad                          ; save all registers for C
+minimal:
 	call	zz_1
 	call	zz_1
-         mov     rax,qword [rsp+64+4]          ; get ordinal
-         mov     rcx,qword [reg_wa]              ; restore registers
+         mov     rax,qword [minimal_id]		; get ordinal
+         mov     rcx,qword [reg_wa]             ; restore registers
  	 mov	 rbx,qword [reg_wb]
-         mov     rdx,qword [reg_wc]              ; (also _reg_ia)
+         mov     rdx,qword [reg_wc]             ; (also _reg_ia)
  	 mov	 rdi,qword [reg_xr]
  	 mov	 rsi,qword [reg_xl]
  	 mov	 rbp,qword [reg_cp]
 	call	zz_1
  
-         mov     qword [osisp],rsp               ; 1.39 save OSINT stack pointer
-         cmp     qword [compsp],0      ; 1.39 is there a compiler stack?
-         je      min1              ; 1.39 jump if none yet
-;         mov     rsp,qword [compsp]              ; 1.39 switch to compiler stack
+         mov     qword [osisp],rsp              ; save OSINT stack pointer
+         cmp     qword [compsp],0      		; is there a compiler stack?
+         je      min1				; jump if none yet
+;         mov     rsp,qword [compsp]            ; switch to compiler stack
  
  min1:
 	call	zz_1
-;	   call   qword [calltab+eax*4]        ; off to the Minimal code
+;	   call   qword [calltab+eax*8]        ; off to the Minimal code
 	extern	START
 	call	START
+
+;	Note that START doesn't return, but code below needed if calling other procs in Minimal.
  
          mov     rsp,qword [osisp]               ; 1.39 switch to OSINT stack
  
@@ -496,7 +545,6 @@ cprtmsg:
 ;       ccaller, as they are not needed by this implementation.
 
 
-;-----------
 
 ;       CCALLER is called by the OS interface routines to call the
 ;       real C OS interface function.
@@ -724,7 +772,6 @@ SYSUL:	syscall	zysul,37
 	extern	zysxi
 SYSXI:	mov	qword [reg_xs],rsp
 	syscall	zysxi,38
-;---------------
 
 ;       Individual OSINT routine entry points
 
@@ -735,8 +782,6 @@ SYSXI:	mov	qword [reg_xs],rsp
 	call	%1
 	add	rsp,%2	; pop arguments
 	%endmacro
-
-;-----------
 ;
 ;       CVD_ - convert by division
 ;
@@ -755,12 +800,7 @@ CVD_:
         mov     rcx,rdx         ; return remainder in WA
         xchg    rdx,rax         ; return quotient in IA
 	ret
-
-;
-;-----------
-;
 ;       DVI_ - divide IA (EDX) by long in EAX
-;
         global  DVI_
 
 DVI_:
@@ -776,10 +816,6 @@ DVI_:
         xor     rax,rax         ; clear overflow indicator
 	ret
 
-
-;
-;-----------
-;
 ;       RMI_ - remainder of IA (EDX) divided by long in EAX
 ;
         global  RMI_
@@ -799,8 +835,6 @@ setovr: mov     al,0x80         ; set overflow indicator
 	ret
 
 
-
-;----------
 ;
 ;    Calls to C
 ;
@@ -819,7 +853,6 @@ setovr: mov     al,0x80         ; set overflow indicator
 %define fretst0 1
 %define fretrax 0
 
-;----------
 ;
 ;       RTI_ - convert real in RA to integer in IA
 ;               returns C=0 if fit OK, C=1 if too large to convert
@@ -853,11 +886,8 @@ RTI_0:  btc     rax,31                  ; make negative again
 RTI_1:  stc                             ; return C=1 for too large to convert
         ret
 
-;
-;----------
-;
 ;       ITR_ - convert integer in IA to real in RA
-;
+
         global  ITR_
 ITR_:
 
@@ -876,11 +906,8 @@ ITR_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       LDR_ - load real pointed to by rax to RA
-;
+
         global  LDR_
 LDR_:
 
@@ -890,11 +917,8 @@ LDR_:
 	mov	qword [reg_ra+4], rax
 	ret
 
-;
-;----------
-;
 ;       STR_ - store RA in real pointed to by rax
-;
+
         global  STR_
 STR_:
 
@@ -904,9 +928,6 @@ STR_:
 	pop	qword [rax+4]
 	ret
 
-;
-;----------
-;
 ;       ADR_ - add real at [rax] to RA
 ;
         global  ADR_
@@ -933,11 +954,8 @@ ADR_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       SBR_ - subtract real at [rax] from RA
-;
+
         global  SBR_
 
 SBR_:
@@ -962,11 +980,8 @@ SBR_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       MLR_ - multiply real in RA by real at [rax]
-;
+
         global  MLR_
 
 MLR_:
@@ -991,11 +1006,8 @@ MLR_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       DVR_ - divide real in RA by real at [rax]
-;
+
         global  DVR_
 
 DVR_:
@@ -1020,11 +1032,8 @@ DVR_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       NGR_ - negate real in RA
-;
+
         global  NGR_
 
 NGR_:
@@ -1035,11 +1044,8 @@ NGR_:
 ngr_1:  xor     byte [reg_ra+7], 0x80         ; complement mantissa sign
 ngr_2:	ret
 
-;
-;----------
-;
 ;       ATN_ arctangent of real in RA
-;
+
         global  ATN_
 
 ATN_:
@@ -1062,11 +1068,8 @@ ATN_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       CHP_ chop fractional part of real in RA
-;
+
         global  CHP_
 
 
@@ -1090,11 +1093,8 @@ CHP_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       COS_ cosine of real in RA
-;
+
         global  COS_
 
 COS_:
@@ -1117,13 +1117,9 @@ COS_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       ETX_ exponential of real in RA
-;
-        global  ETX_
 
+        global  ETX_
 ETX_:
         push    rdx                             ; preserve regs for C
 	push	rdx
@@ -1144,11 +1140,8 @@ ETX_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       LNF_ natural logarithm of real in RA
-;
+
         global  LNF_
 
 LNF_:
@@ -1171,11 +1164,8 @@ LNF_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       SIN_ arctangent of real in RA
-;
+
         global  SIN_
 
 SIN_:
@@ -1199,11 +1189,8 @@ SIN_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       SQR_ arctangent of real in RA
-;
+
         global  SQR_
 
 SQR_:
@@ -1226,10 +1213,8 @@ SQR_:
 %endif
 	ret
 ;
-;----------
-;
 ;       TAN_ arctangent of real in RA
-;
+
         global  TAN_
 
 TAN_:
@@ -1252,11 +1237,8 @@ TAN_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       CPR_ compare real in RA to 0
-;
+
         global  CPR_
 CPR_:
         mov     rax, qword [reg_ra+4] ; fetch msh
@@ -1271,9 +1253,6 @@ cpr050: cmp     qword [reg_ra], 0     ; true zero, or denormalized number?
         cmp     al, 0                   ; positive denormal, set cc
 cpr100:	ret
 
-
-;----------
-;
 ;       OVR_ test for overflow value in RA
 
 	global	OVR_
@@ -1300,7 +1279,6 @@ tryfpu:
 ; # procedures needed for save file / load module support -- debug later
 ; 
 ; #
-; #-----------
 ; #
 ; #       get_fp  - get C caller's FP (frame pointer)
 ; #
@@ -1375,8 +1353,6 @@ tryfpu:
 ; 
 ;         cendp    get_fp
 ; 
-; #
-; #-----------
 ; #
 ; #       restart - restart for load module
 ; #

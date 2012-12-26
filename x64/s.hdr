@@ -22,13 +22,15 @@
 	%define M_WORD  QWORD
 	%define D_WORD	DQ
 
-	%define	Qword dword
 	extern	_rc_
 	extern	zz
 	extern	osisp
 	extern	compsp
+	extern	save_regs
+	extern	restore_regs
 
 	%macro	ZZZ	1
+	call	save_regs
 	mov	qword [zz_zz],%1
 	mov	qword [zz_xl],XL
 	mov	qword [zz_xr],XR
@@ -37,10 +39,12 @@
 	mov	qword [zz_wb],WB
 	mov	qword [zz_wc],WC
 	mov	qword [zz_w0],W0
+	mov	qword [zz_cp],CP
 ; switch to C's stack
 	mov	qword [compsp],rsp
 	mov	rsp,qword [osisp]
  	call	zz
+	call	restore_regs
 ;	save C's stack pointer
 	mov	qword [osisp],rsp
 ;	restore compiler stack pointer
@@ -48,6 +52,7 @@
 	%endmacro
 %define zz_trace
 %ifdef zz_trace
+	extern	zz_cp
 	extern	zz_xl
 	extern	zz_xr
 	extern	zz_xs
