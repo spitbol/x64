@@ -15,7 +15,7 @@
 ; 
 ;     You should have received a copy of the GNU General Public License
 ;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
-;
+
 	%include	"x32.h"
 ;	CFP_B gives bytes per word, CFP_C gives characters per word
 	%define CFP_B	4
@@ -40,15 +40,15 @@
  
 %define globals 1                       ;ASM globals defined here
 
-;
+
 ;       ---------------------------------------
-;
+
 ;       This file contains the assembly language routines that interface
 ;       the Macro SPITBOL compiler written in 80386 assembly language to its
 ;       operating system interface functions written in C.
-;
+
 ;       Contents:
-;
+
 ;       o Overview
 ;       o Global variables accessed by OSINT functions
 ;       o Interface routines between compiler and OSINT functions
@@ -59,17 +59,15 @@
 ;       o Routines for Minimal opcodes CHK and CVD
 ;       o Math functions for integer multiply, divide, and remainder
 ;       o Math functions for real operation
-;
-;-----------
-;
+
 ;       Overview
-;
+
 ;       The Macro SPITBOL compiler relies on a set of operating system
 ;       interface functions to provide all interaction with the host
 ;       operating system.  These functions are referred to as OSINT
 ;       functions.  A typical call to one of these OSINT functions takes
 ;       the following form in the 80386 version of the compiler:
-;
+
 ;               ...code to put arguments in registers...
 ;               call    SYSXX           # call osint function
 ;             D_WORD    EXIT_1          # address of exit point 1
@@ -77,7 +75,7 @@
 ;               ...     ...             # ...
 ;             D_WORD    EXIT_n          # address of exit point n
 ;               ...instruction following call...
-;
+
 ;       The OSINT function 'SYSXX' can then return in one of n+1 ways:
 ;       to one of the n exit points or to the instruction following the
 ;       last exit.  This is not really very complicated - the call places
@@ -85,48 +83,46 @@
 ;       to do is add the appropriate offset to the return address and then
 ;       pick up the exit address and jump to it OR do a normal return via
 ;       an ret instruction.
-;
+
 ;       Unfortunately, a C function cannot handle this scheme.  So, an
 ;       intermediary set of routines have been established to allow the
 ;       interfacing of C functions.  The mechanism is as follows:
-;
+
 ;       (1) The compiler calls OSINT functions as described above.
-;
+
 ;       (2) A set of assembly language interface routines is established,
 ;           one per OSINT function, named accordingly.  Each interface
 ;           routine ...
-;
+
 ;           (a) saves all compiler registers in global variables
 ;               accessible by C functions
 ;           (b) calls the OSINT function written in C
 ;           (c) restores all compiler registers from the global variables
 ;           (d) inspects the OSINT function's return value to determine
 ;               which of the n+1 returns should be taken and does so
-;
+
 ;       (3) A set of C language OSINT functions is established, one per
 ;           OSINT function, named differently than the interface routines.
 ;           Each OSINT function can access compiler registers via global
 ;           variables.  NO arguments are passed via the call.
-;
+
 ;           When an OSINT function returns, it must return a value indicating
 ;           which of the n+1 exits should be taken.  These return values are
 ;           defined in header file 'inter.h'.
-;
+
 ;       Note:  in the actual implementation below, the saving and restoring
 ;       of registers is actually done in one common routine accessed by all
 ;       interface routines.
-;
+
 ;       Other notes:
-;
+
 ;       Some C ompilers transform "internal" global names to
 ;       "external" global names by adding a leading underscore at the front
 ;       of the internal name.  Thus, the function name 'osopen' becomes
 ;       '_osopen'.  However, not all C compilers follow this convention.
-;
-;------------
-;
+
 ;       Global Variables
-;
+
         segment	.data
 ; 	extern	swcoup
 ; 
@@ -152,25 +148,25 @@ reg_xr:	D_WORD	0        ; Register XR (XR)
 reg_xl:	D_WORD	0        ; Register XL (XL)
 reg_cp:	D_WORD	0        ; Register CP
 reg_ra	dq 	0.0  ; Register RA
-;
+
 ; These locations save information needed to return after calling OSINT
 ; and after a restart from EXIT()
-;
+
 reg_pc: dd      0               ; return PC from caller
 reg_xs:	D_WORD	0;		 Minimal stack pointer
-;
+
 ;	r_size  equ       $-reg_block
 ; use computed value for nasm conversion, put back proper code later
 r_size	equ	10*CFP_B
 reg_size:	dd   r_size
 
-;
-; end of words saved during exit(-3)
-;
 
-;
+; end of words saved during exit(-3)
+
+
+
 ;  Constants
-;
+
 	global	ten
 ten:    D_WORD      10              ; constant 10
         global  inf
@@ -180,7 +176,7 @@ inf:	D_WORD	0
 	global	sav_block
 ;sav_block: times r_size db 0     ; Save Minimal registers during push/pop reg
 sav_block: times 44 db 0     ; Save Minimal registers during push/pop reg
-;
+
         align CFP_B
 	global	ppoff
 ppoff:  D_WORD      0               ; offset for ppm exits
@@ -193,12 +189,34 @@ sav_compsp:
 osisp:  D_WORD      0               ; 1.39 OSINT's stack pointer
 	global	_rc_
 _rc_:	dd   0	; return code from osint procedure
+
+
+
+	global	save_cp
+	global	save_xl
+	global	save_xr
+	global	save_xs
+	global	save_wa
+	global	save_wb
+	global	save_wc
+	global	save_w0
+save_cp:	D_WORD	0	; saved CP value
+save_xl:	D_WORD	0	; saved XL value
+save_xr:	D_WORD	0	; saved XR value
+save_xs:	D_WORD	0	; saved SP value
+save_wa:	D_WORD	0	; saved WA value
+save_wb:	D_WORD	0	; saved WB value
+save_wc:	D_WORD	0	; saved WC value
+save_w0:	D_WORD	0	; saved W0 value
+
+minimal_id:	D_WORD	0	; id for call to minimal from C. See proc minimal below.
+
 ; 
 %define SETREAL 0
-;
+
 ;       Setup a number of internal addresses in the compiler that cannot
 ;       be directly accessed from within C because of naming difficulties.
-;
+
         global  ID1
 ID1:	dd   0
 %if SETREAL == 1
@@ -207,7 +225,7 @@ ID1:	dd   0
        D_WORD       1
         db  "1x\x00\x00\x00"
 %endif
-;
+
         global  ID2BLK
 ID2BLK	D_WORD   52
       D_WORD    0
@@ -222,9 +240,9 @@ TSCBLK:	 D_WORD   512
       D_WORD    0
         times   512 db 0
 
-;
+
 ;       Standard input buffer block.
-;
+
         global  INPBUF
 INPBUF:	D_WORD	0		; type word
       D_WORD    0               ; block length
@@ -234,7 +252,7 @@ INPBUF:	D_WORD	0		; type word
       D_WORD    0               ; file position of buffer
       D_WORD    0               ; physical position in file
         times   1024 db 0        ; buffer
-;
+
         global  TTYBUF
 TTYBUF:	D_WORD    0     ; type word
       	D_WORD    0               ; block length
@@ -244,7 +262,6 @@ TTYBUF:	D_WORD    0     ; type word
       	D_WORD    0               ; file position of buffer
       	D_WORD    0               ; physical position in file
         times   260 db 0         ; buffer
-; ;-----------
 ; ;
 ; ;       Save and restore MINIMAL and interface registers on stack.
 ; ;       Used by any routine that needs to call back into the MINIMAL
@@ -269,52 +286,72 @@ TTYBUF:	D_WORD    0     ; type word
 ; ;       reloading a save file.
 ; ;
 ; ;
-	global	pushregs
-pushregs:
-	pushad
-	lea	XL,[reg_block]
-	lea	XR,[sav_block]
-	mov	WA,r_size/4
-	cld
-   rep	movsd
-
-        mov     XR,M_WORD [compsp]
-        or      XR,XR                         ; 1.39 is there a compiler stack
-        je      push1                     ; 1.39 jump if none yet
-        sub     XR,4                           ;push onto compiler's stack
-        mov     XL,M_WORD [reg_xl]                      ;collectable XL
-	mov	[XR],XL
-        mov     M_WORD [compsp],XR                      ;smashed if call OSINT again (SYSGC)
-        mov     M_WORD [sav_compsp],XR                  ;used by popregs
-
-push1:	popad
+; 	global	pushregs
+; pushregs:
+; 	pushad
+; 	lea	XL,[reg_block]
+; 	lea	XR,[sav_block]
+; 	mov	WA,r_size/4
+; 	cld
+;    rep	movsd
+; 
+;         mov     XR,M_WORD [compsp]
+;         or      XR,XR                         ; 1.39 is there a compiler stack
+;         je      push1                     ; 1.39 jump if none yet
+;         sub     XR,4                           ;push onto compiler's stack
+;         mov     XL,M_WORD [reg_xl]                      ;collectable XL
+; 	mov	[XR],XL
+;         mov     M_WORD [compsp],XR                      ;smashed if call OSINT again (SYSGC)
+;         mov     M_WORD [sav_compsp],XR                  ;used by popregs
+; 
+; push1:	popad
+; 	ret
+; 
+; 	global	popregs
+; popregs:
+; 	pushad
+;         mov     W0,M_WORD [reg_cp]                      ;don't restore CP
+; 	cld
+; 	lea	XL,[sav_block]
+;         lea     XR,[reg_block]                   ;unload saved registers
+; 	mov	WA,r_size/4
+;    rep  movsd                                   ;restore from temp area
+; 	mov	M_WORD [reg_cp],W0
+; 
+;         mov     XR,M_WORD [sav_compsp]                  ;saved compiler's stack
+;         or      XR,XR                         ;1.39 is there one?
+;         je      pop1                      ;1.39 jump if none yet
+;         mov     XL,M_WORD [XR]                       ;retrieve collectable XL
+;         mov     M_WORD [reg_xl],XL                      ;update XL
+;         add     XR,CFP_B                           ;update compiler's sp
+;         mov     M_WORD [compsp],XR
+; 
+; pop1:	popad
+; 	ret
+	global	save_regs
+save_regs:
+	mov	M_WORD [save_cp],WA
+	mov	M_WORD [save_xl],XL
+	mov	M_WORD [save_xr],XR
+	mov	M_WORD [save_xs],XS
+	mov	M_WORD [save_wa],WA
+	mov	M_WORD [save_wb],WB
+	mov	M_WORD [save_wc],WC
+	mov	M_WORD [save_w0],W0
 	ret
 
-	global	popregs
-popregs:
-	pushad
-        mov     W0,M_WORD [reg_cp]                      ;don't restore CP
-	cld
-	lea	XL,[sav_block]
-        lea     XR,[reg_block]                   ;unload saved registers
-	mov	WA,r_size/4
-   rep  movsd                                   ;restore from temp area
-	mov	M_WORD [reg_cp],W0
-
-        mov     XR,M_WORD [sav_compsp]                  ;saved compiler's stack
-        or      XR,XR                         ;1.39 is there one?
-        je      pop1                      ;1.39 jump if none yet
-        mov     XL,M_WORD [XR]                       ;retrieve collectable XL
-        mov     M_WORD [reg_xl],XL                      ;update XL
-        add     XR,CFP_B                           ;update compiler's sp
-        mov     M_WORD [compsp],XR
-
-pop1:	popad
+	global	restore_regs
+restore_regs:
+	;	Restore regs, except for SP. That is caller's responsibility
+	mov	XL,M_WORD [save_xl]
+	mov	XR,M_WORD [save_xr]
+;	mov	XS,M_WORD [save_xs	; caller restores SP]
+	mov	WA,M_WORD [save_cp]
+	mov	WA,M_WORD [save_wa]
+	mov	WB,M_WORD [save_wb]
+	mov	WC,M_WORD [save_wc]
+	mov	W0,M_WORD [save_w0]
 	ret
-
-; ;
-; ;
-; ;-----------
 ; ;
 ; ;       startup( char *dummy1, char *dummy2) - startup compiler
 ; ;
@@ -329,10 +366,10 @@ pop1:	popad
 ; 
 	global	startup
 ;   Ordinals for MINIMAL calls from assembly language.
-;
+
 ;   The order of entries here must correspond to the order of
 ;   calltab entries in the INTER assembly language module.
-;
+
 CALLTAB_RELAJ equ   0
 CALLTAB_RELCR equ   1
 CALLTAB_RELOC equ   2
@@ -355,31 +392,25 @@ startup:
         pop     W0                     ; discard dummy2
 	call	stackinit               ; initialize MINIMAL stack
         mov     W0,M_WORD [compsp]              ; get MINIMAL's stack pointer
-        mov dword[reg_wa],W0                     ; startup stack pointer
+        mov M_WORD [reg_wa],W0                     ; startup stack pointer
 
 	cld                             ; default to UP direction for string ops
 ;        GETOFF  W0,DFFNC               # get address of PPM offset
         mov     M_WORD [ppoff],W0               ; save for use later
-;
+
         mov     XS,M_WORD [osisp]               ; switch to new C stack
 	push	CALLTAB_START
 	call	minimal			; load regs, switch stack, start compiler
 
-; 
-; 
-; 
-;
-;-----------
-;
 ;	stackinit  -- initialize LOWSPMIN from sp.
-;
+
 ;	Input:  sp - current C stack
 ;		stacksiz - size of desired Minimal stack in bytes
-;
+
 ;	Uses:	W0
-;
+
 ;	Output: register WA, sp, LOWSPMIN, compsp, osisp set up per diagram:
-;
+
 ;	(high)	+----------------+
 ;		|  old C stack   |
 ;	  	|----------------| <-- incoming sp, resultant WA (future XS)
@@ -393,9 +424,9 @@ startup:
 ;	  	|----------------| <-- future C stack pointer, osisp
 ;		|  new C stack	 |
 ;	(low)	|                |
-;
-;
-;
+
+
+
 
 	global	stackinit
 stackinit:
@@ -408,23 +439,20 @@ stackinit:
 	mov	M_WORD [LOWSPMIN],W0
 	ret
 
-;
-;-----------
-;
 ;       mimimal -- call MINIMAL function from C
-;
+
 ;       Usage:  extern void minimal(WORD callno)
-;
+
 ;       where:
 ;         callno is an ordinal defined in osint.h, osint.inc, and calltab.
-;
+
 ;       Minimal registers WA, WB, WC, XR, and XL are loaded and
 ;       saved from/to the register block.
-;
+
 ;       Note that before restart is called, we do not yet have compiler
 ;       stack to switch to.  In that case, just make the call on the
 ;       the OSINT stack.
-;
+
 
  minimal:
          pushad                          ; save all registers for C
@@ -482,9 +510,6 @@ cprtmsg:
 ;       IMPORTANT  ONE interface routine, SYSFC, is passed arguments on
 ;       the stack.  These items are removed from the stack before calling
 ;       ccaller, as they are not needed by this implementation.
-
-
-;-----------
 
 ;       CCALLER is called by the OS interface routines to call the
 ;       real C OS interface function.
@@ -570,7 +595,7 @@ SYSBX:	mov	M_WORD [reg_xs],XS
 ;        global SYSCR
 ;	extern	zyscr
 ;SYSCR:  syscall    zyscr ;    ,0
-;
+
         global SYSDC
 	extern	zysdc
 SYSDC:	syscall	zysdc,4
@@ -712,7 +737,6 @@ SYSUL:	syscall	zysul,37
 	extern	zysxi
 SYSXI:	mov	M_WORD [reg_xs],XS
 	syscall	zysxi,38
-;---------------
 
 ;       Individual OSINT routine entry points
 
@@ -724,14 +748,12 @@ SYSXI:	mov	M_WORD [reg_xs],XS
 	add	XS,%2	; pop arguments
 	%endmacro
 
-;-----------
-;
 ;       CVD_ - convert by division
-;
+
 ;       Input   IA (EDX) = number <=0 to convert
 ;       Output  IA / 10
 ;               WA (ECX) = remainder + '0'
-;
+
         global  CVD_
 
 CVD_:
@@ -744,11 +766,8 @@ CVD_:
         xchg    WC,W0         ; return quotient in IA
 	ret
 
-;
-;-----------
-;
 ;       DVI_ - divide IA (EDX) by long in EAX
-;
+
         global  DVI_
 
 DVI_:
@@ -764,12 +783,8 @@ DVI_:
         xor     W0,W0         ; clear overflow indicator
 	ret
 
-
-;
-;-----------
-;
 ;       RMI_ - remainder of IA (EDX) divided by long in EAX
-;
+
         global  RMI_
 RMI_:
         or      W0,W0         ; test for 0
@@ -786,32 +801,26 @@ setovr: mov     al,0x80         ; set overflow indicator
 	dec	al
 	ret
 
-
-
-;----------
-;
 ;    Calls to C
-;
+
 ;       The calling convention of the various compilers:
-;
+
 ;       Integer results returned in EAX.
 ;       Float results returned in ST0 for Intel.
 ;       See conditional switches fretst0 and
 ;       fretW0. 
-;
+
 ;       C function preserves CP, EBX, XL, XR.
-;
+
 
 ; define how floating point results are returned from a function
 ; (either in ST(0) or in EDX:EAX.
 %define fretst0 1
 %define fretW0 0
 
-;----------
-;
 ;       RTI_ - convert real in RA to integer in IA
 ;               returns C=0 if fit OK, C=1 if too large to convert
-;
+
         global  RTI_
 RTI_:
 ; 41E00000 00000000 = 2147483648.0
@@ -841,11 +850,8 @@ RTI_0:  btc     W0,31                  ; make negative again
 RTI_1:  stc                             ; return C=1 for too large to convert
         ret
 
-;
-;----------
-;
 ;       ITR_ - convert integer in IA to real in RA
-;
+
         global  ITR_
 ITR_:
 
@@ -864,11 +870,8 @@ ITR_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       LDR_ - load real pointed to by W0 to RA
-;
+
         global  LDR_
 LDR_:
 
@@ -878,11 +881,8 @@ LDR_:
 	mov	M_WORD [reg_ra+4], W0
 	ret
 
-;
-;----------
-;
 ;       STR_ - store RA in real pointed to by W0
-;
+
         global  STR_
 STR_:
 
@@ -892,11 +892,8 @@ STR_:
 	pop	M_WORD [W0+4]
 	ret
 
-;
-;----------
-;
 ;       ADR_ - add real at [W0] to RA
-;
+
         global  ADR_
 ADR_:
 
@@ -921,11 +918,8 @@ ADR_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       SBR_ - subtract real at [W0] from RA
-;
+
         global  SBR_
 
 SBR_:
@@ -950,11 +944,8 @@ SBR_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       MLR_ - multiply real in RA by real at [W0]
-;
+
         global  MLR_
 
 MLR_:
@@ -979,11 +970,8 @@ MLR_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       DVR_ - divide real in RA by real at [W0]
-;
+
         global  DVR_
 
 DVR_:
@@ -1008,11 +996,8 @@ DVR_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       NGR_ - negate real in RA
-;
+
         global  NGR_
 
 NGR_:
@@ -1023,11 +1008,8 @@ NGR_:
 ngr_1:  xor     byte [reg_ra+7], 0x80         ; complement mantissa sign
 ngr_2:	ret
 
-;
-;----------
-;
 ;       ATN_ arctangent of real in RA
-;
+
         global  ATN_
 
 ATN_:
@@ -1050,11 +1032,8 @@ ATN_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       CHP_ chop fractional part of real in RA
-;
+
         global  CHP_
 
 
@@ -1078,11 +1057,8 @@ CHP_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       COS_ cosine of real in RA
-;
+
         global  COS_
 
 COS_:
@@ -1105,11 +1081,8 @@ COS_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       ETX_ exponential of real in RA
-;
+
         global  ETX_
 
 ETX_:
@@ -1132,11 +1105,8 @@ ETX_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       LNF_ natural logarithm of real in RA
-;
+
         global  LNF_
 
 LNF_:
@@ -1159,11 +1129,8 @@ LNF_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       SIN_ arctangent of real in RA
-;
+
         global  SIN_
 
 SIN_:
@@ -1187,11 +1154,8 @@ SIN_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       SQR_ arctangent of real in RA
-;
+
         global  SQR_
 
 SQR_:
@@ -1213,11 +1177,9 @@ SQR_:
 	pop	WA
 %endif
 	ret
-;
-;----------
-;
+
 ;       TAN_ arctangent of real in RA
-;
+
         global  TAN_
 
 TAN_:
@@ -1240,11 +1202,8 @@ TAN_:
 %endif
 	ret
 
-;
-;----------
-;
 ;       CPR_ compare real in RA to 0
-;
+
         global  CPR_
 CPR_:
         mov     W0, M_WORD [reg_ra+4] ; fetch msh
@@ -1258,9 +1217,6 @@ cpr050: cmp     M_WORD [reg_ra], 0     ; true zero, or denormalized number?
         cmp     al, 0                   ; positive denormal, set cc
 cpr100:	ret
 
-
-;----------
-;
 ;       OVR_ test for overflow value in RA
 
 	global	OVR_
