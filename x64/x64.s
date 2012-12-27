@@ -160,8 +160,6 @@ reg_size:	dd   r_size
 
 ; end of words saved during exit(-3)
 
-
-
 ;  Constants
 
 	global	ten
@@ -349,7 +347,8 @@ restore_regs:
 	mov	WC,M_WORD [save_wc]
 	mov	W0,M_WORD [save_w0]
 	ret
-
+; ;
+; ;-----------
 ; ;
 ; ;       startup( char *dummy1, char *dummy2) - startup compiler
 ; ;
