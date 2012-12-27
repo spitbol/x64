@@ -17,7 +17,7 @@ vpath %.c $(OSINT)
 
 CC	=	tcc
 ASM	=	nasm
-INCDIRS = -I../tcc/include -Imusl/include
+INCDIRS = -I../tcc/include -I../musl/include
 # next is for tcc
 ifeq	($(DEBUG),0)
 CFLAGS= $(INCDIRS)
