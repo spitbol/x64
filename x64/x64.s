@@ -394,8 +394,6 @@ CALLTAB_ENGTS equ   13
 
 startup:
         pop     W0			; discard return
-        pop     W0                      ; discard dummy1
-        pop     W0                      ; discard dummy2
 	call	stackinit               ; initialize MINIMAL stack
         mov     W0,M_WORD [compsp]      ; get MINIMAL's stack pointer
         mov 	M_WORD[reg_wa],W0	; startup stack pointer
