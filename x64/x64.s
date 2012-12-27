@@ -168,6 +168,23 @@ reg_size:	dd   r_size
 ; end of words saved during exit(-3)
 ;
 
+	global	save_cp
+	global	save_xl
+	global	save_xr
+	global	save_xs
+	global	save_wa
+	global	save_wb
+	global	save_wc
+	global	save_w0
+save_cp:	dq	0	; saved CP value
+save_xl:	dq	0	; saved XL value
+save_xr:	dq	0	; saved XR value
+save_xs:	dq	0	; saved SP value
+save_wa:	dq	0	; saved WA value
+save_wb:	dq	0	; saved WB value
+save_wc:	dq	0	; saved WC value
+save_w0:	dq	0	; saved W0 value
+
 minimal_id:	D_WORD	0	; id of procedure call from C to Minimal
 ;
 ;  Constants
@@ -314,6 +331,30 @@ TTYBUF:	D_WORD    0     ; type word
 ; pop1:	popad
 ; 	ret
 
+	global	save_regs
+save_regs:
+	mov	qword [save_cp],WA
+	mov	qword [save_xl],XL
+	mov	qword [save_xr],XR
+	mov	qword [save_xs],XS
+	mov	qword [save_wa],WA
+	mov	qword [save_wb],WB
+	mov	qword [save_wc],WC
+	mov	qword [save_w0],W0
+	ret
+
+	global	restore_regs
+restore_regs:
+	;	Restore regs, except for SP. That is caller's responsibility
+	mov	XL,qword [save_xl]
+	mov	XR,qword [save_xr]
+;	mov	XS,qword [save_xs	; caller restores SP]
+	mov	WA,qword [save_cp]
+	mov	WA,qword [save_wa]
+	mov	WB,qword [save_wb]
+	mov	WC,qword [save_wc]
+	mov	W0,qword [save_w0]
+	ret
 ; ;
 ; ;
 ; ;-----------
