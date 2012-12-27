@@ -34,7 +34,7 @@
 	global	reg_xs
 	global	reg_size
 
- 	global	minimal
+	global	minimal
 	extern	calltab
 	extern	stacksiz
  
@@ -123,7 +123,7 @@
 
 ;       Global Variables
 
-        segment	.data
+	segment	.data
 ; 	extern	swcoup
 ; 
 ; 	extern	stacksiz
@@ -137,7 +137,7 @@
 ; 
 ; ; Words saved during exit(-3)
 ; ;
-        align CFP_B
+	align CFP_B
 	extern	MINCP
 reg_block:
 reg_wa:	D_WORD	0        ; Register WA (ECX)
@@ -169,22 +169,22 @@ reg_size:	dd   r_size
 
 	global	ten
 ten:    D_WORD      10              ; constant 10
-        global  inf
+	global  inf
 inf:	D_WORD	0   
-        D_WORD      0x7ff00000      ; double precision infinity
+	D_WORD      0x7ff00000      ; double precision infinity
 
 	global	sav_block
 ;sav_block: times r_size db 0     ; Save Minimal registers during push/pop reg
 sav_block: times 44 db 0     ; Save Minimal registers during push/pop reg
 
-        align CFP_B
+	align CFP_B
 	global	ppoff
 ppoff:  D_WORD      0               ; offset for ppm exits
 	global	compsp
 compsp: D_WORD      0               ; 1.39 compiler's stack pointer
 	global	sav_compsp
 sav_compsp:
-        D_WORD      0               ; save compsp here
+	D_WORD      0               ; save compsp here
 	global	osisp
 osisp:  D_WORD      0               ; 1.39 OSINT's stack pointer
 	global	_rc_
@@ -217,33 +217,33 @@ minimal_id:	D_WORD	0	; id for call to minimal from C. See proc minimal below.
 ;       Setup a number of internal addresses in the compiler that cannot
 ;       be directly accessed from within C because of naming difficulties.
 
-        global  ID1
+	global  ID1
 ID1:	dd   0
 %if SETREAL == 1
-        D_WORD       2
+	D_WORD       2
 
        D_WORD       1
-        db  "1x\x00\x00\x00"
+	db  "1x\x00\x00\x00"
 %endif
 
-        global  ID2BLK
+	global  ID2BLK
 ID2BLK	D_WORD   52
       D_WORD    0
-        times   52 db 0
+	times   52 db 0
 
-        global  TICBLK
+	global  TICBLK
 TICBLK:	D_WORD   0
       D_WORD    0
 
-        global  TSCBLK
+	global  TSCBLK
 TSCBLK:	 D_WORD   512
       D_WORD    0
-        times   512 db 0
+	times   512 db 0
 
 
 ;       Standard input buffer block.
 
-        global  INPBUF
+	global  INPBUF
 INPBUF:	D_WORD	0		; type word
       D_WORD    0               ; block length
       D_WORD    1024            ; buffer size
@@ -251,17 +251,17 @@ INPBUF:	D_WORD	0		; type word
       D_WORD    0               ; offset to next character to read
       D_WORD    0               ; file position of buffer
       D_WORD    0               ; physical position in file
-        times   1024 db 0        ; buffer
+	times   1024 db 0        ; buffer
 
-        global  TTYBUF
+	global  TTYBUF
 TTYBUF:	D_WORD    0     ; type word
-      	D_WORD    0               ; block length
-      	D_WORD    260             ; buffer size  (260 OK in MS-DOS with cinread())
-      	D_WORD    0               ; remaining chars to read
-      	D_WORD    0               ; offset to next char to read
-      	D_WORD    0               ; file position of buffer
-      	D_WORD    0               ; physical position in file
-        times   260 db 0         ; buffer
+	D_WORD    0               ; block length
+	D_WORD    260             ; buffer size  (260 OK in MS-DOS with cinread())
+	D_WORD    0               ; remaining chars to read
+	D_WORD    0               ; offset to next char to read
+	D_WORD    0               ; file position of buffer
+	D_WORD    0               ; physical position in file
+	times   260 db 0         ; buffer
 ; ;
 ; ;       Save and restore MINIMAL and interface registers on stack.
 ; ;       Used by any routine that needs to call back into the MINIMAL
@@ -330,7 +330,7 @@ TTYBUF:	D_WORD    0     ; type word
 ; 	ret
 	global	save_regs
 save_regs:
-	mov	M_WORD [save_cp],WA
+	mov	M_WORD [save_cp],CP
 	mov	M_WORD [save_xl],XL
 	mov	M_WORD [save_xr],XR
 	mov	M_WORD [save_xs],XS
@@ -346,7 +346,7 @@ restore_regs:
 	mov	XL,M_WORD [save_xl]
 	mov	XR,M_WORD [save_xr]
 ;	mov	XS,M_WORD [save_xs	; caller restores SP]
-	mov	WA,M_WORD [save_cp]
+	mov	CP,M_WORD [save_cp]
 	mov	WA,M_WORD [save_wa]
 	mov	WB,M_WORD [save_wb]
 	mov	WC,M_WORD [save_wc]
@@ -387,19 +387,19 @@ CALLTAB_ENGTS equ   13
 
 
 startup:
-        pop     W0                     ; discard return
-        pop     W0                     ; discard dummy1
-        pop     W0                     ; discard dummy2
-	call	stackinit               ; initialize MINIMAL stack
-        mov     W0,M_WORD [compsp]              ; get MINIMAL's stack pointer
-        mov M_WORD [reg_wa],W0                     ; startup stack pointer
+	pop     W0			; discard return
+	pop     W0			; discard dummy1
+	pop     W0			; discard dummy2
+	call	stackinit		; initialize MINIMAL stack
+	mov     W0,M_WORD [compsp]	; get MINIMAL's stack pointer
+	mov M_WORD [reg_wa],W0		; startup stack pointer
 
-	cld                             ; default to UP direction for string ops
+	cld				; default to UP direction for string ops
 ;        GETOFF  W0,DFFNC               # get address of PPM offset
-        mov     M_WORD [ppoff],W0               ; save for use later
+	mov     M_WORD [ppoff],W0	; save for use later
 
-        mov     XS,M_WORD [osisp]               ; switch to new C stack
-	push	CALLTAB_START
+	mov     XS,M_WORD [osisp]	; switch to new C stack
+	mov	M_WORD [minimal_id],CALLTAB_START
 	call	minimal			; load regs, switch stack, start compiler
 
 ;	stackinit  -- initialize LOWSPMIN from sp.
@@ -431,10 +431,10 @@ startup:
 	global	stackinit
 stackinit:
 	mov	W0,XS
-        mov     M_WORD [compsp],W0              ; save as MINIMAL's stack pointer
-	sub	W0,M_WORD [stacksiz]            ; end of MINIMAL stack is where C stack will start
-        mov     M_WORD [osisp],W0               ; save new C stack pointer
-	add	W0,CFP_B*100               ; 100 words smaller for CHK
+	mov     M_WORD [compsp],W0	; save as MINIMAL's stack pointer
+	sub	W0,M_WORD [stacksiz]	; end of MINIMAL stack is where C stack will start
+	mov     M_WORD [osisp],W0	; save new C stack pointer
+	add	W0,CFP_B*100		; 100 words smaller for CHK
 	extern	LOWSPMIN
 	mov	M_WORD [LOWSPMIN],W0
 	ret
@@ -455,36 +455,37 @@ stackinit:
 
 
  minimal:
-         pushad                          ; save all registers for C
-	mov     W0,M_WORD [XS+32+4]          ; get ordinal
-        mov     WA,M_WORD [reg_wa]              ; restore registers
+;         pushad			; save all registers for C
+	mov     WA,M_WORD [reg_wa]	; restore registers
 	mov	WB,M_WORD [reg_wb]
-        mov     WC,M_WORD [reg_wc]              ; (also _reg_ia)
- 	mov	XR,M_WORD [reg_xr]
- 	mov	XL,M_WORD [reg_xl]
- 	mov	CP,M_WORD [reg_cp]
+	mov     WC,M_WORD [reg_wc]	; (also _reg_ia)
+	mov	XR,M_WORD [reg_xr]
+	mov	XL,M_WORD [reg_xl]
+	mov	CP,M_WORD [reg_cp]
  
-        mov     M_WORD [osisp],XS               ; 1.39 save OSINT stack pointer
-        cmp     M_WORD [compsp],0      ; 1.39 is there a compiler stack?
-        je      min1              ; 1.39 jump if none yet
-        mov     XS,M_WORD [compsp]              ; 1.39 switch to compiler stack
+	mov     M_WORD [osisp],XS	; save OSINT stack pointer
+	cmp     M_WORD [compsp],0	; is there a compiler stack?
+	je      min1			; jump if none yet
+	mov     XS,M_WORD [compsp]	; switch to compiler stack
  
- min1:  call   M_WORD [calltab+W0*4]        ; off to the Minimal code
+ min1:  
+	mov     W0,M_WORD [minimal_id]	; get ordinal
+	call   M_WORD [calltab+W0*4]        ; off to the Minimal code
  
-        mov     XS,M_WORD [osisp]               ; 1.39 switch to OSINT stack
+	mov     XS,M_WORD [osisp]	; switch to OSINT stack
  
-        mov     M_WORD [reg_wa],WA              ; save registers
- 	mov	M_WORD [reg_wb],WB
- 	mov	M_WORD [reg_wc],WC
- 	mov	M_WORD [reg_xr],XR
- 	mov	M_WORD [reg_xl],XL
- 	mov	M_WORD [reg_cp],CP
- 	popad
- 	ret
+	mov     M_WORD [reg_wa],WA	; save registers
+	mov	M_WORD [reg_wb],WB
+	mov	M_WORD [reg_wc],WC
+	mov	M_WORD [reg_xr],XR
+	mov	M_WORD [reg_xl],XL
+	mov	M_WORD [reg_cp],CP
+; 	popad
+	ret
  
  
-        section		.data
-        align         CFP_B
+	section		.data
+	align         CFP_B
 	global	hasfpu
 hasfpu:	D_WORD	0
 	global	cprtmsg
@@ -546,21 +547,21 @@ call_adr:	D_WORD	0
 syscall_init:
 ;       save registers in global variables
 
-        mov     M_WORD [reg_wa],WA              ; save registers
+	mov     M_WORD [reg_wa],WA              ; save registers
 	mov	M_WORD [reg_wb],WB
-        mov     M_WORD [reg_wc],WC              ; (also _reg_ia)
+	mov     M_WORD [reg_wc],WC              ; (also _reg_ia)
 	mov	M_WORD [reg_xr],XR
 	mov	M_WORD [reg_xl],XL
-        mov     M_WORD [reg_cp],CP              ; Needed in image saved by sysxi
+	mov     M_WORD [reg_cp],CP              ; Needed in image saved by sysxi
 	ret
 
 syscall_exit:
 	mov	M_WORD [_rc_],W0		; save return code from function
- 	mov     M_WORD [osisp],XS               ; save OSINT's stack pointer
-        mov     XS,M_WORD [compsp]              ; restore compiler's stack pointer
-        mov     WA,M_WORD [reg_wa]              ; restore registers
+	mov     M_WORD [osisp],XS               ; save OSINT's stack pointer
+	mov     XS,M_WORD [compsp]              ; restore compiler's stack pointer
+	mov     WA,M_WORD [reg_wa]              ; restore registers
 	mov	WB,M_WORD [reg_wb]
-        mov     WC,M_WORD [reg_wc]              ; (also reg_ia)
+	mov     WC,M_WORD [reg_wc]              ; (also reg_ia)
 	mov	XR,M_WORD [reg_xr]
 	mov	XL,M_WORD [reg_xl]
 	mov	CP,M_WORD [reg_cp]
@@ -569,25 +570,25 @@ syscall_exit:
 	jmp	W0
 	
 	%macro	syscall	2
-        pop     W0                     ; pop return address
+	pop     W0                     ; pop return address
 	mov	M_WORD [reg_pc],W0
 	call	syscall_init
 ;       save compiler stack and switch to OSINT stack
-        mov     M_WORD [compsp],XS              ; save compiler's stack pointer
-        mov     XS,M_WORD [osisp]               ; load OSINT's stack pointer
+	mov     M_WORD [compsp],XS              ; save compiler's stack pointer
+	mov     XS,M_WORD [osisp]               ; load OSINT's stack pointer
 	call	%1
 	call	syscall_exit
 	%endmacro
 
-        global SYSAX
+	global SYSAX
 	extern	zysax
 SYSAX:	syscall	  zysax,1
 
-        global SYSBS
+	global SYSBS
 	extern	zysbs
 SYSBS:	syscall	  zysbs,2
 
-        global SYSBX
+	global SYSBX
 	extern	zysbx
 SYSBX:	mov	M_WORD [reg_xs],XS
 	syscall	zysbx,2
@@ -596,144 +597,144 @@ SYSBX:	mov	M_WORD [reg_xs],XS
 ;	extern	zyscr
 ;SYSCR:  syscall    zyscr ;    ,0
 
-        global SYSDC
+	global SYSDC
 	extern	zysdc
 SYSDC:	syscall	zysdc,4
 
-        global SYSDM
+	global SYSDM
 	extern	zysdm
 SYSDM:	syscall	zysdm,5
 
-        global SYSDT
+	global SYSDT
 	extern	zysdt
 SYSDT:	syscall	zysdt,6
 
-        global SYSEA
+	global SYSEA
 	extern	zysea
 SYSEA:	syscall	zysea,7
 
-        global SYSEF
+	global SYSEF
 	extern	zysef
 SYSEF:	syscall	zysef,8
 
-        global SYSEJ
+	global SYSEJ
 	extern	zysej
 SYSEJ:	syscall	zysej,9
 
-        global SYSEM
+	global SYSEM
 	extern	zysem
 SYSEM:	syscall	zysem,10
 
-        global SYSEN
+	global SYSEN
 	extern	zysen
 SYSEN:	syscall	zysen,11
 
-        global SYSEP
+	global SYSEP
 	extern	zysep
 SYSEP:	syscall	zysep,12
 
-        global SYSEX
+	global SYSEX
 	extern	zysex
 SYSEX:	mov	M_WORD [reg_xs],XS
 	syscall	zysex,13
 
-        global SYSFC
+	global SYSFC
 	extern	zysfc
 SYSFC:  pop     W0             ; <<<<remove stacked SCBLK>>>>
 	lea	XS,[XS+WC*4]
 	push	W0
 	syscall	zysfc,14
 
-        global SYSGC
+	global SYSGC
 	extern	zysgc
 SYSGC:	syscall	zysgc,15
 
-        global SYSHS
+	global SYSHS
 	extern	zyshs
 SYSHS:	mov	M_WORD [reg_xs],XS
 	syscall	zyshs,16
 
-        global SYSID
+	global SYSID
 	extern	zysid
 SYSID:	syscall	zysid,17
 
-        global SYSIF
+	global SYSIF
 	extern	zysif
 SYSIF:	syscall	zysif,18
 
-        global SYSIL
+	global SYSIL
 	extern	zysil
 SYSIL:  syscall zysil,19
 
-        global SYSIN
+	global SYSIN
 	extern	zysin
 SYSIN:	syscall	zysin,20
 
-        global SYSIO
+	global SYSIO
 	extern	zysio
 SYSIO:	syscall	zysio,21
 
-        global SYSLD
+	global SYSLD
 	extern	zysld
 SYSLD:  syscall zysld,22
 
-        global SYSMM
+	global SYSMM
 	extern	zysmm
 SYSMM:	syscall	zysmm,23
 
-        global SYSMX
+	global SYSMX
 	extern	zysmx
 SYSMX:	syscall	zysmx,24
 
-        global SYSOU
+	global SYSOU
 	extern	zysou
 SYSOU:	syscall	zysou,25
 
-        global SYSPI
+	global SYSPI
 	extern	zyspi
 SYSPI:	syscall	zyspi,26
 
-        global SYSPL
+	global SYSPL
 	extern	zyspl
 SYSPL:	syscall	zyspl,27
 
-        global SYSPP
+	global SYSPP
 	extern	zyspp
 SYSPP:	syscall	zyspp,28
 
-        global SYSPR
+	global SYSPR
 	extern	zyspr
 SYSPR:	syscall	zyspr,29
 
-        global SYSRD
+	global SYSRD
 	extern	zysrd
 SYSRD:	syscall	zysrd,30
 
-        global SYSRI
+	global SYSRI
 	extern	zysri
 SYSRI:	syscall	zysri,32
 
-        global SYSRW
+	global SYSRW
 	extern	zysrw
 SYSRW:	syscall	zysrw,33
 
-        global SYSST
+	global SYSST
 	extern	zysst
 SYSST:	syscall	zysst,34
 
-        global SYSTM
+	global SYSTM
 	extern	zystm
 SYSTM:	syscall	zystm,35
 
-        global SYSTT
+	global SYSTT
 	extern	zystt
 SYSTT:	syscall	zystt,36
 
-        global SYSUL
+	global SYSUL
 	extern	zysul
 SYSUL:	syscall	zysul,37
 
-        global SYSXI
+	global SYSXI
 	extern	zysxi
 SYSXI:	mov	M_WORD [reg_xs],XS
 	syscall	zysxi,38
@@ -754,49 +755,49 @@ SYSXI:	mov	M_WORD [reg_xs],XS
 ;       Output  IA / 10
 ;               WA (ECX) = remainder + '0'
 
-        global  CVD_
+	global  CVD_
 
 CVD_:
-        xchg    W0,WC         ; IA to EAX
-        cdq                     ; sign extend
-        idiv    M_WORD [ten]   ; divide by 10. WC = remainder (negative)
-        neg     WC             ; make remainder positive
-        add     dl,0x30         ; convert remainder to ascii ('0')
-        mov     WA,WC         ; return remainder in WA
-        xchg    WC,W0         ; return quotient in IA
+	xchg    W0,WC         ; IA to EAX
+	cdq                     ; sign extend
+	idiv    M_WORD [ten]   ; divide by 10. WC = remainder (negative)
+	neg     WC             ; make remainder positive
+	add     dl,0x30         ; convert remainder to ascii ('0')
+	mov     WA,WC         ; return remainder in WA
+	xchg    WC,W0         ; return quotient in IA
 	ret
 
 ;       DVI_ - divide IA (EDX) by long in EAX
 
-        global  DVI_
+	global  DVI_
 
 DVI_:
-        or      W0,W0         ; test for 0
-        jz      setovr    	; jump if 0 divisor
-        push    CP             ; preserve CP
-        xchg    CP,W0         ; divisor to CP
-        xchg    W0,WC         ; dividend in W0
-        cdq                     ; extend dividend
-        idiv    CP             ; perform division. W0=quotient, WC=remainder
-        xchg    WC,W0         ; place quotient in WC (IA)
-        pop     CP             ; restore CP
-        xor     W0,W0         ; clear overflow indicator
+	or      W0,W0         ; test for 0
+	jz      setovr    	; jump if 0 divisor
+	push    CP             ; preserve CP
+	xchg    CP,W0         ; divisor to CP
+	xchg    W0,WC         ; dividend in W0
+	cdq                     ; extend dividend
+	idiv    CP             ; perform division. W0=quotient, WC=remainder
+	xchg    WC,W0         ; place quotient in WC (IA)
+	pop     CP             ; restore CP
+	xor     W0,W0         ; clear overflow indicator
 	ret
 
 ;       RMI_ - remainder of IA (EDX) divided by long in EAX
 
-        global  RMI_
+	global  RMI_
 RMI_:
-        or      W0,W0         ; test for 0
-        jz      setovr    ; jump if 0 divisor
-        push    CP             ; preserve CP
-        xchg    CP,W0         ; divisor to CP
-        xchg    W0,WC         ; dividend in W0
-        cdq                     ; extend dividend
-        idiv    CP             ; perform division. W0=quotient, WC=remainder
-        pop     CP             ; restore CP
-        xor     W0,W0         ; clear overflow indicator
-        ret                     ; return remainder in WC (IA)
+	or      W0,W0         ; test for 0
+	jz      setovr    ; jump if 0 divisor
+	push    CP             ; preserve CP
+	xchg    CP,W0         ; divisor to CP
+	xchg    W0,WC         ; dividend in W0
+	cdq                     ; extend dividend
+	idiv    CP             ; perform division. W0=quotient, WC=remainder
+	pop     CP             ; restore CP
+	xor     W0,W0         ; clear overflow indicator
+	ret                     ; return remainder in WC (IA)
 setovr: mov     al,0x80         ; set overflow indicator
 	dec	al
 	ret
@@ -821,400 +822,400 @@ setovr: mov     al,0x80         ; set overflow indicator
 ;       RTI_ - convert real in RA to integer in IA
 ;               returns C=0 if fit OK, C=1 if too large to convert
 
-        global  RTI_
+	global  RTI_
 RTI_:
 ; 41E00000 00000000 = 2147483648.0
 ; 41E00000 00200000 = 2147483649.0
-        mov     W0, M_WORD [reg_ra+4]  ; RA msh
-        btr     W0,31          ; take absolute value, sign bit to carry flag
-        jc      RTI_2     ; jump if negative real
-        cmp     W0,0x41E00000  ; test against 2147483648
-        jae     RTI_1     ; jump if >= +2147483648
+	mov     W0, M_WORD [reg_ra+4]  ; RA msh
+	btr     W0,31          ; take absolute value, sign bit to carry flag
+	jc      RTI_2     ; jump if negative real
+	cmp     W0,0x41E00000  ; test against 2147483648
+	jae     RTI_1     ; jump if >= +2147483648
 RTI_3:  push    WA             ; protect against C routine usage.
-        push    W0             ; push RA MSH
-        push    M_WORD [reg_ra]  ; push RA LSH
-        callext f_2_i,8         ; float to integer
-        xchg    W0,WC         ; return integer in WC (IA)
-        pop     WA             ; restore WA
-        clc
+	push    W0             ; push RA MSH
+	push    M_WORD [reg_ra]  ; push RA LSH
+	callext f_2_i,8         ; float to integer
+	xchg    W0,WC         ; return integer in WC (IA)
+	pop     WA             ; restore WA
+	clc
 	ret
 
 ; here to test negative number, made positive by the btr instruction
 RTI_2:  cmp     W0,0x41E00000          ; test against 2147483649
-        jb      RTI_0             ; definately smaller
-        ja      RTI_1             ; definately larger
-        cmp     word [reg_ra+2], 0x0020
-        jae     RTI_1
+	jb      RTI_0             ; definately smaller
+	ja      RTI_1             ; definately larger
+	cmp     word [reg_ra+2], 0x0020
+	jae     RTI_1
 RTI_0:  btc     W0,31                  ; make negative again
-        jmp     RTI_3
+	jmp     RTI_3
 RTI_1:  stc                             ; return C=1 for too large to convert
-        ret
+	ret
 
 ;       ITR_ - convert integer in IA to real in RA
 
-        global  ITR_
+	global  ITR_
 ITR_:
 
-        push    WA             ; preserve
-        push    WC             ; push IA
-        callext i_2_f,4         ; integer to float
+	push    WA             ; preserve
+	push    WC             ; push IA
+	callext i_2_f,4         ; integer to float
 %if fretst0
 	fstp	qword [reg_ra]
-        pop     WA             ; restore WA
+	pop     WA             ; restore WA
 	fwait
 %endif
 %if fretW0
-        mov     M_WORD [reg_ra,W0    ; return result in RA
+	mov     M_WORD [reg_ra,W0    ; return result in RA
 	mov	M_WORD [reg_ra+4,WC
-        pop     WA             ; restore WA
+	pop     WA             ; restore WA
 %endif
 	ret
 
 ;       LDR_ - load real pointed to by W0 to RA
 
-        global  LDR_
+	global  LDR_
 LDR_:
 
-        push    M_WORD [W0]                 ; lsh
+	push    M_WORD [W0]                 ; lsh
 	pop	M_WORD [reg_ra]
-        mov     W0,[W0+4]                     ; msh
+	mov     W0,[W0+4]                     ; msh
 	mov	M_WORD [reg_ra+4], W0
 	ret
 
 ;       STR_ - store RA in real pointed to by W0
 
-        global  STR_
+	global  STR_
 STR_:
 
-        push    M_WORD [reg_ra]               ; lsh
+	push    M_WORD [reg_ra]               ; lsh
 	pop	M_WORD [W0]
-        push    M_WORD [reg_ra+4]              ; msh
+	push    M_WORD [reg_ra+4]              ; msh
 	pop	M_WORD [W0+4]
 	ret
 
 ;       ADR_ - add real at [W0] to RA
 
-        global  ADR_
+	global  ADR_
 ADR_:
 
-        push    WA                             ; preserve regs for C
+	push    WA                             ; preserve regs for C
 	push	WC
-        push    M_WORD [reg_ra+4]             ; RA msh
-        push    M_WORD [reg_ra]               ; RA lsh
-        push    M_WORD [W0+4]               ; arg msh
-        push    M_WORD [W0]                 ; arg lsh
-        callext f_add,16                        ; perform op
+	push    M_WORD [reg_ra+4]             ; RA msh
+	push    M_WORD [reg_ra]               ; RA lsh
+	push    M_WORD [W0+4]               ; arg msh
+	push    M_WORD [W0]                 ; arg lsh
+	callext f_add,16                        ; perform op
 %if fretst0
 	fstp	qword [reg_ra]
-        pop     WC                             ; restore regs
+	pop     WC                             ; restore regs
 	pop	WA
 	fwait
 %endif
 %if fretW0
-        mov     M_WORD [reg_ra+4], WC         ; result msh
-        mov     M_WORD [reg_ra], W0           ; result lsh
-        pop     WC                             ; restore regs
+	mov     M_WORD [reg_ra+4], WC         ; result msh
+	mov     M_WORD [reg_ra], W0           ; result lsh
+	pop     WC                             ; restore regs
 	pop	WA
 %endif
 	ret
 
 ;       SBR_ - subtract real at [W0] from RA
 
-        global  SBR_
+	global  SBR_
 
 SBR_:
-        push    WA                             ; preserve regs for C
+	push    WA                             ; preserve regs for C
 	push	WC
-        push    M_WORD [reg_ra+4]             ; RA msh
-        push    M_WORD [reg_ra]               ; RA lsh
-        push    M_WORD [W0+4]               ; arg msh
-        push    M_WORD [W0]                 ; arg lsh
-        callext f_sub,16                        ; perform op
+	push    M_WORD [reg_ra+4]             ; RA msh
+	push    M_WORD [reg_ra]               ; RA lsh
+	push    M_WORD [W0+4]               ; arg msh
+	push    M_WORD [W0]                 ; arg lsh
+	callext f_sub,16                        ; perform op
 %if fretst0
 	fstp	qword [reg_ra]
-        pop     WC                             ; restore regs
+	pop     WC                             ; restore regs
 	pop	WA
 	fwait
 %endif
 %if fretW0
-        mov     M_WORD [reg_ra+4, WC         ; result msh
-        mov     M_WORD [reg_ra, W0           ; result lsh
-        pop     WC                             ; restore regs
+	mov     M_WORD [reg_ra+4, WC         ; result msh
+	mov     M_WORD [reg_ra, W0           ; result lsh
+	pop     WC                             ; restore regs
 	pop	WA
 %endif
 	ret
 
 ;       MLR_ - multiply real in RA by real at [W0]
 
-        global  MLR_
+	global  MLR_
 
 MLR_:
-        push    WA                             ; preserve regs for C
+	push    WA                             ; preserve regs for C
 	push	WC
-        push    M_WORD [reg_ra+4]              ; RA msh
-        push    M_WORD [reg_ra]                ; RA lsh
-        push    M_WORD [W0+4]               ; arg msh
-        push    M_WORD [W0]                 ; arg lsh
-        callext f_mul,16                        ; perform op
+	push    M_WORD [reg_ra+4]              ; RA msh
+	push    M_WORD [reg_ra]                ; RA lsh
+	push    M_WORD [W0+4]               ; arg msh
+	push    M_WORD [W0]                 ; arg lsh
+	callext f_mul,16                        ; perform op
 %if fretst0
 	fstp	qword [reg_ra]
-        pop     WC                             ; restore regs
+	pop     WC                             ; restore regs
 	pop	WA
 	fwait
 %endif
 %if fretW0
-        mov     M_WORD [reg_ra+4], WC         ; result msh
-        mov     M_WORD [reg_ra], W0           ; result lsh
-        pop     WC                             ; restore regs
+	mov     M_WORD [reg_ra+4], WC         ; result msh
+	mov     M_WORD [reg_ra], W0           ; result lsh
+	pop     WC                             ; restore regs
 	pop	WA
 %endif
 	ret
 
 ;       DVR_ - divide real in RA by real at [W0]
 
-        global  DVR_
+	global  DVR_
 
 DVR_:
-        push    WA                             ; preserve regs for C
+	push    WA                             ; preserve regs for C
 	push	WC
-        push    M_WORD [reg_ra+4]              ; RA msh
-        push    M_WORD [reg_ra]                ; RA lsh
-        push    M_WORD [W0+4]               ; arg msh
-        push    M_WORD [W0]                 ; arg lsh
-        callext f_div,16                        ; perform op
+	push    M_WORD [reg_ra+4]              ; RA msh
+	push    M_WORD [reg_ra]                ; RA lsh
+	push    M_WORD [W0+4]               ; arg msh
+	push    M_WORD [W0]                 ; arg lsh
+	callext f_div,16                        ; perform op
 %if fretst0
-        fstp	qword [reg_ra]
-        pop     WC                             ; restore regs
+	fstp	qword [reg_ra]
+	pop     WC                             ; restore regs
 	pop	WA
 	fwait
 %endif
 %if fretW0
-        mov     M_WORD [reg_ra+4], WC         ; result msh
-        mov     M_WORD [reg_ra], W0           ; result lsh
-        pop     WC                             ; restore regs
+	mov     M_WORD [reg_ra+4], WC         ; result msh
+	mov     M_WORD [reg_ra], W0           ; result lsh
+	pop     WC                             ; restore regs
 	pop	WA
 %endif
 	ret
 
 ;       NGR_ - negate real in RA
 
-        global  NGR_
+	global  NGR_
 
 NGR_:
 	cmp	M_WORD [reg_ra], 0
 	jne	ngr_1
 	cmp	M_WORD [reg_ra+4], 0
-        je      ngr_2                     ; if zero, leave alone
+	je      ngr_2                     ; if zero, leave alone
 ngr_1:  xor     byte [reg_ra+7], 0x80         ; complement mantissa sign
 ngr_2:	ret
 
 ;       ATN_ arctangent of real in RA
 
-        global  ATN_
+	global  ATN_
 
 ATN_:
-        push    WA                             ; preserve regs for C
+	push    WA                             ; preserve regs for C
 	push	WC
-        push    M_WORD [reg_ra+4]              ; RA msh
-        push    M_WORD [reg_ra]                ; RA lsh
-        callext f_atn,8                         ; perform op
+	push    M_WORD [reg_ra+4]              ; RA msh
+	push    M_WORD [reg_ra]                ; RA lsh
+	callext f_atn,8                         ; perform op
 %if fretst0
-        fstp	qword [reg_ra]
-        pop     WC                             ; restore regs
+	fstp	qword [reg_ra]
+	pop     WC                             ; restore regs
 	pop	WA
 	fwait
 %endif
 %if fretW0
-        mov     M_WORD [reg_ra+4], WC         ; result msh
-        mov     M_WORD [reg_ra], W0           ; result lsh
-        pop     WC                             ; restore regs
+	mov     M_WORD [reg_ra+4], WC         ; result msh
+	mov     M_WORD [reg_ra], W0           ; result lsh
+	pop     WC                             ; restore regs
 	pop	WA
 %endif
 	ret
 
 ;       CHP_ chop fractional part of real in RA
 
-        global  CHP_
+	global  CHP_
 
 
 CHP_:
-        push    WA                             ; preserve regs for C
+	push    WA                             ; preserve regs for C
 	push	WC
-        push    M_WORD [reg_ra+4]              ; RA msh
-        push    M_WORD [reg_ra]                ; RA lsh
-        callext f_chp,8                         ; perform op
+	push    M_WORD [reg_ra+4]              ; RA msh
+	push    M_WORD [reg_ra]                ; RA lsh
+	callext f_chp,8                         ; perform op
 %if fretst0
-        fstp	qword [reg_ra]
-        pop     WC                             ; restore regs
+	fstp	qword [reg_ra]
+	pop     WC                             ; restore regs
 	pop	WA
 	fwait
 %endif
 %if fretW0
-        mov     M_WORD [reg_ra+4], WC         ; result msh
-        mov     M_WORD [reg_ra], W0           ; result lsh
-        pop     WC                             ; restore regs
+	mov     M_WORD [reg_ra+4], WC         ; result msh
+	mov     M_WORD [reg_ra], W0           ; result lsh
+	pop     WC                             ; restore regs
 	pop	WA
 %endif
 	ret
 
 ;       COS_ cosine of real in RA
 
-        global  COS_
+	global  COS_
 
 COS_:
-        push    WA                             ; preserve regs for C
+	push    WA                             ; preserve regs for C
 	push	WC
-        push    M_WORD [reg_ra+4]              ; RA msh
-        push    M_WORD [reg_ra]                ; RA lsh
-        callext f_cos,8                         ; perform op
+	push    M_WORD [reg_ra+4]              ; RA msh
+	push    M_WORD [reg_ra]                ; RA lsh
+	callext f_cos,8                         ; perform op
 %if fretst0
-        fstp	qword [reg_ra]
-        pop     WC                             ; restore regs
+	fstp	qword [reg_ra]
+	pop     WC                             ; restore regs
 	pop	WA
 	fwait
 %endif
 %if fretW0
-        mov     M_WORD [reg_ra+4], WC         ; result msh
-        mov     M_WORD [reg_ra], W0           ; result lsh
-        pop     WC                             ; restore regs
+	mov     M_WORD [reg_ra+4], WC         ; result msh
+	mov     M_WORD [reg_ra], W0           ; result lsh
+	pop     WC                             ; restore regs
 	pop	WA
 %endif
 	ret
 
 ;       ETX_ exponential of real in RA
 
-        global  ETX_
+	global  ETX_
 
 ETX_:
-        push    WA                             ; preserve regs for C
+	push    WA                             ; preserve regs for C
 	push	WC
-        push    M_WORD [reg_ra+4]              ; RA msh
-        push    M_WORD [reg_ra]                ; RA lsh
-        callext f_etx,8                         ; perform op
+	push    M_WORD [reg_ra+4]              ; RA msh
+	push    M_WORD [reg_ra]                ; RA lsh
+	callext f_etx,8                         ; perform op
 %if fretst0
-        fstp	qword [reg_ra]
-        pop     WC                             ; restore regs
+	fstp	qword [reg_ra]
+	pop     WC                             ; restore regs
 	pop	WA
 	fwait
 %endif
 %if fretW0
-        mov     M_WORD [reg_ra+4], WC         ; result msh
-        mov     M_WORD [reg_ra], W0           ; result lsh
-        pop     WC                             ; restore regs
+	mov     M_WORD [reg_ra+4], WC         ; result msh
+	mov     M_WORD [reg_ra], W0           ; result lsh
+	pop     WC                             ; restore regs
 	pop	WA
 %endif
 	ret
 
 ;       LNF_ natural logarithm of real in RA
 
-        global  LNF_
+	global  LNF_
 
 LNF_:
-        push    WA                             ; preserve regs for C
+	push    WA                             ; preserve regs for C
 	push	WC
-        push    M_WORD [reg_ra+4]              ; RA msh
-        push    M_WORD [reg_ra]                ; RA lsh
-        callext f_lnf,8                         ; perform op
+	push    M_WORD [reg_ra+4]              ; RA msh
+	push    M_WORD [reg_ra]                ; RA lsh
+	callext f_lnf,8                         ; perform op
 %if fretst0
-        fstp	qword [reg_ra]
-        pop     WC                             ; restore regs
+	fstp	qword [reg_ra]
+	pop     WC                             ; restore regs
 	pop	WA
 	fwait
 %endif
 %if fretW0
-        mov     M_WORD [reg_ra+4], WC         ; result msh
-        mov     M_WORD [reg_ra], W0           ; result lsh
-        pop     WC                             ; restore regs
+	mov     M_WORD [reg_ra+4], WC         ; result msh
+	mov     M_WORD [reg_ra], W0           ; result lsh
+	pop     WC                             ; restore regs
 	pop	WA
 %endif
 	ret
 
 ;       SIN_ arctangent of real in RA
 
-        global  SIN_
+	global  SIN_
 
 SIN_:
 
-        push    WA                             ; preserve regs for C
+	push    WA                             ; preserve regs for C
 	push	WC
-        push    M_WORD [reg_ra+4]              ; RA msh
-        push    M_WORD [reg_ra]               ; RA lsh
-        callext f_sin,8                         ; perform op
+	push    M_WORD [reg_ra+4]              ; RA msh
+	push    M_WORD [reg_ra]               ; RA lsh
+	callext f_sin,8                         ; perform op
 %if fretst0
-        fstp	qword [reg_ra]
-        pop     WC                             ; restore regs
+	fstp	qword [reg_ra]
+	pop     WC                             ; restore regs
 	pop	WA
 	fwait
 %endif
 %if fretW0
-        mov     M_WORD [reg_ra+4], WC         ; result msh
-        mov     M_WORD [reg_ra], W0           ; result lsh
-        pop     WC                             ; restore regs
+	mov     M_WORD [reg_ra+4], WC         ; result msh
+	mov     M_WORD [reg_ra], W0           ; result lsh
+	pop     WC                             ; restore regs
 	pop	WA
 %endif
 	ret
 
 ;       SQR_ arctangent of real in RA
 
-        global  SQR_
+	global  SQR_
 
 SQR_:
-        push    WA                             ; preserve regs for C
+	push    WA                             ; preserve regs for C
 	push	WC
-        push    M_WORD [reg_ra+4]              ; RA msh
-        push    M_WORD [reg_ra]                ; RA lsh
-        callext f_sqr,8                         ; perform op
+	push    M_WORD [reg_ra+4]              ; RA msh
+	push    M_WORD [reg_ra]                ; RA lsh
+	callext f_sqr,8                         ; perform op
 %if fretst0
-        fstp	qword [reg_ra]
-        pop     WC                             ; restore regs
+	fstp	qword [reg_ra]
+	pop     WC                             ; restore regs
 	pop	WA
 	fwait
 %endif
 %if fretW0
-        mov     M_WORD [reg_ra+4], WC         ; result msh
-        mov     M_WORD [reg_ra], W0           ; result lsh
-        pop     WC                             ; restore regs
+	mov     M_WORD [reg_ra+4], WC         ; result msh
+	mov     M_WORD [reg_ra], W0           ; result lsh
+	pop     WC                             ; restore regs
 	pop	WA
 %endif
 	ret
 
 ;       TAN_ arctangent of real in RA
 
-        global  TAN_
+	global  TAN_
 
 TAN_:
-        push    WA                             ; preserve regs for C
+	push    WA                             ; preserve regs for C
 	push	WC
-        push    M_WORD [reg_ra+4]              ; RA msh
-        push    M_WORD [reg_ra]                ; RA lsh
-        callext f_tan,8                         ; perform op
+	push    M_WORD [reg_ra+4]              ; RA msh
+	push    M_WORD [reg_ra]                ; RA lsh
+	callext f_tan,8                         ; perform op
 %if fretst0
-        fstp	qword [reg_ra]
-        pop     WC                             ; restore regs
+	fstp	qword [reg_ra]
+	pop     WC                             ; restore regs
 	pop	WA
 	fwait
 %endif
 %if fretW0
-        mov     M_WORD [reg_ra+4], WC         ; result msh
-        mov     M_WORD [reg_ra], W0           ; result lsh
-        pop     WC                             ; restore regs
+	mov     M_WORD [reg_ra+4], WC         ; result msh
+	mov     M_WORD [reg_ra], W0           ; result lsh
+	pop     WC                             ; restore regs
 	pop	WA
 %endif
 	ret
 
 ;       CPR_ compare real in RA to 0
 
-        global  CPR_
+	global  CPR_
 CPR_:
-        mov     W0, M_WORD [reg_ra+4] ; fetch msh
-        cmp     W0, 0x80000000         ; test msh for -0.0
-        je      cpr050            ; possibly
-        or      W0, W0                ; test msh for +0.0
-        jnz     cpr100            ; exit if non-zero for cc's set
+	mov     W0, M_WORD [reg_ra+4] ; fetch msh
+	cmp     W0, 0x80000000         ; test msh for -0.0
+	je      cpr050            ; possibly
+	or      W0, W0                ; test msh for +0.0
+	jnz     cpr100            ; exit if non-zero for cc's set
 cpr050: cmp     M_WORD [reg_ra], 0     ; true zero, or denormalized number?
-        jz      cpr100            ; exit if true zero
+	jz      cpr100            ; exit if true zero
 	mov	al, 1
-        cmp     al, 0                   ; positive denormal, set cc
+	cmp     al, 0                   ; positive denormal, set cc
 cpr100:	ret
 
 ;       OVR_ test for overflow value in RA
@@ -1222,9 +1223,9 @@ cpr100:	ret
 	global	OVR_
 
 OVR_:   
-        mov     ax, word [reg_ra+6]   ; get top 2 bytes
-        and     ax, 0x7ff0              ; check for infinity or nan
-        add     ax, 0x10                ; set/clear overflow accordingly
+	mov     ax, word [reg_ra+6]   ; get top 2 bytes
+	and     ax, 0x7ff0              ; check for infinity or nan
+	add     ax, 0x10                ; set/clear overflow accordingly
 	ret
 
 
