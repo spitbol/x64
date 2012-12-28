@@ -134,7 +134,7 @@
 ; 
 ; ; Words saved during exit(-3)
 ; ;
-	align CFP_B
+	align 16
 	extern	MINCP
 reg_block:
 reg_wa:	D_WORD	0        ; Register WA (ECX)
@@ -480,7 +480,7 @@ minimal:
 	mov	M_WORD [reg_cp],CP
 	ret
 	section		.data
-	align         CFP_B
+	align         16
 	global	hasfpu
 hasfpu:	D_WORD	0
 	global	cprtmsg
@@ -636,7 +636,7 @@ SYSEX:	mov	M_WORD [reg_xs],XS
 	global SYSFC
 	extern	zysfc
 SYSFC:  pop     W0             ; <<<<remove stacked SCBLK>>>>
-	lea	XS,[XS+WC*4]
+	lea	XS,[XS+WC*CFP_B]
 	push	W0
 	syscall	zysfc,14
 
