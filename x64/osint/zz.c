@@ -45,7 +45,7 @@ int last_wc;
 int last_w0;
 int last_cp;
 
-int AT_CALLS = 0;
+int zz_calls = 0;
 
 #define DAVE
 #ifdef DAVE
@@ -82,7 +82,8 @@ void zz() {
 	int changed = 0;
 	int listed = 0;
 
-	if(zz_zz>0) zz_calls++;
+//	if(zz_zz>0) zz_calls++;
+	zz_calls++;
 	fprintf(stderr, "ZZZ %d %d %d\n",zz_calls, zz_zz, zz_id);
 
 	/* print registers that have changed since last statement */
@@ -119,9 +120,8 @@ void zz() {
 			{ prtdif("w0.eax", last_w0, zz_w0, listed); listed += 1; }
 		prtnl();
 	}
-	AT_CALLS++; /* count number of calls */
 
-	if (AT_CALLS % 3 == 1) {
+	if (zz_calls % 3 == 1) {
 		/* print register values before the statement was executed */
 		prtreg("xl.esi", zz_xl);
 		prtreg("xr.edi", zz_xr);

@@ -16,6 +16,7 @@
 ;     You should have received a copy of the GNU General Public License
 ;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 
+	default		rel
 	%include	"x64.h"
 ;	CFP_B gives bytes per word, CFP_C gives characters per word
 	%define CFP_B	8
@@ -636,7 +637,7 @@ SYSEX:	mov	M_WORD [reg_xs],XS
 	global SYSFC
 	extern	zysfc
 SYSFC:  pop     W0             ; <<<<remove stacked SCBLK>>>>
-	lea	XS,[XS+WC*4]
+	lea	XS,[XS+WC*CFP_B]
 	push	W0
 	syscall	zysfc,14
 

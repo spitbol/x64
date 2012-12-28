@@ -55,7 +55,8 @@ loop.0
 
 * look for label to enable ZZZ trace
 	&ANCHOR = 1
-	ZZZON = IDENT(line, 'RELAJ:') 1
+*	ZZZON = IDENT(line, 'RELAJ:') 1
+	ZZZON = IDENT(line, 'START:') 1
 	ZZZON = IDENT(line,'Z-')	0
 	IDENT(line,'Z-')	:s(loop)
 	ZZZON = IDENT(line,'Z+')	1
