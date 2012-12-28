@@ -135,7 +135,7 @@
 ; 
 ; ; Words saved during exit(-3)
 ; ;
-	align CFP_B
+	align 16
 	extern	MINCP
 reg_block:
 reg_wa:	D_WORD	0        ; Register WA (ECX)
@@ -481,7 +481,7 @@ minimal:
 	mov	M_WORD [reg_cp],CP
 	ret
 	section		.data
-	align         CFP_B
+	align         16
 	global	hasfpu
 hasfpu:	D_WORD	0
 	global	cprtmsg

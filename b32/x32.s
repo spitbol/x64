@@ -641,7 +641,7 @@ SYSEX:	mov	M_WORD [reg_xs],XS
 	global SYSFC
 	extern	zysfc
 SYSFC:  pop     W0             ; <<<<remove stacked SCBLK>>>>
-	lea	XS,[XS+WC*4]
+	lea	XS,[XS+WC*CFP_B]
 	push	W0
 	syscall	zysfc,14
 
