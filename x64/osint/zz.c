@@ -22,31 +22,34 @@ This file is part of Macro SPITBOL.
 #include <stdio.h>
 
 
-extern int compsp;
-extern int osisp;
-extern int lowspmin;
+extern uword compsp;
+extern uword osisp;
+extern uword lowspmin;
 
-int zz_xl;
-int zz_xr;
-int zz_xs;
-int zz_wa;
-int zz_wb;
-int zz_wc;
-int zz_w0;
-int zz_cp;
-int zz_zz;
+uword zz_xl;
+uword zz_xr;
+uword zz_xs;
+uword zz_wa;
+uword zz_wb;
+uword zz_wc;
+uword zz_w0;
+uword zz_cp;
+uword zz_zz;
 
-int last_xl;
-int last_xr;
-int last_xs;
-int last_wa;
-int last_wb;
-int last_wc;
-int last_w0;
-int last_cp;
+uword last_xl;
+uword last_xr;
+uword last_xs;
+uword last_wa;
+uword last_wb;
+uword last_wc;
+uword last_w0;
+uword last_cp;
 
-int zz_calls = 0;
+uword zz_calls = 0;
 
+uword zz_off;
+uword zz_id=0;
+/*void zz_(long zz_ip,char * zz_desc) {*/
 #define DAVE
 #ifdef DAVE
 char * AT_DESC;
@@ -73,10 +76,6 @@ void prtdif(char* name, int old, int new, int listed)
 	prtnl();
 }
 
-unsigned long zz_off;
-int zz_calls=0;
-int zz_id=0;
-/*void zz_(long zz_ip,char * zz_desc) {*/
 void zz() {
 
 	int changed = 0;
