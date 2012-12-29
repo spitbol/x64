@@ -432,7 +432,21 @@ OPNEXT	THISLINE = READLINE()
 *
 * Append ':' after label if in code or data.
 *
-        TLABEL = INLABEL (DIFFER(INLABEL) GE(SECTNOW,3) ':', )
+* Output LABEL of executable instruction immediately if there is one,
+* as it simplifies later processing, especially for tracing.
+	IDENT(INLABEL)				:S(OPNEXT.1)
+	THISLABEL = INLABEL (DIFFER(INLABEL) GE(SECTNOW,3) ':',)
+* Keep the label as is is not in executable code
+	LT(SECTNOW,5)				:S(OPNEXT.1)
+* Here if in code, so output label now
+	OUTFILE = THISLABEL
+	OUTLINES = OUTLINES + 1
+* Set LASTLABEL so can check to avoid emitting duplicate label definitions
+	LASTLABEL  THISLABEL
+* Clear out label info once generated
+	LABEL = THISLABEL = 
+OPNEXT.1
+	THISLABEL = INLABEL (DIFFER(INLABEL) GE(SECTNOW,3) ':',)
 	I1 = PRSARG(IARG1)
 	I2 = PRSARG(IARG2)
 	I3 = PRSARG(IARG3)
@@ -663,7 +677,7 @@ OUTSTMT5
 	NOUTLINES = NOUTLINES + 1
 *
 *  Record code labels in table with delimiter removed.
-	(GE(SECTNOW,5) DIFFER(LABEL))		:F(RETURN)
+	(GE(SECTNOW,5) DIFFER(THISLABEL))		:F(RETURN)
 	LABEL ? BREAK(':') . LABEL	:F(RETURN)
 	LABTAB<LABEL> = NOUTLINES		:(RETURN)
 
@@ -825,9 +839,9 @@ G.ENT
 	T.LABEL(T1) = TLABEL
 	CSTMTS[CSTMTS.N] = T1
 *  Here to see if want label made public
-	TLABEL ? RTAB(1) . TLABEL ':'
-        (DIFFER(PUBTAB[TLABEL]), DIFFER(DEBUG)) GENOP('global',TLABEL)
-	TLABEL =				:(OPDONE)
+	THISLABEL ? RTAB(1) . THISLABEL ':'
+        (DIFFER(PUBTAB[THISLABEL]), DIFFER(DEBUG)) GENOP('global',THISLABEL)
+	THISLABEL =				:(OPDONE)
 
 G.BRI	GENOP('JMP',GETARG(I1))			:(OPDONE)
 
@@ -901,10 +915,15 @@ G.PPM.2
 
 G.PRC
 
+*  Generate PUBLIC declaration
+*	T1 = THISLABEL
+*	T1 ? RTAB(1) . T1 ':'
+*	GENOP()
+*	GENOP('Global',T1)
 *  NOP needed to get labels straight
 	PRC.ARGS = GETARG(I2)
-	PPM_CASES[INLABEL] = I.TEXT(I2)
-	INLABEL =
+	PPM_CASES[THISLABEL] = I.TEXT(I2)
+	THISLABEL =
 	MAX_EXI = GT(PRC.ARGS,MAX_EXI) PRC.ARGS
 	PRC.TYPE = I.TEXT(I1)		:($('G.PRC.' PRC.TYPE))
 G.PRC.E
@@ -957,7 +976,11 @@ G.SSL   GENOP()					:(OPDONE)
 G.SSS   GENOP()					:(OPDONE)
 
 G.RTN
+*	Generate PUBLIC declaration and then regenerate label
+*	T1 = THISLABEL
+*	T1 ? RTAB(1) . T1 ':'
 	GENOP()
+*        GENOP('GLobal',T1)                     
                                                 :(OPDONE)
 
 G.ADD	MEMMEM()
@@ -1008,7 +1031,7 @@ G.LCT
 *
 	DIFFER(I.TEXT(I1),I.TEXT(I2))		:S(G.LCT.1)
 *  Here if operands same. Emit no code if no label, else emit null
-	IDENT(TLABEL)				:S(OPNEXT)
+	IDENT(THISLABEL)				:S(OPNEXT)
 	GENOP()					:(OPDONE)
 
 G.LCT.1	GENOP('MOV',GETARG(I1),GETARG(I2))	:(OPDONE)
@@ -1221,7 +1244,7 @@ G.SCG.W.PXR
 G.SCG.W.XRP
 	GENOP('MOV','AL',T1)
 	GENOP('STOSB')				:(OPDONE)
-G.CSC  	IDENT(TLABEL)				:S(OPNEXT)
+G.CSC  	IDENT(THISLABEL)			:S(OPNEXT)
 	GENOP()					:(OPDONE)
 
 G.CEQ
@@ -1402,7 +1425,7 @@ G.MCB
 	GENOP('DEC','XR')
  	GENREP('MOVSB')
 *	GENOP('REP','MOVSB')
-	GENOP('CLD')				:(OPDONE)
+	GENOP('CLD')					:(OPDONE)
 GENREP
 *	Generate equivalent of REP op loop
 	L1 = GENLAB()
@@ -1414,20 +1437,24 @@ GENREP
 	GENOP('DEC','WA')
 	GENOP('JMP',L1)
 	GENOPL(L2 ':')
-						:(RETURN)
+							:(RETURN)
 
 G.CHK   GENOP('CMP','XS','LOWSPMIN')
-	GENOP('JB','SEC06')			:(OPDONE)
+	GENOP('JB','SEC06')			
+							:(OPDONE)
 
 DECEND
 *  Here at end of DIC or DAC to see if want label made public
-	TLABEL ? RTAB(1) . TLABEL ':'
-        DIFFER(PUBTAB[TLABEL]) GENOP('global',TLABEL)  :(OPDONE)
+	THISLABEL ? RTAB(1) . THISLABEL ':'
+        DIFFER(PUBTAB[THISLABEL]) GENOP('global',THISLABEL)  
+							:(OPDONE)
 
 G.DAC	T1 = I.TYPE(I1)
         T2 = "" ;*(LE(T1,2) "", LE(T1,4) "D_OFFSET_(", LE(T1,6) "D_OFFSET_(", "")
-        GENOPL(TLABEL,'D_WORD',T2 I.TEXT(I1))    :(DECEND)
-G.DIC   GENOPL(TLABEL,'D_WORD',I.TEXT(I1))               :(DECEND)
+        GENOPL(THISLABEL,'D_WORD',T2 I.TEXT(I1))    
+							:(DECEND)
+G.DIC   GENOPL(THISLABEL,'D_WORD',I.TEXT(I1))               
+							:(DECEND)
 
 *
 * Make sure don't attach label to the align.
@@ -1441,8 +1468,8 @@ G.DRC   GENOP('align','CFP_B')
 	T1 ? FENCE "+" = ""
         GENOP('D_WORD',T1)
 *  Note that want to attach label to last instruction
-	T.LABEL(CSTMTS[CSTMTS.N]) = TLABEL
-	TLABEL =					:(OPDONE)
+	T.LABEL(CSTMTS[CSTMTS.N]) = THISLABEL
+	THISLABEL =					:(OPDONE)
 
 G.DTC
 *  CHANGE FIRST AND LAST CHARS TO " (ASSUME / USED IN SOURCE)
@@ -1453,16 +1480,19 @@ G.DTC
 *  Append nulls to complete last word so constant length is multiple
 *  of word word
         T2 = NE(T3) T2 DUPL(',0',CFP_C - T3)
-        GENOPL(TLABEL,'db',T2)              :(OPDONE)
-G.DBC   GENOPL(TLABEL,'D_WORD',GETARG(I1))       :(OPDONE)
-G.EQU   GENOP('equ',I.TEXT(I1))			:(OPDONE)
+        GENOPL(THISLABEL,'db',T2)              
+							:(OPDONE)
+G.DBC   GENOPL(THISLABEL,'D_WORD',GETARG(I1))       
+							:(OPDONE)
+G.EQU   GENOPL(THISLABEL,'equ',I.TEXT(I1))			
+							:(OPDONE)
 G.EXP   
-	PPM_CASES[INLABEL] = I.TEXT(I1)
-	GENOP('extern',TLABEL)
-	TLABEL =				:(OPDONE)
+	PPM_CASES[THISLABEL] = I.TEXT(I1)
+	GENOP('extern',THISLABEL)
+	THISLABEL =				:(OPDONE)
 
 G.INP	
-	PPM_CASES[INLABEL] = I.TEXT(I2)
+	PPM_CASES[THISLABEL] = I.TEXT(I2)
 	PRC.COUNT1 = IDENT(I.TEXT(I1),'N') PRC.COUNT1 + 1
 +						:(OPNEXT)
 
@@ -1545,9 +1575,10 @@ OPDONE	FLUSH()					:(OPNEXT)
 *
 FLUSH	EQ(ASTMTS.N) EQ(BSTMTS.N) EQ(CSTMTS.N)	:F(OPDONE1)
 *
-*  Here if no statements, so output single 'null' statement to get label
+*  Here if some statements to emit, so output single 'null' statement to get label
 *  and comment field right.
 *
+	LABEL = THISLABEL = 
 	OUTSTMT(TSTMT())			:(OPDONE.6)
 OPDONE1	EQ(BSTMTS.N)				:S(OPDONE.2)
 	I = 1

@@ -55,16 +55,18 @@ loop.0
 
 * look for label to enable ZZZ trace
 	&ANCHOR = 1
-*	ZZZON = IDENT(line, 'RELAJ:') 1
-	ZZZON = IDENT(line, 'START:') 1
+ 	ZZZON = IDENT(line, 'RELAJ:') 1
+*	ZZZON = IDENT(line, 'START:') 1
 	ZZZON = IDENT(line,'Z-')	0
 	IDENT(line,'Z-')	:s(loop)
 	ZZZON = IDENT(line,'Z+')	1
 	IDENT(line,'Z+')	:s(loop)
 	EQ(ZZZON)	:s(copy)
-*   :(copy)
+*    :(copy)
+* only trace statements with labels
         first = substr(line,1,1)
- 	LNE(first,' ')		:s(label)
+ 	LNE(first,' ')		:s(label)f(copy)
+
 	label = 
 	line ? span(' ' tab) . first rem . rest
 					:(zzz)
