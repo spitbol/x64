@@ -162,3 +162,7 @@ install:
 	sudo cp spitbol /usr/local/bin
 clean:
 	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s errors.s ./sbl
+z:
+	nm -n s.o >s.nm
+	spitbol ../map32.spt <s.nm >s.dic
+	spitbol ../v.spt <ad >ae

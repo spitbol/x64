@@ -50,11 +50,11 @@ uword zz_calls = 0;
 
 uword zz_off;
 uword zz_id=0;
+char ** zz_de;
 extern long C_AAA;
 extern long W_YYY;
 long OFF_C_AAA;
 long OFF_W_YYY;
-/*void zz_(long zz_ip,char * zz_desc) {*/
 #define DAVE
 #ifdef DAVE
 char * AT_DESC;
@@ -101,12 +101,12 @@ void zz_init() {
 
 void zz() {
 
+	char *p;
 	int changed = 0;
 	int listed = 0;
 
-//	if(zz_zz>0) zz_calls++;
 	zz_calls++;
-	fprintf(stderr, "zzz %d %d %d\n",zz_calls, zz_id, zz_zz);
+	fprintf(stderr, "zzz %d %d %d %s\n",zz_calls, zz_id, zz_zz,zz_de);
 
 	/* print registers that have changed since last statement */
 

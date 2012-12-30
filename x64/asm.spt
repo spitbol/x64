@@ -92,10 +92,10 @@
 
 *	Set Z_TRACE to enable instruction by instruction trace
 	Z_TRACE = 1
-*	AT_LIMIT is maximum number of calls to be generated if non-zero
-	AT_LIMIT = 000
-*	Set AT_SKIP non-zero to skip first number of instructions that would generate trace
-	AT_SKIP = 0
+*	Z_LIMIT is maximum number of calls to be generated if non-zero
+	Z_LIMIT = 000
+*	Set Z_SKIP non-zero to skip first number of instructions that would generate trace
+	Z_SKIP = 0
 *	will set in_executable when in part of program where executable
 *	instructions may occur
 	IN_EXEC = 0
@@ -187,7 +187,7 @@
 *
 	DEFINE('ERROR(TEXT)')
 	DEFINE('FLUSH()')
-	DEFINE('GENAT()')
+	DEFINE('GENZ()')
 	DEFINE('GENAOP(STMT)')
 	DEFINE('GENBOP(STMT)')
         DEFINE('GENLAB()')
@@ -814,8 +814,8 @@ CHKTRACE
 *     	OUTPUT = DIFFER(OLD_IN_EXEC, IN_EXEC) 'in_exec now ' IN_EXEC
 *     	OUTPUT = DIFFER(OLD_IS_EXEC, IS_EXEC) 'is_exec now ' IS_EXEC
 
-	AT_NUM = 100 * IN_EXEC + 10 * IS_EXEC + IN_SKIP
-* 	OUTPUT = CLABEL ':' 'AT_NUM:' AT_NUM ':' LPAD(NLINES,6) ' ' STMTOUT
+	Z_NUM = 100 * IN_EXEC + 10 * IS_EXEC + IN_SKIP
+* 	OUTPUT = CLABEL ':' 'Z_NUM:' Z_NUM ':' LPAD(NLINES,6) ' ' STMTOUT
 *	skip trace if would otherwise access label that is too far removed
 	NE(IN_SKIP)				:S(RETURN)
 	EQ(IN_EXEC)				:S(RETURN)
@@ -833,55 +833,19 @@ CHKTRACE
 *	LABEL =
 	NE(IN_GCOL)				:S(RETURN)
 CHKTRACE.1
-*	GENAT()
-	Z_COUNT = Z_COUNT + 1
-	IDENT(THISLABEL)			:S(RETURN)
+	GENZ()
+						:(RETURN)
+GENZ
 * Only trace at label definition
-	OUTFILE = TAB 'ZZZ' TAB	NLINES ',' Z_COUNT 
+	IDENT(THISLABEL)			:S(RETURN)
+	Z_COUNT = Z_COUNT + 1
+	GT(Z_SKIP) LE(Z_COUNT,Z_SKIP)		:S(RETURN)
+	GT(Z_LIMIT)  GT(Z_COUNT, Z_LIMIT)	:S(RETURN)
+*	Always generate trace if at label definition
+	Z_DESC = '"' REPLACE(THISLINE,'{',' ') '"'
+	OUTFILE = TAB 'ZZZ' TAB	Z_COUNT ',' NLINES ',' Z_DESC 
 	OUTLINES = OUTLINES + 1
 						:(RETURN)
-
-
-GENAT
-	ATLINES = ATLINES + 1
-	NE(ATLINES,1)				:S(GENAT.0)
-*	Here to emit code and declarations that need be done ony once
-*	OUTFILE = EQ(ATLINES,1) TAB '.extern' TAB 'AT_REGS'
-*        OUTFILE =   TAB 'DSeg_'
-*	OUTFILE =   TAB '.global' TAB 'AT1_0'
-*        OUTFILE =   'AT1_0:'
-GENAT.0
-	GT(AT_SKIP) LE(ATLINES,AT_SKIP)		:S(RETURN)
-	GT(AT_LIMIT)  GT(ATLINES, AT_LIMIT)	:S(RETURN)
-*	Always generate trace if at label definition
-	DIFFER(INLABEL)				:S(GENAT.1)
-*       Can't trace every statement due to loader limit on .stabn entries, so just
-*	do some.
-* 	NE(REMDR(NSTMTS,2),1)			:S(RETURN)
-*	desc = lpad('"' ilineno,6) ' ' uopcode ' ' thisline 
-GENAT.1
-	DESCTEXT = REPLACE(THISLINE,'{','|')
-*	OUTPUT = 'GENAT ' ATLINES ':' DESCTEXT ':'
-*        OUTFILE =   TAB 'DSeg_'
-        AT.CALLS = AT.CALLS + 1
-        AT.1 =  'AT1_' AT.CALLs
-        AT.2 =  'AT2_' AT.CALLs
-        OUTFILE = AT.1 ':'
-*        OUTFILE =   TAB '.ascii "'  DESCTEXT '"'
-*        OUTFILE =   TAB '.byte 0'
-*        OUTFILE =   TAB 'CSeg_'
-*        OUTFILE =   TAB 'pushf'
-*        OUTFILE =   TAB 'pushad'
-*	OUTFILE =   TAB 'call AT_REGS'
-*	OUTFILE =   TAB 'push' TAB  AT.1 '-AT1_0'
-*        OUTFILE =   TAB 'call ' AT.2
-*        OUTFILE = AT.2 ':'
-*        OUTFILE =   TAB 'call AT_'
-*        OUTFILE =   TAB 'pop eax'
-*        OUTFILE =   TAB 'pop eax'
-*        OUTFILE =   TAB 'popad'
-*        OUTFILE =   TAB 'popf'
-        OUTFILE =  
         
 -STITL PRSARG(IARG)
 PRSARG	PRSARG = MINARG(0)
@@ -1066,7 +1030,7 @@ G.JSR
 *	get count of following ppm statements
 	JSR_COUNT = PPM_CASES[JSR_PROC]
 	EQ(JSR_COUNT)				:S(OPDONE)
-*	AT_SUSPEND()
+*	Z_SUSPEND()
 	JSR_CALLS = JSR_CALLS +  1
 	JSR_LABEL = 'CALL_' JSR_CALLS
 	JSR_LABEL_NORM = JSR_LABEL 
@@ -1098,7 +1062,7 @@ G.PPM
 G.PPM.LOOP.NEXT
 	GENOPL(LAB_NEXT ':')
  	JSR_COUNT = JSR_COUNT - 1
-* 	EQ(JSR_COUNT) AT_RESTORE()
+* 	EQ(JSR_COUNT) Z_RESTORE()
 	EQ(JSR_COUNT) GENOPL(JSR_LABEL_NORM ':') :(OPDONE)
 G.PPM.LOOP
 	LAB_NEXT = GENLAB()
