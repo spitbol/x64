@@ -210,6 +210,7 @@ char	*argv[];
         __exit( 1 );
     }
 	fprintf(stderr,"lowsp\t%x\n",lowsp);
+	fprintf(stderr,"lowsp\t%ld\n",lowsp);
     /*
     /   Allocate initial increment of dynamic memory.
     /
@@ -221,8 +222,10 @@ char	*argv[];
     }
     topmem = basemem + memincb;
     maxmem = basemem + databts;
-	fprintf(stderr,"topmem\t%x\n",topmem);
-	fprintf(stderr,"basemem\t%x\n",basemem);
+	fprintf(stderr,"topmem\t%xx\n",topmem);
+	fprintf(stderr,"topmem\t%ld\n",topmem);
+	fprintf(stderr,"basemem\t%xx\n",basemem);
+	fprintf(stderr,"basemem\t%ld\n",basemem);
 
 
     /*
@@ -242,6 +245,7 @@ char	*argv[];
     /   Startup compiler.
     */
 	fprintf(stderr,"calling startup\n");
+    zz_init();
     startup();
 #endif					/* !RUNTIME */
 

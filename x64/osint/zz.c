@@ -35,6 +35,7 @@ uword zz_wc;
 uword zz_w0;
 uword zz_cp;
 uword zz_zz;
+uword zz_ln;
 
 uword last_xl;
 uword last_xr;
@@ -49,6 +50,10 @@ uword zz_calls = 0;
 
 uword zz_off;
 uword zz_id=0;
+extern long C_AAA;
+extern long W_YYY;
+long OFF_C_AAA;
+long OFF_W_YYY;
 /*void zz_(long zz_ip,char * zz_desc) {*/
 #define DAVE
 #ifdef DAVE
@@ -57,23 +62,41 @@ extern char at1_0;
 void prtnl() {
 	fprintf(stderr,"\n");
 }
-void prtval(int reg) {
+void prtval(long reg) {
 	if (reg < 100000 && reg >= 0)
-		fprintf(stderr," %8d ", reg);
-	else
+		fprintf(stderr," %16d ", reg);
+	else if ( reg >= OFF_C_AAA && reg <= OFF_W_YYY) {
+		fprintf(stderr," Z%ld ", reg);
+	}
+	else {
 		fprintf(stderr," %16lxx", reg);
 //		fprintf(stderr," ---------", reg);
+	}
 }
-void prtreg(char * name, int val) {
+void prtreg(char * name, long val) {
 	prtval(val);
 	fprintf(stderr," %s",name);
 }
-void prtdif(char* name, int old, int new, int listed)
+void prtdif(char* name, long old, long new, long listed)
 {
 	/* print old and new values of named register */
 	fprintf(stderr,"%s:", name);
 	prtval(old); fprintf(stderr," -> "); prtval(new);
 	prtnl();
+}
+extern long C_AAA;
+extern long W_YYY;
+
+long OFF_C_AAA;
+long OFF_W_YYY;
+
+void zz_init() {
+	OFF_C_AAA = &C_AAA;
+	OFF_W_YYY = &W_YYY;
+	fprintf(stderr, "OFF_C_AAA %ld\n", &C_AAA);
+	fprintf(stderr, " OFF_C_AAA %lx\n", &C_AAA);
+	fprintf(stderr, "OFF_W_YYY %ld\n", &W_YYY);
+	fprintf(stderr, " OFF_W_YYY %lx\n", &W_YYY);
 }
 
 void zz() {
@@ -83,7 +106,7 @@ void zz() {
 
 //	if(zz_zz>0) zz_calls++;
 	zz_calls++;
-	fprintf(stderr, "ZZZ %d %d %d\n",zz_calls, zz_zz, zz_id);
+	fprintf(stderr, "zzz %d %d %d\n",zz_calls, zz_id, zz_zz);
 
 	/* print registers that have changed since last statement */
 
@@ -120,7 +143,9 @@ void zz() {
 		prtnl();
 	}
 
-	if (zz_calls % 3 == 1) {
+//	if (zz_calls % 3 == 1) {
+	if (zz_calls>0) {
+	
 		/* print register values before the statement was executed */
 		prtreg("xl.esi", zz_xl);
 		prtreg("xr.edi", zz_xr);

@@ -14,9 +14,10 @@
 	extern	save_regs
 	extern	restore_regs
 
-	%macro	ZZZ	1
+	%macro	ZZZ	2
 	call	save_regs
-	mov	qword [zz_zz],%1
+	mov	qword [zz_id],%1
+	mov	qword [zz_zz],%2
 	mov	qword [zz_xl],XL
 	mov	qword [zz_xr],XR
 	mov	qword [zz_xs],XS
@@ -46,6 +47,7 @@
 	extern	zz_wc
 	extern	zz_w0
 	extern	zz_zz
+	extern	zz_id
 	extern	zz_0
 	extern	zz_1
 	extern	zz_2

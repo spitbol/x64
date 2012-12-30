@@ -130,7 +130,7 @@
 	SKIP_ON['PRNL1'] = 1
 	SKIP_ON['PRTI1'] = 1
 	SKIP_ON['SRPL5'] = 1
-	SKIP_ON['START'] = 1
+*	SKIP_ON['START'] = 1
 
 	SKIP_OFF = TABLE(10)
 	SKIP_OFF['GTARR'] = 1
@@ -156,7 +156,7 @@
 	SKIP_OFF['PRNL2'] = 1
 	SKIP_OFF['PRTMI'] = 1
 	SKIP_OFF['SRPL8'] = 1
-	SKIP_OFF['INI03'] = 1
+*	SKIP_OFF['INI03'] = 1
 
 *
 *  Data structures
@@ -835,7 +835,9 @@ CHKTRACE
 CHKTRACE.1
 *	GENAT()
 	Z_COUNT = Z_COUNT + 1
-	OUTFILE = TAB 'ZZZ' TAB	Z_COUNT
+	IDENT(THISLABEL)			:S(RETURN)
+* Only trace at label definition
+	OUTFILE = TAB 'ZZZ' TAB	NLINES ',' Z_COUNT 
 	OUTLINES = OUTLINES + 1
 						:(RETURN)
 
