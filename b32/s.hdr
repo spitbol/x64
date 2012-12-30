@@ -35,13 +35,15 @@
 	extern	zz_wc
 	extern	zz_w0
 	extern	zz_zz
+	extern	zz_id
 	extern zz_num
 	global	START
 
-	%macro	ZZZ	1
+	%macro	ZZZ	2
 	pushf
 	pushad
-	mov	dword [zz_zz],%1
+	mov	dword [zz_id],%1
+	mov	dword [zz_zz],%2
 	mov	dword [zz_cp],ebp
 	mov	dword [zz_xl],esi
 	mov	dword [zz_xl],esi
