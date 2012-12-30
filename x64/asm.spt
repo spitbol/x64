@@ -534,7 +534,7 @@ OPNEXT	THISLINE = READLINE()
 	OUTFILE = THISLABEL
 	OUTLINES = OUTLINES + 1
 * Set LASTLABEL so can check to avoid emitting duplicate label definitions
-	LASTLABEL  THISLABEL
+	LASTLABEL = THISLABEL
 * Clear out label info once generated
 	LABEL = THISLABEL = 
 OPNEXT.1
