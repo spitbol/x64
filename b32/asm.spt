@@ -721,10 +721,8 @@ PRCENT PRCENT = 'PRC_' '+'  (CFP_B * ( N - 1)) :(RETURN)
 *  passed in the argument list to the formatted .s file
 *
 OUTSTMT	LABEL = T.LABEL(OSTMT)
-*  attach source label to first generated instruction
-	DIFFER(LABEL)				:S(OUTSTMT1)
-	IDENT(TLABEL)				:S(OUTSTMT1)
-	LABEL = TLABEL; TLABEL =
+*  Clear label if definition already emitted
+	LABEL = IDENT(LABEL, LASTLABEL)
 
 OUTSTMT1
 	COMMENT = T.COMMENT(OSTMT)
@@ -857,6 +855,8 @@ READLINE READLINE = INFILE                      :F(RL02)
 	NLINES  = NLINES + 1
 	IDENT( READLINE )			:S(READLINE)
 	LEQ( SUBSTR( READLINE,1,1 ),'*' )       :F(RL01)
+*  Force skip of full line comments.
+	:(READLINE)
 *
 *  Only print comment if requested.
 *
@@ -1642,7 +1642,7 @@ G.DBC   GENOPL(THISLABEL,'D_WORD',GETARG(I1))       :(OPDONE)
 G.EQU   GENOPL(THISLABEL,'equ',I.TEXT(I1))			:(OPDONE)
 G.EXP   
 	PPM_CASES[THISLABEL] = I.TEXT(I1)
-	GENOP('Extern',THISLABEL)
+	GENOP('extern',THISLABEL)
 	THISLABEL =				:(OPDONE)
 
 G.INP	

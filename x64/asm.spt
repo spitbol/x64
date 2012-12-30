@@ -6,7 +6,7 @@
 * 
 *     Macro SPITBOL is free software: you can redistribute it and/or modify
 *     it under the terms of the GNU General Public License as published by
-*     the Free Software Foundation, either version 3 of the License, or
+*     the Free Software Foundation, either version 2 of the License, or
 *     (at your option) any later version.
 * 
 *     Macro SPITBOL is distributed in the hope that it will be useful,
@@ -724,10 +724,6 @@ PRCENT PRCENT = 'PRC_' '+'  (CFP_B * ( N - 1)) :(RETURN)
 OUTSTMT	LABEL = T.LABEL(OSTMT)
 * Clear LABEL if definition already emitted
 	LABEL = IDENT(LABEL, LASTLABEL)
-*  attach source label to first generated instruction
-*	DIFFER(LABEL)				:S(OUTSTMT1)
-*	IDENT(TLABEL)				:S(OUTSTMT1)
-*	LABEL = TLABEL; TLABEL =
 
 OUTSTMT1
 	COMMENT = T.COMMENT(OSTMT)
@@ -765,7 +761,7 @@ OUTSTMT4
 **	Send text to output file if not null.
 *
 *	STMTOUT = REPLACE(TRIM(STMTOUT),'$','_')
-	STMOUT = TRIM(STMTOUT)
+	STMTOUT = TRIM(STMTOUT)
 	IDENT(STMTOUT)				:S(RETURN)
 	EQ(Z_TRACE)				:S(OUTSTMT5)
 *	here if trace code desired for executable instructions
