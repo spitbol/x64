@@ -88,75 +88,6 @@
 	CFP_C = 4
 	LOG_CFP_B = '2'
 	LOG_CFP_C = '2'
-
-*	Set Z_TRACE to enable instruction by instruction trace
-	Z_TRACE = 1
-*	AT_LIMIT is maximum number of calls to be generated if non-zero
-	AT_LIMIT = 000
-*	Set AT_SKIP non-zero to skip first number of instructions that would generate trace
-	AT_SKIP = 0
-*	will set in_executable when in part of program where executable
-*	instructions may occur
-	IN_EXEC = 0
-*	set in_skip when should not insert trace code, else assembly errors result.
-*	start with skip on, turn off when see first start of code.
-	IN_SKIP = 1
-*	skip_on and skip_off are labels indicating the start and end, 
-*	respectively, of sections of the code that should not be traced,
-*	usually because they contain a LOOP instruction that won't
-*	compile if too much trace code is inserted.
-	SKIP_ON = TABLE(10)
-	SKIP_ON['GBCOL'] = 1
-	SKIP_ON['GTN01'] = 1
-	SKIP_ON['BPF05'] = 1
-	SKIP_ON['SCV12'] = 1
-	SKIP_ON['CNC01'] = 1
-	SKIP_ON['EXBL1'] = 1
-	SKIP_ON['EXBL5'] = 1
-	SKIP_ON['PRN17'] = 1
-	SKIP_ON['INI11'] = 1
-	SKIP_ON['OEX13'] = 1
-	SKIP_ON['OEX14'] = 1
-	SKIP_ON['BDFC1'] = 1
-	SKIP_ON['SAR01'] = 1
-	SKIP_ON['SAR06'] = 1
-	SKIP_ON['SRPL5'] = 1
-	SKIP_ON['PFLU1'] = 1
-	SKIP_ON['PRPA4'] = 1
-	SKIP_ON['PRN17'] = 1
-	SKIP_ON['PRTT1'] = 1
-	SKIP_ON['TRIM4'] = 1
-	SKIP_ON['PRNL1'] = 1
-	SKIP_ON['PRTI1'] = 1
-	SKIP_ON['SRPL5'] = 1
-*	SKIP_ON['START'] = 1
-
-	SKIP_OFF = TABLE(10)
-	SKIP_OFF['GTARR'] = 1
-	SKIP_OFF['GTNVR'] = 1
-	SKIP_OFF['BPF07'] = 1
-	SKIP_OFF['SCV19'] = 1
-	SKIP_OFF['EXBL2'] = 1
-	SKIP_OFF['EXPAN'] = 1
-	SKIP_OFF['PRN18'] = 1
-	SKIP_OFF['PRN18'] = 1
-	SKIP_OFF['INI13'] = 1
-	SKIP_OFF['OEXP2'] = 1
-	SKIP_OFF['OEXP6'] = 1
-	SKIP_OFF['B_EFC'] = 1
-	SKIP_OFF['SAR10'] = 1
-	SKIP_OFF['SRPL8'] = 1
-	SKIP_OFF['CNC06'] = 1
-	SKIP_OFF['PFLU2'] = 1
-	SKIP_OFF['PRPA5'] = 1
-	SKIP_OFF['PRN18'] = 1
-	SKIP_Off['PRTVL'] = 1
-	SKIP_OFF['TRIM5'] = 1
-	SKIP_OFF['PRNL2'] = 1
-	SKIP_OFF['PRTMI'] = 1
-	SKIP_OFF['SRPL8'] = 1
-*	SKIP_OFF['INI03'] = 1
-
 *
 *  Data structures
 *
@@ -178,7 +109,6 @@
 *
 	DEFINE('CRACK(LINE)OPERANDS,OPERAND,CHAR')
 *
-	DEFINE('CHKTRACE()')
 *	COMREGS - map minimal register names to target register names
 	DEFINE('COMREGS(LINE)T,PRE,WORD')
 *
@@ -186,7 +116,6 @@
 *
 	DEFINE('ERROR(TEXT)')
 	DEFINE('FLUSH()')
-	DEFINE('GENAT()')
 	DEFINE('GENAOP(STMT)')
 	DEFINE('GENBOP(STMT)')
         DEFINE('GENLAB()')
@@ -285,75 +214,6 @@
 *
 *
 
-
-
-*	Set Z_TRACE to enable instruction by instruction trace
-	Z_TRACE = 1
-*	AT_LIMIT is maximum number of calls to be generated if non-zero
-	AT_LIMIT = 000
-*	Set AT_SKIP non-zero to skip first number of instructions that would generate trace
-	AT_SKIP = 0
-*	will set in_executable when in part of program where executable
-*	instructions may occur
-	IN_EXEC = 0
-*	set in_skip when should not insert trace code, else assembly errors result.
-*	start with skip on, turn off when see first start of code.
-	IN_SKIP = 1
-*	skip_on and skip_off are labels indicating the start and end, 
-*	respectively, of sections of the code that should not be traced,
-*	usually because they contain a LOOP instruction that won't
-*	compile if too much trace code is inserted.
-	SKIP_ON = TABLE(10)
-	SKIP_ON['GBCOL'] = 1
-	SKIP_ON['GTN01'] = 1
-	SKIP_ON['BPF05'] = 1
-	SKIP_ON['SCV12'] = 1
-	SKIP_ON['CNC01'] = 1
-	SKIP_ON['EXBL1'] = 1
-	SKIP_ON['EXBL5'] = 1
-	SKIP_ON['PRN17'] = 1
-	SKIP_ON['INI11'] = 1
-	SKIP_ON['OEX13'] = 1
-	SKIP_ON['OEX14'] = 1
-	SKIP_ON['BDFC1'] = 1
-	SKIP_ON['SAR01'] = 1
-	SKIP_ON['SAR06'] = 1
-	SKIP_ON['SRPL5'] = 1
-	SKIP_ON['PFLU1'] = 1
-	SKIP_ON['PRPA4'] = 1
-	SKIP_ON['PRN17'] = 1
-	SKIP_ON['PRTT1'] = 1
-	SKIP_ON['TRIM4'] = 1
-	SKIP_ON['PRNL1'] = 1
-	SKIP_ON['PRTI1'] = 1
-	SKIP_ON['SRPL5'] = 1
-*	SKIP_ON['START'] = 1
-
-	SKIP_OFF = TABLE(10)
-	SKIP_OFF['GTARR'] = 1
-	SKIP_OFF['GTNVR'] = 1
-	SKIP_OFF['BPF07'] = 1
-	SKIP_OFF['SCV19'] = 1
-	SKIP_OFF['EXBL2'] = 1
-	SKIP_OFF['EXPAN'] = 1
-	SKIP_OFF['PRN18'] = 1
-	SKIP_OFF['PRN18'] = 1
-	SKIP_OFF['INI13'] = 1
-	SKIP_OFF['OEXP2'] = 1
-	SKIP_OFF['OEXP6'] = 1
-	SKIP_OFF['B_EFC'] = 1
-	SKIP_OFF['SAR10'] = 1
-	SKIP_OFF['SRPL8'] = 1
-	SKIP_OFF['CNC06'] = 1
-	SKIP_OFF['PFLU2'] = 1
-	SKIP_OFF['PRPA5'] = 1
-	SKIP_OFF['PRN18'] = 1
-	SKIP_Off['PRTVL'] = 1
-	SKIP_OFF['TRIM5'] = 1
-	SKIP_OFF['PRNL2'] = 1
-	SKIP_OFF['PRTMI'] = 1
-	SKIP_OFF['SRPL8'] = 1
-*	SKIP_OFF['INI03'] = 1
 
 
 -STITL MAIN PROGRAM
@@ -572,6 +432,7 @@ OPNEXT	THISLINE = READLINE()
 *
 * Append ':' after label if in code or data.
 *
+*
 * Output LABEL of executable instruction immediately if there is one,
 * as it simplifies later processing, especially for tracing.
 	IDENT(INLABEL)				:S(OPNEXT.1)
@@ -584,7 +445,7 @@ OPNEXT	THISLINE = READLINE()
 	OUTFILE = THISLABEL
 	OUTLINES = OUTLINES + 1
 * Set LASTLABEL so can check to avoid emitting duplicate label definitions
-	LASTLABEL  THISLABEL
+	LASTLABEL = THISLABEL
 * Clear out label info once generated
 	LABEL = THISLABEL = 
 OPNEXT.1
@@ -812,12 +673,8 @@ OUTSTMT4
 **
 **	Send text to output file if not null.
 *
-	STMTOUT = REPLACE(TRIM(STMTOUT),'$','_')
+*	STMTOUT = REPLACE(TRIM(STMTOUT),'$','_')
 	STMTOUT = TRIM(STMTOUT)
-	IDENT(STMTOUT)				:S(RETURN)
-	EQ(Z_TRACE_				:S(OUTSTMT5)
-	CHKTRACE()
-OUTSTMT5
 	IDENT(STMTOUT)				:S(RETURN)
 	OUTFILE = STMTOUT
 	NTARGET	= NTARGET + 1
@@ -828,108 +685,6 @@ OUTSTMT5
 	LABEL ? BREAK(':') . LABEL	:F(RETURN)
 	LABTAB<LABEL> = NOUTLINES		:(RETURN)
 
--stitl  CHKTRACE()
-CHKTRACE
-*						:(return)
-*	OUTPUT = 'chktrace:' INLINES ':' LABEL ':' STMTOUT
-*	output = differ (label) 'chktrace label:' label ':'
-*	turn off skip mode when begin executable code
-	CLABEL = INLABEL
- 	OLD_IN_SKIP = IN_SKIP
- 	OLD_IN_EXEC = IN_EXEC
- 	OLD_IS_EXEC = IS_EXEC
-	IN_SKIP = IDENT(INLABEL,'S_AAA') 0
-
-*	INCODE ? ANY(LCASE)			:S(RETURN)
-	UOPCODE  = REPLACE(INCODE, LCASE,UCASE)
-*  do not trace bsw (for now)
-	IDENT(UOPCODE,'BSW')			:s(return)
-	IS_EXEC = IS_EXECUTABLE[UOPCODE]
-	IN_EXEC = NE(Z_TRACE)  IDENT(INLABEL, 'S_AAA') 1
-	IN_EXEC = GT(NLINES,2186) 1
-*	need to skip certain blocks since otherwise get branches that are too long
-*	skip when in code that won't assemble if try to trace
-*	this was discovered on a case-by-case basis.
-
- 	IN_SKIP  = DIFFER(INLABEL) DIFFER(SKIP_ON[INLABEL]) 1
-*    	OUTPUT  = DIFFER(INLABEL) DIFFER(SKIP_ON[INLABEL]) 'skip on ' INLABEL
- 	IN_SKIP  = DIFFER(INLABEL) DIFFER(SKIP_OFF[INLABEL]) 0
-*    	OUTPUT  = DIFFER(INLABEL) DIFFER(SKIP_OFF[INLABEL]) 'skip off ' INLABEL
-*	IN_SKIP = 0
-	
-*     	OUTPUT = DIFFER(OLD_IN_SKIP, IN_SKIP) 'in_skip now ' IN_SKIP
-*     	OUTPUT = DIFFER(OLD_IN_EXEC, IN_EXEC) 'in_exec now ' IN_EXEC
-*     	OUTPUT = DIFFER(OLD_IS_EXEC, IS_EXEC) 'is_exec now ' IS_EXEC
-
-	AT_NUM = 100 * IN_EXEC + 10 * IS_EXEC + IN_SKIP
-* 	OUTPUT = CLABEL ':' 'AT_NUM:' AT_NUM ':' LPAD(NLINES,6) ' ' STMTOUT
-*	skip trace if would otherwise access label that is too far removed
-	NE(IN_SKIP)				:S(RETURN)
-	EQ(IN_EXEC)				:S(RETURN)
-	EQ(IS_EXEC)				:S(RETURN)
-*	here to emit trace. need to emit trace after label if there is label
-* 	IDENT(INLABEL)				:S(CHKTRACE.1)
-*	only trace at labels since get jumps that are too removed otherwise
-*	ident(label)				:s(return)
-*	here to emit trace code when there is label
-*	first need to emit label, then fall through
-
-*	STMTOUT ? BREAK_WS  . LABEL SPANWS  REM . BODY	:F(OUTSTMT5)
-* 	STMTOUT = TAB BODY
-*	OUTFILE = LABEL
-*	LABEL =
-	NE(IN_GCOL)				:S(RETURN)
-CHKTRACE.1
-*	GENAT()
-	Z_COUNT = Z_COUNT + 1
-	IDENT(THISLABEL)			:S(RETURN)
-* Only trace at label definition
-	OUTFILE = TAB 'ZZZ' TAB	NLINES ',' Z_COUNT 
-	OUTLINES = OUTLINES + 1
-						:(RETURN)
-
-
-GENAT
-	ATLINES = ATLINES + 1
-	NE(ATLINES,1)				:S(GENAT.0)
-*	Here to emit code and declarations that need be done ony once
-*	OUTFILE = EQ(ATLINES,1) TAB '.extern' TAB 'AT_REGS'
-*        OUTFILE =   TAB 'DSeg_'
-*	OUTFILE =   TAB '.global' TAB 'AT1_0'
-*        OUTFILE =   'AT1_0:'
-GENAT.0
-	GT(AT_SKIP) LE(ATLINES,AT_SKIP)		:S(RETURN)
-	GT(AT_LIMIT)  GT(ATLINES, AT_LIMIT)	:S(RETURN)
-*	Always generate trace if at label definition
-	DIFFER(INLABEL)				:S(GENAT.1)
-*       Can't trace every statement due to loader limit on .stabn entries, so just
-*	do some.
-* 	NE(REMDR(NSTMTS,2),1)			:S(RETURN)
-*	desc = lpad('"' ilineno,6) ' ' uopcode ' ' thisline 
-GENAT.1
-	DESCTEXT = REPLACE(THISLINE,'{','|')
-*	OUTPUT = 'GENAT ' ATLINES ':' DESCTEXT ':'
-*        OUTFILE =   TAB 'DSeg_'
-        AT.CALLS = AT.CALLS + 1
-        AT.1 =  'AT1_' AT.CALLs
-        AT.2 =  'AT2_' AT.CALLs
-        OUTFILE = AT.1 ':'
-*        OUTFILE =   TAB '.ascii "'  DESCTEXT '"'
-*        OUTFILE =   TAB '.byte 0'
-*        OUTFILE =   TAB 'CSeg_'
-*        OUTFILE =   TAB 'pushf'
-*        OUTFILE =   TAB 'pushad'
-*	OUTFILE =   TAB 'call AT_REGS'
-*	OUTFILE =   TAB 'push' TAB  AT.1 '-AT1_0'
-*        OUTFILE =   TAB 'call ' AT.2
-*        OUTFILE = AT.2 ':'
-*        OUTFILE =   TAB 'call AT_'
-*        OUTFILE =   TAB 'pop eax'
-*        OUTFILE =   TAB 'pop eax'
-*        OUTFILE =   TAB 'popad'
-*        OUTFILE =   TAB 'popf'
-        OUTFILE =  
-        
 -STITL PRSARG(IARG)
 PRSARG	PRSARG = MINARG(0)
 	IARG BREAK(',') . L1 ',' REM . L2	:F(RETURN)
@@ -1080,7 +835,8 @@ G.ENT
 *
 
 	T1 = I.TEXT(I1)
-        GENOP('align',2)
+*        GENOP('align',2)
+	OUTFILE = TAB 'align' TAB '2'
 	DIFFER(T1)					:S(G.ENT.1)
 	OUTFILE = TAB 'NOP'
 							:(G.ENT.2)
@@ -1091,9 +847,9 @@ G.ENT.2
 	OUTLINES = OUTLINES + 2
 	GENOPL(THISLABEL)
 *  Note that want to attach label to last instruction
-	T1 = CSTMTS[CSTMTS.N]
-	T.LABEL(T1) = TLABEL
-	CSTMTS[CSTMTS.N] = T1
+*	T1 = CSTMTS[CSTMTS.N]
+*	T.LABEL(T1) = TLABEL
+*	CSTMTS[CSTMTS.N] = T1
 *  Here to see if want label made public
 	THISLABEL ? RTAB(1) . THISLABEL ':'
         (DIFFER(PUBTAB[THISLABEL]), DIFFER(DEBUG)) GENOP('global',THISLABEL)
@@ -1176,7 +932,8 @@ G.PRC
 	PPM_CASES[THISLABEL] = I.TEXT(I2)
 	THISLABEL =
 	MAX_EXI = GT(PRC.ARGS,MAX_EXI) PRC.ARGS
-	PRC.TYPE = I.TEXT(I1)		:($('G.PRC.' PRC.TYPE))
+	PRC.TYPE = I.TEXT(I1)		
+					:($('G.PRC.' PRC.TYPE))
 G.PRC.E
 G.PRC.R						:(OPDONE)
 
@@ -1413,8 +1170,8 @@ G.PSC
 	T1 = GETARG(I1)
 	T2 = I.TYPE(I2)
 	((IFREG(I2), GE(T2,1) LE(T2,2))
-+	GENOP('LEA',T1,'[CFP$F+' T1 '+' GETARG(I2) ']')) :S(OPDONE)
-	GENOP('ADD',T1,'CFP$F')
++	GENOP('LEA',T1,'[CFP_F+' T1 '+' GETARG(I2) ']')) :S(OPDONE)
+	GENOP('ADD',T1,'CFP_F')
 	EQ(I.TYPE(I2))				:S(OPDONE)
 *
 *  Here if D_OFFSET_(given (in a variable), so add it in.
@@ -1697,7 +1454,7 @@ DECEND
 G.DAC	T1 = I.TYPE(I1)
         T2 = "" ;*(LE(T1,2) "", LE(T1,4) "D_OFFSET_(", LE(T1,6) "D_OFFSET_(", "")
         GENOPL(THISLABEL,'D_WORD',T2 I.TEXT(I1))    :(DECEND)
-G.DIC   GENOPL(HISTLABEL,'D_WORD',I.TEXT(I1))               :(DECEND)
+G.DIC   GENOPL(THISLABEL,'D_WORD',I.TEXT(I1))               :(DECEND)
 
 *
 * Make sure don't attach label to the align.
@@ -1723,15 +1480,12 @@ G.DTC
 *  Append nulls to complete last word so constant length is multiple
 *  of word word
         T2 = NE(T3) T2 DUPL(',0',CFP_C - T3)
-        GENOPL(THISLABEL,'db',T2)              
-							:(OPDONE)
-G.DBC   GENOPL(THISLABEL,'D_WORD',GETARG(I1))       
-							:(OPDONE)
-G.EQU   GENOP(THISLABEL,'equ',I.TEXT(I1))			
-							:(OPDONE)
+        GENOPL(THISLABEL,'db',T2)              :(OPDONE)
+G.DBC   GENOPL(THISLABEL,'D_WORD',GETARG(I1))       :(OPDONE)
+G.EQU   GENOPL(THISLABEL,'equ',I.TEXT(I1))			:(OPDONE)
 G.EXP   
 	PPM_CASES[THISLABEL] = I.TEXT(I1)
-	GENOP('extern',THISABEL)
+	GENOP('Extern',THISLABEL)
 	THISLABEL =				:(OPDONE)
 
 G.INP	
@@ -1818,10 +1572,10 @@ OPDONE	FLUSH()					:(OPNEXT)
 *
 FLUSH	EQ(ASTMTS.N) EQ(BSTMTS.N) EQ(CSTMTS.N)	:F(OPDONE1)
 *
-*  Here if some statements, so output single 'null' statement to get label
+*  Here if no statements, so output single 'null' statement to get label
 *  and comment field right.
 *
-	LABEL = THISLABEL = 
+	LABEL = THISLABEL =
 	OUTSTMT(TSTMT())			:(OPDONE.6)
 OPDONE1	EQ(BSTMTS.N)				:S(OPDONE.2)
 	I = 1

@@ -25,37 +25,33 @@
 	%include	"x32.h"
 
 	extern	_rc_
-	%define AT_TRACE
-%ifdef AT_TRACE
-	extern	at_xl
-	extern	at_xr
-	extern	at_xs
-	extern	at_wa
-	extern	at_wb
-	extern	at_wc
-	extern	at_w0
-	extern	at_zz
-	extern at_note
-	extern at_num
-	extern at_note3
-%endif
+	extern	zz
+	extern	zz_cp
+	extern	zz_xl
+	extern	zz_xr
+	extern	zz_xs
+	extern	zz_wa
+	extern	zz_wb
+	extern	zz_wc
+	extern	zz_w0
+	extern	zz_zz
+	extern zz_num
 	global	START
 
 	%macro	ZZZ	1
 	pushf
 	pushad
-%ifdef AT_TRACE
-	mov	dword [at_zz],%1
-	mov	dword [at_xl],esi
-	mov	dword [at_xr],edi
-	mov	dword [at_xs],esp
-	mov	dword [at_wa],ecx
-	mov	dword [at_wb],ebx
-	mov	dword [at_wc],edx
-	mov	dword [at_w0],eax
-%endif
-;	push	%1
-;	pop	eax
+	mov	dword [zz_zz],%1
+	mov	dword [zz_cp],ebp
+	mov	dword [zz_xl],esi
+	mov	dword [zz_xl],esi
+	mov	dword [zz_xr],edi
+	mov	dword [zz_xs],esp
+	mov	dword [zz_wa],ecx
+	mov	dword [zz_wb],ebx
+	mov	dword [zz_wc],edx
+	mov	dword [zz_w0],eax
+	call	zz
 	popad
 	popf
 	%endmacro

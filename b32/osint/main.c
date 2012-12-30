@@ -209,7 +209,8 @@ char	*argv[];
         wrterr( "Stack memory unavailable." );
         __exit( 1 );
     }
-
+	fprintf(stderr,"lowsp\t%x\n",lowsp);
+	fprintf(stderr,"lowsp\t%ld\n",lowsp);
     /*
     /   Allocate initial increment of dynamic memory.
     /
@@ -221,6 +222,10 @@ char	*argv[];
     }
     topmem = basemem + memincb;
     maxmem = basemem + databts;
+	fprintf(stderr,"topmem\t%xx\n",topmem);
+	fprintf(stderr,"topmem\t%ld\n",topmem);
+	fprintf(stderr,"basemem\t%xx\n",basemem);
+	fprintf(stderr,"basemem\t%ld\n",basemem);
 
 
     /*
@@ -234,12 +239,14 @@ char	*argv[];
     SET_WC( 0 );
     SET_XR( basemem );
     SET_XL( topmem - sizeof(word) );
+    fprintf(stderr,"basemem %x\n",basemem);
 
     /*
     /   Startup compiler.
     */
-/*	fprintf(stderr,"calling startup\n");*/
-    startup( (char *)0L, lowsp );
+	fprintf(stderr,"calling startup\n");
+    zz_init();
+    startup();
 #endif					/* !RUNTIME */
 
     /*
@@ -333,148 +340,6 @@ void setout()
         spitflag |= (PRTICH | NOHEDR);
     }
 }
-int at_xl;
-int at_xr;
-int at_xs;
-int at_wa;
-int at_wb;
-int at_wc;
-int at_w0;
-int at_cp;
-int at_zz;
-
-int last_xl;
-int last_xr;
-int last_xs;
-int last_wa;
-int last_wb;
-int last_wc;
-int last_w0;
-int last_cp;
-
-int AT_CALLS = 0;
-
-#define DAVE
-#ifdef DAVE
-char * AT_DESC;
-extern char at1_0;
-void prtnl() {
-	fprintf(stderr,"\n");
-}
-void prtval(int reg) {
-	if (reg < 100000 && reg >= 0)
-		fprintf(stderr," %8d ", reg);
-	else
-		/*fprintf(stderr," %8xx", reg);*/
-		fprintf(stderr," ---------", reg);
-}
-void prtreg(char * name, int val) {
-	prtval(val);
-	fprintf(stderr," %s",name);
-}
-void prtdif(char* name, int old, int new, int listed)
-{
-	/* print old and new values of named register */
-	fprintf(stderr,"%s:", name);
-	prtval(old); fprintf(stderr," -> "); prtval(new);
-	prtnl();
-}
-
-unsigned long at_off;
-int zzz_calls=0;
-/*void at_(long at_ip,char * at_desc) {*/
-void zzz() {
-
-	int changed = 0;
-	int listed = 0;
-
-	if(at_zz>0) zzz_calls++;
-	fprintf(stderr, "zzz %d %d\n",zzz_calls, at_zz);
-
-	/* print registers that have changed since last statement */
-
-	/* see if any have changed. */
-	if (at_xl != last_xl)  changed += 1;
-	if (at_xr != last_xr)  changed += 1;
-	if (at_xs != last_xs)  changed += 1;
-	if (at_cp != last_cp)  changed += 1;
-	if (at_wa != last_wa)  changed += 1;
-	if (at_wb != last_wb)  changed += 1;
-	if (at_wc != last_wc)  changed += 1;
-	if (at_w0 != last_w0)  changed += 1;
-
-	if (changed) {
-/* marked changed Minimal registers with "!" to make it easy to search
-   backward for last statement that changed a register. */
-		prtnl();
-		if (at_xl != last_xl)
-			{ prtdif("xl.esi", last_xl, at_xl, listed); listed += 1; }
-		if (at_xr != last_xr)
-			{ prtdif("xr.edi", last_xr, at_xr, listed); listed += 1; }
-		if (at_xs != last_xs)
-			{ prtdif("xs.esp", last_xs, at_xs, listed); listed += 1; }
-		if (at_cp != last_cp)
-			{ prtdif("cp.ebp", last_cp, at_cp, listed); listed += 1; }
-		if (at_wa != last_wa)
-			{ prtdif("wa.ecx", last_wa, at_wa, listed); listed += 1; }
-		if (at_wb != last_wb)
-			{ prtdif("wb.ebx", last_wb, at_wb, listed); listed += 1; }
-		if (at_wc != last_wc)
-			{ prtdif("wc.edx", last_wc, at_wc, listed); listed += 1; }
-		if (at_w0 != last_w0)
-			{ prtdif("w0.eax", last_w0, at_w0, listed); listed += 1; }
-		prtnl();
-	}
-	AT_CALLS++; /* count number of calls */
-
-	if (AT_CALLS % 3 == 1) {
-		/* print register values before the statement was executed */
-		prtreg("xl.esi", at_xl);
-		prtreg("xr.edi", at_xr);
-		prtreg("xs.esp", at_xs);
-		/* cp is last on line, so don't print it zero */
-		if (at_cp) prtreg("cp.ebp", at_cp);
-		fprintf(stderr, "\n");
-		prtreg("wa.ecx", at_wa);
-		prtreg("wb.ebx", at_wb);
-		prtreg("wc.edx", at_wc);
-		prtreg("w0.eax", at_w0);
-		fprintf(stderr, "\n");
-	}
-	/* display instruction pointer and description of current statement. */
-/*	fprintf(stderr, "\n%8xx %s\n", at_ip, p);*/
-
-	/* save current register contents. */
-	last_xl = at_xl; last_xr = at_xr; last_xs = at_xs; last_cp = at_cp;
-
-	last_wa = at_wa; last_wb = at_wb; last_wc = at_wc; last_w0 = at_w0;
-
-}
-void AT_SHORT() {
-    fprintf(stderr,"Enter short AT\n");
-}
-void strt()
-{
-	fprintf(stderr, "start minimal execution\n");
-}
-void strt1()
-{
-	fprintf(stderr, "start1 minimal execution\n");
-}
-void at_note() {
-	fprintf(stderr, "at_note\n");
-}
-void at_note1() {
-	fprintf(stderr, "at_note1\n");
-}
-void at_note2() {
-	fprintf(stderr, "at_note2\n");
-}
-int at_num;
-void at_note3() {
-	fprintf(stderr, "at_note3 %c %d\n",at_num,at_num);
-}
-#endif
 void restart(char *p, char * q) {
  fprintf(stderr,"restart not supported\n");
 }

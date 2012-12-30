@@ -78,7 +78,7 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 	int.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	sioarg.o st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
-	trypath.o wrtaout.o
+	trypath.o wrtaout.o zz.o
 
 # Assembly langauge objects common to all versions:
 # CAOBJS is for gas, NAOBJS for nasm
