@@ -7,6 +7,8 @@
 ;
 	%include	"x64.h"
 
+	section	.data
+
 	extern	_rc_
 	extern	zz
 	extern	osisp
@@ -14,10 +16,14 @@
 	extern	save_regs
 	extern	restore_regs
 
-	%macro	ZZZ	2
+	%macro	ZZZ	3
+	section	.data
+%%desc:	db	%3,0
+	section	.text
 	call	save_regs
 	mov	qword [zz_id],%1
 	mov	qword [zz_zz],%2
+	mov	qword [zz_de],%%desc
 	mov	qword [zz_xl],XL
 	mov	qword [zz_xr],XR
 	mov	qword [zz_xs],XS
@@ -48,6 +54,7 @@
 	extern	zz_w0
 	extern	zz_zz
 	extern	zz_id
+	extern	zz_de
 	extern	zz_0
 	extern	zz_1
 	extern	zz_2

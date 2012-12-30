@@ -36,14 +36,19 @@
 	extern	zz_w0
 	extern	zz_zz
 	extern	zz_id
+	extern	zz_de
 	extern zz_num
 	global	START
 
-	%macro	ZZZ	2
+	%macro	ZZZ	3
+	section	.data
+%%desc:	db	%3,0
+	section	.text
 	pushf
 	pushad
 	mov	dword [zz_id],%1
 	mov	dword [zz_zz],%2
+	mov	dword [zz_de],%%desc
 	mov	dword [zz_cp],ebp
 	mov	dword [zz_xl],esi
 	mov	dword [zz_xl],esi
