@@ -1,7 +1,7 @@
 # X32 SPITBOL
 #
 
-ARCH=x64
+ARCH=x32
 ifeq ($(ARCH),x32)
 ARCHDEF=-DARCH-X32
 ELF=elf32
@@ -72,7 +72,7 @@ UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/syste
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	x32.hdr x64.hdr
+VHDRS=	$(ARCH).hdr 
 
 # OSINT objects:
 SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
@@ -92,7 +92,7 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 # Assembly langauge objects common to all versions:
 # CAOBJS is for gas, NAOBJS for nasm
 CAOBJS = 
-NAOBJS = x64.o errors.o
+NAOBJS = $(ARCH).o errors.o
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
