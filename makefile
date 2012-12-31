@@ -117,7 +117,7 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 
 # main program
 spitbol: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol
+	$(CC) $(CFLAGS) $(OBJS) -Lmusl/lib -ospitbol
 
 # Assembly language dependencies:
 errors.o: errors.s
