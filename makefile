@@ -1,7 +1,7 @@
 # X32 SPITBOL
 #
 
-ARCH=x32
+ARCH=x64
 ifeq ($(ARCH),x32)
 ARCHDEF=-DARCH-X32
 ELF=elf32
@@ -117,7 +117,12 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 
 # main program
 spitbol: $(OBJS)
+ifeq ($(ARCH),x32)
 	$(CC) $(CFLAGS) $(OBJS) -Lmusl/lib -ospitbol
+endif
+ifeq ($(ARCH),x64)
+	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol
+endif
 
 # Assembly language dependencies:
 errors.o: errors.s
