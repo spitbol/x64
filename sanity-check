@@ -19,6 +19,6 @@ echo "comparing generated .s files"
 diff chk.s.1 chk.s.2
 cp savebol bootbol
 # test for compile END in lower or upper case
-./spitbol e.spt
-./spitbol E.spt
+./spitbol ./test/e.spt
+./spitbol ./test/E.spt
 echo "end bootstrap test"
