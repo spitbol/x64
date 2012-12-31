@@ -132,16 +132,32 @@ This file is part of Macro SPITBOL.
 /*
  *  Other defaulted values that may be overridden in systype.h
  */
+#ifdef ARCH-X32
 #ifndef INTBITS
-#define INTBITS		64			/* assume int will be 32 bits */
-#define MAXINT		18446744073709551615 /* maximum positive value in int */
+#define INTBITS		32		
+#define MAXINT		0x7FFFFFFFL
 #endif
 #ifndef WORDBITS
-#define WORDBITS	64			/* assume word will be 32 bits */
-#define MAXPOSWORD	18446744073709551615 /* maximum positive value in word */
+#define WORDBITS	32	
+#define MAXPOSWORD	0x7FFFFFFFL
 #endif
 #ifndef IABITS
-#define IABITS      64          /* Integer accumulator (IA) width */
+#define IABITS      	32          /* Integer accumulator (IA) width */
+#endif
+#endif
+
+#ifdef ARCH-X64
+#ifndef INTBITS
+#define INTBITS		64			
+#define MAXINT		0x7FFFFFFFFFFFFFFFL
+#endif
+#ifndef WORDBITS
+#define WORDBITS	64		
+#define MAXPOSWORD	0x7FFFFFFFFFFFFFFFL
+#endif
+#ifndef IABITS
+#define IABITS      	64
+#endif
 #endif
 
 
@@ -189,16 +205,11 @@ This file is part of Macro SPITBOL.
 
 #define UNIX  LINUX
 
-// long is 64-bits on 64-bit machine
 typedef long word;
 typedef unsigned long uword;
 
 /* Size of integer accumulator */
-#if IABITS==32
 typedef long IATYPE;
-#elif IABITS==64
-typedef long long IATYPE;
-#endif
 
 /*
 /   Define the default end of line characters.  Use Unix definitions

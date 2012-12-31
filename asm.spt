@@ -33,7 +33,7 @@
 *	COMPRESS	Generate tabs rather than spaces in output file
 *       COMMENTS        Retain full-line and end-of-line comments
 *
-*  The variable TARGET is set equal to the uppercase name of the machine
+*  The variable ARCH is set equal to the uppercase name of the machine
 *  being processed.  Specific tests upon this variable are discouraged, as
 *  all machine-dependent code should be placed in the machine-definition
 *  file if possible.
@@ -87,17 +87,17 @@
 
 *  Default the parameter string if none present
 *
-        TARGET = (DIFFER(HOST(0)) HOST(0), "X64")
-	TARGET = UPPER(TARGET)
+        ARCH = (DIFFER(HOST(0)) HOST(0), "X64")
+	ARCH = UPPER(ARCH)
 *        OUTPUT = IDENT(FILEPREFIX) "Filename (.lex) required" :S(END)
 	FILEPREFIX = "s"
-	OUTPUT = 'TARGET IS ' TARGET
+	OUTPUT = 'ARCH IS ' ARCH
 
 *	CFP_B is bytes per word, CFP_C is characters per word
 *       These should agree with values used in translator	
 * Set target-dependent configuration parameters 
-	OUTPUT = 'CONFIG:' TARGET ':'
-	:($('CONFIG.' UPPER(TARGET)))
+	OUTPUT = 'CONFIG:' ARCH ':'
+	:($('CONFIG.' UPPER(ARCH)))
 
 CONFIG.X32
 	CFP_B = 4
@@ -511,9 +511,9 @@ ERR_OK
 *
 	NOUTLINES = NOUTLINES + 1
 
-	INPUT(.HDRFILE,4,LOWER(TARGET) '.hdr')	:F(NOHDR)
+	INPUT(.HDRFILE,4,LOWER(ARCH) '.hdr')	:F(NOHDR)
 	HAVEHDR = 1
-        OUTPUT = '  Input HEADER file: ' LOWER(TARGET) '.hdr'
+        OUTPUT = '  Input HEADER file: ' LOWER(ARCH) '.hdr'
 HDRCOPY LINE = HDRFILE				:F(HDREND)
 	IDENT(LINE,'END')			:S(NOHDR)
 	OUTFILE = LINE

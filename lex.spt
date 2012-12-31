@@ -56,8 +56,8 @@
 	P.REAL	= SPAN(NOS) '.' (SPAN(NOS) | NULL) (P.EXP | NULL) RPOS(0)
 	TAB	= CHAR(9)
 
-*  UPPER converts to upper case
-	DEFINE('UPPER(S)')
+*  LOWER converts to upper case
+	DEFINE('LOWER(S)')
 
 *  ARGFORM classifies arguments
 	DEFINE('ARGFORM(ARG)')
@@ -370,8 +370,8 @@
 *
 *  Default the parameter string if none present
 *
-	TARGET = (DIFFER(HOST(0)) HOST(0), "x64")
-	TARGET = UPPER(TARGET)
+	ARCH = (DIFFER(HOST(0)) HOST(0), "x64")
+	ARCH = LOWER(ARCH)
 	PARM = "s"
 	FILENAMC = PARM '.cnd'
 	FILENAMI = PARM '.min'
@@ -441,8 +441,8 @@ MAIN2
 . 'CH_SQ[039]CH_UN[095]CH_OB[091]CH_CB[093]CH_HT[009]CH_VT[011]'
 . 'CH_EY[094]IODEL[032]' )
 * Set target-dependent configuration parameters 
-	OUTPUT = 'TARGET:' TARGET ':'
-	:($('CONFIG.' TARGET))
+	OUTPUT = 'ARCH:' ARCH ':'
+	:($('CONFIG.' ARCH))
 
 CONFIG.X32
 	EQU_DEFS['CFP_A'] = '256'
@@ -816,7 +816,7 @@ G.BSW
 .		ARRAY( '0:' UB - 1,'{{' )	:F(G.BSW1)
 	DPLBL = OP3
 	BSW   = 1				:(DSGEN)
-G.BSW1	ERROR("NON-INTEGER UPPER BOUND FOR BSW")
+G.BSW1	ERROR("NON-INTEGER LOWER BOUND FOR BSW")
 
 *
 *  IFF processing sets the iffar[] element to the current
@@ -915,7 +915,7 @@ G.PRC
 	DIFFER(T,OP1) ERROR('INCONSISTENT INP/PRC')
 	PRCTAB[LABEL] =				:(DSGEN)
 * Convert argument to upper case
-UPPER
-	UPPER = REPLACE(S,'abcdefghijklmnopqrstuvwxyz',
-.			  'ABCDEFGHIJKLMNOPQRSTUVWXYZ')	:(RETURN)
+LOWER
+	LOWER = REPLACE(S,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+.			  'abcdefghijklmnopqrstuvwxyz')	:(RETURN)
 END

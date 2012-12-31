@@ -1,7 +1,15 @@
 # X32 SPITBOL
 #
 
-TARGET=X64
+ARCH=x64
+ifeq ($(ARCH),x32)
+ARCHDEF=-DARCH-X32
+ELF=elf32
+endif
+ifeq ($(ARCH),x64)
+ARCHDEF=-DARCH-X64
+ELF=elf64
+endif
 
 # SPITBOL Version:
 MIN=   s
@@ -10,7 +18,7 @@ DEBUG=	1
 # Minimal source directory.
 MINPATH=./
 
-OSINT=./x64/osint
+OSINT=./osint
 
 vpath %.c $(OSINT)
 
@@ -18,12 +26,12 @@ vpath %.c $(OSINT)
 
 CC	=	tcc
 ASM	=	nasm
-INCDIRS = -I../tcc/include -I../musl/include
+INCDIRS = -I./tcc/include -I./musl/include
 # next is for tcc
 ifeq	($(DEBUG),0)
-CFLAGS= $(INCDIRS)
+CFLAGS= $(INCDIRS) $(ARCHDEF)
 else
-CFLAGS= -g  $(INCDIRS)
+CFLAGS= -g  $(INCDIRS) $(ARCHDEF)
 endif
 # next is for gcc
 #ifeq	($(DEBUG),0)
@@ -34,9 +42,9 @@ endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMFLAGS = -f elf64
+ASMFLAGS = -f $(ELF)
 else
-ASMFLAGS = -g -f elf64
+ASMFLAGS = -g -f $(ELF)
 endif
 
 # Tools for processing Minimal source file.
@@ -120,11 +128,11 @@ errors.o: errors.s
 
 # SPITBOL Minimal source
 s.s:	s.lex $(VHDRS) $(COD) 
-	$(SPIT) -u $(TARGET) $(COD)
+	$(SPIT) -u $(ARCH) $(COD)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
 #	 $(SPIT) -u "s" $(LEX)
-	 $(SPIT) -u $(TARGET) $(LEX)
+	 $(SPIT) -u $(ARCH) $(LEX)
 
 s.err: s.s
 
@@ -153,5 +161,5 @@ clean:
 	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s errors.s s.S s.t
 z:
 	nm -n s.o >s.nm
-	spitbol ../map64.spt <s.nm >s.dic
+	spitbol map-$(ARCH).spt <s.nm >s.dic
 	spitbol ../v.spt <ad >ae
