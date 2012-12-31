@@ -1,7 +1,6 @@
--TITLE ASM: PHASE 2 TRANSLATION FROM MINIMAL TOKENS TO X32 ASSEMBLY
+-TITLE MINCOD: PHASE 2 TRANSLATION FROM MINIMAL TOKENS TO 80386 CODE
 -STITL Description
 * Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
-* Copyright 2012 David Shields
 * 
 * This file is part of Macro SPITBOL.
 * 
@@ -19,22 +18,22 @@
 *     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 *
 *
-*  This program takes input file in MINIMAL lexeme form and
-*  produces assembly code for an x32 processor.
+*  This program takes input file in MINIMAL token form and
+*  produces assembly code for INTEL 80386 processor.
 *  The program obtains the name of the file to be translated from the
 *  command line string in HOST(0).  Options relating to the processing
 *  of comments can be changed by modifying the source.
 *
-*  In addition to the MINIMAL lexeme file, the program requires the
-*  name of a "system definition file" that contains code specific
-*  to a particular version.
+*  In addition to the MINIMAL token file, the program requires the
+*  name of a "machine definition file" that contains code specific
+*  to a particular 80386 assembler.
 *
 *  You may also specify option flags on the command line to control the
 *  code generation.  The following flags are processed:
 *	COMPRESS	Generate tabs rather than spaces in output file
 *       COMMENTS        Retain full-line and end-of-line comments
 *
-*  The variable MACHINE is set equal to the uppercase name of the machine
+*  The variable TARGET is set equal to the uppercase name of the machine
 *  being processed.  Specific tests upon this variable are discouraged, as
 *  all machine-dependent code should be placed in the machine-definition
 *  file if possible.
@@ -49,10 +48,10 @@
 *  PC-SPITBOL translator by David Shields.
 *
 *  To run under Spitbol:
-*       spitbol -u "<file>:<machine>[:flag:...:flag]" asm.spt
+*       spitbol -u "<file>:<machine>[:flag:...:flag]" codlinux.spt
 *
 *	reads <file>.lex	containing tokenized source code
-*       writes <file>.s         with x32 assembly code
+*       writes <file>.s         with 80386 assembly code
 *	also writes <file>.err	with ERR and ERB error messages
 *	using <machine>.def	to provide machine-specific information
 *       parts of <machine>.hdr  are prepended and appended to <file>.s
@@ -60,7 +59,7 @@
 *	also reads <file>.pub	for debug symbols to be declared public
 *
 *  Example:
-*       spitbol -u v37:dos:compress asm.spt
+*       spitbol -u v37:dos:compress codlinux.spt
 *
 *
 *  Revision History:
@@ -82,6 +81,110 @@
 	LCASE   = 'abcdefghijklmnopqrstuvwxyz'
 	NOS     = '0123456789'
 	TAB	= CHAR(9)
+	
+	DEFINE('LOWER(S)')
+	DEFINE('UPPER(S)')
+
+*  Default the parameter string if none present
+*
+        TARGET = (DIFFER(HOST(0)) HOST(0), "X64")
+	TARGET = UPPER(TARGET)
+*        OUTPUT = IDENT(FILEPREFIX) "Filename (.lex) required" :S(END)
+	FILEPREFIX = "s"
+	OUTPUT = 'TARGET IS ' TARGET
+
+*	CFP_B is bytes per word, CFP_C is characters per word
+*       These should agree with values used in translator	
+* Set target-dependent configuration parameters 
+	OUTPUT = 'CONFIG:' TARGET ':'
+	:($('CONFIG.' UPPER(TARGET)))
+
+CONFIG.X32
+	CFP_B = 4
+	CFP_C = 4
+	LOG_CFP_B = '2'
+	LOG_CFP_C = '2'
+							:(CONFIG.DONE)
+
+
+CONFIG.X64
+*	CFP_B is bytes per word, CFP_C is characters per word
+*       These should agree with values used in translator	
+	CFP_B = 8
+	CFP_C = 8
+	LOG_CFP_B = '3'
+	LOG_CFP_C = '3'
+CONFIG.DONE
+
+
+*	Set Z_TRACE to enable instruction by instruction trace
+	Z_TRACE = 1
+*	Z_LIMIT is maximum number of calls to be generated if non-zero
+	Z_LIMIT = 000
+*	Set Z_SKIP non-zero to skip first number of instructions that would generate trace
+	Z_SKIP = 0
+*	will set in_executable when in part of program where executable
+*	instructions may occur
+	IN_EXEC = 0
+*	set in_skip when should not insert trace code, else assembly errors result.
+*	start with skip on, turn off when see first start of code.
+	IN_SKIP = 1
+*	skip_on and skip_off are labels indicating the start and end, 
+*	respectively, of sections of the code that should not be traced,
+*	usually because they contain a LOOP instruction that won't
+*	compile if too much trace code is inserted.
+	SKIP_ON = TABLE(10)
+	SKIP_ON['GBCOL'] = 1
+	SKIP_ON['GTN01'] = 1
+	SKIP_ON['BPF05'] = 1
+	SKIP_ON['SCV12'] = 1
+	SKIP_ON['CNC01'] = 1
+	SKIP_ON['EXBL1'] = 1
+	SKIP_ON['EXBL5'] = 1
+	SKIP_ON['PRN17'] = 1
+	SKIP_ON['INI11'] = 1
+	SKIP_ON['OEX13'] = 1
+	SKIP_ON['OEX14'] = 1
+	SKIP_ON['BDFC1'] = 1
+	SKIP_ON['SAR01'] = 1
+	SKIP_ON['SAR06'] = 1
+	SKIP_ON['SRPL5'] = 1
+	SKIP_ON['PFLU1'] = 1
+	SKIP_ON['PRPA4'] = 1
+	SKIP_ON['PRN17'] = 1
+	SKIP_ON['PRTT1'] = 1
+	SKIP_ON['TRIM4'] = 1
+	SKIP_ON['PRNL1'] = 1
+	SKIP_ON['PRTI1'] = 1
+	SKIP_ON['SRPL5'] = 1
+*	SKIP_ON['START'] = 1
+
+	SKIP_OFF = TABLE(10)
+	SKIP_OFF['GTARR'] = 1
+	SKIP_OFF['GTNVR'] = 1
+	SKIP_OFF['BPF07'] = 1
+	SKIP_OFF['SCV19'] = 1
+	SKIP_OFF['EXBL2'] = 1
+	SKIP_OFF['EXPAN'] = 1
+	SKIP_OFF['PRN18'] = 1
+	SKIP_OFF['PRN18'] = 1
+	SKIP_OFF['INI13'] = 1
+	SKIP_OFF['OEXP2'] = 1
+	SKIP_OFF['OEXP6'] = 1
+	SKIP_OFF['B_EFC'] = 1
+	SKIP_OFF['SAR10'] = 1
+	SKIP_OFF['SRPL8'] = 1
+	SKIP_OFF['CNC06'] = 1
+	SKIP_OFF['PFLU2'] = 1
+	SKIP_OFF['PRPA5'] = 1
+	SKIP_OFF['PRN18'] = 1
+	SKIP_Off['PRTVL'] = 1
+	SKIP_OFF['TRIM5'] = 1
+	SKIP_OFF['PRNL2'] = 1
+	SKIP_OFF['PRTMI'] = 1
+	SKIP_OFF['SRPL8'] = 1
+*	SKIP_OFF['INI03'] = 1
+
 *
 *  Data structures
 *
@@ -103,6 +206,7 @@
 *
 	DEFINE('CRACK(LINE)OPERANDS,OPERAND,CHAR')
 *
+	DEFINE('CHKTRACE()')
 *	COMREGS - map minimal register names to target register names
 	DEFINE('COMREGS(LINE)T,PRE,WORD')
 *
@@ -110,6 +214,7 @@
 *
 	DEFINE('ERROR(TEXT)')
 	DEFINE('FLUSH()')
+	DEFINE('GENZ()')
 	DEFINE('GENAOP(STMT)')
 	DEFINE('GENBOP(STMT)')
         DEFINE('GENLAB()')
@@ -210,6 +315,24 @@
 
 
 
+	IS_EXECUTABLE = TABLE(100)
+	s = 
++       'ADD ADI ADR ANB AOV ATN '
++	'BCT BEQ BEV BGE BGT BHI BLE BLO BLT BNE BNZ BOD '
++       'BRN BRI BSW BTW BZE CEQ CHK CHP CMB CMC CMP CNE CSC '
++       'COS CTB CTW CVD CVM DCA DCV ETI DVI DVR ERB ESW ETX FLC '
++       'ICA ICP ICV IEQ IGE IGT ILE ILT INE INO IOV ITR JMP '
++       'JSR LCH LCT LCP LCW LDI LDR LEI LNF LSH LSX MCB MFI MLI MLR '
++       'MNZ MOV MTI MVC MVW MWB NGI ETI NGR NZB ORB PLC PRC PSC '
++       'REQ RGE RGT RLE RLT RMI RNE RNO ROV RSH RSX RTI RTN SBI SBR '
++       'SCH SCP SIN SQR SSL SSS STI STR SUB TAN TRC WTB XOB ZER '
++       'ZGB ZRB'
+IS_EXEC.1
+	S LEN(3) . OPC ' ' =				:F(IS_EXEC.2)
+	IS_EXECUTABLE[OPC] = 1				:(IS_EXEC.1)
+IS_EXEC.2
+
+
 -STITL MAIN PROGRAM
 *  Here follows the driver code for the "main" program.
 
@@ -231,35 +354,29 @@
 *
 *
 *  Get file name
-*
-	TRANSDATE = DATE()
-        OUTPUT = 'MINIMAL to x32 translator'
-*
-*  Default the parameter string if none present
-*
-        PARMS = (DIFFER(HOST(0)) HOST(0), "s:s:compress")
-        OUTPUT = IDENT(PARMS) "Filename (.lex) required" :S(END)
 
 *
-* Get machine definition file name following lexeme file name, and flags.
+* Get definition file name following token file name, and flags.
 *
-	PARMS ? BREAK(';:') . PARMS LEN(1) (BREAK(';:') | REM) . MACHINE
-+		((LEN(1) REM . FLAGS) | '')
-        OUTPUT = IDENT(MACHINE)
-+		"Machine type file (.def) required"	:S(END)
-	$REPLACE(MACHINE,LCASE,UCASE) = 1
+*	FILEPREFIX ? BREAK(';:') . FILEPREFIX LEN(1) (BREAK(';:') | REM) . TARGET
+*+		((LEN(1) REM . FLAGS) | '')
+*        OUTPUT = IDENT(TARGET)
+*+		"Target type file (.def) required"	:S(END)
+*	$REPLACE(TARGET,LCASE,UCASE) = 1
 *
 * Parse and display flags, setting each one's name to non-null value (1).
 *
+ :(FLGS.SKIP)
 FLGS	FLAGS ? ((LEN(1) BREAK(';:')) . FLAG LEN(1)) |
 +	 ((LEN(1) REM) . FLAG) =			:F(FLGS2)
 	FLAG = REPLACE(FLAG,LCASE,UCASE)
-        OUTPUT = "Flag: " FLAG
+        OUTPUT = "  Flag: " FLAG
 	$FLAG = 1					:(FLGS)
 *
+FLGS.SKIP
 *  Open machine definition file
 *
-FLGS2	FILENAMD = MACHINE '.def'
+FLGS2	FILENAMD = FILEPREFIX '.def'
 	INPUT(.DEFFILE,1,FILENAMD)			:S(DEFOK)
         OUTPUT = "Cannot open machine definition file: " FILENAMD :(END)
 *
@@ -268,7 +385,7 @@ FLGS2	FILENAMD = MACHINE '.def'
 *  statements and comments only.  Continuation lines are not processed
 *  by this code (but could be easily handled).
 *
-DEFOK   OUTPUT = "Machine definition file: " FILENAMD
+DEFOK   OUTPUT = "  Target definition file: " FILENAMD
 	DEFS =
 DEFLOOP	LINE = DEFFILE					:F(DEFCOMP)
 	LINE '*'					:S(DEFLOOP)
@@ -330,28 +447,27 @@ COMPDONE DEFS =
 *  register/memory-location name.
 *
 	REGMAP = TABLE(30)
-	REGMAP['XL'] = 'XL';  REGMAP['XT'] = 'XL'
-	REGMAP['XR'] = 'XR';  REGMAP['XS'] = 'ESP'
+	REGMAP['XL'] = 'XL';  REGMAP['XT'] = 'XT'
+	REGMAP['XR'] = 'XR';  REGMAP['XS'] = 'XS'
 	REGMAP['WA'] = 'WA';  REGMAP['WB'] = 'WB'
-	REGMAP['WC'] = 'WC';  REGMAP['IA'] = 'WC'
-	REGMAP['CP'] = 'EBP'
+	REGMAP['WC'] = 'WC';  REGMAP['IA'] = 'IA'
+	REGMAP['CP'] = 'CP'
 *	W0 is temp register
 	REGMAP['W0'] = 'W0'
-
-* REGLOW maps register to identify target, so
-* can extract 'L' part.
-	REGLOW = TABLE(3)
-	REGLOW['WA'] = 'WA_L'
-	REGLOW['WB'] = 'WB_L'
-	REGLOW['WC'] = 'WC_L'
-	REGLOW['W0'] = 'WA_L'
-
 
 *  Quick reference:
 	REG.IA = REGMAP['IA']
 	REG.WA = REGMAP['WA']
 	REG.CP = REGMAP['CP']
 	W0 = REGMAP['W0']
+
+* REGLOW maps register to identify target, so
+* can extract 'L' part.
+	REGLOW = TABLE(4)
+	REGLOW['WA'] = 'WA_L'
+	REGLOW['WB'] = 'WB_L'
+	REGLOW['WC'] = 'WC_L'
+
 *  Other definitions that are dependent upon things defined in the
 *  machine definition file, and cannot be built until after the definition
 *  file has been read in.
@@ -366,27 +482,27 @@ COMPDONE DEFS =
 *
 	STRIP_COMMENT = (DIFFER(COMMENTS) 'N', 'Y')
 
-	FILENAMI = PARMS '.lex'
+	FILENAMI = FILEPREFIX '.lex'
         INPUT(.INFILE,1,FILENAMI)                     :S(INPUTOK)
-        OUTPUT = 'Cannot open TOKEN file: ' FILENAMI  :(END)
-INPUTOK OUTPUT = 'Input TOKEN file: ' FILENAMI
+        OUTPUT = '  Cannot open TOKEN file: ' FILENAMI  :(END)
+INPUTOK OUTPUT = '  Input LEX file: ' FILENAMI
 *
 *
 *
 *  Associate output files.  Code is written to a temp file, which
 *  will subsequently be rewound and reread for jump optimization.
 *
-	FILENAMO = PARMS '.tmp'
+	FILENAMO = FILEPREFIX '.tmp'
         OUTPUT(.OUTFILE,2,FILENAMO)                 :S(OUTPUTOK)
         OUTPUT = 'Cannot open TEMP file: ' FILENAMO :(END)
 OUTPUTOK
-        OUTPUT = 'Output TEMP file: ' FILENAMO
+        OUTPUT = '  Output TEMP file: ' FILENAMO
 
 *
 * Open file for compilation of Minimal ERR and ERB messages
 *
-        OUTPUT(.ERRFILE,3, PARMS ".err")             :S(ERR_OK)
-        OUTPUT = "Cannot open error message file: " PARMS ".err" :(END)
+        OUTPUT(.ERRFILE,3, FILEPREFIX ".err")             :S(ERR_OK)
+        OUTPUT = "Cannot open error message file: " FILEPREFIX ".err" :(END)
 ERR_OK
 
 
@@ -395,9 +511,9 @@ ERR_OK
 *
 	NOUTLINES = NOUTLINES + 1
 
-	INPUT(.HDRFILE,4,MACHINE '.hdr')	:F(NOHDR)
+	INPUT(.HDRFILE,4,LOWER(TARGET) '.hdr')	:F(NOHDR)
 	HAVEHDR = 1
-        OUTPUT = 'Input HEADER file: ' MACHINE '.hdr'
+        OUTPUT = '  Input HEADER file: ' LOWER(TARGET) '.hdr'
 HDRCOPY LINE = HDRFILE				:F(HDREND)
 	IDENT(LINE,'END')			:S(NOHDR)
 	OUTFILE = LINE
@@ -411,7 +527,7 @@ NOHDR
 *  be declared public when encountered.
 *
 	PUBTAB = TABLE(2)
-	INPUT(.PUBFILE,5, PARMS ".pub")		:F(NOPUB)
+	INPUT(.PUBFILE,5, FILEPREFIX ".pub")		:F(NOPUB)
 	PUBTAB = TABLE(101)
 PUBCOPY	LINE = PUBFILE				:F(PUBEND)
 	PUBTAB[LINE] = 1			:(PUBCOPY)
@@ -428,7 +544,23 @@ OPNEXT	THISLINE = READLINE()
 *
 * Append ':' after label if in code or data.
 *
-        TLABEL = INLABEL (DIFFER(INLABEL) GE(SECTNOW,3) ':', )
+* Output LABEL of executable instruction immediately if there is one,
+* as it simplifies later processing, especially for tracing.
+	IDENT(INLABEL)				:S(OPNEXT.1)
+	THISLABEL = INLABEL (DIFFER(INLABEL) GE(SECTNOW,3) ':',)
+* Keep the label as is is not in executable code
+	LT(SECTNOW,5)				:S(OPNEXT.1)
+* Here if in code, so output label now
+* Defer label processing for ENT to allow emission of alignment ops for X86.
+	IDENT(INCODE,'ENT')			:S(OPNEXT.1)
+	OUTFILE = THISLABEL
+	OUTLINES = OUTLINES + 1
+* Set LASTLABEL so can check to avoid emitting duplicate label definitions
+	LASTLABEL = THISLABEL
+* Clear out label info once generated
+	LABEL = THISLABEL = 
+OPNEXT.1
+	THISLABEL = INLABEL (DIFFER(INLABEL) GE(SECTNOW,3) ':',)
 	I1 = PRSARG(IARG1)
 	I2 = PRSARG(IARG2)
 	I3 = PRSARG(IARG3)
@@ -511,7 +643,7 @@ GETARG.C.2 GETARG = L1			:(RETURN)
 
 * WLBL, CLBL
 GETARG.C.3
-GETARG.C.4 GETARG = 'DWORD [' L1 ']'     :(RETURN)
+GETARG.C.4 GETARG = 'M_WORD [' L1 ']'     :(RETURN)
 
 * ELBL, PLBL
 GETARG.C.5
@@ -526,37 +658,37 @@ GETARG.C.8
 GETARG.C.9
 	L1 LEN(1) LEN(2) . L2
 	L2 = REGMAP[L2]
-	GETARG = 'DWORD [' L2 ']'		:(RETURN)
+	GETARG = 'M_WORD [' L2 ']'		:(RETURN)
 
 * (X)+, Register indirect, post increment
-* Use lea reg,[reg+4] unless reg is esp, since it takes an extra byte.
-* Actually, lea reg,[reg+4] and add reg,4 are both 2 cycles and 3 bytes
+* Use lea reg,[reg+CFP_B] unless reg is esp, since it takes an extra byte.
+* Actually, lea reg,[reg+CFP_B] and add reg,CFP_B are both 2 cycles and 3 bytes
 * for all the other regs, and either could be used.
 GETARG.C.10
 	L1 = SUBSTR(L1,2,2)
 	T1 = REGMAP[L1]
-	GETARG = 'DWORD [' T1 ']'
-	(IDENT(L1,'XS') GENAOP(TSTMT(,'ADD',T1,'4'))) :S(RETURN)
-	GENAOP(TSTMT(,'LEA',T1,'[' T1 '+4]'))	:(RETURN)
+	GETARG = 'M_WORD [' T1 ']'
+	(IDENT(L1,'XS') GENAOP(TSTMT(,'ADD',T1,'CFP_B'))) :S(RETURN)
+	GENAOP(TSTMT(,'LEA',T1,'[' T1 '+CFP_B]'))	:(RETURN)
 
 *  -(X), Register indirect, pre decrement
 GETARG.C.11
 	T1 = REGMAP[SUBSTR(L1,3,2)]
-	GETARG = 'DWORD [' T1 ']'
-	GENBOP(TSTMT(,'LEA',T1,'[' T1 '-4]'))	:(RETURN)
+	GETARG = 'M_WORD [' T1 ']'
+	GENBOP(TSTMT(,'LEA',T1,'[' T1 '-CFP_B]'))	:(RETURN)
 
 * INT(X)
 * DLBL(X)
 GETARG.C.12
 GETARG.C.13
 	L1 BREAK('(') . T1 '(' LEN(2) . T2
-	GETARG = 'DWORD [(4*' T1 ')+' REGMAP[T2] ']'   	:(RETURN)
+	GETARG = 'M_WORD [(CFP_B*' T1 ')+' REGMAP[T2] ']'   	:(RETURN)
 
 *  NAME(X), WHERE NAME IS IN WORKING SECTION
 GETARG.C.14
 GETARG.C.15
 	L1 BREAK('(') . T1 '(' LEN(2) . T2
-	GETARG = 'DWORD [' T1 '+'  REGMAP[T2] ']'	:(RETURN)
+	GETARG = 'M_WORD [' T1 '+'  REGMAP[T2] ']'	:(RETURN)
 
 * Signed Integer
 GETARG.C.16 GETARG = L1				:(RETURN)
@@ -570,7 +702,7 @@ GETARG.C.18
 
 *  *DLBL
 GETARG.C.19
-	GETARG = '4*' SUBSTR(L1,2)	:(RETURN)
+	GETARG = 'CFP_B*' SUBSTR(L1,2)	:(RETURN)
 
 *  =NAME (Data section)
 GETARG.C.20
@@ -605,22 +737,20 @@ MEMMEM
   GENOP('MOV','W0',T1)				:(RETURN)
 
 -STITL PRCENT(N)
-PRCENT PRCENT = 'PRC_' '+'  (4 * ( N - 1)) :(RETURN)
+PRCENT PRCENT = 'PRC_' '+'  (CFP_B * ( N - 1)) :(RETURN)
 
 -STITL OUTSTMT(OSTMT)LABEL,OPCODE,OP1,OP2,OP3,COMMENT)
 *  This module writes the components of the statement
 *  passed in the argument list to the formatted .s file
 *
 OUTSTMT	LABEL = T.LABEL(OSTMT)
-*  attach source label to first generated instruction
-	DIFFER(LABEL)				:S(OUTSTMT1)
-	IDENT(TLABEL)				:S(OUTSTMT1)
-	LABEL = TLABEL; TLABEL =
+* Clear LABEL if definition already emitted
+	LABEL = IDENT(LABEL, LASTLABEL)
 
 OUTSTMT1
 	COMMENT = T.COMMENT(OSTMT)
 * DS SUPPRESS COMMENTS
- 	COMMENT = TCOMMENT = 
+ 	COMMENT = TCOMMENT = COMMENTS =
  	:(OUTSTMT2)
 *  attach source comment to first generated instruction
 	DIFFER(COMMENT)				:S(OUTSTMT2)
@@ -631,14 +761,14 @@ OUTSTMT2
 	OP1 = T.OP1(OSTMT)
 	OP2 = T.OP2(OSTMT)
 	OP3 = T.OP3(OSTMT)
-	DIFFER(COMPRESS)			:S(OUTSTMT6)
+	DIFFER(COMPRESS)			:S(OUTSTMT3)
 	STMTOUT = RPAD( RPAD(LABEL,7) ' ' RPAD(OPCODE,4) ' '
 .		  (IDENT(OP1), OP1
 .			(IDENT(OP2), ',' OP2
 .				(IDENT(OP3), ',' OP3))) ,27)
 .       (IDENT(STRIP_COMMENT,'Y'), ' ' (IDENT(COMMENT), ';') COMMENT)
-.						:(OUTSTMT5)
-OUTSTMT6
+.						:(OUTSTMT4)
+OUTSTMT3
 	STMTOUT = LABEL TAB OPCODE TAB
 .		  (IDENT(OP1), OP1
 .		    (IDENT(OP2), ',' OP2
@@ -648,21 +778,93 @@ OUTSTMT6
 **	Send text to OUTFILE
 *
 **
-OUTSTMT5
+OUTSTMT4
 **
 **	Send text to output file if not null.
 *
-	STMTOUT = REPLACE(TRIM(STMTOUT),'$','_')
+*	STMTOUT = REPLACE(TRIM(STMTOUT),'$','_')
+	STMTOUT = TRIM(STMTOUT)
+	IDENT(STMTOUT)				:S(RETURN)
+	EQ(Z_TRACE)				:S(OUTSTMT5)
+*	here if trace code desired for executable instructions
+	CHKTRACE()
+OUTSTMT5
 	IDENT(STMTOUT)				:S(RETURN)
 	OUTFILE = STMTOUT
 	NTARGET	= NTARGET + 1
 	NOUTLINES = NOUTLINES + 1
 *
 *  Record code labels in table with delimiter removed.
-	(GE(SECTNOW,5) DIFFER(LABEL))		:F(RETURN)
+	(GE(SECTNOW,5) DIFFER(THISLABEL))		:F(RETURN)
 	LABEL ? BREAK(':') . LABEL	:F(RETURN)
 	LABTAB<LABEL> = NOUTLINES		:(RETURN)
 
+-stitl  CHKTRACE()
+CHKTRACE
+*						:(return)
+*	OUTPUT = 'chktrace:' INLINES ':' LABEL ':' STMTOUT
+*	output = differ (label) 'chktrace label:' label ':'
+*	turn off skip mode when begin executable code
+	CLABEL = INLABEL
+ 	OLD_IN_SKIP = IN_SKIP
+ 	OLD_IN_EXEC = IN_EXEC
+ 	OLD_IS_EXEC = IS_EXEC
+	IN_SKIP = IDENT(INLABEL,'S_AAA') 0
+
+*	INCODE ? ANY(LCASE)			:S(RETURN)
+	UOPCODE  = REPLACE(INCODE, LCASE,UCASE)
+*  do not trace bsw (for now)
+	IDENT(UOPCODE,'BSW')			:s(return)
+	IS_EXEC = IS_EXECUTABLE[UOPCODE]
+	IN_EXEC = NE(Z_TRACE)  IDENT(INLABEL, 'S_AAA') 1
+	IN_EXEC = GT(NLINES,2186) 1
+*	need to skip certain blocks since otherwise get branches that are too long
+*	skip when in code that won't assemble if try to trace
+*	this was discovered on a case-by-case basis.
+
+ 	IN_SKIP  = DIFFER(INLABEL) DIFFER(SKIP_ON[INLABEL]) 1
+*    	OUTPUT  = DIFFER(INLABEL) DIFFER(SKIP_ON[INLABEL]) 'skip on ' INLABEL
+ 	IN_SKIP  = DIFFER(INLABEL) DIFFER(SKIP_OFF[INLABEL]) 0
+*    	OUTPUT  = DIFFER(INLABEL) DIFFER(SKIP_OFF[INLABEL]) 'skip off ' INLABEL
+*	IN_SKIP = 0
+	
+*     	OUTPUT = DIFFER(OLD_IN_SKIP, IN_SKIP) 'in_skip now ' IN_SKIP
+*     	OUTPUT = DIFFER(OLD_IN_EXEC, IN_EXEC) 'in_exec now ' IN_EXEC
+*     	OUTPUT = DIFFER(OLD_IS_EXEC, IS_EXEC) 'is_exec now ' IS_EXEC
+
+	Z_NUM = 100 * IN_EXEC + 10 * IS_EXEC + IN_SKIP
+* 	OUTPUT = CLABEL ':' 'Z_NUM:' Z_NUM ':' LPAD(NLINES,6) ' ' STMTOUT
+*	skip trace if would otherwise access label that is too far removed
+	NE(IN_SKIP)				:S(RETURN)
+	EQ(IN_EXEC)				:S(RETURN)
+	EQ(IS_EXEC)				:S(RETURN)
+*	here to emit trace. need to emit trace after label if there is label
+* 	IDENT(INLABEL)				:S(CHKTRACE.1)
+*	only trace at labels since get jumps that are too removed otherwise
+*	ident(label)				:s(return)
+*	here to emit trace code when there is label
+*	first need to emit label, then fall through
+
+*	STMTOUT ? BREAK_WS  . LABEL SPANWS  REM . BODY	:F(OUTSTMT5)
+* 	STMTOUT = TAB BODY
+*	OUTFILE = LABEL
+*	LABEL =
+	NE(IN_GCOL)				:S(RETURN)
+CHKTRACE.1
+	GENZ()
+						:(RETURN)
+GENZ
+* Only trace at label definition
+	IDENT(THISLABEL)			:S(RETURN)
+	Z_COUNT = Z_COUNT + 1
+	GT(Z_SKIP) LE(Z_COUNT,Z_SKIP)		:S(RETURN)
+	GT(Z_LIMIT)  GT(Z_COUNT, Z_LIMIT)	:S(RETURN)
+*	Always generate trace if at label definition
+	Z_DESC = '"' REPLACE(THISLINE,'{',' ') '"'
+	OUTFILE = TAB 'ZZZ' TAB	Z_COUNT ',' NLINES ',' Z_DESC 
+	OUTLINES = OUTLINES + 1
+						:(RETURN)
+        
 -STITL PRSARG(IARG)
 PRSARG	PRSARG = MINARG(0)
 	IARG BREAK(',') . L1 ',' REM . L2	:F(RETURN)
@@ -677,7 +879,9 @@ PRSARG	PRSARG = MINARG(0)
 READLINE READLINE = INFILE                      :F(RL02)
 	NLINES  = NLINES + 1
 	IDENT( READLINE )			:S(READLINE)
-	LEQ( SUBSTR( READLINE,1,1 ),'*' )       :F(RL01)
+	LEQ( SUBSTR(READLINE,1,1 ),'*' )       :F(RL01)
+* Force skip of full line comments		
+	:(READLINE)
 *
 *  Only print comment if requested.
 *
@@ -723,10 +927,8 @@ IFREG	GE(I.TYPE(IARG),7) LE(I.TYPE(IARG),8)
 .						:F(FRETURN)S(RETURN)
 
 G.FLC
-	T1 = SUBSTR(GETARG(I1),2,1) 'L'
+	T1 = REGLOW[GETARG(I1)]
 	T2 = GENLAB()
-*	GENOP('MOV','DWORD[at_num]','EAX')
-* 	GENOP('CALL','at_note3')
 	GENOP('CMP',T1,"'a'")
 	GENOP('JB', T2 )
 	GENOP('CMP',T1,"'z'")
@@ -774,7 +976,7 @@ MOV.2
 
 * Odd/Even tests.  If W reg, use low byte of register.
 G.BOD	T1 = GETARG(I1)
-	T1 = EQ(I.TYPE(I1),8) REGLOW[T1]
+ 	T1 = EQ(I.TYPE(I1),8) REGLOW[T1]
 	GENOP('TEST',T1,'1')
 	GENOP('JNE',GETARG(I2))			:(OPDONE)
 
@@ -791,11 +993,11 @@ G.BSW	T1 = GETARG(I1)
 	GENOP('CMP',T1,GETARG(I2))
 	GENOP('JGE',GETARG(I3))
 * Here after default case.
-G.BSW1	GENOP('JMP', 'DWORD [' T2 '+' T1 '*4]') 
+G.BSW1	GENOP('JMP', 'M_WORD [' T2 '+' T1 '*CFP_B]') 
         GENOP('segment .data')
         GENOPL(T2 ':')                  :(OPDONE)
 
-G.IFF   GENOP('dd',GETARG(I2))               :(OPDONE)
+G.IFF   GENOP('D_WORD',GETARG(I2))               :(OPDONE)
 
 G.ESW   
         GENOP('segment .text')                          :(OPDONE)
@@ -815,17 +1017,25 @@ G.ENT
 *
 
 	T1 = I.TEXT(I1)
-        GENOP('align',2)
-        (DIFFER(T1) GENOP('db',T1), GENOP('NOP'))
-	GENOP()
+*        GENOP('align',2)
+	OUTFILE = TAB 'align' TAB '2'
+	DIFFER(T1)					:S(G.ENT.1)
+	OUTFILE = TAB 'NOP'
+							:(G.ENT.2)
+G.ENT.1
+	OUTFILE = TAB 'DB' TAB	T1
+	
+G.ENT.2
+	OUTLINES = OUTLINES + 2
+	GENOPL(THISLABEL)
 *  Note that want to attach label to last instruction
-	T1 = CSTMTS[CSTMTS.N]
-	T.LABEL(T1) = TLABEL
-	CSTMTS[CSTMTS.N] = T1
+*	T1 = CSTMTS[CSTMTS.N]
+*	T.LABEL(T1) = TLABEL
+*	CSTMTS[CSTMTS.N] = T1
 *  Here to see if want label made public
-	TLABEL ? RTAB(1) . TLABEL ':'
-        (DIFFER(PUBTAB[TLABEL]), DIFFER(DEBUG)) GENOP('global',TLABEL)
-	TLABEL =				:(OPDONE)
+	THISLABEL ? RTAB(1) . THISLABEL ':'
+        (DIFFER(PUBTAB[THISLABEL]), DIFFER(DEBUG)) GENOP('global',THISLABEL)
+	THISLABEL =				:(OPDONE)
 
 G.BRI	GENOP('JMP',GETARG(I1))			:(OPDONE)
 
@@ -838,11 +1048,11 @@ G.JSR
 *	get count of following ppm statements
 	JSR_COUNT = PPM_CASES[JSR_PROC]
 	EQ(JSR_COUNT)				:S(OPDONE)
-*	AT_SUSPEND()
+*	Z_SUSPEND()
 	JSR_CALLS = JSR_CALLS +  1
 	JSR_LABEL = 'CALL_' JSR_CALLS
 	JSR_LABEL_NORM = JSR_LABEL 
-	GENOP('DEC','DWORD [' RCODE ']')
+	GENOP('DEC','M_WORD [' RCODE ']')
 	GENOP('JS',JSR_LABEL_NORM)
 
 *	generate branch around for ppms that will follow
@@ -870,17 +1080,17 @@ G.PPM
 G.PPM.LOOP.NEXT
 	GENOPL(LAB_NEXT ':')
  	JSR_COUNT = JSR_COUNT - 1
-* 	EQ(JSR_COUNT) AT_RESTORE()
+* 	EQ(JSR_COUNT) Z_RESTORE()
 	EQ(JSR_COUNT) GENOPL(JSR_LABEL_NORM ':') :(OPDONE)
 G.PPM.LOOP
 	LAB_NEXT = GENLAB()
-	GENOP('DEC','DWORD [' RCODE ']')
+	GENOP('DEC','M_WORD [' RCODE ']')
 	GENOP('JNS',LAB_NEXT)
 	IDENT(INCODE,'PPM')			:S(G.PPM.LOOP.PPM)
 *  Here if error exit via EXI. Set RCODE to exit code and jump 
 *  to error handler with error code in RCODE
 G.PPM.LOOP.ERR
-	GENOP('MOV','DWORD [' RCODE ']', +T1)
+	GENOP('MOV','M_WORD [' RCODE ']', +T1)
 	GENOP('JMP','ERR_')
 						:(G.PPM.LOOP.NEXT)
 G.PPM.LOOP.PPM
@@ -899,10 +1109,15 @@ G.PPM.2
 
 G.PRC
 
+*  Generate PUBLIC declaration
+*	T1 = THISLABEL
+*	T1 ? RTAB(1) . T1 ':'
+*	GENOP()
+*	GENOP('Global',T1)
 *  NOP needed to get labels straight
 	PRC.ARGS = GETARG(I2)
-	PPM_CASES[INLABEL] = I.TEXT(I2)
-	INLABEL =
+	PPM_CASES[THISLABEL] = I.TEXT(I2)
+	THISLABEL =
 	MAX_EXI = GT(PRC.ARGS,MAX_EXI) PRC.ARGS
 	PRC.TYPE = I.TEXT(I1)		:($('G.PRC.' PRC.TYPE))
 G.PRC.E
@@ -911,19 +1126,19 @@ G.PRC.R						:(OPDONE)
 G.PRC.N
 *  Store return address in reserved location
 	PRC.COUNT = PRC.COUNT + 1
-	GENOP('POP', 'DWORD [' PRCENT(PRC.COUNT) ']')		:(OPDONE)
+	GENOP('POP', 'M_WORD [' PRCENT(PRC.COUNT) ']')		:(OPDONE)
 
 G.EXI	
         T1 = GETARG(I1); T2 = PRC.TYPE; T3 = I.TEXT(I1)
 *  If type R or E, and no exit parameters, just return
  	DIFFER(T2,'N') EQ(PRC.ARGS)	GENOP('RET')	:S(OPDONE)
         T3 = IDENT(T3) '0'
-    	GENOP('MOV','DWORD [' RCODE ']',+T3)
+    	GENOP('MOV','M_WORD [' RCODE ']',+T3)
 	IDENT(T2,'N')				:S(G.EXI.1)
 	GENOP('RET')				:(OPDONE)
 G.EXI.1
 
-	GENOP('MOV','W0', 'DWORD ['  PRCENT(PRC.COUNT) ']' )
+	GENOP('MOV','W0', 'M_WORD ['  PRCENT(PRC.COUNT) ']' )
 	GENOP('JMP','W0')
 						:(OPDONE)
 G.ENP   GENOP()					:(OPDONE)
@@ -931,7 +1146,7 @@ G.ENP   GENOP()					:(OPDONE)
 G.ERB
 	ERRFILE =  I.TEXT(I1) ' ' I.TEXT(I2)
 *	Set RCODE to error code and branch to error handler
-	GENOP('MOV', 'DWORD [' RCODE ']',  +(I.TEXT(I1)))
+	GENOP('MOV', 'M_WORD [' RCODE ']',  +(I.TEXT(I1)))
  	GENOP('JMP','ERR_')
 						:(OPDONE)
 
@@ -949,13 +1164,17 @@ G.ZER1	T1 = GETARG(I1)
 	GENOP('XOR',T1,T1)			:(OPDONE)
 G.ZER.XS GENOP('PUSH','0')			:(OPDONE)
 
-G.MNZ   GENOP('MOV',GETARG(I1),'ESP')		:(OPDONE)
+G.MNZ   GENOP('MOV',GETARG(I1),'XS')		:(OPDONE)
 
 G.SSL   GENOP()					:(OPDONE)
 G.SSS   GENOP()					:(OPDONE)
 
 G.RTN
+*	Generate PUBLIC declaration and then regenerate label
+*	T1 = THISLABEL
+*	T1 ? RTAB(1) . T1 ':'
 	GENOP()
+*        GENOP('GLobal',T1)                     
                                                 :(OPDONE)
 
 G.ADD	MEMMEM()
@@ -964,8 +1183,8 @@ G.ADD	MEMMEM()
 G.SUB	MEMMEM()
 	GENOP('SUB',GETARG(I2),GETARG(I1))	:(OPDONE)
 
-G.ICA   GENOP('ADD',GETARG(I1),'4')		:(OPDONE)
-G.DCA   GENOP('SUB',GETARG(I1),'4')		:(OPDONE)
+G.ICA   GENOP('ADD',GETARG(I1),'CFP_B')		:(OPDONE)
+G.DCA   GENOP('SUB',GETARG(I1),'CFP_B')		:(OPDONE)
 
 G.BEQ
 G.BNE
@@ -1006,7 +1225,7 @@ G.LCT
 *
 	DIFFER(I.TEXT(I1),I.TEXT(I2))		:S(G.LCT.1)
 *  Here if operands same. Emit no code if no label, else emit null
-	IDENT(TLABEL)				:S(OPNEXT)
+	IDENT(THISLABEL)				:S(OPNEXT)
 	GENOP()					:(OPDONE)
 
 G.LCT.1	GENOP('MOV',GETARG(I1),GETARG(I2))	:(OPDONE)
@@ -1017,34 +1236,25 @@ G.BCT
 	T2 = GETARG(I2)
 	:(G.BCT2)
 	IDENT(T1,'WA')				:S(G.BCT1)
-G.BCT2	GENOP('DEC',T1)
+G.BCT2	
+	GENOP('DEC',T1)
 	GENOP('JNZ',T2)				:(OPDONE)
-G.BCT1	GENOP('LOOP',T2)			:(OPDONE)
+G.BCT1	
+	GENOP('LOOP',T2)			:(OPDONE)
 
 G.AOV   GENOP('ADD',GETARG(I2),GETARG(I1))
 	GENOP('JC',GETARG(I3))			:(OPDONE)
 G.LCP
 *  Use CP for code pointer.
-	GENOP('MOV','DWORD [MINCP]',GETARG(I1))		
-						:(OPDONE)
-
-G.SCP   
-	GENOP('MOV',GETARG(I1),'DWORD [MINCP]')
-						:(OPDONE)
+	GENOP('MOV',REG.CP,GETARG(I1))		:(OPDONE)
+G.SCP   GENOP('MOV',GETARG(I1),REG.CP)		:(OPDONE)
 G.LCW
 *  Should be able to get LODSD; XCHG W0,GETARG(I1)
-	GENOP('MOV',W0,'DWORD [MINCP]')
-	GENOP('MOV',GETARG(I1),'[' W0 ']')
-	GENOP('ADD',W0,'4')			
-	GENOP('MOV','DWORD [MINCP]',W0)
-						:(OPDONE)
+	GENOP('MOV',GETARG(I1),'[' REG.CP ']')
+	GENOP('ADD',REG.CP,'CFP_B')			:(OPDONE)
 
 
-G.ICP   	
-	GENOP('MOV',W0,'DWORD [MINCP]')
-	GENOP('ADD',W0,'4')
-	GENOP('MOV','DWORD [MINCP]',W0)
-						:(OPDONE)
+G.ICP   GENOP('ADD',REG.CP,'CFP_B')			:(OPDONE)
 
 *  INTEGER ACCUMULATOR KEPT IN WDX (WC)
 G.LDI	GENOP('MOV',REG.IA,GETARG(I1))		:(OPDONE)
@@ -1057,7 +1267,7 @@ G.SBI   GENOP('SUB',REG.IA,GETARG(I1))		:(OPDONE)
 
 G.DVI
 G.RMI
-*	Move argument to EAX, call procedure
+*	Move argument to W0, call procedure
 	GENOP('MOV','W0',GETARG(I1))
 	GENOP('CALL', INCODE '_')	:(OPDONE)
 
@@ -1107,7 +1317,7 @@ G.DVR
 	TYP1 = I.TYPE(I1)
 * 	OUTPUT = 'g.rop before dword test ' t1 ' ' typ1
 *	t1 'dword [' break(']') . leaarg rem
-*	T1 'DWORD' =
+*	T1 'M_WORD' =
 	T1 = TRIM(T1)
 *	OUTPUT = 'g.rop after dword test ' t1 ' leaarg ' leaarg
 *	(GE(TYP1,9) LE(TYP1,15) GENOP('LEA','W0', T1),
@@ -1150,8 +1360,8 @@ G.PSC
 	T1 = GETARG(I1)
 	T2 = I.TYPE(I2)
 	((IFREG(I2), GE(T2,1) LE(T2,2))
-+	GENOP('LEA',T1,'[CFP$F+' T1 '+' GETARG(I2) ']')) :S(OPDONE)
-	GENOP('ADD',T1,'CFP$F')
++	GENOP('LEA',T1,'[CFP_F+' T1 '+' GETARG(I2) ']')) :S(OPDONE)
+	GENOP('ADD',T1,'CFP_F')
 	EQ(I.TYPE(I2))				:S(OPDONE)
 *
 *  Here if D_OFFSET_(given (in a variable), so add it in.
@@ -1205,7 +1415,7 @@ G.SCG.W
 *  Here if moving character from work register, convert T1
 *  to name of low part.
 *
-	T1 = REGLOW[I.TEXT(I1)]
+	T1 = REGLOW[GETARG(I1)]
 	IDENT(T2,'(XL)')			:S(G.SCG.W.XL)
 	IDENT(T2,'-(XL)')			:S(G.SCG.W.PXL)
 	IDENT(T2,'(XL)+')			:S(G.SCG.W.XLP)
@@ -1228,7 +1438,7 @@ G.SCG.W.PXR
 G.SCG.W.XRP
 	GENOP('MOV','AL',T1)
 	GENOP('STOSB')				:(OPDONE)
-G.CSC  	IDENT(TLABEL)				:S(OPNEXT)
+G.CSC  	IDENT(THISLABEL)			:S(OPNEXT)
 	GENOP()					:(OPDONE)
 
 G.CEQ
@@ -1266,9 +1476,9 @@ G.TRC
         GENOPL((T1 = GENLAB()) ':','MOVZX','W0','BYTE [XR]') 
 	GENOP('MOV','AL','[XL+W0]')
 	GENOP('STOSB')
-	GENOP('DEC','ECX')
-	GENOP('JNZ',T1)
 *	GENOP('LOOP',T1)
+	GENOP('DEC','WA')
+	GENOP('JNZ',T1)				:(OPDONE)
 	GENOP('XOR','XL','XL')
 	GENOP('XOR','XR','XR')		:(OPDONE)
 
@@ -1320,8 +1530,10 @@ G.ZRB	IFREG(I1)				:S(G.ZRB1)
 G.ZRB1	GENOP('OR',GETARG(I1),GETARG(I1))
 	GENOP('JZ',GETARG(I2))			:(OPDONE)
 
-* x32 is a Little-Endian machine, so ZGB must swap bytes.
+* 80386 is a Little-Endian machine, so ZGB must swap bytes.
 *
+* NOTE THAT ON A 486 AND LATER CPU, THIS CAN BE DONE WITH ONE INSTRUCTION, BSWAP.
+* SHOULD CONSIDER ABANDONING THE 80386 SO CAN USE BSWAP.
 *
 G.ZGB	T1 = GETARG(I1)			;* 32-bit register name, e.g., EDX
         T2 = SUBSTR(T1,2,1) 'L'         ;* 8-bit low register name, e.g., DL
@@ -1334,8 +1546,10 @@ G.ZGB	T1 = GETARG(I1)			;* 32-bit register name, e.g., EDX
 G.ZZZ
  	GENOP('ZZZ',GETARG(I1))
 						:(OPDONE)
-G.WTB   GENOP('SAL',GETARG(I1),'2')		:(OPDONE)
-G.BTW   GENOP('SHR',GETARG(I1),'2')		:(OPDONE)
+G.WTB   GENOP('SAL',GETARG(I1),LOG_CFP_B)	
+						:(OPDONE)
+G.BTW   GENOP('SHR',GETARG(I1),LOG_CFP_B)
+						:(OPDONE)
 
 G.MTI	(IDENT(I.TEXT(I1),'(XS)+') GENOP('POP',REG.IA)) :S(OPDONE)
 	GENOP('MOV',REG.IA,GETARG(I1))		:(OPDONE)
@@ -1352,28 +1566,28 @@ G.MFI1	IDENT(I.TEXT(I1),'WC') GENOP()		:S(OPDONE)
 	GENOP('MOV',GETARG(I1),REG.IA)		:(OPDONE)
 
 G.CTW
-*  assume four chars per word
+*  assume CFP_C chars per word
 	T1 = GETARG(I1)
-	GENOP('ADD',T1,'3+4*' I.TEXT(I2))
-	GENOP('SHR',T1,'2')		:(OPDONE)
+	GENOP('ADD',T1,'(CFP_C-1)+CFP_C*' I.TEXT(I2))
+	GENOP('SHR',T1,LOG_CFP_C)		:(OPDONE)
 
 G.CTB
-*  use add w,val*CFP.B+3; and w,-4
+*  use add w,val*CFP.B+3; and w,-CFP_B
 	T1 = GETARG(I1)
-	GENOP('ADD',T1,'3+4*' I.TEXT(I2))
-	GENOP('AND',T1,'-4')	:(OPDONE)
+	GENOP('ADD',T1,'(CFP_B-1)+CFP_B*' I.TEXT(I2))
+	GENOP('AND',T1,'-CFP_B')	:(OPDONE)
 
 G.CVM	T1 = GETARG(I1)
 	GENOP('IMUL',REG.IA,'10')
 	GENOP('JO',T1)
-	GENOP('SUB',REGMAP['WB'],'CH$D0')
+	GENOP('SUB',REGMAP['WB'],'CH_D0')
 	GENOP('SUB',REG.IA,REGMAP['WB'])
 	GENOP('JO',T1)				:(OPDONE)
 
 G.CVD	GENOP('CALL','CVD_')			:(OPDONE)
 
 G.MVC
-*	move chars from XL (ESI) to XR (EDI), count in WA (ECX)
+*	move chars from XL to XR, count in WA 
 *	Use Minimal specification
 *
 	T1 = GENLAB()
@@ -1383,17 +1597,17 @@ G.MVC
 	GENOP('JNZ',T1)
 
 G.MVW
-	GENOP('SHR','WA','2')
+	GENOP('SHR','WA',LOG_CFP_B)
  	GENREP('MOVSD')
 * 	GENOP('REP','MOVSD')		
 					:(OPDONE)
 
 G.MWB
 *   move words backwards
-	GENOP('SHR','WA','2')
+	GENOP('SHR','WA',LOG_CFP_B)
 	GENOP('STD')
-	GENOP('LEA','XL','[XL-4]')
-	GENOP('LEA','XR','[XR-4]')
+	GENOP('LEA','XL','[XL-CFP_B]')
+	GENOP('LEA','XR','[XR-CFP_B]')
  	GENREP('MOVSD')
 *	GENOP('REP','MOVSD')
 	GENOP('CLD')				:(OPDONE)
@@ -1405,7 +1619,7 @@ G.MCB
 	GENOP('DEC','XR')
  	GENREP('MOVSB')
 *	GENOP('REP','MOVSB')
-	GENOP('CLD')				:(OPDONE)
+	GENOP('CLD')					:(OPDONE)
 GENREP
 *	Generate equivalent of REP op loop
 	L1 = GENLAB()
@@ -1417,20 +1631,24 @@ GENREP
 	GENOP('DEC','WA')
 	GENOP('JMP',L1)
 	GENOPL(L2 ':')
-						:(RETURN)
+							:(RETURN)
 
-G.CHK   GENOP('CMP','ESP','LOWSPMIN')
-	GENOP('JB','SEC06')			:(OPDONE)
+G.CHK   GENOP('CMP','XS','LOWSPMIN')
+	GENOP('JB','SEC06')			
+							:(OPDONE)
 
 DECEND
 *  Here at end of DIC or DAC to see if want label made public
-	TLABEL ? RTAB(1) . TLABEL ':'
-        DIFFER(PUBTAB[TLABEL]) GENOP('global',TLABEL)  :(OPDONE)
+	THISLABEL ? RTAB(1) . THISLABEL ':'
+        DIFFER(PUBTAB[THISLABEL]) GENOP('global',THISLABEL)  
+							:(OPDONE)
 
 G.DAC	T1 = I.TYPE(I1)
         T2 = "" ;*(LE(T1,2) "", LE(T1,4) "D_OFFSET_(", LE(T1,6) "D_OFFSET_(", "")
-        GENOPL(TLABEL,'dd',T2 I.TEXT(I1))    :(DECEND)
-G.DIC   GENOPL(TLABEL,'dd',I.TEXT(I1))               :(DECEND)
+        GENOPL(THISLABEL,'D_WORD',T2 I.TEXT(I1))    
+							:(DECEND)
+G.DIC   GENOPL(THISLABEL,'D_WORD',I.TEXT(I1))               
+							:(DECEND)
 
 *
 * Make sure don't attach label to the align.
@@ -1439,53 +1657,36 @@ G.DIC   GENOPL(TLABEL,'dd',I.TEXT(I1))               :(DECEND)
 * Microsoft MASM 6.0, it treats "+0.0" as an expression, and
 * then says that real-valued expressions are illegal.
 *
-G.DRC   GENOP('align','4')
+G.DRC   GENOP('align','CFP_B')
 	T1 = I.TEXT(I1)
 	T1 ? FENCE "+" = ""
-        GENOP('dd',T1)
+        GENOP('D_WORD',T1)
 *  Note that want to attach label to last instruction
-	T.LABEL(CSTMTS[CSTMTS.N]) = TLABEL
-	TLABEL =					:(OPDONE)
+	T.LABEL(CSTMTS[CSTMTS.N]) = THISLABEL
+	THISLABEL =					:(OPDONE)
 
 G.DTC
 *  CHANGE FIRST AND LAST CHARS TO " (ASSUME / USED IN SOURCE)
 	T1 = I.TEXT(I1)
 	T1 TAB(1) RTAB(1) . T2
-	T1 = REMDR(SIZE(T2),4)
-	DTC_LEN = SIZE(T2)
-	DTC_MAX = GT(SIZE(T2),DTC_MAX) SIZE(T2)
-*        T2 = "'" T2 "'"
+	T3 = REMDR(SIZE(T2),CFP_C)
+        T2 = "'" T2 "'"
 *  Append nulls to complete last word so constant length is multiple
 *  of word word
-*        T2 = NE(T3) T2 DUPL(',0',4 - T3)
-	T3 = ''
-	T4 = 1
-G.DTC.1
-
-	T3 = T3 "'"  SUBSTR(T2,T4,1) "',"
-	LE(T4 = T4 + 1, DTC_LEN)  :S(G.DTC.1)
-	T1 = REMDR(SIZE(T2),4)
-	EQ(T1)			:S(G.DTC.DONE)
-*  Here to pad out to multiple of word size
-	T1 = 4 - T1
-
-G.DTC.2
-	T3 = T3 "0,"
-	GT(T1 = T1 - 1, 0)		:S(G.DTC.2)
-G.DTC.DONE
-	GENOPL(TLABEL,'db',SUBSTR(T3,1,SIZE(T3) - 1))
-					:(OPDONE)
-        GENOPL(TLABEL,'db',T2)              :(OPDONE)
-
-G.DBC   GENOPL(TLABEL,'dd',GETARG(I1))       :(OPDONE)
-G.EQU   GENOP('equ',I.TEXT(I1))			:(OPDONE)
+        T2 = NE(T3) T2 DUPL(',0',CFP_C - T3)
+        GENOPL(THISLABEL,'db',T2)              
+							:(OPDONE)
+G.DBC   GENOPL(THISLABEL,'D_WORD',GETARG(I1))       
+							:(OPDONE)
+G.EQU   GENOPL(THISLABEL,'equ',I.TEXT(I1))			
+							:(OPDONE)
 G.EXP   
-	PPM_CASES[INLABEL] = I.TEXT(I1)
-	GENOP('extern',TLABEL)
-	TLABEL =				:(OPDONE)
+	PPM_CASES[THISLABEL] = I.TEXT(I1)
+	GENOP('extern',THISLABEL)
+	THISLABEL =				:(OPDONE)
 
 G.INP	
-	PPM_CASES[INLABEL] = I.TEXT(I2)
+	PPM_CASES[THISLABEL] = I.TEXT(I2)
 	PRC.COUNT1 = IDENT(I.TEXT(I1),'N') PRC.COUNT1 + 1
 +						:(OPNEXT)
 
@@ -1534,7 +1735,7 @@ G.SEC.5
 *        (GT(PRC.COUNT1) GENOPL('PRC$' ':','times', PRC.COUNT1 ' dd 0'))
 	GENOP('PRC_: times ' PRC.COUNT1 ' dd 0')
         GENOP('global','LOWSPMIN')
-        GENOPL('LOWSPMIN' ':','dd','0')
+        GENOPL('LOWSPMIN' ':','D_WORD','0')
         GENOP('global','END_MIN_DATA')
         GENOPL('END_MIN_DATA' ':')
         GENOP('segment .text')
@@ -1556,8 +1757,8 @@ G.SEC.7
 
 *	allow for some extra cases in case of max.err bad estimate
 	N1 = MAX.ERR + 8
-	OUTPUT = 'MAX.ERR ' MAX.ERR
-	GENOPL('ERR_:','xchg',REG.WA,'DWORD [' RCODE ']')
+	OUTPUT = '  MAX.ERR ' MAX.ERR
+	GENOPL('ERR_:','xchg',REG.WA,'M_WORD [' RCODE ']')
 						:(OPDONE)
 
 
@@ -1568,9 +1769,10 @@ OPDONE	FLUSH()					:(OPNEXT)
 *
 FLUSH	EQ(ASTMTS.N) EQ(BSTMTS.N) EQ(CSTMTS.N)	:F(OPDONE1)
 *
-*  Here if no statements, so output single 'null' statement to get label
+*  Here if some statements to emit, so output single 'null' statement to get label
 *  and comment field right.
 *
+	LABEL = THISLABEL = 
 	OUTSTMT(TSTMT())			:(OPDONE.6)
 OPDONE1	EQ(BSTMTS.N)				:S(OPDONE.2)
 	I = 1
@@ -1609,15 +1811,15 @@ G.END.2
 * it to perform jump optimization.
 	ENDFILE(1)
 	ENDFILE(2)
-        OUTPUT = "Code generation complete, begin jump optimization"
+        OUTPUT = "  Code generation complete, begin jump optimization"
 
 	INPUT(.INFILE,1,FILENAMO)			:S(G.END.3)
         OUTPUT = 'Cannot reopen TEMP file: ' FILENAMO :(END)
 
-G.END.3 FILENAMO = PARMS ".s"
+G.END.3 FILENAMO = FILEPREFIX ".s"
         OUTPUT(.OUTFILE,2,FILENAMO '[-m10 -n0]')            :S(G.END.4)
         OUTPUT = 'Cannot open ASSEMBLY file: ' FILENAMO :(END)
-G.END.4 OUTPUT = 'Output ASSEMBLY file: ' FILENAMO
+G.END.4 OUTPUT = '  Output ASSEMBLY file: ' FILENAMO
 
 ***************************************************************************
 * Jump optimization
@@ -1654,26 +1856,31 @@ G.END.6	OUTFILE = LINE					:(G.END.5)
 G.END.7 ENDFILE(1)
 	ENDFILE(2)
 	ENDFILE(3)
-	HOST(1,"touch " PARMS ".err")
-	HOST(1,"del " PARMS ".tmp")
-        OUTPUT = '*** TRANSLATION COMPLETE ***'
-        OUTPUT = NLINES ' LINES READ.'
-        OUTPUT = NSTMTS ' STATEMENTS PROCESSED.'
-        OUTPUT = NTARGET ' TARGET CODE LINES PRODUCED.'
-        OUTPUT = NOPTIM1 ' "OR" optimizations performed.'
-        OUTPUT = NOPTIM2 ' jumps shortened.'
-        OUTPUT = MAX.ERR ' MAXIMUM ERR/ERB NUMBER.'
-        OUTPUT = PRC.COUNT1 ' PRC COUNT.'
-	OUTPUT = DTC_MAX ' MAXIMUM DTC LENGTH'
-        OUTPUT = GT(PRC.COUNT,PRC.COUNT1)
+        OUTPUT = '  ' '*** TRANSLATION COMPLETE ***'
+        OUTPUT = '  ' NLINES ' LINES READ.'
+        OUTPUT = '  ' NSTMTS ' STATEMENTS PROCESSED.'
+        OUTPUT = '  ' NTARGET ' TARGET CODE LINES PRODUCED.'
+        OUTPUT = '  ' NOPTIM1 ' "OR" optimizations performed.'
+        OUTPUT = '  ' NOPTIM2 ' jumps shortened.'
+        OUTPUT = '  ' MAX.ERR ' MAXIMUM ERR/ERB NUMBER.'
+        OUTPUT = '  ' PRC.COUNT1 ' PRC COUNT.'
+        OUTPUT = '  ' GT(PRC.COUNT,PRC.COUNT1)
 .	  'DIFFERING COUNTS FOR N-PROCEDURES:'
 .	  ' INP ' PRC.COUNT1 ' PRC ' PRC.COUNT
-        OUTPUT = NERRORS ' ERRORS OCCURRED.'
+        OUTPUT = '  ' NERRORS ' ERRORS OCCURRED.'
         OUTPUT =
 	ERRFILE = '* ' MAX.ERR ' MAXIMUM ERR/ERB NUMBER'
 	ERRFILE  = '* ' PRC.COUNT ' PRC COUNT'
 .		DIFFER(LASTERROR) 'THE LAST ERROR WAS IN LINE ' LASTERROR
 	&CODE   = NE(NERRORS) 2001
-        OUTPUT = COLLECT() ' FREE WORDS'
+        OUTPUT = '  ' COLLECT() ' FREE WORDS'
 	:(END)
+* Convert argument to upper case
+LOWER
+	LOWER = REPLACE(S,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+.			  'abcdefghijklmnopqrstuvwxyz')	:(RETURN)
+* Convert argument to upper case
+UPPER
+	UPPER = REPLACE(S,'abcdefghijklmnopqrstuvwxyz',
+.			  'ABCDEFGHIJKLMNOPQRSTUVWXYZ')	:(RETURN)
 END

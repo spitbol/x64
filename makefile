@@ -1,6 +1,7 @@
 # X32 SPITBOL
 #
 
+TARGET=X64
 
 # SPITBOL Version:
 MIN=   s
@@ -9,7 +10,7 @@ DEBUG=	1
 # Minimal source directory.
 MINPATH=./
 
-OSINT=./osint
+OSINT=./x64/osint
 
 vpath %.c $(OSINT)
 
@@ -63,7 +64,7 @@ UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/syste
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	$(MIN).hdr
+VHDRS=	x32.hdr x64.hdr
 
 # OSINT objects:
 SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
@@ -119,13 +120,11 @@ errors.o: errors.s
 
 # SPITBOL Minimal source
 s.s:	s.lex $(VHDRS) $(COD) 
-	$(SPIT) -u "s:$(MIN):comments" $(COD)
-#	cp	s.s	s.S
-#	$(SPIT) san.spt <s.s >s.t
-#	cp	s.t s.s
+	$(SPIT) -u $(TARGET) $(COD)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
-	 $(SPIT) -u "$(MINPATH)s:$(MIN):s" $(LEX)
+#	 $(SPIT) -u "s" $(LEX)
+	 $(SPIT) -u $(TARGET) $(LEX)
 
 s.err: s.s
 
