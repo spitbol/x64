@@ -9,7 +9,7 @@ DEBUG=	1
 # Minimal source directory.
 MINPATH=./
 
-OSINT=./osint
+OSINT=./x64/osint
 
 vpath %.c $(OSINT)
 
@@ -120,12 +120,10 @@ errors.o: errors.s
 # SPITBOL Minimal source
 s.s:	s.lex $(VHDRS) $(COD) 
 	$(SPIT) -u "s:$(MIN):comments" $(COD)
-#	cp	s.s	s.S
-#	$(SPIT) san.spt <s.s >s.t
-#	cp	s.t s.s
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
-	 $(SPIT) -u "$(MINPATH)s:$(MIN):s" $(LEX)
+#	 $(SPIT) -u "s" $(LEX)
+	 $(SPIT) -u X64 $(LEX)
 
 s.err: s.s
 

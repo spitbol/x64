@@ -36,14 +36,17 @@
 *  a stream of lexemes, or lexemes. It performs EQU * substitution and
 *  conditional assembly.
 *
-*  It is based on earlier translators written by David Shields,
-*  Steve Duff and Robert Goldberg.
+*  It is based on earlier translators written by David Shields, Steve Duff 
+*  and Robert Goldberg.
 *
 *
 -EJECT
 *  Keyword initialization
 
-        &ANCHOR = 1;    &STLIMIT = -1;  &TRIM   = 1
+        &ANCHOR = 1
+	&STLIMIT = -1
+	&TRIM   = 1
+
 *  Useful constants
 
 	MINLETS = 'ABCDEFGHIJKLMNOPQRSTUVWXY_'
@@ -52,6 +55,9 @@
 	P.EXP	= 'E' ANY('+-') SPAN(NOS)
 	P.REAL	= SPAN(NOS) '.' (SPAN(NOS) | NULL) (P.EXP | NULL) RPOS(0)
 	TAB	= CHAR(9)
+
+*  UPPER converts to upper case
+	DEFINE('UPPER(S)')
 
 *  ARGFORM classifies arguments
 	DEFINE('ARGFORM(ARG)')
@@ -331,49 +337,6 @@
 *
 	BSW	= 0
 
--STITL Machine-Dependent Initializations
-*  Following values for 68000, a 32-bit machine
-*  Some definitions appear in limited form in COD.SPT
-*
-       G.EQU.DEFS = TBLINI(
-. 'CFP_A[256]'
-. 'CFP_B[8]'
-. 'CFP_C[8]'
-. 'CFP_F[8]'
-. 'CFP_I[1]'
-. 'CFP_L[18446744073709551616]'
-. 'CFP_M[18446744073709551615]'
-. 'CFP_N[64]'
-. 'CFP_U[128]'
-. 'NSTMX[10]'
-. 'CFP_R[1]'
-. 'CFP_S[9]'
-. 'CFP_X[3]'
-. 'E_SRS[100]'
-. 'E_STS[1000]'
-. 'E_CBS[500]'
-. 'E_HNB[257]'
-. 'E_HNW[6]'
-. 'E_FSP[15]'
-. 'E_SED[25]'
-. 'CH_LA[065]CH_LB[066]CH_LC[067]CH_LD[068]CH_LE[069]CH_LF[070]'
-. 'CH_LG[071]CH_LH[072]CH_LI[073]CH_LJ[074]CH_LK[075]CH_LL[076]'
-. 'CH_LM[077]CH_LN[078]CH_LO[079]CH_LP[080]CH_LQ[081]CH_LR[082]'
-. 'CH_LS[083]CH_LT[084]CH_LU[085]CH_LV[086]CH_LW[087]CH_LX[088]'
-. 'CH_LY[089]CH_L_[090]'
-. 'CH_D0[048]CH_D1[049]CH_D2[050]CH_D3[051]CH_D4[052]CH_D5[053]'
-. 'CH_D6[054]CH_D7[055]CH_D8[056]CH_D9[057]CH__A[097]CH__B[098]'
-. 'CH__C[099]CH__D[100]CH__E[101]CH__F[102]CH__G[103]CH__H[104]'
-. 'CH__I[105]CH__J[106]CH__K[107]CH__L[108]CH__M[109]CH__N[110]'
-. 'CH__O[111]CH__P[112]CH__Q[113]CH__R[114]CH__S[115]CH__T[116]'
-. 'CH__U[117]CH__V[118]CH__W[119]CH__X[120]CH__Y[121]CH___[122]'
-. 'CH_AM[038]CH_AS[042]CH_AT[064]CH_BB[060]CH_BL[032]CH_BR[124]'
-. 'CH_CL[058]CH_CM[044]CH_DL[036]CH_DT[046]CH_DQ[034]CH_EQ[061]'
-. 'CH_EX[033]CH_MN[045]CH_NM[035]CH_NT[126]CH_PC[037]CH_PL[043]'
-. 'CH_PP[040]CH_RB[062]CH_RP[041]CH_QU[063]CH_SL[047]CH_SM[059]'
-. 'CH_SQ[039]CH_UN[095]CH_OB[091]CH_CB[093]CH_HT[009]CH_VT[011]'
-. 'CH_EY[094]IODEL[032]' )
-*
 -STITL MAIN PROGRAM
 *  Here follows the driver code for the "main" program.
 
@@ -407,20 +370,15 @@
 *
 *  Default the parameter string if none present
 *
-	PARMS = (DIFFER(HOST(0)) HOST(0), "v37:dos")
+	TARGET = (DIFFER(HOST(0)) HOST(0), "x64")
+	TARGET = UPPER(TARGET)
+	PARM = "s"
+	FILENAMC = PARM '.cnd'
+	FILENAMI = PARM '.min'
+	FILENAMO = PARM '.lex'
 *
 *  Get file name
 *
-	PARMS ? BREAK(';:') . PARMS LEN(1) (BREAK(';:') | REM) . FILENAMC
-.		(LEN(1) | NULL) REM . FILENAMO
-	FILENAMC = DIFFER(FILENAMC) FILENAMC '.cnd'
-        OUTPUT = IDENT(PARMS) "Need file name (.min)" :S(END)
-
-	FILENAMI = PARMS '.min'
-        OUTPUT = 'Input MINIMAL file: ' FILENAMI
-	FILENAMO = (IDENT(FILENAMO) PARMS, FILENAMO) '.lex'
-        OUTPUT = 'Output LEXEME file: ' FILENAMO
-        OUTPUT = DIFFER(FILENAMC) 'Condition definition file: ' FILENAMC
 *   FLCFLAG  = REPLACE( INPUT,'y','Y' )
 	FLCFLAG = 'N'
 	FLCFLAG = 'Y'
@@ -452,6 +410,54 @@ MAIN2
 *  Patterns used by DOSTMT
 	P.OPSK1 = (BREAK(' ') | REM) . ARGSKEL
 
+-STITL Machine-Dependent Initializations
+*  Initianlize configuration parameters common to all implementations
+       EQU_DEFS = TBLINI(
+. 'NSTMX[10]'
+. 'CFP_R[1]'
+. 'CFP_S[9]'
+. 'CFP_X[3]'
+. 'E_SRS[100]'
+. 'E_STS[1000]'
+. 'E_CBS[500]'
+. 'E_HNB[257]'
+. 'E_HNW[6]'
+. 'E_FSP[15]'
+. 'E_SED[25]'
+. 'CH_LA[065]CH_LB[066]CH_LC[067]CH_LD[068]CH_LE[069]CH_LF[070]'
+. 'CH_LG[071]CH_LH[072]CH_LI[073]CH_LJ[074]CH_LK[075]CH_LL[076]'
+. 'CH_LM[077]CH_LN[078]CH_LO[079]CH_LP[080]CH_LQ[081]CH_LR[082]'
+. 'CH_LS[083]CH_LT[084]CH_LU[085]CH_LV[086]CH_LW[087]CH_LX[088]'
+. 'CH_LY[089]CH_L_[090]'
+. 'CH_D0[048]CH_D1[049]CH_D2[050]CH_D3[051]CH_D4[052]CH_D5[053]'
+. 'CH_D6[054]CH_D7[055]CH_D8[056]CH_D9[057]CH__A[097]CH__B[098]'
+. 'CH__C[099]CH__D[100]CH__E[101]CH__F[102]CH__G[103]CH__H[104]'
+. 'CH__I[105]CH__J[106]CH__K[107]CH__L[108]CH__M[109]CH__N[110]'
+. 'CH__O[111]CH__P[112]CH__Q[113]CH__R[114]CH__S[115]CH__T[116]'
+. 'CH__U[117]CH__V[118]CH__W[119]CH__X[120]CH__Y[121]CH___[122]'
+. 'CH_AM[038]CH_AS[042]CH_AT[064]CH_BB[060]CH_BL[032]CH_BR[124]'
+. 'CH_CL[058]CH_CM[044]CH_DL[036]CH_DT[046]CH_DQ[034]CH_EQ[061]'
+. 'CH_EX[033]CH_MN[045]CH_NM[035]CH_NT[126]CH_PC[037]CH_PL[043]'
+. 'CH_PP[040]CH_RB[062]CH_RP[041]CH_QU[063]CH_SL[047]CH_SM[059]'
+. 'CH_SQ[039]CH_UN[095]CH_OB[091]CH_CB[093]CH_HT[009]CH_VT[011]'
+. 'CH_EY[094]IODEL[032]' )
+* Set target-dependent configuration parameters 
+	OUTPUT = 'TARGET:' TARGET ':'
+	:($('CONFIG.' TARGET))
+
+CONFIG.X64
+	EQU_DEFS['CFP_A'] = '256'
+	EQU_DEFS['CFP_B'] = '8'
+	EQU_DEFS['CFP_C'] = '8'
+	EQU_DEFS['CFP_F'] = '8'
+	EQU_DEFS['CFP_I'] = '1'
+	EQU_DEFS['CFP_L'] = '18446744073709551616'
+	EQU_DEFS['CFP_M'] = '18446744073709551615'
+	EQU_DEFS['CFP_N'] = '64'
+	EQU_DEFS['CFP_U'] = '128'
+CONFIG.DONE
+
+*
   :(DSOUT)
   &TRACE = 4000
   &FTRACE = 4000
@@ -579,7 +585,7 @@ ARG.PTYP OP ANY('RNE')				:F(RETURN)
 	ARGTYPE = 25				:(RETURN)
 ARG.EQOP
 	OP1 = IDENT(OP,'*')
-.			G.EQU.DEFS[LABEL]
+.			EQU_DEFS[LABEL]
 	ARGTYPE = 24				:(RETURN)
 
 *
@@ -819,7 +825,7 @@ G.IFF
 *
 G.EQU
 	EQUATES[LABEL] = IDENT(OP1,'*')
-.			G.EQU.DEFS[LABEL]	:S(DSGEN)
+.			EQU_DEFS[LABEL]	:S(DSGEN)
 
 	NUM1 = NUM2 = SYM1 = SYM2 = OPRTR =
 	OP1 P.EQU.RIP				:F(G.EQU2)
@@ -896,4 +902,8 @@ G.PRC
 	IDENT(T = PRCTAB[LABEL]) ERROR('MISSING INP')
 	DIFFER(T,OP1) ERROR('INCONSISTENT INP/PRC')
 	PRCTAB[LABEL] =				:(DSGEN)
+* Convert argument to upper case
+UPPER
+	UPPER = REPLACE(S,'abcdefghijklmnopqrstuvwxyz',
+.			  'ABCDEFGHIJKLMNOPQRSTUVWXYZ')	:(RETURN)
 END
