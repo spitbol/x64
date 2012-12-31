@@ -118,7 +118,7 @@ CONFIG.DONE
 
 
 *	Set Z_TRACE to enable instruction by instruction trace
-	Z_TRACE = 0
+	Z_TRACE = 1
 *	Z_LIMIT is maximum number of calls to be generated if non-zero
 	Z_LIMIT = 000
 *	Set Z_SKIP non-zero to skip first number of instructions that would generate trace

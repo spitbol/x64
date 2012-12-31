@@ -162,4 +162,4 @@ clean:
 z:
 	nm -n s.o >s.nm
 	spitbol map-$(ARCH).spt <s.nm >s.dic
-	spitbol ../v.spt <ad >ae
+	spitbol z.spt <ad >ae
