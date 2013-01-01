@@ -1651,11 +1651,18 @@ G.DTC
 	T1 = I.TEXT(I1)
 	T1 TAB(1) RTAB(1) . T2
 	T3 = REMDR(SIZE(T2),CFP_C)
-        T2 = "'" T2 "'"
+*        T2 = "'" T2 "'"
 *  Append nulls to complete last word so constant length is multiple
 *  of word word
-        T2 = NE(T3) T2 DUPL(',0',CFP_C - T3)
-        GENOPL(THISLABEL,'db',T2)              
+	DTC_I = 1
+	T4 = 
+G.DTC.1
+	T4 = GT(DTC_I, 1) T4 ","
+	T4 = T4 "'" SUBSTR(T2,DTC_I,1) "'" 
+	LE(DTC_I = DTC_I + 1, SIZE(T2))			:S(G.DTC.1)
+
+        T4 = NE(T3) T4 DUPL(',0',CFP_C - T3)
+        GENOPL(THISLABEL,'db',T4)              
 							:(OPDONE)
 G.DBC   GENOPL(THISLABEL,'D_WORD',GETARG(I1))       
 							:(OPDONE)

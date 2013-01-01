@@ -105,7 +105,7 @@ void zz() {
 	int changed = 0;
 	int listed = 0;
 
-	zz_calls++;
+//*	zz_calls++;
 	fprintf(stderr, "zzz %d %d %d %s\n",zz_calls, zz_id, zz_zz,zz_de);
 
 	/* print registers that have changed since last statement */

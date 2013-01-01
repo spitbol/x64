@@ -455,6 +455,9 @@ CONFIG.X32
 	EQU_DEFS['CFP_N'] = '32'
  	EQU_DEFS['CFP_R'] = '2'
 	EQU_DEFS['CFP_U'] = '128'
+*	Use 6 words, or 24 characters, for hash in x32
+	EQU_DEFS['E_HNW'] = '6'
+	
 							:(CONFIG.DONE)
 CONFIG.X64
 	EQU_DEFS['CFP_A'] = '256'
@@ -467,6 +470,9 @@ CONFIG.X64
 	EQU_DEFS['CFP_N'] = '64'
  	EQU_DEFS['CFP_R'] = '1'
 	EQU_DEFS['CFP_U'] = '128'
+*	Use 3 words, or 24 characters, for hash in x64
+*	This is done so hashes for x32 and x64 should agree
+	EQU_DEFS['E_HNW'] = '3'
 CONFIG.DONE
 
 *
