@@ -1049,7 +1049,7 @@ G.JSR
 	JSR_LABEL_NORM = JSR_LABEL 
 	GENOP('DEC','M_WORD [' RCODE ']')
 	GENOP('JS',JSR_LABEL_NORM)
-	Z_SUSPEND =0
+	Z_SUSPEND = 0
 
 *	generate branch around for ppms that will follow
 *	take the branch if normal return (eax==0)
