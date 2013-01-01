@@ -121,14 +121,14 @@ CONFIG.DONE
 	Z_TRACE = 1
 *	Z_LIMIT is maximum number of calls to be generated if non-zero
 	Z_LIMIT = 000
-*	Set Z_SKIP non-zero to skip first number of instructions that would generate trace
-	Z_SKIP = 0
+*	Set Z_FIRST non-zero to skip first number of instructions that would generate trace
+	Z_FIRST = 0
 *	will set in_executable when in part of program where executable
 *	instructions may occur
-	IN_EXEC = 0
+	Z_EXEC = 0
 *	set in_skip when should not insert trace code, else assembly errors result.
 *	start with skip on, turn off when see first start of code.
-	IN_SKIP = 1
+	Z_SKIP = 1
 *	skip_on and skip_off are labels indicating the start and end, 
 *	respectively, of sections of the code that should not be traced,
 *	usually because they contain a LOOP instruction that won't
@@ -142,7 +142,7 @@ SKIP_INIT	S BREAK(':') . ON ':' REM . OFF	:F(RETURN)
 	SKIP_OFF[OFF] = 1			:(RETURN)
 SKIP_INIT.END
 
-	SKIP_INIT('START:INI03')
+*	SKIP_INIT('START:INI03')
 *	SKIP_INIT('GBCOL:GTARR')
 *	SKIP_INIT('GTN01:GTNVR')
 *	SKIP_INIT('BPF05:BPF07')
@@ -787,37 +787,37 @@ CHKTRACE
 *	output = differ (label) 'chktrace label:' label ':'
 *	turn off skip mode when begin executable code
 	CLABEL = INLABEL
- 	OLD_IN_SKIP = IN_SKIP
- 	OLD_IN_EXEC = IN_EXEC
+ 	OLD_Z_SKIP = Z_SKIP
+ 	OLD_Z_EXEC = Z_EXEC
  	OLD_IS_EXEC = IS_EXEC
-	IN_SKIP = IDENT(INLABEL,'S_AAA') 0
+	Z_SKIP = IDENT(INLABEL,'S_AAA') 0
 
 *	INCODE ? ANY(LCASE)			:S(RETURN)
 	UOPCODE  = REPLACE(INCODE, LCASE,UCASE)
 *  do not trace bsw (for now)
 	IDENT(UOPCODE,'BSW')			:s(return)
 	IS_EXEC = IS_EXECUTABLE[UOPCODE]
-	IN_EXEC = NE(Z_TRACE)  IDENT(INLABEL, 'S_AAA') 1
-	IN_EXEC = GT(NLINES,2186) 1
+	Z_EXEC = NE(Z_TRACE)  IDENT(INLABEL, 'S_AAA') 1
+	Z_EXEC = GT(NLINES,2186) 1
 *	need to skip certain blocks since otherwise get branches that are too long
 *	skip when in code that won't assemble if try to trace
 *	this was discovered on a case-by-case basis.
 
- 	IN_SKIP  = DIFFER(INLABEL) DIFFER(SKIP_ON[INLABEL]) 1
+ 	Z_SKIP  = DIFFER(INLABEL) DIFFER(SKIP_ON[INLABEL]) 1
 *    	OUTPUT  = DIFFER(INLABEL) DIFFER(SKIP_ON[INLABEL]) 'skip on ' INLABEL
- 	IN_SKIP  = DIFFER(INLABEL) DIFFER(SKIP_OFF[INLABEL]) 0
+ 	Z_SKIP  = DIFFER(INLABEL) DIFFER(SKIP_OFF[INLABEL]) 0
 *    	OUTPUT  = DIFFER(INLABEL) DIFFER(SKIP_OFF[INLABEL]) 'skip off ' INLABEL
-*	IN_SKIP = 0
+*	Z_SKIP = 0
 	
-*     	OUTPUT = DIFFER(OLD_IN_SKIP, IN_SKIP) 'in_skip now ' IN_SKIP
-*     	OUTPUT = DIFFER(OLD_IN_EXEC, IN_EXEC) 'in_exec now ' IN_EXEC
+*     	OUTPUT = DIFFER(OLD_Z_SKIP, Z_SKIP) 'in_skip now ' Z_SKIP
+*     	OUTPUT = DIFFER(OLD_Z_EXEC, Z_EXEC) 'in_exec now ' Z_EXEC
 *     	OUTPUT = DIFFER(OLD_IS_EXEC, IS_EXEC) 'is_exec now ' IS_EXEC
 
-	Z_NUM = 100 * IN_EXEC + 10 * IS_EXEC + IN_SKIP
+	Z_NUM = 100 * Z_EXEC + 10 * IS_EXEC + Z_SKIP
 * 	OUTPUT = CLABEL ':' 'Z_NUM:' Z_NUM ':' LPAD(NLINES,6) ' ' STMTOUT
 *	skip trace if would otherwise access label that is too far removed
-	NE(IN_SKIP)				:S(RETURN)
-	EQ(IN_EXEC)				:S(RETURN)
+	NE(Z_SKIP)				:S(RETURN)
+	EQ(Z_EXEC)				:S(RETURN)
 	EQ(IS_EXEC)				:S(RETURN)
 *	here to emit trace. need to emit trace after label if there is label
 * 	IDENT(INLABEL)				:S(CHKTRACE.1)
@@ -835,10 +835,12 @@ CHKTRACE.1
 	GENZ()
 						:(RETURN)
 GENZ
+*	No trace if trace has been suspended
+*	DIFFER(Z_SUSPEND)			:S(RETURN)
 * Only trace at label definition
 	IDENT(THISLABEL)			:S(RETURN)
 	Z_COUNT = Z_COUNT + 1
-	GT(Z_SKIP) LE(Z_COUNT,Z_SKIP)		:S(RETURN)
+	GT(Z_FIRST) LE(Z_COUNT,Z_FIRST)		:S(RETURN)
 	GT(Z_LIMIT)  GT(Z_COUNT, Z_LIMIT)	:S(RETURN)
 *	Always generate trace if at label definition
 	Z_DESC = '"' REPLACE(THISLINE,'{',' ') '"'
@@ -860,7 +862,10 @@ PRSARG	PRSARG = MINARG(0)
 READLINE READLINE = INFILE                      :F(RL02)
 	NLINES  = NLINES + 1
 	IDENT( READLINE )			:S(READLINE)
-	LEQ( SUBSTR(READLINE,1,1 ),'*' )       :F(RL01)
+READLINE.0
+	LEQ( SUBSTR(READLINE,1,1 ),'*' )       	:F(RL01)
+	Z_SKIP = IDENT(READLINE,'*Z+') 0	:S(READLINE)
+	Z_SKIP = IDENT(READLINE,'*Z-') 1	:S(READLINE)
 * Force skip of full line comments		
 	:(READLINE)
 *
@@ -910,12 +915,15 @@ IFREG	GE(I.TYPE(IARG),7) LE(I.TYPE(IARG),8)
 G.FLC
 	T1 = REGLOW[GETARG(I1)]
 	T2 = GENLAB()
+	Z_SUSPEND = 1
 	GENOP('CMP',T1,"'a'")
 	GENOP('JB', T2 )
 	GENOP('CMP',T1,"'z'")
 	GENOP('JA', T2)
 	GENOP('SUB',T1,'32')
-        GENOPL(T2 ':')                  :(OPDONE)
+        GENOPL(T2 ':')                  
+	Z_SUSPEND = 0
+						:(OPDONE)
 
 G.MOV
 *  perhaps change MOV X,(XR)+ to
@@ -964,7 +972,10 @@ G.BOD	T1 = GETARG(I1)
 G.BEV	T1 = GETARG(I1)
 	T1 = EQ(I.TYPE(I1),8) REGLOW[T1]
 	GENOP('TEST',T1,'1')
-	GENOP('JE',GETARG(I2))			:(OPDONE)
+	Z_SUSPEND = 1
+	GENOP('JE',GETARG(I2))			
+	Z_SUSPEND = 0
+						:(OPDONE)
 
 G.BRN   GENOP('JMP',GETARG(I1))			:(OPDONE)
 
@@ -972,11 +983,14 @@ G.BSW	T1 = GETARG(I1)
 	T2 = GENLAB()
 	IDENT(I.TEXT(I3))			:S(G.BSW1)
 	GENOP('CMP',T1,GETARG(I2))
+	Z_SUSPEND = 1
 	GENOP('JGE',GETARG(I3))
 * Here after default case.
 G.BSW1	GENOP('JMP', 'M_WORD [' T2 '+' T1 '*CFP_B]') 
         GENOP('segment .data')
-        GENOPL(T2 ':')                  :(OPDONE)
+        GENOPL(T2 ':')                  
+	Z_SUSPEND = 0
+						:(OPDONE)
 
 G.IFF   GENOP('D_WORD',GETARG(I2))               :(OPDONE)
 
@@ -1029,12 +1043,13 @@ G.JSR
 *	get count of following ppm statements
 	JSR_COUNT = PPM_CASES[JSR_PROC]
 	EQ(JSR_COUNT)				:S(OPDONE)
-*	Z_SUSPEND()
+	Z_SUSPEND = 1
 	JSR_CALLS = JSR_CALLS +  1
 	JSR_LABEL = 'CALL_' JSR_CALLS
 	JSR_LABEL_NORM = JSR_LABEL 
 	GENOP('DEC','M_WORD [' RCODE ']')
 	GENOP('JS',JSR_LABEL_NORM)
+	Z_SUSPEND =0
 
 *	generate branch around for ppms that will follow
 *	take the branch if normal return (eax==0)
@@ -1061,7 +1076,7 @@ G.PPM
 G.PPM.LOOP.NEXT
 	GENOPL(LAB_NEXT ':')
  	JSR_COUNT = JSR_COUNT - 1
-* 	EQ(JSR_COUNT) Z_RESTORE()
+ 	Z_SUSPEND = EQ(JSR_COUNT) 0
 	EQ(JSR_COUNT) GENOPL(JSR_LABEL_NORM ':') :(OPDONE)
 G.PPM.LOOP
 	LAB_NEXT = GENLAB()
@@ -1182,19 +1197,30 @@ G.BHI
 	MEMMEM()
 	T1 = BRANCHTAB[INCODE]
 	GENOP('CMP',GETARG(I1),GETARG(I2))
+	Z_SUSPEND = 1
 	GENOP(BRANCHTAB[INCODE],GETARG(I3))
+	Z_SUSPEND = 0
 .						:(OPDONE)
 
 G.BNZ
 	IFREG(I1)				:S(G.BNZ1)
         GENOP('CMP', GETARG(I1) ,'0')
-	GENOP('JNZ',GETARG(I2))			:(OPDONE)
+	Z_SUSPEND = 1
+	GENOP('JNZ',GETARG(I2))			
+	Z_SUSPEND = 0
+						:(OPDONE)
 G.BNZ1	GENOP('OR',GETARG(I1),GETARG(I1))
-	GENOP('JNZ',GETARG(I2))			:(OPDONE)
+	Z_SUSPEND = 1
+	GENOP('JNZ',GETARG(I2))			
+	Z_SUSPEND = 0
+						:(OPDONE)
 
 G.BZE   IFREG(I1)				:S(G.BZE1)
         GENOP('CMP', GETARG(I1)  ,'0')
-	GENOP('JZ',GETARG(I2))			:(OPDONE)
+	Z_SUSPEND = 1
+	GENOP('JZ',GETARG(I2))			
+	Z_SUSPEND = 0
+						:(OPDONE)
 G.BZE1
 	T1 = GETARG(I1)
 	GENOP('OR',T1,T1)
@@ -1425,11 +1451,17 @@ G.CSC  	IDENT(THISLABEL)			:S(OPNEXT)
 G.CEQ
 	MEMMEM()
 	GENOP('CMP',GETARG(I1),GETARG(I2))
-	GENOP('JE',GETARG(I3))			:(OPDONE)
+	Z_SUSPEND = 1
+	GENOP('JE',GETARG(I3))			
+	Z_SUSPEND = 0
+						:(OPDONE)
 
 G.CNE   MEMMEM()
 	GENOP('CMP',GETARG(I1),GETARG(I2))
-	GENOP('JNZ',GETARG(I3))			:(OPDONE)
+	Z_SUSPEND = 1
+	GENOP('JNZ',GETARG(I3))			
+	Z_SUSPEND = 0
+						:(OPDONE)
 
 G.CMC
 *	repe	cmpsb		;compare strings
@@ -1501,15 +1533,27 @@ G.LSX.C	GENOP('XCHG',T1,'WA')
 
 G.NZB	IFREG(I1)				:S(G.NZB1)
 	GENOP('CMP',GETARG(I1),'0')
-	GENOP('JNZ',GETARG(I2))			:(OPDONE)
+	Z_SUSPEND = 1
+	GENOP('JNZ',GETARG(I2))			
+	Z_SUSPEND = 0
+						:(OPDONE)
 G.NZB1	GENOP('OR',GETARG(I1),GETARG(I1))
-	GENOP('JNZ',GETARG(I2))			:(OPDONE)
+	Z_SUSPEND = 1
+	GENOP('JNZ',GETARG(I2))			
+	Z_SUSPEND = 0
+						:(OPDONE)
 
 G.ZRB	IFREG(I1)				:S(G.ZRB1)
 	GENOP('CMP',GETARG(I1),'0')
-	GENOP('JZ',GETARG(I2))			:(OPDONE)
+	Z_SUSPEND = 1
+	GENOP('JZ',GETARG(I2))				
+	Z_SUSPEND = 0
+						:(OPDONE)
 G.ZRB1	GENOP('OR',GETARG(I1),GETARG(I1))
-	GENOP('JZ',GETARG(I2))			:(OPDONE)
+	Z_SUSPEND = 1
+	GENOP('JZ',GETARG(I2))			
+	Z_SUSPEND = 1
+						:(OPDONE)
 
 * 80386 is a Little-Endian machine, so ZGB must swap bytes.
 *
@@ -1615,7 +1659,9 @@ GENREP
 							:(RETURN)
 
 G.CHK   GENOP('CMP','XS','LOWSPMIN')
+	Z_SUSPEND = 1
 	GENOP('JB','SEC06')			
+	Z_SUSPEND = 0
 							:(OPDONE)
 
 DECEND
