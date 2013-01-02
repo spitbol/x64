@@ -988,7 +988,7 @@ G.BSW	T1 = GETARG(I1)
 	GENOP('JGE',GETARG(I3))
 * Here after default case.
 G.BSW1	GENOP('JMP', 'M_WORD [' T2 '+' T1 '*CFP_B]') 
-        GENOP('segment .data')
+        GENOP('SEGMENT .data')
         GENOPL(T2 ':')                  
 	Z_SUSPEND = 0
 						:(OPDONE)
@@ -996,7 +996,7 @@ G.BSW1	GENOP('JMP', 'M_WORD [' T2 '+' T1 '*CFP_B]')
 G.IFF   GENOP('D_WORD',GETARG(I2))              :(OPDONE)
 
 G.ESW   
-        GENOP('segment .text')			:(OPDONE)
+        GENOP('SEGMENT .text')			:(OPDONE)
 G.ENT
 *
 *  Entry points are stored in byte before program entry label
@@ -1540,9 +1540,9 @@ G.ZGB
 G.ZZZ
  	GENOP('ZZZ',GETARG(I1))			:(OPDONE)
 
-G.WTB   GENOP('SAL',GETARG(I1),LOG_CFP_B)	:(OPDONE)
+G.WTB   GENOP('SAL',GETARG(I1),'LOG_CFP_B')	:(OPDONE)
 
-G.BTW   GENOP('SHR',GETARG(I1),LOG_CFP_B)	:(OPDONE)
+G.BTW   GENOP('SHR',GETARG(I1),'LOG_CFP_B')	:(OPDONE)
 
 G.MTI	(IDENT(I.TEXT(I1),'(XS)+') GENOP('POP',REG.IA)) :S(OPDONE)
 	GENOP('MOV',REG.IA,GETARG(I1))		:(OPDONE)
@@ -1562,7 +1562,7 @@ G.CTW
 *  assume CFP_C chars per word
 	T1 = GETARG(I1)
 	GENOP('ADD',T1,'(CFP_C-1)+CFP_C*' I.TEXT(I2))
-	GENOP('SHR',T1,LOG_CFP_C)		:(OPDONE)
+	GENOP('SHR',T1,'LOG_CFP_C')		:(OPDONE)
 
 G.CTB
 	T1 = GETARG(I1)
@@ -1587,13 +1587,13 @@ G.MVC
 	GENOP('JNZ',T1)
 						:(OPDONE)
 G.MVW
-	GENOP('SHR','WA',LOG_CFP_B)
+	GENOP('SHR','WA','LOG_CFP_B')
  	GENREP('MOVSD')
 * 	GENOP('REP','MOVSD')		
 						:(OPDONE)
 
 G.MWB
-	GENOP('SHR','WA',LOG_CFP_B)
+	GENOP('SHR','WA','LOG_CFP_B')
 	GENOP('STD')
 	GENOP('LEA','XL','[XL-CFP_B]')
 	GENOP('LEA','XR','[XR-CFP_B]')

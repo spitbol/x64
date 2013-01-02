@@ -14,3 +14,5 @@
 	%define	IA	RDX
 	%define M_WORD  QWORD
 	%define D_WORD	DQ
+	%define LOG_CFP_B 3
+	%define LOG_CFP_C 3

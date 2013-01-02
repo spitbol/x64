@@ -13,4 +13,6 @@
 	%define W0	EAX
 	%define M_WORD	DWORD
 	%define D_WORD	DD
+	%define LOG_CFP_B 2
+	%define LOG_CFP_C 2
 
