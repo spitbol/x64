@@ -298,15 +298,13 @@ SKIP_INIT.END
 *
 
 
-*  Don't include CMP TEST and conditional branch instructions as executable
-*  to avoid putting trace code where condition register may change
-*	'BCT BEQ BEV BGE BGT BHI BLE BLO BLT BNE BNZ BOD '
 	IS_EXECUTABLE = TABLE(100)
 	s = 
 +       'ADD ADI ADR ANB AOV ATN '
-+       'BRN BRI BSW BTW CHK CHP CMB CMC CSC '
++	'BCT BEQ BEV BGE BGT BHI BLE BLO BLT BNE BNZ BOD '
++       'BRN BRI BSW BTW BZE CEQ CHK CHP CMB CMC CMP CNE CSC '
 +       'COS CTB CTW CVD CVM DCA DCV ETI DVI DVR ERB ESW ETX FLC '
-+       'ICA ICP ICV JMP '
++       'ICA ICP ICV IEQ IGE IGT ILE ILT INE INO IOV ITR JMP '
 +       'JSR LCH LCT LCP LCW LDI LDR LEI LNF LSH LSX MCB MFI MLI MLR '
 +       'MNZ MOV MTI MVC MVW MWB NGI ETI NGR NZB ORB PLC PRC PSC '
 +       'REQ RGE RGT RLE RLT RMI RNE RNO ROV RSH RSX RTI RTN SBI SBR '
@@ -316,7 +314,6 @@ IS_EXEC.1
 	S LEN(3) . OPC ' ' =				:F(IS_EXEC.2)
 	IS_EXECUTABLE[OPC] = 1				:(IS_EXEC.1)
 IS_EXEC.2
-
 
 -STITL MAIN PROGRAM
 *  Here follows the driver code for the "main" program.
@@ -1270,7 +1267,6 @@ G.LCP
 	GENOP('MOV',REG.CP,GETARG(I1))		:(OPDONE)
 G.SCP   GENOP('MOV',GETARG(I1),REG.CP)		:(OPDONE)
 G.LCW
-*  Should be able to get LODSD; XCHG W0,GETARG(I1)
 	GENOP('MOV',GETARG(I1),'[' REG.CP ']')
 	GENOP('ADD',REG.CP,'CFP_B')			:(OPDONE)
 
@@ -1478,10 +1474,6 @@ G.CNE   MEMMEM()
 						:(OPDONE)
 
 G.CMC
-*	repe	cmpsb		;compare strings
-*	mov	esi,0		;clear XL (without changing flags)
-*	mov	edi,esi		;v1.02  XR also
-*
 	GENOP('REPE','CMPSB')
 	GENOP('MOV','XL','0')
 	GENOP('MOV','XR','XL')
@@ -1492,23 +1484,16 @@ G.CMC
 	GENOP('JB',T1)				:(OPDONE)
 
 G.TRC
-*	xchg	esi,edi
-*  tmp	movzx   eax,byte ptr [edi]	;get character
-*	mov	al,[esi+eax]		;translate
-*	stosd				;put back and increment ptr
-*	loop	tmp
-*	xor	esi,esi			;set XL to zero
-*	xor	edi,edi			;v1.02  XR also
 	GENOP('XCHG','XL','XR')
         GENOPL((T1 = GENLAB()) ':','MOVZX','W0','BYTE [XR]') 
 	GENOP('MOV','AL','[XL+W0]')
 	GENOP('STOSB')
 *	GENOP('LOOP',T1)
 	GENOP('DEC','WA')
-	GENOP('JNZ',T1)				:(OPDONE)
+	GENOP('JNZ',T1)	
 	GENOP('XOR','XL','XL')
-	GENOP('XOR','XR','XR')		:(OPDONE)
-
+	GENOP('XOR','XR','XR')		
+						:(OPDONE)
 
 G.ANB   GENOP('AND',GETARG(I2),GETARG(I1))	:(OPDONE)
 G.ORB   GENOP('OR',GETARG(I2),GETARG(I1))	:(OPDONE)
