@@ -118,7 +118,7 @@ CONFIG.DONE
 
 
 *	Set Z_TRACE to enable instruction by instruction trace
-	Z_TRACE = 0
+	Z_TRACE = 1
 *	Z_LIMIT is maximum number of calls to be generated if non-zero
 	Z_LIMIT = 000
 *	Set Z_FIRST non-zero to skip first number of instructions that would generate trace
@@ -1392,7 +1392,9 @@ G.LCH
 	GENOP('DEC',REGMAP[T3])
 G.LCG.1
 	T2 BREAK('(') LEN(1) LEN(2) . T3
-	GENOP('MOVZX',T1,'BYTE [' REGMAP[T3] ']')
+	GENOP('MOV','W0','0')
+	GENOP('MOV','AL','BYTE [' REGMAP[T3] ']')
+	GENOP('MOV',T1,'W0')
 
 *  See if postincrement needed.
 	T2 RTAB(1) '+'				:F(G.LCG.2)
