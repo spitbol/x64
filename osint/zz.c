@@ -108,7 +108,6 @@ void zz() {
 	int listed = 0;
 
 //*	zz_calls++;
-	fprintf(stderr, "zzz %d %d %d %s\n",zz_calls, zz_id, zz_zz,zz_de);
 
 	/* print registers that have changed since last statement */
 
@@ -163,6 +162,7 @@ void zz() {
 	}
 	/* display instruction pointer and description of current statement. */
 /*	fprintf(stderr, "\n%8xx %s\n", zz_ip, p);*/
+	fprintf(stderr, "zzz %d %d %d %s\n",zz_calls, zz_id, zz_zz,zz_de);
 
 	/* save current register contents. */
 	last_xl = zz_xl; last_xr = zz_xr; last_xs = zz_xs; last_cp = zz_cp;
