@@ -63,9 +63,13 @@ void prtnl() {
 	fprintf(stderr,"\n");
 }
 void prtval(long reg) {
-	if (reg < 100000 && reg >= 0)
+	if (reg > 32 && reg < 127 ) {
+		fprintf(stderr," '%c' %4d ", reg, reg);
+	}
+	else if (reg >= 0 && reg < 100000) {
 //		fprintf(stderr," %16d ", reg);
-		fprintf(stderr," %8d ", reg);
+		fprintf(stderr," %8d ", reg); 
+	}
 	else if ( reg >= OFF_C_AAA && reg <= OFF_W_YYY) {
 		fprintf(stderr," Z%ld ", reg);
 	}
