@@ -118,7 +118,7 @@ CONFIG.DONE
 
 
 *	Set Z_TRACE to enable instruction by instruction trace
-	Z_TRACE = 1
+	Z_TRACE = 0
 *	Z_LIMIT is maximum number of calls to be generated if non-zero
 	Z_LIMIT = 000
 *	Set Z_FIRST non-zero to skip first number of instructions that would generate trace
@@ -1151,11 +1151,11 @@ G.ERB
 G.ICV   GENOP('INC',GETARG(I1))    :(OPDONE)
 G.DCV   GENOP('DEC',GETARG(I1))    :(OPDONE)
 
-G.ZER	IDENT(I.TEXT(I1),'(XR)+') GENOP('XOR','W0','W0')
+G.ZER	IDENT(I.TEXT(I1),'(XR)+') GENOP('MOV','W0','0')
 +		GENOP('STOSD')			:S(OPDONE)
 	IFREG(I1)				:S(G.ZER1)
 	IDENT(I.TEXT(I1),'-(XS)')		:S(G.ZER.XS)
-	GENOP('XOR','W0','W0')
+	GENOP('MOV','W0','0')
 	GENOP('MOV',GETARG(I1),'W0')		:(OPDONE)
 G.ZER1	T1 = GETARG(I1)
 	GENOP('XOR',T1,T1)			:(OPDONE)
