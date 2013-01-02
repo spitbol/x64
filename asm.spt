@@ -126,6 +126,9 @@ CONFIG.DONE
 *	will set in_executable when in part of program where executable
 *	instructions may occur
 	Z_EXEC = 0
+*
+*	Z_SUSPEND is set to temporarily disable the trace.
+	Z_SUSPEND = 0
 *	set in_skip when should not insert trace code, else assembly errors result.
 *	start with skip on, turn off when see first start of code.
 	Z_SKIP = 1
@@ -836,9 +839,9 @@ CHKTRACE.1
 						:(RETURN)
 GENZ
 *	No trace if trace has been suspended
-*	DIFFER(Z_SUSPEND)			:S(RETURN)
+ 	NE(Z_SUSPEND)			:S(RETURN)
 * Only trace at label definition
-	IDENT(THISLABEL)			:S(RETURN)
+*	IDENT(THISLABEL)			:S(RETURN)
 	Z_COUNT = Z_COUNT + 1
 	GT(Z_FIRST) LE(Z_COUNT,Z_FIRST)		:S(RETURN)
 	GT(Z_LIMIT)  GT(Z_COUNT, Z_LIMIT)	:S(RETURN)

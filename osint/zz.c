@@ -71,7 +71,7 @@ void prtval(long reg) {
 	}
 	else {
 //		fprintf(stderr," %16lxx", reg);
-		fprintf(stderr," %8lxx", reg);
+		fprintf(stderr," %8lxx", reg & 0xffffffff);
 //		fprintf(stderr," ---------", reg);
 	}
 }
