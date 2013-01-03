@@ -20,6 +20,7 @@
 	section	.data
 %%desc:	db	%3,0
 	section	.text
+	pushf
 	call	save_regs
 	mov	qword [zz_id],%1
 	mov	qword [zz_zz],%2
@@ -41,6 +42,7 @@
 	mov	qword [osisp],rsp
 ;	restore compiler stack pointer
 	mov	rsp,qword [compsp]
+	popf
 	%endmacro
 %define zz_trace
 %ifdef zz_trace

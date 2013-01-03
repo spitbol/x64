@@ -63,20 +63,19 @@ void prtnl() {
 	fprintf(stderr,"\n");
 }
 void prtval(long reg) {
-	if (reg > 32 && reg < 127 ) {
-		fprintf(stderr," '%c' %4d ", reg, reg);
-	}
-	else if (reg >= 0 && reg < 100000) {
-//		fprintf(stderr," %16d ", reg);
+//	if (reg > 32 && reg < 127 ) {
+//		fprintf(stderr," '%c' %4d ", reg, reg);
+//	}
+//	else if (reg >= 0 && reg < 100000) {
+	if (reg >= 0 && reg < 100000) {
 		fprintf(stderr," %8d ", reg); 
 	}
 	else if ( reg >= OFF_C_AAA && reg <= OFF_W_YYY) {
 		fprintf(stderr," Z%ld ", reg);
 	}
 	else {
-//		fprintf(stderr," %16lxx", reg);
-//		fprintf(stderr," %8lxx", reg & 0xffffffff);
-		fprintf(stderr," ---------", reg);
+		fprintf(stderr," %8lxx", reg & 0xffffffff);
+//		fprintf(stderr," ---------", reg);
 	}
 }
 void prtreg(char * name, long val) {
@@ -149,7 +148,7 @@ void zz() {
 	}
 
 //	if (zz_calls % 3 == 1) {
-	if (zz_calls>0) {
+//	if (zz_calls>0) {
 	
 		/* print register values before the statement was executed */
 		prtreg("xl.esi", zz_xl);
@@ -163,7 +162,7 @@ void zz() {
 		prtreg("wc.edx", zz_wc);
 		prtreg("w0.eax", zz_w0);
 		fprintf(stderr, "\n");
-	}
+//	}
 	/* display instruction pointer and description of current statement. */
 /*	fprintf(stderr, "\n%8xx %s\n", zz_ip, p);*/
 	fprintf(stderr, "zzz %d %d %d %s\n",zz_calls, zz_id, zz_zz,zz_de);
