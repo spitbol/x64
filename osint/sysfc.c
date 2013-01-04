@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -60,14 +61,7 @@ This file is part of Macro SPITBOL.
 /
 /   Exits:
 /	1	invalid file argument
-/ 2 channel already in use
-/
-/	1.03	If called first time with null filearg2, lookup filearg1
-/		in environment block, and use filename specified there
-/		instead.
-/
-/ 1.04  If called with filename or file descriptor and channel is
-/   already in use, take new exit number 2.
+/       2 channel already in use
 /
 */
 

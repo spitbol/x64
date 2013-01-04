@@ -1,7 +1,7 @@
 # X32 SPITBOL
 #
 
-ARCH=x32
+ARCH=x64
 ifeq ($(ARCH),x32)
 ARCHDEF=-DARCH-X32
 ELF=elf32

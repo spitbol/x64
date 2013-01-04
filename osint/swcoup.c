@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -17,23 +18,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-/	File:  SWCOUP.C		Version:  01.03
-/	---------------------------------------
-/
-/	Contents:	Function swcoup
-/
-/	Revision History:
-/
-/	01.01	14-Jul-88
-/			Moved errflag to osint.c so that it can be reinitialized as necessary.
-/
-/	01.02	12-Sep-89
-/			Defaulted list file extension to .lst
-/
-/	01.03	24-Oct-89
-/			File name '-' means file descriptor 1.
-*/
 
 #include "port.h"
 

@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -36,12 +37,6 @@ This file is part of Macro SPITBOL.
 /	Returns
 /	    Nothing
 /	    Preserves all registers
-/
-/  Version history:
-/	  v1.01 17-May-91 MBE
-/		Add arguments in WA, WB, WC for use in discarding page
-/       contents of freed memory on virtual memory systems.
-/
 */
 
 #include "port.h"

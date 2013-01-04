@@ -2,6 +2,7 @@
 -title err.spt:  compress spitbol error messages
 -stitle initialization
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
+* cOPYRIGHT 2012-2013 david shields
 *
 * this file is part of macro spitbol.
 *

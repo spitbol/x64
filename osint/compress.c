@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -42,7 +43,6 @@ This file is part of Macro SPITBOL.
 /	ALLOCATED BLOCK ON THE HEAP, AND THAT ADDITIONAL MEMORY PROVIDED
 /	BY SBRK() WILL BE CONTIGUOUS WITH THIS MEMORY.
 /
-/   v1.01 02-26-92	Correct input_code() to fill with zeros at end of file.
 */
 
 

@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -22,8 +23,6 @@ This file is part of Macro SPITBOL.
 /	---------------------------------------
 /
 /	Contents:	Function zysid
-/
-/	1.02	Move id2 string here.
 */
 
 /*

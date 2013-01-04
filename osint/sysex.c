@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -43,9 +44,6 @@ This file is part of Macro SPITBOL.
 /	THE RETURNED VALUE FROM THE EXTERNAL FUNCTION.  THAT ALLOCATION MAY
 /	CAUSE A GARBAGE COLLECTION, THEREFORE IT IS IMPERATIVE THAT THE STACK
 /	BE CLEAN, COLLECTABLE, AND WORD ALIGNED.
-/
-/  v1.01 11/25/90 Add exit 2 - insufficient memory, exit 3 - improper argument.
-/
 */
 
 #include "port.h"

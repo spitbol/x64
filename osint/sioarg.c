@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -40,18 +41,6 @@ This file is part of Macro SPITBOL.
 /   Side Effects:
 /	Modifies contents of passed IOBLK (ioptr).
 /
-/	V1.02	Distinguish default input/output record lengths
-/	V1.03	Buffer size and record size must be less than
-/			maxsize to avoid garbage collector problems when
-/			these values are stored in fcblk and ioblk.
-/	V1.04	Add i/o option -u for update mode.
-/	V1.05	01-Aug-93. Add IO_EOT flag to ignore EOT char in
-/			DOS-mode text files.
-/	V1.06   21-Oct-94. Use uppercase function to fold case letters.
-/	V1.07	26-Oct-94. Added share field to ioblk and processing of
-/			-S option.
-/			In -B option, subtract BFSIZE from maxsize before comparison.
-/	V1.08	18-Dec-94. Add -I and -X options.
 */
 
 #include "port.h"

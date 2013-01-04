@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -38,11 +39,6 @@ This file is part of Macro SPITBOL.
 /	    1 - EOF or file not available after SYSXI
 /	    2 - i/o error
 /	    3 - record format error
-/
-/	V1.02	05-Mar-88	When reading an EOF from fd 0, call swcinp()
-/				before calling it a true EOF.
-/	V1.03	01-Feb-93	New osread calling sequence with separate mode and
-/				line length fields.
 */
 
 #include "port.h"

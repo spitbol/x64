@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -59,11 +60,6 @@ This file is part of Macro SPITBOL.
 /	    XR - pointer to SCBLK containing error message (null string is ok)
 /	Exits:
 /	    None
-/
-/   V2.01 23-Dec-91
-/		Add ERRDIST to allow the errors and phrases arrays to be
-/       accessed as FAR pointers for those systems that point to them
-/		in another segment.
 */
 
 #include "port.h"

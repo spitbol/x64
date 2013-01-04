@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -17,19 +18,12 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-/	File:  SYSPP.C		Version:  01.01
-/	---------------------------------------
-/
-/	Contents:	Function zyspp
-*/
 
 /*
 /   zyspp - obtain print parameters
 */
 
 #include "port.h"
-#include <stdio.h>
 
 zyspp()
 
@@ -41,12 +35,10 @@ zyspp()
     /*
     /   Set page width, lines per page, and compiler flags.
     */
-	fprintf(stderr,"enter syspp\n");
 
     SET_WA( pagewdth );
     SET_WB( lnsppage );
     SET_WC( spitflag );
-	fprintf(stderr,"leave syspp\n");
 
     return NORMAL_RETURN;
 }

@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -15,22 +16,6 @@ This file is part of Macro SPITBOL.
 
     You should have received a copy of the GNU General Public License
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
-/	File:  SYSOU.C		Version:  01.03
-/	---------------------------------------
-/
-/	Contents:	Function zysou
-/
-/   V1.04	4-3-95
-/		    Modified to accept BCBLKs (Buffers) as well as SCBLKs.
-/
-/	V1.03	New oswrite calling sequence with separate mode & line length.
-/	V1.02	Reference to changes in compiler at ASG11,
-/		this routine is now called for writes to OUTPUT
-/		and TERMINAL.  WA contains a 0 or 1 instead of an
-/		FCBLK.
 */
 
 /*

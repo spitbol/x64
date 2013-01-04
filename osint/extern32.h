@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -24,30 +25,6 @@ This file is part of Macro SPITBOL.
 /*
  *  Definitions of routines and data available to C-language
  *  external function to be called from 32-bit versions of SPITBOL.
- *
- * 	V1.00  02/17/90 01:52pm
- * 		   Initial version
- *
- *  V1.01  10-18-91 04:53pm
- *         <withdrawn>.
- *
- *  V1.02  03-29-92 09:11am
- *       <withdrawn>.
- *
- *  V1.03  07-28-92 06:56am
- * 		   Customize for SPARC.
- *
- *	V1.04  09-12-94 07:13pm
- *		   Add definitions for buffers
- *
- *  V1.05  04-25-95 10:05pm
- *		   Customize for RS/6000
- *
- *  V1.06  12-29-96 06:05pm
- *         Customize for Windows NT
- *
- *  V1.07  03-04-97 12:45pm
- *			  Tweak for SPARC.
  *
  *  Definition of information placed on stack prior to pushing arguments to
  *  an external function.

@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -15,23 +16,6 @@ This file is part of Macro SPITBOL.
 
     You should have received a copy of the GNU General Public License
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
-/	File:  GETSHELL.C	Version:  01.04
-/	---------------------------------------
-/
-/	Contents:	Function getshell
-/
-/	V1.04	18-Oct-90	Rewrite to use findenv().
-/
-/	V1.03	23-Jun-90	Move pathlast() to swcinp.c.
-/
-/	V1.02	03-Mar-88	Return in tscblk in all cases, so that
-/				there is room to append after command string.
-/
-/	V1.01	28-Feb-88	Remove usage of strlen and strcpy
-/
 */
 
 #include "port.h"

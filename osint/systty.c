@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -15,29 +16,6 @@ This file is part of Macro SPITBOL.
 
     You should have received a copy of the GNU General Public License
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
-/	File:  SYSTTY.C		Version:  01.04
-/	---------------------------------------
-/
-/	Contents:	Function zyspi
-/			Function zysri
-/
-/ 01.02		Added output record size to ioblock.  Note, as a
-/		result of changes in the compiler at ASG11, it is now
-/		possible for zyspi() to be called from zysou().  Previously,
-/		writes to TERMINAL were going through the PRTST logic, wasting
-/		time using the print buffer, and limiting the record length
-/		to the listing page width.  Instead, all output assignments
-/		go to zysou(), which now uses the FCB info in WA to decide
-/		if it is a special file (OUTPUT/TERMINAL), or a normal
-/		file.
-/
-/ 01.03 06-Feb-91 Changed for read/write I/O.  Add EOL chars to ioblk.
-/
-/ 01.04 01-Feb-93 New oswrite calling sequence.
-/
 */
 
 /*

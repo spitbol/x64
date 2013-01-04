@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -15,13 +16,6 @@ This file is part of Macro SPITBOL.
 
     You should have received a copy of the GNU General Public License
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
-/	File:  MAIN.C		Version:  01.00
-/	---------------------------------------
-/
-/	Contents:	Function main
 */
 
 /*
@@ -44,17 +38,10 @@ This file is part of Macro SPITBOL.
 /	   and transfer control to function that returns control to
 /	   suspended spitbol program
 /
-/	HISTORY
-/
-/  V1.00 04-Jun-92 Split off from OSINT as a front-end module.
-/  V1.01 30-Dec-96 Call swcinp after reloading SPX file.
-/  V1.02 18-Mar-00 Don't interpret parameters following .spx on command
 /                  line as file names.
 */
 #define GLOBALS			/* global variables will be defined in this module */
 #include "port.h"
-#include <stdio.h>
-#include <stdio.h>
 
 #ifdef DEBUG
 #undef DEBUG			/* Change simple -DDEBUG on command line to -DDEBUG=1 */
@@ -209,8 +196,8 @@ char	*argv[];
         wrterr( "Stack memory unavailable." );
         __exit( 1 );
     }
-	fprintf(stderr,"lowsp\t%x\n",lowsp);
-	fprintf(stderr,"lowsp\t%ld\n",lowsp);
+//	fprintf(stderr,"lowsp\t%x\n",lowsp);
+//	fprintf(stderr,"lowsp\t%ld\n",lowsp);
     /*
     /   Allocate initial increment of dynamic memory.
     /
@@ -222,10 +209,10 @@ char	*argv[];
     }
     topmem = basemem + memincb;
     maxmem = basemem + databts;
-	fprintf(stderr,"topmem\t%xx\n",topmem);
-	fprintf(stderr,"topmem\t%ld\n",topmem);
-	fprintf(stderr,"basemem\t%xx\n",basemem);
-	fprintf(stderr,"basemem\t%ld\n",basemem);
+//	fprintf(stderr,"topmem\t%xx\n",topmem);
+//	fprintf(stderr,"topmem\t%ld\n",topmem);
+//	fprintf(stderr,"basemem\t%xx\n",basemem);
+//	fprintf(stderr,"basemem\t%ld\n",basemem);
 
 
     /*
@@ -239,12 +226,12 @@ char	*argv[];
     SET_WC( 0 );
     SET_XR( basemem );
     SET_XL( topmem - sizeof(word) );
-    fprintf(stderr,"basemem %x\n",basemem);
+//    fprintf(stderr,"basemem %x\n",basemem);
 
     /*
     /   Startup compiler.
     */
-	fprintf(stderr,"calling startup\n");
+//	fprintf(stderr,"calling startup\n");
     zz_init();
     startup();
 #endif					/* !RUNTIME */
@@ -341,5 +328,5 @@ void setout()
     }
 }
 void restart(char *p, char * q) {
- fprintf(stderr,"restart not supported\n");
+// fprintf(stderr,"restart not supported\n");
 }

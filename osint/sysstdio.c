@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -17,40 +18,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-/	File:  SYSSTDIO.C	Version:  01.09
-/	---------------------------------------
-/
-/	Contents:	Function zyspr
-/			Function zysrd
-/
-/	01.04	Removed usage of inpateof.  From disk files, OK to read
-/		from file again and get EOF.  From console, OK to request
-/		another line after EOF, if that is what user wants.  Makes
-/		behavior of INPUT similar to behavior of TERMINAL.
-/		MBE 12/24/87
-/
-/	01.05	Added getprfd() to provide current standard output fd to
-/		osint.
-/
-/	01.06	Added sfn to report source file name to compiler.  Definition of sysrd EXIT 1
-/		case expanded to handle both EOF and reporting of source file change.
-/		Use of first_record expanded to provide initial source file name to compiler.
-/
-/	01.07	Added input/output record sizes to ioblocks.  Note, as a
-/		result of changes in the compiler at ASG11, it is now
-/		possible for zyspr() to be called from zysou().  Previously,
-/		writes to OUTPUT were going through the PRTST logic, wasting
-/		time using the print buffer, and limiting the record length
-/		to the listing page width.  Instead, all output assignments
-/		go to zysou(), which now uses the FCB info in WA to decide
-/		if it is a special file (OUTPUT/TERMINAL), or a normal
-/		file.
-/
-/	01.08	Add end of line characters to IOBLKs.  Add clrbuf().
-/
-/	01.09	New oswrite calling sequence.  01-Feb-93.
-*/
 
 /*
 /   sysstdio module
@@ -71,7 +38,6 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-#include <stdio.h>
 
 void stdioinit()
 {
@@ -100,16 +66,10 @@ zyspr()
     /*
     /	Do writes in line mode.
     */
-    fprintf(stderr,"enter syspr\n");
-	fprintf(stderr,"pr WA %d\n",WA(word));
-	fprintf(stderr,"pt XR %u\n",XR(struct scblk *));
-	fprintf(stderr,"reg_xr %u\n",XR(char *));
 
     if ( oswrite( 1, oupiob.len, WA(word), &oupiob, XR( struct scblk * ) ) < 0 ) {
-        fprintf(stderr,"leave syspr exit 1\n");
         return  EXIT_1;
     }
-    fprintf(stderr,"leave syspr exit 0\n");
 
     return NORMAL_RETURN;
 }

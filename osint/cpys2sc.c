@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -39,9 +40,6 @@ This file is part of Macro SPITBOL.
 /
 /   Side Effects:
 /	Modifies contents of passed SCBLK (scptr).
-/
-/   v1.01, 12/28/90 - pad last word in SCBLK with zeros to match behavior of ALOCS.
-/			Eliminated termch argument,  since it was always zero.
 */
 
 #include "port.h"

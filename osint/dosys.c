@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -15,27 +16,6 @@ This file is part of Macro SPITBOL.
 
     You should have received a copy of the GNU General Public License
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
-/	File:  DOSYS.C		Version:  01.04
-/	---------------------------------------
-/
-/	Contents:	Function dosys
-/
-/	1.04	15-Oct-91	Intel bug in system() command.  Malloc must
-/						allocate out of high memory to allow spawn to
-/						work properly.  We set a global switch that
-/						tells malloc to use sbrk to satisfy memory
-/						request made by spawn() and system().
-/
-/   1.03  08-May-91 <withdrawn>.
-/
-/	1.02	23-Jun-90	Add second argument for optional path specification.
-/				Change first argument to C-string, not SCBLK.
-/
-/	1.01	04-Mar-88	Changes for Definicon
-/
 */
 
 /*

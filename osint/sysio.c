@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -43,19 +44,6 @@ This file is part of Macro SPITBOL.
 /   Exits:
 /	1	file does not exist
 /	2	I/O not allowed
-/
-/  1.04		If filearg2 is null, filearg1 can be an environment
-/		variable that points to the real filename.  Flag IO_ENV
-/		notes this case, and iob->fnm points to filearg1 instead
-/		of filearg 2.
-/
-/ 1.05 06-Feb-91 Changed for read/write I/O.
-/
-/ 1.06 01-Feb-93 Split record size into two fields (rsz and mode), to
-/				 prevent negative record size appearing to be a valid
-/				 pointer in 8088 SPITBOL.
-/
-/ 1.07 26-Oct-94 Added share field to ioblk.
 */
 
 #include "port.h"

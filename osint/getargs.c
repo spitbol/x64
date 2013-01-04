@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -18,20 +19,8 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  GETARGS.C		Version:  01.00
-/	---------------------------------------
-/
-/	Contents:	Function getargs
-*/
-
-
-/*
 /	This module contains the switch loop that processes command
 /	line options.
-/
-/	HISTORY
-/
-/  V1.00 30-Jul-92 Split off from OSINT as a separate module.
 */
 #include "port.h"
 

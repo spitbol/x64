@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -17,29 +18,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-/  File:  SYSST.C    Version:  01.07
-/	---------------------------------------
-/
-/	Contents:	Function zysst
-/
-/  01.02 10-Oct-87 MBE	Return EXIT_5 if I/O error.
-/			Return resulting file position in IA
-/			(requiring non-standard mod to V36A.MIN).
-/
-/  01.03 29-Nov-89 MBE	Allow SET of a system file.
-/
-/  01.04 18-May-92 MBE  Provide PC-SPITBOL-style support for SET.
-/
-/  01.05 01-Feb-93 MBE	fcb->rsz is always positive now.
-/
-/  01.06 21-Oct-94 MBE  Use uppercase function to fold case letters.
-/
-/  01.07 19-Jul-97 MBE  Add SETREAL support to force SET to use real for
-/                       offset argument and return value.  Used only for
-/                       special version for select customers.
-/
-*/
 
 /*
 /   zysst - set file position

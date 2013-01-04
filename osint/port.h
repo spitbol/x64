@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -134,11 +135,11 @@ This file is part of Macro SPITBOL.
  */
 #ifdef ARCH-X32
 #ifndef INTBITS
-#define INTBITS		32		
+#define INTBITS		32
 #define MAXINT		0x7FFFFFFFL
 #endif
 #ifndef WORDBITS
-#define WORDBITS	32	
+#define WORDBITS	32
 #define MAXPOSWORD	0x7FFFFFFFL
 #endif
 #ifndef IABITS
@@ -148,11 +149,11 @@ This file is part of Macro SPITBOL.
 
 #ifdef ARCH-X64
 #ifndef INTBITS
-#define INTBITS		64			
+#define INTBITS		64
 #define MAXINT		0x7FFFFFFFFFFFFFFFL
 #endif
 #ifndef WORDBITS
-#define WORDBITS	64		
+#define WORDBITS	64
 #define MAXPOSWORD	0x7FFFFFFFFFFFFFFFL
 #endif
 #ifndef IABITS

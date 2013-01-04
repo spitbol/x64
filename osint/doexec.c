@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -36,14 +37,6 @@ This file is part of Macro SPITBOL.
 /	No return if shell successfully executed
 /	Returns if could not execute command
 /
-/
-/	1.03	15-Oct-91	Intel bug in system() command.  Malloc must
-/						allocate out of high memory to allow spawn to
-/						work properly.  We set a global switch that
-/						tells malloc to use sbrk to satisfy memory
-/						request made by spawn() and system().
-/
-
 */
 
 #include "port.h"

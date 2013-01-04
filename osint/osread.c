@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -15,13 +16,6 @@ This file is part of Macro SPITBOL.
 
     You should have received a copy of the GNU General Public License
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
-/	File:  OSREAD.C		Version:  01.08
-/	---------------------------------------
-/
-/	Contents:	Function osread
 */
 
 /*
@@ -46,18 +40,6 @@ This file is part of Macro SPITBOL.
 /	>0	length of record read
 /	-1	EOF
 /	-2	I/O error
-/
-/	V1.08	01-Aug-93	Add IO_EOT flag to ignore EOT char in DOS-mode
-/						 text files.
-/	V1.07	01-Feb-93	Change definition of mode argument.
-/	V1.06	05-Feb-91	Change for read/write files.
-/	V1.05	29-Nov-89	Terminate host screen operation if HOST386.
-/	V1.04	05-Mar-88	Changes for Definicon and carriage return/
-/						line feed terminated records.
-/						Also modified code so that an end of file
-/						in a record with no record terminator returns
-/			   			that record, rather than an I/O error.
-/
 */
 
 #include "port.h"

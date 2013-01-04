@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -24,32 +25,6 @@ This file is part of Macro SPITBOL.
 /*
  * Definitions of SPITBOL data blocks available to C-language
  * external functions to be called from 32-bit versions of SPITBOL.
- *
- * V1.00	02/17/90 01:53pm
- *			Initial version
- * V1.01	12-03-90 12:01pm
- * 			To match release 1.08.  Split flags in IOBLK
- * 			into to words to prevent flag bits from being
- * 			mistaken for a relocatable value.
- * V1.02	03-11-91 15:00pm
- * 			To match release 1.1.  Add new words to ioblk for end-
- * 			of-line characters.  The bfblk has been completely
- * 			reworked to accommodate read/write I/O.
- * V1.03	10-18-91 04:27pm
- *        <withdrawn>.
- * V1.04	3-July-92
- * 			Begin to customize for SPARC/Sun 4.
- * V1.05	09-12-94 07:13pm
- *		 	Add definitions for buffers
- * V1.06	04-25-95 10:07pm
- *			Customize for RS/6000.
- * V1.07    12-29-96 06:05pm
- *          Customize for Windows NT
- * V1.08    03-04-97 01:45pm
- *          Tweak for SPARC
- * V1.09 04-27-97
- *          Add FILEPOS definition.
- *
  *
  * SPITBOL BLOCKS
  *

@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -17,54 +18,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-/  File:  SYSHS.C    Version:  01.13
-/	---------------------------------------
-/
-/	Contents:	Function zyshs
-/
-/  1.13  21-Jun-97   Changed getint() to allow real argument.
-/
-/  1.12  15-Mar-97   Added HOST(-1) calls.
-/
-/	1.11	18-May-92	Change getint() to return value as IATYPE.
-/
-/   1.10    20-Jan-92   Soften check in restorestring to just verify
-/						that scp is non-zero.  Previously, we were
-/						checking for valid sc_type word at scp, which
-/						might not be true if two adjacent string arguments
-/						were used in the host call.  The zero byte from
-/						the first arg might be clobbering the type word
-/						of the second arg.  This was the case in the
-/						Mac implementation with a HOST(16) call.
-/
-/	1.09	03-Jul-90	Add functions for checking, converting, and
-/						restoring string arguments.  The technique
-/						of producing C-style strings by storing a zero
-/						beyond the end of a SPITBOL string fails when
-/						two string arguments are adjacent on the heap.
-/
-/						Storing a zero after the first string will bash
-/						the type word of the second string, and the
-/						subsequent conversion of the second string will fail.
-/
-/						To overcome this, we check all argument types first,
-/						and then convert strings without checking type words.
-/						If a sub-function contains both integer and string
-/						arguments, convert the integers first.
-/
-/	1.08	23-Jun-90	Add additional argument to HOST(1,"cmd","path")
-/						for MS-DOS hosts.
-/
-/	1.07	21-Nov-89	Add support for 386-specific hosts
-/
-/	1.06	21-Sep-88	Added fourth and fifth arguments to call.
-/
-/	1.05	04-Mar-88	Call save0() in swcinp.c to make sure fd 0
-/				properly connected prior to HOST(1,"cmd").
-/
-/
-*/
 
 /*
 /	zyshs - host specific functions

@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -17,22 +18,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-/  File:  SYSIF.C    Version:  01.03
-/	-----------------------------------
-/
-/	Contents:	Function zysif
-/
-/	V1.01	01-25-90
-/			If include file cannot be opened, restore fd 0.
-/
-/	V1.02	02-16-91
-/			Call clrbuf() after closing the existing file.
-/
-/  V1.03 04-27-97
-/        Look for include file in the directory where SPITBOL resides, and
-/        in the directory of the first source file.
-*/
 
 /*
 /	zysif - start/stop using include file

@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -22,9 +23,6 @@ This file is part of Macro SPITBOL.
 /	---------------------------------------
 /
 /	Contents:	Function zysil
-/
-/	V1.02	Return binary/text indication in WC
-/	V1.03	Adjust to new fcb style with separate mode field.  1-Feb-93.
 */
 
 /*

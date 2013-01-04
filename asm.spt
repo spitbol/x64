@@ -1,6 +1,7 @@
 -TITLE MINCOD: PHASE 2 TRANSLATION FROM MINIMAL TOKENS TO 80386 CODE
 -STITL Description
 * Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+* Copyright 2012-2013 David Shields
 * 
 * This file is part of Macro SPITBOL.
 * 
@@ -104,6 +105,10 @@ CONFIG.X32
 	CFP_C = 4
 	LOG_CFP_B = '2'
 	LOG_CFP_C = '2'
+*	OP_W is instruction suffix for word-size
+	OP_W = 'D'
+*	OP_C is instruction suffix for Minimal character size
+	OP_C = 'B'
 						:(CONFIG.DONE)
 
 
@@ -114,11 +119,14 @@ CONFIG.X64
 	CFP_C = 8
 	LOG_CFP_B = '3'
 	LOG_CFP_C = '3'
+	OP_W = 'Q'
+	OP_C = 'B'
+
 CONFIG.DONE
 
 
 *	Set Z_TRACE to enable instruction by instruction trace
-	Z_TRACE = 1
+	Z_TRACE = 0
 *	Z_LIMIT is maximum number of calls to be generated if non-zero
 	Z_LIMIT = 000
 *	Set Z_FIRST non-zero to skip first number of instructions that would generate trace
@@ -950,17 +958,17 @@ G.MOV
 						:(OPDONE)
 MOV.XTP
 MOV.XLP
-	IDENT(T2,'(XR)+') GENOP('MOVSD')	:S(OPDONE)
-	GENOP('LODSD')
+	IDENT(T2,'(XR)+') GENOP('MOVS' OP_W)	:S(OPDONE)
+	GENOP('LODS' OP_W)
 	IDENT(T2,'-(XS)') GENOP('PUSH','W0')	:S(OPDONE)
 	GENOP('MOV',GETARG(I2),'W0')		:(OPDONE)
 MOV.XSP
 	IDENT(I.TEXT(I2),'(XR)+')		:S(MOV.XSPRP)
 	GENOP('POP',GETARG(I2))			:(OPDONE)
 MOV.XSPRP GENOP('POP','W0')
-	GENOP('STOSD')				:(OPDONE)
+	GENOP('STOS' OP_W)			:(OPDONE)
 MOV.XRP GENOP('MOV','W0',GETARG(I1))
-	GENOP('STOSD')				:(OPDONE)
+	GENOP('STOS' OP_W)			:(OPDONE)
 MOV.2
 	GENOP('PUSH',GETARG(I1))		:(OPDONE)
 
@@ -1150,7 +1158,7 @@ G.ICV   GENOP('INC',GETARG(I1))    :(OPDONE)
 G.DCV   GENOP('DEC',GETARG(I1))    :(OPDONE)
 
 G.ZER	IDENT(I.TEXT(I1),'(XR)+') GENOP('MOV','W0','0')
-+		GENOP('STOSD')			:S(OPDONE)
++		GENOP('STOS' OP_W)		:S(OPDONE)
 	IFREG(I1)				:S(G.ZER1)
 	IDENT(I.TEXT(I1),'-(XS)')		:S(G.ZER.XS)
 	GENOP('MOV','W0','0')
@@ -1394,7 +1402,7 @@ G.SCH
 *  Here if can use STOSB.
 *
 	GENOP('MOV','AL',GETARG(I1))
-	GENOP('STOSB')				:(OPDONE)
+	GENOP('STOS' OP_C)			:(OPDONE)
 
 G.SCG.0
 	LEQ('-',SUBSTR(T2,1,1))			:F(G.SCG.1)
@@ -1435,7 +1443,7 @@ G.SCG.W.PXR
 	GENOP('MOV','[XR]',T1)			:(OPDONE)
 G.SCG.W.XRP
 	GENOP('MOV','AL',T1)
-	GENOP('STOSB')				:(OPDONE)
+	GENOP('STOS' OP_C)				:(OPDONE)
 G.CSC  	IDENT(THISLABEL)			:S(OPNEXT)
 	GENOP()					:(OPDONE)
 
@@ -1451,7 +1459,7 @@ G.CNE   MEMMEM()
 						:(OPDONE)
 
 G.CMC
-	GENOP('REPE','CMPSB')
+	GENOP('REPE','CMPS' OP_C)
 	GENOP('MOV','XL','0')
 	GENOP('MOV','XR','XL')
 	T1 = GETARG(I1)
@@ -1464,7 +1472,7 @@ G.TRC
 	GENOP('XCHG','XL','XR')
         GENOPL((T1 = GENLAB()) ':','MOVZX','W0','BYTE [XR]') 
 	GENOP('MOV','AL','[XL+W0]')
-	GENOP('STOSB')
+	GENOP('STOS' OP_C)
 *	GENOP('LOOP',T1)
 	GENOP('DEC','WA')
 	GENOP('JNZ',T1)	
@@ -1566,16 +1574,14 @@ G.MVC
 						:(OPDONE)
 *
 	T1 = GENLAB()
-	GENOPL(T1 ':', 'LODSB')
-	GENOP('STOSB')
+	GENOPL(T1 ':', 'LODS' OP_C)
+	GENOP('STOS' OP_C)
 	GENOP('DEC', 'WA')
 	GENOP('JNZ',T1)
 						:(OPDONE)
 G.MVW
 	GENOP('SHR','WA','LOG_CFP_B')
-* 	GENREP('MOVSD')
- 	IDENT(ARCH,'X32') GENOP('REP','MOVSD')		
- 	IDENT(ARCH,'X64') GENOP('REP','MOVSQ')		
+ 	GENOP('REP','MOVS' OP_W)		
 						:(OPDONE)
 
 G.MWB
@@ -1583,13 +1589,13 @@ G.MWB
 	GENOP('STD')
 	GENOP('LEA','XL','[XL-CFP_B]')
 	GENOP('LEA','XR','[XR-CFP_B]')
- 	GENREP('MOVSD')
+ 	GENREP('MOVD' OP_W)
 	GENOP('CLD')				:(OPDONE)
 
 	GENOP('STD')
 	GENOP('SHR','WA','LOG_CFP_B')
 	GENOP('REP')
-	GENOP('MOVSD')
+	GENOP('MOVS' OP_W)
 	GENOP('CTD')
 						:(OPDONE)
 
@@ -1597,12 +1603,12 @@ G.MCB
 	GENOP('STD')
 	GENOP('DEC','XL')
 	GENOP('DEC','XR')
- 	GENREP('MOVSB')
+ 	GENREP('MOVS' OP_C)
 	GENOP('CLD')				
 						:(OPDONE)
 	GENOP('STD')
 	GENOP('REP')
-	GENOP('MOVSB')
+	GENOP('MOVS' OP_C)
 	GENOP('CLD')	
 						:(OPDONE)
 GENREP

@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -68,7 +69,7 @@ void prtval(long reg) {
 //	}
 //	else if (reg >= 0 && reg < 100000) {
 	if (reg >= 0 && reg < 100000) {
-		fprintf(stderr," %8d ", reg); 
+		fprintf(stderr," %8d ", reg);
 	}
 	else if ( reg >= OFF_C_AAA && reg <= OFF_W_YYY) {
 		fprintf(stderr," Z%ld ", reg);
@@ -99,9 +100,7 @@ void zz_init() {
 	OFF_C_AAA = &C_AAA;
 	OFF_W_YYY = &W_YYY;
 	fprintf(stderr, "OFF_C_AAA %ld\n", &C_AAA);
-	fprintf(stderr, " OFF_C_AAA %lx\n", &C_AAA);
 	fprintf(stderr, "OFF_W_YYY %ld\n", &W_YYY);
-	fprintf(stderr, " OFF_W_YYY %lx\n", &W_YYY);
 }
 
 void zz() {
@@ -149,7 +148,7 @@ void zz() {
 
 //	if (zz_calls % 3 == 1) {
 //	if (zz_calls>0) {
-	
+
 		/* print register values before the statement was executed */
 		prtreg("xl.esi", zz_xl);
 		prtreg("xr.edi", zz_xr);

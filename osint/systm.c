@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -39,13 +40,11 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-#include <stdio.h>
 
 #include <sys/times.h>
 #define CLK_TCK sysconf(_SC_CLK_TCK)
 
 zystm() {
-	fprintf(stderr,"enter systm\n");
 
     /*
     /	process times are in 60ths of second, multiply by 100

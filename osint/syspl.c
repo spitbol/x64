@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -39,10 +40,6 @@ This file is part of Macro SPITBOL.
 /	    2 - single step
 /	    3 - evaluate expression
 /       normal exit - no special action
-/
-/  Version history:
-/
-/
 */
 
 #include "port.h"

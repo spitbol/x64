@@ -1,5 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+Copyright 2012-2013 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -23,8 +24,6 @@ This file is part of Macro SPITBOL.
 /
 /	zyscm - string compare
 /
-/	V1.01	Don't bother clearing XR.
-/		Change definition of first/second string.
 */
 
 /*
