@@ -1551,6 +1551,19 @@ G.CVM	T1 = GETARG(I1)
 G.CVD	GENOP('CALL','CVD_')			:(OPDONE)
 
 G.MVC
+	
+	T1 = GENLAB()
+	GENOP('REP')
+	GENOP('MOVSB')
+						:(OPDONE)
+	T1 = GENLAB()
+	GENOPL(T1 ':', 'MOV','AL','BYTE [ESI]')
+	GENOP('MOV','BYTE [EDI]','AL')
+	GENOP('INC', 'ESI')
+	GENOP('INC', 'EDI')
+	GENOP('DEC','WA')
+	GENOP('JNZ', T1)
+						:(OPDONE)
 *
 	T1 = GENLAB()
 	GENOPL(T1 ':', 'LODSB')
@@ -1560,8 +1573,9 @@ G.MVC
 						:(OPDONE)
 G.MVW
 	GENOP('SHR','WA','LOG_CFP_B')
- 	GENREP('MOVSD')
-* 	GENOP('REP','MOVSD')		
+* 	GENREP('MOVSD')
+ 	IDENT(ARCH,'X32') GENOP('REP','MOVSD')		
+ 	IDENT(ARCH,'X64') GENOP('REP','MOVSQ')		
 						:(OPDONE)
 
 G.MWB
@@ -1572,12 +1586,25 @@ G.MWB
  	GENREP('MOVSD')
 	GENOP('CLD')				:(OPDONE)
 
+	GENOP('STD')
+	GENOP('SHR','WA','LOG_CFP_B')
+	GENOP('REP')
+	GENOP('MOVSD')
+	GENOP('CTD')
+						:(OPDONE)
+
 G.MCB
 	GENOP('STD')
 	GENOP('DEC','XL')
 	GENOP('DEC','XR')
  	GENREP('MOVSB')
-	GENOP('CLD')				:(OPDONE)
+	GENOP('CLD')				
+						:(OPDONE)
+	GENOP('STD')
+	GENOP('REP')
+	GENOP('MOVSB')
+	GENOP('CLD')	
+						:(OPDONE)
 GENREP
 *	Generate equivalent of REP op loop
 	L1 = GENLAB()
