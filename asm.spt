@@ -92,12 +92,11 @@
 	ARCH = UPPER(ARCH)
 *        OUTPUT = IDENT(FILEPREFIX) "Filename (.lex) required" :S(END)
 	FILEPREFIX = "s"
-	OUTPUT = 'ARCH IS ' ARCH
+	OUTPUT = '  target architecture:' ARCH
 
 *	CFP_B is bytes per word, CFP_C is characters per word
 *       These should agree with values used in translator	
 * Set target-dependent configuration parameters 
-	OUTPUT = 'CONFIG:' ARCH ':'
 	:($('CONFIG.' UPPER(ARCH)))
 
 CONFIG.X32
@@ -260,7 +259,6 @@ SKIP_INIT.END
 *  Initialize variables
 *
 	LABCNT = NOUTLINES = NLINES = NSTMTS = NTARGET = NERRORS = 0
-	NOPTIM1 = NOPTIM2 = 0
 	LASTOPC = LASTOP1 = LASTOP2 =
 	DATA_LC = 0
 	MAX_EXI = 0
@@ -360,41 +358,16 @@ IS_EXEC.2
 FLGS	FLAGS ? ((LEN(1) BREAK(';:')) . FLAG LEN(1)) |
 +	 ((LEN(1) REM) . FLAG) =			:F(FLGS2)
 	FLAG = REPLACE(FLAG,LCASE,UCASE)
-        OUTPUT = "  Flag: " FLAG
+        OUTPUT = "  flag: " FLAG
 	$FLAG = 1					:(FLGS)
 *
 FLGS.SKIP
-*  Open machine definition file
+FLGS2	
 *
-FLGS2	FILENAMD = FILEPREFIX '.def'
-	INPUT(.DEFFILE,1,FILENAMD)			:S(DEFOK)
-        OUTPUT = "Cannot open machine definition file: " FILENAMD :(END)
-*
-*  Read in statements, discarding comments and building a long string.
-*  Spitbol code in machine definition file may contain one-line
-*  statements and comments only.  Continuation lines are not processed
-*  by this code (but could be easily handled).
-*
-DEFOK   OUTPUT = "  Target definition file: " FILENAMD
-	DEFS =
-DEFLOOP	LINE = DEFFILE					:F(DEFCOMP)
-	LINE '*'					:S(DEFLOOP)
-	DEFS = DIFFER(LINE) DEFS ';' LINE		:(DEFLOOP)
-*
-*  Compile the code, and execute it to perform initializations.
-*  Returns to label COMPDONE when complete.
-*
-DEFCOMP	DEFS = CODE(DEFS '; :(COMPDONE)')		:S(COMPOK)
-        OUTPUT = "Error compiling definitions file"
-        OUTPUT = &ERRTEXT                             :(END)
-COMPOK	ENDFILE(1)					:<DEFS>
-COMPDONE DEFS =
-
 * Various constants
 *
         COMMENT.DELIM = ';'
-*
-*
+ 
 *  BRANCHTAB maps MINIMAL opcodes 'BEQ', etc to desired
 *  target instruction
 *
@@ -474,25 +447,24 @@ COMPDONE DEFS =
 
 	FILENAMI = FILEPREFIX '.lex'
         INPUT(.INFILE,1,FILENAMI)                     :S(INPUTOK)
-        OUTPUT = '  Cannot open TOKEN file: ' FILENAMI  :(END)
-INPUTOK OUTPUT = '  Input LEX file: ' FILENAMI
+        OUTPUT = '  cannot open TOKEN file: ' FILENAMI  :(END)
+INPUTOK OUTPUT = '  input LEX file: ' FILENAMI
 *
 *
 *
-*  Associate output files.  Code is written to a temp file, which
-*  will subsequently be rewound and reread for jump optimization.
+*  Associate output files.  
 *
-	FILENAMO = FILEPREFIX '.tmp'
+	FILENAMO = FILEPREFIX '.s'
         OUTPUT(.OUTFILE,2,FILENAMO)             :S(OUTPUTOK)
-        OUTPUT = 'Cannot open TEMP file: ' FILENAMO :(END)
+        OUTPUT = '  cannot open ASM file: ' FILENAMO :(END)
 OUTPUTOK
-        OUTPUT = '  Output TEMP file: ' FILENAMO
+        OUTPUT = '  output ASM file: ' FILENAMO
 
 *
 * Open file for compilation of Minimal ERR and ERB messages
 *
         OUTPUT(.ERRFILE,3, FILEPREFIX ".err")	:S(ERR_OK)
-        OUTPUT = "Cannot open error message file: " FILEPREFIX ".err" :(END)
+        OUTPUT = "  cannot open error message file: " FILEPREFIX ".err" :(END)
 ERR_OK
 
 
@@ -597,7 +569,7 @@ ERROR   OUTFILE = '* *???* ' THISLINE
 	LASTERROR = NOUTLINES
 	NOUTLINES = NOUTLINES + 2
 	LE(NERRORS = NERRORS + 1, 10)		:S(DSOUT)
-        OUTPUT = 'Too many errors, quitting'  :(END)
+        OUTPUT = 'too many errors, quitting'  :(END)
 -STITL GENAOP(STMT)
 GENAOP
 	ASTMTS[ASTMTS.N = ASTMTS.N + 1] = STMT	:(RETURN)
@@ -812,18 +784,8 @@ CHKTRACE
 *	this was discovered on a case-by-case basis.
 
  	Z_SKIP  = DIFFER(INLABEL) DIFFER(SKIP_ON[INLABEL]) 1
-*    	OUTPUT  = DIFFER(INLABEL) DIFFER(SKIP_ON[INLABEL]) 'skip on ' INLABEL
  	Z_SKIP  = DIFFER(INLABEL) DIFFER(SKIP_OFF[INLABEL]) 0
-*    	OUTPUT  = DIFFER(INLABEL) DIFFER(SKIP_OFF[INLABEL]) 'skip off ' INLABEL
-*	Z_SKIP = 0
-	
-*     	OUTPUT = DIFFER(OLD_Z_SKIP, Z_SKIP) 'in_skip now ' Z_SKIP
-*     	OUTPUT = DIFFER(OLD_Z_EXEC, Z_EXEC) 'in_exec now ' Z_EXEC
-*     	OUTPUT = DIFFER(OLD_IS_EXEC, IS_EXEC) 'is_exec now ' IS_EXEC
 
-	Z_NUM = 100 * Z_EXEC + 10 * IS_EXEC + Z_SKIP
-* 	OUTPUT = CLABEL ':' 'Z_NUM:' Z_NUM ':' LPAD(NLINES,6) ' ' STMTOUT
-*	skip trace if would otherwise access label that is too far removed
 	NE(Z_SKIP)				:S(RETURN)
 	EQ(Z_EXEC)				:S(RETURN)
 	EQ(IS_EXEC)				:S(RETURN)
@@ -1797,74 +1759,29 @@ G.END.1	LINE = HDRFILE				:F(G.END.2)
 	OUTFILE = LINE				:(G.END.1)
 G.END.2
 
+* Here at end of code generation.  
 
-* Here at end of code generation.  Close the temp file, and reread
-* it to perform jump optimization.
 	ENDFILE(1)
 	ENDFILE(2)
-        OUTPUT = "  Code generation complete, begin jump optimization"
-
-	INPUT(.INFILE,1,FILENAMO)		:S(G.END.3)
-        OUTPUT = 'Cannot reopen TEMP file: ' FILENAMO :(END)
-
-G.END.3 FILENAMO = FILEPREFIX ".s"
-        OUTPUT(.OUTFILE,2,FILENAMO '[-m10 -n0]') :S(G.END.4)
-        OUTPUT = 'Cannot open ASSEMBLY file: ' FILENAMO :(END)
-G.END.4 OUTPUT = '  Output ASSEMBLY file: ' FILENAMO
-
-***************************************************************************
-* Jump optimization
-*
-* Forward jumps to target labels within JUMP_N lines of the jump receive
-* a SHORT.  Exception is made for those lines that match NS_PAT.
-*
-* JUMP_N and NS_PAT are defined in the <machine>.def file.
-*
-***************************************************************************
-*
-	N = JUMP_N			;* # lines allowed for shortening
-	JUMP = "J" SPAN(&UCASE)
-	WS = SPAN(" " CHAR(9))
-	LETS = &UCASE "_0123456789"
-	L_PAT = SPAN(LETS)
-	L_PATC = L_PAT ':'
-	L_PAT2 = L_PAT . LABEL ':'
-	STMT = ((L_PATC | "") WS JUMP WS) . FIRST (L_PAT . LABEL REM) . REST
-
-	LNO = 0
-G.END.5	LINE = INFILE					:F(G.END.7)
-	LNO = LNO + 1
-	:(G.END.6)
-	LINE ? STMT					:F(G.END.6)
-	(IDENT(LABEL,"SHORT"), IDENT(LABTAB<LABEL>))	:S(G.END.6)
-	DISTANCE = LABTAB<LABEL> - LNO
-	(GT(DISTANCE,0) LE(DISTANCE,N))			:F(G.END.6)
-	LINE ? NS_PAT					:S(G.END.6)
-	NOPTIM2 = NOPTIM2 + 1
-        LINE = FIRST "SHORT " REST FILLC "# (Jump shortened)"
-G.END.6	OUTFILE = LINE					:(G.END.5)
-
-G.END.7 ENDFILE(1)
-	ENDFILE(2)
 	ENDFILE(3)
-        OUTPUT = '  ' '*** TRANSLATION COMPLETE ***'
-        OUTPUT = '  ' NLINES ' LINES READ.'
-        OUTPUT = '  ' NSTMTS ' STATEMENTS PROCESSED.'
-        OUTPUT = '  ' NTARGET ' TARGET CODE LINES PRODUCED.'
-        OUTPUT = '  ' NOPTIM1 ' "OR" optimizations performed.'
-        OUTPUT = '  ' NOPTIM2 ' jumps shortened.'
-        OUTPUT = '  ' MAX.ERR ' MAXIMUM ERR/ERB NUMBER.'
-        OUTPUT = '  ' PRC.COUNT1 ' PRC COUNT.'
+        OUTPUT = '  ' '*** Translation Complete ***'
+        OUTPUT = '  ' NLINES ' lines read'
+        OUTPUT = '  ' NSTMTS ' statements processed'
+        OUTPUT = '  ' NTARGET ' target code lines produced'
+	OUTPUT = '  ' &STCOUNT ' spitbol statements executed'
+        OUTPUT = '  ' MAX.ERR ' maximum err/erb number'
+        OUTPUT = '  ' PRC.COUNT1 ' prc count'
         OUTPUT = '  ' GT(PRC.COUNT,PRC.COUNT1)
-.	  'DIFFERING COUNTS FOR N-PROCEDURES:'
+.	  '  differing counts for n-procedures:'
 .	  ' INP ' PRC.COUNT1 ' PRC ' PRC.COUNT
-        OUTPUT = '  ' NERRORS ' ERRORS OCCURRED.'
-        OUTPUT =
-	ERRFILE = '* ' MAX.ERR ' MAXIMUM ERR/ERB NUMBER'
-	ERRFILE  = '* ' PRC.COUNT ' PRC COUNT'
-.		DIFFER(LASTERROR) 'THE LAST ERROR WAS IN LINE ' LASTERROR
+        OUTPUT = DIFFER(NERRORS) '  ' NERRORS ' errors detected'
+
+	ERRFILE = '* ' MAX.ERR ' maximum ERR/ERB number'
+	ERRFILE  = '* ' PRC.COUNT ' PRC count'
+.		DIFFER(LASTERROR) '  the last error was in line ' LASTERROR
+
 	&CODE   = NE(NERRORS) 2001
-        OUTPUT = '  ' COLLECT() ' FREE WORDS'
+        OUTPUT = '  ' COLLECT() ' free words'
 	:(END)
 * Convert argument to upper case
 LOWER

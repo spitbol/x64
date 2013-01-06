@@ -44,7 +44,7 @@
 *  Keyword initialization
 
         &ANCHOR = 1
-	&STLIMIT = -1
+*	&STLIMIT = -1
 	&TRIM   = 1
 
 *  Useful constants
@@ -441,7 +441,6 @@ MAIN2
 . 'CH_SQ[039]CH_UN[095]CH_OB[091]CH_CB[093]CH_HT[009]CH_VT[011]'
 . 'CH_EY[094]IODEL[032]' )
 * Set target-dependent configuration parameters 
-	OUTPUT = 'ARCH:' ARCH ':'
 	:($('CONFIG.' ARCH))
 
 CONFIG.X32
@@ -874,20 +873,23 @@ G.ESW2  IFFAR =					:(DSGEN)
 
 *  END prints statistics on terminal then exits program
 *
-G.END   OUTSTMT(,'END',,,,COMMENT)
-	(NE(LEVEL) ERROR("Unclosed IF conditional clause"))
-        OUTPUT = '*** TRANSLATION COMPLETE ***'
-        OUTPUT = NLINES ' LINES READ.'
-        OUTPUT = NSTMTS ' STATEMENTS PROCESSED.'
-        OUTPUT = NTARGET ' TARGET CODE LINES PRODUCED.'
-        OUTPUT = NERRORS ' ERRORS OCCURRED.'
-        OUTPUT =
-.	  DIFFER(LASTERROR) 'THE LAST ERROR WAS IN LINE ' LASTERROR
+G.END   
+	OUTSTMT(,'END',,,,COMMENT)
+	(NE(LEVEL) ERROR("  unclosed IF conditional clause"))
+        OUTPUT = '  *** Translation Complete ***'
+        OUTPUT = '  ' NLINES ' lines read'
+        OUTPUT = '  ' NSTMTS ' statements processed'
+        OUTPUT = '  ' NTARGET ' target code lines produced'
+	OUTPUT = '  ' &STCOUNT ' spitbol statements executed'
+        OUTPUT = DIFFER(NERRORS) '  ' NERRORS ' errors detected'
+ 	OUTPUT =
++	  DIFFER(LASTERROR) '  the last error was in line ' LASTERROR
 	&CODE   = NE(NERRORS) 2001
-        OUTPUT = COLLECT() * 5 ' FREE BYTES'
+        OUTPUT = '  ' COLLECT() * 5 ' free bytes'
+
 	T = CONVERT(PRCTAB,'ARRAY')		:F(G.END.2)
 *  Here if procedures declared by INP but not by PRC
-        OUTPUT = 'Procedures with INP, no PRC'
+        OUTPUT = '  procedures with INP, no PRC'
 	I = 1
 G.END.1 OUTPUT = T[I,1] ' ' T[I,2]            :F(G.END.2)
 	I = I + 1				:(G.END.1)
