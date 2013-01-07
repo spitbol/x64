@@ -48,6 +48,7 @@ uword last_w0;
 uword last_cp;
 
 uword zz_calls = 0;
+uword zz_hundred = 0;
 
 uword zz_off;
 uword zz_id=0;
@@ -109,8 +110,17 @@ void zz() {
 	int changed = 0;
 	int listed = 0;
 
-//*	zz_calls++;
+/*
+	return;
+ 	zz_calls++;
 
+	if (zz_calls == 100 ) {
+	zz_hundred++;
+	printf("%\d\n",zz_hundred);
+	zz_calls = 0;
+	}
+	return;
+*/
 	/* print registers that have changed since last statement */
 
 	/* see if any have changed. */
@@ -122,7 +132,7 @@ void zz() {
 	if (zz_wb != last_wb)  changed += 1;
 	if (zz_wc != last_wc)  changed += 1;
 	if (zz_w0 != last_w0)  changed += 1;
-
+changed = 0; // bypass printout
 	if (changed) {
 /* marked changed Minimal registers with "!" to make it easy to search
    backward for last statement that changed a register. */
@@ -148,6 +158,8 @@ void zz() {
 
 //	if (zz_calls % 3 == 1) {
 //	if (zz_calls>0) {
+	int prtregs=0;
+if (prtregs) {
 
 		/* print register values before the statement was executed */
 		prtreg("xl.esi", zz_xl);
@@ -161,6 +173,7 @@ void zz() {
 		prtreg("wc.edx", zz_wc);
 		prtreg("w0.eax", zz_w0);
 		fprintf(stderr, "\n");
+}
 //	}
 	/* display instruction pointer and description of current statement. */
 /*	fprintf(stderr, "\n%8xx %s\n", zz_ip, p);*/

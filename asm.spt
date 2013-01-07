@@ -54,7 +54,6 @@
 *	reads <file>.lex	containing tokenized source code
 *       writes <file>.s         with 80386 assembly code
 *	also writes <file>.err	with ERR and ERB error messages
-*	using <machine>.def	to provide machine-specific information
 *       parts of <machine>.hdr  are prepended and appended to <file>.s
 *	also sets flags		to 1 after converting names to upper case
 *	also reads <file>.pub	for debug symbols to be declared public
@@ -153,7 +152,7 @@ SKIP_INIT	S BREAK(':') . ON ':' REM . OFF	:F(RETURN)
 SKIP_INIT.END
 
 *	SKIP_INIT('START:INI03')
-*	SKIP_INIT('GBCOL:GTARR')
+   	SKIP_INIT('GBCOL:GTARR')
 *	SKIP_INIT('GTN01:GTNVR')
 *	SKIP_INIT('BPF05:BPF07')
 *	SKIP_INIT('SCV12:SCV19')
@@ -348,8 +347,6 @@ IS_EXEC.2
 *
 *	FILEPREFIX ? BREAK(';:') . FILEPREFIX LEN(1) (BREAK(';:') | REM) . TARGET
 *+		((LEN(1) REM . FLAGS) | '')
-*        OUTPUT = IDENT(TARGET)
-*+		"Target type file (.def) required"	:S(END)
 *	$REPLACE(TARGET,LCASE,UCASE) = 1
 *
 * Parse and display flags, setting each one's name to non-null value (1).
@@ -1523,8 +1520,10 @@ G.CVD	GENOP('CALL','CVD_')			:(OPDONE)
 G.MVC
 	
 	T1 = GENLAB()
+	Z_SUSPEND = 1
 	GENOP('REP')
-	GENOP('MOVSB')
+	GENOP('MOVS' OP_C)
+	Z_SUSPEND = 0
 						:(OPDONE)
 	T1 = GENLAB()
 	GENOPL(T1 ':', 'MOV','AL','BYTE [ESI]')
@@ -1542,8 +1541,10 @@ G.MVC
 	GENOP('JNZ',T1)
 						:(OPDONE)
 G.MVW
+	Z_SUSPEND = 1
 	GENOP('SHR','WA','LOG_CFP_B')
  	GENOP('REP','MOVS' OP_W)		
+	Z_SUSPEND = 0
 						:(OPDONE)
 
 G.MWB
@@ -1764,24 +1765,24 @@ G.END.2
 	ENDFILE(1)
 	ENDFILE(2)
 	ENDFILE(3)
-        OUTPUT = '  ' '*** Translation Complete ***'
-        OUTPUT = '  ' NLINES ' lines read'
-        OUTPUT = '  ' NSTMTS ' statements processed'
-        OUTPUT = '  ' NTARGET ' target code lines produced'
-	OUTPUT = '  ' &STCOUNT ' spitbol statements executed'
-        OUTPUT = '  ' MAX.ERR ' maximum err/erb number'
-        OUTPUT = '  ' PRC.COUNT1 ' prc count'
+        OUTPUT = '  ' '*** translation complete ***'
+        OUTPUT = '  ' RPAD(NLINES,7)	' lines read'
+        OUTPUT = '  ' RPAD(NSTMTS,7)	' statements processed'
+        OUTPUT = '  ' RPAD(NTARGET,7)	' target code lines produced'
+	OUTPUT = '  ' RPAD(&STCOUNT,7)	' spitbol statements executed'
+        OUTPUT = '  ' RPAD(MAX.ERR,7)	' maximum err/erb number'
+        OUTPUT = '  ' RPAD(PRC.COUNT1,7) ' prc count'
         OUTPUT = '  ' GT(PRC.COUNT,PRC.COUNT1)
 .	  '  differing counts for n-procedures:'
 .	  ' INP ' PRC.COUNT1 ' PRC ' PRC.COUNT
-        OUTPUT = DIFFER(NERRORS) '  ' NERRORS ' errors detected'
+        OUTPUT = DIFFER(NERRORS) '  ' RPAD(NERRORS,7) ' errors detected'
 
 	ERRFILE = '* ' MAX.ERR ' maximum ERR/ERB number'
 	ERRFILE  = '* ' PRC.COUNT ' PRC count'
 .		DIFFER(LASTERROR) '  the last error was in line ' LASTERROR
 
 	&CODE   = NE(NERRORS) 2001
-        OUTPUT = '  ' COLLECT() ' free words'
+        OUTPUT = '  ' RPAD(COLLECT(),7) ' free words'
 	:(END)
 * Convert argument to upper case
 LOWER
