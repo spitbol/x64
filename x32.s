@@ -756,13 +756,13 @@ SYSXI:	mov	M_WORD [reg_xs],XS
 	global  CVD_
 
 CVD_:
-	xchg    W0,WC         ; IA to EAX
+	xchg    eax,edx         ; IA to EAX
 	cdq                     ; sign extend
-	idiv    M_WORD [ten]   ; divide by 10. WC = remainder (negative)
-	neg     WC             ; make remainder positive
+	idiv    M_WORD [ten]   ; divide by 10. WC (EDX) = remainder (negative)
+	neg     edx             ; make remainder positive
 	add     dl,0x30         ; convert remainder to ascii ('0')
-	mov     WA,WC         ; return remainder in WA
-	xchg    WC,W0         ; return quotient in IA
+	mov     ecx,edx         ; return remainder in WA
+	xchg    edx,eax         ; return quotient in IA
 	ret
 
 ;       DVI_ - divide IA (EDX) by long in EAX
@@ -770,31 +770,31 @@ CVD_:
 	global  DVI_
 
 DVI_:
-	or      W0,W0         ; test for 0
+	or      eax,eax         ; test for 0
 	jz      setovr    	; jump if 0 divisor
 	push    CP             ; preserve CP
-	xchg    CP,W0         ; divisor to CP
-	xchg    W0,WC         ; dividend in W0
+	xchg    CP,eax         ; divisor to CP
+	xchg    eax,edx         ; dividend in eax
 	cdq                     ; extend dividend
-	idiv    CP             ; perform division. W0=quotient, WC=remainder
-	xchg    WC,W0         ; place quotient in WC (IA)
+	idiv    CP             ; perform division. W0(EAX)=quotient, WC(EDX)=remainder
+	xchg    edx,eax         ; place quotient in WC (IA)
 	pop     CP             ; restore CP
-	xor     W0,W0         ; clear overflow indicator
+	xor     eax,eax         ; clear overflow indicator
 	ret
 
 ;       RMI_ - remainder of IA (EDX) divided by long in EAX
 
 	global  RMI_
 RMI_:
-	or      W0,W0         ; test for 0
+	or      eax,eax         ; test for 0
 	jz      setovr    ; jump if 0 divisor
 	push    CP             ; preserve CP
-	xchg    CP,W0         ; divisor to CP
-	xchg    W0,WC         ; dividend in W0
+	xchg    CP,eax         ; divisor to CP
+	xchg    eax,edx         ; dividend in W0 (EAX)
 	cdq                     ; extend dividend
-	idiv    CP             ; perform division. W0=quotient, WC=remainder
+	idiv    CP             ; perform division. W0=quotient, WC(EDX)=remainder
 	pop     CP             ; restore CP
-	xor     W0,W0         ; clear overflow indicator
+	xor     eax,eax         ; clear overflow indicator
 	ret                     ; return remainder in WC (IA)
 setovr: mov     al,0x80         ; set overflow indicator
 	dec	al
@@ -829,12 +829,12 @@ RTI_:
 	jc      RTI_2     ; jump if negative real
 	cmp     W0,0x41E00000  ; test against 2147483648
 	jae     RTI_1     ; jump if >= +2147483648
-RTI_3:  push    WA             ; protect against C routine usage.
+RTI_3:  push    ecx             ; protect against C routine usage.
 	push    W0             ; push RA MSH
 	push    M_WORD [reg_ra]  ; push RA LSH
 	callext f_2_i,8         ; float to integer
-	xchg    W0,WC         ; return integer in WC (IA)
-	pop     WA             ; restore WA
+	xchg    W0,edx         ; return integer in WC (IA)
+	pop     ecx             ; restore WA
 	clc
 	ret
 
@@ -854,18 +854,18 @@ RTI_1:  stc                             ; return C=1 for too large to convert
 	global  ITR_
 ITR_:
 
-	push    WA             ; preserve
-	push    WC             ; push IA
+	push    ecx             ; preserve
+	push    edx             ; push IA
 	callext i_2_f,4         ; integer to float
 %if fretst0
 	fstp	qword [reg_ra]
-	pop     WA             ; restore WA
+	pop     ecx             ; restore WA
 	fwait
 %endif
 %if fretW0
 	mov     M_WORD [reg_ra,W0    ; return result in RA
 	mov	M_WORD [reg_ra+4,WC
-	pop     WA             ; restore WA
+	pop     ecx             ; restore WA
 %endif
 	ret
 
@@ -896,7 +896,7 @@ STR_:
 	global  ADR_
 ADR_:
 
-	push    WA                             ; preserve regs for C
+	push    ecx                             ; preserve regs for C
 	push	WC
 	push    M_WORD [reg_ra+4]             ; RA msh
 	push    M_WORD [reg_ra]               ; RA lsh
@@ -906,14 +906,14 @@ ADR_:
 %if fretst0
 	fstp	qword [reg_ra]
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 	fwait
 %endif
 %if fretW0
 	mov     M_WORD [reg_ra+4], WC         ; result msh
 	mov     M_WORD [reg_ra], W0           ; result lsh
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 %endif
 	ret
 
@@ -922,7 +922,7 @@ ADR_:
 	global  SBR_
 
 SBR_:
-	push    WA                             ; preserve regs for C
+	push    ecx                             ; preserve regs for C
 	push	WC
 	push    M_WORD [reg_ra+4]             ; RA msh
 	push    M_WORD [reg_ra]               ; RA lsh
@@ -932,14 +932,14 @@ SBR_:
 %if fretst0
 	fstp	qword [reg_ra]
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 	fwait
 %endif
 %if fretW0
 	mov     M_WORD [reg_ra+4, WC         ; result msh
 	mov     M_WORD [reg_ra, W0           ; result lsh
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 %endif
 	ret
 
@@ -948,7 +948,7 @@ SBR_:
 	global  MLR_
 
 MLR_:
-	push    WA                             ; preserve regs for C
+	push    ecx                             ; preserve regs for C
 	push	WC
 	push    M_WORD [reg_ra+4]              ; RA msh
 	push    M_WORD [reg_ra]                ; RA lsh
@@ -958,14 +958,14 @@ MLR_:
 %if fretst0
 	fstp	qword [reg_ra]
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 	fwait
 %endif
 %if fretW0
 	mov     M_WORD [reg_ra+4], WC         ; result msh
 	mov     M_WORD [reg_ra], W0           ; result lsh
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 %endif
 	ret
 
@@ -974,7 +974,7 @@ MLR_:
 	global  DVR_
 
 DVR_:
-	push    WA                             ; preserve regs for C
+	push    ecx                             ; preserve regs for C
 	push	WC
 	push    M_WORD [reg_ra+4]              ; RA msh
 	push    M_WORD [reg_ra]                ; RA lsh
@@ -984,14 +984,14 @@ DVR_:
 %if fretst0
 	fstp	qword [reg_ra]
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 	fwait
 %endif
 %if fretW0
 	mov     M_WORD [reg_ra+4], WC         ; result msh
 	mov     M_WORD [reg_ra], W0           ; result lsh
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 %endif
 	ret
 
@@ -1012,7 +1012,7 @@ ngr_2:	ret
 	global  ATN_
 
 ATN_:
-	push    WA                             ; preserve regs for C
+	push    ecx                             ; preserve regs for C
 	push	WC
 	push    M_WORD [reg_ra+4]              ; RA msh
 	push    M_WORD [reg_ra]                ; RA lsh
@@ -1020,14 +1020,14 @@ ATN_:
 %if fretst0
 	fstp	qword [reg_ra]
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 	fwait
 %endif
 %if fretW0
 	mov     M_WORD [reg_ra+4], WC         ; result msh
 	mov     M_WORD [reg_ra], W0           ; result lsh
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 %endif
 	ret
 
@@ -1037,7 +1037,7 @@ ATN_:
 
 
 CHP_:
-	push    WA                             ; preserve regs for C
+	push    ecx                             ; preserve regs for C
 	push	WC
 	push    M_WORD [reg_ra+4]              ; RA msh
 	push    M_WORD [reg_ra]                ; RA lsh
@@ -1045,14 +1045,14 @@ CHP_:
 %if fretst0
 	fstp	qword [reg_ra]
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 	fwait
 %endif
 %if fretW0
 	mov     M_WORD [reg_ra+4], WC         ; result msh
 	mov     M_WORD [reg_ra], W0           ; result lsh
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 %endif
 	ret
 
@@ -1061,7 +1061,7 @@ CHP_:
 	global  COS_
 
 COS_:
-	push    WA                             ; preserve regs for C
+	push    ecx                             ; preserve regs for C
 	push	WC
 	push    M_WORD [reg_ra+4]              ; RA msh
 	push    M_WORD [reg_ra]                ; RA lsh
@@ -1069,14 +1069,14 @@ COS_:
 %if fretst0
 	fstp	qword [reg_ra]
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 	fwait
 %endif
 %if fretW0
 	mov     M_WORD [reg_ra+4], WC         ; result msh
 	mov     M_WORD [reg_ra], W0           ; result lsh
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 %endif
 	ret
 
@@ -1085,7 +1085,7 @@ COS_:
 	global  ETX_
 
 ETX_:
-	push    WA                             ; preserve regs for C
+	push    ecx                             ; preserve regs for C
 	push	WC
 	push    M_WORD [reg_ra+4]              ; RA msh
 	push    M_WORD [reg_ra]                ; RA lsh
@@ -1093,14 +1093,14 @@ ETX_:
 %if fretst0
 	fstp	qword [reg_ra]
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 	fwait
 %endif
 %if fretW0
 	mov     M_WORD [reg_ra+4], WC         ; result msh
 	mov     M_WORD [reg_ra], W0           ; result lsh
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 %endif
 	ret
 
@@ -1109,7 +1109,7 @@ ETX_:
 	global  LNF_
 
 LNF_:
-	push    WA                             ; preserve regs for C
+	push    ecx                             ; preserve regs for C
 	push	WC
 	push    M_WORD [reg_ra+4]              ; RA msh
 	push    M_WORD [reg_ra]                ; RA lsh
@@ -1117,14 +1117,14 @@ LNF_:
 %if fretst0
 	fstp	qword [reg_ra]
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 	fwait
 %endif
 %if fretW0
 	mov     M_WORD [reg_ra+4], WC         ; result msh
 	mov     M_WORD [reg_ra], W0           ; result lsh
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 %endif
 	ret
 
@@ -1134,7 +1134,7 @@ LNF_:
 
 SIN_:
 
-	push    WA                             ; preserve regs for C
+	push    ecx                             ; preserve regs for C
 	push	WC
 	push    M_WORD [reg_ra+4]              ; RA msh
 	push    M_WORD [reg_ra]               ; RA lsh
@@ -1142,14 +1142,14 @@ SIN_:
 %if fretst0
 	fstp	qword [reg_ra]
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 	fwait
 %endif
 %if fretW0
 	mov     M_WORD [reg_ra+4], WC         ; result msh
 	mov     M_WORD [reg_ra], W0           ; result lsh
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 %endif
 	ret
 
@@ -1158,7 +1158,7 @@ SIN_:
 	global  SQR_
 
 SQR_:
-	push    WA                             ; preserve regs for C
+	push    ecx                             ; preserve regs for C
 	push	WC
 	push    M_WORD [reg_ra+4]              ; RA msh
 	push    M_WORD [reg_ra]                ; RA lsh
@@ -1166,14 +1166,14 @@ SQR_:
 %if fretst0
 	fstp	qword [reg_ra]
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 	fwait
 %endif
 %if fretW0
 	mov     M_WORD [reg_ra+4], WC         ; result msh
 	mov     M_WORD [reg_ra], W0           ; result lsh
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 %endif
 	ret
 
@@ -1182,7 +1182,7 @@ SQR_:
 	global  TAN_
 
 TAN_:
-	push    WA                             ; preserve regs for C
+	push    ecx                             ; preserve regs for C
 	push	WC
 	push    M_WORD [reg_ra+4]              ; RA msh
 	push    M_WORD [reg_ra]                ; RA lsh
@@ -1190,14 +1190,14 @@ TAN_:
 %if fretst0
 	fstp	qword [reg_ra]
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 	fwait
 %endif
 %if fretW0
 	mov     M_WORD [reg_ra+4], WC         ; result msh
 	mov     M_WORD [reg_ra], W0           ; result lsh
 	pop     WC                             ; restore regs
-	pop	WA
+	pop	ecx
 %endif
 	ret
 
@@ -1361,7 +1361,7 @@ tryfpu:
 ;                                         # set up for stack relocation
 ;         lea     W0,TSCBLK+scstr        # top of saved stack
 ;         mov     WB,lmodstk             # bottom of saved stack
-;         GETMIN  WA,STBAS               # WA = stbas from exit() time
+;         GETMIN  ecx,STBAS               # WA = stbas from exit() time
 ;         sub     WB,W0                 # WB = size of saved stack
 ; 	mov	WC,WA
 ;         sub     WC,WB                 # WC = stack bottom from exit() time
