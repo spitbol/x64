@@ -132,7 +132,7 @@ void zz() {
 	if (zz_wb != last_wb)  changed += 1;
 	if (zz_wc != last_wc)  changed += 1;
 	if (zz_w0 != last_w0)  changed += 1;
-changed = 0; // bypass printout
+//changed = 0; // bypass printout
 	if (changed) {
 /* marked changed Minimal registers with "!" to make it easy to search
    backward for last statement that changed a register. */
@@ -158,7 +158,7 @@ changed = 0; // bypass printout
 
 //	if (zz_calls % 3 == 1) {
 //	if (zz_calls>0) {
-	int prtregs=0;
+	int prtregs=1;
 if (prtregs) {
 
 		/* print register values before the statement was executed */

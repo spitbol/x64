@@ -124,7 +124,7 @@ CONFIG.DONE
 
 
 *	Set Z_TRACE to enable instruction by instruction trace
-	Z_TRACE = 0
+	Z_TRACE = 1
 *	Z_LIMIT is maximum number of calls to be generated if non-zero
 	Z_LIMIT = 000
 *	Set Z_FIRST non-zero to skip first number of instructions that would generate trace
@@ -302,6 +302,7 @@ SKIP_INIT.END
 *
 *
 
+*	Trace not working for MVC (x32/x64)
 
 	IS_EXECUTABLE = TABLE(100)
 	s = 
@@ -311,7 +312,7 @@ SKIP_INIT.END
 +       'COS CTB CTW CVD CVM DCA DCV ETI DVI DVR ERB ESW ETX FLC '
 +       'ICA ICP ICV IEQ IGE IGT ILE ILT INE INO IOV ITR JMP '
 +       'JSR LCH LCT LCP LCW LDI LDR LEI LNF LSH LSX MCB MFI MLI MLR '
-+       'MNZ MOV MTI MVC MVW MWB NGI ETI NGR NZB ORB PLC PRC PSC '
++       'MNZ MOV MTI MVW MWB NGI ETI NGR NZB ORB PLC PRC PSC '
 +       'REQ RGE RGT RLE RLT RMI RNE RNO ROV RSH RSX RTI RTN SBI SBR '
 +       'SCH SCP SIN SQR SSL SSS STI STR SUB TAN TRC WTB XOB ZER '
 +       'ZGB ZRB'
@@ -1515,7 +1516,17 @@ G.CVM	T1 = GETARG(I1)
 	GENOP('SUB',REG.IA,REGMAP['WB'])
 	GENOP('JO',T1)				:(OPDONE)
 
-G.CVD	GENOP('CALL','CVD_')			:(OPDONE)
+G.CVD	
+	GENOP('EXTERN','ten')
+	GENOP('XCHG','W0','WC')
+	GENOP('CDQE')
+	GENOP('IDIV','M_WORD [ten]')
+	GENOP('NEG','WC')
+	GENOP('ADD','WC_L','0x30')
+	GENOP('MOV','WA','WC')
+	GENOP('XCHG','WC','W0')
+						:(OPDONE)
+*	GENOP('CALL','CVD_')			:(OPDONE)
 
 G.MVC
 	
