@@ -124,7 +124,7 @@ CONFIG.DONE
 
 
 *	Set Z_TRACE to enable instruction by instruction trace
-	Z_TRACE = 1
+	Z_TRACE = 0
 *	Z_LIMIT is maximum number of calls to be generated if non-zero
 	Z_LIMIT = 000
 *	Set Z_FIRST non-zero to skip first number of instructions that would generate trace
@@ -1502,32 +1502,22 @@ G.CTW
 *  assume CFP_C chars per word
 	T1 = GETARG(I1)
 	GENOP('ADD',T1,'(CFP_C-1)+CFP_C*' I.TEXT(I2))
-	GENOP('SHR',T1,'LOG_CFP_C')		:(OPDONE)
-
+	GENOP('SHR',T1,'LOG_CFP_C')	
+					:(OPDONE)
 G.CTB
 	T1 = GETARG(I1)
 	GENOP('ADD',T1,'(CFP_B-1)+CFP_B*' I.TEXT(I2))
-	GENOP('AND',T1,'-CFP_B')		:(OPDONE)
-
+	GENOP('AND',T1,'-CFP_B')		
+						:(OPDONE)
 G.CVM	T1 = GETARG(I1)
 	GENOP('IMUL',REG.IA,'10')
 	GENOP('JO',T1)
 	GENOP('SUB',REGMAP['WB'],'CH_D0')
 	GENOP('SUB',REG.IA,REGMAP['WB'])
-	GENOP('JO',T1)				:(OPDONE)
-
-G.CVD	
-	GENOP('EXTERN','ten')
-	GENOP('XCHG','W0','WC')
-	GENOP('CDQE')
-	GENOP('IDIV','M_WORD [ten]')
-	GENOP('NEG','WC')
-	GENOP('ADD','WC_L','0x30')
-	GENOP('MOV','WA','WC')
-	GENOP('XCHG','WC','W0')
+	GENOP('JO',T1)				
 						:(OPDONE)
-*	GENOP('CALL','CVD_')			:(OPDONE)
-
+G.CVD	
+	GENOP('CALL','CVD_')			:(OPDONE)
 G.MVC
 	
 	T1 = GENLAB()

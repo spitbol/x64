@@ -754,9 +754,14 @@ SYSXI:	mov	M_WORD [reg_xs],XS
 	global  CVD_
 
 CVD_:
-	xchg    W0,WC         ; IA to EAX
-	cdq                     ; sign extend
-	idiv    M_WORD [ten]   ; divide by 10. WC = remainder (negative)
+	xchg    rax,rdx         ; IA to EAX
+	xor	rdx,rdx		; assume eax positive
+	test    rax,rax	
+	jns	CVD_1
+	not	rdx
+CVD_1:
+	;cdq                     ; sign extend
+	idiv    M_WORD [ten]   ; divide by 10. WC (EDX) = remainder (negative)
 	neg     WC             ; make remainder positive
 	add     dl,0x30         ; convert remainder to ascii ('0')
 	mov     WA,WC         ; return remainder in WA
