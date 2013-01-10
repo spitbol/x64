@@ -760,7 +760,6 @@ CVD_:
 	jns	CVD_1
 	not	rdx
 CVD_1:
-	;cdq                     ; sign extend
 	idiv    M_WORD [ten]   ; divide by 10. WC (EDX) = remainder (negative)
 	neg     WC             ; make remainder positive
 	add     dl,0x30         ; convert remainder to ascii ('0')
@@ -778,7 +777,11 @@ DVI_:
 	push    CP             ; preserve CP
 	xchg    CP,W0         ; divisor to CP
 	xchg    W0,WC         ; dividend in W0
-	cdq                     ; extend dividend
+	xor	rdx,rdx		; assume eax positive
+	test    rax,rax	
+	jns	DVI_1
+	not	rdx
+DVI_1:
 	idiv    CP             ; perform division. W0=quotient, WC=remainder
 	xchg    WC,W0         ; place quotient in WC (IA)
 	pop     CP             ; restore CP
@@ -794,7 +797,11 @@ RMI_:
 	push    CP             ; preserve CP
 	xchg    CP,W0         ; divisor to CP
 	xchg    W0,WC         ; dividend in W0
-	cdq                     ; extend dividend
+	xor	rdx,rdx		; assume eax positive
+	test    rax,rax	
+	jns	RMI_1
+	not	rdx
+RMI_1:
 	idiv    CP             ; perform division. W0=quotient, WC=remainder
 	pop     CP             ; restore CP
 	xor     W0,W0         ; clear overflow indicator

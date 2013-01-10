@@ -780,7 +780,11 @@ DVI_:
 	push    CP             ; preserve CP
 	xchg    CP,eax         ; divisor to CP
 	xchg    eax,edx         ; dividend in eax
-	cdq                     ; extend dividend
+	xor	edx,edx		; assume eax positive
+	test    eax,eax	
+	jns	DVI_1
+	not	edx
+DVI_1:
 	idiv    CP             ; perform division. W0(EAX)=quotient, WC(EDX)=remainder
 	xchg    edx,eax         ; place quotient in WC (IA)
 	pop     CP             ; restore CP
@@ -796,7 +800,11 @@ RMI_:
 	push    CP             ; preserve CP
 	xchg    CP,eax         ; divisor to CP
 	xchg    eax,edx         ; dividend in W0 (EAX)
-	cdq                     ; extend dividend
+	xor	edx,edx		; assume eax positive
+	test    eax,eax	
+	jns	RMI_1
+	not	edx
+RMI_1:
 	idiv    CP             ; perform division. W0=quotient, WC(EDX)=remainder
 	pop     CP             ; restore CP
 	xor     eax,eax         ; clear overflow indicator
