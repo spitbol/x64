@@ -124,7 +124,7 @@ CONFIG.DONE
 
 
 *	Set Z_TRACE to enable instruction by instruction trace
-	Z_TRACE = 0
+	Z_TRACE = 1
 *	Z_LIMIT is maximum number of calls to be generated if non-zero
 	Z_LIMIT = 000
 *	Set Z_FIRST non-zero to skip first number of instructions that would generate trace
@@ -300,8 +300,6 @@ SKIP_INIT.END
 .	'AOV[1]BEQ[1]BNE[1]BGE[1]BGT[1]BHI[1]BLE[1]BLO[1]'
 .	'BLT[1]BNE[1]BNZ[1]CEQ[1]CNE[1]MFI[1]NZB[1]ZRB[1]')
 *
-*
-
 *	Trace not working for MVC (x32/x64)
 
 	IS_EXECUTABLE = TABLE(100)
@@ -316,6 +314,9 @@ SKIP_INIT.END
 +       'REQ RGE RGT RLE RLT RMI RNE RNO ROV RSH RSX RTI RTN SBI SBR '
 +       'SCH SCP SIN SQR SSL SSS STI STR SUB TAN TRC WTB XOB ZER '
 +       'ZGB ZRB'
+
+*	Don't trace MVC as doing so causes just 'END' to fail. Sort out later. (DS 01/09/13)
+
 IS_EXEC.1
 	S LEN(3) . OPC ' ' =			:F(IS_EXEC.2)
 	IS_EXECUTABLE[OPC] = 1			:(IS_EXEC.1)
