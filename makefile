@@ -1,7 +1,7 @@
 # X32 SPITBOL
 #
 
-ARCH=x32
+ARCH=x64
 ifeq ($(ARCH),x32)
 ARCHDEF=-DARCH-X32
 ELF=elf32
@@ -92,7 +92,7 @@ COBJS =	arg2scb.o break.o checkfpu.o compress.o cpys2sc.o doexec.o \
 # Assembly langauge objects common to all versions:
 # CAOBJS is for gas, NAOBJS for nasm
 CAOBJS = 
-NAOBJS = $(ARCH).o errors.o
+NAOBJS = $(ARCH).o err.o
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
@@ -118,17 +118,17 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 # main program
 spitbol: $(OBJS)
 ifeq ($(ARCH),x32)
-	$(CC) $(CFLAGS) $(OBJS) -Lmusl/lib -ospitbol
+	$(CC) $(CFLAGS) $(OBJS) -Lmusl/lib -lm -ospitbol
 endif
 ifeq ($(ARCH),x64)
 	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol
 endif
 
 # Assembly language dependencies:
-errors.o: errors.s
+err.o: err.s
 s.o: s.s
 
-errors.o: errors.s
+err.o: err.s
 
 
 # SPITBOL Minimal source
@@ -141,8 +141,8 @@ s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
 
 s.err: s.s
 
-errors.s: $(MIN).cnd $(ERR) s.s
-	   $(SPIT) -1=s.err -2=errors.s $(ERR)
+err.s: $(MIN).cnd $(ERR) s.s
+	   $(SPIT) -1=s.err -2=err.s $(ERR)
 
 
 # make osint objects
@@ -158,12 +158,12 @@ sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
 
 boot:
-	cp -p bootstrap/s.s bootstrap/s.lex bootstrap/errors.s .
+	cp -p bootstrap/s.s bootstrap/s.lex bootstrap/err.s .
 
 install:
 	sudo cp spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s errors.s s.S s.t
+	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t
 z:
 	nm -n s.o >s.nm
 	spitbol map-$(ARCH).spt <s.nm >s.dic
