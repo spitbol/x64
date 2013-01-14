@@ -1,9 +1,8 @@
 -in80
 -title err.spt:  compress spitbol error messages
 -stitle initialization
-*	&ftrace = 500000
-* copyright 1987-2012 robert b. k. dewar and mark emmer.
-* cOPYRIGHT 2012-2013 david shields
+* Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+* Copyright 2012-2013 David Shields
 *
 * this file is part of macro spitbol.
 *
@@ -135,7 +134,7 @@ nomachine
 *
 	&anchor	= 0
 	&trim	= 1
-	&stlimit = -1
+*	&stlimit = -1
 	&code = 1
 *	&fullscan = 1			;* for snobol4+
 
@@ -420,6 +419,7 @@ readerr_end
         output = "input message length = " insize
         output = "output string size = " outsize
         output = "savings = " insize - outsize
+	output = "spitbol statements executed " &stcount
 
 *  clear error indicator for successful return
 *

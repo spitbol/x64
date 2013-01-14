@@ -98,11 +98,29 @@ extern long W_YYY;
 long OFF_C_AAA;
 long OFF_W_YYY;
 
+
 void zz_init() {
 	OFF_C_AAA = &C_AAA;
 	OFF_W_YYY = &W_YYY;
 	fprintf(stderr, "OFF_C_AAA %ld\n", &C_AAA);
 	fprintf(stderr, "OFF_W_YYY %ld\n", &W_YYY);
+}
+
+char * zz_charp;
+
+void zz_str() {
+// print memory block pointed to by zz_cp as string.
+// print up to 20 characters, or until find non-printable character.
+	char * cp;
+	cp = zz_charp;
+	int i;
+	fprintf(stderr,"zz_str  ");
+	for (i = 0;i<20;i++) {
+		char c = *cp++;
+		if (c>=32 && c <= 126) fprintf(stderr,"%c",c);
+		else break;
+	}
+	fprintf(stderr,"\n");
 }
 
 extern uword _rc_;
