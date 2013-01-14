@@ -39,6 +39,7 @@
 	extern	zz_de
 	extern zz_num
 	global	START
+	extern	MINCP
 
 	%macro	ZZZ	3
 	section	.data

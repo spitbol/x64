@@ -159,7 +159,8 @@ reg_xs:	D_WORD	0;		 Minimal stack pointer
 r_size	equ	10*CFP_B
 reg_size:	dd   r_size
 
-
+	global	MINCP
+MINCP:	D_WORD	0 		; Minimal Code Pointer (CP)
 ; end of words saved during exit(-3)
 
 
@@ -191,7 +192,6 @@ _rc_:	dd   0	; return code from osint procedure
 
 
 
-	global	save_cp
 	global	save_xl
 	global	save_xr
 	global	save_xs
@@ -199,7 +199,6 @@ _rc_:	dd   0	; return code from osint procedure
 	global	save_wb
 	global	save_wc
 	global	save_w0
-save_cp:	D_WORD	0	; saved CP value
 save_xl:	D_WORD	0	; saved XL value
 save_xr:	D_WORD	0	; saved XR value
 save_xs:	D_WORD	0	; saved SP value
@@ -309,7 +308,6 @@ TTYBUF:	D_WORD    0     ; type word
 ; 	global	popregs
 ; popregs:
 ; 	pushad
-;         mov     W0,M_WORD [reg_cp]                      ;don't restore CP
 ; 	cld
 ; 	lea	XL,[sav_block]
 ;         lea     XR,[reg_block]                   ;unload saved registers
@@ -329,7 +327,6 @@ TTYBUF:	D_WORD    0     ; type word
 ; 	ret
 	global	save_regs
 save_regs:
-	mov	M_WORD [save_cp],CP
 	mov	M_WORD [save_xl],XL
 	mov	M_WORD [save_xr],XR
 	mov	M_WORD [save_xs],XS
@@ -345,7 +342,6 @@ restore_regs:
 	mov	XL,M_WORD [save_xl]
 	mov	XR,M_WORD [save_xr]
 ;	mov	XS,M_WORD [save_xs	; caller restores SP]
-	mov	CP,M_WORD [save_cp]
 	mov	WA,M_WORD [save_wa]
 	mov	WB,M_WORD [save_wb]
 	mov	WC,M_WORD [save_wc]
@@ -458,7 +454,6 @@ stackinit:
 	mov     WC,M_WORD [reg_wc]	; (also _reg_ia)
 	mov	XR,M_WORD [reg_xr]
 	mov	XL,M_WORD [reg_xl]
-	mov	CP,M_WORD [reg_cp]
  
 	mov     M_WORD [osisp],XS	; save OSINT stack pointer
 	cmp     M_WORD [compsp],0	; is there a compiler stack?
@@ -476,7 +471,6 @@ stackinit:
 	mov	M_WORD [reg_wc],WC
 	mov	M_WORD [reg_xr],XR
 	mov	M_WORD [reg_xl],XL
-	mov	M_WORD [reg_cp],CP
 ; 	popad
 	ret
  
@@ -549,7 +543,6 @@ syscall_init:
 	mov     M_WORD [reg_wc],WC              ; (also _reg_ia)
 	mov	M_WORD [reg_xr],XR
 	mov	M_WORD [reg_xl],XL
-	mov     M_WORD [reg_cp],CP              ; Needed in image saved by sysxi
 	ret
 
 syscall_exit:
@@ -561,7 +554,6 @@ syscall_exit:
 	mov     WC,M_WORD [reg_wc]              ; (also reg_ia)
 	mov	XR,M_WORD [reg_xr]
 	mov	XL,M_WORD [reg_xl]
-	mov	CP,M_WORD [reg_cp]
 	cld
 	mov	W0,M_WORD [reg_pc]
 	jmp	W0
@@ -776,17 +768,17 @@ CVD_1:
 DVI_:
 	or      eax,eax         ; test for 0
 	jz      setovr    	; jump if 0 divisor
-	push    CP             ; preserve CP
-	xchg    CP,eax         ; divisor to CP
+	push    ebp             ; preserve ebp
+	xchg    ebp,eax         ; divisor to ebp
 	xchg    eax,edx         ; dividend in eax
 	xor	edx,edx		; assume eax positive
 	test    eax,eax	
 	jns	DVI_1
 	not	edx
 DVI_1:
-	idiv    CP             ; perform division. W0(EAX)=quotient, WC(EDX)=remainder
+	idiv    ebp             ; perform division. W0(EAX)=quotient, WC(EDX)=remainder
 	xchg    edx,eax         ; place quotient in WC (IA)
-	pop     CP             ; restore CP
+	pop     ebp             ; restore ebp
 	xor     eax,eax         ; clear overflow indicator
 	ret
 
@@ -796,16 +788,16 @@ DVI_1:
 RMI_:
 	or      eax,eax         ; test for 0
 	jz      setovr    ; jump if 0 divisor
-	push    CP             ; preserve CP
-	xchg    CP,eax         ; divisor to CP
+	push    ebp             ; preserve ebp
+	xchg    ebp,eax         ; divisor to ebp
 	xchg    eax,edx         ; dividend in W0 (EAX)
 	xor	edx,edx		; assume eax positive
 	test    eax,eax	
 	jns	RMI_1
 	not	edx
 RMI_1:
-	idiv    CP             ; perform division. W0=quotient, WC(EDX)=remainder
-	pop     CP             ; restore CP
+	idiv    ebp             ; perform division. W0=quotient, WC(EDX)=remainder
+	pop     ebp             ; restore ebp
 	xor     eax,eax         ; clear overflow indicator
 	ret                     ; return remainder in WC (IA)
 setovr: mov     al,0x80         ; set overflow indicator
@@ -821,7 +813,7 @@ setovr: mov     al,0x80         ; set overflow indicator
 ;       See conditional switches fretst0 and
 ;       fretW0. 
 
-;       C function preserves CP, EBX, XL, XR.
+;       C function preserves ebp, EBX, XL, XR.
 
 
 ; define how floating point results are returned from a function
@@ -1245,9 +1237,9 @@ OVR_:
 
 	global	tryfpu
 tryfpu:
-	push	CP
+	push	ebp
 	fldz
-	pop	CP
+	pop	ebp
 	ret
 
 

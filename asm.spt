@@ -421,7 +421,6 @@ FLGS2
 	REG.IA = REGMAP['IA']
 	REG.WA = REGMAP['WA']
 	REG.CP = REGMAP['CP']
-	W0 = REGMAP['W0']
 
 * REGLOW maps register to identify target, so
 * can extract 'L' part.
@@ -1213,25 +1212,25 @@ G.AOV
 						:(OPDONE)
 G.LCP
 *  Use CP for code pointer.
-	GENOP('MOV','M_WORD [reg_cp]',GETARG(I1))		
+	GENOP('MOV','M_WORD [MINCP]',GETARG(I1))		
 						:(OPDONE)
 
 G.SCP   
-	GENOP('MOV','M_WORD [reg_cp]',GETARG(I1))
+	GENOP('MOV',GETARG(I1),'M_WORD [MINCP]')
 						:(OPDONE)
 G.LCW
 *  Should be able to get LODSD; XCHG EAX,GETARG(I1)
-	GENOP('MOV',W0,'M_WORD [reg_cp]')
-	GENOP('MOV',GETARG(I1),'[' W0 ']')
-	GENOP('ADD',W0,'4')			
-	GENOP('MOV','M_WORD [reg_cp]',W0)
+	GENOP('MOV','W0','M_WORD [MINCP]')
+	GENOP('MOV',GETARG(I1),'[W0]')
+	GENOP('ADD','W0','CFP_B')			
+	GENOP('MOV','M_WORD [MINCP]','W0')
 						:(OPDONE)
 
 
 G.ICP   	
-	GENOP('MOV',W0,'M_WORD [reg_cp]')
-	GENOP('ADD',W0,'4')
-	GENOP('MOV','M_WORD [reg_cp]',W0)
+	GENOP('MOV','W0','M_WORD [MINCP]')
+	GENOP('ADD','W0','CFP_B')
+	GENOP('MOV','M_WORD [MINCP]','W0')
 						:(OPDONE)
 
 *  INTEGER ACCUMULATOR KEPT IN WDX (WC)
