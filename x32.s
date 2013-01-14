@@ -138,7 +138,6 @@
 ; ; Words saved during exit(-3)
 ; ;
 	align CFP_B
-	extern	MINCP
 reg_block:
 reg_wa:	D_WORD	0        ; Register WA (ECX)
 reg_wb:	D_WORD 	0        ; Register WB (EBX)
