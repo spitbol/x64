@@ -46,7 +46,8 @@
         &ANCHOR = 1
 *	&STLIMIT = -1
 	&TRIM   = 1
-
+	&ANCHOR = 1
+	&ANCHOR  = 1
 *  Useful constants
 
 	MINLETS = 'ABCDEFGHIJKLMNOPQRSTUVWXY_'

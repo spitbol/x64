@@ -1,3 +1,4 @@
+	bits	64
 	%define CP	RBP
 	%define	XL	RSI
 	%define	XT	RSI

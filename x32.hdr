@@ -51,7 +51,6 @@
 	mov	dword [zz_de],%%desc
 	mov	dword [zz_cp],ebp
 	mov	dword [zz_xl],esi
-	mov	dword [zz_xl],esi
 	mov	dword [zz_xr],edi
 	mov	dword [zz_xs],esp
 	mov	dword [zz_wa],ecx

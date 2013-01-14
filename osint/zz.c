@@ -52,6 +52,7 @@ uword zz_hundred = 0;
 
 uword zz_off;
 uword zz_id=0;
+uword zz_last = 0;
 char ** zz_de;
 extern long C_AAA;
 extern long W_YYY;
@@ -104,12 +105,15 @@ void zz_init() {
 	fprintf(stderr, "OFF_W_YYY %ld\n", &W_YYY);
 }
 
+extern uword _rc_;
 void zz() {
 
 	char *p;
 	int changed = 0;
 	int listed = 0;
 
+	zz_calls++;
+	if (zz_calls > 100000) return;
 /*
 	return;
  	zz_calls++;
@@ -132,7 +136,7 @@ void zz() {
 	if (zz_wb != last_wb)  changed += 1;
 	if (zz_wc != last_wc)  changed += 1;
 	if (zz_w0 != last_w0)  changed += 1;
-//changed = 0; // bypass printout
+  changed = 0; // bypass printout
 	if (changed) {
 /* marked changed Minimal registers with "!" to make it easy to search
    backward for last statement that changed a register. */
@@ -159,6 +163,7 @@ void zz() {
 //	if (zz_calls % 3 == 1) {
 //	if (zz_calls>0) {
 	int prtregs=1;
+ prtregs=0;
 if (prtregs) {
 
 		/* print register values before the statement was executed */
@@ -176,8 +181,12 @@ if (prtregs) {
 }
 //	}
 	/* display instruction pointer and description of current statement. */
+	if (zz_zz != zz_last) {
 /*	fprintf(stderr, "\n%8xx %s\n", zz_ip, p);*/
-	fprintf(stderr, "zzz %d %d %d %s\n",zz_calls, zz_id, zz_zz,zz_de);
+//	fprintf(stderr, "zzz %d %d %d %s\n",zz_calls, zz_id, zz_zz,zz_de);
+	fprintf(stderr, "zzz %d %s\n",_rc_,zz_de);
+	}
+	zz_last = zz_zz;
 
 	/* save current register contents. */
 	last_xl = zz_xl; last_xr = zz_xr; last_xs = zz_xs; last_cp = zz_cp;
