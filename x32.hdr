@@ -170,18 +170,12 @@ calltab:
 	global	B_RCL
 	global	END_MIN_DATA
 
-        extern LDR_
-        extern STR_
         extern OVR_
         extern DVI_
         extern RMI_
         extern CVD_
         extern RTI_
         extern ITR_
-        extern ADR_
-        extern SBR_
-        extern MLR_
-        extern DVR_
         extern NGR_
         extern ATN_
         extern CHP_

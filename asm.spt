@@ -211,7 +211,7 @@ SKIP_INIT.END
 	DEFINE('GENOP(GOPC,GOP1,GOP2,GOP3)')
 	DEFINE('GENOPL(GOPL,GOPC,GOP1,GOP2,GOP3)')
 	DEFINE('GENREP(OP)L1,L2)')
-	DEFINE('GETARG(IARG,IACC)L1,L2,T1,T2')
+	DEFINE('GETARG(IARG,IMEM)L1,L2,T1,T2,TMEM')
 	DEFINE('IFREG(IARG)')
 	DEFINE('MEMMEM()T1')
 	DEFINE('PRCENT(N)')
@@ -429,6 +429,15 @@ FLGS2
 	REGLOW['WB'] = 'WB_L'
 	REGLOW['WC'] = 'WC_L'
 
+* REAL_OP maps Minimal real opcode to machine opcode
+	REAL_OP = TABLE(10)
+	REAL_OP['LDR'] = 'FLD'
+	REAL_OP['STR'] = 'FST'
+	REAL_OP['ADR'] = 'FADD'
+	REAL_OP['SBR'] = 'FSUB'
+	REAL_OP['MLR'] = 'FMUL'
+	REAL_OP['DVR'] = 'FDIV'
+
 *  Other definitions that are dependent upon things defined in the
 *  machine definition file, and cannot be built until after the definition
 *  file has been read in.
@@ -588,8 +597,10 @@ GENOPL	CSTMTS[CSTMTS.N = CSTMTS.N + 1] =
 *  Generate operation with no label
 GENOP   GENOPL(,GOPC,GOP1,GOP2,GOP3)            :(RETURN)
 
--STITL GETARG(IARG,IACC)
-GETARG	L1 = I.TEXT(IARG)
+-STITL GETARG(IARG,IMEM)
+GETARG	
+	TMEM = (DIFFER(IMEM) IMEM ' ', 'M_WORD ')
+	L1 = I.TEXT(IARG)
 	L2 = I.TYPE(IARG)
 	EQ(L2)					:F($(GETARGCASE[L2]))
 	GETARG = L1				:(RETURN)
@@ -602,7 +613,7 @@ GETARG.C.2 GETARG = L1				:(RETURN)
 
 * WLBL, CLBL
 GETARG.C.3
-GETARG.C.4 GETARG = 'M_WORD [' L1 ']'     	:(RETURN)
+GETARG.C.4 GETARG = TMEM '[' L1 ']'     	:(RETURN)
 
 * ELBL, PLBL
 GETARG.C.5
@@ -617,7 +628,7 @@ GETARG.C.8
 GETARG.C.9
 	L1 LEN(1) LEN(2) . L2
 	L2 = REGMAP[L2]
-	GETARG = 'M_WORD [' L2 ']'		:(RETURN)
+	GETARG = TMEM '[' L2 ']'		:(RETURN)
 
 * (X)+, Register indirect, post increment
 * Use lea reg,[reg+CFP_B] unless reg is esp, since it takes an extra byte.
@@ -626,14 +637,14 @@ GETARG.C.9
 GETARG.C.10
 	L1 = SUBSTR(L1,2,2)
 	T1 = REGMAP[L1]
-	GETARG = 'M_WORD [' T1 ']'
+	GETARG = TMEM '[' T1 ']'
 	(IDENT(L1,'XS') GENAOP(TSTMT(,'ADD',T1,'CFP_B'))) :S(RETURN)
 	GENAOP(TSTMT(,'LEA',T1,'[' T1 '+CFP_B]'))	:(RETURN)
 
 *  -(X), Register indirect, pre decrement
 GETARG.C.11
 	T1 = REGMAP[SUBSTR(L1,3,2)]
-	GETARG = 'M_WORD [' T1 ']'
+	GETARG = TMEM '[' T1 ']'
 	GENBOP(TSTMT(,'LEA',T1,'[' T1 '-CFP_B]')) :(RETURN)
 
 * INT(X)
@@ -641,13 +652,13 @@ GETARG.C.11
 GETARG.C.12
 GETARG.C.13
 	L1 BREAK('(') . T1 '(' LEN(2) . T2
-	GETARG = 'M_WORD [(CFP_B*' T1 ')+' REGMAP[T2] ']'   	:(RETURN)
+	GETARG = TMEM '[(CFP_B*' T1 ')+' REGMAP[T2] ']'   	:(RETURN)
 
 *  NAME(X), WHERE NAME IS IN WORKING SECTION
 GETARG.C.14
 GETARG.C.15
 	L1 BREAK('(') . T1 '(' LEN(2) . T2
-	GETARG = 'M_WORD [' T1 '+'  REGMAP[T2] ']' :(RETURN)
+	GETARG = TMEM '[' T1 '+'  REGMAP[T2] ']' :(RETURN)
 
 * Signed Integer
 GETARG.C.16 GETARG = L1				:(RETURN)
@@ -1278,31 +1289,15 @@ G.RTI	GENOP('CALL','RTI_')
 	EQ(I.TYPE(I1))				:S(OPDONE)
 *  HERE IF LABEL GIVEN, BRANCH IF REAL TOO LARGE
         GENOP('JC',GETARG(I1))                 :(OPDONE)
-
 G.LDR
 G.STR
 G.ADR
 G.SBR
 G.MLR
 G.DVR	
-*  unlike the other minimal registers, ra is maintained not as a single
-*  storage location, but as two successive 32-bit words, due to the x86
-*  architecture. The consequence here is that we must deal with the address
-*  of the ra, not its value.
-	T1 = GETARG(I1)
-	TYP1 = I.TYPE(I1)
-* 	OUTPUT = 'g.rop before dword test ' t1 ' ' typ1
-*	t1 'dword [' break(']') . leaarg rem
-*	T1 'M_WORD' =
-	T1 = TRIM(T1)
-*	OUTPUT = 'g.rop after dword test ' t1 ' leaarg ' leaarg
-*	(GE(TYP1,9) LE(TYP1,15) GENOP('LEA','W0', T1),
-*+	 GE(TYP1,3) LE(TYP1,4)  GENOP('LEA','W0', T1),
-*+                GENOP('MOV','W0', GETARG(I1)))
-                GENOP('MOV','W0', GETARG(I1))
-	GENOP('CALL',INCODE '_')		:(OPDONE)
-
-
+	T1 = GETARG(I1,'R_WORD')
+	GENOP(REAL_OP[INCODE],T1)
+						:(OPDONE)
 G.NGR
 G.ATN
 G.CHP
@@ -1311,7 +1306,9 @@ G.ETX
 G.LNF
 G.SIN
 G.SQR
-G.TAN	GENOP('CALL',INCODE '_')		:(OPDONE)
+G.TAN	
+* Need to map these later
+	GENOP('CALL',INCODE '_')		:(OPDONE)
 
 
 G.RNO	T1 = 'JNO'				:(G.ROV1)
