@@ -60,6 +60,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include <sys/types.h>
 
 #if EXECFILE & !EXECSAVE
 #include <a.out.h>
@@ -82,8 +83,8 @@ static void hcopy Params((char *src, char *dst, int len, int max));
 
 #if SAVEFILE | EXECSAVE
 /* TODO - DS commented out next line to get clean x64 compile 12/11/12 */
-/*extern word read Params((int F, void *Buf, unsigned Cnt)); */
-/*extern off_t LSEEK Params((int F, FILEPOS Loc, int Method));*/
+extern word read Params((int F, void *Buf, unsigned Cnt)); 
+extern off_t LSEEK Params((int F, off_t Loc, int Method));
 #endif          /* EXECFILE  | SAVEFILE */
 
 zysxi()
@@ -577,7 +578,8 @@ int fd;
             spitflag = svfheader.flags;	/* restore flags */
             spitflag |= NOLIST;		/* no listing (screws up swcoup if reset) */
             setout();
-
+#define SKIPIT
+#ifdef SKIPIT
             /* Check version number */
             if ( svfheader.version != SaveVersion )
             {
@@ -588,6 +590,7 @@ int fd;
                 goto reload_verserr;
 #endif					/* USEQUIT */
             }
+#endif
 
             if ( svfheader.sec3size != (GET_DATA_OFFSET(C_YYY,uword) - GET_DATA_OFFSET(C_AAA,uword)) )
             {

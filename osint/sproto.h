@@ -226,19 +226,6 @@ extern	int			zysxi Params(( void ));
 
 /* prototypes for standard system-level functions used by OSINT */
 
-#if BCC32
-/* Borland's header file defines sbrk with an int argument.  We prefer long.
- */
-#undef sbrk
-#define sbrk sbrkx
-#endif
-
-#if _MSC_VER
-#undef sbrk
-#define sbrk sbrkx
-#endif          /* _MSC_VER */
-
-#if UNIX
 #include <unistd.h>
 #define LSEEK lseek
 
@@ -250,18 +237,5 @@ extern	int			zysxi Params(( void ));
 extern	int 		brkx Params(( void *addr ));
 extern	void		*sbrkx Params(( long incr ));
 
-#else
-extern  int         access Params((char *Name, int mode));
-extern	int 		brk Params(( void *addr ));
-extern	int 		close Params(( File_handle F ));
-extern	File_handle	dup Params(( File_handle F ));
-extern	char * _Optlink	getenv Params(( char *name ));
-#define LSEEK lseek
-extern   FILEPOS  LSEEK Params(( File_handle F, FILEPOS Loc, int Method ));
-extern	word		read Params(( File_handle F, void *Buf, uword Cnt ));
-extern	void		*sbrk Params(( long incr ));
-extern	int			unlink Params(( char *Name ));
-extern	word		write Params(( File_handle F, void *Buf, uword Cnt ));
-#endif
 
 #endif

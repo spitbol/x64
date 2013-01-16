@@ -102,8 +102,8 @@ long OFF_W_YYY;
 void zz_init() {
 	OFF_C_AAA = &C_AAA;
 	OFF_W_YYY = &W_YYY;
-	fprintf(stderr, "OFF_C_AAA %ld\n", &C_AAA);
-	fprintf(stderr, "OFF_W_YYY %ld\n", &W_YYY);
+//	fprintf(stderr, "OFF_C_AAA %ld\n", &C_AAA);
+//	fprintf(stderr, "OFF_W_YYY %ld\n", &W_YYY);
 }
 
 char * zz_charp;
