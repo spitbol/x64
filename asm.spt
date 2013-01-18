@@ -431,12 +431,18 @@ FLGS2
 
 * REAL_OP maps Minimal real opcode to machine opcode
 	REAL_OP = TABLE(10)
-	REAL_OP['LDR'] = 'FLD'
-	REAL_OP['STR'] = 'FST'
 	REAL_OP['ADR'] = 'FADD'
-	REAL_OP['SBR'] = 'FSUB'
-	REAL_OP['MLR'] = 'FMUL'
+	REAL_OP['ATN'] = 'FPATAN'
+	REAL_OP['CHP'] = 'FRNDINT'
+	REAL_OP['COS'] = 'FCOS'
 	REAL_OP['DVR'] = 'FDIV'
+	REAL_OP['LDR'] = 'FLD'
+	REAL_OP['MLR'] = 'FMUL'
+	REAL_OP['NGR'] = 'FCHS'
+	REAL_OP['SBR'] = 'FSUB'
+	REAL_OP['SIN'] = 'FSIN'
+	REAL_OP['SQR'] = 'FSQRT'
+	REAL_OP['STR'] = 'FST'
 
 *  Other definitions that are dependent upon things defined in the
 *  machine definition file, and cannot be built until after the definition
@@ -599,7 +605,7 @@ GENOP   GENOPL(,GOPC,GOP1,GOP2,GOP3)            :(RETURN)
 
 -STITL GETARG(IARG,IMEM)
 GETARG	
-	TMEM = (DIFFER(IMEM) IMEM ' ', 'M_WORD ')
+	TMEM = (DIFFER(IMEM) '', 'M_WORD ')
 	L1 = I.TEXT(IARG)
 	L2 = I.TYPE(IARG)
 	EQ(L2)					:F($(GETARGCASE[L2]))
@@ -1278,17 +1284,15 @@ G.ILT   GENOP('OR',REG.IA,REG.IA)
 G.INE   GENOP('OR',REG.IA,REG.IA)
 	GENOP('JNE',GETARG(I1))			:(OPDONE)
 
-
-
-*
 *  Real operations
-*
-G.ITR	GENOP('CALL','ITR_')			:(OPDONE)
+
+G.ITR	GENOP('CALL','ITR_')	:(OPDONE)
 
 G.RTI	GENOP('CALL','RTI_')
 	EQ(I.TYPE(I1))				:S(OPDONE)
 *  HERE IF LABEL GIVEN, BRANCH IF REAL TOO LARGE
         GENOP('JC',GETARG(I1))                 :(OPDONE)
+
 G.LDR
 G.STR
 G.ADR
@@ -1296,7 +1300,8 @@ G.SBR
 G.MLR
 G.DVR	
 	T1 = GETARG(I1,'R_WORD')
-	GENOP(REAL_OP[INCODE],T1)
+	GENOP('LEA','W0',T1)
+	GENOP('CALL',INCODE '_')		
 						:(OPDONE)
 G.NGR
 G.ATN
@@ -1307,9 +1312,8 @@ G.LNF
 G.SIN
 G.SQR
 G.TAN	
-* Need to map these later
-	GENOP('CALL',INCODE '_')		:(OPDONE)
-
+	GENOP('CALL',INCODE '_')		
+						:(OPDONE)
 
 G.RNO	T1 = 'JNO'				:(G.ROV1)
 G.ROV	T1 = 'JO'

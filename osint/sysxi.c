@@ -82,7 +82,6 @@ static void hcopy Params((char *src, char *dst, int len, int max));
 #endif					/* SAVEFILE */
 
 #if SAVEFILE | EXECSAVE
-/* TODO - DS commented out next line to get clean x64 compile 12/11/12 */
 extern word read Params((int F, void *Buf, unsigned Cnt)); 
 extern off_t LSEEK Params((int F, off_t Loc, int Method));
 #endif          /* EXECFILE  | SAVEFILE */
@@ -90,9 +89,6 @@ extern off_t LSEEK Params((int F, off_t Loc, int Method));
 zysxi()
 
 {
-/* sysxi not supported for now */
-#if TBSL
-	return EXIT_1;
 #if EXECFILE & !EXECSAVE
     register word	*srcptr, *dstptr;
     char	*endofmem;
@@ -314,7 +310,6 @@ fail:
     zysej();			/* NO RETURN */
     return EXIT_1;
 #endif					/* EXECFILE | SAVEFILE */
-#endif
 }
 
 #if EXECFILE & !EXECSAVE
