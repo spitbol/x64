@@ -37,6 +37,15 @@
 	global	minimal
 	extern	calltab
 	extern	stacksiz
+	extern	zz_ra
+	%macro	ZRA	0
+	nop
+;	pushf
+;	pushad
+;	call	zz_ra
+;	popad
+;	popf
+	%endmacro
  
 %define globals 1                       ;ASM globals defined here
 
@@ -739,309 +748,380 @@ SYSXI:	mov	M_WORD [reg_xs],XS
 	%endmacro
 
 ;       CVD_ - convert by division
-
+;
 ;       Input   IA (EDX) = number <=0 to convert
 ;       Output  IA / 10
 ;               WA (ECX) = remainder + '0'
-
-	global  CVD_
-
+	global	CVD_
 CVD_:
-	xchg    eax,edx         ; IA to EAX
-	xor	edx,edx		; assume eax positive
-	test    eax,eax	
-	jns	CVD_1
-	not	edx
-CVD_1:
-	;cdq                     ; sign extend
-	idiv    M_WORD [ten]   ; divide by 10. WC (EDX) = remainder (negative)
-	neg     edx             ; make remainder positive
-	add     dl,0x30         ; convert remainder to ascii ('0')
-	mov     ecx,edx         ; return remainder in WA
-	xchg    edx,eax         ; return quotient in IA
+        xchg    eax,edx         ; IA to EAX
+        cdq                     ; sign extend
+        idiv    dword [ten]	; divide by 10. edx = remainder (negative)
+        neg     edx             ; make remainder positive
+        add     dl,0x30         ; convert remainder to ascii ('0')
+        mov     ecx,edx         ; return remainder in WA
+        xchg    edx,eax         ; return quotient in IA
 	ret
 
 ;       DVI_ - divide IA (EDX) by long in EAX
-
-	global  DVI_
-
+	global	DVI_
 DVI_:
-	or      eax,eax         ; test for 0
-	jz      setovr    	; jump if 0 divisor
-	push    ebp             ; preserve ebp
-	xchg    ebp,eax         ; divisor to ebp
-	xchg    eax,edx         ; dividend in eax
-	xor	edx,edx		; assume eax positive
-	test    eax,eax	
-	jns	DVI_1
-	not	edx
-DVI_1:
-	idiv    ebp             ; perform division. W0(EAX)=quotient, WC(EDX)=remainder
-	xchg    edx,eax         ; place quotient in WC (IA)
-	pop     ebp             ; restore ebp
-	xor     eax,eax         ; clear overflow indicator
+        or      eax,eax         ; test for 0
+        jz      setovr    	; jump if 0 divisor
+        push    ebp             ; preserve CP
+        xchg    ebp,eax         ; divisor to ebp
+        xchg    eax,edx         ; dividend in eax
+        cdq                     ; extend dividend
+        idiv    ebp             ; perform division. eax=quotient, edx=remainder
+        xchg    edx,eax         ; place quotient in edx (IA)
+        pop     ebp             ; restore CP
+        xor     eax,eax         ; clear overflow indicator
 	ret
 
+	global	RMI_
 ;       RMI_ - remainder of IA (EDX) divided by long in EAX
 
-	global  RMI_
 RMI_:
 	or      eax,eax         ; test for 0
-	jz      setovr    ; jump if 0 divisor
-	push    ebp             ; preserve ebp
-	xchg    ebp,eax         ; divisor to ebp
-	xchg    eax,edx         ; dividend in W0 (EAX)
-	xor	edx,edx		; assume eax positive
-	test    eax,eax	
-	jns	RMI_1
-	not	edx
-RMI_1:
-	idiv    ebp             ; perform division. W0=quotient, WC(EDX)=remainder
-	pop     ebp             ; restore ebp
-	xor     eax,eax         ; clear overflow indicator
-	ret                     ; return remainder in WC (IA)
+        jz      setovr		; jump if 0 divisor
+        push    ebp             ; preserve CP
+        xchg    ebp,eax         ; divisor to ebp
+        xchg    eax,edx         ; dividend in eax
+        cdq                     ; extend dividend
+        idiv    ebp             ; perform division. eax=quotient, edx=remainder
+        pop     ebp             ; restore CP
+        xor     eax,eax         ; clear overflow indicator
+        ret                     ; return remainder in edx (IA)
 setovr: mov     al,0x80         ; set overflow indicator
 	dec	al
 	ret
 
 ;    Calls to C
-
+;
 ;       The calling convention of the various compilers:
-
+;
 ;       Integer results returned in EAX.
 ;       Float results returned in ST0 for Intel.
 ;       See conditional switches fretst0 and
-;       fretW0. 
+;       freteax in systype.ah for each compiler.
+;
+;       C function preserves EBP, EBX, ESI, EDI.
 
-;       C function preserves ebp, EBX, XL, XR.
 
-
-; define how floating point results are returned from a function
-; (either in ST(0) or in EDX:EAX.
-%define fretst0 1
-%define fretW0 0
-
+;
 ;       RTI_ - convert real in RA to integer in IA
 ;               returns C=0 if fit OK, C=1 if too large to convert
+	global	RTI_
 
-	global  RTI_
 RTI_:
-	fld	R_WORD [reg_ra]
-	fist	M_WORD [reg_ia]
+; 41E00000 00000000 = 2147483648.0
+; 41E00000 00200000 = 2147483649.0
+        mov     eax, dword [reg_ra+4]   ; RA msh
+        btr     eax,31          ; take absolute value, sign bit to carry flag
+        jc      RTI_2		; jump if negative real
+        cmp     eax,0x41E00000  ; test against 2147483648
+        jae     RTI_1		; jump if >= +2147483648
+RTI_3:  push    ecx             ; protect against C routine usage.
+        push    eax             ; push RA MSH
+        push    dword [reg_ra]  ; push RA LSH
+	extern	f_2_i
+        call	f_2_i		; float to integer
+	add	esp,8
+        xchg    eax,edx         ; return integer in edx (IA)
+        pop     ecx             ; restore ecx
+        clc
 	ret
+
+; here to test negative number, made positive by the btr instruction
+RTI_2:  cmp     eax,0x41E00000          ; test against 2147483649
+        jb      RTI_0		; definately smaller
+        ja      RTI_1		; definately larger
+        cmp     word [reg_ra+2], 0x0020
+        jae     RTI_1
+RTI_0:  btc     eax,31                  ; make negative again
+        jmp     RTI_3
+RTI_1:  stc                             ; return C=1 for too large to convert
+        ret
 
 ;       ITR_ - convert integer in IA to real in RA
 
-	global  ITR_
+	global	ITR_
 ITR_:
-	mov	M_WORD[reg_ia],IA	; save IA in memory
-	fild	M_WORD[reg_ia]		; load from memory
+        push    ecx             ; preserve
+        push    edx             ; push IA
+	extern	i_2_f
+        call	i_2_f		; integer to float
+	add	esp,4
+	fstp	qword [reg_ra]
+        pop     ecx             ; restore ecx
 	fwait
-	fst	R_WORD [reg_ra]
 	ret
 
-;       LDR_ - load real pointed to by W0 to RA
+;----------
 
-	global  LDR_
+;       LDR_ - load real pointed to by eax to RA
+	global	LDR_
 LDR_:
 	fld	R_WORD [W0]
-	fst	R_WORD [reg_ra]
-	ffree	st7
+	fstp	R_WORD [reg_ra]
+;        push    dword [eax]                 ; lsh
+;	pop	dword [reg_ra]
+;        mov     eax,[eax+4]                     ; msh
+;	mov	dword [reg_ra+4], eax
+	ZRA
 	ret
 
-;       STR_ - store RA in real pointed to by W0
+;       STR_ - store RA in real pointed to by eax
 
-	global  STR_
+	global	STR_
 STR_:
-	fld	R_WORD [reg_ra]
-	fst	R_WORD [W0]
-	ffree	st7
+        push    dword [reg_ra]                ; lsh
+	pop	dword [eax]
+        push    dword [reg_ra+4]              ; msh
+	pop	dword [eax+4]
 	ret
+;----------
 
-;       ADR_ - add real at [W0] to RA
+;       ADR_ - add real at [eax] to RA
 
-	global  ADR_
+	global	ADR_
 ADR_:
-	fld	R_WORD [reg_ra]
-	fadd	R_WORD [W0]
+        push    ecx                             ; preserve regs for C
+	push	edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+        push    dword [eax+4]               ; arg msh
+        push    dword [eax]                 ; arg lsh
+	extern	f_add
+        call	f_add                           ; perform op
+	add	esp,16
+	fstp	qword [reg_ra]
+        pop     edx                             ; restore regs
+	pop	ecx
 	fwait
-	fst	R_WORD [reg_ra]
-	ffree	st7
+	ZRA
 	ret
+;----------
 
-;       SBR_ - subtract real at [W0] from RA
-
-	global  SBR_
-
+;       SBR_ - subtract real at [eax] from RA
+	global	SBR_
 SBR_:
-	fld	R_WORD [reg_ra]
-	fsub	R_WORD [W0]
+        push    ecx                             ; preserve regs for C
+	push	edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+        push    dword [eax+4]               ; arg msh
+        push    dword [eax]                 ; arg lsh
+	extern	f_sub
+        call	f_sub                        ; perform op
+	add	esp,16
+	fstp	qword [reg_ra]
+        pop     edx                             ; restore regs
+	pop	ecx
 	fwait
-	fst	R_WORD [reg_ra]
-	ffree	st7
+	ZRA
 	ret
-
-;       MLR_ - multiply real in RA by real at [W0]
-
-	global  MLR_
-
+;----------
+;       MLR_ - multiply real in RA by real at [eax]
+	global	MLR_
 MLR_:
-	fld	R_WORD [reg_ra]
-	fmul	R_WORD [W0]
+        push    ecx                             ; preserve regs for C
+	push	edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+        push    dword [eax+4]               ; arg msh
+        push    dword [eax]                 ; arg lsh
+	extern	f_mul
+        call	f_mul			; perform op
+	add	esp,16
+	fstp	qword [reg_ra]
+        pop     edx                             ; restore regs
+	pop	ecx
 	fwait
-	fst	R_WORD [reg_ra]
-	ffree	st7
+	ZRA
 	ret
 
-;       DVR_ - divide real in RA by real at [W0]
+;       DVR_ - divide real in RA by real at [eax]
 
-	global  DVR_
-
+	global	DVR_
 DVR_:
-	fld	R_WORD [reg_ra]
-	fdiv	R_WORD [W0]
+        push    ecx                             ; preserve regs for C
+	push	edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+        push    dword [eax+4]               ; arg msh
+        push    dword [eax]                 ; arg lsh
+	extern	f_div
+        call	f_div			; perform op
+	add	esp,16
+        fstp	qword [reg_ra]
+        pop     edx                             ; restore regs
+	pop	ecx
 	fwait
-	fst	R_WORD [reg_ra]
-	ffree	st7
+	ZRA
 	ret
 
+	global	NGR_
 ;       NGR_ - negate real in RA
 
-	global  NGR_
-
 NGR_:
-	fld	R_WORD [reg_ra]
-	fchs
-	fwait
-	fst	R_WORD [reg_ra]
-	ffree	st7
-	ret
+	cmp	dword [reg_ra], 0
+	jne	ngr_1
+	cmp	dword [reg_ra+4], 0
+        je      ngr_2                     ; if zero, leave alone
+ngr_1:  xor     byte [reg_ra+7], 0x80         ; complement mantissa sign
+	ZRA
+ngr_2:	ret
 
 ;       ATN_ arctangent of real in RA
-
-	global  ATN_
-
+	global	ATN_
 ATN_:
-	fld	R_WORD [reg_ra]
-	fpatan
+
+        push    ecx                             ; preserve regs for C
+	push	edx
+        push    dword [reg_ra+4]             ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+	extern	f_atn
+        call	f_atn                         ; perform op
+	add	esp,8
+        fstp	qword [reg_ra]
+        pop     edx                             ; restore regs
+	pop	ecx
 	fwait
-	fst	R_WORD [reg_ra]
-	ffree	st7
 	ret
 
 ;       CHP_ chop fractional part of real in RA
-
-	global  CHP_
-
-
+	global	CHP_
 CHP_:
-	fld	R_WORD [reg_ra]
-	fchs
+        push    ecx                             ; preserve regs for C
+	push	edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+	extern	f_chp
+        call	f_chp				; perform op
+	add	esp,8
+        fstp	qword [reg_ra]
+        pop     edx                             ; restore regs
+	pop	ecx
 	fwait
-	fst	R_WORD [reg_ra]
-	ffree	st7
 	ret
 
 ;       COS_ cosine of real in RA
-
-	global  COS_
-
+	global	COS_
 COS_:
-	fld	R_WORD [reg_ra]
-	fchs
+        push    ecx                             ; preserve regs for C
+	push	edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+	extern	f_cos
+        call	f_cos                         ; perform op
+	add	esp,8
+        fstp	qword [reg_ra]
+        pop     edx                             ; restore regs
+	pop	ecx
 	fwait
-	fst	R_WORD [reg_ra]
-	ffree	st7
 	ret
 
 ;       ETX_ exponential of real in RA
-
-	global  ETX_
-
+	global	ETX_
 ETX_:
-	fld	R_WORD [reg_ra]
-	fchs
+        push    ecx                             ; preserve regs for C
+	push	edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+	extern	f_etx
+        call	f_etx                         ; perform op
+	add	esp,8
+        fstp	qword [reg_ra]
+        pop     edx                             ; restore regs
+	pop	ecx
 	fwait
-	fst	R_WORD [reg_ra]
-	ffree	st7
 	ret
-
 ;       LNF_ natural logarithm of real in RA
-
-	global  LNF_
-
+	global	LNF_
 LNF_:
-	fld	R_WORD [reg_ra]
-	fchs
+        push    ecx                             ; preserve regs for C
+	push	edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+	extern	f_lnf
+        call	f_lnf                         ; perform op
+	add	esp,8
+        fstp	qword [reg_ra]
+        pop     edx                             ; restore regs
+	pop	ecx
 	fwait
-	fst	R_WORD [reg_ra]
-	ffree	st7
 	ret
 
 ;       SIN_ arctangent of real in RA
-
-	global  SIN_
-
+	global	SIN_
 SIN_:
-	fld	R_WORD [reg_ra]
-	fsin
+        push    ecx                             ; preserve regs for C
+	push	edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+	extern	f_sin
+        call	f_sin                         ; perform op
+	add	esp,8
+        fstp	qword [reg_ra]
+        pop     edx                             ; restore regs
+	pop	ecx
 	fwait
-	fst	R_WORD [reg_ra]
-	ffree	st7
 	ret
 
 ;       SQR_ arctangent of real in RA
-
-	global  SQR_
-
+	global	SQR_
 SQR_:
-	fld	R_WORD [reg_ra]
-	fsqrt
+        push    ecx                             ; preserve regs for C
+	push	edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+	extern	f_sqr
+        call	f_sqr                         ; perform op
+	add	esp,8
+        fstp	qword [reg_ra]
+        pop     edx                             ; restore regs
+	pop	ecx
 	fwait
-	fst	R_WORD [reg_ra]
-	ffree	st7
 	ret
 
 ;       TAN_ arctangent of real in RA
-
-	global  TAN_
-
+	global	TAN_
 TAN_:
-	fld	R_WORD [reg_ra]
-	fptan
+        push    ecx                             ; preserve regs for C
+	push	edx
+        push    dword [reg_ra+4]              ; RA msh
+        push    dword [reg_ra]                ; RA lsh
+	extern	f_tan
+        call	f_tan                         ; perform op
+	add	esp,8
+        fstp	qword [reg_ra]
+        pop     edx                             ; restore regs
+	pop	ecx
 	fwait
-	fst	R_WORD [reg_ra]
-	ffree	st7
 	ret
 
 ;       CPR_ compare real in RA to 0
-
-	global  CPR_
+	global	CPR_
 CPR_:
-	fld	R_WORD [reg_ra]
-	fldz			; load 0.0
-	fcomp
-	fwait
-; need insert tests here after copying flags to eax
-; no need to free register, since fcomp pops st(0)
-	ret
+        mov     eax, dword [reg_ra+4] ; fetch msh
+        cmp     eax, 0x80000000         ; test msh for -0.0
+        je      cpr050            ; possibly
+        or      eax, eax                ; test msh for +0.0
+        jnz     cpr100            ; exit if non-zero for cc's set
+cpr050: cmp     dword [reg_ra], 0     ; true zero, or denormalized number?
+        jz      cpr100            ; exit if true zero
+	mov	al, 1
+        cmp     al, 0                   ; positive denormal, set cc
+cpr100:	ret
+
 ;       OVR_ test for overflow value in RA
-
 	global	OVR_
-
-OVR_:   
-	fld	R_WORD [reg_ra]
-	ftst				; compare to 0.0
-	fstsw	ax			; move flags to eax
-	fwait				; wait for op to complete
-	sahf				; move flags to eax
-	jpe	ovr_err			; ovr_err
-	xor	eax,eax			; clear eax
+OVR_:
+        mov     ax, word [reg_ra+6]   ; get top 2 bytes
+        and     ax, 0x7ff0              ; check for infinity or nan
+        add     ax, 0x10                ; set/clear overflow accordingly
 	ret
-ovr_err:
-	mov	ax,1			; indicate error
-	ret
-
 ;  tryfpu - perform a floating point op to trigger a trap if no floating point hardware.
 
 	global	tryfpu
