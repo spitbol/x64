@@ -1619,10 +1619,12 @@ G.DAC	T1 = I.TYPE(I1)
 G.DIC   GENOPL(THISLABEL,'D_WORD',I.TEXT(I1))               
 						:(DECEND)
 
-G.DRC   GENOP('align','CFP_B')
+G.DRC   
+*	GENOP('align','CFP_B')
+	GENOP('align',8)
 	T1 = I.TEXT(I1)
 	T1 ? FENCE "+" = ""
-        GENOP('D_WORD',T1)
+        GENOP('D_REAL',T1)
 *  Note that want to attach label to last instruction
 	T.LABEL(CSTMTS[CSTMTS.N]) = THISLABEL
 	THISLABEL =				:(OPDONE)

@@ -238,4 +238,8 @@ void zz_sys() {
 	zz_sys_calls++;
 	fprintf(stderr, "zz_sys %d %d\n",zz_sys_calls,zz_sys_id);
 }
+	extern double REAV1;
+void zz_ra() {
+	fprintf(stderr,"zz_ra %e\n",reg_ra);
+}
 #endif

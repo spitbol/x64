@@ -14,6 +14,7 @@
 	%define M_WORD	DWORD
 	%define R_WORD	QWORD
 	%define D_WORD	DD
+	%define D_REAL	DQ
 	%define LOG_CFP_B 2
 	%define LOG_CFP_C 2
 
