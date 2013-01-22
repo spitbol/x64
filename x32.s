@@ -168,8 +168,6 @@ reg_xs:	D_WORD	0;		 Minimal stack pointer
 r_size	equ	10*CFP_B
 reg_size:	dd   r_size
 
-	global	MINCP
-MINCP:	D_WORD	0 		; Minimal Code Pointer (CP)
 ; end of words saved during exit(-3)
 
 
@@ -1203,7 +1201,7 @@ tryfpu:
  
 	global	get_fp
 get_fp: 
-         mov     W0,reg_xs      ; Minimal's XS
+         mov     W0,dword [reg_xs]      ; Minimal's XS
          add     W0,4           ; pop return from call to SYSBX or SYSXI
          ret                    ; done
 ; #

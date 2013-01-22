@@ -136,7 +136,6 @@
 ; ; Words saved during exit(-3)
 ; ;
 	align 16
-	extern	MINCP
 reg_block:
 reg_wa:	D_WORD	0        ; Register WA (ECX)
 reg_wb:	D_WORD 	0        ; Register WB (EBX)

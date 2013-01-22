@@ -195,7 +195,3 @@ calltab:
         extern SQR_
         extern TAN_
         extern CPR_
-
-	global	MINCP
-; MINCP - Minimal Code Pointer Register (CP)
-MINCP:	dd	0
