@@ -216,6 +216,7 @@ SKIP_INIT.END
 	DEFINE('MEMMEM()T1')
 	DEFINE('PRCENT(N)')
 	DEFINE('PRSARG(IARG)L1,L2')
+	DEFINE('REPORT(NUM,TEXT)')
 	DEFINE('TBLINI(STR)POS,CNT,INDEX,VAL,LASTVAL')
 
 *  OUTSTMT is used to send a target statement to the target code
@@ -1766,6 +1767,10 @@ OPDONE.5	OUTSTMT(ASTMTS[I])
 OPDONE.6 ASTMTS.N = BSTMTS.N = CSTMTS.N =	:(RETURN)
 FLUSH_END
 
+REPORT
+	OUTPUT = LPAD(NUM,10) '  ' TEXT		:(RETURN)
+
+
 G.END
 	&DUMP = 0
 	IDENT(HAVEHDR)				:S(G.END.2)
@@ -1781,24 +1786,23 @@ G.END.2
 	ENDFILE(1)
 	ENDFILE(2)
 	ENDFILE(3)
-        OUTPUT = '  ' '*** translation complete ***'
-        OUTPUT = '  ' RPAD(NLINES,7)	' lines read'
-        OUTPUT = '  ' RPAD(NSTMTS,7)	' statements processed'
-        OUTPUT = '  ' RPAD(NTARGET,7)	' target code lines produced'
-	OUTPUT = '  ' RPAD(&STCOUNT,7)	' spitbol statements executed'
-        OUTPUT = '  ' RPAD(MAX.ERR,7)	' maximum err/erb number'
-        OUTPUT = '  ' RPAD(PRC.COUNT1,7) ' prc count'
-        OUTPUT = '  ' GT(PRC.COUNT,PRC.COUNT1)
+        REPORT(NLINES,		'lines read')
+        REPORT(NSTMTS,		'statements processed')
+        REPORT(NTARGET,		'target code lines produced')
+	REPORT(&STCOUNT,	'spitbol statements executed')
+        REPORT(MAX.ERR,		'maximum err/erb number')
+        REPORT(PRC.COUNT1, 	'prc count')
+        OUTPUT  = '  ' GT(PRC.COUNT,PRC.COUNT1)
 .	  '  differing counts for n-procedures:'
 .	  ' INP ' PRC.COUNT1 ' PRC ' PRC.COUNT
-        OUTPUT = DIFFER(NERRORS) '  ' RPAD(NERRORS,7) ' errors detected'
+        DIFFER(NERRORS) REPORT(NERRORS,'errors detected')
 
 	ERRFILE = '* ' MAX.ERR ' maximum ERR/ERB number'
 	ERRFILE  = '* ' PRC.COUNT ' PRC count'
 .		DIFFER(LASTERROR) '  the last error was in line ' LASTERROR
 
 	&CODE   = NE(NERRORS) 2001
-        OUTPUT = '  ' RPAD(COLLECT(),7) ' free words'
+        REPORT(COLLECT(), 'free words')
 	:(END)
 * Convert argument to upper case
 LOWER

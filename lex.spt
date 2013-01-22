@@ -78,6 +78,10 @@
 *
 	DEFINE('ERROR(TEXT)')
 
+*  REPORT writes summary message at end of translation
+	
+	DEFINE('REPORT(NUM,TEXT)')
+
 *  LABENTER enters non-null LABEL in LABTAB
 	DEFINE('LABENTER()TLAB')
 
@@ -872,21 +876,23 @@ G.ESW1	IFFAR[IFFINDX] BREAK('{') $ VAL LEN(1)
 	IFFINDX = IFFINDX + 1			:(G.ESW1)
 G.ESW2  IFFAR =					:(DSGEN)
 
+REPORT
+	OUTPUT = LPAD(NUM,10) '  ' TEXT		:(RETURN)
+
 *  END prints statistics on terminal then exits program
 *
 G.END   
 	OUTSTMT(,'END',,,,COMMENT)
 	(NE(LEVEL) ERROR("  unclosed IF conditional clause"))
-        OUTPUT = '  *** Translation Complete ***'
-        OUTPUT = '  ' NLINES ' lines read'
-        OUTPUT = '  ' NSTMTS ' statements processed'
-        OUTPUT = '  ' NTARGET ' target code lines produced'
-	OUTPUT = '  ' &STCOUNT ' spitbol statements executed'
-        OUTPUT = DIFFER(NERRORS) '  ' NERRORS ' errors detected'
- 	OUTPUT =
+        REPORT(NLINES,		'lines read')
+        REPORT(NSTMTS, 		'statements processed')
+        REPORT(NTARGET, 	'target code lines produced')
+	REPORT(&STCOUNT, 	'spitbol statements executed')
+        DIFFER(NERRORS) REPORT(NERRORS,'errors detected')
+ 	REPORT =
 +	  DIFFER(LASTERROR) '  the last error was in line ' LASTERROR
 	&CODE   = NE(NERRORS) 2001
-        OUTPUT = '  ' COLLECT() * 5 ' free bytes'
+        REPORT(COLLECT() * 5,	'free bytes')
 
 	T = CONVERT(PRCTAB,'ARRAY')		:F(G.END.2)
 *  Here if procedures declared by INP but not by PRC
