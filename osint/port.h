@@ -133,7 +133,7 @@ This file is part of Macro SPITBOL.
 /*
  *  Other defaulted values that may be overridden in systype.h
  */
-#ifdef ARCH-X32
+#ifdef ARCH_X32
 #ifndef INTBITS
 #define INTBITS		32
 #define MAXINT		0x7FFFFFFFL
@@ -147,7 +147,7 @@ This file is part of Macro SPITBOL.
 #endif
 #endif
 
-#ifdef ARCH-X64
+#ifdef ARCH_X64
 #ifndef INTBITS
 #define INTBITS		64
 #define MAXINT		0x7FFFFFFFFFFFFFFFL

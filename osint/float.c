@@ -26,7 +26,7 @@ This file is part of Macro SPITBOL.
  */
 
 #include "port.h"
-#if (FLOAT & !FLTHDWR) | EXTFUN)
+#if (FLOAT & !FLTHDWR) | EXTFUN
 
 /*
  * f_2_i - float to integer

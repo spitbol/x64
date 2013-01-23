@@ -237,7 +237,7 @@ unsigned int code;
 */
 int
 expand( fd, startadr, size )
-word	fd;
+int	fd;
 unsigned char FAR *startadr;
 uword size;
 

@@ -1,13 +1,13 @@
-# X32 SPITBOL makefile using gcc
+# X32 SPITBOL
 #
 
 ARCH=x32
 ifeq ($(ARCH),x32)
-ARCHDEF=-D ARCH_X32
+ARCHDEF=-DARCH_X32
 ELF=elf32
 endif
 ifeq ($(ARCH),x64)
-ARCHDEF=-D ARCH_X64
+ARCHDEF=-DARCH_X64
 ELF=elf64
 endif
 
@@ -24,15 +24,21 @@ vpath %.c $(OSINT)
 
 
 
-CC	=	gcc
+CC	=	tcc
 ASM	=	nasm
 INCDIRS = -I./tcc/include -I./musl/include
 # next is for tcc
 ifeq	($(DEBUG),0)
-CFLAGS= $(ARCHDEF) -m32 -fno-leading-underscore
+CFLAGS= $(INCDIRS) $(ARCHDEF)
 else
-CFLAGS= $(ARCHDEF) -g -m32 -fno-leading-underscore
+CFLAGS= -g  $(INCDIRS) $(ARCHDEF)
 endif
+# next is for gcc
+#ifeq	($(DEBUG),0)
+#CFLAGS= -m32 -O2 -fno-leading-underscore -mfpmath=387
+#else
+#CFLAGS= -g -m32 -fno-leading-underscore -mfpmath=387
+#endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
@@ -109,22 +115,13 @@ VOBJS =	s.o
 # All objects:
 OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 
-# link spitbol with static linking
+# main program
 spitbol: $(OBJS)
 ifeq ($(ARCH),x32)
-	$(CC) $(CFLAGS) $(OBJS) -static /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
+	$(CC) $(CFLAGS) $(OBJS) -Lmusl/lib -lm -ospitbol
 endif
 ifeq ($(ARCH),x64)
-	$(CC) $(CFLAGS) $(OBJS) -static /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
-endif
-
-# link spitbol with dynamic linking
-spitbol-dynamic: $(OBJS)
-ifeq ($(ARCH),x32)
-	$(CC) $(CFLAGS) $(OBJS) /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
-endif
-ifeq ($(ARCH),x64)
-	$(CC) $(CFLAGS) $(OBJS) /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
+	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol
 endif
 
 # Assembly language dependencies:
@@ -163,12 +160,8 @@ dlfcn.o: dlfcn.h
 boot:
 	cp -p bootstrap/s.s bootstrap/s.lex bootstrap/err.s .
 
-# install spitbol as the symstem spitbol compiler
 install:
 	sudo cp spitbol /usr/local/bin
-# install bootbol as the system spitbol compiler
-install-bootbol:
-	sudo cp bootbol /usr/local/bin/spitbol
 clean:
 	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t
 z:

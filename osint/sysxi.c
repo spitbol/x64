@@ -82,7 +82,7 @@ static void hcopy Params((char *src, char *dst, int len, int max));
 #endif					/* SAVEFILE */
 
 #if SAVEFILE | EXECSAVE
-extern word read Params((int F, void *Buf, unsigned Cnt)); 
+extern ssize_t read Params((int F, void *Buf, size_t Cnt)); 
 extern off_t LSEEK Params((int F, off_t Loc, int Method));
 #endif          /* EXECFILE  | SAVEFILE */
 
