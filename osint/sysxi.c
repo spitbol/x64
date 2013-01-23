@@ -683,14 +683,16 @@ int fd;
             SET_XR(basemem);
             SET_CP(basemem+svfheader.dynoff);
             SET_XL(adjusts);
-            MINIMAL(RELCR);
-            MINIMAL(RELOC);
+            MINIMAL(MINIMAL_RELCR);
+            MINIMAL(MINIMAL_RELOC);
 
             /* Relocate any return addresses in stack */
             SET_WB(pTSCBLK->str);
             SET_WA(pTSCBLK->str + svfheader.stacklength);
-            if (svfheader.stacklength)
-                MINIMAL(RELAJ);
+            if (svfheader.stacklength) {
+	
+                MINIMAL(MINIMAL_RELAJ);
+	    }
 
             /* Note: There are return addresses in the PRC_ variables
              * used by N-type Minimal procedures.  However, there does
@@ -737,6 +739,7 @@ int fd;
             if (uargbuf[0] && !uarg)		/* if uarg in save file and none */
                 uarg = uargbuf;				/* on command line, use saved version */
             provide_name = 0;	/* no need to provide filename in sysrd */
+
             executing = 1;		/* we're running */
             return 1;			/* call restart to continue execution	*/
 

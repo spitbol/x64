@@ -42,6 +42,7 @@ This file is part of Macro SPITBOL.
 */
 #define GLOBALS			/* global variables will be defined in this module */
 #include "port.h"
+//#include <stdio.h>
 
 #ifdef DEBUG
 #undef DEBUG			/* Change simple -DDEBUG on command line to -DDEBUG=1 */
@@ -326,7 +327,4 @@ void setout()
         lnsppage = 0;
         spitflag |= (PRTICH | NOHEDR);
     }
-}
-void restart(char *p, char * q) {
-// fprintf(stderr,"restart not supported\n");
 }

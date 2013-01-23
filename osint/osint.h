@@ -36,6 +36,7 @@ This file is part of Macro SPITBOL.
 extern word	reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs;
 extern IATYPE	reg_ia;
 extern double reg_ra;
+extern uword	minimal_id;
 
 /*
  *  Macros to deal with converting pointers within the Minimal heap
@@ -116,10 +117,10 @@ extern void *mk_mp(void near *minp);
 /	Function to call into MINIMAL code.
 /	The argument is an ordinal number defined below.
 */
-extern void minimal Params((word callno));
+extern void minimal Params((void));
 extern void popregs Params((void));
 extern void pushregs Params((void));
-#define MINIMAL(cn) minimal(cn)
+#define MINIMAL(cn) minimal_id = cn; minimal();
 #define MINSAVE() pushregs()
 #define MINRESTORE() popregs()
 
@@ -130,20 +131,20 @@ extern void pushregs Params((void));
 /   table entries in the INTER assembly language module.
 */
 enum CALLS {
-    RELAJ,
-    RELCR,
-    RELOC,
-    ALLOC,
-    ALOCS,
-    ALOST,
-    BLKLN,
-    INSTA,
-    RSTRT,
-    START,
-    FILNM,
-    DTYPE,
-    ENEVS,
-    ENGTS
+    MINIMAL_RELAJ,
+    MINIMAL_RELCR,
+    MINIMAL_RELOC,
+    MINIMAL_ALLOC,
+    MINIMAL_ALOCS,
+    MINIMAL_ALOST,
+    MINIMAL_BLKLN,
+    MINIMAL_INSTA,
+    MINIMAL_RSTRT,
+    MINIMAL_START,
+    MINIMAL_FILNM,
+    MINIMAL_DTYPE,
+    MINIMAL_ENEVS,
+    MINIMAL_ENGTS
 };
 
 /*

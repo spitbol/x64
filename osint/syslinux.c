@@ -241,7 +241,7 @@ mword nargs;
             break;						/* return null string result */
         MINSAVE();
         SET_WA(length);
-        MINIMAL(ALOCS);				/* allocate string storage */
+        MINIMAL(MINIMAL_ALOCS);				/* allocate string storage */
         result = XR(union block *);
         MINRESTORE();
         q = result->scb.scstr;
@@ -259,7 +259,7 @@ mword nargs;
         r = result->fxb.fxptr;
         MINSAVE();
         SET_WA(length);
-        MINIMAL(ALLOC);				/* allocate block storage */
+        MINIMAL(MINIMAL_ALLOC);				/* allocate block storage */
         result = XR(union block *);
         MINRESTORE();
         result->xnb.xnlen = length;
@@ -348,7 +348,7 @@ char *filename;
     else {
         MINSAVE();							/* No */
         SET_WA(sizeof(XFNode));
-        MINIMAL(ALOST);						/* allocate from static region */
+        MINIMAL(MINIMAL_ALOST);						/* allocate from static region */
         pnode = XR(pXFNode);					/* get node to hold information */
         MINRESTORE();
     }
@@ -418,7 +418,7 @@ int io;
         type = scanp->scb.sctyp;				/* any block type lets us access type word */
         SET_WA(type);
         SET_XR(scanp);
-        MINIMAL(BLKLN);						/* get length of block in bytes */
+        MINIMAL(MINIMAL_BLKLN);						/* get length of block in bytes */
         blksize = WA(mword);
         if (type != ef_type)					/* keep searching if not EFBLK */
             continue;
