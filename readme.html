@@ -11,13 +11,12 @@
 
 <body>
 
-<h2>Macro SPITBOL for Unix V3.8.1 (June 2012)</h2>
+<h2>Macro SPITBOL for Unix V13.08 (January 2013)</h2>
 
 <p>Macro SPITBOL is an extremely high performance implementation of the
    SNOBOL4 language.</p>
 
-<p>It is maintained by Dave Shields (dave dot shields dot github at
-   gmail dot com).  </p>
+<p>It is maintained by Dave Shields (dave dot shields at gmail dot com).  </p>
 
 <p>Development versions, as well as other files of interest, can be
    found at
@@ -25,9 +24,9 @@
 
 <h2>Licensing</h2>
 	
-<p>Macro SPITBOL is licensed with the GPLv3 (or later) license.</p>
+<p>Macro SPITBOL is licensed with the GPLv2 (or later) license.</p>
 
-<p><a href="COPYING">COPYING</a> contains a copy of the GPLv3 license.</p>
+<p><a href="COPYING">COPYING</a> contains a copy of the GPLv2 license.</p>
 
 <p><a href="COPYING-SAVE-FILES">COPYING-SAVE-FILE</a>  describes licensing issues for a SPITBOL "save file."</p>
 
@@ -68,17 +67,30 @@ Denver Post columnist Ed Quillen dies at age 61 in his Salida home</a>.</p>
 <h2>Known Problems and Limitations</h2>
 
 
-<p>Load modules don't work.</p>
+<p>Load modules are not supported.</p>
 
-
+<p>Loading of external functions is not supported.</p>
 
 <h2>Building Macro SPITBOL</h2>
 
-<p>To see if spitbol is working:
-<p><code>
-   <br>$ ./spitbol demos/hi.spt
-   </code>
+<p>You should be able to build spitbol on most Unix systems. 
+The development work and testing was done using the 32-bit version of 
+<a href="http://linuxmint.com">linux mint</a>, a variant of Ubuntu.
 </p>
+
+
+<p>You need the <code>gcc</code> compiler, <code>make</code>, and the netwide assembler, <code>nasm</code>, to build the system. You can install nasm with:
+<pre>
+$ sudo apt-get install nasm
+</pre>
+
+<p>The file <code>bootbol</code> is used to build the system. 
+
+<p>To see if spitbol is working, try :
+<pre>
+$ ./bootbol demos/hi.spt
+
+</pre>
 
 <p>If this doesn't work, especially if you get a message about a file not being found, then do
 <br><code>$ ldd -v ./spitbol</code>
@@ -91,10 +103,34 @@ To build the system:
     <code>
    <br>$ make clean
    <br>$ make
-   <br>$ make install
    </code>
 </p>
 
+<p>This should produce the file <code>spitbol</code>. You can test it with the "hello world" program:
+<pre>
+$ ./spitbol test/hi.spt
+</pre>
+</p>
+
+<p>By default, the <code>spitbol</code> binary is linked statically. To get a dynamically-linked version,do
+<pre>
+$ make
+$ rm spitbol
+$ make spitbol-dynamic
+</pre>
+
+<h2>Installing Macro SPITBOL</h2>
+<p>If you just want to use spitbol without building it, the file
+<code>bootbool</code> contains a statically-linked binary. You can install
+it in <code>/usr/lib/bin/spitbol</code> with the command:
+<pre>
+$ sudo make install bootbol
+</pre>
+</p>
+
+
+<h2>Installing spitbol</h2>
+   <br>$ make install
 <p>This creates <code>/usr/bin/spitbol</code>.</p>
 
 <p>This release was built with the help of
@@ -118,10 +154,10 @@ You should be able to build it on most Unix distributions.</p>
 <h2>Resources</h2>
 
 <p>Mark Emmer's SNOBOL4 site:
-   <a href="http://snobol4.com">Snobol4.coM</a></p>
+   <a href="http://snobol4.com">snobol4.com</a></p>
 <p>
    Phil Bunde's SNOBOL site:
-   <a href="http://snobol4.org">Snobol4.org</a></p>
+   <a href="http://www.snobol4.org">snobol4.org</a></p>
 
 </body>
 </html>
