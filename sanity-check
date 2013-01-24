@@ -18,6 +18,6 @@ echo "comparing generated .s files"
 diff tbol.s.1 tbol.s.2
 cp savebol tbol
 # test for compile END in lower or upper case
-./spitbol ./test/e.spt
-./spitbol ./test/E.spt
+./tbol ./test/e.spt
+./tbol ./test/E.spt
 echo "end sanity test"

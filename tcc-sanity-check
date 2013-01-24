@@ -1,24 +1,24 @@
 #!/bin/bash --verbose
 rm chk.*
 echo "start bootstrap test"
-git checkout bootbol
-cp bootbol savebol
+cp basebol tbol
 make clean>/dev/null
-make -f tcc-makefile
+make -f tcc-makefile BASEBOL=./tbol
 mv s.lex chk.lex.0
 mv s.s chk.s.0
-cp spitbol bootbol
-make -f tcc-makefile
+cp spitbol tbol
+make -f tcc-makefile BASEBOL=./tbol
 mv s.lex chk.lex.1
 mv s.s chk.s.1
-cp spitbol bootbol
+cp spitbol tbol
 make -f tcc-makefile
+make -f tcc-makefile BASEBOL=./tbol
 mv s.lex chk.lex.2
 mv s.s chk.s.2
 echo "comparing generated .s files"
 diff chk.s.1 chk.s.2
-cp savebol bootbol
+cp savebol tbol
 # test for compile END in lower or upper case
-./spitbol ./test/e.spt
-./spitbol ./test/E.spt
+./tbol ./test/e.spt
+./tbol ./test/E.spt
 echo "end bootstrap test"

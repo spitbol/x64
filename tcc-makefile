@@ -51,7 +51,7 @@ endif
 LEX=	lex.spt
 COD=    asm.spt
 ERR=    err.spt
-SPIT=   ./bootbol
+BASEBOL=   ./basebol
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
@@ -133,16 +133,16 @@ err.o: err.s
 
 # SPITBOL Minimal source
 s.s:	s.lex $(VHDRS) $(COD) 
-	$(SPIT) -u $(ARCH) $(COD)
+	$(BASEBOL) -u $(ARCH) $(COD)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
-#	 $(SPIT) -u "s" $(LEX)
-	 $(SPIT) -u $(ARCH) $(LEX)
+#	 $(BASEBOL) -u "s" $(LEX)
+	 $(BASEBOL) -u $(ARCH) $(LEX)
 
 s.err: s.s
 
 err.s: $(MIN).cnd $(ERR) s.s
-	   $(SPIT) -1=s.err -2=err.s $(ERR)
+	   $(BASEBOL) -1=s.err -2=err.s $(ERR)
 
 
 # make osint objects

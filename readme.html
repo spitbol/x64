@@ -135,6 +135,77 @@ $ sudo apt-get install ia32-libs-multiarch
 </pre>
 </p>
 
+<h2>Files</h2>
+
+The SPITBOL implementation includes the following files:
+<ul>
+<dt>basebol</dt>
+<dd>base compiler, used to compile the SPITBOL part of the Minimal translator</dd>
+<dt>COPYING </dt>
+<dd>license information</dd>
+<dt>COPYING-LOAD-MODULES </dt>
+<dd>license information for SPITBOL load modules</dd>
+<dt>COPYING-SAVE-FILES </dt>
+<dd>license information for SPITBOL save files</dd>
+<dt>demos</dt> 
+<dd>directory with SPITBOL demonstration programs</dd>
+<dt>docs</dt> 
+<dd>directory with pdf version of SNOBOL "Green Book" and MACRO SPITBOL user manual.</dd>
+<dt>lex.spt</dt> 
+<dd>First stage of translator. It translates Minimal source to files of lexemes (tokens)</dd>
+<dt>makefile</dt>
+<dd>make file</dd>
+<dt>map-x32.spt</dt> 
+<dd>file used for debugging x32 version</dd>
+<dt>map-x64.spt</dt> 
+<dd>file used to debugging x64 version</dd>
+<dt>minimal-reference-manual.html</dt> 
+<dd>Minimal Reference Manual</dd>
+<dt>musl</dt> 
+<dd>the Musl C runtime library (not used in default build using gcc)</dd>
+<dt>osint</dt> 
+<dd>operating system interface files, written in C99.</dd>
+<dt>readme.html</dt> 
+<dd>system introduction</dd>
+<dt>README.md</dt> 
+<dd>system identification (required by Github for use with Git).</dd>
+<dt>sanity-check</dt> 
+<dd>script to run test that compiler can compile itself</dd>
+<dt>s.cnd</dt> 
+<dd>selection of Minimal conditional assembly options for spitbol</dd>
+<dt>s.min</dt> 
+<dd>Minimal source for SPITBOL</dd>
+<dt>tcc</dt> 
+<dd>copy of Philippe Bellard's Tiny C compiler (not used in default using gcc)</dd>
+<dt>tcc-makefile</dt> 
+<dd>make file to build the system using tcc</dd>
+<dt>test</dt> 
+<dd>directory with several small tests</dd>
+<dt>x32.h</dt> 
+<dd>header file for 32-bit version</dd>
+<dt>x32.hdr</dt> 
+<dd>file prepended to s.min for compiling 32-bit version</dd>
+<dt>x32.s</dt> 
+<dd>assembly language support and interface routines for 32-bit version</dd>
+<dt>x64.h</dt> 
+<dd>header file for 64-bit version</dd>
+<dt>x64.hdr</dt>
+<dd>file prepended to s.min for compiling 64-bit version</dd>
+<dt>x64.s</dt>
+<dd>assembly language support and interface routines for 64-bit version</dd>
+<dt>z.spt</dt>
+<dd>prorgram used to insert trace code in generated assembly for debugging.</dd>
+</ul>
+
+
+<h2>Notes</h2>
+
+<p>This version contains code supporting both 32 and 64 bit implementations of SPITBOL. Only the 32-bit version is complete. The 64-bit version is able to compile lex and spt, but fails compiling the error message processor.
+</p>
+<p>You can build the 64-bit version, on a 64-bit system, with:
+<pre>
+$ make ARCH=X32_64
+</pre>
 
 <h2>Documentation</h2>
 
