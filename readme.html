@@ -11,9 +11,9 @@
 
 <body>
 
-<h2>Macro SPITBOL for Unix V13.08 (January 2013)</h2>
+<h2>Unix SPITBOL 13.01 (January 2013)</h2>
 
-<p>Macro SPITBOL is an extremely high performance implementation of the
+<p>SPITBOL is an extremely high performance implementation of the
    SNOBOL4 language.</p>
 
 <p>It is maintained by Dave Shields (dave dot shields at gmail dot com).  </p>
@@ -24,13 +24,117 @@
 
 <h2>Licensing</h2>
 	
-<p>Macro SPITBOL is licensed with the GPLv2 (or later) license.</p>
+<p>SPITBOL is licensed with the GPLv2 (or later) license.</p>
 
 <p><a href="COPYING">COPYING</a> contains a copy of the GPLv2 license.</p>
 
 <p><a href="COPYING-SAVE-FILES">COPYING-SAVE-FILE</a>  describes licensing issues for a SPITBOL "save file."</p>
 
 <p><a href="COPYING-LOAD-MODULES">COPYING-LOAD-MODULES</a> describes licensing issues for a SPITBOL "load module."</p>
+
+<h2>Known Problems and Limitations</h2>
+
+
+<p>Load modules are not supported.</p>
+
+<p>Loading of external functions is not supported.</p>
+
+<h2>Installing SPITBOL</h2>
+
+<p>If you just want to use spitbol without building it, the file
+<code>basebol</code> contains a statically-linked copy of spitbol. 
+</p>
+
+<p>You can install it in <code>/usr/local/bin/spitbol</code> with the command:
+<pre>
+$ sudo make install basebol
+</pre>
+</p>
+
+
+<h2>Building SPITBOL</h2>
+
+<p>You should be able to build SPITBOL on most Unix systems with a processor that implements the x86-32 or x86-64 architecture.
+</p>
+
+<p>
+The development work and testing was done using the 32-bit version of 
+<a href="http://linuxmint.com">linux mint</a>, a variant of Ubuntu.
+</p>
+
+
+<p>You need the <code>gcc</code> compiler, <code>make</code>, and the netwide assembler, <code>nasm</code>, to build the system. You can install nasm with:
+<pre>
+$ sudo apt-get install nasm
+</pre>
+
+<p>The file <code>basebol</code> is the base version of Spitbol that is used to build the system. 
+
+</p>
+<p>To see if spitbol is working, try the "hello world" program:
+<pre>
+$ ./basebol test/hi.spt
+</pre>
+
+<p>
+To build the system:
+<pre>
+$ make clean
+$ make
+</pre>
+</p>
+
+<p>This should produce the file <code>spitbol</code>. You can test it with the "hello world" program:
+<pre>
+$ ./spitbol test/hi.spt
+</pre>
+</p>
+
+<p>Directory <code>demos</code> contains some demonstration programs.
+<br>
+Directory <code>test</code> contains some small test programs.
+</p>
+
+<p>To test the system more comprehensively, do:
+<pre>
+$ ./sanity-test
+</pre>
+which verifies that the version of SPITBOL just built is able to translate
+itself. This test passes if the diff outputs are null.
+</p>
+<p>NEVER replace the file <code>basebol</code> with a newly built <code>spitbol</code> unless you have run the sanity test.
+</p>
+
+<p>By default, the <code>spitbol</code> binary is linked statically. 
+To get a dynamically-linked version, do:
+<pre>
+$ make
+$ rm spitbol
+$ make spitbol-dynamic
+</pre>
+
+<p>Use the command:
+<pre>
+$ make install
+</pre>
+to install <code>spitbol</code> in <code>/usr/local/bin</code>.
+</p>
+
+
+<p>This version of SPITBOL was built using a 32-bit version of Unix. If you are running a 64-bit system, then you may get compile errors when you try to build
+the system, in which case you need to install the 32-bit runtime libraries.
+</p>
+
+<p>You can do this on Mint (and also Ubuntu) with:
+<pre>
+$ sudo apt-get install ia32-libs
+</pre>
+or, if that doesn't work, try:
+<pre>
+$ sudo apt-get install ia32-libs-multiarch
+</pre>
+</p>
+
 
 <h2>Documentation</h2>
 
@@ -42,7 +146,7 @@ The <code>./docs</code> directory contains:
 by R. E. Griswold, J.  F. Poage and I. P. Polonski.</li>
 
 <li>
-<a href="docs/spitbol-manual-v3.7.pdf">Macro SPITBOL: The High-Performance SNOBOL4 Language</a> 
+<a href="docs/spitbol-manual-v3.7.pdf">MACRO SPITBOL: The High-Performance SNOBOL4 Language</a> 
 by Mark Emmer and Edward Quillen.</a>
 </li>
 </ul>
@@ -57,100 +161,13 @@ quote from Mark Emmer's  Acknowledgments in the SPITBOL Manual:
       concepts. Any observed clarity is this manual is due to Ed,
       while the more opaque portions can be blamed on me.
       </blockquote>
-
 </p>
+
 <p>You can learn more about Ed at <a href="http://www.edquillen.com/">Ed's web site</a> and
 <a
 href="http://www.denverpost.com/obituaries/ci_20781716/denver-post-columnist-ed-quillen-dies-at-age">
 Denver Post columnist Ed Quillen dies at age 61 in his Salida home</a>.</p>
 
-<h2>Known Problems and Limitations</h2>
-
-
-<p>Load modules are not supported.</p>
-
-<p>Loading of external functions is not supported.</p>
-
-<h2>Building Macro SPITBOL</h2>
-
-<p>You should be able to build spitbol on most Unix systems. 
-The development work and testing was done using the 32-bit version of 
-<a href="http://linuxmint.com">linux mint</a>, a variant of Ubuntu.
-</p>
-
-
-<p>You need the <code>gcc</code> compiler, <code>make</code>, and the netwide assembler, <code>nasm</code>, to build the system. You can install nasm with:
-<pre>
-$ sudo apt-get install nasm
-</pre>
-
-<p>The file <code>bootbol</code> is used to build the system. 
-
-<p>To see if spitbol is working, try :
-<pre>
-$ ./bootbol demos/hi.spt
-
-</pre>
-
-<p>If this doesn't work, especially if you get a message about a file not being found, then do
-<br><code>$ ldd -v ./spitbol</code>
-<br>to list out the libraries required by the spitbol executble. Then verify that they are installed
-on your system, installing any that are missing. TODO: say how to do this...
-</p>
-
-<p>
-To build the system:
-    <code>
-   <br>$ make clean
-   <br>$ make
-   </code>
-</p>
-
-<p>This should produce the file <code>spitbol</code>. You can test it with the "hello world" program:
-<pre>
-$ ./spitbol test/hi.spt
-</pre>
-</p>
-
-<p>By default, the <code>spitbol</code> binary is linked statically. To get a dynamically-linked version,do
-<pre>
-$ make
-$ rm spitbol
-$ make spitbol-dynamic
-</pre>
-
-<h2>Installing Macro SPITBOL</h2>
-<p>If you just want to use spitbol without building it, the file
-<code>bootbool</code> contains a statically-linked binary. You can install
-it in <code>/usr/lib/bin/spitbol</code> with the command:
-<pre>
-$ sudo make install bootbol
-</pre>
-</p>
-
-
-<h2>Installing spitbol</h2>
-   <br>$ make install
-<p>This creates <code>/usr/bin/spitbol</code>.</p>
-
-<p>This release was built with the help of
-<a href="http://www.ubuntu.com/download/desktop">Ubuntu 12.04 LTS</a>.
-You should be able to build it on most Unix distributions.</p>
-
-
-<p>If you get a compile error due to missing include file
-   <code>/usr/include/bits/predef.h</code>, then try<br>
-<code>sudo apt-get install libc6-dev-i386</code>.See
-	<a href="http://ubuntuforums.org/showthread.php?t=1877944">Missing
-	   predefs.h</a>.
-</p><p>You can also try <br><code>sudo apt-get install ia32-libs-multiarch</code><br>
-</p>
-
-<p>If you get the message "No such file or directory" when you try to
-   run <code>./spitbol</code> or <code>./bootstrap-spitbol</code>, then
-   install <code>libc6-dev-i386</code> as described above.
-   </p>
-   
 <h2>Resources</h2>
 
 <p>Mark Emmer's SNOBOL4 site:

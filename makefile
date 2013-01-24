@@ -45,7 +45,7 @@ endif
 LEX=	lex.spt
 COD=    asm.spt
 ERR=    err.spt
-SPIT=   ./bootbol
+BASEBOL =   ./basebol
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
@@ -136,16 +136,16 @@ err.o: err.s
 
 # SPITBOL Minimal source
 s.s:	s.lex $(VHDRS) $(COD) 
-	$(SPIT) -u $(ARCH) $(COD)
+	$(BASEBOL) -u $(ARCH) $(COD)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
-#	 $(SPIT) -u "s" $(LEX)
-	 $(SPIT) -u $(ARCH) $(LEX)
+#	 $(BASEBOL) -u "s" $(LEX)
+	 $(BASEBOL) -u $(ARCH) $(LEX)
 
 s.err: s.s
 
 err.s: $(MIN).cnd $(ERR) s.s
-	   $(SPIT) -1=s.err -2=err.s $(ERR)
+	   $(BASEBOL) -1=s.err -2=err.s $(ERR)
 
 
 # make osint objects
@@ -166,9 +166,9 @@ boot:
 # install spitbol as the symstem spitbol compiler
 install:
 	sudo cp spitbol /usr/local/bin
-# install bootbol as the system spitbol compiler
-install-bootbol:
-	sudo cp bootbol /usr/local/bin/spitbol
+# install basebol as the system spitbol compiler
+install-basebol:
+	sudo cp basebol /usr/local/bin/spitbol
 clean:
 	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t
 z:

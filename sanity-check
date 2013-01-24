@@ -1,24 +1,23 @@
 #!/bin/bash --verbose
-rm chk.*
-echo "start bootstrap test"
-git checkout bootbol
-cp bootbol savebol
+rm tbol.*
+echo "start sanity test"
+cp	basebol	tbol
 make clean>/dev/null
-make
-mv s.lex chk.lex.0
-mv s.s chk.s.0
-cp spitbol bootbol
-make
-mv s.lex chk.lex.1
-mv s.s chk.s.1
-cp spitbol bootbol
-make
-mv s.lex chk.lex.2
-mv s.s chk.s.2
+make BASEBOL=./tbol
+mv s.lex tbol.lex.0
+mv s.s tbol.s.0
+cp spitbol tbol
+make BASEBOL=./tbol
+mv s.lex tbol.lex.1
+mv s.s tbol.s.1
+cp spitbol tbol
+make BASEBOL=./tbol
+mv s.lex tbol.lex.2
+mv s.s tbol.s.2
 echo "comparing generated .s files"
-diff chk.s.1 chk.s.2
-cp savebol bootbol
+diff tbol.s.1 tbol.s.2
+cp savebol tbol
 # test for compile END in lower or upper case
 ./spitbol ./test/e.spt
 ./spitbol ./test/E.spt
-echo "end bootstrap test"
+echo "end sanity test"
