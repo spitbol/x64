@@ -1,24 +1,20 @@
 #!/bin/bash --verbose
-rm chk.*
+rm tbol.*
 echo "start bootstrap test"
 cp basebol tbol
 make clean>/dev/null
 make -f tcc-makefile BASEBOL=./tbol
-mv s.lex chk.lex.0
-mv s.s chk.s.0
+mv s.lex tbol.lex.0
+mv s.s tbol.s.0
 cp spitbol tbol
 make -f tcc-makefile BASEBOL=./tbol
-mv s.lex chk.lex.1
-mv s.s chk.s.1
+mv s.lex tbol.lex.1
+mv s.s tbol.s.1
 cp spitbol tbol
 make -f tcc-makefile
 make -f tcc-makefile BASEBOL=./tbol
-mv s.lex chk.lex.2
-mv s.s chk.s.2
+mv s.lex tbol.lex.2
+mv s.s tbol.s.2
 echo "comparing generated .s files"
-diff chk.s.1 chk.s.2
-cp savebol tbol
-# test for compile END in lower or upper case
-./tbol ./test/e.spt
-./tbol ./test/E.spt
+diff tbol.s.1 tbol.s.2
 echo "end bootstrap test"

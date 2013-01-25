@@ -16,8 +16,4 @@ mv s.lex tbol.lex.2
 mv s.s tbol.s.2
 echo "comparing generated .s files"
 diff tbol.s.1 tbol.s.2
-cp savebol tbol
-# test for compile END in lower or upper case
-./tbol ./test/e.spt
-./tbol ./test/E.spt
 echo "end sanity test"
