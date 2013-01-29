@@ -198,18 +198,18 @@ IATYPE *pword;
         i = scp->len;
         p = scp->str;
         result = (IATYPE)0;
-        while (i && *p == ' ') {		/* remove leading blanks */
+        while (i && *p == ' ') {		// remove leading blanks
             p++;
             i--;
         }
-        if (i && (*p == '+' || *p == '-')) {	/* process optional sign char */
+        if (i && (*p == '+' || *p == '-')) {	// process optional sign char
             if (*p++ == '-')
                 sign = -1;
             i--;
         }
         while (i--) {
             c = *p++;
-            if ( c < '0' || c > '9' ) {	/* not handling trailing blanks */
+            if ( c < '0' || c > '9' ) {	// not handling trailing blanks
                 return 0;
             }
             result = result * 10 + (c - '0');
@@ -268,9 +268,9 @@ zyshs()
                     pTICBLK->val = (IATYPE)topmem;
                     return EXIT_8;
                 case 4:
-                    pTICBLK->val = stacksiz - 400;	/* safety margin */
+                    pTICBLK->val = stacksiz - 400;	// safety margin
                     return EXIT_8;
-                case 5:							/* stack in use */
+                case 5:							// stack in use
                     pTICBLK->val = stacksiz - (XS(IATYPE) - (IATYPE)lowsp);
                     return EXIT_8;
                 case 6:
@@ -314,7 +314,7 @@ zyshs()
             if (!check2str())
                 return EXIT_1;
             save2str(&cmd,&path);
-            save0();		/* made sure fd 0 OK	*/
+            save0();		// made sure fd 0 OK
             pTICBLK->val = dosys( cmd, path );
 
             pTICBLK->typ = TYPE_ICL;
@@ -373,14 +373,14 @@ zyshs()
             }
             else
                 return EXIT_1;
-        }       /* end switch */
+        }       // end switch
 
         /*
         / Any other integer value is processed by the system-specific functions
         */
 #if HOST386
         return host386( (int)val );
-#endif					/* HOST386 */
+#endif					// HOST386
 
         /*
         /   Here if first argument wasn't an integer or was an illegal value.

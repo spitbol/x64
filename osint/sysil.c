@@ -47,6 +47,6 @@ zysil()
     SET_WA( fcb->rsz );
     SET_WC( fcb->mode );
 
-    /* normal return */
+    // normal return
     return NORMAL_RETURN;
 }

@@ -93,4 +93,4 @@ double ra;
     return -ra;
 }
 
-#endif					/* (FLOAT & !FLTHDWR) | EXTFUN */
+#endif					// (FLOAT & !FLTHDWR) | EXTFUN

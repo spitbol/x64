@@ -45,7 +45,7 @@ This file is part of Macro SPITBOL.
 static int datecvt ( char *cp, int type );
 static int timeconv ( char *tp, struct tm *tm );
 
-/* conv() rewritten to avoid dependence on library remainder routine */
+// conv() rewritten to avoid dependence on library remainder routine
 void conv (dest, value)
 
 register char *dest;
@@ -96,26 +96,26 @@ int     type;
     switch (type)
     {
     default:
-    case 0:     /* "MM/DD/YY hh:mm:ss" */
+    case 0:     // "MM/DD/YY hh:mm:ss"
         conv( cp, tm->tm_mon+1 );
         cp[2] = '/';
         conv( cp+3, tm->tm_mday );
         cp[5] = '/';
-        conv( cp+6, tm->tm_year % 100 );    /* Prepare for year 2000! */
+        conv( cp+6, tm->tm_year % 100 );    // Prepare for year 2000!
         return 8 + timeconv(&cp[8], tm);
 
-    case 1:     /* "MM/DD/YYYY hh:mm:ss" */
+    case 1:     // "MM/DD/YYYY hh:mm:ss"
         conv( cp, tm->tm_mon+1 );
         cp[2] = '/';
         conv( cp+3, tm->tm_mday );
         cp[5] = '/';
         conv( cp+6, (tm->tm_year + 1900) / 100 );
-        conv( cp+8, tm->tm_year % 100 );    /* Prepare for year 2000! */
+        conv( cp+8, tm->tm_year % 100 );    // Prepare for year 2000!
         return 10 + timeconv(&cp[10], tm);
 
-    case 2:     /* "YYYY-MM-DD/YYYY hh:mm:ss" */
+    case 2:     // "YYYY-MM-DD/YYYY hh:mm:ss"
         conv( cp+0, (tm->tm_year + 1900) / 100 );
-        conv( cp+2, tm->tm_year % 100 );    /* Prepare for year 2000! */
+        conv( cp+2, tm->tm_year % 100 );    // Prepare for year 2000!
         cp[4] = '-';
         conv( cp+5, tm->tm_mon+1 );
         cp[7] = '-';

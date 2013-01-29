@@ -49,9 +49,9 @@ This file is part of Macro SPITBOL.
 */
 static struct scblk	ffscblk =
 {
-    0,		/*  type word - ignore		*/
-    1,		/*  string length		*/
-    '\f'	/*  string is a form-feed	*/
+    0,		//  type word - ignore
+    1,		//  string length
+    '\f'	//  string is a form-feed
 };
 
 zysef()
@@ -59,11 +59,11 @@ zysef()
     register struct fcblk *fcb = WA(struct fcblk *);
     register struct ioblk *iob = MK_MP(fcb->iob, struct ioblk *);
 
-    /* ensure the file is open */
+    // ensure the file is open
     if ( !(iob->flg1 & IO_OPN) )
         return EXIT_1;
 
-    /* write the data, fail if unsuccessful */
+    // write the data, fail if unsuccessful
     if ( oswrite( fcb->mode, fcb->rsz, ffscblk.len, iob, &ffscblk) != 0 )
         return EXIT_2;
 

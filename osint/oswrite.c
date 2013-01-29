@@ -61,12 +61,12 @@ struct	scblk	*scptr;
     int	ioerrcnt = 0;
 
 #if HOST386
-    if ( ioptr->flg1 & IO_COT ) 			/* End any special screen modes */
+    if ( ioptr->flg1 & IO_COT ) 			// End any special screen modes
         termhost();
-#endif					/* HOST386 */
+#endif					// HOST386
 
     do {
-        /* If line mode, limit characters written on a line */
+        // If line mode, limit characters written on a line
         if ( mode == 1 && recsiz > linesiz )
             linelen = linesiz;
         else
@@ -154,15 +154,15 @@ struct	scblk	*scptr;
                             break;
                         }
 
-                    n = bfptr->size - bfptr->next;	/* space in buffer */
-                    if (n > linelen)				/* if don't need it all */
+                    n = bfptr->size - bfptr->next;	// space in buffer
+                    if (n > linelen)				// if don't need it all
                         n = linelen;
                     linelen -= n;
 
-                    r = bfptr->buf + bfptr->next;	/* buffer write-in position */
+                    r = bfptr->buf + bfptr->next;	// buffer write-in position
                     bfptr->next += n;
 
-                    /* copy n characters from *cp to *r */
+                    // copy n characters from *cp to *r
                     if ( n & 1 )
                         *r++ = *cp++;
                     if ( n & 2 ) {
@@ -177,7 +177,7 @@ struct	scblk	*scptr;
                         *r++ = *cp++;
                     }
 
-                    ioptr->flg2 |= IO_DIR;			/* mark buffer dirty */
+                    ioptr->flg2 |= IO_DIR;			// mark buffer dirty
                     if ( bfptr->next > bfptr->fill )
                         bfptr->fill = bfptr->next;
                 }
@@ -189,11 +189,11 @@ struct	scblk	*scptr;
                  * the buffer and write as many multiples of the buffer
                  * as possible.
                  */
-                else {								/* n==bfptr->size means ignore buffer contents */
+                else {								// n==bfptr->size means ignore buffer contents
                     register word n,m;
 
-                    fsyncio(ioptr);              /* synchronize file and buffer */
-                    bfptr->fill = 0;				/* discard contents */
+                    fsyncio(ioptr);              // synchronize file and buffer
+                    bfptr->fill = 0;				// discard contents
 
                     n = (linelen / bfptr->size) * bfptr->size;
                     m = write(fdn, cp, n);

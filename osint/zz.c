@@ -87,7 +87,7 @@ void prtreg(char * name, long val) {
 }
 void prtdif(char* name, long old, long new, long listed)
 {
-	/* print old and new values of named register */
+	// print old and new values of named register
 	fprintf(stderr,"%s:", name);
 	prtval(old); fprintf(stderr," -> "); prtval(new);
 	prtnl();
@@ -143,9 +143,9 @@ void zz() {
 	}
 	return;
 */
-	/* print registers that have changed since last statement */
+	// print registers that have changed since last statement
 
-	/* see if any have changed. */
+	// see if any have changed.
 	if (zz_xl != last_xl)  changed += 1;
 	if (zz_xr != last_xr)  changed += 1;
 	if (zz_xs != last_xs)  changed += 1;
@@ -184,11 +184,11 @@ void zz() {
  prtregs=0;
 if (prtregs) {
 
-		/* print register values before the statement was executed */
+		// print register values before the statement was executed
 		prtreg("xl.esi", zz_xl);
 		prtreg("xr.edi", zz_xr);
 		prtreg("xs.esp", zz_xs);
-		/* cp is last on line, so don't print it zero */
+		// cp is last on line, so don't print it zero
 		if (zz_cp) prtreg("cp.ebp", zz_cp);
 		fprintf(stderr, "\n");
 		prtreg("wa.ecx", zz_wa);
@@ -198,15 +198,15 @@ if (prtregs) {
 		fprintf(stderr, "\n");
 }
 //	}
-	/* display instruction pointer and description of current statement. */
+	// display instruction pointer and description of current statement.
 	if (zz_zz != zz_last) {
-/*	fprintf(stderr, "\n%8xx %s\n", zz_ip, p);*/
+//	fprintf(stderr, "\n%8xx %s\n", zz_ip, p);
 //	fprintf(stderr, "zzz %d %d %d %s\n",zz_calls, zz_id, zz_zz,zz_de);
 	fprintf(stderr, "zzz %d %s\n",_rc_,zz_de);
 	}
 	zz_last = zz_zz;
 
-	/* save current register contents. */
+	// save current register contents.
 	last_xl = zz_xl; last_xr = zz_xr; last_xs = zz_xs; last_cp = zz_cp;
 
 	last_wa = zz_wa; last_wb = zz_wb; last_wc = zz_wc; last_w0 = zz_w0;

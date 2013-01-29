@@ -42,7 +42,7 @@ This file is part of Macro SPITBOL.
 /*  Values for x86 Linux 32-bit SPITBOL.
  */
 #define EXECFILE    0
-#define FLTHDWR     0   /* Change to 1 when do floating ops inline */
+#define FLTHDWR     0   // Change to 1 when do floating ops inline
 #define GCCi32      1
 #define LINUX       1
 #define SAVEFILE    1

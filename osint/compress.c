@@ -55,9 +55,9 @@ This file is part of Macro SPITBOL.
 #define MAX_CODE (MAX_VALUE - 1)
 
 #if LZWBITS == 14
-#define TABLE_SIZE 18041		/* The string table size needs to be a	*/
-#endif							/* prime number that is somewhat larger	*/
-#if LZWBITS == 13               /* than 2**LZWBITS       */
+#define TABLE_SIZE 18041		// The string table size needs to be a
+#endif							// prime number that is somewhat larger
+#if LZWBITS == 13               // than 2**LZWBITS
 #define TABLE_SIZE 9029
 #endif
 #if LZWBITS == 12
@@ -97,42 +97,42 @@ int	bits;
 char	*freeptr;
 uword size;
 {
-    if (!(bits | expanding))	/* If not expanding, nothing to do */
+    if (!(bits | expanding))	// If not expanding, nothing to do
         return 0;
 
-    if (!bits && expanding)		/* Turn off expansion */
+    if (!bits && expanding)		// Turn off expansion
     {
         if (extra)
-            sbrk(-extra);		/* release any extra memory acquired */
+            sbrk(-extra);		// release any extra memory acquired
         extra = 0;
         expanding = 0;
         return 0;
     }
 
-    if (bits == LZWBITS)          /* turn on expansion */
+    if (bits == LZWBITS)          // turn on expansion
     {
         if (EMEMORY <= size)
-            extra = 0;	/* no extra memory needed */
+            extra = 0;	// no extra memory needed
         else
         {
-            extra = EMEMORY - size;	/* extra memory needed */
+            extra = EMEMORY - size;	// extra memory needed
             if ((char *)sbrk((uword)extra) == (char *) -1)
-                return 1;			/* not available */
+                return 1;			// not available
         }
         expanding = bits;
 
-        /* initialize for expansion */
+        // initialize for expansion
         prefix_code = (short unsigned int *)freeptr;
         append_character = (unsigned char *)prefix_code + PREFIX_SIZE;
         decode_stack = (unsigned char *)append_character + APPEND_SIZE;
         buffer = decode_stack + DECODE_SIZE;
-        bufcnt = 0;				/* buffer is empty */
+        bufcnt = 0;				// buffer is empty
         bit_buffer = 0L;
         bit_count = 0;
         return 0;
     }
 
-    return 1;			/* failure */
+    return 1;			// failure
 
 }
 
@@ -152,8 +152,8 @@ word fd;
             bufcnt = read( fd, buffer, BUFF_SIZE);
             if (bufcnt < 0)
                 return MAX_VALUE;
-            if (!bufcnt) {				/* provide 0 at EOF until ... */
-                *buffer = 0;			/* ... bit_buffer is shifted out */
+            if (!bufcnt) {				// provide 0 at EOF until ...
+                *buffer = 0;			// ... bit_buffer is shifted out
                 bufcnt++;
             }
             bufptr = buffer;
@@ -210,10 +210,10 @@ unsigned int code;
         {
 #if USEQUIT
             quit(356);
-#else					/* USEQUIT */
+#else					// USEQUIT
             wrterr("Fatal error during save file expansion.");
             __exit(1);
-#endif					/* USEQUIT */
+#endif					// USEQUIT
         }
     }
     *buffer = (unsigned char) code;
@@ -254,10 +254,10 @@ uword size;
     if (!size)
         return 0;
 
-    next_code = 256;					/* This is the next available code to define	*/
-    old_code = input_code(fd);			/* Read in the first code, initialize the	*/
-    character = old_code;				/* character variable, and send the first	*/
-    *startadr++ = old_code;				/* code to the output file.					*/
+    next_code = 256;					// This is the next available code to define
+    old_code = input_code(fd);			// Read in the first code, initialize the
+    character = old_code;				// character variable, and send the first
+    *startadr++ = old_code;				// code to the output file.
     size--;
 
     /*
@@ -304,7 +304,7 @@ uword size;
         }
         old_code = new_code;
         if (next_code > MAX_CODE)
-            next_code = 256;			/* Restart codes when it gets too big */
+            next_code = 256;			// Restart codes when it gets too big
     }
     return (size == 0 ? 0 : -2);
 }
@@ -350,48 +350,48 @@ int	bits;
 char	*freeptr;
 uword size;
 {
-    if (!(bits | compressing))	/* If not compressing, nothing to do */
+    if (!(bits | compressing))	// If not compressing, nothing to do
         return 0;
 
-    if (!bits && compressing)	/* Turn off compression */
+    if (!bits && compressing)	// Turn off compression
     {
-        output_code(0);			/* This code flushes the output buffer	*/
+        output_code(0);			// This code flushes the output buffer
         if (bufcnt)
             wrtaout((unsigned char FAR *)buffer, bufcnt);
         bufcnt = 0;
         if (extra)
-            sbrk(-extra);		/* release any extra memory acquired */
+            sbrk(-extra);		// release any extra memory acquired
         extra = 0;
         compressing = 0;
         return 0;
     }
 
-    if (bits == LZWBITS)          /* turn on compression */
+    if (bits == LZWBITS)          // turn on compression
     {
         if (CMEMORY <= size)
-            extra = 0;	/* no extra memory needed */
+            extra = 0;	// no extra memory needed
         else
         {
-            extra = CMEMORY - size;	/* extra memory needed */
+            extra = CMEMORY - size;	// extra memory needed
             if ((char *)sbrk((uword)extra) == (char *) -1)
-                return 1;			/* not available */
+                return 1;			// not available
         }
         compressing = bits;
 
-        /* initialize for compression */
+        // initialize for compression
         code_value = (short int *)freeptr;
         prefix_code = (short unsigned int *)((char *)code_value + CODE_SIZE);
         append_character = (unsigned char *)prefix_code + PREFIX_SIZE;
         decode_stack = (unsigned char *)append_character + APPEND_SIZE;
         buffer = decode_stack + DECODE_SIZE;
-        bufcnt = 0;				/* buffer is empty */
+        bufcnt = 0;				// buffer is empty
         bufptr = buffer;
         bit_buffer = 0L;
         bit_count = 0;
         return 0;
     }
 
-    return 1;			/* failure */
+    return 1;			// failure
 
 }
 
@@ -424,12 +424,12 @@ uword size;
     if (!size)
         return 0;
 
-    next_code = 256;				/* next_code is the next available string code	*/
+    next_code = 256;				// next_code is the next available string code
 
-    /* Clear out the string hash table before starting */
+    // Clear out the string hash table before starting
     memset((void *)code_value, -1, TABLE_SIZE*sizeof(short int));
 
-    string_code = *startadr++;		/* Get the first code */
+    string_code = *startadr++;		// Get the first code
     size--;
 
     /*
@@ -441,22 +441,22 @@ uword size;
     {
         character = *startadr++;
 
-        index = find_match(string_code, character);	/* See if the string is in	*/
-        if (code_value[index] != -1)				/* the table.  If it is,	*/
-            string_code = code_value[index];		/* get the code value.  If	*/
-        else										/* the string is not in the	*/
-        {   /* table, try to add it.	*/
+        index = find_match(string_code, character);	// See if the string is in
+        if (code_value[index] != -1)				// the table.  If it is,
+            string_code = code_value[index];		// get the code value.  If
+        else										// the string is not in the
+        {   // table, try to add it.
             if (next_code <= MAX_CODE)
             {
                 code_value[index] = next_code++;
                 prefix_code[index] = string_code;
                 append_character[index] = character;
             }
-            output_code(string_code);				/* When a string is found	*/
-            string_code = character;				/* that is not in the table,*/
-            if (next_code > MAX_CODE)				/* output the last string	*/
-            {   /* after adding the new one */
-                /* Clear out the string hash table and restart codes */
+            output_code(string_code);				// When a string is found
+            string_code = character;				// that is not in the table,
+            if (next_code > MAX_CODE)				// output the last string
+            {   // after adding the new one
+                // Clear out the string hash table and restart codes
                 memset((void *)code_value, -1, TABLE_SIZE*sizeof(short int));
                 next_code = 256;
             }
@@ -466,8 +466,8 @@ uword size;
     /*
     /	End of the main loop
     */
-    output_code(string_code);					/* Output the last code			*/
-    output_code(MAX_VALUE);						/* Output the buffer end code	*/
+    output_code(string_code);					// Output the last code
+    output_code(MAX_VALUE);						// Output the buffer end code
     return 0;
 }
-#endif					/* SAVEFILE */
+#endif					// SAVEFILE

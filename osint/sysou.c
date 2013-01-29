@@ -44,7 +44,7 @@ zysou()
 
     if (blk->scb.typ == TYPE_SCL)
     {
-        /* called with string, get length from SCBLK */
+        // called with string, get length from SCBLK
         SET_WA(blk->scb.len);
     }
     else
@@ -68,14 +68,14 @@ zysou()
             return EXIT_2;
     }
 
-    /* ensure iob is open, fail if unsuccessful */
+    // ensure iob is open, fail if unsuccessful
     if ( !(MK_MP(fcb->iob, struct ioblk *)->flg1 & IO_OPN) )
         return EXIT_1;
 
-    /* write the data, fail if unsuccessful */
+    // write the data, fail if unsuccessful
     if ( oswrite( fcb->mode, fcb->rsz, WA(word), MK_MP(fcb->iob, struct ioblk *), XR(struct scblk *)) != 0 )
         return EXIT_2;
 
-    /* normal return */
+    // normal return
     return NORMAL_RETURN;
 }

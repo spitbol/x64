@@ -41,11 +41,11 @@ This file is part of Macro SPITBOL.
 /	V1.02	Split RECSIZ into IRECSIZ and ORECSIZ
 */
 
-/* Size of file position words in I/O buffer block */
+// Size of file position words in I/O buffer block
 #if SETREAL
-typedef double FILEPOS;     /* real file positions */
+typedef double FILEPOS;     // real file positions
 #else
-typedef long FILEPOS;       /* 32-bit file positions */
+typedef long FILEPOS;       // 32-bit file positions
 #endif
 
 /*
@@ -62,14 +62,14 @@ typedef long FILEPOS;       /* 32-bit file positions */
 
 struct bfblk
 {
-    word typ;       /*  type word           */
-    word len;       /*  length of bfblk        */
-    word size;      /*  size of buffer in bytes      */
-    word fill;      /*  number of bytes currently in buffer   */
-    word next;      /*  next buffer position to read/write */
-    FILEPOS offset; /*  file position of first byte in buf */
-    FILEPOS curpos; /*  physical file position    */
-    char	buf[sizeof(word)]; /* buffer ([sizeof(word)] is kludge for C) */
+    word typ;       //  type word
+    word len;       //  length of bfblk
+    word size;      //  size of buffer in bytes
+    word fill;      //  number of bytes currently in buffer
+    word next;      //  next buffer position to read/write
+    FILEPOS offset; //  file position of first byte in buf
+    FILEPOS curpos; //  physical file position
+    char	buf[sizeof(word)]; // buffer ([sizeof(word)] is kludge for C)
 };
 
 #define BFSIZE		(sizeof( struct bfblk ) - sizeof( word ))
@@ -83,11 +83,11 @@ struct bfblk
 
 struct fcblk
 {
-    word	typ;			/*  type word					*/
-    word	len;			/*  length of fcblk				*/
-    word	rsz;			/*  record size					*/
-    struct ioblk NEAR *iob;	/*  pointer to IOBLK			*/
-    word	mode;			/*  1=line mode, 0 = raw mode	*/
+    word	typ;			//  type word
+    word	len;			//  length of fcblk
+    word	rsz;			//  record size
+    struct ioblk NEAR *iob;	//  pointer to IOBLK
+    word	mode;			//  1=line mode, 0 = raw mode
 };
 
 #define FCSIZE		(sizeof( struct fcblk ))
@@ -109,18 +109,18 @@ struct fcblk
 
 struct ioblk
 {
-    word	typ;			/*  type word				*/
-    word	len;			/*  length of IOBLK			*/
-    struct scblk NEAR *fnm;	/*  pointer to SCBLK holding filename	*/
-    word	pid;			/*  process id for pipe			*/
-    struct bfblk NEAR *bfb;	/*  pointer to BFBLK (type XNBLK)	*/
-    word	fdn;			/*  file descriptor number		*/
-    word	flg1;			/*  first nine flags			*/
-    word	flg2;			/*  second nine flags			*/
-    word	eol1;			/*  end of line character 1		*/
-    word	eol2;			/*  end of line character 2		*/
-    word	share;			/*	sharing mode				*/
-    word	action;			/*  file open actions			*/
+    word	typ;			//  type word
+    word	len;			//  length of IOBLK
+    struct scblk NEAR *fnm;	//  pointer to SCBLK holding filename
+    word	pid;			//  process id for pipe
+    struct bfblk NEAR *bfb;	//  pointer to BFBLK (type XNBLK)
+    word	fdn;			//  file descriptor number
+    word	flg1;			//  first nine flags
+    word	flg2;			//  second nine flags
+    word	eol1;			//  end of line character 1
+    word	eol2;			//  end of line character 2
+    word	share;			//	sharing mode
+    word	action;			//  file open actions
 };
 
 #define IOSIZE		(sizeof( struct ioblk ))
@@ -132,51 +132,51 @@ struct ioblk
  *  may be assigned to high-order bits on some systems, and this would
  *  produce values larger than MXLEN.
  */
-/* Flags in flg1 */
-#define IO_INP		0x00000001	/* file open for reading */
-#define IO_OUP		0x00000002	/* file open for writing */
-#define IO_APP		0x00000004	/* append output to existing file */
-#define IO_OPN		0x00000008	/* file is open */
-#define IO_COT		0x00000010	/* console output to non-disk device */
-#define IO_CIN		0x00000020	/* console input from non-disk device */
-#define IO_SYS		0x00000040	/* -f option used instead of name */
-#define IO_WRC		0x00000080	/* output without buffering */
-#define IO_EOT		0x00000100	/* Ignore end-of-text (control-Z) char */
+// Flags in flg1
+#define IO_INP		0x00000001	// file open for reading
+#define IO_OUP		0x00000002	// file open for writing
+#define IO_APP		0x00000004	// append output to existing file
+#define IO_OPN		0x00000008	// file is open
+#define IO_COT		0x00000010	// console output to non-disk device
+#define IO_CIN		0x00000020	// console input from non-disk device
+#define IO_SYS		0x00000040	// -f option used instead of name
+#define IO_WRC		0x00000080	// output without buffering
+#define IO_EOT		0x00000100	// Ignore end-of-text (control-Z) char
 
-/* Flags in flg2 */
-#define IO_PIP		0x00000001	/* pipe */
-#define IO_DED		0x00000002	/* dead pipe */
-#define IO_ILL		0x00000004	/* illegal I/O association */
-#define	IO_RAW		0x00000008	/* binary I/O to TTY device */
-#define	IO_LF		0x00000010	/* Ignore eol2 if next character (pipes only) */
-#define IO_NOE		0x00000020	/* no echo input */
-#define IO_ENV		0x00000040	/* filearg1 maps to filename thru environment var */
-#define IO_DIR		0x00000080	/* buffer is dirty (needs to be written) */
-#define IO_BIN		0x00000100	/* last fcb to open file used raw mode */
+// Flags in flg2
+#define IO_PIP		0x00000001	// pipe
+#define IO_DED		0x00000002	// dead pipe
+#define IO_ILL		0x00000004	// illegal I/O association
+#define	IO_RAW		0x00000008	// binary I/O to TTY device
+#define	IO_LF		0x00000010	// Ignore eol2 if next character (pipes only)
+#define IO_NOE		0x00000020	// no echo input
+#define IO_ENV		0x00000040	// filearg1 maps to filename thru environment var
+#define IO_DIR		0x00000080	// buffer is dirty (needs to be written)
+#define IO_BIN		0x00000100	// last fcb to open file used raw mode
 
 #ifndef	 IRECSIZ
-#define  IRECSIZ	1024		/* input line length */
+#define  IRECSIZ	1024		// input line length
 #endif
 
-#define  ORECSIZ	((word)MAXPOSWORD)	/* output line length */
+#define  ORECSIZ	((word)MAXPOSWORD)	// output line length
 
 #define  IOBUFSIZ	1024
 
-/* Private flags used to convey sharing status when opening a file */
+// Private flags used to convey sharing status when opening a file
 #define IO_COMPATIBILITY	0x00
 #define IO_DENY_READWRITE	0x01
 #define IO_DENY_WRITE		0x02
 #define IO_DENY_READ		0x03
 #define IO_DENY_NONE		0x04
-#define IO_DENY_MASK		0x07		/* mask for above deny mode bits*/
-#define	IO_EXECUTABLE		0x40		/* file to be marked executable */
-#define IO_PRIVATE			0x80		/* file is private to current process */
+#define IO_DENY_MASK		0x07		// mask for above deny mode bits
+#define	IO_EXECUTABLE		0x40		// file to be marked executable
+#define IO_PRIVATE			0x80		// file is private to current process
 
-/* Private flags used to convey file open actions */
-#define IO_FAIL_IF_EXISTS		0x00	/* file exists -- fail */
-#define IO_OPEN_IF_EXISTS		0x01    /* file exists -- open */
-#define IO_REPLACE_IF_EXISTS	0x02    /* file exists -- open and truncate */
-#define IO_FAIL_IF_NOT_EXIST	0x00	/* file does not exist -- fail */
-#define IO_CREATE_IF_NOT_EXIST	0x10    /* file does not exist -- create it */
-#define IO_EXIST_ACTION_MASK	0x13	/* mask for above bits */
-#define IO_WRITE_THRU       	0x20	/* writes complete before return*/
+// Private flags used to convey file open actions
+#define IO_FAIL_IF_EXISTS		0x00	// file exists -- fail
+#define IO_OPEN_IF_EXISTS		0x01    // file exists -- open
+#define IO_REPLACE_IF_EXISTS	0x02    // file exists -- open and truncate
+#define IO_FAIL_IF_NOT_EXIST	0x00	// file does not exist -- fail
+#define IO_CREATE_IF_NOT_EXIST	0x10    // file does not exist -- create it
+#define IO_EXIST_ACTION_MASK	0x13	// mask for above bits
+#define IO_WRITE_THRU       	0x20	// writes complete before return

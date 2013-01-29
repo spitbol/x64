@@ -44,6 +44,6 @@ This file is part of Macro SPITBOL.
 
 zysgc()
 {
-    in_gbcol = XR(word);  /* retain information */
+    in_gbcol = XR(word);  // retain information
     return NORMAL_RETURN;
 }

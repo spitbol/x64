@@ -52,28 +52,28 @@ This file is part of Macro SPITBOL.
 #if EXTFUN
 static word openloadfile (char *namebuf);
 static void closeloadfile (word fd);
-#endif					/* EXTFUN */
+#endif					// EXTFUN
 
 zysld()
 {
 #if EXTFUN
-    word fd;					/* keep stack word-aligned */
+    word fd;					// keep stack word-aligned
     void *result = 0;
 
     fd = openloadfile(pTSCBLK->str);
-    if ( fd != -1 ) {			/* If file opened OK */
-        result = loadef(fd, pTSCBLK->str); /* Invoke loader */
+    if ( fd != -1 ) {			// If file opened OK
+        result = loadef(fd, pTSCBLK->str); // Invoke loader
         closeloadfile(fd);
         switch ((word)result) {
         case (word)0:
-            return EXIT_2;			/* I/O error */
+            return EXIT_2;			// I/O error
         case (word)-1:
-            return EXIT_1;			/* doesn't exist */
+            return EXIT_1;			// doesn't exist
         case (word)-2:
-            return EXIT_3;			/* insufficient memory */
+            return EXIT_3;			// insufficient memory
         default:
             SET_XR(result);
-            return NORMAL_RETURN;	/* Success, return pointer to stuff in EFBLK */
+            return NORMAL_RETURN;	// Success, return pointer to stuff in EFBLK
         }
     }
     else
@@ -94,7 +94,7 @@ char *file;
     register struct scblk *fnscb = XR (struct scblk *);
     char *savecp;
     char savechar;
-#else					/* EXTFUN */
+#else					// EXTFUN
     return EXIT_1;
 }
-#endif					/* EXTFUN */
+#endif					// EXTFUN

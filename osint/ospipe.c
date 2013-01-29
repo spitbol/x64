@@ -46,7 +46,7 @@ struct	ioblk	*ioptr;
     HFILE childfd, parentfd, savefd, stdfd, fd[2];
 
     if ( (ioptr->flg1 & (IO_INP | IO_OUP)) == (IO_INP | IO_OUP) )
-        return -1;		/* can't open read/write pipe */
+        return -1;		// can't open read/write pipe
     /*
     /	Fail if system call to create pipe fails.
     */
@@ -58,13 +58,13 @@ struct	ioblk	*ioptr;
     /	writing to pipe.
     */
     if ( ioptr->flg1 & IO_INP ) {
-        parentfd = fd[0];	/* parent reads from fd[0]	*/
-        childfd  = fd[1];	/* child writes to fd[1]	*/
+        parentfd = fd[0];	// parent reads from fd[0]
+        childfd  = fd[1];	// child writes to fd[1]
         stdfd = 1;
     }
     else {
-        parentfd = fd[1];	/* parent writes to fd[1]	*/
-        childfd  = fd[0];	/* child reads from fd[0]	*/
+        parentfd = fd[1];	// parent writes to fd[1]
+        childfd  = fd[0];	// child reads from fd[0]
         stdfd = 0;
     }
 
@@ -108,7 +108,7 @@ struct	ioblk	*ioptr;
 
         if (doshell(ioptr) == -1)
             return -1;
-        __exit(1);			/* Should never get here! */
+        __exit(1);			// Should never get here!
 
     default:
         /*
@@ -142,23 +142,23 @@ struct	ioblk	*ioptr;
     /   terminate it with a Nul character.  Remember that
     /   command is in string with form "!*command* options".
     */
-    scptr = MK_MP(ioptr->fnm,struct scblk *);	/* point to cmd scblk	*/
+    scptr = MK_MP(ioptr->fnm,struct scblk *);	// point to cmd scblk
     if (ioptr->flg2 & IO_ENV) {
         if (optfile(scptr, pTSCBLK))
             return -1;
         scptr = pTSCBLK;
-        pTSCBLK->len = lenfnm(scptr);	/* remove any options	*/
+        pTSCBLK->len = lenfnm(scptr);	// remove any options
     }
-    len   = lenfnm( scptr ) - 2;        /* length of cmd without ! & delimiter */
+    len   = lenfnm( scptr ) - 2;        // length of cmd without ! & delimiter
     if (len >= CMDBUFLEN)
         return -1;
-    mystrncpy( cmdbuf, &scptr->str[2], len);/* get command */
-    if ( cmdbuf[len-1] == scptr->str[1] )   /* if necessary         */
-        len--;                              /*   zap 2nd delimiter  */
-    cmdbuf[len] = '\0';                     /* Nul terminate cmd    */
-    shellpath = getshell();         /* get shell's path     */
+    mystrncpy( cmdbuf, &scptr->str[2], len);// get command
+    if ( cmdbuf[len-1] == scptr->str[1] )   // if necessary
+        len--;                              //   zap 2nd delimiter
+    cmdbuf[len] = '\0';                     // Nul terminate cmd
+    shellpath = getshell();         // get shell's path
     execl( shellpath, pathlast( shellpath ), "-c", cmdbuf, (char *)NULL );
-    return -1;					/* should not get here */
+    return -1;					// should not get here
 }
 
-#endif					/* PIPES */
+#endif					// PIPES

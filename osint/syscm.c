@@ -57,8 +57,8 @@ zyscm()
 {
     register word result;
 
-    if (!kvcom_ptr)							/* Cheap optimization to speed up */
-        kvcom_ptr = GET_DATA_OFFSET(KVCOM,long *);	/* &COMPARE consultation */
+    if (!kvcom_ptr)							// Cheap optimization to speed up
+        kvcom_ptr = GET_DATA_OFFSET(KVCOM,long *);	// &COMPARE consultation
 
     result = gencmp(XL(char *), XR(char *), WA(word), WB(word), *kvcom_ptr);
 
@@ -73,4 +73,4 @@ zyscm()
     else
         return EXIT_3;
 }
-#endif					/* ALTCOMP */
+#endif					// ALTCOMP

@@ -34,15 +34,15 @@ This file is part of Macro SPITBOL.
 */
 
 #ifndef	ALTCOMP
-#define	ALTCOMP		0	/* no alternate string comparison */
+#define	ALTCOMP		0	// no alternate string comparison
 #endif
 
 #ifndef DATECHECK
-#define DATECHECK   0   /* no check for expiration date */
+#define DATECHECK   0   // no check for expiration date
 #endif
 
 #ifndef ENGINE
-#define ENGINE		0	/* not building engine version */
+#define ENGINE		0	// not building engine version
 #endif
 
 /*
@@ -57,19 +57,19 @@ This file is part of Macro SPITBOL.
 */
 
 #ifndef	FLTHDWR
-#define	FLTHDWR		0	/* floating point hardware not present */
+#define	FLTHDWR		0	// floating point hardware not present
 #endif
 
 #ifndef	HOST386
-#define HOST386		0	/* no 80386 host functions */
+#define HOST386		0	// no 80386 host functions
 #endif
 
 #ifndef	MATHHDWR
-#define	MATHHDWR	0	/* extended math hardware not present */
+#define	MATHHDWR	0	// extended math hardware not present
 #endif
 
 #ifndef	RUNTIME
-#define	RUNTIME		0	/* not making runtime version */
+#define	RUNTIME		0	// not making runtime version
 #endif
 
 /*
@@ -79,11 +79,11 @@ This file is part of Macro SPITBOL.
 */
 
 #ifndef SETREAL
-#define SETREAL     0   /* don't use reals for SET()  */
+#define SETREAL     0   // don't use reals for SET()
 #endif
 
 #ifndef	USEQUIT
-#define	USEQUIT		0	/* use quit() to report errors instead of wrterr */
+#define	USEQUIT		0	// use quit() to report errors instead of wrterr
 #endif
 
 /*
@@ -91,7 +91,7 @@ This file is part of Macro SPITBOL.
  * 	in systype.h
  */
 #ifndef DIRECT
-#define	DIRECT		1	/* access Minimal data directly */
+#define	DIRECT		1	// access Minimal data directly
 #endif
 
 /*
@@ -101,11 +101,11 @@ This file is part of Macro SPITBOL.
 */
 
 #ifndef	FLOAT
-#define	FLOAT		1	/* include floating point code */
+#define	FLOAT		1	// include floating point code
 #endif
 
 #ifndef IO
-#define	IO			1	/* include input/output code */
+#define	IO			1	// include input/output code
 #endif
 
 /*
@@ -115,15 +115,15 @@ This file is part of Macro SPITBOL.
 */
 
 #ifndef PIPES
-#define	PIPES		1	/* include pipe code */
+#define	PIPES		1	// include pipe code
 #endif
 
 #ifndef	POLLING
-#define	POLLING		1	/* enable polling of operating system */
+#define	POLLING		1	// enable polling of operating system
 #endif
 
 #ifndef USEFD0FD1
-#define	USEFD0FD1	1	/* use file descriptor 0 & 1 for stdio	*/
+#define	USEFD0FD1	1	// use file descriptor 0 & 1 for stdio
 #endif
 
 /*
@@ -139,7 +139,7 @@ This file is part of Macro SPITBOL.
 #define MAXPOSWORD	0x7FFFFFFFL
 #endif
 #ifndef IABITS
-#define IABITS      	32          /* Integer accumulator (IA) width */
+#define IABITS      	32          // Integer accumulator (IA) width
 #endif
 #endif
 
@@ -162,8 +162,8 @@ This file is part of Macro SPITBOL.
 /*
  *  If not defined in systype.h, disable it here.
  */
-/* compiler defs */
-/* operating system defs */
+// compiler defs
+// operating system defs
 #ifndef LINUX
 #define LINUX       0
 #endif
@@ -180,7 +180,7 @@ This file is part of Macro SPITBOL.
 #endif
 */
 
-/* Define how the errors and phrases arrays will be accessed (see sysem.c) */
+// Define how the errors and phrases arrays will be accessed (see sysem.c)
 #ifndef ERRDIST
 #define ERRDIST
 #endif
@@ -205,7 +205,7 @@ This file is part of Macro SPITBOL.
 typedef long word;
 typedef unsigned long uword;
 
-/* Size of integer accumulator */
+// Size of integer accumulator
 typedef long IATYPE;
 
 /*
@@ -271,8 +271,8 @@ typedef long IATYPE;
 
 #define CHUNK_SIZE	32768
 #define CHUNK_B_SIZE	(CHUNK_SIZE * sizeof(word))
-#define HEAP_SIZE	16777216	/* 16Mwords = 64Mbytes */
-#define OBJECT_SIZE	1048576		/* 1 Mword = 4 Mbytes */
+#define HEAP_SIZE	16777216	// 16Mwords = 64Mbytes
+#define OBJECT_SIZE	1048576		// 1 Mword = 4 Mbytes
 /*
  *  Define the maximum nesting allowed of INCLUDE files
  */
@@ -301,7 +301,7 @@ typedef long IATYPE;
  */
 #ifndef PollCount
 #define PollCount MAXPOSWORD
-#endif					/* PollCount */
+#endif					// PollCount
 
 
 /*
@@ -314,7 +314,7 @@ typedef long IATYPE;
 /                   to make the stack larger results in a stack overflow
 /                   error.  Defined in BYTES!
 */
-#define STACK_SIZE  (0x100000)      /* Set to 1MB 6/28/09 */
+#define STACK_SIZE  (0x100000)      // Set to 1MB 6/28/09
 
 
 /*
@@ -356,7 +356,7 @@ typedef long IATYPE;
 #define EFNEXT ".slf"
 #define LISTEXT ".lst"
 #define RUNEXT ".spx"
-#define SPITFILEPATH  "snolib"  /* path for include and external files */
+#define SPITFILEPATH  "snolib"  // path for include and external files
 
 /*
 /   The following manifest constant determines the maximum number of
@@ -442,7 +442,7 @@ typedef long IATYPE;
 #define WRTEXE		0x00004000L
 #define WRTSAV		0x00008000L
 
-#define NOBRAG		0x02000000L	/*	No signon header when loading save file */
+#define NOBRAG		0x02000000L	//	No signon header when loading save file
 
 #define DFLT_FLAGS  (ERRORS+PRTICH+NOLIST+NOCMPS+NOEXCS+TRMNAL+PRINTC+CASFLD+NOERRO)
 
@@ -454,10 +454,10 @@ typedef long IATYPE;
 
 #ifdef PRIVATEBLOCKS
 #include "extern32.h"
-#else					/* PRIVATEBLOCKS */
+#else					// PRIVATEBLOCKS
 #include "spitblks.h"
 #include "spitio.h"
-#endif					/* PRIVATEBLOCKS */
+#endif					// PRIVATEBLOCKS
 
 
 #include "globals.h"

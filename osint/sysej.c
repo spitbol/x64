@@ -43,7 +43,7 @@ This file is part of Macro SPITBOL.
 
 #if EXTFUN
 unsigned char FAR *bufp;
-#endif					/* EXTFUN */
+#endif					// EXTFUN
 
 
 /*
@@ -75,16 +75,16 @@ void zysej()
 {
 #if HOST386
     termhost();
-#endif					/* HOST386 */
+#endif					// HOST386
 
-    if (!in_gbcol) {		/* Only if not mid-garbage collection */
+    if (!in_gbcol) {		// Only if not mid-garbage collection
         close_all( XL( struct chfcb * ) );
 
 #if EXTFUN
-        scanef();					/* prepare to scan for external functions */
-        while (nextef(&bufp, 1))	/* perform closing callback to some		  */
+        scanef();					// prepare to scan for external functions
+        while (nextef(&bufp, 1))	// perform closing callback to some
             ;
-#endif					/* EXTFUN */
+#endif					// EXTFUN
 
     }
     /*

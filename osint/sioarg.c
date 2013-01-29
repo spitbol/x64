@@ -83,21 +83,21 @@ struct	scblk	*scptr;
     / fdn shell or external function provided file descriptor (IO_SYS flag)
     /	flg1,2	IO_INP or IO_OUP as appropriate and other flags
     */
-    ioptr->typ = 0;			/* no args seen yet		*/
-    ioptr->fdn = 0;			/* no shell provided fd		*/
-    ioptr->pid = IOBUFSIZ;	/* buffer size		*/
-    ioptr->eol1 = EOL1;		/* default end of line char 1	*/
-    ioptr->eol2 = EOL2;		/* default end of line char 2	*/
+    ioptr->typ = 0;			// no args seen yet
+    ioptr->fdn = 0;			// no shell provided fd
+    ioptr->pid = IOBUFSIZ;	// buffer size
+    ioptr->eol1 = EOL1;		// default end of line char 1
+    ioptr->eol2 = EOL2;		// default end of line char 2
     if (ioflg)
-    {   /* output */
-        ioptr->len = maxsize;	/* line mode record len	*/
+    {   // output
+        ioptr->len = maxsize;	// line mode record len
         ioptr->flg1 = IO_OUP;
         ioptr->share = IO_DENY_READWRITE | IO_PRIVATE;
         ioptr->action= IO_REPLACE_IF_EXISTS | IO_CREATE_IF_NOT_EXIST;
     }
     else
-    {   /* input */
-        ioptr->len = IRECSIZ;	/* line mode record len	*/
+    {   // input
+        ioptr->len = IRECSIZ;	// line mode record len
         ioptr->flg1 = IO_INP;
         ioptr->share = IO_DENY_WRITE | IO_PRIVATE;
         ioptr->action = IO_OPEN_IF_EXISTS;
@@ -115,7 +115,7 @@ struct	scblk	*scptr;
     */
     while ( cnt < scptr->len )
     {
-        ch = uppercase(*(cp + cnt++));	/* get next character		*/
+        ch = uppercase(*(cp + cnt++));	// get next character
         switch (ch)
         {
         case ' ':
@@ -127,11 +127,11 @@ struct	scblk	*scptr;
             continue;
 
         case '-':
-            if ( lastdash != 0 )	/* "--" is illegal	*/
+            if ( lastdash != 0 )	// "--" is illegal
                 return ( -1 );
             else
             {
-                lastdash = 1;	/* saw an '-'		*/
+                lastdash = 1;	// saw an '-'
                 continue;
             }
 
@@ -181,10 +181,10 @@ struct	scblk	*scptr;
                 ioptr->flg1 |= IO_WRC;
 
 #if HOST386
-            /* Test for character input/output to a device */
-            if ( ioflg && !coutdev( v ) )	/* Test for character output */
+            // Test for character input/output to a device
+            if ( ioflg && !coutdev( v ) )	// Test for character output
                 ioptr->flg1 |= IO_COT;
-#endif					/* HOST386 */
+#endif					// HOST386
 
 
             break;
@@ -248,10 +248,10 @@ struct	scblk	*scptr;
             /		-sdrw	=	deny read/write
             */
         case 'S':
-            ch = uppercase(*(cp + cnt++));	/* get next character		*/
+            ch = uppercase(*(cp + cnt++));	// get next character
             if (ch != 'D')
                 return -1;
-            ch = uppercase(*(cp + cnt++));	/* get next character		*/
+            ch = uppercase(*(cp + cnt++));	// get next character
             switch (ch)
             {
             case 'N':
@@ -282,7 +282,7 @@ struct	scblk	*scptr;
         case 'U':
             ioptr->flg1 |= (IO_INP | IO_OUP);
             if (ioptr->len == (word)maxsize)
-                ioptr->len = IRECSIZ;	/* limit to input record len */
+                ioptr->len = IRECSIZ;	// limit to input record len
             ioptr->action &= ~IO_REPLACE_IF_EXISTS;
             ioptr->action |= IO_CREATE_IF_NOT_EXIST | IO_OPEN_IF_EXISTS;
             break;
@@ -320,8 +320,8 @@ struct	scblk	*scptr;
         /   Indicate that an argument was found and processed and
         /   that the last character processed was not a '-'.
         */
-        ioptr->typ = 1;		/* processed arg		*/
-        lastdash = 0;		/* last char not a '-'		*/
+        ioptr->typ = 1;		// processed arg
+        lastdash = 0;		// last char not a '-'
     }
     /*
     /	Return successful scanning.

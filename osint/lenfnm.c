@@ -57,7 +57,7 @@ This file is part of Macro SPITBOL.
 /   separate the end of the command string from the space preceding any
 /   options.
 */
-#endif					/* PIPES */
+#endif					// PIPES
 
 /*  Parameters:
 /	scptr	pointer to SCBLK containg filename string
@@ -77,7 +77,7 @@ struct	scblk	*scptr;
     register char	*cp;
 #if PIPES
     register char delim;
-#endif					/* PIPES */
+#endif					// PIPES
 
     /*
     /	Null strings have filenames with lengths of 0.
@@ -89,24 +89,24 @@ struct	scblk	*scptr;
     /*
     /   Here to examine end of string for "[option]".
     */
-    cp = &scptr->str[--len2];    /* last char of strng */
-    if ( *cp == ']')			/* string end with "]" ? */
+    cp = &scptr->str[--len2];    // last char of strng
+    if ( *cp == ']')			// string end with "]" ?
     {
-        /* String ends with "]", find preceeding "[" */
+        // String ends with "]", find preceeding "["
         while (len2--)
         {
             if (*--cp == ']')
                 break;
             if (*cp == '[')
             {
-                /* valid option syntax, remove from length of string we'll examine */
+                // valid option syntax, remove from length of string we'll examine
                 len = cp - scptr->str;
                 break;
             }
         }
     }
 
-    /* Look for space as the options delimiter */
+    // Look for space as the options delimiter
     cp = scptr->str;
 
 #if PIPES
@@ -117,19 +117,19 @@ struct	scblk	*scptr;
     */
     if ( *cp == '!' )
     {
-        if ( len < 3L )		/* "!!" clearly invalid		*/
+        if ( len < 3L )		// "!!" clearly invalid
             return	-1L;
-        delim = *++cp;		/*  pick up delimiter		*/
-        if ( *++cp == delim )	/* "!!!" also invalid		*/
+        delim = *++cp;		//  pick up delimiter
+        if ( *++cp == delim )	// "!!!" also invalid
             return	-1L;
-        /*  count chars up to delim	*/
+        //  count chars up to delim
         for ( cnt = 2; cnt < len  && *cp++ != delim; cnt++ )
             ;
-        if ( *--cp == delim )   /* if last char is delim then */
-            ++cnt;             /*   include it in the count  */
+        if ( *--cp == delim )   // if last char is delim then
+            ++cnt;             //   include it in the count
         return cnt;
     }
-#endif					/* PIPES */
+#endif					// PIPES
 
     /*
     /	Here for a normal filename.  Just count the number of characters

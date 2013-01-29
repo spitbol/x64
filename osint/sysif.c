@@ -49,17 +49,17 @@ static	void	openprev (void);
 
 static void openprev()
 {
-    fd = inc_fd[--nesting];		/* Unstack one level */
+    fd = inc_fd[--nesting];		// Unstack one level
 #if USEFD0FD1
-    dup(fd);					/* Create fd 0 for previous file */
-    close(fd);					/* Release dup'ed fd of old file */
+    dup(fd);					// Create fd 0 for previous file
+    close(fd);					// Release dup'ed fd of old file
     fd = 0;
-#else					/* USEFD0FD1 */
-    setrdfd( fd );	  			/* Make it the current input stream */
-#endif					/* USEFD0FD1 */
+#else					// USEFD0FD1
+    setrdfd( fd );	  			// Make it the current input stream
+#endif					// USEFD0FD1
     clrbuf();
 
-    doset( getrdiob(),inc_pos[nesting],0 );	/* Position file where left off */
+    doset( getrdiob(),inc_pos[nesting],0 );	// Position file where left off
 }
 
 zysif()
@@ -71,27 +71,27 @@ zysif()
     char *file;
 
     if (fnscb) {
-        /* Here to nest another include file */
-        if (nesting == INCLUDE_DEPTH)			/* Is there room in array? */
+        // Here to nest another include file
+        if (nesting == INCLUDE_DEPTH)			// Is there room in array?
             return EXIT_1;
 
-        inc_pos[nesting] = doset(getrdiob(),0L,1);	/* Record current position */
+        inc_pos[nesting] = doset(getrdiob(),0L,1);	// Record current position
 #if USEFD0FD1
-        inc_fd[nesting++] = dup(0);			/* Save current input file */
-        close(0);							/* Make fd 0 available */
-#else					/* USEFD0FD1 */
-        inc_fd[nesting++] = getrdfd();		/* Record current input stream */
-#endif					/* USEFD0FD1 */
+        inc_fd[nesting++] = dup(0);			// Save current input file
+        close(0);							// Make fd 0 available
+#else					// USEFD0FD1
+        inc_fd[nesting++] = getrdfd();		// Record current input stream
+#endif					// USEFD0FD1
         clrbuf();
-        savecp = fnscb->str + fnscb->len;	/* Make it a C string for now. */
+        savecp = fnscb->str + fnscb->len;	// Make it a C string for now.
         savechar = *savecp;
         *savecp = '\0';
         file = fnscb->str;
         fd = spit_open( file, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
-                        IO_OPEN_IF_EXISTS );	/* Open file */
+                        IO_OPEN_IF_EXISTS );	// Open file
         if (fd < 0)
         {
-            /* If couldn't open, try alternate paths via SNOLIB */
+            // If couldn't open, try alternate paths via SNOLIB
             initpath(SPITFILEPATH);
             file = filebuf;
             while (trypath(fnscb->str,file))
@@ -103,7 +103,7 @@ zysif()
         }
         if (fd < 0)
         {
-            /* If still not open, look in directory where SPITBOL resides. */
+            // If still not open, look in directory where SPITBOL resides.
             int i = pathlast(gblargv[0]) - gblargv[0];
             if (i)
             {
@@ -114,7 +114,7 @@ zysif()
         }
         if (fd < 0 && sfn && sfn[0])
         {
-            /* If still not open, look in directory where first source file resides. */
+            // If still not open, look in directory where first source file resides.
             int i = pathlast(sfn) - sfn;
             if (i)
             {
@@ -123,26 +123,26 @@ zysif()
                 fd = spit_open(filebuf, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE, IO_OPEN_IF_EXISTS);
             }
         }
-        if ( fd >= 0 ) {  				/* If file opened OK */
+        if ( fd >= 0 ) {  				// If file opened OK
             cpys2sc(file,pnscb,pnscb->len);
 #if !USEFD0FD1
-            setrdfd( fd );        /* Make it the current input stream */
-#endif					/* !USEFD0FD1 */
-            *savecp = savechar;			/* Restore saved char */
+            setrdfd( fd );        // Make it the current input stream
+#endif					// !USEFD0FD1
+            *savecp = savechar;			// Restore saved char
         }
-        else {  						/* Couldn't open file */
-            *savecp = savechar;			/* Restore saved char */
-            openprev();					/* Restore input file we just closed */
-            return EXIT_1;				/* Fail */
+        else {  						// Couldn't open file
+            *savecp = savechar;			// Restore saved char
+            openprev();					// Restore input file we just closed
+            return EXIT_1;				// Fail
         }
     }
     /*
     /  EOF read.  Pop back one include file.
     */
     else {
-        if (nesting > 0) {				/* Make sure don't go too far	*/
-            close(fd);					/* Close last include file		*/
-            openprev();					/* Reopen previous include file	*/
+        if (nesting > 0) {				// Make sure don't go too far
+            close(fd);					// Close last include file
+            openprev();					// Reopen previous include file
         }
     }
     return NORMAL_RETURN;

@@ -59,4 +59,4 @@ i arg,ia;
     return ia % arg;
 }
 
-#endif					/* SUN4 */
+#endif					// SUN4

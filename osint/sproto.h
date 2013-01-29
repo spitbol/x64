@@ -224,12 +224,12 @@ extern	int			zystt ( void );
 extern	int			zysul ( void );
 extern	int			zysxi ( void );
 
-/* prototypes for standard system-level functions used by OSINT */
+// prototypes for standard system-level functions used by OSINT
 
 #include <unistd.h>
 #define LSEEK lseek
 
-/* Redefine sbrk and brk to use custom routines in syslinux.c */
+// Redefine sbrk and brk to use custom routines in syslinux.c
 #undef sbrk
 #undef brk
 #define sbrk sbrkx

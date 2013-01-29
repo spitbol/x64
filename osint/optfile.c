@@ -50,10 +50,10 @@ struct	scblk	*varname, *result;
     word	i, j, n;
     register char *p, *q;
 
-    /* try to convert alias to an integer */
+    // try to convert alias to an integer
     i = 0;
     n = scnint( varname->str, varname->len, &i);
-    if (i == varname->len)		/* Consume all characters? */
+    if (i == varname->len)		// Consume all characters?
     {
         for (j = 0; j <= maxf; j++)
         {
@@ -69,7 +69,7 @@ struct	scblk	*varname, *result;
         }
     }
 
-    /* didn't find it on the command line.  Check environment */
+    // didn't find it on the command line.  Check environment
     return rdenv( varname, result );
 }
 

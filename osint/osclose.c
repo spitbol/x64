@@ -90,7 +90,7 @@ struct	ioblk	*ioptr;
         else
             oswait( ioptr->pid );
     }
-#endif					/* PIPES */
+#endif					// PIPES
 
     /*
     /	Return number of errors.

@@ -39,7 +39,7 @@ This file is part of Macro SPITBOL.
 int errno;
 #endif
 
-extern double inf;	/* infinity */
+extern double inf;	// infinity
 
 /*
  * f_atn - arctangent
@@ -136,4 +136,4 @@ double ra;
     return errno ? inf : result;
 }
 
-#endif					/* FLOAT & !MATHHDWR */
+#endif					// FLOAT & !MATHHDWR

@@ -27,21 +27,21 @@ void prompt()
 {
 #if RUNTIME
     wrterr("usage: spitrun [options] file[.spx] [program arguments]");
-#else					/* RUNTIME */
+#else					// RUNTIME
 
 #if SAVEFILE
     wrterr("usage: spitbol [options] files[.spt or .spx] [args to HOST(2)]");
-#else					/* SAVEFILE */
+#else					// SAVEFILE
     wrterr("usage: spitbol [options] files[.spt] [args to HOST(2)]");
-#endif					/* SAVEFILE */
+#endif					// SAVEFILE
 
-#endif					/* RUNTIME */
+#endif					// RUNTIME
 
 #if RUNTIME
     wrterr("options: (# is a decimal number)");
     wrterr("-u \"string\" data string available to program");
     wrterr("-#=file   associate file with I/O channel #");
-#else					/* RUNTIME */
+#else					// RUNTIME
     wrterr("source files are concatenated, filename '-' is standard input/output");
     wrterr("# is a decimal number.  Append \"k\" for kilobytes, \"m\" for megabytes.");
     wrterr("options:");
@@ -58,18 +58,18 @@ void prompt()
 
 #if EXECFILE & SAVEFILE
     wrterr("-w write load (.out) module    -y write save (.spx) file");
-#endif					/* EXECFILE & SAVEFILE */
+#endif					// EXECFILE & SAVEFILE
 
 #if SAVEFILE & !EXECFILE
     wrterr("-y write save (.spx) file");
-#endif					/* SAVEFILE & !EXECFILE */
+#endif					// SAVEFILE & !EXECFILE
 
     wrterr("-r INPUT from source file following END statement");
     wrterr("-T=file  write TERMINAL output to file");
     wrterr("-#=file[options]  associate file with I/O channel #");
     wrterr("option defaults: -d64m -i128k -m4m -s128k -g60 -t120");
 
-#endif					/* RUNTIME */
+#endif					// RUNTIME
 
     __exit(0);
 }

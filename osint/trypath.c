@@ -38,7 +38,7 @@ This file is part of Macro SPITBOL.
 void initpath(name)
 char *name;
 {
-    char	ucname[32];		/* only called with "snolib" and "path" */
+    char	ucname[32];		// only called with "snolib" and "path"
     int		i;
 
     pathptr = findenv(name,length(name));
@@ -50,7 +50,7 @@ char *name;
         pathptr = findenv(ucname, length(ucname));
     }
 
-    /* skip leading paren if present */
+    // skip leading paren if present
     if (pathptr && *pathptr == '(')
         pathptr++;
 }
@@ -65,7 +65,7 @@ char *name, *file;
 {
     char c;
 
-    /* return 0 if no search path or fully-qualified name */
+    // return 0 if no search path or fully-qualified name
     if (pathptr == (char *)0L || name[0] == FSEP
 #ifdef FSEP2
             || name[0] == FSEP2
@@ -73,7 +73,7 @@ char *name, *file;
        )
         return 0;
 
-    while (*pathptr == ' ')    /* Skip initial blanks */
+    while (*pathptr == ' ')    // Skip initial blanks
         pathptr++;
     if (!*pathptr)
         return 0;
@@ -89,8 +89,8 @@ char *name, *file;
 #endif
         ;
 
-    if (!c)                     /* If exhausted the string, */
-        pathptr = (char *)0L;     /* clear pathptr so kick out on next call */
+    if (!c)                     // If exhausted the string,
+        pathptr = (char *)0L;     // clear pathptr so kick out on next call
 
     file--;
     *file++ = FSEP;

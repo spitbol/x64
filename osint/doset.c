@@ -46,7 +46,7 @@ This file is part of Macro SPITBOL.
 
 
 #if SETREAL
-#include <math.h>       /* for floor() */
+#include <math.h>       // for floor()
 #endif
 
 FILEPOS doset( ioptr, offset, whence )
@@ -64,14 +64,14 @@ int	whence;
 
 
     switch (whence) {
-    case 0:								/* absolute position */
+    case 0:								// absolute position
         target = offset;
         break;
-    case 1:								/* relative to current position */
+    case 1:								// relative to current position
         target = offset +
                  (bfptr ? bfptr->offset + bfptr->next : LSEEK(ioptr->fdn, (FILEPOS)0, 1));
         break;
-    case 2:								/* relative to EOF */
+    case 2:								// relative to EOF
         target = offset + geteof(ioptr);
         break;
     default:
@@ -95,7 +95,7 @@ int	whence;
         /  Flush any dirty buffer before doing LSEEK.
         */
         if (flush(ioptr))
-            return -1;						/* return if error */
+            return -1;						// return if error
 
         /*
         /	Seek to a position that is a multiple of the buffer size.
@@ -107,7 +107,7 @@ int	whence;
 #endif
         if (newoffset != bfptr->curpos)
         {
-            /* physical file position differs from desired new offset */
+            // physical file position differs from desired new offset
             FILEPOS newcurrent;
             newcurrent = LSEEK(ioptr->fdn, newoffset, 0);
             if (newcurrent < (FILEPOS)0)
@@ -116,7 +116,7 @@ int	whence;
         }
         else
         {
-            /* file is properly positined already */
+            // file is properly positined already
             bfptr->offset = newoffset;
         }
 
@@ -127,17 +127,17 @@ int	whence;
             return -1;
 
         bfptr->next = (word)(target - bfptr->offset);
-        if (bfptr->next > bfptr->fill)	{			/* if extending beyond EOF */
+        if (bfptr->next > bfptr->fill)	{			// if extending beyond EOF
             if (ioptr->flg1 & IO_OUP)
-                bfptr->fill = bfptr->next;			/* only allow if output file */
+                bfptr->fill = bfptr->next;			// only allow if output file
             else
-                bfptr->next = bfptr->fill;			/* otherwise, limit to true EOF */
+                bfptr->next = bfptr->fill;			// otherwise, limit to true EOF
         }
 
         return bfptr->offset + bfptr->next;
     }
     else
-        return LSEEK(ioptr->fdn, target, 0); /* unbuffered I/O */
+        return LSEEK(ioptr->fdn, target, 0); // unbuffered I/O
 }
 
 FILEPOS geteof(ioptr)
@@ -146,18 +146,18 @@ struct ioblk *ioptr;
     register struct	bfblk *bfptr = MK_MP(ioptr->bfb, struct bfblk *);
     FILEPOS eofpos, curpos;
 
-    if (!bfptr)								/* if unbuffered file */
-        curpos = LSEEK(ioptr->fdn, (FILEPOS)0, 1);   /*  record current position */
+    if (!bfptr)								// if unbuffered file
+        curpos = LSEEK(ioptr->fdn, (FILEPOS)0, 1);   //  record current position
 
-    eofpos = LSEEK(ioptr->fdn, (FILEPOS)0, 2);      /* get eof position */
+    eofpos = LSEEK(ioptr->fdn, (FILEPOS)0, 2);      // get eof position
 
     if (bfptr) {
-        bfptr->curpos = eofpos;				/* buffered - record position */
-        if (bfptr->offset + bfptr->fill > eofpos)	/* if buffer extended */
-            eofpos = bfptr->offset + bfptr->fill;	/* beyond physical file */
+        bfptr->curpos = eofpos;				// buffered - record position
+        if (bfptr->offset + bfptr->fill > eofpos)	// if buffer extended
+            eofpos = bfptr->offset + bfptr->fill;	// beyond physical file
     }
     else
-        LSEEK(ioptr->fdn, curpos, 0);    /* unbuffered - restore position */
+        LSEEK(ioptr->fdn, curpos, 0);    // unbuffered - restore position
 
 
     return eofpos;

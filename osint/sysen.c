@@ -50,11 +50,11 @@ zysen()
     register struct fcblk *fcb = WA (struct fcblk *);
     register struct ioblk *iob = MK_MP(fcb->iob, struct ioblk *);
 
-    /* ensure the file is open */
+    // ensure the file is open
     if ( !(iob->flg1 & IO_OPN) )
         return EXIT_1;
 
-    /* now close it */
+    // now close it
     if (osclose( iob ))
         return EXIT_3;
 

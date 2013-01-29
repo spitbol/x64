@@ -18,7 +18,7 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* ------------------------- system.h ------------------------------- */
+// ------------------------- system.h -------------------------------
 
 /*
  * Define system type.

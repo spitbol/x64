@@ -61,16 +61,16 @@ word	maxlen;
         cnt--;
         scptr->str[--cnt] = 0;
     }
-#else					/* EOL2 */
+#else					// EOL2
     if ( cnt > 0  &&  scptr->str[cnt-1] == EOL1 )
     {
         scptr->str[--cnt] = 0;
     }
-#endif					/* EOL2 */
+#endif					// EOL2
 
     if ( cnt == 0 )
     {
-        /* Could not read spithost file.  Construct string instead */
+        // Could not read spithost file.  Construct string instead
         register char *scp;
 
         gettype( scptr, maxlen );
@@ -97,5 +97,5 @@ void gettype( scptr, maxlen )
 struct	scblk	*scptr;
 word	maxlen;
 {
-    cpys2sc( htype, scptr, maxlen );	/* Computer type */
+    cpys2sc( htype, scptr, maxlen );	// Computer type
 }

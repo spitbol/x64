@@ -67,7 +67,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-struct ioblk	tioblk;			/* temporary ioblk		*/
+struct ioblk	tioblk;			// temporary ioblk
 
 zysfc()
 {
@@ -76,7 +76,7 @@ zysfc()
     register struct scblk *scb1 = XL( struct scblk * );
     register struct scblk *scb2 = XR( struct scblk * );
     register struct fcblk *fcb  = WA( struct fcblk * );
-    word use_env = 0;   /* Initially, flag that not using environment block */
+    word use_env = 0;   // Initially, flag that not using environment block
 
     /*
     /   Bad filearg2 or NULL filearg1 is an error
@@ -141,7 +141,7 @@ again:
     */
     else
     {
-        if ( !fcb )					/* if no FCB then error	*/
+        if ( !fcb )					// if no FCB then error
         {
             /*
             	/ 1.03 - look up in environment block.  Filename
@@ -155,23 +155,23 @@ again:
             }
             return  EXIT_1;
         }
-        if ( tioblk.typ )		/* if args then		*/
+        if ( tioblk.typ )		// if args then
         {
-            allocsize = FCSIZE;	/*    alloc new FCB	*/
-            /* BAD!! Garbage collect could move ioblk before sysio is called */
+            allocsize = FCSIZE;	//    alloc new FCB
+            // BAD!! Garbage collect could move ioblk before sysio is called
             save_iob = MK_MP(fcb->iob, struct ioblk *);
         }
-        else				/* if no args then	*/
-            allocsize = 0;		/*   no new FCB needed	*/
+        else				// if no args then
+            allocsize = 0;		//   no new FCB needed
     }
 
     /*
     /   Do a normal return here.
     */
-    tioblk.flg2 |= use_env; /*  record use of environment for sysio */
-    SET_WA( allocsize );  /*  size of block to alloc or 0   */
-    SET_WC( 0 );		/*  xrblk please			*/
-    SET_XL( 0 );		/*  no private fcblk			*/
+    tioblk.flg2 |= use_env; //  record use of environment for sysio
+    SET_WA( allocsize );  //  size of block to alloc or 0
+    SET_WC( 0 );		//  xrblk please
+    SET_XL( 0 );		//  no private fcblk
 
     return NORMAL_RETURN;
 }

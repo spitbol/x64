@@ -70,26 +70,26 @@ zysst()
     register struct ioblk *iob = MK_MP(fcb->iob, struct ioblk *);
     register struct icblk *icp;
 
-    /* ensure iob is open, fail if unsuccessful */
+    // ensure iob is open, fail if unsuccessful
     if ( !(iob->flg1 & IO_OPN) )
         return EXIT_3;
 
 #if PIPES
-    /* not allowed to do a set of a pipe */
+    // not allowed to do a set of a pipe
     if ( iob->flg2 & IO_PIP )
         return EXIT_4;
-#endif					/* PIPES */
+#endif					// PIPES
 
-    /* whence may come in either integer or string form */
+    // whence may come in either integer or string form
     icp = WC( struct icblk * );
     if ( !getint(icp,&whence) )
         return EXIT_1;
 
 #if SETREAL
-    /* offset comes in as a real in RA */
+    // offset comes in as a real in RA
     offset = RA(FILEPOS);
 #else
-    /* offset may come in either integer or string form */
+    // offset may come in either integer or string form
     icp = WB( struct icblk * );
     if ( !getint(icp,&temp) ) {
         struct scblk *scp;
@@ -119,7 +119,7 @@ zysst()
             if ( fcb->mode == 0 && temp > 0 && temp <= (word)maxsize ) {
                 fcb->rsz = temp;
                 temp = 0;
-                whence = 1;			/* return current position */
+                whence = 1;			// return current position
                 break;
             }
             else {
@@ -130,25 +130,25 @@ zysst()
             }
 
         default:
-            return EXIT_1;		/* Unrecognised control */
+            return EXIT_1;		// Unrecognised control
         }
     }
     offset = (FILEPOS)temp;
 #endif
-    /*  finally, set the file position  */
+    //  finally, set the file position
     offset = doset( iob, offset, (int)whence );
 
-    /*  test for error.  01.02 */
+    //  test for error.  01.02
     if ( offset < (FILEPOS)0 )
         return EXIT_5;
 #if SETREAL
-    /*  return resulting position in RA.  01.07  */
+    //  return resulting position in RA.  01.07
     SET_RA( offset );
 #else
-    /*  return resulting position in IA.  01.02  */
+    //  return resulting position in IA.  01.02
     SET_IA( (IATYPE)offset );
 #endif
 
-    /* normal return */
+    // normal return
     return NORMAL_RETURN;
 }

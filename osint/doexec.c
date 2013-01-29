@@ -69,7 +69,7 @@ struct	scblk	*scbptr;
     /	to get the last component of the shell's path.
     */
     shellpath = getshell();
-    execle( shellpath, pathlast( shellpath ), "-c", cp, (char *)NULL, environ );	/* no return */
+    execle( shellpath, pathlast( shellpath ), "-c", cp, (char *)NULL, environ );	// no return
 
     unmake_c_str(&cp[length], savech);
 }

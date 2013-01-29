@@ -104,7 +104,7 @@ zysrd()
 
     if (provide_name)
     {
-        /* Provide compiler with name of source file, if desired. */
+        // Provide compiler with name of source file, if desired.
         provide_name = 0;
         if (sfn && sfn[0])
         {
@@ -123,13 +123,13 @@ zysrd()
     {
         if ( nesting || swcinp( inpcnt, inpptr ) < 0 )
         {
-            /* EOF */
+            // EOF
             scb->len = 0;
             return  EXIT_1;
         }
         else
         {
-            /* Successful switch, report new file name if still in compilation phase */
+            // Successful switch, report new file name if still in compilation phase
             if (!executing && sfn && sfn[0])
             {
                 cpys2sc( sfn, scb, WC(word));
@@ -138,7 +138,7 @@ zysrd()
         }
 
     }
-    scb->len = length;	/* line read, so set line length	*/
+    scb->len = length;	// line read, so set line length
     /*
     /	Special check for '#!' invocation.
     */
@@ -156,7 +156,7 @@ zysrd()
                     scb->len = 0;
                     return  EXIT_1;
                 }
-                /* Successful switch, report new file name */
+                // Successful switch, report new file name
                 if (sfn && sfn[0])
                 {
                     cpys2sc( sfn, scb, WC(word));
@@ -244,5 +244,5 @@ int	fd;
     inpiob.fdn = fd;
     clrbuf();
 }
-#endif					/* !USEFD0FD1 */
+#endif					// !USEFD0FD1
 

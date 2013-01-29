@@ -1,0 +1,9 @@
+* change /* ... */ comments to '// ...
+*	dave shields	29 jan 2013
+
+	&anchor = 0
+	:(loop)
+copy	output	= line
+loop	line	= input	:f(end)
+	line arb . first '/*' arb . text '*/' rpos(0) = first '//' text		:(copy)
+end

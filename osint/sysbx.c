@@ -56,9 +56,9 @@ zysbx()
     executing = 1;
 
     if (readshell0) {
-        doset(getrdiob(), 0L, 2); /* bypass rest of source file */
-        curfile = inpcnt;	  /* skip rest of cmd line files */
-        swcinp( inpcnt, inpptr ); /* v1.07 switch away from source file */
+        doset(getrdiob(), 0L, 2); // bypass rest of source file
+        curfile = inpcnt;	  // skip rest of cmd line files
+        swcinp( inpcnt, inpptr ); // v1.07 switch away from source file
     }
 
 #if EXECFILE
@@ -76,7 +76,7 @@ zysbx()
             zysej();
         }
     }
-#endif					/* EXECFILE */
+#endif					// EXECFILE
 
 #if SAVEFILE
     /*
@@ -90,10 +90,10 @@ zysbx()
         {
 #if USEQUIT
             quit(357);
-#else					/* USEQUIT */
+#else					// USEQUIT
             wrterr( "Error writing save file." );
             zysej();
-#endif					/* USEQUIT */
+#endif					// USEQUIT
         }
     }
     /*
@@ -109,19 +109,19 @@ zysbx()
     / * DUPLICATED IN THE RESTART CODE                          *
     / ***********************************************************
     */
-#endif					/* SAVEFILE */
+#endif					// SAVEFILE
 
-    /*  execution resumes here when a.out file created with		*/
-    /*  the -w option is reloaded.					*/
+    //  execution resumes here when a.out file created with
+    //  the -w option is reloaded.
 
-    startbrk();			/* turn on Control-C checking */
+    startbrk();			// turn on Control-C checking
 
-    /*  swcoup does real work  */
+    //  swcoup does real work
     swcoup( outptr );
 
-#else         /* !RUNTIME */
+#else         // !RUNTIME
     __exit(1);
-#endif					/* !RUNTIME */
+#endif					// !RUNTIME
 
     return NORMAL_RETURN;
 }

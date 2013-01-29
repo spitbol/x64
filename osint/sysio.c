@@ -63,7 +63,7 @@ zysio()
     if ( tioblk.flg2 & IO_ILL )
         return  EXIT_2;
 
-    fcb = (struct fcblk *) charptr;		/* 1.03 MBE	*/
+    fcb = (struct fcblk *) charptr;		// 1.03 MBE
     /*
     /	If a new FCB has been allocated, fill it in.
     */
@@ -71,11 +71,11 @@ zysio()
     {
         fcb->len = FCSIZE;
         if (tioblk.len >= 0) {
-            fcb->rsz = tioblk.len;	/* line mode */
+            fcb->rsz = tioblk.len;	// line mode
             fcb->mode = 1;
         }
         else {
-            fcb->rsz = -tioblk.len;	/* raw mode */
+            fcb->rsz = -tioblk.len;	// raw mode
             fcb->mode = 0;
         }
         fcb->iob = MP_OFF(save_iob, struct ioblk NEAR *);
@@ -94,30 +94,30 @@ zysio()
             /*
             /	Establish pointers to IOBLK and BFBLK.
             */
-            charptr += FCSIZE;	/* point to IOBLK	*/
+            charptr += FCSIZE;	// point to IOBLK
             iob = (struct ioblk *)charptr;
             fcb->iob = MP_OFF(iob, struct ioblk NEAR *);
-            charptr += IOSIZE;	/* point to BFBLK	*/
+            charptr += IOSIZE;	// point to BFBLK
             bfb = (struct bfblk *) charptr;
 
             /*
             /	Fill in IOBLK.
             */
-            iob->typ = TYPE_XRT;	/* type: external reloc	*/
-            iob->len = IOSIZE;		/* length		*/
+            iob->typ = TYPE_XRT;	// type: external reloc
+            iob->len = IOSIZE;		// length
             iob->fnm = MP_OFF((tioblk.flg2 & IO_ENV) ?
-                              XL( struct scblk *) :  /* filearg 1	*/
-                              XR( struct scblk * ), struct scblk NEAR *);  /* filename	*/
+                              XL( struct scblk *) :  // filearg 1
+                              XR( struct scblk * ), struct scblk NEAR *);  // filename
 
-            iob->pid = 0;			/* process id		*/
-            iob->bfb = MP_OFF(bfb, struct bfblk NEAR *);	/* buffer		*/
-            iob->fdn = tioblk.fdn;	/* file descriptor	*/
-            iob->flg1 = tioblk.flg1;/* flags		*/
+            iob->pid = 0;			// process id
+            iob->bfb = MP_OFF(bfb, struct bfblk NEAR *);	// buffer
+            iob->fdn = tioblk.fdn;	// file descriptor
+            iob->flg1 = tioblk.flg1;// flags
             iob->flg2 = tioblk.flg2;
-            iob->eol1 = tioblk.eol1;/* end of line chars	*/
+            iob->eol1 = tioblk.eol1;// end of line chars
             iob->eol2 = tioblk.eol2;
-            iob->share = tioblk.share;	/* sharing mode */
-            iob->action= tioblk.action; /* file open action */
+            iob->share = tioblk.share;	// sharing mode
+            iob->action= tioblk.action; // file open action
 
             /*
             /	If system file (file descriptor provided),
@@ -143,13 +143,13 @@ zysio()
             /*
             /	Fill in BFBLK.
             */
-            bfb->typ = TYPE_XNT;	/* type: external nonreloc */
-            bfb->len = bfblksize;	/* length		*/
-            bfb->size = tioblk.pid;	/* buffer size		*/
-            bfb->fill = 0;		/* chars in buffer	*/
-            bfb->next = 0;		/* next read/write pos	*/
-            bfb->offset = (FILEPOS)0;  /* file offset of 1st byte in buffer */
-            bfb->curpos = (FILEPOS)0;  /* physical file position */
+            bfb->typ = TYPE_XNT;	// type: external nonreloc
+            bfb->len = bfblksize;	// length
+            bfb->size = tioblk.pid;	// buffer size
+            bfb->fill = 0;		// chars in buffer
+            bfb->next = 0;		// next read/write pos
+            bfb->offset = (FILEPOS)0;  // file offset of 1st byte in buffer
+            bfb->curpos = (FILEPOS)0;  // physical file position
         }
     }
 
@@ -169,9 +169,9 @@ zysio()
     /	iob->flg.  The RAW bit within the device will be turned on and
     /	off as appropriate when the read or write operation is done.
     */
-    if ( ( testty( iob->fdn ) == 0 ) &&	/* If TTY device	*/
-            ( fcb->mode == 0 ) )			/* and raw mode file	*/
-        iob->flg2 |= IO_RAW;		/* then set IO_RAW bit	*/
+    if ( ( testty( iob->fdn ) == 0 ) &&	// If TTY device
+            ( fcb->mode == 0 ) )			// and raw mode file
+        iob->flg2 |= IO_RAW;		// then set IO_RAW bit
 
 
     /*

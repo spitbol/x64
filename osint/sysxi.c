@@ -72,19 +72,19 @@ This file is part of Macro SPITBOL.
 #if EXECFILE & !EXECSAVE
 extern word	*edata;
 extern word	*etext;
-#endif					/* EXECFILE */
+#endif					// EXECFILE
 
 #if SAVEFILE
 struct svfilehdr svfheader;
 char uargbuf[UargSize];
 
 static void hcopy (char *src, char *dst, int len, int max);
-#endif					/* SAVEFILE */
+#endif					// SAVEFILE
 
 #if SAVEFILE | EXECSAVE
 extern ssize_t read (int F, void *Buf, size_t Cnt);
 extern off_t LSEEK (int F, off_t Loc, int Method);
-#endif          /* EXECFILE  | SAVEFILE */
+#endif          // EXECFILE  | SAVEFILE
 
 zysxi()
 
@@ -95,7 +95,7 @@ zysxi()
     char	*starttext;
     char	*startdata;
     long	i;
-#endif					/* EXECFILE */
+#endif					// EXECFILE
 
 #if EXECFILE | SAVEFILE
     char	fileName[256], tmpfnbuf[256];
@@ -103,7 +103,7 @@ zysxi()
     word	retval, stacklength;
     struct scblk	*scfn = WA( struct scblk * );
     char	savech;
-#endif					/* EXECFILE | SAVEFILE */
+#endif					// EXECFILE | SAVEFILE
 
     struct scblk	*scb = XL( struct scblk * );
 
@@ -115,37 +115,37 @@ zysxi()
     */
     if ( scb != 0 )
     {
-        if ( scb->typ == TYPE_SCL )		/* must be SCBLK!	*/
+        if ( scb->typ == TYPE_SCL )		// must be SCBLK!
         {
-            close_all( WB( struct chfcb * ) );	/* V1.11*/
+            close_all( WB( struct chfcb * ) );	// V1.11
 #if HOST386
             termhost();
-#endif					/* HOST386 */
-            save0();		/* V1.14 make sure fd 0 OK */
-            doexec( scb );		/* execute command	*/
-            restore0();		/* just in case		*/
-            return EXIT_2;		/* Couldn't chain */
+#endif					// HOST386
+            save0();		// V1.14 make sure fd 0 OK
+            doexec( scb );		// execute command
+            restore0();		// just in case
+            return EXIT_2;		// Couldn't chain
         }
-        return  EXIT_1;			/* not a SCBLK		*/
+        return  EXIT_1;			// not a SCBLK
     }
 
     /*
     /	Case 2:  Write load module.
     /
     */
-    SET_WA(0);					/* Prepare to return 0 on resumption. */
+    SET_WA(0);					// Prepare to return 0 on resumption.
 
 #if !EXECFILE
-    /*	Don't accept request to write executable files. */
+    //	Don't accept request to write executable files.
     if ( IA(IATYPE) >= 0 )
         return  EXIT_1;
-#endif					/* !EXECFILE */
+#endif					// !EXECFILE
 
 #if !SAVEFILE
-    /*	Don't accept request except to write save file. */
+    //	Don't accept request except to write save file.
     if ( IA(IATYPE) <= 0 )
         return  EXIT_1;
-#endif					/* !SAVEFILE */
+#endif					// !SAVEFILE
 
 #if SAVEFILE | EXECFILE
     /*
@@ -158,35 +158,35 @@ zysxi()
     */
 #if HOST386
     termhost();
-#endif					/* HOST386 */
-    close_all( WB( struct chfcb * ) );	/* V1.11 */
+#endif					// HOST386
+    close_all( WB( struct chfcb * ) );	// V1.11
 
-    /*	Prepare optional file name as a C string, open output file */
+    //	Prepare optional file name as a C string, open output file
     savech = make_c_str(&(scfn->str[scfn->len]));
     if (scfn->str[0])
         mystrcpy(fileName, scfn->str);
     else
-        mystrcpy(fileName,                /* default file name */
+        mystrcpy(fileName,                // default file name
 #if SAVEFILE
                  IA(IATYPE) < 0 ? SAVE_FILE : AOUT_FILE);
-#else					/* SAVEFILE */
+#else					// SAVEFILE
                  AOUT_FILE);
-#endif					/* SAVEFILE */
+#endif					// SAVEFILE
     retval = openaout(fileName, tmpfnbuf,
 #if SAVEFILE
-                      (IA(IATYPE) < 0 ? 0 : IO_EXECUTABLE)		/* executable? */
-#else					/* SAVEFILE */
+                      (IA(IATYPE) < 0 ? 0 : IO_EXECUTABLE)		// executable?
+#else					// SAVEFILE
                       IO_EXECUTABLE
-#endif					/* SAVEFILE */
+#endif					// SAVEFILE
                      );
     unmake_c_str(&(scfn->str[scfn->len]), savech);
 
 
 #if SAVEFILE
     if (IA(IATYPE) < 0 ) {
-        retval |= putsave(stackbase, stacklength);	/* write save file */
+        retval |= putsave(stackbase, stacklength);	// write save file
     }
-#endif					/* SAVEFILE */
+#endif					// SAVEFILE
 
 #if EXECFILE
     if (IA(IATYPE) > 0 ) {
@@ -226,11 +226,11 @@ zysxi()
          */
         bufsize = 4096;
         bufp = GET_MIN_VALUE(DNAMP,char *);
-        size = topmem - bufp;			/* free space in heap */
+        size = topmem - bufp;			// free space in heap
         extra = bufsize - size;
-        if (extra > 0) {				/* if not enough in heap */
-            if (sbrk((uword)extra) == (void *)-1) {	/* try to enlarge */
-                bufsize = size;			/* couldn't.  Use smaller buffer */
+        if (extra > 0) {				// if not enough in heap
+            if (sbrk((uword)extra) == (void *)-1) {	// try to enlarge
+                bufsize = size;			// couldn't.  Use smaller buffer
                 extra = 0;
             }
         }
@@ -239,7 +239,7 @@ zysxi()
          *
          */
         copylen = bufsize;
-        retval = -1;					/* flag first buffer read */
+        retval = -1;					// flag first buffer read
         if (!bufsize)
             goto fail;
 
@@ -251,11 +251,11 @@ zysxi()
                 retval = -1;
                 goto fail;
             }
-            if (retval) {					/* first time through */
+            if (retval) {					// first time through
                 copylen = savestart(fromfd, bufp, size);
                 if (!copylen)
                     goto fail;
-                retval = 0;				/* only do this once */
+                retval = 0;				// only do this once
             }
             copylen -= size;
 
@@ -264,13 +264,13 @@ zysxi()
 
         close(fromfd);
 
-        /* If we allocated extra memory, release it */
+        // If we allocated extra memory, release it
         if (extra > 0)
             sbrk(-extra);
 
         retval |= saveend(stackbase, stacklength);
 
-#else					/* EXECSAVE */
+#else					// EXECSAVE
         /*
         /	Copy entire stack into local storage of temporary SCBLK.
         */
@@ -283,12 +283,12 @@ zysxi()
         i = GET_MIN_VALUE(STBAS,word *) - srcptr;
         while( i-- )
             *dstptr++ = *srcptr++;
-        lmodstk = dstptr;		/* (also non-zero flag for restart) */
-#endif					/* EXECSAVE */
+        lmodstk = dstptr;		// (also non-zero flag for restart)
+#endif					// EXECSAVE
 
 
     }
-#endif					/* EXECFILE */
+#endif					// EXECFILE
 
     rereloc();
 fail:
@@ -301,15 +301,15 @@ fail:
     /   If called with anything other than +4 or -4, terminate execution.
     */
     if (IA(IATYPE) == 4 || IA(IATYPE) == -4) {
-        SET_WA( 1 );			/* flag continuation to caller */
+        SET_WA( 1 );			// flag continuation to caller
         return NORMAL_RETURN;
     }
 
-    SET_XL( 0 );			/* files already closed V1.11 */
+    SET_XL( 0 );			// files already closed V1.11
     SET_WB( 0 );
-    zysej();			/* NO RETURN */
+    zysej();			// NO RETURN
     return EXIT_1;
-#endif					/* EXECFILE | SAVEFILE */
+#endif					// EXECFILE | SAVEFILE
 }
 
 #if EXECFILE & !EXECSAVE
@@ -387,7 +387,7 @@ void rereloc()
     SET_MIN_VALUE(PMHBS,GET_MIN_VALUE(PMHBS,word) + stbas,word);
     SET_CP(CP(word) + GET_MIN_VALUE(DNAMB,char *));
 }
-#endif					/* EXECFILE | SAVEFILE */
+#endif					// EXECFILE | SAVEFILE
 
 
 #if SAVEFILE
@@ -402,7 +402,7 @@ int len, max;
     while (++i <= max)
         *dst++ = '\0';
 }
-#endif					/* SAVEFILE */
+#endif					// SAVEFILE
 
 
 
@@ -417,7 +417,7 @@ word	n;
 {
     return (n + PAGESIZE - 1) & ~((word)PAGESIZE - 1);
 }
-#endif					/* EXECFILE */
+#endif					// EXECFILE
 
 #if SAVEFILE | EXECSAVE
 /*
@@ -431,7 +431,7 @@ word *stkbase, stklen;
 #if EXTFUN
     unsigned char FAR *bufp;
     word textlen;
-#endif					/* EXTFUN */
+#endif					// EXTFUN
 
 
     /*
@@ -453,8 +453,8 @@ word *stkbase, stklen;
     svfheader.sec3adr = GET_DATA_OFFSET(C_AAA,char *);
     svfheader.sec4size = (uword)(GET_DATA_OFFSET(W_YYY,char *) - GET_DATA_OFFSET(G_AAA,char *));
     svfheader.sec4adr = GET_DATA_OFFSET(G_AAA,char *);
-    svfheader.statoff = (uword)(GET_MIN_VALUE(HSHTB,char *) - basemem);	/* offset to saved static in heap */
-    svfheader.dynoff = (uword)(GET_MIN_VALUE(DNAMB,char *) - basemem);		/* offset to saved dynamic in heap */
+    svfheader.statoff = (uword)(GET_MIN_VALUE(HSHTB,char *) - basemem);	// offset to saved static in heap
+    svfheader.dynoff = (uword)(GET_MIN_VALUE(DNAMB,char *) - basemem);		// offset to saved dynamic in heap
     svfheader.heapsize = (uword)(GET_MIN_VALUE(DNAMP,char *) - basemem);
     svfheader.heapadr = basemem;
     svfheader.topmem = topmem;
@@ -475,37 +475,37 @@ word *stkbase, stklen;
     unreloc();
 
     if (docompress(svfheader.compress, basemem+svfheader.heapsize,
-                   (uword)(topmem-(basemem+svfheader.heapsize)) ) )	/* Do compression if room */
+                   (uword)(topmem-(basemem+svfheader.heapsize)) ) )	// Do compression if room
         svfheader.compress = 0;
 
-    /* write out header */
+    // write out header
     result |= wrtaout( (unsigned char FAR *)&svfheader, sizeof( struct svfilehdr ) );
 
-    /* write out -u command line string if there is one */
+    // write out -u command line string if there is one
     result |= compress( (unsigned char FAR *)uarg, svfheader.uarglen );
 
-    /* write out stack */
+    // write out stack
     result |= compress( (unsigned char FAR *)stkbase, stklen );
 
-    /* write out working section */
+    // write out working section
     result |= compress( (unsigned char FAR *)svfheader.sec4adr, svfheader.sec4size );
 
-    /* write out important portion of static region */
+    // write out important portion of static region
     result |= compress( (unsigned char FAR *)GET_MIN_VALUE(HSHTB,char *),
                         GET_MIN_VALUE(STATE,uword)-GET_MIN_VALUE(HSHTB,uword) );
 
-    /* write out dynamic portion of heap */
+    // write out dynamic portion of heap
     result |= compress( (unsigned char FAR *)GET_MIN_VALUE(DNAMB,char *),
                         GET_MIN_VALUE(DNAMP,uword) - GET_MIN_VALUE(DNAMB,uword) );
 
-    /* write out MINIMAL register block */
+    // write out MINIMAL register block
     result |= compress( (unsigned char FAR *)&reg_block, reg_size );
 #if EXTFUN
-    scanef();			/* prepare to scan for external functions */
+    scanef();			// prepare to scan for external functions
     while ((textlen = (word)nextef(&bufp, 1)) != 0)
-        result |= compress( bufp, textlen );	/* write each function */
-#endif					/* EXTFUN */
-    docompress(0, (char *)0, 0);	/* turn off compression */
+        result |= compress( bufp, textlen );	// write each function
+#endif					// EXTFUN
+    docompress(0, (char *)0, 0);	// turn off compression
     return result;
 }
 
@@ -529,8 +529,8 @@ int fd;
 #if EXTFUN
     unsigned char FAR *bufp;
     int textlen;
-#endif					/* EXTFUN */
-    word adjusts[15];				/* structure to hold adjustments */
+#endif					// EXTFUN
+    word adjusts[15];				// structure to hold adjustments
 
     /*
     / Test if input is from a block device, and if so, peek ahead and
@@ -538,9 +538,9 @@ int fd;
     */
     if ( testty(fd) && (pos = LSEEK(fd, (FILEPOS)0, 1)) >=0 )
     {
-        /* If not char device or pipe, peek ahead to see if it's a save file */
+        // If not char device or pipe, peek ahead to see if it's a save file
         n = read(fd, (char *)&svfheader.magic1, sizeof(svfheader.magic1));
-        LSEEK(fd, pos, 0);           /* Restore position */
+        LSEEK(fd, pos, 0);           // Restore position
 
         if (n == sizeof(svfheader.magic1) && svfheader.magic1 == OURMAGIC1)
         {
@@ -552,38 +552,38 @@ int fd;
             /   Read file header from save file
             */
 
-            doexpand(0, (char *)0, 0);	/* turn off expansion for header */
+            doexpand(0, (char *)0, 0);	// turn off expansion for header
             if ( expand( fd, (unsigned char FAR *)&svfheader, sizeof(struct svfilehdr) ) )
                 goto reload_ioerr;
 
-            /* Check header validity.   ** UNDER CONSTRUCTION ** */
+            // Check header validity.   ** UNDER CONSTRUCTION **
             if (svfheader.magic1 != OURMAGIC1)
             {
 #if USEQUIT
                 quit(360);
-#else					/* USEQUIT */
+#else					// USEQUIT
                 cp = "Invalid file ";
                 goto reload_err;
-#endif					/* USEQUIT */
+#endif					// USEQUIT
             }
 
             /*
             /	Setup output and issue brag message
             */
-            spitflag = svfheader.flags;	/* restore flags */
-            spitflag |= NOLIST;		/* no listing (screws up swcoup if reset) */
+            spitflag = svfheader.flags;	// restore flags
+            spitflag |= NOLIST;		// no listing (screws up swcoup if reset)
             setout();
 #define SKIPIT
 #ifdef SKIPIT
-            /* Check version number */
+            // Check version number
             if ( svfheader.version != SaveVersion )
             {
 #if USEQUIT
                 quit(361);
-#else					/* USEQUIT */
+#else					// USEQUIT
                 cp = "Wrong save file version.";
                 goto reload_verserr;
-#endif					/* USEQUIT */
+#endif					// USEQUIT
             }
 #endif
 
@@ -591,20 +591,20 @@ int fd;
             {
 #if USEQUIT
                 quit(362);
-#else					/* USEQUIT */
+#else					// USEQUIT
                 cp = "Constant section size error.";
                 goto reload_verserr;
-#endif					/* USEQUIT */
+#endif					// USEQUIT
             }
 
             if ( svfheader.sec4size != (GET_DATA_OFFSET(W_YYY,uword) - GET_DATA_OFFSET(G_AAA,uword)) )
             {
 #if USEQUIT
                 quit(363);
-#else					/* USEQUIT */
+#else					// USEQUIT
                 cp = "Working section size error.";
                 goto reload_verserr;
-#endif					/* USEQUIT */
+#endif					// USEQUIT
             }
 
             if ( svfheader.sec5size !=
@@ -612,22 +612,22 @@ int fd;
             {
 #if USEQUIT
                 quit(364);
-#else					/* USEQUIT */
+#else					// USEQUIT
                 cp = "Code section size error.";
                 goto reload_verserr;
-#endif					/* USEQUIT */
+#endif					// USEQUIT
             }
 
-            /* build onto existing stack */
+            // build onto existing stack
             lowsp = (char *)&fd - svfheader.stacksiz - 100;
 
-            s = svfheader.maxsize - svfheader.dynoff; /* Minimum load address */
+            s = svfheader.maxsize - svfheader.dynoff; // Minimum load address
             cp = "Insufficient memory to load ";
-            if ((unsigned long)sbrk(0) < s )    /* If DNAMB will be below old MXLEN, */
-                if (brk((char *)s))             /*  try to move basemem up. */
+            if ((unsigned long)sbrk(0) < s )    // If DNAMB will be below old MXLEN,
+                if (brk((char *)s))             //  try to move basemem up.
                     goto reload_err;
 
-            /* Allocate heap. Restore topmem to its prior state */
+            // Allocate heap. Restore topmem to its prior state
             s = svfheader.topmem - svfheader.heapadr;
             basemem = (char *)sbrk((uword)s);
             if (basemem == (char *)-1)
@@ -644,17 +644,17 @@ int fd;
             if ( doexpand(svfheader.compress, basemem+svfheader.heapsize,
                           (uword)(topmem-(basemem+svfheader.heapsize))) )
             {
-                /* Do decompression if required */
+                // Do decompression if required
                 cp = "Insufficient memory to uncompress file ";
                 goto reload_err;
             }
 
-            /* Read saved -u command string if present */
+            // Read saved -u command string if present
             if (svfheader.uarglen)
                 if ( expand( fd, (unsigned char FAR *)uargbuf, svfheader.uarglen ) )
                     goto reload_ioerr;
 
-            /* Read saved stack from save file into tscblk */
+            // Read saved stack from save file into tscblk
             if ( expand( fd, (unsigned char FAR *)pTSCBLK->str, svfheader.stacklength ) )
                 goto reload_ioerr;
 
@@ -662,21 +662,21 @@ int fd;
             lmodstk = (word *)(pTSCBLK->str + svfheader.stacklength);
             stacksiz = svfheader.stacksiz;
 
-            /* Reload compiler working globals section */
+            // Reload compiler working globals section
             if ( expand( fd, GET_DATA_OFFSET(G_AAA,unsigned char FAR *), svfheader.sec4size ) )
                 goto reload_ioerr;
 
-            /* Reload important portion of static region */
+            // Reload important portion of static region
             if ( expand(fd, (unsigned char FAR *)basemem+svfheader.statoff,
                         GET_MIN_VALUE(STATE,uword)-GET_MIN_VALUE(HSHTB,uword)) )
                 goto reload_ioerr;
 
-            /* Reload heap */
+            // Reload heap
             if ( expand(fd, (unsigned char FAR *)basemem+svfheader.dynoff,
                         GET_MIN_VALUE(DNAMP,uword)-GET_MIN_VALUE(DNAMB,uword)) )
                 goto reload_ioerr;
 
-            /* Relocate all pointers because of different reload addresses */
+            // Relocate all pointers because of different reload addresses
             SET_WA(svfheader.sec5adr);
             SET_WB(svfheader.sec3adr);
             SET_WC(svfheader.sec4adr);
@@ -686,7 +686,7 @@ int fd;
             MINIMAL(MINIMAL_RELCR);
             MINIMAL(MINIMAL_RELOC);
 
-            /* Relocate any return addresses in stack */
+            // Relocate any return addresses in stack
             SET_WB(pTSCBLK->str);
             SET_WA(pTSCBLK->str + svfheader.stacklength);
             if (svfheader.stacklength) {
@@ -713,35 +713,35 @@ int fd;
              */
 
 #if EXTFUN
-            scanef();           /* prepare to scan for external functions */
-            while ((textlen = (word)nextef(&bufp, 0)) > 0)  /* read each function */
+            scanef();           // prepare to scan for external functions
+            while ((textlen = (word)nextef(&bufp, 0)) > 0)  // read each function
                 if ( expand( fd, bufp, textlen ) )
                     goto reload_ioerr;
             if (textlen < 0)
             {
 #if USEQUIT
                 quit(365);
-#else					/* USEQUIT */
+#else					// USEQUIT
                 cp = "Insufficient memory to load ";
                 goto reload_err;
-#endif					/* USEQUIT */
+#endif					// USEQUIT
             }
-#endif					/* EXTFUN */
+#endif					// EXTFUN
 
-            doexpand(0, (char *)0, 0);	/* turn off compression */
+            doexpand(0, (char *)0, 0);	// turn off compression
 
-            LSEEK(fd, (FILEPOS)0, 2); /* advance to EOF should be a nop */
-            pathptr = (char *)-1L;  /* include paths unknown  */
-            pINPBUF->next = 0;  /* no chars left in std input buffer  */
-            pINPBUF->fill = 0;	/* ditto				*/
+            LSEEK(fd, (FILEPOS)0, 2); // advance to EOF should be a nop
+            pathptr = (char *)-1L;  // include paths unknown
+            pINPBUF->next = 0;  // no chars left in std input buffer
+            pINPBUF->fill = 0;	// ditto
             pINPBUF->offset = (FILEPOS)0;
             pINPBUF->curpos = (FILEPOS)0;
-            if (uargbuf[0] && !uarg)		/* if uarg in save file and none */
-                uarg = uargbuf;				/* on command line, use saved version */
-            provide_name = 0;	/* no need to provide filename in sysrd */
+            if (uargbuf[0] && !uarg)		// if uarg in save file and none
+                uarg = uargbuf;				// on command line, use saved version
+            provide_name = 0;	// no need to provide filename in sysrd
 
-            executing = 1;		/* we're running */
-            return 1;			/* call restart to continue execution	*/
+            executing = 1;		// we're running
+            return 1;			// call restart to continue execution
 
 reload_verserr:
             write( STDERRFD,  cp, length(cp) );
@@ -756,18 +756,18 @@ reload_verserr:
 reload_ioerr:
 #if USEQUIT
             quit(366);
-#else					/* USEQUIT */
+#else					// USEQUIT
             cp = "Error reading ";
 reload_err:
             write( STDERRFD,  cp, length(cp) );
             write( STDERRFD,  *inpptr, length(*inpptr) );
             wrterr( "" );
             return -1;
-#endif					/* USEQUIT */
+#endif					// USEQUIT
         }
     }
     return 0;
 }
 
-#endif          /* SAVEFILE | EXECSAVE */
+#endif          // SAVEFILE | EXECSAVE
 

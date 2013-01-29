@@ -38,16 +38,16 @@ zysdc()
 {
     struct scblk *pHEADV = GET_DATA_OFFSET(HEADV,struct scblk *);
 	return;
-    /* announce name and copyright */
+    // announce name and copyright
     if (!dcdone && !(spitflag & NOBRAG))
     {
-        dcdone = 1;				/* Only do once per run */
+        dcdone = 1;				// Only do once per run
 
         write( STDERRFD, "LINUX SPITBOL", 13);
 
 #if RUNTIME
         write( STDERRFD, " Runtime", 8);
-#endif					/* RUNTIME */
+#endif					// RUNTIME
 
         write( STDERRFD, "  Release ", 10);
         write( STDERRFD, pHEADV->str, pHEADV->len );

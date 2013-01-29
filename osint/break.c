@@ -37,17 +37,17 @@ static SigType (*cstat)(int);
 void catchbrk (int sig);
 void rearmbrk (void);
 
-void startbrk()							/* start up break logic */
+void startbrk()							// start up break logic
 {
     brkpnd = 0;
-    cstat = signal(SIGINT,catchbrk);	/* set to catch control-C */
+    cstat = signal(SIGINT,catchbrk);	// set to catch control-C
 }
 
 
 
-void endbrk()							/* terminate break logic */
+void endbrk()							// terminate break logic
 {
-    signal(SIGINT, cstat);				/* restore original trap value */
+    signal(SIGINT, cstat);				// restore original trap value
 }
 
 
@@ -61,15 +61,15 @@ int sig;
     brkpnd++;
     stmct = GET_MIN_VALUE(STMCT,word) - 1;
     stmcs = GET_MIN_VALUE(STMCS,word);
-    SET_MIN_VALUE(STMCT,1,word);                /* force STMGO loop to check */
-    SET_MIN_VALUE(STMCS,stmcs - stmct,word);    /* counters quickly */
-    SET_MIN_VALUE(POLCT,1,word);				/* force quick SYSPL call */
+    SET_MIN_VALUE(STMCT,1,word);                // force STMGO loop to check
+    SET_MIN_VALUE(STMCS,stmcs - stmct,word);    // counters quickly
+    SET_MIN_VALUE(POLCT,1,word);				// force quick SYSPL call
 }
 
 
-void rearmbrk()							/* rearm after a trap occurs */
+void rearmbrk()							// rearm after a trap occurs
 {
-    signal(SIGINT,catchbrk);			/* set to catch traps */
+    signal(SIGINT,catchbrk);			// set to catch traps
 }
-#endif					/* POLLING */
+#endif					// POLLING
 

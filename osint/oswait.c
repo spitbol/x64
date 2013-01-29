@@ -70,4 +70,4 @@ int	pid;
     signal( SIGQUIT,qstat );
     signal( SIGHUP,hstat );
 }
-#endif					/* PIPES */
+#endif					// PIPES

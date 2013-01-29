@@ -95,15 +95,15 @@ zysri()
     /*
     /	Read a line specified by length of scblk.  If EOF take exit 1.
     */
-    length = scb->len;					/* Length of buffer provided */
-    saveptr = scb->str + length;		/* Save char following buffer for \n */
+    length = scb->len;					// Length of buffer provided
+    saveptr = scb->str + length;		// Save char following buffer for \n
     savechr = *saveptr;
 
-    MK_MP(ttyiobin.bfb, struct bfblk *)->size = ++length; /* Size includes extra byte for \n */
+    MK_MP(ttyiobin.bfb, struct bfblk *)->size = ++length; // Size includes extra byte for \n
 
     length = osread( 1, length, &ttyiobin, scb );
 
-    *saveptr = savechr;					/* Restore saved char */
+    *saveptr = savechr;					// Restore saved char
 
     if ( length < 0 )
         return  EXIT_1;
@@ -116,7 +116,7 @@ zysri()
 }
 
 
-/* change handle used for TERMINAL output */
+// change handle used for TERMINAL output
 void ttyoutfdn(h)
 File_handle h;
 {

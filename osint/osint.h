@@ -49,10 +49,10 @@ extern uword	minimal_id;
 extern void *mk_mp(void near *minp);
 #define MK_MP(minp,type) ((type)mk_mp((void near *)(minp)))
 #define MP_OFF(cp,type) ((type)(void NEAR *)(cp))
-#else					/* __NEAR__ */
+#else					// __NEAR__
 #define MK_MP(minp,type) ((type)(minp))
 #define MP_OFF(cp,type) ((type)cp)
-#endif					/* __NEAR__ */
+#endif					// __NEAR__
 
 /*
 /   Macros to fetch a value of appropriate type from a compiler register
@@ -69,7 +69,7 @@ extern void *mk_mp(void near *minp);
 #define PC(type)	(sizeof(type) == 4 ? MK_MP(reg_pc,type) : ((type) reg_pc))
 #define XS(type)	(sizeof(type) == 4 ? MK_MP(reg_xs,type) : ((type) reg_xs))
 #define RA(type)  (sizeof(type) == 8 ? MK_MP(reg_ra,type) : ((type) reg_ra))
-#else         /* __NEAR__ */
+#else         // __NEAR__
 #define CP(type)	((type) reg_cp)
 #define IA(type)	((type) reg_ia)
 #define WA(type)	((type) reg_wa)
@@ -79,8 +79,8 @@ extern void *mk_mp(void near *minp);
 #define XL(type)	((type) reg_xl)
 #define PC(type)	((type) reg_pc)
 #define XS(type)	((type) reg_xs)
-#define RA(type)  ((type) reg_ra)    /* v1.30.12 */
-#endif          /* __NEAR__ */
+#define RA(type)  ((type) reg_ra)    // v1.30.12
+#endif          // __NEAR__
 /*
 /   Macros to set a value of appropriate type into a compiler register.
 */
@@ -218,7 +218,7 @@ extern void	DFFNC();
 extern void	S_AAA();
 extern void	S_YYY();
 
-#else					/* DIRECT */
+#else					// DIRECT
 extern  word *minoff (word valno);
 #define GET_CODE_OFFSET(vn,type) ((type)minoff(vn))
 #define GET_DATA_OFFSET(vn,type) ((type)minoff(vn))
@@ -282,9 +282,9 @@ enum VALS {
     END_MIN_DATA
 };
 
-#endif					/* DIRECT */
+#endif					// DIRECT
 
-/* Some shorthand notations */
+// Some shorthand notations
 #define pID1 GET_DATA_OFFSET(ID1,struct scblk *)
 #define pID2BLK GET_DATA_OFFSET(ID2BLK,struct scblk *)
 #define pINPBUF GET_DATA_OFFSET(INPBUF,struct bfblk *)

@@ -49,9 +49,9 @@ struct	ioblk	*ioptr;
     register int	ioerrcnt = 0;
     register word	n;
 
-    if ( bfptr ) {							/* if buffer */
-        if ( ioptr->flg2 & IO_DIR ) {		/* if dirty */
-            ioerrcnt += fsyncio(ioptr);     /* synchronize file and buffer */
+    if ( bfptr ) {							// if buffer
+        if ( ioptr->flg2 & IO_DIR ) {		// if dirty
+            ioerrcnt += fsyncio(ioptr);     // synchronize file and buffer
             if ( bfptr->fill ) {
                 n = write(ioptr->fdn, bfptr->buf, bfptr->fill);
                 if ( n != bfptr->fill)
@@ -62,8 +62,8 @@ struct	ioblk	*ioptr;
             }
             ioptr->flg2 &= ~IO_DIR;
         }
-        bfptr->offset += bfptr->fill;		/* advance file position */
-        bfptr->next = bfptr->fill = 0;		/* empty the buffer */
+        bfptr->offset += bfptr->fill;		// advance file position
+        bfptr->next = bfptr->fill = 0;		// empty the buffer
     }
     return ioerrcnt;
 }
@@ -92,7 +92,7 @@ struct	ioblk	*ioptr;
             if (n >= 0)
                 bfptr->curpos = n;
             else
-                return 1;			/* I/O error */
+                return 1;			// I/O error
         }
     }
     return 0;

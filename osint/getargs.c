@@ -78,10 +78,10 @@ char	*argv[];
     /   A single '-' represents the standard file provided by the shell
     /   and is treated as an input-file or output file as appropriate.
     */
-    result = (char **)0;		/* no source file */
+    result = (char **)0;		// no source file
 
     for( i = 1 ; i < argc ; i++ ) {
-        cp = argv[i];			/* point to next cmd line argument	*/
+        cp = argv[i];			// point to next cmd line argument
 
         /*
          *   If this command line argument does not start with a '-
@@ -89,8 +89,8 @@ char	*argv[];
          */
         if ( *cp != '-'  ||  !cp[1] ) {
             if ( !result )
-                result = argv + i;	/* result -> first filename pointer	*/
-            break;		/* break out of for loop		*/
+                result = argv + i;	// result -> first filename pointer
+            break;		// break out of for loop
         }
 
         /*
@@ -134,7 +134,7 @@ char	*argv[];
                     */
             case 'd':
                 cp = optnum( cp, &databts );
-                /* round up to machine word boundary */
+                // round up to machine word boundary
                 databts = (databts + sizeof(int) - 1)  & ~(sizeof(int) - 1);
                 break;
 
@@ -231,7 +231,7 @@ char	*argv[];
                 */
             case 's': {
                 cp = optnum( cp, &stacksiz );
-                /* round up to machine word boundary */
+                // round up to machine word boundary
                 stacksiz = (stacksiz + sizeof(int) - 1)  & ~(sizeof(int) - 1);
             }
             break;
@@ -242,7 +242,7 @@ char	*argv[];
             case 't':
                 cp = getnum( cp, &pagewdth );
                 break;
-#endif					/* !RUNTIME */
+#endif					// !RUNTIME
 
                 /*
                 /   -T fff  write TERMINAL output to file fff
@@ -271,7 +271,7 @@ char	*argv[];
             case 'u':
                 uarg = argv[++i];
                 if ( i == argc )
-                    goto badopt;	/* V1.08 */
+                    goto badopt;	// V1.08
                 break;
 
 
@@ -284,7 +284,7 @@ char	*argv[];
                 spitflag |= WRTEXE;
                 break;
 
-#endif					/* EXECFILE */
+#endif					// EXECFILE
 
                 /*
                 /   -x	print execution statistics
@@ -300,7 +300,7 @@ char	*argv[];
             case 'y':
                 spitflag |= WRTSAV;
                 break;
-#endif					/* SAVEFILE */
+#endif					// SAVEFILE
 
                 /*
                 /   -z	turn on standard listing options
@@ -309,7 +309,7 @@ char	*argv[];
                 spitflag |= STDLST;
                 spitflag &= ~NOLIST;
                 break;
-#endif					/* !RUNTIME */
+#endif					// !RUNTIME
 
                 /*
                 / -# fff	associate file fff with channel #
@@ -342,11 +342,11 @@ badopt:
                 write( STDERRFD, "Illegal option -", 17 );
                 write( STDERRFD,  (cp - 1), 1 );
                 wrterr( "?" );
-                __exit(1);			/* V1.08 */
+                __exit(1);			// V1.08
             }
     }
 
-    inpcnt = argc - i;		/* inpcnt =  number of filenames	*/
+    inpcnt = argc - i;		// inpcnt =  number of filenames
 
     /*
     /   Establish command counter for use by HOST(3) function
@@ -355,7 +355,7 @@ badopt:
     return result;
 }
 
-/* Collect filename following option */
+// Collect filename following option
 static char *filenamearg( argc, argv )
 int		argc;
 char    *argv[];
@@ -378,7 +378,7 @@ char    *argv[];
         result = argv[++i];
         if ( i == argc || (result[0] == '-' && result[1] != '\0')
            )
-            return (char *)0;    /* V1.08 */
+            return (char *)0;    // V1.08
     }
     return result;
 }

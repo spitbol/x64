@@ -70,13 +70,13 @@ int	fd;
 int	flag;
 
 {
-    /* read current params	*/
-    if ( testty( fd ) ) return;     /* exit if not tty  */
+    // read current params
+    if ( testty( fd ) ) return;     // exit if not tty
     tcgetattr( fd, &termiosbuf );
     if ( flag )
-        termiosbuf.c_lflag &= ~(ICANON|ECHO); /* Setting      */
+        termiosbuf.c_lflag &= ~(ICANON|ECHO); // Setting
     else
-        termiosbuf.c_lflag |= (ICANON|ECHO);    /* Clearing     */
+        termiosbuf.c_lflag |= (ICANON|ECHO);    // Clearing
 
-    tcsetattr( fd, TCSANOW, &termiosbuf );     /* store device flags   */
+    tcsetattr( fd, TCSANOW, &termiosbuf );     // store device flags
 }

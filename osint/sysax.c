@@ -44,7 +44,7 @@ This file is part of Macro SPITBOL.
 
 zysax()
 {
-    /*  swcoup does real work  */
+    //  swcoup does real work
     swcoup( outptr );
     return NORMAL_RETURN;
 }

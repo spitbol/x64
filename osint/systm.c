@@ -52,8 +52,8 @@ zystm() {
     */
     struct tms	timebuf;
 
-    timebuf.tms_utime = 0;	/* be sure to init in case failure	*/
-    times( &timebuf );	/* get process times			*/
+    timebuf.tms_utime = 0;	// be sure to init in case failure
+    times( &timebuf );	// get process times
 
     /* CLK_TCK is clock ticks/second:
      * # of seconds = tms_utime / CLK_TCK

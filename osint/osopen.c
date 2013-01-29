@@ -54,26 +54,26 @@ struct	ioblk	*ioptr;
     /*
     /	Establish a few pointers and filename length.
     */
-    scptr	= MK_MP(ioptr->fnm, struct scblk *);	/* point to filename SCBLK	*/
+    scptr	= MK_MP(ioptr->fnm, struct scblk *);	// point to filename SCBLK
     if (ioptr->flg2 & IO_ENV)
     {
         if (optfile(scptr, pTSCBLK))
             return -1;
         scptr = pTSCBLK;
-        pTSCBLK->len = lenfnm(scptr);	/* remove any options */
+        pTSCBLK->len = lenfnm(scptr);	// remove any options
     }
 
-    cp	= scptr->str;		/* point to filename string	*/
-    len	= lenfnm( scptr );	/* get length of filename	*/
+    cp	= scptr->str;		// point to filename string
+    len	= lenfnm( scptr );	// get length of filename
 
 #if PIPES
     /*
     /	Handle pipes here.
     */
-    if ( cp[0] == '!' )		/* if pipe ...			*/
+    if ( cp[0] == '!' )		// if pipe ...
     {
-        ioptr -> flg2 |= IO_PIP;	/*   then set flag and		*/
-        fd = ospipe( ioptr );   /*      let ospipe() do work	*/
+        ioptr -> flg2 |= IO_PIP;	//   then set flag and
+        fd = ospipe( ioptr );   //      let ospipe() do work
     }
 
 
@@ -81,18 +81,18 @@ struct	ioblk	*ioptr;
     /	Handle files here.
     */
     else
-#endif					/* PIPES */
+#endif					// PIPES
 
     {
-        savech	= make_c_str(&cp[len]);	/*   else temporarily terminate	filename */
-        if ( ioptr->flg1 & IO_OUP ) /*  output file		*/
+        savech	= make_c_str(&cp[len]);	//   else temporarily terminate	filename
+        if ( ioptr->flg1 & IO_OUP ) //  output file
         {
-            fd = -1;	/* force creat if not update or append	*/
+            fd = -1;	// force creat if not update or append
 
-            /* Look for "-" as a file name.  Assign to fd 1 */
+            // Look for "-" as a file name.  Assign to fd 1
             if (len == 1 && *cp == '-')
             {
-                fd = STDERRFD;          /* was STDOUTFD, changed for WinNT */
+                fd = STDERRFD;          // was STDOUTFD, changed for WinNT
                 ioptr->flg1 |= IO_SYS;
             }
             else
@@ -105,24 +105,24 @@ struct	ioblk	*ioptr;
                  *   if file is not buffered and not appending or updating,
                  *    use O_WRONLY instead of O_RDWR.
                  */
-                int mode = O_CREAT;		/* create file if it doesn't exist */
+                int mode = O_CREAT;		// create file if it doesn't exist
 
                 if (ioptr->flg1 & IO_WRC && !(ioptr->action & IO_OPEN_IF_EXISTS))
                     mode |= O_WRONLY;
                 else
                     mode |= O_RDWR;
 
-                /* if not update or append mode */
+                // if not update or append mode
                 if (!(ioptr->flg1 & (IO_INP|IO_APP)))
-                    mode |= O_TRUNC;			/* truncate existing file */
+                    mode |= O_TRUNC;			// truncate existing file
 
                 fd = spit_open( cp, mode, ioptr->share /* 0666 */, ioptr->action);
             }
 
         }
-        else			/* input-only file		*/
+        else			// input-only file
         {
-            /* Look for "-" as a file name.  Assign to fd 0 */
+            // Look for "-" as a file name.  Assign to fd 0
             if (len == 1 && *cp == '-')
             {
                 fd = STDINFD;
@@ -131,7 +131,7 @@ struct	ioblk	*ioptr;
             else
                 fd = spit_open( cp, O_RDONLY, ioptr->share /* 0 */, ioptr->action);
         }
-        unmake_c_str(&cp[len], savech);	/* restore filename string	*/
+        unmake_c_str(&cp[len], savech);	// restore filename string
     }
 
     /*
@@ -153,10 +153,10 @@ struct	ioblk	*ioptr;
             ioptr->flg1 |= IO_WRC;
 
 #if HOST386
-        /* Test for character output.  Definicon doesn't have screen functions */
+        // Test for character output.  Definicon doesn't have screen functions
         if ( ioptr->flg1 & IO_OUP && coutdev( ioptr->fdn ) == 0 )
             ioptr->flg1 |= IO_COT;
-#endif					/* HOST386 */
+#endif					// HOST386
 
         if ( ioptr->flg1 & IO_WRC )
             ioptr->bfb = 0;

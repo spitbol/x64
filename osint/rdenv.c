@@ -48,7 +48,7 @@ int  vn;
     char *p;
 
     savech = make_c_str(&vq[vn]);
-    p = (char *)getenv(vq);			/* use library lookup routine */
+    p = (char *)getenv(vq);			// use library lookup routine
     unmake_c_str(&vq[vn], savech);
     return p;
 
@@ -85,7 +85,7 @@ char *p;
 }
 
 
-/* Intel compiler bug? */
+// Intel compiler bug?
 void unmake_c_str(p, savech)
 char *p;
 char savech;

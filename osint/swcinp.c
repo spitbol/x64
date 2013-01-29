@@ -180,7 +180,7 @@ char	**fileptr;
         close(0);
 #else
         if (lastfd > 0)
-            close(lastfd);				/* if second or subsequent call to swcinp */
+            close(lastfd);				// if second or subsequent call to swcinp
 #endif
         clrbuf();
         /*
@@ -190,7 +190,7 @@ char	**fileptr;
         if ( *cp == '-' )
         {
 #if USEFD0FD1
-            dup( originp );		/* returns 0 */
+            dup( originp );		// returns 0
 #endif
             lastfd = 0;
             goto swci_exit;
@@ -205,12 +205,12 @@ char	**fileptr;
             lastfd = -1;
             switch (i)
             {
-            case 0:		/* first pass, no alteration */
+            case 0:		// first pass, no alteration
                 if ((lastfd = tryopen(cp)) >= 0 )
                     goto swci_exit;
                 break;
 #if !RUNTIME
-            case 1:		/* try with .spt extension */
+            case 1:		// try with .spt extension
                 if (!executing && appendext(cp, COMPEXT, namebuf, 0))
                     if ((lastfd = tryopen(namebuf)) >= 0 )
                     {
@@ -218,10 +218,10 @@ char	**fileptr;
                         goto swci_exit;
                     }
                 break;
-#endif					/* !RUNTIME */
+#endif					// !RUNTIME
 
 #if SAVEFILE
-            case 2:		/* try with .spx extension */
+            case 2:		// try with .spx extension
                 if (!executing && curfile == 1 && appendext(cp, RUNEXT, namebuf, 0))
                     if ((lastfd = tryopen(namebuf)) >= 0 )
                     {
@@ -229,7 +229,7 @@ char	**fileptr;
                         goto swci_exit;
                     }
                 break;
-#endif					/* SAVEFILE */
+#endif					// SAVEFILE
             case 3:
                 /*
                 /   Error opening file, so issue a message and exit
@@ -242,7 +242,7 @@ char	**fileptr;
         }
     }
     else
-        lastfd = -1;		/* ATTEMPT TO FIX PIPE BUG FOR COPPEN 10-FEB-95 */
+        lastfd = -1;		// ATTEMPT TO FIX PIPE BUG FOR COPPEN 10-FEB-95
 
 #if USEFD0FD1
     sfn = "stdin";
@@ -251,17 +251,17 @@ char	**fileptr;
     {
         if (!executing && filecnt)
         {
-            wrterr( "No END statement found in source file(s)." );   /* V1.16 */
+            wrterr( "No END statement found in source file(s)." );   // V1.16
             __exit(1);
         }
         close(0);
         clrbuf();
-        dup( originp );			/* returns 0 */
-        readshell0 = 0;			/* only do this once */
+        dup( originp );			// returns 0
+        readshell0 = 0;			// only do this once
         lastfd = 0;
     }
 
-#endif					/* !USEFD0FD1 */
+#endif					// !USEFD0FD1
     /*
     /  Control comes here after all files specified on the command line
     /  have been read.
@@ -292,7 +292,7 @@ void save0()
         clrbuf();
         dup( originp );
     }
-#endif					/* USEFD0FD1 */
+#endif					// USEFD0FD1
 }
 
 
@@ -311,9 +311,9 @@ void restore0()
         close( 0 );
         clrbuf();
         dup( save_fd0 );
-        close( save_fd0 );	 	/* 1.13 for HOST(1,"cmd") */
+        close( save_fd0 );	 	// 1.13 for HOST(1,"cmd")
     }
-#endif					/* USEFD0FD1 */
+#endif					// USEFD0FD1
 }
 
 
@@ -417,15 +417,15 @@ int  force;
     if ( r != (char *) 0)
     {
         if ( force )
-            p = r;					/* copy over old extension */
+            p = r;					// copy over old extension
         else
-            return 0;				/* no force but extension present */
+            return 0;				// no force but extension present
     }
 
     p = mystrcpy(p, ext);
     return p - result;
 }
-#endif          /* !(RUNTIME) */
+#endif          // !(RUNTIME)
 
 /*
  * mystrcpy(p,q)  - copy string q to string p.  Return pointer to '\0' in p;

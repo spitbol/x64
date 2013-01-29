@@ -56,32 +56,32 @@ zysin()
     register struct scblk *scb = XR (struct scblk *);
     register struct ioblk *ioptr = MK_MP(fcb->iob, struct ioblk *);
 
-    /* ensure iob is open, fail if unsuccessful */
+    // ensure iob is open, fail if unsuccessful
     if ( !(ioptr->flg1 & IO_OPN) )
         return EXIT_3;
 
-    /* read the data, fail if unsuccessful */
+    // read the data, fail if unsuccessful
     while( (reclen = osread( fcb->mode, fcb->rsz, ioptr, scb )) < 0)
     {
-        if ( reclen == (word)-1 )		/* EOF?			*/
+        if ( reclen == (word)-1 )		// EOF?
         {
-            if ( ioptr->fdn )	/* If not fd 0, true EOF*/
+            if ( ioptr->fdn )	// If not fd 0, true EOF
                 return EXIT_1;
-            else			/* Fd 0 - try to switch files */
+            else			// Fd 0 - try to switch files
                 if ( swcinp( inpcnt, inpptr ) < 0 )
-                    return EXIT_1;     /* If can't switch      */
+                    return EXIT_1;     // If can't switch
 
-            ioptr->flg2 &= ~IO_RAW; /* Switched. Set IO_RAW */
-            if ( (testty( ioptr->fdn ) == 0 ) && /* If TTY */
-                    ( fcb->mode == 0 ) )	/* and raw mode,   */
-                ioptr->flg2 |= IO_RAW;   /* then set IO_RAW */
+            ioptr->flg2 &= ~IO_RAW; // Switched. Set IO_RAW
+            if ( (testty( ioptr->fdn ) == 0 ) && // If TTY
+                    ( fcb->mode == 0 ) )	// and raw mode,
+                ioptr->flg2 |= IO_RAW;   // then set IO_RAW
 
         }
-        else				/* I/O Error		*/
+        else				// I/O Error
             return EXIT_2;
     }
-    scb->len = reclen;		/* set record length	*/
+    scb->len = reclen;		// set record length
 
-    /* normal return */
+    // normal return
     return NORMAL_RETURN;
 }
