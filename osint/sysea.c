@@ -46,7 +46,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-static char *eacpy Params((char *s1, char *s2, int n));
+static char *eacpy (char *s1, char *s2, int n);
 
 static char *eacpy(s1, s2, n)
 char *s1, *s2;

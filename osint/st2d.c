@@ -22,7 +22,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-static int stc_d Params((char *out, unsigned int in, int outlen, int signflag));
+static int stc_d (char *out, unsigned int in, int outlen, int signflag);
 
 static int stc_d(out, in, outlen, signflag)
 register char *out;

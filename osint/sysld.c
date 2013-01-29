@@ -50,8 +50,8 @@ This file is part of Macro SPITBOL.
 #include <fcntl.h>
 
 #if EXTFUN
-static word openloadfile Params((char *namebuf));
-static void closeloadfile Params((word fd));
+static word openloadfile (char *namebuf);
+static void closeloadfile (word fd);
 #endif					/* EXTFUN */
 
 zysld()

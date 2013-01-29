@@ -49,14 +49,6 @@ typedef unsigned int muword;	/* MINIMAL unsigned word	*/
 #define near
 #endif
 
-#ifndef Params
-#if PROTOTYPES
-#define Params(a) a
-#else
-#define Params(a) ()
-#endif
-#endif
-
 #include "blocks32.h"
 #include <string.h>
 
@@ -171,11 +163,11 @@ enum ext_type {						/* Executing under:						*/
 #include <memory.h>
 #endif
 
-mword     retint Params((int val, union block *presult));
-mword     retnstrt Params((char *s, size_t n, union block *presult));
-mword     retnxdtf Params((void *s, size_t n, union block *presult));
-mword     retreal Params((double val, union block *presult));
-mword     retstrt Params((char *s, union block *presult));
+mword     retint (int val, union block *presult);
+mword     retnstrt (char *s, size_t n, union block *presult);
+mword     retnxdtf (void *s, size_t n, union block *presult);
+mword     retreal (double val, union block *presult);
+mword     retstrt (char *s, union block *presult);
 
 #endif          /* __extern32__ */
 /*-------------------------- end of extern32.h ------------------------*/

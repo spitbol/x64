@@ -43,9 +43,9 @@ int	pid;
 {
     int	deadpid, status;
     struct  chfcb   *chptr;
-    SigType (*hstat)Params((int)),
-            (*istat)Params((int)),
-            (*qstat)Params((int));
+    SigType (*hstat)(int),
+            (*istat)(int),
+            (*qstat)(int);
 
     istat	= signal( SIGINT, SIG_IGN );
     qstat	= signal( SIGQUIT ,SIG_IGN );

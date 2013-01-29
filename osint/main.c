@@ -51,7 +51,7 @@ This file is part of Macro SPITBOL.
 #define DEBUG 0
 #endif
 
-void setout Params(( void ));
+void setout ( void );
 
 main( argc, argv )
 int	argc;

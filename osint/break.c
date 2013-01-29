@@ -33,9 +33,9 @@ int	brkpnd;
 #undef SigType
 #define SigType void
 
-static SigType (*cstat)Params((int));
-void catchbrk Params((int sig));
-void rearmbrk Params((void));
+static SigType (*cstat)(int);
+void catchbrk (int sig);
+void rearmbrk (void);
 
 void startbrk()							/* start up break logic */
 {

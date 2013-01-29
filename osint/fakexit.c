@@ -39,7 +39,7 @@ int status;
 {}
 #endif
 
-extern void _exit Params((int status));
+extern void _exit (int status);
 
 void __exit(code)
 int code;

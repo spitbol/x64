@@ -55,7 +55,7 @@ This file is part of Macro SPITBOL.
  */
 static  int i;
 static  char *cp;
-static char *filenamearg Params((int argc, char *argv[]));
+static char *filenamearg (int argc, char *argv[]);
 
 char **getargs( argc, argv )
 int		argc;

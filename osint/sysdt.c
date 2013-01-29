@@ -42,8 +42,8 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #include <time.h>
 
-static int datecvt Params(( char *cp, int type ));
-static int timeconv Params(( char *tp, struct tm *tm ));
+static int datecvt ( char *cp, int type );
+static int timeconv ( char *tp, struct tm *tm );
 
 /* conv() rewritten to avoid dependence on library remainder routine */
 void conv (dest, value)

@@ -41,7 +41,7 @@ This file is part of Macro SPITBOL.
 
 #include <fcntl.h>
 
-static	void	openprev Params((void));
+static	void	openprev (void);
 
 /*
 /  Helper function to back up one file in the include nesting.

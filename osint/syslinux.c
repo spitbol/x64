@@ -47,21 +47,21 @@ typedef mword (*PFN)();				/* pointer to function */
 static union block *scanp;			/* used by scanef/nextef */
 static pXFNode xnfree = (pXFNode)0;	/* list of freed blocks */
 
-extern IATYPE f_2_i Params((double ra));
-extern double i_2_f Params((IATYPE ia));
-extern double f_add Params((double arg, double ra));
-extern double f_sub Params((double arg, double ra));
-extern double f_mul Params((double arg, double ra));
-extern double f_div Params((double arg, double ra));
-extern double f_neg Params((double ra));
-extern double f_atn Params((double ra));
-extern double f_chp Params((double ra));
-extern double f_cos Params((double ra));
-extern double f_etx Params((double ra));
-extern double f_lnf Params((double ra));
-extern double f_sin Params((double ra));
-extern double f_sqr Params((double ra));
-extern double f_tan Params((double ra));
+extern IATYPE f_2_i (double ra);
+extern double i_2_f (IATYPE ia);
+extern double f_add (double arg, double ra);
+extern double f_sub (double arg, double ra);
+extern double f_mul (double arg, double ra);
+extern double f_div (double arg, double ra);
+extern double f_neg (double ra);
+extern double f_atn (double ra);
+extern double f_chp (double ra);
+extern double f_cos (double ra);
+extern double f_etx (double ra);
+extern double f_lnf (double ra);
+extern double f_sin (double ra);
+extern double f_sqr (double ra);
+extern double f_tan (double ra);
 
 static APDF flttab = {
     (double (*)())f_2_i,			/* float to integer */
@@ -93,7 +93,7 @@ misc miscinfo = {0x105,				/* internal version number */
 
 /* Assembly-language helper needed for final linkage to function:
  */
-extern mword callextfun Params((struct efblk *efb, union block **sp, mword nargs, mword nbytes));
+extern mword callextfun (struct efblk *efb, union block **sp, mword nargs, mword nbytes);
 
 
 /*

@@ -122,10 +122,6 @@ This file is part of Macro SPITBOL.
 #define	POLLING		1	/* enable polling of operating system */
 #endif
 
-#ifndef PROTOTYPES
-#define	PROTOTYPES	1	/* assume compiler can handle prototypes */
-#endif
-
 #ifndef USEFD0FD1
 #define	USEFD0FD1	1	/* use file descriptor 0 & 1 for stdio	*/
 #endif
@@ -306,16 +302,6 @@ typedef long IATYPE;
 #ifndef PollCount
 #define PollCount MAXPOSWORD
 #endif					/* PollCount */
-
-
-/*
- *   Define Params macro to use or ignore function prototypes.
- */
-#if PROTOTYPES
-#define Params(a) a
-#else
-#define Params(a) ()
-#endif
 
 
 /*

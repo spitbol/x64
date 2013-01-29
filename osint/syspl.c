@@ -46,7 +46,7 @@ This file is part of Macro SPITBOL.
 
 #if POLLING
 #define pollevent()
-extern  rearmbrk Params((void));
+extern  rearmbrk (void);
 extern	int	brkpnd;
 #define stmtDelay PollCount
 #endif

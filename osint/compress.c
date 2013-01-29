@@ -78,10 +78,10 @@ This file is part of Macro SPITBOL.
 #define DECODE_SIZE (4096*sizeof(unsigned char))
 #define BUFF_SIZE (2048*sizeof(unsigned char))
 
-static unsigned int input_code Params((word fd));
-static void output_code Params((unsigned int code));
-static unsigned char *decode_string Params((unsigned char *buffer, unsigned int code));
-static int find_match Params((int hash_prefix, unsigned int hash_character));
+static unsigned int input_code (word fd);
+static void output_code (unsigned int code);
+static unsigned char *decode_string (unsigned char *buffer, unsigned int code);
+static int find_match (int hash_prefix, unsigned int hash_character);
 
 /*
 / Memory needed for tables for expansion (EMEMORY) and compression (CMEMORY)

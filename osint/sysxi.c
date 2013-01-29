@@ -78,12 +78,12 @@ extern word	*etext;
 struct svfilehdr svfheader;
 char uargbuf[UargSize];
 
-static void hcopy Params((char *src, char *dst, int len, int max));
+static void hcopy (char *src, char *dst, int len, int max);
 #endif					/* SAVEFILE */
 
 #if SAVEFILE | EXECSAVE
-extern ssize_t read Params((int F, void *Buf, size_t Cnt)); 
-extern off_t LSEEK Params((int F, off_t Loc, int Method));
+extern ssize_t read (int F, void *Buf, size_t Cnt);
+extern off_t LSEEK (int F, off_t Loc, int Method);
 #endif          /* EXECFILE  | SAVEFILE */
 
 zysxi()
@@ -690,7 +690,7 @@ int fd;
             SET_WB(pTSCBLK->str);
             SET_WA(pTSCBLK->str + svfheader.stacklength);
             if (svfheader.stacklength) {
-	
+
                 MINIMAL(MINIMAL_RELAJ);
 	    }
 

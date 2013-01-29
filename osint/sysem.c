@@ -66,8 +66,8 @@ This file is part of Macro SPITBOL.
 
 extern unsigned char ERRDIST errors[];
 extern unsigned char ERRDIST phrases[];
-word msgcopy Params((word n, unsigned char ERRDIST *source, char *dest ));
-word special Params((word c));
+word msgcopy (word n, unsigned char ERRDIST *source, char *dest );
+word special (word c);
 
 zysem()
 {

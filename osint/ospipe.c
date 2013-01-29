@@ -26,7 +26,7 @@ typedef int HFILE;
 char	*getshell();
 char	*lastpath();
 
-static int doshell Params((struct ioblk *ioptr));
+static int doshell (struct ioblk *ioptr);
 /*
 /   ospipe( ioptr )
 /
