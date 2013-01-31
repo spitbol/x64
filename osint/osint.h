@@ -45,31 +45,13 @@ extern uword	minimal_id;
  *  8088 or under Windows, the near pointers within the heap need to
  *  be converted to and from far pointers in the C data space.
  */
-#if __NEAR__
-extern void *mk_mp(void near *minp);
-#define MK_MP(minp,type) ((type)mk_mp((void near *)(minp)))
-#define MP_OFF(cp,type) ((type)(void NEAR *)(cp))
-#else					// __NEAR__
 #define MK_MP(minp,type) ((type)(minp))
 #define MP_OFF(cp,type) ((type)cp)
-#endif					// __NEAR__
 
 /*
 /   Macros to fetch a value of appropriate type from a compiler register
 */
 
-#if __NEAR__
-#define CP(type)	(sizeof(type) == 4 ? MK_MP(reg_cp,type) : ((type) reg_cp))
-#define IA(type)	((type) reg_ia)
-#define WA(type)	(sizeof(type) == 4 ? MK_MP(reg_wa,type) : ((type) reg_wa))
-#define WB(type)	(sizeof(type) == 4 ? MK_MP(reg_wb,type) : ((type) reg_wb))
-#define WC(type)	(sizeof(type) == 4 ? MK_MP(reg_wc,type) : ((type) reg_wc))
-#define XR(type)	(sizeof(type) == 4 ? MK_MP(reg_xr,type) : ((type) reg_xr))
-#define XL(type)	(sizeof(type) == 4 ? MK_MP(reg_xl,type) : ((type) reg_xl))
-#define PC(type)	(sizeof(type) == 4 ? MK_MP(reg_pc,type) : ((type) reg_pc))
-#define XS(type)	(sizeof(type) == 4 ? MK_MP(reg_xs,type) : ((type) reg_xs))
-#define RA(type)  (sizeof(type) == 8 ? MK_MP(reg_ra,type) : ((type) reg_ra))
-#else         // __NEAR__
 #define CP(type)	((type) reg_cp)
 #define IA(type)	((type) reg_ia)
 #define WA(type)	((type) reg_wa)
@@ -79,8 +61,7 @@ extern void *mk_mp(void near *minp);
 #define XL(type)	((type) reg_xl)
 #define PC(type)	((type) reg_pc)
 #define XS(type)	((type) reg_xs)
-#define RA(type)  ((type) reg_ra)    // v1.30.12
-#endif          // __NEAR__
+#define RA(type)        ((type) reg_ra)    
 /*
 /   Macros to set a value of appropriate type into a compiler register.
 */

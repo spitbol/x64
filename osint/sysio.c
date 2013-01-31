@@ -78,7 +78,7 @@ zysio()
             fcb->rsz = -tioblk.len;	// raw mode
             fcb->mode = 0;
         }
-        fcb->iob = MP_OFF(save_iob, struct ioblk NEAR *);
+        fcb->iob = MP_OFF(save_iob, struct ioblk *);
 
         /*
         /	If allocating a new FCB, check to see if it is the first FCB for
@@ -96,7 +96,7 @@ zysio()
             */
             charptr += FCSIZE;	// point to IOBLK
             iob = (struct ioblk *)charptr;
-            fcb->iob = MP_OFF(iob, struct ioblk NEAR *);
+            fcb->iob = MP_OFF(iob, struct ioblk *);
             charptr += IOSIZE;	// point to BFBLK
             bfb = (struct bfblk *) charptr;
 
@@ -107,10 +107,10 @@ zysio()
             iob->len = IOSIZE;		// length
             iob->fnm = MP_OFF((tioblk.flg2 & IO_ENV) ?
                               XL( struct scblk *) :  // filearg 1
-                              XR( struct scblk * ), struct scblk NEAR *);  // filename
+                              XR( struct scblk * ), struct scblk *);  // filename
 
             iob->pid = 0;			// process id
-            iob->bfb = MP_OFF(bfb, struct bfblk NEAR *);	// buffer
+            iob->bfb = MP_OFF(bfb, struct bfblk *);	// buffer
             iob->fdn = tioblk.fdn;	// file descriptor
             iob->flg1 = tioblk.flg1;// flags
             iob->flg2 = tioblk.flg2;
@@ -129,7 +129,7 @@ zysio()
                 switch( iob->fdn )
                 {
                 case 0:
-                    iob->bfb = MP_OFF(pINPBUF, struct bfblk NEAR *);
+                    iob->bfb = MP_OFF(pINPBUF, struct bfblk *);
                     break;
                 case 1:
                     iob->bfb = 0;

@@ -191,13 +191,6 @@ This file is part of Macro SPITBOL.
 #define writefar write
 #endif
 
-#ifdef NEAR
-#define __NEAR__ 1
-#else
-#define NEAR
-#define __NEAR__ 0
-#endif
-
 #define GCCx86 (GCCi32 | GCCi64)
 
 #define UNIX  LINUX

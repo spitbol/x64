@@ -18,46 +18,36 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*
-/	File:  SYSLD.C		Version:  01.03
-/	---------------------------------------
-/
-/	Contents:	Function zysld
-/
-*/
-
-/*
-/	zysld - load external function
-/
-/	Parameters:
-/	    XR - pointer to SCBLK containing function name
-/	    XL - pointer to SCBLK containing library name
-/	Returns:
-/	    XR - pointer to code (or other data structure) to be stored in the EFBLK.
-/	Exits:
-/	    1 - function does not exist
-/	    2 - I/O error loading function
-/	    3 - insufficient memory
-/
-/
-/	WARNING:  THIS FUNCTION CALLS A FUNCTION WHICH MAY INVOKE A GARBAGE
-/	COLLECTION.  STACK MUST REMAIN WORD ALIGNED AND COLLECTABLE.
-/
-*/
+//	zysld - load external function
+//
+//	Parameters:
+//	    XR - pointer to SCBLK containing function name
+//	    XL - pointer to SCBLK containing library name
+//	Returns:
+//	    XR - pointer to code (or other data structure) to be stored in the EFBLK.
+//	Exits:
+//	    1 - function does not exist
+//	    2 - I/O error loading function
+//	    3 - insufficient memory
+//
+//
+//	WARNING:  THIS FUNCTION CALLS A FUNCTION WHICH MAY INVOKE A GARBAGE
+//	COLLECTION.  STACK MUST REMAIN WORD ALIGNED AND COLLECTABLE.
+//
 
 #include "port.h"
-
+#include <dlfcn.h>
 #include <fcntl.h>
 
 #if EXTFUN
-static word openloadfile (char *namebuf);
-static void closeloadfile (word fd);
+static void *openloadfile (char *namebuf);
+static void closeloadfile (void *fd);
 #endif					// EXTFUN
 
 zysld()
 {
 #if EXTFUN
-    word fd;					// keep stack word-aligned
+    void *fd;					// keep stack word-aligned
     void *result = 0;
 
     fd = openloadfile(pTSCBLK->str);
@@ -86,7 +76,7 @@ word fd;
 {
 }
 
-static word openloadfile(file)
+static void *openloadfile(file)
 char *file;
 {
 
@@ -94,6 +84,14 @@ char *file;
     register struct scblk *fnscb = XR (struct scblk *);
     char *savecp;
     char savechar;
+    void *handle;
+	handle = dlopen(file, RTLD_LAZY);
+	if (handle == NULL) 
+		return EXIT_1;
+	else {
+		// todo ...
+		return EXIT_NORMAL
+	}
 #else					// EXTFUN
     return EXIT_1;
 }
