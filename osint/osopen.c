@@ -54,7 +54,7 @@ struct	ioblk	*ioptr;
     /*
     /	Establish a few pointers and filename length.
     */
-    scptr	= MK_MP(ioptr->fnm, struct scblk *);	// point to filename SCBLK
+    scptr	= ((struct scblk *) (ioptr->fnm));	// point to filename SCBLK
     if (ioptr->flg2 & IO_ENV)
     {
         if (optfile(scptr, pTSCBLK))

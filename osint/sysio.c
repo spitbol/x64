@@ -157,7 +157,7 @@ zysio()
     /	If file is not open, open it now so that 'file not found' exit
     /	can be taken.
     */
-    iob = MK_MP(fcb->iob, struct ioblk *);
+    iob = ((struct ioblk *) (fcb->iob));
 
     if ( !(iob->flg1 & IO_OPN) ) {
         if ( osopen(iob) != 0 )

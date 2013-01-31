@@ -99,7 +99,7 @@ zysri()
     saveptr = scb->str + length;		// Save char following buffer for \n
     savechr = *saveptr;
 
-    MK_MP(ttyiobin.bfb, struct bfblk *)->size = ++length; // Size includes extra byte for \n
+    ((struct bfblk *) (ttyiobin.bfb))->size = ++length; // Size includes extra byte for \n
 
     length = osread( 1, length, &ttyiobin, scb );
 

@@ -52,7 +52,7 @@ zysbs()
 {
     register int c;
     register struct fcblk *fcb = WA(struct fcblk *);
-    register struct ioblk *iob = MK_MP(fcb->iob, struct ioblk *);
+    register struct ioblk *iob = ((struct ioblk *) (fcb->iob));
 
     // ensure the file is open
     if ( !(iob->flg1 & IO_OPN) )
@@ -121,7 +121,7 @@ zysbs()
 static int back(ioptr)
 struct ioblk *ioptr;
 {
-    register struct bfblk *bfptr = MK_MP(ioptr->bfb, struct bfblk *);
+    register struct bfblk *bfptr = ((struct bfblk *) (ioptr->bfb));
     unsigned char c;
 
     while (bfptr) {							// if file is buffered

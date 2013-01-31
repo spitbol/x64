@@ -54,13 +54,11 @@ int	pid;
     while ( (deadpid = wait( &status )) != pid  &&  deadpid != -1 )
     {
         for ( chptr = GET_MIN_VALUE(R_FCB,struct chfcb *); chptr != 0;
-                chptr = MK_MP(chptr->nxt, struct chfcb *) )
+                chptr = ((struct chfcb *) (chptr->nxt)) )
         {
-            if ( deadpid == MK_MP(MK_MP(chptr->fcp, struct fcblk *)->iob,
-                                  struct ioblk *)->pid )
+            if ( deadpid == ((struct ioblk *) (((struct fcblk *) (chptr->fcp))->iob))->pid )
             {
-                MK_MP(MK_MP(chptr->fcp, struct fcblk *)->iob,
-                      struct ioblk *)->flg2 |= IO_DED;
+                ((struct ioblk *) (((struct fcblk *) (chptr->fcp))->iob))->flg2 |= IO_DED;
                 break;
             }
         }

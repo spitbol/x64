@@ -129,7 +129,7 @@ mword nargs;
     mword *r;
     mword *s;
 
-    pnode = MK_MP(efb->efcod, pXFNode);
+    pnode = ((pXFNode) (efb->efcod));
     if (pnode == NULL)
         return (union block *)-1L;
 
@@ -414,7 +414,7 @@ int io;
 
     MINSAVE();
     for (dnamp = GET_MIN_VALUE(DNAMP,union block *);
-            scanp < dnamp; scanp = MK_MP(MP_OFF(scanp,muword)+blksize, union block *)) {
+            scanp < dnamp; scanp = ((union block *) (MP_OFF(scanp,muword)+blksize)) {
         type = scanp->scb.sctyp;				// any block type lets us access type word
         SET_WA(type);
         SET_XR(scanp);
@@ -422,7 +422,7 @@ int io;
         blksize = WA(mword);
         if (type != ef_type)					// keep searching if not EFBLK
             continue;
-        pnode = MK_MP(scanp->efb.efcod, pXFNode);	// it's an EFBLK; get address of XNBLK
+        pnode = ((pXFNode) (scanp->efb.efcod));	// it's an EFBLK; get address of XNBLK
         if (!pnode)							// keep searching if no longer in use
             continue;
 
@@ -445,7 +445,7 @@ int io;
             break;
         }
         // point to next block
-        scanp = MK_MP(MP_OFF(scanp,muword)+blksize, union block *);
+        scanp = ((union block *) (MP_OFF(scanp,muword)+blksize));
         break;								// break out of for loop
     }
     MINRESTORE();
@@ -485,7 +485,7 @@ struct efblk *efb;
     pXFNode pnode, pnode2;
     unsigned char *bufp;
 
-    pnode = MK_MP(efb->efcod, pXFNode);
+    pnode = ((pXFNode) (efb->efcod));
     if (pnode == NULL)
         return;
 

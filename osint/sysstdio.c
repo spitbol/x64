@@ -208,7 +208,7 @@ void clrbuf()
 {
     register struct bfblk *bfptr;
 
-    bfptr = MK_MP(inpiob.bfb,struct bfblk *);
+    bfptr = ((struct bfblk *) (inpiob.bfb));
     bfptr->next = bfptr->fill = 0;
     bfptr->offset = (FILEPOS)0;
     bfptr->curpos = (FILEPOS)-1;

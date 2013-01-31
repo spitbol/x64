@@ -69,11 +69,11 @@ zysou()
     }
 
     // ensure iob is open, fail if unsuccessful
-    if ( !(MK_MP(fcb->iob, struct ioblk *)->flg1 & IO_OPN) )
+    if ( !(((struct ioblk *) (fcb->iob))->flg1 & IO_OPN) )
         return EXIT_1;
 
     // write the data, fail if unsuccessful
-    if ( oswrite( fcb->mode, fcb->rsz, WA(word), MK_MP(fcb->iob, struct ioblk *), XR(struct scblk *)) != 0 )
+    if ( oswrite( fcb->mode, fcb->rsz, WA(word), ((struct ioblk *) (fcb->iob)), XR(struct scblk *)) != 0 )
         return EXIT_2;
 
     // normal return

@@ -64,8 +64,8 @@ register struct chfcb *chb;
 {
     while( chb != 0 )
     {
-        osclose( MK_MP(MK_MP(chb->fcp, struct fcblk *)->iob, struct ioblk *) );
-        chb = MK_MP(chb->nxt, struct chfcb *);
+        osclose( ((struct ioblk *) (((struct fcblk *) (chb->fcp))->iob)) );
+        chb = ((struct chfcb *) (chb->nxt));
     }
 }
 

@@ -48,7 +48,7 @@ This file is part of Macro SPITBOL.
 zysen()
 {
     register struct fcblk *fcb = WA (struct fcblk *);
-    register struct ioblk *iob = MK_MP(fcb->iob, struct ioblk *);
+    register struct ioblk *iob = ((struct ioblk *) (fcb->iob));
 
     // ensure the file is open
     if ( !(iob->flg1 & IO_OPN) )

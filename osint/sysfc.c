@@ -99,7 +99,7 @@ again:
     */
     if ( fcb )
     {
-        i = MK_MP(fcb->iob, struct ioblk *)->flg1 & (IO_INP | IO_OUP);
+        i = ((struct ioblk *) (fcb->iob))->flg1 & (IO_INP | IO_OUP);
         if ( !(tioblk.flg1 & i) )
             tioblk.flg2 |= IO_ILL;
     }
@@ -123,7 +123,7 @@ again:
         */
         if ( (length_fname && fd_spec) )
             return EXIT_1;
-        if ( (fcb && (MK_MP(fcb->iob, struct ioblk *)->flg1 & IO_OPN)) )
+        if ( (fcb && (((struct ioblk *) (fcb->iob))->flg1 & IO_OPN)) )
             return EXIT_2;
 
         save_iob = 0;
@@ -159,7 +159,7 @@ again:
         {
             allocsize = FCSIZE;	//    alloc new FCB
             // BAD!! Garbage collect could move ioblk before sysio is called
-            save_iob = MK_MP(fcb->iob, struct ioblk *);
+            save_iob = ((struct ioblk *) (fcb->iob));
         }
         else				// if no args then
             allocsize = 0;		//   no new FCB needed

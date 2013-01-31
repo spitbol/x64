@@ -142,7 +142,7 @@ struct	ioblk	*ioptr;
     /   terminate it with a Nul character.  Remember that
     /   command is in string with form "!*command* options".
     */
-    scptr = MK_MP(ioptr->fnm,struct scblk *);	// point to cmd scblk
+    scptr = ((struct scblk *) (ioptr->fnm));	// point to cmd scblk
     if (ioptr->flg2 & IO_ENV) {
         if (optfile(scptr, pTSCBLK))
             return -1;

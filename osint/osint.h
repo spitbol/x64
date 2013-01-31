@@ -40,12 +40,11 @@ extern uword	minimal_id;
 
 /*
  *  Macros to deal with converting pointers within the Minimal heap
- *  to pointers that the C code can deal with. 
+ *  to pointers that the C code can deal with.
  *  These macros were needed for x86, due to NEAR/FAR distinction, which
  *  is no longer relevant, so that the macros should be eliminated when
  *  convenient, to improve readability.
  */
-#define MK_MP(minp,type) ((type)(minp))
 #define MP_OFF(cp,type) ((type)cp)
 
 /*
@@ -61,7 +60,7 @@ extern uword	minimal_id;
 #define XL(type)	((type) reg_xl)
 #define PC(type)	((type) reg_pc)
 #define XS(type)	((type) reg_xs)
-#define RA(type)        ((type) reg_ra)    
+#define RA(type)        ((type) reg_ra)
 /*
 /   Macros to set a value of appropriate type into a compiler register.
 */

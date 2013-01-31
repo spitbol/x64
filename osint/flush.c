@@ -45,7 +45,7 @@ This file is part of Macro SPITBOL.
 int flush( ioptr )
 struct	ioblk	*ioptr;
 {
-    register struct bfblk	*bfptr = MK_MP(ioptr->bfb, struct bfblk *);
+    register struct bfblk	*bfptr = ((struct bfblk *) (ioptr->bfb));
     register int	ioerrcnt = 0;
     register word	n;
 
@@ -83,7 +83,7 @@ struct	ioblk	*ioptr;
 int fsyncio( ioptr )
 struct	ioblk	*ioptr;
 {
-    register struct bfblk *bfptr = MK_MP(ioptr->bfb, struct bfblk *);
+    register struct bfblk *bfptr = ((struct bfblk *) (ioptr->bfb));
     FILEPOS n;
 
     if (bfptr) {

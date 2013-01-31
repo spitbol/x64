@@ -54,7 +54,7 @@ zysin()
     register word	reclen;
     register struct fcblk *fcb = WA (struct fcblk *);
     register struct scblk *scb = XR (struct scblk *);
-    register struct ioblk *ioptr = MK_MP(fcb->iob, struct ioblk *);
+    register struct ioblk *ioptr = ((struct ioblk *) (fcb->iob));
 
     // ensure iob is open, fail if unsuccessful
     if ( !(ioptr->flg1 & IO_OPN) )

@@ -86,7 +86,7 @@ char *file;
     char savechar;
     void *handle;
 	handle = dlopen(file, RTLD_LAZY);
-	if (handle == NULL) 
+	if (handle == NULL)
 		return EXIT_1;
 	else {
 		// todo ...

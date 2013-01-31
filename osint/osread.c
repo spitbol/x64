@@ -53,7 +53,7 @@ struct	ioblk	*ioptr;
 struct	scblk	*scptr;
 
 {
-    register struct bfblk	*bfptr = MK_MP(ioptr->bfb, struct bfblk *);
+    register struct bfblk	*bfptr = ((struct bfblk *) (ioptr->bfb));
     register char	*cp = scptr->str;
     register char   *bp;
     register word	cnt = 0;
@@ -411,7 +411,7 @@ struct	scblk	*scptr;
 word fillbuf(ioptr)
 struct ioblk *ioptr;
 {
-    register struct bfblk *bfptr = MK_MP(ioptr->bfb, struct bfblk *);
+    register struct bfblk *bfptr = ((struct bfblk *) (ioptr->bfb));
     word n;
 
     fsyncio(ioptr);           // synchronize file and buffer

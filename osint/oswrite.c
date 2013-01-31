@@ -55,7 +55,7 @@ struct	scblk	*scptr;
     char	savech2;
 
     register char	*cp = scptr->str;
-    register struct bfblk *bfptr = MK_MP(ioptr->bfb, struct bfblk *);
+    register struct bfblk *bfptr = ((struct bfblk *) (ioptr->bfb));
     register word fdn = ioptr->fdn;
     word	linelen;
     int	ioerrcnt = 0;
