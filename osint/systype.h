@@ -22,13 +22,8 @@ This file is part of Macro SPITBOL.
 /   The following manifest constants define the target hardware platform
 /   and tool chain.
 /
-/               running on a:
 /   GCCi32      Intel 32-bit x86, GNU GCC
 /   GCCi64      Intel 64-bit x86, GNU GCC
-/
-/   The following manifest constants define the target operating system.
-/
-/   LINUX       Linux
 /
 */
 

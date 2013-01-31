@@ -40,10 +40,10 @@ extern uword	minimal_id;
 
 /*
  *  Macros to deal with converting pointers within the Minimal heap
- *  to pointers that the C code can deal with.  On most systems, the
- *  two types of pointers are equivalent.  But on machines like the
- *  8088 or under Windows, the near pointers within the heap need to
- *  be converted to and from far pointers in the C data space.
+ *  to pointers that the C code can deal with. 
+ *  These macros were needed for x86, due to NEAR/FAR distinction, which
+ *  is no longer relevant, so that the macros should be eliminated when
+ *  convenient, to improve readability.
  */
 #define MK_MP(minp,type) ((type)(minp))
 #define MP_OFF(cp,type) ((type)cp)
@@ -131,8 +131,8 @@ enum CALLS {
 /*
 /	Function and macro to get/set value from/to MINIMAL dataspace.
 /	The argument is an ordinal number defined below.
-/   GET_DATA_OFFSET returns the address of a Minimal data value.
-/   GET_CODE_OFFSET returns the address of a Minimal routine.
+/   	GET_DATA_OFFSET returns the address of a Minimal data value.
+/   	GET_CODE_OFFSET returns the address of a Minimal routine.
 /	GET_MIN_VALUE returns the contents of an item of Minimal data.
 /	SET_MIN_VALUE sets the contents of an item of Minimal data.
 */
@@ -190,8 +190,8 @@ END_MIN_DATA;
 */
 extern void	B_EFC();
 extern void	B_ICL();
-extern void B_RCL();
-extern void B_SCL();
+extern void 	B_RCL();
+extern void 	B_SCL();
 extern void	B_VCT();
 extern void	B_XNT();
 extern void	B_XRT();
