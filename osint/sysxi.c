@@ -429,7 +429,7 @@ word *stkbase, stklen;
     word result = 0;
     struct scblk *vscb = XR( struct scblk * );
 #if EXTFUN
-    unsigned char FAR *bufp;
+    unsigned char *bufp;
     word textlen;
 #endif					// EXTFUN
 
@@ -479,27 +479,27 @@ word *stkbase, stklen;
         svfheader.compress = 0;
 
     // write out header
-    result |= wrtaout( (unsigned char FAR *)&svfheader, sizeof( struct svfilehdr ) );
+    result |= wrtaout( (unsigned char *)&svfheader, sizeof( struct svfilehdr ) );
 
     // write out -u command line string if there is one
-    result |= compress( (unsigned char FAR *)uarg, svfheader.uarglen );
+    result |= compress( (unsigned char *)uarg, svfheader.uarglen );
 
     // write out stack
-    result |= compress( (unsigned char FAR *)stkbase, stklen );
+    result |= compress( (unsigned char *)stkbase, stklen );
 
     // write out working section
-    result |= compress( (unsigned char FAR *)svfheader.sec4adr, svfheader.sec4size );
+    result |= compress( (unsigned char *)svfheader.sec4adr, svfheader.sec4size );
 
     // write out important portion of static region
-    result |= compress( (unsigned char FAR *)GET_MIN_VALUE(HSHTB,char *),
+    result |= compress( (unsigned char *)GET_MIN_VALUE(HSHTB,char *),
                         GET_MIN_VALUE(STATE,uword)-GET_MIN_VALUE(HSHTB,uword) );
 
     // write out dynamic portion of heap
-    result |= compress( (unsigned char FAR *)GET_MIN_VALUE(DNAMB,char *),
+    result |= compress( (unsigned char *)GET_MIN_VALUE(DNAMB,char *),
                         GET_MIN_VALUE(DNAMP,uword) - GET_MIN_VALUE(DNAMB,uword) );
 
     // write out MINIMAL register block
-    result |= compress( (unsigned char FAR *)&reg_block, reg_size );
+    result |= compress( (unsigned char *)&reg_block, reg_size );
 #if EXTFUN
     scanef();			// prepare to scan for external functions
     while ((textlen = (word)nextef(&bufp, 1)) != 0)
@@ -527,7 +527,7 @@ int fd;
     FILEPOS pos;
     char *cp;
 #if EXTFUN
-    unsigned char FAR *bufp;
+    unsigned char *bufp;
     int textlen;
 #endif					// EXTFUN
     word adjusts[15];				// structure to hold adjustments
@@ -553,7 +553,7 @@ int fd;
             */
 
             doexpand(0, (char *)0, 0);	// turn off expansion for header
-            if ( expand( fd, (unsigned char FAR *)&svfheader, sizeof(struct svfilehdr) ) )
+            if ( expand( fd, (unsigned char *)&svfheader, sizeof(struct svfilehdr) ) )
                 goto reload_ioerr;
 
             // Check header validity.   ** UNDER CONSTRUCTION **
@@ -651,11 +651,11 @@ int fd;
 
             // Read saved -u command string if present
             if (svfheader.uarglen)
-                if ( expand( fd, (unsigned char FAR *)uargbuf, svfheader.uarglen ) )
+                if ( expand( fd, (unsigned char *)uargbuf, svfheader.uarglen ) )
                     goto reload_ioerr;
 
             // Read saved stack from save file into tscblk
-            if ( expand( fd, (unsigned char FAR *)pTSCBLK->str, svfheader.stacklength ) )
+            if ( expand( fd, (unsigned char *)pTSCBLK->str, svfheader.stacklength ) )
                 goto reload_ioerr;
 
             SET_MIN_VALUE(STBAS, svfheader.stbas,word);
@@ -663,16 +663,16 @@ int fd;
             stacksiz = svfheader.stacksiz;
 
             // Reload compiler working globals section
-            if ( expand( fd, GET_DATA_OFFSET(G_AAA,unsigned char FAR *), svfheader.sec4size ) )
+            if ( expand( fd, GET_DATA_OFFSET(G_AAA,unsigned char *), svfheader.sec4size ) )
                 goto reload_ioerr;
 
             // Reload important portion of static region
-            if ( expand(fd, (unsigned char FAR *)basemem+svfheader.statoff,
+            if ( expand(fd, (unsigned char *)basemem+svfheader.statoff,
                         GET_MIN_VALUE(STATE,uword)-GET_MIN_VALUE(HSHTB,uword)) )
                 goto reload_ioerr;
 
             // Reload heap
-            if ( expand(fd, (unsigned char FAR *)basemem+svfheader.dynoff,
+            if ( expand(fd, (unsigned char *)basemem+svfheader.dynoff,
                         GET_MIN_VALUE(DNAMP,uword)-GET_MIN_VALUE(DNAMB,uword)) )
                 goto reload_ioerr;
 
@@ -705,7 +705,7 @@ int fd;
              * The only Minimal register in need of relocation is CP,
              * and this is handled by the rereloc routine.
              */
-            if ( expand( fd, (unsigned char FAR *)&reg_block, reg_size ) )
+            if ( expand( fd, (unsigned char *)&reg_block, reg_size ) )
                 goto reload_ioerr;
 
             /* No Minimal calls past this point should be done if it

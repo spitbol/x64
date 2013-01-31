@@ -164,9 +164,6 @@ This file is part of Macro SPITBOL.
  */
 // compiler defs
 // operating system defs
-#ifndef LINUX
-#define LINUX       0
-#endif
 #ifndef SYSVERSION
 #define SYSVERSION 255
 #endif
@@ -185,15 +182,7 @@ This file is part of Macro SPITBOL.
 #define ERRDIST
 #endif
 
-#ifndef FAR
-#define FAR
-#define readfar read
-#define writefar write
-#endif
-
 #define GCCx86 (GCCi32 | GCCi64)
-
-#define UNIX  LINUX
 
 typedef long word;
 typedef unsigned long uword;

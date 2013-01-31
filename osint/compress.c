@@ -178,7 +178,7 @@ unsigned int code;
     {
         if (bufcnt >= BUFF_SIZE)
         {
-            wrtaout((unsigned char FAR *) buffer, bufcnt);
+            wrtaout((unsigned char *) buffer, bufcnt);
             bufptr = buffer;
             bufcnt = 0;
         }
@@ -238,7 +238,7 @@ unsigned int code;
 int
 expand( fd, startadr, size )
 int	fd;
-unsigned char FAR *startadr;
+unsigned char *startadr;
 uword size;
 
 {
@@ -357,7 +357,7 @@ uword size;
     {
         output_code(0);			// This code flushes the output buffer
         if (bufcnt)
-            wrtaout((unsigned char FAR *)buffer, bufcnt);
+            wrtaout((unsigned char *)buffer, bufcnt);
         bufcnt = 0;
         if (extra)
             sbrk(-extra);		// release any extra memory acquired
@@ -410,7 +410,7 @@ uword size;
 */
 int
 compress( startadr, size )
-unsigned char FAR *startadr;
+unsigned char *startadr;
 uword size;
 {
     unsigned int index;

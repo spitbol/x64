@@ -33,12 +33,10 @@ This file is part of Macro SPITBOL.
 
 #define RAW_BIT RAW
 
-#if UNIX
 #include <sys/stat.h>
 struct  stat	statbuf;
 #include <termios.h>
 struct termios termiosbuf;
-#endif
 
 int testty( fd )
 

@@ -23,11 +23,8 @@ This file is part of Macro SPITBOL.
 /   and tool chain.
 /
 /               running on a:
-/   BCC32       Intel 32-bit x86, Borland C++ compiler (Windows command line)
-/   VCC         Intel 32-bit x86, Microsoft Visual C (Windows command line)
 /   GCCi32      Intel 32-bit x86, GNU GCC
 /   GCCi64      Intel 64-bit x86, GNU GCC
-/   RS6         IBM RS6000 (Power)
 /
 /   The following manifest constants define the target operating system.
 /
@@ -44,7 +41,4 @@ This file is part of Macro SPITBOL.
 #define EXECFILE    0
 #define FLTHDWR     0   // Change to 1 when do floating ops inline
 #define GCCi32      1
-#define LINUX       1
 #define SAVEFILE    1
-
-

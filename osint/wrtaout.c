@@ -86,7 +86,7 @@ int	exe;
 /   wrtaout( startadr, size )
 /
 /   Parameters:
-/	startadr	FAR char pointer to first address to write
+/	startadr	char pointer to first address to write
 /	size		number of bytes to write
 /   Returns:
 /	0	successful
@@ -95,10 +95,10 @@ int	exe;
 /   Write data to a.out file.
 */
 int wrtaout( startadr, size )
-unsigned char FAR *startadr;
+unsigned char *startadr;
 uword size;
 {
-    if ( (uword)writefar( aoutfd, startadr, size ) != size )
+    if ( (uword)write( aoutfd, startadr, size ) != size )
         return	-2;
 
     fp += size;			//   advance file position
@@ -190,10 +190,10 @@ word errflag;
 */
 int rdaout( fd, startadr, size )
 int	fd;
-unsigned char FAR *startadr;
+unsigned char *startadr;
 uword size;
 {
-    if ( (uword)readfar( fd, startadr, size ) != size )
+    if ( (uword)read( fd, startadr, size ) != size )
         return	-2;
 
     fp += size;			//   advance file position
