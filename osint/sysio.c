@@ -114,7 +114,6 @@ zysio()
             iob->fdn = tioblk.fdn;	// file descriptor
             iob->flg1 = tioblk.flg1;// flags
             iob->flg2 = tioblk.flg2;
-            iob->eol1 = tioblk.eol1;// end of line chars
             iob->share = tioblk.share;	// sharing mode
             iob->action= tioblk.action; // file open action
 

@@ -81,10 +81,9 @@ struct	scblk	*scptr;
             /*
              * Unbuffered Line Mode
              */
-            register char	eol1 = ioptr->eol1;
 #ifdef EOT
             // Ignore eot char if IO_EOT bit set
-            register char	eot	 = (ioptr->flg1 & IO_EOT) ? eol1 : EOT;
+            register char	eot	 = (ioptr->flg1 & IO_EOT) ? EOL : EOT;
 #endif
             word i;
             char c;
@@ -98,7 +97,7 @@ struct	scblk	*scptr;
                         if (ioptr->flg2 & IO_LF) {
                             ioptr->flg2 &= ~IO_LF;
                         }
-                        if (c == eol1) {
+                        if (c == EOL) {
                             break;							// exit loop on eol
                         }
 #ifdef EOT
@@ -126,11 +125,11 @@ struct	scblk	*scptr;
                     cnt = n;
 
                     for (i = cnt; i--; )
-                    {   // scan for eol1
+                    {   // scan for EOL
 #ifdef EOT
-                        if ((c = *cp++) == eol1 || c == eot)
+                        if ((c = *cp++) == EOL || c == eot)
 #else
-                        if (*cp++ == eol1)
+                        if (*cp++ == EOL)
 #endif
                         {   // if end of line (or EOF)
                             findeol = 0;
@@ -151,10 +150,10 @@ struct	scblk	*scptr;
                             i = read(fdn, &c, 1);
                             if (i > 0) {
 #ifdef EOT
-                                if (c == eol1 || c == eot) {
+                                if (c == EOL || c == eot) {
                                     if (0 == 1)
 #else
-                                if (c == eol1) {
+                                if (c == EOL) {
                                     if (0)
 #endif
                                         doset(ioptr, -1L, 1);	// back up over non-eol2
@@ -216,10 +215,9 @@ struct	scblk	*scptr;
             /*
              * Buffered Line Mode
              */
-            register char	eol1 = ioptr->eol1;
 #ifdef EOT
             // Ignore eot char if IO_EOT bit set
-            register char	eot	 = (ioptr->flg1 & IO_EOT) ? eol1 : EOT;
+            register char	eot	 = (ioptr->flg1 & IO_EOT) ? EOL : EOT;
 #endif
             char	*savecp;
             char	savechar;
@@ -257,17 +255,17 @@ struct	scblk	*scptr;
                 // point bp and oldbp at the first char to be copied
                 oldbp = bp = bfptr->buf + bfptr->next;
 
-                // plant an eol1 at the end of the valid input
+                // plant an EOL at the end of the valid input
                 savecp = bp + n;
                 savechar = *savecp;
-                *savecp = eol1;
+                *savecp = EOL;
 
 #ifdef EOT
-                // copy characters until we hit eol1 or EOT
-                while ( *bp != eol1 && *bp != eot )
+                // copy characters until we hit EOL or EOT
+                while ( *bp != EOL && *bp != eot )
 #else					// EOT
-                // copy characters until we hit eol1
-                while ( *bp != eol1 )
+                // copy characters until we hit EOL
+                while ( *bp != EOL )
 #endif					// EOT
 
                     *cp++ = *bp++;
@@ -285,7 +283,7 @@ struct	scblk	*scptr;
 
             /*
              *	Second phase: discard characters up to and
-             *	including the next EOL1 in the input.
+             *	including the next EOL in the input.
              *	This loop is optimized to miminize startup
              *	overhead, because it will usually be executed
              *	only once (but never less than once!)
@@ -314,8 +312,8 @@ struct	scblk	*scptr;
                  *	Pick up a character and bump the offset.
                  */
 #ifdef EOT
-                // loop until we see eol1 or end of text
-            } while ( (savechar = bfptr->buf[bfptr->next++]) != eol1 &&
+                // loop until we see EOL or end of text
+            } while ( (savechar = bfptr->buf[bfptr->next++]) != EOL &&
                       savechar != eot );
 
             if ( !(ioptr->flg1 & IO_EOT) && savechar == EOT ) {
@@ -323,9 +321,9 @@ struct	scblk	*scptr;
                 return (cnt > 0 ? cnt: -1);
             }
 #else					// EOT
-                // loop until we see an eol1
+                // loop until we see an EOL
             }
-            while ( bfptr->buf[bfptr->next++] != eol1 );
+            while ( bfptr->buf[bfptr->next++] != EOL );
 #endif					// EOT
 
         }

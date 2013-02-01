@@ -74,13 +74,13 @@ struct	scblk	*scptr;
         recsiz -= linelen;
 
         /*
-        /  If in line mode, temperarily replace the character(s) following the
-        /  string (record) to be written with eol1.
+        /  If in line mode, temperarily replace the characte following the
+        /  string (record) to be written with EOL.
         */
         if ( mode == 1 ) {
             saveloc = cp + linelen;
             savech = *saveloc;
-            *saveloc = ioptr->eol1;
+            *saveloc = EOL;
             linelen++;
         }
 
@@ -210,7 +210,7 @@ struct	scblk	*scptr;
 
         /*
         /  If in line mode, restore the character(s) that were temporarily
-        /  replaced with eol1.
+        /  replaced with EOL.
         */
         if ( mode == 1 ) {
             *saveloc = savech;

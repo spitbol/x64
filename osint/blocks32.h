@@ -278,7 +278,7 @@ struct ioblk {
     mword			iobfdn;			// O/S file descriptor number
     mword			iobflg1;		// flags 1 (see below)
     mword			iobflg2;		// flags 2 (see below)
-    mword			iobeol1;		// end of line character 1
+    mword			iobeol;			// end of line character 1
     mword			iobshare; 		// sharing mode
     mword			iobaction;		// file open actions
 };

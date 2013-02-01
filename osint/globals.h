@@ -123,7 +123,7 @@ NoInit(	CFile	cfiles[Ncmdf]);	// Array of structures to record info
     STDERRFD,               /* file descriptor 2    */ \
     IO_INP+IO_OPN+IO_SYS+IO_CIN, /* flg1            */ \
 	0,						/* flg2					*/ \
-	EOL1}					/* end of line char 1	*/ 
+	EOL}					/* end of line char 1	*/
 
 #define ttyioboutinit {0,   /* type word            */ \
 	ORECSIZ,				/* length				*/ \
@@ -133,7 +133,7 @@ NoInit(	CFile	cfiles[Ncmdf]);	// Array of structures to record info
     STDERRFD,               /* file descriptor 2    */ \
     IO_OUP+IO_OPN+IO_SYS+IO_COT+IO_WRC, /* flg1     */ \
 	0,						/* flg2					*/ \
-	EOL1}					/* end of line char 1	*/ 
+	EOL}					/* end of line char 1	*/
 
 Init(   struct ioblk ttyiobin, ttyiobininit);
 Init(   struct ioblk ttyiobout, ttyioboutinit);
@@ -146,7 +146,7 @@ Init(   struct ioblk ttyiobout, ttyioboutinit);
 	0,						/* file descriptor 0	*/ \
 	IO_INP+IO_OPN+IO_SYS,	/* flg1:  				*/ \
 	0,						/* flg2:				*/ \
-	EOL1}					/* end of line char 1	*/ 
+	EOL}					/* end of line char 1	*/
 
 Init(	struct ioblk inpiob, inpiobinit);
 
@@ -159,7 +159,7 @@ Init(	struct ioblk inpiob, inpiobinit);
 	1,						/* file descriptor 1	*/ \
 	IO_OUP+IO_OPN+IO_SYS+IO_WRC,  /* flg1: 			*/ \
 	0,						/* flg2:				*/ \
-	EOL1}					/* end of line char 1	*/ 
+	EOL}					/* end of line char 1	*/
 Init(	struct ioblk oupiob, outiobinit);
 
 NoInit( char  namebuf[256]);

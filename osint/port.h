@@ -194,8 +194,8 @@ typedef long IATYPE;
 /   Define the default end of line characters.  Use Unix definitions
 /   as the default.  Override in systype.h.
 */
-#ifndef EOL1
-#define EOL1	'\n'
+#ifndef EOL
+#define EOL	'\n'
 #endif
 
 /*

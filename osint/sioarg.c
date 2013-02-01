@@ -86,7 +86,6 @@ struct	scblk	*scptr;
     ioptr->typ = 0;			// no args seen yet
     ioptr->fdn = 0;			// no shell provided fd
     ioptr->pid = IOBUFSIZ;	// buffer size
-    ioptr->eol1 = EOL1;		// default end of line char 1
     if (ioflg)
     {   // output
         ioptr->len = maxsize;	// line mode record len
@@ -206,22 +205,7 @@ struct	scblk	*scptr;
                 return	-1;
             break;
 
-            /*
-            /   M - specify end-of-line character 1.
-            */
-        case 'M':
-            /*
-            /   N - specify end-of-line character 2.
-            */
-        case 'N':
-            v = scnint( cp + cnt, scptr->len - cnt, &cnt );
-            if ( v >= 0 && v <= 255 ) {
-                if (ch == 'M')
-                    ioptr->eol1 = v;
-            }
-            else
-                return -1;
-            break;
+	/* M and N options no longer needed (DS 1 Feb 2013)
 
             /*
             /   R - raw mode access of v characters.

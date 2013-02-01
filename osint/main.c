@@ -252,20 +252,18 @@ char	*argv[];
 void wrterr(s)
 char	*s;
 {
-    static char eol[1] = {EOL1};
     write( STDERRFD, s, length(s) );
-    write( STDERRFD,  eol, sizeof(eol) );
+    write( STDERRFD,  EOL, 1 );
 }
 
-void wrtint(n)
+void wrtintz(n)
 int	n;
 {
-    static char eol[1] = {EOL1};
     /*
     	char str[16];
     	itoa(n,str);
     	write( STDOUTFD, str, length(str) );
-    	write( STDOUTFD,  eol, sizeof(eol) );
+    	write( STDOUTFD,  EOL, 1 );
     */
 }
 
@@ -277,9 +275,8 @@ int	n;
 void wrtmsg(s)
 char	*s;
 {
-    static char eol[1] = {EOL1};
     write( STDOUTFD, s, length(s) );
-    write( STDOUTFD,  eol, sizeof(eol) );
+    write( STDOUTFD,  EOL, 1 );
 }
 
 /*

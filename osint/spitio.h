@@ -117,7 +117,6 @@ struct ioblk
     word	fdn;			//  file descriptor number
     word	flg1;			//  first nine flags
     word	flg2;			//  second nine flags
-    word	eol1;			//  end of line character 1
     word	share;			//	sharing mode
     word	action;			//  file open actions
 };
