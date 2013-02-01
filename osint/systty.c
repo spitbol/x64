@@ -121,11 +121,7 @@ void ttyoutfdn(h)
 File_handle h;
 {
     ttyiobout.fdn = h;
-#if HOST386
-    if (coutdev(h))
-#else
     if (testty(h))
-#endif
         ttyiobout.flg1 &= ~IO_COT;
     else
         ttyiobout.flg1 |= IO_COT;

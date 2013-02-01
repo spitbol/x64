@@ -60,11 +60,6 @@ struct	scblk	*scptr;
     register word fdn = ioptr->fdn;
     register word	n;
 
-#if HOST386
-    if ( ioptr->flg1 & IO_CIN )			// End any special screen modes
-        termhost();
-#endif					// HOST386
-
     /*
     /	Distinguish buffered from unbuffered I/O.
     */

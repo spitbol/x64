@@ -156,12 +156,5 @@ char  *oupptr;
     }
 
 swcexit:
-#if HOST386
-    if ( coutdev( 1 ) == 0 )		// Test for character output
-        getpriob()->flg1 |= IO_COT;
-    else
-        getpriob()->flg1 &= ~IO_COT;
-#endif					// HOST386
-
     return	retval;
 }

@@ -56,10 +56,6 @@ This file is part of Macro SPITBOL.
 #define	FLTHDWR		0	// floating point hardware not present
 #endif
 
-#ifndef	HOST386
-#define HOST386		0	// no 80386 host functions
-#endif
-
 #ifndef	MATHHDWR
 #define	MATHHDWR	0	// extended math hardware not present
 #endif

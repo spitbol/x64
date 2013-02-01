@@ -112,9 +112,6 @@ zysxi()
         if ( scb->typ == TYPE_SCL )		// must be SCBLK!
         {
             close_all( WB( struct chfcb * ) );	// V1.11
-#if HOST386
-            termhost();
-#endif					// HOST386
             save0();		// V1.14 make sure fd 0 OK
             doexec( scb );		// execute command
             restore0();		// just in case
@@ -143,9 +140,6 @@ zysxi()
     /*
     /	Close all files and flush buffers
     */
-#if HOST386
-    termhost();
-#endif					// HOST386
     close_all( WB( struct chfcb * ) );	// V1.11
 
     //	Prepare optional file name as a C string, open output file

@@ -73,9 +73,6 @@ register struct chfcb *chb;
 
 void zysej()
 {
-#if HOST386
-    termhost();
-#endif					// HOST386
 
     if (!in_gbcol) {		// Only if not mid-garbage collection
         close_all( XL( struct chfcb * ) );

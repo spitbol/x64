@@ -378,9 +378,6 @@ zyshs()
         /*
         / Any other integer value is processed by the system-specific functions
         */
-#if HOST386
-        return host386( (int)val );
-#endif					// HOST386
 
         /*
         /   Here if first argument wasn't an integer or was an illegal value.

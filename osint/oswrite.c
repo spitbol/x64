@@ -60,11 +60,6 @@ struct	scblk	*scptr;
     word	linelen;
     int	ioerrcnt = 0;
 
-#if HOST386
-    if ( ioptr->flg1 & IO_COT ) 			// End any special screen modes
-        termhost();
-#endif					// HOST386
-
     do {
         // If line mode, limit characters written on a line
         if ( mode == 1 && recsiz > linesiz )

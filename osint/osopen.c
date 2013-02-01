@@ -149,12 +149,6 @@ struct	ioblk	*ioptr;
         if ( ioptr->flg1 & IO_OUP  &&  testty( fd ) == 0 )
             ioptr->flg1 |= IO_WRC;
 
-#if HOST386
-        // Test for character output.  Definicon doesn't have screen functions
-        if ( ioptr->flg1 & IO_OUP && coutdev( ioptr->fdn ) == 0 )
-            ioptr->flg1 |= IO_COT;
-#endif					// HOST386
-
         if ( ioptr->flg1 & IO_WRC )
             ioptr->bfb = 0;
 

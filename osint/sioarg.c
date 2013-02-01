@@ -176,13 +176,6 @@ struct	scblk	*scptr;
             if ( ioflg && (testty(v) == 0) )
                 ioptr->flg1 |= IO_WRC;
 
-#if HOST386
-            // Test for character input/output to a device
-            if ( ioflg && !coutdev( v ) )	// Test for character output
-                ioptr->flg1 |= IO_COT;
-#endif					// HOST386
-
-
             break;
 
             /*
