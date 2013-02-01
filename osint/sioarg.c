@@ -164,9 +164,7 @@ struct	scblk	*scptr;
             /*
             /   E- ignore end-of-text character (DOS only)
             */
-        case 'E':
-            ioptr->flg1 |= IO_EOT;
-            break;
+	// Support for EOT eliminated on 1 Feb 2013 since not needed for Linux.
 
             /*
             /   F - set file descriptor number (file opened by shell or external func).

@@ -81,10 +81,6 @@ struct	scblk	*scptr;
             /*
              * Unbuffered Line Mode
              */
-#ifdef EOT
-            // Ignore eot char if IO_EOT bit set
-            register char	eot	 = (ioptr->flg1 & IO_EOT) ? EOL : EOT;
-#endif
             word i;
             char c;
 
@@ -99,12 +95,6 @@ struct	scblk	*scptr;
                         if (c == EOL) {
                             break;							// exit loop on eol
                         }
-#ifdef EOT
-                        if ( c == eot ) {
-                            n = 0;
-                            break;
-                        }
-#endif
                         if (cnt < recsiz) {
                             cnt++;
                             *cp++ = c;
@@ -124,11 +114,7 @@ struct	scblk	*scptr;
 
                     for (i = cnt; i--; )
                     {   // scan for EOL
-#ifdef EOT
-                        if ((c = *cp++) == EOL || c == eot)
-#else
                         if (*cp++ == EOL)
-#endif
                         {   // if end of line (or EOF)
                             findeol = 0;
                             cnt -= i + 1;
@@ -147,13 +133,8 @@ struct	scblk	*scptr;
                         do {									// until find eol
                             i = read(fdn, &c, 1);
                             if (i > 0) {
-#ifdef EOT
-                                if (c == EOL || c == eot) {
-                                    if (0 == 1)
-#else
                                 if (c == EOL) {
                                     if (0)
-#endif
                                         doset(ioptr, -1L, 1);	// back up over non-eol2
                                     break;						// exit loop on eol
                                 }
@@ -213,10 +194,6 @@ struct	scblk	*scptr;
             /*
              * Buffered Line Mode
              */
-#ifdef EOT
-            // Ignore eot char if IO_EOT bit set
-            register char	eot	 = (ioptr->flg1 & IO_EOT) ? EOL : EOT;
-#endif
             char	*savecp;
             char	savechar;
 
@@ -258,14 +235,8 @@ struct	scblk	*scptr;
                 savechar = *savecp;
                 *savecp = EOL;
 
-#ifdef EOT
-                // copy characters until we hit EOL or EOT
-                while ( *bp != EOL && *bp != eot )
-#else					// EOT
                 // copy characters until we hit EOL
                 while ( *bp != EOL )
-#endif					// EOT
-
                     *cp++ = *bp++;
 
                 // restore the stolen character
@@ -309,21 +280,9 @@ struct	scblk	*scptr;
                  *	The buffer is guaranteed non-empty,
                  *	Pick up a character and bump the offset.
                  */
-#ifdef EOT
-                // loop until we see EOL or end of text
-            } while ( (savechar = bfptr->buf[bfptr->next++]) != EOL &&
-                      savechar != eot );
-
-            if ( !(ioptr->flg1 & IO_EOT) && savechar == EOT ) {
-                    bfptr->next--;				// back up so see it repeatedly
-                return (cnt > 0 ? cnt: -1);
-            }
-#else					// EOT
                 // loop until we see an EOL
             }
             while ( bfptr->buf[bfptr->next++] != EOL );
-#endif					// EOT
-
         }
 
         else {

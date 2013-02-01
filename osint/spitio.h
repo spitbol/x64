@@ -139,7 +139,9 @@ struct ioblk
 #define IO_CIN		0x00000020	// console input from non-disk device
 #define IO_SYS		0x00000040	// -f option used instead of name
 #define IO_WRC		0x00000080	// output without buffering
-#define IO_EOT		0x00000100	// Ignore end-of-text (control-Z) char
+// IO_EOT only needed for DOS so is not used/supported for Linux.
+//# define IO_EOT		0x00000100	// Ignore end-of-text (control-Z) char
+
 
 // Flags in flg2
 #define IO_PIP		0x00000001	// pipe
