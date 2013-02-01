@@ -90,9 +90,6 @@ This file is part of Macro SPITBOL.
  * 	Turn on system-specific features unless specifically turned off
  * 	in systype.h
  */
-#ifndef DIRECT
-#define	DIRECT		1	// access Minimal data directly
-#endif
 
 /*
 #ifndef EXECFILE

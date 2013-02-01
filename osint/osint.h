@@ -135,7 +135,6 @@ enum CALLS {
 /	GET_MIN_VALUE returns the contents of an item of Minimal data.
 /	SET_MIN_VALUE sets the contents of an item of Minimal data.
 */
-#if DIRECT
 #define GET_CODE_OFFSET(vn,type) ((type)vn)
 #define GET_DATA_OFFSET(vn,type) ((type)&vn)
 #define GET_MIN_VALUE(vn,type) ((type)vn)
@@ -198,71 +197,6 @@ extern void	DFFNC();
 extern void	S_AAA();
 extern void	S_YYY();
 
-#else					// DIRECT
-extern  word *minoff (word valno);
-#define GET_CODE_OFFSET(vn,type) ((type)minoff(vn))
-#define GET_DATA_OFFSET(vn,type) ((type)minoff(vn))
-#define GET_MIN_VALUE(vn,type)	((type)*minoff(vn))
-#define SET_MIN_VALUE(vn,val,type) (*(type *)minoff(vn) = (type)(val))
-/*
-/   Ordinals for accessing MINIMAL values.
-/
-/   The order of entries here must correspond to the order of
-/   valtab entries in the INTER assembly language module.
-*/
-enum VALS {
-    GBCNT,
-    HEADV,
-    MXLEN,
-    STAGE,
-    TIMSX,
-    DNAMB,
-    DNAMP,
-    STATE,
-    B_EFC,
-    B_ICL,
-    B_SCL,
-    B_VCT,
-    B_XNT,
-    B_XRT,
-    STBAS,
-    STATB,
-    POLCT,
-    TYPET,
-    DFFNC,
-    LOWSPMIN,
-    FLPRT,
-    FLPTR,
-    GTCEF,
-    HSHTB,
-    PMHBS,
-    R_FCB,
-    C_AAA,
-    C_YYY,
-    G_AAA,
-    W_YYY,
-    S_AAA,
-    S_YYY,
-    R_COD,
-    KVSTN,
-    KVDMP,
-    KVFTR,
-    KVCOM,
-    KVPFL,
-    CSWFL,
-    STMCS,
-    STMCT,
-    TICBLK,
-    TSCBLK,
-    ID1,
-    ID2BLK,
-    INPBUF,
-    TTYBUF,
-    B_RCL,
-    END_MIN_DATA
-};
-
-#endif					// DIRECT
 
 // Some shorthand notations
 #define pID1 GET_DATA_OFFSET(ID1,struct scblk *)
