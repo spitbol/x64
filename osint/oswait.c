@@ -34,7 +34,6 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-#if PIPES
 
 #include <signal.h>
 
@@ -68,4 +67,3 @@ int	pid;
     signal( SIGQUIT,qstat );
     signal( SIGHUP,hstat );
 }
-#endif					// PIPES

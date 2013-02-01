@@ -74,11 +74,9 @@ zysst()
     if ( !(iob->flg1 & IO_OPN) )
         return EXIT_3;
 
-#if PIPES
     // not allowed to do a set of a pipe
     if ( iob->flg2 & IO_PIP )
         return EXIT_4;
-#endif					// PIPES
 
     // whence may come in either integer or string form
     icp = WC( struct icblk * );

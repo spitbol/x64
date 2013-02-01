@@ -45,7 +45,6 @@ This file is part of Macro SPITBOL.
 /
 */
 
-#if PIPES
 /*
 /   The file argument may instead be a command string with options as in
 /
@@ -57,7 +56,6 @@ This file is part of Macro SPITBOL.
 /   separate the end of the command string from the space preceding any
 /   options.
 */
-#endif					// PIPES
 
 /*  Parameters:
 /	scptr	pointer to SCBLK containg filename string
@@ -75,9 +73,7 @@ struct	scblk	*scptr;
 {
     register word cnt, len, len2;
     register char	*cp;
-#if PIPES
     register char delim;
-#endif					// PIPES
 
     /*
     /	Null strings have filenames with lengths of 0.
@@ -109,7 +105,6 @@ struct	scblk	*scptr;
     // Look for space as the options delimiter
     cp = scptr->str;
 
-#if PIPES
     /*
     /	Here to bypass spaces within a pipe command.
     /   Count characters through second occurrence of delimiting
@@ -129,7 +124,6 @@ struct	scblk	*scptr;
             ++cnt;             //   include it in the count
         return cnt;
     }
-#endif					// PIPES
 
     /*
     /	Here for a normal filename.  Just count the number of characters

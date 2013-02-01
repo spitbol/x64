@@ -62,7 +62,6 @@ struct	ioblk	*ioptr;
     if ( close(ioptr->fdn ) < 0 )
         errcnt++;
 
-#if PIPES
     /*
     /	For a pipe, must deal with process at other end.
     */
@@ -90,7 +89,6 @@ struct	ioblk	*ioptr;
         else
             oswait( ioptr->pid );
     }
-#endif					// PIPES
 
     /*
     /	Return number of errors.

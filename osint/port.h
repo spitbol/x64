@@ -107,10 +107,6 @@ This file is part of Macro SPITBOL.
 #endif
 */
 
-#ifndef PIPES
-#define	PIPES		1	// include pipe code
-#endif
-
 /*
  *  Other defaulted values that may be overridden in systype.h
  */

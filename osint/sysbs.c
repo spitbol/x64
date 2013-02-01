@@ -59,9 +59,7 @@ zysbs()
         return EXIT_1;
 
     if (!testty(iob->fdn)
-#if PIPES
             || iob->flg2 & IO_PIP				// not allowed on pipes
-#endif
        )
         return EXIT_2;						// character device
 

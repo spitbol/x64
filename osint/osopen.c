@@ -66,7 +66,6 @@ struct	ioblk	*ioptr;
     cp	= scptr->str;		// point to filename string
     len	= lenfnm( scptr );	// get length of filename
 
-#if PIPES
     /*
     /	Handle pipes here.
     */
@@ -81,8 +80,6 @@ struct	ioblk	*ioptr;
     /	Handle files here.
     */
     else
-#endif					// PIPES
-
     {
         savech	= make_c_str(&cp[len]);	//   else temporarily terminate	filename
         if ( ioptr->flg1 & IO_OUP ) //  output file

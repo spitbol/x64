@@ -20,7 +20,6 @@ This file is part of Macro SPITBOL.
 
 
 #include "port.h"
-#if PIPES
 typedef int HFILE;
 
 char	*getshell();
@@ -161,4 +160,3 @@ struct	ioblk	*ioptr;
     return -1;					// should not get here
 }
 
-#endif					// PIPES

@@ -88,7 +88,6 @@ struct	scblk	*scptr;
             word i;
             char c;
 
-#if PIPES
             if (ioptr->flg2 & IO_PIP) {				// if pipe, read 1 char at a time
 
                 do {								// because there's no chance to backup
@@ -114,7 +113,6 @@ struct	scblk	*scptr;
                 } while (n > 0);						// loop until eol or eof
             }
             else
-#endif					// PIPES
             {
                 char findeol = 1;
 
