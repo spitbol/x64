@@ -44,18 +44,14 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if POLLING
 #define pollevent()
 extern  rearmbrk (void);
 extern	int	brkpnd;
 #define stmtDelay PollCount
-#endif
 
 
 zyspl()
 {
-#if POLLING
-
     // Make simple polling case the fastest by avoiding switch statement
     if (WA(word) == 0) {
 #if !ENGINE
@@ -70,9 +66,6 @@ zyspl()
         }
 #endif
     }
-#else					// POLLING
-    SET_WA((word)MAXPOSWORD);			// Effectively shut off polling
-#endif					// POLLING
     return NORMAL_RETURN;
 }
 

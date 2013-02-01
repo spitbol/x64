@@ -111,10 +111,6 @@ This file is part of Macro SPITBOL.
 #define	PIPES		1	// include pipe code
 #endif
 
-#ifndef	POLLING
-#define	POLLING		1	// enable polling of operating system
-#endif
-
 #ifndef USEFD0FD1
 #define	USEFD0FD1	1	// use file descriptor 0 & 1 for stdio
 #endif
@@ -265,7 +261,7 @@ typedef long IATYPE;
 
 /*
  *   Define number of SPITBOL statements to be executed between
- *   interface polling intervals.  Only used if POLLING is 1.
+ *   interface polling intervals.  
  *   Unix systems can get away with an infinite polling interval,
  *   because their interrupts are asynchronous, and do not require
  *   true polling.

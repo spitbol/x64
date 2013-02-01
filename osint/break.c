@@ -26,7 +26,6 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#if POLLING
 int	brkpnd;
 
 #include <signal.h>
@@ -71,5 +70,4 @@ void rearmbrk()							// rearm after a trap occurs
 {
     signal(SIGINT,catchbrk);			// set to catch traps
 }
-#endif					// POLLING
 
