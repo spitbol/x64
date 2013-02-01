@@ -54,8 +54,5 @@ zysdc()
         write( STDERRFD, pID1->str, pID1->len );
         wrterr( cprtmsg );
     }
-
-#if DATECHECK
-#endif
     return NORMAL_RETURN;
 }

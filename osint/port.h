@@ -37,10 +37,6 @@ This file is part of Macro SPITBOL.
 #define	ALTCOMP		0	// no alternate string comparison
 #endif
 
-#ifndef DATECHECK
-#define DATECHECK   0   // no check for expiration date
-#endif
-
 #ifndef ENGINE
 #define ENGINE		0	// not building engine version
 #endif
