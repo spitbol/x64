@@ -99,8 +99,7 @@ extern	struct ioblk ttyiobin;
     STDERRFD,               /* file descriptor 2  */ \
     IO_INP+IO_OPN+IO_SYS+IO_CIN, /* flg1 */ \
         0,              /* flg2 */ \
-        EOL1,           /* end of line char 1 */ \
-        EOL2}		/* end of line char 2 */
+        EOL1}           /* end of line char 1 */ 
 
 #define ttyioboutinit {0,   /* type word */ \
         ORECSIZ,           /* length */ \
@@ -110,8 +109,8 @@ extern	struct ioblk ttyiobin;
     STDERRFD,              /* file descriptor 2  */ \
     IO_OUP+IO_OPN+IO_SYS+IO_COT+IO_WRC, /* flg1 */ \
         0,                 /* flg2                             */ \
-        EOL1,              /* end of line char 1 */ \
-        EOL2}		   /* end of line char 2 */
+        EOL1}              /* end of line char 1 */ 
+
 extern	struct ioblk ttyiobout;
 
 #define inpiobinit      \
@@ -123,8 +122,8 @@ extern	struct ioblk ttyiobout;
         0,             /* file descriptor 0  */ \
         IO_INP+IO_OPN+IO_SYS,   /* flg1: */ \
         0,             /* flg2:*/ \
-        EOL1,          /* end of line char 1 */ \
-        EOL2 }	/* end of line char 2 */
+        EOL1}          /* end of line char 1 */ 
+
 extern	struct ioblk inpiob;
 
 
@@ -137,8 +136,8 @@ extern	struct ioblk inpiob;
         1,           /* file descriptor 1 */ \
         IO_OUP+IO_OPN+IO_SYS+IO_WRC,  /* flg1: */ \
         0,           /* flg2: */ \
-        EOL1,        /* end of line char 1 */ \
-        EOL2 }	/* end of line char 2 */
+        EOL1}        /* end of line char 1 */ 
+
 extern	struct ioblk oupiob;
 
 extern	char namebuf[256];

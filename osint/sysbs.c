@@ -74,11 +74,6 @@ zysbs()
          */
         if ((c = back(iob)) < 0)
             return c + RET_BIAS;			// beginning of file
-#if EOL2
-        if (c == EOL2)
-            if ((c = back(iob)) < 0)
-                return c + RET_BIAS;
-#endif					// EOL2
         if (c == EOL1)
             if ((c = back(iob)) < 0)
                 return c + RET_BIAS;
@@ -88,10 +83,6 @@ zysbs()
          * we should examine.
          */
         do {
-#if EOL2
-            if (c == EOL2)
-                break;
-#endif					// EOL2
             if (c == EOL1)
                 break;
         } while ((c = back(iob)) >= 0);

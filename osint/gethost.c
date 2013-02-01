@@ -55,18 +55,10 @@ word	maxlen;
         close( fd );
     }
 
-#if EOL2
-    if ( cnt > 0  &&  scptr->str[cnt-2] == EOL1 )
-    {
-        cnt--;
-        scptr->str[--cnt] = 0;
-    }
-#else					// EOL2
     if ( cnt > 0  &&  scptr->str[cnt-1] == EOL1 )
     {
         scptr->str[--cnt] = 0;
     }
-#endif					// EOL2
 
     if ( cnt == 0 )
     {

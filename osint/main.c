@@ -252,12 +252,7 @@ char	*argv[];
 void wrterr(s)
 char	*s;
 {
-#if EOL2
-    static char eol[2] = {EOL1,EOL2};
-
-#else					// EOL2
     static char eol[1] = {EOL1};
-#endif					// EOL2
     write( STDERRFD, s, length(s) );
     write( STDERRFD,  eol, sizeof(eol) );
 }
@@ -265,12 +260,7 @@ char	*s;
 void wrtint(n)
 int	n;
 {
-#if EOL2
-    static char eol[2] = {EOL1,EOL2};
-
-#else					// EOL2
     static char eol[1] = {EOL1};
-#endif					// EOL2
     /*
     	char str[16];
     	itoa(n,str);
@@ -287,12 +277,7 @@ int	n;
 void wrtmsg(s)
 char	*s;
 {
-#if EOL2
-    static char eol[2] = {EOL1,EOL2};
-
-#else					// EOL2
     static char eol[1] = {EOL1};
-#endif					// EOL2
     write( STDOUTFD, s, length(s) );
     write( STDOUTFD,  eol, sizeof(eol) );
 }

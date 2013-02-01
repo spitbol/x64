@@ -279,7 +279,6 @@ struct ioblk {
     mword			iobflg1;		// flags 1 (see below)
     mword			iobflg2;		// flags 2 (see below)
     mword			iobeol1;		// end of line character 1
-    mword			iobeol2;		// end of line character 2
     mword			iobshare; 		// sharing mode
     mword			iobaction;		// file open actions
 };

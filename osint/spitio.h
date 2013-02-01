@@ -118,7 +118,6 @@ struct ioblk
     word	flg1;			//  first nine flags
     word	flg2;			//  second nine flags
     word	eol1;			//  end of line character 1
-    word	eol2;			//  end of line character 2
     word	share;			//	sharing mode
     word	action;			//  file open actions
 };

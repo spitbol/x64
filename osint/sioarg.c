@@ -87,7 +87,6 @@ struct	scblk	*scptr;
     ioptr->fdn = 0;			// no shell provided fd
     ioptr->pid = IOBUFSIZ;	// buffer size
     ioptr->eol1 = EOL1;		// default end of line char 1
-    ioptr->eol2 = EOL2;		// default end of line char 2
     if (ioflg)
     {   // output
         ioptr->len = maxsize;	// line mode record len
@@ -219,8 +218,6 @@ struct	scblk	*scptr;
             if ( v >= 0 && v <= 255 ) {
                 if (ch == 'M')
                     ioptr->eol1 = v;
-                else
-                    ioptr->eol2 = v;
             }
             else
                 return -1;

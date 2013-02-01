@@ -198,10 +198,6 @@ typedef long IATYPE;
 #define EOL1	'\n'
 #endif
 
-#ifndef EOL2
-#define EOL2	0
-#endif
-
 /*
  * Define the data type returned by a call to signal()
  */

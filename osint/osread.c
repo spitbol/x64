@@ -82,7 +82,6 @@ struct	scblk	*scptr;
              * Unbuffered Line Mode
              */
             register char	eol1 = ioptr->eol1;
-            register char	eol2 = ioptr->eol2;
 #ifdef EOT
             // Ignore eot char if IO_EOT bit set
             register char	eot	 = (ioptr->flg1 & IO_EOT) ? eol1 : EOT;
@@ -98,12 +97,8 @@ struct	scblk	*scptr;
                     if (n > 0) {
                         if (ioptr->flg2 & IO_LF) {
                             ioptr->flg2 &= ~IO_LF;
-                            if (c == eol2)
-                                continue;
                         }
                         if (c == eol1) {
-                            if (eol2)
-                                ioptr->flg2 |= IO_LF;
                             break;							// exit loop on eol
                         }
 #ifdef EOT
@@ -140,13 +135,6 @@ struct	scblk	*scptr;
                         {   // if end of line (or EOF)
                             findeol = 0;
                             cnt -= i + 1;
-                            if (eol2)
-                            {
-                                if (i && *cp == eol2)
-                                    cp++;
-                                else if (testty(fdn) && read(fdn, &c, 1) == 1 && c != eol2)
-                                    doset(ioptr, -1L, 1);	// back up over non-eol2
-                            }
                             if (testty(fdn))
                                 doset(ioptr, cp-scptr->str-n, 1);// backup file to point following line
                             break;
@@ -164,10 +152,10 @@ struct	scblk	*scptr;
                             if (i > 0) {
 #ifdef EOT
                                 if (c == eol1 || c == eot) {
-                                    if (c == eol1 && eol2 && read(fdn, &c, 1) == 1 && c != eol2)
+                                    if (0 == 1)
 #else
                                 if (c == eol1) {
-                                    if (eol2 && read(fdn, &c, 1) == 1 && c != eol2)
+                                    if (0)
 #endif
                                         doset(ioptr, -1L, 1);	// back up over non-eol2
                                     break;						// exit loop on eol
@@ -229,7 +217,6 @@ struct	scblk	*scptr;
              * Buffered Line Mode
              */
             register char	eol1 = ioptr->eol1;
-            register char	eol2 = ioptr->eol2;
 #ifdef EOT
             // Ignore eot char if IO_EOT bit set
             register char	eot	 = (ioptr->flg1 & IO_EOT) ? eol1 : EOT;
@@ -340,19 +327,6 @@ struct	scblk	*scptr;
             }
             while ( bfptr->buf[bfptr->next++] != eol1 );
 #endif					// EOT
-
-            // if there is an eol2, look ahead for it
-            if (eol2) {
-                if ( bfptr->next >= bfptr->fill && testty(fdn))
-                {
-                    if (flush(ioptr))	// flush any dirty buffer
-                        return -2;
-                    fillbuf(ioptr);
-                }
-
-                if ( bfptr->next < bfptr->fill && (bfptr->buf[bfptr->next] == eol2) )
-                    bfptr->next++;	// discard it if found
-            }
 
         }
 
