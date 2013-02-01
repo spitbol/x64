@@ -222,27 +222,3 @@ void oupeof()
 {
     doset(&oupiob, 0L, 2);
 }
-
-#if !USEFD0FD1
-/*
-/    SETPRFD/SETRDFD  are used on systems that do not support the
-/    dup() system call.  On these systems, it is impossible to read/write
-/    through fd 0 and 1 at all times.  Disk files must be accessed through
-/    normal file descriptors.  These functions inform sysrd and syspr of
-/    the descriptor currently in use.
-*/
-
-void setprfd( fd )
-int	fd;
-{
-    oupiob.fdn = fd;
-}
-
-void setrdfd( fd )
-int	fd;
-{
-    inpiob.fdn = fd;
-    clrbuf();
-}
-#endif					// !USEFD0FD1
-

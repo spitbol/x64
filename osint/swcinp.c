@@ -155,10 +155,8 @@ char	**fileptr;
     */
     sfn = "stdin";
 
-#if USEFD0FD1
     if ( originp < 0 )
         originp = dup( 0 );
-#endif
 
     /*
     /  Process files on command line, if any.
@@ -173,15 +171,10 @@ char	**fileptr;
         cmdcnt++;
         cp = fileptr[curfile++];
 
-#if USEFD0FD1
         /*
         /   Close fd 0 so subsequent open or dup will acquire fd 0.
         */
         close(0);
-#else
-        if (lastfd > 0)
-            close(lastfd);				// if second or subsequent call to swcinp
-#endif
         clrbuf();
         /*
         /   If next entry is '-' then read file descriptor
@@ -189,9 +182,7 @@ char	**fileptr;
         */
         if ( *cp == '-' )
         {
-#if USEFD0FD1
             dup( originp );		// returns 0
-#endif
             lastfd = 0;
             goto swci_exit;
         }
@@ -244,7 +235,6 @@ char	**fileptr;
     else
         lastfd = -1;		// ATTEMPT TO FIX PIPE BUG FOR COPPEN 10-FEB-95
 
-#if USEFD0FD1
     sfn = "stdin";
 
     if ( readshell0 )
@@ -261,7 +251,6 @@ char	**fileptr;
         lastfd = 0;
     }
 
-#endif					// !USEFD0FD1
     /*
     /  Control comes here after all files specified on the command line
     /  have been read.
@@ -270,9 +259,6 @@ char	**fileptr;
     /  should continue to return EOFs.
     */
 swci_exit:
-#if !USEFD0FD1
-    setrdfd(lastfd);
-#endif
     return lastfd;
 }
 
@@ -286,13 +272,11 @@ swci_exit:
 */
 void save0()
 {
-#if USEFD0FD1
     if ((save_fd0 = dup( 0 )) >= 0) {
         close( 0 );
         clrbuf();
         dup( originp );
     }
-#endif					// USEFD0FD1
 }
 
 
@@ -306,14 +290,12 @@ void save0()
 */
 void restore0()
 {
-#if USEFD0FD1
     if (save_fd0 >= 0) {
         close( 0 );
         clrbuf();
         dup( save_fd0 );
         close( save_fd0 );	 	// 1.13 for HOST(1,"cmd")
     }
-#endif					// USEFD0FD1
 }
 
 

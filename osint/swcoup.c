@@ -109,7 +109,6 @@ char  *oupptr;
         /	State 0 (1st call to swcoup):  standard output -> -o file
         */
     case 0:
-#if USEFD0FD1
         origoup = dup( 1 );		// save std output
         close( 1 );				// close std output
         if (appendext(oupptr, LISTEXT, namebuf, 0))	// Append .lst if needed
@@ -124,30 +123,21 @@ char  *oupptr;
             close( origoup );
             retval = -1;
         }
-#else					// USEFD0FD1
-        setprfd( origoup );
-#endif					// USEFD0FD1
-
         break;
 
         /*
         /	State 1 (2nd call to swcoup):  standard output -> shell output file
         */
     case 1:
-#if USEFD0FD1
         close( 1 );				// close -o file
         dup( origoup );			// restore std output
         close( origoup );		// close its duplicate
-#else					// USEFD0FD1
-        setprfd( 1 );			// switch to fd 1, leave list file open
-#endif					// USEFD0FD1
         break;
 
         /*
         /	State 2 (3rd call to swcoup):  standard output -> -o file
         */
     case 2:
-#if USEFD0FD1
         close( 1 );				// close std output
         if (appendext(oupptr, LISTEXT, namebuf, 0))	// Append .lst if needed
             oupptr = namebuf;
@@ -158,10 +148,6 @@ char  *oupptr;
             wrterr( "error reopening" );
         }
         oupeof();				// seek to EOF on -o file
-#else					// USEFD0FD1
-        setprfd( origoup );		// resume -o file
-#endif					// USEFD0FD1
-
         break;
 
     default:

@@ -94,9 +94,7 @@ char	*argv[];
         /* set up things that normally would be retained in the
          * a Unix exec file.
          */
-#if USEFD0FD1
         originp = dup(0);
-#endif					// USEFD0FD1
         readshell0 = 0;
 #else					// EXECSAVE
     /*

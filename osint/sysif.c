@@ -50,13 +50,9 @@ static	void	openprev (void);
 static void openprev()
 {
     fd = inc_fd[--nesting];		// Unstack one level
-#if USEFD0FD1
     dup(fd);					// Create fd 0 for previous file
     close(fd);					// Release dup'ed fd of old file
     fd = 0;
-#else					// USEFD0FD1
-    setrdfd( fd );	  			// Make it the current input stream
-#endif					// USEFD0FD1
     clrbuf();
 
     doset( getrdiob(),inc_pos[nesting],0 );	// Position file where left off
@@ -76,12 +72,8 @@ zysif()
             return EXIT_1;
 
         inc_pos[nesting] = doset(getrdiob(),0L,1);	// Record current position
-#if USEFD0FD1
         inc_fd[nesting++] = dup(0);			// Save current input file
         close(0);							// Make fd 0 available
-#else					// USEFD0FD1
-        inc_fd[nesting++] = getrdfd();		// Record current input stream
-#endif					// USEFD0FD1
         clrbuf();
         savecp = fnscb->str + fnscb->len;	// Make it a C string for now.
         savechar = *savecp;
@@ -125,9 +117,6 @@ zysif()
         }
         if ( fd >= 0 ) {  				// If file opened OK
             cpys2sc(file,pnscb,pnscb->len);
-#if !USEFD0FD1
-            setrdfd( fd );        // Make it the current input stream
-#endif					// !USEFD0FD1
             *savecp = savechar;			// Restore saved char
         }
         else {  						// Couldn't open file
