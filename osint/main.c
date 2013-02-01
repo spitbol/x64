@@ -154,7 +154,6 @@ char	*argv[];
     hasfpu = checkfpu();
 #endif					// FLOAT
 
-#if SAVEFILE | EXECSAVE
     switch (getsave(getrdfd())) {
     case 1:					// save file loaded
         inpcnt = 0;               // v1.02 no more cmd line files
@@ -171,7 +170,6 @@ char	*argv[];
     case -1:				// error loading save file
         __exit(1);
     }
-#endif					// SAVEFILE | EXECSAVE
 
     /*
     /	Setup output and issue brag message

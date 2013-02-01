@@ -293,14 +293,12 @@ char	*argv[];
                 spitflag &= ~NOEXCS;
                 break;
 
-#if SAVEFILE
                 /*
                 /   -y	write executable module after compilation
                 */
             case 'y':
                 spitflag |= WRTSAV;
                 break;
-#endif					// SAVEFILE
 
                 /*
                 /   -z	turn on standard listing options

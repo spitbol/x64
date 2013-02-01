@@ -70,7 +70,6 @@ This file is part of Macro SPITBOL.
 #define	TABLE_SIZE 1223
 #endif
 
-#if SAVEFILE
 
 #define CODE_SIZE   (TABLE_SIZE*sizeof(short int))
 #define PREFIX_SIZE (TABLE_SIZE*sizeof(short unsigned int))
@@ -466,4 +465,3 @@ uword size;
     output_code(MAX_VALUE);						// Output the buffer end code
     return 0;
 }
-#endif					// SAVEFILE

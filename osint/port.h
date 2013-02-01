@@ -68,12 +68,6 @@ This file is part of Macro SPITBOL.
 #define	RUNTIME		0	// not making runtime version
 #endif
 
-/*
-#ifndef	SAVEFILE
-#define	SAVEFILE	0	/ * can't create save files * /
-#endif
-*/
-
 #ifndef SETREAL
 #define SETREAL     0   // don't use reals for SET()
 #endif
@@ -146,11 +140,9 @@ This file is part of Macro SPITBOL.
 #endif
 
 /*
-#if EXECSAVE			/ * EXECSAVE requires EXECFILE & SAVEFILE on * /
+#if EXECSAVE			/ * EXECSAVE requires EXECFILE on * /
 #undef EXECFILE
-#undef SAVEFILE
 #define EXECFILE	1
-#define SAVEFILE	1
 #endif
 */
 

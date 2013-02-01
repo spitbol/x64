@@ -33,7 +33,6 @@ This file is part of Macro SPITBOL.
 /	Exec files.
 /
 */
-#if SAVEFILE
 /*
  * +--------2--------+--------2--------+---------4---------+
  * |                 |                 |                   |
@@ -88,4 +87,3 @@ struct svfilehdr {
 
 #define OURMAGIC1   0xfaa5a5fa
 #define OURMAGIC2   0x0d0a0d0a
-#endif					// SAVEFILE

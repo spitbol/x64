@@ -143,7 +143,6 @@ extern	struct ioblk oupiob;
 extern	char namebuf[256];
 extern	int save_fd0;		/* Hold current fd 0 for swcinp */
 
-#if SAVEFILE
 extern	int expanding;	/* non-zero if doing expansion */
 extern	int compressing;	/* non-zero if doing expansion */
 extern	long extra;
@@ -156,12 +155,9 @@ extern	short unsigned int *prefix_code;	/* This array holds the prefix codes  */
 extern	unsigned char *append_character;	/* This array holds the appended chars  */
 extern	unsigned char *decode_stack;	/* This array holds the decoded string  */
 extern	unsigned char *buffer;	/* Read/write buffer                                */
-#endif /* SAVEFILE */
 
-#if SAVEFILE | EXECFILE
 extern	int aoutfd;
 extern	FILEPOS fp;
-#endif /* SAVEFILE | EXECFILE */
 
 /*
     lmodstk is set when creating a load module.  On the subsequent

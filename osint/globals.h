@@ -165,7 +165,6 @@ Init(	struct ioblk oupiob, outiobinit);
 NoInit( char  namebuf[256]);
 NoInit(	int		save_fd0);		// Hold current fd 0 for swcinp
 
-#if SAVEFILE
 Init(	int expanding, 0);	// non-zero if doing expansion
 Init(	int compressing, 0);	// non-zero if doing expansion
 Init(	long extra, 0);
@@ -178,12 +177,9 @@ NoInit(	short unsigned int *prefix_code);	// This array holds the prefix codes
 NoInit(	unsigned char *append_character);	// This array holds the appended chars
 NoInit(	unsigned char *decode_stack);		// This array holds the decoded string
 NoInit(	unsigned char *buffer);				// Read/write buffer
-#endif					// SAVEFILE
 
-#if SAVEFILE | EXECFILE
 NoInit(	int		aoutfd);
 NoInit(  FILEPOS  fp);
-#endif					// SAVEFILE | EXECFILE
 
 /*
 /   lmodstk is set when creating a load module.  On the subsequent

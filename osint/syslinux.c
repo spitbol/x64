@@ -777,7 +777,6 @@ long savestart(int fd, char *bufp, unsigned int size)
 }
 #endif // EXECSAVE
 
-#if EXECFILE | SAVEFILE
 /*
  *-----------
  *
@@ -835,5 +834,4 @@ int type;
     reg_xr = save_xr;
     return result;
 }
-#endif	// EXECFILE | SAVEFILE
 

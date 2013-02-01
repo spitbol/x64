@@ -211,7 +211,6 @@ char	**fileptr;
                 break;
 #endif					// !RUNTIME
 
-#if SAVEFILE
             case 2:		// try with .spx extension
                 if (!executing && curfile == 1 && appendext(cp, RUNEXT, namebuf, 0))
                     if ((lastfd = tryopen(namebuf)) >= 0 )
@@ -220,7 +219,6 @@ char	**fileptr;
                         goto swci_exit;
                     }
                 break;
-#endif					// SAVEFILE
             case 3:
                 /*
                 /   Error opening file, so issue a message and exit

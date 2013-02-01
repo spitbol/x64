@@ -36,4 +36,3 @@ This file is part of Macro SPITBOL.
 #define EXECFILE    0
 #define FLTHDWR     0   // Change to 1 when do floating ops inline
 #define GCCi32      1
-#define SAVEFILE    1

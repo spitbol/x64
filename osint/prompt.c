@@ -29,11 +29,7 @@ void prompt()
     wrterr("usage: spitrun [options] file[.spx] [program arguments]");
 #else					// RUNTIME
 
-#if SAVEFILE
     wrterr("usage: spitbol [options] files[.spt or .spx] [args to HOST(2)]");
-#else					// SAVEFILE
-    wrterr("usage: spitbol [options] files[.spt] [args to HOST(2)]");
-#endif					// SAVEFILE
 
 #endif					// RUNTIME
 
@@ -56,13 +52,13 @@ void prompt()
     wrterr("-k run with compilation error  -n suppress execution");
     wrterr("-f no case-folding             -u \"string\" data passed to HOST(0)");
 
-#if EXECFILE & SAVEFILE
+#if EXECFILE
     wrterr("-w write load (.out) module    -y write save (.spx) file");
-#endif					// EXECFILE & SAVEFILE
+#endif					// EXECFILE
 
-#if SAVEFILE & !EXECFILE
+#if !EXECFILE
     wrterr("-y write save (.spx) file");
-#endif					// SAVEFILE & !EXECFILE
+#endif					// !EXECFILE
 
     wrterr("-r INPUT from source file following END statement");
     wrterr("-T=file  write TERMINAL output to file");

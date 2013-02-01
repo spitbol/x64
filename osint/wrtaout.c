@@ -38,7 +38,6 @@ This file is part of Macro SPITBOL.
 
 #include <fcntl.h>
 
-#if SAVEFILE | EXECFILE
 
 /*  openaout(file, tmpfnbuf, exe)
 /
@@ -174,7 +173,6 @@ word errflag;
 }
 
 
-#if SAVEFILE
 /*
 /   rdaout( fd, startadr, size ) - read in section of file created by wrtaout()
 /
@@ -199,5 +197,3 @@ uword size;
     fp += size;			//   advance file position
     return 0;
 }
-#endif					// SAVEFILE
-#endif          // SAVEFILE | EXECFILE

@@ -78,7 +78,6 @@ zysbx()
     }
 #endif					// EXECFILE
 
-#if SAVEFILE
     /*
     /   do we need to write a save (.spx) file, and if
     /   so does writing it produce an error?
@@ -105,7 +104,6 @@ zysbx()
     / * DUPLICATED IN THE RESTART CODE                          *
     / ***********************************************************
     */
-#endif					// SAVEFILE
 
     //  execution resumes here when a.out file created with
     //  the -w option is reloaded.

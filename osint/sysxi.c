@@ -74,17 +74,13 @@ extern word	*edata;
 extern word	*etext;
 #endif					// EXECFILE
 
-#if SAVEFILE
 struct svfilehdr svfheader;
 char uargbuf[UargSize];
 
 static void hcopy (char *src, char *dst, int len, int max);
-#endif					// SAVEFILE
 
-#if SAVEFILE | EXECSAVE
 extern ssize_t read (int F, void *Buf, size_t Cnt);
 extern off_t LSEEK (int F, off_t Loc, int Method);
-#endif          // EXECFILE  | SAVEFILE
 
 zysxi()
 
@@ -97,13 +93,11 @@ zysxi()
     long	i;
 #endif					// EXECFILE
 
-#if EXECFILE | SAVEFILE
     char	fileName[256], tmpfnbuf[256];
     word	*stackbase;
     word	retval, stacklength;
     struct scblk	*scfn = WA( struct scblk * );
     char	savech;
-#endif					// EXECFILE | SAVEFILE
 
     struct scblk	*scb = XL( struct scblk * );
 
@@ -141,13 +135,6 @@ zysxi()
         return  EXIT_1;
 #endif					// !EXECFILE
 
-#if !SAVEFILE
-    //	Don't accept request except to write save file.
-    if ( IA(IATYPE) <= 0 )
-        return  EXIT_1;
-#endif					// !SAVEFILE
-
-#if SAVEFILE | EXECFILE
     /*
     /	Get current value of FP and compute length of current stack.
     */
@@ -167,26 +154,16 @@ zysxi()
         mystrcpy(fileName, scfn->str);
     else
         mystrcpy(fileName,                // default file name
-#if SAVEFILE
                  IA(IATYPE) < 0 ? SAVE_FILE : AOUT_FILE);
-#else					// SAVEFILE
-                 AOUT_FILE);
-#endif					// SAVEFILE
     retval = openaout(fileName, tmpfnbuf,
-#if SAVEFILE
                       (IA(IATYPE) < 0 ? 0 : IO_EXECUTABLE)		// executable?
-#else					// SAVEFILE
-                      IO_EXECUTABLE
-#endif					// SAVEFILE
                      );
     unmake_c_str(&(scfn->str[scfn->len]), savech);
 
 
-#if SAVEFILE
     if (IA(IATYPE) < 0 ) {
         retval |= putsave(stackbase, stacklength);	// write save file
     }
-#endif					// SAVEFILE
 
 #if EXECFILE
     if (IA(IATYPE) > 0 ) {
@@ -309,7 +286,6 @@ fail:
     SET_WB( 0 );
     zysej();			// NO RETURN
     return EXIT_1;
-#endif					// EXECFILE | SAVEFILE
 }
 
 #if EXECFILE & !EXECSAVE
@@ -330,7 +306,6 @@ void heapmove()
 #endif
 
 
-#if EXECFILE | SAVEFILE
 /*
 /	The following two functions deal with the "unrelocation" and
 /	"re-relocation" of compiler variables that point into the stack.
@@ -387,10 +362,8 @@ void rereloc()
     SET_MIN_VALUE(PMHBS,GET_MIN_VALUE(PMHBS,word) + stbas,word);
     SET_CP(CP(word) + GET_MIN_VALUE(DNAMB,char *));
 }
-#endif					// EXECFILE | SAVEFILE
 
 
-#if SAVEFILE
 static void hcopy(src, dst, len, max)
 char *src, *dst;
 int len, max;
@@ -402,9 +375,6 @@ int len, max;
     while (++i <= max)
         *dst++ = '\0';
 }
-#endif					// SAVEFILE
-
-
 
 #if EXECFILE & !EXECSAVE
 /*
@@ -419,7 +389,6 @@ word	n;
 }
 #endif					// EXECFILE
 
-#if SAVEFILE | EXECSAVE
 /*
  * putsave - create a save file
  */
@@ -740,6 +709,3 @@ reload_err:
     }
     return 0;
 }
-
-#endif          // SAVEFILE | EXECSAVE
-
