@@ -559,12 +559,8 @@ int fd;
             // Check header validity.   ** UNDER CONSTRUCTION **
             if (svfheader.magic1 != OURMAGIC1)
             {
-#if USEQUIT
-                quit(360);
-#else					// USEQUIT
                 cp = "Invalid file ";
                 goto reload_err;
-#endif					// USEQUIT
             }
 
             /*
@@ -578,44 +574,28 @@ int fd;
             // Check version number
             if ( svfheader.version != SaveVersion )
             {
-#if USEQUIT
-                quit(361);
-#else					// USEQUIT
                 cp = "Wrong save file version.";
                 goto reload_verserr;
-#endif					// USEQUIT
             }
 #endif
 
             if ( svfheader.sec3size != (GET_DATA_OFFSET(C_YYY,uword) - GET_DATA_OFFSET(C_AAA,uword)) )
             {
-#if USEQUIT
-                quit(362);
-#else					// USEQUIT
                 cp = "Constant section size error.";
                 goto reload_verserr;
-#endif					// USEQUIT
             }
 
             if ( svfheader.sec4size != (GET_DATA_OFFSET(W_YYY,uword) - GET_DATA_OFFSET(G_AAA,uword)) )
             {
-#if USEQUIT
-                quit(363);
-#else					// USEQUIT
                 cp = "Working section size error.";
                 goto reload_verserr;
-#endif					// USEQUIT
             }
 
             if ( svfheader.sec5size !=
                     (uword)((GET_CODE_OFFSET(S_YYY,char *)-GET_CODE_OFFSET(S_AAA,char *))) )
             {
-#if USEQUIT
-                quit(364);
-#else					// USEQUIT
                 cp = "Code section size error.";
                 goto reload_verserr;
-#endif					// USEQUIT
             }
 
             // build onto existing stack
@@ -719,12 +699,8 @@ int fd;
                     goto reload_ioerr;
             if (textlen < 0)
             {
-#if USEQUIT
-                quit(365);
-#else					// USEQUIT
                 cp = "Insufficient memory to load ";
                 goto reload_err;
-#endif					// USEQUIT
             }
 #endif					// EXTFUN
 
@@ -754,16 +730,12 @@ reload_verserr:
             cp = " to load file ";
             goto reload_err;
 reload_ioerr:
-#if USEQUIT
-            quit(366);
-#else					// USEQUIT
             cp = "Error reading ";
 reload_err:
             write( STDERRFD,  cp, length(cp) );
             write( STDERRFD,  *inpptr, length(*inpptr) );
             wrterr( "" );
             return -1;
-#endif					// USEQUIT
         }
     }
     return 0;

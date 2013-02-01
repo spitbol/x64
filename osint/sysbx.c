@@ -88,12 +88,8 @@ zysbx()
         pTSCBLK->len = appendext( *inpptr, RUNEXT, pTSCBLK->str, 1 );
         if ( makeexec( pTSCBLK, spitflag & NOEXEC ? -3 : -4 ) )
         {
-#if USEQUIT
-            quit(357);
-#else					// USEQUIT
             wrterr( "Error writing save file." );
             zysej();
-#endif					// USEQUIT
         }
     }
     /*

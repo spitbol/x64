@@ -78,10 +78,6 @@ This file is part of Macro SPITBOL.
 #define SETREAL     0   // don't use reals for SET()
 #endif
 
-#ifndef	USEQUIT
-#define	USEQUIT		0	// use quit() to report errors instead of wrterr
-#endif
-
 /*
  * 	Turn on system-specific features unless specifically turned off
  * 	in systype.h

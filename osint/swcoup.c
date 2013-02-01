@@ -151,11 +151,7 @@ char  *oupptr;
         break;
 
     default:
-#if USEQUIT
-        quit(354);
-#else					// USEQUIT
         wrterr( "Internal system error--SWCOUP" );
-#endif					// USEQUIT
 
     }
 

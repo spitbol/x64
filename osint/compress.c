@@ -208,12 +208,8 @@ unsigned int code;
         code = prefix_code[code];
         if (i++ >= 4000)
         {
-#if USEQUIT
-            quit(356);
-#else					// USEQUIT
             wrterr("Fatal error during save file expansion.");
             __exit(1);
-#endif					// USEQUIT
         }
     }
     *buffer = (unsigned char) code;
