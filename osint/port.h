@@ -42,11 +42,6 @@ This file is part of Macro SPITBOL.
 #endif
 
 /*
-#ifndef EXECSAVE
-#define EXECSAVE	0	/ * executable modules via save files * /
-#endif
-*/
-/*
 #ifndef	EXTFUN
 #define EXTFUN		0	/ * no external functions * /
 #endif
@@ -134,13 +129,6 @@ This file is part of Macro SPITBOL.
 #ifndef SYSVERSION
 #define SYSVERSION 255
 #endif
-
-/*
-#if EXECSAVE			/ * EXECSAVE requires EXECFILE on * /
-#undef EXECFILE
-#define EXECFILE	1
-#endif
-*/
 
 // Define how the errors and phrases arrays will be accessed (see sysem.c)
 #ifndef ERRDIST

@@ -77,26 +77,6 @@ char	*argv[];
     dcdone = 0;
 
 #if EXECFILE
-#if EXECSAVE
-    /* On some platforms we implement execfiles differently.  A save file
-     * is appended to the SPITBOL executable file, and will be read in
-     * just like a save file specified on the command line.
-     *
-     * We have to check for the presence of a save file in the executable.
-     */
-    i = checksave(gblargv[0]);
-    if (i) {
-        inpptr = gblargv;
-        if (getsave(i) != 1)
-            __exit(1);
-        close(i);
-
-        /* set up things that normally would be retained in the
-         * a Unix exec file.
-         */
-        originp = dup(0);
-        readshell0 = 0;
-#else					// EXECSAVE
     /*
     /   If this is a restart of this program from a load module, set things
     /   up for a restart.  Transfer control to function restart which actually
@@ -107,7 +87,6 @@ char	*argv[];
             wrterr( "Insufficient memory to load." );
             __exit(1);
         }
-#endif					// EXECSAVE
 
         cmdcnt = 1;       // allow access to command line args
         inpptr = 0;				// no compilation input files
@@ -119,10 +98,8 @@ char	*argv[];
 #if FLOAT
         hasfpu = checkfpu();	// check for floating point hardware
 #endif					// FLOAT
-#if !EXECSAVE
         heapmove();				// move the heap up
         malloc_empty();			// mark the malloc region as empty
-#endif
         zysdc();							// Brag if necessary
         restart( (char *)0L, lowsp );       // call restart to continue execution
     }

@@ -62,14 +62,14 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #include <sys/types.h>
 
-#if EXECFILE & !EXECSAVE
+#if EXECFILE
 #include <a.out.h>
 #endif
 
 #include "save.h"
 
 #include <time.h>
-#if EXECFILE & !EXECSAVE
+#if EXECFILE
 extern word	*edata;
 extern word	*etext;
 #endif					// EXECFILE
@@ -85,7 +85,7 @@ extern off_t LSEEK (int F, off_t Loc, int Method);
 zysxi()
 
 {
-#if EXECFILE & !EXECSAVE
+#if EXECFILE
     register word	*srcptr, *dstptr;
     char	*endofmem;
     char	*starttext;
@@ -162,86 +162,6 @@ zysxi()
 #if EXECFILE
     if (IA(IATYPE) > 0 ) {
 
-#if EXECSAVE
-        /*
-         * We copy the SPITBOL executable to the target file, and then
-         * append a save file to the end of it.  Locations in the
-         * executable header are adjusted to mark the presence of
-         * the save file.
-         *
-         * Have to do this carefully.  If we are currently running in
-         * an EXEC file, then we want to overwrite the old save file
-         * presently on the end.
-         *
-         * Ideally we should bash the code that can read source files
-         * to prevent tampering, but it's difficult to figure out
-         * where that is in the EXE file.
-         */
-        int fromfd;
-        long extra, copylen, bufsize, size;
-        char *bufp;
-
-        fromfd = openexe( gblargv[0] );
-        if (fromfd == -1) {
-            write( STDERRFD, "To create an executable, the file ", 34);
-            write( STDERRFD, gblargv[0], length(gblargv[0]));
-            wrterr( " must have read (-r) privilege." );
-            retval = -1;
-            goto fail;
-        }
-
-        /*
-         * Try to allocate 4k buffer at end of heap,
-         * expanding if necessary.  If we can't expand, we settle for
-         * a smaller buffer.
-         */
-        bufsize = 4096;
-        bufp = GET_MIN_VALUE(DNAMP,char *);
-        size = topmem - bufp;			// free space in heap
-        extra = bufsize - size;
-        if (extra > 0) {				// if not enough in heap
-            if (sbrk((uword)extra) == (void *)-1) {	// try to enlarge
-                bufsize = size;			// couldn't.  Use smaller buffer
-                extra = 0;
-            }
-        }
-        /*
-         * Copy copylen bytes from fromfd to target file.
-         *
-         */
-        copylen = bufsize;
-        retval = -1;					// flag first buffer read
-        if (!bufsize)
-            goto fail;
-
-        do {
-            size = read(fromfd, bufp, copylen > bufsize ? bufsize : copylen);
-
-            if (!size || size == (uword)-1) {
-                close(fromfd);
-                retval = -1;
-                goto fail;
-            }
-            if (retval) {					// first time through
-                copylen = savestart(fromfd, bufp, size);
-                if (!copylen)
-                    goto fail;
-                retval = 0;				// only do this once
-            }
-            copylen -= size;
-
-            retval |= wrtaout((unsigned char *)bufp, size);
-        } while (copylen > 0 && !retval);
-
-        close(fromfd);
-
-        // If we allocated extra memory, release it
-        if (extra > 0)
-            sbrk(-extra);
-
-        retval |= saveend(stackbase, stacklength);
-
-#else					// EXECSAVE
         /*
         /	Copy entire stack into local storage of temporary SCBLK.
         */
@@ -255,9 +175,6 @@ zysxi()
         while( i-- )
             *dstptr++ = *srcptr++;
         lmodstk = dstptr;		// (also non-zero flag for restart)
-#endif					// EXECSAVE
-
-
     }
 #endif					// EXECFILE
 
@@ -282,7 +199,7 @@ fail:
     return EXIT_1;
 }
 
-#if EXECFILE & !EXECSAVE
+#if EXECFILE
 /* heapmove
  *
  * perform upward copy of heap from where it was stored in the execfile
@@ -370,7 +287,7 @@ int len, max;
         *dst++ = '\0';
 }
 
-#if EXECFILE & !EXECSAVE
+#if EXECFILE
 /*
 /	Roundup the integer argument to be a multiple of the
 /	system page size.
