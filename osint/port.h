@@ -148,7 +148,7 @@ typedef long IATYPE;
 /   as the default.  Override in systype.h.
 */
 #ifndef EOL
-#define EOL	'\n'
+#define EOL	"\n"
 #endif
 
 /*
