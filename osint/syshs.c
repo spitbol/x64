@@ -20,6 +20,51 @@ This file is part of Macro SPITBOL.
 
 
 /*
+/   arg2scb( req, argc, argv, scptr, maxs )
+/
+/   arg2scb() makes a copy of the req-th argument in the argv array.
+/   The copy is appended to the string in the SCBLK provided.
+/
+/   Parameters:
+/	req	number of argument to copy
+/	argc	number of arguments
+/	argv	pointer to array of pointers to strings (arguments)
+/	scptr	pointer to SCBLK to receive copy of argument
+/	maxs	maximum number of characters to append.
+/   Returns:
+/	Length of argument copied or -1 if req is out of range.
+/   Side Effects:
+/	Modifies contents of passed SCBLK (scptr).
+/	SCBLK length field is incremented.
+*/
+
+#include "port.h"
+
+static int 
+arg2scb( req, argc, argv, scptr, maxs )
+
+int	req;
+int	argc;
+char	*argv[];
+struct	scblk	*scptr;
+int	maxs;
+
+{
+    register word	i;
+    register char	*argcp, *scbcp;
+
+    if ( req < 0  ||  req >= argc )
+        return	-1;
+
+    argcp	= argv[req];
+    scbcp	= scptr->str + scptr->len;
+    for( i = 0 ; i < maxs  &&  ((*scbcp++ = *argcp++) != 0) ; i++ )
+        ;
+    scptr->len += i;
+    return i;
+}
+
+/*
 /	zyshs - host specific functions
 /
 /	zyshs is the catch-all function in the interface.  Any actions that
@@ -66,8 +111,6 @@ This file is part of Macro SPITBOL.
 /	    7 - return string in XL, length in WA (may be 0)
 /	    8 - return copy of result in XR
 */
-
-#include "port.h"
 
 /*
  *  checkstr - check if scblk is a valid string.  Returns 1 if so, else 0.
@@ -219,8 +262,7 @@ IATYPE *pword;
     return 1;
 }
 
-
-
+int
 zyshs()
 {
     word	retval;

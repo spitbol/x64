@@ -676,3 +676,16 @@ int type;
     return result;
 }
 
+/*  uppercase( word )
+ *
+ *  restricted upper case function.  Only acts on 'a' through 'z'.
+ */
+word 
+uppercase(c)
+word c;
+{
+    if (c >= 'a' && c <= 'z')
+        c += 'A' - 'a';
+    return c;
+}
+

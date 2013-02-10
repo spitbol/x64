@@ -37,7 +37,6 @@ extern	union block *	alloc (word nchars);
 extern	struct scblk *	alocs (word nchars);
 extern	union block *	alost (word nchars);
 extern	int			appendext (char *path, char *ext, char *result, int force);
-extern	int			arg2scb ( int req, int argc, char *argv[], struct scblk *scptr, int maxs );
 #if EXTFUN
 extern  union block *   callef (struct efblk *efb, union block **sp, word nargs);
 #endif
@@ -153,7 +152,6 @@ extern	void		setoptions (word flags);
 extern	void		setout ( void );
 extern	void		setprfd ( File_handle fd );
 extern	void		setrdfd ( File_handle fd );
-extern	int			sioarg ( int ioflg, struct ioblk *ioptr, struct scblk *scptr );
 extern	File_handle	spit_open ( char *Name, Open_method Method, File_mode Mode, int Access );
 extern	void		startbrk ( void );
 extern	void		startup (void);
