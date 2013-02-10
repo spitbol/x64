@@ -19,6 +19,54 @@ This file is part of Macro SPITBOL.
 */
 
 /*
+/   doexec( scptr )
+/
+/   doexec() does an "execle" function call to invoke the shell on the
+/   command string contained in the passed SCBLK.
+/
+/   Parameters:
+/	scptr	pointer to SCBLK containing the command to execute
+/   Returns:
+/	No return if shell successfully executed
+/	Returns if could not execute command
+/
+*/
+
+#include "port.h"
+
+char	*getshell();
+char	*pathlast();
+
+static void 
+doexec( scbptr )
+struct	scblk	*scbptr;
+
+{
+    word	length;
+    char	savech;
+    char	*cp;
+    extern char **environ;
+    char	*shellpath;
+    length	= scbptr->len;
+    cp	= scbptr->str;
+
+    /*
+    /	Instead of copying the command string, temporarily save the character
+    /	following the string, replace it with a NUL, execute the command, and
+    /	then restore the original character.
+    */
+    savech	= make_c_str(&cp[length]);
+
+    /*
+    /	Use function getshell to get shell's path and function lastpath
+    /	to get the last component of the shell's path.
+    */
+    shellpath = getshell();
+    execle( shellpath, pathlast( shellpath ), "-c", cp, (char *)NULL, environ );	// no return
+
+    unmake_c_str(&cp[length], savech);
+}
+/*
 /	File:  SYSXI.C		Version:  01.18
 /	---------------------------------------
 /
@@ -59,7 +107,6 @@ This file is part of Macro SPITBOL.
 /	    2 - action caused irrecoverable error
 */
 
-#include "port.h"
 #include <sys/types.h>
 
 #if EXECFILE

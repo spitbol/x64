@@ -57,7 +57,6 @@ extern	int			coutdev ( File_handle F );
 extern	void		cpys2sc ( char *cp, struct scblk *scptr, word maxlen );
 extern	void		crlf ( void );
 extern	int			docompress ( int bits, char *freeptr, uword size );
-extern	void		doexec ( struct scblk *scbptr );
 extern	int			doexpand ( int bits, char *freeptr, uword size );
 extern   FILEPOS  doset ( struct ioblk *ioptr, FILEPOS offset, int whence );
 extern  int     dosys ( char *cmd, char *path );

@@ -76,7 +76,7 @@ SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	sysst.o sysstdio.o systm.o systty.o sysul.o sysxi.o 
 
 # Other C objects:
-COBJS =	break.o checkfpu.o compress.o cpys2sc.o doexec.o \
+COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
 	doset.o dosys.o fakexit.o float.o flush.o gethost.o getshell.o \
 	int.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
