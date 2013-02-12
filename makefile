@@ -29,9 +29,9 @@ ASM	=	nasm
 INCDIRS = -I./tcc/include -I./musl/include
 # next is for tcc
 ifeq	($(DEBUG),0)
-CFLAGS= $(ARCHDEF) -m32 -fno-leading-underscore
+CFLAGS= $(ARCHDEF) -std=c99 -m32 -fno-leading-underscore
 else
-CFLAGS= $(ARCHDEF) -g -m32 -fno-leading-underscore
+CFLAGS= $(ARCHDEF) -g -std=c99 -m32 -fno-leading-underscore
 endif
 
 # Assembler info -- Intel 32-bit syntax
@@ -81,7 +81,7 @@ COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
 	int.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
-	trypath.o wrtaout.o zz.o
+	trypath.o uc.o wrtaout.o zz.o
 
 # Assembly langauge objects common to all versions:
 # CAOBJS is for gas, NAOBJS for nasm

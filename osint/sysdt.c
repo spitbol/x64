@@ -40,6 +40,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include <stdio.h>
 #include <time.h>
 
 static int datecvt ( char *cp, int type );
@@ -61,9 +62,13 @@ register int value;
 zysdt()
 {
     struct icblk *dtscb = XR (struct icblk *);
+    char dt[20];
 
-    pTSCBLK->len = datecvt( pTSCBLK->str, dtscb->val );
-    SET_XL( pTSCBLK );
+    uc_init(0);
+    datecvt(dt, dtscb->val);
+    uc_strcpy(0,dt);
+    uc_decode(0);
+    SET_XL(uc_scblk(0));
     return NORMAL_RETURN;
 }
 
