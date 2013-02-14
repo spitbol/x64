@@ -612,10 +612,6 @@ SYSBX:	mov	M_WORD [reg_xs],XS
 ;	extern	zyscr
 ;SYSCR:  syscall    zyscr ;    ,0
 
-	global SYSDC
-	extern	zysdc
-SYSDC:	syscall	zysdc,4
-
 	global SYSDM
 	extern	zysdm
 SYSDM:	syscall	zysdm,5
