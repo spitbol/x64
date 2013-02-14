@@ -307,19 +307,10 @@ typedef long IATYPE;
 /                   in structure 'tscblk'.  'tscblk' is defined in
 /                   file inter.s.
 /
-/   ID2BLK_LENGTH	the maximum length of a string that can be stored
-/                   in structure 'id2blk'.  'id2blk' is defined in
-/                   inter.c.  ID2BLK_LENGTH should be long enough
-/                   to hold the computer name type string (htype)
-/                   plus the date/time and a few blanks (typically
-/                   20 characters).  It should also be a multiple of
-/                   the word size.
-/
 */
 #ifndef TSCBLK_LENGTH
 #define TSCBLK_LENGTH	512
 #endif
-#define ID2BLK_LENGTH	52
 
 /*
 /   The following manifest constants determine the default environment

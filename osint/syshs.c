@@ -186,10 +186,10 @@ zyshs()
     scp = WA (struct scblk *);
     if (scp->typ == TYPE_SCL && !scp->len)
     {
-        gethost( pTSCBLK, TSCBLK_LENGTH );
-        if ( pTSCBLK->len == 0 )
-            return EXIT_4;
-        SET_XL( pTSCBLK );
+	uc_init(0);
+	uc_strcpy(0,HOST_STRING);
+        uc_decode(0);
+	SET_XL(uc_scblk(0));
         return EXIT_3;
     }
 

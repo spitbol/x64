@@ -370,7 +370,6 @@ word *stkbase, stklen;
     svfheader.system = SYSVERSION;
     svfheader.spare = 0;
     hcopy(vscb->str, svfheader.headv, vscb->len, sizeof(svfheader.headv));
-    hcopy(pID1->str, svfheader.iov, pID1->len, sizeof(svfheader.iov));
     svfheader.timedate = time((time_t *)0);
     svfheader.flags = spitflag;
     svfheader.stacksiz = (uword)stacksiz;
@@ -653,7 +652,6 @@ reload_verserr:
             write( STDERRFD, ((svfheader.version>>VWBSHFT) & 0xF)==2 ? "32" : "64", 2);
             write( STDERRFD, "-bit SPITBOL release ", 21);
             write( STDERRFD, svfheader.headv, length(svfheader.headv) );
-            write( STDERRFD, svfheader.iov, length(svfheader.iov) );
             cp = " to load file ";
             goto reload_err;
 reload_ioerr:

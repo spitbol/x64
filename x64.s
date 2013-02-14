@@ -210,20 +210,6 @@ minimal_id:	D_WORD	0	; id for call to minimal from C. See proc minimal below.
 ;       Setup a number of internal addresses in the compiler that cannot
 ;       be directly accessed from within C because of naming difficulties.
 
-	global  ID1
-ID1:	dd   0
-%if SETREAL == 1
-	D_WORD       2
-
-       D_WORD       1
-	db  "1x\x00\x00\x00"
-%endif
-
-	global  ID2BLK
-ID2BLK	D_WORD   52
-      D_WORD    0
-	times   52 db 0
-
 	global  TICBLK
 TICBLK:	D_WORD   0
       D_WORD    0

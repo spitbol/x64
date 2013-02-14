@@ -177,8 +177,6 @@ STMCS,
 STMCT,
 TICBLK,
 TSCBLK,
-ID1,
-ID2BLK,
 INPBUF,
 TTYBUF,
 END_MIN_DATA;
@@ -199,8 +197,6 @@ extern void	S_YYY();
 
 
 // Some shorthand notations
-#define pID1 GET_DATA_OFFSET(ID1,struct scblk *)
-#define pID2BLK GET_DATA_OFFSET(ID2BLK,struct scblk *)
 #define pINPBUF GET_DATA_OFFSET(INPBUF,struct bfblk *)
 #define pTTYBUF GET_DATA_OFFSET(TTYBUF,struct bfblk *)
 #define pTICBLK GET_DATA_OFFSET(TICBLK,struct icblk *)
