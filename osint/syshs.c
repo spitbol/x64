@@ -20,15 +20,13 @@ This file is part of Macro SPITBOL.
 
 
 /*
-/   arg2scb( req, argc, argv, scptr, maxs )
+/   arg2scb( req, scptr, maxs )
 /
 /   arg2scb() makes a copy of the req-th argument in the argv array.
 /   The copy is appended to the string in the SCBLK provided.
 /
 /   Parameters:
 /	req	number of argument to copy
-/	argc	number of arguments
-/	argv	pointer to array of pointers to strings (arguments)
 /	scptr	pointer to SCBLK to receive copy of argument
 /	maxs	maximum number of characters to append.
 /   Returns:
@@ -41,11 +39,9 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 static int 
-arg2scb( req, argc, argv, scptr, maxs )
+arg2scb( req, scptr, maxs )
 
 int	req;
-int	argc;
-char	*argv[];
 struct	scblk	*scptr;
 int	maxs;
 
@@ -53,10 +49,10 @@ int	maxs;
     register word	i;
     register char	*argcp, *scbcp;
 
-    if ( req < 0  ||  req >= argc )
+    if ( req < 0  ||  req >= gblargc )
         return	-1;
 
-    argcp	= argv[req];
+    argcp	= gblargv[req];
     scbcp	= scptr->str + scptr->len;
     for( i = 0 ; i < maxs  &&  ((*scbcp++ = *argcp++) != 0) ; i++ )
         ;
@@ -113,93 +109,6 @@ int	maxs;
 */
 
 /*
- *  checkstr - check if scblk is a valid string.  Returns 1 if so, else 0.
- */
-int
-checkstr(scp)
-struct scblk *scp;
-{
-    return scp != (struct scblk *)0L &&
-           scp->typ == TYPE_SCL && scp->len < TSCBLK_LENGTH;
-}
-
-/*  check2str - check first two argument strings in XL, XR.
- *
- * Returns 1 if both OK, else 0.
- */
-int
-check2str()
-{
-    return checkstr( XL(struct scblk *) ) && checkstr( XR(struct scblk *) );
-}
-
-
-/*
- *  savestr - convert an scblk to a valid C string.  Returns pointer to
- *		start of string, or 0 if fail.  The char replaced by the
- *		'\0' terminator is returned in *cp.
- */
-char *
-savestr(scp,cp)
-struct scblk *scp;
-char *cp;
-{
-    *cp = scp->str[scp->len];
-    scp->str[scp->len] = '\0';
-    return scp->str;
-}
-
-/*
- *  save2str - convert first two argument strings in XL, XR.
- */
-void
-save2str(s1p,s2p)
-char **s1p, **s2p;
-{
-    *s1p = savestr( XL(struct scblk *), &savexl );
-    *s2p = savestr( XR(struct scblk *), &savexr );
-}
-
-/*
- *  getstring - verify and convert an scblk to a valid C string.
- *   Returns pointer to start of string, or 0 if fail.  The char
- *   replaced by the '\0' terminator is returned in *cp.
- */
-char *
-getstring(scp,cp)
-struct scblk *scp;
-char *cp;
-{
-    return checkstr(scp) ? savestr(scp,cp) : (char *)0L;
-}
-
-
-/*
- *  restorestring - restore an scblk after a getstring call.
- *
- *  when making multiple getstring calls, call restorestring in the reverse
- *  order from getstring, in case two arguments point to the same source string.
- */
-void restorestring(scp,c)
-struct scblk *scp;
-word c;
-{
-    if (scp)
-        scp->str[scp->len] = c;
-}
-
-
-/*
- *  restore2str - restore two argument strings in XL, XR.
- */
-void
-restore2str()
-{
-    restorestring( XR(struct scblk *), savexr);
-    restorestring( XL(struct scblk *), savexl);
-}
-
-/*
  *  getint - fetch an integer from either an icblk, rcblk or non-null scblk.
  *
  *  returns 1 if successful, 0 if failed.
@@ -235,11 +144,12 @@ IATYPE *pword;
     }
 #endif
     else {
-        scp = (struct scblk *)icp;
-        if (!checkstr(scp))
-            return 0;
-        i = scp->len;
-        p = scp->str;
+	uc_init(2);
+	if (!uc_encode(2,(struct scblk *)icp)) {
+		return 0;
+	}
+        i = uc_len(2);
+        p = uc_str(2);
         result = (IATYPE)0;
         while (i && *p == ' ') {		// remove leading blanks
             p++;
@@ -337,8 +247,7 @@ zyshs()
             else if ((val = cmdcnt) != 0) {
                 pTSCBLK->len = 0;
                 while (pTSCBLK->len < TSCBLK_LENGTH - 2 &&
-                        arg2scb( (int) val++, gblargc, gblargv,
-                                 pTSCBLK, TSCBLK_LENGTH - pTSCBLK->len ) > 0)
+                        arg2scb( (int) val++, pTSCBLK, TSCBLK_LENGTH - pTSCBLK->len ) > 0)
                     pTSCBLK->str[pTSCBLK->len++] = ' ';
                 if (pTSCBLK->len)
                     --pTSCBLK->len;
@@ -352,15 +261,18 @@ zyshs()
             */
         case 1: {
             char *cmd, *path;
-
-            if (!check2str())
-                return EXIT_1;
-            save2str(&cmd,&path);
+	    uc_init(0);
+	    uc_init(1);
+	    if (!uc_encode(0, XL(struct scblk *))) {
+		return EXIT_1;
+	    }
+	    if (!uc_encode(1, XR(struct scblk *))) {
+		return EXIT_1;
+	    }
             save0();		// made sure fd 0 OK
-            pTICBLK->val = dosys( cmd, path );
+            pTICBLK->val = dosys(uc_str(0), uc_str(1));
 
             pTICBLK->typ = TYPE_ICL;
-            restore2str();
             restore0();
             if (pTICBLK->val < 0)
                 return EXIT_6;
@@ -375,7 +287,7 @@ zyshs()
             icp = XL( struct icblk * );
             if ( getint(icp,&val) ) {
                 pTSCBLK->len = 0;
-                retval = arg2scb( (int) val, gblargc, gblargv, pTSCBLK, TSCBLK_LENGTH );
+                retval = arg2scb( (int) val, pTSCBLK, TSCBLK_LENGTH );
                 if ( retval < 0 )
                     return EXIT_6;
                 if ( retval == 0 )

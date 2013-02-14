@@ -90,12 +90,12 @@ zysst()
     // offset may come in either integer or string form
     icp = WB( struct icblk * );
     if ( !getint(icp,&temp) ) {
-        struct scblk *scp;
-        scp = (struct scblk *)icp;
-        if (!checkstr(scp) || scp->len != 1)
+	char *scp;
+	if (!uc_encode(2,(struct scblk *)icp))
             return EXIT_1;
+	scp = uc_str(2);
         temp = whence;
-        switch (uppercase(scp->str[0])) {
+        switch (uppercase(scp[0])) {
         case 'P':
             whence = 0;
             break;

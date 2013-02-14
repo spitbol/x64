@@ -29,9 +29,9 @@ ASM	=	nasm
 INCDIRS = -I./tcc/include -I./musl/include
 # next is for tcc
 ifeq	($(DEBUG),0)
-CFLAGS= $(ARCHDEF) -std=c99 -m32 -fno-leading-underscore
+CFLAGS= $(ARCHDEF) -m32 -fno-leading-underscore
 else
-CFLAGS= $(ARCHDEF) -g -std=c99 -m32 -fno-leading-underscore
+CFLAGS= $(ARCHDEF) -g -m32 -fno-leading-underscore
 endif
 
 # Assembler info -- Intel 32-bit syntax
