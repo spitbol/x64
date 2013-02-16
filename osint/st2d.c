@@ -22,14 +22,15 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-static int stc_d (char *out, unsigned int in, int outlen, int signflag);
+char stc_out[20]; // output buffer, as c string
+static int stc_d (unsigned int in, int outlen, int signflag);
 
-static int stc_d(out, in, outlen, signflag)
-register char *out;
+static int stc_d(in, outlen, signflag)
 register unsigned int in;
 register int outlen;
 int signflag;
 {
+    char *out = stc_out;
     char revnum [20];
     register int i=0;
     register char *out0 = out;
@@ -54,17 +55,15 @@ int signflag;
         *out++ = revnum[i-1] + '0';
 
     *out = '\0';
-
     return (out-out0);
 
 }
 
 
 int
-stcu_d(out, in, outlen)
-char *out;
+stcu_d(in, outlen)
 unsigned int in;
 int outlen;
 {
-    return (stc_d(out, in, outlen, 0));
+    return (stc_d(in, outlen, 0));
 }

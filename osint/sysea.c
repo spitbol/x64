@@ -46,19 +46,6 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-static char *eacpy (char *s1, char *s2, int n);
-
-static char *eacpy(s1, s2, n)
-char *s1, *s2;
-int n;
-{
-    char *s0 = s1+n;
-
-    while (n--)
-        *s1++ = *s2++;
-    return s0;
-}
-
 /*
  * Error stage states
  */
@@ -73,6 +60,7 @@ enum stage {
     STGNO				// Number of codes
 };
 
+extern char *stc_out;
 zysea()
 {
     register struct scblk *fnscblk = XL(struct scblk *);
@@ -81,22 +69,24 @@ zysea()
 
     // Display file name if present
     if (fnscblk->len) {
-        p = pTSCBLK->str;
-        p = eacpy(p, fnscblk->str, (int)fnscblk->len);
+	uc_init(1);
+	uc_encode(1,XL(struct scblk *));
         // Display line number if present
         if (WC(unsigned int)) {
-            *p++ = '(';
-            p += stcu_d(p, WC(unsigned int), 16);
+	    uc_strcat(1,"(");
+            stcu_d(WC(unsigned int), 16);
+	    uc_strcat(1,stc_out);
             // Display character position if present
             if (WB(unsigned int)) {
-                *p++ = ',';
-                p += stcu_d(p, WB(unsigned int)+1, 16);
+		uc_strcat(1,",");
+                stcu_d(WB(unsigned int)+1, 16);
+		uc_strcat(1,stc_out);
             }
-            *p++ = ')';
+	    uc_strcat(1,")");
         }
-        p = eacpy(p, " : ", 3);
-        pTSCBLK->len = p - pTSCBLK->str;
-        SET_XR( pTSCBLK );
+        uc_strcat(1," : ");
+	uc_decode(1);
+        SET_XR( uc_scblk(1) );
         return NORMAL_RETURN;
     }
     SET_XR(0L);

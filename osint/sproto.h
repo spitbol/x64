@@ -153,7 +153,7 @@ extern	File_handle	spit_open ( char *Name, Open_method Method, File_mode Mode, i
 extern	void		startbrk ( void );
 extern	void		startup (void);
 extern	int			storedate ( char *cp, word maxlen );
-extern	int			stcu_d ( char *out, unsigned int in, int outlen );
+extern	int			stcu_d ( unsigned int in, int outlen );
 extern	void		stdioinit ( void );
 extern	void		strout ( char *s );
 extern	int			swcinp ( int filecnt, char **fileptr );

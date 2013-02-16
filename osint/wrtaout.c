@@ -38,6 +38,7 @@ This file is part of Macro SPITBOL.
 
 #include <fcntl.h>
 
+extern char stc_out[];
 
 /*  openaout(file, tmpfnbuf, exe)
 /
@@ -63,7 +64,8 @@ int	exe;
     for (;;) {
         p = pathlast(tmpfnbuf);				// p = address we can append to
         p = mystrcpy(p, "temp");
-        p += stcu_d(p, n, 4);
+        stcu_d(n, 4);
+        p = mystrcpy(p,stc_out);
         mystrcpy(p, ".tmp");
         if (access(tmpfnbuf, 0) != 0)
             break;
