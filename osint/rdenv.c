@@ -54,16 +54,15 @@ int  vn;
 
 }
 
-rdenv( varname, result )
-register struct scblk *varname, *result;
+rdenv( int varname, int result )
 {
     register char *p;
 
 
-    if ( (p = findenv(varname->str, varname->len)) == 0 )
+    if ( (p = findenv(uc_str(varname), uc_len(varname))) == 0 )
         return -1;
 
-    cpys2sc(p, result, TSCBLK_LENGTH);
+    uc_append(result,p);
 
     return 0;
 }

@@ -316,13 +316,17 @@ zyshs()
             /	    the environment.
             */
         case 4:
-            scp = XL( struct scblk * );
+	    scp = XL(struct scblk *);
             if ( scp->typ == TYPE_SCL ) {
                 if ( scp->len == 0 )
                     return EXIT_1;
-                if ( rdenv( scp, pTSCBLK ) < 0 )
+	    	uc_init(0);
+	    	uc_encode(0,scp);
+	        uc_init(2);
+                if ( rdenv( 0, 2 ) < 0 )
                     return EXIT_6;
-                SET_XL( pTSCBLK );
+
+                SET_XL( uc_scblk(2) );
                 return EXIT_3;
             }
             else

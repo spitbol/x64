@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #define UC_MAX 512
+#define UC_BLOCKS 4
 // Above should match TSCBLK_LENGTH until that is eliminated.
 
 struct	ccblk {
@@ -10,9 +11,9 @@ struct	ccblk {
 	char	str[UC_MAX];
 	};	
 
-struct scblk  s_blk[3];
+struct scblk  s_blk[UC_BLOCKS];
 
-struct ccblk 	c_blk[3];
+struct ccblk 	c_blk[UC_BLOCKS];
 
 
 /* return length of string argument */
@@ -33,8 +34,16 @@ int	uc_len(int num) {
 	return c_blk[num].len;
 }
 
+void	uc_setlen(int num, int length) {
+	c_blk[num].len = length;
+}
+
 char * uc_str(int num) {
 	return c_blk[num].str;
+}
+
+int	uc_type(int num) {
+	return s_blk[num].typ;
 }
 
 struct scblk * uc_scblk(int num) {
