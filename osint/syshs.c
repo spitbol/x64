@@ -240,8 +240,11 @@ zyshs()
             */
         case 0:
             if ( uarg ) {
-                cpys2sc( uarg, pTSCBLK, TSCBLK_LENGTH );
-                SET_XL( pTSCBLK );
+		// uarg is encoded (utf8 format)
+		uc_init(0);
+		uc_append(0,uarg);
+		uc_decode(0);
+		SET_XL(uc_scblk(0));
                 return EXIT_3;
             }
             else if ((val = cmdcnt) != 0) {

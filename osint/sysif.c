@@ -61,9 +61,7 @@ static void openprev()
 zysif()
 {
     register struct scblk *fnscb = XL (struct scblk *);
-    register struct scblk *pnscb = XR (struct scblk *);
-    register char *savecp;
-    char savechar, filebuf[256];
+    char filebuf[256];
     char *file;
 
     if (fnscb) {
@@ -75,10 +73,9 @@ zysif()
         inc_fd[nesting++] = dup(0);			// Save current input file
         close(0);							// Make fd 0 available
         clrbuf();
-        savecp = fnscb->str + fnscb->len;	// Make it a C string for now.
-        savechar = *savecp;
-        *savecp = '\0';
-        file = fnscb->str;
+	uc_init(0);
+	uc_encode(0,XL(struct scblk *));
+        file = uc_str(0);
         fd = spit_open( file, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
                         IO_OPEN_IF_EXISTS );	// Open file
         if (fd < 0)
@@ -86,7 +83,7 @@ zysif()
             // If couldn't open, try alternate paths via SNOLIB
             initpath(SPITFILEPATH);
             file = filebuf;
-            while (trypath(fnscb->str,file))
+            while (trypath(uc_str(0),file))
             {
                 fd = spit_open(file, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE, IO_OPEN_IF_EXISTS);
                 if (fd >= 0)
@@ -100,7 +97,7 @@ zysif()
             if (i)
             {
                 mystrncpy(filebuf, gblargv[0], i);
-                mystrcpy(&filebuf[i], fnscb->str);
+                mystrcpy(&filebuf[i], uc_str(0));
                 fd = spit_open(filebuf, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE, IO_OPEN_IF_EXISTS);
             }
         }
@@ -111,16 +108,16 @@ zysif()
             if (i)
             {
                 mystrncpy(filebuf, sfn, i);
-                mystrcpy(&filebuf[i], fnscb->str);
+                mystrcpy(&filebuf[i], uc_str(0));
                 fd = spit_open(filebuf, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE, IO_OPEN_IF_EXISTS);
             }
         }
         if ( fd >= 0 ) {  				// If file opened OK
-            cpys2sc(file,pnscb,pnscb->len);
-            *savecp = savechar;			// Restore saved char
+	    uc_init(1);
+	    uc_encode(1, XR(struct scblk *)); 
+	    uc_append(1,file);
         }
         else {  						// Couldn't open file
-            *savecp = savechar;			// Restore saved char
             openprev();					// Restore input file we just closed
             return EXIT_1;				// Fail
         }
