@@ -19,7 +19,7 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   lenfnm( scptr )
+/   lenfnm( char *s, int n )
 /
 /   lenfnm() examines the file argument within the passed SCBLK and returns
 /   the length of the filename contained within it.  This function will be
@@ -66,11 +66,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-word lenfnm( scptr )
-
-struct	scblk	*scptr;
-
-{
+word lenfnm( char * s, int n ) {
     register word cnt, len, len2;
     register char	*cp;
     register char delim;
@@ -78,14 +74,15 @@ struct	scblk	*scptr;
     /*
     /	Null strings have filenames with lengths of 0.
     */
-    len = len2 = scptr->len;
+    len = len2 = n;
     if ( len == 0 )
         return	0L;
 
     /*
     /   Here to examine end of string for "[option]".
     */
-    cp = &scptr->str[--len2];    // last char of strng
+    --len2; // point to last chacter in string.
+    cp = s+len2;    // last char of strng
     if ( *cp == ']')			// string end with "]" ?
     {
         // String ends with "]", find preceeding "["
@@ -96,14 +93,14 @@ struct	scblk	*scptr;
             if (*cp == '[')
             {
                 // valid option syntax, remove from length of string we'll examine
-                len = cp - scptr->str;
+                len = cp - s;
                 break;
             }
         }
     }
 
     // Look for space as the options delimiter
-    cp = scptr->str;
+    cp = s;
 
     /*
     /	Here to bypass spaces within a pipe command.

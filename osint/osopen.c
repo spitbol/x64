@@ -60,11 +60,11 @@ struct	ioblk	*ioptr;
         if (optfile(scptr, pTSCBLK))
             return -1;
         scptr = pTSCBLK;
-        pTSCBLK->len = lenfnm(scptr);	// remove any options
+        pTSCBLK->len = lenfnm(scptr->str, scptr->len);	// remove any options
     }
 
     cp	= scptr->str;		// point to filename string
-    len	= lenfnm( scptr );	// get length of filename
+    len	= lenfnm( scptr->str, scptr->len );	// get length of filename
 
     /*
     /	Handle pipes here.

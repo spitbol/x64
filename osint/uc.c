@@ -36,6 +36,7 @@ int	uc_len(int num) {
 
 void	uc_setlen(int num, int length) {
 	c_blk[num].len = length;
+	c_blk[num].str[length] = '\0'; // shorten c string
 }
 
 char * uc_str(int num) {

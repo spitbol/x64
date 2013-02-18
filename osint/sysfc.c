@@ -84,7 +84,7 @@ struct	scblk	*scptr;
     /*
     /	If lenfnm() fails so shall we.
     */
-    if ( (cnt = lenfnm( scptr )) < 0 )
+    if ( (cnt = lenfnm( scptr->str, scptr->len )) < 0 )
         return	-1;
 
     /*
@@ -386,7 +386,7 @@ zysfc()
     /   Bad filearg2 or NULL filearg1 is an error
     */
 again:
-    if ( (length_fname = lenfnm( scb2 )) < 0  ||  !scb1->len )
+    if ( (length_fname = lenfnm( scb2->str, scb2->len )) < 0  ||  !scb1->len )
         return  EXIT_1;
 
     /*

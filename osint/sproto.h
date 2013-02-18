@@ -94,7 +94,7 @@ extern	int			host88 ( int hostno );
 extern	int			hostapl ( int hostno );
 extern	void		init_custom ( void );
 extern	void		initpath ( char *name );
-extern	word		lenfnm ( struct scblk *scptr );
+extern	word		lenfnm (char * s, int n);
 extern	int			length ( char *cp );
 extern	void *		loadef (word fd, char *filename);
 extern	long		lstrncmp (char*, char*, long, long);

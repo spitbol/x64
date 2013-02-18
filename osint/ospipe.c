@@ -146,9 +146,9 @@ struct	ioblk	*ioptr;
         if (optfile(scptr, pTSCBLK))
             return -1;
         scptr = pTSCBLK;
-        pTSCBLK->len = lenfnm(scptr);	// remove any options
+        pTSCBLK->len = lenfnm(scptr->str, scptr->len);	// remove any options
     }
-    len   = lenfnm( scptr ) - 2;        // length of cmd without ! & delimiter
+    len   = lenfnm( scptr->str, scptr->len ) - 2;        // length of cmd without ! & delimiter
     if (len >= CMDBUFLEN)
         return -1;
     mystrncpy( cmdbuf, &scptr->str[2], len);// get command
