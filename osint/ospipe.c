@@ -141,18 +141,20 @@ struct	ioblk	*ioptr;
     /   terminate it with a Nul character.  Remember that
     /   command is in string with form "!*command* options".
     */
-    scptr = ((struct scblk *) (ioptr->fnm));	// point to cmd scblk
+    uc_init(2); // unicode buffer for filename
+    uc_encode(2,ioptr->fnm);
+    uc_init(3); // unicode buffer for command
     if (ioptr->flg2 & IO_ENV) {
-        if (optfile(scptr, pTSCBLK))
+
+        if (optfile(2, 3))
             return -1;
-        scptr = pTSCBLK;
-        pTSCBLK->len = lenfnm(scptr->str, scptr->len);	// remove any options
+	uc_setlen(3, lenfnm(uc_str(3), uc_len(3)));	/// remove any options
     }
-    len   = lenfnm( scptr->str, scptr->len ) - 2;        // length of cmd without ! & delimiter
+    len   = lenfnm(uc_str(3),uc_len(3)) - 2;        // length of cmd without ! & delimiter
     if (len >= CMDBUFLEN)
         return -1;
-    mystrncpy( cmdbuf, &scptr->str[2], len);// get command
-    if ( cmdbuf[len-1] == scptr->str[1] )   // if necessary
+    mystrncpy( cmdbuf, uc_str(0)+2, len);// get command
+    if ( cmdbuf[len-1] == uc_str(0)[1])   // if necessary
         len--;                              //   zap 2nd delimiter
     cmdbuf[len] = '\0';                     // Nul terminate cmd
     shellpath = getshell();         // get shell's path
