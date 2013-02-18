@@ -73,18 +73,18 @@ zysea()
 	uc_encode(1,XL(struct scblk *));
         // Display line number if present
         if (WC(unsigned int)) {
-	    uc_strcat(1,"(");
+	    uc_append(1,"(");
             stcu_d(WC(unsigned int), 16);
-	    uc_strcat(1,stc_out);
+	    uc_append(1,stc_out);
             // Display character position if present
             if (WB(unsigned int)) {
-		uc_strcat(1,",");
+		uc_append(1,",");
                 stcu_d(WB(unsigned int)+1, 16);
-		uc_strcat(1,stc_out);
+		uc_append(1,stc_out);
             }
-	    uc_strcat(1,")");
+	    uc_append(1,")");
         }
-        uc_strcat(1," : ");
+        uc_append(1," : ");
 	uc_decode(1);
         SET_XR( uc_scblk(1) );
         return NORMAL_RETURN;

@@ -65,7 +65,7 @@ zysdt()
     char dt[20];
 
     uc_init(0);
-    uc_strcat(0, getdate(dtscb->val));
+    uc_append(0, getdate(dtscb->val));
     uc_decode(0);
     SET_XL(uc_scblk(0));
     return NORMAL_RETURN;

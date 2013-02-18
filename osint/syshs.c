@@ -187,7 +187,7 @@ zyshs()
     if (scp->typ == TYPE_SCL && !scp->len)
     {
 	uc_init(0);
-	uc_strcpy(0,HOST_STRING);
+	uc_append(0,HOST_STRING);
         uc_decode(0);
 	SET_XL(uc_scblk(0));
         return EXIT_3;

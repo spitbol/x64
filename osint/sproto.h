@@ -232,8 +232,7 @@ extern char * 	uc_str(int num);
 extern struct 	scblk * uc_scblk(int num);
 extern int 	uc_decode(int num);
 extern int 	uc_encode(int num,struct scblk *scb);
-extern void 	uc_strcat(int num, char * s);
-extern void 	uc_strcpy(int num, char * s);
+extern void 	uc_append(int num, char * s);
 extern void	uc_putc(int num,char c);
 
 

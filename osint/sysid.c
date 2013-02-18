@@ -55,9 +55,9 @@ zysid()
     uc_init(1);
     SET_XR(uc_scblk(1));
     uc_init(0);
-    uc_strcpy(0,HOST_STRING);
-    uc_strcat(0,"  ");
-    uc_strcat(0,getdate(0));
+    uc_append(0,HOST_STRING);
+    uc_append(0,"  ");
+    uc_append(0,getdate(0));
     uc_decode(0);
     SET_XL(uc_scblk(0));
     return NORMAL_RETURN;

@@ -41,21 +41,6 @@ struct scblk * uc_scblk(int num) {
 	return (struct scblk *) &s_blk[num];
 }
 
-void uc_strcpy(int num, char * s) {
-	struct ccblk *cb = &c_blk[num];
-	char * cp = cb->str;
-	cb->len = c_length(s);
-	if (cb->len > UC_MAX) {
-		cb->len = 0;
-		return;
-	}
-	int i;
-	for (i=0;(*cp++ = *s++) != 0;i++) {
-		;
-	}
-	*cp = 0;
-}
-
 int uc_decode(int num) {
 	struct ccblk *cb = &c_blk[num];
 	char * cp = cb->str;
@@ -70,7 +55,7 @@ int uc_decode(int num) {
 }
 
 
-void uc_strcat(int num, char * s) {
+void uc_append(int num, char * s) {
 	int n = c_length(s);
 	struct ccblk *cb = &c_blk[num];
 	if (cb->len + n > UC_MAX) {
