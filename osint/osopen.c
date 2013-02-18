@@ -40,10 +40,8 @@ struct	ioblk	*ioptr;
 
 {
     word	fd;
-    char	savech;
     word 	len;
     char	*cp;
-    struct	scblk	*scptr;
 
     /*
     /	If file already open, return.
@@ -54,17 +52,19 @@ struct	ioblk	*ioptr;
     /*
     /	Establish a few pointers and filename length.
     */
-    scptr	= ((struct scblk *) (ioptr->fnm));	// point to filename SCBLK
+    uc_init(2);
+    uc_encode(2, ioptr->fnm); 		// convert filename to utf form
+    uc_init(3);
     if (ioptr->flg2 & IO_ENV)
     {
-        if (optfile(scptr, pTSCBLK))
+        if (optfile(2, 3))
             return -1;
-        scptr = pTSCBLK;
-        pTSCBLK->len = lenfnm(scptr->str, scptr->len);	// remove any options
+
+        uc_setlen(3, lenfnm(uc_str(2), uc_len(2)));	// remove any options
     }
 
-    cp	= scptr->str;		// point to filename string
-    len	= lenfnm( scptr->str, scptr->len );	// get length of filename
+    cp	= uc_str(2);		// point to filename string
+    len	= lenfnm( uc_str(2),uc_len(2));	// get length of filename
 
     /*
     /	Handle pipes here.
@@ -81,7 +81,6 @@ struct	ioblk	*ioptr;
     */
     else
     {
-        savech	= make_c_str(&cp[len]);	//   else temporarily terminate	filename
         if ( ioptr->flg1 & IO_OUP ) //  output file
         {
             fd = -1;	// force creat if not update or append
@@ -128,7 +127,6 @@ struct	ioblk	*ioptr;
             else
                 fd = spit_open( cp, O_RDONLY, ioptr->share /* 0 */, ioptr->action);
         }
-        unmake_c_str(&cp[len], savech);	// restore filename string
     }
 
     /*
