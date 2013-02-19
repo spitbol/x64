@@ -54,7 +54,7 @@ int signflag;
     for (; i && outlen; i--, outlen--)
         *out++ = revnum[i-1] + '0';
 
-    *out = '\0';
+    *out++ = '\0';
     return (out-out0);
 
 }

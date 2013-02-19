@@ -55,7 +55,7 @@ int uc_decode(int num) {
 	struct ccblk *cb = &c_blk[num];
 	char * cp = cb->str;
 	char * sp = s_blk[num].str;
-	fprintf(stderr,"decode: %d %s\n",cb->len,cb->str);
+//	fprintf(stderr,"decode: %d %s\n",cb->len,cb->str);
 	int i;
 	for (i = 0;i<cb->len; i++) {
 		*sp++ = *cp++;
