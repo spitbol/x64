@@ -60,7 +60,7 @@ enum stage {
     STGNO				// Number of codes
 };
 
-extern char *stc_out;
+extern char stc_out[];
 zysea()
 {
     register struct scblk *fnscblk = XL(struct scblk *);
