@@ -100,6 +100,7 @@ char	*argv[];
 #endif					// FLOAT
         heapmove();				// move the heap up
         malloc_empty();			// mark the malloc region as empty
+        zysdc();							// Brag if necessary
         restart( (char *)0L, lowsp );       // call restart to continue execution
     }
 #endif					// EXECFILE
@@ -113,6 +114,7 @@ char	*argv[];
         sfn = *inpptr;		// pointer to first file name
     else
     {
+        zysdc();
         wrterr("");
         prompt();
     }
@@ -224,7 +226,7 @@ void wrterr(s)
 char	*s;
 {
     write( STDERRFD, s, length(s) );
-    write( STDERRFD,  "\n", 1 );
+    write( STDERRFD,  EOL, 1 );
 }
 
 void wrtintz(n)
@@ -260,6 +262,11 @@ char	*s;
  */
 void setout()
 {
+    /*
+     *	Brag prior to calling swcoup
+     */
+    zysdc();
+
     /*
     /   Switch to proper output file.
     */

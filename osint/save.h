@@ -60,6 +60,7 @@ struct svfilehdr {
     short int       spare;          // spare cells to dword boundary
     char            serial[8];      // compiler serial number
     char            headv[8];       // version string
+    char            iov[12];        // i/o version string
     unsigned long   timedate;       // date and time of creation
     long            flags;          // spitflag word
     uword           stacksiz;       // total size of stack area

@@ -69,7 +69,7 @@ HDRS=	$(CHDRS) $(UHDRS)
 VHDRS=	$(ARCH).hdr 
 
 # OSINT objects:
-SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdt.o sysea.o \
+SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	sysef.o sysej.o sysem.o sysen.o sysep.o sysex.o sysfc.o \
 	sysgc.o syshs.o sysid.o sysif.o sysil.o sysin.o sysio.o \
 	sysld.o sysmm.o sysmx.o sysou.o syspl.o syspp.o sysrw.o \
@@ -77,7 +77,7 @@ SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdt.o sysea.o \
 
 # Other C objects:
 COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
-	doset.o dosys.o fakexit.o float.o flush.o getshell.o \
+	doset.o dosys.o fakexit.o float.o flush.o gethost.o getshell.o \
 	int.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\

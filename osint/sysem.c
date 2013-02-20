@@ -71,12 +71,8 @@ word special (word c);
 
 zysem()
 {
-    int n;
-    uc_init(1);
-    n = msgcopy( WA(word), errors, uc_str(1));
-    uc_setlen(1,n);
-    uc_decode(1);
-    SET_XR(uc_scblk(1));
+    pTSCBLK->len = msgcopy( WA(word), errors, pTSCBLK->str );
+    SET_XR( pTSCBLK );
     return NORMAL_RETURN;
 }
 
@@ -144,8 +140,6 @@ char		*dest;
         else
             *dest++ = c;
     }
-    *dest++ = '\0';
-
 
     /*
     /   Return number of characters transferred.
