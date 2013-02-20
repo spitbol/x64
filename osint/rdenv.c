@@ -30,6 +30,8 @@ This file is part of Macro SPITBOL.
 /   Returns:
 /	0 if successful / -1 on failure
 /
+/	v1.02 02-Jan-91 Changed rdenv to use cpys2sc instead of mystrncpy.
+/					Add private getenv().
 */
 
 #include "port.h"
@@ -52,15 +54,16 @@ int  vn;
 
 }
 
-rdenv( int varname, int result )
+rdenv( varname, result )
+register struct scblk *varname, *result;
 {
     register char *p;
 
 
-    if ( (p = findenv(uc_str(varname), uc_len(varname))) == 0 )
+    if ( (p = findenv(varname->str, varname->len)) == 0 )
         return -1;
 
-    uc_append(result,p);
+    cpys2sc(p, result, TSCBLK_LENGTH);
 
     return 0;
 }

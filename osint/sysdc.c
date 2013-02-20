@@ -19,45 +19,40 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/	File:  SYSID.C		Version:  01.02
-/	---------------------------------------
+/	zysdc - check system expiration date
 /
-/	Contents:	Function zysid
-*/
-
-/*
-/	zysid - identify system
-/
-/	zysid returns two strings identifying the Spitbol system.
+/	zysdc prints any header messages and may check
+/	the date to see if execution is allowed to proceed.
 /
 /	Parameters:
-/	    None
-/	Returns:
-/	    XR - pointer to SCBLK containing suffix to Spitbol header
-/	    XL - pointer to SCBLK containing 2nd header line
-/	Exits:
-/	    None
+/	    Nothing
+/	Returns
+/	    Nothing
+/	    No return if execution not permitted
+/
 */
 
 #include "port.h"
 
-/*
-/   define actual headers elsewhere to overcome problems in initializing
-/   the two SCBLKs.  Use id2blk instead of tscblk because tscblk may
-/	be active with an error message when zysid is called.
-*/
-
-zysid()
-
+zysdc()
 {
-    register char *cp;
+    struct scblk *pHEADV = GET_DATA_OFFSET(HEADV,struct scblk *);
+	return;
+    // announce name and copyright
+    if (!dcdone && !(spitflag & NOBRAG))
+    {
+        dcdone = 1;				// Only do once per run
 
-    SET_XR( pID1 );
-    gettype( pID2BLK, ID2BLK_LENGTH );
-    cp = pID2BLK->str + pID2BLK->len;
-    *cp++ = ' ';
-    *cp++ = ' ';
-    pID2BLK->len += 2 + storedate(cp, ID2BLK_LENGTH - pID2BLK->len);
-    SET_XL( pID2BLK );
+        write( STDERRFD, "LINUX SPITBOL", 13);
+
+#if RUNTIME
+        write( STDERRFD, " Runtime", 8);
+#endif					// RUNTIME
+
+        write( STDERRFD, "  Release ", 10);
+        write( STDERRFD, pHEADV->str, pHEADV->len );
+        write( STDERRFD, pID1->str, pID1->len );
+        wrterr( cprtmsg );
+    }
     return NORMAL_RETURN;
 }

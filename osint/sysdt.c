@@ -40,11 +40,10 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-#include <stdio.h>
 #include <time.h>
 
-static char * getdate (int type );
-static void timeconv ( char *tp, struct tm *tm );
+static int datecvt ( char *cp, int type );
+static int timeconv ( char *tp, struct tm *tm );
 
 // conv() rewritten to avoid dependence on library remainder routine
 void conv (dest, value)
@@ -62,31 +61,37 @@ register int value;
 zysdt()
 {
     struct icblk *dtscb = XR (struct icblk *);
-    char dt[20];
 
-    uc_init(0);
-    uc_append(0, getdate(dtscb->val));
-    uc_decode(0);
-    SET_XL(uc_scblk(0));
+    pTSCBLK->len = datecvt( pTSCBLK->str, dtscb->val );
+    SET_XL( pTSCBLK );
     return NORMAL_RETURN;
 }
 
 /*
- * Return date/time in several different forms to a string
+ * Write date/time in SPITBOL form to a string
  */
-char * getdate(type )
+int storedate( cp, maxlen )
+char	*cp;
+word	maxlen;
+{
+    if (maxlen < 18)
+        return 0;
+
+    return datecvt(cp, 0);
+}
+
+/*
+ * Write date/time in several different forms to a string
+ */
+int datecvt( cp, type )
+char	*cp;
 int     type;
 {
-	
 
-    char	*cp;
     time_t      tod;
 
     register struct tm *tm;
     tm = localtime( &tod );
-
-    uc_init(2);
-    cp = uc_str(2);
 
     switch (type)
     {
@@ -97,8 +102,7 @@ int     type;
         conv( cp+3, tm->tm_mday );
         cp[5] = '/';
         conv( cp+6, tm->tm_year % 100 );    // Prepare for year 2000!
-        timeconv(&cp[8], tm);
-	break;
+        return 8 + timeconv(&cp[8], tm);
 
     case 1:     // "MM/DD/YYYY hh:mm:ss"
         conv( cp, tm->tm_mon+1 );
@@ -107,8 +111,7 @@ int     type;
         cp[5] = '/';
         conv( cp+6, (tm->tm_year + 1900) / 100 );
         conv( cp+8, tm->tm_year % 100 );    // Prepare for year 2000!
-        timeconv(&cp[10], tm);
-	break;
+        return 10 + timeconv(&cp[10], tm);
 
     case 2:     // "YYYY-MM-DD/YYYY hh:mm:ss"
         conv( cp+0, (tm->tm_year + 1900) / 100 );
@@ -117,13 +120,11 @@ int     type;
         conv( cp+5, tm->tm_mon+1 );
         cp[7] = '-';
         conv( cp+8, tm->tm_mday );
-        timeconv(&cp[10], tm);
-	break;
+        return 10 + timeconv(&cp[10], tm);
     }
-    return uc_str(2);
 }
 
-static void timeconv( tp, tm)
+static int timeconv( tp, tm)
 char *tp;
 struct tm *tm;
 {
@@ -134,6 +135,6 @@ struct tm *tm;
     tp[6] = ':';
     conv( tp+7, tm->tm_sec );
     *(tp+9) = '\0';
-    return;
+    return 9;
 }
 

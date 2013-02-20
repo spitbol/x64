@@ -42,8 +42,9 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-int optfile( int varname, int result )
+int optfile( varname, result )
 
+struct	scblk	*varname, *result;
 
 {
     word	i, j, n;
@@ -51,18 +52,18 @@ int optfile( int varname, int result )
 
     // try to convert alias to an integer
     i = 0;
-    n = scnint( uc_str(varname), uc_len(varname), &i);
-    if (i == uc_len(varname))		// Consume all characters?
+    n = scnint( varname->str, varname->len, &i);
+    if (i == varname->len)		// Consume all characters?
     {
         for (j = 0; j <= maxf; j++)
         {
             if (cfiles[j].filenum == n)
             {
                 p = cfiles[j].fileptr;
-                q = uc_str(result);
+                q = result->str;
                 while ((*q++ = *p++) != 0)
                     ;
-                uc_setlen(result, q - uc_str(result) - 1);
+                result->len = q - result->str - 1;
                 return 0;
             }
         }

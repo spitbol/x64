@@ -36,4 +36,3 @@ This file is part of Macro SPITBOL.
 #define EXECFILE    0
 #define FLTHDWR     0   // Change to 1 when do floating ops inline
 #define GCCi32      1
-#define HOST_STRING "x32:Linux:Macro SPITBOL 13.01"

@@ -61,7 +61,9 @@ static void openprev()
 zysif()
 {
     register struct scblk *fnscb = XL (struct scblk *);
-    char filebuf[256];
+    register struct scblk *pnscb = XR (struct scblk *);
+    register char *savecp;
+    char savechar, filebuf[256];
     char *file;
 
     if (fnscb) {
@@ -73,9 +75,10 @@ zysif()
         inc_fd[nesting++] = dup(0);			// Save current input file
         close(0);							// Make fd 0 available
         clrbuf();
-	uc_init(0);
-	uc_encode(0,XL(struct scblk *));
-        file = uc_str(0);
+        savecp = fnscb->str + fnscb->len;	// Make it a C string for now.
+        savechar = *savecp;
+        *savecp = '\0';
+        file = fnscb->str;
         fd = spit_open( file, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
                         IO_OPEN_IF_EXISTS );	// Open file
         if (fd < 0)
@@ -83,7 +86,7 @@ zysif()
             // If couldn't open, try alternate paths via SNOLIB
             initpath(SPITFILEPATH);
             file = filebuf;
-            while (trypath(uc_str(0),file))
+            while (trypath(fnscb->str,file))
             {
                 fd = spit_open(file, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE, IO_OPEN_IF_EXISTS);
                 if (fd >= 0)
@@ -97,7 +100,7 @@ zysif()
             if (i)
             {
                 mystrncpy(filebuf, gblargv[0], i);
-                mystrcpy(&filebuf[i], uc_str(0));
+                mystrcpy(&filebuf[i], fnscb->str);
                 fd = spit_open(filebuf, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE, IO_OPEN_IF_EXISTS);
             }
         }
@@ -108,16 +111,16 @@ zysif()
             if (i)
             {
                 mystrncpy(filebuf, sfn, i);
-                mystrcpy(&filebuf[i], uc_str(0));
+                mystrcpy(&filebuf[i], fnscb->str);
                 fd = spit_open(filebuf, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE, IO_OPEN_IF_EXISTS);
             }
         }
         if ( fd >= 0 ) {  				// If file opened OK
-	    uc_init(1);
-	    uc_encode(1, XR(struct scblk *)); 
-	    uc_append(1,file);
+            cpys2sc(file,pnscb,pnscb->len);
+            *savecp = savechar;			// Restore saved char
         }
         else {  						// Couldn't open file
+            *savecp = savechar;			// Restore saved char
             openprev();					// Restore input file we just closed
             return EXIT_1;				// Fail
         }
