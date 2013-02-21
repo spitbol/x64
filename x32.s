@@ -262,6 +262,11 @@ TSCBLK:	 D_WORD   512
       D_WORD    0
 	times   512 db 0
 
+	global  TCCBLK
+TCCBLK:	 D_WORD   512
+      D_WORD    0
+	times   512 db 0
+
 
 ;       Standard input buffer block.
 

@@ -34,8 +34,8 @@ This file is part of Macro SPITBOL.
 /   to divide this large block into smaller blocks as needed.
 /
 /   Parameters:
-/	xl	pointer to scblk holding filearg1 (channel id)
-/	xr	pointer to scblk holding filearg2 (filename & args)
+/	xl	pointer to ccblk holding filearg1 (channel id)
+/	xr	pointer to ccblk holding filearg2 (filename & args)
 /	wa	pointer to fcblk or 0
 /	wb	0/3 for input/output association
 /   Returns:
@@ -106,8 +106,8 @@ zysio()
             iob->typ = TYPE_XRT;	// type: external reloc
             iob->len = IOSIZE;		// length
             iob->fnm = MP_OFF((tioblk.flg2 & IO_ENV) ?
-                              XL( struct scblk *) :  // filearg 1
-                              XR( struct scblk * ), struct scblk *);  // filename
+                              XL( struct ccblk *) :  // filearg 1
+                              XR( struct ccblk * ), struct ccblk *);  // filename
 
             iob->pid = 0;			// process id
             iob->bfb = MP_OFF(bfb, struct bfblk *);	// buffer

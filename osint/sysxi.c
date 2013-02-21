@@ -19,13 +19,13 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   doexec( scptr )
+/   doexec( ccptr )
 /
 /   doexec() does an "execle" function call to invoke the shell on the
 /   command string contained in the passed SCBLK.
 /
 /   Parameters:
-/	scptr	pointer to SCBLK containing the command to execute
+/	ccptr	pointer to SCBLK containing the command to execute
 /   Returns:
 /	No return if shell successfully executed
 /	Returns if could not execute command
@@ -37,9 +37,9 @@ This file is part of Macro SPITBOL.
 char	*getshell();
 char	*pathlast();
 
-static void 
-doexec( scbptr )
-struct	scblk	*scbptr;
+static void
+doexec( ccbptr )
+struct	ccblk	*ccbptr;
 
 {
     word	length;
@@ -47,8 +47,8 @@ struct	scblk	*scbptr;
     char	*cp;
     extern char **environ;
     char	*shellpath;
-    length	= scbptr->len;
-    cp	= scbptr->str;
+    length	= ccbptr->len;
+    cp	= ccbptr->str;
 
     /*
     /	Instead of copying the command string, temporarily save the character
@@ -143,10 +143,10 @@ zysxi()
     char	fileName[256], tmpfnbuf[256];
     word	*stackbase;
     word	retval, stacklength;
-    struct scblk	*scfn = WA( struct scblk * );
+    struct ccblk	*scfn = WA( struct ccblk * );
     char	savech;
 
-    struct scblk	*scb = XL( struct scblk * );
+    struct ccblk	*ccb = XL( struct ccblk * );
 
     /*
     /	Case 1:  Chain to another program
@@ -154,13 +154,13 @@ zysxi()
     /	If XL is non-zero then it must point to a SCBLK containing the
     /	command to execute by chaining.
     */
-    if ( scb != 0 )
+    if ( ccb != 0 )
     {
-        if ( scb->typ == TYPE_SCL )		// must be SCBLK!
+        if ( ccb->typ == TYPE_SCL )		// must be SCBLK!
         {
             close_all( WB( struct chfcb * ) );	// V1.11
             save0();		// V1.14 make sure fd 0 OK
-            doexec( scb );		// execute command
+            doexec( ccb );		// execute command
             restore0();		// just in case
             return EXIT_2;		// Couldn't chain
         }
@@ -212,12 +212,12 @@ zysxi()
         /*
         /	Copy entire stack into local storage of temporary SCBLK.
         */
-        if ( stacklength > TSCBLK_LENGTH ) {
+        if ( stacklength > TCCBLK_LENGTH ) {
             retval = -1;
             goto fail;
         }
         srcptr = stackbase;
-        dstptr = (word *)pTSCBLK->str;
+        dstptr = (word *)pTCCBLK->str;
         i = GET_MIN_VALUE(STBAS,word *) - srcptr;
         while( i-- )
             *dstptr++ = *srcptr++;
@@ -354,7 +354,7 @@ word putsave(stkbase, stklen)
 word *stkbase, stklen;
 {
     word result = 0;
-    struct scblk *vscb = XR( struct scblk * );
+    struct ccblk *vccb = XR( struct ccblk * );
 #if EXTFUN
     unsigned char *bufp;
     word textlen;
@@ -369,7 +369,7 @@ word *stkbase, stklen;
     svfheader.version = SaveVersion;
     svfheader.system = SYSVERSION;
     svfheader.spare = 0;
-    hcopy(vscb->str, svfheader.headv, vscb->len, sizeof(svfheader.headv));
+    hcopy(vccb->str, svfheader.headv, vccb->len, sizeof(svfheader.headv));
     hcopy(pID1->str, svfheader.iov, pID1->len, sizeof(svfheader.iov));
     svfheader.timedate = time((time_t *)0);
     svfheader.flags = spitflag;
@@ -561,12 +561,12 @@ int fd;
                 if ( expand( fd, (unsigned char *)uargbuf, svfheader.uarglen ) )
                     goto reload_ioerr;
 
-            // Read saved stack from save file into tscblk
-            if ( expand( fd, (unsigned char *)pTSCBLK->str, svfheader.stacklength ) )
+            // Read saved stack from save file into tccblk
+            if ( expand( fd, (unsigned char *)pTCCBLK->str, svfheader.stacklength ) )
                 goto reload_ioerr;
 
             SET_MIN_VALUE(STBAS, svfheader.stbas,word);
-            lmodstk = (word *)(pTSCBLK->str + svfheader.stacklength);
+            lmodstk = (word *)(pTCCBLK->str + svfheader.stacklength);
             stacksiz = svfheader.stacksiz;
 
             // Reload compiler working globals section
@@ -594,8 +594,8 @@ int fd;
             MINIMAL(MINIMAL_RELOC);
 
             // Relocate any return addresses in stack
-            SET_WB(pTSCBLK->str);
-            SET_WA(pTSCBLK->str + svfheader.stacklength);
+            SET_WB(pTCCBLK->str);
+            SET_WA(pTCCBLK->str + svfheader.stacklength);
             if (svfheader.stacklength) {
 
                 MINIMAL(MINIMAL_RELAJ);

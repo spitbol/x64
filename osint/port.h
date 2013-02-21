@@ -303,8 +303,8 @@ typedef long IATYPE;
 /   The following manifest constants determines the size of the temporary
 /   SCBLKs defined by the interface.
 /
-/   TSCBLK_LENGTH	the maximum length of a string that can be stored
-/                   in structure 'tscblk'.  'tscblk' is defined in
+/   TCCBLK_LENGTH	the maximum length of a string that can be stored
+/                   in structure 'tccblk'.  'tccblk' is defined in
 /                   file inter.s.
 /
 /   ID2BLK_LENGTH	the maximum length of a string that can be stored
@@ -316,8 +316,8 @@ typedef long IATYPE;
 /                   the word size.
 /
 */
-#ifndef TSCBLK_LENGTH
-#define TSCBLK_LENGTH	512
+#ifndef TCCBLK_LENGTH
+#define TCCBLK_LENGTH	512
 #endif
 #define ID2BLK_LENGTH	52
 

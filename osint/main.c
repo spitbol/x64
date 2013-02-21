@@ -226,7 +226,7 @@ void wrterr(s)
 char	*s;
 {
     write( STDERRFD, s, length(s) );
-    write( STDERRFD,  EOL, 1 );
+    write( STDERRFD,  "\n", 1 );
 }
 
 void wrtintz(n)
@@ -236,7 +236,7 @@ int	n;
     	char str[16];
     	itoa(n,str);
     	write( STDOUTFD, str, length(str) );
-    	write( STDOUTFD,  EOL, 1 );
+    	write( STDOUTFD,  "\n", 1 );
     */
 }
 
@@ -249,7 +249,7 @@ void wrtmsg(s)
 char	*s;
 {
     write( STDOUTFD, s, length(s) );
-    write( STDOUTFD,  EOL, 1 );
+    write( STDOUTFD,  "\n", 1 );
 }
 
 /*

@@ -43,7 +43,7 @@ struct	ioblk	*ioptr;
     char	savech;
     word 	len;
     char	*cp;
-    struct	scblk	*scptr;
+    struct	ccblk	*ccptr;
 
     /*
     /	If file already open, return.
@@ -54,17 +54,17 @@ struct	ioblk	*ioptr;
     /*
     /	Establish a few pointers and filename length.
     */
-    scptr	= ((struct scblk *) (ioptr->fnm));	// point to filename SCBLK
+    ccptr	= ((struct ccblk *) (ioptr->fnm));	// point to filename CCBLK
     if (ioptr->flg2 & IO_ENV)
     {
-        if (optfile(scptr, pTSCBLK))
+        if (optfile(ccptr, pTCCBLK))
             return -1;
-        scptr = pTSCBLK;
-        pTSCBLK->len = lenfnm(scptr);	// remove any options
+        ccptr = pTCCBLK;
+        pTCCBLK->len = lenfnm(ccptr);	// remove any options
     }
 
-    cp	= scptr->str;		// point to filename string
-    len	= lenfnm( scptr );	// get length of filename
+    cp	= ccptr->str;		// point to filename string
+    len	= lenfnm( ccptr );	// get length of filename
 
     /*
     /	Handle pipes here.

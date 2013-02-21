@@ -37,7 +37,7 @@ This file is part of Macro SPITBOL.
 /				WA - error number (1-330)
 /				WB - column number
 /				WC - line number
-/				XL - scblk containing source file name
+/				XL - ccblk containing source file name
 /	Returns:
 /	    XR - SCBLK of message to print, or 0 if none
 /	Exits:
@@ -75,14 +75,14 @@ enum stage {
 
 zysea()
 {
-    register struct scblk *fnscblk = XL(struct scblk *);
+    register struct ccblk *fnccblk = XL(struct ccblk *);
     register char *p;
 
 
     // Display file name if present
-    if (fnscblk->len) {
-        p = pTSCBLK->str;
-        p = eacpy(p, fnscblk->str, (int)fnscblk->len);
+    if (fnccblk->len) {
+        p = pTCCBLK->str;
+        p = eacpy(p, fnccblk->str, (int)fnccblk->len);
         // Display line number if present
         if (WC(unsigned int)) {
             *p++ = '(';
@@ -95,8 +95,8 @@ zysea()
             *p++ = ')';
         }
         p = eacpy(p, " : ", 3);
-        pTSCBLK->len = p - pTSCBLK->str;
-        SET_XR( pTSCBLK );
+        pTCCBLK->len = p - pTCCBLK->str;
+        SET_XR( pTCCBLK );
         return NORMAL_RETURN;
     }
     SET_XR(0L);

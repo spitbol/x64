@@ -22,8 +22,8 @@ This file is part of Macro SPITBOL.
 /   optfile( varname, result )
 /
 /   optfile() looks for other, optional ways to supply a filename to
-/   the INPUT/OUTPUT functions.  Varname is an SCBLK containing the string
-/   used as an alias for the file name, and result is an SCBLK that will
+/   the INPUT/OUTPUT functions.  Varname is an CCBLK containing the string
+/   used as an alias for the file name, and result is an CCBLK that will
 /   receive the aliased name.
 /
 /   optfile() looks in two places for the alias.  First, if the alias is
@@ -31,8 +31,8 @@ This file is part of Macro SPITBOL.
 /   on the command line.  If not found there, it looks in the environment block.
 /
 /   Parameters:
-/	varname	 pointer to SCBLK containing alias
-/	result   pointer to SCBLK that will receive any name found
+/	varname	 pointer to CCBLK containing alias
+/	result   pointer to CCBLK that will receive any name found
 /   Returns:
 /       0  - success, result contains name
 /	-1 - failure
@@ -44,7 +44,7 @@ This file is part of Macro SPITBOL.
 
 int optfile( varname, result )
 
-struct	scblk	*varname, *result;
+struct	ccblk	*varname, *result;
 
 {
     word	i, j, n;

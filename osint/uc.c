@@ -2,16 +2,11 @@
 #include "port.h"
 #include <stdio.h>
 
-#define UC_MAX 512
+//#define UC_MAX 512
 #define UC_BLOCKS 4
-// Above should match TSCBLK_LENGTH until that is eliminated.
+// Above should match TCCBLK_LENGTH until that is eliminated.
 
-struct	ccblk {
-	int	len;
-	char	str[UC_MAX];
-	};	
-
-struct scblk  s_blk[UC_BLOCKS];
+struct ccblk  s_blk[UC_BLOCKS];
 
 struct ccblk 	c_blk[UC_BLOCKS];
 
@@ -47,8 +42,8 @@ int	uc_type(int num) {
 	return s_blk[num].typ;
 }
 
-struct scblk * uc_scblk(int num) {
-	return (struct scblk *) &s_blk[num];
+struct ccblk * uc_ccblk(int num) {
+	return (struct ccblk *) &s_blk[num];
 }
 
 int uc_decode(int num) {
@@ -92,9 +87,9 @@ int		uc_putc(int num, char c)
 */
 
 
-int uc_encode(int num,struct scblk *sb) {
+int uc_encode(int num,struct ccblk *sb) {
 // return 0 if can encode, 1 if not
-	
+
 	uc_init(num);
 	struct ccblk *cb = &c_blk[num];
 	char * cp = cb->str;

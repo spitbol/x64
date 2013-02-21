@@ -43,7 +43,7 @@ This file is part of Macro SPITBOL.
 
 /*
 /   define actual headers elsewhere to overcome problems in initializing
-/   the two SCBLKs.  Use id2blk instead of tscblk because tscblk may
+/   the two SCBLKs.  Use id2blk instead of tccblk because tccblk may
 /	be active with an error message when zysid is called.
 */
 

@@ -19,17 +19,17 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   gethost( scptr, maxlen )
+/   gethost( ccptr, maxlen )
 /
-/   gethost() reads the first line from the host file into the passed SCBLK.
+/   gethost() reads the first line from the host file into the passed CCBLK.
 /
 /   Parameters:
-/	scptr	pointer to SCBLK to receive host string
-/	maxlen	max length of string area in SCBLK
+/	ccptr	pointer to CCBLK to receive host string
+/	maxlen	max length of string area in CCBLK
 /   Returns:
 /	Nothing.
 /   Side Effects:
-/	Modifies contents of passed SCBLK (scptr).
+/	Modifies contents of passed CCBLK (ccptr).
 */
 
 #include "port.h"
@@ -39,25 +39,25 @@ char osver[] = ":Linux";
 
 #include <fcntl.h>
 
-void gethost( scptr, maxlen )
-struct	scblk	*scptr;
+void gethost( ccptr, maxlen )
+struct	ccblk	*ccptr;
 word	maxlen;
 
 {
-    struct scblk *pHEADV = GET_DATA_OFFSET(HEADV,struct scblk *);
+    struct ccblk *pHEADV = GET_DATA_OFFSET(HEADV,struct ccblk *);
     int cnt = 0;
     word fd;
 
     if ( (fd = spit_open( HOST_FILE, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
                           IO_OPEN_IF_EXISTS )) >= 0 )
     {
-        cnt	= read( fd, scptr->str, maxlen );
+        cnt	= read( fd, ccptr->str, maxlen );
         close( fd );
     }
 
-    if ( cnt > 0  &&  scptr->str[cnt-1] == EOL )
+    if ( cnt > 0  &&  ccptr->str[cnt-1] == EOL )
     {
-        scptr->str[--cnt] = 0;
+        ccptr->str[--cnt] = 0;
     }
 
     if ( cnt == 0 )
@@ -65,18 +65,18 @@ word	maxlen;
         // Could not read spithost file.  Construct string instead
         register char *scp;
 
-        gettype( scptr, maxlen );
-        scp = scptr->str + scptr->len;
+        gettype( ccptr, maxlen );
+        scp = ccptr->str + ccptr->len;
         scp = mystrcpy(scp,osver);
         scp = mystrcpy(scp,":Macro SPITBOL ");
         scp += mystrncpy(scp, pHEADV->str, pHEADV->len );
         scp += mystrncpy(scp, pID1->str, (int)pID1->len);
         *scp++ = ' ';
         *scp++ = ' ';
-        cnt = scp - scptr->str;
+        cnt = scp - ccptr->str;
     }
 
-    scptr->len = cnt;
+    ccptr->len = cnt;
 }
 
 
@@ -84,10 +84,10 @@ word	maxlen;
 /*
  * Get type of host computer
  */
-void gettype( scptr, maxlen )
+void gettype( ccptr, maxlen )
 
-struct	scblk	*scptr;
+struct	ccblk	*ccptr;
 word	maxlen;
 {
-    cpys2sc( htype, scptr, maxlen );	// Computer type
+    cpys2sc( htype, ccptr, maxlen );	// Computer type
 }

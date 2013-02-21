@@ -150,11 +150,17 @@ struct	rcblk {
 /   to hold a string of length sclen.
 */
 
-struct	scblk {
+struct	Scblk {
     word	typ;		//  type word - b$scl
     word	len;		//  string length
     char	str[1];		//  string characters
 };
+
+struct	ccblk {
+        word	typ;
+	int	len;
+	char	str[UC_MAX];
+	};
 
 
 /*
@@ -190,6 +196,6 @@ union block {
     struct efblk	efb;
     struct icblk	icb;
     struct rcblk	rcb;
-    struct scblk	scb;
+    struct ccblk	scb;
     struct vrblk	vrb;
 };

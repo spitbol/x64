@@ -26,39 +26,39 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   cpys2sc( cp, scptr, maxlen )
+/   cpys2sc( cp, ccptr, maxlen )
 /
-/   cpys2sc() copies a C style string pointed to by cp into the SCBLK
-/   pointed to by scptr.
+/   cpys2sc() copies a C style string pointed to by cp into the CCBLK
+/   pointed to by ccptr.
 /
 /   Parameters:
 /	cp	pointer to C style string
-/	scptr	pointer to SCBLK to receive copy of string
-/	maxlen	maximum length of string area within SCBLK
+/	ccptr	pointer to CCBLK to receive copy of string
+/	maxlen	maximum length of string area within CCBLK
 /   Returns:
 /	Nothing.
 /
 /   Side Effects:
-/	Modifies contents of passed SCBLK (scptr).
+/	Modifies contents of passed CCBLK (ccptr).
 */
 
 #include "port.h"
 
-void cpys2sc( cp, scptr, maxlen )
+void cpys2sc( cp, ccptr, maxlen )
 
 char	*cp;
-struct	scblk	*scptr;
+struct	ccblk	*ccptr;
 word	maxlen;
 
 {
     register word	i;
-    register char	*scbcp;
+    register char	*ccbcp;
 
-    scptr->typ = TYPE_SCL;
-    scbcp	= scptr->str;
-    for( i = 0 ; i < maxlen  &&  ((*scbcp++ = *cp++) != 0) ; i++ )
+    ccptr->typ = TYPE_SCL;
+    ccbcp	= ccptr->str;
+    for( i = 0 ; i < maxlen  &&  ((*ccbcp++ = *cp++) != 0) ; i++ )
         ;
-    scptr->len = i;
+    ccptr->len = i;
     while (i++ & (sizeof(word) - 1))
-        *scbcp++ = 0;
+        *ccbcp++ = 0;
 }

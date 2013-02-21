@@ -67,7 +67,7 @@ zyspr()
     /	Do writes in line mode.
     */
 
-    if ( oswrite( 1, oupiob.len, WA(word), &oupiob, XR( struct scblk * ) ) < 0 ) {
+    if ( oswrite( 1, oupiob.len, WA(word), &oupiob, XR( struct ccblk * ) ) < 0 ) {
         return  EXIT_1;
     }
 
@@ -100,7 +100,7 @@ zysrd()
 {
 
     word	length;
-    struct scblk *scb = XR( struct scblk * );
+    struct ccblk *ccb = XR( struct ccblk * );
 
     if (provide_name)
     {
@@ -108,7 +108,7 @@ zysrd()
         provide_name = 0;
         if (sfn && sfn[0])
         {
-            cpys2sc( sfn, scb, WC(word));
+            cpys2sc( sfn, ccb, WC(word));
             return  EXIT_1;
         }
     }
@@ -119,12 +119,12 @@ zysrd()
     /	file, call function swcinp to switch to the next file, if any, except
     /       if within an include file.
     */
-    while ( (length = osread( 1, WC(word), &inpiob, scb )) < 0 )
+    while ( (length = osread( 1, WC(word), &inpiob, ccb )) < 0 )
     {
         if ( nesting || swcinp( inpcnt, inpptr ) < 0 )
         {
             // EOF
-            scb->len = 0;
+            ccb->len = 0;
             return  EXIT_1;
         }
         else
@@ -132,39 +132,39 @@ zysrd()
             // Successful switch, report new file name if still in compilation phase
             if (!executing && sfn && sfn[0])
             {
-                cpys2sc( sfn, scb, WC(word));
+                cpys2sc( sfn, ccb, WC(word));
                 return  EXIT_1;
             }
         }
 
     }
-    scb->len = length;	// line read, so set line length
+    ccb->len = length;	// line read, so set line length
     /*
     /	Special check for '#!' invocation.
     */
     if ( first_record  &&  inpptr )
     {
         first_record = 0;
-        if ( scb->str[0] == '#'  &&  scb->str[1] == '!' )
+        if ( ccb->str[0] == '#'  &&  ccb->str[1] == '!' )
         {
             cmdcnt = gblargc - inpcnt + 1;
             inpcnt = 1;
-            while( (length=osread(1, WC(word), &inpiob, scb)) < 0 )
+            while( (length=osread(1, WC(word), &inpiob, ccb)) < 0 )
             {
                 if ( swcinp( inpcnt, inpptr ) < 0 )
                 {
-                    scb->len = 0;
+                    ccb->len = 0;
                     return  EXIT_1;
                 }
                 // Successful switch, report new file name
                 if (sfn && sfn[0])
                 {
-                    cpys2sc( sfn, scb, WC(word));
+                    cpys2sc( sfn, ccb, WC(word));
                     return  EXIT_1;
                 }
 
             }
-            scb->len = length;
+            ccb->len = length;
         }
     }
 

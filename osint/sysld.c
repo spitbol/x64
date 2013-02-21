@@ -50,9 +50,9 @@ zysld()
     void *fd;					// keep stack word-aligned
     void *result = 0;
 
-    fd = openloadfile(pTSCBLK->str);
+    fd = openloadfile(pTCCBLK->str);
     if ( fd != -1 ) {			// If file opened OK
-        result = loadef(fd, pTSCBLK->str); // Invoke loader
+        result = loadef(fd, pTCCBLK->str); // Invoke loader
         closeloadfile(fd);
         switch ((word)result) {
         case (word)0:
@@ -80,8 +80,8 @@ static void *openloadfile(file)
 char *file;
 {
 
-    register struct scblk *lnscb = XL (struct scblk *);
-    register struct scblk *fnscb = XR (struct scblk *);
+    register struct ccblk *lnccb = XL (struct ccblk *);
+    register struct ccblk *fnccb = XR (struct ccblk *);
     char *savecp;
     char savechar;
     void *handle;

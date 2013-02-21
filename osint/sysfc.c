@@ -19,7 +19,7 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   sioarg( ioflg,ioptr,scptr )
+/   sioarg( ioflg,ioptr,ccptr )
 /
 /   sioarg() scans any arguments after the filename in the passed SCBLK and
 /   sets appropriate values in the passed ioblk.
@@ -27,7 +27,7 @@ This file is part of Macro SPITBOL.
 /   Parameters:
 /	ioflg	0 - input association/ 3 - output association
 /	ioptr	pointer to IOBLK representing file
-/	scptr	pointer to SCBLK containing filename and args
+/	ccptr	pointer to CCBLK containing filename and args
 /   Returns:
 /	0 - options successfully processed / -1 - option error
 /   Side Effects:
@@ -38,17 +38,17 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 static int
-sioarg( ioflg, ioptr, scptr )
+sioarg( ioflg, ioptr, ccptr )
 int	ioflg;
 struct	ioblk	*ioptr;
-struct	scblk	*scptr;
+struct	ccblk	*ccptr;
 
 {
     int	lastdash = 0;
     word	cnt, v, share;
     char	ch, *cp;
 
-    cp	= scptr->str;
+    cp	= ccptr->str;
 
     /*
     /	Initialize the default values for an I/O association.  Note that
@@ -84,14 +84,14 @@ struct	scblk	*scptr;
     /*
     /	If lenfnm() fails so shall we.
     */
-    if ( (cnt = lenfnm( scptr )) < 0 )
+    if ( (cnt = lenfnm( ccptr )) < 0 )
         return	-1;
 
     /*
     /	One iteration per character.  Note that scanning an integer causes
     /	more than one character to be handled in an iteration.
     */
-    while ( cnt < scptr->len )
+    while ( cnt < ccptr->len )
     {
         ch = uppercase(*(cp + cnt++));	// get next character
         switch (ch)
@@ -126,7 +126,7 @@ struct	scblk	*scptr;
             /   B - set size of I/O buffer (stored in pid field).
             */
         case 'B':
-            v = scnint( cp + cnt, scptr->len - cnt, &cnt );
+            v = scnint( cp + cnt, ccptr->len - cnt, &cnt );
             if ( v > 0  &&
                     ((v + sizeof(word) - 1) & ~(sizeof(word) - 1)) <= (maxsize - BFSIZE) )
                 ioptr->pid = v;
@@ -150,7 +150,7 @@ struct	scblk	*scptr;
             /   F - set file descriptor number (file opened by shell or external func).
             */
         case 'F':
-            v = scnint( cp + cnt, scptr->len - cnt, &cnt );
+            v = scnint( cp + cnt, ccptr->len - cnt, &cnt );
             ioptr->fdn = v;
             ioptr->flg1 |= ( IO_OPN | IO_SYS );
             if ( ioflg && (testty(v) == 0) )
@@ -169,7 +169,7 @@ struct	scblk	*scptr;
             /   L - line mode access having max record length v.
             */
         case 'L':
-            v = scnint( cp + cnt, scptr->len - cnt, &cnt );
+            v = scnint( cp + cnt, ccptr->len - cnt, &cnt );
             if ( v > 0 && (uword)v <= maxsize )
                 ioptr->len = v;
             else
@@ -185,7 +185,7 @@ struct	scblk	*scptr;
         case 'Q':
             ioptr->flg2 |= IO_NOE;
         case 'R':
-            v = scnint( cp + cnt, scptr->len - cnt, &cnt );
+            v = scnint( cp + cnt, ccptr->len - cnt, &cnt );
             if ( v > 0 && v <= (word)maxsize )
                 ioptr->len = -v;
             else
@@ -223,7 +223,7 @@ struct	scblk	*scptr;
                 return -1;
             }
 
-            if (cnt >= scptr->len)
+            if (cnt >= ccptr->len)
                 return -1;
             ioptr->share = (ioptr->share & ~IO_DENY_MASK) |  share;
             break;
@@ -354,11 +354,11 @@ word	*intptr;
 /   as an I/O argument.
 /
 /   Parameters:
-/	xl	pointer to scblk holding filearg1 (channel id)
-/	xr	pointer to scblk holding filearg2 (filename & args)
+/	xl	pointer to ccblk holding filearg1 (channel id)
+/	xr	pointer to ccblk holding filearg2 (filename & args)
 /	wa	pointer to existing fcblk or 0
 /	wb	0/3 for input/output association
-/	wc	number of scblk pointers on stack (forced to zero by interface)
+/	wc	number of ccblk pointers on stack (forced to zero by interface)
 /   Returns:
 /	wa = xl = 0	Nothing to allocate
 /	wa > 0		Size of requested fcblk
@@ -377,8 +377,8 @@ zysfc()
 {
     int	fd_spec, i;
     word	allocsize, length_fname;
-    register struct scblk *scb1 = XL( struct scblk * );
-    register struct scblk *scb2 = XR( struct scblk * );
+    register struct ccblk *ccb1 = XL( struct ccblk * );
+    register struct ccblk *ccb2 = XR( struct ccblk * );
     register struct fcblk *fcb  = WA( struct fcblk * );
     word use_env = 0;   // Initially, flag that not using environment block
 
@@ -386,13 +386,13 @@ zysfc()
     /   Bad filearg2 or NULL filearg1 is an error
     */
 again:
-    if ( (length_fname = lenfnm( scb2 )) < 0  ||  !scb1->len )
+    if ( (length_fname = lenfnm( ccb2 )) < 0  ||  !ccb1->len )
         return  EXIT_1;
 
     /*
     /   Scan out I/O arguments and build temporary ioblk.
     */
-    if ( sioarg( WB(int), &tioblk, scb2 ) < 0 )
+    if ( sioarg( WB(int), &tioblk, ccb2 ) < 0 )
         return  EXIT_1;
 
     /*
@@ -449,10 +449,10 @@ again:
         {
             /*
             	/ 1.03 - look up in environment block.  Filename
-            	/	 will be copied to tscblk.
+            	/	 will be copied to tccblk.
             	*/
-            scb2 = pTSCBLK;
-            if (!optfile(scb1, scb2) && !use_env)
+            ccb2 = pTCCBLK;
+            if (!optfile(ccb1, ccb2) && !use_env)
             {
                 use_env = IO_ENV;
                 goto again;

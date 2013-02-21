@@ -73,7 +73,7 @@ zysou()
         return EXIT_1;
 
     // write the data, fail if unsuccessful
-    if ( oswrite( fcb->mode, fcb->rsz, WA(word), ((struct ioblk *) (fcb->iob)), XR(struct scblk *)) != 0 )
+    if ( oswrite( fcb->mode, fcb->rsz, WA(word), ((struct ioblk *) (fcb->iob)), XR(struct ccblk *)) != 0 )
         return EXIT_2;
 
     // normal return

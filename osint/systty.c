@@ -59,7 +59,7 @@ zyspi()
 {
     word	retval;
 
-    retval = oswrite( 1, ttyiobout.len, WA(word), &ttyiobout, XR( struct scblk * ) );
+    retval = oswrite( 1, ttyiobout.len, WA(word), &ttyiobout, XR( struct ccblk * ) );
 
     /*
     /	Return error if oswrite fails.
@@ -89,19 +89,19 @@ zysri()
 
 {
     register word	length;
-    register struct scblk *scb = XR( struct scblk * );
+    register struct ccblk *ccb = XR( struct ccblk * );
     register char *saveptr, savechr;
 
     /*
-    /	Read a line specified by length of scblk.  If EOF take exit 1.
+    /	Read a line specified by length of ccblk.  If EOF take exit 1.
     */
-    length = scb->len;					// Length of buffer provided
-    saveptr = scb->str + length;		// Save char following buffer for \n
+    length = ccb->len;					// Length of buffer provided
+    saveptr = ccb->str + length;		// Save char following buffer for \n
     savechr = *saveptr;
 
     ((struct bfblk *) (ttyiobin.bfb))->size = ++length; // Size includes extra byte for \n
 
-    length = osread( 1, length, &ttyiobin, scb );
+    length = osread( 1, length, &ttyiobin, ccb );
 
     *saveptr = savechr;					// Restore saved char
 
@@ -111,7 +111,7 @@ zysri()
     /*
     /	Line read OK, so set string length and return normally.
     */
-    scb->len = length;
+    ccb->len = length;
     return NORMAL_RETURN;
 }
 

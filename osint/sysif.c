@@ -31,7 +31,7 @@ This file is part of Macro SPITBOL.
 /	    XR - pointer to vacant SCBLK that will receive the name of the
 /			 file finally opened, after looking in other directories.
 /	Returns:
-/	    XR - scblk filled in with full path name and length.
+/	    XR - ccblk filled in with full path name and length.
 /	Exits:
 /	     1 - could not find file
 /
@@ -60,13 +60,13 @@ static void openprev()
 
 zysif()
 {
-    register struct scblk *fnscb = XL (struct scblk *);
-    register struct scblk *pnscb = XR (struct scblk *);
+    register struct ccblk *fnccb = XL (struct ccblk *);
+    register struct ccblk *pnccb = XR (struct ccblk *);
     register char *savecp;
     char savechar, filebuf[256];
     char *file;
 
-    if (fnscb) {
+    if (fnccb) {
         // Here to nest another include file
         if (nesting == INCLUDE_DEPTH)			// Is there room in array?
             return EXIT_1;
@@ -75,10 +75,10 @@ zysif()
         inc_fd[nesting++] = dup(0);			// Save current input file
         close(0);							// Make fd 0 available
         clrbuf();
-        savecp = fnscb->str + fnscb->len;	// Make it a C string for now.
+        savecp = fnccb->str + fnccb->len;	// Make it a C string for now.
         savechar = *savecp;
         *savecp = '\0';
-        file = fnscb->str;
+        file = fnccb->str;
         fd = spit_open( file, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,
                         IO_OPEN_IF_EXISTS );	// Open file
         if (fd < 0)
@@ -86,7 +86,7 @@ zysif()
             // If couldn't open, try alternate paths via SNOLIB
             initpath(SPITFILEPATH);
             file = filebuf;
-            while (trypath(fnscb->str,file))
+            while (trypath(fnccb->str,file))
             {
                 fd = spit_open(file, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE, IO_OPEN_IF_EXISTS);
                 if (fd >= 0)
@@ -100,7 +100,7 @@ zysif()
             if (i)
             {
                 mystrncpy(filebuf, gblargv[0], i);
-                mystrcpy(&filebuf[i], fnscb->str);
+                mystrcpy(&filebuf[i], fnccb->str);
                 fd = spit_open(filebuf, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE, IO_OPEN_IF_EXISTS);
             }
         }
@@ -111,12 +111,12 @@ zysif()
             if (i)
             {
                 mystrncpy(filebuf, sfn, i);
-                mystrcpy(&filebuf[i], fnscb->str);
+                mystrcpy(&filebuf[i], fnccb->str);
                 fd = spit_open(filebuf, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE, IO_OPEN_IF_EXISTS);
             }
         }
         if ( fd >= 0 ) {  				// If file opened OK
-            cpys2sc(file,pnscb,pnscb->len);
+            cpys2sc(file,pnccb,pnccb->len);
             *savecp = savechar;			// Restore saved char
         }
         else {  						// Couldn't open file

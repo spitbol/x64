@@ -53,7 +53,7 @@ zysin()
 {
     register word	reclen;
     register struct fcblk *fcb = WA (struct fcblk *);
-    register struct scblk *scb = XR (struct scblk *);
+    register struct ccblk *ccb = XR (struct ccblk *);
     register struct ioblk *ioptr = ((struct ioblk *) (fcb->iob));
 
     // ensure iob is open, fail if unsuccessful
@@ -61,7 +61,7 @@ zysin()
         return EXIT_3;
 
     // read the data, fail if unsuccessful
-    while( (reclen = osread( fcb->mode, fcb->rsz, ioptr, scb )) < 0)
+    while( (reclen = osread( fcb->mode, fcb->rsz, ioptr, ccb )) < 0)
     {
         if ( reclen == (word)-1 )		// EOF?
         {
@@ -80,7 +80,7 @@ zysin()
         else				// I/O Error
             return EXIT_2;
     }
-    scb->len = reclen;		// set record length
+    ccb->len = reclen;		// set record length
 
     // normal return
     return NORMAL_RETURN;
