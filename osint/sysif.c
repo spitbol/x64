@@ -60,16 +60,23 @@ static void openprev()
 
 zysif()
 {
-    register struct ccblk *fnccb = XL (struct ccblk *);
-    register struct ccblk *pnccb = XR (struct ccblk *);
+    register struct scblk *fnscb = XL (struct scblk *);
+    register struct ccblk *fnccb;
+    register struct scblk *pnscb = XR (struct scblk *);
+    register struct ccblk *pnccb;
     register char *savecp;
     char savechar, filebuf[256];
     char *file;
 
-    if (fnccb) {
+    if (fnscb) {
         // Here to nest another include file
         if (nesting == INCLUDE_DEPTH)			// Is there room in array?
             return EXIT_1;
+
+        uc_encode(0, fnscb);
+	fnccb = uc_ccblk(0);
+	uc_encode(1, pnscb);
+	pnccb = uc_ccblk(1);
 
         inc_pos[nesting] = doset(getrdiob(),0L,1);	// Record current position
         inc_fd[nesting++] = dup(0);			// Save current input file
