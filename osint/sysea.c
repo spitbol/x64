@@ -75,12 +75,15 @@ enum stage {
 
 zysea()
 {
-    register struct ccblk *fnccblk = XL(struct ccblk *);
+    register struct scblk *fnscblk = XL(struct scblk *);
+    register struct ccblk *fnccblk;
     register char *p;
 
 
     // Display file name if present
-    if (fnccblk->len) {
+    if (fnscblk->len) {
+	uc_encode(0, fnscblk);
+	fnccblk = uc_ccblk(0);
         p = pTCCBLK->str;
         p = eacpy(p, fnccblk->str, (int)fnccblk->len);
         // Display line number if present

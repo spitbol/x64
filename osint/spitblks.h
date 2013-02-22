@@ -150,7 +150,7 @@ struct	rcblk {
 /   to hold a string of length sclen.
 */
 
-struct	Scblk {
+struct	scblk {
     word	typ;		//  type word - b$scl
     word	len;		//  string length
     char	str[1];		//  string characters

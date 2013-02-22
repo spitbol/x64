@@ -53,7 +53,7 @@ int uc_decode(int num,struct ccblk * cb) {
 	return 0;
 }
 
-int uc_encode(int num,struct ccblk *sb) {
+int uc_encode(int num,struct scblk *sb) {
 // return 0 if can encode, 1 if not
 
 	uc_init_c(num);
