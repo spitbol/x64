@@ -37,7 +37,8 @@ This file is part of Macro SPITBOL.
 zysdc()
 {
     struct ccblk *pHEADV = GET_DATA_OFFSET(HEADV,struct ccblk *);
-	return;
+// be silent for Linux. No need to clutter up output with copyright message.
+    return NORMAL_RETURN;
     // announce name and copyright
     if (!dcdone && !(spitflag & NOBRAG))
     {

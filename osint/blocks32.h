@@ -288,7 +288,7 @@ struct	chfcb {
 struct ioblk {
     mword			iobtyp;	   		// type word (XRBLK)
     mword			ioblen;			// size of IOBLK in bytes
-    struct ccblk   *iobfnm;			// SCBLK holding filename
+    struct scblk   *iobfnm;			// SCBLK holding filename
     mword			iobpid;			// pipe id (not used for DOS)
     struct bfbblk  *iobbfb;         // pointer to BFBBLK
     mword			iobfdn;			// O/S file descriptor number

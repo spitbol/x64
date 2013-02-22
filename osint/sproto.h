@@ -228,5 +228,23 @@ extern	int			zysxi ( void );
 extern	int 		brkx ( void *addr );
 extern	void		*sbrkx ( long incr );
 
+int 		uc_decode(int num,struct ccblk * cb);
+int		uc_encode(int num,struct ccblk *sb);
+struct ccblk *	uc_ccblk(int num);
+struct scblk *	uc_scblk(int num);
+#ifdef UC_ALL
+void 		uc_init(int num);
+int		uc_len(int num);
+void		uc_setlen(int num, int length);
+char * 		uc_str(int num);
+int		uc_type(int num);
+void		uc_append(int num, char * s);
+void		uc_putc(int num, char c);
+/*
+int		uc_putstr(int num, char * s)
+int		uc_putc(int num, char c)
+*/
+#endif
+
 
 #endif
