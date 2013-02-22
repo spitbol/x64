@@ -52,12 +52,14 @@ zysid()
 {
     register char *cp;
 
-    SET_XR( pID1 );
+    uc_decode(1, pID1);
+    SET_XR( uc_scblk(1) );
     gettype( pID2BLK, ID2BLK_LENGTH );
     cp = pID2BLK->str + pID2BLK->len;
     *cp++ = ' ';
     *cp++ = ' ';
     pID2BLK->len += 2 + storedate(cp, ID2BLK_LENGTH - pID2BLK->len);
-    SET_XL( pID2BLK );
+    uc_decode(0, pID2BLK);
+    SET_XL( uc_scblk(0) );
     return NORMAL_RETURN;
 }

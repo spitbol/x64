@@ -354,8 +354,8 @@ word	*intptr;
 /   as an I/O argument.
 /
 /   Parameters:
-/	xl	pointer to ccblk holding filearg1 (channel id)
-/	xr	pointer to ccblk holding filearg2 (filename & args)
+/	xl	pointer to scblk holding filearg1 (channel id)
+/	xr	pointer to scblk holding filearg2 (filename & args)
 /	wa	pointer to existing fcblk or 0
 /	wb	0/3 for input/output association
 /	wc	number of ccblk pointers on stack (forced to zero by interface)
@@ -377,14 +377,20 @@ zysfc()
 {
     int	fd_spec, i;
     word	allocsize, length_fname;
-    register struct ccblk *ccb1 = XL( struct ccblk * );
-    register struct ccblk *ccb2 = XR( struct ccblk * );
+    register struct scblk *scb1 = XL( struct scblk * );
+    register struct ccblk *ccb1;
+    register struct scblk *scb2 = XR( struct scblk * );
+    register struct ccblk *ccb2;
     register struct fcblk *fcb  = WA( struct fcblk * );
     word use_env = 0;   // Initially, flag that not using environment block
 
     /*
     /   Bad filearg2 or NULL filearg1 is an error
     */
+    uc_encode(0,scb1);
+    ccb1 = uc_ccblk(0);
+    uc_encode(1,scb2);
+    ccb2 = uc_ccblk(1);
 again:
     if ( (length_fname = lenfnm( ccb2 )) < 0  ||  !ccb1->len )
         return  EXIT_1;

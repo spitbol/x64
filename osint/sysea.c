@@ -37,7 +37,7 @@ This file is part of Macro SPITBOL.
 /				WA - error number (1-330)
 /				WB - column number
 /				WC - line number
-/				XL - ccblk containing source file name
+/				XL - scblk containing source file name
 /	Returns:
 /	    XR - SCBLK of message to print, or 0 if none
 /	Exits:
@@ -99,7 +99,8 @@ zysea()
         }
         p = eacpy(p, " : ", 3);
         pTCCBLK->len = p - pTCCBLK->str;
-        SET_XR( pTCCBLK );
+	uc_decode(1,pTCCBLK);
+        SET_XR( uc_scblk(1) );
         return NORMAL_RETURN;
     }
     SET_XR(0L);
