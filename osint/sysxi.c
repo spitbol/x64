@@ -97,7 +97,7 @@ struct	ccblk	*ccbptr;
 /	    WA - pointer to SCBLK for second argument
 /	    WB - pointer to head of FCBLK chain (CHBLK)
 /	    XL - pointer to SCBLK containing command to execute or 0
-/	    XR - version number SCBLK.  Three char string of form "X.Y".
+/	    XR - version number SCBLK.
 /	Returns:
 /       WA   1 only when called with IA=4 or IA=-4 and we are
 /            continuing execution, else 0.
@@ -146,7 +146,7 @@ zysxi()
     struct ccblk	*scfn = WA( struct ccblk * );
     char	savech;
 
-    struct ccblk	*ccb = XL( struct ccblk * );
+    struct ccblk *ccb;
 
     /*
     /	Case 1:  Chain to another program
@@ -160,6 +160,8 @@ zysxi()
         {
             close_all( WB( struct chfcb * ) );	// V1.11
             save0();		// V1.14 make sure fd 0 OK
+	    uc_encode(0, XL(struct scblk *));
+	    ccb = uc_ccblk(0);
             doexec( ccb );		// execute command
             restore0();		// just in case
             return EXIT_2;		// Couldn't chain
@@ -354,13 +356,15 @@ word putsave(stkbase, stklen)
 word *stkbase, stklen;
 {
     word result = 0;
-    struct ccblk *vccb = XR( struct ccblk * );
+    struct ccblk *vccb;
 #if EXTFUN
     unsigned char *bufp;
     word textlen;
 #endif					// EXTFUN
 
 
+    uc_encode(1, XR(struct scblk *));
+    vccb = uc_ccblk(1);
     /*
     /   Fill in the file header
     */
