@@ -67,7 +67,9 @@ zyspr()
     /	Do writes in line mode.
     */
 
-    if ( oswrite( 1, oupiob.len, WA(word), &oupiob, XR( struct ccblk * ) ) < 0 ) {
+    if (uc_encode(2,XR(struct scblk *)))
+	return EXIT_1;
+    if ( oswrite( 1, oupiob.len, WA(word), &oupiob, uc_ccblk(2) ) ) {
         return  EXIT_1;
     }
 

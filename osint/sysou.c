@@ -40,6 +40,7 @@ zysou()
 {
     register struct fcblk *fcb = WA (struct fcblk *);
     register union block  *blk = XR (union block *);
+    struct ccblk *ccb;
     int result;
 
     if (blk->scb.typ == TYPE_SCL)
@@ -73,8 +74,17 @@ zysou()
         return EXIT_1;
 
     // write the data, fail if unsuccessful
-    if ( oswrite( fcb->mode, fcb->rsz, WA(word), ((struct ioblk *) (fcb->iob)), XR(struct ccblk *)) != 0 )
+    if (fcb->mode == 1) {  // if line mode, encode unicode string
+    	result = uc_encode(2, XR(struct scblk *));
+    	if (result) return EXIT_2;
+        ccb = uc_ccblk(2);
+    }
+    else {
+        ccb = XR(struct ccblk *);
+    }
+    if (oswrite( fcb->mode, fcb->rsz, WA(word), ((struct ioblk *) (fcb->iob)), ccb) != 0) {
         return EXIT_2;
+    }
 
     // normal return
     return NORMAL_RETURN;
