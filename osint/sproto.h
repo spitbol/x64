@@ -228,7 +228,9 @@ extern	int 		brkx ( void *addr );
 extern	void		*sbrkx ( long incr );
 
 int 		uc_decode(int num,struct ccblk * cb);
+int 		uc_decodes(struct ccblk * cb, struct scblk *sb);
 int		uc_encode(int num,struct scblk *sb);
+int		uc_encodes(struct ccblk *cb,struct scblk *sb);
 struct ccblk *	uc_ccblk(int num);
 struct scblk *	uc_scblk(int num);
 #ifdef UC_ALL

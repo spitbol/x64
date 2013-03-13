@@ -40,24 +40,29 @@ struct scblk * uc_scblk(int num) {
 	return (struct scblk *) &s_blk[num];
 }
 
-int uc_decode(int num,struct ccblk * cb) {
+int uc_decodes(struct ccblk * cb,struct scblk *sb) {
 	char * cp = cb->str;
-	char * sp = s_blk[num].str;
+	char * sp = sb->str;
 //	fprintf(stderr,"decode: %d %s\n",cb->len,cb->str);
 	int i;
-	uc_init_s(num);
+	sb->typ = TYPE_SCL;
+	sb->len = 0;
 	for (i = 0;i<cb->len; i++) {
 		*sp++ = *cp++;
 	}
-	s_blk[num].len = cb->len;
+        sb->len = cb->len;
 	return 0;
 }
 
-int uc_encode(int num,struct scblk *sb) {
+int uc_decode(int num,struct ccblk * cb) {
+	return uc_decodes(cb, uc_scblk(num));
+}
+
+int uc_encodes(struct ccblk *cb,struct scblk *sb) {
 // return 0 if can encode, 1 if not
 
-	uc_init_c(num);
-	struct ccblk *cb = &c_blk[num];
+	cb->len = 0;
+	cb->str[0] = '\0';
 	char * cp = cb->str;
 	char * sp = sb->str;
 //	fprintf(stderr,"decode:%d %s\n",c_length(cp),cp);
@@ -71,6 +76,12 @@ int uc_encode(int num,struct scblk *sb) {
 	*cp = 0;
 	return 0;
 }
+
+int uc_encode(int num,struct scblk *sb) {
+// return 0 if can encode, 1 if not
+	return uc_encodes(uc_ccblk(num), sb);
+}
+
 #ifdef UC_ALL
 
 int	uc_len(int num) {
