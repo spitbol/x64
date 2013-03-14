@@ -120,6 +120,10 @@ This file is part of Macro SPITBOL.
 #endif
 
 
+// CHARBITS is number of bits per character.
+// Setting it now to WORDBITS, just to provide alternate path for case where CHARBITS is not 8, the size of byte.
+// CHARBITS is not otherwise used for now.
+#define CHARBITS WORDBITS
 
 /*
  *  If not defined in systype.h, disable it here.

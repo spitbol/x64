@@ -102,7 +102,16 @@ zysrd()
 {
 
     word	length;
-    struct ccblk *ccb = XR( struct ccblk * );
+    struct scblk *scb = XR( struct scblk * );
+    struct ccblk *ccb;
+    int retval;
+
+    if (CHARBITS == 8) {
+	ccb = (struct ccblk *) scb;
+    }
+    else {
+	ccb = uc_ccblk(1);	// if need unicode translation
+    }
 
     if (provide_name)
     {
@@ -115,7 +124,6 @@ zysrd()
         }
     }
 
-
     /*
     /	Read a line from standard input.  If EOF on current standard input
     /	file, call function swcinp to switch to the next file, if any, except
@@ -126,7 +134,7 @@ zysrd()
         if ( nesting || swcinp( inpcnt, inpptr ) < 0 )
         {
             // EOF
-            ccb->len = 0;
+            scb->len = 0;
             return  EXIT_1;
         }
         else
@@ -155,7 +163,7 @@ zysrd()
             {
                 if ( swcinp( inpcnt, inpptr ) < 0 )
                 {
-                    ccb->len = 0;
+                    scb->len = 0;
                     return  EXIT_1;
                 }
                 // Successful switch, report new file name
@@ -166,9 +174,17 @@ zysrd()
                 }
 
             }
-            ccb->len = length;
         }
     }
+
+	    if (CHARBITS == 8) {
+            	scb->len = length;
+	    }
+	    else {
+		retval = uc_decodes(ccb, scb);
+		if (retval)
+			return EXIT_1; // if unicode translation error, treat as EOF
+	    }
 
     return NORMAL_RETURN;
 }

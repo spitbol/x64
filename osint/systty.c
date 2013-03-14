@@ -92,21 +92,31 @@ zysri()
 
 {
     register word	length;
-    register struct ccblk *ccb = XR( struct ccblk * );
+    struct scblk * scb = XR(struct scblk *);
+    register struct ccblk *ccb;
     register char *saveptr, savechr;
+    int retval;
 
     /*
     /	Read a line specified by length of ccblk.  If EOF take exit 1.
     */
-    length = ccb->len;					// Length of buffer provided
-    saveptr = ccb->str + length;		// Save char following buffer for \n
-    savechr = *saveptr;
+    length = scb->len;
+    if (CHARBITS == 8) {
+	ccb = XR(struct ccblk *); // Interpret SCBLK as CCBLK
+    	saveptr = ccb->str + length;		// Save char following buffer for \n
+    	savechr = *saveptr;
+    }
+    else {
+	ccb = uc_ccblk(1);
+    }
 
     ((struct bfblk *) (ttyiobin.bfb))->size = ++length; // Size includes extra byte for \n
 
     length = osread( 1, length, &ttyiobin, ccb );
 
-    *saveptr = savechr;					// Restore saved char
+    if (CHARBITS == 8) {
+    	*saveptr = savechr;					// Restore saved char
+    }
 
     if ( length < 0 )
         return  EXIT_1;
@@ -114,7 +124,14 @@ zysri()
     /*
     /	Line read OK, so set string length and return normally.
     */
-    ccb->len = length;
+    if (CHARBITS == 8) {
+    	ccb->len = length;
+    }
+    else {
+	retval = uc_decodes(ccb, scb);
+	if (retval) 
+	    return EXIT_1; // encoding failure same as EOF
+    }
     return NORMAL_RETURN;
 }
 

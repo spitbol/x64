@@ -43,7 +43,7 @@ struct scblk * uc_scblk(int num) {
 int uc_decodes(struct ccblk * cb,struct scblk *sb) {
 	char * cp = cb->str;
 	char * sp = sb->str;
-//	fprintf(stderr,"decode: %d %s\n",cb->len,cb->str);
+//	fprintf(stderr,"decodes: %d %s\n",cb->len,cb->str);
 	int i;
 	sb->typ = TYPE_SCL;
 	sb->len = 0;
