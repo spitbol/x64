@@ -40,6 +40,18 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
+void set_xl() {
+	
+// set XL to string, performing unicode translation if needed.
+        if (CHARBITS == 8) {
+	        SET_XL( pTCCBLK );
+	}
+	else {
+		uc_decode(0, pTCCBLK);	// assume translation cannot fail
+		SET_XL( uc_scblk(0));
+	}
+}
+
 static int
 arg2scb( req, argc, argv, ccptr, maxs )
 
@@ -279,7 +291,7 @@ zyshs()
         gethost( pTCCBLK, TCCBLK_LENGTH );
         if ( pTCCBLK->len == 0 )
             return EXIT_4;
-        SET_XL( pTCCBLK );
+	set_xl();
         return EXIT_3;
     }
 
@@ -331,7 +343,7 @@ zyshs()
         case 0:
             if ( uarg ) {
                 cpys2sc( uarg, pTCCBLK, TCCBLK_LENGTH );
-                SET_XL( pTCCBLK );
+		set_xl();
                 return EXIT_3;
             }
             else if ((val = cmdcnt) != 0) {
@@ -342,7 +354,7 @@ zyshs()
                     pTCCBLK->str[pTCCBLK->len++] = ' ';
                 if (pTCCBLK->len)
                     --pTCCBLK->len;
-                SET_XL( pTCCBLK );
+		set_xl();
                 return EXIT_3;
             }
             else
@@ -352,16 +364,27 @@ zyshs()
             */
         case 1: {
             char *cmd, *path;
+	    if (CHARBITS == 8) {
 
-            if (!check2str())
-                return EXIT_1;
-            save2str(&cmd,&path);
-            save0();		// made sure fd 0 OK
-            pTICBLK->val = dosys( cmd, path );
+            	if (!check2str())
+                    return EXIT_1;
+            	save2str(&cmd,&path);
+            	save0();		// made sure fd 0 OK
+            	pTICBLK->val = dosys( cmd, path );
 
-            pTICBLK->typ = TYPE_ICL;
-            restore2str();
-            restore0();
+            	pTICBLK->typ = TYPE_ICL;
+            	restore2str();
+            }
+	    else {
+		uc_encode(0, XL(struct scblk *));
+		cmd = uc_ccblk(0)->str;
+		uc_encode(1, XR(struct scblk *));
+		path = uc_ccblk(1)->str;
+		save0();
+		pTICBLK->val = dosys(cmd,path);
+            	pTICBLK->typ = TYPE_ICL;
+	    }
+	    restore0();
             if (pTICBLK->val < 0)
                 return EXIT_6;
             SET_XR( pTICBLK );
@@ -380,7 +403,7 @@ zyshs()
                     return EXIT_6;
                 if ( retval == 0 )
                     return EXIT_1;
-                SET_XL( pTCCBLK );
+                set_xl();
                 return EXIT_3;
             }
             else
@@ -404,13 +427,21 @@ zyshs()
             /	    the environment.
             */
         case 4:
-            scp = XL( struct ccblk * );
+	    scp = XL( struct ccblk *);
             if ( scp->typ == TYPE_SCL ) {
                 if ( scp->len == 0 )
                     return EXIT_1;
+
+	    	if (CHARBITS == 8) {
+                    scp = XL( struct ccblk * );
+	   	}
+	    	else {
+		    uc_encode(0, XL(struct scblk *)); // assume unicode translation cannot fail
+		    scp = uc_ccblk(0);
+	    	}
                 if ( rdenv( scp, pTCCBLK ) < 0 )
                     return EXIT_6;
-                SET_XL( pTCCBLK );
+		set_xl();
                 return EXIT_3;
             }
             else
