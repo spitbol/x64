@@ -1367,25 +1367,28 @@ G.LCH
 *  See if predecrement needed.
 	LEQ('-',SUBSTR(T2,1,1))			:F(G.LCG.1)
 	T2 BREAK('(') LEN(1) LEN(2) . T3
-	GENOP('DEC',REGMAP[T3])
+	(EQ(CFP_B,CFP_C) GENOP('DEC',REGMAP[T3]), GENOP('SUB',REGMAP[T3],'CFP_B'))
 G.LCG.1
 	T2 BREAK('(') LEN(1) LEN(2) . T3
-	GENOP('MOV','W0','0')
-	GENOP('MOV','AL','BYTE [' REGMAP[T3] ']')
-	GENOP('MOV',T1,'W0')
+	EQ(CFP_B,CFP_C) GENOP('MOV','W0','0')
+	EQ(CFP_B,CFP_C) GENOP('MOV','AL','M_CHAR [' REGMAP[T3] ']')
+	EQ(CFP_B,CFP_C) GENOP('MOV',T1,'W0')
+
+	NE(CFP_B,CFP_C) GENOP('MOV',T1,'M_CHAR [' REGMAP[T3] ']')
 
 *  See if postincrement needed.
 	T2 RTAB(1) '+'				:F(G.LCG.2)
-	GENOP('INC',REGMAP[T3])
+	(EQ(CFP_B,CFP_C) GENOP('INC',REGMAP[T3]), GENOP('ADD',REGMAP[T3],'CFP_B'))
 G.LCG.2						:(OPDONE)
 
 G.SCH
 	T2 = I.TEXT(I2)
 	EQ(I.TYPE(I1),8)			:S(G.SCG.W)
 	T1 = GETARG(I1)
+	EQ(CFP_B,CFP_W)				:F(G.SCG.0)
 	IDENT(T2,'(XR)+')			:F(G.SCG.0)
 *
-*  Here if can use STOSB.
+*  Here if can use STOS.
 *
 	GENOP('MOV','AL',GETARG(I1))
 	GENOP('STOS' OP_C)			:(OPDONE)
@@ -1394,20 +1397,23 @@ G.SCG.0
 	LEQ('-',SUBSTR(T2,1,1))			:F(G.SCG.1)
 	T2 BREAK('(') LEN(1) LEN(2) . T3
 	GENOP('DEC',REGMAP[T3])
+	(EQ(CFP_B,CFP_C) GENOP('DEC',REGMAP[T3]), GENOP('SUB',REGMAP[T3],'CFP_B'))
 G.SCG.1
 	T2 BREAK('(') LEN(1) LEN(2) . T3
-	GENOP('MOV','W0',T1,)
-	GENOP('MOV','[' REGMAP[T3] ']','AL')
+	EQ(CFP_B,CFP_C) GENOP('MOV','W0',T1,)
+	EQ(CFP_B,CFP_C) GENOP('MOV','[' REGMAP[T3] ']','AL')
+	NE(CFP_B,CFP_C) GENOP('MOV','[' REGMAP[T3] ']',T1)
 *  See if postincrement needed.
 	T2 RTAB(1) '+'				:F(G.SCG.2)
-	GENOP('INC',REGMAP[T3])
+	(EQ(CFP_B,CFP_C) GENOP('INC',REGMAP[T3]), GENOP('ADD',REGMAP[T3],'CFP_B'))
 G.SCG.2						:(OPDONE)
 G.SCG.W
 *
 *  Here if moving character from work register, convert T1
 *  to name of low part.
 *
-	T1 = REGLOW[GETARG(I1)]
+	T1 = (EQ(CFP_B,CFP_C) REGLOW[GETARG(I1)], GETARG(I1))
+	
 	IDENT(T2,'(XL)')			:S(G.SCG.W.XL)
 	IDENT(T2,'-(XL)')			:S(G.SCG.W.PXL)
 	IDENT(T2,'(XL)+')			:S(G.SCG.W.XLP)
@@ -1415,21 +1421,25 @@ G.SCG.W
 	IDENT(T2,'-(XR)')			:S(G.SCG.W.PXR)
 	IDENT(T2,'(XR)+')			:S(G.SCG.W.XRP)
 G.SCG.W.XL
-	GENOP('MOV','[XL]',T1)			:(OPDONE)
+	GENOP('MOV','M_CHAR [XL]',T1)		:(OPDONE)
 G.SCG.W.PXL
-	GENOP('DEC','XL')
-	GENOP('MOV','[XL]',T1)			:(OPDONE)
+	(EQ(CFP_B,CFP_C)  GENOP('DEC', 'XL'), GENOP('SUB','XL', 'CFP_B'))
+	GENOP('MOV','M_CHAR [XL]',T1)			:(OPDONE)
+
 G.SCG.W.XLP
-	GENOP('MOV','[XL]',T1)
-	GENOP('INC','XL')			:(OPDONE)
+	GENOP('MOV','M_CHAR [XL]',T1)
+	(EQ(CFP_B,CFP_C)  GENOP('INC', 'XL'), GENOP('ADD','XL', 'CFP_B'))
+						:(OPDONE)
 G.SCG.W.XR
-	GENOP('MOV','[XR]',T1)			:(OPDONE)
+	GENOP('MOV','M_CHAR [XR]',T1)			:(OPDONE)
+
 G.SCG.W.PXR
-	GENOP('DEC','XR')
-	GENOP('MOV','[XR]',T1)			:(OPDONE)
+	(EQ(CFP_B,CFP_C)  GENOP('DEC', 'XR'), GENOP('SUB','XR', 'CFP_B'))
+	GENOP('MOV','M_CHAR [XR]',T1)			:(OPDONE)
 G.SCG.W.XRP
-	GENOP('MOV','AL',T1)
+	(EQ(CFP_B,CFP_C) GENOP('MOV','AL',T1), GENOP('MOV','EAX',T1))
 	GENOP('STOS' OP_C)				:(OPDONE)
+
 G.CSC  	IDENT(THISLABEL)			:S(OPNEXT)
 	GENOP()					:(OPDONE)
 
@@ -1456,7 +1466,9 @@ G.CMC
 
 G.TRC
 	GENOP('XCHG','XL','XR')
-        GENOPL((T1 = GENLAB()) ':','MOVZX','W0','BYTE [XR]') 
+        EQ(CFP_B,CFP_C) GENOPL((T1 = GENLAB()) ':','MOVZX','W0','M_CHAR [XR]') 
+        NE(CFP_B,CFP_C) GENOPL((T1 = GENLAB()) ':','MOV','W0','M_CHAR [XR]') 
+	NE(CFP_B,CFP_C) GENOP('SAL', 'W0', 'LOG_CFP_B');* convert char value to byte offset
 	GENOP('MOV','AL','[XL+W0]')
 	GENOP('STOS' OP_C)
 *	GENOP('LOOP',T1)
@@ -1545,6 +1557,8 @@ G.CVM	T1 = GETARG(I1)
 G.CVD	
 	GENOP('CALL','CVD_')			:(OPDONE)
 G.MVC
+*	Use word move if character size is word size
+	NE(CFP_B,CFP_C)				:S(G.MVW)
 	
 	T1 = GENLAB()
 	Z_SUSPEND = 1
@@ -1590,6 +1604,8 @@ G.MWB
 						:(OPDONE)
 
 G.MCB
+*	Use word move if character size is word size
+	NE(CFP_B,CFP_C)				:S(G.MWB)
 	GENOP('STD')
 	GENOP('DEC','XL')
 	GENOP('DEC','XR')
