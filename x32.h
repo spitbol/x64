@@ -15,6 +15,14 @@
 	%define R_WORD	QWORD
 	%define D_WORD	DD
 	%define D_REAL	DQ
-	%define LOG_CFP_B 2
+%if	CHARBITS == 8
+	%define D_CHAR	DB
+	%define CFP_C_VAL	4
 	%define LOG_CFP_C 2
+%else
+	%define	D_CHAR	DD
+	%define CFP_C_VAL	1
+	%define LOG_CFP_C 0
+%endif
+	%define LOG_CFP_B 2
 

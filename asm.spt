@@ -87,7 +87,7 @@
 
 *  Default the parameter string if none present
 *
-        ARCH = (DIFFER(HOST(0)) HOST(0), "X64")
+        ARCH = (DIFFER(HOST(0)) HOST(0), "X32")
 	ARCH = UPPER(ARCH)
 *        OUTPUT = IDENT(FILEPREFIX) "Filename (.lex) required" :S(END)
 	FILEPREFIX = "s"
@@ -99,6 +99,7 @@
 	:($('CONFIG.' UPPER(ARCH)))
 
 CONFIG.X32
+CONFIG.X32.8
 	CFP_B = 4
 	CFP_C = 4
 	LOG_CFP_B = '2'
@@ -107,6 +108,17 @@ CONFIG.X32
 	OP_W = 'D'
 *	OP_C is instruction suffix for Minimal character size
 	OP_C = 'B'
+						:(CONFIG.DONE)
+
+CONFIG.X32.32
+	CFP_B = 4
+	CFP_C = 1
+	LOG_CFP_B = '2'
+	LOG_CFP_C = '0'
+*	OP_W is instruction suffix for word-size
+	OP_W = 'D'
+*	OP_C is instruction suffix for Minimal character size
+	OP_C = 'D'
 						:(CONFIG.DONE)
 
 
@@ -1646,7 +1658,7 @@ G.DTC.1
 	LE(DTC_I = DTC_I + 1, SIZE(T2))		:S(G.DTC.1)
 
         T4 = NE(T3) T4 DUPL(',0',CFP_C - T3)
-        GENOPL(THISLABEL,'db',T4)             
+        GENOPL(THISLABEL,'D_CHAR',T4)             
 						:(OPDONE)
 G.DBC   GENOPL(THISLABEL,'D_WORD',GETARG(I1))       
 						:(OPDONE)

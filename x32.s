@@ -19,7 +19,7 @@
 	%include	"x32.h"
 ;	CFP_B gives bytes per word, CFP_C gives characters per word
 	%define CFP_B	4
-	%define CFP_C	4
+	%define CFP_C	CFP_C_VAL
 
 	global	reg_block
 	global	reg_wa

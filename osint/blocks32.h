@@ -190,7 +190,7 @@ struct rcblk {
 struct scblk {
     mword	sctyp;					// type word
     mword	sclen;					// string length
-    char	scstr[1];				// start of string
+    CHAR	scstr[1];				// start of string
 };
 
 

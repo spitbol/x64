@@ -1,13 +1,24 @@
 # X32 SPITBOL makefile using gcc
 #
 
-ARCH=x32
+ARCH?=x32
 ifeq ($(ARCH),x32)
-ARCHDEF=-D ARCH_X32
+ARCHDEF=-D ARCH_X32_8
+ARCHX=x32
+CHARBITS=8
+ELF=elf32
+endif
+ifeq ($(ARCH),x32.32)
+ARCH=x32
+ARCHDEF=-D ARCH_X32_32
+ARCHX=x32
+CHARBITS=8
 ELF=elf32
 endif
 ifeq ($(ARCH),x64)
 ARCHDEF=-D ARCH_X64
+ARCHX=x64
+CHARBITS=8
 ELF=elf64
 endif
 
@@ -36,9 +47,9 @@ endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMFLAGS = -f $(ELF)
+ASMFLAGS = -f $(ELF) -DCHARBITS=$(CHARBITS)
 else
-ASMFLAGS = -g -f $(ELF)
+ASMFLAGS = -g -f $(ELF) -DCHARBITS=$(CHARBITS)
 endif
 
 # Tools for processing Minimal source file.
@@ -66,7 +77,7 @@ UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/syste
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	$(ARCH).hdr 
+VHDRS=	$(ARCHX).hdr 
 
 # OSINT objects:
 SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
@@ -86,7 +97,7 @@ COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
 # Assembly langauge objects common to all versions:
 # CAOBJS is for gas, NAOBJS for nasm
 CAOBJS = 
-NAOBJS = $(ARCH).o err.o
+NAOBJS = $(ARCHX).o err.o
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
@@ -111,19 +122,19 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 
 # link spitbol with static linking
 spitbol: $(OBJS)
-ifeq ($(ARCH),x32)
+ifeq ($(ARCHX),x32)
 	$(CC) $(CFLAGS) $(OBJS) -static /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
 endif
-ifeq ($(ARCH),x64)
+ifeq ($(ARCHX),x64)
 	$(CC) $(CFLAGS) $(OBJS) -static /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
 endif
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS)
-ifeq ($(ARCH),x32)
+ifeq ($(ARCHX),x32)
 	$(CC) $(CFLAGS) $(OBJS) /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
 endif
-ifeq ($(ARCH),x64)
+ifeq ($(ARCHX),x64)
 	$(CC) $(CFLAGS) $(OBJS) /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
 endif
 
@@ -173,5 +184,5 @@ clean:
 	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t
 z:
 	nm -n s.o >s.nm
-	spitbol map-$(ARCH).spt <s.nm >s.dic
+	spitbol map-$(ARCHX).spt <s.nm >s.dic
 	spitbol z.spt <ad >ae
