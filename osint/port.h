@@ -91,7 +91,7 @@ This file is part of Macro SPITBOL.
 /*
  *  Other defaulted values that may be overridden in systype.h
  */
-#ifdef ARCH_X32
+#ifdef ARCH_X32_32
 #ifndef INTBITS
 #define INTBITS		32
 #define MAXINT		0x7FFFFFFFL
@@ -103,9 +103,31 @@ This file is part of Macro SPITBOL.
 #ifndef IABITS
 #define IABITS      	32          // Integer accumulator (IA) width
 #endif
+#ifndef CHARBITS
+#define CHARBITS 32
+#endif
+typedef unsigned int CHAR;
 #endif
 
-#ifdef ARCH_X64
+#ifdef ARCH_X32_8
+#ifndef INTBITS
+#define INTBITS		32
+#define MAXINT		0x7FFFFFFFL
+#endif
+#ifndef WORDBITS
+#define WORDBITS	32
+#define MAXPOSWORD	0x7FFFFFFFL
+#endif
+#ifndef IABITS
+#define IABITS      	32          // Integer accumulator (IA) width
+#endif
+#ifndef CHARBITS
+#define CHARBITS 8
+#endif
+typedef unsigned char CHAR;
+#endif
+
+#ifdef ARCH_X64_8
 #ifndef INTBITS
 #define INTBITS		64
 #define MAXINT		0x7FFFFFFFFFFFFFFFL
@@ -117,13 +139,14 @@ This file is part of Macro SPITBOL.
 #ifndef IABITS
 #define IABITS      	64
 #endif
+#ifndef CHARBITS
+#define CHARBITS 8
+#endif
+typedef unsigned char CHAR;
 #endif
 
 
 // CHARBITS is number of bits per character.
-// Setting it now to WORDBITS, just to provide alternate path for case where CHARBITS is not 8, the size of byte.
-// CHARBITS is not otherwise used for now.
-#define CHARBITS WORDBITS
 
 /*
  *  If not defined in systype.h, disable it here.

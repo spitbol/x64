@@ -375,7 +375,7 @@
 *
 *  Default the parameter string if none present
 *
-	ARCH = (DIFFER(HOST(0)) HOST(0), "x64")
+	ARCH = (DIFFER(HOST(0)) HOST(0), "x32")
 	ARCH = LOWER(ARCH)
 	PARM = "s"
 	FILENAMC = PARM '.cnd'
@@ -449,6 +449,8 @@ MAIN2
 	:($('CONFIG.' ARCH))
 
 CONFIG.X32
+CONFIG.X32.8
+	ANAME = 'x32'
 	EQU_DEFS['CFP_A'] = '256'
 	EQU_DEFS['CFP_B'] = '4'
 	EQU_DEFS['CFP_C'] = '4'
@@ -463,7 +465,27 @@ CONFIG.X32
 	EQU_DEFS['E_HNW'] = '6'
 	
 							:(CONFIG.DONE)
+CONFIG.X32.32
+	ANAME = 'x32'	
+	EQU_DEFS['CFP_A'] = '256'
+	EQU_DEFS['CFP_B'] = '4'
+	EQU_DEFS['CFP_C'] = '1'
+	EQU_DEFS['CFP_F'] = '8'
+	EQU_DEFS['CFP_I'] = '1'
+	EQU_DEFS['CFP_L'] = '4294967295'
+	EQU_DEFS['CFP_M'] = '2147483647'
+	EQU_DEFS['CFP_N'] = '32'
+ 	EQU_DEFS['CFP_R'] = '2'
+	EQU_DEFS['CFP_U'] = '128'
+*	Use 6 words, or 24 characters, for hash in x32
+*	Need to adjust this for unicode later to simulate multiple characters per word
+*	The value below will work, but will produce inefficient hash.
+	EQU_DEFS['E_HNW'] = '6'
+	
+							:(CONFIG.DONE)
+
 CONFIG.X64
+	ANAME = 'x64'
 	EQU_DEFS['CFP_A'] = '256'
 	EQU_DEFS['CFP_B'] = '8'
 	EQU_DEFS['CFP_C'] = '8'
