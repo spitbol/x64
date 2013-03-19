@@ -153,7 +153,7 @@ err.o: err.s
 
 # SPITBOL Minimal source
 s.s:	s.lex $(VHDRS) $(COD) 
-	$(BASEBOL) -u $(ARCHX) $(COD)
+	$(BASEBOL) -u $(ARCH) $(COD)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
 #	 $(BASEBOL) -u "s" $(LEX)

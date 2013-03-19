@@ -89,6 +89,7 @@
 *
         ARCH = (DIFFER(HOST(0)) HOST(0), "X32")
 	ARCH = UPPER(ARCH)
+	OUTPUT = 'Target architecture ' ARCH
 *        OUTPUT = IDENT(FILEPREFIX) "Filename (.lex) required" :S(END)
 	FILEPREFIX = "s"
 	OUTPUT = '  target architecture:' ARCH
@@ -100,6 +101,7 @@
 
 CONFIG.X32
 CONFIG.X32.8
+	HDR = 'x32'
 	CFP_B = 4
 	CFP_C = 4
 	LOG_CFP_B = '2'
@@ -111,6 +113,7 @@ CONFIG.X32.8
 						:(CONFIG.DONE)
 
 CONFIG.X32.32
+	HDR = 'x32'
 	CFP_B = 4
 	CFP_C = 1
 	LOG_CFP_B = '2'
@@ -125,6 +128,7 @@ CONFIG.X32.32
 CONFIG.X64
 *	CFP_B is bytes per word, CFP_C is characters per word
 *       These should agree with values used in translator	
+	HDR = 'x64'
 	CFP_B = 8
 	CFP_C = 8
 	LOG_CFP_B = '3'
@@ -473,7 +477,7 @@ FLGS2
 
 	FILENAMI = FILEPREFIX '.lex'
         INPUT(.INFILE,1,FILENAMI)                     :S(INPUTOK)
-        OUTPUT = '  cannot open TOKEN file: ' FILENAMI  :(END)
+        
 INPUTOK OUTPUT = '  input LEX file: ' FILENAMI
 *
 *
@@ -499,9 +503,9 @@ ERR_OK
 *
 	NOUTLINES = NOUTLINES + 1
 
-	INPUT(.HDRFILE,4,LOWER(ARCH) '.hdr')	:F(NOHDR)
+	INPUT(.HDRFILE,4,HDR '.hdr')	:F(NOHDR)
 	HAVEHDR = 1
-        OUTPUT = '  Input HEADER file: ' LOWER(ARCH) '.hdr'
+        OUTPUT = '  Input HEADER file:  ' HDR  '.hdr'
 HDRCOPY LINE = HDRFILE				:F(HDREND)
 	IDENT(LINE,'END')			:S(NOHDR)
 	OUTFILE = LINE
