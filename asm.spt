@@ -1562,6 +1562,8 @@ G.CVD
 	GENOP('CALL','CVD_')			:(OPDONE)
 G.MVC
 *	Use word move if character size is word size
+*	If charsize is word size, convert character count to byte count for word move
+	NE(CFP_B,CFP_C) GENOP('SHL', 'WA', 'LOG_CFP_B')
 	NE(CFP_B,CFP_C)				:S(G.MVW)
 	
 	T1 = GENLAB()
@@ -1609,6 +1611,7 @@ G.MWB
 
 G.MCB
 *	Use word move if character size is word size
+	NE(CFP_B,CFP_C) GENOP('SHL', 'WA', 'LOG_CFP_B')
 	NE(CFP_B,CFP_C)				:S(G.MWB)
 	GENOP('STD')
 	GENOP('DEC','XL')
