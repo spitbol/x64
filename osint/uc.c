@@ -6,7 +6,7 @@
 #define UC_BLOCKS 4
 // Above should match TCCBLK_LENGTH until that is eliminated.
 
-struct ccblk  s_blk[UC_BLOCKS];
+struct scblk  s_blk[UC_BLOCKS];
 
 struct ccblk 	c_blk[UC_BLOCKS];
 
@@ -33,16 +33,16 @@ static void uc_init(int num) {
 }
 
 struct ccblk * uc_ccblk(int num) {
-	return (struct ccblk *) &c_blk[num];
+	return  &c_blk[num];
 }
 
 struct scblk * uc_scblk(int num) {
-	return (struct scblk *) &s_blk[num];
+	return &s_blk[num];
 }
 
 int uc_decodes(struct ccblk * cb,struct scblk *sb) {
 	char * cp = cb->str;
-	char * sp = sb->str;
+	CHAR * sp = sb->str;
 //	fprintf(stderr,"decodes: %d %s\n",cb->len,cb->str);
 	int i;
 	sb->typ = TYPE_SCL;
@@ -64,9 +64,7 @@ int uc_encodes(struct ccblk *cb,struct scblk *sb) {
 	cb->len = 0;
 	cb->str[0] = '\0';
 	char * cp = cb->str;
-	char * sp = sb->str;
-//	fprintf(stderr,"decode:%d %s\n",c_length(cp),cp);
-	int l = c_length(cp);
+	CHAR * sp = sb->str;
 	if (sb->len > UC_MAX) return 1;
 	int i;
 	for (i = 0;i<sb->len; i++) {
@@ -74,6 +72,7 @@ int uc_encodes(struct ccblk *cb,struct scblk *sb) {
 	}
 	cb->len = sb->len;
 	*cp = 0;
+//	fprintf(stderr,"encodes:%d %s\n",cb->len,cb);
 	return 0;
 }
 
