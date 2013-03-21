@@ -67,10 +67,16 @@ zyspr()
     /	Do writes in line mode.
     */
 
-    if (uc_encode(2,XR(struct scblk *)))
-	return EXIT_1;
-    if ( oswrite( 1, oupiob.len, WA(word), &oupiob, uc_ccblk(2) ) ) {
-        return  EXIT_1;
+    if (CHARBITS == 8) {
+        if ( oswrite( 1, oupiob.len, WA(word), &oupiob, XR( struct scblk * ) ) < 0 )
+            return  EXIT_1;
+    }
+    else {
+        if (uc_encode(2,XR(struct scblk *)))
+    	return EXIT_1;
+        if ( oswrite( 1, oupiob.len, WA(word), &oupiob, uc_ccblk(2) ) ) {
+            return  EXIT_1;
+        }
     }
 
     return NORMAL_RETURN;
