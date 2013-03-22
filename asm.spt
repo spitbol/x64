@@ -1394,7 +1394,8 @@ G.SCH
 *
 *  Here if can use STOS.
 *
-	GENOP('MOV','AL',GETARG(I1))
+	EQ(CFP_B,CFP_C) GENOP('MOV','AL',GETARG(I1))
+	NE(CFP_B,CFP_C) GENOP('MOV','EAX',GETARG(I1))
 	GENOP('STOS' OP_C)			:(OPDONE)
 
 G.SCG.0
@@ -1406,7 +1407,7 @@ G.SCG.1
 	T2 BREAK('(') LEN(1) LEN(2) . T3
 	EQ(CFP_B,CFP_C) GENOP('MOV','W0',T1,)
 	EQ(CFP_B,CFP_C) GENOP('MOV','[' REGMAP[T3] ']','AL')
-	NE(CFP_B,CFP_C) GENOP('MOV','[' REGMAP[T3] ']',T1)
+	NE(CFP_B,CFP_C) GENOP('MOV','M_CHAR [' REGMAP[T3] ']',T1)
 *  See if postincrement needed.
 	T2 RTAB(1) '+'				:F(G.SCG.2)
 	(EQ(CFP_B,CFP_C) GENOP('INC',REGMAP[T3]), GENOP('ADD',REGMAP[T3],'CFP_B'))
@@ -1473,7 +1474,8 @@ G.TRC
         EQ(CFP_B,CFP_C) GENOPL((T1 = GENLAB()) ':','MOVZX','W0','M_CHAR [XR]') 
         NE(CFP_B,CFP_C) GENOPL((T1 = GENLAB()) ':','MOV','W0','M_CHAR [XR]') 
 	NE(CFP_B,CFP_C) GENOP('SAL', 'W0', 'LOG_CFP_B');* convert char value to byte offset
-	GENOP('MOV','AL','[XL+W0]')
+	EQ(CFP_B,CFP_C) GENOP('MOV','AL','[XL+W0]')
+	NE(CFP_B,CFP_C) GENOP('MOV','EAX','[XL+W0]')
 	GENOP('STOS' OP_C)
 *	GENOP('LOOP',T1)
 	GENOP('DEC','WA')
@@ -1543,11 +1545,21 @@ G.MFI1	IDENT(I.TEXT(I1),'WC') GENOP()		:S(OPDONE)
 G.CTW
 *  assume CFP_C chars per word
 	T1 = GETARG(I1)
+	EQ(CFP_B,CFP_C)				:S(G.CTW.1)
+*  here if one word per character, so just add character count
+	GENOP('ADD',T1,I.TEXT(I2))
+						:(OPDONE)
+G.CTW.1
 	GENOP('ADD',T1,'(CFP_C-1)+CFP_C*' I.TEXT(I2))
 	GENOP('SHR',T1,'LOG_CFP_C')	
 					:(OPDONE)
 G.CTB
 	T1 = GETARG(I1)
+	EQ(CFP_B,CFP_C)				:S(G.CTB.1)
+*  here if one word per character, so just add character count, then convert to byte count
+	GENOP('ADD',T1,I.TEXT(I2))
+        GENOP('SAL',GETARG(I1),'LOG_CFP_B')	:(OPDONE)
+G.CTB.1
 	GENOP('ADD',T1,'(CFP_B-1)+CFP_B*' I.TEXT(I2))
 	GENOP('AND',T1,'-CFP_B')		
 						:(OPDONE)
