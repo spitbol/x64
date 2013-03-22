@@ -916,7 +916,7 @@ IFREG	GE(I.TYPE(IARG),7) LE(I.TYPE(IARG),8)
 .						:F(FRETURN)S(RETURN)
 
 G.FLC
-	T1 = REGLOW[GETARG(I1)]
+	T1 = (EQ(CFP_B,CFP_C) REGLOW[GETARG(I1)], GETARG(I1))
 	T2 = GENLAB()
 *	Z_SUSPEND = 1
 	GENOP('CMP',T1,"'a'")
@@ -1348,7 +1348,8 @@ G.R1	GENOP('CALL','CPR_')
 
 G.PLC
 G.PSC
-*  Last arg is optinal.  If present and a register or constant,
+	NE(CFP_B,CFP_C)				:S(G.PLC.1)
+*  Last arg is optional.  If present and a register or constant,
 *  use lea instead.
 
 	T1 = GETARG(I1)
@@ -1361,6 +1362,24 @@ G.PSC
 *  Here if D_OFFSET_(given (in a variable), so add it in.
 *
 	GENOP('ADD',T1,GETARG(I2))		:(OPDONE)
+
+G.PLC.1
+*  Here for case where character size if word size
+*  Last arg is optional.  If present and a register or constant,
+*  use lea instead.
+
+	T1 = GETARG(I1)
+	T2 = I.TYPE(I2)
+	((IFREG(I2), GE(T2,1) LE(T2,2))
++	GENOP('LEA',T1,'[CFP_F+' T1 '+' 'CFP_B*' GETARG(I2) ']')) :S(OPDONE)
+	GENOP('ADD',T1,'CFP_F')
+	EQ(I.TYPE(I2))				:S(OPDONE)
+*
+*  Here if D_OFFSET_(given (in a variable), so add it in, after converting to byte count
+	GENOP('MOV','W0', GETARG(I2))
+	GENOP('SAL','W0', 'LOG_CFP_B')
+*
+	GENOP('ADD',T1,'W0')		:(OPDONE)
 *
 *  LCH requires separate cases for each first operand possibility.
 *

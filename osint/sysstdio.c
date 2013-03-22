@@ -38,6 +38,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+//#include <stdio.h>
 
 void stdioinit()
 {
@@ -67,6 +68,7 @@ zyspr()
     /	Do writes in line mode.
     */
 
+// fprintf(stderr,"syspr %d\n",WA(word));
     if (CHARBITS == 8) {
         if ( oswrite( 1, oupiob.len, WA(word), &oupiob, XR( struct scblk * ) ) < 0 )
             return  EXIT_1;
