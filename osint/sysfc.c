@@ -36,6 +36,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+//#include <stdio.h>
 
 static int
 sioarg( ioflg, ioptr, ccptr )
@@ -390,7 +391,9 @@ zysfc()
     uc_encode(0,scb1);
     ccb1 = uc_ccblk(0);
     uc_encode(1,scb2);
+//    fprintf(stderr,"sysfc ccb1 %s\n",ccb1->str);
     ccb2 = uc_ccblk(1);
+ //   fprintf(stderr,"sysfc ccb2 %s\n",ccb2->str);
 again:
     if ( (length_fname = lenfnm( ccb2 )) < 0  ||  !ccb1->len )
         return  EXIT_1;

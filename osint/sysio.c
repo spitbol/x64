@@ -106,8 +106,8 @@ zysio()
             iob->typ = TYPE_XRT;	// type: external reloc
             iob->len = IOSIZE;		// length
             iob->fnm = MP_OFF((tioblk.flg2 & IO_ENV) ?
-                              XL( struct ccblk *) :  // filearg 1
-                              XR( struct ccblk * ), struct ccblk *);  // filename
+                              XL( struct scblk *) :  // filearg 1
+                              XR( struct scblk * ), struct scblk *);  // filename
 
             iob->pid = 0;			// process id
             iob->bfb = MP_OFF(bfb, struct bfblk *);	// buffer

@@ -6,6 +6,7 @@
 #define UC_BLOCKS 4
 // Above should match TCCBLK_LENGTH until that is eliminated.
 
+int uc_trace=0;
 struct scblk  s_blk[UC_BLOCKS];
 
 struct ccblk 	c_blk[UC_BLOCKS];
@@ -43,8 +44,13 @@ struct scblk * uc_scblk(int num) {
 int uc_decodes(struct ccblk * cb,struct scblk *sb) {
 	char * cp = cb->str;
 	CHAR * sp = sb->str;
-//	fprintf(stderr,"decodes: %d %s\n",cb->len,cb->str);
+	if (uc_trace)fprintf(stderr,"\ndecodes: %d ",cb->len);
 	int i;
+	if (uc_trace) {
+	for (i=0;i<cb->len;i++)
+	    fprintf(stderr,"%c",cb->str[i]);
+	fprintf(stderr,"\n");
+        }
 	sb->typ = TYPE_SCL;
 	sb->len = 0;
 	for (i = 0;i<cb->len; i++) {
@@ -72,7 +78,7 @@ int uc_encodes(struct ccblk *cb,struct scblk *sb) {
 	}
 	cb->len = sb->len;
 	*cp = 0;
-//	fprintf(stderr,"encodes:%d %s\n",cb->len,cb);
+	if (uc_trace) fprintf(stderr,"\nencodes:%d %s\n",cb->len,cb->str);
 	return 0;
 }
 

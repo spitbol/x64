@@ -44,6 +44,7 @@ struct	ioblk	*ioptr;
     word 	len;
     char	*cp;
     struct	ccblk	*ccptr;
+    struct      scblk   *scptr;
 
     /*
     /	If file already open, return.
@@ -54,7 +55,9 @@ struct	ioblk	*ioptr;
     /*
     /	Establish a few pointers and filename length.
     */
-    ccptr	= ((struct ccblk *) (ioptr->fnm));	// point to filename CCBLK
+    scptr	= ((struct scblk *) (ioptr->fnm));	// point to filename SCBLK
+    uc_encode(0,scptr);
+    ccptr = uc_ccblk(0);
     if (ioptr->flg2 & IO_ENV)
     {
         if (optfile(ccptr, pTCCBLK))
