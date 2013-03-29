@@ -157,7 +157,7 @@ s.s:	s.lex $(VHDRS) $(COD)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
 #	 $(BASEBOL) -u "s" $(LEX)
-	 $(BASEBOL) -u $(ARCHX) $(LEX)
+	 $(BASEBOL) -u $(ARCH) $(LEX)
 
 s.err: s.s
 

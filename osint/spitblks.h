@@ -153,7 +153,7 @@ struct	rcblk {
 struct	scblk {
     word	typ;		//  type word - b$scl
     word	len;		//  string length
-    char	str[1];		//  string characters
+    CHAR	str[UC_MAX];		//  string characters
 };
 
 struct	ccblk {
