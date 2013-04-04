@@ -128,6 +128,9 @@ zysrd()
         if (sfn && sfn[0])
         {
             cpys2sc( sfn, ccb, WC(word));
+	    if (CHARBITS != 8) {
+	    	uc_decodes(ccb, scb);
+	    }
             return  EXIT_1;
         }
     }
@@ -151,6 +154,9 @@ zysrd()
             if (!executing && sfn && sfn[0])
             {
                 cpys2sc( sfn, ccb, WC(word));
+		if (CHARBITS != 8) {
+	            uc_decodes(ccb, scb);
+                }
                 return  EXIT_1;
             }
         }
@@ -178,6 +184,9 @@ zysrd()
                 if (sfn && sfn[0])
                 {
                     cpys2sc( sfn, ccb, WC(word));
+		    if (CHARBITS != 8) {
+	    	    	uc_decodes(ccb, scb);
+		    }
                     return  EXIT_1;
                 }
 
