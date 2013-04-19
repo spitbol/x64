@@ -145,7 +145,6 @@ typedef unsigned char CHAR;
 typedef unsigned char CHAR;
 #endif
 
-
 // CHARBITS is number of bits per character.
 
 /*

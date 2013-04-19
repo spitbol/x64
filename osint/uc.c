@@ -2,7 +2,7 @@
 #include "port.h"
 #include <stdio.h>
 
-//#define UC_MAX 512
+#define UC_MAX 512
 #define UC_BLOCKS 4
 // Above should match TCCBLK_LENGTH until that is eliminated.
 
@@ -51,12 +51,29 @@ int uc_decodes(struct ccblk * cb,struct scblk *sb) {
 	    fprintf(stderr,"%c",cb->str[i]);
 	fprintf(stderr,"\n");
         }
+#define UC_COPY0
+#ifdef UC_COPY
 	sb->typ = TYPE_SCL;
 	sb->len = 0;
 	for (i = 0;i<cb->len; i++) {
 		*sp++ = *cp++;
 	}
         sb->len = cb->len;
+#else
+// here for new code
+// fprintf(stderr,"use new\n");
+	sb->typ = TYPE_SCL;
+	sb->len = 0;
+	int rc = utf8_to_mchar(cp, cb->len, sp, UC_MAX, 0);
+// fprintf(stderr,"mchar result length%d\n",rc);
+        sb->len = rc;
+	//if (uc_trace>0) {
+	if (0) {
+	    fprintf(stderr,"decodes result:");
+	    for (i=0;i<rc;i++) fprintf(stderr," %d",sp[i]);
+	    fprintf(stderr,"\n");
+	}
+#endif
 	return 0;
 }
 
@@ -73,12 +90,20 @@ int uc_encodes(struct ccblk *cb,struct scblk *sb) {
 	CHAR * sp = sb->str;
 	if (sb->len > UC_MAX) return 1;
 	int i;
+#ifdef COPY
 	for (i = 0;i<sb->len; i++) {
 		*cp++ = *sp++;
 	}
 	cb->len = sb->len;
 	*cp = 0;
 	if (uc_trace) fprintf(stderr,"\nencodes:%d %s\n",cb->len,cb->str);
+#else
+
+	int rc = mchar_to_utf8(sp, sb->len, cp, UC_MAX, 0);
+	cb->len = rc;
+//	*cp = 0;
+	if (uc_trace) fprintf(stderr,"\nencodes:%d %s\n",cb->len,cb->str);
+#endif
 	return 0;
 }
 

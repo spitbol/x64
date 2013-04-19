@@ -247,5 +247,12 @@ int		uc_putc(int num, char c)
 */
 #endif
 
+#if CHARBITS == 32
+size_t		utf8_to_mchar(const char *in, size_t insize, CHAR *out,
+		    size_t outsize, int flags);
+size_t		mchar_to_utf8(const CHAR *in, size_t insize, char *out,
+		    size_t outsize, int flags);
+#endif
+
 
 #endif

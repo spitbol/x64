@@ -74,7 +74,7 @@ BASEBOL =   ./basebol
 	$(ASM) $(ASMFLAGS) -l $*.lst -o$@ $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
-CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h
+CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h 
 
 # C Headers unique to this version of SPITBOL:
 UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/system.h
@@ -98,7 +98,7 @@ COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
 	int.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
-	trypath.o uc.o wrtaout.o zz.o
+	trypath.o uc.o utf8.o wrtaout.o zz.o
 
 # Assembly langauge objects common to all versions:
 # CAOBJS is for gas, NAOBJS for nasm

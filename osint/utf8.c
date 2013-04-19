@@ -13,11 +13,13 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+#include "port.h"
+#if CHARBITS == 32
 #include <sys/types.h>
 
-#include <wchar.h>
 
-#include "utf8.h"
+#define UTF8_IGNORE_ERROR		0x01
+#define UTF8_SKIP_BOM			0x02
 
 #define _NXT	0x80
 #define _SEQ2	0xc0
@@ -28,11 +30,11 @@
 
 #define _BOM	0xfeff
 
-static int __wchar_forbitten(wchar_t sym);
-static int __utf8_forbitten(u_char octet);
+static int __mchar_forbidden(CHAR sym);
+static int __utf8_forbidden(u_char octet);
 
 static int
-__wchar_forbitten(wchar_t sym)
+__mchar_forbidden(CHAR sym)
 {
 
 	/* Surrogate pairs */
@@ -43,7 +45,7 @@ __wchar_forbitten(wchar_t sym)
 }
 
 static int
-__utf8_forbitten(u_char octet)
+__utf8_forbidden(u_char octet)
 {
 
 	switch (octet) {
@@ -78,17 +80,17 @@ __utf8_forbitten(u_char octet)
  *	   as regular symbols.
  *	2. If UTF8_IGNORE_ERROR or UTF8_SKIP_BOM flag is set, sizes may vary
  *	   when `out' is NULL and not NULL. It's because of special UTF-8
- *	   sequences which may result in forbitten (by RFC3629) UNICODE
+ *	   sequences which may result in forbidden (by RFC3629) UNICODE
  *	   characters.  So, the caller must check return value every time and
  *	   not prepare buffer in advance (\0 terminate) but after calling this
  *	   function.
  */
 size_t
-utf8_to_wchar(const char *in, size_t insize, wchar_t *out, size_t outsize,
+utf8_to_mchar(const char *in, size_t insize, CHAR *out, size_t outsize,
     int flags)
 {
 	u_char *p, *lim;
-	wchar_t *wlim, high;
+	CHAR *wlim, high;
 	size_t n, total, i, n_bits;
 
 	if (in == NULL || insize == 0 || (outsize == 0 && out != NULL))
@@ -100,7 +102,7 @@ utf8_to_wchar(const char *in, size_t insize, wchar_t *out, size_t outsize,
 	wlim = out + outsize;
 
 	for (; p < lim; p += n) {
-		if (__utf8_forbitten(*p) != 0 &&
+		if (__utf8_forbidden(*p) != 0 &&
 		    (flags & UTF8_IGNORE_ERROR) == 0)
 			return (0);
 
@@ -109,22 +111,22 @@ utf8_to_wchar(const char *in, size_t insize, wchar_t *out, size_t outsize,
 		 */
 		n = 1;	/* default: 1 byte. Used when skipping bytes. */
 		if ((*p & 0x80) == 0)
-			high = (wchar_t)*p;
+			high = (CHAR)*p;
 		else if ((*p & 0xe0) == _SEQ2) {
 			n = 2;
-			high = (wchar_t)(*p & 0x1f);
+			high = (CHAR)(*p & 0x1f);
 		} else if ((*p & 0xf0) == _SEQ3) {
 			n = 3;
-			high = (wchar_t)(*p & 0x0f);
+			high = (CHAR)(*p & 0x0f);
 		} else if ((*p & 0xf8) == _SEQ4) {
 			n = 4;
-			high = (wchar_t)(*p & 0x07);
+			high = (CHAR)(*p & 0x07);
 		} else if ((*p & 0xfc) == _SEQ5) {
 			n = 5;
-			high = (wchar_t)(*p & 0x03);
+			high = (CHAR)(*p & 0x03);
 		} else if ((*p & 0xfe) == _SEQ6) {
 			n = 6;
-			high = (wchar_t)(*p & 0x01);
+			high = (CHAR)(*p & 0x01);
 		} else {
 			if ((flags & UTF8_IGNORE_ERROR) == 0)
 				return (0);
@@ -167,14 +169,14 @@ utf8_to_wchar(const char *in, size_t insize, wchar_t *out, size_t outsize,
 		*out = 0;
 		n_bits = 0;
 		for (i = 1; i < n; i++) {
-			*out |= (wchar_t)(p[n - i] & 0x3f) << n_bits;
+			*out |= (CHAR)(p[n - i] & 0x3f) << n_bits;
 			n_bits += 6;		/* 6 low bits in every byte */
 		}
 		*out |= high << n_bits;
 
-		if (__wchar_forbitten(*out) != 0) {
+		if (__mchar_forbidden(*out) != 0) {
 			if ((flags & UTF8_IGNORE_ERROR) == 0)
-				return (0);	/* forbitten character */
+				return (0);	/* forbidden character */
 			else {
 				total--;
 				out--;
@@ -211,23 +213,23 @@ utf8_to_wchar(const char *in, size_t insize, wchar_t *out, size_t outsize,
  *	as regular symbols.
  */
 size_t
-wchar_to_utf8(const wchar_t *in, size_t insize, char *out, size_t outsize,
+mchar_to_utf8(const CHAR *in, size_t insize, char *out, size_t outsize,
     int flags)
 {
-	wchar_t *w, *wlim, ch;
+	CHAR *w, *wlim, ch;
 	u_char *p, *lim, *oc;
 	size_t total, n;
 
 	if (in == NULL || insize == 0 || (outsize == 0 && out != NULL))
 		return (0);
 
-	w = (wchar_t *)in;
+	w = (CHAR *)in;
 	wlim = w + insize;
 	p = (u_char *)out;
 	lim = p + outsize;
 	total = 0;
 	for (; w < wlim; w++) {
-		if (__wchar_forbitten(*w) != 0) {
+		if (__mchar_forbidden(*w) != 0) {
 			if ((flags & UTF8_IGNORE_ERROR) == 0)
 				return (0);
 			else
@@ -309,7 +311,7 @@ wchar_to_utf8(const wchar_t *in, size_t insize, char *out, size_t outsize,
 		}
 
 		/*
-		 * NOTE: do not check here for forbitten UTF-8 characters.
+		 * NOTE: do not check here for forbidden UTF-8 characters.
 		 * They cannot appear here because we do proper convertion.
 		 */
 
@@ -318,3 +320,4 @@ wchar_to_utf8(const wchar_t *in, size_t insize, char *out, size_t outsize,
 
 	return (total);
 }
+#endif
