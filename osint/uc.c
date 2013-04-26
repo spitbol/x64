@@ -2,7 +2,7 @@
 #include "port.h"
 #include <stdio.h>
 
-#define UC_MAX 512
+//#define UC_MAX 512
 #define UC_BLOCKS 4
 // Above should match TCCBLK_LENGTH until that is eliminated.
 
@@ -51,8 +51,7 @@ int uc_decodes(struct ccblk * cb,struct scblk *sb) {
 	    fprintf(stderr,"%c",cb->str[i]);
 	fprintf(stderr,"\n");
         }
-#define UC_COPY0
-#ifdef UC_COPY
+#ifdef ARCH_X32_8
 	sb->typ = TYPE_SCL;
 	sb->len = 0;
 	for (i = 0;i<cb->len; i++) {
@@ -90,7 +89,7 @@ int uc_encodes(struct ccblk *cb,struct scblk *sb) {
 	CHAR * sp = sb->str;
 	if (sb->len > UC_MAX) return 1;
 	int i;
-#ifdef COPY
+#ifdef ARCH_X32_8
 	for (i = 0;i<sb->len; i++) {
 		*cp++ = *sp++;
 	}

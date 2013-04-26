@@ -14,7 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 #include "port.h"
-#if CHARBITS == 32
 #include <sys/types.h>
 
 
@@ -320,4 +319,3 @@ mchar_to_utf8(const CHAR *in, size_t insize, char *out, size_t outsize,
 
 	return (total);
 }
-#endif
