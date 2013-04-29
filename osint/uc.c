@@ -42,18 +42,12 @@ struct scblk * uc_scblk(int num) {
 }
 
 int uc_decodes(struct ccblk * cb,struct scblk *sb) {
-	char * cp = cb->str;
+	unsigned char * cp = cb->str;
 	CHAR * sp = sb->str;
-	if (uc_trace)fprintf(stderr,"\ndecodes: %d ",cb->len);
 	int i;
-	if (uc_trace) {
-	for (i=0;i<cb->len;i++)
-	    fprintf(stderr,"%c",cb->str[i]);
-	fprintf(stderr,"\n");
-        }
-#ifdef ARCH_X32_8
 	sb->typ = TYPE_SCL;
 	sb->len = 0;
+#ifdef ARCH_X32_8
 	for (i = 0;i<cb->len; i++) {
 		*sp++ = *cp++;
 	}
@@ -61,15 +55,30 @@ int uc_decodes(struct ccblk * cb,struct scblk *sb) {
 #else
 // here for new code
 // fprintf(stderr,"use new\n");
-	sb->typ = TYPE_SCL;
-	sb->len = 0;
+        if (uc_trace) {
+	    fprintf(stderr,"\ndecodes  in: %d ",cb->len);
+	    for (i=0;i<cb->len;i++) {
+		unsigned int c = (unsigned int) cp[i];
+		if (0<c && c<127)
+	            fprintf(stderr," %c",c);
+		else
+	            fprintf(stderr," %x",c);
+	    }
+	    fprintf(stderr,"\n");
+	}
 	int rc = utf8_to_mchar(cp, cb->len, sp, UC_MAX, 0);
 // fprintf(stderr,"mchar result length%d\n",rc);
         sb->len = rc;
-	//if (uc_trace>0) {
-	if (0) {
-	    fprintf(stderr,"decodes result:");
-	    for (i=0;i<rc;i++) fprintf(stderr," %d",sp[i]);
+	if (uc_trace) {
+	    fprintf(stderr,"\ndecodes out: %d ",sb->len);
+	    int i;
+	    for (i=0;i<sb->len;i++) {
+		unsigned int c = sp[i];
+		if (0<c && c<127)
+	            fprintf(stderr," %c",c);
+		else
+	            fprintf(stderr," %x",c);
+	    }
 	    fprintf(stderr,"\n");
 	}
 #endif
@@ -83,25 +92,46 @@ int uc_decode(int num,struct ccblk * cb) {
 int uc_encodes(struct ccblk *cb,struct scblk *sb) {
 // return 0 if can encode, 1 if not
 
+	int i;
 	cb->len = 0;
 	cb->str[0] = '\0';
-	char * cp = cb->str;
+	unsigned char * cp = cb->str;
 	CHAR * sp = sb->str;
 	if (sb->len > UC_MAX) return 1;
-	int i;
 #ifdef ARCH_X32_8
 	for (i = 0;i<sb->len; i++) {
 		*cp++ = *sp++;
 	}
 	cb->len = sb->len;
 	*cp = 0;
-	if (uc_trace) fprintf(stderr,"\nencodes:%d %s\n",cb->len,cb->str);
 #else
 
+        if (uc_trace) {
+	    fprintf(stderr,"\nencodes  in: %d ",sb->len);
+	    for (i=0;i<sb->len;i++) {
+		unsigned int c = sp[i];
+		if (c<127)
+	            fprintf(stderr," %c",c);
+		else
+	            fprintf(stderr," %x",c);
+	    }
+	    fprintf(stderr,"\n");
+	}
 	int rc = mchar_to_utf8(sp, sb->len, cp, UC_MAX, 0);
 	cb->len = rc;
 //	*cp = 0;
-	if (uc_trace) fprintf(stderr,"\nencodes:%d %s\n",cb->len,cb->str);
+	if (uc_trace) {
+	    fprintf(stderr,"\nencodes out: %d ",cb->len);
+	    int i;
+	    for (i=0;i<cb->len;i++) {
+		unsigned int c = cp[i];
+		if (0<c && c<127)
+	            fprintf(stderr," %c",c);
+		else
+	            fprintf(stderr," %x",c);
+	    }
+	    fprintf(stderr,"\n");
+	}
 #endif
 	return 0;
 }

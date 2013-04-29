@@ -15,6 +15,7 @@
  */
 #include "port.h"
 #include <sys/types.h>
+//#include <stdio.h>
 
 
 #define UTF8_IGNORE_ERROR		0x01
@@ -185,6 +186,7 @@ utf8_to_mchar(const char *in, size_t insize, CHAR *out, size_t outsize,
 			out--;
 		}
 
+// fprintf(stderr,"decode char %d\n",*out);
 		out++;
 	}
 
@@ -228,6 +230,7 @@ mchar_to_utf8(const CHAR *in, size_t insize, char *out, size_t outsize,
 	lim = p + outsize;
 	total = 0;
 	for (; w < wlim; w++) {
+// fprintf(stderr,"encode %d\n",*w);
 		if (__mchar_forbidden(*w) != 0) {
 			if ((flags & UTF8_IGNORE_ERROR) == 0)
 				return (0);

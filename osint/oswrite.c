@@ -59,7 +59,6 @@ struct	ccblk	*ccptr;
     register word fdn = ioptr->fdn;
     word	linelen;
     int	ioerrcnt = 0;
-
     do {
         // If line mode, limit characters written on a line
         if ( mode == 1 && recsiz > linesiz )

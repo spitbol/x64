@@ -58,11 +58,15 @@ zyspi()
 
 {
     word	retval;
+    int		len;
+    struct ccblk * ccb;
 
     retval = uc_encode(2, XR(struct scblk *));
+    ccb = uc_ccblk(2);
+    len = ccb->len;
     if (retval)	// return error if cannot encode unicode string
 	return EXIT_1;
-    retval = oswrite( 1, ttyiobout.len, WA(word), &ttyiobout, uc_ccblk(2)) ;
+    retval = oswrite( 1, ttyiobout.len, len, &ttyiobout, ccb) ;
 
     /*
     /	Return error if oswrite fails.

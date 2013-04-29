@@ -42,6 +42,7 @@ zysou()
     register union block  *blk = XR (union block *);
     struct ccblk *ccb;
     int result;
+    int len;
 
     if (blk->scb.typ == TYPE_SCL)
     {
@@ -78,11 +79,13 @@ zysou()
     	result = uc_encode(2, XR(struct scblk *));
     	if (result) return EXIT_2;
         ccb = uc_ccblk(2);
+	len = ccb->len;
     }
     else {
         ccb = XR(struct ccblk *);
+	len = WA(word);
     }
-    if (oswrite( fcb->mode, fcb->rsz, WA(word), ((struct ioblk *) (fcb->iob)), ccb) != 0) {
+    if (oswrite( fcb->mode, fcb->rsz, len, ((struct ioblk *) (fcb->iob)), ccb) != 0) {
         return EXIT_2;
     }
 

@@ -38,7 +38,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-//#include <stdio.h>
+#include <stdio.h>
 
 void stdioinit()
 {
@@ -68,15 +68,23 @@ zyspr()
     /	Do writes in line mode.
     */
 
-// fprintf(stderr,"syspr %d\n",WA(word));
     if (CHARBITS == 8) {
         if ( oswrite( 1, oupiob.len, WA(word), &oupiob, XR( struct scblk * ) ) < 0 )
             return  EXIT_1;
     }
     else {
-        if (uc_encode(2,XR(struct scblk *)))
+	struct ccblk * ccb = uc_ccblk(2);
+	struct scblk * scb = XR(struct scblk *);
+	// need to encode using count in WA, not count in the SCBLK area, so save and restore that count
+	int savelen = scb->len;
+	int rc;
+	scb->len = WA(word);
+	rc = uc_encode(2,scb);
+	scb->len = savelen;
+        if (rc)
     	return EXIT_1;
-        if ( oswrite( 1, oupiob.len, WA(word), &oupiob, uc_ccblk(2) ) ) {
+//	fprintf(stderr,"syspr len1 %d %d\n",WA(word),ccb->len);
+        if ( oswrite( 1, oupiob.len, ccb->len, &oupiob, ccb) ) {
             return  EXIT_1;
         }
     }
