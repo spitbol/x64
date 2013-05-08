@@ -8,13 +8,13 @@ ARCHX=x32
 CHARBITS=8
 ELF=elf32
 endif
-ifeq ($(ARCH),x32.8)
+ifeq ($(ARCH),x32-8)
 ARCHDEF=-D ARCH_X32_8
 ARCHX=x32
 CHARBITS=8
 ELF=elf32
 endif
-ifeq ($(ARCH),x32.32)
+ifeq ($(ARCH),x32-32)
 ARCH=x32
 ARCHDEF=-D ARCH_X32_32
 ARCHX=x32
