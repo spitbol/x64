@@ -478,9 +478,9 @@ CONFIG.X32.32
  	EQU_DEFS['CFP_R'] = '2'
 	EQU_DEFS['CFP_U'] = '128'
 *	Use 6 words, or 24 characters, for hash in x32
-*	Need to adjust this for unicode later to simulate multiple characters per word
-*	The value below will work, but will produce inefficient hash.
-	EQU_DEFS['E_HNW'] = '6'
+*       Set E_HNW to zero for unicode, to indicate at
+*       runtime there is just one character per word.
+	EQU_DEFS['E_HNW'] = '0'
 	
 							:(CONFIG.DONE)
 
