@@ -2,9 +2,7 @@
 #include "port.h"
 #include <stdio.h>
 
-//#define UC_MAX 512
 #define UC_BLOCKS 4
-// Above should match TCCBLK_LENGTH until that is eliminated.
 
 int uc_trace=0;
 struct scblk  s_blk[UC_BLOCKS];
@@ -141,52 +139,5 @@ int uc_encode(int num,struct scblk *sb) {
 	return uc_encodes(uc_ccblk(num), sb);
 }
 
-#ifdef UC_ALL
-
-int	uc_len(int num) {
-	return c_blk[num].len;
-}
-
-void	uc_setlen(int num, int length) {
-	c_blk[num].len = length;
-	c_blk[num].str[length] = '\0'; // shorten c string
-}
-
-char * uc_str(int num) {
-	return c_blk[num].str;
-}
-
-int	uc_type(int num) {
-	return s_blk[num].typ;
-}
-
-
-
-void uc_append(int num, char * s) {
-	int n = c_length(s);
-	struct ccblk *cb = &c_blk[num];
-	if (cb->len + n > UC_MAX) {
-		return;
-	}
-	int i;
-	for (i=0;i<n;i++) {
-		cb->str[cb->len+i] = s[i];
-	}
-	cb->len += n;
-	cb->str[cb->len] = 0;
-}
-
-void uc_putc(int num, char c) {
-	struct ccblk *cb = &c_blk[num];
-	if (cb->len == UC_MAX) return;
-	cb->str[cb->len++] = c;
-	cb->str[cb->len] = 0;
-}
-
-/*
-int		uc_putstr(int num, char * s)
-int		uc_putc(int num, char c)
-*/
-#endif
 
 
