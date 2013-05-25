@@ -143,9 +143,10 @@ zysxi()
     char	fileName[256], tmpfnbuf[256];
     word	*stackbase;
     word	retval, stacklength;
-    struct ccblk	*scfn = WA( struct ccblk * );
+    struct scblk	*scfn = WA( struct scblk * );
     char	savech;
 
+    struct scblk *scb = XL(struct scblk *);
     struct ccblk *ccb;
 
     /*
@@ -154,9 +155,9 @@ zysxi()
     /	If XL is non-zero then it must point to a SCBLK containing the
     /	command to execute by chaining.
     */
-    if ( ccb != 0 )
+    if ( scb != 0 )
     {
-        if ( ccb->typ == TYPE_SCL )		// must be SCBLK!
+        if ( scb->typ == TYPE_SCL )		// must be SCBLK!
         {
             close_all( WB( struct chfcb * ) );	// V1.11
             save0();		// V1.14 make sure fd 0 OK
@@ -191,17 +192,21 @@ zysxi()
     */
     close_all( WB( struct chfcb * ) );	// V1.11
 
+    // convert to C string (just a copy if using ascii, not unicode)
+    uc_encode(1,scfn);
+    ccb = uc_ccblk(1);
     //	Prepare optional file name as a C string, open output file
-    savech = make_c_str(&(scfn->str[scfn->len]));
-    if (scfn->str[0])
-        mystrcpy(fileName, scfn->str);
+    savech = make_c_str(&(ccb->str[ccb->len]));
+    if (ccb->str[0])
+        mystrcpy(fileName, ccb->str);
     else
         mystrcpy(fileName,                // default file name
                  IA(IATYPE) < 0 ? SAVE_FILE : AOUT_FILE);
+
     retval = openaout(fileName, tmpfnbuf,
                       (IA(IATYPE) < 0 ? 0 : IO_EXECUTABLE)		// executable?
                      );
-    unmake_c_str(&(scfn->str[scfn->len]), savech);
+    unmake_c_str(&(ccb->str[ccb->len]), savech);
 
 
     if (IA(IATYPE) < 0 ) {
