@@ -11,7 +11,17 @@
 
 <body>
 
+<h2>Unix SPITBOl 13.05 (May 2013)</h2>
+
+
+
 <h2>Unix SPITBOL 13.01 (January 2013)</h2>
+
+This version completes the initial port to Linux. Currently only Intel 32-bit (X32) architecture is
+supported. There are files for building a 64-bit version, but this version does not yet work.
+
+
+<h2>Overview</h2>
 
 <p>SPITBOL is an extremely high performance implementation of the
    SNOBOL4 language.</p>
@@ -21,6 +31,7 @@
 <p>Development versions, as well as other files of interest, can be
    found at
    <a href="http://github.com/hardbol/spitbol">github.com/hardbol/spitbol</a>.</p>
+
 
 <h2>Licensing</h2>
 	
@@ -42,7 +53,7 @@
 <h2>Installing SPITBOL</h2>
 
 <p>If you just want to use spitbol without building it, the file
-<code>basebol</code> contains a statically-linked copy of spitbol. 
+<code>basebol</code> contains a statically-linked copy of the 8-bit version of spitbol. 
 </p>
 
 <p>You can install it in <code>/usr/local/bin/spitbol</code> with the command:
@@ -97,7 +108,7 @@ Directory <code>test</code> contains some small test programs.
 
 <p>To test the system more comprehensively, do:
 <pre>
-$ ./sanity-test
+$ ./test/sanity-test
 </pre>
 which verifies that the version of SPITBOL just built is able to translate
 itself. This test passes if the diff outputs are null.

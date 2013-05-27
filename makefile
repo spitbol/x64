@@ -2,35 +2,29 @@
 #
 
 ARCH?=x32
+CHARBITS=8
+DEBUG?=0
+EXECUTABLE=spitbol
+UNICODE?=0
+
 ifeq ($(ARCH),x32)
 ARCHDEF=-D ARCH_X32_8
-ARCHX=x32
-CHARBITS=8
-ELF=elf32
-endif
-ifeq ($(ARCH),x32-8)
-ARCHDEF=-D ARCH_X32_8
-ARCHX=x32
-CHARBITS=8
-ELF=elf32
-endif
-ifeq ($(ARCH),x32-32)
-ARCH=x32
-ARCHDEF=-D ARCH_X32_32
-ARCHX=x32
-CHARBITS=32
 ELF=elf32
 endif
 ifeq ($(ARCH),x64)
 ARCHDEF=-D ARCH_X64
-ARCHX=x64
-CHARBITS=8
 ELF=elf64
 endif
 
+ifneq ($(UNICODE),0)
+CHARBITS=32
+ARCHDEF=-D ARCH_X32_32
+EXECUTABLE=uspitbol
+endif
+
+
 # SPITBOL Version:
 MIN=   s
-DEBUG=	1
 
 # Minimal source directory.
 MINPATH=./
@@ -62,7 +56,7 @@ endif
 LEX=	lex.spt
 COD=    asm.spt
 ERR=    err.spt
-BASEBOL =   ./basebol
+BASEBOL =   ./bin/spitbol
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
@@ -83,7 +77,7 @@ UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/syste
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	$(ARCHX).hdr 
+VHDRS=	$(ARCH).hdr 
 
 # OSINT objects:
 SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
@@ -103,7 +97,7 @@ COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
 # Assembly langauge objects common to all versions:
 # CAOBJS is for gas, NAOBJS for nasm
 CAOBJS = 
-NAOBJS = $(ARCHX).o err.o
+NAOBJS = $(ARCH).o err.o
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
@@ -128,20 +122,20 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 
 # link spitbol with static linking
 spitbol: $(OBJS)
-ifeq ($(ARCHX),x32)
-	$(CC) $(CFLAGS) $(OBJS) -static /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
+ifeq ($(ARCH),x32)
+	$(CC) $(CFLAGS) $(OBJS) -static /usr/lib/i386-linux-gnu/libm.a -o$(EXECUTABLE) -Wl,-M,-Map,$(EXECUTABLE).map
 endif
-ifeq ($(ARCHX),x64)
+ifeq ($(ARCH),x64)
 	$(CC) $(CFLAGS) $(OBJS) -static /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
 endif
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS)
-ifeq ($(ARCHX),x32)
-	$(CC) $(CFLAGS) $(OBJS) /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
+ifeq ($(ARCH),x32)
+	$(CC) $(CFLAGS) $(OBJS) /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,$(EXECUTABLE).map
 endif
-ifeq ($(ARCHX),x64)
-	$(CC) $(CFLAGS) $(OBJS) /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
+ifeq ($(ARCH),x64)
+	$(CC) $(CFLAGS) $(OBJS) /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,$(EXECUTABLE).map
 endif
 
 # Assembly language dependencies:
@@ -153,11 +147,11 @@ err.o: err.s
 
 # SPITBOL Minimal source
 s.s:	s.lex $(VHDRS) $(COD) 
-	$(BASEBOL) -u $(ARCH) $(COD)
+	$(BASEBOL) -u $(ARCH)-$(CHARBITS) $(COD)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
 #	 $(BASEBOL) -u "s" $(LEX)
-	 $(BASEBOL) -u $(ARCH) $(LEX)
+	 $(BASEBOL) -u $(ARCH)-$(CHARBITS) $(LEX)
 
 s.err: s.s
 
@@ -187,8 +181,8 @@ install:
 install-basebol:
 	sudo cp basebol /usr/local/bin/spitbol
 clean:
-	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t
+	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t ./spitbol ./uspitbol
 z:
 	nm -n s.o >s.nm
-	spitbol map-$(ARCHX).spt <s.nm >s.dic
+	spitbol map-$(ARCH).spt <s.nm >s.dic
 	spitbol z.spt <ad >ae
