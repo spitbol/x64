@@ -171,15 +171,10 @@ sysgc.o: $(OSINT)/save.h
 sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
 
-boot:
-	cp -p bootstrap/s.s bootstrap/s.lex bootstrap/err.s .
-
-# install spitbol as the symstem spitbol compiler
+# install binaries from ./bin as the system spitbol compilers
 install:
-	sudo cp spitbol /usr/local/bin
-# install basebol as the system spitbol compiler
-install-basebol:
-	sudo cp basebol /usr/local/bin/spitbol
+	sudo cp ./bin/spitbol /usr/local/bin
+	sudo cp ./bin/uspitbol /usr/local/bin
 clean:
 	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t ./spitbol ./uspitbol
 z:
