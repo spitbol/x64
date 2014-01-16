@@ -149,6 +149,9 @@ err.o: err.s
 s.i:	s.lex i32.h i32.hdr  int.spt
 	$(BASEBOL) -u i32 int.spt
 
+s.s:	s.lex $(VHDRS) $(COD) 
+	$(BASEBOL) -u $(ARCH)-$(CHARBITS) $(COD)
+
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
 #	 $(BASEBOL) -u "s" $(LEX)
 	 $(BASEBOL) -u $(ARCH)-$(CHARBITS) $(LEX)
