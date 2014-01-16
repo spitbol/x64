@@ -194,51 +194,51 @@ The definitions of these parameters are supplied by the translation
 program to match the target machine.
 
 <dl>
-<dt><strong>cfp$a</strong> 
+<dt><strong>CFP$A</strong> 
 
 <dd>Number of distinct characters in internal alphabet in the range 64
-le <strong>cfp$a</strong> le <strong>MAXLEN</strong>.
+le <strong>CFP$A</STRONG> le <strong>MAXLEN</strong>.
 
-<dt><strong>cfp$b</strong> 
+<dt><strong>CFP$B</strong> 
 
 <dd>Number of bytes in a word where a byte is the amount of storage
 addressed by the least significant address bit.  
 
-<dt> <strong>cfp$c</strong> 
+<dt> <strong>CFP$C</strong> 
 
 <dd> Number of characters which can be stored in a single word.
 
-<dt><strong>cfp$f</strong> 
+<dt><strong>CFP$F</strong> 
 
 <dd>Byte offset from start of a string block to the first character.
 depends both on target machine and string data structure. see
 <strong>plc</strong> psc
 
-<dt><strong>cfp$i</strong> 
+<dt><strong>CFP$I</strong> 
 
 <dd> Number of words in a signed integer constant
 
-<dt><strong>cfp$l</strong> 
+<dt><strong>CFP$L</strong> 
 
 <dd> The largest unsigned integer of form 2**n - 1 which can be stored
-in a single word.  n will often be <strong>cfp$n</strong> but need not
+in a single word.  n will often be <strong>CFP$N</strong> but need not
 be.
 
-<dt><strong>cfp$m</strong> 
+<dt><strong>CFP$M</strong> 
 
 <dd>The largest positive signed integer of form 2**n - 1 which can be
-stored in a single word.  n will often be <strong>cfp$n</strong> -1
+stored in a single word.  n will often be <strong>CFP$N</strong> -1
 but need not be.
 
-<dt><strong>cfp$n</strong> 
+<dt><strong>CFP$N</strong> 
 
 <dd> Number of bits which can be stored in a one word bit string.
 
-<dt><strong>cfp$r</strong> 
+<dt><strong>CFP$R</strong> 
 
 <dd> Number of words in a real constant
 
-<dt><strong>cfp$s</strong> 
+<dt><strong>CFP$S</strong> 
 
 <dd> 
 
@@ -251,11 +251,11 @@ must not be too large to fit in the integer accum.  .fi
 
 
 .if    .cucf
-       <strong>cfp$u</strong>                  realistic upper bound on alphabet.
+       <strong>CFP$U</strong>                  realistic upper bound on alphabet.
 
 
 .fi
-       <strong>cfp$x</strong>                  number of digits in real exponent
+       <strong>CFP$X</strong>                  number of digits in real exponent
 </pre>
 
 </dl>
@@ -265,10 +265,10 @@ must not be too large to fit in the integer accum.  .fi
 <p>
 
 Memory is organized into words which each contain
-<strong>cfp$b</strong> bytes. for word machines <strong>cfp$b</strong>
+<strong>CFP$B</strong> bytes. for word machines <strong>CFP$B</strong>
 , which is a configuration parameter, may be one in which case words
 and bytes are identical. To each word corresponds an address which is
-a non-negative quantity which is a multiple of <strong>cfp$b</strong>
+a non-negative quantity which is a multiple of <strong>CFP$B</strong>
 .  Data is organized into words as follows.
 
 
@@ -276,27 +276,27 @@ a non-negative quantity which is a multiple of <strong>cfp$b</strong>
 
    <li>
 
-A signed integer value occupies <strong>cfp$i</strong> consecutive
-words (<strong>cfp$i</strong> is a configuration parameter).  The
+A signed integer value occupies <strong>CFP$I</strong> consecutive
+words (<strong>CFP$I</strong> is a configuration parameter).  The
 range may include more negative numbers than positive (e.g. the twos
 complement representation).
 
 
-<li>A signed real value occupies <strong>cfp$r</strong> consecutive
-words. (<strong>cfp$r</strong> is a configuration parameter).
+<li>A signed real value occupies <strong>CFP$R</strong> consecutive
+words. (<strong>CFP$R</strong> is a configuration parameter).
 
-<li><strong>cfp$c</strong> characters may be stored in a single word
-(<strong>cfp$c</strong> is a configuration parameter).
+<li><strong>CFP$C</strong> characters may be stored in a single word
+(<strong>CFP$C</strong> is a configuration parameter).
 
 <li>
 
-A bit string containing <strong>cfp$n</strong> bits can be stored in a
-single word (<strong>cfp$n</strong> is a configuration parameter).
+A bit string containing <strong>CFP$N</strong> bits can be stored in a
+single word (<strong>CFP$N</strong> is a configuration parameter).
 
 <li>
 
 A word can contain a unsigned integer value in the range (<strong>0 le n le
-cfp$l</strong> . These integer values may represent addresses
+CFP$L</strong> . These integer values may represent addresses
 of other words and some of the instructions use this fact to provide
 indexing and indirection facilities.  
 
@@ -336,7 +336,7 @@ There are three index registers called <strong>XR</strong>
 ,<strong>XL</strong> ,<strong>XS</strong> . In addition
 <strong>XL</strong> may sometimes be referred to by the alias of <strong>XT</strong> -
 see section 4. Any of the above registers may hold a positive unsigned
-integer in the range (<strong>0 le n le cfp$l</strong> ). When the
+integer in the range (<strong>0 le n le CFP$L</strong> ). When the
 index register is used for indexing purposes, this must be an appropriate address.  
 <strong>XS</strong> is special in that it is
 used to point to the top item of a stack in memory. The stack may
@@ -396,7 +396,7 @@ restriction on simple dump/restore operations.
 <p>
 
 There is an integer accumulator (<strong>IA</strong> ) which is
-capable of holding a signed integer value (<strong>cfp$i</strong>
+capable of holding a signed integer value (<strong>CFP$I</strong>
 words long).  register <strong>WC</strong> may overlap the integer
 accumulator (<strong>IA</strong> ) in some implementations. thus any
 operation changing the value in <strong>WC</strong> leaves
@@ -484,7 +484,7 @@ are illegal, since they assume information storage above the stack top.
 <p>
 
 The internal character set is represented by a set of contiguous codes
-from 0 to <strong>cfp$a-1</strong> . The codes for the digits 0-9 must
+from 0 to <strong>CFP$A-1</strong> . The codes for the digits 0-9 must
 be contiguous and in sequence. Other than this, there are no
 restraints.
 
@@ -623,7 +623,7 @@ condition processor of the translator.
 of instructions and assembly operations.
 </p>
 <pre>
-      01   int              unsigned integer le cfp$l
+      01   int              unsigned integer le CFP$L
       02   dlbl             symbol defined in definitions sec
       03   wlbl             label in working storage section
       04   clbl             label in constant section
@@ -641,7 +641,7 @@ of instructions and assembly operations.
       16   integer          signed integer (dic)
       17   real             signed real (drc)
       18   =dlbl            location containing dac dlbl
-      19   *dlbl            location containing dac cfp$b*dlbl
+      19   *dlbl            location containing dac CFP$B*dlbl
       20   =wlbl            location containing dac wlbl
       21   =clbl            location containing dac clbl
       22   =elbl            location containing dac elbl
@@ -668,7 +668,7 @@ possibilities
 <p>
 
 <em>val</em> is used to refer to a predefined one word integer value in the
-range 0 le n le <strong>cfp$l</strong> 
+range 0 le n le <strong>CFP$L</strong> 
 
 <dt>reg  07,08
 
@@ -691,7 +691,7 @@ a one word integer (address).
 <em>opc</em> is used to designate a specific character operand for use
 in the <strong>lch</strong> and <strong>sch</strong> instructions.
 the index register referenced must be either <strong>XR</strong> or
-<strong>XL</strong> (not <strong>XS</strong> ,<strong>xt</strong>). see section on
+<strong>XL</strong> (not <strong>XS</strong> ,<strong>XT</strong>). see section on
 character operations.
 
 <dt> <em>ops</em>  03,04,09,12,13,14,15
@@ -738,7 +738,7 @@ contain a one word integer (e.g. an address).  This includes all the
 possibilities for <em>opw</em> plus the use of one of the index
 registers (<strong>XL</strong> ,<strong>XR</strong> ,
 <strong>XT</strong> , <strong>XS</strong> ). The range of integer
-values is <strong>0 le n le cfp$l</strong> 
+values is <strong>0 le n le CFP$L</strong> 
 
 <dt> <em>opv</em>  as for  <em>opn</em> + 18-22
 
@@ -773,7 +773,7 @@ value) for use with <strong>dac</strong>
             ****************************************************
             *   in the following descriptions the usage --     *
             *      (<strong>XL</strong> ),(<strong>XR</strong> ), ... ,(<strong>IA</strong> )                        *
-            *   in the descriptive te<strong>xt</strong> signifies the          +
+            *   in the descriptive te<strong>XT</strong> signifies the          +
             *   contents of the stated register.               *
             ****************************************************
 </pre>
@@ -807,7 +807,7 @@ format and comment conventions.
 <tr>
 <td>2.1</td>
 <td><strong>add</strong></td>
-<td align="left"><em>opn</em>,<em>opv</em></td>
+<td align="left"><em>opv,opn</em></td>
 <td>add address <em>opv</em> to <em>opn</em></td>
 </tr>
 <tr>
@@ -825,13 +825,13 @@ format and comment conventions.
 <tr>
 <td>7.1</td>
 <td><strong>anb</strong></td>
-<td align="left"><em>w</em>,<em>opw</em></td>
+<td align="left"><em>opw,w</em></td>
 <td>and bit string</td>
 </tr>
 <tr>
 <td>2.17</td>
 <td><strong>aov</strong></td>
-<td align="left"><em>opn</em>,<em>opv</em>,<em>plbl</em></td>
+<td align="left"><em>opn,opv,plbl</em></td>
 <td>add address, fail if overflow</td>
 </tr>
 <tr>
@@ -849,67 +849,67 @@ format and comment conventions.
 <tr>
 <td>2.5</td>
 <td><strong>beq</strong></td>
-<td align="left"><em>opn</em>,<em>opv</em>,<em>plbl</em></td>
+<td align="left"><em>opn,opv,plbl</em></td>
 <td>branch if address equal</td>
 </tr>
 <tr>
 <td>2.18</td>
 <td><strong>bev</strong></td>
-<td align="left"><em>opn</em>,<em>plbl</em></td>
+<td align="left"><em>opn,plbl</em></td>
 <td>branch if address even</td>
 </tr>
 <tr>
 <td>2.8</td>
 <td><strong>bge</strong></td>
-<td align="left"><em>opn</em>,<em>opv</em>,<em>plbl</em></td>
+<td align="left"><em>opn,opv,plbl</em></td>
 <td>branch if address greater or equl</td>
 </tr>
 <tr>
 <td>2.7</td>
 <td><strong>bgt</strong></td>
-<td align="left"><em>opn</em>,<em>opv</em>,<em>plbl</em></td>
+<td align="left"><em>opn,opv,plbl</em></td>
 <td>branch if address greater</td>
 </tr>
 <tr>
 <td>2.12</td>
 <td><strong>bhi</strong></td>
-<td align="left"><em>opn</em>,<em>opv</em>,<em>plbl</em></td>
+<td align="left"><em>opn,opv,plbl</em></td>
 <td>branch if address high</td>
 </tr>
 <tr>
 <td>2.10</td>
 <td><strong>ble</strong></td>
-<td align="left"><em>opn</em>,<em>opv</em>,<em>plbl</em></td>
+<td align="left"><em>opn,opv,plbl</em></td>
 <td>branch if address less or equal</td>
 </tr>
 <tr>
 <td>2.11</td>
 <td><strong>blo</strong></td>
-<td align="left"><em>opn</em>,<em>opv</em>,<em>plbl</em></td>
+<td align="left"><em>opn,opv,plbl</em></td>
 <td>branch if address low</td>
 </tr>
 <tr>
 <td>2.9</td>
 <td><strong>blt</strong></td>
-<td align="left"><em>opn</em>,<em>opv</em>,<em>plbl</em></td>
+<td align="left"><em>opn,opv,plbl</em></td>
 <td>branch if address less than</td>
 </tr>
 <tr>
 <td>2.6</td>
 <td><strong>bne</strong></td>
-<td align="left"><em>opn</em>,<em>opv</em>,<em>plbl</em></td>
+<td align="left"><em>opn,opv,plbl</em></td>
 <td>branch if address not equal</td>
 </tr>
 <tr>
 <td>2.13</td>
 <td><strong>bnz</strong></td>
-<td align="left"><em>opn</em>,<em>plbl</em></td>
+<td align="left"><em>opn,plbl</em></td>
 <td>branch if address non-zero</td>
 </tr>
 <tr>
 <td>2.19</td>
 <td><strong>bod</strong></td>
-<td align="left"><em>opn</em>,<em>plbl</em></td>
+<td align="left"><em>opn,plbl</em></td>
 <td>branch if address odd</td>
 </tr>
 <tr>
@@ -939,7 +939,7 @@ format and comment conventions.
 <tr>
 <td>2.14</td>
 <td><strong>bze</strong></td>
-<td align="left"><em>opn</em>,<em>plbl</em></td>
+<td align="left"><em>opn,plbl</em></td>
 <td>branch if address zero</td>
 </tr>
 <tr>
@@ -969,7 +969,7 @@ format and comment conventions.
 <tr>
 <td>6.8</td>
 <td><strong>cmc</strong></td>
-<td align="left"><em>plbl</em>,<em>plbl</em></td>
+<td align="left"><em>plbl,plbl</em></td>
 <td>compare character strings</td>
 </tr>
 <tr>
@@ -1132,7 +1132,7 @@ format and comment conventions.
 <td>12.2</td>
 <td><strong>exp</strong></td>
 <td align="left"><em>define</em></td>
-<td>e<strong>xt</strong>ernal procedure</td>
+<td>external procedure</td>
 </tr>
 <tr>
 <td>6.10</td>
@@ -1245,7 +1245,7 @@ format and comment conventions.
 <tr>
 <td>2.15</td>
 <td><strong>lct</strong></td>
-<td align="left"><em>w</em>,<em>opv</em></td>
+<td align="left"><em>w,opv</em></td>
 <td>load counter for loop</td>
 </tr>
 <tr>
@@ -1258,7 +1258,7 @@ format and comment conventions.
 <td>3.3</td>
 <td><strong>lcw</strong></td>
 <td align="left"><em>reg</em></td>
-<td>load ne<strong>xt</strong> code word</td>
+<td>load next code word</td>
 </tr>
 <tr>
 <td>4.1</td>
@@ -1306,7 +1306,7 @@ format and comment conventions.
 <td>8.4</td>
 <td><strong>mfi</strong></td>
 <td>*</td>
-<td align="left"><em>opn</em>,<em>plbl</em>    convert (<strong>IA</strong> ) to address value</td>
+<td align="left"><em>opn,plbl</em>    convert (<strong>IA</strong> ) to address value</td>
 </tr>
 <tr>
 <td>4.3</td>
@@ -1329,8 +1329,8 @@ format and comment conventions.
 <tr>
 <td>1.1</td>
 <td><strong>mov</strong></td>
-<td align="left"><em>opn</em>,<em>opn</em></td>
-<td>move <em>ovn</em> to <em>opv</em></td>
+<td align="left"><em>opv,opn</em></td>
+<td>move <em>opv</em> to <em>opn</em></td>
 </tr>
 <tr>
 <td>8.3</td>
@@ -1377,13 +1377,13 @@ format and comment conventions.
 <tr>
 <td>7.2</td>
 <td><strong>orb</strong></td>
-<td align="left"><em>o,opw</em></td>
+<td align="left"><em>opw,w</em></td>
 <td>or bit strings</td>
 </tr>
 <tr>
 <td>6.1</td>
 <td><strong>plc*</strong></td>
-<td align="left"><em>x</em>,<em>opv</em></td>
+<td align="left"><em>x,opv</em></td>
 <td>prepare To load characters</td>
 </tr>
 <tr>
@@ -1395,13 +1395,13 @@ format and comment conventions.
 <tr>
 <td>1.11</td>
 <td><strong>prc</strong></td>
-<td align="left"><em>ptyp</em>,<em>val</em></td>
+<td align="left"><em>ptyp,val</em></td>
 <td>define start of procedure</td>
 </tr>
 <tr>
 <td>6.2</td>
 <td><strong>psc</strong></td>
-<td>*<em>x</em>,<em>opv</em></td>
+<td>*<em>x,opv</em></td>
 <td>prepare to store characters</td>
 </tr>
 <tr>
@@ -1551,7 +1551,7 @@ format and comment conventions.
 <tr>
 <td>2.2</td>
 <td><strong>sub</strong></td>
-<td align="left"><em>opn</em>,<em>opv</em></td>
+<td align="left"><em>opv,opn</em></td>
 <td>subtract address <em>opv</em> from <em>opn</em></td>
 </tr>
 <tr>
@@ -1617,20 +1617,20 @@ format and comment conventions.
 
 <h3>1-  Basic Instruction Set</h3>
 
-<dl>1.1  <br><strong>mov</strong>   <em>opn</em>,<em>opn</em>
+<dl>1.1  <br><strong>mov</strong>   <em>opn,opv</em>
 
 <dd>     move one word value
 
    <p>
 
 
-<strong>mov</strong> causes the value of operand <em>opn</em> to be
-set as the new contents of operand location <em>opv</em>. In the case
+<strong>mov</strong> causes the value of operand <em>opv</em> to be
+set as the new contents of operand location <em>opn</em>. In the case
 where <em>opn</em> is not an index register, any value which can
 normally occupy a memory word (including a part of a multiword real or
-integer value) can be transferred using <strong>mov</strong> if the
+integer value) can be transferred using <strong>mov</strong>. If the
 target location <em>opn</em> is an index register,
-<strong>then</strong> <em>opv</em> must specify an appropriate one
+then <em>opv</em> must specify an appropriate one
 word value or operand containing such an appropriate value.
 
 <dt> 1.2  <strong>brn</strong>  <em>plbl</em>
@@ -1643,12 +1643,12 @@ word value or operand containing such an appropriate value.
 <strong>brn</strong> causes control to be passed to the indicated
 label in the program section.
 
-<dt>1.3  <strong>bsw</strong>  x,val,<em>plbl</em>
+<dt>1.3  <strong>bsw</strong>  <em>x,val,plbl</em>
 
 <dd>
 branch on switch value
 <p>
-<dt> 1.4  <strong>iff</strong>  val,<em>plbl</em>
+<dt> 1.4  <strong>iff</strong>  <em>val,plbl</em>
 
 <dd>provide branch for switch
 
@@ -1683,7 +1683,7 @@ of x.  The <strong>iff</strong> entries may be in any order and since
 a translator may thus need to store and sort them, the comment field
 is restricted in length (sec 11).
 	    
-<p><dt>1.6  <strong>ent</strong>  val
+<p><dt>1.6  <strong>ent</strong>  <em>val</em>
 
 <dd>define program entry point
 
@@ -1694,8 +1694,8 @@ entry point which can subsequently be used in conjunction with the
 <strong>bri</strong> instruction, which provides the only means of
 entering the code. It is illegal to fall into code identified by an
 entry point. the entry symbol is assigned an address which need not be
-a multiple of <strong>cfp$b</strong> but which must be in the range 0
-le <strong>cfp$l</strong> and the address must not lie within the
+a multiple of <strong>CFP$B</strong> but which must be in the range 0
+le <strong>CFP$L</strong> and the address must not lie within the
 address range of the allocated data area.  Furthermore, addresses of
 successive entry points must be assigned in some ascending sequence so
 that the address comparison instructions can be used to test the order
@@ -1780,7 +1780,7 @@ in the procedure definition.
 be omitted if the corresponding <strong>exi</strong> return is certain
 not to be taken.
 
-<p><dt>1.11 <strong>prc</strong>  <em>ptyp</em>,int
+<p><dt>1.11 <strong>prc</strong>  <em>ptyp,int</em>
 
 <dd>    define start of procedure
 
@@ -1878,7 +1878,7 @@ not appear to lie within the allocated data area.
                              to lie within the program section.
 </ol>
 
-<p><dt>1.12 <strong>exi</strong>  int
+<p><dt>1.12 <strong>exi</strong>  <em>int</em>
 
 <dd>         exit from procedure
 <p>
@@ -1906,7 +1906,7 @@ restored to its calling value.
 <strong>enp</strong> delimits a procedure body and may not actually be
 executed, hence it must have no label.
 
-<p><dt>1.14 <strong>err</strong>  int,te<strong>xt</strong>
+<p><dt>1.14 <strong>err</strong>  <em>int,text</em>
 
 <dd>    provide error return
 <p>
@@ -1914,17 +1914,17 @@ executed, hence it must have no label.
 
 <strong>err</strong> may replace an exit parameter (ppm) in any
 procedure call. the int argument is a unique error code in 0 to 899.
-the te<strong>xt</strong> supplied as the other operand is arbitrary te<strong>xt</strong> in the
-fortran character set and may be used in constructing a file of error
+The text supplied as the other operand is arbitrary text in the
+FORTRAN character set and may be used in constructing a file of error
 messages for documenting purposes or for building a direct access or
 other file of messages to be used by the error handling code.
 
- <p>In the event that an <strong>exi</strong> attempts to return control via an
-exit parameter to an <strong>err</strong> control is instead passed to
+ <p>In the event that an <strong>EXI</strong> attempts to return control via an
+exit parameter to an <strong>ERR</strong> control is instead passed to
 the first instruction in the error section (which follows the program
 section) with the error code in <strong>WA</strong>.
 
-<p><dt>1.15 <strong>erb</strong>  int,te<strong>xt</strong>
+<p><dt>1.15 <strong>erb</strong>  <em>int,text</em>
 
 <dd>    error branch
 <p>
@@ -2016,19 +2016,19 @@ the end of a routine is not marked by an explicit opcode (compare
 
 <dl>
 
-<p><dt>2.1  <strong>add</strong>   <em>opv</em>,op
+<p><dt>2.1  <strong>add</strong>   <em>opv,opn</em>
 
 <dd>
 
     adds  <em>opv</em> to the value in  <em>opn</em> and
                              stores the result in  <em>opn</em>. undefined
-                             if the result exceeds <strong>cfp$l</strong> .
+                             if the result exceeds <strong>CFP$L</strong> .
 
-<p><dt>2.2  <strong>sub</strong>   <em>opn</em>,<em>opv</em>
+<p><dt>2.2  <strong>sub</strong>   <em>opn,opv</em>
 
 <dd>
 
-subtracts <em>opv</em> from <em>opn</em>. stores the result in
+subtracts <em>opv</em> from <em>opn</em>, and stores the result in
 <em>opn</em>. Undefined if the result is negative.
 
 <p><dt>2.3  <strong>ica</strong>   <em>opn</em>
@@ -2047,41 +2047,41 @@ equivalent to <strong>add</strong>  <em>opn</em>,*unity
 Decrement address in <em>opn</em> equivalent to <strong>sub</strong>
 *unity,<em>opn</em>
 
-<p><dt>2.5  <strong>beq</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.5  <strong>beq</strong>   <em>opn,opv,plbl</em>
 
 <dd> branch to <em>plbl</em>  <em>opn</em> eq  <em>opv</em>
 
 
-<p><dt>2.6  <strong>bne</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.6  <strong>bne</strong>   <em>opn,opv,plbl</em>
 
 
 <dd>branch to <em>plbl</em>  <em>opn</em> ne  <em>opv</em>
 
-<p><dt>2.7  <strong>bgt</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.7  <strong>bgt</strong>   <em>opn,opv,plbl</em>
 
 
 <dd> branch to <em>plbl</em>  <em>opn</em> gt  <em>opv</em>
 
-<p><dt>2.8  <strong>bge</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.8  <strong>bge</strong>   <em>opn,opv,plbl</em>
 
 
 <dd> branch to <em>plbl</em>  <em>opn</em> ge  <em>opv</em>
 
-<p><dt>2.9  <strong>blt</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.9  <strong>blt</strong>   <em>opn,opv,plbl</em>
 
 <dd>branch to <em>plbl</em>  <em>opn</em> lt  <em>opv</em>
 
-<p><dt>2.10 <strong>ble</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.10 <strong>ble</strong>   <em>opn,opv,plbl</em>
 
 <dd> branch to <em>plbl</em>  <em>opn</em> le  <em>opv</em>
 
-<p><dt>2.11 <strong>blo</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.11 <strong>blo</strong>   <em>opn,opv,plbl</em>
 
 <dd> equivalent to <strong>blt</strong> or ble
 
-<p><dt>2.12 <strong>bhi</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.12 <strong>bhi</strong>   <em>opn,opv,plbl</em>
 
-<dd> equivalent to <strong>bgt</strong> or bge
+<dd> equivalent to <strong>bgt</strong> or <strong>bge</strong>
 
 <p>
 
@@ -2092,27 +2092,28 @@ instructions are used in cases where the equal condition either does
 not occur or can result either in a branch or no branch. This avoids
 inefficient translations in some implementations.
 
-<p><dt>2.13 <strong>bnz</strong>   <em>opn</em>,<em>plbl</em>
+<p><dt>2.13 <strong>bnz</strong>   <em>opn,plbl</em>
 
 <dd>    Equivalent to <strong>bne</strong>  <em>opn</em>,=zeroe,<em>plbl</em>
 
-<p><dt>2.14 <strong>bze</strong>   <em>opn</em>,<em>plbl</em>
+<p><dt>2.14 <strong>bze</strong>   <em>opn,plbl</em>
 
 <dd>    equivalent to <strong>beq</strong>  <em>opn</em>,=zeroe,<em>plbl</em>
 
-<p><dt>2.15 <strong>lct</strong>  <em>w</em>,<em>opv</em>
+<p><dt>2.15 <strong>lct</strong>  <em>w,opv</em>
 
 <dd>       load counter for bct
 <p>
 
 
-<strong>lct</strong> loads a counter value for use with the bct
-instruction. the value in <em>opv</em> is the number of lo
-<em>ops</em> to be executed. 
+<strong>lct</strong> loads a counter value for use with the
+<strong>bct</strong>
+instruction. The value in <em>opv</em> is the number of loop
+operations  to be executed. 
 <p>The value in <em>w</em> after this operation is an
 undefined one word integer quantity.
 
-<p><dt>2.16 <strong>bct</strong>  w,<em>plbl</em>
+<p><dt>2.16 <strong>bct</strong>  <em>w,plbl</em>
 
 <dd>      branch and count
 <p>
@@ -2121,23 +2122,23 @@ undefined one word integer quantity.
 
 <strong>bct</strong> uses the counter value in w to branch the
 required number of times and <strong>then</strong> finally to fall
-through to the ne<strong>xt</strong> instruction. <strong>bct</strong> can only be used
+through to the next instruction. <strong>bct</strong> can only be used
 following an appropriate <strong>lct</strong> instruction.  The value
 in <em>w</em> after execution of <strong>bct</strong> is undefined.
 
-<p><dt>2.17 <strong>aov</strong>   <em>opn</em>,<em>opv</em>,<em>plbl</em>
+<p><dt>2.17 <strong>aov</strong>   <em>opn,opv,plbl</em>
 
 <dd> <strong>add</strong> with carry test
 
 <p> adds  <em>opv</em> to the value in  <em>opn</em> and stores result in
-             <em>opn</em>. Branches to <em>plbl</em> result exceeds <strong>cfp$l</strong> 
+             <em>opn</em>. Branches to <em>plbl</em> result exceeds <strong>CFP$L</strong> 
             with result in  <em>opn</em> undefined. cf. <strong>add</strong> 
 
-<p><dt>2.18 <strong>bev</strong>   <em>opn</em>,<em>plbl</em>
+<p><dt>2.18 <strong>bev</strong>   <em>opn,plbl</em>
 
 <dd>     branch even
 
-<p><dt>2.19 <strong>bod</strong>   <em>opn</em>,<em>plbl</em>
+<p><dt>2.19 <strong>bod</strong>   <em>opn,plbl</em>
 
 <dd>     branch odd
 <p>
@@ -2146,10 +2147,10 @@ in <em>w</em> after execution of <strong>bct</strong> is undefined.
 These operations are used only .cepp or .crpp is defined.  On some
 implementations, a more efficient implementation is possible by noting
 that address of blocks must always be a multiple of
-<strong>cfp$b</strong>. We call such addresses even.  Thus return
+<strong>CFP$B</strong>. We call such addresses even.  Thus return
 address on the stack (.crpp) and entry point addresses (.cepp) can be
 distinguished from block addresses they are forced to be odd (not a
-multiple of <strong>cfp$b</strong> ).  <strong>bev</strong> and
+multiple of <strong>CFP$B</strong> ).  <strong>bev</strong> and
 <strong>bod</strong> branch according as operand is even or odd,
 respectively.  </dl>
 
@@ -2162,10 +2163,10 @@ use in an interpretor. It may be implemented as a real register or as
 a memory location, but in either case it is separate from any other
 register. the value in the code pointer register is always a word
 address (i.e.  a one word integer which is a multiple of
-<strong>cfp$b</strong> ).
+<strong>CFP$B</strong> ).
 
 <dl>
-<p><dt>3.1  <strong>lcp</strong>   reg
+<p><dt>3.1  <strong>lcp</strong>   <em>reg</em>
 
 <dd>         load code pointer register
 
@@ -2174,7 +2175,7 @@ address (i.e.  a one word integer which is a multiple of
 This instruction causes the code pointer register to be set from the
 value in <em>reg</em> which is unchanged
 
-<p><dt>3.2  <strong>scp</strong>   reg
+<p><dt>3.2  <strong>scp</strong>   <em>reg</em>
 
 <dd>
 
@@ -2182,7 +2183,7 @@ Store code pointer register this instruction loads the current value
 in the code pointer register into reg. (<strong>CP</strong> ) is
 unchanged.
 
-<p><dt>3.3  <strong>lcw</strong>  reg
+<p><dt>3.3  <strong>lcw</strong>  <em>reg</em>
 
 <dd>load next code word
 
@@ -2319,11 +2320,11 @@ machines having distinct overflow and divide by zero conditions.
 
 <p><dt>4.9  <strong>ino</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> no integer overflow
+<dd>        jump to <em>plbl</em> if no integer overflow
 
 <p><dt>4.10 <strong>iov</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> integer overflow
+<dd>        jump to <em>plbl</em> if integer overflow
 <p>
 
 
@@ -2335,29 +2336,29 @@ and test the result of the preceding instruction.
 
 <p><dt>4.11 <strong>ieq</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>IA</strong> ) eq 0
+<dd>        jump to <em>plbl</em> if (<strong>IA</strong>) eq 0
 
 
 <p><dt>4.12 <strong>ige</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>IA</strong> ) ge 0
+<dd>        jump to <em>plbl</em> if (<strong>IA</strong>) ge 0
 
 <p><dt>4.13 <strong>igt</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>IA) gt 0</strong> 
+<dd>        jump to <em>plbl</em> if (<strong>IA</strong>) gt 0 
 
 <p><dt>4.14 <strong>ile</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>IA) le 0</strong> 
+<dd>        jump to <em>plbl</em> if (<strong>IA</strong>) le 0
 
 
 <p><dt>4.15 <strong>ilt</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>IA) lt 0</strong> 
+<dd>        jump to <em>plbl</em> if (<strong>IA</strong>) lt 0
 
 <p><dt>4.16 <strong>ine</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>IA) ne 0</strong> 
+<dd>        jump to <em>plbl</em> if (<strong>IA</strong>) ne 0 
 
 <p>
 
@@ -2428,29 +2429,29 @@ which can cause real overflow (<strong>adr</strong>,<strong>sbr</strong>
 
 <p><dt>5.10 <strong>req</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>RA</strong> ) eq 0.0
+<dd>        jump to <em>plbl</em> if (<strong>RA</strong>) eq 0.0
 
 
 <p><dt>5.11 <strong>rge</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>RA</strong> ) ge 0.0
+<dd>        jump to <em>plbl</em> if (<strong>RA</strong>) ge 0.0
 
 <p><dt>5.12 <strong>rgt</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>RA</strong> ) gt 0.0
+<dd>        jump to <em>plbl</em> if (<strong>RA</strong>) gt 0.0
 
 
 <p><dt>5.13 <strong>rle</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>RA</strong> ) le 0.0
+<dd>        jump to <em>plbl</em> if (<strong>RA</strong>) le 0.0
 
 <p><dt>5.14 <strong>rlt</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>RA</strong> ) lt 0.0
+<dd>        jump to <em>plbl</em> if (<strong>RA</strong> ) lt 0.0
 
 <p><dt>5.15 <strong>rne</strong>  <em>plbl</em>
 
-<dd>        jump to <em>plbl</em> (<strong>RA</strong> ) ne 0.0
+<dd>        jump to <em>plbl</em> if (<strong>RA</strong>) ne 0.0
 
 <p>
 
@@ -2521,7 +2522,7 @@ uses either index register <strong>XR</strong> or <strong>XL</strong>
 <p>
 
 A character pointer points to a specific character in a string of
-characters stored <strong>cfp$c</strong> chars to a word.
+characters stored <strong>CFP$C</strong> chars to a word.
 
 <p> The only
 operations permitted on a character pointer are <strong>lch</strong>
@@ -2555,12 +2556,12 @@ equality.
 
 </dl>
 
-<p><dt>6.1  <strong>plc</strong>  <em>x</em>,<em>opv</em>
+<p><dt>6.1  <strong>plc</strong>  <em>x,opv</em>
 
 <dd>       prepare ch ptr for <strong>lch</strong> <strong>cmc</strong> mvc,<strong>trc</strong> 
                              <strong>mcb</strong> 
 
-<p><dt>6.2  <strong>psc</strong>  <em>x</em>,<em>opv</em>
+<p><dt>6.2  <strong>psc</strong>  <em>x,opv</em>
 
 <dd>       prepare char. ptr for <strong>sch</strong> <strong>mvc</strong> <strong>mcb</strong> 
 
@@ -2570,22 +2571,22 @@ equality.
 <em>opv</em> can be omitted it is zero.  the char. initially addressed
 is determined by the word address in x and the integer offset
 <em>opv</em>.  There is an automatic implied offset of
-<strong>cfp$f</strong> bytes.  <strong>cfp$f</strong> is used to
+<strong>CFP$F</strong> bytes.  <strong>CFP$F</strong> is used to
 formally introduce into MINIMAL a value needed in translating these
 opcodes which, since MINIMAL itself does not prescribe a string
 structure in detail, depends on the choice of a data structure for
-strings in the MINIMAL program.  e.g. <strong>cfp$b</strong> =
-<strong>cfp$c</strong> = 3, <strong>cfp$f</strong> = 6, num01 = 1,
+strings in the MINIMAL program.  e.g. <strong>CFP$B</strong> =
+<strong>CFP$C</strong> = 3, <strong>CFP$F</strong> = 6, num01 = 1,
 <strong>XL</strong> points to a series of 4 words, abc/def/ghi/jkl,
 then <pre> <strong>plc</strong> <strong>XL</strong> ,=num01 </pre>
 points to h.
 
 
-<p><dt>6.3  <strong>lch</strong>  <em>reg</em>,<em>opc</em>
+<p><dt>6.3  <strong>lch</strong>  <em>reg,opc</em>
 
 <dd>     load character into reg
 
-<p><dt>6.4  <strong>sch</strong>  <em>reg</em>,<em>opc</em>
+<p><dt>6.4  <strong>sch</strong>  <em>reg,opc</em>
 
 <dd>     store character from <em>reg</em>
 
@@ -2608,7 +2609,7 @@ character.
 
 <li>(x)+  --             same character as (x) but the
                              character pointer is incremented
-                             to point to the ne<strong>xt</strong> character
+                             to point to the next character
                              following execution.
 
 <li>-(x)  --             the character pointer is decre-
@@ -2617,7 +2618,7 @@ character.
                              character is referenced.
 </ul>
 
-<p><dt>6.5  <strong>csc</strong>  x
+<p><dt>6.5  <strong>csc</strong>  <em>x</em>
 
 <dd>           complete store characters
 
@@ -2639,7 +2640,7 @@ must not nullify this action.)
 <p>
 
 The following instructions are used to compare two words containing
-<strong>cfp$c</strong> characters. 
+<strong>CFP$C</strong> characters. 
 <p> Comparisons distinct from
 <strong>beq</strong> <strong>bne</strong> are provided as on some target machines, the
 possibility of the sign bit being set may require special action.
@@ -2647,15 +2648,15 @@ possibility of the sign bit being set may require special action.
 Note that restriction 2 above, eases use of these orders in testing
 complete strings for equality, since whole word tests are possible.
 
-<p><dt>6.6  <strong>ceq</strong>   <em>opw</em>,<em>opw</em>,<em>plbl</em>
+<p><dt>6.6  <strong>ceq</strong>   <em>opw,opw,plbl</em>
 
 <dd> jump to <em>plbl</em>  <em>opw</em> eq  <em>opw</em>
 
-<p><dt>6.7  <strong>cne</strong>   <em>opw</em>,<em>opw</em>,<em>plbl</em>
+<p><dt>6.7  <strong>cne</strong>   <em>opw,opw,plbl</em>
 
 <dd> jump to <em>plbl</em>  <em>opw</em> ne  <em>opw</em>
 
-<p><dt>6.8  <strong>cmc</strong>  <em>plbl</em>,<em>plbl</em>
+<p><dt>6.8  <strong>cmc</strong>  <em>plbl,plbl</em>
 
 <dd>   compare characters
 
@@ -2704,14 +2705,14 @@ difficult (dependent in general on shifts and masking).
 
 <strong>XL</strong> and <strong>XR</strong> should have been prepared
 by <strong>plc</strong> the translate table consists of
-<strong>cfp$a</strong> contiguous characters giving the translations
-of the <strong>cfp$a</strong> characters in the alphabet.
+<strong>CFP$A</strong> contiguous characters giving the translations
+of the <strong>CFP$A</strong> characters in the alphabet.
 
 <p>On
 completion, (<strong>XR</strong> ) and (<strong>XL</strong> ) are set
 to zero and (<strong>WA</strong>) is undefined.
 
-<p><dt>6.10 <strong>flc</strong>  w
+<p><dt>6.10 <strong>flc</strong>  <em>w</em>
 
 <dd>           fold character to upper case
 
@@ -2725,56 +2726,56 @@ character.  </dl>
 
 <dl>
 
-<p><dt>7.1  <strong>anb</strong>   <em>w</em>,<em>opw</em>
+<p><dt>7.1  <strong>anb</strong>   <em>opw,w</em>
 
-<dd>       and bit string values
-
-
-<p><dt>7.2  <strong>orb</strong>   <emp>w</em>,<em>opw</em>
-
-<dd>       or bit string values
+<dd>       and bit string values, result in <em>w</em>
 
 
-<p><dt>7.3  <strong>xob</strong>   <em>w</em>,<em>opw</em>
+<p><dt>7.2  <strong>orb</strong>   <emp>opw,w</em>
 
-<dd>       exclusive or bit string values
+<dd>       or bit string values, result in <em>w</em>
+
+
+<p><dt>7.3  <strong>xob</strong>   <em>opw,w</em>
+
+<dd>       exclusive or bit string values, result in <em>w</em>
 
 
 <p>
 
 In the above operations, the logical connective is applied separately
-to each of the <strong>cfp$n</strong> bits.  The result is stored in
+to each of the <strong>CFP$N</strong> bits.  The result is stored in
 the second operand location.
 
-<p><dt>7.4  <strong>cmb</strong>  w
+<p><dt>7.4  <strong>cmb</strong>  <em>w</em>
 
 <dd>           complement all bits in  <em>opw</em>
 
 
-<p><dt>7.5  <strong>rsh</strong>  w,val
+<p><dt>7.5  <strong>rsh</strong>  <em>w,val</em>
 
-<dd>       right shift by <em>val</em> bits
-
-
-<p><dt>7.6  <strong>lsh</strong>  w,val
-
-<dd>       left shift by <em>val</em> bits
+<dd>       right shift <em>w</em> by <em>val</em> bits
 
 
-<p><dt>7.7  <strong>rsx</strong>  w,(dx)
+<p><dt>7.6  <strong>lsh</strong>  <em>w,val</em>
 
-<dd>       right shift w number of bits in x
+<dd>       left shift <em>w</em> by <em>val</em> bits
 
 
-<p><dt>7.8  <strong>lsx</strong>  w,(x)
+<p><dt>7.7  <strong>rsx</strong>  <em>w,(x)</em>
 
-<dd>       left shift w number of bits in x
+<dd>       right shift <em>w</em> by  number of bits in <em>x</em>
+
+
+<p><dt>7.8  <strong>lsx</strong>  <em>w,(x)</em>
+
+<dd>       left shift <em>w</em> by the  number of bits in <em>x</em>
 
 <p>
 
 The above shifts are logical shifts in which bits shifted out are lost
 and zero bits supplied as required. The shift count is in the range
-0-<strong>cfp$n</strong> .
+0-<strong>CFP$N</strong> .
 
 
 <p><dt>7.9  <strong>nzb</strong>  w,<em>plbl</em>
@@ -2812,22 +2813,22 @@ The following instructions provide for conversion between lengths in
 bytes and lengths in words.
 
 
-<p><dt>8.1  <strong>wtb</strong>  reg
+<p><dt>8.1  <strong>wtb</strong>  <em>reg</em>
 
 <dd>         convert  <em>reg</em> from words to bytes.
 
 
-<p>That is, multiply by <strong>cfp$b</strong> . this is
-                             a no-op <strong>cfp$b</strong>  is one.
+<p>That is, multiply by <strong>CFP$B</strong> . this is
+                             a no-op <strong>CFP$B</strong>  is one.
 
-<p><dt>8.2  <strong>btw</strong>  reg
+<p><dt>8.2  <strong>btw</strong>  <em>reg</em>
 
 <dd>         convert  <em>reg</em> from bytes to words
 
 <p>
 
-By dividing <em>reg</em> by <strong>cfp$b</strong> discarding the
-fraction. no-op <strong>cfp$b</strong> is one
+By dividing <em>reg</em> by <strong>CFP$B</strong> discarding the
+fraction. no-op <strong>CFP$B</strong> is one
 
 <p>
 
@@ -2841,13 +2842,13 @@ values (addresses) to and from the full signed integer format.
 The value of <em>opn</em> (an address) is moved as a positive integer
 to the integer accumulator.
 
-<p><dt>8.4  <strong>mfi</strong>   <em>opn</em>,<em>plbl</em>
+<p><dt>8.4  <strong>mfi</strong>   <em>opn,plbl</em>
 
 <dd>
 
 The value currently stored in the integer accumulator is moved to
 <em>opn</em> as an address it is in the range 0 to
-<strong>cfp$m</strong> inclusive.  The accumulator value is outside
+<strong>CFP$M</strong> inclusive.  The accumulator value is outside
 this range, <strong>then</strong> the result in <em>opn</em> is
 undefined and control is passed to <em>plbl</em>. <strong>mfi</strong>
 destroys the value of (ia) whether or not integer overflow is
@@ -2868,11 +2869,11 @@ accumulator (may lose precision in some cases)
 
 <dd>
 
-Convert the real value in ra to an integer and place result in
+Convert the real value in <strong>RA</strong> to an integer and place result in
 <strong>IA</strong> .  Conversion is by truncation of the fraction -
 no rounding occurs.  
 
-<p>Jump to <em>plbl</em> out of range. (ra) is not
+<p>Jump to <em>plbl</em> if <strong>RA</strong> out of range. <strong>RA</strong> is not
 changed in either case.  
 
 <p><em>plbl</em> may be omitted overflow is impossible.
@@ -2880,9 +2881,9 @@ changed in either case.
 <p>
 
 The following instructions provide for computing the length of storage
-required for a te<strong>xt</strong> string.
+required for a text string.
 
-<p><dt>8.7  <strong>ctw</strong>  w,val
+<p><dt>8.7  <strong>ctw</strong>  <em>w,val</em>
 
 <dd>
 
@@ -2890,7 +2891,7 @@ This instruction computes the sum (number of words required to store w
 characters) + (val). the sum is stored in w. 
 
 <p>For example,
-<strong>cfp$c</strong> is 5, and <strong>WA</strong> contains 32, <strong>then</strong>
+<strong>CFP$C</strong> is 5, and <strong>WA</strong> contains 32, <strong>then</strong>
 <strong>ctw</strong> <strong>WA</strong>,2 gives a result of 9 in <strong>WA</strong>.
 
 <p><dt>8.8  <strong>ctb</strong>  w,val
@@ -3002,7 +3003,7 @@ The character pointers are bumped as indicated and the final value of
 <p>
 
 Note that this implies that the value in <strong>WA</strong> is the length in bytes
-which is a multiple of <strong>cfp$b</strong> .  
+which is a multiple of <strong>CFP$B</strong> .  
 
 <p>The initial addresses in <strong>XR</strong> ,<strong>XL</strong> are word addresses.  as indicated, the final <strong>XR</strong> ,<strong>XL</strong> values
 point past the new and old regions of memory respectively.
@@ -3139,7 +3140,7 @@ The following instructions are used to generate constant values in the
 constant section and also to assemble initial values in the working
 storage section. They may not appear except in these two sections.
 
-<p><dt>11.1 <strong>dac</strong>  addr
+<p><dt>11.1 <strong>dac</strong>  <em>addr</em>
 
 <dd>        assemble address constant.
 
@@ -3150,25 +3151,25 @@ Generates one word containing the specified one word integer value
 (address).
 
 
-<p><dt>11.2 <strong>dic</strong>  integer
+<p><dt>11.2 <strong>dic</strong>  <em>integer</em>
 
 <dd>
 
-Generates an integer value which occupies <strong>cfp$i</strong>
+Generates an integer value which occupies <strong>CFP$I</strong>
 consecutive words.  The operand is a digit string with a required
 leading sign.
 
-<p><dt>11.3 <strong>drc</strong>  real
+<p><dt>11.3 <strong>drc</strong>  <em>real</em>
 
 <dd>
 
-Assembles a real constant which occupies <strong>cfp$r</strong>
+Assembles a real constant which occupies <strong>CFP$R</strong>
 consecutive words.  The operand form must obey the rules for a fortran
 real constant with the extra requirement that a leading sign be
 present.
 
 
-<p><dt>11.4 <strong>dtc</strong>  <em>dte<strong>xt</strong></em>
+<p><dt>11.4 <strong>dtc</strong>  <em>dtext</em>
 
 <dd>       define <em>text</em> constant.
 
@@ -3177,7 +3178,7 @@ present.
 
 <strong>Text</strong> is started and ended with any character not contained in the
 characters to be assembled. The constant occupies consecutive words as
-dictated by the configuration parameter <strong>cfp$c</strong> . 
+dictated by the configuration parameter <strong>CFP$C</strong> . 
 
 <p>Any unused chars in the last word are right filled with zeros (i.e. the
 character whose internal code is zero).  The string contains a
@@ -3186,7 +3187,7 @@ characters.  =,$.(*)/+-
 
 			     <p>
                              no other characters
-                             may be used in a <em>dte<strong>xt</strong></em> operand.
+                             may be used in a <em>dtext</em> operand.
 
 <p><dt>11.5 <strong>dbc</strong>  val
 
@@ -3223,19 +3224,19 @@ occuring in <em>eqop</em> must be previously defined.  <p>
 
 <dl>
 
-<dt>val
+<dt><em>val</em>
 
 <dd>             the indicated value is used
 
 
-<dt> val+val
+<dt> <em>val+val</em>
 
 <dd>
 
 The sum of the two values is used.  This sum must not exceed
-<strong>cfp$m</strong> 
+<strong>CFP$M</strong> 
 
-<dt>val-val
+<dt><em>val-val</em>
 
 <dd>
 
@@ -3249,9 +3250,9 @@ This format defines the label by using a value supplied by the MINIMAL
 translator. Values are required for the
 
 			     <pre>
-            <strong>cfp$x</strong>             (configuration parameters)
-            e$xxx            (environment parameters)
-            ch$xx            (character codes).
+            CFP$x            (configuration parameters)
+            E$xxx            (environment parameters)
+            CH$xx            (character codes).
 </pre>
 
 <p>
@@ -3269,12 +3270,12 @@ program.
 
 <p><dt>12.2 <strong>exp</strong>
 
-<dd>              define e<strong>xt</strong>ernal procedure
+<dd>              define external procedure
 
 <p>
 
             <strong>exp</strong> defines the symbol appearing in the
-label field to be the name of an e<strong>xt</strong>ernal procedure which can be
+label field to be the name of an external procedure which can be
 referenced in a subsequent <strong>jsr</strong> instruction. The
 coding for the procedure is external to the coding of the source
 program in this language.  The code for external procedures may be
@@ -3315,12 +3316,12 @@ label field to be the name of an internal routine.
 <dl>
 <p><dt>13.1 <strong>ejc</strong>
 
-<dd>              eject to ne<strong>xt</strong> page
+<dd>              eject to next page
 
 
 
 
-<p><dt>13.2 <strong>ttl</strong>  te<strong>xt</strong>
+<p><dt>13.2 <strong>ttl</strong>  text
 
 <dd>        set new assembly title
 
@@ -3409,7 +3410,7 @@ following specified order.
 
 <dd>
 
-The procedure section contains all the exp instructions for e<strong>xt</strong>ernally
+The procedure section contains all the exp instructions for externally
 available procedures and <strong>inp</strong> inr opcodes for internal
 procedures,routines so that a single pass MINIMAL translator has
 advance knowledge of procedure types when translating calls.
@@ -3528,12 +3529,12 @@ The letter z is however permitted in opcode mnemonics and in comments.
 
        cols 13-28            operand field, terminated by a
                              blank. may occasionally
-                             e<strong>xt</strong>end past column 28.
+                             extend past column 28.
 
        cols 30-64            comment. always separated from the
                              operand field by at least one blank
                              may occasionally start after column
-                             30 the operand e<strong>xt</strong>ends past 28.
+                             30 the operand extends past 28.
                              a special exception occurs for the
                              <strong>iff</strong> instruction, whose comment may
                              be only 20 characters long (30-49).
@@ -3547,7 +3548,7 @@ The letter z is however permitted in opcode mnemonics and in comments.
 
        cols 2-7              blank
 
-       cols 8-64             arbitrary te<strong>xt</strong>, restricted to the
+       cols 8-64             arbitrary text, restricted to the
                              fortran character set.
 
 
@@ -3628,7 +3629,7 @@ with the <strong>sysej</strong> instruction.
 
 <h1>SPITBOL Operating System Interface (OSINT)</h1>
 
-p>This section describes the operating system interface functions,
+<p>This section describes the operating system interface functions,
 mostly written in C, the are used by MACRO SPITBOL for runtime
 support,doing input/output, loading external functions, reading and
 writing save files, reading and writing load modules, and so forth.
@@ -3644,7 +3645,7 @@ call is not required it will be omitted if .csax is undefined. in this
 case <strong>sysax</strong> need not be coded.
 
 <pre>
-jsr  <strong>sysax</strong>            call after execution
+jsr  sysax            call after execution
 </pre>
 <h4>sysbs -- backspace file</h4>
 
@@ -3658,13 +3659,13 @@ write will operate on the previous record.
 
 <pre>
 
-       (<strong>wa</strong>)                  pointer to <strong>fcblk</strong> or zero
-       (<strong>xr</strong>)                  backspace argument (<strong>scblk</strong> pointer)
-       jsr  <strong>sysbs</strong>            call to backspace
+       (wa)                  pointer to fcblk or zero
+       (xr)                  backspace argument (scblk pointer)
+       jsr  sysbs            call to backspace
        ppm  loc              return here if file does not exist
        ppm  loc              return here if backspace not allowed
        ppm  loc              return here if i/o error
-       (<strong>wa</strong>,<strong>wb</strong>)               destroyed
+       (wa,wb)               destroyed
 </pre>
 
 <p> The second error return is used for files for which backspace is
@@ -3677,7 +3678,7 @@ devices are in this category.
 called as a breakpoint to assist in debugging.
 
 <pre>
-       jsr  <strong>sysbp</strong>            call to breakpoint
+       jsr  sysbp            call to breakpoint
 </pre>
 <h4>sysbx -- before execution</h4>
 
@@ -3713,8 +3714,8 @@ any trailing blanks, and conversion cannot fail.
 
 <pre>
        (ia)                  value to be converted
-       jsr  <strong>sysci</strong>            call to convert integer value
-       (<strong>xl</strong>)                  pointer to pseudo-<strong>scblk</strong> with string
+       jsr  sysci            call to convert integer value
+       (xl)                  pointer to pseudo-scblk with string
 </pre>
 
 <h4><strong>syscb</strong> -- general string comparison function</h4>
@@ -3724,17 +3725,17 @@ international string comparison.
 
 
 <pre>
-       (<strong>xr</strong>)                  character pointer for first string
-       (<strong>xl</strong>)                  character pointer for second string
-       (<strong>wb</strong>)                  character count of first string
-       (<strong>wa</strong>)                  character count of second string
-       jsr  <strong>syscb</strong>            call to <strong>syscb</strong> function
-       ppm  loc              string too long for <strong>syscb</strong>
+       (xr)                  character pointer for first string
+       (xl)                  character pointer for second string
+       (wb)                  character count of first string
+       (wa)                  character count of second string
+       jsr  syscb            call to syscb function
+       ppm  loc              string too long for syscb
        ppm  loc              first string lexically gt second
        ppm  loc              first string lexically lt second
        ---                   strings equal
-       (<strong>xl</strong>)                  zero
-       (<strong>xr</strong>)                  destroyed
+       (xl)                  zero
+       (xr)                  destroyed
 </pre>
 
 <h4><strong>syscr</strong> -- convert real</h4>
@@ -3757,16 +3758,16 @@ trailing zeros in the fractional part.  conversion cannot fail.
 
 <pre>
        (ra)                  value to be converted
-       (<strong>wa</strong>)                  no. of significant digits desired
-       (<strong>wb</strong>)                  conversion type:
+       (wa)                  no. of significant digits desired
+       (wb)                  conversion type:
                      negative for e-type conversion
                      zero for g-type conversion
                      positive for f-type conversion
-       (<strong>wc</strong>)                  character positions in result <strong>scblk</strong>
-       (<strong>xr</strong>)                  <strong>scblk</strong> for result
-       jsr  <strong>syscr</strong>            call to convert real value
-       (<strong>xr</strong>)                  result <strong>scblk</strong>
-       (<strong>wa</strong>)                  number of result characters
+       (wc)                  character positions in result <strong>scblk</strong>
+       (xr)                  scblk for result
+       jsr  syscr            call to convert real value
+       (xr)                  result <strong>scblk</strong>
+       (wa)                  number of result characters
 </pre>
 
 <h4><strong>sysdc</strong> -- date check</h4>
@@ -3775,7 +3776,7 @@ trailing zeros in the fractional part.  conversion cannot fail.
 a trial version of SPITBOL is unexpired.
 
 <pre>
-       jsr  <strong>sysdc</strong>            call to check date
+       jsr  sysdc>            call to check date
 return only if date is ok
 </pre>
 
@@ -3789,8 +3790,8 @@ e.g.  n = 256*a + s , s = start adrs in kilowords, a = kilowords to
 dump
 
 <pre>
-(<strong>xr</strong>)                  parameter n of call dump(n)
-       jsr  <strong>sysdm</strong>            call to enter routine
+       (xr)                  parameter n of call dump(n)
+       jsr  sysdm            call to enter routine
 
 </pre>
 
@@ -3803,9 +3804,9 @@ day. <strong>sysdt</strong> is used to implement the snobol4 function
 date().
 
 <pre>
-       (<strong>xr</strong>)                  parameter n of call date(n)
-       jsr  <strong>sysdt</strong>            call to get date
-       (<strong>xl</strong>)                  pointer to block containing date
+       (xr)                  parameter n of call date(n)
+       jsr  sysdt            call to get date
+       (xl)                  pointer to block containing date
 </pre>
 
 <p>The format of the block is like an <strong>scblk</strong> except
@@ -3816,14 +3817,14 @@ of compilation and runtime errors</h4>
 <p>Provides means for interface to take special actions on errors
 
 <pre>
-       (<strong>wa</strong>)                  error code
-       (<strong>wb</strong>)                  line number
-       (<strong>wc</strong>)                  column number
-       (<strong>xr</strong>)                  system stage
-       (<strong>xl</strong>)                  file name (<strong>scblk</strong>)<
-       jsr  <strong>sysea</strong>            call to <strong>sysea</strong> function
+       (wa)                  error code
+       (wb)                  line number
+       (wc)                  column number
+       (xr)                  system stage
+       (xl)                  file name (scblk)
+       jsr  sysea            call to sysea function
        ppm  loc              suppress printing of error message
-       (<strong>xr</strong>)                  message to print (<strong>scblk</strong>) or 0
+       (xr)                  message to print (scblk) or 0
 
 </pre>
 
@@ -3841,9 +3842,9 @@ Note that <strong>sysef</strong> is not normally used for the standard
 output file (see <strong>sysep</strong>).
 
 <pre>
-       (<strong>wa</strong>)                  pointer to <strong>fcblk</strong> or zero
-       (<strong>xr</strong>)                  eject argument (<strong>scblk</strong> pointer)
-       jsr  <strong>sysef</strong>            call to eject file
+       (wa)                  pointer to fcblk> or zero
+       (xr)                  eject argument (scblk pointer)
+       jsr  sysef            call to eject file
        ppm  loc              return here if file does not exist
        ppm  loc              return here if inappropriate file
        ppm  loc              return here if i/o error
@@ -3858,9 +3859,9 @@ file. It may only be used for files where this concept makes sense.
 standard output file (see <strong>sysep</strong>).
 
 <pre>
-       (<strong>wa</strong>)                  pointer to <strong>fcblk</strong> or zero
-       (<strong>xr</strong>)                  eject argument (<strong>scblk</strong> pointer)
-       jsr  <strong>sysef</strong>            call to eject file
+       (wa)                  pointer to fcblk or zero
+       (xr)                  eject argument (scblk pointer)
+       jsr  sysef            call to eject file
        ppm  loc              return here if file does not exist
        ppm  loc              return here if inappropriate file
        ppm  loc              return here if i/o error
@@ -3875,9 +3876,9 @@ file. It may only be used for files where this concept makes sense.
 standard output file (see <strong>sysep</strong>).
 
 <pre>
-       (<strong>wa</strong>)                  pointer to <strong>fcblk</strong> or zero
-       (<strong>xr</strong>)                  eject argument (<strong>scblk</strong> pointer)
-       jsr  <strong>sysef</strong>            call to eject file
+       (wa)                  pointer to fcblk or zero
+       (xr)                  eject argument (scblk pointer)
+       jsr  sysef            call to eject file
        ppm  loc              return here if file does not exist
        ppm  loc              return here if inappropriate file
        ppm  loc              return here if i/o error
@@ -3895,10 +3896,10 @@ such as a dump.
 See <strong>sysxi</strong> for details of <strong>fcblk</strong> chain
 
 <pre>
-       (<strong>wa</strong>)                  value of abend keyword
-       (<strong>wb</strong>)                  value of code keyword
-       (<strong>xl</strong>)                  o or pointer to head of <strong>fcblk</strong> chain
-       jsr  <strong>sysej</strong>            call to end job
+       (wa)                  value of abend keyword
+       (wb)                  value of code keyword
+       (xl)                  zero or pointer to head of fcblk chain
+       jsr  sysej            call to end job
 </pre>
 
 <p>The following special values are used as codes in
@@ -3918,9 +3919,9 @@ calls in the source program given the error code number. It is allowed
 to return a null string if this facility is unavailable.
 
 <pre>
-       (<strong>wa</strong>)                  error code number
-       jsr  <strong>sysem</strong>            call to get text
-       (<strong>xr</strong>)                  text of message
+       (wa)                  error code number
+       jsr  sysem            call to get text
+       (xr)                  text of message
 </pre>
 
 <p>The returned value is a pointer to a block in
@@ -3940,13 +3941,13 @@ call, a subsequent read or write may reopen the file at the start or
 it may be necessary to reopen the file via <strong>sysio</strong>.
 
 <pre>
-       (<strong>wa</strong>)                  pointer to <strong>fcblk</strong> or zero
-       (<strong>xr</strong>)                  endfile argument (<strong>scblk</strong> pointer)
-       jsr  <strong>sysen</strong>            call to endfile
+       (wa)                  pointer to fcblk or zero
+       (xr)                  endfile argument (scblk pointer)
+       jsr  sysen            call to endfile
        ppm  loc              return here if file does not exist
        ppm  loc              return here if endfile not allowed
        ppm  loc              return here if i/o error
-       (<strong>wa</strong>,<strong>wb</strong>)               destroyed
+       (wa,wb)               destroyed
 </pre>
 
 <p>The second error return is used for files for which endfile is not
@@ -3969,15 +3970,15 @@ output).
 external function previously loaded with a call to sysld.
 
 <pre>
-       (<strong>xs</strong>)                  pointer to arguments on stack
-       (<strong>xl</strong>)                  pointer to control block (<strong>efblk</strong>)
-       (<strong>wa</strong>)                  number of arguments on stack
-       jsr  <strong>sysex</strong>            call to pass control to function
+       (xs)                  pointer to arguments on stack
+       (xl)                  pointer to control block (efblk)
+       (wa)                  number of arguments on stack
+       jsr  sysex            call to pass control to function
        ppm  loc              return here if function call fails
        ppm  loc              return here if insufficient memory
        ppm  loc              return here if bad argument type
-       (<strong>xs</strong>)                  popped past arguments
-       (<strong>xr</strong>)                  result returned
+       (xs)                  popped past arguments
+       (xr)                  result returned
 </pre>
 
 <p>The arguments are stored on the stack with the last argument at
@@ -4119,47 +4120,57 @@ with file name, _f_ (otherwise null) extracted and stacked first.
 them are stacked and a count of all items stacked is placed in
 <strong>wc</strong>.
 
-<p>If an <strong>fcblk</strong> was earlier
-allocated and pointed to via file <em>arg1</em>,
-<strong>sysfc</strong> is also passed a pointer to this
-<strong>fcblk</strong>.  <pre> (<strong>xl</strong>) file
-<em>arg1</em> <strong>scblk</strong> pointer (2nd arg)
-(<strong>xr</strong>) file<em>arg2</em> (3rd arg) or null
--(<strong>xs</strong>)...-(<strong>xs</strong>)
-<strong>scblk</strong>s for _f_,_r_,_c_,...  (<strong>wc</strong>) no.
-of stacked <strong>scblk</strong>s above (<strong>wa</strong>)
-existing file <em>arg1</em> <strong>fcblk</strong> pointer or 0
-(<strong>wb</strong>) 0/3 for input/output assocn jsr
-<strong>sysfc</strong> call to check need for <strong>fcblk</strong>
-ppm loc invalid file argument ppm loc <strong>fcblk</strong> already
-in use (<strong>xs</strong>) popped (<strong>wc</strong>) times
-(<strong>wa</strong> non zero) byte size of requested
-<strong>fcblk</strong> (<strong>wa</strong>=0,<strong>xl</strong> non
-zero) private <strong>fcblk</strong> pointer in <strong>xl</strong>
-(<strong>wa</strong>=<strong>xl</strong>=0) no <strong>fcblk</strong>
-wanted, no private <strong>fcblk</strong> (<strong>wc</strong>) 0/1/2
-request alloc of <strong><strong>xr</strong>blk</strong> /static block
-for use as <strong>fcblk</strong> (<strong>wb</strong>) destroyed
-</pre> <h4><strong>sysgc</strong> -- inform interface of garbage
+<p>If an fcblk was earlier
+allocated and pointed to via file <em>arg1</em>, sysfc is also passed a pointer to this
+fcblk.
+
+<pre>
+      (xl)                  file arg1 scblk ptr (2nd arg)
+      (xr)                  filearg2 (3rd arg) or null
+      -(xs)...-(xs)         scblks for $f$,$r$,$c$,...
+      (wc)                  no. of stacked scblks above
+      (wa)                  existing file arg1 fcblk ptr or 0
+      (wb)                  0/3 for input/output assocn
+      jsr  sysfc            call to check need for fcblk
+      ppm  loc              invalid file argument
+      ppm  loc              fcblk already in use
+      (xs)                  popped (wc) times
+      (wa non zero)         byte size of requested fcblk
+      (wa=0,xl non zero)    private fcblk ptr in xl
+      (wa=xl=0)             no fcblk wanted, no private fcblk
+      (wc)                  0/1/2 request alloc of xrblk/xnblk
+                            /static block for use as fcblk
+      (wb)                  destroyed
+</pre>
+
+<h4><strong>sysgc</strong> -- inform interface of garbage
 collections</h4>
 
 <p>Provides means for interface to take special actions prior to and
 after a garbage collection.
 
-<p>Possible usages- <ol> <li>provide visible screen icon of garbage
-collection in progress.</li> <li>inform virtual memory manager to
-ignore page access patterns during garbage collection.  such accesses
-typically destroy the page working set accumulated by the
-program.</li> <li>inform virtual memory manager that contents of
-memory freed by garbage collection can be discarded.</li> </ol> <pre>
-(<strong>xr</strong>) non-zero if beginning gc, =0 if completing gc
-(<strong>wa</strong>) dnamb=start of dynamic area
-(<strong>wb</strong>) dnamp=next available location
-(<strong>wc</strong>) dname=last available location + 1 jsr
-<strong>sysgc</strong> call to <strong>sysgc</strong> function
+<p>Possible usages- <ol>
 
-       all registers preserved
+<li>provide visible screen icon of garbage collection in
+progress.</li>
+
+<li>inform virtual memory manager to ignore page access patterns
+during garbage collection.  such accesses typically destroy the page
+working set accumulated by the program.</li>
+
+<li>inform virtual memory manager that contents of memory freed by
+garbage collection can be discarded.</li> </ol>
+
+<pre>
+      (xr)                  non-zero if beginning gc
+                            =0 if completing gc
+      (wa)                  dnamb=start of dynamic area
+      (wb)                  dnamp=next available location
+      (wc)                  dname=last available location + 1
+      jsr  sysgc            call to sysgc function
+      all registers preserved
 </pre>
+
 <h4>syshs -- give access to host computer features</h4>
 
 <p> Provides means for implementing special features on different host
@@ -4192,20 +4203,20 @@ collector rules.
 return.
 
 <pre>
-       (<strong>wa</strong>)                  argument 1
-       (<strong>xl</strong>)                  argument 2
-       (<strong>xr</strong>)                  argument 3
-       (<strong>wb</strong>)                  argument 4
-       (<strong>wc</strong>)                  argument 5
-       jsr  <strong>syshs</strong>            call to get host information
+       (wa)                  argument 1
+       (xl)                  argument 2
+       (xr)                  argument 3
+       (wb)                  argument 4
+       (wc)                  argument 5
+       jsr  syshs            call to get host information
        ppm  loc1             erroneous arg
        ppm  loc2             execution error
-       ppm  loc3             <strong>scblk</strong> pointer in <strong>xl</strong> or 0 if unavailable
+       ppm  loc3             <strong>scblk</strong> pointer in xl or 0 if unavailable
        ppm  loc4             return a null result
-       ppm  loc5             return result in <strong>xr</strong>
+       ppm  loc5             return result in xr
        ppm  loc6             cause statement failure
-       ppm  loc7             return string at <strong>xl</strong>, length <strong>wa</strong>
-       ppm  loc8             return copy of result in <strong>xr</strong>
+       ppm  loc7             return string at xl, length wa
+       ppm  loc8             return copy of result in xr
 </pre>
 
 <h4><strong>sysid</strong> -- return system identification</h4>
@@ -4236,9 +4247,9 @@ long as to be a nuisance to users.  the first words of the
 
 
 <pre>
-       jsr  <strong>sysid</strong>            call for system identification
-       (<strong>xr</strong>)                  <strong>scblk</strong> pointer for addition to header
-       (<strong>xl</strong>)                  <strong>scblk</strong> pointer for second header
+       jsr  sysid            call for system identification
+       (xr)                  scblk pointer for addition to header
+       (xl)                  scblk pointer for second header
 </pre>
 
 <h4><strong>sysif</strong> -- switch to new include file</h4>
@@ -4250,12 +4261,17 @@ return to reading from the previous nested file.
 
 <p>It is the responsibility of <strong>sysif</strong> to remember the
 file access path to the present input file before switching to the new
-include file.  <pre> (<strong>xl</strong>) pointer to
-<strong>scblk</strong> or zero (<strong>xr</strong>) pointer to vacant
-<strong>scblk</strong> of length cswin (<strong>xr</strong> not used
-if <strong>xl</strong> is zero) jsr <strong>sysif</strong> call to
-change files ppm loc unable to open file (<strong>xr</strong>)
-<strong>scblk</strong> with full path name of file </pre>
+include file.
+
+<pre>
+      (xl)                  ptr to scblk or zero
+      (xr)                  ptr to vacant scblk of length cswin
+                            (xr not used if xl is zero)
+      jsr  sysif            call to change files
+      ppm  loc              unable to open file
+      (xr)                  scblk with full path name of file
+                            (xr not used if input xl is zero)
+</pre>
 
 <p>Register <strong>xl</strong> points to an <strong>scblk</strong>
 containing the name of the include file to which the interface should
@@ -4282,10 +4298,10 @@ a buffer for a subsequent <strong>sysin</strong> call.
 binary or text file.
 
 <pre>
-       (<strong>wa</strong>)                  pointer to <strong>fcblk</strong> or zero
-       jsr  <strong>sysil</strong>            call to get record length
-       (<strong>wa</strong>)                  length or zero if file closed
-       (<strong>wc</strong>)                  zero if binary, non-zero if text
+       (wa)                  pointer to fcblk or zero
+       jsr  sysil            call to get record length
+       (wa)                  length or zero if file closed
+       (wc)                  zero if binary, non-zero if text
 </pre>
 
 <p>No harm is done if the value returned is too long since unused
@@ -4309,13 +4325,13 @@ before returning unless buffer is right padded with zeroes.
 <strong>scblk</strong> length has been modified.
 
 <pre>
-       (<strong>wa</strong>)                  pointer to <strong>fcblk</strong> or zero
-       (<strong>xr</strong>)                  pointer to buffer (<strong>scblk</strong> pointer)
-       jsr  <strong>sysin</strong>            call to read record
-       ppm  loc              endfile or no i/p file after <strong>sysxi</strong>
+       (wa)                  pointer to fcblk or zero
+       (xr)                  pointer to buffer (scblk pointer)
+       jsr  sysin            call to read record
+       ppm  loc              endfile or no i/p file after sysxi
        ppm  loc              return here if i/o error
        ppm  loc              return here if record format error
-       (<strong>wa</strong>,<strong>wb</strong>,<strong>wc</strong>)            destroyed
+       (wa,wb,wc)            destroyed
 </pre>
 
 <h4><strong>sysio</strong> -- input/output file association</h4>
@@ -4341,16 +4357,16 @@ file and do not result in re-opening the file.
 <strong>fcblk</strong> allocated will be made available.
 
 <pre>
-       (<strong>xl</strong>)                  file <em>arg1</em> <strong>scblk</strong> pointer (2nd arg)
-       (<strong>xr</strong>)                  file <em>arg2</em> <strong>scblk</strong> pointer (3rd arg)
-       (<strong>wa</strong>)                  <strong>fcblk</strong> pointer (0 if none)
-       (<strong>wb</strong>)                  0 for input, 3 for output
-       jsr  <strong>sysio</strong>            call to associate file
+       (xl)                  file arg1 scblk pointer (2nd arg)
+       (xr)                  file arg2 scblk pointer (3rd arg)
+       (wa)                  fcblk pointer (0 if none)
+       (wb)                  0 for input, 3 for output
+       jsr  sysio            call to associate file
        ppm  loc              return here if file does not exist
        ppm  loc              return if input/output not allowed
-       (<strong>xl</strong>)                  <strong>fcblk</strong> pointer (0 if none)
-       (<strong>wc</strong>)                  0 (for default) or max record lngth
-       (<strong>wa</strong>,<strong>wb</strong>)               destroyed
+       (xl)                  fcblk pointer (0 if none)
+       (wc)                  0 (for default) or max record lngth
+       (wa,wb)               destroyed
 </pre>
 
 <p>The second error return is used if the file named exists but
@@ -4365,13 +4381,13 @@ pointer is returned. the pointer will be used on subsequent calls to
 the function (see <strong>sysex</strong>).
 
 <pre>
-       (<strong>xr</strong>)                  pointer to function name (<strong>scblk</strong>)
-       (<strong>xl</strong>)                  pointer to library name (<strong>scblk</strong>)
+       (xr)                  pointer to function name (scblk)
+       (xl)                  pointer to library name (scblk)
        jsr  sysld            call to load function
        ppm  loc              return here if func does not exist
        ppm  loc              return here if i/o error
        ppm  loc              return here if insufficient memory
-       (<strong>xr</strong>)                  pointer to loaded code
+       (xr)                  pointer to loaded code
 </pre>
 
 <p>The significance of the pointer returned is up to the system
@@ -4388,8 +4404,8 @@ current dynamic data area.
 acceptable including zero if allocation is impossible.
 
 <pre>
-       jsr  <strong>sysmm</strong>            call to get more memory
-       (<strong>xr</strong>)                  number of additional words obtained
+       jsr  sysmm            call to get more memory
+       (xr)                  number of additional words obtained
 
 </pre>
 
@@ -4419,8 +4435,8 @@ ma<strong>xl</strong>ngth. Otherwise the initial low address of
 dynamic memory is used for this keyword.
 
 <pre>
-       jsr  <strong>sysmx</strong>            call to get <strong>m<strong>xl</strong>en</strong>
-       (<strong>wa</strong>)                  either <strong>m<strong>xl</strong>en</strong> or 0 for default
+       jsr  sysmx            call to get mxlen
+       (wa)                  either mxlen or 0 for default
 </pre>
 
 <h4><strong>sysou</strong> -- output record</h4>
@@ -4429,12 +4445,12 @@ dynamic memory is used for this keyword.
 associated with a <strong>sysio</strong> call.
 
 <pre>
-       (<strong>wa</strong>)                  pointer to <strong>fcblk</strong> or 0 for terminal or 1 for output
-       (<strong>xr</strong>)                  record to be written (<strong>scblk</strong>)
-       jsr  <strong>sysou</strong>            call to output record
-       ppm  loc              file full or no file after <strong>sysxi</strong>
+       (wa)                  pointer to fcblk or 0 for terminal or 1 for output
+       (xr)                  record to be written (scblk)
+       jsr  sysou            call to output record
+       ppm  loc              file full or no file after sysxi
        ppm  loc              return here if i/o error
-       (<strong>wa</strong>,<strong>wb</strong>,<strong>wc</strong>)            destroyed
+       (wa,wb,wc)            destroyed
 </pre>
 
 <p>Note that it is the <strong>sysou</strong> call (not the
@@ -4462,19 +4478,19 @@ evaluation.  These last three options are not presently implemented by
 the code calling <strong>syspl</strong>.
 
 <pre>
-       (<strong>wa</strong>)                  opcode as follows-
+       (wa)                  opcode as follows-
                              =0 poll to allow osint to interrupt
                              =1 breakpoint hit
                              =2 completion of statement stepping
                              =3 expression evaluation result
-       (<strong>wb</strong>)                  statement number
-       r_fcb                 o or pointer to head of <strong>fcblk</strong> chain
-       jsr  <strong>syspl</strong>            call to <strong>syspl</strong> function
+       (wb)                  statement number
+       r_fcb                 zero or pointer to head of fcblk chain
+       jsr  syspl            call to syspl function
        ppm  loc              user interruption
        ppm  loc              step one statement
        ppm  loc              evaluate expression
        ---                   resume execution
-                             (<strong>wa</strong>) = new polling interval
+                             (wa) = new polling interval
 </pre>
 
 <h4><strong>syspp</strong> -- obtain print parameters</h4>
@@ -4531,10 +4547,10 @@ but partially extends compact option.</li>
 </ol>
 <pre>
 
-       jsr  <strong>syspp</strong>            call to get print parameters
-       (<strong>wa</strong>)                  print line length in chars
-       (<strong>wb</strong>)                  number of lines/page
-       (<strong>wc</strong>)                  bits value ...mlkjihgfedcba where
+       jsr  syspp            call to get print parameters
+       (wa)                  print line length in chars
+       (wb)                  number of lines/page
+       (wc)                  bits value ...mlkjihgfedcba where
                      a = 1 to send error copy to int.ch.
                      b = 1 means std printer is int. ch.
                      c = 1 for -nolist option
@@ -4558,11 +4574,11 @@ but partially extends compact option.</li>
 standard output file.
 
 <pre>
-       (<strong>xr</strong>)                  pointer to line buffer (<strong>scblk</strong>)
-       (<strong>wa</strong>)                  line length
-       jsr  <strong>syspr</strong>            call to print line
-       ppm  loc              too much o/p or no file after <strong>sysxi</strong>
-       (<strong>wa</strong>,<strong>wb</strong>)               destroyed
+       (xr)                  pointer to line buffer (scblk)
+       (wa)                  line length
+       jsr  syspr            call to print line
+       ppm  loc              too much o/p or no file after sysxi
+       (wa,wb)               destroyed
 </pre>
 
 <p>The buffer pointed to is the length obtained from the
@@ -4607,16 +4623,16 @@ adjustment has been made.
 routine should be prepared to make repeated endfile returns.
 
 <pre>
-       (<strong>xr</strong>)                  pointer to buffer (<strong>scblk</strong> pointer)
-       (<strong>wc</strong>)                  length of buffer in characters
-       jsr  <strong>sysrd</strong>            call to read line
-       ppm  loc              endfile or no i/p file after <strong>sysxi</strong>
-                            or input file name change.  if
-                            the former, <strong>scblk</strong> length is zero.
-                            if input file name change, length
-                            is non-zero. caller should re-issue
-                            <strong>sysrd</strong> to obtain input record.
-       (<strong>wa</strong>,<strong>wb</strong>,<strong>wc</strong>)            destroyed
+       (xr)                  pointer to buffer (scblk pointer)
+       (wc)                  length of buffer in characters
+       jsr  sysrd            call to read line
+       ppm  loc              endfile or no i/p file after sysxi
+                             or input file name change.  if
+                             the former,scblk length is zero.
+                             if input file name change, length
+                             is non-zero. caller should re-issue
+                             sysrd to obtain input record.
+       (wa,wb,wc)            destroyed
 </pre>
 
 <h4><strong>sysri</strong> -- read record from interactive channel</h4>
@@ -4638,10 +4654,10 @@ sense on the target machine (e.g. if there is an
 eof character.)
 
 <pre>
-       (<strong>xr</strong>)                  pointer to 258 char buffer (<strong>scblk</strong> pointer)
-       jsr  <strong>sysri</strong>            call to read line from terminal
+       (xr)                  pointer to 258 char buffer (scblk pointer)
+       jsr  sysri            call to read line from terminal
        ppm  loc              end of file return
-       (<strong>wa</strong>,<strong>wb</strong>,<strong>wc</strong>)            may be destroyed
+       (wa,wb,wc)            may be destroyed
 </pre>
 
 <h4> <strong>sysrw</strong> -- rewind file</h4>
@@ -4652,9 +4668,9 @@ closed and the next read or write call will open the file at the
 start.
 
 <pre>
-       (<strong>wa</strong>)                  pointer to <strong>fcblk</strong> or zero
-       (<strong>xr</strong>)                  rewind arg (<strong>scblk</strong> pointer)
-       jsr  <strong>sysrw</strong>            call to rewind file
+       (wa)                  pointer to fcblk or zero
+       (xr)                  rewind arg scblk pointer)
+       jsr  sysrw            call to rewind file
        ppm loc return here if file does not exist
        ppm loc return here if rewind not allowed ppm loc return here if i / o error
 </pre>}
@@ -4666,9 +4682,9 @@ pointer. this is accomplished in a system dependent manner, and thus
 the 2nd and 3rd arguments are passed unconverted.
 
 <pre>
-       (<strong>wa</strong>)                  <strong>fcblk</strong> pointer
-       (<strong>wb</strong>)                  2nd argument
-       (<strong>wc</strong>)                  3rd argument
+       (wa)                  fcblk pointer
+       (wb)                  2nd argument
+       (wc)                  3rd argument
        jsr  <strong>sysst</strong>            call to set file pointer
        ppm  loc              return here if invalid 2nd arg
        ppm  loc              return here if invalid 3rd arg
@@ -4689,7 +4705,7 @@ processor rather than clock timing values.
 deciseconds (0.1 second).
 
 <pre>
-       jsr  <strong>systm</strong>            call to get timer value
+       jsr  systm            call to get timer value
        (ia)                  time so far in milliseconds
                             (deciseconds if .ctmd defined)
 </pre>
@@ -4701,7 +4717,7 @@ system trace switch.  this permits tracing of labels in SPITBOL code
 to be turned on or off.
 
 <pre>
-       jsr  <strong>systt</strong>            call to toggle trace switch
+       jsr  systt            call to toggle trace switch
 </pre>
 
 <h4><strong>sysul</strong> -- unload external function</h4>
@@ -4710,8 +4726,8 @@ to be turned on or off.
 loaded with a call to sysld.
 
 <pre>
-       (<strong>xr</strong>)                  pointer to control block (<strong>efblk</strong>)
-       jsr  <strong>sysul</strong>            call to unload function
+       (xr)                  pointer to control block (efblk)
+       jsr  sysul            call to unload function
 </pre>
 
 <p>The function cannot be called following a <strong>sysul</strong>
@@ -4786,18 +4802,18 @@ words long. The third word contains link to next node or 0, and the
 fourth word contains a <strong>fcblk</strong> pointer.
 
 <pre>
-       (<strong>xl</strong>)                  zero or <strong>scblk</strong> pointer to first argument
-       (<strong>xr</strong>)                  pointer to v.v <strong>scblk</strong>
+       (xl)                  zero or scblk pointer to first argument
+       (xr)                  pointer to v.v scblk
        (ia)                  signed integer argument
-       (<strong>wa</strong>)                  <strong>scblk</strong> pointer to second argument
-       (<strong>wb</strong>)                  0 or pointer to head of <strong>fcblk</strong> chain
-       jsr  <strong>sysxi</strong>            call to exit
+       (wa)                  scblk pointer to second argument
+       (wb)                  0 or pointer to head of fcblk chain
+       jsr  sysxi            call to exit
        ppm  loc              requested action not possible
        ppm  loc              action caused irrecoverable error
-       (<strong>wb</strong>,<strong>wc</strong>,ia,<strong>xr</strong>,<strong>xl</strong>,cp)   should be preserved over call
-       (<strong>wa</strong>)                  0 in all cases except sucessful
-                            performance of exit(4) or exit(-4),
-                            in which case 1 should be returned.
+       (wb,wc,ia,xr,xl,cp)   should be preserved over call
+       (wa)                  0 in all cases except sucessful
+                             performance of exit(4) or exit(-4),
+                             in which case 1 should be returned.
 </pre>
 
 <p>Loading and running the load module or returning from jcl command
