@@ -193,6 +193,7 @@ SKIP_INIT.END
 *
 *  Error is used to report an error for current statement
 *
+	DEFINE('CHKARG(I)')
 	DEFINE('ERROR(TEXT)')
 	DEFINE('FLUSH()')
 	DEFINE('GENZ()')
@@ -414,13 +415,6 @@ FLGS2
 	REG.WA = REGMAP['WA']
 	REG.CP = REGMAP['CP']
 
-* REGLOW maps register to identify target, so
-* can extract 'L' part.
-	REGLOW = TABLE(4)
-	REGLOW['WA'] = 'WA_L'
-	REGLOW['WB'] = 'WB_L'
-	REGLOW['WC'] = 'WC_L'
-
 * REAL_OP maps Minimal real opcode to machine opcode
 	REAL_OP = TABLE(10)
 	REAL_OP['ADR'] = 'FADD'
@@ -534,6 +528,14 @@ OPNEXT.1
 	TCOMMENT = COMREGS(INCOMMENT) '} ' INCODE ' ' I.TEXT(I1) ' '
 .		I.TEXT(I2) ' ' I.TEXT(I3)
 	ARGERRS = 0
+	EQ(IS_EXECUTABLE[INCODE])		:S(OPNEXT.2)
+*  Here if excutable opcode
+	EXEC.COUNT = EXEC.COUNT + 1
+	CHKARG(I1)
+	CHKARG(I2)
+	CHKARG(I3)
+OPNEXT.2
+
 						:($('G.' INCODE))
 *  Here if bad opcode
 DS01	ERROR('BAD OP-CODE')			:(DSOUT)
@@ -559,6 +561,13 @@ COMREGS1 COMREGS = COMREGS LINE			:(RETURN)
 CRACK   NSTMTS  = NSTMTS + 1
 	OP1 = OP2 = OP3 = TYP1 = TYP2 = TYP3 =
 	LINE    P.CSPARSE			:S(RETURN)
+-STITL CHKARG(I)
+*  Check if argument refers to memory, updating count if so
+CHKARG
+	IDENT(I)					:S(RETURN)
+	EQ(ISMEM[I.TYPE(I)])				:S(RETURN)
+	MEMARG.COUNT = MEMARG.COUNT + 1			:(RETURN)
+
 *  Here on syntax error
 *
 	ERROR('SOURCE LINE SYNTAX ERROR')	:(FRETURN)
@@ -700,6 +709,7 @@ MEMMEM
   EQ(ISMEM[I.TYPE(I1)])				:S(RETURN)
   EQ(ISMEM[I.TYPE(I2)])				:S(RETURN)
 *  here if memory-memory case, load first argument
+  MEM.COUNT = MEM.COUNT + 1
   T1 = GETARG(I1)
   I1 = MINARG(8,'W0')
   GENOP('MOV','W0',T1)				:(RETURN)
@@ -943,12 +953,10 @@ MOV.2
 
 * Odd/Even tests.  If W reg, use low byte of register.
 G.BOD	T1 = GETARG(I1)
- 	T1 = EQ(I.TYPE(I1),8) REGLOW[T1]
 	GENOP('TEST',T1,'1')
 	GENOP('JNE',GETARG(I2))			:(OPDONE)
 
 G.BEV	T1 = GETARG(I1)
-	T1 = EQ(I.TYPE(I1),8) REGLOW[T1]
 	GENOP('TEST',T1,'1')
 	GENOP('JE',GETARG(I2))			
 						:(OPDONE)
@@ -1411,8 +1419,6 @@ G.SCG.W
 *  Here if moving character from work register, convert T1
 *  to name of low part.
 *
-	T1 = (EQ(CFP_B,CFP_C) REGLOW[GETARG(I1)], GETARG(I1))
-	
 	IDENT(T2,'(XL)')			:S(G.SCG.W.XL)
 	IDENT(T2,'-(XL)')			:S(G.SCG.W.PXL)
 	IDENT(T2,'(XL)+')			:S(G.SCG.W.XLP)
@@ -1811,6 +1817,9 @@ G.END.2
 	REPORT(&STCOUNT,	'spitbol statements executed')
         REPORT(MAX.ERR,		'maximum err/erb number')
         REPORT(PRC.COUNT1, 	'prc count')
+        REPORT(EXEC.COUNT, 	'exec count')
+        REPORT(MEM.COUNT, 	'memmem count')
+        REPORT(MEMARG.COUNT, 	'memarg count')
         OUTPUT  = '  ' GT(PRC.COUNT,PRC.COUNT1)
 .	  '  differing counts for n-procedures:'
 .	  ' INP ' PRC.COUNT1 ' PRC ' PRC.COUNT

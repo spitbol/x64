@@ -180,6 +180,7 @@ install:
 	sudo cp ./bin/uspitbol /usr/local/bin
 clean:
 	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t ./spitbol ./uspitbol
+	rm -f ubol.* tbol.* tbol ubol
 z:
 	nm -n s.o >s.nm
 	spitbol map-$(ARCH).spt <s.nm >s.dic
