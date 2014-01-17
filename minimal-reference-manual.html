@@ -55,23 +55,23 @@ from the MINIMAL source:
 *      here for output association
 
 asg10  bze  kvoup,asg07      ignore output assoc if output off
-asg1b  mov  xl,xr            copy trblk pointer
-       mov  xr,trnxt(xr)     point to next trblk
+asg1b  mov  xr,xl            copy trblk pointer
+       mov  trnxt(xr),xr     point to next trblk
        beq  (xr),=b_trt,asg1b loop back if another trblk
-       mov  xr,xl            else point back to last trblk
+       mov  xl,xr            else point back to last trblk
 .if    .cnbf
-       mov  -(xs),trval(xr)  stack value to output
+       mov  trval(xr),-(xs)  stack value to output
 .else
-       mov  xr,trval(xr)     get value to output
+       mov  trval(xr),xr     get value to output
        beq  (xr),=b_bct,asg11 branch if buffer
-       mov  -(xs),xr         stack value to output
+       mov  xr,-(xs)         stack value to output
 .fi
        jsr  gtstg            convert to string
        ppm  asg12            get datatype name if unconvertible
 
 *      merge with string or buffer to output in xr
 
-asg11  mov  wa,trfpt(xl)     fcblk ptr
+asg11  mov  trfpt(xl),wa     fcblk ptr
        bze  wa,asg13         jump if standard output file
 
 *      here for output to file
@@ -807,7 +807,7 @@ format and comment conventions.
 <tr>
 <td>2.1</td>
 <td><strong>add</strong></td>
-<td align="left"><em>opv,opn</em></td>
+<td align="left"><em>opn,opv</em></td>
 <td>add address <em>opv</em> to <em>opn</em></td>
 </tr>
 <tr>
@@ -825,7 +825,7 @@ format and comment conventions.
 <tr>
 <td>7.1</td>
 <td><strong>anb</strong></td>
-<td align="left"><em>opw,w</em></td>
+<td align="left"><em>w,opw</em></td>
 <td>and bit string</td>
 </tr>
 <tr>
@@ -1329,7 +1329,7 @@ format and comment conventions.
 <tr>
 <td>1.1</td>
 <td><strong>mov</strong></td>
-<td align="left"><em>opv,opn</em></td>
+<td align="left"><em>opn,opv</em></td>
 <td>move <em>opv</em> to <em>opn</em></td>
 </tr>
 <tr>
@@ -1377,7 +1377,7 @@ format and comment conventions.
 <tr>
 <td>7.2</td>
 <td><strong>orb</strong></td>
-<td align="left"><em>opw,w</em></td>
+<td align="left"><em>w,opw</em></td>
 <td>or bit strings</td>
 </tr>
 <tr>
@@ -1551,7 +1551,7 @@ format and comment conventions.
 <tr>
 <td>2.2</td>
 <td><strong>sub</strong></td>
-<td align="left"><em>opv,opn</em></td>
+<td align="left"><em>opn,opv</em></td>
 <td>subtract address <em>opv</em> from <em>opn</em></td>
 </tr>
 <tr>
@@ -1581,7 +1581,7 @@ format and comment conventions.
 <tr>
 <td>7.3</td>
 <td><strong>xob</strong></td>
-<td align="left"><em>opw,w</em></td>
+<td align="left"><em>w,opw</em></td>
 <td>exclusive or bit strings</td>
 </tr>
 <tr>
@@ -2016,12 +2016,12 @@ the end of a routine is not marked by an explicit opcode (compare
 
 <dl>
 
-<p><dt>2.1  <strong>add</strong>   <em>opv,opn</em>
+<p><dt>2.1  <strong>add</strong>   <em>opn,opv</em>
 
 <dd>
 
     adds  <em>opv</em> to the value in  <em>opn</em> and
-                             stores the result in  <em>opn</em>. undefined
+                             stores the result in  <em>opn</em>. Undefined
                              if the result exceeds <strong>CFP$L</strong> .
 
 <p><dt>2.2  <strong>sub</strong>   <em>opn,opv</em>
@@ -2045,7 +2045,7 @@ equivalent to <strong>add</strong>  <em>opn</em>,*unity
 <dd>
 
 Decrement address in <em>opn</em> equivalent to <strong>sub</strong>
-*unity,<em>opn</em>
+<em>opn</em>,*unity
 
 <p><dt>2.5  <strong>beq</strong>   <em>opn,opv,plbl</em>
 
@@ -2726,17 +2726,17 @@ character.  </dl>
 
 <dl>
 
-<p><dt>7.1  <strong>anb</strong>   <em>opw,w</em>
+<p><dt>7.1  <strong>anb</strong>   <em>w,opw</em>
 
 <dd>       and bit string values, result in <em>w</em>
 
 
-<p><dt>7.2  <strong>orb</strong>   <emp>opw,w</em>
+<p><dt>7.2  <strong>orb</strong>   <emp>w,opw</em>
 
 <dd>       or bit string values, result in <em>w</em>
 
 
-<p><dt>7.3  <strong>xob</strong>   <em>opw,w</em>
+<p><dt>7.3  <strong>xob</strong>   <em>w,opw</em>
 
 <dd>       exclusive or bit string values, result in <em>w</em>
 
@@ -2969,13 +2969,13 @@ should have been set up, the latter two by <strong>plc</strong>
 sequence
 	    
 <pre>
-                   <strong>mov</strong>  <strong>WB</strong> ,dumpb
-                   <strong>lct</strong>  <strong>WA</strong>,<strong>WA</strong>
-            lo <em>opc</em>  <strong>lch</strong>  <strong>WB</strong> ,(<strong>XL</strong> )+
-                   <strong>sch</strong>  <strong>WB</strong> ,(<strong>XR</strong> )+
-                   <strong>bct</strong>  <strong>WA</strong>,lo <em>opc</em>
-                   <strong>csc</strong>  <strong>XR</strong> 
-                   <strong>mov</strong>  dumpb,<strong>WB</strong> 
+                   mov  dumpb,WB
+                   lct  WA,WA
+            loopc  lch  WB,(XL)+
+                   sch  WB,(XR)+
+                   bct  WA,loopc
+                   csc  XR
+                   mov  WB,dumpb
 
 </pre>
 
@@ -2994,9 +2994,9 @@ The character pointers are bumped as indicated and the final value of
             <strong>mvw</strong> is equivalent to the sequence
 
 <pre>
-             <em>opw</em>  <strong>mov</strong>  (<strong>XL</strong> )+,(<strong>XR</strong> )+
-                   <strong>dca</strong>  <strong>WA</strong>               <strong>WA</strong> = bytes to move
-                   <strong>bnz</strong>  <strong>WA</strong>,lo <em>opw</em>
+             opw  mov  (XR)+,(XL)+
+             dca  WA              WA = bytes to move
+             bnz  WA,lo opw
 
 </pre>
 
@@ -3020,9 +3020,9 @@ must be set up before obeying <strong>mvw</strong>
             <strong>mwb</strong>  is equivalent to the sequence
 
 <pre>
-            loopb  <strong>mov</strong>  -(<strong>XL</strong> ),-(<strong>XR</strong> )
-                   <strong>dca</strong>  <strong>WA</strong>               <strong>WA</strong> = bytes to move
-                   <strong>bnz</strong>  <strong>WA</strong>,loopb
+            loopb  mov  -(XL),-(XR)
+                   dca  WA               WA = bytes to move
+                   bnz  WA,loopb
 </pre>
 
 <p>
@@ -3049,13 +3049,13 @@ set up before obeying <strong>MWB</strong> .
             <strong>mcb</strong> is equivalent to the sequence
 
 <pre>
-                   <strong>mov</strong>  <strong>WB</strong> ,dumpb
-                   <strong>lct</strong>  <strong>WA</strong>,<strong>WA</strong>
-            lo <em>opc</em>  <strong>lch</strong>  <strong>WB</strong> ,-(<strong>XL</strong> )
-                   <strong>sch</strong>  <strong>WB</strong> ,-(<strong>XR</strong> )
-                   <strong>bct</strong>  <strong>WA</strong>,lo <em>opc</em>
-                   <strong>csc</strong>  <strong>XR</strong> 
-                   <strong>mov</strong>  dumpb,<strong>WB</strong> 
+                   mov  dumpb,WB
+                   lct  WA,WA
+            loopc  lch  WB,-(XL)
+                   sch  WB,-(XR)
+                   bct  WA,loopc
+                   csc  XR
+                   mov  WB,dumpb
 </pre>
 
 <p>

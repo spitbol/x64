@@ -1,12 +1,12 @@
 	optab = table()
 	&anchor = &trim = 1
-	optab['mov'] = 1
-	optab['add'] = 1
-	optab['sub'] = 1
+	optab['MOV'] = 1
+	optab['ADD'] = 1
+	optab['SUB'] = 1
 *	optab['aov'] = 1
-	optab['orb'] = 1
-	optab['anb'] = 1
-	optab['xob'] = 1
+	optab['ORB'] = 1
+	optab['ANB'] = 1
+	optab['XOB'] = 1
 				:(loop)
 copy
  	output = line

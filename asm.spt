@@ -229,7 +229,8 @@ SKIP_INIT.END
 	DEFINE('GENREP(OP)L1,L2)')
 	DEFINE('GETARG(IARG,IMEM)L1,L2,T1,T2,TMEM')
 	DEFINE('IFREG(IARG)')
-	DEFINE('MEMMEM()T1')
+	DEFINE('MEMMEM1()T')
+	DEFINE('MEMMEM2()T')
 	DEFINE('PRCENT(N)')
 	DEFINE('PRSARG(IARG)L1,L2')
 	DEFINE('REPORT(NUM,TEXT)')
@@ -715,8 +716,8 @@ GETARG.C.25
 GETARG.C.26
 GETARG.C.27 GETARG = L1				:(RETURN)
 
--STITL MEMMEM()T1
-MEMMEM
+-STITL MEMMEM1()T
+MEMMEM1
 *  MEMMEM is called for those ops for which both operands may be
 *  in memory, in which case, we generate code to load first operand
 *  to pseudo-register 'W0', and then modify the first argument
@@ -724,10 +725,24 @@ MEMMEM
 *
   EQ(ISMEM[I.TYPE(I1)])				:S(RETURN)
   EQ(ISMEM[I.TYPE(I2)])				:S(RETURN)
-*  here if memory-memory case, load first argument
-  T1 = GETARG(I1)
+*  here if memory-memory case, load second argument
+  T = GETARG(I1)
   I1 = MINARG(8,'W0')
-  GENOP('MOV','W0',T1)				:(RETURN)
+  GENOP('MOV','W0',T)				:(RETURN)
+
+-STITL MEMMEM2()T
+MEMMEM2
+*  MEMMEM is called for those ops for which both operands may be
+*  in memory, in which case, we generate code to load second operand
+*  to pseudo-register 'W0', and then modify the second argument
+*  to reference this register
+*
+  EQ(ISMEM[I.TYPE(I1)])				:S(RETURN)
+  EQ(ISMEM[I.TYPE(I2)])				:S(RETURN)
+*  here if memory-memory case, load second argument
+  T = GETARG(I2)
+  I2 = MINARG(8,'W0')
+  GENOP('MOV','W0',T)				:(RETURN)
 
 -STITL PRCENT(N)
 PRCENT PRCENT = 'PRC_' '+'  (CFP_B * ( N - 1)) :(RETURN)
@@ -941,30 +956,31 @@ G.MOV
 *  NEED TO PROCESS MEMORY-MEMORY CASE
 *  CHANGE 'MOV (XS)+,A' TO 'POP A'
 *  CHANGE 'MOV A,-(XS)' TO 'PUSH A'
-	T1 = I.TEXT(I1); T2 = I.TEXT(I2)
-	IDENT(T1,'(XL)+')			:S(MOV.XLP)
-	IDENT(T1,'(XT)+')			:S(MOV.XTP)
-	IDENT(T1,'(XS)+')			:S(MOV.XSP)
-	IDENT(T2,'(XR)+')			:S(MOV.XRP)
-	IDENT(T2,'-(XS)')			:S(MOV.2)
-	MEMMEM()
-	GENOP('MOV',GETARG(I2),GETARG(I1))
+        I.SRC = I2; I.DST = I1
+	T.SRC = I.TEXT(I.SRC); T.DST = I.TEXT(I.DST)
+	IDENT(T.SRC,'(XL)+')			:S(MOV.XLP)
+	IDENT(T.SRC,'(XT)+')			:S(MOV.XTP)
+	IDENT(T.SRC,'(XS)+')			:S(MOV.XSP)
+	IDENT(T.DST,'(XR)+')			:S(MOV.XRP)
+	IDENT(T.DST,'-(XS)')			:S(MOV.2)
+	MEMMEM2()
+	GENOP('MOV',GETARG(I1),GETARG(I2))
 						:(OPDONE)
 MOV.XTP
 MOV.XLP
-	IDENT(T2,'(XR)+') GENOP('MOVS' OP_W)	:S(OPDONE)
+	IDENT(T.DST,'(XR)+') GENOP('MOVS' OP_W)	:S(OPDONE)
 	GENOP('LODS' OP_W)
-	IDENT(T2,'-(XS)') GENOP('PUSH','W0')	:S(OPDONE)
-	GENOP('MOV',GETARG(I2),'W0')		:(OPDONE)
+	IDENT(T.DST,'-(XS)') GENOP('PUSH','W0')	:S(OPDONE)
+	GENOP('MOV',GETARG(I.DST),'W0')		:(OPDONE)
 MOV.XSP
-	IDENT(I.TEXT(I2),'(XR)+')		:S(MOV.XSPRP)
-	GENOP('POP',GETARG(I2))			:(OPDONE)
+	IDENT(T.DST,'(XR)+')		:S(MOV.XSPRP)
+	GENOP('POP',GETARG(I.DST))		:(OPDONE)
 MOV.XSPRP GENOP('POP','W0')
 	GENOP('STOS' OP_W)			:(OPDONE)
-MOV.XRP GENOP('MOV','W0',GETARG(I1))
+MOV.XRP GENOP('MOV','W0',GETARG(I.SRC))
 	GENOP('STOS' OP_W)			:(OPDONE)
 MOV.2
-	GENOP('PUSH',GETARG(I1))		:(OPDONE)
+	GENOP('PUSH',GETARG(I.SRC))		:(OPDONE)
 
 * Odd/Even tests.  If W reg, use low byte of register.
 G.BOD	T1 = GETARG(I1)
@@ -1170,11 +1186,11 @@ G.RTN
 	GENOP()
                                                 :(OPDONE)
 
-G.ADD	MEMMEM()
-	GENOP('ADD',GETARG(I2),GETARG(I1))	:(OPDONE)
+G.ADD	MEMMEM2()
+	GENOP('ADD',GETARG(I1),GETARG(I2))	:(OPDONE)
 
-G.SUB	MEMMEM()
-	GENOP('SUB',GETARG(I2),GETARG(I1))	:(OPDONE)
+G.SUB	MEMMEM2()
+	GENOP('SUB',GETARG(I1),GETARG(I2))	:(OPDONE)
 
 G.ICA   GENOP('ADD',GETARG(I1),'CFP_B')		:(OPDONE)
 
@@ -1192,7 +1208,7 @@ G.BHI
 *  These operators all have two operands, MEMMEM may apply
 *  Issue target opcode by table lookup.
 *
-	MEMMEM()
+	MEMMEM1()
 	T1 = BRANCHTAB[INCODE]
 	GENOP('CMP',GETARG(I1),GETARG(I2))
 	GENOP(BRANCHTAB[INCODE],GETARG(I3))
@@ -1468,12 +1484,12 @@ G.CSC  	IDENT(THISLABEL)			:S(OPNEXT)
 	GENOP()					:(OPDONE)
 
 G.CEQ
-	MEMMEM()
+	MEMMEM1()
 	GENOP('CMP',GETARG(I1),GETARG(I2))
 	GENOP('JE',GETARG(I3))			
 						:(OPDONE)
 
-G.CNE   MEMMEM()
+G.CNE   MEMMEM1()
 	GENOP('CMP',GETARG(I1),GETARG(I2))
 	GENOP('JNZ',GETARG(I3))			
 						:(OPDONE)
@@ -1503,9 +1519,9 @@ G.TRC
 	GENOP('XOR','XR','XR')		
 						:(OPDONE)
 
-G.ANB   GENOP('AND',GETARG(I2),GETARG(I1))	:(OPDONE)
-G.ORB   GENOP('OR',GETARG(I2),GETARG(I1))	:(OPDONE)
-G.XOB   GENOP('XOR',GETARG(I2),GETARG(I1))	:(OPDONE)
+G.ANB   GENOP('AND',GETARG(I1),GETARG(I2))	:(OPDONE)
+G.ORB   GENOP('OR',GETARG(I1),GETARG(I2))	:(OPDONE)
+G.XOB   GENOP('XOR',GETARG(I1),GETARG(I2))	:(OPDONE)
 G.CMB   GENOP('NOT',GETARG(I1))			:(OPDONE)
 
 G.RSH
