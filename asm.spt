@@ -229,8 +229,7 @@ SKIP_INIT.END
 	DEFINE('GENREP(OP)L1,L2)')
 	DEFINE('GETARG(IARG,IMEM)L1,L2,T1,T2,TMEM')
 	DEFINE('IFREG(IARG)')
-	DEFINE('MEMMEM1()T')
-	DEFINE('MEMMEM2()T')
+	DEFINE('MEMMEM()T')
 	DEFINE('PRCENT(N)')
 	DEFINE('PRSARG(IARG)L1,L2')
 	DEFINE('REPORT(NUM,TEXT)')
@@ -716,22 +715,8 @@ GETARG.C.25
 GETARG.C.26
 GETARG.C.27 GETARG = L1				:(RETURN)
 
--STITL MEMMEM1()T
-MEMMEM1
-*  MEMMEM is called for those ops for which both operands may be
-*  in memory, in which case, we generate code to load first operand
-*  to pseudo-register 'W0', and then modify the first argument
-*  to reference this register
-*
-  EQ(ISMEM[I.TYPE(I1)])				:S(RETURN)
-  EQ(ISMEM[I.TYPE(I2)])				:S(RETURN)
-*  here if memory-memory case, load second argument
-  T = GETARG(I1)
-  I1 = MINARG(8,'W0')
-  GENOP('MOV','W0',T)				:(RETURN)
-
--STITL MEMMEM2()T
-MEMMEM2
+-STITL MEMMEM()T
+MEMMEM
 *  MEMMEM is called for those ops for which both operands may be
 *  in memory, in which case, we generate code to load second operand
 *  to pseudo-register 'W0', and then modify the second argument
@@ -963,7 +948,7 @@ G.MOV
 	IDENT(T.SRC,'(XS)+')			:S(MOV.XSP)
 	IDENT(T.DST,'(XR)+')			:S(MOV.XRP)
 	IDENT(T.DST,'-(XS)')			:S(MOV.2)
-	MEMMEM2()
+	MEMMEM()
 	GENOP('MOV',GETARG(I1),GETARG(I2))
 						:(OPDONE)
 MOV.XTP
@@ -1186,10 +1171,10 @@ G.RTN
 	GENOP()
                                                 :(OPDONE)
 
-G.ADD	MEMMEM2()
+G.ADD	MEMMEM()
 	GENOP('ADD',GETARG(I1),GETARG(I2))	:(OPDONE)
 
-G.SUB	MEMMEM2()
+G.SUB	MEMMEM()
 	GENOP('SUB',GETARG(I1),GETARG(I2))	:(OPDONE)
 
 G.ICA   GENOP('ADD',GETARG(I1),'CFP_B')		:(OPDONE)
@@ -1208,7 +1193,7 @@ G.BHI
 *  These operators all have two operands, MEMMEM may apply
 *  Issue target opcode by table lookup.
 *
-	MEMMEM1()
+	MEMMEM()
 	T1 = BRANCHTAB[INCODE]
 	GENOP('CMP',GETARG(I1),GETARG(I2))
 	GENOP(BRANCHTAB[INCODE],GETARG(I3))
@@ -1484,12 +1469,12 @@ G.CSC  	IDENT(THISLABEL)			:S(OPNEXT)
 	GENOP()					:(OPDONE)
 
 G.CEQ
-	MEMMEM1()
+	MEMMEM()
 	GENOP('CMP',GETARG(I1),GETARG(I2))
 	GENOP('JE',GETARG(I3))			
 						:(OPDONE)
 
-G.CNE   MEMMEM1()
+G.CNE   MEMMEM()
 	GENOP('CMP',GETARG(I1),GETARG(I2))
 	GENOP('JNZ',GETARG(I3))			
 						:(OPDONE)
