@@ -194,7 +194,6 @@ SKIP_INIT.END
         DEFINE('GENLAB()')
 	DEFINE('GENOP(GOPC,GOP1,GOP2,GOP3)')
 	DEFINE('GENOPL(GOPL,GOPC,GOP1,GOP2,GOP3)')
-	DEFINE('GENREP(OP)L1,L2)')
 	DEFINE('GETARG(IARG,IMEM)L1,L2,T1,T2,TMEM')
 	DEFINE('IFREG(IARG)')
 	DEFINE('MEMMEM()T')
@@ -351,35 +350,6 @@ FLGS2
 * Various constants
 *
         COMMENT.DELIM = ';'
- 
-*  BRANCHTAB maps MINIMAL opcodes 'BEQ', etc to desired
-*  target instruction
-*
-	BRANCHTAB = TABLE(10)
-	BRANCHTAB['BEQ'] = 'JE'
-	BRANCHTAB['BNE'] = 'JNE'
-	BRANCHTAB['BGT'] = 'JA'
-	BRANCHTAB['BGE'] = 'JAE'
-	BRANCHTAB['BLE'] = 'JBE'
-	BRANCHTAB['BLT'] = 'JB'
-	BRANCHTAB['BLO'] = 'JB'
-	BRANCHTAB['BHI'] = 'JA'
-
-*  OPTIM.TAB flags opcodes capable of participating in OR optimization
-*		in OUTSTMT routine
-*
-	OPTIM.TAB = TABLE(10)
-	OPTIM.TAB<"AND"> = 1
-	OPTIM.TAB<"ADD"> = 1
-	OPTIM.TAB<"SUB"> = 1
-	OPTIM.TAB<"NEG"> = 1
-	OPTIM.TAB<"OR"> = 1
-	OPTIM.TAB<"XOR"> = 1
-	OPTIM.TAB<"SHR"> = 1
-	OPTIM.TAB<"SHL"> = 1
-	OPTIM.TAB<"INC"> = 1
-	OPTIM.TAB<"DEC"> = 1
-
 
 *  ISMEM IS TABLE indexed by operand type which is nonzero if
 *  operand type implies memory reference.
@@ -889,6 +859,25 @@ G.FLC
 						:(OPDONE)
 
 G.MOV
+* NEW special casing
+	STYPE = I.TYPE(I2); STEXT = I.TEXT(I2)
+	DTYPE = I.TYPE(I1); DTEXT = I.TEXT(I1)
+	NE(DTYPE,11)				:S(MOV.10)
+* Here if target is predecremented X register: -(XL) -(XR) or -(XS)
+* Generate PUSH
+	GENOP('PUSH',SUBSTR(DTEXT,3,2), GETARG(I2))	:(OPDONE)
+
+MOV.10
+	NE(STYPE,10)				:S(MOV.20)
+* Here if source is postdecrement X register: (XL)+ (XR)+ or (XS)+
+	GENOP('POP',GETARG(I1), SUBSTR(STEXT,2,2))	:(OPDONE)
+
+
+MOV.20
+	MEMMEM()
+	GENOP('MOV',GETARG(I1),GETARG(I2))
+						:(OPDONE)
+* code below is OLD handlng of MOV
 *  perhaps change MOV X,(XR)+ to
 *	mov ax,X; STOWS
 *
@@ -901,32 +890,33 @@ G.MOV
 *  NEED TO PROCESS MEMORY-MEMORY CASE
 *  CHANGE 'MOV (XS)+,A' TO 'POP A'
 *  CHANGE 'MOV A,-(XS)' TO 'PUSH A'
-        I.SRC = I2; I.DST = I1
-	T.SRC = I.TEXT(I.SRC); T.DST = I.TEXT(I.DST)
-	IDENT(T.SRC,'(XL)+')			:S(MOV.XLP)
-	IDENT(T.SRC,'(XT)+')			:S(MOV.XTP)
-	IDENT(T.SRC,'(XS)+')			:S(MOV.XSP)
-	IDENT(T.DST,'(XR)+')			:S(MOV.XRP)
-	IDENT(T.DST,'-(XS)')			:S(MOV.2)
-	MEMMEM()
-	GENOP('MOV',GETARG(I1),GETARG(I2))
-						:(OPDONE)
-MOV.XTP
-MOV.XLP
-	IDENT(T.DST,'(XR)+') GENOP('MOVS' OP_W)	:S(OPDONE)
-	GENOP('LODS' OP_W)
-	IDENT(T.DST,'-(XS)') GENOP('PUSH','W0')	:S(OPDONE)
-	GENOP('MOV',GETARG(I.DST),'W0')		:(OPDONE)
-MOV.XSP
-	IDENT(T.DST,'(XR)+')		:S(MOV.XSPRP)
-	GENOP('POP',GETARG(I.DST))		:(OPDONE)
-MOV.XSPRP GENOP('POP','W0')
-	GENOP('STOS' OP_W)			:(OPDONE)
-MOV.XRP GENOP('MOV','W0',GETARG(I.SRC))
-	GENOP('STOS' OP_W)			:(OPDONE)
-MOV.2
-	GENOP('PUSH',GETARG(I.SRC))		:(OPDONE)
 
+*       I.SRC = I2; I.DST = I1
+*	T.SRC= I.TEXT(I.SRC); T.DST = I.TEXT(I.DST)
+*	IDENT(T.SRC,'(XL)+')			:S(MOV.XLP)
+*	IDENT(T.SRC,'(XT)+')			:S(MOV.XTP)
+*	IDENT(T.SRC,'(XS)+')			:S(MOV.XSP)
+*	IDENT(T.DST,'(XR)+')			:S(MOV.XRP)
+*	IDENT(T.DST,'-(XS)')			:S(MOV.2)
+*	MEMMEM()
+*	GENOP('MOV',GETARG(I1),GETARG(I2))
+*						:(OPDONE)
+*MOV.XTP
+*MOV.XLP
+*	IDENT(T.DST,'(XR)+')*GENOP('MOVS' OP_W)	:S(OPDONE)
+*	GENOP('LODS'*OP_W)
+*	IDENT(T.DST,'-(XS)')*GENOP('QUSH','W0')	:S(OPDONE)
+*	GENOP('MOV',GETARG(I.DST),'W0')		:(OPDONE)
+*MOV.XSP
+*	IDENT(T.DST,'(XR)+')		:S(MOV.XSPRP)
+*	GENOP('QOP',GETARG(I.DST))		:(OPDONE)
+*MOV.XSPRP*GENOP('QOP','W0')
+*	GENOP('STOS'*OP_W)			:(OPDONE)
+*MOV.XRP*GENOP('MOV','W0',GETARG(I.SRC))
+*	GENOP('STOS'*OP_W)			:(OPDONE)
+*MOV.2
+*	GENOP('QUSH',GETARG(I.SRC))		:(OPDONE)
+*
 * Odd/Even tests.  If W reg, use low byte of register.
 G.BOD	T1 = GETARG(I1)
 	GENOP('TEST',T1,'1')
@@ -1082,7 +1072,7 @@ G.PRC.R						:(OPDONE)
 G.PRC.N
 *  Store return address in reserved location
 	PRC.COUNT = PRC.COUNT + 1
-	GENOP('POP', '[' PRCENT(PRC.COUNT) ']')		:(OPDONE)
+	GENOP('QOP', '[' PRCENT(PRC.COUNT) ']')		:(OPDONE)
 
 G.EXI	
         T1 = GETARG(I1); T2 = PRC.TYPE; T3 = I.TEXT(I1)
@@ -1118,7 +1108,7 @@ G.ZER	IDENT(I.TEXT(I1),'(XR)+') GENOP('MOV','W0','0')
 	GENOP('MOV',GETARG(I1),'W0')		:(OPDONE)
 G.ZER1	T1 = GETARG(I1)
 	GENOP('XOR',T1,T1)			:(OPDONE)
-G.ZER.XS GENOP('PUSH','0')			:(OPDONE)
+G.ZER.XS GENOP('QUSH','0')			:(OPDONE)
 
 G.MNZ   GENOP('MOV',GETARG(I1),'XS')		:(OPDONE)
 
@@ -1152,9 +1142,8 @@ G.BHI
 *  Issue target opcode by table lookup.
 *
 	MEMMEM()
-	T1 = BRANCHTAB[INCODE]
 	GENOP('CMP',GETARG(I1),GETARG(I2))
-	GENOP(BRANCHTAB[INCODE],GETARG(I3))
+	GENOP(INCODE,GETARG(I3))
 .						:(OPDONE)
 
 G.BNZ
@@ -1459,16 +1448,14 @@ G.TRC
 	GENOP('XOR','XR','XR')		
 						:(OPDONE)
 
-G.ANB   GENOP('AND',GETARG(I1),GETARG(I2))	:(OPDONE)
-G.ORB   GENOP('OR',GETARG(I1),GETARG(I2))	:(OPDONE)
-G.XOB   GENOP('XOR',GETARG(I1),GETARG(I2))	:(OPDONE)
-G.CMB   GENOP('NOT',GETARG(I1))			:(OPDONE)
-
+G.ANB 
+G.ORB
+G.XOB
 G.RSH
-	GENOP('SHR',GETARG(I1),GETARG(I2))	:(OPDONE)
-
 G.LSH
-	GENOP('SHL',GETARG(I1),GETARG(I2))	:(OPDONE)
+	GENOP(INCODE,GETARG(I1),GETARG(I2))	:(OPDONE)
+
+G.CMB   GENOP(INCODE,GETARG(I1))		:(OPDONE)
 
 G.RSX	
 	ERROR('RSX NOT SUPPORTED')
@@ -1503,7 +1490,7 @@ G.WTB   	:(OPDONE)
 
 G.BTW   	:(OPDONE)
 
-G.MTI	(IDENT(I.TEXT(I1),'(XS)+') GENOP('POP',REG.IA)) :S(OPDONE)
+G.MTI	(IDENT(I.TEXT(I1),'(XS)+') GENOP('QOP',REG.IA)) :S(OPDONE)
 	GENOP('MOV',REG.IA,GETARG(I1))		:(OPDONE)
 
 G.MFI
@@ -1514,7 +1501,7 @@ G.MFI
 	GENOP('OR',REG.IA,REG.IA)
 	GENOP('JS',GETARG(I2))
 G.MFI1	IDENT(I.TEXT(I1),'WC') GENOP()		:S(OPDONE)
-	IDENT(I.TEXT(I1),'-(XS)') GENOP('PUSH',REG.IA)	:S(OPDONE)
+	IDENT(I.TEXT(I1),'-(XS)') GENOP('QUSH',REG.IA)	:S(OPDONE)
 	GENOP('MOV',GETARG(I1),REG.IA)		:(OPDONE)
 
 G.CTW
@@ -1529,11 +1516,6 @@ G.CTW.1
 					:(OPDONE)
 G.CTB
 	T1 = GETARG(I1)
-	EQ(1,1)				:S(G.CTB.1)
-*  here if one word per character, so just add character count, then convert to byte count
-	GENOP('ADD',T1,I.TEXT(I2))
-        	:(OPDONE)
-G.CTB.1
 	GENOP('ADD',T1, I.TEXT(I2))
 	GENOP('AND',T1,'-1')		
 						:(OPDONE)
@@ -1547,75 +1529,10 @@ G.CVM	T1 = GETARG(I1)
 G.CVD	
 	GENOP('CALL','CVD_')			:(OPDONE)
 G.MVC
-*	Use word move if character size is word size
-*	If charsize is word size, convert character count to byte count for word move
-	
-	T1 = GENLAB()
-	Z_SUSPEND = 1
-	GENOP('REP')
-	GENOP('MOVS' OP_C)
-	Z_SUSPEND = 0
-						:(OPDONE)
-	T1 = GENLAB()
-	GENOPL(T1 ':', 'MOV','AL','[ESI]')
-	GENOP('MOV','[EDI]','AL')
-	GENOP('INC', 'ESI')
-	GENOP('INC', 'EDI')
-	GENOP('DEC','WA')
-	GENOP('JNZ', T1)
-						:(OPDONE)
-*
-	T1 = GENLAB()
-	GENOPL(T1 ':', 'LODS' OP_C)
-	GENOP('STOS' OP_C)
-	GENOP('DEC', 'WA')
-	GENOP('JNZ',T1)
-						:(OPDONE)
-G.MVW
-	Z_SUSPEND = 1
- 	GENOP('REP','MOVS' OP_W)		
-	Z_SUSPEND = 0
-						:(OPDONE)
-
-G.MWB
-	GENOP('STD')
-	GENOP('LEA','XL','[XL-1]')
-	GENOP('LEA','XR','[XR-1]')
- 	GENREP('MOVS' OP_W)
-	GENOP('CLD')				:(OPDONE)
-
-	GENOP('STD')
-	GENOP('REP')
-	GENOP('MOVS' OP_W)
-	GENOP('CTD')
-						:(OPDONE)
-
 G.MCB
-*	Use word move if character size is word size
-	NE(1,1)				:S(G.MWB)
-	GENOP('STD')
-	GENOP('DEC','XL')
-	GENOP('DEC','XR')
- 	GENREP('MOVS' OP_C)
-	GENOP('CLD')				
-						:(OPDONE)
-	GENOP('STD')
-	GENOP('REP')
-	GENOP('MOVS' OP_C)
-	GENOP('CLD')	
-						:(OPDONE)
-GENREP
-*	Generate equivalent of REP op loop
-	L1 = GENLAB()
-	L2 = GENLAB()
-	GENOPL(L1 ':')
-	GENOP('OR','WA','WA')
-	GENOP('JZ',L2)
-	GENOP(OP)
-	GENOP('DEC','WA')
-	GENOP('JMP',L1)
-	GENOPL(L2 ':')
-						:(RETURN)
+G.MVW
+G.MWB
+	GENOP(INCODE)				:(OPDONE)
 
 G.CHK   
 	GENOP('CMP','XS','LOWSPMIN')
