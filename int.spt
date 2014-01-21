@@ -1,6 +1,9 @@
 -TITLE MINCOD: PHASE 2 TRANSLATION FROM MINIMAL TOKENS TO 80386 CODE
 -STITL Description
-* Use 'FETCH' to bring opn operand value to register. Result suitabl for use in GENOP
+
+* Ops with result that may be a memory reference (always in first argument)
+* ADD AOV DCA DCV ICA ICV MNZ MOV STI STR SUB ZER ZGB 
+
 * Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 * Copyright 2012-2013 David Shields
 * 
@@ -41,7 +44,7 @@
 *  file if possible.
 *
 *  In addition to the normal MINIMAL register complement, one scratch
-*  work register, W0 is defined.
+*  work register, WT is defined.
 *  See the register map below for specific allocations.
 *
 *  This program is based in part on earlier translators for the
@@ -188,7 +191,6 @@ SKIP_INIT.END
 *  Error is used to report an error for current statement
 *
 	DEFINE('ERROR(TEXT)')
-	DEFINE('FETCH(I)')
 	DEFINE('FLUSH()')
 	DEFINE('GENZ()')
 	DEFINE('GENAOP(STMT)')
@@ -196,13 +198,14 @@ SKIP_INIT.END
         DEFINE('GENLAB()')
 	DEFINE('GENOP(GOPC,GOP1,GOP2,GOP3)')
 	DEFINE('GENOPL(GOPL,GOPC,GOP1,GOP2,GOP3)')
-	DEFINE('GET1()')
-	DEFINE('GET2()')
+	DEFINE('GET1()T')
+	DEFINE('GET2()T')
 	DEFINE('GETARG(IARG,IMEM)L1,L2,T1,T2,TMEM')
 	DEFINE('IFREG(IARG)')
 	DEFINE('MEMMEM()T')
 	DEFINE('PRCENT(N)')
 	DEFINE('PRSARG(IARG)L1,L2')
+	DEFINE('PUT1()')
 	DEFINE('REPORT(NUM,TEXT)')
 	DEFINE('TBLINI(STR)POS,CNT,INDEX,VAL,LASTVAL')
 
@@ -373,28 +376,16 @@ FLGS2
 	REGMAP['WA'] = 'WA';  REGMAP['WB'] = 'WB'
 	REGMAP['WC'] = 'WC';  REGMAP['IA'] = 'IA'
 	REGMAP['CP'] = 'CP'
-*	W0 is temp register
-	REGMAP['W0'] = 'W0'
+*	WT is temp register
+	REGMAP['WT'] = 'WT'
+	REGMAP['W1'] = 'W1'
+	REGMAP['W2'] = 'W2'
+	REGMAP['WZ'] = 'WZ'
 
 *  Quick reference:
 	REG.IA = REGMAP['IA']
 	REG.WA = REGMAP['WA']
 	REG.CP = REGMAP['CP']
-
-* REAL_OP maps Minimal real opcode to machine opcode
-	REAL_OP = TABLE(10)
-	REAL_OP['ADR'] = 'FADD'
-	REAL_OP['ATN'] = 'FPATAN'
-	REAL_OP['CHP'] = 'FRNDINT'
-	REAL_OP['COS'] = 'FCOS'
-	REAL_OP['DVR'] = 'FDIV'
-	REAL_OP['LDR'] = 'FLD'
-	REAL_OP['MLR'] = 'FMUL'
-	REAL_OP['NGR'] = 'FCHS'
-	REAL_OP['SBR'] = 'FSUB'
-	REAL_OP['SIN'] = 'FSIN'
-	REAL_OP['SQR'] = 'FSQRT'
-	REAL_OP['STR'] = 'FST'
 
 *  Other definitions that are dependent upon things defined in the
 *  machine definition file, and cannot be built until after the definition
@@ -468,6 +459,7 @@ NOPUB
 DSOUT
 OPNEXT	THISLINE = READLINE()
 	CRACK(THISLINE)				:F(DSOUT)
+*	 OUTPUT = THISLINE
 *
 * Append ':' after label if in code or data.
 *
@@ -491,6 +483,7 @@ OPNEXT.1
 	I1 = PRSARG(IARG1)
 	I2 = PRSARG(IARG2)
 	I3 = PRSARG(IARG3)
+
 	TCOMMENT = COMREGS(INCOMMENT) '} ' INCODE ' ' I.TEXT(I1) ' '
 .		I.TEXT(I2) ' ' I.TEXT(I3)
 	ARGERRS = 0
@@ -535,12 +528,6 @@ ERROR   OUTFILE = '* *???* ' THISLINE
 	NOUTLINES = NOUTLINES + 2
 	LE(NERRORS = NERRORS + 1, 10)		:S(DSOUT)
         OUTPUT = 'too many errors, quitting'  :(END)
--STITL FETCH(I)
-*  Fetch 'opn' type argument to register.
-FETCH
-	GENOP('FETCH',GET1())
-	FETCH = '*FETCH*' I.TEXT(I)
-						:(RETURN)
 -STITL GENAOP(STMT)
 GENAOP
 	ASTMTS[ASTMTS.N = ASTMTS.N + 1] = STMT	:(RETURN)
@@ -555,7 +542,7 @@ GENLAB	GENLAB = '_L' LPAD(GENLABELS = GENLABELS + 1,4,'0') :(RETURN)
 -STITL GENOPL(GOPL,GOPC,GOP1,GOP2,GOP3)
 *  Generate operation with label
 GENOPL	CSTMTS[CSTMTS.N = CSTMTS.N + 1] =
-.		TSTMT(GOPL,GOPC,GOP1,GOP2,GOP3)	:(RETURN)
+.		TSTMT(GOPL,LOWER(GOPC),GOP1,GOP2,GOP3)	:(RETURN)
 
 -STITL GENOP(GOPC,GOP1,GOP2,GOP3)
 *  Generate operation with no label
@@ -563,22 +550,32 @@ GENOP   GENOPL(,LOWER(GOPC),GOP1,GOP2,GOP3)            :(RETURN)
 
 -STITL GET1()
 GET1
-	LT(I.TYPE(I1),7)			:S(GET1.1)
-	GT(I.TYPE(I1),8)			:S(GET1.1)
+	IFREG(I1)				:F(GET1.1)
 * Here if register, so just return it
-	GET1 = GETARG(I1)			:(RETURN)
+        GET1.MEM = 
+	GET1 = GETARG(I1)
+						:(RETURN)
 GET1.1
-	GET1 = '1.' GETARG(I1)
+        T = GETARG(I1)
+        I1 = MINARG(8,'W1')
+        GENOP('get','W1',T)
+        GET1.MEM = T
+	GET1 = 'W1'
 						:(RETURN)
 
 -STITL GET2()
 GET2
-	LT(I.TYPE(I2),7)			:S(GET2.1)
-	GT(I.TYPE(I2),8)			:S(GET2.1)
+	IFREG(I2)				:F(GET2.1)
 * Here if register, so just return it
-	GET2 = GETARG(I2)			:(RETURN)
+        GET2.MEM = 
+	GET2 = GETARG(I2)
+						:(RETURN)
 GET2.1
-	GET2 = '2.' GETARG(I2)
+        T = GETARG(I2)
+        I2 = MINARG(8,'W2')
+        GENOP('get','W2',T)
+        GET2.MEM = T
+	GET2 = 'W2'
 						:(RETURN)
 
 -STITL GETARG(IARG,IMEM)
@@ -622,7 +619,7 @@ GETARG.C.10
 	L1 = SUBSTR(L1,2,2)
 	T1 = REGMAP[L1]
 	GETARG = TMEM '[' T1 ']'
-	(IDENT(L1,'XS') GENAOP(TSTMT(,'ADD',T1,'1'))) :S(RETURN)
+	(IDENT(L1,'XS') GENAOP(TSTMT(,'INC',T1))) :S(RETURN)
 	GENAOP(TSTMT(,'LEA',T1,'[' T1 '+1]'))	:(RETURN)
 
 *  -(X), Register indirect, pre decrement
@@ -680,15 +677,16 @@ GETARG.C.27 GETARG = L1				:(RETURN)
 MEMMEM
 *  MEMMEM is called for those ops for which both operands may be
 *  in memory, in which case, we generate code to load second operand
-*  to pseudo-register 'W0', and then modify the second argument
+*  to pseudo-register 'W2', and then modify the second argument
 *  to reference this register
 *
+  :(RETURN)
   EQ(ISMEM[I.TYPE(I1)])				:S(RETURN)
   EQ(ISMEM[I.TYPE(I2)])				:S(RETURN)
 *  here if memory-memory case, load second argument
   T = GET2()
-  I2 = MINARG(8,'W0')
-  GENOP('MOV','W0',T)				:(RETURN)
+  I2 = MINARG(8,'W2')
+  GENOP('MOV','W2',T)				:(RETURN)
 
 -STITL PRCENT(N)
 PRCENT PRCENT = 'PRC_' '+'  (1 * ( N - 1)) :(RETURN)
@@ -816,6 +814,15 @@ GENZ
 PRSARG	PRSARG = MINARG(0)
 	IARG BREAK(',') . L1 ',' REM . L2	:F(RETURN)
 	PRSARG = MINARG(CONVERT(L1,'INTEGER'),L2)	:(RETURN)
+
+-STITL PUT1()
+PUT1
+* No need to issue store if argument is plain register
+	IDENT(GET1.MEM)				:S(RETURN)
+* Issue store in case first argument is memory location that must be updated    
+        GENOP('PUT',REGMAP['W1'],GET1.MEM)
+						:(RETURN)
+
 -STITL READLINE()
 *  This routine returns the next statement line in the input file
 *  to the caller.  It never fails.  If there is no more input,
@@ -876,19 +883,8 @@ TIN02   STR     (BREAK('[') $ INDEX LEN(1) BREAK(']') $ VAL LEN(1)) =
 IFREG	GE(I.TYPE(IARG),7) LE(I.TYPE(IARG),8)
 .						:F(FRETURN)S(RETURN)
 
-G.FLC
-	T2 = GENLAB()
-*	Z_SUSPEND = 1
-	GENOP('CMP',T1,"'a'")
-	GENOP('JB', T2 )
-	GENOP('CMP',T1,"'z'")
-	GENOP('JA', T2)
-	GENOP('SUB',T1,'32')
-        GENOPL(T2 ':')                  
-*	Z_SUSPEND = 0
-						:(OPDONE)
-
 G.MOV
+* Result may need to be stored back to memory
 * NEW special casing
 	STYPE = I.TYPE(I2); STEXT = I.TEXT(I2)
 	DTYPE = I.TYPE(I1); DTEXT = I.TEXT(I1)
@@ -908,13 +904,32 @@ MOV.20
 	GENOP('MOV',GET1(),GET2())
 						:(OPDONE)
 
-* Odd/Even tests.  If W reg, use low byte of register.
-G.BOD	
-G.BEV
+G.NONE
+* here for standard case with no arguments
+        GENOP(INCODE)                           :(OPDONE)
 
-	GENOP(INCODE,FETCH(I1),GET2())	:(OPDONE)
+G.ONE
+* here for standard case with single argument
+        GENOP(INCODE,GET1())                    
+                                                :(OPDONE)
+G.TWO
+* here for standard case with two arguments
+        GENOP(INCODE,GET1(),GET2())             
+                                                :(OPDONE)
 
-G.BRN   GENOP('JMP',GET1())			:(OPDONE)
+G.ONEPUT
+* here for standard case with single argument
+        GENOP(INCODE,GET1())                    
+        DIFFER(GET1.MEM) PUT1('W1',GET1.MEM)
+                                                :(OPDONE)
+G.TWOPUT
+* here for standard case with two arguments
+        GENOP(INCODE,GET1(),GET2())             
+        DIFFER(GET1.MEM) PUT1('W1',GET1.MEM)
+                                                :(OPDONE)
+
+
+G.BRN   					:(G.ONE)
 
 G.BSW	T1 = GET1()
 	T2 = GENLAB()
@@ -1061,7 +1076,8 @@ G.PRC.N
 	GENOP('QOP', '[' PRCENT(PRC.COUNT) ']')		:(OPDONE)
 
 G.EXI	
-        T1 = GET1(); T2 = PRC.TYPE; T3 = I.TEXT(I1)
+ 	T3 = I.TEXT(I1)
+        T1 = GET1(); T2 = PRC.TYPE
 *  If type R or E, and no exit parameters, just return
  	DIFFER(T2,'N') EQ(PRC.ARGS)	GENOP('RET')	:S(OPDONE)
         T3 = IDENT(T3) '0'
@@ -1070,8 +1086,8 @@ G.EXI
 	GENOP('RET')				:(OPDONE)
 G.EXI.1
 
-	GENOP('MOV','W0', '['  PRCENT(PRC.COUNT) ']' )
-	GENOP('JMP','W0')
+	GENOP('MOV','WT', '['  PRCENT(PRC.COUNT) ']' )
+	GENOP('JMP','WT')
 						:(OPDONE)
 G.ENP   GENOP()					:(OPDONE)
 
@@ -1082,38 +1098,61 @@ G.ERB
  	GENOP('JMP','ERR_')
 						:(OPDONE)
 
+G.START
 
-G.ICV   GENOP('INC',GET1())    :(OPDONE)
-G.DCV   GENOP('DEC',GET1())    :(OPDONE)
+G.ICV   
+        GENOP('INCV',GET1())    
+        PUT1()
+                                                :(OPDONE)
+G.DCV   
+        GENOP('DECV',GET1())
+        PUT1()
+                                                :(OPDONE)
 
-G.ZER	IDENT(I.TEXT(I1),'(XR)+') GENOP('MOV','W0','0')
-+		GENOP('STOS' OP_W)		:S(OPDONE)
-	IFREG(I1)				:S(G.ZER1)
-	IDENT(I.TEXT(I1),'-(XS)')		:S(G.ZER.XS)
-	GENOP('MOV','W0','0')
-	GENOP('MOV',GET1(),'W0')		:(OPDONE)
-G.ZER1	T1 = GET1()
-	GENOP('XOR',T1,T1)			:(OPDONE)
-G.ZER.XS GENOP('QUSH','0')			:(OPDONE)
-
-G.MNZ   GENOP('MOV',GET1(),'XS')		:(OPDONE)
+* For ZER (MNZ) move register WZ (XS) to target
+G.ZER	
+G.MNZ
+       ZER.REG = (IDENT(INCODE, 'ZER') 'WZ', 'XS')
+       IFREG(I1)                                :F(G.MNZ.1)
+       GENOP('MOV', I.TEXT(I1), ZER.REG)        :(OPDONE)
+G.MNZ.1
+* Result may need to be stored back to memory
+        GENOP('put',REGMAP[ZER.REG],I.TEXT(I1))
+                                                :(OPDONE)
 
 G.SSL   GENOP()					:(OPDONE)
+
 G.SSS   GENOP()					:(OPDONE)
 
 G.RTN
 	GENOP()
                                                 :(OPDONE)
 
-G.ADD	MEMMEM()
-	GENOP('ADD',GET1(),GET2())	:(OPDONE)
+G.ADD	
+* May have result in memory
+        MEMMEM()
+	GENOP('ADD',GET1(),GET2())	
+        PUT1()
+                                                :(OPDONE)
 
-G.SUB	MEMMEM()
-	GENOP('SUB',GET1(),GET2())	:(OPDONE)
+G.SUB	
+* Result may need to be stored back to memory
+        MEMMEM()
+	GENOP('SUB',GET1(),GET2())	
+        PUT1()
+                                                :(OPDONE)
 
-G.ICA   GENOP('ADD',GET1(),'1')		:(OPDONE)
+G.ICA   
+* Result may need to be stored back to memory
+        GENOP('INCV',GET1())		
+        PUT1()
+                                                :(OPDONE)
 
-G.DCA   GENOP('SUB',GET1(),'1')		:(OPDONE)
+G.DCA   
+* Result may need to be stored back to memory
+        GENOP('DECV',GET1())		
+        PUT1()
+                                                :(OPDONE)
 
 G.BEQ
 G.BNE
@@ -1125,31 +1164,18 @@ G.BLO
 G.BHI
 *
 *  These operators all have two operands, MEMMEM may apply
-*  Issue target opcode by table lookup.
 *
 	MEMMEM()
 	GENOP('CMP',GET1(),GET2())
 	GENOP(INCODE,GETARG(I3))
 .						:(OPDONE)
 
+G.BOD	
+G.BEV
 G.BNZ
-	IFREG(I1)				:S(G.BNZ1)
-        GENOP('CMP', GET1() ,'0')
-	GENOP('JNZ',GET2())			
-						:(OPDONE)
-G.BNZ1	
-	GENOP('OR',GET1(),GET1())
-	GENOP('JNZ',GET2())			
-						:(OPDONE)
+G.BZE
+                                        :(G.TWO)
 
-G.BZE   IFREG(I1)				:S(G.BZE1)
-        GENOP('CMP', GET1()  ,'0')
-	GENOP('JZ',GET2())			
-						:(OPDONE)
-G.BZE1
-	T1 = GET1()
-	GENOP('OR',T1,T1)
-	GENOP('JZ',GET2())			:(OPDONE)
 
 G.LCT
 *
@@ -1175,85 +1201,69 @@ G.BCT1
 	GENOP('LOOP',T2)			:(OPDONE)
 
 G.AOV   
+* Result may need to be stored back to memory
 	GENOP('ADD',GET2(),GET1())
+        PUT1()
 	GENOP('JC',GETARG(I3))			
 						:(OPDONE)
 G.LCP
-*  Use CP for code pointer.
-	GENOP('MOV','[reg_cp]',GET1())		
-						:(OPDONE)
-
-G.SCP   
-	GENOP('MOV',GET1(),'[reg_cp]')
-						:(OPDONE)
 G.LCW
-*  Should be able to get LODSD; XCHG EAX,GET1()
-	GENOP('MOV','W0','[reg_cp]')
-	GENOP('MOV',GET1(),'[W0]')
-	GENOP('ADD','W0','1')			
-	GENOP('MOV','[reg_cp]','W0')
-						:(OPDONE)
-
+G.SCP   
+                                                :(G.ONE)
 
 G.ICP   	
-	GENOP('MOV','W0','[reg_cp]')
-	GENOP('ADD','W0','1')
-	GENOP('MOV','[reg_cp]','W0')
-						:(OPDONE)
+                                                :(G.NONE)
 
-*  INTEGER ACCUMULATOR KEPT IN WDX (WC)
-G.LDI	GENOP('MOV',REG.IA,GET1())		:(OPDONE)
-
-G.ADI   GENOP('ADD',REG.IA,GET1())		:(OPDONE)
-
-G.MLI	GENOP('IMUL',REG.IA,GET1())		:(OPDONE)
-
-G.SBI   GENOP('SUB',REG.IA,GET1())		:(OPDONE)
-
+G.LDI
+G.ADI
+G.MLI
+G.SBI
 G.DVI
 G.RMI
-	GENOP('MOV','W0',GET1())
-	GENOP('CALL', INCODE '_'	)	:(OPDONE)
+G.NGI
+                                                :(G.ONE)
+G.STI
+* Result may need to be stored back to memory
+        
+        IFREG(I1)                               :S(OPDONE)
+        GENOP('put',REGMAP['IA'],GETARG(I1))
+                                                :(OPDONE)
 
-G.STI   GENOP('MOV',GET1(),REG.IA)		:(OPDONE)
+G.INO
+G.IOV
+        GENOP(INCODE,'WZ',GET1())                :(OPDONE)
 
-G.NGI   GENOP('NEG',REG.IA)			:(OPDONE)
+G.IEQ
+G.IGE
+G.IGT
+G.ILE
+G.ILT
+G.INE
+        GENOP(INCODE,'WZ',GET1())                :(OPDONE)
 
-G.INO   GENOP('JNO',GET1())			:(OPDONE)
-G.IOV   GENOP('JO',GET1())			:(OPDONE)
 
-G.IEQ	GENOP('OR',REG.IA,REG.IA)
-	GENOP('JE',GET1())			:(OPDONE)
-G.IGE   GENOP('OR',REG.IA,REG.IA)
-	GENOP('JGE',GET1())			:(OPDONE)
-G.IGT   GENOP('OR',REG.IA,REG.IA)
-	GENOP('JG',GET1())			:(OPDONE)
-G.ILE   GENOP('OR',REG.IA,REG.IA)
-	GENOP('JLE',GET1())			:(OPDONE)
-G.ILT   GENOP('OR',REG.IA,REG.IA)
-	GENOP('JL',GET1())			:(OPDONE)
-G.INE   GENOP('OR',REG.IA,REG.IA)
-	GENOP('JNE',GET1())			:(OPDONE)
+G.ITR                                           :(G.ONE)
 
-*  Real operations
-
-G.ITR	GENOP('CALL','ITR_')	:(OPDONE)
-
-G.RTI	GENOP('CALL','RTI_')
-	EQ(I.TYPE(I1))				:S(OPDONE)
+G.RTI
 *  HERE IF LABEL GIVEN, BRANCH IF REAL TOO LARGE
-        GENOP('JC',GET1())                 :(OPDONE)
+        GENOP(INCODE,GET1())                 :(OPDONE)
+
+G.STR
+* Result may need to be stored back to memory
+        
+        IFREG(I1)                               :F(G.STR.1)
+* Here if result is register   
+        GENOP('mov',GETARG(I1), REGMAP['RA'])	:(OPDONE)
+G.STR.1
+        GENOP('put',REGMAP['RA'],GETARG(I1))
+                                                :(OPDONE)
 
 G.LDR
-G.STR
 G.ADR
 G.SBR
 G.MLR
 G.DVR	
-	T1 = GETARG(I1,'R_WORD')
-	GENOP('LEA','W0',T1)
-	GENOP('CALL',INCODE '_')		
-						:(OPDONE)
+                                                :(G.ONE)
 G.NGR
 G.ATN
 G.CHP
@@ -1263,22 +1273,20 @@ G.LNF
 G.SIN
 G.SQR
 G.TAN	
-	GENOP('CALL',INCODE '_')		
-						:(OPDONE)
+                                                :(G.NONE)
 
 G.RNO	T1 = 'JNO'				:(G.ROV1)
 G.ROV	T1 = 'JO'
 G.ROV1  GENOP('CALL','OVR_')
 	GENOP(T1,GET1())			:(OPDONE)
 
-G.REQ	T1 = 'JE'				:(G.R1)
-G.RNE	T1 = 'JNE'				:(G.R1)
-G.RGE	T1 = 'JGE'				:(G.R1)
-G.RGT	T1 = 'JG'				:(G.R1)
-G.RLE	T1 = 'JLE'				:(G.R1)
-G.RLT	T1 = 'JL'
-G.R1	GENOP('CALL','CPR_')
-	GENOP(T1,GET1())			:(OPDONE)
+G.REQ
+G.RNE
+G.RGE
+G.RGT
+G.RLE
+G.RLT
+                                                :(G.ONE)
 
 G.PLC
 G.PSC
@@ -1310,9 +1318,9 @@ G.PLC.1
 	EQ(I.TYPE(I2))				:S(OPDONE)
 *
 *  Here if D_OFFSET_(given (in a variable), so add it in, after converting to byte count
-	GENOP('MOV','W0', GET2())
+	GENOP('MOV','WT', GET2())
 *
-	GENOP('ADD',T1,'W0')		:(OPDONE)
+	GENOP('ADD',T1,'WT')		:(OPDONE)
 *
 *  LCH requires separate cases for each first operand possibility.
 *
@@ -1323,18 +1331,15 @@ G.LCH
 *  See if predecrement needed.
 	LEQ('-',SUBSTR(T2,1,1))			:F(G.LCG.1)
 	T2 BREAK('(') LEN(1) LEN(2) . T3
-	(EQ(1,1) GENOP('DEC',REGMAP[T3]), GENOP('SUB',REGMAP[T3],'1'))
+	(EQ(1,1) GENOP('DEC',REGMAP[T3]), GENOP('DEC',REGMAP[T3]))
 G.LCG.1
 	T2 BREAK('(') LEN(1) LEN(2) . T3
-	EQ(1,1) GENOP('MOV','W0','0')
-	EQ(1,1) GENOP('MOV','AL','M_CHAR [' REGMAP[T3] ']')
-	EQ(1,1) GENOP('MOV',T1,'W0')
-
-	NE(1,1) GENOP('MOV',T1,'M_CHAR [' REGMAP[T3] ']')
+	GENOP('MOV','AL','M_CHAR [' REGMAP[T3] ']')
+	GENOP('MOV',T1,'WZ')
 
 *  See if postincrement needed.
 	T2 RTAB(1) '+'				:F(G.LCG.2)
-	(EQ(1,1) GENOP('INC',REGMAP[T3]), GENOP('ADD',REGMAP[T3],'1'))
+	(EQ(1,1) GENOP('INC',REGMAP[T3]), GENOP('INC',REGMAP[T3]))
 G.LCG.2						:(OPDONE)
 
 G.SCH
@@ -1354,15 +1359,15 @@ G.SCG.0
 	LEQ('-',SUBSTR(T2,1,1))			:F(G.SCG.1)
 	T2 BREAK('(') LEN(1) LEN(2) . T3
 	GENOP('DEC',REGMAP[T3])
-	(EQ(1,1) GENOP('DEC',REGMAP[T3]), GENOP('SUB',REGMAP[T3],'1'))
+	(EQ(1,1) GENOP('DEC',REGMAP[T3]), GENOP('DEC',REGMAP[T3]))
 G.SCG.1
 	T2 BREAK('(') LEN(1) LEN(2) . T3
-	EQ(1,1) GENOP('MOV','W0',T1,)
+	EQ(1,1) GENOP('MOV','WT',T1,)
 	EQ(1,1) GENOP('MOV','[' REGMAP[T3] ']','AL')
 	NE(1,1) GENOP('MOV','M_CHAR [' REGMAP[T3] ']',T1)
 *  See if postincrement needed.
 	T2 RTAB(1) '+'				:F(G.SCG.2)
-	(EQ(1,1) GENOP('INC',REGMAP[T3]), GENOP('ADD',REGMAP[T3],'1'))
+	(EQ(1,1) GENOP('INC',REGMAP[T3]), GENOP('INC',REGMAP[T3]))
 G.SCG.2						:(OPDONE)
 G.SCG.W
 *
@@ -1379,18 +1384,18 @@ G.SCG.W
 G.SCG.W.XL
 	GENOP('MOV','M_CHAR [XL]',T1)		:(OPDONE)
 G.SCG.W.PXL
-	(EQ(1,1)  GENOP('DEC', 'XL'), GENOP('SUB','XL', '1'))
+	GENOP('DEC','XL')
 	GENOP('MOV','M_CHAR [XL]',T1)			:(OPDONE)
 
 G.SCG.W.XLP
 	GENOP('MOV','M_CHAR [XL]',T1)
-	(EQ(1,1)  GENOP('INC', 'XL'), GENOP('ADD','XL', '1'))
+	GENOP('INC', 'XL')
 						:(OPDONE)
 G.SCG.W.XR
 	GENOP('MOV','M_CHAR [XR]',T1)			:(OPDONE)
 
 G.SCG.W.PXR
-	(EQ(1,1)  GENOP('DEC', 'XR'), GENOP('SUB','XR', '1'))
+	GENOP('DEC', 'XR')
 	GENOP('MOV','M_CHAR [XR]',T1)			:(OPDONE)
 G.SCG.W.XRP
 	(EQ(1,1) GENOP('MOV','AL',T1), GENOP('MOV','EAX',T1))
@@ -1401,33 +1406,19 @@ G.CSC  	IDENT(THISLABEL)			:S(OPNEXT)
 
 G.CEQ
 G.CNE   MEMMEM()
-	MEMMEM()
 	GENOP(INCODE,GET1(),GET2(),GETARG(I3))  :(OPDONE)
-						:(OPDONE)
 
 G.CMC
-	GENOP('REPE','CMPS' OP_C)
-	GENOP('MOV','XL','0')
-	GENOP('MOV','XR','XL')
-	T1 = GET1()
-	T2 = GET2()
-	(IDENT(T1,T2) GENOP('JNZ',T1))		:S(OPDONE)
-	GENOP('JA',T2)
-	GENOP('JB',T1)				:(OPDONE)
+*  CMC has two label operands, so generate two instructions
+	GENOP('CMC1',0,I.TEXT(I1))
+	GENOP('CMC2',0,I.TEXT(I2))
+						:(OPDONE)
 
 G.TRC
-	GENOP('XCHG','XL','XR')
-        EQ(1,1) GENOPL((T1 = GENLAB()) ':','MOVZX','W0','M_CHAR [XR]') 
-        NE(1,1) GENOPL((T1 = GENLAB()) ':','MOV','W0','M_CHAR [XR]') 
-	EQ(1,1) GENOP('MOV','AL','[XL+W0]')
-	NE(1,1) GENOP('MOV','EAX','[XL+W0]')
-	GENOP('STOS' OP_C)
-*	GENOP('LOOP',T1)
-	GENOP('DEC','WA')
-	GENOP('JNZ',T1)	
-	GENOP('XOR','XL','XL')
-	GENOP('XOR','XR','XR')		
-						:(OPDONE)
+	GENOP(INCODE)				:(OPDONE)
+
+G.FLC
+	GENOP(INCODE,GET1())				:(OPDONE)
 
 G.ANB 
 G.ORB
@@ -1528,7 +1519,9 @@ G.DRC
 	THISLABEL =				:(OPDONE)
 
 G.DTC
-	GENOP('DTC', I.TEXT(I1))
+        T1 = I.TEXT(I1)
+        DTC.COUNT = DTC.COUNT + SIZE(T1)
+	GENOP('DTC', T1)
 						:(OPDONE)
 G.DBC   GENOPL(THISLABEL,'LBL',GET1())       
 						:(OPDONE)
