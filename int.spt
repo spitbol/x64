@@ -166,7 +166,7 @@ SKIP_INIT.END
 *
 *  Data structures
 *
-	DATA('MINARG(I.TYPE,I.TEXT)')
+	DATA('MINARG(I.TYPE,I.TEXT,I.REGISTER,I.OFFSET)')
 	DATA('TSTMT(T.LABEL,T.OPC,T.OP1,T.OP2,T.OP3,T.COMMENT)')
 
 	SECTNOW = 0
@@ -200,9 +200,12 @@ SKIP_INIT.END
 	DEFINE('GENOPL(GOPL,GOPC,GOP1,GOP2,GOP3)')
 	DEFINE('GET1()T')
 	DEFINE('GET2()T')
-	DEFINE('GETARG(IARG,IMEM)L1,L2,T1,T2,TMEM')
+	DEFINE('GETARG(IARG,IMEM)L1,L2,T1,T2')
+	DEFINE('IFLIT(IARG)')
+	DEFINE('IFMEM(IARG)')
 	DEFINE('IFREG(IARG)')
 	DEFINE('MEMMEM()T')
+	DEFINE('MOVE(DST,SRC)DTYPE,STYPE,MOP,STEXT,DTEXT')
 	DEFINE('PRCENT(N)')
 	DEFINE('PRSARG(IARG)L1,L2')
 	DEFINE('PUT1()')
@@ -358,15 +361,6 @@ FLGS2
 *
         COMMENT.DELIM = ';'
 
-*  ISMEM IS TABLE indexed by operand type which is nonzero if
-*  operand type implies memory reference.
-
-	ISMEM = ARRAY(30,0)
-	ISMEM<3> = 1; ISMEM<4> = 1; ISMEM<5> = 1
-	ISMEM<9> = 1; ISMEM<10> = 1; ISMEM<11> = 1
-	ISMEM<12> = 1; ISMEM<13> = 1; ISMEM<14> = 1
-	ISMEM<15> = 1
-*
 *  REGMAP maps MINIMAL register name to target machine
 *  register/memory-location name.
 *
@@ -386,6 +380,9 @@ FLGS2
 	REG.IA = REGMAP['IA']
 	REG.WA = REGMAP['WA']
 	REG.CP = REGMAP['CP']
+
+	W1.MINARG = MINARG(8, 'W1','W1')
+	W2.MINARG = MINARG(8, 'W2','W2')
 
 *  Other definitions that are dependent upon things defined in the
 *  machine definition file, and cannot be built until after the definition
@@ -557,7 +554,7 @@ GET1
 						:(RETURN)
 GET1.1
         T = GETARG(I1)
-        I1 = MINARG(8,'W1')
+        I1 = W1.MINARG
         GENOP('get','W1',T)
         GET1.MEM = T
 	GET1 = 'W1'
@@ -580,7 +577,6 @@ GET2.1
 
 -STITL GETARG(IARG,IMEM)
 GETARG	
-	TMEM = (DIFFER(IMEM) '', '')
 	L1 = I.TEXT(IARG)
 	L2 = I.TYPE(IARG)
 	EQ(L2)					:F($(GETARGCASE[L2]))
@@ -594,7 +590,7 @@ GETARG.C.2 GETARG = L1				:(RETURN)
 
 * WLBL, CLBL
 GETARG.C.3
-GETARG.C.4 GETARG = TMEM '[' L1 ']'     	:(RETURN)
+GETARG.C.4 GETARG =  L1      	:(RETURN)
 
 * ELBL, PLBL
 GETARG.C.5
@@ -609,23 +605,20 @@ GETARG.C.8
 GETARG.C.9
 	L1 LEN(1) LEN(2) . L2
 	L2 = REGMAP[L2]
-	GETARG = TMEM '[' L2 ']'		:(RETURN)
+	GETARG =  L2 				:(RETURN)
 
 * (X)+, Register indirect, post increment
-* Use lea reg,[reg+1] unless reg is esp, since it takes an extra byte.
-* Actually, lea reg,[reg+1] and add reg,1 are both 2 cycles and 3 bytes
-* for all the other regs, and either could be used.
 GETARG.C.10
 	L1 = SUBSTR(L1,2,2)
 	T1 = REGMAP[L1]
-	GETARG = TMEM '[' T1 ']'
-	(IDENT(L1,'XS') GENAOP(TSTMT(,'INC',T1))) :S(RETURN)
-	GENAOP(TSTMT(,'LEA',T1,'[' T1 '+1]'))	:(RETURN)
+	GETARG =  T1 
+ 	(IDENT(L1,'XS') GENAOP(TSTMT(,'INC',T1))) :S(RETURN)
+ 	GENAOP(TSTMT(,'LEA',T1,'[' T1 '+1]'))	:(RETURN)
 
 *  -(X), Register indirect, pre decrement
 GETARG.C.11
 	T1 = REGMAP[SUBSTR(L1,3,2)]
-	GETARG = TMEM '[' T1 ']'
+	GETARG =  T1 
 	GENBOP(TSTMT(,'LEA',T1,'[' T1 '-1]')) :(RETURN)
 
 * INT(X)
@@ -633,13 +626,13 @@ GETARG.C.11
 GETARG.C.12
 GETARG.C.13
 	L1 BREAK('(') . T1 '(' LEN(2) . T2
-	GETARG = TMEM '[T1 +' REGMAP[T2] ']'   	:(RETURN)
+	GETARG =  REGMAP[T2] ',' T1   	:(RETURN)
 
 *  NAME(X), WHERE NAME IS IN WORKING SECTION
 GETARG.C.14
 GETARG.C.15
 	L1 BREAK('(') . T1 '(' LEN(2) . T2
-	GETARG = TMEM '[' T1 '+'  REGMAP[T2] ']' :(RETURN)
+	GETARG = REGMAP[T2] ',' T1 :(RETURN)
 
 * Signed Integer
 GETARG.C.16 GETARG = L1				:(RETURN)
@@ -681,12 +674,65 @@ MEMMEM
 *  to reference this register
 *
   :(RETURN)
-  EQ(ISMEM[I.TYPE(I1)])				:S(RETURN)
-  EQ(ISMEM[I.TYPE(I2)])				:S(RETURN)
+  IFMEM(I1) IFMEM(I2    )			:F(RETURN)
 *  here if memory-memory case, load second argument
   T = GET2()
   I2 = MINARG(8,'W2')
   GENOP('MOV','W2',T)				:(RETURN)
+
+-STLTL MOVE(DST,SRC)DTYPE,STYPE,MOP,STEXT,DTEXT
+* Generate code for move instruction
+MOVE
+* Output ops are
+* MOVE - from register to register
+* LOAD - load from memory
+* LOADI - load immediate (Note this can be done as MOVE with src=r0 and off=value)
+* PUSH - push value from memory
+* PUSHI - push immdiate, that is, of the effective address
+* POP	- pop stack value to memory
+* POPR  - pop stack value to registera
+*
+* Result may need to be stored back to memory
+* NEW special casing
+	STYPE = I.TYPE(SRC); STEXT = I.TEXT(SRC)
+	DTYPE = I.TYPE(DST); DTEXT = I.TEXT(DST)
+	
+* 	OUTPUT = ' ' LPAD(DTYPE,2,'0') LPAD(STYPE,2,'0') ' ' DTEXT ',' STEXT
+
+	MOP =
+* Look for register to register move
+        IFREG(SRC) IFREG(DST) GENOP('MOVE',GETARG(I1),GETARG(I2))  :S(RETURN)
+
+* Look for pop to register
+        IFREG(DST) EQ(STYPE,10) GENOP('POPR',GETARG(I1),GETARG(I2)) :S(RETURN)
+
+* Look for pop to memory
+	IFMEM(DST) EQ(STYPE,10)  GENOP('POP',GETARG(I1),GETARG(I2) )    :S(RETURN)
+* Look for push of literal
+ 	EQ(DTYPE,11) IFLIT(SRC)  GENOP('PUSHL',GETARG(I1),GETARG(I2))   :S(RETURN)
+* Look for push of memory value
+ 	EQ(DTYPE,11) IFMEM(SRC)  GENOP('PUSHM',GETARG(I1),GETARG(I2))   :S(RETURN)
+* Look for push of register
+ 	EQ(DTYPE,11) IFREG(SRC)  GENOP('PUSHR',GETARG(I1),GETARG(I2))  :S(RETURN)
+	
+* Look for load of immediate value
+	IFREG(DST) IFLIT(SRC) GENOP('LOADI',GETARG(I1),GETARG(I2))  :S(RETURN)
+
+* Look for load from memory
+	IFREG(DST) IFMEM(SRC) GENOP('LOAD',GETARG(I1),GETARG(I2))  :S(RETURN)
+
+* Look for store
+	IFMEM(DST) IFREG(SRC) GENOP('STORE',GETARG(I1),GETARG(I2))  :S(RETURN)
+
+	DIFFER(MOP) GENOP(MOP,GETARG(I1),GETARG(I2))	:S(RETURN)
+
+*	MEMMEM()
+	MOVE(W1.MINARG,SRC)
+	MOVE(DST,W1.MINARG)			
+						:(RETURN)
+MOVE.1
+        GENOP(MOP,GETARG(I1),GETARG(I2))        :(RETURN)
+        
 
 -STITL PRCENT(N)
 PRCENT PRCENT = 'PRC_' '+'  (1 * ( N - 1)) :(RETURN)
@@ -880,30 +926,16 @@ TIN02   STR     (BREAK('[') $ INDEX LEN(1) BREAK(']') $ VAL LEN(1)) =
 	TBLINI[INDEX] = VAL			:(TIN02)
 -STITL Generators
 
-IFREG	GE(I.TYPE(IARG),7) LE(I.TYPE(IARG),8)
-.						:F(FRETURN)S(RETURN)
+IFLIT	GE(I.TYPE(IARG),18) LE(I.TYPE(IARG),22) :F(FRETURN)S(RETURN)
+
+IFMEM
+        GE(I.TYPE(IARG),3) LT(I.TYPE(IARG),6)    :S(RETURN)
+	GE(I.TYPE(IARG),9) LE(I.TYPE(IARG),15)	:S(RETURN)F(FRETURN)
+
+IFREG	GE(I.TYPE(IARG),7) LE(I.TYPE(IARG),8) 	:F(FRETURN)S(RETURN)
 
 G.MOV
-* Result may need to be stored back to memory
-* NEW special casing
-	STYPE = I.TYPE(I2); STEXT = I.TEXT(I2)
-	DTYPE = I.TYPE(I1); DTEXT = I.TEXT(I1)
-	NE(DTYPE,11)				:S(MOV.10)
-* Here if target is predecremented X register: -(XL) -(XR) or -(XS)
-* Generate PUSH
-	GENOP('PUSH',SUBSTR(DTEXT,3,2), GET2())	:(OPDONE)
-
-MOV.10
-	NE(STYPE,10)				:S(MOV.20)
-* Here if source is postdecrement X register: (XL)+ (XR)+ or (XS)+
-	GENOP('POP',GET1(), SUBSTR(STEXT,2,2))	:(OPDONE)
-
-
-MOV.20
-	MEMMEM()
-	GENOP('MOV',GET1(),GET2())
-						:(OPDONE)
-
+	MOVE(I1,I2)				:(OPDONE)
 G.NONE
 * here for standard case with no arguments
         GENOP(INCODE)                           :(OPDONE)
@@ -938,7 +970,7 @@ G.BSW	T1 = GET1()
 	GENOP('CMP',T1,GET2())
 	GENOP('JGE',GETARG(I3))
 * Here after default case.
-G.BSW1	GENOP('JMP', '[' T2 '+' T1 '*1]') 
+G.BSW1	GENOP('JMP', '[' T2 '+' T1 ']') 
         GENOPL(T2 ':')                  
 	Z_SUSPEND = 0
 						:(OPDONE)
@@ -986,7 +1018,7 @@ G.ENT.2
 G.BRI	GENOP('JMP',GET1())			:(OPDONE)
 
 G.LEI	T1 = REGMAP[I.TEXT(I1)]
-	GENOP('MOVZX',T1,'[' T1 '-1]' )	:(OPDONE)
+	GENOP('LEI',T1)	                        :(OPDONE)
 
 G.JSR	
 	JSR_PROC = GET1()
@@ -1077,7 +1109,7 @@ G.PRC.N
 
 G.EXI	
  	T3 = I.TEXT(I1)
-        T1 = GET1(); T2 = PRC.TYPE
+        T1 = GETARG(I1); T2 = PRC.TYPE
 *  If type R or E, and no exit parameters, just return
  	DIFFER(T2,'N') EQ(PRC.ARGS)	GENOP('RET')	:S(OPDONE)
         T3 = IDENT(T3) '0'
@@ -1334,7 +1366,7 @@ G.LCH
 	(EQ(1,1) GENOP('DEC',REGMAP[T3]), GENOP('DEC',REGMAP[T3]))
 G.LCG.1
 	T2 BREAK('(') LEN(1) LEN(2) . T3
-	GENOP('MOV','AL','M_CHAR [' REGMAP[T3] ']')
+	GENOP('MOV','AL','[' REGMAP[T3] ']')
 	GENOP('MOV',T1,'WZ')
 
 *  See if postincrement needed.
@@ -1364,7 +1396,7 @@ G.SCG.1
 	T2 BREAK('(') LEN(1) LEN(2) . T3
 	EQ(1,1) GENOP('MOV','WT',T1,)
 	EQ(1,1) GENOP('MOV','[' REGMAP[T3] ']','AL')
-	NE(1,1) GENOP('MOV','M_CHAR [' REGMAP[T3] ']',T1)
+	NE(1,1) GENOP('MOV','[' REGMAP[T3] ']',T1)
 *  See if postincrement needed.
 	T2 RTAB(1) '+'				:F(G.SCG.2)
 	(EQ(1,1) GENOP('INC',REGMAP[T3]), GENOP('INC',REGMAP[T3]))
@@ -1382,21 +1414,21 @@ G.SCG.W
 	IDENT(T2,'-(XR)')			:S(G.SCG.W.PXR)
 	IDENT(T2,'(XR)+')			:S(G.SCG.W.XRP)
 G.SCG.W.XL
-	GENOP('MOV','M_CHAR [XL]',T1)		:(OPDONE)
+	GENOP('MOV','[XL]',T1)		:(OPDONE)
 G.SCG.W.PXL
 	GENOP('DEC','XL')
-	GENOP('MOV','M_CHAR [XL]',T1)			:(OPDONE)
+	GENOP('MOV','[XL]',T1)			:(OPDONE)
 
 G.SCG.W.XLP
-	GENOP('MOV','M_CHAR [XL]',T1)
+	GENOP('MOV','[XL]',T1)
 	GENOP('INC', 'XL')
 						:(OPDONE)
 G.SCG.W.XR
-	GENOP('MOV','M_CHAR [XR]',T1)			:(OPDONE)
+	GENOP('MOV','[XR]',T1)			:(OPDONE)
 
 G.SCG.W.PXR
 	GENOP('DEC', 'XR')
-	GENOP('MOV','M_CHAR [XR]',T1)			:(OPDONE)
+	GENOP('MOV','[XR]',T1)			:(OPDONE)
 G.SCG.W.XRP
 	(EQ(1,1) GENOP('MOV','AL',T1), GENOP('MOV','EAX',T1))
 	GENOP('STOS' OP_C)				:(OPDONE)
