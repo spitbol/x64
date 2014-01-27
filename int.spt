@@ -81,8 +81,8 @@
 *  useful constants
 *
 	letters = 'abcdefghijklmnopqrstuvwxyz'
-	ucase   = letters
-	lcase   = 'abcdefghijklmnopqrstuvwxyz'
+	ucase  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+	lcase   = letters
 	nos     = '0123456789'
 	tab	= char(9)
 
@@ -198,8 +198,8 @@ skip_init.end
         define('genlab()')
 	define('genop(gopc,gop1,gop2,gop3)')
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
-	define('get1()t')
-	define('get2()t')
+	define('get1()')
+	define('get2()')
 	define('getarg(iarg,imem)l1,l2,t1,t2')
 	define('getoff(iarg)atype')
 	define('getreg(iarg)atype')
@@ -530,34 +530,37 @@ genopl	cstmts[cstmts.n = cstmts.n + 1] =
 
 -stitl genop(gopc,gop1,gop2,gop3)
 *  generate operation with no label
-genop   genopl(,lower(gopc),gop1,gop2,gop3)            :(return)
+genop   genopl(,lower(gopc),gop1,gop2,(differ(gop3) gop3,0))            :(return)
 
 -stitl get1()
+* return register if i1 is register, else load i1 value to w1
 get1
 	ifreg(i1)				:f(get1.1)
-* here if register, so just return it
-	get1 = getarg(i1)
-						:(return)
+        get1 = getreg(i1)                      :(return)
 get1.1
-        genop('get','w1',getreg(i1),getoff(i1))
-        i1 = w1.minarg
-	get1 = 'w1'
-						:(return)
+        iflit(i1)                              :f(get1.2)
+	genop('loadi',w1,w0,getoff(i1))		:(get1.3)
+get1.2
+* here if source in memory, so load to w1
+        move(w1.minarg,i1)
+get1.3
+* merge to return with argument now in w1
+        get1 = w1	                        :(return)
 
 -stitl get2()
+* return register if i2 is register, else load i2 value to w1
 get2
 	ifreg(i2)				:f(get2.1)
-* here if register, so just return it
-        get2.mem =
-	get2 = getarg(i2)
-						:(return)
+        get2 = getreg(i2)                      :(return)
 get2.1
-        t = getarg(i2)
-        i2 = w2.minarg
-        genop('get','w2',t)
-        get2.mem = t
-	get2 = 'w2'
-						:(return)
+        iflit(i2)                              :f(get2.2)
+	genop('loadi',w2,w0,getoff(i2))		:(get2.3)
+get2.2
+* here if source in memory, so load to w2
+        move(w2.minarg,i2)
+get2.3
+* merge to return with argument now in w1
+        get1 = w2	                        :(return)
 
 -stitl getarg(iarg,imem)
 getarg
@@ -610,13 +613,13 @@ getarg.c.11
 getarg.c.12
 getarg.c.13
 	l1 break('(') . t1 '(' len(2) . t2
-	getarg =  $t2 ',' t1   	:(return)
+	getarg =  $t2 '!' t1   	:(return)
 
 *  name(x), where name is in working section
 getarg.c.14
 getarg.c.15
 	l1 break('(') . t1 '(' len(2) . t2
-	getarg = $t2 ',' t1 :(return)
+	getarg = $t2 '!' t1 :(return)
 
 * signed integer
 getarg.c.16 getarg = l1				:(return)
@@ -653,6 +656,7 @@ getarg.c.27 getarg = l1				:(return)
 -stitl getoff(iarg)atype
 - return offset of argument, or 0
 getoff
+	getoff = 0
 	lt(atype,2)			:s(return)
 	gt(atype,6)			:s(getoff.1)
 * here if plain label, just return it
@@ -696,7 +700,7 @@ memmem
   i2 = w2.minarg
   genop('mov','w2',t)				:(return)
 
--stltl move(dst,src)dtype,stype,mop,stext,dtext
+-stltl move(dst,src)dtype,stype,stext,dtext
 * generate code for move instruction
 move
 * output ops are
@@ -715,33 +719,31 @@ move
 
 * 	output = ' ' lpad(dtype,2,'0') lpad(stype,2,'0') ' ' dtext ',' stext
 
-	mop =
 * look for register to register move
-        ifreg(src) ifreg(dst) genop('move',getreg(dst),getarg(src))  :s(return)
+        ifreg(src) ifreg(dst) genop('mover',getreg(dst),getreg(src))  :s(return)
 
 * look for pop to register
-        ifreg(dst) eq(stype,10) genop('popr',getarg(dst),getarg(src)) :s(return)
+        ifreg(dst) eq(stype,10) genop('popr',getreg(dst),getreg(src)) :s(return)
 
 * look for pop to memory
-	ifmem(dst) eq(stype,10)  genop('pop',getarg(dst),getarg(src))    :s(return)
+	ifmem(dst) eq(stype,10)  genop('pop',getreg(src),getreg(dst),getoff(dst))    :s(return)
 * look for push of literal
- 	eq(dtype,11) iflit(src)  genop('pushl',getarg(dst),getarg(src))   :s(return)
+ 	eq(dtype,11) iflit(src)  genop('pushl',getarg(dst),w0,getoff(src))   :s(return)
 * look for push of memory value
- 	eq(dtype,11) ifmem(src)  genop('pushm',getarg(dst),getarg(src))   :s(return)
+ 	eq(dtype,11) ifmem(src)  genop('pushm',getarg(dst),getreg(src),getoff(src))   :s(return)
 * look for push of register
- 	eq(dtype,11) ifreg(src)  genop('pushr',getarg(dst),getarg(src))  :s(return)
+ 	eq(dtype,11) ifreg(src)  genop('pushr',getarg(dst),getreg(src),0)  :s(return)
 
 * look for load of immediate value
-	ifreg(dst) iflit(src) genop('loadi',getarg(dst),getarg(src))  :s(return)
+	ifreg(dst) iflit(src) genop('loadi',getreg(dst),w0,getoff(src))  :s(return)
 
 * look for load from memory
-	ifreg(dst) ifmem(src) genop('load',getarg(dst),getarg(src))  :s(return)
+	ifreg(dst) ifmem(src) genop('load',getreg(dst),getreg(src),getoff(src))  :s(return)
 
 * look for store
-	ifmem(dst) ifreg(src) genop('store',getarg(dst),getarg(src))  :s(return)
+	ifmem(dst) ifreg(src) genop('store',getreg(src),getreg(dst),getoff(dst))  :s(return)
 
-	differ(mop) genop(mop,getarg(dst),getarg(src))	:s(return)
-
+* here if have memory-to-memory case, so move src to w1 and then do store
 *	memmem()
 	move(w1.minarg,src)
 	move(dst,w1.minarg)
@@ -957,16 +959,16 @@ g.none
         genop(incode)                           :(opdone)
 
 g.one
-* here for standard case with single argument
+* here for standard case with single value argument
         genop(incode,get1())
                                                 :(opdone)
 g.two
-* here for standard case with two arguments
-        genop(incode,get1(),get2())
+* here for standard case with two value arguments
+        genop(incode,get1(),get2(),0)
                                                 :(opdone)
 
 g.oneput
-* here for standard case with single argument
+* here for standard case with single argument which is computed
         genop(incode,get1())
         differ(get1.mem) put1('w1',get1.mem)
                                                 :(opdone)
@@ -977,13 +979,15 @@ g.twoput
                                                 :(opdone)
 
 
-g.brn   					:(g.one)
+g.brn
+        genop('brn',getarg(i1))                 :(opdone)
+        
 
-g.bsw	t1 = get1()
+g.bsw	t1 = getarg(i1)
 	t2 = genlab()
 	z_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
-	genop('cmp',t1,get2())
+	genop('cmp',t1,getarg(i2))
 	genop('jge',getarg(i3))
 * here after default case.
 g.bsw1	genop('jmp', '[' t2 '+' t1 ']')
@@ -1031,13 +1035,13 @@ g.ent.2
 *        (differ(pubtab[thislabel]), differ(debug)) genop('global',thislabel)
 	thislabel =				:(opdone)
 
-g.bri	genop('jmp',get1())			:(opdone)
+g.bri	genop('jmp',getarg(i1))			:(opdone)
 
 g.lei	t1 = $i.text(i1)
 	genop('lei',t1)	                        :(opdone)
 
 g.jsr
-	jsr_proc = get1()
+	jsr_proc = getarg(i1)
 	genop('call',jsr_proc)
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
@@ -1222,7 +1226,7 @@ g.bod
 g.bev
 g.bnz
 g.bze
-                                        :(g.two)
+	genop(incode,get1(),getarg(i2))		:(opdone)
 
 
 g.lct
@@ -1237,16 +1241,7 @@ g.lct
 g.lct.1	genop('mov',get1(),get2())	:(opdone)
 
 g.bct
-*  can issue loop if target register is cx.
-	t1 = get1()
-	t2 = get2()
-	:(g.bct2)
-	ident(t1,'wa')				:s(g.bct1)
-g.bct2
-	genop('dec',t1)
-	genop('jnz',t2)				:(opdone)
-g.bct1
-	genop('loop',t2)			:(opdone)
+        genop('bct',getarg(i1),getarg(i2),0)    :(opdone)
 
 g.aov
 * result may need to be stored back to memory
@@ -1268,8 +1263,11 @@ g.mli
 g.sbi
 g.dvi
 g.rmi
-g.ngi
+
                                                 :(g.one)
+g.ngi
+	genop(incode,w0,w0)			:(opdone)
+
 g.sti
 * result may need to be stored back to memory
 
@@ -1279,7 +1277,7 @@ g.sti
 
 g.ino
 g.iov
-        genop(incode,'w0',get1())                :(opdone)
+        genop(incode,w0,w0,,getarg(i1))                :(opdone)
 
 g.ieq
 g.ige
@@ -1287,14 +1285,14 @@ g.igt
 g.ile
 g.ilt
 g.ine
-        genop(incode,'w0',get1())                :(opdone)
+        genop(incode,w0,w0,getarg(i1))                :(opdone)
 
 
-g.itr                                           :(g.one)
+g.itr genop(incode,w0,w0)			:(opdone)
 
 g.rti
 *  here if label given, branch if real too large
-        genop(incode,get1())                 :(opdone)
+        genop(incode,w0,w0,getoff(i1))                 :(opdone)
 
 g.str
 * result may need to be stored back to memory
@@ -1326,7 +1324,7 @@ g.tan
 g.rno	t1 = 'jno'				:(g.rov1)
 g.rov	t1 = 'jo'
 g.rov1  genop('call','ovr_')
-	genop(t1,get1())			:(opdone)
+	genop(t1,getarg(i1))			:(opdone)
 
 g.req
 g.rne
@@ -1334,7 +1332,8 @@ g.rge
 g.rgt
 g.rle
 g.rlt
-                                                :(g.one)
+	genop(incode,w0,w0,getoff(i1))
+                                                :(opdone)
 
 g.plc
 g.psc
@@ -1473,9 +1472,9 @@ g.orb
 g.xob
 g.rsh
 g.lsh
-	genop(incode,get1(),get2())	:(opdone)
+	genop(incode,getarg(i1),getarg(i2))	:(opdone)
 
-g.cmb   genop(incode,get1())		:(opdone)
+g.cmb   genop(incode,getarg(i1))		:(opdone)
 
 g.rsx
 	error('rsx not supported')
@@ -1483,28 +1482,28 @@ g.lsx
 	error('lsx not supported')
 
 g.nzb	ifreg(i1)				:s(g.nzb1)
-	genop('cmp',get1(),'0')
-	genop('jnz',get2())
+	genop('cmp',getarg(i1),'0')
+	genop('jnz',getarg(i2))
 						:(opdone)
 g.nzb1
-	genop('or',get1(),get1())
-	genop('jnz',get2())
+	genop('or',getreg(i1),getreg(i1))
+	genop('jnz',getarg(i2))
 						:(opdone)
 
 g.zrb	ifreg(i1)				:s(g.zrb1)
-	genop('cmp',get1(),'0')
-	genop('jz',get2())
+	genop('cmp',getarg(i1),'0')
+	genop('jz',getarg(i2))
 						:(opdone)
 g.zrb1
-	genop('or',get1(),get1())
-	genop('jz',get2())
+	genop('or',getreg(i1),getreg(i1))
+	genop('jz',getarg(i2))
 						:(opdone)
 
 g.zgb
 	genop('nop')				:(opdone)
 
 g.zzz
- 	genop('zzz',get1())			:(opdone)
+ 	genop('zzz',getarg(i1))			:(opdone)
 
 g.wtb   	:(opdone)
 
@@ -1519,14 +1518,14 @@ g.mfi
 	eq(i.type(i2))				:s(g.mfi1)
 *  here if label given, branch if wc not in range (ie, negative)
 	genop('or',ia,ia)
-	genop('js',get2())
+	genop('js',getarg(i2))
 g.mfi1	ident(i.text(i1),'wc') genop()		:s(opdone)
 	ident(i.text(i1),'-(xs)') genop('qush',ia)	:s(opdone)
-	genop('mov',get1(),ia)		:(opdone)
+	genop('mov',getarg(i1),ia)		:(opdone)
 
 g.ctw
 g.ctb
-	genop(incode,get1())			:(opdone)
+	genop(incode,getarg(i1))			:(opdone)
 g.cvm
 	genop(incode,getarg(i1))		:(opdone)
 
@@ -1571,7 +1570,7 @@ g.dtc
         dtc.count = dtc.count + size(t1)
 	genop('dtc', t1)
 						:(opdone)
-g.dbc   genopl(thislabel,'lbl',get1())
+g.dbc   genopl(thislabel,'lbl',getarg(i1))
 						:(opdone)
 g.equ   genopl(thislabel,'equ',i.text(i1))
 						:(opdone)
