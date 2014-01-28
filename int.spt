@@ -201,7 +201,7 @@ skip_init.end
 	define('get1()')
 	define('get2()')
 	define('getarg(iarg,imem)l1,l2,t1,t2')
-	define('getoff(iarg)atype')
+	define('getoff(iarg)itext,itype')
 	define('getreg(iarg)atype')
 	define('iflit(iarg)')
 	define('ifmem(iarg)')
@@ -530,10 +530,13 @@ genopl	cstmts[cstmts.n = cstmts.n + 1] =
 
 -stitl genop(gopc,gop1,gop2,gop3)
 *  generate operation with no label
-genop   genopl(,lower(gopc),gop1,gop2,(differ(gop3) gop3,0))            :(return)
+genop   genopl(,lower(gopc),gop1,gop2,gop3)            
+* output = 'genop ' gopc ',' gop1 ',' gop2 ',' gop3
+						:(return)
 
 -stitl get1()
-* return register if i1 is register, else load i1 value to w1
+* return argument if it is a register, or else load the argument
+* value into w1
 get1
 	ifreg(i1)				:f(get1.1)
         get1 = getreg(i1)                      :(return)
@@ -541,7 +544,7 @@ get1.1
         iflit(i1)                              :f(get1.2)
 	genop('loadi',w1,w0,getoff(i1))		:(get1.3)
 get1.2
-* here if source in memory, so load to w1
+* here if argument in memory, so load to w1
         move(w1.minarg,i1)
 get1.3
 * merge to return with argument now in w1
@@ -653,22 +656,29 @@ getarg.c.25
 getarg.c.26
 getarg.c.27 getarg = l1				:(return)
 
--stitl getoff(iarg)atype
+-stitl getoff(iarg)itext,itype
 - return offset of argument, or 0
 getoff
-	getoff = 0
-	lt(atype,2)			:s(return)
-	gt(atype,6)			:s(getoff.1)
+	itype = i.type(iarg)
+	itext = i.text(iarg)
+	lt(itype,2)				:s(return)
+	gt(itype,6)				:s(getoff.1)
 * here if plain label, just return it
-	getoff = i.text(iarg)		:(return)
+	getoff = itext				:(return)
 getoff.1
-	lt(atype,12)			:s(return)
-	gt(atype,15)			:s(return)
+	lt(itype,12)				:s(return)
+	gt(itype,15)				:s(getoff.2)
 	i.text(iarg) break('(') . getoff	:(return)
+getoff.2
+	gt(itype,22)				:s(return)
+	getoff = substr(itext,2)		:(return)
 
 -stitl getreg(iarg)atype
-* return register associated with argument, or null if no register
+* return register associated with argument, or w0 if no register
+* since it is assumed a register is needed.
 getreg
+* assume result is w0
+	getreg = w0
 	atype = i.type(iarg)
 	lt(atype,6)			:s(return)
 	gt(atype,8)			:s(getreg.1)
@@ -677,7 +687,7 @@ getreg
 getreg.1
 	gt(atype,15)			:s(getreg.2)
 * here if register enclosed in parentheses
-	i.text(iarg) break('(') len(2) . getreg 	:(return)
+	i.text(iarg) break('(') '('  len(2) . getreg 	:(return)
 getreg.2
 * no type if numeric constant
 	le(atype,17)			:s(return)
@@ -717,7 +727,6 @@ move
 	stype = i.type(src); stext = i.text(src)
 	dtype = i.type(dst); dtext = i.text(dst)
 
-* 	output = ' ' lpad(dtype,2,'0') lpad(stype,2,'0') ' ' dtext ',' stext
 
 * look for register to register move
         ifreg(src) ifreg(dst) genop('mover',getreg(dst),getreg(src))  :s(return)
@@ -732,7 +741,7 @@ move
 * look for push of memory value
  	eq(dtype,11) ifmem(src)  genop('pushm',getarg(dst),getreg(src),getoff(src))   :s(return)
 * look for push of register
- 	eq(dtype,11) ifreg(src)  genop('pushr',getarg(dst),getreg(src),0)  :s(return)
+ 	eq(dtype,11) ifreg(src)  genop('pushr',getarg(dst),getreg(src))  :s(return)
 
 * look for load of immediate value
 	ifreg(dst) iflit(src) genop('loadi',getreg(dst),w0,getoff(src))  :s(return)
@@ -964,14 +973,24 @@ g.one
                                                 :(opdone)
 g.two
 * here for standard case with two value arguments
-        genop(incode,get1(),get2(),0)
+        genop(incode,get1(),get2())
                                                 :(opdone)
 
 g.oneput
 * here for standard case with single argument which is computed
-        genop(incode,get1())
-        differ(get1.mem) put1('w1',get1.mem)
-                                                :(opdone)
+* and so must be stored back if it came from memory
+	ifreg(i1)				:f(g.oneput.1)
+* here if argument is register, so just use it
+	genop(incode,getreg(i1))		:(opdone)
+g.oneput.1
+* here if argument in memory. First bring it to w1
+	oneput.arg = i1
+* then do the operation
+	oneput.res = get1()
+	genop(incode,oneput.res)
+* and now store it back
+	genop('store',oneput.res,oneput.reg,oneput.off)	
+						:(opdone)
 g.twoput
 * here for standard case with two arguments
         genop(incode,get1(),get2())
@@ -1241,7 +1260,7 @@ g.lct
 g.lct.1	genop('mov',get1(),get2())	:(opdone)
 
 g.bct
-        genop('bct',getarg(i1),getarg(i2),0)    :(opdone)
+        genop('bct',getarg(i1),getarg(i2))    :(opdone)
 
 g.aov
 * result may need to be stored back to memory
