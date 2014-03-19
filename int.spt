@@ -101,10 +101,7 @@
 *	1 is bytes per word, 1 is characters per word
 *       these should agree with values used in translator
 * set target-dependent configuration parameters
-	:($('config.' lower(arch)))
 
-config.i32
-config.i32-8
 	hdr = 'i32'
 *	op_w is instruction suffix for word-size
 	op_w = ''
@@ -247,9 +244,7 @@ config.i32-8
 .	'aov[1]beq[1]bne[1]bge[1]bgt[1]bhi[1]ble[1]blo[1]'
 .	'blt[1]bne[1]bnz[1]ceq[1]cne[1]mfi[1]nzb[1]zrb[1]')
 *
-*	trace not working for mvc (x32/x64)
-
-	is_executable = table(100)
+	opcodes = table(100)
 	s =
 +       'add adi adr anb aov atn '
 +	'bct beq bev bge bgt bhi ble blo blt bne bnz bod '
@@ -260,13 +255,13 @@ config.i32-8
 +       'mnz mov mti mvw mwb ngi eti ngr nzb orb plc prc psc '
 +       'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
 +       'sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer '
-+       'zgb zrb'
++	'ent inr lea move load loadi push pushi pop popr '
 
 *	don't trace mvc as doing so causes just 'end' to fail. sort out later. (ds 01/09/13)
 
 is_exec.1
-	s len(3) . opc ' ' =			:f(is_exec.2)
-	is_executable[opc] = 1			:(is_exec.1)
+	s break(' ') . opc ' ' =			:f(is_exec.2)
+	opcodes[opc] = 1			:(is_exec.1)
 is_exec.2
 
 -stitl main program
@@ -495,7 +490,7 @@ get1
         get1 = getreg(i1)                      :(return)
 get1.1
         iflit(i1)                              :f(get1.2)
-	genop('loadi',w1,w0,getoff(i1))		:(get1.3)
+	genop('loadi',w1,,getoff(i1))		:(get1.3)
 get1.2
 * here if argument in memory, so load to w1
         move(w1.minarg,i1)
@@ -510,7 +505,7 @@ get2
         get2 = getreg(i2)                      :(return)
 get2.1
         iflit(i2)                              :f(get2.2)
-	genop('loadi',w2,w0,getoff(i2))		:(get2.3)
+	genop('loadi',w2,,getoff(i2))		:(get2.3)
 get2.2
 * here if source in memory, so load to w2
         move(w2.minarg,i2)
@@ -713,7 +708,8 @@ move.1
 
 
 -stitl prcent(n)
-prcent prcent = 'prc_' '+'  (1 * ( n - 1)) :(return)
+prcent 
+	prcent = 'prc_' '+'  (1 * ( n - 1)) :(return)
 
 -stitl putlab(label)
 putlab
@@ -746,8 +742,13 @@ putstmt2
 	op1 = t.op1(ostmt)
 	op2 = t.op2(ostmt)
 	op3 = t.op3(ostmt)
+*	 putline('putstmt ' opcode ',' op1 ',' op2 ',' op3)
+
 putstmt3
-	stmtout = tab opcode tab op1 ',' op2 ',' op3
+	stmtout = tab opcode 
+.	(differ(op1) tab '+ ' op1 ' >>dst ','')
+.	(ident(op2,'w0') '', differ(op2) tab '+ ' op2 ' >>src ','')
+.	(differ(op3) tab '+ ' op3 ' >>off ',, ) ','
 *.       (ident(strip_comment,'y'), tab (ident(comment), ';') comment)
 *
 **	send text to outfile
@@ -1450,13 +1451,17 @@ decend
 g.dac
 g.dbc
 g.dic
-g.dtc
-g.drc
 	program_counter = program_counter + 1
 	labtab<thislabel> = program_counter
 	genconst(thislabel,i.text(i1))
 						:(decend)
-
+g.dtc
+g.drc
+*TODO put out values later
+	program_counter = program_counter + 1
+	labtab<thislabel> = program_counter
+*	genconst(thislabel,i.text(i1))
+						:(decend)
 g.drc.old
 *	genop('align','1')
 	t1 = i.text(i1)
@@ -1499,6 +1504,22 @@ g.sec	sectnow = sectnow + 1			:($("g.sec." sectnow))
 
 * procedure declaration section
 g.sec.1
+* write out opcode definitions
+
+	putline('const (')
+	putline(tab	'nop = iota')
+	opcodea = sort(opcodes,1)
+	i = 0
+* write out opcodes offsets sorted by offset value
+	opcodea = sort(opcodes,1)	
+	i = 0
+g.sec.1.2
+	i = i +  1
+*	differ(opcodea<i,1>) putline(tab opcodea<i,1>  tab '=' tab  opcodea<i,2>)	:s(g.sec.1.2)
+	putline(tab opcodea<i,1>)	:s(g.sec.1.2)
+	putline(')')
+
+g.sec.1.1
 	putline('//sec01')
         			            	:(opnext)
 
@@ -1511,7 +1532,7 @@ g.sec.2
 g.sec.3
 	putline(tab ')')
 	putline('//sec03')
-	putline('var program []uint32 (')
+	putline('program = []uint32 {')
 				     		:(opnext)
 
 * working variables section
@@ -1525,7 +1546,7 @@ g.sec.5
 *  emit code to indicate in code section
 *  get direction set to up.
 *        (gt(prc.count1) genopl('prc$' ':','times', prc.count1 ' dd 0'))
-	genop('prc_: times ' prc.count1 ' dd 0')
+*TODO	genop('prc_: times ' prc.count1 ' dd 0')
 	genconst('lowspmin','0')
         putline('// sec05' )
 						:(opnext)
@@ -1598,7 +1619,7 @@ g.end.2
 
 * here at end of code generation.
 *	mark end of program
-	putline(')')
+	putline('}')
 	putline('const (')
 
 * write out labels offsets sorted by offset value

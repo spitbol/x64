@@ -1,0 +1,22 @@
+package	main
+//go
+const (
+	w0 = iota
+	w1
+	w2
+	wa
+	wb
+	wc
+	xl
+	xr
+	xs
+	xt
+	ia
+	ra
+	cp
+)
+const (
+	dst = 1
+	src = 2
+	off = 3
+)
