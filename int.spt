@@ -3,6 +3,7 @@
 
 * ops with result that may be a memory reference (always in first argument)
 * add aov dca dcv ica icv mnz mov sti str sub zer zgb
+*	dave	
 
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
 * copyright 2012-2013 david shields
@@ -35,7 +36,6 @@
 *
 *  you may also specify option flags on the command line to control the
 *  code generation.  the following flags are processed:
-*	compress	generate tabs rather than spaces in output file
 *       comments        retain full-line and end-of-line comments
 *
 *  the variable arch is set equal to the uppercase name of the machine
@@ -63,7 +63,7 @@
 *	also reads <file>.pub	for debug symbols to be declared public
 *
 *  example:
-*       spitbol -u v37:dos:compress codlinux.spt
+*       spitbol -u v37:dos codlinux.spt
 *
 *
 *  revision history:
@@ -111,57 +111,6 @@ config.i32-8
 *	op_c is instruction suffix for minimal character size
 	op_c = ''
 
-*	set z_trace to enable instruction by instruction trace
-	z_trace = 0
-*	z_limit is maximum number of calls to be generated if non-zero
-	z_limit = 000
-*	set z_first non-zero to skip first number of instructions that would generate trace
-	z_first = 0
-*	will set in_executable when in part of program where executable
-*	instructions may occur
-	z_exec = 0
-*
-*	z_suspend is set to temporarily disable the trace.
-	z_suspend = 0
-*	set in_skip when should not insert trace code, else assembly errors result.
-*	start with skip on, turn off when see first start of code.
-	z_skip = 1
-*	skip_on and skip_off are labels indicating the start and end,
-*	respectively, of sections of the code that should not be traced,
-*	usually because they contain a loop instruction that won't
-*	compile if too much trace code is inserted.
-	skip_on = table(50)
-	skip_off = table(50)
-
-	define('skip_init(s)on,off')		:(skip_init.end)
-skip_init	s break(':') . on ':' rem . off	:f(return)
-	skip_on[on] = 1
-	skip_off[off] = 1			:(return)
-skip_init.end
-
-*	skip_init('start:ini03')
-   	skip_init('gbcol:gtarr')
-*	skip_init('gtn01:gtnvr')
-*	skip_init('bpf05:bpf07')
-*	skip_init('scv12:scv19')
-*	skip_init('exbl1:exbl2')
-*	skip_init('exbl5:expan')
-*	skip_init('prn17:prn18')
-*	skip_init('ini11:ini13')
-*	skip_init('oex13:oexp2')
-*	skip_init('oex14:oexp6')
-*	skip_init('bdfc1:b_efc')
-*	skip_init('sar01:sar10')
-*	skip_init('srpl5:srpl8')
-*	skip_init('pflu1:pflu2')
-*	skip_init('prpa4:prpa5')
-*	skip_init('prn17:prn18')
-*	skip_init('prtvl:prtt1')
-*	skip_init('trim4:trim5')
-*	skip_init('prnl1:prnl2')
-*	skip_init('prti1:prtmi')
-*	skip_init('srpl5:srpl8')
-
 
 *
 *  data structures
@@ -184,7 +133,6 @@ skip_init.end
 *
 	define('crack(line)operands,operand,char')
 *
-	define('chktrace()')
 *	comregs - map minimal register names to target register names
 	define('comregs(line)t,pre,word')
 *
@@ -376,7 +324,7 @@ flgs2
 *  file has been read in.
 *
 *  p.outstmt examines output lines for certain types of comment contructions
-	fillc	  = (ident(compress) " ",tab)
+	fillc	  = tab
 	p.outstmt = (break(fillc) . label span(fillc)) . leader
 +			comment.delim rem . comment
 	p.alltabs = span(tab) rpos(0)
@@ -394,7 +342,7 @@ inputok output = '  input lex file: ' filenami
 *
 *  associate output files.
 *
-	filenamo = fileprefix '.i'
+	filenamo = fileprefix '.int'
         output(.outfile,2,filenamo)             :s(outputok)
         output = '  cannot open asm file: ' filenamo :(end)
 outputok
@@ -563,7 +511,7 @@ get2.2
         move(w2.minarg,i2)
 get2.3
 * merge to return with argument now in w1
-        get1 = w2	                        :(return)
+        get2 = w2	                        :(return)
 
 -stitl getarg(iarg,imem)
 getarg
@@ -708,7 +656,7 @@ memmem
 *  here if memory-memory case, load second argument
   t = get2()
   i2 = w2.minarg
-  genop('mov','w2',t)				:(return)
+  genop('load','w2',t)				:(return)
 
 -stltl move(dst,src)dtype,stype,stext,dtext
 * generate code for move instruction
@@ -720,16 +668,14 @@ move
 * push - push value from memory
 * pushi - push immdiate, that is, of the effective address
 * pop	- pop stack value to memory
-* popr  - pop stack value to registera
+* popr  - pop stack value to register
 *
 * result may need to be stored back to memory
 * new special casing
 	stype = i.type(src); stext = i.text(src)
 	dtype = i.type(dst); dtext = i.text(dst)
-
-
 * look for register to register move
-        ifreg(src) ifreg(dst) genop('mover',getreg(dst),getreg(src))  :s(return)
+        ifreg(src) ifreg(dst) genop('move',getreg(dst),getreg(src))  :s(return)
 
 * look for pop to register
         ifreg(dst) eq(stype,10) genop('popr',getreg(dst),getreg(src)) :s(return)
@@ -737,9 +683,9 @@ move
 * look for pop to memory
 	ifmem(dst) eq(stype,10)  genop('pop',getreg(src),getreg(dst),getoff(dst))    :s(return)
 * look for push of literal
- 	eq(dtype,11) iflit(src)  genop('pushl',getarg(dst),w0,getoff(src))   :s(return)
+ 	eq(dtype,11) iflit(src)  genop('pushi',getarg(dst),w0,getoff(src))   :s(return)
 * look for push of memory value
- 	eq(dtype,11) ifmem(src)  genop('pushm',getarg(dst),getreg(src),getoff(src))   :s(return)
+ 	eq(dtype,11) ifmem(src)  genop('push',getarg(dst),getreg(src),getoff(src))   :s(return)
 * look for push of register
  	eq(dtype,11) ifreg(src)  genop('pushr',getarg(dst),getreg(src))  :s(return)
 
@@ -786,13 +732,6 @@ outstmt2
 	op1 = t.op1(ostmt)
 	op2 = t.op2(ostmt)
 	op3 = t.op3(ostmt)
-	differ(compress)			:s(outstmt3)
-	stmtout = rpad( rpad(label,7) ' ' rpad(opcode,4) ' '
-.		  (ident(op1), op1
-.			(ident(op2), ',' op2
-.				(ident(op3), ',' op3))) ,27)
-.       (ident(strip_comment,'y'), ' ' (ident(comment), ';') comment)
-.						:(outstmt4)
 outstmt3
 	stmtout = label tab opcode tab
 .		  (ident(op1), op1
@@ -810,11 +749,6 @@ outstmt4
 *	stmtout = replace(trim(stmtout),'$','_')
 	stmtout = trim(stmtout)
 	ident(stmtout)				:s(return)
-	eq(z_trace)				:s(outstmt5)
-*	here if trace code desired for executable instructions
-	chktrace()
-outstmt5
-	ident(stmtout)				:s(return)
 	outfile = stmtout
 	ntarget	= ntarget + 1
 	noutlines = noutlines + 1
@@ -823,65 +757,6 @@ outstmt5
 	(ge(sectnow,5) differ(thislabel))	:f(return)
 	label ? break(':') . label		:f(return)
 	labtab<label> = noutlines		:(return)
-
--stitl  chktrace()
-chktrace
-*						:(return)
-*	output = 'chktrace:' inlines ':' label ':' stmtout
-*	output = differ (label) 'chktrace label:' label ':'
-*	turn off skip mode when begin executable code
-	clabel = inlabel
- 	old_z_skip = z_skip
- 	old_z_exec = z_exec
- 	old_is_exec = is_exec
-	z_skip = ident(inlabel,'s_aaa') 0
-
-*	incode ? any(lcase)			:s(return)
-	uopcode  = replace(incode, lcase,ucase)
-*  do not trace bsw (for now)
-	ident(uopcode,'bsw')			:s(return)
-	is_exec = is_executable[uopcode]
-	z_exec = ne(z_trace)  ident(inlabel, 's_aaa') 1
-	z_exec = gt(nlines,2186) 1
-*	need to skip certain blocks since otherwise get branches that are too long
-*	skip when in code that won't assemble if try to trace
-*	this was discovered on a case-by-case basis.
-
- 	z_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
- 	z_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
-
-	ne(z_skip)				:s(return)
-	eq(z_exec)				:s(return)
-	eq(is_exec)				:s(return)
-*	here to emit trace. need to emit trace after label if there is label
-* 	ident(inlabel)				:s(chktrace.1)
-*	only trace at labels since get jumps that are too removed otherwise
-*	ident(label)				:s(return)
-*	here to emit trace code when there is label
-*	first need to emit label, then fall through
-
-*	stmtout ? break_ws  . label spanws  rem . body	:f(outstmt5)
-* 	stmtout = tab body
-*	outfile = label
-*	label =
-	ne(in_gcol)				:s(return)
-chktrace.1
-	genz()
-						:(return)
-genz
-*	no trace if trace has been suspended
-*	output = ne(z_suspend) 'z_suspend ' thisline
- 	ne(z_suspend)			:s(return)
-* only trace at label definition
-*	ident(thislabel)			:s(return)
-	z_count = z_count + 1
-	gt(z_first) le(z_count,z_first)		:s(return)
-	gt(z_limit)  gt(z_count, z_limit)	:s(return)
-*	always generate trace if at label definition
-	z_desc = '"' replace(thisline,'{',' ') '"'
-	outfile = tab 'zzz' tab	z_count ',' nlines ',' z_desc
-	outlines = outlines + 1
-						:(return)
 
 -stitl prsarg(iarg)
 prsarg	prsarg = minarg(0)
@@ -908,8 +783,6 @@ readline readline = lower(infile)                      :f(rl02)
 	ident( readline )			:s(readline)
 readline.0
 	leq( substr(readline,1,1 ),'*' )       	:f(rl01)
-	z_skip = ident(readline,'*z+') 0	:s(readline)
-	z_skip = ident(readline,'*z-') 1	:s(readline)
 * force skip of full line comments
 	:(readline)
 *
@@ -1004,17 +877,15 @@ g.brn
 
 g.bsw	t1 = getarg(i1)
 	t2 = genlab()
-	z_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
 	genop('cmp',t1,getarg(i2))
 	genop('jge',getarg(i3))
 * here after default case.
 g.bsw1	genop('jmp', '[' t2 '+' t1 ']')
         genopl(t2 ':')
-	z_suspend = 0
 						:(opdone)
 
-g.iff   genop('lbl',getarg(i2))              :(opdone)
+g.iff   genop('dac',getarg(i2))              :(opdone)
 
 g.esw
         					:(opdone)
@@ -1065,13 +936,11 @@ g.jsr
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
 	eq(jsr_count)				:s(opdone)
-	z_suspend = 1
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
 	genop('dec','[' rcode ']')
 	genop('js',jsr_label_norm)
-	z_suspend = 0
 
 *	generate branch around for ppms that will follow
 *	take the branch if normal return (eax==0)
@@ -1098,7 +967,6 @@ g.ppm
 g.ppm.loop.next
 	genopl(lab_next ':')
  	jsr_count = jsr_count - 1
- 	z_suspend = eq(jsr_count) 0
 	eq(jsr_count) genopl(jsr_label_norm ':') :(opdone)
 g.ppm.loop
 	lab_next = genlab()
@@ -1569,9 +1437,9 @@ decend
 
 g.dac	t1 = i.type(i1)
         t2 = "" ;*(le(t1,2) "", le(t1,4) "d_offset_(", le(t1,6) "d_offset_(", "")
-        genopl(thislabel,'lbl',t2 i.text(i1))
+        genopl(thislabel,'dac',t2 i.text(i1))
 						:(decend)
-g.dic   genopl(thislabel,'lbl',i.text(i1))
+g.dic   genopl(thislabel,'dic',i.text(i1))
 						:(decend)
 
 g.drc
