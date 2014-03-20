@@ -69,7 +69,6 @@
 *  revision history:
 *
         version = 'v1.12'
-	rcode = '_rc_'
 *
 *
 -eject
@@ -140,7 +139,7 @@
 	define('genz()')
 	define('genaop(stmt)')
 	define('genbop(stmt)')
-	define('genconst(label,value)')
+	define('putconst(label,value)')
         define('genlab()')
 	define('genop(gopc,gop1,gop2,gop3)')
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
@@ -255,14 +254,30 @@
 +       'mnz mov mti mvw mwb ngi eti ngr nzb orb plc prc psc '
 +       'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
 +       'sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer '
-+	'ent inr lea move load loadi push pushi pop popr '
++	'decr ent inr lea move load loadi push pushi pop popr '
+* decr is used to decrement rc register (cf. rcode)
 
 *	don't trace mvc as doing so causes just 'end' to fail. sort out later. (ds 01/09/13)
 
-is_exec.1
-	s break(' ') . opc ' ' =			:f(is_exec.2)
-	opcodes[opc] = 1			:(is_exec.1)
-is_exec.2
+opcodes.1
+	s break(' ') . opc ' ' =			:f(opcodes.2)
+	opcodes[opc] = 1			:(opcodes.1)
+opcodes.2
+
+* since program is represented as an array of unsigned integers we cannot enter real constants, so we
+* create a map that can be used to enter the values later.
+	drctab = table(50)
+
+* initialize osint procs
+	osiprocs = 
+.	'sysax sysbs sysbx syscm sysdc sysdt sysea sysef sysej sysem sysen sysep sysex sysfc sysgc syshs '
+.	'sysid sysif sysil sysin sysio sysld sysmm sysmx sysou syspl syspp sysrw sysst systm sysul sysxi '
+	is_osint = table(50)
+	str = osiprocs
+osiprocs.1
+	str break(' ') . name ' ' =			:f(osiprocs.2)
+	is_osint[name] = 1			:(osiprocs.1)
+osiprocs.2
 
 -stitl main program
 *  here follows the driver code for the "main" program.
@@ -313,9 +328,12 @@ flgs2
 	wa = 'wa'; wb = 'wb'; wc = 'wc'
 	w0 = 'w0'; w1 = 'w1'; w2 = 'w2'
 	ia = 'ia'; cp = 'cp'
+* user rc for error handling (this is memory location in x32 version)
+	rc = 'rc'
 
 	w1.minarg = minarg(8, 'w1')
 	w2.minarg = minarg(8, 'w2')
+	rcode = minarg(8,'rc')
 
 *  other definitions that are dependent upon things defined in the
 *  machine definition file, and cannot be built until after the definition
@@ -383,6 +401,7 @@ pubend	endfile(5)
 nopub
 
 						:(dsout)
+
   &trace = 2000
   &ftrace = 1000
 *  &profile = 1
@@ -461,9 +480,10 @@ genaop
 -stitl genbop(stmt)
 genbop
 	bstmts[bstmts.n = bstmts.n + 1] = stmt	:(return)
--stitl	genconst(label,value)
-genconst
-	putline((differ(label) '/* ' label ' */' tab, tab tab) value ',') :(return)
+-stitl	putconst(label,value)
+putconst
+	differ(label) putlab(label)
+	putline(tab  value ',') :(return)
 
 
 
@@ -675,6 +695,7 @@ move
 	stype = i.type(src); stext = i.text(src)
 	dtype = i.type(dst); dtext = i.text(dst)
 * look for register to register move
+*	putline(dtype ' ' dtext ' ' stype ' ' stext)
         ifreg(src) ifreg(dst) genop('move',getreg(dst),getreg(src))  :s(return)
 
 * look for pop to register
@@ -683,11 +704,11 @@ move
 * look for pop to memory
 	ifmem(dst) eq(stype,10)  genop('pop',getreg(src),getreg(dst),getoff(dst))    :s(return)
 * look for push of literal
- 	eq(dtype,11) iflit(src)  genop('pushi',getarg(dst),,getoff(src))   :s(return)
+ 	eq(dtype,11) iflit(src)  genop('pushi',getreg(dst),,getoff(src))   :s(return)
 * look for push of memory value
- 	eq(dtype,11) ifmem(src)  genop('push',getarg(dst),getreg(src),getoff(src))   :s(return)
+ 	eq(dtype,11) ifmem(src)  genop('push',getreg(dst),getreg(src),getoff(src))   :s(return)
 * look for push of register
- 	eq(dtype,11) ifreg(src)  genop('pushr',getarg(dst),getreg(src))  :s(return)
+ 	eq(dtype,11) ifreg(src)  genop('pushr',getreg(dst),getreg(src))  :s(return)
 
 * look for load of immediate value
 	ifreg(dst) iflit(src) genop('loadi',getreg(dst),,getoff(src))  :s(return)
@@ -742,13 +763,13 @@ putstmt2
 	op1 = t.op1(ostmt)
 	op2 = t.op2(ostmt)
 	op3 = t.op3(ostmt)
-*	 putline('putstmt ' opcode ',' op1 ',' op2 ',' op3)
+	 putline('putstmt ' opcode ',' op1 ',' op2 ',' op3)
 
 putstmt3
 	stmtout = tab opcode 
-.	(differ(op1) tab '+ ' op1 ' >>dst ','')
-.	(ident(op2,'w0') '', differ(op2) tab '+ ' op2 ' >>src ','')
-.	(differ(op3) tab '+ ' op3 ' >>off ',, ) ','
+.	(differ(op1) tab '| ' op1 tab ' << dst ','')
+.	(ident(op2,'w0') '', differ(op2) tab '| ' op2 tab ' << src ','')
+.	(differ(op3) tab '| ' op3 tab ' <<off ',, ) ','
 *.       (ident(strip_comment,'y'), tab (ident(comment), ';') comment)
 *
 **	send text to outfile
@@ -779,7 +800,7 @@ put1
 * no need to issue store if argument is plain register
 	ident(get1.mem)				:s(return)
 * issue store in case first argument is memory location that must be updated
-        genop('put',w1,get1.mem)
+        genop('store',w1,,get1.mem)
 						:(return)
 
 -stitl readline()
@@ -898,11 +919,14 @@ g.bsw	t1 = getarg(i1)
 	genop('cmp',t1,getarg(i2))
 	genop('jge',,,getarg(i3))
 * here after default case.
-g.bsw1	genop('jmp', '[' t2 '+' t1 ']')
-        genopl(t2 )
-						:(opdone)
+g.bsw1	genop('jmp',t1,,t2)
+	flush()
+	putlab(t2)
+						:(opnext)
 
-g.iff   genop('dac',getarg(i2))              :(opdone)
+g.iff   
+	program_counter = program_counter + 1
+	putconst(,i.text(i2))			:(opnext)
 
 g.esw
         					:(opdone)
@@ -920,6 +944,8 @@ g.ent
 *  is a simple odd/even, least significant bit definition.
 *  that is, for us, 1 and 3 are odd, 2 and 4 are even.
 *
+	differ(thislabel) putlab(thislabel)
+
 	genop('ent',,,i.text(i1))		:(opdone)
 * TODO: Review this later
 
@@ -949,14 +975,15 @@ g.lei	t1 = $i.text(i1)
 
 g.jsr
 	jsr_proc = getarg(i1)
-	genop('call',,,jsr_proc)
+	jsr_op = (differ(is_osint[jsr_proc]) 'callos', 'call')
+	genop(jsr_op,,,jsr_proc)
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
 	eq(jsr_count)				:s(opdone)
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call' lpad(jsr_calls,3,'0')
 	jsr_label_norm = jsr_label
-	genop('dec','[' rcode ']')
+	genop('decr')
 	genop('js',,,jsr_label_norm)
 
 *	generate branch around for ppms that will follow
@@ -966,6 +993,7 @@ g.jsr
 g.err
 g.ppm
 
+	putline('//ppm')
 *  here with return code in rcode. it is zero for normal return
 *  and positive for error return. decrement the value.
 *  if it is negative then this is normal return. otherwise,
@@ -987,13 +1015,15 @@ g.ppm.loop.next
 	eq(jsr_count) genopl(jsr_label_norm ) :(opdone)
 g.ppm.loop
 	lab_next = genlab()
-	genop('dec','[' rcode ']')
+	genop('decr')
 	genop('jns',,,lab_next)
 	ident(incode,'ppm')			:s(g.ppm.loop.ppm)
 *  here if error exit via exi. set rcode to exit code and jump
 *  to error handler with error code in rcode
 g.ppm.loop.err
-	genop('mov','[' rcode ']', +t1)
+* TODO TODO
+*	move(rcode,minarg(2,+t1))
+*	genop('mov',rcode, +t1)
 	genop('jmp',,,'err_')
 						:(g.ppm.loop.next)
 g.ppm.loop.ppm
@@ -1031,12 +1061,13 @@ g.prc.n
 	genop('qop', '[' prcent(prc.count) ']')		:(opdone)
 
 g.exi
+	:(opdone)
  	t3 = i.text(i1)
         t1 = getarg(i1); t2 = prc.type
 *  if type r or e, and no exit parameters, just return
  	differ(t2,'n') eq(prc.args)	genop('ret')	:s(opdone)
         t3 = ident(t3) '0'
-    	genop('mov','[' rcode ']',+t3)
+	move(rcode,+t3)
 	ident(t2,'n')				:s(g.exi.1)
 	genop('ret')				:(opdone)
 g.exi.1
@@ -1050,7 +1081,7 @@ g.enp   genop('enp')					:(opdone)
 g.erb
 	errfile =  i.text(i1) ' ' i.text(i2)
 *	set rcode to error code and branch to error handler
-	genop('mov', '[' rcode ']',  +(i.text(i1)))
+*	genop('mov', rcode,  +(i.text(i1)))
  	genop('jmp',,,'err_')
 						:(opdone)
 
@@ -1068,12 +1099,8 @@ g.dcv
 * for zer (mnz) move register w0 (xs) to target
 g.zer
 g.mnz
-       zer.reg = (ident(incode, 'zer') 'w0', 'xs')
-       ifreg(i1)                                :f(g.mnz.1)
-       genop('mov', i.text(i1), zer.reg)        :(opdone)
-g.mnz.1
-* result may need to be stored back to memory
-        genop('put',zer.reg,,i.text(i1))
+	zer.reg = (ident(incode, 'zer') 'w0', 'xs')
+	move(i1,minarg(8,zer.reg))
                                                 :(opdone)
 
 g.ssl   genop('ssl')					:(opdone)
@@ -1176,7 +1203,7 @@ g.sti
 * result may need to be stored back to memory
 
         ifreg(i1)                               :s(opdone)
-        genop('put',ia,,getarg(i1))
+        genop('store',ia,,getarg(i1))
                                                 :(opdone)
 
 g.ino
@@ -1205,7 +1232,7 @@ g.str
 * here if result is register
         genop('mov',getarg(i1), ra)	:(opdone)
 g.str.1
-        genop('put',ra,getarg(i1))
+        genop('store',ra,,getarg(i1))
                                                 :(opdone)
 
 g.ldr
@@ -1452,15 +1479,29 @@ g.dac
 g.dbc
 g.dic
 	program_counter = program_counter + 1
-	labtab<thislabel> = program_counter
-	genconst(thislabel,i.text(i1))
+	putconst(thislabel,i.text(i1))
 						:(decend)
-g.dtc
 g.drc
-*TODO put out values later
 	program_counter = program_counter + 1
+	drctab<program_counter> = i.text(i1)
+						:(decend)
+
+g.dtc
+* each character needs separate declaration, but do not include enclosing '/' characters
+
+*	putline('dtc ' i.text(i1))
+	differ(thislabel) putlab(thislabel)
+	str = i.text(i1)
+	str = substr(str,2,size(str) - 2)
+
+g.dtc.1
+	str len(1) . c =			:f(decend)
+	program_counter = program_counter + 1
+	putconst("","'" c "'") 			:(g.dtc.1)
+
+*TODO put out values later
 	labtab<thislabel> = program_counter
-*	genconst(thislabel,i.text(i1))
+*	putconst(thislabel,i.text(i1))
 						:(decend)
 g.drc.old
 *	genop('align','1')
@@ -1471,17 +1512,12 @@ g.drc.old
 	t.label(cstmts[cstmts.n]) = thislabel
 	thislabel =				:(opdone)
 
-g.dtc.old
-        t1 = i.text(i1)
-        dtc.count = dtc.count + size(t1)
-	genop('dtc', t1)
-						:(opdone)
 g.equ   
 	putline(tab thislabel ' = ' i.text(i1))
 						:(opnext)
 g.exp
 	ppm_cases[thislabel] = i.text(i1)
-	putline('//' tab 'extern' tab thislabel)
+*	putline('//' tab 'extern' tab thislabel)
 	thislabel =				:(opnext)
 
 g.inp
@@ -1547,7 +1583,8 @@ g.sec.5
 *  get direction set to up.
 *        (gt(prc.count1) genopl('prc$' ':','times', prc.count1 ' dd 0'))
 *TODO	genop('prc_: times ' prc.count1 ' dd 0')
-	genconst('lowspmin','0')
+*	putlab('lowspmin')
+*	putconst('lowspmin','0')
         putline('// sec05' )
 						:(opnext)
 
@@ -1565,7 +1602,9 @@ g.sec.7
 *	allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
 	output = '  max.err ' max.err
-	genopl('err_','xchg',wa,'[' rcode ']')
+	putline('err code')
+	output = 'err code'
+	genopl('err_','xchg',wa,rc)
 						:(opdone)
 
 
@@ -1629,6 +1668,28 @@ g.end.3
 	i = i +  1
 	differ(labels<i,1>) putline(tab labels<i,1>  tab '=' tab  labels<i,2>)	:s(g.end.3)
 	putline(')')
+
+* write out any real constants that need to be patched into the program text
+	putline('reals := map[int] float32 {')
+	drcara = sort(drctab,1)
+	i = 0
+g.end.4
+	i = i + 1
+	putline(tab drcara<i,1> tab ':' tab  drcara<i,2> ",")				:s(g.end.4)
+	putline('}')
+
+* write out const definitions for osint procedures
+
+	putline('const (')
+	str = osiprocs
+	str break(' ') . name ' ' =
+	putline(tab name ' = iota + 1, ')
+g.end.5
+	str break(' ') . name ' ' =		:f(g.end.6)
+	putline(tab name ',')			:(g.end.5)
+g.end.6
+	putline(')')
+
 
 	endfile(1)
 	endfile(2)
