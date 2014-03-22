@@ -21,3 +21,15 @@ const (
 	src = 2
 	off = 3
 )
+/*
+const (
+	atn = iota
+	chp
+	cos
+	etx
+	lnf
+	sin
+	sqr
+	tan
+)
+*/

@@ -1,4 +1,4 @@
--title mincod: phase 2 translation from minimal tokens to 80386 code
+- title mincod: phase 2 translation from minimal tokens to 80386 code
 -stitl description
 
 * ops with result that may be a memory reference (always in first argument)
@@ -121,6 +121,7 @@
 
 	ppm_cases = table(50,,0)
 
+	error_messages = table(200)
 *
 *  function definitions
 *
@@ -248,16 +249,17 @@
 +       'add adi adr anb aov atn '
 +	'bct beq bev bge bgt bhi ble blo blt bne bnz bod '
 +       'brn bri bsw btw bze ceq chk chp cmb cmc cmp cne csc '
-+       'cos ctb ctw cvd cvm dca dcv eti dvi dvr erb esw etx flc '
++       'cos ctb ctw cvd cvm dca dcv eti dvi dvr err erb esw etx flc '
 +       'ica icp icv ieq ige igt ile ilt ine ino iov itr jmp '
 +       'jsr lch lct lcp lcw ldi ldr lei lnf lsh lsx mcb mfi mli mlr '
-+       'mnz mov mti mvw mwb ngi eti ngr nzb orb plc prc psc '
++       'mnz mov mti mvw mwb ngi eti ngr nzb orb plc ppm prc psc '
 +       'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
 +       'sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer '
-+	'decr ent inr lea move load loadi push pushi pop popr '
++	'decr ent inr lea move load loadi push pushi pop popr realop '
 * decr is used to decrement rc register (cf. rcode)
 
 *	don't trace mvc as doing so causes just 'end' to fail. sort out later. (ds 01/09/13)
+	opsused = table(100)
 
 opcodes.1
 	s break(' ') . opc ' ' =			:f(opcodes.2)
@@ -333,6 +335,7 @@ flgs2
 
 	w1.minarg = minarg(8, 'w1')
 	w2.minarg = minarg(8, 'w2')
+	ia.minarg = minarg(8, 'ia')
 	rcode = minarg(8,'rc')
 
 *  other definitions that are dependent upon things defined in the
@@ -363,14 +366,6 @@ inputok output = '  input lex file: ' filenami
         output = '  cannot open asm file: ' filenamo :(end)
 outputok
         output = '  output asm file: ' filenamo
-
-*
-* open file for compilation of minimal err and erb messages
-*
-        output(.errfile,3, fileprefix ".err")	:s(err_ok)
-        output = "  cannot open error message file: " fileprefix ".err" :(end)
-err_ok
-
 
 *  then copy contents of <machine>.hdr (if it exists) to outfile
 *  stop at line with just 'end' or end of file
@@ -483,18 +478,21 @@ genbop
 -stitl	putconst(label,value)
 putconst
 	differ(label) putlab(label)
+	program_counter = program_counter + 1
 	putline(tab  value ',') :(return)
-
-
-
+	
 -stitl genlab()
 *  generate unique labels for use in generated code
 genlab	genlab = 'labl' lpad(genlabels = genlabels + 1,3,'0') :(return)
 
 -stitl genopl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
-genopl	cstmts[cstmts.n = cstmts.n + 1] =
-.		tstmt(gopl,lower(gopc),gop1,gop2,gop3)	:(return)
+genopl	
+	gopc = lower(gopc)
+	output = ident(gopc,'sss') 'sss ' thisline
+	opsused[gopc] = opsused[gopc] + 1
+	cstmts[cstmts.n = cstmts.n + 1] =
+.		tstmt(gopl,gopc,gop1,gop2,gop3)	:(return)
 
 -stitl genop(gopc,gop1,gop2,gop3)
 *  generate operation with no label
@@ -571,13 +569,18 @@ getarg.c.10
 	t1 = $l1
 	getarg =  t1
  	(ident(l1,'xs') genaop(tstmt(,'inc',t1))) :s(return)
- 	genaop(tstmt(,'lea',t1,'[' t1 '+1]'))	:(return)
+*TODOTODO 	genaop(tstmt(,'lea',t1,'[' t1 '+1]'))	:(return)
+							:(return)
 
 *  -(x), register indirect, pre decrement
 getarg.c.11
 	t1 = $substr(l1,3,2)
 	getarg =  t1
-	genbop(tstmt(,'lea',t1,'[' t1 '-1]')) :(return)
+*TODOTODO
+
+* fix next op
+*	genbop(tstmt(,'lea',t1,'[' t1 '-1]')) 
+							:(return)
 
 * int(x)
 * dlbl(x)
@@ -763,13 +766,13 @@ putstmt2
 	op1 = t.op1(ostmt)
 	op2 = t.op2(ostmt)
 	op3 = t.op3(ostmt)
-	 putline('putstmt ' opcode ',' op1 ',' op2 ',' op3)
+*	 putline('putstmt ' opcode ',' op1 ',' op2 ',' op3)
 
 putstmt3
 	stmtout = tab opcode 
 .	(differ(op1) tab '| ' op1 tab ' << dst ','')
 .	(ident(op2,'w0') '', differ(op2) tab '| ' op2 tab ' << src ','')
-.	(differ(op3) tab '| ' op3 tab ' <<off ',, ) ','
+.	(differ(op3) tab '| ' op3 tab ' << off ',, ) ','
 *.       (ident(strip_comment,'y'), tab (ident(comment), ';') comment)
 *
 **	send text to outfile
@@ -788,7 +791,7 @@ putstmt4
 *  record code labels in table with delimiter removed.
 	ident(thislabel)			:s(return)
 	
-	labtab<label> = program_counter		:(return)
+	labtab<label> = program_counter - 1		:(return)
 
 -stitl prsarg(iarg)
 prsarg	prsarg = minarg(0)
@@ -925,11 +928,11 @@ g.bsw1	genop('jmp',t1,,t2)
 						:(opnext)
 
 g.iff   
-	program_counter = program_counter + 1
-	putconst(,i.text(i2))			:(opnext)
+	putconst(,i.text(i2))			
+						:(opnext)
 
 g.esw
-        					:(opdone)
+        					:(opnext)
 g.ent
 *
 *  entry points are stored in byte before program entry label
@@ -980,65 +983,13 @@ g.jsr
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
 	eq(jsr_count)				:s(opdone)
-	jsr_calls = jsr_calls +  1
-	jsr_label = 'call' lpad(jsr_calls,3,'0')
-	jsr_label_norm = jsr_label
-	genop('decr')
-	genop('js',,,jsr_label_norm)
-
-*	generate branch around for ppms that will follow
-*	take the branch if normal return (eax==0)
-						:(opdone)
+	genop('jsrerr',,,jsr_count)
+						:s(opdone)
 
 g.err
+	genop(incode,,,+i.text(i1))		:(opnext)
 g.ppm
-
-	putline('//ppm')
-*  here with return code in rcode. it is zero for normal return
-*  and positive for error return. decrement the value.
-*  if it is negative then this is normal return. otherwise,
-*  proceed decrementing rcode until it goes negative,and then
-*  take the appropriate branch.
-
-	t1 = getarg(i1)
-
-*  branch to next case if rcode code still not negative.
-	ident(incode,'ppm')			:s(g.ppm.loop)
-	count.err =  count.err + 1
-	errfile =   i.text(i1) ' ' i.text(i2)
-	max.err = gt(t1,max.err) t1
-						:(g.ppm.loop)
-
-g.ppm.loop.next
-	genopl(lab_next )
- 	jsr_count = jsr_count - 1
-	eq(jsr_count) genopl(jsr_label_norm ) :(opdone)
-g.ppm.loop
-	lab_next = genlab()
-	genop('decr')
-	genop('jns',,,lab_next)
-	ident(incode,'ppm')			:s(g.ppm.loop.ppm)
-*  here if error exit via exi. set rcode to exit code and jump
-*  to error handler with error code in rcode
-g.ppm.loop.err
-* TODO TODO
-*	move(rcode,minarg(2,+t1))
-*	genop('mov',rcode, +t1)
-	genop('jmp',,,'err_')
-						:(g.ppm.loop.next)
-g.ppm.loop.ppm
-*	check each ppm case and take branch if appropriate
-	ident(i.text(i1))			:s(g.ppm.2)
-	count.ppm = count.ppm + 1
-	genop('jmp',,,getarg(i1))
-						:(g.ppm.loop.next)
-
-g.ppm.2
-*  a ppm with no arguments, which should never be executed, is
-*  translated to err 299,internal logic error: unexpected ppm branch
-	t1 = 299
-	errfile =  t1 ' internal logic error: unexpected ppm branch'
-						:(g.ppm.loop.err)
+	genop(incode,,,i.text(i1))		:(opnext)
 
 g.prc
 
@@ -1061,29 +1012,29 @@ g.prc.n
 	genop('qop', '[' prcent(prc.count) ']')		:(opdone)
 
 g.exi
-	:(opdone)
  	t3 = i.text(i1)
         t1 = getarg(i1); t2 = prc.type
 *  if type r or e, and no exit parameters, just return
  	differ(t2,'n') eq(prc.args)	genop('ret')	:s(opdone)
         t3 = ident(t3) '0'
-	move(rcode,+t3)
+	genop('loadi',rc,,t3)
 	ident(t2,'n')				:s(g.exi.1)
 	genop('ret')				:(opdone)
 g.exi.1
 
-	genop('mov','wt', '['  prcent(prc.count) ']' )
+	genop('move','wt', '['  prcent(prc.count) ']' )
 	genop('jmp','wt')
 						:(opdone)
 
-g.enp   genop('enp')					:(opdone)
+g.enp   genop('enp')				:(opdone)
 
 g.erb
-	errfile =  i.text(i1) ' ' i.text(i2)
+	error_messages[+i.text(i1)] = i.text(i2)
+	genop('erb',,,'err_')
 *	set rcode to error code and branch to error handler
 *	genop('mov', rcode,  +(i.text(i1)))
- 	genop('jmp',,,'err_')
-						:(opdone)
+* 	genop('jmp',,,'err_')
+						:(opnext)
 
 g.start
 
@@ -1169,6 +1120,7 @@ g.lct
 	ident(thislabel)			:s(opnext)
 	genop('lct')					:(opdone)
 
+	
 g.lct.1	genop('mov',get1(),get2())	:(opdone)
 
 g.bct
@@ -1242,6 +1194,7 @@ g.mlr
 g.dvr
                                                 :(g.one)
 g.ngr
+						:(g.none)
 g.atn
 g.chp
 g.cos
@@ -1250,13 +1203,12 @@ g.lnf
 g.sin
 g.sqr
 g.tan
-                                                :(g.none)
+*	outline = 'realop ' thisline
+	genop('realop',,,incode)		
+                                                :(opdone)
 
-g.rno	t1 = 'jno'				:(g.rov1)
-g.rov	t1 = 'jo'
-g.rov1  genop('call',,,'ovr_')
-	genop(t1,getarg(i1))			:(opdone)
-
+g.rno	
+g.rov
 g.req
 g.rne
 g.rge
@@ -1274,8 +1226,10 @@ g.psc
 
 	t1 = get1()
 	t2 = i.type(i2)
-	((ifreg(i2), ge(t2,1) le(t2,2))
-+	genop('lea',t1,'[cfp_f+' t1 '+' get2() ']')) :s(opdone)
+*TODOTODO
+*fix next
+*	((ifreg(i2), ge(t2,1) le(t2,2))
+*+	genop('lea',t1,'[cfp_f+' t1 '+' get2() ']')) :s(opdone)
 	genop('add',t1,,'cfp_f')
 	eq(i.type(i2))				:s(opdone)
 *
@@ -1442,14 +1396,13 @@ g.mti	(ident(i.text(i1),'(xs)+') genop('qop',ia)) :s(opdone)
 
 g.mfi
 *  last arg is optional
+	eq(i.type(i2))				:s(g.mfi.1)
 *  compare with cfp$m, branching if result negative
-	eq(i.type(i2))				:s(g.mfi1)
-*  here if label given, branch if wc not in range (ie, negative)
-	genop('or',ia,ia)
-	genop('js',,,getarg(i2))
-g.mfi1	ident(i.text(i1),'wc') genop('mfil')		:s(opdone)
-	ident(i.text(i1),'-(xs)') genop('qush',ia)	:s(opdone)
-	genop('mov',getarg(i1),ia)		:(opdone)
+*  here if label given, branch if ia not in range (ie, negative)
+	genop(incode,,,getoff(i2))
+g.mfi.1
+	move(i1,ia.minarg)				
+						:(opdone)
 
 g.ctw
 g.ctb
@@ -1458,12 +1411,11 @@ g.cvm
 	genop(incode,getarg(i1))		:(opdone)
 
 g.cvd
-	genop('call',,,'cvd_')			:(opdone)
 g.mvc
 g.mcb
 g.mvw
 g.mwb
-	genop(incode)				:(opdone)
+						:(g.none)
 
 g.chk
 	genop('cmp','xs',,'lowspmin')
@@ -1478,12 +1430,14 @@ decend
 g.dac
 g.dbc
 g.dic
-	program_counter = program_counter + 1
 	putconst(thislabel,i.text(i1))
 						:(decend)
 g.drc
-	program_counter = program_counter + 1
+	str = i.text(i1)
+*	strip leading +
+	str '+' =
 	drctab<program_counter> = i.text(i1)
+	putconst(thislabel,"0")
 						:(decend)
 
 g.dtc
@@ -1496,22 +1450,9 @@ g.dtc
 
 g.dtc.1
 	str len(1) . c =			:f(decend)
-	program_counter = program_counter + 1
 	putconst("","'" c "'") 			:(g.dtc.1)
 
-*TODO put out values later
-	labtab<thislabel> = program_counter
-*	putconst(thislabel,i.text(i1))
 						:(decend)
-g.drc.old
-*	genop('align','1')
-	t1 = i.text(i1)
-	t1 ? fence "+" = ""
-        genop('d_real',t1)
-*  note that want to attach label to last instruction
-	t.label(cstmts[cstmts.n]) = thislabel
-	thislabel =				:(opdone)
-
 g.equ   
 	putline(tab thislabel ' = ' i.text(i1))
 						:(opnext)
@@ -1602,8 +1543,6 @@ g.sec.7
 *	allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
 	output = '  max.err ' max.err
-	putline('err code')
-	output = 'err code'
 	genopl('err_','xchg',wa,rc)
 						:(opdone)
 
@@ -1619,7 +1558,8 @@ flush	eq(astmts.n) eq(bstmts.n) eq(cstmts.n)	:f(opdone1)
 *  and comment field right.
 *
 	label = thislabel =
-	putstmt(tstmt())			:(opdone.6)
+*	putstmt(tstmt())			
+						:(opdone.6)
 opdone1	eq(bstmts.n)				:s(opdone.2)
 	i = 1
 opdone.1
@@ -1669,8 +1609,10 @@ g.end.3
 	differ(labels<i,1>) putline(tab labels<i,1>  tab '=' tab  labels<i,2>)	:s(g.end.3)
 	putline(')')
 
+* TODO - fix declaration below
+	:(g.end.4a)
 * write out any real constants that need to be patched into the program text
-	putline('reals := map[int] float32 {')
+	putline('reals = map[int] float32 {')
 	drcara = sort(drctab,1)
 	i = 0
 g.end.4
@@ -1678,25 +1620,60 @@ g.end.4
 	putline(tab drcara<i,1> tab ':' tab  drcara<i,2> ",")				:s(g.end.4)
 	putline('}')
 
+g.end.4a
 * write out const definitions for osint procedures
 
 	putline('const (')
 	str = osiprocs
 	str break(' ') . name ' ' =
-	putline(tab name ' = iota + 1, ')
+	putline(tab name ' = iota + 1 ')
 g.end.5
 	str break(' ') . name ' ' =		:f(g.end.6)
-	putline(tab name ',')			:(g.end.5)
+	putline(tab name )			:(g.end.5)
 g.end.6
 	putline(')')
 
+* list ops used
+	usedara = sort(opsused,1)
+	i = 0
+g.end.7
+	nused = nused + 1
+	opnam = usedara<i = i + 1,1>		:f(g.end.8)
+	opcnt = usedara<i,2>
+	output = opnam tab opcnt			
+						:(g.end.7)
+g.end.8
+
+*	output = 'ppm_cases'
+*	putline(tab "var ppm_cases =  map[int]int {")
+* list ppm_cases
+	ppm_cases_ara = sort(ppm_cases,1)
+	i = 0
+	:(g.end.10)
+* this may not be needed
+g.end.9
+	i = i + 1
+	putline(tab  ppm_cases_ara[i,1]  tab ':'	ppm_cases_ara[i,2] ',')	:s(g.end.9)
+	putline('}')
+g.end.10
+
+*	emit error messages
+	ara = sort(error_messages,1)
+	i = 0
+	putline('var error_messages = map[int]string {')
+g.end.11
+	i = i + 1
+	putline(tab ara<i,1> tab ': "' ara<i,2> '",')	:s(g.end.11)
+	putline("}")
+
+*	&dump = 2
 
 	endfile(1)
 	endfile(2)
-	endfile(3)
         report(nlines,		'lines read')
         report(nstmts,		'statements processed')
         report(ntarget,		'target code lines produced')
+	report(nused,		'opcodes used')
 	report(&stcount,	'spitbol statements executed')
         report(max.err,		'maximum err/erb number')
         report(prc.count1, 	'prc count')
@@ -1706,9 +1683,9 @@ g.end.6
 .	  ' inp ' prc.count1 ' prc ' prc.count
         differ(nerrors) report(nerrors,'errors detected')
 
-	errfile = '* ' max.err ' maximum err/erb number'
-	errfile  = '* ' prc.count ' prc count'
-.		differ(lasterror) '  the last error was in line ' lasterror
+*	errfile = '* ' max.err ' maximum err/erb number'
+*	errfile  = '* ' prc.count ' prc count'
+*.		differ(lasterror) '  the last error was in line ' lasterror
 
 	&code   = ne(nerrors) 2001
         report(collect(), 'free words')
