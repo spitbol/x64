@@ -112,7 +112,6 @@
 *  data structures
 *
 	data('minarg(i.type,i.text)')
-	data('tstmt(t.label,t.opc,t.op1,t.op2,t.op3,t.comment)')
 
 	sectnow = 0
 
@@ -136,7 +135,6 @@
 *  error is used to report an error for current statement
 *
 	define('error(text)')
-	define('flush()')
 	define('genz()')
 	define('genaop(stmt)')
 	define('genbop(stmt)')
@@ -164,7 +162,7 @@
 *  putstmt is used to send a target statement to the target code
 *  output file outfile
 *
-	define('putstmt(ostmt)label,opcode,op1,op2,op3,comment,t,stmtout')
+	define('putstmt(label,opcode,op1,op2,op3,comment)')
 
 *  readline is called to return the next non-comment line from
 *  the minimal input file (infile <=> lu1).   note that it will
@@ -182,16 +180,6 @@
 *
 	labtab = table(500)
 
-*  for each statement, code in generated into three
-*  arrays of statements:
-*
-*	astmts:	statements after opcode (()+, etc.)
-*	bstmts: statements before code (-(), etc)
-*	cstmts: generated code proper
-*
-	astmts = array(20,'')
-	bstmts = array(10,'')
-	cstmts = array(20,'')
 *
 *  genlabels is count of generated labels (cf. genlab)
 *
@@ -292,11 +280,7 @@ osiprocs.2
 *  for this opcode if there is one.
 *  the generators all have entry points beginning
 *  with "g.", and can be considered a logical extension of the
-*  opnext routine.  the generators have the choice of branching back
-*  to dsgen to cause the thisstmt plex to be sent to putstmt, or
-*  or branching to dsout, in which case the generator must output
-*  all needed code itself.
-*
+*  opnext routine.  
 *  the generators are listed in a separate section below.
 *
 *
@@ -400,7 +384,9 @@ nopub
   &ftrace = 1000
 *  &profile = 1
 dsout
-opnext	thisline = readline()
+opnext	
+	label = thislabel =
+	thisline = readline()
 	crack(thisline)				:f(dsout)
 *	 output = thisline
 *
@@ -468,12 +454,6 @@ error   outfile = '* *???* ' thisline
 	noutlines = noutlines + 2
 	le(nerrors = nerrors + 1, 10)		:s(dsout)
         output = 'too many errors, quitting'  	:(end)
--stitl genaop(stmt)
-genaop
-	astmts[astmts.n = astmts.n + 1] = stmt	:(return)
--stitl genbop(stmt)
-genbop
-	bstmts[bstmts.n = bstmts.n + 1] = stmt	:(return)
 -stitl	putconst(label,value)
 putconst
 	differ(label) putlab(label)
@@ -490,8 +470,7 @@ genopl
 	gopc = lower(gopc)
 	output = ident(gopc,'sss') 'sss ' thisline
 	opsused[gopc] = opsused[gopc] + 1
-	cstmts[cstmts.n = cstmts.n + 1] =
-.		tstmt(gopl,gopc,gop1,gop2,gop3)	:(return)
+	putstmt(gopl,gopc,gop1,gop2,gop3)	:(return)
 
 -stitl genop(gopc,gop1,gop2,gop3)
 *  generate operation with no label
@@ -743,19 +722,14 @@ putlab
 	labtab<label> = program_counter
 	putline('/* ' label ' */')		:(return)
 
--stitl putstmt(ostmt)label,opcode,op1,op2,op3,comment)
-*  this module writes the components of the statement
-*  passed in the argument list to the formatted .s file
-*
+-stitl putstmt(label,opcode,op1,op2,op3,comment)
 putstmt	
 *	putline(thisline)
-	label = t.label(ostmt)
 * clear label if definition already emitted
 	label = ident(label, lastlabel)
 	differ(label) putlab(label)
 
 putstmt1
-	comment = t.comment(ostmt)
 * ds suppress comments
  	comment = tcomment = comments =
  	:(putstmt2)
@@ -764,10 +738,6 @@ putstmt1
 	ident(tcomment)				:s(putstmt2)
 	comment = tcomment; tcomment =
 putstmt2
-	opcode = t.opc(ostmt)
-	op1 = t.op1(ostmt)
-	op2 = t.op2(ostmt)
-	op3 = t.op3(ostmt)
 *	 putline('putstmt ' opcode ',' op1 ',' op2 ',' op3)
 
 putstmt3
@@ -877,10 +847,10 @@ upper
 * 1 - Basic instruction set
 
 g.mov
-	move(i1,i2)				:(opdone)
+	move(i1,i2)				:(opnext)
 
 g.brn
-        genop('brn',,,getarg(i1))		:(opdone)
+        genop('brn',,,getarg(i1))		:(opnext)
         
 
 g.bsw	t1 = getarg(i1)
@@ -890,7 +860,6 @@ g.bsw	t1 = getarg(i1)
 	genop('jge',,,getarg(i3))
 * here after default case.
 g.bsw1	genop('jmp',t1,,t2)
-	flush()
 	putlab(t2)
 						:(opnext)
 
@@ -916,7 +885,7 @@ g.ent
 *
 	differ(thislabel) putlab(thislabel)
 
-	genop('ent',,,i.text(i1))		:(opdone)
+	genop('ent',,,i.text(i1))		:(opnext)
 * TODO: Review this later
 
 	t1 = i.text(i1)
@@ -929,19 +898,14 @@ g.ent.1
 g.ent.2
 	outlines = outlines + 2
 	genopl(thislabel)
-*  note that want to attach label to last instruction
-*	t1 = cstmts[cstmts.n]
-*	t.label(t1) = tlabel
-*	cstmts[cstmts.n] = t1
-*  here to see if want label made public
 	thislabel ? rtab(1) . thislabel 
 *        (differ(pubtab[thislabel]), differ(debug)) genop('global',thislabel)
-	thislabel =				:(opdone)
+	thislabel =				:(opnext)
 
-g.bri	genop('jmp',,,getarg(i1))		:(opdone)
+g.bri	genop('jmp',,,getarg(i1))		:(opnext)
 
 g.lei	t1 = $i.text(i1)
-	genop('lei',t1)	                        :(opdone)
+	genop('lei',t1)	                        :(opnext)
 
 g.jsr
 	jsr_proc = getarg(i1)
@@ -949,9 +913,9 @@ g.jsr
 	genop(jsr_op,,,jsr_proc)
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
-	eq(jsr_count)				:s(opdone)
+	eq(jsr_count)				:s(opnext)
 	genop('jsrerr',,,jsr_count)
-						:s(opdone)
+						:s(opnext)
 
 g.err
 	genop(incode,,,+i.text(i1))		:(opnext)
@@ -976,24 +940,24 @@ g.prc.r						:(opnext)
 g.prc.n
 *  store return address in reserved location
 	prc.count = prc.count + 1
-	genop('qop', '[' prcent(prc.count) ']')	:(opdone)
+	genop('qop', '[' prcent(prc.count) ']')	:(opnext)
 
 g.exi
  	t3 = i.text(i1)
         t1 = getarg(i1); t2 = prc.type
 *  if type r or e, and no exit parameters, just return
- 	differ(t2,'n') eq(prc.args)	genop('ret')	:s(opdone)
+ 	differ(t2,'n') eq(prc.args)	genop('ret')	:s(opnext)
         t3 = ident(t3) '0'
 	genop('loadi',rc,,t3)
 	ident(t2,'n')				:s(g.exi.1)
-	genop('ret')				:(opdone)
+	genop('ret')				:(opnext)
 g.exi.1
 
 	genop('move','wt', '['  prcent(prc.count) ']' )
 	genop('jmp','wt')
-						:(opdone)
+						:(opnext)
 
-g.enp   genop('enp')				:(opdone)
+g.enp   genop('enp')				:(opnext)
 
 g.erb
 	error_messages[+i.text(i1)] = i.text(i2)
@@ -1008,50 +972,50 @@ g.start
 g.icv
         genop('incv',get1())
         put1()
-                                                :(opdone)
+                                                :(opnext)
 g.dcv
         genop('decv',get1())
         put1()
-                                                :(opdone)
+                                                :(opnext)
 
 * for zer (mnz) move register w0 (xs) to target
 g.zer
 g.mnz
 	zer.reg = (ident(incode, 'zer') 'w0', 'xs')
 	move(i1,minarg(8,zer.reg))
-                                                :(opdone)
+                                                :(opnext)
 
-g.ssl   genop('ssl')				:(opdone)
+g.ssl   genop('ssl')				:(opnext)
 
-g.sss   genop('sss')				:(opdone)
+g.sss   genop('sss')				:(opnext)
 
 g.rtn
 	genop('rtn')
-                                                :(opdone)
+                                                :(opnext)
 
 * 2 - Operations on one word integer values (addresses)
 
 g.add
 	genop('add',get1(),get2())
         put1()
-                                                :(opdone)
+                                                :(opnext)
 
 g.sub
 	genop('sub',get1(),get2())
         put1()
-                                                :(opdone)
+                                                :(opnext)
 
 g.ica
 * result may need to be stored back to memory
         genop('incv',get1())
         put1()
-                                                :(opdone)
+                                                :(opnext)
 
 g.dca
 * result may need to be stored back to memory
         genop('decv',get1())
         put1()
-                                                :(opdone)
+                                                :(opnext)
 
 g.beq
 g.bne
@@ -1061,13 +1025,13 @@ g.blt
 g.ble
 g.blo
 g.bhi
-	genop(incode,get1(),get2(),getarg(i3)) 	:(opdone)
+	genop(incode,get1(),get2(),getarg(i3)) 	:(opnext)
 
 g.bod
 g.bev
 g.bnz
 g.bze
-	genop(incode,get1(),getarg(i2))		:(opdone)
+	genop(incode,get1(),getarg(i2))		:(opnext)
 
 g.lct
 *
@@ -1076,20 +1040,20 @@ g.lct
 	differ(i.text(i1),i.text(i2))		:s(g.lct.1)
 *  here if operands same. emit no code if no label, else emit null
 	ident(thislabel)			:s(opnext)
-	genop('lct')				:(opdone)
+	genop('lct')				:(opnext)
 
 	
-g.lct.1	genop('mov',get1(),get2())		:(opdone)
+g.lct.1	genop('mov',get1(),get2())		:(opnext)
 
 g.bct
-        genop('bct',getarg(i1),getarg(i2))    	:(opdone)
+        genop('bct',getarg(i1),getarg(i2))    	:(opnext)
 
 g.aov
 * result may need to be stored back to memory
 	genop('add',get2(),get1())
         put1()
 	genop('jc',,,getarg(i3))
-						:(opdone)
+						:(opnext)
 
 * 3 - Operations on the code pointer register (CP)
 
@@ -1111,14 +1075,14 @@ g.dvi
 g.rmi
                                                 :(op.one)
 g.ngi
-	genop(incode)				:(opdone)
+	genop(incode)				:(opnext)
 
 g.sti
-	move(i1,ia.minarg)			:(opdone)
+	move(i1,ia.minarg)			:(opnext)
 
 g.ino
 g.iov
-        genop(incode,,,getarg(i1))             	:(opdone)
+        genop(incode,,,getarg(i1))             	:(opnext)
 
 g.ieq
 g.ige
@@ -1126,7 +1090,7 @@ g.igt
 g.ile
 g.ilt
 g.ine
-        genop(incode,,,getarg(i1))             	:(opdone)
+        genop(incode,,,getarg(i1))             	:(opnext)
 
 * 5 - Operations on real values
 
@@ -1143,10 +1107,10 @@ g.str
 
         ifreg(i1)                               :f(g.str.1)
 * here if result is register
-        genop('mov',getarg(i1), ra)	:(opdone)
+        genop('mov',getarg(i1), ra)	:(opnext)
 g.str.1
         genop('store',ra,,getarg(i1))
-                                                :(opdone)
+                                                :(opnext)
 
 
 g.ngr
@@ -1161,7 +1125,7 @@ g.sqr
 g.tan
 *	outline = 'realop ' thisline
 	genop('realop',,,incode)		
-                                                :(opdone)
+                                                :(opnext)
 
 g.rno	
 g.rov
@@ -1172,7 +1136,7 @@ g.rgt
 g.rle
 g.rlt
 	genop(incode,,,getoff(i1))
-                                                :(opdone)
+                                                :(opnext)
 
 * 6 - Operations on character values
 
@@ -1187,13 +1151,13 @@ g.psc
 *TODOTODO
 *fix next
 *	((ifreg(i2), ge(t2,1) le(t2,2))
-*+	genop('lea',t1,'[cfp_f+' t1 '+' get2() ']')) :s(opdone)
+*+	genop('lea',t1,'[cfp_f+' t1 '+' get2() ']')) :s(opnext)
 	genop('add',t1,,'cfp_f')
-	eq(i.type(i2))				:s(opdone)
+	eq(i.type(i2))				:s(opnext)
 *
 *  here if d_offset_(given (in a variable), so add it in.
 *
-	genop('add',t1,get2())			:(opdone)
+	genop('add',t1,get2())			:(opnext)
 
 g.plc.1
 *  here for case where character size if word size
@@ -1203,14 +1167,14 @@ g.plc.1
 	t1 = get1()
 	t2 = i.type(i2)
 	((ifreg(i2), ge(t2,1) le(t2,2))
-+	genop('lea',t1,'[cfp_f+' t1 '+' get2() ']')) :s(opdone)
++	genop('lea',t1,'[cfp_f+' t1 '+' get2() ']')) :s(opnext)
 	genop('add',t1,,'cfp_f')
-	eq(i.type(i2))				:s(opdone)
+	eq(i.type(i2))				:s(opnext)
 *
 *  here if d_offset_(given (in a variable), so add it in, after converting to byte count
 	genop('mov','wt', get2())
 *
-	genop('add',t1,'wt')			:(opdone)
+	genop('add',t1,'wt')			:(opnext)
 *
 *  lch requires separate cases for each first operand possibility.
 *
@@ -1230,7 +1194,7 @@ g.lcg.1
 *  see if postincrement needed.
 	t2 rtab(1) '+'				:f(g.lcg.2)
 	(eq(1,1) genop('inc',$t3), genop('inc',$t3))
-g.lcg.2						:(opdone)
+g.lcg.2						:(opnext)
 
 g.sch
 	t2 = i.text(i2)
@@ -1243,7 +1207,7 @@ g.sch
 *
 	eq(1,1) genop('mov','al',get1())
 	ne(1,1) genop('mov','eax',get1())
-	genop('stos' op_c)			:(opdone)
+	genop('stos' op_c)			:(opnext)
 
 g.scg.0
 	leq('-',substr(t2,1,1))			:f(g.scg.1)
@@ -1258,7 +1222,7 @@ g.scg.1
 *  see if postincrement needed.
 	t2 rtab(1) '+'				:f(g.scg.2)
 	(eq(1,1) genop('inc',$t3), genop('inc',$t3))
-g.scg.2						:(opdone)
+g.scg.2						:(opnext)
 g.scg.w
 *
 *  here if moving character from work register, convert t1
@@ -1272,43 +1236,43 @@ g.scg.w
 	ident(t2,'-(xr)')			:s(g.scg.w.pxr)
 	ident(t2,'(xr)+')			:s(g.scg.w.xrp)
 g.scg.w.xl
-	genop('mov','[xl]',t1)			:(opdone)
+	genop('mov','[xl]',t1)			:(opnext)
 g.scg.w.pxl
 	genop('dec','xl')
-	genop('mov','[xl]',t1)			:(opdone)
+	genop('mov','[xl]',t1)			:(opnext)
 
 g.scg.w.xlp
 	genop('mov','[xl]',t1)
 	genop('inc', 'xl')
-						:(opdone)
+						:(opnext)
 g.scg.w.xr
-	genop('mov','[xr]',t1)			:(opdone)
+	genop('mov','[xr]',t1)			:(opnext)
 
 g.scg.w.pxr
 	genop('dec', 'xr')
-	genop('mov','[xr]',t1)			:(opdone)
+	genop('mov','[xr]',t1)			:(opnext)
 g.scg.w.xrp
 	(eq(1,1) genop('mov','al',t1), genop('mov','eax',t1))
-	genop('stos' op_c)			:(opdone)
+	genop('stos' op_c)			:(opnext)
 
 g.csc  	ident(thislabel)			:s(opnext)
-	genop('csc')				:(opdone)
+	genop('csc')				:(opnext)
 
 g.ceq
 g.cne 
-	genop(incode,get1(),get2(),getarg(i3))  :(opdone)
+	genop(incode,get1(),get2(),getarg(i3))  :(opnext)
 
 g.cmc
 *  cmc has two label operands, so generate two instructions
 	genop('cmc1',0,i.text(i1))
 	genop('cmc2',0,i.text(i2))
-						:(opdone)
+						:(opnext)
 
 g.trc
-	genop(incode)				:(opdone)
+	genop(incode)				:(opnext)
 
 g.flc
-	genop(incode,get1())			:(opdone)
+	genop(incode,get1())			:(opnext)
 
 * 7 - Operations on bit string values
 
@@ -1317,9 +1281,9 @@ g.orb
 g.xob
 g.rsh
 g.lsh
-	genop(incode,getarg(i1),getarg(i2))	:(opdone)
+	genop(incode,getarg(i1),getarg(i2))	:(opnext)
 
-g.cmb   genop(incode,getarg(i1))		:(opdone)
+g.cmb   genop(incode,getarg(i1))		:(opnext)
 
 g.rsx
 	error('rsx not supported')
@@ -1329,33 +1293,33 @@ g.lsx
 g.nzb	ifreg(i1)				:s(g.nzb1)
 	genop('cmp',getarg(i1),'0')
 	genop('jnz',getarg(i2))
-						:(opdone)
+						:(opnext)
 g.nzb1
 	genop('or',getreg(i1),getreg(i1))
 	genop('jnz',getarg(i2))
-						:(opdone)
+						:(opnext)
 
 g.zrb	ifreg(i1)				:s(g.zrb1)
 	genop('cmp',getarg(i1),'0')
 	genop('jz',getarg(i2))
-						:(opdone)
+						:(opnext)
 g.zrb1
 	genop('or',getreg(i1),getreg(i1))
 	genop('jz',getarg(i2))
-						:(opdone)
+						:(opnext)
 
 g.zgb
-	genop('nop')				:(opdone)
+	genop('nop')				:(opnext)
 
 
 * 8 - Conversion instructions
 
-g.wtb   	:(opdone)
+g.wtb   	:(opnext)
 
-g.btw   	:(opdone)
+g.btw   	:(opnext)
 
-g.mti	(ident(i.text(i1),'(xs)+') genop('qop',ia)) :s(opdone)
-	genop('mov',ia,get1())			:(opdone)
+g.mti	(ident(i.text(i1),'(xs)+') genop('qop',ia)) :s(opnext)
+	genop('mov',ia,get1())			:(opnext)
 
 g.mfi
 *  last arg is optional
@@ -1365,18 +1329,18 @@ g.mfi
 	genop(incode,,,getoff(i2))
 g.mfi.1
 	move(i1,ia.minarg)				
-						:(opdone)
+						:(opnext)
 
-g.itr genop(incode)				:(opdone)
+g.itr genop(incode)				:(opnext)
 
 g.rti
 *  here if label given, branch if real too large
-        genop(incode,,,getoff(i1))             	:(opdone)
+        genop(incode,,,getoff(i1))             	:(opnext)
 
 g.ctw
 g.ctb
 g.cvm
-	genop(incode,getarg(i1))		:(opdone)
+	genop(incode,getarg(i1))		:(opnext)
 
 g.cvd						:(op.none)
 
@@ -1393,7 +1357,7 @@ g.mwb
 g.chk
 	genop('cmp','xs',,'lowspmin')
 	genop('jb',,,'sec06')
-						:(opdone)
+						:(opnext)
 
 * 11 - Data generation instructions
 
@@ -1513,19 +1477,17 @@ g.sec.5
 *  stack overflow section.  output exi__n tail code
 g.sec.6
         genopl('sec06'  , 'nop')
-						:(opdone)
+						:(opnext)
 
 *  error section.  produce code to receive erb's
 g.sec.7
         putline('//sec07' )
-* TODO see why had flush here	flush()
-*  error section.  produce code to receive erb's
 
 *	allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
 	output = '  max.err ' max.err
 	genopl('err_','xchg',wa,rc)
-						:(opdone)
+						:(opnext)
 
 g.end						:(program.end)
 
@@ -1533,21 +1495,21 @@ g.end						:(program.end)
 * its arguments into the same target opcode.
 
 op.none
-        genop(incode)                           :(opdone)
+        genop(incode)                           :(opnext)
 
 op.one
         genop(incode,get1())
-                                                :(opdone)
+                                                :(opnext)
 op.two
         genop(incode,get1(),get2())
-                                                :(opdone)
+                                                :(opnext)
 
 op.oneput
 * here for standard case with single argument which is computed
 * and so must be stored back if it came from memory
 of 	ifreg(i1)				:f(op.oneput.1)
 * here if argument is register, so just use it
-	genop(incode,getreg(i1))		:(opdone)
+	genop(incode,getreg(i1))		:(opnext)
 op.oneput.1
 * here if argument in memory. First bring it to w1
 	oneput.arg = i1
@@ -1556,47 +1518,12 @@ op.oneput.1
 	genop(incode,oneput.res)
 * and now store it back
 	genop('store',oneput.res,oneput.reop.oneput.off)	
-						:(opdone)
+						:(opnext)
 op.twoput
 * here for standard case with two arguments
         genop(incode,get1(),get2())
         differ(get1.mem) put1('w1',get1.mem)
-                                                :(opdone)
-
-opdone	flush()					:(opnext)
-*
-*  here to emit bstmts, cstmts, astmts. attach input label and
-*  comment to first instruction generated.
-*
-flush	eq(astmts.n) eq(bstmts.n) eq(cstmts.n)	:f(opdone1)
-*
-*  here if some statements to emit, so output single 'null' statement to get label
-*  and comment field right.
-*
-	label = thislabel =
-*	putstmt(tstmt())			
-						:(opdone.6)
-opdone1	eq(bstmts.n)				:s(opdone.2)
-	i = 1
-opdone.1
-	putstmt(bstmts[i])
-	le(i = i + 1, bstmts.n)			:s(opdone.1)
-
-opdone.2	eq(cstmts.n)			:s(opdone.4)
-	i = 1
-opdone.3
-	putstmt(cstmts[i])
-	le(i = i + 1, cstmts.n)			:s(opdone.3)
-
-opdone.4	eq(astmts.n)			:s(opdone.6)
-	i = 1
-	ident(pifatal[incode])			:s(opdone.5)
-*  here if post incrementing code not allowed
-	error('post increment not allowed for op ' incode)
-opdone.5	putstmt(astmts[i])
-	le(i = i + 1, astmts.n)			:s(opdone.5)
-opdone.6 astmts.n = bstmts.n = cstmts.n =	:(return)
-flush_end
+                                                :(opnext)
 
 report
 	output = lpad(num,10) '  ' text		:(return)
