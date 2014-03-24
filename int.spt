@@ -152,7 +152,6 @@
 	define('iflit(iarg)')
 	define('ifmem(iarg)')
 	define('ifreg(iarg)')
-	define('memmem()t')
 	define('move(dst,src)dtype,stype,mop,stext,dtext')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
@@ -388,7 +387,7 @@ nohdr
 *  be declared public when encountered.
 *
 	pubtab = table(2)
-	input(.pubfile,5, fileprefix ".pub")		:f(nopub)
+	input(.pubfile,5, fileprefix ".pub")	:f(nopub)
 	pubtab = table(101)
 pubcopy	line = pubfile				:f(pubend)
 	pubtab[line] = 1			:(pubcopy)
@@ -468,7 +467,7 @@ error   outfile = '* *???* ' thisline
 	lasterror = noutlines
 	noutlines = noutlines + 2
 	le(nerrors = nerrors + 1, 10)		:s(dsout)
-        output = 'too many errors, quitting'  :(end)
+        output = 'too many errors, quitting'  	:(end)
 -stitl genaop(stmt)
 genaop
 	astmts[astmts.n = astmts.n + 1] = stmt	:(return)
@@ -505,9 +504,9 @@ genop   genopl(,lower(gopc),gop1,gop2,gop3)
 * value into w1
 get1
 	ifreg(i1)				:f(get1.1)
-        get1 = getreg(i1)                      :(return)
+        get1 = getreg(i1)			:(return)
 get1.1
-        iflit(i1)                              :f(get1.2)
+        iflit(i1)				:f(get1.2)
 	genop('loadi',w1,,getoff(i1))		:(get1.3)
 get1.2
 * here if argument in memory, so load to w1
@@ -520,9 +519,9 @@ get1.3
 * return register if i2 is register, else load i2 value to w1
 get2
 	ifreg(i2)				:f(get2.1)
-        get2 = getreg(i2)                      :(return)
+        get2 = getreg(i2)			:(return)
 get2.1
-        iflit(i2)                              :f(get2.2)
+        iflit(i2)				:f(get2.2)
 	genop('loadi',w2,,getoff(i2))		:(get2.3)
 get2.2
 * here if source in memory, so load to w2
@@ -546,7 +545,7 @@ getarg.c.2 getarg = l1				:(return)
 
 * wlbl, clbl
 getarg.c.3
-getarg.c.4 getarg =  l1      	:(return)
+getarg.c.4 getarg =  l1      			:(return)
 
 * elbl, plbl
 getarg.c.5
@@ -555,7 +554,7 @@ getarg.c.6 getarg = l1				:(return)
 * w,x, map register name
 getarg.c.7
 getarg.c.8
-	getarg = $l1			:(return)
+	getarg = $l1				:(return)
 
 * (x), register indirect
 getarg.c.9
@@ -570,7 +569,7 @@ getarg.c.10
 	getarg =  t1
  	(ident(l1,'xs') genaop(tstmt(,'inc',t1))) :s(return)
 *TODOTODO 	genaop(tstmt(,'lea',t1,'[' t1 '+1]'))	:(return)
-							:(return)
+						:(return)
 
 *  -(x), register indirect, pre decrement
 getarg.c.11
@@ -580,20 +579,20 @@ getarg.c.11
 
 * fix next op
 *	genbop(tstmt(,'lea',t1,'[' t1 '-1]')) 
-							:(return)
+						:(return)
 
 * int(x)
 * dlbl(x)
 getarg.c.12
 getarg.c.13
 	l1 break('(') . t1 '(' len(2) . t2
-	getarg =  $t2 '!' t1   	:(return)
+	getarg =  $t2 '!' t1   			:(return)
 
 *  name(x), where name is in working section
 getarg.c.14
 getarg.c.15
 	l1 break('(') . t1 '(' len(2) . t2
-	getarg = $t2 '!' t1 :(return)
+	getarg = $t2 '!' t1			:(return)
 
 * signed integer
 getarg.c.16 getarg = l1				:(return)
@@ -607,7 +606,7 @@ getarg.c.18
 
 *  *dlbl
 getarg.c.19
-	getarg = substr(l1,2)		:(return)
+	getarg = substr(l1,2)			:(return)
 
 *  =name (data section)
 getarg.c.20
@@ -651,35 +650,39 @@ getreg
 * assume result is w0
 	getreg = w0
 	atype = i.type(iarg)
-	lt(atype,6)			:s(return)
-	gt(atype,8)			:s(getreg.1)
+	lt(atype,6)				:s(return)
+	gt(atype,8)				:s(getreg.1)
 * here if explicit x or w register
-	getreg = i.text(iarg)		:(return)
+	getreg = i.text(iarg)			:(return)
 getreg.1
-	gt(atype,15)			:s(getreg.2)
+	gt(atype,15)				:s(getreg.2)
 * here if register enclosed in parentheses
 	i.text(iarg) break('(') '('  len(2) . getreg 	:(return)
 getreg.2
 * no type if numeric constant
-	le(atype,17)			:s(return)
-	gt(atype,22)			:s(return)
+	le(atype,17)				:s(return)
+	gt(atype,22)				:s(return)
 * here if literal, so return w0
-	getreg = 'w0'			:(return)
+	getreg = 'w0'				:(return)
 
-						:(return)
--stitl memmem()t
-memmem
-*  memmem is called for those ops for which both operands may be
-*  in memory, in which case, we generate code to load second operand
-*  to pseudo-register 'w2', and then modify the second argument
-*  to reference this register
-*
-  :(return)
-  ifmem(i1) ifmem(i2    )			:f(return)
-*  here if memory-memory case, load second argument
-  t = get2()
-  i2 = w2.minarg
-  genop('load','w2',,t)				:(return)
+-stitl iflit(iarg) - test if argument is literal
+iflit	ge(i.type(iarg),18) le(i.type(iarg),22) :f(freturn)s(return)
+
+-stitl ifmem(iarg) - test if argument is in memory
+ifmem
+        ge(i.type(iarg),3) lt(i.type(iarg),6)  	:s(return)
+	ge(i.type(iarg),9) le(i.type(iarg),15)	:s(return)f(freturn)
+
+-stitl ifreg(iarg) - test if argument is register
+ifreg	
+*	ia is considered to be a register
+	eq(i.type(iarg),8) ident(i.text(iarg),'ia')	:s(return)
+	ge(i.type(iarg),7) le(i.type(iarg),8) 	:f(freturn)s(return)
+
+-stitl lower(s) -  convert argument to upper case
+lower
+	lower = replace(s,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+.			  'abcdefghijklmnopqrstuvwxyz')	:(return)
 
 -stltl move(dst,src)dtype,stype,stext,dtext
 * generate code for move instruction
@@ -723,7 +726,6 @@ move
 	ifmem(dst) ifreg(src) genop('store',getreg(src),getreg(dst),getoff(dst))  :s(return)
 
 * here if have memory-to-memory case, so move src to w1 and then do store
-*	memmem()
 	move(w1.minarg,src)
 	move(dst,w1.minarg)
 						:(return)
@@ -733,7 +735,7 @@ move.1
 
 -stitl prcent(n)
 prcent 
-	prcent = 'prc_' '+'  (1 * ( n - 1)) :(return)
+	prcent = 'prc_' '+'  (1 * ( n - 1)) 	:(return)
 
 -stitl putlab(label)
 putlab
@@ -791,7 +793,7 @@ putstmt4
 *  record code labels in table with delimiter removed.
 	ident(thislabel)			:s(return)
 	
-	labtab<label> = program_counter - 1		:(return)
+	labtab<label> = program_counter - 1	:(return)
 
 -stitl prsarg(iarg)
 prsarg	prsarg = minarg(0)
@@ -813,7 +815,7 @@ put1
 *  comments are passed through to the output file directly.
 *
 *
-readline readline = lower(infile)                      :f(rl02)
+readline readline = lower(infile)              	:f(rl02)
 	nlines  = nlines + 1
 	ident( readline )			:s(readline)
 readline.0
@@ -867,53 +869,18 @@ tin02   str     (break('[') $ index len(1) break(']') $ val len(1)) =
 	tblini[index] = val			:(tin02)
 -stitl generators
 
-iflit	ge(i.type(iarg),18) le(i.type(iarg),22) :f(freturn)s(return)
+-stitl upper(s) - convert string to upper case
+upper
+	upper = replace(s,'abcdefghijklmnopqrstuvwxyz',
+.			  'ABCDEFGHIJKLMNOPQRSTUVWXYZ')	:(return)
 
-ifmem
-        ge(i.type(iarg),3) lt(i.type(iarg),6)    :s(return)
-	ge(i.type(iarg),9) le(i.type(iarg),15)	:s(return)f(freturn)
-
-ifreg	ge(i.type(iarg),7) le(i.type(iarg),8) 	:f(freturn)s(return)
+* 1 - Basic instruction set
 
 g.mov
 	move(i1,i2)				:(opdone)
-g.none
-* here for standard case with no arguments
-        genop(incode)                           :(opdone)
-
-g.one
-* here for standard case with single value argument
-        genop(incode,get1())
-                                                :(opdone)
-g.two
-* here for standard case with two value arguments
-        genop(incode,get1(),get2())
-                                                :(opdone)
-
-g.oneput
-* here for standard case with single argument which is computed
-* and so must be stored back if it came from memory
-	ifreg(i1)				:f(g.oneput.1)
-* here if argument is register, so just use it
-	genop(incode,getreg(i1))		:(opdone)
-g.oneput.1
-* here if argument in memory. First bring it to w1
-	oneput.arg = i1
-* then do the operation
-	oneput.res = get1()
-	genop(incode,oneput.res)
-* and now store it back
-	genop('store',oneput.res,oneput.reg,oneput.off)	
-						:(opdone)
-g.twoput
-* here for standard case with two arguments
-        genop(incode,get1(),get2())
-        differ(get1.mem) put1('w1',get1.mem)
-                                                :(opdone)
-
 
 g.brn
-        genop('brn',,,getarg(i1))                 :(opdone)
+        genop('brn',,,getarg(i1))		:(opdone)
         
 
 g.bsw	t1 = getarg(i1)
@@ -971,7 +938,7 @@ g.ent.2
 *        (differ(pubtab[thislabel]), differ(debug)) genop('global',thislabel)
 	thislabel =				:(opdone)
 
-g.bri	genop('jmp',,,getarg(i1))			:(opdone)
+g.bri	genop('jmp',,,getarg(i1))		:(opdone)
 
 g.lei	t1 = $i.text(i1)
 	genop('lei',t1)	                        :(opdone)
@@ -1009,7 +976,7 @@ g.prc.r						:(opnext)
 g.prc.n
 *  store return address in reserved location
 	prc.count = prc.count + 1
-	genop('qop', '[' prcent(prc.count) ']')		:(opdone)
+	genop('qop', '[' prcent(prc.count) ']')	:(opdone)
 
 g.exi
  	t3 = i.text(i1)
@@ -1054,24 +1021,22 @@ g.mnz
 	move(i1,minarg(8,zer.reg))
                                                 :(opdone)
 
-g.ssl   genop('ssl')					:(opdone)
+g.ssl   genop('ssl')				:(opdone)
 
-g.sss   genop('sss')					:(opdone)
+g.sss   genop('sss')				:(opdone)
 
 g.rtn
 	genop('rtn')
                                                 :(opdone)
 
+* 2 - Operations on one word integer values (addresses)
+
 g.add
-* may have result in memory
-        memmem()
 	genop('add',get1(),get2())
         put1()
                                                 :(opdone)
 
 g.sub
-* result may need to be stored back to memory
-        memmem()
 	genop('sub',get1(),get2())
         put1()
                                                 :(opdone)
@@ -1096,20 +1061,13 @@ g.blt
 g.ble
 g.blo
 g.bhi
-*
-*  these operators all have two operands, memmem may apply
-*
-	memmem()
-	genop('cmp',get1(),get2())
-	genop(incode,,,getarg(i3))
-.						:(opdone)
+	genop(incode,get1(),get2(),getarg(i3)) 	:(opdone)
 
 g.bod
 g.bev
 g.bnz
 g.bze
 	genop(incode,get1(),getarg(i2))		:(opdone)
-
 
 g.lct
 *
@@ -1118,13 +1076,13 @@ g.lct
 	differ(i.text(i1),i.text(i2))		:s(g.lct.1)
 *  here if operands same. emit no code if no label, else emit null
 	ident(thislabel)			:s(opnext)
-	genop('lct')					:(opdone)
+	genop('lct')				:(opdone)
 
 	
-g.lct.1	genop('mov',get1(),get2())	:(opdone)
+g.lct.1	genop('mov',get1(),get2())		:(opdone)
 
 g.bct
-        genop('bct',getarg(i1),getarg(i2))    :(opdone)
+        genop('bct',getarg(i1),getarg(i2))    	:(opdone)
 
 g.aov
 * result may need to be stored back to memory
@@ -1132,13 +1090,18 @@ g.aov
         put1()
 	genop('jc',,,getarg(i3))
 						:(opdone)
+
+* 3 - Operations on the code pointer register (CP)
+
 g.lcp
 g.lcw
 g.scp
-                                                :(g.one)
+                                                :(op.one)
 
 g.icp
-                                                :(g.none)
+                                                :(op.none)
+
+* 4 - Operatons on signed integer values
 
 g.ldi
 g.adi
@@ -1146,21 +1109,16 @@ g.mli
 g.sbi
 g.dvi
 g.rmi
-
-                                                :(g.one)
+                                                :(op.one)
 g.ngi
 	genop(incode)				:(opdone)
 
 g.sti
-* result may need to be stored back to memory
-
-        ifreg(i1)                               :s(opdone)
-        genop('store',ia,,getarg(i1))
-                                                :(opdone)
+	move(i1,ia.minarg)			:(opdone)
 
 g.ino
 g.iov
-        genop(incode,,,getarg(i1))                :(opdone)
+        genop(incode,,,getarg(i1))             	:(opdone)
 
 g.ieq
 g.ige
@@ -1168,14 +1126,17 @@ g.igt
 g.ile
 g.ilt
 g.ine
-        genop(incode,,,getarg(i1))                :(opdone)
+        genop(incode,,,getarg(i1))             	:(opdone)
+
+* 5 - Operations on real values
 
 
-g.itr genop(incode)			:(opdone)
-
-g.rti
-*  here if label given, branch if real too large
-        genop(incode,,,getoff(i1))                 :(opdone)
+g.ldr
+g.adr
+g.sbr
+g.mlr
+g.dvr
+                                                :(op.one)
 
 g.str
 * result may need to be stored back to memory
@@ -1187,14 +1148,9 @@ g.str.1
         genop('store',ra,,getarg(i1))
                                                 :(opdone)
 
-g.ldr
-g.adr
-g.sbr
-g.mlr
-g.dvr
-                                                :(g.one)
+
 g.ngr
-						:(g.none)
+						:(op.none)
 g.atn
 g.chp
 g.cos
@@ -1218,9 +1174,11 @@ g.rlt
 	genop(incode,,,getoff(i1))
                                                 :(opdone)
 
+* 6 - Operations on character values
+
 g.plc
 g.psc
-	ne(1,1)				:s(g.plc.1)
+	ne(1,1)					:s(g.plc.1)
 *  last arg is optional.  if present and a register or constant,
 *  use lea instead.
 
@@ -1235,7 +1193,7 @@ g.psc
 *
 *  here if d_offset_(given (in a variable), so add it in.
 *
-	genop('add',t1,get2())		:(opdone)
+	genop('add',t1,get2())			:(opdone)
 
 g.plc.1
 *  here for case where character size if word size
@@ -1252,7 +1210,7 @@ g.plc.1
 *  here if d_offset_(given (in a variable), so add it in, after converting to byte count
 	genop('mov','wt', get2())
 *
-	genop('add',t1,'wt')		:(opdone)
+	genop('add',t1,'wt')			:(opdone)
 *
 *  lch requires separate cases for each first operand possibility.
 *
@@ -1314,7 +1272,7 @@ g.scg.w
 	ident(t2,'-(xr)')			:s(g.scg.w.pxr)
 	ident(t2,'(xr)+')			:s(g.scg.w.xrp)
 g.scg.w.xl
-	genop('mov','[xl]',t1)		:(opdone)
+	genop('mov','[xl]',t1)			:(opdone)
 g.scg.w.pxl
 	genop('dec','xl')
 	genop('mov','[xl]',t1)			:(opdone)
@@ -1331,13 +1289,13 @@ g.scg.w.pxr
 	genop('mov','[xr]',t1)			:(opdone)
 g.scg.w.xrp
 	(eq(1,1) genop('mov','al',t1), genop('mov','eax',t1))
-	genop('stos' op_c)				:(opdone)
+	genop('stos' op_c)			:(opdone)
 
 g.csc  	ident(thislabel)			:s(opnext)
-	genop('csc')					:(opdone)
+	genop('csc')				:(opdone)
 
 g.ceq
-g.cne   memmem()
+g.cne 
 	genop(incode,get1(),get2(),getarg(i3))  :(opdone)
 
 g.cmc
@@ -1350,7 +1308,9 @@ g.trc
 	genop(incode)				:(opdone)
 
 g.flc
-	genop(incode,get1())				:(opdone)
+	genop(incode,get1())			:(opdone)
+
+* 7 - Operations on bit string values
 
 g.anb
 g.orb
@@ -1387,12 +1347,15 @@ g.zrb1
 g.zgb
 	genop('nop')				:(opdone)
 
+
+* 8 - Conversion instructions
+
 g.wtb   	:(opdone)
 
 g.btw   	:(opdone)
 
 g.mti	(ident(i.text(i1),'(xs)+') genop('qop',ia)) :s(opdone)
-	genop('mov',ia,get1())		:(opdone)
+	genop('mov',ia,get1())			:(opdone)
 
 g.mfi
 *  last arg is optional
@@ -1404,28 +1367,35 @@ g.mfi.1
 	move(i1,ia.minarg)				
 						:(opdone)
 
+g.itr genop(incode)				:(opdone)
+
+g.rti
+*  here if label given, branch if real too large
+        genop(incode,,,getoff(i1))             	:(opdone)
+
 g.ctw
 g.ctb
-	genop(incode,getarg(i1))			:(opdone)
 g.cvm
 	genop(incode,getarg(i1))		:(opdone)
 
-g.cvd
+g.cvd						:(op.none)
+
+* 9 - BLock move instructions
+
 g.mvc
 g.mcb
 g.mvw
 g.mwb
-						:(g.none)
+						:(op.none)
+
+* 10 - Operations connected with the stack
 
 g.chk
 	genop('cmp','xs',,'lowspmin')
 	genop('jb',,,'sec06')
 						:(opdone)
 
-decend
-*  here at end of dic or dac to see if want label made public
-*	thislabel ? rtab(1) . thislabel 
-						:(opnext)
+* 11 - Data generation instructions
 
 g.dac
 g.dbc
@@ -1453,6 +1423,14 @@ g.dtc.1
 	putconst("","'" c "'") 			:(g.dtc.1)
 
 						:(decend)
+
+decend
+*  here at end of dic or dac to see if want label made public
+*	thislabel ? rtab(1) . thislabel 
+						:(opnext)
+
+* 12 - Symbol definition instructions
+
 g.equ   
 	putline(tab thislabel ' = ' i.text(i1))
 						:(opnext)
@@ -1469,6 +1447,8 @@ g.inp
 g.inr
 	putline('//' tab incode tab thislabel) :(opnext) 
 
+* 13 - Assembly listing layout instruction
+
 g.ejc						:(opnext)
 
 g.ttl	
@@ -1477,6 +1457,7 @@ g.ttl
 
 						:(opnext)
 
+* 14 - Program form
 g.sec	sectnow = sectnow + 1			:($("g.sec." sectnow))
 
 * procedure declaration section
@@ -1493,7 +1474,7 @@ g.sec.1
 g.sec.1.2
 	i = i +  1
 *	differ(opcodea<i,1>) putline(tab opcodea<i,1>  tab '=' tab  opcodea<i,2>)	:s(g.sec.1.2)
-	putline(tab opcodea<i,1>)	:s(g.sec.1.2)
+	putline(tab opcodea<i,1>)		:s(g.sec.1.2)
 	putline(')')
 
 g.sec.1.1
@@ -1532,7 +1513,7 @@ g.sec.5
 *  stack overflow section.  output exi__n tail code
 g.sec.6
         genopl('sec06'  , 'nop')
-				             :(opdone)
+						:(opdone)
 
 *  error section.  produce code to receive erb's
 g.sec.7
@@ -1546,6 +1527,41 @@ g.sec.7
 	genopl('err_','xchg',wa,rc)
 						:(opdone)
 
+g.end						:(program.end)
+
+* These utility procedures are used to just map Minimal opcode and
+* its arguments into the same target opcode.
+
+op.none
+        genop(incode)                           :(opdone)
+
+op.one
+        genop(incode,get1())
+                                                :(opdone)
+op.two
+        genop(incode,get1(),get2())
+                                                :(opdone)
+
+op.oneput
+* here for standard case with single argument which is computed
+* and so must be stored back if it came from memory
+of 	ifreg(i1)				:f(op.oneput.1)
+* here if argument is register, so just use it
+	genop(incode,getreg(i1))		:(opdone)
+op.oneput.1
+* here if argument in memory. First bring it to w1
+	oneput.arg = i1
+* then do the operation
+	oneput.res = get1()
+	genop(incode,oneput.res)
+* and now store it back
+	genop('store',oneput.res,oneput.reop.oneput.off)	
+						:(opdone)
+op.twoput
+* here for standard case with two arguments
+        genop(incode,get1(),get2())
+        differ(get1.mem) put1('w1',get1.mem)
+                                                :(opdone)
 
 opdone	flush()					:(opnext)
 *
@@ -1585,8 +1601,9 @@ flush_end
 report
 	output = lpad(num,10) '  ' text		:(return)
 
+* Complete compilation by writing out needed declarations
 
-g.end
+program.end
 	&dump = 0
 	ident(havehdr)				:s(g.end.2)
 *  here to copy remaining part from hdr file
@@ -1617,7 +1634,7 @@ g.end.3
 	i = 0
 g.end.4
 	i = i + 1
-	putline(tab drcara<i,1> tab ':' tab  drcara<i,2> ",")				:s(g.end.4)
+	putline(tab drcara<i,1> tab ':' tab  drcara<i,2> ",") :s(g.end.4)
 	putline('}')
 
 g.end.4a
@@ -1653,7 +1670,7 @@ g.end.8
 * this may not be needed
 g.end.9
 	i = i + 1
-	putline(tab  ppm_cases_ara[i,1]  tab ':'	ppm_cases_ara[i,2] ',')	:s(g.end.9)
+	putline(tab  ppm_cases_ara[i,1]  tab ':' ppm_cases_ara[i,2] ',')	:s(g.end.9)
 	putline('}')
 g.end.10
 
@@ -1666,10 +1683,11 @@ g.end.11
 	putline(tab ara<i,1> tab ': "' ara<i,2> '",')	:s(g.end.11)
 	putline("}")
 
-*	&dump = 2
+* Close files and issue summary report
 
 	endfile(1)
 	endfile(2)
+
         report(nlines,		'lines read')
         report(nstmts,		'statements processed')
         report(ntarget,		'target code lines produced')
@@ -1690,12 +1708,4 @@ g.end.11
 	&code   = ne(nerrors) 2001
         report(collect(), 'free words')
 	:(end)
-* convert argument to upper case
-lower
-	lower = replace(s,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-.			  'abcdefghijklmnopqrstuvwxyz')	:(return)
-* convert argument to upper case
-upper
-	upper = replace(s,'abcdefghijklmnopqrstuvwxyz',
-.			  'ABCDEFGHIJKLMNOPQRSTUVWXYZ')	:(return)
 end
