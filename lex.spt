@@ -448,6 +448,23 @@ MAIN2
 * Set target-dependent configuration parameters 
 	:($('CONFIG.' ARCH))
 
+CONFIG.I32
+CONFIG.I32-8
+	ANAME = 'i32'
+	EQU_DEFS['CFP_A'] = '256'
+	EQU_DEFS['CFP_B'] = '1'
+	EQU_DEFS['CFP_C'] = '1'
+	EQU_DEFS['CFP_F'] = '2'
+	EQU_DEFS['CFP_I'] = '1'
+	EQU_DEFS['CFP_L'] = '4294967295'
+	EQU_DEFS['CFP_M'] = '2147483647'
+	EQU_DEFS['CFP_N'] = '32'
+ 	EQU_DEFS['CFP_R'] = '2'
+	EQU_DEFS['CFP_U'] = '128'
+*	Use 24 characters, for hash in i32
+	EQU_DEFS['E_HNW'] = '24'
+	
+							:(CONFIG.DONE)
 CONFIG.X32
 CONFIG.X32-8
 	ANAME = 'x32'

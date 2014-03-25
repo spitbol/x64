@@ -1,12 +1,8 @@
 - title mincod: phase 2 translation from minimal tokens to 80386 code
 -stitl description
 
-* ops with result that may be a memory reference (always in first argument)
-* add aov dca dcv ica icv mnz mov sti str sub zer zgb
-*	dave	
-
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
-* copyright 2012-2013 david shields
+* copyright 2012-2014 david shields
 *
 * this file is part of macro spitbol.
 *
@@ -47,8 +43,7 @@
 *  work register, wt is defined.
 *  see the register map below for specific allocations.
 *
-*  this program is based in part on earlier translators for the
-*  it is based in part on earlier translators for the dec vax
+*  this program is based in part on earlier translators for the dec vax
 *  (vms and un*x) written by steve duff and robert goldberg, and the
 *  pc-spitbol translator by david shields.
 *
@@ -159,8 +154,7 @@
 	define('report(num,text)')
 	define('tblini(str)pos,cnt,index,val,lastval')
 
-*  putstmt is used to send a target statement to the target code
-*  output file outfile
+*  putstmt writes a target statement
 *
 	define('putstmt(label,opcode,op1,op2,op3,comment)')
 
@@ -222,27 +216,18 @@
 	getargcase[25] = .getarg.c.25; getargcase[26] = .getarg.c.26
 	getargcase[27] = .getarg.c.27
 
-*
-*  pifatal maps minimal opcodes for which no a code allowed
-*  to nonzero value. such operations include conditional
-*  branches with operand of form (x)+
-*
-	pifatal = tblini(
-.	'aov[1]beq[1]bne[1]bge[1]bgt[1]bhi[1]ble[1]blo[1]'
-.	'blt[1]bne[1]bnz[1]ceq[1]cne[1]mfi[1]nzb[1]zrb[1]')
-*
 	opcodes = table(100)
 	s =
 +       'add adi adr anb aov atn '
 +	'bct beq bev bge bgt bhi ble blo blt bne bnz bod '
-+       'brn bri bsw btw bze ceq chk chp cmb cmc cmp cne csc '
-+       'cos ctb ctw cvd cvm dca dcv eti dvi dvr err erb esw etx flc '
-+       'ica icp icv ieq ige igt ile ilt ine ino iov itr jmp '
-+       'jsr lch lct lcp lcw ldi ldr lei lnf lsh lsx mcb mfi mli mlr '
-+       'mnz mov mti mvw mwb ngi eti ngr nzb orb plc ppm prc psc '
++       'brn bri bsw btw bze call callos ceq chk chp cmb cmc cmp cne csc '
++       'cos ctb ctw cvd cvm dca dcv eti decv dvi dvr enp err erb esw etx exi flc '
++       'ica icp icv ieq ige igt ile ilt incv ine ino iov itr jmp '
++       'jsr jsrerr lch lct lcp lcw ldi ldr lei lnf lsh lsx mcb mfi mli mlr '
++       'mnz mov mti mvc mvw mwb ngi eti ngr nzb orb plc ppm prc psc '
 +       'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
 +       'sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer '
-+	'decr ent inr lea move load loadi push pushi pop popr realop '
++	'decr ent inr lea move load loadi push pushi pushr pop popr realop store zrb '
 * decr is used to decrement rc register (cf. rcode)
 
 *	don't trace mvc as doing so causes just 'end' to fail. sort out later. (ds 01/09/13)
@@ -259,8 +244,9 @@ opcodes.2
 
 * initialize osint procs
 	osiprocs = 
-.	'sysax sysbs sysbx syscm sysdc sysdt sysea sysef sysej sysem sysen sysep sysex sysfc sysgc syshs '
-.	'sysid sysif sysil sysin sysio sysld sysmm sysmx sysou syspl syspp sysrw sysst systm sysul sysxi '
+.	'sysax sysbs sysbx syscm sysdc sysdm sysdt sysea sysef sysej sysem sysen sysep sysex '
+.	'sysfc sysgc syshs sysid sysif sysil sysin sysio sysld sysmm sysmx sysou syspi syspl '
+.	'syspp syspr sysrd sysri sysrw sysst systt systm sysul sysxi '
 	is_osint = table(50)
 	str = osiprocs
 osiprocs.1
@@ -309,16 +295,17 @@ flgs2
 *
         comment.delim = ';'
 
+	w0 = 'w0'; w1 = 'w1'; w2 = 'w2'
 	xl = 'xl'; xr = 'xr'; xs = 'xs'; xt = 'xl'
 	wa = 'wa'; wb = 'wb'; wc = 'wc'
-	w0 = 'w0'; w1 = 'w1'; w2 = 'w2'
-	ia = 'ia'; cp = 'cp'
+	ia = 'ia'; cp = 'cp'; ra = 'ra'
 * user rc for error handling (this is memory location in x32 version)
 	rc = 'rc'
 
 	w1.minarg = minarg(8, 'w1')
 	w2.minarg = minarg(8, 'w2')
 	ia.minarg = minarg(8, 'ia')
+	ra.minarg = minarg(8, 'ra')
 	rcode = minarg(8,'rc')
 
 *  other definitions that are dependent upon things defined in the
@@ -394,8 +381,9 @@ opnext
 * as it simplifies later processing, especially for tracing.
 	ident(inlabel)				:s(opnext.1)
 	thislabel = inlabel 
-* keep the label as is is not in executable code
-	lt(sectnow,5)				:s(opnext.1)
+* keep the label as is not in executable code
+*	lt(sectnow,5)				:s(opnext.1)
+	lt(sectnow,3)				:s(opnext.1)
 * here if in code, so output label now
 * defer label processing for ent to allow emission of alignment ops for x86.
 	ident(incode,'ent')			:s(opnext.1)
@@ -468,7 +456,7 @@ genlab	genlab = 'labl' lpad(genlabels = genlabels + 1,3,'0') :(return)
 *  generate operation with label
 genopl	
 	gopc = lower(gopc)
-	output = ident(gopc,'sss') 'sss ' thisline
+*	output = ident(gopc,'sss') 'sss ' thisline
 	opsused[gopc] = opsused[gopc] + 1
 	putstmt(gopl,gopc,gop1,gop2,gop3)	:(return)
 
@@ -482,6 +470,7 @@ genop   genopl(,lower(gopc),gop1,gop2,gop3)
 * return argument if it is a register, or else load the argument
 * value into w1
 get1
+	ident(i.text(i1))			:s(return)
 	ifreg(i1)				:f(get1.1)
         get1 = getreg(i1)			:(return)
 get1.1
@@ -497,6 +486,7 @@ get1.3
 -stitl get2()
 * return register if i2 is register, else load i2 value to w1
 get2
+	ident(i.text(i2))			:s(return)
 	ifreg(i2)				:f(get2.1)
         get2 = getreg(i2)			:(return)
 get2.1
@@ -546,18 +536,12 @@ getarg.c.10
 	l1 = substr(l1,2,2)
 	t1 = $l1
 	getarg =  t1
- 	(ident(l1,'xs') genaop(tstmt(,'inc',t1))) :s(return)
-*TODOTODO 	genaop(tstmt(,'lea',t1,'[' t1 '+1]'))	:(return)
 						:(return)
 
 *  -(x), register indirect, pre decrement
 getarg.c.11
 	t1 = $substr(l1,3,2)
 	getarg =  t1
-*TODOTODO
-
-* fix next op
-*	genbop(tstmt(,'lea',t1,'[' t1 '-1]')) 
 						:(return)
 
 * int(x)
@@ -853,22 +837,15 @@ g.brn
         genop('brn',,,getarg(i1))		:(opnext)
         
 
-g.bsw	t1 = getarg(i1)
-	t2 = genlab()
-	ident(i.text(i3))			:s(g.bsw1)
-	genop('cmp',t1,getarg(i2))
-	genop('jge',,,getarg(i3))
-* here after default case.
-g.bsw1	genop('jmp',t1,,t2)
-	putlab(t2)
-						:(opnext)
+g.bsw	
+	genop('loadi',w1,i.text(i2))
+	genop(incode,get1(),w1,getarg(i3))	:(opnext)
 
 g.iff   
-	putconst(,i.text(i2))			
-						:(opnext)
+	putconst(,i.text(i2))			:(opnext)
 
-g.esw
-        					:(opnext)
+g.esw						:(opnext)
+
 g.ent
 *
 *  entry points are stored in byte before program entry label
@@ -902,10 +879,9 @@ g.ent.2
 *        (differ(pubtab[thislabel]), differ(debug)) genop('global',thislabel)
 	thislabel =				:(opnext)
 
-g.bri	genop('jmp',,,getarg(i1))		:(opnext)
+g.bri	genop(incode,,,getarg(i1))		:(opnext)
 
-g.lei	t1 = $i.text(i1)
-	genop('lei',t1)	                        :(opnext)
+g.lei	genop(incode,i.text(i1))		:(opnext)
 
 g.jsr
 	jsr_proc = getarg(i1)
@@ -923,26 +899,23 @@ g.ppm
 	genop(incode,,,i.text(i1))		:(opnext)
 
 g.prc
-
-*  generate public declaration
-*	t1 = thislabel
-*	t1 ? rtab(1) . t1 
-*	genop()
-*  nop needed to get labels straight
 	prc.args = getarg(i2)
 	ppm_cases[thislabel] = i.text(i2)
 	thislabel =
 	max_exi = gt(prc.args,max_exi) prc.args
 	prc.type = i.text(i1)			:($('g.prc.' prc.type))
+
 g.prc.e
 g.prc.r						:(opnext)
 
 g.prc.n
 *  store return address in reserved location
+	genop('prc',,,prc.count)
 	prc.count = prc.count + 1
-	genop('qop', '[' prcent(prc.count) ']')	:(opnext)
+	:(opnext)
 
 g.exi
+	genop(incode,,,i.text(i1))		:(opnext)
  	t3 = i.text(i1)
         t1 = getarg(i1); t2 = prc.type
 *  if type r or e, and no exit parameters, just return
@@ -961,7 +934,8 @@ g.enp   genop('enp')				:(opnext)
 
 g.erb
 	error_messages[+i.text(i1)] = i.text(i2)
-	genop('erb',,,'err_')
+*	genop('erb',,,'err_')
+	genop('erb')
 *	set rcode to error code and branch to error handler
 *	genop('mov', rcode,  +(i.text(i1)))
 * 	genop('jmp',,,'err_')
@@ -970,28 +944,23 @@ g.erb
 g.start
 
 g.icv
-        genop('incv',get1())
-        put1()
-                                                :(opnext)
-g.dcv
-        genop('decv',get1())
-        put1()
-                                                :(opnext)
+        genop('icv',get1())
+        put1()					:(opnext)
 
-* for zer (mnz) move register w0 (xs) to target
+g.dcv
+        genop('dcv',get1())
+        put1() 					:(opnext) 
+
 g.zer
 g.mnz
 	zer.reg = (ident(incode, 'zer') 'w0', 'xs')
 	move(i1,minarg(8,zer.reg))
                                                 :(opnext)
 
-g.ssl   genop('ssl')				:(opnext)
-
-g.sss   genop('sss')				:(opnext)
-
 g.rtn
-	genop('rtn')
-                                                :(opnext)
+g.ssl
+g.sss   					
+						:(op.none)
 
 * 2 - Operations on one word integer values (addresses)
 
@@ -1050,6 +1019,7 @@ g.bct
 
 g.aov
 * result may need to be stored back to memory
+	genop(incode,get1(),get2(),getoff(i3))	:(opnext)
 	genop('add',get2(),get1())
         put1()
 	genop('jc',,,getarg(i3))
@@ -1102,19 +1072,9 @@ g.mlr
 g.dvr
                                                 :(op.one)
 
-g.str
-* result may need to be stored back to memory
-
-        ifreg(i1)                               :f(g.str.1)
-* here if result is register
-        genop('mov',getarg(i1), ra)	:(opnext)
-g.str.1
-        genop('store',ra,,getarg(i1))
-                                                :(opnext)
-
-
-g.ngr
-						:(op.none)
+g.str move(i1,ra.minarg)			:(opnext)
+ 
+g.ngr						:(op.none)
 g.atn
 g.chp
 g.cos
@@ -1123,7 +1083,6 @@ g.lnf
 g.sin
 g.sqr
 g.tan
-*	outline = 'realop ' thisline
 	genop('realop',,,incode)		
                                                 :(opnext)
 
@@ -1142,131 +1101,23 @@ g.rlt
 
 g.plc
 g.psc
-	ne(1,1)					:s(g.plc.1)
-*  last arg is optional.  if present and a register or constant,
-*  use lea instead.
+	genop(incode,get1(),get2())		:(opnext)
 
-	t1 = get1()
-	t2 = i.type(i2)
-*TODOTODO
-*fix next
-*	((ifreg(i2), ge(t2,1) le(t2,2))
-*+	genop('lea',t1,'[cfp_f+' t1 '+' get2() ']')) :s(opnext)
-	genop('add',t1,,'cfp_f')
-	eq(i.type(i2))				:s(opnext)
-*
-*  here if d_offset_(given (in a variable), so add it in.
-*
-	genop('add',t1,get2())			:(opnext)
-
-g.plc.1
-*  here for case where character size if word size
-*  last arg is optional.  if present and a register or constant,
-*  use lea instead.
-
-	t1 = get1()
-	t2 = i.type(i2)
-	((ifreg(i2), ge(t2,1) le(t2,2))
-+	genop('lea',t1,'[cfp_f+' t1 '+' get2() ']')) :s(opnext)
-	genop('add',t1,,'cfp_f')
-	eq(i.type(i2))				:s(opnext)
-*
-*  here if d_offset_(given (in a variable), so add it in, after converting to byte count
-	genop('mov','wt', get2())
-*
-	genop('add',t1,'wt')			:(opnext)
-*
-*  lch requires separate cases for each first operand possibility.
-*
 g.lch
-	t2 = i.text(i2)
-	t1 = get1()
-
-*  see if predecrement needed.
-	leq('-',substr(t2,1,1))			:f(g.lcg.1)
-	t2 break('(') len(1) len(2) . t3
-	(eq(1,1) genop('dec',$t3), genop('dec',$t3))
-g.lcg.1
-	t2 break('(') len(1) len(2) . t3
-	genop('mov','al','[' $t3 ']')
-	genop('mov',t1,'w0')
-
-*  see if postincrement needed.
-	t2 rtab(1) '+'				:f(g.lcg.2)
-	(eq(1,1) genop('inc',$t3), genop('inc',$t3))
-g.lcg.2						:(opnext)
-
+	move(i1,i2)				:(opnext)
 g.sch
-	t2 = i.text(i2)
-	eq(i.type(i1),8)			:s(g.scg.w)
-	t1 = get1()
-	eq(1,cfp_w)				:f(g.scg.0)
-	ident(t2,'(xr)+')			:f(g.scg.0)
-*
-*  here if can use stos.
-*
-	eq(1,1) genop('mov','al',get1())
-	ne(1,1) genop('mov','eax',get1())
-	genop('stos' op_c)			:(opnext)
+	move(i2,i1)				:(opnext)
 
-g.scg.0
-	leq('-',substr(t2,1,1))			:f(g.scg.1)
-	t2 break('(') len(1) len(2) . t3
-	genop('dec',$t3)
-	(eq(1,1) genop('dec',$t3), genop('dec',$t3))
-g.scg.1
-	t2 break('(') len(1) len(2) . t3
-	eq(1,1) genop('mov','wt',t1,)
-	eq(1,1) genop('mov','[' $t3 ']','al')
-	ne(1,1) genop('mov','[' $t3 ']',t1)
-*  see if postincrement needed.
-	t2 rtab(1) '+'				:f(g.scg.2)
-	(eq(1,1) genop('inc',$t3), genop('inc',$t3))
-g.scg.2						:(opnext)
-g.scg.w
-*
-*  here if moving character from work register, convert t1
-*  to name of low part.
-*
-
-	ident(t2,'(xl)')			:s(g.scg.w.xl)
-	ident(t2,'-(xl)')			:s(g.scg.w.pxl)
-	ident(t2,'(xl)+')			:s(g.scg.w.xlp)
-	ident(t2,'(xr)')			:s(g.scg.w.xr)
-	ident(t2,'-(xr)')			:s(g.scg.w.pxr)
-	ident(t2,'(xr)+')			:s(g.scg.w.xrp)
-g.scg.w.xl
-	genop('mov','[xl]',t1)			:(opnext)
-g.scg.w.pxl
-	genop('dec','xl')
-	genop('mov','[xl]',t1)			:(opnext)
-
-g.scg.w.xlp
-	genop('mov','[xl]',t1)
-	genop('inc', 'xl')
-						:(opnext)
-g.scg.w.xr
-	genop('mov','[xr]',t1)			:(opnext)
-
-g.scg.w.pxr
-	genop('dec', 'xr')
-	genop('mov','[xr]',t1)			:(opnext)
-g.scg.w.xrp
-	(eq(1,1) genop('mov','al',t1), genop('mov','eax',t1))
-	genop('stos' op_c)			:(opnext)
-
-g.csc  	ident(thislabel)			:s(opnext)
-	genop('csc')				:(opnext)
+g.csc  						:(opnext)
 
 g.ceq
 g.cne 
 	genop(incode,get1(),get2(),getarg(i3))  :(opnext)
 
 g.cmc
-*  cmc has two label operands, so generate two instructions
-	genop('cmc1',0,i.text(i1))
-	genop('cmc2',0,i.text(i2))
-						:(opnext)
+	genop('loadi',w1,getarg(i1))
+	genop('loadi',w2,getarg(i2))
+	genop('cmc')				:(opnext)
 
 g.trc
 	genop(incode)				:(opnext)
@@ -1279,6 +1130,8 @@ g.flc
 g.anb
 g.orb
 g.xob
+						:(op.two)
+
 g.rsh
 g.lsh
 	genop(incode,getarg(i1),getarg(i2))	:(opnext)
@@ -1290,36 +1143,20 @@ g.rsx
 g.lsx
 	error('lsx not supported')
 
-g.nzb	ifreg(i1)				:s(g.nzb1)
-	genop('cmp',getarg(i1),'0')
-	genop('jnz',getarg(i2))
-						:(opnext)
-g.nzb1
-	genop('or',getreg(i1),getreg(i1))
-	genop('jnz',getarg(i2))
-						:(opnext)
-
-g.zrb	ifreg(i1)				:s(g.zrb1)
-	genop('cmp',getarg(i1),'0')
-	genop('jz',getarg(i2))
-						:(opnext)
-g.zrb1
-	genop('or',getreg(i1),getreg(i1))
-	genop('jz',getarg(i2))
-						:(opnext)
-
-g.zgb
-	genop('nop')				:(opnext)
-
+g.nzb	
+g.zrb
+	genop(incode,get1(),,getarg(i2))	:(opnext)
+	
+g.zgb						:(opnext)
 
 * 8 - Conversion instructions
 
-g.wtb   	:(opnext)
+g.wtb   					:(opnext)
 
-g.btw   	:(opnext)
+g.btw   					:(opnext)
 
-g.mti	(ident(i.text(i1),'(xs)+') genop('qop',ia)) :s(opnext)
-	genop('mov',ia,get1())			:(opnext)
+g.mti	
+	move(ia.minarg,i1)			:(opnext)
 
 g.mfi
 *  last arg is optional
@@ -1335,7 +1172,7 @@ g.itr genop(incode)				:(opnext)
 
 g.rti
 *  here if label given, branch if real too large
-        genop(incode,,,getoff(i1))             	:(opnext)
+        genop(incode,,,getarg(i1))             	:(opnext)
 
 g.ctw
 g.ctb
@@ -1354,7 +1191,7 @@ g.mwb
 
 * 10 - Operations connected with the stack
 
-g.chk
+g.chk						:(op.none)
 	genop('cmp','xs',,'lowspmin')
 	genop('jb',,,'sec06')
 						:(opnext)
@@ -1454,7 +1291,7 @@ g.sec.2
 g.sec.3
 	putline(tab ')')
 	putline('//sec03')
-	putline('program = []uint32 {')
+	putline('var program = []uint32 {')
 				     		:(opnext)
 
 * working variables section
@@ -1486,7 +1323,7 @@ g.sec.7
 *	allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
 	output = '  max.err ' max.err
-	genopl('err_','xchg',wa,rc)
+*	genopl('err_','xchg',wa,rc)
 						:(opnext)
 
 g.end						:(program.end)
@@ -1501,6 +1338,7 @@ op.one
         genop(incode,get1())
                                                 :(opnext)
 op.two
+*	putline("// op.two " incode " " i.text(i1) "," i.text(i2))
         genop(incode,get1(),get2())
                                                 :(opnext)
 
