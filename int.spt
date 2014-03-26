@@ -133,7 +133,7 @@
 	define('genz()')
 	define('genaop(stmt)')
 	define('genbop(stmt)')
-	define('putconst(label,value)')
+	define('putconst(value)')
         define('genlab()')
 	define('genop(gopc,gop1,gop2,gop3)')
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
@@ -223,7 +223,7 @@
 +       'brn bri bsw btw bze call callos ceq chk chp cmb cmc cmp cne csc '
 +       'cos ctb ctw cvd cvm dca dcv eti decv dvi dvr enp err erb esw etx exi flc '
 +       'ica icp icv ieq ige igt ile ilt incv ine ino iov itr jmp '
-+       'jsr jsrerr lch lct lcp lcw ldi ldr lei lnf lsh lsx mcb mfi mli mlr '
++       'jsr jsrerr lch lct lcp lcw ldi ldr lei loadi loadcfp lnf lsh lsx mcb mfi mli mlr '
 +       'mnz mov mti mvc mvw mwb ngi eti ngr nzb orb plc ppm prc psc '
 +       'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
 +       'sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer '
@@ -365,35 +365,25 @@ pubcopy	line = pubfile				:f(pubend)
 pubend	endfile(5)
 nopub
 
-						:(dsout)
+						:(translate)
 
   &trace = 2000
   &ftrace = 1000
+
 *  &profile = 1
-dsout
+
+translate
+* start translation
 opnext	
 	label = thislabel =
 	thisline = readline()
-	crack(thisline)				:f(dsout)
-*	 output = thisline
-*
-* output label of executable instruction immediately if there is one,
-* as it simplifies later processing, especially for tracing.
-	ident(inlabel)				:s(opnext.1)
-	thislabel = inlabel 
-* keep the label as is not in executable code
-*	lt(sectnow,5)				:s(opnext.1)
+	crack(thisline)				:f(opnext)
+	thislabel = inlabel
 	lt(sectnow,3)				:s(opnext.1)
-* here if in code, so output label now
-* defer label processing for ent to allow emission of alignment ops for x86.
-	ident(incode,'ent')			:s(opnext.1)
-	putlab(thislabel)
-* set lastlabel so can check to avoid emitting duplicate label definitions
-	lastlabel = thislabel
-* clear out label info once generated
+	ident(inlabel)				:s(opnext.1)
+	putlab(inlabel)
 	label = thislabel =
 opnext.1
-	thislabel = inlabel 
 	i1 = prsarg(iarg1)
 	i2 = prsarg(iarg2)
 	i3 = prsarg(iarg3)
@@ -403,12 +393,12 @@ opnext.1
 	argerrs = 0
 						:($('g.' incode))
 *  here if bad opcode
-ds01	error('bad op-code')			:(dsout)
+ds01	error('bad op-code')			:(opnext)
 
 *  generate tokens.
 *
 ds.typerr
-	error('operand type zero')		:(dsout)
+	error('operand type zero')		:(opnext)
 -stitl comregs(line)t,pre,word
 comregs
 	line p.comregs =			:f(comregs1)
@@ -440,11 +430,10 @@ error   outfile = '* *???* ' thisline
 .	          (ident(lasterror),'. last error was line ' lasterror)
 	lasterror = noutlines
 	noutlines = noutlines + 2
-	le(nerrors = nerrors + 1, 10)		:s(dsout)
+	le(nerrors = nerrors + 1, 10)		:s(opnext)
         output = 'too many errors, quitting'  	:(end)
--stitl	putconst(label,value)
+-stitl	putconst(value)
 putconst
-	differ(label) putlab(label)
 	program_counter = program_counter + 1
 	putline(tab  value ',') :(return)
 	
@@ -474,13 +463,7 @@ get1
 	ifreg(i1)				:f(get1.1)
         get1 = getreg(i1)			:(return)
 get1.1
-        iflit(i1)				:f(get1.2)
-	genop('loadi',w1,,getoff(i1))		:(get1.3)
-get1.2
-* here if argument in memory, so load to w1
-        move(w1.minarg,i1)
-get1.3
-* merge to return with argument now in w1
+	move(w1.minarg,i1)
         get1 = w1	                        :(return)
 
 -stitl get2()
@@ -490,13 +473,7 @@ get2
 	ifreg(i2)				:f(get2.1)
         get2 = getreg(i2)			:(return)
 get2.1
-        iflit(i2)				:f(get2.2)
-	genop('loadi',w2,,getoff(i2))		:(get2.3)
-get2.2
-* here if source in memory, so load to w2
-        move(w2.minarg,i2)
-get2.3
-* merge to return with argument now in w1
+	move(w2.minarg,i2)
         get2 = w2	                        :(return)
 
 -stitl getarg(iarg,imem)
@@ -650,21 +627,20 @@ lower
 -stltl move(dst,src)dtype,stype,stext,dtext
 * generate code for move instruction
 move
-* output ops are
-* move - from register to register
-* load - load from memory
-* loadi - load immediate (note this can be done as move with src=r0 and off=value)
-* push - push value from memory
-* pushi - push immdiate, that is, of the effective address
-* pop	- pop stack value to memory
-* popr  - pop stack value to register
+* translate the minimal instruction to one or more of the following:
+* move	move register to register
+* load	load from memory
+* loadi load immediate (note this can be done as move with src=r0 and off=value)
+* push  push value from memory
+* pushi push immdiate, that is, of the effective address
+* pop	pop stack value to memory
+* popr  pop stack value to register
+* store store value to memory
 *
-* result may need to be stored back to memory
-* new special casing
 	stype = i.type(src); stext = i.text(src)
 	dtype = i.type(dst); dtext = i.text(dst)
+
 * look for register to register move
-*	putline(dtype ' ' dtext ' ' stype ' ' stext)
         ifreg(src) ifreg(dst) genop('move',getreg(dst),getreg(src))  :s(return)
 
 * look for pop to register
@@ -672,15 +648,25 @@ move
 
 * look for pop to memory
 	ifmem(dst) eq(stype,10)  genop('pop',getreg(src),getreg(dst),getoff(dst))    :s(return)
+
 * look for push of literal
  	eq(dtype,11) iflit(src)  genop('pushi',getreg(dst),,getoff(src))   :s(return)
+
 * look for push of memory value
  	eq(dtype,11) ifmem(src)  genop('push',getreg(dst),getreg(src),getoff(src))   :s(return)
+
 * look for push of register
  	eq(dtype,11) ifreg(src)  genop('pushr',getreg(dst),getreg(src))  :s(return)
 
 * look for load of immediate value
-	ifreg(dst) iflit(src) genop('loadi',getreg(dst),,getoff(src))  :s(return)
+	ifreg(dst) iflit(src)   		:f(move.2)
+	off = getoff(src)
+	differ(off,'cfp_m')			:s(move.1)
+	genop('loadcfp',getreg(dst))		:(return)
+* special case cfp_m since it won't fit into offset field of loadi instruction.
+move.1
+	genop('loadi',getreg(dst),,getoff(src))	:(return)
+move.2
 
 * look for load from memory
 	ifreg(dst) ifmem(src) genop('load',getreg(dst),getreg(src),getoff(src))  :s(return)
@@ -692,9 +678,6 @@ move
 	move(w1.minarg,src)
 	move(dst,w1.minarg)
 						:(return)
-move.1
-        genop(mop,getarg(i1),getarg(i2))        :(return)
-
 
 -stitl prcent(n)
 prcent 
@@ -704,7 +687,7 @@ prcent
 putlab
 	ident(label)				:s(return)
 	labtab<label> = program_counter
-	putline('/* ' label ' */')		:(return)
+	putline('/* ' label ' - ' +program_counter ' */')		:(return)
 
 -stitl putstmt(label,opcode,op1,op2,op3,comment)
 putstmt	
@@ -743,11 +726,7 @@ putstmt4
 	ident(stmtout)				:s(return)
 	program_counter = program_counter + 1
 	putline(stmtout)
-*
-*  record code labels in table with delimiter removed.
-	ident(thislabel)			:s(return)
-	
-	labtab<label> = program_counter - 1	:(return)
+						:(return)
 
 -stitl prsarg(iarg)
 prsarg	prsarg = minarg(0)
@@ -842,7 +821,7 @@ g.bsw
 	genop(incode,get1(),w1,getarg(i3))	:(opnext)
 
 g.iff   
-	putconst(,i.text(i2))			:(opnext)
+	putconst(i.text(i2))			:(opnext)
 
 g.esw						:(opnext)
 
@@ -860,7 +839,6 @@ g.ent
 *  is a simple odd/even, least significant bit definition.
 *  that is, for us, 1 and 3 are odd, 2 and 4 are even.
 *
-	differ(thislabel) putlab(thislabel)
 
 	genop('ent',,,i.text(i1))		:(opnext)
 * TODO: Review this later
@@ -874,8 +852,8 @@ g.ent.1
 
 g.ent.2
 	outlines = outlines + 2
-	genopl(thislabel)
-	thislabel ? rtab(1) . thislabel 
+*	genopl(thislabel)
+*	thislabel ? rtab(1) . thislabel 
 *        (differ(pubtab[thislabel]), differ(debug)) genop('global',thislabel)
 	thislabel =				:(opnext)
 
@@ -1008,7 +986,7 @@ g.lct
 *
 	differ(i.text(i1),i.text(i2))		:s(g.lct.1)
 *  here if operands same. emit no code if no label, else emit null
-	ident(thislabel)			:s(opnext)
+*	ident(thislabel)			:s(opnext)
 	genop('lct')				:(opnext)
 
 	
@@ -1201,14 +1179,14 @@ g.chk						:(op.none)
 g.dac
 g.dbc
 g.dic
-	putconst(thislabel,i.text(i1))
+	putconst(i.text(i1))
 						:(decend)
 g.drc
 	str = i.text(i1)
 *	strip leading +
 	str '+' =
 	drctab<program_counter> = i.text(i1)
-	putconst(thislabel,"0")
+	putconst("0")
 						:(decend)
 
 g.dtc
@@ -1221,7 +1199,7 @@ g.dtc
 
 g.dtc.1
 	str len(1) . c =			:f(decend)
-	putconst("","'" c "'") 			:(g.dtc.1)
+	putconst("'" c "'") 			:(g.dtc.1)
 
 						:(decend)
 
@@ -1292,6 +1270,9 @@ g.sec.3
 	putline(tab ')')
 	putline('//sec03')
 	putline('var program = []uint32 {')
+* emit single word so program counter will start at one.
+	putline(tab "0,")
+	program_counter = 1
 				     		:(opnext)
 
 * working variables section
@@ -1306,8 +1287,6 @@ g.sec.5
 *  get direction set to up.
 *        (gt(prc.count1) genopl('prc$' ':','times', prc.count1 ' dd 0'))
 *TODO	genop('prc_: times ' prc.count1 ' dd 0')
-*	putlab('lowspmin')
-*	putconst('lowspmin','0')
         putline('// sec05' )
 						:(opnext)
 
@@ -1422,7 +1401,9 @@ g.end.7
 	nused = nused + 1
 	opnam = usedara<i = i + 1,1>		:f(g.end.8)
 	opcnt = usedara<i,2>
-	output = opnam tab opcnt			
+*	output = opnam tab opcnt			
+*	output = tab 'case ' opnam  ':'
+	output = tab opnam
 						:(g.end.7)
 g.end.8
 
