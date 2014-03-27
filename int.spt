@@ -33,6 +33,7 @@
 *  you may also specify option flags on the command line to control the
 *  code generation.  the following flags are processed:
 *       comments        retain full-line and end-of-line comments
+	list.comments = 1
 *
 *  the variable arch is set equal to the uppercase name of the machine
 *  being processed.  specific tests upon this variable are discouraged, as
@@ -227,8 +228,7 @@
 +       'mnz mov mti mvc mvw mwb ngi eti ngr nzb orb plc ppm prc psc '
 +       'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
 +       'sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer '
-+	'decr ent inr lea move load loadi push pushi pushr pop popr realop store zrb '
-* decr is used to decrement rc register (cf. rcode)
++	'ent inr lea move load loadi push pushi pushr pop popr realop store zrb '
 
 *	don't trace mvc as doing so causes just 'end' to fail. sort out later. (ds 01/09/13)
 	opsused = table(100)
@@ -293,30 +293,30 @@ flgs2
 *
 * various constants
 *
-        comment.delim = ';'
+        comment.delim = '//'
 
-	w0 = 'w0'; w1 = 'w1'; w2 = 'w2'
+	r0 = 'r0'; r1 = 'r1'; r2 = 'r2'
 	xl = 'xl'; xr = 'xr'; xs = 'xs'; xt = 'xl'
 	wa = 'wa'; wb = 'wb'; wc = 'wc'
 	ia = 'ia'; cp = 'cp'; ra = 'ra'
 * user rc for error handling (this is memory location in x32 version)
-	rc = 'rc'
+	r1 = 'r1'
+	r2 = 'r2'
 
-	w1.minarg = minarg(8, 'w1')
-	w2.minarg = minarg(8, 'w2')
-	ia.minarg = minarg(8, 'ia')
-	ra.minarg = minarg(8, 'ra')
-	rcode = minarg(8,'rc')
+	arg.r1 = minarg(8, 'r1')
+	arg.r2 = minarg(8, 'r2')
+	arg.ia = minarg(8, 'ia')
+	ra.arg = minarg(8, 'ra')
 
 *  other definitions that are dependent upon things defined in the
 *  machine definition file, and cannot be built until after the definition
 *  file has been read in.
 *
 *  p.putstmt examines output lines for certain types of comment contructions
-	fillc	  = tab
-	p.putstmt = (break(fillc) . label span(fillc)) . leader
-+			comment.delim rem . comment
-	p.alltabs = span(tab) rpos(0)
+*	fillc	  = tab
+*	p.putstmt = (break(fillc) . label span(fillc)) . leader
+*+			comment.delim rem . comment
+*	p.alltabs = span(tab) rpos(0)
 
 *  strip end of comments if y
 *
@@ -434,8 +434,7 @@ error   outfile = '* *???* ' thisline
         output = 'too many errors, quitting'  	:(end)
 -stitl	putconst(value)
 putconst
-	program_counter = program_counter + 1
-	putline(tab  value ',') :(return)
+	genop(value)		:(return)
 	
 -stitl genlab()
 *  generate unique labels for use in generated code
@@ -457,26 +456,26 @@ genop   genopl(,lower(gopc),gop1,gop2,gop3)
 
 -stitl get1()
 * return argument if it is a register, or else load the argument
-* value into w1
+* value into r1
 get1
 	ident(i.text(i1))			:s(return)
 	ifreg(i1)				:f(get1.1)
         get1 = getreg(i1)			:(return)
 get1.1
-	move(w1.minarg,i1)
-        get1 = w1	                        :(return)
+	move(arg.r1,i1)
+        get1 = r1	                        :(return)
 
 -stitl get2()
-* return register if i2 is register, else load i2 value to w1
+* return register if i2 is register, else load i2 value to r1
 get2
 	ident(i.text(i2))			:s(return)
 	ifreg(i2)				:f(get2.1)
         get2 = getreg(i2)			:(return)
 get2.1
-	move(w2.minarg,i2)
-        get2 = w2	                        :(return)
+	move(arg.r2,i2)
+        get2 = r2	                        :(return)
 
--stitl getarg(iarg,imem)
+-stitl getarg.iarg,imem)
 getarg
 	l1 = i.text(iarg)
 	l2 = i.type(iarg)
@@ -584,11 +583,11 @@ getoff.2
 	getoff = substr(itext,2)		:(return)
 
 -stitl getreg(iarg)atype
-* return register associated with argument, or w0 if no register
+* return register associated with argument, or r0 if no register
 * since it is assumed a register is needed.
 getreg
-* assume result is w0
-	getreg = w0
+* assume result is r0
+	getreg = r0
 	atype = i.type(iarg)
 	lt(atype,6)				:s(return)
 	gt(atype,8)				:s(getreg.1)
@@ -602,8 +601,8 @@ getreg.2
 * no type if numeric constant
 	le(atype,17)				:s(return)
 	gt(atype,22)				:s(return)
-* here if literal, so return w0
-	getreg = 'w0'				:(return)
+* here if literal, so return r0
+	getreg = 'r0'				:(return)
 
 -stitl iflit(iarg) - test if argument is literal
 iflit	ge(i.type(iarg),18) le(i.type(iarg),22) :f(freturn)s(return)
@@ -644,7 +643,7 @@ move
         ifreg(src) ifreg(dst) genop('move',getreg(dst),getreg(src))  :s(return)
 
 * look for pop to register
-        ifreg(dst) eq(stype,10) genop('popr',getreg(dst),getreg(src)) :s(return)
+        ifreg(dst) eq(stype,10) genop('popr',getreg(src),getreg(dst)) :s(return)
 
 * look for pop to memory
 	ifmem(dst) eq(stype,10)  genop('pop',getreg(src),getreg(dst),getoff(dst))    :s(return)
@@ -674,9 +673,9 @@ move.2
 * look for store
 	ifmem(dst) ifreg(src) genop('store',getreg(src),getreg(dst),getoff(dst))  :s(return)
 
-* here if have memory-to-memory case, so move src to w1 and then do store
-	move(w1.minarg,src)
-	move(dst,w1.minarg)
+* here if have memory-to-memory case, so move src to r1 and then do store
+	move(arg.r1,src)
+	move(dst,arg.r1)
 						:(return)
 
 -stitl prcent(n)
@@ -687,59 +686,43 @@ prcent
 putlab
 	ident(label)				:s(return)
 	labtab<label> = program_counter
-	putline('/* ' label ' - ' +program_counter ' */')		:(return)
+*	putline('// ' label ' - ' +program_counter )		:(return)
+	putline('// ' label)			:(return)
 
 -stitl putstmt(label,opcode,op1,op2,op3,comment)
 putstmt	
 *	putline(thisline)
-* clear label if definition already emitted
-	label = ident(label, lastlabel)
-	differ(label) putlab(label)
 
-putstmt1
-* ds suppress comments
- 	comment = tcomment = comments =
- 	:(putstmt2)
-*  attach source comment to first generated instruction
-	differ(comment)				:s(putstmt2)
-	ident(tcomment)				:s(putstmt2)
-	comment = tcomment; tcomment =
-putstmt2
 *	 putline('putstmt ' opcode ',' op1 ',' op2 ',' op3)
 
-putstmt3
-	stmtout = tab opcode 
-.	(differ(op1) tab '| ' op1 tab ' << dst ','')
-.	(ident(op2,'w0') '', differ(op2) tab '| ' op2 tab ' << src ','')
-.	(differ(op3) tab '| ' op3 tab ' << off ',, ) ','
-*.       (ident(strip_comment,'y'), tab (ident(comment), ';') comment)
-*
-**	send text to outfile
-*
-**
-putstmt4
-**
-**	send text to output file if not null.
-*
-*	stmtout = replace(trim(stmtout),'$','_')
+	op2 = ident(op2,'r0') ''
+	stmtout = tab rpad(opcode,8) 
+.	(differ(op1) '| ' rpad(op1,6)  ' << dst ',)
+.	(differ(op2) '| ' rpad(op2,6)  ' << src ',)
+.	(differ(op3) '| ' rpad(op3,6)  ' << off ',) ','
+	op = op1 = op2 = op3 =
+	ident(list.comments)			:s(putstmt.1)
+	ident(incomment)			:s(putstmt.1)
+	stmtout = rpad(stmtout,60) '// ' incomment
+*	reset incomment since single minimal statement may generate more than one target statement
+	incomment =
+putstmt.1
 	stmtout = trim(stmtout)
 	ident(stmtout)				:s(return)
 	program_counter = program_counter + 1
 	putline(stmtout)
 						:(return)
 
--stitl prsarg(iarg)
+-stitl prsarg
 prsarg	prsarg = minarg(0)
 	iarg break(',') . l1 ',' rem . l2	:f(return)
 	prsarg = minarg(convert(l1,'integer'),l2)	:(return)
 
 -stitl put1()
 put1
-* no need to issue store if argument is plain register
-	ident(get1.mem)				:s(return)
-* issue store in case first argument is memory location that must be updated
-        genop('store',w1,,get1.mem)
-						:(return)
+*	store updated value of i1 is memory reference
+	ifreg(i1)				:s(return)
+	move(i1,arg.r1)				:(return)
 
 -stitl readline()
 *  this routine returns the next statement line in the input file
@@ -748,11 +731,12 @@ put1
 *  comments are passed through to the output file directly.
 *
 *
-readline readline = lower(infile)              	:f(rl02)
+readline readline = lower(infile)              	:f(readline.2)
 	nlines  = nlines + 1
 	ident( readline )			:s(readline)
 readline.0
-	leq( substr(readline,1,1 ),'*' )       	:f(rl01)
+	leq( substr(readline,1,1 ),'*' )       	:f(readline.1)
+	differ(list.comments) putline('//' substr(readline,2))
 * force skip of full line comments
 	:(readline)
 *
@@ -765,12 +749,12 @@ readline.0
 *
 *  here if not a comment line
 *
-rl01						:(return)
+readline.1						:(return)
 *
 *  here on eof
 *
-rl02    readline = '       end'
-						:(rl01)
+readline.2    readline = '       end'
+						:(return)
 -stitl putline(stmt)
 putline
 	outfile = stmt
@@ -817,8 +801,8 @@ g.brn
         
 
 g.bsw	
-	genop('loadi',w1,i.text(i2))
-	genop(incode,get1(),w1,getarg(i3))	:(opnext)
+	genop('loadi',r1,i.text(i2))
+	genop(incode,get1(),r1,getarg(i3))	:(opnext)
 
 g.iff   
 	putconst(i.text(i2))			:(opnext)
@@ -857,7 +841,7 @@ g.ent.2
 *        (differ(pubtab[thislabel]), differ(debug)) genop('global',thislabel)
 	thislabel =				:(opnext)
 
-g.bri	genop(incode,,,getarg(i1))		:(opnext)
+g.bri	genop(incode,getarg(i1))		:(opnext)
 
 g.lei	genop(incode,i.text(i1))		:(opnext)
 
@@ -872,6 +856,9 @@ g.jsr
 						:s(opnext)
 
 g.err
+	error_messages[+i.text(i1)] = i.text(i2)
+*	statement has no comment, so make one from the error message text
+	incomment = i.text(i2)
 	genop(incode,,,+i.text(i1))		:(opnext)
 g.ppm
 	genop(incode,,,i.text(i1))		:(opnext)
@@ -914,9 +901,6 @@ g.erb
 	error_messages[+i.text(i1)] = i.text(i2)
 *	genop('erb',,,'err_')
 	genop('erb')
-*	set rcode to error code and branch to error handler
-*	genop('mov', rcode,  +(i.text(i1)))
-* 	genop('jmp',,,'err_')
 						:(opnext)
 
 g.start
@@ -931,7 +915,7 @@ g.dcv
 
 g.zer
 g.mnz
-	zer.reg = (ident(incode, 'zer') 'w0', 'xs')
+	zer.reg = (ident(incode, 'zer') 'r0', 'xs')
 	move(i1,minarg(8,zer.reg))
                                                 :(opnext)
 
@@ -1026,7 +1010,7 @@ g.ngi
 	genop(incode)				:(opnext)
 
 g.sti
-	move(i1,ia.minarg)			:(opnext)
+	move(i1,arg.ia)			:(opnext)
 
 g.ino
 g.iov
@@ -1050,7 +1034,7 @@ g.mlr
 g.dvr
                                                 :(op.one)
 
-g.str move(i1,ra.minarg)			:(opnext)
+g.str move(i1,ra.arg)			:(opnext)
  
 g.ngr						:(op.none)
 g.atn
@@ -1093,8 +1077,8 @@ g.cne
 	genop(incode,get1(),get2(),getarg(i3))  :(opnext)
 
 g.cmc
-	genop('loadi',w1,getarg(i1))
-	genop('loadi',w2,getarg(i2))
+	genop('loadi',r1,getarg(i1))
+	genop('loadi',r2,getarg(i2))
 	genop('cmc')				:(opnext)
 
 g.trc
@@ -1134,7 +1118,7 @@ g.wtb   					:(opnext)
 g.btw   					:(opnext)
 
 g.mti	
-	move(ia.minarg,i1)			:(opnext)
+	move(arg.ia,i1)			:(opnext)
 
 g.mfi
 *  last arg is optional
@@ -1143,7 +1127,7 @@ g.mfi
 *  here if label given, branch if ia not in range (ie, negative)
 	genop(incode,,,getoff(i2))
 g.mfi.1
-	move(i1,ia.minarg)				
+	move(i1,arg.ia)				
 						:(opnext)
 
 g.itr genop(incode)				:(opnext)
@@ -1154,6 +1138,7 @@ g.rti
 
 g.ctw
 g.ctb
+						:(opnext)
 g.cvm
 	genop(incode,getarg(i1))		:(opnext)
 
@@ -1328,7 +1313,7 @@ of 	ifreg(i1)				:f(op.oneput.1)
 * here if argument is register, so just use it
 	genop(incode,getreg(i1))		:(opnext)
 op.oneput.1
-* here if argument in memory. First bring it to w1
+* here if argument in memory. First bring it to r1
 	oneput.arg = i1
 * then do the operation
 	oneput.res = get1()
@@ -1339,7 +1324,7 @@ op.oneput.1
 op.twoput
 * here for standard case with two arguments
         genop(incode,get1(),get2())
-        differ(get1.mem) put1('w1',get1.mem)
+        differ(get1.mem) put1('r1',get1.mem)
                                                 :(opnext)
 
 report
@@ -1403,7 +1388,7 @@ g.end.7
 	opcnt = usedara<i,2>
 *	output = opnam tab opcnt			
 *	output = tab 'case ' opnam  ':'
-	output = tab opnam
+*	output = opnam
 						:(g.end.7)
 g.end.8
 

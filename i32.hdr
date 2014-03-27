@@ -1,9 +1,9 @@
 package	main
 //go
 const (
-	w0 = iota
-	w1
-	w2
+	r0 = iota
+	r1
+	r2
 	wa
 	wb
 	wc
@@ -14,7 +14,6 @@ const (
 	ia
 	ra
 	cp
-	rc
 )
 const (
 	dst = 1
