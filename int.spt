@@ -33,7 +33,7 @@
 *  you may also specify option flags on the command line to control the
 *  code generation.  the following flags are processed:
 *       comments        retain full-line and end-of-line comments
-	list.comments = 1
+*	list.comments = 1
 *
 *  the variable arch is set equal to the uppercase name of the machine
 *  being processed.  specific tests upon this variable are discouraged, as
@@ -64,7 +64,7 @@
 *
 *  revision history:
 *
-        version = 'v1.12'
+        version = 'v1.0'
 *
 *
 -eject
@@ -290,10 +290,25 @@ flgs	flags ? ((len(1) break(';:')) . flag len(1)) |
 *
 flgs.skip
 flgs2
+
+* We use three additional registers in addition to the minimal registers
 *
-* various constants
-*
-        comment.delim = '//'
+*	r0	is always zero
+*	r1	is used to load the value of the first operand if it is in memory
+*	r2	is used to load the value of the second operand if it is in memory
+
+	r0 = 'R0'; r1 = 'R1'; r2 = 'R2'
+	xl = 'XL'; xr = 'XR'; xs = 'XS'; xt = 'XL'
+	wa = 'WA'; wb = 'WB'; wc = 'WC'
+	ia = 'IA'; cp = 'CP'; ra = 'RA'
+* user rc for error handling (this is memory location in x32 version)
+	r1 = 'R1'
+	r2 = 'R2'
+
+	arg.r1 = minarg(8, 'R1')
+	arg.r2 = minarg(8, 'R2')
+	arg.ia = minarg(8, 'IA')
+	ra.arg = minarg(8, 'RA')
 
 	r0 = 'r0'; r1 = 'r1'; r2 = 'r2'
 	xl = 'xl'; xr = 'xr'; xs = 'xs'; xt = 'xl'
@@ -308,19 +323,18 @@ flgs2
 	arg.ia = minarg(8, 'ia')
 	ra.arg = minarg(8, 'ra')
 
-*  other definitions that are dependent upon things defined in the
-*  machine definition file, and cannot be built until after the definition
-*  file has been read in.
-*
-*  p.putstmt examines output lines for certain types of comment contructions
-*	fillc	  = tab
-*	p.putstmt = (break(fillc) . label span(fillc)) . leader
-*+			comment.delim rem . comment
-*	p.alltabs = span(tab) rpos(0)
+* operation encoding
 
-*  strip end of comments if y
+* Each generated operation has four fields:
+*	opc - opcode
+*	dst - destination register
+*	src - source register
+*	off - offset, either immediate constant or address
 *
-	strip_comment = (differ(comments) 'n', 'y')
+* Memory references always use the src and off registers. 
+* The effective addressis obtained by adding the offset to the contents of the
+* src register. If the src register is r0, the the effective address is the offset.
+*
 
 	filenami = fileprefix '.lex'
         input(.infile,1,filenami)                     :s(inputok)
@@ -419,7 +433,7 @@ crack   nstmts  = nstmts + 1
 *  here on syntax error
 *
 	error('source line syntax error')	:(freturn)
--stitl error(text)
+estitl error(text)
 *  this module handles reporting of errors with the offending
 *  statement text in thisline.  comments explaining
 *  the error are written to the listing (including error chain), and
@@ -434,8 +448,8 @@ error   outfile = '* *???* ' thisline
         output = 'too many errors, quitting'  	:(end)
 -stitl	putconst(value)
 putconst
-	genop(value)		:(return)
-	
+	putstmt('',value)	:(return)
+
 -stitl genlab()
 *  generate unique labels for use in generated code
 genlab	genlab = 'labl' lpad(genlabels = genlabels + 1,3,'0') :(return)
@@ -444,7 +458,6 @@ genlab	genlab = 'labl' lpad(genlabels = genlabels + 1,3,'0') :(return)
 *  generate operation with label
 genopl	
 	gopc = lower(gopc)
-*	output = ident(gopc,'sss') 'sss ' thisline
 	opsused[gopc] = opsused[gopc] + 1
 	putstmt(gopl,gopc,gop1,gop2,gop3)	:(return)
 
@@ -596,13 +609,15 @@ getreg
 getreg.1
 	gt(atype,15)				:s(getreg.2)
 * here if register enclosed in parentheses
-	i.text(iarg) break('(') '('  len(2) . getreg 	:(return)
+	i.text(iarg) break('(') '('  len(2) . getreg
+	getreg = getreg
+					 	:(return)
 getreg.2
 * no type if numeric constant
 	le(atype,17)				:s(return)
 	gt(atype,22)				:s(return)
 * here if literal, so return r0
-	getreg = 'r0'				:(return)
+	getreg = r0				:(return)
 
 -stitl iflit(iarg) - test if argument is literal
 iflit	ge(i.type(iarg),18) le(i.type(iarg),22) :f(freturn)s(return)
@@ -636,6 +651,8 @@ move
 * popr  pop stack value to register
 * store store value to memory
 *
+* The src and off fields are always used to refer to an operand in memory
+
 	stype = i.type(src); stext = i.text(src)
 	dtype = i.type(dst); dtext = i.text(dst)
 
@@ -643,7 +660,7 @@ move
         ifreg(src) ifreg(dst) genop('move',getreg(dst),getreg(src))  :s(return)
 
 * look for pop to register
-        ifreg(dst) eq(stype,10) genop('popr',getreg(src),getreg(dst)) :s(return)
+        ifreg(dst) eq(stype,10) genop('popr',getreg(dst),getreg(src)) :s(return)
 
 * look for pop to memory
 	ifmem(dst) eq(stype,10)  genop('pop',getreg(src),getreg(dst),getoff(dst))    :s(return)
@@ -695,11 +712,11 @@ putstmt
 
 *	 putline('putstmt ' opcode ',' op1 ',' op2 ',' op3)
 
-	op2 = ident(op2,'r0') ''
+	op2 = ident(op2,r0) ''
 	stmtout = tab rpad(opcode,8) 
-.	(differ(op1) '| ' rpad(op1,6)  ' << dst ',)
-.	(differ(op2) '| ' rpad(op2,6)  ' << src ',)
-.	(differ(op3) '| ' rpad(op3,6)  ' << off ',) ','
+.	(differ(op1) '| ' rpad(op1,6)  ' << dst_ ',)
+.	(differ(op2) '| ' rpad(op2,6)  ' << src_ ',)
+.	(differ(op3) '| ' rpad(op3,6)  ' << off_ ',) ','
 	op = op1 = op2 = op3 =
 	ident(list.comments)			:s(putstmt.1)
 	ident(incomment)			:s(putstmt.1)
@@ -731,29 +748,19 @@ put1
 *  comments are passed through to the output file directly.
 *
 *
-readline readline = lower(infile)              	:f(readline.2)
+readline 
+	readline = lower(infile)              	:f(readline.1)
 	nlines  = nlines + 1
 	ident( readline )			:s(readline)
 readline.0
-	leq( substr(readline,1,1 ),'*' )       	:f(readline.1)
+	leq( substr(readline,1,1 ),'*' )       	:f(return)
 	differ(list.comments) putline('//' substr(readline,2))
 * force skip of full line comments
 	:(readline)
 *
-*  only print comment if requested.
-*
-	ident(strip_comment,'n')		:f(readline)
-        readline len(1) = ';'
-	outfile = readline
-	noutlines = noutlines + 1               :(readline)
-*
-*  here if not a comment line
-*
-readline.1						:(return)
-*
 *  here on eof
 *
-readline.2    readline = '       end'
+readline.1    readline = '       end'
 						:(return)
 -stitl putline(stmt)
 putline
@@ -810,40 +817,14 @@ g.iff
 g.esw						:(opnext)
 
 g.ent
-*
-*  entry points are stored in byte before program entry label
-*  last arg is optional, in which case no initial 'db' need be
-*  issued. we force odd alignment so can distinguish entry point
-*  addresses from block addresses (which are always even).
-*
-*  note that this address of odd/even is less restrictive than
-*  the minimal definition, which defines an even address as being
-*  a multiple of 1 (4), and an odd address as one that is not
-*  a multiple of 1 (ends in 1, 2, or 3).  the definition here
-*  is a simple odd/even, least significant bit definition.
-*  that is, for us, 1 and 3 are odd, 2 and 4 are even.
-*
-
-	genop('ent',,,i.text(i1))		:(opnext)
-* TODO: Review this later
-
-	t1 = i.text(i1)
-	differ(t1)				:s(g.ent.1)
-	outfile = tab 'nop'
-						:(g.ent.2)
-g.ent.1
-	outfile = tab 'dw' tab	t1
-
-g.ent.2
-	outlines = outlines + 2
-*	genopl(thislabel)
-*	thislabel ? rtab(1) . thislabel 
-*        (differ(pubtab[thislabel]), differ(debug)) genop('global',thislabel)
-	thislabel =				:(opnext)
+* TODO Need adjust S.MIN to NOT set conditional assembly CEEP
+* generate constant used to identify block for use by lei instruction
+	putconst((differ(i.text(i1)) i.text(i1), '0'))	:(opnext)
 
 g.bri	genop(incode,getarg(i1))		:(opnext)
 
-g.lei	genop(incode,i.text(i1))		:(opnext)
+g.lei	
+	genop(incode,i.text(i1))		:(opnext)
 
 g.jsr
 	jsr_proc = getarg(i1)
@@ -875,14 +856,18 @@ g.prc.r						:(opnext)
 
 g.prc.n
 *  store return address in reserved location
-	genop('prc',,,prc.count)
+*  the interpreter requires prc.count be nonzero for 'n' type procedures.
 	prc.count = prc.count + 1
+	genop('prc',,,prc.count)
 	:(opnext)
 
 g.exi
-	genop(incode,,,i.text(i1))		:(opnext)
+*	set src field to 1 if 'n' type, 0 otherwise
+*	genop(incode,,,i.text(i1))		:(opnext)
  	t3 = i.text(i1)
         t1 = getarg(i1); t2 = prc.type
+	genop(incode,,(ident(t2,'n') prc.count, ''),(differ(t3) t3,''))
+						:(opnext)	
 *  if type r or e, and no exit parameters, just return
  	differ(t2,'n') eq(prc.args)	genop('ret')	:s(opnext)
         t3 = ident(t3) '0'
@@ -895,12 +880,11 @@ g.exi.1
 	genop('jmp','wt')
 						:(opnext)
 
-g.enp   genop('enp')				:(opnext)
+g.enp						:(opnext)
 
 g.erb
 	error_messages[+i.text(i1)] = i.text(i2)
-*	genop('erb',,,'err_')
-	genop('erb')
+	genop('erb',,,+i.text(i1))
 						:(opnext)
 
 g.start
@@ -915,14 +899,14 @@ g.dcv
 
 g.zer
 g.mnz
-	zer.reg = (ident(incode, 'zer') 'r0', 'xs')
+	zer.reg = (ident(incode, 'zer') r0, xs)
 	move(i1,minarg(8,zer.reg))
                                                 :(opnext)
 
 g.rtn
 g.ssl
 g.sss   					
-						:(op.none)
+						:(opnext)
 
 * 2 - Operations on one word integer values (addresses)
 
@@ -1006,8 +990,8 @@ g.sbi
 g.dvi
 g.rmi
                                                 :(op.one)
-g.ngi
-	genop(incode)				:(opnext)
+
+g.ngi						:(op.none)
 
 g.sti
 	move(i1,arg.ia)			:(opnext)
@@ -1026,7 +1010,6 @@ g.ine
 
 * 5 - Operations on real values
 
-
 g.ldr
 g.adr
 g.sbr
@@ -1037,6 +1020,7 @@ g.dvr
 g.str move(i1,ra.arg)			:(opnext)
  
 g.ngr						:(op.none)
+
 g.atn
 g.chp
 g.cos
@@ -1155,7 +1139,7 @@ g.mwb
 * 10 - Operations connected with the stack
 
 g.chk						:(op.none)
-	genop('cmp','xs',,'lowspmin')
+	genop('cmp',xs,,'lowspmin')
 	genop('jb',,,'sec06')
 						:(opnext)
 
@@ -1165,14 +1149,14 @@ g.dac
 g.dbc
 g.dic
 	putconst(i.text(i1))
-						:(decend)
+						:(opnext)
 g.drc
 	str = i.text(i1)
 *	strip leading +
 	str '+' =
 	drctab<program_counter> = i.text(i1)
 	putconst("0")
-						:(decend)
+						:(opnext)
 
 g.dtc
 * each character needs separate declaration, but do not include enclosing '/' characters
@@ -1183,15 +1167,9 @@ g.dtc
 	str = substr(str,2,size(str) - 2)
 
 g.dtc.1
-	str len(1) . c =			:f(decend)
+	str len(1) . c =			:f(opnext)
 	putconst("'" c "'") 			:(g.dtc.1)
 
-						:(decend)
-
-decend
-*  here at end of dic or dac to see if want label made public
-*	thislabel ? rtab(1) . thislabel 
-						:(opnext)
 
 * 12 - Symbol definition instructions
 
@@ -1283,11 +1261,8 @@ g.sec.6
 *  error section.  produce code to receive erb's
 g.sec.7
         putline('//sec07' )
-
-*	allow for some extra cases in case of max.err bad estimate
-	n1 = max.err + 8
-	output = '  max.err ' max.err
-*	genopl('err_','xchg',wa,rc)
+*  since 'error' is a keyword, emit label 'error_' for use in generating err instruction
+	putlab('error_')	
 						:(opnext)
 
 g.end						:(program.end)
@@ -1424,17 +1399,11 @@ g.end.11
         report(ntarget,		'target code lines produced')
 	report(nused,		'opcodes used')
 	report(&stcount,	'spitbol statements executed')
-        report(max.err,		'maximum err/erb number')
         report(prc.count1, 	'prc count')
-        report(dtc.count, 	'dtc count')
         output  = '  ' gt(prc.count,prc.count1)
 .	  '  differing counts for n-procedures:'
 .	  ' inp ' prc.count1 ' prc ' prc.count
         differ(nerrors) report(nerrors,'errors detected')
-
-*	errfile = '* ' max.err ' maximum err/erb number'
-*	errfile  = '* ' prc.count ' prc count'
-*.		differ(lasterror) '  the last error was in line ' lasterror
 
 	&code   = ne(nerrors) 2001
         report(collect(), 'free words')
