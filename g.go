@@ -2,15 +2,23 @@ package minimal
 
 import	(
 	"math"
+//	"unsafe"
 )
 
 func fun() {
 	var long1,long2 int64
-	var int1,int2 int32
-	overflow := false
+//	var int1,int2 int32
 	var prcstack [32]uint32
-	var inst,op,dst,src,off uint32
+	var reg [16]uint32
+	var mem [16]uint32
+	var inst,dst,src,off uint32
+	var overflow bool
+	var op uint32
+	var f1,f2 float32
+	var d1 float64
+
 	op = inst & op_m
+	_ = op
 	dst = inst >> dst_ & dst_m
 	src = inst >> src_ & src_m
 	off = inst >> off_ & off_m
@@ -21,44 +29,44 @@ func fun() {
 		reg[dst] = reg[src]
 
 	case brn:
-		ip = dst
+		reg[ip] = dst
 
 	case bsw:
 		if off > 0 {
 			if reg[dst] >= r1 {
-				ip = off
+				reg[ip] = off
 			}
 		}
-		ip = ip + reg[dst] + 1
+		reg[ip] = reg[ip] + reg[dst] + 1
 
 	case bri:
-		ip = reg[dst]
+		reg[ip] = reg[dst]
 
 	case lei:
 		reg[dst] = mem[reg[dst] - 1]
 
 	case ppm:
-		ip = off
+		reg[ip] = off
 	case prc:
-		prcstack[off] = ip
+		prcstack[off] = reg[ip]
 	case exi:
 	// dst is procedure identifier  if 'n' type procedure, 0 otherwise. 
 	// off is exit number
 		reg[r1] = off
 		if dst>0 {
-			ip = prcstack[dst]
+			reg[ip] = prcstack[dst]
 		} else {
 			// pop return address from stack
-			ip = mem[reg[xs]]
-			xs++
+			reg[ip] = mem[reg[xs]]
+			reg[xs]++
 		}
 		
 	case err:
 		reg[wa] = reg[r1]
-		ip = off
+		reg[ip] = off
 	case erb:
 		reg[wa] = off
-		ip = error_
+		reg[ip] = error_
 	case icv:
 		reg[dst]++
 	case dcv:
@@ -69,117 +77,121 @@ func fun() {
 		reg[dst] -= reg[src]
 	case beq:
 		if reg[dst] == reg[src] {
-			ip = off
+			reg[ip] = off
 		}
 	case bge:
 		if reg[dst] >= reg[src] {
-			ip = off
+			reg[ip] = off
 		}
 	case bgt:
 		if reg[dst] > reg[src] {
-			ip = off
+			reg[ip] = off
 		}
 	case bne:
 		if reg[dst] != reg[src] {
-			ip = off
+			reg[ip] = off
 		}
 	case ble:
 		if reg[dst] <= reg[src] {
-			ip = off
+			reg[ip] = off
 		}
 	case blt:
 		if reg[dst] < reg[src] {
-			ip = off
+			reg[ip] = off
 		}
 	case blo:
 		if reg[dst] < reg[src] {
-			ip = off
+			reg[ip] = off
 		}
 	case bhi:
 		if reg[dst] > reg[src] {
-			ip = off
+			reg[ip] = off
 		}
 	case bnz:
 		if reg[dst] != 0 {
-			ip = off
+			reg[ip] = off
 		}
 	case bze:
 		if reg[dst] == 0 {
-			ip = off
+			reg[ip] = off
 		}
 	case lct:
 		reg[dst] = reg[src]
 	case bct:
 		reg[dst]--
 		if reg[dst] > 0 {
-			ip = off
+			reg[ip] = off
 		}
 	case aov:
-		// TODO
+		reg[dst] += reg[src]
+		if uint64(reg[dst]) + uint64(reg[src]) > math.MaxUint32 {
+			reg[ip] = off
+		}
 	case bev:
 		if reg[dst] & 1 == 0{
-			ip = off
+			reg[ip] = off
 		}
 	case bod:
 		if reg[dst] & 1 != 0 {
-			ip = off
+			reg[ip] = off
 		}
 	case lcp:
-		reg[CP] = reg[dst]
+		reg[cp] = reg[dst]
 	case scp:
-		reg[dst] = reg[CP]
+		reg[dst] = reg[cp]
 	case lcw:
-		reg[dst] = mem[reg[CP]]
+		reg[dst] = mem[reg[cp]]
 	case icp:
-		reg[CP]++
+		reg[cp]++
 	case ldi:
-		reg[ia] = int32(reg[dst])
+//		ia = int32(reg[dst])
+			reg[ia] = reg[dst]
 	case adi:
 		long1,long2 = int64(reg[ia]),int64(reg[dst])
 		long1 = long1 + long2
 		if long1 > math.MaxInt32 || long1 < math.MinInt32 {
-			overlow = true
+			overflow = true
 		} else {
 			overflow = false
-			reg[ia] += reg[src]
+			reg[ia] = uint32(long1)
 		}
 	case mli:
 		long1,long2 = int64(reg[ia]),int64(reg[dst])
 		long1 = long1 * long2
 		if long1 > math.MaxInt32 || long1 < math.MinInt32 {
-			overlow = true
+			overflow = true
 		} else {
 			overflow = false
-			reg[ia] *= reg[src]
+			reg[ia] = uint32(long1)
 		}
 
 	case sbi:
 		long1,long2 = int64(reg[ia]),int64(reg[dst])
 		long1 = long1 - long2
 		if long1 > math.MaxInt32 || long1 < math.MinInt32 {
-			overlow = true
+			overflow = true
 		} else {
 			overflow = false
-			reg[ia] -= reg[src]
+			reg[ia] = uint32(long1)
 		}
 	case dvi:
 		if reg[src] == 0 {
 			overflow = true
 		} else {
-			overlow = false
+			overflow = false
 			reg[ia] /= reg[src]
 		}
 	case rmi:
 		if reg[src] == 0 {
 			overflow = true
 		} else {
-			overlow = false
+			overflow = false
 			reg[ia] %= reg[src]
 		}
 	case sti:
-			reg[dst] = uint32(reg[ia])
+			reg[dst] = reg[ia]
 	case ngi:
-		if reg[ia] == math.MinInt32 {
+		if int32(reg[ia]) == math.MinInt32 {
 			overflow = true
 		} else {
 			overflow = false
@@ -199,37 +211,81 @@ func fun() {
 		}
 	case ige:
 		if reg[ia] == 0 {
-			ip = off
+			reg[ip] = off
 		}
 	case igt:
-		if reg[ia] > 0 {
-			ip = off
+		if int32(reg[ia]) > 0 {
+			reg[ip] = off
 		}
 	case ile:
-		if reg[ia] <= 0 {
-			ip = off
+		if int32(reg[ia]) <= 0 {
+			reg[ip] = off
 		}
 	case ilt:
-		if reg[ia] < 0 {
-			ip = off
+		if int32(reg[ia]) < 0 {
+			reg[ip] = off
 		}
 	case ine:
 		if reg[ia] != 0 {
-			ip = off
+			reg[ip] = off
 		}
 	case ldr:
-//		reg[ra] = (float32) reg[dst]
+		reg[ra] = reg[dst]
+	case str:
+		reg[dst] = reg[ra]
+	case adr:
+		f1 =  math.Float32frombits(reg[dst])
+		f2 =  math.Float32frombits(reg[ra])
+		reg[ra] = math.Float32bits(f1 + f2)
+	case sbr:
+		f1 =  math.Float32frombits(reg[dst])
+		f2 =  math.Float32frombits(reg[ra])
+		reg[ra] = math.Float32bits(f1 - f2)
 	case mlr:
+		f1 =  math.Float32frombits(reg[dst])
+		f2 =  math.Float32frombits(reg[ra])
+		reg[ra] = math.Float32bits(f1 * f2)
 	case dvr:
+		f1 =  math.Float32frombits(reg[ra])
+		f2 =  math.Float32frombits(reg[src])
+		reg[ra] = math.Float32bits(f1 / f2)
 	case rov:
+		d1 = float64(math.Float32frombits(reg[ra]))
+		if math.IsNaN(d1) || math.IsInf(d1,0) {
+			reg[ip] = off
+		}
 	case rno:
+		d1 = float64(math.Float32frombits(reg[ra]))
+		if ! (math.IsNaN(d1) || math.IsInf(d1,0)) {
+			reg[ip] = off
+		}
 	case ngr:
+		f1 =  math.Float32frombits(reg[ra])
+		reg[ra] = math.Float32bits(-f1)
 	case req:
+		if math.Float32frombits(reg[ra]) == 0.0 {
+			reg[ip] = off	
+		}
 	case rge:
+		if math.Float32frombits(reg[ra]) >= 0.0 {
+			reg[ip] = off	
+		}
 	case rgt:
+		if math.Float32frombits(reg[ra]) < 0.0 {
+			reg[ip] = off	
+		}
 	case rle:
+		if math.Float32frombits(reg[ra]) <= 0.0 {
+			reg[ip] = off	
+		}
 	case rlt:
+		if math.Float32frombits(reg[ra]) < 0.0 {
+			reg[ip] = off	
+		}
 	case rne:
+		if math.Float32frombits(reg[ra]) != 0.0 {
+			reg[ip] = off	
+		}
 	case plc:
 		reg[dst] = reg[dst] + reg[src] + 2
 	case psc:
@@ -252,11 +308,11 @@ func fun() {
 		reg[dst] = reg[dst] << reg[src]
 	case nzb:
 		if reg[dst] != 0 {
-			ip = off
+			reg[ip] = off
 		}
 	case zrb:
 		if reg[dst] == 0 {
-			ip = off
+			reg[ip] = off
 		}
 	case mfi:
 		// TODO
@@ -271,7 +327,6 @@ func fun() {
 
 	case move:
 		reg[dst] = reg[src]
-	case adr:
 	case call:
 	case callos:
 	case cvd:
@@ -287,6 +342,7 @@ func fun() {
 	case loadi:
 		reg[dst] = off
 	case nop:
+		// nop means 'no operation' so there is nothing to do here
 	case pop:
 		mem[reg[src] + off] = mem[reg[dst]]
 		reg[src]++
@@ -303,154 +359,8 @@ func fun() {
 		reg[dst]--
 		mem[reg[dst]] = reg[src]
 	case realop:
-	case sbr:
 	case store:
 		mem[reg[src] + off] = reg[dst]
 	}
 }
 
-const (
-	aaa = iota
-	add
-	adi
-	adr
-	anb
-	aov
-	bct
-	beq
-	bev
-	bge
-	bgt
-	bhi
-	ble
-	blo
-	blt
-	bne
-	bnz
-	bod
-	bri
-	brn
-	bsw
-	bze
-	call
-	callos
-	chk
-	cmc
-	cne
-	ctb
-	ctw
-	cvd
-	cvm
-	dcv
-	decv
-	dvi
-	dvr
-	enp
-	ent
-	erb
-	err
-	exi
-	flc
-	icp
-	icv
-	ieq
-	ige
-	igt
-	ile
-	ilt
-	incv
-	ine
-	ino
-	iov
-	itr
-	jsrerr
-	lcp
-	lct
-	lcw
-	ldi
-	ldr
-	lei
-	load
-	loadcfp
-	loadi
-	lsh
-	mfi
-	mli
-	mlr
-	mov
-	move
-	mvc
-	mvw
-	mwb
-	ngi
-	ngr
-	nop
-	nzb
-	orb
-	plc
-	pop
-	popr
-	ppm
-	prc
-	psc
-	push
-	pushi
-	pushr
-	realop
-	req
-	rge
-	rgt
-	rle
-	rlt
-	rmi
-	rne
-	rno
-	rov
-	rsh
-	rti
-	rtn
-	sbi
-	sbr
-	scp
-	ssl
-	sss
-	store
-	sub
-	trc
-	xob
-	zrb
-)
-const (
-	r0 = iota
-	r1
-	r2
-	wa
-	wb
-	wc
-	xl
-	xr
-	xs
-	ia
-	ra
-	cp
-)
-const (
-	xt = xs
-)
-const (
-	dst = 1
-	src = 2
-	off = 3
-)
-/*
-const (
-	atn = iota
-	chp
-	cos
-	etx
-	lnf
-	sin
-	sqr
-	tan
-)
-*/

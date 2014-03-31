@@ -387,6 +387,7 @@ nopub
 *  &profile = 1
 
 translate
+	putline('package minimal')
 * start translation
 opnext	
 	label = thislabel =
