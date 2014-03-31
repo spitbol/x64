@@ -8,6 +8,7 @@ import	(
 func fun() {
 	var long1,long2 int64
 //	var int1,int2 int32
+	var int1 int32
 	var prcstack [32]uint32
 	var reg [16]uint32
 	var mem [16]uint32
@@ -315,23 +316,53 @@ func fun() {
 			reg[ip] = off
 		}
 	case mfi:
-		// TODO
+		if off !=0 && int32(reg[ia]) < 0 {
+			reg[ip] = off
+		}
+		else {
+			reg[dst] = reg[ia]
+		}
 	case itr:
+		reg[ia] = math.Float32bits(float32(int32(reg[ia])))
 	case rti:
-//HERE
+		long1 = int64(math.Float32frombits(reg[ra]))
+		if long > math.MaxInt32 || long < math.MinInt32) {
+			reg[ip] = off
+		}
+		reg[ia] = uint32(long1)
 	case cvm:
-	case mvc:
-	case mvw:
-	case mwb:
+		long1 = int64(reg[ia]) * 10 - (int64(reg[wb]) - 0x30)
+		if (long1 > math.MaxInt32 || long1 < math.MinInt32) {
+			reg[ip] = off
+		}
+		reg[ia] = uint32(long1)
+	case cvd:
+		int1 = int32(reg[ia])
+		reg[ia] = uint32( int1 / 10)
+		reg[wa] = uint32(-(int1 % 10) + 0x30))
+	case mvc, mvw:
+		for i=0;i<reg[wa];i++ {
+			mem[reg[xr]+i] = mem[reg[xl]+i]
+		}
+		reg[xl] += reg[wa]
+		reg[xr] += reg[wa]
+	case mcb,mwb:
+		for i:=0;i<reg[wa];i++ {
+			mem[reg[xr] -1 -i] = mem[reg[xl] -1 -i]
+		}
+		reg[xl] -= reg[wa]
+		reg[xr] -= reg[wa]
 	case chk:
 
 	case move:
 		reg[dst] = reg[src]
 	case call:
 	case callos:
-	case cvd:
 	case decv:
-		reg[dst]--
+		int1 = int32(reg[ia])
+		reg[ia] = uint32(reg[ia] / 10)
+		int1 = int1 % 10
+		reg[ia] = uint32(-int1 + 0x30)
 	case incv:
 		reg[dst]++
 	case jsrerr:
