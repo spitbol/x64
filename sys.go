@@ -1,154 +1,154 @@
 package minimal
 
-func sysax () {
+func sysax () int {
 	panic("sysax not implemented.")
 }
 
-func sysbs () {
+func sysbs () int {
 	panic("sysbs not implemented.")
 }
 
-func sysbx () {
+func sysbx () int {
 	panic("sysbx not implemented.")
 }
 
-func syscm () {
+func syscm () int {
 	panic("syscm not implemented.")
 }
 
-func sysdc () {
+func sysdc () int {
 	panic("sysdc not implemented.")
 }
 
-func sysdm () {
+func sysdm () int {
 	panic("sysdm not implemented.")
 }
 
-func sysdt () {
+func sysdt () int {
 	panic("sysdt not implemented.")
 }
 
-func sysea () {
+func sysea () int {
 	panic("sysea not implemented.")
 }
 
-func sysef () {
+func sysef () int {
 	panic("sysef not implemented.")
 }
 
-func sysej () {
+func sysej () int {
 	panic("sysej not implemented.")
 }
 
-func sysem () {
+func sysem () int {
 	panic("sysem not implemented.")
 }
 
-func sysen () {
+func sysen () int {
 	panic("sysen not implemented.")
 }
 
-func sysep () {
+func sysep () int {
 	panic("sysep not implemented.")
 }
 
-func sysex () {
+func sysex () int {
 	panic("sysex not implemented.")
 }
 
-func sysfc () {
+func sysfc () int {
 	panic("sysfc not implemented.")
 }
 
-func sysgc () {
+func sysgc () int {
 	panic("sysgc not implemented.")
 }
 
-func syshs () {
+func syshs () int {
 	panic("syshs not implemented.")
 }
 
-func sysid () {
+func sysid () int {
 	panic("sysid not implemented.")
 }
 
-func sysif () {
+func sysif () int {
 	panic("sysif not implemented.")
 }
 
-func sysil () {
+func sysil () int {
 	panic("sysil not implemented.")
 }
 
-func sysin () {
+func sysin () int {
 	panic("sysin not implemented.")
 }
 
-func sysio () {
+func sysio () int {
 	panic("sysio not implemented.")
 }
 
-func sysld () {
+func sysld () int {
 	panic("sysld not implemented.")
 }
 
-func sysmm () {
+func sysmm () int {
 	panic("sysmm not implemented.")
 }
 
-func sysmx () {
+func sysmx () int {
 	panic("sysmx not implemented.")
 }
 
-func sysou () {
+func sysou () int {
 	panic("sysou not implemented.")
 }
 
-func syspi () {
+func syspi () int {
 	panic("syspi not implemented.")
 }
 
-func syspl () {
+func syspl () int {
 	panic("syspl not implemented.")
 }
 
-func syspp () {
+func syspp () int {
 	panic("syspp not implemented.")
 }
 
-func syspr () {
+func syspr () int {
 	panic("syspr not implemented.")
 }
 
-func sysrd () {
+func sysrd () int {
 	panic("sysrd not implemented.")
 }
 
-func sysri () {
+func sysri () int {
 	panic("sysri not implemented.")
 }
 
-func sysrw () {
+func sysrw () int {
 	panic("sysrw not implemented.")
 }
 
-func sysst () {
+func sysst () int {
 	panic("sysst not implemented.")
 }
 
-func systm () {
+func systm () int {
 	panic("systm not implemented.")
 }
 
-func systt () {
+func systt () int {
 	panic("systt not implemented.")
 }
 
-func sysul () {
+func sysul () int {
 	panic("sysul not implemented.")
 }
 
-func sysxi () {
+func sysxi () int {
 	panic("sysxi not implemented.")
 }
 

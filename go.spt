@@ -221,13 +221,13 @@
 	s =
 +       'add adi adr anb aov atn '
 +	'bct beq bev bge bgt bhi ble blo blt bne bnz bod '
-+       'brn bri bsw btw bze call callos ceq chk chp cmb cmc cmp cne csc '
++       'brn bri bsw btw bze call ceq chk chp cmb cmc cmp cne csc '
 +       'cos ctb ctw cvd cvm dca dcv eti decv dvi dvr enp err erb esw etx exi flc '
 +       'ica icp icv ieq ige igt ile ilt incv ine ino iov itr jmp '
 +       'jsr jsrerr lch lct lcp lcw ldi ldr lei loadi loadcfp lnf lsh lsx mcb mfi mli mlr '
 +       'mnz mov mti mvc mvw mwb ngi eti ngr nzb orb plc ppm prc psc '
 +       'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
-+       'sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer '
++       'sch scp sin sqr ssl sss sti str sub sys tan trc wtb xob zer '
 +	'ent inr lea move load loadi push pushi pushr pop popr realop store zrb '
 
 *	don't trace mvc as doing so causes just 'end' to fail. sort out later. (ds 01/09/13)
@@ -345,11 +345,11 @@ inputok output = '  input lex file: ' filenami
 *
 *  associate output files.
 *
-	filenamo = fileprefix '.int'
+	filenamo = fileprefix '.go'
         output(.outfile,2,filenamo)             :s(outputok)
         output = '  cannot open asm file: ' filenamo :(end)
 outputok
-        output = '  output asm file: ' filenamo
+        output = '  output go file: ' filenamo
 
 *  then copy contents of <machine>.hdr (if it exists) to outfile
 *  stop at line with just 'end' or end of file
@@ -829,8 +829,9 @@ g.lei
 
 g.jsr
 	jsr_proc = getarg(i1)
-	jsr_op = (differ(is_osint[jsr_proc]) 'callos', 'call')
-	genop(jsr_op,,,jsr_proc)
+	is_os = is_osint[jsr_proc]
+	jsr_op = (differ(is_os) 'sys', 'call')
+	genop(jsr_op,,,jsr_proc (differ(is_os) '_',''))
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
 	eq(jsr_count)				:s(opnext)
@@ -1348,10 +1349,10 @@ g.end.4a
 	putline('const (')
 	str = osiprocs
 	str break(' ') . name ' ' =
-	putline(tab name ' = iota + 1 ')
+	putline(tab name '_ = iota')
 g.end.5
 	str break(' ') . name ' ' =		:f(g.end.6)
-	putline(tab name )			:(g.end.5)
+	putline(tab name '_' )			:(g.end.5)
 g.end.6
 	putline(')')
 

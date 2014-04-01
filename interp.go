@@ -1,3 +1,6 @@
+
+/* this is a comment */
+
 package minimal
 
 import	(
@@ -61,7 +64,7 @@ func fun() {
 			reg[ip] = mem[reg[xs]]
 			reg[xs]++
 		}
-		
+
 	case err:
 		reg[wa] = reg[r1]
 		reg[ip] = off
@@ -265,27 +268,27 @@ func fun() {
 		reg[ra] = math.Float32bits(-f1)
 	case req:
 		if math.Float32frombits(reg[ra]) == 0.0 {
-			reg[ip] = off	
+			reg[ip] = off
 		}
 	case rge:
 		if math.Float32frombits(reg[ra]) >= 0.0 {
-			reg[ip] = off	
+			reg[ip] = off
 		}
 	case rgt:
 		if math.Float32frombits(reg[ra]) < 0.0 {
-			reg[ip] = off	
+			reg[ip] = off
 		}
 	case rle:
 		if math.Float32frombits(reg[ra]) <= 0.0 {
-			reg[ip] = off	
+			reg[ip] = off
 		}
 	case rlt:
 		if math.Float32frombits(reg[ra]) < 0.0 {
-			reg[ip] = off	
+			reg[ip] = off
 		}
 	case rne:
 		if math.Float32frombits(reg[ra]) != 0.0 {
-			reg[ip] = off	
+			reg[ip] = off
 		}
 	case plc:
 		reg[dst] = reg[dst] + reg[src] + 2
@@ -316,39 +319,38 @@ func fun() {
 			reg[ip] = off
 		}
 	case mfi:
-		if off !=0 && int32(reg[ia]) < 0 {
+		if off != 0 && int32(reg[ia]) < 0 {
 			reg[ip] = off
-		}
-		else {
+		} else {
 			reg[dst] = reg[ia]
 		}
 	case itr:
 		reg[ia] = math.Float32bits(float32(int32(reg[ia])))
 	case rti:
 		long1 = int64(math.Float32frombits(reg[ra]))
-		if long > math.MaxInt32 || long < math.MinInt32) {
+		if long1 > math.MaxInt32 || long1 < math.MinInt32 {
 			reg[ip] = off
 		}
 		reg[ia] = uint32(long1)
 	case cvm:
 		long1 = int64(reg[ia]) * 10 - (int64(reg[wb]) - 0x30)
-		if (long1 > math.MaxInt32 || long1 < math.MinInt32) {
+		if long1 > math.MaxInt32 || long1 < math.MinInt32 {
 			reg[ip] = off
 		}
 		reg[ia] = uint32(long1)
 	case cvd:
 		int1 = int32(reg[ia])
 		reg[ia] = uint32( int1 / 10)
-		reg[wa] = uint32(-(int1 % 10) + 0x30))
+		reg[wa] = uint32(-(int1 % 10) + 0x30)
 	case mvc, mvw:
-		for i=0;i<reg[wa];i++ {
-			mem[reg[xr]+i] = mem[reg[xl]+i]
+		for i:=0;i<int(reg[wa]);i++ {
+			mem[reg[xr] + uint32(i)] = mem[reg[xl]+uint32(i)]
 		}
 		reg[xl] += reg[wa]
 		reg[xr] += reg[wa]
 	case mcb,mwb:
-		for i:=0;i<reg[wa];i++ {
-			mem[reg[xr] -1 -i] = mem[reg[xl] -1 -i]
+		for i:=0;i<int(reg[wa]);i++ {
+			mem[reg[xr] -1 - uint32(i)] = mem[reg[xl] -1 - uint32(i)]
 		}
 		reg[xl] -= reg[wa]
 		reg[xr] -= reg[wa]
@@ -357,7 +359,7 @@ func fun() {
 	case move:
 		reg[dst] = reg[src]
 	case call:
-	case callos:
+	case sys:
 	case decv:
 		int1 = int32(reg[ia])
 		reg[ia] = uint32(reg[ia] / 10)

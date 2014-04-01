@@ -146,8 +146,8 @@ err.o: err.s
 
 
 # SPITBOL Minimal source
-s.int:	s.lex i32.hdr int.spt
-	$(BASEBOL) -u i32 int.spt
+s.go:	s.lex i32.hdr go.spt
+	$(BASEBOL) -u i32 go.spt
 
 s.s:	s.lex $(VHDRS) $(COD) 
 	$(BASEBOL) -u $(ARCH)-$(CHARBITS) $(COD)

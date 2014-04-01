@@ -1,4 +1,5 @@
 package	minimal
+
 //go
 const (
 	r0 = iota
@@ -49,3 +50,4 @@ const	(
 	src_	=	dst_ + dst_w
 	off_	=	src_ + src_w
 )
+
