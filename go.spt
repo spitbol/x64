@@ -146,6 +146,7 @@
 	define('iflit(iarg)')
 	define('ifmem(iarg)')
 	define('ifreg(iarg)')
+	define('labname(lab)')
 	define('move(dst,src)dtype,stype,mop,stext,dtext')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
@@ -332,14 +333,14 @@ flgs2
 *	off - offset, either immediate constant or address
 *
 * Memory references always use the src and off registers. 
-* The effective addressis obtained by adding the offset to the contents of the
+* The effective address is obtained by adding the offset to the contents of the
 * src register. If the src register is r0, the the effective address is the offset.
 *
-
 	filenami = fileprefix '.lex'
         input(.infile,1,filenami)                     :s(inputok)
 
 inputok output = '  input lex file: ' filenami
+
 *
 *
 *
@@ -500,15 +501,15 @@ getarg
 getarg.c.1 getarg = l1				:(return)
 
 * dlbl
-getarg.c.2 getarg = l1				:(return)
+getarg.c.2 getarg = labname(l1)			:(return)
 
 * wlbl, clbl
 getarg.c.3
-getarg.c.4 getarg =  l1      			:(return)
+getarg.c.4 getarg =  labname(l1)		:(return)
 
 * elbl, plbl
 getarg.c.5
-getarg.c.6 getarg = l1				:(return)
+getarg.c.6 getarg = labname(l1)			:(return)
 
 * w,x, map register name
 getarg.c.7
@@ -634,6 +635,13 @@ ifreg
 	eq(i.type(iarg),8) ident(i.text(iarg),'ia')	:s(return)
 	ge(i.type(iarg),7) le(i.type(iarg),8) 	:f(freturn)s(return)
 
+-stitl labname(lab) - get label name
+labname
+* rename label if is same as a go keyword
+	labname = lab
+	differ(lab,'error')			:s(return)
+	labname = lab '_' 
+						:(return)
 -stitl lower(s) -  convert argument to upper case
 lower
 	lower = replace(s,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
@@ -703,6 +711,7 @@ prcent
 -stitl putlab(label)
 putlab
 	ident(label)				:s(return)
+	label = ident(label,'error') 'error_'
 	labtab<label> = program_counter
 *	putline('// ' label ' - ' +program_counter )		:(return)
 	putline('// ' label)			:(return)
@@ -1263,8 +1272,6 @@ g.sec.6
 *  error section.  produce code to receive erb's
 g.sec.7
         putline('//sec07' )
-*  since 'error' is a keyword, emit label 'error_' for use in generating err instruction
-	putlab('error_')	
 						:(opnext)
 
 g.end						:(program.end)
@@ -1385,7 +1392,7 @@ g.end.10
 *	emit error messages
 	ara = sort(error_messages,1)
 	i = 0
-	putline('var error_messages = map[int]string {')
+	putline('var error_messages = map[uint32]string {')
 g.end.11
 	i = i + 1
 	putline(tab ara<i,1> tab ': "' ara<i,2> '",')	:s(g.end.11)

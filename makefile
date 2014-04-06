@@ -146,7 +146,7 @@ err.o: err.s
 
 
 # SPITBOL Minimal source
-s.go:	s.lex i32.hdr go.spt
+s.go:	s.lex go.spt
 	$(BASEBOL) -u i32 go.spt
 
 s.s:	s.lex $(VHDRS) $(COD) 
