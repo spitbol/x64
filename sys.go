@@ -2,6 +2,7 @@ package minimal
 
 import (
 	"bufio"
+	"bytes"
 	//	"io"
 	"os"
 	"time"
@@ -17,6 +18,7 @@ type fcblk struct { // file control block
 	name    string
 	open    bool
 	illegal bool
+	eof	bool
 	reclen  int
 	reader  *bufio.Reader
 	writer  *bufio.Writer
@@ -31,7 +33,11 @@ var (
 	scblk2  int
 	fcblkid int
 	fcblks  map[int]*fcblk
+	fcb0	*fcblk	// fcblk for stdin
+	fcb1	*fcblk  // fcblk for stdout
+	fcb2	*fcblk  // fcblk for stderr
 	fcbn    int
+	timeStart	time.Time
 )
 
 func sysax() uint32 {
@@ -44,6 +50,7 @@ func sysbs() uint32 {
 }
 
 func sysbx() uint32 {
+	timeStart = time.Now()
 	return 0
 	panic("sysbx not implemented.")
 }
@@ -65,6 +72,7 @@ func sysdm() uint32 {
 
 func sysdt() uint32 {
 	t := time.Now()
+	// TODO: Need to initialize scblk1 and scblk2 to blocks im mem[]
 	s := t.Format(time.RFC822)
 	for i := 0; i < len(s); i++ {
 		mem[scblk1+2+i] = uint32(s[i])
@@ -93,7 +101,8 @@ func sysej() uint32 {
 		}
 	}
 	// need to find way to terminate program
-	return 0
+	// return 999 to indicate end of job
+	return 999
 }
 
 func setscblk(b int, str string) {
@@ -292,11 +301,22 @@ func sysmx() uint32 {
 }
 
 func sysou() uint32 {
-	panic("sysou not implemented.")
+	var fcb	*fcblk
+	if reg[wa] == 0 {
+		fcb = fcb2
+	} else if reg[wa] == 1 {
+		fcb = fcb1
+	} else {
+		fcb = fcblks[int(reg[wa])]
+		if fcb == nil {
+			return 2
+		}
+	}
+	return writeLine(fcb, reg[xr])
 }
 
 func syspi() uint32 {
-	panic("syspi not implemented.")
+	return writeLine(fcb2, reg[xr])
 }
 
 func syspl() uint32 {
@@ -304,48 +324,38 @@ func syspl() uint32 {
 }
 
 func syspp() uint32 {
-	panic("syspp not implemented.")
+	reg[wa] = maxreclen
+	reg[wb] = 60
+	reg[wc] = 0
+	return 0
 }
 
 func syspr() uint32 {
-	var fcb *fcblk
-	scblk1 = int(reg[xr])
-
-	l := int(reg[wa])
-	for i := 0; i < l; i++ {
-		_, err := fcb.writer.WriteRune(rune(mem[scblk1+2+i]))
-		if err != nil {
-			return 1
-		}
-	}
-	_, err := fcb.writer.WriteString("\n")
-	if err != nil {
-		return 1
-	}
-	fcb.writer.Flush()
-	return 0
-	panic("syspr not implemented.")
+	return writeLine(fcb1, reg[xr])
 }
 
 func sysrd() uint32 {
-	// read standard input
-	panic("sysrd not implemented.")
+	n := readLine(fcb0, reg[xr], reg[wc])
+	return n
 }
 
 func sysri() uint32 {
-	panic("sysri not implemented.")
+	n := readLine(fcb0, reg[xr], mem[reg[xr]+1])
+	return n
 }
 
 func sysrw() uint32 {
-	panic("sysrw not implemented.")
+	return 2
 }
 
 func sysst() uint32 {
-	panic("sysst not implemented.")
+	return 5
 }
 
 func systm() uint32 {
-	panic("systm not implemented.")
+	d := time.Since(timeStart)
+	reg[ia]  =  uint32(d.Nanoseconds() / 1000000)
+	return 0
 }
 
 func systt() uint32 {
@@ -355,7 +365,7 @@ func systt() uint32 {
 }
 
 func sysul() uint32 {
-	return 1
+	return 0
 }
 
 func sysxi() uint32 {
@@ -485,19 +495,23 @@ func syscall(ea uint32) uint32 {
 }
 
 func init() {
-	var fcb *fcblk
-	fcb = new(fcblk)
-	fcb.name = "dev/stdin"
-	fcb.file = os.Stdin
-	fcblks[len(fcblks)+1] = fcb
-	fcb = new(fcblk)
-	fcb.name = "dev/stdout"
-	fcb.file = os.Stdout
-	fcblks[len(fcblks)+1] = fcb
-	fcb = new(fcblk)
-	fcb.name = "dev/stderr"
-	fcb.file = os.Stderr
-	fcblks[len(fcblks)+1] = fcb
+	fcb0 =  new(fcblk)
+	fcb0.name = "dev/stdin"
+	fcb0.file = os.Stdin
+	fcb0.open = true
+	fcb0.reader = bufio.NewReader(fcb0.file)
+
+	fcb1 = new(fcblk)
+	fcb1.name = "dev/stdout"
+	fcb1.file = os.Stdout
+	fcb1.open = true
+	fcb1.writer = bufio.NewWriter(fcb1.file)
+
+	fcb2 = new(fcblk)
+	fcb2.name = "dev/stderr"
+	fcb2.file = os.Stderr
+	fcb2.open = true
+	fcb2.writer = bufio.NewWriter(fcb0.file)
 }
 
 func goString(scblk []uint32) string {
@@ -526,4 +540,53 @@ func check(e error) {
 	if e != nil {
 		panic(e)
 	}
+}
+func writeLine(fcb *fcblk, start uint32) uint32 {
+	scb := int(start)
+	n := int(mem[scb+1])
+
+	for i := 0; i < n; i++ {
+		_, err := fcb.writer.WriteRune(rune(mem[scb+2+i]))
+		if err != nil {
+			return 1
+		}
+	}
+	return writeNewLine(fcb, true)
+}
+
+func writeNewLine(fcb *fcblk,flush bool) uint32 {
+	_, err := fcb.writer.WriteString("\n")
+	if err != nil {
+		return 1
+	}
+	if flush {
+		err := fcb.writer.Flush()
+		if err != nil {
+			return 1
+		}
+	}
+	return 0
+}
+
+func readLine(fcb *fcblk, scb uint32, max uint32) uint32{
+	
+	if fcb.eof {	// don't go past EOF, just resignal it.
+		return 1
+	}
+	n := int(max) // maximum length to read
+// read line, then break line into runes, then copy runes to minimal
+	line, err := fcb.reader.ReadBytes('\n') 
+	if err != nil {
+		fcb.eof = true
+		return 1
+	}
+	runes := bytes.Runes(line)
+	if len(runes) < n {
+		n = len(runes)
+	}
+	mem[scb+1] = uint32(n)
+	for i:=0;i<n;i++ {
+		mem[int(scb)+2+i] = uint32(runes[i])
+	}
+	return 0
 }

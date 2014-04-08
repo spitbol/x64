@@ -723,7 +723,9 @@ putstmt
 *	 putline('putstmt ' opcode ',' op1 ',' op2 ',' op3)
 
 	op2 = ident(op2,r0) ''
-	stmtout = tab rpad(opcode,8) 
+	stmtout = 
+.	'/* ' lpad(program_counter, 6) ' */'
+.	tab rpad(opcode,8) 
 .	(differ(op1) '| ' rpad(op1,6)  ' << dst_ ',)
 .	(differ(op2) '| ' rpad(op2,6)  ' << src_ ',)
 .	(differ(op3) '| ' rpad(op3,6)  ' << off_ ',) ','
@@ -957,7 +959,7 @@ g.bod
 g.bev
 g.bnz
 g.bze
-	genop(incode,get1(),getarg(i2))		:(opnext)
+	genop(incode,get1(),,getarg(i2))		:(opnext)
 
 g.lct
 *
@@ -972,7 +974,7 @@ g.lct
 g.lct.1	genop('mov',get1(),get2())		:(opnext)
 
 g.bct
-        genop('bct',getarg(i1),getarg(i2))    	:(opnext)
+        genop('bct',getarg(i1),,getarg(i2))    	:(opnext)
 
 g.aov
 * result may need to be stored back to memory
@@ -1150,9 +1152,6 @@ g.mwb
 * 10 - Operations connected with the stack
 
 g.chk						:(op.none)
-	genop('cmp',xs,,'lowspmin')
-	genop('jb',,,'sec06')
-						:(opnext)
 
 * 11 - Data generation instructions
 
@@ -1266,7 +1265,7 @@ g.sec.5
 
 *  stack overflow section.  output exi__n tail code
 g.sec.6
-        genopl('sec06'  , 'nop')
+	putlab('sec06')
 						:(opnext)
 
 *  error section.  produce code to receive erb's
