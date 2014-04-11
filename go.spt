@@ -146,7 +146,6 @@
 	define('iflit(iarg)')
 	define('ifmem(iarg)')
 	define('ifreg(iarg)')
-	define('labname(lab)')
 	define('move(dst,src)dtype,stype,mop,stext,dtext')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
@@ -501,15 +500,15 @@ getarg
 getarg.c.1 getarg = l1				:(return)
 
 * dlbl
-getarg.c.2 getarg = labname(l1)			:(return)
+getarg.c.2 getarg = l1				:(return)
 
 * wlbl, clbl
 getarg.c.3
-getarg.c.4 getarg =  labname(l1)		:(return)
+getarg.c.4 getarg =  l1      			:(return)
 
 * elbl, plbl
 getarg.c.5
-getarg.c.6 getarg = labname(l1)			:(return)
+getarg.c.6 getarg = l1				:(return)
 
 * w,x, map register name
 getarg.c.7
@@ -635,13 +634,6 @@ ifreg
 	eq(i.type(iarg),8) ident(i.text(iarg),'ia')	:s(return)
 	ge(i.type(iarg),7) le(i.type(iarg),8) 	:f(freturn)s(return)
 
--stitl labname(lab) - get label name
-labname
-* rename label if is same as a go keyword
-	labname = lab
-	differ(lab,'error')			:s(return)
-	labname = lab '_' 
-						:(return)
 -stitl lower(s) -  convert argument to upper case
 lower
 	lower = replace(s,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
@@ -684,14 +676,14 @@ move
  	eq(dtype,11) ifreg(src)  genop('pushr',getreg(dst),getreg(src))  :s(return)
 
 * look for load of immediate value
-	ifreg(dst) iflit(src)   		:f(move.2)
+	ifreg(dst) iflit(src)   		:f(move.20)
 	off = getoff(src)
-	differ(off,'cfp_m')			:s(move.1)
+	differ(off,'cfp_m')			:s(move.10)
 	genop('loadcfp',getreg(dst))		:(return)
 * special case cfp_m since it won't fit into offset field of loadi instruction.
-move.1
+move.10
 	genop('loadi',getreg(dst),,getoff(src))	:(return)
-move.2
+move.20
 
 * look for load from memory
 	ifreg(dst) ifmem(src) genop('load',getreg(dst),getreg(src),getoff(src))  :s(return)
@@ -711,7 +703,6 @@ prcent
 -stitl putlab(label)
 putlab
 	ident(label)				:s(return)
-	label = ident(label,'error') 'error_'
 	labtab<label> = program_counter
 *	putline('// ' label ' - ' +program_counter )		:(return)
 	putline('// ' label)			:(return)
@@ -723,9 +714,7 @@ putstmt
 *	 putline('putstmt ' opcode ',' op1 ',' op2 ',' op3)
 
 	op2 = ident(op2,r0) ''
-	stmtout = 
-.	'/* ' lpad(program_counter, 6) ' */'
-.	tab rpad(opcode,8) 
+	stmtout = tab rpad(opcode,8) 
 .	(differ(op1) '| ' rpad(op1,6)  ' << dst_ ',)
 .	(differ(op2) '| ' rpad(op2,6)  ' << src_ ',)
 .	(differ(op3) '| ' rpad(op3,6)  ' << off_ ',) ','
@@ -959,7 +948,7 @@ g.bod
 g.bev
 g.bnz
 g.bze
-	genop(incode,get1(),,getarg(i2))		:(opnext)
+	genop(incode,get1(),getarg(i2))		:(opnext)
 
 g.lct
 *
@@ -974,7 +963,7 @@ g.lct
 g.lct.1	genop('mov',get1(),get2())		:(opnext)
 
 g.bct
-        genop('bct',getarg(i1),,getarg(i2))    	:(opnext)
+        genop('bct',getarg(i1),getarg(i2))    	:(opnext)
 
 g.aov
 * result may need to be stored back to memory
@@ -1152,6 +1141,9 @@ g.mwb
 * 10 - Operations connected with the stack
 
 g.chk						:(op.none)
+	genop('cmp',xs,,'lowspmin')
+	genop('jb',,,'sec06')
+						:(opnext)
 
 * 11 - Data generation instructions
 
@@ -1265,12 +1257,14 @@ g.sec.5
 
 *  stack overflow section.  output exi__n tail code
 g.sec.6
-	putlab('sec06')
+        genopl('sec06'  , 'nop')
 						:(opnext)
 
 *  error section.  produce code to receive erb's
 g.sec.7
         putline('//sec07' )
+*  since 'error' is a keyword, emit label 'error_' for use in generating err instruction
+	putlab('error_')	
 						:(opnext)
 
 g.end						:(program.end)

@@ -3,6 +3,7 @@ package minimal
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	//	"io"
 	"os"
 	"time"
@@ -334,9 +335,26 @@ func syspr() uint32 {
 	return writeLine(fcb1, reg[xr])
 }
 
+var sysrds int
 func sysrd() uint32 {
-	n := readLine(fcb0, reg[xr], reg[wc])
-	return n
+	fmt.Println("enter sysrd")
+	sysrds++
+	switch sysrds {
+	case 1:
+		scblk := mem[reg[xr]:]
+		goblk := minString("t.spt")
+		for i:=0;i<int(goblk[1]);i++ {
+			scblk[i] = goblk[i]
+		}
+		reg[wc] = goblk[1]
+		return 1
+	default: // signal end of file, no more input
+		scblk := mem[reg[xr]:]
+		scblk[2] = 0
+		reg[wc] = 0
+		return 1
+	}
+	return 1
 }
 
 func sysri() uint32 {
@@ -374,6 +392,7 @@ func sysxi() uint32 {
 
 func syscall(ea uint32) uint32 {
 
+	fmt.Println("SYSCALL ", ea)
 	switch ea {
 
 	case sysax_:
@@ -526,13 +545,23 @@ func goString(scblk []uint32) string {
 	return string(b)
 }
 
-// return byte array in form of spitbol scblk
-func minString(b []byte) []uint32 {
+// return scblk from go byte array
+func minBytes(b []byte) []uint32 {
 	var s []uint32
 	s = make([]uint32, len(b)+2)
 	s[1] = uint32(len(b))
 	for i := 1; i < len(b); i++ {
 		s[i+1] = uint32(b[i])
+	}
+	return s
+}
+// return scblk from go string
+func minString(g string) []uint32 {
+	var s []uint32
+	s = make([]uint32, len(g)+2)
+	s[1] = uint32(len(g))
+	for i := 0; i < len(g); i++ {
+		s[i+2] = uint32(g[i])
 	}
 	return s
 }

@@ -459,10 +459,10 @@ CONFIG.I32-8
 	EQU_DEFS['CFP_L'] = '4294967295'
 *	EQU_DEFS['CFP_M'] = '2147483647'
 	EQU_DEFS['CFP_N'] = '32'
- 	EQU_DEFS['CFP_R'] = '2'
+ 	EQU_DEFS['CFP_R'] = '1'
 	EQU_DEFS['CFP_U'] = '128'
 *	Use 24 characters, for hash in i32
-	EQU_DEFS['E_HNW'] = '24'
+	EQU_DEFS['E_HNW'] = '0'
 	
 							:(CONFIG.DONE)
 CONFIG.X32

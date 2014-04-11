@@ -27,6 +27,22 @@ const (
 const (
 	xt = xs
 )
+
+var regName  = map[uint32]string {
+	r0 : "r0",
+	r1 : "r1",
+	r2 : "r2",
+	wa : "wa",
+	wb : "wb",
+	wc : "wc",
+	xl : "xl",
+	xr : "xr",
+	xs : "xs",
+	ia : "ia",
+	ra : "ra",
+	cp : "cp",
+}
+
 /*
 const (
 	atn = iota
@@ -44,19 +60,19 @@ const (
 	_m	gives mask to extract value
 	operand encod
 */
-const	(
-	op_w	=	8
-	dst_w	=	4
-	src_w	=	4
-	off_w	=	16
-	op_m	=	1<<op_w - 1
-	dst_m	=	1<<dst_w - 1
-	src_m	=	1<<src_w - 1
-	off_m 	=	1<<off_w - 1
-	op_	=	0
-	dst_	=	op_ + op_w
-	src_	=	dst_ + dst_w
-	off_	=	src_ + src_w
+const (
+	op_w  = 8
+	dst_w = 4
+	src_w = 4
+	off_w = 16
+	op_m  = 1<<op_w - 1
+	dst_m = 1<<dst_w - 1
+	src_m = 1<<src_w - 1
+	off_m = 1<<off_w - 1
+	op_   = 0
+	dst_  = op_ + op_w
+	src_  = dst_ + dst_w
+	off_  = src_ + src_w
 )
 
 const (
@@ -66,7 +82,7 @@ const (
 var (
 	reg      [16]uint32
 	mem      [100000]uint32
-	ip	uint32
+	ip       uint32
 	stackEnd uint32
 )
 
@@ -74,7 +90,7 @@ func interp() {
 	instn := 0
 	var long1, long2 int64
 	//	var int1,int2 int32
-	var int1 int32
+	var int1,int2 int32
 	var prcstack [32]uint32
 	var inst, dst, src, off uint32
 	var overflow bool
@@ -83,66 +99,68 @@ func interp() {
 	var d1 float64
 
 	ip = start
-
 	for {
-//		fmt.Println("ip",ip)
+		//		fmt.Println("ip",ip)
 		if ip < s_aaa || ip > s_yyy {
 			fmt.Println("ip out of range ", ip)
 			return
 		}
+		if reg[r0] != 0 {
+			fmt.Println("r0 not zero",reg[r0],ip)
+			panic("r0 not zero")
+		}
 		inst = mem[ip]
 		instn++
-		if instn > 500 {
+		if instn > 50000 {
+			fmt.Println("instruction limit exceeded",instn)
 			return
 		}
-		ip++
 		op = inst & op_m
 		dst = inst >> dst_ & dst_m
 		src = inst >> src_ & src_m
 		off = inst >> off_ & off_m
-		fmt.Printf(" %v %x %v %v %v %v\n",ip-1,inst,op,dst,src,off)
+		fmt.Printf(" %v %v %v %v=%v %v=%v %v\n", ip,
+		op, opName[op], regName[dst], reg[dst], 
+		regName[src], reg[src], off)
+		ip++
 		switch op {
 
 		case mov:
 			reg[dst] = reg[src]
-
 		case brn:
-			ip = dst
-
+			ip = off
 		case bsw:
 			if off > 0 {
-				if reg[dst] >= r1 {
+				if reg[dst] >= reg[r1] {
 					ip = off
+					continue
 				}
 			}
-			ip = ip + reg[dst] + 1
-
+			// when reach here, ip is pointing to first iff entry
+			ip = mem[ip + reg[dst]]
 		case bri:
 			ip = reg[dst]
-
 		case lei:
 			reg[dst] = mem[reg[dst]-1]
-
 		case ppm:
 			ip = off
 		case prc:
-			prcstack[off] = ip
+			prcstack[off] = mem[reg[xs]]
+			reg[xs]++
 		case exi:
+			fmt.Println("PROC:EXI  ", reg[xs], mem[reg[xs]], ip)
 			// dst is procedure identifier  if 'n' type procedure, 0 otherwise.
 			// off is exit number
-			reg[r1] = off
-			if dst > 0 {
-				ip = prcstack[dst]
+			if off >= 100 {
+				ip = prcstack[off / 100]
+				reg[r1] = off % 100
 			} else {
 				// pop return address from stack
 				ip = mem[reg[xs]]
 				reg[xs]++
+				reg[r1] = off
 			}
-
-		case err:
-			reg[wa] = reg[r1]
-			ip = off
-		case erb:
+		case err,erb:
 			reg[wa] = off
 			ip = error_
 		case icv:
@@ -153,6 +171,10 @@ func interp() {
 			reg[dst] += reg[src]
 		case sub:
 			reg[dst] -= reg[src]
+		case ica:
+			reg[dst]++
+		case dca:
+			reg[dst]--
 		case beq:
 			if reg[dst] == reg[src] {
 				ip = off
@@ -196,16 +218,16 @@ func interp() {
 		case lct:
 			reg[dst] = reg[src]
 		case bct:
-			fmt.Println("bct",dst,off)
+			fmt.Println("BCT", dst, off)
 			reg[dst]--
 			if reg[dst] > 0 {
 				ip = off
 			}
 		case aov:
-			reg[dst] += reg[src]
 			if uint64(reg[dst])+uint64(reg[src]) > math.MaxUint32 {
 				ip = off
 			}
+			reg[dst] += reg[src]
 		case bev:
 			if reg[dst]&1 == 0 {
 				ip = off
@@ -220,11 +242,12 @@ func interp() {
 			reg[dst] = reg[cp]
 		case lcw:
 			reg[dst] = mem[reg[cp]]
+			reg[cp]++
 		case icp:
 			reg[cp]++
 		case ldi:
-			//		ia = int32(reg[dst])
 			reg[ia] = reg[dst]
+		//TODO: Reminder that ia is SIGNED integer when doing arithmetic
 		case adi:
 			long1, long2 = int64(reg[ia]), int64(reg[dst])
 			long1 = long1 + long2
@@ -243,7 +266,6 @@ func interp() {
 				overflow = false
 				reg[ia] = uint32(long1)
 			}
-
 		case sbi:
 			long1, long2 = int64(reg[ia]), int64(reg[dst])
 			long1 = long1 - long2
@@ -254,27 +276,32 @@ func interp() {
 				reg[ia] = uint32(long1)
 			}
 		case dvi:
-			if reg[src] == 0 {
+			if reg[dst] == 0 {
 				overflow = true
 			} else {
 				overflow = false
-				reg[ia] /= reg[src]
+				int1,int2 = int32(reg[ia]),int32(reg[dst])
+				int1 /= int2
+				reg[ia] = uint32(int1)
 			}
 		case rmi:
-			if reg[src] == 0 {
+			if reg[dst] == 0 {
 				overflow = true
 			} else {
 				overflow = false
-				reg[ia] %= reg[src]
+				int1,int2 = int32(reg[ia]),int32(reg[dst])
+				int1 %= int2
+				reg[ia] = uint32(int1)
 			}
-		case sti:
-			reg[dst] = reg[ia]
+//		case sti:
+//			reg[dst] = reg[ia]
 		case ngi:
-			if int32(reg[ia]) == math.MinInt32 {
+			int1 = int32(reg[ia])
+			if int1 == math.MinInt32 {
 				overflow = true
 			} else {
 				overflow = false
-				reg[ia] = -reg[ia]
+				reg[ia] = uint32(-int1)
 			}
 		case ino:
 			if !overflow {
@@ -285,11 +312,11 @@ func interp() {
 				ip = off
 			}
 		case ieq:
-			if reg[ia] == 0 {
+			if int32(reg[ia]) == 0 {
 				ip = off
 			}
 		case ige:
-			if reg[ia] == 0 {
+			if int32(reg[ia]) >= 0 {
 				ip = off
 			}
 		case igt:
@@ -313,20 +340,20 @@ func interp() {
 		case str:
 			reg[dst] = reg[ra]
 		case adr:
-			f1 = math.Float32frombits(reg[dst])
-			f2 = math.Float32frombits(reg[ra])
+			f1 = math.Float32frombits(reg[ra])
+			f2 = math.Float32frombits(reg[dst])
 			reg[ra] = math.Float32bits(f1 + f2)
 		case sbr:
-			f1 = math.Float32frombits(reg[dst])
-			f2 = math.Float32frombits(reg[ra])
+			f1 = math.Float32frombits(reg[ra])
+			f2 = math.Float32frombits(reg[dst])
 			reg[ra] = math.Float32bits(f1 - f2)
 		case mlr:
-			f1 = math.Float32frombits(reg[dst])
-			f2 = math.Float32frombits(reg[ra])
+			f1 = math.Float32frombits(reg[ra])
+			f2 = math.Float32frombits(reg[dst])
 			reg[ra] = math.Float32bits(f1 * f2)
 		case dvr:
 			f1 = math.Float32frombits(reg[ra])
-			f2 = math.Float32frombits(reg[src])
+			f2 = math.Float32frombits(reg[dst])
 			reg[ra] = math.Float32bits(f1 / f2)
 		case rov:
 			d1 = float64(math.Float32frombits(reg[ra]))
@@ -370,11 +397,38 @@ func interp() {
 		case psc:
 			reg[dst] = reg[dst] + reg[src] + 2
 		case cne:
-			// TODO
+		// Current spitbol code only has 'cne', no instances of 'ceq'
+			s1 := mem[reg[xl]:]
+			s2 := mem[reg[xr]:]
+			n := int(reg[wa])
+			for i:=0;i<n;i++ {
+				if s1[i] != s2[i] {
+					ip = off
+					reg[xl],reg[xr] = 0,0
+					break
+				}
+			}
+			reg[xl],reg[xr] = 0,0
 		case cmc:
-			// TODO
+			s1 := mem[reg[xl]:]
+			s2 := mem[reg[xr]:]
+			n := int(reg[wa])
+			for i:=0;i<n;i++ {
+				if s1[i] < s2[i] {
+					ip = reg[r1]
+					reg[xl],reg[xr] = 0,0
+					break
+				} else if s1[i] > s2[i] {
+					ip = reg[r2]
+					reg[xl],reg[xr] = 0,0
+					break
+				}
+			}
+			reg[xl],reg[xr] = 0,0
 		case trc:
+			panic("trc not implemented")
 		case flc:
+			panic("flc not implemented")
 		case anb:
 			reg[dst] &= reg[src]
 		case orb:
@@ -396,17 +450,15 @@ func interp() {
 		case mfi:
 			if off != 0 && int32(reg[ia]) < 0 {
 				ip = off
-			} else {
-				reg[dst] = reg[ia]
 			}
 		case itr:
 			reg[ia] = math.Float32bits(float32(int32(reg[ia])))
 		case rti:
-			long1 = int64(math.Float32frombits(reg[ra]))
-			if long1 > math.MaxInt32 || long1 < math.MinInt32 {
+			d1 = float64(math.Float32frombits(reg[ra]))
+			if math.IsNaN(d1) || math.IsInf(d1, 0) {
 				ip = off
 			}
-			reg[ia] = uint32(long1)
+			reg[ia] = uint32(int32(d1))
 		case cvm:
 			long1 = int64(reg[ia])*10 - (int64(reg[wb]) - 0x30)
 			if long1 > math.MaxInt32 || long1 < math.MinInt32 {
@@ -418,7 +470,8 @@ func interp() {
 			reg[ia] = uint32(int1 / 10)
 			reg[wa] = uint32(-(int1 % 10) + 0x30)
 		case mvc, mvw:
-			for i := 0; i < int(reg[wa]); i++ {
+			n := int(reg[wa])
+			for i := 0; i < n; i++ {
 				mem[reg[xr]+uint32(i)] = mem[reg[xl]+uint32(i)]
 			}
 			reg[xl] += reg[wa]
@@ -437,23 +490,32 @@ func interp() {
 			reg[dst] = reg[src]
 		case call:
 			reg[xs]--
-			reg[xs] = ip
+			mem[reg[xs]] = ip
+			fmt.Println("PROC:CALL ", off, reg[xs],mem[reg[xs]], ip)
 			ip = off
 		case sys:
 			reg[r1] = syscall(off)
+			fmt.Printf("SYSCALL %v %v %v\n", off, sysName[off],reg[r1])
 			if reg[r1] == 999 {
-				break; // end execution
+				break // end execution
 			}
+/*
 		case decv:
 			int1 = int32(reg[ia])
 			reg[ia] = uint32(reg[ia] / 10)
 			int1 = int1 % 10
 			reg[ia] = uint32(-int1 + 0x30)
-		case incv:
-			reg[dst]++
+*/
 		case jsrerr:
+			fmt.Println("PROC:JSRE ", ip, reg[r1],off)
+			if reg[r1] == 0 {
+				ip = ip + off  // skip around exi/ppm's
+			} else {
+				ip = ip + reg[r1] - 1
+			}
 		case load:
 			reg[dst] = mem[reg[src]+off]
+			fmt.Println("  load ",regName[dst], "<-",mem[reg[src]+off], reg[src]+off)
 		case loadcfp:
 			reg[dst] = 2147483647
 		case loadi:
@@ -462,10 +524,10 @@ func interp() {
 			// nop means 'no operation' so there is nothing to do here
 		case pop:
 			mem[reg[src]+off] = mem[reg[dst]]
-			reg[src]++
+			reg[dst]++
 		case popr:
-			reg[dst] = mem[reg[src]]
-			reg[src]++
+			reg[src] = mem[reg[dst]]
+			reg[dst]++
 		case push:
 			reg[dst]--
 			mem[reg[dst]+off] = mem[reg[src]+off]
@@ -476,8 +538,10 @@ func interp() {
 			reg[dst]--
 			mem[reg[dst]] = reg[src]
 		case realop:
+			panic("realop not implemented")
 		case store:
 			mem[reg[src]+off] = reg[dst]
+			fmt.Println("  store ",regName[dst], reg[dst], "->",reg[src]+off)
 		}
 	}
 }
@@ -493,12 +557,13 @@ func Startup() int {
 	//	var memMinimum int = len(program) + 3 * (maxreclen + 2) + stackLength
 	for i := 0; i < len(program); i++ {
 		mem[i] = program[i]
-//		fmt.Printf("mem %v %x\n",i,mem[i])
+		//		fmt.Printf("mem %v %x\n",i,mem[i])
 	}
 	scblk0 = 20000
 	scblk1 = 22000
 	scblk2 = 24000
 	reg[xs] = 25000
+	stackEnd = 24500
 	reg[xr] = 30000
 	reg[xl] = 50000
 	reg[wa] = start
@@ -507,21 +572,21 @@ func Startup() int {
 	reg[wa] = 25000 - 1
 	interp()
 	/*
-	last := len(program)
-	scblk0 = last
-	last += maxreclen + 2
-	scblk1 = last
-	last += maxreclen + 2
-	scblk2 = last
-	last += maxreclen + 2
-	// allocate stack
-	stackEnd = uint32(last)
-	last += stackLength
-	stackStart := uint32(last)
-	reg[xs] = stackStart
-	memStart := last + 1
-	//memEnd := memStart + 1
-	// allocate work areas
-*/
+		last := len(program)
+		scblk0 = last
+		last += maxreclen + 2
+		scblk1 = last
+		last += maxreclen + 2
+		scblk2 = last
+		last += maxreclen + 2
+		// allocate stack
+		stackEnd = uint32(last)
+		last += stackLength
+		stackStart := uint32(last)
+		reg[xs] = stackStart
+		memStart := last + 1
+		//memEnd := memStart + 1
+		// allocate work areas
+	*/
 	return 0
 }
