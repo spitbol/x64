@@ -222,8 +222,8 @@
 +       'add adi adr anb aov atn '
 +	'bct beq bev bge bgt bhi ble blo blt bne bnz bod '
 +       'brn bri bsw btw bze call ceq chk chp cmb cmc cmp cne csc '
-+       'cos ctb ctw cvd cvm dca dcv eti decv dvi dvr enp err erb esw etx exi flc '
-+       'ica icp icv ieq ige igt ile ilt incv ine ino iov itr jmp '
++       'cos ctb ctw cvd cvm dca dcv eti dvi dvr enp err erb esw etx exi flc '
++       'ica icp icv ieq ige igt ile ilt ine ino iov itr jmp '
 +       'jsr jsrerr lch lct lcp lcw ldi ldr lei loadi loadcfp lnf lsh lsx mcb mfi mli mlr '
 +       'mnz mov mti mvc mvw mwb ngi eti ngr nzb orb plc ppm prc psc '
 +       'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
@@ -396,7 +396,10 @@ opnext
 	thislabel = inlabel
 	lt(sectnow,3)				:s(opnext.1)
 	ident(inlabel)				:s(opnext.1)
-	putlab(inlabel)
+* need to defer label generation in case of 'ent' operator
+	differ(incode,'ent')	putlab(inlabel)
+*	need to defer label generate for 'ent' operator
+*	differ(incode,'ent')	putlab(inlabel)
 	label = thislabel =
 opnext.1
 	i1 = prsarg(iarg1)
@@ -508,7 +511,10 @@ getarg.c.4 getarg =  l1      			:(return)
 
 * elbl, plbl
 getarg.c.5
-getarg.c.6 getarg = l1				:(return)
+getarg.c.6 
+* cannot use 'error' as label since it is go keyword
+	l1 = ident(l1,'error') 'error_'
+	getarg = l1				:(return)
 
 * w,x, map register name
 getarg.c.7
@@ -661,7 +667,7 @@ move
         ifreg(src) ifreg(dst) genop('move',getreg(dst),getreg(src))  :s(return)
 
 * look for pop to register
-        ifreg(dst) eq(stype,10) genop('popr',getreg(dst),getreg(src)) :s(return)
+        ifreg(dst) eq(stype,10) genop('popr',getreg(src),getreg(dst)) :s(return)
 
 * look for pop to memory
 	ifmem(dst) eq(stype,10)  genop('pop',getreg(src),getreg(dst),getoff(dst))    :s(return)
@@ -702,10 +708,12 @@ prcent
 
 -stitl putlab(label)
 putlab
+*	ident(incode,'ent')			:s(return)
 	ident(label)				:s(return)
+	
 	labtab<label> = program_counter
 *	putline('// ' label ' - ' +program_counter )		:(return)
-	putline('// ' label)			:(return)
+	putline('// ' label ':')			:(return)
 
 -stitl putstmt(label,opcode,op1,op2,op3,comment)
 putstmt	
@@ -714,7 +722,9 @@ putstmt
 *	 putline('putstmt ' opcode ',' op1 ',' op2 ',' op3)
 
 	op2 = ident(op2,r0) ''
-	stmtout = tab rpad(opcode,8) 
+*.	"/* " lpad(program_counter,5) " */"
+	stmtout = 
+.	tab rpad(opcode,8) 
 .	(differ(op1) '| ' rpad(op1,6)  ' << dst_ ',)
 .	(differ(op2) '| ' rpad(op2,6)  ' << src_ ',)
 .	(differ(op3) '| ' rpad(op3,6)  ' << off_ ',) ','
@@ -809,7 +819,7 @@ g.brn
         
 
 g.bsw	
-	genop('loadi',r1,i.text(i2))
+	genop('loadi',r1,,i.text(i2))
 	genop(incode,get1(),r1,getarg(i3))	:(opnext)
 
 g.iff   
@@ -818,9 +828,11 @@ g.iff
 g.esw						:(opnext)
 
 g.ent
-* TODO Need adjust S.MIN to NOT set conditional assembly CEEP
-* generate constant used to identify block for use by lei instruction
-	putconst((differ(i.text(i1)) i.text(i1), '0'))	:(opnext)
+*	note that emitted constant must come before the label declaration
+	putconst((differ(i.text(i1)) i.text(i1), '0'))	
+*	reset incode so putlab will write the label
+	putlab(inlabel)				
+						:(opnext)
 
 g.bri	genop(incode,getarg(i1))		:(opnext)
 
@@ -835,7 +847,7 @@ g.jsr
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
 	eq(jsr_count)				:s(opnext)
-	genop('jsrerr',,,jsr_count)
+	genop('jsrerr',r1,,jsr_count)
 						:s(opnext)
 
 g.err
@@ -864,22 +876,14 @@ g.prc.n
 	:(opnext)
 
 g.exi
-*	set src field to 1 if 'n' type, 0 otherwise
-*	genop(incode,,,i.text(i1))		:(opnext)
+* TODO: multiply by 100 if prc type 'n'
  	t3 = i.text(i1)
         t1 = getarg(i1); t2 = prc.type
-	genop(incode,,(ident(t2,'n') prc.count, ''),(differ(t3) t3,''))
-						:(opnext)	
-*  if type r or e, and no exit parameters, just return
- 	differ(t2,'n') eq(prc.args)	genop('ret')	:s(opnext)
-        t3 = ident(t3) '0'
-	genop('loadi',rc,,t3)
-	ident(t2,'n')				:s(g.exi.1)
-	genop('ret')				:(opnext)
-g.exi.1
-
-	genop('move','wt', '['  prcent(prc.count) ']' )
-	genop('jmp','wt')
+	ident(prc.type,'n')			:s(g.exi.n)
+	genop(incode,,,(differ(t3) t3,''))		:(opnext)
+g.exi.n
+	exitn = +i.text(i1)
+	differ(t3) genop(incode,,,prc.count * 100  + exitn) 
 						:(opnext)
 
 g.enp						:(opnext)
@@ -924,13 +928,13 @@ g.sub
 
 g.ica
 * result may need to be stored back to memory
-        genop('incv',get1())
+        genop('ica',get1())
         put1()
                                                 :(opnext)
 
 g.dca
 * result may need to be stored back to memory
-        genop('decv',get1())
+        genop('dca',get1())
         put1()
                                                 :(opnext)
 
@@ -948,9 +952,10 @@ g.bod
 g.bev
 g.bnz
 g.bze
-	genop(incode,get1(),getarg(i2))		:(opnext)
+	genop(incode,get1(),,getarg(i2))		:(opnext)
 
 g.lct
+*TODOTODO review this
 *
 *  if operands differ must emit code
 *
@@ -963,15 +968,13 @@ g.lct
 g.lct.1	genop('mov',get1(),get2())		:(opnext)
 
 g.bct
-        genop('bct',getarg(i1),getarg(i2))    	:(opnext)
+        genop('bct',getarg(i1),,getarg(i2))    	:(opnext)
 
 g.aov
 * result may need to be stored back to memory
-	genop(incode,get1(),get2(),getoff(i3))	:(opnext)
-	genop('add',get2(),get1())
-        put1()
-	genop('jc',,,getarg(i3))
-						:(opnext)
+* TODO: results are in wrong order in minimal code (need to fix)
+* so put second argument first in generated pseudo-code
+	genop(incode,get2(),get1(),getoff(i3))	:(opnext)
 
 * 3 - Operations on the code pointer register (CP)
 
@@ -1107,13 +1110,13 @@ g.mti
 	move(arg.ia,i1)			:(opnext)
 
 g.mfi
+	move(i1,arg.ia)				
 *  last arg is optional
 	eq(i.type(i2))				:s(g.mfi.1)
 *  compare with cfp$m, branching if result negative
 *  here if label given, branch if ia not in range (ie, negative)
 	genop(incode,,,getoff(i2))
 g.mfi.1
-	move(i1,arg.ia)				
 						:(opnext)
 
 g.itr genop(incode)				:(opnext)
@@ -1251,8 +1254,7 @@ g.sec.5
 *  emit code to indicate in code section
 *  get direction set to up.
 *        (gt(prc.count1) genopl('prc$' ':','times', prc.count1 ' dd 0'))
-*TODO	genop('prc_: times ' prc.count1 ' dd 0')
-        putline('// sec05' )
+*TODO	genop('prc_: times ' prc.count1 ' dd 0') putline('// sec05' )
 						:(opnext)
 
 *  stack overflow section.  output exi__n tail code
@@ -1327,9 +1329,9 @@ g.end.2
 * write out labels offsets sorted by offset value
 	labels = sort(labtab,2)	
 	i = 0
-g.end.3
+g.end.labels
 	i = i +  1
-	differ(labels<i,1>) putline(tab labels<i,1>  tab '=' tab  labels<i,2>)	:s(g.end.3)
+	differ(labels<i,1>) putline(tab labels<i,1>  tab '=' tab  labels<i,2>)	:s(g.end.labels)
 	putline(')')
 
 * TODO - fix declaration below
@@ -1338,9 +1340,9 @@ g.end.3
 	putline('reals = map[int] float32 {')
 	drcara = sort(drctab,1)
 	i = 0
-g.end.4
+g.end.reals
 	i = i + 1
-	putline(tab drcara<i,1> tab ':' tab  drcara<i,2> ",") :s(g.end.4)
+	putline(tab drcara<i,1> tab ':' tab  drcara<i,2> ",") :s(g.end.reals)
 	putline('}')
 
 g.end.4a
@@ -1359,15 +1361,15 @@ g.end.6
 * list ops used
 	usedara = sort(opsused,1)
 	i = 0
-g.end.7
+g.end.ops
 	nused = nused + 1
-	opnam = usedara<i = i + 1,1>		:f(g.end.8)
+	opnam = usedara<i = i + 1,1>		:f(g.end.opsdone)
 	opcnt = usedara<i,2>
 *	output = opnam tab opcnt			
 *	output = tab 'case ' opnam  ':'
 *	output = opnam
-						:(g.end.7)
-g.end.8
+						:(g.end.ops)
+g.end.opsdone
 
 *	output = 'ppm_cases'
 *	putline(tab "var ppm_cases =  map[int]int {")
