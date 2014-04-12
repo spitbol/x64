@@ -1,4 +1,4 @@
-- title mincod: phase 2 translation from minimal tokens to 80386 code
+-title mincod: phase 2 translation from minimal tokens to 80386 code
 -stitl description
 
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
@@ -88,6 +88,7 @@
 *
         arch = (differ(host(0)) host(0), "i32")
 	arch = lower(arch)
+	
 	output = 'target architecture ' arch
 *        output = ident(fileprefix) "filename (.lex) required" :s(end)
 	fileprefix = "s"
@@ -145,6 +146,8 @@
 	define('getreg(iarg)atype')
 	define('iflit(iarg)')
 	define('ifmem(iarg)')
+	define('ifpost(iarg)')
+	define('ifpre(iarg)')
 	define('ifreg(iarg)')
 	define('move(dst,src)dtype,stype,mop,stext,dtext')
 	define('prcent(n)')
@@ -633,7 +636,12 @@ iflit	ge(i.type(iarg),18) le(i.type(iarg),22) :f(freturn)s(return)
 ifmem
         ge(i.type(iarg),3) lt(i.type(iarg),6)  	:s(return)
 	ge(i.type(iarg),9) le(i.type(iarg),15)	:s(return)f(freturn)
-
+-stitl ifpost(iarg) - test if postincrement of register
+ifpost
+	eq(i.type(iarg),10)			:s(return)f(freturn)
+-stitl ifpre(iarg) - test if preincrement of register
+ifpre
+	eq(i.type(iarg),11)			:s(return)f(freturn)
 -stitl ifreg(iarg) - test if argument is register
 ifreg	
 *	ia is considered to be a register
@@ -648,58 +656,105 @@ lower
 -stltl move(dst,src)dtype,stype,stext,dtext
 * generate code for move instruction
 move
-* translate the minimal instruction to one or more of the following:
-* move	move register to register
-* load	load from memory
-* loadi load immediate (note this can be done as move with src=r0 and off=value)
-* push  push value from memory
-* pushi push immdiate, that is, of the effective address
-* pop	pop stack value to memory
-* popr  pop stack value to register
-* store store value to memory
+* move is translated to one of more of the following
+*
+* dst and src indicate registers (either w or x register, or r0, which is always zero)
+* lab indicates proram label
+* lit is program literal
+*
+* Cases where destination is a register
+* mov  dst,src	
+*		move	dst,src
+* mov	dst,(src)
+*		load	dst,src
+* mov	dst,off(src)
+*		load	dst,src,off
+* mov	dst,(src)+
+*		load	dst,src,0
+*		ica	src
+* mov	dst,-(src)
+*		dca	src
+*		load	dst,src,0
+* mov	dst,lab
+*		load	dst,r0,lab
+* mov	dst,lit
+*		loadi	dst,r0,lit
+* if target is not a register and the source is not in a register,
+* then the source operand is loaded to a register.
+* the remaining cases are:
+*
+* mov	(x)+,reg
+*		store	reg,x,0
+*		ica	x
+* mov	-(x),reg
+*		dca	x
+*		store	reg,x,0
+* mov	lab,reg	
+*		store	reg,r0,lab
+* mov	(x),reg
+*		store	reg,x,0
+*		
+*		
 *
 * The src and off fields are always used to refer to an operand in memory
 
 	stype = i.type(src); stext = i.text(src)
 	dtype = i.type(dst); dtext = i.text(dst)
+*	output = 'move ' dtype ' ' dtext '  ' stype ' ' stext
+*.	(ifreg(dst) ' DR','') (ifmem(dst) ' DM', '') 
+*.	(ifreg(src) ' SR','') (ifmem(src) ' SM','')
 
-* look for register to register move
-        ifreg(src) ifreg(dst) genop('move',getreg(dst),getreg(src))  :s(return)
+	ifreg(dst) ifreg(src)			:s(move.reg.reg)
+	ifreg(dst) ifpost(src)			:s(move.reg.post)
+	ifreg(dst) ifpre(src)			:s(move.reg.pre)
+	ifreg(dst) iflit(src)			:s(move.reg.lit)
+	ifreg(dst) ifmem(src)			:s(move.reg.mem)
+* remaining cases are
+*	mov	dst,(src)
+*	mov	dst,off(src)
+*	mov	dst,lab
 
-* look for pop to register
-        ifreg(dst) eq(stype,10) genop('popr',getreg(src),getreg(dst)) :s(return)
+***	ifreg(dst) ifmem(src)			:s(move.dst.mem)
 
-* look for pop to memory
-	ifmem(dst) eq(stype,10)  genop('pop',getreg(src),getreg(dst),getoff(dst))    :s(return)
-
-* look for push of literal
- 	eq(dtype,11) iflit(src)  genop('pushi',getreg(dst),,getoff(src))   :s(return)
-
-* look for push of memory value
- 	eq(dtype,11) ifmem(src)  genop('push',getreg(dst),getreg(src),getoff(src))   :s(return)
-
-* look for push of register
- 	eq(dtype,11) ifreg(src)  genop('pushr',getreg(dst),getreg(src))  :s(return)
-
-* look for load of immediate value
-	ifreg(dst) iflit(src)   		:f(move.20)
-	off = getoff(src)
-	differ(off,'cfp_m')			:s(move.10)
-	genop('loadcfp',getreg(dst))		:(return)
-* special case cfp_m since it won't fit into offset field of loadi instruction.
-move.10
-	genop('loadi',getreg(dst),,getoff(src))	:(return)
-move.20
-
-* look for load from memory
-	ifreg(dst) ifmem(src) genop('load',getreg(dst),getreg(src),getoff(src))  :s(return)
-
-* look for store
-	ifmem(dst) ifreg(src) genop('store',getreg(src),getreg(dst),getoff(dst))  :s(return)
-
-* here if have memory-to-memory case, so move src to r1 and then do store
+* here if target not register and source is not in a register
+	ifpost(dst) ifreg(dst)			:s(move.post.reg)
+	ifpre(dst) ifreg(src)			:s(move.pre.reg)
+	ifmem(dst) ifreg(src)			:s(move.mem.reg)
+* here if dst and src both in memory, so move src to r1 and then do store
+	output = 'memory to memory'
 	move(arg.r1,src)
-	move(dst,arg.r1)
+	move(dst,arg.r1)				:(return)
+	error('impossible move case')		:(return)
+move.reg.reg
+	genop('move',getreg(dst),getreg(src))	:(return)
+move.reg.post
+	genop('load',getreg(dst),getreg(src))
+	genop('ica',getreg(src))		:(return)
+move.reg.pre
+	genop('dca',getreg(src))		
+	genop('load',getreg(dst),getreg(src))
+						:(return)
+move.reg.lit
+	off = getoff(src)
+	differ(off,'cfp_m')			:s(move.reg.lit.1)
+	genop('loadcfp',getreg(dst))		:(return)
+move.reg.lit.1
+* special case cfp_m since it won't fit into offset field of loadi instruction.
+	genop('loadi',getreg(dst),,getoff(src))	:(return)
+
+move.reg.mem
+	genop('load',getreg(dst),getreg(src),getoff(src))	:(return)
+
+move.post.reg
+	genop('store',getreg(src),getreg(dst))
+	genop('ica',getreg(dst))
+						:(return)
+move.pre.reg
+	genop('dca',getreg(dst))
+	genop('store',getreg(src),getreg(dst))
+						:(return)
+move.mem.reg
+	genop('store',getreg(src),getreg(dst),getoff(dst))
 						:(return)
 
 -stitl prcent(n)
@@ -711,6 +766,8 @@ putlab
 *	ident(incode,'ent')			:s(return)
 	ident(label)				:s(return)
 	
+* avoid use of go keyword as label
+	label = ident(label,'error') 'error_'
 	labtab<label> = program_counter
 *	putline('// ' label ' - ' +program_counter )		:(return)
 	putline('// ' label ':')			:(return)
@@ -955,15 +1012,8 @@ g.bze
 	genop(incode,get1(),,getarg(i2))		:(opnext)
 
 g.lct
-*TODOTODO review this
-*
-*  if operands differ must emit code
-*
-	differ(i.text(i1),i.text(i2))		:s(g.lct.1)
-*  here if operands same. emit no code if no label, else emit null
-*	ident(thislabel)			:s(opnext)
-	genop('lct')				:(opnext)
-
+	ident(i.text(i1),i.text(i2))			:s(opnext)
+	move(i1,i2)					:(opnext)
 	
 g.lct.1	genop('mov',get1(),get2())		:(opnext)
 
@@ -1259,8 +1309,7 @@ g.sec.5
 
 *  stack overflow section.  output exi__n tail code
 g.sec.6
-        genopl('sec06'  , 'nop')
-						:(opnext)
+	putlab('sec06')				:(opnext)
 
 *  error section.  produce code to receive erb's
 g.sec.7
