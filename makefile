@@ -123,19 +123,19 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 # link spitbol with static linking
 spitbol: $(OBJS)
 ifeq ($(ARCH),x32)
-	$(CC) $(CFLAGS) $(OBJS) -static /usr/lib/i386-linux-gnu/libm.a -o$(EXECUTABLE) -Wl,-M,-Map,$(EXECUTABLE).map
+	$(CC) $(CFLAGS) $(OBJS) -static -lm -o$(EXECUTABLE) -Wl,-M,-Map,$(EXECUTABLE).map
 endif
 ifeq ($(ARCH),x64)
-	$(CC) $(CFLAGS) $(OBJS) -static /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,spitbol.map
+	$(CC) $(CFLAGS) $(OBJS) -static -lm -ospitbol -Wl,-M,-Map,spitbol.map
 endif
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS)
 ifeq ($(ARCH),x32)
-	$(CC) $(CFLAGS) $(OBJS) /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,$(EXECUTABLE).map
+	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol -Wl,-M,-Map,$(EXECUTABLE).map
 endif
 ifeq ($(ARCH),x64)
-	$(CC) $(CFLAGS) $(OBJS) /usr/lib/i386-linux-gnu/libm.a -ospitbol -Wl,-M,-Map,$(EXECUTABLE).map
+	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol -Wl,-M,-Map,$(EXECUTABLE).map
 endif
 
 # Assembly language dependencies:
