@@ -117,6 +117,9 @@
 
 	ppm_cases = table(50,,0)
 
+*	prc_names maps program_counter values to name of program entry point
+	prc_names = table(100)
+
 	error_messages = table(200)
 *
 *  function definitions
@@ -486,7 +489,7 @@ get1.1
         get1 = r1	                        :(return)
 
 -stitl get2()
-* return register if i2 is register, else load i2 value to r1
+* return register if i2 is register, else load i2 value to r2
 get2
 	ident(i.text(i2))			:s(return)
 	ifreg(i2)				:f(get2.1)
@@ -700,9 +703,6 @@ move
 
 	stype = i.type(src); stext = i.text(src)
 	dtype = i.type(dst); dtext = i.text(dst)
-*	output = 'move ' dtype ' ' dtext '  ' stype ' ' stext
-*.	(ifreg(dst) ' DR','') (ifmem(dst) ' DM', '') 
-*.	(ifreg(src) ' SR','') (ifmem(src) ' SM','')
 
 	ifreg(dst) ifreg(src)			:s(move.reg.reg)
 	ifreg(dst) ifpost(src)			:s(move.reg.post)
@@ -717,11 +717,14 @@ move
 ***	ifreg(dst) ifmem(src)			:s(move.dst.mem)
 
 * here if target not register and source is not in a register
-	ifpost(dst) ifreg(dst)			:s(move.post.reg)
+	ifpost(dst) ifreg(src)			:s(move.post.reg)
 	ifpre(dst) ifreg(src)			:s(move.pre.reg)
 	ifmem(dst) ifreg(src)			:s(move.mem.reg)
 * here if dst and src both in memory, so move src to r1 and then do store
-	output = 'memory to memory'
+*	output = 'memory to memory'
+*	output = 'move ' program_counter ' ' dtype ' ' dtext '  ' stype ' ' stext
+*.	(ifreg(dst) ' DR','') (ifmem(dst) ' DM', '') 
+*.	(ifreg(src) ' SR','') (ifmem(src) ' SM','')
 	move(arg.r1,src)
 	move(dst,arg.r1)				:(return)
 	error('impossible move case')		:(return)
@@ -779,8 +782,8 @@ putstmt
 *	 putline('putstmt ' opcode ',' op1 ',' op2 ',' op3)
 
 	op2 = ident(op2,r0) ''
-*.	"/* " lpad(program_counter,5) " */"
 	stmtout = 
+.	"/* " lpad(program_counter,5) " */"
 .	tab rpad(opcode,8) 
 .	(differ(op1) '| ' rpad(op1,6)  ' << dst_ ',)
 .	(differ(op2) '| ' rpad(op2,6)  ' << src_ ',)
@@ -916,6 +919,7 @@ g.ppm
 	genop(incode,,,i.text(i1))		:(opnext)
 
 g.prc
+	prc_names[program_counter] = inlabel
 	prc.args = getarg(i2)
 	ppm_cases[thislabel] = i.text(i2)
 	thislabel =
@@ -934,14 +938,9 @@ g.prc.n
 
 g.exi
 * TODO: multiply by 100 if prc type 'n'
- 	t3 = i.text(i1)
-        t1 = getarg(i1); t2 = prc.type
-	ident(prc.type,'n')			:s(g.exi.n)
-	genop(incode,,,(differ(t3) t3,''))		:(opnext)
-g.exi.n
-	exitn = +i.text(i1)
-	differ(t3) genop(incode,,,prc.count * 100  + exitn) 
-						:(opnext)
+ 	exitn = (ident(i1) 0, +i.text(i1))
+	exitn = ident(prc.type,'n') 100 * prc.count + exitn
+	genop(incode,,,exitn)			:(opnext)
 
 g.enp						:(opnext)
 
@@ -1177,7 +1176,10 @@ g.rti
 
 g.ctw
 g.ctb
-						:(opnext)
+	output = incode ' ' i.text(i1) ' ' i.text(i2)
+	ident(i.text(i2),'0')			:s(opnext)
+	genop(incode,getarg(i1),,getarg(i2))	:(opnext)
+	
 g.cvm
 	genop(incode,getarg(i1))		:(opnext)
 
@@ -1401,10 +1403,10 @@ g.end.4a
 	str = osiprocs
 	str break(' ') . name ' ' =
 	putline(tab name '_ = iota')
-g.end.5
-	str break(' ') . name ' ' =		:f(g.end.6)
-	putline(tab name '_' )			:(g.end.5)
-g.end.6
+g.end.osint
+	str break(' ') . name ' ' =		:f(g.end.osint.1)
+	putline(tab name '_' )			:(g.end.osint)
+g.end.osint.1
 	putline(')')
 
 * list ops used
@@ -1420,18 +1422,19 @@ g.end.ops
 						:(g.end.ops)
 g.end.opsdone
 
+
 *	output = 'ppm_cases'
 *	putline(tab "var ppm_cases =  map[int]int {")
 * list ppm_cases
 	ppm_cases_ara = sort(ppm_cases,1)
 	i = 0
-	:(g.end.10)
+	:(g.end.ppm.1)
 * this may not be needed
-g.end.9
+g.end.ppm
 	i = i + 1
-	putline(tab  ppm_cases_ara[i,1]  tab ':' ppm_cases_ara[i,2] ',')	:s(g.end.9)
+	putline(tab  ppm_cases_ara[i,1]  tab ':' ppm_cases_ara[i,2] ',')	:s(g.end.ppm)
 	putline('}')
-g.end.10
+g.end.ppm.1
 
 *	emit error messages
 	ara = sort(error_messages,1)
@@ -1441,6 +1444,17 @@ g.end.11
 	i = i + 1
 	putline(tab ara<i,1> tab ': "' ara<i,2> '",')	:s(g.end.11)
 	putline("}")
+	
+	putline('var prc_names = map[uint32]string {')
+	prc_ara = sort(prc_names,1)
+	i = 0
+g.end.prc_names
+	n = prc_ara<i = i + 1,1>				:f(g.end.prc_names.1)
+	nam = prc_ara<i,2>
+	putline(tab	+n tab	':' tab	'"' nam '",')
+						:(g.end.prc_names)
+g.end.prc_names.1
+	putline('}')
 
 * Close files and issue summary report
 

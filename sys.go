@@ -339,9 +339,14 @@ var sysrds int
 func sysrd() uint32 {
 	fmt.Println("enter sysrd")
 	sysrds++
+	scblk := mem[reg[xr]:]
+/*
+	scblk[1] = 0
+	reg[wc] = 0
+	return 1
+*/
 	switch sysrds {
 	case 1:
-		scblk := mem[reg[xr]:]
 		goblk := minString("t.spt")
 		for i:=0;i<int(goblk[1]);i++ {
 			scblk[i] = goblk[i]
@@ -350,7 +355,7 @@ func sysrd() uint32 {
 		return 1
 	default: // signal end of file, no more input
 		scblk := mem[reg[xr]:]
-		scblk[2] = 0
+		scblk[1] = 0
 		reg[wc] = 0
 		return 1
 	}

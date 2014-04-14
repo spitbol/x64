@@ -111,7 +111,7 @@ func interp() {
 		}
 		inst = mem[ip]
 		instn++
-		if instn > 50000 {
+		if instn > 150000 {
 			fmt.Println("instruction limit exceeded",instn)
 			return
 		}
@@ -119,10 +119,15 @@ func interp() {
 		dst = inst >> dst_ & dst_m
 		src = inst >> src_ & src_m
 		off = inst >> off_ & off_m
-		fmt.Printf(" %v %v %v %v=%v %v=%v %v\n", ip,
-		op, opName[op], regName[dst], reg[dst], 
-		regName[src], reg[src], off)
+		fmt.Printf(" %v %v %v %v %v %v\n", ip,
+		op, opName[op], regName[dst], regName[src], off)
+
+//		fmt.Printf(" %v %v %v %v=%v %v=%v %v\n", ip,
+//		op, opName[op], regName[dst], reg[dst], 
+//		regName[src], reg[src], off)
 		ip++
+		fmt.Printf(" r1 %v r2 %v wa %v wb %v wc %v xl %v xr %v xs %v\n",
+			reg[r1],reg[r2],reg[wa],reg[wb],reg[wc],reg[xl],reg[xr],reg[xs])	
 		switch op {
 
 		case mov:
@@ -459,6 +464,8 @@ func interp() {
 				ip = off
 			}
 			reg[ia] = uint32(int32(d1))
+		case ctb,ctw:
+			reg[dst] += off
 		case cvm:
 			long1 = int64(reg[ia])*10 - (int64(reg[wb]) - 0x30)
 			if long1 > math.MaxInt32 || long1 < math.MinInt32 {
@@ -489,13 +496,13 @@ func interp() {
 		case move:
 			reg[dst] = reg[src]
 		case call:
+			fmt.Println("PROC:CALL ", off, prc_names[off], reg[xs],mem[reg[xs]], ip)
 			reg[xs]--
 			mem[reg[xs]] = ip
-			fmt.Println("PROC:CALL ", off, reg[xs],mem[reg[xs]], ip)
 			ip = off
 		case sys:
-			reg[r1] = syscall(off)
 			fmt.Printf("SYSCALL %v %v %v\n", off, sysName[off],reg[r1])
+			reg[r1] = syscall(off)
 			if reg[r1] == 999 {
 				break // end execution
 			}
@@ -515,7 +522,7 @@ func interp() {
 			}
 		case load:
 			reg[dst] = mem[reg[src]+off]
-			fmt.Println("  load ",regName[dst], "<-",mem[reg[src]+off], reg[src]+off)
+//			fmt.Println("  load ",regName[dst], "<-",mem[reg[src]+off], reg[src]+off)
 		case loadcfp:
 			reg[dst] = 2147483647
 		case loadi:
@@ -541,7 +548,10 @@ func interp() {
 			panic("realop not implemented")
 		case store:
 			mem[reg[src]+off] = reg[dst]
-			fmt.Println("  store ",regName[dst], reg[dst], "->",reg[src]+off)
+//			fmt.Println("  store ",regName[dst], reg[dst], "->",reg[src]+off)
+		default:
+			fmt.Println("unknown opcode ", op)
+			panic("unknown opcode")
 		}
 	}
 }
