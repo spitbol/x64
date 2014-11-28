@@ -195,3 +195,5 @@ calltab:
         extern SQR_
         extern TAN_
         extern CPR_
+
+	extern	reg_cp

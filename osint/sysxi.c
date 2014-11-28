@@ -19,54 +19,6 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   doexec( ccptr )
-/
-/   doexec() does an "execle" function call to invoke the shell on the
-/   command string contained in the passed SCBLK.
-/
-/   Parameters:
-/	ccptr	pointer to SCBLK containing the command to execute
-/   Returns:
-/	No return if shell successfully executed
-/	Returns if could not execute command
-/
-*/
-
-#include "port.h"
-
-char	*getshell();
-char	*pathlast();
-
-static void
-doexec( ccbptr )
-struct	ccblk	*ccbptr;
-
-{
-    word	length;
-    char	savech;
-    char	*cp;
-    extern char **environ;
-    char	*shellpath;
-    length	= ccbptr->len;
-    cp	= ccbptr->str;
-
-    /*
-    /	Instead of copying the command string, temporarily save the character
-    /	following the string, replace it with a NUL, execute the command, and
-    /	then restore the original character.
-    */
-    savech	= make_c_str(&cp[length]);
-
-    /*
-    /	Use function getshell to get shell's path and function lastpath
-    /	to get the last component of the shell's path.
-    */
-    shellpath = getshell();
-    execle( shellpath, pathlast( shellpath ), "-c", cp, (char *)NULL, environ );	// no return
-
-    unmake_c_str(&cp[length], savech);
-}
-/*
 /	File:  SYSXI.C		Version:  01.18
 /	---------------------------------------
 /
@@ -97,7 +49,7 @@ struct	ccblk	*ccbptr;
 /	    WA - pointer to SCBLK for second argument
 /	    WB - pointer to head of FCBLK chain (CHBLK)
 /	    XL - pointer to SCBLK containing command to execute or 0
-/	    XR - version number SCBLK.
+/	    XR - version number SCBLK.  Three char string of form "X.Y".
 /	Returns:
 /       WA   1 only when called with IA=4 or IA=-4 and we are
 /            continuing execution, else 0.
@@ -107,6 +59,7 @@ struct	ccblk	*ccbptr;
 /	    2 - action caused irrecoverable error
 */
 
+#include "port.h"
 #include <sys/types.h>
 
 #if EXECFILE
@@ -146,8 +99,7 @@ zysxi()
     struct scblk	*scfn = WA( struct scblk * );
     char	savech;
 
-    struct scblk *scb = XL(struct scblk *);
-    struct ccblk *ccb;
+    struct scblk	*scb = XL( struct scblk * );
 
     /*
     /	Case 1:  Chain to another program
@@ -161,9 +113,7 @@ zysxi()
         {
             close_all( WB( struct chfcb * ) );	// V1.11
             save0();		// V1.14 make sure fd 0 OK
-	    uc_encode(0, XL(struct scblk *));
-	    ccb = uc_ccblk(0);
-            doexec( ccb );		// execute command
+            doexec( scb );		// execute command
             restore0();		// just in case
             return EXIT_2;		// Couldn't chain
         }
@@ -192,21 +142,17 @@ zysxi()
     */
     close_all( WB( struct chfcb * ) );	// V1.11
 
-    // convert to C string (just a copy if using ascii, not unicode)
-    uc_encode(1,scfn);
-    ccb = uc_ccblk(1);
     //	Prepare optional file name as a C string, open output file
-    savech = make_c_str(&(ccb->str[ccb->len]));
-    if (ccb->str[0])
-        mystrcpy(fileName, ccb->str);
+    savech = make_c_str(&(scfn->str[scfn->len]));
+    if (scfn->str[0])
+        mystrcpy(fileName, scfn->str);
     else
         mystrcpy(fileName,                // default file name
                  IA(IATYPE) < 0 ? SAVE_FILE : AOUT_FILE);
-
     retval = openaout(fileName, tmpfnbuf,
                       (IA(IATYPE) < 0 ? 0 : IO_EXECUTABLE)		// executable?
                      );
-    unmake_c_str(&(ccb->str[ccb->len]), savech);
+    unmake_c_str(&(scfn->str[scfn->len]), savech);
 
 
     if (IA(IATYPE) < 0 ) {
@@ -219,12 +165,12 @@ zysxi()
         /*
         /	Copy entire stack into local storage of temporary SCBLK.
         */
-        if ( stacklength > TCCBLK_LENGTH ) {
+        if ( stacklength > TSCBLK_LENGTH ) {
             retval = -1;
             goto fail;
         }
         srcptr = stackbase;
-        dstptr = (word *)pTCCBLK->str;
+        dstptr = (word *)pTSCBLK->str;
         i = GET_MIN_VALUE(STBAS,word *) - srcptr;
         while( i-- )
             *dstptr++ = *srcptr++;
@@ -361,15 +307,13 @@ word putsave(stkbase, stklen)
 word *stkbase, stklen;
 {
     word result = 0;
-    struct ccblk *vccb;
+    struct scblk *vscb = XR( struct scblk * );
 #if EXTFUN
     unsigned char *bufp;
     word textlen;
 #endif					// EXTFUN
 
 
-    uc_encode(1, XR(struct scblk *));
-    vccb = uc_ccblk(1);
     /*
     /   Fill in the file header
     */
@@ -378,7 +322,7 @@ word *stkbase, stklen;
     svfheader.version = SaveVersion;
     svfheader.system = SYSVERSION;
     svfheader.spare = 0;
-    hcopy(vccb->str, svfheader.headv, vccb->len, sizeof(svfheader.headv));
+    hcopy(vscb->str, svfheader.headv, vscb->len, sizeof(svfheader.headv));
     hcopy(pID1->str, svfheader.iov, pID1->len, sizeof(svfheader.iov));
     svfheader.timedate = time((time_t *)0);
     svfheader.flags = spitflag;
@@ -570,12 +514,12 @@ int fd;
                 if ( expand( fd, (unsigned char *)uargbuf, svfheader.uarglen ) )
                     goto reload_ioerr;
 
-            // Read saved stack from save file into tccblk
-            if ( expand( fd, (unsigned char *)pTCCBLK->str, svfheader.stacklength ) )
+            // Read saved stack from save file into tscblk
+            if ( expand( fd, (unsigned char *)pTSCBLK->str, svfheader.stacklength ) )
                 goto reload_ioerr;
 
             SET_MIN_VALUE(STBAS, svfheader.stbas,word);
-            lmodstk = (word *)(pTCCBLK->str + svfheader.stacklength);
+            lmodstk = (word *)(pTSCBLK->str + svfheader.stacklength);
             stacksiz = svfheader.stacksiz;
 
             // Reload compiler working globals section
@@ -603,8 +547,8 @@ int fd;
             MINIMAL(MINIMAL_RELOC);
 
             // Relocate any return addresses in stack
-            SET_WB(pTCCBLK->str);
-            SET_WA(pTCCBLK->str + svfheader.stacklength);
+            SET_WB(pTSCBLK->str);
+            SET_WA(pTSCBLK->str + svfheader.stacklength);
             if (svfheader.stacklength) {
 
                 MINIMAL(MINIMAL_RELAJ);
@@ -675,4 +619,50 @@ reload_err:
         }
     }
     return 0;
+}
+/*
+/   doexec( scptr )
+/
+/   doexec() does an "execle" function call to invoke the shell on the
+/   command string contained in the passed SCBLK.
+/
+/   Parameters:
+/	scptr	pointer to SCBLK containing the command to execute
+/   Returns:
+/	No return if shell successfully executed
+/	Returns if could not execute command
+/
+*/
+
+char	*getshell();
+char	*pathlast();
+
+void doexec( scbptr )
+
+struct	scblk	*scbptr;
+
+{
+    word	length;
+    char	savech;
+    char	*cp;
+    extern char **environ;
+    char	*shellpath;
+    length	= scbptr->len;
+    cp	= scbptr->str;
+
+    /*
+    /	Instead of copying the command string, temporarily save the character
+    /	following the string, replace it with a NUL, execute the command, and
+    /	then restore the original character.
+    */
+    savech	= make_c_str(&cp[length]);
+
+    /*
+    /	Use function getshell to get shell's path and function lastpath
+    /	to get the last component of the shell's path.
+    */
+    shellpath = getshell();
+    execle( shellpath, pathlast( shellpath ), "-c", cp, (char *)NULL, environ );	// no return
+
+    unmake_c_str(&cp[length], savech);
 }

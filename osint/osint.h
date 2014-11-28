@@ -176,7 +176,7 @@ CSWFL,
 STMCS,
 STMCT,
 TICBLK,
-TCCBLK,
+TSCBLK,
 ID1,
 ID2BLK,
 INPBUF,
@@ -199,12 +199,12 @@ extern void	S_YYY();
 
 
 // Some shorthand notations
-#define pID1 GET_DATA_OFFSET(ID1,struct ccblk *)
-#define pID2BLK GET_DATA_OFFSET(ID2BLK,struct ccblk *)
+#define pID1 GET_DATA_OFFSET(ID1,struct scblk *)
+#define pID2BLK GET_DATA_OFFSET(ID2BLK,struct scblk *)
 #define pINPBUF GET_DATA_OFFSET(INPBUF,struct bfblk *)
 #define pTTYBUF GET_DATA_OFFSET(TTYBUF,struct bfblk *)
 #define pTICBLK GET_DATA_OFFSET(TICBLK,struct icblk *)
-#define pTCCBLK GET_DATA_OFFSET(TCCBLK,struct ccblk *)
+#define pTSCBLK GET_DATA_OFFSET(TSCBLK,struct scblk *)
 
 #define TYPE_EFC GET_CODE_OFFSET(B_EFC,word)
 #define TYPE_ICL GET_CODE_OFFSET(B_ICL,word)

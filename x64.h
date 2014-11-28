@@ -17,3 +17,8 @@
 	%define D_WORD	DQ
 	%define LOG_CFP_B 3
 	%define LOG_CFP_C 3
+	%define D_CHAR	DB
+	%define M_CHAR	BYTE
+	%define CFP_C_VAL	8
+	%define LOG_CFP_C 3
+

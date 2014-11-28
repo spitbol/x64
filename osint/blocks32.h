@@ -190,23 +190,7 @@ struct rcblk {
 struct scblk {
     mword	sctyp;					// type word
     mword	sclen;					// string length
-    CHAR	scstr[1024];				// start of string
-};
-
-
-/* A CCBLK is used for a string in C-format, while a SCBLK is used for Minimal format.
- * These are usually, but not necessarily, the same.
- * The uc_* procedures are used to convert between the two.
- */
-
-/*
- *  	Structure of CCBLK (strings)
- */
-
-struct ccblk {
-    mword	cctyp;					// type word
-    mword	cclen;					// string length
-    char	ccstr[1024];				// start of string
+    char	scstr[1];				// start of string
 };
 
 /*
@@ -460,7 +444,7 @@ struct arblk1 {	   					// One dimensional array
     mword			arndm;			// number of dimensions
     mword			arlbd;			// low bound (first subscript)
     mword			ardim;			// dimension (first subscript)
-    struct ccblk   *arpro;			// array prototype string
+    struct scblk   *arpro;			// array prototype string
     union block	   *arvls[1];		// start of values in row-wise order
 };
 
@@ -474,7 +458,7 @@ struct arblk2 {						// Two dimensional array
     mword			ardim;			// dimension (first subscript)
     mword			arlb2;			// low bound (second subscript)
     mword			ardm2;			// dimension (second subscript)
-    struct ccblk   *arpro;			// array prototype string
+    struct scblk   *arpro;			// array prototype string
     union block	   *arvls[1];		// start of values in row-wise order
 };
 
@@ -489,7 +473,7 @@ struct arblkn {						// N-dimensional array
         mword	arlbd;				// low bound (first subscript)
         mword	ardim;				// dimension (first subscript)
     } 			bounds[ndim]; 	// adjust for number of dimensions
-    struct ccblk   *arpro;  		// array prototype string
+    struct scblk   *arpro;  		// array prototype string
     union block	   *arvls[1];		// start of values in row-wise order
 };
 
@@ -652,7 +636,7 @@ union block {
     struct ioblk	iob;
     struct nmblk	nmb;
     struct rcblk	rcb;
-    struct ccblk	scb;
+    struct scblk	scb;
     struct tbblk	tbb;
     struct teblk	teb;
     struct vcblk	vcb;

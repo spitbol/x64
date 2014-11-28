@@ -19,14 +19,14 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   osread( mode, recsiz, ioptr, ccptr )
+/   osread( mode, recsiz, ioptr, scptr )
 /
 /   osread()  reads the next record from the input file associated with
-/   the passed IOBLK into the passed CCBLK.  mode determines whether the
+/   the passed IOBLK into the passed SCBLK.  mode determines whether the
 /   read should be line or raw mode.
 /
 /	Line mode records are teminated with a new-line character (the
-/	new-line is not put in the ccblk though).
+/	new-line is not put in the scblk though).
 /
 /	Raw mode records are simply the next recsiz characters.
 /
@@ -35,7 +35,7 @@ This file is part of Macro SPITBOL.
 /	recsiz	line mode:  max length of record to be read
 /		raw mode:   number of characters to be read
 /	ioptr	pointer to IOBLK associated with input file
-/	ccptr	pointer to CCBLK to receive input record
+/	scptr	pointer to SCBLK to receive input record
 /   Returns:
 /	>0	length of record read
 /	-1	EOF
@@ -45,16 +45,16 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #include <string.h>
 
-word osread( mode, recsiz, ioptr, ccptr )
+word osread( mode, recsiz, ioptr, scptr )
 
 word	mode;
 word	recsiz;
 struct	ioblk	*ioptr;
-struct	ccblk	*ccptr;
+struct	scblk	*scptr;
 
 {
     register struct bfblk	*bfptr = ((struct bfblk *) (ioptr->bfb));
-    register char	*cp = ccptr->str;
+    register char	*cp = scptr->str;
     register char   *bp;
     register word	cnt = 0;
     register word fdn = ioptr->fdn;
@@ -114,7 +114,7 @@ struct	ccblk	*ccptr;
                             findeol = 0;
                             cnt -= i + 1;
                             if (testty(fdn))
-                                doset(ioptr, cp-ccptr->str-n, 1);// backup file to point following line
+                                doset(ioptr, cp-scptr->str-n, 1);// backup file to point following line
                             break;
                         }
                     }

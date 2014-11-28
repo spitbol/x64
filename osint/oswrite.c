@@ -19,9 +19,9 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   oswrite( mode, linesiz, recsiz, ioptr, ccptr )
+/   oswrite( mode, linesiz, recsiz, ioptr, scptr )
 /
-/   oswrite() writes the record in the passed CCBLK to the file associated
+/   oswrite() writes the record in the passed SCBLK to the file associated
 /   with the passed IOBLK.  There are two types of transfer:
 /
 /	unbuffered	write is done immediately
@@ -36,29 +36,30 @@ This file is part of Macro SPITBOL.
 /	linesiz output record length
 /	recsiz	length of data being written
 /	ioptr	pointer to IOBLK associated with output file
-/	ccptr	pointer to CCBLK to receive output record
+/	scptr	pointer to SCBLK to receive output record
 /   Returns:
 /	Number of I/O errors.  Should be 0.
 */
 
 #include "port.h"
 
-word oswrite( mode, linesiz, recsiz, ioptr, ccptr )
+word oswrite( mode, linesiz, recsiz, ioptr, scptr )
 word	mode;
 word	linesiz;
 register word	recsiz;
 struct	ioblk	*ioptr;
-struct	ccblk	*ccptr;
+struct	scblk	*scptr;
 
 {
     char	*saveloc, savech;
     char	savech2;
 
-    register char	*cp = ccptr->str;
+    register char	*cp = scptr->str;
     register struct bfblk *bfptr = ((struct bfblk *) (ioptr->bfb));
     register word fdn = ioptr->fdn;
     word	linelen;
     int	ioerrcnt = 0;
+
     do {
         // If line mode, limit characters written on a line
         if ( mode == 1 && recsiz > linesiz )

@@ -236,7 +236,7 @@ int	n;
     	char str[16];
     	itoa(n,str);
     	write( STDOUTFD, str, length(str) );
-    	write( STDOUTFD,  "\n", 1 );
+    	write( STDOUTFD,  EOL, 1 );
     */
 }
 

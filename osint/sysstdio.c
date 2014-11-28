@@ -38,7 +38,6 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-#include <stdio.h>
 
 void stdioinit()
 {
@@ -68,25 +67,8 @@ zyspr()
     /	Do writes in line mode.
     */
 
-    if (CHARBITS == 8) {
-        if ( oswrite( 1, oupiob.len, WA(word), &oupiob, XR( struct scblk * ) ) < 0 )
-            return  EXIT_1;
-    }
-    else {
-	struct ccblk * ccb = uc_ccblk(2);
-	struct scblk * scb = XR(struct scblk *);
-	// need to encode using count in WA, not count in the SCBLK area, so save and restore that count
-	int savelen = scb->len;
-	int rc;
-	scb->len = WA(word);
-	rc = uc_encode(2,scb);
-	scb->len = savelen;
-        if (rc)
-    	return EXIT_1;
-//	fprintf(stderr,"syspr len1 %d %d\n",WA(word),ccb->len);
-        if ( oswrite( 1, oupiob.len, ccb->len, &oupiob, ccb) ) {
-            return  EXIT_1;
-        }
+    if ( oswrite( 1, oupiob.len, WA(word), &oupiob, XR( struct scblk * ) ) < 0 ) {
+        return  EXIT_1;
     }
 
     return NORMAL_RETURN;
@@ -119,15 +101,6 @@ zysrd()
 
     word	length;
     struct scblk *scb = XR( struct scblk * );
-    struct ccblk *ccb;
-    int retval;
-
-    if (CHARBITS == 8) {
-	ccb = (struct ccblk *) scb;
-    }
-    else {
-	ccb = uc_ccblk(1);	// if need unicode translation
-    }
 
     if (provide_name)
     {
@@ -135,20 +108,18 @@ zysrd()
         provide_name = 0;
         if (sfn && sfn[0])
         {
-            cpys2sc( sfn, ccb, WC(word));
-	    if (CHARBITS != 8) {
-	    	uc_decodes(ccb, scb);
-	    }
+            cpys2sc( sfn, scb, WC(word));
             return  EXIT_1;
         }
     }
+
 
     /*
     /	Read a line from standard input.  If EOF on current standard input
     /	file, call function swcinp to switch to the next file, if any, except
     /       if within an include file.
     */
-    while ( (length = osread( 1, WC(word), &inpiob, ccb )) < 0 )
+    while ( (length = osread( 1, WC(word), &inpiob, scb )) < 0 )
     {
         if ( nesting || swcinp( inpcnt, inpptr ) < 0 )
         {
@@ -161,27 +132,24 @@ zysrd()
             // Successful switch, report new file name if still in compilation phase
             if (!executing && sfn && sfn[0])
             {
-                cpys2sc( sfn, ccb, WC(word));
-		if (CHARBITS != 8) {
-	            uc_decodes(ccb, scb);
-                }
+                cpys2sc( sfn, scb, WC(word));
                 return  EXIT_1;
             }
         }
 
     }
-    ccb->len = length;	// line read, so set line length
+    scb->len = length;	// line read, so set line length
     /*
     /	Special check for '#!' invocation.
     */
     if ( first_record  &&  inpptr )
     {
         first_record = 0;
-        if ( ccb->str[0] == '#'  &&  ccb->str[1] == '!' )
+        if ( scb->str[0] == '#'  &&  scb->str[1] == '!' )
         {
             cmdcnt = gblargc - inpcnt + 1;
             inpcnt = 1;
-            while( (length=osread(1, WC(word), &inpiob, ccb)) < 0 )
+            while( (length=osread(1, WC(word), &inpiob, scb)) < 0 )
             {
                 if ( swcinp( inpcnt, inpptr ) < 0 )
                 {
@@ -191,25 +159,14 @@ zysrd()
                 // Successful switch, report new file name
                 if (sfn && sfn[0])
                 {
-                    cpys2sc( sfn, ccb, WC(word));
-		    if (CHARBITS != 8) {
-	    	    	uc_decodes(ccb, scb);
-		    }
+                    cpys2sc( sfn, scb, WC(word));
                     return  EXIT_1;
                 }
 
             }
+            scb->len = length;
         }
     }
-
-	    if (CHARBITS == 8) {
-            	scb->len = length;
-	    }
-	    else {
-		retval = uc_decodes(ccb, scb);
-		if (retval)
-			return EXIT_1; // if unicode translation error, treat as EOF
-	    }
 
     return NORMAL_RETURN;
 }

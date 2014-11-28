@@ -2,24 +2,17 @@
 #
 
 ARCH?=x32
-CHARBITS=8
 DEBUG?=0
 EXECUTABLE=spitbol
 UNICODE?=0
 
 ifeq ($(ARCH),x32)
-ARCHDEF=-D ARCH_X32_8
+ARCHDEF=-D ARCH_X32
 ELF=elf32
 endif
 ifeq ($(ARCH),x64)
 ARCHDEF=-D ARCH_X64
 ELF=elf64
-endif
-
-ifneq ($(UNICODE),0)
-CHARBITS=32
-ARCHDEF=-D ARCH_X32_32
-EXECUTABLE=uspitbol
 endif
 
 
@@ -47,9 +40,9 @@ endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMFLAGS = -f $(ELF) -DCHARBITS=$(CHARBITS)
+ASMFLAGS = -f $(ELF)
 else
-ASMFLAGS = -g -f $(ELF) -DCHARBITS=$(CHARBITS)
+ASMFLAGS = -g -f $(ELF)
 endif
 
 # Tools for processing Minimal source file.
@@ -92,7 +85,7 @@ COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
 	int.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
-	trypath.o uc.o utf8.o wrtaout.o zz.o
+	trypath.o wrtaout.o zz.o
 
 # Assembly langauge objects common to all versions:
 # CAOBJS is for gas, NAOBJS for nasm
@@ -150,11 +143,11 @@ s.go:	s.lex go.spt
 	$(BASEBOL) -u i32 go.spt
 
 s.s:	s.lex $(VHDRS) $(COD) 
-	$(BASEBOL) -u $(ARCH)-$(CHARBITS) $(COD)
+	$(BASEBOL) -u $(ARCH) $(COD)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
 #	 $(BASEBOL) -u "s" $(LEX)
-	 $(BASEBOL) -u $(ARCH)-$(CHARBITS) $(LEX)
+	 $(BASEBOL) -u $(ARCH) $(LEX)
 
 s.err: s.s
 

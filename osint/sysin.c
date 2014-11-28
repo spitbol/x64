@@ -54,22 +54,14 @@ zysin()
     register word	reclen;
     register struct fcblk *fcb = WA (struct fcblk *);
     register struct scblk *scb = XR (struct scblk *);
-    struct ccblk * ccb;
     register struct ioblk *ioptr = ((struct ioblk *) (fcb->iob));
-    int retval;
 
     // ensure iob is open, fail if unsuccessful
     if ( !(ioptr->flg1 & IO_OPN) )
         return EXIT_3;
 
-    if (CHARBITS == 8) {
-	ccb = (struct ccblk *) scb;
-    }
-    else {
-	ccb = uc_ccblk(1);
-    }
     // read the data, fail if unsuccessful
-    while( (reclen = osread( fcb->mode, fcb->rsz, ioptr, ccb )) < 0)
+    while( (reclen = osread( fcb->mode, fcb->rsz, ioptr, scb )) < 0)
     {
         if ( reclen == (word)-1 )		// EOF?
         {
@@ -88,15 +80,7 @@ zysin()
         else				// I/O Error
             return EXIT_2;
     }
-    if (CHARBITS == 8) {
-	scb->len = reclen;	// set record length
-    }
-    else {
-	ccb->len = reclen;
-	retval = uc_decodes(ccb, scb);
-	if (retval)
- 	    return EXIT_2; // IO Error if translation error
-    }
+    scb->len = reclen;		// set record length
 
     // normal return
     return NORMAL_RETURN;

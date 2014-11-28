@@ -91,7 +91,7 @@ This file is part of Macro SPITBOL.
 /*
  *  Other defaulted values that may be overridden in systype.h
  */
-#ifdef ARCH_X32_32
+#ifdef ARCH_X32
 #ifndef INTBITS
 #define INTBITS		32
 #define MAXINT		0x7FFFFFFFL
@@ -103,31 +103,9 @@ This file is part of Macro SPITBOL.
 #ifndef IABITS
 #define IABITS      	32          // Integer accumulator (IA) width
 #endif
-#ifndef CHARBITS
-#define CHARBITS 32
-#endif
-typedef unsigned int CHAR;
 #endif
 
-#ifdef ARCH_X32_8
-#ifndef INTBITS
-#define INTBITS		32
-#define MAXINT		0x7FFFFFFFL
-#endif
-#ifndef WORDBITS
-#define WORDBITS	32
-#define MAXPOSWORD	0x7FFFFFFFL
-#endif
-#ifndef IABITS
-#define IABITS      	32          // Integer accumulator (IA) width
-#endif
-#ifndef CHARBITS
-#define CHARBITS 8
-#endif
-typedef unsigned char CHAR;
-#endif
-
-#ifdef ARCH_X64_8
+#ifdef ARCH_X64
 #ifndef INTBITS
 #define INTBITS		64
 #define MAXINT		0x7FFFFFFFFFFFFFFFL
@@ -139,13 +117,9 @@ typedef unsigned char CHAR;
 #ifndef IABITS
 #define IABITS      	64
 #endif
-#ifndef CHARBITS
-#define CHARBITS 8
-#endif
-typedef unsigned char CHAR;
 #endif
 
-// CHARBITS is number of bits per character.
+
 
 /*
  *  If not defined in systype.h, disable it here.
@@ -329,8 +303,8 @@ typedef long IATYPE;
 /   The following manifest constants determines the size of the temporary
 /   SCBLKs defined by the interface.
 /
-/   TCCBLK_LENGTH	the maximum length of a string that can be stored
-/                   in structure 'tccblk'.  'tccblk' is defined in
+/   TSCBLK_LENGTH	the maximum length of a string that can be stored
+/                   in structure 'tscblk'.  'tscblk' is defined in
 /                   file inter.s.
 /
 /   ID2BLK_LENGTH	the maximum length of a string that can be stored
@@ -342,8 +316,8 @@ typedef long IATYPE;
 /                   the word size.
 /
 */
-#ifndef TCCBLK_LENGTH
-#define TCCBLK_LENGTH	512
+#ifndef TSCBLK_LENGTH
+#define TSCBLK_LENGTH	512
 #endif
 #define ID2BLK_LENGTH	52
 

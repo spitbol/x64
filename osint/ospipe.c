@@ -130,7 +130,7 @@ static int doshell( ioptr )
 struct	ioblk	*ioptr;
 {
 #define CMDBUFLEN 1024
-    struct	ccblk	*ccptr;
+    struct	scblk	*scptr;
     char    *shellpath, cmdbuf[CMDBUFLEN];
     int     len;
 
@@ -141,18 +141,18 @@ struct	ioblk	*ioptr;
     /   terminate it with a Nul character.  Remember that
     /   command is in string with form "!*command* options".
     */
-    ccptr = ((struct ccblk *) (ioptr->fnm));	// point to cmd ccblk
+    scptr = ((struct scblk *) (ioptr->fnm));	// point to cmd scblk
     if (ioptr->flg2 & IO_ENV) {
-        if (optfile(ccptr, pTCCBLK))
+        if (optfile(scptr, pTSCBLK))
             return -1;
-        ccptr = pTCCBLK;
-        pTCCBLK->len = lenfnm(ccptr);	// remove any options
+        scptr = pTSCBLK;
+        pTSCBLK->len = lenfnm(scptr);	// remove any options
     }
-    len   = lenfnm( ccptr ) - 2;        // length of cmd without ! & delimiter
+    len   = lenfnm( scptr ) - 2;        // length of cmd without ! & delimiter
     if (len >= CMDBUFLEN)
         return -1;
-    mystrncpy( cmdbuf, &ccptr->str[2], len);// get command
-    if ( cmdbuf[len-1] == ccptr->str[1] )   // if necessary
+    mystrncpy( cmdbuf, &scptr->str[2], len);// get command
+    if ( cmdbuf[len-1] == scptr->str[1] )   // if necessary
         len--;                              //   zap 2nd delimiter
     cmdbuf[len] = '\0';                     // Nul terminate cmd
     shellpath = getshell();         // get shell's path

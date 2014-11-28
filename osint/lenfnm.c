@@ -19,9 +19,9 @@ This file is part of Macro SPITBOL.
 */
 
 /*
-/   lenfnm( ccptr )
+/   lenfnm( scptr )
 /
-/   lenfnm() examines the file argument within the passed CCBLK and returns
+/   lenfnm() examines the file argument within the passed SCBLK and returns
 /   the length of the filename contained within it.  This function will be
 /   called from any of the OSINT functions dealing with filenames or I/O
 /   options.
@@ -58,7 +58,7 @@ This file is part of Macro SPITBOL.
 */
 
 /*  Parameters:
-/	ccptr	pointer to CCBLK containg filename string
+/	scptr	pointer to SCBLK containg filename string
 /   Returns:
 /	length of filename (0 is possible)
 /       -1 if illegal name
@@ -66,9 +66,9 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-word lenfnm( ccptr )
+word lenfnm( scptr )
 
-struct	ccblk	*ccptr;
+struct	scblk	*scptr;
 
 {
     register word cnt, len, len2;
@@ -78,14 +78,14 @@ struct	ccblk	*ccptr;
     /*
     /	Null strings have filenames with lengths of 0.
     */
-    len = len2 = ccptr->len;
+    len = len2 = scptr->len;
     if ( len == 0 )
         return	0L;
 
     /*
     /   Here to examine end of string for "[option]".
     */
-    cp = &ccptr->str[--len2];    // last char of strng
+    cp = &scptr->str[--len2];    // last char of strng
     if ( *cp == ']')			// string end with "]" ?
     {
         // String ends with "]", find preceeding "["
@@ -96,14 +96,14 @@ struct	ccblk	*ccptr;
             if (*cp == '[')
             {
                 // valid option syntax, remove from length of string we'll examine
-                len = cp - ccptr->str;
+                len = cp - scptr->str;
                 break;
             }
         }
     }
 
     // Look for space as the options delimiter
-    cp = ccptr->str;
+    cp = scptr->str;
 
     /*
     /	Here to bypass spaces within a pipe command.

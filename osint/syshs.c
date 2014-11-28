@@ -20,59 +20,47 @@ This file is part of Macro SPITBOL.
 
 
 /*
-/   arg2scb( req, argc, argv, ccptr, maxs )
+/   arg2scb( req, argc, argv, scptr, maxs )
 /
 /   arg2scb() makes a copy of the req-th argument in the argv array.
-/   The copy is appended to the string in the CCBLK provided.
+/   The copy is appended to the string in the SCBLK provided.
 /
 /   Parameters:
 /	req	number of argument to copy
 /	argc	number of arguments
 /	argv	pointer to array of pointers to strings (arguments)
-/	ccptr	pointer to SCBLK to receive copy of argument
+/	scptr	pointer to SCBLK to receive copy of argument
 /	maxs	maximum number of characters to append.
 /   Returns:
 /	Length of argument copied or -1 if req is out of range.
 /   Side Effects:
-/	Modifies contents of passed CCBLK (ccptr).
-/	CCBLK length field is incremented.
+/	Modifies contents of passed SCBLK (scptr).
+/	SCBLK length field is incremented.
 */
 
 #include "port.h"
 
-void set_xl() {
-	
-// set XL to string, performing unicode translation if needed.
-        if (CHARBITS == 8) {
-	        SET_XL( pTCCBLK );
-	}
-	else {
-		uc_decode(0, pTCCBLK);	// assume translation cannot fail
-		SET_XL( uc_scblk(0));
-	}
-}
-
-static int
-arg2scb( req, argc, argv, ccptr, maxs )
+static int 
+arg2scb( req, argc, argv, scptr, maxs )
 
 int	req;
 int	argc;
 char	*argv[];
-struct	ccblk	*ccptr;
+struct	scblk	*scptr;
 int	maxs;
 
 {
     register word	i;
-    register char	*argcp, *ccbcp;
+    register char	*argcp, *scbcp;
 
     if ( req < 0  ||  req >= argc )
         return	-1;
 
     argcp	= argv[req];
-    ccbcp	= ccptr->str + ccptr->len;
-    for( i = 0 ; i < maxs  &&  ((*ccbcp++ = *argcp++) != 0) ; i++ )
+    scbcp	= scptr->str + scptr->len;
+    for( i = 0 ; i < maxs  &&  ((*scbcp++ = *argcp++) != 0) ; i++ )
         ;
-    ccptr->len += i;
+    scptr->len += i;
     return i;
 }
 
@@ -125,14 +113,14 @@ int	maxs;
 */
 
 /*
- *  checkstr - check if ccblk is a valid string.  Returns 1 if so, else 0.
+ *  checkstr - check if scblk is a valid string.  Returns 1 if so, else 0.
  */
 int
 checkstr(scp)
-struct ccblk *scp;
+struct scblk *scp;
 {
-    return scp != (struct ccblk *)0L &&
-           scp->typ == TYPE_SCL && scp->len < TCCBLK_LENGTH;
+    return scp != (struct scblk *)0L &&
+           scp->typ == TYPE_SCL && scp->len < TSCBLK_LENGTH;
 }
 
 /*  check2str - check first two argument strings in XL, XR.
@@ -142,18 +130,18 @@ struct ccblk *scp;
 int
 check2str()
 {
-    return checkstr( XL(struct ccblk *) ) && checkstr( XR(struct ccblk *) );
+    return checkstr( XL(struct scblk *) ) && checkstr( XR(struct scblk *) );
 }
 
 
 /*
- *  savestr - convert an ccblk to a valid C string.  Returns pointer to
+ *  savestr - convert an scblk to a valid C string.  Returns pointer to
  *		start of string, or 0 if fail.  The char replaced by the
  *		'\0' terminator is returned in *cp.
  */
 char *
 savestr(scp,cp)
-struct ccblk *scp;
+struct scblk *scp;
 char *cp;
 {
     *cp = scp->str[scp->len];
@@ -168,18 +156,18 @@ void
 save2str(s1p,s2p)
 char **s1p, **s2p;
 {
-    *s1p = savestr( XL(struct ccblk *), &savexl );
-    *s2p = savestr( XR(struct ccblk *), &savexr );
+    *s1p = savestr( XL(struct scblk *), &savexl );
+    *s2p = savestr( XR(struct scblk *), &savexr );
 }
 
 /*
- *  getstring - verify and convert an ccblk to a valid C string.
+ *  getstring - verify and convert an scblk to a valid C string.
  *   Returns pointer to start of string, or 0 if fail.  The char
  *   replaced by the '\0' terminator is returned in *cp.
  */
 char *
 getstring(scp,cp)
-struct ccblk *scp;
+struct scblk *scp;
 char *cp;
 {
     return checkstr(scp) ? savestr(scp,cp) : (char *)0L;
@@ -187,13 +175,13 @@ char *cp;
 
 
 /*
- *  restorestring - restore an ccblk after a getstring call.
+ *  restorestring - restore an scblk after a getstring call.
  *
  *  when making multiple getstring calls, call restorestring in the reverse
  *  order from getstring, in case two arguments point to the same source string.
  */
 void restorestring(scp,c)
-struct ccblk *scp;
+struct scblk *scp;
 word c;
 {
     if (scp)
@@ -207,12 +195,12 @@ word c;
 void
 restore2str()
 {
-    restorestring( XR(struct ccblk *), savexr);
-    restorestring( XL(struct ccblk *), savexl);
+    restorestring( XR(struct scblk *), savexr);
+    restorestring( XL(struct scblk *), savexl);
 }
 
 /*
- *  getint - fetch an integer from either an icblk, rcblk or non-null ccblk.
+ *  getint - fetch an integer from either an icblk, rcblk or non-null scblk.
  *
  *  returns 1 if successful, 0 if failed.
  */
@@ -222,7 +210,7 @@ struct icblk *icp;
 IATYPE *pword;
 {
     register char *p, c;
-    struct ccblk *scp;
+    struct scblk *scp;
     word i;
     IATYPE result;
     int sign;
@@ -247,7 +235,7 @@ IATYPE *pword;
     }
 #endif
     else {
-        scp = (struct ccblk *)icp;
+        scp = (struct scblk *)icp;
         if (!checkstr(scp))
             return 0;
         i = scp->len;
@@ -280,18 +268,18 @@ zyshs()
     word	retval;
     IATYPE	val;
     register struct icblk *icp = WA (struct icblk *);
-    register struct ccblk *scp;
+    register struct scblk *scp;
 
     /*
     /   if argument one is null...
     */
-    scp = WA (struct ccblk *);
+    scp = WA (struct scblk *);
     if (scp->typ == TYPE_SCL && !scp->len)
     {
-        gethost( pTCCBLK, TCCBLK_LENGTH );
-        if ( pTCCBLK->len == 0 )
+        gethost( pTSCBLK, TSCBLK_LENGTH );
+        if ( pTSCBLK->len == 0 )
             return EXIT_4;
-	set_xl();
+        SET_XL( pTSCBLK );
         return EXIT_3;
     }
 
@@ -342,19 +330,19 @@ zyshs()
             */
         case 0:
             if ( uarg ) {
-                cpys2sc( uarg, pTCCBLK, TCCBLK_LENGTH );
-		set_xl();
+                cpys2sc( uarg, pTSCBLK, TSCBLK_LENGTH );
+                SET_XL( pTSCBLK );
                 return EXIT_3;
             }
             else if ((val = cmdcnt) != 0) {
-                pTCCBLK->len = 0;
-                while (pTCCBLK->len < TCCBLK_LENGTH - 2 &&
+                pTSCBLK->len = 0;
+                while (pTSCBLK->len < TSCBLK_LENGTH - 2 &&
                         arg2scb( (int) val++, gblargc, gblargv,
-                                 pTCCBLK, TCCBLK_LENGTH - pTCCBLK->len ) > 0)
-                    pTCCBLK->str[pTCCBLK->len++] = ' ';
-                if (pTCCBLK->len)
-                    --pTCCBLK->len;
-		set_xl();
+                                 pTSCBLK, TSCBLK_LENGTH - pTSCBLK->len ) > 0)
+                    pTSCBLK->str[pTSCBLK->len++] = ' ';
+                if (pTSCBLK->len)
+                    --pTSCBLK->len;
+                SET_XL( pTSCBLK );
                 return EXIT_3;
             }
             else
@@ -364,27 +352,16 @@ zyshs()
             */
         case 1: {
             char *cmd, *path;
-	    if (CHARBITS == 8) {
 
-            	if (!check2str())
-                    return EXIT_1;
-            	save2str(&cmd,&path);
-            	save0();		// made sure fd 0 OK
-            	pTICBLK->val = dosys( cmd, path );
+            if (!check2str())
+                return EXIT_1;
+            save2str(&cmd,&path);
+            save0();		// made sure fd 0 OK
+            pTICBLK->val = dosys( cmd, path );
 
-            	pTICBLK->typ = TYPE_ICL;
-            	restore2str();
-            }
-	    else {
-		uc_encode(0, XL(struct scblk *));
-		cmd = uc_ccblk(0)->str;
-		uc_encode(1, XR(struct scblk *));
-		path = uc_ccblk(1)->str;
-		save0();
-		pTICBLK->val = dosys(cmd,path);
-            	pTICBLK->typ = TYPE_ICL;
-	    }
-	    restore0();
+            pTICBLK->typ = TYPE_ICL;
+            restore2str();
+            restore0();
             if (pTICBLK->val < 0)
                 return EXIT_6;
             SET_XR( pTICBLK );
@@ -397,13 +374,13 @@ zyshs()
         case 2:
             icp = XL( struct icblk * );
             if ( getint(icp,&val) ) {
-                pTCCBLK->len = 0;
-                retval = arg2scb( (int) val, gblargc, gblargv, pTCCBLK, TCCBLK_LENGTH );
+                pTSCBLK->len = 0;
+                retval = arg2scb( (int) val, gblargc, gblargv, pTSCBLK, TSCBLK_LENGTH );
                 if ( retval < 0 )
                     return EXIT_6;
                 if ( retval == 0 )
                     return EXIT_1;
-                set_xl();
+                SET_XL( pTSCBLK );
                 return EXIT_3;
             }
             else
@@ -427,21 +404,13 @@ zyshs()
             /	    the environment.
             */
         case 4:
-	    scp = XL( struct ccblk *);
+            scp = XL( struct scblk * );
             if ( scp->typ == TYPE_SCL ) {
                 if ( scp->len == 0 )
                     return EXIT_1;
-
-	    	if (CHARBITS == 8) {
-                    scp = XL( struct ccblk * );
-	   	}
-	    	else {
-		    uc_encode(0, XL(struct scblk *)); // assume unicode translation cannot fail
-		    scp = uc_ccblk(0);
-	    	}
-                if ( rdenv( scp, pTCCBLK ) < 0 )
+                if ( rdenv( scp, pTSCBLK ) < 0 )
                     return EXIT_6;
-		set_xl();
+                SET_XL( pTSCBLK );
                 return EXIT_3;
             }
             else

@@ -206,7 +206,7 @@ mword nargs;
 
     type = callextfun(efb, sp-1, nargs, SA(nbytes));	// make call with Stack Aligned nbytes
 
-    result = (union block *)pTCCBLK;
+    result = (union block *)pTSCBLK;
     switch (type) {
 
     case BL_XN:						// XNBLK    external block
@@ -233,7 +233,7 @@ mword nargs;
     case BL_NC:	 					// return result block unchanged
         break;
 
-    case BL_FS:						// string pointer at TCCBLK.str
+    case BL_FS:						// string pointer at TSCBLK.str
         result->fsb.fstyp = (*pTYPET)[BL_SC];
         p = result->fsb.fsptr;
         length = result->fsb.fslen;
@@ -249,7 +249,7 @@ mword nargs;
             *q++ = *p++;
         break;
 
-    case BL_FX:						// pointer to external data at TCCBLK.str
+    case BL_FX:						// pointer to external data at TSCBLK.str
         length = ((result->fxb.fxlen + sizeof(mword) - 1) &
                   -sizeof(mword)) + FIELDOFFSET(struct xnblk, xnu.xndta[0]);
         if (length > GET_MIN_VALUE(MXLEN,mword)) {
@@ -631,9 +631,9 @@ int brkx( void *addr )
  *
  *	Then zysxi() is invoked directly to write the module.
  *
- *	int makeexec( struct ccblk *ccptr, int type);
+ *	int makeexec( struct scblk *scptr, int type);
  *
- *	Input:	ccptr = Pointer to SCBLK for load module name.
+ *	Input:	scptr = Pointer to SCBLK for load module name.
  *			type = Type (+-3 or +-4)
  *	Output:	Result value <> 0 if error writing a.out.
  *		Result = 0 if type was |4| and no error.
@@ -647,8 +647,8 @@ int brkx( void *addr )
  *		count are reset appropriately by restart().
  *
  */
-int makeexec( ccptr, type )
-struct ccblk *ccptr;
+int makeexec( scptr, type )
+struct scblk *scptr;
 int type;
 {
     word	save_wa, save_wb, save_ia, save_xr;
@@ -660,7 +660,7 @@ int type;
     save_ia = reg_ia;
     save_xr = reg_xr;
 
-    reg_wa = (word)ccptr;
+    reg_wa = (word)scptr;
     reg_xl = 0;
     reg_ia = type;
     reg_wb = 0;
@@ -680,7 +680,7 @@ int type;
  *
  *  restricted upper case function.  Only acts on 'a' through 'z'.
  */
-word
+word 
 uppercase(c)
 word c;
 {

@@ -34,7 +34,7 @@ typedef int File_mode;
 typedef int Open_method;
 
 extern	union block *	alloc (word nchars);
-extern	struct ccblk *	alocs (word nchars);
+extern	struct scblk *	alocs (word nchars);
 extern	union block *	alost (word nchars);
 extern	int			appendext (char *path, char *ext, char *result, int force);
 #if EXTFUN
@@ -42,7 +42,7 @@ extern  union block *   callef (struct efblk *efb, union block **sp, word nargs)
 #endif
 extern	int			checkfpu ( void );
 extern	int			checksave (char *namep);
-extern	int			checkstr ( struct ccblk *scp );
+extern	int			checkstr ( struct scblk *scp );
 extern	int			check2str ( void );
 extern	int			check3str ( void );
 extern	int			chrdev ( File_handle F );
@@ -54,16 +54,17 @@ extern	void		clrbuf ( void );
 extern	int			compress ( unsigned char *startadr, uword size );
 extern	void		conv ( char *dest, int value );
 extern	int			coutdev ( File_handle F );
-extern	void		cpys2sc ( char *cp, struct ccblk *ccptr, word maxlen );
+extern	void		cpys2sc ( char *cp, struct scblk *scptr, word maxlen );
 extern	void		crlf ( void );
 extern	int			docompress ( int bits, char *freeptr, uword size );
+extern	void		doexec ( struct scblk *scbptr );
 extern	int			doexpand ( int bits, char *freeptr, uword size );
 extern   FILEPOS  doset ( struct ioblk *ioptr, FILEPOS offset, int whence );
 extern  int     dosys ( char *cmd, char *path );
 extern	void		endbrk (void);
-extern	struct ccblk *	enevs (struct ccblk *inScblkPtr, word flag);
-extern	struct ccblk *	endtp (union block *inBlkPtr);
-extern	struct ccblk *	engts (union block *inBlkPtr);
+extern	struct scblk *	enevs (struct scblk *inScblkPtr, word flag);
+extern	struct scblk *	endtp (union block *inBlkPtr);
+extern	struct scblk *	engts (union block *inBlkPtr);
 extern	void		exephase (void);
 extern	void		exeinput (void);
 extern	void		__exit  (int code);
@@ -78,7 +79,7 @@ extern	word *		get_fp ( void );
 extern	char **		getargs (int argc, char *argv[]);
 extern	double		get_ra ( void );
 extern   FILEPOS     geteof ( struct ioblk *ioptr );
-extern	void		gethost ( struct ccblk *ccptr, word maxlen );
+extern	void		gethost ( struct scblk *scptr, word maxlen );
 extern	int			getint ( struct icblk *icp, IATYPE *pword );
 extern	char		*getnum ( char *cp, uword *ip );
 extern	File_handle	getprfd ( void );
@@ -87,8 +88,8 @@ extern	File_handle	getrdfd ( void );
 extern	struct ioblk *	getrdiob ( void );
 extern	int			getsave (File_handle fd);
 extern	char *		getshell ( void );
-extern	char *		getstring ( struct ccblk *scp, char *cp );
-extern	void		gettype ( struct ccblk *ccptr, word maxlen );
+extern	char *		getstring ( struct scblk *scp, char *cp );
+extern	void		gettype ( struct scblk *scptr, word maxlen );
 extern	char *		heapAlloc ( void *minAdr, word size );
 extern	void		heapmove  ( void );
 extern	int			host386 ( int hostno );
@@ -96,12 +97,12 @@ extern	int			host88 ( int hostno );
 extern	int			hostapl ( int hostno );
 extern	void		init_custom ( void );
 extern	void		initpath ( char *name );
-extern	word		lenfnm ( struct ccblk *ccptr );
+extern	word		lenfnm ( struct scblk *scptr );
 extern	int			length ( char *cp );
 extern	void *		loadef (word fd, char *filename);
 extern	long		lstrncmp (char*, char*, long, long);
 extern	int			_main ( int srcfd, int argc, char *argv[] );
-extern	int			makeexec ( struct ccblk *ccptr, int type );
+extern	int			makeexec ( struct scblk *scptr, int type );
 extern	char	    make_c_str ( char *p );
 extern	void		malloc_empty ( void );
 extern	int			malloc_init ( word endadr );
@@ -112,14 +113,14 @@ extern	void *		nextef ( unsigned char **bufp, int io );
 extern	void		numout ( unsigned n );
 extern	int			openaout ( char *fn, char *tmpfnbuf, int exe );
 extern	int			openexe (char *name);
-extern	int			optfile ( struct ccblk *varname, struct ccblk *result );
+extern	int			optfile ( struct scblk *varname, struct scblk *result );
 extern	char		*optnum ( char *cp, uword *ip );
 extern	int			osclose ( struct ioblk *ioptr );
 extern	int			osopen ( struct ioblk *ioptr );
 extern  int         ospipe ( struct ioblk *ioptr );
-extern	word		osread ( word mode, word recsiz, struct ioblk *ioptr, struct ccblk *ccptr );
+extern	word		osread ( word mode, word recsiz, struct ioblk *ioptr, struct scblk *scptr );
 extern  void        oswait ( int pid );
-extern  word        oswrite ( word mode, word linesiz, word recsiz, struct ioblk *ioptr, struct ccblk *ccptr );
+extern  word        oswrite ( word mode, word linesiz, word recsiz, struct ioblk *ioptr, struct scblk *scptr );
 extern	void		oupeof ( void );
 extern	char *		pathlast ( char *path );
 extern	void		prompt ( void );
@@ -127,20 +128,20 @@ extern	word		putsave (word *stkbase, word stklen);
 extern	void		quit ( int errno );
 extern	void		rawmode ( File_handle F, int mode );
 extern	int			rdaout ( File_handle fd, unsigned char *startadr, uword size );
-extern	int			rdenv ( struct ccblk *varname, struct ccblk *result );
+extern	int			rdenv ( struct scblk *varname, struct scblk *result );
 extern	int			renames (char *oldname, char *newname);
 extern	void		rereloc ( void );
 extern	int			resaout ( char *filename );
 extern	void		restart ( char *code, char *stack );
 extern	void		restore0 ( void );
-extern	void		restorestring (struct ccblk *scp, word c);
+extern	void		restorestring (struct scblk *scp, word c);
 extern	void		restore2str ( void );
 extern	void		restore3str ( void );
 extern	word		roundup (word n);
 extern	void		save0 ( void );
 extern	word		saveend (word *stkbase, word stklen);
 extern	long		savestart (File_handle fd, char *bufp, unsigned int size);
-extern	char *		savestr ( struct ccblk *scp, char *cp );
+extern	char *		savestr ( struct scblk *scp, char *cp );
 extern	void		save2str ( char **s1p, char **s2p );
 extern	void		save3str ( char **s1p, char **s2p, char **s3p );
 extern	void		scanef ( void );
@@ -216,6 +217,7 @@ extern	int			zysul ( void );
 extern	int			zysxi ( void );
 
 // prototypes for standard system-level functions used by OSINT
+
 #include <unistd.h>
 #define LSEEK lseek
 
@@ -226,33 +228,6 @@ extern	int			zysxi ( void );
 #define brk  brkx
 extern	int 		brkx ( void *addr );
 extern	void		*sbrkx ( long incr );
-
-int 		uc_decode(int num,struct ccblk * cb);
-int 		uc_decodes(struct ccblk * cb, struct scblk *sb);
-int		uc_encode(int num,struct scblk *sb);
-int		uc_encodes(struct ccblk *cb,struct scblk *sb);
-struct ccblk *	uc_ccblk(int num);
-struct scblk *	uc_scblk(int num);
-#ifdef UC_ALL
-void 		uc_init(int num);
-int		uc_len(int num);
-void		uc_setlen(int num, int length);
-char * 		uc_str(int num);
-int		uc_type(int num);
-void		uc_append(int num, char * s);
-void		uc_putc(int num, char c);
-/*
-int		uc_putstr(int num, char * s)
-int		uc_putc(int num, char c)
-*/
-#endif
-
-#if CHARBITS == 32
-size_t		utf8_to_mchar(const char *in, size_t insize, CHAR *out,
-		    size_t outsize, int flags);
-size_t		mchar_to_utf8(const CHAR *in, size_t insize, char *out,
-		    size_t outsize, int flags);
-#endif
 
 
 #endif

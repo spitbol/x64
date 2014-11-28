@@ -76,16 +76,13 @@ enum stage {
 zysea()
 {
     register struct scblk *fnscblk = XL(struct scblk *);
-    register struct ccblk *fnccblk;
     register char *p;
 
 
     // Display file name if present
     if (fnscblk->len) {
-	uc_encode(0, fnscblk);
-	fnccblk = uc_ccblk(0);
-        p = pTCCBLK->str;
-        p = eacpy(p, fnccblk->str, (int)fnccblk->len);
+        p = pTSCBLK->str;
+        p = eacpy(p, fnscblk->str, (int)fnscblk->len);
         // Display line number if present
         if (WC(unsigned int)) {
             *p++ = '(';
@@ -98,9 +95,8 @@ zysea()
             *p++ = ')';
         }
         p = eacpy(p, " : ", 3);
-        pTCCBLK->len = p - pTCCBLK->str;
-	uc_decode(1,pTCCBLK);
-        SET_XR( uc_scblk(1) );
+        pTSCBLK->len = p - pTSCBLK->str;
+        SET_XR( pTSCBLK );
         return NORMAL_RETURN;
     }
     SET_XR(0L);

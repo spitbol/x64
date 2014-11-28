@@ -19,7 +19,7 @@
 	%include	"x32.h"
 ;	CFP_B gives bytes per word, CFP_C gives characters per word
 	%define CFP_B	4
-	%define CFP_C	CFP_C_VAL
+	%define CFP_C	4
 
 	global	reg_block
 	global	reg_wa
@@ -257,10 +257,10 @@ ID2BLK	D_WORD   52
 TICBLK:	D_WORD   0
       D_WORD    0
 
-	global  TCCBLK
-TCCBLK:	 D_WORD   2048
+	global  TSCBLK
+TSCBLK:	 D_WORD   512
       D_WORD    0
-	times   2048 db 0
+	times   512 db 0
 
 
 ;       Standard input buffer block.
@@ -1243,7 +1243,7 @@ get_fp:
 ;       that point within the stack itself.  An adjustment factor is
 ;       calculated as the difference between the STBAS at exit() time,
 ;       and STBAS at restart() time.  As the stack is transferred from
-;       TCCBLK to the active stack, each word is inspected to see if it
+;       TSCBLK to the active stack, each word is inspected to see if it
 ;       points within the old stack boundaries.  If so, the adjustment
 ;       factor is subtracted from it.
 ;
@@ -1275,7 +1275,7 @@ restart:
 	call	stackinit               ; initialize MINIMAL stack
 
                                         ; set up for stack relocation
-        lea     W0,[TCCBLK+scstr]       ; top of saved stack
+        lea     W0,[TSCBLK+scstr]       ; top of saved stack
         mov     WB,M_WORD [lmodstk]    	; bottom of saved stack
         mov	ecx,M_WORD [STBAS]      ; WA = stbas from exit() time
         sub     WB,W0                 	; WB = size of saved stack
@@ -1288,10 +1288,10 @@ restart:
 ;        GETOFF  W0,DFFNC               ; get address of PPM offset
         mov     M_WORD [ppoff],W0       ; save for use later
 ;
-;       restore stack from TCCBLK.
+;       restore stack from TSCBLK.
 ;
-        mov     XL,M_WORD [lmodstk]    	; -> bottom word of stack in TCCBLK
-        lea     XR,[TCCBLK+scstr]      	; -> top word of stack
+        mov     XL,M_WORD [lmodstk]    	; -> bottom word of stack in TSCBLK
+        lea     XR,[TSCBLK+scstr]      	; -> top word of stack
         cmp     XL,XR                 	; Any stack to transfer?
         je      re3               	;  skip if not
 	sub	XL,4

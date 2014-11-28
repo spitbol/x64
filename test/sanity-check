@@ -25,22 +25,3 @@ mv s.s tbol.s.2
 echo "comparing generated .s files"
 diff tbol.s.1 tbol.s.2
 echo "end sanity test"
-#!/bin/bash --verbose
-rm ubol.*
-echo "start 32-bit sanity test"
-cp	./bin/spitbol	ubol
-make clean>/dev/null
-make BASEBOL=./ubol UNICODE=1
-mv s.lex ubol.lex.0
-mv s.s ubol.s.0
-cp uspitbol ubol
-make BASEBOL=./ubol UNICODE=1
-mv s.lex ubol.lex.1
-mv s.s ubol.s.1
-cp uspitbol ubol
-make BASEBOL=./ubol UNICODE=1
-mv s.lex ubol.lex.2
-mv s.s ubol.s.2
-echo "comparing generated .s files"
-diff ubol.s.1 ubol.s.2
-echo "end sanity test"

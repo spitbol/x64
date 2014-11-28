@@ -16,15 +16,8 @@
 	%define D_WORD	DD
 	%define D_REAL	DQ
 	%define LOG_CFP_B 2
-%if	CHARBITS == 32
-	%define	D_CHAR	DD
-	%define M_CHAR	DWORD
-	%define CFP_C_VAL	1
-	%define LOG_CFP_C 0
-%else
 	%define D_CHAR	DB
 	%define M_CHAR	BYTE
 	%define CFP_C_VAL	4
 	%define LOG_CFP_C 2
-%endif
 

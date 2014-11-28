@@ -111,8 +111,7 @@ struct ioblk
 {
     word	typ;			//  type word
     word	len;			//  length of IOBLK
-// TODO fnm should be scblk
-    struct Scblk *fnm;	//  pointer to SCBLK holding filename
+    struct scblk *fnm;	//  pointer to SCBLK holding filename
     word	pid;			//  process id for pipe
     struct bfblk *bfb;	//  pointer to BFBLK (type XNBLK)
     word	fdn;			//  file descriptor number

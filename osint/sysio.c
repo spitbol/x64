@@ -34,8 +34,8 @@ This file is part of Macro SPITBOL.
 /   to divide this large block into smaller blocks as needed.
 /
 /   Parameters:
-/	xl	pointer to ccblk holding filearg1 (channel id)
-/	xr	pointer to ccblk holding filearg2 (filename & args)
+/	xl	pointer to scblk holding filearg1 (channel id)
+/	xr	pointer to scblk holding filearg2 (filename & args)
 /	wa	pointer to fcblk or 0
 /	wb	0/3 for input/output association
 /   Returns:

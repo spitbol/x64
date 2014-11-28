@@ -58,15 +58,8 @@ zyspi()
 
 {
     word	retval;
-    int		len;
-    struct ccblk * ccb;
 
-    retval = uc_encode(2, XR(struct scblk *));
-    ccb = uc_ccblk(2);
-    len = ccb->len;
-    if (retval)	// return error if cannot encode unicode string
-	return EXIT_1;
-    retval = oswrite( 1, ttyiobout.len, len, &ttyiobout, ccb) ;
+    retval = oswrite( 1, ttyiobout.len, WA(word), &ttyiobout, XR( struct scblk * ) );
 
     /*
     /	Return error if oswrite fails.
@@ -96,31 +89,21 @@ zysri()
 
 {
     register word	length;
-    struct scblk * scb = XR(struct scblk *);
-    register struct ccblk *ccb;
+    register struct scblk *scb = XR( struct scblk * );
     register char *saveptr, savechr;
-    int retval;
 
     /*
-    /	Read a line specified by length of ccblk.  If EOF take exit 1.
+    /	Read a line specified by length of scblk.  If EOF take exit 1.
     */
-    length = scb->len;
-    if (CHARBITS == 8) {
-	ccb = XR(struct ccblk *); // Interpret SCBLK as CCBLK
-    	saveptr = ccb->str + length;		// Save char following buffer for \n
-    	savechr = *saveptr;
-    }
-    else {
-	ccb = uc_ccblk(1);
-    }
+    length = scb->len;					// Length of buffer provided
+    saveptr = scb->str + length;		// Save char following buffer for \n
+    savechr = *saveptr;
 
     ((struct bfblk *) (ttyiobin.bfb))->size = ++length; // Size includes extra byte for \n
 
-    length = osread( 1, length, &ttyiobin, ccb );
+    length = osread( 1, length, &ttyiobin, scb );
 
-    if (CHARBITS == 8) {
-    	*saveptr = savechr;					// Restore saved char
-    }
+    *saveptr = savechr;					// Restore saved char
 
     if ( length < 0 )
         return  EXIT_1;
@@ -128,14 +111,7 @@ zysri()
     /*
     /	Line read OK, so set string length and return normally.
     */
-    if (CHARBITS == 8) {
-    	ccb->len = length;
-    }
-    else {
-	retval = uc_decodes(ccb, scb);
-	if (retval) 
-	    return EXIT_1; // encoding failure same as EOF
-    }
+    scb->len = length;
     return NORMAL_RETURN;
 }
 

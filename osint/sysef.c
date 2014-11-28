@@ -44,10 +44,10 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 /*
-/	ffccblk is one of the few SCBLKs that can be directly allocated
+/	ffscblk is one of the few SCBLKs that can be directly allocated
 /	using a C struct!
 */
-static struct ccblk	ffccblk =
+static struct scblk	ffscblk =
 {
     0,		//  type word - ignore
     1,		//  string length
@@ -64,7 +64,7 @@ zysef()
         return EXIT_1;
 
     // write the data, fail if unsuccessful
-    if ( oswrite( fcb->mode, fcb->rsz, ffccblk.len, iob, &ffccblk) != 0 )
+    if ( oswrite( fcb->mode, fcb->rsz, ffscblk.len, iob, &ffscblk) != 0 )
         return EXIT_2;
 
     return NORMAL_RETURN;

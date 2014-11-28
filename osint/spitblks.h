@@ -153,14 +153,8 @@ struct	rcblk {
 struct	scblk {
     word	typ;		//  type word - b$scl
     word	len;		//  string length
-    CHAR	str[UC_MAX];		//  string characters
+    char	str[1];		//  string characters
 };
-
-struct	ccblk {
-        word	typ;
-	int	len;
-	char	str[UC_MAX];
-	};
 
 
 /*
@@ -196,6 +190,6 @@ union block {
     struct efblk	efb;
     struct icblk	icb;
     struct rcblk	rcb;
-    struct ccblk	scb;
+    struct scblk	scb;
     struct vrblk	vrb;
 };

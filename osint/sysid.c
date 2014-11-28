@@ -43,7 +43,7 @@ This file is part of Macro SPITBOL.
 
 /*
 /   define actual headers elsewhere to overcome problems in initializing
-/   the two SCBLKs.  Use id2blk instead of tccblk because tccblk may
+/   the two SCBLKs.  Use id2blk instead of tscblk because tscblk may
 /	be active with an error message when zysid is called.
 */
 
@@ -52,14 +52,12 @@ zysid()
 {
     register char *cp;
 
-    uc_decode(1, pID1);
-    SET_XR( uc_scblk(1) );
+    SET_XR( pID1 );
     gettype( pID2BLK, ID2BLK_LENGTH );
     cp = pID2BLK->str + pID2BLK->len;
     *cp++ = ' ';
     *cp++ = ' ';
     pID2BLK->len += 2 + storedate(cp, ID2BLK_LENGTH - pID2BLK->len);
-    uc_decode(0, pID2BLK);
-    SET_XL( uc_scblk(0) );
+    SET_XL( pID2BLK );
     return NORMAL_RETURN;
 }

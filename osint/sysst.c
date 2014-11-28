@@ -90,8 +90,8 @@ zysst()
     // offset may come in either integer or string form
     icp = WB( struct icblk * );
     if ( !getint(icp,&temp) ) {
-        struct ccblk *scp;
-        scp = (struct ccblk *)icp;
+        struct scblk *scp;
+        scp = (struct scblk *)icp;
         if (!checkstr(scp) || scp->len != 1)
             return EXIT_1;
         temp = whence;
