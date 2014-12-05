@@ -375,7 +375,7 @@
 *
 *  Default the parameter string if none present
 *
-	ARCH = (DIFFER(HOST(0)) HOST(0), "x32")
+	ARCH = (DIFFER(HOST(0)) HOST(0), "32")
 	ARCH = LOWER(ARCH)
 	PARM = "s"
 	FILENAMC = PARM '.cnd'
@@ -448,24 +448,8 @@ MAIN2
 * Set target-dependent configuration parameters 
 	:($('CONFIG.' ARCH))
 
-CONFIG.I32
-	ANAME = 'i32'
-	EQU_DEFS['CFP_A'] = '256'
-	EQU_DEFS['CFP_B'] = '1'
-	EQU_DEFS['CFP_C'] = '1'
-	EQU_DEFS['CFP_F'] = '2'
-	EQU_DEFS['CFP_I'] = '1'
-	EQU_DEFS['CFP_L'] = '4294967295'
-*	EQU_DEFS['CFP_M'] = '2147483647'
-	EQU_DEFS['CFP_N'] = '32'
- 	EQU_DEFS['CFP_R'] = '1'
-	EQU_DEFS['CFP_U'] = '128'
-*	Use 24 characters, for hash in i32
-	EQU_DEFS['E_HNW'] = '0'
-	
 							:(CONFIG.DONE)
-CONFIG.X32
-	ANAME = 'x32'
+CONFIG.32
 	EQU_DEFS['CFP_A'] = '256'
 	EQU_DEFS['CFP_B'] = '4'
 	EQU_DEFS['CFP_C'] = '4'
@@ -480,8 +464,7 @@ CONFIG.X32
 	EQU_DEFS['E_HNW'] = '6'
 	
 							:(CONFIG.DONE)
-CONFIG.X64
-	ANAME = 'x64'
+CONFIG.64
 	EQU_DEFS['CFP_A'] = '256'
 	EQU_DEFS['CFP_B'] = '8'
 	EQU_DEFS['CFP_C'] = '8'

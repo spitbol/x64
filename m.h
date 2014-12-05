@@ -1,7 +1,7 @@
 	%define M_CHAR	BYTE	; reference to byte in memory
 	%define D_CHAR	DB	; define value of byte
 			
-%ifdef	x32
+%ifdef	m32
 	%define CP	EBP
 	%define	XL	ESI
 	%define	XT	ESI

@@ -91,7 +91,7 @@ This file is part of Macro SPITBOL.
 /*
  *  Other defaulted values that may be overridden in systype.h
  */
-#ifdef ARCH_X32
+#ifdef m32		// 32 bit words
 #ifndef INTBITS
 #define INTBITS		32
 #define MAXINT		0x7FFFFFFFL
@@ -101,11 +101,11 @@ This file is part of Macro SPITBOL.
 #define MAXPOSWORD	0x7FFFFFFFL
 #endif
 #ifndef IABITS
-#define IABITS      	32          // Integer accumulator (IA) width
+#define IABITS      	32      // Integer accumulator (IA) width
 #endif
 #endif
 
-#ifdef ARCH_X64
+#ifndef m32		// 64 bit words
 #ifndef INTBITS
 #define INTBITS		64
 #define MAXINT		0x7FFFFFFFFFFFFFFFL

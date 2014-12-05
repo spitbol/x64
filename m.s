@@ -19,12 +19,10 @@
 
 ;	WS is bits per word, CFP_B is bytes per word, CFP_C is characters per word
 
-%ifdef	x32
-	%define	WS	32
+%ifdef	m32
 	%define	CFP_B	4
 	%define	CFP_C	4
 %else
-	%define	WS	64
 	%define	CFP_B	8
 	%define	CFP_C	8
 %endif

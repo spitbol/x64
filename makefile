@@ -1,21 +1,14 @@
 # X32 SPITBOL makefile using gcc
 #
 
-ARCH?=x32
-ARCH=x64
-ARCH=x32
+WS?=32
+#WS=x64
+#WS=32
 DEBUG?=0
 EXECUTABLE=spitbol
 UNICODE?=0
 
-ifeq ($(ARCH),x32)
-WS=32
-ARCHDEF=-D ARCH_X32
-endif
-ifeq ($(ARCH),x64)
-ARCHDEF=-D ARCH_X64
-WS=64
-endif
+ARCHDEF=-D m$(WS)
 ELF=elf$(WS)
 
 
@@ -34,16 +27,16 @@ vpath %.c $(OSINT)
 CC	=	gcc
 ASM	=	nasm
 ifeq	($(DEBUG),0)
-CFLAGS= $(ARCHDEF) -m$(WS) 
+CFLAGS= -D m$(WS) -m$(WS) 
 else
-CFLAGS= $(ARCHDEF) -g -m$(WS)
+CFLAGS= -D m$(WS)-g -m$(WS)
 endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMFLAGS = -f $(ELF) -d x$(WS)
+ASMFLAGS = -f $(ELF) -d m$(WS)
 else
-ASMFLAGS = -g -f $(ELF) -d x$(WS)
+ASMFLAGS = -g -f $(ELF) -d m$(WS)
 endif
 
 # Tools for processing Minimal source file.
@@ -116,19 +109,19 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 
 # link spitbol with static linking
 spitbol: $(OBJS)
-ifeq ($(ARCH),x32)
+ifeq ($(WS),32)
 	$(CC) $(CFLAGS) $(OBJS) -static -lm -o$(EXECUTABLE) -Wl,-M,-Map,$(EXECUTABLE).map
 endif
-ifeq ($(ARCH),x64)
+ifeq ($(WS),64)
 	$(CC) $(CFLAGS) $(OBJS) -static -lm -ospitbol -Wl,-M,-Map,spitbol.map
 endif
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS)
-ifeq ($(ARCH),x32)
+ifeq ($(WS),32)
 	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol -Wl,-M,-Map,$(EXECUTABLE).map
 endif
-ifeq ($(ARCH),x64)
+ifeq ($(WS),64)
 	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol -Wl,-M,-Map,$(EXECUTABLE).map
 endif
 
@@ -144,11 +137,11 @@ s.go:	s.lex go.spt
 	$(BASEBOL) -u i32 go.spt
 
 s.s:	s.lex $(VHDRS) $(COD) 
-	$(BASEBOL) -u $(ARCH) $(COD)
+	$(BASEBOL) -u $(WS) $(COD)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
-#	 $(BASEBOL) -u "s" $(LEX)
-	 $(BASEBOL) -u $(ARCH) $(LEX)
+#	 $(BASEBOL) -u $(WS) $(LEX)
+	 $(BASEBOL) -u $(WS) $(LEX)
 
 s.err: s.s
 
@@ -177,7 +170,7 @@ clean:
 
 z:
 	nm -n s.o >s.nm
-	spitbol map-$(ARCH).spt <s.nm >s.dic
+	spitbol map-$(WS).spt <s.nm >s.dic
 	spitbol z.spt <ad >ae
 
 sclean:

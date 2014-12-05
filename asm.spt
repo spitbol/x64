@@ -87,8 +87,7 @@
 
 *  Default the parameter string if none present
 *
-        ARCH = (DIFFER(HOST(0)) HOST(0), "X32")
-	ARCH = UPPER(ARCH)
+        ARCH = (DIFFER(HOST(0)) HOST(0), "32")
 	OUTPUT = 'Target architecture ' ARCH
 *        OUTPUT = IDENT(FILEPREFIX) "Filename (.lex) required" :S(END)
 	FILEPREFIX = "s"
@@ -99,8 +98,7 @@
 * Set target-dependent configuration parameters 
 	:($('CONFIG.' UPPER(ARCH)))
 
-CONFIG.X32
-CONFIG.X32-8
+CONFIG.32
 	CFP_B = 4
 	CFP_C = 4
 	LOG_CFP_B = '2'
@@ -111,19 +109,7 @@ CONFIG.X32-8
 	OP_C = 'B'
 						:(CONFIG.DONE)
 
-CONFIG.X32-32
-	CFP_B = 4
-	CFP_C = 1
-	LOG_CFP_B = '2'
-	LOG_CFP_C = '0'
-*	OP_W is instruction suffix for word-size
-	OP_W = 'D'
-*	OP_C is instruction suffix for Minimal character size
-	OP_C = 'D'
-						:(CONFIG.DONE)
-
-
-CONFIG.X64
+CONFIG.64
 *	CFP_B is bytes per word, CFP_C is characters per word
 *       These should agree with values used in translator	
 	CFP_B = 8
