@@ -172,12 +172,12 @@ reg_wc:	D_WORD	0		; Register WC & IA (EDX)
 reg_xr:	D_WORD	0        	; Register XR (XR)
 reg_xl:	D_WORD	0        	; Register XL (XL)
 reg_cp:	D_WORD	0        	; Register CP
-reg_ra	dq 	0.0  		; Register RA
+reg_ra:	D_REAL 	0.0  		; Register RA
 
 ; These locations save information needed to return after calling OSINT
 ; and after a restart from EXIT()
 
-reg_pc: dd      0               ; return PC from caller
+reg_pc: D_WORD      0               ; return PC from caller
 reg_xs:	D_WORD	0		; Minimal stack pointer
 
 ;	r_size  equ       $-reg_block
@@ -214,8 +214,7 @@ osisp:  D_WORD      0               	; OSINT's stack pointer
 	global	_rc_
 _rc_:	dd   0				; return code from osint procedure
 
-
-
+	global	save_cp
 	global	save_xl
 	global	save_xr
 	global	save_xs
@@ -223,6 +222,7 @@ _rc_:	dd   0				; return code from osint procedure
 	global	save_wb
 	global	save_wc
 	global	save_w0
+save_cp:	D_WORD	0		; saved CP value
 save_xl:	D_WORD	0		; saved XL value
 save_xr:	D_WORD	0		; saved XR value
 save_xs:	D_WORD	0		; saved SP value
@@ -352,6 +352,7 @@ TTYBUF:	D_WORD    0     ; type word
 ; 	ret
 	global	save_regs
 save_regs:
+	mov	M_WORD [save_cp],CP
 	mov	M_WORD [save_xl],XL
 	mov	M_WORD [save_xr],XR
 	mov	M_WORD [save_xs],XS
@@ -364,6 +365,7 @@ save_regs:
 	global	restore_regs
 restore_regs:
 	;	Restore regs, except for SP. That is caller's responsibility
+	mov	CP,M_WORD [save_cp]
 	mov	XL,M_WORD [save_xl]
 	mov	XR,M_WORD [save_xr]
 ;	mov	XS,M_WORD [save_xs	; caller restores SP]

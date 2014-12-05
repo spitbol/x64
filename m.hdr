@@ -28,6 +28,7 @@
 
 %define zz_trace
 %ifdef zz_trace
+	extern	zz
 	extern	zzz
 	extern	zz_cp
 	extern	zz_xl

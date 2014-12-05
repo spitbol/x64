@@ -488,7 +488,7 @@ ERR_OK
 
 	INPUT(.HDRFILE,4,'m.hdr')	:F(NOHDR)
 	HAVEHDR = 1
-        OUTPUT = '  Input HEADER file:  ' HDR  '.hdr'
+*        OUTPUT = '  Input HEADER file:  ' HDR  '.hdr'
 HDRCOPY LINE = HDRFILE				:F(HDREND)
 	IDENT(LINE,'END')			:S(NOHDR)
 	OUTFILE = LINE
