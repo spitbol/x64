@@ -164,9 +164,8 @@ dlfcn.o: dlfcn.h
 # install binaries from ./bin as the system spitbol compilers
 install:
 	sudo cp ./bin/spitbol /usr/local/bin
-	sudo cp ./bin/uspitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t ./spitbol ./uspitbol
+	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t ./spitbol
 
 z:
 	nm -n s.o >s.nm
