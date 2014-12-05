@@ -2,18 +2,21 @@
 #
 
 ARCH?=x32
+ARCH=x64
+ARCH=x32
 DEBUG?=0
 EXECUTABLE=spitbol
 UNICODE?=0
 
 ifeq ($(ARCH),x32)
+WS=32
 ARCHDEF=-D ARCH_X32
-ELF=elf32
 endif
 ifeq ($(ARCH),x64)
 ARCHDEF=-D ARCH_X64
-ELF=elf64
+WS=64
 endif
+ELF=elf$(WS)
 
 
 # SPITBOL Version:
@@ -33,16 +36,16 @@ ASM	=	nasm
 INCDIRS = -I./tcc/include -I./musl/include
 # next is for tcc
 ifeq	($(DEBUG),0)
-CFLAGS= $(ARCHDEF) -m32 -fno-leading-underscore
+CFLAGS= $(ARCHDEF) -m$(WS) -fno-leading-underscore
 else
-CFLAGS= $(ARCHDEF) -g -m32 -fno-leading-underscore
+CFLAGS= $(ARCHDEF) -g -m$(WS) -fno-leading-underscore
 endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMFLAGS = -f $(ELF)
+ASMFLAGS = -f $(ELF) -d x$(WS)
 else
-ASMFLAGS = -g -f $(ELF)
+ASMFLAGS = -g -f $(ELF) -d x$(WS)
 endif
 
 # Tools for processing Minimal source file.
@@ -182,4 +185,4 @@ z:
 sclean:
 # clean up after sanity-check
 	make clean
-	rm ubol* tbol*
+	rm tbol*

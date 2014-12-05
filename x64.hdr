@@ -1,13 +1,23 @@
-
-	bits	64
+; Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+; Copyright 2012-2013 David Shields
+; 
+; This file is part of Macro SPITBOL.
+; 
+;     Macro SPITBOL is free software: you can redistribute it and/or modify
+;     it under the terms of the GNU General Public License as published by
+;     the Free Software Foundation, either version 2 of the License, or
+;     (at your option) any later version.
+; 
+;     Macro SPITBOL is distributed in the hope that it will be useful,
+;     but WITHOUT ANY WARRANTY; without even the implied warranty of
+;     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;     GNU General Public License for more details.
+; 
+;     You should have received a copy of the GNU General Public License
+;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+;
         section	.text
-
-;
-;  no header code in 386 version.
-;
 	%include	"x64.h"
-
-	section	.data
 
 	extern	_rc_
 	extern	zz
@@ -16,36 +26,9 @@
 	extern	save_regs
 	extern	restore_regs
 
-	%macro	ZZZ	3
-	section	.data
-%%desc:	db	%3,0
-	section	.text
-	pushf
-	call	save_regs
-	mov	qword [zz_id],%1
-	mov	qword [zz_zz],%2
-	mov	qword [zz_de],%%desc
-	mov	qword [zz_xl],XL
-	mov	qword [zz_xr],XR
-	mov	qword [zz_xs],XS
-	mov	qword [zz_wa],WA
-	mov	qword [zz_wb],WB
-	mov	qword [zz_wc],WC
-	mov	qword [zz_w0],W0
-	mov	qword [zz_cp],CP
-; switch to C's stack
-	mov	qword [compsp],rsp
-	mov	rsp,qword [osisp]
- 	call	zz
-	call	restore_regs
-;	save C's stack pointer
-	mov	qword [osisp],rsp
-;	restore compiler stack pointer
-	mov	rsp,qword [compsp]
-	popf
-	%endmacro
 %define zz_trace
 %ifdef zz_trace
+	extern	zzz
 	extern	zz_cp
 	extern	zz_xl
 	extern	zz_xr
@@ -65,7 +48,7 @@
 	extern	zz_arg
 	extern	zz_num
 %endif
-	global	start
+	global	START
 
 ;   Table to recover type word from type ordinal
 ;
@@ -74,36 +57,36 @@
 	global	TYPET
 	section .data
 	
-        dq B_ART   ; ARBLK type word - 0
-        dq B_CDC   ; CDBLK type word - 1
-        dq B_EXL   ; EXBLK type word - 2
-        dq B_ICL   ; ICBLK type word - 3
-        dq B_NML   ; NMBLK type word - 4
-        dq P_ABA   ; P0BLK type word - 5
-        dq P_ALT   ; P1BLK type word - 6
-        dq P_ANY   ; P2BLK type word - 7
+        D_WORD	B_ART   ; ARBLK type word - 0
+        D_WORD	B_CDC   ; CDBLK type word - 1
+        D_WORD	B_EXL   ; EXBLK type word - 2
+        D_WORD	B_ICL   ; ICBLK type word - 3
+        D_WORD	B_NML   ; NMBLK type word - 4
+        D_WORD	P_ABA   ; P0BLK type word - 5
+        D_WORD	P_ALT   ; P1BLK type word - 6
+        D_WORD	P_ANY   ; P2BLK type word - 7
 ; next needed only if support real arithmetic CNRA
-;        dq B_RCL   ; RCBLK type word - 8
-        dq B_SCL   ; SCBLK type word - 9
-        dq B_SEL   ; SEBLK type word - 10
-        dq B_TBT   ; TBBLK type word - 11
-        dq B_VCT   ; VCBLK type word - 12
-        dq B_XNT   ; XNBLK type word - 13
-        dq B_XRT   ; XRBLK type word - 14
-        dq B_BCT   ; BCBLK type word - 15
-        dq B_PDT   ; PDBLK type word - 16
-        dq B_TRT   ; TRBLK type word - 17
-        dq B_BFT   ; BFBLK type word   18
-        dq B_CCT   ; CCBLK type word - 19
-        dq B_CMT   ; CMBLK type word - 20
-        dq B_CTT   ; CTBLK type word - 21
-        dq B_DFC   ; DFBLK type word - 22
-        dq B_EFC   ; EFBLK type word - 23
-        dq B_EVT   ; EVBLK type word - 24
-        dq B_FFC   ; FFBLK type word - 25
-        dq B_KVT   ; KVBLK type word - 26
-        dq B_PFC   ; PFBLK type word - 27
-        dq B_TET   ; TEBLK type word - 28
+;       D_WORD	B_RCL   ; RCBLK type word - 8
+        D_WORD	B_SCL   ; SCBLK type word - 9
+        D_WORD	B_SEL   ; SEBLK type word - 10
+        D_WORD	B_TBT   ; TBBLK type word - 11
+        D_WORD	B_VCT   ; VCBLK type word - 12
+        D_WORD	B_XNT   ; XNBLK type word - 13
+        D_WORD	B_XRT   ; XRBLK type word - 14
+        D_WORD	B_BCT   ; BCBLK type word - 15
+        D_WORD	B_PDT   ; PDBLK type word - 16
+        D_WORD	B_TRT   ; TRBLK type word - 17
+        D_WORD	B_BFT   ; BFBLK type word   18
+        D_WORD	B_CCT   ; CCBLK type word - 19
+        D_WORD	B_CMT   ; CMBLK type word - 20
+        D_WORD	B_CTT   ; CTBLK type word - 21
+        D_WORD	B_DFC   ; DFBLK type word - 22
+        D_WORD	B_EFC   ; EFBLK type word - 23
+        D_WORD	B_EVT   ; EVBLK type word - 24
+        D_WORD	B_FFC   ; FFBLK type word - 25
+        D_WORD	B_KVT   ; KVBLK type word - 26
+        D_WORD	B_PFC   ; PFBLK type word - 27
+        D_WORD	B_TET   ; TEBLK type word - 28
 ;
 ;   Table of MINIMAL entry points that can be dded from C
 ;   via the minimal function (see inter.asm).
@@ -112,23 +95,22 @@
 ;   to the order of entries in the CALL enumeration in osint.h
 ;   and osint.inc.
 ;
-	global	START
 	global calltab
 calltab:
-        dq   RELAJ
-        dq   RELCR
-        dq   RELOC
-        dq   ALLOC
-        dq   ALOCS
-        dq   ALOST
-        dq   BLKLN
-        dq   INSTA
-        dq   RSTRT
-        dq   START
-        dq   FILNM
-        dq   DTYPE
-;       dq   ENEVS ;  Engine words
-;       dq   ENGTS ;   not used
+        D_WORD	RELAJ
+        D_WORD	RELCR
+        D_WORD	RELOC
+        D_WORD	ALLOC
+        D_WORD	ALOCS
+        D_WORD	ALOST
+        D_WORD	BLKLN
+        D_WORD	INSTA
+        D_WORD	RSTRT
+        D_WORD	START
+        D_WORD	FILNM
+        D_WORD	DTYPE
+;       D_WORD	ENEVS ;  Engine words
+;       D_WORD	ENGTS ;   not used
 
 	global	GBCNT
 	global	HEADV
@@ -197,3 +179,13 @@ calltab:
         extern CPR_
 
 	extern	reg_cp
+
+	%macro	ZZZ	3
+	section	.data
+%%desc:	db	%3,0
+	section	.text
+	mov	M_WORD [zz_id],%1
+	mov	M_WORD [zz_zz],%2
+	mov	M_WORD [zz_de],%%desc
+	call	zzz
+	%endmacro

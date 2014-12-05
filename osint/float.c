@@ -28,6 +28,15 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #if (FLOAT & !FLTHDWR) | EXTFUN
 
+
+/*
+ * f_ldr - load real
+ */
+void f_ldr(double * w0) {
+	reg_ra = *w0;
+	return;
+}
+
 /*
  * f_2_i - float to integer
  */

@@ -16,10 +16,20 @@
 ;     You should have received a copy of the GNU General Public License
 ;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 
+
+;	WS is bits per word, CFP_B is bytes per word, CFP_C is characters per word
+
+%ifdef	x32
+	%define	WS	32
+	%define	CFP_B	4
+	%define	CFP_C	4
 	%include	"x32.h"
-;	CFP_B gives bytes per word, CFP_C gives characters per word
-	%define CFP_B	4
-	%define CFP_C	4
+%else
+	%define	WS	64
+	%define	CFP_B	8
+	%define	CFP_C	8
+	%include	"x64.h"
+%endif
 
 	global	reg_block
 	global	reg_wa
@@ -38,16 +48,9 @@
 	extern	calltab
 	extern	stacksiz
 	extern	zz_ra
-	%macro	ZRA	0
-	nop
-;	pushf
-;	pushad
-;	call	zz_ra
-;	popad
-;	popf
-	%endmacro
  
 ;	Values below must agree with calltab defined in x32.hdr and also in osint/osint.h
+
 MINIMAL_RELAJ	equ	0
 MINIMAL_RELCR	equ	1
 MINIMAL_RELOC	equ	2
@@ -419,14 +422,14 @@ startup:
 	mov	M_WORD [minimal_id],CALLTAB_START
 	call	minimal			; load regs, switch stack, start compiler
 
-;	stackinit  -- initialize LOWSPMIN from sp.
+;	stackinit  -- initialize lowspmin from sp.
 
 ;	Input:  sp - current C stack
 ;		stacksiz - size of desired Minimal stack in bytes
 
 ;	Uses:	W0
 
-;	Output: register WA, sp, LOWSPMIN, compsp, osisp set up per diagram:
+;	Output: register WA, sp, lowspmin, compsp, osisp set up per diagram:
 
 ;	(high)	+----------------+
 ;		|  old C stack   |
@@ -436,7 +439,7 @@ startup:
 ;		/ stacksiz bytes /
 ;		|	     |	 |
 ;		|            |	 |
-;		|----------- | --| <-- resultant LOWSPMIN
+;		|----------- | --| <-- resultant lowspmin
 ;		| 400 bytes  v   |
 ;	  	|----------------| <-- future C stack pointer, osisp
 ;		|  new C stack	 |
@@ -879,13 +882,12 @@ ITR_:
 ;       LDR_ - load real pointed to by eax to RA
 	global	LDR_
 LDR_:
-	fld	R_WORD [W0]
-	fstp	R_WORD [reg_ra]
-;        push    dword [eax]    	; lsh
-;	pop	dword [reg_ra]
-;        mov     eax,[eax+4]           	; msh
-;	mov	dword [reg_ra+4], eax
-	ZRA
+;	fld	R_WORD [W0]
+;	fstp	R_WORD [reg_ra]
+        push    dword [eax]    	; lsh
+	pop	dword [reg_ra]
+        mov     eax,[eax+4]           	; msh
+	mov	dword [reg_ra+4], eax
 	ret
 
 ;       STR_ - store RA in real pointed to by eax
@@ -916,7 +918,6 @@ ADR_:
         pop     edx                     ; restore regs
 	pop	ecx
 	fwait
-	ZRA
 	ret
 ;----------
 
@@ -936,7 +937,6 @@ SBR_:
         pop     edx                     ; restore regs
 	pop	ecx
 	fwait
-	ZRA
 	ret
 ;----------
 ;       MLR_ - multiply real in RA by real at [eax]
@@ -955,7 +955,6 @@ MLR_:
         pop     edx                     ; restore regs
 	pop	ecx
 	fwait
-	ZRA
 	ret
 
 ;       DVR_ - divide real in RA by real at [eax]
@@ -975,7 +974,6 @@ DVR_:
         pop     edx                     ; restore regs
 	pop	ecx
 	fwait
-	ZRA
 	ret
 
 	global	NGR_
@@ -987,7 +985,6 @@ NGR_:
 	cmp	dword [reg_ra+4], 0
         je      ngr_2                   ; if zero, leave alone
 ngr_1:  xor     byte [reg_ra+7], 0x80   ; complement mantissa sign
-	ZRA
 ngr_2:	ret
 
 ;       ATN_ arctangent of real in RA
@@ -1101,6 +1098,7 @@ SQR_:
 	pop	ecx
 	fwait
 	ret
+
 
 ;       TAN_ arctangent of real in RA
 	global	TAN_

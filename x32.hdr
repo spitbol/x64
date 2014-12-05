@@ -16,16 +16,22 @@
 ;     You should have received a copy of the GNU General Public License
 ;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 ;
-	bits	32
         section	.text
-
-;
-;  No header code in 386 version.
-;
+%ifdef x32
 	%include	"x32.h"
+%else
+	%include	"x64.h"
 
+	extern	osisp
+	extern	compsp
+	extern	save_regs
+	extern	restore_regs
+%endif
 	extern	_rc_
-	extern	zz
+
+%define zz_trace
+%ifdef zz_trace
+	extern	zzz
 	extern	zz_cp
 	extern	zz_xl
 	extern	zz_xr
@@ -37,30 +43,16 @@
 	extern	zz_zz
 	extern	zz_id
 	extern	zz_de
-	extern zz_num
+	extern	zz_0
+	extern	zz_1
+	extern	zz_2
+	extern	zz_3
+	extern	zz_4
+	extern	zz_arg
+	extern	zz_num
+%endif
 	global	START
 
-	%macro	ZZZ	3
-	section	.data
-%%desc:	db	%3,0
-	section	.text
-	pushf
-	pushad
-	mov	dword [zz_id],%1
-	mov	dword [zz_zz],%2
-	mov	dword [zz_de],%%desc
-	mov	dword [zz_cp],ebp
-	mov	dword [zz_xl],esi
-	mov	dword [zz_xr],edi
-	mov	dword [zz_xs],esp
-	mov	dword [zz_wa],ecx
-	mov	dword [zz_wb],ebx
-	mov	dword [zz_wc],edx
-	mov	dword [zz_w0],eax
-	call	zz
-	popad
-	popf
-	%endmacro
 
 ;
 ;
@@ -71,36 +63,36 @@
 	global	TYPET
 	section .data
 	
-        dd B_ART   ; ARBLK type word - 0
-        dd B_CDC   ; CDBLK type word - 1
-        dd B_EXL   ; EXBLK type word - 2
-        dd B_ICL   ; ICBLK type word - 3
-        dd B_NML   ; NMBLK type word - 4
-        dd P_ABA   ; P0BLK type word - 5
-        dd P_ALT   ; P1BLK type word - 6
-        dd P_ANY   ; P2BLK type word - 7
+        D_WORD	B_ART   ; ARBLK type word - 0
+        D_WORD	B_CDC   ; CDBLK type word - 1
+        D_WORD	B_EXL   ; EXBLK type word - 2
+        D_WORD	B_ICL   ; ICBLK type word - 3
+        D_WORD	B_NML   ; NMBLK type word - 4
+        D_WORD	P_ABA   ; P0BLK type word - 5
+        D_WORD	P_ALT   ; P1BLK type word - 6
+        D_WORD	P_ANY   ; P2BLK type word - 7
 ; next needed only if support real arithmetic CNRA
-;        dd B_RCL   ; RCBLK type word - 8
-        dd B_SCL   ; SCBLK type word - 9
-        dd B_SEL   ; SEBLK type word - 10
-        dd B_TBT   ; TBBLK type word - 11
-        dd B_VCT   ; VCBLK type word - 12
-        dd B_XNT   ; XNBLK type word - 13
-        dd B_XRT   ; XRBLK type word - 14
-        dd B_BCT   ; BCBLK type word - 15
-        dd B_PDT   ; PDBLK type word - 16
-        dd B_TRT   ; TRBLK type word - 17
-        dd B_BFT   ; BFBLK type word   18
-        dd B_CCT   ; CCBLK type word - 19
-        dd B_CMT   ; CMBLK type word - 20
-        dd B_CTT   ; CTBLK type word - 21
-        dd B_DFC   ; DFBLK type word - 22
-        dd B_EFC   ; EFBLK type word - 23
-        dd B_EVT   ; EVBLK type word - 24
-        dd B_FFC   ; FFBLK type word - 25
-        dd B_KVT   ; KVBLK type word - 26
-        dd B_PFC   ; PFBLK type word - 27
-        dd B_TET   ; TEBLK type word - 28
+;       D_WORD	B_RCL   ; RCBLK type word - 8
+        D_WORD	B_SCL   ; SCBLK type word - 9
+        D_WORD	B_SEL   ; SEBLK type word - 10
+        D_WORD	B_TBT   ; TBBLK type word - 11
+        D_WORD	B_VCT   ; VCBLK type word - 12
+        D_WORD	B_XNT   ; XNBLK type word - 13
+        D_WORD	B_XRT   ; XRBLK type word - 14
+        D_WORD	B_BCT   ; BCBLK type word - 15
+        D_WORD	B_PDT   ; PDBLK type word - 16
+        D_WORD	B_TRT   ; TRBLK type word - 17
+        D_WORD	B_BFT   ; BFBLK type word   18
+        D_WORD	B_CCT   ; CCBLK type word - 19
+        D_WORD	B_CMT   ; CMBLK type word - 20
+        D_WORD	B_CTT   ; CTBLK type word - 21
+        D_WORD	B_DFC   ; DFBLK type word - 22
+        D_WORD	B_EFC   ; EFBLK type word - 23
+        D_WORD	B_EVT   ; EVBLK type word - 24
+        D_WORD	B_FFC   ; FFBLK type word - 25
+        D_WORD	B_KVT   ; KVBLK type word - 26
+        D_WORD	B_PFC   ; PFBLK type word - 27
+        D_WORD	B_TET   ; TEBLK type word - 28
 ;
 ;   Table of MINIMAL entry points that can be dded from C
 ;   via the minimal function (see inter.asm).
@@ -111,20 +103,20 @@
 ;
 	global calltab
 calltab:
-        dd   RELAJ
-        dd   RELCR
-        dd   RELOC
-        dd   ALLOC
-        dd   ALOCS
-        dd   ALOST
-        dd   BLKLN
-        dd   INSTA
-        dd   RSTRT
-        dd   START
-        dd   FILNM
-        dd   DTYPE
-;       dd   ENEVS ;  Engine words
-;       dd   ENGTS ;   not used
+        D_WORD	RELAJ
+        D_WORD	RELCR
+        D_WORD	RELOC
+        D_WORD	ALLOC
+        D_WORD	ALOCS
+        D_WORD	ALOST
+        D_WORD	BLKLN
+        D_WORD	INSTA
+        D_WORD	RSTRT
+        D_WORD	START
+        D_WORD	FILNM
+        D_WORD	DTYPE
+;       D_WORD	ENEVS ;  Engine words
+;       D_WORD	ENGTS ;   not used
 
 	global	GBCNT
 	global	HEADV
@@ -193,3 +185,25 @@ calltab:
         extern CPR_
 
 	extern	reg_cp
+
+	%macro	ZZZ	3
+	section	.data
+%%desc:	db	%3,0
+	section	.text
+	pushf
+	pushad
+	mov	M_WORD [zz_id],%1
+	mov	M_WORD [zz_zz],%2
+	mov	M_WORD [zz_de],%%desc
+	mov	M_WORD [zz_cp],ebp
+	mov	M_WORD [zz_xl],esi
+	mov	M_WORD [zz_xr],edi
+	mov	M_WORD [zz_xs],esp
+	mov	M_WORD [zz_wa],ecx
+	mov	M_WORD [zz_wb],ebx
+	mov	M_WORD [zz_wc],edx
+	mov	M_WORD [zz_w0],eax
+	call	zz
+	popad
+	popf
+	%endmacro
