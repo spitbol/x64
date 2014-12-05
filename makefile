@@ -33,12 +33,10 @@ vpath %.c $(OSINT)
 
 CC	=	gcc
 ASM	=	nasm
-INCDIRS = -I./tcc/include -I./musl/include
-# next is for tcc
 ifeq	($(DEBUG),0)
-CFLAGS= $(ARCHDEF) -m$(WS) -fno-leading-underscore
+CFLAGS= $(ARCHDEF) -m$(WS) 
 else
-CFLAGS= $(ARCHDEF) -g -m$(WS) -fno-leading-underscore
+CFLAGS= $(ARCHDEF) -g -m$(WS)
 endif
 
 # Assembler info -- Intel 32-bit syntax
@@ -73,7 +71,7 @@ UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/syste
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	$(ARCH).hdr 
+VHDRS=	m.hdr 
 
 # OSINT objects:
 SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
@@ -93,7 +91,7 @@ COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
 # Assembly langauge objects common to all versions:
 # CAOBJS is for gas, NAOBJS for nasm
 CAOBJS = 
-NAOBJS = $(ARCH).o err.o
+NAOBJS = m.o err.o
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o

@@ -54,7 +54,7 @@
 *	reads <file>.lex	containing tokenized source code
 *       writes <file>.s         with 80386 assembly code
 *	also writes <file>.err	with ERR and ERB error messages
-*       parts of <machine>.hdr  are prepended and appended to <file>.s
+*       parts of m.hdr  are prepended and appended to <file>.s
 *	also sets flags		to 1 after converting names to upper case
 *	also reads <file>.pub	for debug symbols to be declared public
 *
@@ -101,7 +101,6 @@
 
 CONFIG.X32
 CONFIG.X32-8
-	HDR = 'x32'
 	CFP_B = 4
 	CFP_C = 4
 	LOG_CFP_B = '2'
@@ -113,7 +112,6 @@ CONFIG.X32-8
 						:(CONFIG.DONE)
 
 CONFIG.X32-32
-	HDR = 'x32'
 	CFP_B = 4
 	CFP_C = 1
 	LOG_CFP_B = '2'
@@ -128,7 +126,6 @@ CONFIG.X32-32
 CONFIG.X64
 *	CFP_B is bytes per word, CFP_C is characters per word
 *       These should agree with values used in translator	
-	HDR = 'x64'
 	CFP_B = 8
 	CFP_C = 8
 	LOG_CFP_B = '3'
@@ -498,12 +495,12 @@ OUTPUTOK
 ERR_OK
 
 
-*  Then copy contents of <machine>.HDR (if it exists) to OUTFILE
+*  Then copy contents of m.HDR (if it exists) to OUTFILE
 *  Stop at line with just 'END' or end of file
 *
 	NOUTLINES = NOUTLINES + 1
 
-	INPUT(.HDRFILE,4,HDR '.hdr')	:F(NOHDR)
+	INPUT(.HDRFILE,4,'m.hdr')	:F(NOHDR)
 	HAVEHDR = 1
         OUTPUT = '  Input HEADER file:  ' HDR  '.hdr'
 HDRCOPY LINE = HDRFILE				:F(HDREND)

@@ -23,13 +23,13 @@
 	%define	WS	32
 	%define	CFP_B	4
 	%define	CFP_C	4
-	%include	"x32.h"
 %else
 	%define	WS	64
 	%define	CFP_B	8
 	%define	CFP_C	8
-	%include	"x64.h"
 %endif
+
+	%include	"m.h"
 
 	global	reg_block
 	global	reg_wa

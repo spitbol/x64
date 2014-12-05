@@ -17,14 +17,14 @@
 ;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 ;
         section	.text
-	%include	"x64.h"
 
-	extern	_rc_
-	extern	zz
+	%include	"m.h"
+
 	extern	osisp
 	extern	compsp
 	extern	save_regs
 	extern	restore_regs
+	extern	_rc_
 
 %define zz_trace
 %ifdef zz_trace
@@ -50,6 +50,9 @@
 %endif
 	global	START
 
+
+;
+;
 ;   Table to recover type word from type ordinal
 ;
 
@@ -184,8 +187,20 @@ calltab:
 	section	.data
 %%desc:	db	%3,0
 	section	.text
+	pushf
+	pushad
 	mov	M_WORD [zz_id],%1
 	mov	M_WORD [zz_zz],%2
 	mov	M_WORD [zz_de],%%desc
-	call	zzz
+	mov	M_WORD [zz_cp],ebp
+	mov	M_WORD [zz_xl],esi
+	mov	M_WORD [zz_xr],edi
+	mov	M_WORD [zz_xs],esp
+	mov	M_WORD [zz_wa],ecx
+	mov	M_WORD [zz_wb],ebx
+	mov	M_WORD [zz_wc],edx
+	mov	M_WORD [zz_w0],eax
+	call	zz
+	popad
+	popf
 	%endmacro
