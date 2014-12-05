@@ -1,5 +1,7 @@
 	%define M_CHAR	BYTE	; reference to byte in memory
 	%define D_CHAR	DB	; define value of byte
+	%define M_REAL	QWORD	; reference to floating point value in memory
+	%define D_REAL	DQ	; define value for floating point
 			
 %ifdef	m32
 	%define CP	EBP
@@ -16,9 +18,7 @@
 	%define IA	EDX
 	%define W0	EAX
 	%define M_WORD	DWORD	; reference to word in memory
-	%define R_WORD	DWORD	; reference to floating point value in memory
 	%define D_WORD	DD	; define value for memory word
-	%define D_REAL	DQ	; define value for floating point
 	%define LOG_CFP_B 2
 	%define CFP_C_VAL	4
 	%define LOG_CFP_C 2
@@ -39,9 +39,7 @@
 	%define	W0_L	AL
 	%define	IA	RDX
 	%define M_WORD  QWORD
-	%define R_WORD  QWORD
 	%define D_WORD	DQ
-	%define D_REAL	DQ
 	%define LOG_CFP_B 3
 	%define LOG_CFP_C 3
 	%define D_REAL	DQ
