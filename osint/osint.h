@@ -33,7 +33,7 @@ This file is part of Macro SPITBOL.
 /   Set up externals for all the compiler's registers.
 */
 
-extern word	reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs;
+extern word	reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs, reg_w0;
 extern IATYPE	reg_ia;
 extern double reg_ra;
 extern uword	minimal_id;
@@ -53,6 +53,7 @@ extern uword	minimal_id;
 
 #define CP(type)	((type) reg_cp)
 #define IA(type)	((type) reg_ia)
+#define W0(type)	((type) reg_w0)
 #define WA(type)	((type) reg_wa)
 #define WB(type)	((type) reg_wb)
 #define WC(type)	((type) reg_wc)
@@ -66,6 +67,7 @@ extern uword	minimal_id;
 */
 #define SET_CP(val)	(reg_cp = (word) (val))
 #define SET_IA(val)	(reg_ia = (val))
+#define SET_W0(val)	(reg_w0 = (word) (val))
 #define SET_WA(val)	(reg_wa = (word) (val))
 #define SET_WB(val)	(reg_wb = (word) (val))
 #define SET_WC(val)	(reg_wc = (word) (val))

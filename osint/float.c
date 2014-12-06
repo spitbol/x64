@@ -32,8 +32,57 @@ This file is part of Macro SPITBOL.
 /*
  * f_ldr - load real
  */
-void f_ldr(double * w0) {
-	reg_ra = *w0;
+void f_ldr() {
+	reg_ra = * (double *) reg_w0;
+	return;
+}
+
+/*
+ * f_str - store real
+ */
+void f_str() {
+	*((double *) reg_w0) = reg_ra;
+	return;
+}
+
+/*
+ * f_adr - add value to RA
+ */
+void f_adr() {
+	reg_ra += * (double *) reg_w0;
+	return;
+}
+
+
+/*
+ * f_sbr - subtract value from RA
+ */
+void f_sbr() {
+	reg_ra -= * (double *) reg_w0;
+	return;
+}
+
+/*
+ * f_mlr - multiply RA by value
+ */
+void f_mlr() {
+	reg_ra *= * (double *) reg_w0;
+	return;
+}
+
+/*
+ * f_dvr - divide RA by value
+ */
+void f_dvr() {
+	reg_ra /= * (double *) reg_w0;
+	return;
+}
+
+/*
+ * f_ngr - negate value in RA
+ */
+void f_ngr() {
+	reg_ra = - (* (double *) reg_w0);
 	return;
 }
 

@@ -30,6 +30,7 @@
 	%include	"m.h"
 
 	global	reg_block
+	global	reg_w0
 	global	reg_wa
 	global	reg_wb
 	global	reg_ia
@@ -165,6 +166,7 @@ MINIMAL_ENGTS	equ	12
 ; ;
 	align CFP_B
 reg_block:
+reg_w0:	D_WORD	0        	; Register WA (ECX)
 reg_wa:	D_WORD	0        	; Register WA (ECX)
 reg_wb:	D_WORD 	0        	; Register WB (EBX)
 reg_ia:
@@ -489,8 +491,6 @@ stackinit:
  
  min1:  
 	mov     W0,M_WORD [minimal_id]	; get ordinal
-	pushad
-	popad
 	call   M_WORD [calltab+W0*4]    ; off to the Minimal code
  
 	mov     XS,M_WORD [osisp]	; switch to OSINT stack
@@ -500,7 +500,6 @@ stackinit:
 	mov	M_WORD [reg_wc],WC
 	mov	M_WORD [reg_xr],XR
 	mov	M_WORD [reg_xl],XL
-; 	popad
 	ret
  
  
@@ -788,13 +787,13 @@ CVD_:
 DVI_:
         or      W0,W0         ; test for 0
         jz      setovr    	; jump if 0 divisor
-        push    ebp             ; preserve CP
-        xchg    ebp,W0         ; divisor to ebp
+        push    CP              ; preserve CP
+        xchg    CP ,W0         ; divisor to CP 
         xchg    W0,WC         ; dividend in W0
         cdq                     ; extend dividend
-        idiv    ebp             ; perform division. W0=quotient, WC=remainder
+        idiv    CP              ; perform division. W0=quotient, WC=remainder
         xchg    WC,W0         ; place quotient in WC (IA)
-        pop     ebp             ; restore CP
+        pop     CP              ; restore CP
         xor     W0,W0         ; clear overflow indicator
 	ret
 
@@ -804,12 +803,12 @@ DVI_:
 RMI_:
 	or      W0,W0         ; test for 0
         jz      setovr		; jump if 0 divisor
-        push    ebp             ; preserve CP
-        xchg    ebp,W0         ; divisor to ebp
+        push    CP              ; preserve CP
+        xchg    CP ,W0         ; divisor to CP 
         xchg    W0,WC         ; dividend in W0
         cdq                     ; extend dividend
-        idiv    ebp             ; perform division. W0=quotient, WC=remainder
-        pop     ebp             ; restore CP
+        idiv    CP              ; perform division. W0=quotient, WC=remainder
+        pop     CP              ; restore CP
         xor     W0,W0         ; clear overflow indicator
         ret                     ; return remainder in WC (IA)
 setovr: mov     al,0x80         ; set overflow indicator
@@ -836,7 +835,7 @@ setovr: mov     al,0x80         ; set overflow indicator
 RTI_:
 ; 41E00000 00000000 = 2147483648.0
 ; 41E00000 00200000 = 2147483649.0
-        mov     W0, dword [reg_ra+4]   ; RA msh
+        mov     W0, M_WORD [reg_ra+4]   ; RA msh
         btr     W0,31          ; take absolute value, sign bit to carry flag
         jc      RTI_2		; jump if negative real
         cmp     W0,0x41E00000  ; test against 2147483648
@@ -897,6 +896,100 @@ STR_:
 ;       ADR_ - add real at [W0] to RA
 
 	global	ADR_
+	extern	f_adr
+ADR_:
+	fld	M_REAL [W0]
+	fld	M_REAL [reg_ra]
+	fadd
+	fstp	M_REAL [reg_ra]
+	ret
+	mov	M_WORD [reg_w0],W0
+	call	f_adr
+	ret
+
+;       SBR_ - subtract real at [W0] from RA
+	global	SBR_
+	extern	f_sbr
+SBR_:
+	fld	M_REAL [reg_ra]
+	fld	M_REAL [W0]
+	fsub
+	fstp	M_REAL [reg_ra]
+	ret
+	mov	M_WORD [reg_w0],W0
+	call	f_sbr
+	ret
+
+;       MLR_ - multiply real in RA by real at [W0]
+	global	MLR_
+	extern	f_mlr
+MLR_:
+	fld	M_REAL [reg_ra]
+	fld	M_REAL [W0]
+	fmul
+	fstp	M_REAL [reg_ra]
+	ret
+	mov	M_WORD [reg_w0],W0
+	call	f_mlr
+	ret
+
+;       DVR_ - divide real in RA by real at [W0]
+
+	global	DVR_
+	extern	f_dvr
+DVR_:
+	fld	M_REAL [reg_ra]
+	fld	M_REAL [W0]
+	fdiv
+	fstp	M_REAL [reg_ra]
+	ret
+	mov	M_WORD [reg_w0],W0
+	call	f_dvr
+	ret
+	fld	M_REAL [reg_ra]
+	fld	M_REAL [W0]
+	fdiv
+	fstp	M_REAL [reg_ra]
+	ret
+
+;       NGR_ - negate real in RA
+
+	global	NGR_
+	extern	f_ngr
+NGR_:
+	fldz
+	fld	M_REAL [reg_ra]
+	fsub		; compute 0 - reg_ra
+	fstp	M_REAL [reg_ra]
+	ret
+	fldz
+	fld	M_REAL [reg_ra]
+	fsub		; compute 0 - reg_ra
+	fstp	M_REAL [reg_ra]
+	ret
+
+%ifdef daveshields
+;       LDR_ - load real pointed to by W0 to RA
+	global	LDR_
+	extern	f_ldr
+LDR_:	
+	mov	M_WORD [reg_w0],W0
+	call	f_ldr
+	ret
+
+;       STR_ - store RA in real pointed to by W0
+
+	global	STR_
+	extern	f_str
+STR_:
+	mov	M_WORD [reg_w0],W0
+	call	f_str
+	ret
+
+;       ADR_ - add real at [W0] to RA
+
+	global	ADR_
+	extern	f_adr
 ADR_:
 	fld	M_REAL [W0]
 	fld	M_REAL [reg_ra]
@@ -906,6 +999,7 @@ ADR_:
 
 ;       SBR_ - subtract real at [W0] from RA
 	global	SBR_
+	extern	f_sbr
 SBR_:
 	fld	M_REAL [reg_ra]
 	fld	M_REAL [W0]
@@ -915,33 +1009,28 @@ SBR_:
 
 ;       MLR_ - multiply real in RA by real at [W0]
 	global	MLR_
+	extern	f_mlr
 MLR_:
-	fld	M_REAL [reg_ra]
-	fld	M_REAL [W0]
-	fmul
-	fstp	M_REAL [reg_ra]
+	mov	M_WORD [reg_w0],W0
+	call	f_mlr
+	ret
 	ret
 
 ;       DVR_ - divide real in RA by real at [W0]
 
 	global	DVR_
+	extern	f_dvr
 DVR_:
-	fld	M_REAL [reg_ra]
-	fld	M_REAL [W0]
-	fdiv
-	fstp	M_REAL [reg_ra]
-	ret
 
 	global	NGR_
 ;       NGR_ - negate real in RA
+	extern	f_ngr
 
 NGR_:
-	fldz
-	fld	M_REAL [reg_ra]
-	fsub		; compute 0 - reg_ra
-	fstp	M_REAL [reg_ra]
+	mov	M_WORD [reg_w0],W0
+	call	f_ngr
 	ret
-
+%endif
 ;       ATN_ arctangent of real in RA
 	global	ATN_
 ATN_:
@@ -1096,9 +1185,9 @@ OVR_:
 
 	global	tryfpu
 tryfpu:
-	push	ebp
+	push	CP 
 	fldz
-	pop	ebp
+	pop	CP 
 	ret
 
 
@@ -1173,7 +1262,7 @@ tryfpu:
  
 	global	get_fp
 get_fp: 
-         mov     W0,dword [reg_xs]      ; Minimal's XS
+         mov     W0,M_WORD [reg_xs]      ; Minimal's XS
          add     W0,4           	; pop return from call to SYSBX or SYSXI
          ret                    	; done
 ;

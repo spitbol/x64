@@ -9,6 +9,7 @@
 	%define	XT	ESI
 	%define XR	EDI
 	%define XS	ESP
+	%define W0	EAX
 	%define WA	ECX
 	%define WA_L    CL
 	%define WB	EBX
@@ -16,7 +17,6 @@
 	%define WC	EDX
 	%define WC_L  	DL
 	%define IA	EDX
-	%define W0	EAX
 	%define M_WORD	DWORD	; reference to word in memory
 	%define D_WORD	DD	; define value for memory word
 	%define LOG_CFP_B 2
@@ -28,6 +28,7 @@
 	%define	XL	RSI
 	%define	XT	RSI
 	%define	XR	RDI
+	%define	W0	RAX
 	%define	WA	RCX
 	%define WA_L	CL
 	%define	WB	RBX
@@ -35,7 +36,6 @@
 	%define	WC	RDX
 	%define WC_L    DL
 	%define	XS	RSP
-	%define	W0	RAX
 	%define	W0_L	AL
 	%define	IA	RDX
 	%define M_WORD  QWORD
