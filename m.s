@@ -878,202 +878,39 @@ ITR_:
 
 ;----------
 
-;       LDR_ - load real pointed to by W0 to RA
-	global	LDR_
-	extern	f_ldr
-LDR_:
-	mov	M_WORD [reg_w0],W0
-	call	f_ldr
+	%macro	real_op 2
+	global	%1
+	extern	%2
+%1:
+	mov	M_WORD[reg_w0],W0
+	call	%2
 	ret
+%endmacro
 
-;       STR_ - store RA in real pointed to by W0
-
-	global	STR_
-	extern	f_str
-STR_:
-	mov	M_WORD [reg_w0],W0
-	call	f_str
+	real_op	LDR_,f_ldr
+	real_op	STR_,f_str
+	real_op	ADR_,f_adr
+	real_op	SBR_,f_sbr
+	real_op	MLR_,f_mlr
+	real_op	DVR_,f_dvr
+	real_op	NGR_,f_ngr
+	
+	%macro	math_op 2
+	global	%1
+	extern	%2
+%1:
+	call	%2
 	ret
+%endmacro
 
-;       ADR_ - add real at [W0] to RA
-
-	global	ADR_
-	extern	f_adr
-ADR_:
-	mov	M_WORD [reg_w0],W0
-	call	f_adr
-	ret
-
-;       SBR_ - subtract real at [W0] from RA
-	global	SBR_
-	extern	f_sbr
-SBR_:
-	mov	M_WORD [reg_w0],W0
-	call	f_sbr
-	ret
-
-;       MLR_ - multiply real in RA by real at [W0]
-	global	MLR_
-	extern	f_mlr
-MLR_:
-	mov	M_WORD [reg_w0],W0
-	call	f_mlr
-	ret
-
-;       DVR_ - divide real in RA by real at [W0]
-
-	global	DVR_
-	extern	f_dvr
-DVR_:
-	mov	M_WORD [reg_w0],W0
-	call	f_dvr
-	ret
-
-;       NGR_ - negate real in RA
-
-	global	NGR_
-	extern	f_ngr
-NGR_:
-	mov	M_WORD [reg_w0],W0
-	call	f_ngr
-	ret
-
-;       ATN_ arctangent of real in RA
-
-	global	ATN_
-ATN_:
-
-        push    WA                     ; preserve regs for C
-	push	WC
-        push    dword [reg_ra+4]        ; RA msh
-        push    dword [reg_ra]          ; RA lsh
-	extern	f_atn
-        call	f_atn                   ; perform op
-	add	esp,8
-        fstp	qword [reg_ra]
-        pop     WC                     ; restore regs
-	pop	WA
-	fwait
-	ret
-
-;       CHP_ chop fractional part of real in RA
-
-	global	CHP_
-CHP_:
-        push    WA                     ; preserve regs for C
-	push	WC
-        push    dword [reg_ra+4]        ; RA msh
-        push    dword [reg_ra]          ; RA lsh
-	extern	f_chp
-        call	f_chp			; perform op
-	add	esp,8
-        fstp	qword [reg_ra]
-        pop     WC                    	; restore regs
-	pop	WA
-	fwait
-	ret
-
-;       COS_ cosine of real in RA
-
-	global	COS_
-COS_:
-        push    WA                    ; preserve regs for C
-	push	WC
-        push    dword [reg_ra+4]       ; RA msh
-        push    dword [reg_ra]         ; RA lsh
-	extern	f_cos
-        call	f_cos                  	; perform op
-	add	esp,8
-        fstp	qword [reg_ra]
-        pop     WC                    	; restore regs
-	pop	WA
-	fwait
-	ret
-
-;       ETX_ exponential of real in RA
-
-	global	ETX_
-ETX_:
-        push    WA                    	; preserve regs for C
-	push	WC
-        push    dword [reg_ra+4]       	; RA msh
-        push    dword [reg_ra]         	; RA lsh
-	extern	f_etx
-        call	f_etx                  	; perform op
-	add	esp,8
-        fstp	qword [reg_ra]
-        pop     WC                    	; restore regs
-	pop	WA
-	fwait
-	ret
-;       LNF_ natural logarithm of real in RA
-
-	global	LNF_
-LNF_:
-        push    WA                    	; preserve regs for C
-	push	WC
-        push    dword [reg_ra+4]       	; RA msh
-        push    dword [reg_ra]         	; RA lsh
-	extern	f_lnf
-        call	f_lnf                  	; perform op
-	add	esp,8
-        fstp	qword [reg_ra]
-        pop     WC                    	; restore regs
-	pop	WA
-	fwait
-	ret
-
-;       SIN_ arctangent of real in RA
-
-	global	SIN_
-SIN_:
-        push    WA                    	; preserve regs for C
-	push	WC
-        push    dword [reg_ra+4]	; RA msh
-        push    dword [reg_ra]         	; RA lsh
-	extern	f_sin
-        call	f_sin                   ; perform op
-	add	esp,8
-        fstp	qword [reg_ra]
-        pop     WC                     ; restore regs
-	pop	WA
-	fwait
-	ret
-
-;       SQR_ arctangent of real in RA
-
-	global	SQR_
-SQR_:
-        push    WA                     ; preserve regs for C
-	push	WC
-        push    dword [reg_ra+4]        ; RA msh
-        push    dword [reg_ra]          ; RA lsh
-	extern	f_sqr
-        call	f_sqr			; perform op
-	add	esp,8
-        fstp	qword [reg_ra]
-        pop     WC                     ; restore regs
-	pop	WA
-	fwait
-	ret
-
-
-;       TAN_ arctangent of real in RA
-
-	global	TAN_
-TAN_:
-        push    WA                    	; preserve regs for C
-	push	WC
-        push    dword [reg_ra+4]       	; RA msh
-        push    dword [reg_ra]         	; RA lsh
-	extern	f_tan
-        call	f_tan                  	; perform op
-	add	esp,8
-        fstp	qword [reg_ra]
-        pop     WC                    	; restore regs
-	pop	WA
-	fwait
-	ret
+	math_op	ATN_,f_atn
+	math_op	CHP_,f_chp
+	math_op	COS_,f_cos
+	math_op	ETX_,f_etx
+	math_op	LNF_,f_lnf
+	math_op	SIN_,f_sin
+	math_op	SQR_,f_sqr
+	math_op	TAN_,f_tan
 
 ;       CPR_ compare real in RA to 0
 

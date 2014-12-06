@@ -44,96 +44,79 @@ extern double inf;	// infinity
 /*
  * f_atn - arctangent
  */
-double f_atn(ra)
-double ra;
+void f_atn()
 {
-    return atan(ra);
+	reg_ra = atan(reg_ra);
 }
-
 
 /*
  * f_chp - chop
  */
-double f_chp(ra)
-double ra;
+void f_chp()
 {
-    if (ra >= 0.0)
-        return floor(ra);
+    if (reg_ra >= 0.0)
+        reg_ra =  floor(reg_ra);
     else
-        return ceil(ra);
+        reg_ra =  ceil(reg_ra);
 }
-
-
 
 /*
  * f_cos - cosine
  */
-double f_cos(ra)
-double ra;
+void f_cos()
 {
-    return cos(ra);
+    reg_ra =  cos(reg_ra);
 }
-
 
 
 /*
  * f_etx - e to the x
  */
-double f_etx(ra)
-double ra;
+void f_etx()
 {
-    double result;
     errno = 0;
-    result = exp(ra);
-    return errno ? inf : result;
+    reg_ra = exp(reg_ra);
+    if (errno) {
+	reg_ra = inf;
+    }
 }
-
-
 
 /*
- * f_lnf - natural log
+ * f_lnf - natureg_ral log
  */
-double f_lnf(ra)
-double ra;
+void f_lnf()
 {
-    double result;
     errno = 0;
-    result = log(ra);
-    return errno ? inf : result;
+    reg_ra = log(reg_ra);
+    if (errno) {
+	reg_ra = inf;
+    }
 }
-
-
 
 /*
  * f_sin - sine
  */
-double f_sin(ra)
-double ra;
+void f_sin()
 {
-    return sin(ra);
+    reg_ra = sin(reg_ra);
 }
-
 
 /*
- * f_sqr - square root  (range checked by caller)
+ * f_sqr - square root  (reg_range checked by caller)
  */
-double f_sqr(ra)
-double ra;
+void f_sqr()
 {
-    return sqrt(ra);
+    reg_ra = sqrt(reg_ra);
 }
-
 
 /*
  * f_tan - tangent
  */
-double f_tan(ra)
-double ra;
+void f_tan()
 {
     double result;
+    result = tan(reg_ra);
     errno = 0;
-    result = tan(ra);
-    return errno ? inf : result;
+    reg_ra = errno ? inf : result;
 }
-
 #endif					// FLOAT & !MATHHDWR
