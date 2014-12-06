@@ -82,7 +82,7 @@ void f_dvr() {
  * f_ngr - negate value in RA
  */
 void f_ngr() {
-	reg_ra = - (* (double *) reg_w0);
+	reg_ra = - reg_ra;
 	return;
 }
 

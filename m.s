@@ -880,99 +880,8 @@ ITR_:
 
 ;       LDR_ - load real pointed to by W0 to RA
 	global	LDR_
-LDR_:
-	fld	M_REAL [W0]
-	fstp	M_REAL [reg_ra]
-	ret
-
-;       STR_ - store RA in real pointed to by W0
-
-	global	STR_
-STR_:
-	fld	M_REAL [reg_ra]
-	fstp	M_REAL [W0]
-	ret
-
-;       ADR_ - add real at [W0] to RA
-
-	global	ADR_
-	extern	f_adr
-ADR_:
-	fld	M_REAL [W0]
-	fld	M_REAL [reg_ra]
-	fadd
-	fstp	M_REAL [reg_ra]
-	ret
-	mov	M_WORD [reg_w0],W0
-	call	f_adr
-	ret
-
-;       SBR_ - subtract real at [W0] from RA
-	global	SBR_
-	extern	f_sbr
-SBR_:
-	fld	M_REAL [reg_ra]
-	fld	M_REAL [W0]
-	fsub
-	fstp	M_REAL [reg_ra]
-	ret
-	mov	M_WORD [reg_w0],W0
-	call	f_sbr
-	ret
-
-;       MLR_ - multiply real in RA by real at [W0]
-	global	MLR_
-	extern	f_mlr
-MLR_:
-	fld	M_REAL [reg_ra]
-	fld	M_REAL [W0]
-	fmul
-	fstp	M_REAL [reg_ra]
-	ret
-	mov	M_WORD [reg_w0],W0
-	call	f_mlr
-	ret
-
-;       DVR_ - divide real in RA by real at [W0]
-
-	global	DVR_
-	extern	f_dvr
-DVR_:
-	fld	M_REAL [reg_ra]
-	fld	M_REAL [W0]
-	fdiv
-	fstp	M_REAL [reg_ra]
-	ret
-	mov	M_WORD [reg_w0],W0
-	call	f_dvr
-	ret
-	fld	M_REAL [reg_ra]
-	fld	M_REAL [W0]
-	fdiv
-	fstp	M_REAL [reg_ra]
-	ret
-
-;       NGR_ - negate real in RA
-
-	global	NGR_
-	extern	f_ngr
-NGR_:
-	fldz
-	fld	M_REAL [reg_ra]
-	fsub		; compute 0 - reg_ra
-	fstp	M_REAL [reg_ra]
-	ret
-	fldz
-	fld	M_REAL [reg_ra]
-	fsub		; compute 0 - reg_ra
-	fstp	M_REAL [reg_ra]
-	ret
-
-%ifdef daveshields
-;       LDR_ - load real pointed to by W0 to RA
-	global	LDR_
 	extern	f_ldr
-LDR_:	
+LDR_:
 	mov	M_WORD [reg_w0],W0
 	call	f_ldr
 	ret
@@ -991,20 +900,16 @@ STR_:
 	global	ADR_
 	extern	f_adr
 ADR_:
-	fld	M_REAL [W0]
-	fld	M_REAL [reg_ra]
-	fadd
-	fstp	M_REAL [reg_ra]
+	mov	M_WORD [reg_w0],W0
+	call	f_adr
 	ret
 
 ;       SBR_ - subtract real at [W0] from RA
 	global	SBR_
 	extern	f_sbr
 SBR_:
-	fld	M_REAL [reg_ra]
-	fld	M_REAL [W0]
-	fsub
-	fstp	M_REAL [reg_ra]
+	mov	M_WORD [reg_w0],W0
+	call	f_sbr
 	ret
 
 ;       MLR_ - multiply real in RA by real at [W0]
@@ -1014,24 +919,27 @@ MLR_:
 	mov	M_WORD [reg_w0],W0
 	call	f_mlr
 	ret
-	ret
 
 ;       DVR_ - divide real in RA by real at [W0]
 
 	global	DVR_
 	extern	f_dvr
 DVR_:
+	mov	M_WORD [reg_w0],W0
+	call	f_dvr
+	ret
+
+;       NGR_ - negate real in RA
 
 	global	NGR_
-;       NGR_ - negate real in RA
 	extern	f_ngr
-
 NGR_:
 	mov	M_WORD [reg_w0],W0
 	call	f_ngr
 	ret
-%endif
+
 ;       ATN_ arctangent of real in RA
+
 	global	ATN_
 ATN_:
 
@@ -1049,6 +957,7 @@ ATN_:
 	ret
 
 ;       CHP_ chop fractional part of real in RA
+
 	global	CHP_
 CHP_:
         push    WA                     ; preserve regs for C
@@ -1065,6 +974,7 @@ CHP_:
 	ret
 
 ;       COS_ cosine of real in RA
+
 	global	COS_
 COS_:
         push    WA                    ; preserve regs for C
@@ -1081,6 +991,7 @@ COS_:
 	ret
 
 ;       ETX_ exponential of real in RA
+
 	global	ETX_
 ETX_:
         push    WA                    	; preserve regs for C
@@ -1096,6 +1007,7 @@ ETX_:
 	fwait
 	ret
 ;       LNF_ natural logarithm of real in RA
+
 	global	LNF_
 LNF_:
         push    WA                    	; preserve regs for C
@@ -1112,6 +1024,7 @@ LNF_:
 	ret
 
 ;       SIN_ arctangent of real in RA
+
 	global	SIN_
 SIN_:
         push    WA                    	; preserve regs for C
@@ -1128,6 +1041,7 @@ SIN_:
 	ret
 
 ;       SQR_ arctangent of real in RA
+
 	global	SQR_
 SQR_:
         push    WA                     ; preserve regs for C
@@ -1145,6 +1059,7 @@ SQR_:
 
 
 ;       TAN_ arctangent of real in RA
+
 	global	TAN_
 TAN_:
         push    WA                    	; preserve regs for C
@@ -1161,6 +1076,7 @@ TAN_:
 	ret
 
 ;       CPR_ compare real in RA to 0
+
 	global	CPR_
 CPR_:
         mov     W0, dword [reg_ra+4]	; fetch msh
@@ -1175,6 +1091,7 @@ cpr050: cmp     dword [reg_ra], 0     	; true zero, or denormalized number?
 cpr100:	ret
 
 ;       OVR_ test for overflow value in RA
+
 	global	OVR_
 OVR_:
         mov     ax, word [reg_ra+6]	; get top 2 bytes
@@ -1182,6 +1099,7 @@ OVR_:
         add     ax, 0x10               	; set/clear overflow accordingly
 	ret
 ;  tryfpu - perform a floating point op to trigger a trap if no floating point hardware.
+
 
 	global	tryfpu
 tryfpu:
