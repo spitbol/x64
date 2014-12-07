@@ -4,10 +4,18 @@ WS?=64
 
 DEBUG?=0
 EXECUTABLE=spitbol
-UNICODE?=0
+
+OS?=unix
 
 ARCHDEF=-D m$(WS)
+
+ifeq ($(OS),unix)
+CC=gcc
 ELF=elf$(WS)
+else
+CC=llvm
+ELF=macho$(WS)
+endif
 
 
 # SPITBOL Version:
@@ -21,7 +29,8 @@ OSINT=./osint
 vpath %.c $(OSINT)
 
 CC	=	gcc
-ASM	=	nasm
+ASM	=	bin/nasm.$(OS)
+
 ifeq	($(DEBUG),0)
 CFLAGS= -D m$(WS) -m$(WS) 
 else
@@ -39,7 +48,7 @@ endif
 LEX=	lex.spt
 COD=    asm.spt
 ERR=    err.spt
-BASEBOL =   ./bin/spitbol
+BASEBOL =   ./bin/spitbol.$(OS)
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c

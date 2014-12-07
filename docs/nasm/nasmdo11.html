@@ -1,0 +1,164 @@
+<html><head><title>NASM Manual</title></head>
+<body><h1 align=center>The Netwide Assembler: NASM</h1>
+
+<p align=center><a href="nasmdo12.html">Next Chapter</a> |
+<a href="nasmdo10.html">Previous Chapter</a> |
+<a href="nasmdoc0.html">Contents</a> |
+<a href="nasmdoci.html">Index</a>
+<h2><a name="chapter-11">Chapter 11: Writing 64-bit Code (Unix, Win64)</a></h2>
+<p>This chapter attempts to cover some of the common issues involved when
+writing 64-bit code, to run under Win64 or Unix. It covers how to write
+assembly code to interface with 64-bit C routines, and how to write
+position-independent code for shared libraries.
+<p>All 64-bit code uses a flat memory model, since segmentation is not
+available in 64-bit mode. The one exception is the
+<code><nobr>FS</nobr></code> and <code><nobr>GS</nobr></code> registers,
+which still add their bases.
+<p>Position independence in 64-bit mode is significantly simpler, since the
+processor supports <code><nobr>RIP</nobr></code>-relative addressing
+directly; see the <code><nobr>REL</nobr></code> keyword
+(<a href="nasmdoc3.html#section-3.3">section 3.3</a>). On most 64-bit
+platforms, it is probably desirable to make that the default, using the
+directive <code><nobr>DEFAULT REL</nobr></code>
+(<a href="nasmdoc6.html#section-6.2">section 6.2</a>).
+<p>64-bit programming is relatively similar to 32-bit programming, but of
+course pointers are 64 bits long; additionally, all existing platforms pass
+arguments in registers rather than on the stack. Furthermore, 64-bit
+platforms use SSE2 by default for floating point. Please see the ABI
+documentation for your platform.
+<p>64-bit platforms differ in the sizes of the fundamental datatypes, not
+just from 32-bit platforms but from each other. If a specific size data
+type is desired, it is probably best to use the types defined in the
+Standard C header <code><nobr>&lt;inttypes.h&gt;</nobr></code>.
+<p>In 64-bit mode, the default instruction size is still 32 bits. When
+loading a value into a 32-bit register (but not an 8- or 16-bit register),
+the upper 32 bits of the corresponding 64-bit register are set to zero.
+<h3><a name="section-11.1">11.1 Register Names in 64-bit Mode</a></h3>
+<p>NASM uses the following names for general-purpose registers in 64-bit
+mode, for 8-, 16-, 32- and 64-bit references, respectively:
+<p><pre>
+     AL/AH, CL/CH, DL/DH, BL/BH, SPL, BPL, SIL, DIL, R8B-R15B 
+     AX, CX, DX, BX, SP, BP, SI, DI, R8W-R15W 
+     EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI, R8D-R15D 
+     RAX, RCX, RDX, RBX, RSP, RBP, RSI, RDI, R8-R15
+</pre>
+<p>This is consistent with the AMD documentation and most other assemblers.
+The Intel documentation, however, uses the names
+<code><nobr>R8L-R15L</nobr></code> for 8-bit references to the higher
+registers. It is possible to use those names by definiting them as macros;
+similarly, if one wants to use numeric names for the low 8 registers,
+define them as macros. The standard macro package
+<code><nobr>altreg</nobr></code> (see
+<a href="nasmdoc5.html#section-5.1">section 5.1</a>) can be used for this
+purpose.
+<h3><a name="section-11.2">11.2 Immediates and Displacements in 64-bit Mode</a></h3>
+<p>In 64-bit mode, immediates and displacements are generally only 32 bits
+wide. NASM will therefore truncate most displacements and immediates to 32
+bits.
+<p>The only instruction which takes a full 64-bit immediate is:
+<p><pre>
+     MOV reg64,imm64
+</pre>
+<p>NASM will produce this instruction whenever the programmer uses
+<code><nobr>MOV</nobr></code> with an immediate into a 64-bit register. If
+this is not desirable, simply specify the equivalent 32-bit register, which
+will be automatically zero-extended by the processor, or specify the
+immediate as <code><nobr>DWORD</nobr></code>:
+<p><pre>
+     mov rax,foo             ; 64-bit immediate 
+     mov rax,qword foo       ; (identical) 
+     mov eax,foo             ; 32-bit immediate, zero-extended 
+     mov rax,dword foo       ; 32-bit immediate, sign-extended
+</pre>
+<p>The length of these instructions are 10, 5 and 7 bytes, respectively.
+<p>The only instructions which take a full 64-bit <em>displacement</em> is
+loading or storing, using <code><nobr>MOV</nobr></code>,
+<code><nobr>AL</nobr></code>, <code><nobr>AX</nobr></code>,
+<code><nobr>EAX</nobr></code> or <code><nobr>RAX</nobr></code> (but no
+other registers) to an absolute 64-bit address. Since this is a relatively
+rarely used instruction (64-bit code generally uses relative addressing),
+the programmer has to explicitly declare the displacement size as
+<code><nobr>QWORD</nobr></code>:
+<p><pre>
+     default abs 
+
+     mov eax,[foo]           ; 32-bit absolute disp, sign-extended 
+     mov eax,[a32 foo]       ; 32-bit absolute disp, zero-extended 
+     mov eax,[qword foo]     ; 64-bit absolute disp 
+
+     default rel 
+
+     mov eax,[foo]           ; 32-bit relative disp 
+     mov eax,[a32 foo]       ; d:o, address truncated to 32 bits(!) 
+     mov eax,[qword foo]     ; error 
+     mov eax,[abs qword foo] ; 64-bit absolute disp
+</pre>
+<p>A sign-extended absolute displacement can access from -2 GB to +2 GB; a
+zero-extended absolute displacement can access from 0 to 4 GB.
+<h3><a name="section-11.3">11.3 Interfacing to 64-bit C Programs (Unix)</a></h3>
+<p>On Unix, the 64-bit ABI is defined by the document:
+<p>
+<a href="http://www.nasm.us/links/unix64abi"><code><nobr>http://www.nasm.us/links/unix64abi</nobr></code></a>
+<p>Although written for AT&amp;T-syntax assembly, the concepts apply
+equally well for NASM-style assembly. What follows is a simplified summary.
+<p>The first six integer arguments (from the left) are passed in
+<code><nobr>RDI</nobr></code>, <code><nobr>RSI</nobr></code>,
+<code><nobr>RDX</nobr></code>, <code><nobr>RCX</nobr></code>,
+<code><nobr>R8</nobr></code>, and <code><nobr>R9</nobr></code>, in that
+order. Additional integer arguments are passed on the stack. These
+registers, plus <code><nobr>RAX</nobr></code>,
+<code><nobr>R10</nobr></code> and <code><nobr>R11</nobr></code> are
+destroyed by function calls, and thus are available for use by the function
+without saving.
+<p>Integer return values are passed in <code><nobr>RAX</nobr></code> and
+<code><nobr>RDX</nobr></code>, in that order.
+<p>Floating point is done using SSE registers, except for
+<code><nobr>long double</nobr></code>. Floating-point arguments are passed
+in <code><nobr>XMM0</nobr></code> to <code><nobr>XMM7</nobr></code>; return
+is <code><nobr>XMM0</nobr></code> and <code><nobr>XMM1</nobr></code>.
+<code><nobr>long double</nobr></code> are passed on the stack, and returned
+in <code><nobr>ST0</nobr></code> and <code><nobr>ST1</nobr></code>.
+<p>All SSE and x87 registers are destroyed by function calls.
+<p>On 64-bit Unix, <code><nobr>long</nobr></code> is 64 bits.
+<p>Integer and SSE register arguments are counted separately, so for the
+case of
+<p><pre>
+     void foo(long a, double b, int c)
+</pre>
+<p><code><nobr>a</nobr></code> is passed in <code><nobr>RDI</nobr></code>,
+<code><nobr>b</nobr></code> in <code><nobr>XMM0</nobr></code>, and
+<code><nobr>c</nobr></code> in <code><nobr>ESI</nobr></code>.
+<h3><a name="section-11.4">11.4 Interfacing to 64-bit C Programs (Win64)</a></h3>
+<p>The Win64 ABI is described at:
+<p>
+<a href="http://www.nasm.us/links/win64abi"><code><nobr>http://www.nasm.us/links/win64abi</nobr></code></a>
+<p>What follows is a simplified summary.
+<p>The first four integer arguments are passed in
+<code><nobr>RCX</nobr></code>, <code><nobr>RDX</nobr></code>,
+<code><nobr>R8</nobr></code> and <code><nobr>R9</nobr></code>, in that
+order. Additional integer arguments are passed on the stack. These
+registers, plus <code><nobr>RAX</nobr></code>,
+<code><nobr>R10</nobr></code> and <code><nobr>R11</nobr></code> are
+destroyed by function calls, and thus are available for use by the function
+without saving.
+<p>Integer return values are passed in <code><nobr>RAX</nobr></code> only.
+<p>Floating point is done using SSE registers, except for
+<code><nobr>long double</nobr></code>. Floating-point arguments are passed
+in <code><nobr>XMM0</nobr></code> to <code><nobr>XMM3</nobr></code>; return
+is <code><nobr>XMM0</nobr></code> only.
+<p>On Win64, <code><nobr>long</nobr></code> is 32 bits;
+<code><nobr>long long</nobr></code> or <code><nobr>_int64</nobr></code> is
+64 bits.
+<p>Integer and SSE register arguments are counted together, so for the case
+of
+<p><pre>
+     void foo(long long a, double b, int c)
+</pre>
+<p><code><nobr>a</nobr></code> is passed in <code><nobr>RCX</nobr></code>,
+<code><nobr>b</nobr></code> in <code><nobr>XMM1</nobr></code>, and
+<code><nobr>c</nobr></code> in <code><nobr>R8D</nobr></code>.
+<p align=center><a href="nasmdo12.html">Next Chapter</a> |
+<a href="nasmdo10.html">Previous Chapter</a> |
+<a href="nasmdoc0.html">Contents</a> |
+<a href="nasmdoci.html">Index</a>
+</body></html>

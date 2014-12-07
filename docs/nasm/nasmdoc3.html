@@ -1,0 +1,819 @@
+<html><head><title>NASM Manual</title></head>
+<body><h1 align=center>The Netwide Assembler: NASM</h1>
+
+<p align=center><a href="nasmdoc4.html">Next Chapter</a> |
+<a href="nasmdoc2.html">Previous Chapter</a> |
+<a href="nasmdoc0.html">Contents</a> |
+<a href="nasmdoci.html">Index</a>
+<h2><a name="chapter-3">Chapter 3: The NASM Language</a></h2>
+<h3><a name="section-3.1">3.1 Layout of a NASM Source Line</a></h3>
+<p>Like most assemblers, each NASM source line contains (unless it is a
+macro, a preprocessor directive or an assembler directive: see
+<a href="nasmdoc4.html">chapter 4</a> and <a href="nasmdoc6.html">chapter
+6</a>) some combination of the four fields
+<p><pre>
+label:    instruction operands        ; comment
+</pre>
+<p>As usual, most of these fields are optional; the presence or absence of
+any combination of a label, an instruction and a comment is allowed. Of
+course, the operand field is either required or forbidden by the presence
+and nature of the instruction field.
+<p>NASM uses backslash (\) as the line continuation character; if a line
+ends with backslash, the next line is considered to be a part of the
+backslash-ended line.
+<p>NASM places no restrictions on white space within a line: labels may
+have white space before them, or instructions may have no space before
+them, or anything. The colon after a label is also optional. (Note that
+this means that if you intend to code <code><nobr>lodsb</nobr></code> alone
+on a line, and type <code><nobr>lodab</nobr></code> by accident, then
+that's still a valid source line which does nothing but define a label.
+Running NASM with the command-line option
+<code><nobr>-w+orphan-labels</nobr></code> will cause it to warn you if you
+define a label alone on a line without a trailing colon.)
+<p>Valid characters in labels are letters, numbers,
+<code><nobr>_</nobr></code>, <code><nobr>$</nobr></code>,
+<code><nobr>#</nobr></code>, <code><nobr>@</nobr></code>,
+<code><nobr>~</nobr></code>, <code><nobr>.</nobr></code>, and
+<code><nobr>?</nobr></code>. The only characters which may be used as the
+<em>first</em> character of an identifier are letters,
+<code><nobr>.</nobr></code> (with special meaning: see
+<a href="#section-3.9">section 3.9</a>), <code><nobr>_</nobr></code> and
+<code><nobr>?</nobr></code>. An identifier may also be prefixed with a
+<code><nobr>$</nobr></code> to indicate that it is intended to be read as
+an identifier and not a reserved word; thus, if some other module you are
+linking with defines a symbol called <code><nobr>eax</nobr></code>, you can
+refer to <code><nobr>$eax</nobr></code> in NASM code to distinguish the
+symbol from the register. Maximum length of an identifier is 4095
+characters.
+<p>The instruction field may contain any machine instruction: Pentium and
+P6 instructions, FPU instructions, MMX instructions and even undocumented
+instructions are all supported. The instruction may be prefixed by
+<code><nobr>LOCK</nobr></code>, <code><nobr>REP</nobr></code>,
+<code><nobr>REPE</nobr></code>/<code><nobr>REPZ</nobr></code>,
+<code><nobr>REPNE</nobr></code>/<code><nobr>REPNZ</nobr></code>,
+<code><nobr>XACQUIRE</nobr></code>/<code><nobr>XRELEASE</nobr></code> or
+<code><nobr>BND</nobr></code>/<code><nobr>NOBND</nobr></code>, in the usual
+way. Explicit address-size and operand-size prefixes
+<code><nobr>A16</nobr></code>, <code><nobr>A32</nobr></code>,
+<code><nobr>A64</nobr></code>, <code><nobr>O16</nobr></code> and
+<code><nobr>O32</nobr></code>, <code><nobr>O64</nobr></code> are provided -
+one example of their use is given in <a href="nasmdo10.html">chapter
+10</a>. You can also use the name of a segment register as an instruction
+prefix: coding <code><nobr>es mov [bx],ax</nobr></code> is equivalent to
+coding <code><nobr>mov [es:bx],ax</nobr></code>. We recommend the latter
+syntax, since it is consistent with other syntactic features of the
+language, but for instructions such as <code><nobr>LODSB</nobr></code>,
+which has no operands and yet can require a segment override, there is no
+clean syntactic way to proceed apart from
+<code><nobr>es lodsb</nobr></code>.
+<p>An instruction is not required to use a prefix: prefixes such as
+<code><nobr>CS</nobr></code>, <code><nobr>A32</nobr></code>,
+<code><nobr>LOCK</nobr></code> or <code><nobr>REPE</nobr></code> can appear
+on a line by themselves, and NASM will just generate the prefix bytes.
+<p>In addition to actual machine instructions, NASM also supports a number
+of pseudo-instructions, described in <a href="#section-3.2">section
+3.2</a>.
+<p>Instruction operands may take a number of forms: they can be registers,
+described simply by the register name (e.g. <code><nobr>ax</nobr></code>,
+<code><nobr>bp</nobr></code>, <code><nobr>ebx</nobr></code>,
+<code><nobr>cr0</nobr></code>: NASM does not use the
+<code><nobr>gas</nobr></code>-style syntax in which register names must be
+prefixed by a <code><nobr>%</nobr></code> sign), or they can be effective
+addresses (see <a href="#section-3.3">section 3.3</a>), constants
+(<a href="#section-3.4">section 3.4</a>) or expressions
+(<a href="#section-3.5">section 3.5</a>).
+<p>For x87 floating-point instructions, NASM accepts a wide range of
+syntaxes: you can use two-operand forms like MASM supports, or you can use
+NASM's native single-operand forms in most cases. For example, you can
+code:
+<p><pre>
+        fadd    st1             ; this sets st0 := st0 + st1 
+        fadd    st0,st1         ; so does this 
+
+        fadd    st1,st0         ; this sets st1 := st1 + st0 
+        fadd    to st1          ; so does this
+</pre>
+<p>Almost any x87 floating-point instruction that references memory must
+use one of the prefixes <code><nobr>DWORD</nobr></code>,
+<code><nobr>QWORD</nobr></code> or <code><nobr>TWORD</nobr></code> to
+indicate what size of memory operand it refers to.
+<h3><a name="section-3.2">3.2 Pseudo-Instructions</a></h3>
+<p>Pseudo-instructions are things which, though not real x86 machine
+instructions, are used in the instruction field anyway because that's the
+most convenient place to put them. The current pseudo-instructions are
+<code><nobr>DB</nobr></code>, <code><nobr>DW</nobr></code>,
+<code><nobr>DD</nobr></code>, <code><nobr>DQ</nobr></code>,
+<code><nobr>DT</nobr></code>, <code><nobr>DO</nobr></code>,
+<code><nobr>DY</nobr></code> and <code><nobr>DZ</nobr></code>; their
+uninitialized counterparts <code><nobr>RESB</nobr></code>,
+<code><nobr>RESW</nobr></code>, <code><nobr>RESD</nobr></code>,
+<code><nobr>RESQ</nobr></code>, <code><nobr>REST</nobr></code>,
+<code><nobr>RESO</nobr></code>, <code><nobr>RESY</nobr></code> and
+<code><nobr>RESZ</nobr></code>; the <code><nobr>INCBIN</nobr></code>
+command, the <code><nobr>EQU</nobr></code> command, and the
+<code><nobr>TIMES</nobr></code> prefix.
+<h4><a name="section-3.2.1">3.2.1 <code><nobr>DB</nobr></code> and Friends: Declaring Initialized Data</a></h4>
+<p><code><nobr>DB</nobr></code>, <code><nobr>DW</nobr></code>,
+<code><nobr>DD</nobr></code>, <code><nobr>DQ</nobr></code>,
+<code><nobr>DT</nobr></code>, <code><nobr>DO</nobr></code>,
+<code><nobr>DY</nobr></code> and <code><nobr>DZ</nobr></code> are used,
+much as in MASM, to declare initialized data in the output file. They can
+be invoked in a wide range of ways:
+<p><pre>
+      db    0x55                ; just the byte 0x55 
+      db    0x55,0x56,0x57      ; three bytes in succession 
+      db    'a',0x55            ; character constants are OK 
+      db    'hello',13,10,'$'   ; so are string constants 
+      dw    0x1234              ; 0x34 0x12 
+      dw    'a'                 ; 0x61 0x00 (it's just a number) 
+      dw    'ab'                ; 0x61 0x62 (character constant) 
+      dw    'abc'               ; 0x61 0x62 0x63 0x00 (string) 
+      dd    0x12345678          ; 0x78 0x56 0x34 0x12 
+      dd    1.234567e20         ; floating-point constant 
+      dq    0x123456789abcdef0  ; eight byte constant 
+      dq    1.234567e20         ; double-precision float 
+      dt    1.234567e20         ; extended-precision float
+</pre>
+<p><code><nobr>DT</nobr></code>, <code><nobr>DO</nobr></code>,
+<code><nobr>DY</nobr></code> and <code><nobr>DZ</nobr></code> do not accept
+numeric constants as operands.
+<h4><a name="section-3.2.2">3.2.2 <code><nobr>RESB</nobr></code> and Friends: Declaring Uninitialized Data</a></h4>
+<p><code><nobr>RESB</nobr></code>, <code><nobr>RESW</nobr></code>,
+<code><nobr>RESD</nobr></code>, <code><nobr>RESQ</nobr></code>,
+<code><nobr>REST</nobr></code>, <code><nobr>RESO</nobr></code>,
+<code><nobr>RESY</nobr></code> and <code><nobr>RESZ</nobr></code> are
+designed to be used in the BSS section of a module: they declare
+<em>uninitialized</em> storage space. Each takes a single operand, which is
+the number of bytes, words, doublewords or whatever to reserve. As stated
+in <a href="nasmdoc2.html#section-2.2.7">section 2.2.7</a>, NASM does not
+support the MASM/TASM syntax of reserving uninitialized space by writing
+<code><nobr>DW ?</nobr></code> or similar things: this is what it does
+instead. The operand to a <code><nobr>RESB</nobr></code>-type
+pseudo-instruction is a <em>critical expression</em>: see
+<a href="#section-3.8">section 3.8</a>.
+<p>For example:
+<p><pre>
+buffer:         resb    64              ; reserve 64 bytes 
+wordvar:        resw    1               ; reserve a word 
+realarray       resq    10              ; array of ten reals 
+ymmval:         resy    1               ; one YMM register 
+zmmvals:        resz    32              ; 32 ZMM registers 
+</pre>
+<h4><a name="section-3.2.3">3.2.3 <code><nobr>INCBIN</nobr></code>: Including External Binary Files</a></h4>
+<p><code><nobr>INCBIN</nobr></code> is borrowed from the old Amiga
+assembler DevPac: it includes a binary file verbatim into the output file.
+This can be handy for (for example) including graphics and sound data
+directly into a game executable file. It can be called in one of these
+three ways:
+<p><pre>
+    incbin  "file.dat"             ; include the whole file 
+    incbin  "file.dat",1024        ; skip the first 1024 bytes 
+    incbin  "file.dat",1024,512    ; skip the first 1024, and 
+                                   ; actually include at most 512
+</pre>
+<p><code><nobr>INCBIN</nobr></code> is both a directive and a standard
+macro; the standard macro version searches for the file in the include file
+search path and adds the file to the dependency lists. This macro can be
+overridden if desired.
+<h4><a name="section-3.2.4">3.2.4 <code><nobr>EQU</nobr></code>: Defining Constants</a></h4>
+<p><code><nobr>EQU</nobr></code> defines a symbol to a given constant
+value: when <code><nobr>EQU</nobr></code> is used, the source line must
+contain a label. The action of <code><nobr>EQU</nobr></code> is to define
+the given label name to the value of its (only) operand. This definition is
+absolute, and cannot change later. So, for example,
+<p><pre>
+message         db      'hello, world' 
+msglen          equ     $-message
+</pre>
+<p>defines <code><nobr>msglen</nobr></code> to be the constant 12.
+<code><nobr>msglen</nobr></code> may not then be redefined later. This is
+not a preprocessor definition either: the value of
+<code><nobr>msglen</nobr></code> is evaluated <em>once</em>, using the
+value of <code><nobr>$</nobr></code> (see <a href="#section-3.5">section
+3.5</a> for an explanation of <code><nobr>$</nobr></code>) at the point of
+definition, rather than being evaluated wherever it is referenced and using
+the value of <code><nobr>$</nobr></code> at the point of reference.
+<h4><a name="section-3.2.5">3.2.5 <code><nobr>TIMES</nobr></code>: Repeating Instructions or Data</a></h4>
+<p>The <code><nobr>TIMES</nobr></code> prefix causes the instruction to be
+assembled multiple times. This is partly present as NASM's equivalent of
+the <code><nobr>DUP</nobr></code> syntax supported by MASM-compatible
+assemblers, in that you can code
+<p><pre>
+zerobuf:        times 64 db 0
+</pre>
+<p>or similar things; but <code><nobr>TIMES</nobr></code> is more versatile
+than that. The argument to <code><nobr>TIMES</nobr></code> is not just a
+numeric constant, but a numeric <em>expression</em>, so you can do things
+like
+<p><pre>
+buffer: db      'hello, world' 
+        times 64-$+buffer db ' '
+</pre>
+<p>which will store exactly enough spaces to make the total length of
+<code><nobr>buffer</nobr></code> up to 64. Finally,
+<code><nobr>TIMES</nobr></code> can be applied to ordinary instructions, so
+you can code trivial unrolled loops in it:
+<p><pre>
+        times 100 movsb
+</pre>
+<p>Note that there is no effective difference between
+<code><nobr>times 100 resb 1</nobr></code> and
+<code><nobr>resb 100</nobr></code>, except that the latter will be
+assembled about 100 times faster due to the internal structure of the
+assembler.
+<p>The operand to <code><nobr>TIMES</nobr></code> is a critical expression
+(<a href="#section-3.8">section 3.8</a>).
+<p>Note also that <code><nobr>TIMES</nobr></code> can't be applied to
+macros: the reason for this is that <code><nobr>TIMES</nobr></code> is
+processed after the macro phase, which allows the argument to
+<code><nobr>TIMES</nobr></code> to contain expressions such as
+<code><nobr>64-$+buffer</nobr></code> as above. To repeat more than one
+line of code, or a complex macro, use the preprocessor
+<code><nobr>%rep</nobr></code> directive.
+<h3><a name="section-3.3">3.3 Effective Addresses</a></h3>
+<p>An effective address is any operand to an instruction which references
+memory. Effective addresses, in NASM, have a very simple syntax: they
+consist of an expression evaluating to the desired address, enclosed in
+square brackets. For example:
+<p><pre>
+wordvar dw      123 
+        mov     ax,[wordvar] 
+        mov     ax,[wordvar+1] 
+        mov     ax,[es:wordvar+bx]
+</pre>
+<p>Anything not conforming to this simple system is not a valid memory
+reference in NASM, for example <code><nobr>es:wordvar[bx]</nobr></code>.
+<p>More complicated effective addresses, such as those involving more than
+one register, work in exactly the same way:
+<p><pre>
+        mov     eax,[ebx*2+ecx+offset] 
+        mov     ax,[bp+di+8]
+</pre>
+<p>NASM is capable of doing algebra on these effective addresses, so that
+things which don't necessarily <em>look</em> legal are perfectly all right:
+<p><pre>
+    mov     eax,[ebx*5]             ; assembles as [ebx*4+ebx] 
+    mov     eax,[label1*2-label2]   ; ie [label1+(label1-label2)]
+</pre>
+<p>Some forms of effective address have more than one assembled form; in
+most such cases NASM will generate the smallest form it can. For example,
+there are distinct assembled forms for the 32-bit effective addresses
+<code><nobr>[eax*2+0]</nobr></code> and
+<code><nobr>[eax+eax]</nobr></code>, and NASM will generally generate the
+latter on the grounds that the former requires four bytes to store a zero
+offset.
+<p>NASM has a hinting mechanism which will cause
+<code><nobr>[eax+ebx]</nobr></code> and <code><nobr>[ebx+eax]</nobr></code>
+to generate different opcodes; this is occasionally useful because
+<code><nobr>[esi+ebp]</nobr></code> and <code><nobr>[ebp+esi]</nobr></code>
+have different default segment registers.
+<p>However, you can force NASM to generate an effective address in a
+particular form by the use of the keywords <code><nobr>BYTE</nobr></code>,
+<code><nobr>WORD</nobr></code>, <code><nobr>DWORD</nobr></code> and
+<code><nobr>NOSPLIT</nobr></code>. If you need
+<code><nobr>[eax+3]</nobr></code> to be assembled using a double-word
+offset field instead of the one byte NASM will normally generate, you can
+code <code><nobr>[dword eax+3]</nobr></code>. Similarly, you can force NASM
+to use a byte offset for a small value which it hasn't seen on the first
+pass (see <a href="#section-3.8">section 3.8</a> for an example of such a
+code fragment) by using <code><nobr>[byte eax+offset]</nobr></code>. As
+special cases, <code><nobr>[byte eax]</nobr></code> will code
+<code><nobr>[eax+0]</nobr></code> with a byte offset of zero, and
+<code><nobr>[dword eax]</nobr></code> will code it with a double-word
+offset of zero. The normal form, <code><nobr>[eax]</nobr></code>, will be
+coded with no offset field.
+<p>The form described in the previous paragraph is also useful if you are
+trying to access data in a 32-bit segment from within 16 bit code. For more
+information on this see the section on mixed-size addressing
+(<a href="nasmdo10.html#section-10.2">section 10.2</a>). In particular, if
+you need to access data with a known offset that is larger than will fit in
+a 16-bit value, if you don't specify that it is a dword offset, nasm will
+cause the high word of the offset to be lost.
+<p>Similarly, NASM will split <code><nobr>[eax*2]</nobr></code> into
+<code><nobr>[eax+eax]</nobr></code> because that allows the offset field to
+be absent and space to be saved; in fact, it will also split
+<code><nobr>[eax*2+offset]</nobr></code> into
+<code><nobr>[eax+eax+offset]</nobr></code>. You can combat this behaviour
+by the use of the <code><nobr>NOSPLIT</nobr></code> keyword:
+<code><nobr>[nosplit eax*2]</nobr></code> will force
+<code><nobr>[eax*2+0]</nobr></code> to be generated literally.
+<code><nobr>[nosplit eax*1]</nobr></code> also has the same effect. In
+another way, a split EA form <code><nobr>[0, eax*2]</nobr></code> can be
+used, too. However, <code><nobr>NOSPLIT</nobr></code> in
+<code><nobr>[nosplit eax+eax]</nobr></code> will be ignored because user's
+intention here is considered as <code><nobr>[eax+eax]</nobr></code>.
+<p>In 64-bit mode, NASM will by default generate absolute addresses. The
+<code><nobr>REL</nobr></code> keyword makes it produce
+<code><nobr>RIP</nobr></code>-relative addresses. Since this is frequently
+the normally desired behaviour, see the <code><nobr>DEFAULT</nobr></code>
+directive (<a href="nasmdoc6.html#section-6.2">section 6.2</a>). The
+keyword <code><nobr>ABS</nobr></code> overrides
+<code><nobr>REL</nobr></code>.
+<p>A new form of split effective addres syntax is also supported. This is
+mainly intended for mib operands as used by MPX instructions, but can be
+used for any memory reference. The basic concept of this form is splitting
+base and index.
+<p><pre>
+     mov eax,[ebx+8,ecx*4]   ; ebx=base, ecx=index, 4=scale, 8=disp
+</pre>
+<p>For mib operands, there are several ways of writing effective address
+depending on the tools. NASM supports all currently possible ways of mib
+syntax:
+<p><pre>
+     ; bndstx 
+     ; next 5 lines are parsed same 
+     ; base=rax, index=rbx, scale=1, displacement=3 
+     bndstx [rax+0x3,rbx], bnd0      ; NASM - split EA 
+     bndstx [rbx*1+rax+0x3], bnd0    ; GAS - '*1' indecates an index reg 
+     bndstx [rax+rbx+3], bnd0        ; GAS - without hints 
+     bndstx [rax+0x3], bnd0, rbx     ; ICC-1 
+     bndstx [rax+0x3], rbx, bnd0     ; ICC-2
+</pre>
+<p>When broadcasting decorator is used, the opsize keyword should match the
+size of each element.
+<p><pre>
+     VDIVPS zmm4, zmm5, dword [rbx]{1to16}   ; single-precision float 
+     VDIVPS zmm4, zmm5, zword [rbx]          ; packed 512 bit memory
+</pre>
+<h3><a name="section-3.4">3.4 Constants</a></h3>
+<p>NASM understands four different types of constant: numeric, character,
+string and floating-point.
+<h4><a name="section-3.4.1">3.4.1 Numeric Constants</a></h4>
+<p>A numeric constant is simply a number. NASM allows you to specify
+numbers in a variety of number bases, in a variety of ways: you can suffix
+<code><nobr>H</nobr></code> or <code><nobr>X</nobr></code>,
+<code><nobr>D</nobr></code> or <code><nobr>T</nobr></code>,
+<code><nobr>Q</nobr></code> or <code><nobr>O</nobr></code>, and
+<code><nobr>B</nobr></code> or <code><nobr>Y</nobr></code> for hexadecimal,
+decimal, octal and binary respectively, or you can prefix
+<code><nobr>0x</nobr></code>, for hexadecimal in the style of C, or you can
+prefix <code><nobr>$</nobr></code> for hexadecimal in the style of Borland
+Pascal or Motorola Assemblers. Note, though, that the
+<code><nobr>$</nobr></code> prefix does double duty as a prefix on
+identifiers (see <a href="#section-3.1">section 3.1</a>), so a hex number
+prefixed with a <code><nobr>$</nobr></code> sign must have a digit after
+the <code><nobr>$</nobr></code> rather than a letter. In addition, current
+versions of NASM accept the prefix <code><nobr>0h</nobr></code> for
+hexadecimal, <code><nobr>0d</nobr></code> or <code><nobr>0t</nobr></code>
+for decimal, <code><nobr>0o</nobr></code> or <code><nobr>0q</nobr></code>
+for octal, and <code><nobr>0b</nobr></code> or <code><nobr>0y</nobr></code>
+for binary. Please note that unlike C, a <code><nobr>0</nobr></code> prefix
+by itself does <em>not</em> imply an octal constant!
+<p>Numeric constants can have underscores (<code><nobr>_</nobr></code>)
+interspersed to break up long strings.
+<p>Some examples (all producing exactly the same code):
+<p><pre>
+        mov     ax,200          ; decimal 
+        mov     ax,0200         ; still decimal 
+        mov     ax,0200d        ; explicitly decimal 
+        mov     ax,0d200        ; also decimal 
+        mov     ax,0c8h         ; hex 
+        mov     ax,$0c8         ; hex again: the 0 is required 
+        mov     ax,0xc8         ; hex yet again 
+        mov     ax,0hc8         ; still hex 
+        mov     ax,310q         ; octal 
+        mov     ax,310o         ; octal again 
+        mov     ax,0o310        ; octal yet again 
+        mov     ax,0q310        ; octal yet again 
+        mov     ax,11001000b    ; binary 
+        mov     ax,1100_1000b   ; same binary constant 
+        mov     ax,1100_1000y   ; same binary constant once more 
+        mov     ax,0b1100_1000  ; same binary constant yet again 
+        mov     ax,0y1100_1000  ; same binary constant yet again
+</pre>
+<h4><a name="section-3.4.2">3.4.2 Character Strings</a></h4>
+<p>A character string consists of up to eight characters enclosed in either
+single quotes (<code><nobr>'...'</nobr></code>), double quotes
+(<code><nobr>"..."</nobr></code>) or backquotes
+(<code><nobr>`...`</nobr></code>). Single or double quotes are equivalent
+to NASM (except of course that surrounding the constant with single quotes
+allows double quotes to appear within it and vice versa); the contents of
+those are represented verbatim. Strings enclosed in backquotes support
+C-style <code><nobr>\</nobr></code>-escapes for special characters.
+<p>The following escape sequences are recognized by backquoted strings:
+<p><pre>
+      \'          single quote (') 
+      \"          double quote (") 
+      \`          backquote (`) 
+      \\          backslash (\) 
+      \?          question mark (?) 
+      \a          BEL (ASCII 7) 
+      \b          BS  (ASCII 8) 
+      \t          TAB (ASCII 9) 
+      \n          LF  (ASCII 10) 
+      \v          VT  (ASCII 11) 
+      \f          FF  (ASCII 12) 
+      \r          CR  (ASCII 13) 
+      \e          ESC (ASCII 27) 
+      \377        Up to 3 octal digits - literal byte 
+      \xFF        Up to 2 hexadecimal digits - literal byte 
+      \u1234      4 hexadecimal digits - Unicode character 
+      \U12345678  8 hexadecimal digits - Unicode character
+</pre>
+<p>All other escape sequences are reserved. Note that
+<code><nobr>\0</nobr></code>, meaning a <code><nobr>NUL</nobr></code>
+character (ASCII 0), is a special case of the octal escape sequence.
+<p>Unicode characters specified with <code><nobr>\u</nobr></code> or
+<code><nobr>\U</nobr></code> are converted to UTF-8. For example, the
+following lines are all equivalent:
+<p><pre>
+      db `\u263a`            ; UTF-8 smiley face 
+      db `\xe2\x98\xba`      ; UTF-8 smiley face 
+      db 0E2h, 098h, 0BAh    ; UTF-8 smiley face
+</pre>
+<h4><a name="section-3.4.3">3.4.3 Character Constants</a></h4>
+<p>A character constant consists of a string up to eight bytes long, used
+in an expression context. It is treated as if it was an integer.
+<p>A character constant with more than one byte will be arranged with
+little-endian order in mind: if you code
+<p><pre>
+          mov eax,'abcd'
+</pre>
+<p>then the constant generated is not <code><nobr>0x61626364</nobr></code>,
+but <code><nobr>0x64636261</nobr></code>, so that if you were then to store
+the value into memory, it would read <code><nobr>abcd</nobr></code> rather
+than <code><nobr>dcba</nobr></code>. This is also the sense of character
+constants understood by the Pentium's <code><nobr>CPUID</nobr></code>
+instruction.
+<h4><a name="section-3.4.4">3.4.4 String Constants</a></h4>
+<p>String constants are character strings used in the context of some
+pseudo-instructions, namely the <code><nobr>DB</nobr></code> family and
+<code><nobr>INCBIN</nobr></code> (where it represents a filename.) They are
+also used in certain preprocessor directives.
+<p>A string constant looks like a character constant, only longer. It is
+treated as a concatenation of maximum-size character constants for the
+conditions. So the following are equivalent:
+<p><pre>
+      db    'hello'               ; string constant 
+      db    'h','e','l','l','o'   ; equivalent character constants
+</pre>
+<p>And the following are also equivalent:
+<p><pre>
+      dd    'ninechars'           ; doubleword string constant 
+      dd    'nine','char','s'     ; becomes three doublewords 
+      db    'ninechars',0,0,0     ; and really looks like this
+</pre>
+<p>Note that when used in a string-supporting context, quoted strings are
+treated as a string constants even if they are short enough to be a
+character constant, because otherwise <code><nobr>db 'ab'</nobr></code>
+would have the same effect as <code><nobr>db 'a'</nobr></code>, which would
+be silly. Similarly, three-character or four-character constants are
+treated as strings when they are operands to <code><nobr>DW</nobr></code>,
+and so forth.
+<h4><a name="section-3.4.5">3.4.5 Unicode Strings</a></h4>
+<p>The special operators <code><nobr>__utf16__</nobr></code>,
+<code><nobr>__utf16le__</nobr></code>,
+<code><nobr>__utf16be__</nobr></code>, <code><nobr>__utf32__</nobr></code>,
+<code><nobr>__utf32le__</nobr></code> and
+<code><nobr>__utf32be__</nobr></code> allows definition of Unicode strings.
+They take a string in UTF-8 format and converts it to UTF-16 or UTF-32,
+respectively. Unless the <code><nobr>be</nobr></code> forms are specified,
+the output is littleendian.
+<p>For example:
+<p><pre>
+%define u(x) __utf16__(x) 
+%define w(x) __utf32__(x) 
+
+      dw u('C:\WINDOWS'), 0       ; Pathname in UTF-16 
+      dd w(`A + B = \u206a`), 0   ; String in UTF-32
+</pre>
+<p>The UTF operators can be applied either to strings passed to the
+<code><nobr>DB</nobr></code> family instructions, or to character constants
+in an expression context.
+<h4><a name="section-3.4.6">3.4.6 Floating-Point Constants</a></h4>
+<p>Floating-point constants are acceptable only as arguments to
+<code><nobr>DB</nobr></code>, <code><nobr>DW</nobr></code>,
+<code><nobr>DD</nobr></code>, <code><nobr>DQ</nobr></code>,
+<code><nobr>DT</nobr></code>, and <code><nobr>DO</nobr></code>, or as
+arguments to the special operators <code><nobr>__float8__</nobr></code>,
+<code><nobr>__float16__</nobr></code>,
+<code><nobr>__float32__</nobr></code>,
+<code><nobr>__float64__</nobr></code>,
+<code><nobr>__float80m__</nobr></code>,
+<code><nobr>__float80e__</nobr></code>,
+<code><nobr>__float128l__</nobr></code>, and
+<code><nobr>__float128h__</nobr></code>.
+<p>Floating-point constants are expressed in the traditional form: digits,
+then a period, then optionally more digits, then optionally an
+<code><nobr>E</nobr></code> followed by an exponent. The period is
+mandatory, so that NASM can distinguish between
+<code><nobr>dd 1</nobr></code>, which declares an integer constant, and
+<code><nobr>dd 1.0</nobr></code> which declares a floating-point constant.
+<p>NASM also support C99-style hexadecimal floating-point:
+<code><nobr>0x</nobr></code>, hexadecimal digits, period, optionally more
+hexadeximal digits, then optionally a <code><nobr>P</nobr></code> followed
+by a <em>binary</em> (not hexadecimal) exponent in decimal notation. As an
+extension, NASM additionally supports the <code><nobr>0h</nobr></code> and
+<code><nobr>$</nobr></code> prefixes for hexadecimal, as well binary and
+octal floating-point, using the <code><nobr>0b</nobr></code> or
+<code><nobr>0y</nobr></code> and <code><nobr>0o</nobr></code> or
+<code><nobr>0q</nobr></code> prefixes, respectively.
+<p>Underscores to break up groups of digits are permitted in floating-point
+constants as well.
+<p>Some examples:
+<p><pre>
+      db    -0.2                    ; "Quarter precision" 
+      dw    -0.5                    ; IEEE 754r/SSE5 half precision 
+      dd    1.2                     ; an easy one 
+      dd    1.222_222_222           ; underscores are permitted 
+      dd    0x1p+2                  ; 1.0x2^2 = 4.0 
+      dq    0x1p+32                 ; 1.0x2^32 = 4 294 967 296.0 
+      dq    1.e10                   ; 10 000 000 000.0 
+      dq    1.e+10                  ; synonymous with 1.e10 
+      dq    1.e-10                  ; 0.000 000 000 1 
+      dt    3.141592653589793238462 ; pi 
+      do    1.e+4000                ; IEEE 754r quad precision
+</pre>
+<p>The 8-bit "quarter-precision" floating-point format is
+sign:exponent:mantissa = 1:4:3 with an exponent bias of 7. This appears to
+be the most frequently used 8-bit floating-point format, although it is not
+covered by any formal standard. This is sometimes called a "minifloat."
+<p>The special operators are used to produce floating-point numbers in
+other contexts. They produce the binary representation of a specific
+floating-point number as an integer, and can use anywhere integer constants
+are used in an expression. <code><nobr>__float80m__</nobr></code> and
+<code><nobr>__float80e__</nobr></code> produce the 64-bit mantissa and
+16-bit exponent of an 80-bit floating-point number, and
+<code><nobr>__float128l__</nobr></code> and
+<code><nobr>__float128h__</nobr></code> produce the lower and upper 64-bit
+halves of a 128-bit floating-point number, respectively.
+<p>For example:
+<p><pre>
+      mov    rax,__float64__(3.141592653589793238462)
+</pre>
+<p>... would assign the binary representation of pi as a 64-bit floating
+point number into <code><nobr>RAX</nobr></code>. This is exactly equivalent
+to:
+<p><pre>
+      mov    rax,0x400921fb54442d18
+</pre>
+<p>NASM cannot do compile-time arithmetic on floating-point constants. This
+is because NASM is designed to be portable - although it always generates
+code to run on x86 processors, the assembler itself can run on any system
+with an ANSI C compiler. Therefore, the assembler cannot guarantee the
+presence of a floating-point unit capable of handling the Intel number
+formats, and so for NASM to be able to do floating arithmetic it would have
+to include its own complete set of floating-point routines, which would
+significantly increase the size of the assembler for very little benefit.
+<p>The special tokens <code><nobr>__Infinity__</nobr></code>,
+<code><nobr>__QNaN__</nobr></code> (or <code><nobr>__NaN__</nobr></code>)
+and <code><nobr>__SNaN__</nobr></code> can be used to generate infinities,
+quiet NaNs, and signalling NaNs, respectively. These are normally used as
+macros:
+<p><pre>
+%define Inf __Infinity__ 
+%define NaN __QNaN__ 
+
+      dq    +1.5, -Inf, NaN         ; Double-precision constants
+</pre>
+<p>The <code><nobr>%use fp</nobr></code> standard macro package contains a
+set of convenience macros. See <a href="nasmdoc5.html#section-5.3">section
+5.3</a>.
+<h4><a name="section-3.4.7">3.4.7 Packed BCD Constants</a></h4>
+<p>x87-style packed BCD constants can be used in the same contexts as
+80-bit floating-point numbers. They are suffixed with
+<code><nobr>p</nobr></code> or prefixed with <code><nobr>0p</nobr></code>,
+and can include up to 18 decimal digits.
+<p>As with other numeric constants, underscores can be used to separate
+digits.
+<p>For example:
+<p><pre>
+      dt 12_345_678_901_245_678p 
+      dt -12_345_678_901_245_678p 
+      dt +0p33 
+      dt 33p
+</pre>
+<h3><a name="section-3.5">3.5 Expressions</a></h3>
+<p>Expressions in NASM are similar in syntax to those in C. Expressions are
+evaluated as 64-bit integers which are then adjusted to the appropriate
+size.
+<p>NASM supports two special tokens in expressions, allowing calculations
+to involve the current assembly position: the <code><nobr>$</nobr></code>
+and <code><nobr>$$</nobr></code> tokens. <code><nobr>$</nobr></code>
+evaluates to the assembly position at the beginning of the line containing
+the expression; so you can code an infinite loop using
+<code><nobr>JMP $</nobr></code>. <code><nobr>$$</nobr></code> evaluates to
+the beginning of the current section; so you can tell how far into the
+section you are by using <code><nobr>($-$$)</nobr></code>.
+<p>The arithmetic operators provided by NASM are listed here, in increasing
+order of precedence.
+<h4><a name="section-3.5.1">3.5.1 <code><nobr>|</nobr></code>: Bitwise OR Operator</a></h4>
+<p>The <code><nobr>|</nobr></code> operator gives a bitwise OR, exactly as
+performed by the <code><nobr>OR</nobr></code> machine instruction. Bitwise
+OR is the lowest-priority arithmetic operator supported by NASM.
+<h4><a name="section-3.5.2">3.5.2 <code><nobr>^</nobr></code>: Bitwise XOR Operator</a></h4>
+<p><code><nobr>^</nobr></code> provides the bitwise XOR operation.
+<h4><a name="section-3.5.3">3.5.3 <code><nobr>&amp;</nobr></code>: Bitwise AND Operator</a></h4>
+<p><code><nobr>&amp;</nobr></code> provides the bitwise AND operation.
+<h4><a name="section-3.5.4">3.5.4 <code><nobr>&lt;&lt;</nobr></code> and <code><nobr>&gt;&gt;</nobr></code>: Bit Shift Operators</a></h4>
+<p><code><nobr>&lt;&lt;</nobr></code> gives a bit-shift to the left, just
+as it does in C. So <code><nobr>5&lt;&lt;3</nobr></code> evaluates to 5
+times 8, or 40. <code><nobr>&gt;&gt;</nobr></code> gives a bit-shift to the
+right; in NASM, such a shift is <em>always</em> unsigned, so that the bits
+shifted in from the left-hand end are filled with zero rather than a
+sign-extension of the previous highest bit.
+<h4><a name="section-3.5.5">3.5.5 <code><nobr>+</nobr></code> and <code><nobr>-</nobr></code>: Addition and Subtraction Operators</a></h4>
+<p>The <code><nobr>+</nobr></code> and <code><nobr>-</nobr></code>
+operators do perfectly ordinary addition and subtraction.
+<h4><a name="section-3.5.6">3.5.6 <code><nobr>*</nobr></code>, <code><nobr>/</nobr></code>, <code><nobr>//</nobr></code>, <code><nobr>%</nobr></code> and <code><nobr>%%</nobr></code>: Multiplication and Division</a></h4>
+<p><code><nobr>*</nobr></code> is the multiplication operator.
+<code><nobr>/</nobr></code> and <code><nobr>//</nobr></code> are both
+division operators: <code><nobr>/</nobr></code> is unsigned division and
+<code><nobr>//</nobr></code> is signed division. Similarly,
+<code><nobr>%</nobr></code> and <code><nobr>%%</nobr></code> provide
+unsigned and signed modulo operators respectively.
+<p>NASM, like ANSI C, provides no guarantees about the sensible operation
+of the signed modulo operator.
+<p>Since the <code><nobr>%</nobr></code> character is used extensively by
+the macro preprocessor, you should ensure that both the signed and unsigned
+modulo operators are followed by white space wherever they appear.
+<h4><a name="section-3.5.7">3.5.7 Unary Operators</a></h4>
+<p>The highest-priority operators in NASM's expression grammar are those
+which only apply to one argument. These are <code><nobr>+</nobr></code>,
+<code><nobr>-</nobr></code>, <code><nobr>~</nobr></code>,
+<code><nobr>!</nobr></code>, <code><nobr>SEG</nobr></code>, and the integer
+functions operators.
+<p><code><nobr>-</nobr></code> negates its operand,
+<code><nobr>+</nobr></code> does nothing (it's provided for symmetry with
+<code><nobr>-</nobr></code>), <code><nobr>~</nobr></code> computes the
+one's complement of its operand, <code><nobr>!</nobr></code> is the logical
+negation operator.
+<p><code><nobr>SEG</nobr></code> provides the segment address of its
+operand (explained in more detail in <a href="#section-3.6">section
+3.6</a>).
+<p>A set of additional operators with leading and trailing double
+underscores are used to implement the integer functions of the
+<code><nobr>ifunc</nobr></code> macro package, see
+<a href="nasmdoc5.html#section-5.4">section 5.4</a>.
+<h3><a name="section-3.6">3.6 <code><nobr>SEG</nobr></code> and <code><nobr>WRT</nobr></code></a></h3>
+<p>When writing large 16-bit programs, which must be split into multiple
+segments, it is often necessary to be able to refer to the segment part of
+the address of a symbol. NASM supports the <code><nobr>SEG</nobr></code>
+operator to perform this function.
+<p>The <code><nobr>SEG</nobr></code> operator returns the
+<em>preferred</em> segment base of a symbol, defined as the segment base
+relative to which the offset of the symbol makes sense. So the code
+<p><pre>
+        mov     ax,seg symbol 
+        mov     es,ax 
+        mov     bx,symbol
+</pre>
+<p>will load <code><nobr>ES:BX</nobr></code> with a valid pointer to the
+symbol <code><nobr>symbol</nobr></code>.
+<p>Things can be more complex than this: since 16-bit segments and groups
+may overlap, you might occasionally want to refer to some symbol using a
+different segment base from the preferred one. NASM lets you do this, by
+the use of the <code><nobr>WRT</nobr></code> (With Reference To) keyword.
+So you can do things like
+<p><pre>
+        mov     ax,weird_seg        ; weird_seg is a segment base 
+        mov     es,ax 
+        mov     bx,symbol wrt weird_seg
+</pre>
+<p>to load <code><nobr>ES:BX</nobr></code> with a different, but
+functionally equivalent, pointer to the symbol
+<code><nobr>symbol</nobr></code>.
+<p>NASM supports far (inter-segment) calls and jumps by means of the syntax
+<code><nobr>call segment:offset</nobr></code>, where
+<code><nobr>segment</nobr></code> and <code><nobr>offset</nobr></code> both
+represent immediate values. So to call a far procedure, you could code
+either of
+<p><pre>
+        call    (seg procedure):procedure 
+        call    weird_seg:(procedure wrt weird_seg)
+</pre>
+<p>(The parentheses are included for clarity, to show the intended parsing
+of the above instructions. They are not necessary in practice.)
+<p>NASM supports the syntax <code><nobr>call far procedure</nobr></code> as
+a synonym for the first of the above usages. <code><nobr>JMP</nobr></code>
+works identically to <code><nobr>CALL</nobr></code> in these examples.
+<p>To declare a far pointer to a data item in a data segment, you must code
+<p><pre>
+        dw      symbol, seg symbol
+</pre>
+<p>NASM supports no convenient synonym for this, though you can always
+invent one using the macro processor.
+<h3><a name="section-3.7">3.7 <code><nobr>STRICT</nobr></code>: Inhibiting Optimization</a></h3>
+<p>When assembling with the optimizer set to level 2 or higher (see
+<a href="nasmdoc2.html#section-2.1.22">section 2.1.22</a>), NASM will use
+size specifiers (<code><nobr>BYTE</nobr></code>,
+<code><nobr>WORD</nobr></code>, <code><nobr>DWORD</nobr></code>,
+<code><nobr>QWORD</nobr></code>, <code><nobr>TWORD</nobr></code>,
+<code><nobr>OWORD</nobr></code>, <code><nobr>YWORD</nobr></code> or
+<code><nobr>ZWORD</nobr></code>), but will give them the smallest possible
+size. The keyword <code><nobr>STRICT</nobr></code> can be used to inhibit
+optimization and force a particular operand to be emitted in the specified
+size. For example, with the optimizer on, and in
+<code><nobr>BITS 16</nobr></code> mode,
+<p><pre>
+        push dword 33
+</pre>
+<p>is encoded in three bytes <code><nobr>66 6A 21</nobr></code>, whereas
+<p><pre>
+        push strict dword 33
+</pre>
+<p>is encoded in six bytes, with a full dword immediate operand
+<code><nobr>66 68 21 00 00 00</nobr></code>.
+<p>With the optimizer off, the same code (six bytes) is generated whether
+the <code><nobr>STRICT</nobr></code> keyword was used or not.
+<h3><a name="section-3.8">3.8 Critical Expressions</a></h3>
+<p>Although NASM has an optional multi-pass optimizer, there are some
+expressions which must be resolvable on the first pass. These are called
+<em>Critical Expressions</em>.
+<p>The first pass is used to determine the size of all the assembled code
+and data, so that the second pass, when generating all the code, knows all
+the symbol addresses the code refers to. So one thing NASM can't handle is
+code whose size depends on the value of a symbol declared after the code in
+question. For example,
+<p><pre>
+        times (label-$) db 0 
+label:  db      'Where am I?'
+</pre>
+<p>The argument to <code><nobr>TIMES</nobr></code> in this case could
+equally legally evaluate to anything at all; NASM will reject this example
+because it cannot tell the size of the <code><nobr>TIMES</nobr></code> line
+when it first sees it. It will just as firmly reject the slightly
+paradoxical code
+<p><pre>
+        times (label-$+1) db 0 
+label:  db      'NOW where am I?'
+</pre>
+<p>in which <em>any</em> value for the <code><nobr>TIMES</nobr></code>
+argument is by definition wrong!
+<p>NASM rejects these examples by means of a concept called a <em>critical
+expression</em>, which is defined to be an expression whose value is
+required to be computable in the first pass, and which must therefore
+depend only on symbols defined before it. The argument to the
+<code><nobr>TIMES</nobr></code> prefix is a critical expression.
+<h3><a name="section-3.9">3.9 Local Labels</a></h3>
+<p>NASM gives special treatment to symbols beginning with a period. A label
+beginning with a single period is treated as a <em>local</em> label, which
+means that it is associated with the previous non-local label. So, for
+example:
+<p><pre>
+label1  ; some code 
+
+.loop 
+        ; some more code 
+
+        jne     .loop 
+        ret 
+
+label2  ; some code 
+
+.loop 
+        ; some more code 
+
+        jne     .loop 
+        ret
+</pre>
+<p>In the above code fragment, each <code><nobr>JNE</nobr></code>
+instruction jumps to the line immediately before it, because the two
+definitions of <code><nobr>.loop</nobr></code> are kept separate by virtue
+of each being associated with the previous non-local label.
+<p>This form of local label handling is borrowed from the old Amiga
+assembler DevPac; however, NASM goes one step further, in allowing access
+to local labels from other parts of the code. This is achieved by means of
+<em>defining</em> a local label in terms of the previous non-local label:
+the first definition of <code><nobr>.loop</nobr></code> above is really
+defining a symbol called <code><nobr>label1.loop</nobr></code>, and the
+second defines a symbol called <code><nobr>label2.loop</nobr></code>. So,
+if you really needed to, you could write
+<p><pre>
+label3  ; some more code 
+        ; and some more 
+
+        jmp label1.loop
+</pre>
+<p>Sometimes it is useful - in a macro, for instance - to be able to define
+a label which can be referenced from anywhere but which doesn't interfere
+with the normal local-label mechanism. Such a label can't be non-local
+because it would interfere with subsequent definitions of, and references
+to, local labels; and it can't be local because the macro that defined it
+wouldn't know the label's full name. NASM therefore introduces a third type
+of label, which is probably only useful in macro definitions: if a label
+begins with the special prefix <code><nobr>..@</nobr></code>, then it does
+nothing to the local label mechanism. So you could code
+<p><pre>
+label1:                         ; a non-local label 
+.local:                         ; this is really label1.local 
+..@foo:                         ; this is a special symbol 
+label2:                         ; another non-local label 
+.local:                         ; this is really label2.local 
+
+        jmp     ..@foo          ; this will jump three lines up
+</pre>
+<p>NASM has the capacity to define other special symbols beginning with a
+double period: for example, <code><nobr>..start</nobr></code> is used to
+specify the entry point in the <code><nobr>obj</nobr></code> output format
+(see <a href="nasmdoc7.html#section-7.4.6">section 7.4.6</a>),
+<code><nobr>..imagebase</nobr></code> is used to find out the offset from a
+base address of the current image in the <code><nobr>win64</nobr></code>
+output format (see <a href="nasmdoc7.html#section-7.6.1">section
+7.6.1</a>). So just keep in mind that symbols beginning with a double
+period are special.
+<p align=center><a href="nasmdoc4.html">Next Chapter</a> |
+<a href="nasmdoc2.html">Previous Chapter</a> |
+<a href="nasmdoc0.html">Contents</a> |
+<a href="nasmdoci.html">Index</a>
+</body></html>
