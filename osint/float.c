@@ -64,7 +64,7 @@ void f_ngr() {			// negate real
 }
 
 void f_itr() {			// integer to real
-	reg_ra = reg_ia;
+	reg_ra = (double) reg_ia;
 	return;
 }
 
@@ -77,13 +77,6 @@ long f_2_i(ra) 		// float to integer
 double ra;
 {
     return (long)ra;
-}
-
-
-double i_2_f(ia)		// integer to float
-long ia;
-{
-    return ia;
 }
 
 

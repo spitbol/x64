@@ -19,6 +19,7 @@
 	%define IA	EDX
 	%define M_WORD	DWORD	; reference to word in memory
 	%define D_WORD	DD	; define value for memory word
+;	%define	CFP_B	4
 	%define LOG_CFP_B 2
 	%define CFP_C_VAL	4
 	%define LOG_CFP_C 2
@@ -40,6 +41,7 @@
 	%define	IA	RDX
 	%define M_WORD  QWORD
 	%define D_WORD	DQ
+;	%define	CFP_B	8
 	%define LOG_CFP_B 3
 	%define LOG_CFP_C 3
 	%define D_REAL	DQ

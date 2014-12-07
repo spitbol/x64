@@ -1,4 +1,5 @@
 ; Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+
 ; Copyright 2012-2013 David Shields
 ; 
 ; This file is part of Macro SPITBOL.
@@ -287,71 +288,30 @@ TTYBUF:	D_WORD    0     ; type word
 	D_WORD    0               	; file position of buffer
 	D_WORD    0               	; physical position in file
 	times   260 db 0         	; buffer
-; ;
-; ;       Save and restore MINIMAL and interface registers on stack.
-; ;       Used by any routine that needs to call back into the MINIMAL
-; ;       code in such a way that the MINIMAL code might trigger another
-; ;       SYSxx call before returning.
-; ;
-; ;       Note 1:  pushregs returns a collectable value in XL, safe
-; ;       for subsequent call to memory allocation routine.
-; ;
-; ;       Note 2:  these are not recursive routines.  Only reg_xl is
-; ;       saved on the stack, where it is accessible to the garbage
-; ;       collector.  Other registers are just moved to a temp area.
-; ;
-; ;       Note 3:  popregs does not restore REG_CP, because it may have
-; ;       been modified by the Minimal routine called between pushregs
-; ;       and popregs as a result of a garbage collection.  Calling of
-; ;       another SYSxx routine in between is not a problem, because
-; ;       CP will have been preserved by Minimal.
-; ;
-; ;       Note 4:  if there isn't a compiler stack yet, we don't bother
-; ;       saving XL.  This only happens in call of nextef from sysxi when
-; ;       reloading a save file.
-; ;
-; ;
-; 	global	pushregs
-; pushregs:
-; 	pushad
-; 	lea	XL,[reg_block]
-; 	lea	XR,[sav_block]
-; 	mov	WA,r_size/4
-; 	cld
-;    rep	movsd
-; 
-;         mov     XR,M_WORD [compsp]
-;         or      XR,XR			; is there a compiler stack
-;         je      push1                 ; jump if none yet
-;         sub     XR,4                  ; push onto compiler's stack
-;         mov     XL,M_WORD [reg_xl]    ; collectable XL
-; 	mov	[XR],XL
-;         mov     M_WORD [compsp],XR    ; smashed if call OSINT again (SYSGC)
-;         mov     M_WORD [sav_compsp],XR ; used by popregs
-; 
-; push1:	popad
-; 	ret
-; 
-; 	global	popregs
-; popregs:
-; 	pushad
-; 	cld
-; 	lea	XL,[sav_block]
-;         lea     XR,[reg_block]         ; unload saved registers
-; 	mov	WA,r_size/4
-;    rep  movsd                          ; restore from temp area
-; 	mov	M_WORD [reg_cp],W0
-; 
-;         mov     XR,M_WORD [sav_compsp] ; saved compiler's stack
-;         or      XR,XR                  ; is there one?
-;         je      pop1                   ; jump if none yet
-;         mov     XL,M_WORD [XR]         ; retrieve collectable XL
-;         mov     M_WORD [reg_xl],XL     ; update XL
-;         add     XR,CFP_B               ; update compiler's sp
-;         mov     M_WORD [compsp],XR
-; 
-; pop1:	popad
-; 	ret
+;
+;       Save and restore MINIMAL and interface registers on stack.
+;       Used by any routine that needs to call back into the MINIMAL
+;       code in such a way that the MINIMAL code might trigger another
+;       SYSxx call before returning.
+;
+;       Note 1:  pushregs returns a collectable value in XL, safe
+;       for subsequent call to memory allocation routine.
+;
+;       Note 2:  these are not recursive routines.  Only reg_xl is
+;       saved on the stack, where it is accessible to the garbage
+;       collector.  Other registers are just moved to a temp area.
+;
+;       Note 3:  popregs does not restore REG_CP, because it may have
+;       been modified by the Minimal routine called between pushregs
+;       and popregs as a result of a garbage collection.  Calling of
+;       another SYSxx routine in between is not a problem, because
+;       CP will have been preserved by Minimal.
+;
+;       Note 4:  if there isn't a compiler stack yet, we don't bother
+;       saving XL.  This only happens in call of nextef from sysxi when
+;       reloading a save file.
+;
+;
 	global	save_regs
 save_regs:
 	mov	M_WORD [save_cp],CP
@@ -491,7 +451,7 @@ stackinit:
  
  min1:  
 	mov     W0,M_WORD [minimal_id]	; get ordinal
-	call   M_WORD [calltab+W0*4]    ; off to the Minimal code
+	call   M_WORD [calltab+W0*CFP_B]    ; off to the Minimal code
  
 	mov     XS,M_WORD [osisp]	; switch to OSINT stack
  
@@ -842,10 +802,10 @@ RTI_:
         jae     RTI_1		; jump if >= +2147483648
 RTI_3:  push    WA             ; protect against C routine usage.
         push    W0             ; push RA MSH
-        push    dword [reg_ra]  ; push RA LSH
+        push    M_WORD [reg_ra]  ; push RA LSH
 	extern	f_2_i
         call	f_2_i		; float to integer
-	add	esp,8
+	add	XS,2*CFP_B
         xchg    W0,WC         ; return integer in WC (IA)
         pop     WA             ; restore WA
         clc
@@ -862,22 +822,6 @@ RTI_0:  btc     W0,31                  ; make negative again
 RTI_1:  stc                             ; return C=1 for too large to convert
         ret
 
-;       ITR_ - convert integer in IA to real in RA
-
-	global	ITR_
-ITR_:
-        push    WA             ; preserve
-        push    WC             ; push IA
-	extern	i_2_f
-        call	i_2_f		; integer to float
-	add	esp,4
-	fstp	qword [reg_ra]
-        pop     WA             ; restore WA
-	fwait
-	ret
-
-;----------
-
 	%macro	real_op 2
 	global	%1
 	extern	%2
@@ -886,9 +830,6 @@ ITR_:
 	call	%2
 	ret
 %endmacro
-
-;	math_op RTI_,f_rti
-;	math_op ITR_,f_itr
 
 	real_op	LDR_,f_ldr
 	real_op	STR_,f_str
@@ -906,6 +847,9 @@ ITR_:
 	call	%2
 	ret
 %endmacro
+
+;	int_op RTI_,f_rti
+	int_op ITR_,f_itr
 
 	%macro	math_op 2
 	global	%1
@@ -928,10 +872,10 @@ ITR_:
 
 	global	CPR_
 CPR_:
-        mov     W0, dword [reg_ra+4]	; fetch msh
-        cmp     W0, 0x80000000        	; test msh for -0.0
+        mov     eax, dword [reg_ra+4]	; fetch msh
+        cmp     eax, 0x80000000        	; test msh for -0.0
         je      cpr050            	; possibly
-        or      W0, W0               	; test msh for +0.0
+        or      eax, eax               	; test msh for +0.0
         jnz     cpr100            	; exit if non-zero for cc's set
 cpr050: cmp     dword [reg_ra], 0     	; true zero, or denormalized number?
         jz      cpr100            	; exit if true zero
@@ -958,108 +902,14 @@ tryfpu:
 	ret
 
 
-; procedures needed for save file / load module support -- debug later
-; 
-;
-;-----------
-;
-;       get_fp  - get C caller's FP (frame pointer)
-;
-;       get_fp() returns the frame pointer for the C function that called
-;       this function.  HOWEVER, THIS FUNCTION IS ONLY CALLED BY ZYSXI.
-;
-;       C function zysxi calls this function to determine the lowest USEFUL
-;       word on the stack, so that only the useful part of the stack will be
-;       saved in the load module.
-;
-;       The flow goes like this:
-;
-;       (1) User's spitbol program calls EXIT function
-;
-;       (2) spitbol compiler calls interface routine sysxi to handle exit
-;
-;       (3) Interface routine sysxi passes control to ccaller which then
-;           calls C function zysxi
-;
-;       (4) C function zysxi will write a load module, but needs to save
-;           a copy of the current stack in the load module.  The base of
-;           the part of the stack to be saved begins with the frame of our
-;           caller, so that the load module can execute a return to ccaller.
-;
-;           This will allow the load module to pretend to be returning from
-;           C function zysxi.  So, C function zysxi calls this function,
-;           get_fp, to determine the BASE OF THE USEFUL PART OF THE STACK.
-;
-;           We cheat just a little bit here.  C function zysxi can (and does)
-;           have local variables, but we won't save them in the load module.
-;           Only the portion of the frame established by the 80386 call
-;           instruction, from BP up, is saved.  These local variables
-;           aren't needed, because the load module will not be going back
-;           to C function zysxi.  Instead when function restart returns, it
-;           will act as if C function zysxi is returning.
-;
-;       (5) After writing the load module, C function zysxi calls C function
-;           zysej to terminate spitbol's execution.
-;
-;       (6) When the resulting load module is executed, C function main
-;           calls function restart.  Function restart restores the stack
-;           and then does a return.  This return will act as if it is
-;           C function zysxi doing the return and the user's program will
-;           continue execution following its call to EXIT.
-;
-;       On entry to _get_fp, the stack looks like
-;
-;               /      ...      /
-;       (high)  |               |
-;               |---------------|
-;       ZYSXI   |    old PC     |  --> return point in CCALLER
-;         +     |---------------|  USEFUL part of stack
-;       frame   |    old BP     |  <<<<-- BP of get_fp's caller
-;               |---------------|     -
-;               |     ZYSXI's   |     -
-;               /     locals    /     - NON-USEFUL part of stack
-;               |               |     ------
-;       ======= |---------------|
-;       SP-->   |    old PC     |  --> return PC in C function ZYSXI
-;       (low)   +---------------+
-;
-;       On exit, return CP in EAX. This is the lower limit on the
-;       size of the stack.
  
  
-	global	get_fp
+	global	get_fp			; get frame pointer
 get_fp: 
-         mov     W0,M_WORD [reg_xs]      ; Minimal's XS
+         mov     W0,M_WORD [reg_xs]     ; Minimal's XS
          add     W0,4           	; pop return from call to SYSBX or SYSXI
          ret                    	; done
-;
-;-----------
-;
-;       restart - restart for load module
-;
-;       restart( char *dummy, char *stackbase ) - startup compiler
-;
-;       The OSINT main function calls restart when resuming execution
-;       of a program from a load module.  The OSINT main function has
-;       reset global variables except for the stack and any associated
-;       variables.
-;
-;       Before restoring stack, set up values for proper checking of
-;       stack overflow. (initial sp here will most likely differ
-;       from initial sp when compile was done.)
-;
-;       It is also necessary to relocate any addresses in the the stack
-;       that point within the stack itself.  An adjustment factor is
-;       calculated as the difference between the STBAS at exit() time,
-;       and STBAS at restart() time.  As the stack is transferred from
-;       TSCBLK to the active stack, each word is inspected to see if it
-;       points within the old stack boundaries.  If so, the adjustment
-;       factor is subtracted from it.
-;
-;       We use Minimal's INSTA routine to initialize static variables
-;       not saved in the Save file.  These values were not saved so as
-;       to minimize the size of the Save file.
-;
+
 	extern	rereloc
 
 	global	restart
@@ -1074,6 +924,7 @@ get_fp:
 ;	scstr is offset to start of string in SCBLK, or two words
 scstr	equ	CFP_C+CFP_C
 
+;
 restart:
         pop     W0                      ; discard return
         pop     W0                     	; discard dummy
@@ -1176,7 +1027,7 @@ re4:	mov	W0,M_WORD [STBAS]
         push    M_WORD [outptr]        	; swcoup(outptr)
 	extern 	swcoup
 	call	swcoup
-	add	esp,4
+	add	XS,CFP_B
 
 ;       Jump to Minimal code to restart a save file.
 

@@ -1,9 +1,6 @@
-# X32 SPITBOL makefile using gcc
-#
+# SPITBOL makefile using gcc
 
-WS?=32
-#WS=64
-#WS=32
+WS?=64
 
 DEBUG?=0
 EXECUTABLE=spitbol
@@ -22,8 +19,6 @@ MINPATH=./
 OSINT=./osint
 
 vpath %.c $(OSINT)
-
-
 
 CC	=	gcc
 ASM	=	nasm
