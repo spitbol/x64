@@ -124,7 +124,7 @@ struct	efblk {
 
 struct	icblk {
     word	typ;		//  type word - b$icl
-    IATYPE	val;
+    long	val;
 };
 
 /*

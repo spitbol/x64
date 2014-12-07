@@ -207,12 +207,12 @@ restore2str()
 int
 getint(icp,pword)
 struct icblk *icp;
-IATYPE *pword;
+long *pword;
 {
     register char *p, c;
     struct scblk *scp;
     word i;
-    IATYPE result;
+    long result;
     int sign;
 
     sign = 1;
@@ -228,9 +228,9 @@ IATYPE *pword;
         } val;
         val.rcvals[0] = ((struct rcblk *)icp)->rcvals[0];
         val.rcvals[1] = ((struct rcblk *)icp)->rcvals[1];
-        result = (IATYPE)val.rcval;
+        result = (long)val.rcval;
 #else
-        result = (IATYPE)(((struct rcblk *)icp)->rcval);
+        result = (long)(((struct rcblk *)icp)->rcval);
 #endif
     }
 #endif
@@ -240,7 +240,7 @@ IATYPE *pword;
             return 0;
         i = scp->len;
         p = scp->str;
-        result = (IATYPE)0;
+        result = (long)0;
         while (i && *p == ' ') {		// remove leading blanks
             p++;
             i--;
@@ -266,7 +266,7 @@ int
 zyshs()
 {
     word	retval;
-    IATYPE	val;
+    long	val;
     register struct icblk *icp = WA (struct icblk *);
     register struct scblk *scp;
 
@@ -304,19 +304,19 @@ zyshs()
                     pTICBLK->val = databts;
                     return EXIT_8;
                 case 2:
-                    pTICBLK->val = (IATYPE)basemem;
+                    pTICBLK->val = (long)basemem;
                     return EXIT_8;
                 case 3:
-                    pTICBLK->val = (IATYPE)topmem;
+                    pTICBLK->val = (long)topmem;
                     return EXIT_8;
                 case 4:
                     pTICBLK->val = stacksiz - 400;	// safety margin
                     return EXIT_8;
                 case 5:							// stack in use
-                    pTICBLK->val = stacksiz - (XS(IATYPE) - (IATYPE)lowsp);
+                    pTICBLK->val = stacksiz - (XS(long) - (long)lowsp);
                     return EXIT_8;
                 case 6:
-                    pTICBLK->val = sizeof(IATYPE);
+                    pTICBLK->val = sizeof(long);
                     return EXIT_8;
                 default:
                     return EXIT_1;

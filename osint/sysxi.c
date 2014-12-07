@@ -128,7 +128,7 @@ zysxi()
 
 #if !EXECFILE
     //	Don't accept request to write executable files.
-    if ( IA(IATYPE) >= 0 )
+    if ( IA(long) >= 0 )
         return  EXIT_1;
 #endif					// !EXECFILE
 
@@ -148,19 +148,19 @@ zysxi()
         mystrcpy(fileName, scfn->str);
     else
         mystrcpy(fileName,                // default file name
-                 IA(IATYPE) < 0 ? SAVE_FILE : AOUT_FILE);
+                 IA(long) < 0 ? SAVE_FILE : AOUT_FILE);
     retval = openaout(fileName, tmpfnbuf,
-                      (IA(IATYPE) < 0 ? 0 : IO_EXECUTABLE)		// executable?
+                      (IA(long) < 0 ? 0 : IO_EXECUTABLE)		// executable?
                      );
     unmake_c_str(&(scfn->str[scfn->len]), savech);
 
 
-    if (IA(IATYPE) < 0 ) {
+    if (IA(long) < 0 ) {
         retval |= putsave(stackbase, stacklength);	// write save file
     }
 
 #if EXECFILE
-    if (IA(IATYPE) > 0 ) {
+    if (IA(long) > 0 ) {
 
         /*
         /	Copy entire stack into local storage of temporary SCBLK.
@@ -188,7 +188,7 @@ fail:
     /	load module or save file has been successfully written.
     /   If called with anything other than +4 or -4, terminate execution.
     */
-    if (IA(IATYPE) == 4 || IA(IATYPE) == -4) {
+    if (IA(long) == 4 || IA(long) == -4) {
         SET_WA( 1 );			// flag continuation to caller
         return NORMAL_RETURN;
     }

@@ -3,8 +3,8 @@
 
 WS?=32
 #WS=64
-#WS=x64
 #WS=32
+
 DEBUG?=0
 EXECUTABLE=spitbol
 UNICODE?=0

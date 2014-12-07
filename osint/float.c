@@ -63,15 +63,25 @@ void f_ngr() {			// negate real
 	return;
 }
 
-IATYPE f_2_i(ra) 		// float to integer
+void f_itr() {			// integer to real
+	reg_ra = reg_ia;
+	return;
+}
+
+int f_rti() {			// real to integer
+	reg_ia = reg_ra;
+	return 0;
+}
+
+long f_2_i(ra) 		// float to integer
 double ra;
 {
-    return (IATYPE)ra;
+    return (long)ra;
 }
 
 
 double i_2_f(ia)		// integer to float
-IATYPE ia;
+long ia;
 {
     return ia;
 }

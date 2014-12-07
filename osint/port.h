@@ -137,16 +137,16 @@ This file is part of Macro SPITBOL.
 
 #define GCCx86 (GCCi32 | GCCi64)
 
-typedef long word;
-typedef unsigned long uword;
+//	minimal datatypes in C. word is long.
+//	integer accumulator is long. real accumulator is double
 
-// Size of integer accumulator
-typedef long IATYPE;
+typedef long word;		// minimal word as signed
+typedef unsigned long uword;	// minimal word as unsigned value
 
-/*
-/   Define the default end of line characters.  Use Unix definitions
-/   as the default.  Override in systype.h.
-*/
+
+//   Define the default end of line characters.  Use Unix definition as the default.
+//  Override in systype.h.
+
 #ifndef EOL
 #define EOL	'\n'
 #endif

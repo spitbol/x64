@@ -887,6 +887,9 @@ ITR_:
 	ret
 %endmacro
 
+;	math_op RTI_,f_rti
+;	math_op ITR_,f_itr
+
 	real_op	LDR_,f_ldr
 	real_op	STR_,f_str
 	real_op	ADR_,f_adr
@@ -895,6 +898,15 @@ ITR_:
 	real_op	DVR_,f_dvr
 	real_op	NGR_,f_ngr
 	
+	%macro	int_op 2
+	global	%1
+	extern	%2
+%1:
+	mov	M_WORD [reg_ia],IA
+	call	%2
+	ret
+%endmacro
+
 	%macro	math_op 2
 	global	%1
 	extern	%2

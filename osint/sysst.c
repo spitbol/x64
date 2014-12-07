@@ -64,7 +64,7 @@ This file is part of Macro SPITBOL.
 zysst()
 
 {
-    IATYPE	whence, temp;
+    long	whence, temp;
     FILEPOS  offset;
     register struct fcblk *fcb = WA (struct fcblk *);
     register struct ioblk *iob = ((struct ioblk *) (fcb->iob));
@@ -144,7 +144,7 @@ zysst()
     SET_RA( offset );
 #else
     //  return resulting position in IA.  01.02
-    SET_IA( (IATYPE)offset );
+    SET_IA( (long)offset );
 #endif
 
     // normal return

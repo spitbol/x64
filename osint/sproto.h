@@ -80,7 +80,7 @@ extern	char **		getargs (int argc, char *argv[]);
 extern	double		get_ra ( void );
 extern   FILEPOS     geteof ( struct ioblk *ioptr );
 extern	void		gethost ( struct scblk *scptr, word maxlen );
-extern	int			getint ( struct icblk *icp, IATYPE *pword );
+extern	int			getint ( struct icblk *icp, long *pword );
 extern	char		*getnum ( char *cp, uword *ip );
 extern	File_handle	getprfd ( void );
 extern	struct ioblk *	getpriob ( void );
