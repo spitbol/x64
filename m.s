@@ -734,8 +734,8 @@ SYSXI:	mov	M_WORD [reg_xs],XS
 	global	CVD_
 CVD_:
         xchg    W0,WC         ; IA to EAX
-        cdq                     ; sign extend
-        idiv    dword [ten]	; divide by 10. WC = remainder (negative)
+        CDQ                     ; sign extend
+        idiv    M_WORD [ten]	; divide by 10. WC = remainder (negative)
         neg     WC             ; make remainder positive
         add     dl,0x30         ; convert remainder to ascii ('0')
         mov     WA,WC         ; return remainder in WA
@@ -750,7 +750,7 @@ DVI_:
         push    CP              ; preserve CP
         xchg    CP ,W0         ; divisor to CP 
         xchg    W0,WC         ; dividend in W0
-        cdq                     ; extend dividend
+        CDQ                     ; extend dividend
         idiv    CP              ; perform division. W0=quotient, WC=remainder
         xchg    WC,W0         ; place quotient in WC (IA)
         pop     CP              ; restore CP
@@ -766,7 +766,7 @@ RMI_:
         push    CP              ; preserve CP
         xchg    CP ,W0         ; divisor to CP 
         xchg    W0,WC         ; dividend in W0
-        cdq                     ; extend dividend
+        CDQ                     ; extend dividend
         idiv    CP              ; perform division. W0=quotient, WC=remainder
         pop     CP              ; restore CP
         xor     W0,W0         ; clear overflow indicator

@@ -23,6 +23,8 @@
 	%define LOG_CFP_B 2
 	%define CFP_C_VAL	4
 	%define LOG_CFP_C 2
+
+	%define	CDQ	cdq	; sign extend (32 bits)
 %else
 	%define CP	RBP
 	%define CP	RBP
@@ -47,4 +49,7 @@
 	%define D_REAL	DQ
 	%define CFP_C_VAL	8
 	%define LOG_CFP_C 3
+
+	%define	CDQ	cqo	; sign extend (64 bits)
+
 %endif	
