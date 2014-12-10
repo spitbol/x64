@@ -27,14 +27,14 @@ extern uword compsp;
 extern uword osisp;
 extern uword lowspmin;
 
-uword zz_xl;
-uword zz_xr;
-uword zz_xs;
-uword zz_wa;
-uword zz_wb;
-uword zz_wc;
-uword zz_w0;
-uword zz_cp;
+uword save_xl;
+uword save_xr;
+uword save_xs;
+uword save_wa;
+uword save_wb;
+uword save_wc;
+uword save_w0;
+uword save_cp;
 uword zz_zz;
 uword zz_ln;
 
@@ -109,7 +109,7 @@ void zz_init() {
 char * zz_charp;
 
 void zz_str() {
-// print memory block pointed to by zz_cp as string.
+// print memory block pointed to by save_cp as string.
 // print up to 20 characters, or until find non-printable character.
 	char * cp;
 	cp = zz_charp;
@@ -146,35 +146,35 @@ void zz() {
 	// print registers that have changed since last statement
 
 	// see if any have changed.
-	if (zz_xl != last_xl)  changed += 1;
-	if (zz_xr != last_xr)  changed += 1;
-	if (zz_xs != last_xs)  changed += 1;
-	if (zz_cp != last_cp)  changed += 1;
-	if (zz_wa != last_wa)  changed += 1;
-	if (zz_wb != last_wb)  changed += 1;
-	if (zz_wc != last_wc)  changed += 1;
-	if (zz_w0 != last_w0)  changed += 1;
+	if (save_xl != last_xl)  changed += 1;
+	if (save_xr != last_xr)  changed += 1;
+	if (save_xs != last_xs)  changed += 1;
+	if (save_cp != last_cp)  changed += 1;
+	if (save_wa != last_wa)  changed += 1;
+	if (save_wb != last_wb)  changed += 1;
+	if (save_wc != last_wc)  changed += 1;
+	if (save_w0 != last_w0)  changed += 1;
   changed = 0; // bypass printout
 	if (changed) {
 /* marked changed Minimal registers with "!" to make it easy to search
    backward for last statement that changed a register. */
 		prtnl();
-		if (zz_xl != last_xl)
-			{ prtdif("xl.esi", last_xl, zz_xl, listed); listed += 1; }
-		if (zz_xr != last_xr)
-			{ prtdif("xr.edi", last_xr, zz_xr, listed); listed += 1; }
-		if (zz_xs != last_xs)
-			{ prtdif("xs.esp", last_xs, zz_xs, listed); listed += 1; }
-		if (zz_cp != last_cp)
-			{ prtdif("cp.ebp", last_cp, zz_cp, listed); listed += 1; }
-		if (zz_wa != last_wa)
-			{ prtdif("wa.ecx", last_wa, zz_wa, listed); listed += 1; }
-		if (zz_wb != last_wb)
-			{ prtdif("wb.ebx", last_wb, zz_wb, listed); listed += 1; }
-		if (zz_wc != last_wc)
-			{ prtdif("wc.edx", last_wc, zz_wc, listed); listed += 1; }
-		if (zz_w0 != last_w0)
-			{ prtdif("w0.eax", last_w0, zz_w0, listed); listed += 1; }
+		if (save_xl != last_xl)
+			{ prtdif("xl.esi", last_xl, save_xl, listed); listed += 1; }
+		if (save_xr != last_xr)
+			{ prtdif("xr.edi", last_xr, save_xr, listed); listed += 1; }
+		if (save_xs != last_xs)
+			{ prtdif("xs.esp", last_xs, save_xs, listed); listed += 1; }
+		if (save_cp != last_cp)
+			{ prtdif("cp.ebp", last_cp, save_cp, listed); listed += 1; }
+		if (save_wa != last_wa)
+			{ prtdif("wa.ecx", last_wa, save_wa, listed); listed += 1; }
+		if (save_wb != last_wb)
+			{ prtdif("wb.ebx", last_wb, save_wb, listed); listed += 1; }
+		if (save_wc != last_wc)
+			{ prtdif("wc.edx", last_wc, save_wc, listed); listed += 1; }
+		if (save_w0 != last_w0)
+			{ prtdif("w0.eax", last_w0, save_w0, listed); listed += 1; }
 		prtnl();
 	}
 
@@ -185,16 +185,16 @@ void zz() {
 if (prtregs) {
 
 		// print register values before the statement was executed
-		prtreg("xl.esi", zz_xl);
-		prtreg("xr.edi", zz_xr);
-		prtreg("xs.esp", zz_xs);
+		prtreg("xl.esi", save_xl);
+		prtreg("xr.edi", save_xr);
+		prtreg("xs.esp", save_xs);
 		// cp is last on line, so don't print it zero
-		if (zz_cp) prtreg("cp.ebp", zz_cp);
+		if (save_cp) prtreg("cp.ebp", save_cp);
 		fprintf(stderr, "\n");
-		prtreg("wa.ecx", zz_wa);
-		prtreg("wb.ebx", zz_wb);
-		prtreg("wc.edx", zz_wc);
-		prtreg("w0.eax", zz_w0);
+		prtreg("wa.ecx", save_wa);
+		prtreg("wb.ebx", save_wb);
+		prtreg("wc.edx", save_wc);
+		prtreg("w0.eax", save_w0);
 		fprintf(stderr, "\n");
 }
 //	}
@@ -207,9 +207,9 @@ if (prtregs) {
 	zz_last = zz_zz;
 
 	// save current register contents.
-	last_xl = zz_xl; last_xr = zz_xr; last_xs = zz_xs; last_cp = zz_cp;
+	last_xl = save_xl; last_xr = save_xr; last_xs = save_xs; last_cp = save_cp;
 
-	last_wa = zz_wa; last_wb = zz_wb; last_wc = zz_wc; last_w0 = zz_w0;
+	last_wa = save_wa; last_wb = save_wb; last_wc = save_wc; last_w0 = save_w0;
 
 }
 void zz_0() {

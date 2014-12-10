@@ -24,6 +24,10 @@
 	%define CFP_C_VAL	4
 	%define LOG_CFP_C 2
 
+	%define	LODS_W	lodsd
+	%define	STOS_W	stosd
+	%define MOVS_W	movsw
+
 	%define	CDQ	cdq	; sign extend (32 bits)
 %else
 	%define CP	RBP
@@ -49,6 +53,10 @@
 	%define D_REAL	DQ
 	%define CFP_C_VAL	8
 	%define LOG_CFP_C 3
+
+	%define	LODS_W	lodsq
+	%define	STOS_W	stosq
+	%define MOVS_W	movsq
 
 	%define	CDQ	cqo	; sign extend (64 bits)
 

@@ -217,6 +217,7 @@ osisp:  D_WORD      0               	; OSINT's stack pointer
 	global	_rc_
 _rc_:	dd   0				; return code from osint procedure
 
+	align	CFP_B
 	global	save_cp
 	global	save_xl
 	global	save_xr
@@ -1035,3 +1036,12 @@ re4:	mov	W0,M_WORD [STBAS]
 	mov	M_WORD [minimal_id],W0
         call	minimal			; no return
 
+	global	zzz
+	extern	zz,zz_cp,zz_xl,zz_xr,zz_wa,zz_wb,zz_wc,zz_w0
+zzz:
+	pushf
+	call	save_regs
+	call	zz
+	call	restore_regs
+	popf
+	ret
