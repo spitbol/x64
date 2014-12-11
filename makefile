@@ -1,6 +1,6 @@
 # SPITBOL makefile using gcc
 
-WS?=64
+WS?=32
 
 DEBUG?=0
 EXECUTABLE=spitbol
@@ -29,7 +29,7 @@ OSINT=./osint
 vpath %.c $(OSINT)
 
 CC	=	gcc
-ASM	=	bin/nasm.$(OS)
+ASM	=	nasm
 
 ifeq	($(DEBUG),0)
 CFLAGS= -D m$(WS) -m$(WS) 
@@ -48,7 +48,7 @@ endif
 LEX=	lex.spt
 COD=    asm.spt
 ERR=    err.spt
-BASEBOL =   ./bin/spitbol.$(OS)
+BASEBOL =   ./bin/spitbol
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
