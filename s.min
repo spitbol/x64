@@ -8046,6 +8046,7 @@ RSTRT  PRC  E,0              ENTRY POINT
 *      BINARY PLUS (ADDITION)
 *
 O_ADD  ENT                   ENTRY POINT
+*Z+
        JSR  ARITH            FETCH ARITHMETIC OPERANDS
        ERR  001,Addition left operand is not numeric
        ERR  002,Addition right operand is not numeric
@@ -21801,6 +21802,7 @@ GTN36  MOV  XR,(XS)+         RELOAD ORIGINAL ARGUMENT
 *      (WC)                  DESTROYED
 *
 GTNVR  PRC  E,1              ENTRY POINT
+*Z-
        BNE  (XR),=B_NML,GNV02 JUMP IF NOT NAME
        MOV  XR,NMBAS(XR)     ELSE LOAD NAME BASE IF NAME
        BLO  XR,STATE,GNV07   SKIP IF VRBLK (IN STATIC REGION)
@@ -22020,6 +22022,7 @@ GNV19  MOV  WC,BTVAL         LOAD TEST BIT
 *      (XR)                  UNCHANGED (ONLY ON CONVERT ERROR)
 *
 GTPAT  PRC  E,1              ENTRY POINT
+*Z+
        BHI  (XR),=P_AAA,GTPT5 JUMP IF PATTERN ALREADY
 *
 *      HERE IF NOT PATTERN, TRY FOR STRING
@@ -22667,6 +22670,7 @@ GTVR4  EXI                   RETURN TO CALLER
 *      CHANGES TO THE BUILD PROCESS (DS 8 May 2013).
 *
 HASHS  PRC  E,0              ENTRY POINT
+*Z-
        MOV  WC,=E_HNW        GET NUMBER OF WORDS TO USE
        BZE  WC,HSHSA         BRANCH IF ONE CHARACTER PER WORD
        MOV  WC,SCLEN(XR)     LOAD STRING LENGTH IN CHARACTERS
@@ -22811,6 +22815,7 @@ HSH00  MOV  XL,(XS)+         RESTORE XL
 *      (WA)                  DESTROYED
 *
 ICBLD  PRC  E,0              ENTRY POINT
+*Z+
        MFI  XR,ICBL1         COPY SMALL INTEGERS
        BLE  XR,=NUM02,ICBL3  JUMP IF 0,1 OR 2
 *
@@ -23231,7 +23236,6 @@ INST2  SCH  WB,(XR)+         STORE NEXT CODE
        BCT  WC,INST2         LOOP TILL ALL STORED
        CSC  XR               COMPLETE STORE CHARACTERS
        MOV  XR,WA            RETURN CURRENT STATIC PTR
-*Z+
        EXI                   RETURN TO CALLER
        ENP                   END PROCEDURE INSTA
        EJC
@@ -23253,6 +23257,7 @@ INST2  SCH  WB,(XR)+         STORE NEXT CODE
 *      (WB,WC)               DESTROYED
 *
 IOFCB  PRC  N,3              ENTRY POINT
+*Z+
        JSR  GTSTG            GET ARG AS STRING
        PPM  IOFC2            FAIL
        MOV  XL,XR            COPY STRING PTR
