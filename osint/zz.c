@@ -131,6 +131,7 @@ void zz() {
 	int listed = 0;
 
 	zz_calls++;
+//	if (zz_calls < 13000)	return;	// bypass initial code
 	if (zz_calls > 100000) return;
 /*
 	return;
@@ -154,6 +155,7 @@ void zz() {
 	if (save_wb != last_wb)  changed += 1;
 	if (save_wc != last_wc)  changed += 1;
 	if (save_w0 != last_w0)  changed += 1;
+  changed = 1; // bypass printout
   changed = 0; // bypass printout
 	if (changed) {
 /* marked changed Minimal registers with "!" to make it easy to search
@@ -181,7 +183,8 @@ void zz() {
 //	if (zz_calls % 3 == 1) {
 //	if (zz_calls>0) {
 	int prtregs=1;
- prtregs=0;
+	 prtregs=0;
+
 if (prtregs) {
 
 		// print register values before the statement was executed
