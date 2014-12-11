@@ -105,6 +105,8 @@ CONFIG.32
 	LOG_CFP_C = '2'
 *	OP_W is instruction suffix for word-size
 	OP_W = 'D'
+*	OP_C is instruction suffix for Minimal character size
+	OP_C = 'B'
 						:(CONFIG.DONE)
 
 CONFIG.64
@@ -115,16 +117,12 @@ CONFIG.64
 	LOG_CFP_B = '3'
 	LOG_CFP_C = '3'
 	OP_W = 'Q'
+	OP_C = 'B'
 
 CONFIG.DONE
 
-*	opcode suffix for byte ops (LODS, STOS ...)
-*	OP_C is instruction suffix for Minimal character size
-	OP_C = 'B'
-
 
 *	Set Z_TRACE to enable instruction by instruction trace
-	Z_TRACE = 1
 	Z_TRACE = 0
 *	Z_LIMIT is maximum number of calls to be generated if non-zero
 	Z_LIMIT = 000
@@ -153,7 +151,7 @@ SKIP_INIT	S BREAK(':') . ON ':' REM . OFF	:F(RETURN)
 SKIP_INIT.END
 
 *	SKIP_INIT('START:INI03')
-*   	SKIP_INIT('GBCOL:GTARR')
+   	SKIP_INIT('GBCOL:GTARR')
 *	SKIP_INIT('GTN01:GTNVR')
 *	SKIP_INIT('BPF05:BPF07')
 *	SKIP_INIT('SCV12:SCV19')
@@ -715,7 +713,7 @@ MEMMEM
   GENOP('MOV','W0',T)				:(RETURN)
 
 -STITL PRCENT(N)
-PRCENT PRCENT = 'PRC_  +  CFP_B * ' ( N - 1)	:(RETURN)
+PRCENT PRCENT = 'PRC_' '+'  (CFP_B * ( N - 1)) :(RETURN)
 
 -STITL OUTSTMT(OSTMT)LABEL,OPCODE,OP1,OP2,OP3,COMMENT)
 *  This module writes the components of the statement
@@ -795,7 +793,7 @@ CHKTRACE
 	IDENT(UOPCODE,'BSW')			:S(RETURN)
 	IS_EXEC = IS_EXECUTABLE[UOPCODE]
 	Z_EXEC = NE(Z_TRACE)  IDENT(INLABEL, 'S_AAA') 1
-*	Z_EXEC = GT(NLINES,2186) 1
+	Z_EXEC = GT(NLINES,2186) 1
 *	need to skip certain blocks since otherwise get branches that are too long
 *	skip when in code that won't assemble if try to trace
 *	this was discovered on a case-by-case basis.
@@ -803,7 +801,7 @@ CHKTRACE
  	Z_SKIP  = DIFFER(INLABEL) DIFFER(SKIP_ON[INLABEL]) 1
  	Z_SKIP  = DIFFER(INLABEL) DIFFER(SKIP_OFF[INLABEL]) 0
 
-*	NE(Z_SKIP)				:S(RETURN)
+	NE(Z_SKIP)				:S(RETURN)
 	EQ(Z_EXEC)				:S(RETURN)
 	EQ(IS_EXEC)				:S(RETURN)
 *	here to emit trace. need to emit trace after label if there is label
@@ -938,17 +936,17 @@ G.MOV
 						:(OPDONE)
 MOV.XTP
 MOV.XLP
-	IDENT(T.DST,'(XR)+') GENOP('MOVS_w')	:S(OPDONE)
-	GENOP('LODS_W')
+	IDENT(T.DST,'(XR)+') GENOP('MOVS' OP_W)	:S(OPDONE)
+	GENOP('LODS' OP_W)
 	IDENT(T.DST,'-(XS)') GENOP('PUSH','W0')	:S(OPDONE)
 	GENOP('MOV',GETARG(I.DST),'W0')		:(OPDONE)
 MOV.XSP
 	IDENT(T.DST,'(XR)+')		:S(MOV.XSPRP)
 	GENOP('POP',GETARG(I.DST))		:(OPDONE)
 MOV.XSPRP GENOP('POP','W0')
-	GENOP('STOS_W')			:(OPDONE)
+	GENOP('STOS' OP_W)			:(OPDONE)
 MOV.XRP GENOP('MOV','W0',GETARG(I.SRC))
-	GENOP('STOS_W')			:(OPDONE)
+	GENOP('STOS' OP_W)			:(OPDONE)
 MOV.2
 	GENOP('PUSH',GETARG(I.SRC))		:(OPDONE)
 
@@ -1138,7 +1136,7 @@ G.ICV   GENOP('INC',GETARG(I1))    :(OPDONE)
 G.DCV   GENOP('DEC',GETARG(I1))    :(OPDONE)
 
 G.ZER	IDENT(I.TEXT(I1),'(XR)+') GENOP('MOV','W0','0')
-+		GENOP('STOS_W')		:S(OPDONE)
++		GENOP('STOS' OP_W)		:S(OPDONE)
 	IFREG(I1)				:S(G.ZER1)
 	IDENT(I.TEXT(I1),'-(XS)')		:S(G.ZER.XS)
 	GENOP('MOV','W0','0')
@@ -1599,7 +1597,7 @@ G.MVC
 						:(OPDONE)
 *
 	T1 = GENLAB()
-	GENOPL(T1 ':', 'LODS_C')
+	GENOPL(T1 ':', 'LODS' OP_C)
 	GENOP('STOS' OP_C)
 	GENOP('DEC', 'WA')
 	GENOP('JNZ',T1)
@@ -1607,7 +1605,7 @@ G.MVC
 G.MVW
 	Z_SUSPEND = 1
 	GENOP('SHR','WA','LOG_CFP_B')
- 	GENOP('REP','MOVS_W')		
+ 	GENOP('REP','MOVS' OP_W)		
 	Z_SUSPEND = 0
 						:(OPDONE)
 
@@ -1616,13 +1614,13 @@ G.MWB
 	GENOP('STD')
 	GENOP('LEA','XL','[XL-CFP_B]')
 	GENOP('LEA','XR','[XR-CFP_B]')
- 	GENREP('MOVS_W')
+ 	GENREP('MOVS' OP_W)
 	GENOP('CLD')				:(OPDONE)
 
 	GENOP('STD')
 	GENOP('SHR','WA','LOG_CFP_B')
 	GENOP('REP')
-	GENOP('MOVS_W')
+	GENOP('MOVS' OP_W)
 	GENOP('CTD')
 						:(OPDONE)
 

@@ -47,8 +47,8 @@ typedef mword (*PFN)();				// pointer to function
 static union block *scanp;			// used by scanef/nextef
 static pXFNode xnfree = (pXFNode)0;	// list of freed blocks
 
-extern long f_2_i (double ra);
-extern double i_2_f (long ia);
+extern IATYPE f_2_i (double ra);
+extern double i_2_f (IATYPE ia);
 extern double f_add (double arg, double ra);
 extern double f_sub (double arg, double ra);
 extern double f_mul (double arg, double ra);

@@ -188,17 +188,6 @@ calltab:
 	section	.data
 %%desc:	db	%3,0
 	section	.text
-	mov	M_WORD [zz_id],%1
-	mov	M_WORD [zz_zz],%2
-	mov	M_WORD [zz_de],%%desc
-	call	zzz
-	%endmacro
-
-%ifdef ZZZOLD
-	%macro	ZZZ	3
-	section	.data
-%%desc:	db	%3,0
-	section	.text
 	pushf
 	pushad
 	mov	M_WORD [zz_id],%1
@@ -216,6 +205,3 @@ calltab:
 	popad
 	popf
 	%endmacro
-%endif
-
-	global	REAV0

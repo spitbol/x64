@@ -29,82 +29,123 @@ This file is part of Macro SPITBOL.
 #if (FLOAT & !FLTHDWR) | EXTFUN
 
 
-void f_ldr() {			// load real
+/*
+ * f_ldr - load real
+ */
+void f_ldr() {
 	reg_ra = * (double *) reg_w0;
 	return;
 }
-void f_str() {			// store real
+
+/*
+ * f_str - store real
+ */
+void f_str() {
 	*((double *) reg_w0) = reg_ra;
 	return;
 }
 
-void f_adr() {			// add real
+/*
+ * f_adr - add value to RA
+ */
+void f_adr() {
 	reg_ra += * (double *) reg_w0;
 	return;
 }
 
-void f_sbr() {			// subtract real
+
+/*
+ * f_sbr - subtract value from RA
+ */
+void f_sbr() {
 	reg_ra -= * (double *) reg_w0;
 	return;
 }
 
-void f_mlr() {			// multiply real
+/*
+ * f_mlr - multiply RA by value
+ */
+void f_mlr() {
 	reg_ra *= * (double *) reg_w0;
 	return;
 }
 
-void f_dvr() {			// divide real
+/*
+ * f_dvr - divide RA by value
+ */
+void f_dvr() {
 	reg_ra /= * (double *) reg_w0;
 	return;
 }
 
-void f_ngr() {			// negate real
-	reg_ra = - reg_ra;
+/*
+ * f_ngr - negate value in RA
+ */
+void f_ngr() {
+	reg_ra = - (* (double *) reg_w0);
 	return;
 }
 
-void f_itr() {			// integer to real
-	reg_ra = (double) reg_ia;
-	return;
-}
-
-int f_rti() {			// real to integer
-	reg_ia = reg_ra;
-	return 0;
-}
-
-long f_2_i(ra) 		// float to integer
+/*
+ * f_2_i - float to integer
+ */
+long f_2_i(ra)
 double ra;
 {
     return (long)ra;
 }
 
 
-double f_add(arg, ra)		// float add
+/*
+ * i_2_f - integer to float
+ */
+double i_2_f(ia)
+long ia;
+{
+    return ia;
+}
+
+/*
+ * f_add - floating add to accumulator
+ */
+double f_add(arg, ra)
 double arg,ra;
 {
     return ra+arg;
 }
 
-double f_sub(arg, ra)		// float substract
+/*
+ * f_sub - floating subtract from accumulator
+ */
+double f_sub(arg, ra)
 double arg,ra;
 {
     return ra-arg;
 }
 
-double f_mul(arg, ra)		// float multiply
+/*
+ * f_mul - floating multiply to accumulator
+ */
+double f_mul(arg, ra)
 double arg,ra;
 {
     return ra*arg;
 }
 
-double f_div(arg, ra)		// float divide
+
+/*
+ * f_div - floating divide into accumulator
+ */
+double f_div(arg, ra)
 double arg,ra;
 {
     return ra/arg;
 }
 
-double f_neg(ra)		// float negate
+/*
+ * f_neg - negate accumulator
+ */
+double f_neg(ra)
 double ra;
 {
     return -ra;
