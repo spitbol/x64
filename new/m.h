@@ -27,7 +27,7 @@
 	%define	LODS_B	lodsb
 	%define	LODS_W	lodsd
 	%define MOVS_B	movsb
-	%define MOVS_W	movsd
+	%define MOVS_W	movsw
 	%define	STOS_B	stosb
 	%define	STOS_W	stosd
 	%define	CMPS_B	cmpsb

@@ -873,8 +873,8 @@ RTI_1:  stc                             ; return C=1 for too large to convert
 
 	global	CPR_
 CPR_:
-        mov     W0, dword [reg_ra+4]	; fetch msh
-        cmp     W0, 0x80000000        	; test msh for -0.0
+        mov     eax, dword [reg_ra+4]	; fetch msh
+        cmp     eax, 0x80000000        	; test msh for -0.0
         je      cpr050            	; possibly
         or      W0, W0               	; test msh for +0.0
         jnz     cpr100            	; exit if non-zero for cc's set
