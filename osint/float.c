@@ -80,6 +80,16 @@ double ra;
 }
 
 
+/*
+ * i_2_f - integer to float
+ */
+double i_2_f(ia)
+long ia;
+{
+    return ia;
+}
+
+
 double f_add(arg, ra)		// float add
 double arg,ra;
 {
