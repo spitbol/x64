@@ -48,7 +48,7 @@ endif
 LEX=	lex.spt
 COD=    asm.spt
 ERR=    err.spt
-BASEBOL =   ./bin/spitbol
+BASEBOL =   ./bin/spitbol.$(OS)
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
