@@ -713,7 +713,7 @@ MEMMEM
   GENOP('MOV','W0',T)				:(RETURN)
 
 -STITL PRCENT(N)
-PRCENT PRCENT = 'PRC_' '+'  (CFP_B * ( N - 1)) :(RETURN)
+PRCENT PRCENT = 'PRC_+CFP_B*' ( N - 1)	:(RETURN)
 
 -STITL OUTSTMT(OSTMT)LABEL,OPCODE,OP1,OP2,OP3,COMMENT)
 *  This module writes the components of the statement
