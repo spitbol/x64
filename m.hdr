@@ -165,8 +165,8 @@ calltab:
         extern DVI_
         extern RMI_
         extern CVD_
-        extern ITR_
         extern RTI_
+        extern ITR_
         extern ADR_
         extern SBR_
         extern MLR_
