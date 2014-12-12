@@ -734,7 +734,7 @@ SYSXI:	mov	M_WORD [reg_xs],XS
 ;               WA (ECX) = remainder + '0'
 	global	CVD_
 CVD_:
-        xchg    W0,WC         ; IA to EAX
+        xchg    W0,WC         ; IA to W0
         CDQ                     ; sign extend
         idiv    M_WORD [ten]	; divide by 10. WC = remainder (negative)
         neg     WC             ; make remainder positive
@@ -743,7 +743,7 @@ CVD_:
         xchg    WC,W0         ; return quotient in IA
 	ret
 
-;       DVI_ - divide IA (EDX) by long in EAX
+;       DVI_ - divide IA (EDX) by long in W0
 	global	DVI_
 DVI_:
         or      W0,W0         ; test for 0
@@ -759,7 +759,7 @@ DVI_:
 	ret
 
 	global	RMI_
-;       RMI_ - remainder of IA (EDX) divided by long in EAX
+;       RMI_ - remainder of IA (EDX) divided by long in W0
 
 RMI_:
 	or      W0,W0         ; test for 0
@@ -780,7 +780,7 @@ setovr: mov     al,0x80         ; set overflow indicator
 ;
 ;       The calling convention of the various compilers:
 ;
-;       Integer results returned in EAX.
+;       Integer results returned in W0.
 ;       Float results returned in ST0 for Intel.
 ;       See conditional switches fretst0 and
 ;       freteax in systype.ah for each compiler.
@@ -873,10 +873,10 @@ RTI_1:  stc                             ; return C=1 for too large to convert
 
 	global	CPR_
 CPR_:
-        mov     eax, dword [reg_ra+4]	; fetch msh
-        cmp     eax, 0x80000000        	; test msh for -0.0
+        mov     W0, dword [reg_ra+4]	; fetch msh
+        cmp     W0, 0x80000000        	; test msh for -0.0
         je      cpr050            	; possibly
-        or      eax, eax               	; test msh for +0.0
+        or      W0, W0               	; test msh for +0.0
         jnz     cpr100            	; exit if non-zero for cc's set
 cpr050: cmp     dword [reg_ra], 0     	; true zero, or denormalized number?
         jz      cpr100            	; exit if true zero
