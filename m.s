@@ -836,7 +836,7 @@ RTI__0:
 %ifdef	m32
 	btc     W0,31 
 %else
-	btc,	W0,63
+	btc	W0,63
 %endif
 
         jmp     RTI__3

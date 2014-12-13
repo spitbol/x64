@@ -1,0 +1,324 @@
+; Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+; Copyright 2012-2013 David Shields
+; 
+; This file is part of Macro SPITBOL.
+; 
+;     Macro SPITBOL is free software: you can redistribute it and/or modify
+;     it under the terms of the GNU General Public License as published by
+;     the Free Software Foundation, either version 2 of the License, or
+;     (at your option) any later version.
+; 
+;     Macro SPITBOL is distributed in the hope that it will be useful,
+;     but WITHOUT ANY WARRANTY; without even the implied warranty of
+;     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;     GNU General Public License for more details.
+; 
+;     You should have received a copy of the GNU General Public License
+;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+;
+        section	.text
+
+	%include	"m.h"
+
+	extern	osisp
+	extern	compsp
+	extern	save_regs
+	extern	restore_regs
+	extern	_rc_
+
+%define zz_trace
+%ifdef zz_trace
+	extern	zz
+	extern	zzz
+	extern	zz_cp
+	extern	zz_xl
+	extern	zz_xr
+	extern	zz_xs
+	extern	zz_wa
+	extern	zz_wb
+	extern	zz_wc
+	extern	zz_w0
+	extern	zz_zz
+	extern	zz_id
+	extern	zz_de
+	extern	zz_0
+	extern	zz_1
+	extern	zz_2
+	extern	zz_3
+	extern	zz_4
+	extern	zz_arg
+	extern	zz_num
+%endif
+	global	START
+
+
+;
+;
+;   Table to recover type word from type ordinal
+;
+
+	extern	_rc_
+	global	TYPET
+	section .data
+	
+        D_WORD	B_ART   ; ARBLK type word - 0
+        D_WORD	B_CDC   ; CDBLK type word - 1
+        D_WORD	B_EXL   ; EXBLK type word - 2
+        D_WORD	B_ICL   ; ICBLK type word - 3
+        D_WORD	B_NML   ; NMBLK type word - 4
+        D_WORD	P_ABA   ; P0BLK type word - 5
+        D_WORD	P_ALT   ; P1BLK type word - 6
+        D_WORD	P_ANY   ; P2BLK type word - 7
+; next needed only if support real arithmetic CNRA
+;       D_WORD	B_RCL   ; RCBLK type word - 8
+        D_WORD	B_SCL   ; SCBLK type word - 9
+        D_WORD	B_SEL   ; SEBLK type word - 10
+        D_WORD	B_TBT   ; TBBLK type word - 11
+        D_WORD	B_VCT   ; VCBLK type word - 12
+        D_WORD	B_XNT   ; XNBLK type word - 13
+        D_WORD	B_XRT   ; XRBLK type word - 14
+        D_WORD	B_BCT   ; BCBLK type word - 15
+        D_WORD	B_PDT   ; PDBLK type word - 16
+        D_WORD	B_TRT   ; TRBLK type word - 17
+        D_WORD	B_BFT   ; BFBLK type word   18
+        D_WORD	B_CCT   ; CCBLK type word - 19
+        D_WORD	B_CMT   ; CMBLK type word - 20
+        D_WORD	B_CTT   ; CTBLK type word - 21
+        D_WORD	B_DFC   ; DFBLK type word - 22
+        D_WORD	B_EFC   ; EFBLK type word - 23
+        D_WORD	B_EVT   ; EVBLK type word - 24
+        D_WORD	B_FFC   ; FFBLK type word - 25
+        D_WORD	B_KVT   ; KVBLK type word - 26
+        D_WORD	B_PFC   ; PFBLK type word - 27
+        D_WORD	B_TET   ; TEBLK type word - 28
+;
+;   Table of MINIMAL entry points that can be dded from C
+;   via the minimal function (see inter.asm).
+;
+;   Note that the order of entries in this table must correspond
+;   to the order of entries in the CALL enumeration in osint.h
+;   and osint.inc.
+;
+	global calltab
+calltab:
+        D_WORD	RELAJ
+        D_WORD	RELCR
+        D_WORD	RELOC
+        D_WORD	ALLOC
+        D_WORD	ALOCS
+        D_WORD	ALOST
+        D_WORD	BLKLN
+        D_WORD	INSTA
+        D_WORD	RSTRT
+        D_WORD	START
+        D_WORD	FILNM
+        D_WORD	DTYPE
+;       D_WORD	ENEVS ;  Engine words
+;       D_WORD	ENGTS ;   not used
+
+	global	GBCNT
+	global	HEADV
+	global	MXLEN
+	global	STAGE
+	global	TIMSX
+	global	DNAMB
+	global	DNAMP
+	global	STATE
+	global	B_EFC
+	global	B_ICL
+	global	B_SCL
+	global	B_VCT
+	global	B_XNT
+	global	B_XRT
+	global	STBAS
+	global	STATB
+	global	POLCT
+	global  TYPET
+	global	LOWSPMIN
+	global	FLPRT
+	global	FLPTR
+	global	GTCEF
+	global	HSHTB
+	global	PMHBS
+	global	R_FCB
+	global	C_AAA
+	global	C_YYY
+	global	G_AAA
+	global	W_YYY
+	global	S_AAA
+	global	S_YYY
+	global	R_COD
+	global	KVSTN
+	global	KVDMP
+	global	KVFTR
+	global	KVCOM
+	global	KVPFL
+	global	CSWFL
+        global  STMCS
+        global  STMCT
+	global	B_RCL
+	global	END_MIN_DATA
+
+        extern LDR_
+        extern STR_
+        extern OVR_
+        extern DVI__
+        extern RMI__
+        extern CVD_
+        extern RTI__
+        extern ITR__
+        extern ADR_
+        extern SBR_
+        extern MLR_
+        extern DVR_
+        extern NGR_
+        extern ATN_
+        extern CHP_
+        extern COS_
+        extern ETX_
+        extern LNF_
+        extern SIN_
+        extern SQR_
+        extern TAN_
+        extern CPR_
+	extern	reg_ia
+
+;	Minimal registers CP is kept in memory?
+	extern	reg_cp
+
+	%macro	ZZZ	3
+	section	.data
+%%desc:	db	%3,0
+	section	.text
+	mov	M_WORD [zz_id],%1
+	mov	M_WORD [zz_zz],%2
+	mov	M_WORD [zz_de],%%desc
+	call	zzz
+	%endmacro
+
+%ifdef ZZZOLD
+	%macro	ZZZ	3
+	section	.data
+%%desc:	db	%3,0
+	section	.text
+	pushf
+	pushad
+	mov	M_WORD [zz_id],%1
+	mov	M_WORD [zz_zz],%2
+	mov	M_WORD [zz_de],%%desc
+	mov	M_WORD [zz_cp],ebp
+	mov	M_WORD [zz_xl],esi
+	mov	M_WORD [zz_xr],edi
+	mov	M_WORD [zz_xs],esp
+	mov	M_WORD [zz_wa],ecx
+	mov	M_WORD [zz_wb],ebx
+	mov	M_WORD [zz_wc],edx
+	mov	M_WORD [zz_w0],eax
+	call	zz
+	popad
+	popf
+	%endmacro
+%endif
+
+	global	REAV0
+
+
+;	IA is kept in memory as reg_ia, we use register IA as working register for integer operations
+
+	%macro	LDI_		1
+	mov	IA,%1
+;	mov	M_WORD [reg_ia],IA
+	%endmacro
+	
+	%macro	ADI_		1
+;	mov	IA,M_WORD [reg_ia]
+	add	IA,%1
+	mov	M_WORD [reg_ia],IA
+	%endmacro
+	
+	%macro	MLI_	1
+;	mov	IA,M_WORD [reg_ia]
+	imul	IA,%1
+;	mov	M_WORD [reg_ia],IA
+	%endmacro
+
+	%macro	SBI_		1
+;	mov	IA,M_WORD [reg_ia]
+	sub	IA,%1
+;	MOV	M_WORD [reg_ia],IA
+	%endmacro
+	
+	%macro	RMI_	1
+	mov	W0,%1
+	call	RMI__
+	%endmacro
+
+	%macro	DVI_	1
+	mov	W0,%1
+;	mov	IA,M_WORD [reg_ia]
+	call	DVI__
+	%endmacro
+
+	%macro	STI_		1
+;	mov	IA,M_WORD [reg_ia]
+	mov	%1,IA
+	%endmacro
+	
+	%macro	NGI_	0
+;	mov	IA,M_WORD [reg_ia]
+	neg	IA,
+;	mov	M_WORD [reg_ia],IA
+	%endmacro
+
+	%macro	INO_	1
+	jno	%1
+	%endmacro
+
+	%macro	IOV_	1
+	jo	%1
+	%endmacro
+
+	%macro	IEQ_	1
+;	mov	IA,M_WORD [reg_ia]
+	or	IA,IA
+	je	%1
+	%endmacro
+
+	%macro	IGE_	1
+;	mov	IA,M_WORD [reg_ia]
+	or	IA,IA
+	jge	%1
+	%endmacro
+
+	%macro	IGT_	1
+;	mov	IA,M_WORD [reg_ia]
+	or	IA,IA
+	jg	%1
+	%endmacro
+
+	%macro	ILE_	1
+;	mov	IA,M_WORD [reg_ia]
+	or	IA,IA
+	jle	%1
+	%endmacro
+
+	%macro	ILT_	1
+;	mov	IA,M_WORD [reg_ia]
+	or	IA,IA
+	jl	%1
+	%endmacro
+
+	%macro	INE_	1
+;	mov	IA,M_WORD [reg_ia]
+	or	IA,IA
+	jne	%1
+	%endmacro
+
+	%macro	RTI_	0
+	call	RTI__
+	%endmacro
+
+	%macro	ITR_	0
+	call	ITR__
+	%endmacro
+
