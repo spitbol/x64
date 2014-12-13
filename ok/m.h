@@ -19,9 +19,20 @@
 	%define IA	EDX
 	%define M_WORD	DWORD	; reference to word in memory
 	%define D_WORD	DD	; define value for memory word
+;	%define	CFP_B	4
 	%define LOG_CFP_B 2
 	%define CFP_C_VAL	4
 	%define LOG_CFP_C 2
+
+	%define	LODS_B	lodsb
+	%define	LODS_W	lodsd
+	%define MOVS_B	movsb
+	%define MOVS_W	movsd
+	%define	STOS_B	stosb
+	%define	STOS_W	stosd
+	%define	CMPS_B	cmpsb
+
+	%define	CDQ	cdq	; sign extend (32 bits)
 %else
 	%define CP	RBP
 	%define CP	RBP
@@ -40,9 +51,21 @@
 	%define	IA	RDX
 	%define M_WORD  QWORD
 	%define D_WORD	DQ
+;	%define	CFP_B	8
 	%define LOG_CFP_B 3
 	%define LOG_CFP_C 3
 	%define D_REAL	DQ
 	%define CFP_C_VAL	8
 	%define LOG_CFP_C 3
+
+	%define	LODS_W	lodsq
+	%define	LODS_B	lodsb
+	%define MOVS_B	movsb
+	%define MOVS_W	movsq
+	%define STOS_B	stosb
+	%define	STOS_W	stosq
+	%define	CMPS_B	cmpsb
+
+	%define	CDQ	cqo	; sign extend (64 bits)
+
 %endif	
