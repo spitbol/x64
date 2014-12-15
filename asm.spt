@@ -1174,6 +1174,17 @@ G.BLE
 G.BLO
 G.BHI
 *
+*  The CMP operation only allows literals of 32 bits or less, so if target is
+*  x64 and if the second argument is a literal, then load that literal to W0.
+
+	EQ(CFP_B,4)				:S(BOP.1)
+	DIFFER(I.TEXT(I2),'=CFP_M')			:S(BOP.1)
+	T = GETARG(I2)
+	I2 = MINARG(8,'W0')
+	GENOP('MOV','W0',T)
+BOP.1
+
+*
 *  These operators all have two operands, MEMMEM may apply
 *  Issue target opcode by table lookup.
 *
