@@ -220,23 +220,6 @@ osisp:  D_WORD      0               	; OSINT's stack pointer
 _rc_:	dd   0				; return code from osint procedure
 
 	align	CFP_B
-	global	save_cp
-	global	save_xl
-	global	save_xr
-	global	save_xs
-	global	save_wa
-	global	save_wb
-	global	save_wc
-	global	save_w0
-save_cp:	D_WORD	0		; saved CP value
-save_xl:	D_WORD	0		; saved XL value
-save_xr:	D_WORD	0		; saved XR value
-save_xs:	D_WORD	0		; saved SP value
-save_wa:	D_WORD	0		; saved WA value
-save_wb:	D_WORD	0		; saved WB value
-save_wc:	D_WORD	0		; saved WC value
-save_w0:	D_WORD	0		; saved W0 value
-
 	global	minimal_id
 minimal_id:	D_WORD	0		; id for call to minimal from C. See proc minimal below.
 
@@ -315,29 +298,29 @@ TTYBUF:	D_WORD    0     ; type word
 ;       reloading a save file.
 ;
 ;
-	global	save_regs
+	global	reg_regs
 save_regs:
-	mov	M_WORD [save_cp],CP
-	mov	M_WORD [save_xl],XL
-	mov	M_WORD [save_xr],XR
-	mov	M_WORD [save_xs],XS
-	mov	M_WORD [save_wa],WA
-	mov	M_WORD [save_wb],WB
-	mov	M_WORD [save_wc],WC
-	mov	M_WORD [save_w0],W0
+	mov	M_WORD [reg_cp],CP
+	mov	M_WORD [reg_xl],XL
+	mov	M_WORD [reg_xr],XR
+	mov	M_WORD [reg_xs],XS
+	mov	M_WORD [reg_wa],WA
+	mov	M_WORD [reg_wb],WB
+	mov	M_WORD [reg_wc],WC
+	mov	M_WORD [reg_w0],W0
 	ret
 
 	global	restore_regs
 restore_regs:
 	;	Restore regs, except for SP. That is caller's responsibility
-	mov	CP,M_WORD [save_cp]
-	mov	XL,M_WORD [save_xl]
-	mov	XR,M_WORD [save_xr]
-;	mov	XS,M_WORD [save_xs	; caller restores SP]
-	mov	WA,M_WORD [save_wa]
-	mov	WB,M_WORD [save_wb]
-	mov	WC,M_WORD [save_wc]
-	mov	W0,M_WORD [save_w0]
+	mov	CP,M_WORD [reg_cp]
+	mov	XL,M_WORD [reg_xl]
+	mov	XR,M_WORD [reg_xr]
+;	mov	XS,M_WORD [reg_xs	; caller restores SP]
+	mov	WA,M_WORD [reg_wa]
+	mov	WB,M_WORD [reg_wb]
+	mov	WC,M_WORD [reg_wc]
+	mov	W0,M_WORD [reg_w0]
 	ret
 ; ;
 ; ;       startup( char *dummy1, char *dummy2) - startup compiler

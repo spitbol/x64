@@ -196,31 +196,7 @@ calltab:
 	call	zzz
 	%endmacro
 
-%ifdef ZZZOLD
-	%macro	ZZZ	3
-	section	.data
-%%desc:	db	%3,0
-	section	.text
-	pushf
-	pushad
-	mov	M_WORD [zz_id],%1
-	mov	M_WORD [zz_zz],%2
-	mov	M_WORD [zz_de],%%desc
-	mov	M_WORD [zz_cp],ebp
-	mov	M_WORD [zz_xl],esi
-	mov	M_WORD [zz_xr],edi
-	mov	M_WORD [zz_xs],esp
-	mov	M_WORD [zz_wa],ecx
-	mov	M_WORD [zz_wb],ebx
-	mov	M_WORD [zz_wc],edx
-	mov	M_WORD [zz_w0],eax
-	call	zz
-	popad
-	popf
-	%endmacro
-%endif
-
-	global	REAV0
+;	global	REAV0
 
 
 ;	IA is kept in memory as reg_ia, we use register IA as working register for integer operations

@@ -61,7 +61,6 @@
 	%define CFP_C_VAL	8
 	%define LOG_CFP_C 3
 	%define CFP_M_	18446744073709551615
-;	%define CFP_M_	18446744073709551616 ; TOO BIG
 ;	%define	CFP_N_	64
 
 	%define	LODS_W	lodsq
