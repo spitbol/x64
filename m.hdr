@@ -183,9 +183,6 @@ calltab:
         extern CPR_
 	extern	reg_ia
 
-;	Minimal registers CP is kept in memory?
-	extern	reg_cp
-
 	%macro	ZZZ	3
 	section	.data
 %%desc:	db	%3,0
