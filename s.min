@@ -7889,7 +7889,6 @@ INI11  ZER  (XR)+            BLANK A WORD
        MOV  R_IFL,XR         SAVE PTR TO ARRAY
 .FI
 .FI
-*Z+
 *
 *      INITIALIZE VARIABLE BLOCKS FOR INPUT AND OUTPUT
 *
@@ -7906,6 +7905,7 @@ INI11  ZER  (XR)+            BLANK A WORD
 *
 *      CHECK FOR EXPIRY DATE
 *
+*Z+
 INI13  JSR  SYSDC            CALL DATE CHECK
        MOV  FLPTR,XS         IN CASE STACK OVERFLOWS IN COMPILER
 *
@@ -8046,7 +8046,6 @@ RSTRT  PRC  E,0              ENTRY POINT
 *      BINARY PLUS (ADDITION)
 *
 O_ADD  ENT                   ENTRY POINT
-*Z+
        JSR  ARITH            FETCH ARITHMETIC OPERANDS
        ERR  001,Addition left operand is not numeric
        ERR  002,Addition right operand is not numeric
@@ -27533,6 +27532,7 @@ TRBLD  PRC  E,0              ENTRY POINT
 *      THE CALL WITH WB ZERO STILL PERFORMS THE END ZERO PAD
 *      AND DNAMP READJUSTMENT. IT IS USED FROM ACESS IF KVTRM=0.
 *
+*Z-
 TRIMR  PRC  E,0              ENTRY POINT
        MOV  XL,XR            COPY STRING POINTER
        MOV  WA,SCLEN(XR)     LOAD STRING LENGTH
@@ -27582,6 +27582,7 @@ TRIM4  SCH  WC,(XL)+         STORE ZERO CHARACTER
 TRIM5  ZER  XL               CLEAR GARBAGE XL POINTER
        EXI                   RETURN TO CALLER
        ENP                   END PROCEDURE TRIMR
+*Z+
        EJC
 *
 *      TRXEQ -- EXECUTE FUNCTION TYPE TRACE

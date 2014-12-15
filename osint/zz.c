@@ -69,7 +69,7 @@ void prtval(long reg) {
 //	if (reg > 32 && reg < 127 ) {
 //		fprintf(stderr," '%c' %4d ", reg, reg);
 //	}
-//	else if (reg >= 0 && reg < 100000) {
+//	else if (reg >= 0 && reg < 300000) {
 	if (reg >= 0 && reg < 100000) {
 		fprintf(stderr," %8d ", reg);
 	}
@@ -132,7 +132,7 @@ void zz() {
 
 	zz_calls++;
 //	if (zz_calls < 13000)	return;	// bypass initial code
-	if (zz_calls > 100000) return;
+	if (zz_calls > 1000000) return;
 /*
 	return;
  	zz_calls++;
@@ -205,7 +205,8 @@ if (prtregs) {
 	if (zz_zz != zz_last) {
 //	fprintf(stderr, "\n%8xx %s\n", zz_ip, p);
 //	fprintf(stderr, "zzz %d %d %d %s\n",zz_calls, zz_id, zz_zz,zz_de);
-	fprintf(stderr, "zzz %d %s\n",_rc_,zz_de);
+//	fprintf(stderr, "zzz %d %s\n",_rc_,zz_de);
+	fprintf(stderr, "zzz %6d  %s\n",zz_calls,zz_de);
 	}
 	zz_last = zz_zz;
 
