@@ -183,6 +183,10 @@ reg_ra:	D_REAL 	0.0  		; Register RA
 reg_pc: D_WORD      0               ; return PC from caller
 reg_xs:	D_WORD	0		; Minimal stack pointer
 
+; reg_cc is used to communicate condition codes between Minimal and C code.
+	global	reg_cc
+reg_cc:	D_WORD	0		; condition code register for numeric operations
+
 ;	r_size  equ       $-reg_block
 ; use computed value for nasm conversion, put back proper code later
 r_size	equ	10*CFP_B
@@ -789,9 +793,11 @@ RMI_:
         idiv    CP              ; perform division. W0=quotient, WC=remainder
         pop     CP              ; restore CP
         xor     W0,W0         ; clear overflow indicator
+	mov	M_WORD [reg_cc],W0
         ret                     ; return remainder in WC (IA)
 setovr: mov     al,FLAG_OF	; set overflow indicator
 	dec	al
+	mov	M_WORD [reg_cc],W0
 	ret
 %endif
 

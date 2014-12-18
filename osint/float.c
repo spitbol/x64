@@ -130,11 +130,11 @@ void f_dvi() {
 //	fprintf(stderr, "fdvi %ld %ld \n",reg_ia, reg_w0);
 
 	if (reg_w0 == 0) {
-		reg_w0 = 0x80; // set overflow
+		reg_cc = 0x80; // set overflow
 	}
 	else {
 		reg_ia /= (long) reg_w0;
-		reg_w0 = 0;
+		reg_cc = 0;
 	}
 //	fprintf(stderr,"fdvi returns %ld\n", reg_w0);
 

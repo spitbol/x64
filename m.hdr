@@ -25,6 +25,7 @@
 	extern	save_regs
 	extern	restore_regs
 	extern	_rc_
+	extern	reg_cc
 
 %define zz_trace
 %ifdef zz_trace
@@ -162,7 +163,7 @@ calltab:
         extern LDR_
         extern STR_
         extern OVR_
-        extern DVI__
+;        extern DVI__
         extern RMI__
         extern CVD_
         extern RTI__
@@ -209,3 +210,109 @@ calltab:
 	extern RTI_
 	extern ITR_
 	extern RMI_
+
+	%macro	IOV_	1
+	mov	W0,M_WORD [reg_cc]
+	or	W0,W0
+	jne	%1
+	%endmacro
+
+	%macro	INO_	1
+	mov	W0,M_WORD [reg_cc]
+	or	W0,W0
+	je	%1
+	%endmacro
+
+	%macro	ADI_	1
+	xor	W0,W0			; clear condition code
+	add	IA,%1
+	jno	%%done
+	mov	W0,SP			; indicate overflow
+%%done:
+	mov	M_WORD [reg_cc],W0
+	%endmacro
+	
+	%macro	SBI_	1
+	xor	W0,W0			; clear condition code
+	sub	IA,%1
+	jno	%%done
+	mov	W0,SP			; indicate overflow
+%%done:
+	mov	M_WORD [reg_cc],W0
+	%endmacro
+	
+	%macro	MLI_	1
+	xor	W0,W0			; clear condition code
+	imul	IA,%1
+	jno	%%done
+	mov	W0,SP			; indicate overflow
+%%done:
+	mov	M_WORD [reg_cc],W0
+	%endmacro
+	
+	%macro	DVI	1
+	xor	W0,W0			; clear condition code
+	idiv	IA,%1
+	jno	%%done
+	mov	W0,SP			; indicate overflow
+%%done:
+	mov	M_WORD [reg_cc],W0
+	%endmacro
+	
+	%macro	NGI_	0
+	xor	W0,W0			; clear condition code
+	neg	IA,%1
+	jno	%%done
+	mov	W0,SP			; indicate overflow
+%%done:
+	mov	M_WORD [reg_cc],W0
+	%endmacro
+	
+%ifdef LATER
+	%macro	ADI_	%1
+	xor	W0,W0			; clear condition code
+	add	IA,%1
+	jno	%%done
+	mov	W0,SP			; indicate overflow
+%%done:
+	mov	M_WORD [reg_cc],W0
+	%endmacro
+	
+	%macro	ADI_	%1
+	xor	W0,W0			; clear condition code
+	add	IA,%1
+	jno	%%done
+	mov	W0,SP			; indicate overflow
+%%done:
+	mov	M_WORD [reg_cc],W0
+	%endmacro
+	
+	%macro	ADI_	%1
+	xor	W0,W0			; clear condition code
+	add	IA,%1
+	jno	%%done
+	mov	W0,SP			; indicate overflow
+%%done:
+	mov	M_WORD [reg_cc],W0
+	%endmacro
+	
+	%macro	ADI_	%1
+	xor	W0,W0			; clear condition code
+	add	IA,%1
+	jno	%%done
+	mov	W0,SP			; indicate overflow
+%%done:
+	mov	M_WORD [reg_cc],W0
+	%endmacro
+	
+	%macro	ADI_	%1
+	xor	W0,W0			; clear condition code
+	add	IA,%1
+	jno	%%done
+	mov	W0,SP			; indicate overflow
+%%done:
+	mov	M_WORD [reg_cc],W0
+	%endmacro
+%endif
+	
+
