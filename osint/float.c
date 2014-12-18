@@ -120,4 +120,8 @@ double ra;
     return -ra;
 }
 
+void f_dvi() {
+	reg_ia /= reg_w0;
+}
+
 #endif					// (FLOAT & !FLTHDWR) | EXTFUN
