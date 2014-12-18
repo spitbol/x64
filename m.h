@@ -74,3 +74,7 @@
 
 %endif	
 
+;	Flags
+	%define	FLAG_OF	0x80
+	%define	FLAG_CF	0x01
+	%define	FLAG_CA	0x40

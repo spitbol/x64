@@ -746,13 +746,15 @@ CVD_:
 ;       DVI_ - divide IA (EDX) by long in W0
 	global	DVI_
 DVI_:
+;	%define	DVI_NEW
+%ifdef	DVI_NEW
 	mov	M_WORD [reg_w0],W0
 	mov	M_WORD [reg_ia],IA
 	extern	f_dvi
 	call	f_dvi
 	mov	IA,M_WORD[reg_ia]
 	ret
-%ifdef OLD
+%else
         or      W0,W0         ; test for 0
         jz      setovr    	; jump if 0 divisor
         push    CP              ; preserve CP
@@ -768,8 +770,16 @@ DVI_:
 
 	global	RMI_
 ;       RMI_ - remainder of IA (EDX) divided by long in W0
-
 RMI_:
+%define OLD
+%ifdef RMI_NEW
+	extern	f_rmi
+	mov	M_WORD [reg_w0],W0
+	mov	M_WORD [reg_ia],IA
+	call	f_rmi
+	mov	IA,M_WORD [reg_ia]
+	ret
+%else
 	or      W0,W0         ; test for 0
         jz      setovr		; jump if 0 divisor
         push    CP              ; preserve CP
@@ -780,9 +790,10 @@ RMI_:
         pop     CP              ; restore CP
         xor     W0,W0         ; clear overflow indicator
         ret                     ; return remainder in WC (IA)
-setovr: mov     al,0x80         ; set overflow indicator
+setovr: mov     al,FLAG_OF	; set overflow indicator
 	dec	al
 	ret
+%endif
 
 ;    Calls to C
 ;

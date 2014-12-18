@@ -28,6 +28,12 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #if (FLOAT & !FLTHDWR) | EXTFUN
 
+#include <stdio.h>
+
+// overflow codes
+// OF = 0x80
+// cf = 0x01
+// zr = 0x40
 
 void f_ldr() {			// load real
 	reg_ra = * (double *) reg_w0;
@@ -121,7 +127,27 @@ double ra;
 }
 
 void f_dvi() {
-	reg_ia /= reg_w0;
+//	fprintf(stderr, "fdvi %ld %ld \n",reg_ia, reg_w0);
+
+	if (reg_w0 == 0) {
+		reg_w0 = 0x80; // set overflow
+	}
+	else {
+		reg_ia /= (long) reg_w0;
+		reg_w0 = 0;
+	}
+//	fprintf(stderr,"fdvi returns %ld\n", reg_w0);
+
+}
+
+#include <stdio.h>
+void f_rmi() {
+	long dividend,divisor,remainder;
+	dividend = (long) reg_ia;
+	divisor = (long) reg_w0;
+	remainder = dividend % divisor;
+	reg_ia = remainder;
+//	fprintf(stderr,"rmi %8ld =  %8ld   %8ld   %8ld\n",reg_ia, remainder, dividend, divisor);
 }
 
 #endif					// (FLOAT & !FLTHDWR) | EXTFUN
