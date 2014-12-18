@@ -23,9 +23,6 @@
 	%define LOG_CFP_B 2
 	%define CFP_C_VAL	4
 	%define LOG_CFP_C 2
-	%define CFP_M_	2147483647
-;	%define CFP_M_	2147483648 ; TOO BIG
-;	%define	CFP_N_	32
 
 	%define	LODS_B	lodsb
 	%define	LODS_W	lodsd
@@ -60,8 +57,6 @@
 	%define D_REAL	DQ
 	%define CFP_C_VAL	8
 	%define LOG_CFP_C 3
-	%define CFP_M_	18446744073709551615
-;	%define	CFP_N_	64
 
 	%define	LODS_W	lodsq
 	%define	LODS_B	lodsb
@@ -74,4 +69,3 @@
 	%define	CDQ	cqo	; sign extend (64 bits)
 
 %endif	
-

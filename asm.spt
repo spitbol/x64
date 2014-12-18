@@ -123,7 +123,6 @@ CONFIG.DONE
 
 
 *	Set Z_TRACE to enable instruction by instruction trace
-	Z_TRACE = 1
 	Z_TRACE = 0
 *	Z_LIMIT is maximum number of calls to be generated if non-zero
 	Z_LIMIT = 000
@@ -1174,17 +1173,6 @@ G.BLE
 G.BLO
 G.BHI
 *
-*  The CMP operation only allows literals of 32 bits or less, so if target is
-*  x64 and if the second argument is a literal, then load that literal to W0.
-
-	EQ(CFP_B,4)				:S(BOP.1)
-	DIFFER(I.TEXT(I2),'=CFP_M')			:S(BOP.1)
-	T = GETARG(I2)
-	I2 = MINARG(8,'W0')
-	GENOP('MOV','W0',T)
-BOP.1
-
-*
 *  These operators all have two operands, MEMMEM may apply
 *  Issue target opcode by table lookup.
 *
@@ -1242,87 +1230,66 @@ G.AOV
 						:(OPDONE)
 G.LCP
 *  Use CP for code pointer.
-	GENOP('MOV','CP',GETARG(I1))		
+	GENOP('MOV','M_WORD [reg_cp]',GETARG(I1))		
 						:(OPDONE)
 
 G.SCP   
-	GENOP('MOV',GETARG(I1),'CP')
+	GENOP('MOV',GETARG(I1),'M_WORD [reg_cp]')
 						:(OPDONE)
 G.LCW
 *  Should be able to get LODSD; XCHG EAX,GETARG(I1)
-	GENOP('MOV','W0','CP')
+	GENOP('MOV','W0','M_WORD [reg_cp]')
 	GENOP('MOV',GETARG(I1),'[W0]')
 	GENOP('ADD','W0','CFP_B')			
-	GENOP('MOV','CP','W0')
+	GENOP('MOV','M_WORD [reg_cp]','W0')
 						:(OPDONE)
 
 
 G.ICP   	
-	GENOP('MOV','W0','CP')
+	GENOP('MOV','W0','M_WORD [reg_cp]')
 	GENOP('ADD','W0','CFP_B')
-	GENOP('MOV','CP','W0')
+	GENOP('MOV','M_WORD [reg_cp]','W0')
 						:(OPDONE)
 
 *  INTEGER ACCUMULATOR KEPT IN WDX (WC)
-G.LDI
-G.ADI
-G.MLI
-G.SBI
+G.LDI	GENOP('MOV',REG.IA,GETARG(I1))		:(OPDONE)
+
+G.ADI   GENOP('ADD',REG.IA,GETARG(I1))		:(OPDONE)
+
+G.MLI	GENOP('IMUL',REG.IA,GETARG(I1))		:(OPDONE)
+
+G.SBI   GENOP('SUB',REG.IA,GETARG(I1))		:(OPDONE)
+
 G.DVI
 G.RMI
-G.STI
-G.INO
-G.IOV
-G.IEQ
-G.IGE
-G.IGT
-G.ILE
-G.ILT
-G.INE
-	GENOP(INCODE '_', GETARG(I1))		:(OPDONE)
+	GENOP('MOV','W0',GETARG(I1))
+	GENOP('CALL', INCODE '_'	)	:(OPDONE)
 
-G.NGI
-	GENOP(INCODE '_')			:(OPDONE)
+G.STI   GENOP('MOV',GETARG(I1),REG.IA)		:(OPDONE)
 
+G.NGI   GENOP('NEG',REG.IA)			:(OPDONE)
 
-* 	GENOP('MOV',REG.IA,GETARG(I1))		:(OPDONE)
+G.INO   GENOP('JNO',GETARG(I1))			:(OPDONE)
+G.IOV   GENOP('JO',GETARG(I1))			:(OPDONE)
 
-* G.ADI   GENOP('ADD',REG.IA,GETARG(I1))		:(OPDONE)
-* 
-* G.MLI	GENOP('IMUL',REG.IA,GETARG(I1))		:(OPDONE)
-* 
-* G.SBI   GENOP('SUB',REG.IA,GETARG(I1))		:(OPDONE)
-* 
-* G.DVI
-* G.RMI
-* 	GENOP('MOV','W0',GETARG(I1))
-* 	GENOP('CALL', INCODE '_'	)	:(OPDONE)
-* 
-* G.STI   GENOP('MOV',GETARG(I1),REG.IA)		:(OPDONE)
-* 
-* G.NGI   GENOP('NEG',REG.IA)			:(OPDONE)
-* 
-* G.INO   GENOP('JNO',GETARG(I1))			:(OPDONE)
-* G.IOV   GENOP('JO',GETARG(I1))			:(OPDONE)
-* 
-* G.IEQ	GENOP('OR',REG.IA,REG.IA)
-* 	GENOP('JE',GETARG(I1))			:(OPDONE)
-* G.IGE   GENOP('OR',REG.IA,REG.IA)
-* 	GENOP('JGE',GETARG(I1))			:(OPDONE)
-* G.IGT   GENOP('OR',REG.IA,REG.IA)
-* 	GENOP('JG',GETARG(I1))			:(OPDONE)
-* G.ILE   GENOP('OR',REG.IA,REG.IA)
-* 	GENOP('JLE',GETARG(I1))			:(OPDONE)
-* G.ILT   GENOP('OR',REG.IA,REG.IA)
-* 	GENOP('JL',GETARG(I1))			:(OPDONE)
-* G.INE   GENOP('OR',REG.IA,REG.IA)
-* 	GENOP('JNE',GETARG(I1))			:(OPDONE)
-* 
+G.IEQ	GENOP('OR',REG.IA,REG.IA)
+	GENOP('JE',GETARG(I1))			:(OPDONE)
+G.IGE   GENOP('OR',REG.IA,REG.IA)
+	GENOP('JGE',GETARG(I1))			:(OPDONE)
+G.IGT   GENOP('OR',REG.IA,REG.IA)
+	GENOP('JG',GETARG(I1))			:(OPDONE)
+G.ILE   GENOP('OR',REG.IA,REG.IA)
+	GENOP('JLE',GETARG(I1))			:(OPDONE)
+G.ILT   GENOP('OR',REG.IA,REG.IA)
+	GENOP('JL',GETARG(I1))			:(OPDONE)
+G.INE   GENOP('OR',REG.IA,REG.IA)
+	GENOP('JNE',GETARG(I1))			:(OPDONE)
+
 *  Real operations
 
-G.ITR	GENOP('ITR_')				:(OPDONE)
+G.ITR	GENOP('CALL','ITR_')	:(OPDONE)
 
-G.RTI	GENOP('RTI_')
+G.RTI	GENOP('CALL','RTI_')
 	EQ(I.TYPE(I1))				:S(OPDONE)
 *  HERE IF LABEL GIVEN, BRANCH IF REAL TOO LARGE
         GENOP('JC',GETARG(I1))                 :(OPDONE)

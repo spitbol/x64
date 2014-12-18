@@ -170,7 +170,7 @@ reg_block:
 reg_w0:	D_WORD	0        	; Register WA (ECX)
 reg_wa:	D_WORD	0        	; Register WA (ECX)
 reg_wb:	D_WORD 	0        	; Register WB (EBX)
-reg_ia: 
+reg_ia:
 reg_wc:	D_WORD	0		; Register WC & IA (EDX)
 reg_xr:	D_WORD	0        	; Register XR (XR)
 reg_xl:	D_WORD	0        	; Register XL (XL)
@@ -199,8 +199,6 @@ ten:    D_WORD      10              ; constant 10
 	global  inf
 inf:	D_WORD	0   
 	D_WORD      0x7ff00000      ; double precision infinity
-	global	mxuint
-mxuint	D_WORD	CFP_M_			; value of largest unsigned integer
 
 	global	sav_block
 ;sav_block: times r_size db 0     	; Save Minimal registers during push/pop reg
@@ -220,6 +218,23 @@ osisp:  D_WORD      0               	; OSINT's stack pointer
 _rc_:	dd   0				; return code from osint procedure
 
 	align	CFP_B
+	global	save_cp
+	global	save_xl
+	global	save_xr
+	global	save_xs
+	global	save_wa
+	global	save_wb
+	global	save_wc
+	global	save_w0
+save_cp:	D_WORD	0		; saved CP value
+save_xl:	D_WORD	0		; saved XL value
+save_xr:	D_WORD	0		; saved XR value
+save_xs:	D_WORD	0		; saved SP value
+save_wa:	D_WORD	0		; saved WA value
+save_wb:	D_WORD	0		; saved WB value
+save_wc:	D_WORD	0		; saved WC value
+save_w0:	D_WORD	0		; saved W0 value
+
 	global	minimal_id
 minimal_id:	D_WORD	0		; id for call to minimal from C. See proc minimal below.
 
@@ -298,29 +313,29 @@ TTYBUF:	D_WORD    0     ; type word
 ;       reloading a save file.
 ;
 ;
-	global	reg_regs
+	global	save_regs
 save_regs:
-	mov	M_WORD [reg_cp],CP
-	mov	M_WORD [reg_xl],XL
-	mov	M_WORD [reg_xr],XR
-	mov	M_WORD [reg_xs],XS
-	mov	M_WORD [reg_wa],WA
-	mov	M_WORD [reg_wb],WB
-	mov	M_WORD [reg_wc],WC
-	mov	M_WORD [reg_w0],W0
+	mov	M_WORD [save_cp],CP
+	mov	M_WORD [save_xl],XL
+	mov	M_WORD [save_xr],XR
+	mov	M_WORD [save_xs],XS
+	mov	M_WORD [save_wa],WA
+	mov	M_WORD [save_wb],WB
+	mov	M_WORD [save_wc],WC
+	mov	M_WORD [save_w0],W0
 	ret
 
 	global	restore_regs
 restore_regs:
 	;	Restore regs, except for SP. That is caller's responsibility
-	mov	CP,M_WORD [reg_cp]
-	mov	XL,M_WORD [reg_xl]
-	mov	XR,M_WORD [reg_xr]
-;	mov	XS,M_WORD [reg_xs	; caller restores SP]
-	mov	WA,M_WORD [reg_wa]
-	mov	WB,M_WORD [reg_wb]
-	mov	WC,M_WORD [reg_wc]
-	mov	W0,M_WORD [reg_w0]
+	mov	CP,M_WORD [save_cp]
+	mov	XL,M_WORD [save_xl]
+	mov	XR,M_WORD [save_xr]
+;	mov	XS,M_WORD [save_xs	; caller restores SP]
+	mov	WA,M_WORD [save_wa]
+	mov	WB,M_WORD [save_wb]
+	mov	WC,M_WORD [save_wc]
+	mov	W0,M_WORD [save_w0]
 	ret
 ; ;
 ; ;       startup( char *dummy1, char *dummy2) - startup compiler
@@ -426,7 +441,7 @@ stackinit:
 ;         pushad			; save all registers for C
 	mov     WA,M_WORD [reg_wa]	; restore registers
 	mov	WB,M_WORD [reg_wb]
-	mov     WC,M_WORD [reg_wc]	; (also reg_ia)
+	mov     WC,M_WORD [reg_wc]	; (also _reg_ia)
 	mov	XR,M_WORD [reg_xr]
 	mov	XL,M_WORD [reg_xl]
  
@@ -514,7 +529,7 @@ syscall_init:
 
 	mov     M_WORD [reg_wa],WA      ; save registers
 	mov	M_WORD [reg_wb],WB
-	mov     M_WORD [reg_wc],WC      ; (also reg_ia)
+	mov     M_WORD [reg_wc],WC      ; (also _reg_ia)
 	mov	M_WORD [reg_xr],XR
 	mov	M_WORD [reg_xl],XL
 	ret
@@ -719,47 +734,44 @@ SYSXI:	mov	M_WORD [reg_xs],XS
 ;               WA (ECX) = remainder + '0'
 	global	CVD_
 CVD_:
-        xchg    W0,IA         ; IA to W0
+        xchg    W0,WC         ; IA to W0
         CDQ                     ; sign extend
-        idiv    M_WORD [ten]	; divide by 10. IA = remainder (negative)
-        neg     IA             ; make remainder positive
+        idiv    M_WORD [ten]	; divide by 10. WC = remainder (negative)
+        neg     WC             ; make remainder positive
         add     dl,0x30         ; convert remainder to ascii ('0')
-        mov     WA,IA         ; return remainder in WA
-        xchg    IA,W0         ; return quotient in IA
-;	mov	M_WORD [reg_ia],IA
+        mov     WA,WC         ; return remainder in WA
+        xchg    WC,W0         ; return quotient in IA
 	ret
 
-;       DVI__ - divide IA (EDX) by long in W0
-	global	DVI__
-DVI__:
+;       DVI_ - divide IA (EDX) by long in W0
+	global	DVI_
+DVI_:
         or      W0,W0         ; test for 0
         jz      setovr    	; jump if 0 divisor
         push    CP              ; preserve CP
         xchg    CP ,W0         ; divisor to CP 
-        xchg    W0,IA         ; dividend in W0
+        xchg    W0,WC         ; dividend in W0
         CDQ                     ; extend dividend
-        idiv    CP              ; perform division. W0=quotient, IA=remainder
-        xchg    IA,W0         ; place quotient in IA (IA)
+        idiv    CP              ; perform division. W0=quotient, WC=remainder
+        xchg    WC,W0         ; place quotient in WC (IA)
         pop     CP              ; restore CP
         xor     W0,W0         ; clear overflow indicator
-;	mov	M_WORD [reg_ia],IA
 	ret
 
-	global	RMI__
-;       RMI__ - remainder of IA (EDX) divided by long in W0
+	global	RMI_
+;       RMI_ - remainder of IA (EDX) divided by long in W0
 
-RMI__:
+RMI_:
 	or      W0,W0         ; test for 0
         jz      setovr		; jump if 0 divisor
         push    CP              ; preserve CP
         xchg    CP ,W0         ; divisor to CP 
-        xchg    W0,IA         ; dividend in W0
+        xchg    W0,WC         ; dividend in W0
         CDQ                     ; extend dividend
-        idiv    CP              ; perform division. W0=quotient, IA=remainder
-;	mov	M_WORD [reg_ia],IA
+        idiv    CP              ; perform division. W0=quotient, WC=remainder
         pop     CP              ; restore CP
         xor     W0,W0         ; clear overflow indicator
-        ret                     ; return remainder in IA (IA)
+        ret                     ; return remainder in WC (IA)
 setovr: mov     al,0x80         ; set overflow indicator
 	dec	al
 	ret
@@ -777,26 +789,19 @@ setovr: mov     al,0x80         ; set overflow indicator
 
 
 ;
-;       RTI__ - convert real in RA to integer in IA
+;       RTI_ - convert real in RA to integer in IA
 ;               returns C=0 if fit OK, C=1 if too large to convert
-	global	RTI__
+	global	RTI_
 
-RTI__:
+RTI_:
 ; 41E00000 00000000 = 2147483648.0
 ; 41E00000 00200000 = 2147483649.0
         mov     W0, M_WORD [reg_ra+4]   ; RA msh
-				; take absolute value, sign bit to carry flag
-%ifdef	m32
-	btr	W0,31
-%else
-	btr	W0,63
-%endif
-        jc      RTI__2		; jump if negative real
-;        cmp     W0,0x41E00000  ; test against largest unsigned integer value (OLD)
-        cmp     M_WORD[mxuint],W0  ; test against largest unsigned integer value
-;        jae     RTI__1		; jump if >= largest unsigned integer value (OLD)
-        jb     RTI__1		; jump if >= largest unsigned integer value
-RTI__3:  push    WA             ; protect against C routine usage.
+        btr     W0,31          ; take absolute value, sign bit to carry flag
+        jc      RTI_2		; jump if negative real
+        cmp     W0,0x41E00000  ; test against 2147483648
+        jae     RTI_1		; jump if >= +2147483648
+RTI_3:  push    WA             ; protect against C routine usage.
         push    W0             ; push RA MSH
         push    M_WORD [reg_ra]  ; push RA LSH
 	extern	f_2_i
@@ -808,22 +813,14 @@ RTI__3:  push    WA             ; protect against C routine usage.
 	ret
 
 ; here to test negative number, made positive by the btr instruction
-;RTI__2:  cmp     W0,0x41E00000          ; test against 2147483649 (OLD)
-RTI__2:  cmp     M_WORD[mxuint],W0	; test against 2147483649
-        jb      RTI__0		; definitely smaller
-        ja      RTI__1		; definitely larger
-        cmp     word [reg_ra+CFP_B], 0x0020
-        jae     RTI__1
-RTI__0:  
-					; make negative again
-%ifdef	m32
-	btc     W0,31 
-%else
-	btc	W0,63
-%endif
-
-        jmp     RTI__3
-RTI__1:  stc                             ; return C=1 for too large to convert
+RTI_2:  cmp     W0,0x41E00000          ; test against 2147483649
+        jb      RTI_0		; definately smaller
+        ja      RTI_1		; definately larger
+        cmp     word [reg_ra+2], 0x0020
+        jae     RTI_1
+RTI_0:  btc     W0,31                  ; make negative again
+        jmp     RTI_3
+RTI_1:  stc                             ; return C=1 for too large to convert
         ret
 
 	%macro	real_op 2
@@ -843,6 +840,18 @@ RTI__1:  stc                             ; return C=1 for too large to convert
 	real_op	DVR_,f_dvr
 	real_op	NGR_,f_ngr
 	
+	%macro	int_op 2
+	global	%1
+	extern	%2
+%1:
+	mov	M_WORD [reg_ia],IA
+	call	%2
+	ret
+%endmacro
+
+;	int_op RTI_,f_rti
+	int_op ITR_,f_itr
+
 	%macro	math_op 2
 	global	%1
 	extern	%2
@@ -859,20 +868,6 @@ RTI__1:  stc                             ; return C=1 for too large to convert
 	math_op	SIN_,f_sin
 	math_op	SQR_,f_sqr
 	math_op	TAN_,f_tan
-
-;       ITR__ - convert integer in IA to real in RA
-
-	global	ITR__
-ITR__:
-        push    WA             ; preserve
-        push    WC             ; push IA
-	extern	i_2_f
-        call	i_2_f		; integer to float
-	add	XS,CFP_B
-	fstp	M_WORD [reg_ra]
-        pop     WA             ; restore WA
-	fwait
-	ret
 
 ;       CPR_ compare real in RA to 0
 
