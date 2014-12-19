@@ -126,6 +126,7 @@ double ra;
     return -ra;
 }
 
+#include <stdio.h>
 void f_dvi() {
 //	fprintf(stderr, "fdvi %ld %ld \n",reg_ia, reg_w0);
 
@@ -139,8 +140,21 @@ void f_dvi() {
 //	fprintf(stderr,"fdvi returns %ld\n", reg_w0);
 
 }
+void f_rmi() {
+//	fprintf(stderr, "fdvi %ld %ld \n",reg_ia, reg_w0);
 
-#include <stdio.h>
+	if (reg_w0 == 0) {
+		reg_cc = 0x80; // set overflow
+	}
+	else {
+		reg_ia %= (long) reg_w0;
+		reg_cc = 0;
+	}
+//	fprintf(stderr,"fdvi returns %ld\n", reg_w0);
+
+}
+
+/*
 void f_rmi() {
 	long dividend,divisor,remainder;
 	dividend = (long) reg_ia;
@@ -149,5 +163,6 @@ void f_rmi() {
 	reg_ia = remainder;
 //	fprintf(stderr,"rmi %8ld =  %8ld   %8ld   %8ld\n",reg_ia, remainder, dividend, divisor);
 }
+*/
 
 #endif					// (FLOAT & !FLTHDWR) | EXTFUN

@@ -26,6 +26,11 @@
 	extern	restore_regs
 	extern	_rc_
 	extern	reg_cc
+	extern	reg_w0
+	extern	f_dvi
+	extern	f_rmi
+	
+	extern	DVI_
 
 %define zz_trace
 %ifdef zz_trace
@@ -160,14 +165,15 @@ calltab:
 	global	B_RCL
 	global	END_MIN_DATA
 
+
         extern LDR_
         extern STR_
         extern OVR_
 ;        extern DVI__
-        extern RMI__
+        extern RMI_
         extern CVD_
-        extern RTI__
-        extern ITR__
+        extern RTI_
+        extern ITR_
         extern ADR_
         extern SBR_
         extern MLR_
@@ -182,7 +188,6 @@ calltab:
         extern SQR_
         extern TAN_
         extern CPR_
-	extern	reg_ia
 
 	%macro	ZZZ	3
 	section	.data
@@ -194,9 +199,30 @@ calltab:
 	call	zzz
 	%endmacro
 
-%ifdef NEW
+%ifdef	MACROS
 
 
+	extern	reg_ia
+
+	%macro	OV	2
+	mov	W0,M_WORD [reg_cc]
+	or	W0,W0
+	%1	%2
+	%endmacro
+
+	%macro	IOV_	1
+	OV	jne,%1	
+	%endmacro
+
+	%macro	INO_	1
+	OV	je,%1
+	%endmacro
+
+	%macro	DVI_	1
+	mov	W0,%1
+	call	DVI__
+	%endmacro
+	
 	%macro	RTI_	0
 	call	RTI__
 	%endmacro
@@ -205,114 +231,31 @@ calltab:
 	call	ITR__
 	%endmacro
 
-%endif
-	extern DVI_
-	extern RTI_
-	extern ITR_
-	extern RMI_
-
-	%macro	IOV_	1
-	mov	W0,M_WORD [reg_cc]
-	or	W0,W0
-	jne	%1
-	%endmacro
-
-	%macro	INO_	1
-	mov	W0,M_WORD [reg_cc]
-	or	W0,W0
-	je	%1
-	%endmacro
+;	extern ITR_
+;	extern RMI_
 
 	%macro	ADI_	1
-	xor	W0,W0			; clear condition code
-	add	IA,%1
-	jno	%%done
-	mov	W0,SP			; indicate overflow
-%%done:
-	mov	M_WORD [reg_cc],W0
+	mov	W0,%1
+	call	ADI__
 	%endmacro
-	
+
 	%macro	SBI_	1
-	xor	W0,W0			; clear condition code
-	sub	IA,%1
-	jno	%%done
-	mov	W0,SP			; indicate overflow
-%%done:
-	mov	M_WORD [reg_cc],W0
+	mov	W0,%1
+	call	SBI__
 	%endmacro
 	
 	%macro	MLI_	1
-	xor	W0,W0			; clear condition code
-	imul	IA,%1
-	jno	%%done
-	mov	W0,SP			; indicate overflow
-%%done:
-	mov	M_WORD [reg_cc],W0
+	mov	W0,%1
+	call	MLI__
 	%endmacro
 	
-	%macro	DVI	1
-	xor	W0,W0			; clear condition code
-	idiv	IA,%1
-	jno	%%done
-	mov	W0,SP			; indicate overflow
-%%done:
-	mov	M_WORD [reg_cc],W0
+	%macro	RMI_	1
+	mov	W0,%1
+	call	RMI__
 	%endmacro
 	
 	%macro	NGI_	0
-	xor	W0,W0			; clear condition code
-	neg	IA,%1
-	jno	%%done
-	mov	W0,SP			; indicate overflow
-%%done:
-	mov	M_WORD [reg_cc],W0
+	call	NGI__
 	%endmacro
 	
-%ifdef LATER
-	%macro	ADI_	%1
-	xor	W0,W0			; clear condition code
-	add	IA,%1
-	jno	%%done
-	mov	W0,SP			; indicate overflow
-%%done:
-	mov	M_WORD [reg_cc],W0
-	%endmacro
-	
-	%macro	ADI_	%1
-	xor	W0,W0			; clear condition code
-	add	IA,%1
-	jno	%%done
-	mov	W0,SP			; indicate overflow
-%%done:
-	mov	M_WORD [reg_cc],W0
-	%endmacro
-	
-	%macro	ADI_	%1
-	xor	W0,W0			; clear condition code
-	add	IA,%1
-	jno	%%done
-	mov	W0,SP			; indicate overflow
-%%done:
-	mov	M_WORD [reg_cc],W0
-	%endmacro
-	
-	%macro	ADI_	%1
-	xor	W0,W0			; clear condition code
-	add	IA,%1
-	jno	%%done
-	mov	W0,SP			; indicate overflow
-%%done:
-	mov	M_WORD [reg_cc],W0
-	%endmacro
-	
-	%macro	ADI_	%1
-	xor	W0,W0			; clear condition code
-	add	IA,%1
-	jno	%%done
-	mov	W0,SP			; indicate overflow
-%%done:
-	mov	M_WORD [reg_cc],W0
-	%endmacro
 %endif
-	
-
