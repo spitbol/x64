@@ -25,12 +25,11 @@
 	extern	save_regs
 	extern	restore_regs
 	extern	_rc_
-	extern	reg_cc
+	extern	reg_fl
 	extern	reg_w0
 	extern	f_dvi
 	extern	f_rmi
 	
-	extern	DVI_
 
 %define zz_trace
 %ifdef zz_trace
@@ -169,7 +168,6 @@ calltab:
         extern LDR_
         extern STR_
         extern OVR_
-;        extern DVI__
         extern RMI_
         extern CVD_
         extern RTI_
@@ -187,7 +185,7 @@ calltab:
         extern SIN_
         extern SQR_
         extern TAN_
-        extern CPR_
+	extern CPR_
 
 	%macro	ZZZ	3
 	section	.data
@@ -218,11 +216,6 @@ calltab:
 	OV	je,%1
 	%endmacro
 
-	%macro	DVI_	1
-	mov	W0,%1
-	call	DVI__
-	%endmacro
-	
 	%macro	RTI_	0
 	call	RTI__
 	%endmacro
@@ -234,28 +227,40 @@ calltab:
 ;	extern ITR_
 ;	extern RMI_
 
-	%macro	ADI_	1
-	mov	W0,%1
-	call	ADI__
-	%endmacro
-
-	%macro	SBI_	1
-	mov	W0,%1
-	call	SBI__
-	%endmacro
-	
-	%macro	MLI_	1
-	mov	W0,%1
-	call	MLI__
-	%endmacro
-	
-	%macro	RMI_	1
-	mov	W0,%1
-	call	RMI__
-	%endmacro
-	
 	%macro	NGI_	0
 	call	NGI__
 	%endmacro
 	
 %endif
+
+	%macro	ADI_	0
+	add	IA,W0
+	mov	W0,0
+	seto	AL
+	mov	M_WORD [reg_fl],W0
+	%endmacro
+
+	%macro	SBI_	0
+	sub	IA,W0
+	mov	W0,0
+	seto	AL
+	mov	M_WORD [reg_fl],W0
+	%endmacro
+	
+	%macro	MLI_	0
+	imul	IA,W0
+	mov	W0,0
+	seto	AL
+	mov	M_WORD [reg_fl],W0
+	%endmacro
+	
+	extern	DVI__
+	%macro	DVI_	0
+	call	DVI__
+	%endmacro
+	
+	extern	RMI__
+	%macro	RMI_	0
+	call	RMI__
+	%endmacro
+	

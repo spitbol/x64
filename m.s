@@ -1,4 +1,5 @@
 ; Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+_
 
 ; Copyright 2012-2013 David Shields
 ; 
@@ -183,9 +184,9 @@ reg_ra:	D_REAL 	0.0  		; Register RA
 reg_pc: D_WORD      0               ; return PC from caller
 reg_xs:	D_WORD	0		; Minimal stack pointer
 
-; reg_cc is used to communicate condition codes between Minimal and C code.
-	global	reg_cc
-reg_cc:	D_WORD	0		; condition code register for numeric operations
+; reg_fl is used to communicate condition codes between Minimal and C code.
+	global	reg_fl
+reg_fl:	D_WORD	0		; condition code register for numeric operations
 
 ;	r_size  equ       $-reg_block
 ; use computed value for nasm conversion, put back proper code later
@@ -738,68 +739,51 @@ SYSXI:	mov	M_WORD [reg_xs],XS
 ;               WA (ECX) = remainder + '0'
 	global	CVD_
 CVD_:
-        xchg    W0,WC         ; IA to W0
+        xchg    W0,WC         	; IA to W0
         CDQ                     ; sign extend
         idiv    M_WORD [ten]	; divide by 10. WC = remainder (negative)
-        neg     WC             ; make remainder positive
+        neg     WC             
+				; make remainder positive
         add     dl,0x30         ; convert remainder to ascii ('0')
-        mov     WA,WC         ; return remainder in WA
-        xchg    WC,W0         ; return quotient in IA
+        mov     WA,WC         	; return remainder in WA
+        xchg    WC,W0         	; return quotient in IA
 	ret
 
-;       DVI_ - divide IA (EDX) by long in W0
-	global	DVI_
-DVI_:
-;	%define	DVI_NEW
-%ifdef	DVI_NEW
-	mov	M_WORD [reg_w0],W0
-	mov	M_WORD [reg_ia],IA
-	extern	f_dvi
-	call	f_dvi
-	mov	IA,M_WORD[reg_ia]
-	ret
-%else
-        or      W0,W0         ; test for 0
+;       DVI__ - divide IA (EDX) by long in W0
+	global	DVI__
+DVI__:
+        or      W0,W0         	; test for 0
         jz      setovr    	; jump if 0 divisor
         push    CP              ; preserve CP
-        xchg    CP ,W0         ; divisor to CP 
-        xchg    W0,WC         ; dividend in W0
+        xchg    CP ,W0         	; divisor to CP 
+        xchg    W0,IA         	; dividend in W0
         CDQ                     ; extend dividend
-        idiv    CP              ; perform division. W0=quotient, WC=remainder
-        xchg    WC,W0         ; place quotient in WC (IA)
+        idiv    CP              ; perform division. W0=quotient, IA=remainder
+        xchg    IA,W0         	; place quotient in IA (IA)
         pop     CP              ; restore CP
-        xor     W0,W0         ; clear overflow indicator
+	mov	W0,0
+	seto	AL
+	mov	M_WORD [reg_fl],W0
 	ret
-%endif
 
-	global	RMI_
-;       RMI_ - remainder of IA (EDX) divided by long in W0
-RMI_:
-%define OLD
-%ifdef RMI_NEW
-	extern	f_rmi
-	mov	M_WORD [reg_w0],W0
-	mov	M_WORD [reg_ia],IA
-	call	f_rmi
-	mov	IA,M_WORD [reg_ia]
-	ret
-%else
-	or      W0,W0         ; test for 0
+	global	RMI__
+;       RMI__ - remainder of IA (EDX) divided by long in W0
+RMI__:
+	or      W0,W0         	; test for 0
         jz      setovr		; jump if 0 divisor
         push    CP              ; preserve CP
-        xchg    CP ,W0         ; divisor to CP 
-        xchg    W0,WC         ; dividend in W0
+        xchg    CP ,W0         	; divisor to CP 
+        xchg    W0,IA         	; dividend in W0
         CDQ                     ; extend dividend
-        idiv    CP              ; perform division. W0=quotient, WC=remainder
+        idiv    CP              ; perform division. W0=quotient, IA=remainder
         pop     CP              ; restore CP
-        xor     W0,W0         ; clear overflow indicator
-	mov	M_WORD [reg_cc],W0
-        ret                     ; return remainder in WC (IA)
-setovr: mov     al,FLAG_OF	; set overflow indicator
-	dec	al
-	mov	M_WORD [reg_cc],W0
+	mov	W0,0
+	seto	AL
+	mov	M_WORD [reg_fl],W0
+        ret                     ; return remainder in IA (IA)
+setovr: mov     W0,1		; set overflow indicator
+	mov	M_WORD [reg_fl],W0
 	ret
-%endif
 
 ;    Calls to C
 ;
@@ -1069,4 +1053,10 @@ zzz:
 	call	zz
 	call	restore_regs
 	popf
+	ret
+
+
+	global	SFL__			; save flags
+SFL__:
+	nop
 	ret
