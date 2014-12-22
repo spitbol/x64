@@ -45,6 +45,8 @@ _
 	global	reg_xs
 	global	reg_size
 
+	global	reg_rp
+
 	global	minimal
 	extern	calltab
 	extern	stacksiz
@@ -184,16 +186,19 @@ reg_ra:	D_REAL 	0.0  		; Register RA
 reg_pc: D_WORD      0               ; return PC from caller
 reg_xs:	D_WORD	0		; Minimal stack pointer
 
-; reg_fl is used to communicate condition codes between Minimal and C code.
-	global	reg_fl
-reg_fl:	D_WORD	0		; condition code register for numeric operations
-
 ;	r_size  equ       $-reg_block
 ; use computed value for nasm conversion, put back proper code later
 r_size	equ	10*CFP_B
 reg_size:	dd   r_size
 
 ; end of words saved during exit(-3)
+
+; reg_fl is used to communicate condition codes between Minimal and C code.
+	global	reg_fl
+reg_fl:	D_WORD	0		; condition code register for numeric operations
+; reg_rp is used to pass pointer to real operand for real arithmetic
+reg_rp:	D_WORD	0
+
 
 
 
@@ -836,7 +841,7 @@ RTI_1:  stc                             ; return C=1 for too large to convert
 	global	%1
 	extern	%2
 %1:
-	mov	M_WORD[reg_w0],W0
+	mov	M_WORD [reg_rp],W0
 	call	%2
 	ret
 %endmacro
@@ -884,7 +889,7 @@ RTI_1:  stc                             ; return C=1 for too large to convert
 CPR_:
         mov     eax, dword [reg_ra+4]	; fetch msh
         cmp     eax, 0x80000000        	; test msh for -0.0
-        je      cpr050            	; possibly
+
         or      W0, W0               	; test msh for +0.0
         jnz     cpr100            	; exit if non-zero for cc's set
 cpr050: cmp     dword [reg_ra], 0     	; true zero, or denormalized number?

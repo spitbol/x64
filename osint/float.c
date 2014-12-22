@@ -36,36 +36,36 @@ This file is part of Macro SPITBOL.
 // zr = 0x40
 
 void f_ldr() {			// load real
-	reg_ra = * (double *) reg_w0;
+	reg_ra = *reg_rp;
 	return;
 }
 void f_str() {			// store real
-	*((double *) reg_w0) = reg_ra;
+	*reg_rp = reg_ra;
 	return;
 }
 
 void f_adr() {			// add real
-	reg_ra += * (double *) reg_w0;
+	reg_ra += *reg_rp;
 	return;
 }
 
 void f_sbr() {			// subtract real
-	reg_ra -= * (double *) reg_w0;
+	reg_ra -= *reg_rp;
 	return;
 }
 
 void f_mlr() {			// multiply real
-	reg_ra *= * (double *) reg_w0;
+	reg_ra *= *reg_rp;
 	return;
 }
 
 void f_dvr() {			// divide real
-	reg_ra /= * (double *) reg_w0;
+	reg_ra /= *reg_rp;
 	return;
 }
 
 void f_ngr() {			// negate real
-	reg_ra = - reg_ra;
+	reg_ra = -reg_ra;
 	return;
 }
 
@@ -164,5 +164,16 @@ void f_rmi() {
 //	fprintf(stderr,"rmi %8ld =  %8ld   %8ld   %8ld\n",reg_ia, remainder, dividend, divisor);
 }
 */
+
+void f_cpr() {
+//	fprintf(stderr, "cpr %g12.6\n",reg_ra);
+	if ( reg_ra < 0.0)	reg_w0 = -1; 
+	if ( reg_ra == 0.0)	reg_w0 =  0; 
+	if ( reg_ra > 0.0)	reg_w0 =  1; 
+}
+
+void f_pra () {
+	fprintf(stderr,"ldr %g10.6\n",(double) reg_ra);
+}
 
 #endif					// (FLOAT & !FLTHDWR) | EXTFUN
