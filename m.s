@@ -155,16 +155,6 @@ MINIMAL_ENGTS	equ	12
 ;       Global Variables
 
 	segment	.data
-; 	extern	swcoup
-; 
-; 	extern	stacksiz
-; 	extern	lmodstk
-; 	extern	lowsp
-; 	extern	outptr
-; 	extern	calltab
-; 
-; ;       .include "extrn386.inc"
-; 
 ; 
 ; ; Words saved during exit(-3)
 ; ;
@@ -198,9 +188,6 @@ reg_size:	dd   r_size
 reg_fl:	D_WORD	0		; condition code register for numeric operations
 ; reg_rp is used to pass pointer to real operand for real arithmetic
 reg_rp:	D_WORD	0
-
-
-
 
 ;  Constants
 
@@ -276,7 +263,6 @@ TICBLK:	D_WORD   0
 TSCBLK:	 D_WORD   512
       D_WORD    0
 	times   512 db 0
-
 
 ;       Standard input buffer block.
 
@@ -380,7 +366,6 @@ CALLTAB_DTYPE equ   11
 CALLTAB_ENEVS equ   12
 CALLTAB_ENGTS equ   13
 
-
 startup:
 	pop     W0			; discard return
 	call	stackinit		; initialize MINIMAL stack
@@ -445,7 +430,6 @@ stackinit:
 ;       Note that before restart is called, we do not yet have compiler
 ;       stack to switch to.  In that case, just make the call on the
 ;       the OSINT stack.
-
 
  minimal:
 ;         pushad			; save all registers for C
@@ -727,10 +711,6 @@ SYSUL:	syscall	zysul,37
 SYSXI:	mov	M_WORD [reg_xs],XS
 	syscall	zysxi,38
 
-;       Individual OSINT routine entry points
-
-; SPITBOL math routine interface 
-
 	%macro	callext	2
 	extern	%1
 	call	%1
@@ -790,53 +770,6 @@ setovr: mov     W0,1		; set overflow indicator
 	mov	M_WORD [reg_fl],W0
 	ret
 
-;    Calls to C
-;
-;       The calling convention of the various compilers:
-;
-;       Integer results returned in W0.
-;       Float results returned in ST0 for Intel.
-;       See conditional switches fretst0 and
-;       freteax in systype.ah for each compiler.
-;
-;       C function preserves EBP, EBX, ESI, EDI.
-
-
-;
-;       RTI_ - convert real in RA to integer in IA
-;               returns C=0 if fit OK, C=1 if too large to convert
-	global	RTI_
-
-RTI_:
-; 41E00000 00000000 = 2147483648.0
-; 41E00000 00200000 = 2147483649.0
-        mov     W0, M_WORD [reg_ra+4]   ; RA msh
-        btr     W0,31          ; take absolute value, sign bit to carry flag
-        jc      RTI_2		; jump if negative real
-        cmp     W0,0x41E00000  ; test against 2147483648
-        jae     RTI_1		; jump if >= +2147483648
-RTI_3:  push    WA             ; protect against C routine usage.
-        push    W0             ; push RA MSH
-        push    M_WORD [reg_ra]  ; push RA LSH
-	extern	f_2_i
-        call	f_2_i		; float to integer
-	add	XS,2*CFP_B
-        xchg    W0,WC         ; return integer in WC (IA)
-        pop     WA             ; restore WA
-        clc
-	ret
-
-; here to test negative number, made positive by the btr instruction
-RTI_2:  cmp     W0,0x41E00000          ; test against 2147483649
-        jb      RTI_0		; definately smaller
-        ja      RTI_1		; definately larger
-        cmp     word [reg_ra+2], 0x0020
-        jae     RTI_1
-RTI_0:  btc     W0,31                  ; make negative again
-        jmp     RTI_3
-RTI_1:  stc                             ; return C=1 for too large to convert
-        ret
-
 	%macro	real_op 2
 	global	%1
 	extern	%2
@@ -863,8 +796,8 @@ RTI_1:  stc                             ; return C=1 for too large to convert
 	ret
 %endmacro
 
-;	int_op RTI_,f_rti
 	int_op ITR_,f_itr
+	int_op RTI_,f_rti
 
 	%macro	math_op 2
 	global	%1
@@ -906,6 +839,7 @@ OVR_:
         and     ax, 0x7ff0             	; check for infinity or nan
         add     ax, 0x10               	; set/clear overflow accordingly
 	ret
+%ifdef OLD
 ;  tryfpu - perform a floating point op to trigger a trap if no floating point hardware.
 
 
@@ -918,6 +852,7 @@ tryfpu:
 
 
  
+%endif
  
 	global	get_fp			; get frame pointer
 get_fp: 
@@ -1058,10 +993,4 @@ zzz:
 	call	zz
 	call	restore_regs
 	popf
-	ret
-
-
-	global	SFL__			; save flags
-SFL__:
-	nop
 	ret

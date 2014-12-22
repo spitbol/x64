@@ -170,7 +170,6 @@ calltab:
         extern OVR_
         extern RMI_
         extern CVD_
-        extern RTI_
         extern ITR_
         extern ADR_
         extern SBR_
@@ -216,10 +215,6 @@ calltab:
 	OV	je,%1
 	%endmacro
 
-	%macro	RTI_	0
-	call	RTI__
-	%endmacro
-
 	%macro	ITR_	0
 	call	ITR__
 	%endmacro
@@ -232,6 +227,8 @@ calltab:
 	%endmacro
 	
 %endif
+
+	extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
 
 	%macro	ADI_	0
 	add	IA,W0
@@ -264,3 +261,8 @@ calltab:
 	call	RMI__
 	%endmacro
 	
+	extern	f_rti
+	%macro	RTI_	0
+	call	f_rti
+	mov	IA,M_WORD [reg_ia]
+	%endmacro
