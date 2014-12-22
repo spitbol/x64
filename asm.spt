@@ -1272,15 +1272,15 @@ G.INO   GENOP('JNO',GETARG(I1))			:(OPDONE)
 G.IOV   GENOP('JO',GETARG(I1))			:(OPDONE)
 
 
-G.IEQ	IOP = 'JE'				:(OP.CMP)
-G.IGE	IOP = 'JGE'				:(OP.CMP)
-G.IGT	IOP = 'JG'				:(OP.CMP)
-G.ILE	IOP = 'JLE'				:(OP.CMP)
-G.ILT	IOP = 'JL'				:(OP.CMP)
-G.INE	IOP = 'JNE'				:(OP.CMP)
+G.IEQ	JOP = 'JE'				:(OP.CMP)
+G.IGE	JOP = 'JGE'				:(OP.CMP)
+G.IGT	JOP = 'JG'				:(OP.CMP)
+G.ILE	JOP = 'JLE'				:(OP.CMP)
+G.ILT	JOP = 'JL'				:(OP.CMP)
+G.INE	JOP = 'JNE'				:(OP.CMP)
 OP.CMP
 	GENOP('OR',REG.IA,REG.IA)
-	GENOP(IOP,GETARG(I1))			:(OPDONE)
+	GENOP(JOP,GETARG(I1))			:(OPDONE)
 
 *  Real operations
 
@@ -1318,14 +1318,14 @@ G.ROV	T1 = 'JO'
 G.ROV1  GENOP('CALL','OVR_')
 	GENOP(T1,GETARG(I1))			:(OPDONE)
 
-G.REQ	T1 = 'JE'				:(G.R1)
-G.RNE	T1 = 'JNE'				:(G.R1)
-G.RGE	T1 = 'JGE'				:(G.R1)
-G.RGT	T1 = 'JG'				:(G.R1)
-G.RLE	T1 = 'JLE'				:(G.R1)
-G.RLT	T1 = 'JL'
-G.R1	GENOP('CALL','CPR_')
-	GENOP(T1,GETARG(I1))			:(OPDONE)
+G.REQ	JOP = 'JE'				:(G.R1)
+G.RNE	JOP = 'JNE'				:(G.R1)
+G.RGE	JOP = 'JGE'				:(G.R1)
+G.RGT	JOP = 'JG'				:(G.R1)
+G.RLE	JOP = 'JLE'				:(G.R1)
+G.RLT	JOP = 'JL'
+G.R1	GENOP('JRA_')
+	GENOP(JOP,GETARG(I1))			:(OPDONE)
 
 G.PLC
 G.PSC

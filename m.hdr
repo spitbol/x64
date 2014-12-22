@@ -167,7 +167,6 @@ calltab:
 
         extern LDR_
         extern STR_
-        extern OVR_
         extern RMI_
         extern CVD_
         extern ITR_
@@ -184,7 +183,8 @@ calltab:
         extern SIN_
         extern SQR_
         extern TAN_
-	extern CPR_
+;	extern CPR_
+	extern OVR_
 
 	%macro	ZZZ	3
 	section	.data
@@ -266,3 +266,11 @@ calltab:
 	call	f_rti
 	mov	IA,M_WORD [reg_ia]
 	%endmacro
+
+	extern	f_jra
+	%macro	JRA_	0
+	call	f_jra
+	mov	M_WORD [W0],reg_w0
+	or	W0,W0			; set flags
+	%endmacro
+

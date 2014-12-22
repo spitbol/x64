@@ -815,46 +815,17 @@ setovr: mov     W0,1		; set overflow indicator
 	math_op	SIN_,f_sin
 	math_op	SQR_,f_sqr
 	math_op	TAN_,f_tan
-
-;       CPR_ compare real in RA to 0
-
-	global	CPR_
-CPR_:
-        mov     eax, dword [reg_ra+4]	; fetch msh
-        cmp     eax, 0x80000000        	; test msh for -0.0
-
-        or      W0, W0               	; test msh for +0.0
-        jnz     cpr100            	; exit if non-zero for cc's set
-cpr050: cmp     dword [reg_ra], 0     	; true zero, or denormalized number?
-        jz      cpr100            	; exit if true zero
-	mov	al, 1
-        cmp     al, 0                  	; positive denormal, set cc
-cpr100:	ret
-
+ 
 ;       OVR_ test for overflow value in RA
-
 	global	OVR_
 OVR_:
         mov     ax, word [reg_ra+6]	; get top 2 bytes
         and     ax, 0x7ff0             	; check for infinity or nan
         add     ax, 0x10               	; set/clear overflow accordingly
 	ret
-%ifdef OLD
-;  tryfpu - perform a floating point op to trigger a trap if no floating point hardware.
 
-
-	global	tryfpu
-tryfpu:
-	push	CP 
-	fldz
-	pop	CP 
-	ret
-
-
- 
-%endif
- 
 	global	get_fp			; get frame pointer
+
 get_fp: 
          mov     W0,M_WORD [reg_xs]     ; Minimal's XS
          add     W0,4           	; pop return from call to SYSBX or SYSXI
