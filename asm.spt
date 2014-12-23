@@ -123,6 +123,7 @@ CONFIG.DONE
 
 
 *	Set Z_TRACE to enable instruction by instruction trace
+	Z_TRACE = 1
 	Z_TRACE = 0
 *	Z_LIMIT is maximum number of calls to be generated if non-zero
 	Z_LIMIT = 000
@@ -1324,7 +1325,7 @@ G.RGE	JOP = 'JGE'				:(G.R1)
 G.RGT	JOP = 'JG'				:(G.R1)
 G.RLE	JOP = 'JLE'				:(G.R1)
 G.RLT	JOP = 'JL'
-G.R1	GENOP('JRA_')
+G.R1	GENOP('CALL','CPR_')
 	GENOP(JOP,GETARG(I1))			:(OPDONE)
 
 G.PLC

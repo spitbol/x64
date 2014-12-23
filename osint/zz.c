@@ -35,6 +35,7 @@ uword save_wb;
 uword save_wc;
 uword save_w0;
 uword save_cp;
+double save_ra;
 uword zz_zz;
 uword zz_ln;
 
@@ -46,6 +47,7 @@ uword last_wb;
 uword last_wc;
 uword last_w0;
 uword last_cp;
+double last_ra;
 
 uword zz_calls = 0;
 uword zz_hundred = 0;
@@ -65,6 +67,10 @@ extern char at1_0;
 void prtnl() {
 	fprintf(stderr,"\n");
 }
+void prtreal(double val) {
+	fprintf(stderr, " %8.3g ", val);
+}
+
 void prtval(long reg) {
 //	if (reg > 32 && reg < 127 ) {
 //		fprintf(stderr," '%c' %4d ", reg, reg);
@@ -81,6 +87,11 @@ void prtval(long reg) {
 //		fprintf(stderr," ---------", reg);
 	}
 }
+void prtregr(char * name, double val) {
+	prtreal(val);
+	fprintf(stderr," %s",name);
+}
+
 void prtreg(char * name, long val) {
 	prtval(val);
 	fprintf(stderr," %s",name);
@@ -90,6 +101,14 @@ void prtdif(char* name, long old, long new, long listed)
 	// print old and new values of named register
 	fprintf(stderr,"%s:", name);
 	prtval(old); fprintf(stderr," -> "); prtval(new);
+	prtnl();
+}
+
+void prtdifr(char* name, double old, double new, long listed)
+{
+	// print old and new values of named register
+	fprintf(stderr,"%s:", name);
+	prtreal(old); fprintf(stderr," -> "); prtreal(new);
 	prtnl();
 }
 extern long C_AAA;
@@ -131,8 +150,8 @@ void zz() {
 	int listed = 0;
 
 	zz_calls++;
-//	if (zz_calls < 13000)	return;	// bypass initial code
-	if (zz_calls > 1000000) return;
+	if (zz_calls < 2000)	return;	// bypass initial code
+	if (zz_calls > 50000) return;
 /*
 	return;
  	zz_calls++;
@@ -149,55 +168,58 @@ void zz() {
 	// see if any have changed.
 	if (save_xl != last_xl)  changed += 1;
 	if (save_xr != last_xr)  changed += 1;
-	if (save_xs != last_xs)  changed += 1;
-	if (save_cp != last_cp)  changed += 1;
+//	if (save_xs != last_xs)  changed += 1;
+//	if (save_cp != last_cp)  changed += 1;
 	if (save_wa != last_wa)  changed += 1;
 	if (save_wb != last_wb)  changed += 1;
 	if (save_wc != last_wc)  changed += 1;
 	if (save_w0 != last_w0)  changed += 1;
-  changed = 1; // bypass printout
-  changed = 0; // bypass printout
+	if (save_ra != last_ra)  changed += 1;
+//  changed = 0; // bypass printout
 	if (changed) {
 /* marked changed Minimal registers with "!" to make it easy to search
    backward for last statement that changed a register. */
 		prtnl();
 		if (save_xl != last_xl)
-			{ prtdif("xl.esi", last_xl, save_xl, listed); listed += 1; }
+			{ prtdif("XL.esi", last_xl, save_xl, listed); listed += 1; }
 		if (save_xr != last_xr)
-			{ prtdif("xr.edi", last_xr, save_xr, listed); listed += 1; }
-		if (save_xs != last_xs)
-			{ prtdif("xs.esp", last_xs, save_xs, listed); listed += 1; }
-		if (save_cp != last_cp)
-			{ prtdif("cp.ebp", last_cp, save_cp, listed); listed += 1; }
-		if (save_wa != last_wa)
-			{ prtdif("wa.ecx", last_wa, save_wa, listed); listed += 1; }
-		if (save_wb != last_wb)
-			{ prtdif("wb.ebx", last_wb, save_wb, listed); listed += 1; }
-		if (save_wc != last_wc)
-			{ prtdif("wc.edx", last_wc, save_wc, listed); listed += 1; }
+			{ prtdif("XR.edi", last_xr, save_xr, listed); listed += 1; }
+//		if (save_xs != last_xs)
+//			{ prtdif("XS.esp", last_xs, save_xs, listed); listed += 1; }
+//		if (save_cp != last_cp)
+//			{ prtdif("CP.ebp", last_cp, save_cp, listed); listed += 1; }
 		if (save_w0 != last_w0)
-			{ prtdif("w0.eax", last_w0, save_w0, listed); listed += 1; }
+			{ prtdif("W0.eax", last_w0, save_w0, listed); listed += 1; }
+		if (save_wa != last_wa)
+			{ prtdif("WA.ecx", last_wa, save_wa, listed); listed += 1; }
+		if (save_wb != last_wb)
+			{ prtdif("WB.ebx", last_wb, save_wb, listed); listed += 1; }
+		if (save_wc != last_wc)
+			{ prtdif("WC.edx", last_wc, save_wc, listed); listed += 1; }
+		if (save_ra != last_ra)
+			{ prtdifr("RA    ", last_ra, save_ra, listed); listed += 1; }
 		prtnl();
 	}
 
 //	if (zz_calls % 3 == 1) {
 //	if (zz_calls>0) {
 	int prtregs=1;
-	 prtregs=0;
+	 prtregs=1;
 
 if (prtregs) {
 
 		// print register values before the statement was executed
-		prtreg("xl.esi", save_xl);
-		prtreg("xr.edi", save_xr);
-		prtreg("xs.esp", save_xs);
+		prtreg("XL.esi", save_xl);
+		prtreg("XR.edi", save_xr);
+		prtregr("RA    ",save_ra);
+//		prtreg("XS.esp", save_xs);
 		// cp is last on line, so don't print it zero
-		if (save_cp) prtreg("cp.ebp", save_cp);
+//		if (save_cp) prtreg("cp.ebp", save_cp);
 		fprintf(stderr, "\n");
-		prtreg("wa.ecx", save_wa);
-		prtreg("wb.ebx", save_wb);
-		prtreg("wc.edx", save_wc);
-		prtreg("w0.eax", save_w0);
+		prtreg("W0.eax", save_w0);
+		prtreg("WA.ecx", save_wa);
+		prtreg("WB.ebx", save_wb);
+		prtreg("WC.edx", save_wc);
 		fprintf(stderr, "\n");
 }
 //	}
@@ -206,7 +228,7 @@ if (prtregs) {
 //	fprintf(stderr, "\n%8xx %s\n", zz_ip, p);
 //	fprintf(stderr, "zzz %d %d %d %s\n",zz_calls, zz_id, zz_zz,zz_de);
 //	fprintf(stderr, "zzz %d %s\n",_rc_,zz_de);
-	fprintf(stderr, "zzz %6d  %s\n",zz_calls,zz_de);
+	fprintf(stderr, "\n    %6d  %s\n",zz_calls,zz_de);
 	}
 	zz_last = zz_zz;
 

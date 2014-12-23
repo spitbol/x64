@@ -816,6 +816,21 @@ setovr: mov     W0,1		; set overflow indicator
 	math_op	SQR_,f_sqr
 	math_op	TAN_,f_tan
  
+;       CPR_ compare real in RA to 0
+
+	global	CPR_
+CPR_:
+        mov     eax, dword [reg_ra+4]	; fetch msh
+        cmp     eax, 0x80000000        	; test msh for -0.0
+
+        or      W0, W0               	; test msh for +0.0
+        jnz     cpr100            	; exit if non-zero for cc's set
+cpr050: cmp     dword [reg_ra], 0     	; true zero, or denormalized number?
+        jz      cpr100            	; exit if true zero
+	mov	al, 1
+        cmp     al, 0                  	; positive denormal, set cc
+cpr100:	ret
+
 ;       OVR_ test for overflow value in RA
 	global	OVR_
 OVR_:

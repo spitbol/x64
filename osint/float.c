@@ -60,7 +60,8 @@ void f_mlr() {			// multiply real
 }
 
 void f_dvr() {			// divide real
-	reg_ra /= *reg_rp;
+	if (reg_ra != 0.0)
+		reg_ra /= *reg_rp;
 	return;
 }
 
@@ -74,59 +75,14 @@ void f_itr() {			// integer to real
 	return;
 }
 
-int f_rti() {			// real to integer
+void f_rti() {			// real to integer
 	reg_ia = reg_ra;
-	return 0;
 }
 
-long f_2_i(ra) 		// float to integer
-double ra;
-{
-    return (long)ra;
-}
-
-
-/*
- * i_2_f - integer to float
- */
-double i_2_f(ia)
-long ia;
-{
-    return ia;
-}
-
-
-double f_add(arg, ra)		// float add
-double arg,ra;
-{
-    return ra+arg;
-}
-
-double f_sub(arg, ra)		// float substract
-double arg,ra;
-{
-    return ra-arg;
-}
-
-double f_mul(arg, ra)		// float multiply
-double arg,ra;
-{
-    return ra*arg;
-}
-
-double f_div(arg, ra)		// float divide
-double arg,ra;
-{
-    return ra/arg;
-}
-
-double f_neg(ra)		// float negate
-double ra;
-{
-    return -ra;
-}
 
 #include <stdio.h>
+#ifdef DVI_RMI_LIB
+// dvi and rmi currently done in assembler, in m.s
 void f_dvi() {
 //	fprintf(stderr, "fdvi %ld %ld \n",reg_ia, reg_w0);
 
@@ -153,17 +109,7 @@ void f_rmi() {
 //	fprintf(stderr,"fdvi returns %ld\n", reg_w0);
 
 }
-
-/*
-void f_rmi() {
-	long dividend,divisor,remainder;
-	dividend = (long) reg_ia;
-	divisor = (long) reg_w0;
-	remainder = dividend % divisor;
-	reg_ia = remainder;
-//	fprintf(stderr,"rmi %8ld =  %8ld   %8ld   %8ld\n",reg_ia, remainder, dividend, divisor);
-}
-*/
+#endif
 
 void f_jra() {
 	if ( reg_ra == 0.0) 
