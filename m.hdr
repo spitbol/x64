@@ -274,3 +274,11 @@ calltab:
 	or	W0,W0			; set flags
 	%endmacro
 
+	%macro	LDI_	1
+	mov	IA,%1
+	%endmacro
+
+	%macro	STI_	1
+	mov	%1,IA
+
+	%endmacro
