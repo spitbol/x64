@@ -282,3 +282,7 @@ calltab:
 	mov	%1,IA
 
 	%endmacro
+
+	%macro	NGI_	0
+	neg	IA
+	%endmacro
