@@ -747,8 +747,7 @@ DVI__:
         xchg    IA,W0         	; place quotient in IA (IA)
         pop     CP              ; restore CP
 	mov	W0,0
-	seto	AL
-	mov	M_WORD [reg_fl],W0
+	seto	BYTE [reg_fl]
 	ret
 
 	global	RMI__
@@ -763,11 +762,10 @@ RMI__:
         idiv    CP              ; perform division. W0=quotient, IA=remainder
         pop     CP              ; restore CP
 	mov	W0,0
-	seto	AL
-	mov	M_WORD [reg_fl],W0
+	seto	BYTE [reg_fl]
         ret                     ; return remainder in IA (IA)
-setovr: mov     W0,1		; set overflow indicator
-	mov	M_WORD [reg_fl],W0
+setovr: mov     AL,1		; set overflow indicator
+	mov	BYTE [reg_fl],AL
 	ret
 
 	%macro	real_op 2

@@ -167,7 +167,6 @@ calltab:
 
         extern LDR_
         extern STR_
-        extern RMI_
         extern CVD_
         extern ITR_
         extern ADR_
@@ -199,15 +198,15 @@ calltab:
 
 	extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
 
-	%macro	ADI_	0
-	add	IA,W0
+	%macro	ADI_	1
+	add	IA,%1
 	mov	W0,0
 	seto	AL
 	mov	M_WORD [reg_fl],W0
 	%endmacro
 
 	extern	DVI__
-	%macro	DVI_	0
+	%macro	DVI_	1
 	call	DVI__
 	%endmacro
 
@@ -225,8 +224,8 @@ calltab:
 	mov	IA,%1
 	%endmacro
 
-	%macro	MLI_	0
-	imul	IA,W0
+	%macro	MLI_	1
+	imul	IA,%1
 	mov	W0,0
 	seto	AL
 	mov	M_WORD [reg_fl],W0
@@ -235,8 +234,10 @@ calltab:
 	%macro	NGI_	0
 	neg	IA
 	%endmacro
+
 	extern	RMI__
-	%macro	RMI_	0
+	%macro	RMI_	1
+	mov	W0,%1
 	call	RMI__
 	%endmacro
 	
@@ -246,8 +247,8 @@ calltab:
 	mov	IA,M_WORD [reg_ia]
 	%endmacro
 
-	%macro	SBI_	0
-	sub	IA,W0
+	%macro	SBI_	1
+	sub	IA,%1
 	mov	W0,0
 	seto	AL
 	mov	M_WORD [reg_fl],W0
