@@ -1152,12 +1152,10 @@ G.ZER.XS GENOP('PUSH','0')			:(OPDONE)
 
 G.MNZ   GENOP('MOV',GETARG(I1),'XS')		:(OPDONE)
 
-G.SSL   GENOP()					:(OPDONE)
-G.SSS   GENOP()					:(OPDONE)
-
+G.SSL   
+G.SSS
 G.RTN
-	GENOP()
-                                                :(OPDONE)
+	GENOP()					:(OPDONE)
 
 G.ADD	MEMMEM()
 	GENOP('ADD',GETARG(I1),GETARG(I2))	:(OPDONE)
@@ -1264,16 +1262,12 @@ G.RMI
 	GENOP('MOV','W0',GETARG(I1))
 	GENOP(OP_)				:(OPDONE)
 
-
 G.NGI   
 	GENOP(OP_)				:(OPDONE)
 
-
-*G.INO	
-*G.IOV
+G.INO
+G.IOV
 	GENOP(OP_,GETARG(I1))			:(OPDONE)
-G.INO   GENOP('JNO',GETARG(I1))			:(OPDONE)
-G.IOV   GENOP('JO',GETARG(I1))			:(OPDONE)
 
 
 G.IEQ	JOP = 'JE'				:(OP.CMP)

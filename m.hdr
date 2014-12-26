@@ -196,37 +196,6 @@ calltab:
 	call	zzz
 	%endmacro
 
-%ifdef	MACROS
-
-
-	extern	reg_ia
-
-	%macro	OV	2
-	mov	W0,M_WORD [reg_cc]
-	or	W0,W0
-	%1	%2
-	%endmacro
-
-	%macro	IOV_	1
-	OV	jne,%1	
-	%endmacro
-
-	%macro	INO_	1
-	OV	je,%1
-	%endmacro
-
-	%macro	ITR_	0
-	call	ITR__
-	%endmacro
-
-;	extern ITR_
-;	extern RMI_
-
-	%macro	NGI_	0
-	call	NGI__
-	%endmacro
-	
-%endif
 
 	extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
 
@@ -237,13 +206,25 @@ calltab:
 	mov	M_WORD [reg_fl],W0
 	%endmacro
 
-	%macro	SBI_	0
-	sub	IA,W0
-	mov	W0,0
-	seto	AL
-	mov	M_WORD [reg_fl],W0
+	extern	DVI__
+	%macro	DVI_	0
+	call	DVI__
+	%endmacro
+
+	%macro	INO_	1
+	mov	W0,M_WORD [reg_fl]
+	jno	%1
 	%endmacro
 	
+	%macro	IOV_	1
+	mov	W0,M_WORD [reg_fl]
+	jo	%1
+	%endmacro
+	
+	%macro	LDI_	1
+	mov	IA,%1
+	%endmacro
+
 	%macro	MLI_	0
 	imul	IA,W0
 	mov	W0,0
@@ -251,11 +232,9 @@ calltab:
 	mov	M_WORD [reg_fl],W0
 	%endmacro
 	
-	extern	DVI__
-	%macro	DVI_	0
-	call	DVI__
+	%macro	NGI_	0
+	neg	IA
 	%endmacro
-	
 	extern	RMI__
 	%macro	RMI_	0
 	call	RMI__
@@ -267,22 +246,15 @@ calltab:
 	mov	IA,M_WORD [reg_ia]
 	%endmacro
 
-	extern	f_jra
-	%macro	JRA_	0
-	call	f_jra
-	mov	M_WORD [W0],reg_w0
-	or	W0,W0			; set flags
+	%macro	SBI_	0
+	sub	IA,W0
+	mov	W0,0
+	seto	AL
+	mov	M_WORD [reg_fl],W0
 	%endmacro
-
-	%macro	LDI_	1
-	mov	IA,%1
-	%endmacro
-
+	
 	%macro	STI_	1
 	mov	%1,IA
-
 	%endmacro
 
-	%macro	NGI_	0
-	neg	IA
-	%endmacro
+
