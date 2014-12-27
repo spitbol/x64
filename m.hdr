@@ -199,11 +199,11 @@ calltab:
 
 	extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
 
+;	Integer arithmetic instructions
+
 	%macro	ADI_	1
 	add	IA,%1
-	mov	W0,0
-	seto	AL
-	mov	M_WORD [reg_fl],W0
+	seto	BYTE [reg_fl]
 	%endmacro
 
 	extern	DVI__
@@ -212,12 +212,14 @@ calltab:
 	%endmacro
 
 	%macro	INO_	1
-	mov	W0,M_WORD [reg_fl]
+	mov	AL,BYTE [reg_fl]
+	or	AL,AL
 	jno	%1
 	%endmacro
 	
 	%macro	IOV_	1
-	mov	W0,M_WORD [reg_fl]
+	mov	AL,BYTE [reg_fl]
+	or	AL,AL
 	jo	%1
 	%endmacro
 	
@@ -227,13 +229,12 @@ calltab:
 
 	%macro	MLI_	1
 	imul	IA,%1
-	mov	W0,0
-	seto	AL
-	mov	M_WORD [reg_fl],W0
+	seto	BYTE [reg_fl]
 	%endmacro
 	
 	%macro	NGI_	0
 	neg	IA
+	seto	BYTE [reg_fl]
 	%endmacro
 
 	extern	RMI__
@@ -251,8 +252,7 @@ calltab:
 	%macro	SBI_	1
 	sub	IA,%1
 	mov	W0,0
-	seto	AL
-	mov	M_WORD [reg_fl],W0
+	seto	BYTE [reg_fl]
 	%endmacro
 	
 	%macro	STI_	1

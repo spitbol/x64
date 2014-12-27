@@ -34,7 +34,7 @@ This file is part of Macro SPITBOL.
 */
 
 extern word	reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs, reg_w0;
-extern long	reg_fl;
+extern signed char	reg_fl;
 extern long	reg_ia;
 extern double 	reg_ra,*reg_rp;
 extern uword	minimal_id;

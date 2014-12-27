@@ -182,12 +182,14 @@ reg_size:	dd   r_size
 
 ; end of words saved during exit(-3)
 
-; reg_fl is used to communicate condition codes between Minimal and C code.
-	global	reg_fl
-reg_fl:	D_WORD	0		; condition code register for numeric operations
 ; reg_rp is used to pass pointer to real operand for real arithmetic
 reg_rp:	D_WORD	0
 
+; reg_fl is used to communicate condition codes between Minimal and C code.
+	global	reg_fl
+reg_fl:	DB	0		; condition code register for numeric operations
+
+	align	8
 ;  Constants
 
 	global	ten
