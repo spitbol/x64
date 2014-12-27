@@ -30,6 +30,7 @@
 	extern	f_dvi
 	extern	f_rmi
 	
+	global	MXINT
 
 %define zz_trace
 %ifdef zz_trace

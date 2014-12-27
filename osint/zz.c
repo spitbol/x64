@@ -150,7 +150,7 @@ void zz() {
 	int listed = 0;
 
 	zz_calls++;
-	if (zz_calls < 2000)	return;	// bypass initial code
+//	if (zz_calls < 2000)	return;	// bypass initial code
 	if (zz_calls > 50000) return;
 /*
 	return;
@@ -175,7 +175,7 @@ void zz() {
 	if (save_wc != last_wc)  changed += 1;
 	if (save_w0 != last_w0)  changed += 1;
 	if (save_ra != last_ra)  changed += 1;
-//  changed = 0; // bypass printout
+  changed = 0; // bypass printout
 	if (changed) {
 /* marked changed Minimal registers with "!" to make it easy to search
    backward for last statement that changed a register. */
@@ -204,7 +204,7 @@ void zz() {
 //	if (zz_calls % 3 == 1) {
 //	if (zz_calls>0) {
 	int prtregs=1;
-	 prtregs=1;
+	 prtregs=0;
 
 if (prtregs) {
 
@@ -228,7 +228,8 @@ if (prtregs) {
 //	fprintf(stderr, "\n%8xx %s\n", zz_ip, p);
 //	fprintf(stderr, "zzz %d %d %d %s\n",zz_calls, zz_id, zz_zz,zz_de);
 //	fprintf(stderr, "zzz %d %s\n",_rc_,zz_de);
-	fprintf(stderr, "\n    %6d  %s\n",zz_calls,zz_de);
+//	fprintf(stderr, "\n    %6d  %s\n",zz_calls,zz_de);
+	fprintf(stderr, "\n  %s\n",zz_de);
 	}
 	zz_last = zz_zz;
 

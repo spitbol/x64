@@ -42,6 +42,7 @@ This file is part of Macro SPITBOL.
 */
 #define GLOBALS			// global variables will be defined in this module
 #include "port.h"
+#include <stdint.h>
 //#include <stdio.h>
 
 #ifdef DEBUG
@@ -195,8 +196,17 @@ char	*argv[];
     */
     SET_CP( 0 );
     SET_IA( 0 );
+/* For x32-x86, we pass value of largest integer in WA on startup. It's not possible to set this up
+   at compile time, if we want to compile for 64 bits on 32 bit machine.
+ */
     SET_WA( 0 );
-    SET_WB( 0 );
+#ifdef m32
+    long mxint = INT32_MAX;
+#else
+    long mxint = INT64_MAX;
+#endif
+//    reg_wb = mxint;
+    SET_WB( mxint );
     SET_WC( 0 );
     SET_XR( basemem );
     SET_XL( topmem - sizeof(word) );
