@@ -1232,14 +1232,16 @@ G.AOV
 	GENOP('JC',GETARG(I3))			
 						:(OPDONE)
 G.LCP
+G.LCW
+G.SCP   
+	GENOP(OP_,GETARG(I1))			:(OPDONE)
+
 *  Use CP for code pointer.
 	GENOP('MOV',REG.CP,GETARG(I1))		
 						:(OPDONE)
 
-G.SCP   
 	GENOP('MOV',GETARG(I1),REG.CP)
 						:(OPDONE)
-G.LCW
 *  Should be able to get LODSD; XCHG EAX,GETARG(I1)
 	GENOP('MOV',GETARG(I1),'M_WORD [' REG.CP ']')
 	GENOP('ADD',REG.CP,'CFP_B')			
@@ -1248,6 +1250,7 @@ G.LCW
 
 
 G.ICP   	
+	GENOP(OP_)				:(OPDONE)
 	GENOP('ADD',REG.CP,'CFP_B')
 						:(OPDONE)
 *  INTEGER ACCUMULATOR KEPT IN WDX (WC)

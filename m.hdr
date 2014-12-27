@@ -259,4 +259,32 @@ calltab:
 	mov	%1,IA
 	%endmacro
 
+;	Code Pointer Instructions (CP maintained in location reg_cp)
+
+	extern	reg_cp
+
+	%macro	LCP_	1
+	mov	W0,%1
+	mov	M_WORD [reg_cp],W0
+	%endmacro
+
+	%macro	LCW_	1
+	mov	W0,M_WORD [reg_cp]		; load address of code word
+	mov	W0,M_WORD [W0]			; load code word
+	mov	%1,W0
+	mov	W0,M_WORD [reg_cp]		; load address of code word
+	add	W0,CFP_B
+	mov	M_WORD [reg_cp],W0
+	%endmacro
+
+	%macro	SCP_	1
+	mov	W0,M_WORD [reg_cp]
+	mov	%1,W0
+	%endmacro
+	
+	%macro	ICP_	0
+	mov	W0,M_WORD [reg_cp]
+	add	W0,CFP_B
+	mov	M_WORD [reg_cp],W0
+	%endmacro
 

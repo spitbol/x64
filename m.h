@@ -4,12 +4,12 @@
 	%define D_REAL	DQ	; define value for floating point
 			
 %ifdef	m32
-	%define CP	EBP
 	%define	XL	ESI
 	%define	XT	ESI
 	%define XR	EDI
 	%define XS	ESP
 	%define W0	EAX
+	%define W1	EBP
 	%define WA	ECX
 	%define WA_L    CL
 	%define WB	EBX
@@ -36,12 +36,11 @@
 
 	%define	CDQ	cdq	; sign extend (32 bits)
 %else
-	%define CP	RBP
-	%define CP	RBP
 	%define	XL	RSI
 	%define	XT	RSI
 	%define	XR	RDI
 	%define	W0	RAX
+	%define W1	RBP
 	%define	WA	RCX
 	%define WA_L	CL
 	%define	WB	RBX

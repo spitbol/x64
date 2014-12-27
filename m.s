@@ -1,5 +1,4 @@
 ; Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
-_
 
 ; Copyright 2012-2013 David Shields
 ; 
@@ -311,7 +310,6 @@ TTYBUF:	D_WORD    0     ; type word
 ;
 	global	save_regs
 save_regs:
-	mov	M_WORD [save_cp],CP
 	mov	M_WORD [save_xl],XL
 	mov	M_WORD [save_xr],XR
 	mov	M_WORD [save_xs],XS
@@ -324,7 +322,6 @@ save_regs:
 	global	restore_regs
 restore_regs:
 	;	Restore regs, except for SP. That is caller's responsibility
-	mov	CP,M_WORD [save_cp]
 	mov	XL,M_WORD [save_xl]
 	mov	XR,M_WORD [save_xr]
 ;	mov	XS,M_WORD [save_xs	; caller restores SP]
@@ -739,13 +736,11 @@ CVD_:
 DVI__:
         or      W0,W0         	; test for 0
         jz      setovr    	; jump if 0 divisor
-        push    CP              ; preserve CP
-        xchg    CP ,W0         	; divisor to CP 
+        xchg    W1 ,W0         	; divisor to CP 
         xchg    W0,IA         	; dividend in W0
         CDQ                     ; extend dividend
-        idiv    CP              ; perform division. W0=quotient, IA=remainder
+        idiv    W1              ; perform division. W0=quotient, IA=remainder
         xchg    IA,W0         	; place quotient in IA (IA)
-        pop     CP              ; restore CP
 	mov	W0,0
 	seto	BYTE [reg_fl]
 	ret
@@ -755,12 +750,10 @@ DVI__:
 RMI__:
 	or      W0,W0         	; test for 0
         jz      setovr		; jump if 0 divisor
-        push    CP              ; preserve CP
-        xchg    CP ,W0         	; divisor to CP 
+        xchg    W1 ,W0         	; divisor to W1
         xchg    W0,IA         	; dividend in W0
         CDQ                     ; extend dividend
-        idiv    CP              ; perform division. W0=quotient, IA=remainder
-        pop     CP              ; restore CP
+        idiv    W1              ; perform division. W0=quotient, IA=remainder
 	mov	W0,0
 	seto	BYTE [reg_fl]
         ret                     ; return remainder in IA (IA)
