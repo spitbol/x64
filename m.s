@@ -159,11 +159,11 @@ MINIMAL_ENGTS	equ	12
 ; ;
 	align CFP_B
 reg_block:
+reg_ia: D_WORD	0		; Register IA (EBP)
 reg_w0:	D_WORD	0        	; Register WA (ECX)
 reg_wa:	D_WORD	0        	; Register WA (ECX)
 reg_wb:	D_WORD 	0        	; Register WB (EBX)
-reg_ia:
-reg_wc:	D_WORD	0		; Register WC & IA (EDX)
+reg_wc:	D_WORD	0		; Register WC
 reg_xr:	D_WORD	0        	; Register XR (XR)
 reg_xl:	D_WORD	0        	; Register XL (XL)
 reg_cp:	D_WORD	0        	; Register CP
@@ -225,6 +225,7 @@ _rc_:	dd   0				; return code from osint procedure
 	global	save_wc
 	global	save_w0
 save_cp:	D_WORD	0		; saved CP value
+save_ia:	D_WORD	0		; saved IA value
 save_xl:	D_WORD	0		; saved XL value
 save_xr:	D_WORD	0		; saved XR value
 save_xs:	D_WORD	0		; saved SP value
@@ -312,6 +313,7 @@ TTYBUF:	D_WORD    0     ; type word
 ;
 	global	save_regs
 save_regs:
+	mov	M_WORD [save_ia],IA
 	mov	M_WORD [save_xl],XL
 	mov	M_WORD [save_xr],XR
 	mov	M_WORD [save_xs],XS
@@ -324,6 +326,7 @@ save_regs:
 	global	restore_regs
 restore_regs:
 	;	Restore regs, except for SP. That is caller's responsibility
+	mov	IA,M_WORD [save_ia]
 	mov	XL,M_WORD [save_xl]
 	mov	XR,M_WORD [save_xr]
 ;	mov	XS,M_WORD [save_xs	; caller restores SP]
@@ -434,7 +437,7 @@ stackinit:
 ;         pushad			; save all registers for C
 	mov     WA,M_WORD [reg_wa]	; restore registers
 	mov	WB,M_WORD [reg_wb]
-	mov     WC,M_WORD [reg_wc]	; (also _reg_ia)
+	mov     WC,M_WORD [reg_wc]	;
 	mov	XR,M_WORD [reg_xr]
 	mov	XL,M_WORD [reg_xl]
  
@@ -525,6 +528,7 @@ syscall_init:
 	mov     M_WORD [reg_wc],WC      ; (also _reg_ia)
 	mov	M_WORD [reg_xr],XR
 	mov	M_WORD [reg_xl],XL
+	mov	M_WORD [reg_ia],IA
 	ret
 
 syscall_exit:
@@ -533,9 +537,10 @@ syscall_exit:
 	mov     XS,M_WORD [compsp]      ; restore compiler's stack pointer
 	mov     WA,M_WORD [reg_wa]      ; restore registers
 	mov	WB,M_WORD [reg_wb]
-	mov     WC,M_WORD [reg_wc]      ; (also reg_ia)
+	mov     WC,M_WORD [reg_wc]      ;
 	mov	XR,M_WORD [reg_xr]
 	mov	XL,M_WORD [reg_xl]
+	mov	IA,M_WORD [reg_ia]
 	cld
 	mov	W0,M_WORD [reg_pc]
 	jmp	W0
@@ -716,21 +721,25 @@ SYSXI:	mov	M_WORD [reg_xs],XS
 	add	XS,%2		; pop arguments
 	%endmacro
 
+;	x64 hardware divide, expressed in form of Minimal register mappings, requires dividend be
+;	placed in W0, which is then sign extended into WC:W0. After the divide, W0 contains the
+;	quotient, WC contains the remainder.
+;
 ;       CVD_ - convert by division
 ;
-;       Input   IA (EDX) = number <=0 to convert
+;       Input   IA = number <=0 to convert
 ;       Output  IA / 10
-;               WA (ECX) = remainder + '0'
+;               WA ECX) = remainder + '0'
 	global	CVD_
 CVD_:
-        xchg    W0,WC         	; IA to W0
+        xchg    W0,IA         	; IA to W0, divisor to IA
         CDQ                     ; sign extend
         idiv    M_WORD [ten]	; divide by 10. WC = remainder (negative)
-        neg     WC             
-				; make remainder positive
+	seto	BYTE [reg_fl]
+        neg     WC              ; make remainder positive
         add     dl,0x30         ; convert remainder to ascii ('0')
         mov     WA,WC         	; return remainder in WA
-        xchg    WC,W0         	; return quotient in IA
+        mov    IA,W0         	; return quotient in IA
 	ret
 
 ;       DVI__ - divide IA (EDX) by long in W0
@@ -738,27 +747,25 @@ CVD_:
 DVI__:
         or      W0,W0         	; test for 0
         jz      setovr    	; jump if 0 divisor
-        xchg    W1 ,W0         	; divisor to CP 
-        xchg    W0,IA         	; dividend in W0
+        xchg    W0,IA         	; IA to W0, divisor to IA
         CDQ                     ; extend dividend
-        idiv    W1              ; perform division. W0=quotient, IA=remainder
-        xchg    IA,W0         	; place quotient in IA (IA)
-	mov	W0,0
+        idiv    IA              ; perform division. W0=quotient, WC=remainder
 	seto	BYTE [reg_fl]
+	mov	IA,W0
 	ret
 
 	global	RMI__
 ;       RMI__ - remainder of IA (EDX) divided by long in W0
 RMI__:
-	or      W0,W0         	; test for 0
-        jz      setovr		; jump if 0 divisor
-        xchg    W1 ,W0         	; divisor to W1
-        xchg    W0,IA         	; dividend in W0
+        or      W0,W0         	; test for 0
+        jz      setovr    	; jump if 0 divisor
+        xchg    W0,IA         	; IA to W0, divisor to IA
         CDQ                     ; extend dividend
-        idiv    W1              ; perform division. W0=quotient, IA=remainder
-	mov	W0,0
+        idiv    IA              ; perform division. W0=quotient, WC=remainder
 	seto	BYTE [reg_fl]
-        ret                     ; return remainder in IA (IA)
+	mov	IA,WC
+	ret
+
 setovr: mov     AL,1		; set overflow indicator
 	mov	BYTE [reg_fl],AL
 	ret

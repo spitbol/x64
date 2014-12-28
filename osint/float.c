@@ -125,4 +125,42 @@ void f_pra () {
 	fprintf(stderr,"ldr %g10.6\n",(double) reg_ra);
 }
 
+#ifdef trace_int
+extern long reg_i1,reg_i2,reg_i3;
+
+void t_ldi() {
+	fprintf(stderr,"t_ldi %ld\n",reg_ia);
+}
+
+void t_sti() {
+	fprintf(stderr,"t_sti %ld\n",reg_ia);
+}
+
+void t_adi() {
+	fprintf(stderr,"t_adi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
+}
+
+void t_mli() {
+	fprintf(stderr,"t_mli  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
+}
+
+void t_sbi() {
+	fprintf(stderr,"t_sbi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
+}
+
+void t_dvi() {
+	fprintf(stderr,"t_dvi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
+}
+
+void t_rmi() {
+	fprintf(stderr,"t_rmi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
+}
+
+void t_ngi() {
+	fprintf(stderr,"t_ngi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
+}
+
+#endif
+
 #endif					// (FLOAT & !FLTHDWR) | EXTFUN
+

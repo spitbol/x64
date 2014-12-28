@@ -16,7 +16,8 @@
 	%define WB_L  	BL
 	%define WC	EDX
 	%define WC_L  	DL
-	%define IA	EDX
+;	%define IA	EDX
+	%define IA	EBP
 	%define M_WORD	DWORD	; reference to word in memory
 	%define D_WORD	DD	; define value for memory word
 ;	%define	CFP_B	4
@@ -49,7 +50,8 @@
 	%define WC_L    DL
 	%define	XS	RSP
 	%define	W0_L	AL
-	%define	IA	RDX
+;	%define	IA	RDX
+	%define	IA	RBP
 	%define M_WORD  QWORD
 	%define D_WORD	DQ
 ;	%define	CFP_B	8
