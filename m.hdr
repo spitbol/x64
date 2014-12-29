@@ -195,21 +195,111 @@ calltab:
 	mov	M_WORD [zz_de],%%desc
 	call	zzz
 	%endmacro
-
-
-	extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
-
+%ifdef	NEW
 ;	Integer arithmetic instructions
+
+	extern	i_adi
+	%macro	ADI_	1
+	mov	W0,%1
+	call	i_adi
+	seto	BYTE [reg_fl]
+	%endmacro
+
+	extern	i_dvi
+	%macro	DVI_	1
+	mov	W0,%1
+	call 	i_dvi
+	mov	AL,BYTE [reg_fl]
+	or	AL,AL
+	%endmacro
+
+	%macro	INO_	1
+	mov	AL,BYTE [reg_fl]
+	or	AL,AL
+	jno	%1
+	%endmacro
+	
+	%macro	IOV_	1
+	mov	AL,BYTE [reg_fl]
+	or	AL,AL
+	jo	%1
+	%endmacro
+	
+	%macro	LDI_	1
+	mov	W0,%1
+	mov	M_WORD [reg_ia],W0
+	%endmacro
+
+	extern	i_mli
+	%macro	MLI_	1
+	mov	W0,%1
+	call 	i_mli
+	mov	AL,BYTE [reg_fl]
+	or	AL,AL
+	%endmacro
+	
+	extern	i_ngi
+	%macro	NGI_	0
+	call	i_ngi
+	%endmacro
+
+	extern	i_rmi
+	%macro	RMI_	1
+	mov	W0,%1
+	call	i_rmi
+	%endmacro
+	
+	extern	f_rti
+	%macro	RTI_	0
+	call	f_rti
+	%endmacro
+
+	extern	i_sbi
+	%macro	SBI_	1
+	mov	W0,%1
+	call 	i_sbi
+	mov	AL,BYTE [reg_fl]
+	or	AL,AL
+	%endmacro
+	
+	%macro	STI_	1
+	mov	W0,M_WORD [reg_ia]
+	mov	%1,W0
+	%endmacro
+
+	extern	i_cvd
+	%macro	CVD_	0
+	call	i_cvd
+	mov	WA,reg_ia
+	%endmacro
+
+%endif
+	extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
+%define OLD
+%ifdef	OLD
+;	Integer arithmetic instructions
+	extern	CVD__
+	%macro	CVD_	0
+	call	CVD__
+	%endmacro
+
 
 	%macro	ADI_	1
 	add	IA,%1
 	seto	BYTE [reg_fl]
 	%endmacro
-
 	extern	DVI__
 	%macro	DVI_	1
 	call	DVI__
 	%endmacro
+
+	extern	RMI__
+	%macro	RMI_	1
+	mov	W0,%1
+	call	RMI__
+	%endmacro
+%endif	
+
 
 	%macro	INO_	1
 	mov	AL,BYTE [reg_fl]
@@ -237,12 +327,6 @@ calltab:
 	seto	BYTE [reg_fl]
 	%endmacro
 
-	extern	RMI__
-	%macro	RMI_	1
-	mov	W0,%1
-	call	RMI__
-	%endmacro
-	
 	extern	f_rti
 	%macro	RTI_	0
 	call	f_rti

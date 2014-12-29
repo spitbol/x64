@@ -162,5 +162,88 @@ void t_ngi() {
 
 #endif
 
+
+void i_adi() {
+	reg_fl = 0;
+	reg_ia += reg_w0;
+}
+
+void i_dvi() {
+	if (reg_w0 == 0) {
+		reg_fl = 1;
+	}
+	else {
+		reg_ia /= reg_w0;
+	}
+}
+
+void i_mli() {
+	reg_fl = 0;
+	reg_ia *= reg_w0;
+}
+
+void i_ngi() {
+	reg_fl = 0;
+	reg_ia = -reg_ia;
+}
+
+void i_rmi() {
+	if (reg_ia == 0) {
+		reg_fl = 1;
+	}
+	else {
+		reg_ia %= reg_w0;
+		reg_fl = 0;
+	}
+}
+
+void i_sbi() {
+	reg_ia -= reg_w0;
+}
+
+void i_cvd() {
+	long reg_wa = reg_ia % 10;
+	reg_ia /= 10;
+	reg_wa  = -reg_wa + 48; // convert remainder to character code for digit
+}
+
+#ifdef trace_int
+extern long reg_i1,reg_i2,reg_i3;
+
+void t_ldi() {
+	fprintf(stderr,"t_ldi %ld\n",reg_ia);
+}
+
+void t_sti() {
+	fprintf(stderr,"t_sti %ld\n",reg_ia);
+}
+
+void t_adi() {
+	fprintf(stderr,"t_adi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
+}
+
+void t_mli() {
+	fprintf(stderr,"t_mli  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
+}
+
+void t_sbi() {
+	fprintf(stderr,"t_sbi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
+}
+
+void t_dvi() {
+	fprintf(stderr,"t_dvi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
+}
+
+void t_rmi() {
+	fprintf(stderr,"t_rmi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
+}
+
+void t_ngi() {
+	fprintf(stderr,"t_ngi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
+}
+
+#endif
+
+
 #endif					// (FLOAT & !FLTHDWR) | EXTFUN
 

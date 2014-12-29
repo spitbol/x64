@@ -720,18 +720,19 @@ SYSXI:	mov	M_WORD [reg_xs],XS
 	call	%1
 	add	XS,%2		; pop arguments
 	%endmacro
-
+%define OLD
+%ifdef OLD
 ;	x64 hardware divide, expressed in form of Minimal register mappings, requires dividend be
 ;	placed in W0, which is then sign extended into WC:W0. After the divide, W0 contains the
 ;	quotient, WC contains the remainder.
 ;
-;       CVD_ - convert by division
+;       CVD__ - convert by division
 ;
 ;       Input   IA = number <=0 to convert
 ;       Output  IA / 10
 ;               WA ECX) = remainder + '0'
-	global	CVD_
-CVD_:
+	global	CVD__
+CVD__:
         xchg    W0,IA         	; IA to W0, divisor to IA
         CDQ                     ; sign extend
         idiv    M_WORD [ten]	; divide by 10. WC = remainder (negative)
@@ -741,7 +742,6 @@ CVD_:
         mov     WA,WC         	; return remainder in WA
         mov    IA,W0         	; return quotient in IA
 	ret
-
 ;       DVI__ - divide IA (EDX) by long in W0
 	global	DVI__
 DVI__:
@@ -769,7 +769,73 @@ RMI__:
 setovr: mov     AL,1		; set overflow indicator
 	mov	BYTE [reg_fl],AL
 	ret
+%endif
 
+%ifdef NEW
+
+%ifdef CVD
+;	x64 hardware divide, expressed in form of Minimal register mappings, requires dividend be
+;	placed in W0, which is then sign extended into WC:W0. After the divide, W0 contains the
+;	quotient, WC contains the remainder.
+;
+;       CVD_ - convert by division
+;
+;       Input   IA = number <=0 to convert
+;       Output  IA / 10
+;               WA ECX) = remainder + '0'
+	global	CVD_
+CVD_:
+        xchg    W0,IA         	; IA to W0, divisor to IA
+        CDQ                     ; sign extend
+        idiv    M_WORD [ten]	; divide by 10. WC = remainder (negative)
+	seto	BYTE [reg_fl]
+        neg     WC              ; make remainder positive
+        add     dl,0x30         ; convert remainder to ascii ('0')
+        mov     WA,WC         	; return remainder in WA
+        mov    IA,W0         	; return quotient in IA
+	ret
+%endif
+
+%ifdef DVI_RMI
+;       DVI__ - divide IA (EDX) by long in W0
+	global	DVI__
+DVI__:
+        or      W0,W0         	; test for 0
+        jz      setovr    	; jump if 0 divisor
+        xchg    W0,IA         	; IA to W0, divisor to IA
+        CDQ                     ; extend dividend
+        idiv    IA              ; perform division. W0=quotient, WC=remainder
+	seto	BYTE [reg_fl]
+	mov	IA,W0
+	ret
+
+	global	RMI__
+;       RMI__ - remainder of IA (EDX) divided by long in W0
+RMI__:
+        or      W0,W0         	; test for 0
+        jz      setovr    	; jump if 0 divisor
+        xchg    W0,IA         	; IA to W0, divisor to IA
+        CDQ                     ; extend dividend
+        idiv    IA              ; perform division. W0=quotient, WC=remainder
+	seto	BYTE [reg_fl]
+	mov	IA,WC
+	ret
+
+setovr: mov     AL,1		; set overflow indicator
+	mov	BYTE [reg_fl],AL
+	ret
+%endif
+
+	%macro	real_op 2
+	global	%1
+	extern	%2
+%1:
+	mov	M_WORD [reg_rp],W0
+	call	%2
+	ret
+%endmacro
+
+%endif
 	%macro	real_op 2
 	global	%1
 	extern	%2
@@ -878,7 +944,7 @@ restart:
 	mov	WC,WA
         sub     WC,WB                 	; WC = stack bottom from exit() time
 	mov	WB,WA
-        sub     WB,XS                 	; WB = old stbas - new stbas
+        sub     WB,XS                 	; WB =  stbas - new stbas
 
         mov	M_WORD [STBAS],XS       ; save initial sp
 ;        GETOFF  W0,DFFNC               ; get address of PPM offset

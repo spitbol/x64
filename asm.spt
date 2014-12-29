@@ -1582,7 +1582,7 @@ G.CVM	T1 = GETARG(I1)
 	GENOP('JO',T1)				
 						:(OPDONE)
 G.CVD	
-	GENOP('CALL','CVD_')			:(OPDONE)
+	GENOP('CVD_')				:(OPDONE)
 G.MVC
 *	Use word move if character size is word size
 *	If charsize is word size, convert character count to byte count for word move
