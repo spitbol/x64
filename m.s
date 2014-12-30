@@ -20,6 +20,9 @@
 
 ;	WS is bits per word, CFP_B is bytes per word, CFP_C is characters per word
 
+%define OLD
+;%define NEW
+
 %ifdef	m32
 	%define	CFP_B	4
 	%define	CFP_C	4
@@ -720,8 +723,7 @@ SYSXI:	mov	M_WORD [reg_xs],XS
 	call	%1
 	add	XS,%2		; pop arguments
 	%endmacro
-%define OLD
-%ifdef OLD
+
 ;	x64 hardware divide, expressed in form of Minimal register mappings, requires dividend be
 ;	placed in W0, which is then sign extended into WC:W0. After the divide, W0 contains the
 ;	quotient, WC contains the remainder.
@@ -733,30 +735,40 @@ SYSXI:	mov	M_WORD [reg_xs],XS
 ;               WA ECX) = remainder + '0'
 	global	CVD__
 CVD__:
-        xchg    W0,IA         	; IA to W0, divisor to IA
-        CDQ                     ; sign extend
-        idiv    M_WORD [ten]	; divide by 10. WC = remainder (negative)
-	seto	BYTE [reg_fl]
-        neg     WC              ; make remainder positive
-        add     dl,0x30         ; convert remainder to ascii ('0')
-        mov     WA,WC         	; return remainder in WA
-        mov    IA,W0         	; return quotient in IA
+	extern	i_cvd
+	mov	M_WORD [reg_ia],IA
+	mov	M_WORD [reg_wa],WA
+	call	i_cvd
+	mov	IA,M_WORD [reg_ia]
+	mov	WA,M_WORD [reg_wa]
 	ret
+
+
 ;       DVI__ - divide IA (EDX) by long in W0
 	global	DVI__
 DVI__:
-        or      W0,W0         	; test for 0
-        jz      setovr    	; jump if 0 divisor
-        xchg    W0,IA         	; IA to W0, divisor to IA
-        CDQ                     ; extend dividend
-        idiv    IA              ; perform division. W0=quotient, WC=remainder
-	seto	BYTE [reg_fl]
-	mov	IA,W0
+	extern	i_dvi
+	mov	M_WORD [reg_w0],W0
+	call	i_dvi
+	mov	IA,M_WORD [reg_ia]
+	mov	AL,BYTE [reg_fl]
+	or	AL,AL
 	ret
 
+%ifdef OLD
 	global	RMI__
 ;       RMI__ - remainder of IA (EDX) divided by long in W0
 RMI__:
+	jmp	ocode
+	extern	i_rmi
+	mov	M_WORD [reg_w0],W0
+	call	i_rmi
+	mov	IA,M_WORD [reg_ia]
+	mov	AL,BYTE [reg_fl]
+	or	AL,AL
+	ret
+
+ocode:
         or      W0,W0         	; test for 0
         jz      setovr    	; jump if 0 divisor
         xchg    W0,IA         	; IA to W0, divisor to IA
@@ -772,59 +784,6 @@ setovr: mov     AL,1		; set overflow indicator
 %endif
 
 %ifdef NEW
-
-%ifdef CVD
-;	x64 hardware divide, expressed in form of Minimal register mappings, requires dividend be
-;	placed in W0, which is then sign extended into WC:W0. After the divide, W0 contains the
-;	quotient, WC contains the remainder.
-;
-;       CVD_ - convert by division
-;
-;       Input   IA = number <=0 to convert
-;       Output  IA / 10
-;               WA ECX) = remainder + '0'
-	global	CVD_
-CVD_:
-        xchg    W0,IA         	; IA to W0, divisor to IA
-        CDQ                     ; sign extend
-        idiv    M_WORD [ten]	; divide by 10. WC = remainder (negative)
-	seto	BYTE [reg_fl]
-        neg     WC              ; make remainder positive
-        add     dl,0x30         ; convert remainder to ascii ('0')
-        mov     WA,WC         	; return remainder in WA
-        mov    IA,W0         	; return quotient in IA
-	ret
-%endif
-
-%ifdef DVI_RMI
-;       DVI__ - divide IA (EDX) by long in W0
-	global	DVI__
-DVI__:
-        or      W0,W0         	; test for 0
-        jz      setovr    	; jump if 0 divisor
-        xchg    W0,IA         	; IA to W0, divisor to IA
-        CDQ                     ; extend dividend
-        idiv    IA              ; perform division. W0=quotient, WC=remainder
-	seto	BYTE [reg_fl]
-	mov	IA,W0
-	ret
-
-	global	RMI__
-;       RMI__ - remainder of IA (EDX) divided by long in W0
-RMI__:
-        or      W0,W0         	; test for 0
-        jz      setovr    	; jump if 0 divisor
-        xchg    W0,IA         	; IA to W0, divisor to IA
-        CDQ                     ; extend dividend
-        idiv    IA              ; perform division. W0=quotient, WC=remainder
-	seto	BYTE [reg_fl]
-	mov	IA,WC
-	ret
-
-setovr: mov     AL,1		; set overflow indicator
-	mov	BYTE [reg_fl],AL
-	ret
-%endif
 
 	%macro	real_op 2
 	global	%1

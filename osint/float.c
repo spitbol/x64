@@ -97,7 +97,7 @@ void f_dvi() {
 
 }
 void f_rmi() {
-//	fprintf(stderr, "fdvi %ld %ld \n",reg_ia, reg_w0);
+	fprintf(stderr, "fdvi %ld %ld \n",reg_ia, reg_w0);
 
 	if (reg_w0 == 0) {
 		reg_fl = 0x80; // set overflow
@@ -106,7 +106,7 @@ void f_rmi() {
 		reg_ia %= (long) reg_w0;
 		reg_fl = 0;
 	}
-//	fprintf(stderr,"fdvi returns %ld\n", reg_w0);
+	fprintf(stderr,"fdvi returns %ld\n", reg_w0);
 
 }
 #endif
@@ -188,11 +188,14 @@ void i_ngi() {
 }
 
 void i_rmi() {
+	fprintf(stderr,"i_rmi enter IA %ld  WC %ld\n",reg_ia,(long) reg_w0);
 	if (reg_ia == 0) {
 		reg_fl = 1;
 	}
 	else {
-		reg_ia %= reg_w0;
+		reg_wa = reg_ia % 10;
+		reg_ia = reg_ia / 10;
+		reg_wa = -reg_wa + '0';
 		reg_fl = 0;
 	}
 }
@@ -202,9 +205,12 @@ void i_sbi() {
 }
 
 void i_cvd() {
-	long reg_wa = reg_ia % 10;
+	
+	reg_wa = reg_ia % 10;
+//	fprintf(stderr,"i_cvd enter IA %ld  WA %ld\n");	
 	reg_ia /= 10;
 	reg_wa  = -reg_wa + 48; // convert remainder to character code for digit
+//	fprintf(stderr,"i_cvd leave IA %ld  WA %ld\n");	
 }
 
 #ifdef trace_int
