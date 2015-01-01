@@ -20,8 +20,6 @@
 
 ;	WS is bits per word, CFP_B is bytes per word, CFP_C is characters per word
 
-%define OLD
-;%define NEW
 
 %ifdef	m32
 	%define	CFP_B	4
@@ -755,7 +753,6 @@ DVI__:
 	or	AL,AL
 	ret
 
-%ifdef OLD
 	global	RMI__
 ;       RMI__ - remainder of IA (EDX) divided by long in W0
 RMI__:
@@ -781,20 +778,7 @@ ocode:
 setovr: mov     AL,1		; set overflow indicator
 	mov	BYTE [reg_fl],AL
 	ret
-%endif
 
-%ifdef NEW
-
-	%macro	real_op 2
-	global	%1
-	extern	%2
-%1:
-	mov	M_WORD [reg_rp],W0
-	call	%2
-	ret
-%endmacro
-
-%endif
 	%macro	real_op 2
 	global	%1
 	extern	%2
@@ -842,22 +826,6 @@ setovr: mov     AL,1		; set overflow indicator
 	math_op	SQR_,f_sqr
 	math_op	TAN_,f_tan
  
-%ifdef OLDER
-;       CPR_ compare real in RA to 0
-
-	global	CPR_
-CPR_:
-        mov     eax, dword [reg_ra+4]	; fetch msh
-        cmp     eax, 0x80000000        	; test msh for -0.0
-
-        or      W0, W0               	; test msh for +0.0
-        jnz     cpr100            	; exit if non-zero for cc's set
-cpr050: cmp     dword [reg_ra], 0     	; true zero, or denormalized number?
-        jz      cpr100            	; exit if true zero
-	mov	al, 1
-        cmp     al, 0                  	; positive denormal, set cc
-cpr100:	ret
-%endif
 ;       OVR_ test for overflow value in RA
 	global	OVR_
 OVR_:
