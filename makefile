@@ -1,6 +1,6 @@
 # SPITBOL makefile using gcc
 
-WS?=32
+WS?=64
 
 DEBUG?=0
 EXECUTABLE=spitbol
