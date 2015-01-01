@@ -9,7 +9,7 @@
 #
 rm tbol.*
 echo "start 32-bit sanity test"
-cp	./bin/spitbol tbol
+cp	./bin/spitbol.m32 tbol
 make clean>/dev/null
 make BASEBOL=./tbol WS=32
 mv s.lex tbol.lex.0
