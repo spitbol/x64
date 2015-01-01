@@ -60,8 +60,14 @@ void f_mlr() {			// multiply real
 }
 
 void f_dvr() {			// divide real
-	if (reg_ra != 0.0)
+//	fprintf(stderr, "f_dvr_e %12.6g  %12.6g  %d\n",reg_ra,*reg_rp,reg_fl);
+	if (*reg_rp != 0.0) {
 		reg_ra /= *reg_rp;
+		reg_fl = 0;
+	}
+	else
+		reg_fl = 1;
+//	fprintf(stderr, "f_dvr_l %12.6g  %12.6g  %d\n",reg_ra,*reg_rp,reg_fl);
 	return;
 }
 
@@ -81,36 +87,6 @@ void f_rti() {			// real to integer
 
 
 #include <stdio.h>
-#ifdef DVI_RMI_LIB
-// dvi and rmi currently done in assembler, in m.s
-void f_dvi() {
-//	fprintf(stderr, "fdvi %ld %ld \n",reg_ia, reg_w0);
-
-	if (reg_w0 == 0) {
-		reg_fl = 0x80; // set overflow
-	}
-	else {
-		reg_ia /= (long) reg_w0;
-		reg_fl = 0;
-	}
-//	fprintf(stderr,"fdvi returns %ld\n", reg_w0);
-
-}
-void f_rmi() {
-	fprintf(stderr, "fdvi %ld %ld \n",reg_ia, reg_w0);
-
-	if (reg_w0 == 0) {
-		reg_fl = 0x80; // set overflow
-	}
-	else {
-		reg_ia %= (long) reg_w0;
-		reg_fl = 0;
-	}
-	fprintf(stderr,"fdvi returns %ld\n", reg_w0);
-
-}
-#endif
-
 void f_cpr() {
 	if ( reg_ra == 0.0) 
 		reg_fl =  0; 
