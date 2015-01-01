@@ -50,7 +50,7 @@
 	&anchor  = 1
 *  useful constants
 
-	minlets = 'abcdefghijklmnopqrstuvwxy_' 'ABCDEFGHIJKLMNOPQRSTUVWXY'
+	minlets = 'abcdefghijklmnopqrstuvwxy_z' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 	nos     = '0123456789'
 	p.nos	= span(nos) rpos(0)
 	p.exp	= 'e' any('+-') span(nos)
@@ -424,22 +424,22 @@ main2
 . 'e_hnw[6]'
 . 'e_fsp[15]'
 . 'e_sed[25]'
-. 'ch_la[065]ch_lb[066]ch_lc[067]ch_ld[068]ch_le[069]ch_lf[070]'
-. 'ch_lg[071]ch_lh[072]ch_li[073]ch_lj[074]ch_lk[075]ch_ll[076]'
-. 'ch_lm[077]ch_ln[078]ch_lo[079]ch_lp[080]ch_lq[081]ch_lr[082]'
-. 'ch_ls[083]ch_lt[084]ch_lu[085]ch_lv[086]ch_lw[087]ch_lx[088]'
-. 'ch_ly[089]ch_l_[090]'
+. 'ch_ua[065]ch_ub[066]ch_uc[067]ch_ud[068]ch_ue[069]ch_uf[070]'
+. 'ch_ug[071]ch_uh[072]ch_ui[073]ch_uj[074]ch_uk[075]ch_ul[076]'
+. 'ch_um[077]ch_un[078]ch_uo[079]ch_up[080]ch_uq[081]ch_ur[082]'
+. 'ch_us[083]ch_ut[084]ch_uu[085]ch_uv[086]ch_uw[087]ch_ux[088]'
+. 'ch_uy[089]ch_uz[090]'
 . 'ch_d0[048]ch_d1[049]ch_d2[050]ch_d3[051]ch_d4[052]ch_d5[053]'
-. 'ch_d6[054]ch_d7[055]ch_d8[056]ch_d9[057]ch__a[097]ch__b[098]'
-. 'ch__c[099]ch__d[100]ch__e[101]ch__f[102]ch__g[103]ch__h[104]'
-. 'ch__i[105]ch__j[106]ch__k[107]ch__l[108]ch__m[109]ch__n[110]'
-. 'ch__o[111]ch__p[112]ch__q[113]ch__r[114]ch__s[115]ch__t[116]'
-. 'ch__u[117]ch__v[118]ch__w[119]ch__x[120]ch__y[121]ch___[122]'
+. 'ch_d6[054]ch_d7[055]ch_d8[056]ch_d9[057]ch_la[097]ch_lb[098]'
+. 'ch_lc[099]ch_ld[100]ch_le[101]ch_lf[102]ch_lg[103]ch_lh[104]'
+. 'ch_li[105]ch_lj[106]ch_lk[107]ch_ll[108]ch_lm[109]ch_ln[110]'
+. 'ch_lo[111]ch_lp[112]ch_lq[113]ch_lr[114]ch_ls[115]ch_lt[116]'
+. 'ch_lu[117]ch_lv[118]ch_lw[119]ch_lx[120]ch_ly[121]ch_l_[122]'
 . 'ch_am[038]ch_as[042]ch_at[064]ch_bb[060]ch_bl[032]ch_br[124]'
 . 'ch_cl[058]ch_cm[044]ch_dl[036]ch_dt[046]ch_dq[034]ch_eq[061]'
 . 'ch_ex[033]ch_mn[045]ch_nm[035]ch_nt[126]ch_pc[037]ch_pl[043]'
 . 'ch_pp[040]ch_rb[062]ch_rp[041]ch_qu[063]ch_sl[047]ch_sm[059]'
-. 'ch_sq[039]ch_un[095]ch_ob[091]ch_cb[093]ch_ht[009]ch_vt[011]'
+. 'ch_sq[039]ch_u_[095]ch_ob[091]ch_cb[093]ch_ht[009]ch_vt[011]'
 . 'ch_ey[094]iodel[032]' )
 * set target-dependent configuration parameters
 	:($('config.' arch))
@@ -458,7 +458,6 @@ config.32
 	equ_defs['cfp_u'] = '128'
 *	use 6 words, or 24 characters, for hash in x32
 	equ_defs['e_hnw'] = '6'
-
 							:(config.done)
 config.64
 	equ_defs['cfp_a'] = '256'

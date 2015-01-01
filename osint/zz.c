@@ -54,7 +54,7 @@ uword zz_hundred = 0;
 uword zz_off;
 uword zz_id=0;
 uword zz_last = 0;
-char ** zz_de;
+char * zz_de;
 extern long c_aaa;
 extern long w_yyy;
 long off_c_aaa;
@@ -76,7 +76,7 @@ void prtval(long reg) {
 //	}
 //	else if (reg >= 0 && reg < 300000) {
 	if (reg >= 0 && reg < 100000) {
-		fprintf(stderr," %8d ", reg);
+		fprintf(stderr," %8ld ", reg);
 	}
 	else if ( reg >= off_c_aaa && reg <= off_w_yyy) {
 		fprintf(stderr," Z%ld ", reg);
@@ -118,8 +118,8 @@ long off_w_yyy;
 
 
 void zz_init() {
-	off_c_aaa = &c_aaa;
-	off_w_yyy = &w_yyy;
+//	off_c_aaa = &c_aaa;
+//	off_w_yyy = &w_yyy;
 //	fprintf(stderr, "off_c_aaa %ld\n", &c_aaa);
 //	fprintf(stderr, "off_w_yyy %ld\n", &w_yyy);
 }
@@ -256,11 +256,11 @@ void zz_4() {
 }
 uword zz_arg;
 void zz_num() {
-	fprintf(stderr, "zz_num\t%x\n",zz_arg);
+	fprintf(stderr, "zz_num\t%x\n",(unsigned int) zz_arg);
 }
-uword zz_num_id;
-uword zz_sys_id;
-uword zz_sys_calls=0;
+int zz_num_id;
+int zz_sys_id;
+int zz_sys_calls=0;
 void zz_sys() {
 	zz_sys_calls++;
 	fprintf(stderr, "zz_sys %d %d\n",zz_sys_calls,zz_sys_id);

@@ -1,4 +1,4 @@
-	OUTPUT = 'writing save file'
+	output = 'writing save file'
 	exit(-3,'save.spx')
-	OUTPUT = 'Resuming after save'
+	output = 'Resuming after save'
 end

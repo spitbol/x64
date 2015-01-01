@@ -470,7 +470,7 @@
 *      .culc                 define to include &case (lc names)
 *                            if cucl defined, must support
 *                            minimal op flc wreg that folds
-*                            argument to upper case
+*                            argument to lower case
 *      .cust                 define to include set() code
 *
 *                            conditional options
@@ -2162,7 +2162,7 @@ ch_qu  equ  *                interrogation operator (question)
 ch_sl  equ  *                slash
 ch_sm  equ  *                semicolon
 ch_sq  equ  *                single quote
-ch_un  equ  *                special identifier char (underline)
+ch_u_  equ  *                special identifier char (underline)
 ch_ob  equ  *                opening bracket
 ch_cb  equ  *                closing bracket
        ejc
@@ -2187,32 +2187,32 @@ ch_ey  equ  *                up arrow
 *
 *      lower case or shifted case alphabetic chars
 *
-ch__a  equ  *                shifted a
-ch__b  equ  *                shifted b
-ch__c  equ  *                shifted c
-ch__d  equ  *                shifted d
-ch__e  equ  *                shifted e
-ch__f  equ  *                shifted f
-ch__g  equ  *                shifted g
-ch__h  equ  *                shifted h
-ch__i  equ  *                shifted i
-ch__j  equ  *                shifted j
-ch__k  equ  *                shifted k
-ch__l  equ  *                shifted l
-ch__m  equ  *                shifted m
-ch__n  equ  *                shifted n
-ch__o  equ  *                shifted o
-ch__p  equ  *                shifted p
-ch__q  equ  *                shifted q
-ch__r  equ  *                shifted r
-ch__s  equ  *                shifted s
-ch__t  equ  *                shifted t
-ch__u  equ  *                shifted u
-ch__v  equ  *                shifted v
-ch__w  equ  *                shifted w
-ch__x  equ  *                shifted x
-ch__y  equ  *                shifted y
-ch___  equ  *                shifted z
+ch_ua  equ  *                shifted a
+ch_ub  equ  *                shifted b
+ch_uc  equ  *                shifted c
+ch_ud  equ  *                shifted d
+ch_ue  equ  *                shifted e
+ch_uf  equ  *                shifted f
+ch_ug  equ  *                shifted g
+ch_uh  equ  *                shifted h
+ch_ui  equ  *                shifted i
+ch_uj  equ  *                shifted j
+ch_uk  equ  *                shifted k
+ch_ul  equ  *                shifted l
+ch_um  equ  *                shifted m
+ch_un  equ  *                shifted n
+ch_uo  equ  *                shifted o
+ch_up  equ  *                shifted p
+ch_uq  equ  *                shifted q
+ch_ur  equ  *                shifted r
+ch_us  equ  *                shifted s
+ch_ut  equ  *                shifted t
+ch_uu  equ  *                shifted u
+ch_uv  equ  *                shifted v
+ch_uw  equ  *                shifted w
+ch_ux  equ  *                shifted x
+ch_uy  equ  *                shifted y
+ch_uz  equ  *                shifted z
 .fi
 *      if a delimiter other than ch_cm must be used in
 *      the third argument of input(),output() then .ciod should
@@ -18262,7 +18262,7 @@ cnc01  bge  scnpt,scnil,cnc09 return if end of image
        plc  xr,scnpt         char ptr for first char
        lch  wa,(xr)+         get first char
 .if    .culc
-       flc  wa               fold to upper case
+       flc  wa               fold to lower case
 .fi
        beq  wa,=ch_li,cnc07  special case of -inxxx
 cnc0a  mnz  scncc            set flag for scane
@@ -18369,7 +18369,7 @@ cnc06  erb  247,invalid control statement
 *
 cnc07  lch  wa,(xr)+         get next char
 .if    .culc
-       flc  wa               fold to upper case
+       flc  wa               fold to lower case
 .fi
        bne  wa,=ch_ln,cnc0a  if not letter n
        lch  wa,(xr)          get third char
@@ -20305,10 +20305,10 @@ filn3  mov  wb,(xs)+         restore wb
 *
 .if    .culc
 *
-*      flstg -- fold string to upper case
+*      flstg -- fold string to lower case
 *
-*      flstg folds a character string containing lower case
-*      characcters to one containing upper case characters.
+*      flstg folds a character string containing upper case
+*      characcters to one containing lower case characters.
 *      folding is only done if &case (kvcas) is not zero.
 *
 *      (xr)                  string argument
@@ -20329,9 +20329,9 @@ flstg  prc  e,0              entry point
        zer  -(xs)            init did fold flag
        lct  wc,wc            load loop counter
 fst01  lch  wa,(xl)+         load character
-       blt  wa,=ch__a,fst02  skip if less than lc a
-       bgt  wa,=ch___,fst02  skip if greater than lc z
-       flc  wa               fold character to upper case
+       blt  wa,=ch_ua,fst02  skip if less than uc a
+       bgt  wa,=ch_uz,fst02  skip if greater than uc z
+       flc  wa               fold character to lower case
        mnz  (xs)             set did fold character flag
 fst02  sch  wa,(xr)+         store (possibly folded) character
        bct  wc,fst01         loop thru entire string
@@ -21611,8 +21611,8 @@ gtn12  bne  wb,=ch_dt,gtn13  jump if not dec point
 gtn13  beq  wb,=ch_le,gtn15  jump if e for exponent
        beq  wb,=ch_ld,gtn15  jump if d for exponent
 .if    .culc
-       beq  wb,=ch__e,gtn15  jump if e for exponent
-       beq  wb,=ch__d,gtn15  jump if d for exponent
+       beq  wb,=ch_ue,gtn15  jump if e for exponent
+       beq  wb,=ch_ud,gtn15  jump if d for exponent
 .fi
 *
 *      here check for trailing blanks
@@ -21830,7 +21830,7 @@ gnv02  mov  gnvsa,wa         save wa
        ppm  gnv01            jump if conversion error
        bze  wa,gnv01         null string is an error
 .if    .culc
-       jsr  flstg            fold lower case to upper case
+       jsr  flstg            fold upper case to lower case
 .fi
        mov  -(xs),xl         save xl
        mov  -(xs),xr         stack string ptr for later
@@ -26335,32 +26335,32 @@ scn06  lch  xr,(xl)+         get next character
        iff  ch_ly,scn09      letter y
        iff  ch_l_,scn09      letter z
 .if    .casl
-       iff  ch__a,scn09      shifted a
-       iff  ch__b,scn09      shifted b
-       iff  ch__c,scn09      shifted c
-       iff  ch__d,scn09      shifted d
-       iff  ch__e,scn09      shifted e
-       iff  ch__f,scn20      shifted f
-       iff  ch__g,scn09      shifted g
-       iff  ch__h,scn09      shifted h
-       iff  ch__i,scn09      shifted i
-       iff  ch__j,scn09      shifted j
-       iff  ch__k,scn09      shifted k
-       iff  ch__l,scn09      shifted l
-       iff  ch__m,scn09      shifted m
-       iff  ch__n,scn09      shifted n
-       iff  ch__o,scn09      shifted o
-       iff  ch__p,scn09      shifted p
-       iff  ch__q,scn09      shifted q
-       iff  ch__r,scn09      shifted r
-       iff  ch__s,scn21      shifted s
-       iff  ch__t,scn09      shifted t
-       iff  ch__u,scn09      shifted u
-       iff  ch__v,scn09      shifted v
-       iff  ch__w,scn09      shifted w
-       iff  ch__x,scn09      shifted x
-       iff  ch__y,scn09      shifted y
-       iff  ch___,scn09      shifted z
+       iff  ch_ua,scn09      shifted a
+       iff  ch_ub,scn09      shifted b
+       iff  ch_uc,scn09      shifted c
+       iff  ch_ud,scn09      shifted d
+       iff  ch_ue,scn09      shifted e
+       iff  ch_uf,scn20      shifted f
+       iff  ch_ug,scn09      shifted g
+       iff  ch_uh,scn09      shifted h
+       iff  ch_ui,scn09      shifted i
+       iff  ch_uj,scn09      shifted j
+       iff  ch_uk,scn09      shifted k
+       iff  ch_ul,scn09      shifted l
+       iff  ch_um,scn09      shifted m
+       iff  ch_un,scn09      shifted n
+       iff  ch_uo,scn09      shifted o
+       iff  ch_up,scn09      shifted p
+       iff  ch_uq,scn09      shifted q
+       iff  ch_ur,scn09      shifted r
+       iff  ch_us,scn21      shifted s
+       iff  ch_ut,scn09      shifted t
+       iff  ch_uu,scn09      shifted u
+       iff  ch_uv,scn09      shifted v
+       iff  ch_uw,scn09      shifted w
+       iff  ch_ux,scn09      shifted x
+       iff  ch_uy,scn09      shifted y
+       iff  ch_uz,scn09      shifted z
 .fi
        ejc
 *
@@ -26370,7 +26370,7 @@ scn06  lch  xr,(xl)+         get next character
        iff  ch_dq,scn17      double quote
        iff  ch_lf,scn20      letter f
        iff  ch_ls,scn21      letter s
-       iff  ch_un,scn24      underline
+       iff  ch_u_,scn24      underline
        iff  ch_pp,scn25      left paren
        iff  ch_rp,scn26      right paren
        iff  ch_rb,scn27      right bracket
@@ -27347,7 +27347,7 @@ trace  prc  n,2              entry point
        plc  xr               else point to string
        lch  wa,(xr)          load first character
 .if    .culc
-       flc  wa               fold to upper case
+       flc  wa               fold to lower case
 .fi
        mov  xr,(xs)          load name argument
        mov  (xs),xl          stack trblk ptr or zero
