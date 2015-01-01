@@ -75,7 +75,7 @@
 
 %endif	
 
-	%define	R_WORD	DQ	; reference to real
+	%define	R_WORD	QWORD	; reference to real
 
 ;	Flags
 	%define	FLAG_OF	0x80

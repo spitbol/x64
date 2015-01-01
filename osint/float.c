@@ -111,14 +111,14 @@ void f_rmi() {
 }
 #endif
 
-void f_jra() {
+void f_cpr() {
 	if ( reg_ra == 0.0) 
-		reg_w0 =  0; 
+		reg_fl =  0; 
 	else if ( reg_ra < 0.0) 
-		reg_w0 = -1; 
+		reg_fl = -1; 
 	else 
-		reg_w0 =  1; 
-	fprintf(stderr, "cpr %g12.6 %ld\n",reg_ra,reg_w0);
+		reg_fl =  1; 
+//	fprintf(stderr, "cpr %g12.6 %ld\n",reg_ra,reg_w0);
 }
 
 void f_pra () {

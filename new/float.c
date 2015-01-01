@@ -112,14 +112,14 @@ void f_rmi() {
 }
 #endif
 
-void f_jra() {
+void f_cpr() {
 	if ( reg_ra == 0.0) 
-		reg_w0 =  0; 
+		reg_fl =  0; 
 	else if ( reg_ra < 0.0) 
-		reg_w0 = -1; 
+		reg_fl = -1; 
 	else 
-		reg_w0 =  1; 
-	fprintf(stderr, "cpr %g12.6 %ld\n",reg_ra,reg_w0);
+		reg_fl =  1; 
+	fprintf(stderr, "cpr %g12.6 %d\n",reg_ra,reg_fl);
 }
 
 void f_pra () {
@@ -250,6 +250,71 @@ void t_ngi() {
 }
 
 #endif
+
+void rt(char *s) {
+	fprintf(stderr, "rtrace %s  %12.6g   %d\n",s,reg_ra,reg_fl);
+}
+
+void adr_e() {
+	rt("adr_e");
+}
+
+void adr_l() {
+	rt("adr_l");
+}
+
+
+void sbr_e() {
+	rt("sbr_e");
+}
+
+void sbr_l() {
+	rt("sbr_l");
+}
+
+
+void mlr_e() {
+	rt("mlr_e");
+}
+
+void mlr_l() {
+	rt("mlr_l");
+}
+
+
+void dvr_e() {
+	rt("dvr_e");
+}
+
+void dvr_l() {
+	rt("dvr_l");
+}
+
+
+void ngr_e() {
+	rt("adr_e");
+}
+
+void ngr_l() {
+	rt("adr_l");
+}
+
+void rno_e() {
+	rt("rno_e");
+}
+
+
+void rov_e() {
+	rt("rov_e");
+}
+
+extern double *reg_rp;
+void ldr_e() {
+	fprintf(stderr,"ldr_e  %12.6g\n",*reg_rp);
+}
+void ldr_l() {
+	rt("ldr_e");
+}
 
 
 #endif					// (FLOAT & !FLTHDWR) | EXTFUN

@@ -1314,9 +1314,11 @@ G.TAN
 	GENOP('CALL',OP_)		
 						:(OPDONE)
 
-G.RNO	T1 = 'JNO'				:(G.ROV1)
-G.ROV	T1 = 'JO'
-G.ROV1  GENOP('CALL','OVR_')
+G.ROV
+G.RNO	GENOP(OP_,GETARG(I1))			:(OPDONE)
+*G.RNO	T1 = 'JNO'				:(G.ROV1)
+*G.ROV	T1 = 'JO'
+*G.ROV1  GENOP('CALL','OVR_')
 	GENOP(T1,GETARG(I1))			:(OPDONE)
 
 G.REQ	JOP = 'JE'				:(G.R1)
@@ -1326,6 +1328,8 @@ G.RGT	JOP = 'JG'				:(G.R1)
 G.RLE	JOP = 'JLE'				:(G.R1)
 G.RLT	JOP = 'JL'
 G.R1	GENOP('CALL','CPR_')
+	GENOP('MOV','AL','BYTE [reg_fl]')
+	GENOP('OR','AL','AL')
 	GENOP(JOP,GETARG(I1))			:(OPDONE)
 
 G.PLC

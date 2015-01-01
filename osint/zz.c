@@ -205,6 +205,7 @@ void zz() {
 //	if (zz_calls>0) {
 	int prtregs=1;
 	 prtregs=0;
+	 prtregs=1;
 
 if (prtregs) {
 

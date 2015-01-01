@@ -46,6 +46,7 @@
 	global	reg_size
 
 	global	reg_rp
+	global	reg_rv
 
 	global	minimal
 	extern	calltab
@@ -190,9 +191,14 @@ reg_rp:	D_WORD	0
 	global	reg_fl
 reg_fl:	DB	0		; condition code register for numeric operations
 
+;	global	reg_rv
+;reg_rv: R_WORD	0.0
+
 	align	8
 ;  Constants
 
+	global	zero
+zero:	D_WORD	0
 	global	ten
 ten:    D_WORD      10              ; constant 10
 	global  inf
@@ -788,13 +794,13 @@ setovr: mov     AL,1		; set overflow indicator
 	ret
 %endmacro
 
-	real_op	LDR_,f_ldr
-	real_op	STR_,f_str
-	real_op	ADR_,f_adr
-	real_op	SBR_,f_sbr
-	real_op	MLR_,f_mlr
-	real_op	DVR_,f_dvr
-	real_op	NGR_,f_ngr
+;	real_op	LDR_,f_ldr
+;	real_op	STR_,f_str
+;	real_op	ADR_,f_adr
+;	real_op	SBR_,f_sbr
+;;	real_op	MLR_,f_mlr
+;	real_op	DVR_,f_dvr
+;	real_op	NGR_,f_ngr
 	
 	%macro	int_op 2
 	global	%1

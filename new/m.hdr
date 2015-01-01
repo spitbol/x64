@@ -29,6 +29,7 @@
 	extern	reg_w0
 	extern	f_dvi
 	extern	f_rmi
+	extern	OVR_
 	
 	global	MXINT
 
@@ -167,7 +168,6 @@ calltab:
 
 
         extern CVD_
-        extern ITR_
         extern ATN_
         extern CHP_
         extern COS_
@@ -176,8 +176,6 @@ calltab:
         extern SIN_
         extern SQR_
         extern TAN_
-	extern CPR_
-	extern OVR_
 
 	%macro	ZZZ	3
 	section	.data
@@ -282,16 +280,21 @@ calltab:
 	mov	M_WORD [reg_cp],W0
 	%endmacro
 
+	extern	reg_ra
 
-
-	%macro	LDR_	1
-	fld	R_WORD [W0]
+	extern	ldr_l,ldr_e
+	extern	reg_rp
+	%macro	LDR_	0
+	mov	M_WORD [reg_rp],W0
+	call	ldr_e
+	fld	%1
 	fstp	R_WORD [reg_ra]
+	call	ldr_l
 	%endmacro
 
-	%macro	STR_	1
+	%macro	STR_	0
 	fld	R_WORD [reg_ra]
-	fstp	R_WORD [W0]
+	fstp	%1
 	%endmacro
 
 	%macro	RTI_	1
@@ -306,38 +309,85 @@ calltab:
 	fstp	R_WORD [reg_ra]
 	%endmacro
 
-	%macro	ADR_	1
+	extern	adr_e,adr_l
+	%macro	ADR_	0
+	call	adr_e
 	fld	R_WORD [reg_ra]
 	fadd	R_WORD [W0]
 	fstp	R_WORD [reg_ra]
+	call	adr_l
 	%endmacro
 
-	%macro	SBR_	1
+	extern	sbr_e,sbr_l
+	%macro	SBR_	0
+	call	sbr_e
 	fld	R_WORD [reg_ra]
 	fsub	R_WORD [W0]
 	fstp	R_WORD [reg_ra]
+	call	sbr_l
 	%endmacro
 
-	%macro	MLR_	1
+	extern	mlr_e,mlr_l
+	%macro	MLR_	0
+	call	mlr_e
 	fld	R_WORD [reg_ra]
 	fmul	R_WORD [W0]
 	fstp	R_WORD [reg_ra]
+	call	mlr_l
 	%endmacro
 
-	%macro	DVR_	1
+	extern	dvr_e,dvr_l
+	%macro	DVR_	0
+	call	dvr_e
 	fld	R_WORD [reg_ra]
 	fdiv	R_WORD [W0]
 	fstp	R_WORD [reg_ra]
+	call	dvr_l
 	%endmacro
-
+	
+	extern	ngr_e,ngr_l
 	%macro	NGR_	0
-	fchs	R_WORD [reg_ra]
+	call	ngr_e
+	fld	R_WORD [reg_ra]
+	fchs
+	fstp	R_WORD [reg_ra]
+	call	ngr_l
 	%endmacro
 
-	%macro	REQ_	1
-	fld	R_WORD [reg_ra]
-	ftst
+	extern	zero
+	extern	f_cpr
+	%macro	CPR_	0
+	call	f_cpr
+; 	fld	R_WORD [reg_ra]
+; ;	fcomip	M_WORD [zero]
+; 	ftst
+; 	fstsw
+; 	test	AX,0x4500
+; 	jz	%%1
+; 	test	AX,0x0100
+; 	jnz	%%2
+; 	; here if equal to zero
+; 	mov	BYTE [reg_fl],0
+; 	jmp	%%3
+; %%1:	; here if GT zero
+; 	mov	BYTE [reg_fl],1
+; 	jmp	%%3
+; %%2:	; here if equal to zero
+; 	mov	BYTE [reg_fl],0
+; %%3:
 	%endmacro
-	
-	
-	
+
+	extern	rno_e
+	%macro	RNO_	1
+	call	rno_e
+	test	BYTE [reg_fl]
+	jz		%1
+	%endmacro
+
+	extern	rov_e
+	%macro	ROV_	1
+	call	rov_e
+	test	BYTE [reg_fl]
+	jne		%1
+	%endmacro
+

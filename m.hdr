@@ -372,3 +372,16 @@ calltab:
 	mov	M_WORD [reg_cp],W0
 	%endmacro
 
+	%macro	ROV_	1
+	mov	AL,BYTE [reg_fl]
+	or	AL,AL
+	jne	%1
+	%endmacro
+
+	%macro	RNO_	1
+	mov	AL,BYTE [reg_fl]
+	or	AL,AL
+	je	%1
+	%endmacro
+
+

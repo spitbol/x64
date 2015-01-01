@@ -811,6 +811,7 @@ setovr: mov     AL,1		; set overflow indicator
 	real_op	MLR_,f_mlr
 	real_op	DVR_,f_dvr
 	real_op	NGR_,f_ngr
+	real_op CPR_,f_cpr
 	
 	%macro	int_op 2
 	global	%1
@@ -841,6 +842,7 @@ setovr: mov     AL,1		; set overflow indicator
 	math_op	SQR_,f_sqr
 	math_op	TAN_,f_tan
  
+%ifdef OLDER
 ;       CPR_ compare real in RA to 0
 
 	global	CPR_
@@ -855,7 +857,7 @@ cpr050: cmp     dword [reg_ra], 0     	; true zero, or denormalized number?
 	mov	al, 1
         cmp     al, 0                  	; positive denormal, set cc
 cpr100:	ret
-
+%endif
 ;       OVR_ test for overflow value in RA
 	global	OVR_
 OVR_:

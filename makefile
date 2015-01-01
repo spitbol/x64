@@ -34,7 +34,7 @@ ASM	=	nasm
 ifeq	($(DEBUG),0)
 CFLAGS= -D m$(WS) -m$(WS) 
 else
-CFLAGS= -D m$(WS)-g -m$(WS)
+CFLAGS= -D m$(WS) -g -m$(WS)
 endif
 
 # Assembler info -- Intel 32-bit syntax
