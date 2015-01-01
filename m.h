@@ -1,81 +1,81 @@
-	%define M_CHAR	BYTE	; reference to byte in memory
-	%define D_CHAR	DB	; define value of byte
-	%define M_REAL	QWORD	; reference to floating point value in memory
-	%define D_REAL	DQ	; define value for floating point
-			
+	%define m_char	byte	; reference to byte in memory
+	%define d_char	db	; define value of byte
+	%define m_real	qword	; reference to floating point value in memory
+	%define d_real	dq	; define value for floating point
+
 %ifdef	m32
-	%define	XL	ESI
-	%define	XT	ESI
-	%define XR	EDI
-	%define XS	ESP
-	%define W0	EAX
-	%define W1	EBP
-	%define WA	ECX
-	%define WA_L    CL
-	%define WB	EBX
-	%define WB_L  	BL
-	%define WC	EDX
-	%define WC_L  	DL
-;	%define IA	EDX
-	%define IA	EBP
-	%define M_WORD	DWORD	; reference to word in memory
-	%define D_WORD	DD	; define value for memory word
-;	%define	CFP_B	4
-	%define LOG_CFP_B 2
-	%define CFP_C_VAL	4
-	%define LOG_CFP_C 2
-	%define CFP_M_	2147483647
-;	%define	CFP_N_	32
+	%define	xl	esi
+	%define	xt	esi
+	%define xr	edi
+	%define xs	esp
+	%define w0	eax
+	%define w1	ebp
+	%define wa	ecx
+	%define wa_l    cl
+	%define wb	ebx
+	%define wb_l  	bl
+	%define wc	edx
+	%define wc_l  	dl
+;	%define ia	edx
+	%define ia	ebp
+	%define m_word	dword	; reference to word in memory
+	%define d_word	dd	; define value for memory word
+;	%define	cfp_b	4
+	%define log_cfp_b 2
+	%define cfp_c_val	4
+	%define log_cfp_c 2
+	%define cfp_m_	2147483647
+;	%define	cfp_n_	32
 
-	%define	LODS_B	lodsb
-	%define	LODS_W	lodsd
-	%define MOVS_B	movsb
-	%define MOVS_W	movsd
-	%define	STOS_B	stosb
-	%define	STOS_W	stosd
-	%define	CMPS_B	cmpsb
+	%define	lods_b	lodsb
+	%define	lods_w	lodsd
+	%define movs_b	movsb
+	%define movs_w	movsd
+	%define	stos_b	stosb
+	%define	stos_w	stosd
+	%define	cmps_b	cmpsb
 
-	%define	CDQ	cdq	; sign extend (32 bits)
+	%define	cdq	cdq	; sign extend (32 bits)
 %else
-	%define	XL	RSI
-	%define	XT	RSI
-	%define	XR	RDI
-	%define	W0	RAX
-	%define W1	RBP
-	%define	WA	RCX
-	%define WA_L	CL
-	%define	WB	RBX
-	%define WB_L    BL
-	%define	WC	RDX
-	%define WC_L    DL
-	%define	XS	RSP
-	%define	W0_L	AL
-;	%define	IA	RDX
-	%define	IA	RBP
-	%define M_WORD  QWORD
-	%define D_WORD	DQ
-;	%define	CFP_B	8
-	%define LOG_CFP_B 3
-	%define LOG_CFP_C 3
-	%define D_REAL	DQ
-	%define CFP_C_VAL	8
-	%define LOG_CFP_C 3
-	%define CFP_M_	9223372036854775807
-;	%define	CFP_N_	64
+	%define	xl	rsi
+	%define	xt	rsi
+	%define	xr	rdi
+	%define	w0	rax
+	%define w1	rbp
+	%define	wa	rcx
+	%define wa_l	cl
+	%define	wb	rbx
+	%define wb_l    bl
+	%define	wc	rdx
+	%define wc_l    dl
+	%define	xs	rsp
+	%define	w0_l	al
+;	%define	ia	rdx
+	%define	ia	rbp
+	%define m_word  qword
+	%define d_word	dq
+;	%define	cfp_b	8
+	%define log_cfp_b 3
+	%define log_cfp_c 3
+	%define d_real	dq
+	%define cfp_c_val	8
+	%define log_cfp_c 3
+	%define cfp_m_	9223372036854775807
+;	%define	cfp_n_	64
 
-	%define	LODS_W	lodsq
-	%define	LODS_B	lodsb
-	%define MOVS_B	movsb
-	%define MOVS_W	movsq
-	%define STOS_B	stosb
-	%define	STOS_W	stosq
-	%define	CMPS_B	cmpsb
+	%define	lods_w	lodsq
+	%define	lods_b	lodsb
+	%define movs_b	movsb
+	%define movs_w	movsq
+	%define stos_b	stosb
+	%define	stos_w	stosq
+	%define	cmps_b	cmpsb
 
-	%define	CDQ	cqo	; sign extend (64 bits)
+	%define	cdq	cqo	; sign extend (64 bits)
 
-%endif	
+%endif
 
-;	Flags
-	%define	FLAG_OF	0x80
-	%define	FLAG_CF	0x01
-	%define	FLAG_CA	0x40
+;	flags
+	%define	flag_of	0x80
+	%define	flag_cf	0x01
+	%define	flag_ca	0x40

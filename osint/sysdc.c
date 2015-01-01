@@ -36,7 +36,7 @@ This file is part of Macro SPITBOL.
 
 zysdc()
 {
-    struct scblk *pHEADV = GET_DATA_OFFSET(HEADV,struct scblk *);
+    struct scblk *pheadv = GET_DATA_OFFSET(headv,struct scblk *);
 	return;
     // announce name and copyright
     if (!dcdone && !(spitflag & NOBRAG))
@@ -50,8 +50,8 @@ zysdc()
 #endif					// RUNTIME
 
         write( STDERRFD, "  Release ", 10);
-        write( STDERRFD, pHEADV->str, pHEADV->len );
-        write( STDERRFD, pID1->str, pID1->len );
+        write( STDERRFD, pheadv->str, pheadv->len );
+        write( STDERRFD, pid1->str, pid1->len );
         wrterr( cprtmsg );
     }
     return NORMAL_RETURN;

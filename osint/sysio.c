@@ -127,7 +127,7 @@ zysio()
                 switch( iob->fdn )
                 {
                 case 0:
-                    iob->bfb = MP_OFF(pINPBUF, struct bfblk *);
+                    iob->bfb = MP_OFF(pinpbuf, struct bfblk *);
                     break;
                 case 1:
                     iob->bfb = 0;

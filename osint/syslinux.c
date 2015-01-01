@@ -206,7 +206,7 @@ mword nargs;
 
     type = callextfun(efb, sp-1, nargs, SA(nbytes));	// make call with Stack Aligned nbytes
 
-    result = (union block *)pTSCBLK;
+    result = (union block *)ptscblk;
     switch (type) {
 
     case BL_XN:						// XNBLK    external block
@@ -233,7 +233,7 @@ mword nargs;
     case BL_NC:	 					// return result block unchanged
         break;
 
-    case BL_FS:						// string pointer at TSCBLK.str
+    case BL_FS:						// string pointer at tscblk.str
         result->fsb.fstyp = (*pTYPET)[BL_SC];
         p = result->fsb.fsptr;
         length = result->fsb.fslen;
@@ -249,10 +249,10 @@ mword nargs;
             *q++ = *p++;
         break;
 
-    case BL_FX:						// pointer to external data at TSCBLK.str
+    case BL_FX:						// pointer to external data at tscblk.str
         length = ((result->fxb.fxlen + sizeof(mword) - 1) &
                   -sizeof(mword)) + FIELDOFFSET(struct xnblk, xnu.xndta[0]);
-        if (length > GET_MIN_VALUE(MXLEN,mword)) {
+        if (length > GET_MIN_VALUE(mxlen,mword)) {
             result = (union block *)0;
             break;
         }
@@ -413,7 +413,7 @@ int io;
     pXFNode pnode;
 
     MINSAVE();
-    for (dnamp = GET_MIN_VALUE(DNAMP,union block *);
+    for (dnamp = GET_MIN_VALUE(dnamp,union block *);
             scanp < dnamp; scanp = ((union block *) (MP_OFF(scanp,muword)+blksize)) {
         type = scanp->scb.sctyp;				// any block type lets us access type word
         SET_WA(type);
@@ -472,7 +472,7 @@ char *newname;
  */
 void scanef()
 {
-    scanp = GET_MIN_VALUE(DNAMB,union block *);
+    scanp = GET_MIN_VALUE(dnamb,union block *);
 }
 
 
@@ -664,7 +664,7 @@ int type;
     reg_xl = 0;
     reg_ia = type;
     reg_wb = 0;
-    reg_xr = GET_DATA_OFFSET(HEADV,word);
+    reg_xr = GET_DATA_OFFSET(headv,word);
 
     //  -1 is the normal return, so result >= 0 is an error
     result = zysxi() + 1;

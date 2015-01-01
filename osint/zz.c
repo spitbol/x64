@@ -25,7 +25,6 @@ This file is part of Macro SPITBOL.
 
 extern uword compsp;
 extern uword osisp;
-extern uword lowspmin;
 
 uword save_xl;
 uword save_xr;
@@ -56,10 +55,10 @@ uword zz_off;
 uword zz_id=0;
 uword zz_last = 0;
 char ** zz_de;
-extern long C_AAA;
-extern long W_YYY;
-long OFF_C_AAA;
-long OFF_W_YYY;
+extern long c_aaa;
+extern long w_yyy;
+long off_c_aaa;
+long off_w_yyy;
 #define DAVE
 #ifdef DAVE
 char * AT_DESC;
@@ -79,7 +78,7 @@ void prtval(long reg) {
 	if (reg >= 0 && reg < 100000) {
 		fprintf(stderr," %8d ", reg);
 	}
-	else if ( reg >= OFF_C_AAA && reg <= OFF_W_YYY) {
+	else if ( reg >= off_c_aaa && reg <= off_w_yyy) {
 		fprintf(stderr," Z%ld ", reg);
 	}
 	else {
@@ -111,18 +110,18 @@ void prtdifr(char* name, double old, double new, long listed)
 	prtreal(old); fprintf(stderr," -> "); prtreal(new);
 	prtnl();
 }
-extern long C_AAA;
-extern long W_YYY;
+extern long c_aaa;
+extern long w_yyy;
 
-long OFF_C_AAA;
-long OFF_W_YYY;
+long off_c_aaa;
+long off_w_yyy;
 
 
 void zz_init() {
-	OFF_C_AAA = &C_AAA;
-	OFF_W_YYY = &W_YYY;
-//	fprintf(stderr, "OFF_C_AAA %ld\n", &C_AAA);
-//	fprintf(stderr, "OFF_W_YYY %ld\n", &W_YYY);
+	off_c_aaa = &c_aaa;
+	off_w_yyy = &w_yyy;
+//	fprintf(stderr, "off_c_aaa %ld\n", &c_aaa);
+//	fprintf(stderr, "off_w_yyy %ld\n", &w_yyy);
 }
 
 char * zz_charp;

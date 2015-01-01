@@ -120,7 +120,7 @@ checkstr(scp)
 struct scblk *scp;
 {
     return scp != (struct scblk *)0L &&
-           scp->typ == TYPE_SCL && scp->len < TSCBLK_LENGTH;
+           scp->typ == TYPE_SCL && scp->len < tscblk_length;
 }
 
 /*  check2str - check first two argument strings in XL, XR.
@@ -276,10 +276,10 @@ zyshs()
     scp = WA (struct scblk *);
     if (scp->typ == TYPE_SCL && !scp->len)
     {
-        gethost( pTSCBLK, TSCBLK_LENGTH );
-        if ( pTSCBLK->len == 0 )
+        gethost( ptscblk, tscblk_length );
+        if ( ptscblk->len == 0 )
             return EXIT_4;
-        SET_XL( pTSCBLK );
+        SET_XL( ptscblk );
         return EXIT_3;
     }
 
@@ -294,29 +294,29 @@ zyshs()
         case -1:
             icp = XL( struct icblk * );
             if ( getint(icp,&val) ) {
-                pTICBLK->typ = TYPE_ICL;
-                SET_XR( pTICBLK );
+                pticblk->typ = TYPE_ICL;
+                SET_XR( pticblk );
                 switch ( (int)val ) {
                 case 0:
-                    pTICBLK->val = memincb;
+                    pticblk->val = memincb;
                     return EXIT_8;
                 case 1:
-                    pTICBLK->val = databts;
+                    pticblk->val = databts;
                     return EXIT_8;
                 case 2:
-                    pTICBLK->val = (long)basemem;
+                    pticblk->val = (long)basemem;
                     return EXIT_8;
                 case 3:
-                    pTICBLK->val = (long)topmem;
+                    pticblk->val = (long)topmem;
                     return EXIT_8;
                 case 4:
-                    pTICBLK->val = stacksiz - 400;	// safety margin
+                    pticblk->val = stacksiz - 400;	// safety margin
                     return EXIT_8;
                 case 5:							// stack in use
-                    pTICBLK->val = stacksiz - (XS(long) - (long)lowsp);
+                    pticblk->val = stacksiz - (XS(long) - (long)lowsp);
                     return EXIT_8;
                 case 6:
-                    pTICBLK->val = sizeof(long);
+                    pticblk->val = sizeof(long);
                     return EXIT_8;
                 default:
                     return EXIT_1;
@@ -330,19 +330,19 @@ zyshs()
             */
         case 0:
             if ( uarg ) {
-                cpys2sc( uarg, pTSCBLK, TSCBLK_LENGTH );
-                SET_XL( pTSCBLK );
+                cpys2sc( uarg, ptscblk, tscblk_length );
+                SET_XL( ptscblk );
                 return EXIT_3;
             }
             else if ((val = cmdcnt) != 0) {
-                pTSCBLK->len = 0;
-                while (pTSCBLK->len < TSCBLK_LENGTH - 2 &&
+                ptscblk->len = 0;
+                while (ptscblk->len < tscblk_length - 2 &&
                         arg2scb( (int) val++, gblargc, gblargv,
-                                 pTSCBLK, TSCBLK_LENGTH - pTSCBLK->len ) > 0)
-                    pTSCBLK->str[pTSCBLK->len++] = ' ';
-                if (pTSCBLK->len)
-                    --pTSCBLK->len;
-                SET_XL( pTSCBLK );
+                                 ptscblk, tscblk_length - ptscblk->len ) > 0)
+                    ptscblk->str[ptscblk->len++] = ' ';
+                if (ptscblk->len)
+                    --ptscblk->len;
+                SET_XL( ptscblk );
                 return EXIT_3;
             }
             else
@@ -357,14 +357,14 @@ zyshs()
                 return EXIT_1;
             save2str(&cmd,&path);
             save0();		// made sure fd 0 OK
-            pTICBLK->val = dosys( cmd, path );
+            pticblk->val = dosys( cmd, path );
 
-            pTICBLK->typ = TYPE_ICL;
+            pticblk->typ = TYPE_ICL;
             restore2str();
             restore0();
-            if (pTICBLK->val < 0)
+            if (pticblk->val < 0)
                 return EXIT_6;
-            SET_XR( pTICBLK );
+            SET_XR( pticblk );
             return EXIT_8;
         }
 
@@ -374,13 +374,13 @@ zyshs()
         case 2:
             icp = XL( struct icblk * );
             if ( getint(icp,&val) ) {
-                pTSCBLK->len = 0;
-                retval = arg2scb( (int) val, gblargc, gblargv, pTSCBLK, TSCBLK_LENGTH );
+                ptscblk->len = 0;
+                retval = arg2scb( (int) val, gblargc, gblargv, ptscblk, tscblk_length );
                 if ( retval < 0 )
                     return EXIT_6;
                 if ( retval == 0 )
                     return EXIT_1;
-                SET_XL( pTSCBLK );
+                SET_XL( ptscblk );
                 return EXIT_3;
             }
             else
@@ -391,9 +391,9 @@ zyshs()
             */
         case 3:
             if ( cmdcnt ) {
-                pTICBLK->typ = TYPE_ICL;
-                pTICBLK->val = cmdcnt;
-                SET_XR( pTICBLK );
+                pticblk->typ = TYPE_ICL;
+                pticblk->val = cmdcnt;
+                SET_XR( pticblk );
                 return EXIT_8;
             }
             else
@@ -408,9 +408,9 @@ zyshs()
             if ( scp->typ == TYPE_SCL ) {
                 if ( scp->len == 0 )
                     return EXIT_1;
-                if ( rdenv( scp, pTSCBLK ) < 0 )
+                if ( rdenv( scp, ptscblk ) < 0 )
                     return EXIT_6;
-                SET_XL( pTSCBLK );
+                SET_XL( ptscblk );
                 return EXIT_3;
             }
             else

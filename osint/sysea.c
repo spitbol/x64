@@ -81,7 +81,7 @@ zysea()
 
     // Display file name if present
     if (fnscblk->len) {
-        p = pTSCBLK->str;
+        p = ptscblk->str;
         p = eacpy(p, fnscblk->str, (int)fnscblk->len);
         // Display line number if present
         if (WC(unsigned int)) {
@@ -95,8 +95,8 @@ zysea()
             *p++ = ')';
         }
         p = eacpy(p, " : ", 3);
-        pTSCBLK->len = p - pTSCBLK->str;
-        SET_XR( pTSCBLK );
+        ptscblk->len = p - ptscblk->str;
+        SET_XR( ptscblk );
         return NORMAL_RETURN;
     }
     SET_XR(0L);

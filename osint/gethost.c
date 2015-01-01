@@ -44,7 +44,7 @@ struct	scblk	*scptr;
 word	maxlen;
 
 {
-    struct scblk *pHEADV = GET_DATA_OFFSET(HEADV,struct scblk *);
+    struct scblk *pheadv = GET_DATA_OFFSET(headv,struct scblk *);
     int cnt = 0;
     word fd;
 
@@ -69,8 +69,8 @@ word	maxlen;
         scp = scptr->str + scptr->len;
         scp = mystrcpy(scp,osver);
         scp = mystrcpy(scp,":Macro SPITBOL ");
-        scp += mystrncpy(scp, pHEADV->str, pHEADV->len );
-        scp += mystrncpy(scp, pID1->str, (int)pID1->len);
+        scp += mystrncpy(scp, pheadv->str, pheadv->len );
+        scp += mystrncpy(scp, pid1->str, (int)pid1->len);
         *scp++ = ' ';
         *scp++ = '#';
         cnt = scp - scptr->str;

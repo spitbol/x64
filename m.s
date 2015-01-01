@@ -1,32 +1,32 @@
-; Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+; copyright 1987-2012 robert b. k. dewar and mark emmer.
 
-; Copyright 2012-2013 David Shields
-; 
-; This file is part of Macro SPITBOL.
-; 
-;     Macro SPITBOL is free software: you can redistribute it and/or modify
-;     it under the terms of the GNU General Public License as published by
-;     the Free Software Foundation, either version 2 of the License, or
+; copyright 2012-2013 david shields
+;
+; this file is part of macro spitbol.
+;
+;     macro spitbol is free software: you can redistribute it and/or modify
+;     it under the terms of the gnu general public license as published by
+;     the free software foundation, either version 2 of the license, or
 ;     (at your option) any later version.
-; 
-;     Macro SPITBOL is distributed in the hope that it will be useful,
-;     but WITHOUT ANY WARRANTY; without even the implied warranty of
-;     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;     GNU General Public License for more details.
-; 
-;     You should have received a copy of the GNU General Public License
-;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+;
+;     macro spitbol is distributed in the hope that it will be useful,
+;     but without any warranty; without even the implied warranty of
+;     merchantability or fitness for a particular purpose.  see the
+;     gnu general public license for more details.
+;
+;     you should have received a copy of the gnu general public license
+;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 
 
-;	WS is bits per word, CFP_B is bytes per word, CFP_C is characters per word
+;	ws is bits per word, cfp_b is bytes per word, cfp_c is characters per word
 
 
 %ifdef	m32
-	%define	CFP_B	4
-	%define	CFP_C	4
+	%define	cfp_b	4
+	%define	cfp_c	4
 %else
-	%define	CFP_B	8
-	%define	CFP_C	8
+	%define	cfp_b	8
+	%define	cfp_c	8
 %endif
 
 	%include	"m.h"
@@ -51,172 +51,172 @@
 	extern	calltab
 	extern	stacksiz
 	extern	zz_ra
- 
-;	Values below must agree with calltab defined in x32.hdr and also in osint/osint.h
 
-MINIMAL_RELAJ	equ	0
-MINIMAL_RELCR	equ	1
-MINIMAL_RELOC	equ	2
-MINIMAL_ALLOC	equ	3
-MINIMAL_ALOCS	equ	4
-MINIMAL_ALOST	equ	5
-MINIMAL_BLKLN	equ	6
-MINIMAL_INSTA	equ	7
-MINIMAL_RSTRT	equ	8
-MINIMAL_START	equ	9
-MINIMAL_FILNM	equ	10
-MINIMAL_DTYPE	equ	11
-MINIMAL_ENEVS	equ	10
-MINIMAL_ENGTS	equ	12
+;	values below must agree with calltab defined in x32.hdr and also in osint/osint.h
 
-%define globals 1                       ;ASM globals defined here
+minimal_relaj	equ	0
+minimal_relcr	equ	1
+minimal_reloc	equ	2
+minimal_alloc	equ	3
+minimal_alocs	equ	4
+minimal_alost	equ	5
+minimal_blkln	equ	6
+minimal_insta	equ	7
+minimal_rstrt	equ	8
+minimal_start	equ	9
+minimal_filnm	equ	10
+minimal_dtype	equ	11
+minimal_enevs	equ	10
+minimal_engts	equ	12
+
+%define globals 1                       ;asm globals defined here
 
 
 ;       ---------------------------------------
 
-;       This file contains the assembly language routines that interface
-;       the Macro SPITBOL compiler written in 80386 assembly language to its
-;       operating system interface functions written in C.
+;       this file contains the assembly language routines that interface
+;       the macro spitbol compiler written in 80386 assembly language to its
+;       operating system interface functions written in c.
 
-;       Contents:
+;       contents:
 
-;       o Overview
-;       o Global variables accessed by OSINT functions
-;       o Interface routines between compiler and OSINT functions
-;       o C callable function startup
-;       o C callable function get_fp
-;       o C callable function restart
-;       o C callable function makeexec
-;       o Routines for Minimal opcodes CHK and CVD
-;       o Math functions for integer multiply, divide, and remainder
-;       o Math functions for real operation
+;       o overview
+;       o global variables accessed by osint functions
+;       o interface routines between compiler and osint functions
+;       o c callable function startup
+;       o c callable function get_fp
+;       o c callable function restart
+;       o c callable function makeexec
+;       o routines for minimal opcodes chk and cvd
+;       o math functions for integer multiply, divide, and remainder
+;       o math functions for real operation
 
-;       Overview
+;       overview
 
-;       The Macro SPITBOL compiler relies on a set of operating system
+;       the macro spitbol compiler relies on a set of operating system
 ;       interface functions to provide all interaction with the host
-;       operating system.  These functions are referred to as OSINT
-;       functions.  A typical call to one of these OSINT functions takes
+;       operating system.  these functions are referred to as osint
+;       functions.  a typical call to one of these osint functions takes
 ;       the following form in the 80386 version of the compiler:
 
 ;               ...code to put arguments in registers...
-;               call    SYSXX           # call osint function
-;             D_WORD    EXIT_1          # address of exit point 1
-;             D_WORD    EXIT_2          # address of exit point 2
+;               call    sysxx           # call osint function
+;             d_word    exit_1          # address of exit point 1
+;             d_word    exit_2          # address of exit point 2
 ;               ...     ...             # ...
-;             D_WORD    EXIT_n          # address of exit point n
+;             d_word    exit_n          # address of exit point n
 ;               ...instruction following call...
 
-;       The OSINT function 'SYSXX' can then return in one of n+1 ways:
+;       the osint function 'sysxx' can then return in one of n+1 ways:
 ;       to one of the n exit points or to the instruction following the
-;       last exit.  This is not really very complicated - the call places
+;       last exit.  this is not really very complicated - the call places
 ;       the return address on the stack, so all the interface function has
 ;       to do is add the appropriate offset to the return address and then
-;       pick up the exit address and jump to it OR do a normal return via
+;       pick up the exit address and jump to it or do a normal return via
 ;       an ret instruction.
 
-;       Unfortunately, a C function cannot handle this scheme.  So, an
+;       unfortunately, a c function cannot handle this scheme.  so, an
 ;       intermediary set of routines have been established to allow the
-;       interfacing of C functions.  The mechanism is as follows:
+;       interfacing of c functions.  the mechanism is as follows:
 
-;       (1) The compiler calls OSINT functions as described above.
+;       (1) the compiler calls osint functions as described above.
 
-;       (2) A set of assembly language interface routines is established,
-;           one per OSINT function, named accordingly.  Each interface
+;       (2) a set of assembly language interface routines is established,
+;           one per osint function, named accordingly.  each interface
 ;           routine ...
 
 ;           (a) saves all compiler registers in global variables
-;               accessible by C functions
-;           (b) calls the OSINT function written in C
+;               accessible by c functions
+;           (b) calls the osint function written in c
 ;           (c) restores all compiler registers from the global variables
-;           (d) inspects the OSINT function's return value to determine
+;           (d) inspects the osint function's return value to determine
 ;               which of the n+1 returns should be taken and does so
 
-;       (3) A set of C language OSINT functions is established, one per
-;           OSINT function, named differently than the interface routines.
-;           Each OSINT function can access compiler registers via global
-;           variables.  NO arguments are passed via the call.
+;       (3) a set of c language osint functions is established, one per
+;           osint function, named differently than the interface routines.
+;           each osint function can access compiler registers via global
+;           variables.  no arguments are passed via the call.
 
-;           When an OSINT function returns, it must return a value indicating
-;           which of the n+1 exits should be taken.  These return values are
+;           when an osint function returns, it must return a value indicating
+;           which of the n+1 exits should be taken.  these return values are
 ;           defined in header file 'inter.h'.
 
-;       Note:  in the actual implementation below, the saving and restoring
+;       note:  in the actual implementation below, the saving and restoring
 ;       of registers is actually done in one common routine accessed by all
 ;       interface routines.
 
-;       Other notes:
+;       other notes:
 
-;       Some C ompilers transform "internal" global names to
+;       some c ompilers transform "internal" global names to
 ;       "external" global names by adding a leading underscore at the front
-;       of the internal name.  Thus, the function name 'osopen' becomes
-;       '_osopen'.  However, not all C compilers follow this convention.
+;       of the internal name.  thus, the function name 'osopen' becomes
+;       '_osopen'.  however, not all c compilers follow this convention.
 
-;       Global Variables
+;       global variables
 
 	segment	.data
-; 
-; ; Words saved during exit(-3)
+;
+; ; words saved during exit(-3)
 ; ;
-	align CFP_B
+	align cfp_b
 reg_block:
-reg_ia: D_WORD	0		; Register IA (EBP)
-reg_w0:	D_WORD	0        	; Register WA (ECX)
-reg_wa:	D_WORD	0        	; Register WA (ECX)
-reg_wb:	D_WORD 	0        	; Register WB (EBX)
-reg_wc:	D_WORD	0		; Register WC
-reg_xr:	D_WORD	0        	; Register XR (XR)
-reg_xl:	D_WORD	0        	; Register XL (XL)
-reg_cp:	D_WORD	0        	; Register CP
-reg_ra:	D_REAL 	0.0  		; Register RA
+reg_ia: d_word	0		; register ia (ebp)
+reg_w0:	d_word	0        	; register wa (ecx)
+reg_wa:	d_word	0        	; register wa (ecx)
+reg_wb:	d_word 	0        	; register wb (ebx)
+reg_wc:	d_word	0		; register wc
+reg_xr:	d_word	0        	; register xr (xr)
+reg_xl:	d_word	0        	; register xl (xl)
+reg_cp:	d_word	0        	; register cp
+reg_ra:	d_real 	0.0  		; register ra
 
-; These locations save information needed to return after calling OSINT
-; and after a restart from EXIT()
+; these locations save information needed to return after calling osint
+; and after a restart from exit()
 
-reg_pc: D_WORD      0               ; return PC from caller
-reg_xs:	D_WORD	0		; Minimal stack pointer
+reg_pc: d_word      0               ; return pc from caller
+reg_xs:	d_word	0		; minimal stack pointer
 
 ;	r_size  equ       $-reg_block
 ; use computed value for nasm conversion, put back proper code later
-r_size	equ	10*CFP_B
+r_size	equ	10*cfp_b
 reg_size:	dd   r_size
 
 ; end of words saved during exit(-3)
 
 ; reg_rp is used to pass pointer to real operand for real arithmetic
-reg_rp:	D_WORD	0
+reg_rp:	d_word	0
 
-; reg_fl is used to communicate condition codes between Minimal and C code.
+; reg_fl is used to communicate condition codes between minimal and c code.
 	global	reg_fl
-reg_fl:	DB	0		; condition code register for numeric operations
+reg_fl:	db	0		; condition code register for numeric operations
 
 	align	8
-;  Constants
+;  constants
 
 	global	ten
-ten:    D_WORD      10              ; constant 10
+ten:    d_word      10              ; constant 10
 	global  inf
-inf:	D_WORD	0   
-	D_WORD      0x7ff00000      ; double precision infinity
+inf:	d_word	0
+	d_word      0x7ff00000      ; double precision infinity
 
 	global	sav_block
-;sav_block: times r_size db 0     	; Save Minimal registers during push/pop reg
-sav_block: times 44 db 0     		; Save Minimal registers during push/pop reg
+;sav_block: times r_size db 0     	; save minimal registers during push/pop reg
+sav_block: times 44 db 0     		; save minimal registers during push/pop reg
 
-	align CFP_B
+	align cfp_b
 	global	ppoff
-ppoff:  D_WORD      0               	; offset for ppm exits
+ppoff:  d_word      0               	; offset for ppm exits
 	global	compsp
-compsp: D_WORD      0               	; compiler's stack pointer
+compsp: d_word      0               	; compiler's stack pointer
 	global	sav_compsp
 sav_compsp:
-	D_WORD      0               	; save compsp here
+	d_word      0               	; save compsp here
 	global	osisp
-osisp:  D_WORD      0               	; OSINT's stack pointer
+osisp:  d_word      0               	; osint's stack pointer
 	global	_rc_
 _rc_:	dd   0				; return code from osint procedure
 
-	align	CFP_B
+	align	cfp_b
 	global	save_cp
 	global	save_xl
 	global	save_xr
@@ -225,176 +225,176 @@ _rc_:	dd   0				; return code from osint procedure
 	global	save_wb
 	global	save_wc
 	global	save_w0
-save_cp:	D_WORD	0		; saved CP value
-save_ia:	D_WORD	0		; saved IA value
-save_xl:	D_WORD	0		; saved XL value
-save_xr:	D_WORD	0		; saved XR value
-save_xs:	D_WORD	0		; saved SP value
-save_wa:	D_WORD	0		; saved WA value
-save_wb:	D_WORD	0		; saved WB value
-save_wc:	D_WORD	0		; saved WC value
-save_w0:	D_WORD	0		; saved W0 value
+save_cp:	d_word	0		; saved cp value
+save_ia:	d_word	0		; saved ia value
+save_xl:	d_word	0		; saved xl value
+save_xr:	d_word	0		; saved xr value
+save_xs:	d_word	0		; saved sp value
+save_wa:	d_word	0		; saved wa value
+save_wb:	d_word	0		; saved wb value
+save_wc:	d_word	0		; saved wc value
+save_w0:	d_word	0		; saved w0 value
 
 	global	minimal_id
-minimal_id:	D_WORD	0		; id for call to minimal from C. See proc minimal below.
+minimal_id:	d_word	0		; id for call to minimal from c. see proc minimal below.
 
-; 
-%define SETREAL 0
+;
+%define setreal 0
 
-;       Setup a number of internal addresses in the compiler that cannot
-;       be directly accessed from within C because of naming difficulties.
+;       setup a number of internal addresses in the compiler that cannot
+;       be directly accessed from within c because of naming difficulties.
 
-	global  ID1
-ID1:	dd   0
-%if SETREAL == 1
-	D_WORD       2
+	global  id1
+id1:	dd   0
+%if setreal == 1
+	d_word       2
 
-       D_WORD       1
+       d_word       1
 	db  "1x\x00\x00\x00"
 %endif
 
-	global  ID2BLK
-ID2BLK	D_WORD   52
-      D_WORD    0
+	global  id2blk
+id2blk	d_word   52
+      d_word    0
 	times   52 db 0
 
-	global  TICBLK
-TICBLK:	D_WORD   0
-      D_WORD    0
+	global  ticblk
+ticblk:	d_word   0
+      d_word    0
 
-	global  TSCBLK
-TSCBLK:	 D_WORD   512
-      D_WORD    0
+	global  tscblk
+tscblk:	 d_word   512
+      d_word    0
 	times   512 db 0
 
-;       Standard input buffer block.
+;       standard input buffer block.
 
-	global  INPBUF
-INPBUF:	D_WORD	0			; type word
-      D_WORD    0               	; block length
-      D_WORD    1024            	; buffer size
-      D_WORD    0               	; remaining chars to read
-      D_WORD    0               	; offset to next character to read
-      D_WORD    0               	; file position of buffer
-      D_WORD    0               	; physical position in file
+	global  inpbuf
+inpbuf:	d_word	0			; type word
+      d_word    0               	; block length
+      d_word    1024            	; buffer size
+      d_word    0               	; remaining chars to read
+      d_word    0               	; offset to next character to read
+      d_word    0               	; file position of buffer
+      d_word    0               	; physical position in file
 	times   1024 db 0        	; buffer
 
-	global  TTYBUF
-TTYBUF:	D_WORD    0     ; type word
-	D_WORD    0               	; block length
-	D_WORD    260             	; buffer size  (260 OK in MS-DOS with cinread())
-	D_WORD    0               	; remaining chars to read
-	D_WORD    0               	; offset to next char to read
-	D_WORD    0               	; file position of buffer
-	D_WORD    0               	; physical position in file
+	global  ttybuf
+ttybuf:	d_word    0     ; type word
+	d_word    0               	; block length
+	d_word    260             	; buffer size  (260 ok in ms-dos with cinread())
+	d_word    0               	; remaining chars to read
+	d_word    0               	; offset to next char to read
+	d_word    0               	; file position of buffer
+	d_word    0               	; physical position in file
 	times   260 db 0         	; buffer
 ;
-;       Save and restore MINIMAL and interface registers on stack.
-;       Used by any routine that needs to call back into the MINIMAL
-;       code in such a way that the MINIMAL code might trigger another
-;       SYSxx call before returning.
+;       save and restore minimal and interface registers on stack.
+;       used by any routine that needs to call back into the minimal
+;       code in such a way that the minimal code might trigger another
+;       sysxx call before returning.
 ;
-;       Note 1:  pushregs returns a collectable value in XL, safe
+;       note 1:  pushregs returns a collectable value in xl, safe
 ;       for subsequent call to memory allocation routine.
 ;
-;       Note 2:  these are not recursive routines.  Only reg_xl is
+;       note 2:  these are not recursive routines.  only reg_xl is
 ;       saved on the stack, where it is accessible to the garbage
-;       collector.  Other registers are just moved to a temp area.
+;       collector.  other registers are just moved to a temp area.
 ;
-;       Note 3:  popregs does not restore REG_CP, because it may have
-;       been modified by the Minimal routine called between pushregs
-;       and popregs as a result of a garbage collection.  Calling of
-;       another SYSxx routine in between is not a problem, because
-;       CP will have been preserved by Minimal.
+;       note 3:  popregs does not restore reg_cp, because it may have
+;       been modified by the minimal routine called between pushregs
+;       and popregs as a result of a garbage collection.  calling of
+;       another sysxx routine in between is not a problem, because
+;       cp will have been preserved by minimal.
 ;
-;       Note 4:  if there isn't a compiler stack yet, we don't bother
-;       saving XL.  This only happens in call of nextef from sysxi when
+;       note 4:  if there isn't a compiler stack yet, we don't bother
+;       saving xl.  this only happens in call of nextef from sysxi when
 ;       reloading a save file.
 ;
 ;
 	global	save_regs
 save_regs:
-	mov	M_WORD [save_ia],IA
-	mov	M_WORD [save_xl],XL
-	mov	M_WORD [save_xr],XR
-	mov	M_WORD [save_xs],XS
-	mov	M_WORD [save_wa],WA
-	mov	M_WORD [save_wb],WB
-	mov	M_WORD [save_wc],WC
-	mov	M_WORD [save_w0],W0
+	mov	m_word [save_ia],ia
+	mov	m_word [save_xl],xl
+	mov	m_word [save_xr],xr
+	mov	m_word [save_xs],xs
+	mov	m_word [save_wa],wa
+	mov	m_word [save_wb],wb
+	mov	m_word [save_wc],wc
+	mov	m_word [save_w0],w0
 	ret
 
 	global	restore_regs
 restore_regs:
-	;	Restore regs, except for SP. That is caller's responsibility
-	mov	IA,M_WORD [save_ia]
-	mov	XL,M_WORD [save_xl]
-	mov	XR,M_WORD [save_xr]
-;	mov	XS,M_WORD [save_xs	; caller restores SP]
-	mov	WA,M_WORD [save_wa]
-	mov	WB,M_WORD [save_wb]
-	mov	WC,M_WORD [save_wc]
-	mov	W0,M_WORD [save_w0]
+	;	restore regs, except for sp. that is caller's responsibility
+	mov	ia,m_word [save_ia]
+	mov	xl,m_word [save_xl]
+	mov	xr,m_word [save_xr]
+;	mov	xs,m_word [save_xs	; caller restores sp]
+	mov	wa,m_word [save_wa]
+	mov	wb,m_word [save_wb]
+	mov	wc,m_word [save_wc]
+	mov	w0,m_word [save_w0]
 	ret
 ; ;
 ; ;       startup( char *dummy1, char *dummy2) - startup compiler
 ; ;
-; ;       An OSINT C function calls startup to transfer control
+; ;       an osint c function calls startup to transfer control
 ; ;       to the compiler.
 ; ;
-; ;       (XR) = basemem
-; ;       (XL) = topmem - sizeof(WORD)
+; ;       (xr) = basemem
+; ;       (xl) = topmem - sizeof(word)
 ; ;
-; ;	Note: This function never returns.
+; ;	note: this function never returns.
 ; ;
-; 
+;
 	global	startup
-;   Ordinals for MINIMAL calls from assembly language.
+;   ordinals for minimal calls from assembly language.
 
-;   The order of entries here must correspond to the order of
-;   calltab entries in the INTER assembly language module.
+;   the order of entries here must correspond to the order of
+;   calltab entries in the inter assembly language module.
 
-CALLTAB_RELAJ equ   0
-CALLTAB_RELCR equ   1
-CALLTAB_RELOC equ   2
-CALLTAB_ALLOC equ   3
-CALLTAB_ALOCS equ   4
-CALLTAB_ALOST equ   5
-CALLTAB_BLKLN equ   6
-CALLTAB_INSTA equ   7
-CALLTAB_RSTRT equ   8
-CALLTAB_START equ   9
-CALLTAB_FILNM equ   10
-CALLTAB_DTYPE equ   11
-CALLTAB_ENEVS equ   12
-CALLTAB_ENGTS equ   13
+calltab_relaj equ   0
+calltab_relcr equ   1
+calltab_reloc equ   2
+calltab_alloc equ   3
+calltab_alocs equ   4
+calltab_alost equ   5
+calltab_blkln equ   6
+calltab_insta equ   7
+calltab_rstrt equ   8
+calltab_start equ   9
+calltab_filnm equ   10
+calltab_dtype equ   11
+calltab_enevs equ   12
+calltab_engts equ   13
 
 startup:
-	pop     W0			; discard return
-	call	stackinit		; initialize MINIMAL stack
-	mov     W0,M_WORD [compsp]	; get MINIMAL's stack pointer
-	mov M_WORD [reg_wa],W0		; startup stack pointer
+	pop     w0			; discard return
+	call	stackinit		; initialize minimal stack
+	mov     w0,m_word [compsp]	; get minimal's stack pointer
+	mov m_word [reg_wa],w0		; startup stack pointer
 
-	cld				; default to UP direction for string ops
-;        GETOFF  W0,DFFNC               # get address of PPM offset
-	mov     M_WORD [ppoff],W0	; save for use later
+	cld				; default to up direction for string ops
+;        getoff  w0,dffnc               # get address of ppm offset
+	mov     m_word [ppoff],w0	; save for use later
 
-	mov     XS,M_WORD [osisp]	; switch to new C stack
-	mov	M_WORD [minimal_id],CALLTAB_START
+	mov     xs,m_word [osisp]	; switch to new c stack
+	mov	m_word [minimal_id],calltab_start
 	call	minimal			; load regs, switch stack, start compiler
 
 ;	stackinit  -- initialize lowspmin from sp.
 
-;	Input:  sp - current C stack
-;		stacksiz - size of desired Minimal stack in bytes
+;	input:  sp - current c stack
+;		stacksiz - size of desired minimal stack in bytes
 
-;	Uses:	W0
+;	uses:	w0
 
-;	Output: register WA, sp, lowspmin, compsp, osisp set up per diagram:
+;	output: register wa, sp, lowspmin, compsp, osisp set up per diagram:
 
 ;	(high)	+----------------+
-;		|  old C stack   |
-;	  	|----------------| <-- incoming sp, resultant WA (future XS)
+;		|  old c stack   |
+;	  	|----------------| <-- incoming sp, resultant wa (future xs)
 ;		|	     ^	 |
 ;		|	     |	 |
 ;		/ stacksiz bytes /
@@ -402,8 +402,8 @@ startup:
 ;		|            |	 |
 ;		|----------- | --| <-- resultant lowspmin
 ;		| 400 bytes  v   |
-;	  	|----------------| <-- future C stack pointer, osisp
-;		|  new C stack	 |
+;	  	|----------------| <-- future c stack pointer, osisp
+;		|  new c stack	 |
 ;	(low)	|                |
 
 
@@ -411,403 +411,403 @@ startup:
 
 	global	stackinit
 stackinit:
-	mov	W0,XS
-	mov     M_WORD [compsp],W0	; save as MINIMAL's stack pointer
-	sub	W0,M_WORD [stacksiz]	; end of MINIMAL stack is where C stack will start
-	mov     M_WORD [osisp],W0	; save new C stack pointer
-	add	W0,CFP_B*100		; 100 words smaller for CHK
-	extern	LOWSPMIN
-	mov	M_WORD [LOWSPMIN],W0
+	mov	w0,xs
+	mov     m_word [compsp],w0	; save as minimal's stack pointer
+	sub	w0,m_word [stacksiz]	; end of minimal stack is where c stack will start
+	mov     m_word [osisp],w0	; save new c stack pointer
+	add	w0,cfp_b*100		; 100 words smaller for chk
+	extern	lowspmin
+	mov	m_word [lowspmin],w0
 	ret
 
-;       mimimal -- call MINIMAL function from C
+;       mimimal -- call minimal function from c
 
-;       Usage:  extern void minimal(WORD callno)
+;       usage:  extern void minimal(word callno)
 
 ;       where:
 ;         callno is an ordinal defined in osint.h, osint.inc, and calltab.
 
-;       Minimal registers WA, WB, WC, XR, and XL are loaded and
+;       minimal registers wa, wb, wc, xr, and xl are loaded and
 ;       saved from/to the register block.
 
-;       Note that before restart is called, we do not yet have compiler
-;       stack to switch to.  In that case, just make the call on the
-;       the OSINT stack.
+;       note that before restart is called, we do not yet have compiler
+;       stack to switch to.  in that case, just make the call on the
+;       the osint stack.
 
  minimal:
-;         pushad			; save all registers for C
-	mov     WA,M_WORD [reg_wa]	; restore registers
-	mov	WB,M_WORD [reg_wb]
-	mov     WC,M_WORD [reg_wc]	;
-	mov	XR,M_WORD [reg_xr]
-	mov	XL,M_WORD [reg_xl]
- 
-	mov     M_WORD [osisp],XS	; save OSINT stack pointer
-	cmp     M_WORD [compsp],0	; is there a compiler stack?
+;         pushad			; save all registers for c
+	mov     wa,m_word [reg_wa]	; restore registers
+	mov	wb,m_word [reg_wb]
+	mov     wc,m_word [reg_wc]	;
+	mov	xr,m_word [reg_xr]
+	mov	xl,m_word [reg_xl]
+
+	mov     m_word [osisp],xs	; save osint stack pointer
+	cmp     m_word [compsp],0	; is there a compiler stack?
 	je      min1			; jump if none yet
-	mov     XS,M_WORD [compsp]	; switch to compiler stack
- 
- min1:  
-	mov     W0,M_WORD [minimal_id]	; get ordinal
-	call   M_WORD [calltab+W0*CFP_B]    ; off to the Minimal code
- 
-	mov     XS,M_WORD [osisp]	; switch to OSINT stack
- 
-	mov     M_WORD [reg_wa],WA	; save registers
-	mov	M_WORD [reg_wb],WB
-	mov	M_WORD [reg_wc],WC
-	mov	M_WORD [reg_xr],XR
-	mov	M_WORD [reg_xl],XL
+	mov     xs,m_word [compsp]	; switch to compiler stack
+
+ min1:
+	mov     w0,m_word [minimal_id]	; get ordinal
+	call   m_word [calltab+w0*cfp_b]    ; off to the minimal code
+
+	mov     xs,m_word [osisp]	; switch to osint stack
+
+	mov     m_word [reg_wa],wa	; save registers
+	mov	m_word [reg_wb],wb
+	mov	m_word [reg_wc],wc
+	mov	m_word [reg_xr],xr
+	mov	m_word [reg_xl],xl
 	ret
- 
- 
+
+
 	section		.data
-	align         CFP_B
+	align         cfp_b
 	global	hasfpu
-hasfpu:	D_WORD	0
+hasfpu:	d_word	0
 	global	cprtmsg
 cprtmsg:
-	db          ' Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.',0,0
+	db          ' copyright 1987-2012 robert b. k. dewar and mark emmer.',0,0
 
 
-;       Interface routines
+;       interface routines
 
-;       Each interface routine takes the following form:
+;       each interface routine takes the following form:
 
-;               SYSXX   call    ccaller ; call common interface
-;                     D_WORD    zysxx   ; dd      of C OSINT function
+;               sysxx   call    ccaller ; call common interface
+;                     d_word    zysxx   ; dd      of c osint function
 ;                       db      n       ; offset to instruction after
 ;                                       ;   last procedure exit
 
-;       In an effort to achieve portability of C OSINT functions, we
+;       in an effort to achieve portability of c osint functions, we
 ;       do not take take advantage of any "internal" to "external"
-;       transformation of names by C compilers.  So, a C OSINT function
-;       representing sysxx is named _zysxx.  This renaming should satisfy
-;       all C compilers.
+;       transformation of names by c compilers.  so, a c osint function
+;       representing sysxx is named _zysxx.  this renaming should satisfy
+;       all c compilers.
 
-;       IMPORTANT  ONE interface routine, SYSFC, is passed arguments on
-;       the stack.  These items are removed from the stack before calling
+;       important  one interface routine, sysfc, is passed arguments on
+;       the stack.  these items are removed from the stack before calling
 ;       ccaller, as they are not needed by this implementation.
 
-;       CCALLER is called by the OS interface routines to call the
-;       real C OS interface function.
+;       ccaller is called by the os interface routines to call the
+;       real c os interface function.
 
-;       General calling sequence is
+;       general calling sequence is
 
 ;               call    ccaller
-;             D_WORD    address_of_C_function
+;             d_word    address_of_c_function
 ;               db      2*number_of_exit_points
 
-;       Control IS NEVER returned to a interface routine.  Instead, control
-;       is returned to the compiler (THE caller of the interface routine).
+;       control is never returned to a interface routine.  instead, control
+;       is returned to the compiler (the caller of the interface routine).
 
-;       The C function that is called MUST ALWAYS return an integer
+;       the c function that is called must always return an integer
 ;       indicating the procedure exit to take or that a normal return
 ;       is to be performed.
 
-;               C function      Interpretation
+;               c function      interpretation
 ;               return value
 ;               ------------    -------------------------------------------
-;                    <0         Do normal return to instruction past
+;                    <0         do normal return to instruction past
 ;                               last procedure exit (distance passed
 ;                               in by dummy routine and saved on stack)
-;                     0         Take procedure exit 1
-;                     4         Take procedure exit 2
-;                     8         Take procedure exit 3
+;                     0         take procedure exit 1
+;                     4         take procedure exit 2
+;                     8         take procedure exit 3
 ;                    ...        ...
 
 
 	segment	.data
-call_adr:	D_WORD	0
+call_adr:	d_word	0
 	segment	.text
 
 syscall_init:
 ;       save registers in global variables
 
-	mov     M_WORD [reg_wa],WA      ; save registers
-	mov	M_WORD [reg_wb],WB
-	mov     M_WORD [reg_wc],WC      ; (also _reg_ia)
-	mov	M_WORD [reg_xr],XR
-	mov	M_WORD [reg_xl],XL
-	mov	M_WORD [reg_ia],IA
+	mov     m_word [reg_wa],wa      ; save registers
+	mov	m_word [reg_wb],wb
+	mov     m_word [reg_wc],wc      ; (also _reg_ia)
+	mov	m_word [reg_xr],xr
+	mov	m_word [reg_xl],xl
+	mov	m_word [reg_ia],ia
 	ret
 
 syscall_exit:
-	mov	M_WORD [_rc_],W0	; save return code from function
-	mov     M_WORD [osisp],XS       ; save OSINT's stack pointer
-	mov     XS,M_WORD [compsp]      ; restore compiler's stack pointer
-	mov     WA,M_WORD [reg_wa]      ; restore registers
-	mov	WB,M_WORD [reg_wb]
-	mov     WC,M_WORD [reg_wc]      ;
-	mov	XR,M_WORD [reg_xr]
-	mov	XL,M_WORD [reg_xl]
-	mov	IA,M_WORD [reg_ia]
+	mov	m_word [_rc_],w0	; save return code from function
+	mov     m_word [osisp],xs       ; save osint's stack pointer
+	mov     xs,m_word [compsp]      ; restore compiler's stack pointer
+	mov     wa,m_word [reg_wa]      ; restore registers
+	mov	wb,m_word [reg_wb]
+	mov     wc,m_word [reg_wc]      ;
+	mov	xr,m_word [reg_xr]
+	mov	xl,m_word [reg_xl]
+	mov	ia,m_word [reg_ia]
 	cld
-	mov	W0,M_WORD [reg_pc]
-	jmp	W0
-	
+	mov	w0,m_word [reg_pc]
+	jmp	w0
+
 	%macro	syscall	2
-	pop     W0			; pop return address
-	mov	M_WORD [reg_pc],W0
+	pop     w0			; pop return address
+	mov	m_word [reg_pc],w0
 	call	syscall_init
-;       save compiler stack and switch to OSINT stack
-	mov     M_WORD [compsp],XS      ; save compiler's stack pointer
-	mov     XS,M_WORD [osisp]       ; load OSINT's stack pointer
+;       save compiler stack and switch to osint stack
+	mov     m_word [compsp],xs      ; save compiler's stack pointer
+	mov     xs,m_word [osisp]       ; load osint's stack pointer
 	call	%1
 	call	syscall_exit
 	%endmacro
 
-	global SYSAX
+	global sysax
 	extern	zysax
-SYSAX:	syscall	  zysax,1
+sysax:	syscall	  zysax,1
 
-	global SYSBS
+	global sysbs
 	extern	zysbs
-SYSBS:	syscall	  zysbs,2
+sysbs:	syscall	  zysbs,2
 
-	global SYSBX
+	global sysbx
 	extern	zysbx
-SYSBX:	mov	M_WORD [reg_xs],XS
+sysbx:	mov	m_word [reg_xs],xs
 	syscall	zysbx,2
 
-;        global SYSCR
+;        global syscr
 ;	extern	zyscr
-;SYSCR:  syscall    zyscr ;    ,0
+;syscr:  syscall    zyscr ;    ,0
 
-	global SYSDC
+	global sysdc
 	extern	zysdc
-SYSDC:	syscall	zysdc,4
+sysdc:	syscall	zysdc,4
 
-	global SYSDM
+	global sysdm
 	extern	zysdm
-SYSDM:	syscall	zysdm,5
+sysdm:	syscall	zysdm,5
 
-	global SYSDT
+	global sysdt
 	extern	zysdt
-SYSDT:	syscall	zysdt,6
+sysdt:	syscall	zysdt,6
 
-	global SYSEA
+	global sysea
 	extern	zysea
-SYSEA:	syscall	zysea,7
+sysea:	syscall	zysea,7
 
-	global SYSEF
+	global sysef
 	extern	zysef
-SYSEF:	syscall	zysef,8
+sysef:	syscall	zysef,8
 
-	global SYSEJ
+	global sysej
 	extern	zysej
-SYSEJ:	syscall	zysej,9
+sysej:	syscall	zysej,9
 
-	global SYSEM
+	global sysem
 	extern	zysem
-SYSEM:	syscall	zysem,10
+sysem:	syscall	zysem,10
 
-	global SYSEN
+	global sysen
 	extern	zysen
-SYSEN:	syscall	zysen,11
+sysen:	syscall	zysen,11
 
-	global SYSEP
+	global sysep
 	extern	zysep
-SYSEP:	syscall	zysep,12
+sysep:	syscall	zysep,12
 
-	global SYSEX
+	global sysex
 	extern	zysex
-SYSEX:	mov	M_WORD [reg_xs],XS
+sysex:	mov	m_word [reg_xs],xs
 	syscall	zysex,13
 
-	global SYSFC
+	global sysfc
 	extern	zysfc
-SYSFC:  pop     W0             ; <<<<remove stacked SCBLK>>>>
-	lea	XS,[XS+WC*CFP_B]
-	push	W0
+sysfc:  pop     w0             ; <<<<remove stacked scblk>>>>
+	lea	xs,[xs+wc*cfp_b]
+	push	w0
 	syscall	zysfc,14
 
-	global SYSGC
+	global sysgc
 	extern	zysgc
-SYSGC:	syscall	zysgc,15
+sysgc:	syscall	zysgc,15
 
-	global SYSHS
+	global syshs
 	extern	zyshs
-SYSHS:	mov	M_WORD [reg_xs],XS
+syshs:	mov	m_word [reg_xs],xs
 	syscall	zyshs,16
 
-	global SYSID
+	global sysid
 	extern	zysid
-SYSID:	syscall	zysid,17
+sysid:	syscall	zysid,17
 
-	global SYSIF
+	global sysif
 	extern	zysif
-SYSIF:	syscall	zysif,18
+sysif:	syscall	zysif,18
 
-	global SYSIL
+	global sysil
 	extern	zysil
-SYSIL:  syscall zysil,19
+sysil:  syscall zysil,19
 
-	global SYSIN
+	global sysin
 	extern	zysin
-SYSIN:	syscall	zysin,20
+sysin:	syscall	zysin,20
 
-	global SYSIO
+	global sysio
 	extern	zysio
-SYSIO:	syscall	zysio,21
+sysio:	syscall	zysio,21
 
-	global SYSLD
+	global sysld
 	extern	zysld
-SYSLD:  syscall zysld,22
+sysld:  syscall zysld,22
 
-	global SYSMM
+	global sysmm
 	extern	zysmm
-SYSMM:	syscall	zysmm,23
+sysmm:	syscall	zysmm,23
 
-	global SYSMX
+	global sysmx
 	extern	zysmx
-SYSMX:	syscall	zysmx,24
+sysmx:	syscall	zysmx,24
 
-	global SYSOU
+	global sysou
 	extern	zysou
-SYSOU:	syscall	zysou,25
+sysou:	syscall	zysou,25
 
-	global SYSPI
+	global syspi
 	extern	zyspi
-SYSPI:	syscall	zyspi,26
+syspi:	syscall	zyspi,26
 
-	global SYSPL
+	global syspl
 	extern	zyspl
-SYSPL:	syscall	zyspl,27
+syspl:	syscall	zyspl,27
 
-	global SYSPP
+	global syspp
 	extern	zyspp
-SYSPP:	syscall	zyspp,28
+syspp:	syscall	zyspp,28
 
-	global SYSPR
+	global syspr
 	extern	zyspr
-SYSPR:	syscall	zyspr,29
+syspr:	syscall	zyspr,29
 
-	global SYSRD
+	global sysrd
 	extern	zysrd
-SYSRD:	syscall	zysrd,30
+sysrd:	syscall	zysrd,30
 
-	global SYSRI
+	global sysri
 	extern	zysri
-SYSRI:	syscall	zysri,32
+sysri:	syscall	zysri,32
 
-	global SYSRW
+	global sysrw
 	extern	zysrw
-SYSRW:	syscall	zysrw,33
+sysrw:	syscall	zysrw,33
 
-	global SYSST
+	global sysst
 	extern	zysst
-SYSST:	syscall	zysst,34
+sysst:	syscall	zysst,34
 
-	global SYSTM
+	global systm
 	extern	zystm
-SYSTM:	syscall	zystm,35
+systm:	syscall	zystm,35
 
-	global SYSTT
+	global systt
 	extern	zystt
-SYSTT:	syscall	zystt,36
+systt:	syscall	zystt,36
 
-	global SYSUL
+	global sysul
 	extern	zysul
-SYSUL:	syscall	zysul,37
+sysul:	syscall	zysul,37
 
-	global SYSXI
+	global sysxi
 	extern	zysxi
-SYSXI:	mov	M_WORD [reg_xs],XS
+sysxi:	mov	m_word [reg_xs],xs
 	syscall	zysxi,38
 
 	%macro	callext	2
 	extern	%1
 	call	%1
-	add	XS,%2		; pop arguments
+	add	xs,%2		; pop arguments
 	%endmacro
 
-;	x64 hardware divide, expressed in form of Minimal register mappings, requires dividend be
-;	placed in W0, which is then sign extended into WC:W0. After the divide, W0 contains the
-;	quotient, WC contains the remainder.
+;	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
+;	placed in w0, which is then sign extended into wc:w0. after the divide, w0 contains the
+;	quotient, wc contains the remainder.
 ;
-;       CVD__ - convert by division
+;       cvd__ - convert by division
 ;
-;       Input   IA = number <=0 to convert
-;       Output  IA / 10
-;               WA ECX) = remainder + '0'
-	global	CVD__
-CVD__:
+;       input   ia = number <=0 to convert
+;       output  ia / 10
+;               wa ecx) = remainder + '0'
+	global	cvd__
+cvd__:
 	extern	i_cvd
-	mov	M_WORD [reg_ia],IA
-	mov	M_WORD [reg_wa],WA
+	mov	m_word [reg_ia],ia
+	mov	m_word [reg_wa],wa
 	call	i_cvd
-	mov	IA,M_WORD [reg_ia]
-	mov	WA,M_WORD [reg_wa]
+	mov	ia,m_word [reg_ia]
+	mov	wa,m_word [reg_wa]
 	ret
 
 
-;       DVI__ - divide IA (EDX) by long in W0
-	global	DVI__
-DVI__:
+;       dvi__ - divide ia (edx) by long in w0
+	global	dvi__
+dvi__:
 	extern	i_dvi
-	mov	M_WORD [reg_w0],W0
+	mov	m_word [reg_w0],w0
 	call	i_dvi
-	mov	IA,M_WORD [reg_ia]
-	mov	AL,BYTE [reg_fl]
-	or	AL,AL
+	mov	ia,m_word [reg_ia]
+	mov	al,byte [reg_fl]
+	or	al,al
 	ret
 
-	global	RMI__
-;       RMI__ - remainder of IA (EDX) divided by long in W0
-RMI__:
+	global	rmi__
+;       rmi__ - remainder of ia (edx) divided by long in w0
+rmi__:
 	jmp	ocode
 	extern	i_rmi
-	mov	M_WORD [reg_w0],W0
+	mov	m_word [reg_w0],w0
 	call	i_rmi
-	mov	IA,M_WORD [reg_ia]
-	mov	AL,BYTE [reg_fl]
-	or	AL,AL
+	mov	ia,m_word [reg_ia]
+	mov	al,byte [reg_fl]
+	or	al,al
 	ret
 
 ocode:
-        or      W0,W0         	; test for 0
+        or      w0,w0         	; test for 0
         jz      setovr    	; jump if 0 divisor
-        xchg    W0,IA         	; IA to W0, divisor to IA
-        CDQ                     ; extend dividend
-        idiv    IA              ; perform division. W0=quotient, WC=remainder
-	seto	BYTE [reg_fl]
-	mov	IA,WC
+        xchg    w0,ia         	; ia to w0, divisor to ia
+        cdq                     ; extend dividend
+        idiv    ia              ; perform division. w0=quotient, wc=remainder
+	seto	byte [reg_fl]
+	mov	ia,wc
 	ret
 
-setovr: mov     AL,1		; set overflow indicator
-	mov	BYTE [reg_fl],AL
+setovr: mov     al,1		; set overflow indicator
+	mov	byte [reg_fl],al
 	ret
 
 	%macro	real_op 2
 	global	%1
 	extern	%2
 %1:
-	mov	M_WORD [reg_rp],W0
+	mov	m_word [reg_rp],w0
 	call	%2
 	ret
 %endmacro
 
-	real_op	LDR_,f_ldr
-	real_op	STR_,f_str
-	real_op	ADR_,f_adr
-	real_op	SBR_,f_sbr
-	real_op	MLR_,f_mlr
-	real_op	DVR_,f_dvr
-	real_op	NGR_,f_ngr
-	real_op CPR_,f_cpr
-	
+	real_op	ldr_,f_ldr
+	real_op	str_,f_str
+	real_op	adr_,f_adr
+	real_op	sbr_,f_sbr
+	real_op	mlr_,f_mlr
+	real_op	dvr_,f_dvr
+	real_op	ngr_,f_ngr
+	real_op cpr_,f_cpr
+
 	%macro	int_op 2
 	global	%1
 	extern	%2
 %1:
-	mov	M_WORD [reg_ia],IA
+	mov	m_word [reg_ia],ia
 	call	%2
 	ret
 %endmacro
 
-	int_op ITR_,f_itr
-	int_op RTI_,f_rti
+	int_op itr_,f_itr
+	int_op rti_,f_rti
 
 	%macro	math_op 2
 	global	%1
@@ -817,18 +817,18 @@ setovr: mov     AL,1		; set overflow indicator
 	ret
 %endmacro
 
-	math_op	ATN_,f_atn
-	math_op	CHP_,f_chp
-	math_op	COS_,f_cos
-	math_op	ETX_,f_etx
-	math_op	LNF_,f_lnf
-	math_op	SIN_,f_sin
-	math_op	SQR_,f_sqr
-	math_op	TAN_,f_tan
- 
-;       OVR_ test for overflow value in RA
-	global	OVR_
-OVR_:
+	math_op	atn_,f_atn
+	math_op	chp_,f_chp
+	math_op	cos_,f_cos
+	math_op	etx_,f_etx
+	math_op	lnf_,f_lnf
+	math_op	sin_,f_sin
+	math_op	sqr_,f_sqr
+	math_op	tan_,f_tan
+
+;       ovr_ test for overflow value in ra
+	global	ovr_
+ovr_:
         mov     ax, word [reg_ra+6]	; get top 2 bytes
         and     ax, 0x7ff0             	; check for infinity or nan
         add     ax, 0x10               	; set/clear overflow accordingly
@@ -836,134 +836,134 @@ OVR_:
 
 	global	get_fp			; get frame pointer
 
-get_fp: 
-         mov     W0,M_WORD [reg_xs]     ; Minimal's XS
-         add     W0,4           	; pop return from call to SYSBX or SYSXI
+get_fp:
+         mov     w0,m_word [reg_xs]     ; minimal's xs
+         add     w0,4           	; pop return from call to sysbx or sysxi
          ret                    	; done
 
 	extern	rereloc
 
 	global	restart
-	extern	STBAS
-	extern	STATB
-	extern	STAGE
-	extern	GBCNT
+	extern	stbas
+	extern	statb
+	extern	stage
+	extern	gbcnt
 	extern	lmodstk
 	extern	startbrk
 	extern	outptr
 	extern	swcoup
-;	scstr is offset to start of string in SCBLK, or two words
-scstr	equ	CFP_C+CFP_C
+;	scstr is offset to start of string in scblk, or two words
+scstr	equ	cfp_c+cfp_c
 
 ;
 restart:
-        pop     W0                      ; discard return
-        pop     W0                     	; discard dummy
-        pop     W0                     	; get lowest legal stack value
+        pop     w0                      ; discard return
+        pop     w0                     	; discard dummy
+        pop     w0                     	; get lowest legal stack value
 
-        add     W0,M_WORD [stacksiz]  	; top of compiler's stack
-        mov     XS,W0                 	; switch to this stack
-	call	stackinit               ; initialize MINIMAL stack
+        add     w0,m_word [stacksiz]  	; top of compiler's stack
+        mov     xs,w0                 	; switch to this stack
+	call	stackinit               ; initialize minimal stack
 
                                         ; set up for stack relocation
-        lea     W0,[TSCBLK+scstr]       ; top of saved stack
-        mov     WB,M_WORD [lmodstk]    	; bottom of saved stack
-        mov	WA,M_WORD [STBAS]      ; WA = stbas from exit() time
-        sub     WB,W0                 	; WB = size of saved stack
-	mov	WC,WA
-        sub     WC,WB                 	; WC = stack bottom from exit() time
-	mov	WB,WA
-        sub     WB,XS                 	; WB =  stbas - new stbas
+        lea     w0,[tscblk+scstr]       ; top of saved stack
+        mov     wb,m_word [lmodstk]    	; bottom of saved stack
+        mov	wa,m_word [stbas]      ; wa = stbas from exit() time
+        sub     wb,w0                 	; wb = size of saved stack
+	mov	wc,wa
+        sub     wc,wb                 	; wc = stack bottom from exit() time
+	mov	wb,wa
+        sub     wb,xs                 	; wb =  stbas - new stbas
 
-        mov	M_WORD [STBAS],XS       ; save initial sp
-;        GETOFF  W0,DFFNC               ; get address of PPM offset
-        mov     M_WORD [ppoff],W0       ; save for use later
+        mov	m_word [stbas],xs       ; save initial sp
+;        getoff  w0,dffnc               ; get address of ppm offset
+        mov     m_word [ppoff],w0       ; save for use later
 ;
-;       restore stack from TSCBLK.
+;       restore stack from tscblk.
 ;
-        mov     XL,M_WORD [lmodstk]    	; -> bottom word of stack in TSCBLK
-        lea     XR,[TSCBLK+scstr]      	; -> top word of stack
-        cmp     XL,XR                 	; Any stack to transfer?
+        mov     xl,m_word [lmodstk]    	; -> bottom word of stack in tscblk
+        lea     xr,[tscblk+scstr]      	; -> top word of stack
+        cmp     xl,xr                 	; any stack to transfer?
         je      re3               	;  skip if not
-	sub	XL,4
+	sub	xl,4
 	std
-re1:    lodsd                           ; get old stack word to W0
-        cmp     W0,WC                 	; below old stack bottom?
-        jb      re2               	;   j. if W0 < WC
-        cmp     W0,WA                 	; above old stack top?
-        ja      re2               	;   j. if W0 > WA
-        sub     W0,WB                 	; within old stack, perform relocation
-re2:    push    W0                     	; transfer word of stack
-        cmp     XL,XR                 	; if not at end of relocation then
+re1:    lodsd                           ; get old stack word to w0
+        cmp     w0,wc                 	; below old stack bottom?
+        jb      re2               	;   j. if w0 < wc
+        cmp     w0,wa                 	; above old stack top?
+        ja      re2               	;   j. if w0 > wa
+        sub     w0,wb                 	; within old stack, perform relocation
+re2:    push    w0                     	; transfer word of stack
+        cmp     xl,xr                 	; if not at end of relocation then
         jae     re1                     ;    loop back
 
 re3:	cld
-        mov     M_WORD [compsp],XS     	; save compiler's stack pointer
-        mov     XS,M_WORD [osisp]      	; back to OSINT's stack pointer
+        mov     m_word [compsp],xs     	; save compiler's stack pointer
+        mov     xs,m_word [osisp]      	; back to osint's stack pointer
         call   rereloc               	; relocate compiler pointers into stack
-        mov	W0,M_WORD [STATB]      	; start of static region to XR
-	mov	M_WORD [reg_xr],W0
-	mov	W0,MINIMAL_INSTA
+        mov	w0,m_word [statb]      	; start of static region to xr
+	mov	m_word [reg_xr],w0
+	mov	w0,minimal_insta
 	call	minimal			; initialize static region
 
 ;
-;       Now pretend that we're executing the following C statement from
+;       now pretend that we're executing the following c statement from
 ;       function zysxi:
 ;
-;               return  NORMAL_RETURN;
+;               return  normal_return;
 ;
-;       If the load module was invoked by EXIT(), the return path is
-;       as follows:  back to ccaller, back to S$EXT following SYSXI call,
-;       back to user program following EXIT() call.
+;       if the load module was invoked by exit(), the return path is
+;       as follows:  back to ccaller, back to s$ext following sysxi call,
+;       back to user program following exit() call.
 ;
-;       Alternately, the user specified -w as a command line option, and
-;       SYSBX called MAKEEXEC, which in turn called SYSXI.  The return path
-;       should be:  back to ccaller, back to MAKEEXEC following SYSXI call,
-;       back to SYSBX, back to MINIMAL code.  If we allowed this to happen,
-;       then it would require that stacked return address to SYSBX still be
-;       valid, which may not be true if some of the C programs have changed
-;       size.  Instead, we clear the stack and execute the restart code that
-;       simulates resumption just past the SYSBX call in the MINIMAL code.
-;       We distinguish this case by noting the variable STAGE is 4.
+;       alternately, the user specified -w as a command line option, and
+;       sysbx called makeexec, which in turn called sysxi.  the return path
+;       should be:  back to ccaller, back to makeexec following sysxi call,
+;       back to sysbx, back to minimal code.  if we allowed this to happen,
+;       then it would require that stacked return address to sysbx still be
+;       valid, which may not be true if some of the c programs have changed
+;       size.  instead, we clear the stack and execute the restart code that
+;       simulates resumption just past the sysbx call in the minimal code.
+;       we distinguish this case by noting the variable stage is 4.
 ;
-        call   startbrk			; start control-C logic
+        call   startbrk			; start control-c logic
 
-        mov	W0,M_WORD [STAGE]      	; is this a -w call?
-	cmp	W0,4
+        mov	w0,m_word [stage]      	; is this a -w call?
+	cmp	w0,4
         je            re4               ; yes, do a complete fudge
 
 ;
-;       Jump back with return value = NORMAL_RETURN
-	xor	W0,W0			; set to zero to indicate normal return
+;       jump back with return value = normal_return
+	xor	w0,w0			; set to zero to indicate normal return
 	call	syscall_exit
 	ret
 
-;       Here if -w produced load module.  simulate all the code that
-;       would occur if we naively returned to sysbx.  Clear the stack and
+;       here if -w produced load module.  simulate all the code that
+;       would occur if we naively returned to sysbx.  clear the stack and
 ;       go for it.
 ;
-re4:	mov	W0,M_WORD [STBAS]
-        mov     M_WORD [compsp],W0     	; empty the stack
+re4:	mov	w0,m_word [stbas]
+        mov     m_word [compsp],w0     	; empty the stack
 
-;       Code that would be executed if we had returned to makeexec:
+;       code that would be executed if we had returned to makeexec:
 ;
-        mov	M_WORD [GBCNT],0       	; reset garbage collect count
-        call    zystm                 	; Fetch execution time to reg_ia
-        mov     W0,M_WORD [reg_ia]     	; Set time into compiler
-	extern	TIMSX
-	mov	M_WORD [TIMSX],W0
+        mov	m_word [gbcnt],0       	; reset garbage collect count
+        call    zystm                 	; fetch execution time to reg_ia
+        mov     w0,m_word [reg_ia]     	; set time into compiler
+	extern	timsx
+	mov	m_word [timsx],w0
 
-;       Code that would be executed if we returned to sysbx:
+;       code that would be executed if we returned to sysbx:
 ;
-        push    M_WORD [outptr]        	; swcoup(outptr)
+        push    m_word [outptr]        	; swcoup(outptr)
 	extern 	swcoup
 	call	swcoup
-	add	XS,CFP_B
+	add	xs,cfp_b
 
-;       Jump to Minimal code to restart a save file.
+;       jump to minimal code to restart a save file.
 
-	mov	W0,MINIMAL_RSTRT
-	mov	M_WORD [minimal_id],W0
+	mov	w0,minimal_rstrt
+	mov	m_word [minimal_id],w0
         call	minimal			; no return
 
 	global	zzz

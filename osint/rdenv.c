@@ -63,7 +63,7 @@ register struct scblk *varname, *result;
     if ( (p = findenv(varname->str, varname->len)) == 0 )
         return -1;
 
-    cpys2sc(p, result, TSCBLK_LENGTH);
+    cpys2sc(p, result, tscblk_length);
 
     return 0;
 }

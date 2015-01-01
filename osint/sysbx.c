@@ -68,9 +68,9 @@ zysbx()
     */
     if ( spitflag & WRTEXE)
     {
-        pTSCBLK->len = appendext( *inpptr, BINEXT, pTSCBLK->str, 1 );
+        ptscblk->len = appendext( *inpptr, BINEXT, ptscblk->str, 1 );
 
-        if ( makeexec( pTSCBLK, spitflag & NOEXEC ? 3 : 4 ) )
+        if ( makeexec( ptscblk, spitflag & NOEXEC ? 3 : 4 ) )
         {
             wrterr( "Error writing load module." );
             zysej();
@@ -84,8 +84,8 @@ zysbx()
     */
     if ( spitflag & WRTSAV)
     {
-        pTSCBLK->len = appendext( *inpptr, RUNEXT, pTSCBLK->str, 1 );
-        if ( makeexec( pTSCBLK, spitflag & NOEXEC ? -3 : -4 ) )
+        ptscblk->len = appendext( *inpptr, RUNEXT, ptscblk->str, 1 );
+        if ( makeexec( ptscblk, spitflag & NOEXEC ? -3 : -4 ) )
         {
             wrterr( "Error writing save file." );
             zysej();

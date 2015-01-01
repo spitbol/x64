@@ -303,23 +303,23 @@ typedef unsigned long uword;	// minimal word as unsigned value
 /   The following manifest constants determines the size of the temporary
 /   SCBLKs defined by the interface.
 /
-/   TSCBLK_LENGTH	the maximum length of a string that can be stored
+/   tscblk_length	the maximum length of a string that can be stored
 /                   in structure 'tscblk'.  'tscblk' is defined in
 /                   file inter.s.
 /
-/   ID2BLK_LENGTH	the maximum length of a string that can be stored
+/   id2blk_length	the maximum length of a string that can be stored
 /                   in structure 'id2blk'.  'id2blk' is defined in
-/                   inter.c.  ID2BLK_LENGTH should be long enough
+/                   inter.c.  id2blk_length should be long enough
 /                   to hold the computer name type string (htype)
 /                   plus the date/time and a few blanks (typically
 /                   20 characters).  It should also be a multiple of
 /                   the word size.
 /
 */
-#ifndef TSCBLK_LENGTH
-#define TSCBLK_LENGTH	512
+#ifndef tscblk_length
+#define tscblk_length	512
 #endif
-#define ID2BLK_LENGTH	52
+#define id2blk_length	52
 
 /*
 /   The following manifest constants determine the default environment

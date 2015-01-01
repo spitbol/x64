@@ -136,7 +136,7 @@ zysxi()
     /	Get current value of FP and compute length of current stack.
     */
     stackbase   = (word *)get_fp();
-    stacklength = GET_MIN_VALUE(STBAS,char *) - (char *)stackbase;
+    stacklength = GET_MIN_VALUE(stbas,char *) - (char *)stackbase;
     /*
     /	Close all files and flush buffers
     */
@@ -165,13 +165,13 @@ zysxi()
         /*
         /	Copy entire stack into local storage of temporary SCBLK.
         */
-        if ( stacklength > TSCBLK_LENGTH ) {
+        if ( stacklength > tscblk_length ) {
             retval = -1;
             goto fail;
         }
         srcptr = stackbase;
-        dstptr = (word *)pTSCBLK->str;
-        i = GET_MIN_VALUE(STBAS,word *) - srcptr;
+        dstptr = (word *)ptscblk->str;
+        i = GET_MIN_VALUE(stbas,word *) - srcptr;
         while( i-- )
             *dstptr++ = *srcptr++;
         lmodstk = dstptr;		// (also non-zero flag for restart)
@@ -207,7 +207,7 @@ fail:
  */
 void heapmove()
 {
-    unsigned long i = (GET_MIN_VALUE(DNAMP, char *) - basemem) / sizeof(word);
+    unsigned long i = (GET_MIN_VALUE(dnamp, char *) - basemem) / sizeof(word);
     word *from = (word *)&edata;
     word *to = (word *)basemem;
 
@@ -246,14 +246,14 @@ void heapmove()
 
 void unreloc()
 {
-    register char *stbas;
+    register char *pstbas;
 
-    stbas = GET_MIN_VALUE(STBAS,char *);
-    SET_MIN_VALUE(FLPTR,GET_MIN_VALUE(FLPTR,char *) - stbas,word);
-    SET_MIN_VALUE(FLPRT,GET_MIN_VALUE(FLPRT,char *) - stbas,word);
-    SET_MIN_VALUE(GTCEF,GET_MIN_VALUE(GTCEF,char *) - stbas,word);
-    SET_MIN_VALUE(PMHBS,GET_MIN_VALUE(PMHBS,char *) - stbas,word);
-    SET_CP(CP(char *) - GET_MIN_VALUE(DNAMB,char *));
+    pstbas = GET_MIN_VALUE(stbas,char *);
+    SET_MIN_VALUE(flptr,GET_MIN_VALUE(flptr,char *) - pstbas,word);
+    SET_MIN_VALUE(flprt,GET_MIN_VALUE(flprt,char *) - pstbas,word);
+    SET_MIN_VALUE(gtcef,GET_MIN_VALUE(gtcef,char *) - pstbas,word);
+    SET_MIN_VALUE(pmhbs,GET_MIN_VALUE(pmhbs,char *) - pstbas,word);
+    SET_CP(CP(char *) - GET_MIN_VALUE(dnamb,char *));
 }
 
 /*
@@ -264,14 +264,14 @@ void unreloc()
 
 void rereloc()
 {
-    register char *stbas;
+    register char *pstbas;
 
-    stbas = GET_MIN_VALUE(STBAS,char *);
-    SET_MIN_VALUE(FLPTR,GET_MIN_VALUE(FLPTR,word) + stbas,word);
-    SET_MIN_VALUE(FLPRT,GET_MIN_VALUE(FLPRT,word) + stbas,word);
-    SET_MIN_VALUE(GTCEF,GET_MIN_VALUE(GTCEF,word) + stbas,word);
-    SET_MIN_VALUE(PMHBS,GET_MIN_VALUE(PMHBS,word) + stbas,word);
-    SET_CP(CP(word) + GET_MIN_VALUE(DNAMB,char *));
+    pstbas = GET_MIN_VALUE(stbas,char *);
+    SET_MIN_VALUE(flptr,GET_MIN_VALUE(flptr,word) + pstbas,word);
+    SET_MIN_VALUE(flprt,GET_MIN_VALUE(flprt,word) + pstbas,word);
+    SET_MIN_VALUE(gtcef,GET_MIN_VALUE(gtcef,word) + pstbas,word);
+    SET_MIN_VALUE(pmhbs,GET_MIN_VALUE(pmhbs,word) + pstbas,word);
+    SET_CP(CP(word) + GET_MIN_VALUE(dnamb,char *));
 }
 
 
@@ -323,26 +323,26 @@ word *stkbase, stklen;
     svfheader.system = SYSVERSION;
     svfheader.spare = 0;
     hcopy(vscb->str, svfheader.headv, vscb->len, sizeof(svfheader.headv));
-    hcopy(pID1->str, svfheader.iov, pID1->len, sizeof(svfheader.iov));
+    hcopy(pid1->str, svfheader.iov, pid1->len, sizeof(svfheader.iov));
     svfheader.timedate = time((time_t *)0);
     svfheader.flags = spitflag;
     svfheader.stacksiz = (uword)stacksiz;
     svfheader.stacklength = (uword)stklen;
-    svfheader.stbas = GET_MIN_VALUE(STBAS,char *);
-    svfheader.sec3size = (uword)(GET_DATA_OFFSET(C_YYY,char *) - GET_DATA_OFFSET(C_AAA,char *));
-    svfheader.sec3adr = GET_DATA_OFFSET(C_AAA,char *);
-    svfheader.sec4size = (uword)(GET_DATA_OFFSET(W_YYY,char *) - GET_DATA_OFFSET(G_AAA,char *));
-    svfheader.sec4adr = GET_DATA_OFFSET(G_AAA,char *);
-    svfheader.statoff = (uword)(GET_MIN_VALUE(HSHTB,char *) - basemem);	// offset to saved static in heap
-    svfheader.dynoff = (uword)(GET_MIN_VALUE(DNAMB,char *) - basemem);		// offset to saved dynamic in heap
-    svfheader.heapsize = (uword)(GET_MIN_VALUE(DNAMP,char *) - basemem);
+    svfheader.stbas = GET_MIN_VALUE(stbas,char *);
+    svfheader.sec3size = (uword)(GET_DATA_OFFSET(c_yyy,char *) - GET_DATA_OFFSET(c_aaa,char *));
+    svfheader.sec3adr = GET_DATA_OFFSET(c_aaa,char *);
+    svfheader.sec4size = (uword)(GET_DATA_OFFSET(w_yyy,char *) - GET_DATA_OFFSET(g_aaa,char *));
+    svfheader.sec4adr = GET_DATA_OFFSET(g_aaa,char *);
+    svfheader.statoff = (uword)(GET_MIN_VALUE(hshtb,char *) - basemem);	// offset to saved static in heap
+    svfheader.dynoff = (uword)(GET_MIN_VALUE(dnamb,char *) - basemem);		// offset to saved dynamic in heap
+    svfheader.heapsize = (uword)(GET_MIN_VALUE(dnamp,char *) - basemem);
     svfheader.heapadr = basemem;
     svfheader.topmem = topmem;
     svfheader.databts = (uword)databts;
     svfheader.memincb = (uword)memincb;
     svfheader.maxsize = (uword)maxsize;
-    svfheader.sec5size = (uword)(GET_CODE_OFFSET(S_YYY,char *) - GET_CODE_OFFSET(S_AAA,char *));
-    svfheader.sec5adr = GET_CODE_OFFSET(S_AAA,char *);
+    svfheader.sec5size = (uword)(GET_CODE_OFFSET(s_yyy,char *) - GET_CODE_OFFSET(s_aaa,char *));
+    svfheader.sec5adr = GET_CODE_OFFSET(s_aaa,char *);
     svfheader.compress = (uword)LZWBITS;
     svfheader.uarglen = uarg ? (uword)length(uarg) : 0;
     if (svfheader.uarglen >= UargSize)
@@ -371,12 +371,12 @@ word *stkbase, stklen;
     result |= compress( (unsigned char *)svfheader.sec4adr, svfheader.sec4size );
 
     // write out important portion of static region
-    result |= compress( (unsigned char *)GET_MIN_VALUE(HSHTB,char *),
-                        GET_MIN_VALUE(STATE,uword)-GET_MIN_VALUE(HSHTB,uword) );
+    result |= compress( (unsigned char *)GET_MIN_VALUE(hshtb,char *),
+                        GET_MIN_VALUE(state,uword)-GET_MIN_VALUE(hshtb,uword) );
 
     // write out dynamic portion of heap
-    result |= compress( (unsigned char *)GET_MIN_VALUE(DNAMB,char *),
-                        GET_MIN_VALUE(DNAMP,uword) - GET_MIN_VALUE(DNAMB,uword) );
+    result |= compress( (unsigned char *)GET_MIN_VALUE(dnamb,char *),
+                        GET_MIN_VALUE(dnamp,uword) - GET_MIN_VALUE(dnamb,uword) );
 
     // write out MINIMAL register block
     result |= compress( (unsigned char *)&reg_block, reg_size );
@@ -459,20 +459,20 @@ int fd;
             }
 #endif
 
-            if ( svfheader.sec3size != (GET_DATA_OFFSET(C_YYY,uword) - GET_DATA_OFFSET(C_AAA,uword)) )
+            if ( svfheader.sec3size != (GET_DATA_OFFSET(c_yyy,uword) - GET_DATA_OFFSET(c_aaa,uword)) )
             {
                 cp = "Constant section size error.";
                 goto reload_verserr;
             }
 
-            if ( svfheader.sec4size != (GET_DATA_OFFSET(W_YYY,uword) - GET_DATA_OFFSET(G_AAA,uword)) )
+            if ( svfheader.sec4size != (GET_DATA_OFFSET(w_yyy,uword) - GET_DATA_OFFSET(g_aaa,uword)) )
             {
                 cp = "Working section size error.";
                 goto reload_verserr;
             }
 
             if ( svfheader.sec5size !=
-                    (uword)((GET_CODE_OFFSET(S_YYY,char *)-GET_CODE_OFFSET(S_AAA,char *))) )
+                    (uword)((GET_CODE_OFFSET(s_yyy,char *)-GET_CODE_OFFSET(s_aaa,char *))) )
             {
                 cp = "Code section size error.";
                 goto reload_verserr;
@@ -515,25 +515,25 @@ int fd;
                     goto reload_ioerr;
 
             // Read saved stack from save file into tscblk
-            if ( expand( fd, (unsigned char *)pTSCBLK->str, svfheader.stacklength ) )
+            if ( expand( fd, (unsigned char *)ptscblk->str, svfheader.stacklength ) )
                 goto reload_ioerr;
 
-            SET_MIN_VALUE(STBAS, svfheader.stbas,word);
-            lmodstk = (word *)(pTSCBLK->str + svfheader.stacklength);
+            SET_MIN_VALUE(stbas, svfheader.stbas,word);
+            lmodstk = (word *)(ptscblk->str + svfheader.stacklength);
             stacksiz = svfheader.stacksiz;
 
             // Reload compiler working globals section
-            if ( expand( fd, GET_DATA_OFFSET(G_AAA,unsigned char *), svfheader.sec4size ) )
+            if ( expand( fd, GET_DATA_OFFSET(g_aaa,unsigned char *), svfheader.sec4size ) )
                 goto reload_ioerr;
 
             // Reload important portion of static region
             if ( expand(fd, (unsigned char *)basemem+svfheader.statoff,
-                        GET_MIN_VALUE(STATE,uword)-GET_MIN_VALUE(HSHTB,uword)) )
+                        GET_MIN_VALUE(state,uword)-GET_MIN_VALUE(hshtb,uword)) )
                 goto reload_ioerr;
 
             // Reload heap
             if ( expand(fd, (unsigned char *)basemem+svfheader.dynoff,
-                        GET_MIN_VALUE(DNAMP,uword)-GET_MIN_VALUE(DNAMB,uword)) )
+                        GET_MIN_VALUE(dnamp,uword)-GET_MIN_VALUE(dnamb,uword)) )
                 goto reload_ioerr;
 
             // Relocate all pointers because of different reload addresses
@@ -543,15 +543,15 @@ int fd;
             SET_XR(basemem);
             SET_CP(basemem+svfheader.dynoff);
             SET_XL(adjusts);
-            MINIMAL(MINIMAL_RELCR);
-            MINIMAL(MINIMAL_RELOC);
+            MINIMAL(minimal_relcr);
+            MINIMAL(minimal_reloc);
 
             // Relocate any return addresses in stack
-            SET_WB(pTSCBLK->str);
-            SET_WA(pTSCBLK->str + svfheader.stacklength);
+            SET_WB(ptscblk->str);
+            SET_WA(ptscblk->str + svfheader.stacklength);
             if (svfheader.stacklength) {
 
-                MINIMAL(MINIMAL_RELAJ);
+                MINIMAL(minimal_relaj);
 	    }
 
             /* Note: There are return addresses in the PRC_ variables
@@ -588,10 +588,10 @@ int fd;
 
             LSEEK(fd, (FILEPOS)0, 2); // advance to EOF should be a nop
             pathptr = (char *)-1L;  // include paths unknown
-            pINPBUF->next = 0;  // no chars left in std input buffer
-            pINPBUF->fill = 0;	// ditto
-            pINPBUF->offset = (FILEPOS)0;
-            pINPBUF->curpos = (FILEPOS)0;
+            pinpbuf->next = 0;  // no chars left in std input buffer
+            pinpbuf->fill = 0;	// ditto
+            pinpbuf->offset = (FILEPOS)0;
+            pinpbuf->curpos = (FILEPOS)0;
             if (uargbuf[0] && !uarg)		// if uarg in save file and none
                 uarg = uargbuf;				// on command line, use saved version
             provide_name = 0;	// no need to provide filename in sysrd

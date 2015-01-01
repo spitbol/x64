@@ -143,10 +143,10 @@ struct	ioblk	*ioptr;
     */
     scptr = ((struct scblk *) (ioptr->fnm));	// point to cmd scblk
     if (ioptr->flg2 & IO_ENV) {
-        if (optfile(scptr, pTSCBLK))
+        if (optfile(scptr, ptscblk))
             return -1;
-        scptr = pTSCBLK;
-        pTSCBLK->len = lenfnm(scptr);	// remove any options
+        scptr = ptscblk;
+        ptscblk->len = lenfnm(scptr);	// remove any options
     }
     len   = lenfnm( scptr ) - 2;        // length of cmd without ! & delimiter
     if (len >= CMDBUFLEN)

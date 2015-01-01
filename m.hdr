@@ -1,20 +1,20 @@
-; Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
-; Copyright 2012-2013 David Shields
-; 
-; This file is part of Macro SPITBOL.
-; 
-;     Macro SPITBOL is free software: you can redistribute it and/or modify
-;     it under the terms of the GNU General Public License as published by
-;     the Free Software Foundation, either version 2 of the License, or
+; copyright 1987-2012 robert b. k. dewar and mark emmer.
+; copyright 2012-2013 david shields
+;
+; this file is part of macro spitbol.
+;
+;     macro spitbol is free software: you can redistribute it and/or modify
+;     it under the terms of the gnu general public license as published by
+;     the free software foundation, either version 2 of the license, or
 ;     (at your option) any later version.
-; 
-;     Macro SPITBOL is distributed in the hope that it will be useful,
-;     but WITHOUT ANY WARRANTY; without even the implied warranty of
-;     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;     GNU General Public License for more details.
-; 
-;     You should have received a copy of the GNU General Public License
-;     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+;
+;     macro spitbol is distributed in the hope that it will be useful,
+;     but without any warranty; without even the implied warranty of
+;     merchantability or fitness for a particular purpose.  see the
+;     gnu general public license for more details.
+;
+;     you should have received a copy of the gnu general public license
+;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 ;
         section	.text
 
@@ -29,8 +29,8 @@
 	extern	reg_w0
 	extern	f_dvi
 	extern	f_rmi
-	
-	global	MXINT
+
+	global	mxint
 
 %define zz_trace
 %ifdef zz_trace
@@ -55,252 +55,252 @@
 	extern	zz_arg
 	extern	zz_num
 %endif
-	global	START
+	global	start
 
 
 ;
 ;
-;   Table to recover type word from type ordinal
+;   table to recover type word from type ordinal
 ;
 
 	extern	_rc_
-	global	TYPET
+	global	typet
 	section .data
-	
-        D_WORD	B_ART   ; ARBLK type word - 0
-        D_WORD	B_CDC   ; CDBLK type word - 1
-        D_WORD	B_EXL   ; EXBLK type word - 2
-        D_WORD	B_ICL   ; ICBLK type word - 3
-        D_WORD	B_NML   ; NMBLK type word - 4
-        D_WORD	P_ABA   ; P0BLK type word - 5
-        D_WORD	P_ALT   ; P1BLK type word - 6
-        D_WORD	P_ANY   ; P2BLK type word - 7
-; next needed only if support real arithmetic CNRA
-;       D_WORD	B_RCL   ; RCBLK type word - 8
-        D_WORD	B_SCL   ; SCBLK type word - 9
-        D_WORD	B_SEL   ; SEBLK type word - 10
-        D_WORD	B_TBT   ; TBBLK type word - 11
-        D_WORD	B_VCT   ; VCBLK type word - 12
-        D_WORD	B_XNT   ; XNBLK type word - 13
-        D_WORD	B_XRT   ; XRBLK type word - 14
-        D_WORD	B_BCT   ; BCBLK type word - 15
-        D_WORD	B_PDT   ; PDBLK type word - 16
-        D_WORD	B_TRT   ; TRBLK type word - 17
-        D_WORD	B_BFT   ; BFBLK type word   18
-        D_WORD	B_CCT   ; CCBLK type word - 19
-        D_WORD	B_CMT   ; CMBLK type word - 20
-        D_WORD	B_CTT   ; CTBLK type word - 21
-        D_WORD	B_DFC   ; DFBLK type word - 22
-        D_WORD	B_EFC   ; EFBLK type word - 23
-        D_WORD	B_EVT   ; EVBLK type word - 24
-        D_WORD	B_FFC   ; FFBLK type word - 25
-        D_WORD	B_KVT   ; KVBLK type word - 26
-        D_WORD	B_PFC   ; PFBLK type word - 27
-        D_WORD	B_TET   ; TEBLK type word - 28
+
+        d_word	b_art   ; arblk type word - 0
+        d_word	b_cdc   ; cdblk type word - 1
+        d_word	b_exl   ; exblk type word - 2
+        d_word	b_icl   ; icblk type word - 3
+        d_word	b_nml   ; nmblk type word - 4
+        d_word	p_aba   ; p0blk type word - 5
+        d_word	p_alt   ; p1blk type word - 6
+        d_word	p_any   ; p2blk type word - 7
+; next needed only if support real arithmetic cnra
+;       d_word	b_rcl   ; rcblk type word - 8
+        d_word	b_scl   ; scblk type word - 9
+        d_word	b_sel   ; seblk type word - 10
+        d_word	b_tbt   ; tbblk type word - 11
+        d_word	b_vct   ; vcblk type word - 12
+        d_word	b_xnt   ; xnblk type word - 13
+        d_word	b_xrt   ; xrblk type word - 14
+        d_word	b_bct   ; bcblk type word - 15
+        d_word	b_pdt   ; pdblk type word - 16
+        d_word	b_trt   ; trblk type word - 17
+        d_word	b_bft   ; bfblk type word   18
+        d_word	b_cct   ; ccblk type word - 19
+        d_word	b_cmt   ; cmblk type word - 20
+        d_word	b_ctt   ; ctblk type word - 21
+        d_word	b_dfc   ; dfblk type word - 22
+        d_word	b_efc   ; efblk type word - 23
+        d_word	b_evt   ; evblk type word - 24
+        d_word	b_ffc   ; ffblk type word - 25
+        d_word	b_kvt   ; kvblk type word - 26
+        d_word	b_pfc   ; pfblk type word - 27
+        d_word	b_tet   ; teblk type word - 28
 ;
-;   Table of MINIMAL entry points that can be dded from C
+;   table of minimal entry points that can be dded from c
 ;   via the minimal function (see inter.asm).
 ;
-;   Note that the order of entries in this table must correspond
-;   to the order of entries in the CALL enumeration in osint.h
+;   note that the order of entries in this table must correspond
+;   to the order of entries in the call enumeration in osint.h
 ;   and osint.inc.
 ;
 	global calltab
 calltab:
-        D_WORD	RELAJ
-        D_WORD	RELCR
-        D_WORD	RELOC
-        D_WORD	ALLOC
-        D_WORD	ALOCS
-        D_WORD	ALOST
-        D_WORD	BLKLN
-        D_WORD	INSTA
-        D_WORD	RSTRT
-        D_WORD	START
-        D_WORD	FILNM
-        D_WORD	DTYPE
-;       D_WORD	ENEVS ;  Engine words
-;       D_WORD	ENGTS ;   not used
+        d_word	relaj
+        d_word	relcr
+        d_word	reloc
+        d_word	alloc
+        d_word	alocs
+        d_word	alost
+        d_word	blkln
+        d_word	insta
+        d_word	rstrt
+        d_word	start
+        d_word	filnm
+        d_word	dtype
+;       d_word	enevs ;  engine words
+;       d_word	engts ;   not used
 
-	global	GBCNT
-	global	HEADV
-	global	MXLEN
-	global	STAGE
-	global	TIMSX
-	global	DNAMB
-	global	DNAMP
-	global	STATE
-	global	B_EFC
-	global	B_ICL
-	global	B_SCL
-	global	B_VCT
-	global	B_XNT
-	global	B_XRT
-	global	STBAS
-	global	STATB
-	global	POLCT
-	global  TYPET
-	global	LOWSPMIN
-	global	FLPRT
-	global	FLPTR
-	global	GTCEF
-	global	HSHTB
-	global	PMHBS
-	global	R_FCB
-	global	C_AAA
-	global	C_YYY
-	global	G_AAA
-	global	W_YYY
-	global	S_AAA
-	global	S_YYY
-	global	R_COD
-	global	KVSTN
-	global	KVDMP
-	global	KVFTR
-	global	KVCOM
-	global	KVPFL
-	global	CSWFL
-        global  STMCS
-        global  STMCT
-	global	B_RCL
-	global	END_MIN_DATA
+	global	gbcnt
+	global	headv
+	global	mxlen
+	global	stage
+	global	timsx
+	global	dnamb
+	global	dnamp
+	global	state
+	global	b_efc
+	global	b_icl
+	global	b_scl
+	global	b_vct
+	global	b_xnt
+	global	b_xrt
+	global	stbas
+	global	statb
+	global	polct
+	global  typet
+	global	lowspmin
+	global	flprt
+	global	flptr
+	global	gtcef
+	global	hshtb
+	global	pmhbs
+	global	r_fcb
+	global	c_aaa
+	global	c_yyy
+	global	g_aaa
+	global	w_yyy
+	global	s_aaa
+	global	s_yyy
+	global	r_cod
+	global	kvstn
+	global	kvdmp
+	global	kvftr
+	global	kvcom
+	global	kvpfl
+	global	cswfl
+        global  stmcs
+        global  stmct
+	global	b_rcl
+	global	end_min_data
 
 
-        extern LDR_
-        extern STR_
-        extern CVD_
-        extern ITR_
-        extern ADR_
-        extern SBR_
-        extern MLR_
-        extern DVR_
-        extern NGR_
-        extern ATN_
-        extern CHP_
-        extern COS_
-        extern ETX_
-        extern LNF_
-        extern SIN_
-        extern SQR_
-        extern TAN_
-	extern CPR_
-	extern OVR_
+        extern ldr_
+        extern str_
+        extern cvd_
+        extern itr_
+        extern adr_
+        extern sbr_
+        extern mlr_
+        extern dvr_
+        extern ngr_
+        extern atn_
+        extern chp_
+        extern cos_
+        extern etx_
+        extern lnf_
+        extern sin_
+        extern sqr_
+        extern tan_
+	extern cpr_
+	extern ovr_
 
-	%macro	ZZZ	3
+	%macro	zzz	3
 	section	.data
 %%desc:	db	%3,0
 	section	.text
-	mov	M_WORD [zz_id],%1
-	mov	M_WORD [zz_zz],%2
-	mov	M_WORD [zz_de],%%desc
+	mov	m_word [zz_id],%1
+	mov	m_word [zz_zz],%2
+	mov	m_word [zz_de],%%desc
 	call	zzz
 	%endmacro
 
 	extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
 
-;	Integer arithmetic instructions
-	extern	CVD__
-	%macro	CVD_	0
-	call	CVD__
+;	integer arithmetic instructions
+	extern	cvd__
+	%macro	cvd_	0
+	call	cvd__
 	%endmacro
 
 
-	%macro	ADI_	1
-	add	IA,%1
-	seto	BYTE [reg_fl]
+	%macro	adi_	1
+	add	ia,%1
+	seto	byte [reg_fl]
 	%endmacro
-	extern	DVI__
-	%macro	DVI_	1
-	call	DVI__
-	%endmacro
-
-	extern	RMI__
-	%macro	RMI_	1
-	mov	W0,%1
-	call	RMI__
+	extern	dvi__
+	%macro	dvi_	1
+	call	dvi__
 	%endmacro
 
+	extern	rmi__
+	%macro	rmi_	1
+	mov	w0,%1
+	call	rmi__
+	%endmacro
 
-	%macro	INO_	1
-	mov	AL,BYTE [reg_fl]
-	or	AL,AL
+
+	%macro	ino_	1
+	mov	al,byte [reg_fl]
+	or	al,al
 	jno	%1
 	%endmacro
-	
-	%macro	IOV_	1
-	mov	AL,BYTE [reg_fl]
-	or	AL,AL
+
+	%macro	iov_	1
+	mov	al,byte [reg_fl]
+	or	al,al
 	jo	%1
 	%endmacro
-	
-	%macro	LDI_	1
-	mov	IA,%1
+
+	%macro	ldi_	1
+	mov	ia,%1
 	%endmacro
 
-	%macro	MLI_	1
-	imul	IA,%1
-	seto	BYTE [reg_fl]
+	%macro	mli_	1
+	imul	ia,%1
+	seto	byte [reg_fl]
 	%endmacro
-	
-	%macro	NGI_	0
-	neg	IA
-	seto	BYTE [reg_fl]
+
+	%macro	ngi_	0
+	neg	ia
+	seto	byte [reg_fl]
 	%endmacro
 
 	extern	f_rti
-	%macro	RTI_	0
+	%macro	rti_	0
 	call	f_rti
-	mov	IA,M_WORD [reg_ia]
+	mov	ia,m_word [reg_ia]
 	%endmacro
 
-	%macro	SBI_	1
-	sub	IA,%1
-	mov	W0,0
-	seto	BYTE [reg_fl]
-	%endmacro
-	
-	%macro	STI_	1
-	mov	%1,IA
+	%macro	sbi_	1
+	sub	ia,%1
+	mov	w0,0
+	seto	byte [reg_fl]
 	%endmacro
 
-;	Code Pointer Instructions (CP maintained in location reg_cp)
+	%macro	sti_	1
+	mov	%1,ia
+	%endmacro
+
+;	code pointer instructions (cp maintained in location reg_cp)
 
 	extern	reg_cp
 
-	%macro	LCP_	1
-	mov	W0,%1
-	mov	M_WORD [reg_cp],W0
+	%macro	lcp_	1
+	mov	w0,%1
+	mov	m_word [reg_cp],w0
 	%endmacro
 
-	%macro	LCW_	1
-	mov	W0,M_WORD [reg_cp]		; load address of code word
-	mov	W0,M_WORD [W0]			; load code word
-	mov	%1,W0
-	mov	W0,M_WORD [reg_cp]		; load address of code word
-	add	W0,CFP_B
-	mov	M_WORD [reg_cp],W0
+	%macro	lcw_	1
+	mov	w0,m_word [reg_cp]		; load address of code word
+	mov	w0,m_word [w0]			; load code word
+	mov	%1,w0
+	mov	w0,m_word [reg_cp]		; load address of code word
+	add	w0,cfp_b
+	mov	m_word [reg_cp],w0
 	%endmacro
 
-	%macro	SCP_	1
-	mov	W0,M_WORD [reg_cp]
-	mov	%1,W0
-	%endmacro
-	
-	%macro	ICP_	0
-	mov	W0,M_WORD [reg_cp]
-	add	W0,CFP_B
-	mov	M_WORD [reg_cp],W0
+	%macro	scp_	1
+	mov	w0,m_word [reg_cp]
+	mov	%1,w0
 	%endmacro
 
-	%macro	ROV_	1
-	mov	AL,BYTE [reg_fl]
-	or	AL,AL
+	%macro	icp_	0
+	mov	w0,m_word [reg_cp]
+	add	w0,cfp_b
+	mov	m_word [reg_cp],w0
+	%endmacro
+
+	%macro	rov_	1
+	mov	al,byte [reg_fl]
+	or	al,al
 	jne	%1
 	%endmacro
 
-	%macro	RNO_	1
-	mov	AL,BYTE [reg_fl]
-	or	AL,AL
+	%macro	rno_	1
+	mov	al,byte [reg_fl]
+	or	al,al
 	je	%1
 	%endmacro
 
