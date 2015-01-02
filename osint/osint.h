@@ -1,6 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
-Copyright 2012-2013 David Shields
+Copyright 2012-2015555vid Shields
 
 This file is part of Macro SPITBOL.
 

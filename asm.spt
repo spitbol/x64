@@ -1,7 +1,7 @@
 -title mincod: phase 2 translation from minimal tokens to 80386 code
 -stitl description
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
-* copyright 2012-2013 david shields
+* copyright 2012-2015 david shields
 *
 * this file is part of macro spitbol.
 *

@@ -1,6 +1,6 @@
 ; copyright 1987-2012 robert b. k. dewar and mark emmer.
 
-; copyright 2012-2013 david shields
+; copyright 2012-2015 david shields
 ;
 ; this file is part of macro spitbol.
 ;
