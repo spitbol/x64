@@ -43,7 +43,6 @@ This file is part of Macro SPITBOL.
 #define GLOBALS			// global variables will be defined in this module
 #include "port.h"
 #include <stdint.h>
-//#include <stdio.h>
 
 #ifdef DEBUG
 #undef DEBUG			// Change simple -DDEBUG on command line to -DDEBUG=1
@@ -171,8 +170,6 @@ char	*argv[];
         wrterr( "Stack memory unavailable." );
         __exit( 1 );
     }
-//	fprintf(stderr,"lowsp\t%x\n",lowsp);
-//	fprintf(stderr,"lowsp\t%ld\n",lowsp);
     /*
     /   Allocate initial increment of dynamic memory.
     /
@@ -184,10 +181,6 @@ char	*argv[];
     }
     topmem = basemem + memincb;
     maxmem = basemem + databts;
-//	fprintf(stderr,"topmem\t%xx\n",topmem);
-//	fprintf(stderr,"topmem\t%ld\n",topmem);
-//	fprintf(stderr,"basemem\t%xx\n",basemem);
-//	fprintf(stderr,"basemem\t%ld\n",basemem);
 
 
     /*
@@ -210,13 +203,13 @@ char	*argv[];
     SET_WC( 0 );
     SET_XR( basemem );
     SET_XL( topmem - sizeof(word) );
-//    fprintf(stderr,"basemem %x\n",basemem);
 
     /*
     /   Startup compiler.
     */
-//	fprintf(stderr,"calling startup\n");
+#ifdef Z_TRACE
     zz_init();
+#endif
     startup();
 #endif					// !RUNTIME
 

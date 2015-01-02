@@ -51,7 +51,7 @@ zysdc()
 
         write( STDERRFD, "  Release ", 10);
         write( STDERRFD, pheadv->str, pheadv->len );
-        write( STDERRFD, pid1->str, pid1->len );
+        write( STDERRFD, pid1blk->str, pid1blk->len );
         wrterr( cprtmsg );
     }
     return NORMAL_RETURN;

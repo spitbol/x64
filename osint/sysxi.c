@@ -323,7 +323,7 @@ word *stkbase, stklen;
     svfheader.system = SYSVERSION;
     svfheader.spare = 0;
     hcopy(vscb->str, svfheader.headv, vscb->len, sizeof(svfheader.headv));
-    hcopy(pid1->str, svfheader.iov, pid1->len, sizeof(svfheader.iov));
+    hcopy(pid1blk->str, svfheader.iov, pid1blk->len, sizeof(svfheader.iov));
     svfheader.timedate = time((time_t *)0);
     svfheader.flags = spitflag;
     svfheader.stacksiz = (uword)stacksiz;

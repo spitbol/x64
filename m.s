@@ -50,7 +50,6 @@
 	global	minimal
 	extern	calltab
 	extern	stacksiz
-	extern	zz_ra
 
 ;	values below must agree with calltab defined in x32.hdr and also in osint/osint.h
 
@@ -253,10 +252,15 @@ id1:	dd   0
 	db  "1x\x00\x00\x00"
 %endif
 
+	global  id1blk
+id1blk	d_word   152
+      	d_word    0
+	times   152 db 0
+
 	global  id2blk
-id2blk	d_word   52
-      d_word    0
-	times   52 db 0
+id2blk	d_word   152
+      	d_word    0
+	times   152 db 0
 
 	global  ticblk
 ticblk:	d_word   0
@@ -966,6 +970,8 @@ re4:	mov	w0,m_word [stbas]
 	mov	m_word [minimal_id],w0
         call	minimal			; no return
 
+%ifdef z_trace
+	extern	zz_ra
 	global	zzz
 	extern	zz,zz_cp,zz_xl,zz_xr,zz_wa,zz_wb,zz_wc,zz_w0
 zzz:
@@ -975,3 +981,4 @@ zzz:
 	call	restore_regs
 	popf
 	ret
+%endif

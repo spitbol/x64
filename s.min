@@ -4882,11 +4882,11 @@ lstms  dac  b_scl            page
 *
 headr  dac  b_scl
        dac  27
-       dtc  /macro spitbol version 13.01/
+       dtc  /macro spitbol version 15.01/
 *
 headv  dac  b_scl            for exit() version no. check
        dac  5
-       dtc  /13.01/
+       dtc  /15.01/
 .if    .csed
 *      free store percentage (used by gbcol)
 *

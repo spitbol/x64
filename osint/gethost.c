@@ -34,8 +34,8 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-char htype[] = "80386";
-char osver[] = ":Linux ";
+char htype[] = "x86-64";
+char osver[] = ":unix ";
 
 #include <fcntl.h>
 
@@ -70,7 +70,7 @@ word	maxlen;
         scp = mystrcpy(scp,osver);
         scp = mystrcpy(scp,":Macro SPITBOL ");
         scp += mystrncpy(scp, pheadv->str, pheadv->len );
-        scp += mystrncpy(scp, pid1->str, (int)pid1->len);
+        scp += mystrncpy(scp, pid1blk->str, (int)pid1blk->len);
         *scp++ = ' ';
         *scp++ = '#';
         cnt = scp - scptr->str;

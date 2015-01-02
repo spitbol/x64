@@ -40,6 +40,8 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include <time.h>
+#include <string.h>
 
 /*
 /   define actual headers elsewhere to overcome problems in initializing
@@ -50,14 +52,21 @@ This file is part of Macro SPITBOL.
 zysid()
 
 {
+    time_t now;
     register char *cp;
+    char * s;
+    int i;
+	
 
-    SET_XR( pid1 );
+    SET_XR( pid1blk );
+    now = time(NULL);
     gettype( pid2blk, id2blk_length );
     cp = pid2blk->str + pid2blk->len;
     *cp++ = ' ';
     *cp++ = ' ';
-    pid2blk->len += 2 + storedate(cp, id2blk_length - pid2blk->len);
+    s = ctime(&now);
+    for (i=0;i<strlen(s);i++) *cp++ = s[i];
+    pid2blk->len = pid2blk->len + 2 + strlen(s);
     SET_XL( pid2blk );
     return NORMAL_RETURN;
 }

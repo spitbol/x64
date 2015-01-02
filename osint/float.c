@@ -28,7 +28,6 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #if (FLOAT & !FLTHDWR) | EXTFUN
 
-#include <stdio.h>
 
 // overflow codes
 // OF = 0x80
@@ -60,14 +59,12 @@ void f_mlr() {			// multiply real
 }
 
 void f_dvr() {			// divide real
-//	fprintf(stderr, "f_dvr_e %12.6g  %12.6g  %d\n",reg_ra,*reg_rp,reg_fl);
 	if (*reg_rp != 0.0) {
 		reg_ra /= *reg_rp;
 		reg_fl = 0;
 	}
 	else
 		reg_fl = 1;
-//	fprintf(stderr, "f_dvr_l %12.6g  %12.6g  %d\n",reg_ra,*reg_rp,reg_fl);
 	return;
 }
 
@@ -94,46 +91,36 @@ void f_cpr() {
 		reg_fl = -1; 
 	else 
 		reg_fl =  1; 
-//	fprintf(stderr, "cpr %g12.6 %ld\n",reg_ra,reg_w0);
 }
 
 void f_pra () {
-	fprintf(stderr,"ldr %g10.6\n",(double) reg_ra);
 }
 
 #ifdef trace_int
 extern long reg_i1,reg_i2,reg_i3;
 
 void t_ldi() {
-	fprintf(stderr,"t_ldi %ld\n",reg_ia);
 }
 
 void t_sti() {
-	fprintf(stderr,"t_sti %ld\n",reg_ia);
 }
 
 void t_adi() {
-	fprintf(stderr,"t_adi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
 }
 
 void t_mli() {
-	fprintf(stderr,"t_mli  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
 }
 
 void t_sbi() {
-	fprintf(stderr,"t_sbi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
 }
 
 void t_dvi() {
-	fprintf(stderr,"t_dvi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
 }
 
 void t_rmi() {
-	fprintf(stderr,"t_rmi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
 }
 
 void t_ngi() {
-	fprintf(stderr,"t_ngi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
 }
 
 #endif
@@ -164,7 +151,6 @@ void i_ngi() {
 }
 
 void i_rmi() {
-	fprintf(stderr,"i_rmi enter IA %ld  WC %ld\n",reg_ia,(long) reg_w0);
 	if (reg_ia == 0) {
 		reg_fl = 1;
 	}
@@ -183,49 +169,9 @@ void i_sbi() {
 void i_cvd() {
 	
 	reg_wa = reg_ia % 10;
-//	fprintf(stderr,"i_cvd enter IA %ld  WA %ld\n");	
 	reg_ia /= 10;
 	reg_wa  = -reg_wa + 48; // convert remainder to character code for digit
-//	fprintf(stderr,"i_cvd leave IA %ld  WA %ld\n");	
 }
-
-#ifdef trace_int
-extern long reg_i1,reg_i2,reg_i3;
-
-void t_ldi() {
-	fprintf(stderr,"t_ldi %ld\n",reg_ia);
-}
-
-void t_sti() {
-	fprintf(stderr,"t_sti %ld\n",reg_ia);
-}
-
-void t_adi() {
-	fprintf(stderr,"t_adi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
-}
-
-void t_mli() {
-	fprintf(stderr,"t_mli  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
-}
-
-void t_sbi() {
-	fprintf(stderr,"t_sbi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
-}
-
-void t_dvi() {
-	fprintf(stderr,"t_dvi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
-}
-
-void t_rmi() {
-	fprintf(stderr,"t_rmi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
-}
-
-void t_ngi() {
-	fprintf(stderr,"t_ngi  IA %ld  RB %ld  IA' %ld\n",reg_i2,reg_i1,reg_i3);
-}
-
-#endif
-
 
 #endif					// (FLOAT & !FLTHDWR) | EXTFUN
 

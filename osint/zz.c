@@ -18,6 +18,8 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef z_trace
+
 #include "port.h"
 
 #include <stdio.h>
@@ -59,8 +61,6 @@ extern long c_aaa;
 extern long w_yyy;
 long off_c_aaa;
 long off_w_yyy;
-#define DAVE
-#ifdef DAVE
 char * AT_DESC;
 extern char at1_0;
 void prtnl() {

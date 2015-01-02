@@ -180,7 +180,7 @@ stmcs,
 stmct,
 ticblk,
 tscblk,
-id1,
+id1blk,
 id2blk,
 inpbuf,
 ttybuf,
@@ -202,7 +202,7 @@ extern void	s_yyy();
 
 
 // Some shorthand notations
-#define pid1 GET_DATA_OFFSET(id1,struct scblk *)
+#define pid1blk GET_DATA_OFFSET(id1blk,struct scblk *)
 #define pid2blk GET_DATA_OFFSET(id2blk,struct scblk *)
 #define pinpbuf GET_DATA_OFFSET(inpbuf,struct bfblk *)
 #define pttybuf GET_DATA_OFFSET(ttybuf,struct bfblk *)
