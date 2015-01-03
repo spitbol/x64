@@ -27,12 +27,10 @@
 	extern	_rc_
 	extern	reg_fl
 	extern	reg_w0
-	extern	f_dvi
-	extern	f_rmi
 
 	global	mxint
 
-%define zz_trace
+;%define zz_trace
 %ifdef zz_trace
 	extern	zz
 	extern	zzz
@@ -168,7 +166,6 @@ calltab:
 
         extern ldr_
         extern str_
-        extern cvd_
         extern itr_
         extern adr_
         extern sbr_

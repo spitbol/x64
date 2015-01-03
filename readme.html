@@ -8,6 +8,57 @@
 
 <body>
 
+<h2>Unix SPITBOL 15.01 (Jan 2015)</h2>
+
+<p>This version adds support for <a href="http://en.wikipedia.org/wiki/x86-64">x86-64</a>, 
+so that both 32-bit and 64-bit versions of Spitbol are now available.</p>
+
+<p>Downloads in the traditional form are no longer directly supported, since both "Google Code" and "Github" no
+longer provide downloads built by the project.</p>
+
+<p>Spitbol is now available only from its home at 
+<a href="http://github.com/hardbol/spitbol">github.com/hardbol/spitbol</a>.
+If you wish to use git to work with the probject, use:
+<br>
+<code>$ git clone http://github.com/hardbol/spitbol</code>
+<br>
+<p>If you just want to use the system, then select "Download ZIP" from the project home page,
+and extract the files from that.</p>
+
+<p>The binaries for 32-bit and 64-bit versions can be found in <code>./bin/spitbol.m32</code> 
+and <code>./bin/spitbol.m64</code>, respectively.</p>
+
+<p>This 64-bit version is built by default, as 32-bit processors are no longer widely used.</p>
+
+<p>Three tools are needed to build Spitbol:
+<ol>
+<li>A C compiler</li>
+<li>A C runtime library</li>
+<li>An assembler</li>
+</ol>
+</p>
+
+<p>Previous versions used <em>gcc</em> and <em>glibc</em> for the compiler and runtime support, 
+and the <a href="http://www.nasm.us">nasm</a> assembler.</p>
+
+<p>This version uses <a href="http://bellard.org/tcc">tcc</a> for the compiler,
+ <a href="http://musl-libc.org">musl</a> for the runtime support, and continues the use
+of <em>nasm</em>.</p>
+
+<p>The make file  <code>makefile</code> now uses tcc and musl to build (only) the 64-bit version. To build the 32-bit
+version and/or to use gcc, use <code>makefile.gcc</code>.</p>
+
+<p>This version rescinds the support for Unicode added in version 13.05.  
+(This caused enough problems that it was deemed best to abandon this experiment.)</p>
+
+<p>Known problems</p>
+
+<ul>
+<li>The SAVE function doesn't work. (This loss of function occurred  whilst adding 64-bit support).
+Note that SAVE mode was mainly of interest back in the day when Spitbol was proprietary, 
+so that one could distribute a program written in Spitbol without having to disclose the source.</li>
+</ul>
+
 <h2>Unix SPITBOl 13.05 (May 2013)</h2>
 
 This version includes versions of SPITBOL for both ASCII (8-bit characters) and Unicode (32-bit
