@@ -16,5 +16,7 @@ The bug also occured when the 'default rel' instruction was used.
 dave shields
 thedaveshields@gmail.com
 
+The bug has been with filed with nasm's bugzilla tracking system, as bug 3392298,
+
 4 Jan 2015
 
