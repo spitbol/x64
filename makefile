@@ -15,8 +15,8 @@ ARCH=m$(WS)
 ARCHDEF=-D m$(WS)
 
 ifeq ($(OS),unix)
-#CC=tools/tcc/bin/tcc
-CC=tcc
+CC=tools/tcc/bin/tcc
+#CC=tcc
 ELF=elf$(WS)
 else
 CC=llvm
@@ -34,7 +34,7 @@ OSINT=./osint
 
 vpath %.c $(OSINT)
 
-ASM	=	nasm
+ASM	=	tools/nasm/bin/nasm
 
 ifeq	($(DEBUG),0)
 CFLAGS= -D m$(WS) -m$(WS) -Itools/tcc/include

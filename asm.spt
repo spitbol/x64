@@ -622,7 +622,7 @@ getarg.c.2 getarg = l1				:(return)
 
 * wlbl, clbl
 getarg.c.3
-getarg.c.4 getarg = tmem '[' l1 ']'     	:(return)
+getarg.c.4 getarg = tmem '[REL ' l1 ']'     	:(return)
 
 * elbl, plbl
 getarg.c.5
@@ -637,7 +637,8 @@ getarg.c.8
 getarg.c.9
 	l1 len(1) len(2) . l2
 	l2 = regmap[l2]
-	getarg = tmem '[' l2 ']'		:(return)
+*	getarg = tmem '[REL ' l2 ']'		:(return)
+	getarg = tmem '[ ' l2 ']'		:(return)
 
 * (x)+, register indirect, post increment
 * use lea reg,[reg+cfp_b] unless reg is esp, since it takes an extra byte.
@@ -646,13 +647,14 @@ getarg.c.9
 getarg.c.10
 	l1 = substr(l1,2,2)
 	t1 = regmap[l1]
-	getarg = tmem '[' t1 ']'
+	getarg = tmem '[REL ' t1 ']'
 	(ident(l1,'xs') genaop(tstmt(,'add',t1,'cfp_b'))) :s(return)
 	genaop(tstmt(,'lea',t1,'[' t1 '+cfp_b]'))	:(return)
 
 *  -(x), register indirect, pre decrement
 getarg.c.11
 	t1 = regmap[substr(l1,3,2)]
+*	getarg = tmem '[REL ' t1 ']'
 	getarg = tmem '[' t1 ']'
 	genbop(tstmt(,'lea',t1,'[' t1 '-cfp_b]')) :(return)
 
@@ -661,13 +663,13 @@ getarg.c.11
 getarg.c.12
 getarg.c.13
 	l1 break('(') . t1 '(' len(2) . t2
-	getarg = tmem '[(cfp_b*' t1 ')+' regmap[t2] ']'   	:(return)
+	getarg = tmem '[REL (cfp_b*' t1 ')+' regmap[t2] ']'   	:(return)
 
 *  name(x), where name is in working section
 getarg.c.14
 getarg.c.15
 	l1 break('(') . t1 '(' len(2) . t2
-	getarg = tmem '[' t1 '+'  regmap[t2] ']' :(return)
+	getarg = tmem '[REL ' t1 '+'  regmap[t2] ']' :(return)
 
 * signed integer
 getarg.c.16 getarg = l1				:(return)
