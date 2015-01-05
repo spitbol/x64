@@ -1,16 +1,16 @@
-This directory can be used to demonstrate a bug in nasm 2.11.96 that came about trying to 
-compile spitbol for 64-bits for osx (macho format).
 
-The problem is that nasm terminates with a segmantation fault.
+Work on porting Spitbol to osx (which is 64 bit) uncovered a problem in addressing. osx uses 'rip addressing' (relative
+to instruction pointer), so that 'rel' prefixes must be generated for memory references in the generated assembly
+code. This has been done. However, using nasm to compile the result results in nasm failing with a segmentation fault.
+The files needed to demonstrate this problem can be found in tools/nasm/bugs/macho.
 
+This directory can be used to demonstrate the bug. Try:
 
-To repeat the problem: try
-	
 	nasm -fmacho64 -os.o s.s
 
 This version of s.s has 'rel' directives (via macro REL) in the appropriate instructions.
 
-The bug also occurs if the 'default rel' instruction is used.
+The bug also occured when the 'default rel' instruction was used.
 
 
 dave shields
