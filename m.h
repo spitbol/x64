@@ -23,7 +23,6 @@
 	%define d_real	dq	; define value for floating point
 
 %ifdef	m32
-	%define	REL	
 	%define	xl	esi
 	%define	xt	esi
 	%define xr	edi
@@ -57,7 +56,6 @@
 
 	%define	cdq	cdq	; sign extend (32 bits)
 %else
-	%define	REL	rel
 	%define	xl	rsi
 	%define	xt	rsi
 	%define	xr	rdi

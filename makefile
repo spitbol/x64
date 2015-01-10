@@ -15,13 +15,11 @@ ARCH=m$(WS)
 ARCHDEF=-D m$(WS)
 
 ifeq ($(OS),unix)
-CC=tools/tcc/bin/tcc
-CFLAGS= -D m$(WS) -m$(WS) -Itools/tcc/include
-#CC=tcc
+#CC=tools/tcc/bin/tcc
+CC=tcc
 ELF=elf$(WS)
 else
 CC=llvm
-CFLAGS= -D m$(WS) -m$(WS) -Itools/tcc/include
 ELF=macho$(WS)
 endif
 
@@ -36,11 +34,12 @@ OSINT=./osint
 
 vpath %.c $(OSINT)
 
-ASM	=	tools/nasm/bin/nasm
+ASM	=	nasm
 
 ifeq	($(DEBUG),0)
+CFLAGS= -D m$(WS) -m$(WS) -Itools/tcc/include
 else
-CFLAGS= -g $(CFLAGS)
+CFLAGS= -D m$(WS) -g -m$(WS)-Itools/tcc/include
 endif
 
 # Assembler info -- Intel 32-bit syntax
