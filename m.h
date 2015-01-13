@@ -59,6 +59,7 @@
 	%define a(ref) [ref]
 %else
 	%define		m64		// m64 is the default
+	default	rel
 	%define	xl	rsi
 	%define	xt	rsi
 	%define	xr	rdi
@@ -96,10 +97,13 @@
 	%define	cdq	cqo	; sign extend (64 bits)
 
 ;	%define mem(ref) qword[ref]
-	%define m(ref) qword[ rel ref]
-	%define a(ref) [ rel ref]
-; rel not needed for m32
-	%define rel		
+%ifdef osx
+	%define m(ref) qword[rel ref]
+	%define a(ref) [rel ref]
+%else
+	%define m(ref) qword[ref]
+	%define a(ref) [ref]
+%endif
 %endif
 
 ;	flags

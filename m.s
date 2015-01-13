@@ -163,6 +163,13 @@ minimal_engts	equ	12
 ; ; words saved during exit(-3)
 ; ;
 	align cfp_b
+%ifdef	m64
+	align	16
+%endif
+reg_zzz:	d_word	0
+		d_word	0
+		d_word	0
+		d_word	0
 reg_block:
 reg_ia: d_word	0		; register ia (ebp)
 reg_w0:	d_word	0        	; register wa (ecx)

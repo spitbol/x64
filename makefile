@@ -34,7 +34,7 @@ OSINT=./osint
 
 vpath %.c $(OSINT)
 
-ASM	=	nasm
+#ASM	=	nasm
 ASM	=	./tools/nasm/bin/nasm
 
 ifeq	($(DEBUG),0)
@@ -45,9 +45,9 @@ endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMFLAGS = -f $(ELF) -d m$(WS)
+ASMFLAGS = -f $(ELF) -dm$(WS) -dosx
 else
-ASMFLAGS = -g -f $(ELF) -d m$(WS)
+ASMFLAGS = -g -f $(ELF) -dm$(WS) -dosx
 endif
 
 # Tools for processing Minimal source file.
