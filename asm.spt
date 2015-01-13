@@ -268,13 +268,13 @@ skip_init.end
 *  initial patterns
 *
 *  p.csparse parses tokenized line
-	p.csparse = '{' break('{') . inlabel
-.	'{' break('{') . incode
-.	'{' break('{') . iarg1
-.	'{' break('{') . iarg2
-.	'{' break('{') . iarg3
-.	'{' break('{') . incomment
-	'{' rem . slineno
+	p.csparse = '|' break('|') . inlabel
+.	'|' break('|') . incode
+.	'|' break('|') . iarg1
+.	'|' break('|') . iarg2
+.	'|' break('|') . iarg3
+.	'|' break('|') . incomment
+	'|' rem . slineno
 
 *  dispatch table
 *
@@ -882,7 +882,7 @@ genz
 	gt(z_first) le(z_count,z_first)		:s(return)
 	gt(z_limit)  gt(z_count, z_limit)	:s(return)
 *	always generate trace if at label definition
-	z_desc = '"' replace(thisline,'{',' ') '"'
+	z_desc = '"' replace(thisline,'|',' ') '"'
 	outfile = tab 'zzz' tab	z_count ',' nlines ',' z_desc
 	outlines = outlines + 1
 						:(return)

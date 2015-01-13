@@ -668,11 +668,11 @@ outstmt
 *
 *  send text to outfile
 *
-	outfile = '{' label '{' opcode '{'
-.	(ident(typ1), typ1 ',') op1 '{'
-.	(ident(typ2), typ2 ',') op2 '{'
-.	(ident(typ3), typ3 ',') op3 '{' comment
-.	'{' nlines
+	outfile = '|' label '|' opcode '|'
+.	(ident(typ1), typ1 ',') op1 '|'
+.	(ident(typ2), typ2 ',') op2 '|'
+.	(ident(typ3), typ3 ',') op3 '|' comment
+.	'|' nlines
 	ntarget = ntarget + 1
 	noutlines = noutlines + 1
 .						:(return)
@@ -819,7 +819,7 @@ g.bsw
 *  save prior vms code in case needed
 	ub = ( integer( op2 ) op2, equates[op2] )
 	iffar = integer( ub )
-.		array( '0:' ub - 1,'{{' )	:f(g.bsw1)
+.		array( '0:' ub - 1,'||' )	:f(g.bsw1)
 	dplbl = op3
 	bsw   = 1				:(dsgen)
 g.bsw1	error("non-integer lower bound for bsw")
@@ -833,7 +833,7 @@ g.iff
 	ifftyp = ( integer(op1) '1', '2')
 	iffval = ( integer( op1 ) op1, equates[op1] )
 	iffar[iffval] = integer( iffval )
-.		ifftyp ',' op1 '{' typ2 ',' op2 '{'  comment
+.		ifftyp ',' op1 '|' typ2 ',' op2 '|'  comment
 .						:s(dsout)
 	error("non-integer iff value")
 *
@@ -860,8 +860,8 @@ g.equ3	error("equ evaluation failed: " num1 ' ' oprtr ' ' num2 ' "' op1 '"' )
 g.esw
 	(eq(bsw) error("esw without bsw"))
 	iffindx = 0
-g.esw1	iffar[iffindx] break('{') $ val len(1)
-.		break( '{' ) $ plbl len(1)
+g.esw1	iffar[iffindx] break('|') $ val len(1)
+.		break( '|' ) $ plbl len(1)
 .		rem $ cmnt
 .						:f(g.esw2)
 	val = ident( val ) '1,' iffindx
