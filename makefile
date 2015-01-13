@@ -35,6 +35,7 @@ OSINT=./osint
 vpath %.c $(OSINT)
 
 ASM	=	nasm
+ASM	=	./tools/nasm/bin/nasm
 
 ifeq	($(DEBUG),0)
 CFLAGS= -D m$(WS) -m$(WS) -Itools/tcc/include

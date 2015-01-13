@@ -105,6 +105,7 @@ config.32
 	op_w = 'd'
 *	op_c is instruction suffix for minimal character size
 	op_c = 'b'
+	rel = ''
 						:(config.done)
 
 config.64
@@ -116,6 +117,8 @@ config.64
 	log_cfp_c = '3'
 	op_w = 'q'
 	op_c = 'b'
+*	rel = 'rel '
+	rel = ''
 
 config.done
 
@@ -209,7 +212,7 @@ skip_init.end
 	define('genop(gopc,gop1,gop2,gop3)')
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
-	define('getarg(iarg,imem)l1,l2,t1,t2,tmem')
+	define('getarg(iarg,imem)l1,l2,t1,t2,pre,post')
 	define('ifreg(iarg)')
 	define('memmem()t')
 	define('prcent(n)')
@@ -608,7 +611,14 @@ genop   genopl(,gopc,gop1,gop2,gop3)            :(return)
 
 -stitl getarg(iarg,imem)
 getarg
-	tmem = (differ(imem) '', 'm_word ')
+*	imem is null to generate memory reference, otherwise just get
+*	address for use in 'lea' instruction.
+	pre = ident(imem)	'mem('
+	post = ident(imem)	')'	
+
+	pre = differ(imem)	'['
+	post = differ(imem)	']'
+
 	l1 = i.text(iarg)
 	l2 = i.type(iarg)
 	eq(l2)					:f($(getargcase[l2]))
@@ -622,7 +632,7 @@ getarg.c.2 getarg = l1				:(return)
 
 * wlbl, clbl
 getarg.c.3
-getarg.c.4 getarg = tmem '[' l1 ']'     	:(return)
+getarg.c.4 getarg = pre l1 post			:(return)
 
 * elbl, plbl
 getarg.c.5
@@ -637,7 +647,8 @@ getarg.c.8
 getarg.c.9
 	l1 len(1) len(2) . l2
 	l2 = regmap[l2]
-	getarg = tmem '[' l2 ']'		:(return)
+	getarg = pre l2 post
+						:(return)
 
 * (x)+, register indirect, post increment
 * use lea reg,[reg+cfp_b] unless reg is esp, since it takes an extra byte.
@@ -646,14 +657,14 @@ getarg.c.9
 getarg.c.10
 	l1 = substr(l1,2,2)
 	t1 = regmap[l1]
-	getarg = tmem '[' t1 ']'
+	getarg = pre t1 post
 	(ident(l1,'xs') genaop(tstmt(,'add',t1,'cfp_b'))) :s(return)
 	genaop(tstmt(,'lea',t1,'[' t1 '+cfp_b]'))	:(return)
 
 *  -(x), register indirect, pre decrement
 getarg.c.11
 	t1 = regmap[substr(l1,3,2)]
-	getarg = tmem '[' t1 ']'
+	getarg = pre t1 post
 	genbop(tstmt(,'lea',t1,'[' t1 '-cfp_b]')) :(return)
 
 * int(x)
@@ -661,13 +672,15 @@ getarg.c.11
 getarg.c.12
 getarg.c.13
 	l1 break('(') . t1 '(' len(2) . t2
-	getarg = tmem '[(cfp_b*' t1 ')+' regmap[t2] ']'   	:(return)
+	getarg = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
+							:(return)
 
 *  name(x), where name is in working section
 getarg.c.14
 getarg.c.15
 	l1 break('(') . t1 '(' len(2) . t2
-	getarg = tmem '[' t1 '+'  regmap[t2] ']' :(return)
+	getarg = pre    t1 '+'  regmap[t2] 	post
+							:(return)
 
 * signed integer
 getarg.c.16 getarg = l1				:(return)
@@ -974,7 +987,7 @@ g.bsw	t1 = getarg(i1)
 	genop('cmp',t1,getarg(i2))
 	genop('jge',getarg(i3))
 * here after default case.
-g.bsw1	genop('jmp', 'm_word [' t2 '+' t1 '*cfp_b]')
+g.bsw1	genop('jmp', 'mem(' t2 '+' t1 '*cfp_b)' )
         genop('segment .data')
         genopl(t2 ':')
 	z_suspend = 0
@@ -1035,7 +1048,7 @@ g.jsr
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
-	genop('dec','m_word [' rcode ']')
+	genop('dec','mem(' rcode ')')
 	genop('js',jsr_label_norm)
 	z_suspend = 0
 
@@ -1068,13 +1081,13 @@ g.ppm.loop.next
 	eq(jsr_count) genopl(jsr_label_norm ':') :(opdone)
 g.ppm.loop
 	lab_next = genlab()
-	genop('dec','m_word [' rcode ']')
+	genop('dec','mem(' rcode ')' )
 	genop('jns',lab_next)
 	ident(incode,'ppm')			:s(g.ppm.loop.ppm)
 *  here if error exit via exi. set rcode to exit code and jump
 *  to error handler with error code in rcode
 g.ppm.loop.err
-	genop('mov','m_word [' rcode ']', +t1)
+	genop('mov','mem(' rcode ')', +t1)
 	genop('jmp','err_')
 						:(g.ppm.loop.next)
 g.ppm.loop.ppm
@@ -1110,19 +1123,19 @@ g.prc.r						:(opdone)
 g.prc.n
 *  store return address in reserved location
 	prc.count = prc.count + 1
-	genop('pop', 'm_word [' prcent(prc.count) ']')		:(opdone)
+	genop('pop', 'mem(' prcent(prc.count) ')')	:(opdone)
 
 g.exi
         t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
 *  if type r or e, and no exit parameters, just return
  	differ(t2,'n') eq(prc.args)	genop('ret')	:s(opdone)
         t3 = ident(t3) '0'
-    	genop('mov','m_word [' rcode ']',+t3)
+    	genop('mov','mem('  rcode ')',+t3)
 	ident(t2,'n')				:s(g.exi.1)
 	genop('ret')				:(opdone)
 g.exi.1
 
-	genop('mov','w0', 'm_word ['  prcent(prc.count) ']' )
+	genop('mov','w0', 'mem( ' prcent(prc.count) ')' )
 	genop('jmp','w0')
 						:(opdone)
 g.enp   genop()					:(opdone)
@@ -1130,7 +1143,7 @@ g.enp   genop()					:(opdone)
 g.erb
 	errfile =  i.text(i1) ' ' i.text(i2)
 *	set rcode to error code and branch to error handler
-	genop('mov', 'm_word [' rcode ']',  +(i.text(i1)))
+	genop('mov', 'mem(' rcode ')',  +(i.text(i1)))
  	genop('jmp','err_')
 						:(opdone)
 
@@ -1241,7 +1254,7 @@ g.scp
 	genop('mov',getarg(i1),reg.cp)
 						:(opdone)
 *  should be able to get lodsd; xchg eax,getarg(i1)
-	genop('mov',getarg(i1),'m_word [' reg.cp ']')
+	genop('mov',getarg(i1),mem(reg.cp))
 	genop('add',reg.cp,'cfp_b')
 
 						:(opdone)
@@ -1296,7 +1309,7 @@ g.adr
 g.sbr
 g.mlr
 g.dvr
-	t1 = getarg(i1,'m_word')
+	t1 = getarg(i1,'lea')
 	genop('lea','w0',t1)
 	genop('call',op_)
 						:(opdone)
@@ -1789,7 +1802,7 @@ g.sec.7
 *	allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
 	output = '  max.err ' max.err
-	genopl('err_:','xchg',reg.wa,'m_word [' rcode ']')
+	genopl('err_:','xchg',reg.wa,'mem(' rcode ')')
 						:(opdone)
 
 

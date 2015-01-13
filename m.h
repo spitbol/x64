@@ -55,6 +55,7 @@
 	%define	cmps_b	cmpsb
 
 	%define	cdq	cdq	; sign extend (32 bits)
+	%define mem(ref) dword[ref]
 %else
 	%define	xl	rsi
 	%define	xt	rsi
@@ -92,6 +93,7 @@
 
 	%define	cdq	cqo	; sign extend (64 bits)
 
+	%define mem(ref) qword[ref]
 %endif
 
 ;	flags
