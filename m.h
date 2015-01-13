@@ -55,8 +55,9 @@
 	%define	cmps_b	cmpsb
 
 	%define	cdq	cdq	; sign extend (32 bits)
-	%define mem(ref) dword[ref]
+	%define m(ref) dword[ref]
 %else
+	%define		m64		// m64 is the default
 	%define	xl	rsi
 	%define	xt	rsi
 	%define	xr	rdi
@@ -93,7 +94,10 @@
 
 	%define	cdq	cqo	; sign extend (64 bits)
 
-	%define mem(ref) qword[ref]
+;	%define mem(ref) qword[ref]
+	%define m(ref) qword[ rel ref]
+; rel not needed for m32
+	%define rel		
 %endif
 
 ;	flags

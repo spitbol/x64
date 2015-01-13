@@ -613,7 +613,7 @@ genop   genopl(,gopc,gop1,gop2,gop3)            :(return)
 getarg
 *	imem is null to generate memory reference, otherwise just get
 *	address for use in 'lea' instruction.
-	pre = ident(imem)	'mem('
+	pre = ident(imem)	'm('
 	post = ident(imem)	')'	
 
 	pre = differ(imem)	'['

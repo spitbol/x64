@@ -27,9 +27,14 @@
 %else
 	%define	cfp_b	8
 	%define	cfp_c	8
+	%define		m64			// make m64 the default
 %endif
 
 	%include	"m.h"
+
+%ifdef	m32
+;	%define	rel
+%endif
 
 	global	reg_block
 	global	reg_w0
@@ -318,27 +323,27 @@ ttybuf:	d_word    0     ; type word
 ;
 	global	save_regs
 save_regs:
-	mov	m_word [save_ia],ia
-	mov	m_word [save_xl],xl
-	mov	m_word [save_xr],xr
-	mov	m_word [save_xs],xs
-	mov	m_word [save_wa],wa
-	mov	m_word [save_wb],wb
-	mov	m_word [save_wc],wc
-	mov	m_word [save_w0],w0
+	mov	m(save_ia),ia
+	mov	m(save_xl),xl
+	mov	m(save_xr),xr
+	mov	m(save_xs),xs
+	mov	m(save_wa),wa
+	mov	m(save_wb),wb
+	mov	m(save_wc),wc
+	mov	m(save_w0),w0
 	ret
 
 	global	restore_regs
 restore_regs:
 	;	restore regs, except for sp. that is caller's responsibility
-	mov	ia,m_word [save_ia]
-	mov	xl,m_word [save_xl]
-	mov	xr,m_word [save_xr]
-;	mov	xs,m_word [save_xs	; caller restores sp]
-	mov	wa,m_word [save_wa]
-	mov	wb,m_word [save_wb]
-	mov	wc,m_word [save_wc]
-	mov	w0,m_word [save_w0]
+	mov	ia,m(save_ia)
+	mov	xl,m(save_xl)
+	mov	xr,m(save_xr)
+;	mov	xs,m(save_xs)	; caller restores sp
+	mov	wa,m(save_wa)
+	mov	wb,m(save_wb)
+	mov	wc,m(save_wc)
+	mov	w0,m(save_w0)
 	ret
 ; ;
 ; ;       startup( char *dummy1, char *dummy2) - startup compiler
@@ -376,15 +381,15 @@ calltab_engts equ   13
 startup:
 	pop     w0			; discard return
 	call	stackinit		; initialize minimal stack
-	mov     w0,m_word [compsp]	; get minimal's stack pointer
-	mov m_word [reg_wa],w0		; startup stack pointer
+	mov     w0,m(compsp)	; get minimal's stack pointer
+	mov m(reg_wa),w0		; startup stack pointer
 
 	cld				; default to up direction for string ops
 ;        getoff  w0,dffnc               # get address of ppm offset
-	mov     m_word [ppoff],w0	; save for use later
+	mov     m(ppoff),w0	; save for use later
 
-	mov     xs,m_word [osisp]	; switch to new c stack
-	mov	m_word [minimal_id],calltab_start
+	mov     xs,m(osisp)	; switch to new c stack
+	mov	m(minimal_id),calltab_start
 	call	minimal			; load regs, switch stack, start compiler
 
 ;	stackinit  -- initialize lowspmin from sp.
@@ -416,12 +421,12 @@ startup:
 	global	stackinit
 stackinit:
 	mov	w0,xs
-	mov     m_word [compsp],w0	; save as minimal's stack pointer
-	sub	w0,m_word [stacksiz]	; end of minimal stack is where c stack will start
-	mov     m_word [osisp],w0	; save new c stack pointer
+	mov     m(compsp),w0	; save as minimal's stack pointer
+	sub	w0,m(stacksiz)	; end of minimal stack is where c stack will start
+	mov     m(osisp),w0	; save new c stack pointer
 	add	w0,cfp_b*100		; 100 words smaller for chk
 	extern	lowspmin
-	mov	m_word [lowspmin],w0
+	mov	m(lowspmin),w0
 	ret
 
 ;       mimimal -- call minimal function from c
@@ -440,28 +445,30 @@ stackinit:
 
  minimal:
 ;         pushad			; save all registers for c
-	mov     wa,m_word [reg_wa]	; restore registers
-	mov	wb,m_word [reg_wb]
-	mov     wc,m_word [reg_wc]	;
-	mov	xr,m_word [reg_xr]
-	mov	xl,m_word [reg_xl]
+	mov     wa,m(reg_wa)	; restore registers
+	mov	wb,m(reg_wb)
+	mov     wc,m(reg_wc)	;
+	mov	xr,m(reg_xr)
+	mov	xl,m(reg_xl)
 
-	mov     m_word [osisp],xs	; save osint stack pointer
-	cmp     m_word [compsp],0	; is there a compiler stack?
+	mov     m(osisp),xs	; save osint stack pointer
+	cmp     m(compsp),0	; is there a compiler stack?
 	je      min1			; jump if none yet
-	mov     xs,m_word [compsp]	; switch to compiler stack
+	mov     xs,m(compsp)	; switch to compiler stack
 
  min1:
-	mov     w0,m_word [minimal_id]	; get ordinal
-	call   m_word [calltab+w0*cfp_b]    ; off to the minimal code
+	mov     w0,m(minimal_id)	; get ordinal
+;	call   m(calltab+w0*cfp_b)    ; off to the minimal code
+	extern	start
+	call	start
 
-	mov     xs,m_word [osisp]	; switch to osint stack
+	mov     xs,m(osisp)	; switch to osint stack
 
-	mov     m_word [reg_wa],wa	; save registers
-	mov	m_word [reg_wb],wb
-	mov	m_word [reg_wc],wc
-	mov	m_word [reg_xr],xr
-	mov	m_word [reg_xl],xl
+	mov     m(reg_wa),wa	; save registers
+	mov	m(reg_wb),wb
+	mov	m(reg_wc),wc
+	mov	m(reg_xr),xr
+	mov	m(reg_xl),xl
 	ret
 
 
@@ -528,35 +535,35 @@ call_adr:	d_word	0
 syscall_init:
 ;       save registers in global variables
 
-	mov     m_word [reg_wa],wa      ; save registers
-	mov	m_word [reg_wb],wb
-	mov     m_word [reg_wc],wc      ; (also _reg_ia)
-	mov	m_word [reg_xr],xr
-	mov	m_word [reg_xl],xl
-	mov	m_word [reg_ia],ia
+	mov     m(reg_wa),wa      ; save registers
+	mov	m(reg_wb),wb
+	mov     m(reg_wc),wc      ; (also _reg_ia)
+	mov	m(reg_xr),xr
+	mov	m(reg_xl),xl
+	mov	m(reg_ia),ia
 	ret
 
 syscall_exit:
-	mov	m_word [_rc_],w0	; save return code from function
-	mov     m_word [osisp],xs       ; save osint's stack pointer
-	mov     xs,m_word [compsp]      ; restore compiler's stack pointer
-	mov     wa,m_word [reg_wa]      ; restore registers
-	mov	wb,m_word [reg_wb]
-	mov     wc,m_word [reg_wc]      ;
-	mov	xr,m_word [reg_xr]
-	mov	xl,m_word [reg_xl]
-	mov	ia,m_word [reg_ia]
+	mov	m(_rc_),w0	; save return code from function
+	mov     m(osisp),xs       ; save osint's stack pointer
+	mov     xs,m(compsp)      ; restore compiler's stack pointer
+	mov     wa,m(reg_wa)      ; restore registers
+	mov	wb,m(reg_wb)
+	mov     wc,m(reg_wc)      ;
+	mov	xr,m(reg_xr)
+	mov	xl,m(reg_xl)
+	mov	ia,m(reg_ia)
 	cld
-	mov	w0,m_word [reg_pc]
+	mov	w0,m(reg_pc)
 	jmp	w0
 
 	%macro	syscall	2
 	pop     w0			; pop return address
-	mov	m_word [reg_pc],w0
+	mov	m(reg_pc),w0
 	call	syscall_init
 ;       save compiler stack and switch to osint stack
-	mov     m_word [compsp],xs      ; save compiler's stack pointer
-	mov     xs,m_word [osisp]       ; load osint's stack pointer
+	mov     m(compsp),xs      ; save compiler's stack pointer
+	mov     xs,m(osisp)       ; load osint's stack pointer
 	call	%1
 	call	syscall_exit
 	%endmacro
@@ -571,7 +578,7 @@ sysbs:	syscall	  zysbs,2
 
 	global sysbx
 	extern	zysbx
-sysbx:	mov	m_word [reg_xs],xs
+sysbx:	mov	m(reg_xs),xs
 	syscall	zysbx,2
 
 ;        global syscr
@@ -616,7 +623,7 @@ sysep:	syscall	zysep,12
 
 	global sysex
 	extern	zysex
-sysex:	mov	m_word [reg_xs],xs
+sysex:	mov	m(reg_xs),xs
 	syscall	zysex,13
 
 	global sysfc
@@ -632,7 +639,7 @@ sysgc:	syscall	zysgc,15
 
 	global syshs
 	extern	zyshs
-syshs:	mov	m_word [reg_xs],xs
+syshs:	mov	m(reg_xs),xs
 	syscall	zyshs,16
 
 	global sysid
@@ -717,7 +724,7 @@ sysul:	syscall	zysul,37
 
 	global sysxi
 	extern	zysxi
-sysxi:	mov	m_word [reg_xs],xs
+sysxi:	mov	m(reg_xs),xs
 	syscall	zysxi,38
 
 	%macro	callext	2
@@ -738,11 +745,11 @@ sysxi:	mov	m_word [reg_xs],xs
 	global	cvd__
 cvd__:
 	extern	i_cvd
-	mov	m_word [reg_ia],ia
-	mov	m_word [reg_wa],wa
+	mov	m(reg_ia),ia
+	mov	m(reg_wa),wa
 	call	i_cvd
-	mov	ia,m_word [reg_ia]
-	mov	wa,m_word [reg_wa]
+	mov	ia,m(reg_ia)
+	mov	wa,m(reg_wa)
 	ret
 
 
@@ -750,10 +757,10 @@ cvd__:
 	global	dvi__
 dvi__:
 	extern	i_dvi
-	mov	m_word [reg_w0],w0
+	mov	m(reg_w0),w0
 	call	i_dvi
-	mov	ia,m_word [reg_ia]
-	mov	al,byte [reg_fl]
+	mov	ia,m(reg_ia)
+	mov	al,byte [rel reg_fl]
 	or	al,al
 	ret
 
@@ -762,10 +769,10 @@ dvi__:
 rmi__:
 	jmp	ocode
 	extern	i_rmi
-	mov	m_word [reg_w0],w0
+	mov	m(reg_w0),w0
 	call	i_rmi
-	mov	ia,m_word [reg_ia]
-	mov	al,byte [reg_fl]
+	mov	ia,m(reg_ia)
+	mov	al,byte [rel reg_fl]
 	or	al,al
 	ret
 
@@ -775,19 +782,19 @@ ocode:
         xchg    w0,ia         	; ia to w0, divisor to ia
         cdq                     ; extend dividend
         idiv    ia              ; perform division. w0=quotient, wc=remainder
-	seto	byte [reg_fl]
+	seto	byte [rel reg_fl]
 	mov	ia,wc
 	ret
 
 setovr: mov     al,1		; set overflow indicator
-	mov	byte [reg_fl],al
+	mov	byte [rel reg_fl],al
 	ret
 
 	%macro	real_op 2
 	global	%1
 	extern	%2
 %1:
-	mov	m_word [reg_rp],w0
+	mov	m(reg_rp),w0
 	call	%2
 	ret
 %endmacro
@@ -805,7 +812,7 @@ setovr: mov     al,1		; set overflow indicator
 	global	%1
 	extern	%2
 %1:
-	mov	m_word [reg_ia],ia
+	mov	m(reg_ia),ia
 	call	%2
 	ret
 %endmacro
@@ -833,7 +840,7 @@ setovr: mov     al,1		; set overflow indicator
 ;       ovr_ test for overflow value in ra
 	global	ovr_
 ovr_:
-        mov     ax, word [reg_ra+6]	; get top 2 bytes
+        mov     ax, word [ rel reg_ra+6]	; get top 2 bytes
         and     ax, 0x7ff0             	; check for infinity or nan
         add     ax, 0x10               	; set/clear overflow accordingly
 	ret
@@ -841,7 +848,7 @@ ovr_:
 	global	get_fp			; get frame pointer
 
 get_fp:
-         mov     w0,m_word [reg_xs]     ; minimal's xs
+         mov     w0,m(reg_xs)     ; minimal's xs
          add     w0,4           	; pop return from call to sysbx or sysxi
          ret                    	; done
 
@@ -865,28 +872,28 @@ restart:
         pop     w0                     	; discard dummy
         pop     w0                     	; get lowest legal stack value
 
-        add     w0,m_word [stacksiz]  	; top of compiler's stack
+        add     w0,m(stacksiz)  	; top of compiler's stack
         mov     xs,w0                 	; switch to this stack
 	call	stackinit               ; initialize minimal stack
 
                                         ; set up for stack relocation
-        lea     w0,[tscblk+scstr]       ; top of saved stack
-        mov     wb,m_word [lmodstk]    	; bottom of saved stack
-        mov	wa,m_word [stbas]      ; wa = stbas from exit() time
+        lea     w0,[rel tscblk+scstr]       ; top of saved stack
+        mov     wb,m(lmodstk)    	; bottom of saved stack
+        mov	wa,m(stbas)      ; wa = stbas from exit() time
         sub     wb,w0                 	; wb = size of saved stack
 	mov	wc,wa
         sub     wc,wb                 	; wc = stack bottom from exit() time
 	mov	wb,wa
         sub     wb,xs                 	; wb =  stbas - new stbas
 
-        mov	m_word [stbas],xs       ; save initial sp
+        mov	m(stbas),xs       ; save initial sp
 ;        getoff  w0,dffnc               ; get address of ppm offset
-        mov     m_word [ppoff],w0       ; save for use later
+        mov     m(ppoff),w0       ; save for use later
 ;
 ;       restore stack from tscblk.
 ;
-        mov     xl,m_word [lmodstk]    	; -> bottom word of stack in tscblk
-        lea     xr,[tscblk+scstr]      	; -> top word of stack
+        mov     xl,m(lmodstk)    	; -> bottom word of stack in tscblk
+        lea     xr,[rel tscblk+scstr]      	; -> top word of stack
         cmp     xl,xr                 	; any stack to transfer?
         je      re3               	;  skip if not
 	sub	xl,4
@@ -902,11 +909,11 @@ re2:    push    w0                     	; transfer word of stack
         jae     re1                     ;    loop back
 
 re3:	cld
-        mov     m_word [compsp],xs     	; save compiler's stack pointer
-        mov     xs,m_word [osisp]      	; back to osint's stack pointer
+        mov     m(compsp),xs     	; save compiler's stack pointer
+        mov     xs,m(osisp)      	; back to osint's stack pointer
         call   rereloc               	; relocate compiler pointers into stack
-        mov	w0,m_word [statb]      	; start of static region to xr
-	mov	m_word [reg_xr],w0
+        mov	w0,m(statb)      	; start of static region to xr
+	mov	m(reg_xr),w0
 	mov	w0,minimal_insta
 	call	minimal			; initialize static region
 
@@ -932,7 +939,7 @@ re3:	cld
 ;
         call   startbrk			; start control-c logic
 
-        mov	w0,m_word [stage]      	; is this a -w call?
+        mov	w0,m(stage)      	; is this a -w call?
 	cmp	w0,4
         je            re4               ; yes, do a complete fudge
 
@@ -946,20 +953,20 @@ re3:	cld
 ;       would occur if we naively returned to sysbx.  clear the stack and
 ;       go for it.
 ;
-re4:	mov	w0,m_word [stbas]
-        mov     m_word [compsp],w0     	; empty the stack
+re4:	mov	w0,m(stbas)
+        mov     m(compsp),w0     	; empty the stack
 
 ;       code that would be executed if we had returned to makeexec:
 ;
-        mov	m_word [gbcnt],0       	; reset garbage collect count
+        mov	m(gbcnt),0       	; reset garbage collect count
         call    zystm                 	; fetch execution time to reg_ia
-        mov     w0,m_word [reg_ia]     	; set time into compiler
+        mov     w0,m(reg_ia)     	; set time into compiler
 	extern	timsx
-	mov	m_word [timsx],w0
+	mov	m(timsx),w0
 
 ;       code that would be executed if we returned to sysbx:
 ;
-        push    m_word [outptr]        	; swcoup(outptr)
+        push    m(outptr)        	; swcoup(outptr)
 	extern 	swcoup
 	call	swcoup
 	add	xs,cfp_b
@@ -967,7 +974,7 @@ re4:	mov	w0,m_word [stbas]
 ;       jump to minimal code to restart a save file.
 
 	mov	w0,minimal_rstrt
-	mov	m_word [minimal_id],w0
+	mov	m(minimal_id),w0
         call	minimal			; no return
 
 %ifdef z_trace
