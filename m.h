@@ -56,6 +56,7 @@
 
 	%define	cdq	cdq	; sign extend (32 bits)
 	%define m(ref) dword[ref]
+	%define a(ref) [ref]
 %else
 	%define		m64		// m64 is the default
 	%define	xl	rsi
@@ -96,6 +97,7 @@
 
 ;	%define mem(ref) qword[ref]
 	%define m(ref) qword[ rel ref]
+	%define a(ref) [ rel ref]
 ; rel not needed for m32
 	%define rel		
 %endif

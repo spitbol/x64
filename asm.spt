@@ -212,7 +212,8 @@ skip_init.end
 	define('genop(gopc,gop1,gop2,gop3)')
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
-	define('getarg(iarg,imem)l1,l2,t1,t2,pre,post')
+	define('getarg(iarg)txt,typ,pre,post')
+	define('getlea(iarg)txt,typ,pre,post')
 	define('ifreg(iarg)')
 	define('memmem()t')
 	define('prcent(n)')
@@ -277,22 +278,21 @@ skip_init.end
 
 *  dispatch table
 *
-	getargcase = table(27)
-	getargcase[1] = .getarg.c.1;   getargcase[2] = .getarg.c.2
-	getargcase[3] = .getarg.c.3;   getargcase[4] = .getarg.c.4
-	getargcase[5] = .getarg.c.5;   getargcase[6] = .getarg.c.6
-	getargcase[7] = .getarg.c.7;   getargcase[8] = .getarg.c.8
-	getargcase[9] = .getarg.c.9;   getargcase[10] = .getarg.c.10
-	getargcase[11] = .getarg.c.11; getargcase[12] = .getarg.c.12
-	getargcase[13] = .getarg.c.13; getargcase[14] = .getarg.c.14
-	getargcase[15] = .getarg.c.15; getargcase[16] = .getarg.c.16
-	getargcase[17] = .getarg.c.17; getargcase[18] = .getarg.c.18
-	getargcase[19] = .getarg.c.19; getargcase[20] = .getarg.c.20
-	getargcase[21] = .getarg.c.21; getargcase[22] = .getarg.c.22
-	getargcase[23] = .getarg.c.23; getargcase[24] = .getarg.c.24
-	getargcase[25] = .getarg.c.25; getargcase[26] = .getarg.c.26
-	getargcase[27] = .getarg.c.27
+	argcase = table(27)
+	argcase[01] = .arg.c.1;	argcase[2]  = .arg.c.2;	argcase[3]  = .arg.c.3;
+	argcase[04] = .arg.c.4;	argcase[5]  = .arg.c.5;	argcase[6]  = .arg.c.6;
+	argcase[07] = .arg.c.7;	argcase[8]  = .arg.c.8;	argcase[9]  = .arg.c.9;   
+	argcase[10] = .arg.c.10;	argcase[11] = .arg.c.11;	argcase[12] = .arg.c.12;
+	argcase[13] = .arg.c.13;	argcase[14] = .arg.c.14;	argcase[15] = .arg.c.15;
+	argcase[16] = .arg.c.16;	argcase[17] = .arg.c.17;	argcase[18] = .arg.c.18;
+	argcase[19] = .arg.c.19;	argcase[20] = .arg.c.20;	argcase[21] = .arg.c.21; 
+	argcase[22] = .arg.c.22;	argcase[23] = .arg.c.23;	argcase[24] = .arg.c.24;
+	argcase[25] = .arg.c.25;	argcase[26] = .arg.c.26;	argcase[27] = .arg.c.27
 
+	leacase = table(10) 
+	leacase[03] = .lea.c.3;		leacase[04] = .lea.c.4;		leacase[09] = .lea.c.9;   
+	leacase[12] = .lea.c.12;	leacase[13] = .lea.c.13;	leacase[14] = .lea.c.14
+	leacase[15] = .lea.c.15;		 
 *
 *  pifatal maps minimal opcodes for which no a code allowed
 *  to nonzero value. such operations include conditional
@@ -609,110 +609,147 @@ genopl	cstmts[cstmts.n = cstmts.n + 1] =
 genop   genopl(,gopc,gop1,gop2,gop3)            :(return)
 
 
--stitl getarg(iarg,imem)
+-stitl getarg(iarg)
 getarg
 *	imem is null to generate memory reference, otherwise just get
 *	address for use in 'lea' instruction.
-	pre = ident(imem)	'm('
-	post = ident(imem)	')'	
+	pre = 'm('
+	post = ')'	
 
-	pre = differ(imem)	'['
-	post = differ(imem)	']'
-
-	l1 = i.text(iarg)
-	l2 = i.type(iarg)
-	eq(l2)					:f($(getargcase[l2]))
-	getarg = l1				:(return)
+	txt = i.text(iarg)
+	typ = i.type(iarg)
+	eq(typ)					:f($(argcase[typ]))
+	getarg = txt				:(return)
 
 * int
-getarg.c.1 getarg = l1				:(return)
+arg.c.1 getarg = txt				:(return)
 
 * dlbl
-getarg.c.2 getarg = l1				:(return)
+arg.c.2 getarg = txt				:(return)
 
 * wlbl, clbl
-getarg.c.3
-getarg.c.4 getarg = pre l1 post			:(return)
+arg.c.3
+arg.c.4 getarg = pre txt post			:(return)
 
 * elbl, plbl
-getarg.c.5
-getarg.c.6 getarg = l1				:(return)
+arg.c.5
+arg.c.6 getarg = txt				:(return)
 
 * w,x, map register name
-getarg.c.7
-getarg.c.8
-	getarg = regmap[l1]			:(return)
+arg.c.7
+arg.c.8
+	getarg = regmap[txt]			:(return)
 
 * (x), register indirect
-getarg.c.9
-	l1 len(1) len(2) . l2
-	l2 = regmap[l2]
-	getarg = pre l2 post
+arg.c.9
+	txt len(1) len(2) . typ
+	typ = regmap[typ]
+	getarg = pre typ post
 						:(return)
 
 * (x)+, register indirect, post increment
 * use lea reg,[reg+cfp_b] unless reg is esp, since it takes an extra byte.
 * actually, lea reg,[reg+cfp_b] and add reg,cfp_b are both 2 cycles and 3 bytes
 * for all the other regs, and either could be used.
-getarg.c.10
-	l1 = substr(l1,2,2)
-	t1 = regmap[l1]
+arg.c.10
+	txt = substr(txt,2,2)
+	t1 = regmap[txt]
 	getarg = pre t1 post
-	(ident(l1,'xs') genaop(tstmt(,'add',t1,'cfp_b'))) :s(return)
+	(ident(txt,'xs') genaop(tstmt(,'add',t1,'cfp_b'))) :s(return)
 	genaop(tstmt(,'lea',t1,'[' t1 '+cfp_b]'))	:(return)
 
 *  -(x), register indirect, pre decrement
-getarg.c.11
-	t1 = regmap[substr(l1,3,2)]
+arg.c.11
+	t1 = regmap[substr(txt,3,2)]
 	getarg = pre t1 post
 	genbop(tstmt(,'lea',t1,'[' t1 '-cfp_b]')) :(return)
 
 * int(x)
 * dlbl(x)
-getarg.c.12
-getarg.c.13
-	l1 break('(') . t1 '(' len(2) . t2
+arg.c.12
+arg.c.13
+	txt break('(') . t1 '(' len(2) . t2
 	getarg = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
 							:(return)
 
 *  name(x), where name is in working section
-getarg.c.14
-getarg.c.15
-	l1 break('(') . t1 '(' len(2) . t2
+arg.c.14
+arg.c.15
+	txt break('(') . t1 '(' len(2) . t2
 	getarg = pre    t1 '+'  regmap[t2] 	post
 							:(return)
 
 * signed integer
-getarg.c.16 getarg = l1				:(return)
+arg.c.16 getarg = txt				:(return)
 
 * signed real
-getarg.c.17 getarg = l1				:(return)
+arg.c.17 getarg = txt				:(return)
 
 *  =dlbl
-getarg.c.18
-	getarg = substr(l1,2)			:(return)
+arg.c.18
+	getarg = substr(txt,2)			:(return)
 
 *  *dlbl
-getarg.c.19
-	getarg = 'cfp_b*' substr(l1,2)		:(return)
+arg.c.19
+	getarg = 'cfp_b*' substr(txt,2)		:(return)
 
 *  =name (data section)
-getarg.c.20
-getarg.c.21
-        getarg =  substr(l1,2) 			:(return)
+arg.c.20
+arg.c.21
+        getarg =  substr(txt,2) 			:(return)
 
 *  =name (program section)
-getarg.c.22
-        getarg =  substr(l1,2)   		:(return)
+arg.c.22
+        getarg =  substr(txt,2)   		:(return)
 
 *  pnam, eqop
-getarg.c.23
-getarg.c.24 getarg = l1				:(return)
+arg.c.23
+arg.c.24 getarg = txt				:(return)
 
 * ptyp, text, dtext
-getarg.c.25
-getarg.c.26
-getarg.c.27 getarg = l1				:(return)
+arg.c.25
+arg.c.26
+arg.c.27 getarg = txt				:(return)
+
+-stitl getlea(iarg)
+getlea
+*	similar to getarg, but gets effective address
+*	this procedure only called if operand is
+*	ops: 3,4,9,12,13,14,15
+*	imem is null to generate memory reference, otherwise just get
+*	address for use in 'lea' instruction.
+	pre = 'a('
+	post = ')'	
+
+	txt = i.text(iarg)
+	typ = i.type(iarg)
+	eq(typ)					:f($(leacase[typ]))
+	getlea = txt				:(return)
+* wlbl, clbl
+lea.c.3
+lea.c.4 
+	getlea = pre txt post			:(return)
+
+* (x), register indirect
+lea.c.9
+	txt len(1) len(2) . typ
+	typ = regmap[typ]
+	getlea = pre typ post
+						:(return)
+* int(x)
+* dlbl(x)
+lea.c.12
+lea.c.13
+	txt break('(') . t1 '(' len(2) . t2
+	getlea = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
+							:(return)
+
+*  name(x), where name is in working section
+lea.c.14
+lea.c.15
+	txt break('(') . t1 '(' len(2) . t2
+	getlea = pre    t1 '+'  regmap[t2] 	post
+							:(return)
 
 -stitl memmem()t
 memmem
@@ -987,7 +1024,7 @@ g.bsw	t1 = getarg(i1)
 	genop('cmp',t1,getarg(i2))
 	genop('jge',getarg(i3))
 * here after default case.
-g.bsw1	genop('jmp', 'mem(' t2 '+' t1 '*cfp_b)' )
+g.bsw1	genop('jmp', 'm(' t2 '+' t1 '*cfp_b)' )
         genop('segment .data')
         genopl(t2 ':')
 	z_suspend = 0
@@ -1048,7 +1085,7 @@ g.jsr
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
-	genop('dec','mem(' rcode ')')
+	genop('dec','m(' rcode ')')
 	genop('js',jsr_label_norm)
 	z_suspend = 0
 
@@ -1081,13 +1118,13 @@ g.ppm.loop.next
 	eq(jsr_count) genopl(jsr_label_norm ':') :(opdone)
 g.ppm.loop
 	lab_next = genlab()
-	genop('dec','mem(' rcode ')' )
+	genop('dec','m(' rcode ')' )
 	genop('jns',lab_next)
 	ident(incode,'ppm')			:s(g.ppm.loop.ppm)
 *  here if error exit via exi. set rcode to exit code and jump
 *  to error handler with error code in rcode
 g.ppm.loop.err
-	genop('mov','mem(' rcode ')', +t1)
+	genop('mov','m(' rcode ')', +t1)
 	genop('jmp','err_')
 						:(g.ppm.loop.next)
 g.ppm.loop.ppm
@@ -1123,19 +1160,19 @@ g.prc.r						:(opdone)
 g.prc.n
 *  store return address in reserved location
 	prc.count = prc.count + 1
-	genop('pop', 'mem(' prcent(prc.count) ')')	:(opdone)
+	genop('pop', 'm(' prcent(prc.count) ')')	:(opdone)
 
 g.exi
         t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
 *  if type r or e, and no exit parameters, just return
  	differ(t2,'n') eq(prc.args)	genop('ret')	:s(opdone)
         t3 = ident(t3) '0'
-    	genop('mov','mem('  rcode ')',+t3)
+    	genop('mov','m('  rcode ')',+t3)
 	ident(t2,'n')				:s(g.exi.1)
 	genop('ret')				:(opdone)
 g.exi.1
 
-	genop('mov','w0', 'mem( ' prcent(prc.count) ')' )
+	genop('mov','w0', 'm( ' prcent(prc.count) ')' )
 	genop('jmp','w0')
 						:(opdone)
 g.enp   genop()					:(opdone)
@@ -1143,7 +1180,7 @@ g.enp   genop()					:(opdone)
 g.erb
 	errfile =  i.text(i1) ' ' i.text(i2)
 *	set rcode to error code and branch to error handler
-	genop('mov', 'mem(' rcode ')',  +(i.text(i1)))
+	genop('mov', 'm(' rcode ')',  +(i.text(i1)))
  	genop('jmp','err_')
 						:(opdone)
 
@@ -1254,7 +1291,7 @@ g.scp
 	genop('mov',getarg(i1),reg.cp)
 						:(opdone)
 *  should be able to get lodsd; xchg eax,getarg(i1)
-	genop('mov',getarg(i1),mem(reg.cp))
+	genop('mov',getarg(i1),m(reg.cp))
 	genop('add',reg.cp,'cfp_b')
 
 						:(opdone)
@@ -1309,8 +1346,7 @@ g.adr
 g.sbr
 g.mlr
 g.dvr
-	t1 = getarg(i1,'lea')
-	genop('lea','w0',t1)
+	genop('lea','w0',getlea(i1))
 	genop('call',op_)
 						:(opdone)
 g.ngr
@@ -1802,7 +1838,7 @@ g.sec.7
 *	allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
 	output = '  max.err ' max.err
-	genopl('err_:','xchg',reg.wa,'mem(' rcode ')')
+	genopl('err_:','xchg',reg.wa,'m(' rcode ')')
 						:(opdone)
 
 
