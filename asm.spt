@@ -101,12 +101,14 @@
 	define('genrep(op)l1,l2)')
 	define('getarg(iarg)txt,typ,pre,post')
 	define('getlea(iarg)txt,typ,pre,post')
+	define('getrip(iarg)txt,typ,pre,post')
 	define('getval(iarg)txt,typ,pre,post')
 	define('ifreg(iarg)')
 	define('memmem()t')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
 	define('report(num,text)')
+	define('ripinit()')
 	define('tblini(str)pos,cnt,index,val,lastval')
 
 *  outstmt is used to send a target statement to the target code
@@ -170,6 +172,8 @@ config.done
 *	rip_mode is needed for osx. See getval()
 
 	rip_mode = (ident(os,'osx'),1,0)
+
+	ne(rip_mode) ripinit()
 
 *	set z_trace to enable instruction by instruction trace
 	z_trace = 1
@@ -284,7 +288,7 @@ skip_init.end
 
 *  dispatch table
 *
-	argcase = table(27)
+	argcase = table(100)
 	argcase[01] = .arg.c.1;	argcase[2]  = .arg.c.2;	argcase[3]  = .arg.c.3;
 	argcase[04] = .arg.c.4;	argcase[5]  = .arg.c.5;	argcase[6]  = .arg.c.6;
 	argcase[07] = .arg.c.7;	argcase[8]  = .arg.c.8;	argcase[9]  = .arg.c.9;   
@@ -295,14 +299,18 @@ skip_init.end
 	argcase[22] = .arg.c.22;	argcase[23] = .arg.c.23;	argcase[24] = .arg.c.24;
 	argcase[25] = .arg.c.25;	argcase[26] = .arg.c.26;	argcase[27] = .arg.c.27
 
-	leacase = table(10) 
+	leacase = table(50) 
 	leacase[03] = .lea.c.3;		leacase[04] = .lea.c.4;		leacase[09] = .lea.c.9;   
 	leacase[12] = .lea.c.12;	leacase[13] = .lea.c.13;	leacase[14] = .lea.c.14
 	leacase[15] = .lea.c.15;		 
 
-	valcase = table(8)
+	valcase = table(50)
 	valcase[18] = .val.c.18;	valcase[19] = .val.c.19;	valcase[20] = .val.c.20;	
 	valcase[21] = .val.c.21;	valcase[22] = .val.c.22
+
+	ripcase = table(50)
+	ripcase[18] = .rip.c.18;	ripcase[19] = .rip.c.19;	ripcase[20] = .rip.c.20;	
+	ripcase[21] = .rip.c.21;	ripcase[22] = .rip.c.22
 
 *
 *  pifatal maps minimal opcodes for which no a code allowed
@@ -752,36 +760,81 @@ lea.c.15
 	txt break('(') . t1 '(' len(2) . t2
 	getlea = pre    t1 '+'  regmap[t2] 	post
 							:(return)
--stitl getval(iarg)
-getval
+
+-stitl getrip(iarg)
+getrip
+*  return value suitable for use in rip mode (needed for osx). This requires that we
+*  allocate a variable to hold the address,value. This is loaded into w0.
+
 	pre = 'm('
 	post = ')'	
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
+	eq(typ)					:f($(ripcase[typ]))
+	getarg = txt				:(return)
+
+*  =dlbl
+rip.c.18	
+*	ne(if_osx)				:s(rip.c.18.1)
+	getrip = substr(txt,2)			:(return)
+rip.c.18.1
+	getrip = substr(txt,2)			:(return)
+* ... DS TBSL NEW
+
+*  *dlbl
+rip.c.19
+	getrip = 'cfp_b*' substr(txt,2)		:(return)
+
+*  =name (data section)
+rip.c.20
+rip.c.21
+        getrip =  substr(txt,2) 		:(return)
+
+*  =name (program section)
+rip.c.22
+        getrip =  substr(txt,2)   		:(return)
+
+-stitl getval(iarg)
+getval
+	getval = ne(rip_mode) getrip(iarg)	:s(return)
+	pre = 'm('
+	post = ')'	
+
+	txt = i.text(iarg)
+	typ = i.type(iarg)
+	outfile = ';getval ' txt ' ' type
 	eq(typ)					:f($(valcase[typ]))
 	getarg = txt				:(return)
 
 *  =dlbl
 val.c.18	
 *	ne(if_osx)				:s(val.c.18.1)
-	getval = substr(txt,2)			:(return)
+	getval = substr(txt,2)			
+	outfile = '; getval ' getval
+						:(return)
 val.c.18.1
-	getval = substr(txt,2)			:(return)
+	getval = substr(txt,2)			
+	outfile = '; getval ' getval
+						:(return)
 * ... DS TBSL NEW
 
 *  *dlbl
 val.c.19
-	getval = 'cfp_b*' substr(txt,2)		:(return)
-
+	getval = 'cfp_b*' substr(txt,2)		
+	outfile = '; getval ' getval
+						:(return)
 *  =name (data section)
 val.c.20
 val.c.21
-        getval =  substr(txt,2) 		:(return)
-
+        getval =  substr(txt,2) 		
+	outfile = '; getval ' getval
+						:(return)
 *  =name (program section)
 val.c.22
-        getval =  substr(txt,2)   		:(return)
+        getval =  substr(txt,2)   		
+	outfile = '; getval ' getval
+						:(return)
 
 -stitl memmem()t
 memmem
@@ -955,6 +1008,12 @@ rl01						:(return)
 *
 rl02    readline = '       end'
 						:(rl01)
+-stitl ripinit()
+*  initialize rip mode, allocating the table used to save allocated locations
+ripinit
+	riptable = table(500)
+						:(return)
+
 -stitl tblini(str)
 *  this routine is called to initialize a table from a string of
 *  index/value pairs.
