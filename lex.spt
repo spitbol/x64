@@ -372,7 +372,7 @@
 *
 *  default the parameter string if none present
 *
-	arch = (differ(host(0)) host(0), "32")
+	target = (differ(host(0)) host(0), "unix-64")
 	parm = "s"
 	filenamc = parm '.cnd'
 	filenami = parm '.min'
@@ -442,10 +442,10 @@ main2
 . 'ch_sq[039]ch_u_[095]ch_ob[091]ch_cb[093]ch_ht[009]ch_vt[011]'
 . 'ch_ey[094]iodel[032]' )
 * set target-dependent configuration parameters
-	:($('config.' arch))
+	:($('config.' target))
 
 							:(config.done)
-config.32
+config.unix-32
 	equ_defs['cfp_a'] = '256'
 	equ_defs['cfp_b'] = '4'
 	equ_defs['cfp_c'] = '4'
@@ -459,7 +459,8 @@ config.32
 *	use 6 words, or 24 characters, for hash in x32
 	equ_defs['e_hnw'] = '6'
 							:(config.done)
-config.64
+config.unix-64
+config.osx-64
 	equ_defs['cfp_a'] = '256'
 	equ_defs['cfp_b'] = '8'
 	equ_defs['cfp_c'] = '8'
@@ -873,13 +874,14 @@ g.esw1	iffar[iffindx] break('|') $ val len(1)
 g.esw2  iffar =					:(dsgen)
 
 report
-	output = lpad(num,10) '  ' text		:(return)
+	output = lpad(num,7) char(9) text		:(return)
 
 *  end prints statistics on terminal then exits program
 *
 g.end
 	outstmt(,'end',,,,comment)
 	(ne(level) error("  unclosed if conditional clause"))
+	report(target,		'target')
         report(nlines,		'lines read')
         report(nstmts, 		'statements processed')
         report(ntarget, 	'target code lines produced')
@@ -889,6 +891,7 @@ g.end
 +	  differ(lasterror) '  the last error was in line ' lasterror
 	&code   = ne(nerrors) 2001
         report(collect() * 5,	'free bytes')
+	report(time(),	'execution time ms')
 
 	t = convert(prctab,'array')		:f(g.end.2)
 *  here if procedures declared by inp but not by prc

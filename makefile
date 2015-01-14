@@ -10,6 +10,7 @@ os?=unix
 OS=$(os)
 WS=$(ws)
 DEBUG=$(debug)
+TARGET=$(OS)-$(WS)
 
 ARCH=m$(WS)
 ARCHDEF=-D m$(WS)
@@ -141,11 +142,11 @@ s.go:	s.lex go.spt
 	$(BASEBOL) -u i32 go.spt
 
 s.s:	s.lex $(VHDRS) $(COD) 
-	$(BASEBOL) -u $(WS) $(COD)
+	$(BASEBOL) -u $(TARGET) $(COD)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
 #	 $(BASEBOL) -u $(WS) $(LEX)
-	 $(BASEBOL) -u $(WS) $(LEX)
+	 $(BASEBOL) -u $(TARGET) $(LEX)
 
 s.err: s.s
 

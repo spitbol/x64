@@ -34,14 +34,8 @@
 *	compress	generate tabs rather than spaces in output file
 *       comments        retain full-line and end-of-line comments
 *
-*  the variable arch is set equal to the uppercase name of the machine
-*  being processed.  specific tests upon this variable are discouraged, as
-*  all machine-dependent code should be placed in the machine-definition
-*  file if possible.
-*
 *  in addition to the normal minimal register complement, one scratch
-*  work register, w0 is defined.
-*  see the register map below for specific allocations.
+*  work register, w0 is defined.  see the register map below for specific allocations.
 *
 *  this program is based in part on earlier translators for the
 *  it is based in part on earlier translators for the dec vax
@@ -82,19 +76,66 @@
 	nos     = '0123456789'
 	tab	= char(9)
 
+*
+*  function definitions
+*
+*  crack parses stmt into a stmt data plex and returns it.
+*  it fails if there is a syntax error.
+*
+	define('crack(line)operands,operand,char')
+*
+	define('chktrace()')
+*	comregs - map minimal register names to target register names
+	define('comregs(line)t,pre,word')
+*
+*  error is used to report an error for current statement
+*
+	define('error(text)')
+	define('flush()')
+	define('genz()')
+	define('genaop(stmt)')
+	define('genbop(stmt)')
+        define('genlab()')
+	define('genop(gopc,gop1,gop2,gop3)')
+	define('genopl(gopl,gopc,gop1,gop2,gop3)')
+	define('genrep(op)l1,l2)')
+	define('getarg(iarg)txt,typ,pre,post')
+	define('getlea(iarg)txt,typ,pre,post')
+	define('ifreg(iarg)')
+	define('memmem()t')
+	define('prcent(n)')
+	define('prsarg(iarg)l1,l2')
+	define('report(num,text)')
+	define('tblini(str)pos,cnt,index,val,lastval')
+
+*  outstmt is used to send a target statement to the target code
+*  output file outfile
+*
+	define('outstmt(ostmt)label,opcode,op1,op2,op3,comment,t,stmtout')
+
+*  readline is called to return the next non-comment line from
+*  the minimal input file (infile <=> lu1).   note that it will
+*  not fail on eof, but it will return a minimal end statement
+*
+	define('readline()')
 
 *  default the parameter string if none present
 *
-        arch = (differ(host(0)) host(0), "32")
-	output = 'target architecture ' arch
-*        output = ident(fileprefix) "filename (.lex) required" :s(end)
+*	add trailing blank so always have blank after an argument
+*
+*  argument string now of form  os-ws, for example unix-64 (the default)
+	os = 'unix'; ws = 64
+
+	options = host(0) ' '
+	options break('-') . os '-' rem . time
+	target = os '-' ws
+	report(target,'target')
 	fileprefix = "s"
-	output = '  target architecture:' arch
 
 *	cfp_b is bytes per word, cfp_c is characters per word
 *       these should agree with values used in translator
 * set target-dependent configuration parameters
-	:($('config.' arch))
+	:($('config.' ws))
 
 config.32
 	cfp_b = 4
@@ -189,48 +230,6 @@ skip_init.end
 
 	ppm_cases = table(50,,0)
 
-*
-*  function definitions
-*
-*  crack parses stmt into a stmt data plex and returns it.
-*  it fails if there is a syntax error.
-*
-	define('crack(line)operands,operand,char')
-*
-	define('chktrace()')
-*	comregs - map minimal register names to target register names
-	define('comregs(line)t,pre,word')
-*
-*  error is used to report an error for current statement
-*
-	define('error(text)')
-	define('flush()')
-	define('genz()')
-	define('genaop(stmt)')
-	define('genbop(stmt)')
-        define('genlab()')
-	define('genop(gopc,gop1,gop2,gop3)')
-	define('genopl(gopl,gopc,gop1,gop2,gop3)')
-	define('genrep(op)l1,l2)')
-	define('getarg(iarg)txt,typ,pre,post')
-	define('getlea(iarg)txt,typ,pre,post')
-	define('ifreg(iarg)')
-	define('memmem()t')
-	define('prcent(n)')
-	define('prsarg(iarg)l1,l2')
-	define('report(num,text)')
-	define('tblini(str)pos,cnt,index,val,lastval')
-
-*  outstmt is used to send a target statement to the target code
-*  output file outfile
-*
-	define('outstmt(ostmt)label,opcode,op1,op2,op3,comment,t,stmtout')
-
-*  readline is called to return the next non-comment line from
-*  the minimal input file (infile <=> lu1).   note that it will
-*  not fail on eof, but it will return a minimal end statement
-*
-	define('readline()')
 *
 	 p.comregs = break(letters) . pre span(letters) . word
 
@@ -367,6 +366,7 @@ flgs2
 *
 * various constants
 *
+	tab = char(9)
         comment.delim = ';'
 
 *  branchtab maps minimal opcodes 'beq', etc to desired
@@ -463,8 +463,9 @@ flgs2
 	filenami = fileprefix '.lex'
         input(.infile,1,filenami)                     :s(inputok)
 
-inputok output = '  input lex file: ' filenami
-*
+inputok 
+	report(filenami,'input lex file')
+
 *
 *
 *  associate output files.
@@ -473,7 +474,7 @@ inputok output = '  input lex file: ' filenami
         output(.outfile,2,filenamo)             :s(outputok)
         output = '  cannot open asm file: ' filenamo :(end)
 outputok
-        output = '  output asm file: ' filenamo
+        report(filenamo,'output asm file')
 
 *
 * open file for compilation of minimal err and erb messages
@@ -656,13 +657,13 @@ arg.c.10
 	t1 = regmap[txt]
 	getarg = pre t1 post
 	(ident(txt,'xs') genaop(tstmt(,'add',t1,'cfp_b'))) :s(return)
-	genaop(tstmt(,'lea',t1,'[' t1 '+cfp_b]'))	:(return)
+	genaop(tstmt(,'lea',t1,'a(' t1 '+cfp_b)'))	:(return)
 
 *  -(x), register indirect, pre decrement
 arg.c.11
 	t1 = regmap[substr(txt,3,2)]
 	getarg = pre t1 post
-	genbop(tstmt(,'lea',t1,'[' t1 '-cfp_b]')) :(return)
+	genbop(tstmt(,'lea',t1,'a(' t1 '-cfp_b)')) :(return)
 
 * int(x)
 * dlbl(x)
@@ -686,8 +687,12 @@ arg.c.16 getarg = txt				:(return)
 arg.c.17 getarg = txt				:(return)
 
 *  =dlbl
-arg.c.18
+arg.c.18	
+	ne(if_osx)				:s(arg.c.18.1)
 	getarg = substr(txt,2)			:(return)
+arg.c.18.1
+	getarg = substr(txt,2)			:(return)
+* ... DS TBSL NEW
 
 *  *dlbl
 arg.c.19
@@ -1388,7 +1393,7 @@ g.psc
 	t1 = getarg(i1)
 	t2 = i.type(i2)
 	((ifreg(i2), ge(t2,1) le(t2,2))
-+	genop('lea',t1,'[cfp_f+' t1 '+' getarg(i2) ']')) :s(opdone)
++	genop('lea',t1,'a(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
 	genop('add',t1,'cfp_f')
 	eq(i.type(i2))				:s(opdone)
 *
@@ -1404,7 +1409,7 @@ g.plc.1
 	t1 = getarg(i1)
 	t2 = i.type(i2)
 	((ifreg(i2), ge(t2,1) le(t2,2))
-+	genop('lea',t1,'[cfp_f+' t1 '+' 'cfp_b*' getarg(i2) ']')) :s(opdone)
++	genop('lea',t1,'a(cfp_f+' t1 '+' 'cfp_b*' getarg(i2) ')')) :s(opdone)
 	genop('add',t1,'cfp_f')
 	eq(i.type(i2))				:s(opdone)
 *
@@ -1671,8 +1676,8 @@ g.mvw
 g.mwb
 	genop('shr','wa','log_cfp_b')
 	genop('std')
-	genop('lea','xl','[xl-cfp_b]')
-	genop('lea','xr','[xr-cfp_b]')
+	genop('lea','xl','a(xl-cfp_b)')
+	genop('lea','xr','a(xr-cfp_b)')
  	genrep('movs_w')
 	genop('cld')				:(opdone)
 
@@ -1837,7 +1842,6 @@ g.sec.7
 
 *	allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
-	output = '  max.err ' max.err
 	genopl('err_:','xchg',reg.wa,'m(' rcode ')')
 						:(opdone)
 
@@ -1877,7 +1881,7 @@ opdone.6 astmts.n = bstmts.n = cstmts.n =	:(return)
 flush_end
 
 report
-	output = lpad(num,10) '  ' text		:(return)
+	output = lpad(num,7) tab text		:(return)
 
 
 g.end
@@ -1902,15 +1906,16 @@ g.end.2
         report(max.err,		'maximum err/erb number')
         report(prc.count1, 	'prc count')
         output  = '  ' gt(prc.count,prc.count1)
-.	  '  differing counts for n-procedures:'
+.	  'differing counts for n-procedures:'
 .	  ' inp ' prc.count1 ' prc ' prc.count
         differ(nerrors) report(nerrors,'errors detected')
 
-	errfile = '* ' max.err ' maximum err/erb number'
-	errfile  = '* ' prc.count ' prc count'
+	errfile = '* ' max.err 'maximum err/erb number'
+	errfile  = '* ' prc.count 'prc count'
 .		differ(lasterror) '  the last error was in line ' lasterror
 
 	&code   = ne(nerrors) 2001
         report(collect(), 'free words')
+	report(time(),'execution time ms')
 	:(end)
 end
