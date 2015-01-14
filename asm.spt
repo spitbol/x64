@@ -101,6 +101,7 @@
 	define('genrep(op)l1,l2)')
 	define('getarg(iarg)txt,typ,pre,post')
 	define('getlea(iarg)txt,typ,pre,post')
+	define('getval(iarg)txt,typ,pre,post')
 	define('ifreg(iarg)')
 	define('memmem()t')
 	define('prcent(n)')
@@ -127,17 +128,19 @@
 	os = 'unix'; ws = 64
 
 	options = host(0) ' '
-	options break('-') . os '-' rem . time
-	target = os '-' ws
+	options break('_') . os '_' rem . time
+	target = os '_' ws
 	report(target,'target')
+
 	fileprefix = "s"
 
 *	cfp_b is bytes per word, cfp_c is characters per word
 *       these should agree with values used in translator
 * set target-dependent configuration parameters
-	:($('config.' ws))
+	output = 'config.'  target
+	:($('config.' target))
 
-config.32
+config.unix_32
 	cfp_b = 4
 	cfp_c = 4
 	log_cfp_b = '2'
@@ -149,7 +152,8 @@ config.32
 	rel = ''
 						:(config.done)
 
-config.64
+config.unix_64
+config.osx_64
 *	cfp_b is bytes per word, cfp_c is characters per word
 *       these should agree with values used in translator
 	cfp_b = 8
@@ -163,6 +167,9 @@ config.64
 
 config.done
 
+*	rip_mode is needed for osx. See getval()
+
+	rip_mode = (ident(os,'osx'),1,0)
 
 *	set z_trace to enable instruction by instruction trace
 	z_trace = 1
@@ -292,6 +299,11 @@ skip_init.end
 	leacase[03] = .lea.c.3;		leacase[04] = .lea.c.4;		leacase[09] = .lea.c.9;   
 	leacase[12] = .lea.c.12;	leacase[13] = .lea.c.13;	leacase[14] = .lea.c.14
 	leacase[15] = .lea.c.15;		 
+
+	valcase = table(8)
+	valcase[18] = .val.c.18;	valcase[19] = .val.c.19;	valcase[20] = .val.c.20;	
+	valcase[21] = .val.c.21;	valcase[22] = .val.c.22
+
 *
 *  pifatal maps minimal opcodes for which no a code allowed
 *  to nonzero value. such operations include conditional
@@ -686,27 +698,12 @@ arg.c.16 getarg = txt				:(return)
 * signed real
 arg.c.17 getarg = txt				:(return)
 
-*  =dlbl
-arg.c.18	
-	ne(if_osx)				:s(arg.c.18.1)
-	getarg = substr(txt,2)			:(return)
-arg.c.18.1
-	getarg = substr(txt,2)			:(return)
-* ... DS TBSL NEW
-
-*  *dlbl
+arg.c.18
 arg.c.19
-	getarg = 'cfp_b*' substr(txt,2)		:(return)
-
-*  =name (data section)
 arg.c.20
 arg.c.21
-        getarg =  substr(txt,2) 			:(return)
-
-*  =name (program section)
 arg.c.22
-        getarg =  substr(txt,2)   		:(return)
-
+	getarg = getval(iarg)			:(return)
 *  pnam, eqop
 arg.c.23
 arg.c.24 getarg = txt				:(return)
@@ -755,6 +752,36 @@ lea.c.15
 	txt break('(') . t1 '(' len(2) . t2
 	getlea = pre    t1 '+'  regmap[t2] 	post
 							:(return)
+-stitl getval(iarg)
+getval
+	pre = 'm('
+	post = ')'	
+
+	txt = i.text(iarg)
+	typ = i.type(iarg)
+	eq(typ)					:f($(valcase[typ]))
+	getarg = txt				:(return)
+
+*  =dlbl
+val.c.18	
+*	ne(if_osx)				:s(val.c.18.1)
+	getval = substr(txt,2)			:(return)
+val.c.18.1
+	getval = substr(txt,2)			:(return)
+* ... DS TBSL NEW
+
+*  *dlbl
+val.c.19
+	getval = 'cfp_b*' substr(txt,2)		:(return)
+
+*  =name (data section)
+val.c.20
+val.c.21
+        getval =  substr(txt,2) 		:(return)
+
+*  =name (program section)
+val.c.22
+        getval =  substr(txt,2)   		:(return)
 
 -stitl memmem()t
 memmem

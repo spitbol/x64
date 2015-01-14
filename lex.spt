@@ -372,7 +372,7 @@
 *
 *  default the parameter string if none present
 *
-	target = (differ(host(0)) host(0), "unix-64")
+	target = (differ(host(0)) host(0), "unix_64")
 	parm = "s"
 	filenamc = parm '.cnd'
 	filenami = parm '.min'
@@ -442,10 +442,11 @@ main2
 . 'ch_sq[039]ch_u_[095]ch_ob[091]ch_cb[093]ch_ht[009]ch_vt[011]'
 . 'ch_ey[094]iodel[032]' )
 * set target-dependent configuration parameters
+	output = 'config.' target
 	:($('config.' target))
 
 							:(config.done)
-config.unix-32
+config.unix_32
 	equ_defs['cfp_a'] = '256'
 	equ_defs['cfp_b'] = '4'
 	equ_defs['cfp_c'] = '4'
@@ -459,8 +460,8 @@ config.unix-32
 *	use 6 words, or 24 characters, for hash in x32
 	equ_defs['e_hnw'] = '6'
 							:(config.done)
-config.unix-64
-config.osx-64
+config.unix_64
+config.osx_64
 	equ_defs['cfp_a'] = '256'
 	equ_defs['cfp_b'] = '8'
 	equ_defs['cfp_c'] = '8'
