@@ -17,12 +17,35 @@
 ;     you should have received a copy of the gnu general public license
 ;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 
+	%define	os	unix	; default
+	%define	unix
+	%define	ws	64	; default
+
+%ifdef	osx_64
+	%define	os	osx
+	%define	osx
+	%define	ws	64
+	default	rel		; use rip addressing
+%endif
+
+%ifdef	unix_32
+	%define	os	unix
+	%define	unix
+	%define	ws	32
+%endif
+
+%ifdef	unix_64
+	%define	os	unix
+	%define	unix
+	%define	ws	64
+%endif
+
 	%define m_char	byte	; reference to byte in memory
 	%define d_char	db	; define value of byte
 	%define m_real	qword	; reference to floating point value in memory
 	%define d_real	dq	; define value for floating point
 
-%ifdef	m32
+%if	ws=32
 	%define	xl	esi
 	%define	xt	esi
 	%define xr	edi
@@ -58,8 +81,6 @@
 	%define m(ref) dword[ref]
 	%define a(ref) [ref]
 %else
-	%define		m64		// m64 is the default
-	default	rel
 	%define	xl	rsi
 	%define	xt	rsi
 	%define	xr	rdi

@@ -163,13 +163,6 @@ minimal_engts	equ	12
 ; ; words saved during exit(-3)
 ; ;
 	align cfp_b
-%ifdef	m64
-	align	16
-%endif
-reg_zzz:	d_word	0
-		d_word	0
-		d_word	0
-		d_word	0
 reg_block:
 reg_ia: d_word	0		; register ia (ebp)
 reg_w0:	d_word	0        	; register wa (ecx)
@@ -547,7 +540,7 @@ syscall_init:
 	mov     m(reg_wc),wc      ; (also _reg_ia)
 	mov	m(reg_xr),xr
 	mov	m(reg_xl),xl
-	mov	m(reg_ia),ia
+;	mov	m(reg_ia),ia
 	ret
 
 syscall_exit:
@@ -558,8 +551,8 @@ syscall_exit:
 	mov	wb,m(reg_wb)
 	mov     wc,m(reg_wc)      ;
 	mov	xr,m(reg_xr)
-	mov	xl,m(reg_xl)
 	mov	ia,m(reg_ia)
+	mov	xl,m(reg_xl)
 	cld
 	mov	w0,m(reg_pc)
 	jmp	w0

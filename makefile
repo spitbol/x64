@@ -11,6 +11,7 @@ OS=$(os)
 WS=$(ws)
 DEBUG=$(debug)
 TARGET=$(OS)-$(WS)
+ATARGET=$(OS)_$(WS)
 
 ARCH=m$(WS)
 ARCHDEF=-D m$(WS)
@@ -46,9 +47,9 @@ endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMFLAGS = -f $(ELF) -dm$(WS) -dosx
+ASMFLAGS = -f $(ELF) -dm$(WS) -d$(ATARGET)
 else
-ASMFLAGS = -g -f $(ELF) -dm$(WS) -dosx
+ASMFLAGS = -g -f $(ELF) -dm$(WS) -d$(ATARGET)
 endif
 
 # Tools for processing Minimal source file.
