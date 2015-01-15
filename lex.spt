@@ -701,7 +701,7 @@ rdline	rdline = infile				:f(rl02)
 *
 	leq( substr( rdline,1,1 ),'.' )		:f(other)
 	rdline ? p.condasm			:s( $catab[condcmd] )
-rl00	leq( substr( rdline,1,1 ),'*' )		:f(rl01)
+rl00	leq( substr( rdline,1,1 ),';' )		:f(rl01)
 
 *
 *  only print comment if requested.

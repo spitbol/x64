@@ -96,15 +96,17 @@
 	define('genaop(stmt)')
 	define('genbop(stmt)')
         define('genlab()')
+        define('genrip()')
 	define('genop(gopc,gop1,gop2,gop3)')
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
 	define('getarg(iarg)txt,typ,pre,post')
 	define('getlea(iarg)txt,typ,pre,post')
-	define('getrip(iarg)txt,typ,pre,post')
+	define('getrip(iarg)txt,typ,pre,post,ent,lbl')
 	define('getval(iarg)txt,typ,pre,post')
 	define('ifreg(iarg)')
 	define('memmem()t')
+	define('outline(txt)')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
 	define('report(num,text)')
@@ -129,20 +131,24 @@
 *  argument string now of form  os-ws, for example unix-64 (the default)
 	os = 'unix'; ws = 64
 
-	options = host(0) ' '
-	options break('_') . os '_' rem . time
-	target = os '_' ws
+	options = host(0) 
+	
+	options break('_') . os '_' rem . ws
 	report(target,'target')
+
+*  xtrace_opt turns on tracing for executable instructions
+
+	xtrace_opt = 1  
+	xtrace = 0
 
 	fileprefix = "s"
 
 *	cfp_b is bytes per word, cfp_c is characters per word
 *       these should agree with values used in translator
 * set target-dependent configuration parameters
-	output = 'config.'  target
-	:($('config.' target))
+	:($('config.' ws))
 
-config.unix_32
+config.32
 	cfp_b = 4
 	cfp_c = 4
 	log_cfp_b = '2'
@@ -154,8 +160,7 @@ config.unix_32
 	rel = ''
 						:(config.done)
 
-config.unix_64
-config.osx_64
+config.64
 *	cfp_b is bytes per word, cfp_c is characters per word
 *       these should agree with values used in translator
 	cfp_b = 8
@@ -169,10 +174,12 @@ config.osx_64
 
 config.done
 
+	output = 'os:' os ':  ws:' ws ':'
 *	rip_mode is needed for osx. See getval()
 
-	rip_mode = (ident(os,'osx'),1,0)
+	rip_mode = (ident(os,'osx') 1, 0)
 
+	output = 'rip_mode ' rip_mode
 	ne(rip_mode) ripinit()
 
 *	set z_trace to enable instruction by instruction trace
@@ -267,10 +274,14 @@ skip_init.end
 *
 	genlabels = 0
 
+*  riplabel is count of generated rip (osx rip address mode) labels
+
+	riplabels = 0
+
 *
 *  initialize variables
 *
-	labcnt = noutlines = nlines = nstmts = ntarget = nerrors = 0
+	labcnt = outlines = nlines = nstmts = ntarget = nerrors = 0
 	lastopc = lastop1 = lastop2 =
 	data_lc = 0
 	max_exi = 0
@@ -308,6 +319,8 @@ skip_init.end
 	valcase[18] = .val.c.18;	valcase[19] = .val.c.19;	valcase[20] = .val.c.20;	
 	valcase[21] = .val.c.21;	valcase[22] = .val.c.22
 
+	riptable = table(500)
+	rip_count = 0
 	ripcase = table(50)
 	ripcase[18] = .rip.c.18;	ripcase[19] = .rip.c.19;	ripcase[20] = .rip.c.20;	
 	ripcase[21] = .rip.c.21;	ripcase[22] = .rip.c.22
@@ -389,6 +402,7 @@ flgs2
 	tab = char(9)
         comment.delim = ';'
 
+	w0_arg = minarg(8,'w0')
 *  branchtab maps minimal opcodes 'beq', etc to desired
 *  target instruction
 *
@@ -507,15 +521,15 @@ err_ok
 *  then copy contents of m.hdr (if it exists) to outfile
 *  stop at line with just 'end' or end of file
 *
-	noutlines = noutlines + 1
+	outlines = outlines + 1
 
 	input(.hdrfile,4,'m.hdr')	:f(nohdr)
 	havehdr = 1
 *        output = '  input header file:  ' hdr  '.hdr'
 hdrcopy line = hdrfile				:f(hdrend)
 	ident(line,'end')			:s(nohdr)
-	outfile = line
-	noutlines = noutlines + 1		:(hdrcopy)
+	outline(line)
+						:(hdrcopy)
 hdrend	havehdr =
 nohdr
 *
@@ -552,8 +566,7 @@ opnext	thisline = readline()
 * here if in code, so output label now
 * defer label processing for ent to allow emission of alignment ops for x86.
 	ident(incode,'ent')			:s(opnext.1)
-	outfile = thislabel
-	outlines = outlines + 1
+	outline(thislabel)
 * set lastlabel so can check to avoid emitting duplicate label definitions
 	lastlabel = thislabel
 * clear out label info once generated
@@ -600,11 +613,10 @@ crack   nstmts  = nstmts + 1
 *  the error are written to the listing (including error chain), and
 *  the appropriate counts are updated.
 *
-error   outfile = '* *???* ' thisline
-	outfile = '*       ' text
+error   outline('* *???* ' thisline)
+	outline('*       ' text)
 .	          (ident(lasterror),'. last error was line ' lasterror)
-	lasterror = noutlines
-	noutlines = noutlines + 2
+	lasterror = outlines
 	le(nerrors = nerrors + 1, 10)		:s(dsout)
         output = 'too many errors, quitting'  :(end)
 
@@ -618,7 +630,11 @@ genbop
 
 -stitl genlab()
 *  generate unique labels for use in generated code
-genlab	genlab = '_l' lpad(genlabels = genlabels + 1,4,'0') :(return)
+genlab	genlab = 'l_' lpad(genlabels = genlabels + 1,4,'0') :(return)
+
+-stitl genrip()
+*  generate unique labels for use in generated code
+genrip	genrip = 'r_' lpad(riplabels = riplabels + 1,4,'0') :(return)
 
 -stitl genopl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
@@ -640,33 +656,33 @@ getarg
 	txt = i.text(iarg)
 	typ = i.type(iarg)
 	eq(typ)					:f($(argcase[typ]))
-	getarg = txt				:(return)
+	getarg = txt				:(arg.done)
 
 * int
-arg.c.1 getarg = txt				:(return)
+arg.c.1 getarg = txt				:(arg.done)
 
 * dlbl
-arg.c.2 getarg = txt				:(return)
+arg.c.2 getarg = txt				:(arg.done)
 
 * wlbl, clbl
 arg.c.3
-arg.c.4 getarg = pre txt post			:(return)
+arg.c.4 getarg = pre txt post			:(arg.done)
 
 * elbl, plbl
 arg.c.5
-arg.c.6 getarg = txt				:(return)
+arg.c.6 getarg = txt				:(arg.done)
 
 * w,x, map register name
 arg.c.7
 arg.c.8
-	getarg = regmap[txt]			:(return)
+	getarg = regmap[txt]			:(arg.done)
 
 * (x), register indirect
 arg.c.9
 	txt len(1) len(2) . typ
 	typ = regmap[typ]
 	getarg = pre typ post
-						:(return)
+						:(arg.done)
 
 * (x)+, register indirect, post increment
 * use lea reg,[reg+cfp_b] unless reg is esp, since it takes an extra byte.
@@ -676,14 +692,14 @@ arg.c.10
 	txt = substr(txt,2,2)
 	t1 = regmap[txt]
 	getarg = pre t1 post
-	(ident(txt,'xs') genaop(tstmt(,'add',t1,'cfp_b'))) :s(return)
-	genaop(tstmt(,'lea',t1,'a(' t1 '+cfp_b)'))	:(return)
+	(ident(txt,'xs') genaop(tstmt(,'add',t1,'cfp_b'))) :s(arg.done)
+	genaop(tstmt(,'lea',t1,'a(' t1 '+cfp_b)'))	:(arg.done)
 
 *  -(x), register indirect, pre decrement
 arg.c.11
 	t1 = regmap[substr(txt,3,2)]
 	getarg = pre t1 post
-	genbop(tstmt(,'lea',t1,'a(' t1 '-cfp_b)')) :(return)
+	genbop(tstmt(,'lea',t1,'a(' t1 '-cfp_b)')) :(arg.done)
 
 * int(x)
 * dlbl(x)
@@ -691,35 +707,38 @@ arg.c.12
 arg.c.13
 	txt break('(') . t1 '(' len(2) . t2
 	getarg = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
-							:(return)
+							:(arg.done)
 
 *  name(x), where name is in working section
 arg.c.14
 arg.c.15
 	txt break('(') . t1 '(' len(2) . t2
 	getarg = pre    t1 '+'  regmap[t2] 	post
-							:(return)
+							:(arg.done)
 
 * signed integer
-arg.c.16 getarg = txt				:(return)
+arg.c.16 getarg = txt				:(arg.done)
 
 * signed real
-arg.c.17 getarg = txt				:(return)
+arg.c.17 getarg = txt				:(arg.done)
 
 arg.c.18
 arg.c.19
 arg.c.20
 arg.c.21
 arg.c.22
-	getarg = getval(iarg)			:(return)
+	getarg = getval(iarg)			:(arg.done)
 *  pnam, eqop
 arg.c.23
-arg.c.24 getarg = txt				:(return)
+arg.c.24 getarg = txt				:(arg.done)
 
 * ptyp, text, dtext
 arg.c.25
 arg.c.26
-arg.c.27 getarg = txt				:(return)
+arg.c.27 getarg = txt				:(arg.done)
+arg.done
+	ne(xtrace) outline('; arg ' typ ':' txt   ' -> ' getarg)
+						:(return)
 
 -stitl getlea(iarg)
 getlea
@@ -768,32 +787,42 @@ getrip
 
 	pre = 'm('
 	post = ')'	
-
 	txt = i.text(iarg)
 	typ = i.type(iarg)
-	eq(typ)					:f($(ripcase[typ]))
-	getarg = txt				:(return)
-
-*  =dlbl
-rip.c.18	
-*	ne(if_osx)				:s(rip.c.18.1)
-	getrip = substr(txt,2)			:(return)
-rip.c.18.1
-	getrip = substr(txt,2)			:(return)
-* ... DS TBSL NEW
+	Eq(typ)					:f($(ripcase[typ]))
+	getrip = txt				:(rip.done)
 
 *  *dlbl
 rip.c.19
-	getrip = 'cfp_b*' substr(txt,2)		:(return)
+	getrip = 'cfp_b*' substr(txt,2)		:(rip.done)
 
+*  =dlbl
+rip.c.18	
 *  =name (data section)
 rip.c.20
 rip.c.21
-        getrip =  substr(txt,2) 		:(return)
-
 *  =name (program section)
 rip.c.22
-        getrip =  substr(txt,2)   		:(return)
+        getrip =  substr(txt,2)   		:(rip.done)
+
+rip.done
+*  see if have generated location for argument with same txt. Use it if so, else make new one.
+	ent = riptable[txt]
+	differ(ent)				:s(rip.ent)
+*  here to make new entry for generated location
+	rip_count = rip_count + 1
+	lbl = genrip()
+	riptable[txt] = lbl
+	ent = lbl
+	genop('segment','.data')
+	genopl(lbl,'d_word',getrip)
+	genop('segment','.text')
+rip.ent
+*	generate reference via w0 if needed
+	genop('mov',w0,pre ent post)
+	getrip = w0
+						:(return)
+	
 
 -stitl getval(iarg)
 getval
@@ -803,37 +832,25 @@ getval
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
-	outfile = ';getval ' txt ' ' type
 	eq(typ)					:f($(valcase[typ]))
-	getarg = txt				:(return)
+	getarg = txt				:(val.done)
 
 *  =dlbl
 val.c.18	
-*	ne(if_osx)				:s(val.c.18.1)
-	getval = substr(txt,2)			
-	outfile = '; getval ' getval
-						:(return)
+	getval = substr(txt,2)			:(val.done)
 val.c.18.1
-	getval = substr(txt,2)			
-	outfile = '; getval ' getval
-						:(return)
-* ... DS TBSL NEW
-
+	getval = substr(txt,2)			:(val.done)
 *  *dlbl
 val.c.19
-	getval = 'cfp_b*' substr(txt,2)		
-	outfile = '; getval ' getval
-						:(return)
+	getval = 'cfp_b*' substr(txt,2)		:(val.done)
 *  =name (data section)
 val.c.20
 val.c.21
-        getval =  substr(txt,2) 		
-	outfile = '; getval ' getval
-						:(return)
+        getval =  substr(txt,2)			:(val.done)
 *  =name (program section)
 val.c.22
-        getval =  substr(txt,2)   		
-	outfile = '; getval ' getval
+        getval =  substr(txt,2)			:(val.done)
+val.done
 						:(return)
 
 -stitl memmem()t
@@ -847,8 +864,14 @@ memmem
   eq(ismem[i.type(i2)])				:s(return)
 *  here if memory-memory case, load second argument
   t = getarg(i2)
-  i2 = minarg(8,'w0')
+  i2 = w0_arg
   genop('mov','w0',t)				:(return)
+
+-stitl outline(txt)
+outline	
+	outlines = outlines + 1		
+	outfile = txt
+						:(return)
 
 -stitl prcent(n)
 prcent prcent = 'prc_+cfp_b*' ( n - 1)	:(return)
@@ -904,14 +927,13 @@ outstmt4
 	chktrace()
 outstmt5
 	ident(stmtout)				:s(return)
-	outfile = stmtout
+	outline(stmtout)
 	ntarget	= ntarget + 1
-	noutlines = noutlines + 1
 *
 *  record code labels in table with delimiter removed.
 	(ge(sectnow,5) differ(thislabel))	:f(return)
 	label ? break(':') . label		:f(return)
-	labtab<label> = noutlines		:(return)
+	labtab<label> = outlines		:(return)
 
 -stitl  chktrace()
 chktrace
@@ -951,7 +973,7 @@ chktrace
 
 *	stmtout ? break_ws  . label spanws  rem . body	:f(outstmt5)
 * 	stmtout = tab body
-*	outfile = label
+*	outline(label
 *	label =
 	ne(in_gcol)				:s(return)
 chktrace.1
@@ -968,8 +990,7 @@ genz
 	gt(z_limit)  gt(z_count, z_limit)	:s(return)
 *	always generate trace if at label definition
 	z_desc = '"' replace(thisline,'|',' ') '"'
-	outfile = tab 'zzz' tab	z_count ',' nlines ',' z_desc
-	outlines = outlines + 1
+	outline(tab 'zzz' tab	z_count ',' nlines ',' z_desc)
 						:(return)
 
 -stitl prsarg(iarg)
@@ -987,9 +1008,9 @@ readline readline = infile                      :f(rl02)
 	nlines  = nlines + 1
 	ident( readline )			:s(readline)
 readline.0
-	leq( substr(readline,1,1 ),'*' )       	:f(rl01)
-	z_skip = ident(readline,'*z+') 0	:s(readline)
-	z_skip = ident(readline,'*z-') 1	:s(readline)
+	leq( substr(readline,1,1 ),';' )       	:f(rl01)
+	z_skip = ident(readline,';z+') 0	:s(readline)
+	z_skip = ident(readline,';z-') 1	:s(readline)
 * force skip of full line comments
 	:(readline)
 *
@@ -997,12 +1018,15 @@ readline.0
 *
 	ident(strip_comment,'n')		:f(readline)
         readline len(1) = ';'
-	outfile = readline
-	noutlines = noutlines + 1               :(readline)
+	outlines = outlines + 1               :(readline)
 *
 *  here if not a comment line
 *
-rl01						:(return)
+rl01	
+*  find out why need to add 2 here
+*  add 2 since need to account for this line and one that will follow
+	ne(xtrace) outline(';:' outlines + 2 ':' tab readline)
+					:(return)
 *
 *  here on eof
 *
@@ -1142,15 +1166,14 @@ g.ent
 
 	t1 = i.text(i1)
 *        genop('align',2)
-	outfile = tab 'align' tab '2'
+	outline(tab 'align' tab '2')
 	differ(t1)				:s(g.ent.1)
-	outfile = tab 'nop'
+	outline(tab 'nop')
 						:(g.ent.2)
 g.ent.1
-	outfile = tab 'db' tab	t1
+	outline(tab 'db' tab	t1)
 
 g.ent.2
-	outlines = outlines + 2
 	genopl(thislabel)
 *  note that want to attach label to last instruction
 *	t1 = cstmts[cstmts.n]
@@ -1894,7 +1917,8 @@ g.sec.4 genop('global','esec03')
         genopl('esec03' ':')
         genop('segment .data')
         genop('global','sec04')
-        genopl('sec04' ':')     :(opdone)
+        genopl('sec04' ':')     
+						:(opdone)
 
 *  here at start of program section.  if any n type procedures,
 *  put out entry-word block declaration at end of working storage
@@ -1911,7 +1935,10 @@ g.sec.5
         genopl('end_min_data' ':')
         genop('segment .text')
         genop('global','sec05')
-        genopl('sec05' ':')     :(opdone)
+        genopl('sec05' ':')     
+*  enable tracing if desired
+	xtrace = differ(xtrace_opt) 1
+						:(opdone)
 
 *  stack overflow section.  output exi__n tail code
 g.sec.6
@@ -1976,8 +2003,7 @@ g.end
 *  here to copy remaining part from hdr file
 g.end.1	line = hdrfile				:f(g.end.2)
 	ntarget = ntarget + 1
-	noutlines = noutlines + 1
-	outfile = line				:(g.end.1)
+	outline(line)				:(g.end.1)
 g.end.2
 
 * here at end of code generation.
