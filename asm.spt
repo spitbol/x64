@@ -1,3 +1,4 @@
+	txt break('(') . t1 '(' len(2) . t2
 -title mincod: phase 2 translation from minimal tokens to 80386 code
 -stitl description
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
@@ -67,6 +68,7 @@
 *  keyword initialization
 *
 	&anchor = 1;	&stlimit = 10000000;	&trim	= 1;  &dump = 1
+	&dump = 3
 *
 *  useful constants
 *
@@ -102,7 +104,7 @@
 	define('genrep(op)l1,l2)')
 	define('getarg(iarg)txt,typ,pre,post')
 	define('getlea(iarg)txt,typ,pre,post')
-	define('getrip(iarg)txt,typ,pre,post,ent,lbl')
+	define('getrip(iarg)txt,typ,pre,post,ent,lb,var,reg')
 	define('getval(iarg)txt,typ,pre,post')
 	define('ifreg(iarg)')
 	define('memmem()t')
@@ -322,8 +324,9 @@ skip_init.end
 	riptable = table(500)
 	rip_count = 0
 	ripcase = table(50)
-	ripcase[18] = .rip.c.18;	ripcase[19] = .rip.c.19;	ripcase[20] = .rip.c.20;	
-	ripcase[21] = .rip.c.21;	ripcase[22] = .rip.c.22
+	ripcase[14] = .rip.c.14;	ripcase[15] = .rip.c.15;	ripcase[18] = .rip.c.18;	
+	ripcase[19] = .rip.c.19;	ripcase[20] = .rip.c.20;	ripcase[21] = .rip.c.21;	
+	ripcase[22] = .rip.c.22
 
 *
 *  pifatal maps minimal opcodes for which no a code allowed
@@ -712,8 +715,7 @@ arg.c.13
 *  name(x), where name is in working section
 arg.c.14
 arg.c.15
-	txt break('(') . t1 '(' len(2) . t2
-	getarg = pre    t1 '+'  regmap[t2] 	post
+	getarg = getrip(iarg)
 							:(arg.done)
 
 * signed integer
@@ -789,9 +791,16 @@ getrip
 	post = ')'	
 	txt = i.text(iarg)
 	typ = i.type(iarg)
-	Eq(typ)					:f($(ripcase[typ]))
+	eq(typ)					:f($(ripcase[typ]))
 	getrip = txt				:(rip.done)
 
+*  name(x), where name is in working section
+rip.c.14
+rip.c.15
+	txt break('(') . var '(' len(2) . reg
+*	getrip = pre    var '+'  regmap[t2] 	post
+	getrip = var 
+						:(rip.done)
 *  *dlbl
 rip.c.19
 	getrip = 'cfp_b*' substr(txt,2)		:(rip.done)
@@ -815,23 +824,26 @@ rip.done
 	riptable[txt] = lbl
 	ent = lbl
 	genop('segment','.data')
-	genopl(lbl,'d_word',getrip)
+	genopl(lbl ':','d_word',getrip)
 	genop('segment','.text')
 rip.ent
 *	generate reference via w0 if needed
 	genop('mov',w0,pre ent post)
+	differ(reg)	genop('add',w0,reg)
 	getrip = w0
+	outfile = ne(xtrace) '; getrip ' ent
 						:(return)
 	
 
 -stitl getval(iarg)
 getval
-	getval = ne(rip_mode) getrip(iarg)	:s(return)
 	pre = 'm('
 	post = ')'	
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
+	output = lt(typ, 18) gt(typ.22) ' impossible type for getval ' typ
+	getval = ne(rip_mode) getrip(iarg)	:s(return)
 	eq(typ)					:f($(valcase[typ]))
 	getarg = txt				:(val.done)
 
@@ -1139,8 +1151,21 @@ g.bsw	t1 = getarg(i1)
 	genop('cmp',t1,getarg(i2))
 	genop('jge',getarg(i3))
 * here after default case.
-g.bsw1	genop('jmp', 'm(' t2 '+' t1 '*cfp_b)' )
+g.bsw1	
+	ne(rip_mode)				:s(g.bsw.2)	
+	genop('jmp', 'm(' t2 '+' t1 '*cfp_b)' ) :(g.bsw.3)
+g.bsw.2
+* in rip_mode, need to generate location to host destination
+	lbl = genrip()
+	genop('segment','.data')
+	genopl(lbl,'d_word',t2 )
         genop('segment .data')
+	genop('segment','.text')
+	genop('mov',w0,t1)
+	genop('sal',w0,'log_cfp_b')
+	genop('add',w0,'m(' lbl ')')
+	genop('jmp', w0)
+g.bsw.3
         genopl(t2 ':')
 	z_suspend = 0
 						:(opdone)
@@ -1826,7 +1851,10 @@ genrep
 						:(return)
 
 g.chk
-	genop('cmp','xs','lowspmin')
+* load address of lowspmin in case we are in rip mode
+*	genop('mov',w0,'m(lowspmin.a)')
+	genop('mov',w0,'m(lowspmin)')
+	genop('cmp','xs',w0)
 	genop('jb','sec06')
 						:(opdone)
 

@@ -417,6 +417,7 @@ startup:
 
 
 
+lowspmin.a:	d_word	lowspmin
 
 	global	stackinit
 stackinit:
