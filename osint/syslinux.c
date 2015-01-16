@@ -31,7 +31,7 @@ This file is part of Macro SPITBOL.
 #include <fcntl.h>
 #undef brk  // remove sproto redefinition
 #undef sbrk // remove sproto redefinition
-#include <malloc.h>
+//#include <malloc.h>
 
 // Size and offset of fields of a structure.  Probably not portable.
 #define FIELDSIZE(str, fld) (sizeof(((str *)0)->fld))
