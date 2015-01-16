@@ -218,7 +218,7 @@ extern	int			zysxi ( void );
 
 // prototypes for standard system-level functions used by OSINT
 
-#include <unistd.h>
+//#include <unistd.h>
 #define LSEEK lseek
 
 // Redefine sbrk and brk to use custom routines in syslinux.c

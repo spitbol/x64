@@ -26,6 +26,7 @@ This file is part of Macro SPITBOL.
 /   dependencies.  Many of these values will be changed when porting
 /   the OS interface to another machine/operating system.
 */
+#include <stddef.h>
 #include "systype.h"
 
 /*

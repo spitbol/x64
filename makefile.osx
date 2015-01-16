@@ -1,4 +1,4 @@
-# SPITBOL makefile using gcc
+# SPITBOL makefile using tcc
 
 ws?=64
 
@@ -10,15 +10,15 @@ os?=unix
 OS=$(os)
 WS=$(ws)
 DEBUG=$(debug)
+OTARGET=$(OS)-$(WS)
 TARGET=$(OS)_$(WS)
 
 ARCH=m$(WS)
 ARCHDEF=-D m$(WS)
 
 ifeq ($(OS),unix)
-CC=gcc
-CC=clang
-# use llvm for osx bootstrap
+#CC=tools/tcc/bin/tcc
+CC=tcc
 ELF=elf$(WS)
 else
 CC=llvm
@@ -36,19 +36,20 @@ OSINT=./osint
 
 vpath %.c $(OSINT)
 
-ASM	=	nasm
+#ASM	=	nasm
+ASM	=	./tools/nasm/bin/nasm
 
 ifeq	($(DEBUG),0)
-CFLAGS= -D m$(WS) -m$(WS) 
+CFLAGS= -D m$(WS) -m$(WS) -Itools/tcc/include
 else
-CFLAGS= -D m$(WS) -g -m$(WS)
+CFLAGS= -D m$(WS) -g -m$(WS)-Itools/tcc/include
 endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMFLAGS = -f $(ELF) -d m$(WS)
+ASMFLAGS = -f $(ELF) -d$(TARGET)
 else
-ASMFLAGS = -g -f $(ELF) -d m$(WS)
+ASMFLAGS = -g -f $(ELF) -d$(TARGET)
 endif
 
 # Tools for processing Minimal source file.
@@ -120,31 +121,15 @@ VOBJS =	s.o
 OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 
 # link spitbol with static linking
+#LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a $(MUSL)/lib/libc.a 
+LIBS = -Ltools/tcc/lib -Ltools/musl/lib
 spitbol: $(OBJS)
-ifeq ($(WS),32)
-	$(CC) $(CFLAGS) $(OBJS) -static -lm -o$(EXECUTABLE) -Wl,-M,-Map,$(EXECUTABLE).map
-endif
-ifeq ($(WS),64)
-	$(CC) $(CFLAGS) $(OBJS) -static -lm -ospitbol -Wl,-M,-Map,spitbol.map
-endif
-
-# link spitbol with static linking without checking objs (for bootstrapping)
-bootbol: 
-ifeq ($(WS),32)
-	$(CC) $(CFLAGS) $(OBJS) -lm -o$(EXECUTABLE) 
-endif
-ifeq ($(WS),64)
-	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol 
-endif
+#	$(CC) $(CFLAGS) $(LIBS) -static -lm $(OBJS) -o$(EXECUTABLE) 
+	$(CC) $(CFLAGS) $(LIBS) -lm $(OBJS) -o$(EXECUTABLE) 
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS)
-ifeq ($(WS),32)
-	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol -Wl,-M,-Map,$(EXECUTABLE).map
-endif
-ifeq ($(WS),64)
-	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol -Wl,-M,-Map,$(EXECUTABLE).map
-endif
+	$(CC) $(CFLAGS) $(OBJS) $(LIBS) lm -ospitbol 
 
 # Assembly language dependencies:
 err.o: err.s
