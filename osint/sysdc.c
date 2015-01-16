@@ -37,8 +37,8 @@ This file is part of Macro SPITBOL.
 zysdc()
 {
     struct scblk *pheadv = GET_DATA_OFFSET(headv,struct scblk *);
-	return;
     // announce name and copyright
+    	return NORMAL_RETURN;
     if (!dcdone && !(spitflag & NOBRAG))
     {
         dcdone = 1;				// Only do once per run
