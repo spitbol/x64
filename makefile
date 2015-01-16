@@ -1,4 +1,4 @@
-# SPITBOL makefile using tcc
+# SPITBOL makefile using gcc
 
 ws?=64
 
@@ -10,15 +10,14 @@ os?=unix
 OS=$(os)
 WS=$(ws)
 DEBUG=$(debug)
-OTARGET=$(OS)-$(WS)
 TARGET=$(OS)_$(WS)
 
 ARCH=m$(WS)
 ARCHDEF=-D m$(WS)
 
 ifeq ($(OS),unix)
-#CC=tools/tcc/bin/tcc
-CC=tcc
+CC=gcc
+# use llvm for osx bootstrap
 ELF=elf$(WS)
 else
 CC=llvm
@@ -36,20 +35,19 @@ OSINT=./osint
 
 vpath %.c $(OSINT)
 
-#ASM	=	nasm
-ASM	=	./tools/nasm/bin/nasm
+ASM	=	nasm
 
 ifeq	($(DEBUG),0)
-CFLAGS= -D m$(WS) -m$(WS) -Itools/tcc/include
+CFLAGS= -D m$(WS) -m$(WS) 
 else
-CFLAGS= -D m$(WS) -g -m$(WS)-Itools/tcc/include
+CFLAGS= -D m$(WS) -g -m$(WS)
 endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMFLAGS = -f $(ELF) -d$(TARGET)
+ASMFLAGS = -f $(ELF) -d m$(WS)
 else
-ASMFLAGS = -g -f $(ELF) -d$(TARGET)
+ASMFLAGS = -g -f $(ELF) -d m$(WS)
 endif
 
 # Tools for processing Minimal source file.
@@ -121,15 +119,31 @@ VOBJS =	s.o
 OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 
 # link spitbol with static linking
-#LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a $(MUSL)/lib/libc.a 
-LIBS = -Ltools/tcc/lib -Ltools/musl/lib
 spitbol: $(OBJS)
-#	$(CC) $(CFLAGS) $(LIBS) -static -lm $(OBJS) -o$(EXECUTABLE) 
-	$(CC) $(CFLAGS) $(LIBS) -lm $(OBJS) -o$(EXECUTABLE) 
+ifeq ($(WS),32)
+	$(CC) $(CFLAGS) $(OBJS) -static -lm -o$(EXECUTABLE) -Wl,-M,-Map,$(EXECUTABLE).map
+endif
+ifeq ($(WS),64)
+	$(CC) $(CFLAGS) $(OBJS) -static -lm -ospitbol -Wl,-M,-Map,spitbol.map
+endif
+
+# link spitbol with static linking without checking objs (for bootstrapping)
+bootbol: 
+ifeq ($(WS),32)
+	$(CC) $(CFLAGS) $(OBJS) -lm -o$(EXECUTABLE) 
+endif
+ifeq ($(WS),64)
+	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol 
+endif
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LIBS) lm -ospitbol 
+ifeq ($(WS),32)
+	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol -Wl,-M,-Map,$(EXECUTABLE).map
+endif
+ifeq ($(WS),64)
+	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol -Wl,-M,-Map,$(EXECUTABLE).map
+endif
 
 # Assembly language dependencies:
 err.o: err.s
