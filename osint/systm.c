@@ -41,6 +41,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
+#ifdef old
 #include <sys/times.h>
 #define CLK_TCK sysconf(_SC_CLK_TCK)
 
@@ -65,4 +66,10 @@ zystm() {
     SET_IA( (timebuf.tms_utime * (1000/10)) / (CLK_TCK/10) );
     return NORMAL_RETURN;
 }
+#endif
 
+zystm() {
+
+    SET_IA( 600);
+    return NORMAL_RETURN;
+}
