@@ -20,7 +20,7 @@ CC=gcc
 # use llvm for osx bootstrap
 ELF=elf$(WS)
 else
-CC=llvm
+CC=gcc
 ELF=macho$(WS)
 endif
 
