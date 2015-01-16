@@ -17,7 +17,6 @@ ARCHDEF=-D m$(WS)
 
 ifeq ($(OS),unix)
 CC=gcc
-CC=clang
 # use llvm for osx bootstrap
 ELF=elf$(WS)
 else
