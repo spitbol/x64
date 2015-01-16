@@ -45,6 +45,7 @@ zysdc()
 
         write( STDERRFD, "LINUX SPITBOL", 13);
 
+    	return NORMAL_RETURN;
 #if RUNTIME
         write( STDERRFD, " Runtime", 8);
 #endif					// RUNTIME
