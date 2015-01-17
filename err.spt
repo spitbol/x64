@@ -24,10 +24,10 @@
 *
 *  find a near optimum compression for a spitbol error message file.
 *
-*  spitbol -u "machine" -1<input file> -2<output file> err
+*  spitbol -u "target" -1<input file> -2<output file> err
 *
-*  the variable machine is set equal to the uppercase name of the machine
-*  being processed.  usage is optional.
+*  the variable target is set equal to the name of the target machine.
+*  usage is optional.
 *
 *  technique:
 *	the 159 characters from 1 to 31, and 128 to 255 are used to
@@ -103,12 +103,10 @@
 *	      in favor of just using the error array to pick the next
 *	      phrase for compression.
 
-* set machine definition flag, if any.
+* set target definition flag, if any.
 *
-	ident(host(0))				:s(nomachine)
-	$replace(host(0),&lcase,&ucase) = 1
-        output = "machine: " host(0)
-nomachine
+	target = (differ(host(0)) host(0), "unix_64")
+        output = "target: " target
 
 * tab character
 	tab	= char(9)
@@ -396,16 +394,19 @@ readerr_end
         outfile =
 
 *  putout label and compressed error message table
+*  osx visible names must start with '_'.
 *
-	outfile = tab 'global' tab 'errors'
-	outfile = 'errors:' tab 'db' tab '0'
+	prefix = ident(target,"osx_64") "_"
+
+	outfile = tab 'global' tab prefix "errors"
+	outfile = prefix 'errors:' tab 'db' tab '0'
 	seq(" putout(err[i],i)", .i)
 
 *  putout label and phrase table
 *
         outfile =
-	outfile = tab 'global' tab 'phrases'
-	outfile = 'phrases:' tab 'db' tab '0'
+	outfile = tab 'global' tab prefix 'phrases'
+	outfile = prefix 'phrases:' tab 'db' tab '0'
 	seq(" putout(phrase[i],spread(i))", .i)
 
 *  finish up the output file

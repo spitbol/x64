@@ -184,6 +184,7 @@
 	%define	f_adr		_f_adr
 	%define	f_atn		_f_atn
 	%define	f_chk		_f_chk
+	%define	f_chp		_f_chp
 	%define	f_cos		_f_cos
 	%define	f_cpr		_f_cpr
 	%define	f_dvr		_f_dvr
@@ -205,8 +206,8 @@
 	%define	lmodstk		_lmodstk
 	%define	outptr		_outptr
 	%define	rereloc		_rereloc
-	%define	stacksiz		_stacksiz
-	%define	startbrk		_startbrk
+	%define	stacksiz	_stacksiz
+	%define	startbrk	_startbrk
 	%define	swcoup		_swcoup
 	%define	zysaz		_zysaz
 	%define	zysbs		_zysbs

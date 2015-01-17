@@ -30,7 +30,7 @@ ARCH=-D m$(WS) -m$(WS)
 ifeq ($(CC),tcc)
 CC=tools/tcc/bin/tcc
 #LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a $(MUSL)/lib/libc.a 
-CCOPTS= -Dm$(WS) -m$(WS) -I tools/tcc/include $(GFLAG)
+CCOPTS= -D$(TARGET) -Dm$(WS) -m$(WS) -I tools/tcc/include $(GFLAG)
 LDOPTS = -Ltools/tcc/lib -Ltools/musl/lib $(GFLAG) 
 LMOPT=-lm
 else
@@ -169,7 +169,7 @@ s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
 s.err: s.s
 
 err.s: $(MIN).cnd $(ERR) s.s
-	   $(BASEBOL) -1=s.err -2=err.s $(ERR)
+	   $(BASEBOL) -u $(TARGET) -1=s.err -2=err.s $(ERR)
 
 
 # make osint objects
