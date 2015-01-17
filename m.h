@@ -215,6 +215,7 @@
 	%define	stacksiz	_stacksiz
 	%define	startbrk	_startbrk
 	%define	swcoup		_swcoup
+	%define	zysax		_zysax
 	%define	zysaz		_zysaz
 	%define	zysbs		_zysbs
 	%define	zysbx		_zysbx

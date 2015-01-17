@@ -74,6 +74,8 @@ extern word	*edata;
 extern word	*etext;
 #endif					// EXECFILE
 
+extern	long	reg_block;
+
 struct svfilehdr svfheader;
 char uargbuf[UargSize];
 
