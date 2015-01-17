@@ -174,12 +174,11 @@ config.64
 
 config.done
 
-	output = 'os:' os ':  ws:' ws ':'
 *	rip_mode is needed for osx. See getval()
 
 	rip_mode = (ident(os,'osx') 1, 0)
 
-	output = 'rip_mode ' rip_mode
+	report('rip', rip_mode)
 	ne(rip_mode) ripinit()
 
 *	set z_trace to enable instruction by instruction trace
