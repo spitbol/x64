@@ -542,7 +542,7 @@ syscall_init:
 	mov     m(reg_wc),wc      ; (also _reg_ia)
 	mov	m(reg_xr),xr
 	mov	m(reg_xl),xl
-;	mov	m(reg_ia),ia
+	mov	m(reg_ia),ia
 	ret
 
 syscall_exit:

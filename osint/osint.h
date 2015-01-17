@@ -33,7 +33,7 @@ This file is part of Macro SPITBOL.
 /   Set up externals for all the compiler's registers.
 */
 
-extern word	reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs, reg_w0, reg_ia;
+extern word	reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs, reg_w0;
 extern signed char	reg_fl;
 extern long	reg_ia;
 extern double 	reg_ra,*reg_rp;
