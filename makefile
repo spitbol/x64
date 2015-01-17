@@ -132,11 +132,6 @@ VOBJS =	s.o
 
 # All objects:
 OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
-# bootbol is for bootstrapping just link with what's at hand
-#bootbol: $(OBJS)
-bootbol: $(OBJS)
-	$(CC) $(LDOPTS)  $(OBJS) $(LMOPT) -obootbol
-
 
 # link spitbol with static linking
 spitbol: $(OBJS)
@@ -148,6 +143,12 @@ spitbol: $(OBJS)
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS)
 	$(CC) $(LDOPTS) $(OBJS) $(LMOPT)  -ospitbol 
+
+# bootbol is for bootstrapping just link with what's at hand
+#bootbol: $(OBJS)
+# no dependencies so can link for osx bootstrap
+bootbol: 
+	$(CC) $(LDOPTS)  $(OBJS) $(LMOPT) -obootbol
 
 # Assembly language dependencies:
 err.o: err.s
