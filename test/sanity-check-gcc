@@ -8,18 +8,18 @@
 # being introduced, the first two may differ, but the second and third should always agree.
 #
 rm tbol.*
-echo "start 64-bit gcc sanity test"
+echo "start 64-bit sanity test"
 cp	./bin/spitbol.m64 tbol
-make -f makefile.gcc clean>/dev/null
-make -f makefile.gcc BASEBOL=./tbol WS=64
+make clean>/dev/null
+make 		BASEBOL=./tbol
 mv s.lex tbol.lex.0
 mv s.s tbol.s.0
 cp spitbol tbol
-make -f makefile.gcc BASEBOL=./tbol WS=64
+make 		BASEBOL=./tbol 
 mv s.lex tbol.lex.1
 mv s.s tbol.s.1
 cp spitbol tbol
-make -f makefile.gcc BASEBOL=./tbol WS=64
+make 		BASEBOL=./tbol 
 mv s.lex tbol.lex.2
 mv s.s tbol.s.2
 echo "comparing generated .s files"

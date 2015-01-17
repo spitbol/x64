@@ -1,4 +1,4 @@
-# SPITBOL makefile using gcc
+# SPITBOL makefile using tcc
 
 ws?=64
 
@@ -9,18 +9,39 @@ os?=unix
 
 OS=$(os)
 WS=$(ws)
-DEBUG=$(debug)
+
 TARGET=$(OS)_$(WS)
 
-ARCH=m$(WS)
-ARCHDEF=-D m$(WS)
+TOPT=-D m$(WS)
+
+DEBUG=$(debug)
+
+cc?=gcc
+CC=$(cc)
+
+ifeq	($(DEBUG),1)
+GFLAG=-g
+endif
+
+
+ARCH=-D m$(WS) -m$(WS)
+
+
+ifeq ($(CC),tcc)
+CC=tools/tcc/bin/tcc
+#LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a $(MUSL)/lib/libc.a 
+CCOPTS= -Dm$(WS) -m$(WS) -I tools/tcc/include $(GFLAG)
+LDOPTS = -Ltools/tcc/lib -Ltools/musl/lib $(GFLAG) 
+LMOPT=-lm
+else
+CCOPTS= -Dm$(WS) -m$(WS)  $(GFLAG)
+LDOPTS= -lm $(GFLAG) $(ARCH)
+LMOPT=-lm
+endif
 
 ifeq ($(OS),unix)
-CC=gcc
-# use llvm for osx bootstrap
 ELF=elf$(WS)
 else
-CC=gcc
 ELF=macho$(WS)
 endif
 
@@ -35,13 +56,7 @@ OSINT=./osint
 
 vpath %.c $(OSINT)
 
-ASM	=	nasm
-
-ifeq	($(DEBUG),0)
-CFLAGS= -D m$(WS) -m$(WS) 
-else
-CFLAGS= -D m$(WS) -g -m$(WS)
-endif
+ASM	=	tools/nasm/bin/nasm
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
@@ -54,12 +69,12 @@ endif
 LEX=	lex.spt
 COD=    asm.spt
 ERR=    err.spt
-BASEBOL =   ./bin/spitbol.$(ARCH)
+BASEBOL =   ./bin/spitbol.m$(WS)
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
 #.c.o:
-	$(CC)  $(CFLAGS) -c  -o$@ $(OSINT)/$*.c
+	$(CC)  $(CCOPTS) -c  -o$@ $(OSINT)/$*.c
 
 # Implicit rule for building objects from assembly language files.
 .s.o:
@@ -120,30 +135,14 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 
 # link spitbol with static linking
 spitbol: $(OBJS)
-ifeq ($(WS),32)
-	$(CC) $(CFLAGS) $(OBJS) -static -lm -o$(EXECUTABLE) -Wl,-M,-Map,$(EXECUTABLE).map
-endif
-ifeq ($(WS),64)
-	$(CC) $(CFLAGS) $(OBJS) -static -lm -ospitbol -Wl,-M,-Map,spitbol.map
-endif
+#	$(CC) $(LDOPTS) -static -lm $(OBJS) -o$(EXECUTABLE) 
 
-# link spitbol with static linking without checking objs (for bootstrapping)
-bootbol: 
-ifeq ($(WS),32)
-	$(CC) $(CFLAGS) $(OBJS) -lm -o$(EXECUTABLE) 
-endif
-ifeq ($(WS),64)
-	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol 
-endif
+#	$(CC) -static  $(LDOPTS)  $(OBJS) $(LMOPT) -o$(EXECUTABLE) 
+	$(CC) $(LDOPTS)  $(OBJS) $(LMOPT) -o$(EXECUTABLE) 
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS)
-ifeq ($(WS),32)
-	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol -Wl,-M,-Map,$(EXECUTABLE).map
-endif
-ifeq ($(WS),64)
-	$(CC) $(CFLAGS) $(OBJS) -lm -ospitbol -Wl,-M,-Map,$(EXECUTABLE).map
-endif
+	$(CC) $(LDOPTS) $(OBJS) $(LMOPT)  -ospitbol 
 
 # Assembly language dependencies:
 err.o: err.s
@@ -160,7 +159,6 @@ s.s:	s.lex $(VHDRS) $(COD)
 	$(BASEBOL) -u $(TARGET) $(COD)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
-#	 $(BASEBOL) -u $(WS) $(LEX)
 	 $(BASEBOL) -u $(TARGET) $(LEX)
 
 s.err: s.s
