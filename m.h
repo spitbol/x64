@@ -153,6 +153,7 @@
 	%define	inf		_inf
 	%define	inpbuf		_inpbuf
 	%define	minimal		_minimal
+	%define	minimal_id	_minimal_id
 	%define	phrases		_phrases
 	%define	pmhbs		_pmhbs
 	%define	polct		_polct
@@ -181,6 +182,11 @@
 	%define	tscblk		_tscblk
 	%define	ttybuf		_ttybuf
 	%define	w_yyy		_w_yyy
+	%define	i_adi		_i_adi
+	%define	i_dvi		_i_dvi
+	%define	i_mli		_i_mli
+	%define	i_ngi		_i_ngi
+	%define	i_rmi		_i_rmi
 	%define	f_adr		_f_adr
 	%define	f_atn		_f_atn
 	%define	f_chk		_f_chk
