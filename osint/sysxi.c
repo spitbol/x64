@@ -306,8 +306,6 @@ word	n;
 word putsave(stkbase, stklen)
 word *stkbase, stklen;
 {
-	return EXIT_1;
-#ifdef PUTSAVE
     word result = 0;
     struct scblk *vscb = XR( struct scblk * );
 #if EXTFUN
@@ -389,7 +387,6 @@ word *stkbase, stklen;
 #endif					// EXTFUN
     docompress(0, (char *)0, 0);	// turn off compression
     return result;
-#endif
 }
 
 
@@ -405,8 +402,6 @@ word *stkbase, stklen;
 int getsave(fd)
 int fd;
 {
-	return EXIT_1;
-#ifdef GETSAVE
     int n;
     unsigned long s;
     FILEPOS pos;
@@ -624,7 +619,6 @@ reload_err:
         }
     }
     return 0;
-#endif
 }
 /*
 /   doexec( scptr )
