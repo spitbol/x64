@@ -74,7 +74,7 @@ extern word	*edata;
 extern word	*etext;
 #endif					// EXECFILE
 
-extern	long	reg_block;
+//extern	long	reg_block;
 
 struct svfilehdr svfheader;
 char uargbuf[UargSize];
@@ -381,7 +381,7 @@ word *stkbase, stklen;
                         GET_MIN_VALUE(dnamp,uword) - GET_MIN_VALUE(dnamb,uword) );
 
     // write out MINIMAL register block
-    result |= compress( (unsigned char *)&reg_block, reg_size );
+//    result |= compress( (unsigned char *)&reg_block, reg_size );
 #if EXTFUN
     scanef();			// prepare to scan for external functions
     while ((textlen = (word)nextef(&bufp, 1)) != 0)
@@ -567,8 +567,8 @@ int fd;
              * The only Minimal register in need of relocation is CP,
              * and this is handled by the rereloc routine.
              */
-            if ( expand( fd, (unsigned char *)&reg_block, reg_size ) )
-                goto reload_ioerr;
+//            if ( expand( fd, (unsigned char *)&reg_block, reg_size ) )
+ //               goto reload_ioerr;
 
             /* No Minimal calls past this point should be done if it
              * involves setting any of the Minimal registers.
