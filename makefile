@@ -105,7 +105,7 @@ COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
 	int.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
-	trypath.o wrtaout.o zz.o
+	trypath.o wrtaout.o zz.o getargs.o main.o
 
 # Assembly langauge objects common to all versions:
 # CAOBJS is for gas, NAOBJS for nasm
@@ -121,9 +121,6 @@ HOBJS=
 #LOBJS=  dlfcn.o load.o
 LOBJS=
 
-# main objects:
-MOBJS=	getargs.o main.o
-
 # All assembly language objects
 AOBJS = $(CAOBJS)
 
@@ -131,7 +128,7 @@ AOBJS = $(CAOBJS)
 VOBJS =	s.o
 
 # All objects:
-OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
+OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(NAOBJS)
 
 # link spitbol with static linking
 spitbol: $(OBJS)
@@ -178,7 +175,6 @@ cobjs:	$(COBJS)
 
 # C language header dependencies:
 $(COBJS): $(HDRS)
-$(MOBJS): $(HDRS)
 $(SYSOBJS): $(HDRS)
 main.o: $(OSINT)/save.h
 sysgc.o: $(OSINT)/save.h
