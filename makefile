@@ -60,9 +60,9 @@ ASM	=	tools/nasm/bin/nasm
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMFLAGS = -f $(ELF) -d m$(WS)
+ASMOPTS = -f $(ELF) -d $(TARGET) -d m$(WS)
 else
-ASMFLAGS = -g -f $(ELF) -d m$(WS)
+ASMOPTS = -g -f $(ELF) -d $(TARGET) -d$(WS)
 endif
 
 # Tools for processing Minimal source file.
@@ -78,7 +78,7 @@ BASEBOL =   ./bin/spitbol.m$(WS)
 
 # Implicit rule for building objects from assembly language files.
 .s.o:
-	$(ASM) $(ASMFLAGS) -l $*.lst -o$@ $*.s
+	$(ASM) $(ASMOPTS) -l $*.lst -o$@ $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
 CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h 

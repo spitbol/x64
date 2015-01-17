@@ -58,8 +58,6 @@
 	%define wb_l  	bl
 	%define wc	edx
 	%define wc_l  	dl
-;	%define ia	edx
-	%define ia	ebp
 	%define m_word	dword	; reference to word in memory
 	%define d_word	dd	; define value for memory word
 ;	%define	cfp_b	4
@@ -94,7 +92,6 @@
 	%define wc_l    dl
 	%define	xs	rsp
 	%define	w0_l	al
-;	%define	ia	rdx
 	%define	ia	rbp
 	%define m_word  qword
 	%define d_word	dq
