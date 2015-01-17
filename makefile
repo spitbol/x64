@@ -132,6 +132,11 @@ VOBJS =	s.o
 
 # All objects:
 OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
+# bootbol is for bootstrapping just link with what's at hand
+#bootbol: $(OBJS)
+bootbol: $(OBJS)
+	$(CC) $(LDOPTS)  $(OBJS) $(LMOPT) -obootbol
+
 
 # link spitbol with static linking
 spitbol: $(OBJS)
