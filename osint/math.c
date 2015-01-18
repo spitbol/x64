@@ -29,8 +29,6 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
-#include <errno.h>
-
 #if FLOAT & !MATHHDWR
 
 #include <math.h>
