@@ -12,8 +12,6 @@ WS=$(ws)
 
 TARGET=$(OS)_$(WS)
 
-TOPT=-D m$(WS)
-
 DEBUG=$(debug)
 
 cc?=gcc
@@ -24,17 +22,17 @@ GFLAG=-g
 endif
 
 
-ARCH=-D m$(WS) -m$(WS)
+ARCH=-D$(TARGET)  -m$(WS)
 
 
 ifeq ($(CC),tcc)
 CC=tools/tcc/bin/tcc
 #LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a $(MUSL)/lib/libc.a 
-CCOPTS= -D$(TARGET) -Dm$(WS) -m$(WS) -I tools/tcc/include $(GFLAG)
+CCOPTS= $(ARCH) -I tools/tcc/include $(GFLAG)
 LDOPTS = -Ltools/tcc/lib -Ltools/musl/lib $(GFLAG) 
 LMOPT=-lm
 else
-CCOPTS= -Dm$(WS) -m$(WS)  $(GFLAG)
+CCOPTS= $(ARCH) $(GFLAG)
 LDOPTS= -lm $(GFLAG) $(ARCH)
 LMOPT=-lm
 endif

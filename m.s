@@ -21,7 +21,7 @@
 ;	ws is bits per word, cfp_b is bytes per word, cfp_c is characters per word
 
 
-%ifdef	m32
+%ifdef	unix_32
 	%define	cfp_b	4
 	%define	cfp_c	4
 %else
@@ -31,10 +31,6 @@
 %endif
 
 	%include	"m.h"
-
-%ifdef	m32
-;	%define	rel
-%endif
 
 	global	reg_block
 	global	reg_w0

@@ -193,7 +193,7 @@ char	*argv[];
    at compile time, if we want to compile for 64 bits on 32 bit machine.
  */
     SET_WA( 0 );
-#ifdef m32
+#ifdef unix_32
     long mxint = INT32_MAX;
 #else
     long mxint = INT64_MAX;

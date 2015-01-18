@@ -92,7 +92,7 @@ This file is part of Macro SPITBOL.
 /*
  *  Other defaulted values that may be overridden in systype.h
  */
-#ifdef m32		// 32 bit words
+#ifdef unix_32		// 32 bit words
 #ifndef INTBITS
 #define INTBITS		32
 #define MAXINT		0x7FFFFFFFL
@@ -106,7 +106,7 @@ This file is part of Macro SPITBOL.
 #endif
 #endif
 
-#ifndef m32		// 64 bit words
+#ifndef unix_32		// 64 bit words
 #ifndef INTBITS
 #define INTBITS		64
 #define MAXINT		0x7FFFFFFFFFFFFFFFL
