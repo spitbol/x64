@@ -534,6 +534,15 @@ cprtmsg:
 call_adr:	d_word	0
 	segment	.text
 
+	global	get_ia
+get_ia:
+	mov	w0,ia
+	ret
+
+	global	set_ia_
+set_ia_:	mov	ia,m_word[reg_w0]
+	ret
+
 syscall_init:
 ;       save registers in global variables
 

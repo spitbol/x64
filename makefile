@@ -92,43 +92,19 @@ HDRS=	$(CHDRS) $(UHDRS)
 # Headers for Minimal source translation:
 VHDRS=	m.hdr 
 
-# OSINT objects:
-SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
+OBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	sysef.o sysej.o sysem.o sysen.o sysep.o sysex.o sysfc.o \
 	sysgc.o syshs.o sysid.o sysif.o sysil.o sysin.o sysio.o \
 	sysld.o sysmm.o sysmx.o sysou.o syspl.o syspp.o sysrw.o \
-	sysst.o sysstdio.o systm.o systty.o sysul.o sysxi.o 
-
-# Other C objects:
-COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
+	sysst.o sysstdio.o systm.o systty.o sysul.o sysxi.o  \
+	break.o checkfpu.o compress.o cpys2sc.o \
 	doset.o dosys.o fakexit.o float.o flush.o gethost.o getshell.o \
 	int.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
-	trypath.o wrtaout.o zz.o getargs.o main.o
+	trypath.o wrtaout.o zz.o getargs.o main.o m.o err.o s.o
 
-# Assembly langauge objects common to all versions:
-# CAOBJS is for gas, NAOBJS for nasm
-CAOBJS = 
-NAOBJS = m.o err.o
 
-# Objects for SPITBOL's HOST function:
-#HOBJS=	hostrs6.o scops.o kbops.o vmode.o
-HOBJS=
-
-# Objects for SPITBOL's LOAD function.  AIX 4 has dlxxx function library.
-#LOBJS=  load.o
-#LOBJS=  dlfcn.o load.o
-LOBJS=
-
-# All assembly language objects
-AOBJS = $(CAOBJS)
-
-# Minimal source object file:
-VOBJS =	s.o
-
-# All objects:
-OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(NAOBJS)
 
 # link spitbol with static linking
 spitbol: $(OBJS)
@@ -169,13 +145,7 @@ s.err: s.s
 err.s: $(MIN).cnd $(ERR) s.s
 	   $(BASEBOL) -u $(TARGET) -1=s.err -2=err.s $(ERR)
 
-
-# make osint objects
-cobjs:	$(COBJS)
-
 # C language header dependencies:
-$(COBJS): $(HDRS)
-$(SYSOBJS): $(HDRS)
 main.o: $(OSINT)/save.h
 sysgc.o: $(OSINT)/save.h
 sysxi.o: $(OSINT)/save.h
