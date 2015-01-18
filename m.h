@@ -46,10 +46,9 @@
 	%define d_real	dq	; define value for floating point
 
 %if	ws=32
-	%define	xl	esi
-	%define	xt	esi
-	%define xr	edi
-	%define xs	esp
+
+	%define	ia	ebp
+
 	%define w0	eax
 	%define w1	ebp
 	%define wa	ecx
@@ -58,6 +57,12 @@
 	%define wb_l  	bl
 	%define wc	edx
 	%define wc_l  	dl
+
+	%define	xl	esi
+	%define	xt	esi
+	%define xr	edi
+	%define xs	esp
+
 	%define m_word	dword	; reference to word in memory
 	%define d_word	dd	; define value for memory word
 ;	%define	cfp_b	4
@@ -79,10 +84,10 @@
 	%define m(ref) dword[ref]
 	%define a(ref) [ref]
 %else
-	%define	xl	rsi
-	%define	xt	rsi
-	%define	xr	rdi
+	%define	ia	rbp
+
 	%define	w0	rax
+	%define	w0_l	al
 	%define w1	rbp
 	%define	wa	rcx
 	%define wa_l	cl
@@ -90,9 +95,12 @@
 	%define wb_l    bl
 	%define	wc	rdx
 	%define wc_l    dl
+
+	%define	xl	rsi
+	%define	xt	rsi
+	%define	xr	rdi
 	%define	xs	rsp
-	%define	w0_l	al
-	%define	ia	rbp
+
 	%define m_word  qword
 	%define d_word	dq
 ;	%define	cfp_b	8
