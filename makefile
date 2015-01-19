@@ -1,6 +1,6 @@
 # SPITBOL makefile using tcc
 
-nasm?=tool/nasm/bin/nasm
+nasm?=tools/nasm/bin/nasm
 ASM=$(nasm)
 
 ws?=64
