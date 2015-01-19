@@ -1,5 +1,8 @@
 # SPITBOL makefile using tcc
 
+nasm?=tool/nasm/bin/nasm
+ASM=$(nasm)
+
 ws?=64
 
 debug?=0
@@ -53,8 +56,6 @@ MINPATH=./
 OSINT=./osint
 
 vpath %.c $(OSINT)
-
-ASM	=	tools/nasm/bin/nasm
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
