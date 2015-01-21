@@ -30,10 +30,10 @@
 
 	global	mxint
 
-;%define zz_trace
 %ifdef zz_trace
+	extern	shields
 	extern	zz
-	extern	zzz
+	extern	zz_
 	extern	zz_cp
 	extern	zz_xl
 	extern	zz_xr
@@ -190,7 +190,7 @@ calltab:
 	mov	m_word [zz_id],%1
 	mov	m_word [zz_zz],%2
 	mov	m_word [zz_de],%%desc
-	call	zzz
+	call	zz_
 	%endmacro
 
 	extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc

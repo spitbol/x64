@@ -66,7 +66,9 @@
 *
 *  keyword initialization
 *
-	&anchor = 1;	&stlimit = 10000000;	&trim	= 1;  &dump = 1
+	&anchor = &trim	= &dump = 1
+	&stlimit = 10000000
+	
 *
 *  useful constants
 *
@@ -124,22 +126,45 @@
 *
 	define('readline()')
 
-*  default the parameter string if none present
-*
-*	add trailing blank so always have blank after an argument
-*
-*  argument string now of form  os-ws, for example unix-64 (the default)
-	os = 'unix'; ws = 64
+	os = 'unix';	ws = '64'
+	options = host(0)
+	output = 'options: ' options
+*	add trailing colon so always have colon after an argument
+	options = options ':'
+option.next		
+*	ignore extraneous : in list (helps with writing makefiles)
+	options ':' =				:s(option.next)
+	options break(':') . option ':' =	:f(options.done)
 
-	options = host(0) 
-	
-	options break('_') . os '_' rem . ws
+	ident(option,'unix_32')			:s(option.unix.32)
+	ident(option,'unix_64')			:s(option.unix.64)
+	ident(option,'osx_64')			:s(option.osx.64)
+	ident(option,'xt')			:s(option.xt)
+	ident(option,'it')			:s(option.it)
+
+* here if unknown option
+
+	output = "error: unknown option '" option "', translation ends."	
+	&dump = 0				:(end)
+
+option.unix.32
+	os = 'unix'; 	ws = '32'		:(option.next)
+option.unix.64
+	os = 'unix'; 	ws = '64'		:(option.next)
+option.osx.64
+	os = 'osx'; 	ws = '64'		:(option.next)
+option.it
+*	turn on instruction trace
+	i_trace = 1				:(option.next)
+option.xt
+*  xtrace turns on tracing for executable instructions
+	xtrace = 1				:(option.next)
+
+options.done
+	target = os '_' ws
 	report(target,'target')
 
-*  xtrace_opt turns on tracing for executable instructions
 
-	xtrace_opt = 1  
-	xtrace = 0
 
 	fileprefix = "s"
 
@@ -181,13 +206,10 @@ config.done
 	report('rip', rip_mode)
 	ne(rip_mode) ripinit()
 
-*	set z_trace to enable instruction by instruction trace
-	z_trace = 1
-	z_trace = 0
 *	z_limit is maximum number of calls to be generated if non-zero
 	z_limit = 000
 *	set z_first non-zero to skip first number of instructions that would generate trace
-	z_first = 0
+	z_first = 1000
 *	will set in_executable when in part of program where executable
 *	instructions may occur
 	z_exec = 0
@@ -523,6 +545,9 @@ err_ok
 *
 	outlines = outlines + 1
 
+*	differ(i_trace) outline(tab '%define' tab 'zi_trace')
+*	outlines = differ(i_trace) outlines + 1
+
 	input(.hdrfile,4,'m.hdr')	:f(nohdr)
 	havehdr = 1
 *        output = '  input header file:  ' hdr  '.hdr'
@@ -737,7 +762,7 @@ arg.c.25
 arg.c.26
 arg.c.27 getarg = txt				:(arg.done)
 arg.done
-	ne(xtrace) outline('; arg ' typ ':' txt   ' -> ' getarg)
+*	ne(xtrace) outline('; arg ' typ ':' txt   ' -> ' getarg)
 						:(return)
 
 -stitl getlea(iarg)
@@ -829,7 +854,7 @@ rip.ent
 	genop('mov',w0,pre ent post)
 	differ(reg)	genop('add',w0,reg)
 	getrip = w0
-	outfile = ne(xtrace) '; getrip ' ent
+*	outfile = ne(xtrace) '; getrip ' ent
 						:(return)
 	
 
@@ -932,7 +957,7 @@ outstmt4
 *	stmtout = replace(trim(stmtout),'$','_')
 	stmtout = trim(stmtout)
 	ident(stmtout)				:s(return)
-	eq(z_trace)				:s(outstmt5)
+	eq(i_trace)				:s(outstmt5)
 *	here if trace code desired for executable instructions
 	chktrace()
 outstmt5
@@ -962,7 +987,7 @@ chktrace
 *  do not trace bsw (for now)
 	ident(uopcode,'bsw')			:s(return)
 	is_exec = is_executable[uopcode]
-	z_exec = ne(z_trace)  ident(inlabel, 's_aaa') 1
+	z_exec = ne(i_trace)  ident(inlabel, 's_aaa') 1
 	z_exec = gt(nlines,2186) 1
 *	need to skip certain blocks since otherwise get branches that are too long
 *	skip when in code that won't assemble if try to trace
@@ -1964,7 +1989,6 @@ g.sec.5
         genop('global','sec05')
         genopl('sec05' ':')     
 *  enable tracing if desired
-	xtrace = differ(xtrace_opt) 1
 						:(opdone)
 
 *  stack overflow section.  output exi__n tail code

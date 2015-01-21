@@ -7676,13 +7676,13 @@ relws  prc  e,0              entry point
 ;      (xl)                  points to last word of data area
 ;
 start  prc  e,0              entry point
+;z-
        mov  mxint,wb
        mov  bitsm,wb
        zer  wb
-;z-
        mov  xs,wa            discard return
-       jsr  systm            initialise timer
 ;z+
+       jsr  systm            initialise timer
 .if    .cnbt
        sti  timsx            store time
        mov  statb,xr         start address of static

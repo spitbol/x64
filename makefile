@@ -10,6 +10,14 @@ EXECUTABLE=spitbol
 
 os?=unix
 
+it?=0
+IT=$(it)
+ifneq ($(IT),0)
+ITOPT=:it
+ITDEF=-Dzz_trace
+endif
+
+
 OS=$(os)
 WS=$(ws)
 
@@ -31,11 +39,11 @@ ARCH=-D$(TARGET)  -m$(WS)
 ifeq ($(CC),tcc)
 CC=tools/tcc/bin/tcc
 #LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a $(MUSL)/lib/libc.a 
-CCOPTS= $(ARCH) -I tools/tcc/include $(GFLAG)
+CCOPTS= $(ARCH) $(ITDEF) -I tools/tcc/include $(GFLAG) $(ITDEF)
 LDOPTS = -Ltools/tcc/lib -Ltools/musl/lib $(GFLAG) 
 LMOPT=-lm
 else
-CCOPTS= $(ARCH) $(GFLAG)
+CCOPTS= $(ARCH) $(ITDEF) $(GFLAG) 
 LDOPTS= -lm $(GFLAG) $(ARCH)
 LMOPT=-lm
 endif
@@ -59,9 +67,9 @@ vpath %.c $(OSINT)
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMOPTS = -f $(ELF) -d $(TARGET) -d m$(WS)
+ASMOPTS = -f $(ELF) -d $(TARGET) -d m$(WS) $(ITDEF)
 else
-ASMOPTS = -g -f $(ELF) -d $(TARGET) -d$(WS)
+ASMOPTS = -g -f $(ELF) -d $(TARGET) -d$(WS) $(ITDEF)
 endif
 
 # Tools for processing Minimal source file.
@@ -134,7 +142,7 @@ s.go:	s.lex go.spt
 	$(BASEBOL) -u i32 go.spt
 
 s.s:	s.lex $(VHDRS) $(COD) 
-	$(BASEBOL) -u $(TARGET) $(COD)
+	$(BASEBOL) -u $(TARGET):$(ITOPT) $(COD)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
 	 $(BASEBOL) -u $(TARGET) $(LEX)

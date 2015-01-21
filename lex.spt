@@ -442,7 +442,6 @@ main2
 . 'ch_sq[039]ch_u_[095]ch_ob[091]ch_cb[093]ch_ht[009]ch_vt[011]'
 . 'ch_ey[094]iodel[032]' )
 * set target-dependent configuration parameters
-	output = 'config.' target
 	:($('config.' target))
 
 							:(config.done)

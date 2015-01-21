@@ -18,7 +18,7 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef z_trace
+#ifdef zz_trace
 
 #include "port.h"
 
@@ -211,7 +211,7 @@ if (prtregs) {
 		// print register values before the statement was executed
 		prtreg("XL.esi", save_xl);
 		prtreg("XR.edi", save_xr);
-		prtregr("RA    ",save_ra);
+//		prtregr("RA    ",save_ra);
 //		prtreg("XS.esp", save_xs);
 		// cp is last on line, so don't print it zero
 //		if (save_cp) prtreg("cp.ebp", save_cp);
