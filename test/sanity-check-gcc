@@ -9,7 +9,7 @@
 #
 rm tbol.*
 echo "start 64-bit sanity test"
-cp	./bin/spitbol.m64 tbol
+cp	./bin/spitbol.unix_64 tbol
 make clean>/dev/null
 make 		BASEBOL=./tbol
 mv s.lex tbol.lex.0

@@ -21,6 +21,8 @@
 ;	ws is bits per word, cfp_b is bytes per word, cfp_c is characters per word
 
 
+	%include	"m.h"
+
 %ifdef	unix_32
 	%define	cfp_b	4
 	%define	cfp_c	4
@@ -29,8 +31,6 @@
 	%define	cfp_c	8
 	%define		m64			// make m64 the default
 %endif
-
-	%include	"m.h"
 
 	global	reg_block
 	global	reg_w0
@@ -470,14 +470,6 @@ stackinit:
 	ret
 
 
-	section		.data
-	align         cfp_b
-	global	hasfpu
-hasfpu:	d_word	0
-	global	cprtmsg
-cprtmsg:
-	db          ' copyright 1987-2012 robert b. k. dewar and mark emmer.',0,0
-
 
 ;       interface routines
 
@@ -525,10 +517,6 @@ cprtmsg:
 ;                     8         take procedure exit 3
 ;                    ...        ...
 
-
-	segment	.data
-call_adr:	d_word	0
-	segment	.text
 
 	global	get_ia
 get_ia:
@@ -996,3 +984,14 @@ zz_:
 	popf
 	ret
 %endif
+	section		.data
+	align	16
+	align         cfp_b
+	global	hasfpu
+hasfpu:	d_word	0
+	global	cprtmsg
+cprtmsg:
+	db          ' copyright 1987-2012 robert b. k. dewar and mark emmer.',0,0
+
+call_adr:	d_word	0
+

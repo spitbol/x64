@@ -1,6 +1,6 @@
 # SPITBOL makefile using tcc
-
-nasm?=tools/nasm/bin/nasm
+HOST=unix_64
+nasm?=tools/nasm/bin/nasm.$(HOST)
 ASM=$(nasm)
 
 ws?=64
@@ -22,6 +22,10 @@ OS=$(os)
 WS=$(ws)
 
 TARGET=$(OS)_$(WS)
+
+# basebol determines which spitbol to use to compile
+spitbol?=./bin/spitbol.$(TARGET)
+BASEBOL=$(spitbol)
 
 DEBUG=$(debug)
 
@@ -67,16 +71,15 @@ vpath %.c $(OSINT)
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMOPTS = -f $(ELF) -d $(TARGET) -d m$(WS) $(ITDEF)
+ASMOPTS = -f $(ELF) -D$(TARGET) -d m$(WS) $(ITDEF)
 else
-ASMOPTS = -g -f $(ELF) -d $(TARGET) -d$(WS) $(ITDEF)
+ASMOPTS = -g -f $(ELF) -D$(TARGET) -d$(WS) $(ITDEF)
 endif
 
 # Tools for processing Minimal source file.
 LEX=	lex.spt
 COD=    asm.spt
 ERR=    err.spt
-BASEBOL =   ./bin/spitbol.m$(WS)
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c

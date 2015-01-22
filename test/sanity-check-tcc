@@ -9,7 +9,7 @@
 #
 rm tbol.*
 echo "start 64-bit tcc sanity test"
-cp	./bin/spitbol.m64 tbol
+cp	./bin/spitbol.unix_64 tbol
 make cc=tcc  clean>/dev/null
 make cc=tcc  BASEBOL=./tbol WS=64
 mv s.lex tbol.lex.0
