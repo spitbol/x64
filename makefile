@@ -24,7 +24,7 @@ WS=$(ws)
 TARGET=$(OS)_$(WS)
 
 # basebol determines which spitbol to use to compile
-spitbol?=./bin/spitbol.$(TARGET)
+spitbol?=./bin/spitbol.$(HOST)
 BASEBOL=$(spitbol)
 
 DEBUG=$(debug)
