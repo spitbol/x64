@@ -5,6 +5,10 @@
 *	30	comments
 
 * this version just inserts spaces so opcode starts at 9, arguments at 17, end comments at 32 (with '; ' prefix)
+* a separate program can then be used to replace runs of blanks with tabs where appropriate
+
+* dave shields	jan 2015
+
 	&anchor = &trim = 1
 	tab = char(9)
 	whitespace = span(' ')
@@ -15,7 +19,7 @@ loop
 * copy comments, conditional assembly, and stmts with opcode but no args or comment
 
 	line = input				:f(end)
-	line ';'				:s(copy.comment)
+	line ';'				:s(copy.line)
 	line '.'				:s(copy.line)
 
 * just copy for certain opcodes.
@@ -30,12 +34,20 @@ loop
 * done if just opcode with no args or comment
 
 	le(size(line),10)			:s(copy.op)
-	text = substr(line,1,7) ' '  substr(line,8,3) '     '  rpad(substr(line,13,17),24)
+* assume rest of line is argument string
+	arg_comment = substr(line,13)
+	arg_comment break(' ') . args span(' ') rem . comment :s(loop.1)
+* if no whitespace then rest of line is just argument
+	args = substr(line,13)
+loop.1
+	text = substr(line,1,7) ' '  substr(line,8,3) '     '  rpad(args,24)
 
 * done if no comment
 
 	lt(size(line,30))			:s(copy.text)
-	text = text '; ' substr(line,30) :s(copy.text)
+
+* append comment
+	text = text '; ' comment 		:s(copy.text)
 copy.comment
 
 * insert space to align with opcode if possible
@@ -51,7 +63,7 @@ copy.op
 copy.text
 	output = trim(text)			:(loop)
 copy.ejc
-	text = tab 'EJC'			:(copy.text)
+	text = tab 'ejc'			:(copy.text)
 end
 	
 	

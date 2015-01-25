@@ -56,6 +56,8 @@
 	p.exp	= 'e' any('+-') span(nos)
 	p.real	= span(nos) '.' (span(nos) | null) (p.exp | null) rpos(0)
 	tab	= char(9)
+	whitespace = ' ' tab
+	p.whitespace = span(whitespace)
 
 *  argform classifies arguments
 	define('argform(arg)')
@@ -68,7 +70,7 @@
 *  a minimal statement during processing.
 *  it fails if there is a syntax error.
 *
-	define('crack(line)operands,operand,char')
+	define('crack(line)operands,operand,start,text')
 
 *
 *  error is used to report an error for current statement
@@ -256,29 +258,10 @@
 	p.minlabel = any(minlets) any(minlets) any(minlets nos)
 .	           any(minlets nos) any(minlets nos)
 *
-*  p.csparse parses out the components of the input line in stmt,
-*  and puts them into the locals: label, opcode, operands, comment
-*
-	p.csparse = (((p.minlabel . label) | ('     '  '' . label)) '  '
-.	  len(3) . opcode
-.	  (('  ' (break(' ') | rtab(0)) . operands
-.	      (span(' ') | '') rtab(0) . comment)  |
-.	      (rpos(0) . operands . comment)))  |
-.	     ('.'  '' . label  mincond . opcode
-.	       ((tab(7)  '.'  len(4) . operands) | (rpos(0) . operands))
-.	           '' . comment)
-*
 *  p.csoperand breaks out the next operand in the operands string.
 *
 	p.csoperand = (break(',') . operand  ',')  |
 .			((len(1) rtab(0)) . operand)
-*
-*  p.csdtc is a pattern that handles the special case of the
-*  minimal dtc op
-*
-	p.csdtc   = ((p.minlabel . label)  |  ('     '  '' . label))
-.	          len(7) (len(1) $ char  break(*char)  len(1)) . operand
-.	          (span(' ') | '')  rtab(0) . comment
 *
 *  p.equ.rip is a pattern that parses out the components of an equ
 *  expression.
@@ -608,7 +591,7 @@ arg.eqop
 	argtype = 24				:(return)
 
 *
--stitl crack(line)operands,operand,char
+-stitl crack(line)operands,operand,start,text
 *  crack is called to create a stmt plex containing the various
 *  entrails of the minimal source statement in line.  for
 *  conditional assembly ops, the opcode is the op, and op1
@@ -617,25 +600,58 @@ arg.eqop
 *
 *  crack will print an error and fail if a syntax error occurs.
 *
+
 crack   nstmts  = nstmts + 1
-	line    p.csparse			:f(cs03)
-	op1 = op2 = op3 = typ1 = typ2 = typ3 =
-	ident(opcode,'dtc')			:s(cs02)
-*
-*  now pick out operands until none left
-*
+	op1 = op2 = op3 = typ1 = typ2 = typ3 = comment = label =
+	text = line
+*  extract label if there is one
+	text p.minlabel . label =
+*  skip any whitespace and extract opcode
+	text p.whitespace len(3) . opcode =
+*  done if there is nothing after the opcode
+	ident(text)				:s(cs01)
+*  strip any leading whitespace before the arguments
+	text p.whitespace =
+*  special processing for 'dtc' and 'ttl'
+	
+	ident(opcode,'dtc')			:s(crack.dtc)
+	ident(opcode,'ttl')			:s(crack.ttl)
+
+*  extract comment
+
+	text break(';') . start rem . comment	:f(crack.1)
+	text = start
+crack.1
+	text p.whitespace =
+	
+*  look for conditional assembly operation
+	
+	text '.'				:f(crack.2)
+	text '.' break(whitespace) . label  =	:f(cs03)
+	opcode = label
+	text p.whitespace rem . operand		:f(cs03)
+
+*  pick out operands until none left
+
+crack.2
+	operands = trim(text)
 	operands  p.csoperand = 		:f(cs01)
 	op1 = operand
 	operands  p.csoperand = 		:f(cs01)
 	op2 = operand
 	operands  p.csoperand			:f(cs01)
 	op3 = operand
-cs01	:(return)
+cs01			
+						:(return)
 *
 *  dtc - special case
 *
-cs02	line	p.csdtc				:f(cs03)
-	op1 = operand
+crack.dtc	
+crack.ttl
+
+*  here for special op for which operand is just the remainder of the line
+	op1 = text
+	operands =
 						:(cs01)
 *
 *  here on syntax error
@@ -909,11 +925,11 @@ g.h						:(dsgen)
 
 *  keep track of sec statements
 
-g.sec	sectnow = sectnow + 1  		:(dsgen)
+g.sec	sectnow = sectnow + 1  			
+						:(dsgen)
 g.ttl
-	thisline len(10) rem . t
-	t span(' ') =
-	outstmt(,'ttl','27,' t)			:(dsout)
+	outstmt(,'ttl','27,' op1)			
+						:(dsout)
 g.erb
 g.err	thisline break(',') len(1) rem . t
 	outstmt(label,opcode,op1, t)		:(dsout)
