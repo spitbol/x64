@@ -71,9 +71,9 @@ vpath %.c $(OSINT)
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMOPTS = -f $(ELF) -D$(TARGET) -d m$(WS) $(ITDEF)
+ASMOPTS = -f $(ELF) -D$(TARGET) $(ITDEF)
 else
-ASMOPTS = -g -f $(ELF) -D$(TARGET) -d$(WS) $(ITDEF)
+ASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
 endif
 
 # Tools for processing Minimal source file.
