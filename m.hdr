@@ -203,7 +203,7 @@ calltab:
 
 
 	%macro	adi_	1
-	add	ia,%1
+	add	IA,%1
 	seto	byte [reg_fl]
 	%endmacro
 	extern	dvi__
@@ -213,7 +213,7 @@ calltab:
 
 	extern	rmi__
 	%macro	rmi_	1
-	mov	w0,%1
+	mov	W0,%1
 	call	rmi__
 	%endmacro
 
@@ -231,33 +231,33 @@ calltab:
 	%endmacro
 
 	%macro	ldi_	1
-	mov	ia,%1
+	mov	IA,%1
 	%endmacro
 
 	%macro	mli_	1
-	imul	ia,%1
+	imul	IA,%1
 	seto	byte [reg_fl]
 	%endmacro
 
 	%macro	ngi_	0
-	neg	ia
+	neg	IA
 	seto	byte [reg_fl]
 	%endmacro
 
 	extern	f_rti
 	%macro	rti_	0
 	call	f_rti
-	mov	ia,m_word [reg_ia]
+	mov	IA,m_word [reg_ia]
 	%endmacro
 
 	%macro	sbi_	1
-	sub	ia,%1
-	mov	w0,0
+	sub	IA,%1
+	mov	W0,0
 	seto	byte [reg_fl]
 	%endmacro
 
 	%macro	sti_	1
-	mov	%1,ia
+	mov	%1,IA
 	%endmacro
 
 ;	code pointer instructions (cp maintained in location reg_cp)
@@ -265,28 +265,28 @@ calltab:
 	extern	reg_cp
 
 	%macro	lcp_	1
-	mov	w0,%1
-	mov	m_word [reg_cp],w0
+	mov	W0,%1
+	mov	m_word [reg_cp],W0
 	%endmacro
 
 	%macro	lcw_	1
-	mov	w0,m_word [reg_cp]		; load address of code word
-	mov	w0,m_word [w0]			; load code word
-	mov	%1,w0
-	mov	w0,m_word [reg_cp]		; load address of code word
-	add	w0,cfp_b
-	mov	m_word [reg_cp],w0
+	mov	W0,m_word [reg_cp]		; load address of code word
+	mov	W0,m_word [W0]			; load code word
+	mov	%1,W0
+	mov	W0,m_word [reg_cp]		; load address of code word
+	add	W0,cfp_b
+	mov	m_word [reg_cp],W0
 	%endmacro
 
 	%macro	scp_	1
-	mov	w0,m_word [reg_cp]
-	mov	%1,w0
+	mov	W0,m_word [reg_cp]
+	mov	%1,W0
 	%endmacro
 
 	%macro	icp_	0
-	mov	w0,m_word [reg_cp]
-	add	w0,cfp_b
-	mov	m_word [reg_cp],w0
+	mov	W0,m_word [reg_cp]
+	add	W0,cfp_b
+	mov	m_word [reg_cp],W0
 	%endmacro
 
 	%macro	rov_	1

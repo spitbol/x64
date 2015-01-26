@@ -47,21 +47,20 @@
 
 %if	ws=32
 
-	%define	ia	ebp
+	%define	IA	ebp
 
-	%define w0	eax
-	%define w1	ebp
-	%define wa	ecx
-	%define wa_l    cl
-	%define wb	ebx
-	%define wb_l  	bl
-	%define wc	edx
-	%define wc_l  	dl
+	%define W0	eax
+	%define W1	ebp
+	%define WA	ecx
+	%define WA_L    cl
+	%define WB	ebx
+	%define WB_L  	bl
+	%define WC	edx
+	%define WC_L  	dl
 
-	%define	xl	esi
-	%define	xt	esi
-	%define xr	edi
-	%define xs	esp
+	%define	XL	esi
+	%define XR	edi
+	%define XS	esp
 
 	%define m_word	dword	; reference to word in memory
 	%define d_word	dd	; define value for memory word
@@ -84,22 +83,22 @@
 	%define m(ref) dword[ref]
 	%define a(ref) [ref]
 %else
-	%define	ia	rbp
+	%define	IA	rbp
 
-	%define	w0	rax
-	%define	w0_l	al
-	%define w1	rbp
-	%define	wa	rcx
-	%define wa_l	cl
-	%define	wb	rbx
-	%define wb_l    bl
-	%define	wc	rdx
-	%define wc_l    dl
+	%define	W0	rax
+	%define	W0_L	al
+	%define W1	rbp
+	%define	WA	rcx
+	%define WA_L	cl
+	%define	WB	rbx
+	%define WB_L    bl
+	%define	WC	rdx
+	%define WC_L    dl
 
-	%define	xl	rsi
-	%define	xt	rsi
-	%define	xr	rdi
-	%define	xs	rsp
+	%define	XL	rsi
+	%define	XT	rsi
+	%define	XR	rdi
+	%define	XS	rsp
 
 	%define m_word  qword
 	%define d_word	dq

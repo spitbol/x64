@@ -101,9 +101,10 @@
 *  for conditional assembly directives.
 *
        catab = table( 11,,.badop )
-       catab['.def']   = .defop; catab['.undef'] = .undefop
-       catab['.if']    = .ifop; catab['.then']  = .thenop
-       catab['.else']  = .elseop; catab['.fi']    = .fiop
+       catab['.DEF']   = .defop; catab['.UNDEF'] = .undefop
+       catab['.IF']    = .ifop; catab['.THEN']  = .thenop
+       catab['.ELSE']	= .elseop; catab['.FI'] = .fiop
+
 
 *  symtbl tracks defined conditional symbols.  (undefined symbols
 *  are assigned null values in symtbl.)
@@ -144,7 +145,7 @@
 *
 *  p.condasm breaks up conditional assembly directives.
 *
-       sep      = ' '
+       sep      = whitespace
        p.condasm      = ( break(sep) | rem ) . condcmd
 .	          ( span(sep) | '' )
 .	          ( break(sep) | rem ) . condvar
@@ -156,14 +157,14 @@
 *  ityptab is table mapping from common operands to gross type
 
 	ityptab = table(21)
-	ityptab['0'] = 1; ityptab['1'] = 1; ityptab['wa'] = 8
-	ityptab['wb'] = 8; ityptab['wc'] = 8; ityptab['xl'] = 7
-	ityptab['xr'] = 7; ityptab['xs'] = 7; ityptab['xt'] = 7
-	ityptab['(xl)'] = 9; ityptab['(xr)'] = 9; ityptab['(xs)'] = 9
-	ityptab['(xt)'] = 9; ityptab['-(xl)'] = 11; ityptab['-(xr)'] = 11
-	ityptab['-(xs)'] = 11; ityptab['-(xt)'] = 11;
-	ityptab['(xl)+'] = 10;	ityptab['(xr)+'] = 10;
-	ityptab['(xs)+'] = 10; ityptab['(xt)+'] = 10
+	ityptab['0'] = 1; ityptab['1'] = 1; ityptab['WA'] = 8
+	ityptab['WB'] = 8; ityptab['WC'] = 8; ityptab['XL'] = 7
+	ityptab['XR'] = 7; ityptab['XS'] = 7; ityptab['XT'] = 7
+	ityptab['(XL)'] = 9; ityptab['(XR)'] = 9; ityptab['(XS)'] = 9
+	ityptab['(XT)'] = 9; ityptab['-(XL)'] = 11; ityptab['-(XR)'] = 11
+	ityptab['-(XS)'] = 11; ityptab['-(XT)'] = 11;
+	ityptab['(XL)+'] = 10;	ityptab['(XR)+'] = 10;
+	ityptab['(XS)+'] = 10; ityptab['(XT)+'] = 10
 
 *  opformtab is table mapping general op formats to row index for
 *  validform array.
@@ -274,31 +275,31 @@
 *  optab is a table that maps opcodes into their argument
 *  types and is used for argument checking and processing.
 	optab = tblini(
-. 'flc[w]'
-. 'add[opn,opv]adi[ops]adr[ops]anb[w,opw]aov[opv,opn,plbl]atn[none]'
-. 'bod[opn,plbl]bev[opn,plbl]'
-. 'bct[w,plbl]beq[opn,opv,plbl]bge[opn,opv,plbl]bgt[opn,opv,plbl]'
-. 'bhi[opn,opv,plbl]ble[opn,opv,plbl]blo[opn,opv,plbl]'
-. 'blt[opn,opv,plbl]bne[opn,opv,plbl]bnz[opn,plbl]brn[plbl]'
-. 'bri[opn]bsw[x,val,*plbl bsw]btw[reg]'
-. 'bze[opn,plbl]ceq[ops,ops,plbl]'
-. 'chk[none]chp[none]cmb[w]cmc[plbl,plbl]cne[ops,ops,plbl]cos[none]csc[x]ctb[w,val]'
-. 'ctw[w,val]cvd[none]cvm[plbl]dac[addr]dbc[val]dca[opn]dcv[opn]'
-. 'def[def]dic[integer]drc[real]dtc[dtext]dvi[ops]dvr[ops]ejc[none]'
-. 'else[else]end[none end]enp[none]ent[*val ent]equ[eqop equ]'
-. 'erb[int,text erb]err[int,text err]esw[none esw]etx[none]exi[*int]exp[int]fi[fi]'
-. 'ica[opn]icp[none]icv[opn]ieq[plbl]if[if]iff[val,plbl iff]ige[plbl]'
-. 'igt[plbl]ile[plbl]ilt[plbl]ine[plbl]ino[plbl]inp[ptyp,int inp]'
-. 'inr[none]iov[plbl]itr[none]jsr[pnam]lch[reg,opc]lct[w,opv]lcp[reg]'
-. 'lcw[reg]ldi[ops]ldr[ops]lei[x]lnf[none]lsh[w,val]lsx[w,(x)]mcb[none]'
-. 'mfi[opn,*plbl]mli[ops]mlr[ops]mnz[opn]mov[opn,opv]mti[opn]'
-. 'mvc[none]mvw[none]mwb[none]ngi[none]ngr[none]nzb[w,plbl]'
-. 'orb[w,opw]plc[x,*opv]ppm[*plbl]prc[ptyp,val prc]psc[x,*opv]req[plbl]'
-. 'rge[plbl]rgt[plbl]rle[plbl]rlt[plbl]rmi[ops]rne[plbl]rno[plbl]'
-. 'rov[plbl]rsh[w,val]rsx[w,(x)]rti[*plbl]rtn[none]sbi[ops]'
-. 'sbr[ops]sch[reg,opc]scp[reg]sec[none sec]sin[none]sqr[none]ssl[opw]sss[opw]'
-. 'sti[ops]str[ops]sub[opn,opv]tan[none]then[then]trc[none]ttl[none ttl]'
-. 'undef[undef]wtb[reg]xob[w,opw]zer[opn]zgb[opn]zrb[w,plbl]zzz[int]' )
+. 'FLC[w]'
+. 'ADD[opn,opv]ADI[ops]ADR[ops]ANB[w,opw]AOV[opv,opn,plbl]ATN[none]'
+. 'BOD[opn,plbl]BEV[opn,plbl]'
+. 'BCT[w,plbl]BEQ[opn,opv,plbl]BGE[opn,opv,plbl]BGT[opn,opv,plbl]'
+. 'BHI[opn,opv,plbl]BLE[opn,opv,plbl]BLO[opn,opv,plbl]'
+. 'BLT[opn,opv,plbl]BNE[opn,opv,plbl]BNZ[opn,plbl]BRN[plbl]'
+. 'BRI[opn]BSW[x,val,*plbl bsw]BTW[reg]'
+. 'BZE[opn,plbl]CEQ[ops,ops,plbl]'
+. 'CHK[none]CHP[none]CMB[w]CMC[plbl,plbl]CNE[ops,ops,plbl]COS[none]CSC[x]CTB[w,val]'
+. 'CTW[w,val]CVD[none]CVM[plbl]DAC[addr]DBC[val]DCA[opn]DCV[opn]'
+. 'DEF[def]DIC[integer]DRC[real]DTC[dtext]DVI[ops]DVR[ops]EJC[none]'
+. 'ELSE[else]END[none end]ENP[none]ENT[*val ent]EQU[eqop equ]'
+. 'ERB[int,text erb]ERR[int,text err]ESW[none esw]ETX[none]EXI[*int]EXP[int]FI[fi]'
+. 'ICA[opn]ICP[none]ICV[opn]IEQ[plbl]IF[if]IFF[val,plbl iff]IGE[plbl]'
+. 'IGT[plbl]ILE[plbl]ILT[plbl]INE[plbl]INO[plbl]INP[ptyp,int inp]'
+. 'INR[none]IOV[plbl]ITR[none]JSR[pnam]LCH[reg,opc]LCT[w,opv]LCP[reg]'
+. 'LCW[reg]LDI[ops]LDR[ops]LEI[x]LNF[none]LSH[w,val]LSX[w,(x)]MCB[none]'
+. 'MFI[opn,*plbl]MLI[ops]MLR[ops]MNZ[opn]MOV[opn,opv]MTI[opn]'
+. 'MVC[none]MVW[none]MWB[none]NGI[none]NGR[none]NZB[w,plbl]'
+. 'ORB[w,opw]PLC[x,*opv]PPM[*plbl]PRC[ptyp,val prc]PSC[x,*opv]REQ[plbl]'
+. 'RGE[plbl]RGT[plbl]RLE[plbl]RLT[plbl]RMI[ops]RNE[plbl]RNO[plbl]'
+. 'ROV[plbl]RSH[w,val]RSX[w,(x)]RTI[*plbl]RTN[none]SBI[ops]'
+. 'SBR[ops]SCH[reg,opc]SCP[reg]SEC[none sec]SIN[none]SQR[none]SSL[opw]SSS[opw]'
+. 'STI[ops]STR[ops]SUB[opn,opv]TAN[none]THEn[then]TRC[none]TTL[none ttl]'
+. 'UNDEF[undef]WTB[reg]XOB[w,opw]ZER[opn]ZGB[opn]ZRB[w,plbl]ZZZ[int]' )
 
 
 *  prctab is table of procedures declared in inp that is used to
@@ -477,12 +478,14 @@ dostmt	thisline = rdline()
 
 *  here if arguments to verify
 dos01	ident(argskel)				:s(dos05)
+*	outfile = 'argskel:' argskel 
 	argskel p.argskel1 =
 *  accept null argument if this argument optional
 	argthis '*' ident(op1)			:s(dos05)
 	typ1 = argtype(op1,argthis)
 	argerrs = eq(typ1) argerrs + 1
 	ident(argskel)				:s(dos05)
+*	outfile = 'argskel2:' argskel 
 	argskel p.argskel2 =
 	argthis '*' ident(op2)			:s(dos05)
 	typ2 = argtype(op2,argthis)
@@ -494,6 +497,7 @@ dos01	ident(argskel)				:s(dos05)
 	argerrs = eq(typ3) argerrs + 1
 dos10
 dos05
+*	outfile  = 'arg error ' 'typ1:' typ1 ' typ2:' typ2 ' typ3:' typ3
 	gt(argerrs) error('arg type not known')
 *  here if an argument type not recognized
 	opskel ' ' =				:f(dsgen)
@@ -549,7 +553,7 @@ argform.snum	arg len(1) p.nos		:f(argform.sreal)
 		argform = 16			:(return)
 argform.sreal	arg len(1) p.real		:f(return)
 		argform = 17			:(return)
-argform.index	arg break('(') . t '(x' any('lrst') ')' rpos(0)
+argform.index	arg break('(') . t '(X' any('LRST') ')' rpos(0)
 .						:f(return)
 	t p.nos					:f(argform.index1)
 *  here if int(x)
@@ -568,6 +572,7 @@ argform.index1
 *  25=ptyp  26=text  27=dtext
 argtype
 	argtype = 0
+*	outfile = 'argtype op ' op ' typ ' typ
 *  typ may have initial'*' indicating argument optional. this
 *  code reached only if argument not null, so remove the '*'.
 	typ '*' =
@@ -578,17 +583,20 @@ argtype
 	ident(typ,'eqop')			:s(arg.eqop)
 	itype = argform(op)
 	opform = opformtab<typ>
-	argtype = ne(validform<+opform,itype>) itype	:(return)
-*	argtype = itype 			:(return)
+	argtype = ne(validform<+opform,itype>) itype	:(argtype.done)
+*	argtype = itype 			:(argtype.done)
 
-arg.text argtype = 26 				:(return)
-arg.dtext argtype = 27				:(return)
-arg.ptyp op any('rne')				:f(return)
-	argtype = 25				:(return)
+arg.text argtype = 26 				:(argtype.done)
+arg.dtext argtype = 27				:(argtype.done)
+arg.ptyp op any('rne')				:f(argtype.done)
+	argtype = 25				:(argtype.done)
 arg.eqop
 	op1 = ident(op,'*')
 .			equ_defs[label]
-	argtype = 24				:(return)
+	argtype = 24				:(argtype.done)
+argtype.done
+*	outfile = 'argtype ' argtype		
+						:(return)
 
 *
 -stitl crack(line)operands,operand,start,text
@@ -715,6 +723,7 @@ rdline	rdline = infile				:f(rl02)
 *  directive generator or other statement generator.
 *
 	leq( substr( rdline,1,1 ),'.' )		:f(other)
+	
 	rdline ? p.condasm			:s( $catab[condcmd] )
 rl00	leq( substr( rdline,1,1 ),';' )		:f(rl01)
 
@@ -832,7 +841,7 @@ tin02   str     (break('[') $ index len(1) break(']') $ val len(1)) =
 *  bsw processing begins by building an array that can hold all
 *  iff operands and comments.
 *
-g.bsw
+g.BSW
 *  save prior vms code in case needed
 	ub = ( integer( op2 ) op2, equates[op2] )
 	iffar = integer( ub )
@@ -845,7 +854,7 @@ g.bsw1	error("non-integer lower bound for bsw")
 *  iff processing sets the iffar[] element to the current
 *  value, plbl, and comment.
 *
-g.iff
+g.IFF
 	(eq( bsw ) error("iff without bsw"))
 	ifftyp = ( integer(op1) '1', '2')
 	iffval = ( integer( op1 ) op1, equates[op1] )
@@ -858,7 +867,7 @@ g.iff
 *  bsw/iff/esw preprocessing, all equ expressions must be
 * 	evaluated and kept in a symbol table.
 *
-g.equ
+g.EQU
 	equates[label] = ident(op1,'*')
 .			equ_defs[label]	:s(dsgen)
 
@@ -874,7 +883,7 @@ g.equ3	error("equ evaluation failed: " num1 ' ' oprtr ' ' num2 ' "' op1 '"' )
 *  esw processing generates an iff for every value in the
 *  bsw range.
 *
-g.esw
+g.ESW
 	(eq(bsw) error("esw without bsw"))
 	iffindx = 0
 g.esw1	iffar[iffindx] break('|') $ val len(1)
@@ -894,7 +903,7 @@ report
 
 *  end prints statistics on terminal then exits program
 *
-g.end
+g.END
 	outstmt(,'end',,,,comment)
 	(ne(level) error("  unclosed if conditional clause"))
 	report(target,		'target')
@@ -917,7 +926,7 @@ g.end.1 output = t[i,1] ' ' t[i,2]            :f(g.end.2)
 	i = i + 1				:(g.end.1)
 g.end.2
 						:(end)
-g.ent
+g.ENT
 *  note program entry labels
 *	entfile = label ',' op1
 	labtab[label] = 5			:(dsgen)
@@ -925,27 +934,23 @@ g.h						:(dsgen)
 
 *  keep track of sec statements
 
-g.sec	sectnow = sectnow + 1  			
+g.SEC	sectnow = sectnow + 1  			
 						:(dsgen)
-g.ttl
-	outstmt(,'ttl','27,' op1)			
+g.TTL
+	outstmt(,'TTL','27,' op1)			
 						:(dsout)
-g.erb
-g.err	thisline break(',') len(1) rem . t
+g.ERB
+g.ERR	thisline break(',') len(1) rem . t
 	outstmt(label,opcode,op1, t)		:(dsout)
 
-g.inp
+g.INP
 	ident(label) error('no label for inp')
 	differ(t = prctab[label]) error('duplicate inp')
 	prctab[label] = op1			:(dsgen)
 
-g.prc
+g.PRC
 	ident(label) error('no label for prc')
 	ident(t = prctab[label]) error('missing inp')
 	differ(t,op1) error('inconsistent inp/prc')
 	prctab[label] =				:(dsgen)
-* convert argument to upper case
-lower
-	lower = replace(s,'abcdefghijklmnopqrstuvwxyz',
-.			  'abcdefghijklmnopqrstuvwxyz')	:(return)
 end
