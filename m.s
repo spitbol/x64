@@ -294,6 +294,21 @@ ttybuf:	d_word    0     ; type word
 	d_word    0               	; file position of buffer
 	d_word    0               	; physical position in file
 	times   260 db 0         	; buffer
+
+lowspmin.a:	d_word	lowspmin
+
+	align	16
+	align         cfp_b
+	global	hasfpu
+hasfpu:	d_word	0
+	global	cprtmsg
+cprtmsg:
+	db          ' copyright 1987-2012 robert b. k. dewar and mark emmer.',0,0
+
+call_adr:	d_word	0
+
+
+	segment	.text
 ;
 ;       save and restore minimal and interface registers on stack.
 ;       used by any routine that needs to call back into the minimal
@@ -342,6 +357,7 @@ restore_regs:
 	mov	wc,m(save_wc)
 	mov	w0,m(save_w0)
 	ret
+
 ; ;
 ; ;       startup( char *dummy1, char *dummy2) - startup compiler
 ; ;
@@ -374,6 +390,7 @@ calltab_filnm equ   10
 calltab_dtype equ   11
 calltab_enevs equ   12
 calltab_engts equ   13
+
 
 startup:
 	pop     w0			; discard return
@@ -413,8 +430,6 @@ startup:
 ;	(low)	|                |
 
 
-
-lowspmin.a:	d_word	lowspmin
 
 	global	stackinit
 stackinit:
@@ -984,14 +999,3 @@ zz_:
 	popf
 	ret
 %endif
-	section		.data
-	align	16
-	align         cfp_b
-	global	hasfpu
-hasfpu:	d_word	0
-	global	cprtmsg
-cprtmsg:
-	db          ' copyright 1987-2012 robert b. k. dewar and mark emmer.',0,0
-
-call_adr:	d_word	0
-
