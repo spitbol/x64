@@ -120,103 +120,100 @@ calltab:
 ;       d_word	enevs ;  engine words
 ;       d_word	engts ;   not used
 
-	global	gbcnt
-	global	headv
-	global	mxlen
-	global	stage
-	global	timsx
-	global	dnamb
-	global	dnamp
-	global	state
 	global	b_efc
 	global	b_icl
+	global	b_rcl
 	global	b_scl
 	global	b_vct
 	global	b_xnt
 	global	b_xrt
-	global	stbas
-	global	statb
-	global	polct
-	global  typet
-	global	lowspmin
-	global	flprt
-	global	flptr
-	global	gtcef
-	global	hshtb
-	global	pmhbs
-	global	r_fcb
 	global	c_aaa
 	global	c_yyy
+	global	dnamb
+	global	cswfl
+	global	dnamp
+	global	flprt
+	global	flptr
 	global	g_aaa
-	global	w_yyy
-	global	s_aaa
-	global	s_yyy
-	global	r_cod
+	global	gbcnt
+	global	gtcef
+	global	headv
+	global	hshtb
 	global	kvstn
 	global	kvdmp
 	global	kvftr
 	global	kvcom
 	global	kvpfl
-	global	cswfl
+	global	mxlen
+	global	polct
+	global	s_yyy
+	global	s_aaa
+	global	stage
+	global	state
+	global	stbas
+	global	statb
         global  stmcs
         global  stmct
-	global	b_rcl
+	global	timsx
+	global  typet
+	global	pmhbs
+	global	r_cod
+	global	r_fcb
+	global	w_yyy
 	global	end_min_data
 
 
-        extern ldr_
-        extern str_
-        extern itr_
-        extern adr_
-        extern sbr_
-        extern mlr_
-        extern dvr_
-        extern ngr_
-        extern atn_
-        extern chp_
-        extern cos_
-        extern etx_
-        extern lnf_
-        extern sin_
-        extern sqr_
-        extern tan_
-	extern cpr_
-	extern ovr_
+        extern	adr_
+        extern	atn_
+        extern	chp_
+        extern	cos_
+	extern	cpr_
+        extern	dvr_
+        extern	etx_
+        extern	itr_
+        extern	ldr_
+        extern	lnf_
+        extern	mlr_
+        extern	ngr_
+	extern	ovr_
+        extern	sbr_
+        extern	sin_
+        extern	str_
+        extern	sqr_
+        extern	tan_
 
-	%macro	zzz	3
-	section	.data
-%%desc:	db	%3,0
-	section	.text
-	mov	m_word [zz_id],%1
-	mov	m_word [zz_zz],%2
-	mov	m_word [zz_de],%%desc
-	call	zz_
-	%endmacro
+	extern	reg_cp
 
 	extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
-
-;	integer arithmetic instructions
-	extern	cvd__
-	%macro	cvd_	0
-	call	cvd__
-	%endmacro
-
 
 	%macro	adi_	1
 	add	ia,%1
 	seto	byte [reg_fl]
 	%endmacro
+
+
+	%macro	chk_	0
+	extern	chk__	
+	call	chk__
+	%endmacro
+
+	extern	cvd__
+
+	%macro	cvd_	0
+	call	cvd__
+	%endmacro
+
 	extern	dvi__
+
 	%macro	dvi_	1
 	call	dvi__
 	%endmacro
 
-	extern	rmi__
-	%macro	rmi_	1
-	mov	w0,%1
-	call	rmi__
+	%macro	icp_	0
+	mov	w0,m_word [reg_cp]
+	add	w0,cfp_b
+	mov	m_word [reg_cp],w0
 	%endmacro
-
 
 	%macro	ino_	1
 	mov	al,byte [reg_fl]
@@ -244,8 +241,15 @@ calltab:
 	seto	byte [reg_fl]
 	%endmacro
 
+	extern	rmi__
+	%macro	rmi_	1
+	mov	w0,%1
+	call	rmi__
+	%endmacro
+
 	extern	f_rti
 	%macro	rti_	0
+
 	call	f_rti
 	mov	ia,m_word [reg_ia]
 	%endmacro
@@ -259,10 +263,6 @@ calltab:
 	%macro	sti_	1
 	mov	%1,ia
 	%endmacro
-
-;	code pointer instructions (cp maintained in location reg_cp)
-
-	extern	reg_cp
 
 	%macro	lcp_	1
 	mov	w0,%1
@@ -278,15 +278,10 @@ calltab:
 	mov	m_word [reg_cp],w0
 	%endmacro
 
-	%macro	scp_	1
-	mov	w0,m_word [reg_cp]
-	mov	%1,w0
-	%endmacro
-
-	%macro	icp_	0
-	mov	w0,m_word [reg_cp]
-	add	w0,cfp_b
-	mov	m_word [reg_cp],w0
+	%macro	rno_	1
+	mov	al,byte [reg_fl]
+	or	al,al
+	je	%1
 	%endmacro
 
 	%macro	rov_	1
@@ -295,10 +290,17 @@ calltab:
 	jne	%1
 	%endmacro
 
-	%macro	rno_	1
-	mov	al,byte [reg_fl]
-	or	al,al
-	je	%1
+	%macro	scp_	1
+	mov	w0,m_word [reg_cp]
+	mov	%1,w0
 	%endmacro
 
-
+	%macro	zzz	3
+	section	.data
+%%desc:	db	%3,0
+	section	.text
+	mov	m_word [zz_id],%1
+	mov	m_word [zz_zz],%2
+	mov	m_word [zz_de],%%desc
+	call	zz_
+	%endmacro
