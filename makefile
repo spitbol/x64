@@ -1,7 +1,7 @@
 # SPITBOL makefile using tcc
 HOST=unix_64
-nasm?=tools/nasm/bin/nasm.$(HOST)
-ASM=$(nasm)
+#nasm?=tools/nasm/bin/nasm.$(HOST)
+ASM=as
 
 ws?=64
 
@@ -71,9 +71,11 @@ vpath %.c $(OSINT)
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMOPTS = -f $(ELF) -D$(TARGET) $(ITDEF)
+#ASMOPTS = -f $(ELF) -D$(TARGET) $(ITDEF)
+ASMOPTS =
 else
-ASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
+#ASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
+ASMOPTS = -g
 endif
 
 # Tools for processing Minimal source file.
@@ -88,7 +90,7 @@ ERR=    err.spt
 
 # Implicit rule for building objects from assembly language files.
 .s.o:
-	$(ASM) $(ASMOPTS) -l $*.lst -o$@ $*.s
+	$(ASM) $(ASMOPTS) -o$@ $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
 CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h 

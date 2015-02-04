@@ -691,7 +691,7 @@ arg.c.2 getarg = txt				:(arg.done)
 
 * wlbl, clbl
 arg.c.3
-arg.c.4 getarg = pre txt post			:(arg.done)
+arg.c.4 getarg = 'qword ptr ' txt 			:(arg.done)
 
 * elbl, plbl
 arg.c.5
@@ -706,7 +706,7 @@ arg.c.8
 arg.c.9
 	txt len(1) len(2) . typ
 	typ = regmap[typ]
-	getarg = pre typ post
+	getarg = 'qword ptr [' typ ']'
 						:(arg.done)
 
 * (x)+, register indirect, post increment
@@ -716,14 +716,14 @@ arg.c.9
 arg.c.10
 	txt = substr(txt,2,2)
 	t1 = regmap[txt]
-	getarg = pre t1 post
+	getarg = 'qword ptr [' t1 ']'
 	(ident(txt,'xs') genaop(tstmt(,'add',t1,'cfp_b'))) :s(arg.done)
 	genaop(tstmt(,'lea',t1,'a(' t1 '+cfp_b)'))	:(arg.done)
 
 *  -(x), register indirect, pre decrement
 arg.c.11
 	t1 = regmap[substr(txt,3,2)]
-	getarg = pre t1 post
+	getarg = 'qword ptr [' t1 ']'
 	genbop(tstmt(,'lea',t1,'a(' t1 '-cfp_b)')) :(arg.done)
 
 * int(x)
@@ -731,7 +731,7 @@ arg.c.11
 arg.c.12
 arg.c.13
 	txt break('(') . t1 '(' len(2) . t2
-	getarg = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
+	getarg = 'qword ptr (cfp_b*' t1 ')[' regmap[t2]  ']'
 							:(arg.done)
 
 *  name(x), where name is in working section
@@ -739,7 +739,7 @@ arg.c.14
 arg.c.15
 	getarg = ne(rip_mode)	getrip(iarg)		:s(return)
 	txt break('(') . t1 '(' len(2) . t2
-	getarg = pre    t1 '+'  regmap[t2] 	post
+	getarg = t1 '['  regmap[t2] 	']'
 							:(arg.done)
 * signed integer
 arg.c.16 getarg = txt				:(arg.done)
@@ -846,9 +846,9 @@ rip.done
 	lbl = genrip()
 	riptable[txt] = lbl
 	ent = lbl
-	genop('segment','.data')
+	genop('.section','data')
 	genopl(lbl ':','d_word',getrip)
-	genop('segment','.text')
+	genop('.section','text')
 rip.ent
 *	generate reference via w0 if needed
 	genop('mov',w0,pre ent post)
@@ -881,10 +881,10 @@ val.c.19
 *  =name (data section)
 val.c.20
 val.c.21
-        getval =  substr(txt,2)			:(val.done)
+        getval =  'offset ' substr(txt,2)	:(val.done)
 *  =name (program section)
 val.c.22
-        getval =  substr(txt,2)			:(val.done)
+       getval =  'offset ' substr(txt,2)	:(val.done)
 val.done
 						:(return)
 
@@ -1180,15 +1180,15 @@ g.bsw1
 g.bsw.2
 * in rip_mode, need to generate location to reference destination
 	lbl = genrip()
-        genop('segment .data')
+        genop('.section data')
 	genopl(lbl,'d_word',t2 )
-	genop('segment','.text')
+	genop('.section','text')
 	genop('mov',w0,t1)
 	genop('sal',w0,'log_cfp_b')
 	genop('add',w0,'m(' lbl ')')
 	genop('jmp', w0)
 g.bsw.3
-	genop('segment','.data')
+	genop('.section','data')
         genopl(t2 ':')
 	z_suspend = 0
 						:(opdone)
@@ -1196,7 +1196,7 @@ g.bsw.3
 g.iff   genop('d_word',getarg(i2))              :(opdone)
 
 g.esw
-        genop('segment .text')			:(opdone)
+        genop('.section .text')			:(opdone)
 g.ent
 *
 *  entry points are stored in byte before program entry label
@@ -1235,7 +1235,7 @@ g.ent.2
 g.bri	genop('jmp',getarg(i1))			:(opdone)
 
 g.lei	t1 = regmap[i.text(i1)]
-	genop('movzx',t1,'byte [' t1 '-1]' )	:(opdone)
+	genop('movzx',t1,'byte ptr [' t1 '-1]' )	:(opdone)
 
 g.jsr
 	jsr_proc = getarg(i1)
@@ -1884,7 +1884,7 @@ decend
         differ(pubtab[thislabel]) genop('global',thislabel)
 						:(opdone)
 
-g.dac	t1 = i.type(i1)
+gdac	t1 = i.type(i1)
         t2 = "" ;*(le(t1,2) "", le(t1,4) "d_offset_(", le(t1,6) "d_offset_(", "")
         genopl(thislabel,'d_word',t2 i.text(i1))
 						:(decend)
@@ -1944,26 +1944,26 @@ g.sec	genop('')
 	sectnow = sectnow + 1			:($("g.sec." sectnow))
 
 * procedure declaration section
-g.sec.1 genop('segment .text')
+g.sec.1 genop('.section .text')
         genop('global','sec01')
         genopl('sec01' ':')             	:(opdone)
 
 * definitions section
 g.sec.2
-        genop('segment .data')
+        genop('.section data')
         genop('global','sec02')
         genopl('sec02' ':')             	:(opdone)
 
 * constants section
 g.sec.3
-        genop('segment .data')
+        genop('.section data')
         genop('global','sec03')
         genopl('sec03' ':')     		:(opdone)
 
 * working variables section
 g.sec.4 genop('global','esec03')
         genopl('esec03' ':')
-        genop('segment .data')
+        genop('.section data')
         genop('global','sec04')
         genopl('sec04' ':')     
 						:(opdone)
@@ -1979,7 +1979,7 @@ g.sec.5
 	genop('prc_: times ' prc.count1 ' dd 0')
         genop('global','end_min_data')
         genopl('end_min_data' ':')
-        genop('segment .text')
+        genop('.section .text')
         genop('global','sec05')
         genopl('sec05' ':')     
 *  enable tracing if desired

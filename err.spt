@@ -113,20 +113,20 @@
 
 *
 *  comma delimited string of decimal bytes:
-        db      = 'db'
+        db      = '.byte'
 	byte	= tab db tab
 
 *  delim delimited string of 'normal' ascii characters (32-127)
 	delim	= '"'
-        ascii   = tab 'db' tab
+        ascii   = tab '.ascii' tab
 
 *  comment lead-in character
 *
-        comment = ';'
+        comment = '#'
 
 *  data and public definitions
 *
-        data    = tab 'segment'	tab '.data'
+        data    = tab '.section'	tab '.data'
 
 *  setup keywords
 *
@@ -398,15 +398,15 @@ readerr_end
 *
 	prefix = ident(target,"osx_64") "_"
 
-	outfile = tab 'global' tab prefix "errors"
-	outfile = prefix 'errors:' tab 'db' tab '0'
+	outfile = tab '.global' tab prefix "errors"
+	outfile = prefix 'errors:' tab db tab '0'
 	seq(" putout(err[i],i)", .i)
 
 *  putout label and phrase table
 *
         outfile =
-	outfile = tab 'global' tab prefix 'phrases'
-	outfile = prefix 'phrases:' tab 'db' tab '0'
+	outfile = tab '.global' tab prefix 'phrases'
+	outfile = prefix 'phrases:' tab db tab '0'
 	seq(" putout(phrase[i],spread(i))", .i)
 
 *  finish up the output file
