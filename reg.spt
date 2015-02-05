@@ -1,0 +1,16 @@
+*	rename registers according to word size
+
+	prefix = (eq(host(0),32) "%e", "%r")
+
+	rmap = table(20)
+	rmap['XL'] = 'si';  rmap['XR'] = 'di';  rmap['XS'] = 'sp';  rmap['XT'] = 'si'
+	rmap['WA'] = 'cx';  rmap['WB'] = 'bx';  rmap['WC'] = 'dx';  rmap['W0'] = 'ax' 
+	rmap['IA'] = 'bp'
+
+	rpat =  'IA' | ('X' any('LRST')) | ('W' any('ABC0')) 
+next
+	line = input				:f(end)
+loop
+	line rpat . reg = prefix rmap[reg]	:s(loop)
+	output = line				:(next)
+end

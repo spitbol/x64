@@ -481,7 +481,7 @@ regs.32
 	regmap['wc'] = '%edx'; 	regmap['ia'] = '%ebp'
 	regmap['cp'] = '%cp'
 *	w0 is temp register
-	regmap['w0'] = '%eax'
+	regmap['w0'] = '%eax';	 regmap['w1'] = '%ebp'
 	ptr_ref = 'dword ptr '
 						:(regs.done)
 
@@ -492,7 +492,7 @@ regs.64
 	regmap['wa_l'] = '%cl';	regmap['wc_l'] '%dl'
 	regmap['wc'] = '%rdx'; 	regmap['ia'] = '%rbp'
 *	w0 is temp register
-	regmap['w0'] = 'rax'
+	regmap['w0'] = 'rax';	 regmap['w1'] = 'rbp'
 	ptr_ref = 'qword ptr '
 regs.done
 	regmap['cp'] = 'cp'

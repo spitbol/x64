@@ -16,9 +16,12 @@
 #     you should have received a copy of the gnu general public license
 #     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 #
-        .section	text
 
-	.include	"m.h"
+	.intel_syntax
+
+        .text
+
+.include	"m.h"
 
 	.extern	osisp
 	.extern	compsp
@@ -30,7 +33,7 @@
 
 	.global	mxint
 
-#ifdef zz_trace
+.ifdef zz_trace
 	.extern	shields
 	.extern	zz
 	.extern	zz_
@@ -52,7 +55,7 @@
 	.extern	zz_4
 	.extern	zz_arg
 	.extern	zz_num
-#endif
+.endif
 	.global	start
 
 
@@ -63,7 +66,7 @@
 
 	.extern	_rc_
 	.global	typet
-	.section data
+	.data
 
         d_word	b_art   # arblk type word - 0
         d_word	b_cdc   # cdblk type word - 1
@@ -205,7 +208,7 @@ calltab:
 
 	.extern	dvi__
 
-	.macro	dvi_	a1
+	.macro	dvi_	
 	call	dvi__
 	.endm
 
@@ -295,14 +298,14 @@ calltab:
 	mov	\a1,w0
 	.endm
 
-#ifdef zz_trace
+.ifdef zz_trace
 	.macro	zzz	a1,a2,a3
-	.section	data
+	.data
 %%desc:	db	\a3,0
-	.section	text
+	.text
 	mov	m_word [zz_id],\a1
 	mov	m_word [zz_zz],\a2
 	mov	m_word [zz_de],%%desc
 	call	zz_
 	.endm
-#endif
+.endif

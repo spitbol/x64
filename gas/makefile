@@ -158,13 +158,6 @@ s.err: s.s
 err.s: $(MIN).cnd $(ERR) s.s
 	   $(BASEBOL) -u $(TARGET) -1=s.err -2=err.s $(ERR)
 
-m.h:	m.h.r
-	$(BASEBOL) -u $(WS) < m.h.r > m.h
-m.hdr:	m.hdr.r
-	$(BASEBOL) -u $(WS) < m.hdr.r > m.hdr
-m.s:	m.s.r
-	$(BASEBOL) -u $(WS) < m.s.r > m.s
-
 # C language header dependencies:
 main.o: $(OSINT)/save.h
 sysgc.o: $(OSINT)/save.h
