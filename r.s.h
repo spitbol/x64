@@ -190,7 +190,7 @@ calltab:
 	.extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
 
 	.macro	adi_	a1
-	add	ia,\a1
+	add	IA,\a1
 	seto	byte [reg_fl]
 	.endm
 
@@ -213,9 +213,9 @@ calltab:
 	.endm
 
 	.macro	icp_
-	mov	w0,m_word [reg_cp]
-	add	w0,cfp_b
-	mov	m_word [reg_cp],w0
+	mov	W0,m_word [reg_cp]
+	add	W0,cfp_b
+	mov	m_word [reg_cp],W0
 	.endm
 
 	.macro	ino_	a1
@@ -231,22 +231,22 @@ calltab:
 	.endm
 
 	.macro	ldi_	a1
-	mov	ia,\a1
+	mov	IA,\a1
 	.endm
 
 	.macro	mli_	a1
-	imul	ia,\a1
+	imul	IA,\a1
 	seto	byte [reg_fl]
 	.endm
 
 	.macro	ngi_
-	neg	ia
+	neg	IA
 	seto	byte [reg_fl]
 	.endm
 
 	.extern	rmi__
 	.macro	rmi_
-	mov	w0,\a1
+	mov	W0,\a1
 	call	rmi__
 	.endm
 
@@ -254,12 +254,12 @@ calltab:
 	.macro	rti_
 
 	call	f_rti
-	mov	ia,m_word [reg_ia]
+	mov	IA,m_word [reg_ia]
 	.endm
 
 	.macro	sbi_	a1
-	sub	ia,\a1
-	mov	w0,0
+	sub	IA,\a1
+	mov	W0,0
 	seto	byte [reg_fl]
 	.endm
 
@@ -268,17 +268,17 @@ calltab:
 	.endm
 
 	.macro	lcp_	a1
-	mov	w0,\a1
-	mov	m_word [reg_cp],w0
+	mov	W0,\a1
+	mov	m_word [reg_cp],W0
 	.endm
 
 	.macro	lcw_	a1
-	mov	w0,m_word [reg_cp]		# load address of code word
-	mov	w0,m_word [w0]			# load code word
-	mov	\a1,w0
-	mov	w0,m_word [reg_cp]		# load address of code word
-	add	w0,cfp_b
-	mov	m_word [reg_cp],w0
+	mov	W0,m_word [reg_cp]		# load address of code word
+	mov	W0,m_word [W0]			# load code word
+	mov	\a1,W0
+	mov	W0,m_word [reg_cp]		# load address of code word
+	add	W0,cfp_b
+	mov	m_word [reg_cp],W0
 	.endm
 
 	.macro	rno_	a1
@@ -294,8 +294,8 @@ calltab:
 	.endm
 
 	.macro	scp_	a1
-	mov	w0,m_word [reg_cp]
-	mov	\a1,w0
+	mov	W0,m_word [reg_cp]
+	mov	\a1,W0
 	.endm
 
 .ifdef zz_trace

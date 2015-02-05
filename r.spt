@@ -1,5 +1,6 @@
 *	rename registers according to word size
 
+	output = host(0)
 	prefix = (eq(host(0),32) "%e", "%r")
 
 	rmap = table(20)

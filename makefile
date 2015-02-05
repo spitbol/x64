@@ -6,6 +6,8 @@ ASM=as
 ws?=64
 
 debug?=0
+DEBUG=$(debug)
+
 EXECUTABLE=spitbol
 
 os?=unix
@@ -17,17 +19,14 @@ ITOPT=:it
 ITDEF=-Dzz_trace
 endif
 
-
 OS=$(os)
 WS=$(ws)
-
 TARGET=$(OS)_$(WS)
 
 # basebol determines which spitbol to use to compile
 spitbol?=./bin/spitbol.$(HOST)
 BASEBOL=$(spitbol)
 
-DEBUG=$(debug)
 
 cc?=gcc
 CC=$(cc)
@@ -103,7 +102,7 @@ UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/syste
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	m.hdr 
+VHDRS=	r.s.h
 
 OBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	sysef.o sysej.o sysem.o sysen.o sysep.o sysex.o sysfc.o \
@@ -138,16 +137,14 @@ bootbol:
 
 # Assembly language dependencies:
 err.o: err.s
+
 s.o: s.s
-
-err.o: err.s
-
 
 # SPITBOL Minimal source
 s.go:	s.lex go.spt
 	$(BASEBOL) -u i32 go.spt
 
-s.s:	s.lex $(VHDRS) $(COD) 
+r.s.s:	s.lex $(VHDRS) $(COD) 
 	$(BASEBOL) -u $(TARGET):$(ITOPT) $(COD)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
@@ -158,12 +155,15 @@ s.err: s.s
 err.s: $(MIN).cnd $(ERR) s.s
 	   $(BASEBOL) -u $(TARGET) -1=s.err -2=err.s $(ERR)
 
-m.h:	m.h.r
-	$(BASEBOL) -u $(WS) < m.h.r > m.h
-m.hdr:	m.hdr.r
-	$(BASEBOL) -u $(WS) < m.hdr.r > m.hdr
-m.s:	m.s.r
-	$(BASEBOL) -u $(WS) < m.s.r > m.s
+
+m.h:	r.m.h
+	$(BASEBOL) -u $(WS) r.spt < r.m.h > m.h
+s.h:	r.s.h
+	$(BASEBOL) -u $(WS) r.spt < r.s.h > s.h
+m.s:	r.m.s r.m.h
+	$(BASEBOL) -u $(WS) r.spt < r.m.s > m.s
+s.s:	r.s.s r.s.h m.h
+	$(BASEBOL) -u $(WS) r.spt < r.s.s > s.s
 
 # C language header dependencies:
 main.o: $(OSINT)/save.h
@@ -176,6 +176,7 @@ install:
 	sudo cp ./bin/spitbol /usr/local/bin
 clean:
 	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t ./spitbol
+	rm -f m.h m.hdr m.s s.s
 
 z:
 	nm -n s.o >s.nm

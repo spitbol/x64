@@ -48,7 +48,7 @@
 *	reads <file>.lex	containing tokenized source code
 *       writes <file>.s         with 80386 assembly code
 *	also writes <file>.err	with err and erb error messages
-*       parts of m.hdr  are prepended and appended to <file>.s
+*       parts of s.h  are prepended and appended to <file>.s
 *	also sets flags		to 1 after converting names to upper case
 *	also reads <file>.pub	for debug symbols to be declared public
 *
@@ -472,30 +472,19 @@ flgs2
 *  register/memory-location name.
 *
 	regmap = table(30)
+	s = 'xlXLxrXRxsXTxtXTwaWAwbWBwcWCw0W0iaIAcpCP'
+regmap.loop
+	s len(2) . min len(2) . reg =		:f(regmap.done)
+	regmap[min] = reg			:(regmap.loop)
+regmap.done
+
 	eq(ws,64)				:s(regs.64)
 regs.32
-	regmap['xl'] = '%esi';	regmap['xt'] = '%esi'
-	regmap['xr'] = '%edi';	regmap['xs'] = '%esp'
-	regmap['wa'] = '%ecx'; 	regmap['wb'] = '%ebx'
-	regmap['wa_l'] = '%cl';	regmap['wc_l'] '%dl'
-	regmap['wc'] = '%edx'; 	regmap['ia'] = '%ebp'
-	regmap['cp'] = '%cp'
-*	w0 is temp register
-	regmap['w0'] = '%eax'
 	ptr_ref = 'dword ptr '
 						:(regs.done)
-
 regs.64
-	regmap['xl'] = '%rsi';	regmap['xt'] = '%rsi'
-	regmap['xr'] = '%rdi';	regmap['xs'] = '%rsp'
-	regmap['wa'] = '%rcx'; 	regmap['wb'] = '%rbx'
-	regmap['wa_l'] = '%cl';	regmap['wc_l'] '%dl'
-	regmap['wc'] = '%rdx'; 	regmap['ia'] = '%rbp'
-*	w0 is temp register
-	regmap['w0'] = 'rax'
 	ptr_ref = 'qword ptr '
 regs.done
-	regmap['cp'] = 'cp'
 	w0 = regmap['w0']
 *  quick reference:
 	reg.wa = regmap['wa']
@@ -547,7 +536,7 @@ inputok
 *
 *  associate output files.
 *
-	filenamo = fileprefix '.s'
+	filenamo = 'r.' fileprefix '.s'
         output(.outfile,2,filenamo)             :s(outputok)
         output = '  cannot open asm file: ' filenamo :(end)
 outputok
@@ -561,7 +550,7 @@ outputok
 err_ok
 
 
-*  then copy contents of m.hdr (if it exists) to outfile
+*  then copy contents of s.h (if it exists) to outfile
 *  stop at line with just 'end' or end of file
 *
 	outlines = outlines + 1
@@ -569,7 +558,7 @@ err_ok
 *	differ(i_trace) outline(tab '%define' tab 'zi_trace')
 *	outlines = differ(i_trace) outlines + 1
 
-	input(.hdrfile,4,'m.hdr')	:f(nohdr)
+	input(.hdrfile,4,'s.h')			:f(nohdr)
 	havehdr = 1
 *        output = '  input header file:  ' hdr  '.hdr'
 hdrcopy line = hdrfile				:f(hdrend)
