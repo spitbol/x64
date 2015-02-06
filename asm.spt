@@ -893,7 +893,8 @@ val.done
 -stitl m(text)
 m
 *  m is called to emit memory referene
-	m = m_word ' ptr ' text
+*	m = m_word ' ptr ' text
+	m = 'M(' text ')'
 						:(return)
 
 -stitl memmem()t

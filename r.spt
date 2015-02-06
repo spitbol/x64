@@ -1,16 +1,47 @@
 *	rename registers according to word size
 
-	prefix = (eq(host(0),32) "%e", "%r")
+	target = host(0)
+	target break('_') . os "_" rem . ws
+
+	prefix = (eq(ws,32) '%e', '%r')
+
+	define = 
+	word = (eq(ws,32) 'dword','qword')
+	define = define 'M_WORD ' word ' '
+
+	define('a(ref)')			:(a.end)
+						:(next)
+a	ident(os,"osx")				:s(a.err)
+	a = '[' ref ']' 			:(return)
+a.end
+
+	define('m(ref)')			:(m.end)
+m	ident(os,"osx")				:s(m.err)
+	m = (eq(ws,32) 'd', 'q') 'word ptr ' ref ']' :(return)
+m.end
 
 	rmap = table(20)
-	rmap['XL'] = 'si';  rmap['XR'] = 'di';  rmap['XS'] = 'sp';  rmap['XT'] = 'si'
-	rmap['WA'] = 'cx';  rmap['WB'] = 'bx';  rmap['WC'] = 'dx';  rmap['W0'] = 'ax' 
-	rmap['IA'] = 'bp'
 
+	s = 'XLsiXRdiXSspXTsiWAcxWBcxWCdxW0axIAbp'
+rinit	s len(2) . min  len(2) . reg = 		:f(rdone)
+	rmap[min] = reg				:(rinit)
+rdone
 	rpat =  'IA' | ('X' any('LRST')) | ('W' any('ABC0')) 
+
 next
 	line = input				:f(end)
-loop
-	line rpat . reg = prefix rmap[reg]	:s(loop)
+
+aloop	line breakx('A') . first 'A(' bal . ref ')' rem . last = first a(ref) last	:s(mloop)
+	def = define
+
+dloop
+	def break(' ') . key ' ' break(' ') . val ' ' =	:f(mloop)
+
+dloop.1	line key = val				:s(dloop.1)f(dloop)
+
+mloop	line breakx('M') . first 'M(' bal . ref ')' rem . last = first m(ref) last	:s(mloop)
+
+rloop 	line rpat . reg = prefix rmap[reg]	:s(rloop)
 	output = line				:(next)
+err	output = 'error '
 end

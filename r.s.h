@@ -21,7 +21,7 @@
 
         .text
 
-.include	"m.h"
+	.include	"m.h"
 
 	.extern	osisp
 	.extern	compsp

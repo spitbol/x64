@@ -1,7 +1,7 @@
 # SPITBOL makefile using tcc
 HOST=unix_64
 #nasm?=tools/nasm/bin/nasm.$(HOST)
-ASM=as
+AS=as
 
 ws?=64
 
@@ -70,17 +70,15 @@ vpath %.c $(OSINT)
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-#ASMOPTS = -f $(ELF) -D$(TARGET) $(ITDEF)
-#ASMOPTS = -x assembler-with-cpp -Wa,m64
-ASMOPTS = -Wa,m64
+#ASOPTS = -Wa,m64
+ASOPTS = -c
 else
-#ASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
-ASMOPTS = -Wa,m64 -g
+ASOPTS = -Wa,m64 -g
 endif
 
 # Tools for processing Minimal source file.
 LEX=	lex.spt
-COD=    asm.spt
+ASM=    asm.spt
 ERR=    err.spt
 
 # Implicit rule for building objects from C files.
@@ -90,7 +88,7 @@ ERR=    err.spt
 
 # Implicit rule for building objects from assembly language files.
 .s.o:
-	$(CC) $(ASMOPTS) -o$@ $*.s
+	$(CC) $(ASOPTS) -o$@ $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
 CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h 
@@ -144,8 +142,8 @@ s.o: s.s
 s.go:	s.lex go.spt
 	$(BASEBOL) -u i32 go.spt
 
-r.s.s:	s.lex $(VHDRS) $(COD) 
-	$(BASEBOL) -u $(TARGET):$(ITOPT) $(COD)
+r.s.s:	s.lex $(VHDRS) $(ASM) 
+	$(BASEBOL) -u $(TARGET) $(ITOPT) $(ASM)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
 	 $(BASEBOL) -u $(TARGET) $(LEX)
@@ -157,13 +155,13 @@ err.s: $(MIN).cnd $(ERR) s.s
 
 
 m.h:	r.m.h
-	$(BASEBOL) -u $(WS) r.spt < r.m.h > m.h
+	$(BASEBOL) -u $(TARGET) r.spt < r.m.h > m.h
 s.h:	r.s.h
-	$(BASEBOL) -u $(WS) r.spt < r.s.h > s.h
+	$(BASEBOL) -u $(TARGET) r.spt < r.s.h > s.h
 m.s:	r.m.s r.m.h
-	$(BASEBOL) -u $(WS) r.spt < r.m.s > m.s
+	$(BASEBOL) -u $(TARGET) r.spt < r.m.s > m.s
 s.s:	r.s.s r.s.h m.h
-	$(BASEBOL) -u $(WS) r.spt < r.s.s > s.s
+	$(BASEBOL) -u $(TARGET) r.spt < r.s.s > s.s
 
 # C language header dependencies:
 main.o: $(OSINT)/save.h
@@ -175,8 +173,7 @@ dlfcn.o: dlfcn.h
 install:
 	sudo cp ./bin/spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t ./spitbol
-	rm -f m.h m.hdr m.s s.s
+	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp r.s.s s.s err.s s.s   m.h m.s ./spitbol
 
 z:
 	nm -n s.o >s.nm
