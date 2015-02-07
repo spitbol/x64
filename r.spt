@@ -5,9 +5,8 @@
 
 	prefix = (eq(ws,32) '%e', '%r')
 
-	define = 
 	word = (eq(ws,32) 'dword','qword')
-	define = define 'M_WORD ' word ' '
+	defines = 'M_WORD ' word ' '
 
 	define('a(ref)')			:(a.end)
 						:(next)
@@ -32,11 +31,10 @@ next
 	line = input				:f(end)
 
 aloop	line breakx('A') . first 'A(' bal . ref ')' rem . last = first a(ref) last	:s(mloop)
-	def = define
+	defs = defines
 
 dloop
-	def break(' ') . key ' ' break(' ') . val ' ' =	:f(mloop)
-
+	defs break(' ') . key ' ' break(' ') . val ' ' =	:f(mloop)
 dloop.1	line key = val				:s(dloop.1)f(dloop)
 
 mloop	line breakx('M') . first 'M(' bal . ref ')' rem . last = first m(ref) last	:s(mloop)

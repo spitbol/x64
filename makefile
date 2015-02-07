@@ -71,9 +71,9 @@ vpath %.c $(OSINT)
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
 #ASOPTS = -Wa,m64
-ASOPTS = -c
+ASOPTS = -c --$(WS)
 else
-ASOPTS = -Wa,m64 -g
+ASOPTS = -c --$(WS) -g
 endif
 
 # Tools for processing Minimal source file.
@@ -88,7 +88,7 @@ ERR=    err.spt
 
 # Implicit rule for building objects from assembly language files.
 .s.o:
-	$(CC) $(ASOPTS) -o$@ $*.s
+	$(AS) $(ASOPTS) -o$@ $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
 CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h 

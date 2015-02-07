@@ -20,7 +20,7 @@
 
 #	ws is bits per word, cfp_b is bytes per word, cfp_c is characters per word
 
-	.intel_syntax
+	.intel_syntax	prefix
 
 	#include	"m.h"
 

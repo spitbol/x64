@@ -206,9 +206,10 @@ calltab:
 	call	cvd__
 	.endm
 
-	.extern	dvi__
+	.extern	dvi__ val
 
 	.macro	dvi_	
+	mov	W0,\val
 	call	dvi__
 	.endm
 

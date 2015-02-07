@@ -17,7 +17,7 @@
 #     you should have received a copy of the gnu general public license
 #     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 
-	.intel_syntax
+	.intel_syntax	prefix
 
 	.set	os,	unix	# default
 #	.set	unix
@@ -51,10 +51,6 @@
 
 
 	.set	m_word,dword	# reference to word in memory
-#	.set	d_word,dd	# define value for memory word
-	.macro	d_word	val
-	.int	\val
-	.endm
 #	.set	cfp_b,4
 	.set	log_cfp_b,2
 	.set	cfp_c_val,4
@@ -81,11 +77,7 @@
 #	.set d_real,dq	# define value for floating point
 
 	.set	m_word,qword
-#	.set	d_word,dq
 #	.set	cfp_b,8
-	.macro	d_word	val
-	.long	\val
-	.endm
 	.set	log_cfp_b,3
 	.set	log_cfp_c,3
 	.set	d_real,dq
@@ -113,6 +105,10 @@
 #	.set	a(ref)	[ref]
 ##endif
 #endif
+
+	.macro	d_word	val
+	.long	\val
+	.endm
 
 #	flags
 	.set	flag_of,0x80
@@ -173,6 +169,7 @@
 	.set	ttybuf,_ttybuf
 	.set	w_yyy,_w_yyy
 	.set	i_adi,_i_adi
+	.set	i_cvd,_i_cvd
 	.set	i_dvi,_i_dvi
 	.set	i_mli,_i_mli
 	.set	i_ngi,_i_ngi
@@ -196,9 +193,6 @@
 	.set	f_sqr,_f_sqr
 	.set	f_str,_f_str
 	.set	f_tan,_f_tan
-	.set	i_cvd,_i_cvd
-	.set	i_dvi,_i_dvi
-	.set	i_rmi,_i_rmi
 	.set	lmodstk,_lmodstk
 	.set	outptr,_outptr
 	.set	rereloc,_rereloc
