@@ -472,9 +472,9 @@ regmap.done
 * reglow maps register to identify target, so
 * can extract 'l' part.
 	reglow = table(4)
-	reglow['wa'] = regmap['wa_l']
-	reglow['wb'] = regmap['wb_l']
-	reglow['wc'] = regmap['wc_l']
+	reglow['wa'] = '%cl'
+	reglow['wb'] = '%bl'
+	reglow['wc'] = '%dl'
 
 * real_op maps minimal real opcode to machine opcode
 	real_op = table(10)
@@ -659,7 +659,6 @@ genopl	cstmts[cstmts.n = cstmts.n + 1] =
 -stitl genop(gopc,gop1,gop2,gop3)
 *  generate operation with no label
 genop   genopl(,gopc,gop1,gop2,gop3)            :(return)
-
 
 -stitl getarg(iarg)base,disp,indx,scale
 getarg
@@ -1079,15 +1078,18 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 .						:f(freturn)s(return)
 
 g.flc
-	t1 = reglow[getarg(i1)]
-	t2 = genlab()
+	
+	t1 = i.text(i1)
+	t2 = '%'  (ident(t1,'wa') 'c', ident(t1,wb) 'b', 'd') 'l'
+	t3 = genlab()
+	outfile = '# t1 ' t1 '  t2 ' t2 '  t3 ' t3
 *	z_suspend = 1
-	genop('cmpb',t1,"'A'")
-	genop('jb', t2 )
-	genop('cmpb',t1,"'Z'")
+	genop('cmpb',t2,"'A'")
+	genop('jb', t3 )
+	genop('cmpb',t2,"'Z'")
 	genop('ja', t2)
-	genop('add','$32',t1)
-        genopl(t2 ':')
+	genop('add','$32',t2)
+        genopl(t3 ':')
 *	z_suspend = 0
 						:(opdone)
 
@@ -1588,16 +1590,16 @@ g.sch
 g.scg.0
 	leq('-',substr(t2,1,1))			:f(g.scg.1)
 	t2 break('(') len(1) len(2) . t3
-	genop('dec' o_,regmap[t3])
-	genop('dec' o_,regmap[t3])
+	genop('dec',regmap[t3])
+	genop('dec',regmap[t3])
 g.scg.1
 	t2 break('(') len(1) len(2) . t3
-	genop('mov',w0,t1,)
+	genop('mov',t1,w0)
 * TODO
-	genop('mov','[' regmap[t3] ']','%al')
+	genop('mov','%al', '(' regmap[t3] ')')
 *  see if postincrement needed.
 	t2 rtab(1) '+'				:f(g.scg.2)
-	genop('inc' o_,regmap[t3])
+	genop('inc',regmap[t3])
 
 g.scg.2						:(opdone)
 g.scg.w
@@ -1632,7 +1634,7 @@ g.scg.w.pxr
 	genop('movz' (eq(ws,32) 'bl', 'bq'), t1,'$-1(,' t1 ')')		:(opdone)
 
 g.scg.w.xrp
-	genop('movb','al',t1)
+	genop('movb',t1,'%al')
 	genop('stosb')				:(opdone)
 
 g.csc  	ident(thislabel)			:s(opnext)
@@ -1715,7 +1717,7 @@ g.zgb
 g.zzz
  	genop('zzz',getarg(i1))			:(opdone)
 
-g.wtb   genop('sal',getarg(i1),log_cfp_b)	
+g.wtb   genop('shl',getarg(i1),log_cfp_b)	
 						:(opdone)
 
 g.btw   genop('shr',getarg(i1),log_cfp_b)	:(opdone)

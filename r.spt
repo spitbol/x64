@@ -21,7 +21,7 @@ m.end
 
 	rmap = table(20)
 
-	s = 'XLsiXRdiXSspXTsiWAcxWBcxWCdxW0axIAbp'
+	s = 'XLsiXRdiXSspXTsiWAcxWBbxWCdxW0axIAbp'
 rinit	s len(2) . min  len(2) . reg = 		:f(rdone)
 	rmap[min] = reg				:(rinit)
 rdone
