@@ -36,15 +36,15 @@
 	.global	reg_block
 	.global	reg_w0
 	.global	reg_wa
-	.global	reg_wB
+	.global	reg_wb
 	.global	reg_ia
-	.global	reg_wC
-	.global	reg_xR
-	.global	reg_xL
+	.global	reg_wc
+	.global	reg_xr
+	.global	reg_xl
 	.global	reg_cp
 	.global	reg_ra
 	.global	reg_pc
-	.global	reg_xS
+	.global	reg_xs
 	.global	reg_size
 
 	.global	reg_rp
@@ -193,6 +193,10 @@ reg_rp:	.long	0
 reg_fl:	.byte	0		# condition code register for numeric operations
 
 	.align	8
+
+# rcode is used to store return code
+	.global	rcode
+rcode:	.long	0
 #  constants
 
 zero:	.long	0
