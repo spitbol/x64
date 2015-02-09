@@ -17,7 +17,7 @@
 #     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 #
 
-	.intel_syntax
+	.att_syntax
 
         .text
 
@@ -189,12 +189,6 @@ calltab:
 
 	.extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
 
-	.macro	adi_	a1
-	add	IA,\a1
-	seto	byte [reg_fl]
-	.endm
-
-
 	.macro	chk_	
 	.extern	chk__	
 	call	chk__
@@ -206,107 +200,71 @@ calltab:
 	call	cvd__
 	.endm
 
-	.extern	dvi__ val
-
-	.macro	dvi_	
-	mov	W0,\val
-	call	dvi__
-	.endm
-
 	.macro	icp_
-	mov	W0,m_word [reg_cp]
+	mov	reg_cp,W0
 	add	W0,cfp_b
-	mov	m_word [reg_cp],W0
+	mov	W0,reg_cp
 	.endm
 
-	.macro	ino_	a1
-	mov	al,byte [reg_fl]
-	or	al,al
-	jno	\a1
+	.macro	ino_	val
+	mov	reg_fl,%al
+	or	%al,%al
+	jno	\val
 	.endm
 
-	.macro	iov_	a1
-	mov	al,byte [reg_fl]
-	or	al,al
-	jo	\a1
-	.endm
-
-	.macro	ldi_	a1
-	mov	IA,\a1
-	.endm
-
-	.macro	mli_	a1
-	imul	IA,\a1
-	seto	byte [reg_fl]
-	.endm
-
-	.macro	ngi_
-	neg	IA
-	seto	byte [reg_fl]
-	.endm
-
-	.extern	rmi__
-	.macro	rmi_
-	mov	W0,\a1
-	call	rmi__
+	.macro	iov_	val
+	mov	reg_fl,%al
+	or	%al,%al
+	jo	\val
 	.endm
 
 	.extern	f_rti
 	.macro	rti_
 
 	call	f_rti
-	mov	IA,m_word [reg_ia]
+	mov	(reg_ia),IA
 	.endm
 
-	.macro	sbi_	a1
-	sub	IA,\a1
-	mov	W0,0
-	seto	byte [reg_fl]
+
+	.macro	lcp_	val
+	mov	\val,W0
+	mov	W0,reg_cp
 	.endm
 
-	.macro	sti_	a1
-	mov	\a1,ia
+	.macro	lcw_	val
+	mov	reg_cp,W0		# load address of code word
+	mov	(W0),W0			# load code word
+	mov	W0,\val
+	mov	reg_cp,W0		# load address of code word
+	add	cfp_b,W0
+	mov	W0,reg_cp
 	.endm
 
-	.macro	lcp_	a1
-	mov	W0,\a1
-	mov	m_word [reg_cp],W0
+	.macro	rno_	val
+	mov	reg_flx,%al
+	or	%al,%al
+	je	\val
 	.endm
 
-	.macro	lcw_	a1
-	mov	W0,m_word [reg_cp]		# load address of code word
-	mov	W0,m_word [W0]			# load code word
-	mov	\a1,W0
-	mov	W0,m_word [reg_cp]		# load address of code word
-	add	W0,cfp_b
-	mov	m_word [reg_cp],W0
+	.macro	rov_	val
+	mov	reg_fl,%al
+	or	%al,%al
+	jne	\val
 	.endm
 
-	.macro	rno_	a1
-	mov	al,byte [reg_fl]
-	or	al,al
-	je	\a1
-	.endm
-
-	.macro	rov_	a1
-	mov	al,byte [reg_fl]
-	or	al,al
-	jne	\a1
-	.endm
-
-	.macro	scp_	a1
-	mov	W0,m_word [reg_cp]
-	mov	\a1,W0
+	.macro	scp_	val
+	mov	(reg_cp),W0
+	mov	W0,\val
 	.endm
 
 .ifdef zz_trace
-	.macro	zzz	a1,a2,a3
+	.macro	zzz	val,a2,a3
 	.data
 %%desc:	db	\a3,0
 	.text
-	mov	m_word [zz_id],\a1
-	mov	m_word [zz_zz],\a2
-	mov	m_word [zz_de],%%desc
+	mov	\val,zz_id
+	mov	\a2,m_word [zz_zz]
+	mov	%%desc,zz_de
 	call	zz_
 	.endm
 .endif

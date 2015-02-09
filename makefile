@@ -100,7 +100,7 @@ UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/syste
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	r.s.h
+VHDRS=	r.s.h s.h
 
 OBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	sysef.o sysej.o sysem.o sysen.o sysep.o sysex.o sysfc.o \
@@ -156,11 +156,11 @@ err.s: $(MIN).cnd $(ERR) s.s
 
 m.h:	r.m.h
 	$(BASEBOL) -u $(TARGET) r.spt < r.m.h > m.h
-s.h:	r.s.h
+s.h:	r.s.h $(ASM)
 	$(BASEBOL) -u $(TARGET) r.spt < r.s.h > s.h
-m.s:	r.m.s r.m.h
+m.s:	r.m.s r.m.h $(ASM)
 	$(BASEBOL) -u $(TARGET) r.spt < r.m.s > m.s
-s.s:	r.s.s r.s.h m.h
+s.s:	r.s.s s.h m.h
 	$(BASEBOL) -u $(TARGET) r.spt < r.s.s > s.s
 
 # C language header dependencies:
@@ -173,7 +173,7 @@ dlfcn.o: dlfcn.h
 install:
 	sudo cp ./bin/spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp r.s.s s.s err.s s.s   m.h m.s ./spitbol
+	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp r.s.s s.s err.s s.s s.h  m.h m.s ./spitbol
 
 z:
 	nm -n s.o >s.nm

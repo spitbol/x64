@@ -17,8 +17,6 @@
 #     you should have received a copy of the gnu general public license
 #     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 
-	.intel_syntax	prefix
-
 	.set	os,	unix	# default
 #	.set	unix
 	.set	ws,64	# default
