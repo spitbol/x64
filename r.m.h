@@ -79,7 +79,11 @@
 #endif
 
 	.macro	d_word	val
+#if	ws=32
 	.long	\val
+#else
+	.quad	\val
+#endif
 	.endm
 
 #	flags

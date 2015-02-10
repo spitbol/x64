@@ -19,6 +19,12 @@ ITOPT=:it
 ITDEF=-Dzz_trace
 endif
 
+xt?=0
+XT=$(xt)
+ifneq ($(XT),0)
+XTOPT=:xt
+endif
+
 OS=$(os)
 WS=$(ws)
 TARGET=$(OS)_$(WS)
@@ -143,7 +149,7 @@ s.go:	s.lex go.spt
 	$(BASEBOL) -u i32 go.spt
 
 r.s.s:	s.lex $(VHDRS) $(ASM) 
-	$(BASEBOL) -u $(TARGET) $(ITOPT) $(ASM)
+	$(BASEBOL) -u $(TARGET)$(ITOPT)$(XTOPT) $(ASM)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
 	 $(BASEBOL) -u $(TARGET) $(LEX)
@@ -158,7 +164,7 @@ m.h:	r.m.h
 	$(BASEBOL) -u $(TARGET) r.spt < r.m.h > m.h
 s.h:	r.s.h $(ASM)
 	$(BASEBOL) -u $(TARGET) r.spt < r.s.h > s.h
-m.s:	r.m.s r.m.h $(ASM)
+m.s:	r.m.s r.m.h m.h $(ASM)
 	$(BASEBOL) -u $(TARGET) r.spt < r.m.s > m.s
 s.s:	r.s.s s.h m.h
 	$(BASEBOL) -u $(TARGET) r.spt < r.s.s > s.s

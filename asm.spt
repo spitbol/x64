@@ -20,7 +20,7 @@
 *
 *
 *  this program takes input file in minimal token form and
-*  produces assembly code for intel 80386 processor.
+*  produces assembly code for intel x86_64  processor.
 *  the program obtains the name of the file to be translated from the
 *  command line string in host(0).  options relating to the processing
 *  of comments can be changed by modifying the source.
@@ -154,10 +154,11 @@ option.osx.64
 	os = 'osx'; 	ws = '64'		:(option.next)
 option.it
 *	turn on instruction trace
+	x_trace = 1
 	i_trace = 1				:(option.next)
 option.xt
-*  xtrace turns on tracing for executable instructions
-	xtrace = 1				:(option.next)
+*  x_trace turns on tracing for executable instructions
+	x_trace = 1				:(option.next)
 
 options.done
 	target = os '_' ws
@@ -180,6 +181,7 @@ config.32
 *	op_c is instruction suffix for minimal character size
 	op_c = 'b'
 	rel = ''
+	d_word = '.long'
 	m_word = 'dword '
 *	suffix for opcode to indicate double word (32 bits)
 	o_ =	'd'
@@ -196,15 +198,12 @@ config.64
 	op_c = 'b'
 *	rel = 'rel '
 	rel = ''
+	d_word = '.quad'
 	m_word = 'qword '
 *	suffix for opcode to indicate quad word (64 bits)
 	o_ =	'q'
 
 config.done
-
-*	.long is 32 bits for ws=32, 64 bits for ws=64, so can use it for memory reference
-
-	d_word = '.long'
 
 *	z_limit is maximum number of calls to be generated if non-zero
 	z_limit = 000
@@ -671,6 +670,8 @@ gensh
 *  then restore WA from stack unless it is the result register.
 
 	genop('push',reg.wa)
+*  turn integer shift count into literal
+	val = integer(val) '$' val
 	genop('mov',val,w0)
 *  load count to WA, setting %cl to the count
 	genop('mov',reg,reg.wa)
@@ -780,8 +781,6 @@ getarg.c.25
 getarg.c.26
 getarg.c.27 getarg = txt			:(getarg.done)
 getarg.done
-*	ne(xtrace) outline('; arg ' typ ':' txt   ' -> ' getarg)
-	outfile = '# getarg ' getarg
 						:(return)
 getarg.lit
 *  see if have generated location for argument with same txt. Use it if so, else make new one.
@@ -793,14 +792,12 @@ getarg.lit
 	valtable[txt] = lbl
 	ent = lbl
 	genop('.data')
-	genopl(lbl ':','.long',getarg)
+	genopl(lbl ':',d_word,getarg)
 	genop('.text')
 getarg.ent
 *	generate reference via w0 if needed
 	genop('movq', ent ,w0)
-*	differ(reg)	genop('add' o_,reg,w0)
-	getarg = w0
-*	outfile = ne(xtrace) '; getarg ' ent
+	getarg =  w0 
 						:(getarg.done)
 	
 getarg.mem
@@ -857,14 +854,14 @@ getlea.c.12
 getlea.c.13
 	txt break('(') . t1 '(' len(2) . t2
 	genop('mov',regmap[t2],w0)
-	genop('add',cfp_b '*' t1,w0)		:(getlea.fin)
+	genop('add',cfp_b '*' t1,w0)		:(getlea.done)
 
 *  name(x), where name is in working section
 getlea.c.14
 getlea.c.15
 	txt break('(') . t1 '(' len(2) . t2
 	genop('mov',regmap[t2],w0)
-	genop('add','$' t1,w0)			:(getlea.fin)
+	genop('add','$' t1,w0)			:(getlea.done)
 
 getlea.fin
 *  see if have generated location for argument with same txt. Use it if so, else make new one.
@@ -876,13 +873,13 @@ getlea.fin
 	valtable[txt] = lbl
 	ent = lbl
 	genop('.data')
-	genopl(lbl ':','.long',getlea)
+	genopl(lbl ':',d_word ,txt)
 	genop('.text')
 getlea.ent
 *	generate reference via w0 if needed
 	genop('movq', ent ,w0)
 *	differ(reg)	genop('add' o_,reg,w0)
-*	outfile = ne(xtrace) '; getlea ' ent
+*	outfile = ne(x_trace) '; getlea ' ent
 						:(getlea.done)
 getlea.done
 	getlea = w0
@@ -1062,10 +1059,10 @@ readline.0
 *  here if not a comment line
 *
 rl01	
-	outfile = '# ' readline
+*	outfile = '# ' readline
 *  find out why need to add 2 here
 *  add 2 since need to account for this line and one that will follow
-	ne(xtrace) outline(';:' outlines + 2 ':' tab readline)
+	ne(x_trace) outline('#:' outlines + 2 ':' tab readline)
 					:(return)
 *
 *  here on eof
@@ -1240,7 +1237,7 @@ g.jsr
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
-	genop('dec' o_, 'rcode')
+	genop('dec' o_, rcode)
 	genop('js',jsr_label_norm)
 	z_suspend = 0
 
@@ -1273,13 +1270,13 @@ g.ppm.loop.next
 	eq(jsr_count) genopl(jsr_label_norm ':') :(opdone)
 g.ppm.loop
 	lab_next = genlab()
-	genop('dec' o_,'rcode' )
+	genop('dec' o_,rcode )
 	genop('jns',lab_next)
 	ident(incode,'ppm')			:s(g.ppm.loop.ppm)
 *  here if error exit via exi. set rcode to exit code and jump
 *  to error handler with error code in rcode
 g.ppm.loop.err
-	genop('mov' o_,'$' +t1,'rcode', )
+	genop('mov' o_,'$' +t1,rcode, )
 	genop('jmp','err_')
 						:(g.ppm.loop.next)
 g.ppm.loop.ppm
@@ -1322,7 +1319,7 @@ g.exi
 *  if type r or e, and no exit parameters, just return
  	differ(t2,'n') eq(prc.args)	genop('ret')	:s(opdone)
         t3 = ident(t3) '0'
-    	genop('mov' o_,'$' +t3,'rcode')
+    	genop('mov' o_,'$' +t3,rcode)
 	ident(t2,'n')				:s(g.exi.1)
 	genop('ret')				:(opdone)
 g.exi.1
@@ -1335,7 +1332,7 @@ g.enp   genop()					:(opdone)
 g.erb
 	errfile =  i.text(i1) ' ' i.text(i2)
 *	set rcode to error code and branch to error handler
-	genop('mov' o_,  '$' +(i.text(i1)),'rcode')
+	genop('mov' o_,  '$' +(i.text(i1)),rcode)
  	genop('jmp','err_')
 						:(opdone)
 
@@ -1418,7 +1415,7 @@ g.lct
 	ident(thislabel)			:s(opnext)
 	genop()					:(opdone)
 
-g.lct.1	genop('mov',getarg(i1),getarg(i2))	:(opdone)
+g.lct.1	genop('mov',getarg(i2),getarg(i1))	:(opdone)
 
 g.bct
 *  can issue loop if target register is cx.
@@ -1711,7 +1708,7 @@ g.cmb   genop('not',getarg(i1))			:(opdone)
 g.rsh
 
 g.lsh
-	gensh('shl',getarg(i2),getarg(i1))	:(opdone)
+	gensh('shl',getarg(i1),getarg(i2))	:(opdone)
 
 g.rsx
 	error('rsx not supported')
@@ -1775,16 +1772,31 @@ g.mfi.2
 g.ctw
 *  assume cfp_c chars per word
 	t1 = getarg(i1)
+	integer(i.text(i2))			:s(g.ctw.1)
 * TODO
 	genop('add','(' cfp_c '-1)+' cfp_c '*' i.text(i2),t1)
 	gensh('shr',t1,log_cfp_c)
 					:(opdone)
+g.ctw.1
+*  here if second argument is integer, in which case we can evaluate now and make into literal
+	val = cfp_c -1 + cfp_c * i.text(i2)
+	genop('add','$' val ,t1)
+	gensh('shr',t1,log_cfp_c)
+						:(opdone)
+
 g.ctb
 	t1 = getarg(i1)
-* TODO
+	integer(i.text(i2))			:s(g.ctb.1)
 	genop('add','(' $cfp_b '-1)+' cfp_b '*' i.text(i2),t1)
 	genop('and',t1,'-' cfp_b)
 						:(opdone)
+g.ctb.1
+*  here if second argument is integer, in which case we can evaluate now and make into literal
+	val = cfp_c -1 + cfp_c * i.text(i2)
+	genop('add','$' val ,t1)
+	gensh('shr',t1,log_cfp_c)
+						:(opdone)
+
 g.cvm	t1 = getarg(i1)
 	genop('mov',reg.ia,w0)
 	genop('imul',w0,intvt)
@@ -1994,7 +2006,7 @@ g.sec.7
 
 *	allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
-	genopl('err_:','xchg',reg.wa,'rcode')
+	genopl('err_:','xchg',reg.wa,rcode)
 						:(opdone)
 
 

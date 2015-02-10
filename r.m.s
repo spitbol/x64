@@ -102,10 +102,10 @@
 
 #               ...code to put arguments in registers...
 #               call    sysxx           # call osint function
-#             .long    exit_1          # address of exit point 1
-#             .long    exit_2          # address of exit point 2
+#             D_WORD    exit_1          # address of exit point 1
+#             D_WORD    exit_2          # address of exit point 2
 #               ...     ...             # ...
-#             .long    exit_n          # address of exit point n
+#             D_WORD    exit_n          # address of exit point n
 #               ...instruction following call...
 
 #       the osint function 'sysxx' can then return in one of n+1 ways:
@@ -160,33 +160,33 @@
 # ; words saved during exit(-3)
 # ;
 	.align 8
-dummy:	.long	0
+dummy:	D_WORD	0
 reg_block:
-reg_ia: .long	0		# register ia
-reg_w0:	.long	0        	# register w0
-reg_wa:	.long	0        	# register wa
-reg_wb:	.long 	0        	# register wb
-reg_wc:	.long	0		# register wc
-reg_xr:	.long	0        	# register xr
-reg_xl:	.long	0        	# register xl
-reg_cp:	.long	0        	# register cp
+reg_ia: D_WORD	0		# register ia
+reg_w0:	D_WORD	0        	# register w0
+reg_wa:	D_WORD	0        	# register wa
+reg_wb:	D_WORD 	0        	# register wb
+reg_wc:	D_WORD	0		# register wc
+reg_xr:	D_WORD	0        	# register xr
+reg_xl:	D_WORD	0        	# register xl
+reg_cp:	D_WORD	0        	# register cp
 reg_ra:	.double 	0.0  		# register ra
 
 # these locations save information needed to return after calling osint
 # and after a restart from exit()
 
-reg_pc: .long      0               # return pc from caller
-reg_xs:	.long	0		# minimal stack pointer
+reg_pc: D_WORD      0               # return pc from caller
+reg_xs:	D_WORD	0		# minimal stack pointer
 
 #	r_size  equ       $-reg_block
 # use computed value for nasm conversion, put back proper code later
 	.set r_size,10*cfp_b
-reg_size:	.long   r_size
+reg_size:	D_WORD   r_size
 
 # end of words saved during exit(-3)
 
 # reg_rp is used to pass pointer to real operand for real arithmetic
-reg_rp:	.long	0
+reg_rp:	D_WORD	0
 
 # reg_fl is used to communicate condition codes between minimal and c code.
 	.global	reg_fl
@@ -195,16 +195,16 @@ reg_fl:	.byte	0		# condition code register for numeric operations
 	.align	8
 
 # rcode is used to store return code
-	.global	rcode
-rcode:	.long	0
+#	.global	rcode
+#rcode:	D_WORD	0
 #  constants
 
-zero:	.long	0
+zero:	D_WORD	0
 	.global	ten
-ten:    .long      10              # constant 10
+ten:    D_WORD      10              # constant 10
 	.global  inf
-inf:	.long	0
-	.long      0x7ff00000      # double precision infinity
+inf:	D_WORD	0
+	D_WORD      0x7ff00000      # double precision infinity
 
 	.global	sav_block
 #sav_block: times r_size db 0     	# save minimal registers during push/pop reg
@@ -213,18 +213,17 @@ sav_block: .fill 44     		# save minimal registers during push/pop reg
 
 	.align cfp_b
 	.global	ppoff
-ppoff:  .long  	0               	# offset for ppm exits
+ppoff:  D_WORD  	0               	# offset for ppm exits
 	.global	compsp
-compsp: .long  	0               	# compiler's stack pointer
+compsp: D_WORD  	0               	# compiler's stack pointer
 	.global	sav_compsp
 sav_compsp:
-	.long  	0               	# save compsp here
+	D_WORD  	0               	# save compsp here
 	.global	osisp
-osisp:  .long  	0               	# osint's stack pointer
+osisp:  D_WORD  	0               	# osint's stack pointer
 	.global	_rc_
-_rc_:	.long  	0				# return code from osint procedure
+_rc_:	D_WORD  	0				# return code from osint procedure
 
-	.align	cfp_b
 	.global	save_cp
 	.global	save_xl
 	.global	save_xr
@@ -233,18 +232,19 @@ _rc_:	.long  	0				# return code from osint procedure
 	.global	save_wb
 	.global	save_wc
 	.global	save_w0
-save_cp:	.long	0		# saved cp value
-save_ia:	.long	0		# saved ia value
-save_xl:	.long	0		# saved xl value
-save_xr:	.long	0		# saved xr value
-save_xs:	.long	0		# saved sp value
-save_wa:	.long	0		# saved wa value
-save_wb:	.long	0		# saved wb value
-save_wc:	.long	0		# saved wc value
-save_w0:	.long	0		# saved w0 value
+	.align	16
+save_cp:	D_WORD	0		# saved cp value
+save_ia:	D_WORD	0		# saved ia value
+save_xl:	D_WORD	0		# saved xl value
+save_xr:	D_WORD	0		# saved xr value
+save_xs:	D_WORD	0		# saved sp value
+save_wa:	D_WORD	0		# saved wa value
+save_wb:	D_WORD	0		# saved wb value
+save_wc:	D_WORD	0		# saved wc value
+save_w0:	D_WORD	0		# saved w0 value
 
 	.global	minimal_id
-minimal_id:	.long	0		# id for call to minimal from c. see proc minimal below.
+minimal_id:	D_WORD	0		# id for call to minimal from c. see proc minimal below.
 
 #
 	.set setreal,0
@@ -253,61 +253,61 @@ minimal_id:	.long	0		# id for call to minimal from c. see proc minimal below.
 #       be directly accessed from within c because of naming difficulties.
 
 	.global  id1
-id1:	.long   0
+id1:	D_WORD   0
 #if setreal == 1
-	.long       2
+	D_WORD       2
 
-       .long       1
+       D_WORD       1
 	.ascii  "1x\x00\x00\x00"
 #endif
 
 	.global  id1blk
-id1blk:	.long   152
-      	.long    0
+id1blk:	D_WORD   152
+      	D_WORD    0
 	.fill	152
 
 	.global  id2blk
-id2blk:	.long   152
-      	.long    0
+id2blk:	D_WORD   152
+      	D_WORD    0
 	.fill   152
 
 	.global  ticblk
-ticblk:	.long   0
-      .long    0
+ticblk:	D_WORD   0
+      D_WORD    0
 
 	.global  tscblk
-tscblk:	 .long   512
-      .long    0
+tscblk:	 D_WORD   512
+      D_WORD    0
 	.fill	512
 
 #       standard input buffer block.
 
 	.global  inpbuf
 
-inpbuf:	.long	0			# type word
-	.long	0               	# block length
-	.long	1024            	# buffer size
-	.long	0               	# remaining chars to read
-	.long	0               	# offset to next character to read
-	.long	0               	# file position of buffer
-	.long	0               	# physical position in file
+inpbuf:	D_WORD	0			# type word
+	D_WORD	0               	# block length
+	D_WORD	1024            	# buffer size
+	D_WORD	0               	# remaining chars to read
+	D_WORD	0               	# offset to next character to read
+	D_WORD	0               	# file position of buffer
+	D_WORD	0               	# physical position in file
 	.fill	1024         	# buffer
 
 	.global  ttybuf
 
-ttybuf:	.long    0     # type word
-	.long	0               	# block length
-	.long	260             	# buffer size  (260 ok in ms-dos with cinread())
-	.long	0               	# remaining chars to read
-	.long	0               	# offset to next char to read
-	.long	0               	# file position of buffer
-	.long	0               	# physical position in file
+ttybuf:	D_WORD    0     # type word
+	D_WORD	0               	# block length
+	D_WORD	260             	# buffer size  (260 ok in ms-dos with cinread())
+	D_WORD	0               	# remaining chars to read
+	D_WORD	0               	# offset to next char to read
+	D_WORD	0               	# file position of buffer
+	D_WORD	0               	# physical position in file
 	.fill	260	         	# buffer
 
 	.global	spmin
 
-spmin:	.long	0			# stack limit (stack grows down for x86_64)
-spmin.a:	.long	spmin
+spmin:	D_WORD	0			# stack limit (stack grows down for x86_64)
+spmin.a:	D_WORD	spmin
 
 	.align	16
 	.align         cfp_b
@@ -316,7 +316,7 @@ spmin.a:	.long	spmin
 cprtmsg:
 	.ascii          " copyright 1987-2012 robert b. k. dewar and mark emmer."
 
-call_adr:	.long	0
+call_adr:	D_WORD	0
 
 
 	.text
@@ -513,7 +513,7 @@ minimal:
 #       each interface routine takes the following form:
 
 #               sysxx   call    ccaller ; call common interface
-#                     .long    zysxx   ; .long      of c osint function
+#                     D_WORD    zysxx   ; d_word      of c osint function
 #                       db      n       ; offset to instruction after
 #                                       ;   last procedure exit
 
@@ -533,7 +533,7 @@ minimal:
 #       general calling sequence is
 
 #               call    ccaller
-#             .long    address_of_c_function
+#             D_WORD    address_of_c_function
 #               db      2*number_of_exit_points
 
 #       control is never returned to a interface routine.  instead, control
@@ -557,7 +557,7 @@ minimal:
 
 	.global	get_ia
 get_ia:
-	mov	W0,ia
+	mov	W0,IA
 	ret
 
 	.global	set_ia_
@@ -811,7 +811,7 @@ rmi__:
 ocode:
         or      W0,W0         	# test for 0
         jz      setovr    	# jump if 0 divisor
-        xchg    W0,ia         	# ia to W0, divisor to ia
+        xchg    W0,IA         	# ia to W0, divisor to ia
         cdq                     # extend dividend
         idiv    IA              # perform division. w0=quotient, wc=remainder
 	seto	reg_fl
@@ -823,7 +823,7 @@ setovr: mov     %al,1		# set overflow indicator
 	ret
 
 	.macro	real_op nam,proc
-	.global	nam,proc
+	.global	\nam,
 	.extern	\proc
 \nam:
 	mov	reg_rp,W0
@@ -971,7 +971,7 @@ re3:	cld
 #
         call   startbrk			# start control-c logic
 
-        mov	W0,Mtage	      	# is this a -w call?
+        mov	W0,stage	      	# is this a -w call?
 	cmp	W0,4
         je            re4               # yes, do a complete fudge
 
@@ -1011,14 +1011,14 @@ re4:	mov	W0,stbas
         call	minimal			# no return
 
 #ifdef zz_trace
-	.extern	zz_ra
-	.global	zz_
-	.extern	zz,zz_cp,zz_xl,zz_xr,zz_wa,zz_wb,zz_wc,zz_w0
-zz_:
-	pushf
-	call	save_regs
-	call	zz
-	call	restore_regs
-	popf
-	ret
+#	.extern	zz_ra
+#	.global	zz_
+#	.extern	zz,zz_cp,zz_xl,zz_xr,zz_wa,zz_wb,zz_wc,zz_w0
+#zz_:
+#	pushf
+#	call	save_regs
+#	call	zz
+#	call	restore_regs
+#	popf
+#	ret
 #endif

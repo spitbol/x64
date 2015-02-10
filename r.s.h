@@ -34,8 +34,7 @@
 
 	.global	mxint
 
-.ifdef zz_trace
-	.extern	shields
+#ifdef zz_trace
 	.extern	zz
 	.extern	zz_
 	.extern	zz_cp
@@ -56,7 +55,7 @@
 	.extern	zz_4
 	.extern	zz_arg
 	.extern	zz_num
-.endif
+#endif
 	.global	start
 
 
@@ -203,7 +202,7 @@ calltab:
 
 	.macro	icp_
 	mov	reg_cp,W0
-	add	W0,cfp_b
+	add	cfp_b,W0
 	mov	W0,reg_cp
 	.endm
 
@@ -220,12 +219,11 @@ calltab:
 	.endm
 
 	.extern	f_rti
-	.macro	rti_
 
+	.macro	rti_
 	call	f_rti
 	mov	(reg_ia),IA
 	.endm
-
 
 	.macro	lcp_	val
 	mov	\val,W0
@@ -242,7 +240,7 @@ calltab:
 	.endm
 
 	.macro	rno_	val
-	mov	reg_flx,%al
+	mov	reg_fl,%al
 	or	%al,%al
 	je	\val
 	.endm
@@ -258,14 +256,14 @@ calltab:
 	mov	W0,\val
 	.endm
 
-.ifdef zz_trace
+#ifdef zz_trace
 	.macro	zzz	val,a2,a3
 	.data
-%%desc:	db	\a3,0
+%%desc:	.string	\a3,0
 	.text
 	mov	\val,zz_id
-	mov	\a2,m_word [zz_zz]
+	mov	\a2,zz_zz
 	mov	%%desc,zz_de
 	call	zz_
 	.endm
-.endif
+#endif

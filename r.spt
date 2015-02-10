@@ -7,6 +7,7 @@
 
 	word = (eq(ws,32) 'dword','qword')
 	defines = 'M_WORD ' word ' '
+	defines = defines 'D_WORD' ' ' (eq(ws,32) '.long', '.quad') ' '
 
 	define('a(ref)')			:(a.end)
 						:(next)
