@@ -69,16 +69,16 @@
 	&anchor = &trim	= &dump = 1
 	&stlimit = 10000000
 	
-*
+
 *  useful constants
-*
+
 	letters = 'abcdefghijklmnopqrstuvwxyz'
 	ucase   = letters
 	lcase   = 'abcdefghijklmnopqrstuvwxyz'
 	nos     = '0123456789'
 	tab	= char(9)
 
-*
+	i_trace = x_trace = 0
 *  function definitions
 *
 *  crack parses stmt into a stmt data plex and returns it.
@@ -94,7 +94,6 @@
 *
 	define('error(text)')
 	define('flush()')
-	define('genz()')
 	define('genaop(stmt)')
 	define('genbop(stmt)')
         define('genlab(prefix)')
@@ -157,6 +156,7 @@ option.it
 *	turn on instruction trace
 	x_trace = 1
 	i_trace = 1				:(option.next)
+
 option.xt
 *  x_trace turns on tracing for executable instructions
 	x_trace = 1				:(option.next)
@@ -206,19 +206,21 @@ config.64
 
 config.done
 
-*	z_limit is maximum number of calls to be generated if non-zero
-	z_limit = 000
-*	set z_first non-zero to skip first number of instructions that would generate trace
-	z_first = 1000
+*	it_limit is maximum number of calls to be generated if non-zero
+	it_limit = 000
+*	set it_first non-zero to skip first number of instructions that would generate trace
+*	output = ne(it_suspend) 'it_suspend ' thisline
+	it_first = 1000
+	it_first = 1
 *	will set in_executable when in part of program where executable
 *	instructions may occur
-	z_exec = 0
+	it_exec = 0
 *
-*	z_suspend is set to temporarily disable the trace.
-	z_suspend = 0
+*	it_suspend is set to temporarily disable the trace.
+	it_suspend = 0
 *	set in_skip when should not insert trace code, else assembly errors result.
 *	start with skip on, turn off when see first start of code.
-	z_skip = 1
+	it_skip = 1
 *	skip_on and skip_off are labels indicating the start and end,
 *	respectively, of sections of the code that should not be traced,
 *	usually because they contain a loop instruction that won't
@@ -540,7 +542,6 @@ err_ok
 *
 	outlines = outlines + 1
 
-*	differ(i_trace) outline(tab '%define' tab 'zi_trace')
 *	outlines = differ(i_trace) outlines + 1
 
 	input(.hdrfile,4,'s.h')			:f(nohdr)
@@ -975,32 +976,31 @@ outstmt5
 -stitl  chktrace()
 chktrace
 *						:(return)
-*	output = 'chktrace:' inlines ':' label ':' stmtout
-*	output = differ (label) 'chktrace label:' label ':'
-*	turn off skip mode when begin executable code
 	clabel = inlabel
- 	old_z_skip = z_skip
- 	old_z_exec = z_exec
+ 	old_it_skip = it_skip
+ 	old_it_exec = it_exec
  	old_is_exec = is_exec
-	z_skip = ident(inlabel,'s_aaa') 0
+	it_skip = ident(inlabel,'s_aaa') 0
 
-*	incode ? any(lcase)			:s(return)
-	uopcode  = replace(incode, lcase,ucase)
 *  do not trace bsw (for now)
-	ident(uopcode,'bsw')			:s(return)
-	is_exec = is_executable[uopcode]
-	z_exec = ne(i_trace)  ident(inlabel, 's_aaa') 1
-	z_exec = gt(nlines,2186) 1
+	ident(incode,'bsw')			:s(return)
+
+	is_exec = is_executable[incode]
+	it_exec = ne(i_trace)  ident(inlabel, 's_aaa') 1
+*	it_exec = gt(nlines,2186) 1
+	outfile = ne(it_exec) '# chktrace is_exec'
+
 *	need to skip certain blocks since otherwise get branches that are too long
 *	skip when in code that won't assemble if try to trace
 *	this was discovered on a case-by-case basis.
 
- 	z_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
- 	z_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
+ 	it_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
+ 	it_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
 
-	ne(z_skip)				:s(return)
-	eq(z_exec)				:s(return)
+	ne(it_skip)				:s(return)
+	eq(it_exec)				:s(return)
 	eq(is_exec)				:s(return)
+
 *	here to emit trace. need to emit trace after label if there is label
 * 	ident(inlabel)				:s(chktrace.1)
 *	only trace at labels since get jumps that are too removed otherwise
@@ -1012,39 +1012,29 @@ chktrace
 * 	stmtout = tab body
 *	outline(label
 *	label =
+
 	ne(in_gcol)				:s(return)
+
 chktrace.1
-	genz()
-						:(return)
-genz
 *	no trace if trace has been suspended
-*	output = ne(z_suspend) 'z_suspend ' thisline
- 	ne(z_suspend)			:s(return)
+ 	ne(it_suspend)				:s(return)
 * only trace at label definition
 *	ident(thislabel)			:s(return)
-	z_count = z_count + 1
-	gt(z_first) le(z_count,z_first)		:s(return)
-	gt(z_limit)  gt(z_count, z_limit)	:s(return)
-*	always generate trace if at label definition
-	z_desc = '"' replace(thisline,'|',' ') '"'
 
-	genit(z_count,nlines,z_desc)
+	it_count = it_count + 1
+	gt(it_first) le(it_count,it_first)	:s(return)
+	gt(it_limit)  gt(it_count, it_limit)	:s(return)
+	it_desc = '"' replace(thisline,'|',' ') '"'
 
-*	outline(tab 'it_' tab genlab() ','	'$' z_count ',' '$' nlines ',' z_desc)
-						:(return)
-
--stitl	genit(count,lines,desc)lbl
-genit
 	lbl = genlab('it')
 	outline(tab		'.data')
-	outline(lbl ':' tab 	'.asciz' tab 	desc)
+	outline(lbl ':' tab 	'.asciz' tab 	it_desc)
 	outline(tab		'.text')
-	outline(tab 		'mov' o_ 	 tab	'$' count ',it_id')
-	outline(tab 		'mov' o_ 	 tab	'$' lines ',it_ln')
+	outline(tab 		'mov' o_ 	 tab	'$' it_count ',it_id')
+	outline(tab 		'mov' o_ 	 tab	'$' nlines ',it_ln')
 	outline(tab		'mov' o_ tab	'$' lbl   ',it_de')
 	outline(tab		'call'	tab	'it')
 						:(return)
-	
 
 -stitl prsarg(iarg)
 prsarg	prsarg = minarg(0)
@@ -1062,8 +1052,8 @@ readline readline = infile                      :f(rl02)
 	ident( readline )			:s(readline)
 readline.0
 	leq( substr(readline,1,1 ),';' )       	:f(rl01)
-	z_skip = ident(readline,';z+') 0	:s(readline)
-	z_skip = ident(readline,';z-') 1	:s(readline)
+	it_skip = ident(readline,';it+') 0	:s(readline)
+	it_skip = ident(readline,';it-') 1	:s(readline)
 * force skip of full line comments
 	:(readline)
 *
@@ -1121,14 +1111,14 @@ g.flc
 	t2 = '%'  (ident(t1,'wa') 'c', ident(t1,wb) 'b', 'd') 'l'
 	t3 = genlab('flc')
 	outfile = '# t1 ' t1 '  t2 ' t2 '  t3 ' t3
-*	z_suspend = 1
+*	it_suspend = 1
 	genop('cmpb',t2,"'A'")
 	genop('jb', t3 )
 	genop('cmpb',t2,"'Z'")
 	genop('ja', t3)
 	genop('add','$32',t2)
         genopl(t3 ':')
-*	z_suspend = 0
+*	it_suspend = 0
 						:(opdone)
 
 g.mov
@@ -1185,7 +1175,7 @@ g.brn   genop('jmp',getarg(i1))			:(opdone)
 
 g.bsw	t1 = getarg(i1)
 	t2 = genlab('bsw')
-	z_suspend = 1
+	it_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
 	genop('cmp' o_,t1,getarg(i2))
 	genop('jge',getarg(i3))
@@ -1194,7 +1184,7 @@ g.bsw1
 	genop('jmp','*' t2 '(,' t1 ',' cfp_b ')')
 	genop('.data')
         genopl(t2 ':')
-	z_suspend = 0
+	it_suspend = 0
 						:(opdone)
 
 g.iff   genop(d_word,getarg(i2))              :(opdone)
@@ -1250,13 +1240,13 @@ g.jsr
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
 	eq(jsr_count)				:s(opdone)
-	z_suspend = 1
+	it_suspend = 1
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
 	genop('dec' o_, rcode)
 	genop('js',jsr_label_norm)
-	z_suspend = 0
+	it_suspend = 0
 
 *	generate branch around for ppms that will follow
 *	take the branch if normal return (eax==0)
@@ -1283,7 +1273,7 @@ g.ppm
 g.ppm.loop.next
 	genopl(lab_next ':')
  	jsr_count = jsr_count - 1
- 	z_suspend = eq(jsr_count) 0
+ 	it_suspend = eq(jsr_count) 0
 	eq(jsr_count) genopl(jsr_label_norm ':') :(opdone)
 g.ppm.loop
 	lab_next = genlab('ppm')
@@ -1822,10 +1812,10 @@ g.mvc
 *	if charsize is word size, convert character count to byte count for word move
 
 	t1 = genlab('mvc')
-	z_suspend = 1
+	it_suspend = 1
 	genop('rep')
 	genop('movsb')
-	z_suspend = 0
+	it_suspend = 0
 						:(opdone)
 	t1 = genlab('mvc')
 	genopl(t1 ':', 'mov',reg.xl,'%al')
@@ -1843,7 +1833,7 @@ g.mvc
 	genop('jnz',t1)
 						:(opdone)
 g.mvw
-	z_suspend = 1
+	it_suspend = 1
 	gensh('shr',reg.wa,log_cfp_b)
 
 g.mwb
@@ -2071,12 +2061,14 @@ g.end.2
 	endfile(1)
 	endfile(2)
 	endfile(3)
-        report(nlines,		'lines read')
-        report(nstmts,		'statements processed')
-        report(ntarget,		'target code lines produced')
-	report(&stcount,	'spitbol statements executed')
-        report(max.err,		'maximum err/erb number')
-        report(prc.count1, 	'prc count')
+	ne(i_trace) report(i_trace,'i_trace')
+	ne(x_trace) report(x_trace,'x_trace')
+        report(nlines,'lines read')
+        report(nstmts,'statements processed')
+        report(ntarget,'target code lines produced')
+	report(&stcount,'spitbol statements executed')
+        report(max.err,'maximum err/erb number')
+        report(prc.count1,'prc count')
         output  = '  ' gt(prc.count,prc.count1)
 .	  'differing counts for n-procedures:'
 .	  ' inp ' prc.count1 ' prc ' prc.count
@@ -2087,7 +2079,7 @@ g.end.2
 .		differ(lasterror) '  the last error was in line ' lasterror
 
 	&code   = ne(nerrors) 2001
-        report(collect(), 'free words')
+        report(collect(),'free words')
 	report(time(),'execution time ms')
 	:(end)
 end

@@ -7676,12 +7676,12 @@ relws	prc	e,0			; entry point
 ;      (xl)		     points to last word of data area
 ;
 start	prc	e,0			; entry point
-;z-
+;it-
 	mov	mxint,wb		;
 	mov	bitsm,wb		;
 	zer	wb			;
 	mov	xs,wa			; discard return
-;z+
+;it+
 	jsr	systm			; initialise timer
 .if    .cnbt
 	sti	timsx			; store time
@@ -7899,7 +7899,7 @@ ini11	zer	(xr)+			; blank a word
 	mov	r_ifl,xr		; save ptr to array
 .fi
 .fi
-;z+
+;it+
 ;
 ;      initialize variable blocks for input and output
 ;
@@ -8056,7 +8056,7 @@ rstrt	prc	e,0			; entry point
 ;      binary plus (addition)
 ;
 o_add	ent				; entry point
-;z+
+;it+
 	jsr	arith			; fetch arithmetic operands
 	err	001,addition left operand is not numeric
 	err	002,addition right operand is not numeric
@@ -20543,7 +20543,7 @@ fst99	exi				; return
 ;      gbcol (continued)
 ;
 gbcol	prc	e,0			; entry point
-;z-
+;it-
 	bnz	dmvch,gbc14		; fail if in mid-dump
 	mnz	gbcfl			; note gbcol entered
 	mov	gbsva,wa		; save entry wa
@@ -21109,7 +21109,7 @@ gpf18	mov	wa,*bcsi_		; set length
 .fi
 	enp				; end procedure gbcpf
 	ejc
-;z+
+;it+
 ;
 ;      gtarr -- get array
 ;
@@ -21812,7 +21812,7 @@ gtn36	mov	xr,(xs)+		; reload original argument
 ;      (wc)		     destroyed
 ;
 gtnvr	prc	e,1			; entry point
-;z-
+;it-
 	bne	(xr),=b_nml,gnv02	; jump if not name
 	mov	xr,nmbas(xr)		; else load name base if name
 	blo	xr,state,gnv07		; skip if vrblk (in static region)
@@ -22032,7 +22032,7 @@ gnv19	mov	wc,btval		; load test bit
 ;      (xr)		     unchanged (only on convert error)
 ;
 gtpat	prc	e,1			; entry point
-;z+
+;it+
 	bhi	(xr),=p_aaa,gtpt5	; jump if pattern already
 ;
 ;      here if not pattern, try for string
@@ -22680,7 +22680,7 @@ gtvr4	exi				; return to caller
 ;      changes to the build process (ds 8 may 2013).
 ;
 hashs	prc	e,0			; entry point
-;z-
+;it-
 	mov	wc,=e_hnw		; get number of words to use
 	bze	wc,hshsa		; branch if one character per word
 	mov	wc,sclen(xr)		; load string length in characters
@@ -22825,7 +22825,7 @@ hsh00	mov	xl,(xs)+		; restore xl
 ;      (wa)		     destroyed
 ;
 icbld	prc	e,0			; entry point
-;z+
+;it+
 	mfi	xr,icbl1		; copy small integers
 	ble	xr,=num02,icbl3		; jump if 0,1 or 2
 ;
@@ -23204,7 +23204,7 @@ insta	prc	e,0			; entry point
 ;
 ;      initialize print buffer with blank words
 ;
-;z-
+;it-
 	mov	wc,prlen		; no. of chars in print bfr
 	mov	prbuf,xr		; print bfr is put at static start
 	mov	(xr)+,=b_scl		; store string type code
@@ -23267,7 +23267,7 @@ inst2	sch	wb,(xr)+		; store next code
 ;      (wb,wc)		     destroyed
 ;
 iofcb	prc	n,3			; entry point
-;z+
+;it+
 	jsr	gtstg			; get arg as string
 	ppm	iofc2			; fail
 	mov	xl,xr			; copy string ptr

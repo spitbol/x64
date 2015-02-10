@@ -116,13 +116,6 @@ long off_c_aaa;
 long off_w_yyy;
 
 
-void it_init() {
-//	off_c_aaa = &c_aaa;
-//	off_w_yyy = &w_yyy;
-//	fprintf(stderr, "off_c_aaa %ld\n", &c_aaa);
-//	fprintf(stderr, "off_w_yyy %ld\n", &w_yyy);
-}
-
 char * it_charp;
 
 void it_str() {
@@ -202,8 +195,8 @@ void it() {
 //	if (it_calls % 3 == 1) {
 //	if (it_calls>0) {
 	int prtregs=1;
-	 prtregs=0;
 	 prtregs=1;
+	 prtregs=0;
 
 if (prtregs) {
 
@@ -268,3 +261,10 @@ void it_sys() {
 void it_ra() {
 	fprintf(stderr,"it_ra %e\n",reg_ra);
 }
+void it_init() {
+//	off_c_aaa = &c_aaa;
+//	off_w_yyy = &w_yyy;
+//	fprintf(stderr, "off_c_aaa %ld\n", &c_aaa);
+//	fprintf(stderr, "off_w_yyy %ld\n", &w_yyy);
+}
+
