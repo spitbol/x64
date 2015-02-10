@@ -16,7 +16,7 @@ it?=0
 IT=$(it)
 ifneq ($(IT),0)
 ITOPT=:it
-ITDEF=-Dzz_trace
+ITDEF=-Di_trace
 endif
 
 xt?=0
@@ -118,7 +118,7 @@ OBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	int.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
-	trypath.o wrtaout.o zz.o getargs.o main.o m.o err.o s.o
+	trypath.o wrtaout.o it.o getargs.o main.o m.o err.o s.o
 
 
 

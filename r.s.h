@@ -34,28 +34,27 @@
 
 	.global	mxint
 
-#ifdef zz_trace
-	.extern	zz
-	.extern	zz_
-	.extern	zz_cp
-	.extern	zz_xl
-	.extern	zz_xr
-	.extern	zz_xs
-	.extern	zz_wa
-	.extern	zz_wb
-	.extern	zz_wc
-	.extern	zz_w0
-	.extern	zz_zz
-	.extern	zz_id
-	.extern	zz_de
-	.extern	zz_0
-	.extern	zz_1
-	.extern	zz_2
-	.extern	zz_3
-	.extern	zz_4
-	.extern	zz_arg
-	.extern	zz_num
-#endif
+	.extern	it
+	.extern	it_
+	.extern	it_cp
+	.extern	it_xl
+	.extern	it_xr
+	.extern	it_xs
+	.extern	it_wa
+	.extern	it_wb
+	.extern	it_wc
+	.extern	it_w0
+	.extern	it_it
+	.extern	it_id
+	.extern	it_de
+	.extern	it_0
+	.extern	it_1
+	.extern	it_2
+	.extern	it_3
+	.extern	it_4
+	.extern	it_arg
+	.extern	it_num
+
 	.global	start
 
 
@@ -255,15 +254,3 @@ calltab:
 	mov	(reg_cp),W0
 	mov	W0,\val
 	.endm
-
-#ifdef zz_trace
-	.macro	zzz	lbl,val,a2,a3
-	.data
-\lbl:	.asciz	\a3
-	.text
-	mov	\val,zz_id
-	mov	\a2,zz_zz
-	mov	$\lbl,zz_de
-	call	zz_
-	.endm
-#endif

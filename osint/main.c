@@ -203,9 +203,7 @@ char	*argv[];
     /   Startup compiler.
     */
 	printf("start compiler\n");
-#ifdef Z_TRACE
-    zz_init();
-#endif
+    it_init();
     startup();
 #endif					// !RUNTIME
 

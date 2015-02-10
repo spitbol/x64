@@ -18,7 +18,6 @@ This file is part of Macro SPITBOL.
     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef zz_trace
 
 #include "port.h"
 
@@ -37,8 +36,8 @@ uword save_wc;
 uword save_w0;
 uword save_cp;
 double save_ra;
-uword zz_zz;
-uword zz_ln;
+uword it_ln;
+uword it_ln;
 
 uword last_xl;
 uword last_xr;
@@ -50,13 +49,13 @@ uword last_w0;
 uword last_cp;
 double last_ra;
 
-uword zz_calls = 0;
-uword zz_hundred = 0;
+uword it_calls = 0;
+uword it_hundred = 0;
 
-uword zz_off;
-uword zz_id=0;
-uword zz_last = 0;
-char * zz_de;
+uword it_off;
+uword it_id=0;
+uword it_last = 0;
+char * it_de;
 extern long c_aaa;
 extern long w_yyy;
 long off_c_aaa;
@@ -117,22 +116,22 @@ long off_c_aaa;
 long off_w_yyy;
 
 
-void zz_init() {
+void it_init() {
 //	off_c_aaa = &c_aaa;
 //	off_w_yyy = &w_yyy;
 //	fprintf(stderr, "off_c_aaa %ld\n", &c_aaa);
 //	fprintf(stderr, "off_w_yyy %ld\n", &w_yyy);
 }
 
-char * zz_charp;
+char * it_charp;
 
-void zz_str() {
+void it_str() {
 // print memory block pointed to by save_cp as string.
 // print up to 20 characters, or until find non-printable character.
 	char * cp;
-	cp = zz_charp;
+	cp = it_charp;
 	int i;
-	fprintf(stderr,"zz_str  ");
+	fprintf(stderr,"it_str  ");
 	for (i = 0;i<20;i++) {
 		char c = *cp++;
 		if (c>=32 && c <= 126) fprintf(stderr,"%c",c);
@@ -142,23 +141,23 @@ void zz_str() {
 }
 
 extern uword _rc_;
-void zz() {
+void it() {
 
 	char *p;
 	int changed = 0;
 	int listed = 0;
 
-	zz_calls++;
-//	if (zz_calls < 2000)	return;	// bypass initial code
-	if (zz_calls > 50000) return;
+	it_calls++;
+//	if (it_calls < 2000)	return;	// bypass initial code
+	if (it_calls > 50000) return;
 /*
 	return;
- 	zz_calls++;
+ 	it_calls++;
 
-	if (zz_calls == 100 ) {
-	zz_hundred++;
-	printf("%\d\n",zz_hundred);
-	zz_calls = 0;
+	if (it_calls == 100 ) {
+	it_hundred++;
+	printf("%\d\n",it_hundred);
+	it_calls = 0;
 	}
 	return;
 */
@@ -200,8 +199,8 @@ void zz() {
 		prtnl();
 	}
 
-//	if (zz_calls % 3 == 1) {
-//	if (zz_calls>0) {
+//	if (it_calls % 3 == 1) {
+//	if (it_calls>0) {
 	int prtregs=1;
 	 prtregs=0;
 	 prtregs=1;
@@ -224,14 +223,14 @@ if (prtregs) {
 }
 //	}
 	// display instruction pointer and description of current statement.
-	if (zz_zz != zz_last) {
-//	fprintf(stderr, "\n%8xx %s\n", zz_ip, p);
-//	fprintf(stderr, "zzz %d %d %d %s\n",zz_calls, zz_id, zz_zz,zz_de);
-//	fprintf(stderr, "zzz %d %s\n",_rc_,zz_de);
-//	fprintf(stderr, "\n    %6d  %s\n",zz_calls,zz_de);
-	fprintf(stderr, "\n  %s\n",zz_de);
+	if (it_ln != it_last) {
+//	fprintf(stderr, "\n%8xx %s\n", it_ip, p);
+//	fprintf(stderr, "it %d %d %d %s\n",it_calls, it_id, it_ln,it_de);
+//	fprintf(stderr, "it %d %s\n",_rc_,it_de);
+//	fprintf(stderr, "\n    %6d  %s\n",it_calls,it_de);
+	fprintf(stderr, "\n  %s\n",it_de);
 	}
-	zz_last = zz_zz;
+	it_last = it_ln;
 
 	// save current register contents.
 	last_xl = save_xl; last_xr = save_xr; last_xs = save_xs; last_cp = save_cp;
@@ -239,34 +238,33 @@ if (prtregs) {
 	last_wa = save_wa; last_wb = save_wb; last_wc = save_wc; last_w0 = save_w0;
 
 }
-void zz_0() {
-	fprintf(stderr, "zz_0\n");
+void it_0() {
+	fprintf(stderr, "it_0\n");
 }
-void zz_1() {
-	fprintf(stderr, "zz_1\n");
+void it_1() {
+	fprintf(stderr, "it_1\n");
 }
-void zz_2() {
-	fprintf(stderr, "zz_2\n");
+void it_2() {
+	fprintf(stderr, "it_2\n");
 }
-void zz_3() {
-	fprintf(stderr, "zz_3\n");
+void it_3() {
+	fprintf(stderr, "it_3\n");
 }
-void zz_4() {
-	fprintf(stderr, "zz_4\n");
+void it_4() {
+	fprintf(stderr, "it_4\n");
 }
-uword zz_arg;
-void zz_num() {
-	fprintf(stderr, "zz_num\t%x\n",(unsigned int) zz_arg);
+uword it_arg;
+void it_num() {
+	fprintf(stderr, "it_num\t%x\n",(unsigned int) it_arg);
 }
-int zz_num_id;
-int zz_sys_id;
-int zz_sys_calls=0;
-void zz_sys() {
-	zz_sys_calls++;
-	fprintf(stderr, "zz_sys %d %d\n",zz_sys_calls,zz_sys_id);
+int it_num_id;
+int it_sys_id;
+int it_sys_calls=0;
+void it_sys() {
+	it_sys_calls++;
+	fprintf(stderr, "it_sys %d %d\n",it_sys_calls,it_sys_id);
 }
 	extern double REAV1;
-void zz_ra() {
-	fprintf(stderr,"zz_ra %e\n",reg_ra);
+void it_ra() {
+	fprintf(stderr,"it_ra %e\n",reg_ra);
 }
-#endif

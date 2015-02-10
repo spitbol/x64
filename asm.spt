@@ -102,7 +102,7 @@
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
 	define('gensh(opc,reg,val)')
-	define('genzzz(count,lines,desc)lbl')
+	define('genit(count,lines,desc)lbl')
 	define('getarg(iarg)txt,typ,pre,post,base,disp,indx,scale')
 	define('getlea(iarg)txt,typ,pre,post')
 	define('getmem(iarg)txt,typ,pre,post,base,disp,indx,scale')
@@ -1028,21 +1028,21 @@ genz
 *	always generate trace if at label definition
 	z_desc = '"' replace(thisline,'|',' ') '"'
 
-	genzzz(z_count,nlines,z_desc)
+	genit(z_count,nlines,z_desc)
 
-*	outline(tab 'zzz' tab genlab() ','	'$' z_count ',' '$' nlines ',' z_desc)
+*	outline(tab 'it_' tab genlab() ','	'$' z_count ',' '$' nlines ',' z_desc)
 						:(return)
 
--stitl	genzzz(count,lines,desc)lbl
-genzzz
+-stitl	genit(count,lines,desc)lbl
+genit
 	lbl = genlab('it')
 	outline(tab		'.data')
 	outline(lbl ':' tab 	'.asciz' tab 	desc)
 	outline(tab		'.text')
-	outline(tab 		'mov' o_ 	 tab	'$' count ',zz_id')
-	outline(tab 		'mov' o_ 	 tab	'$' lines ',zz_zz')
-	outline(tab		'mov' o_ tab	'$' lbl   ',zz_de')
-	outline(tab		'call'	tab	'zz_')
+	outline(tab 		'mov' o_ 	 tab	'$' count ',it_id')
+	outline(tab 		'mov' o_ 	 tab	'$' lines ',it_ln')
+	outline(tab		'mov' o_ tab	'$' lbl   ',it_de')
+	outline(tab		'call'	tab	'it')
 						:(return)
 	
 
