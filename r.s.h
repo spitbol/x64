@@ -257,13 +257,13 @@ calltab:
 	.endm
 
 #ifdef zz_trace
-	.macro	zzz	val,a2,a3
+	.macro	zzz	lbl,val,a2,a3
 	.data
-%%desc:	.string	\a3,0
+\lbl:	.asciz	\a3
 	.text
 	mov	\val,zz_id
 	mov	\a2,zz_zz
-	mov	%%desc,zz_de
+	mov	$\lbl,zz_de
 	call	zz_
 	.endm
 #endif

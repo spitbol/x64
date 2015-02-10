@@ -40,6 +40,7 @@ This file is part of Macro SPITBOL.
 /
 /                  line as file names.
 */
+#include <stdio.h>
 #define GLOBALS			// global variables will be defined in this module
 #include "port.h"
 #include <stdint.h>
@@ -76,6 +77,7 @@ char	*argv[];
     */
     dcdone = 0;
 
+	printf("enter main\n");
 #if EXECFILE
     /*
     /   If this is a restart of this program from a load module, set things
@@ -143,6 +145,7 @@ char	*argv[];
     */
     setout();
 
+	printf("setout called\n");
 #if !RUNTIME
 
     /*
@@ -165,6 +168,7 @@ char	*argv[];
     /
     */
 
+	printf("memory allocate  main\n");
     if ((basemem = (char *)sbrk((uword)memincb)) == (char *) -1) {
         wrterr( "Workspace memory unavailable." );
         __exit( 1 );
@@ -194,9 +198,11 @@ char	*argv[];
     SET_XR( basemem );
     SET_XL( topmem - sizeof(word) );
 
+	printf("ready to startup\n");
     /*
     /   Startup compiler.
     */
+	printf("start compiler\n");
 #ifdef Z_TRACE
     zz_init();
 #endif

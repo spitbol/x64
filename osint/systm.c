@@ -41,6 +41,13 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
+#include <stdio.h>
+zystm() {
+	
+  printf("enter zystm");
+    SET_IA( 600);
+    return NORMAL_RETURN;
+}
 #ifdef old
 #include <sys/times.h>
 #define CLK_TCK sysconf(_SC_CLK_TCK)
@@ -68,8 +75,3 @@ zystm() {
 }
 #endif
 
-zystm() {
-
-    SET_IA( 600);
-    return NORMAL_RETURN;
-}

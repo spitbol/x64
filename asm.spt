@@ -97,11 +97,12 @@
 	define('genz()')
 	define('genaop(stmt)')
 	define('genbop(stmt)')
-        define('genlab()')
+        define('genlab(prefix)')
 	define('genop(gopc,gop1,gop2,gop3)')
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
 	define('gensh(opc,reg,val)')
+	define('genzzz(count,lines,desc)lbl')
 	define('getarg(iarg)txt,typ,pre,post,base,disp,indx,scale')
 	define('getlea(iarg)txt,typ,pre,post')
 	define('getmem(iarg)txt,typ,pre,post,base,disp,indx,scale')
@@ -650,9 +651,9 @@ genaop
 genbop
 	bstmts[bstmts.n = bstmts.n + 1] = stmt	:(return)
 
--stitl genlab()
+-stitl genla(prefix)
 *  generate unique labels for use in generated code
-genlab	genlab = 'l_' lpad(genlabels = genlabels + 1,4,'0') :(return)
+genlab	genlab = (differ(prefix) prefix, '') '_' lpad(genlabels = genlabels + 1,4,'0') :(return)
 
 -stitl genopl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
@@ -788,7 +789,7 @@ getarg.lit
 	differ(ent)				:s(getarg.ent)
 *  here to make new entry for generated location
 	val_count = val_count + 1
-	lbl = genlab()
+	lbl = genlab('lit')
 	valtable[txt] = lbl
 	ent = lbl
 	genop('.data')
@@ -818,16 +819,16 @@ getlea
 	txt = i.text(iarg)
 	typ = i.type(iarg)
 	eq(typ)					:f($(leacase[typ]))
-						:(getlea.fin)
+						:(getlea.lit)
 * wlbl, clbl
 getlea.c.3
 getlea.c.4 
-						:(getlea.fin)
+						:(getlea.lit)
 
 * (x), register indirect
 getlea.c.9
 	txt len(1) len(2) . typ
-	txt = regmap[typ] 			:(getlea.fin)
+	txt = regmap[typ] 			:(getlea.done)
 
 * (x)+, register indirect, post increment -- memory reference
 getlea.c.10
@@ -863,13 +864,13 @@ getlea.c.15
 	genop('mov',regmap[t2],w0)
 	genop('add','$' t1,w0)			:(getlea.done)
 
-getlea.fin
+getlea.lit
 *  see if have generated location for argument with same txt. Use it if so, else make new one.
 	ent = valtable[txt]
 	differ(ent)				:s(getlea.ent)
 *  here to make new entry for generated location
 	val_count = val_count + 1
-	lbl = genlab()
+	lbl = genlab('lea')
 	valtable[txt] = lbl
 	ent = lbl
 	genop('.data')
@@ -1026,8 +1027,24 @@ genz
 	gt(z_limit)  gt(z_count, z_limit)	:s(return)
 *	always generate trace if at label definition
 	z_desc = '"' replace(thisline,'|',' ') '"'
-	outline(tab 'zzz' tab	z_count ',' nlines ',' z_desc)
+
+	genzzz(z_count,nlines,z_desc)
+
+*	outline(tab 'zzz' tab genlab() ','	'$' z_count ',' '$' nlines ',' z_desc)
 						:(return)
+
+-stitl	genzzz(count,lines,desc)lbl
+genzzz
+	lbl = genlab('it')
+	outline(tab		'.data')
+	outline(lbl ':' tab 	'.asciz' tab 	desc)
+	outline(tab		'.text')
+	outline(tab 		'mov' o_ 	 tab	'$' count ',zz_id')
+	outline(tab 		'mov' o_ 	 tab	'$' lines ',zz_zz')
+	outline(tab		'mov' o_ tab	'$' lbl   ',zz_de')
+	outline(tab		'call'	tab	'zz_')
+						:(return)
+	
 
 -stitl prsarg(iarg)
 prsarg	prsarg = minarg(0)
@@ -1102,7 +1119,7 @@ g.flc
 	
 	t1 = i.text(i1)
 	t2 = '%'  (ident(t1,'wa') 'c', ident(t1,wb) 'b', 'd') 'l'
-	t3 = genlab()
+	t3 = genlab('flc')
 	outfile = '# t1 ' t1 '  t2 ' t2 '  t3 ' t3
 *	z_suspend = 1
 	genop('cmpb',t2,"'A'")
@@ -1167,7 +1184,7 @@ g.bev
 g.brn   genop('jmp',getarg(i1))			:(opdone)
 
 g.bsw	t1 = getarg(i1)
-	t2 = genlab()
+	t2 = genlab('bsw')
 	z_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
 	genop('cmp' o_,t1,getarg(i2))
@@ -1269,7 +1286,7 @@ g.ppm.loop.next
  	z_suspend = eq(jsr_count) 0
 	eq(jsr_count) genopl(jsr_label_norm ':') :(opdone)
 g.ppm.loop
-	lab_next = genlab()
+	lab_next = genlab('ppm')
 	genop('dec' o_,rcode )
 	genop('jns',lab_next)
 	ident(incode,'ppm')			:s(g.ppm.loop.ppm)
@@ -1439,17 +1456,8 @@ g.scp
 	genop(op_,getarg(i1))			:(opdone)
 
 *  use cp for code pointer.
-	genop('mov',reg.cp,getarg(i1))
-						:(opdone)
-
 	genop('mov',getarg(i1),reg.cp)
 						:(opdone)
-*  should be able to get lodsd; xchg eax,getarg(i1)
-	genop('mov',getarg(i1),reg.cp)
-	genop('add','$' cfp_b,reg.cp)
-
-						:(opdone)
-
 
 g.icp
 	genop(op_)				:(opdone)
@@ -1605,7 +1613,7 @@ g.sch
 *
 *  here if can use stos.
 *
-	genop('mov','%al',getarg(src))
+	genop('mov',getarg(src),'%al')
 	genop('stosb')				:(opdone)
 
 g.scg.0
@@ -1689,13 +1697,13 @@ g.cmc
 
 g.trc
 	genop('xchg',reg.xl,reg.xr)
-        genopl((t1 = genlab()) ':','movz' (eq(ws,32) 'bl', 'bq'),'(' reg.xr ')',w0)
-	genop('add', w0, '(,' reg.xl ')')
+	labl = genlab('trc')
+        genopl(labl ':','movz' (eq(ws,32) 'bl', 'bq'),'(' reg.xr ')',w0)
+	genop('add','(,' reg.xl ')',w0)
 	genop('mov','(' w0 ')', '%al')
 	genop('stos' op_c)
-*	genop('loop',t1)
 	genop('dec',reg.wa)
-	genop('jnz',t1)
+	genop('jnz',labl)
 	genop('xor',reg.xl,reg.xl)
 	genop('xor',reg.xr,reg.xr)
 						:(opdone)
@@ -1706,6 +1714,7 @@ g.xob   genop('xor',getarg(i1),getarg(i2))	:(opdone)
 g.cmb   genop('not',getarg(i1))			:(opdone)
 
 g.rsh
+	gensh('shr',getarg(i1),getarg(i2))	:(opdone)
 
 g.lsh
 	gensh('shl',getarg(i1),getarg(i2))	:(opdone)
@@ -1742,10 +1751,10 @@ g.zgb
 g.zzz
  	genop('zzz',getarg(i1))			:(opdone)
 
-g.wtb   gensh('shl',getarg(i1),'$' log_cfp_b)	
+g.wtb   gensh('shl',getarg(i1),log_cfp_b)	
 						:(opdone)
 
-g.btw   gensh('shr',getarg(i1),'$' log_cfp_b)	:(opdone)
+g.btw   gensh('shr',getarg(i1),log_cfp_b)	:(opdone)
 
 
 g.mti	ident(i.text(i1),'(xs)+')		:f(g.mti.1)
@@ -1812,13 +1821,13 @@ g.mvc
 *	use word move if character size is word size
 *	if charsize is word size, convert character count to byte count for word move
 
-	t1 = genlab()
+	t1 = genlab('mvc')
 	z_suspend = 1
 	genop('rep')
 	genop('movsb')
 	z_suspend = 0
 						:(opdone)
-	t1 = genlab()
+	t1 = genlab('mvc')
 	genopl(t1 ':', 'mov',reg.xl,'%al')
 	genop('mov','%al','(' reg.xr ')')
 	genop('inc', reg.xl)
@@ -1835,10 +1844,10 @@ g.mvc
 						:(opdone)
 g.mvw
 	z_suspend = 1
-	gensh('shr',reg.wa,'$' log_cfp_b)
+	gensh('shr',reg.wa,log_cfp_b)
 
 g.mwb
-	gensh('shr',reg.wa,'$' log_cfp_b,)
+	gensh('shr',reg.wa,log_cfp_b,)
 	genop('std')
 	genop('sub','$' cfp_b,reg.xl)
 	genop('sub','$' cfp_b,reg.xr)
@@ -1846,7 +1855,7 @@ g.mwb
 	genop('cld')				:(opdone)
 
 	genop('std')
-	gensh('shr',reg.wa,'$' log_cfp_b)
+	gensh('shr',reg.wa,log_cfp_b)
 	genop('rep')
 	genop('movs' (eq(ws,32) 'd','q'))
 	genop('ctd')
@@ -1867,8 +1876,8 @@ g.mcb
 						:(opdone)
 genrep
 *	generate equivalent of rep op loop
-	l1 = genlab()
-	l2 = genlab()
+	l1 = genlab('rep')
+	l2 = genlab('rep')
 	genopl(l1 ':')
 	genop('or',reg.wa,reg.wa)
 	genop('jz',l2)
