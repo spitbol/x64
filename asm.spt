@@ -783,24 +783,6 @@ getarg.c.27 getarg = txt			:(getarg.done)
 getarg.done
 	it_suspend = 0
 						:(return)
-getarg.lit
-*  see if have generated location for argument with same txt. Use it if so, else make new one.
-	ent = valtable[txt]
-	differ(ent)				:s(getarg.ent)
-*  here to make new entry for generated location
-	val_count = val_count + 1
-	lbl = genlab('lit')
-	valtable[txt] = lbl
-	ent = lbl
-	genop('.data')
-	genopl(lbl ':',d_word,getarg)
-	genop('.text')
-getarg.ent
-*	generate reference via w0 if needed
-	genop('movq', ent ,w0)
-	getarg =  w0 
-						:(getarg.done)
-	
 getarg.mem
 *	generate memory reference. It is just displacement if no index register
 
