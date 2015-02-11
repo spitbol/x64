@@ -839,7 +839,7 @@ setovr: mov     %al,1		# set overflow indicator
 	.global	\nam,
 	.extern	\proc
 \nam:
-	mov	reg_rp,W0
+	mov	W0,reg_rp
 	call	\proc
 	ret
 	.endm

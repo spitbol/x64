@@ -78,7 +78,6 @@
 	nos     = '0123456789'
 	tab	= char(9)
 
-	i_trace = x_trace = 0
 *  function definitions
 *
 *  crack parses stmt into a stmt data plex and returns it.
@@ -103,7 +102,7 @@
 	define('gensh(opc,reg,val)')
 	define('genit(count,lines,desc)lbl')
 	define('getarg(iarg)txt,typ,pre,post,base,disp,indx,scale')
-	define('getlea(iarg)txt,typ,pre,post')
+	define('getadr(iarg)txt,typ,pre,post')
 	define('getmem(iarg)txt,typ,pre,post,base,disp,indx,scale')
 	define('ifreg(iarg)')
 	define('m(text)')
@@ -154,8 +153,8 @@ option.osx.64
 	os = 'osx'; 	ws = '64'		:(option.next)
 option.it
 *	turn on instruction trace
-	x_trace = 1
-	i_trace = 1				:(option.next)
+	x_trace = 'yes'
+	i_trace = 'yes'				:(option.next)
 
 option.xt
 *  x_trace turns on tracing for executable instructions
@@ -330,9 +329,9 @@ skip_init.end
 	argcase[25] = .getarg.c.25;	argcase[26] = .getarg.c.26;	argcase[27] = .getarg.c.27
 
 	leacase = table(50) 
-	leacase[03] = .getlea.c.3;	leacase[04] = .getlea.c.4;	leacase[09] = .getlea.c.9;   
-	leacase[12] = .getlea.c.12;	leacase[13] = .getlea.c.13;	leacase[14] = .getlea.c.14
-	leacase[15] = .getlea.c.15;		 
+	leacase[03] = .getadr.c.3;	leacase[04] = .getadr.c.4;	leacase[09] = .getadr.c.9;   
+	leacase[12] = .getadr.c.12;	leacase[13] = .getadr.c.13;	leacase[14] = .getadr.c.14
+	leacase[15] = .getadr.c.15;		 
 
 
 	valtable = table(100)
@@ -442,7 +441,6 @@ flgs2
 	optim.tab<"inc"> = 1
 	optim.tab<"dec"> = 1
 
-
 *  ismem is table indexed by operand type which is nonzero if
 *  operand type implies memory reference.
 
@@ -451,10 +449,10 @@ flgs2
 	ismem<9> = 1; ismem<10> = 1; ismem<11> = 1
 	ismem<12> = 1; ismem<13> = 1; ismem<14> = 1
 	ismem<15> = 1
-*
+
 *  regmap maps minimal register name to target machine
 *  register/memory-location name.
-*
+
 	regmap = table(30)
 	s = 'xlXLxrXRxsXTxtXTwaWAwbWBwcWCw0W0iaIAcpCP'
 regmap.loop
@@ -740,7 +738,7 @@ getarg.c.11
 getarg.c.12
 getarg.c.13
 	txt break('(') . disp '(' len(2) . indx
-	scale = cfp_b					:(getarg.mem)
+	scale = cfp_b				:(getarg.mem)
 
 *  name(x), where name is in working section -- memory reference
 getarg.c.14
@@ -748,32 +746,31 @@ getarg.c.15
 	txt break('(') . disp '(' len(2) . indx		:(getarg.mem)
 
 * signed integer
-getarg.c.16 getarg = txt				:(getarg.done)
+getarg.c.16 getarg = txt			:(getarg.done)
 
 * signed real
-getarg.c.17 getarg = txt				:(getarg.done)
+getarg.c.17 getarg = txt			:(getarg.done)
 
 *  =dlbl
 getarg.c.18	
-	txt = substr(txt,2)			:(getarg.lit)
-getarg.c.18.1
-	txt = substr(txt,2)			:(getarg.lit)
+	getarg = '$' substr(txt,2)			:(getarg.done)
+	
 *  *dlbl
 getarg.c.19
-	txt =  cfp_b '*' substr(txt,2)	:(getarg.lit)
+	getarg  = '$'  cfp_b '*' substr(txt,2)		:(getarg.done)
 
 *  =name (data section)
 getarg.c.20
 getarg.c.21
-        txt = substr(txt,2)	
-						:(getarg.lit)
+        getarg = '$' substr(txt,2)	
+						:(getarg.done)
 	genop('lea',w0,substr(txt,2))
 	getarg = reg.w0				:(getarg.done)
 
 *  =name (program section)
 getarg.c.22
 
-       txt = substr(txt,2)			:(getarg.lit)
+       getarg = '$' substr(txt,2)			:(getarg.done)
 
 
 *  pnam, eqop
@@ -813,8 +810,8 @@ getarg.mem
 
 	getarg = disp '(,' regmap[indx] ',' scale ')'	:(getarg.done)
 
--stitl getlea(iarg)
-getlea
+-stitl getadr(iarg)
+getadr
 *	similar to getarg, but gets effective address
 *	this procedure only called if operand is in range 3-4 or 9-15
 *	it generates code to load effective address of the argument to w0
@@ -823,55 +820,55 @@ getlea
 	typ = i.type(iarg)
 	it_suspend = 1
 	eq(typ)					:f($(leacase[typ]))
-						:(getlea.lit)
+						:(getadr.lit)
 * wlbl, clbl
-getlea.c.3
-getlea.c.4 
-						:(getlea.lit)
+getadr.c.3
+getadr.c.4 
+						:(getadr.lit)
 
 * (x), register indirect
-getlea.c.9
+getadr.c.9
 	txt len(1) len(2) . typ
-	txt = regmap[typ] 			:(getlea.done)
+	txt = regmap[typ] 			:(getadr.done)
 
 * (x)+, register indirect, post increment -- memory reference
-getlea.c.10
-	error('getlea called with type 10')	:(getlea.done)
+getadr.c.10
+	error('getadr called with type 10')	:(getadr.done)
 
 	indx = substr(txt,2,2)
-	(ident(txt,'xs') genaop(tstmt(,'add','$' cfp_b,regmap[indx]))) :s(getlea.mem)
+	(ident(txt,'xs') genaop(tstmt(,'add','$' cfp_b,regmap[indx]))) :s(getadr.mem)
 *	genaop(tstmt(,'lea',regmap[indx], regmap[indx] '+$' cfp_b))	
-						:(getlea.done)
+						:(getadr.done)
 
 *  -(x), register indirect, pre decrement -- memory reference
-getlea.c.11
-	error('getlea called with type 11')	:(getlea.done)
+getadr.c.11
+	error('getadr called with type 11')	:(getadr.done)
 
-	getlea = substr(txt,3,2)
+	getadr = substr(txt,3,2)
 *	genbop(tstmt(,'lea',regmap[indx], '-$' cfp_b '(,' regmap[indx] ')')) 
-						:(getlea.mem)
+						:(getadr.mem)
 
 * int(x) -- memory reference
 * dlbl(x)
 * int(x)
 * dlbl(x)
-getlea.c.12
-getlea.c.13
+getadr.c.12
+getadr.c.13
 	txt break('(') . t1 '(' len(2) . t2
 	genop('mov',regmap[t2],w0)
-	genop('add',cfp_b '*' t1,w0)		:(getlea.done)
+	genop('add',cfp_b '*' t1,w0)		:(getadr.done)
 
 *  name(x), where name is in working section
-getlea.c.14
-getlea.c.15
+getadr.c.14
+getadr.c.15
 	txt break('(') . t1 '(' len(2) . t2
 	genop('mov',regmap[t2],w0)
-	genop('add','$' t1,w0)			:(getlea.done)
+	genop('add','$' t1,w0)			:(getadr.done)
 
-getlea.lit
+getadr.lit
 *  see if have generated location for argument with same txt. Use it if so, else make new one.
 	ent = valtable[txt]
-	differ(ent)				:s(getlea.ent)
+	differ(ent)				:s(getadr.ent)
 *  here to make new entry for generated location
 	val_count = val_count + 1
 	lbl = genlab('lea')
@@ -884,7 +881,7 @@ getlea.lit
 	genop('.text')
 	flush()
 	it_suspend = 0
-getlea.ent
+getadr.ent
 *	generate reference via w0 if needed
 	it_suspend = 1
 	flush()
@@ -892,11 +889,11 @@ getlea.ent
 	flush()
 	it_suspend = 0
 *	differ(reg)	genop('add' o_,reg,w0)
-*	outfile = ne(x_trace) '; getlea ' ent
-						:(getlea.done)
-getlea.done
+*	outfile = differ(x_trace) '; getadr ' ent
+						:(getadr.done)
+getadr.done
 	it_suspend = 0
-	getlea = w0
+	getadr = w0
 						:(return)
 	
 -stitl m(text)
@@ -972,7 +969,7 @@ outstmt4
 *	stmtout = replace(trim(stmtout),'$','_')
 	stmtout = trim(stmtout)
 	ident(stmtout)				:s(return)
-	eq(i_trace)				:s(outstmt5)
+	ident(i_trace)				:s(outstmt5)
 *	here if trace code desired for executable instructions
 	chktrace()
 outstmt5
@@ -998,7 +995,7 @@ chktrace
 	ident(incode,'bsw')			:s(return)
 
 	is_exec = is_executable[incode]
-	it_exec = ne(i_trace)  ident(inlabel, 's_aaa') 1
+	it_exec = differ(i_trace)  ident(inlabel, 's_aaa') 1
 *	it_exec = gt(nlines,2186) 1
 
 *	need to skip certain blocks since otherwise get branches that are too long
@@ -1038,13 +1035,13 @@ chktrace.1
 	it_desc = '"' replace(thisline,'|',' ') '"'
 
 	lbl = genlab('it')
-	outline(tab		'.data')
-	outline(lbl ':' tab 	'.asciz' tab 	it_desc)
-	outline(tab		'.text')
-	outline(tab 		'mov' o_ 	 tab	'$' it_count ',it_id')
-	outline(tab 		'mov' o_ 	 tab	'$' nlines ',it_ln')
-	outline(tab		'mov' o_ tab	'$' lbl   ',it_de')
-	outline(tab		'call'	tab	'it')
+	genbop(tstmt(,'.data'))
+	genbop(tstmt(lbl ':','.asciz',it_desc))
+	genbop(tstmt(,'.text'))
+	genbop(tstmt(,'mov' o_,'$' it_count,'it_id'))
+	genbop(tstmt(,'mov' o_ ,'$' nlines,'it_ln'))
+	genbop(tstmt(,'mov' o_ ,'$' lbl,'it_de'))
+	genbop(tstmt(,'call','it'))
 						:(return)
 
 -stitl prsarg(iarg)
@@ -1080,7 +1077,7 @@ rl01
 *	outfile = '# ' readline
 *  find out why need to add 2 here
 *  add 2 since need to account for this line and one that will follow
-	ne(x_trace) outline('#:' outlines + 2 ':' tab readline)
+	differ(x_trace) outline('#:' outlines + 2 ':' tab readline)
 					:(return)
 *
 *  here on eof
@@ -1188,7 +1185,7 @@ g.bsw	t1 = getarg(i1)
 	t2 = genlab('bsw')
 	it_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
-	genop('cmp' o_,t1,getarg(i2))
+	genop('cmp',t1,getarg(i2))
 	genop('jge',getarg(i3))
 * here after default case.
 g.bsw1	
@@ -1393,13 +1390,17 @@ g.blt
 g.ble
 g.blo
 g.bhi
-*
-*  these operators all have two operands, memmem may apply
-*  issue target opcode by table lookup.
-*
-	memmem()
-	t1 = branchtab[incode]
-	genop('cmp' o_,getarg(i1),getarg(i2))
+
+*  bring second operand to register if not already in one
+
+	ifreg(i2)				:f(bhi.1)	
+	reg = getarg(i2)
+						:(bhi.2)
+bhi.1
+	genop('mov' o_,getarg(i2),w0)
+	reg = w0
+bhi.2
+	genop('cmp',getarg(i1),reg)
 	genop(branchtab[incode],getarg(i3))
 .						:(opdone)
 
@@ -1442,7 +1443,7 @@ g.bct
 	:(g.bct2)
 	ident(t1,reg.wa)				:s(g.bct1)
 g.bct2
-	genop('dec' o_,t1)
+	genop('dec',t1)
 	genop('jnz',t2)				:(opdone)
 g.bct1
 	genop('loop',t2)			:(opdone)
@@ -1528,9 +1529,11 @@ g.adr
 g.sbr
 g.mlr
 g.dvr
-*  getlea returns ea in w0
-	getlea(i1)
+*  getadr returns ea in w0
+*	it_suspend = 1
+	getadr(i1)
 	genop('call',op_)
+*	it_suspend = 0
 						:(opdone)
 g.ngr
 g.atn
@@ -1602,7 +1605,7 @@ g.lcg.1
 
 *  see if postincrement needed.
 	t2 rtab(1) '+'				:f(g.lcg.2)
-	genop('inc' o_,regmap[t3])
+	genop('inc',regmap[t3])
 g.lcg.2						:(opdone)
 
 g.sch
@@ -1727,7 +1730,7 @@ g.lsx
 
 g.nzb	ifreg(i1)				:s(g.nzb1)
 	genop('xor',w0,w0)
-	genop('cmp' o_,getarg(i1),w0)
+	genop('cmp',getarg(i1),w0)
 	genop('jnz',getarg(i2))
 						:(opdone)
 g.nzb1
@@ -1737,7 +1740,7 @@ g.nzb1
 
 g.zrb	ifreg(i1)				:s(g.zrb1)
 	genop('xor',w0,w0)
-	genop('cmp' o_,getarg(i1),w0)
+	genop('cmp',getarg(i1),w0)
 	
 	genop('jz',getarg(i2))
 						:(opdone)
@@ -2072,8 +2075,8 @@ g.end.2
 	endfile(1)
 	endfile(2)
 	endfile(3)
-	ne(i_trace) report(i_trace,'i_trace')
-	ne(x_trace) report(x_trace,'x_trace')
+	differ(i_trace) report(i_trace,'i_trace')
+	differ(x_trace) report(x_trace,'x_trace')
         report(nlines,'lines read')
         report(nstmts,'statements processed')
         report(ntarget,'target code lines produced')
