@@ -693,6 +693,7 @@ getarg
 	txt = i.text(iarg)
 	typ = i.type(iarg)
 	base = disp = indx = scale =
+	it_suspend = 1
 	eq(typ)					:f($(argcase[typ]))
 	getarg = txt				:(getarg.done)
 
@@ -754,17 +755,17 @@ getarg.c.17 getarg = txt				:(getarg.done)
 
 *  =dlbl
 getarg.c.18	
-	getarg = substr(txt,2)			:(getarg.lit)
+	txt = substr(txt,2)			:(getarg.lit)
 getarg.c.18.1
-	getarg = substr(txt,2)			:(getarg.lit)
+	txt = substr(txt,2)			:(getarg.lit)
 *  *dlbl
 getarg.c.19
-	getarg =  cfp_b '*' substr(txt,2)	:(getarg.lit)
+	txt =  cfp_b '*' substr(txt,2)	:(getarg.lit)
 
 *  =name (data section)
 getarg.c.20
 getarg.c.21
-        getarg = substr(txt,2)	
+        txt = substr(txt,2)	
 						:(getarg.lit)
 	genop('lea',w0,substr(txt,2))
 	getarg = reg.w0				:(getarg.done)
@@ -772,7 +773,7 @@ getarg.c.21
 *  =name (program section)
 getarg.c.22
 
-       getarg = substr(txt,2)			:(getarg.lit)
+       txt = substr(txt,2)			:(getarg.lit)
 
 
 *  pnam, eqop
@@ -783,6 +784,7 @@ getarg.c.25
 getarg.c.26
 getarg.c.27 getarg = txt			:(getarg.done)
 getarg.done
+	it_suspend = 0
 						:(return)
 getarg.lit
 *  see if have generated location for argument with same txt. Use it if so, else make new one.
@@ -819,6 +821,7 @@ getlea
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
+	it_suspend = 1
 	eq(typ)					:f($(leacase[typ]))
 						:(getlea.lit)
 * wlbl, clbl
@@ -874,16 +877,25 @@ getlea.lit
 	lbl = genlab('lea')
 	valtable[txt] = lbl
 	ent = lbl
+	flush()
+	it_suspend = 1
 	genop('.data')
 	genopl(lbl ':',d_word ,txt)
 	genop('.text')
+	flush()
+	it_suspend = 0
 getlea.ent
 *	generate reference via w0 if needed
+	it_suspend = 1
+	flush()
 	genop('movq', ent ,w0)
+	flush()
+	it_suspend = 0
 *	differ(reg)	genop('add' o_,reg,w0)
 *	outfile = ne(x_trace) '; getlea ' ent
 						:(getlea.done)
 getlea.done
+	it_suspend = 0
 	getlea = w0
 						:(return)
 	
@@ -988,7 +1000,6 @@ chktrace
 	is_exec = is_executable[incode]
 	it_exec = ne(i_trace)  ident(inlabel, 's_aaa') 1
 *	it_exec = gt(nlines,2186) 1
-	outfile = ne(it_exec) '# chktrace is_exec'
 
 *	need to skip certain blocks since otherwise get branches that are too long
 *	skip when in code that won't assemble if try to trace

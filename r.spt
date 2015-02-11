@@ -7,7 +7,8 @@
 
 	word = (eq(ws,32) 'dword','qword')
 	defines = 'M_WORD ' word ' '
-	defines = defines 'D_WORD' ' ' (eq(ws,32) '.long', '.quad') ' '
+	defines = defines 'D_WORD' ' ' 	(eq(ws,32) '.long',	'.quad') ' '
+	defines = defines 'CFP_B'  ' ' 	(eq(ws,32) '4',		'8') ' '
 
 	define('a(ref)')			:(a.end)
 						:(next)
