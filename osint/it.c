@@ -141,7 +141,6 @@ void it() {
 	int listed = 0;
 
 	it_calls++;
-//	if (it_calls < 2000)	return;	// bypass initial code
 	if (it_calls > 50000) return;
 //	ln and id are encoded as 10000*ln + id
 	it_ln = it_id / 10000;
@@ -224,7 +223,7 @@ if (prtregs) {
 //	fprintf(stderr, "it %d %d %d %s\n",it_calls, it_id, it_ln,it_de);
 //	fprintf(stderr, "it %d %s\n",_rc_,it_de);
 //	fprintf(stderr, "\n    %6d  %s\n",it_calls,it_de);
-	fprintf(stderr, "\n  %s\n",it_de);
+	fprintf(stderr, "  %s\n",it_de);
 	}
 	it_last = it_ln;
 

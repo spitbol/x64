@@ -231,28 +231,28 @@ skip_init	s break(':') . on ':' rem . off	:f(return)
 	skip_off[off] = 1			:(return)
 skip_init.end
 
-*	skip_init('start:ini03')
+	skip_init('start:ini03')
    	skip_init('gbcol:gtarr')
-*	skip_init('gtn01:gtnvr')
-*	skip_init('bpf05:bpf07')
-*	skip_init('scv12:scv19')
-*	skip_init('exbl1:exbl2')
-*	skip_init('exbl5:expan')
-*	skip_init('prn17:prn18')
-*	skip_init('ini11:ini13')
-*	skip_init('oex13:oexp2')
-*	skip_init('oex14:oexp6')
-*	skip_init('bdfc1:b_efc')
-*	skip_init('sar01:sar10')
-*	skip_init('srpl5:srpl8')
-*	skip_init('pflu1:pflu2')
-*	skip_init('prpa4:prpa5')
-*	skip_init('prn17:prn18')
-*	skip_init('prtvl:prtt1')
-*	skip_init('trim4:trim5')
-*	skip_init('prnl1:prnl2')
-*	skip_init('prti1:prtmi')
-*	skip_init('srpl5:srpl8')
+	skip_init('gtn01:gtnvr')
+	skip_init('bpf05:bpf07')
+	skip_init('scv12:scv19')
+	skip_init('exbl1:exbl2')
+	skip_init('exbl5:expan')
+	skip_init('prn17:prn18')
+	skip_init('ini11:ini13')
+	skip_init('oex13:oexp2')
+	skip_init('oex14:oexp6')
+	skip_init('bdfc1:b_efc')
+	skip_init('sar01:sar10')
+	skip_init('srpl5:srpl8')
+	skip_init('pflu1:pflu2')
+	skip_init('prpa4:prpa5')
+	skip_init('prn17:prn18')
+	skip_init('prtvl:prtt1')
+	skip_init('trim4:trim5')
+	skip_init('prnl1:prnl2')
+	skip_init('prti1:prtmi')
+	skip_init('srpl5:srpl8')
 
 
 
@@ -957,10 +957,8 @@ chktrace
 	it_skip = ident(inlabel,'s_aaa') 0
 
 	is_exec = is_executable[incode]
-*	outfile = ne(is_exec) '# is_exec ' thisline
-	outfile = '#chktrace ' is_exec '  ' incode  '  '  thisline
-*	it_exec = differ(i_trace)  ident(inlabel, 's_aaa') 1
-*	it_exec = gt(nlines,2186) 1
+	it_exec = differ(i_trace)  ident(inlabel, 's_aaa') 1
+	it_exec = gt(nlines,2186) 1
 
 *	need to skip certain blocks since otherwise get branches that are too long
 *	skip when in code that won't assemble if try to trace
@@ -969,8 +967,8 @@ chktrace
  	it_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
  	it_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
 
-*	ne(it_skip)				:s(return)
-*	eq(it_exec)				:s(return)
+	ne(it_skip)				:s(return)
+	eq(it_exec)				:s(return)
 	eq(is_exec)				:s(return)
 
 *	ne(in_gcol)				:s(return)
