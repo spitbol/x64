@@ -143,6 +143,9 @@ void it() {
 	it_calls++;
 //	if (it_calls < 2000)	return;	// bypass initial code
 	if (it_calls > 50000) return;
+//	ln and id are encoded as 10000*ln + id
+	it_ln = it_id / 10000;
+	it_id = it_id - 10000 * it_ln;
 /*
 	return;
  	it_calls++;

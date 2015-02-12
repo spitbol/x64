@@ -587,6 +587,7 @@ opnext.1
 	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' '
 .		i.text(i2) ' ' i.text(i3)
 	argerrs = 0
+	differ(i_trace) ge(sectnow,5) eq(it_suspend)  chktrace()
 						:($('g.' incode))
 *  here if bad opcode
 ds01	error('bad op-code')			:(dsout)
@@ -937,7 +938,6 @@ outstmt4
 *	stmtout = replace(trim(stmtout),'$','_')
 	stmtout = trim(stmtout)
 	ident(stmtout)				:s(return)
-	differ(i_trace) ge(sectnow,5) eq(it_suspend)  chktrace()
 	outline(stmtout)
 	ntarget	= ntarget + 1
 
@@ -990,14 +990,15 @@ chktrace.1
 *	don't trace the trace code itself!
 	it_suspend = 1
 	lbl = genlab('it')
-	genbop(tstmt(,'.data'))
-	genbop(tstmt(lbl ':','.asciz',it_desc))
-	genbop(tstmt(,'.text'))
-	genbop(tstmt(,'mov' o_,'$' it_count,'it_id'))
-	genbop(tstmt(,'mov' o_ ,'$' nlines,'it_ln'))
-	genbop(tstmt(,'mov' o_ ,'$' lbl,'it_de'))
-	genbop(tstmt(,'call','it'))
-	flush()
+	outstmt(tstmt(,'.data'))
+	outstmt(tstmt(lbl ':','.asciz',it_desc))
+	outstmt(tstmt(,'.text'))
+*	encode id and ln as 10,000 * lines  + count, since count < 10000 (no more than 10,000 executable instructions.
+	it_id = 10000 * nlines  + it_count
+	outstmt(tstmt(,'mov' o_,'$' it_id,'it_id'))
+*	outstmt(tstmt(,'mov' o_ ,'$' nlines,'it_ln'))
+	outstmt(tstmt(,'mov' o_ ,'$' lbl,'it_de'))
+	outstmt(tstmt(,'call','it'))
 	it_suspend = 0
 						:(return)
 
