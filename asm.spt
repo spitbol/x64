@@ -2,70 +2,68 @@
 -stitl description
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
 * copyright 2012-2015 david shields
-*
+
 * this file is part of macro spitbol.
-*
+
 *     macro spitbol is free software: you can redistribute it and/or modify
 *     it under the terms of the gnu general public license as published by
 *     the free software foundation, either version 2 of the license, or
 *     (at your option) any later version.
-*
+
 *     macro spitbol is distributed in the hope that it will be useful,
 *     but without any warranty; without even the implied warranty of
 *     merchantability or fitness for a particular purpose.  see the
 *     gnu general public license for more details.
-*
+
 *     you should have received a copy of the gnu general public license
 *     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
-*
-*
+
+
 *  this program takes input file in minimal token form and
 *  produces assembly code for intel x86_64  processor.
 *  the program obtains the name of the file to be translated from the
 *  command line string in host(0).  options relating to the processing
 *  of comments can be changed by modifying the source.
-*
+
 *  in addition to the minimal token file, the program requires the
 *  name of a "machine definition file" that contains code specific
 *  to a particular 80386 assembler.
-*
+
 *  you may also specify option flags on the command line to control the
 *  code generation.  the following flags are processed:
 *	compress	generate tabs rather than spaces in output file
 *       comments        retain full-line and end-of-line comments
-*
+
 *  in addition to the normal minimal register complement, one scratch
 *  work register, w0 is defined.  see the register map below for specific allocations.
-*
+
 *  this program is based in part on earlier translators for the
 *  it is based in part on earlier translators for the dec vax
 *  (vms and un*x) written by steve duff and robert goldberg, and the
 *  pc-spitbol translator by david shields.
-*
+
 *  to run under spitbol:
 *       spitbol -u "<file>:<machine>[:flag:...:flag]" codlinux.spt
-*
+
 *	reads <file>.lex	containing tokenized source code
 *       writes <file>.s         with 80386 assembly code
 *	also writes <file>.err	with err and erb error messages
 *       parts of s.h  are prepended and appended to <file>.s
 *	also sets flags		to 1 after converting names to upper case
 *	also reads <file>.pub	for debug symbols to be declared public
-*
+
 *  example:
 *       spitbol -u v37:dos:compress codlinux.spt
-*
-*
+
+
 *  revision history:
-*
+
         version = 'v1.12'
 	rcode = '_rc_'
-*
-*
 -eject
-*
+
 *  keyword initialization
-*
+
 	&anchor = &trim	= &dump = 1
 	&stlimit = 10000000
 	
@@ -79,18 +77,18 @@
 	tab	= char(9)
 
 *  function definitions
-*
+
 *  crack parses stmt into a stmt data plex and returns it.
 *  it fails if there is a syntax error.
-*
+
 	define('crack(line)operands,operand,char')
-*
+
 	define('chktrace()')
 *	comregs - map minimal register names to target register names
 	define('comregs(line)t,pre,word')
-*
+
 *  error is used to report an error for current statement
-*
+
 	define('error(text)')
 	define('flush()')
 	define('genaop(stmt)')
@@ -115,13 +113,13 @@
 
 *  outstmt is used to send a target statement to the target code
 *  output file outfile
-*
+
 	define('outstmt(ostmt)label,opcode,op1,op2,op3,comment,t,stmtout')
 
 *  readline is called to return the next non-comment line from
 *  the minimal input file (infile <=> lu1).   note that it will
 *  not fail on eof, but it will return a minimal end statement
-*
+
 	define('readline()')
 
 	os = 'unix';	ws = '64'
@@ -208,15 +206,15 @@ config.done
 *	it_limit is maximum number of calls to be generated if non-zero
 	it_limit = 000
 *	set it_first non-zero to skip first number of instructions that would generate trace
-*	output = ne(it_suspend) 'it_suspend ' thisline
 	it_first = 1000
 	it_first = 1
 *	will set in_executable when in part of program where executable
 *	instructions may occur
 	it_exec = 0
-*
-*	it_suspend is set to temporarily disable the trace.
-	it_suspend = 0
+
+*	it_suspend is set nonzero to temporarily disable the instruction trace.
+*	it is initially nonzero so no trace can be emitted until reach code section.
+	it_suspend = 1
 *	set in_skip when should not insert trace code, else assembly errors result.
 *	start with skip on, turn off when see first start of code.
 	it_skip = 1
@@ -257,9 +255,9 @@ skip_init.end
 *	skip_init('srpl5:srpl8')
 
 
-*
+
 *  data structures
-*
+
 	data('minarg(i.type,i.text)')
 	data('tstmt(t.label,t.opc,t.op1,t.op2,t.op3,t.comment)')
 
@@ -270,42 +268,42 @@ skip_init.end
 
 	ppm_cases = table(50,,0)
 
-*
+
 	 p.comregs = break(letters) . pre span(letters) . word
 
 *  exttab has entry for external procedures
-*
+
 	exttab = table(50)
 
 *  labtab records labels in the code section, and their line numbers
-*
+
 	labtab = table(500)
 
 *  for each statement, code in generated into three
 *  arrays of statements:
-*
+
 *	astmts:	statements after opcode (()+, etc.)
 *	bstmts: statements before code (-(), etc)
 *	cstmts: generated code proper
-*
+
 	astmts = array(20,'')
 	bstmts = array(10,'')
 	cstmts = array(20,'')
-*
+
 *  genlabels is count of generated labels (cf. genlab)
-*
+
 	genlabels = 0
 
-*
+
 *  initialize variables
-*
+
 	labcnt = outlines = nlines = nstmts = ntarget = nerrors = 0
 	lastopc = lastop1 = lastop2 =
 	data_lc = 0
 	max_exi = 0
-*
+
 *  initial patterns
-*
+
 *  p.csparse parses tokenized line
 	p.csparse = '|' break('|') . inlabel
 .	'|' break('|') . incode
@@ -316,7 +314,7 @@ skip_init.end
 	'|' rem . slineno
 
 *  dispatch table
-*
+
 	argcase = table(100)
 	argcase[01] = .getarg.c.1;	argcase[2]  = .getarg.c.2;	argcase[3]  = .getarg.c.3;
 	argcase[04] = .getarg.c.4;	argcase[5]  = .getarg.c.5;	argcase[6]  = .getarg.c.6;
@@ -335,15 +333,15 @@ skip_init.end
 
 
 	valtable = table(100)
-*
+
 *  pifatal maps minimal opcodes for which no a code allowed
 *  to nonzero value. such operations include conditional
 *  branches with operand of form (x)+
-*
+
 	pifatal = tblini(
 .	'aov[1]beq[1]bne[1]bge[1]bgt[1]bhi[1]ble[1]blo[1]'
 .	'blt[1]bne[1]bnz[1]ceq[1]cne[1]mfi[1]nzb[1]zrb[1]')
-*
+
 *	trace not working for mvc (x32/x64)
 
 	is_executable = table(100)
@@ -369,9 +367,9 @@ is_exec.2
 -stitl main program
 *  here follows the driver code for the "main" program.
 
-*
+
 *  loop until program exits via g.end
-*
+
 *  opnext is invoked to initiate processing of the next line from
 *  readline.
 *  after doing this, opnext branches to the generator routine indicated
@@ -382,40 +380,40 @@ is_exec.2
 *  to dsgen to cause the thisstmt plex to be sent to outstmt, or
 *  or branching to dsout, in which case the generator must output
 *  all needed code itself.
-*
+
 *  the generators are listed in a separate section below.
-*
-*
+
+
 *  get file name
 
-*
+
 * get definition file name following token file name, and flags.
-*
+
 *	fileprefix ? break(';:') . fileprefix len(1) (break(';:') | rem) . target
 *+		((len(1) rem . flags) | '')
 *	$replace(target,lcase,ucase) = 1
-*
+
 * parse and display flags, setting each one's name to non-null value (1).
-*
+
  :(flgs.skip)
 flgs	flags ? ((len(1) break(';:')) . flag len(1)) |
 +	 ((len(1) rem) . flag) =			:f(flgs2)
 	flag = replace(flag,lcase,ucase)
         output = "  flag: " flag
 	$flag = 1					:(flgs)
-*
+
 flgs.skip
 flgs2
-*
+
 * various constants
-*
+
 	tab = char(9)
         comment.delim = ';'
 
 	w0_arg = minarg(8,'w0')
 *  branchtab maps minimal opcodes 'beq', etc to desired
 *  target instruction
-*
+
 	branchtab = table(10)
 	branchtab['beq'] = 'je'
 	branchtab['bne'] = 'jne'
@@ -428,7 +426,7 @@ flgs2
 
 *  optim.tab flags opcodes capable of participating in or optimization
 *		in outstmt routine
-*
+
 	optim.tab = table(10)
 	optim.tab<"and"> = 1
 	optim.tab<"add"> = 1
@@ -498,7 +496,7 @@ regmap.done
 *  other definitions that are dependent upon things defined in the
 *  machine definition file, and cannot be built until after the definition
 *  file has been read in.
-*
+
 *  p.outstmt examines output lines for certain types of comment contructions
 	fillc	  = (ident(compress) " ",tab)
 	p.outstmt = (break(fillc) . label span(fillc)) . leader
@@ -506,7 +504,7 @@ regmap.done
 	p.alltabs = span(tab) rpos(0)
 
 *  strip end of comments if y
-*
+
 	strip_comment = (differ(comments) 'n', 'y')
 
 	filenami = fileprefix '.lex'
@@ -515,10 +513,8 @@ regmap.done
 inputok 
 	report(filenami,'input lex file')
 
-*
-*
 *  associate output files.
-*
+
 	filenamo = 'r.' fileprefix '.s'
         output(.outfile,2,filenamo)             :s(outputok)
         output = '  cannot open asm file: ' filenamo :(end)
@@ -527,56 +523,46 @@ outputok
 
 	outfile = tab '.att_syntax	prefix'
 
-*
+
 * open file for compilation of minimal err and erb messages
-*
+
         output(.errfile,3, fileprefix ".err")	:s(err_ok)
         output = "  cannot open error message file: " fileprefix ".err" :(end)
 err_ok
 
 
-*  then copy contents of s.h (if it exists) to outfile
-*  stop at line with just 'end' or end of file
-*
-	outlines = outlines + 1
+* copy contents of s.h (if it exists) to outfile
 
-*	outlines = differ(i_trace) outlines + 1
+	input(.hdrfile,4,'s.h')			:f(hdr.done)
+hdr.copy line = hdrfile				:f(hdr.end)
+	outline(line)				:(hdr.copy)
+hdr.end
+	endfile(4)
+hdr.done
 
-	input(.hdrfile,4,'s.h')			:f(nohdr)
-	havehdr = 1
-*        output = '  input header file:  ' hdr  '.hdr'
-hdrcopy line = hdrfile				:f(hdrend)
-	ident(line,'end')			:s(nohdr)
-*	output = 's.h: ' line
-	outline(line)
-						:(hdrcopy)
-hdrend	havehdr =
-nohdr
-*
-*  will have havehdr non-null if more remains to copy out at end.
-*
 *  read in pub file if it exists.  this contains a list of symbols to
 *  be declared public when encountered.
-*
-	pubtab = table(2)
-	input(.pubfile,5, fileprefix ".pub")		:f(nopub)
-	pubtab = table(101)
-pubcopy	line = pubfile				:f(pubend)
-	pubtab[line] = 1			:(pubcopy)
-pubend	endfile(5)
-nopub
 
-						:(dsout)
-  &trace = 2000
-  &ftrace = 1000
-*  &profile = 1
+	pubtab = table(2)
+	input(.pubfile,5, fileprefix ".pub")	:f(pub.done)
+	pubtab = table(101)
+pub.copy	line = pubfile			:f(pub.end)
+	pubtab[line] = 1			:(pub.copy)
+pub.end	endfile(5)
+pub.done
+
+*	output = 'start translation'
+
+*	&trace = 2000
+*	&ftrace = 1000
+
 dsout
 opnext	thisline = readline()
 	crack(thisline)				:f(dsout)
 	op_ = incode '_'
-*
+
 * append ':' after label if in code or data.
-*
+
 * output label of executable instruction immediately if there is one,
 * as it simplifies later processing, especially for tracing.
 	ident(inlabel)				:s(opnext.1)
@@ -606,7 +592,7 @@ opnext.1
 ds01	error('bad op-code')			:(dsout)
 
 *  generate tokens.
-*
+
 ds.typerr
 	error('operand type zero')		:(dsout)
 -stitl comregs(line)t,pre,word
@@ -622,19 +608,19 @@ comregs1 comregs = comregs line			:(return)
 *  as a special case to assure that the decomposition is correct.
 
 *  crack prints an error and fails if a syntax error occurs.
-*
+
 crack   nstmts  = nstmts + 1
 	op1 = op2 = op3 = typ1 = typ2 = typ3 =
 	line    p.csparse			:s(return)
 *  here on syntax error
-*
+
 	error('source line syntax error')	:(freturn)
 -stitl error(text)
 *  this module handles reporting of errors with the offending
 *  statement text in thisline.  comments explaining
 *  the error are written to the listing (including error chain), and
 *  the appropriate counts are updated.
-*
+
 error   outline('* *???* ' thisline)
 	outline('*       ' text)
 .	          (ident(lasterror),'. last error was line ' lasterror)
@@ -888,7 +874,7 @@ memmem
 *  in memory, in which case, we generate code to load second operand
 *  to pseudo-register w0, and then modify the second argument
 *  to reference this register
-*
+
   eq(ismem[i.type(i1)])				:s(return)
   eq(ismem[i.type(i2)])				:s(return)
 *  here if memory-memory case, load second argument
@@ -908,7 +894,7 @@ prcent prcent = 'prc_+' cfp_b '*' ( n - 1)	:(return)
 -stitl outstmt(ostmt)label,opcode,op1,op2,op3,comment)
 *  this module writes the components of the statement
 *  passed in the argument list to the formatted .s file
-*
+
 outstmt	label = t.label(ostmt)
 * clear label if definition already emitted
 	label = ident(label, lastlabel)
@@ -940,25 +926,21 @@ outstmt3
 .		    (ident(op2), ',' op2
 .		      (ident(op3), ',' op3)))
 .       (ident(strip_comment,'y'), tab (ident(comment), ';') comment)
-*
+
 **	send text to outfile
-*
+
 **
 outstmt4
 **
 **	send text to output file if not null.
-*
+
 *	stmtout = replace(trim(stmtout),'$','_')
 	stmtout = trim(stmtout)
 	ident(stmtout)				:s(return)
-	ident(i_trace)				:s(outstmt5)
-*	here if trace code desired for executable instructions
-	chktrace()
-outstmt5
-	ident(stmtout)				:s(return)
+	differ(i_trace) ge(sectnow,5) eq(it_suspend)  chktrace()
 	outline(stmtout)
 	ntarget	= ntarget + 1
-*
+
 *  record code labels in table with delimiter removed.
 	(ge(sectnow,5) differ(thislabel))	:f(return)
 	label ? break(':') . label		:f(return)
@@ -966,18 +948,18 @@ outstmt5
 
 -stitl  chktrace()
 chktrace
-*						:(return)
+	ident(i_trace)				:s(return)
+ 	ne(it_suspend)				:s(return)
 	clabel = inlabel
  	old_it_skip = it_skip
  	old_it_exec = it_exec
  	old_is_exec = is_exec
 	it_skip = ident(inlabel,'s_aaa') 0
 
-*  do not trace bsw (for now)
-	ident(incode,'bsw')			:s(return)
-
 	is_exec = is_executable[incode]
-	it_exec = differ(i_trace)  ident(inlabel, 's_aaa') 1
+*	outfile = ne(is_exec) '# is_exec ' thisline
+	outfile = '#chktrace ' is_exec '  ' incode  '  '  thisline
+*	it_exec = differ(i_trace)  ident(inlabel, 's_aaa') 1
 *	it_exec = gt(nlines,2186) 1
 
 *	need to skip certain blocks since otherwise get branches that are too long
@@ -987,35 +969,26 @@ chktrace
  	it_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
  	it_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
 
-	ne(it_skip)				:s(return)
-	eq(it_exec)				:s(return)
+*	ne(it_skip)				:s(return)
+*	eq(it_exec)				:s(return)
 	eq(is_exec)				:s(return)
 
-*	here to emit trace. need to emit trace after label if there is label
-* 	ident(inlabel)				:s(chktrace.1)
-*	only trace at labels since get jumps that are too removed otherwise
-*	ident(label)				:s(return)
-*	here to emit trace code when there is label
-*	first need to emit label, then fall through
-
-*	stmtout ? break_ws  . label spanws  rem . body	:f(outstmt5)
-* 	stmtout = tab body
-*	outline(label
-*	label =
-
-	ne(in_gcol)				:s(return)
+*	ne(in_gcol)				:s(return)
 
 chktrace.1
 *	no trace if trace has been suspended
- 	ne(it_suspend)				:s(return)
-* only trace at label definition
+
+*	 only trace at label definition
 *	ident(thislabel)			:s(return)
 
 	it_count = it_count + 1
+
 	gt(it_first) le(it_count,it_first)	:s(return)
 	gt(it_limit)  gt(it_count, it_limit)	:s(return)
-	it_desc = '"' replace(thisline,'|',' ') '"'
 
+	it_desc = '"' replace(thisline,'|',' ') '"'
+*	don't trace the trace code itself!
+	it_suspend = 1
 	lbl = genlab('it')
 	genbop(tstmt(,'.data'))
 	genbop(tstmt(lbl ':','.asciz',it_desc))
@@ -1024,6 +997,8 @@ chktrace.1
 	genbop(tstmt(,'mov' o_ ,'$' nlines,'it_ln'))
 	genbop(tstmt(,'mov' o_ ,'$' lbl,'it_de'))
 	genbop(tstmt(,'call','it'))
+	flush()
+	it_suspend = 0
 						:(return)
 
 -stitl prsarg(iarg)
@@ -1035,54 +1010,54 @@ prsarg	prsarg = minarg(0)
 *  to the caller.  it never fails.  if there is no more input,
 *  then a minimal end statement is returned.
 *  comments are passed through to the output file directly.
-*
-*
-readline readline = infile                      :f(rl02)
+
+
+readline readline = infile                      :f(readline.end)
 	nlines  = nlines + 1
-	ident( readline )			:s(readline)
+	ident(readline )			:s(readline)
 readline.0
-	leq( substr(readline,1,1 ),';' )       	:f(rl01)
+	leq( substr(readline,1,1 ),';' )       	:f(readline.asm)
 	it_skip = ident(readline,';it+') 0	:s(readline)
 	it_skip = ident(readline,';it-') 1	:s(readline)
 * force skip of full line comments
 	:(readline)
-*
+
 *  only print comment if requested.
-*
+
 	ident(strip_comment,'n')		:f(readline)
         readline len(1) = ';'
 	outlines = outlines + 1               :(readline)
-*
+
 *  here if not a comment line
-*
-rl01	
+
+readline.asm	
 *	outfile = '# ' readline
 *  find out why need to add 2 here
 *  add 2 since need to account for this line and one that will follow
 	differ(x_trace) outline('#:' outlines + 2 ':' tab readline)
 					:(return)
-*
-*  here on eof
-*
-rl02    readline = '       end'
-						:(rl01)
+
+*  here on eof, proceed as if end statement seen.
+
+readline.end    
+	output = 'eof reached with no end statement, ending translation.' :(g.end)
 
 -stitl tblini(str)
 *  this routine is called to initialize a table from a string of
 *  index/value pairs.
-*
+
 tblini   pos     = 0
-*
+
 *  count the number of "[" symbols to get an assessment of the table
 *  size we need.
-*
+
 tin01   str     (tab(*pos) '[' break(']') *?(cnt = cnt + 1) @pos)
 .						:s(tin01)
-*
+
 *  allocate the table, and then fill it. note that a small memory
 *  optimisation is attempted here by trying to re-use the previous
 *  value string if it is the same as the present one.
-*
+
 	tblini   = table(cnt)
 tin02   str     (break('[') $ index len(1) break(']') $ val len(1)) =
 .						:f(return)
@@ -1101,20 +1076,20 @@ g.flc
 	t2 = '%'  (ident(t1,'wa') 'c', ident(t1,wb) 'b', 'd') 'l'
 	t3 = genlab('flc')
 	outfile = '# t1 ' t1 '  t2 ' t2 '  t3 ' t3
-*	it_suspend = 1
+	it_suspend = 1
 	genop('cmpb',t2,"'A'")
 	genop('jb', t3 )
 	genop('cmpb',t2,"'Z'")
 	genop('ja', t3)
 	genop('add','$32',t2)
         genopl(t3 ':')
-*	it_suspend = 0
+	it_suspend = 0
 						:(opdone)
 
 g.mov
 *  perhaps change mov x,(xr)+ to
 *	mov ax,x; stows
-*
+
 *  perhaps do  mov (xl)+,wx as
 *	lodsw
 *	xchg ax,tx
@@ -1182,19 +1157,19 @@ g.iff   genop(d_word,getarg(i2))              :(opdone)
 g.esw
         genop('.text')				:(opdone)
 g.ent
-*
+
 *  entry points are stored in byte before program entry label
 *  last arg is optional, in which case no initial '.byte' need be
 *  issued. we force odd alignment so can distinguish entry point
 *  addresses from block addresses (which are always even).
-*
+
 *  note that this address of odd/even is less restrictive than
 *  the minimal definition, which defines an even address as being
 *  a multiple of cfp_b (4), and an odd address as one that is not
 *  a multiple of cfp_b (ends in 1, 2, or 3).  the definition here
 *  is a simple odd/even, least significant bit definition.
 *  that is, for us, 1 and 3 are odd, 2 and 4 are even.
-*
+
 
 	t1 = i.text(i1)
 *        genop('align',2)
@@ -1408,9 +1383,9 @@ g.bze1
 	genop('jz',getarg(i2))			:(opdone)
 
 g.lct
-*
+
 *  if operands differ must emit code
-*
+
 	differ(i.text(i1),i.text(i2))		:s(g.lct.1)
 *  here if operands same. emit no code if no label, else emit null
 	ident(thislabel)			:s(opnext)
@@ -1559,17 +1534,17 @@ g.psc
 	ge(t2,1) le(t2,2)			:s(g.plc.1)
 	genop('add', '$cfp_f',t1)
 	eq(i.type(i2))				:s(opdone)
-*
+
 *  here if d_offset_(given (in a variable), so add it in.
-*
+
 	genop('add',getarg(i2),t1)		:(opdone)
 g.plc.1
 	genop('mov',getarg(i2),w0)
 	genop('add','$cfp_f',w0)
 	genop('mov',w0,t1)			:(opdone)
-*
+
 *  lch requires separate cases for each first operand possibility.
-*
+
 g.lch
 	t2 = i.text(i2)
 	t1 = getarg(i1)
@@ -1596,9 +1571,9 @@ g.sch
 	eq(i.type(src),8)			:s(g.scg.w)
 	t.src = getarg(src)
 	ident(t.dst,'(xr)+')			:f(g.scg.0)
-*
+
 *  here if can use stos.
-*
+
 	genop('mov',getarg(src),'%al')
 	genop('stosb')				:(opdone)
 
@@ -1618,10 +1593,10 @@ g.scg.1
 
 g.scg.2						:(opdone)
 g.scg.w
-*
+
 *  here if moving character from work register, convert t.src
 *  to name of low part.
-*
+
 	t.src = reglow[i.text(src)]
 
 	ident(t.dst,'(xl)')			:s(g.scg.w.xl)
@@ -1821,7 +1796,7 @@ g.mvc
 	genop('dec', reg.wa)
 	genop('jnz', t1)
 						:(opdone)
-*
+
 	t1 = genlab()
 	genopl(t1 ':', 'lods_b')
 	genop('stosb')
@@ -1838,7 +1813,9 @@ g.mwb
 	genop('sub','$' cfp_b,reg.xl)
 	genop('sub','$' cfp_b,reg.xr)
  	genrep('movs' (eq(ws,32) 'd','q'))
-	genop('cld')				:(opdone)
+	genop('cld')				
+	it_suspend = 0
+						:(opdone)
 
 	genop('std')
 	gensh('shr',reg.wa,log_cfp_b)
@@ -1984,6 +1961,7 @@ g.sec.5
         genop('.global','sec05')
         genopl('sec05' ':')     
 *  enable tracing if desired
+	it_suspend = 0
 						:(opdone)
 
 *  stack overflow section.  output exi__n tail code
@@ -2006,15 +1984,15 @@ g.sec.7
 
 
 opdone	flush()					:(opnext)
-*
+
 *  here to emit bstmts, cstmts, astmts. attach input label and
 *  comment to first instruction generated.
-*
+
 flush	eq(astmts.n) eq(bstmts.n) eq(cstmts.n)	:f(opdone1)
-*
+
 *  here if some statements to emit, so output single 'null' statement to get label
 *  and comment field right.
-*
+
 	label = thislabel =
 	outstmt(tstmt())			:(opdone.6)
 opdone1	eq(bstmts.n)				:s(opdone.2)
@@ -2045,12 +2023,6 @@ report
 
 g.end
 	&dump = 0
-	ident(havehdr)				:s(g.end.2)
-*  here to copy remaining part from hdr file
-g.end.1	line = hdrfile				:f(g.end.2)
-	ntarget = ntarget + 1
-	outline(line)				:(g.end.1)
-g.end.2
 
 * here at end of code generation.
 

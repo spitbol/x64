@@ -404,6 +404,7 @@ restore_regs:
 
 
 startup:
+	call	it_1
 	pop     W0			# discard return
 	call	stackinit		# initialize minimal stack
 	mov     compsp,W0	# get minimal's stack pointer
@@ -416,6 +417,7 @@ startup:
 	mov     osisp,XS	# switch to new c stack
 	mov	$calltab_start,W0
 	mov	W0,minimal_id
+	call	it_2
 	call	minimal			# load regs, switch stack, start compiler
 
 #	stackinit  -- initialize spmin from sp.
@@ -444,14 +446,11 @@ startup:
 #	initialize stack
 	.global	stackinit
 stackinit:
-	call	it_1
 	mov	XS,W0
 	mov     W0,compsp	# save minimal's stack pointer
 	sub	stacksiz,W0	# end of minimal stack is where c stack will start
 	mov     W0,osisp	# save new c stack pointer
-	call	it_1
 	add	$CFP_B*100,W0		# 100 words smaller for chk
-	call	it_1
 	mov	W0,spmin
 	ret
 
