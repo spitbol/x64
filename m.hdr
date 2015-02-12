@@ -183,12 +183,10 @@ calltab:
 	extern cpr_
 	extern ovr_
 
-	%macro	zzz	3
+	%macro	zzz	1
 	section	.data
-%%desc:	db	%3,0
+%%desc:	db	%1,0
 	section	.text
-	mov	m_word [zz_id],%1
-	mov	m_word [zz_zz],%2
 	mov	m_word [zz_de],%%desc
 	call	zz_
 	%endmacro

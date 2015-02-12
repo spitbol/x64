@@ -117,13 +117,6 @@ long off_c_aaa;
 long off_w_yyy;
 
 
-void zz_init() {
-//	off_c_aaa = &c_aaa;
-//	off_w_yyy = &w_yyy;
-//	fprintf(stderr, "off_c_aaa %ld\n", &c_aaa);
-//	fprintf(stderr, "off_w_yyy %ld\n", &w_yyy);
-}
-
 char * zz_charp;
 
 void zz_str() {
@@ -204,7 +197,6 @@ void zz() {
 //	if (zz_calls>0) {
 	int prtregs=1;
 	 prtregs=0;
-	 prtregs=1;
 
 if (prtregs) {
 
@@ -224,12 +216,10 @@ if (prtregs) {
 }
 //	}
 	// display instruction pointer and description of current statement.
+	fprintf(stderr, "  %s\n",zz_de);
 	if (zz_zz != zz_last) {
-//	fprintf(stderr, "\n%8xx %s\n", zz_ip, p);
-//	fprintf(stderr, "zzz %d %d %d %s\n",zz_calls, zz_id, zz_zz,zz_de);
-//	fprintf(stderr, "zzz %d %s\n",_rc_,zz_de);
-//	fprintf(stderr, "\n    %6d  %s\n",zz_calls,zz_de);
-	fprintf(stderr, "\n  %s\n",zz_de);
+	fprintf(stderr,"reached zzz\n");
+	fprintf(stderr, "  %s\n",zz_de);
 	}
 	zz_last = zz_zz;
 

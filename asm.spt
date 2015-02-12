@@ -1024,8 +1024,8 @@ genz
 	gt(z_first) le(z_count,z_first)		:s(return)
 	gt(z_limit)  gt(z_count, z_limit)	:s(return)
 *	always generate trace if at label definition
-	z_desc = '"' replace(thisline,'|',' ') '"'
-	outline(tab 'zzz' tab	z_count ',' nlines ',' z_desc)
+	z_desc = '"' lpad(nlines,4,'0') ' ' replace(thisline,'|',' ') '"'
+	outline(tab 'zzz' tab	z_desc)
 						:(return)
 
 -stitl prsarg(iarg)
