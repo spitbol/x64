@@ -13,7 +13,7 @@ os?=unix
 it?=0
 IT=$(it)
 ifneq ($(IT),0)
-ITOPT=:it
+ITOPT=it
 ITDEF=-Dzz_trace
 endif
 

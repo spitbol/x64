@@ -23,6 +23,8 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 
 extern uword compsp;
@@ -55,7 +57,7 @@ uword zz_hundred = 0;
 
 uword zz_off;
 uword zz_id=0;
-uword zz_last = 0;
+uword linelast = 0;
 char * zz_de;
 extern long c_aaa;
 extern long w_yyy;
@@ -138,8 +140,10 @@ extern uword _rc_;
 void zz() {
 
 	char *p;
+	char *dp;
 	int changed = 0;
 	int listed = 0;
+	int	linenum;
 
 	zz_calls++;
 //	if (zz_calls < 2000)	return;	// bypass initial code
@@ -216,12 +220,15 @@ if (prtregs) {
 }
 //	}
 	// display instruction pointer and description of current statement.
-	fprintf(stderr, "  %s\n",zz_de);
-	if (zz_zz != zz_last) {
-	fprintf(stderr,"reached zzz\n");
-	fprintf(stderr, "  %s\n",zz_de);
+	// the trace line ends with 5-digit line number. This defines linelast
+	dp = zz_de + strlen(zz_de) - 4;
+	linenum = atoi(dp);
+
+//	fprintf(stderr, "  %s\n",zz_de);
+	if (linenum != linelast) {
+	    fprintf(stderr, "  %s\n",zz_de);
 	}
-	zz_last = zz_zz;
+	linelast = linenum;
 
 	// save current register contents.
 	last_xl = save_xl; last_xr = save_xr; last_xs = save_xs; last_cp = save_cp;
