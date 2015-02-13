@@ -95,9 +95,6 @@ char	*argv[];
         pathptr = (char *)-1L;	// include paths unknown
         clrbuf();				// no chars left in std input buffer
         sfn = 0;
-#if FLOAT
-        hasfpu = checkfpu();	// check for floating point hardware
-#endif					// FLOAT
         heapmove();				// move the heap up
         malloc_empty();			// mark the malloc region as empty
         zysdc();							// Brag if necessary
@@ -123,13 +120,6 @@ char	*argv[];
     /   Switch to proper input file.
     */
     swcinp( inpcnt, inpptr );
-
-#if FLOAT
-    /*
-     * test if floating point hardware present
-     */
-    hasfpu = checkfpu();
-#endif					// FLOAT
 
     switch (getsave(getrdfd())) {
     case 1:					// save file loaded

@@ -895,7 +895,7 @@ val.done
 memmem
 *  memmem is called for those ops for which both operands may be
 *  in memory, in which case, we generate code to load second operand
-*  to pseudo-register 'w0', and then modify the second argument
+*  to pseudo-register w0, and then modify the second argument
 *  to reference this register
 
   eq(ismem[i.type(i1)])				:s(return)
@@ -903,7 +903,7 @@ memmem
 *  here if memory-memory case, load second argument
   t = getarg(i2)
   i2 = w0_arg
-  genop('mov','w0',t)				:(return)
+  genop('mov',w0,t)				:(return)
 
 -stitl outline(txt)
 outline	
@@ -1121,14 +1121,14 @@ mov.xtp
 mov.xlp
 	ident(t.dst,'(xr)+') genop('movs_w')	:s(opdone)
 	genop('lods_w')
-	ident(t.dst,'-(xs)') genop('push','w0')	:s(opdone)
-	genop('mov',getarg(i.dst),'w0')		:(opdone)
+	ident(t.dst,'-(xs)') genop('push',w0)	:s(opdone)
+	genop('mov',getarg(i.dst),w0)		:(opdone)
 mov.xsp
 	ident(t.dst,'(xr)+')		:s(mov.xsprp)
 	genop('pop',getarg(i.dst))		:(opdone)
-mov.xsprp genop('pop','w0')
+mov.xsprp genop('pop',w0)
 	genop('stos_w')				:(opdone)
-mov.xrp genop('mov','w0',getarg(i.src))
+mov.xrp genop('mov',w0,getarg(i.src))
 	genop('stos_w')				:(opdone)
 mov.2
 	genop('push',getarg(i.src))		:(opdone)
@@ -1314,8 +1314,8 @@ g.exi
 	genop('ret')				:(opdone)
 g.exi.1
 
-	genop('mov','w0', 'm( ' prcent(prc.count) ')' )
-	genop('jmp','w0')
+	genop('mov',w0, 'm( ' prcent(prc.count) ')' )
+	genop('jmp',w0)
 						:(opdone)
 g.enp   genop()					:(opdone)
 
@@ -1330,12 +1330,12 @@ g.erb
 g.icv   genop('inc',getarg(i1))    :(opdone)
 g.dcv   genop('dec',getarg(i1))    :(opdone)
 
-g.zer	ident(i.text(i1),'(xr)+') genop('mov','w0','0')
+g.zer	ident(i.text(i1),'(xr)+') genop('mov',w0,'0')
 +		genop('stos_w')			:s(opdone)
 	ifreg(i1)				:s(g.zer1)
 	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
-	genop('mov','w0','0')
-	genop('mov',getarg(i1),'w0')		:(opdone)
+	genop('mov',w0,'0')
+	genop('mov',getarg(i1),w0)		:(opdone)
 g.zer1	t1 = getarg(i1)
 	genop('xor',t1,t1)			:(opdone)
 g.zer.xs genop('push','0')			:(opdone)
@@ -1488,7 +1488,7 @@ g.adr
 g.sbr
 g.mlr
 g.dvr
-	genop('lea','w0',getlea(i1))
+	genop('lea',w0,getlea(i1))
 	genop('call',op_)
 						:(opdone)
 g.ngr
@@ -1568,9 +1568,9 @@ g.lch
 	(eq(cfp_b,cfp_c) genop('dec',regmap[t3]), genop('sub',regmap[t3],'cfp_b'))
 g.lcg.1
 	t2 break('(') len(1) len(2) . t3
-	eq(cfp_b,cfp_c) genop('mov','w0','0')
+	eq(cfp_b,cfp_c) genop('mov',w0,'0')
 	eq(cfp_b,cfp_c) genop('mov','al','m_char [' regmap[t3] ']')
-	eq(cfp_b,cfp_c) genop('mov',t1,'w0')
+	eq(cfp_b,cfp_c) genop('mov',t1,w0)
 
 	ne(cfp_b,cfp_c) genop('mov',t1,'m_char [' regmap[t3] ']')
 
@@ -1599,7 +1599,7 @@ g.scg.0
 	(eq(cfp_b,cfp_c) genop('dec',regmap[t3]), genop('sub',regmap[t3],'cfp_b'))
 g.scg.1
 	t2 break('(') len(1) len(2) . t3
-	eq(cfp_b,cfp_c) genop('mov','w0',t1,)
+	eq(cfp_b,cfp_c) genop('mov',w0,t1,)
 	eq(cfp_b,cfp_c) genop('mov','[' regmap[t3] ']','al')
 	ne(cfp_b,cfp_c) genop('mov','m_char [' regmap[t3] ']',t1)
 *  see if postincrement needed.
@@ -1665,9 +1665,9 @@ g.cmc
 
 g.trc
 	genop('xchg','xl','xr')
-        eq(cfp_b,cfp_c) genopl((t1 = genlab()) ':','movzx','w0','m_char [xr]')
-        ne(cfp_b,cfp_c) genopl((t1 = genlab()) ':','mov','w0','m_char [xr]')
-	ne(cfp_b,cfp_c) genop('sal', 'w0', 'log_cfp_b');* convert char value to byte offset
+        eq(cfp_b,cfp_c) genopl((t1 = genlab()) ':','movzx',w0,'m_char [xr]')
+        ne(cfp_b,cfp_c) genopl((t1 = genlab()) ':','mov',w0,'m_char [xr]')
+	ne(cfp_b,cfp_c) genop('sal', w0, 'log_cfp_b');* convert char value to byte offset
 	eq(cfp_b,cfp_c) genop('mov','al','[xl+w0]')
 	ne(cfp_b,cfp_c) genop('mov','eax','[xl+w0]')
 	genop('stos' op_c)
@@ -1724,8 +1724,8 @@ g.btw   genop('shr',getarg(i1),'log_cfp_b')	:(opdone)
 
 
 g.mti	ident(i.text(i1),'(xs)+')		:f(g.mti.1)
-	genop('pop','w0')
-	genop('ldi_','w0')			:(opdone)
+	genop('pop',w0)
+	genop('ldi_',w0)			:(opdone)
 g.mti.1
 	genop('ldi_',getarg(i1))		:(opdone)
 
@@ -1734,15 +1734,15 @@ g.mfi
 *  compare with cfp$m, branching if result negative
 	eq(i.type(i2))				:s(g.mfi.1)
 *  here if label given, branch if wc not in range (ie, negative)
-	genop('sti_','w0')
-	genop('or','w0','w0')
+	genop('sti_',w0)
+	genop('or',w0,w0)
 	genop('js',getarg(i2))
 g.mfi.1
 	ident(i.text(i1),'-(xs)')		:s(g.mfi.2)
 	genop('sti_',getarg(i1))		:(opdone)
 g.mfi.2
-	genop('sti_','w0')
-	genop('push','w0')			:(opdone)
+	genop('sti_',w0)
+	genop('push',w0)			:(opdone)
 
 g.ctw
 *  assume cfp_c chars per word
@@ -1854,13 +1854,9 @@ genrep
 						:(return)
 
 g.chk
-	ne(rip_mode)				:s(g.chk.1)
-	genop('cmp','xs','lowspmin')
-	genop('jb','sec06')			:(opdone)
-g.chk.1
-	genop('mov',w0,'a(lowspmin)')
-	genop('cmp','xs',w0)
-	genop('jb','sec06')			:(opdone)
+	genop('chk_')
+	genop('or',w0,w0);
+	genop('jne','sec06')			:(opdone)
 
 decend
 *  here at end of dic or dac to see if want label made public
@@ -1961,8 +1957,6 @@ g.sec.5
         genopl('esec04' ':')
 *        (gt(prc.count1) genopl('prc$' ':','times', prc.count1 ' dd 0'))
 	genop('prc_: times ' prc.count1 ' dd 0')
-        genop('global','lowspmin')
-        genopl('lowspmin' ':','d_word','0')
         genop('global','end_min_data')
         genopl('end_min_data' ':')
         genop('segment .text')

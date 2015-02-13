@@ -171,7 +171,6 @@ extern	word * lmodstk;
 
  */
 extern	extern int reg_size;
-extern	extern int hasfpu;
 extern	extern char cprtmsg[];
 extern	extern word reg_block;
 

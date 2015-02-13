@@ -276,6 +276,7 @@ tscblk:	 d_word   512
 ;       standard input buffer block.
 
 	global  inpbuf
+
 inpbuf:	d_word	0			; type word
       d_word    0               	; block length
       d_word    1024            	; buffer size
@@ -286,6 +287,7 @@ inpbuf:	d_word	0			; type word
 	times   1024 db 0        	; buffer
 
 	global  ttybuf
+
 ttybuf:	d_word    0     ; type word
 	d_word    0               	; block length
 	d_word    260             	; buffer size  (260 ok in ms-dos with cinread())
@@ -294,6 +296,23 @@ ttybuf:	d_word    0     ; type word
 	d_word    0               	; file position of buffer
 	d_word    0               	; physical position in file
 	times   260 db 0         	; buffer
+
+	global	spmin
+
+spmin:	d_word	0			; stack limit (stack grows down for x86_64)
+spmin.a:	d_word	spmin
+
+	align	16
+	align         cfp_b
+
+	global	cprtmsg
+cprtmsg:
+	db          ' copyright 1987-2012 robert b. k. dewar and mark emmer.',0,0
+
+call_adr:	d_word	0
+
+
+	segment	.text
 ;
 ;       save and restore minimal and interface registers on stack.
 ;       used by any routine that needs to call back into the minimal
@@ -342,6 +361,7 @@ restore_regs:
 	mov	wc,m(save_wc)
 	mov	w0,m(save_w0)
 	ret
+
 ; ;
 ; ;       startup( char *dummy1, char *dummy2) - startup compiler
 ; ;
@@ -375,6 +395,7 @@ calltab_dtype equ   11
 calltab_enevs equ   12
 calltab_engts equ   13
 
+
 startup:
 	pop     w0			; discard return
 	call	stackinit		; initialize minimal stack
@@ -389,14 +410,14 @@ startup:
 	mov	m(minimal_id),calltab_start
 	call	minimal			; load regs, switch stack, start compiler
 
-;	stackinit  -- initialize lowspmin from sp.
+;	stackinit  -- initialize spmin from sp.
 
 ;	input:  sp - current c stack
 ;		stacksiz - size of desired minimal stack in bytes
 
 ;	uses:	w0
 
-;	output: register wa, sp, lowspmin, compsp, osisp set up per diagram:
+;	output: register wa, sp, spmin, compsp, osisp set up per diagram:
 
 ;	(high)	+----------------+
 ;		|  old c stack   |
@@ -406,25 +427,32 @@ startup:
 ;		/ stacksiz bytes /
 ;		|	     |	 |
 ;		|            |	 |
-;		|----------- | --| <-- resultant lowspmin
+;		|----------- | --| <-- resultant spmin
 ;		| 400 bytes  v   |
 ;	  	|----------------| <-- future c stack pointer, osisp
 ;		|  new c stack	 |
 ;	(low)	|                |
 
-
-
-lowspmin.a:	d_word	lowspmin
-
+;	initialize stack
 	global	stackinit
 stackinit:
 	mov	w0,xs
-	mov     m(compsp),w0	; save as minimal's stack pointer
+	mov     m(compsp),w0	; save minimal's stack pointer
 	sub	w0,m(stacksiz)	; end of minimal stack is where c stack will start
 	mov     m(osisp),w0	; save new c stack pointer
 	add	w0,cfp_b*100		; 100 words smaller for chk
-	extern	lowspmin
-	mov	m(lowspmin),w0
+	mov	m(spmin),w0
+	ret
+
+;	check for stack overflow, making w0 nonzero if found
+	global	chk__
+chk__:
+	xor	w0,w0			; set return value assuming no overflow
+	cmp	xs,m(spmin)
+	jb	chk.oflo
+	ret
+chk.oflo:
+	inc	w0			; make nonzero to indicate stack overflow0
 	ret
 
 ;       mimimal -- call minimal function from c
@@ -441,7 +469,7 @@ stackinit:
 ;       stack to switch to.  in that case, just make the call on the
 ;       the osint stack.
 
- minimal:
+minimal:
 ;         pushad			; save all registers for c
 	mov     wa,m(reg_wa)	; restore registers
 	mov	wb,m(reg_wb)
@@ -984,14 +1012,3 @@ zz_:
 	popf
 	ret
 %endif
-	section		.data
-	align	16
-	align         cfp_b
-	global	hasfpu
-hasfpu:	d_word	0
-	global	cprtmsg
-cprtmsg:
-	db          ' copyright 1987-2012 robert b. k. dewar and mark emmer.',0,0
-
-call_adr:	d_word	0
-

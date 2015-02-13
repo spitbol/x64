@@ -197,7 +197,6 @@ NoInit(	word	*lmodstk);
  *
  */
 extern int  reg_size;
-extern int  hasfpu;
 extern char cprtmsg[];
 extern word reg_block;
 
