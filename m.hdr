@@ -26,6 +26,7 @@
 	extern	restore_regs
 	extern	_rc_
 	extern	reg_fl
+	extern	reg_cp
 	extern	reg_w0
 
 	global	mxint
@@ -56,6 +57,13 @@
 	global	start
 
 
+	%macro	zzz	1
+	section	.data
+%%desc:	db	%1,0
+	section	.text
+	mov	m_word [zz_de],%%desc
+	call	zz_
+	%endmacro
 ;
 ;
 ;   table to recover type word from type ordinal
@@ -182,7 +190,6 @@ calltab:
         extern	sqr_
         extern	tan_
 
-	extern	reg_cp
 
 	extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
 
@@ -295,12 +302,3 @@ calltab:
 	mov	%1,w0
 	%endmacro
 
-	%macro	zzz	3
-	section	.data
-%%desc:	db	%3,0
-	section	.text
-	mov	m_word [zz_id],%1
-	mov	m_word [zz_zz],%2
-	mov	m_word [zz_de],%%desc
-	call	zz_
-	%endmacro

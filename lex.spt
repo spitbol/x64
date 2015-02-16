@@ -741,6 +741,7 @@ rl02	ident(filenamc)				:s(rl03)
 	filenamc =
 	ignore_defs = 1
 	endfile(1)
+	nlines = 0
 	input(.infile,1,filenami)		:s(rdline)
         output = "cannot open minimal file: " filenami        :(end)
 
@@ -898,7 +899,7 @@ g.end
 	outstmt(,'end',,,,comment)
 	(ne(level) error("  unclosed if conditional clause"))
 	report(target,		'target')
-        report(nlines,		'lines read')
+        report(nlines,		'minimal source lines')
         report(nstmts, 		'statements processed')
         report(ntarget, 	'target code lines produced')
 	report(&stcount, 	'spitbol statements executed')

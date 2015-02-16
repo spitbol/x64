@@ -23,6 +23,8 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 
 extern uword compsp;
@@ -55,7 +57,7 @@ uword zz_hundred = 0;
 
 uword zz_off;
 uword zz_id=0;
-uword zz_last = 0;
+uword linelast = 0;
 char * zz_de;
 extern long c_aaa;
 extern long w_yyy;
@@ -78,9 +80,9 @@ void prtval(long reg) {
 	if (reg >= 0 && reg < 100000) {
 		fprintf(stderr," %8ld ", reg);
 	}
-	else if ( reg >= off_c_aaa && reg <= off_w_yyy) {
-		fprintf(stderr," Z%ld ", reg);
-	}
+//	else if ( reg >= off_c_aaa && reg <= off_w_yyy) {
+//		fprintf(stderr," Z%ld ", reg);
+//	}
 	else {
 		fprintf(stderr," %8lxx", reg & 0xffffffff);
 //		fprintf(stderr," ---------", reg);
@@ -117,13 +119,6 @@ long off_c_aaa;
 long off_w_yyy;
 
 
-void zz_init() {
-//	off_c_aaa = &c_aaa;
-//	off_w_yyy = &w_yyy;
-//	fprintf(stderr, "off_c_aaa %ld\n", &c_aaa);
-//	fprintf(stderr, "off_w_yyy %ld\n", &w_yyy);
-}
-
 char * zz_charp;
 
 void zz_str() {
@@ -145,37 +140,29 @@ extern uword _rc_;
 void zz() {
 
 	char *p;
+	char *dp;
 	int changed = 0;
 	int listed = 0;
+	int	linenum;
 
 	zz_calls++;
-//	if (zz_calls < 2000)	return;	// bypass initial code
 	if (zz_calls > 50000) return;
-/*
-	return;
- 	zz_calls++;
 
-	if (zz_calls == 100 ) {
-	zz_hundred++;
-	printf("%\d\n",zz_hundred);
-	zz_calls = 0;
-	}
-	return;
-*/
+
 	// print registers that have changed since last statement
 
 	// see if any have changed.
 	if (save_xl != last_xl)  changed += 1;
 	if (save_xr != last_xr)  changed += 1;
-//	if (save_xs != last_xs)  changed += 1;
-//	if (save_cp != last_cp)  changed += 1;
 	if (save_wa != last_wa)  changed += 1;
 	if (save_wb != last_wb)  changed += 1;
 	if (save_wc != last_wc)  changed += 1;
 	if (save_w0 != last_w0)  changed += 1;
 	if (save_ra != last_ra)  changed += 1;
-  changed = 0; // bypass printout
+
+//  changed = 0; // bypass printout
 	if (changed) {
+
 /* marked changed Minimal registers with "!" to make it easy to search
    backward for last statement that changed a register. */
 		prtnl();
@@ -183,10 +170,6 @@ void zz() {
 			{ prtdif("XL.esi", last_xl, save_xl, listed); listed += 1; }
 		if (save_xr != last_xr)
 			{ prtdif("XR.edi", last_xr, save_xr, listed); listed += 1; }
-//		if (save_xs != last_xs)
-//			{ prtdif("XS.esp", last_xs, save_xs, listed); listed += 1; }
-//		if (save_cp != last_cp)
-//			{ prtdif("CP.ebp", last_cp, save_cp, listed); listed += 1; }
 		if (save_w0 != last_w0)
 			{ prtdif("W0.eax", last_w0, save_w0, listed); listed += 1; }
 		if (save_wa != last_wa)
@@ -200,21 +183,14 @@ void zz() {
 		prtnl();
 	}
 
-//	if (zz_calls % 3 == 1) {
-//	if (zz_calls>0) {
-	int prtregs=1;
-	 prtregs=0;
-	 prtregs=1;
+	int prtregs=0;
+	prtregs = 1;
 
 if (prtregs) {
 
 		// print register values before the statement was executed
 		prtreg("XL.esi", save_xl);
 		prtreg("XR.edi", save_xr);
-//		prtregr("RA    ",save_ra);
-//		prtreg("XS.esp", save_xs);
-		// cp is last on line, so don't print it zero
-//		if (save_cp) prtreg("cp.ebp", save_cp);
 		fprintf(stderr, "\n");
 		prtreg("W0.eax", save_w0);
 		prtreg("WA.ecx", save_wa);
@@ -222,21 +198,20 @@ if (prtregs) {
 		prtreg("WC.edx", save_wc);
 		fprintf(stderr, "\n");
 }
-//	}
-	// display instruction pointer and description of current statement.
-	if (zz_zz != zz_last) {
-//	fprintf(stderr, "\n%8xx %s\n", zz_ip, p);
-//	fprintf(stderr, "zzz %d %d %d %s\n",zz_calls, zz_id, zz_zz,zz_de);
-//	fprintf(stderr, "zzz %d %s\n",_rc_,zz_de);
-//	fprintf(stderr, "\n    %6d  %s\n",zz_calls,zz_de);
-	fprintf(stderr, "\n  %s\n",zz_de);
-	}
-	zz_last = zz_zz;
-
 	// save current register contents.
-	last_xl = save_xl; last_xr = save_xr; last_xs = save_xs; last_cp = save_cp;
-
+	last_xl = save_xl; last_xr = save_xr; 
 	last_wa = save_wa; last_wb = save_wb; last_wc = save_wc; last_w0 = save_w0;
+
+	// display instruction pointer and description of current statement.
+	// the trace line ends with 5-digit line number. This defines linelast
+	dp = zz_de + strlen(zz_de) - 4;
+	linenum = atoi(dp);
+
+//	fprintf(stderr, "  %s\n",zz_de);
+	if (linenum != linelast) {
+	    fprintf(stderr, "\n %s\n",zz_de);
+	}
+	linelast = linenum;
 
 }
 void zz_0() {
