@@ -689,7 +689,7 @@ outstmt
 .	(ident(typ1), typ1 ',') op1 '|'
 .	(ident(typ2), typ2 ',') op2 '|'
 .	(ident(typ3), typ3 ',') op3 '|' comment
-.	'|' nlines
+.	'|' lpad(nlines,5)
 	ntarget = ntarget + 1
 	noutlines = noutlines + 1
 .						:(return)
