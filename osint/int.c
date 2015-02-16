@@ -60,3 +60,18 @@ i arg,ia;
 }
 
 #endif					// SUN4
+
+// C code for ctb and ctw opcodes.
+long ctbw_r;
+long ctbw_v;
+void ctb__() {
+	ctw__();
+	ctbw_r = ctbw_r * CPW;
+}
+
+void ctw__() {
+	long reg;
+	reg = (ctbw_r + CPW - 1) >> LOG_CPW;
+	reg += ctbw_v;
+	ctbw_r = reg;
+}

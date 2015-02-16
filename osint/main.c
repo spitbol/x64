@@ -198,7 +198,6 @@ char	*argv[];
     /*
     /   Startup compiler.
     */
-    it_init();
     startup();
 #endif					// !RUNTIME
 

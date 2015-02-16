@@ -96,6 +96,8 @@ This file is part of Macro SPITBOL.
 #ifndef INTBITS
 #define INTBITS		32
 #define MAXINT		0x7FFFFFFFL
+#define CPW		4
+#define LOG_CPW		2
 #endif
 #ifndef WORDBITS
 #define WORDBITS	32
@@ -110,6 +112,8 @@ This file is part of Macro SPITBOL.
 #ifndef INTBITS
 #define INTBITS		64
 #define MAXINT		0x7FFFFFFFFFFFFFFFL
+#define CPW		8
+#define LOG_CPW		3
 #endif
 #ifndef WORDBITS
 #define WORDBITS	64
