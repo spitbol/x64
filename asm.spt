@@ -1025,7 +1025,7 @@ readline readline = infile                      :f(rl02)
 readline.0
 	leq( substr(readline,1,1 ),';' )       	:f(rl01)
 	z_skip = ident(readline,';z+') 0	:s(readline)
-	z_skip = ident(readline,';z-') 1	:s(readline)
+*	z_skip = ident(readline,';z-') 1	:s(readline)
 * force skip of full line comments
 	:(readline)
 

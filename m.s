@@ -221,20 +221,16 @@ _rc_:	dd   0				; return code from osint procedure
 	global	save_cp
 	global	save_xl
 	global	save_xr
-	global	save_xs
 	global	save_wa
 	global	save_wb
 	global	save_wc
-	global	save_w0
 save_cp:	d_word	0		; saved cp value
 save_ia:	d_word	0		; saved ia value
 save_xl:	d_word	0		; saved xl value
 save_xr:	d_word	0		; saved xr value
-save_xs:	d_word	0		; saved sp value
 save_wa:	d_word	0		; saved wa value
 save_wb:	d_word	0		; saved wb value
 save_wc:	d_word	0		; saved wc value
-save_w0:	d_word	0		; saved w0 value
 
 	global	minimal_id
 minimal_id:	d_word	0		; id for call to minimal from c. see proc minimal below.
@@ -342,11 +338,9 @@ save_regs:
 	mov	m(save_ia),ia
 	mov	m(save_xl),xl
 	mov	m(save_xr),xr
-	mov	m(save_xs),xs
 	mov	m(save_wa),wa
 	mov	m(save_wb),wb
 	mov	m(save_wc),wc
-	mov	m(save_w0),w0
 	ret
 
 	global	restore_regs
@@ -355,11 +349,9 @@ restore_regs:
 	mov	ia,m(save_ia)
 	mov	xl,m(save_xl)
 	mov	xr,m(save_xr)
-;	mov	xs,m(save_xs)	; caller restores sp
 	mov	wa,m(save_wa)
 	mov	wb,m(save_wb)
 	mov	wc,m(save_wc)
-	mov	w0,m(save_w0)
 	ret
 
 ; ;
