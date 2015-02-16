@@ -80,9 +80,9 @@ void prtval(long reg) {
 	if (reg >= 0 && reg < 100000) {
 		fprintf(stderr," %8ld ", reg);
 	}
-	else if ( reg >= off_c_aaa && reg <= off_w_yyy) {
-		fprintf(stderr," Z%ld ", reg);
-	}
+//	else if ( reg >= off_c_aaa && reg <= off_w_yyy) {
+//		fprintf(stderr," Z%ld ", reg);
+//	}
 	else {
 		fprintf(stderr," %8lxx", reg & 0xffffffff);
 //		fprintf(stderr," ---------", reg);
