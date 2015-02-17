@@ -1,13 +1,19 @@
 # SPITBOL makefile using tcc
 HOST=unix_64
-nasm?=tools/nasm/bin/nasm.$(HOST)
-ASM=$(nasm)
+nasm?=nasm
+as?=as
+NASM=$(nasm)
+GAS=$(as)
 
 ws?=64
 
 debug?=0
 EXECUTABLE=spitbol
-
+# P is prefix chosen according to assembler, used to identify machine-dependent assembler files
+#ifeq($(A),nasm)
+P=p
+#else
+P=a
 os?=unix
 
 it?=0
@@ -40,17 +46,9 @@ endif
 ARCH=-D$(TARGET)  -m$(WS)
 
 
-ifeq ($(CC),tcc)
-CC=tools/tcc/bin/tcc
-#LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a $(MUSL)/lib/libc.a 
-CCOPTS= $(ARCH) $(ITDEF) -I tools/tcc/include $(GFLAG) $(ITDEF)
-LDOPTS = -Ltools/tcc/lib -Ltools/musl/lib $(GFLAG) 
-LMOPT=-lm
-else
 CCOPTS= $(ARCH) $(ITDEF) $(GFLAG) 
 LDOPTS= -lm $(GFLAG) $(ARCH)
 LMOPT=-lm
-endif
 
 ifeq ($(OS),unix)
 ELF=elf$(WS)
@@ -71,14 +69,14 @@ vpath %.c $(OSINT)
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMOPTS = -f $(ELF) -D$(TARGET) $(ITDEF)
+NASMOPTS = -f $(ELF) -D$(TARGET) $(ITDEF)
 else
-ASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
+NASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
 endif
 
 # Tools for processing Minimal source file.
 LEX=	lex.spt
-COD=    asm.spt
+COD=    $(A).spt
 ERR=    err.spt
 
 # Implicit rule for building objects from C files.
@@ -87,8 +85,8 @@ ERR=    err.spt
 	$(CC)  $(CCOPTS) -c  -o$@ $(OSINT)/$*.c
 
 # Implicit rule for building objects from assembly language files.
-.s.o:
-	$(ASM) $(ASMOPTS) -l $*.lst -o$@ $*.s
+ns.o:
+	$(NASM) $(ASMOPTS) -l $*.lst -o$@ $*.ns
 
 # C Headers common to all versions and all source files of SPITBOL:
 CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h 
@@ -100,7 +98,8 @@ UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/syste
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	m.hdr 
+AVHDRS=	m.hdr 
+NVHDRS=	n.hdr 
 
 OBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	sysef.o sysej.o sysem.o sysen.o sysep.o sysex.o sysfc.o \
@@ -112,20 +111,28 @@ OBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	int.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
-	trypath.o wrtaout.o zz.o getargs.o main.o m.o err.o s.o
+	trypath.o wrtaout.o zz.o getargs.o main.o 
+
+AOBJS=as.o aerr.o
+NOBJS=ns.o nerr.o n.o
 
 
+# Build nspitbol using nasm, build aspitbol using as.
+# link nspitbol with static linking
+nspitbol: $(OBJS) $(NOBJS)
+	$(CC) $(LDOPTS)  $(OBJS) $(NOBJS) $(LMOPT) -o$(EXECUTABLE) 
 
-# link spitbol with static linking
-spitbol: $(OBJS)
-#	$(CC) $(LDOPTS) -static -lm $(OBJS) -o$(EXECUTABLE) 
+# link nspitbol with dynamic linking
+nspitbol-dynamic: $(OBJS) $(NOBJS)
+	$(CC) $(LDOPTS) $(OBJS) $(NOBJS) $(LMOPT)  -ospitbol 
 
-#	$(CC) -static  $(LDOPTS)  $(OBJS) $(LMOPT) -o$(EXECUTABLE) 
+# link aspitbol with static linking
+aspitbol: $(OBJS) $(AOBJS)
 	$(CC) $(LDOPTS)  $(OBJS) $(LMOPT) -o$(EXECUTABLE) 
 
-# link spitbol with dynamic linking
-spitbol-dynamic: $(OBJS)
-	$(CC) $(LDOPTS) $(OBJS) $(LMOPT)  -ospitbol 
+# link aspitbol with dynamic linking
+aspitbol-dynamic: $(OBJS) $(AOBJS)
+	$(CC) $(LDOPTS) $(OBJS) $(AOBJS) $(LMOPT)  -ospitbol 
 
 # bootbol is for bootstrapping just link with what's at hand
 #bootbol: $(OBJS)
@@ -134,26 +141,28 @@ bootbol:
 	$(CC) $(LDOPTS)  $(OBJS) $(LMOPT) -obootbol
 
 # Assembly language dependencies:
-err.o: err.s
-s.o: s.s
-
-err.o: err.s
-
+err.o: err.ns
+nerr.o: ns.ne
 
 # SPITBOL Minimal source
 s.go:	s.lex go.spt
 	$(BASEBOL) -u i32 go.spt
 
-s.s:	s.lex $(VHDRS) $(COD) 
-	$(BASEBOL) -u $(TARGET):$(ITOPT) $(COD)
+#s.s:	s.lex $(VHDRS) $(COD) 
+#	$(BASEBOL) -u $(TARGET):$(ITOPT) $(COD)
 
-s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
+ns.ns: s.lex $(VHDRS) nasm.spt
+	$(BASEBOL) -u $(TARGET):$(ITOPT) nasm.spt
+.ns.o: s.ns
+	$(NASM) $(NASMOPTS) -ons.o ns.ns
+
+s.lex: $(MINPATH)s.min s.cnd $(LEX)
 	 $(BASEBOL) -u $(TARGET) $(LEX)
 
-s.err: s.s
+s.nerr: s.ns
 
-err.s: $(MIN).cnd $(ERR) s.s
-	   $(BASEBOL) -u $(TARGET) -1=s.err -2=err.s $(ERR)
+err.ns: s.cnd $(ERR) s.ns
+	   $(BASEBOL) -u $(TARGET) -1=s.ne -2=err.ns $(ERR)
 
 # C language header dependencies:
 main.o: $(OSINT)/save.h
@@ -165,7 +174,7 @@ dlfcn.o: dlfcn.h
 install:
 	sudo cp ./bin/spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t ./spitbol
+	rm -f $(OBJS) *.o *.lst *.map *.ne s.lex s.tmp ns.ns ./spitbol
 
 z:
 	nm -n s.o >s.nm

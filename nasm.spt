@@ -48,7 +48,7 @@
 *	reads <file>.lex	containing tokenized source code
 *       writes <file>.s         with 80386 assembly code
 *	also writes <file>.err	with err and erb error messages
-*       parts of m.hdr  are prepended and appended to <file>.s
+*       parts of n.hdr  are prepended and appended to <file>.s
 *	also sets flags		to 1 after converting names to upper case
 *	also reads <file>.pub	for debug symbols to be declared public
 
@@ -166,7 +166,9 @@ options.done
 
 
 
-	fileprefix = "s"
+	filebase = "s"
+* use 'n' to identify files to use with nasm
+	filetag = 'n'
 
 *	cfp_b is bytes per word, cfp_c is characters per word
 *       these should agree with values used in translator
@@ -404,7 +406,7 @@ is_exec.2
 
 * get definition file name following token file name, and flags.
 
-*	fileprefix ? break(';:') . fileprefix len(1) (break(';:') | rem) . target
+*	filebase ? break(';:') . filebase len(1) (break(';:') | rem) . target
 *+		((len(1) rem . flags) | '')
 *	$replace(target,lcase,ucase) = 1
 
@@ -517,7 +519,7 @@ flgs2
 
 	strip_comment = (differ(comments) 'n', 'y')
 
-	filenami = fileprefix '.lex'
+	filenami = filebase '.lex'
         input(.infile,1,filenami)                     :s(inputok)
 
 inputok 
@@ -527,7 +529,7 @@ inputok
 
 *  associate output files.
 
-	filenamo = fileprefix '.s'
+	filenamo =  filetag filebase '.' filetag 's'
         output(.outfile,2,filenamo)             :s(outputok)
         output = '  cannot open asm file: ' filenamo :(end)
 outputok
@@ -536,22 +538,22 @@ outputok
 
 * open file for compilation of minimal err and erb messages
 
-        output(.errfile,3, fileprefix ".err")	:s(err_ok)
-        output = "  cannot open error message file: " fileprefix ".err" :(end)
+        output(.errfile,3, filetag filebase '.' filetag 'ne')	:s(err_ok)
+        output = "  cannot open error message file: " filebase ".err" :(end)
 err_ok
 
 
-*  then copy contents of m.hdr (if it exists) to outfile
+*  then copy contents of n.hdr (if it exists) to outfile
 *  stop at line with just 'end' or end of file
 
 	outlines = outlines + 1
 
 *	differ(i_trace) outline(tab '%define' tab 'zi_trace')
 *	outlines = differ(i_trace) outlines + 1
-
-	input(.hdrfile,4,'m.hdr')	:f(nohdr)
+	hdrname = 'n.hdr'
+	input(.hdrfile,4,hdrname)	:f(nohdr)
 	havehdr = 1
-*        output = '  input header file:  ' hdr  '.hdr'
+        output = '  input header file:  ' hdrname
 hdrcopy line = hdrfile				:f(hdrend)
 	ident(line,'end')			:s(nohdr)
 	outline(line)
@@ -565,7 +567,7 @@ nohdr
 *  be declared public when encountered.
 
 	pubtab = table(2)
-	input(.pubfile,5, fileprefix ".pub")		:f(nopub)
+	input(.pubfile,5, filebase ".pub")		:f(nopub)
 	pubtab = table(101)
 pubcopy	line = pubfile				:f(pubend)
 	pubtab[line] = 1			:(pubcopy)
