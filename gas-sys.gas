@@ -22,7 +22,7 @@
 
 	.att_syntax	prefix
 
-	#include	"m.h"
+	.include	"gas.h"
 
 #ifdef	unix_32
 	.set	cfp_b,4

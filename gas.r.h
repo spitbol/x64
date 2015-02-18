@@ -21,8 +21,6 @@
 
         .text
 
-	.include	"m.h"
-
 	.extern	osisp
 	.extern	compsp
 	.extern	save_regs
@@ -71,36 +69,36 @@
 	.global	typet
 	.data
 
-        d_word	b_art   # arblk type word - 0
-        d_word	b_cdc   # cdblk type word - 1
-        d_word	b_exl   # exblk type word - 2
-        d_word	b_icl   # icblk type word - 3
-        d_word	b_nml   # nmblk type word - 4
-        d_word	p_aba   # p0blk type word - 5
-        d_word	p_alt   # p1blk type word - 6
-        d_word	p_any   # p2blk type word - 7
+        D_WORD	b_art   # arblk type word - 0
+        D_WORD	b_cdc   # cdblk type word - 1
+        D_WORD	b_exl   # exblk type word - 2
+        D_WORD	b_icl   # icblk type word - 3
+        D_WORD	b_nml   # nmblk type word - 4
+        D_WORD	p_aba   # p0blk type word - 5
+        D_WORD	p_alt   # p1blk type word - 6
+        D_WORD	p_any   # p2blk type word - 7
 # next needed only if support real arithmetic cnra
-#       d_word	b_rcl   # rcblk type word - 8
-        d_word	b_scl   # scblk type word - 9
-        d_word	b_sel   # seblk type word - 10
-        d_word	b_tbt   # tbblk type word - 11
-        d_word	b_vct   # vcblk type word - 12
-        d_word	b_xnt   # xnblk type word - 13
-        d_word	b_xrt   # xrblk type word - 14
-        d_word	b_bct   # bcblk type word - 15
-        d_word	b_pdt   # pdblk type word - 16
-        d_word	b_trt   # trblk type word - 17
-        d_word	b_bft   # bfblk type word   18
-        d_word	b_cct   # ccblk type word - 19
-        d_word	b_cmt   # cmblk type word - 20
-        d_word	b_ctt   # ctblk type word - 21
-        d_word	b_dfc   # dfblk type word - 22
-        d_word	b_efc   # efblk type word - 23
-        d_word	b_evt   # evblk type word - 24
-        d_word	b_ffc   # ffblk type word - 25
-        d_word	b_kvt   # kvblk type word - 26
-        d_word	b_pfc   # pfblk type word - 27
-        d_word	b_tet   # teblk type word - 28
+#       D_WORD	b_rcl   # rcblk type word - 8
+        D_WORD	b_scl   # scblk type word - 9
+        D_WORD	b_sel   # seblk type word - 10
+        D_WORD	b_tbt   # tbblk type word - 11
+        D_WORD	b_vct   # vcblk type word - 12
+        D_WORD	b_xnt   # xnblk type word - 13
+        D_WORD	b_xrt   # xrblk type word - 14
+        D_WORD	b_bct   # bcblk type word - 15
+        D_WORD	b_pdt   # pdblk type word - 16
+        D_WORD	b_trt   # trblk type word - 17
+        D_WORD	b_bft   # bfblk type word   18
+        D_WORD	b_cct   # ccblk type word - 19
+        D_WORD	b_cmt   # cmblk type word - 20
+        D_WORD	b_ctt   # ctblk type word - 21
+        D_WORD	b_dfc   # dfblk type word - 22
+        D_WORD	b_efc   # efblk type word - 23
+        D_WORD	b_evt   # evblk type word - 24
+        D_WORD	b_ffc   # ffblk type word - 25
+        D_WORD	b_kvt   # kvblk type word - 26
+        D_WORD	b_pfc   # pfblk type word - 27
+        D_WORD	b_tet   # teblk type word - 28
 #
 #   table of minimal entry points that can be dded from c
 #   via the minimal function (see inter.asm).
@@ -111,20 +109,20 @@
 #
 	.global calltab
 calltab:
-        d_word	relaj
-        d_word	relcr
-        d_word	reloc
-        d_word	alloc
-        d_word	alocs
-        d_word	alost
-        d_word	blkln
-        d_word	insta
-        d_word	rstrt
-        d_word	start
-        d_word	filnm
-        d_word	dtype
-#       d_word	enevs #  engine words
-#       d_word	engts #   not used
+        D_WORD	relaj
+        D_WORD	relcr
+        D_WORD	reloc
+        D_WORD	alloc
+        D_WORD	alocs
+        D_WORD	alost
+        D_WORD	blkln
+        D_WORD	insta
+        D_WORD	rstrt
+        D_WORD	start
+        D_WORD	filnm
+        D_WORD	dtype
+#       D_WORD	enevs #  engine words
+#       D_WORD	engts #   not used
 
 	.global	b_efc
 	.global	b_icl
