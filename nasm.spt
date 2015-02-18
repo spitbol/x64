@@ -138,7 +138,7 @@ option.next
 
 	ident(option,'unix_32')			:s(option.unix.32)
 	ident(option,'unix_64')			:s(option.unix.64)
-	ident(option,'osx_64')			:s(option.osx.64)
+	ident(option,'osx_32')			:s(option.osx.32)
 	ident(option,'xt')			:s(option.xt)
 	ident(option,'it')			:s(option.it)
 
@@ -151,8 +151,8 @@ option.unix.32
 	os = 'unix'; 	ws = '32'		:(option.next)
 option.unix.64
 	os = 'unix'; 	ws = '64'		:(option.next)
-option.osx.64
-	os = 'osx'; 	ws = '64'		:(option.next)
+option.osx.32
+	os = 'osx'; 	ws = '32'		:(option.next)
 option.it
 *	turn on instruction trace
 	i_trace = 1				:(option.next)

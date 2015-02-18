@@ -1,9 +1,8 @@
 # SPITBOL makefile using tcc
-HOST=unix_64
+host?=unix_64
+HOST=$(host)
 
-EXECUTABLE=spitbol
-
-DEBUG=$(debug)
+DEBUG:=$(debug)
 
 nasm?=nasm
 gas?=as
@@ -11,30 +10,33 @@ gas?=as
 debug?=0
 
 NASM=$(nasm)
-GAS=$(gas)
+GAS:=$(gas)
 
 os?=unix
-OS=$(os)
-
-TARGET=$(OS)_$(WS)
+OS:=$(os)
 
 ws?=64
 WS=$(ws)
 
+asm?=nasm
+ASM=$(asm)
+
+TARGET=$(OS)_$(WS)
+
 it?=0
-IT=$(it)
+IT:=$(it)
 ifneq ($(IT),0)
-ITOPT=:it
-ITDEF=-Dzz_trace
+ITOPT:=:it
+ITDEF:=-Dzz_trace
 endif
 
 # basebol determines which spitbol to use to compile
 spitbol?=./bin/spitbol.$(HOST)
 
-BASEBOL=$(spitbol)
+BASEBOL:=$(spitbol)
 
 cc?=gcc
-CC=$(cc)
+CC:=$(cc)
 
 ifeq	($(DEBUG),1)
 GFLAG=-g
@@ -42,14 +44,14 @@ endif
 
 ARCH=-D$(TARGET)  -m$(WS)
 
-CCOPTS= $(ARCH) $(ITDEF) $(GFLAG) 
-LDOPTS= -lm $(GFLAG) $(ARCH)
-LMOPT=-lm
+CCOPTS:= $(ARCH) $(ITDEF) $(GFLAG) 
+LDOPTS:= -lm $(GFLAG) $(ARCH)
+LMOPT:=-lm
 
 ifeq ($(OS),unix)
-ELF=elf$(WS)
+ELF:=elf$(WS)
 else
-ELF=macho$(WS)
+EL:F=macho$(WS)
 endif
 
 # spitbol source file
@@ -68,7 +70,6 @@ endif
 
 # tools for processing Minimal source file.
 LEX=	lex.spt
-COD=    $(A).spt
 ERR=    err.spt
 
 # implicit rule for building objects from C files.
@@ -105,23 +106,23 @@ GOBJS=s-gas.o s-gas-err.o gas-sys.o
 NOBJS=s-nasm.o s-nasm-err.o nasm-sys.o
 
 
-# build nspitbol using nasm, build nspitbol using as.
-# link nspitbol with static linking
-nspitbol: $(OBJS) $(NOBJS)
-	$(CC) $(LDOPTS)  $(OBJS) $(NOBJS) $(LMOPT) -onspitbol
+# build spitbol using nasm, build spitbol using as.
+# link spitbol with static linking
+spitbol: $(OBJS) $(NOBJS)
+	$(CC) $(LDOPTS)  $(OBJS) $(NOBJS) $(LMOPT) -ospitbol
 
-# link nspitbol with dynamic linking
-nspitbol-dynamic: $(OBJS) $(NOBJS)
-	$(CC) $(LDOPTS) $(OBJS) $(NOBJS) $(LMOPT)  -onspitbol 
+# link spitbol with dynamic linking
+spitbol-dynamic: $(OBJS) $(NOBJS)
+	$(CC) $(LDOPTS) $(OBJS) $(NOBJS) $(LMOPT)  -ospitbol 
 
-# build gspitbol using gas
-# link gspitbol with static linking
-gspitbol: $(OBJS) $(AOBJS) $(GOBJS)
-	$(GAS) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT) -o$(EXECUTABLE) 
+# build gasbol using gas
+# link gasbol with static linking
+gasbol: $(OBJS) $(AOBJS) $(GOBJS)
+	$(GAS) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT) -o$(gasbol) 
 
-# link gspitbol with dynamic linking
-gspitbol-dynamic: $(OBJS) $(AOBJS) $(GOBJS)
-	$(GAS) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT)  -ogspitbol 
+# link gasbol with dynamic linking
+gasbol-dynamic: $(OBJS) $(AOBJS) $(GOBJS)
+	$(GAS) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT)  -ogasbol 
 
 # bootbol is for bootstrapping just link with what's at hand
 #bootbol: $(OBJS)
@@ -136,7 +137,7 @@ s.lex: s.min s.cnd $(LEX)
 	 $(BASEBOL) -u $(TARGET) $(LEX)
 
 s-gas-err.gas: s.cnd $(ERR) s-gas.gas
-	$(BASEBOL) -u $(TARGET) -1=s-gas.err -2=s-gas-err.gas $(ERR)
+	$(BASEBOL) -u $(ASM) -1=s-gas.err -2=s-gas-err.gas $(ERR)
 
 gas.inc: gas.hdr gas.h
 	spitbol -u $(TARGET) r.spt <gas.hdr >gas.inc
@@ -164,7 +165,7 @@ nasm-sys.o: nasm-sys.nasm
 	$(NASM) $(NASMOPTS) -onasm-sys.o nasm-sys.nasm
 
 s-nasm-err.nasm: s.cnd $(ERR) s-nasm.nasm
-	   $(BASEBOL) -u $(TARGET) -1=s-nasm.err -2=s-nasm-err.nasm $(ERR)
+	   $(BASEBOL) -u $(ASM) -1=s-nasm.err -2=s-nasm-err.nasm $(ERR)
 
 s-nasm-err.o: s-nasm-err.nasm
 	$(NASM) $(NASMOPTS) -os-nasm-err.o s-nasm-err.nasm

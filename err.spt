@@ -105,28 +105,40 @@
 
 * set target definition flag, if any.
 *
-	target = (differ(host(0)) host(0), "unix_64")
+	target = (differ(host(0)) host(0), "nasm")
         output = "target: " target
+
+	ident(target,'gas')				:s(asm.gas)
+* here for nasm target
+	asm.comment	= ';'
+	asm.data	= '.data'
+	asm.global	= 'global'
+	asm.segment	= 'segment'
+	asm.string	= 'db'
+	
+							:(asm.done)
+asm.gas
+	asm.comment	= '#'
+	asm.data	= '.data'
+	asm.global	= '.global'
+	asm.segment	= '.segment'
+	asm.string	= '.string'
+asm.done
 
 * tab character
 	tab	= char(9)
 
 *
 *  comma delimited string of decimal bytes:
-        db      = 'db'
-	byte	= tab db tab
+	byte	= tab asm.string tab
 
 *  delim delimited string of 'normal' ascii characters (32-127)
 	delim	= '"'
-        ascii   = tab 'db' tab
-
-*  comment lead-in character
-*
-        comment = ';'
+        ascii   = tab asm.string  tab
 
 *  data and public definitions
 *
-        data    = tab 'segment'	tab '.data'
+        data    = tab asm.segment	tab asm.data
 
 *  setup keywords
 *
@@ -284,7 +296,7 @@ repl_end
 
 *  entry.  put out comment line to show what string is being compressed.
 putout  outfile =
-        outfile = comment lpad(i,5) '  "' expand(s) '"'
+        outfile = asm.comment lpad(i,5) '  "' expand(s) '"'
 
 *  main loop.  get segments of normal and special characters.  each segment
 *    (or both) may be null.
@@ -384,8 +396,8 @@ readerr_end
 
 *  putout title and header information
 *
-        outfile = comment ' compressed spitbol error messages ' date()
-        outfile = comment
+        outfile = asm.comment ' compressed spitbol error messages ' date()
+        outfile = asm.comment
         outfile = name
         outfile = model
         outfile = include

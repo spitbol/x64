@@ -132,12 +132,15 @@ option.next
 	options ':' =				:s(option.next)
 	options break(':') . option ':' =	:f(options.done)
 
-	ident(option,'unix_32')			:s(option.unix.32)
-	ident(option,'unix_64')			:s(option.unix.64)
-	ident(option,'osx_64')			:s(option.osx.64)
+	ident(option,'unix_32_gas')		:s(option.unix.32)
+	ident(option,'unix_32_nasm')		:s(option.unix.32)
+	ident(option,'unix_64_gas')		:s(option.unix.64)
+	ident(option,'osx_32_gas')		:s(option.osx.32)
+	ident(option,'osx_64_gas')		:s(option.bad)
 	ident(option,'xt')			:s(option.xt)
 	ident(option,'it')			:s(option.it)
 
+option.bad
 * here if unknown option
 
 	output = "error: unknown option '" option "', translation ends."	
