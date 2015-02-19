@@ -1,0 +1,47 @@
+*	The following trace function will give the last 10 or so GOTOS
+*	of a SNOBOL4 program before it ends.  This history is kept in the
+*	form of a string so that it will get dumped if execution ends
+*	abnormally.  You can also send all error conditions to the statement:
+*	ERROR OUTPUT = GOTOS_QUEUE
+*
+*	The string GOTOS_QUEUE will have entries in the form:
+*
+*	    F1>T1;F2>T2;...
+*
+*	where entries are delimited by the semicolon.  Fn is the
+*	'FROM' statement where a GOTO was made to the 'TO' statement, Tn.
+*	The most recent GOTO is at the beginning of string, and ages to the
+*	right.
+*
+*	From a note in the Dec., 1975 newsletter of SIGPLAN from
+*	Gideon Yuval, Computer Science Dept., Hebrew University,
+*	Jerusalem, Israel.
+*
+*	(c) Copyright 1985 - Catspaw, Incorporated
+*
+	DEFINE( 'GOTOS_()' )
+	GOTOS_LENGTH = 119
+	GOTOS_QUEUE  = DUPL( '.' , GOTOS_LENGTH)
+	GOTOS_PAT    = POS(0) LEN(GOTOS_LENGTH) . GOTOS_QUEUE	:(GOTOS_END)
+
+GOTOS_	GOTOS_NO     = &LASTNO
+	EQ(GOTOS_LAST, GOTOS_NO)				:S(RETURN)
+	GOTOS_LAST   = EQ(GOTOS_NO, GOTOS_LAST + 1) GOTOS_NO	:S(RETURN)
+	(GOTOS_LAST '>' GOTOS_NO ';' GOTOS_QUEUE) ? GOTOS_PAT
+	GOTOS_LAST   = GOTOS_NO					:(RETURN)
+GOTOS_END
+
+	TRACE( 'STCOUNT', 'KEYWORD',   , 'GOTOS_')
+	&TRACE = 50000
+	&DUMP  = 1
+
+*	Sample Program:
+*
+	&STLIMIT = 200				;* Limit to 200 statements
+
+A		:(B)
+C		:(D)
+B		:(C)
+D		:(A)
+
+END

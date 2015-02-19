@@ -1,0 +1,94 @@
+*	Sentence.spt
+*
+*	This progam defines a simple sentence grammar, and then
+*	accepts sentences from the keyboard to see if they can be
+*	matched by the grammar.
+*
+*	You'll have to examine the program to see the words that
+*	it recognizes.  Try it with sentences like:
+*
+*	Dick walks with Jane.
+*	Zippy eats the yellow banana slowly.
+*	The aggressive monkey reads the large book, however, Dick is a boy.
+*
+*	Contributed by Prof. Michael Feldman, George Washington Univ.
+
+	&TRACE = 500
+	&TRIM = 1
+	UPPERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	LOWERS = "abcdefghijklmnopqrstuvwxyz"
+
+	BL = SPAN(' ')
+
+	NOUN = (  'BOY' | 'GIRL' | 'MONKEY' | 'TREE' | 'SCHOOL' | 'BOOK'
++			| 'BANANA' ) $ NOM
+	TRACE('NOM')
+
+	ARTICLE = ( 'A' | 'THE' ) $ ART
+	TRACE('ART')
+
+	CONJUNCTION =  ( 'AND' | 'BUT' | 'HOWEVER' ) $ CONJ
+	TRACE('CONJ')
+
+	PROPER = ( 'DICK' | 'JANE' | 'ZIPPY' ) $ PROP
+	TRACE('PROP')
+
+	PRONOUN = ( 'HE' | 'SHE' | 'IT' ) $ PRON
+	TRACE('PRON')
+
+	ADJECTIVE = ( 'LARGE' | 'SMALL' | 'GRAY' | 'YELLOW'
++			| 'NICE' | 'AGGRESSIVE' ) $ ADJ
+	TRACE('ADJ')
+
+	ADVERB = ( 'SLOWLY' | 'ENTHUSIASTICALLY' ) $ ADV
+	TRACE('ADV')
+
+	TRANSITIVE = ( 'READS' | 'GIVES' | 'EATS' | 'WRITES' ) $ TRANS
+	TRACE('TRANS')
+
+	INTRANSITIVE = ( 'RUNS' | 'WALKS' ) $ INTRANS
+	TRACE('INTRANS')
+
+	BEING = ( 'IS' | 'WAS' ) $ BE
+	TRACE('BE')
+
+	PREPOSITION = ( 'TO' | 'FROM' | 'WITH' ) $ PREP
+	TRACE('PREP')
+
+	NOUN.PHRASE = ( *PROPER | (*ARTICLE *BL *NOUN)
++			| (*ARTICLE *BL *ADJECTIVE *BL *NOUN) ) $ NP
+	TRACE('NP')
+
+	PREP.PHRASE = ( *PREPOSITION *BL *NOUN.PHRASE ) $ PP
+	TRACE('PP')
+
+	VERB.PHRASE = ( (*INTRANSITIVE *BL *PREP.PHRASE)
++			| (*TRANSITIVE *BL *NOUN.PHRASE *BL *PREP.PHRASE)
++			| (*TRANSITIVE *BL *NOUN.PHRASE)
++			| (*BEING *BL *NOUN.PHRASE)
++			| *INTRANSITIVE | *BEING ) $ VP
+	TRACE('VP')
+
+	PREDICATE = ( (*VERB.PHRASE *BL *ADVERB)
++			| *VERB.PHRASE  ) $ PRED
+	TRACE('PRED')
+
+	SUBJECT = ( *PRONOUN | *NOUN.PHRASE ) $ SUBJ
+	TRACE('SUBJ')
+
+	CLAUSE = ( *SUBJECT *BL *PREDICATE ) $ CL
+	TRACE('CL')
+
+	SENTENCE = POS(0) ( *CLAUSE
++		ARBNO( *BL *CONJUNCTION *BL *CLAUSE ) )
++ 		$ SENT (*BL | "") RPOS(0)
+	TRACE('SENT')
+
+READ	S = INPUT						:F(END)
+	OUTPUT = '-----------------------------------------------'
+	OUTPUT = S
+	OUTPUT = '-----------------------------------------------'
+	REPLACE(S,LOWERS ",.-!?;:",UPPERS "       ") ? SENTENCE	:S(YES)F(NO)
+YES	OUTPUT = '==>SENTENCE FOUND'			:(READ)
+NO	OUTPUT = 'NO' 					:(READ)
+END
