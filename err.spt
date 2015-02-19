@@ -105,24 +105,29 @@
 
 * set target definition flag, if any.
 *
-	target = (differ(host(0)) host(0), "nasm")
+	target = (differ(host(0)) host(0), "unix_64_nasm")
         output = "target: " target
+	ident(target,'osx_32_gas')			:s(asm.gas)
+	ident(target,'osx_32_nasm')			:s(asm.nasm)
+	ident(target,'unix_32_gas')			:s(asm.gas)
+	ident(target,'unix_32_nasm')			:s(asm.nasm)
+	ident(target,'unix_64_gas')			:s(asm.gas)
+	ident(target,'unix_64_nasm')			:s(asm.nasm)
+	output = 'invalid option ' target		:s(end)
 
-	ident(target,'gas')				:s(asm.gas)
-* here for nasm target
+asm.nasm
+	asm.byte	= 'db'
 	asm.comment	= ';'
 	asm.data	= '.data'
 	asm.global	= 'global'
-	asm.segment	= 'segment'
 	asm.string	= 'db'
-	
 							:(asm.done)
 asm.gas
+	asm.byte	= '.byte'
 	asm.comment	= '#'
 	asm.data	= '.data'
 	asm.global	= '.global'
-	asm.segment	= '.segment'
-	asm.string	= '.string'
+	asm.string	= '.ascii'
 asm.done
 
 * tab character
@@ -130,7 +135,7 @@ asm.done
 
 *
 *  comma delimited string of decimal bytes:
-	byte	= tab asm.string tab
+	byte	= tab asm.byte tab
 
 *  delim delimited string of 'normal' ascii characters (32-127)
 	delim	= '"'
@@ -138,7 +143,9 @@ asm.done
 
 *  data and public definitions
 *
-        data    = tab asm.segment	tab asm.data
+        data	=	ident(target,'nasm') tab 'segment'	tab '.data'
+	data	=	ident(target,'gas')  tab	'.data'
+
 
 *  setup keywords
 *
@@ -397,28 +404,23 @@ readerr_end
 *  putout title and header information
 *
         outfile = asm.comment ' compressed spitbol error messages ' date()
-        outfile = asm.comment
-        outfile = name
-        outfile = model
-        outfile = include
-        outfile = group
         outfile = data
         outfile =
 
 *  putout label and compressed error message table
 *  osx visible names must start with '_'.
 *
-	prefix = ident(target,"osx_64") "_"
+	prefix = ident(target,"osx_32") "_"
 
-	outfile = tab 'global' tab prefix "errors"
-	outfile = prefix 'errors:' tab 'db' tab '0'
+	outfile = tab asm.global tab prefix "errors"
+	outfile = prefix 'errors:' tab asm.byte tab '0'
 	seq(" putout(err[i],i)", .i)
 
 *  putout label and phrase table
 *
         outfile =
-	outfile = tab 'global' tab prefix 'phrases'
-	outfile = prefix 'phrases:' tab 'db' tab '0'
+	outfile = tab asm.global tab prefix 'phrases'
+	outfile = prefix 'phrases:' tab asm.byte tab '0'
 	seq(" putout(phrase[i],spread(i))", .i)
 
 *  finish up the output file

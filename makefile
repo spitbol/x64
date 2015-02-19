@@ -19,7 +19,7 @@ ws?=64
 WS=$(ws)
 
 asm?=nasm
-ASM=$(asm)
+ASM:=$(asm)
 
 TARGET=$(OS)_$(WS)
 
@@ -118,11 +118,11 @@ spitbol-dynamic: $(OBJS) $(NOBJS)
 # build gasbol using gas
 # link gasbol with static linking
 gasbol: $(OBJS) $(AOBJS) $(GOBJS)
-	$(GAS) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT) -o$(gasbol) 
+	$(CC) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT) -ogasbol
 
 # link gasbol with dynamic linking
 gasbol-dynamic: $(OBJS) $(AOBJS) $(GOBJS)
-	$(GAS) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT)  -ogasbol 
+	$(CC) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT)  -ogasbol 
 
 # bootbol is for bootstrapping just link with what's at hand
 #bootbol: $(OBJS)
@@ -130,30 +130,36 @@ gasbol-dynamic: $(OBJS) $(AOBJS) $(GOBJS)
 bootbol: 
 	$(CC) $(LDOPTS)  $(OBJS) $(LMOPT) -obootbol
 
-gas.h:	gas.r.h
-	$(BASEBOL) -u $(TARGET) r.spt <gas.r.h >gas.h
+gas.h:	gas.h.r
+	$(BASEBOL) -u $(TARGET) r.spt <gas.h.r >gas.h
 
 s.lex: s.min s.cnd $(LEX)
 	 $(BASEBOL) -u $(TARGET) $(LEX)
 
+gas.hdr: gas.hdr.r gas.h
+	$(BASEBOL) -u $(TARGET) r.spt <gas.hdr.r >gas.hdr
+
 s-gas-err.gas: s.cnd $(ERR) s-gas.gas
-	$(BASEBOL) -u $(ASM) -1=s-gas.err -2=s-gas-err.gas $(ERR)
+	$(BASEBOL) -u $(TARGET)_gas -1=s-gas.err -2=s-gas-err.gas $(ERR)
 
-gas.inc: gas.hdr gas.h
-	spitbol -u $(TARGET) r.spt <gas.hdr >gas.inc
+s-gas-err.o: s-gas-err.gas s-gas.gas
+	$(GAS) $(GASOPTS) -os-gas-err.o s-gas-err.gas
 
-s-gas.gas: s.lex $(VHDRS) gas.spt gas.inc
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.tmp -3=s-gas.err -4=gas.inc	gas.spt
+s-gas.gas: s.lex $(VHDRS) gas.spt gas.hdr
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.tmp -3=s-gas.err -4=gas.hdr	gas.spt
 	$(BASEBOL) -u $(TARGET) r.spt <s-gas.tmp >s-gas.gas
 
 s-gas.o: s-gas.gas
 	$(GAS) $(GASOPTS) -os-gas.o s-gas.gas
 
+gas-sys.gas: gas-sys.gas.r s.lex
+	$(BASEBOL) -u $(TARGET) r.spt <gas-sys.gas.r >gas-sys.gas
+
 gas-sys.o: gas-sys.gas
 	$(GAS) $(GASOPTS) -ogas-sys.o gas-sys.gas
 
-s-gas-err.o: s-gas-err.gas
-	$(GAS) $(GASOPTS) -os-gas-err.o s-gas-err.gas
+nasm-sys.o: nasm-sys.nasm
+	$(NASM) $(NASMOPTS) -onasm-sys.o nasm-sys.nasm
 
 s-nasm.nasm: s.lex $(VHDRS) nasm.spt
 	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-nasm.nasm -3=s-nasm.err	nasm.spt
@@ -161,16 +167,14 @@ s-nasm.nasm: s.lex $(VHDRS) nasm.spt
 s-nasm.o: s-nasm.nasm
 	$(NASM) $(NASMOPTS) -os-nasm.o s-nasm.nasm
 
-nasm-sys.o: nasm-sys.nasm
-	$(NASM) $(NASMOPTS) -onasm-sys.o nasm-sys.nasm
-
 s-nasm-err.nasm: s.cnd $(ERR) s-nasm.nasm
-	   $(BASEBOL) -u $(ASM) -1=s-nasm.err -2=s-nasm-err.nasm $(ERR)
+	   $(BASEBOL) -u $(TARGET)_nasm -1=s-nasm.err -2=s-nasm-err.nasm $(ERR)
 
 s-nasm-err.o: s-nasm-err.nasm
 	$(NASM) $(NASMOPTS) -os-nasm-err.o s-nasm-err.nasm
 
 # c language header dependencies:
+
 main.o: $(OSINT)/save.h
 sysgc.o: $(OSINT)/save.h
 sysxi.o: $(OSINT)/save.h
@@ -180,12 +184,12 @@ dlfcn.o: dlfcn.h
 install:
 	sudo cp ./bin/spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o s.lex s.tmp [rs]-* ./spitbol gas.inc gas.h
+	rm -f $(OBJS) *.o s.lex s.tmp [rs]-* ./spitbol gas.inc gas.h gas-sys.gas
 
 z:
 	nm -n s.o >s.nm
-	spitbol map-$(WS).spt <s.nm >s.dic
-	spitbol z.spt <ad >ae
+	$(BASEBOL) map-$(WS).spt <s.nm >s.dic
+	$(BASEBOL) z.spt <ad >ae
 
 sclean:
 # clean up after sanity-check

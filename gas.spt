@@ -132,11 +132,10 @@ option.next
 	options ':' =				:s(option.next)
 	options break(':') . option ':' =	:f(options.done)
 
-	ident(option,'unix_32_gas')		:s(option.unix.32)
-	ident(option,'unix_32_nasm')		:s(option.unix.32)
-	ident(option,'unix_64_gas')		:s(option.unix.64)
-	ident(option,'osx_32_gas')		:s(option.osx.32)
-	ident(option,'osx_64_gas')		:s(option.bad)
+	ident(option,'unix_32')		:s(option.unix.32)
+	ident(option,'unix_64')		:s(option.unix.64)
+	ident(option,'osx_32')		:s(option.osx.32)
+	ident(option,'osx_64')		:s(option.bad)
 	ident(option,'xt')			:s(option.xt)
 	ident(option,'it')			:s(option.it)
 
@@ -528,7 +527,7 @@ regmap.done
         output = ~output(.errfile,3) 'missing error file'	:s(end)
 
 * copy header (which follows 'end' statement in this file) to output
-	output = ~input(.hdrfile,4,'gas.inc') 'cannot open header file'	:s(end)
+	output = ~input(.hdrfile,4) 'cannot open header file'	:s(end)
 hdr.copy line = hdrfile				:f(hdr.end)
 	outline(line)				:(hdr.copy)
 hdr.end

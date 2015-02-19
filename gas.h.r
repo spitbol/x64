@@ -19,7 +19,7 @@
 
 	.att_syntax
 
-        .text
+        .data
 
 	.extern	osisp
 	.extern	compsp
@@ -59,15 +59,13 @@
 
 	.global	start
 
+	.extern	_rc_
 
-#
 #
 #   table to recover type word from type ordinal
 #
 
-	.extern	_rc_
 	.global	typet
-	.data
 
         D_WORD	b_art   # arblk type word - 0
         D_WORD	b_cdc   # cdblk type word - 1
@@ -123,7 +121,6 @@ calltab:
         D_WORD	dtype
 #       D_WORD	enevs #  engine words
 #       D_WORD	engts #   not used
-
 	.global	b_efc
 	.global	b_icl
 	.global	b_rcl
@@ -165,7 +162,6 @@ calltab:
 	.global	r_fcb
 	.global	w_yyy
 	.global	end_min_data
-
 
 	.extern	adr_
 	.extern	atn_

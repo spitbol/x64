@@ -96,6 +96,8 @@ This file is part of Macro SPITBOL.
 #ifndef INTBITS
 #define INTBITS		32
 #define MAXINT		0x7FFFFFFFL
+#define CPW		4
+#define LOG_CPW		2
 #endif
 #ifndef WORDBITS
 #define WORDBITS	32
@@ -110,6 +112,8 @@ This file is part of Macro SPITBOL.
 #ifndef INTBITS
 #define INTBITS		64
 #define MAXINT		0x7FFFFFFFFFFFFFFFL
+#define CPW		8
+#define LOG_CPW		3
 #endif
 #ifndef WORDBITS
 #define WORDBITS	64
@@ -246,7 +250,8 @@ typedef unsigned long uword;	// minimal word as unsigned value
 /                   to make the stack larger results in a stack overflow
 /                   error.  Defined in BYTES!
 */
-#define STACK_SIZE  (0x100000)      // Set to 1MB 6/28/09
+//#define STACK_SIZE  (0x100000)      // Set to 1MB 6/28/09
+#define STACK_SIZE  (0x10000)      //  DS Jan 2015
 
 
 /*

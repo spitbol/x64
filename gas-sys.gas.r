@@ -24,14 +24,14 @@
 
 	.include	"gas.h"
 
-#ifdef	unix_32
+.ifdef	unix_32
 	.set	cfp_b,4
 	.set	cfp_c,4
-#else
+.else
 	.set	cfp_b,8
 	.set	cfp_c,8
 	.set	m64,1			# make m64 the default
-#endif
+.endif
 
 	.global	reg_block
 	.global	reg_w0
@@ -50,7 +50,7 @@
 	.global	reg_rp
 
 	.global	minimal
-	.extern	calltab
+#	.extern	calltab
 	.extern	stacksiz
 
 #	values below must agree with calltab defined in x32.hdr and also in osint/osint.h
@@ -379,6 +379,7 @@ restore_regs:
 #   the order of entries here must correspond to the order of
 #   calltab entries in the inter assembly language module.
 
+.ifdef CALLTAB
 	.set	calltab_relaj,0
 	.set	calltab_relcr,1
 	.set	calltab_reloc,2
@@ -393,6 +394,7 @@ restore_regs:
 	.set	calltab_dtype,11
 	.set	calltab_enevs,12
 	.set	calltab_engts,13
+.endif
 
 
 startup:
