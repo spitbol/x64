@@ -277,7 +277,8 @@ typedef unsigned long uword;	// minimal word as unsigned value
 / PSEP is the separator between multiple paths.
 / FSEP is the separator between directories in a path.
 / EXT is separator between name and extension.
-/ COMPEXT is extension for source files.
+/ COMPEXTSPT is extension for source files: .spt
+/ COMPEXTSBL is another extension for source files: .sbl
 / EFNEXT is extension for external functions.
 / RUNEXT is extension for save files.
 / BINEXT is extension for load modules
@@ -289,7 +290,8 @@ typedef unsigned long uword;	// minimal word as unsigned value
 
 #define EXT '.'
 #define	BINEXT ".out"
-#define COMPEXT ".spt"
+#define COMPEXTSPT ".spt"
+#define COMPEXTSBL ".sbl"
 #define EFNEXT ".slf"
 #define LISTEXT ".lst"
 #define RUNEXT ".spx"
