@@ -1,5 +1,5 @@
 # SPITBOL makefile using tcc
-host?=unix_64
+host?=unix_32
 HOST=$(host)
 
 DEBUG:=$(debug)
@@ -15,7 +15,7 @@ GAS:=$(gas)
 os?=unix
 OS:=$(os)
 
-ws?=64
+ws?=32
 WS=$(ws)
 
 asm?=nasm
@@ -109,7 +109,7 @@ NOBJS=s-nasm.o s-nasm-err.o nasm-sys.o
 # build spitbol using nasm, build spitbol using as.
 # link spitbol with static linking
 spitbol: $(OBJS) $(NOBJS)
-	$(CC) $(LDOPTS)  $(OBJS) $(NOBJS) $(LMOPT) -ospitbol
+	$(CC) $(LDOPTS)  $(OBJS) $(NOBJS) $(LMOPT) -static -ospitbol
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS) $(NOBJS)

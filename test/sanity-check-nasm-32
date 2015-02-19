@@ -8,8 +8,8 @@
 # being introduced, the first two may differ, but the second and third should always agree.
 #
 rm tbol.*
-echo "start 64-bit sanity test for nasm"
-cp	./bin/spitbol.unix_64 tbol
+echo "start 32-bit sanity test for nasm"
+cp	./bin/spitbol.unix_32 tbol
 make clean>/dev/null
 make 		BASEBOL=./tbol
 mv s.lex tbol.lex.0
