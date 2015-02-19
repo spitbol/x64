@@ -1,0 +1,39 @@
+
+	&anchor = &trim = 1
+loop	line = input	:f(end)
+	output = 'mv ' line '.spt  ' line '.sbl' :(loop)
+end
+arcget
+arcput
+args
+cc
+cfreq
+chars
+copy
+c
+def
+d
+dt
+en
+enum
+equ
+e
+float
+fmt
+g
+hello
+hi
+host
+hs
+lower
+map-x32
+map-x64
+module
+op
+reverse
+rev
+save
+sv
+tbl
+trim
+uc

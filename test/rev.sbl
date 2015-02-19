@@ -1,0 +1,39 @@
+	optab = table()
+	&anchor = &trim = 1
+	optab['MOV'] = 1
+	optab['ADD'] = 1
+	optab['SUB'] = 1
+*	optab['aov'] = 1
+	optab['ORB'] = 1
+	optab['ANB'] = 1
+	optab['XOB'] = 1
+				:(loop)
+copy
+ 	output = line
+loop
+	line = input				:f(finis)
+	lines = lines + 1
+	ident(line)				:s(copy)
+	line '*'				:s(copy)
+	line '{'				:s(block)
+	line ? len(7) . p1 len(3) . opc '  ' break(',') . a1 ',' break(' ') . a2 ' ' rem . rest :f(stmt1)
+	ident(optab[opc])			:s(copy)
+	output = p1 opc '  ' a2 ',' a1 ' ' rest
+						:(loop)
+stmt1
+*	look for operation with no trailing comment
+	line ? len(7) . p1 len(3) . opc '  ' break(',') . a1 ',' rem . a2 :f(copy)
+	ident(optab[opc])			:s(copy)
+*	output = 'no comment'
+*	output = 'old' char(9) line
+*	output = 'new ' char(9) p1 opc '  ' a2 ',' a1 
+	output = p1 opc '  ' a2 ',' a1 		:(loop)
+block
+*	here in block comment, just copy until closer seen
+ 	output = line
+bloop
+	line = input				:f(finis)
+	line '}'				:f(block)s(copy)
+
+finis
+end

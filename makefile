@@ -69,8 +69,8 @@ NASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
 endif
 
 # tools for processing Minimal source file.
-LEX=	lex.spt
-ERR=    err.spt
+LEX=	lex.sbl
+ERR=    err.sbl
 
 # implicit rule for building objects from C files.
 ./%.o: %.c
@@ -131,13 +131,13 @@ bootbol:
 	$(CC) $(LDOPTS)  $(OBJS) $(LMOPT) -obootbol
 
 gas.h:	gas.h.r
-	$(BASEBOL) -u $(TARGET) r.spt <gas.h.r >gas.h
+	$(BASEBOL) -u $(TARGET) r.sbl <gas.h.r >gas.h
 
 s.lex: s.min s.cnd $(LEX)
 	 $(BASEBOL) -u $(TARGET) $(LEX)
 
 gas.hdr: gas.hdr.r 
-	$(BASEBOL) -u $(TARGET) r.spt <gas.hdr.r >gas.hdr
+	$(BASEBOL) -u $(TARGET) r.sbl <gas.hdr.r >gas.hdr
 
 s-gas-err.gas: s.cnd $(ERR) s-gas.gas
 	$(BASEBOL) -u $(TARGET)_gas -1=s-gas.err -2=s-gas-err.gas $(ERR)
@@ -145,15 +145,15 @@ s-gas-err.gas: s.cnd $(ERR) s-gas.gas
 s-gas-err.o: s-gas-err.gas s-gas.gas
 	$(GAS) $(GASOPTS) -os-gas-err.o s-gas-err.gas
 
-s-gas.gas: s.lex $(VHDRS) gas.spt gas.hdr gas.h
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.tmp -3=s-gas.err -4=gas.hdr	gas.spt
-	$(BASEBOL) -u $(TARGET) r.spt <s-gas.tmp >s-gas.gas
+s-gas.gas: s.lex $(VHDRS) gas.sbl gas.hdr gas.h
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.tmp -3=s-gas.err -4=gas.hdr	gas.sbl
+	$(BASEBOL) -u $(TARGET) r.sbl <s-gas.tmp >s-gas.gas
 
 s-gas.o: s-gas.gas
 	$(GAS) $(GASOPTS) -os-gas.o s-gas.gas
 
 gas-sys.gas: gas-sys.gas.r s.lex 
-	$(BASEBOL) -u $(TARGET) r.spt <gas-sys.gas.r >gas-sys.gas
+	$(BASEBOL) -u $(TARGET) r.sbl <gas-sys.gas.r >gas-sys.gas
 
 gas-sys.o: gas-sys.gas gas.h
 	$(GAS) $(GASOPTS) -ogas-sys.o gas-sys.gas
@@ -161,8 +161,8 @@ gas-sys.o: gas-sys.gas gas.h
 nasm-sys.o: nasm-sys.nasm
 	$(NASM) $(NASMOPTS) -onasm-sys.o nasm-sys.nasm
 
-s-nasm.nasm: s.lex $(VHDRS) nasm.spt
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-nasm.nasm -3=s-nasm.err	nasm.spt
+s-nasm.nasm: s.lex $(VHDRS) nasm.sbl
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-nasm.nasm -3=s-nasm.err	nasm.sbl
 
 s-nasm.o: s-nasm.nasm
 	$(NASM) $(NASMOPTS) -os-nasm.o s-nasm.nasm
@@ -188,8 +188,8 @@ clean:
 
 z:
 	nm -n s.o >s.nm
-	$(BASEBOL) map-$(WS).spt <s.nm >s.dic
-	$(BASEBOL) z.spt <ad >ae
+	$(BASEBOL) map-$(WS).sbl <s.nm >s.dic
+	$(BASEBOL) z.sbl <ad >ae
 
 sclean:
 # clean up after sanity-check

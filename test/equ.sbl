@@ -1,0 +1,55 @@
+*	generate enum for list of SPITBOL accessible values
+	tab = char(9)
+loop
+	name = input		:f(end)
+	output =  name  tab 'equ ' lpad(count,2)
+	count = count + 1			:s(loop)
+end
+B_EFC
+B_ICL
+B_RCL
+B_SCL
+B_VCT
+B_XNT
+B_XRT
+C_AAA
+CSWFL
+C_YYY
+DFFNC
+DNAMB
+DNAMP
+FLPRT
+FLPTR
+G_AAA
+GBCNT
+GTCEF
+HEADV
+HSHTB
+ID1
+ID2BLK
+INPBUF
+KVCOM
+KVDMP
+KVFTR
+KVPFL
+KVSTN
+LOWSPMIN19
+MXLEN
+PMHBS
+POLCT
+R_COD
+R_FCB
+S_AAA
+STAGE
+STATB
+STATE
+STBAS
+STMCS
+STMCT
+S_YYY
+TICBLK
+TIMSX
+TSCBLK
+TTYBUF
+TYPET
+W_YYY

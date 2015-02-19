@@ -1,0 +1,46 @@
+
+	&trim = 1
+	&anchor = 0
+ ops = 
+. 'flc '
+. 'add adi adr anb aov atn '
+. 'bod bev '
+. 'bct beq bge bgt '
+. 'bhi ble blo '
+. 'blt bne bnz brn '
+. 'bri bsw btw '
+. 'bze ceq '
+. 'chk chp cmb cmc cne cos csc ctb '
+. 'ctw cvd cvm dac dbc dca dcv '
+. 'def dic drc dtc dvi dvr ejc '
+. 'else end enp ent equ '
+. 'erb err esw etx exi exp fi '
+. 'ica icp icv ieq if iff ige '
+. 'igt ile ilt ine ino inp '
+. 'inr iov itr jsr lch lct lcp '
+. 'lcw ldi ldr lei lnf lsh lsx mcb '
+. 'mfi mli mlr mnz mov mti '
+. 'mvc mvw mwb ngi ngr nzb '
+. 'orb plc ppm prc psc req '
+. 'rge rgt rle rlt rmi rne rno '
+. 'rov rsh rsx rti rtn sbi '
+. 'sbr sch scp sec sin sqr ssl sss '
+. 'sti str sub tan then trc ttl '
+. 'undef wtb xob zer zgb zrb ' 
+
+* output = ops
+loop
+  ops break(' ') . opc span(' ') =		:f(finis)
+  output = '* '  '"opc"'
+  c = "  line  "
+  c = c " any(' .,') . sep1 "
+  c = c " '" opc "'"
+  c =  c  " any(' .,') . sep2 "
+  c = c " =  sep1 " "'{'" " '" opc "' "  "'}'" sep2
+  output = c
+*    output = " any(' .,') . sep1 " opc 
+*+    " any(' ,.') . sep2 "  =  " pre sep1 '{' "  opc " '}'" sep2
+	:(loop)
+finis
+end
+ 

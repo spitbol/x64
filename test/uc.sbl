@@ -1,0 +1,13 @@
+ S = ''
+ LOW = 63; HIGH = 126;* ASCII
+ LOW = 1040; HIGH = 1104;* CYRILLIC
+ LOW = 1424; HIGH = 1524;* HEBREW
+
+ I = LOW
+LOOP
+ S = S CHAR(I)
+ LE(I = I + 1, HIGH)		:S(LOOP)
+ OUTPUT =  S
+ OUTPUT =  SIZE(S) 
+ OUTPUT = I
+END
