@@ -379,7 +379,6 @@ restore_regs:
 #   the order of entries here must correspond to the order of
 #   calltab entries in the inter assembly language module.
 
-.ifdef CALLTAB
 	.set	calltab_relaj,0
 	.set	calltab_relcr,1
 	.set	calltab_reloc,2
@@ -394,7 +393,6 @@ restore_regs:
 	.set	calltab_dtype,11
 	.set	calltab_enevs,12
 	.set	calltab_engts,13
-.endif
 
 
 startup:

@@ -1,4 +1,5 @@
 # copyright 1987-2012 robert b. k. dewar and mark emmer.
+
 # copyright 2012-2015 david shields
 #
 # this file is part of macro spitbol.
@@ -15,240 +16,206 @@
 #
 #     you should have received a copy of the gnu general public license
 #     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
-#
 
-	.att_syntax
+	.include	"gas.h"
 
-        .data
+	.set	os,	unix	# default
+	.set	ws,64	# default
 
-	.extern	osisp
-	.extern	compsp
-	.extern	save_regs
-	.extern	restore_regs
-	.extern	_rc_
-	.extern	reg_fl
-	.extern	reg_w0
-	.extern	rcode
-	.extern	ctbw_r
-	.extern	ctbw_v
-	.extern	ctb_
-	.extern	ctw_
+.ifdef	osx_64
+	.set	os,osx
+#	.set	osx
+	.set	ws,64
+#	default	rel		# use rip addressing
+.endif
 
-	.global	mxint
+.ifdef	unix_32
+	.set	os,unix
+#	.set	unix
+	.set	ws,32
+.endif
 
-	.extern	it
-	.extern	it_
-	.extern	it_cp
-	.extern	it_xl
-	.extern	it_xr
-	.extern	it_xs
-	.extern	it_wa
-	.extern	it_wb
-	.extern	it_wc
-	.extern	it_w0
-	.extern	it_it
-	.extern	it_id
-	.extern	it_de
-	.extern	it_0
-	.extern	it_1
-	.extern	it_2
-	.extern	it_3
-	.extern	it_4
-	.extern	it_arg
-	.extern	it_num
+.ifdef	unix_64
+	.set	os,unix
+#	.set	unix
+	.set	ws,64
+.endif
 
-	.global	start
+.ifc	ws,32
+#	.set	cfp_b,4
+	.set	cfp_b_m1,3
+	.set	log_cfp_b,2
+	.set	cfp_c_val,4
+	.set	log_cfp_c,2
+	.set	cfp_m_,2147483647
+#	.set	cfp_n_,32
 
-	.extern	_rc_
+	.set	lods_b,lodsb
+	.set	lods_w,lodsd
+	.set	movs_b,movsb
+	.set	movs_w,movsd
+	.set	stos_b,stosb
+	.set	stos_w,stosd
+	.set	cmps_b,cmpsb
 
-#
-#   table to recover type word from type ordinal
-#
+	.set	cdq,cdq	# sign extend (32 bits)
+.else
+#	.set	cfp_b,8
+	.set	cfp_b_m1,7
+	.set	log_cfp_b,3
+	.set	log_cfp_c,3
+	.set	d_real,dq
+	.set	cfp_c_val,8
+	.set	log_cfp_c,3
+	.set	cfp_m_,9223372036854775807
+#	.set	cfp_n_,64
 
-	.global	typet
+	.set	lods_w,lodsq
+	.set	lods_b,lodsb
+	.set	movs_b,movsb
+	.set	movs_w,movsq
+	.set	stos_b,stosb
+	.set	stos_w,stosq
+	.set	cmps_b,cmpsb
 
-        D_WORD	b_art   # arblk type word - 0
-        D_WORD	b_cdc   # cdblk type word - 1
-        D_WORD	b_exl   # exblk type word - 2
-        D_WORD	b_icl   # icblk type word - 3
-        D_WORD	b_nml   # nmblk type word - 4
-        D_WORD	p_aba   # p0blk type word - 5
-        D_WORD	p_alt   # p1blk type word - 6
-        D_WORD	p_any   # p2blk type word - 7
-# next needed only if support real arithmetic cnra
-#       D_WORD	b_rcl   # rcblk type word - 8
-        D_WORD	b_scl   # scblk type word - 9
-        D_WORD	b_sel   # seblk type word - 10
-        D_WORD	b_tbt   # tbblk type word - 11
-        D_WORD	b_vct   # vcblk type word - 12
-        D_WORD	b_xnt   # xnblk type word - 13
-        D_WORD	b_xrt   # xrblk type word - 14
-        D_WORD	b_bct   # bcblk type word - 15
-        D_WORD	b_pdt   # pdblk type word - 16
-        D_WORD	b_trt   # trblk type word - 17
-        D_WORD	b_bft   # bfblk type word   18
-        D_WORD	b_cct   # ccblk type word - 19
-        D_WORD	b_cmt   # cmblk type word - 20
-        D_WORD	b_ctt   # ctblk type word - 21
-        D_WORD	b_dfc   # dfblk type word - 22
-        D_WORD	b_efc   # efblk type word - 23
-        D_WORD	b_evt   # evblk type word - 24
-        D_WORD	b_ffc   # ffblk type word - 25
-        D_WORD	b_kvt   # kvblk type word - 26
-        D_WORD	b_pfc   # pfblk type word - 27
-        D_WORD	b_tet   # teblk type word - 28
-#
-#   table of minimal entry points that can be dded from c
-#   via the minimal function (see inter.asm).
-#
-#   note that the order of entries in this table must correspond
-#   to the order of entries in the call enumeration in osint.h
-#   and osint.inc.
-#
-	.global calltab
-calltab:
-        D_WORD	relaj
-        D_WORD	relcr
-        D_WORD	reloc
-        D_WORD	alloc
-        D_WORD	alocs
-        D_WORD	alost
-        D_WORD	blkln
-        D_WORD	insta
-        D_WORD	rstrt
-        D_WORD	start
-        D_WORD	filnm
-        D_WORD	dtype
-#       D_WORD	enevs #  engine words
-#       D_WORD	engts #   not used
-	.global	b_efc
-	.global	b_icl
-	.global	b_rcl
-	.global	b_scl
-	.global	b_vct
-	.global	b_xnt
-	.global	b_xrt
-	.global	c_aaa
-	.global	c_yyy
-	.global	dnamb
-	.global	cswfl
-	.global	dnamp
-	.global	flprt
-	.global	flptr
-	.global	g_aaa
-	.global	gbcnt
-	.global	gtcef
-	.global	headv
-	.global	hshtb
-	.global	kvstn
-	.global	kvdmp
-	.global	kvftr
-	.global	kvcom
-	.global	kvpfl
-	.global	mxlen
-	.global	polct
-	.global	s_yyy
-	.global	s_aaa
-	.global	stage
-	.global	state
-	.global	stbas
-	.global	statb
-	.global	stmcs
-	.global	stmct
-	.global	timsx
-	.global	typet
-	.global	pmhbs
-	.global	r_cod
-	.global	r_fcb
-	.global	w_yyy
-	.global	end_min_data
+	.set	cdq,cqo	# sign extend (64 bits)
 
-	.extern	adr_
-	.extern	atn_
-	.extern	chp_
-	.extern	cos_
-	.extern	cpr_
-	.extern	dvr_
-	.extern	etx_
-	.extern	itr_
-	.extern	ldr_
-	.extern	lnf_
-	.extern	mlr_
-	.extern	ngr_
-	.extern	ovr_
-	.extern	sbr_
-	.extern	sin_
-	.extern	str_
-	.extern	sqr_
-	.extern	tan_
+.endif
 
-	.extern	reg_cp
-
-	.extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
-
-	.macro	chk_	
-	.extern	chk__	
-	call	chk__
+	.macro	d_word	val
+.ifc	ws,32
+	.long	\val
+.else
+	.quad	\val
+.endif
 	.endm
 
-	.extern	cvd__
+#	flags
+	.set	flag_of,0x80
+	.set	flag_cf,0x01
+	.set	flag_ca,0x40
 
-	.macro	cvd_
-	call	cvd__
-	.endm
+.ifc	os,osx
+# redefine symbols needed by C to account for leading _ inserted by C compiler on osx
+#	.set	b_icl,_b_icl
+#	.set	b_scl,_b_scl
+#	.set	b_xnt,_b_xnt
+#	.set	b_xrt,_b_xrt
+#	.set	c_aaa,_c_aaa
+#	.set	c_yyy,_c_yyy
+#	.set	dnamb,_dnamb
+#	.set	dnamp,_dnamp
+#	.set	error	,_errors
+#	.set	flprt,_flprt
+#	.set	flptr,_flptr
+#	.set	g_aaa,_g_aaa
+#	.set	get_fp,_get_fp
+#	.set	gtcef,_gtcef
+#	.set	hasfpu,_hasfpu
+#	.set	headv,_headv
+#	.set	hshtb,_hshtb
+#	.set	id1blk,_id1blk
+#	.set	id2blk,_id2blk
+#	.set	inf,_inf
+#	.set	inpbuf,_inpbuf
+#	.set	minimal,_minimal
+#	.set	minimal_id,_minimal_id
+#	.set	phrases,_phrases
+#	.set	pmhbs,_pmhbs
+#	.set	polct,_polct
+#	.set	r_fcb,_r_fcb
+#	.set	reg_block,_reg_block
+#	.set	reg_cp,_reg_cp
+#	.set	reg_xl,_reg_xl
+#	.set	reg_xr,_reg_xr
+#	.set	reg_xs,_reg_xs
+#	.set	reg_w0,_reg_w0
+#	.set	reg_wa,_reg_wa
+#	.set	reg_wb,_reg_wb
+#	.set	reg_wc,_reg_wc
+#	.set	reg_ia,_reg_ia
+#	.set	reg_fl,_reg_fl
+#	.set	reg_ra,_reg_ra
+#	.set	reg_rp,_reg_rp
+#	.set	reg_size,_reg_size
+#	.set	restart,_restart
+#	.set	s_aaa,_s_aaa
+#	.set	s_yyy,_s_yyy
+#	.set	startup,_startup
+#	.set	state,_state
+#	.set	stbas,_stbas
+#	.set	ticbl,	_ticblk
+#	 .set	tscblk,_tscblk
+#	.set	ttybuf,_ttybuf
+#	.set	w_yyy,_w_yyy
+#	.set	i_adi,_i_adi
+#	.set	i_cvd,_i_cvd
+#	.set	i_dvi,_i_dvi
+#	.set	i_mli,_i_mli
+#	.set	i_ngi,_i_ngi
+#	.set	i_rmi,_i_rmi
+#	.set	f_adr,_f_adr
+#	.set	f_atn,_f_atn
+#	.set	f_chk,_f_chk
+#	.set	f_chp,_f_chp
+#	.set	f_cos,_f_cos
+#	.set	f_cpr,_f_cpr
+#	.set	f_dvr,_f_dvr
+#	.set	f_etx,_f_etx
+#	.set	f_itr,_f_itr
+#	.set	f_ldr,_f_ldr
+#	.set	f_lnf,_f_lnf
+#	.set	f_mlr,_f_mlr
+#	.set	f_ngr,_f_ngr
+#	.set	f_rti,_f_rti
+#	.set	f_sbr,_f_sbr
+#	.set	f_sin,_f_sin
+#	.set	f_sqr,_f_sqr
+#	.set	f_str,_f_str
+#	.set	f_tan,_f_tan
+#	.set	lmodstk,_lmodstk
+#	.set	outptr,_outptr
+#	.set	rereloc,_rereloc
+#	.set	stacksiz,_stacksiz
+#	.set	startbrk,_startbrk
+#	.set	swcoup,_swcoup
+#	.set	zysax,_zysax
+#	.set	zysaz,_zysaz
+#	.set	zysbs,_zysbs
+#	.set	zysbx,_zysbx
+#	.set	zysdc,_zysdc
+#	.set	zysdm,_zysdm
+#	.set	zysdt,_zysdt
+#	.set	zysea,_zysea
+#	.set	zysef,_zysef
+#	.set	zysej,_zysej
+#	.set	zysem,_zysem
+#	.set	zysen,_zysen
+#	.set	zysep,_zysep
+#	.set	zysex,_zysex
+#	.set	zysfc,_zysfc
+#	.set	zysgc,_zysgc
+#	.set	zyshs,_zyshs
+#	.set	zysid,_zysid
+#	.set	zysif,_zysif
+#	.set	zysil,_zysil
+#	.set	zysin,_zysin
+#	.set	zysio,_zysio
+#	.set	zysld,_zysld
+#	.set	zysmm,_zysmm
+#	.set	zysmx,_zysmx
+#	.set	zysou,_zysou
+#	.set	zyspi,_zyspi
+#	.set	zyspl,_zyspl
+#	.set	zyspp,_zyspp
+#	.set	zyspr,_zyspr
+#	.set	zysrd,_zysrd
+#	.set	zysri,_zysri
+#	.set	zysrw,_zysrw
+#	.set	zysst,_zysst
+#	.set	zystm,_zystm
+#	.set	zystt,_zystt
+#	.set	zysul,_zysul
+#	.set	zysxi,_zysxi
+.endif
 
-	.macro	icp_
-	mov	reg_cp,W0
-	add	cfp_b,W0
-	mov	W0,reg_cp
-	.endm
-
-	.macro	ino_	val
-	mov	reg_fl,%al
-	or	%al,%al
-	jno	\val
-	.endm
-
-	.macro	iov_	val
-	mov	reg_fl,%al
-	or	%al,%al
-	jo	\val
-	.endm
-
-	.extern	f_rti
-
-	.macro	rti_
-	call	f_rti
-	mov	(reg_ia),IA
-	.endm
-
-	.macro	lcp_	val
-	mov	\val,W0
-	mov	W0,reg_cp
-	.endm
-
-	.macro	lcw_	val
-	mov	reg_cp,W0		# load address of code word
-	mov	(W0),W0			# load code word
-	mov	W0,\val
-	mov	reg_cp,W0		# load address of code word
-	add	cfp_b,W0
-	mov	W0,reg_cp
-	.endm
-
-	.macro	rno_	val
-	mov	reg_fl,%al
-	or	%al,%al
-	je	\val
-	.endm
-
-	.macro	rov_	val
-	mov	reg_fl,%al
-	or	%al,%al
-	jne	\val
-	.endm
-
-	.macro	scp_	val
-	mov	(reg_cp),W0
-	mov	W0,\val
-	.endm
