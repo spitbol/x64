@@ -100,7 +100,7 @@ OBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	int.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
-	trypath.o wrtaout.o zz.o getargs.o main.o 
+	trypath.o wrtaout.o zz.o getargs.o it.o main.o 
 
 GOBJS=s-gas.o s-gas-err.o gas-sys.o
 NOBJS=s-nasm.o s-nasm-err.o nasm-sys.o
@@ -136,7 +136,7 @@ gas.h:	gas.h.r
 s.lex: s.min s.cnd $(LEX)
 	 $(BASEBOL) -u $(TARGET) $(LEX)
 
-gas.hdr: gas.hdr.r gas.h
+gas.hdr: gas.hdr.r 
 	$(BASEBOL) -u $(TARGET) r.spt <gas.hdr.r >gas.hdr
 
 s-gas-err.gas: s.cnd $(ERR) s-gas.gas
@@ -145,17 +145,17 @@ s-gas-err.gas: s.cnd $(ERR) s-gas.gas
 s-gas-err.o: s-gas-err.gas s-gas.gas
 	$(GAS) $(GASOPTS) -os-gas-err.o s-gas-err.gas
 
-s-gas.gas: s.lex $(VHDRS) gas.spt gas.hdr
+s-gas.gas: s.lex $(VHDRS) gas.spt gas.hdr gas.h
 	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.tmp -3=s-gas.err -4=gas.hdr	gas.spt
 	$(BASEBOL) -u $(TARGET) r.spt <s-gas.tmp >s-gas.gas
 
 s-gas.o: s-gas.gas
 	$(GAS) $(GASOPTS) -os-gas.o s-gas.gas
 
-gas-sys.gas: gas-sys.gas.r s.lex
+gas-sys.gas: gas-sys.gas.r s.lex 
 	$(BASEBOL) -u $(TARGET) r.spt <gas-sys.gas.r >gas-sys.gas
 
-gas-sys.o: gas-sys.gas
+gas-sys.o: gas-sys.gas gas.h
 	$(GAS) $(GASOPTS) -ogas-sys.o gas-sys.gas
 
 nasm-sys.o: nasm-sys.nasm
@@ -184,7 +184,7 @@ dlfcn.o: dlfcn.h
 install:
 	sudo cp ./bin/spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o s.lex s.tmp [rs]-* ./spitbol gas.inc gas.h gas-sys.gas
+	rm -f $(OBJS) *.o s.lex s.tmp [rs]-* ./spitbol gas.hdr gas.h gas-sys.gas
 
 z:
 	nm -n s.o >s.nm

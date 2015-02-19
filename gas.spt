@@ -528,9 +528,11 @@ regmap.done
 
 * copy header (which follows 'end' statement in this file) to output
 	output = ~input(.hdrfile,4) 'cannot open header file'	:s(end)
+	outline('# start gas.hdr copy')
 hdr.copy line = hdrfile				:f(hdr.end)
 	outline(line)				:(hdr.copy)
 hdr.end
+	outline('# end gas.hdr copy')
 	endfile(4)
 	nlines = 0
 hdr.done

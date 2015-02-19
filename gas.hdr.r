@@ -19,6 +19,7 @@
 
 	.att_syntax
 
+	.include	"gas.h"
         .data
 
 	.extern	osisp

@@ -1006,6 +1006,7 @@ re4:	mov	stbas,W0
         call	minimal			# no return
 
 	.global	it_
+	.extern	it
 it_:
 	pushf
 	call	save_regs

@@ -17,8 +17,6 @@
 #     you should have received a copy of the gnu general public license
 #     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 
-	.include	"gas.h"
-
 	.set	os,	unix	# default
 	.set	ws,64	# default
 
@@ -81,14 +79,6 @@
 	.set	cdq,cqo	# sign extend (64 bits)
 
 .endif
-
-	.macro	d_word	val
-.ifc	ws,32
-	.long	\val
-.else
-	.quad	\val
-.endif
-	.endm
 
 #	flags
 	.set	flag_of,0x80
