@@ -1,5 +1,5 @@
 # SPITBOL makefile using tcc
-host?=unix_32
+host?=unix_64
 HOST=$(host)
 
 DEBUG:=$(debug)
@@ -15,7 +15,7 @@ GAS:=$(gas)
 os?=unix
 OS:=$(os)
 
-ws?=32
+ws?=64
 WS=$(ws)
 
 asm?=nasm
