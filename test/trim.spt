@@ -1,3 +1,0 @@
-loop
-  output = trim(input)	:s(loop)
-end
