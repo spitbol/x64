@@ -65,6 +65,7 @@
 *  keyword initialization
 
 	&anchor = &trim	= &dump = 1
+	&dump = 3
 	&stlimit = 10000000
 	
 
@@ -143,7 +144,8 @@ option.bad
 * here if unknown option
 
 	output = "error: unknown option '" option "', translation ends."	
-	&dump = 0				:(end)
+	&dump = 3				
+						:(end)
 
 option.unix.32
 	os = 'unix'; 	ws = '32'		:(option.next)
@@ -454,11 +456,12 @@ flgs2
 	ismem<12> = 1; ismem<13> = 1; ismem<14> = 1
 	ismem<15> = 1
 
+
 *  regmap maps minimal register name to target machine
 *  register/memory-location name.
 
 	regmap = table(30)
-	s = 'xlXLxrXRxsXTxtXTwaWAwbWBwcWCw0W0iaIAcpCP'
+	s = 'xlXLxrXRxsXSxtXTwaWAwbWBwcWCw0W0iaIAcpCP'
 regmap.loop
 	s len(2) . min len(2) . reg =		:f(regmap.done)
 	regmap[min] = reg			:(regmap.loop)
@@ -536,6 +539,16 @@ hdr.end
 	endfile(4)
 	nlines = 0
 hdr.done
+
+*  read in .equ file with value for symbols defined by equ opcode (this is really only needed for gas)
+	output = ~input(.equfile,6) 'cannot open equ file'	:s(end)
+	equ_value = table(1000)
+equ.copy
+	line = equfile				:f(equ.end)
+	line break(' ') . key ' ' rem . val
+	equ_value[key] = val			:(equ.copy)
+equ.end
+	endfile(6)
 
 *  read in pub file if it exists.  this contains a list of symbols to
 *  be declared public when encountered.
@@ -634,7 +647,7 @@ genaop
 genbop
 	bstmts[bstmts.n = bstmts.n + 1] = stmt	:(return)
 
--stitl genla(prefix)
+-stitl genlab(prefix)
 *  generate unique labels for use in generated code
 genlab	genlab = (differ(prefix) prefix, '') '_' lpad(genlabels = genlabels + 1,4,'0') :(return)
 
@@ -649,26 +662,26 @@ genop   genopl(,gopc,gop1,gop2,gop3)            :(return)
 
 -stitl	gensh(opc,reg,val)
 gensh
-*  gnu as only supports shifts using %cl register, which corresponds to WA.
-*  save WA on stack, move src to W0, set %cl to shift count, do the shift,
-*  then restore WA from stack unless it is the result register.
-
+*  if the shift count is constant, then just do the shift. Otherwise, save WA, which corresponds
+*  to %cl, load the shift count to that register, do the shift. Then restore WA, unless it was the
+*  register to be shifted
+	opc = (ident(opc,'lsh') 'sal', 'sar')
+*  get value if shift count is constant defined in equ statement
+	val = differ(equ_value[val]) equ_value[val]
+	integer(val) genop(opc, '$' val, reg)	:s(return)
+	ident(reg,reg.wa)			:s(gensh.wa)
+*  here if register is NOT WA, so push/restore WA
 	genop('push',reg.wa)
-*  turn integer shift count into literal
-	val = integer(val) '$' val
-	genop('mov',val,w0)
-*  load count to WA, setting %cl to the count
-	genop('mov',reg,reg.wa)
-	genop((ident(opc,'lsh') 'sal', 'sar'),'%cl',w0)
-*  if result is WA, then pop stack value that is no longer needed
-	ident(reg,reg.wa)	genop('pop',w0)	:s(return)
-*  otherwise, move result from W0 to target register, restore Wa
-	genop('mov',w0,reg)
+	genop('mov',val,reg.wa)
+	genop(opc, '%cl',reg)
 	genop('pop',reg.wa)			:(return)
-
-	genop('pop', (ident(reg,reg.wa) reg.w0, reg))
+reg.wa
+*  here if shifting WA. Move to W0, then use WA to get shift count, shift W0, and move result back to WA
+	mov(reg.wa.reg.w0)
+	mov(val,reg.wa)
+	genop(opc,'%cl',reg.w0)
+	genop('mov',reg.w0,reg.wa)
 						:(return)
-
 -stitl getarg(iarg)base,disp,indx,scale
 getarg
 *	address for use in 'lea' instruction.
@@ -722,12 +735,14 @@ getarg.c.11
 getarg.c.12
 getarg.c.13
 	txt break('(') . disp '(' len(2) . indx
-	scale = cfp_b				:(getarg.mem)
+	disp = cfp_b * equ_value[disp]
+	base = indx
+	indx = 					:(getarg.mem)
 
 *  name(x), where name is in working section -- memory reference
 getarg.c.14
 getarg.c.15
-	txt break('(') . disp '(' len(2) . indx		:(getarg.mem)
+	txt break('(') . disp '(' len(2) . indx	:(getarg.mem)
 
 * signed integer
 getarg.c.16 getarg = txt			:(getarg.done)
@@ -737,11 +752,11 @@ getarg.c.17 getarg = txt			:(getarg.done)
 
 *  =dlbl
 getarg.c.18	
-	getarg = '$' substr(txt,2)			:(getarg.done)
+	getarg = '$' substr(txt,2)		:(getarg.done)
 	
 *  *dlbl
 getarg.c.19
-	getarg  = '$'  cfp_b '*' substr(txt,2)		:(getarg.done)
+	getarg  = '$'  cfp_b '*' substr(txt,2)	:(getarg.done)
 
 *  =name (data section)
 getarg.c.20
@@ -754,12 +769,16 @@ getarg.c.21
 *  =name (program section)
 getarg.c.22
 
-       getarg = '$' substr(txt,2)			:(getarg.done)
+       getarg = '$' substr(txt,2)		:(getarg.done)
 
 
-*  pnam, eqop
+*  pnam
 getarg.c.23
-getarg.c.24 getarg = txt			:(getarg.done)
+	getarg = txt				:(getarg.done)
+
+*  eqop
+getarg.c.24 getarg = '$(' equ_value[txt] ')'	:(getarg.done)
+
 * ptyp, text, dtext
 getarg.c.25
 getarg.c.26
@@ -768,13 +787,10 @@ getarg.done
 	it_suspend = 0
 						:(return)
 getarg.mem
-*	generate memory reference. It is just displacement if no index register
-
+	getarg = differ(base) disp '(' regmap[base] ')'		:s(getarg.done)	
 	getarg = ident(indx) disp 		:s(getarg.done)
-
-	getarg = ident(scale) '(' regmap[indx] ')'	:s(getarg.done)
-
-	getarg = disp '(,' regmap[indx] ',' scale ')'	:(getarg.done)
+	getarg = ident(scale) ident(disp) '(' regmap[indx] ')'	:s(getarg.done)
+	getarg = differ(disp) disp '(,' regmap[indx] ',' scale ')'	:(getarg.done)
 
 -stitl getadr(iarg)
 getadr
@@ -1693,7 +1709,12 @@ g.zgb
 g.zzz
  	genop('zzz',getarg(i1))			:(opdone)
 
-g.wtb   gensh('shl',getarg(i1),log_cfp_b)	
+g.wtb   
+*  gas flaky on doing shifts, so just do repeated adds
+	reg = getarg(i1)
+	genop('add',reg,reg)
+	genop('add',reg,reg)
+	ne(ws,32) genop('add',reg,reg)
 						:(opdone)
 
 g.btw   gensh('shr',getarg(i1),log_cfp_b)	:(opdone)
@@ -1861,7 +1882,10 @@ g.dtc.1
 						:(opdone)
 g.dbc   genopl(thislabel,d_word,getarg(i1))
 						:(opdone)
-g.equ   genop('.set',thislabel,i.text(i1))
+
+g.equ   
+*  generate eqv instruction, even though cannot use it without getting assembly error
+	genop('.set',thislabel,i.text(i1))
 						:(opdone)
 g.exp
 	xx = i.text(i1)

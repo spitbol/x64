@@ -48,6 +48,8 @@ CCOPTS:= $(ARCH) $(ITDEF) $(GFLAG)
 LDOPTS:= -lm $(GFLAG) $(ARCH)
 LMOPT:=-lm
 
+GASOPTS= --$(WS)
+
 ifeq ($(OS),unix)
 ELF:=elf$(WS)
 else
@@ -134,7 +136,7 @@ gas.h:	gas.h.r
 	$(BASEBOL) -u $(TARGET) r.sbl <gas.h.r >gas.h
 
 s.lex: s.min s.cnd $(LEX)
-	 $(BASEBOL) -u $(TARGET) $(LEX)
+	 $(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 
 gas.hdr: gas.hdr.r 
 	$(BASEBOL) -u $(TARGET) r.sbl <gas.hdr.r >gas.hdr
@@ -146,7 +148,7 @@ s-gas-err.o: s-gas-err.gas s-gas.gas
 	$(GAS) $(GASOPTS) -os-gas-err.o s-gas-err.gas
 
 s-gas.gas: s.lex $(VHDRS) gas.sbl gas.hdr gas.h
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.tmp -3=s-gas.err -4=gas.hdr	gas.sbl
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.tmp -3=s-gas.err -4=gas.hdr -5=s.lex -6=s.equ	gas.sbl
 	$(BASEBOL) -u $(TARGET) r.sbl <s-gas.tmp >s-gas.gas
 
 s-gas.o: s-gas.gas
@@ -162,7 +164,7 @@ nasm-sys.o: nasm-sys.nasm
 	$(NASM) $(NASMOPTS) -onasm-sys.o nasm-sys.nasm
 
 s-nasm.nasm: s.lex $(VHDRS) nasm.sbl
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-nasm.nasm -3=s-nasm.err	nasm.sbl
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-nasm.nasm -3=s-nasm.err -6=s.equ	nasm.sbl
 
 s-nasm.o: s-nasm.nasm
 	$(NASM) $(NASMOPTS) -os-nasm.o s-nasm.nasm
@@ -184,7 +186,7 @@ dlfcn.o: dlfcn.h
 install:
 	sudo cp ./bin/spitbol /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o s.lex s.tmp [rs]-* ./spitbol gas.hdr gas.h gas-sys.gas
+	rm -f *.o s.lex s.equ [rs]-* ./gasbol ./spitbol gas.hdr gas.h gas-sys.gas 
 
 z:
 	nm -n s.o >s.nm

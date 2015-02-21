@@ -151,13 +151,11 @@ void i_ngi() {
 }
 
 void i_rmi() {
-	if (reg_ia == 0) {
+	if (reg_w0 == 0) {
 		reg_fl = 1;
 	}
 	else {
-		reg_wa = reg_ia % 10;
-		reg_ia = reg_ia / 10;
-		reg_wa = -reg_wa + '0';
+		reg_ia = reg_ia % reg_w0;
 		reg_fl = 0;
 	}
 }

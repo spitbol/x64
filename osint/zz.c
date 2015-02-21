@@ -65,14 +65,14 @@ long off_c_aaa;
 long off_w_yyy;
 char * AT_DESC;
 extern char at1_0;
-void prtnl() {
+void zz_prtnl() {
 	fprintf(stderr,"\n");
 }
-void prtreal(double val) {
+void zz_prtreal(double val) {
 	fprintf(stderr, " %8.3g ", val);
 }
 
-void prtval(long reg) {
+void zz_prtval(long reg) {
 //	if (reg > 32 && reg < 127 ) {
 //		fprintf(stderr," '%c' %4d ", reg, reg);
 //	}
@@ -88,29 +88,29 @@ void prtval(long reg) {
 //		fprintf(stderr," ---------", reg);
 	}
 }
-void prtregr(char * name, double val) {
-	prtreal(val);
+void zz_zz_prtregr(char * name, double val) {
+	zz_prtreal(val);
 	fprintf(stderr," %s",name);
 }
 
-void prtreg(char * name, long val) {
-	prtval(val);
+void zz_prtreg(char * name, long val) {
+	zz_prtval(val);
 	fprintf(stderr," %s",name);
 }
-void prtdif(char* name, long old, long new, long listed)
+void zz_prtdif(char* name, long old, long new, long listed)
 {
 	// print old and new values of named register
 	fprintf(stderr,"%s:", name);
-	prtval(old); fprintf(stderr," -> "); prtval(new);
-	prtnl();
+	zz_prtval(old); fprintf(stderr," -> "); zz_prtval(new);
+	zz_prtnl();
 }
 
-void prtdifr(char* name, double old, double new, long listed)
+void zz_prtdifr(char* name, double old, double new, long listed)
 {
 	// print old and new values of named register
 	fprintf(stderr,"%s:", name);
-	prtreal(old); fprintf(stderr," -> "); prtreal(new);
-	prtnl();
+	zz_prtreal(old); fprintf(stderr," -> "); zz_prtreal(new);
+	zz_prtnl();
 }
 extern long c_aaa;
 extern long w_yyy;
@@ -165,37 +165,37 @@ void zz() {
 
 /* marked changed Minimal registers with "!" to make it easy to search
    backward for last statement that changed a register. */
-		prtnl();
+		zz_prtnl();
 		if (save_xl != last_xl)
-			{ prtdif("XL.esi", last_xl, save_xl, listed); listed += 1; }
+			{ zz_prtdif("XL.esi", last_xl, save_xl, listed); listed += 1; }
 		if (save_xr != last_xr)
-			{ prtdif("XR.edi", last_xr, save_xr, listed); listed += 1; }
+			{ zz_prtdif("XR.edi", last_xr, save_xr, listed); listed += 1; }
 		if (save_w0 != last_w0)
-			{ prtdif("W0.eax", last_w0, save_w0, listed); listed += 1; }
+			{ zz_prtdif("W0.eax", last_w0, save_w0, listed); listed += 1; }
 		if (save_wa != last_wa)
-			{ prtdif("WA.ecx", last_wa, save_wa, listed); listed += 1; }
+			{ zz_prtdif("WA.ecx", last_wa, save_wa, listed); listed += 1; }
 		if (save_wb != last_wb)
-			{ prtdif("WB.ebx", last_wb, save_wb, listed); listed += 1; }
+			{ zz_prtdif("WB.ebx", last_wb, save_wb, listed); listed += 1; }
 		if (save_wc != last_wc)
-			{ prtdif("WC.edx", last_wc, save_wc, listed); listed += 1; }
+			{ zz_prtdif("WC.edx", last_wc, save_wc, listed); listed += 1; }
 		if (save_ra != last_ra)
-			{ prtdifr("RA    ", last_ra, save_ra, listed); listed += 1; }
-		prtnl();
+			{ zz_prtdifr("RA    ", last_ra, save_ra, listed); listed += 1; }
+		zz_prtnl();
 	}
 
-	int prtregs=0;
-	prtregs = 1;
+	int zz_prtregs=0;
+	zz_prtregs = 1;
 
-if (prtregs) {
+if (zz_prtregs) {
 
 		// print register values before the statement was executed
-		prtreg("XL.esi", save_xl);
-		prtreg("XR.edi", save_xr);
+		zz_prtreg("XL.esi", save_xl);
+		zz_prtreg("XR.edi", save_xr);
 		fprintf(stderr, "\n");
-		prtreg("W0.eax", save_w0);
-		prtreg("WA.ecx", save_wa);
-		prtreg("WB.ebx", save_wb);
-		prtreg("WC.edx", save_wc);
+		zz_prtreg("W0.eax", save_w0);
+		zz_prtreg("WA.ecx", save_wa);
+		zz_prtreg("WB.ebx", save_wb);
+		zz_prtreg("WC.edx", save_wc);
 		fprintf(stderr, "\n");
 }
 	// save current register contents.

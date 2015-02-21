@@ -356,11 +356,14 @@
 *  default the parameter string if none present
 *
 	target = (differ(host(0)) host(0), "unix_64_nasm")
-	target break('_') . os len(1) rem . ws
+	target break('_') . os len(1) break('_') . ws len(1) rem  . asm 
+	output = 'target ' target
+	output = 'os ' os '  ws  '  ws '  asm  '  asm
 	parm = "s"
 	filenamc = parm '.cnd'
 	filenami = parm '.min'
 	filenamo = parm '.lex'
+	filename = parm '.equ'
 *
 *  get file name
 *
@@ -391,6 +394,10 @@
 main1	output(.outfile,2,filenamo)		:s(main2)
         output = "cannot open lexeme file: " filenamo  :(end)
 main2
+*	differ(asm,'gas')			:s(main3)
+	output(.equfile,3,filename)		:s(main3)
+        output = "cannot open equ file: " filenamo  :(end)
+main3
 
 *  patterns used by dostmt
 	p.opsk1 = (break(' ') | rem) . argskel
@@ -868,6 +875,8 @@ g.equ
 	num1    = differ(sym1) equates[sym1]
 	num2    = differ(sym2) equates[sym2]
 	val     = (differ(oprtr) eval( num1 ' ' oprtr ' ' num2 ), num1)	:f(g.equ3)
+*	differ(equfile)  equfile  = label ' ' val
+	equfile  = label ' ' val
 g.equ1	equates[label] = val				:(dsgen)
 g.equ2	error("equ operand syntax error")
 g.equ3	error("equ evaluation failed: " num1 ' ' oprtr ' ' num2 ' "' op1 '"' )
