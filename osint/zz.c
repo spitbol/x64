@@ -90,12 +90,12 @@ void zz_prtval(long reg) {
 }
 void zz_zz_prtregr(char * name, double val) {
 	zz_prtreal(val);
-	fprintf(stderr," %s",name);
+	fprintf(stderr," %s\n",name);
 }
 
 void zz_prtreg(char * name, long val) {
 	zz_prtval(val);
-	fprintf(stderr," %s",name);
+	fprintf(stderr," %s\n",name);
 }
 void zz_prtdif(char* name, long old, long new, long listed)
 {
@@ -191,12 +191,10 @@ if (zz_prtregs) {
 		// print register values before the statement was executed
 		zz_prtreg("XL.esi", save_xl);
 		zz_prtreg("XR.edi", save_xr);
-		fprintf(stderr, "\n");
 		zz_prtreg("W0.eax", save_w0);
 		zz_prtreg("WA.ecx", save_wa);
 		zz_prtreg("WB.ebx", save_wb);
 		zz_prtreg("WC.edx", save_wc);
-		fprintf(stderr, "\n");
 }
 	// save current register contents.
 	last_xl = save_xl; last_xr = save_xr; 

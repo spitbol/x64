@@ -93,12 +93,12 @@ void prtval(long reg) {
 }
 void prtregr(char * name, double val) {
 	prtreal(val);
-	fprintf(stderr," %s",name);
+	fprintf(stderr," %s\n",name);
 }
 
 void prtreg(char * name, long val) {
 	prtval(val);
-	fprintf(stderr," %s",name);
+	fprintf(stderr," %s\n",name);
 }
 void prtdif(char* name, long old, long new, long listed)
 {
@@ -190,12 +190,10 @@ if (prtregs) {
 		// print register values before the statement was executed
 		prtreg("XL.esi", save_xl);
 		prtreg("XR.edi", save_xr);
-		fprintf(stderr, "\n");
 		prtreg("W0.eax", save_w0);
 		prtreg("WA.ecx", save_wa);
 		prtreg("WB.ebx", save_wb);
 		prtreg("WC.edx", save_wc);
-		fprintf(stderr, "\n");
 }
 //	}
 	// save current register contents.

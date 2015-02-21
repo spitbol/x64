@@ -97,7 +97,7 @@
 	define('genz()')
 	define('genaop(stmt)')
 	define('genbop(stmt)')
-        define('genlab()')
+        define('genlab(prefix)')
         define('genrip()')
 	define('genop(gopc,gop1,gop2,gop3)')
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
@@ -206,20 +206,20 @@ config.done
 	report('rip', rip_mode)
 	ne(rip_mode) ripinit()
 
-*	z_limit is maximum number of calls to be generated if non-zero
-	z_limit = 0
-*	set z_first non-zero to skip first number of instructions that would generate trace
-	z_first = 1
+*	it_limit is maximum number of calls to be generated if non-zero
+	it_limit = 000
+*	set it_first non-zero to skip first number of instructions that would generate trace
+	it_first = 1
 *	will set in_executable when in part of program where executable
 *	instructions may occur
-	z_exec = 0
+	it_exec = 0
 
-*	z_suspend is set to temporarily disable the trace.
-*	initially set so emit no code until reach code section
-	z_suspend = 0
+*	it_suspend is set nonzero to temporarily disable the instruction trace.
+*	it is initially nonzero so no trace can be emitted until reach code section.
+	it_suspend = 1
 *	set in_skip when should not insert trace code, else assembly errors result.
 *	start with skip on, turn off when see first start of code.
-	z_skip = 1
+	it_skip = 1
 *	skip_on and skip_off are labels indicating the start and end,
 *	respectively, of sections of the code that should not be traced,
 *	usually because they contain a loop instruction that won't
@@ -596,7 +596,7 @@ opnext.1
 	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' '
 .		i.text(i2) ' ' i.text(i3)
 	argerrs = 0
-*	differ(it_trace) ge(sectnow,5) eq(z_suspend) chktrace()
+	differ(it_trace) ge(sectnow,5) eq(it_suspend) chktrace()
 	ge(sectnow,5) chktrace()
 						:($('g.' incode))
 *  here if bad opcode
@@ -647,9 +647,9 @@ genaop
 genbop
 	bstmts[bstmts.n = bstmts.n + 1] = stmt	:(return)
 
--stitl genlab()
+-stitl genlab(prefix)
 *  generate unique labels for use in generated code
-genlab	genlab = 'l_' lpad(genlabels = genlabels + 1,4,'0') :(return)
+genlab	genlab = (differ(prefix) prefix,'')  '_' lpad(genlabels = genlabels + 1,4,'0') :(return)
 
 -stitl genrip()
 *  generate unique labels for use in generated code
@@ -674,6 +674,7 @@ getarg
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
+	it_suspend = 1
 	eq(typ)					:f($(argcase[typ]))
 	getarg = txt				:(arg.done)
 
@@ -756,6 +757,7 @@ arg.c.25
 arg.c.26
 arg.c.27 getarg = txt				:(arg.done)
 arg.done
+	it_suspend = 0
 *	ne(x_trace) outline('; arg ' typ ':' txt   ' -> ' getarg)
 						:(return)
 
@@ -802,8 +804,7 @@ lea.c.15
 -stitl getrip(iarg)
 getrip
 *  return value suitable for use in rip mode (needed for osx). This requires that we
-*  allocate a variable to hold the address,value. This is loaded into w0.
-
+*  allocate a variable to hold the address,value. This is loaded into w0
 	pre = 'm('
 	post = ')'	
 	txt = i.text(iarg)
@@ -962,41 +963,50 @@ outstmt4
 -stitl  chktrace()
 chktrace
 	ident(i_trace)				:s(return)
-	ne(z_suspend)				:s(return)
+	ne(it_suspend)				:s(return)
 	clabel = inlabel
- 	old_z_skip = z_skip
- 	old_z_exec = z_exec
+ 	old_it_skip = z_skip
+ 	old_it_exec = z_exec
  	old_is_exec = is_exec
-	z_skip = ident(inlabel,'s_aaa') 0
+	it_skip = ident(inlabel,'s_aaa') 0
 
 	is_exec = is_executable[incode]
-	z_exec = differ(i_trace)  ident(inlabel, 's_aaa') 1
-	z_exec = differ(i_trace) ge(sectnow,5) 1
+	it_exec = differ(i_trace)  ident(inlabel, 's_aaa') 1
+	it_exec = differ(i_trace) ge(sectnow,5) 1
 
- 	z_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
- 	z_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
+ 	it_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
+ 	it_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
 
-	ne(z_skip)				:s(return)
-	eq(z_exec)				:s(return)
+	ne(it_skip)				:s(return)
+	eq(it_exec)				:s(return)
 	eq(is_exec)				:s(return)
 
 *	ne(in_gcol)				:s(return)
 chktrace.1
-	genz()
-
-genz
 *	no trace if trace has been suspended
-*	output = ne(z_suspend) 'z_suspend ' thisline
-	z_count = z_count + 1
-	gt(z_first) le(z_count,z_first)		:s(return)
-	gt(z_limit)  gt(z_count, z_limit)	:s(return)
 
+*	 only trace at label definition
+*	ident(thislabel)			:s(return)
+
+	it_count = it_count + 1
+
+	gt(it_first) le(it_count,it_first)	:s(return)
+	gt(it_limit)  gt(it_count, it_limit)	:s(return)
 *	only trace an instruction once
 	eq(nlines,nlast)			:s(return)
 	nlast = nlines
 
-	z_desc = '"' replace(thisline,'|',' ') '"'
-	outline(tab 'zzz' tab	z_desc)
+	it_desc = '"' replace(thisline,'|',' ') '"'
+
+	lbl = genlab('it')
+	genop('segment' tab '.data')
+	genopl(lbl ':','d_char',it_desc)
+	genop('d_char','0');* string terminator
+	genop('segment' tab '.text')
+	flush()
+	genop('mov',w0,lbl)
+	genop('mov','m(it_de)',w0)
+	genop('call','it_')
 						:(return)
 
 -stitl prsarg(iarg)
@@ -1015,8 +1025,8 @@ readline readline = infile                      :f(rl02)
 	ident( readline )			:s(readline)
 readline.0
 	leq( substr(readline,1,1 ),';' )       	:f(rl01)
-	z_skip = ident(readline,';z+') 0	:s(readline)
-*	z_skip = ident(readline,';z-') 1	:s(readline)
+	it_skip = ident(readline,';z+') 0	:s(readline)
+*	it_skip = ident(readline,';z-') 1	:s(readline)
 * force skip of full line comments
 	:(readline)
 
@@ -1074,15 +1084,15 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 
 g.flc
 	t1 = (eq(cfp_b,cfp_c) reglow[getarg(i1)], getarg(i1))
-	t2 = genlab()
-*	z_suspend = 1
+	t2 = genlab('flc')
+*	it_suspend = 1
 	genop('cmp',t1,"'A'")
 	genop('jb', t2 )
 	genop('cmp',t1,"'Z'")
 	genop('ja', t2)
 	genop('add',t1,'32')
         genopl(t2 ':')
-*	z_suspend = 0
+*	it_suspend = 0
 						:(opdone)
 
 g.mov
@@ -1139,8 +1149,8 @@ g.bev	t1 = getarg(i1)
 g.brn   genop('jmp',getarg(i1))			:(opdone)
 
 g.bsw	t1 = getarg(i1)
-	t2 = genlab()
-	z_suspend = 1
+	t2 = genlab('bsw')
+	it_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
 	genop('cmp',t1,getarg(i2))
 	genop('jge',getarg(i3))
@@ -1161,7 +1171,7 @@ g.bsw.2
 g.bsw.3
 	genop('segment','.data')
         genopl(t2 ':')
-	z_suspend = 0
+	it_suspend = 0
 						:(opdone)
 
 g.iff   genop('d_word',getarg(i2))              :(opdone)
@@ -1214,13 +1224,13 @@ g.jsr
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
 	eq(jsr_count)				:s(opdone)
-	z_suspend = 1
+	it_suspend = 1
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
 	genop('dec','m(' rcode ')')
 	genop('js',jsr_label_norm)
-	z_suspend = 0
+	it_suspend = 0
 
 *	generate branch around for ppms that will follow
 *	take the branch if normal return (eax==0)
@@ -1247,10 +1257,10 @@ g.ppm
 g.ppm.loop.next
 	genopl(lab_next ':')
  	jsr_count = jsr_count - 1
- 	z_suspend = eq(jsr_count) 0
+ 	it_suspend = eq(jsr_count) 0
 	eq(jsr_count) genopl(jsr_label_norm ':') :(opdone)
 g.ppm.loop
-	lab_next = genlab()
+	lab_next = genlab('ppm')
 	genop('dec','m(' rcode ')' )
 	genop('jns',lab_next)
 	ident(incode,'ppm')			:s(g.ppm.loop.ppm)
@@ -1656,8 +1666,8 @@ g.cmc
 
 g.trc
 	genop('xchg','xl','xr')
-        eq(cfp_b,cfp_c) genopl((t1 = genlab()) ':','movzx',w0,'m_char [xr]')
-        ne(cfp_b,cfp_c) genopl((t1 = genlab()) ':','mov',w0,'m_char [xr]')
+        eq(cfp_b,cfp_c) genopl((t1 = genlab('trc')) ':','movzx',w0,'m_char [xr]')
+        ne(cfp_b,cfp_c) genopl((t1 = genlab('trc')) ':','mov',w0,'m_char [xr]')
 	ne(cfp_b,cfp_c) genop('sal', w0, 'log_cfp_b');* convert char value to byte offset
 	eq(cfp_b,cfp_c) genop('mov','al','[xl+w0]')
 	ne(cfp_b,cfp_c) genop('mov','eax','[xl+w0]')
@@ -1773,13 +1783,13 @@ g.mvc
 	ne(cfp_b,cfp_c) genop('shl', 'wa', 'log_cfp_b')
 	ne(cfp_b,cfp_c)				:s(g.mvw)
 
-	t1 = genlab()
-	z_suspend = 1
+	t1 = genlab('mvc')
+	it_suspend = 1
 	genop('rep')
 	genop('movs_b')
-	z_suspend = 0
+	it_suspend = 0
 						:(opdone)
-	t1 = genlab()
+	t1 = genlab('mvc')
 	genopl(t1 ':', 'mov','al','byte [esi]')
 	genop('mov','byte [edi]','al')
 	genop('inc', 'esi')
@@ -1788,17 +1798,17 @@ g.mvc
 	genop('jnz', t1)
 						:(opdone)
 
-	t1 = genlab()
+	t1 = genlab('mvc')
 	genopl(t1 ':', 'lods_b')
 	genop('stos_b')
 	genop('dec', 'wa')
 	genop('jnz',t1)
 						:(opdone)
 g.mvw
-	z_suspend = 1
+	it_suspend = 1
 	genop('shr','wa','log_cfp_b')
  	genop('rep','movs_w')
-	z_suspend = 0
+	it_suspend = 0
 						:(opdone)
 
 g.mwb
@@ -1833,8 +1843,8 @@ g.mcb
 						:(opdone)
 genrep
 *	generate equivalent of rep op loop
-	l1 = genlab()
-	l2 = genlab()
+	l1 = genlab('rep')
+	l2 = genlab('rep')
 	genopl(l1 ':')
 	genop('or','wa','wa')
 	genop('jz',l2)
@@ -2080,38 +2090,38 @@ end
 
 	global	mxint
 
-%ifdef zz_trace
+;%ifdef it_trace
 	extern	shields
-	extern	zz
-	extern	zz_
-	extern	zz_cp
-	extern	zz_xl
-	extern	zz_xr
-	extern	zz_xs
-	extern	zz_wa
-	extern	zz_wb
-	extern	zz_wc
-	extern	zz_w0
-	extern	zz_zz
-	extern	zz_id
-	extern	zz_de
-	extern	zz_0
-	extern	zz_1
-	extern	zz_2
-	extern	zz_3
-	extern	zz_4
-	extern	zz_arg
-	extern	zz_num
-%endif
+	extern	it_
+	extern	id_de
+	extern	it_cp
+	extern	it_xl
+	extern	it_xr
+	extern	it_xs
+	extern	it_wa
+	extern	it_wb
+	extern	it_wc
+	extern	it_w0
+	extern	it_it
+	extern	it_id
+	extern	it_de
+	extern	it_0
+	extern	it_1
+	extern	it_2
+	extern	it_3
+	extern	it_4
+	extern	it_arg
+	extern	it_num
+;%endif
 	global	start
 
 
-	%macro	zzz	1
+	%macro	itz	1
 	section	.data
 %%desc:	db	%1,0
 	section	.text
-	mov	m_word [zz_de],%%desc
-	call	zz_
+	mov	m_word [it_de],%%desc
+	call	it_
 	%endmacro
 ;
 ;

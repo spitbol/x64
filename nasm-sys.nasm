@@ -992,15 +992,12 @@ re4:	mov	w0,m(stbas)
 	mov	m(minimal_id),w0
         call	minimal			; no return
 
-%ifdef zz_trace
-	extern	zz_ra
-	global	zz_
-	extern	zz,zz_cp,zz_xl,zz_xr,zz_wa,zz_wb,zz_wc,zz_w0
-zz_:
+	global	it_
+	extern	it
+it_:
 	pushf
 	call	save_regs
-	call	zz
+	call	it
 	call	restore_regs
 	popf
 	ret
-%endif

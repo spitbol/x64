@@ -27,7 +27,7 @@ it?=0
 IT:=$(it)
 ifneq ($(IT),0)
 ITOPT:=:it
-ITDEF:=-Dzz_trace
+ITDEF:=-Dit_trace
 endif
 
 # basebol determines which spitbol to use to compile
