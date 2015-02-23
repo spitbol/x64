@@ -15,6 +15,7 @@
 *     you should have received a copy of the gnu general public license
 *     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 *
+	&anchor = 1
 	&trim = 1
 	&dump = 0
 	isglobal = 0
@@ -39,13 +40,27 @@
 	digits['e'] = 14
 	digits['f'] = 15
 
+	digit = any('0123456789')
+
+	reverse_label__name =  digit digit digit digit digit '_'
+
 	global_init()
 
 loop
 	line = input			:f(finis)
 	ne(size(line),24)		:s(loop)
-	line len(16) . offset  ' '  any('dd')
+	line len(16) . offset  ' '  len(1) . typ
 +		' ' rem . name	:f(loop)
+
+*	output = line
+
+*	skip symbols defined elsewhere
+	ident(typ,'U')			:s(loop)
+
+*	drop the generated label names that end in '_' followed by four digits.
+	rname = reverse(name)
+*	rname reverse_label_name	:s(loop)
+
 	ident(global_index_table[name])	:s(loop)
 	ioffset = intof(offset)
 	base = ident(name, 'c_aaa') ioffset

@@ -25,6 +25,7 @@ This file is part of Macro SPITBOL.
 #include <stdlib.h>
 #include <string.h>
 
+char reg_prefix;
 
 extern uword compsp;
 extern uword osisp;
@@ -90,17 +91,17 @@ void prtval(long reg) {
 }
 void prtregr(char * name, double val) {
 	prtreal(val);
-	fprintf(stderr," %s\n",name);
+	fprintf(stderr," %c%s\n", reg_prefix,name);
 }
 
-void prtreg(char * name, long val) {
+void prtreg(char * name, char type, char *reg, long val) {
 	prtval(val);
-	fprintf(stderr," %s\n",name);
+	fprintf(stderr," %s%c%s", name,reg_prefix, reg);
 }
-void prtdif(char* name, long old, long new, long listed)
+void prtdif(char* name, char type, char *reg, long old, long new, long listed)
 {
 	// print old and new values of named register
-	fprintf(stderr,"%s:", name);
+	fprintf(stderr,"%s%c%s:", name, reg_prefix, reg);
 	prtval(old); fprintf(stderr," -> "); prtval(new);
 	prtnl();
 }
@@ -136,6 +137,9 @@ void it_str() {
 	fprintf(stderr,"\n");
 }
 
+int reglines; // print full registers every this number of lines
+int regline; // current line module reglines
+
 extern uword _rc_;
 void it() {
 
@@ -165,17 +169,17 @@ void it() {
    backward for last statement that changed a register. */
 		prtnl();
 		if (save_xl != last_xl)
-			{ prtdif("XL.esi", last_xl, save_xl, listed); listed += 1; }
+			{ prtdif("XL.",reg_prefix,"si", last_xl, save_xl, listed); listed += 1; }
 		if (save_xr != last_xr)
-			{ prtdif("XR.edi", last_xr, save_xr, listed); listed += 1; }
+			{ prtdif("XR.",reg_prefix,"di", last_xr, save_xr, listed); listed += 1; }
 		if (save_w0 != last_w0)
-			{ prtdif("W0.eax", last_w0, save_w0, listed); listed += 1; }
+			{ prtdif("W0.",reg_prefix,"ax", last_w0, save_w0, listed); listed += 1; }
 		if (save_wa != last_wa)
-			{ prtdif("WA.ecx", last_wa, save_wa, listed); listed += 1; }
+			{ prtdif("WA.",reg_prefix,"cx", last_wa, save_wa, listed); listed += 1; }
 		if (save_wb != last_wb)
-			{ prtdif("WB.ebx", last_wb, save_wb, listed); listed += 1; }
+			{ prtdif("WB.",reg_prefix,"bx", last_wb, save_wb, listed); listed += 1; }
 		if (save_wc != last_wc)
-			{ prtdif("WC.edx", last_wc, save_wc, listed); listed += 1; }
+			{ prtdif("WC.",reg_prefix,"dx", last_wc, save_wc, listed); listed += 1; }
 		if (save_ra != last_ra)
 			{ prtdifr("RA    ", last_ra, save_ra, listed); listed += 1; }
 		prtnl();
@@ -183,18 +187,19 @@ void it() {
 
 	int prtregs=1;
 //	 prtregs=0;
-
-if (prtregs) {
-
+//	if (prtregs) {
+	--regline;
+	if (prtregs>0 && (regline <= 0)) {
+		regline = reglines;
 		// print register values before the statement was executed
-		prtreg("XL.esi", save_xl);
-		prtreg("XR.edi", save_xr);
-		prtreg("W0.eax", save_w0);
-		prtreg("WA.ecx", save_wa);
-		prtreg("WB.ebx", save_wb);
-		prtreg("WC.edx", save_wc);
-}
-//	}
+		prtreg("XL.",reg_prefix,"si", save_xl); prtnl();
+		prtreg("XR.",reg_prefix,"di", save_xr); prtnl();
+		prtreg("W0.",reg_prefix,"ax", save_w0); prtnl();
+		prtreg("WA.",reg_prefix,"cx", save_wa); prtnl();
+		prtreg("WB.",reg_prefix,"bx", save_wb); prtnl();
+		prtreg("WC.",reg_prefix,"dx", save_wc); prtnl();
+		prtnl();
+	}
 	// save current register contents.
 	last_xl = save_xl; last_xr = save_xr; 
 	last_wa = save_wa; last_wb = save_wb; last_wc = save_wc; last_w0 = save_w0;
@@ -239,11 +244,19 @@ void it_sys() {
 void it_ra() {
 	fprintf(stderr,"it_ra %e\n",reg_ra);
 }
+
 void it_init() {
 	if ((spitflag & ITRACE) == 0) return;
 	off_c_aaa = &c_aaa;
 	off_w_yyy = &w_yyy;
 	fprintf(stderr, "off_c_aaa %ld\n", &c_aaa);
 	fprintf(stderr, "off_w_yyy %ld\n", &w_yyy);
+	reglines = 8; // print all registers every eight instructions
+	regline = 0;
+	if (INTBITS==32)
+		reg_prefix = 'e';
+	else
+		reg_prefix = 'r';
+	fprintf(stderr," INTBITS %d  prefix %c\n",INTBITS,reg_prefix);
 }
 

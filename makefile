@@ -30,6 +30,7 @@ ITOPT:=:it
 ITDEF:=-Dit_trace
 endif
 
+NMFLAGS:=-p
 # basebol determines which spitbol to use to compile
 spitbol?=./bin/spitbol.$(HOST)
 
@@ -178,8 +179,11 @@ s-nasm-err.o: s-nasm-err.nasm
 # c language header dependencies:
 
 main.o: $(OSINT)/save.h
+
 sysgc.o: $(OSINT)/save.h
+
 sysxi.o: $(OSINT)/save.h
+
 dlfcn.o: dlfcn.h
 
 dic:
@@ -190,12 +194,26 @@ dic:
 # install binaries from ./bin as the system spitbol compilers
 install:
 	sudo cp ./bin/spitbol /usr/local/bin
+
 clean:
 	rm -f *.o s.lex s.equ [rs]-* ./gasbol ./spitbol gas.hdr gas.h gas-sys.gas 
 
-it-nasm:
-	nm -n s-nasm.o >s-nasm.nm
+s-gas.dic: s-gas.nm
+	$(BASEBOL) test/map-$(WS).sbl <s-gas.nm >s-gas.dic
+
+s-gas.nm: s-gas.o
+	nm -n s-gas.o >s-gas.nm
+
+it-gas:	s-gas.dic it.sbl
+	$(BASEBOL) -u s-gas.dic it.sbl <ad >ae
+
+s-nasm.dic: s-nasm.nm
 	$(BASEBOL) test/map-$(WS).sbl <s-nasm.nm >s-nasm.dic
+
+s-nasm.nm: s-nasm.o
+	nm $(NMFLAGS) s-nasm.o >s-nasm.nm
+
+it-nasm: s-nasm.dic it.sbl
 	$(BASEBOL) -u s-nasm.dic it.sbl <ad >ae
 
 sclean:
