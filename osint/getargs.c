@@ -219,6 +219,12 @@ char	*argv[];
                 spitflag &= ~NOLIST;
                 break;
 
+		/*
+		/   -q	turn on instruction trace
+		*/
+	    case 'q':  
+		spitflag |= ITRACE;
+		break;
                 /*
                 /   -r	read INPUT from source program file
                 */

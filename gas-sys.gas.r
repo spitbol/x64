@@ -814,7 +814,7 @@ ocode:
         cdq                     # extend dividend
         idiv    IA              # perform division. w0=quotient, wc=remainder
 	seto	reg_fl
-	mov	IA,WC
+	mov	WC,IA
 	ret
 
 setovr: mov     %al,1		# set overflow indicator

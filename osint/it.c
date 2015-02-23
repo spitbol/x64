@@ -72,24 +72,21 @@ void prtreal(double val) {
 }
 
 void prtval(long reg) {
-	fprintf(stderr," %8ld ", reg);
-#ifdef OLD
+//	fprintf(stderr," %8ld ", reg);
+
 	if (reg > 32 && reg < 127 ) {
-	fprintf(stderr," '%c' %4d ", reg, reg);
+	fprintf(stderr," %c  %5d", reg, reg);
 	}
-	else if (reg >= 0 && reg < 300000) {
 	if (reg >= 0 && reg < 1000000) {
-		fprintf(stderr," %8ld ", reg);
-		fprintf(stderr," %8ld ", reg);
+		fprintf(stderr,"\t%8ld ", reg);
 	}
 	else if ( reg >= off_c_aaa && reg <= off_w_yyy) {
-		fprintf(stderr," Z%ld ", reg);
+		fprintf(stderr,"\tZ%ld ", reg);
 	}
 	else {
-		fprintf(stderr," %8lxx", reg & 0xffffffff);
-		fprintf(stderr," ---------", reg);
+		fprintf(stderr,"\t%8lxx", reg & 0xffffffff);
+//		fprintf(stderr,"\t---------", reg);
 	}
-#endif
 }
 void prtregr(char * name, double val) {
 	prtreal(val);
@@ -146,6 +143,8 @@ void it() {
 	char *dp;
 	int changed = 0;
 	int listed = 0;
+
+	if ((spitflag & ITRACE) == 0)	return;
 
 	it_calls++;
 	if (it_calls > 50000) return;
@@ -241,9 +240,10 @@ void it_ra() {
 	fprintf(stderr,"it_ra %e\n",reg_ra);
 }
 void it_init() {
-//	off_c_aaa = &c_aaa;
-//	off_w_yyy = &w_yyy;
-//	fprintf(stderr, "off_c_aaa %ld\n", &c_aaa);
-//	fprintf(stderr, "off_w_yyy %ld\n", &w_yyy);
+	if ((spitflag & ITRACE) == 0) return;
+	off_c_aaa = &c_aaa;
+	off_w_yyy = &w_yyy;
+	fprintf(stderr, "off_c_aaa %ld\n", &c_aaa);
+	fprintf(stderr, "off_w_yyy %ld\n", &w_yyy);
 }
 

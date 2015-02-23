@@ -182,16 +182,21 @@ sysgc.o: $(OSINT)/save.h
 sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
 
+dic:
+	nm -n s-nasm.o >s-nasm.nm
+	spitbol test/map-$(WS).sbl <s-nasm.nm >s-nasm.dic
+	spitbol it.sbl <ad >ae
+
 # install binaries from ./bin as the system spitbol compilers
 install:
 	sudo cp ./bin/spitbol /usr/local/bin
 clean:
 	rm -f *.o s.lex s.equ [rs]-* ./gasbol ./spitbol gas.hdr gas.h gas-sys.gas 
 
-z:
-	nm -n s.o >s.nm
-	$(BASEBOL) map-$(WS).sbl <s.nm >s.dic
-	$(BASEBOL) z.sbl <ad >ae
+it-nasm:
+	nm -n s-nasm.o >s-nasm.nm
+	$(BASEBOL) test/map-$(WS).sbl <s-nasm.nm >s-nasm.dic
+	$(BASEBOL) -u s-nasm.dic it.sbl <ad >ae
 
 sclean:
 # clean up after sanity-check

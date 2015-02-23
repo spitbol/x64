@@ -360,6 +360,7 @@ typedef unsigned long uword;	// minimal word as unsigned value
 /   WRTEXE	write executable module after compilation
 /   CASFLD      fold upper and lower case names
 /   NOFAIL	no fail mode
+/   ITRACE	enable instruction trace
 /
 /   DFLT_FLAGS	reasonable defaults for UN*X environment
 */
@@ -380,6 +381,7 @@ typedef unsigned long uword;	// minimal word as unsigned value
 #define NOFAIL		0x00002000L
 #define WRTEXE		0x00004000L
 #define WRTSAV		0x00008000L
+#define ITRACE		0x00010000L
 
 #define NOBRAG		0x02000000L	//	No signon header when loading save file
 

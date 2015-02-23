@@ -194,6 +194,13 @@ char	*argv[];
     SET_XR( basemem );
     SET_XL( topmem - sizeof(word) );
 
+//	initialize trace
+extern long c_aaa;
+extern long w_yyy;
+long off_c_aaa;
+long off_w_yyy;
+
+    it_init();
     /*
     /   Startup compiler.
     */

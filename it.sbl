@@ -18,15 +18,20 @@
 	&anchor = 0
 	&trim = 1
 	&stlimit = 10000000
-	&dump = 2
+	&stlimit = 10000000
+	&dump = 3
+
+
 	define('getname(varg)')
 	define('adjust()i')
-	input(.varfile,1,'s.dic')
-	names = array('1000')
-	offsets = array('1000')
+
+	names = array('10000')
+	offsets = array('10000')
 	n = 0
 	min_val = 0
 	max_val = 0
+	dicname  = (differ(host(0)) host(0), 's-nasm.dic')
+	output = ~input(.varfile,1,dicname)	'cannot open input' :s(end)
 vloop	
 	line = varfile			:f(vend)
 	line break(' ') . name ' '   
@@ -41,6 +46,7 @@ vend
 bloop
 	gt(i = i + 1,n)		:s(bloop.end)
 	offsets[i] = offsets[i] + min_val
+*	output = '#offsets ' i ' ' offsets[i]
 				:(bloop)
 bloop.end
 		:(loop)
@@ -52,13 +58,14 @@ loop
 	lt(size(line),15)		:s(loop.1)
 	lne(substr(line,10,1),' ')	:s(loop.1)
 	vname = substr(line,1,9)
-	min_val = ident(vname,'OFF_C_AAA') +substr(line,11)
-  	output = ident(vname,'OFF_C_AAA') 'min_val ' substr(line,11)
-	max_val = ident(vname,'OFF_W_YYY') +substr(line,11)
-  	output = ident(vname,'OFF_W_YYY') 'max_val ' substr(line,11)
-	ident(vname,'OFF_C_AAA') adjust()
- 	output = ident(vname,'OFF_W_YYY') 'max-min ' max_val - min_val
+	min_val = ident(vname,'off_c_aaa') +substr(line,11)
+  	output = ident(vname,'off_c_aaa') 'min_val ' substr(line,11)
+	max_val = ident(vname,'off_w_yyy') +substr(line,11)
+  	output = ident(vname,'off_w_yyy') 'max_val ' substr(line,11)
+	ident(vname,'off_c_aaa') adjust()
+ 	output = ident(vname,'off_w_yyy') 'max-min ' max_val - min_val
 loop.1
+*	output = '# ' line
 	line 'Z' span('0123456789') . varg = getname(varg) :s(loop.1)
 					:(copy)
 error
@@ -108,6 +115,6 @@ adjust.1
 					:(adjust.1)
 	
 finis
-	&DUMP = 0
+	&dump = 0
 	output = 'matched ' matched ' entries'
 end
