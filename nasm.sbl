@@ -2272,13 +2272,14 @@ calltab:
 	extern	dvi__
 
 	%macro	dvi_	1
+	mov	w0,%1
 	call	dvi__
 	%endmacro
 
 	%macro	icp_	0
-	mov	w0,m_word [reg_cp]
+	mov	w0,m(reg_cp)
 	add	w0,cfp_b
-	mov	m_word [reg_cp],w0
+	mov	m(reg_cp),w0
 	%endmacro
 
 	%macro	ino_	1
@@ -2317,7 +2318,7 @@ calltab:
 	%macro	rti_	0
 
 	call	f_rti
-	mov	ia,m_word [reg_ia]
+	mov	ia,m(reg_ia)
 	%endmacro
 
 	%macro	sbi_	1
