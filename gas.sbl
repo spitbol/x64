@@ -1764,15 +1764,14 @@ g.mvc
 
 	t1 = genlab('mvc')
 	it_suspend = 1
-	genop('rep')
-	genop('movsb')
+	genop('rep', 'movsb')
 	it_suspend = 0
 						:(opdone)
 g.mvw
-	it_suspend = 1
+*	it_suspend = 1
 	gensh('shr',reg.wa,log_cfp_b)
- 	genrep('movs' (eq(ws,32) 'd','q'))
-	it_suspend = 0
+ 	genrep('rep', 'movs' (eq(ws,32) 'd','q'))
+*	it_suspend = 0
 
 g.mwb
 	gensh('shr',reg.wa,log_cfp_b,)
@@ -1786,8 +1785,7 @@ g.mwb
 
 	genop('std')
 	gensh('shr',reg.wa,log_cfp_b)
-	genop('rep')
-	genop('movs' (eq(ws,32) 'd','q'))
+	genop('rep','movs' (eq(ws,32) 'd','q'))
 	genop('ctd')
 						:(opdone)
 
@@ -1800,8 +1798,7 @@ g.mcb
 	genop('cld')
 						:(opdone)
 	genop('std')
-	genop('rep')
-	genop('movs' (eq(ws,32) 'd','q'))
+	genop('rep','movs' (eq(ws,32) 'd','q'))
 	genop('cld')
 						:(opdone)
 genrep

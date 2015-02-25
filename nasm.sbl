@@ -1786,10 +1786,10 @@ g.mvc
 	it_suspend = 0
 						:(opdone)
 g.mvw
-	it_suspend = 1
+*	it_suspend = 1
 	genop('shr','wa','log_cfp_b')
  	genop('rep','movs_w')
-	it_suspend = 0
+*	it_suspend = 0
 						:(opdone)
 
 g.mwb
