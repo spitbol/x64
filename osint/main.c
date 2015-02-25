@@ -200,7 +200,7 @@ extern long w_yyy;
 long off_c_aaa;
 long off_w_yyy;
 
-    it_init();
+    it_init(basemem, topmem);
     /*
     /   Startup compiler.
     */

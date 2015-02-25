@@ -59,10 +59,22 @@ uword it_off;
 uword it_id=0;
 uword it_last = 0;
 char * it_de;
+
 extern long c_aaa;
 extern long w_yyy;
+
 long off_c_aaa;
 long off_w_yyy;
+long off_s_aaa;
+long off_s_yyy;
+long off_dnamb;
+long off_dname;
+long off_basemem;
+long off_topemem;
+//extern dnamb();
+//extern dname();
+
+
 char * AT_DESC;
 extern char at1_0;
 void prtnl() {
@@ -76,13 +88,20 @@ void prtval(long reg) {
 //	fprintf(stderr," %8ld ", reg);
 
 	if (reg > 32 && reg < 127 ) {
-	fprintf(stderr," %c  %5d", reg, reg);
+	fprintf(stderr," %c  %5d", (char) reg, (int) reg);
 	}
 	if (reg >= 0 && reg < 1000000) {
 		fprintf(stderr,"\t%8ld ", reg);
 	}
-	else if ( reg >= off_c_aaa && reg <= off_w_yyy) {
-		fprintf(stderr,"\tZ%ld ", reg);
+	else if ( reg >= off_s_aaa && reg <= off_s_yyy) {	// code
+		fprintf(stderr,"\tC:%ld ", reg-off_s_aaa);
+	}
+	else if ( reg >= off_c_aaa && reg <= off_w_yyy) {  	// data
+		fprintf(stderr,"\tD:%ld ", reg-off_c_aaa);
+	}
+//	else if ( reg >= off_basemem && reg <= off_topmem) { 	// heap
+	else if ( reg >= off_basemem ) { 	// heap
+		fprintf(stderr,"\tH:%ld ", reg-off_basemem);
 	}
 	else {
 		fprintf(stderr,"\t%8lxx", reg & 0xffffffff);
@@ -187,9 +206,9 @@ void it() {
 
 	int prtregs=1;
 //	 prtregs=0;
-//	if (prtregs) {
 	--regline;
-	if (prtregs>0 && (regline <= 0)) {
+//	if (prtregs>0 && (regline <= 0)) {
+	if (prtregs) {
 		regline = reglines;
 		// print register values before the statement was executed
 		prtreg("XL.",reg_prefix,"si", save_xl); prtnl();
@@ -245,12 +264,28 @@ void it_ra() {
 	fprintf(stderr,"it_ra %e\n",reg_ra);
 }
 
-void it_init() {
+long off_basemem;
+long off_topmem;
+
+void it_init(long basemem, long topmem) {
+	off_basemem = basemem;
+	off_topmem = topmem;
 	if ((spitflag & ITRACE) == 0) return;
-	off_c_aaa = &c_aaa;
-	off_w_yyy = &w_yyy;
-	fprintf(stderr, "off_c_aaa %ld\n", &c_aaa);
-	fprintf(stderr, "off_w_yyy %ld\n", &w_yyy);
+	off_c_aaa = (long) &c_aaa;
+	off_w_yyy = (long) &w_yyy;
+	off_s_aaa = (long) &s_aaa;
+	off_s_yyy = (long) &s_yyy;
+	fprintf(stderr, "off_c_aaa %ld\n", 		(long) &c_aaa);
+	fprintf(stderr, "off_w_yyy %ld\n", 		(long) &w_yyy);
+	fprintf(stderr, "off_yyy-off_aaa %ld\n", 	off_w_yyy-off_c_aaa);
+
+	fprintf(stderr, "off_s_aaa %ld\n", 		(long) &s_aaa);
+	fprintf(stderr, "off_s_yyy %ld\n", 		(long) &s_yyy);
+	fprintf(stderr, "s_yyy-s_aaa %ld\n", 		off_s_yyy - off_s_aaa);
+
+	fprintf(stderr, "off_dnamb %ld\n", 		(long) &dnamb);
+//	fprintf(stderr, "off_dname %ld\n", 		(long) &dname);
+//	fprintf(stderr, "dname-dnamb %ld\n", 		off_dname - off_dnamb);
 	reglines = 8; // print all registers every eight instructions
 	regline = 0;
 	if (INTBITS==32)

@@ -220,9 +220,9 @@ char	*argv[];
                 break;
 
 		/*
-		/   -q	turn on instruction trace
+		/   -I	turn on instruction trace
 		*/
-	    case 'q':  
+	    case 'I':  
 		spitflag |= ITRACE;
 		break;
                 /*

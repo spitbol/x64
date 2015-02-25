@@ -97,11 +97,13 @@
 	define('genz()')
 	define('genaop(stmt)')
 	define('genbop(stmt)')
+	define('gendata()')
         define('genlab(prefix)')
         define('genrip()')
 	define('genop(gopc,gop1,gop2,gop3)')
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
+	define('gentext()')
 	define('getarg(iarg)txt,typ,pre,post')
 	define('getlea(iarg)txt,typ,pre,post')
 	define('getrip(iarg)txt,typ,pre,post,ent,lb,var,reg')
@@ -841,9 +843,9 @@ rip.done
 	lbl = genrip()
 	riptable[txt] = lbl
 	ent = lbl
-	genop('segment','.data')
+	gendata()
 	genopl(lbl ':','d_word',getrip)
-	genop('segment','.text')
+	gentext()
 rip.ent
 *	generate reference via w0 if needed
 	genop('mov',w0,pre ent post)
@@ -965,8 +967,8 @@ chktrace
 	ident(i_trace)				:s(return)
 	ne(it_suspend)				:s(return)
 	clabel = inlabel
- 	old_it_skip = z_skip
- 	old_it_exec = z_exec
+ 	old_it_skip = it_skip
+ 	old_it_exec = it_exec
  	old_is_exec = is_exec
 	it_skip = ident(inlabel,'s_aaa') 0
 
@@ -999,14 +1001,13 @@ chktrace.1
 	it_desc = '"' replace(thisline,'|',' ') '"'
 
 	lbl = genlab('it')
-	genop('segment' tab '.data')
-	genopl(lbl ':','d_char',it_desc)
-	genop('d_char','0');* string terminator
-	genop('segment' tab '.text')
-	flush()
-	genop('mov',w0,lbl)
-	genop('mov','m(it_de)',w0)
-	genop('call','it_')
+	outline(tab 'segment' tab '.data')
+	outline(lbl ':' tab 'd_char' tab it_desc)
+	outline(tab 'd_char' tab '0');* string terminator
+	outline(tab 'segment' tab '.text')
+	outline(tab 'mov' tab w0 ',' lbl)
+	outline(tab 'mov' tab 'm(it_de),' w0)
+	outline(tab 'call' tab 'it_')
 						:(return)
 
 -stitl prsarg(iarg)
@@ -1161,15 +1162,15 @@ g.bsw1
 g.bsw.2
 * in rip_mode, need to generate location to reference destination
 	lbl = genrip()
-        genop('segment .data')
+        gendata()
 	genopl(lbl,'d_word',t2 )
-	genop('segment','.text')
+	gentext()
 	genop('mov',w0,t1)
 	genop('sal',w0,'log_cfp_b')
 	genop('add',w0,'m(' lbl ')')
 	genop('jmp', w0)
 g.bsw.3
-	genop('segment','.data')
+	gendata()
         genopl(t2 ':')
 	it_suspend = 0
 						:(opdone)
@@ -1177,7 +1178,7 @@ g.bsw.3
 g.iff   genop('d_word',getarg(i2))              :(opdone)
 
 g.esw
-        genop('segment .text')			:(opdone)
+        gentext()				:(opdone)
 g.ent
 
 *  entry points are stored in byte before program entry label
@@ -1778,31 +1779,11 @@ g.cvm	t1 = getarg(i1)
 g.cvd
 	genop('cvd_')				:(opdone)
 g.mvc
-*	use word move if character size is word size
-*	if charsize is word size, convert character count to byte count for word move
-	ne(cfp_b,cfp_c) genop('shl', 'wa', 'log_cfp_b')
-	ne(cfp_b,cfp_c)				:s(g.mvw)
-
 	t1 = genlab('mvc')
 	it_suspend = 1
 	genop('rep')
 	genop('movs_b')
 	it_suspend = 0
-						:(opdone)
-	t1 = genlab('mvc')
-	genopl(t1 ':', 'mov','al','byte [esi]')
-	genop('mov','byte [edi]','al')
-	genop('inc', 'esi')
-	genop('inc', 'edi')
-	genop('dec','wa')
-	genop('jnz', t1)
-						:(opdone)
-
-	t1 = genlab('mvc')
-	genopl(t1 ':', 'lods_b')
-	genop('stos_b')
-	genop('dec', 'wa')
-	genop('jnz',t1)
 						:(opdone)
 g.mvw
 	it_suspend = 1
@@ -1853,6 +1834,13 @@ genrep
 	genop('jmp',l1)
 	genopl(l2 ':')
 						:(return)
+-stitl	gendata() - move to data segment
+gendata
+	genop('segment','.data')		:(return)
+
+-stitl	gentext() - move to text segment
+gentext
+	genop('segment','.text')		:(return)
 
 g.chk
 	genop('chk_')
@@ -1925,26 +1913,26 @@ g.sec	genop('')
 	sectnow = sectnow + 1			:($("g.sec." sectnow))
 
 * procedure declaration section
-g.sec.1 genop('segment .text')
+g.sec.1 gentext()
         genop('global','sec01')
         genopl('sec01' ':')             	:(opdone)
 
 * definitions section
 g.sec.2
-        genop('segment .data')
+        gendata()
         genop('global','sec02')
         genopl('sec02' ':')             	:(opdone)
 
 * constants section
 g.sec.3
-        genop('segment .data')
+        gendata()
         genop('global','sec03')
         genopl('sec03' ':')     		:(opdone)
 
 * working variables section
 g.sec.4 genop('global','esec03')
         genopl('esec03' ':')
-        genop('segment .data')
+        gendata()
         genop('global','sec04')
         genopl('sec04' ':')     
 						:(opdone)
@@ -1960,7 +1948,7 @@ g.sec.5
 	genop('prc_: times ' prc.count1 ' dd 0')
         genop('global','end_min_data')
         genopl('end_min_data' ':')
-        genop('segment .text')
+        gentext()
         genop('global','sec05')
         genopl('sec05' ':')     
 *  enable tracing if desired
@@ -2079,6 +2067,8 @@ end
 
 	%include	"nasm.h"
 
+	global	dnamb
+	global	dname
 	extern	osisp
 	extern	compsp
 	extern	save_regs

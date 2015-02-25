@@ -1629,16 +1629,12 @@ g.csc  	ident(thislabel)			:s(opnext)
 
 g.ceq
 	memmem()
-	t1 = (eq(i.type(i1),8) reglow[i.text(i1)], getarg(i1))
-	t2 = (eq(i.type(i2),8) reglow[i.text(i2)], getarg(i2))
-	genop('cmpb',t1,t2)
+	genop('cmp',getarg(i1),getarg(i2))
 	genop('je',getarg(i3))
 						:(opdone)
 
 g.cne   memmem()
-	t1 = (eq(i.type(i1),8) reglow[i.text(i1)], getarg(i1))
-	t2 = (eq(i.type(i2),8) reglow[i.text(i2)], getarg(i2))
-	genop('cmpb',t1,t2)
+	genop('cmp',getarg(i1),getarg(i2))
 	genop('jnz',getarg(i3))
 						:(opdone)
 
@@ -1772,24 +1768,11 @@ g.mvc
 	genop('movsb')
 	it_suspend = 0
 						:(opdone)
-	t1 = genlab('mvc')
-	genopl(t1 ':', 'mov',reg.xl,'%al')
-	genop('mov','%al','(' reg.xr ')')
-	genop('inc', reg.xl)
-	genop('inc', reg.xr)
-	genop('dec', reg.wa)
-	genop('jnz', t1)
-						:(opdone)
-
-	t1 = genlab()
-	genopl(t1 ':', 'lods_b')
-	genop('stosb')
-	genop('dec', reg.wa)
-	genop('jnz',t1)
-						:(opdone)
 g.mvw
 	it_suspend = 1
 	gensh('shr',reg.wa,log_cfp_b)
+ 	genrep('movs' (eq(ws,32) 'd','q'))
+	it_suspend = 0
 
 g.mwb
 	gensh('shr',reg.wa,log_cfp_b,)
@@ -2259,3 +2242,5 @@ end
 #	.set	zysxi,_zysxi
 #endif
 
+	.global	dnamb
+	.global	dname

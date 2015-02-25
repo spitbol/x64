@@ -46,13 +46,15 @@
 
 	global_init()
 
+	offsetof = table(5000)
+
 loop
 	line = input			:f(finis)
 	ne(size(line),24)		:s(loop)
 	line len(16) . offset  ' '  len(1) . typ
 +		' ' rem . name	:f(loop)
 
-*	output = line
+*	soutput = line
 
 *	skip symbols defined elsewhere
 	ident(typ,'U')			:s(loop)
@@ -61,16 +63,26 @@ loop
 	rname = reverse(name)
 *	rname reverse_label_name	:s(loop)
 
-	ident(global_index_table[name])	:s(loop)
+*	ident(global_index_table[name])	:s(loop)
 	ioffset = intof(offset)
 	base = ident(name, 'c_aaa') ioffset
-	output = ne(remdr(ioffset,4)) 'not aligned ' name
+*	output = ne(remdr(ioffset,4)) 'not aligned ' name
 *	output  = ident(name, 'c_aaa') 'base ' ioffset
- 	output = name ' ' (ioffset - base)
+* 	output = name ' ' (ioffset - base)
+	off = ioffset - base
+	offsetof[name] = +off
 	last_name = name
 	differ(name,'w_yyy')		:s(loop)
 *	output = 'last name ' last_name
 loop.end
+*	output offsets, sorted by value
+	ara = sort(offsetof,2)
+	i = 0
+loop.out
+	i = i + 1
+	key = ara[i,1]			:f(end)
+	val = ara[i,2]
+	output = lpad(key,8) ' ' val	:(loop.out)
 	:(finis)
 
 intof

@@ -46,7 +46,7 @@ loop
 	ne(size(line),16)		:s(loop)
 	line len(8) . offset  ' '  any('dd')
 +		' ' rem . name	:f(loop)
-	ident(global_index_table[name])	:s(loop)
+*	ident(global_index_table[name])	:s(loop)
 	ioffset = intof(offset)
 	base = ident(name, 'c_aaa') ioffset
 *	output  = ident(name, 'c_aaa') 'base ' ioffset
