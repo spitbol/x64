@@ -67,8 +67,10 @@ vpath %.c $(OSINT)
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
 NASMOPTS = -f $(ELF) -D$(TARGET) $(ITDEF)
+ASMOPTS = -f $(ELF) -D$(TARGET) $(ITDEF)
 else
 NASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
+ASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
 endif
 
 # tools for processing Minimal source file.
@@ -187,17 +189,18 @@ s-nasm-err.o: s-nasm-err.nasm
 asm-sys.o: asm-sys.asm
 	$(ASM) $(ASMOPTS) -oasm-sys.o asm-sys.asm
 
-s-asm.asm: s.lex $(VHDRS) asm.sbl
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-asm.asm -3=s-asm.err -6=s.equ	asm.sbl
-
-asm.sbl:	asm.asm
-	$(BASEBOL) pp.sbl <asm.asm >asm.sbl
+asm.spt: asm.sbl
+	$(BASEBOL) pp.sbl <asm.sbl >asm.spt
 
 s-asm.o: s-asm.asm
+
+s-asm.asm: s.lex $(VHDRS) asm.spt
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-asm.asm -3=s-asm.err -6=s.equ	asm.spt
+
 	$(ASM) $(ASMOPTS) -os-asm.o s-asm.asm
 
 s-asm-err.asm: s.cnd $(ERR) s-asm.asm
-	   $(BASEBOL) -u $(TARGET)_asm -1=s-asm.err -2=s-asm-err.asm $(ERR)
+	   $(BASEBOL) -u $(TARGET)_nasm -1=s-asm.err -2=s-asm-err.asm $(ERR)
 
 s-asm-err.o: s-asm-err.asm
 	$(ASM) $(ASMOPTS) -os-asm-err.o s-asm-err.asm
@@ -224,7 +227,7 @@ install:
 
 clean:
 	rm -f *.o s.lex s.equ [rs]-* ./gasbol ./spitbol gas.hdr gas.h gas-sys.gas 
-	rm asm.sbl
+	rm asm.spt
 
 s-gas.dic: s-gas.nm
 	$(BASEBOL) test/map-$(WS).sbl <s-gas.nm >s-gas.dic
