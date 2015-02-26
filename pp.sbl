@@ -1,0 +1,30 @@
+* simple pre-processor
+	N = +1
+	G = +0
+	&anchor = &trim = 1
+	&dump = 3
+	skip = 0
+	:(copy)
+copy
+	output = line
+next
+	line = input				:f(finis)
+	line '.'				:f(copy)
+	line '.if'				:s(c.if)
+	line '.fi'				:s(c.fi)
+						:(copy)
+c.if
+	line '.if' span(' ') rem . name	=	:f(err)
+	skip = 1
+	differ(name,'N')			:s(next)
+	skip = 0				:(next)
+
+c.fi
+	skip = 0 				:(next)
+err
+	output = 'illegal if'			:(finis)
+finis
+	&dump = 0
+end
+	
+

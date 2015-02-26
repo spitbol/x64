@@ -68,7 +68,7 @@
 
 	&anchor = &trim	= &dump = 1
 	&stlimit = 10000000
-
+	
 
 *  useful constants
 
@@ -94,22 +94,32 @@
 
 	define('error(text)')
 	define('flush()')
-	define('genz()')
 	define('genaop(stmt)')
 	define('genbop(stmt)')
 	define('gendata()')
+	define('genit(count,lines,desc)lbl')
         define('genlab(prefix)')
         define('genrip()')
 	define('genop(gopc,gop1,gop2,gop3)')
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
+	define('gensh(opc,reg,val)')
 	define('gentext()')
 	define('getarg(iarg)txt,typ,pre,post')
+.if N
 	define('getlea(iarg)txt,typ,pre,post')
+.fi
 	define('getrip(iarg)txt,typ,pre,post,ent,lb,var,reg')
 	define('getval(iarg)txt,typ,pre,post')
+.if G
+	define('getadr(iarg)txt,typ,pre,post')
+.fi
+	define('getmem(iarg)txt,typ,pre,post,base,disp,indx,scale')
 	define('ifreg(iarg)')
 	define('memmem()t')
+.if G
+	define('m(text)')
+.fi
 	define('outline(txt)')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
@@ -133,7 +143,7 @@
 	output = 'options: ' options
 *	add trailing colon so always have colon after an argument
 	options = options ':'
-option.next
+option.next		
 *	ignore extraneous : in list (helps with writing makefiles)
 	options ':' =				:s(option.next)
 	options break(':') . option ':' =	:f(options.done)
@@ -146,7 +156,7 @@ option.next
 
 * here if unknown option
 
-	output = "error: unknown option '" option "', translation ends."
+	output = "error: unknown option '" option "', translation ends."	
 	&dump = 0				:(end)
 
 option.unix.32
@@ -169,6 +179,7 @@ options.done
 
 
 	filebase = "s"
+	fileprefix = "s"
 
 *	cfp_b is bytes per word, cfp_c is characters per word
 *       these should agree with values used in translator
@@ -177,6 +188,7 @@ options.done
 
 config.32
 	cfp_b = 4
+	cfp_bm1 = 3
 	cfp_c = 4
 	log_cfp_b = '2'
 	log_cfp_c = '2'
@@ -185,12 +197,19 @@ config.32
 *	op_c is instruction suffix for minimal character size
 	op_c = 'b'
 	rel = ''
+.if G
+	d_word = '.long'
+	m_word = 'dword '
+*	suffix for opcode to indicate double word (32 bits)
+	o_ =	'd'
+.fi
 						:(config.done)
 
 config.64
 *	cfp_b is bytes per word, cfp_c is characters per word
 *       these should agree with values used in translator
 	cfp_b = 8
+	cfp_bm1 = 7
 	cfp_c = 8
 	log_cfp_b = '3'
 	log_cfp_c = '3'
@@ -198,7 +217,11 @@ config.64
 	op_c = 'b'
 *	rel = 'rel '
 	rel = ''
-
+.if G	d_word = '.quad'
+	m_word = 'qword '
+*	suffix for opcode to indicate quad word (64 bits)
+	o_ =	'q'
+.fi
 config.done
 
 *	rip_mode is needed for osx. See getval()
@@ -322,34 +345,56 @@ skip_init.end
 	'|' rem . slineno
 
 *  dispatch table
-
+.if N
 	argcase = table(100)
 	argcase[01] = .arg.c.1;	argcase[2]  = .arg.c.2;	argcase[3]  = .arg.c.3;
 	argcase[04] = .arg.c.4;	argcase[5]  = .arg.c.5;	argcase[6]  = .arg.c.6;
-	argcase[07] = .arg.c.7;	argcase[8]  = .arg.c.8;	argcase[9]  = .arg.c.9;
+	argcase[07] = .arg.c.7;	argcase[8]  = .arg.c.8;	argcase[9]  = .arg.c.9;   
 	argcase[10] = .arg.c.10;	argcase[11] = .arg.c.11;	argcase[12] = .arg.c.12;
 	argcase[13] = .arg.c.13;	argcase[14] = .arg.c.14;	argcase[15] = .arg.c.15;
 	argcase[16] = .arg.c.16;	argcase[17] = .arg.c.17;	argcase[18] = .arg.c.18;
-	argcase[19] = .arg.c.19;	argcase[20] = .arg.c.20;	argcase[21] = .arg.c.21;
+	argcase[19] = .arg.c.19;	argcase[20] = .arg.c.20;	argcase[21] = .arg.c.21; 
 	argcase[22] = .arg.c.22;	argcase[23] = .arg.c.23;	argcase[24] = .arg.c.24;
 	argcase[25] = .arg.c.25;	argcase[26] = .arg.c.26;	argcase[27] = .arg.c.27
 
-	leacase = table(50)
-	leacase[03] = .lea.c.3;		leacase[04] = .lea.c.4;		leacase[09] = .lea.c.9;
+	leacase = table(50) 
+	leacase[03] = .lea.c.3;		leacase[04] = .lea.c.4;		leacase[09] = .lea.c.9;   
 	leacase[12] = .lea.c.12;	leacase[13] = .lea.c.13;	leacase[14] = .lea.c.14
-	leacase[15] = .lea.c.15;
+	leacase[15] = .lea.c.15;		 
 
 	valcase = table(50)
-	valcase[18] = .val.c.18;	valcase[19] = .val.c.19;	valcase[20] = .val.c.20;
+	valcase[18] = .val.c.18;	valcase[19] = .val.c.19;	valcase[20] = .val.c.20;	
 	valcase[21] = .val.c.21;	valcase[22] = .val.c.22
 
 	riptable = table(500)
 	rip_count = 0
 	ripcase = table(50)
-	ripcase[14] = .rip.c.14;	ripcase[15] = .rip.c.15;	ripcase[18] = .rip.c.18;
-	ripcase[19] = .rip.c.19;	ripcase[20] = .rip.c.20;	ripcase[21] = .rip.c.21;
+	ripcase[14] = .rip.c.14;	ripcase[15] = .rip.c.15;	ripcase[18] = .rip.c.18;	
+	ripcase[19] = .rip.c.19;	ripcase[20] = .rip.c.20;	ripcase[21] = .rip.c.21;	
 	ripcase[22] = .rip.c.22
+.fi
+.if G
+	argcase = table(100)
+	argcase[01] = .getarg.c.1;	argcase[2]  = .getarg.c.2;	argcase[3]  = .getarg.c.3;
+	argcase[04] = .getarg.c.4;	argcase[5]  = .getarg.c.5;	argcase[6]  = .getarg.c.6;
+	argcase[07] = .getarg.c.7;	argcase[8]  = .getarg.c.8;	argcase[9]  = .getarg.c.9;   
+	argcase[10] = .getarg.c.10;	argcase[11] = .getarg.c.11;	argcase[12] = .getarg.c.12;
+	argcase[13] = .getarg.c.13;	argcase[14] = .getarg.c.14;	argcase[15] = .getarg.c.15;
+	argcase[16] = .getarg.c.16;	argcase[17] = .getarg.c.17;	argcase[18] = .getarg.c.18;
+	argcase[19] = .getarg.c.19;	argcase[20] = .getarg.c.20;	argcase[21] = .getarg.c.21; 
+	argcase[22] = .getarg.c.22;	argcase[23] = .getarg.c.23;	argcase[24] = .getarg.c.24;
+	argcase[25] = .getarg.c.25;	argcase[26] = .getarg.c.26;	argcase[27] = .getarg.c.27
 
+	leacase = table(50) 
+	leacase[03] = .getadr.c.3;	leacase[04] = .getadr.c.4;	leacase[09] = .getadr.c.9;   
+	leacase[12] = .getadr.c.12;	leacase[13] = .getadr.c.13;	leacase[14] = .getadr.c.14
+	leacase[15] = .getadr.c.15;		 
+
+
+	valtable = table(100)
+
+
+.fi
 
 *  pifatal maps minimal opcodes for which no a code allowed
 *  to nonzero value. such operations include conditional
@@ -470,6 +515,7 @@ flgs2
 *  register/memory-location name.
 
 	regmap = table(30)
+.if N
 	regmap['xl'] = 'xl';  regmap['xt'] = 'xt'
 	regmap['xr'] = 'xr';  regmap['xs'] = 'xs'
 	regmap['wa'] = 'wa';  regmap['wb'] = 'wb'
@@ -478,7 +524,6 @@ flgs2
 *	w0 is temp register
 	regmap['w0'] = 'w0'
 	w0 = regmap['w0']
-
 *  quick reference:
 	reg.wa = regmap['wa']
 	reg.cp = regmap['cp']
@@ -489,6 +534,35 @@ flgs2
 	reglow['wa'] = 'wa_l'
 	reglow['wb'] = 'wb_l'
 	reglow['wc'] = 'wc_l'
+
+.fi
+.if G
+	s = 'xlXLxrXRxsXSxtXTwaWAwbWBwcWCw0W0iaIAcpCP'
+regmap.loop
+	s len(2) . min len(2) . reg =		:f(regmap.done)
+	regmap[min] = reg			:(regmap.loop)
+regmap.done
+
+	w0 = regmap['w0']
+
+*  quick reference:
+	reg.xl = regmap['xl']
+	reg.xr = regmap['xr']
+	reg.xs = regmap['xs']
+	reg.wa = regmap['wa']
+	reg.wb = regmap['wa']
+	reg.wc = regmap['wc']
+	reg.cp = regmap['cp']
+	reg.ia = regmap['ia']
+
+* reglow maps register to identify target, so
+* can extract 'l' part.
+	reglow = table(4)
+	reglow['wa'] = '%cl'
+	reglow['wb'] = '%bl'
+	reglow['wc'] = '%dl'
+	reglow['w0'] = '%al'
+.fi
 
 * real_op maps minimal real opcode to machine opcode
 	real_op = table(10)
@@ -521,7 +595,7 @@ flgs2
 
         output = ~input(.infile,1) "no input file"	:s(end)
 
-inputok
+inputok 
 
 
 
@@ -672,7 +746,7 @@ getarg
 *	imem is null to generate memory reference, otherwise just get
 *	address for use in 'lea' instruction.
 	pre = 'm('
-	post = ')'
+	post = ')'	
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
@@ -771,7 +845,7 @@ getlea
 *	imem is null to generate memory reference, otherwise just get
 *	address for use in 'lea' instruction.
 	pre = 'a('
-	post = ')'
+	post = ')'	
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
@@ -779,7 +853,7 @@ getlea
 	getlea = txt				:(return)
 * wlbl, clbl
 lea.c.3
-lea.c.4
+lea.c.4 
 	getlea = pre txt post			:(return)
 
 * (x), register indirect
@@ -808,7 +882,7 @@ getrip
 *  return value suitable for use in rip mode (needed for osx). This requires that we
 *  allocate a variable to hold the address,value. This is loaded into w0
 	pre = 'm('
-	post = ')'
+	post = ')'	
 	txt = i.text(iarg)
 	typ = i.type(iarg)
 	eq(typ)					:f($(ripcase[typ]))
@@ -819,14 +893,14 @@ rip.c.14
 rip.c.15
 	txt break('(') . var '(' len(2) . reg
 *	getrip = pre    var '+'  regmap[t2] 	post
-	getrip = var
+	getrip = var 
 						:(rip.done)
 *  *dlbl
 rip.c.19
 	getrip = 'cfp_b*' substr(txt,2)		:(rip.done)
 
 *  =dlbl
-rip.c.18
+rip.c.18	
 *  =name (data section)
 rip.c.20
 rip.c.21
@@ -853,12 +927,12 @@ rip.ent
 	getrip = w0
 *	outfile = ne(x_trace) '; getrip ' ent
 						:(return)
-
+	
 
 -stitl getval(iarg)
 getval
 	pre = 'm('
-	post = ')'
+	post = ')'	
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
@@ -868,7 +942,7 @@ getval
 	getarg = txt				:(val.done)
 
 *  =dlbl
-val.c.18
+val.c.18	
 	getval = substr(txt,2)			:(val.done)
 val.c.18.1
 	getval = substr(txt,2)			:(val.done)
@@ -900,8 +974,8 @@ memmem
   genop('mov',w0,t)				:(return)
 
 -stitl outline(txt)
-outline
-	outlines = outlines + 1
+outline	
+	outlines = outlines + 1		
 	outfile = txt
 						:(return)
 
@@ -1039,7 +1113,7 @@ readline.0
 
 *  here if not a comment line
 
-rl01
+rl01	
 *  find out why need to add 2 here
 *  add 2 since need to account for this line and one that will follow
 	ne(x_trace) outline(';:' outlines + 2 ':' tab readline)
@@ -1156,8 +1230,8 @@ g.bsw	t1 = getarg(i1)
 	genop('cmp',t1,getarg(i2))
 	genop('jge',getarg(i3))
 * here after default case.
-g.bsw1
-	ne(rip_mode)				:s(g.bsw.2)
+g.bsw1	
+	ne(rip_mode)				:s(g.bsw.2)	
 	genop('jmp', 'm(' t2 '+' t1 '*cfp_b)' ) :(g.bsw.3)
 g.bsw.2
 * in rip_mode, need to generate location to reference destination
@@ -1934,7 +2008,7 @@ g.sec.4 genop('global','esec03')
         genopl('esec03' ':')
         gendata()
         genop('global','sec04')
-        genopl('sec04' ':')
+        genopl('sec04' ':')     
 						:(opdone)
 
 *  here at start of program section.  if any n type procedures,
@@ -1950,7 +2024,7 @@ g.sec.5
         genopl('end_min_data' ':')
         gentext()
         genop('global','sec05')
-        genopl('sec05' ':')
+        genopl('sec05' ':')     
 *  enable tracing if desired
 						:(opdone)
 
@@ -2249,7 +2323,7 @@ calltab:
 
 
 	%macro	chk_	0
-	extern	chk__
+	extern	chk__	
 	call	chk__
 	%endmacro
 

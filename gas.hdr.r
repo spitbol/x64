@@ -187,8 +187,8 @@ calltab:
 
 	.extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
 
-	.macro	chk_	
-	.extern	chk__	
+	.macro	chk_
+	.extern	chk__
 	call	chk__
 	.endm
 

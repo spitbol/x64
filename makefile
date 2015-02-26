@@ -107,6 +107,7 @@ OBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 
 GOBJS=s-gas.o s-gas-err.o gas-sys.o
 NOBJS=s-nasm.o s-nasm-err.o nasm-sys.o
+AOBJS=s-asm.o s-asm-err.o asm-sys.o
 
 
 # build spitbol using nasm, build spitbol using as.
@@ -114,17 +115,21 @@ NOBJS=s-nasm.o s-nasm-err.o nasm-sys.o
 spitbol: $(OBJS) $(NOBJS)
 	$(CC) $(LDOPTS)  $(OBJS) $(NOBJS) $(LMOPT) -static -ospitbol
 
+# link asmbol with static linking
+asmbol: $(OBJS) $(AOBJS)
+	$(CC) $(LDOPTS)  $(OBJS) $(AOBJS) $(LMOPT) -static -oasmbol
+
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS) $(NOBJS)
 	$(CC) $(LDOPTS) $(OBJS) $(NOBJS) $(LMOPT)  -ospitbol 
 
 # build gasbol using gas
 # link gasbol with static linking
-gasbol: $(OBJS) $(AOBJS) $(GOBJS)
+gasbol: $(OBJS) $(GOBJS) $(GOBJS)
 	$(CC) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT) -ogasbol
 
 # link gasbol with dynamic linking
-gasbol-dynamic: $(OBJS) $(AOBJS) $(GOBJS)
+gasbol-dynamic: $(OBJS) $(GOBJS) $(GOBJS)
 	$(CC) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT)  -ogasbol 
 
 # bootbol is for bootstrapping just link with what's at hand
@@ -133,11 +138,11 @@ gasbol-dynamic: $(OBJS) $(AOBJS) $(GOBJS)
 bootbol: 
 	$(CC) $(LDOPTS)  $(OBJS) $(LMOPT) -obootbol
 
-gas.h:	gas.h.r
-	$(BASEBOL) -u $(TARGET) r.sbl <gas.h.r >gas.h
-
 s.lex: s.min s.cnd $(LEX)
 	 $(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
+
+gas.h:	gas.h.r
+	$(BASEBOL) -u $(TARGET) r.sbl <gas.h.r >gas.h
 
 gas.hdr: gas.hdr.r 
 	$(BASEBOL) -u $(TARGET) r.sbl <gas.hdr.r >gas.hdr
@@ -161,6 +166,7 @@ gas-sys.gas: gas-sys.gas.r s.lex
 gas-sys.o: gas-sys.gas gas.h
 	$(GAS) $(GASOPTS) -ogas-sys.o gas-sys.gas
 
+
 nasm-sys.o: nasm-sys.nasm
 	$(NASM) $(NASMOPTS) -onasm-sys.o nasm-sys.nasm
 
@@ -175,6 +181,27 @@ s-nasm-err.nasm: s.cnd $(ERR) s-nasm.nasm
 
 s-nasm-err.o: s-nasm-err.nasm
 	$(NASM) $(NASMOPTS) -os-nasm-err.o s-nasm-err.nasm
+
+# asm
+
+asm-sys.o: asm-sys.asm
+	$(ASM) $(ASMOPTS) -oasm-sys.o asm-sys.asm
+
+s-asm.asm: s.lex $(VHDRS) asm.sbl
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-asm.asm -3=s-asm.err -6=s.equ	asm.sbl
+
+asm.sbl:	asm.asm
+	$(BASEBOL) pp.sbl <asm.asm >asm.sbl
+
+s-asm.o: s-asm.asm
+	$(ASM) $(ASMOPTS) -os-asm.o s-asm.asm
+
+s-asm-err.asm: s.cnd $(ERR) s-asm.asm
+	   $(BASEBOL) -u $(TARGET)_asm -1=s-asm.err -2=s-asm-err.asm $(ERR)
+
+s-asm-err.o: s-asm-err.asm
+	$(ASM) $(ASMOPTS) -os-asm-err.o s-asm-err.asm
+
 
 # c language header dependencies:
 
@@ -197,6 +224,7 @@ install:
 
 clean:
 	rm -f *.o s.lex s.equ [rs]-* ./gasbol ./spitbol gas.hdr gas.h gas-sys.gas 
+	rm asm.sbl
 
 s-gas.dic: s-gas.nm
 	$(BASEBOL) test/map-$(WS).sbl <s-gas.nm >s-gas.dic

@@ -67,7 +67,7 @@
 	&anchor = &trim	= &dump = 1
 	&dump = 3
 	&stlimit = 10000000
-	
+
 
 *  useful constants
 
@@ -128,7 +128,7 @@
 	output = 'options: ' options
 *	add trailing colon so always have colon after an argument
 	options = options ':'
-option.next		
+option.next
 *	ignore extraneous : in list (helps with writing makefiles)
 	options ':' =				:s(option.next)
 	options break(':') . option ':' =	:f(options.done)
@@ -143,8 +143,8 @@ option.next
 option.bad
 * here if unknown option
 
-	output = "error: unknown option '" option "', translation ends."	
-	&dump = 3				
+	output = "error: unknown option '" option "', translation ends."
+	&dump = 3
 						:(end)
 
 option.unix.32
@@ -326,18 +326,18 @@ skip_init.end
 	argcase = table(100)
 	argcase[01] = .getarg.c.1;	argcase[2]  = .getarg.c.2;	argcase[3]  = .getarg.c.3;
 	argcase[04] = .getarg.c.4;	argcase[5]  = .getarg.c.5;	argcase[6]  = .getarg.c.6;
-	argcase[07] = .getarg.c.7;	argcase[8]  = .getarg.c.8;	argcase[9]  = .getarg.c.9;   
+	argcase[07] = .getarg.c.7;	argcase[8]  = .getarg.c.8;	argcase[9]  = .getarg.c.9;
 	argcase[10] = .getarg.c.10;	argcase[11] = .getarg.c.11;	argcase[12] = .getarg.c.12;
 	argcase[13] = .getarg.c.13;	argcase[14] = .getarg.c.14;	argcase[15] = .getarg.c.15;
 	argcase[16] = .getarg.c.16;	argcase[17] = .getarg.c.17;	argcase[18] = .getarg.c.18;
-	argcase[19] = .getarg.c.19;	argcase[20] = .getarg.c.20;	argcase[21] = .getarg.c.21; 
+	argcase[19] = .getarg.c.19;	argcase[20] = .getarg.c.20;	argcase[21] = .getarg.c.21;
 	argcase[22] = .getarg.c.22;	argcase[23] = .getarg.c.23;	argcase[24] = .getarg.c.24;
 	argcase[25] = .getarg.c.25;	argcase[26] = .getarg.c.26;	argcase[27] = .getarg.c.27
 
-	leacase = table(50) 
-	leacase[03] = .getadr.c.3;	leacase[04] = .getadr.c.4;	leacase[09] = .getadr.c.9;   
+	leacase = table(50)
+	leacase[03] = .getadr.c.3;	leacase[04] = .getadr.c.4;	leacase[09] = .getadr.c.9;
 	leacase[12] = .getadr.c.12;	leacase[13] = .getadr.c.13;	leacase[14] = .getadr.c.14
-	leacase[15] = .getadr.c.15;		 
+	leacase[15] = .getadr.c.15;
 
 
 	valtable = table(100)
@@ -700,7 +700,7 @@ getarg.c.2 getarg = txt				:(getarg.done)
 
 * wlbl, clbl -- memory reference
 getarg.c.3
-getarg.c.4 
+getarg.c.4
 	disp = txt				:(getarg.mem)
 
 * elbl, plbl
@@ -751,9 +751,9 @@ getarg.c.16 getarg = txt			:(getarg.done)
 getarg.c.17 getarg = txt			:(getarg.done)
 
 *  =dlbl
-getarg.c.18	
+getarg.c.18
 	getarg = '$' substr(txt,2)		:(getarg.done)
-	
+
 *  *dlbl
 getarg.c.19
 	getarg  = '$'  cfp_b '*' substr(txt,2)	:(getarg.done)
@@ -761,7 +761,7 @@ getarg.c.19
 *  =name (data section)
 getarg.c.20
 getarg.c.21
-        getarg = '$' substr(txt,2)	
+        getarg = '$' substr(txt,2)
 						:(getarg.done)
 	genop('lea',w0,substr(txt,2))
 	getarg = reg.w0				:(getarg.done)
@@ -787,7 +787,7 @@ getarg.done
 	it_suspend = 0
 						:(return)
 getarg.mem
-	getarg = differ(base) disp '(' regmap[base] ')'		:s(getarg.done)	
+	getarg = differ(base) disp '(' regmap[base] ')'		:s(getarg.done)
 	getarg = ident(indx) disp 		:s(getarg.done)
 	getarg = ident(scale) ident(disp) '(' regmap[indx] ')'	:s(getarg.done)
 	getarg = differ(disp) disp '(,' regmap[indx] ',' scale ')'	:(getarg.done)
@@ -805,7 +805,7 @@ getadr
 						:(getadr.lit)
 * wlbl, clbl
 getadr.c.3
-getadr.c.4 
+getadr.c.4
 						:(getadr.lit)
 
 * (x), register indirect
@@ -819,7 +819,7 @@ getadr.c.10
 
 	indx = substr(txt,2,2)
 	(ident(txt,'xs') genaop(tstmt(,'add','$' cfp_b,regmap[indx]))) :s(getadr.mem)
-*	genaop(tstmt(,'lea',regmap[indx], regmap[indx] '+$' cfp_b))	
+*	genaop(tstmt(,'lea',regmap[indx], regmap[indx] '+$' cfp_b))
 						:(getadr.done)
 
 *  -(x), register indirect, pre decrement -- memory reference
@@ -827,7 +827,7 @@ getadr.c.11
 	error('getadr called with type 11')	:(getadr.done)
 
 	getadr = substr(txt,3,2)
-*	genbop(tstmt(,'lea',regmap[indx], '-$' cfp_b '(,' regmap[indx] ')')) 
+*	genbop(tstmt(,'lea',regmap[indx], '-$' cfp_b '(,' regmap[indx] ')'))
 						:(getadr.mem)
 
 * int(x) -- memory reference
@@ -875,7 +875,7 @@ getadr.done
 	it_suspend = 0
 	getadr = w0
 						:(return)
-	
+
 -stitl m(text)
 m
 	error(' m wrongly called ' text)	:(return)
@@ -895,8 +895,8 @@ memmem
   genop('mov' o_,t,w0)				:(return)
 
 -stitl outline(txt)
-outline	
-	outlines = outlines + 1		
+outline
+	outlines = outlines + 1
 	outfile = txt
 						:(return)
 
@@ -1033,7 +1033,7 @@ readline.0
 
 *  here if not a comment line
 
-readline.asm	
+readline.asm
 *	outfile = '# ' readline
 *  find out why need to add 2 here
 *  add 2 since need to account for this line and one that will follow
@@ -1042,7 +1042,7 @@ readline.asm
 
 *  here on eof, proceed as if end statement seen.
 
-readline.end    
+readline.end
 	output = 'eof reached with no end statement, ending translation.' :(g.end)
 
 -stitl tblini(str)
@@ -1074,7 +1074,7 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 .						:f(freturn)s(return)
 
 g.flc
-	
+
 	t1 = i.text(i1)
 	t2 = '%'  (ident(t1,'wa') 'c', ident(t1,wb) 'b', 'd') 'l'
 	t3 = genlab('flc')
@@ -1133,7 +1133,7 @@ g.bod	t1 = (eq(i.type(i1),8) reglow[i.text(i1)], getarg(i1))
 	genop('test',t1,'1')
 	genop('jne',getarg(i2))			:(opdone)
 
-g.bev	
+g.bev
 	t1 = (eq(i.type(i1),8) reglow[i.text(i1)], getarg(i1))
 	genop('test',t1,'1')
 	genop('je',getarg(i2))
@@ -1148,7 +1148,7 @@ g.bsw	t1 = getarg(i1)
 	genop('cmp',t1,getarg(i2))
 	genop('jge',getarg(i3))
 * here after default case.
-g.bsw1	
+g.bsw1
 	genop('jmp','*' t2 '(,' t1 ',' cfp_b ')')
 	genop('.data')
         genopl(t2 ':')
@@ -1196,7 +1196,7 @@ g.ent.2
 
 g.bri	genop('jmp','*' getarg(i1))			:(opdone)
 
-g.lei	
+g.lei
 	t1 = regmap[i.text(i1)]
 	genop('dec',t1)
 	genop('mov', '(' t1 ')', '%al')
@@ -1429,12 +1429,12 @@ g.adi
 
 g.mli
 	genop('imul',getarg(i1),reg.ia)
-	genop('seto','reg_fl')		
+	genop('seto','reg_fl')
 						:(opdone)
 g.sbi
 	genop('sub',getarg(i1),reg.ia)
 *	clear to zero (TODO why is that?)
-	genop('xor',w0,w0)		
+	genop('xor',w0,w0)
 	genop('seto','reg_fl')			:(opdone)
 
 g.dvi
@@ -1691,7 +1691,7 @@ g.nzb1
 g.zrb	ifreg(i1)				:s(g.zrb1)
 	genop('xor',w0,w0)
 	genop('cmp',getarg(i1),w0)
-	
+
 	genop('jz',getarg(i2))
 						:(opdone)
 g.zrb1
@@ -1705,7 +1705,7 @@ g.zgb
 g.zzz
  	genop('zzz',getarg(i1))			:(opdone)
 
-g.wtb   
+g.wtb
 *  gas flaky on doing shifts, so just do repeated adds
 	reg = getarg(i1)
 	genop('add',reg,reg)
@@ -1739,10 +1739,10 @@ g.mfi.2
 
 g.ctb
 g.ctw
-	w.reg = getarg(i1); 
+	w.reg = getarg(i1);
 	genop('mov',w.reg,'ctbw_r')
 	genop('mov' op_w,'$' i.text(i2), 'ctbw_v')
-*	genop('mov',w.reg,w0)	
+*	genop('mov',w.reg,w0)
 	genop('call', incode '_')
 	genop('mov','ctbw_r',w.reg)
 						:(opdone)
@@ -1779,7 +1779,7 @@ g.mwb
 	genop('sub','$' cfp_b,reg.xl)
 	genop('sub','$' cfp_b,reg.xr)
  	genrep('movs' (eq(ws,32) 'd','q'))
-	genop('cld')				
+	genop('cld')
 	it_suspend = 0
 						:(opdone)
 
@@ -1863,7 +1863,7 @@ g.dtc.1
 g.dbc   genopl(thislabel,d_word,getarg(i1))
 						:(opdone)
 
-g.equ   
+g.equ
 *  generate eqv instruction, even though cannot use it without getting assembly error
 	genop('.set',thislabel,i.text(i1))
 						:(opdone)
@@ -1910,7 +1910,7 @@ g.sec.4 genop('.global','esec03')
         genopl('esec03' ':')
         genop('.data')
         genop('.global','sec04')
-        genopl('sec04' ':')     
+        genopl('sec04' ':')
 						:(opdone)
 
 *  here at start of program section.  if any n type procedures,
@@ -1926,7 +1926,7 @@ g.sec.5
         genopl('end_min_data' ':')
         genop('.text')
         genop('.global','sec05')
-        genopl('sec05' ':')     
+        genopl('sec05' ':')
 *  enable tracing if desired
 	it_suspend = 0
 						:(opdone)
