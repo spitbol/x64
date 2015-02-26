@@ -1211,7 +1211,12 @@ memmem
 *  here if memory-memory case, load second argument
   t = getarg(i2)
   i2 = w0_arg
+.if N
   genop('mov',w0,t)				:(return)
+.fi
+.if G
+  genop('mov' o_,t,w0)				:(return)
+.fi
 
 -stitl outline(txt)
 outline
@@ -1220,7 +1225,12 @@ outline
 						:(return)
 
 -stitl prcent(n)
+.if N
 prcent prcent = 'prc_+cfp_b*' ( n - 1)	:(return)
+.fi
+.if G
+prcent prcent = 'prc_+' cfp_b '*' ( n - 1)	:(return)
+.fi
 
 -stitl outstmt(ostmt)label,opcode,op1,op2,op3,comment)
 *  this module writes the components of the statement
@@ -1313,7 +1323,7 @@ chktrace.1
 	nlast = nlines
 
 	it_desc = '"' replace(thisline,'|',' ') '"'
-
+.if N
 	lbl = genlab('it')
 	outline(tab 'segment' tab '.data')
 	outline(lbl ':' tab 'd_char' tab it_desc)
@@ -1322,6 +1332,14 @@ chktrace.1
 	outline(tab 'mov' tab w0 ',' lbl)
 	outline(tab 'mov' tab 'm(it_de),' w0)
 	outline(tab 'call' tab 'it_')
+.fi
+.if G
+	outline(tab '.data')
+	outline(lbl ':' tab '.asciz' tab it_desc)
+	outline(tab '.text')
+	outline(tab 'mov' o_ tab '$' lbl ',it_de')
+	outline(tab 'call' tab 'it_')
+.fi
 						:(return)
 
 -stitl prsarg(iarg)
@@ -1340,8 +1358,8 @@ readline readline = infile                      :f(rl02)
 	ident( readline )			:s(readline)
 readline.0
 	leq( substr(readline,1,1 ),';' )       	:f(rl01)
-	it_skip = ident(readline,';z+') 0	:s(readline)
-*	it_skip = ident(readline,';z-') 1	:s(readline)
+	it_skip = ident(readline,';i+') 0	:s(readline)
+*	it_skip = ident(readline,';i-') 1	:s(readline)
 * force skip of full line comments
 	:(readline)
 
@@ -1356,7 +1374,12 @@ readline.0
 rl01
 *  find out why need to add 2 here
 *  add 2 since need to account for this line and one that will follow
+.if N
 	ne(x_trace) outline(';:' outlines + 2 ':' tab readline)
+.fi
+.if G
+	differ(x_trace) outline('#:' ta  tab readline )
+.fi
 					:(return)
 
 *  here on eof
