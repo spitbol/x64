@@ -1523,7 +1523,8 @@ g.rge	jop = 'jge'				:(g.r1)
 g.rgt	jop = 'jg'				:(g.r1)
 g.rle	jop = 'jle'				:(g.r1)
 g.rlt	jop = 'jl'
-g.r1	genop('call','cpr_')
+g.r1
+	genop('call','cpr_')
 	genop('mov','(reg_fl)','%al')
 	genop('or','%al','%al')
 	genop(jop,getarg(i1))			:(opdone)
@@ -1673,12 +1674,10 @@ g.trc
 	genop('xor',reg.xl,reg.xl)
 	genop('xor',reg.xr,reg.xr)
 						:(opdone)
-
 g.anb   genop('and',getarg(i2),getarg(i1))	:(opdone)
 g.orb   genop('or',getarg(i2),getarg(i1))	:(opdone)
 g.xob   genop('xor',getarg(i2),getarg(i1))	:(opdone)
 g.cmb   genop('not',getarg(i1))			:(opdone)
-
 g.rsh
 	gensh('shr',getarg(i1),getarg(i2))	:(opdone)
 
@@ -1725,10 +1724,12 @@ g.wtb
 	ne(ws,32) genop('add',reg,reg)
 						:(opdone)
 
-g.btw   gensh('shr',getarg(i1),log_cfp_b)	:(opdone)
+g.btw
+	gensh('shr',getarg(i1),log_cfp_b)	:(opdone)
 
 
-g.mti	ident(i.text(i1),'(xs)+')		:f(g.mti.1)
+g.mti
+	ident(i.text(i1),'(xs)+')		:f(g.mti.1)
 	genop('pop',w0)
 	genop('mov',w0,reg.ia)			:(opdone)
 g.mti.1
