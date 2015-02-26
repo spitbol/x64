@@ -113,19 +113,19 @@ AOBJS=s-asm.o s-asm-err.o asm-sys.o
 
 
 # build spitbol using nasm, build spitbol using as.
-# link spitbol with static linking
-spitbol: $(OBJS) $(NOBJS)
-	$(CC) $(LDOPTS)  $(OBJS) $(NOBJS) $(LMOPT) -static -ospitbol
+# link asm spitbol with static linking
+spitbol: $(OBJS) $(AOBJS)
+	$(CC) $(LDOPTS)  $(OBJS) $(AOBJS) $(LMOPT) -static -ospitbol
 
-# link asmbol with static linking
-asmbol: $(OBJS) $(AOBJS)
-	$(CC) $(LDOPTS)  $(OBJS) $(AOBJS) $(LMOPT) -static -oasmbol
+# link nasm spitbol with static linking
+asmbol: $(OBJS) $(NOBJS)
+	$(CC) $(LDOPTS)  $(OBJS) $(NOBJS) $(LMOPT) -static -oasmbol
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS) $(NOBJS)
 	$(CC) $(LDOPTS) $(OBJS) $(NOBJS) $(LMOPT)  -ospitbol 
 
-# build gasbol using gas
+# build gasbol, the asm variant  targeting gas format assembler
 # link gasbol with static linking
 gasbol: $(OBJS) $(GOBJS) $(GOBJS)
 	$(CC) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT) -ogasbol
@@ -143,8 +143,15 @@ bootbol:
 s.lex: s.min s.cnd $(LEX)
 	 $(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 
+gas.spt: gas.sbl
+	$(BASEBOL) -u G pp.sbl <gas.sbl >gas.spt
+
 gas.h:	gas.h.r
 	$(BASEBOL) -u $(TARGET) r.sbl <gas.h.r >gas.h
+s-gas.asm: s.lex gas.spt
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.gas -3=s-gas.err -6=s.equ	gas.spt
+	$(ASM) $(ASMOPTS) -os-gas.o s-gas.spt
+
 
 gas.hdr: gas.hdr.r 
 	$(BASEBOL) -u $(TARGET) r.sbl <gas.hdr.r >gas.hdr
@@ -190,14 +197,13 @@ asm-sys.o: asm-sys.asm
 	$(ASM) $(ASMOPTS) -oasm-sys.o asm-sys.asm
 
 asm.spt: asm.sbl
-	$(BASEBOL) pp.sbl <asm.sbl >asm.spt
+	$(BASEBOL) -u N pp.sbl <asm.sbl >asm.spt
 
 s-asm.o: s-asm.asm
 	$(NASM) $(ASMOPTS) -os-asm.o s-asm.asm
 
 s-asm.asm: s.lex asm.spt
 	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-asm.asm -3=s-asm.err -6=s.equ	asm.spt
-
 	$(ASM) $(ASMOPTS) -os-asm.o s-asm.asm
 
 s-asm-err.asm: s.cnd $(ERR) s-asm.asm
@@ -228,7 +234,7 @@ install:
 
 clean:
 	rm -f *.o s.lex s.equ [rs]-* ./gasbol ./spitbol gas.hdr gas.h gas-sys.gas 
-	rm asm.spt
+	rm asm.spt gas.spt
 
 s-gas.dic: s-gas.nm
 	$(BASEBOL) test/map-$(WS).sbl <s-gas.nm >s-gas.dic

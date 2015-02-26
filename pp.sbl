@@ -1,6 +1,5 @@
 * simple pre-processor
-	N = +1
-	G = +0
+	version = (differ(host(0)) host(0), 'N')
 	&anchor = &trim = 1
 	&dump = 3
 	skip = 0
@@ -21,7 +20,7 @@ c.if
 	line '.'				:f(switch)
 	line '.if' span(' ') rem . name	=	:f(err)
 	skip = 1
-	differ(name,'N')			:s(next)
+	differ(name,version)			:s(next)
 	skip = 0				:(next)
 
 c.fi
