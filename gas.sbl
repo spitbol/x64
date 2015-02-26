@@ -1121,15 +1121,18 @@ mov.xlp
 mov.xsp
 	ident(t.dst,'(xr)+')		:s(mov.xsprp)
 	genop('pop',getarg(i.dst))		:(opdone)
-mov.xsprp genop('pop',w0)
+mov.xsprp
+	genop('pop',w0)
 	genop('stos' (eq(ws,32) 'd', 'q'))	:(opdone)
-mov.xrp genop('mov' o_,getarg(i.src),w0)
+mov.xrp
+	genop('mov' o_,getarg(i.src),w0)
 	genop('stos' (eq(ws,32) 'd','q'))	:(opdone)
 mov.2
 	genop('push',getarg(i.src))		:(opdone)
 
 * odd/even tests.  if w reg, use low byte of register.
-g.bod	t1 = (eq(i.type(i1),8) reglow[i.text(i1)], getarg(i1))
+g.bod
+	t1 = (eq(i.type(i1),8) reglow[i.text(i1)], getarg(i1))
 	genop('test',t1,'1')
 	genop('jne',getarg(i2))			:(opdone)
 

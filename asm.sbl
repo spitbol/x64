@@ -1421,6 +1421,7 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 .						:f(freturn)s(return)
 
 g.flc
+.if N
 	t1 = (eq(cfp_b,cfp_c) reglow[getarg(i1)], getarg(i1))
 	t2 = genlab('flc')
 *	it_suspend = 1
@@ -1431,6 +1432,22 @@ g.flc
 	genop('add',t1,'32')
         genopl(t2 ':')
 *	it_suspend = 0
+.fi
+.if G
+	
+	t1 = i.text(i1)
+	t2 = '%'  (ident(t1,'wa') 'c', ident(t1,wb) 'b', 'd') 'l'
+	t3 = genlab('flc')
+	outfile = '# t1 ' t1 '  t2 ' t2 '  t3 ' t3
+	it_suspend = 1
+	genop('cmpb',t2,"'A'")
+	genop('jb', t3 )
+	genop('cmpb',t2,"'Z'")
+	genop('ja', t3)
+	genop('add','$32',t2)
+        genopl(t3 ':')
+	it_suspend = 0
+.fi
 						:(opdone)
 
 g.mov
@@ -1454,29 +1471,74 @@ g.mov
 	ident(t.dst,'(xr)+')			:s(mov.xrp)
 	ident(t.dst,'-(xs)')			:s(mov.2)
 	memmem()
+.if N
 	genop('mov',getarg(i1),getarg(i2))
+.fi
+.if G
+	genop('mov' o_,getarg(i2),getarg(i1))
+.fi
 						:(opdone)
 mov.xtp
 mov.xlp
+.if N
 	ident(t.dst,'(xr)+') genop('movs_w')	:s(opdone)
 	genop('lods_w')
 	ident(t.dst,'-(xs)') genop('push',w0)	:s(opdone)
 	genop('mov',getarg(i.dst),w0)		:(opdone)
+.fi
+.if G
+	ident(t.dst,'(xr)+') genop('movs' (eq(ws,32) 'd', 'q')) :s(opdone)
+	genop('lods' (eq(ws,32) 'd', 'q'))
+	ident(t.dst,'-(xs)') genop('push',w0)	:s(opdone)
+	genop('mov' o_,w0,getarg(i.dst))	:(opdone)
+.fi
+
 mov.xsp
+.if N
 	ident(t.dst,'(xr)+')		:s(mov.xsprp)
 	genop('pop',getarg(i.dst))		:(opdone)
-mov.xsprp genop('pop',w0)
+.fi
+.if G
+	ident(t.dst,'(xr)+')		:s(mov.xsprp)
+	genop('pop',getarg(i.dst))		:(opdone)
+.fi
+
+mov.xsrp
+.if N
+	genop('pop',w0)
 	genop('stos_w')				:(opdone)
-mov.xrp genop('mov',w0,getarg(i.src))
+.fi
+.if G
+	genop('pop',w0)
+	genop('stos' (eq(ws,32) 'd', 'q'))	:(opdone)
+.fi
+
+mov.xrp
+.if N
+	genop('mov',w0,getarg(i.src))
 	genop('stos_w')				:(opdone)
+.fi
+.if G
+	genop('mov' o_,getarg(i.src),w0)
+	genop('stos' (eq(ws,32) 'd','q'))	:(opdone)
+.fi
+
 mov.2
 	genop('push',getarg(i.src))		:(opdone)
 
 * odd/even tests.  if w reg, use low byte of register.
-g.bod	t1 = getarg(i1)
+g.bod
+.if N
+	t1 = getarg(i1)
  	t1 = eq(i.type(i1),8) reglow[t1]
 	genop('test',t1,'1')
 	genop('jne',getarg(i2))			:(opdone)
+.fi
+.if G
+	t1 = (eq(i.type(i1),8) reglow[i.text(i1)], getarg(i1))
+	genop('test',t1,'1')
+	genop('jne',getarg(i2))			:(opdone)
+.fi
 
 g.bev	t1 = getarg(i1)
 	t1 = eq(i.type(i1),8) reglow[t1]
