@@ -5,15 +5,20 @@
 	&dump = 3
 	skip = 0
 	:(copy)
+switch
+* copy line unless skipping, in which case go to read next line
+	eq(skip)				:s(copy)f(next)
 copy
 	output = line
 next
 	line = input				:f(finis)
-	line '.'				:f(copy)
+	line '.'				:f(switch)
 	line '.if'				:s(c.if)
 	line '.fi'				:s(c.fi)
+* here if not directive, so just copy it out
 						:(copy)
 c.if
+	line '.'				:f(switch)
 	line '.if' span(' ') rem . name	=	:f(err)
 	skip = 1
 	differ(name,'N')			:s(next)

@@ -155,7 +155,7 @@ s-gas-err.gas: s.cnd $(ERR) s-gas.gas
 s-gas-err.o: s-gas-err.gas s-gas.gas
 	$(GAS) $(GASOPTS) -os-gas-err.o s-gas-err.gas
 
-s-gas.gas: s.lex $(VHDRS) gas.sbl gas.hdr gas.h
+s-gas.gas: s.lex gas.sbl gas.hdr gas.h
 	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.tmp -3=s-gas.err -4=gas.hdr -5=s.lex -6=s.equ	gas.sbl
 	$(BASEBOL) -u $(TARGET) r.sbl <s-gas.tmp >s-gas.gas
 
@@ -172,7 +172,7 @@ gas-sys.o: gas-sys.gas gas.h
 nasm-sys.o: nasm-sys.nasm
 	$(NASM) $(NASMOPTS) -onasm-sys.o nasm-sys.nasm
 
-s-nasm.nasm: s.lex $(VHDRS) nasm.sbl
+s-nasm.nasm: s.lex nasm.sbl
 	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-nasm.nasm -3=s-nasm.err -6=s.equ	nasm.sbl
 
 s-nasm.o: s-nasm.nasm
@@ -193,8 +193,9 @@ asm.spt: asm.sbl
 	$(BASEBOL) pp.sbl <asm.sbl >asm.spt
 
 s-asm.o: s-asm.asm
+	$(NASM) $(ASMOPTS) -os-asm.o s-asm.asm
 
-s-asm.asm: s.lex $(VHDRS) asm.spt
+s-asm.asm: s.lex asm.spt
 	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-asm.asm -3=s-asm.err -6=s.equ	asm.spt
 
 	$(ASM) $(ASMOPTS) -os-asm.o s-asm.asm
