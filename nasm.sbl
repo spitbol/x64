@@ -1,30 +1,353 @@
+-title mincod: phase 2 translation from minimal tokens to 80386 code
+-stitl description
+* copyright 1987-2012 robert b. k. dewar and mark emmer.
+* copyright 2012-2015 david shields
+
+* this file is part of macro spitbol.
+
+*     macro spitbol is free software: you can redistribute it and/or modify
+*     it under the terms of the gnu general public license as published by
+*     the free software foundation, either version 2 of the license, or
+*     (at your option) any later version.
+
+*     macro spitbol is distributed in the hope that it will be useful,
+*     but without any warranty; without even the implied warranty of
+*     merchantability or fitness for a particular purpose.  see the
+*     gnu general public license for more details.
+
+*     you should have received a copy of the gnu general public license
+*     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+
+
+*  this program takes input file in minimal token form and
+*  produces assembly code for intel 80386 processor.
+*  the program obtains the name of the file to be translated from the
+*  command line string in host(0).  options relating to the processing
+*  of comments can be changed by modifying the source.
+
+*  in addition to the minimal token file, the program requires the
+*  name of a "machine definition file" that contains code specific
+*  to a particular 80386 assembler.
+
+*  you may also specify option flags on the command line to control the
+*  code generation.  the following flags are processed:
+*	compress	generate tabs rather than spaces in output file
+*       comments        retain full-line and end-of-line comments
+
+*  in addition to the normal minimal register complement, one scratch
+*  work register, w0 is defined.  see the register map below for specific allocations.
+
+*  this program is based in part on earlier translators for the
+*  it is based in part on earlier translators for the dec vax
+*  (vms and un*x) written by steve duff and robert goldberg, and the
+*  pc-spitbol translator by david shields.
+
+*  to run under spitbol:
+*       spitbol -u "<file>:<machine>[:flag:...:flag]" codlinux.spt
+
+*	reads <file>.lex	containing tokenized source code
+*       writes <file>.s         with 80386 assembly code
+*	also writes <file>.err	with err and erb error messages
+*       parts of n.hdr  are prepended and appended to <file>.s
+*	also sets flags		to 1 after converting names to upper case
+*	also reads <file>.pub	for debug symbols to be declared public
+
+*  example:
+*       spitbol -u v37:dos:compress codlinux.spt
+
+
+*  revision history:
+
+        version = 'v1.12'
+	rcode = '_rc_'
+
+
+-eject
+
+*  keyword initialization
+
+	&anchor = &trim	= &dump = 1
+	&stlimit = 10000000
+	
+
+*  useful constants
+
+	letters = 'abcdefghijklmnopqrstuvwxyz'
+	ucase   = letters
+	lcase   = 'abcdefghijklmnopqrstuvwxyz'
+	nos     = '0123456789'
+	tab	= char(9)
+
+
+*  function definitions
+
+*  crack parses stmt into a stmt data plex and returns it.
+*  it fails if there is a syntax error.
+
+	define('crack(line)operands,operand,char')
+
+	define('chktrace()')
+*	comregs - map minimal register names to target register names
+	define('comregs(line)t,pre,word')
+
+*  error is used to report an error for current statement
+
+	define('error(text)')
+	define('flush()')
+	define('genz()')
+	define('genaop(stmt)')
+	define('genbop(stmt)')
+	define('gendata()')
+        define('genlab(prefix)')
+        define('genrip()')
+	define('genop(gopc,gop1,gop2,gop3)')
+	define('genopl(gopl,gopc,gop1,gop2,gop3)')
+	define('genrep(op)l1,l2)')
+	define('gentext()')
+	define('getarg(iarg)txt,typ,pre,post')
+	define('getlea(iarg)txt,typ,pre,post')
+	define('getrip(iarg)txt,typ,pre,post,ent,lb,var,reg')
+	define('getval(iarg)txt,typ,pre,post')
+	define('ifreg(iarg)')
+	define('memmem()t')
+	define('outline(txt)')
+	define('prcent(n)')
+	define('prsarg(iarg)l1,l2')
+	define('report(num,text)')
+	define('ripinit()')
+	define('tblini(str)pos,cnt,index,val,lastval')
+
+*  outstmt is used to send a target statement to the target code
+*  output file outfile
+
+	define('outstmt(ostmt)label,opcode,op1,op2,op3,comment,t,stmtout')
+
+*  readline is called to return the next non-comment line from
+*  the minimal input file (infile <=> lu1).   note that it will
+*  not fail on eof, but it will return a minimal end statement
+
+	define('readline()')
+
+	os = 'unix';	ws = '64'
+	options = host(0)
+	output = 'options: ' options
+*	add trailing colon so always have colon after an argument
+	options = options ':'
+option.next		
+*	ignore extraneous : in list (helps with writing makefiles)
+	options ':' =				:s(option.next)
+	options break(':') . option ':' =	:f(options.done)
+
+	ident(option,'unix_32')			:s(option.unix.32)
+	ident(option,'unix_64')			:s(option.unix.64)
+	ident(option,'osx_32')			:s(option.osx.32)
+	ident(option,'xt')			:s(option.xt)
+	ident(option,'it')			:s(option.it)
+
+* here if unknown option
+
+	output = "error: unknown option '" option "', translation ends."	
+	&dump = 0				:(end)
+
+option.unix.32
+	os = 'unix'; 	ws = '32'		:(option.next)
+option.unix.64
+	os = 'unix'; 	ws = '64'		:(option.next)
+option.osx.32
+	os = 'osx'; 	ws = '32'		:(option.next)
+option.it
+*	turn on instruction trace
+	i_trace = 1				:(option.next)
+option.xt
+*  x_trace turns on tracing for executable instructions
+	x_trace = 1				:(option.next)
+
+options.done
+	target = os '_' ws
+	report(target,'target')
+
+
+
+	filebase = "s"
+
+*	cfp_b is bytes per word, cfp_c is characters per word
+*       these should agree with values used in translator
+* set target-dependent configuration parameters
+	:($('config.' ws))
+
+config.32
+	cfp_b = 4
+	cfp_c = 4
+	log_cfp_b = '2'
+	log_cfp_c = '2'
+*	op_w is instruction suffix for word-size
+	op_w = 'd'
+*	op_c is instruction suffix for minimal character size
+	op_c = 'b'
+	rel = ''
+						:(config.done)
+
+config.64
+*	cfp_b is bytes per word, cfp_c is characters per word
+*       these should agree with values used in translator
+	cfp_b = 8
+	cfp_c = 8
+	log_cfp_b = '3'
+	log_cfp_c = '3'
+	op_w = 'q'
+	op_c = 'b'
+*	rel = 'rel '
+	rel = ''
+
+config.done
+
+*	rip_mode is needed for osx. See getval()
+
+	rip_mode = (ident(os,'osx') 1, 0)
+
+	report('rip', rip_mode)
+	ne(rip_mode) ripinit()
+
+*	it_limit is maximum number of calls to be generated if non-zero
+	it_limit = 000
+*	set it_first non-zero to skip first number of instructions that would generate trace
+	it_first = 1
+*	will set in_executable when in part of program where executable
+*	instructions may occur
+	it_exec = 0
+
+*	it_suspend is set nonzero to temporarily disable the instruction trace.
+*	it is initially nonzero so no trace can be emitted until reach code section.
+	it_suspend = 1
+*	set in_skip when should not insert trace code, else assembly errors result.
+*	start with skip on, turn off when see first start of code.
+	it_skip = 1
+*	skip_on and skip_off are labels indicating the start and end,
+*	respectively, of sections of the code that should not be traced,
+*	usually because they contain a loop instruction that won't
+*	compile if too much trace code is inserted.
+	skip_on = table(50)
+	skip_off = table(50)
+
+	define('skip_init(s)on,off')		:(skip_init.end)
+skip_init	s break(':') . on ':' rem . off	:f(return)
+	skip_on[on] = 1
+	skip_off[off] = 1			:(return)
+skip_init.end
+
+*	skip_init('start:ini03')
+   	skip_init('gbcol:gtarr')
+*	skip_init('gtn01:gtnvr')
+*	skip_init('bpf05:bpf07')
+*	skip_init('scv12:scv19')
+*	skip_init('exbl1:exbl2')
+*	skip_init('exbl5:expan')
+*	skip_init('prn17:prn18')
+*	skip_init('ini11:ini13')
+*	skip_init('oex13:oexp2')
+*	skip_init('oex14:oexp6')
+*	skip_init('bdfc1:b_efc')
+*	skip_init('sar01:sar10')
+*	skip_init('srpl5:srpl8')
+*	skip_init('pflu1:pflu2')
+*	skip_init('prpa4:prpa5')
+*	skip_init('prn17:prn18')
+*	skip_init('prtvl:prtt1')
+*	skip_init('trim4:trim5')
+*	skip_init('prnl1:prnl2')
+*	skip_init('prti1:prtmi')
+*	skip_init('srpl5:srpl8')
+
+
+
+*  data structures
+
+	data('minarg(i.type,i.text)')
+	data('tstmt(t.label,t.opc,t.op1,t.op2,t.op3,t.comment)')
+
+	sectnow = 0
+
+*	ppm_cases gives count of ppm/err statments that must follow call to
+*	a procedure
+
+	ppm_cases = table(50,,0)
+
+
+	 p.comregs = break(letters) . pre span(letters) . word
+
+*  exttab has entry for external procedures
+
+	exttab = table(50)
+
+*  labtab records labels in the code section, and their line numbers
+
+	labtab = table(500)
+
+*  for each statement, code in generated into three
+*  arrays of statements:
+
+*	astmts:	statements after opcode (()+, etc.)
+*	bstmts: statements before code (-(), etc)
+*	cstmts: generated code proper
+
+	astmts = array(20,'')
+	bstmts = array(10,'')
+	cstmts = array(20,'')
+
+*  genlabels is count of generated labels (cf. genlab)
+
+	genlabels = 0
+
+*  riplabel is count of generated rip (osx rip address mode) labels
+
+	riplabels = 0
+
+
+*  initialize variables
+
+	labcnt = outlines = nlines = nstmts = ntarget = nerrors = 0
+	lastopc = lastop1 = lastop2 =
+	data_lc = 0
+	max_exi = 0
+
+*  initial patterns
+
+*  p.csparse parses tokenized line
+	p.csparse = '|' break('|') . inlabel
+.	'|' break('|') . incode
+.	'|' break('|') . iarg1
+.	'|' break('|') . iarg2
+.	'|' break('|') . iarg3
+.	'|' break('|') . incomment
+	'|' rem . slineno
+
 *  dispatch table
 
 	argcase = table(100)
 	argcase[01] = .arg.c.1;	argcase[2]  = .arg.c.2;	argcase[3]  = .arg.c.3;
 	argcase[04] = .arg.c.4;	argcase[5]  = .arg.c.5;	argcase[6]  = .arg.c.6;
-	argcase[07] = .arg.c.7;	argcase[8]  = .arg.c.8;	argcase[9]  = .arg.c.9;
+	argcase[07] = .arg.c.7;	argcase[8]  = .arg.c.8;	argcase[9]  = .arg.c.9;   
 	argcase[10] = .arg.c.10;	argcase[11] = .arg.c.11;	argcase[12] = .arg.c.12;
 	argcase[13] = .arg.c.13;	argcase[14] = .arg.c.14;	argcase[15] = .arg.c.15;
 	argcase[16] = .arg.c.16;	argcase[17] = .arg.c.17;	argcase[18] = .arg.c.18;
-	argcase[19] = .arg.c.19;	argcase[20] = .arg.c.20;	argcase[21] = .arg.c.21;
+	argcase[19] = .arg.c.19;	argcase[20] = .arg.c.20;	argcase[21] = .arg.c.21; 
 	argcase[22] = .arg.c.22;	argcase[23] = .arg.c.23;	argcase[24] = .arg.c.24;
 	argcase[25] = .arg.c.25;	argcase[26] = .arg.c.26;	argcase[27] = .arg.c.27
 
-	leacase = table(50)
-	leacase[03] = .lea.c.3;		leacase[04] = .lea.c.4;		leacase[09] = .lea.c.9;
+	leacase = table(50) 
+	leacase[03] = .lea.c.3;		leacase[04] = .lea.c.4;		leacase[09] = .lea.c.9;   
 	leacase[12] = .lea.c.12;	leacase[13] = .lea.c.13;	leacase[14] = .lea.c.14
-	leacase[15] = .lea.c.15;
+	leacase[15] = .lea.c.15;		 
 
 	valcase = table(50)
-	valcase[18] = .val.c.18;	valcase[19] = .val.c.19;	valcase[20] = .val.c.20;
+	valcase[18] = .val.c.18;	valcase[19] = .val.c.19;	valcase[20] = .val.c.20;	
 	valcase[21] = .val.c.21;	valcase[22] = .val.c.22
 
 	riptable = table(500)
 	rip_count = 0
 	ripcase = table(50)
-	ripcase[14] = .rip.c.14;	ripcase[15] = .rip.c.15;	ripcase[18] = .rip.c.18;
-	ripcase[19] = .rip.c.19;	ripcase[20] = .rip.c.20;	ripcase[21] = .rip.c.21;
+	ripcase[14] = .rip.c.14;	ripcase[15] = .rip.c.15;	ripcase[18] = .rip.c.18;	
+	ripcase[19] = .rip.c.19;	ripcase[20] = .rip.c.20;	ripcase[21] = .rip.c.21;	
 	ripcase[22] = .rip.c.22
 
 
@@ -198,7 +521,7 @@ flgs2
 
         output = ~input(.infile,1) "no input file"	:s(end)
 
-inputok
+inputok 
 
 
 
@@ -349,7 +672,7 @@ getarg
 *	imem is null to generate memory reference, otherwise just get
 *	address for use in 'lea' instruction.
 	pre = 'm('
-	post = ')'
+	post = ')'	
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
@@ -448,7 +771,7 @@ getlea
 *	imem is null to generate memory reference, otherwise just get
 *	address for use in 'lea' instruction.
 	pre = 'a('
-	post = ')'
+	post = ')'	
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
@@ -456,7 +779,7 @@ getlea
 	getlea = txt				:(return)
 * wlbl, clbl
 lea.c.3
-lea.c.4
+lea.c.4 
 	getlea = pre txt post			:(return)
 
 * (x), register indirect
@@ -485,7 +808,7 @@ getrip
 *  return value suitable for use in rip mode (needed for osx). This requires that we
 *  allocate a variable to hold the address,value. This is loaded into w0
 	pre = 'm('
-	post = ')'
+	post = ')'	
 	txt = i.text(iarg)
 	typ = i.type(iarg)
 	eq(typ)					:f($(ripcase[typ]))
@@ -496,14 +819,14 @@ rip.c.14
 rip.c.15
 	txt break('(') . var '(' len(2) . reg
 *	getrip = pre    var '+'  regmap[t2] 	post
-	getrip = var
+	getrip = var 
 						:(rip.done)
 *  *dlbl
 rip.c.19
 	getrip = 'cfp_b*' substr(txt,2)		:(rip.done)
 
 *  =dlbl
-rip.c.18
+rip.c.18	
 *  =name (data section)
 rip.c.20
 rip.c.21
@@ -530,12 +853,12 @@ rip.ent
 	getrip = w0
 *	outfile = ne(x_trace) '; getrip ' ent
 						:(return)
-
+	
 
 -stitl getval(iarg)
 getval
 	pre = 'm('
-	post = ')'
+	post = ')'	
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
@@ -545,7 +868,7 @@ getval
 	getarg = txt				:(val.done)
 
 *  =dlbl
-val.c.18
+val.c.18	
 	getval = substr(txt,2)			:(val.done)
 val.c.18.1
 	getval = substr(txt,2)			:(val.done)
@@ -577,8 +900,8 @@ memmem
   genop('mov',w0,t)				:(return)
 
 -stitl outline(txt)
-outline
-	outlines = outlines + 1
+outline	
+	outlines = outlines + 1		
 	outfile = txt
 						:(return)
 
@@ -716,7 +1039,7 @@ readline.0
 
 *  here if not a comment line
 
-rl01
+rl01	
 *  find out why need to add 2 here
 *  add 2 since need to account for this line and one that will follow
 	ne(x_trace) outline(';:' outlines + 2 ':' tab readline)
@@ -833,8 +1156,8 @@ g.bsw	t1 = getarg(i1)
 	genop('cmp',t1,getarg(i2))
 	genop('jge',getarg(i3))
 * here after default case.
-g.bsw1
-	ne(rip_mode)				:s(g.bsw.2)
+g.bsw1	
+	ne(rip_mode)				:s(g.bsw.2)	
 	genop('jmp', 'm(' t2 '+' t1 '*cfp_b)' ) :(g.bsw.3)
 g.bsw.2
 * in rip_mode, need to generate location to reference destination
@@ -1611,7 +1934,7 @@ g.sec.4 genop('global','esec03')
         genopl('esec03' ':')
         gendata()
         genop('global','sec04')
-        genopl('sec04' ':')
+        genopl('sec04' ':')     
 						:(opdone)
 
 *  here at start of program section.  if any n type procedures,
@@ -1627,7 +1950,7 @@ g.sec.5
         genopl('end_min_data' ':')
         gentext()
         genop('global','sec05')
-        genopl('sec05' ':')
+        genopl('sec05' ':')     
 *  enable tracing if desired
 						:(opdone)
 
@@ -1687,4 +2010,345 @@ flush_end
 report
 	output = lpad(num,7) tab text		:(return)
 
+
+g.end
+	&dump = 0
+	ident(havehdr)				:s(g.end.2)
+*  here to copy remaining part from hdr file
+g.end.1	line = hdrfile				:f(g.end.2)
+	ntarget = ntarget + 1
+	outline(line)				:(g.end.1)
+g.end.2
+
+* here at end of code generation.
+
+	endfile(1)
+	endfile(2)
+	endfile(3)
+        report(nlines,		'lines read')
+        report(nstmts,		'statements processed')
+        report(ntarget,		'target code lines produced')
+	report(&stcount,	'spitbol statements executed')
+        report(max.err,		'maximum err/erb number')
+        report(prc.count1, 	'prc count')
+        output  = '  ' gt(prc.count,prc.count1)
+.	  'differing counts for n-procedures:'
+.	  ' inp ' prc.count1 ' prc ' prc.count
+        differ(nerrors) report(nerrors,'errors detected')
+
+	errfile = '* ' max.err 'maximum err/erb number'
+	errfile  = '* ' prc.count 'prc count'
+.		differ(lasterror) '  the last error was in line ' lasterror
+
+	&code   = ne(nerrors) 2001
+        report(collect(), 'free words')
+	report(time(),'execution time ms')
+	:(end)
+end
+; copyright 1987-2012 robert b. k. dewar and mark emmer.
+; copyright 2012-2015 david shields
+;
+; this file is part of macro spitbol.
+;
+;     macro spitbol is free software: you can redistribute it and/or modify
+;     it under the terms of the gnu general public license as published by
+;     the free software foundation, either version 2 of the license, or
+;     (at your option) any later version.
+;
+;     macro spitbol is distributed in the hope that it will be useful,
+;     but without any warranty; without even the implied warranty of
+;     merchantability or fitness for a particular purpose.  see the
+;     gnu general public license for more details.
+;
+;     you should have received a copy of the gnu general public license
+;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+;
+        section	.text
+
+	%include	"nasm.h"
+
+	global	dnamb
+	global	dname
+	extern	osisp
+	extern	compsp
+	extern	save_regs
+	extern	restore_regs
+	extern	_rc_
+	extern	reg_fl
+	extern	reg_cp
+	extern	reg_w0
+
+	global	mxint
+
+;%ifdef it_trace
+	extern	shields
+	extern	it_
+	extern	id_de
+	extern	it_cp
+	extern	it_xl
+	extern	it_xr
+	extern	it_xs
+	extern	it_wa
+	extern	it_wb
+	extern	it_wc
+	extern	it_w0
+	extern	it_it
+	extern	it_id
+	extern	it_de
+	extern	it_0
+	extern	it_1
+	extern	it_2
+	extern	it_3
+	extern	it_4
+	extern	it_arg
+	extern	it_num
+;%endif
+	global	start
+
+
+	%macro	itz	1
+	section	.data
+%%desc:	db	%1,0
+	section	.text
+	mov	m_word [it_de],%%desc
+	call	it_
+	%endmacro
+;
+;
+;   table to recover type word from type ordinal
+;
+
+	extern	_rc_
+	global	typet
+	section .data
+
+        d_word	b_art   ; arblk type word - 0
+        d_word	b_cdc   ; cdblk type word - 1
+        d_word	b_exl   ; exblk type word - 2
+        d_word	b_icl   ; icblk type word - 3
+        d_word	b_nml   ; nmblk type word - 4
+        d_word	p_aba   ; p0blk type word - 5
+        d_word	p_alt   ; p1blk type word - 6
+        d_word	p_any   ; p2blk type word - 7
+; next needed only if support real arithmetic cnra
+;       d_word	b_rcl   ; rcblk type word - 8
+        d_word	b_scl   ; scblk type word - 9
+        d_word	b_sel   ; seblk type word - 10
+        d_word	b_tbt   ; tbblk type word - 11
+        d_word	b_vct   ; vcblk type word - 12
+        d_word	b_xnt   ; xnblk type word - 13
+        d_word	b_xrt   ; xrblk type word - 14
+        d_word	b_bct   ; bcblk type word - 15
+        d_word	b_pdt   ; pdblk type word - 16
+        d_word	b_trt   ; trblk type word - 17
+        d_word	b_bft   ; bfblk type word   18
+        d_word	b_cct   ; ccblk type word - 19
+        d_word	b_cmt   ; cmblk type word - 20
+        d_word	b_ctt   ; ctblk type word - 21
+        d_word	b_dfc   ; dfblk type word - 22
+        d_word	b_efc   ; efblk type word - 23
+        d_word	b_evt   ; evblk type word - 24
+        d_word	b_ffc   ; ffblk type word - 25
+        d_word	b_kvt   ; kvblk type word - 26
+        d_word	b_pfc   ; pfblk type word - 27
+        d_word	b_tet   ; teblk type word - 28
+;
+;   table of minimal entry points that can be dded from c
+;   via the minimal function (see inter.asm).
+;
+;   note that the order of entries in this table must correspond
+;   to the order of entries in the call enumeration in osint.h
+;   and osint.inc.
+;
+	global calltab
+calltab:
+        d_word	relaj
+        d_word	relcr
+        d_word	reloc
+        d_word	alloc
+        d_word	alocs
+        d_word	alost
+        d_word	blkln
+        d_word	insta
+        d_word	rstrt
+        d_word	start
+        d_word	filnm
+        d_word	dtype
+;       d_word	enevs ;  engine words
+;       d_word	engts ;   not used
+
+	global	b_efc
+	global	b_icl
+	global	b_rcl
+	global	b_scl
+	global	b_vct
+	global	b_xnt
+	global	b_xrt
+	global	c_aaa
+	global	c_yyy
+	global	dnamb
+	global	cswfl
+	global	dnamp
+	global	flprt
+	global	flptr
+	global	g_aaa
+	global	gbcnt
+	global	gtcef
+	global	headv
+	global	hshtb
+	global	kvstn
+	global	kvdmp
+	global	kvftr
+	global	kvcom
+	global	kvpfl
+	global	mxlen
+	global	polct
+	global	s_yyy
+	global	s_aaa
+	global	stage
+	global	state
+	global	stbas
+	global	statb
+        global  stmcs
+        global  stmct
+	global	timsx
+	global  typet
+	global	pmhbs
+	global	r_cod
+	global	r_fcb
+	global	w_yyy
+	global	end_min_data
+
+
+        extern	adr_
+        extern	atn_
+        extern	chp_
+        extern	cos_
+	extern	cpr_
+        extern	dvr_
+        extern	etx_
+        extern	itr_
+        extern	ldr_
+        extern	lnf_
+        extern	mlr_
+        extern	ngr_
+	extern	ovr_
+        extern	sbr_
+        extern	sin_
+        extern	str_
+        extern	sqr_
+        extern	tan_
+
+
+	extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
+
+	%macro	adi_	1
+	add	ia,%1
+	seto	byte [reg_fl]
+	%endmacro
+
+
+	%macro	chk_	0
+	extern	chk__	
+	call	chk__
+	%endmacro
+
+	extern	cvd__
+
+	%macro	cvd_	0
+	call	cvd__
+	%endmacro
+
+	extern	dvi__
+
+	%macro	dvi_	1
+	mov	w0,%1
+	call	dvi__
+	%endmacro
+
+	%macro	icp_	0
+	mov	w0,m(reg_cp)
+	add	w0,cfp_b
+	mov	m(reg_cp),w0
+	%endmacro
+
+	%macro	ino_	1
+	mov	al,byte [reg_fl]
+	or	al,al
+	jno	%1
+	%endmacro
+
+	%macro	iov_	1
+	mov	al,byte [reg_fl]
+	or	al,al
+	jo	%1
+	%endmacro
+
+	%macro	ldi_	1
+	mov	ia,%1
+	%endmacro
+
+	%macro	mli_	1
+	imul	ia,%1
+	seto	byte [reg_fl]
+	%endmacro
+
+	%macro	ngi_	0
+	neg	ia
+	seto	byte [reg_fl]
+	%endmacro
+
+	extern	rmi__
+	%macro	rmi_	1
+	mov	w0,%1
+	call	rmi__
+	%endmacro
+
+	extern	f_rti
+	%macro	rti_	0
+
+	call	f_rti
+	mov	ia,m(reg_ia)
+	%endmacro
+
+	%macro	sbi_	1
+	sub	ia,%1
+	mov	w0,0
+	seto	byte [reg_fl]
+	%endmacro
+
+	%macro	sti_	1
+	mov	%1,ia
+	%endmacro
+
+	%macro	lcp_	1
+	mov	w0,%1
+	mov	m_word [reg_cp],w0
+	%endmacro
+
+	%macro	lcw_	1
+	mov	w0,m_word [reg_cp]		; load address of code word
+	mov	w0,m_word [w0]			; load code word
+	mov	%1,w0
+	mov	w0,m_word [reg_cp]		; load address of code word
+	add	w0,cfp_b
+	mov	m_word [reg_cp],w0
+	%endmacro
+
+	%macro	rno_	1
+	mov	al,byte [reg_fl]
+	or	al,al
+	je	%1
+	%endmacro
+
+	%macro	rov_	1
+	mov	al,byte [reg_fl]
+	or	al,al
+	jne	%1
+	%endmacro
+
+	%macro	scp_	1
+	mov	w0,m_word [reg_cp]
+	mov	%1,w0
+	%endmacro
 

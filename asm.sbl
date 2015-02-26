@@ -335,7 +335,7 @@ skip_init.end
 	'|' rem . slineno
 
 *  dispatch table
-
+.if N
 	argcase = table(100)
 	argcase[01] = .arg.c.1;	argcase[2]  = .arg.c.2;	argcase[3]  = .arg.c.3;
 	argcase[04] = .arg.c.4;	argcase[5]  = .arg.c.5;	argcase[6]  = .arg.c.6;
@@ -362,7 +362,28 @@ skip_init.end
 	ripcase[14] = .rip.c.14;	ripcase[15] = .rip.c.15;	ripcase[18] = .rip.c.18;
 	ripcase[19] = .rip.c.19;	ripcase[20] = .rip.c.20;	ripcase[21] = .rip.c.21;
 	ripcase[22] = .rip.c.22
+.fi
+.if G
 
+	argcase = table(100)
+	argcase[01] = .getarg.c.1;	argcase[2]  = .getarg.c.2;	argcase[3]  = .getarg.c.3;
+	argcase[04] = .getarg.c.4;	argcase[5]  = .getarg.c.5;	argcase[6]  = .getarg.c.6;
+	argcase[07] = .getarg.c.7;	argcase[8]  = .getarg.c.8;	argcase[9]  = .getarg.c.9;
+	argcase[10] = .getarg.c.10;	argcase[11] = .getarg.c.11;	argcase[12] = .getarg.c.12;
+	argcase[13] = .getarg.c.13;	argcase[14] = .getarg.c.14;	argcase[15] = .getarg.c.15;
+	argcase[16] = .getarg.c.16;	argcase[17] = .getarg.c.17;	argcase[18] = .getarg.c.18;
+	argcase[19] = .getarg.c.19;	argcase[20] = .getarg.c.20;	argcase[21] = .getarg.c.21;
+	argcase[22] = .getarg.c.22;	argcase[23] = .getarg.c.23;	argcase[24] = .getarg.c.24;
+	argcase[25] = .getarg.c.25;	argcase[26] = .getarg.c.26;	argcase[27] = .getarg.c.27
+
+	leacase = table(50)
+	leacase[03] = .getadr.c.3;	leacase[04] = .getadr.c.4;	leacase[09] = .getadr.c.9;
+	leacase[12] = .getadr.c.12;	leacase[13] = .getadr.c.13;	leacase[14] = .getadr.c.14
+	leacase[15] = .getadr.c.15;
+
+
+	valtable = table(100)
+.fi
 
 *  pifatal maps minimal opcodes for which no a code allowed
 *  to nonzero value. such operations include conditional
@@ -481,7 +502,7 @@ flgs2
 
 *  regmap maps minimal register name to target machine
 *  register/memory-location name.
-
+.if N
 	regmap = table(30)
 	regmap['xl'] = 'xl';  regmap['xt'] = 'xt'
 	regmap['xr'] = 'xr';  regmap['xs'] = 'xs'
@@ -502,7 +523,39 @@ flgs2
 	reglow['wa'] = 'wa_l'
 	reglow['wb'] = 'wb_l'
 	reglow['wc'] = 'wc_l'
+.fi
+.if G
+*  regmap maps minimal register name to target machine
+*  register/memory-location name.
 
+	regmap = table(30)
+	s = 'xlXLxrXRxsXSxtXTwaWAwbWBwcWCw0W0iaIAcpCP'
+regmap.loop
+	s len(2) . min len(2) . reg =		:f(regmap.done)
+	regmap[min] = reg			:(regmap.loop)
+regmap.done
+
+	w0 = regmap['w0']
+
+*  quick reference:
+	reg.xl = regmap['xl']
+	reg.xr = regmap['xr']
+	reg.xs = regmap['xs']
+	reg.wa = regmap['wa']
+	reg.wb = regmap['wa']
+	reg.wc = regmap['wc']
+	reg.cp = regmap['cp']
+	reg.ia = regmap['ia']
+
+* reglow maps register to identify target, so
+* can extract 'l' part.
+	reglow = table(4)
+	reglow['wa'] = '%cl'
+	reglow['wb'] = '%bl'
+	reglow['wc'] = '%dl'
+	reglow['w0'] = '%al'
+
+.fi
 * real_op maps minimal real opcode to machine opcode
 	real_op = table(10)
 	real_op['adr'] = 'fadd'
