@@ -2767,19 +2767,41 @@ decend
 .fi
 						:(opdone)
 
-g.dac	t1 = i.type(i1)
+g.dac	
+	t1 = i.type(i1)
         t2 = "" ;*(le(t1,2) "", le(t1,4) "d_offset_(", le(t1,6) "d_offset_(", "")
+.if N
         genopl(thislabel,'d_word',t2 i.text(i1))
+.fi
+.if G
+        genopl(thislabel,d_word,t2 i.text(i1))
+.fi
 						:(decend)
-g.dic   genopl(thislabel,'d_word',i.text(i1))
+g.dic
+.if N
+	genopl(thislabel,'d_word',i.text(i1))
+.fi
+.if G
+        genopl(thislabel,d_word,t2 i.text(i1))
+.fi
 						:(decend)
 
 g.drc
 *	genop('align','cfp_b')
+.if N
 	genop('align',8)
+.fi
+.if G
+	genop('.align',8)
+.fi
 	t1 = i.text(i1)
 	t1 ? fence "+" = ""
+.if N
         genop('d_real',t1)
+.fi
+.if G
+        genop('.double',t1)
+.fi
 *  note that want to attach label to last instruction
 	t.label(cstmts[cstmts.n]) = thislabel
 	thislabel =				:(opdone)
@@ -2800,15 +2822,37 @@ g.dtc.1
 	le(dtc_i = dtc_i + 1, size(t2))		:s(g.dtc.1)
 
         t4 = ne(t3) t4 dupl(',0',cfp_c - t3)
+.if N
         genopl(thislabel,'d_char',t4)
+.fi
+.if G
+        genopl(thislabel,'.byte',t4)
+.fi
 						:(opdone)
-g.dbc   genopl(thislabel,'d_word',getarg(i1))
+g.dbc
+.if N
+	genopl(thislabel,'d_word',getarg(i1))
+.fi
+.if G
+	genopl(thislabel,d_word,getarg(i1))
+.fi
 						:(opdone)
-g.equ   genopl(thislabel,'equ',i.text(i1))
+g.equ
+.if N
+	genopl(thislabel,'equ',i.text(i1))
+.fi
+.if G
+	genop('.set',thislabel,i.text(i1))
+.fi
 						:(opdone)
 g.exp
 	ppm_cases[thislabel] = i.text(i1)
+.if N
 	genop('extern',thislabel)
+.fi
+.if G
+	genop('.extern',thislabel)
+.fi
 	thislabel =				:(opdone)
 
 g.inp
@@ -2827,27 +2871,55 @@ g.sec	genop('')
 	sectnow = sectnow + 1			:($("g.sec." sectnow))
 
 * procedure declaration section
-g.sec.1 gentext()
+g.sec.1
+.if N 
+	gentext()
+.fi
+.if G
+	genop('.text')
+        genop('.global','sec01')
+.fi
         genop('global','sec01')
         genopl('sec01' ':')             	:(opdone)
 
 * definitions section
 g.sec.2
-        gendata()
+.if N 
+	gendata()
         genop('global','sec02')
+.fi
+.if G
+	genop('.data')
+        genop('.global','sec01')
+.fi
         genopl('sec02' ':')             	:(opdone)
 
 * constants section
+.if N 
+	gendata()
+        genopl('sec03' ':')
+.fi
+.if G
+	genop('.data')
+        genop('.global','sec01')
+.fi
 g.sec.3
-        gendata()
-        genop('global','sec03')
-        genopl('sec03' ':')     		:(opdone)
+						:(opdone)
 
 * working variables section
-g.sec.4 genop('global','esec03')
+g.sec.4 
+.if N
+	genop('global','esec03')
         genopl('esec03' ':')
         gendata()
         genop('global','sec04')
+.fi
+.if G
+	genop('.global','esec03')
+        genopl('esec03' ':')
+        genop('.data')
+        genop('.global','sec04')
+.fi
         genopl('sec04' ':')
 						:(opdone)
 
@@ -2856,11 +2928,24 @@ g.sec.4 genop('global','esec03')
 g.sec.5
 *  emit code to indicate in code section
 *  get direction set to up.
+.if N
         genop('global','esec04')
+.fi
+.if G
+        genop('.global','esec04')
+.fi
         genopl('esec04' ':')
 *        (gt(prc.count1) genopl('prc$' ':','times', prc.count1 ' dd 0'))
+.if N
 	genop('prc_: times ' prc.count1 ' dd 0')
         genop('global','end_min_data')
+.fi
+.if G
+        genop('.global','end_min_data')
+        genopl('end_min_data' ':')
+        genop('.text')
+        genop('.global','sec05')
+.fi
         genopl('end_min_data' ':')
         gentext()
         genop('global','sec05')
@@ -2870,7 +2955,12 @@ g.sec.5
 
 *  stack overflow section.  output exi__n tail code
 g.sec.6
+.if N
         genop('global','sec06')
+.fi
+.if G
+        genop('.global','sec06')
+.fi
         genopl('sec06'  ':', 'nop')
 				             :(opdone)
 
@@ -2883,7 +2973,12 @@ g.sec.7
 
 *	allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
+.if N
 	genopl('err_:','xchg',reg.wa,'m(' rcode ')')
+.fi
+.if G
+	genopl('err_:','xchg',reg.wa,rcode)
+.fi
 						:(opdone)
 
 
