@@ -324,15 +324,15 @@ skip_init.end
 *  dispatch table
 
 	argcase = table(100)
-	argcase[01] = .getarg.c.1;	argcase[2]  = .getarg.c.2;	argcase[3]  = .getarg.c.3;
-	argcase[04] = .getarg.c.4;	argcase[5]  = .getarg.c.5;	argcase[6]  = .getarg.c.6;
-	argcase[07] = .getarg.c.7;	argcase[8]  = .getarg.c.8;	argcase[9]  = .getarg.c.9;   
-	argcase[10] = .getarg.c.10;	argcase[11] = .getarg.c.11;	argcase[12] = .getarg.c.12;
-	argcase[13] = .getarg.c.13;	argcase[14] = .getarg.c.14;	argcase[15] = .getarg.c.15;
-	argcase[16] = .getarg.c.16;	argcase[17] = .getarg.c.17;	argcase[18] = .getarg.c.18;
-	argcase[19] = .getarg.c.19;	argcase[20] = .getarg.c.20;	argcase[21] = .getarg.c.21; 
-	argcase[22] = .getarg.c.22;	argcase[23] = .getarg.c.23;	argcase[24] = .getarg.c.24;
-	argcase[25] = .getarg.c.25;	argcase[26] = .getarg.c.26;	argcase[27] = .getarg.c.27
+	argcase[01] = .arg.c.1;	argcase[2]  = .arg.c.2;	argcase[3]  = .arg.c.3;
+	argcase[04] = .arg.c.4;	argcase[5]  = .arg.c.5;	argcase[6]  = .arg.c.6;
+	argcase[07] = .arg.c.7;	argcase[8]  = .arg.c.8;	argcase[9]  = .arg.c.9;   
+	argcase[10] = .arg.c.10;	argcase[11] = .arg.c.11;	argcase[12] = .arg.c.12;
+	argcase[13] = .arg.c.13;	argcase[14] = .arg.c.14;	argcase[15] = .arg.c.15;
+	argcase[16] = .arg.c.16;	argcase[17] = .arg.c.17;	argcase[18] = .arg.c.18;
+	argcase[19] = .arg.c.19;	argcase[20] = .arg.c.20;	argcase[21] = .arg.c.21; 
+	argcase[22] = .arg.c.22;	argcase[23] = .arg.c.23;	argcase[24] = .arg.c.24;
+	argcase[25] = .arg.c.25;	argcase[26] = .arg.c.26;	argcase[27] = .arg.c.27
 
 	leacase = table(50) 
 	leacase[03] = .getadr.c.3;	leacase[04] = .getadr.c.4;	leacase[09] = .getadr.c.9;   
@@ -690,107 +690,107 @@ getarg
 	base = disp = indx = scale =
 	it_suspend = 1
 	eq(typ)					:f($(argcase[typ]))
-	getarg = txt				:(getarg.done)
+	getarg = txt				:(arg.done)
 
 * int
-getarg.c.1 getarg = txt				:(getarg.done)
+arg.c.1 getarg = txt				:(arg.done)
 
 * dlbl
-getarg.c.2 getarg = txt				:(getarg.done)
+arg.c.2 getarg = txt				:(arg.done)
 
 * wlbl, clbl -- memory reference
-getarg.c.3
-getarg.c.4 
-	disp = txt				:(getarg.mem)
+arg.c.3
+arg.c.4 
+	disp = txt				:(arg.mem)
 
 * elbl, plbl
-getarg.c.5
-getarg.c.6 getarg = txt				:(getarg.done)
+arg.c.5
+arg.c.6 getarg = txt				:(arg.done)
 
 * w,x, map register name
-getarg.c.7
-getarg.c.8
-	getarg = regmap[txt]			:(getarg.done)
+arg.c.7
+arg.c.8
+	getarg = regmap[txt]			:(arg.done)
 
 * (x), register indirect -- memory reference
-getarg.c.9
-	txt len(1) len(2) . indx		:(getarg.mem)
+arg.c.9
+	txt len(1) len(2) . indx		:(arg.mem)
 
 * use lea reg,[reg+cfp_b] unless reg is esp, since it takes an extra byte.
 * actually, lea reg,[reg+cfp_b] and add reg,cfp_b are both 2 cycles and 3 bytes
 * for all the other regs, and either could be used.
 
 * (x)+, register indirect, post increment -- memory reference
-getarg.c.10
+arg.c.10
 	indx = substr(txt,2,2)
-	genaop(tstmt(,'add','$' cfp_b, regmap[indx])) :(getarg.mem)
+	genaop(tstmt(,'add','$' cfp_b, regmap[indx])) :(arg.mem)
 
 *  -(x), register indirect, pre decrement -- memory reference
-getarg.c.11
+arg.c.11
 	indx = substr(txt,3,2)
-	genbop(tstmt(,'sub','$' cfp_b, regmap[indx])) 	:(getarg.mem)
+	genbop(tstmt(,'sub','$' cfp_b, regmap[indx])) 	:(arg.mem)
 
 * int(x) -- memory reference
 * dlbl(x)
-getarg.c.12
-getarg.c.13
+arg.c.12
+arg.c.13
 	txt break('(') . disp '(' len(2) . indx
 	disp = cfp_b * equ_value[disp]
 	base = indx
-	indx = 					:(getarg.mem)
+	indx = 					:(arg.mem)
 
 *  name(x), where name is in working section -- memory reference
-getarg.c.14
-getarg.c.15
-	txt break('(') . disp '(' len(2) . indx	:(getarg.mem)
+arg.c.14
+arg.c.15
+	txt break('(') . disp '(' len(2) . indx	:(arg.mem)
 
 * signed integer
-getarg.c.16 getarg = txt			:(getarg.done)
+arg.c.16 getarg = txt			:(arg.done)
 
 * signed real
-getarg.c.17 getarg = txt			:(getarg.done)
+arg.c.17 getarg = txt			:(arg.done)
 
 *  =dlbl
-getarg.c.18	
-	getarg = '$' substr(txt,2)		:(getarg.done)
+arg.c.18	
+	getarg = '$' substr(txt,2)		:(arg.done)
 	
 *  *dlbl
-getarg.c.19
-	getarg  = '$'  cfp_b '*' substr(txt,2)	:(getarg.done)
+arg.c.19
+	getarg  = '$'  cfp_b '*' substr(txt,2)	:(arg.done)
 
 *  =name (data section)
-getarg.c.20
-getarg.c.21
+arg.c.20
+arg.c.21
         getarg = '$' substr(txt,2)	
-						:(getarg.done)
+						:(arg.done)
 	genop('lea',w0,substr(txt,2))
-	getarg = reg.w0				:(getarg.done)
+	getarg = reg.w0				:(arg.done)
 
 *  =name (program section)
-getarg.c.22
+arg.c.22
 
-       getarg = '$' substr(txt,2)		:(getarg.done)
+       getarg = '$' substr(txt,2)		:(arg.done)
 
 
 *  pnam
-getarg.c.23
-	getarg = txt				:(getarg.done)
+arg.c.23
+	getarg = txt				:(arg.done)
 
 *  eqop
-getarg.c.24 getarg = '$(' equ_value[txt] ')'	:(getarg.done)
+arg.c.24 getarg = '$(' equ_value[txt] ')'	:(arg.done)
 
 * ptyp, text, dtext
-getarg.c.25
-getarg.c.26
-getarg.c.27 getarg = txt			:(getarg.done)
-getarg.done
+arg.c.25
+arg.c.26
+arg.c.27 getarg = txt			:(arg.done)
+arg.done
 	it_suspend = 0
 						:(return)
-getarg.mem
-	getarg = differ(base) disp '(' regmap[base] ')'		:s(getarg.done)	
-	getarg = ident(indx) disp 		:s(getarg.done)
-	getarg = ident(scale) ident(disp) '(' regmap[indx] ')'	:s(getarg.done)
-	getarg = differ(disp) disp '(,' regmap[indx] ',' scale ')'	:(getarg.done)
+arg.mem
+	getarg = differ(base) disp '(' regmap[base] ')'		:s(arg.done)	
+	getarg = ident(indx) disp 				:s(arg.done)
+	getarg = ident(scale) ident(disp) '(' regmap[indx] ')'	:s(arg.done)
+	getarg = differ(disp) disp '(,' regmap[indx] ',' scale ')'	:(arg.done)
 
 -stitl getadr(iarg)
 getadr
