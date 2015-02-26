@@ -1144,7 +1144,8 @@ g.bev
 
 g.brn   genop('jmp',getarg(i1))			:(opdone)
 
-g.bsw	t1 = getarg(i1)
+g.bsw
+	t1 = getarg(i1)
 	t2 = genlab('bsw')
 	it_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
@@ -1197,7 +1198,8 @@ g.ent.2
         (differ(pubtab[thislabel]), differ(debug)) genop('.global',thislabel)
 	thislabel =				:(opdone)
 
-g.bri	genop('jmp','*' getarg(i1))			:(opdone)
+g.bri	
+ genop('jmp','*' getarg(i1)) :(opdone)
 
 g.lei	
 	t1 = regmap[i.text(i1)]
@@ -1301,7 +1303,6 @@ g.exi
 	ident(t2,'n')				:s(g.exi.1)
 	genop('ret')				:(opdone)
 g.exi.1
-
 	genop('mov', prcent(prc.count),w0)
 	genop('jmp', '*' w0)
 						:(opdone)
@@ -1315,10 +1316,14 @@ g.erb
 						:(opdone)
 
 
-g.icv   genop('inc' o_,getarg(i1))    :(opdone)
-g.dcv   genop('dec' o_,getarg(i1))    :(opdone)
+g.icv
+	genop('inc' o_,getarg(i1))    :(opdone)
 
-g.zer	ident(i.text(i1),'(xr)+') genop('mov','$0',w0)
+g.dcv
+	genop('dec' o_,getarg(i1))    :(opdone)
+
+g.zer
+	ident(i.text(i1),'(xr)+') genop('mov','$0',w0)
 +	  genop('stos' (eq(ws,32) 'd','q'))	:s(opdone)
 	ifreg(i1)				:s(g.zer1)
 	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
@@ -1328,7 +1333,8 @@ g.zer1	t1 = getarg(i1)
 	genop('xor',t1,t1)			:(opdone)
 g.zer.xs genop('push','$0')			:(opdone)
 
-g.mnz   genop('mov','XS', getarg(i1))		:(opdone)
+g.mnz
+	genop('mov','XS', getarg(i1))		:(opdone)
 
 g.ssl
 g.sss
@@ -1341,9 +1347,11 @@ g.add	memmem()
 g.sub	memmem()
 	genop('sub' o_,getarg(i2),getarg(i1))	:(opdone)
 
-g.ica   genop('add' o_,'$' cfp_b,getarg(i1))		:(opdone)
+g.ica
+	genop('add' o_,'$' cfp_b,getarg(i1))		:(opdone)
 
-g.dca   genop('sub' o_,'$' cfp_b,getarg(i1))	:(opdone)
+g.dca
+	genop('sub' o_,'$' cfp_b,getarg(i1))	:(opdone)
 
 g.beq
 g.bne
@@ -1388,7 +1396,8 @@ g.lct
 	ident(thislabel)			:s(opnext)
 	genop()					:(opdone)
 
-g.lct.1	genop('mov',getarg(i2),getarg(i1))	:(opdone)
+g.lct.1
+	genop('mov',getarg(i2),getarg(i1))	:(opdone)
 
 g.bct
 *  can issue loop if target register is cx.

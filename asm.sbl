@@ -1540,15 +1540,25 @@ g.bod
 	genop('jne',getarg(i2))			:(opdone)
 .fi
 
-g.bev	t1 = getarg(i1)
+g.bev
+.if N
+	t1 = getarg(i1)
 	t1 = eq(i.type(i1),8) reglow[t1]
 	genop('test',t1,'1')
 	genop('je',getarg(i2))
 						:(opdone)
+.fi
+.if G
+	t1 = (eq(i.type(i1),8) reglow[i.text(i1)], getarg(i1))
+	genop('test',t1,'1')
+	genop('jne',getarg(i2))			:(opdone)
+.fi
 
 g.brn   genop('jmp',getarg(i1))			:(opdone)
 
-g.bsw	t1 = getarg(i1)
+g.bsw
+.if N
+	t1 = getarg(i1)
 	t2 = genlab('bsw')
 	it_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
@@ -1572,6 +1582,21 @@ g.bsw.3
 	gendata()
         genopl(t2 ':')
 	it_suspend = 0
+.fi
+.if G
+	t1 = getarg(i1)
+	t2 = genlab('bsw')
+	it_suspend = 1
+	ident(i.text(i3))			:s(g.bsw1)
+	genop('cmp',t1,getarg(i2))
+	genop('jge',getarg(i3))
+* here after default case.
+g.bsw1	
+	genop('jmp','*' t2 '(,' t1 ',' cfp_b ')')
+	genop('.data')
+        genopl(t2 ':')
+	it_suspend = 0
+.fi
 						:(opdone)
 
 g.iff   genop('d_word',getarg(i2))              :(opdone)
@@ -1592,9 +1617,9 @@ g.ent
 *  is a simple odd/even, least significant bit definition.
 *  that is, for us, 1 and 3 are odd, 2 and 4 are even.
 
-
+.if N
 	t1 = i.text(i1)
-*        genop('align',2)
+*       genop('align',2)
 	outline(tab 'align' tab '2')
 	differ(t1)				:s(g.ent.1)
 	outline(tab 'nop')
@@ -1611,12 +1636,50 @@ g.ent.2
 *  here to see if want label made public
 	thislabel ? rtab(1) . thislabel ':'
         (differ(pubtab[thislabel]), differ(debug)) genop('global',thislabel)
-	thislabel =				:(opdone)
+.fi
+.if G
+	t1 = i.text(i1)
+*        genop('align',2)
+	outline(tab '.align' tab '2')
+	differ(t1)				:s(g.ent.1)
+	outline(tab 'nop')
+						:(g.ent.2)
+g.ent.1
+	outline(tab '.byte' tab	t1)
 
-g.bri	genop('jmp',getarg(i1))			:(opdone)
+g.ent.2
+	genopl(thislabel)
+*  note that want to attach label to last instruction
+*	t1 = cstmts[cstmts.n]
+*	t.label(t1) = tlabel
+*	cstmts[cstmts.n] = t1
+*  here to see if want label made public
+	thislabel ? rtab(1) . thislabel ':'
+        (differ(pubtab[thislabel]), differ(debug)) genop('.global',thislabel)
+.fi
+	thislabel =
+						:(opdone)
 
-g.lei	t1 = regmap[i.text(i1)]
+g.bri
+.if N
+	genop('jmp',getarg(i1))			:(opdone)
+.fi
+.fi G
+	genop('jmp','*' getarg(i1)) :(opdone)
+.fi
+
+
+g.lei
+.if N
+	t1 = regmap[i.text(i1)]
 	genop('movzx',t1,'byte [' t1 '-1]' )	:(opdone)
+.fi
+.if G
+	t1 = regmap[i.text(i1)]
+	genop('dec',t1)
+	genop('mov', '(' t1 ')', '%al')
+	genop('movz' (eq(ws,32) 'bl','bq'),'%al',t1) :(opdone)
+.fi
 
 g.jsr
 	jsr_proc = getarg(i1)
@@ -1628,7 +1691,12 @@ g.jsr
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
+.if N
 	genop('dec','m(' rcode ')')
+.fi
+.if G
+	genop('dec' o_, rcode)
+.fi
 	genop('js',jsr_label_norm)
 	it_suspend = 0
 
@@ -1661,13 +1729,25 @@ g.ppm.loop.next
 	eq(jsr_count) genopl(jsr_label_norm ':') :(opdone)
 g.ppm.loop
 	lab_next = genlab('ppm')
+.if N
 	genop('dec','m(' rcode ')' )
+.fi
+.if G
+	genop('dec' o_,rcode )
+.fi
 	genop('jns',lab_next)
 	ident(incode,'ppm')			:s(g.ppm.loop.ppm)
+
 *  here if error exit via exi. set rcode to exit code and jump
 *  to error handler with error code in rcode
+
 g.ppm.loop.err
+.if N
 	genop('mov','m(' rcode ')', +t1)
+.fi
+.if G
+	genop('mov' o_,'$' +t1,rcode, )
+.fi
 	genop('jmp','err_')
 						:(g.ppm.loop.next)
 g.ppm.loop.ppm
@@ -1703,35 +1783,71 @@ g.prc.r						:(opdone)
 g.prc.n
 *  store return address in reserved location
 	prc.count = prc.count + 1
-	genop('pop', 'm(' prcent(prc.count) ')')	:(opdone)
+.if N
+	genop('pop', 'm(' prcent(prc.count) ')')
+.fi
+.if G
+	genop('pop', prcent(prc.count))	:(opdone)
+.fi	
+						:(opdone)
 
 g.exi
         t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
 *  if type r or e, and no exit parameters, just return
  	differ(t2,'n') eq(prc.args)	genop('ret')	:s(opdone)
         t3 = ident(t3) '0'
+.if N
     	genop('mov','m('  rcode ')',+t3)
+.fi
+.if G
+    	genop('mov' o_,'$' +t3,rcode)
+.fi
 	ident(t2,'n')				:s(g.exi.1)
 	genop('ret')				:(opdone)
 g.exi.1
-
+.if N
 	genop('mov',w0, 'm( ' prcent(prc.count) ')' )
 	genop('jmp',w0)
+.fi
+.if G
+	genop('mov', prcent(prc.count),w0)
+	genop('jmp', '*' w0)
+.fi
 						:(opdone)
+
 g.enp   genop()					:(opdone)
 
 g.erb
 	errfile =  i.text(i1) ' ' i.text(i2)
 *	set rcode to error code and branch to error handler
+.if N
 	genop('mov', 'm(' rcode ')',  +(i.text(i1)))
+.fi
+.if G
+	genop('mov' o_,  '$' +(i.text(i1)),rcode)
+.fi
  	genop('jmp','err_')
 						:(opdone)
 
+g.icv
+.if N
+	genop('inc',getarg(i1))    :(opdone)
+.fi
+.if G
+	genop('inc' o_,getarg(i1))    :(opdone)
+.fi
 
-g.icv   genop('inc',getarg(i1))    :(opdone)
-g.dcv   genop('dec',getarg(i1))    :(opdone)
+g.dcv   
+.if N
+	genop('dec',getarg(i1))    :(opdone)
+.fi
+.if G
+	genop('inc' o_,getarg(i1))    :(opdone)
+.fi
 
-g.zer	ident(i.text(i1),'(xr)+') genop('mov',w0,'0')
+g.zer
+.if N
+	ident(i.text(i1),'(xr)+') genop('mov',w0,'0')
 +		genop('stos_w')			:s(opdone)
 	ifreg(i1)				:s(g.zer1)
 	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
@@ -1740,8 +1856,26 @@ g.zer	ident(i.text(i1),'(xr)+') genop('mov',w0,'0')
 g.zer1	t1 = getarg(i1)
 	genop('xor',t1,t1)			:(opdone)
 g.zer.xs genop('push','0')			:(opdone)
+.fi
+.if G
+	ident(i.text(i1),'(xr)+') genop('mov','$0',w0)
++	  genop('stos' (eq(ws,32) 'd','q'))	:s(opdone)
+	ifreg(i1)				:s(g.zer1)
+	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
+	genop('mov','$0',w0)
+	genop('mov',w0,getarg(i1))		:(opdone)
+g.zer1	t1 = getarg(i1)
+	genop('xor',t1,t1)			:(opdone)
+g.zer.xs genop('push','$0')			:(opdone)
+.fi
 
-g.mnz   genop('mov',getarg(i1),'xs')		:(opdone)
+g.mnz
+.if N
+	genop('mov',getarg(i1),'xs')		:(opdone)
+.fi
+.if G
+	genop('mov','XS', getarg(i1))		:(opdone)
+.fi
 
 g.ssl
 g.sss
@@ -1749,14 +1883,36 @@ g.rtn
 	genop()					:(opdone)
 
 g.add	memmem()
+.if N
 	genop('add',getarg(i1),getarg(i2))	:(opdone)
+.fi
+.if G
+	genop('add' o_,getarg(i2),getarg(i1))	:(opdone)
+.fi
 
 g.sub	memmem()
+.if N
+.fi
+.if G
+	genop('sub' o_,getarg(i2),getarg(i1))	:(opdone)
+.fi
 	genop('sub',getarg(i1),getarg(i2))	:(opdone)
 
-g.ica   genop('add',getarg(i1),'cfp_b')		:(opdone)
+g.ica
+.if N
+	genop('add',getarg(i1),'cfp_b')		:(opdone)
+.fi
+.if G
+	genop('add' o_,'$' cfp_b,getarg(i1))		:(opdone)
+.fi
 
-g.dca   genop('sub',getarg(i1),'cfp_b')		:(opdone)
+g.dca
+.if N
+	genop('sub',getarg(i1),'cfp_b')		:(opdone)
+.fi
+.if G
+	genop('sub' o_,'$' cfp_b,getarg(i1))	:(opdone)
+.fi
 
 g.beq
 g.bne
@@ -1771,14 +1927,26 @@ g.bhi
 *  issue target opcode by table lookup.
 
 	memmem()
+.if N
 	t1 = branchtab[incode]
 	genop('cmp',getarg(i1),getarg(i2))
+.fi
+.if G
+	genop('cmp' o_,getarg(i2),getarg(i1))
+.fi
 	genop(branchtab[incode],getarg(i3))
-.						:(opdone)
+						:(opdone)
 
 g.bnz
+.if N
 	ifreg(i1)				:s(g.bnz1)
         genop('cmp', getarg(i1) ,'0')
+.fi
+.if G
+	ifreg(i1)				:s(g.bnz1)
+	genop('xor',w0,w0)
+        genop('cmp' o_,getarg(i1) ,w0)
+.fi
 	genop('jnz',getarg(i2))
 						:(opdone)
 g.bnz1
@@ -1804,14 +1972,25 @@ g.lct
 	ident(thislabel)			:s(opnext)
 	genop()					:(opdone)
 
-g.lct.1	genop('mov',getarg(i1),getarg(i2))	:(opdone)
+g.lct.1
+.if N
+	genop('mov',getarg(i1),getarg(i2))	:(opdone)
+.fi
+.if G
+	genop('mov',getarg(i2),getarg(i1))	:(opdone)
+.fi
 
 g.bct
 *  can issue loop if target register is cx.
 	t1 = getarg(i1)
 	t2 = getarg(i2)
 	:(g.bct2)
+.if N
 	ident(t1,'wa')				:s(g.bct1)
+.fi
+.if G
+	ident(t1,reg.wa)				:s(g.bct1)
+.fi
 g.bct2
 	genop('dec',t1)
 	genop('jnz',t2)				:(opdone)
@@ -1819,7 +1998,12 @@ g.bct1
 	genop('loop',t2)			:(opdone)
 
 g.aov
+.if N
 	genop('add',getarg(i2),getarg(i1))
+.fi
+.if G
+	genop('add',getarg(i1),getarg(i2))
+.fi
 	genop('jc',getarg(i3))
 						:(opdone)
 g.lcp
@@ -1828,7 +2012,12 @@ g.scp
 	genop(op_,getarg(i1))			:(opdone)
 
 *  use cp for code pointer.
+.if N
 	genop('mov',reg.cp,getarg(i1))
+.fi
+.if G
+	genop('mov',getarg(i1),reg.cp)
+.fi
 						:(opdone)
 
 	genop('mov',getarg(i1),reg.cp)
@@ -1842,7 +2031,12 @@ g.scp
 
 g.icp
 	genop(op_)				:(opdone)
+.if N
 	genop('add',reg.cp,'cfp_b')
+.fi
+.if G
+	genop('add','$' cfp_b,reg.cp)
+.fi
 						:(opdone)
 *  integer accumulator kept in wdx (wc)
 g.ldi
