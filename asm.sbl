@@ -3019,7 +3019,7 @@ end
 ;
         section	.text
 
-	%include	"nasm.h"
+	%include	"asm.h"
 
 	global	dnamb
 	global	dname
