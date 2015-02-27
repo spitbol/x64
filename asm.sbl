@@ -97,13 +97,12 @@
 	define('genz()')
 	define('genaop(stmt)')
 	define('genbop(stmt)')
-	define('gendata()')
+	define('gendir(command,name)')
         define('genlab(prefix)')
         define('genrip()')
 	define('genop(gopc,gop1,gop2,gop3)')
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
-	define('gentext()')
 	define('getarg(iarg)txt,typ,pre,post')
 	define('getlea(iarg)txt,typ,pre,post')
 	define('getrip(iarg)txt,typ,pre,post,ent,lb,var,reg')
@@ -688,8 +687,8 @@ opnext.1
 .fi
 .if G
 * TSBL: note than cannot use comregs for gas since regmap doesn't change names.
-	tcomment = incomment) '} ' incode ' ' i.text(i1) ' '
-.		i.text(i2) ' ' i.text(i3)
+*	tcomment = incomment '} ' incode ' ' i.text(i1) ' '
+*.		i.text(i2) ' ' i.text(i3)
 .fi
 	argerrs = 0
 	differ(it_trace) ge(sectnow,5) eq(it_suspend) chktrace()
@@ -1157,9 +1156,9 @@ rip.done
 	lbl = genrip()
 	riptable[txt] = lbl
 	ent = lbl
-	gendata()
+	gendir('segment','data')
 	genopl(lbl ':','d_word',getrip)
-	gentext()
+	gendir('segment','text')
 rip.ent
 *	generate reference via w0 if needed
 	genop('mov',w0,pre ent post)
@@ -1571,15 +1570,15 @@ g.bsw1
 g.bsw.2
 * in rip_mode, need to generate location to reference destination
 	lbl = genrip()
-        gendata()
+        gendir('segment','data')
 	genopl(lbl,'d_word',t2 )
-	gentext()
+	gendir('segment','text')
 	genop('mov',w0,t1)
 	genop('sal',w0,'log_cfp_b')
 	genop('add',w0,'m(' lbl ')')
 	genop('jmp', w0)
 g.bsw.3
-	gendata()
+	gendir('segment','data')
         genopl(t2 ':')
 	it_suspend = 0
 .fi
@@ -1602,7 +1601,7 @@ g.bsw1
 g.iff   genop('d_word',getarg(i2))              :(opdone)
 
 g.esw
-        gentext()				:(opdone)
+	gendir('segment','text')		:(opdone)
 g.ent
 
 *  entry points are stored in byte before program entry label
@@ -2064,12 +2063,6 @@ g.rmi
 	genop(op_,getarg(i1))			:(opdone)
 .fi
 .if G
-g.ldi
-	genop('mov',getarg(i1),reg.ia)		:(opdone)
-
-g.sti
-	genop('mov',reg.ia,getarg(i1))		:(opdone)
-
 g.adi
 	genop('add',getarg(i1),reg.ia)
 	genop('seto','reg_fl')			:(opdone)
@@ -2092,6 +2085,7 @@ g.rmi
 	genop('mov',getarg(i1),w0)
 	genop('call','rmi__')			:(opdone)
 .fi
+
 g.ngi
 .if N
 	genop(op_)				:(opdone)
@@ -2595,8 +2589,8 @@ g.mfi.2
 .fi
 	genop('push',w0)			:(opdone)
 
-g.ctw
 .if N
+g.ctw
 *  assume cfp_c chars per word
 	t1 = getarg(i1)
 	eq(cfp_b,cfp_c)				:s(g.ctw.1)
@@ -2743,14 +2737,23 @@ genrep
 	genop('jmp',l1)
 	genopl(l2 ':')
 						:(return)
--stitl	gendata() - move to data segment
-gendata
-	genop('segment','.data')		:(return)
-
--stitl	gentext() - move to text segment
-gentext
-	genop('segment','.text')		:(return)
-
+-stitl	gendir(command,name) - generate directive.
+gendir
+	ident(command,'segment')		:s(gendir.segment)
+.if N
+	genop(command,name)			
+.fi
+.if G
+	genop('.' command,name)
+.fi
+						:(return)
+gendir.segment
+.if N
+	genop(command, '.' name)		:(return)
+.fi
+.if G
+	genop('.' name)				:(return)
+.fi
 g.chk
 	genop('chk_')
 	genop('or',w0,w0);
@@ -2759,12 +2762,7 @@ g.chk
 decend
 *  here at end of dic or dac to see if want label made public
 	thislabel ? rtab(1) . thislabel ':'
-.if N
-        differ(pubtab[thislabel]) genop('global',thislabel)
-.fi
-.if G
-        differ(pubtab[thislabel]) genop('.global',thislabel)
-.fi
+        differ(pubtab[thislabel]) gendir('global',thislabel)
 						:(opdone)
 
 g.dac	
@@ -2847,12 +2845,7 @@ g.equ
 						:(opdone)
 g.exp
 	ppm_cases[thislabel] = i.text(i1)
-.if N
 	genop('extern',thislabel)
-.fi
-.if G
-	genop('.extern',thislabel)
-.fi
 	thislabel =				:(opdone)
 
 g.inp
@@ -2872,101 +2865,58 @@ g.sec	genop('')
 
 * procedure declaration section
 g.sec.1
-.if N 
-	gentext()
-.fi
-.if G
-	genop('.text')
-        genop('.global','sec01')
-.fi
-        genop('global','sec01')
-        genopl('sec01' ':')             	:(opdone)
+	gendir('segment','text')
+        gendir('global','sec01')
+        genopl('sec01:')	             	:(opdone)
 
 * definitions section
 g.sec.2
-.if N 
-	gendata()
-        genop('global','sec02')
-.fi
-.if G
-	genop('.data')
-        genop('.global','sec01')
-.fi
-        genopl('sec02' ':')             	:(opdone)
+	gendir('segment','data')
+	gendir('global','seco2')
+        genopl('sec02:')       		      	:(opdone)
 
 * constants section
-.if N 
-	gendata()
-        genopl('sec03' ':')
-.fi
-.if G
-	genop('.data')
-        genop('.global','sec01')
-.fi
 g.sec.3
+	gendir('segment','data')
+	gendir('global','sec03')
+	genopl('sec03:')
 						:(opdone)
 
 * working variables section
 g.sec.4 
-.if N
 	genop('global','esec03')
         genopl('esec03' ':')
-        gendata()
+        gendir('segment','data')
         genop('global','sec04')
-.fi
-.if G
-	genop('.global','esec03')
-        genopl('esec03' ':')
-        genop('.data')
-        genop('.global','sec04')
-.fi
-        genopl('sec04' ':')
-						:(opdone)
+	genopl('sec04:')			:(opdone)
 
 *  here at start of program section.  if any n type procedures,
 *  put out entry-word block declaration at end of working storage
 g.sec.5
 *  emit code to indicate in code section
 *  get direction set to up.
-.if N
-        genop('global','esec04')
-.fi
-.if G
-        genop('.global','esec04')
-.fi
+        gendir('global','esec04')
         genopl('esec04' ':')
 *        (gt(prc.count1) genopl('prc$' ':','times', prc.count1 ' dd 0'))
-.if N
 	genop('prc_: times ' prc.count1 ' dd 0')
-        genop('global','end_min_data')
-.fi
-.if G
-        genop('.global','end_min_data')
+
+        gendir('global','end_min_data')
         genopl('end_min_data' ':')
-        genop('.text')
-        genop('.global','sec05')
-.fi
-        genopl('end_min_data' ':')
-        gentext()
-        genop('global','sec05')
+        gendir('segment','text')
+        gendir('global','sec05')
         genopl('sec05' ':')
 *  enable tracing if desired
 						:(opdone)
 
 *  stack overflow section.  output exi__n tail code
 g.sec.6
-.if N
-        genop('global','sec06')
-.fi
-.if G
-        genop('.global','sec06')
-.fi
+        gendir('global','sec06')
         genopl('sec06'  ':', 'nop')
 				             :(opdone)
 
 *  error section.  produce code to receive erb's
 g.sec.7
-        genop('global','sec07')
+        gendir('global','sec07')
         genopl('sec07' ':')
 	flush()
 *  error section.  produce code to receive erb's

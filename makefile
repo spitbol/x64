@@ -143,15 +143,14 @@ bootbol:
 s.lex: s.min s.cnd $(LEX)
 	 $(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 
-gas.spt: gas.sbl
-	$(BASEBOL) -u G pp.sbl <gas.sbl >gas.spt
+gas.spt: asm.sbl
+	$(BASEBOL) -u G pp.sbl <asm.sbl >gas.spt
 
 gas.h:	gas.h.r
 	$(BASEBOL) -u $(TARGET) r.sbl <gas.h.r >gas.h
-s-gas.asm: s.lex gas.spt
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.gas -3=s-gas.err -6=s.equ	gas.spt
-	$(ASM) $(ASMOPTS) -os-gas.o s-gas.spt
 
+s-gas.asm: s.lex gas.sbl asm.sbl
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.gas -3=s-gas.err -6=s.equ	gas.spt
 
 gas.hdr: gas.hdr.r 
 	$(BASEBOL) -u $(TARGET) r.sbl <gas.hdr.r >gas.hdr
@@ -162,8 +161,8 @@ s-gas-err.gas: s.cnd $(ERR) s-gas.gas
 s-gas-err.o: s-gas-err.gas s-gas.gas
 	$(GAS) $(GASOPTS) -os-gas-err.o s-gas-err.gas
 
-s-gas.gas: s.lex gas.sbl gas.hdr gas.h
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.tmp -3=s-gas.err -4=gas.hdr -5=s.lex -6=s.equ	gas.sbl
+s-gas.gas: s.lex gas.spt gas.hdr gas.h
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.tmp -3=s-gas.err -4=gas.hdr -5=s.lex -6=s.equ	gas.spt
 	$(BASEBOL) -u $(TARGET) r.sbl <s-gas.tmp >s-gas.gas
 
 s-gas.o: s-gas.gas
@@ -233,7 +232,7 @@ install:
 	sudo cp ./bin/spitbol /usr/local/bin
 
 clean:
-	rm -f *.o s.lex s.equ [rs]-* ./gasbol ./spitbol gas.hdr gas.h gas-sys.gas 
+	rm -f *.o s.lex s.equ [rs]-* ./asmbol ./gasbol ./spitbol gas.hdr gas.h gas-sys.gas 
 	rm asm.spt gas.spt
 
 s-gas.dic: s-gas.nm
