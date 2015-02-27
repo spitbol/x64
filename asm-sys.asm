@@ -21,7 +21,7 @@
 ;	ws is bits per word, cfp_b is bytes per word, cfp_c is characters per word
 
 
-	%include	"nasm.h"
+	%include	"asm.h"
 
 %ifdef	unix_32
 	%define	cfp_b	4
