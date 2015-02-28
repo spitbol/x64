@@ -1,27 +1,26 @@
 #!/bin/bash --verbose
 # Copyright 2012-2013 David Shields
 #
-# This program does a sanity test on the 8-bit and 64-bit versions of spitbol, to
-# verify that spitbol is able to compile itself.
-# This is done by building the system three times, and comparing the generated assembly (.s)
-# files. Normally, all three assembly files wil be equal. However, if a new optimization is
+# This program does a sanity test on the 64-bit version of spitbol, to  verify that spitbol is able to compile itself.
+# This is done by building the system three times, and comparing the generated assembly (.s) files. 
+# Normally, all three assembly files wil be equal. However, if a new optimization is
 # being introduced, the first two may differ, but the second and third should always agree.
 #
 rm tbol.*
 echo "start 64-bit sanity test for asm"
 cp	./bin/spitbol.unix_64 tbol
 make clean>/dev/null
-make BASEBOL=./tbol
+make BASEBOL=./tbol spitbol
 mv s.lex tbol.lex.0
-mv s-asm.s tbol.s.0
-cp spitbol tbol
-make BASEBOL=./tbol
+mv s.s tbol.s.0
+mv spitbol tbol
+make BASEBOL=./tbol spitbol
 mv s.lex tbol.lex.1
-mv s-asm.s tbol.s.1
-cp spitbol tbol
-make BASEBOL=./tbol
+mv s.s tbol.s.1
+mv spitbol tbol
+make BASEBOL=./tbol spitbol
 mv s.lex tbol.lex.2
-mv s-asm.s tbol.s.2
+mv s.s tbol.s.2
 echo "comparing generated .s files"
 diff tbol.s.1 tbol.s.2
 echo "end sanity test"
