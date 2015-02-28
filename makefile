@@ -104,9 +104,7 @@ COBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
 	trypath.o wrtaout.o zz.o getargs.o it.o main.o 
 
-#AOBJS=s-asm.o s-asm-err.o asm-sys.o
 AOBJS=s.o err.o sys.o
-
 
 # build spitbol using nasm, build spitbol using as.
 # link asm spitbol with static linking
@@ -114,7 +112,7 @@ AOBJS=s.o err.o sys.o
 asm: 
 
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u N pp.sbl <asm.sbl >asm.spt
+	$(BASEBOL) -u A pp.sbl <asm.sbl >asm.spt
 # run lex to get s.lex
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 # run asm to get .s and .err files
@@ -138,7 +136,7 @@ spitbol-dynamic: $(OBJS) $(AOBJS)
 # link gasbol with static linking
 gas: 
 # run preprocessor to get h file
-	$(BASEBOL) -u $(TARGET) r.sbl <gas.r >gas.h
+	$(BASEBOL) -u $(TARGET) r.sbl <gas.h >gas.r
 # run preprocessor to get asm for nasm as target
 	$(BASEBOL) -u G pp.sbl <asm.sbl >asm.spt
 # run lex to get s.lex

@@ -65,14 +65,15 @@ i arg,ia;
 
 long ctbw_r;
 long ctbw_v;
-void ctb_() {
-	ctw_();
-	ctbw_r = ctbw_r * CPW;
-}
 
 void ctw_() {
 	long reg;
 	reg = (ctbw_r + CPW - 1) >> LOG_CPW;
 	reg += ctbw_v;
 	ctbw_r = reg;
+}
+
+void ctb_() {
+	ctw_();
+	ctbw_r = ctbw_r * CPW;
 }
