@@ -4,22 +4,19 @@ HOST=$(host)
 
 DEBUG:=$(debug)
 
-nasm?=nasm
-gas?=as
-
 debug?=0
 
-NASM=$(nasm)
+gas?=as
 GAS:=$(gas)
+
+nasm?=nasm
+NASM:=$(nasm)
 
 os?=unix
 OS:=$(os)
 
 ws?=64
 WS=$(ws)
-
-asm?=nasm
-ASM:=$(asm)
 
 TARGET=$(OS)_$(WS)
 
@@ -83,8 +80,8 @@ ERR=    err.sbl
 	$(CC)  $(CCOPTS) -c  -o$@ $(OSINT)/$*.c
 
 # implicit rule for building objects from nasm assembly language files.
-.nasm.o:
-	$(NASM) $(ASMOPTS) -l $*.lst -o$@ $*.nasm
+.asm.o:
+	$(NASM) $(ASMOPTS) -l $*.lst -o$@ $*.asm
 
 # c headers common to all versions and all source files of SPITBOL:
 CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h 
@@ -108,7 +105,6 @@ OBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	trypath.o wrtaout.o zz.o getargs.o it.o main.o 
 
 GOBJS=s-gas.o s-gas-err.o gas-sys.o
-NOBJS=s-nasm.o s-nasm-err.o nasm-sys.o
 AOBJS=s-asm.o s-asm-err.o asm-sys.o
 
 
@@ -117,13 +113,9 @@ AOBJS=s-asm.o s-asm-err.o asm-sys.o
 spitbol: $(OBJS) $(AOBJS)
 	$(CC) $(LDOPTS)  $(OBJS) $(AOBJS) $(LMOPT) -static -ospitbol
 
-# link nasm spitbol with static linking
-asmbol: $(OBJS) $(NOBJS)
-	$(CC) $(LDOPTS)  $(OBJS) $(NOBJS) $(LMOPT) -static -oasmbol
-
 # link spitbol with dynamic linking
-spitbol-dynamic: $(OBJS) $(NOBJS)
-	$(CC) $(LDOPTS) $(OBJS) $(NOBJS) $(LMOPT)  -ospitbol 
+spitbol-dynamic: $(OBJS) $(AOBJS)
+	$(CC) $(LDOPTS) $(OBJS) $(AOBJS) $(LMOPT)  -ospitbol 
 
 # build gasbol, the asm variant  targeting gas format assembler
 # link gasbol with static linking
@@ -143,6 +135,35 @@ bootbol:
 s.lex: s.min s.cnd $(LEX)
 	 $(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 
+# asm - nasm, the netwide assembler
+
+asm-sys.o: asm-sys.s
+	$(NASM) $(ASMOPTS) -oasm-sys.o asm-sys.s
+
+asm.spt: asm.sbl
+	$(BASEBOL) -u N pp.sbl <asm.sbl >asm.spt
+
+s-asm.o: s-asm.s
+	$(NASM) $(ASMOPTS) -os-asm.o s-asm.s
+
+s-asm.s: s.lex asm.spt
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-asm.s -3=s-asm-err.err -4=asm.hdr -6=s.equ	asm.spt
+
+asm.hdr: s-asm.s asm.spt
+#	touch s-asm.hdr.done
+#	$(BASEBOL) -u $(TARGET) r.sbl <asm.hdr.r >asm.hdr
+#	cp <asm.hdr.r >asm.hdr
+
+s-asm-err.err: s.cnd $(ERR) s-asm.s
+	touch s-asm-err.err
+
+s-asm-err.s: s-asm-err.err
+	$(BASEBOL) -u $(TARGET)_asm -1=s-asm-err.err -2=s-asm-err.s $(ERR)
+
+s-asm-err.o: s-asm-err.s 
+	$(NASM) $(ASMOPTS) -os-asm-err.o s-asm-err.s
+
+# gas - GNU assembler 'as'
 gas.spt: asm.sbl
 	$(BASEBOL) -u G pp.sbl <asm.sbl >gas.spt
 
@@ -150,7 +171,7 @@ gas.h:	gas.h.r
 	$(BASEBOL) -u $(TARGET) r.sbl <gas.h.r >gas.h
 
 s-gas.asm: s.lex gas.sbl asm.sbl
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.gas -3=s-gas.err -6=s.equ	gas.spt
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.gas -3=s-gas.err -4=gas.hdr.r -6=s.equ	gas.spt
 
 gas.hdr: gas.hdr.r 
 	$(BASEBOL) -u $(TARGET) r.sbl <gas.hdr.r >gas.hdr
@@ -162,7 +183,7 @@ s-gas-err.o: s-gas-err.gas s-gas.gas
 	$(GAS) $(GASOPTS) -os-gas-err.o s-gas-err.gas
 
 s-gas.gas: s.lex gas.spt gas.hdr gas.h
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.tmp -3=s-gas.err -4=gas.hdr -5=s.lex -6=s.equ	gas.spt
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.tmp -3=s-gas.err -4=gas.hdr.r -5=s.lex -6=s.equ	gas.spt
 	$(BASEBOL) -u $(TARGET) r.sbl <s-gas.tmp >s-gas.gas
 
 s-gas.o: s-gas.gas
@@ -173,44 +194,6 @@ gas-sys.gas: gas-sys.gas.r s.lex
 
 gas-sys.o: gas-sys.gas gas.h
 	$(GAS) $(GASOPTS) -ogas-sys.o gas-sys.gas
-
-
-nasm-sys.o: nasm-sys.nasm
-	$(NASM) $(NASMOPTS) -onasm-sys.o nasm-sys.nasm
-
-s-nasm.nasm: s.lex nasm.sbl
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-nasm.nasm -3=s-nasm.err -6=s.equ	nasm.sbl
-
-s-nasm.o: s-nasm.nasm
-	$(NASM) $(NASMOPTS) -os-nasm.o s-nasm.nasm
-
-s-nasm-err.nasm: s.cnd $(ERR) s-nasm.nasm
-	   $(BASEBOL) -u $(TARGET)_nasm -1=s-nasm.err -2=s-nasm-err.nasm $(ERR)
-
-s-nasm-err.o: s-nasm-err.nasm
-	$(NASM) $(NASMOPTS) -os-nasm-err.o s-nasm-err.nasm
-
-# asm
-
-asm-sys.o: asm-sys.asm
-	$(ASM) $(ASMOPTS) -oasm-sys.o asm-sys.asm
-
-asm.spt: asm.sbl
-	$(BASEBOL) -u N pp.sbl <asm.sbl >asm.spt
-
-s-asm.o: s-asm.asm
-	$(NASM) $(ASMOPTS) -os-asm.o s-asm.asm
-
-s-asm.asm: s.lex asm.spt
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-asm.asm -3=s-asm.err -6=s.equ	asm.spt
-	$(ASM) $(ASMOPTS) -os-asm.o s-asm.asm
-
-s-asm-err.asm: s.cnd $(ERR) s-asm.asm
-	   $(BASEBOL) -u $(TARGET)_nasm -1=s-asm.err -2=s-asm-err.asm $(ERR)
-
-s-asm-err.o: s-asm-err.asm
-	$(ASM) $(ASMOPTS) -os-asm-err.o s-asm-err.asm
-
 
 # c language header dependencies:
 

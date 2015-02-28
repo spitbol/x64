@@ -13,15 +13,15 @@ cp	./bin/spitbol.unix_64 tbol
 make clean>/dev/null
 make BASEBOL=./tbol
 mv s.lex tbol.lex.0
-mv s-asm.asm tbol.asm.0
+mv s-asm.s tbol.s.0
 cp spitbol tbol
 make BASEBOL=./tbol
 mv s.lex tbol.lex.1
-mv s-asm.asm tbol.asm.1
+mv s-asm.s tbol.s.1
 cp spitbol tbol
 make BASEBOL=./tbol
 mv s.lex tbol.lex.2
-mv s-asm.asm tbol.asm.2
+mv s-asm.s tbol.s.2
 echo "comparing generated .s files"
-diff tbol.asm.1 tbol.asm.2
+diff tbol.s.1 tbol.s.2
 echo "end sanity test"

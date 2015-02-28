@@ -105,17 +105,17 @@
 
 * set target definition flag, if any.
 *
-	target = (differ(host(0)) host(0), "unix_64_nasm")
+	target = (differ(host(0)) host(0), "unix_64_asm")
         output = "target: " target
 	ident(target,'osx_32_gas')			:s(asm.gas)
-	ident(target,'osx_32_nasm')			:s(asm.nasm)
+	ident(target,'osx_32_asm')			:s(asm.asm)
 	ident(target,'unix_32_gas')			:s(asm.gas)
-	ident(target,'unix_32_nasm')			:s(asm.nasm)
+	ident(target,'unix_32_asm')			:s(asm.asm)
 	ident(target,'unix_64_gas')			:s(asm.gas)
-	ident(target,'unix_64_nasm')			:s(asm.nasm)
+	ident(target,'unix_64_asm')			:s(asm.asm)
 	output = 'invalid option ' target		:s(end)
 
-asm.nasm
+asm.asm
 	asm.byte	= 'db'
 	asm.comment	= ';'
 	asm.data	= '.data'
@@ -143,7 +143,7 @@ asm.done
 
 *  data and public definitions
 *
-        data	=	ident(target,'nasm') tab 'segment'	tab '.data'
+        data	=	ident(target,'asm') tab 'segment'	tab '.data'
 	data	=	ident(target,'gas')  tab	'.data'
 
 

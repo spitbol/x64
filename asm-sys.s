@@ -335,23 +335,23 @@ call_adr:	d_word	0
 ;
 	global	save_regs
 save_regs:
-	mov	m(save_ia),ia
-	mov	m(save_xl),xl
-	mov	m(save_xr),xr
-	mov	m(save_wa),wa
-	mov	m(save_wb),wb
-	mov	m(save_wc),wc
+	mov	m(save_ia),IA
+	mov	m(save_xl),XL
+	mov	m(save_xr),XR
+	mov	m(save_wa),WA
+	mov	m(save_wb),WB
+	mov	m(save_wc),WC
 	ret
 
 	global	restore_regs
 restore_regs:
 	;	restore regs, except for sp. that is caller's responsibility
-	mov	ia,m(save_ia)
-	mov	xl,m(save_xl)
-	mov	xr,m(save_xr)
-	mov	wa,m(save_wa)
-	mov	wb,m(save_wb)
-	mov	wc,m(save_wc)
+	mov	IA,m(save_ia)
+	mov	XL,m(save_xl)
+	mov	XR,m(save_xr)
+	mov	WA,m(save_wa)
+	mov	WB,m(save_wb)
+	mov	WC,m(save_wc)
 	ret
 
 ; ;
@@ -389,16 +389,16 @@ calltab_engts equ   13
 
 
 startup:
-	pop     w0			; discard return
+	pop     W0			; discard return
 	call	stackinit		; initialize minimal stack
-	mov     w0,m(compsp)	; get minimal's stack pointer
-	mov m(reg_wa),w0		; startup stack pointer
+	mov     W0,m(compsp)	; get minimal's stack pointer
+	mov m(reg_wa),W0		; startup stack pointer
 
 	cld				; default to up direction for string ops
-;        getoff  w0,dffnc               # get address of ppm offset
-	mov     m(ppoff),w0	; save for use later
+;        getoff  W0,dffnc               # get address of ppm offset
+	mov     m(ppoff),W0	; save for use later
 
-	mov     xs,m(osisp)	; switch to new c stack
+	mov     XS,m(osisp)	; switch to new c stack
 	mov	m(minimal_id),calltab_start
 	call	minimal			; load regs, switch stack, start compiler
 
@@ -407,7 +407,7 @@ startup:
 ;	input:  sp - current c stack
 ;		stacksiz - size of desired minimal stack in bytes
 
-;	uses:	w0
+;	uses:	W0
 
 ;	output: register wa, sp, spmin, compsp, osisp set up per diagram:
 
@@ -428,23 +428,23 @@ startup:
 ;	initialize stack
 	global	stackinit
 stackinit:
-	mov	w0,xs
-	mov     m(compsp),w0	; save minimal's stack pointer
-	sub	w0,m(stacksiz)	; end of minimal stack is where c stack will start
-	mov     m(osisp),w0	; save new c stack pointer
-	add	w0,cfp_b*100		; 100 words smaller for chk
-	mov	m(spmin),w0
+	mov	W0,XS
+	mov     m(compsp),W0	; save minimal's stack pointer
+	sub	W0,m(stacksiz)	; end of minimal stack is where c stack will start
+	mov     m(osisp),W0	; save new c stack pointer
+	add	W0,cfp_b*100		; 100 words smaller for chk
+	mov	m(spmin),W0
 	ret
 
-;	check for stack overflow, making w0 nonzero if found
+;	check for stack overflow, making W0 nonzero if found
 	global	chk__
 chk__:
-	xor	w0,w0			; set return value assuming no overflow
-	cmp	xs,m(spmin)
+	xor	W0,W0			; set return value assuming no overflow
+	cmp	XS,m(spmin)
 	jb	chk.oflo
 	ret
 chk.oflo:
-	inc	w0			; make nonzero to indicate stack overflow0
+	inc	W0			; make nonzero to indicate stack overfloW0
 	ret
 
 ;       mimimal -- call minimal function from c
@@ -463,30 +463,30 @@ chk.oflo:
 
 minimal:
 ;         pushad			; save all registers for c
-	mov     wa,m(reg_wa)	; restore registers
-	mov	wb,m(reg_wb)
-	mov     wc,m(reg_wc)	;
-	mov	xr,m(reg_xr)
-	mov	xl,m(reg_xl)
+	mov     WA,m(reg_wa)	; restore registers
+	mov	WB,m(reg_wb)
+	mov     WC,m(reg_wc)	;
+	mov	XR,m(reg_xr)
+	mov	XL,m(reg_xl)
 
-	mov     m(osisp),xs	; save osint stack pointer
+	mov     m(osisp),XS	; save osint stack pointer
 	cmp     m(compsp),0	; is there a compiler stack?
 	je      min1			; jump if none yet
-	mov     xs,m(compsp)	; switch to compiler stack
+	mov     XS,m(compsp)	; switch to compiler stack
 
  min1:
-	mov     w0,m(minimal_id)	; get ordinal
-;	call   m(calltab+w0*cfp_b)    ; off to the minimal code
+	mov     W0,m(minimal_id)	; get ordinal
+;	call   m(calltab+W0*cfp_b)    ; off to the minimal code
 	extern	start
 	call	start
 
-	mov     xs,m(osisp)	; switch to osint stack
+	mov     XS,m(osisp)	; switch to osint stack
 
-	mov     m(reg_wa),wa	; save registers
-	mov	m(reg_wb),wb
-	mov	m(reg_wc),wc
-	mov	m(reg_xr),xr
-	mov	m(reg_xl),xl
+	mov     m(reg_wa),WA	; save registers
+	mov	m(reg_wb),WB
+	mov	m(reg_wc),WC
+	mov	m(reg_xr),XR
+	mov	m(reg_xl),XL
 	ret
 
 
@@ -495,8 +495,9 @@ minimal:
 
 ;       each interface routine takes the following form:
 
-;               sysxx   call    ccaller ; call common interface
-;                     d_word    zysxx   ; dd      of c osint function
+;               sysxx:   
+;			call    ccaller ; call common interface
+;                     	d_word    zysxx   ; dd      of c osint function
 ;                       db      n       ; offset to instruction after
 ;                                       ;   last procedure exit
 
@@ -540,45 +541,44 @@ minimal:
 
 	global	get_ia
 get_ia:
-	mov	w0,ia
+	mov	W0,IA
 	ret
 
 	global	set_ia_
-set_ia_:	mov	ia,m_word[reg_w0]
+set_ia_:	mov	IA,m_word[reg_w0]
 	ret
 
 syscall_init:
 ;       save registers in global variables
 
-	mov     m(reg_wa),wa      ; save registers
-	mov	m(reg_wb),wb
-	mov     m(reg_wc),wc      ; (also _reg_ia)
-	mov	m(reg_xr),xr
-	mov	m(reg_xl),xl
-	mov	m(reg_ia),ia
+	mov     m(reg_wa),WA      ; save registers
+	mov	m(reg_wb),WB
+	mov     m(reg_wc),WC      ; (also _reg_ia)
+	mov	m(reg_xr),XR
+	mov	m(reg_xl),XL
+	mov	m(reg_ia),IA
 	ret
 
 syscall_exit:
-	mov	m(_rc_),w0	; save return code from function
-	mov     m(osisp),xs       ; save osint's stack pointer
-	mov     xs,m(compsp)      ; restore compiler's stack pointer
-	mov     wa,m(reg_wa)      ; restore registers
-	mov	wb,m(reg_wb)
-	mov     wc,m(reg_wc)      ;
-	mov	xr,m(reg_xr)
-	mov	ia,m(reg_ia)
-	mov	xl,m(reg_xl)
+	mov	m(_rc_),W0	; save return code from function
+	mov     m(osisp),XS       ; save osint's stack pointer
+	mov     XS,m(compsp)      ; restore compiler's stack pointer
+	mov     WA,m(reg_wa)      ; restore registers
+	mov	WB,m(reg_wb)
+	mov     WC,m(reg_wc)      ;
+	mov	XR,m(reg_xr)
+	mov	XL,m(reg_xl)
 	cld
-	mov	w0,m(reg_pc)
-	jmp	w0
+	mov	W0,m(reg_pc)
+	jmp	W0
 
 	%macro	syscall	2
-	pop     w0			; pop return address
-	mov	m(reg_pc),w0
+	pop     W0			; pop return address
+	mov	m(reg_pc),W0
 	call	syscall_init
 ;       save compiler stack and switch to osint stack
-	mov     m(compsp),xs      ; save compiler's stack pointer
-	mov     xs,m(osisp)       ; load osint's stack pointer
+	mov     m(compsp),XS      ; save compiler's stack pointer
+	mov     XS,m(osisp)       ; load osint's stack pointer
 	call	%1
 	call	syscall_exit
 	%endmacro
@@ -593,7 +593,7 @@ sysbs:	syscall	  zysbs,2
 
 	global sysbx
 	extern	zysbx
-sysbx:	mov	m(reg_xs),xs
+sysbx:	mov	m(reg_xs),XS
 	syscall	zysbx,2
 
 ;        global syscr
@@ -638,14 +638,14 @@ sysep:	syscall	zysep,12
 
 	global sysex
 	extern	zysex
-sysex:	mov	m(reg_xs),xs
+sysex:	mov	m(reg_xs),XS
 	syscall	zysex,13
 
 	global sysfc
 	extern	zysfc
-sysfc:  pop     w0             ; <<<<remove stacked scblk>>>>
-	lea	xs,[xs+wc*cfp_b]
-	push	w0
+sysfc:  pop     W0             ; <<<<remove stacked scblk>>>>
+	lea	XS,[XS+WC*cfp_b]
+	push	W0
 	syscall	zysfc,14
 
 	global sysgc
@@ -654,7 +654,7 @@ sysgc:	syscall	zysgc,15
 
 	global syshs
 	extern	zyshs
-syshs:	mov	m(reg_xs),xs
+syshs:	mov	m(reg_xs),XS
 	syscall	zyshs,16
 
 	global sysid
@@ -739,17 +739,17 @@ sysul:	syscall	zysul,37
 
 	global sysxi
 	extern	zysxi
-sysxi:	mov	m(reg_xs),xs
+sysxi:	mov	m(reg_xs),XS
 	syscall	zysxi,38
 
 	%macro	callext	2
 	extern	%1
 	call	%1
-	add	xs,%2		; pop arguments
+	add	XS,%2		; pop arguments
 	%endmacro
 
 ;	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
-;	placed in w0, which is then sign extended into wc:w0. after the divide, w0 contains the
+;	placed in W0, which is then sign extended into wc:W0. after the divide, W0 contains the
 ;	quotient, wc contains the remainder.
 ;
 ;       cvd__ - convert by division
@@ -760,45 +760,45 @@ sysxi:	mov	m(reg_xs),xs
 	global	cvd__
 cvd__:
 	extern	i_cvd
-	mov	m(reg_ia),ia
-	mov	m(reg_wa),wa
+	mov	m(reg_ia),IA
+	mov	m(reg_wa),WA
 	call	i_cvd
-	mov	ia,m(reg_ia)
-	mov	wa,m(reg_wa)
+	mov	IA,m(reg_ia)
+	mov	WA,m(reg_wa)
 	ret
 
 
-;       dvi__ - divide ia (edx) by long in w0
+;       dvi__ - divide ia (edx) by long in W0
 	global	dvi__
 dvi__:
 	extern	i_dvi
-	mov	m(reg_w0),w0
+	mov	m(reg_w0),W0
 	call	i_dvi
-	mov	ia,m(reg_ia)
+	mov	IA,m(reg_ia)
 	mov	al,byte [rel reg_fl]
 	or	al,al
 	ret
 
 	global	rmi__
-;       rmi__ - remainder of ia (edx) divided by long in w0
+;       rmi__ - remainder of ia (edx) divided by long in W0
 rmi__:
 	jmp	ocode
 	extern	i_rmi
-	mov	m(reg_w0),w0
+	mov	m(reg_w0),W0
 	call	i_rmi
-	mov	ia,m(reg_ia)
+	mov	IA,m(reg_ia)
 	mov	al,byte [rel reg_fl]
 	or	al,al
 	ret
 
 ocode:
-        or      w0,w0         	; test for 0
+        or      W0,W0         	; test for 0
         jz      setovr    	; jump if 0 divisor
-        xchg    w0,ia         	; ia to w0, divisor to ia
+        xchg    W0,IA         	; ia to W0, divisor to ia
         cdq                     ; extend dividend
-        idiv    ia              ; perform division. w0=quotient, wc=remainder
+        idiv    IA              ; perform division. W0=quotient, wc=remainder
 	seto	byte [rel reg_fl]
-	mov	ia,wc
+	mov	IA,WC
 	ret
 
 setovr: mov     al,1		; set overflow indicator
@@ -809,7 +809,7 @@ setovr: mov     al,1		; set overflow indicator
 	global	%1
 	extern	%2
 %1:
-	mov	m(reg_rp),w0
+	mov	m(reg_rp),W0
 	call	%2
 	ret
 %endmacro
@@ -827,7 +827,7 @@ setovr: mov     al,1		; set overflow indicator
 	global	%1
 	extern	%2
 %1:
-	mov	m(reg_ia),ia
+	mov	m(reg_ia),IA
 	call	%2
 	ret
 %endmacro
@@ -863,8 +863,8 @@ ovr_:
 	global	get_fp			; get frame pointer
 
 get_fp:
-         mov     w0,m(reg_xs)     ; minimal's xs
-         add     w0,4           	; pop return from call to sysbx or sysxi
+         mov     W0,m(reg_xs)     ; minimal's xs
+         add     W0,4           	; pop return from call to sysbx or sysxi
          ret                    	; done
 
 	extern	rereloc
@@ -883,53 +883,53 @@ scstr	equ	cfp_c+cfp_c
 
 ;
 restart:
-        pop     w0                      ; discard return
-        pop     w0                     	; discard dummy
-        pop     w0                     	; get lowest legal stack value
+        pop     W0                      ; discard return
+        pop     W0                     	; discard dummy
+        pop     W0                     	; get lowest legal stack value
 
-        add     w0,m(stacksiz)  	; top of compiler's stack
-        mov     xs,w0                 	; switch to this stack
+        add     W0,m(stacksiz)  	; top of compiler's stack
+        mov     XS,W0                 	; switch to this stack
 	call	stackinit               ; initialize minimal stack
 
                                         ; set up for stack relocation
-        lea     w0,[rel tscblk+scstr]       ; top of saved stack
-        mov     wb,m(lmodstk)    	; bottom of saved stack
-        mov	wa,m(stbas)      ; wa = stbas from exit() time
-        sub     wb,w0                 	; wb = size of saved stack
-	mov	wc,wa
-        sub     wc,wb                 	; wc = stack bottom from exit() time
-	mov	wb,wa
-        sub     wb,xs                 	; wb =  stbas - new stbas
+        lea     W0,[rel tscblk+scstr]       ; top of saved stack
+        mov     WB,m(lmodstk)    	; bottom of saved stack
+        mov	WA,m(stbas)      ; wa = stbas from exit() time
+        sub     WB,W0                 	; wb = size of saved stack
+	mov	WC,WA
+        sub     WC,WB                 	; wc = stack bottom from exit() time
+	mov	WB,WA
+        sub     WB,XS                 	; wb =  stbas - new stbas
 
-        mov	m(stbas),xs       ; save initial sp
-;        getoff  w0,dffnc               ; get address of ppm offset
-        mov     m(ppoff),w0       ; save for use later
+        mov	m(stbas),XS       ; save initial sp
+;        getoff  W0,dffnc               ; get address of ppm offset
+        mov     m(ppoff),W0       ; save for use later
 ;
 ;       restore stack from tscblk.
 ;
-        mov     xl,m(lmodstk)    	; -> bottom word of stack in tscblk
-        lea     xr,[rel tscblk+scstr]      	; -> top word of stack
-        cmp     xl,xr                 	; any stack to transfer?
+        mov     XL,m(lmodstk)    	; -> bottom word of stack in tscblk
+        lea     XR,[rel tscblk+scstr]      	; -> top word of stack
+	cmp     XL,XR                 	; any stack to transfer?
         je      re3               	;  skip if not
-	sub	xl,4
+	sub	XL,4
 	std
-re1:    lodsd                           ; get old stack word to w0
-        cmp     w0,wc                 	; below old stack bottom?
-        jb      re2               	;   j. if w0 < wc
-        cmp     w0,wa                 	; above old stack top?
-        ja      re2               	;   j. if w0 > wa
-        sub     w0,wb                 	; within old stack, perform relocation
-re2:    push    w0                     	; transfer word of stack
-        cmp     xl,xr                 	; if not at end of relocation then
+re1:    lodsd                           ; get old stack word to W0
+        cmp     W0,WC                 	; below old stack bottom?
+        jb      re2               	;   j. if W0 < wc
+        cmp     W0,WA                 	; above old stack top?
+        ja      re2               	;   j. if W0 > wa
+        sub     W0,WB                 	; within old stack, perform relocation
+re2:    push    W0                     	; transfer word of stack
+        cmp     XL,XR                 	; if not at end of relocation then
         jae     re1                     ;    loop back
 
 re3:	cld
-        mov     m(compsp),xs     	; save compiler's stack pointer
-        mov     xs,m(osisp)      	; back to osint's stack pointer
+        mov     m(compsp),XS     	; save compiler's stack pointer
+        mov     XS,m(osisp)      	; back to osint's stack pointer
         call   rereloc               	; relocate compiler pointers into stack
-        mov	w0,m(statb)      	; start of static region to xr
-	mov	m(reg_xr),w0
-	mov	w0,minimal_insta
+        mov	W0,m(statb)      	; start of static region to xr
+	mov	m(reg_xr),W0
+	mov	W0,minimal_insta
 	call	minimal			; initialize static region
 
 ;
@@ -954,13 +954,13 @@ re3:	cld
 ;
         call   startbrk			; start control-c logic
 
-        mov	w0,m(stage)      	; is this a -w call?
-	cmp	w0,4
+        mov	W0,m(stage)      	; is this a -w call?
+	cmp	W0,4
         je            re4               ; yes, do a complete fudge
 
 ;
 ;       jump back with return value = normal_return
-	xor	w0,w0			; set to zero to indicate normal return
+	xor	W0,W0			; set to zero to indicate normal return
 	call	syscall_exit
 	ret
 
@@ -968,28 +968,28 @@ re3:	cld
 ;       would occur if we naively returned to sysbx.  clear the stack and
 ;       go for it.
 ;
-re4:	mov	w0,m(stbas)
-        mov     m(compsp),w0     	; empty the stack
+re4:	mov	W0,m(stbas)
+        mov     m(compsp),W0     	; empty the stack
 
 ;       code that would be executed if we had returned to makeexec:
 ;
         mov	m(gbcnt),0       	; reset garbage collect count
         call    zystm                 	; fetch execution time to reg_ia
-        mov     w0,m(reg_ia)     	; set time into compiler
+        mov     W0,m(reg_ia)     	; set time into compiler
 	extern	timsx
-	mov	m(timsx),w0
+	mov	m(timsx),W0
 
 ;       code that would be executed if we returned to sysbx:
 ;
         push    m(outptr)        	; swcoup(outptr)
 	extern 	swcoup
 	call	swcoup
-	add	xs,cfp_b
+	add	XS,cfp_b
 
 ;       jump to minimal code to restart a save file.
 
-	mov	w0,minimal_rstrt
-	mov	m(minimal_id),w0
+	mov	W0,minimal_rstrt
+	mov	m(minimal_id),W0
         call	minimal			; no return
 
 	global	it_

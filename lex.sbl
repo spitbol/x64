@@ -355,7 +355,7 @@
 *
 *  default the parameter string if none present
 *
-	target = (differ(host(0)) host(0), "unix_64_nasm")
+	target = (differ(host(0)) host(0), "unix_64_asm")
 	target break('_') . os len(1) break('_') . ws len(1) rem  . asm 
 	output = 'target ' target
 	output = 'os ' os '  ws  '  ws '  asm  '  asm
