@@ -3,34 +3,23 @@
 	&anchor = &trim = 1
 	&dump = 3
 	skip = 0
-	:(copy)
-switch
-* copy line unless skipping, in which case go to read next line
-	eq(skip)				:s(copy)f(next)
+	:(next)
 copy
 	output = line
 next
 	line = input				:f(finis)
-	line '.'				:f(switch)
-	line '.if'				:s(c.if)
-	line '.fi'				:s(c.fi)
-* here if not directive, so just copy it out
-						:(copy)
-c.if
-	line '.'				:f(switch)
-	lt(size(line),3)			:s(copy)
 	line '.if'				:s(pp.if)
 	line '.fi'				:s(pp.fi)
+* here if not directive, so just copy it out unless skipping
+	ne(skip)				:s(next)f(copy)
 
 pp.if	line len(3)  span(' ') rem . name 	:f(err)
-	skip = 1
-	differ(name,version)			:s(next)
-	skip = 0				:(next)
+	skip = (differ(name,version) 1, 0)	:(next)
 
-c.fi
-	skip = 0 				:(next)
+pp.fi	skip = 0				:(next)
+
 err
-	output = 'illegal if'			:(finis)
+	terminal = 'illegal if - translation terminated'		:(finis)
 finis
 	&dump = 0
 end

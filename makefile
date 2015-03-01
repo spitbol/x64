@@ -112,7 +112,7 @@ AOBJS=s.o err.o sys.o
 asm: 
 
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u A pp.sbl <asm.sbl >asm.spt
+	$(BASEBOL) -u A pp.sbl <asm.sbl >asm.spt pp.sbl
 # run lex to get s.lex
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 # run asm to get .s and .err files
@@ -138,17 +138,17 @@ gas:
 # run preprocessor to get h file
 	$(BASEBOL) -u $(TARGET) r.sbl <gas.h >gas.r
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u G pp.sbl <asm.sbl >asm.spt
+	$(BASEBOL) -u G -pp.sbl <asm.sbl >gas.spt 
 # run lex to get s.lex
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 # run asm to get .s and .err files
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s-gas.s -3=s-gas-err.err -4=asm.hdr -6=s.equ	asm.spt
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s.s -3=s.err -4=asm.hdr -6=s.equ	gas.spt
 # run err to s-asm-err.s
-	$(BASEBOL) -u $(TARGET)_gas -1=s-gas-err.err -2=s-gas-err.s $(ERR)
+	$(BASEBOL) -u $(TARGET)_gas -1=s.err -2=s-err.s $(ERR)
 # compile the .s files 
-	$(NASM) $(ASMOPTS) -os-gas.o s-gas.s
-	$(NASM) $(ASMOPTS) -os-gas-err.o s-gas-err.s
-	$(NASM) $(ASMOPTS) -ogas-sys.o gas.sys
+	$(NASM) $(ASMOPTS) -os.o s.s
+	$(NASM) $(ASMOPTS) -oerr.o err.s
+	$(NASM) $(ASMOPTS) -osys.o gas.sys
 # compile osint
 	$(CC)  $(CCOPTS) -c  osint/*.c
 # load objects
@@ -158,6 +158,12 @@ gas:
 # link gasbol with dynamic linking
 gasbol-dynamic: $(OBJS) $(GOBJS) $(GOBJS)
 	$(CC) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT)  -ogasbol 
+
+asm.spt:	asm.sbl
+	$(BASEBOL) -u A -1=asm.sbl -2=asm.spt pp.sbl
+
+gas.spt:	asm.sbl
+	$(BASEBOL) -u G -1=asm.sbl -2=gas.spt pp.sbl
 
 # bootbol is for bootstrapping just link with what's at hand
 #bootbol: $(OBJS)
@@ -200,7 +206,7 @@ it-nasm: s-nasm.dic it.sbl
 
 clean:
 	rm -f *.o s.err err.s s.lex s.equ ./asmbol ./gasbol ./spitbol 
-	rm asm.hdr asm.spt gas.spt asm.hdr gas.hdr 
+	rm asm.hdr asm.spt gas.r gas.spt asm.hdr gas.hdr 
 
 sclean:
 # clean up after sanity-check
