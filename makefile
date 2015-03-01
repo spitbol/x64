@@ -108,7 +108,7 @@ COBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 asm: 
 
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u G pp.sbl <asm.sbl >asm.spt 
+	$(BASEBOL) -u A pp.sbl <asm.sbl >asm.spt 
 # run lex to get s.lex
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 # run asm to get .s and .err files
