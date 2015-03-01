@@ -55,11 +55,8 @@ EL:F=macho$(WS)
 endif
 
 # spitbol source file
-MIN=s
 
 OSINT=./osint
-
-
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
@@ -111,13 +108,13 @@ COBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 asm: 
 
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u A pp.sbl <asm.sbl >asm.spt pp.sbl
+	$(BASEBOL) -u G pp.sbl <asm.sbl >asm.spt 
 # run lex to get s.lex
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 # run asm to get .s and .err files
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s.s -3=s.err -6=s.equ	asm.spt
+	$(BASEBOL) -u $(TARGET):$(ITOPT) asm.spt
 # run err 
-	$(BASEBOL) -u $(TARGET)_asm -1=s.err -2=err.s $(ERR)
+	$(BASEBOL) -u $(TARGET)_asm $(ERR)
 # assemble the .asm file
 	$(NASM) $(ASMOPTS) -oasm.o asm.asm
 # compile osint
@@ -125,39 +122,35 @@ asm:
 # load objects
 	$(CC) $(LDOPTS)  $(COBJS) asm.o $(LMOPT) -static -ospitbol
 
-# link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS) $(AOBJS)
+# link spitbol with dynamic linking
 	$(CC) $(LDOPTS) $(OBJS) $(AOBJS) $(LMOPT)  -ospitbol 
 
+gas: 
 # build gasbol, the asm variant  targeting gas format assembler
 # link gasbol with static linking
-gas: 
-# run preprocessor to get h file
-	$(BASEBOL) -u $(TARGET) r.sbl <gas.h >gas.r
+
 # run preprocessor to get asm for nasm as target
 	$(BASEBOL) -u G pp.sbl <asm.sbl >gas.spt 
 # run lex to get s.lex
 	$(BASEBOL) -u $(TARGET)_$(GAS) $(LEX)
 # run gas to get .s and .err files
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s.r -3=s.err -6=s.equ	gas.spt
-# run r to rename registers in .s file
-	$(BASEBOL)  -u $(TARGET) r.sbl <s.r >s.s
-# run r to rename registers in hdr file
-	$(BASEBOL) -u $(TARGET) r.sbl  <gas.hdr.r > gas.hdr
+	$(BASEBOL) -u $(TARGET):$(ITOPT) gas.spt
+# revise source .s 
+	$(BASEBOL) -u $(TARGET) r.sbl <s.s >s.r
 # run err 
-	$(BASEBOL) -u $(TARGET)_gas -1=s.err -2=err.s $(ERR)
-# compile the .s files 
-	$(GAS) $(GASOPTS) -os.o s.s
-	$(GAS) $(GASOPTS) -oerr.o err.s
-	$(GAS) $(GASOPTS) -osys.o gas.sys
+	$(BASEBOL) -u $(TARGET)_gas $(ERR)
+# revise gas file
+	$(BASEBOL) -u $(TARGET) r.sbl <gas.gas >gas.r
+# assemble the .gas file
+	$(GAS) $(GASOPTS) -ogas.o gas.r
 # compile osint
 	$(CC)  $(CCOPTS) -c  osint/*.c
 # load objects
-	$(CC) $(LDOPTS)  $(OBJS) $(GOBJS) $(LMOPT) -static -ogasbol
+	$(CC) $(LDOPTS)  $(COBJS) gas.o $(LMOPT) -static -ospitbol
 
-
-# link gasbol with dynamic linking
 gasbol-dynamic: $(OBJS) $(GOBJS) $(GOBJS)
+# link gasbol with dynamic linking
 	$(CC) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT)  -ogasbol 
 
 asm.spt:	asm.sbl
@@ -166,10 +159,10 @@ asm.spt:	asm.sbl
 gas.spt:	asm.sbl
 	$(BASEBOL) -u G -1=asm.sbl -2=gas.spt pp.sbl
 
+bootbol: 
 # bootbol is for bootstrapping just link with what's at hand
 #bootbol: $(OBJS)
 # no dependencies so can link for osx bootstrap
-bootbol: 
 	$(CC) $(LDOPTS)  $(OBJS) $(LMOPT) -obootbol
 
 cobjs:
