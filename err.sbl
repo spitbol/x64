@@ -374,8 +374,8 @@ readerr_end
 *
 
 *  open channel 1 on command line for infile, channel 2 for outfile
-        output = ~input(.infile,1) "no input file"     :s(end)
-        output = ~output(.outfile,2) "no output file"  :s(end)
+        output = ~input(.infile,1,'s.err') "no input file"     :s(end)
+        output = ~output(.outfile,2,'err.s') "no output file"  :s(end)
 
 *  arrays to hold error messages and phrases
 *

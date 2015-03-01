@@ -103,8 +103,9 @@
 	define('genop(gopc,gop1,gop2,gop3)')
 	define('genopl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
+	define('gensh(opc,reg,val)')
+	define('getadr(iarg)txt,typ,pre,post')
 	define('getarg(iarg)txt,typ,pre,post')
-	define('getlea(iarg)txt,typ,pre,post')
 	define('getrip(iarg)txt,typ,pre,post,ent,lb,var,reg')
 	define('getval(iarg)txt,typ,pre,post')
 	define('ifreg(iarg)')
@@ -344,10 +345,10 @@ skip_init.end
 	argcase[22] = .getarg.c.22;	argcase[23] = .getarg.c.23;	argcase[24] = .getarg.c.24;
 	argcase[25] = .getarg.c.25;	argcase[26] = .getarg.c.26;	argcase[27] = .getarg.c.27
 
-	leacase = table(50)
-	leacase[03] = .getlea.c.3;	leacase[04] = .getlea.c.4;	leacase[09] = .getlea.c.9;
-	leacase[12] = .getlea.c.12;	leacase[13] = .getlea.c.13;	leacase[14] = .getlea.c.14
-	leacase[15] = .getlea.c.15;
+	adrcase = table(50)
+	adrcase[03] = .getadr.c.3;	adrcase[04] = .getadr.c.4;	adrcase[09] = .getadr.c.9;
+	adrcase[12] = .getadr.c.12;	adrcase[13] = .getadr.c.13;	adrcase[14] = .getadr.c.14
+	adrcase[15] = .getadr.c.15;
 
 .if A
 	valcase = table(50)
@@ -565,15 +566,7 @@ outputok
 
         output = ~output(.errfile,3) "no error file"	:s(end)
 err_ok
-
-	output = 'write header include'
-.if A
-	outline(tab '%include' tab '"asm.hdr"')
-.fi
-.if G
-	outline(tab '.include' tab '"gas.hdr"')
-.fi
-	outlines = outlines + 1
+* 	&dump = 0
 
 *  read in .equ file with value for symbols defined by equ opcode (this is really only needed for gas)
 	output = ~input(.equfile,6) 'cannot open equ file'	:s(end)
@@ -825,8 +818,8 @@ getarg.done
 *	ne(x_trace) outline('; arg ' typ ':' txt   ' -> ' getarg)
 						:(return)
 
--stitl getlea(iarg)
-getlea
+-stitl getadr(iarg)
+getadr
 *	similar to getarg, but gets effective address
 *	this procedure only called if operand is
 *	ops: 3,4,9,12,13,14,15
@@ -837,32 +830,32 @@ getlea
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
-	eq(typ)					:f($(leacase[typ]))
-	getlea = txt				:(return)
+	eq(typ)					:f($(adrcase[typ]))
+	getadr = txt				:(return)
 * wlbl, clbl
-getlea.c.3
-getlea.c.4
-	getlea = pre txt post			:(return)
+getadr.c.3
+getadr.c.4
+	getadr = pre txt post			:(return)
 
 * (x), register indirect
-getlea.c.9
+getadr.c.9
 	txt len(1) len(2) . typ
 	typ = regmap[typ]
-	getlea = pre typ post
+	getadr = pre typ post
 						:(return)
 * int(x)
 * dlbl(x)
-getlea.c.12
-getlea.c.13
+getadr.c.12
+getadr.c.13
 	txt break('(') . t1 '(' len(2) . t2
-	getlea = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
+	getadr = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
 							:(return)
 
 *  name(x), where name is in working section
-getlea.c.14
-getlea.c.15
+getadr.c.14
+getadr.c.15
 	txt break('(') . t1 '(' len(2) . t2
-	getlea = pre    t1 '+'  regmap[t2] 	post
+	getadr = pre    t1 '+'  regmap[t2] 	post
 							:(return)
 .fi
 .if G
@@ -895,8 +888,7 @@ getarg.c.6 getarg = txt				:(getarg.done)
 * w,x, map register name
 getarg.c.7
 getarg.c.8
-*	getarg = regmap[txt]			:(getarg.done)
-	getarg = txt				:(getarg.done)
+	getarg = regmap[txt]			:(getarg.done)
 
 * (x), register indirect -- memory reference
 getarg.c.9
@@ -987,7 +979,7 @@ getadr
 	txt = i.text(iarg)
 	typ = i.type(iarg)
 	it_suspend = 1
-	eq(typ)					:f($(leacase[typ]))
+	eq(typ)					:f($(adrcase[typ]))
 						:(getadr.lit)
 * wlbl, clbl
 getadr.c.3
@@ -2079,7 +2071,7 @@ g.sbr
 g.mlr
 g.dvr
 .if A
-	genop('lea',reg.w0,getlea(i1))
+	genop('lea',reg.w0,getadr(i1))
 	genop('call',op_)
 .fi
 .if G
@@ -2571,6 +2563,16 @@ g.ctw
 *	genop('mov',w.reg,reg.w0)	
 	genop('call', incode '_')
 	genop('mov','ctbw_r',w.reg)
+
+g.cvm	t1 = getarg(i1)
+	genop('mov',reg.ia,w0)
+	genop('imul',w0,intvt)
+	genop('jo',t1)
+	genop('sub','$ch_d0',reg.wb)
+	genop('sub',reg.wb,w0)
+	genop('mov',w0,reg.ia)
+	genop('jo',t1)
+						:(opdone)
 .fi
 						:(opdone)
 g.cvd
@@ -2722,7 +2724,8 @@ g.dic
 	genopl(thislabel,'d_word',i.text(i1))
 .fi
 .if G
-        genopl(thislabel,d_word,t2 i.text(i1))
+	outfile = '# g.dic ' i.text(i1)
+        genopl(thislabel,d_word,i.text(i1))
 .fi
 						:(decend)
 
@@ -2787,7 +2790,7 @@ g.equ
 						:(opdone)
 g.exp
 	ppm_cases[thislabel] = i.text(i1)
-	genop('extern',thislabel)
+*	gendir('extern',thislabel)
 	thislabel =				:(opdone)
 
 g.inp
@@ -2826,10 +2829,10 @@ g.sec.3
 
 * working variables section
 g.sec.4 
-	genop('global','esec03')
+	gendir('global','esec03')
         genopl('esec03' ':')
         gendir('segment','data')
-        genop('global','sec04')
+        gendir('global','sec04')
 	genopl('sec04:')			:(opdone)
 
 *  here at start of program section.  if any n type procedures,
@@ -2840,8 +2843,12 @@ g.sec.5
         gendir('global','esec04')
         genopl('esec04' ':')
 *        (gt(prc.count1) genopl('prc$' ':','times', prc.count1 ' dd 0'))
+.if A
 	genop('prc_: times ' prc.count1 ' dd 0')
-
+.fi
+.if G
+	genopl('prc_:','.fill', prc.count1,cfp_b)
+.fi
         gendir('global','end_min_data')
         genopl('end_min_data' ':')
         gendir('segment','text')
@@ -2913,22 +2920,6 @@ report
 
 
 g.end
-
-*  Create the header information to be included at assembly
-*  The header follows the 'end' statement in this program.
-*  Note that the '-r' option must be given to spitbol for this to work.
-
-
-	output = 'start header copy'
-	output = ~output(.hdrfile,4) 'cannot open header file' :s(hdr.done)
-hdr.copy line = input				:f(hdr.end)
-*	output = 'hdr line ' line
-	hdrfile = line				:(hdr.copy)
-hdr.end	
-	endfile(4)
-hdr.done
-	&dump = 0
-
 * here at end of code generation.
 
 	endfile(1)
@@ -2952,538 +2943,6 @@ hdr.done
 	&code   = ne(nerrors) 2001
         report(collect(), 'free words')
 	report(time(),'execution time ms')
+	&dump = 0
 	:(end)
 end
-.if A
-; copyright 1987-2012 robert b. k. dewar and mark emmer.
-; copyright 2012-2015 david shields
-;
-; this file is part of macro spitbol.
-;
-;     macro spitbol is free software: you can redistribute it and/or modify
-;     it under the terms of the gnu general public license as published by
-;     the free software foundation, either version 2 of the license, or
-;     (at your option) any later version.
-;
-;     macro spitbol is distributed in the hope that it will be useful,
-;     but without any warranty; without even the implied warranty of
-;     merchantability or fitness for a particular purpose.  see the
-;     gnu general public license for more details.
-;
-;     you should have received a copy of the gnu general public license
-;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
-;
-        section	.text
-
-	%include	"asm.h"
-
-	global	dnamb
-	global	dname
-	extern	osisp
-	extern	compsp
-	extern	save_regs
-	extern	restore_regs
-	extern	_rc_
-	extern	reg_fl
-	extern	reg_cp
-	extern	reg_w0
-
-	global	mxint
-
-;%ifdef it_trace
-	extern	shields
-	extern	it_
-	extern	id_de
-	extern	it_cp
-	extern	it_xl
-	extern	it_xr
-	extern	it_xs
-	extern	it_wa
-	extern	it_wb
-	extern	it_wc
-	extern	it_w0
-	extern	it_it
-	extern	it_id
-	extern	it_de
-	extern	it_0
-	extern	it_1
-	extern	it_2
-	extern	it_3
-	extern	it_4
-	extern	it_arg
-	extern	it_num
-;%endif
-	global	start
-
-
-	%macro	itz	1
-	section	.data
-%%desc:	db	%1,0
-	section	.text
-	mov	m_word [it_de],%%desc
-	call	it_
-	%endmacro
-;
-;
-;   table to recover type word from type ordinal
-;
-
-	extern	_rc_
-	global	typet
-	section .data
-
-        d_word	b_art   ; arblk type word - 0
-        d_word	b_cdc   ; cdblk type word - 1
-        d_word	b_exl   ; exblk type word - 2
-        d_word	b_icl   ; icblk type word - 3
-        d_word	b_nml   ; nmblk type word - 4
-        d_word	p_aba   ; p0blk type word - 5
-        d_word	p_alt   ; p1blk type word - 6
-        d_word	p_any   ; p2blk type word - 7
-; next needed only if support real arithmetic cnra
-;       d_word	b_rcl   ; rcblk type word - 8
-        d_word	b_scl   ; scblk type word - 9
-        d_word	b_sel   ; seblk type word - 10
-        d_word	b_tbt   ; tbblk type word - 11
-        d_word	b_vct   ; vcblk type word - 12
-        d_word	b_xnt   ; xnblk type word - 13
-        d_word	b_xrt   ; xrblk type word - 14
-        d_word	b_bct   ; bcblk type word - 15
-        d_word	b_pdt   ; pdblk type word - 16
-        d_word	b_trt   ; trblk type word - 17
-        d_word	b_bft   ; bfblk type word   18
-        d_word	b_cct   ; ccblk type word - 19
-        d_word	b_cmt   ; cmblk type word - 20
-        d_word	b_ctt   ; ctblk type word - 21
-        d_word	b_dfc   ; dfblk type word - 22
-        d_word	b_efc   ; efblk type word - 23
-        d_word	b_evt   ; evblk type word - 24
-        d_word	b_ffc   ; ffblk type word - 25
-        d_word	b_kvt   ; kvblk type word - 26
-        d_word	b_pfc   ; pfblk type word - 27
-        d_word	b_tet   ; teblk type word - 28
-;
-;   table of minimal entry points that can be dded from c
-;   via the minimal function (see inter.asm).
-;
-;   note that the order of entries in this table must correspond
-;   to the order of entries in the call enumeration in osint.h
-;   and osint.inc.
-;
-	global calltab
-calltab:
-        d_word	relaj
-        d_word	relcr
-        d_word	reloc
-        d_word	alloc
-        d_word	alocs
-        d_word	alost
-        d_word	blkln
-        d_word	insta
-        d_word	rstrt
-        d_word	start
-        d_word	filnm
-        d_word	dtype
-;       d_word	enevs ;  engine words
-;       d_word	engts ;   not used
-
-	global	b_efc
-	global	b_icl
-	global	b_rcl
-	global	b_scl
-	global	b_vct
-	global	b_xnt
-	global	b_xrt
-	global	c_aaa
-	global	c_yyy
-	global	dnamb
-	global	cswfl
-	global	dnamp
-	global	flprt
-	global	flptr
-	global	g_aaa
-	global	gbcnt
-	global	gtcef
-	global	headv
-	global	hshtb
-	global	kvstn
-	global	kvdmp
-	global	kvftr
-	global	kvcom
-	global	kvpfl
-	global	mxlen
-	global	polct
-	global	s_yyy
-	global	s_aaa
-	global	stage
-	global	state
-	global	stbas
-	global	statb
-        global  stmcs
-        global  stmct
-	global	timsx
-	global  typet
-	global	pmhbs
-	global	r_cod
-	global	r_fcb
-	global	w_yyy
-	global	end_min_data
-
-
-        extern	adr_
-        extern	atn_
-        extern	chp_
-        extern	cos_
-	extern	cpr_
-        extern	dvr_
-        extern	etx_
-        extern	itr_
-        extern	ldr_
-        extern	lnf_
-        extern	mlr_
-        extern	ngr_
-	extern	ovr_
-        extern	sbr_
-        extern	sin_
-        extern	str_
-        extern	sqr_
-        extern	tan_
-
-
-	extern	reg_ia,reg_wa,reg_fl,reg_W0,reg_wc
-
-	%macro	adi_	1
-	add	IA,%1
-	seto	byte [reg_fl]
-	%endmacro
-
-
-	%macro	chk_	0
-	extern	chk__
-	call	chk__
-	%endmacro
-
-	extern	cvd__
-
-	%macro	cvd_	0
-	call	cvd__
-	%endmacro
-
-	extern	dvi__
-
-	%macro	dvi_	1
-	mov	W0,%1
-	call	dvi__
-	%endmacro
-
-	%macro	icp_	0
-	mov	W0,m(reg_cp)
-	add	W0,cfp_b
-	mov	m(reg_cp),W0
-	%endmacro
-
-	%macro	ino_	1
-	mov	al,byte [reg_fl]
-	or	al,al
-	jno	%1
-	%endmacro
-
-	%macro	iov_	1
-	mov	al,byte [reg_fl]
-	or	al,al
-	jo	%1
-	%endmacro
-
-	%macro	ldi_	1
-	mov	IA,%1
-	%endmacro
-
-	%macro	mli_	1
-	imul	IA,%1
-	seto	byte [reg_fl]
-	%endmacro
-
-	%macro	ngi_	0
-	neg	IA
-	seto	byte [reg_fl]
-	%endmacro
-
-	extern	rmi__
-	%macro	rmi_	1
-	mov	W0,%1
-	call	rmi__
-	%endmacro
-
-	extern	f_rti
-	%macro	rti_	0
-
-	call	f_rti
-	mov	IA,m(reg_ia)
-	%endmacro
-
-	%macro	sbi_	1
-	sub	IA,%1
-	mov	W0,0
-	seto	byte [reg_fl]
-	%endmacro
-
-	%macro	sti_	1
-	mov	%1,IA
-	%endmacro
-
-	%macro	lcp_	1
-	mov	W0,%1
-	mov	m_word [reg_cp],W0
-	%endmacro
-
-	%macro	lcw_	1
-	mov	W0,m_word [reg_cp]		; load address of code word
-	mov	W0,m_word [W0]			; load code word
-	mov	%1,W0
-	mov	W0,m_word [reg_cp]		; load address of code word
-	add	W0,cfp_b
-	mov	m_word [reg_cp],W0
-	%endmacro
-
-	%macro	rno_	1
-	mov	al,byte [reg_fl]
-	or	al,al
-	je	%1
-	%endmacro
-
-	%macro	rov_	1
-	mov	al,byte [reg_fl]
-	or	al,al
-	jne	%1
-	%endmacro
-
-	%macro	scp_	1
-	mov	W0,m_word [reg_cp]
-	mov	%1,W0
-	%endmacro
-.fi
-.if G
-# copyright 1987-2012 robert b. k. dewar and mark emmer.
-
-# copyright 2012-2015 david shields
-#
-# this file is part of macro spitbol.
-#
-#     macro spitbol is free software: you can redistribute it and/or modify
-#     it under the terms of the gnu general public license as published by
-#     the free software foundation, either version 2 of the license, or
-#     (at your option) any later version.
-#
-#     macro spitbol is distributed in the hope that it will be useful,
-#     but without any warranty; without even the implied warranty of
-#     merchantability or fitness for a particular purpose.  see the
-#     gnu general public license for more details.
-#
-#     you should have received a copy of the gnu general public license
-#     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
-
-	.include "gas.r"
-
-	.set	os,	unix	# default
-	.set	ws,64	# default
-
-#ifdef	osx_64
-	.set	os,osx
-#	.set	osx
-	.set	ws,64
-#	default	rel		# use rip addressing
-#endif
-
-#ifdef	unix_32
-	.set	os,unix
-#	.set	unix
-	.set	ws,32
-#endif
-
-#ifdef	unix_64
-	.set	os,unix
-#	.set	unix
-	.set	ws,64
-#endif
-
-#if	ws=32
-#	.set	cfp_b,4
-	.set	cfp_b_m1,3
-	.set	log_cfp_b,2
-	.set	cfp_c_val,4
-	.set	log_cfp_c,2
-	.set	cfp_m_,2147483647
-#	.set	cfp_n_,32
-
-	.set	lods_b,lodsb
-	.set	lods_w,lodsd
-	.set	movs_b,movsb
-	.set	movs_w,movsd
-	.set	stos_b,stosb
-	.set	stos_w,stosd
-	.set	cmps_b,cmpsb
-
-	.set	cdq,cdq	# sign extend (32 bits)
-#else
-#	.set	cfp_b,8
-	.set	cfp_b_m1,7
-	.set	log_cfp_b,3
-	.set	log_cfp_c,3
-	.set	d_real,dq
-	.set	cfp_c_val,8
-	.set	log_cfp_c,3
-	.set	cfp_m_,9223372036854775807
-#	.set	cfp_n_,64
-
-	.set	lods_w,lodsq
-	.set	lods_b,lodsb
-	.set	movs_b,movsb
-	.set	movs_w,movsq
-	.set	stos_b,stosb
-	.set	stos_w,stosq
-	.set	cmps_b,cmpsb
-
-	.set	cdq,cqo	# sign extend (64 bits)
-
-#endif
-
-	.macro	d_word	val
-#if	ws=32
-	.long	\val
-#else
-	.quad	\val
-#endif
-	.endm
-
-#	flags
-	.set	flag_of,0x80
-	.set	flag_cf,0x01
-	.set	flag_ca,0x40
-
-#if	os=osx
-# redefine symbols needed by C to account for leading _ inserted by C compiler on osx
-#	.set	b_icl,_b_icl
-#	.set	b_scl,_b_scl
-#	.set	b_xnt,_b_xnt
-#	.set	b_xrt,_b_xrt
-#	.set	c_aaa,_c_aaa
-#	.set	c_yyy,_c_yyy
-#	.set	dnamb,_dnamb
-#	.set	dnamp,_dnamp
-#	.set	error	,_errors
-#	.set	flprt,_flprt
-#	.set	flptr,_flptr
-#	.set	g_aaa,_g_aaa
-#	.set	get_fp,_get_fp
-#	.set	gtcef,_gtcef
-#	.set	hasfpu,_hasfpu
-#	.set	headv,_headv
-#	.set	hshtb,_hshtb
-#	.set	id1blk,_id1blk
-#	.set	id2blk,_id2blk
-#	.set	inf,_inf
-#	.set	inpbuf,_inpbuf
-#	.set	minimal,_minimal
-#	.set	minimal_id,_minimal_id
-#	.set	phrases,_phrases
-#	.set	pmhbs,_pmhbs
-#	.set	polct,_polct
-#	.set	r_fcb,_r_fcb
-#	.set	reg_block,_reg_block
-#	.set	reg_cp,_reg_cp
-#	.set	reg_xl,_reg_xl
-#	.set	reg_xr,_reg_xr
-#	.set	reg_xs,_reg_xs
-#	.set	reg_w0,_reg_w0
-#	.set	reg_wa,_reg_wa
-#	.set	reg_wb,_reg_wb
-#	.set	reg_wc,_reg_wc
-#	.set	reg_ia,_reg_ia
-#	.set	reg_fl,_reg_fl
-#	.set	reg_ra,_reg_ra
-#	.set	reg_rp,_reg_rp
-#	.set	reg_size,_reg_size
-#	.set	restart,_restart
-#	.set	s_aaa,_s_aaa
-#	.set	s_yyy,_s_yyy
-#	.set	startup,_startup
-#	.set	state,_state
-#	.set	stbas,_stbas
-#	.set	ticbl,	_ticblk
-#	 .set	tscblk,_tscblk
-#	.set	ttybuf,_ttybuf
-#	.set	w_yyy,_w_yyy
-#	.set	i_adi,_i_adi
-#	.set	i_cvd,_i_cvd
-#	.set	i_dvi,_i_dvi
-#	.set	i_mli,_i_mli
-#	.set	i_ngi,_i_ngi
-#	.set	i_rmi,_i_rmi
-#	.set	f_adr,_f_adr
-#	.set	f_atn,_f_atn
-#	.set	f_chk,_f_chk
-#	.set	f_chp,_f_chp
-#	.set	f_cos,_f_cos
-#	.set	f_cpr,_f_cpr
-#	.set	f_dvr,_f_dvr
-#	.set	f_etx,_f_etx
-#	.set	f_itr,_f_itr
-#	.set	f_ldr,_f_ldr
-#	.set	f_lnf,_f_lnf
-#	.set	f_mlr,_f_mlr
-#	.set	f_ngr,_f_ngr
-#	.set	f_rti,_f_rti
-#	.set	f_sbr,_f_sbr
-#	.set	f_sin,_f_sin
-#	.set	f_sqr,_f_sqr
-#	.set	f_str,_f_str
-#	.set	f_tan,_f_tan
-#	.set	lmodstk,_lmodstk
-#	.set	outptr,_outptr
-#	.set	rereloc,_rereloc
-#	.set	stacksiz,_stacksiz
-#	.set	startbrk,_startbrk
-#	.set	swcoup,_swcoup
-#	.set	zysax,_zysax
-#	.set	zysaz,_zysaz
-#	.set	zysbs,_zysbs
-#	.set	zysbx,_zysbx
-#	.set	zysdc,_zysdc
-#	.set	zysdm,_zysdm
-#	.set	zysdt,_zysdt
-#	.set	zysea,_zysea
-#	.set	zysef,_zysef
-#	.set	zysej,_zysej
-#	.set	zysem,_zysem
-#	.set	zysen,_zysen
-#	.set	zysep,_zysep
-#	.set	zysex,_zysex
-#	.set	zysfc,_zysfc
-#	.set	zysgc,_zysgc
-#	.set	zyshs,_zyshs
-#	.set	zysid,_zysid
-#	.set	zysif,_zysif
-#	.set	zysil,_zysil
-#	.set	zysin,_zysin
-#	.set	zysio,_zysio
-#	.set	zysld,_zysld
-#	.set	zysmm,_zysmm
-#	.set	zysmx,_zysmx
-#	.set	zysou,_zysou
-#	.set	zyspi,_zyspi
-#	.set	zyspl,_zyspl
-#	.set	zyspp,_zyspp
-#	.set	zyspr,_zyspr
-#	.set	zysrd,_zysrd
-#	.set	zysri,_zysri
-#	.set	zysrw,_zysrw
-#	.set	zysst,_zysst
-#	.set	zystm,_zystm
-#	.set	zystt,_zystt
-#	.set	zysul,_zysul
-#	.set	zysxi,_zysxi
-#endif
-
-	.global	dnamb
-	.global	dname
-.fi

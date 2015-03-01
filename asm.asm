@@ -1,5 +1,4 @@
 ; copyright 1987-2012 robert b. k. dewar and mark emmer.
-
 ; copyright 2012-2015 david shields
 ;
 ; this file is part of macro spitbol.
@@ -16,12 +15,498 @@
 ;
 ;     you should have received a copy of the gnu general public license
 ;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+;
+        section	.text
+
+	%define	os	unix	; default
+	%define	unix
+	%define	ws	64	; default
+
+%ifdef	osx_64
+	%define	os	osx
+	%define	osx
+	%define	ws	64
+	default	rel		; use rip addressing
+%endif
+
+%ifdef	unix_32
+	%define	os	unix
+	%define	unix
+	%define	ws	32
+%endif
+
+%ifdef	unix_64
+	%define	os	unix
+	%define	unix
+	%define	ws	64
+%endif
+
+	%define m_char	byte	; reference to byte in memory
+	%define d_char	db	; define value of byte
+	%define m_real	qword	; reference to floating point value in memory
+	%define d_real	dq	; define value for floating point
+
+%if	ws=32
+
+	%define	IA	ebp
+
+	%define W0	eax
+	%define W1	ebp
+	%define WA	ecx
+	%define WA_L    cl
+	%define WB	ebx
+	%define WB_L  	bl
+	%define WC	edx
+	%define WC_L  	dl
+
+	%define	XL	esi
+	%define	XT	esi
+	%define XR	edi
+	%define XS	esp
+
+	%define m_word	dword	; reference to Word in memory
+	%define d_word	dd	; define value for memory Word
+	%define	cfp_b	4
+	%define	cfp_c	4
+	%define log_cfp_b 2
+	%define cfp_c_val	4
+	%define log_cfp_c 2
+	%define cfp_m_	2147483647
+;	%define	cfp_n_	32
+
+	%define	lods_b	lodsb
+	%define	lods_w	lodsd
+	%define movs_b	movsb
+	%define movs_w	movsd
+	%define	stos_b	stosb
+	%define	stos_w	stosd
+	%define	cmps_b	cmpsb
+
+	%define	cdq	cdq	; sign extend (32 bits)
+	%define m(ref) dword[ref]
+	%define a(ref) [ref]
+%else
+	%define	IA	rbp
+
+	%define	W0	rax
+	%define	W0_L	al
+	%define W1	rbp
+	%define	WA	rcx
+	%define WA_L	cl
+	%define	WB	rbx
+	%define WB_L    bl
+	%define	WC	rdx
+	%define WC_L    dl
+
+	%define	XL	rsi
+	%define	XT	rsi
+	%define	XR	rdi
+	%define	XS	rsp
+
+	%define m_word  qword
+	%define d_word	dq
+	%define	cfp_b	8
+	%define	cfp_c	8
+	%define log_cfp_b 3
+	%define log_cfp_c 3
+	%define d_real	dq
+	%define cfp_c_val	8
+	%define log_cfp_c 3
+	%define cfp_m_	9223372036854775807
+;	%define	cfp_n_	64
+
+	%define	lods_w	lodsq
+	%define	lods_b	lodsb
+	%define movs_b	movsb
+	%define movs_w	movsq
+	%define stos_b	stosb
+	%define	stos_w	stosq
+	%define	cmps_b	cmpsb
+
+	%define	cdq	cqo	; sign extend (64 bits)
+
+;	%define mem(ref) qword[ref]
+%ifdef osx
+	%define m(ref) qword[rel ref]
+	%define a(ref) [rel ref]
+%else
+	%define m(ref) qword[ref]
+	%define a(ref) [ref]
+%endif
+%endif
+
+;	flags
+	%define	flag_of	0x80
+	%define	flag_cf	0x01
+	%define	flag_ca	0x40
+
+%ifdef osx
+; redefine symbols needed by C to account for leading _ inserted by C compiler on osx
+	%define	b_icl		_b_icl
+	%define	b_scl		_b_scl
+	%define	b_xnt		_b_xnt
+	%define	b_xrt		_b_xrt
+	%define	c_aaa		_c_aaa
+	%define	c_yyy		_c_yyy
+	%define	dnamb		_dnamb
+	%define	dnamp		_dnamp
+	%define	errors		_errors
+	%define	flprt		_flprt
+	%define	flptr		_flptr
+	%define	g_aaa		_g_aaa
+	%define	get_fp		_get_fp
+	%define	gtcef		_gtcef
+	%define	hasfpu		_hasfpu
+	%define	headv		_headv
+	%define	hshtb		_hshtb
+	%define	id1blk		_id1blk
+	%define	id2blk		_id2blk
+	%define	inf		_inf
+	%define	inpbuf		_inpbuf
+	%define	minimal		_minimal
+	%define	minimal_id	_minimal_id
+	%define	phrases		_phrases
+	%define	pmhbs		_pmhbs
+	%define	polct		_polct
+	%define	r_fcb		_r_fcb
+	%define	reg_block	_reg_block
+	%define	reg_cp		_reg_cp
+	%define	reg_xl		_reg_xl
+	%define	reg_xr		_reg_xr
+	%define	reg_xs		_reg_xs
+	%define	reg_w0		_reg_w0
+	%define	reg_wa		_reg_wa
+	%define	reg_wb		_reg_wb
+	%define	reg_wc		_reg_wc
+	%define	reg_ia		_reg_ia
+	%define	reg_fl		_reg_fl
+	%define	reg_ra		_reg_ra
+	%define	reg_rp		_reg_rp
+	%define	reg_size	_reg_size
+	%define	restart		_restart
+	%define	s_aaa		_s_aaa
+	%define	s_yyy		_s_yyy
+	%define	startup		_startup
+	%define	state		_state
+	%define	stbas		_stbas
+	%define	ticblk		_ticblk
+	%define	tscblk		_tscblk
+	%define	ttybuf		_ttybuf
+	%define	w_yyy		_w_yyy
+	%define	i_adi		_i_adi
+	%define	i_dvi		_i_dvi
+	%define	i_mli		_i_mli
+	%define	i_ngi		_i_ngi
+	%define	i_rmi		_i_rmi
+	%define	f_adr		_f_adr
+	%define	f_atn		_f_atn
+	%define	f_chk		_f_chk
+	%define	f_chp		_f_chp
+	%define	f_cos		_f_cos
+	%define	f_cpr		_f_cpr
+	%define	f_dvr		_f_dvr
+	%define	f_etx		_f_etx
+	%define	f_itr		_f_itr
+	%define	f_ldr		_f_ldr
+	%define	f_lnf		_f_lnf
+	%define	f_mlr		_f_mlr
+	%define	f_ngr		_f_ngr
+	%define	f_rti		_f_rti
+	%define	f_sbr		_f_sbr
+	%define	f_sin		_f_sin
+	%define	f_sqr		_f_sqr
+	%define	f_str		_f_str
+	%define	f_tan		_f_tan
+	%define	i_cvd		_i_cvd
+	%define	i_dvi		_i_dvi
+	%define	i_rmi		_i_rmi
+	%define	lmodstk		_lmodstk
+	%define	outptr		_outptr
+	%define	rereloc		_rereloc
+	%define	stacksiz	_stacksiz
+	%define	startbrk	_startbrk
+	%define	swcoup		_swcoup
+	%define	zysax		_zysax
+	%define	zysaz		_zysaz
+	%define	zysbs		_zysbs
+	%define	zysbx		_zysbx
+	%define	zysdc		_zysdc
+	%define	zysdm		_zysdm
+	%define	zysdt		_zysdt
+	%define	zysea		_zysea
+	%define	zysef		_zysef
+	%define	zysej		_zysej
+	%define	zysem		_zysem
+	%define	zysen		_zysen
+	%define	zysep		_zysep
+	%define	zysex		_zysex
+	%define	zysfc		_zysfc
+	%define	zysgc		_zysgc
+	%define	zyshs		_zyshs
+	%define	zysid		_zysid
+	%define	zysif		_zysif
+	%define	zysil		_zysil
+	%define	zysin		_zysin
+	%define	zysio		_zysio
+	%define	zysld		_zysld
+	%define	zysmm		_zysmm
+	%define	zysmx		_zysmx
+	%define	zysou		_zysou
+	%define	zyspi		_zyspi
+	%define	zyspl		_zyspl
+	%define	zyspp		_zyspp
+	%define	zyspr		_zyspr
+	%define	zysrd		_zysrd
+	%define	zysri		_zysri
+	%define	zysrw		_zysrw
+	%define	zysst		_zysst
+	%define	zystm		_zystm
+	%define	zystt		_zystt
+	%define	zysul		_zysul
+	%define	zysxi		_zysxi
+%endif
+	global	dnamb
+	global	dname
+	global	mxint
+
+;%ifdef it_trace
+	extern	id_de
+	extern	it_cp
+	extern	it_xl
+	extern	it_xr
+	extern	it_xs
+	extern	it_wa
+	extern	it_wb
+	extern	it_wc
+	extern	it_w0
+	extern	it_it
+	extern	it_id
+	extern	it_de
+	extern	it_0
+	extern	it_1
+	extern	it_2
+	extern	it_3
+	extern	it_4
+	extern	it_arg
+	extern	it_num
+;%endif
+	global	start
 
 
-;	ws is bits per word, cfp_b is bytes per word, cfp_c is characters per word
+	%macro	itz	1
+	section	.data
+%%desc:	db	%1,0
+	section	.text
+	mov	m_word [it_de],%%desc
+	call	it_
+	%endmacro
+;
+;
+;   table to recover type word from type ordinal
+;
+
+	global	typet
+	section .data
+
+        d_word	b_art   ; arblk type word - 0
+        d_word	b_cdc   ; cdblk type word - 1
+        d_word	b_exl   ; exblk type word - 2
+        d_word	b_icl   ; icblk type word - 3
+        d_word	b_nml   ; nmblk type word - 4
+        d_word	p_aba   ; p0blk type word - 5
+        d_word	p_alt   ; p1blk type word - 6
+        d_word	p_any   ; p2blk type word - 7
+; next needed only if support real arithmetic cnra
+;       d_word	b_rcl   ; rcblk type word - 8
+        d_word	b_scl   ; scblk type word - 9
+        d_word	b_sel   ; seblk type word - 10
+        d_word	b_tbt   ; tbblk type word - 11
+        d_word	b_vct   ; vcblk type word - 12
+        d_word	b_xnt   ; xnblk type word - 13
+        d_word	b_xrt   ; xrblk type word - 14
+        d_word	b_bct   ; bcblk type word - 15
+        d_word	b_pdt   ; pdblk type word - 16
+        d_word	b_trt   ; trblk type word - 17
+        d_word	b_bft   ; bfblk type word   18
+        d_word	b_cct   ; ccblk type word - 19
+        d_word	b_cmt   ; cmblk type word - 20
+        d_word	b_ctt   ; ctblk type word - 21
+        d_word	b_dfc   ; dfblk type word - 22
+        d_word	b_efc   ; efblk type word - 23
+        d_word	b_evt   ; evblk type word - 24
+        d_word	b_ffc   ; ffblk type word - 25
+        d_word	b_kvt   ; kvblk type word - 26
+        d_word	b_pfc   ; pfblk type word - 27
+        d_word	b_tet   ; teblk type word - 28
+;
+;   table of minimal entry points that can be dded from c
+;   via the minimal function (see inter.asm).
+;
+;   note that the order of entries in this table must correspond
+;   to the order of entries in the call enumeration in osint.h
+;   and osint.inc.
+;
+	global calltab
+calltab:
+        d_word	relaj
+        d_word	relcr
+        d_word	reloc
+        d_word	alloc
+        d_word	alocs
+        d_word	alost
+        d_word	blkln
+        d_word	insta
+        d_word	rstrt
+        d_word	start
+        d_word	filnm
+        d_word	dtype
+;       d_word	enevs ;  engine words
+;       d_word	engts ;   not used
+
+	global	b_efc
+	global	b_icl
+	global	b_rcl
+	global	b_scl
+	global	b_vct
+	global	b_xnt
+	global	b_xrt
+	global	c_aaa
+	global	c_yyy
+	global	dnamb
+	global	cswfl
+	global	dnamp
+	global	flprt
+	global	flptr
+	global	g_aaa
+	global	gbcnt
+	global	gtcef
+	global	headv
+	global	hshtb
+	global	kvstn
+	global	kvdmp
+	global	kvftr
+	global	kvcom
+	global	kvpfl
+	global	mxlen
+	global	polct
+	global	s_yyy
+	global	s_aaa
+	global	stage
+	global	state
+	global	stbas
+	global	statb
+        global  stmcs
+        global  stmct
+	global	timsx
+	global  typet
+	global	pmhbs
+	global	r_cod
+	global	r_fcb
+	global	w_yyy
+	global	end_min_data
+
+	%macro	adi_	1
+	add	IA,%1
+	seto	byte [reg_fl]
+	%endmacro
 
 
-	%include	"asm.h"
+	%macro	chk_	0
+	call	chk__
+	%endmacro
+
+	%macro	cvd_	0
+	call	cvd__
+	%endmacro
+
+	%macro	dvi_	1
+	mov	W0,%1
+	call	dvi__
+	%endmacro
+
+	%macro	icp_	0
+	mov	W0,m(reg_cp)
+	add	W0,cfp_b
+	mov	m(reg_cp),W0
+	%endmacro
+
+	%macro	ino_	1
+	mov	al,byte [reg_fl]
+	or	al,al
+	jno	%1
+	%endmacro
+
+	%macro	iov_	1
+	mov	al,byte [reg_fl]
+	or	al,al
+	jo	%1
+	%endmacro
+
+	%macro	ldi_	1
+	mov	IA,%1
+	%endmacro
+
+	%macro	mli_	1
+	imul	IA,%1
+	seto	byte [reg_fl]
+	%endmacro
+
+	%macro	ngi_	0
+	neg	IA
+	seto	byte [reg_fl]
+	%endmacro
+
+	%macro	rmi_	1
+	mov	W0,%1
+	call	rmi__
+	%endmacro
+
+	%macro	rti_	0
+
+	mov	IA,m(reg_ia)
+	%endmacro
+
+	%macro	sbi_	1
+	sub	IA,%1
+	mov	W0,0
+	seto	byte [reg_fl]
+	%endmacro
+
+	%macro	sti_	1
+	mov	%1,IA
+	%endmacro
+
+	%macro	lcp_	1
+	mov	W0,%1
+	mov	m_word [reg_cp],W0
+	%endmacro
+
+	%macro	lcw_	1
+	mov	W0,m_word [reg_cp]		; load address of code word
+	mov	W0,m_word [W0]			; load code word
+	mov	%1,W0
+	mov	W0,m_word [reg_cp]		; load address of code word
+	add	W0,cfp_b
+	mov	m_word [reg_cp],W0
+	%endmacro
+
+	%macro	rno_	1
+	mov	al,byte [reg_fl]
+	or	al,al
+	je	%1
+	%endmacro
+
+	%macro	rov_	1
+	mov	al,byte [reg_fl]
+	or	al,al
+	jne	%1
+	%endmacro
+
+	%macro	scp_	1
+	mov	W0,m_word [reg_cp]
+	mov	%1,W0
+	%endmacro
+
 
 %ifdef	unix_32
 	%define	cfp_b	4
@@ -49,7 +534,6 @@
 	global	reg_rp
 
 	global	minimal
-	extern	calltab
 	extern	stacksiz
 
 ;	values below must agree with calltab defined in x32.hdr and also in osint/osint.h
@@ -477,7 +961,6 @@ minimal:
  min1:
 	mov     W0,m(minimal_id)	; get ordinal
 ;	call   m(calltab+W0*cfp_b)    ; off to the minimal code
-	extern	start
 	call	start
 
 	mov     XS,m(osisp)	; switch to osint stack
@@ -870,19 +1353,16 @@ get_fp:
 	extern	rereloc
 
 	global	restart
-	extern	stbas
-	extern	statb
-	extern	stage
-	extern	gbcnt
 	extern	lmodstk
 	extern	startbrk
 	extern	outptr
 	extern	swcoup
 ;	scstr is offset to start of string in scblk, or two words
-scstr	equ	cfp_c+cfp_c
+;scstr	equ	cfp_c+cfp_c
 
 ;
 restart:
+%ifdef support_restart
         pop     W0                      ; discard return
         pop     W0                     	; discard dummy
         pop     W0                     	; get lowest legal stack value
@@ -976,7 +1456,6 @@ re4:	mov	W0,m(stbas)
         mov	m(gbcnt),0       	; reset garbage collect count
         call    zystm                 	; fetch execution time to reg_ia
         mov     W0,m(reg_ia)     	; set time into compiler
-	extern	timsx
 	mov	m(timsx),W0
 
 ;       code that would be executed if we returned to sysbx:
@@ -991,6 +1470,7 @@ re4:	mov	W0,m(stbas)
 	mov	W0,minimal_rstrt
 	mov	m(minimal_id),W0
         call	minimal			; no return
+%endif
 
 	global	it_
 	extern	it
@@ -1001,3 +1481,11 @@ it_:
 	call	restore_regs
 	popf
 	ret
+
+	%include	"err.s"
+
+	%undef		cfp_b
+	%undef		cfp_c
+
+	%include	"s.s"
+

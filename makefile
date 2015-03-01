@@ -104,7 +104,6 @@ COBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
 	trypath.o wrtaout.o zz.o getargs.o it.o main.o 
 
-AOBJS=s.o err.o sys.o
 
 # build spitbol using nasm, build spitbol using as.
 # link asm spitbol with static linking
@@ -116,17 +115,15 @@ asm:
 # run lex to get s.lex
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 # run asm to get .s and .err files
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s.s -3=s.err -4=asm.hdr -6=s.equ	asm.spt
-# run err to s-asm-err.s
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s.s -3=s.err -6=s.equ	asm.spt
+# run err 
 	$(BASEBOL) -u $(TARGET)_asm -1=s.err -2=err.s $(ERR)
-# compile the .s files 
-	$(NASM) $(ASMOPTS) -os.o s.s
-	$(NASM) $(ASMOPTS) -oerr.o err.s
-	$(NASM) $(ASMOPTS) -osys.o asm.sys
+# assemble the .asm file
+	$(NASM) $(ASMOPTS) -oasm.o asm.asm
 # compile osint
 	$(CC)  $(CCOPTS) -c  osint/*.c
 # load objects
-	$(CC) $(LDOPTS)  $(COBJS) $(AOBJS) $(LMOPT) -static -ospitbol
+	$(CC) $(LDOPTS)  $(COBJS) asm.o $(LMOPT) -static -ospitbol
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS) $(AOBJS)
@@ -138,17 +135,21 @@ gas:
 # run preprocessor to get h file
 	$(BASEBOL) -u $(TARGET) r.sbl <gas.h >gas.r
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u G -pp.sbl <asm.sbl >gas.spt 
+	$(BASEBOL) -u G pp.sbl <asm.sbl >gas.spt 
 # run lex to get s.lex
-	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
-# run asm to get .s and .err files
-	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s.s -3=s.err -4=asm.hdr -6=s.equ	gas.spt
-# run err to s-asm-err.s
-	$(BASEBOL) -u $(TARGET)_gas -1=s.err -2=s-err.s $(ERR)
+	$(BASEBOL) -u $(TARGET)_$(GAS) $(LEX)
+# run gas to get .s and .err files
+	$(BASEBOL) -r -u $(TARGET):$(ITOPT) -1=s.lex -2=s.r -3=s.err -6=s.equ	gas.spt
+# run r to rename registers in .s file
+	$(BASEBOL)  -u $(TARGET) r.sbl <s.r >s.s
+# run r to rename registers in hdr file
+	$(BASEBOL) -u $(TARGET) r.sbl  <gas.hdr.r > gas.hdr
+# run err 
+	$(BASEBOL) -u $(TARGET)_gas -1=s.err -2=err.s $(ERR)
 # compile the .s files 
-	$(NASM) $(ASMOPTS) -os.o s.s
-	$(NASM) $(ASMOPTS) -oerr.o err.s
-	$(NASM) $(ASMOPTS) -osys.o gas.sys
+	$(GAS) $(GASOPTS) -os.o s.s
+	$(GAS) $(GASOPTS) -oerr.o err.s
+	$(GAS) $(GASOPTS) -osys.o gas.sys
 # compile osint
 	$(CC)  $(CCOPTS) -c  osint/*.c
 # load objects
@@ -205,10 +206,4 @@ it-nasm: s-nasm.dic it.sbl
 	$(BASEBOL) -u s-nasm.dic it.sbl <ad >ae
 
 clean:
-	rm -f *.o s.err err.s s.lex s.equ ./asmbol ./gasbol ./spitbol 
-	rm asm.hdr asm.spt gas.r gas.spt asm.hdr gas.hdr 
-
-sclean:
-# clean up after sanity-check
-	make clean
-	rm tbol*
+	rm -f *.o s.err err.s s.lex s.equ ./asmbol ./gasbol ./spitbol s.s s.r asm.spt gas.r gas.spt gas.hdr tbol*
