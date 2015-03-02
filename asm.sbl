@@ -2935,7 +2935,7 @@ g.end
 	endfile(1)
 	endfile(2)
 	endfile(3)
-	report((ident(asm) 'A' 'nasm', 'gas'),		'assembler')
+	report((ident(asm,'A') 'nasm', 'gas'),		'assembler')
         report(nlines,		'lines read')
         report(nstmts,		'statements processed')
         report(ntarget,		'target code lines produced')

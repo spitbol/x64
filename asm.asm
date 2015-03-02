@@ -462,7 +462,6 @@ calltab:
 	%endmacro
 
 	%macro	rti_	0
-
 	mov	IA,m(reg_ia)
 	%endmacro
 
@@ -1316,7 +1315,7 @@ setovr: mov     al,1		; set overflow indicator
 %endmacro
 
 	int_op itr_,f_itr
-	int_op rti_,f_rti
+;	int_op rti_,f_rti
 
 	%macro	math_op 2
 	global	%1
