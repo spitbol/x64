@@ -389,16 +389,11 @@ skip_init.end
 
 	is_executable = table(100)
 	s =
-+       'add adi adr anb aov atn '
-+	'bct beq bev bge bgt bhi ble blo blt bne bnz bod '
-+       'brn bri bsw btw bze ceq chk chp cmb cmc cmp cne csc '
-+       'cos ctb ctw cvd cvm dca dcv eti dvi dvr erb esw etx flc '
-+       'ica icp icv ieq ige igt ile ilt ine ino iov itr jmp '
-+       'jsr lch lct lcp lcw ldi ldr lei lnf lsh lsx mcb mfi mli mlr '
-+       'mnz mov mti mvw mwb ngi eti ngr nzb orb plc prc psc '
-+       'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
-+       'sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer '
-+       'zgb zrb'
++       'add adi adr anb aov atn bct beq bev bge bgt bhi ble blo blt bne bnz bod brn bri bsw btw '
++	'bze ceq chk chp cmb cmc cmp cne csc cos ctb ctw cvd cvm dca dcv eti dvi dvr erb esw etx flc '
++       'ica icp icv ieq ige igt ile ilt ine ino iov itr jmp jsr lch lct lcp lcw ldi ldr lei lnf lsh lsx '
++	'mcb mfi mli mlr mnz mov mti mvw mwb ngi eti ngr nzb orb plc prc psc req rge rgt rle rlt rmi rne '
++	'rno rov rsh rsx rti rtn sbi sbr sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer zgb zrb'
 
 *	don't trace mvc as doing so causes just 'end' to fail. sort out later. (ds 01/09/13)
 
@@ -978,203 +973,6 @@ getadr.c.15
 .fi
 
 .if G
-getadr.lit
-*  see if have generated location for argument with same txt. Use it if so, else make new one.
-	ent = valtable[txt]
-	differ(ent)				:s(getadr.ent)
-*  here to make new entry for generated location
-	val_count = val_count + 1
-	lbl = genlab('lea')
-	valtable[txt] = lbl
-	ent = lbl
-	flush()
-	it_suspend = 1
-	genop('.data')
-	genopl(lbl ':',d_word ,txt)
-	genop('.text')
-	flush()
-	it_suspend = 0
-getadr.ent
-*	generate reference via reg.w0 if needed
-	it_suspend = 1
-	flush()
-	genop('movq', ent ,reg.w0)
-	flush()
-	it_suspend = 0
-						:(getadr.done)
-getadr.done
-	it_suspend = 0
-	getadr = reg.w0
-						:(return)
-	
-.fi
-.if G
--stitl getarg(iarg)base,disp,indx,scale
-getarg
-* getarg G
-*	address for use in 'lea' instruction.
-	txt = i.text(iarg)
-	typ = i.type(iarg)
-	base = disp = indx = scale =
-	it_suspend = 1
-	eq(typ)					:f($(argcase[typ]))
-	getarg = txt				:(getarg.done)
-
-* int
-getarg.c.1 getarg = txt				:(getarg.done)
-
-* dlbl
-getarg.c.2 getarg = txt				:(getarg.done)
-
-* wlbl, clbl -- memory reference
-getarg.c.3
-getarg.c.4 
-	disp = txt				:(getarg.mem)
-
-* elbl, plbl
-getarg.c.5
-getarg.c.6 getarg = txt				:(getarg.done)
-
-* w,x, map register name
-getarg.c.7
-getarg.c.8
-	getarg = regmap[txt]			:(getarg.done)
-
-* (x), register indirect -- memory reference
-getarg.c.9
-	txt len(1) len(2) . indx		:(getarg.mem)
-
-* use lea reg,[reg+cfp_b] unless reg is esp, since it takes an extra byte.
-* actually, lea reg,[reg+cfp_b] and add reg,cfp_b are both 2 cycles and 3 bytes
-* for all the other regs, and either could be used.
-
-* (x)+, register indirect, post increment -- memory reference
-getarg.c.10
-	indx = substr(txt,2,2)
-	genaop(tstmt(,'add','$' cfp_b, regmap[indx])) :(getarg.mem)
-
-*  -(x), register indirect, pre decrement -- memory reference
-getarg.c.11
-	indx = substr(txt,3,2)
-	genbop(tstmt(,'sub','$' cfp_b, regmap[indx])) 	:(getarg.mem)
-
-* int(x) -- memory reference
-* dlbl(x)
-getarg.c.12
-getarg.c.13
-	txt break('(') . disp '(' len(2) . indx
-	disp = cfp_b * equ_value[disp]
-	base = indx
-	indx = 					:(getarg.mem)
-
-*  name(x), where name is in working section -- memory reference
-getarg.c.14
-getarg.c.15
-	txt break('(') . disp '(' len(2) . indx	:(getarg.mem)
-
-* signed integer
-getarg.c.16 getarg = txt			:(getarg.done)
-
-* signed real
-getarg.c.17 getarg = txt			:(getarg.done)
-
-*  =dlbl
-getarg.c.18	
-	getarg = '$' substr(txt,2)		:(getarg.done)
-	
-*  *dlbl
-getarg.c.19
-	getarg  = '$'  cfp_b '*' substr(txt,2)	:(getarg.done)
-
-*  =name (data section)
-getarg.c.20
-getarg.c.21
-        getarg = '$' substr(txt,2)	
-						:(getarg.done)
-	genop('lea',reg.w0,substr(txt,2))
-	getarg = reg.w0				:(getarg.done)
-
-*  =name (program section)
-getarg.c.22
-
-       getarg = '$' substr(txt,2)		:(getarg.done)
-
-
-*  pnam
-getarg.c.23
-	getarg = txt				:(getarg.done)
-
-*  eqop
-getarg.c.24 getarg = '$(' equ_value[txt] ')'	:(getarg.done)
-
-* ptyp, text, dtext
-getarg.c.25
-getarg.c.26
-getarg.c.27 getarg = txt			:(getarg.done)
-getarg.done
-	it_suspend = 0
-						:(return)
-getarg.mem
-	getarg = differ(base) disp '(' regmap[base] ')'		:s(getarg.done)	
-	getarg = ident(indx) disp 				:s(getarg.done)
-	getarg = ident(scale) ident(disp) '(' regmap[indx] ')'	:s(getarg.done)
-	getarg = differ(disp) disp '(,' regmap[indx] ',' scale ')'	:(getarg.done)
-
--stitl getadr(iarg)
-getadr
-*	similar to getarg, but gets effective address
-*	this procedure only called if operand is in range 3-4 or 9-15
-*	it generates code to load effective address of the argument to w0
-
-	txt = i.text(iarg)
-	typ = i.type(iarg)
-	it_suspend = 1
-	eq(typ)					:f($(adrcase[typ]))
-						:(getadr.lit)
-* wlbl, clbl
-getadr.c.3
-getadr.c.4 
-						:(getadr.lit)
-
-* (x), register indirect
-getadr.c.9
-	txt len(1) len(2) . typ
-	txt = regmap[typ] 			:(getadr.done)
-
-* (x)+, register indirect, post increment -- memory reference
-getadr.c.10
-	error('getadr called with type 10')	:(getadr.done)
-
-	indx = substr(txt,2,2)
-	(ident(txt,'xs') genaop(tstmt(,'add','$' cfp_b,regmap[indx]))) :s(getadr.mem)
-*	genaop(tstmt(,'lea',regmap[indx], regmap[indx] '+$' cfp_b))	
-						:(getadr.done)
-
-*  -(x), register indirect, pre decrement -- memory reference
-getadr.c.11
-	error('getadr called with type 11')	:(getadr.done)
-
-	getadr = substr(txt,3,2)
-*	genbop(tstmt(,'lea',regmap[indx], '-$' cfp_b '(,' regmap[indx] ')')) 
-						:(getadr.mem)
-
-* int(x) -- memory reference
-* dlbl(x)
-* int(x)
-* dlbl(x)
-getadr.c.12
-getadr.c.13
-	txt break('(') . t1 '(' len(2) . t2
-	genop('mov',regmap[t2],reg.w0)
-	genop('add',cfp_b '*' t1,reg.w0)		:(getadr.done)
-
-*  name(x), where name is in working section
-getadr.c.14
-getadr.c.15
-	txt break('(') . t1 '(' len(2) . t2
-	genop('mov',regmap[t2],reg.w0)
-	genop('add','$' t1,reg.w0)			:(getadr.done)
-
 getadr.lit
 *  see if have generated location for argument with same txt. Use it if so, else make new one.
 	ent = valtable[txt]
@@ -2042,7 +1840,8 @@ g.bnz1
 						:(opdone)
 
 g.bze   ifreg(i1)				:s(g.bze1)
-        genop('cmp', getarg(i1)  ,'0')
+	genop('xor',reg.w0,reg.w0);* clear w0 t0 zero
+        genop('cmp', getarg(i1)  ,reg.w0)
 	genop('jz',getarg(i2))
 						:(opdone)
 g.bze1
@@ -2361,65 +2160,6 @@ g.lcg.2
 						:(opdone)
 
 g.sch
-.if A
-	t2 = i.text(i2)
-	eq(i.type(i1),8)			:s(g.scg.w)
-	t1 = getarg(i1)
-	eq(cfp_b,cfp_w)				:f(g.scg.0)
-	ident(t2,'(xr)+')			:f(g.scg.0)
-
-*  here if can use stos.
-
-	genop('mov','al',getarg(i1))
-	genop('stos_b')				:(opdone)
-
-g.scg.0
-	leq('-',substr(t2,1,1))			:f(g.scg.1)
-	t2 break('(') len(1) len(2) . t3
-	genop('dec',regmap[t3])
-	genop('dec',regmap[t3])
-g.scg.1
-	t2 break('(') len(1) len(2) . t3
-	genop('mov',reg.w0,t1,)
-	genop('mov','[' regmap[t3] ']','al')
-*  see if postincrement needed.
-	t2 rtab(1) '+'				:f(g.scg.2)
-	genop('inc',regmap[t3])
-g.scg.2						:(opdone)
-g.scg.w
-
-*  here if moving character from work register, convert t1
-*  to name of low part.
- 
-	t1 = reglow[getarg(i1)]
-
-	ident(t2,'(xl)')			:s(g.scg.w.xl)
-	ident(t2,'-(xl)')			:s(g.scg.w.pxl)
-	ident(t2,'(xl)+')			:s(g.scg.w.xlp)
-	ident(t2,'(xr)')			:s(g.scg.w.xr)
-	ident(t2,'-(xr)')			:s(g.scg.w.pxr)
-	ident(t2,'(xr)+')			:s(g.scg.w.xrp)
-g.scg.w.xl
-	genop('mov','m_char [XL]',t1)		:(opdone)
-g.scg.w.pxl
-	(eq(cfp_b,cfp_c)  genop('dec', reg.xl), genop('sub',reg.xl, 'cfp_b'))
-	genop('mov','m_char [XL]',t1)			:(opdone)
-
-g.scg.w.xlp
-	genop('mov','m_char [XL]',t1)
-	genop('inc', reg.xl)
-						:(opdone)
-g.scg.w.xr
-	genop('mov','m_char [XR]',t1)			:(opdone)
-
-g.scg.w.pxr
-	(eq(cfp_b,cfp_c)  genop('dec', reg.xr), genop('sub',reg.xr, 'cfp_b'))
-	genop('mov','m_char [XR]',t1)			:(opdone)
-g.scg.w.xrp
-	genop('mov','al',t1)
-	genop('stos_b')				:(opdone)
-.fi
-.if G
 	src = i1; dst = i2
 	t.dst = i.text(dst)
 	eq(i.type(src),8)			:s(g.scg.w)
@@ -2427,10 +2167,14 @@ g.scg.w.xrp
 	ident(t.dst,'(xr)+')			:f(g.scg.0)
 
 *  here if can use stos.
-
+.if A
+	genop('mov','al',getarg(src))
+	genop('stos_b')				:(opdone)
+.fi
+.if G
 	genop('mov',getarg(src),'%al')
 	genop('stosb')				:(opdone)
-
+.fi
 g.scg.0
 	leq('-',substr(t.dst,1,1))			:f(g.scg.1)
 	t.dst break('(') len(1) len(2) . t3
@@ -2438,21 +2182,30 @@ g.scg.0
 	genop('dec',regmap[t3])
 g.scg.1
 	t.dst break('(') len(1) len(2) . t3
+.if A
+	genop('mov',reg.w0,t.src,)
+	genop('mov','[' regmap[t3] ']','al')
+.fi
+.if G
 	genop('mov',t.src,reg.w0)
 * TODO
 	genop('mov','%al', '(' regmap[t3] ')')
+.fi
+
 *  see if postincrement needed.
 	t.dst rtab(1) '+'				:f(g.scg.2)
 	genop('inc',regmap[t3])
-
 g.scg.2						:(opdone)
 g.scg.w
 
 *  here if moving character from work register, convert t.src
 *  to name of low part.
-
+.if A
+	t.src = reglow[getarg(src)]
+.fi
+.if G
 	t.src = reglow[i.text(src)]
-
+.fi
 	ident(t.dst,'(xl)')			:s(g.scg.w.xl)
 	ident(t.dst,'-(xl)')			:s(g.scg.w.pxl)
 	ident(t.dst,'(xl)+')			:s(g.scg.w.xlp)
@@ -2460,24 +2213,56 @@ g.scg.w
 	ident(t.dst,'-(xr)')			:s(g.scg.w.pxr)
 	ident(t.dst,'(xr)+')			:s(g.scg.w.xrp)
 g.scg.w.xl
+.if A
+	genop('mov','m_char [XL]',t.src)		:(opdone)
+.fi
+.if G
 	genop('movb',t.src,'(' reg.xl ')')	:(opdone)
+.fi
 
 g.scg.w.pxl
+.if A
+	genop('dec', reg.xl)
+	genop('mov','m_char [XL]',t.src)
+						:(opdone)
+.fi
+.if G
 	genop('dec',reg.xl)
 	genop('movb',t.src,'(' reg.xl ')')	:(opdone)
+.fi
 
 g.scg.w.xlp
+.if A
+	genop('mov','m_char [XL]',t.src)
+.fi
+.if G
 	genop('movb',t.src,'(' reg.xl ')')
+.fi
 	genop('inc', reg.xl)
 						:(opdone)
 g.scg.w.xr
+.if A
+	genop('mov','m_char [XR]',t.src)			:(opdone)
+.fi
+.if G
+* TODO TBASL is the next line right???
 	genop('movb',t.src,'(' reg.xr ')')	:(opdone)
-
+.fi
 g.scg.w.pxr
+.if A
+	genop('dec', reg.xr)
+	genop('mov','m_char [XR]',t.src)			:(opdone)
+.fi
+.if G
 	genop('dec', reg.xr)
 	genop('movb', t.src,getarg(dst))	:(opdone)
-
+.fi
 g.scg.w.xrp
+.if A
+	genop('mov','al',t.src)
+	genop('stos_b')				:(opdone)
+.fi
+.if G
 	genop('movb',t.src,'%al')
 	genop('stosb')				:(opdone)
 .fi
@@ -2499,7 +2284,7 @@ g.cne   memmem()
 g.cmc
 .if A
 	genop('repe','cmps_b')
-	genop('mov',reg.xl,'0')
+	genop('xor',reg.w0,reg.w0)
 	genop('mov',reg.xr,reg.xl)
 .fi
 .if G
@@ -2648,6 +2433,7 @@ g.mti.1
 	genop('mov',getarg(i1),reg.ia)		:(opdone)
 .fi
 
+
 g.mfi
 *  last arg is optional
 *  compare with cfp$m, branching if result negative
@@ -2663,7 +2449,12 @@ g.mfi
 	genop('js',getarg(i2))
 g.mfi.1
 	ident(i.text(i1),'-(xs)')		:s(g.mfi.2)
+.if A
 	genop('sti_',getarg(i1))		:(opdone)
+.fi
+.if G
+	genop('mov',reg.ia,getarg(i1))		:(opdone)
+.fi
 g.mfi.2
 .if A
 	genop('sti_',reg.w0)
@@ -2672,7 +2463,7 @@ g.mfi.2
 	genop('mov',reg.ia,reg.w0)
 .fi
 	genop('push',reg.w0)			:(opdone)
-
+.fi
 .if A
 g.ctw
 *  assume cfp_c chars per word
@@ -2687,11 +2478,6 @@ g.ctw.1
 					:(opdone)
 g.ctb
 	t1 = getarg(i1)
-	eq(cfp_b,cfp_c)				:s(g.ctb.1)
-*  here if one word per character, so just add character count, then convert to byte count
-	genop('add',t1,i.text(i2))
-        genop('sal',getarg(i1),'log_cfp_b')	:(opdone)
-g.ctb.1
 	genop('add',t1,'(cfp_b-1)+cfp_b*' i.text(i2))
 	genop('and',t1,'-cfp_b')
 						:(opdone)
@@ -2703,6 +2489,7 @@ g.cvm	t1 = getarg(i1)
 	genop('sub',reg.w0,reg.wb)
 	genop('ldi_',reg.w0)
 	genop('jo',t1)
+						:(opdone)
 .fi
 .if G
 g.ctb
@@ -2713,6 +2500,7 @@ g.ctw
 *	genop('mov',w.reg,reg.w0)	
 	genop('call', incode '_')
 	genop('mov','ctbw_r',w.reg)
+						:(opdone)
 
 g.cvm	t1 = getarg(i1)
 	genop('mov',reg.ia,reg.w0)
