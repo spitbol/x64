@@ -731,14 +731,18 @@ reg.wa
 	genop(opc,'%cl',reg.w0)
 	genop('mov',reg.w0,reg.wa)
 						:(return)
-.if A
 -stitl getarg(iarg)
 getarg
 *	imem is null to generate memory reference, otherwise just get
 *	address for use in 'lea' instruction.
+.if A
 	pre = 'm('
 	post = ')'
+.fi
+.if G
+	base = disp = indx = scale =
 
+.fi
 	txt = i.text(iarg)
 	typ = i.type(iarg)
 	it_suspend = 1
@@ -753,8 +757,13 @@ getarg.c.2 getarg = txt				:(getarg.done)
 
 * wlbl, clbl
 getarg.c.3
-getarg.c.4 getarg = pre txt post		:(getarg.done)
-
+getarg.c.4 
+.if A
+	getarg = pre txt post		:(getarg.done)
+.fi
+.if G
+	disp = txt				:(getarg.mem)
+.fi
 * elbl, plbl
 getarg.c.5
 getarg.c.6 getarg = txt				:(getarg.done)
@@ -766,58 +775,113 @@ getarg.c.8
 
 * (x), register indirect
 getarg.c.9
+.if A
 	txt len(1) len(2) . typ
 	typ = regmap[typ]
 	getarg = pre typ post
 						:(getarg.done)
-
+.fi
+.if G
+	txt len(1) len(2) . indx		:(getarg.mem)
+.fi
 * (x)+, register indirect, post increment
 * use lea reg,[reg+cfp_b] unless reg is esp, since it takes an extra byte.
 * actually, lea reg,[reg+cfp_b] and add reg,cfp_b are both 2 cycles and 3 bytes
 * for all the other regs, and either could be used.
 getarg.c.10
+.if A
 	txt = substr(txt,2,2)
 	t1 = regmap[txt]
 	getarg = pre t1 post
 	(ident(txt,'xs') genaop(tstmt(,'add',t1,'cfp_b'))) :s(getarg.done)
 	genaop(tstmt(,'lea',t1,'a(' t1 '+cfp_b)')):(getarg.done)
+.fi
+.if G
+	indx = substr(txt,2,2)
+	genaop(tstmt(,'add','$' cfp_b, regmap[indx])) :(getarg.mem)
+.fi
 
 *  -(x), register indirect, pre decrement
 getarg.c.11
+.if A
 	t1 = regmap[substr(txt,3,2)]
 	getarg = pre t1 post
 	genbop(tstmt(,'lea',t1,'a(' t1 '-cfp_b)')) :(getarg.done)
+.fi
+.if G
+	indx = substr(txt,3,2)
+	genbop(tstmt(,'sub','$' cfp_b, regmap[indx])) 	:(getarg.mem)
+.fi
 
 * int(x)
 * dlbl(x)
 getarg.c.12
 getarg.c.13
+.if A
 	txt break('(') . t1 '(' len(2) . t2
 	getarg = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
 						:(getarg.done)
-
+.fi
+.if G
+	txt break('(') . disp '(' len(2) . indx
+	disp = cfp_b * equ_value[disp]
+	base = indx
+	indx = 					:(getarg.mem)
+.fi
 *  name(x), where name is in working section
 getarg.c.14
 getarg.c.15
+.if A
 	getarg = ne(rip_mode)	getrip(iarg)		:s(return)
 	txt break('(') . t1 '(' len(2) . t2
 	getarg = pre    t1 '+'  regmap[t2] 	post
 						:(getarg.done)
+.fi
+.if G
+	txt break('(') . disp '(' len(2) . indx	:(getarg.mem)
+.fi
 * signed integer
 getarg.c.16 getarg = txt			:(getarg.done)
 
 * signed real
 getarg.c.17 getarg = txt			:(getarg.done)
 
+.if A
 getarg.c.18
 getarg.c.19
 getarg.c.20
 getarg.c.21
 getarg.c.22
 	getarg = getval(iarg)			:(getarg.done)
+.fi
+.if G
+*  =dlbl
+getarg.c.18	
+	getarg = '$' substr(txt,2)		:(getarg.done)
+	
+*  *dlbl
+getarg.c.19
+	getarg  = '$'  cfp_b '*' substr(txt,2)	:(getarg.done)
+
+*  =name (data section)
+getarg.c.20
+getarg.c.21
+        getarg = '$' substr(txt,2)	
+						:(getarg.done)
+	genop('lea',reg.w0,substr(txt,2))
+	getarg = reg.w0				:(getarg.done)
+
+*  =name (program section)
+getarg.c.22
+
+       getarg = '$' substr(txt,2)		:(getarg.done)
+
+.fi
+
 *  pnam, eqop
 getarg.c.23
-getarg.c.24 getarg = txt			:(getarg.done)
+getarg.c.24 
+	getarg = txt			:(getarg.done)
 
 * ptyp, text, dtext
 getarg.c.25
@@ -827,9 +891,17 @@ getarg.done
 	it_suspend = 0
 *	ne(x_trace) outline('; arg ' typ ':' txt   ' -> ' getarg)
 						:(return)
+.if G
+getarg.mem
+	getarg = differ(base) disp '(' regmap[base] ')'		:s(getarg.done)	
+	getarg = ident(indx) disp 				:s(getarg.done)
+	getarg = ident(scale) ident(disp) '(' regmap[indx] ')'	:s(getarg.done)
+	getarg = differ(disp) disp '(,' regmap[indx] ',' scale ')'	:(getarg.done)
 
+.fi
 -stitl getadr(iarg)
 getadr
+.if A
 *	similar to getarg, but gets effective address
 *	this procedure only called if operand is
 *	ops: 3,4,9,12,13,14,15
@@ -837,36 +909,104 @@ getadr
 *	address for use in 'lea' instruction.
 	pre = 'a('
 	post = ')'
+.fi
+.if G
+*	similar to getarg, but gets effective address
+*	this procedure only called if operand is in range 3-4 or 9-15
+*	it generates code to load effective address of the argument to w0
 
+.fi
 	txt = i.text(iarg)
 	typ = i.type(iarg)
 	eq(typ)					:f($(adrcase[typ]))
+.if A
 	getadr = txt				:(return)
+.fi
+.if G
+						:(getadr.lit)
+.fi
+
 * wlbl, clbl
 getadr.c.3
 getadr.c.4
+.if A
 	getadr = pre txt post			:(return)
+.fi
+.if G
+						:(getadr.lit)
+.fi
 
 * (x), register indirect
 getadr.c.9
 	txt len(1) len(2) . typ
+.if A
 	typ = regmap[typ]
 	getadr = pre typ post
 						:(return)
+.fi
+.if G
+	txt = regmap[typ] 			:(getadr.done)
+.fi
+
 * int(x)
 * dlbl(x)
 getadr.c.12
 getadr.c.13
+.if A
 	txt break('(') . t1 '(' len(2) . t2
 	getadr = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
 							:(return)
+.fi
+.if G
+	txt break('(') . t1 '(' len(2) . t2
+	genop('mov',regmap[t2],reg.w0)
+	genop('add',cfp_b '*' t1,reg.w0)		:(getadr.done)
+.fi
 
 *  name(x), where name is in working section
 getadr.c.14
 getadr.c.15
+.if A
 	txt break('(') . t1 '(' len(2) . t2
 	getadr = pre    t1 '+'  regmap[t2] 	post
 							:(return)
+.fi
+.if G
+	txt break('(') . t1 '(' len(2) . t2
+	genop('mov',regmap[t2],reg.w0)
+	genop('add','$' t1,reg.w0)			:(getadr.done)
+.fi
+
+.if G
+getadr.lit
+*  see if have generated location for argument with same txt. Use it if so, else make new one.
+	ent = valtable[txt]
+	differ(ent)				:s(getadr.ent)
+*  here to make new entry for generated location
+	val_count = val_count + 1
+	lbl = genlab('lea')
+	valtable[txt] = lbl
+	ent = lbl
+	flush()
+	it_suspend = 1
+	genop('.data')
+	genopl(lbl ':',d_word ,txt)
+	genop('.text')
+	flush()
+	it_suspend = 0
+getadr.ent
+*	generate reference via reg.w0 if needed
+	it_suspend = 1
+	flush()
+	genop('movq', ent ,reg.w0)
+	flush()
+	it_suspend = 0
+						:(getadr.done)
+getadr.done
+	it_suspend = 0
+	getadr = reg.w0
+						:(return)
+	
 .fi
 .if G
 -stitl getarg(iarg)base,disp,indx,scale
