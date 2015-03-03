@@ -85,6 +85,20 @@
 	asm = 'G'
 .fi
 
+.if A
+	asm_cc = ';';* comment character
+	asm_d_char = 'd_char'
+	asm_d_real = 'd_real'
+	asm_d_word = 'd_word'
+	asm_cfp_b	= 'cfp_b'
+.fi
+.if G
+	asm_cc = '#';* comment character
+	asm_d_char = '.byte'
+	asm_d_real = '.double'
+	asm_d_word = 'dw'
+.fi
+
 *  function definitions
 
 *  crack parses stmt into a stmt data plex and returns it.
@@ -98,14 +112,17 @@
 
 *  error is used to report an error for current statement
 
+	define('a(text)')
 	define('error(text)')
 	define('flush()')
+	define('g(text)')
 	define('genz()')
 	define('genaop(stmt)')
 	define('genbop(stmt)')
 	define('gendir(command,name)')
         define('genlab(prefix)')
         define('genrip()')
+	define('opds(gopc,gop1,gop2,gop3)txt')
 	define('op(gopc,gop1,gop2,gop3)')
 	define('opl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
@@ -667,6 +684,13 @@ crack   nstmts  = nstmts + 1
 *  here on syntax error
 
 	error('source line syntax error')	:(freturn)
+-stitl a(text)
+* emit text if using asm
+a
+if A
+	a = text
+.fi
+						:(return)
 -stitl error(text)
 *  this module handles reporting of errors with the offending
 *  statement text in thisline.  comments explaining
@@ -680,6 +704,13 @@ error   outline('* *???* ' thisline)
 	le(nerrors = nerrors + 1, 10)		:s(dsout)
         output = 'too many errors, quitting'  :(end)
 
+-stitl g(text)
+* emit text if using gas
+g
+.if G
+	g = text
+.fi
+						:(return)
 -stitl genaop(stmt)
 genaop
 
@@ -704,6 +735,24 @@ opl	cstmts[cstmts.n = cstmts.n + 1] =
 -stitl op(gopc,gop1,gop2,gop3)
 *  generate operation with no label
 op   opl(,gopc,gop1,gop2,gop3)            :(return)
+
+-stitl opds(gopc,gop1,gop2,gop3)
+*  generate operation with no label, with dest/src switched if using gas
+*  asm uses 'intel' syntax, with destination followed by source
+*  gas use 'att' syntax, with source followed by destination
+*  opds does the switching if compiling for gas.
+opds
+.if G
+	ident(gopc,'add')			:s(opds.switch)
+	ident(gopc,'mov')			:s(opds.switch)
+	ident(gopc,'sub')			:s(opds.switch)
+						:(opds.emit)
+opds.switch
+	tmp = gop1; gop1 = gop2; gop2 = tmp
+	gopc = gopc o_
+opds.emit
+.fi
+	opl(,gopc,gop1,gop2,gop3)            :(return)
 
 -stitl	gensh(opc,reg,val)
 gensh
@@ -1270,12 +1319,7 @@ readline.0
 rl01
 *  find out why need to add 2 here
 *  add 2 since need to account for this line and one that will follow
-.if A
-	ne(x_trace) outline(';:' outlines + 2 ':' tab readline)
-.fi
-.if G
-*	differ(x_trace) outline('#:' ta  tab readline )
-.fi
+	ne(x_trace) outline(asm_cc ':' outlines + 2 ':' tab readline)
 					:(return)
 
 *  here on eof
@@ -1759,20 +1803,10 @@ g.rtn
 	op()					:(opdone)
 
 g.add	memmem()
-.if A
-	op('add',getarg(i1),getarg(i2))	:(opdone)
-.fi
-.if G
-	op('add' o_,getarg(i2),getarg(i1))	:(opdone)
-.fi
+	opds('add',getarg(i1),getarg(i2))	:(opdone)
 
 g.sub	memmem()
-.if A
-.fi
-.if G
-	op('sub' o_,getarg(i2),getarg(i1))	:(opdone)
-.fi
-	op('sub',getarg(i1),getarg(i2))	:(opdone)
+	opds('sub',getarg(i1),getarg(i2))	:(opdone)
 
 g.ica
 .if A
@@ -2240,23 +2274,21 @@ g.scg.w.xr
 	op('movb',t.src,'(' reg.xr ')')	:(opdone)
 .fi
 g.scg.w.pxr
-.if A
 	op('dec', reg.xr)
+.if A
 	op('mov','m_char [XR]',t.src)			:(opdone)
 .fi
 .if G
-	op('dec', reg.xr)
 	op('movb', t.src,getarg(dst))	:(opdone)
 .fi
 g.scg.w.xrp
 .if A
 	op('mov','al',t.src)
-	op('stos_b')				:(opdone)
 .fi
 .if G
 	op('movb',t.src,'%al')
-	op('stosb')				:(opdone)
 .fi
+	op('stosb')				:(opdone)
 
 g.csc  	ident(thislabel)			:s(opnext)
 	op()					:(opdone)
@@ -2273,14 +2305,12 @@ g.cne   memmem()
 						:(opdone)
 
 g.cmc
-.if A
 	op('repe','cmps_b')
 	op('xor',reg.w0,reg.w0)
+.if A
 	op('mov',reg.xr,reg.xl)
 .fi
 .if G
-	op('repe','cmpsb')
-	op('xor',reg.w0,reg.w0)
 	op('mov',reg.w0,reg.xl)
 .fi
 	t1 = getarg(i1)
@@ -2561,29 +2591,23 @@ g.mwb
 						:(opdone)
 
 g.mcb
-.if A
-*	use word move if character size is word size
-	ne(cfp_b,cfp_c) op('shl', reg.wa, 'log_cfp_b')
-	ne(cfp_b,cfp_c)				:s(g.mwb)
 	op('std')
 	op('dec',reg.xl)
 	op('dec',reg.xr)
+.if A
  	genrep('movs_b')
+.fi
+.if G
+ 	genrep('movs' (eq(ws,32) 'd','q'))
+.fi
 	op('cld')
 						:(opdone)
 	op('std')
 	op('rep')
+.if A
 	op('movs_b')
 .fi
 .if G
-*	use word move if character size is word size
-	op('std')
-	op('dec',reg.xl)
-	op('dec',reg.xr)
- 	genrep('movs' (eq(ws,32) 'd','q'))
-	op('cld')
-						:(opdone)
-	op('std')
 	op('rep','movs' (eq(ws,32) 'd','q'))
 .fi
 	op('cld')
@@ -2593,20 +2617,10 @@ genrep
 	l1 = genlab('rep')
 	l2 = genlab('rep')
 	opl(l1 ':')
-.if A
 	op('or',reg.wa,reg.wa)
-.fi
-.if G
-	op('or',reg.wa,reg.wa)
-.fi
 	op('jz',l2)
 	op(op)
-.if A
 	op('dec',reg.wa)
-.fi
-.if G
-	op('dec',reg.wa)
-.fi
 	op('jmp',l1)
 	opl(l2 ':')
 						:(return)
@@ -2641,32 +2655,20 @@ decend
 g.dac	
 	t1 = i.type(i1)
         t2 = "" ;*(le(t1,2) "", le(t1,4) "d_offset_(", le(t1,6) "d_offset_(", "")
-.if A
         opl(thislabel,d_word,t2 i.text(i1))
-.fi
-.if G
-        opl(thislabel,d_word,t2 i.text(i1))
-.fi
 						:(decend)
 g.dic
-.if A
-	opl(thislabel,d_word,i.text(i1))
-.fi
 .if G
 	outfile = '# g.dic ' i.text(i1)
-        opl(thislabel,d_word,i.text(i1))
 .fi
+	opl(thislabel,d_word,i.text(i1))
 						:(decend)
 
 g.drc
 	gendir('align',8)
 	t1 = i.text(i1)
 	t1 ? fence "+" = ""
-.if A
-        op('d_real',t1)
-.fi
-.if G
-        op('.double',t1)
+	op(asm_d_real,t1)
 .fi
 *  note that want to attach label to last instruction
 	t.label(cstmts[cstmts.n]) = thislabel
@@ -2688,20 +2690,10 @@ g.dtc.1
 	le(dtc_i = dtc_i + 1, size(t2))		:s(g.dtc.1)
 
         t4 = ne(t3) t4 dupl(',0',cfp_c - t3)
-.if A
-        opl(thislabel,'d_char',t4)
-.fi
-.if G
-        opl(thislabel,'.byte',t4)
-.fi
+        opl(thislabel,asm_d_char,t4)
 						:(opdone)
 g.dbc
-.if A
 	opl(thislabel,d_word,getarg(i1))
-.fi
-.if G
-	opl(thislabel,d_word,getarg(i1))
-.fi
 						:(opdone)
 g.equ
 .if A
@@ -2795,12 +2787,7 @@ g.sec.7
 
 *	allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
-.if A
-	opl('err_:','xchg',reg.wa,'m(' rcode ')')
-.fi
-.if G
-	opl('err_:','xchg',reg.wa,rcode)
-.fi
+	opl('err_:','xchg',reg.wa,a('m(' rcode ')') g('rcode'))
 						:(opdone)
 
 
