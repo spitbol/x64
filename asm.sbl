@@ -223,6 +223,9 @@ config.64
 
 config.done
 
+*	set ab_suspend to avoid emitting 'a' and 'b' statments which flushing code buffer.
+	ab_suspend = 0
+
 *	rip_mode is needed for osx. See getval()
 
 	rip_mode = (ident(os,'osx') 1, 0)
@@ -1210,21 +1213,28 @@ chktrace.1
 
 	it_desc = '"' replace(thisline,'|',' ') '"'
 .if A
+	ab_suspend = 1
+	gendir('segment','data')
+	flush()
 	lbl = genlab('it')
-	outline(tab 'segment' tab '.data')
-	outline(lbl ':' tab 'd_char' tab it_desc)
-	outline(tab 'd_char' tab '0');* string terminator
-	outline(tab 'segment' tab '.text')
-	outline(tab 'mov' tab reg.w0 ',' lbl)
-	outline(tab 'mov' tab 'm(it_de),' reg.w0)
-	outline(tab 'call' tab 'it_')
+	genopl(lbl,'d_char',it_desc)
+	genop('d_char','0');* string terminator
+	gendir(segment,'text')
+	genop('mov',reg.w0,lbl)
+	genop('call','it_')
+	flush()
+	ab_suspend = 0
 .fi
 .if G
-	outline(tab '.data')
-	outline(lbl ':' tab '.asciz' tab it_desc)
-	outline(tab '.text')
-	outline(tab 'mov' o_ tab '$' lbl ',it_de')
-	outline(tab 'call' tab 'it_')
+	ab_suspend = 1
+	gendir('segment','data')
+	flush()
+	lbl = genlab('it')
+	genop(lbl,'.asciz',it_desc)
+	gendir('segment','text')
+	genop('mov' o_,'$' lbl,',it_de')
+	genop('call','it_')
+	ab_suspend = 0
 .fi
 						:(return)
 
@@ -2824,14 +2834,18 @@ opdone	flush()					:(opnext)
 *  here to emit bstmts, cstmts, astmts. attach input label and
 *  comment to first instruction generated.
 
-flush	eq(astmts.n) eq(bstmts.n) eq(cstmts.n)	:f(opdone1)
+flush	
+	eq(astmts.n) eq(bstmts.n) eq(cstmts.n)	:f(opdone1)
+	ne(ab_suspend)				:s(opdone.2)
+	
 
 *  here if some statements to emit, so output single 'null' statement to get label
 *  and comment field right.
 
 	label = thislabel =
 	outstmt(tstmt())			:(opdone.6)
-opdone1	eq(bstmts.n)				:s(opdone.2)
+opdone1	
+	eq(bstmts.n)				:s(opdone.2)
 	i = 1
 opdone.1
 	outstmt(bstmts[i])
