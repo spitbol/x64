@@ -18,6 +18,8 @@
 *     you should have received a copy of the gnu general public license
 *     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 
+* no case folding
+-case  0
 
 *  this program takes input file in minimal token form and
 *  produces assembly code for intel 80386 processor.
@@ -61,12 +63,16 @@
         version = 'v1.12'
 	rcode = '_rc_'
 
+*  data structures
 
--eject
+	data('minarg(i.type,i.text)')
+	data('tstmt(t.label,t.opc,t.op1,t.op2,t.op3,t.comment)')
+
 
 *  keyword initialization
 
 	&anchor = &trim	= &dump = 1
+	&dump = 3
 	&stlimit = 10000000
 
 
@@ -122,6 +128,7 @@
 	define('gendir(command,name)')
         define('genlab(prefix)')
         define('genrip()')
+	define('getreg(iarg)')
 	define('opds(gopc,gop1,gop2,gop3)txt')
 	define('op(gopc,gop1,gop2,gop3)')
 	define('opl(gopl,gopc,gop1,gop2,gop3)')
@@ -302,11 +309,6 @@ skip_init.end
 
 
 
-*  data structures
-
-	data('minarg(i.type,i.text)')
-	data('tstmt(t.label,t.opc,t.op1,t.op2,t.op3,t.comment)')
-
 	sectnow = 0
 
 *	ppm_cases gives count of ppm/err statments that must follow call to
@@ -468,7 +470,10 @@ flgs2
 	tab = char(9)
         comment.delim = ';'
 
-	w0_arg = minarg(8,'w0')
+	arg_w0 = minarg(8,'w0')
+	arg_xl = minarg(7,'xl')
+	arg_xr = minarg(7,'xr')
+
 *  branchtab maps minimal opcodes 'beq', etc to desired
 *  target instruction
 
@@ -534,16 +539,16 @@ regmap.done
 * can extract 'l' part.
 	reglow = table(4)
 .if A
-	reglow['WA'] = 'WA_L'
-	reglow['WB'] = 'WB_L'
-	reglow['WC'] = 'WC_L'
-	reglow['W0'] = 'W0_L'
+	reglow['wa'] = 'WA_L'
+	reglow['wb'] = 'WB_L'
+	reglow['wc'] = 'WC_L'
+	reglow['w0'] = 'W0_L'
 .fi
 .if G
-	reglow['WA'] = '%cl'
-	reglow['WB'] = '%bl'
-	reglow['WC'] = '%dl'
-	reglow['W0'] = '%al'
+	reglow['wa'] = '%cl'
+	reglow['wb'] = '%bl'
+	reglow['wc'] = '%dl'
+	reglow['w0'] = '%al'
 .fi
 
 * real_op maps minimal real opcode to machine opcode
@@ -735,6 +740,18 @@ opl	cstmts[cstmts.n = cstmts.n + 1] =
 -stitl op(gopc,gop1,gop2,gop3)
 *  generate operation with no label
 op   opl(,gopc,gop1,gop2,gop3)            :(return)
+
+-stitl getreg(iarg)
+*  return register associated with argument for types 7-11
+getreg
+						:($('getreg.' i.type(iarg)))
+getreg.7	
+getreg.8	 getreg = i.text(iarg)			:(return)
+
+getreg.9
+getreg.10	getreg = substr(i.text(iarg),2,2)	:(return)
+
+getreg.11	getreg = substr(i.text(iarg),3,2)	:(return)
 
 -stitl opds(gopc,gop1,gop2,gop3)
 *  generate operation with no label, with dest/src switched if using gas
@@ -1148,7 +1165,7 @@ memmem
   eq(ismem[i.type(i2)])				:s(return)
 *  here if memory-memory case, load second argument
   t = getarg(i2)
-  i2 = w0_arg
+  i2 = arg_w0
 .if A
   op('mov',reg.w0,t)				:(return)
 .fi
@@ -1192,6 +1209,10 @@ outstmt2
 	op1 = t.op1(ostmt)
 	op2 = t.op2(ostmt)
 	op3 = t.op3(ostmt)
+*	outfile = '; opcode ' opcode
+*	outfile = '; op1 ' op1
+*	outfile = '; op2 ' op2
+*	outfile = '; op3 ' op3
 	differ(compress)			:s(outstmt3)
 	stmtout = rpad( rpad(label,7) ' ' rpad(opcode,4) ' '
 .		  (ident(op1), op1
@@ -1362,7 +1383,7 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 
 g.flc
 .if A
-	t1 = (eq(cfp_b,cfp_c) reglow[getarg(i1)], getarg(i1))
+	t1 = reglow[getreg(i1)]
 	t2 = genlab('flc')
 *	it_suspend = 1
 	op('cmp',t1,"'A'")
@@ -1469,12 +1490,12 @@ mov.2
 g.bod
 .if A
 	t1 = getarg(i1)
- 	t1 = eq(i.type(i1),8) reglow[t1]
+ 	t1 = eq(i.type(i1),8) reglow[getreg(i1)]
 	op('test',t1,'1')
 	op('jne',getarg(i2))			:(opdone)
 .fi
 .if G
-	t1 = (eq(i.type(i1),8) reglow[i.text(i1)], getarg(i1))
+	t1 = (eq(i.type(i1),8) reglow[getreg(i1)], getarg(i1))
 	op('test',t1,'1')
 	op('jne',getarg(i2))			:(opdone)
 .fi
@@ -1482,13 +1503,13 @@ g.bod
 g.bev
 .if A
 	t1 = getarg(i1)
-	t1 = eq(i.type(i1),8) reglow[t1]
+	t1 = eq(i.type(i1),8) reglow[getreg(i1)]
 	op('test',t1,'1')
 	op('je',getarg(i2))
 						:(opdone)
 .fi
 .if G
-	t1 = (eq(i.type(i1),8) reglow[i.text(i1)], getarg(i1))
+	t1 = (eq(i.type(i1),8) reglow[getreg(i1)], getarg(i1))
 	op('test',t1,'1')
 	op('jne',getarg(i2))			:(opdone)
 .fi
@@ -1555,18 +1576,16 @@ g.ent
 *  a multiple of cfp_b (ends in 1, 2, or 3).  the definition here
 *  is a simple odd/even, least significant bit definition.
 *  that is, for us, 1 and 3 are odd, 2 and 4 are even.
-
+.if A
 	t1 = i.text(i1)
-	gendir('align','2')
+*       op('align',2)
+	outline(tab 'align' tab '2')
 	differ(t1)				:s(g.ent.1)
-	op('nop')
+	outline(tab 'nop')
 						:(g.ent.2)
 g.ent.1
 	outline(tab 'db' tab	t1)
-.fi
-.if G
-	outline(tab '.byte' tab t1)
-.fi
+
 g.ent.2
 	opl(thislabel)
 *  note that want to attach label to last instruction
@@ -1576,7 +1595,27 @@ g.ent.2
 *  here to see if want label made public
 	thislabel ? rtab(1) . thislabel ':'
         (differ(pubtab[thislabel]), differ(debug)) op('global',thislabel)
+.fi
+.if G
+	t1 = i.text(i1)
+*        op('align',2)
+	outline(tab '.align' tab '2')
+	differ(t1)				:s(g.ent.1)
+	outline(tab 'nop')
+						:(g.ent.2)
+g.ent.1
+	outline(tab '.byte' tab	t1)
 
+g.ent.2
+	opl(thislabel)
+*  note that want to attach label to last instruction
+*	t1 = cstmts[cstmts.n]
+*	t.label(t1) = tlabel
+*	cstmts[cstmts.n] = t1
+*  here to see if want label made public
+	thislabel ? rtab(1) . thislabel ':'
+        (differ(pubtab[thislabel]), differ(debug)) op('.global',thislabel)
+.fi
 	thislabel =
 						:(opdone)
 
@@ -1897,16 +1936,16 @@ g.bct
 	t2 = getarg(i2)
 	:(g.bct2)
 .if A
-	ident(t1,reg.wa)				:s(g.bct1)
+	ident(t1,reg.wa)			:s(g.bct1)
 .fi
 .if G
-	ident(t1,reg.wa)				:s(g.bct1)
+	ident(t1,reg.wa)			:s(g.bct1)
 .fi
 g.bct2
 	op('dec',t1)
 	op('jnz',t2)				:(opdone)
 g.bct1
-	op('loop',t2)			:(opdone)
+	op('loop',t2)				:(opdone)
 
 g.aov
 .if A
@@ -2154,141 +2193,75 @@ g.plc.1
 .fi
 						:(opdone)
 
-*  lch requires separate cases for each first operand possibility.
+*  always load to w0, which allows use of 'lods' if second argument is '(xr)+'
 
+* LCH
 g.lch
-	t2 = i.text(i2)
-	t1 = getarg(i1)
+	lch_pre = lch_post =
+	src = i2; dst = i1
+	s.text = i.text(src); s.type = i.type(src); s.reg = getreg(src)
+	d.text = i.text(dst); d.type = i.type(dst); d.reg = getreg(dst)
+	w = (eq(i.type(dst),8) 0,1);* dst is w-register
+	outfile = ';lch s.text ' s.text '  s.type ' s.type '  s.reg ' s.reg
+	outfile = ';lch d.text ' d.text '  d.type ' d.type '  d.reg ' d.reg '  w ' w
+	ident(s.text,'(xl)+')			:s(g.lch.lods)
 
-*  see if predecrement needed.
-	leq('-',substr(t2,1,1))			:f(g.lcg.1)
-	t2 break('(') len(1) len(2) . t3
-	op('dec',regmap[t3])
-g.lcg.1
-	t2 break('(') len(1) len(2) . t3
-.if A
-	op('mov',reg.w0,'0')
-	op('mov','al','m_char [' regmap[t3] ']')
-	op('mov',t1,reg.w0)
-.fi
-.if G
+
+*  decrement source register if needed
+	eq(s.type,11) op('dec',regmap[s.reg])
+
+*  clear result register
+	op('xor', (eq(w) getarg(dst),reg.w0), (eq(w) getarg(dst),reg.w0))
+
+*  if target is w register, can load to it. otherwise, load to w0 and then move to x
+*  do indexed load of source register
+
+*	outfile = ';lch 1 reglow[(eq(w) d.reg, 'w0')]' reglow[(eq(w) d.reg, 'w0')]
+*	outfile = ';lch,2 m_char [regmap[s.reg]])'  regmap[s.reg]
+	op('mov',reglow[(eq(w) d.reg, 'w0')],'m_char [' regmap[s.reg] ']')
+	ne(w) op('mov',regmap[d.reg],reg.w0)
+
+*  do post increment if needed
+
+	eq(s.type,10)	op('inc',regmap[s.reg])
+						:(opdone)
+g.lch.lods
+*  clear result register, do lodsb, and then move character to result register
 	op('xor',reg.w0,reg.w0)
-	op('movb','(' regmap[t3] ')','%al')
-	op('mov',reg.w0,t1)
-.fi
-
-
-*  see if postincrement needed.
-	t2 rtab(1) '+'				:f(g.lcg.2)
-	op('inc',regmap[t3])
-g.lcg.2
+	op('lodsb')
+	op('mov',getarg(dst),reg.w0)
 						:(opdone)
-
+* SCH
 g.sch
+	sch_pre = sch_post =
 	src = i1; dst = i2
-	t.dst = i.text(dst)
-	eq(i.type(src),8)			:s(g.scg.w)
-	t.src = getarg(src)
-	ident(t.dst,'(xr)+')			:f(g.scg.0)
+	s.text = i.text(src); s.type = i.type(src); s.reg = getreg(src)
+	d.text = i.text(dst); d.type = i.type(dst); d.reg = getreg(dst)
+	w = (eq(i.type(src),8) 0,1);* dst is w-register
+	outfile = ';sch s.text ' s.text '  s.type ' s.type '  s.reg ' s.reg
+	outfile = ';sch d.text ' d.text '  d.type ' d.type '  d.reg ' d.reg '  w ' w
+	ident(s.text,'(xr)+')			:s(g.sch.stos)
 
-*  here if can use stos.
-.if A
-	op('mov','al',getarg(src))
-	op('stos_b')				:(opdone)
-.fi
-.if G
-	op('mov',getarg(src),'%al')
-	op('stosb')				:(opdone)
-.fi
-g.scg.0
-	leq('-',substr(t.dst,1,1))			:f(g.scg.1)
-	t.dst break('(') len(1) len(2) . t3
-	op('dec',regmap[t3])
-	op('dec',regmap[t3])
-g.scg.1
-	t.dst break('(') len(1) len(2) . t3
-.if A
-	op('mov',reg.w0,t.src,)
-	op('mov','[' regmap[t3] ']','al')
-.fi
-.if G
-	op('mov',t.src,reg.w0)
-* TODO
-	op('mov','%al', '(' regmap[t3] ')')
-.fi
 
-*  see if postincrement needed.
-	t.dst rtab(1) '+'				:f(g.scg.2)
-	op('inc',regmap[t3])
-g.scg.2						:(opdone)
-g.scg.w
+*  decrement destination register if needed
 
-*  here if moving character from work register, convert t.src
-*  to name of low part.
-.if A
-	t.src = reglow[getarg(src)]
-.fi
-.if G
-	t.src = reglow[i.text(src)]
-.fi
-	ident(t.dst,'(xl)')			:s(g.scg.w.xl)
-	ident(t.dst,'-(xl)')			:s(g.scg.w.pxl)
-	ident(t.dst,'(xl)+')			:s(g.scg.w.xlp)
-	ident(t.dst,'(xr)')			:s(g.scg.w.xr)
-	ident(t.dst,'-(xr)')			:s(g.scg.w.pxr)
-	ident(t.dst,'(xr)+')			:s(g.scg.w.xrp)
-g.scg.w.xl
-.if A
-	op('mov','m_char [XL]',t.src)		:(opdone)
-.fi
-.if G
-	op('movb',t.src,'(' reg.xl ')')	:(opdone)
-.fi
+	eq(d.type,11) op('dec',regmap[d.reg])
 
-g.scg.w.pxl
-.if A
-	op('dec', reg.xl)
-	op('mov','m_char [XL]',t.src)
+*  if source is x register, move it to w0, so can store character from lower part of a w register
+
+	ne(w) op('mov',reg.w0, regmap[s.reg])
+
+	op('mov','m_char [' regmap[d.reg] ']', reglow[(eq(w) s.reg, 'w0')])
+
+* increment target register if needed
+
+	eq(d.type,10)  op('inc',regmap[d.reg])
 						:(opdone)
-.fi
-.if G
-	op('dec',reg.xl)
-	op('movb',t.src,'(' reg.xl ')')	:(opdone)
-.fi
-
-g.scg.w.xlp
-.if A
-	op('mov','m_char [XL]',t.src)
-.fi
-.if G
-	op('movb',t.src,'(' reg.xl ')')
-.fi
-	op('inc', reg.xl)
+g.sch.stos
+*  move source register to w0, setting up low part, then store from w0
+	op('Mov', reg.w0, regmap[s.reg])
+	op('stosb')
 						:(opdone)
-g.scg.w.xr
-.if A
-	op('mov','m_char [XR]',t.src)			:(opdone)
-.fi
-.if G
-* TODO TBASL is the next line right???
-	op('movb',t.src,'(' reg.xr ')')	:(opdone)
-.fi
-g.scg.w.pxr
-	op('dec', reg.xr)
-.if A
-	op('mov','m_char [XR]',t.src)			:(opdone)
-.fi
-.if G
-	op('movb', t.src,getarg(dst))	:(opdone)
-.fi
-g.scg.w.xrp
-.if A
-	op('mov','al',t.src)
-.fi
-.if G
-	op('movb',t.src,'%al')
-.fi
-	op('stosb')				:(opdone)
 
 g.csc  	ident(thislabel)			:s(opnext)
 	op()					:(opdone)
