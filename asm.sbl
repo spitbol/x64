@@ -129,6 +129,8 @@
         define('genlab(prefix)')
         define('genrip()')
 	define('getreg(iarg)')
+	define('mov(i1,i2)i.src,i.dst,t.src')
+	define('move(dst,src)')
 	define('opds(gopc,gop1,gop2,gop3)txt')
 	define('op(gopc,gop1,gop2,gop3)')
 	define('opl(gopl,gopc,gop1,gop2,gop3)')
@@ -753,6 +755,84 @@ getreg.10	getreg = substr(i.text(iarg),2,2)	:(return)
 
 getreg.11	getreg = substr(i.text(iarg),3,2)	:(return)
 
+-stitl mov(i1,i2)i.src,i.dst,t.src
+*   translate 'mov' instruction
+mov
+*  perhaps change mov x,(xr)+ to
+*	mov ax,x; stows
+
+*  perhaps do  mov (xl)+,wx as
+*	lodsw
+*	xchg ax,tx
+*  and also mov (xl)+,name as
+*	lodsw
+*	mov name,reg.w0
+*  need to process memory-memory case
+*  change 'mov (xs)+,a' to 'pop a'
+*  change 'mov a,-(xs)' to 'push a'
+        i.src = i2; i.dst = i1
+	t.src = i.text(i.src); t.dst = i.text(i.dst)
+	ident(t.src,'(xl)+')			:s(mov.xlp)
+	ident(t.src,'(xt)+')			:s(mov.xtp)
+	ident(t.src,'(xs)+')			:s(mov.xsp)
+	ident(t.dst,'(xr)+')			:s(mov.xrp)
+	ident(t.dst,'-(xs)')			:s(mov.2)
+	memmem()
+	move(getarg(i1),getarg(i2))		:(return)
+mov.xtp
+mov.xlp
+.if A
+	ident(t.dst,'(xr)+') op('movs_w')	:s(return)
+	op('lods_w')
+.fi
+.if G
+	ident(t.dst,'(xr)+') op('movs' (eq(ws,32) 'd', 'q')) :s(return)
+	op('lods' (eq(ws,32) 'd', 'q'))
+.fi
+	move(getarg(i.dst),reg.w0)		:(return)
+	ident(t.dst,'-(xs)') op('push',reg.w0)	:s(return)
+
+mov.xsp
+.if A
+	ident(t.dst,'(xr)+')		:s(mov.xsprp)
+	op('pop',getarg(i.dst))		:(return)
+.fi
+.if G
+	ident(t.dst,'(xr)+')		:s(mov.xsprp)
+	op('pop',getarg(i.dst))		:(return)
+.fi
+
+mov.xsrp
+.if A
+	op('pop',reg.w0)
+	op('stos_w')				:(return)
+.fi
+.if G
+	op('pop',reg.w0)
+	op('stos' (eq(ws,32) 'd', 'q'))	:(return)
+.fi
+
+mov.xrp
+	move(reg.w0,getarg(i.src))
+.if A
+	op('stos_w')				:(return)
+.fi
+.if G
+	op('stos' (eq(ws,32) 'd','q'))	:(return)
+.fi
+
+mov.2
+	op('push',getarg(i.src))		:(return)
+
+-stitl move(dst,src)
+move
+.if A
+	op('mov',dst,src)			:(return)
+.fi
+.if G
+	op('mov' o_,src,dst)			:(return)
+.fi
+
 -stitl opds(gopc,gop1,gop2,gop3)
 *  generate operation with no label, with dest/src switched if using gas
 *  asm uses 'intel' syntax, with destination followed by source
@@ -1166,12 +1246,7 @@ memmem
 *  here if memory-memory case, load second argument
   t = getarg(i2)
   i2 = arg_w0
-.if A
-  op('mov',reg.w0,t)				:(return)
-.fi
-.if G
-  op('mov' o_,t,reg.w0)				:(return)
-.fi
+  move(reg.w0,t)				:(return)
 
 -stitl outline(txt)
 outline
@@ -1411,80 +1486,7 @@ g.flc
 						:(opdone)
 
 g.mov
-*  perhaps change mov x,(xr)+ to
-*	mov ax,x; stows
-
-*  perhaps do  mov (xl)+,wx as
-*	lodsw
-*	xchg ax,tx
-*  and also mov (xl)+,name as
-*	lodsw
-*	mov name,reg.w0
-*  need to process memory-memory case
-*  change 'mov (xs)+,a' to 'pop a'
-*  change 'mov a,-(xs)' to 'push a'
-        i.src = i2; i.dst = i1
-	t.src = i.text(i.src); t.dst = i.text(i.dst)
-	ident(t.src,'(xl)+')			:s(mov.xlp)
-	ident(t.src,'(xt)+')			:s(mov.xtp)
-	ident(t.src,'(xs)+')			:s(mov.xsp)
-	ident(t.dst,'(xr)+')			:s(mov.xrp)
-	ident(t.dst,'-(xs)')			:s(mov.2)
-	memmem()
-.if A
-	op('mov',getarg(i1),getarg(i2))
-.fi
-.if G
-	op('mov' o_,getarg(i2),getarg(i1))
-.fi
-						:(opdone)
-mov.xtp
-mov.xlp
-.if A
-	ident(t.dst,'(xr)+') op('movs_w')	:s(opdone)
-	op('lods_w')
-	ident(t.dst,'-(xs)') op('push',reg.w0)	:s(opdone)
-	op('mov',getarg(i.dst),reg.w0)		:(opdone)
-.fi
-.if G
-	ident(t.dst,'(xr)+') op('movs' (eq(ws,32) 'd', 'q')) :s(opdone)
-	op('lods' (eq(ws,32) 'd', 'q'))
-	ident(t.dst,'-(xs)') op('push',reg.w0)	:s(opdone)
-	op('mov' o_,reg.w0,getarg(i.dst))	:(opdone)
-.fi
-
-mov.xsp
-.if A
-	ident(t.dst,'(xr)+')		:s(mov.xsprp)
-	op('pop',getarg(i.dst))		:(opdone)
-.fi
-.if G
-	ident(t.dst,'(xr)+')		:s(mov.xsprp)
-	op('pop',getarg(i.dst))		:(opdone)
-.fi
-
-mov.xsrp
-.if A
-	op('pop',reg.w0)
-	op('stos_w')				:(opdone)
-.fi
-.if G
-	op('pop',reg.w0)
-	op('stos' (eq(ws,32) 'd', 'q'))	:(opdone)
-.fi
-
-mov.xrp
-.if A
-	op('mov',reg.w0,getarg(i.src))
-	op('stos_w')				:(opdone)
-.fi
-.if G
-	op('mov' o_,getarg(i.src),reg.w0)
-	op('stos' (eq(ws,32) 'd','q'))	:(opdone)
-.fi
-
-mov.2
-	op('push',getarg(i.src))		:(opdone)
+	mov(i1,i2)				:(opdone)
 
 * odd/even tests.  if w reg, use low byte of register.
 g.bod
@@ -1810,7 +1812,7 @@ g.zer
 +		op('stos_w')			:s(opdone)
 	ifreg(i1)				:s(g.zer1)
 	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
-	op('mov',reg.w0,'0')
+	op('xor',reg.w0,reg.w0)
 	op('mov',getarg(i1),reg.w0)		:(opdone)
 g.zer1	t1 = getarg(i1)
 	op('xor',t1,t1)			:(opdone)
@@ -1821,21 +1823,15 @@ g.zer.xs op('push','0')			:(opdone)
 +	  op('stos' (eq(ws,32) 'd','q'))	:s(opdone)
 	ifreg(i1)				:s(g.zer1)
 	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
-	op('mov','$0',reg.w0)
+	op('xor',reg.w0,reg.w0)
 	op('mov',reg.w0,getarg(i1))		:(opdone)
 g.zer1	t1 = getarg(i1)
-	op('xor',t1,t1)			:(opdone)
+	op('xor',t1,t1)				:(opdone)
 g.zer.xs op('push','$0')			:(opdone)
 .fi
 
 g.mnz
-.if A
-	op('mov',getarg(i1),reg.xs)		:(opdone)
-.fi
-.if G
-	op('mov',reg.xs, getarg(i1))		:(opdone)
-.fi
-
+	move(getarg(i1),reg.xs)			:(opdone)
 g.ssl
 g.sss
 g.rtn
@@ -1923,12 +1919,7 @@ g.lct
 	op()					:(opdone)
 
 g.lct.1
-.if A
-	op('mov',getarg(i1),getarg(i2))	:(opdone)
-.fi
-.if G
-	op('mov',getarg(i2),getarg(i1))	:(opdone)
-.fi
+	move(getarg(i1),getarg(i2))	:(opdone)
 
 g.bct
 *  can issue loop if target register is cx.
@@ -1961,26 +1952,8 @@ g.lcw
 g.scp
 	op(op_,getarg(i1))			:(opdone)
 
-*  use cp for code pointer.
-.if A
-	op('mov',reg.cp,getarg(i1))
-.fi
-.if G
-	op('mov',getarg(i1),reg.cp)
-.fi
-						:(opdone)
-
-	op('mov',getarg(i1),reg.cp)
-						:(opdone)
-*  should be able to get lodsd; xchg eax,getarg(i1)
-	op('mov',getarg(i1),m(reg.cp))
-	op('add',reg.cp,'cfp_b')
-
-						:(opdone)
-
-
 g.icp
-	op(op_)				:(opdone)
+	op(op_)					:(opdone)
 .if A
 	op('add',reg.cp,'cfp_b')
 .fi
@@ -2195,7 +2168,6 @@ g.plc.1
 
 *  always load to w0, which allows use of 'lods' if second argument is '(xr)+'
 
-* LCH
 g.lch
 	lch_pre = lch_post =
 	src = i2; dst = i1
@@ -2231,7 +2203,6 @@ g.lch.lods
 	op('lodsb')
 	op('mov',getarg(dst),reg.w0)
 						:(opdone)
-* SCH
 g.sch
 	sch_pre = sch_post =
 	src = i1; dst = i2
@@ -2279,13 +2250,8 @@ g.cne   memmem()
 
 g.cmc
 	op('repe','cmps_b')
-	op('xor',reg.w0,reg.w0)
-.if A
-	op('mov',reg.xr,reg.xl)
-.fi
-.if G
-	op('mov',reg.w0,reg.xl)
-.fi
+	op('xor',reg.xl,reg.xl)
+	op('xor',reg.xr,reg.xl)
 	t1 = getarg(i1)
 	t2 = getarg(i2)
 	(ident(t1,t2) op('jnz',t1))		:s(opdone)
