@@ -95,8 +95,8 @@ COBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	sysld.o sysmm.o sysmx.o sysou.o syspl.o syspp.o sysrw.o \
 	sysst.o sysstdio.o systm.o systty.o sysul.o sysxi.o  \
 	break.o checkfpu.o compress.o cpys2sc.o \
-	doset.o dosys.o fakexit.o float.o flush.o gethost.o getshell.o \
-	int.o lenfnm.o math.o optfile.o osclose.o \
+	doset.o dosys.o fakexit.o flush.o gethost.o getshell.o \
+	arith.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
 	trypath.o wrtaout.o zz.o getargs.o it.o main.o 

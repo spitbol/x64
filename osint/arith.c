@@ -19,14 +19,14 @@ This file is part of Macro SPITBOL.
 */
 
 /*
- * float.c - floating point support for spitbol
+ * arith.c - floating point support for spitbol
  *
  * These routines are not called from other C routines.  Rather they
- * are called by inter.*, and by external functions.
+ * are called by inter.*, and by external functions, to perform basic
+ * arithmetic operatios.
  */
 
 #include "port.h"
-#if (FLOAT & !FLTHDWR) | EXTFUN
 
 
 // overflow codes
@@ -136,6 +136,7 @@ void i_dvi() {
 		reg_fl = 1;
 	}
 	else {
+		reg_fl = 0;
 		reg_ia /= reg_w0;
 	}
 }
@@ -171,5 +172,17 @@ void i_cvd() {
 	reg_wa  = -reg_wa + 48; // convert remainder to character code for digit
 }
 
-#endif					// (FLOAT & !FLTHDWR) | EXTFUN
+long ctbw_r;
+long ctbw_v;
 
+void ctw_() {
+	long reg;
+	reg = (ctbw_r + CPW - 1) >> LOG_CPW;
+	reg += ctbw_v;
+	ctbw_r = reg;
+}
+
+void ctb_() {
+	ctw_();
+	ctbw_r = ctbw_r * CPW;
+}
