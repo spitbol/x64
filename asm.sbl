@@ -694,7 +694,7 @@ crack   nstmts  = nstmts + 1
 -stitl a(text)
 * emit text if using asm
 a
-if A
+.if A
 	a = text
 .fi
 						:(return)
@@ -1334,8 +1334,8 @@ chktrace
 	it_exec = differ(i_trace)  ident(inlabel, 's_aaa') 1
 	it_exec = differ(i_trace) ge(sectnow,5) 1
 
- 	it_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
- 	it_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
+* 	it_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
+* 	it_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
 
 	ne(it_skip)				:s(return)
 	eq(it_exec)				:s(return)
@@ -1364,8 +1364,9 @@ chktrace.1
 	lbl = genlab('it')
 	opl(lbl,'d_char',it_desc)
 	op('d_char','0');* string terminator
-	gendir(segment,'text')
+	gendir('segment','text')
 	op('mov',reg.w0,lbl)
+	op('mov','m(it_de)',reg.w0)
 	op('call','it_')
 	flush()
 	ab_suspend = 0
@@ -1375,9 +1376,9 @@ chktrace.1
 	gendir('segment','data')
 	flush()
 	lbl = genlab('it')
-	op(lbl,'.asciz',it_desc)
+	opl(lbl ':' ,'.asciz',it_desc)
 	gendir('segment','text')
-	op('mov' o_,'$' lbl,',it_de')
+	op('mov' o_,'$' lbl,'it_de')
 	op('call','it_')
 	ab_suspend = 0
 .fi
@@ -2174,8 +2175,14 @@ g.lch
 	s.text = i.text(src); s.type = i.type(src); s.reg = getreg(src)
 	d.text = i.text(dst); d.type = i.type(dst); d.reg = getreg(dst)
 	w = (eq(i.type(dst),8) 0,1);* dst is w-register
+.if A
 	outfile = ';lch s.text ' s.text '  s.type ' s.type '  s.reg ' s.reg
 	outfile = ';lch d.text ' d.text '  d.type ' d.type '  d.reg ' d.reg '  w ' w
+.fi
+.if G
+	outfile = '#lch s.text ' s.text '  s.type ' s.type '  s.reg ' s.reg
+	outfile = '#lch d.text ' d.text '  d.type ' d.type '  d.reg ' d.reg '  w ' w
+.fi
 	ident(s.text,'(xl)+')			:s(g.lch.lods)
 
 
@@ -2190,8 +2197,14 @@ g.lch
 
 *	outfile = ';lch 1 reglow[(eq(w) d.reg, 'w0')]' reglow[(eq(w) d.reg, 'w0')]
 *	outfile = ';lch,2 m_char [regmap[s.reg]])'  regmap[s.reg]
+.if A
 	op('mov',reglow[(eq(w) d.reg, 'w0')],'m_char [' regmap[s.reg] ']')
 	ne(w) op('mov',regmap[d.reg],reg.w0)
+.fi
+.if G
+	op('movb','(' regmap[s.reg] ')' ,reglow[(eq(w) d.reg, 'w0')])
+	ne(w) op('mov',reg.w0,regmap[d.reg])
+.fi
 
 *  do post increment if needed
 
@@ -2201,7 +2214,7 @@ g.lch.lods
 *  clear result register, do lodsb, and then move character to result register
 	op('xor',reg.w0,reg.w0)
 	op('lodsb')
-	op('mov',getarg(dst),reg.w0)
+	move(getarg(dst),reg.w0)
 						:(opdone)
 g.sch
 	sch_pre = sch_post =
@@ -2209,8 +2222,14 @@ g.sch
 	s.text = i.text(src); s.type = i.type(src); s.reg = getreg(src)
 	d.text = i.text(dst); d.type = i.type(dst); d.reg = getreg(dst)
 	w = (eq(i.type(src),8) 0,1);* dst is w-register
+.if A
 	outfile = ';sch s.text ' s.text '  s.type ' s.type '  s.reg ' s.reg
 	outfile = ';sch d.text ' d.text '  d.type ' d.type '  d.reg ' d.reg '  w ' w
+.fi
+.if G
+	outfile = '#sch s.text ' s.text '  s.type ' s.type '  s.reg ' s.reg
+	outfile = '#sch d.text ' d.text '  d.type ' d.type '  d.reg ' d.reg '  w ' w
+.fi
 	ident(s.text,'(xr)+')			:s(g.sch.stos)
 
 
@@ -2220,9 +2239,14 @@ g.sch
 
 *  if source is x register, move it to w0, so can store character from lower part of a w register
 
-	ne(w) op('mov',reg.w0, regmap[s.reg])
+	ne(w) move(reg.w0, regmap[s.reg])
 
+.if A
 	op('mov','m_char [' regmap[d.reg] ']', reglow[(eq(w) s.reg, 'w0')])
+.fi
+.if G
+	op('movb', reglow[(eq(w) s.reg, 'w0')], '(' regmap[d.reg] ')') 
+.fi
 
 * increment target register if needed
 
@@ -2230,7 +2254,7 @@ g.sch
 						:(opdone)
 g.sch.stos
 *  move source register to w0, setting up low part, then store from w0
-	op('Mov', reg.w0, regmap[s.reg])
+	move(reg.w0, regmap[s.reg])
 	op('stosb')
 						:(opdone)
 
@@ -2249,7 +2273,12 @@ g.cne   memmem()
 						:(opdone)
 
 g.cmc
+.if A
 	op('repe','cmps_b')
+.fi
+.if G
+	op('repe','cmpsb')
+.fi
 	op('xor',reg.xl,reg.xl)
 	op('xor',reg.xr,reg.xl)
 	t1 = getarg(i1)
@@ -2720,13 +2749,21 @@ g.sec.6
 *  error section.  produce code to receive erb's
 g.sec.7
         gendir('global','sec07')
-        opl('sec07' ':')
+        opl('sec07:')
 	flush()
 *  error section.  produce code to receive erb's
 
 *	allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
-	opl('err_:','xchg',reg.wa,a('m(' rcode ')') g('rcode'))
+	opl('err_:')
+.if A
+	outfile = ';sec07:a:' a('m(' rcode ')') ':g:' g('rcode')
+.fi
+.if G
+	outfile = '#sec07:a:' a('m(' rcode ')') ':g:' g('rcode')
+.fi
+
+	op('xchg',reg.wa,a('m(' rcode ')') g(rcode))
 						:(opdone)
 
 
