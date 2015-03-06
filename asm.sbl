@@ -1964,63 +1964,17 @@ g.icp
 						:(opdone)
 *  integer accumulator kept in wdx (wc)
 g.ldi
-.if A
-	op(op_,getarg(i1))
-.fi
-.if G
-	op('mov',getarg(i1),reg.ia)
-.fi
-						:(opdone)
 g.sti
-.if A
-	op(op_,getarg(i1))
-.fi
-.if G
-	op('mov',reg.ia,getarg(i1))		
-.fi
-						:(opdone)
-
-.if A
+	op(op_,getarg(i1))			:(opdone)
 g.adi
 g.mli
 g.sbi
 g.dvi
 g.rmi
 	op(op_,getarg(i1))			:(opdone)
-.fi
-.if G
-g.adi
-	op('add',getarg(i1),reg.ia)
-	op('seto','reg_fl')			:(opdone)
-
-g.mli
-	op('imul',getarg(i1),reg.ia)
-	op('seto','reg_fl')		
-						:(opdone)
-g.sbi
-	op('sub',getarg(i1),reg.ia)
-*	clear to zero (TODO why is that?)
-	op('xor',reg.w0,reg.w0)		
-	op('seto','reg_fl')			:(opdone)
-
-g.dvi
-	op('mov',getarg(i1),reg.w0)
-	op('call','dvi__')			:(opdone)
-
-g.rmi
-	op('mov',getarg(i1),reg.w0)
-	op('call','rmi__')			:(opdone)
-.fi
 
 g.ngi
-.if A
 	op(op_)				:(opdone)
-.fi
-.if G
-	op('neg',reg.ia)
-	op('seto','reg_fl') 			:(opdone)
-.fi
-
 g.ino
 g.iov
 	op(op_,getarg(i1))			:(opdone)

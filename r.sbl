@@ -21,7 +21,7 @@ m	ident(os,"osx")				:s(m.err)
 	m = (eq(ws,32) 'd', 'q') 'word ptr ' ref ']' :(return)
 m.end
 
-	lmap = table[4[
+	lmap = table(4)
 	s = 'W0_L %al WA_L %cl WB_L %bl WC_L %dl '
 linit	s break(' ') . reg ' ' break(' ') . low ' '  = 		:f(ldone)
 	lmap[reg] = low				:(linit)
@@ -29,7 +29,7 @@ ldone
 
 	rmap = table(20)
 
-	s = 'XL si XR di XS sp XT si WA cx WB bx WC dx W0 ax IA bp'
+	s = 'XL si XR di XS sp XT si WA cx WB bx WC dx W0 ax IA bp '
 rinit	s break(' ') . min ' ' break(' ') . reg ' '  = 		:f(rdone)
 	rmap[min] = reg				:(rinit)
 rdone
@@ -40,8 +40,14 @@ rdone
 
 	lpat = 'W' any('0ABC') '_L'
 
+						:(next)
+copy
+	output = line
 next
 	line = input				:f(end)
+*	change nasm-style comments into gas format
+	line tab(0) ';' = '#' 			:s(copy)
+	
 
 aloop	line breakx('A') . first 'A(' bal . ref ')' rem . last = first a(ref) last	:s(mloop)
 	defs = defines
