@@ -43,21 +43,19 @@
 
 	%define m_char	byte	; reference to byte in memory
 	%define d_char	db	; define value of byte
-	%define m_real	qword	; reference to floating point value in memory
-	%define d_real	dq	; define value for floating point
 
 %if	ws=32
+
+	%define m_real	dword	; reference to floating point value in memory
+	%define d_real	dq	; define value for floating point
 
 	%define	IA	ebp
 
 	%define W0	eax
 	%define W1	ebp
 	%define WA	ecx
-	%define WA_L    cl
 	%define WB	ebx
-	%define WB_L  	bl
 	%define WC	edx
-	%define WC_L  	dl
 
 	%define	XL	esi
 	%define	XT	esi
@@ -83,20 +81,25 @@
 	%define	cmps_b	cmpsb
 
 	%define	cdq	cdq	; sign extend (32 bits)
+%ifdef osx
+	%define m(ref) dword[rel ref]
+	%define a(ref) [rel ref]
+%else
 	%define m(ref) dword[ref]
 	%define a(ref) [ref]
-%else
-	%define	IA	rbp
+%endif
+%endif
 
+%if ws=64
+	%define m_real	qword	; reference to floating point value in memory
+	%define d_real	dq	; define value for floating point
+
+	%define	IA	rbp
 	%define	W0	rax
-	%define	W0_L	al
 	%define W1	rbp
 	%define	WA	rcx
-	%define WA_L	cl
 	%define	WB	rbx
-	%define WB_L    bl
 	%define	WC	rdx
-	%define WC_L    dl
 
 	%define	XL	rsi
 	%define	XT	rsi
@@ -133,7 +136,13 @@
 	%define m(ref) qword[ref]
 	%define a(ref) [ref]
 %endif
+
 %endif
+
+	%define	W0_L	al
+	%define WA_L	cl
+	%define WB_L    bl
+	%define WC_L    dl
 
 ;	flags
 	%define	flag_of	0x80
