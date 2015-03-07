@@ -68,8 +68,9 @@ ASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
 endif
 
 # tools for processing Minimal source file.
-LEX=	lex.sbl
-ERR=    err.sbl
+LEX=lex.sbl
+ERR=err.sbl
+MIN=min.sbl
 
 # implicit rule for building objects from C files.
 ./%.o: %.c
@@ -107,22 +108,22 @@ COBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 # use fake target asmobj which appears only when all .s files built
 asm: 
 
-# run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u A pp.sbl <asm.r >asm.spt 
-# run lex to get s.lex
+# run lex to get min.lex
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
+# run preprocessor to get asm for nasm as target
+	$(BASEBOL) -u A pp.sbl <min.sbl >asm.spt 
 # run asm to get .s and .err files
 	$(BASEBOL) -u $(TARGET):$(ITOPT) asm.spt
 # run err 
 	$(BASEBOL) -u $(TARGET)_asm $(ERR)
 # run preprocessor to get sys for nasm as target
-	$(BASEBOL) -u A pp.sbl <sys.r >sys.asm
-# assemble the translator file
-	$(NASM) $(ASMOPTS) -oasm.o sys.asm
+	$(BASEBOL) -u A pp.sbl <sys >sys.asm
+# assemble the translated file
+	$(NASM) $(ASMOPTS) -osys.o sys.asm
 # compile osint
 	$(CC)  $(CCOPTS) -c  osint/*.c
 # load objects
-	$(CC) $(LDOPTS)  $(COBJS) asm.o $(LMOPT) -static -ospitbol
+	$(CC) $(LDOPTS)  $(COBJS) sys.o $(LMOPT) -static -ospitbol
 
 spitbol-dynamic: $(OBJS) $(AOBJS)
 # link spitbol with dynamic linking
@@ -201,4 +202,4 @@ it-nasm: s-nasm.dic it.sbl
 	$(BASEBOL) -u s-nasm.dic it.sbl <ad >ae
 
 clean:
-	rm -f *.o s.err err.s s.lex s.equ ./asmbol ./gasbol ./spitbol s.s s.r asm.spt gas.r gas.spt gas.hdr tbol*
+	rm -f *.o sbl.err err.s sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol sbl.s s.r sys.asm asm.spt gas.spt tbol*

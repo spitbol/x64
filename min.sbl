@@ -582,7 +582,10 @@ regmap.done
 
 	strip_comment = (differ(comments) 'n', 'y')
 
-        output = ~input(.infile,1,'s.lex') "no input file"	:s(end)
+*  base name of file
+
+	basename = 'sbl'
+        output = ~input(.infile,1,basename '.lex') "no input file"	:s(end)
 
 inputok
 
@@ -590,18 +593,18 @@ inputok
 
 *  associate output files.
 
-        output = ~output(.outfile,2,'s.s') "no output file"	:s(end)
+        output = ~output(.outfile,2,basename '.s') "no output file"	:s(end)
 outputok
 
 
 * open file for compilation of minimal err and erb messages
 
-        output = ~output(.errfile,3,'s.err') "no error file"	:s(end)
+        output = ~output(.errfile,3,basename '.err') "no error file"	:s(end)
 err_ok
 * 	&dump = 0
 
 *  read in .equ file with value for symbols defined by equ opcode (this is really only needed for gas)
-	output = ~input(.equfile,6,'s.equ') 'cannot open equ file'	:s(end)
+	output = ~input(.equfile,6,basename '.equ') 'cannot open equ file'	:s(end)
 	equ_value = table(1000)
 equ.copy
 	line = equfile				:f(equ.end)

@@ -359,7 +359,7 @@
 	target break('_') . os len(1) break('_') . ws len(1) rem  . asm 
 	output = 'target ' target
 	output = 'os ' os '  ws  '  ws '  asm  '  asm
-	parm = "s"
+	parm = "sbl"
 	filenamc = parm '.cnd'
 	filenami = parm '.min'
 	filenamo = parm '.lex'
