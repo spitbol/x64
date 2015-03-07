@@ -16,7 +16,41 @@
 ;     you should have received a copy of the gnu general public license
 ;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 ;
-        section	.text
+.if A
+	%macro	Text 0
+	section	.text
+	%endmacro
+
+	%macro	Data	0
+	section	.data
+	%endmacro
+
+	%macro Extern	1
+	extern	%1
+	%endmacro
+
+	%macro Global	1
+	global	%1
+	%endmacro
+.fi
+.if G
+	.macro	Text
+	.text
+	.endm
+
+	.macro	Data
+	.data
+	.endm
+
+	.macro	Extern name
+	.extern	\name
+	.endm
+
+	.macro	Global name
+	.global	\name
+	.endm
+.fi
+        Text
 
 	%define	os	unix	; default
 	%define	unix
@@ -147,38 +181,38 @@
 	%define	flag_cf	0x01
 	%define	flag_ca	0x40
 
-	global	dnamb
-	global	dname
-	global	mxint
+	Global	dnamb
+	Global	dname
+	Global	mxint
 
 ;%ifdef it_trace
-	extern	id_de
-	extern	it_cp
-	extern	it_xl
-	extern	it_xr
-	extern	it_xs
-	extern	it_wa
-	extern	it_wb
-	extern	it_wc
-	extern	it_w0
-	extern	it_it
-	extern	it_id
-	extern	it_de
-	extern	it_0
-	extern	it_1
-	extern	it_2
-	extern	it_3
-	extern	it_4
-	extern	it_arg
-	extern	it_num
+	Extern	id_de
+	Extern	it_cp
+	Extern	it_xl
+	Extern	it_xr
+	Extern	it_xs
+	Extern	it_wa
+	Extern	it_wb
+	Extern	it_wc
+	Extern	it_w0
+	Extern	it_it
+	Extern	it_id
+	Extern	it_de
+	Extern	it_0
+	Extern	it_1
+	Extern	it_2
+	Extern	it_3
+	Extern	it_4
+	Extern	it_arg
+	Extern	it_num
 ;%endif
-	global	start
+	Global	start
 
 
 	%macro	itz	1
-	section	.data
+	Data
 %%desc:	db	%1,0
-	section	.text
+	Text
 	mov	m_word [it_de],%%desc
 	call	it_
 	%endmacro
@@ -187,8 +221,8 @@
 ;   table to recover type word from type ordinal
 ;
 
-	global	typet
-	section .data
+	Global	typet
+	Data
 
         d_word	b_art   ; arblk type word - 0
         d_word	b_cdc   ; cdblk type word - 1
@@ -228,7 +262,7 @@
 ;   to the order of entries in the call enumeration in osint.h
 ;   and osint.inc.
 ;
-	global calltab
+	Global calltab
 calltab:
         d_word	relaj
         d_word	relcr
@@ -245,47 +279,47 @@ calltab:
 ;       d_word	enevs ;  engine words
 ;       d_word	engts ;   not used
 
-	global	b_efc
-	global	b_icl
-	global	b_rcl
-	global	b_scl
-	global	b_vct
-	global	b_xnt
-	global	b_xrt
-	global	c_aaa
-	global	c_yyy
-	global	dnamb
-	global	cswfl
-	global	dnamp
-	global	flprt
-	global	flptr
-	global	g_aaa
-	global	gbcnt
-	global	gtcef
-	global	headv
-	global	hshtb
-	global	kvstn
-	global	kvdmp
-	global	kvftr
-	global	kvcom
-	global	kvpfl
-	global	mxlen
-	global	polct
-	global	s_yyy
-	global	s_aaa
-	global	stage
-	global	state
-	global	stbas
-	global	statb
+	Global	b_efc
+	Global	b_icl
+	Global	b_rcl
+	Global	b_scl
+	Global	b_vct
+	Global	b_xnt
+	Global	b_xrt
+	Global	c_aaa
+	Global	c_yyy
+	Global	dnamb
+	Global	cswfl
+	Global	dnamp
+	Global	flprt
+	Global	flptr
+	Global	g_aaa
+	Global	gbcnt
+	Global	gtcef
+	Global	headv
+	Global	hshtb
+	Global	kvstn
+	Global	kvdmp
+	Global	kvftr
+	Global	kvcom
+	Global	kvpfl
+	Global	mxlen
+	Global	polct
+	Global	s_yyy
+	Global	s_aaa
+	Global	stage
+	Global	state
+	Global	stbas
+	Global	statb
         global  stmcs
         global  stmct
-	global	timsx
-	global  typet
-	global	pmhbs
-	global	r_cod
-	global	r_fcb
-	global	w_yyy
-	global	end_min_data
+	Global	timsx
+	Global  typet
+	Global	pmhbs
+	Global	r_cod
+	Global	r_fcb
+	Global	w_yyy
+	Global	end_min_data
 
 %ifdef	unix_32
 	%define	cfp_b	4
@@ -296,23 +330,23 @@ calltab:
 	%define		m64			// make m64 the default
 %endif
 
-	global	reg_block
-	global	reg_w0
-	global	reg_wa
-	global	reg_wb
-	global	reg_ia
-	global	reg_wc
-	global	reg_xr
-	global	reg_xl
-	global	reg_cp
-	global	reg_ra
-	global	reg_pc
-	global	reg_xs
-	global	reg_size
+	Global	reg_block
+	Global	reg_w0
+	Global	reg_wa
+	Global	reg_wb
+	Global	reg_ia
+	Global	reg_wc
+	Global	reg_xr
+	Global	reg_xl
+	Global	reg_cp
+	Global	reg_ra
+	Global	reg_pc
+	Global	reg_xs
+	Global	reg_size
 
-	global	reg_rp
+	Global	reg_rp
 
-	global	minimal
+	Global	minimal
 	extern	stacksiz
 
 ;	values below must agree with calltab defined in x32.hdr and also in osint/osint.h
@@ -451,42 +485,42 @@ reg_size:	dd   r_size
 reg_rp:	d_word	0
 
 ; reg_fl is used to communicate condition codes between minimal and c code.
-	global	reg_fl
+	Global	reg_fl
 reg_fl:	db	0		; condition code register for numeric operations
 
 	align	8
 ;  constants
 
-	global	ten
+	Global	ten
 ten:    d_word      10              ; constant 10
-	global  inf
+	Global  inf
 inf:	d_word	0
 	d_word      0x7ff00000      ; double precision infinity
 
-	global	sav_block
+	Global	sav_block
 ;sav_block: times r_size db 0     	; save minimal registers during push/pop reg
 sav_block: times 44 db 0     		; save minimal registers during push/pop reg
 
 	align cfp_b
-	global	ppoff
+	Global	ppoff
 ppoff:  d_word      0               	; offset for ppm exits
-	global	compsp
+	Global	compsp
 compsp: d_word      0               	; compiler's stack pointer
-	global	sav_compsp
+	Global	sav_compsp
 sav_compsp:
 	d_word      0               	; save compsp here
-	global	osisp
+	Global	osisp
 osisp:  d_word      0               	; osint's stack pointer
-	global	_rc_
+	Global	_rc_
 _rc_:	dd   0				; return code from osint procedure
 
 	align	cfp_b
-	global	save_cp
-	global	save_xl
-	global	save_xr
-	global	save_wa
-	global	save_wb
-	global	save_wc
+	Global	save_cp
+	Global	save_xl
+	Global	save_xr
+	Global	save_wa
+	Global	save_wb
+	Global	save_wc
 save_cp:	d_word	0		; saved cp value
 save_ia:	d_word	0		; saved ia value
 save_xl:	d_word	0		; saved xl value
@@ -495,7 +529,7 @@ save_wa:	d_word	0		; saved wa value
 save_wb:	d_word	0		; saved wb value
 save_wc:	d_word	0		; saved wc value
 
-	global	minimal_id
+	Global	minimal_id
 minimal_id:	d_word	0		; id for call to minimal from c. see proc minimal below.
 
 ;
@@ -504,7 +538,7 @@ minimal_id:	d_word	0		; id for call to minimal from c. see proc minimal below.
 ;       setup a number of internal addresses in the compiler that cannot
 ;       be directly accessed from within c because of naming difficulties.
 
-	global  id1
+	Global  id1
 id1:	dd   0
 %if setreal == 1
 	d_word       2
@@ -513,28 +547,28 @@ id1:	dd   0
 	db  "1x\x00\x00\x00"
 %endif
 
-	global  id1blk
+	Global  id1blk
 id1blk	d_word   152
       	d_word    0
 	times   152 db 0
 
-	global  id2blk
+	Global  id2blk
 id2blk	d_word   152
       	d_word    0
 	times   152 db 0
 
-	global  ticblk
+	Global  ticblk
 ticblk:	d_word   0
       d_word    0
 
-	global  tscblk
+	Global  tscblk
 tscblk:	 d_word   512
       d_word    0
 	times   512 db 0
 
 ;       standard input buffer block.
 
-	global  inpbuf
+	Global  inpbuf
 
 inpbuf:	d_word	0			; type word
       d_word    0               	; block length
@@ -545,7 +579,7 @@ inpbuf:	d_word	0			; type word
       d_word    0               	; physical position in file
 	times   1024 db 0        	; buffer
 
-	global  ttybuf
+	Global  ttybuf
 
 ttybuf:	d_word    0     ; type word
 	d_word    0               	; block length
@@ -556,7 +590,7 @@ ttybuf:	d_word    0     ; type word
 	d_word    0               	; physical position in file
 	times   260 db 0         	; buffer
 
-	global	spmin
+	Global	spmin
 
 spmin:	d_word	0			; stack limit (stack grows down for x86_64)
 spmin.a:	d_word	spmin
@@ -564,7 +598,7 @@ spmin.a:	d_word	spmin
 	align	16
 	align         cfp_b
 
-	global	cprtmsg
+	Global	cprtmsg
 cprtmsg:
 	db          ' copyright 1987-2012 robert b. k. dewar and mark emmer.',0,0
 
@@ -596,7 +630,7 @@ call_adr:	d_word	0
 ;       reloading a save file.
 ;
 ;
-	global	save_regs
+	Global	save_regs
 save_regs:
 	mov	m(save_xl),XL
 	mov	m(save_xr),XR
@@ -605,7 +639,7 @@ save_regs:
 	mov	m(save_wc),WC
 	ret
 
-	global	restore_regs
+	Global	restore_regs
 restore_regs:
 	;	restore regs, except for sp. that is caller's responsibility
 	mov	XL,m(save_xl)
@@ -627,7 +661,7 @@ restore_regs:
 ; ;	note: this function never returns.
 ; ;
 ;
-	global	startup
+	Global	startup
 ;   ordinals for minimal calls from assembly language.
 
 ;   the order of entries here must correspond to the order of
@@ -687,7 +721,7 @@ startup:
 ;	(low)	|                |
 
 ;	initialize stack
-	global	stackinit
+	Global	stackinit
 stackinit:
 	mov	W0,XS
 	mov     m(compsp),W0	; save minimal's stack pointer
@@ -698,7 +732,7 @@ stackinit:
 	ret
 
 ;	check for stack overflow, making W0 nonzero if found
-	global	chk__
+	Global	chk__
 chk__:
 	xor	W0,W0			; set return value assuming no overflow
 	cmp	XS,m(spmin)
@@ -800,12 +834,12 @@ minimal:
 
 
 %ifdef	OLD
-	global	get_ia
+	Global	get_ia
 get_ia:
 	mov	W0,IA
 	ret
 
-	global	set_ia_
+	Global	set_ia_
 set_ia_:	mov	IA,m_word[reg_w0]
 	ret
 %endif
@@ -843,15 +877,15 @@ syscall_exit:
 	call	syscall_exit
 	%endmacro
 
-	global sysax
+	Global sysax
 	extern	zysax
 sysax:	syscall	  zysax,1
 
-	global sysbs
+	Global sysbs
 	extern	zysbs
 sysbs:	syscall	  zysbs,2
 
-	global sysbx
+	Global sysbx
 	extern	zysbx
 sysbx:	mov	m(reg_xs),XS
 	syscall	zysbx,2
@@ -860,144 +894,144 @@ sysbx:	mov	m(reg_xs),XS
 ;	extern	zyscr
 ;syscr:  syscall    zyscr ;    ,0
 
-	global sysdc
+	Global sysdc
 	extern	zysdc
 sysdc:	syscall	zysdc,4
 
-	global sysdm
+	Global sysdm
 	extern	zysdm
 sysdm:	syscall	zysdm,5
 
-	global sysdt
+	Global sysdt
 	extern	zysdt
 sysdt:	syscall	zysdt,6
 
-	global sysea
+	Global sysea
 	extern	zysea
 sysea:	syscall	zysea,7
 
-	global sysef
+	Global sysef
 	extern	zysef
 sysef:	syscall	zysef,8
 
-	global sysej
+	Global sysej
 	extern	zysej
 sysej:	syscall	zysej,9
 
-	global sysem
+	Global sysem
 	extern	zysem
 sysem:	syscall	zysem,10
 
-	global sysen
+	Global sysen
 	extern	zysen
 sysen:	syscall	zysen,11
 
-	global sysep
+	Global sysep
 	extern	zysep
 sysep:	syscall	zysep,12
 
-	global sysex
+	Global sysex
 	extern	zysex
 sysex:	mov	m(reg_xs),XS
 	syscall	zysex,13
 
-	global sysfc
+	Global sysfc
 	extern	zysfc
 sysfc:  pop     W0             ; <<<<remove stacked scblk>>>>
 	lea	XS,[XS+WC*cfp_b]
 	push	W0
 	syscall	zysfc,14
 
-	global sysgc
+	Global sysgc
 	extern	zysgc
 sysgc:	syscall	zysgc,15
 
-	global syshs
+	Global syshs
 	extern	zyshs
 syshs:	mov	m(reg_xs),XS
 	syscall	zyshs,16
 
-	global sysid
+	Global sysid
 	extern	zysid
 sysid:	syscall	zysid,17
 
-	global sysif
+	Global sysif
 	extern	zysif
 sysif:	syscall	zysif,18
 
-	global sysil
+	Global sysil
 	extern	zysil
 sysil:  syscall zysil,19
 
-	global sysin
+	Global sysin
 	extern	zysin
 sysin:	syscall	zysin,20
 
-	global sysio
+	Global sysio
 	extern	zysio
 sysio:	syscall	zysio,21
 
-	global sysld
+	Global sysld
 	extern	zysld
 sysld:  syscall zysld,22
 
-	global sysmm
+	Global sysmm
 	extern	zysmm
 sysmm:	syscall	zysmm,23
 
-	global sysmx
+	Global sysmx
 	extern	zysmx
 sysmx:	syscall	zysmx,24
 
-	global sysou
+	Global sysou
 	extern	zysou
 sysou:	syscall	zysou,25
 
-	global syspi
+	Global syspi
 	extern	zyspi
 syspi:	syscall	zyspi,26
 
-	global syspl
+	Global syspl
 	extern	zyspl
 syspl:	syscall	zyspl,27
 
-	global syspp
+	Global syspp
 	extern	zyspp
 syspp:	syscall	zyspp,28
 
-	global syspr
+	Global syspr
 	extern	zyspr
 syspr:	syscall	zyspr,29
 
-	global sysrd
+	Global sysrd
 	extern	zysrd
 sysrd:	syscall	zysrd,30
 
-	global sysri
+	Global sysri
 	extern	zysri
 sysri:	syscall	zysri,32
 
-	global sysrw
+	Global sysrw
 	extern	zysrw
 sysrw:	syscall	zysrw,33
 
-	global sysst
+	Global sysst
 	extern	zysst
 sysst:	syscall	zysst,34
 
-	global systm
+	Global systm
 	extern	zystm
 systm:	syscall	zystm,35
 
-	global systt
+	Global systt
 	extern	zystt
 systt:	syscall	zystt,36
 
-	global sysul
+	Global sysul
 	extern	zysul
 sysul:	syscall	zysul,37
 
-	global sysxi
+	Global sysxi
 	extern	zysxi
 sysxi:	mov	m(reg_xs),XS
 	syscall	zysxi,38
@@ -1114,16 +1148,16 @@ sysxi:	mov	m(reg_xs),XS
 ;       input   ia = number <=0 to convert
 ;       output  ia / 10
 ;               wa ecx) = remainder + '0'
-	global	cvd__
+	Global	cvd__
 cvd__:
-	extern	i_cvd
+	Extern	i_cvd
 	mov	m(reg_wa),WA
 	call	i_cvd
 	mov	WA,m(reg_wa)
 	ret
 
 ;       dvi__ - divide ia (edx) by long in w0
-	global	dvi__
+	Global	dvi__
 dvi__:
 	extern	i_dvi
 	mov	m(reg_w0),W0
@@ -1132,7 +1166,7 @@ dvi__:
 	or	al,al
 	ret
 
-	global	rmi__
+	Global	rmi__
 ;       rmi__ - remainder of ia (edx) divided by long in w0
 rmi__:
 	jmp	ocode
@@ -1159,8 +1193,8 @@ setovr: mov     al,1		; set overflow indicator
 
 
 	%macro	int_op 2
-	global	%1
-	extern	%2
+	Global	%1
+	Extern	%2
 %1:
 	call	%2
 	ret
@@ -1169,7 +1203,7 @@ setovr: mov     al,1		; set overflow indicator
 	int_op itr_,f_itr
 	int_op rti_,f_rti
 
-;	extern	i_ldi
+;	Extern	i_ldi
 ;	%macro	ldi_	1
 ;	mov	W0,%1
 ;	mov	m(reg_ia),W0
@@ -1181,10 +1215,10 @@ setovr: mov     al,1		; set overflow indicator
 ;	mov	%1,W0
 ;	%endmacro
 ;
-;	extern w00
+;	Extern w00
 ;	%macro	int_op 2
-;	global	%1
-;	extern	%2
+;	Global	%1
+;	Extern	%2
 ;%1:
 ;	mov	m(reg_w0),W0
 ;	call	%2
@@ -1202,8 +1236,8 @@ setovr: mov     al,1		; set overflow indicator
 ;%endif
 
 	%macro	osint_call 3
-	global	%1
-	extern	%2
+	Global	%1
+	Extern	%2
 %1:
 	mov	m_word [%3],W0
 	call	%2
@@ -1225,8 +1259,8 @@ setovr: mov     al,1		; set overflow indicator
 
 
 	%macro	math_op 2
-	global	%1
-	extern	%2
+	Global	%1
+	Extern	%2
 %1:
 	call	%2
 	ret
@@ -1242,27 +1276,27 @@ setovr: mov     al,1		; set overflow indicator
 	math_op	tan_,f_tan
 
 ;       ovr_ test for overflow value in ra
-	global	ovr_
+	Global	ovr_
 ovr_:
         mov     ax, word [ rel reg_ra+6]	; get top 2 bytes
         and     ax, 0x7ff0             	; check for infinity or nan
         add     ax, 0x10               	; set/clear overflow accordingly
 	ret
 
-	global	get_fp			; get frame pointer
+	Global	get_fp			; get frame pointer
 
 get_fp:
          mov     W0,m(reg_xs)     ; minimal's xs
          add     W0,4           	; pop return from call to sysbx or sysxi
          ret                    	; done
 
-	extern	rereloc
+	Extern	rereloc
 
-	global	restart
-	extern	lmodstk
-	extern	startbrk
-	extern	outptr
-	extern	swcoup
+	Global	restart
+	Extern	lmodstk
+	Extern	startbrk
+	Extern	outptr
+	Extern	swcoup
 ;	scstr is offset to start of string in scblk, or two words
 ;scstr	equ	cfp_c+cfp_c
 
@@ -1367,7 +1401,7 @@ re4:	mov	W0,m(stbas)
 ;       code that would be executed if we returned to sysbx:
 ;
         push    m(outptr)        	; swcoup(outptr)
-	extern 	swcoup
+	Extern 	swcoup
 	call	swcoup
 	add	XS,cfp_b
 
@@ -1378,8 +1412,8 @@ re4:	mov	W0,m(stbas)
         call	minimal			; no return
 %endif
 
-	global	it_
-	extern	it
+	Global	it_
+	Extern	it
 it_:
 	pushf
 	call	save_regs
