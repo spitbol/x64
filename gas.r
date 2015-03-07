@@ -41,7 +41,7 @@
 	.set	ws,64
 .endif
 
-.if	ws=32
+.ifeqs	ws,32
 
 ;	define m_real	dword	; reference to floating point value in memory
 ;	define d_real	dq	; define value for floating point

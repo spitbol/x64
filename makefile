@@ -108,15 +108,17 @@ COBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 asm: 
 
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u A pp.sbl <asm.sbl >asm.spt 
+	$(BASEBOL) -u A pp.sbl <asm.r >asm.spt 
 # run lex to get s.lex
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 # run asm to get .s and .err files
 	$(BASEBOL) -u $(TARGET):$(ITOPT) asm.spt
 # run err 
 	$(BASEBOL) -u $(TARGET)_asm $(ERR)
-# assemble the .asm file
-	$(NASM) $(ASMOPTS) -oasm.o asm.asm
+# run preprocessor to get sys for nasm as target
+	$(BASEBOL) -u A pp.sbl <sys.r >sys.asm
+# assemble the translator file
+	$(NASM) $(ASMOPTS) -oasm.o sys.asm
 # compile osint
 	$(CC)  $(CCOPTS) -c  osint/*.c
 # load objects
@@ -131,7 +133,7 @@ gas:
 # link gasbol with static linking
 
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u G pp.sbl <asm.sbl >gas.spt 
+	$(BASEBOL) -u G pp.sbl <asm.r >gas.spt 
 # run lex to get s.lex
 	$(BASEBOL) -u $(TARGET)_$(GAS) $(LEX)
 # run gas to get .s and .err files
@@ -153,11 +155,11 @@ gasbol-dynamic: $(OBJS) $(GOBJS) $(GOBJS)
 # link gasbol with dynamic linking
 	$(CC) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT)  -ogasbol 
 
-asm.spt:	asm.sbl
-	$(BASEBOL) -u A -1=asm.sbl -2=asm.spt pp.sbl
+asm.spt:	asm
+	$(BASEBOL) -u A -1=asm -2=asm.spt pp.sbl
 
-gas.spt:	asm.sbl
-	$(BASEBOL) -u G -1=asm.sbl -2=gas.spt pp.sbl
+gas.spt:	asm
+	$(BASEBOL) -u G -1=asm -2=gas.spt pp.sbl
 
 bootbol: 
 # bootbol is for bootstrapping just link with what's at hand

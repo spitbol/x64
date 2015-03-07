@@ -2008,9 +2008,14 @@ g.dvr
 	op('lea',reg.w0,getadr(i1))
 .fi
 .if G
-	op('mov','m(reg_w0)',getadr(iarg))
+*  getadr returns ea in w0
+*	it_suspend = 1
+	getadr(i1)
+*	it_suspend = 0
 .fi
 	op('call',op_)				:(opdone)
+
+
 g.ngr
 g.atn
 g.chp
