@@ -49,7 +49,6 @@
 	%define m_real	dword	; reference to floating point value in memory
 	%define d_real	dq	; define value for floating point
 
-	%define	IA	ebp
 
 	%define W0	eax
 	%define W1	ebp
@@ -94,7 +93,6 @@
 	%define m_real	qword	; reference to floating point value in memory
 	%define d_real	dq	; define value for floating point
 
-	%define	IA	rbp
 	%define	W0	rax
 	%define W1	rbp
 	%define	WA	rcx
@@ -179,18 +177,18 @@
 	%define	polct		_polct
 	%define	r_fcb		_r_fcb
 	%define	reg_block	_reg_block
-	%define	reg_cp		_reg_cp
-	%define	reg_xl		_reg_xl
-	%define	reg_xr		_reg_xr
-	%define	reg_xs		_reg_xs
-	%define	reg_w0		_reg_w0
-	%define	reg_wa		_reg_wa
-	%define	reg_wb		_reg_wb
-	%define	reg_wc		_reg_wc
-	%define	reg_ia		_reg_ia
-	%define	reg_fl		_reg_fl
-	%define	reg_ra		_reg_ra
-	%define	reg_rp		_reg_rp
+;	%define	reg_cp		_reg_cp
+;	%define	reg_xl		_reg_xl
+;	%define	reg_xr		_reg_xr
+;	%define	reg_xs		_reg_xs
+;	%define	reg_w0		_reg_w0
+;	%define	reg_wa		_reg_wa
+;	%define	reg_wb		_reg_wb
+;	%define	reg_wc		_reg_wc
+;	%define	reg_ia		_reg_ia
+;	%define	reg_fl		_reg_fl
+;	%define	reg_ra		_reg_ra
+;	%define	reg_rp		_reg_rp
 	%define	reg_size	_reg_size
 	%define	restart		_restart
 	%define	s_aaa		_s_aaa
@@ -414,108 +412,6 @@ calltab:
 	global	w_yyy
 	global	end_min_data
 
-	%macro	adi_	1
-	add	IA,%1
-	seto	byte [reg_fl]
-	%endmacro
-
-
-	%macro	chk_	0
-	call	chk__
-	%endmacro
-
-	%macro	cvd_	0
-	call	cvd__
-	%endmacro
-
-	%macro	dvi_	1
-	mov	W0,%1
-	call	dvi__
-	%endmacro
-
-	%macro	icp_	0
-	mov	W0,m(reg_cp)
-	add	W0,cfp_b
-	mov	m(reg_cp),W0
-	%endmacro
-
-	%macro	ino_	1
-	mov	al,byte [reg_fl]
-	or	al,al
-	jno	%1
-	%endmacro
-
-	%macro	iov_	1
-	mov	al,byte [reg_fl]
-	or	al,al
-	jo	%1
-	%endmacro
-
-	%macro	ldi_	1
-	mov	IA,%1
-	%endmacro
-
-	%macro	mli_	1
-	imul	IA,%1
-	seto	byte [reg_fl]
-	%endmacro
-
-	%macro	ngi_	0
-	neg	IA
-	seto	byte [reg_fl]
-	%endmacro
-
-	%macro	rmi_	1
-	mov	W0,%1
-	call	rmi__
-	%endmacro
-
-	%macro	rti_	0
-	mov	IA,m(reg_ia)
-	%endmacro
-
-	%macro	sbi_	1
-	sub	IA,%1
-	mov	W0,0
-	seto	byte [reg_fl]
-	%endmacro
-
-	%macro	sti_	1
-	mov	%1,IA
-	%endmacro
-
-	%macro	lcp_	1
-	mov	W0,%1
-	mov	m_word [reg_cp],W0
-	%endmacro
-
-	%macro	lcw_	1
-	mov	W0,m_word [reg_cp]		; load address of code word
-	mov	W0,m_word [W0]			; load code word
-	mov	%1,W0
-	mov	W0,m_word [reg_cp]		; load address of code word
-	add	W0,cfp_b
-	mov	m_word [reg_cp],W0
-	%endmacro
-
-	%macro	rno_	1
-	mov	al,byte [reg_fl]
-	or	al,al
-	je	%1
-	%endmacro
-
-	%macro	rov_	1
-	mov	al,byte [reg_fl]
-	or	al,al
-	jne	%1
-	%endmacro
-
-	%macro	scp_	1
-	mov	W0,m_word [reg_cp]
-	mov	%1,W0
-	%endmacro
-
-
 %ifdef	unix_32
 	%define	cfp_b	4
 	%define	cfp_c	4
@@ -671,7 +567,7 @@ reg_xs:	d_word	0		; minimal stack pointer
 
 ;	r_size  equ       $-reg_block
 ; use computed value for nasm conversion, put back proper code later
-r_size	equ	10*cfp_b
+r_size	equ	16*cfp_b
 reg_size:	dd   r_size
 
 ; end of words saved during exit(-3)
@@ -827,7 +723,6 @@ call_adr:	d_word	0
 ;
 	global	save_regs
 save_regs:
-	mov	m(save_ia),IA
 	mov	m(save_xl),XL
 	mov	m(save_xr),XR
 	mov	m(save_wa),WA
@@ -838,7 +733,6 @@ save_regs:
 	global	restore_regs
 restore_regs:
 	;	restore regs, except for sp. that is caller's responsibility
-	mov	IA,m(save_ia)
 	mov	XL,m(save_xl)
 	mov	XR,m(save_xr)
 	mov	WA,m(save_wa)
@@ -1030,6 +924,7 @@ minimal:
 ;                    ...        ...
 
 
+%ifdef	OLD
 	global	get_ia
 get_ia:
 	mov	W0,IA
@@ -1038,7 +933,7 @@ get_ia:
 	global	set_ia_
 set_ia_:	mov	IA,m_word[reg_w0]
 	ret
-
+%endif
 syscall_init:
 ;       save registers in global variables
 
@@ -1047,7 +942,6 @@ syscall_init:
 	mov     m(reg_wc),WC      ; (also _reg_ia)
 	mov	m(reg_xr),XR
 	mov	m(reg_xl),XL
-	mov	m(reg_ia),IA
 	ret
 
 syscall_exit:
@@ -1239,6 +1133,103 @@ sysxi:	mov	m(reg_xs),XS
 	add	XS,%2		; pop arguments
 	%endmacro
 
+	%macro	chk_	0
+	call	chk__
+	%endmacro
+
+	%macro	adi_	0
+	add	m(reg_ia),W0
+	seto	byte [reg_fl]
+	%endmacro
+
+	%macro	dvi_	0
+	mov	m(reg_w0),W0
+	call	dvi__
+	%endmacro
+
+	%macro	ldi_	1
+	mov	W0,%1
+	mov	m(reg_ia),W0
+	%endmacro
+
+	%macro	mli_	0
+	imul	m(reg_ia)
+	seto	byte [reg_fl]
+	%endmacro
+
+	%macro	ngi_	0
+	neg	m(reg_ia)
+	seto	byte [reg_fl]
+	%endmacro
+
+	%macro	rmi_	0
+	call	rmi__
+	%endmacro
+
+	%macro	cvd_	0
+	call	cvd__
+	%endmacro
+
+	%macro	ino_	1
+	mov	al,byte [reg_fl]
+	or	al,al
+	jno	%1
+	%endmacro
+
+	%macro	iov_	1
+	mov	al,byte [reg_fl]
+	or	al,al
+	jo	%1
+	%endmacro
+
+	%macro	rno_	1
+	mov	al,byte [reg_fl]
+	or	al,al
+	je	%1
+	%endmacro
+
+	%macro	rov_	1
+	mov	al,byte [reg_fl]
+	or	al,al
+	jne	%1
+	%endmacro
+
+	%macro	sbi_	0
+	sub	m(reg_ia),W0
+	seto	byte [reg_fl]
+	%endmacro
+
+	%macro	sti_	1
+	mov	W0,m(reg_ia)
+	mov	%1,W0
+	%endmacro
+
+	%macro	icp_	0
+	mov	W0,m(reg_cp)
+	add	W0,cfp_b
+	mov	m(reg_cp),W0
+	%endmacro
+
+	%macro	lcp_	1
+	mov	W0,%1
+	mov	m_word [reg_cp],W0
+	%endmacro
+
+	%macro	lcw_	1
+	mov	W0,m_word [reg_cp]		; load address of code word
+	push	W0
+	mov	W0,m_word [W0]			; load code word
+	mov	%1,W0
+	pop	W0 				; load address of code word
+	add	W0,cfp_b
+	mov	m_word [reg_cp],W0
+	%endmacro
+
+	%macro	scp_	1
+	mov	W0,m_word [reg_cp]
+	mov	%1,W0
+	%endmacro
+
 ;	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
 ;	placed in W0, which is then sign extended into wc:W0. after the divide, W0 contains the
 ;	quotient, wc contains the remainder.
@@ -1251,59 +1242,102 @@ sysxi:	mov	m(reg_xs),XS
 	global	cvd__
 cvd__:
 	extern	i_cvd
-	mov	m(reg_ia),IA
 	mov	m(reg_wa),WA
 	call	i_cvd
-	mov	IA,m(reg_ia)
 	mov	WA,m(reg_wa)
 	ret
 
-
-;       dvi__ - divide ia (edx) by long in W0
+;       dvi__ - divide ia (edx) by long in w0
 	global	dvi__
 dvi__:
 	extern	i_dvi
 	mov	m(reg_w0),W0
 	call	i_dvi
-	mov	IA,m(reg_ia)
 	mov	al,byte [rel reg_fl]
 	or	al,al
 	ret
 
 	global	rmi__
-;       rmi__ - remainder of ia (edx) divided by long in W0
+;       rmi__ - remainder of ia (edx) divided by long in w0
 rmi__:
 	jmp	ocode
 	extern	i_rmi
 	mov	m(reg_w0),W0
 	call	i_rmi
-	mov	IA,m(reg_ia)
 	mov	al,byte [rel reg_fl]
 	or	al,al
 	ret
 
 ocode:
-        or      W0,W0         	; test for 0
-        jz      setovr    	; jump if 0 divisor
-        xchg    W0,IA         	; ia to W0, divisor to ia
-        cdq                     ; extend dividend
-        idiv    IA              ; perform division. W0=quotient, wc=remainder
+        or      W0,W0		; test for 0
+        jz      setovr		; jump if 0 divisor
+        xchg    W0,m(reg_ia)	; ia to w0, divisor to ia
+        cdq			; extend dividend
+        idiv    m(reg_ia)	; perform division. w0=quotient, wc=remainder
 	seto	byte [rel reg_fl]
-	mov	IA,WC
+	mov	m(reg_ia),WC
 	ret
 
 setovr: mov     al,1		; set overflow indicator
 	mov	byte [rel reg_fl],al
 	ret
 
-	%macro	real_op 2
+
+	%macro	int_op 2
 	global	%1
 	extern	%2
 %1:
-	mov	m(reg_rp),W0
 	call	%2
 	ret
 %endmacro
+
+	int_op itr_,f_itr
+	int_op rti_,f_rti
+
+;	extern	i_ldi
+;	%macro	ldi_	1
+;	mov	W0,%1
+;	mov	m(reg_ia),W0
+;	call	i_ldi
+;	%endmacro
+;
+;	%macro	sti_	1
+;	mov	W0, m(reg_ia)
+;	mov	%1,W0
+;	%endmacro
+;
+;	extern w00
+;	%macro	int_op 2
+;	global	%1
+;	extern	%2
+;%1:
+;	mov	m(reg_w0),W0
+;	call	%2
+;	ret
+;	%endmacro
+;
+;	int_op	adi_,i_adi
+;	int_op	mli_,i_mli
+;	int_op	sbi_,i_sbi
+;	int_op	dvi_,i_dvi
+;	int_op	rmi_,i_rmi
+;	int_op	ngi_,i_ngi	; causes spurious store of W0 that doesn't matter
+;	int_op	itr_,f_itr
+;	int_op	rti_,f_rti
+;%endif
+
+	%macro	osint_call 3
+	global	%1
+	extern	%2
+%1:
+	mov	m_word [%3],W0
+	call	%2
+	ret
+	%endmacro
+
+	%macro	real_op 2
+	osint_call	%1,%2,reg_rp
+	%endmacro
 
 	real_op	ldr_,f_ldr
 	real_op	str_,f_str
@@ -1314,17 +1348,6 @@ setovr: mov     al,1		; set overflow indicator
 	real_op	ngr_,f_ngr
 	real_op cpr_,f_cpr
 
-	%macro	int_op 2
-	global	%1
-	extern	%2
-%1:
-	mov	m(reg_ia),IA
-	call	%2
-	ret
-%endmacro
-
-	int_op itr_,f_itr
-;	int_op rti_,f_rti
 
 	%macro	math_op 2
 	global	%1
@@ -1496,4 +1519,5 @@ it_:
 	%undef		cfp_c
 
 	%include	"s.s"
+
 

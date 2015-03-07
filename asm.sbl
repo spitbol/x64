@@ -1955,26 +1955,24 @@ g.scp
 
 g.icp
 	op(op_)					:(opdone)
-.if A
-	op('add',reg.cp,'cfp_b')
-.fi
-.if G
-	op('add','$' cfp_b,reg.cp)
-.fi
-						:(opdone)
-*  integer accumulator kept in wdx (wc)
+*  integer accumulator kept in memory (reg_ia)
 g.ldi
 g.sti
 	op(op_,getarg(i1))			:(opdone)
+
 g.adi
 g.mli
 g.sbi
 g.dvi
-g.rmi
-	op(op_,getarg(i1))			:(opdone)
+	op('mov',reg.w0,getarg(i1))
+	op(op_)					:(opdone)
 
+g.rmi
+	op('mov',reg.w0,getarg(i1))
+*	op('mov',reg.w0,getarg(i1))
+	op(op_)					:(opdone)
 g.ngi
-	op(op_)				:(opdone)
+	op(op_)					:(opdone)
 g.ino
 g.iov
 	op(op_,getarg(i1))			:(opdone)
@@ -1987,20 +1985,15 @@ g.ile	jop = 'jle'				:(op.cmp)
 g.ilt	jop = 'jl'				:(op.cmp)
 g.ine	jop = 'jne'				:(op.cmp)
 op.cmp
-.if A
-	op('sti_',reg.w0)
-.fi
-.if G
-	op('mov',reg.ia,reg.w0)
-.fi
+	op('mov',reg.w0,'m(reg_ia)')
 	op('or',reg.w0,reg.w0)
 	op(jop,getarg(i1))			:(opdone)
 
 *  real operations
 
-g.itr	op('call','itr_')	:(opdone)
+g.itr	op('call',op_)	:(opdone)
 
-g.rti	op('rti_')
+g.rti	op('call',op_)
 	eq(i.type(i1))				:s(opdone)
 *  here if label given, branch if real too large
         op('jc',getarg(i1))                 :(opdone)
@@ -2013,16 +2006,11 @@ g.mlr
 g.dvr
 .if A
 	op('lea',reg.w0,getadr(i1))
-	op('call',op_)
 .fi
 .if G
-*  getadr returns ea in w0
-*	it_suspend = 1
-	getadr(i1)
-	op('call',op_)
-*	it_suspend = 0
+	op('mov','m(reg_w0)',getadr(iarg))
 .fi
-						:(opdone)
+	op('call',op_)				:(opdone)
 g.ngr
 g.atn
 g.chp

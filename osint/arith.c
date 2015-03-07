@@ -29,6 +29,8 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 
+long w00;
+
 // overflow codes
 // OF = 0x80
 // cf = 0x01
@@ -83,7 +85,6 @@ void f_rti() {			// real to integer
 }
 
 
-#include <stdio.h>
 void f_cpr() {
 	if ( reg_ra == 0.0) 
 		reg_fl =  0; 
@@ -96,35 +97,9 @@ void f_cpr() {
 void f_pra () {
 }
 
-#ifdef trace_int
-extern long reg_i1,reg_i2,reg_i3;
-
-void t_ldi() {
+void i_ldi() {
+	reg_ia = reg_w0;
 }
-
-void t_sti() {
-}
-
-void t_adi() {
-}
-
-void t_mli() {
-}
-
-void t_sbi() {
-}
-
-void t_dvi() {
-}
-
-void t_rmi() {
-}
-
-void t_ngi() {
-}
-
-#endif
-
 
 void i_adi() {
 	reg_fl = 0;
