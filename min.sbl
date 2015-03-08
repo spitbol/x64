@@ -127,6 +127,7 @@
         define('genlab(prefix)')
         define('genrip()')
 	define('getreg(iarg)')
+	define('mem(ref)')
 	define('mov(i1,i2)i.src,i.dst,t.src')
 	define('move(dst,src)')
 	define('opds(gopc,gop1,gop2,gop3)txt')
@@ -139,7 +140,7 @@
 	define('getrip(iarg)txt,typ,pre,post,ent,lb,var,reg')
 	define('getval(iarg)txt,typ,pre,post')
 	define('ifreg(iarg)')
-	define('memmem()t')
+	define('memmemm()t')
 	define('outline(txt)')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
@@ -756,6 +757,11 @@ getreg.10	getreg = substr(i.text(iarg),2,2)	:(return)
 
 getreg.11	getreg = substr(i.text(iarg),3,2)	:(return)
 
+-stitl mem(ref)
+mem
+*  invoke macro M to resolve ref at assembly
+	ident(ref) error('null argument to mem')
+	mem = 'Mem(' ref ')'				:(return)
 -stitl mov(i1,i2)i.src,i.dst,t.src
 *   translate 'mov' instruction
 mov
@@ -778,7 +784,7 @@ mov
 	ident(t.src,'(xs)+')			:s(mov.xsp)
 	ident(t.dst,'(xr)+')			:s(mov.xrp)
 	ident(t.dst,'-(xs)')			:s(mov.2)
-	memmem()
+	memmemm()
 	move(getarg(i1),getarg(i2))		:(return)
 mov.xtp
 mov.xlp
@@ -880,10 +886,6 @@ reg.wa
 getarg
 *	imem is null to generate memory reference, otherwise just get
 *	address for use in 'lea' instruction.
-.if A
-	pre = 'm('
-	post = ')'
-.fi
 .if G
 	base = disp = indx = scale =
 
@@ -904,7 +906,7 @@ getarg.c.2 getarg = txt				:(getarg.done)
 getarg.c.3
 getarg.c.4 
 .if A
-	getarg = pre txt post		:(getarg.done)
+	getarg = mem(txt)			:(getarg.done)
 .fi
 .if G
 	disp = txt				:(getarg.mem)
@@ -923,7 +925,7 @@ getarg.c.9
 .if A
 	txt len(1) len(2) . typ
 	typ = regmap[typ]
-	getarg = pre typ post
+	getarg = mem( typ )
 						:(getarg.done)
 .fi
 .if G
@@ -937,9 +939,9 @@ getarg.c.10
 .if A
 	txt = substr(txt,2,2)
 	t1 = regmap[txt]
-	getarg = pre t1 post
+	getarg = mem( t1 )
 	(ident(txt,'xs') genaop(tstmt(,'add',t1,'cfp_b'))) :s(getarg.done)
-	genaop(tstmt(,'lea',t1,'a(' t1 '+cfp_b)')):(getarg.done)
+	genaop(tstmt(,'lea',t1,'Adr(' t1 '+cfp_b)')):(getarg.done)
 .fi
 .if G
 	indx = substr(txt,2,2)
@@ -950,8 +952,8 @@ getarg.c.10
 getarg.c.11
 .if A
 	t1 = regmap[substr(txt,3,2)]
-	getarg = pre t1 post
-	genbop(tstmt(,'lea',t1,'a(' t1 '-cfp_b)')) :(getarg.done)
+	getarg = mem( t1 )
+	genbop(tstmt(,'lea',t1,'Adr(' t1 '-cfp_b)')) :(getarg.done)
 .fi
 .if G
 	indx = substr(txt,3,2)
@@ -964,7 +966,7 @@ getarg.c.12
 getarg.c.13
 .if A
 	txt break('(') . t1 '(' len(2) . t2
-	getarg = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
+	getarg = mem('(cfp_b*' t1 ')+' regmap[t2])
 						:(getarg.done)
 .fi
 .if G
@@ -979,7 +981,7 @@ getarg.c.15
 .if A
 	getarg = ne(rip_mode)	getrip(iarg)		:s(return)
 	txt break('(') . t1 '(' len(2) . t2
-	getarg = pre    t1 '+'  regmap[t2] 	post
+	getarg = mem(    t1 '+'  regmap[t2])
 						:(getarg.done)
 .fi
 .if G
@@ -1052,8 +1054,6 @@ getadr
 *	ops: 3,4,9,12,13,14,15
 *	imem is null to generate memory reference, otherwise just get
 *	address for use in 'lea' instruction.
-	pre = 'a('
-	post = ')'
 .fi
 .if G
 *	similar to getarg, but gets effective address
@@ -1075,7 +1075,7 @@ getadr
 getadr.c.3
 getadr.c.4
 .if A
-	getadr = pre txt post			:(return)
+	getadr = 'Adr(' txt ')'			:(return)
 .fi
 .if G
 						:(getadr.lit)
@@ -1086,7 +1086,7 @@ getadr.c.9
 	txt len(1) len(2) . typ
 .if A
 	typ = regmap[typ]
-	getadr = pre typ post
+	getadr = 'Adr(' typ ')'
 						:(return)
 .fi
 .if G
@@ -1099,7 +1099,7 @@ getadr.c.12
 getadr.c.13
 .if A
 	txt break('(') . t1 '(' len(2) . t2
-	getadr = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
+	getadr = 'Adr('  '(cfp_b*' t1 ')+' regmap[t2]  ')'
 							:(return)
 .fi
 .if G
@@ -1113,7 +1113,7 @@ getadr.c.14
 getadr.c.15
 .if A
 	txt break('(') . t1 '(' len(2) . t2
-	getadr = pre    t1 '+'  regmap[t2] 	post
+	getadr = 'Adr('    t1 '+'  regmap[t2] 	')'
 							:(return)
 .fi
 .if G
@@ -1156,9 +1156,6 @@ getadr.done
 -stitl getrip(iarg)
 getrip
 *  return value suitable for use in rip mode (needed for osx). This requires that we
-*  allocate a variable to hold the address,value. This is loaded into w0
-	pre = 'm('
-	post = ')'
 	txt = i.text(iarg)
 	typ = i.type(iarg)
 	eq(typ)					:f($(ripcase[typ]))
@@ -1168,7 +1165,7 @@ getrip
 getrip.c.14
 getrip.c.15
 	txt break('(') . var '(' len(2) . reg
-*	getrip = pre    var '+'  regmap[t2] 	post
+*	getrip = mem(    var '+'  regmap[t2])
 	getrip = var
 						:(getrip.done)
 *  *dlbl
@@ -1198,7 +1195,7 @@ getrip.done
 	gendir('segment','text')
 getrip.ent
 *	generate reference via w0 if needed
-	op('mov',reg.w0,pre ent post)
+	op('mov',reg.w0,mem(ent))
 	differ(reg)	op('add',reg.w0,reg)
 	getrip = reg.w0
 *	outfile = ne(x_trace) '; getrip ' ent
@@ -1207,8 +1204,6 @@ getrip.ent
 
 -stitl getval(iarg)
 getval
-	pre = 'm('
-	post = ')'
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
@@ -1235,9 +1230,9 @@ getval.c.22
 getval.done
 						:(return)
 
--stitl memmem()t
-memmem
-*  memmem is called for those ops for which both operands may be
+-stitl memmemm()t
+memmemm
+*  memmemm is called for those ops for which both operands may be
 *  in memory, in which case, we generate code to load second operand
 *  to pseudo-register w0, and then modify the second argument
 *  to reference this register
@@ -1367,7 +1362,7 @@ chktrace.1
 	op(D_char,'0');* string terminator
 	gendir('segment','text')
 	op('mov',reg.w0,lbl)
-	op('mov','m(it_de)',reg.w0)
+	op('mov',mem(it_de),reg.w0)
 	op('call','it_')
 	flush()
 	ab_suspend = 0
@@ -1531,7 +1526,7 @@ g.bsw
 * here after default case.
 g.bsw1
 	ne(rip_mode)				:s(g.bsw.2)
-	op('jmp', 'm(' t2 '+' t1 '*cfp_b)' ) :(g.bsw.3)
+	op('jmp', mem( t2 '+' t1 '*cfp_b')) :(g.bsw.3)
 g.bsw.2
 * in rip_mode, need to generate location to reference destination
 	lbl = genrip()
@@ -1540,7 +1535,7 @@ g.bsw.2
 	gendir('segment','text')
 	op('mov',reg.w0,t1)
 	op('sal',reg.w0,'log_cfp_b')
-	op('add',reg.w0,'m(' lbl ')')
+	op('add',reg.w0,mem(lbl))
 	op('jmp', reg.w0)
 g.bsw.3
 	gendir('segment','data')
@@ -1655,7 +1650,7 @@ g.jsr
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
 .if A
-	op('dec','m(' rcode ')')
+	op('dec',mem( rcode ))
 .fi
 .if G
 	op('dec' o_, rcode)
@@ -1693,7 +1688,7 @@ g.ppm.loop.next
 g.ppm.loop
 	lab_next = genlab('ppm')
 .if A
-	op('dec','m(' rcode ')' )
+	op('dec',mem(rcode) )
 .fi
 .if G
 	op('dec' o_,rcode )
@@ -1706,7 +1701,7 @@ g.ppm.loop
 
 g.ppm.loop.err
 .if A
-	op('mov','m(' rcode ')', +t1)
+	op('mov',mem(rcode), +t1)
 .fi
 .if G
 	op('mov' o_,'$' +t1,rcode, )
@@ -1747,7 +1742,7 @@ g.prc.n
 *  store return address in reserved location
 	prc.count = prc.count + 1
 .if A
-	op('pop', 'm(' prcent(prc.count) ')')
+	op('pop', mem(prcent(prc.count)))
 .fi
 .if G
 	op('pop', prcent(prc.count))	:(opdone)
@@ -1760,7 +1755,7 @@ g.exi
  	differ(t2,'n') eq(prc.args)	op('ret')	:s(opdone)
         t3 = ident(t3) '0'
 .if A
-    	op('mov','m('  rcode ')',+t3)
+    	op('mov',mem(rcode),+t3)
 .fi
 .if G
     	op('mov' o_,'$' +t3,rcode)
@@ -1769,7 +1764,7 @@ g.exi
 	op('ret')				:(opdone)
 g.exi.1
 .if A
-	op('mov',reg.w0, 'm( ' prcent(prc.count) ')' )
+	op('mov',reg.w0, mem(prcent(prc.count)))
 	op('jmp',reg.w0)
 .fi
 .if G
@@ -1784,7 +1779,7 @@ g.erb
 	errfile =  i.text(i1) ' ' i.text(i2)
 *	set rcode to error code and branch to error handler
 .if A
-	op('mov', 'm(' rcode ')',  +(i.text(i1)))
+	op('mov', mem(rcode),  +(i.text(i1)))
 .fi
 .if G
 	op('mov' o_,  '$' +(i.text(i1)),rcode)
@@ -1839,10 +1834,10 @@ g.sss
 g.rtn
 	op()					:(opdone)
 
-g.add	memmem()
+g.add	memmemm()
 	opds('add',getarg(i1),getarg(i2))	:(opdone)
 
-g.sub	memmem()
+g.sub	memmemm()
 	opds('sub',getarg(i1),getarg(i2))	:(opdone)
 
 g.ica
@@ -1870,10 +1865,10 @@ g.ble
 g.blo
 g.bhi
 
-*  these operators all have two operands, memmem may apply
+*  these operators all have two operands, memmemm may apply
 *  issue target opcode by table lookup.
 
-	memmem()
+	memmemm()
 .if A
 	t1 = branchtab[incode]
 	op('cmp',getarg(i1),getarg(i2))
@@ -1986,7 +1981,7 @@ g.ile	jop = 'jle'				:(op.cmp)
 g.ilt	jop = 'jl'				:(op.cmp)
 g.ine	jop = 'jne'				:(op.cmp)
 op.cmp
-	op('mov',reg.w0,'m(reg_ia)')
+	op('mov',reg.w0,mem('reg_ia'))
 	op('or',reg.w0,reg.w0)
 	op(jop,getarg(i1))			:(opdone)
 
@@ -2064,7 +2059,7 @@ g.psc
 	t1 = getarg(i1)
 	t2 = i.type(i2)
 	((ifreg(i2), ge(t2,1) le(t2,2))
-+	op('lea',t1,'a(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
++	op('lea',t1,'Adr(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
 	op('add',t1,'cfp_f')
 	eq(i.type(i2))				:s(opdone)
 
@@ -2080,7 +2075,7 @@ g.plc.1
 	t1 = getarg(i1)
 	t2 = i.type(i2)
 	((ifreg(i2), ge(t2,1) le(t2,2))
-+	op('lea',t1,'a(cfp_f+' t1 '+' 'cfp_b*' getarg(i2) ')')) :s(opdone)
++	op('lea',t1,'Adr(cfp_f+' t1 '+' 'cfp_b*' getarg(i2) ')')) :s(opdone)
 	op('add',t1,'cfp_f')
 	eq(i.type(i2))				:s(opdone)
 
@@ -2215,7 +2210,7 @@ g.ceq
 	op('je',getarg(i3))
 						:(opdone)
 
-g.cne   memmem()
+g.cne   memmemm()
 	op('cmp',getarg(i1),getarg(i2))
 	op('jnz',getarg(i3))
 						:(opdone)
@@ -2484,8 +2479,8 @@ g.mwb
 .if A
 	op('shr',reg.wa,'log_cfp_b')
 	op('std')
-	op('lea',reg.xl,'a(XL-cfp_b)')
-	op('lea',reg.xr,'a(XR-cfp_b)')
+	op('lea',reg.xl,'Adr(XL-cfp_b)')
+	op('lea',reg.xr,'Adr(XR-cfp_b)')
  	genrep('movs_w')
 	op('cld')
 .fi
@@ -2700,13 +2695,13 @@ g.sec.7
 	n1 = max.err + 8
 	opl('err_:')
 .if A
-	outfile = ';sec07:a:' a('m(' rcode ')') ':g:' g('rcode')
+	outfile = ';sec07:a:' a(mem( rcode)) ':g:' g('rcode')
 .fi
 .if G
-	outfile = '#sec07:a:' a('m(' rcode ')') ':g:' g('rcode')
+	outfile = '#sec07:a:' a(mem(rcode)) ':g:' g('rcode')
 .fi
 
-	op('xchg',reg.wa,a('m(' rcode ')') g(rcode))
+	op('xchg',reg.wa,a(mem(rcode)) g(rcode))
 						:(opdone)
 
 
