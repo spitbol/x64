@@ -17,12 +17,20 @@
 ;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 ;
 .if A
+	%macro	Add	2
+		add	%1,%2
+	%endmacro
+
 	%macro	Align	1
 		align	%1
 	%endmacro
 
 	%macro	Data	0
 		section	.data
+	%endmacro
+
+	%macro	Equ	2
+%1:	equ	%2
 	%endmacro
 
 	%macro Extern	1
@@ -41,17 +49,29 @@
 		Mov	%1,%2
 	%endmacro
 
+	%macro	Sub	2
+		sub	%1,%2
+	%endmacro
+
 	%macro	Text 0
 		section	.text
 	%endmacro
 .fi
 .if G
+	.macro	Add	dst,src
+		add	\src,\dst
+	.endm
+
 	.macro	Align	bytes
 		.align	\bytes
 	.endm
 
 	.macro	Data
 		.data
+	.endm
+
+	.macro	Equ	name,value
+	.set	\name,\value
 	.endm
 
 	.macro	Extern	name
@@ -67,6 +87,10 @@
 	.endm
 	.macro	Mov	dst,src
 		Mov	%src,%dst
+	.endm
+
+	.macro	Sub	dst,src
+		sub	\src,\dst
 	.endm
 
 	.macro	Text
@@ -271,22 +295,22 @@
 
 ;	values below must agree with calltab defined in x32.hdr and also in osint/osint.h
 
-minimal_relaj	equ	0
-minimal_relcr	equ	1
-minimal_reloc	equ	2
-minimal_alloc	equ	3
-minimal_alocs	equ	4
-minimal_alost	equ	5
-minimal_blkln	equ	6
-minimal_insta	equ	7
-minimal_rstrt	equ	8
-minimal_start	equ	9
-minimal_filnm	equ	10
-minimal_dtype	equ	11
-minimal_enevs	equ	10
-minimal_engts	equ	12
+	Equ	minimal_relaj,0
+	Equ	minimal_relcr,1
+	Equ	minimal_reloc,2
+	Equ	minimal_alloc,3
+	Equ	minimal_alocs,4
+	Equ	minimal_alost,5
+	Equ	minimal_blkln,6
+	Equ	minimal_insta,7
+	Equ	minimal_rstrt,8
+	Equ	minimal_start,9
+	Equ	minimal_filnm,10
+	Equ	minimal_dtype,11
+	Equ	minimal_enevs,10
+	Equ	minimal_engts,12
 
-%define globals 1                       ;asm globals defined here
+	Equ	globals,1                       
 
 
 %ifdef osx
@@ -876,9 +900,9 @@ startup:
 stackinit:
 	Mov	W0,XS
 	Mov	m(compsp),W0	; save minimal's stack pointer
-	sub	W0,m(stacksiz)	; end of minimal stack is where c stack will start
+	Sub	W0,m(stacksiz)	; end of minimal stack is where c stack will start
 	Mov	m(osisp),W0	; save new c stack pointer
-	add	W0,cfp_b*100		; 100 words smaller for chk
+	Add	W0,cfp_b*100		; 100 words smaller for chk
 	Mov	m(spmin),W0
 	ret
 
@@ -1190,7 +1214,7 @@ sysxi:	Mov	m(reg_xs),XS
 	%macro	callext	2
 	Extern	%1
 	call	%1
-	add	XS,%2		; pop arguments
+	Add	XS,%2		; pop arguments
 	%endmacro
 
 	%macro	chk_	0
@@ -1198,7 +1222,7 @@ sysxi:	Mov	m(reg_xs),XS
 	%endmacro
 
 	%macro	adi_	0
-	add	m(reg_ia),W0
+	Add	m(reg_ia),W0
 	seto	byte [reg_fl]
 	%endmacro
 
@@ -1255,7 +1279,7 @@ sysxi:	Mov	m(reg_xs),XS
 	%endmacro
 
 	%macro	sbi_	0
-	sub	m(reg_ia),W0
+	Sub	m(reg_ia),W0
 	seto	byte [reg_fl]
 	%endmacro
 
@@ -1266,7 +1290,7 @@ sysxi:	Mov	m(reg_xs),XS
 
 	%macro	icp_	0
 	Mov	W0,m(reg_cp)
-	add	W0,cfp_b
+	Add	W0,cfp_b
 	Mov	m(reg_cp),W0
 	%endmacro
 
@@ -1281,7 +1305,7 @@ sysxi:	Mov	m(reg_xs),XS
 	Mov	W0,m_word [W0]			; load code word
 	Mov	%1,W0
 	pop	W0 				; load address of code word
-	add	W0,cfp_b
+	Add	W0,cfp_b
 	Mov	m_word [reg_cp],W0
 	%endmacro
 
@@ -1432,14 +1456,14 @@ setovr:
 ovr_:
 	Mov	ax, word [ rel reg_ra+6]	; get top 2 bytes
 	and	ax, 0x7ff0             	; check for infinity or nan
-	add	ax, 0x10               	; set/clear overflow accordingly
+	Add	ax, 0x10               	; set/clear overflow accordingly
 	ret
 
 	Global	get_fp			; get frame pointer
 
 get_fp:
 	Mov	W0,m(reg_xs)     ; minimal's xs
-	add	W0,4           	; pop return from call to sysbx or sysxi
+	Add	W0,4           	; pop return from call to sysbx or sysxi
 	ret                    	; done
 
 	Extern	rereloc
@@ -1459,7 +1483,7 @@ restart:
 	pop	W0                     	; discard dummy
 	pop	W0                     	; get lowest legal stack value
 
-	add	W0,m(stacksiz)  	; top of compiler's stack
+	Add	W0,m(stacksiz)  	; top of compiler's stack
 	Mov	XS,W0                 	; switch to this stack
 	call	stackinit               ; initialize minimal stack
 
@@ -1467,11 +1491,11 @@ restart:
 	lea	W0,[rel tscblk+scstr]       ; top of saved stack
 	Mov	WB,m(lmodstk)    	; bottom of saved stack
 	Mov	WA,m(stbas)      ; wa = stbas from exit() time
-	sub	WB,W0                 	; wb = size of saved stack
+	Sub	WB,W0                 	; wb = size of saved stack
 	Mov	WC,WA
-	sub	WC,WB                 	; wc = stack bottom from exit() time
+	Sub	WC,WB                 	; wc = stack bottom from exit() time
 	Mov	WB,WA
-	sub	WB,XS                 	; wb =  stbas - new stbas
+	Sub	WB,XS                 	; wb =  stbas - new stbas
 
 	Mov	m(stbas),XS       ; save initial sp
 ;	getoff  W0,dffnc               ; get address of ppm offset
@@ -1483,7 +1507,7 @@ restart:
 	lea	XR,[rel tscblk+scstr]      	; -> top word of stack
 	cmp	XL,XR                 	; any stack to transfer?
         je      re3               	;  skip if not
-	sub	XL,4
+	Sub	XL,4
 	std
 re1:
 	lodsd                           ; get old stack word to W0
@@ -1491,7 +1515,7 @@ re1:
 	jb	re2               	;   j. if W0 < wc
 	cmp	W0,WA                 	; above old stack top?
 	ja	re2               	;   j. if W0 > wa
-	sub	W0,WB                 	; within old stack, perform relocation
+	Sub	W0,WB                 	; within old stack, perform relocation
 re2:
 	push	W0                     	; transfer word of stack
 	cmp	XL,XR                 	; if not at end of relocation then
@@ -1501,7 +1525,7 @@ re3:	cld
 	Mov	m(compsp),XS     	; save compiler's stack pointer
 	Mov	XS,m(osisp)      	; back to osint's stack pointer
 	call	rereloc               	; relocate compiler pointers into stack
-Mov	W0,m(statb)      	; start of static region to xr
+	Mov	W0,m(statb)      	; start of static region to xr
 	Mov	m(reg_xr),W0
 	Mov	W0,minimal_insta
 	call	minimal			; initialize static region
@@ -1557,7 +1581,7 @@ re4:	Mov	W0,m(stbas)
 	push	m(outptr)        	; swcoup(outptr)
 	Extern 	swcoup
 	call	swcoup
-	add	XS,cfp_b
+	Add	XS,cfp_b
 
 ;	jump to minimal code to restart a save file.
 
