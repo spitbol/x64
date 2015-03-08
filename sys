@@ -29,10 +29,6 @@
 		section	.data
 	%endmacro
 
-	%macro	Equ	2
-%1:	equ	%2
-	%endmacro
-
 	%macro Extern	1
 		extern	%1
 	%endmacro
@@ -43,6 +39,10 @@
 	
 	%macro	Include	1
 		%include	%1
+	%endmacro
+
+	%macro	MinEqu	2
+%1:	equ	%2
 	%endmacro
 
 	%macro	Mov	2
@@ -70,10 +70,6 @@
 		.data
 	.endm
 
-	.macro	Equ	name,value
-	.set	\name,\value
-	.endm
-
 	.macro	Extern	name
 		.extern	\name
 	.endm
@@ -85,6 +81,11 @@
 	.macro	Include	file
 		.include	\file
 	.endm
+
+	.macro	MinEqu	name,value
+	.set	\name,\value
+	.endm
+
 	.macro	Mov	dst,src
 		Mov	%src,%dst
 	.endm
@@ -295,22 +296,22 @@
 
 ;	values below must agree with calltab defined in x32.hdr and also in osint/osint.h
 
-	Equ	minimal_relaj,0
-	Equ	minimal_relcr,1
-	Equ	minimal_reloc,2
-	Equ	minimal_alloc,3
-	Equ	minimal_alocs,4
-	Equ	minimal_alost,5
-	Equ	minimal_blkln,6
-	Equ	minimal_insta,7
-	Equ	minimal_rstrt,8
-	Equ	minimal_start,9
-	Equ	minimal_filnm,10
-	Equ	minimal_dtype,11
-	Equ	minimal_enevs,10
-	Equ	minimal_engts,12
+	MinEqu	minimal_relaj,0
+	MinEqu	minimal_relcr,1
+	MinEqu	minimal_reloc,2
+	MinEqu	minimal_alloc,3
+	MinEqu	minimal_alocs,4
+	MinEqu	minimal_alost,5
+	MinEqu	minimal_blkln,6
+	MinEqu	minimal_insta,7
+	MinEqu	minimal_rstrt,8
+	MinEqu	minimal_start,9
+	MinEqu	minimal_filnm,10
+	MinEqu	minimal_dtype,11
+	MinEqu	minimal_enevs,10
+	MinEqu	minimal_engts,12
 
-	Equ	globals,1                       
+	MinEqu	globals,1                       
 
 
 %ifdef osx
@@ -842,30 +843,30 @@ restore_regs:
 ;   the order of entries here must correspond to the order of
 ;   calltab entries in the inter assembly language module.
 
-calltab_relaj equ   0
-calltab_relcr equ   1
-calltab_reloc equ   2
-calltab_alloc equ   3
-calltab_alocs equ   4
-calltab_alost equ   5
-calltab_blkln equ   6
-calltab_insta equ   7
-calltab_rstrt equ   8
-calltab_start equ   9
-calltab_filnm equ   10
-calltab_dtype equ   11
-calltab_enevs equ   12
-calltab_engts equ   13
+	MinEqu	calltab_relaj,0
+	MinEqu	calltab_relcr,1
+	MinEqu	calltab_reloc,2
+	MinEqu	calltab_alloc,3
+	MinEqu	calltab_alocs,4
+	MinEqu	calltab_alost,5
+	MinEqu	calltab_blkln,6
+	MinEqu	calltab_insta,7
+	MinEqu	calltab_rstrt,8
+	MinEqu	calltab_start,9
+	MinEqu	calltab_filnm,10
+	MinEqu	calltab_dtype,11
+	MinEqu	calltab_enevs,12
+	MinEqu	calltab_engts,13
 
 
 startup:
-	pop     W0			; discard return
+	pop	W0			; discard return
 	call	stackinit		; initialize minimal stack
 	Mov	W0,m(compsp)	; get minimal's stack pointer
 	Mov m(reg_wa),W0		; startup stack pointer
 
 	cld				; default to up direction for string ops
-;        getoff  W0,dffnc               # get address of ppm offset
+;	getoff  W0,dffnc               # get address of ppm offset
 	Mov	m(ppoff),W0	; save for use later
 
 	Mov	XS,m(osisp)	; switch to new c stack
@@ -917,22 +918,22 @@ chk.oflo:
 	inc	W0			; make nonzero to indicate stack overfloW0
 	ret
 
-;       mimimal -- call minimal function from c
+;	mimimal -- call minimal function from c
 
-;       usage:  extern void minimal(word callno)
+;	usage:  extern void minimal(word callno)
 
-;       where:
-;         callno is an ordinal defined in osint.h, osint.inc, and calltab.
+;	where:
+;	callno is an ordinal defined in osint.h, osint.inc, and calltab.
 
-;       minimal registers wa, wb, wc, xr, and xl are loaded and
-;       saved from/to the register block.
+;	minimal registers wa, wb, wc, xr, and xl are loaded and
+;	saved from/to the register block.
 
-;       note that before restart is called, we do not yet have compiler
-;       stack to switch to.  in that case, just make the call on the
-;       the osint stack.
+;	note that before restart is called, we do not yet have compiler
+;	stack to switch to.  in that case, just make the call on the
+;	the osint stack.
 
 minimal:
-;         pushad			; save all registers for c
+;	pushad			; save all registers for c
 	Mov	WA,m(reg_wa)	; restore registers
 	Mov	WB,m(reg_wb)
 	Mov	WC,m(reg_wc)	;
@@ -960,52 +961,52 @@ minimal:
 
 
 
-;       interface routines
+;	interface routines
+	
+;	each interface routine takes the following form:
 
-;       each interface routine takes the following form:
-
-;               sysxx:   
+;	sysxx:   
 ;			call    ccaller ; call common interface
 ;                     	d_word    zysxx   ; dd      of c osint function
 ;                       db      n       ; offset to instruction after
 ;                                       ;   last procedure exit
 
-;       in an effort to achieve portability of c osint functions, we
-;       do not take take advantage of any "internal" to "external"
-;       transformation of names by c compilers.  so, a c osint function
-;       representing sysxx is named _zysxx.  this renaming should satisfy
-;       all c compilers.
+;	in an effort to achieve portability of c osint functions, we
+;	do not take take advantage of any "internal" to "external"
+;	transformation of names by c compilers.  so, a c osint function
+;	representing sysxx is named _zysxx.  this renaming should satisfy
+;	all c compilers.
 
-;       important  one interface routine, sysfc, is passed arguments on
-;       the stack.  these items are removed from the stack before calling
-;       ccaller, as they are not needed by this implementation.
+;	important  one interface routine, sysfc, is passed arguments on
+;	the stack.  these items are removed from the stack before calling
+;	ccaller, as they are not needed by this implementation.
 
-;       ccaller is called by the os interface routines to call the
-;       real c os interface function.
+;	ccaller is called by the os interface routines to call the
+;	real c os interface function.
 
-;       general calling sequence is
+;	general calling sequence is
 
 ;               call    ccaller
 ;             d_word    address_of_c_function
 ;               db      2*number_of_exit_points
 
-;       control is never returned to a interface routine.  instead, control
-;       is returned to the compiler (the caller of the interface routine).
+;	control is never returned to a interface routine.  instead, control
+;	is returned to the compiler (the caller of the interface routine).
 
-;       the c function that is called must always return an integer
-;       indicating the procedure exit to take or that a normal return
-;       is to be performed.
+;	the c function that is called must always return an integer
+;	indicating the procedure exit to take or that a normal return
+;	is to be performed.
 
-;               c function      interpretation
-;               return value
-;               ------------    -------------------------------------------
-;                    <0         do normal return to instruction past
-;                               last procedure exit (distance passed
-;                               in by dummy routine and saved on stack)
-;                     0         take procedure exit 1
-;                     4         take procedure exit 2
-;                     8         take procedure exit 3
-;                    ...        ...
+;	c function      interpretation
+;	return value
+;	------------    -------------------------------------------
+;	<0         do normal return to instruction past
+;	last procedure exit (distance passed
+;	in by dummy routine and saved on stack)
+;	0         take procedure exit 1
+;	4         take procedure exit 2
+;	8         take procedure exit 3
+;	...        ...
 
 
 %ifdef	OLD
@@ -1019,7 +1020,7 @@ set_ia_:	Mov	IA,m_word[reg_w0]
 	ret
 %endif
 syscall_init:
-;       save registers in global variables
+;	save registers in global variables
 
 	Mov     m(reg_wa),WA      ; save registers
 	Mov	m(reg_wb),WB
@@ -1030,11 +1031,11 @@ syscall_init:
 
 syscall_exit:
 	Mov	m(_rc_),W0	; save return code from function
-	Mov     m(osisp),XS       ; save osint's stack pointer
-	Mov     XS,m(compsp)      ; restore compiler's stack pointer
-	Mov     WA,m(reg_wa)      ; restore registers
+	Mov	m(osisp),XS	; save osint's stack pointer
+	Mov	XS,m(compsp)	; restore compiler's stack pointer
+	Mov	WA,m(reg_wa)	; restore registers
 	Mov	WB,m(reg_wb)
-	Mov     WC,m(reg_wc)      ;
+	Mov	WC,m(reg_wc)      ;
 	Mov	XR,m(reg_xr)
 	Mov	XL,m(reg_xl)
 	cld
@@ -1042,12 +1043,12 @@ syscall_exit:
 	jmp	W0
 
 	%macro	syscall	2
-	pop     W0			; pop return address
+	pop	W0			; pop return address
 	Mov	m(reg_pc),W0
 	call	syscall_init
-;       save compiler stack and switch to osint stack
-	Mov     m(compsp),XS      ; save compiler's stack pointer
-	Mov     XS,m(osisp)       ; load osint's stack pointer
+;	save compiler stack and switch to osint stack
+	Mov	m(compsp),XS      ; save compiler's stack pointer
+	Mov	XS,m(osisp)       ; load osint's stack pointer
 	call	%1
 	call	syscall_exit
 	%endmacro
@@ -1065,9 +1066,9 @@ sysbs:	syscall	  zysbs,2
 sysbx:	Mov	m(reg_xs),XS
 	syscall	zysbx,2
 
-;        global syscr
+;	global syscr
 ;	Extern	zyscr
-;syscr:  syscall    zyscr ;    ,0
+;syscr:	syscall	zyscr ;    ,0
 
 	Global sysdc
 	Extern	zysdc
@@ -1318,11 +1319,11 @@ sysxi:	Mov	m(reg_xs),XS
 ;	placed in W0, which is then sign extended into wc:W0. after the divide, W0 contains the
 ;	quotient, wc contains the remainder.
 ;
-;       cvd__ - convert by division
+;	cvd__ - convert by division
 ;
-;       input   ia = number <=0 to convert
-;       output  ia / 10
-;               wa ecx) = remainder + '0'
+;	input   ia = number <=0 to convert
+;	output  ia / 10
+;	wa ecx) = remainder + '0'
 	Global	cvd__
 cvd__:
 	Extern	i_cvd
@@ -1331,7 +1332,7 @@ cvd__:
 	Mov	WA,m(reg_wa)
 	ret
 
-;       dvi__ - divide ia (edx) by long in w0
+;	dvi__ - divide ia (edx) by long in w0
 	Global	dvi__
 dvi__:
 	Extern	i_dvi
@@ -1599,11 +1600,8 @@ it_:
 	call	restore_regs
 	popf
 	ret
-	Include	"err.s"
 
 	%undef		cfp_b
 	%undef		cfp_c
-
-	Include	"sbl.s"
 
 

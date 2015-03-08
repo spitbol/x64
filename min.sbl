@@ -2614,13 +2614,8 @@ g.dbc
 	opl(thislabel,d_word,getarg(i1))
 						:(opdone)
 g.equ
-.if A
-	opl(thislabel,'equ',i.text(i1))
-.fi
-.if G
-	op('.set',thislabel,i.text(i1))
-.fi
-						:(opdone)
+	op('MinEqu',thislabel,i.text(i1))	:(opdone)
+
 g.exp
 	ppm_cases[thislabel] = i.text(i1)
 *	gendir('extern',thislabel)

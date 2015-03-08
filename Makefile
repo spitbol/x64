@@ -111,23 +111,27 @@ asm:
 # run lex to get min.lex
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u A pp.sbl <min.sbl >asm.spt 
+	$(BASEBOL) -u A pp.sbl <min.sbl >min-asm.spt 
 # run asm to get .s and .err files
-	$(BASEBOL) -u $(TARGET):$(ITOPT) asm.spt
+	$(BASEBOL) -u $(TARGET):$(ITOPT) min-asm.spt
 # run err 
 	$(BASEBOL) -u $(TARGET)_asm $(ERR)
 # use preprocessor to make version of rewriter for asm
-	$(BASEBOL) -u A pp.sbl <r.sbl >r-asm.sbl
+	$(BASEBOL) -u A pp.sbl <r.sbl >r-asm.spt
 # run preprocessor to get sys for nasm as target
 	$(BASEBOL) -u A pp.sbl <sys >sys.asm.r
 # run asm rewriter r to resolve system dependencies in sys
-	$(BASEBOL) -u $(TARGET) r-asm.sbl <sys.asm.r >sys.asm
+	$(BASEBOL) -u $(TARGET) r-asm.spt <sys.asm.r >sys.s
+# combine sys.s,min.s, and err.s to get sincle assembler source file
+	cat <sys.s >spitbol.s
+	cat <sbl.s >>spitbol.s
+	cat <err.s >>spitbol.s
 # assemble the translated file
-	$(NASM) $(ASMOPTS) -osys.o sys.asm
+	$(NASM) $(ASMOPTS) -ospitbol.o spitbol.s
 # compile osint
 	$(CC)  $(CCOPTS) -c  osint/*.c
 # load objects
-	$(CC) $(LDOPTS)  $(COBJS) sys.o $(LMOPT) -static -ospitbol
+	$(CC) $(LDOPTS)  $(COBJS) spitbol.o $(LMOPT) -static -ospitbol
 
 spitbol-dynamic: $(OBJS) $(AOBJS)
 # link spitbol with dynamic linking
@@ -206,4 +210,4 @@ it-nasm: s-nasm.dic it.sbl
 	$(BASEBOL) -u s-nasm.dic it.sbl <ad >ae
 
 clean:
-	rm -f *.o sbl.err err.s sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol sbl.s s.r sys.asm asm.spt gas.spt tbol*
+	rm -f *.spt *.[ors] tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol 
