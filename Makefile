@@ -116,8 +116,12 @@ asm:
 	$(BASEBOL) -u $(TARGET):$(ITOPT) asm.spt
 # run err 
 	$(BASEBOL) -u $(TARGET)_asm $(ERR)
+# use preprocessor to make version of rewriter for asm
+	$(BASEBOL) -u A pp.sbl <r.sbl >r-asm.sbl
 # run preprocessor to get sys for nasm as target
-	$(BASEBOL) -u A pp.sbl <sys >sys.asm
+	$(BASEBOL) -u A pp.sbl <sys >sys.asm.r
+# run asm rewriter r to resolve system dependencies in sys
+	$(BASEBOL) -u $(TARGET) r-asm.sbl <sys.asm.r >sys.asm
 # assemble the translated file
 	$(NASM) $(ASMOPTS) -osys.o sys.asm
 # compile osint
