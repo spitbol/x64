@@ -29,6 +29,10 @@
 		section	.data
 	%endmacro
 
+	%macro	Equ	2
+%1:	equ	%2
+	%endmacro
+
 	%macro Extern	1
 		extern	%1
 	%endmacro
@@ -39,10 +43,6 @@
 	
 	%macro	Include	1
 		%include	%1
-	%endmacro
-
-	%macro	MinEqu	2
-%1:	equ	%2
 	%endmacro
 
 	%macro	Mov	2
@@ -70,6 +70,10 @@
 		.data
 	.endm
 
+	.macro	Equ	name,value
+	.set	\name,\value
+	.endm
+
 	.macro	Extern	name
 		.extern	\name
 	.endm
@@ -80,10 +84,6 @@
 
 	.macro	Include	file
 		.include	\file
-	.endm
-
-	.macro	MinEqu	name,value
-	.set	\name,\value
 	.endm
 
 	.macro	Mov	dst,src
@@ -296,22 +296,22 @@
 
 ;	values below must agree with calltab defined in x32.hdr and also in osint/osint.h
 
-	MinEqu	minimal_relaj,0
-	MinEqu	minimal_relcr,1
-	MinEqu	minimal_reloc,2
-	MinEqu	minimal_alloc,3
-	MinEqu	minimal_alocs,4
-	MinEqu	minimal_alost,5
-	MinEqu	minimal_blkln,6
-	MinEqu	minimal_insta,7
-	MinEqu	minimal_rstrt,8
-	MinEqu	minimal_start,9
-	MinEqu	minimal_filnm,10
-	MinEqu	minimal_dtype,11
-	MinEqu	minimal_enevs,10
-	MinEqu	minimal_engts,12
+	Equ	minimal_relaj,0
+	Equ	minimal_relcr,1
+	Equ	minimal_reloc,2
+	Equ	minimal_alloc,3
+	Equ	minimal_alocs,4
+	Equ	minimal_alost,5
+	Equ	minimal_blkln,6
+	Equ	minimal_insta,7
+	Equ	minimal_rstrt,8
+	Equ	minimal_start,9
+	Equ	minimal_filnm,10
+	Equ	minimal_dtype,11
+	Equ	minimal_enevs,10
+	Equ	minimal_engts,12
 
-	MinEqu	globals,1                       
+	Equ	globals,1                       
 
 
 %ifdef osx
@@ -843,20 +843,20 @@ restore_regs:
 ;   the order of entries here must correspond to the order of
 ;   calltab entries in the inter assembly language module.
 
-	MinEqu	calltab_relaj,0
-	MinEqu	calltab_relcr,1
-	MinEqu	calltab_reloc,2
-	MinEqu	calltab_alloc,3
-	MinEqu	calltab_alocs,4
-	MinEqu	calltab_alost,5
-	MinEqu	calltab_blkln,6
-	MinEqu	calltab_insta,7
-	MinEqu	calltab_rstrt,8
-	MinEqu	calltab_start,9
-	MinEqu	calltab_filnm,10
-	MinEqu	calltab_dtype,11
-	MinEqu	calltab_enevs,12
-	MinEqu	calltab_engts,13
+	Equ	calltab_relaj,0
+	Equ	calltab_relcr,1
+	Equ	calltab_reloc,2
+	Equ	calltab_alloc,3
+	Equ	calltab_alocs,4
+	Equ	calltab_alost,5
+	Equ	calltab_blkln,6
+	Equ	calltab_insta,7
+	Equ	calltab_rstrt,8
+	Equ	calltab_start,9
+	Equ	calltab_filnm,10
+	Equ	calltab_dtype,11
+	Equ	calltab_enevs,12
+	Equ	calltab_engts,13
 
 
 startup:
