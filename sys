@@ -36,6 +36,10 @@
 	%macro Extern	1
 		extern	%1
 	%endmacro
+	%macro	Fill	1
+	times	%1 db 0
+	%endmacro
+
 
 	%macro Global	1
 		global	%1
@@ -44,7 +48,6 @@
 	%macro	Include	1
 		%include	%1
 	%endmacro
-
 .fi
 .if G
 	.macro	Add	dst,src
@@ -65,6 +68,10 @@
 
 	.macro	Extern	name
 		.extern	\name
+	.endm
+
+	.macro	Fill	count
+	.fill	\count
 	.endm
 
 	.macro	Global	name
@@ -127,6 +134,7 @@
 %endif
 
 	%define M_char	byte	; reference to byte in memory
+	%define D_byte	db	; define value of byte
 	%define D_char	db	; define value of byte
 
 %if	ws=32
@@ -225,6 +233,7 @@
 
 %endif
 
+.if A
 	%define	W0_L	al
 	%define WA_L	cl
 	%define WB_L    bl
@@ -234,7 +243,7 @@
 	%define	flag_of	0x80
 	%define	flag_cf	0x01
 	%define	flag_ca	0x40
-
+.fi
 	Global	dnamb
 	Global	dname
 	Global	mxint
@@ -262,10 +271,10 @@
 ;%endif
 	Global	start
 
-
+.if A
 	%macro	itz	1
 	Data
-%%desc:	db	%1,0
+%%desc:	D_char	%1,0
 	Text
 	Mov	M_word [it_de],%%desc
 	call	it_
@@ -279,6 +288,7 @@
 	%define	cfp_c	8
 	%define		m64			// make m64 the default
 %endif
+.fi
 
 	Global	reg_block
 	Global	reg_w0
@@ -319,6 +329,7 @@
 	Equ	globals,1                       
 
 
+.if A
 %ifdef osx
 ; redefine symbols needed by C to account for leading _ inserted by C compiler on osx
 	%define	b_icl		_b_icl
@@ -444,6 +455,7 @@
 	%define	zysul		_zysul
 	%define	zysxi		_zysxi
 %endif
+.fi
 
 ;
 ;
@@ -586,7 +598,7 @@ reg_rp:	D_word	0
 
 ; reg_fl is used to communicate condition codes between minimal and c code.
 	Global	reg_fl
-reg_fl:	db	0		; condition code register for numeric operations
+reg_fl:	D_char	0		; condition code register for numeric operations
 
 	Align	8
 ;  constants
@@ -644,7 +656,7 @@ id1:	dd   0
 	D_word       2
 
        D_word       1
-	db  "1x\x00\x00\x00"
+	D_char  "1x\x00\x00\x00"
 %endif
 
 	Global  id1blk
@@ -677,7 +689,12 @@ inpbuf:	D_word	0			; type word
       D_word    0               	; offset to next character to read
       D_word    0               	; file position of buffer
       D_word    0               	; physical position in file
+.if A
 	times   1024 db 0        	; buffer
+.fi
+.if G
+	.fill	1024
+.fi
 
 	Global  ttybuf
 
@@ -688,7 +705,7 @@ ttybuf:	D_word    0     ; type word
 	D_word    0               	; offset to next char to read
 	D_word    0               	; file position of buffer
 	D_word    0               	; physical position in file
-	times   260 db 0         	; buffer
+	Fill   260	         	; buffer
 
 	Global	spmin
 
@@ -700,7 +717,7 @@ spmin.a:	D_word	spmin
 
 	Global	cprtmsg
 cprtmsg:
-	db          ' copyright 1987-2012 robert b. k. dewar and mark emmer.',0,0
+	D_char          ' copyright 1987-2012 robert b. k. dewar and mark emmer.',0,0
 
 call_adr:	D_word	0
 
@@ -1217,6 +1234,7 @@ sysul:	syscall	zysul,37
 sysxi:	Mov	Mem(reg_xs),XS
 	syscall	zysxi,38
 
+.if A
 	%macro	callext	2
 	Extern	%1
 	call	%1
@@ -1320,6 +1338,112 @@ sysxi:	Mov	Mem(reg_xs),XS
 	Mov	%1,W0
 	%endmacro
 
+.fi
+.if G
+	.macro	callext	name,id
+	Extern	\name
+	call	\name
+	Add	XS,\id		; pop arguments
+	.endm
+
+	.macro	chk_
+	call	chk__
+	.endm
+
+	.macro	adi_
+	Add	Mem(reg_ia),W0
+	seto	byte [reg_fl]
+	.endm
+
+	.macro	dvi_
+	Mov	Mem(reg_w0),W0
+	call	dvi__
+	.endm
+
+	.macro	ldi_	val
+	Mov	W0,\val
+	Mov	Mem(reg_ia),W0
+	.endm
+
+	.macro	mli_
+	imul	Mem(reg_ia)
+	seto	byte [reg_fl]
+	.endm
+
+	.macro	ngi_
+	neg	Mem(reg_ia)
+	seto	byte [reg_fl]
+	.endm
+
+	.macro	rmi_
+	call	rmi__
+	.endm
+
+	.macro	cvd_
+	call	cvd__
+	.endm
+
+	.macro	ino_	lbl
+	Mov	al,byte [reg_fl]
+	or	al,al
+	jno	\lbl
+	.endm
+
+	.macro	iov_	lbl
+	Mov	al,byte [reg_fl]
+	or	al,al
+	jo	\lbl
+	.endm
+
+	.macro	rno_	lbl
+	Mov	al,byte [reg_fl]
+	or	al,al
+	je	\lbl
+	.endm
+
+	.macro	rov_	lbl
+	Mov	al,byte [reg_fl]
+	or	al,al
+	jne	\lbl
+	.endm
+
+	.macro	sbi_
+	Sub	Mem(reg_ia),W0
+	seto	byte [reg_fl]
+	.endm
+
+	.macro	sti_	dst
+	Mov	W0,Mem(reg_ia)
+	Mov	\dst,W0
+	.endm
+
+	.macro	icp_
+	Mov	W0,Mem(reg_cp)
+	Add	W0,cfp_b
+	Mov	Mem(reg_cp),W0
+	.endm
+
+	.macro	lcp_	val
+	Mov	W0,\val
+	Mov	M_word [reg_cp],W0
+	.endm
+
+	.macro	lcw_	val
+	Mov	W0,M_word [reg_cp]		; load address of code word
+	push	W0
+	Mov	W0,M_word [W0]			; load code word
+	Mov	\val,W0
+	pop	W0 				; load address of code word
+	Add	W0,cfp_b
+	Mov	M_word [reg_cp],W0
+	.endm
+
+	.macro	scp_	val
+	Mov	W0,M_word [reg_cp]
+	Mov	\val,W0
+	.endm
+
+.fi
 ;	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
 ;	placed in W0, which is then sign extended into wc:W0. after the divide, W0 contains the
 ;	quotient, wc contains the remainder.
