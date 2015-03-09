@@ -112,15 +112,15 @@ asm:
 # run lex to get min.lex
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u A prep.sbl <min.sbl >min-asm.spt 
+	$(BASEBOL) -u A pre.sbl <min.sbl >min-asm.spt 
 # run asm to get .s and .err files
 	$(BASEBOL) -u $(TARGET):$(ITOPT) min-asm.spt
 # run err 
 	$(BASEBOL) -u $(TARGET)_asm $(ERR)
 # use preprocessor to make version of rewriter for asm
-	$(BASEBOL) -u A prep.sbl <$(DEF) >def-asm.spt
+	$(BASEBOL) -u A pre.sbl <$(DEF) >def-asm.spt
 # run preprocessor to get sys for nasm as target
-	$(BASEBOL) -u A prep.sbl <sys >sys.asm.def
+	$(BASEBOL) -u A pre.sbl <sys >sys.asm.def
 # run asm definer to resolve system dependencies in sys
 	$(BASEBOL) -u $(TARGET) def-asm.spt <sys.asm.def >sys.s
 # combine sys.s,min.s, and err.s to get sincle assembler source file
@@ -143,15 +143,15 @@ gas:
 # run lex to get min.lex
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 # run preprocessor to get gas for ngas as target
-	$(BASEBOL) -u G prep.sbl <min.sbl >min-gas.spt 
+	$(BASEBOL) -u G pre.sbl <min.sbl >min-gas.spt 
 # run gas to get .s and .err files
 	$(BASEBOL) -u $(TARGET):$(ITOPT) min-gas.spt
 # run err 
 	$(BASEBOL) -u $(TARGET)_gas $(ERR)
 # use preprocessor to make version of rewriter for gas
-	$(BASEBOL) -u G prep.sbl <$(DEF) >def-gas.spt
+	$(BASEBOL) -u G pre.sbl <$(DEF) >def-gas.spt
 # run preprocessor to get sys for ngas as target
-	$(BASEBOL) -u G prep.sbl <sys >sys.gas.def
+	$(BASEBOL) -u G pre.sbl <sys >sys.gas.def
 # run gas definer to resolve system dependencies in sys
 	$(BASEBOL) -u $(TARGET) def-gas.spt <sys.gas.def >sys.s
 # combine sys.s,min.s, and err.s to get sincle assembler source file
@@ -171,7 +171,7 @@ ogas:
 # link gasbol with static linking
 
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u G prep.sbl <asm.r >gas.spt 
+	$(BASEBOL) -u G pre.sbl <asm.r >gas.spt 
 # run lex to get s.lex
 	$(BASEBOL) -u $(TARGET)_$(GAS) $(LEX)
 # run gas to get .s and .err files
@@ -194,10 +194,10 @@ gasbol-dynamic: $(OBJS) $(GOBJS) $(GOBJS)
 	$(CC) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT)  -ogasbol 
 
 asm.spt:	asm
-	$(BASEBOL) -u A -1=asm -2=asm.spt prep.sbl
+	$(BASEBOL) -u A -1=asm -2=asm.spt pre.sbl
 
 gas.spt:	asm
-	$(BASEBOL) -u G -1=asm -2=gas.spt prep.sbl
+	$(BASEBOL) -u G -1=asm -2=gas.spt pre.sbl
 
 bootbol: 
 # bootbol is for bootstrapping just link with what's at hand
