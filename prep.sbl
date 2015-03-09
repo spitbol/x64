@@ -1,4 +1,4 @@
-* simple pre-processor
+* prep - simple pre-processor 
 	version = (differ(host(0)) host(0), 'A')
 	&anchor = &trim = 1
 	&dump = 3

@@ -111,15 +111,15 @@ asm:
 # run lex to get min.lex
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u A pp.sbl <min.sbl >min-asm.spt 
+	$(BASEBOL) -u A prep.sbl <min.sbl >min-asm.spt 
 # run asm to get .s and .err files
 	$(BASEBOL) -u $(TARGET):$(ITOPT) min-asm.spt
 # run err 
 	$(BASEBOL) -u $(TARGET)_asm $(ERR)
 # use preprocessor to make version of rewriter for asm
-	$(BASEBOL) -u A pp.sbl <r.sbl >r-asm.spt
+	$(BASEBOL) -u A prep.sbl <r.sbl >r-asm.spt
 # run preprocessor to get sys for nasm as target
-	$(BASEBOL) -u A pp.sbl <sys >sys.asm.r
+	$(BASEBOL) -u A prep.sbl <sys >sys.asm.r
 # run asm rewriter r to resolve system dependencies in sys
 	$(BASEBOL) -u $(TARGET) r-asm.spt <sys.asm.r >sys.s
 # combine sys.s,min.s, and err.s to get sincle assembler source file
@@ -137,12 +137,40 @@ spitbol-dynamic: $(OBJS) $(AOBJS)
 # link spitbol with dynamic linking
 	$(CC) $(LDOPTS) $(OBJS) $(AOBJS) $(LMOPT)  -ospitbol 
 
-gas: 
+gas:
+
+# run lex to get min.lex
+	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
+# run preprocessor to get gas for ngas as target
+	$(BASEBOL) -u G prep.sbl <min.sbl >min-gas.spt 
+# run gas to get .s and .err files
+	$(BASEBOL) -u $(TARGET):$(ITOPT) min-gas.spt
+# run err 
+	$(BASEBOL) -u $(TARGET)_gas $(ERR)
+# use preprocessor to make version of rewriter for gas
+	$(BASEBOL) -u G prep.sbl <r.sbl >r-gas.spt
+# run preprocessor to get sys for ngas as target
+	$(BASEBOL) -u G prep.sbl <sys >sys.gas.r
+# run gas rewriter r to resolve system dependencies in sys
+	$(BASEBOL) -u $(TARGET) r-gas.spt <sys.gas.r >sys.s
+# combine sys.s,min.s, and err.s to get sincle assembler source file
+	cat <sys.s >spitbol.s
+	cat <sbl.s >>spitbol.s
+	cat <err.s >>spitbol.s
+# assemble the translated file
+	$(NASM) $(ASMOPTS) -ogasbol.o spitbol.s
+# compile osint
+	$(CC)  $(CCOPTS) -c  osint/*.c
+# load objects
+	$(CC) $(LDOPTS)  $(COBJS) gasbol.o $(LMOPT) -static -ogasbol
+
+
+ogas: 
 # build gasbol, the asm variant  targeting gas format assembler
 # link gasbol with static linking
 
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u G pp.sbl <asm.r >gas.spt 
+	$(BASEBOL) -u G prep.sbl <asm.r >gas.spt 
 # run lex to get s.lex
 	$(BASEBOL) -u $(TARGET)_$(GAS) $(LEX)
 # run gas to get .s and .err files
@@ -165,10 +193,10 @@ gasbol-dynamic: $(OBJS) $(GOBJS) $(GOBJS)
 	$(CC) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT)  -ogasbol 
 
 asm.spt:	asm
-	$(BASEBOL) -u A -1=asm -2=asm.spt pp.sbl
+	$(BASEBOL) -u A -1=asm -2=asm.spt prep.sbl
 
 gas.spt:	asm
-	$(BASEBOL) -u G -1=asm -2=gas.spt pp.sbl
+	$(BASEBOL) -u G -1=asm -2=gas.spt prep.sbl
 
 bootbol: 
 # bootbol is for bootstrapping just link with what's at hand
