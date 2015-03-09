@@ -68,8 +68,9 @@ ASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
 endif
 
 # tools for processing Minimal source file.
-LEX=lex.sbl
+DEF=def.sbl
 ERR=err.sbl
+LEX=lex.sbl
 MIN=min.sbl
 
 # implicit rule for building objects from C files.
@@ -117,11 +118,11 @@ asm:
 # run err 
 	$(BASEBOL) -u $(TARGET)_asm $(ERR)
 # use preprocessor to make version of rewriter for asm
-	$(BASEBOL) -u A prep.sbl <r.sbl >r-asm.spt
+	$(BASEBOL) -u A prep.sbl <$(DEF) >def-asm.spt
 # run preprocessor to get sys for nasm as target
-	$(BASEBOL) -u A prep.sbl <sys >sys.asm.r
-# run asm rewriter r to resolve system dependencies in sys
-	$(BASEBOL) -u $(TARGET) r-asm.spt <sys.asm.r >sys.s
+	$(BASEBOL) -u A prep.sbl <sys >sys.asm.def
+# run asm definer to resolve system dependencies in sys
+	$(BASEBOL) -u $(TARGET) def-asm.spt <sys.asm.def >sys.s
 # combine sys.s,min.s, and err.s to get sincle assembler source file
 	cat <sys.s >spitbol.s
 	cat <sbl.s >>spitbol.s
@@ -148,11 +149,11 @@ gas:
 # run err 
 	$(BASEBOL) -u $(TARGET)_gas $(ERR)
 # use preprocessor to make version of rewriter for gas
-	$(BASEBOL) -u G prep.sbl <r.sbl >r-gas.spt
+	$(BASEBOL) -u G prep.sbl <$(DEF) >def-gas.spt
 # run preprocessor to get sys for ngas as target
-	$(BASEBOL) -u G prep.sbl <sys >sys.gas.r
-# run gas rewriter r to resolve system dependencies in sys
-	$(BASEBOL) -u $(TARGET) r-gas.spt <sys.gas.r >sys.s
+	$(BASEBOL) -u G prep.sbl <sys >sys.gas.def
+# run gas definer to resolve system dependencies in sys
+	$(BASEBOL) -u $(TARGET) def-gas.spt <sys.gas.def >sys.s
 # combine sys.s,min.s, and err.s to get sincle assembler source file
 	cat <sys.s >spitbol.s
 	cat <sbl.s >>spitbol.s
@@ -176,11 +177,11 @@ ogas:
 # run gas to get .s and .err files
 	$(BASEBOL) -u $(TARGET):$(ITOPT) gas.spt
 # revise source .s 
-	$(BASEBOL) -u $(TARGET) r.sbl <s.s >s.r
+	$(BASEBOL) -u $(TARGET) def.sbl <s.s >s.r
 # run err 
 	$(BASEBOL) -u $(TARGET)_gas $(ERR)
 # revise gas file
-	$(BASEBOL) -u $(TARGET) r.sbl <gas.gas >gas.r
+	$(BASEBOL) -u $(TARGET) def.sbl <gas.gas >gas.r
 # assemble the .gas file
 	$(GAS) $(GASOPTS) -ogas.o gas.r
 # compile osint

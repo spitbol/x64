@@ -1,4 +1,4 @@
-*	rename registers according to word size
+*	expand symbolic definitions for target environment.
 
 	target = host(0)
 	target break('_') . os "_" rem . ws
