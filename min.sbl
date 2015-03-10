@@ -1195,7 +1195,7 @@ getrip.done
 	gendir('segment','text')
 getrip.ent
 *	generate reference via w0 if needed
-	op('mov',reg.w0,mem(ent))
+	move(reg.w0,mem(ent))
 	differ(reg)	op('add',reg.w0,reg)
 	getrip = reg.w0
 *	outfile = ne(x_trace) '; getrip ' ent
@@ -1533,7 +1533,7 @@ g.bsw.2
         gendir('segment','data')
 	opl(lbl,D_word,t2 )
 	gendir('segment','text')
-	op('mov',reg.w0,t1)
+	move(reg.w0,t1)
 	op('sal',reg.w0,'log_cfp_b')
 	op('add',reg.w0,mem(lbl))
 	op('jmp', reg.w0)
@@ -1763,12 +1763,11 @@ g.exi
 	ident(t2,'n')				:s(g.exi.1)
 	op('ret')				:(opdone)
 g.exi.1
+	move(reg.w0, mem(prcent(prc.count)))
 .if A
-	op('mov',reg.w0, mem(prcent(prc.count)))
 	op('jmp',reg.w0)
 .fi
 .if G
-	op('mov', prcent(prc.count),reg.w0)
 	op('jmp', '*' reg.w0)
 .fi
 						:(opdone)
@@ -1805,7 +1804,7 @@ g.dcv
 
 g.zer
 .if A
-	ident(i.text(i1),'(xr)+') op('mov',reg.w0,'0')
+	ident(i.text(i1),'(xr)+') op('xor',reg.w0,reg.w0)
 +		op('stos_w')			:s(opdone)
 	ifreg(i1)				:s(g.zer1)
 	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
@@ -1960,11 +1959,11 @@ g.adi
 g.mli
 g.sbi
 g.dvi
-	op('mov',reg.w0,getarg(i1))
+	move(reg.w0,getarg(i1))
 	op(op_)					:(opdone)
 
 g.rmi
-	op('mov',reg.w0,getarg(i1))
+	move(reg.w0,getarg(i1))
 *	op('mov',reg.w0,getarg(i1))
 	op(op_)					:(opdone)
 g.ngi
@@ -1981,7 +1980,7 @@ g.ile	jop = 'jle'				:(op.cmp)
 g.ilt	jop = 'jl'				:(op.cmp)
 g.ine	jop = 'jne'				:(op.cmp)
 op.cmp
-	op('mov',reg.w0,mem('reg_ia'))
+	move(reg.w0,mem('reg_ia'))
 	op('or',reg.w0,reg.w0)
 	op(jop,getarg(i1))			:(opdone)
 
@@ -2080,7 +2079,7 @@ g.plc.1
 	eq(i.type(i2))				:s(opdone)
 
 *  here if d_offset_(given (in a variable), so add it in, after converting to byte count
-	op('mov',reg.w0, getarg(i2))
+	move(reg.w0, getarg(i2))
 	op('sal',reg.w0, 'log_cfp_b')
 
 	op('add',t1,reg.w0)
@@ -2099,14 +2098,14 @@ g.plc.1
 
 *  here if d_offset_(given (in a variable), so add it in.
 
-	op('add',getarg(i2),t1)		:(opdone)
+	op('add',getarg(i2),t1)			:(opdone)
 g.plc.1
 *	computer effefctive address of 'cfp_f+ first-argument + second-argument'
 
-	op('mov',getarg(i2),reg.w0)
+	move(getarg(i2),reg.w0)
 	op('add',t1,reg.w0)
 	op('add','$cfp_f',reg.w0)
-	op('mov',reg.w0,t1)			:(opdone)
+	move(reg.w0,t1)				:(opdone)
 .fi
 						:(opdone)
 

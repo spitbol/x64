@@ -240,4 +240,4 @@ trc-nasm: s-nasm.dic it.sbl
 	$(BASEBOL) -u s-nasm.dic trc.sbl <ad >ae
 
 clean:
-	rm -f *.spt *.[ors] tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol 
+	rm -f *.spt *.[ors] *.def tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol 
