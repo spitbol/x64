@@ -25,6 +25,18 @@
 		align	%1
 	%endmacro
 
+	%macro	And	2
+	and	%1,%2
+	%endmacro
+	
+	%macro	Or	2
+	and	%1,%2
+	%endmacro
+	
+	%macro	Xor	2
+	and	%1,%2
+	%endmacro
+	
 	%macro	Data	0
 		section	.data
 	%endmacro
@@ -58,6 +70,18 @@
 		.align	\bytes
 	.endm
 
+	%macro	And	dst,src
+	and	\src,\dst
+	%endmacro
+	
+	%macro	Or	dst,src
+	or	\src,\dst
+	%endmacro
+	
+	%macro	Xor	dst,src
+	xor	\src,\dst
+	%endmacro
+	
 	.macro	Data
 		.data
 	.endm
@@ -167,13 +191,13 @@
 	%define cfp_m_	2147483647
 ;	%define	cfp_n_	32
 
-	%define	lods_b	lodsb
-	%define	lods_w	lodsd
-	%define movs_b	movsb
-	%define movs_w	movsd
-	%define	stos_b	stosb
-	%define	stos_w	stosd
-	%define	cmps_b	cmpsb
+	%define	Lods_b	lodsb
+	%define	Lods_w	lodsd
+	%define Movs_b	movsb
+	%define Movs_w	movsd
+	%define	Stos_b	stosb
+	%define	Stos_w	stosd
+	%define	Cmps_b	cmpsb
 
 	%define	cdq	cdq	; sign extend (32 bits)
 %ifdef osx
@@ -213,13 +237,13 @@
 	%define cfp_m_	9223372036854775807
 ;	%define	cfp_n_	64
 
-	%define	lods_w	lodsq
-	%define	lods_b	lodsb
-	%define movs_b	movsb
-	%define movs_w	movsq
-	%define stos_b	stosb
-	%define	stos_w	stosq
-	%define	cmps_b	cmpsb
+	%define	Lods_w	lodsq
+	%define	Lods_b	lodsb
+	%define Movs_b	movsb
+	%define Movs_w	movsq
+	%define Stos_b	stosb
+	%define	Stos_w	stosq
+	%define	Cmps_b	cmpsb
 
 	%define	cdq	cqo	; sign extend (64 bits)
 

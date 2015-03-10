@@ -107,11 +107,11 @@
 .fi
 
 .if A
-	asm_cc = ';';* comment character
+	Comment = ';';* comment character
 	asm_cfp_b	= 'cfp_b'
 .fi
 .if G
-	asm_cc = '#';* comment character
+	Comment = '#';* comment character
 .fi
 
 *  function definitions
@@ -152,6 +152,7 @@
 	define('outline(txt)')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
+	define('reglow(reg)')
 	define('report(num,text)')
 	define('ripinit()')
 	define('tblini(str)pos,cnt,index,val,lastval')
@@ -544,22 +545,6 @@ regmap.done
 	reg.cp = regmap['cp']
 	reg.ia = regmap['ia']
 
-* reglow maps register to identify target, so
-* can extract 'l' part.
-	reglow = table(4)
-.if A
-	reglow['wa'] = 'WA_L'
-	reglow['wb'] = 'WB_L'
-	reglow['wc'] = 'WC_L'
-	reglow['w0'] = 'W0_L'
-.fi
-.if G
-	reglow['wa'] = '%cl'
-	reglow['wb'] = '%bl'
-	reglow['wc'] = '%dl'
-	reglow['w0'] = '%al'
-.fi
-
 * real_op maps minimal real opcode to machine opcode
 	real_op = table(10)
 	real_op['adr'] = 'fadd'
@@ -662,14 +647,7 @@ opnext.1
 	i1 = prsarg(iarg1)
 	i2 = prsarg(iarg2)
 	i3 = prsarg(iarg3)
-.if A
-	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' '
-.		i.text(i2) ' ' i.text(i3)
-.fi
-.if G
-	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' '
-.		i.text(i2) ' ' i.text(i3)
-.fi
+	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' ' i.text(i2) ' ' i.text(i3)
 	argerrs = 0
 	differ(trc_trace) ge(sectnow,5) eq(trc_suspend) chktrace()
 	ge(sectnow,5) chktrace()
@@ -796,46 +774,21 @@ mov
 	op('Mov',getarg(i1),getarg(i2))		:(return)
 mov.xtp
 mov.xlp
-.if A
-	ident(t.dst,'(xr)+') op('movs_w')	:s(return)
-	op('lods_w')
-.fi
-.if G
-	ident(t.dst,'(xr)+') op('movs' (eq(ws,32) 'd', 'q')) :s(return)
-	op('lods' (eq(ws,32) 'd', 'q'))
-.fi
+	ident(t.dst,'(xr)+') op('Movs_w')	:s(return)
+	op('Lods_w')
 	op('Mov',getarg(i.dst),reg.w0)		:(return)
 	ident(t.dst,'-(xs)') op('push',reg.w0)	:s(return)
 
 mov.xsp
-.if A
 	ident(t.dst,'(xr)+')		:s(mov.xsprp)
 	op('pop',getarg(i.dst))		:(return)
-.fi
-.if G
-	ident(t.dst,'(xr)+')		:s(mov.xsprp)
-	op('pop',getarg(i.dst))		:(return)
-.fi
-
 mov.xsrp
-.if A
 	op('pop',reg.w0)
-	op('stos_w')				:(return)
-.fi
-.if G
-	op('pop',reg.w0)
-	op('stos' (eq(ws,32) 'd', 'q'))	:(return)
-.fi
+	op('Stos_w')				:(return)
 
 mov.xrp
 	op('Mov',reg.w0,getarg(i.src))
-.if A
-	op('stos_w')				:(return)
-.fi
-.if G
-	op('stos' (eq(ws,32) 'd','q'))	:(return)
-.fi
-
+	op('Stos_w')				:(return)
 mov.2
 	op('push',getarg(i.src))		:(return)
 
@@ -1393,7 +1346,7 @@ readline.0
 rl01
 *  find out why need to add 2 here
 *  add 2 since need to account for this line and one that will follow
-	ne(x_trace) outline(asm_cc ':' outlines + 2 ':' tab readline)
+	ne(x_trace) outline(Comment ':' outlines + 2 ':' tab readline)
 					:(return)
 
 *  here on eof
@@ -1436,7 +1389,7 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 
 g.flc
 .if A
-	t1 = reglow[getreg(i1)]
+	t1 = reglow(getreg(i1))
 	t2 = genlab('flc')
 *	trc_suspend = 1
 	op('cmp',t1,"'A'")
@@ -1470,12 +1423,12 @@ g.mov
 g.bod
 .if A
 	t1 = getarg(i1)
- 	t1 = eq(i.type(i1),8) reglow[getreg(i1)]
+ 	t1 = eq(i.type(i1),8) reglow(getreg(i1))
 	op('test',t1,'1')
 	op('jne',getarg(i2))			:(opdone)
 .fi
 .if G
-	t1 = (eq(i.type(i1),8) reglow[getreg(i1)], getarg(i1))
+	t1 = (eq(i.type(i1),8) reglow(getreg(i1)), getarg(i1))
 	op('test',t1,'1')
 	op('jne',getarg(i2))			:(opdone)
 .fi
@@ -1483,13 +1436,13 @@ g.bod
 g.bev
 .if A
 	t1 = getarg(i1)
-	t1 = eq(i.type(i1),8) reglow[getreg(i1)]
+	t1 = eq(i.type(i1),8) reglow(getreg(i1))
 	op('test',t1,'1')
 	op('je',getarg(i2))
 						:(opdone)
 .fi
 .if G
-	t1 = (eq(i.type(i1),8) reglow[getreg(i1)], getarg(i1))
+	t1 = (eq(i.type(i1),8) reglow(getreg(i1)), getarg(i1))
 	op('test',t1,'1')
 	op('jne',getarg(i2))			:(opdone)
 .fi
@@ -1786,7 +1739,7 @@ g.dcv
 g.zer
 .if A
 	ident(i.text(i1),'(xr)+') op('xor',reg.w0,reg.w0)
-+		op('stos_w')			:s(opdone)
++		op('Stos_w')			:s(opdone)
 	ifreg(i1)				:s(g.zer1)
 	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
 	op('xor',reg.w0,reg.w0)
@@ -2098,14 +2051,8 @@ g.lch
 	s.text = i.text(src); s.type = i.type(src); s.reg = getreg(src)
 	d.text = i.text(dst); d.type = i.type(dst); d.reg = getreg(dst)
 	w = (eq(i.type(dst),8) 0,1);* dst is w-register
-.if A
-	outfile = ';lch s.text ' s.text '  s.type ' s.type '  s.reg ' s.reg
-	outfile = ';lch d.text ' d.text '  d.type ' d.type '  d.reg ' d.reg '  w ' w
-.fi
-.if G
-	outfile = '#lch s.text ' s.text '  s.type ' s.type '  s.reg ' s.reg
-	outfile = '#lch d.text ' d.text '  d.type ' d.type '  d.reg ' d.reg '  w ' w
-.fi
+	outfile = Comment 'lch s.text ' s.text '  s.type ' s.type '  s.reg ' s.reg
+	outfile = Comment 'lch d.text ' d.text '  d.type ' d.type '  d.reg ' d.reg '  w ' w
 	ident(s.text,'(xl)+')			:s(g.lch.lods)
 
 
@@ -2118,14 +2065,14 @@ g.lch
 *  if target is w register, can load to it. otherwise, load to w0 and then move to x
 *  do indexed load of source register
 
-*	outfile = ';lch 1 reglow[(eq(w) d.reg, 'w0')]' reglow[(eq(w) d.reg, 'w0')]
-*	outfile = ';lch,2 M_char [regmap[s.reg]])'  regmap[s.reg]
+*	outfile = Comment 'lch 1 reglow((eq(w) d.reg, 'w0'))' reglow((eq(w) d.reg, 'w0'))
+*	outfile = Comment 'lch,2 M_char [regmap[s.reg]])'  regmap[s.reg]
 .if A
-	op('mov',reglow[(eq(w) d.reg, 'w0')],'M_char [' regmap[s.reg] ']')
+	op('mov',reglow((eq(w) d.reg, 'w0')),'M_char [' regmap[s.reg] ']')
 	ne(w) op('mov',regmap[d.reg],reg.w0)
 .fi
 .if G
-	op('movb','(' regmap[s.reg] ')' ,reglow[(eq(w) d.reg, 'w0')])
+	op('movb','(' regmap[s.reg] ')' ,reglow((eq(w) d.reg, 'w0')))
 	ne(w) op('mov',reg.w0,regmap[d.reg])
 .fi
 
@@ -2145,14 +2092,8 @@ g.sch
 	s.text = i.text(src); s.type = i.type(src); s.reg = getreg(src)
 	d.text = i.text(dst); d.type = i.type(dst); d.reg = getreg(dst)
 	w = (eq(i.type(src),8) 0,1);* dst is w-register
-.if A
-	outfile = ';sch s.text ' s.text '  s.type ' s.type '  s.reg ' s.reg
-	outfile = ';sch d.text ' d.text '  d.type ' d.type '  d.reg ' d.reg '  w ' w
-.fi
-.if G
-	outfile = '#sch s.text ' s.text '  s.type ' s.type '  s.reg ' s.reg
-	outfile = '#sch d.text ' d.text '  d.type ' d.type '  d.reg ' d.reg '  w ' w
-.fi
+	outfile = Comment 'sch s.text ' s.text '  s.type ' s.type '  s.reg ' s.reg
+	outfile = Comment 'sch d.text ' d.text '  d.type ' d.type '  d.reg ' d.reg '  w ' w
 	ident(s.text,'(xr)+')			:s(g.sch.stos)
 
 
@@ -2165,10 +2106,10 @@ g.sch
 	ne(w) op('Mov',reg.w0, regmap[s.reg])
 
 .if A
-	op('mov','M_char [' regmap[d.reg] ']', reglow[(eq(w) s.reg, 'w0')])
+	op('mov','M_char [' regmap[d.reg] ']', reglow((eq(w) s.reg, 'w0')))
 .fi
 .if G
-	op('movb', reglow[(eq(w) s.reg, 'w0')], '(' regmap[d.reg] ')') 
+	op('movb', reglow((eq(w) s.reg, 'w0')), '(' regmap[d.reg] ')') 
 .fi
 
 * increment target register if needed
@@ -2196,12 +2137,7 @@ g.cne   memmemm()
 						:(opdone)
 
 g.cmc
-.if A
-	op('repe','cmps_b')
-.fi
-.if G
-	op('repe','cmpsb')
-.fi
+	op('repe','Cmps_b')
 	op('xor',reg.xl,reg.xl)
 	op('xor',reg.xr,reg.xl)
 	t1 = getarg(i1)
@@ -2236,18 +2172,10 @@ g.trc
 .fi
 						:(opdone)
 
-.if A
-g.anb   op('and',getarg(i1),getarg(i2))	:(opdone)
-g.orb   op('or',getarg(i1),getarg(i2))	:(opdone)
-g.xob   op('xor',getarg(i1),getarg(i2))	:(opdone)
+g.anb   op('And',getarg(i1),getarg(i2))	:(opdone)
+g.orb   op('Or',getarg(i1),getarg(i2))	:(opdone)
+g.xob   op('Xor',getarg(i1),getarg(i2))	:(opdone)
 g.cmb   op('not',getarg(i1))			:(opdone)
-.fi
-.if G
-g.anb   op('and',getarg(i2),getarg(i1))	:(opdone)
-g.orb   op('or',getarg(i2),getarg(i1))	:(opdone)
-g.xob   op('xor',getarg(i2),getarg(i1))	:(opdone)
-g.cmb   op('not',getarg(i1))			:(opdone)
-.fi
 
 g.rsh
 .if A
@@ -2433,7 +2361,7 @@ g.mvc
 .if A
 	t1 = genlab('mvc')
 	op('rep')
-	op('movs_b')
+	op('Movs_b')
 .fi
 .if G
 *	use word move if character size is word size
@@ -2441,19 +2369,13 @@ g.mvc
 
 	t1 = genlab('mvc')
 	trc_suspend = 1
-	op('rep', 'movsb')
+	op('rep', 'Movs_b')
 .fi
 	trc_suspend = 0
 						:(opdone)
 g.mvw
-.if A
 	op('shr',reg.wa,'log_cfp_b')
- 	op('rep','movs_w')
-.fi
-.if G
-	gensh('shr',reg.wa,log_cfp_b)
- 	genrep('rep', 'movs' (eq(ws,32) 'd','q'))
-.fi
+ 	op('rep','Movs_w')
 						:(opdone)
 g.mwb
 .if A
@@ -2657,13 +2579,7 @@ g.sec.7
 *	allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
 	opl('err_:')
-.if A
-	outfile = ';sec07:a:' a(mem( rcode)) ':g:' g('rcode')
-.fi
-.if G
-	outfile = '#sec07:a:' a(mem(rcode)) ':g:' g('rcode')
-.fi
-
+	outfile = Comment 'sec07:a:' a(mem( rcode)) ':g:' g('rcode')
 	op('xchg',reg.wa,a(mem(rcode)) g(rcode))
 						:(opdone)
 
@@ -2706,6 +2622,10 @@ opdone.5	outstmt(astmts[i])
 opdone.6 astmts.n = bstmts.n = cstmts.n =	:(return)
 flush_end
 
+-stitl reglow(reg) - map W register to its lower (least significant) part
+reglow
+	reglow = regmap[reg] '_L'		:(return)
+-stitl report - write statistic to output file
 report
 	output = lpad(num,7) tab text		:(return)
 
