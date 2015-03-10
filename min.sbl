@@ -1568,9 +1568,9 @@ g.lei
 .fi
 .if G
 	t1 = regmap[i.text(i1)]
-	op('dec',t1)
-	op('mov', '(' t1 ')', '%al')
-	op('movz' (eq(ws,32) 'bl','bq'),'%al',t1) :(opdone)
+	op('Dec',t1)
+	op('mov', '(' t1 ')', 'W0_L')
+	op('movz' (eq(ws,32) 'bl','bq'),'W0_L',t1) :(opdone)
 .fi
 
 g.jsr
@@ -1583,12 +1583,7 @@ g.jsr
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
-.if A
-	op('dec',mem( rcode ))
-.fi
-.if G
-	op('dec' o_, rcode)
-.fi
+	op('Dec',mem( rcode ))
 	op('js',jsr_label_norm)
 	trc_suspend = 0
 
@@ -1621,12 +1616,7 @@ g.ppm.loop.next
 	eq(jsr_count) opl(jsr_label_norm ':') :(opdone)
 g.ppm.loop
 	lab_next = genlab('ppm')
-.if A
-	op('dec',mem(rcode) )
-.fi
-.if G
-	op('dec' o_,rcode )
-.fi
+	op('Dec',mem(rcode) )
 	op('jns',lab_next)
 	ident(incode,'ppm')			:s(g.ppm.loop.ppm)
 
@@ -1634,12 +1624,7 @@ g.ppm.loop
 *  to error handler with error code in rcode
 
 g.ppm.loop.err
-.if A
-	op('mov',mem(rcode), +t1)
-.fi
-.if G
-	op('mov' o_,'$' +t1,rcode, )
-.fi
+	op('Mov',mem(rcode), +t1)
 	op('jmp','err_')
 						:(g.ppm.loop.next)
 g.ppm.loop.ppm
@@ -1675,12 +1660,7 @@ g.prc.r						:(opdone)
 g.prc.n
 *  store return address in reserved location
 	prc.count = prc.count + 1
-.if A
 	op('pop', mem(prcent(prc.count)))
-.fi
-.if G
-	op('pop', prcent(prc.count))	:(opdone)
-.fi	
 						:(opdone)
 
 g.exi
@@ -1721,20 +1701,10 @@ g.erb
 						:(opdone)
 
 g.icv
-.if A
-	op('inc',getarg(i1))    :(opdone)
-.fi
-.if G
-	op('inc' o_,getarg(i1))    :(opdone)
-.fi
+	op('Inc',getarg(i1))    :(opdone)
 
 g.dcv   
-.if A
-	op('dec',getarg(i1))    :(opdone)
-.fi
-.if G
-	op('inc' o_,getarg(i1))    :(opdone)
-.fi
+	op('Dec',getarg(i1))    :(opdone)
 
 g.zer
 .if A
@@ -1802,26 +1772,15 @@ g.bhi
 *  issue target opcode by table lookup.
 
 	memmemm()
-.if A
 	t1 = branchtab[incode]
 	op('cmp',getarg(i1),getarg(i2))
-.fi
-.if G
-	op('cmp' o_,getarg(i2),getarg(i1))
-.fi
 	op(branchtab[incode],getarg(i3))
 						:(opdone)
 
 g.bnz
-.if A
-	ifreg(i1)				:s(g.bnz1)
-        op('cmp', getarg(i1) ,'0')
-.fi
-.if G
 	ifreg(i1)				:s(g.bnz1)
 	op('xor',reg.w0,reg.w0)
-        op('cmp' o_,getarg(i1) ,reg.w0)
-.fi
+        op('cmp',getarg(i1) ,reg.w0)
 	op('jnz',getarg(i2))
 						:(opdone)
 g.bnz1
@@ -1856,14 +1815,9 @@ g.bct
 	t1 = getarg(i1)
 	t2 = getarg(i2)
 	:(g.bct2)
-.if A
 	ident(t1,reg.wa)			:s(g.bct1)
-.fi
-.if G
-	ident(t1,reg.wa)			:s(g.bct1)
-.fi
 g.bct2
-	op('dec',t1)
+	op('Dec',t1)
 	op('jnz',t2)				:(opdone)
 g.bct1
 	op('loop',t2)				:(opdone)
@@ -1973,12 +1927,12 @@ g.rlt	jop = 'jl'
 g.r1	
 	op('call','cpr_')
 .if A
-	op('mov','al','byte [reg_fl]')
-	op('or','al','al')
+	op('mov','W0_L','byte [reg_fl]')
+	op('or','W0_L','W0_L')
 .fi
 .if G
-	op('mov','(reg_fl)','%al')
-	op('or','%al','%al')
+	op('mov','(reg_fl)','W0_L')
+	op('or','W0_L','W0_L')
 .fi
 	op(jop,getarg(i1))			:(opdone)
 
@@ -2078,7 +2032,7 @@ g.lch
 
 *  do post increment if needed
 
-	eq(s.type,10)	op('inc',regmap[s.reg])
+	eq(s.type,10)	op('Inc',regmap[s.reg])
 						:(opdone)
 g.lch.lods
 *  clear result register, do lodsb, and then move character to result register
@@ -2114,7 +2068,7 @@ g.sch
 
 * increment target register if needed
 
-	eq(d.type,10)  op('inc',regmap[d.reg])
+	eq(d.type,10)  op('Inc',regmap[d.reg])
 						:(opdone)
 g.sch.stos
 *  move source register to w0, setting up low part, then store from w0
@@ -2147,29 +2101,22 @@ g.cmc
 	op('jb',t1)				:(opdone)
 
 g.trc
-.if A
 	op('xchg',reg.xl,reg.xr)
-        opl((t1 = genlab('trc')) ':','movzx',reg.w0,'M_char [XR]')
-	op('mov','al','[XL+W0]')
-	op('stos' op_c)
-*	op('loop',t1)
-	op('dec',reg.wa)
-	op('jnz',t1)
-	op('xor',reg.xl,reg.xl)
-	op('xor',reg.xr,reg.xr)
+.if A
+        opl((labl = genlab('trc')) ':','movzx',reg.w0,'M_char [XR]')
+	op('mov','W0_L','[XL+W0]')
 .fi
 .if G
-	op('xchg',reg.xl,reg.xr)
 	labl = genlab('trc')
         opl(labl ':','movz' (eq(ws,32) 'bl', 'bq'),'(' reg.xr ')',reg.w0)
 	op('add','(,' reg.xl ')',reg.w0)
-	op('mov','(' reg.w0 ')', '%al')
-	op('stos' op_c)
+	op('mov','(' reg.w0 ')', 'W0_L')
+.fi
+	op('Stos_c')
 	op('dec',reg.wa)
 	op('jnz',labl)
 	op('xor',reg.xl,reg.xl)
 	op('xor',reg.xr,reg.xr)
-.fi
 						:(opdone)
 
 g.anb   op('And',getarg(i1),getarg(i2))	:(opdone)
@@ -2199,13 +2146,8 @@ g.lsx
 	error('lsx not supported')
 
 g.nzb	ifreg(i1)				:s(g.nzb1)
-.if A
-	op('cmp',getarg(i1),'0')
-.fi
-.if G
 	op('xor',reg.w0,reg.w0)
 	op('cmp',getarg(i1),reg.w0)
-.fi
 	op('jnz',getarg(i2))
 						:(opdone)
 g.nzb1
@@ -2215,14 +2157,8 @@ g.nzb1
 
 g.zrb
 	ifreg(i1)				:s(g.zrb1)
-.if A
-
-	op('cmp',getarg(i1),'0')
-.fi
-.if G
 	op('xor',reg.w0,reg.w0)
 	op('cmp',getarg(i1),reg.w0)
-.fi
 	op('jz',getarg(i2))
 						:(opdone)
 g.zrb1

@@ -17,6 +17,14 @@
 ;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 ;
 .if A
+	%macro	Inc	1
+		inc	%1
+	%endmacro
+
+	%macro	Cmp	2	; src/dst differ
+		cmp	%1,%2
+	%endmacro
+
 	%macro	Add	2
 		add	%1,%2
 	%endmacro
