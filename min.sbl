@@ -794,6 +794,11 @@ mov.2
 
 -stitl	gensh(opc,reg,val)
 gensh
+
+.if A
+	op(opc,reg,val)				:(opdone)
+.fi
+.if G
 *  if the shift count is constant, then just do the shift. Otherwise, save WA, which corresponds
 *  to %cl, load the shift count to that register, do the shift. Then restore WA, unless it was the
 *  register to be shifted
@@ -816,6 +821,7 @@ reg.wa
 	op(opc,'%cl',reg.w0)
 	op('Mov',reg.w0,reg.wa)
 						:(return)
+.fi
 -stitl getarg(iarg)
 getarg
 *	imem is null to generate memory reference, otherwise just get
@@ -1424,28 +1430,23 @@ g.bod
 .if A
 	t1 = getarg(i1)
  	t1 = eq(i.type(i1),8) reglow(getreg(i1))
-	op('test',t1,'1')
-	op('jne',getarg(i2))			:(opdone)
 .fi
 .if G
 	t1 = (eq(i.type(i1),8) reglow(getreg(i1)), getarg(i1))
+.fi
 	op('test',t1,'1')
 	op('jne',getarg(i2))			:(opdone)
-.fi
 
 g.bev
 .if A
 	t1 = getarg(i1)
 	t1 = eq(i.type(i1),8) reglow(getreg(i1))
-	op('test',t1,'1')
-	op('je',getarg(i2))
-						:(opdone)
 .fi
 .if G
 	t1 = (eq(i.type(i1),8) reglow(getreg(i1)), getarg(i1))
+.fi
 	op('test',t1,'1')
 	op('jne',getarg(i2))			:(opdone)
-.fi
 
 g.brn   op('jmp',getarg(i1))			:(opdone)
 
@@ -1562,12 +1563,11 @@ g.bri
 
 
 g.lei
-.if A
 	t1 = regmap[i.text(i1)]
+.if A
 	op('movzx',t1,'byte [' t1 '-1]' )	:(opdone)
 .fi
 .if G
-	t1 = regmap[i.text(i1)]
 	op('Dec',t1)
 	op('mov', '(' t1 ')', 'W0_L')
 	op('movz' (eq(ws,32) 'bl','bq'),'W0_L',t1) :(opdone)
@@ -1668,12 +1668,7 @@ g.exi
 *  if type r or e, and no exit parameters, just return
  	differ(t2,'n') eq(prc.args)	op('ret')	:s(opdone)
         t3 = ident(t3) '0'
-.if A
-    	op('mov',mem(rcode),+t3)
-.fi
-.if G
-    	op('mov' o_,'$' +t3,rcode)
-.fi
+    	op('Mov',mem(rcode),+t3)
 	ident(t2,'n')				:s(g.exi.1)
 	op('ret')				:(opdone)
 g.exi.1
@@ -1731,7 +1726,9 @@ g.zer.xs op('push','$0')			:(opdone)
 .fi
 
 g.mnz
-	op('Mov',getarg(i1),reg.xs)			:(opdone)
+	op('xor',reg.w0,reg.w0)
+	op('inc',reg.w0)
+	op('Mov',getarg(i1),reg.w0)			:(opdone)
 g.ssl
 g.sss
 g.rtn
@@ -1823,12 +1820,7 @@ g.bct1
 	op('loop',t2)				:(opdone)
 
 g.aov
-.if A
-	op('add',getarg(i2),getarg(i1))
-.fi
-.if G
-	op('add',getarg(i1),getarg(i2))
-.fi
+	op('Add',getarg(i2),getarg(i1))
 	op('jc',getarg(i3))
 						:(opdone)
 g.lcp
@@ -1913,10 +1905,6 @@ g.tan
 
 g.rov
 g.rno	op(op_,getarg(i1))			:(opdone)
-*g.rno	t1 = 'jno'				:(g.rov1)
-*g.rov	t1 = 'jo'
-*g.rov1  op('call','ovr_')
-	op(t1,getarg(i1))			:(opdone)
 
 g.req	jop = 'je'				:(g.r1)
 g.rne	jop = 'jne'				:(g.r1)
@@ -1926,76 +1914,29 @@ g.rle	jop = 'jle'				:(g.r1)
 g.rlt	jop = 'jl'
 g.r1	
 	op('call','cpr_')
-.if A
-	op('mov','W0_L','byte [reg_fl]')
+	op('Mov','W0_L','byte [reg_fl]')
 	op('or','W0_L','W0_L')
-.fi
-.if G
-	op('mov','(reg_fl)','W0_L')
-	op('or','W0_L','W0_L')
-.fi
 	op(jop,getarg(i1))			:(opdone)
 
 g.plc
 g.psc
+*  last arg is optional.  if present and a register or constant,
+*  use lea instead.
+
+	t1 = getarg(i1)
+	t2 = i.type(i2)
 .if A
-	ne(cfp_b,cfp_c)				:s(g.plc.1)
-*  last arg is optional.  if present and a register or constant,
-*  use lea instead.
-
-	t1 = getarg(i1)
-	t2 = i.type(i2)
-	((ifreg(i2), ge(t2,1) le(t2,2))
-+	op('lea',t1,'Adr(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
-	op('add',t1,'cfp_f')
-	eq(i.type(i2))				:s(opdone)
-
-*  here if d_offset_(given (in a variable), so add it in.
-
-	op('add',t1,getarg(i2))		:(opdone)
-
-g.plc.1
-*  here for case where character size if word size
-*  last arg is optional.  if present and a register or constant,
-*  use lea instead.
-
-	t1 = getarg(i1)
-	t2 = i.type(i2)
-	((ifreg(i2), ge(t2,1) le(t2,2))
-+	op('lea',t1,'Adr(cfp_f+' t1 '+' 'cfp_b*' getarg(i2) ')')) :s(opdone)
-	op('add',t1,'cfp_f')
-	eq(i.type(i2))				:s(opdone)
-
-*  here if d_offset_(given (in a variable), so add it in, after converting to byte count
-	op('Mov',reg.w0, getarg(i2))
-	op('sal',reg.w0, 'log_cfp_b')
-
-	op('add',t1,reg.w0)
+	((ifreg(i2), ge(t2,1) le(t2,2)) op('lea',t1,'Adr(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
 .fi
 .if G
-*  last arg is optional.  if present and a register or constant,
-*  use lea instead.
-
-	t1 = getarg(i1)
-	t2 = i.type(i2)
-* TODO
-	ifreg(i2)				:s(g.plc.1)
-	ge(t2,1) le(t2,2)			:s(g.plc.1)
-	op('add', '$cfp_f',t1)
+	((ifreg(i2), ge(t2,1) le(t2,2)) op('lea',t1,'Adr(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
+.fi
+	op('Add',t1,'cfp_f')
 	eq(i.type(i2))				:s(opdone)
 
 *  here if d_offset_(given (in a variable), so add it in.
 
-	op('add',getarg(i2),t1)			:(opdone)
-g.plc.1
-*	computer effefctive address of 'cfp_f+ first-argument + second-argument'
-
-	op('Mov',getarg(i2),reg.w0)
-	op('add',t1,reg.w0)
-	op('add','$cfp_f',reg.w0)
-	op('Mov',reg.w0,t1)				:(opdone)
-.fi
-						:(opdone)
+	op('Add',t1,getarg(i2))		:(opdone)
 
 *  always load to w0, which allows use of 'lods' if second argument is '(xr)+'
 
@@ -2125,20 +2066,10 @@ g.xob   op('Xor',getarg(i1),getarg(i2))	:(opdone)
 g.cmb   op('not',getarg(i1))			:(opdone)
 
 g.rsh
-.if A
-	op('shr',getarg(i1),getarg(i2))	:(opdone)
-.fi
-.if G
 	gensh('shr',getarg(i1),getarg(i2))	:(opdone)
-.fi
 
 g.lsh
-.if A
-	op('shl',getarg(i1),getarg(i2))	:(opdone)
-.fi
-.if G
 	gensh('shl',getarg(i1),getarg(i2))	:(opdone)
-.fi
 
 g.rsx
 	error('rsx not supported')
@@ -2186,28 +2117,14 @@ g.wtb
 .fi
 
 g.btw
-.if A
-	op('shr',getarg(i1),'log_cfp_b')	:(opdone)
-.fi
-.if G
-	gensh('shr',getarg(i1),log_cfp_b)	:(opdone)
-.fi
+	gensh('shr',getarg(i1),'log_cfp_b')	:(opdone)
 
 g.mti
 	ident(i.text(i1),'(xs)+')		:f(g.mti.1)
 	op('pop',reg.w0)
-.if A
 	op('ldi_',reg.w0)			:(opdone)
 g.mti.1
 	op('ldi_',getarg(i1))		:(opdone)
-.fi
-.if G
-	ident(i.text(i1),'(xs)+')		:f(g.mti.1)
-	op('pop',reg.w0)
-	op('mov',reg.w0,reg.ia)			:(opdone)
-g.mti.1
-	op('mov',getarg(i1),reg.ia)		:(opdone)
-.fi
 
 
 g.mfi
@@ -2215,31 +2132,15 @@ g.mfi
 *  compare with cfp$m, branching if result negative
 	eq(i.type(i2))				:s(g.mfi.1)
 *  here if label given, branch if wc not in range (ie, negative)
-.if A
 	op('sti_',reg.w0)
-.fi
-.if G
-	op('mov',reg.ia,reg.w0)
-.fi
 	op('or',reg.w0,reg.w0)
 	op('js',getarg(i2))
 g.mfi.1
 	ident(i.text(i1),'-(xs)')		:s(g.mfi.2)
-.if A
-	op('sti_',getarg(i1))		:(opdone)
-.fi
-.if G
-	op('mov',reg.ia,getarg(i1))		:(opdone)
-.fi
+	op('sti_',getarg(i1))			:(opdone)
 g.mfi.2
-.if A
 	op('sti_',reg.w0)
-.fi
-.if G
-	op('mov',reg.ia,reg.w0)
-.fi
 	op('push',reg.w0)			:(opdone)
-.fi
 .if A
 g.ctw
 *  assume cfp_c chars per word
@@ -2319,7 +2220,7 @@ g.mwb
 	op('std')
 	op('lea',reg.xl,'Adr(XL-cfp_b)')
 	op('lea',reg.xr,'Adr(XR-cfp_b)')
- 	genrep('movs_w')
+ 	genrep('Movs_w')
 	op('cld')
 .fi
 .if G
@@ -2327,7 +2228,7 @@ g.mwb
 	op('std')
 	op('sub','$' cfp_b,reg.xl)
 	op('sub','$' cfp_b,reg.xr)
- 	genrep('movs' (eq(ws,32) 'd','q'))
+ 	genrep('Movs_w')
 	op('cld')				
 .fi		
 						:(opdone)
@@ -2335,7 +2236,7 @@ g.mwb
 	op('std')
 	op('shr',reg.wa,'log_cfp_b')
 	op('rep')
-	op('movs_w')
+	op('Movs_w')
 	op('ctd')
 						:(opdone)
 
@@ -2343,22 +2244,7 @@ g.mcb
 	op('std')
 	op('dec',reg.xl)
 	op('dec',reg.xr)
-.if A
- 	genrep('movs_b')
-.fi
-.if G
- 	genrep('movs' (eq(ws,32) 'd','q'))
-.fi
-	op('cld')
-						:(opdone)
-	op('std')
-	op('rep')
-.if A
-	op('movs_b')
-.fi
-.if G
-	op('rep','movs' (eq(ws,32) 'd','q'))
-.fi
+ 	genrep('Movs_b')
 	op('cld')
 						:(opdone)
 genrep
@@ -2401,7 +2287,6 @@ g.drc
 	t1 = i.text(i1)
 	t1 ? fence "+" = ""
 	op(D_real,t1)
-.fi
 *  note that want to attach label to last instruction
 	t.label(cstmts[cstmts.n]) = thislabel
 	thislabel =				:(opdone)
