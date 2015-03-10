@@ -21,6 +21,17 @@
 * no case folding
 -case  0
 
+* Hereafter: When we say 'asm' we really mean 'nasm,' and when we say 'gas' we mean 'as', the GNU assembler.
+
+* Note:
+*	A symbol begins with a capital in the output assembly language iff it reflects
+*	a difference between asm and gas that will be resolved later, either by one-line
+*	macros in the case of asm, or via expansion by def.sbl in the case of gas.
+*
+*	For example, 'Mov' is generated instead of 'mov' since asm wants destination before the source, whilst
+*	gas wants the destination after the source.
+
+
 *  this program takes input file in minimal token form and
 *  produces assembly code for intel 80386 processor.
 *  the program obtains the name of the file to be translated from the
@@ -123,14 +134,11 @@
 	define('genz()')
 	define('genaop(stmt)')
 	define('genbop(stmt)')
-	define('gendir(command,name)')
         define('genlab(prefix)')
         define('genrip()')
 	define('getreg(iarg)')
 	define('mem(ref)')
 	define('mov(i1,i2)i.src,i.dst,t.src')
-	define('move(dst,src)')
-	define('opds(gopc,gop1,gop2,gop3)txt')
 	define('op(gopc,gop1,gop2,gop3)')
 	define('opl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
@@ -785,7 +793,7 @@ mov
 	ident(t.dst,'(xr)+')			:s(mov.xrp)
 	ident(t.dst,'-(xs)')			:s(mov.2)
 	memmemm()
-	move(getarg(i1),getarg(i2))		:(return)
+	op('Mov',getarg(i1),getarg(i2))		:(return)
 mov.xtp
 mov.xlp
 .if A
@@ -796,7 +804,7 @@ mov.xlp
 	ident(t.dst,'(xr)+') op('movs' (eq(ws,32) 'd', 'q')) :s(return)
 	op('lods' (eq(ws,32) 'd', 'q'))
 .fi
-	move(getarg(i.dst),reg.w0)		:(return)
+	op('Mov',getarg(i.dst),reg.w0)		:(return)
 	ident(t.dst,'-(xs)') op('push',reg.w0)	:s(return)
 
 mov.xsp
@@ -820,7 +828,7 @@ mov.xsrp
 .fi
 
 mov.xrp
-	move(reg.w0,getarg(i.src))
+	op('Mov',reg.w0,getarg(i.src))
 .if A
 	op('stos_w')				:(return)
 .fi
@@ -830,33 +838,6 @@ mov.xrp
 
 mov.2
 	op('push',getarg(i.src))		:(return)
-
--stitl move(dst,src)
-move
-.if A
-	op('mov',dst,src)			:(return)
-.fi
-.if G
-	op('mov' o_,src,dst)			:(return)
-.fi
-
--stitl opds(gopc,gop1,gop2,gop3)
-*  generate operation with no label, with dest/src switched if using gas
-*  asm uses 'intel' syntax, with destination followed by source
-*  gas use 'att' syntax, with source followed by destination
-*  opds does the switching if compiling for gas.
-opds
-.if G
-	ident(gopc,'add')			:s(opds.switch)
-	ident(gopc,'mov')			:s(opds.switch)
-	ident(gopc,'sub')			:s(opds.switch)
-						:(opds.emit)
-opds.switch
-	tmp = gop1; gop1 = gop2; gop2 = tmp
-	gopc = gopc o_
-opds.emit
-.fi
-	opl(,gopc,gop1,gop2,gop3)            :(return)
 
 -stitl	gensh(opc,reg,val)
 gensh
@@ -872,7 +853,7 @@ gensh
 	ident(reg,reg.wa)			:s(gensh.wa)
 *  here if register is NOT WA, so push/restore WA
 	op('push',reg.wa)
-	move(val,reg.wa)
+	op('Mov',val,reg.wa)
 	op(opc, '%cl',reg)
 	op('pop',reg.wa)			:(return)
 reg.wa
@@ -880,7 +861,7 @@ reg.wa
 	mov(reg.wa.reg.w0)
 	mov(val,reg.wa)
 	op(opc,'%cl',reg.w0)
-	move(reg.w0,reg.wa)
+	op('Mov',reg.w0,reg.wa)
 						:(return)
 -stitl getarg(iarg)
 getarg
@@ -1134,9 +1115,9 @@ getadr.lit
 	ent = lbl
 	flush()
 	trc_suspend = 1
-	op('.data')
+	op('Data')
 	opl(lbl ':',D_word ,txt)
-	op('.text')
+	op('Text')
 	flush()
 	trc_suspend = 0
 getadr.ent
@@ -1190,13 +1171,13 @@ getrip.done
 	lbl = genrip()
 	riptable[txt] = lbl
 	ent = lbl
-	gendir('segment','data')
+	op('Data')
 	opl(lbl ':',D_word,getrip)
-	gendir('segment','text')
+	op('Text')
 getrip.ent
 *	generate reference via w0 if needed
-	move(reg.w0,mem(ent))
-	differ(reg)	op('add',reg.w0,reg)
+	op('Mov',reg.w0,mem(ent))
+	differ(reg)	op('Add',reg.w0,reg)
 	getrip = reg.w0
 *	outfile = ne(x_trace) '; getrip ' ent
 						:(return)
@@ -1242,7 +1223,7 @@ memmemm
 *  here if memory-memory case, load second argument
   t = getarg(i2)
   i2 = arg_w0
-  move(reg.w0,t)				:(return)
+  op('Mov',reg.w0,t)				:(return)
 
 -stitl outline(txt)
 outline
@@ -1355,26 +1336,26 @@ chktrace.1
 	trc_desc = '"' replace(thisline,'|',' ') '"'
 .if A
 	ab_suspend = 1
-	gendir('segment','data')
+	op('Data')
 	flush()
 	lbl = genlab('it')
 	opl(lbl,D_char,trc_desc)
 	op(D_char,'0');* string terminator
-	gendir('segment','text')
-	move(reg.w0,lbl)
-	move(mem('trc_de'),reg.w0)
+	op('Text')
+	op('Mov',reg.w0,lbl)
+	op('Mov',mem('trc_de'),reg.w0)
 	op('call','trc_')
 	flush()
 	ab_suspend = 0
 .fi
 .if G
 	ab_suspend = 1
-	gendir('segment','data')
+	op('Data')
 	flush()
 	lbl = genlab('trc')
 	opl(lbl ':' ,'.asciz',trc_desc)
-	gendir('segment','text')
-	move('$' lbl,'trc_de')
+	op('Text')
+	op('Mov','$' lbl,'trc_de')
 	op('call','trc_')
 	ab_suspend = 0
 .fi
@@ -1462,7 +1443,7 @@ g.flc
 	op('jb', t2 )
 	op('cmp',t1,"'Z'")
 	op('ja', t2)
-	op('add',t1,'32')
+	op('Add',t1,'32')
         opl(t2 ':')
 *	trc_suspend = 0
 .fi
@@ -1530,15 +1511,15 @@ g.bsw1
 g.bsw.2
 * in rip_mode, need to generate location to reference destination
 	lbl = genrip()
-        gendir('segment','data')
+        op('Data')
 	opl(lbl,D_word,t2 )
-	gendir('segment','text')
-	move(reg.w0,t1)
+	op('Text')
+	op('Mov',reg.w0,t1)
 	op('sal',reg.w0,'log_cfp_b')
-	op('add',reg.w0,mem(lbl))
+	op('Add',reg.w0,mem(lbl))
 	op('jmp', reg.w0)
 g.bsw.3
-	gendir('segment','data')
+	op('Data')
         opl(t2 ':')
 	trc_suspend = 0
 .fi
@@ -1552,7 +1533,7 @@ g.bsw.3
 * here after default case.
 g.bsw1	
 	op('jmp','*' t2 '(,' t1 ',' cfp_b ')')
-	op('.data')
+	op('Data')
         opl(t2 ':')
 	trc_suspend = 0
 .fi
@@ -1561,7 +1542,7 @@ g.bsw1
 g.iff   op(D_word,getarg(i2))              :(opdone)
 
 g.esw
-	gendir('segment','text')		:(opdone)
+	op('Text')		:(opdone)
 g.ent
 
 *  entry points are stored in byte before program entry label
@@ -1763,7 +1744,7 @@ g.exi
 	ident(t2,'n')				:s(g.exi.1)
 	op('ret')				:(opdone)
 g.exi.1
-	move(reg.w0, mem(prcent(prc.count)))
+	op('Mov',reg.w0, mem(prcent(prc.count)))
 .if A
 	op('jmp',reg.w0)
 .fi
@@ -1827,17 +1808,17 @@ g.zer.xs op('push','$0')			:(opdone)
 .fi
 
 g.mnz
-	move(getarg(i1),reg.xs)			:(opdone)
+	op('Mov',getarg(i1),reg.xs)			:(opdone)
 g.ssl
 g.sss
 g.rtn
 	op()					:(opdone)
 
 g.add	memmemm()
-	opds('add',getarg(i1),getarg(i2))	:(opdone)
+	op('Add',getarg(i1),getarg(i2))	:(opdone)
 
 g.sub	memmemm()
-	opds('sub',getarg(i1),getarg(i2))	:(opdone)
+	op('Sub',getarg(i1),getarg(i2))	:(opdone)
 
 g.ica
 .if A
@@ -1915,7 +1896,7 @@ g.lct
 	op()					:(opdone)
 
 g.lct.1
-	move(getarg(i1),getarg(i2))	:(opdone)
+	op('Mov',getarg(i1),getarg(i2))	:(opdone)
 
 g.bct
 *  can issue loop if target register is cx.
@@ -1959,11 +1940,11 @@ g.adi
 g.mli
 g.sbi
 g.dvi
-	move(reg.w0,getarg(i1))
+	op('Mov',reg.w0,getarg(i1))
 	op(op_)					:(opdone)
 
 g.rmi
-	move(reg.w0,getarg(i1))
+	op('Mov',reg.w0,getarg(i1))
 *	op('mov',reg.w0,getarg(i1))
 	op(op_)					:(opdone)
 g.ngi
@@ -1980,7 +1961,7 @@ g.ile	jop = 'jle'				:(op.cmp)
 g.ilt	jop = 'jl'				:(op.cmp)
 g.ine	jop = 'jne'				:(op.cmp)
 op.cmp
-	move(reg.w0,mem('reg_ia'))
+	op('Mov',reg.w0,mem('reg_ia'))
 	op('or',reg.w0,reg.w0)
 	op(jop,getarg(i1))			:(opdone)
 
@@ -2079,7 +2060,7 @@ g.plc.1
 	eq(i.type(i2))				:s(opdone)
 
 *  here if d_offset_(given (in a variable), so add it in, after converting to byte count
-	move(reg.w0, getarg(i2))
+	op('Mov',reg.w0, getarg(i2))
 	op('sal',reg.w0, 'log_cfp_b')
 
 	op('add',t1,reg.w0)
@@ -2102,10 +2083,10 @@ g.plc.1
 g.plc.1
 *	computer effefctive address of 'cfp_f+ first-argument + second-argument'
 
-	move(getarg(i2),reg.w0)
+	op('Mov',getarg(i2),reg.w0)
 	op('add',t1,reg.w0)
 	op('add','$cfp_f',reg.w0)
-	move(reg.w0,t1)				:(opdone)
+	op('Mov',reg.w0,t1)				:(opdone)
 .fi
 						:(opdone)
 
@@ -2156,7 +2137,7 @@ g.lch.lods
 *  clear result register, do lodsb, and then move character to result register
 	op('xor',reg.w0,reg.w0)
 	op('lodsb')
-	move(getarg(dst),reg.w0)
+	op('Mov',getarg(dst),reg.w0)
 						:(opdone)
 g.sch
 	sch_pre = sch_post =
@@ -2181,7 +2162,7 @@ g.sch
 
 *  if source is x register, move it to w0, so can store character from lower part of a w register
 
-	ne(w) move(reg.w0, regmap[s.reg])
+	ne(w) op('Mov',reg.w0, regmap[s.reg])
 
 .if A
 	op('mov','M_char [' regmap[d.reg] ']', reglow[(eq(w) s.reg, 'w0')])
@@ -2196,7 +2177,7 @@ g.sch
 						:(opdone)
 g.sch.stos
 *  move source register to w0, setting up low part, then store from w0
-	move(reg.w0, regmap[s.reg])
+	op('Mov',reg.w0, regmap[s.reg])
 	op('stosb')
 						:(opdone)
 
@@ -2534,23 +2515,6 @@ genrep
 	op('jmp',l1)
 	opl(l2 ':')
 						:(return)
--stitl	gendir(command,name) - generate directive.
-gendir
-	ident(command,'segment')		:s(gendir.segment)
-.if A
-	op(command,name)			
-.fi
-.if G
-	op('.' command,name)
-.fi
-						:(return)
-gendir.segment
-.if A
-	op(command, '.' name)		:(return)
-.fi
-.if G
-	op('.' name)				:(return)
-.fi
 g.chk
 	op('chk_')
 	op('or',reg.w0,reg.w0);
@@ -2559,7 +2523,7 @@ g.chk
 decend
 *  here at end of dic or dac to see if want label made public
 	thislabel ? rtab(1) . thislabel ':'
-        differ(pubtab[thislabel]) gendir('global',thislabel)
+        differ(pubtab[thislabel]) op('Global',thislabel)
 						:(opdone)
 
 g.dac	
@@ -2575,7 +2539,7 @@ g.dic
 						:(decend)
 
 g.drc
-	gendir('align',8)
+	op('Align',8)
 	t1 = i.text(i1)
 	t1 ? fence "+" = ""
 	op(D_real,t1)
@@ -2610,7 +2574,7 @@ g.equ
 
 g.exp
 	ppm_cases[thislabel] = i.text(i1)
-*	gendir('extern',thislabel)
+*	op('Extern',thislabel)
 	thislabel =				:(opdone)
 
 g.inp
@@ -2630,29 +2594,29 @@ g.sec	op('')
 
 * procedure declaration section
 g.sec.1
-	gendir('segment','text')
-        gendir('global','sec01')
+	op('Text')
+        op('Global','sec01')
         opl('sec01:')	             	:(opdone)
 
 * definitions section
 g.sec.2
-	gendir('segment','data')
-	gendir('global','sec02')
+	op('Data')
+	op('Global','sec02')
         opl('sec02:')       		      	:(opdone)
 
 * constants section
 g.sec.3
-	gendir('segment','data')
-	gendir('global','sec03')
+	op('Data')
+	op('Global','sec03')
 	opl('sec03:')
 						:(opdone)
 
 * working variables section
 g.sec.4 
-	gendir('global','esec03')
+	op('Global','esec03')
         opl('esec03' ':')
-        gendir('segment','data')
-        gendir('global','sec04')
+        op('Data')
+        op('Global','sec04')
 	opl('sec04:')			:(opdone)
 
 *  here at start of program section.  if any n type procedures,
@@ -2660,7 +2624,7 @@ g.sec.4
 g.sec.5
 *  emit code to indicate in code section
 *  get direction set to up.
-        gendir('global','esec04')
+        op('Global','esec04')
         opl('esec04' ':')
 *        (gt(prc.count1) opl('prc$' ':','times', prc.count1 ' dd 0'))
 .if A
@@ -2669,23 +2633,23 @@ g.sec.5
 .if G
 	opl('prc_:','.fill', prc.count1,cfp_b)
 .fi
-        gendir('global','end_min_data')
+        op('Global','end_min_data')
         opl('end_min_data' ':')
-        gendir('segment','text')
-        gendir('global','sec05')
+        op('Text')
+        op('Global','sec05')
         opl('sec05' ':')
 *  enable tracing if desired
 						:(opdone)
 
 *  stack overflow section.  output exi__n tail code
 g.sec.6
-        gendir('global','sec06')
+        op('Global','sec06')
         opl('sec06'  ':', 'nop')
 				             :(opdone)
 
 *  error section.  produce code to receive erb's
 g.sec.7
-        gendir('global','sec07')
+        op('Global','sec07')
         opl('sec07:')
 	flush()
 *  error section.  produce code to receive erb's
@@ -2749,7 +2713,6 @@ report
 g.end
 * here at end of code generation.
 
-	output = 'i_trace ' i_trace
 	endfile(1)
 	endfile(2)
 	endfile(3)
