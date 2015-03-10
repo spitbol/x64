@@ -39,8 +39,8 @@ uword save_wc;
 uword save_w0;
 uword save_cp;
 double save_ra;
-uword it_ln;
-uword it_ln;
+uword trc_ln;
+uword trc_ln;
 
 uword last_xl;
 uword last_xr;
@@ -52,13 +52,13 @@ uword last_w0;
 uword last_cp;
 double last_ra;
 
-uword it_calls = 0;
-uword it_hundred = 0;
+uword trc_calls = 0;
+uword trc_hundred = 0;
 
-uword it_off;
-uword it_id=0;
-uword it_last = 0;
-char * it_de;
+uword trc_off;
+uword trc_id=0;
+uword trc_last = 0;
+char * trc_de;
 
 extern long c_aaa;
 extern long w_yyy;
@@ -139,15 +139,15 @@ long off_c_aaa;
 long off_w_yyy;
 
 
-char * it_charp;
+char * trc_charp;
 
-void it_str() {
+void trc_str() {
 // print memory block pointed to by save_cp as string.
 // print up to 20 characters, or until find non-printable character.
 	char * cp;
-	cp = it_charp;
+	cp = trc_charp;
 	int i;
-	fprintf(stderr,"it_str  ");
+	fprintf(stderr,"trc_str  ");
 	for (i = 0;i<20;i++) {
 		char c = *cp++;
 		if (c>=32 && c <= 126) fprintf(stderr,"%c",c);
@@ -160,7 +160,7 @@ int reglines; // print full registers every this number of lines
 int regline; // current line module reglines
 
 extern uword _rc_;
-void it() {
+void trc() {
 
 	char *p;
 	char *dp;
@@ -169,8 +169,8 @@ void it() {
 
 	if ((spitflag & ITRACE) == 0)	return;
 
-	it_calls++;
-	if (it_calls > 50000) return;
+	trc_calls++;
+	if (trc_calls > 50000) return;
 
 	// print registers that have changed since last statement
 
@@ -225,49 +225,49 @@ void it() {
 
 	// display instruction pointer and description of current statement.
 	// extract line number at end of trace string
-	dp = it_de + strlen(it_de) - 4;
-	it_last = atoi(dp);
-	if (it_ln != it_last) {
-	fprintf(stderr, "\n %s\n",it_de);
+	dp = trc_de + strlen(trc_de) - 4;
+	trc_last = atoi(dp);
+	if (trc_ln != trc_last) {
+	fprintf(stderr, "\n %s\n",trc_de);
 	}
-	it_last = it_ln;
+	trc_last = trc_ln;
 
 }
-void it_0() {
-	fprintf(stderr, "it_0\n");
+void trc_0() {
+	fprintf(stderr, "trc_0\n");
 }
-void it_1() {
-	fprintf(stderr, "it_1\n");
+void trc_1() {
+	fprintf(stderr, "trc_1\n");
 }
-void it_2() {
-	fprintf(stderr, "it_2\n");
+void trc_2() {
+	fprintf(stderr, "trc_2\n");
 }
-void it_3() {
-	fprintf(stderr, "it_3\n");
+void trc_3() {
+	fprintf(stderr, "trc_3\n");
 }
-void it_4() {
-	fprintf(stderr, "it_4\n");
+void trc_4() {
+	fprintf(stderr, "trc_4\n");
 }
-uword it_arg;
-void it_num() {
-	fprintf(stderr, "it_num\t%x\n",(unsigned int) it_arg);
+uword trc_arg;
+void trc_num() {
+	fprintf(stderr, "trc_num\t%x\n",(unsigned int) trc_arg);
 }
-int it_num_id;
-int it_sys_id;
-int it_sys_calls=0;
-void it_sys() {
-	it_sys_calls++;
-	fprintf(stderr, "it_sys %d %d\n",it_sys_calls,it_sys_id);
+int trc_num_id;
+int trc_sys_id;
+int trc_sys_calls=0;
+void trc_sys() {
+	trc_sys_calls++;
+	fprintf(stderr, "trc_sys %d %d\n",trc_sys_calls,trc_sys_id);
 }
 	extern double REAV1;
-void it_ra() {
-	fprintf(stderr,"it_ra %e\n",reg_ra);
+void trc_ra() {
+	fprintf(stderr,"trc_ra %e\n",reg_ra);
 }
 
 long off_basemem;
 long off_topmem;
 
-void it_init(long basemem, long topmem) {
+void trc_init(long basemem, long topmem) {
 	off_basemem = basemem;
 	off_topmem = topmem;
 	if ((spitflag & ITRACE) == 0) return;

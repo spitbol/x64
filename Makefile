@@ -20,11 +20,13 @@ WS=$(ws)
 
 TARGET=$(OS)_$(WS)
 
-it?=0
-IT:=$(it)
-ifneq ($(IT),0)
-ITOPT:=:it
-ITDEF:=-Dit_trace
+ASM=asm
+
+trc?=0
+TRC:=$(trc)
+ifneq ($(TRC),0)
+TRCOPT:=:trc
+TRCDEF:=-Dtrc_trace
 endif
 
 NMFLAGS:=-p
@@ -101,28 +103,27 @@ COBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 	arith.o lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
-	trypath.o wrtaout.o zz.o getargs.o it.o main.o 
+	trypath.o wrtaout.o zz.o getargs.o trc.o main.o 
 
 
 # build spitbol using nasm, build spitbol using as.
 # link asm spitbol with static linking
 # use fake target asmobj which appears only when all .s files built
 asm: 
-
 # run lex to get min.lex
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 # run preprocessor to get asm for nasm as target
 	$(BASEBOL) -u A pre.sbl <min.sbl >min-asm.spt 
 # run asm to get .s and .err files
-	$(BASEBOL) -u $(TARGET):$(ITOPT) min-asm.spt
+	$(BASEBOL) -u $(TARGET)$(TRCOPT) min-asm.spt
 # run err 
-	$(BASEBOL) -u $(TARGET)_asm $(ERR)
+	$(BASEBOL) -u $(TARGET)_$(ASM) $(ERR)
 # use preprocessor to make version of rewriter for asm
 	$(BASEBOL) -u A pre.sbl <$(DEF) >def-asm.spt
 # run preprocessor to get sys for nasm as target
 	$(BASEBOL) -u A pre.sbl <sys >sys.asm.def
 # run asm definer to resolve system dependencies in sys
-	$(BASEBOL) -u $(TARGET) def-asm.spt <sys.asm.def >sys.s
+	$(BASEBOL) -u $(TARGET)  def-asm.spt <sys.asm.def >sys.s
 # combine sys.s,min.s, and err.s to get sincle assembler source file
 	cat <sys.s >spitbol.s
 	cat <sbl.s >>spitbol.s
@@ -226,8 +227,8 @@ s-gas.dic: s-gas.nm
 s-gas.nm: s-gas.o
 	nm -n s-gas.o >s-gas.nm
 
-it-gas:	s-gas.dic it.sbl
-	$(BASEBOL) -u s-gas.dic it.sbl <ad >ae
+trc-gas:	s-gas.dic trc.sbl
+	$(BASEBOL) -u s-gas.dic trc.sbl <ad >ae
 
 s-nasm.dic: s-nasm.nm
 	$(BASEBOL) test/map-$(WS).sbl <s-nasm.nm >s-nasm.dic
@@ -235,8 +236,8 @@ s-nasm.dic: s-nasm.nm
 s-nasm.nm: s-nasm.o
 	nm $(NMFLAGS) s-nasm.o >s-nasm.nm
 
-it-nasm: s-nasm.dic it.sbl
-	$(BASEBOL) -u s-nasm.dic it.sbl <ad >ae
+trc-nasm: s-nasm.dic it.sbl
+	$(BASEBOL) -u s-nasm.dic trc.sbl <ad >ae
 
 clean:
 	rm -f *.spt *.[ors] tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol 

@@ -173,7 +173,7 @@ option.next
 	ident(option,'unix_64')			:s(option.unix.64)
 	ident(option,'osx_32')			:s(option.osx.32)
 	ident(option,'xt')			:s(option.xt)
-	ident(option,'it')			:s(option.it)
+	ident(option,'trc')			:s(option.trc)
 
 * here if unknown option
 
@@ -186,7 +186,7 @@ option.unix.64
 	os = 'unix'; 	ws = '64'		:(option.next)
 option.osx.32
 	os = 'osx'; 	ws = '32'		:(option.next)
-option.it
+option.trc
 *	turn on instruction trace
 	i_trace = 1				:(option.next)
 option.xt
@@ -258,20 +258,20 @@ config.done
 	report('rip', rip_mode)
 	ne(rip_mode) ripinit()
 
-*	it_limit is maximum number of calls to be generated if non-zero
-	it_limit = 000
-*	set it_first non-zero to skip first number of instructions that would generate trace
-	it_first = 1
+*	trc_limit is maximum number of calls to be generated if non-zero
+	trc_limit = 000
+*	set trc_first non-zero to skip first number of instructions that would generate trace
+	trc_first = 1
 *	will set in_executable when in part of program where executable
 *	instructions may occur
-	it_exec = 0
+	trc_exec = 0
 
-*	it_suspend is set nonzero to temporarily disable the instruction trace.
+*	trc_suspend is set nonzero to temporarily disable the instruction trace.
 *	it is initially nonzero so no trace can be emitted until reach code section.
-	it_suspend = 1
+	trc_suspend = 1
 *	set in_skip when should not insert trace code, else assembly errors result.
 *	start with skip on, turn off when see first start of code.
-	it_skip = 1
+	trc_skip = 1
 *	skip_on and skip_off are labels indicating the start and end,
 *	respectively, of sections of the code that should not be traced,
 *	usually because they contain a loop instruction that won't
@@ -663,7 +663,7 @@ opnext.1
 .		i.text(i2) ' ' i.text(i3)
 .fi
 	argerrs = 0
-	differ(it_trace) ge(sectnow,5) eq(it_suspend) chktrace()
+	differ(trc_trace) ge(sectnow,5) eq(trc_suspend) chktrace()
 	ge(sectnow,5) chktrace()
 						:($('g.' incode))
 *  here if bad opcode
@@ -872,7 +872,7 @@ gensh
 	ident(reg,reg.wa)			:s(gensh.wa)
 *  here if register is NOT WA, so push/restore WA
 	op('push',reg.wa)
-	op('mov',val,reg.wa)
+	move(val,reg.wa)
 	op(opc, '%cl',reg)
 	op('pop',reg.wa)			:(return)
 reg.wa
@@ -880,7 +880,7 @@ reg.wa
 	mov(reg.wa.reg.w0)
 	mov(val,reg.wa)
 	op(opc,'%cl',reg.w0)
-	op('mov',reg.w0,reg.wa)
+	move(reg.w0,reg.wa)
 						:(return)
 -stitl getarg(iarg)
 getarg
@@ -892,7 +892,7 @@ getarg
 .fi
 	txt = i.text(iarg)
 	typ = i.type(iarg)
-	it_suspend = 1
+	trc_suspend = 1
 	eq(typ)					:f($(argcase[typ]))
 	getarg = txt				:(getarg.done)
 
@@ -1035,7 +1035,7 @@ getarg.c.25
 getarg.c.26
 getarg.c.27 getarg = txt			:(getarg.done)
 getarg.done
-	it_suspend = 0
+	trc_suspend = 0
 *	ne(x_trace) outline('; arg ' typ ':' txt   ' -> ' getarg)
 						:(return)
 .if G
@@ -1133,22 +1133,22 @@ getadr.lit
 	valtable[txt] = lbl
 	ent = lbl
 	flush()
-	it_suspend = 1
+	trc_suspend = 1
 	op('.data')
 	opl(lbl ':',D_word ,txt)
 	op('.text')
 	flush()
-	it_suspend = 0
+	trc_suspend = 0
 getadr.ent
 *	generate reference via reg.w0 if needed
-	it_suspend = 1
+	trc_suspend = 1
 	flush()
 	op('movq', ent ,reg.w0)
 	flush()
-	it_suspend = 0
+	trc_suspend = 0
 						:(getadr.done)
 getadr.done
-	it_suspend = 0
+	trc_suspend = 0
 	getadr = reg.w0
 						:(return)
 	
@@ -1319,22 +1319,22 @@ outstmt4
 -stitl  chktrace()
 chktrace
 	ident(i_trace)				:s(return)
-	ne(it_suspend)				:s(return)
+	ne(trc_suspend)				:s(return)
 	clabel = inlabel
- 	old_it_skip = it_skip
- 	old_it_exec = it_exec
+ 	old_trc_skip = trc_skip
+ 	old_trc_exec = trc_exec
  	old_is_exec = is_exec
-	it_skip = ident(inlabel,'s_aaa') 0
+	trc_skip = ident(inlabel,'s_aaa') 0
 
 	is_exec = is_executable[incode]
-	it_exec = differ(i_trace)  ident(inlabel, 's_aaa') 1
-	it_exec = differ(i_trace) ge(sectnow,5) 1
+	trc_exec = differ(i_trace)  ident(inlabel, 's_aaa') 1
+	trc_exec = differ(i_trace) ge(sectnow,5) 1
 
-* 	it_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
-* 	it_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
+* 	trc_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
+* 	trc_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
 
-	ne(it_skip)				:s(return)
-	eq(it_exec)				:s(return)
+	ne(trc_skip)				:s(return)
+	eq(trc_exec)				:s(return)
 	eq(is_exec)				:s(return)
 
 *	ne(in_gcol)				:s(return)
@@ -1344,26 +1344,26 @@ chktrace.1
 *	 only trace at label definition
 *	ident(thislabel)			:s(return)
 
-	it_count = it_count + 1
+	trc_count = trc_count + 1
 
-	gt(it_first) le(it_count,it_first)	:s(return)
-	gt(it_limit)  gt(it_count, it_limit)	:s(return)
+	gt(trc_first) le(trc_count,trc_first)	:s(return)
+	gt(trc_limit)  gt(trc_count, trc_limit)	:s(return)
 *	only trace an instruction once
 	eq(nlines,nlast)			:s(return)
 	nlast = nlines
 
-	it_desc = '"' replace(thisline,'|',' ') '"'
+	trc_desc = '"' replace(thisline,'|',' ') '"'
 .if A
 	ab_suspend = 1
 	gendir('segment','data')
 	flush()
 	lbl = genlab('it')
-	opl(lbl,D_char,it_desc)
+	opl(lbl,D_char,trc_desc)
 	op(D_char,'0');* string terminator
 	gendir('segment','text')
-	op('mov',reg.w0,lbl)
-	op('mov',mem(it_de),reg.w0)
-	op('call','it_')
+	move(reg.w0,lbl)
+	move(mem('trc_de'),reg.w0)
+	op('call','trc_')
 	flush()
 	ab_suspend = 0
 .fi
@@ -1371,11 +1371,11 @@ chktrace.1
 	ab_suspend = 1
 	gendir('segment','data')
 	flush()
-	lbl = genlab('it')
-	opl(lbl ':' ,'.asciz',it_desc)
+	lbl = genlab('trc')
+	opl(lbl ':' ,'.asciz',trc_desc)
 	gendir('segment','text')
-	op('mov' o_,'$' lbl,'it_de')
-	op('call','it_')
+	move('$' lbl,'trc_de')
+	op('call','trc_')
 	ab_suspend = 0
 .fi
 						:(return)
@@ -1396,8 +1396,8 @@ readline readline = infile                      :f(rl02)
 	ident( readline )			:s(readline)
 readline.0
 	leq( substr(readline,1,1 ),';' )       	:f(rl01)
-	it_skip = ident(readline,';i+') 0	:s(readline)
-*	it_skip = ident(readline,';i-') 1	:s(readline)
+	trc_skip = ident(readline,';i+') 0	:s(readline)
+*	trc_skip = ident(readline,';i-') 1	:s(readline)
 * force skip of full line comments
 	:(readline)
 
@@ -1457,28 +1457,28 @@ g.flc
 .if A
 	t1 = reglow[getreg(i1)]
 	t2 = genlab('flc')
-*	it_suspend = 1
+*	trc_suspend = 1
 	op('cmp',t1,"'A'")
 	op('jb', t2 )
 	op('cmp',t1,"'Z'")
 	op('ja', t2)
 	op('add',t1,'32')
         opl(t2 ':')
-*	it_suspend = 0
+*	trc_suspend = 0
 .fi
 .if G
 	
 	t1 = i.text(i1)
 	t2 = '%'  (ident(t1,'wa') 'c', ident(t1,reg.wb) 'b', 'd') 'l'
 	t3 = genlab('flc')
-	it_suspend = 1
+	trc_suspend = 1
 	op('cmpb',t2,"'A'")
 	op('jb', t3 )
 	op('cmpb',t2,"'Z'")
 	op('ja', t3)
 	op('add','$32',t2)
         opl(t3 ':')
-	it_suspend = 0
+	trc_suspend = 0
 .fi
 						:(opdone)
 
@@ -1519,7 +1519,7 @@ g.bsw
 .if A
 	t1 = getarg(i1)
 	t2 = genlab('bsw')
-	it_suspend = 1
+	trc_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
 	op('cmp',t1,getarg(i2))
 	op('jge',getarg(i3))
@@ -1540,12 +1540,12 @@ g.bsw.2
 g.bsw.3
 	gendir('segment','data')
         opl(t2 ':')
-	it_suspend = 0
+	trc_suspend = 0
 .fi
 .if G
 	t1 = getarg(i1)
 	t2 = genlab('bsw')
-	it_suspend = 1
+	trc_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
 	op('cmp',t1,getarg(i2))
 	op('jge',getarg(i3))
@@ -1554,7 +1554,7 @@ g.bsw1
 	op('jmp','*' t2 '(,' t1 ',' cfp_b ')')
 	op('.data')
         opl(t2 ':')
-	it_suspend = 0
+	trc_suspend = 0
 .fi
 						:(opdone)
 
@@ -1645,7 +1645,7 @@ g.jsr
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
 	eq(jsr_count)				:s(opdone)
-	it_suspend = 1
+	trc_suspend = 1
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
@@ -1656,7 +1656,7 @@ g.jsr
 	op('dec' o_, rcode)
 .fi
 	op('js',jsr_label_norm)
-	it_suspend = 0
+	trc_suspend = 0
 
 *	generate branch around for ppms that will follow
 *	take the branch if normal return (eax==0)
@@ -1683,7 +1683,7 @@ g.ppm
 g.ppm.loop.next
 	opl(lab_next ':')
  	jsr_count = jsr_count - 1
- 	it_suspend = eq(jsr_count) 0
+ 	trc_suspend = eq(jsr_count) 0
 	eq(jsr_count) opl(jsr_label_norm ':') :(opdone)
 g.ppm.loop
 	lab_next = genlab('ppm')
@@ -2005,9 +2005,9 @@ g.dvr
 .fi
 .if G
 *  getadr returns ea in w0
-*	it_suspend = 1
+*	trc_suspend = 1
 	getadr(i1)
-*	it_suspend = 0
+*	trc_suspend = 0
 .fi
 	op('call',op_)				:(opdone)
 
@@ -2449,7 +2449,7 @@ g.cvd
 	op('cvd_')				:(opdone)
 
 g.mvc
-	it_suspend = 1
+	trc_suspend = 1
 .if A
 	t1 = genlab('mvc')
 	op('rep')
@@ -2460,10 +2460,10 @@ g.mvc
 *	if charsize is word size, convert character count to byte count for word move
 
 	t1 = genlab('mvc')
-	it_suspend = 1
+	trc_suspend = 1
 	op('rep', 'movsb')
 .fi
-	it_suspend = 0
+	trc_suspend = 0
 						:(opdone)
 g.mvw
 .if A
@@ -2750,10 +2750,12 @@ report
 g.end
 * here at end of code generation.
 
+	output = 'i_trace ' i_trace
 	endfile(1)
 	endfile(2)
 	endfile(3)
 	report((ident(asm,'A') 'nasm', 'gas'),		'assembler')
+	differ(i_trace) report(i_trace,'instruction trace enabled')
         report(nlines,		'lines read')
         report(nstmts,		'statements processed')
         report(ntarget,		'target code lines produced')
