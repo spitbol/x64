@@ -17,8 +17,13 @@
 ;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 ;
 .if A
+	
 	%macro	Inc	1
 		inc	%1
+	%endmacro
+	
+	%macro	Jmp	1	; gas needs '*' before target
+		jmp	%1
 	%endmacro
 
 	%macro	Cmp	2	; src/dst differ

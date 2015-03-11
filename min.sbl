@@ -205,14 +205,12 @@ option.xt
 options.done
 	target = os '_' ws
 	report(target,'target')
-
-
-
 	filebase = "s"
 
 *	cfp_b is bytes per word, cfp_c is characters per word
 *       these should agree with values used in translator
 * set target-dependent configuration parameters
+
 	:($('config.' ws))
 
 config.32
@@ -1448,7 +1446,7 @@ g.bev
 	op('test',t1,'1')
 	op('jne',getarg(i2))			:(opdone)
 
-g.brn   op('jmp',getarg(i1))			:(opdone)
+g.brn   op('Jmp',getarg(i1))			:(opdone)
 
 g.bsw
 .if A
@@ -1461,7 +1459,7 @@ g.bsw
 * here after default case.
 g.bsw1
 	ne(rip_mode)				:s(g.bsw.2)
-	op('jmp', mem( t2 '+' t1 '*cfp_b')) :(g.bsw.3)
+	op('Jmp', mem( t2 '+' t1 '*cfp_b')) :(g.bsw.3)
 g.bsw.2
 * in rip_mode, need to generate location to reference destination
 	lbl = genrip()
@@ -1471,7 +1469,7 @@ g.bsw.2
 	op('Mov',reg.w0,t1)
 	op('sal',reg.w0,'log_cfp_b')
 	op('Add',reg.w0,mem(lbl))
-	op('jmp', reg.w0)
+	op('Jmp', reg.w0)
 g.bsw.3
 	op('Data')
         opl(t2 ':')
@@ -1486,7 +1484,7 @@ g.bsw.3
 	op('jge',getarg(i3))
 * here after default case.
 g.bsw1	
-	op('jmp','*' t2 '(,' t1 ',' cfp_b ')')
+	op('Jmp','*' t2 '(,' t1 ',' cfp_b ')')
 	op('Data')
         opl(t2 ':')
 	trc_suspend = 0
@@ -1554,13 +1552,7 @@ g.ent.2
 						:(opdone)
 
 g.bri
-.if A
-	op('jmp',getarg(i1))			:(opdone)
-.fi
-.fi G
-	op('jmp','*' getarg(i1)) :(opdone)
-.fi
-
+	op('Jmp',getarg(i1))			:(opdone)
 
 g.lei
 	t1 = regmap[i.text(i1)]
@@ -1625,13 +1617,13 @@ g.ppm.loop
 
 g.ppm.loop.err
 	op('Mov',mem(rcode), +t1)
-	op('jmp','err_')
+	op('Jmp','err_')
 						:(g.ppm.loop.next)
 g.ppm.loop.ppm
 *	check each ppm case and take branch if appropriate
 	ident(i.text(i1))			:s(g.ppm.2)
 	count.ppm = count.ppm + 1
-	op('jmp',	getarg(i1))
+	op('Jmp',getarg(i1))
 						:(g.ppm.loop.next)
 
 g.ppm.2
@@ -1673,13 +1665,7 @@ g.exi
 	op('ret')				:(opdone)
 g.exi.1
 	op('Mov',reg.w0, mem(prcent(prc.count)))
-.if A
-	op('jmp',reg.w0)
-.fi
-.if G
-	op('jmp', '*' reg.w0)
-.fi
-						:(opdone)
+	op('Jmp',reg.w0)			:(opdone)
 
 g.enp   op()					:(opdone)
 
@@ -1692,7 +1678,7 @@ g.erb
 .if G
 	op('mov' o_,  '$' +(i.text(i1)),rcode)
 .fi
- 	op('jmp','err_')
+ 	op('Jmp','err_')
 						:(opdone)
 
 g.icv
@@ -1810,8 +1796,7 @@ g.lct.1
 g.bct
 *  can issue loop if target register is cx.
 	t1 = getarg(i1)
-	t2 = getarg(i2)
-	:(g.bct2)
+	t2 = getarg(i2)				:(g.bct2)
 	ident(t1,reg.wa)			:s(g.bct1)
 g.bct2
 	op('Dec',t1)
@@ -2256,7 +2241,7 @@ genrep
 	op('jz',l2)
 	op(op)
 	op('dec',reg.wa)
-	op('jmp',l1)
+	op('Jmp',l1)
 	opl(l2 ':')
 						:(return)
 g.chk
