@@ -1,4 +1,5 @@
-*	expand symbolic definitions for target environment.
+*	expand symbolic definitions for target environment as input to gas assembler
+*	
 
 	target = host(0)
 	target break('_') . os "_" rem . ws
@@ -50,6 +51,7 @@ next
 .if G
 *	change nasm-style comments into gas format
 	line tab(0) ';' = '#' 			:s(copy)
+cloop	line ';' = '#'				:s(cloop)
 	
 
 aloop	line breakx('A') . first 'A(' bal . ref ')' rem . last = first a(ref) last	:s(mloop)

@@ -83,17 +83,17 @@
 		.align	\bytes
 	.endm
 
-	%macro	And	dst,src
+	.macro	And	dst,src
 	and	\src,\dst
-	%endmacro
+	.endm
 	
-	%macro	Or	dst,src
+	.macro	Or	dst,src
 	or	\src,\dst
-	%endmacro
+	.endm
 	
-	%macro	Xor	dst,src
+	.macro	Xor	dst,src
 	xor	\src,\dst
-	%endmacro
+	.endm
 	
 	.macro	Data
 		.data
@@ -146,7 +146,7 @@
 .fi
 
         Text
-
+.if A
 	%define	os	unix	; default
 	%define	unix
 	%define	ws	64	; default
@@ -209,6 +209,7 @@
 	%define Movs_b	movsb
 	%define Movs_w	movsd
 	%define	Stos_b	stosb
+	%define	Stos_c	stosb
 	%define	Stos_w	stosd
 	%define	Cmps_b	cmpsb
 
@@ -269,6 +270,7 @@
 %endif
 
 %endif
+.fi
 
 .if A
 	%define	W0_L	al
@@ -501,7 +503,6 @@
 
 	Global	typet
 	Data
-
         D_word	b_art   ; arblk type word - 0
         D_word	b_cdc   ; cdblk type word - 1
         D_word	b_exl   ; exblk type word - 2

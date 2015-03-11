@@ -810,14 +810,14 @@ gensh
 *  here if register is NOT WA, so push/restore WA
 	op('push',reg.wa)
 	op('Mov',val,reg.wa)
-	op(opc, '%cl',reg)
+	op(opc, WA_L,reg)
 	op('pop',reg.wa)			:(return)
-reg.wa
+gensh.wa
 *  here if shifting WA. Move to W0, then use WA to get shift count, shift W0, and move result back to WA
-	mov(reg.wa.reg.w0)
-	mov(val,reg.wa)
-	op(opc,'%cl',reg.w0)
-	op('Mov',reg.w0,reg.wa)
+	op('Mov',reg.w0.reg.wa)
+	op('Mov,reg.wa,val)
+	op(opc,WA_L,reg.w0)
+	op('Mov',reg.wa,reg.w0)
 						:(return)
 .fi
 -stitl getarg(iarg)
@@ -2102,6 +2102,7 @@ g.wtb
 .fi
 
 g.btw
+*HERE this crashes gas translation, need to five gensh
 	gensh('shr',getarg(i1),'log_cfp_b')	:(opdone)
 
 g.mti

@@ -113,17 +113,17 @@ asm:
 # run lex to get min.lex
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u A pre.sbl <min.sbl >min-asm.spt 
+	$(BASEBOL) -u A pre.sbl <min.sbl >asm.spt 
 # run asm to get .s and .err files
-	$(BASEBOL) -u $(TARGET)$(TRCOPT) min-asm.spt
+	$(BASEBOL) -u $(TARGET)$(TRCOPT) asm.spt
 # run err 
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(ERR)
 # use preprocessor to make version of rewriter for asm
-	$(BASEBOL) -u A pre.sbl <$(DEF) >def-asm.spt
+	$(BASEBOL) -u A pre.sbl <$(DEF) >def.spt
 # run preprocessor to get sys for nasm as target
-	$(BASEBOL) -u A pre.sbl <sys >sys.asm.def
+	$(BASEBOL) -u A pre.sbl <sys >sys.pre
 # run asm definer to resolve system dependencies in sys
-	$(BASEBOL) -u $(TARGET)  def-asm.spt <sys.asm.def >sys.s
+	$(BASEBOL) -u $(TARGET)  def.spt <sys.pre >sys.s
 # combine sys.s,min.s, and err.s to get sincle assembler source file
 	cat <sys.s >spitbol.s
 	cat <sbl.s >>spitbol.s
@@ -144,23 +144,23 @@ gas:
 # run lex to get min.lex
 	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
 # run preprocessor to get gas for ngas as target
-	$(BASEBOL) -u G pre.sbl <min.sbl >min-gas.spt 
+	$(BASEBOL) -u G pre.sbl <min.sbl >gas.spt 
 # run gas to get .s and .err files
-	$(BASEBOL) -u $(TARGET):$(ITOPT) min-gas.spt
+	$(BASEBOL) -u $(TARGET):$(ITOPT) gas.spt
 # run err 
 	$(BASEBOL) -u $(TARGET)_gas $(ERR)
 # use preprocessor to make version of rewriter for gas
-	$(BASEBOL) -u G pre.sbl <$(DEF) >def-gas.spt
+	$(BASEBOL) -u G pre.sbl <$(DEF) >def.spt
 # run preprocessor to get sys for ngas as target
-	$(BASEBOL) -u G pre.sbl <sys >sys.gas.def
+	$(BASEBOL) -u G pre.sbl <sys >sys.pre
 # run gas definer to resolve system dependencies in sys
-	$(BASEBOL) -u $(TARGET) def-gas.spt <sys.gas.def >sys.s
+	$(BASEBOL) -u $(TARGET) def.spt <sys.pre >sys.s
 # combine sys.s,min.s, and err.s to get sincle assembler source file
 	cat <sys.s >spitbol.s
 	cat <sbl.s >>spitbol.s
 	cat <err.s >>spitbol.s
 # assemble the translated file
-	$(NASM) $(ASMOPTS) -ogasbol.o spitbol.s
+	$(GAS) $(GASOPTS) -ogasbol.o spitbol.s
 # compile osint
 	$(CC)  $(CCOPTS) -c  osint/*.c
 # load objects
@@ -240,4 +240,4 @@ trc-nasm: s-nasm.dic it.sbl
 	$(BASEBOL) -u s-nasm.dic trc.sbl <ad >ae
 
 clean:
-	rm -f *.spt *.[ors] *.def tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol 
+	rm -f *.spt *.def *.pre *.[ors] *.def tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol 
