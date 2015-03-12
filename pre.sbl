@@ -1,5 +1,12 @@
 * prep - simple pre-processor 
-	version = (differ(host(0)) host(0), 'A')
+	target = (differ(host(0)) host(0), 'unix_64_asm')
+	target break('_') . os '_' break('_') . ws '_' rem . asm
+
+	defined = table(10)
+	defined[asm] = defined[os] = defined[ws] = 1
+	defined['1'] = 1
+
+	output = 
 	&anchor = &trim = 1
 	&dump = 3
 	skip = 0
@@ -7,16 +14,47 @@
 copy
 	output = line
 next
-	line = input				:f(finis)
-	line '.if'				:s(pp.if)
-	line '.fi'				:s(pp.fi)
+	line = input					:f(finis)
+	line '.if'					:s(pp.if)
+	line '.fi'					:s(pp.fi)
+
 * here if not directive, so just copy it out unless skipping
-	ne(skip)				:s(next)f(copy)
+	ne(skip)					:s(next)f(copy)
 
-pp.if	line len(3)  span(' ') rem . name 	:f(err)
-	skip = (differ(name,version) 1, 0)	:(next)
+pp.if	
+*	strip off directive
 
-pp.fi	skip = 0				:(next)
+	line len(3) span(' ')  =
+
+*	add ' 1 ' at end, to ensure there are two names, and if only one, then and is true
+* 	only if that name is defined
+
+	line = line ' 1 '
+
+*	assume will skip
+
+	skip = 1
+
+*	get first name
+
+	line break(' ') . name span(' ') =
+
+*	skip if name not defined
+
+	ident(defined[name])				:s(next)
+
+*	get second name, or '1' if only one name was present
+
+	line break(' ') . name span(' ') =
+
+*	skip if name not defined
+	ident(defined[name])				:s(next)
+
+*	one or both names defined, so disable skip to include body of if
+
+	skip = 0					:(next)	
+
+pp.fi	skip = 0					:(next)
 
 err
 	terminal = 'illegal if - translation terminated'		:(finis)

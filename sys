@@ -17,125 +17,11 @@
 ;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 ;
 
-.if A
-	%define M_char	byte	; reference to byte in memory
-	%define D_byte	db	; define value of byte
-	%define D_char	db	; define value of byte
-
-
-%if ws=64
-	%define	D_char	db
-	%define D_word	dq
-	%define D_real	dq	; define value for floating point
-	%define M_real	qword	; reference to floating point value in memory
-	%define M_word  qword
-
-	%define	W0	rax
-	%define W1	rbp
-	%define	WA	rcx
-	%define	WB	rbx
-	%define	WC	rdx
-
-	%define	XL	rsi
-	%define	XT	rsi
-	%define	XR	rdi
-	%define	XS	rsp
-
-	%define	cfp_b	8
-	%define	cfp_c	8
-	%define log_cfp_b 3
-	%define log_cfp_c 3
-	%define D_real	dq
-	%define cfp_c_val	8
-	%define log_cfp_c 3
-	%define cfp_m_	9223372036854775807
-;	%define	cfp_n_	64
-
-	%define	Lods_w	lodsq
-	%define	Lods_b	lodsb
-	%define Movs_b	movsb
-	%define Movs_w	movsq
-	%define Stos_b	stosb
-	%define	Stos_w	stosq
-	%define	Cmps_b	cmpsb
-
-	%define	cdq	cqo	; sign extend (64 bits)
-
-%ifdef osx
-	%define Mem(ref) qword[rel ref]
-	%define Adr(ref) [rel ref]
-%else
-	%define Mem(ref) qword[ref]
-	%define Adr(ref) [ref]
-%endif
-
-%endif
-%if	ws=32
-
-	%define M_real	dword	; reference to floating point value in memory
-	%define D_real	dq	; define value for floating point
-
-
-	%define W0	eax
-	%define W1	ebp
-	%define WA	ecx
-	%define WB	ebx
-	%define WC	edx
-
-	%define	XL	esi
-	%define	XT	esi
-	%define XR	edi
-	%define XS	esp
-
-	%define	D_char	db
-	%define D_word	dd	; define value for memory Word
-	%define D_real	dd
-	%define M_word	dword	; reference to Word in memory
-	%define M_real	dword	; reference to Word in memory
-	%define	cfp_b	4
-	%define	cfp_c	4
-	%define log_cfp_b 2
-	%define cfp_c_val	4
-	%define log_cfp_c 2
-	%define cfp_m_	2147483647
-;	%define	cfp_n_	32
-
-	%define	Lods_b	lodsb
-	%define	Lods_w	lodsd
-	%define Movs_b	movsb
-	%define Movs_w	movsd
-	%define	Stos_b	stosb
-	%define	Stos_c	stosb
-	%define	Stos_w	stosd
-	%define	Cmps_b	cmpsb
-
-	%define	cdq	cdq	; sign extend (32 bits)
-%ifdef osx
-	%define Mem(ref) dword[rel ref]
-	%define Adr(ref) [rel ref]
-%else
-	%define Mem(ref) dword[ref]
-	%define Adr(ref) [ref]
-%endif
-%endif
-.fi
-
-.if A
-	%define	W0_L	al
-	%define	WA_L	cl
-	%define	WB_L	bl
-	%define	WC_L	dl
-
-;	flags
-	%define	flag_of	0x80
-	%define	flag_cf	0x01
-	%define	flag_ca	0x40
-.fi
 
 ; Operation and declaration macros are needed for each instruction/declaration having  different
 ; formats in asm and gas.
 
-.if A
+.if asm
 	
 	%macro	Add	2
 		add	%1,%2
@@ -156,8 +42,12 @@
 	%macro	Data	0
 		section	.data
 	%endmacro
+
+	%macro	Equ	2
+%1:	equ	%2
+	%endmacro
 .fi
-.if G
+.if gas
 	.macro	Add	dst,src
 		add	\src,\dst
 	.endm
@@ -177,13 +67,13 @@
 	.macro	Data
 		.data
 	.endm
+
+	.macro	Equ	name,value
+	.set	\name,\value
+	.endm
 .fi
 
-.if A
-	%macro	Equ	2
-%1:	equ	%2
-	%endmacro
-
+.if asm
 	%macro Extern	1
 		extern	%1
 	%endmacro
@@ -205,11 +95,7 @@
 	%endmacro
 .fi
 
-.if G
-	.macro	Equ	name,value
-	.set	\name,\value
-	.endm
-
+.if gas
 	.macro	Extern	name
 		.extern	\name
 	.endm
@@ -231,7 +117,7 @@
 	.endm
 .fi
 
-.if A
+.if asm
 	%macro	Jmp	1	; gas needs '*' before target
 		jmp	%1
 	%endmacro
@@ -258,7 +144,7 @@
 .fi
 	
 
-.if G
+.if gas
 	.macro	Jmp	lab	; gas needs '*' before target
 		jmp	* \lab
 	.endm
@@ -283,6 +169,122 @@
 	xor	\src,\dst
 	.endm
 .fi
+
+; .if 32
+; 	Equ	cfp_b,4
+; 	Equ	cfp_c,4
+; 	Equ	log_cfp_b,2
+; 	Equ	cfp_c_val,4
+; 	Equ	log_cfp_c,2
+; 	Equ	cfp_m_	2147483647
+; ;	%define	cfp_n_	32
+; .fi
+; .if 64
+; 	Equ	cfp_b,8
+; 	Equ	cfp_c,8
+; 	Equ	log_cfp_b,3
+; 	Equ	log_cfp_c,3
+; 	Equ	cfp_c_val,8
+; 	Equ	cfp_m_,9223372036854775807
+; 	Equ	cfp_n_,64
+; 
+; .fi
+	
+.if asm
+	%define M_char	byte	; reference to byte in memory
+	%define D_byte	db	; define value of byte
+	%define D_char	db	; define value of byte
+
+
+.if asm 64
+	%define	log_cfp_b	3
+	%define	log_cfp_c	3
+
+	%define	D_char	db
+	%define D_word	dq
+	%define D_real	dq	; define value for floating point
+	%define M_real	qword	; reference to floating point value in memory
+	%define M_word  qword
+
+	%define	W0	rax
+	%define W1	rbp
+	%define	WA	rcx
+	%define	WB	rbx
+	%define	WC	rdx
+
+	%define	XL	rsi
+	%define	XT	rsi
+	%define	XR	rdi
+	%define	XS	rsp
+
+	%define D_real	dq
+
+	%define	Lods_w	lodsq
+	%define	Lods_b	lodsb
+	%define Movs_b	movsb
+	%define Movs_w	movsq
+	%define Stos_b	stosb
+	%define	Stos_w	stosq
+	%define	Cmps_b	cmpsb
+
+	%define	cdq	cqo	; sign extend (64 bits)
+	%define Mem(ref) qword[ref]
+	%define Adr(ref) [ref]
+.fi
+
+.if asm 32
+
+	%define	log_cfp_b	2
+	%define	log_cfp_c	2
+
+	%define M_real	dword	; reference to floating point value in memory
+	%define D_real	dq	; define value for floating point
+
+
+	%define W0	eax
+	%define W1	ebp
+	%define WA	ecx
+	%define WB	ebx
+	%define WC	edx
+
+	%define	XL	esi
+	%define	XT	esi
+	%define XR	edi
+	%define XS	esp
+
+	%define	D_char	db
+	%define D_word	dd	; define value for memory Word
+	%define D_real	dd
+	%define M_word	dword	; reference to Word in memory
+	%define M_real	dword	; reference to Word in memory
+
+	%define	Lods_b	lodsb
+	%define	Lods_w	lodsd
+	%define Movs_b	movsb
+	%define Movs_w	movsd
+	%define	Stos_b	stosb
+	%define	Stos_c	stosb
+	%define	Stos_w	stosd
+	%define	Cmps_b	cmpsb
+
+	%define	cdq	cdq	; sign extend (32 bits)
+
+	%define Mem(ref) dword[ref]
+	%define Adr(ref) [ref]
+.fi
+
+.if asm
+	%define	W0_L	al
+	%define	WA_L	cl
+	%define	WB_L	bl
+	%define	WC_L	dl
+
+;	flags
+	%define	flag_of	0x80
+	%define	flag_cf	0x01
+	%define	flag_ca	0x40
+.fi
+
 	
         Text
 	Global	dnamb
@@ -311,7 +313,7 @@
 
 	Global	start
 
-.if A
+.if asm
 	%macro	itz	1
 	Data
 %%desc:	D_char	%1,0
@@ -368,7 +370,7 @@
 	Equ	globals,1                       
 
 
-.if A
+.if asm
 %ifdef osx
 ; redefine symbols needed by C to account for leading _ inserted by C compiler on osx
 	%define	b_icl		_b_icl
@@ -1268,7 +1270,7 @@ sysul:	syscall	zysul,37
 sysxi:	Mov	Mem(reg_xs),XS
 	syscall	zysxi,38
 
-.if A
+.if asm
 	%macro	callext	2
 	Extern	%1
 	call	%1
@@ -1373,7 +1375,7 @@ sysxi:	Mov	Mem(reg_xs),XS
 	%endmacro
 
 .fi
-.if G
+.if gas
 	.macro	callext	name,id
 	Extern	\name
 	call	\name

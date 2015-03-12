@@ -116,15 +116,15 @@ asm:
 # run lex to get min.lex
 	$(BASEBOL) -u $(TARGET) $(LEX)
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u A $(PRE) <min.sbl >asm.spt 
+	$(BASEBOL) -u $(TARGET) $(PRE) <min.sbl >asm.spt 
 # run asm to get .s and .err files
 	$(BASEBOL) -u $(TARGET)$(TRCOPT) asm.spt
 # run err 
 	$(BASEBOL) -u $(TARGET) $(ERR)
 # use preprocessor to make version of rewriter for asm
-	$(BASEBOL) -u A $(PRE) <$(DEF) >def.spt
+	$(BASEBOL) -u $(TARGET) $(PRE) <$(DEF) >def.spt
 # run preprocessor to get sys for nasm as target
-	$(BASEBOL) -u A pre.sbl <sys >sys.pre
+	$(BASEBOL) -u $(TARGET) $(PRE)  <sys >sys.pre
 # run asm definer to resolve system dependencies in sys
 	$(BASEBOL) -u $(TARGET)  def.spt <sys.pre >sys.s
 # combine sys.s,min.s, and err.s to get sincle assembler source file
@@ -147,15 +147,15 @@ gas:
 # run lex to get min.lex
 	$(BASEBOL) -u $(TARGET) $(LEX)
 # run preprocessor to get gas for ngas as target
-	$(BASEBOL) -u G $(PRE) <min.sbl >gas.spt 
+	$(BASEBOL) -u $(TARGET) $(PRE) <min.sbl >gas.spt 
 # run gas to get .s and .err files
 	$(BASEBOL) -u $(TARGET):$(TRCOPT) gas.spt
 # run err 
 	$(BASEBOL) -u $(TARGET) $(ERR)
 # use preprocessor to make version of rewriter for gas
-	$(BASEBOL) -u G $(PRE) <$(DEF) >def.spt
+	$(BASEBOL) -u $(TARGET) $(PRE) <$(DEF) >def.spt
 # run preprocessor to get sys for ngas as target
-	$(BASEBOL) -u G pre.sbl <sys >sys.pre
+	$(BASEBOL) -u $(TARGET) $(PRE) <sys >sys.pre
 # run gas definer to resolve system dependencies in sys
 	$(BASEBOL) -u $(TARGET) def.spt <sys.pre >sys.s
 # combine sys.s,min.s, and err.s to get sincle assembler source file
