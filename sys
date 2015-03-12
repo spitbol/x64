@@ -18,29 +18,6 @@
 ;
 
 .if A
-	%define	os	unix	; default
-	%define	unix
-	%define	ws	64	; default
-
-%ifdef	osx_64
-	%define	os	osx
-	%define	osx
-	%define	ws	64
-	default	rel		; use rip addressing
-%endif
-
-%ifdef	unix_32
-	%define	os	unix
-	%define	unix
-	%define	ws	32
-%endif
-
-%ifdef	unix_64
-	%define	os	unix
-	%define	unix
-	%define	ws	64
-%endif
-
 	%define M_char	byte	; reference to byte in memory
 	%define D_byte	db	; define value of byte
 	%define D_char	db	; define value of byte
@@ -145,9 +122,9 @@
 
 .if A
 	%define	W0_L	al
-	%define WA_L	cl
-	%define WB_L    bl
-	%define WC_L    dl
+	%define	WA_L	cl
+	%define	WB_L	bl
+	%define	WC_L	dl
 
 ;	flags
 	%define	flag_of	0x80
@@ -245,9 +222,9 @@
 		.global	\name
 	.endm
 
-	%macro	Inc	val
+	.macro	Inc	val
 		inc	\val
-	%endmacro
+	.endm
 
 	.macro	Include	file
 		.include	\file
@@ -260,7 +237,7 @@
 	%endmacro
 
 	%macro	Mov	2
-		Mov	%1,%2
+		mov	%1,%2
 	%endmacro
 
 	%macro	Or	2
@@ -282,12 +259,12 @@
 	
 
 .if G
-	%macro	Jmp	1	; gas needs '*' before target
-		jmp	* %1
-	%endmacro
+	.macro	Jmp	lab	; gas needs '*' before target
+		jmp	* \lab
+	.endm
 
 	.macro	Mov	dst,src
-		Mov	%src,%dst
+		mov	\src,\dst
 	.endm
 
 	.macro	Or	dst,src
@@ -364,7 +341,7 @@
 	Global	reg_ra
 	Global	reg_pc
 	Global	reg_xs
-	Global	reg_size
+;	Global	reg_size
 
 	Global	reg_rp
 
@@ -434,7 +411,7 @@
 ;	%define	reg_fl		_reg_fl
 ;	%define	reg_ra		_reg_ra
 ;	%define	reg_rp		_reg_rp
-	%define	reg_size	_reg_size
+;	%define	reg_size	_reg_size
 	%define	restart		_restart
 	%define	s_aaa		_s_aaa
 	%define	s_yyy		_s_yyy
@@ -648,9 +625,8 @@ reg_pc: D_word      0               ; return pc from caller
 reg_xs:	D_word	0		; minimal stack pointer
 
 ;	r_size  equ       $-reg_block
-; use computed value for nasm conversion, put back proper code later
-r_size	equ	16*cfp_b
-reg_size:	dd   r_size
+;r_size	equ	16*cfp_b
+;reg_size:	dd   r_size
 
 ; end of words saved during exit(-3)
 
@@ -671,8 +647,8 @@ inf:	D_word	0
 	D_word      0x7ff00000      ; double precision infinity
 
 	Global	sav_block
-;sav_block: times r_size db 0     	; save minimal registers during push/pop reg
-sav_block: times 44 db 0     		; save minimal registers during push/pop reg
+sav_block: 
+	Fill 	44 			; save minimal registers during push/pop reg
 
 	Align cfp_b
 	Global	ppoff
@@ -711,58 +687,55 @@ minimal_id:	D_word	0		; id for call to minimal from c. see proc minimal below.
 ;       setup a number of internal addresses in the compiler that cannot
 ;       be directly accessed from within c because of naming difficulties.
 
-	Global  id1
-id1:	dd   0
+	Global	id1
+id1:	dd	0
 %if setreal == 1
-	D_word       2
+	D_word	2
 
        D_word       1
-	D_char  "1x\x00\x00\x00"
+	D_char	"1x\x00\x00\x00"
 %endif
 
-	Global  id1blk
-id1blk	D_word   152
-      	D_word    0
-	times   152 db 0
+	Global	id1blk
+id1blk	D_word	152
+      	D_word	0
+	Fill	152
 
-	Global  id2blk
-id2blk	D_word   152
-      	D_word    0
-	times   152 db 0
+	Global	id2blk
+id2blk	D_word	152
+      	D_word	0
+	Fill	152
 
-	Global  ticblk
-ticblk:	D_word   0
-      D_word    0
+	Global	ticblk
+ticblk:
+	D_word	0
+	D_word	0
 
-	Global  tscblk
-tscblk:	 D_word   512
-      D_word    0
-	times   512 db 0
+	Global	tscblk
+tscblk: 
+	D_word   512
+	D_word    0
+	Fill   512
 
 ;       standard input buffer block.
 
 	Global  inpbuf
 
 inpbuf:	D_word	0			; type word
-      D_word    0               	; block length
-      D_word    1024            	; buffer size
-      D_word    0               	; remaining chars to read
-      D_word    0               	; offset to next character to read
-      D_word    0               	; file position of buffer
-      D_word    0               	; physical position in file
-.if A
-	times   1024 db 0        	; buffer
-.fi
-.if G
-	.fill	1024
-.fi
+	D_word	0               	; block length
+	D_word	1024            	; buffer size
+	D_word	0               	; remaining chars to read
+	D_word	0               	; offset to next character to read
+	D_word	0               	; file position of buffer
+	D_word	0               	; physical position in file
+	Fill	1024
 
 	Global  ttybuf
 
 ttybuf:	D_word    0     ; type word
-	D_word    0               	; block length
-	D_word    260             	; buffer size  (260 ok in ms-dos with cinread())
-	D_word    0               	; remaining chars to read
+	D_word	0								; block length
+	D_word	260             	; buffer size  (260 ok in ms-dos with cinread())
+	D_word	0               	; remaining chars to read
 	D_word    0               	; offset to next char to read
 	D_word    0               	; file position of buffer
 	D_word    0               	; physical position in file
@@ -1151,7 +1124,7 @@ sysbx:	Mov	Mem(reg_xs),XS
 
 ;	global syscr
 ;	Extern	zyscr
-;syscr:	syscall	zyscr ;    ,0
+;syscr:	syscall	zyscr,0
 
 	Global sysdc
 	Extern	zysdc
@@ -1762,7 +1735,8 @@ re4:	Mov	W0,Mem(stbas)
 
 ;	code that would be executed if we had returned to makeexec:
 ;
-	Mov	Mem(gbcnt),0       	; reset garbage collect count
+	xor	W0,W0
+	Mov	Mem(gbcnt),W0       	; reset garbage collect count to zero
 	call	zystm                 	; fetch execution time to reg_ia
 	Mov	W0,Mem(reg_ia)     	; set time into compiler
 	Mov	Mem(timsx),W0

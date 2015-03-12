@@ -4,14 +4,28 @@
 
 	target = (differ(host(0)) host(0), "unix_64_asm")
 	target break('_') . os len(1) break('_') . ws len(1) rem  . asm 
-*	output = 'target ' target
 *	output = 'os ' os '  ws  '  ws '  asm  '  asm
 
 .if G
+*	&dump = 3
 	target = host(0)
-	target break('_') . os "_" rem . ws
+	target break('_') . os '_' break('_') . ws '_' rem . asm
 
-	prefix = (eq(ws,32) '%e', '%r')
+*	create map from Minimal registers to gas register name
+
+	rmap = table(20)
+
+	s = 'XL si XR di XS sp XT si WA cx WB bx WC dx W0 ax IA bp '
+rinit	s break(' ') . min ' ' break(' ') . reg ' '  = 		:f(rdone)
+	rmap[min] =  (eq(ws,32) '%e', '%r') reg	:(rinit)
+rdone
+
+*	create map from 'low' register names to corresponding gas names
+	lmap = table(4)
+	s = 'W0_L %al WA_L %cl WB_L %bl WC_L %dl W0_L %al '
+linit	s break(' ') . reg ' ' break(' ') . low ' '  = 		:f(ldone)
+	lmap[reg] = low				:(linit)
+ldone
 
 	word = (eq(ws,32) 'dword','qword')
 	defines = 'M_word ' word ' '
@@ -25,22 +39,11 @@ a	ident(os,"osx")				:s(a.err)
 a.end
 
 	define('m(ref)')			:(m.end)
-m	ident(os,"osx")				:s(m.err)
-	m = (eq(ws,32) 'd', 'q') 'word ptr ' ref ']' :(return)
+m
+*	strip off enclosing parenthesis
+	ref len(1) break(')') . m
+	m = (eq(ws,32) 'd', 'q') 'word ptr ' m  :(return)
 m.end
-
-	lmap = table(4)
-	s = 'W0_L %al WA_L %cl WB_L %bl WC_L %dl '
-linit	s break(' ') . reg ' ' break(' ') . low ' '  = 		:f(ldone)
-	lmap[reg] = low				:(linit)
-ldone
-
-	rmap = table(20)
-
-	s = 'XL si XR di XS sp XT si WA cx WB bx WC dx W0 ax IA bp '
-rinit	s break(' ') . min ' ' break(' ') . reg ' '  = 		:f(rdone)
-	rmap[min] = reg				:(rinit)
-rdone
 
 
 
@@ -66,7 +69,12 @@ dloop
 	defs break(' ') . key ' ' break(' ') . val ' ' =	:f(mloop)
 dloop.1	line key = val				:s(dloop.1)f(dloop)
 
-mloop	line breakx('M') . first 'Mem(' bal . ref ')' rem . last = first m(ref) last	:s(mloop)
+mloop	
+*	line breakx('M') . first 'Mem' bal . ref  rem . last = first m(ref) last	:s(mloop)
+	line breakx('M') . first 'Mem' bal . ref  rem . last = first m(ref) last	:f(mloop.1)
+*	output = '#Mem line ' line
+*	output = '# Mem first ' first '  ref ' ref '  last ' last	:(mloop)	
+mloop.1
 
 rloop 	line rpat . reg = prefix rmap[reg]	:s(rloop)
 
