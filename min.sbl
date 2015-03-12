@@ -226,10 +226,6 @@ config.32
 *	op_c is instruction suffix for minimal character size
 	op_c = 'b'
 	rel = ''
-	D_word = 'dd'
-	D_word = ident(asm,'A') 'dd'
-	D_word = ident(asm,'G') '.long'
-	m_word = 'dword '
 *	suffix for opcode to indicate double word (32 bits)
 	o_ =	'd'
 						:(config.done)
@@ -245,11 +241,6 @@ config.64
 	op_w = 'q'
 	op_c = 'b'
 *	rel = 'rel '
-	rel = ''
-	D_word = 'dq'
-	D_word = ident(asm,'G') 'dq'
-	D_word = ident(asm,'G') '.quad'
-	m_word = 'qword '
 *	suffix for opcode to indicate quad word (64 bits)
 	o_ =	'q'
 
