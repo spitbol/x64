@@ -8,17 +8,17 @@
 #
 rm tbol.*
 echo "start 64-bit sanity test for asm"
-cp	./bin/spitbol.unix_64 testbol
+cp	./bin/spitbol_unix_64 testbol
 make clean>/dev/null
-make BASEBOL=./testbol asm
+make base=./testbol asm
 mv sbl.lex tbol.lex.0
 mv sbl.s tbol.s.0
 mv spitbol tbol
-make BASEBOL=./testbol asm
+make base=./testbol asm
 mv sbl.lex tbol.lex.1
 mv sbl.s tbol.s.1
 mv spitbol tbol
-make BASEBOL=./testbol asm
+make base=./testbol asm
 mv sbl.lex tbol.lex.2
 mv sbl.s tbol.s.2
 rm ./testbol

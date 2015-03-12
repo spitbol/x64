@@ -16,136 +16,7 @@
 ;     you should have received a copy of the gnu general public license
 ;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 ;
-.if A
-	
-	%macro	Inc	1
-		inc	%1
-	%endmacro
-	
-	%macro	Jmp	1	; gas needs '*' before target
-		jmp	%1
-	%endmacro
 
-	%macro	Cmp	2	; src/dst differ
-		cmp	%1,%2
-	%endmacro
-
-	%macro	Add	2
-		add	%1,%2
-	%endmacro
-
-	%macro	Align	1
-		align	%1
-	%endmacro
-
-	%macro	And	2
-	and	%1,%2
-	%endmacro
-	
-	%macro	Or	2
-	and	%1,%2
-	%endmacro
-	
-	%macro	Xor	2
-	and	%1,%2
-	%endmacro
-	
-	%macro	Data	0
-		section	.data
-	%endmacro
-
-	%macro	Equ	2
-%1:	equ	%2
-	%endmacro
-
-	%macro Extern	1
-		extern	%1
-	%endmacro
-	%macro	Fill	1
-	times	%1 db 0
-	%endmacro
-
-
-	%macro Global	1
-		global	%1
-	%endmacro
-	
-	%macro	Include	1
-		%include	%1
-	%endmacro
-.fi
-.if G
-	.macro	Add	dst,src
-		add	\src,\dst
-	.endm
-
-	.macro	Align	bytes
-		.align	\bytes
-	.endm
-
-	.macro	And	dst,src
-	and	\src,\dst
-	.endm
-	
-	.macro	Or	dst,src
-	or	\src,\dst
-	.endm
-	
-	.macro	Xor	dst,src
-	xor	\src,\dst
-	.endm
-	
-	.macro	Data
-		.data
-	.endm
-
-	.macro	Equ	name,value
-	.set	\name,\value
-	.endm
-
-	.macro	Extern	name
-		.extern	\name
-	.endm
-
-	.macro	Fill	count
-	.fill	\count
-	.endm
-
-	.macro	Global	name
-		.global	\name
-	.endm
-	.macro	Include	file
-		.include	\file
-	.endm
-.fi
-.if A
-	%macro	Mov	2
-		Mov	%1,%2
-	%endmacro
-
-	%macro	Sub	2
-		sub	%1,%2
-	%endmacro
-
-	%macro	Text 0
-		section	.text
-	%endmacro
-.fi
-.if G
-	.macro	Mov	dst,src
-		Mov	%src,%dst
-	.endm
-
-	.macro	Sub	dst,src
-		sub	\src,\dst
-	.endm
-
-	.macro	Text
-		.text
-	.endm
-.fi
-
-        Text
 .if A
 	%define	os	unix	; default
 	%define	unix
@@ -174,6 +45,54 @@
 	%define D_byte	db	; define value of byte
 	%define D_char	db	; define value of byte
 
+
+%if ws=64
+	%define	D_char	db
+	%define D_word	dq
+	%define D_real	dq	; define value for floating point
+	%define M_real	qword	; reference to floating point value in memory
+	%define M_word  qword
+
+	%define	W0	rax
+	%define W1	rbp
+	%define	WA	rcx
+	%define	WB	rbx
+	%define	WC	rdx
+
+	%define	XL	rsi
+	%define	XT	rsi
+	%define	XR	rdi
+	%define	XS	rsp
+
+	%define	cfp_b	8
+	%define	cfp_c	8
+	%define log_cfp_b 3
+	%define log_cfp_c 3
+	%define D_real	dq
+	%define cfp_c_val	8
+	%define log_cfp_c 3
+	%define cfp_m_	9223372036854775807
+;	%define	cfp_n_	64
+
+	%define	Lods_w	lodsq
+	%define	Lods_b	lodsb
+	%define Movs_b	movsb
+	%define Movs_w	movsq
+	%define Stos_b	stosb
+	%define	Stos_w	stosq
+	%define	Cmps_b	cmpsb
+
+	%define	cdq	cqo	; sign extend (64 bits)
+
+%ifdef osx
+	%define Mem(ref) qword[rel ref]
+	%define Adr(ref) [rel ref]
+%else
+	%define Mem(ref) qword[ref]
+	%define Adr(ref) [ref]
+%endif
+
+%endif
 %if	ws=32
 
 	%define M_real	dword	; reference to floating point value in memory
@@ -222,54 +141,6 @@
 	%define Adr(ref) [ref]
 %endif
 %endif
-
-%if ws=64
-	%define	D_char	db
-	%define D_word	dq
-	%define D_real	dq	; define value for floating point
-	%define M_real	qword	; reference to floating point value in memory
-	%define M_word  qword
-
-	%define	W0	rax
-	%define W1	rbp
-	%define	WA	rcx
-	%define	WB	rbx
-	%define	WC	rdx
-
-	%define	XL	rsi
-	%define	XT	rsi
-	%define	XR	rdi
-	%define	XS	rsp
-
-	%define	cfp_b	8
-	%define	cfp_c	8
-	%define log_cfp_b 3
-	%define log_cfp_c 3
-	%define d_real	dq
-	%define cfp_c_val	8
-	%define log_cfp_c 3
-	%define cfp_m_	9223372036854775807
-;	%define	cfp_n_	64
-
-	%define	Lods_w	lodsq
-	%define	Lods_b	lodsb
-	%define Movs_b	movsb
-	%define Movs_w	movsq
-	%define Stos_b	stosb
-	%define	Stos_w	stosq
-	%define	Cmps_b	cmpsb
-
-	%define	cdq	cqo	; sign extend (64 bits)
-
-%ifdef osx
-	%define Mem(ref) qword[rel ref]
-	%define Adr(ref) [rel ref]
-%else
-	%define Mem(ref) qword[ref]
-	%define Adr(ref) [ref]
-%endif
-
-%endif
 .fi
 
 .if A
@@ -283,11 +154,164 @@
 	%define	flag_cf	0x01
 	%define	flag_ca	0x40
 .fi
+
+; Operation and declaration macros are needed for each instruction/declaration having  different
+; formats in asm and gas.
+
+.if A
+	
+	%macro	Add	2
+		add	%1,%2
+	%endmacro
+
+	%macro	Align	1
+		align	%1
+	%endmacro
+
+	%macro	And	2
+	and	%1,%2
+	%endmacro
+
+	%macro	Cmp	2	; src/dst differ
+		cmp	%1,%2
+	%endmacro
+	
+	%macro	Data	0
+		section	.data
+	%endmacro
+.fi
+.if G
+	.macro	Add	dst,src
+		add	\src,\dst
+	.endm
+
+	.macro	Align	bytes
+		.align	\bytes
+	.endm
+
+	.macro	And	dst,src
+	and	\src,\dst
+	.endm
+	
+	.macro	Cmp	dst,src	; src/dst differ
+		cmp	\src,\dst
+	.endm
+	
+	.macro	Data
+		.data
+	.endm
+.fi
+
+.if A
+	%macro	Equ	2
+%1:	equ	%2
+	%endmacro
+
+	%macro Extern	1
+		extern	%1
+	%endmacro
+
+	%macro	Fill	1
+	times	%1 db 0
+	%endmacro
+
+	%macro Global	1
+		global	%1
+	%endmacro
+	
+	%macro	Inc	1
+		inc	%1
+	%endmacro
+
+	%macro	Include	1
+		%include	%1
+	%endmacro
+.fi
+
+.if G
+	.macro	Equ	name,value
+	.set	\name,\value
+	.endm
+
+	.macro	Extern	name
+		.extern	\name
+	.endm
+
+	.macro	Fill	count
+	.fill	\count
+	.endm
+
+	.macro	Global	name
+		.global	\name
+	.endm
+
+	%macro	Inc	val
+		inc	\val
+	%endmacro
+
+	.macro	Include	file
+		.include	\file
+	.endm
+.fi
+
+.if A
+	%macro	Jmp	1	; gas needs '*' before target
+		jmp	%1
+	%endmacro
+
+	%macro	Mov	2
+		Mov	%1,%2
+	%endmacro
+
+	%macro	Or	2
+	or	%1,%2
+	%endmacro
+	
+	%macro	Sub	2
+		sub	%1,%2
+	%endmacro
+
+	%macro	Text 0
+		section	.text
+	%endmacro
+
+	%macro	Xor	2
+	xor	%1,%2
+	%endmacro
+.fi
+	
+
+.if G
+	%macro	Jmp	1	; gas needs '*' before target
+		jmp	* %1
+	%endmacro
+
+	.macro	Mov	dst,src
+		Mov	%src,%dst
+	.endm
+
+	.macro	Or	dst,src
+	or	\src,\dst
+	.endm
+	
+	.macro	Sub	dst,src
+		sub	\src,\dst
+	.endm
+
+	.macro	Text
+		.text
+	.endm
+
+	.macro	Xor	dst,src
+	xor	\src,\dst
+	.endm
+.fi
+	
+        Text
 	Global	dnamb
 	Global	dname
 	Global	mxint
 
-;%ifdef trc_trace
 	Extern	id_de
 	Extern	trc_cp
 	Extern	trc_xl
@@ -307,7 +331,7 @@
 	Extern	trc_4
 	Extern	trc_arg
 	Extern	trc_num
-;%endif
+
 	Global	start
 
 .if A
@@ -325,7 +349,6 @@
 %else
 	%define	cfp_b	8
 	%define	cfp_c	8
-	%define		m64			// make m64 the default
 %endif
 .fi
 
@@ -616,7 +639,7 @@ reg_wc:	D_word	0		; register wc
 reg_xr:	D_word	0        	; register xr (xr)
 reg_xl:	D_word	0        	; register xl (xl)
 reg_cp:	D_word	0        	; register cp
-reg_ra:	d_real 	0.0  		; register ra
+reg_ra:	D_real 	0.0  		; register ra
 
 ; these locations save information needed to return after calling osint
 ; and after a restart from exit()

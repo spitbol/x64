@@ -1,26 +1,30 @@
 # SPITBOL makefile using tcc
-host?=unix_64
-HOST=$(host)
 
-DEBUG:=$(debug)
+# base compiler used for building
+base?= bin/spitbol_unix_64
+BASEBOL:=$(base)
+
+os?=unix
+OS:=$(os)
+
+asm?=asm
+ASM:=$(asm)
+
+ws?=64
+WS:=$(ws)
+
+TARGET=$(OS)_$(WS)_$(ASM)
 
 debug?=0
+DEBUG:=$(debug)
+
+# options to pick alternate executables for assemblers
 
 gas?=as
 GAS:=$(gas)
 
 nasm?=nasm
 NASM:=$(nasm)
-
-os?=unix
-OS:=$(os)
-
-ws?=64
-WS=$(ws)
-
-TARGET=$(OS)_$(WS)
-
-ASM=asm
 
 trc?=0
 TRC:=$(trc)
@@ -31,9 +35,6 @@ endif
 
 NMFLAGS:=-p
 # basebol determines which spitbol to use to compile
-spitbol?=./bin/spitbol.$(HOST)
-
-BASEBOL:=$(spitbol)
 
 cc?=gcc
 CC:=$(cc)
@@ -62,8 +63,8 @@ OSINT=./osint
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-NASMOPTS = -f $(ELF) -D$(TARGET) $(ITDEF)
-ASMOPTS = -f $(ELF) -D$(TARGET) $(ITDEF)
+NASMOPTS = -f $(ELF) -D$(OS)_$(WS) $(ITDEF)
+ASMOPTS  = -f $(ELF) -D$(OS)_$(WS) $(ITDEF)
 else
 NASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
 ASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
@@ -74,8 +75,10 @@ DEF=def.sbl
 ERR=err.sbl
 LEX=lex.sbl
 MIN=min.sbl
-
+PRE=pre.sbl
+PRE=pre.sbl
 # implicit rule for building objects from C files.
+
 ./%.o: %.c
 #.c.o:
 	$(CC)  $(CCOPTS) -c  -o$@ $(OSINT)/$*.c
@@ -111,15 +114,15 @@ COBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 # use fake target asmobj which appears only when all .s files built
 asm: 
 # run lex to get min.lex
-	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
+	$(BASEBOL) -u $(TARGET) $(LEX)
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u A pre.sbl <min.sbl >asm.spt 
+	$(BASEBOL) -u A $(PRE) <min.sbl >asm.spt 
 # run asm to get .s and .err files
 	$(BASEBOL) -u $(TARGET)$(TRCOPT) asm.spt
 # run err 
-	$(BASEBOL) -u $(TARGET)_$(ASM) $(ERR)
+	$(BASEBOL) -u $(TARGET) $(ERR)
 # use preprocessor to make version of rewriter for asm
-	$(BASEBOL) -u A pre.sbl <$(DEF) >def.spt
+	$(BASEBOL) -u A $(PRE) <$(DEF) >def.spt
 # run preprocessor to get sys for nasm as target
 	$(BASEBOL) -u A pre.sbl <sys >sys.pre
 # run asm definer to resolve system dependencies in sys
@@ -142,15 +145,15 @@ spitbol-dynamic: $(OBJS) $(AOBJS)
 gas:
 
 # run lex to get min.lex
-	$(BASEBOL) -u $(TARGET)_$(ASM) $(LEX)
+	$(BASEBOL) -u $(TARGET) $(LEX)
 # run preprocessor to get gas for ngas as target
-	$(BASEBOL) -u G pre.sbl <min.sbl >gas.spt 
+	$(BASEBOL) -u G $(PRE) <min.sbl >gas.spt 
 # run gas to get .s and .err files
-	$(BASEBOL) -u $(TARGET):$(ITOPT) gas.spt
+	$(BASEBOL) -u $(TARGET):$(TRCOPT) gas.spt
 # run err 
-	$(BASEBOL) -u $(TARGET)_gas $(ERR)
+	$(BASEBOL) -u $(TARGET) $(ERR)
 # use preprocessor to make version of rewriter for gas
-	$(BASEBOL) -u G pre.sbl <$(DEF) >def.spt
+	$(BASEBOL) -u G $(PRE) <$(DEF) >def.spt
 # run preprocessor to get sys for ngas as target
 	$(BASEBOL) -u G pre.sbl <sys >sys.pre
 # run gas definer to resolve system dependencies in sys
@@ -174,7 +177,7 @@ ogas:
 # run preprocessor to get asm for nasm as target
 	$(BASEBOL) -u G pre.sbl <asm.r >gas.spt 
 # run lex to get s.lex
-	$(BASEBOL) -u $(TARGET)_$(GAS) $(LEX)
+	$(BASEBOL) -u $(TARGET)_gas $(LEX)
 # run gas to get .s and .err files
 	$(BASEBOL) -u $(TARGET):$(ITOPT) gas.spt
 # revise source .s 

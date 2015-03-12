@@ -168,8 +168,8 @@
 
 	define('readline()')
 
-	os = 'unix';	ws = '64'
 	options = host(0)
+	os = 'unix';	ws = '64'
 	output = 'options: ' options
 *	add trailing colon so always have colon after an argument
 	options = options ':'
@@ -178,9 +178,11 @@ option.next
 	options ':' =				:s(option.next)
 	options break(':') . option ':' =	:f(options.done)
 
-	ident(option,'unix_32')			:s(option.unix.32)
-	ident(option,'unix_64')			:s(option.unix.64)
-	ident(option,'osx_32')			:s(option.osx.32)
+	ident(option,'unix_32_asm')		:s(option.unix.32)
+	ident(option,'unix_32_gas')		:s(option.unix.32)
+	ident(option,'unix_64_asm')		:s(option.unix.64)
+	ident(option,'unix_64_gas')		:s(option.unix.64)
+	ident(option,'osx_32_gas')		:s(option.osx.32)
 	ident(option,'xt')			:s(option.xt)
 	ident(option,'trc')			:s(option.trc)
 
@@ -815,7 +817,7 @@ gensh
 gensh.wa
 *  here if shifting WA. Move to W0, then use WA to get shift count, shift W0, and move result back to WA
 	op('Mov',reg.w0.reg.wa)
-	op('Mov,reg.wa,val)
+	op('Mov',reg.wa,val)
 	op(opc,WA_L,reg.w0)
 	op('Mov',reg.wa,reg.w0)
 						:(return)
