@@ -118,7 +118,11 @@
 		jmp	%1
 	%endmacro
 
-	%macro	Mov	2
+	%macro	Movb_	2
+		mov	%1,%2
+	%endmacro
+
+	%macro	Mov_	2
 		mov	%1,%2
 	%endmacro
 
@@ -143,6 +147,10 @@
 .if gas
 	.macro	Jmp_	lab	; gas needs '*' before target
 		jmp	* \lab
+	.endm
+
+	.macro	Movb_	dst,src
+		movb	\src,\dst
 	.endm
 
 	.macro	Mov_	dst,src
@@ -260,7 +268,6 @@
 	%define Movs_b	movsb
 	%define Movs_w	movsd
 	%define	Stos_b	stosb
-	%define	Stos_c	stosb
 	%define	Stos_w	stosd
 	%define	Cmps_b	cmpsb
 
@@ -927,7 +934,12 @@ startup:
 	Mov	Mem(ppoff),W0	; save for use later
 
 	Mov	XS,Mem(osisp)	; switch to new c stack
+.if asm
 	Mov	Mem(minimal_id),calltab_start
+.fi
+.if gas
+	Mov	Mem(minimal_id),$calltab_start
+.fi
 	call	minimal			; load regs, switch stack, start compiler
 
 ;	stackinit  -- initialize spmin from sp.
@@ -998,7 +1010,8 @@ minimal:
 	Mov	XL,Mem(reg_xl)
 
 	Mov	Mem(osisp),XS	; save osint stack pointer
-	cmp	Mem(compsp),0	; is there a compiler stack?
+	xor	W0,W0
+	cmp	Mem(compsp),W0	; is there a compiler stack?
 	je	min1			; jump if none yet
 	Mov	XS,Mem(compsp)	; switch to compiler stack
 
@@ -1065,7 +1078,7 @@ minimal:
 ;	8         take procedure exit 3
 ;	...        ...
 
-
+.if asm
 %ifdef	OLD
 	Global	get_ia
 get_ia:
@@ -1076,6 +1089,7 @@ get_ia:
 set_ia_:	Mov	IA,M_word[reg_w0]
 	ret
 %endif
+.fi
 syscall_init:
 ;	save registers in global variables
 
@@ -1097,8 +1111,8 @@ syscall_exit:
 	Mov	XL,Mem(reg_xl)
 	cld
 	Mov	W0,Mem(reg_pc)
-	jmp	W0
-
+	Jmp	W0
+.if asm
 	%macro	syscall	2
 	pop	W0			; pop return address
 	Mov	Mem(reg_pc),W0
@@ -1109,6 +1123,19 @@ syscall_exit:
 	call	%1
 	call	syscall_exit
 	%endmacro
+.fi
+.if gas
+	.macro	syscall	proc,id
+	pop	W0			; pop return address
+	Mov	Mem(reg_pc),W0
+	call	syscall_init
+;	save compiler stack and switch to osint stack
+	Mov	Mem(compsp),XS      ; save compiler's stack pointer
+	Mov	XS,Mem(osisp)       ; load osint's stack pointer
+	call	\proc
+	call	syscall_exit
+	.endm
+.fi
 
 	Global sysax
 	Extern	zysax
@@ -1171,7 +1198,12 @@ sysex:	Mov	Mem(reg_xs),XS
 	Global sysfc
 	Extern	zysfc
 sysfc:  pop     W0             ; <<<<remove stacked scblk>>>>
+.if asm
 	lea	XS,[XS+WC*cfp_b]
+.fi
+.if gas
+	lea	XS,Adr(XS+WC*cfp_b)
+.fi
 	push	W0
 	syscall	zysfc,14
 
@@ -1502,8 +1534,13 @@ dvi__:
 	Extern	i_dvi
 	Mov	Mem(reg_w0),W0
 	call	i_dvi
-	Mov	al,byte [rel reg_fl]
-	or	al,al
+.if asm
+	Movb_	W0_L,byte [reg_fl]
+.fi
+.if gas
+	mov	reg_fl,W0_L
+.fi
+	or	W0_L,W0_L
 	ret
 
 	Global	rmi__
@@ -1513,8 +1550,13 @@ rmi__:
 	Extern	i_rmi
 	Mov	Mem(reg_w0),W0
 	call	i_rmi
-	Mov	al,byte [rel reg_fl]
-	or	al,al
+.if asm
+	Movb_	W0_L,byte [reg_fl]
+.fi
+.if gas
+	movb	reg_fl,W0_L
+.fi
+	or	W0_L,W0_L
 	ret
 
 ocode:
@@ -1523,13 +1565,24 @@ ocode:
 	xchg	W0,Mem(reg_ia)	; ia to w0, divisor to ia
 	cdq			; extend dividend
 	idiv	Mem(reg_ia)	; perform division. w0=quotient, wc=remainder
-	seto	byte [rel reg_fl]
+.if asm
+	seto	byte [reg_fl]
+.fi
+.if gas
+	seto	reg_fl
+.fi
 	Mov	Mem(reg_ia),WC
 	ret
 
 setovr:
-	Mov	al,1		; set overflow indicator
-	Mov	byte [rel reg_fl],al
+	xor	W0_L,W0_L	; mov 1 to W0_L to set overflow indicator
+	inc	W0_L
+.if asm
+	Movb_	byte [reg_fl],W0_L
+.fi
+.if gas
+	mov	W0_L,reg_fl
+.fi
 	ret
 
 

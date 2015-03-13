@@ -2031,7 +2031,7 @@ g.trc
 	op('add','(,' reg.xl ')',reg.w0)
 	op('mov','(' reg.w0 ')', 'W0_L')
 .fi
-	op('Stos_c')
+	op('Stos_b')
 	op('dec',reg.wa)
 	op('jnz',labl)
 	op('xor',reg.xl,reg.xl)
