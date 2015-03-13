@@ -42,10 +42,6 @@
 	%macro	Data	0
 		section	.data
 	%endmacro
-
-	%macro	Equ	2
-%1:	equ	%2
-	%endmacro
 .fi
 .if gas
 	.macro	Add	dst,src
@@ -170,25 +166,26 @@
 	.endm
 .fi
 
-; .if 32
-; 	Equ	cfp_b,4
-; 	Equ	cfp_c,4
-; 	Equ	log_cfp_b,2
-; 	Equ	cfp_c_val,4
-; 	Equ	log_cfp_c,2
-; 	Equ	cfp_m_	2147483647
-; ;	%define	cfp_n_	32
-; .fi
-; .if 64
-; 	Equ	cfp_b,8
-; 	Equ	cfp_c,8
-; 	Equ	log_cfp_b,3
-; 	Equ	log_cfp_c,3
-; 	Equ	cfp_c_val,8
-; 	Equ	cfp_m_,9223372036854775807
-; 	Equ	cfp_n_,64
-; 
-; .fi
+
+.if 32
+	Equ	cfp_b,4
+	Equ	cfp_c,4
+	Equ	log_cfp_b,2
+	Equ	cfp_c_val,4
+	Equ	log_cfp_c,2
+	Equ	cfp_m_	2147483647
+;	%define	cfp_n_	32
+.fi
+.if 64
+	Equ	cfp_b,8
+	Equ	cfp_c,8
+	Equ	log_cfp_b,3
+	Equ	log_cfp_c,3
+	Equ	cfp_c_val,8
+	Equ	cfp_m_,9223372036854775807
+	Equ	cfp_n_,64
+
+.fi
 	
 .if asm
 	%define M_char	byte	; reference to byte in memory
@@ -628,7 +625,7 @@ reg_xs:	D_word	0		; minimal stack pointer
 
 ;	r_size  equ       $-reg_block
 ;r_size	equ	16*cfp_b
-;reg_size:	dd   r_size
+;reg_size:	D_word   r_size
 
 ; end of words saved during exit(-3)
 
@@ -663,7 +660,7 @@ sav_compsp:
 	Global	osisp
 osisp:  D_word      0               	; osint's stack pointer
 	Global	_rc_
-_rc_:	dd   0				; return code from osint procedure
+_rc_:	D_word   0				; return code from osint procedure
 
 	Align	cfp_b
 	Global	save_cp
@@ -684,27 +681,27 @@ save_wc:	D_word	0		; saved wc value
 minimal_id:	D_word	0		; id for call to minimal from c. see proc minimal below.
 
 ;
-	%define setreal 0
+;	%define setreal 0
 
 ;       setup a number of internal addresses in the compiler that cannot
 ;       be directly accessed from within c because of naming difficulties.
 
 	Global	id1
-id1:	dd	0
-%if setreal == 1
-	D_word	2
-
-       D_word       1
-	D_char	"1x\x00\x00\x00"
-%endif
+id1:	D_word	0
+;%if setreal == 1
+;	D_word	2
+;
+;       D_word       1
+;	D_char	"1x\x00\x00\x00"
+;%endif
 
 	Global	id1blk
-id1blk	D_word	152
+id1blk:	D_word	152
       	D_word	0
 	Fill	152
 
 	Global	id2blk
-id2blk	D_word	152
+id2blk:	D_word	152
       	D_word	0
 	Fill	152
 
@@ -753,7 +750,7 @@ spmin.a:	D_word	spmin
 
 	Global	cprtmsg
 cprtmsg:
-	D_char          ' copyright 1987-2012 robert b. k. dewar and mark emmer.',0,0
+	D_char          " copyright 1987-2012 robert b. k. dewar and mark emmer.",0,0
 
 call_adr:	D_word	0
 

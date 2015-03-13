@@ -1,48 +1,79 @@
 *	expand symbolic definitions for target environment as input to assembler
 *	
-	tab = char(9)
+	define('a(ref)')
+	define('m(ref)')
+*	define('macdef(name)')
+
+	define('tbldef(s)key,val')			:(tbldef.end)
+*	define table from list of key values separated by blanks
+tbldef
+*	add blank at end of string to simplify scan
+	s = s ' '
+	tbldef = table(100)
+	
+tbldef.1
+	s break(' ') . key ' ' break(' ') . val ' ' = :f(return)
+	tbldef[key] = value				:(tbldef.1)
+tbldef.end
 
 	target = (differ(host(0)) host(0), "unix_64_asm")
 	target break('_') . os len(1) break('_') . ws len(1) rem  . asm 
 *	output = 'os ' os '  ws  '  ws '  asm  '  asm
 
+	tab = char(9)
+	span.space = span(' ' char(9))
+	break.space = break(' ' char(9))
+
+.if asm
+*	output standard definitions
+	output = tab	'%define'	tab	'cfp_b'	tab	(eq(ws,32) 4, 8)
+	output = tab	'%define'	tab 	'cfp_c'	tab	(eq(ws,32) 4, 8)
+	output = tab	'%define'	tab	'os '	tab	os
+	output = tab	'%define'	tab	'ws'	tab	ws
+	:(next)
+copy	output = line
+next	line = input					:f(a.end)
+
+*	define 'Equ' definitions using %define statements
+
+	line	break('E') 'Equ' span.space  break(',') . name ',' rem . value =
++		tab	'%define'	tab	name	tab	value			
+							:(copy)
+
+a.end
+	output = tab '%undef'	tab	'cfp_b'
+	output = tab '%undef'	tab	'cfp_c'
+	output = tab '%undef'   tab	os
+	output = tab '%undef'	tab	'ws'
+.fi
 .if gas
 *	&dump = 3
-	target = host(0)
-	target break('_') . os '_' break('_') . ws '_' rem . asm
 
-*	create map from Minimal registers to gas register name
+*	create map from Minimal registers to gas register names
 
-	rmap = table(20)
-
-	s = 'XL si XR di XS sp XT si WA cx WB bx WC dx W0 ax IA bp '
-rinit	s break(' ') . min ' ' break(' ') . reg ' '  = 		:f(rdone)
-	rmap[min] =  (eq(ws,32) '%e', '%r') reg	:(rinit)
-rdone
+	rmap = tbldef(
++			'XL %esi XR %edi XS %esp XT %esi WA %ecx WB %ebx WC %edx W0 %eax IA %ebp ',
++			'XL %rsi XR %rdi XS %rsp XT %rsi WA %rcx WB %rbx WC %rdx W0 %rax IA %rbp')
 
 *	create map from 'low' register names to corresponding gas names
-	lmap = table(4)
-	s = 'W0_L %al WA_L %cl WB_L %bl WC_L %dl '
-linit	s break(' ') . reg ' ' break(' ') . low ' '  = 		:f(ldone)
-	lmap[reg] = low				:(linit)
-ldone
+	lmap = tbldef('W0_L %al WA_L %cl WB_L %bl WC_L %dl ')
 
+	is_macro = tbldef('Add 1 Align 1 Add 1 And 1 Cmp 1 Data 1 Equ 1 Extern 1 '
++				'Fill 1 Global 1 Inc 1 Include 1 Jmp 1 Mov 1 Or 1 Sub 1 Text 1 Xor 1')
 
-	define('a(ref)')			:(a.end)
+	macroname = any('ACDEFGIJMOSTX') span(&lcase '_')
 						:(next)
 a	ident(os,"osx")				:s(a.err)
 	a = '[' ref ']' 			:(return)
 a.end
 
-	define('m(ref)')			:(m.end)
 m
 *	strip off enclosing parenthesis
 	ref len(1) break(')') . m
 	m = (eq(ws,32) 'd', 'q') 'word ptr ' m  :(return)
-m.end
-
-
-
+-stitl macdef(name)
+*macdef
+*	macdef = (differ[macros[name]) macros[name], name)	:(return)
 	rpat =  'IA' | ('X' any('LRST')) | ('W' any('ABC0')) 
 
 	lpat = 'W' any('0ABC') '_L'
@@ -67,9 +98,9 @@ next
 
 	line any('CDM')				:f(defs.end)
 	line 'D_word' = (eq(ws,32) '.long', '.quad')
-	line 'D_char' = '.byte'
+	line 'D_char' = '.ascii'
 	line 'D_byte' = '.byte'
-	line 'D_real' = '.quad'
+	line 'D_real' = '.double'
 *	line 'CFP_B' =  (eq(ws,32) '4','8')
 *	line 'CFP_C' =  (eq(ws,32) '4','8')
 	line 'M_real' = 'qword'
@@ -104,24 +135,17 @@ lloop 	line lpat . reg  = lmap[reg]		:s(lloop)
 lloop.end
 regs.end
 
-	output = line				:(next)
+*	look for possible macro call. If found, append '_' to macro name, to avoid
+*	error message that would result if macro invokes operator of same name, ignoring case.
+ 
+ :(copy)
+
+macro
+	line macroname . name = differ(ismacro[name]) macros[name] '_'	:s(macro)
+	:(copy)
+	
 err	output = 'error '			:(end)
 
 .fi
 
-.if asm
-*	output standard definitions
-	output = tab '%define'	tab	'cfp_b'	tab	(eq(ws,32) 4, 8)
-	output = tab '%define'	tab 	'cfp_c'	tab	(eq(ws,32) 4, 8)
-	output = tab '%define'	tab	'os '	tab	os
-	output = tab '%define'	tab	'ws'	tab	ws
-
-loop	line = input				:f(a.end)
-	output = line				:(loop)
-a.end
-	output = tab '%undef'	tab	'cfp_b'
-	output = tab '%undef'	tab	'cfp_c'
-	output = tab '%undef'   tab	os
-	output = tab '%undef'	tab	'ws'
-.fi
 end
