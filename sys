@@ -44,27 +44,27 @@
 	%endmacro
 .fi
 .if gas
-	.macro	Add	dst,src
+	.macro	Add_	dst,src
 		add	\src,\dst
 	.endm
 
-	.macro	Align	bytes
+	.macro	Align_	bytes
 		.align	\bytes
 	.endm
 
-	.macro	And	dst,src
+	.macro	And_	dst,src
 	and	\src,\dst
 	.endm
 	
-	.macro	Cmp	dst,src	; src/dst differ
+	.macro	Cmp_	dst,src	; src/dst differ
 		cmp	\src,\dst
 	.endm
 	
-	.macro	Data
+	.macro	Data_
 		.data
 	.endm
 
-	.macro	Equ	name,value
+	.macro	Equ_	name,value
 	.set	\name,\value
 	.endm
 .fi
@@ -92,23 +92,23 @@
 .fi
 
 .if gas
-	.macro	Extern	name
+	.macro	Extern_	name
 		.extern	\name
 	.endm
 
-	.macro	Fill	count
+	.macro	Fill_	count
 	.fill	\count
 	.endm
 
-	.macro	Global	name
+	.macro	Global_	name
 		.global	\name
 	.endm
 
-	.macro	Inc	val
+	.macro	Inc_	val
 		inc	\val
 	.endm
 
-	.macro	Include	file
+	.macro	Include_	file
 		.include	\file
 	.endm
 .fi
@@ -141,27 +141,27 @@
 	
 
 .if gas
-	.macro	Jmp	lab	; gas needs '*' before target
+	.macro	Jmp_	lab	; gas needs '*' before target
 		jmp	* \lab
 	.endm
 
-	.macro	Mov	dst,src
-		mov	\src,\dst
+	.macro	Mov_	dst,src
+		movq	\src,\dst
 	.endm
 
-	.macro	Or	dst,src
+	.macro	Or_	dst,src
 	or	\src,\dst
 	.endm
 	
-	.macro	Sub	dst,src
+	.macro	Sub_	dst,src
 		sub	\src,\dst
 	.endm
 
-	.macro	Text
+	.macro	Text_
 		.text
 	.endm
 
-	.macro	Xor	dst,src
+	.macro	Xor_	dst,src
 	xor	\src,\dst
 	.endm
 .fi
@@ -634,7 +634,7 @@ reg_rp:	D_word	0
 
 ; reg_fl is used to communicate condition codes between minimal and c code.
 	Global	reg_fl
-reg_fl:	D_char	0		; condition code register for numeric operations
+reg_fl:	D_byte	0		; condition code register for numeric operations
 
 	Align	8
 ;  constants
@@ -750,7 +750,9 @@ spmin.a:	D_word	spmin
 
 	Global	cprtmsg
 cprtmsg:
-	D_char          " copyright 1987-2012 robert b. k. dewar and mark emmer.",0,0
+	D_char          " copyright 1987-2012 robert b. k. dewar and mark emmer."
+	D_byte	0
+	D_byte	0
 
 call_adr:	D_word	0
 
