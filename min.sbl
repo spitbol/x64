@@ -28,7 +28,7 @@
 *	a difference between asm and gas that will be resolved later, either by one-line
 *	macros in the case of asm, or via expansion by def.sbl in the case of gas.
 *
-*	For example, 'Mov' is generated instead of 'mov' since asm wants destination before the source, whilst
+*	For example, 'Mov_' is generated instead of 'mov' since asm wants destination before the source, whilst
 *	gas wants the destination after the source.
 
 
@@ -762,12 +762,12 @@ mov
 	ident(t.dst,'(xr)+')			:s(mov.xrp)
 	ident(t.dst,'-(xs)')			:s(mov.2)
 	memmemm()
-	op('Mov',getarg(i1),getarg(i2))		:(return)
+	op('Mov_',getarg(i1),getarg(i2))		:(return)
 mov.xtp
 mov.xlp
 	ident(t.dst,'(xr)+') op('Movs_w')	:s(return)
 	op('Lods_w')
-	op('Mov',getarg(i.dst),reg.w0)		:(return)
+	op('Mov_',getarg(i.dst),reg.w0)		:(return)
 	ident(t.dst,'-(xs)') op('push',reg.w0)	:s(return)
 
 mov.xsp
@@ -778,7 +778,7 @@ mov.xsrp
 	op('Stos_w')				:(return)
 
 mov.xrp
-	op('Mov',reg.w0,getarg(i.src))
+	op('Mov_',reg.w0,getarg(i.src))
 	op('Stos_w')				:(return)
 mov.2
 	op('push',getarg(i.src))		:(return)
@@ -802,15 +802,15 @@ gensh
 	ident(reg,reg.wa)			:s(gensh.wa)
 *  here if register is NOT WA, so push/restore WA
 	op('push',reg.wa)
-	op('Mov',val,reg.wa)
+	op('Mov_',val,reg.wa)
 	op(opc, WA_L,reg)
 	op('pop',reg.wa)			:(return)
 gensh.wa
 *  here if shifting WA. Move to W0, then use WA to get shift count, shift W0, and move result back to WA
-	op('Mov',reg.w0.reg.wa)
-	op('Mov',reg.wa,val)
+	op('Mov_',reg.w0.reg.wa)
+	op('Mov_',reg.wa,val)
 	op(opc,WA_L,reg.w0)
-	op('Mov',reg.wa,reg.w0)
+	op('Mov_',reg.wa,reg.w0)
 						:(return)
 .fi
 -stitl getarg(iarg)
@@ -1126,7 +1126,7 @@ getrip.done
 	op('Text')
 getrip.ent
 *	generate reference via w0 if needed
-	op('Mov',reg.w0,mem(ent))
+	op('Mov_',reg.w0,mem(ent))
 	differ(reg)	op('Add',reg.w0,reg)
 	getrip = reg.w0
 *	outfile = ne(x_trace) '; getrip ' ent
@@ -1173,7 +1173,7 @@ memmemm
 *  here if memory-memory case, load second argument
   t = getarg(i2)
   i2 = arg_w0
-  op('Mov',reg.w0,t)				:(return)
+  op('Mov_',reg.w0,t)				:(return)
 
 -stitl outline(txt)
 outline
@@ -1292,8 +1292,8 @@ chktrace.1
 	opl(lbl,D_char,trc_desc)
 	op(D_char,'0');* string terminator
 	op('Text')
-	op('Mov',reg.w0,lbl)
-	op('Mov',mem('trc_de'),reg.w0)
+	op('Mov_',reg.w0,lbl)
+	op('Mov_',mem('trc_de'),reg.w0)
 	op('call','trc_')
 	flush()
 	ab_suspend = 0
@@ -1305,7 +1305,7 @@ chktrace.1
 	lbl = genlab('trc')
 	opl(lbl ':' ,'.asciz',trc_desc)
 	op('Text')
-	op('Mov','$' lbl,'trc_de')
+	op('Mov_','$' lbl,'trc_de')
 	op('call','trc_')
 	ab_suspend = 0
 .fi
@@ -1464,7 +1464,7 @@ g.bsw.2
         op('Data')
 	opl(lbl,D_word,t2 )
 	op('Text')
-	op('Mov',reg.w0,t1)
+	op('Mov_',reg.w0,t1)
 	op('sal',reg.w0,'log_cfp_b')
 	op('Add',reg.w0,mem(lbl))
 	op('Jmp', reg.w0)
@@ -1614,7 +1614,7 @@ g.ppm.loop
 *  to error handler with error code in rcode
 
 g.ppm.loop.err
-	op('Mov',mem(rcode), +t1)
+	op('Mov_',mem(rcode), +t1)
 	op('Jmp','err_')
 						:(g.ppm.loop.next)
 g.ppm.loop.ppm
@@ -1658,11 +1658,11 @@ g.exi
 *  if type r or e, and no exit parameters, just return
  	differ(t2,'n') eq(prc.args)	op('ret')	:s(opdone)
         t3 = ident(t3) '0'
-    	op('Mov',mem(rcode),+t3)
+    	op('Mov_',mem(rcode),+t3)
 	ident(t2,'n')				:s(g.exi.1)
 	op('ret')				:(opdone)
 g.exi.1
-	op('Mov',reg.w0, mem(prcent(prc.count)))
+	op('Mov_',reg.w0, mem(prcent(prc.count)))
 	op('Jmp',reg.w0)			:(opdone)
 
 g.enp   op()					:(opdone)
@@ -1712,7 +1712,7 @@ g.zer.xs op('push','$0')			:(opdone)
 g.mnz
 	op('xor',reg.w0,reg.w0)
 	op('inc',reg.w0)
-	op('Mov',getarg(i1),reg.w0)			:(opdone)
+	op('Mov_',getarg(i1),reg.w0)			:(opdone)
 g.ssl
 g.sss
 g.rtn
@@ -1789,7 +1789,7 @@ g.lct
 	op()					:(opdone)
 
 g.lct.1
-	op('Mov',getarg(i1),getarg(i2))	:(opdone)
+	op('Mov_',getarg(i1),getarg(i2))	:(opdone)
 
 g.bct
 *  can issue loop if target register is cx.
@@ -1822,11 +1822,11 @@ g.adi
 g.mli
 g.sbi
 g.dvi
-	op('Mov',reg.w0,getarg(i1))
+	op('Mov_',reg.w0,getarg(i1))
 	op(op_)					:(opdone)
 
 g.rmi
-	op('Mov',reg.w0,getarg(i1))
+	op('Mov_',reg.w0,getarg(i1))
 *	op('mov',reg.w0,getarg(i1))
 	op(op_)					:(opdone)
 g.ngi
@@ -1843,7 +1843,7 @@ g.ile	jop = 'jle'				:(op.cmp)
 g.ilt	jop = 'jl'				:(op.cmp)
 g.ine	jop = 'jne'				:(op.cmp)
 op.cmp
-	op('Mov',reg.w0,mem('reg_ia'))
+	op('Mov_',reg.w0,mem('reg_ia'))
 	op('or',reg.w0,reg.w0)
 	op(jop,getarg(i1))			:(opdone)
 
@@ -1897,7 +1897,7 @@ g.rle	jop = 'jle'				:(g.r1)
 g.rlt	jop = 'jl'
 g.r1	
 	op('call','cpr_')
-	op('Mov','W0_L','byte [reg_fl]')
+	op('Mov_','W0_L','byte [reg_fl]')
 	op('or','W0_L','W0_L')
 	op(jop,getarg(i1))			:(opdone)
 
@@ -1962,7 +1962,7 @@ g.lch.lods
 *  clear result register, do lodsb, and then move character to result register
 	op('xor',reg.w0,reg.w0)
 	op('lodsb')
-	op('Mov',getarg(dst),reg.w0)
+	op('Mov_',getarg(dst),reg.w0)
 						:(opdone)
 g.sch
 	sch_pre = sch_post =
@@ -1981,7 +1981,7 @@ g.sch
 
 *  if source is x register, move it to w0, so can store character from lower part of a w register
 
-	ne(w) op('Mov',reg.w0, regmap[s.reg])
+	ne(w) op('Mov_',reg.w0, regmap[s.reg])
 
 .if asm
 	op('mov','M_char [' regmap[d.reg] ']', reglow((eq(w) s.reg, 'w0')))
@@ -1996,7 +1996,7 @@ g.sch
 						:(opdone)
 g.sch.stos
 *  move source register to w0, setting up low part, then store from w0
-	op('Mov',reg.w0, regmap[s.reg])
+	op('Mov_',reg.w0, regmap[s.reg])
 	op('stosb')
 						:(opdone)
 
@@ -2297,7 +2297,7 @@ g.dbc
 	opl(thislabel,D_word,getarg(i1))
 						:(opdone)
 g.equ
-	op('Equ',thislabel,i.text(i1))		:(opdone)
+	op('Equ_',thislabel,i.text(i1))		:(opdone)
 
 g.exp
 	ppm_cases[thislabel] = i.text(i1)

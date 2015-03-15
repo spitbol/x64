@@ -26,7 +26,7 @@ next	line = input					:f(a.end)
 
 *	define 'Equ' definitions using %define statements
 
-	line	break('E') 'Equ' span.space  break(',') . name ',' rem . value =
+	line	break('E') 'Equ_' span.space  break(',') . name ',' rem . value =
 +		tab	'%define'	tab	name	tab	value			
 							:(copy)
 
@@ -39,7 +39,9 @@ a.end
 .if gas
 *	&dump = 3
 
-	rpat =  ('IA' | ('X' any('LRST')) | ('W' any('ABC0')))
+*	AL is name of 'al'
+
+	rpat =  ('AL' 'IA' | ('X' any('LRST')) | ('W' any('ABC0')))
 
 	lpat = 'W' any('0ABC') '_L'
 
@@ -48,8 +50,8 @@ a.end
 *	create map from Minimal registers to gas register names
 
 	rmap = table(100)
-	s = (eq(ws,32) 'XL %esi XR %edi XS %esp XT %esi WA %ecx WB %ebx WC %edx W0 %eax IA %ebp ',
-+			   'XL %rsi XR %rdi XS %rsp XT %rsi WA %rcx WB %rbx WC %rdx W0 %rax IA %rbp')
+	s = (eq(ws,32) 'XL %esi XR %edi XS %esp XT %esi WA %ecx WB %ebx WC %edx W0 %eax IA %ebp AL %al ',
++			   'XL %rsi XR %rdi XS %rsp XT %rsi WA %rcx WB %rbx WC %rdx W0 %rax IA %rbp AL %al ')
 rmap.ini
 	s break(' ') . key ' ' break(' ') . val ' ' =		:f(rmap.done)
 	rmap[key] = val						:(rmap.ini)
@@ -128,7 +130,7 @@ mloop.end
 
 *	resolve register references
 
-	line any('IXW')				:f(rloop.end)
+	line any('AIXW')				:f(rloop.end)
 rloop 	line rpat . reg = prefix (differ(rmap[reg]) rmap[reg], '??') 	:s(rloop)
 rloop.end
 
