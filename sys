@@ -42,29 +42,33 @@
 	%macro	Data	0
 		section	.data
 	%endmacro
+
+	%macro	Equ	2
+%1:	equ	%2
+	%endmacro
 .fi
 .if gas
-	.macro	Add_	dst,src
+	.macro	Add	dst,src
 		add	\src,\dst
 	.endm
 
-	.macro	Align_	bytes
+	.macro	Align	bytes
 		.align	\bytes
 	.endm
 
-	.macro	And_	dst,src
+	.macro	And	dst,src
 	and	\src,\dst
 	.endm
 	
-	.macro	Cmp_	dst,src	; src/dst differ
+	.macro	Cmp	dst,src	; src/dst differ
 		cmp	\src,\dst
 	.endm
 	
-	.macro	Data_
+	.macro	Data
 		.data
 	.endm
 
-	.macro	Equ_	name,value
+	.macro	Equ	name,value
 	.set	\name,\value
 	.endm
 .fi
@@ -92,23 +96,23 @@
 .fi
 
 .if gas
-	.macro	Extern_	name
+	.macro	Extern	name
 		.extern	\name
 	.endm
 
-	.macro	Fill_	count
+	.macro	Fill	count
 	.fill	\count
 	.endm
 
-	.macro	Global_	name
+	.macro	Global	name
 		.global	\name
 	.endm
 
-	.macro	Inc_	val
+	.macro	Inc	val
 		inc	\val
 	.endm
 
-	.macro	Include_	file
+	.macro	Include	file
 		.include	\file
 	.endm
 .fi
@@ -118,11 +122,7 @@
 		jmp	%1
 	%endmacro
 
-	%macro	Movb_	2
-		mov	%1,%2
-	%endmacro
-
-	%macro	Mov_	2
+	%macro	Mov	2
 		mov	%1,%2
 	%endmacro
 
@@ -145,55 +145,50 @@
 	
 
 .if gas
-	.macro	Jmp_	lab	; gas needs '*' before target
+	.macro	Jmp	lab	; gas needs '*' before target
 		jmp	* \lab
 	.endm
 
-	.macro	Movb_	dst,src
-		movb	\src,\dst
+	.macro	Mov	dst,src
+		mov	\src,\dst
 	.endm
 
-	.macro	Mov_	dst,src
-		movq	\src,\dst
-	.endm
-
-	.macro	Or_	dst,src
+	.macro	Or	dst,src
 	or	\src,\dst
 	.endm
 	
-	.macro	Sub_	dst,src
+	.macro	Sub	dst,src
 		sub	\src,\dst
 	.endm
 
-	.macro	Text_
+	.macro	Text
 		.text
 	.endm
 
-	.macro	Xor_	dst,src
+	.macro	Xor	dst,src
 	xor	\src,\dst
 	.endm
 .fi
 
-
-.if 32
-	Equ	cfp_b,4
-	Equ	cfp_c,4
-	Equ	log_cfp_b,2
-	Equ	cfp_c_val,4
-	Equ	log_cfp_c,2
-	Equ	cfp_m_	2147483647
-;	%define	cfp_n_	32
-.fi
-.if 64
-	Equ	cfp_b,8
-	Equ	cfp_c,8
-	Equ	log_cfp_b,3
-	Equ	log_cfp_c,3
-	Equ	cfp_c_val,8
-	Equ	cfp_m_,9223372036854775807
-	Equ	cfp_n_,64
-
-.fi
+; .if 32
+; 	Equ	cfp_b,4
+; 	Equ	cfp_c,4
+; 	Equ	log_cfp_b,2
+; 	Equ	cfp_c_val,4
+; 	Equ	log_cfp_c,2
+; 	Equ	cfp_m_	2147483647
+; ;	%define	cfp_n_	32
+; .fi
+; .if 64
+; 	Equ	cfp_b,8
+; 	Equ	cfp_c,8
+; 	Equ	log_cfp_b,3
+; 	Equ	log_cfp_c,3
+; 	Equ	cfp_c_val,8
+; 	Equ	cfp_m_,9223372036854775807
+; 	Equ	cfp_n_,64
+; 
+; .fi
 	
 .if asm
 	%define M_char	byte	; reference to byte in memory
@@ -268,6 +263,7 @@
 	%define Movs_b	movsb
 	%define Movs_w	movsd
 	%define	Stos_b	stosb
+	%define	Stos_c	stosb
 	%define	Stos_w	stosd
 	%define	Cmps_b	cmpsb
 
@@ -632,7 +628,7 @@ reg_xs:	D_word	0		; minimal stack pointer
 
 ;	r_size  equ       $-reg_block
 ;r_size	equ	16*cfp_b
-;reg_size:	D_word   r_size
+;reg_size:	dd   r_size
 
 ; end of words saved during exit(-3)
 
@@ -641,7 +637,7 @@ reg_rp:	D_word	0
 
 ; reg_fl is used to communicate condition codes between minimal and c code.
 	Global	reg_fl
-reg_fl:	D_byte	0		; condition code register for numeric operations
+reg_fl:	D_char	0		; condition code register for numeric operations
 
 	Align	8
 ;  constants
@@ -667,7 +663,7 @@ sav_compsp:
 	Global	osisp
 osisp:  D_word      0               	; osint's stack pointer
 	Global	_rc_
-_rc_:	D_word   0				; return code from osint procedure
+_rc_:	dd   0				; return code from osint procedure
 
 	Align	cfp_b
 	Global	save_cp
@@ -688,27 +684,27 @@ save_wc:	D_word	0		; saved wc value
 minimal_id:	D_word	0		; id for call to minimal from c. see proc minimal below.
 
 ;
-;	%define setreal 0
+	%define setreal 0
 
 ;       setup a number of internal addresses in the compiler that cannot
 ;       be directly accessed from within c because of naming difficulties.
 
 	Global	id1
-id1:	D_word	0
-;%if setreal == 1
-;	D_word	2
-;
-;       D_word       1
-;	D_char	"1x\x00\x00\x00"
-;%endif
+id1:	dd	0
+%if setreal == 1
+	D_word	2
+
+       D_word       1
+	D_char	"1x\x00\x00\x00"
+%endif
 
 	Global	id1blk
-id1blk:	D_word	152
+id1blk	D_word	152
       	D_word	0
 	Fill	152
 
 	Global	id2blk
-id2blk:	D_word	152
+id2blk	D_word	152
       	D_word	0
 	Fill	152
 
@@ -757,9 +753,7 @@ spmin.a:	D_word	spmin
 
 	Global	cprtmsg
 cprtmsg:
-	D_char          " copyright 1987-2012 robert b. k. dewar and mark emmer."
-	D_byte	0
-	D_byte	0
+	D_char          ' copyright 1987-2012 robert b. k. dewar and mark emmer.',0,0
 
 call_adr:	D_word	0
 
@@ -934,12 +928,7 @@ startup:
 	Mov	Mem(ppoff),W0	; save for use later
 
 	Mov	XS,Mem(osisp)	; switch to new c stack
-.if asm
 	Mov	Mem(minimal_id),calltab_start
-.fi
-.if gas
-	Mov	Mem(minimal_id),$calltab_start
-.fi
 	call	minimal			; load regs, switch stack, start compiler
 
 ;	stackinit  -- initialize spmin from sp.
@@ -1010,8 +999,7 @@ minimal:
 	Mov	XL,Mem(reg_xl)
 
 	Mov	Mem(osisp),XS	; save osint stack pointer
-	xor	W0,W0
-	cmp	Mem(compsp),W0	; is there a compiler stack?
+	cmp	Mem(compsp),0	; is there a compiler stack?
 	je	min1			; jump if none yet
 	Mov	XS,Mem(compsp)	; switch to compiler stack
 
@@ -1078,7 +1066,7 @@ minimal:
 ;	8         take procedure exit 3
 ;	...        ...
 
-.if asm
+
 %ifdef	OLD
 	Global	get_ia
 get_ia:
@@ -1089,7 +1077,6 @@ get_ia:
 set_ia_:	Mov	IA,M_word[reg_w0]
 	ret
 %endif
-.fi
 syscall_init:
 ;	save registers in global variables
 
@@ -1111,8 +1098,8 @@ syscall_exit:
 	Mov	XL,Mem(reg_xl)
 	cld
 	Mov	W0,Mem(reg_pc)
-	Jmp	W0
-.if asm
+	jmp	W0
+
 	%macro	syscall	2
 	pop	W0			; pop return address
 	Mov	Mem(reg_pc),W0
@@ -1123,19 +1110,6 @@ syscall_exit:
 	call	%1
 	call	syscall_exit
 	%endmacro
-.fi
-.if gas
-	.macro	syscall	proc,id
-	pop	W0			; pop return address
-	Mov	Mem(reg_pc),W0
-	call	syscall_init
-;	save compiler stack and switch to osint stack
-	Mov	Mem(compsp),XS      ; save compiler's stack pointer
-	Mov	XS,Mem(osisp)       ; load osint's stack pointer
-	call	\proc
-	call	syscall_exit
-	.endm
-.fi
 
 	Global sysax
 	Extern	zysax
@@ -1198,12 +1172,7 @@ sysex:	Mov	Mem(reg_xs),XS
 	Global sysfc
 	Extern	zysfc
 sysfc:  pop     W0             ; <<<<remove stacked scblk>>>>
-.if asm
 	lea	XS,[XS+WC*cfp_b]
-.fi
-.if gas
-	lea	XS,Adr(XS+WC*cfp_b)
-.fi
 	push	W0
 	syscall	zysfc,14
 
@@ -1534,13 +1503,8 @@ dvi__:
 	Extern	i_dvi
 	Mov	Mem(reg_w0),W0
 	call	i_dvi
-.if asm
-	Movb_	W0_L,byte [reg_fl]
-.fi
-.if gas
-	mov	reg_fl,W0_L
-.fi
-	or	W0_L,W0_L
+	Mov	al,byte [rel reg_fl]
+	or	al,al
 	ret
 
 	Global	rmi__
@@ -1550,13 +1514,8 @@ rmi__:
 	Extern	i_rmi
 	Mov	Mem(reg_w0),W0
 	call	i_rmi
-.if asm
-	Movb_	W0_L,byte [reg_fl]
-.fi
-.if gas
-	movb	reg_fl,W0_L
-.fi
-	or	W0_L,W0_L
+	Mov	al,byte [rel reg_fl]
+	or	al,al
 	ret
 
 ocode:
@@ -1565,24 +1524,13 @@ ocode:
 	xchg	W0,Mem(reg_ia)	; ia to w0, divisor to ia
 	cdq			; extend dividend
 	idiv	Mem(reg_ia)	; perform division. w0=quotient, wc=remainder
-.if asm
-	seto	byte [reg_fl]
-.fi
-.if gas
-	seto	reg_fl
-.fi
+	seto	byte [rel reg_fl]
 	Mov	Mem(reg_ia),WC
 	ret
 
 setovr:
-	xor	W0_L,W0_L	; mov 1 to W0_L to set overflow indicator
-	inc	W0_L
-.if asm
-	Movb_	byte [reg_fl],W0_L
-.fi
-.if gas
-	mov	W0_L,reg_fl
-.fi
+	Mov	al,1		; set overflow indicator
+	Mov	byte [rel reg_fl],al
 	ret
 
 

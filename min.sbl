@@ -1421,23 +1421,28 @@ g.bod
 .if asm
 	t1 = getarg(i1)
  	t1 = eq(i.type(i1),8) reglow(getreg(i1))
+	op('test',t1,'1')
+	op('jne',getarg(i2))			:(opdone)
 .fi
 .if gas
 	t1 = (eq(i.type(i1),8) reglow(getreg(i1)), getarg(i1))
-.fi
 	op('test',t1,'1')
 	op('jne',getarg(i2))			:(opdone)
+.fi
 
 g.bev
 .if asm
 	t1 = getarg(i1)
 	t1 = eq(i.type(i1),8) reglow(getreg(i1))
+	op('test',t1,'1')
+	op('je',getarg(i2))
+						:(opdone)
 .fi
 .if gas
 	t1 = (eq(i.type(i1),8) reglow(getreg(i1)), getarg(i1))
-.fi
 	op('test',t1,'1')
 	op('jne',getarg(i2))			:(opdone)
+.fi
 
 g.brn   op('Jmp',getarg(i1))			:(opdone)
 
@@ -2031,7 +2036,7 @@ g.trc
 	op('add','(,' reg.xl ')',reg.w0)
 	op('mov','(' reg.w0 ')', 'W0_L')
 .fi
-	op('Stos_b')
+	op('Stos_c')
 	op('dec',reg.wa)
 	op('jnz',labl)
 	op('xor',reg.xl,reg.xl)
@@ -2255,8 +2260,12 @@ g.dac
         opl(thislabel,D_word,t2 i.text(i1))
 						:(decend)
 g.dic
+.if gas
+	outfile = '# g.dic ' i.text(i1)
+.fi
 	opl(thislabel,D_word,i.text(i1))
 						:(decend)
+
 g.drc
 	op('Align',8)
 	t1 = i.text(i1)

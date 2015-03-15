@@ -13,8 +13,7 @@ ASM:=$(asm)
 ws?=64
 WS:=$(ws)
 
-#TARGET=$(OS)_$(WS)_$(ASM)
-TARGET=$(OS)_$(WS)
+TARGET=$(OS)_$(WS)_$(ASM)
 
 debug?=0
 DEBUG:=$(debug)
@@ -115,24 +114,22 @@ COBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 # use fake target asmobj which appears only when all .s files built
 asm: 
 # run lex to get min.lex
-	$(BASEBOL) -u $(TARGET)_asm $(LEX)
+	$(BASEBOL) -u $(TARGET) $(LEX)
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u $(TARGET)_asm $(PRE) <min.sbl >asm.spt 
+	$(BASEBOL) -u $(TARGET) $(PRE) <min.sbl >asm.spt 
 # run asm to get .s and .err files
-	$(BASEBOL) -u $(TARGET)_asm$(TRCOPT) asm.spt
+	$(BASEBOL) -u $(TARGET)$(TRCOPT) asm.spt
 # run err 
-	$(BASEBOL) -u $(TARGET)_asm $(ERR)
-# use preprocessor to make version of definer for asm
-	$(BASEBOL) -u $(TARGET)_asm $(PRE) <$(DEF) >def.spt
+	$(BASEBOL) -u $(TARGET) $(ERR)
+# use preprocessor to make version of rewriter for asm
+	$(BASEBOL) -u $(TARGET) $(PRE) <$(DEF) >def.spt
 # run preprocessor to get sys for nasm as target
-	$(BASEBOL) -u $(TARGET)_asm $(PRE)  <sys >sys.pre
+	$(BASEBOL) -u $(TARGET) $(PRE)  <sys >sys.pre
 # run asm definer to resolve system dependencies in sys
-	$(BASEBOL) -u $(TARGET)_asm  def.spt <sys.pre >sys.def
-# run asm definer to resolve system dependencies in sbl
-	$(BASEBOL) -u $(TARGET)_asm  def.spt <sbl.s >sbl.def
+	$(BASEBOL) -u $(TARGET)  def.spt <sys.pre >sys.s
 # combine sys.s,min.s, and err.s to get sincle assembler source file
-	cat <sys.def >spitbol.s
-	cat <sbl.def >>spitbol.s
+	cat <sys.s >spitbol.s
+	cat <sbl.s >>spitbol.s
 	cat <err.s >>spitbol.s
 # assemble the translated file
 	$(NASM) $(ASMOPTS) -ospitbol.o spitbol.s
@@ -148,24 +145,22 @@ spitbol-dynamic: $(OBJS) $(AOBJS)
 gas:
 
 # run lex to get min.lex
-	$(BASEBOL) -u $(TARGET)_gas $(LEX)
-# run preprocessor to get gas for gas as target
-	$(BASEBOL) -u $(TARGET)_gas $(PRE) <min.sbl >gas.spt 
+	$(BASEBOL) -u $(TARGET) $(LEX)
+# run preprocessor to get gas for ngas as target
+	$(BASEBOL) -u $(TARGET) $(PRE) <min.sbl >gas.spt 
 # run gas to get .s and .err files
-	$(BASEBOL) -u $(TARGET)_gas$(TRCOPT) gas.spt
+	$(BASEBOL) -u $(TARGET):$(TRCOPT) gas.spt
 # run err 
-	$(BASEBOL) -u $(TARGET)_gas $(ERR)
-# use preprocessor to make version of definer for gas
-	$(BASEBOL) -u $(TARGET)_gas $(PRE) <$(DEF) >def.spt
-# run preprocessor to get sys for gas as target
-	$(BASEBOL) -u $(TARGET)_gas $(PRE) <sys >sys.pre
+	$(BASEBOL) -u $(TARGET) $(ERR)
+# use preprocessor to make version of rewriter for gas
+	$(BASEBOL) -u $(TARGET) $(PRE) <$(DEF) >def.spt
+# run preprocessor to get sys for ngas as target
+	$(BASEBOL) -u $(TARGET) $(PRE) <sys >sys.pre
 # run gas definer to resolve system dependencies in sys
-	$(BASEBOL) -u $(TARGET)_gas  def.spt <sys.pre >sys.def
-# run gas definer to resolve system dependencies in sbl
-	$(BASEBOL) -u $(TARGET)_gas  def.spt <sbl.s >sbl.def
+	$(BASEBOL) -u $(TARGET) def.spt <sys.pre >sys.s
 # combine sys.s,min.s, and err.s to get sincle assembler source file
-	cat <sys.def >spitbol.s
-	cat <sbl.def >>spitbol.s
+	cat <sys.s >spitbol.s
+	cat <sbl.s >>spitbol.s
 	cat <err.s >>spitbol.s
 # assemble the translated file
 	$(GAS) $(GASOPTS) -ogasbol.o spitbol.s
