@@ -2009,11 +2009,6 @@ g.mfi.2
 g.ctw
 *  assume cfp_c chars per word
 	t1 = getarg(i1)
-	eq(cfp_b,cfp_c)				:s(g.ctw.1)
-*  here if one word per character, so just add character count
-	op('Add_',t1,i.text(i2))
-						:(opdone)
-g.ctw.1
 	op('Add_',t1,'(cfp_c-1)+cfp_c*' i.text(i2))
 	op('shr',t1,'log_cfp_c')
 					:(opdone)
@@ -2021,15 +2016,6 @@ g.ctb
 	t1 = getarg(i1)
 	op('Add_',t1,'(cfp_b-1)+cfp_b*' i.text(i2))
 	op('and',t1,'-cfp_b')
-						:(opdone)
-g.cvm	t1 = getarg(i1)
-	op('sti_',reg.w0)
-	op('imul',reg.w0,'10')
-	op('jo',t1)
-	op('Sub_',reg.wb,'ch_d0')
-	op('Sub_',reg.w0,reg.wb)
-	op('ldi_',reg.w0)
-	op('jo',t1)
 						:(opdone)
 .fi
 .if gas
@@ -2042,8 +2028,22 @@ g.ctw
 	op('call', incode '_')
 	op('mov','ctbw_r',w.reg)
 						:(opdone)
+.fi
 
-g.cvm	t1 = getarg(i1)
+.if asm
+g.cvm	
+	t1 = getarg(i1)
+	op('sti_',reg.w0)
+	op('imul',reg.w0,intvt)
+	op('jo',t1)
+	op('Sub_',reg.wb,'ch_d0')
+	op('Sub_',reg.w0,reg.wb)
+	op('ldi_',reg.w0)
+	op('jo',t1)
+						:(opdone)
+.fi
+.if gas
+	t1 = getarg(i1)
 	op('mov',reg.ia,reg.w0)
 	op('imul',reg.w0,intvt)
 	op('jo',t1)
