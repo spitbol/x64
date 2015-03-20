@@ -1,7 +1,7 @@
 # SPITBOL makefile using tcc
 
 # base compiler used for building
-base?= bin/spitbol_unix_64
+base?= bin/spitbol_unix_32
 BASEBOL:=$(base)
 
 os?=unix
@@ -10,7 +10,7 @@ OS:=$(os)
 asm?=asm
 ASM:=$(asm)
 
-ws?=64
+ws?=32
 WS:=$(ws)
 
 TARGET=$(OS)_$(WS)_$(ASM)
@@ -43,7 +43,7 @@ ifeq	($(DEBUG),1)
 GFLAG=-g
 endif
 
-ARCH=-D$(TARGET)  -m$(WS)
+ARCH=-D$(OS)_$(WS)  -m$(WS)
 
 CCOPTS:= $(ARCH) $(ITDEF) $(GFLAG) 
 LDOPTS:= -lm $(GFLAG) $(ARCH)
@@ -135,6 +135,22 @@ asm:
 	$(NASM) $(ASMOPTS) -ospitbol.o spitbol.s
 # compile osint
 	$(CC)  $(CCOPTS) -c  osint/*.c
+# load objects
+	$(CC) $(LDOPTS)  $(COBJS) spitbol.o $(LMOPT) -static -ospitbol
+bug:
+# combine sys.s,min.s, and err.s to get sincle assembler source file
+	cat <sys.s >spitbol.s
+	cat <sbl.s >>spitbol.s
+	cat <err.s >>spitbol.s
+
+# assemble the translated file
+	$(NASM) $(ASMOPTS) -ospitbol.o spitbol.s
+# compile osint
+#	$(CC)  $(CCOPTS) -c  osint/*.c
+# load objects
+	$(CC) $(LDOPTS)  $(COBJS) spitbol.o $(LMOPT) -static -ospitbol
+
+lbug:
 # load objects
 	$(CC) $(LDOPTS)  $(COBJS) spitbol.o $(LMOPT) -static -ospitbol
 
@@ -243,4 +259,4 @@ trc-nasm: s-nasm.dic it.sbl
 	$(BASEBOL) -u s-nasm.dic trc.sbl <ad >ae
 
 clean:
-	rm -f *.spt *.def *.pre *.[ors] *.def tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol 
+	rm -f  *.def *.pre *.[ors] *.def tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol def.spt err.s r-asm.sbl sbl.equ sbl.err s.equ s.err s.lex sys.asm sys.pre sys.s asm.spt

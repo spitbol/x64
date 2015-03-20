@@ -189,20 +189,22 @@
 ; 	Equ	cfp_n_,64
 ; 
 ; .fi
+
 	
 .if asm
 	%define M_char	byte	; reference to byte in memory
 	%define D_byte	db	; define value of byte
 	%define D_char	db	; define value of byte
-
+	%define D_real	dq	; real always 64 bits
+.fi
 
 .if asm 64
 	%define	log_cfp_b	3
 	%define	log_cfp_c	3
 
+
 	%define	D_char	db
 	%define D_word	dq
-	%define D_real	dq	; define value for floating point
 	%define M_real	qword	; reference to floating point value in memory
 	%define M_word  qword
 
@@ -216,8 +218,6 @@
 	%define	XT	rsi
 	%define	XR	rdi
 	%define	XS	rsp
-
-	%define D_real	dq
 
 	%define	Lods_w	lodsq
 	%define	Lods_b	lodsb
@@ -238,9 +238,6 @@
 	%define	log_cfp_c	2
 
 	%define M_real	dword	; reference to floating point value in memory
-	%define D_real	dq	; define value for floating point
-
-
 	%define W0	eax
 	%define W1	ebp
 	%define WA	ecx
@@ -254,7 +251,6 @@
 
 	%define	D_char	db
 	%define D_word	dd	; define value for memory Word
-	%define D_real	dd
 	%define M_word	dword	; reference to Word in memory
 	%define M_real	dword	; reference to Word in memory
 
@@ -289,7 +285,6 @@
         Text
 	Global	dnamb
 	Global	dname
-	Global	mxint
 
 	Extern	id_de
 	Extern	trc_cp
@@ -647,6 +642,13 @@ ten:    D_word      10              ; constant 10
 	Global  inf
 inf:	D_word	0
 	D_word      0x7ff00000      ; double precision infinity
+	Global	maxint
+.if 32
+maxint:	D_word 2147483647
+.fi
+.if 64
+maxint:	D_word 9223372036854775807
+.fi
 
 	Global	sav_block
 sav_block: 
@@ -919,15 +921,17 @@ restore_regs:
 
 startup:
 	pop	W0			; discard return
+	mov	W0,Mem(maxint)		; set maximum integer value
+	mov	Mem(mxint),W0
 	call	stackinit		; initialize minimal stack
-	Mov	W0,Mem(compsp)	; get minimal's stack pointer
+	Mov	W0,Mem(compsp)		; get minimal's stack pointer
 	Mov Mem(reg_wa),W0		; startup stack pointer
 
 	cld				; default to up direction for string ops
-;	getoff  W0,dffnc               # get address of ppm offset
-	Mov	Mem(ppoff),W0	; save for use later
+;	getoff  W0,dffnc		; get address of ppm offset
+	Mov	Mem(ppoff),W0		; save for use later
 
-	Mov	XS,Mem(osisp)	; switch to new c stack
+	Mov	XS,Mem(osisp)		; switch to new c stack
 	Mov	Mem(minimal_id),calltab_start
 	call	minimal			; load regs, switch stack, start compiler
 
