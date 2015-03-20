@@ -2081,22 +2081,12 @@ g.mvw
  	op('rep','Movs_w')
 						:(opdone)
 g.mwb
-.if asm
-	op('shr',reg.wa,'log_cfp_b')
-	op('std')
-	op('lea',reg.xl,'Adr(XL-cfp_b)')
-	op('lea',reg.xr,'Adr(XR-cfp_b)')
- 	genrep('Movs_w')
-	op('cld')
-.fi
-.if gas
 	gensh('shr',reg.wa,log_cfp_b,)
 	op('std')
-	op('Sub_',literal cfp_b,reg.xl)
-	op('Sub_',literal cfp_b,reg.xr)
+	op('Sub_',reg.xl,literal_ cfp_b)
+	op('Sub_',reg.xr,literal_ cfp_b)
  	genrep('Movs_w')
 	op('cld')				
-.fi		
 						:(opdone)
 
 	op('std')
