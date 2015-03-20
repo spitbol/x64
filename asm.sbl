@@ -744,7 +744,7 @@ mov.2
 gensh
 
 .if asm
-	op(opc,reg,val)				:(opdone)
+	op(opc,reg,val)				:(return)
 .fi
 .if gas
 *  if the shift count is constant, then just do the shift. Otherwise, save WA, which corresponds
@@ -2077,7 +2077,7 @@ g.mvc
 .fi
 	trc_suspend = 0				:(opdone)
 g.mvw
-	op('shr',reg.wa,'log_cfp_b')
+	gensh('shr',reg.wa,'log_cfp_b')
  	op('rep','Movs_w')
 						:(opdone)
 g.mwb
