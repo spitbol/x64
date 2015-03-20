@@ -1417,12 +1417,11 @@ g.bod
 g.bev
 	t1 = (eq(i.type(i1),8) reglow(getreg(i1)), getarg(i1))
 	op('test',t1,'1')
-	op((ident(incode,'bod') 'jne', 'je'),getarg(i2))			:(opdone)
+	op((ident(incode,'bod') 'jne', 'je'),getarg(i2)) :(opdone) 
 
 g.brn   op('Jmp',getarg(i1))			:(opdone)
 
 g.bsw
-.if asm
 	t1 = getarg(i1)
 	t2 = genlab('bsw')
 	trc_suspend = 1
@@ -1431,38 +1430,25 @@ g.bsw
 	op('jge',getarg(i3))
 * here after default case.
 g.bsw1
-	ne(rip_mode)				:s(g.bsw.2)
-	op('Jmp', mem( t2 '+' t1 '*cfp_b')) :(g.bsw.3)
-g.bsw.2
-* in rip_mode, need to generate location to reference destination
-	lbl = genrip()
-        op('Data')
-	opl(lbl,D_word,t2 )
-	op('Text')
-	op('Mov',reg.w0,t1)
-	op('sal',reg.w0,'log_cfp_b')
-	op('Add',reg.w0,mem(lbl))
-	op('Jmp', reg.w0)
-g.bsw.3
-	op('Data')
-        opl(t2 ':')
-	trc_suspend = 0
+.if asm
+	op('Jmp', mem( t2 '+' t1 '*cfp_b')) 
 .fi
 .if gas
-	t1 = getarg(i1)
-	t2 = genlab('bsw')
-	trc_suspend = 1
-	ident(i.text(i3))			:s(g.bsw1)
-	op('cmp',t1,getarg(i2))
-	op('jge',getarg(i3))
-* here after default case.
-g.bsw1	
 	op('Jmp','*' t2 '(,' t1 ',' cfp_b ')')
+.fi
+*	ne(rip_mode)				:s(g.bsw.2)
+* in rip_mode, need to generate location to reference destination
+*	lbl = genrip()
+*        op('Data')
+*	opl(lbl,D_word,t2 )
+*	op('Text')
+*	op('Mov',reg.w0,t1)
+*	op('sal',reg.w0,'log_cfp_b')
+*	op('Add',reg.w0,mem(lbl))
+*	op('Jmp', reg.w0)
 	op('Data')
         opl(t2 ':')
-	trc_suspend = 0
-.fi
-						:(opdone)
+	trc_suspend =				:(opdone)
 
 g.iff   op(D_word,getarg(i2))              :(opdone)
 
