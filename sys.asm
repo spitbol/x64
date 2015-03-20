@@ -118,7 +118,7 @@
 .fi
 
 .if asm
-	%macro	Jmp	1	; gas needs '*' before target
+	%macro	Jmp_	1	; gas needs '*' before target
 		jmp	%1
 	%endmacro
 
@@ -145,7 +145,7 @@
 	
 
 .if gas
-	.macro	Jmp	lab	; gas needs '*' before target
+	.macro	Jmp_	lab	; gas needs '*' before target
 		jmp	* \lab
 	.endm
 

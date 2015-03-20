@@ -1419,7 +1419,7 @@ g.bev
 	op('test',t1,'1')
 	op((ident(incode,'bod') 'jne', 'je'),getarg(i2)) :(opdone) 
 
-g.brn   op('Jmp',getarg(i1))			:(opdone)
+g.brn   op('Jmp_',getarg(i1))			:(opdone)
 
 g.bsw
 	t1 = getarg(i1)
@@ -1431,10 +1431,10 @@ g.bsw
 * here after default case.
 g.bsw1
 .if asm
-	op('Jmp', mem( t2 '+' t1 '*cfp_b')) 
+	op('Jmp_', mem( t2 '+' t1 '*cfp_b')) 
 .fi
 .if gas
-	op('Jmp','*' t2 '(,' t1 ',' cfp_b ')')
+	op('Jmp_','*' t2 '(,' t1 ',' cfp_b ')')
 .fi
 *	ne(rip_mode)				:s(g.bsw.2)
 * in rip_mode, need to generate location to reference destination
@@ -1445,7 +1445,7 @@ g.bsw1
 *	op('Mov',reg.w0,t1)
 *	op('sal',reg.w0,'log_cfp_b')
 *	op('Add',reg.w0,mem(lbl))
-*	op('Jmp', reg.w0)
+*	op('Jmp_', reg.w0)
 	op('Data')
         opl(t2 ':')
 	trc_suspend =				:(opdone)
@@ -1511,7 +1511,7 @@ g.ent.2
 						:(opdone)
 
 g.bri
-	op('Jmp',getarg(i1))			:(opdone)
+	op('Jmp_',getarg(i1))			:(opdone)
 
 g.lei
 	t1 = regmap[i.text(i1)]
@@ -1576,13 +1576,13 @@ g.ppm.loop
 
 g.ppm.loop.err
 	op('Mov',mem(rcode), +t1)
-	op('Jmp','err_')
+	op('Jmp_','err_')
 						:(g.ppm.loop.next)
 g.ppm.loop.ppm
 *	check each ppm case and take branch if appropriate
 	ident(i.text(i1))			:s(g.ppm.2)
 	count.ppm = count.ppm + 1
-	op('Jmp',getarg(i1))
+	op('Jmp_',getarg(i1))
 						:(g.ppm.loop.next)
 
 g.ppm.2
@@ -1624,7 +1624,7 @@ g.exi
 	op('ret')				:(opdone)
 g.exi.1
 	op('Mov',reg.w0, mem(prcent(prc.count)))
-	op('Jmp',reg.w0)			:(opdone)
+	op('Jmp_',reg.w0)			:(opdone)
 
 g.enp   op()					:(opdone)
 
@@ -1637,7 +1637,7 @@ g.erb
 .if gas
 	op('mov' o_,  literal +(i.text(i1)),rcode)
 .fi
- 	op('Jmp','err_')
+ 	op('Jmp_','err_')
 						:(opdone)
 
 g.icv
@@ -2201,7 +2201,7 @@ genrep
 	op('jz',l2)
 	op(op)
 	op('dec',reg.wa)
-	op('Jmp',l1)
+	op('Jmp_',l1)
 	opl(l2 ':')
 						:(return)
 g.chk
