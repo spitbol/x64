@@ -521,6 +521,7 @@ regmap.loop
 regmap.done
 
 	w0 = "JUNK_W0"
+	w0_arg = minarg(8,'w0')
 
 *  quick reference:
 	reg.xl = regmap['xl']
@@ -1612,39 +1613,19 @@ g.erb
 						:(opdone)
 
 g.icv
-	op('Inc',getarg(i1))    :(opdone)
+	op('Inc',getarg(i1))    		:(opdone)
 
 g.dcv   
-	op('Dec',getarg(i1))    :(opdone)
+	op('Dec',getarg(i1))    		:(opdone)
 
 g.zer
-.if asm
-	ident(i.text(i1),'(xr)+') op('Xor_',reg.w0,reg.w0)
-+		op('Stos_w')			:s(opdone)
-	ifreg(i1)				:s(g.zer1)
-	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
-	op('Xor_',reg.w0,reg.w0)
-	op('mov',getarg(i1),reg.w0)		:(opdone)
-g.zer1	t1 = getarg(i1)
-	op('Xor_',t1,t1)			:(opdone)
-g.zer.xs op('push','0')			:(opdone)
-.fi
-.if gas
-	ident(i.text(i1),'(xr)+') op('mov','$0',reg.w0)
-+	  op('stos' (eq(ws,32) 'd','q'))	:s(opdone)
-	ifreg(i1)				:s(g.zer1)
-	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
-	op('Xor_',reg.w0,reg.w0)
-	op('mov',reg.w0,getarg(i1))		:(opdone)
-g.zer1	t1 = getarg(i1)
-	op('Xor_',t1,t1)				:(opdone)
-g.zer.xs op('push','$0')			:(opdone)
-.fi
-
+	op('Xor_',reg.w0,reg.w0)		
+	mov(i1,arg_w0)				:(opdone)
 g.mnz
 	op('Xor_',reg.w0,reg.w0)
 	op('inc',reg.w0)
-	op('Mov_',getarg(i1),reg.w0)			:(opdone)
+	mov(i1,arg_w0)				:(opdone)
+
 g.ssl
 g.sss
 g.rtn
@@ -1657,20 +1638,10 @@ g.sub	memmemm()
 	op('Sub',getarg(i1),getarg(i2))	:(opdone)
 
 g.ica
-.if asm
-	op('Add_',getarg(i1),'cfp_b')		:(opdone)
-.fi
-.if gas
-	op('Add_' o_,literal cfp_b,getarg(i1))		:(opdone)
-.fi
+	op('Add_',getarg(i1),literal_ 'cfp_b')		:(opdone)
 
 g.dca
-.if asm
-	op('Sub_',getarg(i1),'cfp_b')		:(opdone)
-.fi
-.if gas
-	op('Sub_' o_,literal cfp_b,getarg(i1))	:(opdone)
-.fi
+	op('Sub_',getarg(i1),literal_ 'cfp_b')		:(opdone)
 
 g.beq
 g.bne
