@@ -1236,31 +1236,23 @@ chktrace.1
 	nlast = nlines
 
 	trc_desc = '"' replace(thisline,'|',' ') '"'
-.if asm
 	ab_suspend = 1
 	op('Data')
 	flush()
 	lbl = genlab('it')
+.if asm
 	opl(lbl,D_char,trc_desc)
 	op(D_char,'0');* string terminator
+.fi
+.if gas
+	opl(lbl ':' ,'.asciz',trc_desc)
+.fi
 	op('Text')
 	op('Mov_',reg.w0,lbl)
 	op('Mov_',mem('trc_de'),reg.w0)
 	op('call','trc_')
 	flush()
 	ab_suspend = 0
-.fi
-.if gas
-	ab_suspend = 1
-	op('Data')
-	flush()
-	lbl = genlab('trc')
-	opl(lbl ':' ,'.asciz',trc_desc)
-	op('Text')
-	op('Mov_',literal lbl,'trc_de')
-	op('call','trc_')
-	ab_suspend = 0
-.fi
 						:(return)
 
 -stitl prsarg(iarg)
