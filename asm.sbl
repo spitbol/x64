@@ -1467,7 +1467,6 @@ g.ent
 *  a multiple of cfp_b (ends in 1, 2, or 3).  the definition here
 *  is a simple odd/even, least significant bit definition.
 *  that is, for us, 1 and 3 are odd, 2 and 4 are even.
-.if asm
 	t1 = i.text(i1)
 *       op('align',2)
 	outline(tab 'align' tab '2')
@@ -1475,8 +1474,7 @@ g.ent
 	outline(tab 'nop')
 						:(g.ent.2)
 g.ent.1
-	outline(tab 'db' tab	t1)
-
+	outline(tab a('db') g('.byte')  tab	t1)
 g.ent.2
 	opl(thislabel)
 *  note that want to attach label to last instruction
@@ -1486,29 +1484,7 @@ g.ent.2
 *  here to see if want label made public
 	thislabel ? rtab(1) . thislabel ':'
         (differ(pubtab[thislabel]), differ(debug)) op('global',thislabel)
-.fi
-.if gas
-	t1 = i.text(i1)
-*        op('align',2)
-	outline(tab '.align' tab '2')
-	differ(t1)				:s(g.ent.1)
-	outline(tab 'nop')
-						:(g.ent.2)
-g.ent.1
-	outline(tab '.byte' tab	t1)
-
-g.ent.2
-	opl(thislabel)
-*  note that want to attach label to last instruction
-*	t1 = cstmts[cstmts.n]
-*	t.label(t1) = tlabel
-*	cstmts[cstmts.n] = t1
-*  here to see if want label made public
-	thislabel ? rtab(1) . thislabel ':'
-        (differ(pubtab[thislabel]), differ(debug)) op('.global',thislabel)
-.fi
-	thislabel =
-						:(opdone)
+	thislabel =				:(opdone)
 
 g.bri
 	op('Jmp_',getarg(i1))			:(opdone)
