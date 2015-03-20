@@ -1607,12 +1607,7 @@ g.enp   op()					:(opdone)
 g.erb
 	errfile =  i.text(i1) ' ' i.text(i2)
 *	set rcode to error code and branch to error handler
-.if asm
-	op('mov', mem(rcode),  +(i.text(i1)))
-.fi
-.if gas
-	op('mov' o_,  literal +(i.text(i1)),rcode)
-.fi
+	op('Mov_', mem(rcode),  literal_ +(i.text(i1)))
  	op('Jmp_','err_')
 						:(opdone)
 
