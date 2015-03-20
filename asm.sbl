@@ -606,47 +606,6 @@ pubend	endfile(5)
 nopub
 
 						:(dsout)
-  &trace = 2000
-  &ftrace = 1000
-*  &profile = 1
-dsout
-opnext	thisline = readline()
-	crack(thisline)				:f(dsout)
-	op_ = incode '_'
-
-* append ':' after label if in code or data.
-
-* output label of executable instruction immediately if there is one,
-* as it simplifies later processing, especially for tracing.
-	ident(inlabel)				:s(opnext.1)
-	thislabel = inlabel (differ(inlabel) ge(sectnow,3) ':',)
-* keep the label as is is not in executable code
-	lt(sectnow,5)				:s(opnext.1)
-* here if in code, so output label now
-* defer label processing for ent to allow emission of alignment ops for x86.
-	ident(incode,'ent')			:s(opnext.1)
-	outline(thislabel)
-* set lastlabel so can check to avoid emitting duplicate label definitions
-	lastlabel = thislabel
-* clear out label info once generated
-	label = thislabel =
-opnext.1
-	thislabel = inlabel (differ(inlabel) ge(sectnow,3) ':',)
-	i1 = prsarg(iarg1)
-	i2 = prsarg(iarg2)
-	i3 = prsarg(iarg3)
-	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' ' i.text(i2) ' ' i.text(i3)
-	argerrs = 0
-	differ(trc_trace) ge(sectnow,5) eq(trc_suspend) chktrace()
-	ge(sectnow,5) chktrace()
-						:($('g.' incode))
-*  here if bad opcode
-ds01	error('bad op-code')			:(dsout)
-
-*  generate tokens.
-
-ds.typerr
-	error('operand type zero')		:(dsout)
 -stitl comregs(line)t,pre,word
 comregs
 	line p.comregs =			:f(comregs1)
@@ -1179,12 +1138,7 @@ outline
 						:(return)
 
 -stitl prcent(n)
-.if asm
-prcent prcent = 'prc_+cfp_b*' ( n - 1)	:(return)
-.fi
-.if gas
 prcent prcent = 'prc_+' cfp_b '*' ( n - 1)	:(return)
-.fi
 
 -stitl outstmt(ostmt)label,opcode,op1,op2,op3,comment)
 *  this module writes the components of the statement
@@ -1378,9 +1332,54 @@ tin02   str     (break('[') $ index len(1) break(']') $ val len(1)) =
 	tblini[index] = val			:(tin02)
 -stitl generators
 
+-stitl ifreg
 ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 .						:f(freturn)s(return)
 
+*	translate minimal
+translate
+
+  &trace = 2000
+  &ftrace = 1000
+*  &profile = 1
+dsout
+opnext	thisline = readline()
+	crack(thisline)				:f(dsout)
+	op_ = incode '_'
+
+* append ':' after label if in code or data.
+
+* output label of executable instruction immediately if there is one,
+* as it simplifies later processing, especially for tracing.
+	ident(inlabel)				:s(opnext.1)
+	thislabel = inlabel (differ(inlabel) ge(sectnow,3) ':',)
+* keep the label as is is not in executable code
+	lt(sectnow,5)				:s(opnext.1)
+* here if in code, so output label now
+* defer label processing for ent to allow emission of alignment ops for x86.
+	ident(incode,'ent')			:s(opnext.1)
+	outline(thislabel)
+* set lastlabel so can check to avoid emitting duplicate label definitions
+	lastlabel = thislabel
+* clear out label info once generated
+	label = thislabel =
+opnext.1
+	thislabel = inlabel (differ(inlabel) ge(sectnow,3) ':',)
+	i1 = prsarg(iarg1)
+	i2 = prsarg(iarg2)
+	i3 = prsarg(iarg3)
+	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' ' i.text(i2) ' ' i.text(i3)
+	argerrs = 0
+	differ(trc_trace) ge(sectnow,5) eq(trc_suspend) chktrace()
+	ge(sectnow,5) chktrace()
+						:($('g.' incode))
+*  here if bad opcode
+ds01	error('bad op-code')			:(dsout)
+
+*  generate tokens.
+
+ds.typerr
+	error('operand type zero')		:(dsout)
 g.flc
 .if asm
 	t1 = reglow(getreg(i1))
@@ -1415,31 +1414,10 @@ g.mov
 
 * odd/even tests.  if w reg, use low byte of register.
 g.bod
-.if asm
-	t1 = getarg(i1)
- 	t1 = eq(i.type(i1),8) reglow(getreg(i1))
-	op('test',t1,'1')
-	op('jne',getarg(i2))			:(opdone)
-.fi
-.if gas
-	t1 = (eq(i.type(i1),8) reglow(getreg(i1)), getarg(i1))
-	op('test',t1,'1')
-	op('jne',getarg(i2))			:(opdone)
-.fi
-
 g.bev
-.if asm
-	t1 = getarg(i1)
-	t1 = eq(i.type(i1),8) reglow(getreg(i1))
-	op('test',t1,'1')
-	op('je',getarg(i2))
-						:(opdone)
-.fi
-.if gas
 	t1 = (eq(i.type(i1),8) reglow(getreg(i1)), getarg(i1))
 	op('test',t1,'1')
-	op('jne',getarg(i2))			:(opdone)
-.fi
+	op((ident(incode,'bod') 'jne', 'je'),getarg(i2))			:(opdone)
 
 g.brn   op('Jmp',getarg(i1))			:(opdone)
 
