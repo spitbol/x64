@@ -74,7 +74,7 @@ endif
 DEF=def.sbl
 ERR=err.sbl
 LEX=lex.sbl
-MIN=min.sbl
+MIN=asm.sbl
 PRE=pre.sbl
 PRE=pre.sbl
 # implicit rule for building objects from C files.
@@ -124,7 +124,7 @@ asm:
 # use preprocessor to make version of rewriter for asm
 	$(BASEBOL) -u $(TARGET) $(PRE) <$(DEF) >def.spt
 # run preprocessor to get sys for nasm as target
-	$(BASEBOL) -u $(TARGET) $(PRE)  <sys >sys.pre
+	$(BASEBOL) -u $(TARGET) $(PRE)  <sys.asm >sys.pre
 # run asm definer to resolve system dependencies in sys
 	$(BASEBOL) -u $(TARGET)  def.spt <sys.pre >sys.s
 # combine sys.s,min.s, and err.s to get sincle assembler source file
@@ -171,7 +171,7 @@ gas:
 # use preprocessor to make version of rewriter for gas
 	$(BASEBOL) -u $(TARGET) $(PRE) <$(DEF) >def.spt
 # run preprocessor to get sys for ngas as target
-	$(BASEBOL) -u $(TARGET) $(PRE) <sys >sys.pre
+	$(BASEBOL) -u $(TARGET) $(PRE) <sys.asm >sys.pre
 # run gas definer to resolve system dependencies in sys
 	$(BASEBOL) -u $(TARGET) def.spt <sys.pre >sys.s
 # combine sys.s,min.s, and err.s to get sincle assembler source file
@@ -259,4 +259,4 @@ trc-nasm: s-nasm.dic it.sbl
 	$(BASEBOL) -u s-nasm.dic trc.sbl <ad >ae
 
 clean:
-	rm -f  *.def *.pre *.[ors] *.def tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol def.spt err.s r-asm.sbl sbl.equ sbl.err s.equ s.err s.lex sys.asm sys.pre sys.s asm.spt
+	rm -f  *.def *.pre *.[ors] *.def tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol def.spt err.s r-asm.sbl sbl.equ sbl.err s.equ s.err s.lex sys.pre sys.s asm.spt
