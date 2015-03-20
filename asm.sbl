@@ -1811,12 +1811,7 @@ g.psc
 
 	t1 = getarg(i1)
 	t2 = i.type(i2)
-.if asm
 	((ifreg(i2), ge(t2,1) le(t2,2)) op('lea',t1,'Adr(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
-.fi
-.if gas
-	((ifreg(i2), ge(t2,1) le(t2,2)) op('lea',t1,'Adr(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
-.fi
 	op('Add',t1,'cfp_f')
 	eq(i.type(i2))				:s(opdone)
 
@@ -1990,17 +1985,7 @@ g.zzz
  	op('zzz',getarg(i1))			:(opdone)
 
 g.wtb
-.if asm
-	op('sal',getarg(i1),'log_cfp_b')	:(opdone)
-.fi
-.if gas
-*  gas flaky on doing shifts, so just do repeated adds
-	reg = getarg(i1)
-	op('Add_',reg,reg)
-	op('Add_',reg,reg)
-	ne(ws,32) op('Add_',reg,reg)
-						:(opdone)
-.fi
+	gensh('sal',getarg(i1),'log_cfp_b')	:(opdone)
 
 g.btw
 *HERE this crashes gas translation, need to five gensh
@@ -2082,21 +2067,15 @@ g.cvd
 
 g.mvc
 	trc_suspend = 1
-.if asm
 	t1 = genlab('mvc')
+.if asm
 	op('rep')
 	op('Movs_b')
 .fi
 .if gas
-*	use word move if character size is word size
-*	if charsize is word size, convert character count to byte count for word move
-
-	t1 = genlab('mvc')
-	trc_suspend = 1
 	op('rep', 'Movs_b')
 .fi
-	trc_suspend = 0
-						:(opdone)
+	trc_suspend = 0				:(opdone)
 g.mvw
 	op('shr',reg.wa,'log_cfp_b')
  	op('rep','Movs_w')
