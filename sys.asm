@@ -23,7 +23,7 @@
 
 .if asm
 	
-	%macro	Add	2
+	%macro	Add_	2
 		add	%1,%2
 	%endmacro
 
@@ -35,7 +35,7 @@
 	and	%1,%2
 	%endmacro
 
-	%macro	Cmp	2	; src/dst differ
+	%macro	Cmp_	2	; src/dst differ
 		cmp	%1,%2
 	%endmacro
 	
@@ -48,7 +48,7 @@
 	%endmacro
 .fi
 .if gas
-	.macro	Add	dst,src
+	.macro	Add_	dst,src
 		add	\src,\dst
 	.endm
 
@@ -56,11 +56,11 @@
 		.align	\bytes
 	.endm
 
-	.macro	And	dst,src
+	.macro	And_	dst,src
 	and	\src,\dst
 	.endm
 	
-	.macro	Cmp	dst,src	; src/dst differ
+	.macro	Cmp_	dst,src	; src/dst differ
 		cmp	\src,\dst
 	.endm
 	
@@ -126,11 +126,11 @@
 		mov	%1,%2
 	%endmacro
 
-	%macro	Or	2
+	%macro	Or_	2
 	or	%1,%2
 	%endmacro
 	
-	%macro	Sub	2
+	%macro	Sub_	2
 		sub	%1,%2
 	%endmacro
 
@@ -138,7 +138,7 @@
 		section	.text
 	%endmacro
 
-	%macro	Xor	2
+	%macro	Xor_	2
 	xor	%1,%2
 	%endmacro
 .fi
@@ -153,11 +153,11 @@
 		mov	\src,\dst
 	.endm
 
-	.macro	Or	dst,src
+	.macro	Or_	dst,src
 	or	\src,\dst
 	.endm
 	
-	.macro	Sub	dst,src
+	.macro	Sub_	dst,src
 		sub	\src,\dst
 	.endm
 
@@ -165,7 +165,7 @@
 		.text
 	.endm
 
-	.macro	Xor	dst,src
+	.macro	Xor_	dst,src
 	xor	\src,\dst
 	.endm
 .fi
@@ -965,7 +965,7 @@ stackinit:
 	Mov_	Mem(compsp),W0	; save minimal's stack pointer
 	Sub	W0,Mem(stacksiz)	; end of minimal stack is where c stack will start
 	Mov_	Mem(osisp),W0	; save new c stack pointer
-	Add	W0,cfp_b*100		; 100 words smaller for chk
+	Add_	W0,cfp_b*100		; 100 words smaller for chk
 	Mov_	Mem(spmin),W0
 	ret
 
@@ -1278,7 +1278,7 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	%macro	callext	2
 	Extern	%1
 	call	%1
-	Add	XS,%2		; pop arguments
+	Add_XS,%2		; pop arguments
 	%endmacro
 
 	%macro	chk_	0
@@ -1286,7 +1286,7 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	%endmacro
 
 	%macro	adi_	0
-	Add	Mem(reg_ia),W0
+	Add_	Mem(reg_ia),W0
 	seto	byte [reg_fl]
 	%endmacro
 
@@ -1354,7 +1354,7 @@ sysxi:	Mov_	Mem(reg_xs),XS
 
 	%macro	icp_	0
 	Mov_	W0,Mem(reg_cp)
-	Add	W0,cfp_b
+	Add_	W0,cfp_b
 	Mov_	Mem(reg_cp),W0
 	%endmacro
 
@@ -1369,7 +1369,7 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	Mov_	W0,M_word [W0]			; load code word
 	Mov_	%1,W0
 	pop	W0 				; load address of code word
-	Add	W0,cfp_b
+	Add_	W0,cfp_b
 	Mov_	M_word [reg_cp],W0
 	%endmacro
 
@@ -1383,7 +1383,7 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	.macro	callext	name,id
 	Extern	\name
 	call	\name
-	Add	XS,\id		; pop arguments
+	Add_XS,\id		; pop arguments
 	.endm
 
 	.macro	chk_
@@ -1391,7 +1391,7 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	.endm
 
 	.macro	adi_
-	Add	Mem(reg_ia),W0
+	Add_	Mem(reg_ia),W0
 	seto	byte [reg_fl]
 	.endm
 
@@ -1459,7 +1459,7 @@ sysxi:	Mov_	Mem(reg_xs),XS
 
 	.macro	icp_
 	Mov_	W0,Mem(reg_cp)
-	Add	W0,cfp_b
+	Add_	W0,cfp_b
 	Mov_	Mem(reg_cp),W0
 	.endm
 
@@ -1474,7 +1474,7 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	Mov_	W0,M_word [W0]			; load code word
 	Mov_	\val,W0
 	pop	W0 				; load address of code word
-	Add	W0,cfp_b
+	Add_	W0,cfp_b
 	Mov_	M_word [reg_cp],W0
 	.endm
 
@@ -1626,14 +1626,14 @@ setovr:
 ovr_:
 	Mov_	ax, word [ rel reg_ra+6]	; get top 2 bytes
 	and	ax, 0x7ff0             	; check for infinity or nan
-	Add	ax, 0x10               	; set/clear overflow accordingly
+	Add_	ax, 0x10               	; set/clear overflow accordingly
 	ret
 
 	Global	get_fp			; get frame pointer
 
 get_fp:
 	Mov_	W0,Mem(reg_xs)     ; minimal's xs
-	Add	W0,4           	; pop return from call to sysbx or sysxi
+	Add_	W0,4           	; pop return from call to sysbx or sysxi
 	ret                    	; done
 
 	Extern	rereloc
@@ -1653,7 +1653,7 @@ restart:
 	pop	W0                     	; discard dummy
 	pop	W0                     	; get lowest legal stack value
 
-	Add	W0,Mem(stacksiz)  	; top of compiler's stack
+	Add_	W0,Mem(stacksiz)  	; top of compiler's stack
 	Mov_	XS,W0                 	; switch to this stack
 	call	stackinit               ; initialize minimal stack
 
@@ -1752,7 +1752,7 @@ re4:	Mov_	W0,Mem(stbas)
 	push	Mem(outptr)        	; swcoup(outptr)
 	Extern 	swcoup
 	call	swcoup
-	Add	XS,cfp_b
+	Add_XS,cfp_b
 
 ;	jump to minimal code to restart a save file.
 
