@@ -116,7 +116,7 @@ asm:
 # run lex to get min.lex
 	$(BASEBOL) -u $(TARGET) $(LEX)
 # run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u $(TARGET) $(PRE) <min.sbl >asm.spt 
+	$(BASEBOL) -u $(TARGET) $(PRE) <asm.sbl >asm.spt 
 # run asm to get .s and .err files
 	$(BASEBOL) -u $(TARGET)$(TRCOPT) asm.spt
 # run err 
@@ -163,7 +163,7 @@ gas:
 # run lex to get min.lex
 	$(BASEBOL) -u $(TARGET) $(LEX)
 # run preprocessor to get gas for ngas as target
-	$(BASEBOL) -u $(TARGET) $(PRE) <min.sbl >gas.spt 
+	$(BASEBOL) -u $(TARGET) $(PRE) <asm.sbl >gas.spt 
 # run gas to get .s and .err files
 	$(BASEBOL) -u $(TARGET):$(TRCOPT) gas.spt
 # run err 

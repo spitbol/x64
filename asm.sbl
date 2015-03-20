@@ -99,19 +99,16 @@
 	D_real	=	'D_real'
 	D_word	=	'D_word'
 
-.if asm
-	asm = 'A'
-.fi
-.if gas
-	asm = 'G'
-.fi
+* gas requires '$' before literals, nasm doesn't
 
 .if asm
 	Comment = ';';* comment character
 	asm_cfp_b	= 'cfp_b'
+	literal	= 
 .fi
 .if gas
 	Comment = '#';* comment character
+	literal	= '$'
 .fi
 
 *  function definitions
@@ -798,7 +795,7 @@ gensh
 	opc = (ident(opc,'lsh') 'sal', 'sar')
 *  get value if shift count is constant defined in equ statement
 	val = differ(equ_value[val]) equ_value[val]
-	integer(val) op(opc, '$' val, reg)	:s(return)
+	integer(val) op(opc, literal val, reg)	:s(return)
 	ident(reg,reg.wa)			:s(gensh.wa)
 *  here if register is NOT WA, so push/restore WA
 	op('push',reg.wa)
@@ -876,7 +873,7 @@ getarg.c.10
 .fi
 .if gas
 	indx = substr(txt,2,2)
-	genaop(tstmt(,'add','$' cfp_b, regmap[indx])) :(getarg.mem)
+	genaop(tstmt(,'add',literal cfp_b, regmap[indx])) :(getarg.mem)
 .fi
 
 *  -(x), register indirect, pre decrement
@@ -888,7 +885,7 @@ getarg.c.11
 .fi
 .if gas
 	indx = substr(txt,3,2)
-	genbop(tstmt(,'sub','$' cfp_b, regmap[indx])) 	:(getarg.mem)
+	genbop(tstmt(,'sub',literal  cfp_b, regmap[indx])) 	:(getarg.mem)
 .fi
 
 * int(x)
@@ -935,16 +932,16 @@ getarg.c.22
 .if gas
 *  =dlbl
 getarg.c.18	
-	getarg = '$' substr(txt,2)		:(getarg.done)
+	getarg = literal substr(txt,2)		:(getarg.done)
 	
 *  *dlbl
 getarg.c.19
-	getarg  = '$'  cfp_b '*' substr(txt,2)	:(getarg.done)
+	getarg  = literal  cfp_b '*' substr(txt,2)	:(getarg.done)
 
 *  =name (data section)
 getarg.c.20
 getarg.c.21
-        getarg = '$' substr(txt,2)	
+        getarg = literal substr(txt,2)	
 						:(getarg.done)
 	op('lea',reg.w0,substr(txt,2))
 	getarg = reg.w0				:(getarg.done)
@@ -952,7 +949,7 @@ getarg.c.21
 *  =name (program section)
 getarg.c.22
 
-       getarg = '$' substr(txt,2)		:(getarg.done)
+       getarg = literal substr(txt,2)		:(getarg.done)
 
 .fi
 
@@ -1050,7 +1047,7 @@ getadr.c.15
 .if gas
 	txt break('(') . t1 '(' len(2) . t2
 	op('mov',regmap[t2],reg.w0)
-	op('add','$' t1,reg.w0)			:(getadr.done)
+	op('add',literal t1,reg.w0)			:(getadr.done)
 .fi
 
 .if gas
@@ -1236,7 +1233,7 @@ outstmt4
 **
 **	send text to output file if not null.
 
-*	stmtout = replace(trim(stmtout),'$','_')
+*	stmtout = replace(trim(stmtout),literal ,'_')
 	stmtout = trim(stmtout)
 	ident(stmtout)				:s(return)
 	outline(stmtout)
@@ -1305,7 +1302,7 @@ chktrace.1
 	lbl = genlab('trc')
 	opl(lbl ':' ,'.asciz',trc_desc)
 	op('Text')
-	op('Mov','$' lbl,'trc_de')
+	op('Mov',literal lbl,'trc_de')
 	op('call','trc_')
 	ab_suspend = 0
 .fi
@@ -1674,7 +1671,7 @@ g.erb
 	op('mov', mem(rcode),  +(i.text(i1)))
 .fi
 .if gas
-	op('mov' o_,  '$' +(i.text(i1)),rcode)
+	op('mov' o_,  literal +(i.text(i1)),rcode)
 .fi
  	op('Jmp','err_')
 						:(opdone)
@@ -1729,7 +1726,7 @@ g.ica
 	op('add',getarg(i1),'cfp_b')		:(opdone)
 .fi
 .if gas
-	op('add' o_,'$' cfp_b,getarg(i1))		:(opdone)
+	op('add' o_,literal cfp_b,getarg(i1))		:(opdone)
 .fi
 
 g.dca
@@ -1737,7 +1734,7 @@ g.dca
 	op('sub',getarg(i1),'cfp_b')		:(opdone)
 .fi
 .if gas
-	op('sub' o_,'$' cfp_b,getarg(i1))	:(opdone)
+	op('sub' o_,literal cfp_b,getarg(i1))	:(opdone)
 .fi
 
 g.beq
@@ -2157,7 +2154,7 @@ g.ctb
 g.ctw
 	w.reg = getarg(i1); 
 	op('mov',w.reg,'ctbw_r')
-	op('mov' op_w,'$' i.text(i2), 'ctbw_v')
+	op('mov' op_w,literal i.text(i2), 'ctbw_v')
 *	op('mov',w.reg,reg.w0)	
 	op('call', incode '_')
 	op('mov','ctbw_r',w.reg)
@@ -2210,8 +2207,8 @@ g.mwb
 .if gas
 	gensh('shr',reg.wa,log_cfp_b,)
 	op('std')
-	op('sub','$' cfp_b,reg.xl)
-	op('sub','$' cfp_b,reg.xr)
+	op('sub',literal cfp_b,reg.xl)
+	op('sub',literal cfp_b,reg.xr)
  	genrep('Movs_w')
 	op('cld')				
 .fi		
