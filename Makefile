@@ -164,6 +164,26 @@ gas:
 # load objects
 	$(CC) $(LDOPTS)  $(COBJS) gasbol.o $(LMOPT) -static -ogasbol
 
+sys-asm:
+# run preprocessor to get sys for nasm as target
+	$(BASEBOL) -u $(TARGET)_asm $(PRE)  <sys.asm >sys.pre
+# use preprocessor to make version of rewriter for asm
+	$(BASEBOL) -u $(TARGET)_asm $(PRE) <$(DEF) >def.spt
+# run asm definer to resolve system dependencies in sys
+	$(BASEBOL) -u $(TARGET)_asm  def.spt <sys.pre >sys.s
+# assemble the sys file
+	$(NASM) $(ASMOPTS) -osys.o sys.s
+
+sys-gas:
+# run preprocessor to get sys for gas as target
+	$(BASEBOL) -u $(TARGET)_gas $(PRE)  <sys.asm >sys.pre
+# use preprocessor to make version of rewriter for gas
+	$(BASEBOL) -u $(TARGET)_gas $(PRE) <$(DEF) >def.spt
+# run gas definer to resolve system dependencies in sys
+	$(BASEBOL) -u $(TARGET)_gas  def.spt <sys.pre >sys.s
+# assemble the sys file
+	$(GAS) $(GASOPTS) -osys.o sys.s
+
 bug:
 # combine sys.s,min.s, and err.s to get sincle assembler source file
 	cat <sys.s >spitbol.s

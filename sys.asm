@@ -208,6 +208,10 @@
 	or	%1,%2
 	%endmacro
 	
+	%macro	Sal_	2
+		sal	%1,%2
+	%endmacro
+
 	%macro	Sub_	2
 		sub	%1,%2
 	%endmacro
@@ -235,6 +239,10 @@
 	or	\src,\dst
 	.endm
 	
+	.macro	Sal_	dst,src
+		sal	\src,\dst
+	.endm
+
 	.macro	Sub_	dst,src
 		sub	\src,\dst
 	.endm
@@ -395,13 +403,29 @@
 	call	trc_
 	%endmacro
 
-%ifdef	unix_32
+.if asm 32
 	%define	cfp_b	4
 	%define	cfp_c	4
-%else
+.if
+.if asm 64
 	%define	cfp_b	8
 	%define	cfp_c	8
-%endif
+.fi
+.if gas 32
+	.set	cfp_b,4
+	.set	cfp_c,4
+.if
+.if gas 64
+	.set	cfp_b,8
+	.set	cfp_c,8
+.fi
+.if osx 32
+	.set	cfp_b,4
+	.set	cfp_c,4
+.if
+.if osx 64
+	.set	cfp_b,8
+	.set	cfp_c,8
 .fi
 
 	Global	reg_block
@@ -926,12 +950,14 @@ startup:
 	Mov_	Mem(ppoff),W0		; save for use later
 
 	Mov_	XS,Mem(osisp)		; switch to new c stack
+	Mov	W0,j
 .if asm
-	Mov_	Mem(minimal_id),calltab_start
+	Mov_	W0,calltab_start
 .fi
 .if gas
-	Mov_	Mem(minimal_id),$calltab_start
+	Mov_	W0,$calltab_start
 .fi
+	Mov_	Mem(minimal_id),W0
 	call	minimal			; load regs, switch stack, start compiler
 
 ;	stackinit  -- initialize spmin from sp.
@@ -1002,7 +1028,8 @@ minimal:
 	Mov_	XL,Mem(reg_xl)
 
 	Mov_	Mem(osisp),XS	; save osint stack pointer
-	cmp	Mem(compsp),0	; is there a compiler stack?
+	xor	W0,W0
+	cmp	Mem(compsp),W0	; is there a compiler stack?
 	je	min1			; jump if none yet
 	Mov_	XS,Mem(compsp)	; switch to compiler stack
 
@@ -1070,16 +1097,16 @@ minimal:
 ;	...        ...
 
 
-%ifdef	OLD
-	Global	get_ia
-get_ia:
-	Mov_	W0,IA
-	ret
-
-	Global	set_ia_
-set_ia_:	Mov_	IA,M_word[reg_w0]
-	ret
-%endif
+;%ifdef	OLD
+;	Global	get_ia
+;get_ia:
+;	Mov_	W0,IA
+;	ret
+;
+;	Global	set_ia_
+;set_ia_:	Mov_	IA,M_word[reg_w0]
+;	ret
+;%endif
 syscall_init:
 ;	save registers in global variables
 
@@ -1101,8 +1128,9 @@ syscall_exit:
 	Mov_	XL,Mem(reg_xl)
 	cld
 	Mov_	W0,Mem(reg_pc)
-	jmp	W0
+	Jmp_	W0
 
+.if asm
 	%macro	syscall	2
 	pop	W0			; pop return address
 	Mov_	Mem(reg_pc),W0
@@ -1113,6 +1141,19 @@ syscall_exit:
 	call	%1
 	call	syscall_exit
 	%endmacro
+.fi
+.if gas
+	.macro	syscall	proc,id
+	pop	W0			; pop return address
+	Mov_	Mem(reg_pc),W0
+	call	syscall_init
+;	save compiler stack and switch to osint stack
+	Mov_	Mem(compsp),XS      ; save compiler's stack pointer
+	Mov_	XS,Mem(osisp)       ; load osint's stack pointer
+	call	\proc
+	call	syscall_exit
+	.endm
+.fi
 
 	Global sysax
 	Extern	zysax
@@ -1175,7 +1216,15 @@ sysex:	Mov_	Mem(reg_xs),XS
 	Global sysfc
 	Extern	zysfc
 sysfc:  pop     W0             ; <<<<remove stacked scblk>>>>
+.if asm
 	lea	XS,[XS+WC*cfp_b]
+.fi
+.if gas
+	Mov_	W0,WC
+	Sal_	W0,$log_cfp_b
+	Add_	XS,W0
+.fi
+
 	push	W0
 	syscall	zysfc,14
 
@@ -1506,8 +1555,14 @@ dvi__:
 	Extern	i_dvi
 	Mov_	Mem(reg_w0),W0
 	call	i_dvi
-	Mov_	al,byte [rel reg_fl]
+.if asm
+	Mov_	al,byte [reg_fl]
 	or	al,al
+.fi
+.if gas
+	movb	reg_fl,%al
+	or	%al,%al
+.fi
 	ret
 
 	Global	rmi__
@@ -1517,8 +1572,14 @@ rmi__:
 	Extern	i_rmi
 	Mov_	Mem(reg_w0),W0
 	call	i_rmi
+.if asm
 	Mov_	al,byte [rel reg_fl]
 	or	al,al
+.fi
+.if gas
+	movb	reg_fl,%al
+	or	%al,%al
+.fi
 	ret
 
 ocode:
@@ -1526,17 +1587,30 @@ ocode:
 	jz	setovr		; jump if 0 divisor
 	xchg	W0,Mem(reg_ia)	; ia to w0, divisor to ia
 	cdq			; extend dividend
-	idiv	Mem(reg_ia)	; perform division. w0=quotient, wc=remainder
+	Mov_	W0,Mem(reg_ia)
+	idiv	W0		; perform division. w0=quotient, wc=remainder
+.if asm
 	seto	byte [rel reg_fl]
+.fi
+.if gas
+	seto	reg_fl
+.fi
 	Mov_	Mem(reg_ia),WC
 	ret
 
 setovr:
+.if asm
 	Mov_	al,1		; set overflow indicator
 	Mov_	byte [rel reg_fl],al
+.fi
+.if gas
+	xor	%al,%al		; set overflow indicator
+	inc	%al
+	Mov_	%al,reg_fl
+.fi
 	ret
 
-
+.if asm
 	%macro	int_op 2
 	Global	%1
 	Extern	%2
@@ -1544,6 +1618,16 @@ setovr:
 	call	%2
 	ret
 %endmacro
+.fi
+.if gas
+	.macro	int_op glob,ext
+	Global	\glob
+	Extern	\ext
+\glob:
+	call	\ext
+	ret
+	.endm
+.fi
 
 	int_op itr_,f_itr
 	int_op rti_,f_rti
@@ -1580,6 +1664,7 @@ setovr:
 ;	int_op	rti_,f_rti
 ;%endif
 
+.if asm
 	%macro	osint_call 3
 	Global	%1
 	Extern	%2
@@ -1588,10 +1673,30 @@ setovr:
 	call	%2
 	ret
 	%endmacro
+.fi
 
+.if gas
+	.macro	osint_call glob,ext,id
+	Global	\glob
+	Extern	\ext
+\glob:
+	Mov_	\id,W0
+	call	\ext
+	ret
+	.endm
+.fi
+
+.if asm
 	%macro	real_op 2
 	osint_call	%1,%2,reg_rp
 	%endmacro
+.fi
+
+.if gas
+	.macro	real_op op,proc
+	osint_call	\op,\proc,reg_rp
+	.endm
+.fi
 
 	real_op	ldr_,f_ldr
 	real_op	str_,f_str
@@ -1602,14 +1707,24 @@ setovr:
 	real_op	ngr_,f_ngr
 	real_op cpr_,f_cpr
 
-
+.if asm
 	%macro	math_op 2
 	Global	%1
 	Extern	%2
 %1:
 	call	%2
 	ret
-%endmacro
+	%endmacro
+.fi
+.if gas
+	.macro	math_op glob,ext
+	Global	\glob
+	Extern	\ext
+\glob:
+	call	\ext
+	ret
+	.endm
+.fi
 
 	math_op	atn_,f_atn
 	math_op	chp_,f_chp
@@ -1623,9 +1738,18 @@ setovr:
 ;	ovr_ test for overflow value in ra
 	Global	ovr_
 ovr_:
+.if asm
 	Mov_	ax, word [ rel reg_ra+6]	; get top 2 bytes
 	and	ax, 0x7ff0             	; check for infinity or nan
 	Add_	ax, 0x10               	; set/clear overflow accordingly
+.fi
+.if gas
+	mov	$reg_ra,W0
+	add	$6,W0
+	movw	(W0),%ax		; get top 2 bytes
+	and	$0x7ff0,%ax             	; check for infinity or nan
+	add	$0x10,%ax              	; set/clear overflow accordingly
+.fi
 	ret
 
 	Global	get_fp			; get frame pointer
@@ -1647,7 +1771,7 @@ get_fp:
 
 ;
 restart:
-%ifdef support_restart
+.if restart
 	pop	W0                      ; discard return
 	pop	W0                     	; discard dummy
 	pop	W0                     	; get lowest legal stack value
@@ -1758,7 +1882,7 @@ re4:	Mov_	W0,Mem(stbas)
 	Mov_	W0,minimal_rstrt
 	Mov_	Mem(minimal_id),W0
 	call	minimal			; no return
-%endif
+.fi
 
 	Global	trc_
 	Extern	trc
@@ -1769,8 +1893,9 @@ trc_:
 	call	restore_regs
 	popf
 	ret
-
+.if asm
 	%undef		cfp_b
 	%undef		cfp_c
+.fi
 
 
