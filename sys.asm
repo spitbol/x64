@@ -950,7 +950,6 @@ startup:
 	Mov_	Mem(ppoff),W0		; save for use later
 
 	Mov_	XS,Mem(osisp)		; switch to new c stack
-	Mov	W0,j
 .if asm
 	Mov_	W0,calltab_start
 .fi
