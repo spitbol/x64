@@ -53,7 +53,7 @@ zysdc()
         write( STDERRFD, "  Release ", 10);
         write( STDERRFD, pheadv->str, pheadv->len );
         write( STDERRFD, pid1blk->str, pid1blk->len );
-        wrterr( cprtmsg );
+        wrterr(" copyright 1987-2012 robert b. k. dewar and mark emmer.");
     }
     return NORMAL_RETURN;
 }

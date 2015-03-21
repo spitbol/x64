@@ -1616,7 +1616,7 @@ g.zer
 	mov(i1,arg_w0)				:(opdone)
 g.mnz
 	op('Xor_',reg.w0,reg.w0)
-	op('inc',reg.w0)
+	op('Inc_',reg.w0)
 	mov(i1,arg_w0)				:(opdone)
 
 g.ssl
