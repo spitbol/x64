@@ -37,8 +37,7 @@ a.end
 	define('m(ref)')			:(m.end)
 m
 *	strip off enclosing parenthesis
-	ref len(1) break(')') . m
-	m = (eq(ws,32) 'd', 'q') 'word ptr ' m  :(return)
+	ref len(1) break(')') . m		:(return)
 m.end
 
 
@@ -49,6 +48,12 @@ m.end
 
 	upper.pat = any(&ucase)
 
+*	output standard definitions
+	output = tab '.set'	tab	'cfp_b'	','	(eq(ws,32) 4, 8)
+	output = tab '.set'	tab 	'cfp_c'	','	(eq(ws,32) 4, 8)
+	output = tab '.set'	tab	'os '	','	os
+
+	output = tab '.set'	tab	'ws'	','	ws
 						:(next)
 copy
 	output = line
@@ -67,9 +72,9 @@ next
 
 	line any('CDM')				:f(defs.end)
 	line 'D_word' = (eq(ws,32) '.long', '.quad')
-	line 'D_char' = '.byte'
+	line 'D_char' = '.ascii'
 	line 'D_byte' = '.byte'
-	line 'D_real' = '.quad'
+	line 'D_real' = '.double'
 *	line 'CFP_B' =  (eq(ws,32) '4','8')
 *	line 'CFP_C' =  (eq(ws,32) '4','8')
 	line 'M_real' = 'qword'

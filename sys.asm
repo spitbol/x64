@@ -27,7 +27,7 @@
 		add	%1,%2
 	%endmacro
 
-	%macro	Align	1
+	%macro	Align_	1
 		align	%1
 	%endmacro
 
@@ -52,8 +52,8 @@
 		add	\src,\dst
 	.endm
 
-	.macro	Align	bytes
-		.align	\bytes
+	.macro	Align_	bytes
+		.balign	\bytes,0
 	.endm
 
 	.macro	And_	dst,src
@@ -602,7 +602,7 @@ calltab:
 ;
 ; ; words saved during exit(-3)
 ; ;
-	Align 16
+	Align_ 16
 dummy:	D_word	0
 reg_block:
 reg_ia: D_word	0		; register ia (ebp)
@@ -632,9 +632,9 @@ reg_rp:	D_word	0
 
 ; reg_fl is used to communicate condition codes between minimal and c code.
 	Global	reg_fl
-reg_fl:	D_char	0		; condition code register for numeric operations
+reg_fl:	D_byte	0		; condition code register for numeric operations
 
-	Align	8
+	Align_	8
 ;  constants
 
 	Global	ten
@@ -654,7 +654,7 @@ maxint:	D_word 9223372036854775807
 sav_block: 
 	Fill 	44 			; save minimal registers during push/pop reg
 
-	Align cfp_b
+	Align_ cfp_b
 	Global	ppoff
 ppoff:  D_word      0               	; offset for ppm exits
 	Global	compsp
@@ -665,9 +665,9 @@ sav_compsp:
 	Global	osisp
 osisp:  D_word      0               	; osint's stack pointer
 	Global	_rc_
-_rc_:	dd   0				; return code from osint procedure
+_rc_:	D_word   0				; return code from osint procedure
 
-	Align	cfp_b
+	Align_	cfp_b
 	Global	save_cp
 	Global	save_xl
 	Global	save_xr
@@ -686,27 +686,29 @@ save_wc:	D_word	0		; saved wc value
 minimal_id:	D_word	0		; id for call to minimal from c. see proc minimal below.
 
 ;
-	%define setreal 0
+;	%define setreal 0
 
 ;       setup a number of internal addresses in the compiler that cannot
 ;       be directly accessed from within c because of naming difficulties.
 
 	Global	id1
-id1:	dd	0
+id1:	D_word	0
+.if dead
 %if setreal == 1
 	D_word	2
 
        D_word       1
 	D_char	"1x\x00\x00\x00"
 %endif
+.fi
 
 	Global	id1blk
-id1blk	D_word	152
+id1blk:	D_word	152
       	D_word	0
 	Fill	152
 
 	Global	id2blk
-id2blk	D_word	152
+id2blk:	D_word	152
       	D_word	0
 	Fill	152
 
@@ -750,8 +752,8 @@ ttybuf:	D_word    0     ; type word
 spmin:	D_word	0			; stack limit (stack grows down for x86_64)
 spmin.a:	D_word	spmin
 
-	Align	16
-	Align         cfp_b
+	Align_	16
+	Align_        cfp_b
 
 	Global	cprtmsg
 cprtmsg:

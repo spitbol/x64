@@ -95,6 +95,7 @@
 	nos	= 	'0123456789'
 	tab	=	char(9)
 	
+	D_byte	=	'D_byte'
 	D_char	=	'D_char'
 	D_real	=	'D_real'
 	D_word	=	'D_word'
@@ -1461,8 +1462,8 @@ g.ent
 *  is a simple odd/even, least significant bit definition.
 *  that is, for us, 1 and 3 are odd, 2 and 4 are even.
 	t1 = i.text(i1)
-*       op('align',2)
-	outline(tab 'align' tab '2')
+*       op('Align_',2)
+	outline(tab 'Align_' tab '2')
 	differ(t1)				:s(g.ent.1)
 	outline(tab 'nop')
 						:(g.ent.2)
@@ -2030,7 +2031,6 @@ g.ctw
 						:(opdone)
 .fi
 
-.if asm
 g.cvm	
 	t1 = getarg(i1)
 	op('sti_',reg.w0)
@@ -2040,19 +2040,6 @@ g.cvm
 	op('Sub_',reg.w0,reg.wb)
 	op('ldi_',reg.w0)
 	op('jo',t1)
-						:(opdone)
-.fi
-.if gas
-	t1 = getarg(i1)
-	op('mov',reg.ia,reg.w0)
-	op('imul',reg.w0,intvt)
-	op('jo',t1)
-	op('Sub_','$ch_d0',reg.wb)
-	op('Sub_',reg.wb,reg.w0)
-	op('mov',reg.w0,reg.ia)
-	op('jo',t1)
-						:(opdone)
-.fi
 						:(opdone)
 g.cvd
 	op('cvd_')				:(opdone)
@@ -2131,7 +2118,7 @@ g.dic
 						:(decend)
 
 g.drc
-	op('Align',8)
+	op('Align_',8)
 	t1 = i.text(i1)
 	t1 ? fence "+" = ""
 	op(D_real,t1)
@@ -2141,21 +2128,35 @@ g.drc
 
 g.dtc
 *  change first and last chars to " (assume / used in source)
-	t1 = i.text(i1)
-	t1 tab(1) rtab(1) . t2
-	t3 = remdr(size(t2),cfp_c)
-*        t2 = "'" t2 "'"
+	txt = i.text(i1)
+	txt = substr(txt,2,size(txt) - 2)
+	opl(thislabel,D_char, '"' txt '"')
+
+	n = remdr(size(txt),cfp_b)
+	eq(n)					:s(opdone)
+	n = cfp_b - n
+
+*	Pad out with null bytes to next word boundary
+
+dtc.1	eq(n)					:s(opdone)
+	op(D_byte,'0')
+	n = n - 1				:(dtc.1)
+
+	op('Align_',cfp_b)			
+	op('D_word','0')
+						:(opdone)
+	dtc.rem = remdr(size(dtc.txt),cfp_c)
 *  append nulls to complete last word so constant length is multiple
 *  of word word
 	dtc_i = 1
-	t4 =
+	tmp =
 g.dtc.1
-	t4 = gt(dtc_i, 1) t4 ","
-	t4 = t4 "'" substr(t2,dtc_i,1) "'"
+	tmp = gt(dtc_i, 1) t4 ","
+	tmp = t4 "'" substr(t2,dtc_i,1) "'"
 	le(dtc_i = dtc_i + 1, size(t2))		:s(g.dtc.1)
 
-        t4 = ne(t3) t4 dupl(',0',cfp_c - t3)
-        opl(thislabel,D_char,t4)
+        tmp = ne(gtc.rem) t4 dupl(',0',cfp_c - gtc.rem)
+        opl(thislabel,D_char,tmp)
 						:(opdone)
 g.dbc
 	opl(thislabel,D_word,getarg(i1))
