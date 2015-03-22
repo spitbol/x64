@@ -1522,25 +1522,25 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	.endm
 
 	.macro	ino_	lbl
-	Mov_	reg_fl,%al
+	movb	reg_fl,%al
 	or	%al,%al
 	jno	\lbl
 	.endm
 
 	.macro	iov_	lbl
-	Mov_	reg_fl,%al
+	movb	reg_fl,%al
 	or	%al,%al
 	jo	\lbl
 	.endm
 
 	.macro	rno_	lbl
-	Mov_	reg_fl,%al
+	movb	reg_fl,%al
 	or	al,al
 	je	\lbl
 	.endm
 
 	.macro	rov_	lbl
-	Mov_	reg_fl,%al
+	mov	reg_fl,%al
 	or	al,al
 	jne	\lbl
 	.endm
@@ -1944,8 +1944,8 @@ trc_:
 	popf
 	ret
 .if asm
-	%undef		cfp_b
-	%undef		cfp_c
+;	%undef		cfp_b
+;	%undef		cfp_c
 .fi
 
 

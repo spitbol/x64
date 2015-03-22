@@ -2,8 +2,7 @@
 *	
 	tab = char(9)
 
-	target = (differ(host(0)) host(0), "unix_64_asm")
-	target break('_') . os len(1) break('_') . ws len(1) rem  . asm 
+	target = (differ(host(0)) host(0), "unix_64_asm") target break('_') . os len(1) break('_') . ws len(1) rem  . asm 
 *	output = 'os ' os '  ws  '  ws '  asm  '  asm
 
 .if gas
@@ -49,9 +48,11 @@ m.end
 	upper.pat = any(&ucase)
 
 *	output standard definitions
-	output = tab '.set'	tab	'cfp_b'	','	(eq(ws,32) 4, 8)
-	output = tab '.set'	tab 	'cfp_c'	','	(eq(ws,32) 4, 8)
-	output = tab '.set'	tab	'os '	','	os
+	output = tab '.set' tab 'cfp_b,'  (eq(ws,32) 4, 8)
+ 	output = tab '.set' tab 'cfp_c,' (eq(ws,32) 4, 8)
+	output = tab '.set' tab 'os ' ',' os
+	output = tab '.set' tab 'log_cfp_b,' (eq(ws,32) 2, 3)
+	output = tab '.set' tab 'log_cfp_c,' (eq(ws,32) 2, 3)
 
 	output = tab '.set'	tab	'ws'	','	ws
 						:(next)
@@ -81,7 +82,7 @@ next
 	line 'M_word' = (eq(ws,32), 'dword', 'qword')
 defs.end
 
-aloop	line breakx('A') . first 'Adr' bal . ref  rem . last = first a(ref) last	:s(mloop)
+aloop	line breakx('A') . first 'Adr' bal . ref  rem . last = first '$' ref last	:s(mloop)
 	defs = defines
 
 dloop
@@ -126,7 +127,7 @@ loop	line = input				:f(a.end)
 a.end
 	output = tab '%undef'	tab	'cfp_b'
 	output = tab '%undef'	tab	'cfp_c'
-	output = tab '%undef'   tab	os
+	output = tab '%undef'   tab	'os'
 	output = tab '%undef'	tab	'ws'
 .fi
 end

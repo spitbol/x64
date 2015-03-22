@@ -781,7 +781,7 @@ gensh
 	op('pop',reg.wa)			:(return)
 gensh.wa
 *  here if shifting WA. Move to W0, then use WA to get shift count, shift W0, and move result back to WA
-	op('Mov_',reg.w0.reg.wa)
+	op('Mov_',reg.w0,reg.wa)
 	op('Mov_',reg.wa,val)
 	op(opc,reglow['wa'],reg.w0)
 	op('Mov_',reg.wa,reg.w0)
@@ -1009,7 +1009,7 @@ getadr.c.13
 .fi
 .if gas
 	txt break('(') . t1 '(' len(2) . t2
-	op('mov',regmap[t2],reg.w0)
+	op('Mov_',reg.w0,regmap[t2])
 	op('Add_',cfp_b '*' t1,reg.w0)		:(getadr.done)
 .fi
 
@@ -1023,7 +1023,7 @@ getadr.c.15
 .fi
 .if gas
 	txt break('(') . t1 '(' len(2) . t2
-	op('mov',regmap[t2],reg.w0)
+	op('Mov_',reg.w0,regmap[t2])
 	op('Add_',literal_ t1,reg.w0)			:(getadr.done)
 .fi
 
@@ -1048,7 +1048,8 @@ getadr.ent
 *	generate reference via reg.w0 if needed
 	trc_suspend = 1
 	flush()
-	op('mov' (eq(ws,32) 'l','q'), ent ,reg.w0)
+*	op('Mov_' (eq(ws,32) 'l','q'), ent ,reg.w0)
+	op('Mov_' (eq(ws,32) 'l','q'), reg.w0,ent)
 	flush()
 	trc_suspend = 0
 						:(getadr.done)
@@ -1445,7 +1446,7 @@ g.bsw1
 .fi
 .if gas
 	op('Mov_',reg.w0,val)
-	op('Sal_',reg.w0,literal_ log_cfp_b)
+	gensh('sal',reg.w0,literal_ log_cfp_b)
 	op('Add_',reg.w0,literal_ lbl);
 	op('Jmp_',reg.w0)
 .fi
@@ -1456,7 +1457,7 @@ g.bsw1
 *	opl(lbl,D_word,t2 )
 *	op('Text')
 *	op('Mov_',reg.w0,t1)
-*	op('sal',reg.w0,'log_cfp_b')
+*	op('sal',reg.w0,literal_ 'log_cfp_b')
 *	op('Add_',reg.w0,mem(lbl))
 *	op('Jmp_', reg.w0)
 	op('Data')
@@ -1745,7 +1746,6 @@ g.dvi
 
 g.rmi
 	op('Mov_',reg.w0,getarg(i1))
-*	op('mov',reg.w0,getarg(i1))
 	op(op_)					:(opdone)
 g.ngi
 	op(op_)					:(opdone)
@@ -1815,7 +1815,12 @@ g.rle	jop = 'jle'				:(g.r1)
 g.rlt	jop = 'jl'
 g.r1	
 	op('call','cpr_')
+.if asm
 	op('Mov_',reglow['w0'],'byte [reg_fl]')
+.fi
+.if gas
+	op('Movb_',reglow['w0'],'reg_fl')
+.fi
 	op('or',reglow['w0'],reglow['w0'])
 	op(jop,getarg(i1))			:(opdone)
 
@@ -2003,7 +2008,6 @@ g.wtb
 	gensh('sal',getarg(i1),literal_ 'log_cfp_b')	:(opdone)
 
 g.btw
-*HERE this crashes gas translation, need to five gensh
 	gensh('shr',getarg(i1),literal_ 'log_cfp_b')	:(opdone)
 
 g.mti
@@ -2033,7 +2037,7 @@ g.ctw
 *  assume cfp_c chars per word
 	t1 = getarg(i1)
 	op('Add_',t1,'(cfp_c-1)+cfp_c*' i.text(i2))
-	op('shr',t1,'log_cfp_c')
+	gensh('shr',t1,literal_ 'log_cfp_c')
 					:(opdone)
 g.ctb
 	t1 = getarg(i1)
@@ -2078,11 +2082,11 @@ g.mvc
 .fi
 	trc_suspend = 0				:(opdone)
 g.mvw
-	gensh('shr',reg.wa,'log_cfp_b')
+	gensh('shr',reg.wa,literal_ 'log_cfp_b')
  	op('rep','Movs_w')
 						:(opdone)
 g.mwb
-	gensh('shr',reg.wa,log_cfp_b,)
+	gensh('shr',reg.wa,literal 'log_cfp_b')
 	op('std')
 	op('Sub_',reg.xl,literal_ cfp_b)
 	op('Sub_',reg.xr,literal_ cfp_b)
@@ -2091,7 +2095,7 @@ g.mwb
 						:(opdone)
 
 	op('std')
-	op('shr',reg.wa,'log_cfp_b')
+	gensh('shr',reg.wa,literal_ 'log_cfp_b')
 	op('rep')
 	op('Movs_w')
 	op('ctd')
