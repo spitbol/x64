@@ -153,6 +153,9 @@ gas:
 	$(BASEBOL) -u $(TARGET)_gas $(PRE) <sys.asm >sys.pre
 # run gas definer to resolve system dependencies in sys
 	$(BASEBOL) -u $(TARGET)_gas  def.spt <sys.pre >sys.s
+# run gas definer to resolve system dependencies in sbl.s
+	mv	sbl.s	sbl.tmp
+	$(BASEBOL) -u $(TARGET)_gas  def.spt <sbl.tmp >sbl.s
 # combine sys.s,min.s, and err.s to get sincle assembler source file
 	cat <sys.s >spitbol.s
 	cat <sbl.s >>spitbol.s

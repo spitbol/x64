@@ -150,7 +150,6 @@
 	define('outline(txt)')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
-	define('reglow(reg)')
 	define('report(num,text)')
 	define('ripinit()')
 	define('tblini(str)pos,cnt,index,val,lastval')
@@ -521,6 +520,18 @@ regmap.loop
 	regmap[min] = reg			:(regmap.loop)
 regmap.done
 
+	reglow = table(10)
+.if asm
+	s = 'w0 W0_L wa WA_L wb WB_L wc WC_L '
+.fi
+.if gas
+	s = 'w0 %al wa %cl wb %bl wc %dl '
+.fi
+reglow.loop
+	s break(' ') . min ' ' break(' ') . reg ' '  = :f(reglow.done)
+	reglow[min] = reg			:(reglow.loop)
+reglow.done
+
 	w0 = "JUNK_W0"
 	w0_arg = minarg(8,'w0')
 
@@ -761,13 +772,13 @@ gensh
 *  here if register is NOT WA, so push/restore WA
 	op('push',reg.wa)
 	op('Mov_',val,reg.wa)
-	op(opc, WA_L,reg)
+	op(opc, reglow['wa'],reg)
 	op('pop',reg.wa)			:(return)
 gensh.wa
 *  here if shifting WA. Move to W0, then use WA to get shift count, shift W0, and move result back to WA
 	op('Mov_',reg.w0.reg.wa)
 	op('Mov_',reg.wa,val)
-	op(opc,WA_L,reg.w0)
+	op(opc,reglow['wa'],reg.w0)
 	op('Mov_',reg.wa,reg.w0)
 						:(return)
 .fi
@@ -1376,7 +1387,7 @@ ds.typerr
 	error('operand type zero')		:(dsout)
 g.flc
 .if asm
-	t1 = reglow(getreg(i1))
+	t1 = reglow[getreg(i1)]
 	t2 = genlab('flc')
 *	trc_suspend = 1
 	op('Cmp_',t1,"'A'")
@@ -1409,7 +1420,7 @@ g.mov
 * odd/even tests.  if w reg, use low byte of register.
 g.bod
 g.bev
-	t1 = (eq(i.type(i1),8) reglow(getreg(i1)), getarg(i1))
+	t1 = (eq(i.type(i1),8) reglow[getreg(i1)], getarg(i1))
 	op('test',t1,'1')
 	op((ident(incode,'bod') 'jne', 'je'),getarg(i2)) :(opdone) 
 
@@ -1490,8 +1501,8 @@ g.lei
 .fi
 .if gas
 	op('Dec',t1)
-	op('mov', '(' t1 ')', 'W0_L')
-	op('movz' (eq(ws,32) 'bl','bq'),'W0_L',t1) :(opdone)
+	op('mov', '(' t1 ')', reglow['w0'])
+	op('movz' (eq(ws,32) 'bl','bq'),reglow['w0'],t1) :(opdone)
 .fi
 
 g.jsr
@@ -1628,7 +1639,7 @@ g.add	memmemm()
 	op('Add',getarg(i1),getarg(i2))	:(opdone)
 
 g.sub	memmemm()
-	op('Sub',getarg(i1),getarg(i2))	:(opdone)
+	op('Sub_',getarg(i1),getarg(i2))	:(opdone)
 
 g.ica
 	op('Add_',getarg(i1),literal_ 'cfp_b')		:(opdone)
@@ -1793,8 +1804,8 @@ g.rle	jop = 'jle'				:(g.r1)
 g.rlt	jop = 'jl'
 g.r1	
 	op('call','cpr_')
-	op('Mov_','W0_L','byte [reg_fl]')
-	op('or','W0_L','W0_L')
+	op('Mov_',reglow['w0'],'byte [reg_fl]')
+	op('or',reglow['w0'],reglow['w0'])
 	op(jop,getarg(i1))			:(opdone)
 
 g.plc
@@ -1834,14 +1845,14 @@ g.lch
 *  if target is w register, can load to it. otherwise, load to w0 and then move to x
 *  do indexed load of source register
 
-*	outfile = Comment 'lch 1 reglow((eq(w) d.reg, 'w0'))' reglow((eq(w) d.reg, 'w0'))
+*	outfile = Comment 'lch 1 reglow[(eq(w) d.reg, 'w0')]' reglow[(eq(w) d.reg, 'w0')]
 *	outfile = Comment 'lch,2 M_char [regmap[s.reg]])'  regmap[s.reg]
 .if asm
-	op('mov',reglow((eq(w) d.reg, 'w0')),'M_char [' regmap[s.reg] ']')
+	op('mov',reglow[(eq(w) d.reg, 'w0')],'M_char [' regmap[s.reg] ']')
 	ne(w) op('mov',regmap[d.reg],reg.w0)
 .fi
 .if gas
-	op('movb','(' regmap[s.reg] ')' ,reglow((eq(w) d.reg, 'w0')))
+	op('movb','(' regmap[s.reg] ')' ,reglow[(eq(w) d.reg, 'w0')])
 	ne(w) op('mov',reg.w0,regmap[d.reg])
 .fi
 
@@ -1875,10 +1886,10 @@ g.sch
 	ne(w) op('Mov_',reg.w0, regmap[s.reg])
 
 .if asm
-	op('mov','M_char [' regmap[d.reg] ']', reglow((eq(w) s.reg, 'w0')))
+	op('mov','M_char [' regmap[d.reg] ']', reglow[(eq(w) s.reg, 'w0')])
 .fi
 .if gas
-	op('movb', reglow((eq(w) s.reg, 'w0')), '(' regmap[d.reg] ')') 
+	op('movb', reglow[(eq(w) s.reg, 'w0')], '(' regmap[d.reg] ')') 
 .fi
 
 * increment target register if needed
@@ -1919,13 +1930,13 @@ g.trc
 	op('xchg',reg.xl,reg.xr)
 .if asm
         opl((labl = genlab('trc')) ':','movzx',reg.w0,'M_char [XR]')
-	op('mov','W0_L','[XL+W0]')
+	op('mov',reglow['w0'],'[XL+W0]')
 .fi
 .if gas
 	labl = genlab('trc')
         opl(labl ':','movz' (eq(ws,32) 'bl', 'bq'),'(' reg.xr ')',reg.w0)
 	op('Add_','(,' reg.xl ')',reg.w0)
-	op('mov','(' reg.w0 ')', 'W0_L')
+	op('mov','(' reg.w0 ')', reglow['w0'])
 .fi
 	op('Stos_c')
 	op('dec',reg.wa)
@@ -2291,10 +2302,6 @@ opdone.5	outstmt(astmts[i])
 	le(i = i + 1, astmts.n)			:s(opdone.5)
 opdone.6 astmts.n = bstmts.n = cstmts.n =	:(return)
 flush_end
-
--stitl reglow(reg) - map W register to its lower (least significant) part
-reglow
-	reglow = regmap[reg] '_L'		:(return)
 -stitl report - write statistic to output file
 report
 	output = lpad(num,7) tab text		:(return)
