@@ -117,14 +117,36 @@
 		cmp	%1,%2
 	%endmacro
 	
+	%macro	Cmpb_	2	; src/dst differ
+		Cmp_	%1,%2
+	%endmacro
+	
 	%macro	Data	0
 		section	.data
+	%endmacro
+
+	%macro	Dec_	1
+	dec %1
 	%endmacro
 
 	%macro	Equ	2
 %1:	equ	%2
 	%endmacro
 .fi
+
+.if gas 32
+	.macro	Cmp_	dst,src	; src/dst differ
+		cmpl	\src,\dst
+	.endm
+.fi
+	
+.if gas 64
+	.macro	Cmp_	dst,src	; src/dst differ
+		cmpq	\src,\dst
+	.endm
+.fi
+	
+
 .if gas
 	.macro	Add_	dst,src
 		add	\src,\dst
@@ -138,8 +160,8 @@
 	and	\src,\dst
 	.endm
 	
-	.macro	Cmp_	dst,src	; src/dst differ
-		cmp	\src,\dst
+	.macro	Cmpb_	dst,src	; src/dst differ
+		cmpb	\src,\dst
 	.endm
 	
 	.macro	Data
@@ -150,6 +172,18 @@
 	.set	\name,\value
 	.endm
 .fi
+
+.if gas 32
+	.macro	Dec_	val
+	decl \val
+	.endm
+.fi
+.if gas 64
+	.macro	Dec_	val
+	decq \val
+	.endm
+.fi
+
 
 .if asm
 	%macro Extern	1
@@ -224,15 +258,32 @@
 	xor	%1,%2
 	%endmacro
 .fi
-	
+
+.if gas 32
+	.macro	Mov_	dst,src
+		movl	\src,\dst
+	.endm
+.fi
+.if gas 64
+	.macro	Mov_	dst,src
+		movq	\src,\dst
+	.endm
+.fi
+
+.if gas 32
+	.macro	Stos_w
+	stosl
+	.endm
+.fi
+.if gas 64
+	.macro	Stos_w
+	stosq
+	.endm
+.fi
 
 .if gas
 	.macro	Jmp_	lab	; gas needs '*' before target
 		jmp	* \lab
-	.endm
-
-	.macro	Mov_	dst,src
-		mov	\src,\dst
 	.endm
 
 	.macro	Or_	dst,src
@@ -1399,18 +1450,18 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	Mov_	%1,W0
 	%endmacro
 
-	%macro	icp_	0
+	%macro	Icp_	0
 	Mov_	W0,Mem(reg_cp)
 	Add_	W0,cfp_b
 	Mov_	Mem(reg_cp),W0
 	%endmacro
 
-	%macro	lcp_	1
+	%macro	Lcp_	1
 	Mov_	W0,%1
 	Mov_	M_word [reg_cp],W0
 	%endmacro
 
-	%macro	lcw_	1
+	%macro	Lcw_	1
 	Mov_	W0,M_word [reg_cp]		; load address of code word
 	push	W0
 	Mov_	W0,M_word [W0]			; load code word
@@ -1420,7 +1471,7 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	Mov_	M_word [reg_cp],W0
 	%endmacro
 
-	%macro	scp_	1
+	%macro	Scp_	1
 	Mov_	W0,M_word [reg_cp]
 	Mov_	%1,W0
 	%endmacro
@@ -1439,7 +1490,7 @@ sysxi:	Mov_	Mem(reg_xs),XS
 
 	.macro	adi_
 	Add_	Mem(reg_ia),W0
-	seto	byte [reg_fl]
+	seto	reg_fl
 	.endm
 
 	.macro	dvi_
@@ -1454,12 +1505,12 @@ sysxi:	Mov_	Mem(reg_xs),XS
 
 	.macro	mli_
 	imul	Mem(reg_ia)
-	seto	byte [reg_fl]
+	seto	reg_fl
 	.endm
 
 	.macro	ngi_
 	neg	Mem(reg_ia)
-	seto	byte [reg_fl]
+	seto	reg_fl
 	.endm
 
 	.macro	rmi_
@@ -1471,32 +1522,32 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	.endm
 
 	.macro	ino_	lbl
-	Mov_	al,byte [reg_fl]
-	or	al,al
+	Mov_	reg_fl,%al
+	or	%al,%al
 	jno	\lbl
 	.endm
 
 	.macro	iov_	lbl
-	Mov_	al,byte [reg_fl]
-	or	al,al
+	Mov_	reg_fl,%al
+	or	%al,%al
 	jo	\lbl
 	.endm
 
 	.macro	rno_	lbl
-	Mov_	al,byte [reg_fl]
+	Mov_	reg_fl,%al
 	or	al,al
 	je	\lbl
 	.endm
 
 	.macro	rov_	lbl
-	Mov_	al,byte [reg_fl]
+	Mov_	reg_fl,%al
 	or	al,al
 	jne	\lbl
 	.endm
 
 	.macro	sbi_
 	Sub	Mem(reg_ia),W0
-	seto	byte [reg_fl]
+	seto	reg_fl
 	.endm
 
 	.macro	sti_	dst
@@ -1504,29 +1555,29 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	Mov_	\dst,W0
 	.endm
 
-	.macro	icp_
+	.macro	Icp_
 	Mov_	W0,Mem(reg_cp)
 	Add_	W0,cfp_b
 	Mov_	Mem(reg_cp),W0
 	.endm
 
-	.macro	lcp_	val
+	.macro	Lcp_	val
 	Mov_	W0,\val
-	Mov_	M_word [reg_cp],W0
+	Mov_	reg_cp,W0
 	.endm
 
-	.macro	lcw_	val
-	Mov_	W0,M_word [reg_cp]		; load address of code word
+	.macro	Lcw_	val
+	Mov_	W0,reg_cp			; load address of code word
 	push	W0
-	Mov_	W0,M_word [W0]			; load code word
+	Mov_	W0,(W0)				; load code word
 	Mov_	\val,W0
 	pop	W0 				; load address of code word
-	Add_	W0,cfp_b
-	Mov_	M_word [reg_cp],W0
+	Add_	W0,$cfp_b
+	Mov_	reg_cp,W0
 	.endm
 
-	.macro	scp_	val
-	Mov_	W0,M_word [reg_cp]
+	.macro	Scp_	val
+	Mov_	W0,reg_cp
 	Mov_	\val,W0
 	.endm
 
@@ -1605,7 +1656,7 @@ setovr:
 .if gas
 	xor	%al,%al		; set overflow indicator
 	inc	%al
-	Mov_	%al,reg_fl
+	movb	%al,reg_fl
 .fi
 	ret
 
