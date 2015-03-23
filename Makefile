@@ -1,7 +1,7 @@
 # SPITBOL makefile using tcc
 
 # base compiler used for building
-base?= bin/spitbol_unix_32
+base?= bin/spitbol_unix_64
 BASEBOL:=$(base)
 
 os?=unix
@@ -10,7 +10,7 @@ OS:=$(os)
 asm?=asm
 ASM:=$(asm)
 
-ws?=32
+ws?=64
 WS:=$(ws)
 
 TARGET=$(OS)_$(WS)
