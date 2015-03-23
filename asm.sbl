@@ -950,7 +950,9 @@ getarg.mem
 	getarg = differ(base) disp '(' regmap[base] ')'		:s(getarg.done)	
 	getarg = ident(indx) disp 				:s(getarg.done)
 	getarg = ident(scale) ident(disp) '(' regmap[indx] ')'	:s(getarg.done)
-	getarg = differ(disp) disp '(,' regmap[indx] ',' scale ')'	:(getarg.done)
+	getarg = ident(disp) ident(scale) '(' regmap[indx] ')' 	:s(getarg.done)
+	getarg = differ(disp) ident(scale) disp '(' regmap[indx]  ')'	:s(getarg.done)
+	error('getarg');
 
 .fi
 -stitl getadr(iarg)
@@ -1831,9 +1833,20 @@ g.psc
 *  use lea instead.
 
 	t1 = getarg(i1)
-	t2 = i.type(i2)
-	((ifreg(i2), ge(t2,1) le(t2,2)) op('lea',t1,'Adr(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
-	op('Add_',t1,'cfp_f')
+	typ = i.type(i2)
+.if asm
+	((ifreg(i2), ge(typ,1) le(typ,2)) op('lea',t1,'Adr(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
+.fi
+.if gas
+	ifreg(i2)				:s(g.psc.1)
+	ge(typ,1) le(typ,2)			:s(g.psc.1)
+						:(g.psc.2)
+g.psc.1
+	op('Add_',t1,getarg(i2))
+	op('Add_',t1,literal_ 'cfp_f')		:(opdone)
+g.psc.2
+.fi
+	op('Add_',t1,literal_ 'cfp_f')
 	eq(i.type(i2))				:s(opdone)
 
 *  here if d_offset_(given (in a variable), so add it in.
