@@ -206,7 +206,16 @@
 		%include	%1
 	%endmacro
 .fi
-
+.if gas 32
+	.macro	Inc_	val
+		incl	\val
+	.endm
+.fi
+.if gas 64
+	.macro	Inc_	val
+		incq	\val
+	.endm
+.fi
 .if gas
 	.macro	Extern	name
 		.extern	\name
@@ -218,10 +227,6 @@
 
 	.macro	Global	name
 		.global	\name
-	.endm
-
-	.macro	Inc_	val
-		inc	\val
 	.endm
 
 	.macro	Include	file
@@ -1504,12 +1509,17 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	.endm
 
 	.macro	mli_
-	imul	Mem(reg_ia)
+	mov	Mem(reg_ia),W0
+	imul	W0
 	seto	reg_fl
 	.endm
 
+; using W0 below since operand size not known, and putting it in register defers this problem
 	.macro	ngi_
-	neg	Mem(reg_ia)
+	mov	Mem(reg_ia),W0
+	neg	W0
+	mov	W0,Mem(reg_ia)
+;	neg	Mem(reg_ia)
 	seto	reg_fl
 	.endm
 
@@ -1730,7 +1740,7 @@ setovr:
 	Global	\glob
 	Extern	\ext
 \glob:
-	Mov_	\id,W0
+	mov	\id,W0
 	call	\ext
 	ret
 	.endm

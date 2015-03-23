@@ -218,15 +218,16 @@ config.32
 	cfp_c = 4
 	log_cfp_b = '2'
 	log_cfp_c = '2'
-*	op_w is instruction suffix for word-size
+	op_b = 'b'
+*	op_c is instruction suffix for minimal character size
+	op_c = 'b'
+*	op_w is instruction suffix for 32-bit word-size
 .if asm
 	op_w = 'd'
 .fi
 .if gas
 	op_w = 'l'
 .fi
-*	op_c is instruction suffix for minimal character size
-	op_c = 'b'
 	rel = ''
 *	suffix for opcode to indicate double word (32 bits)
 	o_ =	'd'
@@ -240,8 +241,9 @@ config.64
 	cfp_c = 8
 	log_cfp_b = '3'
 	log_cfp_c = '3'
-	op_w = 'q'
+	op_b = 'b'
 	op_c = 'b'
+	op_w = 'q'
 *	rel = 'rel '
 *	suffix for opcode to indicate quad word (64 bits)
 	o_ =	'q'
@@ -739,7 +741,7 @@ mov
 	op('Mov_',getarg(i1),getarg(i2))		:(return)
 mov.xtp
 mov.xlp
-	ident(t.dst,'(xr)+') op('Movs_w')	:s(return)
+	ident(t.dst,'(xr)+') op('movs' op_w)	:s(return)
 	op('Lods_w')
 	op('Mov_',getarg(i.dst),reg.w0)		:(return)
 	ident(t.dst,'-(xs)') op('push',reg.w0)	:s(return)
@@ -776,7 +778,7 @@ gensh
 	ident(reg,reg.wa)			:s(gensh.wa)
 *  here if register is NOT WA, so push/restore WA
 	op('push',reg.wa)
-	op('Mov_',val,reg.wa)
+	op('Mov_',reg.wa,val)
 	op(opc, reglow['wa'],reg)
 	op('pop',reg.wa)			:(return)
 gensh.wa
@@ -1625,7 +1627,7 @@ g.erb
 						:(opdone)
 
 g.icv
-	op('Inc',getarg(i1))    		:(opdone)
+	op('Inc_',getarg(i1))    		:(opdone)
 
 g.dcv   
 	op('Dec_',getarg(i1))    		:(opdone)
@@ -1818,7 +1820,7 @@ g.r1
 	op('Mov_',reglow['w0'],'byte [reg_fl]')
 .fi
 .if gas
-	op('Movb_',reglow['w0'],'reg_fl')
+	op('movb',reg_fl, reglow['w0'])
 .fi
 	op('or',reglow['w0'],reglow['w0'])
 	op(jop,getarg(i1))			:(opdone)
@@ -1873,7 +1875,7 @@ g.lch
 
 *  do post increment if needed
 
-	eq(s.type,10)	op('Inc',regmap[s.reg])
+	eq(s.type,10)	op('Inc_',regmap[s.reg])
 						:(opdone)
 g.lch.lods
 *  clear result register, do lodsb, and then move character to result register
@@ -1909,7 +1911,7 @@ g.sch
 
 * increment target register if needed
 
-	eq(d.type,10)  op('Inc',regmap[d.reg])
+	eq(d.type,10)  op('Inc_',regmap[d.reg])
 						:(opdone)
 g.sch.stos
 *  move source register to w0, setting up low part, then store from w0
@@ -2074,10 +2076,10 @@ g.mvc
 	t1 = genlab('mvc')
 .if asm
 	op('rep')
-	op('Movs_b')
+	op('movsb')
 .fi
 .if gas
-	op('rep', 'Movs_b')
+	op('rep', 'movsb')
 .fi
 	trc_suspend = 0				:(opdone)
 g.mvw
