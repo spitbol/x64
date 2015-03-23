@@ -1950,14 +1950,14 @@ g.trc
 	op('mov',reglow['w0'],'[XL+W0]')
 .fi
 .if gas
-	labl = genlab('trc')
-        opl(labl ':','movz' (eq(ws,32) 'bl', 'bq'),'(' reg.xr ')',reg.w0)
-	op('Add_','(,' reg.xl ')',reg.w0)
+	lbl = genlab('trc')
+        opl(lbl ':','movz' (eq(ws,32) 'bl', 'bq'),'(' reg.xr ')',reg.w0)
+	op('Add_','(' reg.xl ')',reg.w0)
 	op('mov','(' reg.w0 ')', reglow['w0'])
 .fi
 	op('stos' op_b)
 	op('dec',reg.wa)
-	op('jnz',labl)
+	op('jnz',lbl)
 	op('Xor_',reg.xl,reg.xl)
 	op('Xor_',reg.xr,reg.xr)
 						:(opdone)
@@ -2016,7 +2016,7 @@ g.mti
 	op('pop',reg.w0)
 	op('ldi_',reg.w0)			:(opdone)
 g.mti.1
-	op('ldi_',getarg(i1))		:(opdone)
+	op('ldi_',getarg(i1))			:(opdone)
 
 
 g.mfi
