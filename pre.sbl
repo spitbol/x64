@@ -14,6 +14,9 @@
 copy
 	output = line
 next
+
+*	Note that '.if' or '.fi' must be followed by single space.
+
 	line = input					:f(finis)
 	line '.if'					:s(pp.if)
 	line '.fi'					:s(pp.fi)

@@ -60,7 +60,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-#include <unistd.h>
+//#include <unistd.h>
 #include <sys/types.h>
 
 #if EXECFILE

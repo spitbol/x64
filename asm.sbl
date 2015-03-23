@@ -90,28 +90,26 @@
 *  useful constants
 
 	letters = 'abcdefghijklmnopqrstuvwxyz'
-	ucase	=	letters
-	lcase	=	'abcdefghijklmnopqrstuvwxyz'
-	nos	= 	'0123456789'
-	tab	=	char(9)
+	ucase		=	letters
+	lcase		=	'abcdefghijklmnopqrstuvwxyz'
+	nos		= 	'0123456789'
+	tab		=	char(9)
 	
-	D_char	=	'D_char'
-	D_real	=	'D_real'
-	D_word	=	'D_word'
+	D_byte		=	'D_byte'
+	D_char		=	'D_char'
+	D_real		=	'D_real'
+	D_word		=	'D_word'
+
+* gas requires '$' before literals, nasm doesn't
 
 .if asm
-	asm = 'A'
-.fi
-.if gas
-	asm = 'G'
-.fi
-
-.if asm
-	Comment = ';';* comment character
+	Comment		= ';';* comment character
 	asm_cfp_b	= 'cfp_b'
+	literal_	= 
 .fi
 .if gas
-	Comment = '#';* comment character
+	Comment		= '#';* comment character
+	literal_	= '$'
 .fi
 
 *  function definitions
@@ -152,7 +150,6 @@
 	define('outline(txt)')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
-	define('reglow(reg)')
 	define('report(num,text)')
 	define('ripinit()')
 	define('tblini(str)pos,cnt,index,val,lastval')
@@ -222,7 +219,12 @@ config.32
 	log_cfp_b = '2'
 	log_cfp_c = '2'
 *	op_w is instruction suffix for word-size
+.if asm
 	op_w = 'd'
+.fi
+.if gas
+	op_w = 'l'
+.fi
 *	op_c is instruction suffix for minimal character size
 	op_c = 'b'
 	rel = ''
@@ -523,7 +525,20 @@ regmap.loop
 	regmap[min] = reg			:(regmap.loop)
 regmap.done
 
+	reglow = table(10)
+.if asm
+	s = 'w0 W0_L wa WA_L wb WB_L wc WC_L '
+.fi
+.if gas
+	s = 'w0 %al wa %cl wb %bl wc %dl '
+.fi
+reglow.loop
+	s break(' ') . min ' ' break(' ') . reg ' '  = :f(reglow.done)
+	reglow[min] = reg			:(reglow.loop)
+reglow.done
+
 	w0 = "JUNK_W0"
+	w0_arg = minarg(8,'w0')
 
 *  quick reference:
 	reg.xl = regmap['xl']
@@ -609,47 +624,6 @@ pubend	endfile(5)
 nopub
 
 						:(dsout)
-  &trace = 2000
-  &ftrace = 1000
-*  &profile = 1
-dsout
-opnext	thisline = readline()
-	crack(thisline)				:f(dsout)
-	op_ = incode '_'
-
-* append ':' after label if in code or data.
-
-* output label of executable instruction immediately if there is one,
-* as it simplifies later processing, especially for tracing.
-	ident(inlabel)				:s(opnext.1)
-	thislabel = inlabel (differ(inlabel) ge(sectnow,3) ':',)
-* keep the label as is is not in executable code
-	lt(sectnow,5)				:s(opnext.1)
-* here if in code, so output label now
-* defer label processing for ent to allow emission of alignment ops for x86.
-	ident(incode,'ent')			:s(opnext.1)
-	outline(thislabel)
-* set lastlabel so can check to avoid emitting duplicate label definitions
-	lastlabel = thislabel
-* clear out label info once generated
-	label = thislabel =
-opnext.1
-	thislabel = inlabel (differ(inlabel) ge(sectnow,3) ':',)
-	i1 = prsarg(iarg1)
-	i2 = prsarg(iarg2)
-	i3 = prsarg(iarg3)
-	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' ' i.text(i2) ' ' i.text(i3)
-	argerrs = 0
-	differ(trc_trace) ge(sectnow,5) eq(trc_suspend) chktrace()
-	ge(sectnow,5) chktrace()
-						:($('g.' incode))
-*  here if bad opcode
-ds01	error('bad op-code')			:(dsout)
-
-*  generate tokens.
-
-ds.typerr
-	error('operand type zero')		:(dsout)
 -stitl comregs(line)t,pre,word
 comregs
 	line p.comregs =			:f(comregs1)
@@ -787,7 +761,7 @@ mov.2
 gensh
 
 .if asm
-	op(opc,reg,val)				:(opdone)
+	op(opc,reg,val)				:(return)
 .fi
 .if gas
 *  if the shift count is constant, then just do the shift. Otherwise, save WA, which corresponds
@@ -798,18 +772,18 @@ gensh
 	opc = (ident(opc,'lsh') 'sal', 'sar')
 *  get value if shift count is constant defined in equ statement
 	val = differ(equ_value[val]) equ_value[val]
-	integer(val) op(opc, '$' val, reg)	:s(return)
+	integer(val) op(opc, literal_ val, reg)	:s(return)
 	ident(reg,reg.wa)			:s(gensh.wa)
 *  here if register is NOT WA, so push/restore WA
 	op('push',reg.wa)
 	op('Mov_',val,reg.wa)
-	op(opc, WA_L,reg)
+	op(opc, reglow['wa'],reg)
 	op('pop',reg.wa)			:(return)
 gensh.wa
 *  here if shifting WA. Move to W0, then use WA to get shift count, shift W0, and move result back to WA
-	op('Mov_',reg.w0.reg.wa)
+	op('Mov_',reg.w0,reg.wa)
 	op('Mov_',reg.wa,val)
-	op(opc,WA_L,reg.w0)
+	op(opc,reglow['wa'],reg.w0)
 	op('Mov_',reg.wa,reg.w0)
 						:(return)
 .fi
@@ -871,12 +845,12 @@ getarg.c.10
 	txt = substr(txt,2,2)
 	t1 = regmap[txt]
 	getarg = mem( t1 )
-	(ident(txt,'xs') genaop(tstmt(,'add',t1,'cfp_b'))) :s(getarg.done)
+	(ident(txt,'xs') genaop(tstmt(,'Add_',t1,'cfp_b'))) :s(getarg.done)
 	genaop(tstmt(,'lea',t1,'Adr(' t1 '+cfp_b)')):(getarg.done)
 .fi
 .if gas
 	indx = substr(txt,2,2)
-	genaop(tstmt(,'add','$' cfp_b, regmap[indx])) :(getarg.mem)
+	genaop(tstmt(,'Add_',regmap[indx],literal_ cfp_b)) :(getarg.mem)
 .fi
 
 *  -(x), register indirect, pre decrement
@@ -888,7 +862,7 @@ getarg.c.11
 .fi
 .if gas
 	indx = substr(txt,3,2)
-	genbop(tstmt(,'sub','$' cfp_b, regmap[indx])) 	:(getarg.mem)
+	genbop(tstmt(,'Sub_',regmap[indx],literal_ cfp_b,)) 	:(getarg.mem)
 .fi
 
 * int(x)
@@ -935,16 +909,16 @@ getarg.c.22
 .if gas
 *  =dlbl
 getarg.c.18	
-	getarg = '$' substr(txt,2)		:(getarg.done)
+	getarg = literal_ substr(txt,2)		:(getarg.done)
 	
 *  *dlbl
 getarg.c.19
-	getarg  = '$'  cfp_b '*' substr(txt,2)	:(getarg.done)
+	getarg  = literal_  cfp_b '*' substr(txt,2)	:(getarg.done)
 
 *  =name (data section)
 getarg.c.20
 getarg.c.21
-        getarg = '$' substr(txt,2)	
+        getarg = literal_ substr(txt,2)	
 						:(getarg.done)
 	op('lea',reg.w0,substr(txt,2))
 	getarg = reg.w0				:(getarg.done)
@@ -952,7 +926,7 @@ getarg.c.21
 *  =name (program section)
 getarg.c.22
 
-       getarg = '$' substr(txt,2)		:(getarg.done)
+       getarg = literal_ substr(txt,2)		:(getarg.done)
 
 .fi
 
@@ -1035,8 +1009,8 @@ getadr.c.13
 .fi
 .if gas
 	txt break('(') . t1 '(' len(2) . t2
-	op('mov',regmap[t2],reg.w0)
-	op('add',cfp_b '*' t1,reg.w0)		:(getadr.done)
+	op('Mov_',reg.w0,regmap[t2])
+	op('Add_',cfp_b '*' t1,reg.w0)		:(getadr.done)
 .fi
 
 *  name(x), where name is in working section
@@ -1049,8 +1023,8 @@ getadr.c.15
 .fi
 .if gas
 	txt break('(') . t1 '(' len(2) . t2
-	op('mov',regmap[t2],reg.w0)
-	op('add','$' t1,reg.w0)			:(getadr.done)
+	op('Mov_',reg.w0,regmap[t2])
+	op('Add_',literal_ t1,reg.w0)			:(getadr.done)
 .fi
 
 .if gas
@@ -1074,7 +1048,7 @@ getadr.ent
 *	generate reference via reg.w0 if needed
 	trc_suspend = 1
 	flush()
-	op('movq', ent ,reg.w0)
+	op('Mov_' reg.w0,ent)
 	flush()
 	trc_suspend = 0
 						:(getadr.done)
@@ -1127,7 +1101,7 @@ getrip.done
 getrip.ent
 *	generate reference via w0 if needed
 	op('Mov_',reg.w0,mem(ent))
-	differ(reg)	op('Add',reg.w0,reg)
+	differ(reg)	op('Add_',reg.w0,reg)
 	getrip = reg.w0
 *	outfile = ne(x_trace) '; getrip ' ent
 						:(return)
@@ -1182,12 +1156,7 @@ outline
 						:(return)
 
 -stitl prcent(n)
-.if asm
-prcent prcent = 'prc_+cfp_b*' ( n - 1)	:(return)
-.fi
-.if gas
 prcent prcent = 'prc_+' cfp_b '*' ( n - 1)	:(return)
-.fi
 
 -stitl outstmt(ostmt)label,opcode,op1,op2,op3,comment)
 *  this module writes the components of the statement
@@ -1236,7 +1205,7 @@ outstmt4
 **
 **	send text to output file if not null.
 
-*	stmtout = replace(trim(stmtout),'$','_')
+*	stmtout = replace(trim(stmtout),literal_ ,'_')
 	stmtout = trim(stmtout)
 	ident(stmtout)				:s(return)
 	outline(stmtout)
@@ -1284,31 +1253,23 @@ chktrace.1
 	nlast = nlines
 
 	trc_desc = '"' replace(thisline,'|',' ') '"'
-.if asm
 	ab_suspend = 1
 	op('Data')
 	flush()
 	lbl = genlab('it')
+.if asm
 	opl(lbl,D_char,trc_desc)
 	op(D_char,'0');* string terminator
+.fi
+.if gas
+	opl(lbl ':' ,'.asciz',trc_desc)
+.fi
 	op('Text')
 	op('Mov_',reg.w0,lbl)
 	op('Mov_',mem('trc_de'),reg.w0)
 	op('call','trc_')
 	flush()
 	ab_suspend = 0
-.fi
-.if gas
-	ab_suspend = 1
-	op('Data')
-	flush()
-	lbl = genlab('trc')
-	opl(lbl ':' ,'.asciz',trc_desc)
-	op('Text')
-	op('Mov_','$' lbl,'trc_de')
-	op('call','trc_')
-	ab_suspend = 0
-.fi
 						:(return)
 
 -stitl prsarg(iarg)
@@ -1381,19 +1342,64 @@ tin02   str     (break('[') $ index len(1) break(']') $ val len(1)) =
 	tblini[index] = val			:(tin02)
 -stitl generators
 
+-stitl ifreg
 ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 .						:f(freturn)s(return)
 
+*	translate minimal
+translate
+
+  &trace = 2000
+  &ftrace = 1000
+*  &profile = 1
+dsout
+opnext	thisline = readline()
+	crack(thisline)				:f(dsout)
+	op_ = incode '_'
+
+* append ':' after label if in code or data.
+
+* output label of executable instruction immediately if there is one,
+* as it simplifies later processing, especially for tracing.
+	ident(inlabel)				:s(opnext.1)
+	thislabel = inlabel (differ(inlabel) ge(sectnow,3) ':',)
+* keep the label as is is not in executable code
+	lt(sectnow,5)				:s(opnext.1)
+* here if in code, so output label now
+* defer label processing for ent to allow emission of alignment ops for x86.
+	ident(incode,'ent')			:s(opnext.1)
+	outline(thislabel)
+* set lastlabel so can check to avoid emitting duplicate label definitions
+	lastlabel = thislabel
+* clear out label info once generated
+	label = thislabel =
+opnext.1
+	thislabel = inlabel (differ(inlabel) ge(sectnow,3) ':',)
+	i1 = prsarg(iarg1)
+	i2 = prsarg(iarg2)
+	i3 = prsarg(iarg3)
+	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' ' i.text(i2) ' ' i.text(i3)
+	argerrs = 0
+	differ(trc_trace) ge(sectnow,5) eq(trc_suspend) chktrace()
+	ge(sectnow,5) chktrace()
+						:($('g.' incode))
+*  here if bad opcode
+ds01	error('bad op-code')			:(dsout)
+
+*  generate tokens.
+
+ds.typerr
+	error('operand type zero')		:(dsout)
 g.flc
 .if asm
-	t1 = reglow(getreg(i1))
+	t1 = reglow[getreg(i1)]
 	t2 = genlab('flc')
 *	trc_suspend = 1
-	op('cmp',t1,"'A'")
+	op('Cmpb_',t1,"'A'")
 	op('jb', t2 )
-	op('cmp',t1,"'Z'")
+	op('Cmpb_',t1,"'Z'")
 	op('ja', t2)
-	op('Add',t1,'32')
+	op('Add_',t1,'32')
         opl(t2 ':')
 *	trc_suspend = 0
 .fi
@@ -1407,7 +1413,7 @@ g.flc
 	op('jb', t3 )
 	op('cmpb',t2,"'Z'")
 	op('ja', t3)
-	op('add','$32',t2)
+	op('Add_','$32',t2)
         opl(t3 ':')
 	trc_suspend = 0
 .fi
@@ -1418,76 +1424,44 @@ g.mov
 
 * odd/even tests.  if w reg, use low byte of register.
 g.bod
-.if asm
-	t1 = getarg(i1)
- 	t1 = eq(i.type(i1),8) reglow(getreg(i1))
-	op('test',t1,'1')
-	op('jne',getarg(i2))			:(opdone)
-.fi
-.if gas
-	t1 = (eq(i.type(i1),8) reglow(getreg(i1)), getarg(i1))
-	op('test',t1,'1')
-	op('jne',getarg(i2))			:(opdone)
-.fi
-
 g.bev
-.if asm
-	t1 = getarg(i1)
-	t1 = eq(i.type(i1),8) reglow(getreg(i1))
+	t1 = (eq(i.type(i1),8) reglow[getreg(i1)], getarg(i1))
 	op('test',t1,'1')
-	op('je',getarg(i2))
-						:(opdone)
-.fi
-.if gas
-	t1 = (eq(i.type(i1),8) reglow(getreg(i1)), getarg(i1))
-	op('test',t1,'1')
-	op('jne',getarg(i2))			:(opdone)
-.fi
+	op((ident(incode,'bod') 'jne', 'je'),getarg(i2)) :(opdone) 
 
-g.brn   op('Jmp',getarg(i1))			:(opdone)
+g.brn   op('Jmp_',getarg(i1))			:(opdone)
 
 g.bsw
-.if asm
-	t1 = getarg(i1)
-	t2 = genlab('bsw')
+	val = getarg(i1)
+	lbl = genlab('bsw')
 	trc_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
-	op('cmp',t1,getarg(i2))
+	op('Cmp_',val,getarg(i2))
 	op('jge',getarg(i3))
 * here after default case.
 g.bsw1
-	ne(rip_mode)				:s(g.bsw.2)
-	op('Jmp', mem( t2 '+' t1 '*cfp_b')) :(g.bsw.3)
-g.bsw.2
-* in rip_mode, need to generate location to reference destination
-	lbl = genrip()
-        op('Data')
-	opl(lbl,D_word,t2 )
-	op('Text')
-	op('Mov_',reg.w0,t1)
-	op('sal',reg.w0,'log_cfp_b')
-	op('Add',reg.w0,mem(lbl))
-	op('Jmp', reg.w0)
-g.bsw.3
-	op('Data')
-        opl(t2 ':')
-	trc_suspend = 0
+.if asm
+	op('Jmp_', mem( lbl '+' val '*cfp_b')) 
 .fi
 .if gas
-	t1 = getarg(i1)
-	t2 = genlab('bsw')
-	trc_suspend = 1
-	ident(i.text(i3))			:s(g.bsw1)
-	op('cmp',t1,getarg(i2))
-	op('jge',getarg(i3))
-* here after default case.
-g.bsw1	
-	op('Jmp','*' t2 '(,' t1 ',' cfp_b ')')
-	op('Data')
-        opl(t2 ':')
-	trc_suspend = 0
+	op('Mov_',reg.w0,val)
+	gensh('sal',reg.w0,literal_ log_cfp_b)
+	op('Add_',reg.w0,literal_ lbl);
+	op('Jmp_',reg.w0)
 .fi
-						:(opdone)
+*	ne(rip_mode)				:s(g.bsw.2)
+* in rip_mode, need to generate location to reference destination
+*	lbl = genrip()
+*        op('Data')
+*	opl(lbl,D_word,t2 )
+*	op('Text')
+*	op('Mov_',reg.w0,t1)
+*	op('sal',reg.w0,literal_ 'log_cfp_b')
+*	op('Add_',reg.w0,mem(lbl))
+*	op('Jmp_', reg.w0)
+	op('Data')
+        opl(lbl ':')
+	trc_suspend =				:(opdone)
 
 g.iff   op(D_word,getarg(i2))              :(opdone)
 
@@ -1506,16 +1480,14 @@ g.ent
 *  a multiple of cfp_b (ends in 1, 2, or 3).  the definition here
 *  is a simple odd/even, least significant bit definition.
 *  that is, for us, 1 and 3 are odd, 2 and 4 are even.
-.if asm
 	t1 = i.text(i1)
-*       op('align',2)
-	outline(tab 'align' tab '2')
+*       op('Align_',2)
+	outline(tab 'Align_' tab '2')
 	differ(t1)				:s(g.ent.1)
 	outline(tab 'nop')
 						:(g.ent.2)
 g.ent.1
-	outline(tab 'db' tab	t1)
-
+	outline(tab a('db') g('.byte')  tab	t1)
 g.ent.2
 	opl(thislabel)
 *  note that want to attach label to last instruction
@@ -1525,32 +1497,10 @@ g.ent.2
 *  here to see if want label made public
 	thislabel ? rtab(1) . thislabel ':'
         (differ(pubtab[thislabel]), differ(debug)) op('global',thislabel)
-.fi
-.if gas
-	t1 = i.text(i1)
-*        op('align',2)
-	outline(tab '.align' tab '2')
-	differ(t1)				:s(g.ent.1)
-	outline(tab 'nop')
-						:(g.ent.2)
-g.ent.1
-	outline(tab '.byte' tab	t1)
-
-g.ent.2
-	opl(thislabel)
-*  note that want to attach label to last instruction
-*	t1 = cstmts[cstmts.n]
-*	t.label(t1) = tlabel
-*	cstmts[cstmts.n] = t1
-*  here to see if want label made public
-	thislabel ? rtab(1) . thislabel ':'
-        (differ(pubtab[thislabel]), differ(debug)) op('.global',thislabel)
-.fi
-	thislabel =
-						:(opdone)
+	thislabel =				:(opdone)
 
 g.bri
-	op('Jmp',getarg(i1))			:(opdone)
+	op('Jmp_',getarg(i1))			:(opdone)
 
 g.lei
 	t1 = regmap[i.text(i1)]
@@ -1558,9 +1508,9 @@ g.lei
 	op('movzx',t1,'byte [' t1 '-1]' )	:(opdone)
 .fi
 .if gas
-	op('Dec',t1)
-	op('mov', '(' t1 ')', 'W0_L')
-	op('movz' (eq(ws,32) 'bl','bq'),'W0_L',t1) :(opdone)
+	op('Dec_',t1)
+	op('mov', '(' t1 ')', reglow['w0'])
+	op('movz' (eq(ws,32) 'bl','bq'),reglow['w0'],t1) :(opdone)
 .fi
 
 g.jsr
@@ -1573,7 +1523,7 @@ g.jsr
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
-	op('Dec',mem( rcode ))
+	op('Dec_',mem( rcode ))
 	op('js',jsr_label_norm)
 	trc_suspend = 0
 
@@ -1606,7 +1556,7 @@ g.ppm.loop.next
 	eq(jsr_count) opl(jsr_label_norm ':') :(opdone)
 g.ppm.loop
 	lab_next = genlab('ppm')
-	op('Dec',mem(rcode) )
+	op('Dec_',mem(rcode) )
 	op('jns',lab_next)
 	ident(incode,'ppm')			:s(g.ppm.loop.ppm)
 
@@ -1614,14 +1564,14 @@ g.ppm.loop
 *  to error handler with error code in rcode
 
 g.ppm.loop.err
-	op('Mov_',mem(rcode), +t1)
-	op('Jmp','err_')
+	op('Mov_',mem(rcode), literal_ +t1)
+	op('Jmp_','err_')
 						:(g.ppm.loop.next)
 g.ppm.loop.ppm
 *	check each ppm case and take branch if appropriate
 	ident(i.text(i1))			:s(g.ppm.2)
 	count.ppm = count.ppm + 1
-	op('Jmp',getarg(i1))
+	op('Jmp_',getarg(i1))
 						:(g.ppm.loop.next)
 
 g.ppm.2
@@ -1658,87 +1608,52 @@ g.exi
 *  if type r or e, and no exit parameters, just return
  	differ(t2,'n') eq(prc.args)	op('ret')	:s(opdone)
         t3 = ident(t3) '0'
-    	op('Mov_',mem(rcode),+t3)
+    	op('Mov_',mem(rcode),literal_ +t3)
 	ident(t2,'n')				:s(g.exi.1)
 	op('ret')				:(opdone)
 g.exi.1
 	op('Mov_',reg.w0, mem(prcent(prc.count)))
-	op('Jmp',reg.w0)			:(opdone)
+	op('Jmp_',reg.w0)			:(opdone)
 
 g.enp   op()					:(opdone)
 
 g.erb
 	errfile =  i.text(i1) ' ' i.text(i2)
 *	set rcode to error code and branch to error handler
-.if asm
-	op('mov', mem(rcode),  +(i.text(i1)))
-.fi
-.if gas
-	op('mov' o_,  '$' +(i.text(i1)),rcode)
-.fi
- 	op('Jmp','err_')
+	op('Mov_', mem(rcode),  literal_ +(i.text(i1)))
+ 	op('Jmp_','err_')
 						:(opdone)
 
 g.icv
-	op('Inc',getarg(i1))    :(opdone)
+	op('Inc',getarg(i1))    		:(opdone)
 
 g.dcv   
-	op('Dec',getarg(i1))    :(opdone)
+	op('Dec_',getarg(i1))    		:(opdone)
 
 g.zer
-.if asm
-	ident(i.text(i1),'(xr)+') op('xor',reg.w0,reg.w0)
-+		op('Stos_w')			:s(opdone)
-	ifreg(i1)				:s(g.zer1)
-	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
-	op('xor',reg.w0,reg.w0)
-	op('mov',getarg(i1),reg.w0)		:(opdone)
-g.zer1	t1 = getarg(i1)
-	op('xor',t1,t1)			:(opdone)
-g.zer.xs op('push','0')			:(opdone)
-.fi
-.if gas
-	ident(i.text(i1),'(xr)+') op('mov','$0',reg.w0)
-+	  op('stos' (eq(ws,32) 'd','q'))	:s(opdone)
-	ifreg(i1)				:s(g.zer1)
-	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
-	op('xor',reg.w0,reg.w0)
-	op('mov',reg.w0,getarg(i1))		:(opdone)
-g.zer1	t1 = getarg(i1)
-	op('xor',t1,t1)				:(opdone)
-g.zer.xs op('push','$0')			:(opdone)
-.fi
-
+	op('Xor_',reg.w0,reg.w0)		
+	mov(i1,arg_w0)				:(opdone)
 g.mnz
-	op('xor',reg.w0,reg.w0)
-	op('inc',reg.w0)
-	op('Mov_',getarg(i1),reg.w0)			:(opdone)
+	op('Xor_',reg.w0,reg.w0)
+	op('Inc_',reg.w0)
+	mov(i1,arg_w0)				:(opdone)
+
 g.ssl
 g.sss
 g.rtn
 	op()					:(opdone)
 
 g.add	memmemm()
-	op('Add',getarg(i1),getarg(i2))	:(opdone)
+	op('Add_',getarg(i1),getarg(i2))	:(opdone)
 
 g.sub	memmemm()
-	op('Sub',getarg(i1),getarg(i2))	:(opdone)
+	op('Sub_',getarg(i1),getarg(i2))	:(opdone)
 
 g.ica
-.if asm
-	op('add',getarg(i1),'cfp_b')		:(opdone)
-.fi
-.if gas
-	op('add' o_,'$' cfp_b,getarg(i1))		:(opdone)
-.fi
+	op('Add_',getarg(i1),literal_ 'cfp_b')		:(opdone)
 
 g.dca
-.if asm
-	op('sub',getarg(i1),'cfp_b')		:(opdone)
-.fi
-.if gas
-	op('sub' o_,'$' cfp_b,getarg(i1))	:(opdone)
-.fi
+	op('Sub_',getarg(i1),literal_ 'cfp_b')		:(opdone)
 
 g.beq
 g.bne
@@ -1754,14 +1669,14 @@ g.bhi
 
 	memmemm()
 	t1 = branchtab[incode]
-	op('cmp',getarg(i1),getarg(i2))
+	op('Cmp_',getarg(i1),getarg(i2))
 	op(branchtab[incode],getarg(i3))
 						:(opdone)
 
 g.bnz
 	ifreg(i1)				:s(g.bnz1)
-	op('xor',reg.w0,reg.w0)
-        op('cmp',getarg(i1) ,reg.w0)
+	op('Xor_',reg.w0,reg.w0)
+        op('Cmp_',getarg(i1) ,reg.w0)
 	op('jnz',getarg(i2))
 						:(opdone)
 g.bnz1
@@ -1770,8 +1685,8 @@ g.bnz1
 						:(opdone)
 
 g.bze   ifreg(i1)				:s(g.bze1)
-	op('xor',reg.w0,reg.w0);* clear w0 t0 zero
-        op('cmp', getarg(i1)  ,reg.w0)
+	op('Xor_',reg.w0,reg.w0);* clear w0 t0 zero
+        op('Cmp_', getarg(i1)  ,reg.w0)
 	op('jz',getarg(i2))
 						:(opdone)
 g.bze1
@@ -1797,22 +1712,25 @@ g.bct
 	t2 = getarg(i2)				:(g.bct2)
 	ident(t1,reg.wa)			:s(g.bct1)
 g.bct2
-	op('Dec',t1)
+	op('Dec_',t1)
 	op('jnz',t2)				:(opdone)
 g.bct1
 	op('loop',t2)				:(opdone)
 
 g.aov
-	op('Add',getarg(i2),getarg(i1))
+	op('Add_',getarg(i2),getarg(i1))
 	op('jc',getarg(i3))
 						:(opdone)
 g.lcp
+	op('Lcp_',getarg(i1))			:(opdone)
 g.lcw
+	op('Lcw_',getarg(i1))			:(opdone)
 g.scp
-	op(op_,getarg(i1))			:(opdone)
+	op('Scp_',getarg(i1))			:(opdone)
 
 g.icp
-	op(op_)					:(opdone)
+	op('Icp_')				:(opdone)
+
 *  integer accumulator kept in memory (reg_ia)
 g.ldi
 g.sti
@@ -1827,7 +1745,6 @@ g.dvi
 
 g.rmi
 	op('Mov_',reg.w0,getarg(i1))
-*	op('mov',reg.w0,getarg(i1))
 	op(op_)					:(opdone)
 g.ngi
 	op(op_)					:(opdone)
@@ -1897,8 +1814,13 @@ g.rle	jop = 'jle'				:(g.r1)
 g.rlt	jop = 'jl'
 g.r1	
 	op('call','cpr_')
-	op('Mov_','W0_L','byte [reg_fl]')
-	op('or','W0_L','W0_L')
+.if asm
+	op('Mov_',reglow['w0'],'byte [reg_fl]')
+.fi
+.if gas
+	op('Movb_',reglow['w0'],'reg_fl')
+.fi
+	op('or',reglow['w0'],reglow['w0'])
 	op(jop,getarg(i1))			:(opdone)
 
 g.plc
@@ -1908,18 +1830,13 @@ g.psc
 
 	t1 = getarg(i1)
 	t2 = i.type(i2)
-.if asm
 	((ifreg(i2), ge(t2,1) le(t2,2)) op('lea',t1,'Adr(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
-.fi
-.if gas
-	((ifreg(i2), ge(t2,1) le(t2,2)) op('lea',t1,'Adr(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
-.fi
-	op('Add',t1,'cfp_f')
+	op('Add_',t1,'cfp_f')
 	eq(i.type(i2))				:s(opdone)
 
 *  here if d_offset_(given (in a variable), so add it in.
 
-	op('Add',t1,getarg(i2))		:(opdone)
+	op('Add_',t1,getarg(i2))		:(opdone)
 
 *  always load to w0, which allows use of 'lods' if second argument is '(xr)+'
 
@@ -1938,19 +1855,19 @@ g.lch
 	eq(s.type,11) op('dec',regmap[s.reg])
 
 *  clear result register
-	op('xor', (eq(w) getarg(dst),reg.w0), (eq(w) getarg(dst),reg.w0))
+	op('Xor_', (eq(w) getarg(dst),reg.w0), (eq(w) getarg(dst),reg.w0))
 
 *  if target is w register, can load to it. otherwise, load to w0 and then move to x
 *  do indexed load of source register
 
-*	outfile = Comment 'lch 1 reglow((eq(w) d.reg, 'w0'))' reglow((eq(w) d.reg, 'w0'))
+*	outfile = Comment 'lch 1 reglow[(eq(w) d.reg, 'w0')]' reglow[(eq(w) d.reg, 'w0')]
 *	outfile = Comment 'lch,2 M_char [regmap[s.reg]])'  regmap[s.reg]
 .if asm
-	op('mov',reglow((eq(w) d.reg, 'w0')),'M_char [' regmap[s.reg] ']')
+	op('mov',reglow[(eq(w) d.reg, 'w0')],'M_char [' regmap[s.reg] ']')
 	ne(w) op('mov',regmap[d.reg],reg.w0)
 .fi
 .if gas
-	op('movb','(' regmap[s.reg] ')' ,reglow((eq(w) d.reg, 'w0')))
+	op('movb','(' regmap[s.reg] ')' ,reglow[(eq(w) d.reg, 'w0')])
 	ne(w) op('mov',reg.w0,regmap[d.reg])
 .fi
 
@@ -1960,7 +1877,7 @@ g.lch
 						:(opdone)
 g.lch.lods
 *  clear result register, do lodsb, and then move character to result register
-	op('xor',reg.w0,reg.w0)
+	op('Xor_',reg.w0,reg.w0)
 	op('lodsb')
 	op('Mov_',getarg(dst),reg.w0)
 						:(opdone)
@@ -1984,10 +1901,10 @@ g.sch
 	ne(w) op('Mov_',reg.w0, regmap[s.reg])
 
 .if asm
-	op('mov','M_char [' regmap[d.reg] ']', reglow((eq(w) s.reg, 'w0')))
+	op('mov','M_char [' regmap[d.reg] ']', reglow[(eq(w) s.reg, 'w0')])
 .fi
 .if gas
-	op('movb', reglow((eq(w) s.reg, 'w0')), '(' regmap[d.reg] ')') 
+	op('movb', reglow[(eq(w) s.reg, 'w0')], '(' regmap[d.reg] ')') 
 .fi
 
 * increment target register if needed
@@ -2005,19 +1922,19 @@ g.csc  	ident(thislabel)			:s(opnext)
 
 g.ceq
 	memmem()
-	op('cmp',getarg(i1),getarg(i2))
+	op('Cmp_',getarg(i1),getarg(i2))
 	op('je',getarg(i3))
 						:(opdone)
 
 g.cne   memmemm()
-	op('cmp',getarg(i1),getarg(i2))
+	op('Cmp_',getarg(i1),getarg(i2))
 	op('jnz',getarg(i3))
 						:(opdone)
 
 g.cmc
 	op('repe','Cmps_b')
-	op('xor',reg.xl,reg.xl)
-	op('xor',reg.xr,reg.xl)
+	op('Xor_',reg.xl,reg.xl)
+	op('Xor_',reg.xr,reg.xl)
 	t1 = getarg(i1)
 	t2 = getarg(i2)
 	(ident(t1,t2) op('jnz',t1))		:s(opdone)
@@ -2028,19 +1945,19 @@ g.trc
 	op('xchg',reg.xl,reg.xr)
 .if asm
         opl((labl = genlab('trc')) ':','movzx',reg.w0,'M_char [XR]')
-	op('mov','W0_L','[XL+W0]')
+	op('mov',reglow['w0'],'[XL+W0]')
 .fi
 .if gas
 	labl = genlab('trc')
         opl(labl ':','movz' (eq(ws,32) 'bl', 'bq'),'(' reg.xr ')',reg.w0)
-	op('add','(,' reg.xl ')',reg.w0)
-	op('mov','(' reg.w0 ')', 'W0_L')
+	op('Add_','(,' reg.xl ')',reg.w0)
+	op('mov','(' reg.w0 ')', reglow['w0'])
 .fi
 	op('Stos_c')
 	op('dec',reg.wa)
 	op('jnz',labl)
-	op('xor',reg.xl,reg.xl)
-	op('xor',reg.xr,reg.xr)
+	op('Xor_',reg.xl,reg.xl)
+	op('Xor_',reg.xr,reg.xr)
 						:(opdone)
 
 g.anb   op('And',getarg(i1),getarg(i2))	:(opdone)
@@ -2060,8 +1977,8 @@ g.lsx
 	error('lsx not supported')
 
 g.nzb	ifreg(i1)				:s(g.nzb1)
-	op('xor',reg.w0,reg.w0)
-	op('cmp',getarg(i1),reg.w0)
+	op('Xor_',reg.w0,reg.w0)
+	op('Cmp_',getarg(i1),reg.w0)
 	op('jnz',getarg(i2))
 						:(opdone)
 g.nzb1
@@ -2071,8 +1988,8 @@ g.nzb1
 
 g.zrb
 	ifreg(i1)				:s(g.zrb1)
-	op('xor',reg.w0,reg.w0)
-	op('cmp',getarg(i1),reg.w0)
+	op('Xor_',reg.w0,reg.w0)
+	op('Cmp_',getarg(i1),reg.w0)
 	op('jz',getarg(i2))
 						:(opdone)
 g.zrb1
@@ -2087,21 +2004,10 @@ g.zzz
  	op('zzz',getarg(i1))			:(opdone)
 
 g.wtb
-.if asm
-	op('sal',getarg(i1),'log_cfp_b')	:(opdone)
-.fi
-.if gas
-*  gas flaky on doing shifts, so just do repeated adds
-	reg = getarg(i1)
-	op('add',reg,reg)
-	op('add',reg,reg)
-	ne(ws,32) op('add',reg,reg)
-						:(opdone)
-.fi
+	gensh('sal',getarg(i1),literal_ 'log_cfp_b')	:(opdone)
 
 g.btw
-*HERE this crashes gas translation, need to five gensh
-	gensh('shr',getarg(i1),'log_cfp_b')	:(opdone)
+	gensh('shr',getarg(i1),literal_ 'log_cfp_b')	:(opdone)
 
 g.mti
 	ident(i.text(i1),'(xs)+')		:f(g.mti.1)
@@ -2129,27 +2035,13 @@ g.mfi.2
 g.ctw
 *  assume cfp_c chars per word
 	t1 = getarg(i1)
-	eq(cfp_b,cfp_c)				:s(g.ctw.1)
-*  here if one word per character, so just add character count
-	op('add',t1,i.text(i2))
-						:(opdone)
-g.ctw.1
-	op('add',t1,'(cfp_c-1)+cfp_c*' i.text(i2))
-	op('shr',t1,'log_cfp_c')
+	op('Add_',t1,'(cfp_c-1)+cfp_c*' i.text(i2))
+	gensh('shr',t1,literal_ 'log_cfp_c')
 					:(opdone)
 g.ctb
 	t1 = getarg(i1)
-	op('add',t1,'(cfp_b-1)+cfp_b*' i.text(i2))
+	op('Add_',t1,'(cfp_b-1)+cfp_b*' i.text(i2))
 	op('and',t1,'-cfp_b')
-						:(opdone)
-g.cvm	t1 = getarg(i1)
-	op('sti_',reg.w0)
-	op('imul',reg.w0,'10')
-	op('jo',t1)
-	op('sub',reg.wb,'ch_d0')
-	op('sub',reg.w0,reg.wb)
-	op('ldi_',reg.w0)
-	op('jo',t1)
 						:(opdone)
 .fi
 .if gas
@@ -2157,68 +2049,52 @@ g.ctb
 g.ctw
 	w.reg = getarg(i1); 
 	op('mov',w.reg,'ctbw_r')
-	op('mov' op_w,'$' i.text(i2), 'ctbw_v')
-*	op('mov',w.reg,reg.w0)	
+	op('mov' op_w,literal_ i.text(i2), 'ctbw_v')
+*	op('mov' op_w,w.reg,reg.w0)	
 	op('call', incode '_')
-	op('mov','ctbw_r',w.reg)
-						:(opdone)
-
-g.cvm	t1 = getarg(i1)
-	op('mov',reg.ia,reg.w0)
-	op('imul',reg.w0,intvt)
-	op('jo',t1)
-	op('sub','$ch_d0',reg.wb)
-	op('sub',reg.wb,reg.w0)
-	op('mov',reg.w0,reg.ia)
-	op('jo',t1)
+	op('mov' op_w,'ctbw_r',w.reg)
 						:(opdone)
 .fi
+
+g.cvm	
+	t1 = getarg(i1)
+	op('sti_',reg.w0)
+	op('imul',reg.w0,intvt)
+	op('jo',t1)
+	op('Sub_',reg.wb,'ch_d0')
+	op('Sub_',reg.w0,reg.wb)
+	op('ldi_',reg.w0)
+	op('jo',t1)
 						:(opdone)
 g.cvd
 	op('cvd_')				:(opdone)
 
 g.mvc
 	trc_suspend = 1
-.if asm
 	t1 = genlab('mvc')
+.if asm
 	op('rep')
 	op('Movs_b')
 .fi
 .if gas
-*	use word move if character size is word size
-*	if charsize is word size, convert character count to byte count for word move
-
-	t1 = genlab('mvc')
-	trc_suspend = 1
 	op('rep', 'Movs_b')
 .fi
-	trc_suspend = 0
-						:(opdone)
+	trc_suspend = 0				:(opdone)
 g.mvw
-	op('shr',reg.wa,'log_cfp_b')
+	gensh('shr',reg.wa,literal_ 'log_cfp_b')
  	op('rep','Movs_w')
 						:(opdone)
 g.mwb
-.if asm
-	op('shr',reg.wa,'log_cfp_b')
+	gensh('shr',reg.wa,literal 'log_cfp_b')
 	op('std')
-	op('lea',reg.xl,'Adr(XL-cfp_b)')
-	op('lea',reg.xr,'Adr(XR-cfp_b)')
- 	genrep('Movs_w')
-	op('cld')
-.fi
-.if gas
-	gensh('shr',reg.wa,log_cfp_b,)
-	op('std')
-	op('sub','$' cfp_b,reg.xl)
-	op('sub','$' cfp_b,reg.xr)
+	op('Sub_',reg.xl,literal_ cfp_b)
+	op('Sub_',reg.xr,literal_ cfp_b)
  	genrep('Movs_w')
 	op('cld')				
-.fi		
 						:(opdone)
 
 	op('std')
-	op('shr',reg.wa,'log_cfp_b')
+	gensh('shr',reg.wa,literal_ 'log_cfp_b')
 	op('rep')
 	op('Movs_w')
 	op('ctd')
@@ -2240,7 +2116,7 @@ genrep
 	op('jz',l2)
 	op(op)
 	op('dec',reg.wa)
-	op('Jmp',l1)
+	op('Jmp_',l1)
 	opl(l2 ':')
 						:(return)
 g.chk
@@ -2267,7 +2143,7 @@ g.dic
 						:(decend)
 
 g.drc
-	op('Align',8)
+	op('Align_',8)
 	t1 = i.text(i1)
 	t1 ? fence "+" = ""
 	op(D_real,t1)
@@ -2277,27 +2153,41 @@ g.drc
 
 g.dtc
 *  change first and last chars to " (assume / used in source)
-	t1 = i.text(i1)
-	t1 tab(1) rtab(1) . t2
-	t3 = remdr(size(t2),cfp_c)
-*        t2 = "'" t2 "'"
+	txt = i.text(i1)
+	txt = substr(txt,2,size(txt) - 2)
+	opl(thislabel,D_char, '"' txt '"')
+
+	n = remdr(size(txt),cfp_b)
+	eq(n)					:s(opdone)
+	n = cfp_b - n
+
+*	Pad out with null bytes to next word boundary
+
+dtc.1	eq(n)					:s(opdone)
+	op(D_byte,'0')
+	n = n - 1				:(dtc.1)
+
+	op('Align_',cfp_b)			
+	op('D_word','0')
+						:(opdone)
+	dtc.rem = remdr(size(dtc.txt),cfp_c)
 *  append nulls to complete last word so constant length is multiple
 *  of word word
 	dtc_i = 1
-	t4 =
+	tmp =
 g.dtc.1
-	t4 = gt(dtc_i, 1) t4 ","
-	t4 = t4 "'" substr(t2,dtc_i,1) "'"
+	tmp = gt(dtc_i, 1) t4 ","
+	tmp = t4 "'" substr(t2,dtc_i,1) "'"
 	le(dtc_i = dtc_i + 1, size(t2))		:s(g.dtc.1)
 
-        t4 = ne(t3) t4 dupl(',0',cfp_c - t3)
-        opl(thislabel,D_char,t4)
+        tmp = ne(gtc.rem) t4 dupl(',0',cfp_c - gtc.rem)
+        opl(thislabel,D_char,tmp)
 						:(opdone)
 g.dbc
 	opl(thislabel,D_word,getarg(i1))
 						:(opdone)
 g.equ
-	op('Equ_',thislabel,i.text(i1))		:(opdone)
+	op('Equ',thislabel,i.text(i1))		:(opdone)
 
 g.exp
 	ppm_cases[thislabel] = i.text(i1)
@@ -2426,10 +2316,6 @@ opdone.5	outstmt(astmts[i])
 	le(i = i + 1, astmts.n)			:s(opdone.5)
 opdone.6 astmts.n = bstmts.n = cstmts.n =	:(return)
 flush_end
-
--stitl reglow(reg) - map W register to its lower (least significant) part
-reglow
-	reglow = regmap[reg] '_L'		:(return)
 -stitl report - write statistic to output file
 report
 	output = lpad(num,7) tab text		:(return)

@@ -24,7 +24,7 @@
 *	spitbol -u "infile<sep>condfile<sep>outfile" lex
 *
 *	where:
-*	 infile    - minimal file name, less .min extension
+*	 infile    - minimal file name, less .asm extension
 *	 condfiile - conditional file name, less .cnd extension
 *	 outfile   - output file name, less .lex extension.
 *		     default is infile.lex.
@@ -361,7 +361,7 @@
 	output = 'os ' os '  ws  '  ws '  asm  '  asm
 	parm = "sbl"
 	filenamc = parm '.cnd'
-	filenami = parm '.min'
+	filenami = parm '.asm'
 	filenamo = parm '.lex'
 	filename = parm '.equ'
 *

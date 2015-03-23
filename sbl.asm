@@ -6705,7 +6705,7 @@ lodna	dac	0			; count number of arguments
 ;      mxint is value of maximum positive integer. it is computed at runtime to allow
 ;      the compilation of spitbol on a machine with smaller word size the the target.
 ;
-mxint	dac	0			;
+mxint	dic	+0			;
 .if    .cnpf
 .else
 ;
