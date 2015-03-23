@@ -742,7 +742,7 @@ mov
 mov.xtp
 mov.xlp
 	ident(t.dst,'(xr)+') op('movs' op_w)	:s(return)
-	op('Lods_w')
+	op('lods' op_w)
 	op('Mov_',getarg(i.dst),reg.w0)		:(return)
 	ident(t.dst,'-(xs)') op('push',reg.w0)	:s(return)
 
@@ -751,11 +751,11 @@ mov.xsp
 	op('pop',getarg(i.dst))		:(return)
 mov.xsrp
 	op('pop',reg.w0)
-	op('Stos_w')				:(return)
+	op('stos' op_w)				:(return)
 
 mov.xrp
 	op('Mov_',reg.w0,getarg(i.src))
-	op('Stos_w')				:(return)
+	op('stos' op_w)				:(return)
 mov.2
 	op('push',getarg(i.src))		:(return)
 
@@ -1394,29 +1394,29 @@ ds.typerr
 	error('operand type zero')		:(dsout)
 g.flc
 .if asm
-	t1 = reglow[getreg(i1)]
-	t2 = genlab('flc')
+	reg = reglow[getreg(i1)]
+	lbl = genlab('flc')
 *	trc_suspend = 1
-	op('Cmpb_',t1,"'A'")
-	op('jb', t2 )
-	op('Cmpb_',t1,"'Z'")
-	op('ja', t2)
-	op('Add_',t1,'32')
-        opl(t2 ':')
+	op('Cmpb_',reg,"'A'")
+	op('jb', lbl)
+	op('Cmpb_',reg,"'Z'")
+	op('ja', lbl)
+	op('Add_',reg,'32')
+        opl(lbl ':')
 *	trc_suspend = 0
 .fi
 .if gas
 	
-	t1 = i.text(i1)
-	t2 = '%'  (ident(t1,'wa') 'c', ident(t1,reg.wb) 'b', 'd') 'l'
-	t3 = genlab('flc')
+	txt = i.text(i1)
+	reg = '%'  (ident(txt,'wa') 'c', ident(txt,reg.wb) 'b', 'd') 'l'
+	lbl = genlab('flc')
 	trc_suspend = 1
-	op('cmpb',t2,"'A'")
-	op('jb', t3 )
-	op('cmpb',t2,"'Z'")
-	op('ja', t3)
-	op('Add_','$32',t2)
-        opl(t3 ':')
+	op('cmpb',reg,"'A'")
+	op('jb', lbl )
+	op('cmpb',reg,"'Z'")
+	op('ja', lbl)
+	op('Add_',reg,'$32')
+        opl(lbl ':')
 	trc_suspend = 0
 .fi
 						:(opdone)
@@ -1820,7 +1820,7 @@ g.r1
 	op('Mov_',reglow['w0'],'byte [reg_fl]')
 .fi
 .if gas
-	op('movb',reg_fl, reglow['w0'])
+	op('movb','reg_fl', reglow['w0'])
 .fi
 	op('or',reglow['w0'],reglow['w0'])
 	op(jop,getarg(i1))			:(opdone)
@@ -1934,7 +1934,7 @@ g.cne   memmemm()
 						:(opdone)
 
 g.cmc
-	op('repe','Cmps_b')
+	op('repe','cmpsb')
 	op('Xor_',reg.xl,reg.xl)
 	op('Xor_',reg.xr,reg.xl)
 	t1 = getarg(i1)
@@ -1955,7 +1955,7 @@ g.trc
 	op('Add_','(,' reg.xl ')',reg.w0)
 	op('mov','(' reg.w0 ')', reglow['w0'])
 .fi
-	op('Stos_c')
+	op('stos' op_b)
 	op('dec',reg.wa)
 	op('jnz',labl)
 	op('Xor_',reg.xl,reg.xl)
@@ -2084,14 +2084,14 @@ g.mvc
 	trc_suspend = 0				:(opdone)
 g.mvw
 	gensh('shr',reg.wa,literal_ 'log_cfp_b')
- 	op('rep','Movs_w')
+ 	op('rep','movs' op_w)
 						:(opdone)
 g.mwb
 	gensh('shr',reg.wa,literal 'log_cfp_b')
 	op('std')
 	op('Sub_',reg.xl,literal_ cfp_b)
 	op('Sub_',reg.xr,literal_ cfp_b)
- 	genrep('Movs_w')
+ 	genrep('movs' op_w)
 	op('cld')				
 						:(opdone)
 

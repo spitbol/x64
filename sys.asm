@@ -361,13 +361,11 @@
 	%define	XR	rdi
 	%define	XS	rsp
 
-	%define	Lods_w	lodsq
 	%define	Lods_b	lodsb
 	%define Movs_b	movsb
 	%define Movs_w	movsq
 	%define Stos_b	stosb
 	%define	Stos_w	stosq
-	%define	Cmps_b	cmpsb
 
 	%define	cdq	cqo	; sign extend (64 bits)
 	%define Mem(ref) qword[ref]
@@ -397,13 +395,9 @@
 	%define M_real	dword	; reference to Word in memory
 
 	%define	Lods_b	lodsb
-	%define	Lods_w	lodsd
 	%define Movs_b	movsb
 	%define Movs_w	movsd
 	%define	Stos_b	stosb
-	%define	Stos_c	stosb
-	%define	Stos_w	stosd
-	%define	Cmps_b	cmpsb
 
 	%define	cdq	cdq	; sign extend (32 bits)
 
