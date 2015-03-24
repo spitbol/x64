@@ -1039,7 +1039,7 @@ stackinit:
 	Mov_	Mem(compsp),W0	; save minimal's stack pointer
 	Sub	W0,Mem(stacksiz)	; end of minimal stack is where c stack will start
 	Mov_	Mem(osisp),W0	; save new c stack pointer
-	Add_	W0,cfp_b*100		; 100 words smaller for chk
+	Add_	W0,$cfp_b*100		; 100 words smaller for chk
 	Mov_	Mem(spmin),W0
 	ret
 
