@@ -243,6 +243,13 @@ asm.spt:	asm
 gas.spt:	asm
 	$(BASEBOL) -u G -1=asm -2=gas.spt pre.sbl
 
+# just recompile osint for gas
+gas-osint:
+# compile osint
+	$(CC)  $(CCOPTS) -c  osint/*.c
+# load objects
+	$(CC) $(LDOPTS)  $(COBJS) gas.o $(LMOPT) -static -ospitbol
+
 bootbol: 
 # bootbol is for bootstrapping just link with what's at hand
 #bootbol: $(OBJS)
@@ -283,4 +290,4 @@ trc-nasm: s-nasm.dic it.sbl
 	$(BASEBOL) -u s-nasm.dic trc.sbl <ad >ae
 
 clean:
-	rm -f  *.def *.pre *.[ors] *.def tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol def.spt err.s r-asm.sbl sbl.equ sbl.err s.equ s.err s.lex sys.pre sys.s asm.spt sbl.tmp
+	rm -f  *.def *.pre *.[ors] *.def tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol def.spt err.s r-asm.sbl sbl.equ sbl.err s.equ s.err s.lex sys.pre sys.s asm.spt sbl.tmp gas.spt

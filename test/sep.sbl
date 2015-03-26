@@ -1,0 +1,10 @@
+	&anchor = &trim = 1
+	whitespace = ' ' char(9)
+	:(next)
+copy
+	output = line
+next	line = input		:f(end)
+	line '      ' notany(whitespace) . chr = char(9) chr :(copy)
+
+end
+

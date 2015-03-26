@@ -7250,12 +7250,12 @@ relws	prc	e,0			; entry point
       (xl)		     points to last word of data area
 */
 start	prc	e,0			; entry point
-;i-
 	mov	mxint,wb		;
+;;i-
 	mov	bitsm,wb		;
 	zer	wb			;
 	mov	xs,wa			; discard return
-;i+
+;;i+
 	jsr	systm			; initialise timer
 .if    .cnbt
 	sti	timsx			; store time

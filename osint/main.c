@@ -179,17 +179,21 @@ char	*argv[];
     */
     SET_CP( 0 );
     SET_IA( 0 );
-/* For x32-x86, we pass value of largest integer in WA on startup. It's not possible to set this up
-   at compile time, if we want to compile for 64 bits on 32 bit machine.
- */
     SET_WA( 0 );
+
+/* Pass value of largest integer in WB on startup. It's not possible to set this up
+   at compile time if we compiling for 64 bits on 32 bit machine.
+ */
 #ifdef unix_32
     long mxint = INT32_MAX;
 #else
     long mxint = INT64_MAX;
 #endif
-//    reg_wb = mxint;
+#ifdef osx_32
+    long mxint = INT32_MAX;
+#endif
     SET_WB( mxint );
+
     SET_WC( 0 );
     SET_XR( basemem );
     SET_XL( topmem - sizeof(word) );
