@@ -6,10 +6,11 @@
 # Normally, all three assembly files wil be equal. However, if a new optimization is
 # being introduced, the first two may differ, but the second and third should always agree.
 #
+cd ..
 rm tbol.*
 sys=$1
 asm=$2
-echo "start 64-bit sanity test for asm"
+echo "start  sanity test"
 cp	./bin/$sys testbol
 make clean>/dev/null
 make base=./testbol $asm
