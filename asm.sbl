@@ -2151,9 +2151,6 @@ g.dac
         opl(thislabel,D_word,t2 i.text(i1))
 						:(decend)
 g.dic
-.if gas
-	outfile = '# g.dic ' i.text(i1)
-.fi
 	opl(thislabel,D_word,i.text(i1))
 						:(decend)
 

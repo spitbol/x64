@@ -490,6 +490,7 @@ dos01	ident(argskel)				:s(dos05)
 	typ1 = argtype(op1,argthis)
 	argerrs = eq(typ1) argerrs + 1
 	ident(argskel)				:s(dos05)
+	ident(argskel)				:s(dos05)
 	argskel p.argskel2 =
 	argthis '*' ident(op2)			:s(dos05)
 	typ2 = argtype(op2,argthis)
@@ -502,6 +503,7 @@ dos01	ident(argskel)				:s(dos05)
 dos10
 dos05
 	gt(argerrs) error('arg type not known')
+
 *  here if an argument type not recognized
 	opskel ' ' =				:f(dsgen)
 *  here if post-processing required
@@ -585,8 +587,8 @@ argtype
 	ident(typ,'eqop')			:s(arg.eqop)
 	itype = argform(op)
 	opform = opformtab<typ>
+	argtype = ne(validform<+opform,itype>) itype
 	argtype = ne(validform<+opform,itype>) itype	:(return)
-*	argtype = itype 			:(return)
 
 arg.text argtype = 26 				:(return)
 arg.dtext argtype = 27				:(return)
@@ -717,6 +719,29 @@ outstmt
 rdline	rdline = infile				:f(rl02)
 	nlines  = nlines + 1
 	ident( rdline )				:s(rdline)
+*  look for extended comment, starts with line '/*' and ends with '*/'.
+
+*	:(xc.bypass)
+
+	differ(xcomment)			:s(xcomment.inside)
+* 	here when in normal text, looking for extended comment
+	rdline '/*' = ';'			:f(xcomment.done)
+	outfile = '; beg comment'
+	xcomment = 1				:(xcomment.done)
+
+xcomment.inside
+*	here if inside extended comment, look for closing line
+	rdline '*/' = ';'			:f(xcomment.fix)
+	outfile = '; end comment'
+
+	xcomment =  				:(xcomment.done)
+
+xcomment.fix
+*	here to insert semicolon at start of line in extended comment body
+	rdline = ';' rdline
+
+xcomment.done
+xc.bypass
 *
 *  transfer control to appropriate conditional assembly
 *  directive generator or other statement generator.
