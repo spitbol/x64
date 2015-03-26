@@ -1,0 +1,17 @@
+	&anchor = &trim = 1
+	inside = 
+	:(next)
+copy
+	output = line
+next	line = input		:f(end)
+	line '/*'		:s(in.comment)
+	line '*/'		:s(out.comment)
+	ident(inside)		:s(copy)
+	line ';' = 		:(copy)
+in.comment
+	inside = 1		:(copy)
+out.comment
+	inside = 		:(copy)
+
+end
+
