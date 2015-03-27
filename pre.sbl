@@ -18,6 +18,30 @@ next
 *	Note that '.if' or '.fi' must be followed by single space.
 
 	line = input					:f(finis)
+
+
+*  look for extended comment, starts with line '/*' and ends with '*/'.
+
+	differ(xcomment)				:s(xcomment.inside)
+* 	here when in normal text, looking for extended comment
+	line '/*' = ';'					:f(xcomment.done)
+	outfile = '; beg comment'
+	xcomment = 1					:(xcomment.done)
+
+xcomment.inside
+
+*	here if inside extended comment, look for closing line
+	line '*/' = ';'					:f(xcomment.fix)
+	outfile = '; end comment'
+
+	xcomment =  				:(xcomment.done)
+
+xcomment.fix
+*	here to insert semicolon at start of line in extended comment body
+	line = ';' line
+
+xcomment.done
+
 	line '.if'					:s(pp.if)
 	line '.fi'					:s(pp.fi)
 

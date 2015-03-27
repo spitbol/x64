@@ -1,106 +1,107 @@
-; copyright 1987-2012 robert b. k. dewar and mark emmer.
-; copyright 2012-2015 david shields
-;
-; this file is part of macro spitbol.
-;
-;     macro spitbol is free software: you can redistribute it and/or modify
-;     it under the terms of the gnu general public license as published by
-;     the free software foundation, either version 2 of the license, or
-;     (at your option) any later version.
-;
-;     macro spitbol is distributed in the hope that it will be useful,
-;     but without any warranty; without even the implied warranty of
-;     merchantability or fitness for a particular purpose.  see the
-;     gnu general public license for more details.
-;
-;     you should have received a copy of the gnu general public license
-;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
-;
+/*
+ copyright 1987-2012 robert b. k. dewar and mark emmer.
+ copyright 2012-2015 david shields
+
+ this file is part of macro spitbol.
+
+     macro spitbol is free software: you can redistribute it and/or modify
+     it under the terms of the gnu general public license as published by
+     the free software foundation, either version 2 of the license, or
+     (at your option) any later version.
+
+     macro spitbol is distributed in the hope that it will be useful,
+     but without any warranty; without even the implied warranty of
+     merchantability or fitness for a particular purpose.  see the
+     gnu general public license for more details.
+
+     you should have received a copy of the gnu general public license
+     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 
 
-;       this file contains the assembly language routines that interface
-;       the macro spitbol compiler written in 80386 assembly language to its
-;       operating system interface functions written in c.
-;
-;       contents:
-;
-;       o overview
-;       o global variables accessed by osint functions
-;       o interface routines between compiler and osint functions
-;       o c callable function startup
-;       o c callable function get_fp
-;       o c callable function restart
-;       o c callable function makeexec
-;       o routines for minimal opcodes chk and cvd
-;       o math functions for integer multiply, divide, and remainder
-;       o math functions for real operation
-;
-;       overview
-;
-;       the macro spitbol compiler relies on a set of operating system
-;       interface functions to provide all interaction with the host
-;       operating system.  these functions are referred to as osint
-;       functions.  a typical call to one of these osint functions takes
-;       the following form in the 80386 version of the compiler:
-;
-;               ...code to put arguments in registers...
-;               call    sysxx           # call osint function
-;             D_word    extrc_1          # address of exit point 1
-;             D_word    extrc_2          # address of exit point 2
-;               ...     ...             # ...
-;             D_word    extrc_n          # address of exit point n
-;               ...instruction following call...
-;
-;       the osint function 'sysxx' can then return in one of n+1 ways:
-;       to one of the n exit points or to the instruction following the
-;       last exit.  this is not really very complicated - the call places
-;       the return address on the stack, so all the interface function has
-;       to do is add the appropriate offset to the return address and then
-;       pick up the exit address and jump to it or do a normal return via
-;       an ret instruction.
-;
-;       unfortunately, a c function cannot handle this scheme.  so, an
-;       intermediary set of routines have been established to allow the
-;       interfacing of c functions.  the mechanism is as follows:
-;
-;       (1) the compiler calls osint functions as described above.
-;
-;       (2) a set of assembly language interface routines is established,
-;           one per osint function, named accordingly.  each interface
-;           routine ...
-;
-;           (a) saves all compiler registers in global variables
-;               accessible by c functions
-;           (b) calls the osint function written in c
-;           (c) restores all compiler registers from the global variables
-;           (d) inspects the osint function's return value to determine
-;               which of the n+1 returns should be taken and does so
-;
-;       (3) a set of c language osint functions is established, one per
-;           osint function, named differently than the interface routines.
-;           each osint function can access compiler registers via global
-;           variables.  no arguments are passed via the call.
-;
-;           when an osint function returns, it must return a value indicating
-;           which of the n+1 exits should be taken.  these return values are
-;           defined in header file 'inter.h'.
-;
-;       note:  in the actual implementation below, the saving and restoring
-;       of registers is actually done in one common routine accessed by all
-;       interface routines.
-;
-;       other notes:
-;
-;       some c ompilers transform "internal" global names to
-;       "external" global names by adding a leading underscore at the front
-;       of the internal name.  thus, the function name 'osopen' becomes
-;       '_osopen'.  however, not all c compilers follow this convention.
 
-; Operation and declaration macros are needed for each instruction/declaration having  different
-; formats in asm and gas.
+       this file contains the assembly language routines that interface
+       the macro spitbol compiler written in 80386 assembly language to its
+       operating system interface functions written in c.
+
+       contents:
+
+       o overview
+       o global variables accessed by osint functions
+       o interface routines between compiler and osint functions
+       o c callable function startup
+       o c callable function get_fp
+       o c callable function restart
+       o c callable function makeexec
+       o routines for minimal opcodes chk and cvd
+       o math functions for integer multiply, divide, and remainder
+       o math functions for real operation
+
+       overview
+
+       the macro spitbol compiler relies on a set of operating system
+       interface functions to provide all interaction with the host
+       operating system.  these functions are referred to as osint
+       functions.  a typical call to one of these osint functions takes
+       the following form in the 80386 version of the compiler:
+
+               ...code to put arguments in registers...
+               call    sysxx           # call osint function
+             D_word    extrc_1          # address of exit point 1
+             D_word    extrc_2          # address of exit point 2
+               ...     ...             # ...
+             D_word    extrc_n          # address of exit point n
+               ...instruction following call...
+
+       the osint function 'sysxx' can then return in one of n+1 ways:
+       to one of the n exit points or to the instruction following the
+       last exit.  this is not really very complicated - the call places
+       the return address on the stack, so all the interface function has
+       to do is add the appropriate offset to the return address and then
+       pick up the exit address and jump to it or do a normal return via
+       an ret instruction.
+
+       unfortunately, a c function cannot handle this scheme.  so, an
+       intermediary set of routines have been established to allow the
+       interfacing of c functions.  the mechanism is as follows:
+
+       (1) the compiler calls osint functions as described above.
+
+       (2) a set of assembly language interface routines is established,
+           one per osint function, named accordingly.  each interface
+           routine ...
+
+           (a) saves all compiler registers in global variables
+               accessible by c functions
+           (b) calls the osint function written in c
+           (c) restores all compiler registers from the global variables
+           (d) inspects the osint function's return value to determine
+               which of the n+1 returns should be taken and does so
+
+       (3) a set of c language osint functions is established, one per
+           osint function, named differently than the interface routines.
+           each osint function can access compiler registers via global
+           variables.  no arguments are passed via the call.
+
+           when an osint function returns, it must return a value indicating
+           which of the n+1 exits should be taken.  these return values are
+           defined in header file 'inter.h'.
+
+       note:  in the actual implementation below, the saving and restoring
+       of registers is actually done in one common routine accessed by all
+       interface routines.
+
+       other notes:
+
+       some c ompilers transform "internal" global names to
+       "external" global names by adding a leading underscore at the front
+       of the internal name.  thus, the function name 'osopen' becomes
+       '_osopen'.  however, not all c compilers follow this convention.
+*/
+
+; Operation and declaration macros are needed for each instruction/declaration having different formats in asm and gas.
 
 .if asm
-	
+
 	%macro	Add_	2
 		add	%1,%2
 	%endmacro
@@ -116,11 +117,11 @@
 	%macro	Cmp_	2	; src/dst differ
 		cmp	%1,%2
 	%endmacro
-	
+
 	%macro	Cmpb_	2	; src/dst differ
 		Cmp_	%1,%2
 	%endmacro
-	
+
 	%macro	Data	0
 		section	.data
 	%endmacro
@@ -139,13 +140,13 @@
 		cmpl	\src,\dst
 	.endm
 .fi
-	
+
 .if gas 64
 	.macro	Cmp_	dst,src	; src/dst differ
 		cmpq	\src,\dst
 	.endm
 .fi
-	
+
 
 .if gas
 	.macro	Add_	dst,src
@@ -159,11 +160,11 @@
 	.macro	And_	dst,src
 	and	\src,\dst
 	.endm
-	
+
 	.macro	Cmpb_	dst,src	; src/dst differ
 		cmpb	\src,\dst
 	.endm
-	
+
 	.macro	Data
 		.data
 	.endm
@@ -197,7 +198,7 @@
 	%macro Global	1
 		global	%1
 	%endmacro
-	
+
 	%macro	Inc_	1
 		inc	%1
 	%endmacro
@@ -246,7 +247,7 @@
 	%macro	Or_	2
 	or	%1,%2
 	%endmacro
-	
+
 	%macro	Sal_	2
 		sal	%1,%2
 	%endmacro
@@ -294,7 +295,7 @@
 	.macro	Or_	dst,src
 	or	\src,\dst
 	.endm
-	
+
 	.macro	Sal_	dst,src
 		sal	\src,\dst
 	.endm
@@ -311,28 +312,29 @@
 	xor	\src,\dst
 	.endm
 .fi
+/*
+ .if 32
+ 	Equ	cfp_b,4
+ 	Equ	cfp_c,4
+ 	Equ	log_cfp_b,2
+ 	Equ	cfp_c_val,4
+ 	Equ	log_cfp_c,2
+ 	Equ	cfp_m_	2147483647
+ ;	%define	cfp_n_	32
+ .fi
+ .if 64
+ 	Equ	cfp_b,8
+ 	Equ	cfp_c,8
+ 	Equ	log_cfp_b,3
+ 	Equ	log_cfp_c,3
+ 	Equ	cfp_c_val,8
+ 	Equ	cfp_m_,9223372036854775807
+ 	Equ	cfp_n_,64
 
-; .if 32
-; 	Equ	cfp_b,4
-; 	Equ	cfp_c,4
-; 	Equ	log_cfp_b,2
-; 	Equ	cfp_c_val,4
-; 	Equ	log_cfp_c,2
-; 	Equ	cfp_m_	2147483647
-; ;	%define	cfp_n_	32
-; .fi
-; .if 64
-; 	Equ	cfp_b,8
-; 	Equ	cfp_c,8
-; 	Equ	log_cfp_b,3
-; 	Equ	log_cfp_c,3
-; 	Equ	cfp_c_val,8
-; 	Equ	cfp_m_,9223372036854775807
-; 	Equ	cfp_n_,64
-; 
-; .fi
+ .fi
+*/
 
-	
+
 .if asm
 	%define M_char	byte	; reference to byte in memory
 	%define D_byte	db	; define value of byte
@@ -417,7 +419,7 @@
 	%define	flag_ca	0x40
 .fi
 
-	
+
         Text
 	Global	dnamb
 	Global	dname
@@ -514,7 +516,7 @@
 	Equ	minimal_enevs,10
 	Equ	minimal_engts,12
 
-	Equ	globals,1                       
+	Equ	globals,1
 
 
 .if asm
@@ -682,14 +684,14 @@
         D_word	b_kvt   ; kvblk type word - 26
         D_word	b_pfc   ; pfblk type word - 27
         D_word	b_tet   ; teblk type word - 28
-;
-;   table of minimal entry points that can be dded from c
-;   via the minimal function (see inter.asm).
-;
-;   note that the order of entries in this table must correspond
-;   to the order of entries in the call enumeration in osint.h
-;   and osint.inc.
-;
+/*
+   table of minimal entry points that can be dded from c
+   via the minimal function (see inter.asm).
+
+   note that the order of entries in this table must correspond
+   to the order of entries in the call enumeration in osint.h
+   and osint.inc.
+*/
 	Global calltab
 calltab:
         D_word	relaj
@@ -751,9 +753,7 @@ calltab:
 ;       Global variables
 
 	Data
-;
-; ; words saved during exit(-3)
-; ;
+
 	Align_ 16
 dummy:	D_word	0
 reg_block:
@@ -767,26 +767,30 @@ reg_xl:	D_word	0        	; register xl (xl)
 reg_cp:	D_word	0        	; register cp
 reg_ra:	D_real 	0.0  		; register ra
 
-; these locations save information needed to return after calling osint
-; and after a restart from exit()
+; these locations save information needed to return after calling osint and after a restart from exit()
 
 reg_pc: D_word      0               ; return pc from caller
 reg_xs:	D_word	0		; minimal stack pointer
 
 ;	r_size  equ       $-reg_block
+
 ;r_size	equ	16*cfp_b
+
 ;reg_size:	dd   r_size
 
 ; end of words saved during exit(-3)
 
 ; reg_rp is used to pass pointer to real operand for real arithmetic
+
 reg_rp:	D_word	0
 
 ; reg_fl is used to communicate condition codes between minimal and c code.
+
 	Global	reg_fl
 reg_fl:	D_byte	0		; condition code register for numeric operations
 
 	Align_	8
+
 ;  constants
 
 	Global	ten
@@ -803,19 +807,24 @@ maxint:	D_word 9223372036854775807
 .fi
 
 	Global	sav_block
-sav_block: 
+sav_block:
 	Fill 	44 			; save minimal registers during push/pop reg
 
 	Align_ cfp_b
 	Global	ppoff
+
 ppoff:  D_word      0               	; offset for ppm exits
+
 	Global	compsp
 compsp: D_word      0               	; compiler's stack pointer
+
 	Global	sav_compsp
 sav_compsp:
 	D_word      0               	; save compsp here
+
 	Global	osisp
 osisp:  D_word      0               	; osint's stack pointer
+
 	Global	_rc_
 _rc_:	D_word   0				; return code from osint procedure
 
@@ -839,12 +848,12 @@ save_xs:	D_word	0		; saved xs value
 	Global	minimal_id
 minimal_id:	D_word	0		; id for call to minimal from c. see proc minimal below.
 
-;
-;	%define setreal 0
+/*
+	%define setreal 0
 
-;       setup a number of internal addresses in the compiler that cannot
-;       be directly accessed from within c because of naming difficulties.
-
+       setup a number of internal addresses in the compiler that cannot be directly accessed from within
+	c because of naming difficulties.
+*/
 	Global	id1
 id1:	D_word	0
 .if dead
@@ -858,7 +867,7 @@ id1:	D_word	0
 
 	Global	id1blk
 id1blk:	D_word	152
-      	D_word	0
+	D_word	0
 	Fill	152
 
 	Global	id2blk
@@ -872,10 +881,10 @@ ticblk:
 	D_word	0
 
 	Global	tscblk
-tscblk: 
-	D_word   512
-	D_word    0
-	Fill   512
+tscblk:
+	D_word	512
+	D_word	0
+	Fill	512
 
 ;       standard input buffer block.
 
@@ -896,10 +905,10 @@ ttybuf:	D_word    0     ; type word
 	D_word	0								; block length
 	D_word	260             	; buffer size  (260 ok in ms-dos with cinread())
 	D_word	0               	; remaining chars to read
-	D_word    0               	; offset to next char to read
-	D_word    0               	; file position of buffer
-	D_word    0               	; physical position in file
-	Fill   260	         	; buffer
+	D_word	0               	; offset to next char to read
+	D_word	0               	; file position of buffer
+	D_word	0               	; physical position in file
+	Fill	260	         	; buffer
 
 	Global	spmin
 
@@ -907,35 +916,35 @@ spmin:	D_word	0			; stack limit (stack grows down for x86_64)
 spmin.a:	D_word	spmin
 
 	Align_	16
-	Align_        cfp_b
+	Align_	cfp_b
 
 call_adr:	D_word	0
 
 	Text
-;
-;       save and restore minimal and interface registers on stack.
-;       used by any routine that needs to call back into the minimal
-;       code in such a way that the minimal code might trigger another
-;       sysxx call before returning.
-;
-;       note 1:  pushregs returns a collectable value in xl, safe
-;       for subsequent call to memory allocation routine.
-;
-;       note 2:  these are not recursive routines.  only reg_xl is
-;       saved on the stack, where it is accessible to the garbage
-;       collector.  other registers are just moved to a temp area.
-;
-;       note 3:  popregs does not restore reg_cp, because it may have
-;       been modified by the minimal routine called between pushregs
-;       and popregs as a result of a garbage collection.  calling of
-;       another sysxx routine in between is not a problem, because
-;       cp will have been preserved by minimal.
-;
-;       note 4:  if there isn't a compiler stack yet, we don't bother
-;       saving xl.  this only happens in call of nextef from sysxi when
-;       reloading a save file.
-;
-;
+/*
+       save and restore minimal and interface registers on stack.
+       used by any routine that needs to call back into the minimal
+       code in such a way that the minimal code might trigger another
+       sysxx call before returning.
+
+       note 1:  pushregs returns a collectable value in xl, safe
+       for subsequent call to memory allocation routine.
+
+       note 2:  these are not recursive routines.  only reg_xl is
+       saved on the stack, where it is accessible to the garbage
+       collector.  other registers are just moved to a temp area.
+
+       note 3:  popregs does not restore reg_cp, because it may have
+       been modified by the minimal routine called between pushregs
+       and popregs as a result of a garbage collection.  calling of
+       another sysxx routine in between is not a problem, because
+       cp will have been preserved by minimal.
+
+       note 4:  if there isn't a compiler stack yet, we don't bother
+       saving xl.  this only happens in call of nextef from sysxi when
+       reloading a save file.
+
+*/
 	Global	save_regs
 save_regs:
 	Mov_	Mem(save_xl),XL
@@ -955,24 +964,26 @@ restore_regs:
 	Mov_	WB,Mem(save_wb)
 	Mov_	WC,Mem(save_wc)
 	ret
+/*
+ ;
+ ;       startup( char *dummy1, char *dummy2) - startup compiler
+ ;
+ ;       an osint c function calls startup to transfer control
+ ;       to the compiler.
+ ;
+ ;       (xr) = basemem
+ ;       (xl) = topmem - sizeof(word)
+ ;
+ ;	note: this function never returns.
+ ;
 
-; ;
-; ;       startup( char *dummy1, char *dummy2) - startup compiler
-; ;
-; ;       an osint c function calls startup to transfer control
-; ;       to the compiler.
-; ;
-; ;       (xr) = basemem
-; ;       (xl) = topmem - sizeof(word)
-; ;
-; ;	note: this function never returns.
-; ;
-;
+*/
+
 	Global	startup
+
 ;   ordinals for minimal calls from assembly language.
 
-;   the order of entries here must correspond to the order of
-;   calltab entries in the inter assembly language module.
+;   the order of entries here must correspond to the order of calltab entries in the inter assembly language module.
 
 	Equ	calltab_relaj,0
 	Equ	calltab_relcr,1
@@ -1011,31 +1022,33 @@ startup:
 .fi
 	Mov_	Mem(minimal_id),W0
 	call	minimal			; load regs, switch stack, start compiler
+/*
+	stackinit  -- initialize spmin from sp.
 
-;	stackinit  -- initialize spmin from sp.
+	input:  sp - current c stack
+		stacksiz - size of desired minimal stack in bytes
 
-;	input:  sp - current c stack
-;		stacksiz - size of desired minimal stack in bytes
+	uses:	W0
 
-;	uses:	W0
+	output: register wa, sp, spmin, compsp, osisp set up per diagram:
 
-;	output: register wa, sp, spmin, compsp, osisp set up per diagram:
-
-;	(high)	+----------------+
-;		|  old c stack   |
-;	  	|----------------| <-- incoming sp, resultant wa (future xs)
-;		|	     ^	 |
-;		|	     |	 |
-;		/ stacksiz bytes /
-;		|	     |	 |
-;		|            |	 |
-;		|----------- | --| <-- resultant spmin
-;		| 400 bytes  v   |
-;		|----------------| <-- future c stack pointer, osisp
-;		|  new c stack	 |
-;	(low)	|                |
+	(high)	+----------------+
+		|  old c stack   |
+	  	|----------------| <-- incoming sp, resultant wa (future xs)
+		|	     ^	 |
+		|	     |	 |
+		/ stacksiz bytes /
+		|	     |	 |
+		|            |	 |
+		|----------- | --| <-- resultant spmin
+		| 400 bytes  v   |
+		|----------------| <-- future c stack pointer, osisp
+		|  new c stack	 |
+	(low)	|                |
+*/
 
 ;	initialize stack
+
 	Global	stackinit
 stackinit:
 	Mov_	W0,XS
@@ -1047,6 +1060,7 @@ stackinit:
 	ret
 
 ;	check for stack overflow, making W0 nonzero if found
+
 	Global	chk__
 chk__:
 	xor	W0,W0			; set return value assuming no overflow
@@ -1056,23 +1070,22 @@ chk__:
 chk.oflo:
 	inc	W0			; make nonzero to indicate stack overfloW0
 	ret
+/*
+	mimimal -- call minimal function from c
 
-;	mimimal -- call minimal function from c
+	usage:  extern void minimal(word callno)
 
-;	usage:  extern void minimal(word callno)
+	where:
+	callno is an ordinal defined in osint.h, osint.inc, and calltab.
 
-;	where:
-;	callno is an ordinal defined in osint.h, osint.inc, and calltab.
+	minimal registers wa, wb, wc, xr, and xl are loaded and
+	saved from/to the register block.
 
-;	minimal registers wa, wb, wc, xr, and xl are loaded and
-;	saved from/to the register block.
-
-;	note that before restart is called, we do not yet have compiler
-;	stack to switch to.  in that case, just make the call on the
-;	the osint stack.
-
+	note that before restart is called, we do not yet have compiler
+	stack to switch to.  in that case, just make the call on the
+	the osint stack.
+*/
 minimal:
-;	pushad			; save all registers for c
 	Mov_	WA,Mem(reg_wa)	; restore registers
 	Mov_	WB,Mem(reg_wb)
 	Mov_	WC,Mem(reg_wc)	;
@@ -1099,55 +1112,55 @@ minimal:
 	Mov_	Mem(reg_xl),XL
 	ret
 
+/*
 
+	interface routines
 
-;	interface routines
-	
-;	each interface routine takes the following form:
+	each interface routine takes the following form:
 
-;	sysxx:   
-;			call    ccaller ; call common interface
-;                     	D_word    zysxx   ; dd      of c osint function
-;                       db      n       ; offset to instruction after
-;                                       ;   last procedure exit
+	sysxx:
+			call    ccaller ; call common interface
+                     	D_word    zysxx   ; dd      of c osint function
+                       db      n       ; offset to instruction after
+                                       ;   last procedure exit
 
-;	in an effort to achieve portability of c osint functions, we
-;	do not take take advantage of any "internal" to "external"
-;	transformation of names by c compilers.  so, a c osint function
-;	representing sysxx is named _zysxx.  this renaming should satisfy
-;	all c compilers.
+	in an effort to achieve portability of c osint functions, we
+	do not take take advantage of any "internal" to "external"
+	transformation of names by c compilers.  so, a c osint function
+	representing sysxx is named _zysxx.  this renaming should satisfy
+	all c compilers.
 
-;	important  one interface routine, sysfc, is passed arguments on
-;	the stack.  these items are removed from the stack before calling
-;	ccaller, as they are not needed by this implementation.
+	important  one interface routine, sysfc, is passed arguments on
+	the stack.  these items are removed from the stack before calling
+	ccaller, as they are not needed by this implementation.
 
-;	ccaller is called by the os interface routines to call the
-;	real c os interface function.
+	ccaller is called by the os interface routines to call the
+	real c os interface function.
 
-;	general calling sequence is
+	general calling sequence is
 
-;			call	ccaller
-;			d_word	address_of_c_function
-;			db      2*number_of_extrc_points
+			call	ccaller
+			d_word	address_of_c_function
+			db      2*number_of_extrc_points
 
-;	control is never returned to a interface routine.  instead, control
-;	is returned to the compiler (the caller of the interface routine).
+	control is never returned to a interface routine.  instead, control
+	is returned to the compiler (the caller of the interface routine).
 
-;	the c function that is called must always return an integer
-;	indicating the procedure exit to take or that a normal return
-;	is to be performed.
+	the c function that is called must always return an integer
+	indicating the procedure exit to take or that a normal return
+	is to be performed.
 
-;	c function      interpretation
-;	return value
-;	------------    -------------------------------------------
-;	<0         do normal return to instruction past
-;	last procedure exit (distance passed
-;	in by dummy routine and saved on stack)
-;	0	take procedure exit 1
-;	4	take procedure exit 2
-;	8	take procedure exit 3
-;	...        ...
-
+	c function      interpretation
+	return value
+	------------    -------------------------------------------
+	<0         do normal return to instruction past
+	last procedure exit (distance passed
+	in by dummy routine and saved on stack)
+	0	take procedure exit 1
+	4	take procedure exit 2
+	8	take procedure exit 3
+	...        ...
+*/
 
 ;%ifdef	OLD
 ;	Global	get_ia
@@ -1187,7 +1200,9 @@ syscall_exit:
 	pop	W0			; pop return address
 	Mov_	Mem(reg_pc),W0
 	call	syscall_init
+
 ;	save compiler stack and switch to osint stack
+
 	Mov_	Mem(compsp),XS      ; save compiler's stack pointer
 	Mov_	XS,Mem(osisp)       ; load osint's stack pointer
 	call	%1
@@ -1199,7 +1214,9 @@ syscall_exit:
 	pop	W0			; pop return address
 	Mov_	Mem(reg_pc),W0
 	call	syscall_init
+
 ;	save compiler stack and switch to osint stack
+
 	Mov_	Mem(compsp),XS      ; save compiler's stack pointer
 	Mov_	XS,Mem(osisp)       ; load osint's stack pointer
 	call	\proc
@@ -1512,6 +1529,7 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	.endm
 
 ; using W0 below since operand size not known, and putting it in register defers this problem
+
 	.macro	ngi_
 	mov	Mem(reg_ia),W0
 	neg	W0
@@ -1589,15 +1607,18 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	.endm
 
 .fi
-;	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
-;	placed in W0, which is then sign extended into wc:W0. after the divide, W0 contains the
-;	quotient, wc contains the remainder.
-;
-;	cvd__ - convert by division
-;
-;	input   ia = number <=0 to convert
-;	output  ia / 10
-;	wa ecx) = remainder + '0'
+/*
+	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
+	placed in W0, which is then sign extended into wc:W0. after the divide, W0 contains the
+	quotient, wc contains the remainder.
+
+	cvd__ - convert by division
+
+	input   ia = number <=0 to convert
+	output  ia / 10
+	wa ecx) = remainder + '0'
+*/
+
 	Global	cvd__
 cvd__:
 	Extern	i_cvd
@@ -1879,48 +1900,49 @@ re3:	cld
 	Mov_	Mem(reg_xr),W0
 	Mov_	W0,minimal_insta
 	call	minimal			; initialize static region
+/*
 
-;
-;       now pretend that we're executing the following c statement from
-;       function zysxi:
-;
-;               return  normal_return;
-;
-;       if the load module was invoked by exit(), the return path is
-;       as follows:  back to ccaller, back to s$ext following sysxi call,
-;       back to user program following exit() call.
-;
-;       alternately, the user specified -w as a command line option, and
-;       sysbx called makeexec, which in turn called sysxi.  the return path
-;       should be:  back to ccaller, back to makeexec following sysxi call,
-;       back to sysbx, back to minimal code.  if we allowed this to happen,
-;       then it would require that stacked return address to sysbx still be
-;       valid, which may not be true if some of the c programs have changed
-;       size.  instead, we clear the stack and execute the restart code that
-;       simulates resumption just past the sysbx call in the minimal code.
-;       we distinguish this case by noting the variable stage is 4.
-;
+       now pretend that we're executing the following c statement from
+       function zysxi:
+
+               return  normal_return;
+
+       if the load module was invoked by exit(), the return path is
+       as follows:  back to ccaller, back to s$ext following sysxi call,
+       back to user program following exit() call.
+
+       alternately, the user specified -w as a command line option, and
+       sysbx called makeexec, which in turn called sysxi.  the return path
+       should be:  back to ccaller, back to makeexec following sysxi call,
+       back to sysbx, back to minimal code.  if we allowed this to happen,
+       then it would require that stacked return address to sysbx still be
+       valid, which may not be true if some of the c programs have changed
+       size.  instead, we clear the stack and execute the restart code that
+       simulates resumption just past the sysbx call in the minimal code.
+       we distinguish this case by noting the variable stage is 4.
+
+*/
 	call	startbrk			; start control-c logic
 
 	Mov_	W0,Mem(stage)	; is this a -w call?
 	cmp	W0,4
 	je	re4			; yes, do a complete fudge
 
-;
 ;       jump back with return value = normal_return
+
 	xor	W0,W0			; set to zero to indicate normal return
 	call	syscall_exit
 	ret
-
-;	here if -w produced load module.  simulate all the code that
-;	would occur if we naively returned to sysbx.  clear the stack and
-;	go for it.
-;
+/*
+	here if -w produced load module.  simulate all the code that
+	would occur if we naively returned to sysbx.  clear the stack and
+	go for it.
+*/
 re4:	Mov_	W0,Mem(stbas)
 	Mov_	Mem(compsp),W0     	; empty the stack
 
 ;	code that would be executed if we had returned to makeexec:
-;
+
 	xor	W0,W0
 	Mov_	Mem(gbcnt),W0       	; reset garbage collect count to zero
 	call	zystm                 	; fetch execution time to reg_ia
@@ -1928,7 +1950,7 @@ re4:	Mov_	W0,Mem(stbas)
 	Mov_	Mem(timsx),W0
 
 ;	code that would be executed if we returned to sysbx:
-;
+
 	push	Mem(outptr)        	; swcoup(outptr)
 	Extern 	swcoup
 	call	swcoup
