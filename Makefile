@@ -289,5 +289,31 @@ s-nasm.nm: s-nasm.o
 trc-nasm: s-nasm.dic it.sbl
 	$(BASEBOL) -u s-nasm.dic trc.sbl <ad >ae
 
+sanity:
+# This program does a sanity test to  verify that spitbol is able to compile itself.
+
+# This is done by building the system three times, and comparing the generated assembly (.s) files. 
+
+# Normally, all three assembly files wil be equal. However, if a new optimization is
+# being introduced, the first two may differ, but the second and third should always agree.
+
+	rm -f tbol.*
+	cp	./bin/spitbol_$(OS)_$(WS) testbol
+	make	clean>/dev/null
+	make	base=./testbol ws=$(WS) $(ASM)
+	mv	sbl.lex tbol.lex.0
+	mv	sbl.s tbol.s.0
+	mv	spitbol tbol
+	make 	base=./testbol ws=$(WS) $(ASM)
+	mv	sbl.lex tbol.lex.1
+	mv	sbl.s tbol.s.1
+	mv	spitbol tbol
+	make	base=./testbol ws=$(WS) $(ASM)
+	mv	sbl.lex tbol.lex.2
+	mv	sbl.s tbol.s.2
+	rm -f	./testbol
+	echo	"comparing generated .s files"
+	diff	tbol.s.1 tbol.s.2
+	echo "end sanity test"
 clean:
 	rm -f  *.def *.pre *.[ors] *.def tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol def.spt err.s r-asm.sbl sbl.equ sbl.err s.equ s.err s.lex sys.pre sys.s asm.spt sbl.tmp gas.spt
