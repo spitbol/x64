@@ -109,7 +109,7 @@
 		align	%1
 	%endmacro
 
-	%macro	And	2
+	%macro	And_	2
 	and	%1,%2
 	%endmacro
 
@@ -826,6 +826,7 @@ _rc_:	D_word   0				; return code from osint procedure
 	Global	save_wa
 	Global	save_wb
 	Global	save_wc
+	Global	save_xs
 save_cp:	D_word	0		; saved cp value
 save_ia:	D_word	0		; saved ia value
 save_xl:	D_word	0		; saved xl value
@@ -833,6 +834,7 @@ save_xr:	D_word	0		; saved xr value
 save_wa:	D_word	0		; saved wa value
 save_wb:	D_word	0		; saved wb value
 save_wc:	D_word	0		; saved wc value
+save_xs:	D_word	0		; saved xs value
 
 	Global	minimal_id
 minimal_id:	D_word	0		; id for call to minimal from c. see proc minimal below.
@@ -941,6 +943,7 @@ save_regs:
 	Mov_	Mem(save_wa),WA
 	Mov_	Mem(save_wb),WB
 	Mov_	Mem(save_wc),WC
+	Mov_	Mem(save_xs),XS
 	ret
 
 	Global	restore_regs
@@ -989,11 +992,11 @@ restore_regs:
 
 startup:
 	pop	W0			; discard return
-	mov	W0,Mem(maxint)		; set maximum integer value
-	mov	Mem(mxint),W0
+	Mov_	W0,Mem(maxint)		; set maximum integer value
+	Mov_	Mem(mxint),W0
 	call	stackinit		; initialize minimal stack
 	Mov_	W0,Mem(compsp)		; get minimal's stack pointer
-	Mov Mem(reg_wa),W0		; startup stack pointer
+	Mov_ 	Mem(reg_wa),W0		; startup stack pointer
 
 	cld				; default to up direction for string ops
 ;	getoff  W0,dffnc		; get address of ppm offset
@@ -1037,7 +1040,7 @@ startup:
 stackinit:
 	Mov_	W0,XS
 	Mov_	Mem(compsp),W0	; save minimal's stack pointer
-	Sub	W0,Mem(stacksiz)	; end of minimal stack is where c stack will start
+	Sub_	W0,Mem(stacksiz)	; end of minimal stack is where c stack will start
 	Mov_	Mem(osisp),W0	; save new c stack pointer
 	Add_	W0,$cfp_b*100		; 100 words smaller for chk
 	Mov_	Mem(spmin),W0
@@ -1123,9 +1126,9 @@ minimal:
 
 ;	general calling sequence is
 
-;               call	ccaller
-;             	d_word	address_of_c_function
-;               db      2*number_of_extrc_points
+;			call	ccaller
+;			d_word	address_of_c_function
+;			db      2*number_of_extrc_points
 
 ;	control is never returned to a interface routine.  instead, control
 ;	is returned to the compiler (the caller of the interface routine).
@@ -1140,9 +1143,9 @@ minimal:
 ;	<0         do normal return to instruction past
 ;	last procedure exit (distance passed
 ;	in by dummy routine and saved on stack)
-;	0         take procedure exit 1
-;	4         take procedure exit 2
-;	8         take procedure exit 3
+;	0	take procedure exit 1
+;	4	take procedure exit 2
+;	8	take procedure exit 3
 ;	...        ...
 
 
@@ -1159,9 +1162,9 @@ minimal:
 syscall_init:
 ;	save registers in global variables
 
-	Mov     Mem(reg_wa),WA      ; save registers
+	Mov_	Mem(reg_wa),WA      ; save registers
 	Mov_	Mem(reg_wb),WB
-	Mov     Mem(reg_wc),WC      ; (also _reg_ia)
+	Mov_	Mem(reg_wc),WC      ; (also _reg_ia)
 	Mov_	Mem(reg_xr),XR
 	Mov_	Mem(reg_xl),XL
 	ret
@@ -1264,7 +1267,7 @@ sysex:	Mov_	Mem(reg_xs),XS
 
 	Global sysfc
 	Extern	zysfc
-sysfc:  pop     W0             ; <<<<remove stacked scblk>>>>
+sysfc:  pop	W0             ; <<<<remove stacked scblk>>>>
 .if asm
 	lea	XS,[XS+WC*cfp_b]
 .fi
@@ -1277,96 +1280,96 @@ sysfc:  pop     W0             ; <<<<remove stacked scblk>>>>
 	push	W0
 	syscall	zysfc,14
 
-	Global sysgc
+	Global	sysgc
 	Extern	zysgc
 sysgc:	syscall	zysgc,15
 
-	Global syshs
+	Global	syshs
 	Extern	zyshs
 syshs:	Mov_	Mem(reg_xs),XS
 	syscall	zyshs,16
 
-	Global sysid
+	Global	sysid
 	Extern	zysid
 sysid:	syscall	zysid,17
 
-	Global sysif
+	Global	sysif
 	Extern	zysif
 sysif:	syscall	zysif,18
 
-	Global sysil
+	Global	sysil
 	Extern	zysil
-sysil:  syscall zysil,19
+sysil:	syscall	zysil,19
 
-	Global sysin
+	Global	sysin
 	Extern	zysin
 sysin:	syscall	zysin,20
 
-	Global sysio
+	Global	sysio
 	Extern	zysio
 sysio:	syscall	zysio,21
 
-	Global sysld
+	Global	sysld
 	Extern	zysld
-sysld:  syscall zysld,22
+sysld:	syscall	zysld,22
 
-	Global sysmm
+	Global	sysmm
 	Extern	zysmm
 sysmm:	syscall	zysmm,23
 
-	Global sysmx
+	Global	sysmx
 	Extern	zysmx
 sysmx:	syscall	zysmx,24
 
-	Global sysou
+	Global	sysou
 	Extern	zysou
 sysou:	syscall	zysou,25
 
-	Global syspi
+	Global	syspi
 	Extern	zyspi
 syspi:	syscall	zyspi,26
 
-	Global syspl
+	Global	syspl
 	Extern	zyspl
 syspl:	syscall	zyspl,27
 
-	Global syspp
+	Global	syspp
 	Extern	zyspp
 syspp:	syscall	zyspp,28
 
-	Global syspr
+	Global	syspr
 	Extern	zyspr
 syspr:	syscall	zyspr,29
 
-	Global sysrd
+	Global	sysrd
 	Extern	zysrd
 sysrd:	syscall	zysrd,30
 
-	Global sysri
+	Global	sysri
 	Extern	zysri
 sysri:	syscall	zysri,32
 
-	Global sysrw
+	Global	sysrw
 	Extern	zysrw
 sysrw:	syscall	zysrw,33
 
-	Global sysst
+	Global	sysst
 	Extern	zysst
 sysst:	syscall	zysst,34
 
-	Global systm
+	Global	systm
 	Extern	zystm
 systm:	syscall	zystm,35
 
-	Global systt
+	Global	systt
 	Extern	zystt
 systt:	syscall	zystt,36
 
-	Global sysul
+	Global	sysul
 	Extern	zysul
 sysul:	syscall	zysul,37
 
-	Global sysxi
+	Global	sysxi
 	Extern	zysxi
 sysxi:	Mov_	Mem(reg_xs),XS
 	syscall	zysxi,38
@@ -1794,15 +1797,15 @@ setovr:
 ovr_:
 .if asm
 	Mov_	ax, word [ rel reg_ra+6]	; get top 2 bytes
-	and	ax, 0x7ff0             	; check for infinity or nan
-	Add_	ax, 0x10               	; set/clear overflow accordingly
+	and	ax, 0x7ff0		; check for infinity or nan
+	Add_	ax, 0x10		; set/clear overflow accordingly
 .fi
 .if gas
 	mov	$reg_ra,W0
 	add	$6,W0
 	movw	(W0),%ax		; get top 2 bytes
-	and	$0x7ff0,%ax             	; check for infinity or nan
-	add	$0x10,%ax              	; set/clear overflow accordingly
+	and	$0x7ff0,%ax		; check for infinity or nan
+	add	$0x10,%ax		; set/clear overflow accordingly
 .fi
 	ret
 

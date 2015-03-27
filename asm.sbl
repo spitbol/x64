@@ -1981,9 +1981,9 @@ g.trc
 	op('Xor_',reg.xr,reg.xr)
 						:(opdone)
 
-g.anb   op('And',getarg(i1),getarg(i2))	:(opdone)
-g.orb   op('Or',getarg(i1),getarg(i2))	:(opdone)
-g.xob   op('Xor',getarg(i1),getarg(i2))	:(opdone)
+g.anb   op('And_',getarg(i1),getarg(i2))	:(opdone)
+g.orb   op('Or_',getarg(i1),getarg(i2))	:(opdone)
+g.xob   op('Xor_',getarg(i1),getarg(i2))	:(opdone)
 g.cmb   op('not',getarg(i1))			:(opdone)
 
 g.rsh
