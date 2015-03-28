@@ -240,6 +240,10 @@
 		jmp	%1
 	%endmacro
 
+	%macro	Lea_	2	; load effective address
+		lea	%1,%2
+	%endmacro
+
 	%macro	Mov_	2
 		mov	%1,%2
 	%endmacro
@@ -291,6 +295,10 @@
 	.macro	Jmp_	lab	; gas needs '*' before target
 		jmp	* \lab
 	.endm
+
+	%macro	Lea_	dst,src	; load effective address
+		lea	\src,\dst
+	%endmacro
 
 	.macro	Or_	dst,src
 	or	\src,\dst

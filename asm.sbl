@@ -133,7 +133,6 @@
 	define('genaop(stmt)')
 	define('genbop(stmt)')
         define('genlab(prefix)')
-        define('genrip()')
 	define('getreg(iarg)')
 	define('mem(ref)')
 	define('mov(i1,i2)i.src,i.dst,t.src')
@@ -143,7 +142,6 @@
 	define('gensh(opc,reg,val)')
 	define('getadr(iarg)txt,typ,pre,post')
 	define('getarg(iarg)txt,typ,pre,post')
-	define('getrip(iarg)txt,typ,pre,post,ent,lb,var,reg')
 	define('getval(iarg)txt,typ,pre,post')
 	define('ifreg(iarg)')
 	define('memmemm()t')
@@ -151,7 +149,6 @@
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
 	define('report(num,text)')
-	define('ripinit()')
 	define('tblini(str)pos,cnt,index,val,lastval')
 
 *  outstmt is used to send a target statement to the target code
@@ -261,13 +258,6 @@ config.done
 *	set ab_suspend to avoid emitting 'a' and 'b' statments which flushing code buffer.
 	ab_suspend = 0
 
-*	rip_mode is needed for osx. See getval()
-
-	rip_mode = (ident(os,'osx') 1, 0)
-
-	report('rip', rip_mode)
-	ne(rip_mode) ripinit()
-
 *	trc_limit is maximum number of calls to be generated if non-zero
 	trc_limit = 000
 *	set trc_first non-zero to skip first number of instructions that would generate trace
@@ -353,11 +343,6 @@ skip_init.end
 
 	genlabels = 0
 
-*  riplabel is count of generated rip (osx rip address mode) labels
-
-	riplabels = 0
-
-
 *  initialize variables
 
 	labcnt = outlines = nlines = nstmts = ntarget = nerrors = 0
@@ -397,13 +382,6 @@ skip_init.end
 	valcase = table(50)
 	valcase[18] = .getval.c.18;	valcase[19] = .getval.c.19;	valcase[20] = .getval.c.20;
 	valcase[21] = .getval.c.21;	valcase[22] = .getval.c.22
-
-	riptable = table(500)
-	rip_count = 0
-	ripcase = table(50)
-	ripcase[14] = .getrip.c.14;	ripcase[15] = .getrip.c.15;	ripcase[18] = .getrip.c.18;
-	ripcase[19] = .getrip.c.19;	ripcase[20] = .getrip.c.20;	ripcase[21] = .getrip.c.21;
-	ripcase[22] = .getrip.c.22
 .fi
 .if gas
 
@@ -691,10 +669,6 @@ genbop
 *  generate unique labels for use in generated code
 genlab	genlab = (differ(prefix) prefix,'')  '_' lpad(genlabels = genlabels + 1,4,'0') :(return)
 
--stitl genrip()
-*  generate unique labels for use in generated code
-genrip	genrip = 'r_' lpad(riplabels = riplabels + 1,4,'0') :(return)
-
 -stitl opl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
 opl	cstmts[cstmts.n = cstmts.n + 1] =
@@ -798,7 +772,7 @@ gensh.wa
 -stitl getarg(iarg)
 getarg
 *	imem is null to generate memory reference, otherwise just get
-*	address for use in 'lea' instruction.
+*	address for use in 'Lea_' instruction.
 .if gas
 	base = disp = indx = scale =
 
@@ -854,7 +828,7 @@ getarg.c.10
 	t1 = regmap[txt]
 	getarg = mem( t1 )
 	(ident(txt,'xs') genaop(tstmt(,'Add_',t1,'cfp_b'))) :s(getarg.done)
-	genaop(tstmt(,'lea',t1,'Adr(' t1 '+cfp_b)')):(getarg.done)
+	genaop(tstmt(,'Lea_',t1,'Adr(' t1 '+cfp_b)')):(getarg.done)
 .fi
 .if gas
 	indx = substr(txt,2,2)
@@ -866,7 +840,7 @@ getarg.c.11
 .if asm
 	t1 = regmap[substr(txt,3,2)]
 	getarg = mem( t1 )
-	genbop(tstmt(,'lea',t1,'Adr(' t1 '-cfp_b)')) :(getarg.done)
+	genbop(tstmt(,'Lea_',t1,'Adr(' t1 '-cfp_b)')) :(getarg.done)
 .fi
 .if gas
 	indx = substr(txt,3,2)
@@ -892,7 +866,6 @@ getarg.c.13
 getarg.c.14
 getarg.c.15
 .if asm
-	getarg = ne(rip_mode)	getrip(iarg)		:s(return)
 	txt break('(') . t1 '(' len(2) . t2
 	getarg = mem(    t1 '+'  regmap[t2])
 						:(getarg.done)
@@ -928,7 +901,7 @@ getarg.c.20
 getarg.c.21
         getarg = literal_ substr(txt,2)	
 						:(getarg.done)
-	op('lea',reg.w0,substr(txt,2))
+	op('Lea_',reg.w0,substr(txt,2))
 	getarg = reg.w0				:(getarg.done)
 
 *  =name (program section)
@@ -968,7 +941,7 @@ getadr
 *	this procedure only called if operand is
 *	ops: 3,4,9,12,13,14,15
 *	imem is null to generate memory reference, otherwise just get
-*	address for use in 'lea' instruction.
+*	address for use in 'Lea_' instruction.
 .fi
 .if gas
 *	similar to getarg, but gets effective address
@@ -1044,7 +1017,7 @@ getadr.lit
 	differ(ent)				:s(getadr.ent)
 *  here to make new entry for generated location
 	val_count = val_count + 1
-	lbl = genlab('lea')
+	lbl = genlab('Lea_')
 	valtable[txt] = lbl
 	ent = lbl
 	flush()
@@ -1068,62 +1041,12 @@ getadr.done
 						:(return)
 	
 .fi
--stitl getrip(iarg)
-getrip
-*  return value suitable for use in rip mode (needed for osx). This requires that we
-	txt = i.text(iarg)
-	typ = i.type(iarg)
-	eq(typ)					:f($(ripcase[typ]))
-	getrip = txt				:(getrip.done)
-
-*  name(x), where name is in working section
-getrip.c.14
-getrip.c.15
-	txt break('(') . var '(' len(2) . reg
-*	getrip = mem(    var '+'  regmap[t2])
-	getrip = var
-						:(getrip.done)
-*  *dlbl
-getrip.c.19
-	getrip = 'cfp_b*' substr(txt,2)		:(getrip.done)
-
-*  =dlbl
-getrip.c.18
-*  =name (data section)
-getrip.c.20
-getrip.c.21
-*  =name (program section)
-getrip.c.22
-        getrip =  substr(txt,2)   		:(getrip.done)
-
-getrip.done
-*  see if have generated location for argument with same txt. Use it if so, else make new one.
-	ent = riptable[txt]
-	differ(ent)				:s(getrip.ent)
-*  here to make new entry for generated location
-	rip_count = rip_count + 1
-	lbl = genrip()
-	riptable[txt] = lbl
-	ent = lbl
-	op('Data')
-	opl(lbl ':',D_word,getrip)
-	op('Text')
-getrip.ent
-*	generate reference via w0 if needed
-	op('Mov_',reg.w0,mem(ent))
-	differ(reg)	op('Add_',reg.w0,reg)
-	getrip = reg.w0
-*	outfile = ne(x_trace) '; getrip ' ent
-						:(return)
-
-
 -stitl getval(iarg)
 getval
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
 	output = lt(typ, 18) gt(typ.22) ' impossible type for getval ' typ
-	getval = ne(rip_mode) getrip(iarg)	:s(return)
 	eq(typ)					:f($(valcase[typ]))
 	getarg = txt				:(getval.done)
 
@@ -1321,12 +1244,6 @@ rl01
 
 rl02    readline = '       end'
 						:(rl01)
--stitl ripinit()
-*  initialize rip mode, allocating the table used to save allocated locations
-ripinit
-	riptable = table(500)
-						:(return)
-
 -stitl tblini(str)
 *  this routine is called to initialize a table from a string of
 *  index/value pairs.
@@ -1459,16 +1376,6 @@ g.bsw1
 	op('Add_',reg.w0,literal_ lbl);
 	op('Jmp_',reg.w0)
 .fi
-*	ne(rip_mode)				:s(g.bsw.2)
-* in rip_mode, need to generate location to reference destination
-*	lbl = genrip()
-*        op('Data')
-*	opl(lbl,D_word,t2 )
-*	op('Text')
-*	op('Mov_',reg.w0,t1)
-*	op('sal',reg.w0,literal_ 'log_cfp_b')
-*	op('Add_',reg.w0,mem(lbl))
-*	op('Jmp_', reg.w0)
 	op('Data')
         opl(lbl ':')
 	trc_suspend =				:(opdone)
@@ -1789,15 +1696,7 @@ g.adr
 g.sbr
 g.mlr
 g.dvr
-.if asm
-	op('lea',reg.w0,getadr(i1))
-.fi
-.if gas
-*  getadr returns ea in w0
-*	trc_suspend = 1
-	getadr(i1)
-*	trc_suspend = 0
-.fi
+	op('Lea_',reg.w0,getadr(i1))
 	op('call',op_)				:(opdone)
 
 
@@ -1841,7 +1740,7 @@ g.psc
 	t1 = getarg(i1)
 	typ = i.type(i2)
 .if asm
-	((ifreg(i2), ge(typ,1) le(typ,2)) op('lea',t1,'Adr(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
+	((ifreg(i2), ge(typ,1) le(typ,2)) op('Lea_',t1,'Adr(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
 .fi
 .if gas
 	ifreg(i2)				:s(g.psc.1)
