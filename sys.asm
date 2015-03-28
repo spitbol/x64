@@ -296,9 +296,9 @@
 		jmp	* \lab
 	.endm
 
-	%macro	Lea_	dst,src	; load effective address
+	.macro	Lea_	dst,src	; load effective address
 		lea	\src,\dst
-	%endmacro
+	.endm
 
 	.macro	Or_	dst,src
 	or	\src,\dst
