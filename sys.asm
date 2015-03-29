@@ -1088,7 +1088,7 @@ stackinit:
 	Global	chk__
 chk__:
 	xor	W0,W0			; set return value assuming no overflow
-	cmp	XS,Mem(spmin)
+	Cmp_	XS,Mem(spmin)
 	jb	chk.oflo
 	ret
 chk.oflo:
@@ -1118,7 +1118,7 @@ minimal:
 
 	Mov_	Mem(osisp),XS	; save osint stack pointer
 	xor	W0,W0
-	cmp	Mem(compsp),W0	; is there a compiler stack?
+	Cmp_	Mem(compsp),W0	; is there a compiler stack?
 	je	min1			; jump if none yet
 	Mov_	XS,Mem(compsp)	; switch to compiler stack
 
@@ -1905,20 +1905,20 @@ restart:
 ;
 	Mov_	XL,Mem(lmodstk)    	; -> bottom word of stack in tscblk
 	lea	XR,[rel tscblk+scstr]      	; -> top word of stack
-	cmp	XL,XR                 	; any stack to transfer?
+	Cmp_	XL,XR                 	; any stack to transfer?
         je      re3               	;  skip if not
 	Sub	XL,4
 	std
 re1:
 	lodsd                           ; get old stack word to W0
-	cmp	W0,WC                 	; below old stack bottom?
+	Cmp_	W0,WC                 	; below old stack bottom?
 	jb	re2               	;   j. if W0 < wc
-	cmp	W0,WA                 	; above old stack top?
+	Cmp_	W0,WA                 	; above old stack top?
 	ja	re2               	;   j. if W0 > wa
 	Sub	W0,WB                 	; within old stack, perform relocation
 re2:
 	push	W0                     	; transfer word of stack
-	cmp	XL,XR                 	; if not at end of relocation then
+	Cmp_	XL,XR                 	; if not at end of relocation then
 	jae	re1                     ;    loop back
 
 re3:	cld
@@ -1954,7 +1954,12 @@ re3:	cld
 	call	startbrk			; start control-c logic
 
 	Mov_	W0,Mem(stage)	; is this a -w call?
-	cmp	W0,4
+.if asm
+	Cmp_	W0,4
+.fi
+.if gas
+	Cmp_	W0,$4
+.fi
 	je	re4			; yes, do a complete fudge
 
 ;       jump back with return value = normal_return
@@ -1983,7 +1988,7 @@ re4:	Mov_	W0,Mem(stbas)
 	push	Mem(outptr)        	; swcoup(outptr)
 	Extern 	swcoup
 	call	swcoup
-	Add_XS,cfp_b
+	Add_	XS,cfp_b
 
 ;	jump to minimal code to restart a save file.
 

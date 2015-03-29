@@ -1,9 +1,8 @@
-# SPITBOL makefile using tcc
-
 ws?=64
 WS:=$(ws)
 
 # base compiler used for building
+
 base?= bin/spitbol_unix_$(WS)
 BASEBOL:=$(base)
 
@@ -34,6 +33,7 @@ TRCDEF:=-Dtrc_trace
 endif
 
 NMFLAGS:=-p
+
 # basebol determines which spitbol to use to compile
 
 cc?=gcc
@@ -62,6 +62,7 @@ endif
 OSINT=./osint
 
 # Assembler info -- Intel 32-bit syntax
+
 ifeq	($(DEBUG),0)
 NASMOPTS = -f $(ELF) -D$(OS)_$(WS) $(ITDEF)
 ASMOPTS  = -f $(ELF) -D$(OS)_$(WS) $(ITDEF)
@@ -71,12 +72,14 @@ ASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
 endif
 
 # tools for processing Minimal source file.
+
 DEF=def.sbl
 ERR=err.sbl
 LEX=lex.sbl
 MIN=asm.sbl
 PRE=pre.sbl
 PRE=pre.sbl
+
 # implicit rule for building objects from C files.
 
 ./%.o: %.c
@@ -84,16 +87,20 @@ PRE=pre.sbl
 	$(CC)  $(CCOPTS) -c  -o$@ $(OSINT)/$*.c
 
 # implicit rule for building objects from nasm assembly language files.
+
 .asm.o:
 	$(NASM) $(ASMOPTS) -l $*.lst -o$@ $*.asm
 
 # c headers common to all versions and all source files of SPITBOL:
+
 CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h 
 
 # c headers unique to this version of SPITBOL:
+
 UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/system.h
 
 # headers common to all C files.
+
 HDRS=	$(CHDRS) $(UHDRS)
 
 COBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
@@ -112,130 +119,171 @@ COBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 # build spitbol using nasm, build spitbol using as.
 # link asm spitbol with static linking
 # use fake target asmobj which appears only when all .s files built
+
 asm: 
+
 # run lex to get min.lex
 	$(BASEBOL) -u $(TARGET)_asm $(LEX)
+
 # run preprocessor to get asm for nasm as target
+
 	$(BASEBOL) -u $(TARGET)_asm $(PRE) <asm.sbl >asm.spt 
+
 # run asm to get .s and .err files
+
 	$(BASEBOL) -u $(TARGET)_asm$(TRCOPT) asm.spt
+
 # run err 
+
 	$(BASEBOL) -u $(TARGET)_asm $(ERR)
+
 # use preprocessor to make version of rewriter for asm
+
 	$(BASEBOL) -u $(TARGET)_asm $(PRE) <$(DEF) >def.spt
+
 # run preprocessor to get sys for nasm as target
+
 	$(BASEBOL) -u $(TARGET)_asm $(PRE)  <sys.asm >sys.pre
+
 # run asm definer to resolve system dependencies in sys
+
 	$(BASEBOL) -u $(TARGET)_asm  def.spt <sys.pre >sys.s
+
 # combine sys.s,min.s, and err.s to get sincle assembler source file
+
 	cat <sys.s >spitbol.s
 	cat <sbl.s >>spitbol.s
 	cat <err.s >>spitbol.s
 # -- works
+
 # assemble the translated file
+
 	$(NASM) $(ASMOPTS) -ospitbol.o spitbol.s
+
 # compile osint
+
 	$(CC)  $(CCOPTS) -c  osint/*.c
+
 # load objects
+
 	$(CC) $(LDOPTS)  $(COBJS) spitbol.o $(LMOPT) -static -ospitbol
 gas:
 
 # run lex to get min.lex
+
 	$(BASEBOL) -u $(TARGET)_gas $(LEX)
+
 # run preprocessor to get gas for ngas as target
+
 	$(BASEBOL) -u $(TARGET)_gas $(PRE) <asm.sbl >gas.spt 
+
 # run gas to get .s and .err files
+
 	$(BASEBOL) -u $(TARGET)_gas:$(TRCOPT) gas.spt
+
 # run err 
+
 	$(BASEBOL) -u $(TARGET)_gas $(ERR)
+
 # use preprocessor to make version of rewriter for gas
+
 	$(BASEBOL) -u $(TARGET)_gas $(PRE) <$(DEF) >def.spt
+
 # run preprocessor to get sys for ngas as target
+
 	$(BASEBOL) -u $(TARGET)_gas $(PRE) <sys.asm >sys.pre
+
 # run gas definer to resolve system dependencies in sys
+
 	$(BASEBOL) -u $(TARGET)_gas  def.spt <sys.pre >sys.s
+
 # run gas definer to resolve system dependencies in sbl.s
+
 	mv	sbl.s	sbl.tmp
 	$(BASEBOL) -u $(TARGET)_gas  def.spt <sbl.tmp >sbl.s
+
 # combine sys.s,min.s, and err.s to get sincle assembler source file
+
 	cat <sys.s >spitbol.s
 	cat <sbl.s >>spitbol.s
 	cat <err.s >>spitbol.s
 # assemble the translated file
-	$(GAS) $(GASOPTS) -ogasbol.o spitbol.s
+
+	$(GAS) $(GASOPTS) -ospitbol.o spitbol.s
+
 # compile osint
+
 	$(CC)  $(CCOPTS) -c  osint/*.c
+
 # load objects
-	$(CC) $(LDOPTS)  $(COBJS) gasbol.o $(LMOPT) -static -ogasbol
+
+	$(CC) $(LDOPTS)  $(COBJS) spitbol.o $(LMOPT) -static -ospitbol
 
 sys-asm:
+
 # run preprocessor to get sys for nasm as target
+
 	$(BASEBOL) -u $(TARGET)_asm $(PRE)  <sys.asm >sys.pre
+
 # use preprocessor to make version of rewriter for asm
+
 	$(BASEBOL) -u $(TARGET)_asm $(PRE) <$(DEF) >def.spt
+
 # run asm definer to resolve system dependencies in sys
+
 	$(BASEBOL) -u $(TARGET)_asm  def.spt <sys.pre >sys.s
+
 # assemble the sys file
+
 	$(NASM) $(ASMOPTS) -osys.o sys.s
 
 sys-gas:
+
 # run preprocessor to get sys for gas as target
+
 	$(BASEBOL) -u $(TARGET)_gas $(PRE)  <sys.asm >sys.pre
+
 # use preprocessor to make version of rewriter for gas
+
 	$(BASEBOL) -u $(TARGET)_gas $(PRE) <$(DEF) >def.spt
+
 # run gas definer to resolve system dependencies in sys
+
 	$(BASEBOL) -u $(TARGET)_gas  def.spt <sys.pre >sys.s
+
 # assemble the sys file
+
 	$(GAS) $(GASOPTS) -osys.o sys.s
 
 bug:
+
 # combine sys.s,min.s, and err.s to get sincle assembler source file
+
 	cat <sys.s >spitbol.s
 	cat <sbl.s >>spitbol.s
 	cat <err.s >>spitbol.s
 
 # assemble the translated file
+
 	$(NASM) $(ASMOPTS) -ospitbol.o spitbol.s
+
 # compile osint
 #	$(CC)  $(CCOPTS) -c  osint/*.c
 # load objects
+
 	$(CC) $(LDOPTS)  $(COBJS) spitbol.o $(LMOPT) -static -ospitbol
 
 lbug:
+
 # load objects
+
 	$(CC) $(LDOPTS)  $(COBJS) spitbol.o $(LMOPT) -static -ospitbol
 
 spitbol-dynamic: $(OBJS) $(AOBJS)
+
 # link spitbol with dynamic linking
 	$(CC) $(LDOPTS) $(OBJS) $(AOBJS) $(LMOPT)  -ospitbol 
 
-
-ogas: 
-# build gasbol, the asm variant  targeting gas format assembler
-# link gasbol with static linking
-
-# run preprocessor to get asm for nasm as target
-	$(BASEBOL) -u G pre.sbl <asm.r >gas.spt 
-# run lex to get s.lex
-	$(BASEBOL) -u $(TARGET)_gas $(LEX)
-# run gas to get .s and .err files
-	$(BASEBOL) -u $(TARGET):$(ITOPT) gas.spt
-# revise source .s 
-	$(BASEBOL) -u $(TARGET) def.sbl <s.s >s.r
-# run err 
-	$(BASEBOL) -u $(TARGET)_gas $(ERR)
-# revise gas file
-	$(BASEBOL) -u $(TARGET) def.sbl <gas.gas >gas.r
-# assemble the .gas file
-	$(GAS) $(GASOPTS) -ogas.o gas.r
-# compile osint
-	$(CC)  $(CCOPTS) -c  osint/*.c
-# load objects
-	$(CC) $(LDOPTS)  $(COBJS) gas.o $(LMOPT) -static -ospitbol
-
-gasbol-dynamic: $(OBJS) $(GOBJS) $(GOBJS)
-# link gasbol with dynamic linking
-	$(CC) $(LDOPTS) $(OBJS) $(GOBJS) $(LMOPT)  -ogasbol 
 
 asm.spt:	asm
 	$(BASEBOL) -u A -1=asm -2=asm.spt pre.sbl
@@ -243,17 +291,12 @@ asm.spt:	asm
 gas.spt:	asm
 	$(BASEBOL) -u G -1=asm -2=gas.spt pre.sbl
 
-# just recompile osint for gas
-gas-osint:
-# compile osint
-	$(CC)  $(CCOPTS) -c  osint/*.c
-# load objects
-	$(CC) $(LDOPTS)  $(COBJS) gas.o $(LMOPT) -static -ospitbol
-
 bootbol: 
+
 # bootbol is for bootstrapping just link with what's at hand
 #bootbol: $(OBJS)
 # no dependencies so can link for osx bootstrap
+
 	$(CC) $(LDOPTS)  $(OBJS) $(LMOPT) -obootbol
 
 cobjs:
@@ -268,6 +311,7 @@ dic:
 	spitbol it.sbl <ad >ae
 
 # install binaries from ./bin as the system spitbol compilers
+
 install:
 	sudo cp ./bin/spitbol /usr/local/bin
 
@@ -290,6 +334,7 @@ trc-nasm: s-nasm.dic it.sbl
 	$(BASEBOL) -u s-nasm.dic trc.sbl <ad >ae
 
 sanity:
+
 # This program does a sanity test to  verify that spitbol is able to compile itself.
 
 # This is done by building the system three times, and comparing the generated assembly (.s) files. 
@@ -315,5 +360,6 @@ sanity:
 	echo	"comparing generated .s files"
 	diff	tbol.s.1 tbol.s.2
 	echo "end sanity test"
+
 clean:
 	rm -f  *.def *.pre *.[ors] *.def tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol def.spt err.s r-asm.sbl sbl.equ sbl.err s.equ s.err s.lex sys.pre sys.s asm.spt sbl.tmp gas.spt
