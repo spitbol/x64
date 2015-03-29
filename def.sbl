@@ -82,7 +82,6 @@ next
 	line 'M_word' = (eq(ws,32), 'dword', 'qword')
 defs.end
 
-aloop	line breakx('A') . first 'Adr' bal . ref  rem . last = first '$' ref last	:s(mloop)
 	defs = defines
 
 dloop

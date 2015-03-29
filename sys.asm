@@ -130,7 +130,7 @@
 	dec %1
 	%endmacro
 
-	%macro	Equ	2
+	%macro	Equ_	2
 %1:	equ	%2
 	%endmacro
 .fi
@@ -169,7 +169,7 @@
 		.data
 	.endm
 
-	.macro	Equ	name,value
+	.macro	Equ_	name,value
 	.set	\name,\value
 	.endm
 .fi
@@ -256,6 +256,10 @@
 		sal	%1,%2
 	%endmacro
 
+	%macro	Sar_	2
+		sar	%1,%2
+	%endmacro
+
 	%macro	Sub_	2
 		sub	%1,%2
 	%endmacro
@@ -281,11 +285,27 @@
 .fi
 
 .if gas 32
+	.macro	Sal_	dst,src
+		sall	$\src,\dst
+	.endm
+
+	.macro	Sar_	dst,src
+		sarl	$\src,\dst
+	.endm
+
 	.macro	Stos_w
 	stosl
 	.endm
 .fi
 .if gas 64
+	.macro	Sal_	dst,src
+		salq	\src,\dst
+	.endm
+
+	.macro	Sar_	dst,src
+		sarq	\src,\dst
+	.endm
+
 	.macro	Stos_w
 	stosq
 	.endm
@@ -293,7 +313,7 @@
 
 .if gas
 	.macro	Jmp_	lab	; gas needs '*' before target
-		jmp	* \lab
+		jmp	\lab
 	.endm
 
 	.macro	Lea_	dst,src	; load effective address
@@ -302,10 +322,6 @@
 
 	.macro	Or_	dst,src
 	or	\src,\dst
-	.endm
-
-	.macro	Sal_	dst,src
-		sal	\src,\dst
 	.endm
 
 	.macro	Sub_	dst,src
@@ -322,22 +338,22 @@
 .fi
 /*
  .if 32
- 	Equ	cfp_b,4
- 	Equ	cfp_c,4
- 	Equ	log_cfp_b,2
- 	Equ	cfp_c_val,4
- 	Equ	log_cfp_c,2
- 	Equ	cfp_m_	2147483647
+ 	Equ_	cfp_b,4
+ 	Equ_	cfp_c,4
+ 	Equ_	log_cfp_b,2
+ 	Equ_	cfp_c_val,4
+ 	Equ_	log_cfp_c,2
+ 	Equ_	cfp_m_	2147483647
  ;	%define	cfp_n_	32
  .fi
  .if 64
- 	Equ	cfp_b,8
- 	Equ	cfp_c,8
- 	Equ	log_cfp_b,3
- 	Equ	log_cfp_c,3
- 	Equ	cfp_c_val,8
- 	Equ	cfp_m_,9223372036854775807
- 	Equ	cfp_n_,64
+ 	Equ_	cfp_b,8
+ 	Equ_	cfp_c,8
+ 	Equ_	log_cfp_b,3
+ 	Equ_	log_cfp_c,3
+ 	Equ_	cfp_c_val,8
+ 	Equ_	cfp_m_,9223372036854775807
+ 	Equ_	cfp_n_,64
 
  .fi
 */
@@ -509,22 +525,22 @@
 
 ;	values below must agree with calltab defined in x32.hdr and also in osint/osint.h
 
-	Equ	minimal_relaj,0
-	Equ	minimal_relcr,1
-	Equ	minimal_reloc,2
-	Equ	minimal_alloc,3
-	Equ	minimal_alocs,4
-	Equ	minimal_alost,5
-	Equ	minimal_blkln,6
-	Equ	minimal_insta,7
-	Equ	minimal_rstrt,8
-	Equ	minimal_start,9
-	Equ	minimal_filnm,10
-	Equ	minimal_dtype,11
-	Equ	minimal_enevs,10
-	Equ	minimal_engts,12
+	Equ_	minimal_relaj,0
+	Equ_	minimal_relcr,1
+	Equ_	minimal_reloc,2
+	Equ_	minimal_alloc,3
+	Equ_	minimal_alocs,4
+	Equ_	minimal_alost,5
+	Equ_	minimal_blkln,6
+	Equ_	minimal_insta,7
+	Equ_	minimal_rstrt,8
+	Equ_	minimal_start,9
+	Equ_	minimal_filnm,10
+	Equ_	minimal_dtype,11
+	Equ_	minimal_enevs,10
+	Equ_	minimal_engts,12
 
-	Equ	globals,1
+	Equ_	globals,1
 
 
 .if asm
@@ -993,20 +1009,20 @@ restore_regs:
 
 ;   the order of entries here must correspond to the order of calltab entries in the inter assembly language module.
 
-	Equ	calltab_relaj,0
-	Equ	calltab_relcr,1
-	Equ	calltab_reloc,2
-	Equ	calltab_alloc,3
-	Equ	calltab_alocs,4
-	Equ	calltab_alost,5
-	Equ	calltab_blkln,6
-	Equ	calltab_insta,7
-	Equ	calltab_rstrt,8
-	Equ	calltab_start,9
-	Equ	calltab_filnm,10
-	Equ	calltab_dtype,11
-	Equ	calltab_enevs,12
-	Equ	calltab_engts,13
+	Equ_	calltab_relaj,0
+	Equ_	calltab_relcr,1
+	Equ_	calltab_reloc,2
+	Equ_	calltab_alloc,3
+	Equ_	calltab_alocs,4
+	Equ_	calltab_alost,5
+	Equ_	calltab_blkln,6
+	Equ_	calltab_insta,7
+	Equ_	calltab_rstrt,8
+	Equ_	calltab_start,9
+	Equ_	calltab_filnm,10
+	Equ_	calltab_dtype,11
+	Equ_	calltab_enevs,12
+	Equ_	calltab_engts,13
 
 
 startup:
@@ -1201,7 +1217,12 @@ syscall_exit:
 	Mov_	XL,Mem(reg_xl)
 	cld
 	Mov_	W0,Mem(reg_pc)
-	Jmp_	W0
+.if asm
+	jmp	W0
+.fi
+.if gas
+	jmp	*W0		; gas jump to absolute address requires '*' prefix.
+.fi
 
 .if asm
 	%macro	syscall	2
@@ -1762,11 +1783,11 @@ setovr:
 .fi
 
 .if gas
-	.macro	osint_call glob,ext,id
+	.macro	osint_call glob,ext,reg
 	Global	\glob
 	Extern	\ext
 \glob:
-	mov	\id,W0
+	Mov_	\reg,W0
 	call	\ext
 	ret
 	.endm
@@ -1986,3 +2007,4 @@ trc_:
 .fi
 
 
+	Global	reav1

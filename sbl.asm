@@ -19624,11 +19624,11 @@ fst99	exi				; return
 
 	(wb)		     move offset (see below)
 	jsr  gbcol	     call to collect garbage
-*.
+*/
 .if    .csed
-	(xr)		     sediment size after collection
+;	(xr)		     sediment size after collection
 .else
-	(xr)		     destroyed
+;	(xr)		     destroyed
 .fi
 /*
 	the following conditions must be met at the time when gbcol is called.

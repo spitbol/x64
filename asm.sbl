@@ -139,9 +139,8 @@
 	define('op(gopc,gop1,gop2,gop3)')
 	define('opl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
-	define('gensh(opc,reg,val)')
-	define('getadr(iarg)txt,typ,pre,post')
 	define('getarg(iarg)txt,typ,pre,post')
+	define('getlea(iarg)txt,typ,pre,post')
 	define('getval(iarg)txt,typ,pre,post')
 	define('ifreg(iarg)')
 	define('memmemm()t')
@@ -374,9 +373,9 @@ skip_init.end
 	argcase[25] = .getarg.c.25;	argcase[26] = .getarg.c.26;	argcase[27] = .getarg.c.27
 
 	adrcase = table(50)
-	adrcase[03] = .getadr.c.3;	adrcase[04] = .getadr.c.4;	adrcase[09] = .getadr.c.9;
-	adrcase[12] = .getadr.c.12;	adrcase[13] = .getadr.c.13;	adrcase[14] = .getadr.c.14
-	adrcase[15] = .getadr.c.15;
+	adrcase[03] = .getlea.c.3;	adrcase[04] = .getlea.c.4;	adrcase[09] = .getlea.c.9;
+	adrcase[12] = .getlea.c.12;	adrcase[13] = .getlea.c.13;	adrcase[14] = .getlea.c.14
+	adrcase[15] = .getlea.c.15;
 
 .if asm
 	valcase = table(50)
@@ -739,36 +738,6 @@ mov.xrp
 mov.2
 	op('push',getarg(i.src))		:(return)
 
--stitl	gensh(opc,reg,val)
-gensh
-
-.if asm
-	op(opc,reg,val)				:(return)
-.fi
-.if gas
-*  if the shift count is constant, then just do the shift. Otherwise, save WA, which corresponds
-*  to %cl, load the shift count to that register, do the shift. Then restore WA, unless it was the
-*  register to be shifted
-
-*  gensh currently only used by gas. Should have mainline use it too. TBSL
-	opc = (ident(opc,'lsh') 'sal', 'sar')
-*  get value if shift count is constant defined in equ statement
-	val = differ(equ_value[val]) equ_value[val]
-	integer(val) op(opc, literal_ val, reg)	:s(return)
-	ident(reg,reg.wa)			:s(gensh.wa)
-*  here if register is NOT WA, so push/restore WA
-	op('push',reg.wa)
-	op('Mov_',reg.wa,val)
-	op(opc, reglow['wa'],reg)
-	op('pop',reg.wa)			:(return)
-gensh.wa
-*  here if shifting WA. Move to W0, then use WA to get shift count, shift W0, and move result back to WA
-	op('Mov_',reg.w0,reg.wa)
-	op('Mov_',reg.wa,val)
-	op(opc,reglow['wa'],reg.w0)
-	op('Mov_',reg.wa,reg.w0)
-						:(return)
-.fi
 -stitl getarg(iarg)
 getarg
 *	imem is null to generate memory reference, otherwise just get
@@ -934,8 +903,8 @@ getarg.mem
 	error('getarg');
 
 .fi
--stitl getadr(iarg)
-getadr
+-stitl getlea(iarg)
+getlea
 .if asm
 *	similar to getarg, but gets effective address
 *	this procedure only called if operand is
@@ -954,31 +923,54 @@ getadr
 	eq(typ)					:f($(adrcase[typ]))
 
 * wlbl, clbl
-getadr.c.3
-getadr.c.4
-	getadr = 'Adr(' txt ')'			:(return)
+getlea.c.3
+getlea.c.4
+.if asm
+	getlea = txt	 			:(getlea.asm)
+.fi
+.if gas
+i	op('Mov_',reg.w0,literal_ txt)		:(return)
+.fi
 
 * (x), register indirect
-getadr.c.9
+getlea.c.9
 	txt len(1) len(2) . typ
 	typ = regmap[typ]
-	getadr = 'Adr(' typ ')'
-						:(return)
+.if asm
+	getlea = typ				:(getlea.asm)
+.fi
+.if gas
+	op('Mov_',reg.w0,typ)			:(return)
+.fi
 
 * int(x)
 * dlbl(x)
-getadr.c.12
-getadr.c.13
+getlea.c.12
+getlea.c.13
 	txt break('(') . t1 '(' len(2) . t2
-	getadr = 'Adr('  '(cfp_b*' t1 ')+' regmap[t2]  ')'
-							:(return)
+.if asm
+	getlea = '(cfp_b*' t1 ')+' regmap[t2]	:(getlea.asm)
+.fi
+.if gas
+	op('Mov_',reg.w0,regmap[t2])
+	op('Add_',reg.w0,'(cfp_b*' t1 ')')	:(return)
+.fi
 
 *  name(x), where name is in working section
-getadr.c.14
-getadr.c.15
+getlea.c.14
+getlea.c.15
 	txt break('(') . t1 '(' len(2) . t2
-	getadr = 'Adr('    t1 '+'  regmap[t2] 	')'
-							:(return)
+.if asm
+	getlea = t1 '+'  regmap[t2]		:(getlea.asm)
+.fi
+.if gas
+	op('Mov_',reg.w0,regmap[t2])
+	op('Add_',reg.w0,t1)			:(return)
+.fi
+getlea.asm
+
+*	here to generate Lea instruction (asm case)
+	op('Lea_',reg.w0,'Adr(' getlea ')')	:(return)
 -stitl getval(iarg)
 getval
 
@@ -1294,7 +1286,8 @@ g.bev
 	op('test',t1,'1')
 	op((ident(incode,'bod') 'jne', 'je'),getarg(i2)) :(opdone) 
 
-g.brn   op('Jmp_',getarg(i1))			:(opdone)
+g.brn  
+	op('Jmp_',getarg(i1))			:(opdone)
 
 g.bsw
 	val = getarg(i1)
@@ -1310,9 +1303,9 @@ g.bsw1
 .fi
 .if gas
 	op('Mov_',reg.w0,val)
-	gensh('sal',reg.w0,literal_ log_cfp_b)
+	op('Sal_',reg.w0,literal_ log_cfp_b)
 	op('Add_',reg.w0,literal_ lbl);
-	op('Jmp_',reg.w0)
+	op('Jmp_','*' reg.w0)
 .fi
 	op('Data')
         opl(lbl ':')
@@ -1355,7 +1348,10 @@ g.ent.2
 	thislabel =				:(opdone)
 
 g.bri
-	op('Jmp_',getarg(i1))			:(opdone)
+
+*	need to indicate absolute jump for gas.
+
+	op('Jmp_',g('*') getarg(i1))			:(opdone)
 
 g.lei
 	t1 = regmap[i.text(i1)]
@@ -1468,7 +1464,7 @@ g.exi
 	op('ret')				:(opdone)
 g.exi.1
 	op('Mov_',reg.w0, mem(prcent(prc.count)))
-	op('Jmp_',reg.w0)			:(opdone)
+	op('Jmp_', g('*') reg.w0)			:(opdone)
 
 g.enp   op()					:(opdone)
 
@@ -1634,7 +1630,7 @@ g.adr
 g.sbr
 g.mlr
 g.dvr
-	op('Lea_',reg.w0,getadr(i1))
+	getlea(i1)				;* get operand address in w0
 	op('call',op_)				:(opdone)
 
 
@@ -1823,11 +1819,11 @@ g.orb   op('Or_',getarg(i1),getarg(i2))	:(opdone)
 g.xob   op('Xor_',getarg(i1),getarg(i2))	:(opdone)
 g.cmb   op('not',getarg(i1))			:(opdone)
 
-g.rsh
-	gensh('shr',getarg(i1),getarg(i2))	:(opdone)
-
 g.lsh
-	gensh('shl',getarg(i1),getarg(i2))	:(opdone)
+	op('Sal_',getarg(i1),literal_ getarg(i2))	:(opdone)
+
+g.rsh
+	op('Sar_',getarg(i1),literal_ getarg(i2))	:(opdone)
 
 g.rsx
 	error('rsx not supported')
@@ -1862,10 +1858,10 @@ g.zzz
  	op('zzz',getarg(i1))			:(opdone)
 
 g.wtb
-	gensh('sal',getarg(i1),literal_ 'log_cfp_b')	:(opdone)
+	op('Sal_',getarg(i1),literal_ log_cfp_b)	:(opdone)
 
 g.btw
-	gensh('shr',getarg(i1),literal_ 'log_cfp_b')	:(opdone)
+	op('Sar_',getarg(i1),literal_ log_cfp_b)	:(opdone)
 
 g.mti
 	ident(i.text(i1),'(xs)+')		:f(g.mti.1)
@@ -1894,7 +1890,7 @@ g.ctw
 *  assume cfp_c chars per word
 	t1 = getarg(i1)
 	op('Add_',t1,'(cfp_c-1)+cfp_c*' i.text(i2))
-	gensh('shr',t1,literal_ 'log_cfp_c')
+	op('Sar_',t1,literal_ log_cfp_c)
 					:(opdone)
 g.ctb
 	t1 = getarg(i1)
@@ -1939,11 +1935,11 @@ g.mvc
 .fi
 	trc_suspend = 0				:(opdone)
 g.mvw
-	gensh('shr',reg.wa,literal_ 'log_cfp_b')
+	op('Sar_',reg.wa,literal_ log_cfp_b)
  	op('rep','movs' op_w)
 						:(opdone)
 g.mwb
-	gensh('shr',reg.wa,literal 'log_cfp_b')
+	op('Sar_',reg.wa,literal_ log_cfp_b)
 	op('std')
 	op('Sub_',reg.xl,literal_ cfp_b)
 	op('Sub_',reg.xr,literal_ cfp_b)
@@ -1952,7 +1948,7 @@ g.mwb
 						:(opdone)
 
 	op('std')
-	gensh('shr',reg.wa,literal_ 'log_cfp_b')
+	op('Sar_',reg.wa,literal_ 'log_cfp_b')
 	op('rep')
 	op('Movs_w')
 	op('ctd')
@@ -2042,7 +2038,7 @@ g.dbc
 	opl(thislabel,D_word,getarg(i1))
 						:(opdone)
 g.equ
-	op('Equ',thislabel,i.text(i1))		:(opdone)
+	op('Equ_',thislabel,i.text(i1))		:(opdone)
 
 g.exp
 	ppm_cases[thislabel] = i.text(i1)
