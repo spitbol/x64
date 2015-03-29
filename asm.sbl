@@ -1275,37 +1275,34 @@ g.flc
 	trc_suspend = 0
 .fi
 						:(opdone)
-
 g.mov
 	mov(i1,i2)				:(opdone)
 
-* odd/even tests.  if w reg, use low byte of register.
-g.bod
-g.bev
-	t1 = (eq(i.type(i1),8) reglow[getreg(i1)], getarg(i1))
-	op('test',t1,'1')
-	op((ident(incode,'bod') 'jne', 'je'),getarg(i2)) :(opdone) 
+* even/odd tests.  Set w0 to zero, and with register, then branch accordingly
 
+g.bev
+g.bod
+	op('Xor_',reg.w0,reg.w0)
+	op('Inc_',reg.w0)
+	op('And_',reg.w0,getarg(i1))
+	op((ident(incode,'bod') 'jne', 'je'),getarg(i2)) :(opdone) 
 g.brn  
 	op('Jmp_',getarg(i1))			:(opdone)
 
 g.bsw
-	val = getarg(i1)
+	reg = getarg(i1)
 	lbl = genlab('bsw')
 	trc_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
-	op('Cmp_',val,getarg(i2))
+	op('Cmp_',reg,literal_ getarg(i2))
 	op('jge',getarg(i3))
 * here after default case.
 g.bsw1
 .if asm
-	op('Jmp_', mem( lbl '+' val '*cfp_b')) 
+	op('Jmp_', mem( lbl '+' reg '*cfp_b')) 
 .fi
 .if gas
-	op('Mov_',reg.w0,val)
-	op('Sal_',reg.w0,literal_ log_cfp_b)
-	op('Add_',reg.w0,literal_ lbl);
-	op('Jmp_','*' reg.w0)
+	op('jmp','*' lbl '(,' reg ',' cfp_b ')' )
 .fi
 	op('Data')
         opl(lbl ':')
