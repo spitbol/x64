@@ -6,7 +6,10 @@
 	defined[asm] = defined[os] = defined[ws] = 1
 	defined['1'] = 1
 
-	output = 
+*	if 'osx' is defined, then also define 'gas'
+
+	defined['gas'] = ident(asm,'osx') 1
+
 	&anchor = &trim = 1
 	&dump = 3
 	skip = 0

@@ -5,6 +5,143 @@
 	target = (differ(host(0)) host(0), "unix_64_asm") target break('_') . os len(1) break('_') . ws len(1) rem  . asm 
 *	output = 'os ' os '  ws  '  ws '  asm  '  asm
 
+.if asm
+*	output standard definitions
+
+	output = tab '%define'	tab	'cfp_b'	tab	(eq(ws,32) 4, 8)
+	output = tab '%define'	tab 	'cfp_c'	tab	(eq(ws,32) 4, 8)
+	output = tab '%define'	tab	'os '	tab	os
+	output = tab '%define'	tab	'ws'	tab	ws
+
+loop	line = input				:f(a.end)
+	output = line				:(loop)
+a.end
+	output = tab '%undef'	tab	'cfp_b'
+	output = tab '%undef'	tab	'cfp_c'
+	output = tab '%undef'   tab	'os'
+	output = tab '%undef'	tab	'ws'
+end
+.fi
+
+.if osx
+	define('renamer(line)')
+
+*	osx requires that names referenced from c code be prefixed with underline character.
+*	Don't be fancy. Simple is as simple does.
+
+rename
+	line	'b_icl' = '_b_icl'
+	line	'b_scl' = '_b_scl'
+	line	'b_xnt' = '_b_xnt'
+	line	'b_xrt' = '_b_xrt'
+	line	'c_aaa' = '_c_aaa'
+	line	'c_yyy' = '_c_yyy'
+	line	'dnamb' = '_dnamb'
+	line	'dnamp' = '_dnamp'
+	line	'errors' = '_errors'
+	line	'flprt' = '_flprt'
+	line	'flptr' = '_flptr'
+	line	'g_aaa' = '_g_aaa'
+	line	'get_fp' = '_get_fp'
+	line	'gtcef' = '_gtcef'
+	line	'hasfpu' = '_hasfpu'
+	line	'headv' = '_headv'
+	line	'hshtb' = '_hshtb'
+	line	'id1blk' = '_id1blk'
+	line	'id2blk' = '_id2blk'
+	line	'inf' = '_inf'
+	line	'inpbuf' = '_inpbuf'
+	line	'minimal' = '_minimal'
+	line	'minimal_id' = '_minimal_id'
+	line	'phrases' = '_phrases'
+	line	'pmhbs' = '_pmhbs'
+	line	'polct' = '_polct'
+	line	'r_fcb' = '_r_fcb'
+	line	'reg_block' = '_reg_block'
+	line	'restart' = '_restart'
+	line	's_aaa' = '_s_aaa'
+	line	's_yyy' = '_s_yyy'
+	line	'startup' = '_startup'
+	line	'state' = '_state'
+	line	'stbas' = '_stbas'
+	line	'ticblk' = '_ticblk'
+	line	'tscblk' = '_tscblk'
+	line	'ttybuf' = '_ttybuf'
+	line	'w_yyy' = '_w_yyy'
+	line	'i_adi' = '_i_adi'
+	line	'i_dvi' = '_i_dvi'
+	line	'i_mli' = '_i_mli'
+	line	'i_ngi' = '_i_ngi'
+	line	'i_rmi' = '_i_rmi'
+	line	'f_adr' = '_f_adr'
+	line	'f_atn' = '_f_atn'
+	line	'f_chk' = '_f_chk'
+	line	'f_chp' = '_f_chp'
+	line	'f_cos' = '_f_cos'
+	line	'f_cpr' = '_f_cpr'
+	line	'f_dvr' = '_f_dvr'
+	line	'f_etx' = '_f_etx'
+	line	'f_itr' = '_f_itr'
+	line	'f_ldr' = '_f_ldr'
+	line	'f_lnf' = '_f_lnf'
+	line	'f_mlr' = '_f_mlr'
+	line	'f_ngr' = '_f_ngr'
+	line	'f_rti' = '_f_rti'
+	line	'f_sbr' = '_f_sbr'
+	line	'f_sin' = '_f_sin'
+	line	'f_sqr' = '_f_sqr'
+	line	'f_str' = '_f_str'
+	line	'f_tan' = '_f_tan'
+	line	'i_cvd' = '_i_cvd'
+	line	'i_dvi' = '_i_dvi'
+	line	'i_rmi' = '_i_rmi'
+	line	'lmodstk' = '_lmodstk'
+	line	'outptr' = '_outptr'
+	line	'rereloc' = '_rereloc'
+	line	'stacksiz' = '_stacksiz'
+	line	'startbrk' = '_startbrk'
+	line	'swcoup' = '_swcoup'
+	line	'zysax' = '_zysax'
+	line	'zysaz' = '_zysaz'
+	line	'zysbs' = '_zysbs'
+	line	'zysbx' = '_zysbx'
+	line	'zysdc' = '_zysdc'
+	line	'zysdm' = '_zysdm'
+	line	'zysdt' = '_zysdt'
+	line	'zysea' = '_zysea'
+	line	'zysef' = '_zysef'
+	line	'zysej' = '_zysej'
+	line	'zysem' = '_zysem'
+	line	'zysen' = '_zysen'
+	line	'zysep' = '_zysep'
+	line	'zysex' = '_zysex'
+	line	'zysfc' = '_zysfc'
+	line	'zysgc' = '_zysgc'
+	line	'zyshs' = '_zyshs'
+	line	'zysid' = '_zysid'
+	line	'zysif' = '_zysif'
+	line	'zysil' = '_zysil'
+	line	'zysin' = '_zysin'
+	line	'zysio' = '_zysio'
+	line	'zysld' = '_zysld'
+	line	'zysmm' = '_zysmm'
+	line	'zysmx' = '_zysmx'
+	line	'zysou' = '_zysou'
+	line	'zyspi' = '_zyspi'
+	line	'zyspl' = '_zyspl'
+	line	'zyspp' = '_zyspp'
+	line	'zyspr' = '_zyspr'
+	line	'zysrd' = '_zysrd'
+	line	'zysri' = '_zysri'
+	line	'zysrw' = '_zysrw'
+	line	'zysst' = '_zysst'
+	line	'zystm' = '_zystm'
+	line	'zystt' = '_zystt'
+	line	'zysul' = '_zysul'
+	line	'zysxi' = '_zysxi'
+	rename = line				:(return)
+.fi
+
 .if gas
 *	&dump = 3
 	target = host(0)
@@ -25,13 +162,6 @@ rdone
 linit	s break(' ') . reg ' ' break(' ') . low ' '  = 		:f(ldone)
 	lmap[reg] = low				:(linit)
 ldone
-
-
-	define('a(ref)')			:(a.end)
-						:(next)
-a	ident(os,"osx")				:s(a.err)
-	a = '[' ref ']' 			:(return)
-a.end
 
 	define('m(ref)')			:(m.end)
 m
@@ -57,6 +187,11 @@ m.end
 	output = tab '.set'	tab	'ws'	','	ws
 						:(next)
 copy
+.fi
+.if osx
+	line = rename(line)
+.fi
+.if gas
 	output = line
 next
 *	only need to change lines with upper case character
@@ -112,21 +247,6 @@ regs.end
 	output = line				:(next)
 err	output = 'error '			:(end)
 
-.fi
-
-.if asm
-*	output standard definitions
-	output = tab '%define'	tab	'cfp_b'	tab	(eq(ws,32) 4, 8)
-	output = tab '%define'	tab 	'cfp_c'	tab	(eq(ws,32) 4, 8)
-	output = tab '%define'	tab	'os '	tab	os
-	output = tab '%define'	tab	'ws'	tab	ws
-
-loop	line = input				:f(a.end)
-	output = line				:(loop)
-a.end
-	output = tab '%undef'	tab	'cfp_b'
-	output = tab '%undef'	tab	'cfp_c'
-	output = tab '%undef'   tab	'os'
-	output = tab '%undef'	tab	'ws'
-.fi
 end
+.fi
+

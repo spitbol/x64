@@ -78,7 +78,6 @@ ERR=err.sbl
 LEX=lex.sbl
 MIN=asm.sbl
 PRE=pre.sbl
-PRE=pre.sbl
 
 # implicit rule for building objects from C files.
 
@@ -207,6 +206,61 @@ gas:
 	cat <sys.s >spitbol.s
 	cat <sbl.s >>spitbol.s
 	cat <err.s >>spitbol.s
+# assemble the translated file
+
+	$(GAS) $(GASOPTS) -ospitbol.o spitbol.s
+
+# compile osint
+
+	$(CC)  $(CCOPTS) -c  osint/*.c
+
+# load objects
+
+	$(CC) $(LDOPTS)  $(COBJS) spitbol.o $(LMOPT) -static -ospitbol
+
+
+osx-export:
+
+# run lex to get min.lex
+
+	$(BASEBOL) -u unix_32_gas $(LEX)
+
+# run preprocessor to get gas for ngas as target
+
+	$(BASEBOL) -u osx_32_gas $(PRE) <asm.sbl >gas.spt 
+
+# run gas to get .s and .err files
+
+	$(BASEBOL) -u unix_32_gas:$(TRCOPT) gas.spt
+
+# run err 
+
+	$(BASEBOL) -u unix_32_gas $(ERR)
+
+# use preprocessor to make version of rewriter for gas
+
+	$(BASEBOL) -u osx_32_gas $(PRE) <$(DEF) >def.spt
+
+# run preprocessor to get sys for ngas as target
+
+	$(BASEBOL) -u unix_32_gas $(PRE) <sys.asm >sys.pre
+
+# run gas definer to resolve system dependencies in sys
+
+	$(BASEBOL) -u unix_32_gas  def.spt <sys.pre >sys.s
+
+# run gas definer to resolve system dependencies in sbl.s
+
+	mv	sbl.s	sbl.tmp
+	$(BASEBOL) -u unix_32_gas  def.spt <sbl.tmp >sbl.s
+	cp sys.s sbl.s err.s osx
+
+osx-import:
+
+	cat <osx/sys.s >spitbol.s
+	cat <osx/sbl.s >>spitbol.s
+	cat <osx/err.s >>spitbol.s
+
 # assemble the translated file
 
 	$(GAS) $(GASOPTS) -ospitbol.o spitbol.s
