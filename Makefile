@@ -221,9 +221,11 @@ gas:
 
 osx-export:
 
+	rm	osx/*
+
 # run lex to get min.lex
 
-	$(BASEBOL) -u unix_32_gas $(LEX)
+	$(BASEBOL) -u osx_32_gas $(LEX)
 
 # run preprocessor to get gas for ngas as target
 
@@ -231,11 +233,11 @@ osx-export:
 
 # run gas to get .s and .err files
 
-	$(BASEBOL) -u unix_32_gas:$(TRCOPT) gas.spt
+	$(BASEBOL) -u osx_32_gas:$(TRCOPT) gas.spt
 
 # run err 
 
-	$(BASEBOL) -u unix_32_gas $(ERR)
+	$(BASEBOL) -u osx_32_gas $(ERR)
 
 # use preprocessor to make version of rewriter for gas
 
@@ -243,16 +245,26 @@ osx-export:
 
 # run preprocessor to get sys for ngas as target
 
-	$(BASEBOL) -u unix_32_gas $(PRE) <sys.asm >sys.pre
+	$(BASEBOL) -u osx_32_gas $(PRE) <sys.asm >sys.pre
 
 # run gas definer to resolve system dependencies in sys
 
-	$(BASEBOL) -u unix_32_gas  def.spt <sys.pre >sys.s
+	$(BASEBOL) -u osx_32_gas  def.spt <sys.pre >sys.s
 
 # run gas definer to resolve system dependencies in sbl.s
 
 	mv	sbl.s	sbl.tmp
-	$(BASEBOL) -u unix_32_gas  def.spt <sbl.tmp >sbl.s
+	$(BASEBOL) -u osx_32_gas  def.spt <sbl.tmp >sbl.s
+
+# run fixer to prefix certain names with underscore
+
+	$(BASEBOL) fix.sbl <err.s >err.tmp
+	mv	err.tmp	err.s
+	$(BASEBOL) fix.sbl <sbl.s >sbl.tmp
+	mv	sbl.tmp	sbl.s
+	$(BASEBOL) fix.sbl <sys.s >sys.tmp
+	mv	sys.tmp	sys.s
+
 	cp sys.s sbl.s err.s osx
 
 osx-import:

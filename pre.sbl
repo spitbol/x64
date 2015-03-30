@@ -6,10 +6,15 @@
 	defined[asm] = defined[os] = defined[ws] = 1
 	defined['1'] = 1
 
-*	if 'osx' is defined, then also define 'gas'
+*	defining 'osx' also defines 'gas,' 'unix' and '32'; undefines 'asm' and '64'
 
-	defined['gas'] = ident(asm,'osx') 1
+	differ('os','osx')				:s(notosx)
+	defined['gas'] = defined['unix'] = defined['32'] = 1
+	defined['asm'] = defined['64'] =
 
+notosx
+
+	output = 
 	&anchor = &trim = 1
 	&dump = 3
 	skip = 0
