@@ -218,8 +218,8 @@ config.32
 	cfp_b = 4
 	cfp_bm1 = 3
 	cfp_c = 4
-	log_cfp_b = 2
-	log_cfp_c = 2
+	log_cfp_b = '2'
+	log_cfp_c = '2'
 	op_b = 'b'
 *	op_c is instruction suffix for minimal character size
 	op_c = 'b'
@@ -241,8 +241,8 @@ config.64
 	cfp_b = 8
 	cfp_bm1 = 7
 	cfp_c = 8
-	log_cfp_b = 3
-	log_cfp_c = 3
+	log_cfp_b = '3'
+	log_cfp_c = '3'
 	op_b = 'b'
 	op_c = 'b'
 	op_w = 'q'
@@ -801,7 +801,7 @@ getarg.c.10
 .fi
 .if gas
 	indx = substr(txt,2,2)
-	genaop(tstmt(,'Add_',regmap[indx],cfp_b)) :(getarg.mem)
+	genaop(tstmt(,'Add_',regmap[indx],literal_ cfp_b)) :(getarg.mem)
 .fi
 
 *  -(x), register indirect, pre decrement
@@ -813,7 +813,7 @@ getarg.c.11
 .fi
 .if gas
 	indx = substr(txt,3,2)
-	genbop(tstmt(,'Sub_',regmap[indx],cfp_b,)) 	:(getarg.mem)
+	genbop(tstmt(,'Sub_',regmap[indx],literal_ cfp_b,)) 	:(getarg.mem)
 .fi
 
 * int(x)
@@ -863,7 +863,7 @@ getarg.c.18
 	
 *  *dlbl
 getarg.c.19
-	getarg  = cfp_b '*' substr(txt,2)	:(getarg.done)
+	getarg  = literal_  cfp_b '*' substr(txt,2)	:(getarg.done)
 
 *  =name (data section)
 getarg.c.20
@@ -953,7 +953,7 @@ getlea.c.13
 .fi
 .if gas
 	op('Mov_',reg.w0,regmap[t2])
-	op('Add_',reg.w0,'(' cfp_b '*' t1 ')')	:(return)
+	op('Add_',reg.w0,'(cfp_b*' t1 ')')	:(return)
 .fi
 
 *  name(x), where name is in working section
@@ -987,7 +987,7 @@ getval.c.18.1
 	getval = substr(txt,2)			:(getval.done)
 *  *dlbl
 getval.c.19
-	getval = cfp_b '*' substr(txt,2)		:(getval.done)
+	getval = 'cfp_b*' substr(txt,2)		:(getval.done)
 *  =name (data section)
 getval.c.20
 getval.c.21
@@ -1498,10 +1498,10 @@ g.sub	memmemm()
 	op('Sub_',getarg(i1),getarg(i2))	:(opdone)
 
 g.ica
-	op('Add_',getarg(i1),cfp_b)		:(opdone)
+	op('Add_',getarg(i1),literal_ 'cfp_b')		:(opdone)
 
 g.dca
-	op('Sub_',getarg(i1),cfp_b)		:(opdone)
+	op('Sub_',getarg(i1),literal_ 'cfp_b')		:(opdone)
 
 g.beq
 g.bne
@@ -1855,10 +1855,10 @@ g.zzz
  	op('zzz',getarg(i1))			:(opdone)
 
 g.wtb
-	op('Sal_',getarg(i1),log_cfp_b)	:(opdone)
+	op('Sal_',getarg(i1),literal_ log_cfp_b)	:(opdone)
 
 g.btw
-	op('Sar_',getarg(i1),log_cfp_b)	:(opdone)
+	op('Sar_',getarg(i1),literal_ log_cfp_b)	:(opdone)
 
 g.mti
 	ident(i.text(i1),'(xs)+')		:f(g.mti.1)
@@ -1887,12 +1887,12 @@ g.ctw
 *  assume cfp_c chars per word
 	t1 = getarg(i1)
 	op('Add_',t1,'(cfp_c-1)+cfp_c*' i.text(i2))
-	op('Sar_',t1,log_cfp_c)
+	op('Sar_',t1,literal_ log_cfp_c)
 					:(opdone)
 g.ctb
 	t1 = getarg(i1)
-	op('Add_',t1,'(' cfp_b '-1)+' cfp_b '*' i.text(i2))
-	op('and',t1,-cfp_b)
+	op('Add_',t1,'(cfp_b-1)+cfp_b*' i.text(i2))
+	op('and',t1,'-cfp_b')
 						:(opdone)
 .fi
 .if gas
@@ -1932,20 +1932,20 @@ g.mvc
 .fi
 	trc_suspend = 0				:(opdone)
 g.mvw
-	op('Sar_',reg.wa,log_cfp_b)
+	op('Sar_',reg.wa,literal_ log_cfp_b)
  	op('rep','movs' op_w)
 						:(opdone)
 g.mwb
-	op('Sar_',reg.wa,log_cfp_b)
+	op('Sar_',reg.wa,literal_ log_cfp_b)
 	op('std')
-	op('Sub_',reg.xl,cfp_b)
-	op('Sub_',reg.xr,cfp_b)
+	op('Sub_',reg.xl,literal_ cfp_b)
+	op('Sub_',reg.xr,literal_ cfp_b)
  	genrep('movs' op_w)
 	op('cld')				
 						:(opdone)
 
 	op('std')
-	op('Sar_',reg.wa,log_cfp_b)
+	op('Sar_',reg.wa,literal_ 'log_cfp_b')
 	op('rep')
 	op('Movs_w')
 	op('ctd')

@@ -947,7 +947,7 @@ stackinit:
 	Mov_	Mem(compsp),W0	; save minimal's stack pointer
 	Sub_	W0,Mem(stacksiz)	; end of minimal stack is where c stack will start
 	Mov_	Mem(osisp),W0	; save new c stack pointer
-	Add_	W0,cfp_b*100		; 100 words smaller for chk
+	Add_	W0,$cfp_b*100		; 100 words smaller for chk
 	Mov_	Mem(spmin),W0
 	ret
 
@@ -1187,7 +1187,7 @@ sysfc:  pop	W0             ; <<<<remove stacked scblk>>>>
 .fi
 .if gas
 	Mov_	W0,WC
-	Sal_	W0,log_cfp_b
+	Sal_	W0,$log_cfp_b
 	Add_	XS,W0
 .fi
 
@@ -1494,7 +1494,7 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	Mov_	W0,(W0)				; load code word
 	Mov_	\val,W0
 	pop	W0 				; load address of code word
-	Add_	W0,cfp_b
+	Add_	W0,$cfp_b
 	Mov_	reg_cp,W0
 	.endm
 
