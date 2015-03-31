@@ -286,11 +286,11 @@
 
 .if gas 32
 	.macro	Sal_	dst,src
-		sall	$\src,\dst
+		sall	\src,\dst
 	.endm
 
 	.macro	Sar_	dst,src
-		sarl	$\src,\dst
+		sarl	\src,\dst
 	.endm
 
 	.macro	Stos_w

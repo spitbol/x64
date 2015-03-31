@@ -104,7 +104,6 @@
 
 .if asm
 	Comment		= ';';* comment character
-	asm_cfp_b	= 'cfp_b'
 	literal_	= 
 .fi
 .if gas
@@ -218,8 +217,8 @@ config.32
 	cfp_b = 4
 	cfp_bm1 = 3
 	cfp_c = 4
-	log_cfp_b = '2'
-	log_cfp_c = '2'
+	log_cfp_b = 2
+	log_cfp_c = 2
 	op_b = 'b'
 *	op_c is instruction suffix for minimal character size
 	op_c = 'b'
@@ -241,8 +240,8 @@ config.64
 	cfp_b = 8
 	cfp_bm1 = 7
 	cfp_c = 8
-	log_cfp_b = '3'
-	log_cfp_c = '3'
+	log_cfp_b = 3
+	log_cfp_c = 3
 	op_b = 'b'
 	op_c = 'b'
 	op_w = 'q'
@@ -796,7 +795,7 @@ getarg.c.10
 	txt = substr(txt,2,2)
 	t1 = regmap[txt]
 	getarg = mem( t1 )
-	(ident(txt,'xs') genaop(tstmt(,'Add_',t1,'cfp_b'))) :s(getarg.done)
+	(ident(txt,'xs') genaop(tstmt(,'Add_',t1,cfp_b))) :s(getarg.done)
 	genaop(tstmt(,'Lea_',t1,'Adr(' t1 '+cfp_b)')):(getarg.done)
 .fi
 .if gas
@@ -883,7 +882,13 @@ getarg.c.22
 *  pnam, eqop
 getarg.c.23
 getarg.c.24 
-	getarg = txt			:(getarg.done)
+.if asm
+	getarg = txt				:(getarg.done)
+.fi
+.if gas
+*	getarg = '$(' equ_value[txt] ')'	:(arg.done)
+	getarg =  equ_value[txt]		:(arg.done)
+.fi
 
 * ptyp, text, dtext
 getarg.c.25
@@ -1299,7 +1304,7 @@ g.bsw
 * here after default case.
 g.bsw1
 .if asm
-	op('Jmp_', mem( lbl '+' reg '*cfp_b')) 
+	op('Jmp_', mem( lbl '+' reg '*' cfp_b)) 
 .fi
 .if gas
 	op('jmp','*' lbl '(,' reg ',' cfp_b ')' )
@@ -1498,10 +1503,10 @@ g.sub	memmemm()
 	op('Sub_',getarg(i1),getarg(i2))	:(opdone)
 
 g.ica
-	op('Add_',getarg(i1),literal_ 'cfp_b')		:(opdone)
+	op('Add_',getarg(i1),literal_ cfp_b)		:(opdone)
 
 g.dca
-	op('Sub_',getarg(i1),literal_ 'cfp_b')		:(opdone)
+	op('Sub_',getarg(i1),literal_ cfp_b)		:(opdone)
 
 g.beq
 g.bne
@@ -1886,13 +1891,13 @@ g.mfi.2
 g.ctw
 *  assume cfp_c chars per word
 	t1 = getarg(i1)
-	op('Add_',t1,'(cfp_c-1)+cfp_c*' i.text(i2))
+	op('Add_',t1,'(' cfp_c '-1)+' cfp_c '*' i.text(i2))
 	op('Sar_',t1,literal_ log_cfp_c)
 					:(opdone)
 g.ctb
 	t1 = getarg(i1)
-	op('Add_',t1,'(cfp_b-1)+cfp_b*' i.text(i2))
-	op('and',t1,'-cfp_b')
+	op('Add_',t1,'(' cfp_b '-1)+' cfp_b '*' i.text(i2))
+	op('and',t1,'-' cfp_b)
 						:(opdone)
 .fi
 .if gas
@@ -1945,7 +1950,7 @@ g.mwb
 						:(opdone)
 
 	op('std')
-	op('Sar_',reg.wa,literal_ 'log_cfp_b')
+	op('Sar_',reg.wa,literal_ log_cfp_b)
 	op('rep')
 	op('Movs_w')
 	op('ctd')
