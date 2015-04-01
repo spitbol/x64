@@ -1,3 +1,4 @@
+.def comment_asterisk
 *	expand symbolic definitions for target environment as input to assembler
 	
 	tab = char(9)
@@ -58,13 +59,14 @@ m.end
 	upper.pat = any(&ucase)
 
 *	output standard definitions
-	output = tab '.set' tab 'cfp_b,'  (eq(ws,32) 4, 8)
- 	output = tab '.set' tab 'cfp_c,' (eq(ws,32) 4, 8)
-	output = tab '.set' tab 'os ' ',' os
-	output = tab '.set' tab 'log_cfp_b,' (eq(ws,32) 2, 3)
-	output = tab '.set' tab 'log_cfp_c,' (eq(ws,32) 2, 3)
 
-	output = tab '.set'	tab	'ws'	','	ws
+*	output = tab '.set' tab 'cfp_b,'  (eq(ws,32) 4, 8)
+* 	output = tab '.set' tab 'cfp_c,' (eq(ws,32) 4, 8)
+*	output = tab '.set' tab 'os ' ',' os
+	output = tab '.set' tab 'log_cfp_b,' (eq(ws,32) 2, 3)
+*	output = tab '.set' tab 'log_cfp_c,' (eq(ws,32) 2, 3)
+
+*	output = tab '.set'	tab	'ws'	','	ws
 						:(next)
 copy
 	output = line

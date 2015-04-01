@@ -1,3 +1,4 @@
+.def comment_asterisk
 -title mincod: phase 2 translation from minimal tokens to 80386 code
 -stitl description
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
@@ -594,7 +595,6 @@ equ.copy
 	equ_value[key] = val			:(equ.copy)
 equ.end
 	endfile(6)
-.fi
 
 *  read in pub file if it exists.  this contains a list of symbols to
 *  be declared public when encountered.

@@ -1,45 +1,46 @@
+.def comment_asterisk
 -title lex: phase 1 translation from minimal to lexemes (lexemes)
 -stitl initialization
-* copyright 1987-2012 robert b. k. dewar and mark emmer.
-* copyright 2012-2015 david shields
-*
-* this file is part of macro spitbol.
-*
-*     macro spitbol is free software: you can redistribute it and/or modify
-*     it under the terms of the gnu general public license as published by
-*     the free software foundation, either version 2 of the license, or
-*     (at your option) any later version.
-*
-*     macro spitbol is distributed in the hope that it will be useful,
-*     but without any warranty; without even the implied warranty of
-*     merchantability or fitness for a particular purpose.  see the
-*     gnu general public license for more details.
-*
-*     you should have received a copy of the gnu general public license
-*     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
-*
-*
-*	usage:
-*
-*	spitbol -u "infile<sep>condfile<sep>outfile" lex
-*
-*	where:
-*	 infile    - minimal file name, less .asm extension
-*	 condfiile - conditional file name, less .cnd extension
-*	 outfile   - output file name, less .lex extension.
-*		     default is infile.lex.
-*	 <sep>	   - ; or :
-*
-*	note: <sep>outfile component is optional.
-*
-*  this program takes minimal statements and parses them up into
-*  a stream of lexemes, or lexemes. it performs equ * substitution and
-*  conditional assembly.
-*
-*  it is based on earlier translators written by david shields, steve duff
-*  and robert goldberg.
-*
-*
+/*
+ copyright 1987-2012 robert b. k. dewar and mark emmer.
+ copyright 2012-2015 david shields
+
+ this file is part of macro spitbol.
+
+     macro spitbol is free software: you can redistribute it and/or modify
+     it under the terms of the gnu general public license as published by
+     the free software foundation, either version 2 of the license, or
+     (at your option) any later version.
+
+     macro spitbol is distributed in the hope that it will be useful,
+     but without any warranty; without even the implied warranty of
+     merchantability or fitness for a particular purpose.  see the
+     gnu general public license for more details.
+
+     you should have received a copy of the gnu general public license
+     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+
+
+	usage:
+
+	spitbol -u "infile<sep>condfile<sep>outfile" lex
+
+	where:
+	 infile    - minimal file name, less .asm extension
+	 condfiile - conditional file name, less .cnd extension
+	 outfile   - output file name, less .lex extension.
+		     default is infile.lex.
+	 <sep>	   - ; or :
+
+	note: <sep>outfile component is optional.
+
+  this program takes minimal statements and parses them up into
+  a stream of lexemes, or lexemes. it performs equ * substitution and
+  conditional assembly.
+
+  it is based on earlier translators written by david shields, steve duff
+  and robert goldberg.
+*/
 -eject
 *  keyword initialization
 

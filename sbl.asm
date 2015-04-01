@@ -1,3 +1,8 @@
+.if asm
+.def comment_asterisk
+.else
+.def comment_number
+.fi
 	ttl	l i c e n s e -- software license for this program
 /*
 

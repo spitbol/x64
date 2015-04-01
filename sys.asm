@@ -1,3 +1,8 @@
+.if asm
+.def comment_asterisk
+.else
+.def comment_number
+.fi
 /*
  copyright 1987-2012 robert b. k. dewar and mark emmer.
  copyright 2012-2015 david shields
@@ -45,11 +50,11 @@
        the following form in the 80386 version of the compiler:
 
                ...code to put arguments in registers...
-               call    sysxx           # call osint function
-             D_word    extrc_1          # address of exit point 1
-             D_word    extrc_2          # address of exit point 2
-               ...     ...             # ...
-             D_word    extrc_n          # address of exit point n
+               call    sysxx           ; call osint function
+             D_word    extrc_1          ; address of exit point 1
+             D_word    extrc_2          ; address of exit point 2
+               ...     ...             ; ...
+             D_word    extrc_n          ; address of exit point n
                ...instruction following call...
 
        the osint function 'sysxx' can then return in one of n+1 ways:
@@ -135,16 +140,20 @@
 	%endmacro
 .fi
 
-.if gas 32
+.if gas
+.if 32
 	.macro	Cmp_	dst,src	; src/dst differ
 		cmpl	\src,\dst
 	.endm
 .fi
+.fi
 
-.if gas 64
+.if gas
+.if 64
 	.macro	Cmp_	dst,src	; src/dst differ
 		cmpq	\src,\dst
 	.endm
+.fi
 .fi
 
 
@@ -174,15 +183,20 @@
 	.endm
 .fi
 
-.if gas 32
+.if gas
+.if 32
 	.macro	Dec_	val
 	decl \val
 	.endm
 .fi
-.if gas 64
+.fi
+
+.if gas 
+.if 64
 	.macro	Dec_	val
 	decq \val
 	.endm
+.fi
 .fi
 
 
@@ -207,16 +221,22 @@
 		%include	%1
 	%endmacro
 .fi
-.if gas 32
+.if gas 
+.if 32
 	.macro	Inc_	val
 		incl	\val
 	.endm
 .fi
-.if gas 64
+.fi
+
+.if gas 
+.if 64
 	.macro	Inc_	val
 		incq	\val
 	.endm
 .fi
+.fi
+
 .if gas
 	.macro	Extern	name
 		.extern	\name
@@ -273,18 +293,24 @@
 	%endmacro
 .fi
 
-.if gas 32
+.if gas
+.if  32
 	.macro	Mov_	dst,src
 		movl	\src,\dst
 	.endm
 .fi
-.if gas 64
+.fi
+
+.if gas 
+.if 64
 	.macro	Mov_	dst,src
 		movq	\src,\dst
 	.endm
 .fi
+.fi
 
-.if gas 32
+.if gas 
+.if 32
 	.macro	Sal_	dst,src
 		sall	\src,\dst
 	.endm
@@ -297,7 +323,10 @@
 	stosl
 	.endm
 .fi
-.if gas 64
+.fi
+
+.if gas 
+.if 64
 	.macro	Sal_	dst,src
 		salq	\src,\dst
 	.endm
@@ -309,6 +338,7 @@
 	.macro	Stos_w
 	stosq
 	.endm
+.fi
 .fi
 
 .if gas
@@ -336,28 +366,6 @@
 	xor	\src,\dst
 	.endm
 .fi
-/*
- .if 32
- 	Equ_	cfp_b,4
- 	Equ_	cfp_c,4
- 	Equ_	log_cfp_b,2
- 	Equ_	cfp_c_val,4
- 	Equ_	log_cfp_c,2
- 	Equ_	cfp_m_	2147483647
- ;	%define	cfp_n_	32
- .fi
- .if 64
- 	Equ_	cfp_b,8
- 	Equ_	cfp_c,8
- 	Equ_	log_cfp_b,3
- 	Equ_	log_cfp_c,3
- 	Equ_	cfp_c_val,8
- 	Equ_	cfp_m_,9223372036854775807
- 	Equ_	cfp_n_,64
-
- .fi
-*/
-
 
 .if asm
 	%define M_char	byte	; reference to byte in memory
@@ -366,7 +374,8 @@
 	%define D_real	dq	; real always 64 bits
 .fi
 
-.if asm 64
+.if asm 
+.if 64
 	%define	log_cfp_b	3
 	%define	log_cfp_c	3
 
@@ -397,8 +406,10 @@
 	%define Mem(ref) qword[ref]
 	%define Adr(ref) [ref]
 .fi
+.fi
 
-.if asm 32
+.if asm 
+.if 32
 
 	%define	log_cfp_b	2
 	%define	log_cfp_c	2
@@ -429,6 +440,7 @@
 
 	%define Mem(ref) dword[ref]
 	%define Adr(ref) [ref]
+.fi
 .fi
 
 .if asm
@@ -478,30 +490,48 @@
 	Mov_	M_word [trc_de],%%desc
 	call	trc_
 	%endmacro
+.fi
 
-.if asm 32
+.if asm 
+.if 32
 	%define	cfp_b	4
 	%define	cfp_c	4
-.if
-.if asm 64
+.fi
+.fi
+
+.if asm 
+.if 64
 	%define	cfp_b	8
 	%define	cfp_c	8
 .fi
-.if gas 32
+.fi
+
+.if gas 
+.if 32
 	.set	cfp_b,4
 	.set	cfp_c,4
-.if
-.if gas 64
+.fi
+.fi
+
+.if gas 
+.if 64
 	.set	cfp_b,8
 	.set	cfp_c,8
 .fi
-.if osx 32
+.fi
+
+.if osx 
+.if 32
 	.set	cfp_b,4
 	.set	cfp_c,4
-.if
-.if osx 64
+.fi
+.fi
+
+.if osx 
+.if 64
 	.set	cfp_b,8
 	.set	cfp_c,8
+.fi
 .fi
 
 	Global	reg_block

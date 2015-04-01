@@ -1,3 +1,4 @@
+.def comment_asterisk
 -in80
 -title err.spt:  compress spitbol error messages
 -stitle initialization
