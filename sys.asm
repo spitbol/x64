@@ -1,5 +1,5 @@
 .if asm
-.def comment_asterisk
+.def comment_semicolon
 .else
 .def comment_number
 .fi
@@ -142,22 +142,37 @@
 
 .if gas
 .if 32
+.if unix
 	.macro	Cmp_	dst,src	; src/dst differ
 		cmpl	\src,\dst
 	.endm
+.fi
+.if osx
+	.macro	Cmp_
+		cmpl	$1,$2
+	.endm
+.fi
 .fi
 .fi
 
 .if gas
 .if 64
+.if unix
 	.macro	Cmp_	dst,src	; src/dst differ
 		cmpq	\src,\dst
 	.endm
+.fi
+.if osx
+	.macro	Cmp_
+		cmpq	$1,$2
+	.endm
+.fi
 .fi
 .fi
 
 
 .if gas
+.if unix
 	.macro	Add_	dst,src
 		add	\src,\dst
 	.endm
@@ -182,20 +197,60 @@
 	.set	\name,\value
 	.endm
 .fi
+.if osx
+	.macro	Add_
+		add	$1,$2
+	.endm
+
+	.macro	Align_
+		.balign	$1,0
+	.endm
+
+	.macro	And_
+		and	$1,$2
+	.endm
+
+	.macro	Cmpb_
+		cmpb	$1,$2
+	.endm
+
+	.macro	Data
+		.data
+	.endm
+
+	.macro	Equ_
+	.set	$1,$2
+	.endm
+.fi
+.fi
 
 .if gas
 .if 32
+.if unix
 	.macro	Dec_	val
 	decl \val
 	.endm
+.fi
+.if osx
+	.macro	Dec_
+	decl $1
+	.endm
+.fi
 .fi
 .fi
 
 .if gas 
 .if 64
+.if unix
 	.macro	Dec_	val
 	decq \val
 	.endm
+.fi
+.if osx
+	.macro	Dec_
+	decq $1
+	.endm
+.fi
 .fi
 .fi
 
@@ -223,21 +278,36 @@
 .fi
 .if gas 
 .if 32
+.if unix
 	.macro	Inc_	val
 		incl	\val
 	.endm
+.fi
+.if osx
+	.macro	Inc_
+		incl	$1
+	.endm
+.fi
 .fi
 .fi
 
 .if gas 
 .if 64
+.if unix
 	.macro	Inc_	val
 		incq	\val
 	.endm
 .fi
+.if osx
+	.macro	Inc_
+		incq	$1
+	.endm
+.fi
+.fi
 .fi
 
 .if gas
+.if unix
 	.macro	Extern	name
 		.extern	\name
 	.endm
@@ -253,6 +323,25 @@
 	.macro	Include	file
 		.include	\file
 	.endm
+.fi
+.if osx
+	.macro	Extern
+		.extern	$1
+	.endm
+
+	.macro	Fill
+	.fill	%1
+	.endm
+
+	.macro	Global
+		.globl	$1
+
+	.endm
+
+	.macro	Include	
+		.include	$1
+	.endm
+.fi
 .fi
 
 .if asm
@@ -295,22 +384,37 @@
 
 .if gas
 .if  32
+.if unix
 	.macro	Mov_	dst,src
 		movl	\src,\dst
 	.endm
+.fi
+.if osx
+	.macro	Mov_
+		movl	$1,$2
+	.endm
+.fi
 .fi
 .fi
 
 .if gas 
 .if 64
+.if unix
 	.macro	Mov_	dst,src
 		movq	\src,\dst
 	.endm
+.fi
+.if osx
+	.macro	Mov_
+		movq	$1,$2
+	.endm
+.fi
 .fi
 .fi
 
 .if gas 
 .if 32
+.if unix
 	.macro	Sal_	dst,src
 		sall	\src,\dst
 	.endm
@@ -323,10 +427,25 @@
 	stosl
 	.endm
 .fi
+.if osx
+	.macro	Sal_	
+		sall	$1,$2
+	.endm
+
+	.macro	Sar_
+		sarl	$1,$2
+	.endm
+
+	.macro	Stos_w
+	stosl
+	.endm
+.fi
+.fi
 .fi
 
 .if gas 
 .if 64
+.if unix
 	.macro	Sal_	dst,src
 		salq	\src,\dst
 	.endm
@@ -338,6 +457,20 @@
 	.macro	Stos_w
 	stosq
 	.endm
+.fi
+.if osx
+	.macro	Sal_
+		salq	$1,$2
+	.endm
+
+	.macro	Sar_
+		sarq	$1,$2
+	.endm
+
+	.macro	Stos_w
+	stosq
+	.endm
+.fi
 .fi
 .fi
 
@@ -364,6 +497,32 @@
 
 	.macro	Xor_	dst,src
 	xor	\src,\dst
+	.endm
+.fi
+
+.if osx
+	.macro	Jmp_	
+		jmp	$1
+	.endm
+
+	.macro	Lea_
+		lea	$1,$2
+	.endm
+
+	.macro	Or_
+		or	$1,$2
+	.endm
+
+	.macro	Sub_
+		sub	$1,$2
+	.endm
+
+	.macro	Text
+		.text
+	.endm
+
+	.macro	Xor_
+		xor	$1,$2
 	.endm
 .fi
 
@@ -514,20 +673,6 @@
 .fi
 
 .if gas 
-.if 64
-	.set	cfp_b,8
-	.set	cfp_c,8
-.fi
-.fi
-
-.if osx 
-.if 32
-	.set	cfp_b,4
-	.set	cfp_c,4
-.fi
-.fi
-
-.if osx 
 .if 64
 	.set	cfp_b,8
 	.set	cfp_c,8
@@ -1424,6 +1569,7 @@ sysxi:	Mov_	Mem(reg_xs),XS
 
 .fi
 .if gas
+.if unix
 	.macro	callext	name,id
 	Extern	\name
 	call	\name
@@ -1534,6 +1680,118 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	.endm
 
 .fi
+.if osx
+	.macro	callext
+	Extern	$1
+	call	$1
+	Add_	XS,$2		; pop arguments
+	.endm
+
+	.macro	chk_
+	call	chk__
+	.endm
+
+	.macro	adi_
+	Add_	Mem(reg_ia),W0
+	seto	reg_fl
+	.endm
+
+	.macro	dvi_
+	Mov_	Mem(reg_w0),W0
+	call	dvi__
+	.endm
+
+	.macro	ldi_	val
+	Mov_	W0,\val
+	Mov_	Mem(reg_ia),W0
+	.endm
+
+	.macro	mli_
+	mov	Mem(reg_ia),W0
+	imul	W0
+	seto	reg_fl
+	.endm
+
+; using W0 below since operand size not known, and putting it in register defers this problem
+
+	.macro	ngi_
+	mov	Mem(reg_ia),W0
+	neg	W0
+	mov	W0,Mem(reg_ia)
+;	neg	Mem(reg_ia)
+	seto	reg_fl
+	.endm
+
+	.macro	rmi_
+	call	rmi__
+	.endm
+
+	.macro	cvd_
+	call	cvd__
+	.endm
+
+	.macro	ino_
+	movb	reg_fl,%al
+	or	%al,%al
+	jno	$1
+	.endm
+
+	.macro	iov_
+	movb	reg_fl,%al
+	or	%al,%al
+	jo	$1
+	.endm
+
+	.macro	rno_	
+	movb	reg_fl,%al
+	or	%al,%al
+	je	$1
+	.endm
+
+	.macro	rov_
+	mov	reg_fl,%al
+	or	%al,%al
+	jne	$1
+	.endm
+
+	.macro	sbi_
+	Sub	Mem(reg_ia),W0
+	seto	reg_fl
+	.endm
+
+	.macro	sti
+	Mov_	W0,Mem(reg_ia)
+	Mov_	$1,W0
+	.endm
+
+	.macro	Icp_
+	Mov_	W0,Mem(reg_cp)
+	Add_	W0,cfp_b
+	Mov_	Mem(reg_cp),W0
+	.endm
+
+	.macro	Lcp_
+	Mov_	W0,$1
+	Mov_	reg_cp,W0
+	.endm
+
+	.macro	Lcw_
+	Mov_	W0,reg_cp			; load address of code word
+	push	W0
+	Mov_	W0,(W0)				; load code word
+	Mov_	$1,W0
+	pop	W0 				; load address of code word
+	Add_	W0,$cfp_b
+	Mov_	reg_cp,W0
+	.endm
+
+	.macro	Scp_	val
+	Mov_	W0,reg_cp
+	Mov_	\val,W0
+	.endm
+
+.fi
+.fi
 /*
 	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
 	placed in W0, which is then sign extended into wc:W0. after the divide, W0 contains the
@@ -1625,6 +1883,7 @@ setovr:
 %endmacro
 .fi
 .if gas
+.if unix
 	.macro	int_op glob,ext
 	Global	\glob
 	Extern	\ext
@@ -1632,6 +1891,16 @@ setovr:
 	call	\ext
 	ret
 	.endm
+.fi
+.if osx
+	.macro	int_op 
+	Global	$1
+	Extern	$2
+\glob:
+	call	$2
+	ret
+	.endm
+.fi
 .fi
 
 	int_op itr_,f_itr
@@ -1681,6 +1950,7 @@ setovr:
 .fi
 
 .if gas
+.if unix
 	.macro	osint_call glob,ext,reg
 	Global	\glob
 	Extern	\ext
@@ -1690,6 +1960,17 @@ setovr:
 	ret
 	.endm
 .fi
+.if osx
+	.macro	osint_call 
+	Global	$1
+	Extern	$2
+$1:
+	Mov_	$3,W0
+	call	$2
+	ret
+	.endm
+.fi
+.fi
 
 .if asm
 	%macro	real_op 2
@@ -1698,9 +1979,16 @@ setovr:
 .fi
 
 .if gas
+.if unix
 	.macro	real_op op,proc
 	osint_call	\op,\proc,reg_rp
 	.endm
+.fi
+.if osx
+	.macro	real_op
+	osint_call	$1,$2,\proc,reg_rp
+	.endm
+.fi
 .fi
 
 	real_op	ldr_,f_ldr
@@ -1722,6 +2010,7 @@ setovr:
 	%endmacro
 .fi
 .if gas
+.if unix
 	.macro	math_op glob,ext
 	Global	\glob
 	Extern	\ext
@@ -1729,6 +2018,16 @@ setovr:
 	call	\ext
 	ret
 	.endm
+.fi
+.if osx
+	.macro	math_op 
+	Global	$1
+	Extern	$2
+$1:
+	call	$2
+	ret
+	.endm
+.fi
 .fi
 
 	math_op	atn_,f_atn

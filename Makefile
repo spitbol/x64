@@ -125,13 +125,13 @@ gas:
 
 # run preprocessor to get translator to gas
 
-	$(BASEBOL) -u $(TARGET)_gas $(PRE) <asm.sbl >gas.spt 
+	$(BASEBOL) -u $(TARGET)_gas pre.sbl <asm.sbl >gas.spt 
 
-# run gas to get .s and .err files
+# run gas to get .s and .err files from .lex
 
 	$(BASEBOL) -u $(TARGET)_gas:$(TRCOPT) gas.spt
 
-# run preprocessor to process multi-line comments
+# run preprocessor to process multi-line comments in err
 
 	$(BASEBOL) pre.sbl <err.sbl >err.spt
 
@@ -143,7 +143,7 @@ gas:
 
 	$(BASEBOL) -u $(TARGET)_gas pre.sbl <def.sbl >def.spt
 
-# run preprocessor to get sys for ngas as target
+# run preprocessor to get sys for gas
 
 	$(BASEBOL) -u $(TARGET)_gas pre.sbl <sys.asm >sys.pre
 
@@ -173,16 +173,19 @@ gas:
 
 	$(CC) $(LDOPTS)  $(COBJS) spitbol.o $(LMOPT) -static -ospitbol
 
-
-
 # build spitbol using nasm, build spitbol using as.
 # link asm spitbol with static linking
 # use fake target asmobj which appears only when all .s files built
 
 asm: 
 
-# run lex to get min.lex
-	$(BASEBOL) -u $(TARGET)_asm $(LEX)
+# run preprocessor to process multi-line comments in lex
+
+	$(BASEBOL) -u $(TARGET)_asm pre.sbl <lex.sbl >lex.spt
+
+# run lex to get sbl.lex for asm
+
+	$(BASEBOL) -u $(TARGET)_asm lex.spt
 
 # run preprocessor to get asm for nasm as target
 
@@ -192,9 +195,14 @@ asm:
 
 	$(BASEBOL) -u $(TARGET)_asm$(TRCOPT) asm.spt
 
+# run preprocessor to process multi-line comments in err
+
+	$(BASEBOL) pre.sbl <err.sbl >err.spt
+
 # run err 
 
-	$(BASEBOL) -u $(TARGET)_asm $(ERR)
+	$(BASEBOL) -u $(TARGET)_asm err.spt
+
 
 # use preprocessor to make version of rewriter for asm
 
