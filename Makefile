@@ -187,7 +187,7 @@ asm:
 
 	$(BASEBOL) -u $(TARGET)_asm lex.spt
 
-# run preprocessor to get asm for nasm as target
+# run preprocessor to get translator to nasm 
 
 	$(BASEBOL) -u $(TARGET)_asm $(PRE) <asm.sbl >asm.spt 
 
@@ -234,25 +234,34 @@ asm:
 # load objects
 
 	$(CC) $(LDOPTS)  $(COBJS) spitbol.o $(LMOPT) -static -ospitbol
+
 osx-export:
 
-	rm	osx/*
+	rm	-f osx/*
+
+# run preprocessor to process multi-line comments in lex
+
+	$(BASEBOL) -u $(TARGET)_asm pre.sbl <lex.sbl >lex.spt
 
 # run lex to get min.lex
 
-	$(BASEBOL) -u osx_32_gas $(LEX)
+	$(BASEBOL) -u osx_32_gas lex.spt
 
-# run preprocessor to get gas for ngas as target
+# run preprocessor to get translator for with gas 
 
-	$(BASEBOL) -u osx_32_gas $(PRE) <asm.sbl >gas.spt 
+	$(BASEBOL) -u osx_32_gas pre.sbl <asm.sbl >gas.spt 
 
 # run gas to get .s and .err files
 
 	$(BASEBOL) -u osx_32_gas:$(TRCOPT) gas.spt
 
+# run preprocessor to process multi-line comments in err
+
+	$(BASEBOL) pre.sbl <err.sbl >err.spt
+
 # run err 
 
-	$(BASEBOL) -u osx_32_gas $(ERR)
+	$(BASEBOL) -u osx_32_gas err.spt
 
 # use preprocessor to make version of rewriter for gas
 

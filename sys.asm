@@ -103,8 +103,6 @@
        '_osopen'.  however, not all c compilers follow this convention.
 */
 
-; Operation and declaration macros are needed for each instruction/declaration having different formats in asm and gas.
-
 .if asm
 
 	%macro	Add_	2
@@ -138,7 +136,148 @@
 	%macro	Equ_	2
 %1:	equ	%2
 	%endmacro
+
+	%macro Extern	1
+		extern	%1
+	%endmacro
+
+	%macro	Fill	1
+	times	%1 db 0
+	%endmacro
+
+	%macro Global	1
+		global	%1
+	%endmacro
+
+	%macro	Inc_	1
+		inc	%1
+	%endmacro
+
+	%macro	Include	1
+		%include	%1
+	%endmacro
+
+	%macro	Jmp_	1	; gas needs '*' before target
+		jmp	%1
+	%endmacro
+
+	%macro	Lea_	2	; load effective address
+		lea	%1,%2
+	%endmacro
+
+	%macro	Mov_	2
+		mov	%1,%2
+	%endmacro
+
+	%macro	Or_	2
+	or	%1,%2
+	%endmacro
+
+	%macro	Sal_	2
+		sal	%1,%2
+	%endmacro
+
+	%macro	Sar_	2
+		sar	%1,%2
+	%endmacro
+
+	%macro	Sub_	2
+		sub	%1,%2
+	%endmacro
+
+	%macro	Text 0
+		section	.text
+	%endmacro
+
+	%macro	Xor_	2
+	xor	%1,%2
+	%endmacro
+
+	%define M_char	byte	; reference to byte in memory
+	%define D_byte	db	; define value of byte
+	%define D_char	db	; define value of byte
+	%define D_real	dq	; real always 64 bits
+
+.if 64
+	%define	log_cfp_b	3
+	%define	log_cfp_c	3
+
+
+	%define	D_char	db
+	%define D_word	dq
+	%define M_real	qword	; reference to floating point value in memory
+	%define M_word  qword
+
+	%define	W0	rax
+	%define W1	rbp
+	%define	WA	rcx
+	%define	WB	rbx
+	%define	WC	rdx
+
+	%define	XL	rsi
+	%define	XT	rsi
+	%define	XR	rdi
+	%define	XS	rsp
+
+	%define	Lods_b	lodsb
+	%define Movs_b	movsb
+	%define Movs_w	movsq
+	%define Stos_b	stosb
+	%define	Stos_w	stosq
+
+	%define	cdq	cqo	; sign extend (64 bits)
+	%define Mem(ref) qword[ref]
+	%define Adr(ref) [ref]
 .fi
+
+.if 32
+
+	%define	log_cfp_b	2
+	%define	log_cfp_c	2
+
+	%define M_real	dword	; reference to floating point value in memory
+	%define W0	eax
+	%define W1	ebp
+	%define WA	ecx
+	%define WB	ebx
+	%define WC	edx
+
+	%define	XL	esi
+	%define	XT	esi
+	%define XR	edi
+	%define XS	esp
+
+	%define	D_char	db
+	%define D_word	dd	; define value for memory Word
+	%define M_word	dword	; reference to Word in memory
+	%define M_real	dword	; reference to Word in memory
+
+	%define	Lods_b	lodsb
+	%define Movs_b	movsb
+	%define Movs_w	movsd
+	%define	Stos_b	stosb
+
+	%define	cdq	cdq	; sign extend (32 bits)
+
+	%define Mem(ref) dword[ref]
+	%define Adr(ref) [ref]
+.fi
+
+	%define	W0_L	al
+	%define	WA_L	cl
+	%define	WB_L	bl
+	%define	WC_L	dl
+
+;	flags
+	%define	flag_of	0x80
+	%define	flag_cf	0x01
+	%define	flag_ca	0x40
+.fi
+
+
+
+; Operation and declaration macros are needed for each instruction/declaration having different formats in asm and gas.
+
 
 .if gas
 .if 32
@@ -255,27 +394,6 @@
 .fi
 
 
-.if asm
-	%macro Extern	1
-		extern	%1
-	%endmacro
-
-	%macro	Fill	1
-	times	%1 db 0
-	%endmacro
-
-	%macro Global	1
-		global	%1
-	%endmacro
-
-	%macro	Inc_	1
-		inc	%1
-	%endmacro
-
-	%macro	Include	1
-		%include	%1
-	%endmacro
-.fi
 .if gas 
 .if 32
 .if unix
@@ -344,43 +462,6 @@
 .fi
 .fi
 
-.if asm
-	%macro	Jmp_	1	; gas needs '*' before target
-		jmp	%1
-	%endmacro
-
-	%macro	Lea_	2	; load effective address
-		lea	%1,%2
-	%endmacro
-
-	%macro	Mov_	2
-		mov	%1,%2
-	%endmacro
-
-	%macro	Or_	2
-	or	%1,%2
-	%endmacro
-
-	%macro	Sal_	2
-		sal	%1,%2
-	%endmacro
-
-	%macro	Sar_	2
-		sar	%1,%2
-	%endmacro
-
-	%macro	Sub_	2
-		sub	%1,%2
-	%endmacro
-
-	%macro	Text 0
-		section	.text
-	%endmacro
-
-	%macro	Xor_	2
-	xor	%1,%2
-	%endmacro
-.fi
 
 .if gas
 .if  32
@@ -526,93 +607,6 @@
 	.endm
 .fi
 
-.if asm
-	%define M_char	byte	; reference to byte in memory
-	%define D_byte	db	; define value of byte
-	%define D_char	db	; define value of byte
-	%define D_real	dq	; real always 64 bits
-.fi
-
-.if asm 
-.if 64
-	%define	log_cfp_b	3
-	%define	log_cfp_c	3
-
-
-	%define	D_char	db
-	%define D_word	dq
-	%define M_real	qword	; reference to floating point value in memory
-	%define M_word  qword
-
-	%define	W0	rax
-	%define W1	rbp
-	%define	WA	rcx
-	%define	WB	rbx
-	%define	WC	rdx
-
-	%define	XL	rsi
-	%define	XT	rsi
-	%define	XR	rdi
-	%define	XS	rsp
-
-	%define	Lods_b	lodsb
-	%define Movs_b	movsb
-	%define Movs_w	movsq
-	%define Stos_b	stosb
-	%define	Stos_w	stosq
-
-	%define	cdq	cqo	; sign extend (64 bits)
-	%define Mem(ref) qword[ref]
-	%define Adr(ref) [ref]
-.fi
-.fi
-
-.if asm 
-.if 32
-
-	%define	log_cfp_b	2
-	%define	log_cfp_c	2
-
-	%define M_real	dword	; reference to floating point value in memory
-	%define W0	eax
-	%define W1	ebp
-	%define WA	ecx
-	%define WB	ebx
-	%define WC	edx
-
-	%define	XL	esi
-	%define	XT	esi
-	%define XR	edi
-	%define XS	esp
-
-	%define	D_char	db
-	%define D_word	dd	; define value for memory Word
-	%define M_word	dword	; reference to Word in memory
-	%define M_real	dword	; reference to Word in memory
-
-	%define	Lods_b	lodsb
-	%define Movs_b	movsb
-	%define Movs_w	movsd
-	%define	Stos_b	stosb
-
-	%define	cdq	cdq	; sign extend (32 bits)
-
-	%define Mem(ref) dword[ref]
-	%define Adr(ref) [ref]
-.fi
-.fi
-
-.if asm
-	%define	W0_L	al
-	%define	WA_L	cl
-	%define	WB_L	bl
-	%define	WC_L	dl
-
-;	flags
-	%define	flag_of	0x80
-	%define	flag_cf	0x01
-	%define	flag_ca	0x40
-.fi
 
 
         Text
