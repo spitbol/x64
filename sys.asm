@@ -277,8 +277,8 @@
 ; Operation and declaration macros are needed for each instruction/declaration having different formats in asm and gas.
 
 .if gas
-
 .if unix
+; gas unix, 32 and 64 bit
 	.macro	Add_	dst,src
 		add	\src,\dst
 	.endm
@@ -318,8 +318,31 @@
 	.macro	Include	file
 		.include	\file
 	.endm
+	.macro	Jmp_	lab	; gas needs '*' before target
+		jmp	\lab
+	.endm
 
+	.macro	Lea_	dst,src	; load effective address
+		lea	\src,\dst
+	.endm
+
+	.macro	Or_	dst,src
+	or	\src,\dst
+	.endm
+
+	.macro	Sub_	dst,src
+		sub	\src,\dst
+	.endm
+
+	.macro	Text
+		.text
+	.endm
+
+	.macro	Xor_	dst,src
+	xor	\src,\dst
+	.endm
 .if 32
+; gas unix 32 bit
 	.macro	Dec_	val
 	decl \val
 	.endm
@@ -344,15 +367,37 @@
 	stosl
 	.endm
 .fi
-
 .if 64
+; gas unix 64 bit
 	.macro	Cmp_	dst,src	; src/dst differ
 		cmpq	\src,\dst
+	.endm
+
+	.macro	Dec_	val
+	decq \val
+	.endm
+	.macro	Inc_	val
+		incq	\val
+	.endm
+	.macro	Mov_	dst,src
+		movq	\src,\dst
+	.endm
+	.macro	Sal_	dst,src
+		salq	\src,\dst
+	.endm
+
+	.macro	Sar_	dst,src
+		sarq	\src,\dst
+	.endm
+
+	.macro	Stos_w
+	stosq
 	.endm
 .fi
 .fi
 
 .if osx
+;gas osx, 32 and 64 bit
 	.macro	Add_
 		add	$1,$2
 	.endm
@@ -393,125 +438,6 @@
 	.macro	Include	
 		.include	$1
 	.endm
-.fi
-
-.if 32
-.if osx
-	.macro	Dec_
-	decl $1
-	.endm
-	.macro	Cmp_
-		cmpl	$1,$2
-	.endm
-	.macro	Inc_
-		incl	$1
-	.endm
-	.macro	Mov_
-		movl	$1,$2
-	.endm
-	.macro	Sal_	
-		sall	$1,$2
-	.endm
-
-	.macro	Sar_
-		sarl	$1,$2
-	.endm
-
-	.macro	Stos_w
-	stosl
-	.endm
-.fi
-.fi
-
-.if 64
-.if osx
-	.macro	Cmp_
-		cmpq	$1,$2
-	.endm
-.fi
-.if unix
-	.macro	Dec_	val
-	decq \val
-	.endm
-.fi
-.if osx
-	.macro	Dec_
-	decq $1
-	.endm
-.fi
-.if unix
-	.macro	Inc_	val
-		incq	\val
-	.endm
-.fi
-.if osx
-	.macro	Inc_
-		incq	$1
-	.endm
-.fi
-.if unix
-	.macro	Mov_	dst,src
-		movq	\src,\dst
-	.endm
-.fi
-.if osx
-	.macro	Mov_
-		movq	$1,$2
-	.endm
-.fi
-.if unix
-	.macro	Sal_	dst,src
-		salq	\src,\dst
-	.endm
-
-	.macro	Sar_	dst,src
-		sarq	\src,\dst
-	.endm
-
-	.macro	Stos_w
-	stosq
-	.endm
-.fi
-.if osx
-	.macro	Sal_
-		salq	$1,$2
-	.endm
-
-	.macro	Sar_
-		sarq	$1,$2
-	.endm
-
-	.macro	Stos_w
-	stosq
-	.endm
-.fi
-.fi
-
-	.macro	Jmp_	lab	; gas needs '*' before target
-		jmp	\lab
-	.endm
-
-	.macro	Lea_	dst,src	; load effective address
-		lea	\src,\dst
-	.endm
-
-	.macro	Or_	dst,src
-	or	\src,\dst
-	.endm
-
-	.macro	Sub_	dst,src
-		sub	\src,\dst
-	.endm
-
-	.macro	Text
-		.text
-	.endm
-
-	.macro	Xor_	dst,src
-	xor	\src,\dst
-	.endm
-
-.if osx
 	.macro	Jmp_	
 		jmp	$1
 	.endm
@@ -535,6 +461,67 @@
 	.macro	Xor_
 		xor	$1,$2
 	.endm
+.fi
+
+.if 32
+; gas osx 32 bit
+	.macro	Dec_
+		decl $1
+	.endm
+
+	.macro	Cmp_
+		cmpl	$1,$2
+	.endm
+
+	.macro	Inc_
+		incl	$1
+	.endm
+	.macro	Mov_
+		movl	$1,$2
+	.endm
+	.macro	Sal_	
+		sall	$1,$2
+	.endm
+
+	.macro	Sar_
+		sarl	$1,$2
+	.endm
+
+	.macro	Stos_w
+	stosl
+	.endm
+.fi
+
+
+.if 64
+.if osx
+; gas osx 64 bit
+	.macro	Cmp_
+		cmpq	$1,$2
+	.endm
+
+	.macro	Dec_
+		decq $1
+	.endm
+
+	.macro	Inc_
+		incq	$1
+	.endm
+	.macro	Mov_
+		movq	$1,$2
+	.endm
+	.macro	Sal_
+		salq	$1,$2
+	.endm
+
+	.macro	Sar_
+		sarq	$1,$2
+	.endm
+
+	.macro	Stos_w
+	stosq
+	.endm
+.fi
 .fi
 .fi
 
