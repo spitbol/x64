@@ -274,43 +274,10 @@
 	%define	flag_ca	0x40
 .fi
 
-
-
 ; Operation and declaration macros are needed for each instruction/declaration having different formats in asm and gas.
 
-
 .if gas
-.if 32
-.if unix
-	.macro	Cmp_	dst,src	; src/dst differ
-		cmpl	\src,\dst
-	.endm
-.fi
-.if osx
-	.macro	Cmp_
-		cmpl	$1,$2
-	.endm
-.fi
-.fi
-.fi
 
-.if gas
-.if 64
-.if unix
-	.macro	Cmp_	dst,src	; src/dst differ
-		cmpq	\src,\dst
-	.endm
-.fi
-.if osx
-	.macro	Cmp_
-		cmpq	$1,$2
-	.endm
-.fi
-.fi
-.fi
-
-
-.if gas
 .if unix
 	.macro	Add_	dst,src
 		add	\src,\dst
@@ -335,7 +302,56 @@
 	.macro	Equ_	name,value
 	.set	\name,\value
 	.endm
+
+	.macro	Extern	name
+		.extern	\name
+	.endm
+
+	.macro	Fill	count
+	.fill	\count
+	.endm
+
+	.macro	Global	name
+		.global	\name
+	.endm
+
+	.macro	Include	file
+		.include	\file
+	.endm
+
+.if 32
+	.macro	Dec_	val
+	decl \val
+	.endm
+	.macro	Cmp_	dst,src	; src/dst differ
+		cmpl	\src,\dst
+	.endm
+	.macro	Inc_	val
+		incl	\val
+	.endm
+	.macro	Mov_	dst,src
+		movl	\src,\dst
+	.endm
+	.macro	Sal_	dst,src
+		sall	\src,\dst
+	.endm
+
+	.macro	Sar_	dst,src
+		sarl	\src,\dst
+	.endm
+
+	.macro	Stos_w
+	stosl
+	.endm
 .fi
+
+.if 64
+	.macro	Cmp_	dst,src	; src/dst differ
+		cmpq	\src,\dst
+	.endm
+.fi
+.fi
+
 .if osx
 	.macro	Add_
 		add	$1,$2
@@ -360,89 +376,7 @@
 	.macro	Equ_
 	.set	$1,$2
 	.endm
-.fi
-.fi
 
-.if gas
-.if 32
-.if unix
-	.macro	Dec_	val
-	decl \val
-	.endm
-.fi
-.if osx
-	.macro	Dec_
-	decl $1
-	.endm
-.fi
-.fi
-.fi
-
-.if gas 
-.if 64
-.if unix
-	.macro	Dec_	val
-	decq \val
-	.endm
-.fi
-.if osx
-	.macro	Dec_
-	decq $1
-	.endm
-.fi
-.fi
-.fi
-
-
-.if gas 
-.if 32
-.if unix
-	.macro	Inc_	val
-		incl	\val
-	.endm
-.fi
-.if osx
-	.macro	Inc_
-		incl	$1
-	.endm
-.fi
-.fi
-.fi
-
-.if gas 
-.if 64
-.if unix
-	.macro	Inc_	val
-		incq	\val
-	.endm
-.fi
-.if osx
-	.macro	Inc_
-		incq	$1
-	.endm
-.fi
-.fi
-.fi
-
-.if gas
-.if unix
-	.macro	Extern	name
-		.extern	\name
-	.endm
-
-	.macro	Fill	count
-	.fill	\count
-	.endm
-
-	.macro	Global	name
-		.global	\name
-	.endm
-
-	.macro	Include	file
-		.include	\file
-	.endm
-.fi
-.if osx
 	.macro	Extern
 		.extern	$1
 	.endm
@@ -460,55 +394,21 @@
 		.include	$1
 	.endm
 .fi
-.fi
 
-
-.if gas
-.if  32
-.if unix
-	.macro	Mov_	dst,src
-		movl	\src,\dst
-	.endm
-.fi
+.if 32
 .if osx
+	.macro	Dec_
+	decl $1
+	.endm
+	.macro	Cmp_
+		cmpl	$1,$2
+	.endm
+	.macro	Inc_
+		incl	$1
+	.endm
 	.macro	Mov_
 		movl	$1,$2
 	.endm
-.fi
-.fi
-.fi
-
-.if gas 
-.if 64
-.if unix
-	.macro	Mov_	dst,src
-		movq	\src,\dst
-	.endm
-.fi
-.if osx
-	.macro	Mov_
-		movq	$1,$2
-	.endm
-.fi
-.fi
-.fi
-
-.if gas 
-.if 32
-.if unix
-	.macro	Sal_	dst,src
-		sall	\src,\dst
-	.endm
-
-	.macro	Sar_	dst,src
-		sarl	\src,\dst
-	.endm
-
-	.macro	Stos_w
-	stosl
-	.endm
-.fi
-.if osx
 	.macro	Sal_	
 		sall	$1,$2
 	.endm
@@ -522,10 +422,43 @@
 	.endm
 .fi
 .fi
-.fi
 
-.if gas 
 .if 64
+.if osx
+	.macro	Cmp_
+		cmpq	$1,$2
+	.endm
+.fi
+.if unix
+	.macro	Dec_	val
+	decq \val
+	.endm
+.fi
+.if osx
+	.macro	Dec_
+	decq $1
+	.endm
+.fi
+.if unix
+	.macro	Inc_	val
+		incq	\val
+	.endm
+.fi
+.if osx
+	.macro	Inc_
+		incq	$1
+	.endm
+.fi
+.if unix
+	.macro	Mov_	dst,src
+		movq	\src,\dst
+	.endm
+.fi
+.if osx
+	.macro	Mov_
+		movq	$1,$2
+	.endm
+.fi
 .if unix
 	.macro	Sal_	dst,src
 		salq	\src,\dst
@@ -553,9 +486,7 @@
 	.endm
 .fi
 .fi
-.fi
 
-.if gas
 	.macro	Jmp_	lab	; gas needs '*' before target
 		jmp	\lab
 	.endm
@@ -579,7 +510,6 @@
 	.macro	Xor_	dst,src
 	xor	\src,\dst
 	.endm
-.fi
 
 .if osx
 	.macro	Jmp_	
@@ -606,7 +536,7 @@
 		xor	$1,$2
 	.endm
 .fi
-
+.fi
 
 
         Text
@@ -643,16 +573,12 @@
 	Mov_	M_word [trc_de],%%desc
 	call	trc_
 	%endmacro
-.fi
 
-.if asm 
 .if 32
 	%define	cfp_b	4
 	%define	cfp_c	4
 .fi
-.fi
 
-.if asm 
 .if 64
 	%define	cfp_b	8
 	%define	cfp_c	8
@@ -664,9 +590,6 @@
 	.set	cfp_b,4
 	.set	cfp_c,4
 .fi
-.fi
-
-.if gas 
 .if 64
 	.set	cfp_b,8
 	.set	cfp_c,8
