@@ -313,11 +313,11 @@ sys-asm:
 
 # run preprocessor to get sys for nasm as target
 
-	$(BASEBOL) -u $(TARGET)_asm $(PRE)  <sys.asm >sys.pre
+	$(BASEBOL) -u $(TARGET)_asm pre.sbl  <sys.asm >sys.pre
 
 # use preprocessor to make version of rewriter for asm
 
-	$(BASEBOL) -u $(TARGET)_asm $(PRE) <$(DEF) >def.spt
+	$(BASEBOL) -u $(TARGET)_asm pre.sbl <$(DEF) >def.spt
 
 # run asm definer to resolve system dependencies in sys
 
@@ -331,11 +331,11 @@ sys-gas:
 
 # run preprocessor to get sys for gas as target
 
-	$(BASEBOL) -u $(TARGET)_gas $(PRE)  <sys.asm >sys.pre
+	$(BASEBOL) -u $(TARGET)_gas pre.sbl  <sys.asm >sys.pre
 
 # use preprocessor to make version of rewriter for gas
 
-	$(BASEBOL) -u $(TARGET)_gas $(PRE) <$(DEF) >def.spt
+	$(BASEBOL) -u $(TARGET)_gas pre.sbl <$(DEF) >def.spt
 
 # run gas definer to resolve system dependencies in sys
 

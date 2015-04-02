@@ -341,6 +341,9 @@
 	.macro	Xor_	dst,src
 	xor	\src,\dst
 	.endm
+.fi
+
+.if unix
 .if 32
 ; gas unix 32 bit
 	.macro	Dec_	val
@@ -367,6 +370,9 @@
 	stosl
 	.endm
 .fi
+.fi
+
+.if unix
 .if 64
 ; gas unix 64 bit
 	.macro	Cmp_	dst,src	; src/dst differ
@@ -463,6 +469,8 @@
 	.endm
 .fi
 
+
+.if osx
 .if 32
 ; gas osx 32 bit
 	.macro	Dec_
@@ -491,10 +499,11 @@
 	stosl
 	.endm
 .fi
+.fi
 
 
-.if 64
 .if osx
+.if 64
 ; gas osx 64 bit
 	.macro	Cmp_
 		cmpq	$1,$2
