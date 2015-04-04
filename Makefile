@@ -76,7 +76,6 @@ endif
 DEF=def.sbl
 ERR=err.sbl
 MIN=asm.sbl
-PRE=pre.sbl
 
 # implicit rule for building objects from C files.
 
@@ -189,7 +188,7 @@ asm:
 
 # run preprocessor to get translator to nasm 
 
-	$(BASEBOL) -u $(TARGET)_asm $(PRE) <asm.sbl >asm.spt 
+	$(BASEBOL) -u $(TARGET)_asm pre.sbl <asm.sbl >asm.spt 
 
 # run asm to get .s and .err files
 
@@ -206,11 +205,11 @@ asm:
 
 # use preprocessor to make version of rewriter for asm
 
-	$(BASEBOL) -u $(TARGET)_asm $(PRE) <$(DEF) >def.spt
+	$(BASEBOL) -u $(TARGET)_asm pre.sbl <$(DEF) >def.spt
 
 # run preprocessor to get sys for nasm as target
 
-	$(BASEBOL) -u $(TARGET)_asm $(PRE)  <sys.asm >sys.pre
+	$(BASEBOL) -u $(TARGET)_asm pre.sbl  <sys.asm >sys.pre
 
 # run asm definer to resolve system dependencies in sys
 
@@ -265,11 +264,11 @@ osx-export:
 
 # use preprocessor to make version of rewriter for gas
 
-	$(BASEBOL) -u osx_32_gas $(PRE) <$(DEF) >def.spt
+	$(BASEBOL) -u osx_32_gas pre.sbl <$(DEF) >def.spt
 
 # run preprocessor to get sys for ngas as target
 
-	$(BASEBOL) -u osx_32_gas $(PRE) <sys.asm >sys.pre
+	$(BASEBOL) -u osx_32_gas pre.sbl <sys.asm >sys.pre
 
 # run gas definer to resolve system dependencies in sys
 

@@ -137,7 +137,7 @@
 	define('mem(ref)')
 	define('mov(i1,i2)i.src,i.dst,t.src')
 	define('op(gopc,gop1,gop2,gop3)')
-	define('opl(gopl,gopc,gop1,gop2,gop3)')
+	define('opl(gopl,gopc,gop1,gop2,gop3)tmp,opc')
 	define('genrep(op)l1,l2)')
 	define('getarg(iarg)txt,typ,pre,post')
 	define('getlea(iarg)txt,typ,pre,post')
@@ -187,11 +187,11 @@ option.next
 	&dump = 0				:(end)
 
 option.unix.32.asm
-	os = 'unix'; 	ws = '32';	assembler = 'nasm'		:(option.next)
+	os = 'unix'; 	ws = '32';	assembler = 'asm'		:(option.next)
 option.unix.32.gas
 	os = 'unix'; 	ws = '32';	assembler = 'gas'		:(option.next)
 option.unix.64.asm
-	os = 'unix'; 	ws = '64';	assembler = 'nasm'		:(option.next)
+	os = 'unix'; 	ws = '64';	assembler = 'asm'		:(option.next)
 option.unix.64.gas
 	os = 'unix'; 	ws = '64';	assembler = 'gas'		:(option.next)
 option.osx.32.gas
@@ -411,6 +411,24 @@ is_exec.1
 	s len(3) . opc ' ' =			:f(is_exec.2)
 	is_executable[opc] = 1			:(is_exec.1)
 is_exec.2
+
+*	Simple ops translate to a single instruction. We name the ops with the instruction name, 
+*	capitalizing the first letter, and appending an underline. So 'Add_' represents 'add'.
+
+	simple_op = table(50)
+	s = 'Add_ add And_ and Cmp_ cmp Dec_ dec Inc_ inc Or_ or Mov_ mov Not_ not Sal_ sal Sar_ sar Sub_ sub Xor_ xor '
+simple_op.init
+	s break(' ') . name ' ' break(' ') . opcode ' ' =	:f(simple_op.done)
+	simple_op[name] = opcode				:(simple_op.init)
+simple_op.done
+
+Or
+Xor
+Mov
+Not
+Sal
+Sar
+Sub
 
 -stitl main program
 *  here follows the driver code for the "main" program.
@@ -669,7 +687,21 @@ genlab	genlab = (differ(prefix) prefix,'')  '_' lpad(genlabels = genlabels + 1,4
 
 -stitl opl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
-opl	cstmts[cstmts.n = cstmts.n + 1] =
+opl	
+	opc = simple_op[gopc]
+	ident(opc)				:s(opl.done)
+	gopc = opc
+.if gas
+	gopc = gopc (eq(ws,32) 'l', 'q')
+.fi
+*	here if simple op. Nothing to do if unary op.
+	ident(gop2)				:s(opl.done)
+.if gas
+*	here if binary op. Swap arguments since targeting gas
+	tmp = gop1; gop1 = gop2; gop2 = tmp
+.fi
+opl.done
+	cstmts[cstmts.n = cstmts.n + 1] =
 .		tstmt(gopl,gopc,gop1,gop2,gop3)	:(return)
 
 -stitl op(gopc,gop1,gop2,gop3)
@@ -1275,7 +1307,7 @@ g.flc
 	op('jb', lbl )
 	op('cmpb',reg,"'Z'")
 	op('ja', lbl)
-	op('Add_',reg,'$32')
+	op('addb','$32',reg)
         opl(lbl ':')
 	trc_suspend = 0
 .fi
