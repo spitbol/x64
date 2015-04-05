@@ -126,7 +126,9 @@
 *  error is used to report an error for current statement
 
 	define('a(text)')
+	define('align(n)')
 	define('error(text)')
+	define('extern(var)')
 	define('flush()')
 	define('g(text)')
 	define('genz()')
@@ -134,6 +136,7 @@
 	define('genbop(stmt)')
         define('genlab(prefix)')
 	define('getreg(iarg)')
+	define('global(var)')
 	define('mem(ref)')
 	define('mov(i1,i2)i.src,i.dst,t.src')
 	define('op(gopc,gop1,gop2,gop3)')
@@ -148,6 +151,7 @@
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
 	define('report(num,text)')
+	define('section(sec)')
 	define('tblini(str)pos,cnt,index,val,lastval')
 
 *  outstmt is used to send a target statement to the target code
@@ -424,7 +428,7 @@ simple_op.init
 	simple_op[name] = opcode 		:f(simple_op.init)
 .fi
 .if gas
-	simple_op[name] = opcode (ident(ws,32) 'l', 'q')	:f(simple_op.init)
+	simple_op[name] = opcode (eq(ws,32) 'l', 'q')	:f(simple_op.init)
 .fi
 simple_op.done
 
@@ -651,6 +655,16 @@ a
 	a = text
 .fi
 						:(return)
+-stitl align(n)
+*  emit code to align on specified address
+align
+.if asm
+	op('align',n)				
+.fi
+.if gas
+	op('.balign',n,'0')
+.fi
+						:(return)
 -stitl error(text)
 *  this module handles reporting of errors with the offending
 *  statement text in thisline.  comments explaining
@@ -717,6 +731,16 @@ getreg.9
 getreg.10	getreg = substr(i.text(iarg),2,2)	:(return)
 
 getreg.11	getreg = substr(i.text(iarg),3,2)	:(return)
+
+-stitl global(var)
+*	generate global directive
+global
+.if asm
+	op('global',var)				:(return)
+.fi
+.if asm
+	op('.global',var)				:(return)
+.fi
 
 -stitl mem(ref)
 mem
@@ -1152,7 +1176,7 @@ chktrace.1
 
 	trc_desc = '"' replace(thisline,'|',' ') '"'
 	ab_suspend = 1
-	op('Data')
+	section('data')
 	flush()
 	lbl = genlab('it')
 .if asm
@@ -1162,7 +1186,7 @@ chktrace.1
 .if gas
 	opl(lbl ':' ,'.asciz',trc_desc)
 .fi
-	op('Text')
+	section('text')
 	op('Mov_',reg.w0,literal_ lbl)
 	op('Mov_',mem('trc_de'),reg.w0)
 	op('call','trc_')
@@ -1211,6 +1235,17 @@ rl01
 
 rl02    readline = '       end'
 						:(rl01)
+-stitl section(sec)
+*  declare section of specified type
+*	asm requires op of section, operation of kind, gas just gives the kind as an op.
+section
+.if asm
+	op('section', '.' sec)
+.fi
+.if gas
+	op('.' sec)
+.fi
+						:(return)
 -stitl tblini(str)
 *  this routine is called to initialize a table from a string of
 *  index/value pairs.
@@ -1341,14 +1376,14 @@ g.bsw1
 .if gas
 	op('jmp','*' lbl '(,' reg ',' cfp_b ')' )
 .fi
-	op('Data')
+	section('data')
         opl(lbl ':')
 	trc_suspend =				:(opdone)
 
 g.iff   op(D_word,getarg(i2))              :(opdone)
 
 g.esw
-	op('Text')		:(opdone)
+	section('text')		:(opdone)
 g.ent
 
 *  entry points are stored in byte before program entry label
@@ -1363,7 +1398,7 @@ g.ent
 *  is a simple odd/even, least significant bit definition.
 *  that is, for us, 1 and 3 are odd, 2 and 4 are even.
 	t1 = i.text(i1)
-*       op('Align_',2)
+*       align(2)
 	outline(tab 'Align_' tab '2')
 	differ(t1)				:s(g.ent.1)
 	outline(tab 'nop')
@@ -1740,7 +1775,7 @@ g.lch
 
 
 *  decrement source register if needed
-	eq(s.type,11) op('dec',regmap[s.reg])
+	eq(s.type,11) op('Dec_',regmap[s.reg])
 
 *  clear result register
 	op('Xor_', (eq(w) getarg(dst),reg.w0), (eq(w) getarg(dst),reg.w0))
@@ -1782,7 +1817,7 @@ g.sch
 
 *  decrement destination register if needed
 
-	eq(d.type,11) op('dec',regmap[d.reg])
+	eq(d.type,11) op('Dec_',regmap[d.reg])
 
 *  if source is x register, move it to w0, so can store character from lower part of a w register
 
@@ -1842,7 +1877,7 @@ g.trc
 	op('mov','(' reg.w0 ')', reglow['w0'])
 .fi
 	op('stos' op_b)
-	op('dec',reg.wa)
+	op('Dec_',reg.wa)
 	op('jnz',lbl)
 	op('Xor_',reg.xl,reg.xl)
 	op('Xor_',reg.xr,reg.xr)
@@ -1990,8 +2025,8 @@ g.mwb
 
 g.mcb
 	op('std')
-	op('dec',reg.xl)
-	op('dec',reg.xr)
+	op('Dec_',reg.xl)
+	op('Dec_',reg.xr)
  	genrep('Movs_b')
 	op('cld')
 						:(opdone)
@@ -2003,7 +2038,7 @@ genrep
 	op('or',reg.wa,reg.wa)
 	op('jz',l2)
 	op(op)
-	op('dec',reg.wa)
+	op('Dec_',reg.wa)
 	op('Jmp_',l1)
 	opl(l2 ':')
 						:(return)
@@ -2015,7 +2050,7 @@ g.chk
 decend
 *  here at end of dic or dac to see if want label made public
 	thislabel ? rtab(1) . thislabel ':'
-        differ(pubtab[thislabel]) op('Global',thislabel)
+        differ(pubtab[thislabel]) global(thislabel)
 						:(opdone)
 
 g.dac	
@@ -2028,7 +2063,7 @@ g.dic
 						:(decend)
 
 g.drc
-	op('Align_',8)
+	align(8)
 	t1 = i.text(i1)
 	t1 ? fence "+" = ""
 	op(D_real,t1)
@@ -2052,8 +2087,8 @@ dtc.1	eq(n)					:s(opdone)
 	op(D_byte,'0')
 	n = n - 1				:(dtc.1)
 
-	op('Align_',cfp_b)			
-	op('D_word','0')
+	align(cfp_b)			
+	section('d_word','0')
 						:(opdone)
 	dtc.rem = remdr(size(dtc.txt),cfp_c)
 *  append nulls to complete last word so constant length is multiple
@@ -2076,7 +2111,7 @@ g.equ
 
 g.exp
 	ppm_cases[thislabel] = i.text(i1)
-*	op('Extern',thislabel)
+*	extern(thislabel)
 	thislabel =				:(opdone)
 
 g.inp
@@ -2096,29 +2131,29 @@ g.sec	op('')
 
 * procedure declaration section
 g.sec.1
-	op('Text')
-        op('Global','sec01')
+	section('text')
+        global('sec01')
         opl('sec01:')	             	:(opdone)
 
 * definitions section
 g.sec.2
-	op('Data')
-	op('Global','sec02')
+	section('data')
+	global('sec02')
         opl('sec02:')       		      	:(opdone)
 
 * constants section
 g.sec.3
-	op('Data')
-	op('Global','sec03')
+	section('data')
+	global('sec03')
 	opl('sec03:')
 						:(opdone)
 
 * working variables section
 g.sec.4 
-	op('Global','esec03')
+	global('esec03')
         opl('esec03' ':')
-        op('Data')
-        op('Global','sec04')
+        section('data')
+        global('sec04')
 	opl('sec04:')			:(opdone)
 
 *  here at start of program section.  if any n type procedures,
@@ -2126,7 +2161,7 @@ g.sec.4
 g.sec.5
 *  emit code to indicate in code section
 *  get direction set to up.
-        op('Global','esec04')
+        global('esec04')
         opl('esec04' ':')
 *        (gt(prc.count1) opl('prc$' ':','times', prc.count1 ' dd 0'))
 .if asm
@@ -2135,23 +2170,23 @@ g.sec.5
 .if gas
 	opl('prc_:','.fill', prc.count1,cfp_b)
 .fi
-        op('Global','end_min_data')
+        global('end_min_data')
         opl('end_min_data' ':')
-        op('Text')
-        op('Global','sec05')
+        section('text')
+        global('sec05')
         opl('sec05' ':')
 *  enable tracing if desired
 						:(opdone)
 
 *  stack overflow section.  output exi__n tail code
 g.sec.6
-        op('Global','sec06')
+        global('sec06')
         opl('sec06'  ':', 'nop')
 				             :(opdone)
 
 *  error section.  produce code to receive erb's
 g.sec.7
-        op('Global','sec07')
+        global('sec07')
         opl('sec07:')
 	flush()
 *  error section.  produce code to receive erb's
@@ -2163,6 +2198,16 @@ g.sec.7
 	op('xchg',reg.wa,a(mem(rcode)) g(rcode))
 						:(opdone)
 
+
+-stitl extern(var)
+*	generate extern declaration
+extern
+.if asm
+	op('extern',var)			:(return)
+.fi
+.if gas
+	op('.extern',var)			:(return)
+.fi
 
 opdone	flush()					:(opnext)
 
