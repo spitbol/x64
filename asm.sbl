@@ -412,23 +412,20 @@ is_exec.1
 	is_executable[opc] = 1			:(is_exec.1)
 is_exec.2
 
-*	Simple ops translate to a single instruction. We name the ops with the instruction name, 
-*	capitalizing the first letter, and appending an underline. So 'Add_' represents 'add'.
+*	We say an opcode is 'simple' if it translates to a single machine instruction.
+*	We name the ops with the instruction name, capitalizing the first letter, 
+*	and appending an underline. For example,  'Add_' represents 'add'.
 
 	simple_op = table(50)
 	s = 'Add_ add And_ and Cmp_ cmp Dec_ dec Inc_ inc Or_ or Mov_ mov Not_ not Sal_ sal Sar_ sar Sub_ sub Xor_ xor '
 simple_op.init
+.if asm
 	s break(' ') . name ' ' break(' ') . opcode ' ' =	:f(simple_op.done)
-	simple_op[name] = opcode				:(simple_op.init)
+.fi
+.if gas
+	simple_op[name] = opcode (ident(ws,32) 'l', 'q')	:f(simple_op.init)
+.fi
 simple_op.done
-
-Or
-Xor
-Mov
-Not
-Sal
-Sar
-Sub
 
 -stitl main program
 *  here follows the driver code for the "main" program.
@@ -688,11 +685,13 @@ genlab	genlab = (differ(prefix) prefix,'')  '_' lpad(genlabels = genlabels + 1,4
 -stitl opl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
 opl	
+	ident(gopc)				:s(opl.done)
+simple
 	opc = simple_op[gopc]
 	ident(opc)				:s(opl.done)
 	gopc = opc
 .if gas
-	gopc = gopc (eq(ws,32) 'l', 'q')
+	gopc = differ(gopc) gopc (eq(ws,32) 'l', 'q')
 .fi
 *	here if simple op. Nothing to do if unary op.
 	ident(gop2)				:s(opl.done)
@@ -1185,6 +1184,8 @@ prsarg	prsarg = minarg(0)
 
 readline readline = infile                      :f(rl02)
 	nlines  = nlines + 1
+*	outfile = '$' lpad(nlines,6) tab readline
+
 	ident( readline )			:s(readline)
 readline.0
 	leq( substr(readline,1,1 ),';' )       	:f(rl01)
