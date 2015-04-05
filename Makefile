@@ -54,7 +54,7 @@ GASOPTS= --$(WS)
 ifeq ($(OS),unix)
 ELF:=elf$(WS)
 else
-EL:F=macho$(WS)
+ELF=macho$(WS)
 endif
 
 # spitbol source file
