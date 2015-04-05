@@ -419,8 +419,9 @@ is_exec.2
 	simple_op = table(50)
 	s = 'Add_ add And_ and Cmp_ cmp Dec_ dec Inc_ inc Or_ or Mov_ mov Not_ not Sal_ sal Sar_ sar Sub_ sub Xor_ xor '
 simple_op.init
-.if asm
 	s break(' ') . name ' ' break(' ') . opcode ' ' =	:f(simple_op.done)
+.if asm
+	simple_op[name] = opcode 		:f(simple_op.init)
 .fi
 .if gas
 	simple_op[name] = opcode (ident(ws,32) 'l', 'q')	:f(simple_op.init)
@@ -690,12 +691,10 @@ simple
 	opc = simple_op[gopc]
 	ident(opc)				:s(opl.done)
 	gopc = opc
+	simples = simples + 1
 .if gas
-	gopc = differ(gopc) gopc (eq(ws,32) 'l', 'q')
-.fi
-*	here if simple op. Nothing to do if unary op.
+*	Nothing to do if unary op.
 	ident(gop2)				:s(opl.done)
-.if gas
 *	here if binary op. Swap arguments since targeting gas
 	tmp = gop1; gop1 = gop2; gop2 = tmp
 .fi
@@ -2217,6 +2216,7 @@ g.end
 	differ(i_trace) report(i_trace,'instruction trace enabled')
         report(nlines,		'lines read')
         report(nstmts,		'statements processed')
+	report(+simples,		'simple operations translated')
         report(ntarget,		'target code lines produced')
 	report(&stcount,	'spitbol statements executed')
         report(max.err,		'maximum err/erb number')
