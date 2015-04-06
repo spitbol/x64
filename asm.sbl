@@ -1,87 +1,85 @@
 .def comment_asterisk
 -title mincod: phase 2 translation from minimal tokens to 80386 code
 -stitl description
-* copyright 1987-2012 robert b. k. dewar and mark emmer.
-* copyright 2012-2015 david shields
+/*
+ copyright 1987-2012 robert b. k. dewar and mark emmer.
+ copyright 2012-2015 david shields
 
-* this file is part of macro spitbol.
+ this file is part of macro spitbol.
 
-*     macro spitbol is free software: you can redistribute it and/or modify
-*     it under the terms of the gnu general public license as published by
-*     the free software foundation, either version 2 of the license, or
-*     (at your option) any later version.
+	macro spitbol is free software: you can redistribute it and/or modify it under the terms of the 
+	gnu general public license as published by the free software foundation, either version 2 of the license, or
+	(at your option) any later version.
 
-*     macro spitbol is distributed in the hope that it will be useful,
-*     but without any warranty; without even the implied warranty of
-*     merchantability or fitness for a particular purpose.  see the
-*     gnu general public license for more details.
+	macro spitbol is distributed in the hope that it will be useful, but without any warranty; without even 
+	the implied warranty of merchantability or fitness for a particular purpose.  see the gnu general 
+	public license for more details.
 
-*     you should have received a copy of the gnu general public license
-*     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+	you should have received a copy of the gnu general public license along with macro spitbol.  
+	if not, see <http://www.gnu.org/licenses/>.
 
-* no case folding
+ no case folding
+*/
 -case  0
 
-* Hereafter: When we say 'asm' we really mean 'nasm,' and when we say 'gas' we mean 'as', the GNU assembler.
+/*
+	Hereafter: When we say 'asm' we really mean 'nasm,' and when we say 'gas' we mean 'as', the GNU assembler.
 
-* Note:
-*	A symbol begins with a capital in the output assembly language iff it reflects
-*	a difference between asm and gas that will be resolved later, either by one-line
-*	macros in the case of asm, or via expansion by def.sbl in the case of gas.
-*
-*	For example, 'Mov_' is generated instead of 'mov' since asm wants destination before the source, whilst
-*	gas wants the destination after the source.
+	Note:
 
+	A symbol begins with a capital in the output assembly language iff it reflects a difference between asm 
+	and gas that will be resolved later, either by one-line macros in the case of asm, or via expansion by 
+def.sbl in the case of gas.
 
-*  this program takes input file in minimal token form and
-*  produces assembly code for intel 80386 processor.
-*  the program obtains the name of the file to be translated from the
-*  command line string in host(0).  options relating to the processing
-*  of comments can be changed by modifying the source.
-
-*  in addition to the minimal token file, the program requires the
-*  name of a "machine definition file" that contains code specific
-*  to a particular 80386 assembler.
-
-*  you may also specify option flags on the command line to control the
-*  code generation.  the following flags are processed:
-*	compress	generate tabs rather than spaces in output file
-*       comments        retain full-line and end-of-line comments
-
-*  in addition to the normal minimal register complement, one scratch
-*  work register, w0 is defined.  see the register map below for specific allocations.
-
-*  this program is based in part on earlier translators for the
-*  it is based in part on earlier translators for the dec vax
-*  (vms and un*x) written by steve duff and robert goldberg, and the
-*  pc-spitbol translator by david shields.
-
-*  to run under spitbol:
-*       spitbol -u "<file>:<machine>[:flag:...:flag]" codlinux.spt
-
-*	reads <file>.lex	containing tokenized source code
-*       writes <file>.s         with 80386 assembly code
-*	also writes <file>.err	with err and erb error messages
-*       parts of n.hdr  are prepended and appended to <file>.s
-*	also sets flags		to 1 after converting names to upper case
-*	also reads <file>.pub	for debug symbols to be declared public
-
-*  example:
-*       spitbol -u v37:dos:compress codlinux.spt
+	For example, 'Mov_' is generated instead of 'mov' since asm wants destination before the source, whilst
+	gas wants the destination after the source.
 
 
-*  revision history:
+	this program takes input file in minimal token form and produces assembly code for intel 80386 processor.
+	the program obtains the name of the file to be translated from the command line string in host(0).  
+	options relating to the processing of comments can be changed by modifying the source.
+
+	in addition to the minimal token file, the program requires the name of a "machine definition file" 
+	that contains code specific to a particular 80386 assembler.
+
+	you may also specify option flags on the command line to control the code generation.  
+	the following flags are processed:
+
+		compress	generate tabs rather than spaces in output file
+		comments        retain full-line and end-of-line comments
+
+	in addition to the normal minimal register complement, one scratch work register, w0 is defined.  
+	see the register map below for specific allocations.
+
+	this program is based in part on earlier translators for the it is based in part on earlier 
+	translators for the dec vax (vms and un*x) written by steve duff and robert goldberg, and the
+	pc-spitbol translator by david shields.
+	
+	to run under spitbol:
+
+       spitbol -u "<file>:<machine>[:flag:...:flag]" codlinux.spt
+
+	reads <file>.lex	containing tokenized source code writes <file>.s with 80386 assembly code
+	also writes <file>.err	with err and erb error messages parts of n.hdr  are prepended and appended to <file>.s
+	also sets flags		to 1 after converting names to upper case also reads <file>.pub	for 
+	debug symbols to be declared public
+
+	example:
+       spitbol -u v37:dos:compress codlinux.spt
+*/
+
+*	revision history:
 
         version = 'v1.12'
 	rcode = '_rc_'
 
-*  data structures
+*	data structures
 
 	data('minarg(i.type,i.text)')
 	data('tstmt(t.label,t.opc,t.op1,t.op2,t.op3,t.comment)')
 
 
-*  keyword initialization
+*	keyword initialization
 
 	&anchor = &trim	= &dump = 1
 	&dump = 3
@@ -114,13 +112,14 @@
 
 *  function definitions
 
-*  crack parses stmt into a stmt data plex and returns it.
-*  it fails if there is a syntax error.
+*  crack parses stmt into a stmt data plex and returns it. it fails if there is a syntax error.
 
 	define('crack(line)operands,operand,char')
 
 	define('chktrace()')
+
 *	comregs - map minimal register names to target register names
+
 	define('comregs(line)t,pre,word')
 
 *  error is used to report an error for current statement
@@ -154,23 +153,24 @@
 	define('section(sec)')
 	define('tblini(str)pos,cnt,index,val,lastval')
 
-*  outstmt is used to send a target statement to the target code
-*  output file outfile
+*  outstmt is used to send a target statement to the target code output file outfile
 
 	define('outstmt(ostmt)label,opcode,op1,op2,op3,comment,t,stmtout')
 
-*  readline is called to return the next non-comment line from
-*  the minimal input file (infile <=> lu1).   note that it will
-*  not fail on eof, but it will return a minimal end statement
+*	readline is called to return the next non-comment line from the minimal input file (infile <=> lu1).   
+*	note that it will not fail on eof, but it will return a minimal end statement
 
 	define('readline()')
 
 	options = host(0)
 	os = 'unix';	ws = '64'
 	output = 'options: ' options
+
 *	add trailing colon so always have colon after an argument
+
 	options = options ':'
 option.next
+
 *	ignore extraneous : in list (helps with writing makefiles)
 	options ':' =				:s(option.next)
 	options break(':') . option ':' =	:f(options.done)
@@ -201,10 +201,13 @@ option.unix.64.gas
 option.osx.32.gas
 	os = 'osx'; 	ws = '32';	assembler = 'gas'		:(option.next)
 option.trc
+
 *	turn on instruction trace
 	i_trace = 1				:(option.next)
 option.xt
+
 *  x_trace turns on tracing for executable instructions
+
 	x_trace = 1				:(option.next)
 
 options.done
@@ -212,9 +215,8 @@ options.done
 	report(target,'target')
 	filebase = "s"
 
-*	cfp_b is bytes per word, cfp_c is characters per word
-*       these should agree with values used in translator
-* set target-dependent configuration parameters
+*	cfp_b is bytes per word, cfp_c is characters per word these should agree with values used in translator
+*	set target-dependent configuration parameters
 
 	:($('config.' ws))
 
@@ -225,9 +227,13 @@ config.32
 	log_cfp_b = 2
 	log_cfp_c = 2
 	op_b = 'b'
+
 *	op_c is instruction suffix for minimal character size
+
 	op_c = 'b'
+
 *	op_w is instruction suffix for 32-bit word-size
+
 .if asm
 	op_w = 'd'
 .fi
@@ -235,13 +241,14 @@ config.32
 	op_w = 'l'
 .fi
 	rel = ''
+
 *	suffix for opcode to indicate double word (32 bits)
 	o_ =	'd'
 						:(config.done)
 
 config.64
-*	cfp_b is bytes per word, cfp_c is characters per word
-*       these should agree with values used in translator
+
+*	cfp_b is bytes per word, cfp_c is characters per word these should agree with values used in translator
 	cfp_b = 8
 	cfp_bm1 = 7
 	cfp_c = 8
@@ -250,8 +257,10 @@ config.64
 	op_b = 'b'
 	op_c = 'b'
 	op_w = 'q'
+
 *	rel = 'rel '
 *	suffix for opcode to indicate quad word (64 bits)
+
 	o_ =	'q'
 
 
@@ -259,26 +268,35 @@ config.64
 config.done
 
 *	set ab_suspend to avoid emitting 'a' and 'b' statments which flushing code buffer.
+
 	ab_suspend = 0
 
 *	trc_limit is maximum number of calls to be generated if non-zero
+
 	trc_limit = 000
+
 *	set trc_first non-zero to skip first number of instructions that would generate trace
+
 	trc_first = 1
-*	will set in_executable when in part of program where executable
-*	instructions may occur
+
+*	will set in_executable when in part of program where executable instructions may occur
+
 	trc_exec = 0
 
 *	trc_suspend is set nonzero to temporarily disable the instruction trace.
 *	it is initially nonzero so no trace can be emitted until reach code section.
+
 	trc_suspend = 1
+
 *	set in_skip when should not insert trace code, else assembly errors result.
 *	start with skip on, turn off when see first start of code.
+
 	trc_skip = 1
-*	skip_on and skip_off are labels indicating the start and end,
-*	respectively, of sections of the code that should not be traced,
-*	usually because they contain a loop instruction that won't
-*	compile if too much trace code is inserted.
+/*
+	skip_on and skip_off are labels indicating the start and end, respectively, of sections of the code 
+	that should not be traced, usually because they contain a loop instruction that won't
+	compile if too much trace code is inserted.
+*/
 	skip_on = table(50)
 	skip_off = table(50)
 
@@ -315,8 +333,7 @@ skip_init.end
 
 	sectnow = 0
 
-*	ppm_cases gives count of ppm/err statments that must follow call to
-*	a procedure
+*	ppm_cases gives count of ppm/err statments that must follow call to a procedure
 
 	ppm_cases = table(50,,0)
 
@@ -331,8 +348,7 @@ skip_init.end
 
 	labtab = table(500)
 
-*  for each statement, code in generated into three
-*  arrays of statements:
+*  for each statement, code in generated into three arrays of statements:
 
 *	astmts:	statements after opcode (()+, etc.)
 *	bstmts: statements before code (-(), etc)
@@ -365,6 +381,7 @@ skip_init.end
 	'|' rem . slineno
 
 *  dispatch table
+
 	argcase = table(100)
 	argcase[01] = .getarg.c.1;	argcase[2]  = .getarg.c.2;	argcase[3]  = .getarg.c.3;
 	argcase[04] = .getarg.c.4;	argcase[5]  = .getarg.c.5;	argcase[6]  = .getarg.c.6;
@@ -391,9 +408,8 @@ skip_init.end
 	valtable = table(100)
 .fi
 
-*  pifatal maps minimal opcodes for which no a code allowed
-*  to nonzero value. such operations include conditional
-*  branches with operand of form (x)+
+*	pifatal maps minimal opcodes for which no a code allowed to nonzero value. such operations include 
+*	conditional branches with operand of form (x)+
 
 	pifatal = tblini(
 .	'aov[1]beq[1]bne[1]bge[1]bgt[1]bhi[1]ble[1]blo[1]'
@@ -415,42 +431,39 @@ is_exec.1
 	s len(3) . opc ' ' =			:f(is_exec.2)
 	is_executable[opc] = 1			:(is_exec.1)
 is_exec.2
-
-*	We say an opcode is 'simple' if it translates to a single machine instruction.
-*	We name the ops with the instruction name, capitalizing the first letter, 
-*	and appending an underline. For example,  'Add_' represents 'add'.
-
+/*
+	We say an opcode is 'simple' if it translates to a single machine instruction. We name the ops with 
+	the instruction name, capitalizing the first letter, and appending an underline. 
+	For example,  'Add_' represents 'add'.
+*/
 	simple_op = table(50)
 	s = 'Add_ add And_ and Cmp_ cmp Dec_ dec Inc_ inc Or_ or Mov_ mov Not_ not Sal_ sal Sar_ sar Sub_ sub Xor_ xor '
 simple_op.init
 	s break(' ') . name ' ' break(' ') . opcode ' ' =	:f(simple_op.done)
 .if asm
-	simple_op[name] = opcode 		:f(simple_op.init)
+	simple_op[name] = opcode 		
 .fi
 .if gas
-	simple_op[name] = opcode (eq(ws,32) 'l', 'q')	:f(simple_op.init)
+	simple_op[name] = opcode (eq(ws,32) 'l', 'q')	:(simple_op.init)
 .fi
+						:(simple_op.init)
 simple_op.done
 
 -stitl main program
-*  here follows the driver code for the "main" program.
+/*
+*  	follows the driver code for the "main" program.
 
 
-*  loop until program exits via g.end
+*	loop until program exits via g.end
 
-*  opnext is invoked to initiate processing of the next line from
-*  readline.
-*  after doing this, opnext branches to the generator routine indicated
-*  for this opcode if there is one.
-*  the generators all have entry points beginning
-*  with "g.", and can be considered a logical extension of the
-*  opnext routine.  the generators have the choice of branching back
-*  to dsgen to cause the thisstmt plex to be sent to outstmt, or
-*  or branching to dsout, in which case the generator must output
-*  all needed code itself.
+*	opnext is invoked to initiate processing of the next line from readline.  after doing this, opnext branches 
+	to the generator routine indicated for this opcode if there is one.  the generators all have entry points 
+	beginning with "g.", and can be considered a logical extension of the opnext routine.  the generators 
+	have the choice of branching back to dsgen to cause the thisstmt plex to be sent to outstmt, or
+  	of branching to dsout, in which case the generator must output all needed code itself.
 
-*  the generators are listed in a separate section below.
-
+	the generators are listed in a separate section below.
+*/
 
 *  get file name
 
@@ -482,8 +495,7 @@ flgs2
 	arg_xl = minarg(7,'xl')
 	arg_xr = minarg(7,'xr')
 
-*  branchtab maps minimal opcodes 'beq', etc to desired
-*  target instruction
+*  branchtab maps minimal opcodes 'beq', etc to desired target instruction
 
 	branchtab = table(10)
 	branchtab['beq'] = 'je'
@@ -495,8 +507,7 @@ flgs2
 	branchtab['blo'] = 'jb'
 	branchtab['bhi'] = 'ja'
 
-*  optim.tab flags opcodes capable of participating in or optimization
-*		in outstmt routine
+*  optim.tab flags opcodes capable of participating in or optimization in outstmt routine
 
 	optim.tab = table(10)
 	optim.tab<"and"> = 1
@@ -511,8 +522,7 @@ flgs2
 	optim.tab<"dec"> = 1
 
 
-*  ismem is table indexed by operand type which is nonzero if
-*  operand type implies memory reference.
+*  ismem is table indexed by operand type which is nonzero if operand type implies memory reference.
 
 	ismem = array(30,0)
 	ismem<3> = 1; ismem<4> = 1; ismem<5> = 1
@@ -520,8 +530,7 @@ flgs2
 	ismem<12> = 1; ismem<13> = 1; ismem<14> = 1
 	ismem<15> = 1
 
-*  regmap maps minimal register name to target machine
-*  register/memory-location name.
+*  regmap maps minimal register name to target machine register/memory-location name.
 
 	regmap = table(30)
 	s = 'xlXLxrXRxsXSxtXTwaWAwbWBwcWCw0W0iaIAcpCP'
@@ -546,6 +555,7 @@ reglow.done
 	w0_arg = minarg(8,'w0')
 
 *  quick reference:
+
 	reg.xl = regmap['xl']
 	reg.xr = regmap['xr']
 	reg.xs = regmap['xs']
@@ -557,6 +567,7 @@ reglow.done
 	reg.ia = regmap['ia']
 
 * real_op maps minimal real opcode to machine opcode
+
 	real_op = table(10)
 	real_op['adr'] = 'fadd'
 	real_op['atn'] = 'fpatan'
@@ -571,11 +582,11 @@ reglow.done
 	real_op['sqr'] = 'fsqrt'
 	real_op['str'] = 'fst'
 
-*  other definitions that are dependent upon things defined in the
-*  machine definition file, and cannot be built until after the definition
-*  file has been read in.
+*  other definitions that are dependent upon things defined in the machine definition file, and cannot 
+be built until after the definition file has been read in.
 
 *  p.outstmt examines output lines for certain types of comment contructions
+
 	fillc	  = (ident(compress) " ",tab)
 	p.outstmt = (break(fillc) . label span(fillc)) . leader
 +			comment.delim rem . comment
@@ -607,6 +618,7 @@ err_ok
 * 	&dump = 0
 
 *  read in .equ file with value for symbols defined by equ opcode (this is really only needed for gas)
+
 	output = ~input(.equfile,6,basename '.equ') 'cannot open equ file'	:s(end)
 	equ_value = table(1000)
 equ.copy
@@ -616,8 +628,7 @@ equ.copy
 equ.end
 	endfile(6)
 
-*  read in pub file if it exists.  this contains a list of symbols to
-*  be declared public when encountered.
+*  read in pub file if it exists.  this contains a list of symbols to be declared public when encountered.
 
 	pubtab = table(2)
 	input(.pubfile,5, filebase ".pub")		:f(nopub)
@@ -635,16 +646,17 @@ comregs
 	comregs = comregs pre word		:(comregs)
 comregs1 comregs = comregs line			:(return)
 -stitl crack(line)
-*  crack is called to create a stmt plex containing the various parts  of
-* the minimal source statement in line.  for conditional assembly ops,
-* the opcode is the op, and op1 is the symbol.  note that dtc is handled
-*  as a special case to assure that the decomposition is correct.
+/*
+	crack is called to create a stmt plex containing the various parts  of the minimal source statement 
+	in line.  for conditional assembly ops, the opcode is the op, and op1 is the symbol.  
+	note that dtc is handled as a special case to assure that the decomposition is correct.
 
-*  crack prints an error and fails if a syntax error occurs.
-
+	crack prints an error and fails if a syntax error occurs.
+*/
 crack   nstmts  = nstmts + 1
 	op1 = op2 = op3 = typ1 = typ2 = typ3 =
 	line    p.csparse			:s(return)
+
 *  here on syntax error
 
 	error('source line syntax error')	:(freturn)
@@ -656,7 +668,9 @@ a
 .fi
 						:(return)
 -stitl align(n)
+
 *  emit code to align on specified address
+
 align
 .if asm
 	op('align',n)				
@@ -666,12 +680,13 @@ align
 .fi
 						:(return)
 -stitl error(text)
-*  this module handles reporting of errors with the offending
-*  statement text in thisline.  comments explaining
-*  the error are written to the listing (including error chain), and
-*  the appropriate counts are updated.
+/*
+	this module handles reporting of errors with the offending statement text in inline.  
+	comments explaining the error are written to the listing (including error chain), and the appropriate 
+	counts are updated.
+*/
 
-error   outline('* *???* ' thisline)
+error   outline('* *???* ' inline)
 	outline('*       ' text)
 .	          (ident(lasterror),'. last error was line ' lasterror)
 	lasterror = outlines
@@ -679,7 +694,9 @@ error   outline('* *???* ' thisline)
         output = 'too many errors, quitting'  :(end)
 
 -stitl g(text)
+
 * emit text if using gas
+
 g
 .if gas
 	g = text
@@ -694,11 +711,15 @@ genbop
 	bstmts[bstmts.n = bstmts.n + 1] = stmt	:(return)
 
 -stitl genlab(prefix)
+
 *  generate unique labels for use in generated code
+
 genlab	genlab = (differ(prefix) prefix,'')  '_' lpad(genlabels = genlabels + 1,4,'0') :(return)
 
 -stitl opl(gopl,gopc,gop1,gop2,gop3)
+
 *  generate operation with label
+
 opl	
 	ident(gopc)				:s(opl.done)
 simple
@@ -707,9 +728,13 @@ simple
 	gopc = opc
 	simples = simples + 1
 .if gas
+
 *	Nothing to do if unary op.
+
 	ident(gop2)				:s(opl.done)
+
 *	here if binary op. Swap arguments since targeting gas
+
 	tmp = gop1; gop1 = gop2; gop2 = tmp
 .fi
 opl.done
@@ -717,11 +742,15 @@ opl.done
 .		tstmt(gopl,gopc,gop1,gop2,gop3)	:(return)
 
 -stitl op(gopc,gop1,gop2,gop3)
+
 *  generate operation with no label
+
 op   opl(,gopc,gop1,gop2,gop3)            :(return)
 
 -stitl getreg(iarg)
+
 *  return register associated with argument for types 7-11
+
 getreg
 						:($('getreg.' i.type(iarg)))
 getreg.7	
@@ -733,35 +762,42 @@ getreg.10	getreg = substr(i.text(iarg),2,2)	:(return)
 getreg.11	getreg = substr(i.text(iarg),3,2)	:(return)
 
 -stitl global(var)
+
 *	generate global directive
+
 global
 .if asm
 	op('global',var)				:(return)
 .fi
-.if asm
+.if gas
 	op('.global',var)				:(return)
 .fi
 
 -stitl mem(ref)
 mem
-*  invoke macro M to resolve ref at assembly
+
+*	invoke macro M to resolve ref at assembly
+
 	ident(ref) error('null argument to mem')
 	mem = 'Mem(' ref ')'				:(return)
 -stitl mov(i1,i2)i.src,i.dst,t.src
+
 *   translate 'mov' instruction
 mov
-*  perhaps change mov x,(xr)+ to
-*	mov ax,x; stows
+/*
+  perhaps change mov x,(xr)+ to
+	mov ax,x; stows
 
-*  perhaps do  mov (xl)+,wx as
-*	lodsw
-*	xchg ax,tx
-*  and also mov (xl)+,name as
-*	lodsw
-*	mov name,reg.w0
-*  need to process memory-memory case
-*  change 'mov (xs)+,a' to 'pop a'
-*  change 'mov a,-(xs)' to 'push a'
+	perhaps do  mov (xl)+,wx as
+	lodsw
+	xchg ax,tx
+  and also mov (xl)+,name as
+	lodsw
+	mov name,reg.w0
+	need to process memory-memory case
+	change 'mov (xs)+,a' to 'pop a'
+	change 'mov a,-(xs)' to 'push a'
+*/
         i.src = i2; i.dst = i1
 	t.src = i.text(i.src); t.dst = i.text(i.dst)
 	ident(t.src,'(xl)+')			:s(mov.xlp)
@@ -783,8 +819,7 @@ mov.xsp
 	op('pop',getarg(i.dst))		:(return)
 mov.xsrp
 	op('pop',reg.w0)
-	op('stos' op_w)				:(return)
-
+	op('stos' op_w)				:(return) 
 mov.xrp
 	op('Mov_',reg.w0,getarg(i.src))
 	op('stos' op_w)				:(return)
@@ -793,8 +828,9 @@ mov.2
 
 -stitl getarg(iarg)
 getarg
-*	imem is null to generate memory reference, otherwise just get
-*	address for use in 'Lea_' instruction.
+
+*	imem is null to generate memory reference, otherwise just get address for use in 'Lea_' instruction.
+
 .if gas
 	base = disp = indx = scale =
 
@@ -805,13 +841,16 @@ getarg
 	eq(typ)					:f($(argcase[typ]))
 	getarg = txt				:(getarg.done)
 
-* int
+*	int
+
 getarg.c.1 getarg = txt				:(getarg.done)
 
-* dlbl
+*	dlbl
+
 getarg.c.2 getarg = txt				:(getarg.done)
 
-* wlbl, clbl
+*	wlbl, clbl
+
 getarg.c.3
 getarg.c.4 
 .if asm
@@ -820,16 +859,20 @@ getarg.c.4
 .if gas
 	disp = txt				:(getarg.mem)
 .fi
+
 * elbl, plbl
+
 getarg.c.5
 getarg.c.6 getarg = txt				:(getarg.done)
 
-* w,x, map register name
+*	w,x, map register name
+
 getarg.c.7
 getarg.c.8
 	getarg = regmap[txt]			:(getarg.done)
 
-* (x), register indirect
+*	(x), register indirect
+
 getarg.c.9
 .if asm
 	txt len(1) len(2) . typ
@@ -840,10 +883,11 @@ getarg.c.9
 .if gas
 	txt len(1) len(2) . indx		:(getarg.mem)
 .fi
-* (x)+, register indirect, post increment
-* use lea reg,[reg+cfp_b] unless reg is esp, since it takes an extra byte.
-* actually, lea reg,[reg+cfp_b] and add reg,cfp_b are both 2 cycles and 3 bytes
-* for all the other regs, and either could be used.
+/*
+	(x)+, register indirect, post increment use lea reg,[reg+cfp_b] unless reg is esp, 
+	since it takes an extra byte.  actually, lea reg,[reg+cfp_b] and add reg,cfp_b are both 
+	2 cycles and 3 bytes for all the other regs, and either could be used.
+*/
 getarg.c.10
 .if asm
 	txt = substr(txt,2,2)
@@ -857,7 +901,8 @@ getarg.c.10
 	genaop(tstmt(,'Add_',regmap[indx],literal_ cfp_b)) :(getarg.mem)
 .fi
 
-*  -(x), register indirect, pre decrement
+*	-(x), register indirect, pre decrement
+
 getarg.c.11
 .if asm
 	t1 = regmap[substr(txt,3,2)]
@@ -869,8 +914,9 @@ getarg.c.11
 	genbop(tstmt(,'Sub_',regmap[indx],literal_ cfp_b,)) 	:(getarg.mem)
 .fi
 
-* int(x)
-* dlbl(x)
+*	int(x)
+*	dlbl(x)
+
 getarg.c.12
 getarg.c.13
 .if asm
@@ -884,7 +930,9 @@ getarg.c.13
 	base = indx
 	indx = 					:(getarg.mem)
 .fi
-*  name(x), where name is in working section
+
+*	name(x), where name is in working section
+
 getarg.c.14
 getarg.c.15
 .if asm
@@ -895,10 +943,13 @@ getarg.c.15
 .if gas
 	txt break('(') . disp '(' len(2) . indx	:(getarg.mem)
 .fi
-* signed integer
+
+*	signed integer
+
 getarg.c.16 getarg = txt			:(getarg.done)
 
-* signed real
+*	signed real
+
 getarg.c.17 getarg = txt			:(getarg.done)
 
 .if asm
@@ -910,15 +961,19 @@ getarg.c.22
 	getarg = getval(iarg)			:(getarg.done)
 .fi
 .if gas
-*  =dlbl
+
+*	=dlbl
+
 getarg.c.18	
 	getarg = literal_ substr(txt,2)		:(getarg.done)
 	
-*  *dlbl
+*	*dlbl
+
 getarg.c.19
 	getarg  = literal_  cfp_b '*' substr(txt,2)	:(getarg.done)
 
-*  =name (data section)
+*	=name (data section)
+
 getarg.c.20
 getarg.c.21
         getarg = literal_ substr(txt,2)	
@@ -926,14 +981,15 @@ getarg.c.21
 	op('Lea_',reg.w0,substr(txt,2))
 	getarg = reg.w0				:(getarg.done)
 
-*  =name (program section)
+*	=name (program section)
+
 getarg.c.22
 
        getarg = literal_ substr(txt,2)		:(getarg.done)
 
 .fi
 
-*  pnam, eqop
+*	pnam, eqop
 getarg.c.23
 getarg.c.24 
 .if asm
@@ -944,12 +1000,13 @@ getarg.c.24
 	getarg =  equ_value[txt]		:(arg.done)
 .fi
 
-* ptyp, text, dtext
+*	ptyp, text, dtext
 getarg.c.25
 getarg.c.26
 getarg.c.27 getarg = txt			:(getarg.done)
 getarg.done
 	trc_suspend = 0
+
 *	ne(x_trace) outline('; arg ' typ ':' txt   ' -> ' getarg)
 						:(return)
 .if gas
@@ -965,23 +1022,24 @@ getarg.mem
 -stitl getlea(iarg)
 getlea
 .if asm
-*	similar to getarg, but gets effective address
-*	this procedure only called if operand is
-*	ops: 3,4,9,12,13,14,15
-*	imem is null to generate memory reference, otherwise just get
-*	address for use in 'Lea_' instruction.
+/*
+	similar to getarg, but gets effective address this procedure only called if operand is
+	ops: 3,4,9,12,13,14,15 imem is null to generate memory reference, otherwise just get
+	address for use in 'Lea_' instruction.
+*/
 .fi
 .if gas
-*	similar to getarg, but gets effective address
-*	this procedure only called if operand is in range 3-4 or 9-15
-*	it generates code to load effective address of the argument to w0
+
+*	similar to getarg, but gets effective address this procedure only called if operand is in 
+*	range 3-4 or 9-15 it generates code to load effective address of the argument to w0
 
 .fi
 	txt = i.text(iarg)
 	typ = i.type(iarg)
 	eq(typ)					:f($(adrcase[typ]))
 
-* wlbl, clbl
+*	wlbl, clbl
+
 getlea.c.3
 getlea.c.4
 .if asm
@@ -991,7 +1049,8 @@ getlea.c.4
 i	op('Mov_',reg.w0,literal_ txt)		:(return)
 .fi
 
-* (x), register indirect
+*	(x), register indirect
+
 getlea.c.9
 	txt len(1) len(2) . typ
 	typ = regmap[typ]
@@ -1002,8 +1061,9 @@ getlea.c.9
 	op('Mov_',reg.w0,typ)			:(return)
 .fi
 
-* int(x)
-* dlbl(x)
+*	int(x)
+*	dlbl(x)
+
 getlea.c.12
 getlea.c.13
 	txt break('(') . t1 '(' len(2) . t2
@@ -1015,7 +1075,8 @@ getlea.c.13
 	op('Add_',reg.w0,'(cfp_b*' t1 ')')	:(return)
 .fi
 
-*  name(x), where name is in working section
+*	name(x), where name is in working section
+
 getlea.c.14
 getlea.c.15
 	txt break('(') . t1 '(' len(2) . t2
@@ -1029,6 +1090,7 @@ getlea.c.15
 getlea.asm
 
 *	here to generate Lea instruction (asm case)
+
 	op('Lea_',reg.w0,'Adr(' getlea ')')	:(return)
 -stitl getval(iarg)
 getval
@@ -1040,18 +1102,21 @@ getval
 	getarg = txt				:(getval.done)
 
 *  =dlbl
+
 getval.c.18
 	getval = substr(txt,2)			:(getval.done)
 getval.c.18.1
 	getval = substr(txt,2)			:(getval.done)
-*  *dlbl
+*	*dlbl
+
 getval.c.19
 	getval = 'cfp_b*' substr(txt,2)		:(getval.done)
-*  =name (data section)
+*	=name (data section)
+
 getval.c.20
 getval.c.21
         getval =  substr(txt,2)			:(getval.done)
-*  =name (program section)
+*	=name (program section)
 getval.c.22
         getval =  substr(txt,2)			:(getval.done)
 getval.done
@@ -1059,17 +1124,20 @@ getval.done
 
 -stitl memmemm()t
 memmemm
-*  memmemm is called for those ops for which both operands may be
-*  in memory, in which case, we generate code to load second operand
-*  to pseudo-register w0, and then modify the second argument
-*  to reference this register
+/*
+	memmemm is called for those ops for which both operands may be in memory, in which case, 
+	we generate code to load second operand to pseudo-register w0, and then modify the second argument
+	to reference this register
+*/
 
-  eq(ismem[i.type(i1)])				:s(return)
-  eq(ismem[i.type(i2)])				:s(return)
-*  here if memory-memory case, load second argument
-  t = getarg(i2)
-  i2 = arg_w0
-  op('Mov_',reg.w0,t)				:(return)
+	eq(ismem[i.type(i1)])				:s(return)
+	eq(ismem[i.type(i2)])				:s(return)
+
+*	here if memory-memory case, load second argument
+
+	t = getarg(i2)
+	i2 = arg_w0
+	op('Mov_',reg.w0,t)				:(return)
 
 -stitl outline(txt)
 outline
@@ -1081,19 +1149,24 @@ outline
 prcent prcent = 'prc_+' cfp_b '*' ( n - 1)	:(return)
 
 -stitl outstmt(ostmt)label,opcode,op1,op2,op3,comment)
-*  this module writes the components of the statement
-*  passed in the argument list to the formatted .s file
+
+*	this module writes the components of the statement passed in the argument list to the formatted .s file
 
 outstmt	label = t.label(ostmt)
-* clear label if definition already emitted
+
+*	clear label if definition already emitted
 	label = ident(label, lastlabel)
 
 outstmt1
 	comment = t.comment(ostmt)
-* ds suppress comments
+
+*	ds suppress comments
+
  	comment = tcomment = comments =
  	:(outstmt2)
+
 *  attach source comment to first generated instruction
+
 	differ(comment)				:s(outstmt2)
 	ident(tcomment)				:s(outstmt2)
 	comment = tcomment; tcomment =
@@ -1102,10 +1175,12 @@ outstmt2
 	op1 = t.op1(ostmt)
 	op2 = t.op2(ostmt)
 	op3 = t.op3(ostmt)
+
 *	outfile = '; opcode ' opcode
 *	outfile = '; op1 ' op1
 *	outfile = '; op2 ' op2
 *	outfile = '; op3 ' op3
+
 	differ(compress)			:s(outstmt3)
 	stmtout = rpad( rpad(label,7) ' ' rpad(opcode,4) ' '
 .		  (ident(op1), op1
@@ -1120,20 +1195,21 @@ outstmt3
 .		      (ident(op3), ',' op3)))
 .       (ident(strip_comment,'y'), tab (ident(comment), ';') comment)
 
-**	send text to outfile
+*	send text to outfile
 
-**
 outstmt4
-**
-**	send text to output file if not null.
+
+*	send text to output file if not null.
 
 *	stmtout = replace(trim(stmtout),literal_ ,'_')
+
 	stmtout = trim(stmtout)
 	ident(stmtout)				:s(return)
 	outline(stmtout)
 	ntarget	= ntarget + 1
 
 *  record code labels in table with delimiter removed.
+
 	(ge(sectnow,5) differ(thislabel))	:f(return)
 	label ? break(':') . label		:f(return)
 	labtab<label> = outlines		:(return)
@@ -1160,21 +1236,26 @@ chktrace
 	eq(is_exec)				:s(return)
 
 *	ne(in_gcol)				:s(return)
+
 chktrace.1
+
 *	no trace if trace has been suspended
 
 *	 only trace at label definition
+
 *	ident(thislabel)			:s(return)
 
 	trc_count = trc_count + 1
 
 	gt(trc_first) le(trc_count,trc_first)	:s(return)
 	gt(trc_limit)  gt(trc_count, trc_limit)	:s(return)
+
 *	only trace an instruction once
+
 	eq(nlines,nlast)			:s(return)
 	nlast = nlines
 
-	trc_desc = '"' replace(thisline,'|',' ') '"'
+	trc_desc = '"' replace(inline,'|',' ') '"'
 	ab_suspend = 1
 	section('data')
 	flush()
@@ -1199,45 +1280,52 @@ prsarg	prsarg = minarg(0)
 	iarg break(',') . l1 ',' rem . l2	:f(return)
 	prsarg = minarg(convert(l1,'integer'),l2)	:(return)
 -stitl readline()
-*  this routine returns the next statement line in the input file
-*  to the caller.  it never fails.  if there is no more input,
-*  then a minimal end statement is returned.
-*  comments are passed through to the output file directly.
+/*
+	this routine returns the next statement line in the input file to the caller.  it never fails.  
+	if there is no more input, then a minimal end statement is returned.
+	comments are passed through to the output file directly.
+*/
 
 
 readline readline = infile                      :f(rl02)
 	nlines  = nlines + 1
+
 *	outfile = '$' lpad(nlines,6) tab readline
 
 	ident( readline )			:s(readline)
 readline.0
 	leq( substr(readline,1,1 ),';' )       	:f(rl01)
 	trc_skip = ident(readline,';i+') 0	:s(readline)
+
 *	trc_skip = ident(readline,';i-') 1	:s(readline)
+
 * force skip of full line comments
+
 	:(readline)
 
-*  only print comment if requested.
+*	only print comment if requested.
 
 	ident(strip_comment,'n')		:f(readline)
-        readline len(1) = ';'
+	readline len(1) = ';'
 	outlines = outlines + 1               :(readline)
 
-*  here if not a comment line
+*	here if not a comment line
 
 rl01
-*  find out why need to add 2 here
-*  add 2 since need to account for this line and one that will follow
-	ne(x_trace) outline(Comment ':' outlines + 2 ':' tab readline)
-					:(return)
+
+*	add 2 since need to account for this line and one that will follow
+
+	ne(x_trace) outline(Comment ':' outlines + 2 ':' tab readline) :(return)
 
 *  here on eof
 
 rl02    readline = '       end'
 						:(rl01)
 -stitl section(sec)
-*  declare section of specified type
-*	asm requires op of section, operation of kind, gas just gives the kind as an op.
+
+*	declare section of specified type asm requires op of section, operation of kind, gas just 
+*	gives the kind as an op.
+
 section
 .if asm
 	op('section', '.' sec)
@@ -1247,20 +1335,18 @@ section
 .fi
 						:(return)
 -stitl tblini(str)
-*  this routine is called to initialize a table from a string of
-*  index/value pairs.
+
+*	this routine is called to initialize a table from a string of index/value pairs.
 
 tblini   pos     = 0
 
-*  count the number of "[" symbols to get an assessment of the table
-*  size we need.
+*	count the number of "[" symbols to get an assessment of the table size we need.
 
 tin01   str     (tab(*pos) '[' break(']') *?(cnt = cnt + 1) @pos)
 .						:s(tin01)
 
-*  allocate the table, and then fill it. note that a small memory
-*  optimisation is attempted here by trying to re-use the previous
-*  value string if it is the same as the present one.
+*	allocate the table, and then fill it. note that a small memory optimisation is attempted here by 
+*	trying to re-use the previous value string if it is the same as the present one.
 
 	tblini   = table(cnt)
 tin02   str     (break('[') $ index len(1) break(']') $ val len(1)) =
@@ -1276,31 +1362,41 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 .						:f(freturn)s(return)
 
 *	translate minimal
+
 translate
 
-  &trace = 2000
-  &ftrace = 1000
-*  &profile = 1
+	&trace = 2000
+	&ftrace = 1000
+*	&profile = 1
 dsout
-opnext	thisline = readline()
-	crack(thisline)				:f(dsout)
+opnext	inline = readline()
+	crack(inline)				:f(dsout)
 	op_ = incode '_'
 
-* append ':' after label if in code or data.
+*	append ':' after label if in code or data.
 
-* output label of executable instruction immediately if there is one,
-* as it simplifies later processing, especially for tracing.
+*	output label of executable instruction immediately if there is one, as it simplifies later processing, 
+*	especially for tracing.
+
 	ident(inlabel)				:s(opnext.1)
 	thislabel = inlabel (differ(inlabel) ge(sectnow,3) ':',)
+
 * keep the label as is is not in executable code
+
 	lt(sectnow,5)				:s(opnext.1)
-* here if in code, so output label now
-* defer label processing for ent to allow emission of alignment ops for x86.
+
+*	here if in code, so output label now
+*	defer label processing for ent to allow emission of alignment ops for x86.
+
 	ident(incode,'ent')			:s(opnext.1)
 	outline(thislabel)
-* set lastlabel so can check to avoid emitting duplicate label definitions
+
+*	set lastlabel so can check to avoid emitting duplicate label definitions
+
 	lastlabel = thislabel
-* clear out label info once generated
+
+*	clear out label info once generated
+
 	label = thislabel =
 opnext.1
 	thislabel = inlabel (differ(inlabel) ge(sectnow,3) ':',)
@@ -1313,9 +1409,10 @@ opnext.1
 	ge(sectnow,5) chktrace()
 						:($('g.' incode))
 *  here if bad opcode
+
 ds01	error('bad op-code')			:(dsout)
 
-*  generate tokens.
+*	generate tokens.
 
 ds.typerr
 	error('operand type zero')		:(dsout)
@@ -1350,7 +1447,7 @@ g.flc
 g.mov
 	mov(i1,i2)				:(opdone)
 
-* even/odd tests.  Set w0 to zero, and with register, then branch accordingly
+*	even/odd tests.  Set w0 to zero, and with register, then branch accordingly
 
 g.bev
 g.bod
@@ -1385,20 +1482,20 @@ g.iff   op(D_word,getarg(i2))              :(opdone)
 g.esw
 	section('text')		:(opdone)
 g.ent
+/*
+	entry points are stored in byte before program entry label last arg is optional, in which case no 
+	initial 'db' need be issued. we force odd alignment so can distinguish entry point addresses from 
+	block addresses (which are always even).
 
-*  entry points are stored in byte before program entry label
-*  last arg is optional, in which case no initial 'db' need be
-*  issued. we force odd alignment so can distinguish entry point
-*  addresses from block addresses (which are always even).
+	note that this address of odd/even is less restrictive than the minimal definition, which defines 
+	an even address as being a multiple of cfp_b (4), and an odd address as one that is not a multiple 
+	of cfp_b (ends in 1, 2, or 3).  the definition here is a simple odd/even, least significant bit definition.
+	that is, for us, 1 and 3 are odd, 2 and 4 are even.
+*/
+	  t1 = i.text(i1)
 
-*  note that this address of odd/even is less restrictive than
-*  the minimal definition, which defines an even address as being
-*  a multiple of cfp_b (4), and an odd address as one that is not
-*  a multiple of cfp_b (ends in 1, 2, or 3).  the definition here
-*  is a simple odd/even, least significant bit definition.
-*  that is, for us, 1 and 3 are odd, 2 and 4 are even.
-	t1 = i.text(i1)
 *       align(2)
+
 	outline(tab 'Align_' tab '2')
 	differ(t1)				:s(g.ent.1)
 	outline(tab 'nop')
@@ -1407,15 +1504,17 @@ g.ent.1
 	outline(tab a('db') g('.byte')  tab	t1)
 g.ent.2
 	opl(thislabel)
-*  note that want to attach label to last instruction
-*	t1 = cstmts[cstmts.n]
-*	t.label(t1) = tlabel
-*	cstmts[cstmts.n] = t1
-*  here to see if want label made public
-	thislabel ? rtab(1) . thislabel ':'
-        (differ(pubtab[thislabel]), differ(debug)) op('global',thislabel)
-	thislabel =				:(opdone)
+/*
+	note that want to attach label to last instruction
+	t1 = cstmts[cstmts.n]
+	t.label(t1) = tlabel
+	cstmts[cstmts.n] = t1
+	here to see if want label made public
+*/
 
+	thislabel ? rtab(1) . thislabel ':'
+	(differ(pubtab[thislabel]), differ(debug)) op('global',thislabel)
+	thislabel =				:(opdone)
 g.bri
 
 *	need to indicate absolute jump for gas.
@@ -1436,7 +1535,9 @@ g.lei
 g.jsr
 	jsr_proc = getarg(i1)
 	op('call',jsr_proc)
+
 *	get count of following ppm statements
+
 	jsr_count = ppm_cases[jsr_proc]
 	eq(jsr_count)				:s(opdone)
 	trc_suspend = 1
@@ -1447,22 +1548,21 @@ g.jsr
 	op('js',jsr_label_norm)
 	trc_suspend = 0
 
-*	generate branch around for ppms that will follow
-*	take the branch if normal return (eax==0)
+*	generate branch around for ppms that will follow take the branch if normal return (eax==0)
+
 						:(opdone)
 
 g.err
 g.ppm
-
-*  here with return code in rcode. it is zero for normal return
-*  and positive for error return. decrement the value.
-*  if it is negative then this is normal return. otherwise,
-*  proceed decrementing rcode until it goes negative,and then
-*  take the appropriate branch.
-
+/*
+	here with return code in rcode. it is zero for normal return and positive for error return. 
+	decrement the value. if it is negative then this is normal return. otherwise, proceed decrementing 
+	rcode until it goes negative,and then take the appropriate branch.
+*/
 	t1 = getarg(i1)
 
-*  branch to next case if rcode code still not negative.
+*	branch to next case if rcode code still not negative.
+
 	ident(incode,'ppm')			:s(g.ppm.loop)
 	count.err =  count.err + 1
 	errfile =   i.text(i1) ' ' i.text(i2)
@@ -1480,35 +1580,39 @@ g.ppm.loop
 	op('jns',lab_next)
 	ident(incode,'ppm')			:s(g.ppm.loop.ppm)
 
-*  here if error exit via exi. set rcode to exit code and jump
-*  to error handler with error code in rcode
+*	here if error exit via exi. set rcode to exit code and jump to error handler with error code in rcode
 
 g.ppm.loop.err
 	op('Mov_',mem(rcode), literal_ +t1)
 	op('Jmp_','err_')
 						:(g.ppm.loop.next)
 g.ppm.loop.ppm
+
 *	check each ppm case and take branch if appropriate
+
 	ident(i.text(i1))			:s(g.ppm.2)
 	count.ppm = count.ppm + 1
 	op('Jmp_',getarg(i1))
 						:(g.ppm.loop.next)
 
 g.ppm.2
-*  a ppm with no arguments, which should never be executed, is
-*  translated to err 299,internal logic error: unexpected ppm branch
+/*
+	a ppm with no arguments, which should never be executed, is translated to 
+		err 299,internal logic error: unexpected ppm branch
+*/
 	t1 = 299
 	errfile =  t1 ' internal logic error: unexpected ppm branch'
 						:(g.ppm.loop.err)
 
 g.prc
-
-*  generate public declaration
+/*
+*	generate public declaration
 *	t1 = thislabel
 *	t1 ? rtab(1) . t1 ':'
 *	op()
 *	op('global',t1)
-*  nop needed to get labels straight
+*	nop needed to get labels straight
+*/
 	prc.args = getarg(i2)
 	ppm_cases[thislabel] = i.text(i2)
 	thislabel =
@@ -1518,17 +1622,20 @@ g.prc.e
 g.prc.r						:(opdone)
 
 g.prc.n
-*  store return address in reserved location
+
+*	store return address in reserved location
 	prc.count = prc.count + 1
 	op('pop', mem(prcent(prc.count)))
 						:(opdone)
 
 g.exi
-        t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
-*  if type r or e, and no exit parameters, just return
+	t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
+
+*	if type r or e, and no exit parameters, just return
+
  	differ(t2,'n') eq(prc.args)	op('ret')	:s(opdone)
-        t3 = ident(t3) '0'
-    	op('Mov_',mem(rcode),literal_ +t3)
+	t3 = ident(t3) '0'
+	op('Mov_',mem(rcode),literal_ +t3)
 	ident(t2,'n')				:s(g.exi.1)
 	op('ret')				:(opdone)
 g.exi.1
@@ -1539,7 +1646,9 @@ g.enp   op()					:(opdone)
 
 g.erb
 	errfile =  i.text(i1) ' ' i.text(i2)
+
 *	set rcode to error code and branch to error handler
+
 	op('Mov_', mem(rcode),  literal_ +(i.text(i1)))
  	op('Jmp_','err_')
 						:(opdone)
@@ -1584,8 +1693,7 @@ g.ble
 g.blo
 g.bhi
 
-*  these operators all have two operands, memmemm may apply
-*  issue target opcode by table lookup.
+*	these operators all have two operands, memmemm may apply issue target opcode by table lookup.
 
 	memmemm()
 	t1 = branchtab[incode]
@@ -1596,7 +1704,7 @@ g.bhi
 g.bnz
 	ifreg(i1)				:s(g.bnz1)
 	op('Xor_',reg.w0,reg.w0)
-        op('Cmp_',getarg(i1) ,reg.w0)
+	op('Cmp_',getarg(i1) ,reg.w0)
 	op('jnz',getarg(i2))
 						:(opdone)
 g.bnz1
@@ -1619,7 +1727,9 @@ g.lct
 *  if operands differ must emit code
 
 	differ(i.text(i1),i.text(i2))		:s(g.lct.1)
-*  here if operands same. emit no code if no label, else emit null
+
+*	here if operands same. emit no code if no label, else emit null
+
 	ident(thislabel)			:s(opnext)
 	op()					:(opdone)
 
@@ -1627,7 +1737,9 @@ g.lct.1
 	op('Mov_',getarg(i1),getarg(i2))	:(opdone)
 
 g.bct
+
 *  can issue loop if target register is cx.
+
 	t1 = getarg(i1)
 	t2 = getarg(i2)				:(g.bct2)
 	ident(t1,reg.wa)			:s(g.bct1)
@@ -1651,7 +1763,8 @@ g.scp
 g.icp
 	op('Icp_')				:(opdone)
 
-*  integer accumulator kept in memory (reg_ia)
+*	integer accumulator kept in memory (reg_ia)
+
 g.ldi
 g.sti
 	op(op_,getarg(i1))			:(opdone)
@@ -1690,7 +1803,7 @@ g.itr	op('call',op_)	:(opdone)
 
 g.rti	op('call',op_)
 	eq(i.type(i1))				:s(opdone)
-*  here if label given, branch if real too large
+*	here if label given, branch if real too large
         op('jc',getarg(i1))                 :(opdone)
 
 g.ldr
@@ -1737,8 +1850,8 @@ g.r1
 
 g.plc
 g.psc
-*  last arg is optional.  if present and a register or constant,
-*  use lea instead.
+
+*	last arg is optional.  if present and a register or constant, use lea instead.
 
 	t1 = getarg(i1)
 	typ = i.type(i2)
@@ -1757,7 +1870,7 @@ g.psc.2
 	op('Add_',t1,literal_ 'cfp_f')
 	eq(i.type(i2))				:s(opdone)
 
-*  here if d_offset_(given (in a variable), so add it in.
+*	here if d_offset_(given (in a variable), so add it in.
 
 	op('Add_',t1,getarg(i2))		:(opdone)
 
@@ -1773,18 +1886,20 @@ g.lch
 	outfile = Comment 'lch d.text ' d.text '  d.type ' d.type '  d.reg ' d.reg '  w ' w
 	ident(s.text,'(xl)+')			:s(g.lch.lods)
 
+*	decrement source register if needed
 
-*  decrement source register if needed
 	eq(s.type,11) op('Dec_',regmap[s.reg])
 
-*  clear result register
+*	clear result register
+
 	op('Xor_', (eq(w) getarg(dst),reg.w0), (eq(w) getarg(dst),reg.w0))
 
-*  if target is w register, can load to it. otherwise, load to w0 and then move to x
-*  do indexed load of source register
+*	if target is w register, can load to it. otherwise, load to w0 and then move to x do indexed 
+*	load of source register
 
 *	outfile = Comment 'lch 1 reglow[(eq(w) d.reg, 'w0')]' reglow[(eq(w) d.reg, 'w0')]
 *	outfile = Comment 'lch,2 M_char [regmap[s.reg]])'  regmap[s.reg]
+
 .if asm
 	op('mov',reglow[(eq(w) d.reg, 'w0')],'M_char [' regmap[s.reg] ']')
 	ne(w) op('mov',regmap[d.reg],reg.w0)
@@ -1794,12 +1909,14 @@ g.lch
 	ne(w) op('mov',reg.w0,regmap[d.reg])
 .fi
 
-*  do post increment if needed
+*	do post increment if needed
 
 	eq(s.type,10)	op('Inc_',regmap[s.reg])
 						:(opdone)
 g.lch.lods
+
 *  clear result register, do lodsb, and then move character to result register
+
 	op('Xor_',reg.w0,reg.w0)
 	op('lodsb')
 	op('Mov_',getarg(dst),reg.w0)
@@ -1815,11 +1932,11 @@ g.sch
 	ident(s.text,'(xr)+')			:s(g.sch.stos)
 
 
-*  decrement destination register if needed
+*	decrement destination register if needed
 
 	eq(d.type,11) op('Dec_',regmap[d.reg])
 
-*  if source is x register, move it to w0, so can store character from lower part of a w register
+*	if source is x register, move it to w0, so can store character from lower part of a w register
 
 	ne(w) op('Mov_',reg.w0, regmap[s.reg])
 
@@ -1830,12 +1947,12 @@ g.sch
 	op('movb', reglow[(eq(w) s.reg, 'w0')], '(' regmap[d.reg] ')') 
 .fi
 
-* increment target register if needed
+*	increment target register if needed
 
 	eq(d.type,10)  op('Inc_',regmap[d.reg])
 						:(opdone)
 g.sch.stos
-*  move source register to w0, setting up low part, then store from w0
+*	move source register to w0, setting up low part, then store from w0
 	op('Mov_',reg.w0, regmap[s.reg])
 	op('stosb')
 						:(opdone)
@@ -1867,12 +1984,12 @@ g.cmc
 g.trc
 	op('xchg',reg.xl,reg.xr)
 .if asm
-        opl((labl = genlab('trc')) ':','movzx',reg.w0,'M_char [XR]')
+	opl((labl = genlab('trc')) ':','movzx',reg.w0,'M_char [XR]')
 	op('mov',reglow['w0'],'[XL+W0]')
 .fi
 .if gas
 	lbl = genlab('trc')
-        opl(lbl ':','movz' (eq(ws,32) 'bl', 'bq'),'(' reg.xr ')',reg.w0)
+	opl(lbl ':','movz' (eq(ws,32) 'bl', 'bq'),'(' reg.xr ')',reg.w0)
 	op('Add_','(' reg.xl ')',reg.w0)
 	op('mov','(' reg.w0 ')', reglow['w0'])
 .fi
@@ -1882,11 +1999,10 @@ g.trc
 	op('Xor_',reg.xl,reg.xl)
 	op('Xor_',reg.xr,reg.xr)
 						:(opdone)
-
-g.anb   op('And_',getarg(i1),getarg(i2))	:(opdone)
-g.orb   op('Or_',getarg(i1),getarg(i2))	:(opdone)
-g.xob   op('Xor_',getarg(i1),getarg(i2))	:(opdone)
-g.cmb   op('not',getarg(i1))			:(opdone)
+g.anb	op('And_',getarg(i1),getarg(i2))	:(opdone)
+g.orb	op('Or_',getarg(i1),getarg(i2))	:(opdone)
+g.xob	op('Xor_',getarg(i1),getarg(i2))	:(opdone)
+g.cmb	op('not',getarg(i1))			:(opdone)
 
 g.lsh
 	op('Sal_',getarg(i1),literal_ getarg(i2))	:(opdone)
@@ -1941,10 +2057,14 @@ g.mti.1
 
 
 g.mfi
-*  last arg is optional
+*	last arg is optional
+
 *  compare with cfp$m, branching if result negative
+
 	eq(i.type(i2))				:s(g.mfi.1)
-*  here if label given, branch if wc not in range (ie, negative)
+
+*	here if label given, branch if wc not in range (ie, negative)
+
 	op('sti_',reg.w0)
 	op('or',reg.w0,reg.w0)
 	op('js',getarg(i2))
@@ -1956,7 +2076,9 @@ g.mfi.2
 	op('push',reg.w0)			:(opdone)
 .if asm
 g.ctw
-*  assume cfp_c chars per word
+
+*	assume cfp_c chars per word
+
 	t1 = getarg(i1)
 	op('Add_',t1,'(' cfp_c '-1)+' cfp_c '*' i.text(i2))
 	op('Sar_',t1,literal_ log_cfp_c)
@@ -1973,7 +2095,9 @@ g.ctw
 	w.reg = getarg(i1); 
 	op('mov',w.reg,'ctbw_r')
 	op('mov' op_w,literal_ i.text(i2), 'ctbw_v')
+
 *	op('mov' op_w,w.reg,reg.w0)	
+
 	op('call', incode '_')
 	op('mov' op_w,'ctbw_r',w.reg)
 						:(opdone)
@@ -2031,7 +2155,9 @@ g.mcb
 	op('cld')
 						:(opdone)
 genrep
+
 *	generate equivalent of rep op loop
+
 	l1 = genlab('rep')
 	l2 = genlab('rep')
 	opl(l1 ':')
@@ -2048,15 +2174,17 @@ g.chk
 	op('jne','sec06')			:(opdone)
 
 decend
-*  here at end of dic or dac to see if want label made public
+
+*	here at end of dic or dac to see if want label made public
+
 	thislabel ? rtab(1) . thislabel ':'
-        differ(pubtab[thislabel]) global(thislabel)
+	differ(pubtab[thislabel]) global(thislabel)
 						:(opdone)
 
 g.dac	
 	t1 = i.type(i1)
-        t2 = "" ;*(le(t1,2) "", le(t1,4) "d_offset_(", le(t1,6) "d_offset_(", "")
-        opl(thislabel,D_word,t2 i.text(i1))
+	t2 = "" ;*(le(t1,2) "", le(t1,4) "d_offset_(", le(t1,6) "d_offset_(", "")
+	opl(thislabel,D_word,t2 i.text(i1))
 						:(decend)
 g.dic
 	opl(thislabel,D_word,i.text(i1))
@@ -2067,12 +2195,15 @@ g.drc
 	t1 = i.text(i1)
 	t1 ? fence "+" = ""
 	op(D_real,t1)
-*  note that want to attach label to last instruction
+
+*	note that want to attach label to last instruction
+
 	t.label(cstmts[cstmts.n]) = thislabel
 	thislabel =				:(opdone)
 
 g.dtc
-*  change first and last chars to " (assume / used in source)
+
+*	change first and last chars to " (assume / used in source)
 	txt = i.text(i1)
 	txt = substr(txt,2,size(txt) - 2)
 	opl(thislabel,D_char, '"' txt '"')
@@ -2091,8 +2222,9 @@ dtc.1	eq(n)					:s(opdone)
 	section('d_word','0')
 						:(opdone)
 	dtc.rem = remdr(size(dtc.txt),cfp_c)
-*  append nulls to complete last word so constant length is multiple
-*  of word word
+
+*	append nulls to complete last word so constant length is multiple of word word
+
 	dtc_i = 1
 	tmp =
 g.dtc.1
@@ -2100,8 +2232,8 @@ g.dtc.1
 	tmp = t4 "'" substr(t2,dtc_i,1) "'"
 	le(dtc_i = dtc_i + 1, size(t2))		:s(g.dtc.1)
 
-        tmp = ne(gtc.rem) t4 dupl(',0',cfp_c - gtc.rem)
-        opl(thislabel,D_char,tmp)
+	tmp = ne(gtc.rem) t4 dupl(',0',cfp_c - gtc.rem)
+	opl(thislabel,D_char,tmp)
 						:(opdone)
 g.dbc
 	opl(thislabel,D_word,getarg(i1))
@@ -2111,7 +2243,9 @@ g.equ
 
 g.exp
 	ppm_cases[thislabel] = i.text(i1)
+
 *	extern(thislabel)
+
 	thislabel =				:(opdone)
 
 g.inp
@@ -2130,18 +2264,21 @@ g.sec	op('')
 	sectnow = sectnow + 1			:($("g.sec." sectnow))
 
 * procedure declaration section
+
 g.sec.1
 	section('text')
-        global('sec01')
-        opl('sec01:')	             	:(opdone)
+	global('sec01')
+	opl('sec01:')	             	:(opdone)
 
-* definitions section
+*	definitions section
+
 g.sec.2
 	section('data')
 	global('sec02')
         opl('sec02:')       		      	:(opdone)
 
-* constants section
+*	constants section
+
 g.sec.3
 	section('data')
 	global('sec03')
@@ -2149,49 +2286,57 @@ g.sec.3
 						:(opdone)
 
 * working variables section
+
 g.sec.4 
 	global('esec03')
-        opl('esec03' ':')
-        section('data')
-        global('sec04')
+	opl('esec03' ':')
+	section('data')
+	global('sec04')
 	opl('sec04:')			:(opdone)
 
-*  here at start of program section.  if any n type procedures,
-*  put out entry-word block declaration at end of working storage
+*	here at start of program section.  if any n type procedures, put out entry-word block declaration at 
+*	end of working storage
+
 g.sec.5
-*  emit code to indicate in code section
-*  get direction set to up.
+
+*	emit code to indicate in code section get direction set to up.
+
         global('esec04')
         opl('esec04' ':')
+
 *        (gt(prc.count1) opl('prc$' ':','times', prc.count1 ' dd 0'))
+
 .if asm
 	op('prc_: times ' prc.count1 ' dd 0')
 .fi
 .if gas
 	opl('prc_:','.fill', prc.count1,cfp_b)
 .fi
-        global('end_min_data')
-        opl('end_min_data' ':')
-        section('text')
-        global('sec05')
-        opl('sec05' ':')
-*  enable tracing if desired
+	global('end_min_data')
+	opl('end_min_data' ':')
+	section('text')
+	global('sec05')
+	opl('sec05' ':')
 						:(opdone)
 
-*  stack overflow section.  output exi__n tail code
+*	stack overflow section.  output exi__n tail code
+
 g.sec.6
         global('sec06')
         opl('sec06'  ':', 'nop')
 				             :(opdone)
 
-*  error section.  produce code to receive erb's
+*	error section.  produce code to receive erb's
+
 g.sec.7
         global('sec07')
         opl('sec07:')
 	flush()
-*  error section.  produce code to receive erb's
+
+*	error section.  produce code to receive erb's
 
 *	allow for some extra cases in case of max.err bad estimate
+
 	n1 = max.err + 8
 	opl('err_:')
 	outfile = Comment 'sec07:a:' a(mem( rcode)) ':g:' g('rcode')
@@ -2200,6 +2345,7 @@ g.sec.7
 
 
 -stitl extern(var)
+
 *	generate extern declaration
 extern
 .if asm
@@ -2211,16 +2357,14 @@ extern
 
 opdone	flush()					:(opnext)
 
-*  here to emit bstmts, cstmts, astmts. attach input label and
-*  comment to first instruction generated.
+*	here to emit bstmts, cstmts, astmts. attach input label and comment to first instruction generated.
 
 flush	
 	eq(astmts.n) eq(bstmts.n) eq(cstmts.n)	:f(opdone1)
 	ne(ab_suspend)				:s(opdone.2)
 	
 
-*  here if some statements to emit, so output single 'null' statement to get label
-*  and comment field right.
+*	here if some statements to emit, so output single 'null' statement to get label and comment field right.
 
 	label = thislabel =
 	outstmt(tstmt())			:(opdone.6)
@@ -2240,7 +2384,9 @@ opdone.3
 opdone.4	eq(astmts.n)			:s(opdone.6)
 	i = 1
 	ident(pifatal[incode])			:s(opdone.5)
+
 *  here if post incrementing code not allowed
+
 	error('post increment not allowed for op ' incode)
 opdone.5	outstmt(astmts[i])
 	le(i = i + 1, astmts.n)			:s(opdone.5)
@@ -2252,31 +2398,32 @@ report
 
 
 g.end
-* here at end of code generation.
+
+*	here at end of code generation.
 
 	endfile(1)
 	endfile(2)
 	endfile(3)
 	report(assembler,	 'assembler')
 	differ(i_trace) report(i_trace,'instruction trace enabled')
-        report(nlines,		'lines read')
-        report(nstmts,		'statements processed')
+	report(nlines,		'lines read')
+	report(nstmts,		'statements processed')
 	report(+simples,		'simple operations translated')
-        report(ntarget,		'target code lines produced')
+	report(ntarget,		'target code lines produced')
 	report(&stcount,	'spitbol statements executed')
-        report(max.err,		'maximum err/erb number')
-        report(prc.count1, 	'prc count')
-        output  = '  ' gt(prc.count,prc.count1)
+	report(max.err,		'maximum err/erb number')
+	report(prc.count1, 	'prc count')
+	output  = '  ' gt(prc.count,prc.count1)
 .	  'differing counts for n-procedures:'
 .	  ' inp ' prc.count1 ' prc ' prc.count
-        differ(nerrors) report(nerrors,'errors detected')
+	differ(nerrors) report(nerrors,'errors detected')
 
 	errfile = '* ' max.err 'maximum err/erb number'
 	errfile  = '* ' prc.count 'prc count'
 .		differ(lasterror) '  the last error was in line ' lasterror
 
-	&code   = ne(nerrors) 2001
-        report(collect(), 'free words')
+*	&code   = ne(nerrors) 2001
+	report(collect(), 'free words')
 	report(time(),'execution time ms')
 	&dump = 0
 	:(end)
