@@ -665,7 +665,11 @@ struct	scblk	*scbptr;
     /	to get the last component of the shell's path.
     */
     shellpath = getshell();
+#ifdef  exec
+// suppress call as it generates warning message we don't need for now. 
+    execl( shellpath, pathlast( shellpath ), "-c", cmdbuf, (char *)NULL );
     execle( shellpath, pathlast( shellpath ), "-c", cp, (char *)NULL, environ );	// no return
+#endif
 
     unmake_c_str(&cp[length], savech);
 }

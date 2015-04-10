@@ -94,11 +94,6 @@ def.sbl in the case of gas.
 	nos		= 	'0123456789'
 	tab		=	char(9)
 	
-	D_byte		=	'D_byte'
-	D_char		=	'D_char'
-	D_real		=	'D_real'
-	D_word		=	'D_word'
-
 * gas requires '$' before literals, nasm doesn't
 
 .if asm
@@ -150,7 +145,6 @@ def.sbl in the case of gas.
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
 	define('report(num,text)')
-	define('section(sec)')
 	define('tblini(str)pos,cnt,index,val,lastval')
 
 *  outstmt is used to send a target statement to the target code output file outfile
@@ -1257,17 +1251,18 @@ chktrace.1
 
 	trc_desc = '"' replace(inline,'|',' ') '"'
 	ab_suspend = 1
-	section('data')
+	op('Section_','data')
 	flush()
 	lbl = genlab('it')
+	opl(lbl ':')
 .if asm
-	opl(lbl,D_char,trc_desc)
-	op(D_char,'0');* string terminator
+	op('Char_',trc_desc)
+	op('Char_','0');* string terminator
 .fi
 .if gas
 	opl(lbl ':' ,'.asciz',trc_desc)
 .fi
-	section('text')
+	op('Section_','text')
 	op('Mov_',reg.w0,literal_ lbl)
 	op('Mov_',mem('trc_de'),reg.w0)
 	op('call','trc_')
@@ -1320,20 +1315,6 @@ rl01
 *  here on eof
 
 rl02    readline = '       end'
-						:(rl01)
--stitl section(sec)
-
-*	declare section of specified type asm requires op of section, operation of kind, gas just 
-*	gives the kind as an op.
-
-section
-.if asm
-	op('section', '.' sec)
-.fi
-.if gas
-	op('.' sec)
-.fi
-						:(return)
 -stitl tblini(str)
 
 *	this routine is called to initialize a table from a string of index/value pairs.
@@ -1473,14 +1454,14 @@ g.bsw1
 .if gas
 	op('jmp','*' lbl '(,' reg ',' cfp_b ')' )
 .fi
-	section('data')
+	op('Section_','data')
         opl(lbl ':')
 	trc_suspend =				:(opdone)
 
-g.iff   op(D_word,getarg(i2))              :(opdone)
+g.iff   op('Word_',getarg(i2))              :(opdone)
 
 g.esw
-	section('text')		:(opdone)
+	op('Section_','text')		:(opdone)
 g.ent
 /*
 	entry points are stored in byte before program entry label last arg is optional, in which case no 
@@ -2184,17 +2165,19 @@ decend
 g.dac	
 	t1 = i.type(i1)
 	t2 = "" ;*(le(t1,2) "", le(t1,4) "d_offset_(", le(t1,6) "d_offset_(", "")
-	opl(thislabel,D_word,t2 i.text(i1))
+	opl(thislabel ':')
+	op('Word_',t2 i.text(i1))
 						:(decend)
 g.dic
-	opl(thislabel,D_word,i.text(i1))
+	opl(thislabel ':')
+	op('Word_',i.text(i1))
 						:(decend)
 
 g.drc
 	align(8)
 	t1 = i.text(i1)
 	t1 ? fence "+" = ""
-	op(D_real,t1)
+	op('Real_',t1)
 
 *	note that want to attach label to last instruction
 
@@ -2206,7 +2189,8 @@ g.dtc
 *	change first and last chars to " (assume / used in source)
 	txt = i.text(i1)
 	txt = substr(txt,2,size(txt) - 2)
-	opl(thislabel,D_char, '"' txt '"')
+	opl(thislabel ':')
+	op('Char_', '"' txt '"')
 
 	n = remdr(size(txt),cfp_b)
 	eq(n)					:s(opdone)
@@ -2215,11 +2199,11 @@ g.dtc
 *	Pad out with null bytes to next word boundary
 
 dtc.1	eq(n)					:s(opdone)
-	op(D_byte,'0')
+	op('Byte_',,'0')
 	n = n - 1				:(dtc.1)
 
 	align(cfp_b)			
-	section('d_word','0')
+*	section('d_word','0')
 						:(opdone)
 	dtc.rem = remdr(size(dtc.txt),cfp_c)
 
@@ -2233,10 +2217,11 @@ g.dtc.1
 	le(dtc_i = dtc_i + 1, size(t2))		:s(g.dtc.1)
 
 	tmp = ne(gtc.rem) t4 dupl(',0',cfp_c - gtc.rem)
-	opl(thislabel,D_char,tmp)
+	op('Char_',thislabel,tmp)
 						:(opdone)
 g.dbc
-	opl(thislabel,D_word,getarg(i1))
+	opl(thislabel)
+	op('Word_',getarg(i1))
 						:(opdone)
 g.equ
 	op('Equ_',thislabel,i.text(i1))		:(opdone)
@@ -2266,21 +2251,21 @@ g.sec	op('')
 * procedure declaration section
 
 g.sec.1
-	section('text')
+	op('Section_','text')
 	global('sec01')
 	opl('sec01:')	             	:(opdone)
 
 *	definitions section
 
 g.sec.2
-	section('data')
+	op('Section_','data')
 	global('sec02')
         opl('sec02:')       		      	:(opdone)
 
 *	constants section
 
 g.sec.3
-	section('data')
+	op('Section_','data')
 	global('sec03')
 	opl('sec03:')
 						:(opdone)
@@ -2290,7 +2275,7 @@ g.sec.3
 g.sec.4 
 	global('esec03')
 	opl('esec03' ':')
-	section('data')
+	op('Section_','data')
 	global('sec04')
 	opl('sec04:')			:(opdone)
 
@@ -2314,7 +2299,7 @@ g.sec.5
 .fi
 	global('end_min_data')
 	opl('end_min_data' ':')
-	section('text')
+	op('Section_','text')
 	global('sec05')
 	opl('sec05' ':')
 						:(opdone)

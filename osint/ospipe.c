@@ -157,7 +157,10 @@ struct	ioblk	*ioptr;
         len--;                              //   zap 2nd delimiter
     cmdbuf[len] = '\0';                     // Nul terminate cmd
     shellpath = getshell();         // get shell's path
+#ifdef  exec
+// suppress call as it generates warning message we don't need for now. 
     execl( shellpath, pathlast( shellpath ), "-c", cmdbuf, (char *)NULL );
+#endif
     return -1;					// should not get here
 }
 

@@ -51,10 +51,10 @@
 
                ...code to put arguments in registers...
                call    sysxx           ; call osint function
-             D_word    extrc_1          ; address of exit point 1
-             D_word    extrc_2          ; address of exit point 2
+             Word_    extrc_1          ; address of exit point 1
+             Word_    extrc_2          ; address of exit point 2
                ...     ...             ; ...
-             D_word    extrc_n          ; address of exit point n
+             Word_    extrc_n          ; address of exit point n
                ...instruction following call...
 
        the osint function 'sysxx' can then return in one of n+1 ways:
@@ -102,470 +102,37 @@
        of the internal name.  thus, the function name 'osopen' becomes
        '_osopen'.  however, not all c compilers follow this convention.
 */
-
-.if asm
-
-	%macro	Add_	2
-		add	%1,%2
-	%endmacro
-
-	%macro	Align_	1
-		align	%1
-	%endmacro
-
-	%macro	And_	2
-	and	%1,%2
-	%endmacro
-
-	%macro	Cmp_	2	; src/dst differ
-		cmp	%1,%2
-	%endmacro
-
-	%macro	Cmpb_	2	; src/dst differ
-		Cmp_	%1,%2
-	%endmacro
-
-	%macro	Data	0
-		section	.data
-	%endmacro
-
-	%macro	Dec_	1
-	dec %1
-	%endmacro
-
-	%macro	Equ_	2
-%1:	equ	%2
-	%endmacro
-
-	%macro Extern	1
-		extern	%1
-	%endmacro
-
-	%macro	Fill	1
-	times	%1 db 0
-	%endmacro
-
-	%macro Global	1
-		global	%1
-	%endmacro
-
-	%macro	Inc_	1
-		inc	%1
-	%endmacro
-
-	%macro	Include	1
-		%include	%1
-	%endmacro
-
-	%macro	Jmp_	1	; gas needs '*' before target
-		jmp	%1
-	%endmacro
-
-	%macro	Lea_	2	; load effective address
-		lea	%1,%2
-	%endmacro
-
-	%macro	Mov_	2
-		mov	%1,%2
-	%endmacro
-
-	%macro	Or_	2
-	or	%1,%2
-	%endmacro
-
-	%macro	Sal_	2
-		sal	%1,%2
-	%endmacro
-
-	%macro	Sar_	2
-		sar	%1,%2
-	%endmacro
-
-	%macro	Sub_	2
-		sub	%1,%2
-	%endmacro
-
-	%macro	Text 0
-		section	.text
-	%endmacro
-
-	%macro	Xor_	2
-	xor	%1,%2
-	%endmacro
-
-	%define M_char	byte	; reference to byte in memory
-	%define D_byte	db	; define value of byte
-	%define D_char	db	; define value of byte
-	%define D_real	dq	; real always 64 bits
-
-.if 64
-	%define	log_cfp_b	3
-	%define	log_cfp_c	3
-
-
-	%define	D_char	db
-	%define D_word	dq
-	%define M_real	qword	; reference to floating point value in memory
-	%define M_word  qword
-
-	%define	W0	rax
-	%define W1	rbp
-	%define	WA	rcx
-	%define	WB	rbx
-	%define	WC	rdx
-
-	%define	XL	rsi
-	%define	XT	rsi
-	%define	XR	rdi
-	%define	XS	rsp
-
-	%define	Lods_b	lodsb
-	%define Movs_b	movsb
-	%define Movs_w	movsq
-	%define Stos_b	stosb
-	%define	Stos_w	stosq
-
-	%define	cdq	cqo	; sign extend (64 bits)
-	%define Mem(ref) qword[ref]
-	%define Adr(ref) [ref]
-.fi
-
-.if 32
-
-	%define	log_cfp_b	2
-	%define	log_cfp_c	2
-
-	%define M_real	dword	; reference to floating point value in memory
-	%define W0	eax
-	%define W1	ebp
-	%define WA	ecx
-	%define WB	ebx
-	%define WC	edx
-
-	%define	XL	esi
-	%define	XT	esi
-	%define XR	edi
-	%define XS	esp
-
-	%define	D_char	db
-	%define D_word	dd	; define value for memory Word
-	%define M_word	dword	; reference to Word in memory
-	%define M_real	dword	; reference to Word in memory
-
-	%define	Lods_b	lodsb
-	%define Movs_b	movsb
-	%define Movs_w	movsd
-	%define	Stos_b	stosb
-
-	%define	cdq	cdq	; sign extend (32 bits)
-
-	%define Mem(ref) dword[ref]
-	%define Adr(ref) [ref]
-.fi
-
-	%define	W0_L	al
-	%define	WA_L	cl
-	%define	WB_L	bl
-	%define	WC_L	dl
-
-;	flags
-	%define	flag_of	0x80
-	%define	flag_cf	0x01
-	%define	flag_ca	0x40
-.fi
-
-; Operation and declaration macros are needed for each instruction/declaration having different formats in asm and gas.
-
-.if gas
-.if unix
-; gas unix, 32 and 64 bit
-	.macro	Add_	dst,src
-		add	\src,\dst
-	.endm
-
-	.macro	Align_	bytes
-		.balign	\bytes,0
-	.endm
-
-	.macro	And_	dst,src
-	and	\src,\dst
-	.endm
-
-	.macro	Cmpb_	dst,src	; src/dst differ
-		cmpb	\src,\dst
-	.endm
-
-	.macro	Data
-		.data
-	.endm
-
-	.macro	Equ_	name,value
-	.set	\name,\value
-	.endm
-
-	.macro	Extern	name
-		.extern	\name
-	.endm
-
-	.macro	Fill	count
-	.fill	\count
-	.endm
-
-	.macro	Global	name
-		.global	\name
-	.endm
-
-	.macro	Include	file
-		.include	\file
-	.endm
-	.macro	Jmp_	lab	; gas needs '*' before target
-		jmp	\lab
-	.endm
-
-	.macro	Lea_	dst,src	; load effective address
-		lea	\src,\dst
-	.endm
-
-	.macro	Or_	dst,src
-	or	\src,\dst
-	.endm
-
-	.macro	Sub_	dst,src
-		sub	\src,\dst
-	.endm
-
-	.macro	Text
-		.text
-	.endm
-
-	.macro	Xor_	dst,src
-	xor	\src,\dst
-	.endm
-.fi
-
-.if unix
-.if 32
-; gas unix 32 bit
-	.macro	Dec_	val
-	decl \val
-	.endm
-	.macro	Cmp_	dst,src	; src/dst differ
-		cmpl	\src,\dst
-	.endm
-	.macro	Inc_	val
-		incl	\val
-	.endm
-	.macro	Mov_	dst,src
-		movl	\src,\dst
-	.endm
-	.macro	Sal_	dst,src
-		sall	\src,\dst
-	.endm
-
-	.macro	Sar_	dst,src
-		sarl	\src,\dst
-	.endm
-
-	.macro	Stos_w
-	stosl
-	.endm
-.fi
-.fi
-
-.if unix
-.if 64
-; gas unix 64 bit
-	.macro	Cmp_	dst,src	; src/dst differ
-		cmpq	\src,\dst
-	.endm
-
-	.macro	Dec_	val
-	decq \val
-	.endm
-	.macro	Inc_	val
-		incq	\val
-	.endm
-	.macro	Mov_	dst,src
-		movq	\src,\dst
-	.endm
-	.macro	Sal_	dst,src
-		salq	\src,\dst
-	.endm
-
-	.macro	Sar_	dst,src
-		sarq	\src,\dst
-	.endm
-
-	.macro	Stos_w
-	stosq
-	.endm
-.fi
-.fi
-
-.if osx
-;gas osx, 32 and 64 bit
-	.macro	Add_
-		add	$1,$2
-	.endm
-
-	.macro	Align_
-		.balign	$1,0
-	.endm
-
-	.macro	And_
-		and	$1,$2
-	.endm
-
-	.macro	Cmpb_
-		cmpb	$1,$2
-	.endm
-
-	.macro	Data
-		.data
-	.endm
-
-	.macro	Equ_
-	.set	$1,$2
-	.endm
-
-	.macro	Extern
-		.extern	$1
-	.endm
-
-	.macro	Fill
-	.fill	%1
-	.endm
-
-	.macro	Global
-		.globl	$1
-
-	.endm
-
-	.macro	Include	
-		.include	$1
-	.endm
-	.macro	Jmp_	
-		jmp	$1
-	.endm
-
-	.macro	Lea_
-		lea	$1,$2
-	.endm
-
-	.macro	Or_
-		or	$1,$2
-	.endm
-
-	.macro	Sub_
-		sub	$1,$2
-	.endm
-
-	.macro	Text
-		.text
-	.endm
-
-	.macro	Xor_
-		xor	$1,$2
-	.endm
-.fi
-
-
-.if osx
-.if 32
-; gas osx 32 bit
-	.macro	Dec_
-		decl $1
-	.endm
-
-	.macro	Cmp_
-		cmpl	$1,$2
-	.endm
-
-	.macro	Inc_
-		incl	$1
-	.endm
-	.macro	Mov_
-		movl	$1,$2
-	.endm
-	.macro	Sal_	
-		sall	$1,$2
-	.endm
-
-	.macro	Sar_
-		sarl	$1,$2
-	.endm
-
-	.macro	Stos_w
-	stosl
-	.endm
-.fi
-.fi
-
-
-.if osx
-.if 64
-; gas osx 64 bit
-	.macro	Cmp_
-		cmpq	$1,$2
-	.endm
-
-	.macro	Dec_
-		decq $1
-	.endm
-
-	.macro	Inc_
-		incq	$1
-	.endm
-	.macro	Mov_
-		movq	$1,$2
-	.endm
-	.macro	Sal_
-		salq	$1,$2
-	.endm
-
-	.macro	Sar_
-		sarq	$1,$2
-	.endm
-
-	.macro	Stos_w
-	stosq
-	.endm
-.fi
-.fi
-.fi
-
-
-        Text
-	Global	dnamb
-	Global	dname
-
-	Extern	id_de
-	Extern	trc_cp
-	Extern	trc_xl
-	Extern	trc_xr
-	Extern	trc_xs
-	Extern	trc_wa
-	Extern	trc_wb
-	Extern	trc_wc
-	Extern	trc_w0
-	Extern	trc_it
-	Extern	trc_id
-	Extern	trc_de
-	Extern	trc_0
-	Extern	trc_1
-	Extern	trc_2
-	Extern	trc_3
-	Extern	trc_4
-	Extern	trc_arg
-	Extern	trc_num
-
-	Global	start
+	Section_	text
+	Global_	dnamb
+	Global_	dname
+
+	Extern_	id_de
+	Extern_	trc_cp
+	Extern_	trc_xl
+	Extern_	trc_xr
+	Extern_	trc_xs
+	Extern_	trc_wa
+	Extern_	trc_wb
+	Extern_	trc_wc
+	Extern_	trc_w0
+	Extern_	trc_it
+	Extern_	trc_id
+	Extern_	trc_de
+	Extern_	trc_0
+	Extern_	trc_1
+	Extern_	trc_2
+	Extern_	trc_3
+	Extern_	trc_4
+	Extern_	trc_arg
+	Extern_	trc_num
+
+	Global_	start
 
 .if asm
 	%macro	itz	1
-	Data
+	Section_	data
 %%desc:	D_char	%1,0
-	Text
+	Section_	text
 	Mov_	M_word [trc_de],%%desc
 	call	trc_
 	%endmacro
@@ -591,25 +158,24 @@
 	.set	cfp_c,8
 .fi
 .fi
+	Global_	reg_block
+	Global_	reg_w0
+	Global_	reg_wa
+	Global_	reg_wb
+	Global_	reg_ia
+	Global_	reg_wc
+	Global_	reg_xr
+	Global_	reg_xl
+	Global_	reg_cp
+	Global_	reg_ra
+	Global_	reg_pc
+	Global_	reg_xs
+;	Global_	reg_size
 
-	Global	reg_block
-	Global	reg_w0
-	Global	reg_wa
-	Global	reg_wb
-	Global	reg_ia
-	Global	reg_wc
-	Global	reg_xr
-	Global	reg_xl
-	Global	reg_cp
-	Global	reg_ra
-	Global	reg_pc
-	Global	reg_xs
-;	Global	reg_size
+	Global_	reg_rp
 
-	Global	reg_rp
-
-	Global	minimal
-	Extern	stacksiz
+	Global_	minimal
+	Extern_	stacksiz
 
 ;	values below must agree with calltab defined in x32.hdr and also in osint/osint.h
 
@@ -632,38 +198,38 @@
 
 ;   table to recover type word from type ordinal
 
-	Global	typet
-	Data
-        D_word	b_art   ; arblk type word - 0
-        D_word	b_cdc   ; cdblk type word - 1
-        D_word	b_exl   ; exblk type word - 2
-        D_word	b_icl   ; icblk type word - 3
-        D_word	b_nml   ; nmblk type word - 4
-        D_word	p_aba   ; p0blk type word - 5
-        D_word	p_alt   ; p1blk type word - 6
-        D_word	p_any   ; p2blk type word - 7
+	Global_	typet
+	Section_	data
+        Word_	b_art   ; arblk type word - 0
+        Word_	b_cdc   ; cdblk type word - 1
+        Word_	b_exl   ; exblk type word - 2
+        Word_	b_icl   ; icblk type word - 3
+        Word_	b_nml   ; nmblk type word - 4
+        Word_	p_aba   ; p0blk type word - 5
+        Word_	p_alt   ; p1blk type word - 6
+        Word_	p_any   ; p2blk type word - 7
 ; next needed only if support real arithmetic cnra
-;       D_word	b_rcl   ; rcblk type word - 8
-        D_word	b_scl   ; scblk type word - 9
-        D_word	b_sel   ; seblk type word - 10
-        D_word	b_tbt   ; tbblk type word - 11
-        D_word	b_vct   ; vcblk type word - 12
-        D_word	b_xnt   ; xnblk type word - 13
-        D_word	b_xrt   ; xrblk type word - 14
-        D_word	b_bct   ; bcblk type word - 15
-        D_word	b_pdt   ; pdblk type word - 16
-        D_word	b_trt   ; trblk type word - 17
-        D_word	b_bft   ; bfblk type word   18
-        D_word	b_cct   ; ccblk type word - 19
-        D_word	b_cmt   ; cmblk type word - 20
-        D_word	b_ctt   ; ctblk type word - 21
-        D_word	b_dfc   ; dfblk type word - 22
-        D_word	b_efc   ; efblk type word - 23
-        D_word	b_evt   ; evblk type word - 24
-        D_word	b_ffc   ; ffblk type word - 25
-        D_word	b_kvt   ; kvblk type word - 26
-        D_word	b_pfc   ; pfblk type word - 27
-        D_word	b_tet   ; teblk type word - 28
+;       Word_	b_rcl   ; rcblk type word - 8
+        Word_	b_scl   ; scblk type word - 9
+        Word_	b_sel   ; seblk type word - 10
+        Word_	b_tbt   ; tbblk type word - 11
+        Word_	b_vct   ; vcblk type word - 12
+        Word_	b_xnt   ; xnblk type word - 13
+        Word_	b_xrt   ; xrblk type word - 14
+        Word_	b_bct   ; bcblk type word - 15
+        Word_	b_pdt   ; pdblk type word - 16
+        Word_	b_trt   ; trblk type word - 17
+        Word_	b_bft   ; bfblk type word   18
+        Word_	b_cct   ; ccblk type word - 19
+        Word_	b_cmt   ; cmblk type word - 20
+        Word_	b_ctt   ; ctblk type word - 21
+        Word_	b_dfc   ; dfblk type word - 22
+        Word_	b_efc   ; efblk type word - 23
+        Word_	b_evt   ; evblk type word - 24
+        Word_	b_ffc   ; ffblk type word - 25
+        Word_	b_kvt   ; kvblk type word - 26
+        Word_	b_pfc   ; pfblk type word - 27
+        Word_	b_tet   ; teblk type word - 28
 /*
    table of minimal entry points that can be dded from c
    via the minimal function (see inter.asm).
@@ -672,85 +238,97 @@
    to the order of entries in the call enumeration in osint.h
    and osint.inc.
 */
-	Global calltab
+	Global_ calltab
 calltab:
-        D_word	relaj
-        D_word	relcr
-        D_word	reloc
-        D_word	alloc
-        D_word	alocs
-        D_word	alost
-        D_word	blkln
-        D_word	insta
-        D_word	rstrt
-        D_word	start
-        D_word	filnm
-        D_word	dtype
-;       D_word	enevs ;  engine words
-;       D_word	engts ;   not used
+        Word_	relaj
+        Word_	relcr
+        Word_	reloc
+        Word_	alloc
+        Word_	alocs
+        Word_	alost
+        Word_	blkln
+        Word_	insta
+        Word_	rstrt
+        Word_	start
+        Word_	filnm
+        Word_	dtype
+;       Word_	enevs ;  engine words
+;       Word_	engts ;   not used
 
-	Global	b_efc
-	Global	b_icl
-	Global	b_rcl
-	Global	b_scl
-	Global	b_vct
-	Global	b_xnt
-	Global	b_xrt
-	Global	c_aaa
-	Global	c_yyy
-	Global	dnamb
-	Global	cswfl
-	Global	dnamp
-	Global	flprt
-	Global	flptr
-	Global	g_aaa
-	Global	gbcnt
-	Global	gtcef
-	Global	headv
-	Global	hshtb
-	Global	kvstn
-	Global	kvdmp
-	Global	kvftr
-	Global	kvcom
-	Global	kvpfl
-	Global	mxlen
-	Global	polct
-	Global	s_yyy
-	Global	s_aaa
-	Global	stage
-	Global	state
-	Global	stbas
-	Global	statb
-        Global  stmcs
-        Global  stmct
-	Global	timsx
-	Global  typet
-	Global	pmhbs
-	Global	r_cod
-	Global	r_fcb
-	Global	w_yyy
-	Global	end_min_data
+	Global_	b_efc
+	Global_	b_icl
+	Global_	b_rcl
+	Global_	b_scl
+	Global_	b_vct
+	Global_	b_xnt
+	Global_	b_xrt
+	Global_	c_aaa
+	Global_	c_yyy
+	Global_	dnamb
+	Global_	cswfl
+	Global_	dnamp
+	Global_	flprt
+	Global_	flptr
+	Global_	g_aaa
+	Global_	gbcnt
+	Global_	gtcef
+	Global_	headv
+	Global_	hshtb
+	Global_	kvstn
+	Global_	kvdmp
+	Global_	kvftr
+	Global_	kvcom
+	Global_	kvpfl
+	Global_	mxlen
+	Global_	polct
+	Global_	s_yyy
+	Global_	s_aaa
+	Global_	stage
+	Global_	state
+	Global_	stbas
+	Global_	statb
+        Global_	stmcs
+        Global_	stmct
+	Global_	timsx
+	Global_	typet
+	Global_	pmhbs
+	Global_	r_cod
+	Global_	r_fcb
+	Global_	w_yyy
+	Global_	end_min_data
 ;       Global variables
 
-	Data
+	Section_	data
 
 	Align_ 16
-dummy:	D_word	0
+dummy:	
+	Word_	0
 reg_block:
-reg_ia: D_word	0		; register ia (ebp)
-reg_w0:	D_word	0        	; register wa (ecx)
-reg_wa:	D_word	0        	; register wa (ecx)
-reg_wb:	D_word 	0        	; register wb (ebx)
-reg_wc:	D_word	0		; register wc
-reg_xr:	D_word	0        	; register xr (xr)
-reg_xl:	D_word	0        	; register xl (xl)
-reg_cp:	D_word	0        	; register cp
-reg_ra:	D_real 	0.0  		; register ra
+reg_ia: 
+	Word_	0		; register ia (ebp)
+reg_w0:	
+	Word_	0        	; register wa (ecx)
+reg_wa:
+	Word_	0        	; register wa (ecx)
+reg_wb:
+	Word_ 	0        	; register wb (ebx)
+reg_wc:
+	Word_	0		; register wc
+reg_xr:
+	Word_	0        	; register xr (xr)
+reg_xl:
+	Word_	0        	; register xl (xl)
+reg_cp:
+	Word_	0        	; register cp
+reg_ra:
+	Real_ 	0.0  		; register ra
 
 ; these locations save information needed to return after calling osint and after a restart from exit()
 
-reg_pc: D_word      0               ; return pc from caller
-reg_xs:	D_word	0		; minimal stack pointer
+reg_pc:
+	Word_      0               ; return pc from caller
+reg_xs:
+	Word_	0		; minimal stack pointer
 
 ;	r_size  equ       $-reg_block
 
@@ -762,71 +340,90 @@ reg_xs:	D_word	0		; minimal stack pointer
 
 ; reg_rp is used to pass pointer to real operand for real arithmetic
 
-reg_rp:	D_word	0
+reg_rp:	
+	Word_	0
 
 ; reg_fl is used to communicate condition codes between minimal and c code.
 
-	Global	reg_fl
-reg_fl:	D_byte	0		; condition code register for numeric operations
+	Global_	reg_fl
+reg_fl:
+	Byte_	0		; condition code register for numeric operations
 
 	Align_	8
 
 ;  constants
 
-	Global	ten
-ten:    D_word      10              ; constant 10
-	Global  inf
-inf:	D_word	0
-	D_word      0x7ff00000      ; double precision infinity
-	Global	maxint
+	Global_	ten
+ten:   
+	Word_      10              ; constant 10
+	Global_	inf
+inf:
+	Word_	0
+	Word_      0x7ff00000      ; double precision infinity
+	Global_	maxint
 .if 32
-maxint:	D_word 2147483647
+maxint:
+	Word_ 2147483647
 .fi
 .if 64
-maxint:	D_word 9223372036854775807
+maxint:
+	Word_ 9223372036854775807
 .fi
 
-	Global	sav_block
+	Global_	sav_block
 sav_block:
-	Fill 	44 			; save minimal registers during push/pop reg
-
-	Align_ cfp_b
-	Global	ppoff
-
-ppoff:  D_word      0               	; offset for ppm exits
-
-	Global	compsp
-compsp: D_word      0               	; compiler's stack pointer
-
-	Global	sav_compsp
-sav_compsp:
-	D_word      0               	; save compsp here
-
-	Global	osisp
-osisp:  D_word      0               	; osint's stack pointer
-
-	Global	_rc_
-_rc_:	D_word   0				; return code from osint procedure
+	Fill_	44 			; save minimal registers during push/pop reg
 
 	Align_	cfp_b
-	Global	save_cp
-	Global	save_xl
-	Global	save_xr
-	Global	save_wa
-	Global	save_wb
-	Global	save_wc
-	Global	save_xs
-save_cp:	D_word	0		; saved cp value
-save_ia:	D_word	0		; saved ia value
-save_xl:	D_word	0		; saved xl value
-save_xr:	D_word	0		; saved xr value
-save_wa:	D_word	0		; saved wa value
-save_wb:	D_word	0		; saved wb value
-save_wc:	D_word	0		; saved wc value
-save_xs:	D_word	0		; saved xs value
+	Global_	ppoff
 
-	Global	minimal_id
-minimal_id:	D_word	0		; id for call to minimal from c. see proc minimal below.
+ppoff:
+	Word_      0               	; offset for ppm exits
+
+	Global_	compsp
+compsp:
+	Word_      0               	; compiler's stack pointer
+
+	Global_	sav_compsp
+sav_compsp:
+	Word_      0               	; save compsp here
+
+	Global_	osisp
+osisp: 
+	Word_      0               	; osint's stack pointer
+
+	Global_	_rc_
+_rc_:
+	Word_   0				; return code from osint procedure
+
+	Align_	cfp_b
+	Global_	save_cp
+	Global_	save_xl
+	Global_	save_xr
+	Global_	save_wa
+	Global_	save_wb
+	Global_	save_wc
+	Global_	save_xs
+save_cp:
+	Word_	0		; saved cp value
+save_ia:
+	Word_	0		; saved ia value
+save_xl:
+	Word_	0		; saved xl value
+save_xr:
+	Word_	0		; saved xr value
+save_wa:
+	Word_	0		; saved wa value
+save_wb:
+	Word_	0		; saved wb value
+save_wc:
+	Word_	0		; saved wc value
+save_xs:
+	Word_	0		; saved xs value
+
+	Global_	minimal_id
+minimal_id:
+	Word_	0		; id for call to minimal from c. see proc minimal below.
 
 /*
 	%define setreal 0
@@ -834,73 +431,81 @@ minimal_id:	D_word	0		; id for call to minimal from c. see proc minimal below.
        setup a number of internal addresses in the compiler that cannot be directly accessed from within
 	c because of naming difficulties.
 */
-	Global	id1
-id1:	D_word	0
+	Global_	id1
+id1:	
+	Word_	0
 .if dead
 %if setreal == 1
-	D_word	2
+	Word_	2
 
-       D_word       1
+       Word_       1
 	D_char	"1x\x00\x00\x00"
 %endif
 .fi
 
-	Global	id1blk
-id1blk:	D_word	152
-	D_word	0
-	Fill	152
+	Global_	id1blk
+id1blk:
+		Word_	152
+	Word_	0
+	Fill_	152
 
-	Global	id2blk
-id2blk:	D_word	152
-      	D_word	0
-	Fill	152
+	Global_	id2blk
+id2blk:
+	Word_	152
+      	Word_	0
+	Fill_	152
 
-	Global	ticblk
+	Global_	ticblk
 ticblk:
-	D_word	0
-	D_word	0
+	Word_	0
+	Word_	0
 
-	Global	tscblk
+	Global_	tscblk
 tscblk:
-	D_word	512
-	D_word	0
-	Fill	512
+	Word_	512
+	Word_	0
+	Fill_	512
 
 ;       standard input buffer block.
 
-	Global  inpbuf
+	Global_	inpbuf
 
-inpbuf:	D_word	0			; type word
-	D_word	0               	; block length
-	D_word	1024            	; buffer size
-	D_word	0               	; remaining chars to read
-	D_word	0               	; offset to next character to read
-	D_word	0               	; file position of buffer
-	D_word	0               	; physical position in file
-	Fill	1024
+inpbuf:
+		Word_	0			; type word
+	Word_	0               	; block length
+	Word_	1024            	; buffer size
+	Word_	0               	; remaining chars to read
+	Word_	0               	; offset to next character to read
+	Word_	0               	; file position of buffer
+	Word_	0               	; physical position in file
+	Fill_	1024
 
-	Global  ttybuf
+	Global_	ttybuf
 
-ttybuf:	D_word    0     ; type word
-	D_word	0								; block length
-	D_word	260             	; buffer size  (260 ok in ms-dos with cinread())
-	D_word	0               	; remaining chars to read
-	D_word	0               	; offset to next char to read
-	D_word	0               	; file position of buffer
-	D_word	0               	; physical position in file
-	Fill	260	         	; buffer
+ttybuf:
+	Word_	0     ; type word
+	Word_	0								; block length
+	Word_	260             	; buffer size  (260 ok in ms-dos with cinread())
+	Word_	0               	; remaining chars to read
+	Word_	0               	; offset to next char to read
+	Word_	0               	; file position of buffer
+	Word_	0               	; physical position in file
+	Fill_	260	         	; buffer
 
-	Global	spmin
+	Global_	spmin
 
-spmin:	D_word	0			; stack limit (stack grows down for x86_64)
-spmin.a:	D_word	spmin
+spmin:
+	Word_	0			; stack limit (stack grows down for x86_64)
+spmin.a:
+	Word_	spmin
 
 	Align_	16
 	Align_	cfp_b
 
-call_adr:	D_word	0
+call_adr:	
+	Word_	0
 
-	Text
+	Section_	text
 /*
        save and restore minimal and interface registers on stack.
        used by any routine that needs to call back into the minimal
@@ -925,7 +530,7 @@ call_adr:	D_word	0
        reloading a save file.
 
 */
-	Global	save_regs
+	Global_	save_regs
 save_regs:
 	Mov_	Mem(save_xl),XL
 	Mov_	Mem(save_xr),XR
@@ -935,7 +540,7 @@ save_regs:
 	Mov_	Mem(save_xs),XS
 	ret
 
-	Global	restore_regs
+	Global_	restore_regs
 restore_regs:
 	;	restore regs, except for sp. that is caller's responsibility
 	Mov_	XL,Mem(save_xl)
@@ -959,7 +564,7 @@ restore_regs:
 
 */
 
-	Global	startup
+	Global_	startup
 
 ;   ordinals for minimal calls from assembly language.
 
@@ -1029,7 +634,7 @@ startup:
 
 ;	initialize stack
 
-	Global	stackinit
+	Global_	stackinit
 stackinit:
 	Mov_	W0,XS
 	Mov_	Mem(compsp),W0	; save minimal's stack pointer
@@ -1041,7 +646,7 @@ stackinit:
 
 ;	check for stack overflow, making W0 nonzero if found
 
-	Global	chk__
+	Global_	chk__
 chk__:
 	xor	W0,W0			; set return value assuming no overflow
 	Cmp_	XS,Mem(spmin)
@@ -1100,7 +705,7 @@ minimal:
 
 	sysxx:
 			call    ccaller ; call common interface
-                     	D_word    zysxx   ; dd      of c osint function
+                     	Word_    zysxx   ; dd      of c osint function
                        db      n       ; offset to instruction after
                                        ;   last procedure exit
 
@@ -1120,7 +725,7 @@ minimal:
 	general calling sequence is
 
 			call	ccaller
-			d_word	address_of_c_function
+			Word_	address_of_c_function
 			db      2*number_of_extrc_points
 
 	control is never returned to a interface routine.  instead, control
@@ -1143,12 +748,12 @@ minimal:
 */
 
 ;%ifdef	OLD
-;	Global	get_ia
+;	Global_	get_ia
 ;get_ia:
 ;	Mov_	W0,IA
 ;	ret
 ;
-;	Global	set_ia_
+;	Global_	set_ia_
 ;set_ia_:	Mov_	IA,M_word[reg_w0]
 ;	ret
 ;%endif
@@ -1209,67 +814,82 @@ syscall_exit:
 	.endm
 .fi
 
-	Global sysax
-	Extern	zysax
-sysax:	syscall	  zysax,1
+	Global_	sysax
+	Extern_	zysax
+sysax:
+		syscall	  zysax,1
 
-	Global sysbs
-	Extern	zysbs
-sysbs:	syscall	  zysbs,2
+	Global_	sysbs
+	Extern_	zysbs
+sysbs:
+	syscall	  zysbs,2
 
-	Global sysbx
-	Extern	zysbx
-sysbx:	Mov_	Mem(reg_xs),XS
+	Global_	sysbx
+	Extern_	zysbx
+sysbx:
+	Mov_	Mem(reg_xs),XS
 	syscall	zysbx,2
 
 ;	global syscr
-;	Extern	zyscr
-;syscr:	syscall	zyscr,0
+;	Extern_	zyscr
+;syscr:
+;	syscall	zyscr,0
 
-	Global sysdc
-	Extern	zysdc
-sysdc:	syscall	zysdc,4
+	Global_	sysdc
+	Extern_	zysdc
+sysdc:
+	syscall	zysdc,4
 
-	Global sysdm
-	Extern	zysdm
-sysdm:	syscall	zysdm,5
+	Global_	sysdm
+	Extern_	zysdm
+sysdm:
+	syscall	zysdm,5
 
-	Global sysdt
-	Extern	zysdt
-sysdt:	syscall	zysdt,6
+	Global_	sysdt
+	Extern_	zysdt
+sysdt:
+	syscall	zysdt,6
 
-	Global sysea
-	Extern	zysea
-sysea:	syscall	zysea,7
+	Global_	sysea
+	Extern_	zysea
+sysea:
+	syscall	zysea,7
 
-	Global sysef
-	Extern	zysef
-sysef:	syscall	zysef,8
+	Global_	sysef
+	Extern_	zysef
+sysef:
+	syscall	zysef,8
 
-	Global sysej
-	Extern	zysej
-sysej:	syscall	zysej,9
+	Global_	sysej
+	Extern_	zysej
+sysej:
+	syscall	zysej,9
 
-	Global sysem
-	Extern	zysem
-sysem:	syscall	zysem,10
+	Global_	sysem
+	Extern_	zysem
+sysem:
+	syscall	zysem,10
 
-	Global sysen
-	Extern	zysen
-sysen:	syscall	zysen,11
+	Global_	sysen
+	Extern_	zysen
+sysen:
+	syscall	zysen,11
 
-	Global sysep
-	Extern	zysep
-sysep:	syscall	zysep,12
+	Global_	sysep
+	Extern_	zysep
+sysep:
+	syscall	zysep,12
 
-	Global sysex
-	Extern	zysex
-sysex:	Mov_	Mem(reg_xs),XS
+	Global_	sysex
+	Extern_	zysex
+sysex:
+	Mov_	Mem(reg_xs),XS
 	syscall	zysex,13
 
-	Global sysfc
-	Extern	zysfc
-sysfc:  pop	W0             ; <<<<remove stacked scblk>>>>
+	Global_	sysfc
+	Extern_	zysfc
+sysfc: 
+	pop	W0             ; <<<<remove stacked scblk>>>>
 .if asm
 	lea	XS,[XS+WC*cfp_b]
 .fi
@@ -1282,103 +902,126 @@ sysfc:  pop	W0             ; <<<<remove stacked scblk>>>>
 	push	W0
 	syscall	zysfc,14
 
-	Global	sysgc
-	Extern	zysgc
-sysgc:	syscall	zysgc,15
+	Global_	sysgc
+	Extern_	zysgc
+sysgc:
+	syscall	zysgc,15
 
-	Global	syshs
-	Extern	zyshs
-syshs:	Mov_	Mem(reg_xs),XS
+	Global_	syshs
+	Extern_	zyshs
+syshs:
+	Mov_	Mem(reg_xs),XS
 	syscall	zyshs,16
 
-	Global	sysid
-	Extern	zysid
-sysid:	syscall	zysid,17
+	Global_	sysid
+	Extern_	zysid
+sysid:
+	syscall	zysid,17
 
-	Global	sysif
-	Extern	zysif
-sysif:	syscall	zysif,18
+	Global_	sysif
+	Extern_	zysif
+sysif:
+	syscall	zysif,18
 
-	Global	sysil
-	Extern	zysil
-sysil:	syscall	zysil,19
+	Global_	sysil
+	Extern_	zysil
+sysil:
+	syscall	zysil,19
 
-	Global	sysin
-	Extern	zysin
-sysin:	syscall	zysin,20
+	Global_	sysin
+	Extern_	zysin
+sysin:
+	syscall	zysin,20
 
-	Global	sysio
-	Extern	zysio
-sysio:	syscall	zysio,21
+	Global_	sysio
+	Extern_	zysio
+sysio:
+	syscall	zysio,21
 
-	Global	sysld
-	Extern	zysld
-sysld:	syscall	zysld,22
+	Global_	sysld
+	Extern_	zysld
+sysld:
+	syscall	zysld,22
 
-	Global	sysmm
-	Extern	zysmm
-sysmm:	syscall	zysmm,23
+	Global_	sysmm
+	Extern_	zysmm
+sysmm:
+	syscall	zysmm,23
 
-	Global	sysmx
-	Extern	zysmx
-sysmx:	syscall	zysmx,24
+	Global_	sysmx
+	Extern_	zysmx
+sysmx:
+	syscall	zysmx,24
 
-	Global	sysou
-	Extern	zysou
-sysou:	syscall	zysou,25
+	Global_	sysou
+	Extern_	zysou
+sysou:
+	syscall	zysou,25
 
-	Global	syspi
-	Extern	zyspi
-syspi:	syscall	zyspi,26
+	Global_	syspi
+	Extern_	zyspi
+syspi:
+	syscall	zyspi,26
 
-	Global	syspl
-	Extern	zyspl
-syspl:	syscall	zyspl,27
+	Global_	syspl
+	Extern_	zyspl
+syspl:
+	syscall	zyspl,27
 
-	Global	syspp
-	Extern	zyspp
-syspp:	syscall	zyspp,28
+	Global_	syspp
+	Extern_	zyspp
+syspp:
+	syscall	zyspp,28
 
-	Global	syspr
-	Extern	zyspr
-syspr:	syscall	zyspr,29
+	Global_	syspr
+	Extern_	zyspr
+syspr:
+	syscall	zyspr,29
 
-	Global	sysrd
-	Extern	zysrd
-sysrd:	syscall	zysrd,30
+	Global_	sysrd
+	Extern_	zysrd
+sysrd:
+	syscall	zysrd,30
 
-	Global	sysri
-	Extern	zysri
-sysri:	syscall	zysri,32
+	Global_	sysri
+	Extern_	zysri
+sysri:
+	syscall	zysri,32
 
-	Global	sysrw
-	Extern	zysrw
-sysrw:	syscall	zysrw,33
+	Global_	sysrw
+	Extern_	zysrw
+sysrw:
+	syscall	zysrw,33
 
-	Global	sysst
-	Extern	zysst
-sysst:	syscall	zysst,34
+	Global_	sysst
+	Extern_	zysst
+sysst:
+	syscall	zysst,34
 
-	Global	systm
-	Extern	zystm
-systm:	syscall	zystm,35
+	Global_	systm
+	Extern_	zystm
+systm:
+	syscall	zystm,35
 
-	Global	systt
-	Extern	zystt
-systt:	syscall	zystt,36
+	Global_	systt
+	Extern_	zystt
+systt:
+	syscall	zystt,36
 
-	Global	sysul
-	Extern	zysul
-sysul:	syscall	zysul,37
+	Global_	sysul
+	Extern_	zysul
+sysul:
+	syscall	zysul,37
 
-	Global	sysxi
-	Extern	zysxi
-sysxi:	Mov_	Mem(reg_xs),XS
+	Global_	sysxi
+	Extern_	zysxi
+sysxi:
+	Mov_	Mem(reg_xs),XS
 	syscall	zysxi,38
 
 .if asm
 	%macro	callext	2
-	Extern	%1
+	Extern_	%1
 	call	%1
 	Add_XS,%2		; pop arguments
 	%endmacro
@@ -1484,7 +1127,7 @@ sysxi:	Mov_	Mem(reg_xs),XS
 .if gas
 .if unix
 	.macro	callext	name,id
-	Extern	\name
+	Extern_	\name
 	call	\name
 	Add_XS,\id		; pop arguments
 	.endm
@@ -1595,7 +1238,7 @@ sysxi:	Mov_	Mem(reg_xs),XS
 .fi
 .if osx
 	.macro	callext
-	Extern	$1
+	Extern_	$1
 	call	$1
 	Add_	XS,$2		; pop arguments
 	.endm
@@ -1717,18 +1360,18 @@ sysxi:	Mov_	Mem(reg_xs),XS
 	wa ecx) = remainder + '0'
 */
 
-	Global	cvd__
+	Global_	cvd__
 cvd__:
-	Extern	i_cvd
+	Extern_	i_cvd
 	Mov_	Mem(reg_wa),WA
 	call	i_cvd
 	Mov_	WA,Mem(reg_wa)
 	ret
 
 ;	dvi__ - divide ia (edx) by long in w0
-	Global	dvi__
+	Global_	dvi__
 dvi__:
-	Extern	i_dvi
+	Extern_	i_dvi
 	Mov_	Mem(reg_w0),W0
 	call	i_dvi
 .if asm
@@ -1741,11 +1384,11 @@ dvi__:
 .fi
 	ret
 
-	Global	rmi__
+	Global_	rmi__
 ;       rmi__ - remainder of ia (edx) divided by long in w0
 rmi__:
 	jmp	ocode
-	Extern	i_rmi
+	Extern_	i_rmi
 	Mov_	Mem(reg_w0),W0
 	call	i_rmi
 .if asm
@@ -1762,7 +1405,7 @@ ocode:
 	or	W0,W0		; test for 0
 	jz	setovr		; jump if 0 divisor
 	xchg	W0,Mem(reg_ia)	; ia to w0, divisor to ia
-	cdq			; extend dividend
+	Cdq_			; extend dividend
 	Mov_	W0,Mem(reg_ia)
 	idiv	W0		; perform division. w0=quotient, wc=remainder
 .if asm
@@ -1788,8 +1431,8 @@ setovr:
 
 .if asm
 	%macro	int_op 2
-	Global	%1
-	Extern	%2
+	Global_	%1
+	Extern_	%2
 %1:
 	call	%2
 	ret
@@ -1798,8 +1441,8 @@ setovr:
 .if gas
 .if unix
 	.macro	int_op glob,ext
-	Global	\glob
-	Extern	\ext
+	Global_	\glob
+	Extern_	\ext
 \glob:
 	call	\ext
 	ret
@@ -1807,8 +1450,8 @@ setovr:
 .fi
 .if osx
 	.macro	int_op 
-	Global	$1
-	Extern	$2
+	Global_	$1
+	Extern_	$2
 \glob:
 	call	$2
 	ret
@@ -1819,7 +1462,7 @@ setovr:
 	int_op itr_,f_itr
 	int_op rti_,f_rti
 
-;	Extern	i_ldi
+;	Extern_	i_ldi
 ;	%macro	ldi_	1
 ;	Mov_	W0,%1
 ;	Mov_	Mem(reg_ia),W0
@@ -1833,8 +1476,8 @@ setovr:
 ;
 ;	Extern w00
 ;	%macro	int_op 2
-;	Global	%1
-;	Extern	%2
+;	Global_	%1
+;	Extern_	%2
 ;%1:
 ;	Mov_	Mem(reg_w0),W0
 ;	call	%2
@@ -1853,8 +1496,8 @@ setovr:
 
 .if asm
 	%macro	osint_call 3
-	Global	%1
-	Extern	%2
+	Global_	%1
+	Extern_	%2
 %1:
 	Mov_	M_word [%3],W0
 	call	%2
@@ -1865,8 +1508,8 @@ setovr:
 .if gas
 .if unix
 	.macro	osint_call glob,ext,reg
-	Global	\glob
-	Extern	\ext
+	Global_	\glob
+	Extern_	\ext
 \glob:
 	Mov_	\reg,W0
 	call	\ext
@@ -1875,8 +1518,8 @@ setovr:
 .fi
 .if osx
 	.macro	osint_call 
-	Global	$1
-	Extern	$2
+	Global_	$1
+	Extern_	$2
 $1:
 	Mov_	$3,W0
 	call	$2
@@ -1915,8 +1558,8 @@ $1:
 
 .if asm
 	%macro	math_op 2
-	Global	%1
-	Extern	%2
+	Global_	%1
+	Extern_	%2
 %1:
 	call	%2
 	ret
@@ -1925,8 +1568,8 @@ $1:
 .if gas
 .if unix
 	.macro	math_op glob,ext
-	Global	\glob
-	Extern	\ext
+	Global_	\glob
+	Extern_	\ext
 \glob:
 	call	\ext
 	ret
@@ -1934,8 +1577,8 @@ $1:
 .fi
 .if osx
 	.macro	math_op 
-	Global	$1
-	Extern	$2
+	Global_	$1
+	Extern_	$2
 $1:
 	call	$2
 	ret
@@ -1953,7 +1596,7 @@ $1:
 	math_op	tan_,f_tan
 
 ;	ovr_ test for overflow value in ra
-	Global	ovr_
+	Global_	ovr_
 ovr_:
 .if asm
 	Mov_	ax, word [ rel reg_ra+6]	; get top 2 bytes
@@ -1969,20 +1612,20 @@ ovr_:
 .fi
 	ret
 
-	Global	get_fp			; get frame pointer
+	Global_	get_fp			; get frame pointer
 
 get_fp:
 	Mov_	W0,Mem(reg_xs)     ; minimal's xs
 	Add_	W0,4           	; pop return from call to sysbx or sysxi
 	ret                    	; done
 
-	Extern	rereloc
+	Extern_	rereloc
 
-	Global	restart
-	Extern	lmodstk
-	Extern	startbrk
-	Extern	outptr
-	Extern	swcoup
+	Global_	restart
+	Extern_	lmodstk
+	Extern_	startbrk
+	Extern_	outptr
+	Extern_	swcoup
 ;	scstr is offset to start of string in scblk, or two words
 ;scstr	equ	cfp_c+cfp_c
 
@@ -2082,7 +1725,8 @@ re3:	cld
 	would occur if we naively returned to sysbx.  clear the stack and
 	go for it.
 */
-re4:	Mov_	W0,Mem(stbas)
+re4:
+	Mov_	W0,Mem(stbas)
 	Mov_	Mem(compsp),W0     	; empty the stack
 
 ;	code that would be executed if we had returned to makeexec:
@@ -2107,8 +1751,8 @@ re4:	Mov_	W0,Mem(stbas)
 	call	minimal			; no return
 .fi
 
-	Global	trc_
-	Extern	trc
+	Global_	trc_
+	Extern_	trc
 trc_:
 	pushf
 	call	save_regs
@@ -2122,4 +1766,4 @@ trc_:
 .fi
 
 
-	Global	reav1
+	Global_	reav1

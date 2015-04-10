@@ -71,12 +71,6 @@ NASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
 ASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
 endif
 
-# tools for processing Minimal source file.
-
-DEF=def.sbl
-ERR=err.sbl
-MIN=asm.sbl
-
 # implicit rule for building objects from C files.
 
 ./%.o: %.c
@@ -205,7 +199,7 @@ asm:
 
 # use preprocessor to make version of rewriter for asm
 
-	$(BASEBOL) -u $(TARGET)_asm pre.sbl <$(DEF) >def.spt
+	$(BASEBOL) -u $(TARGET)_asm pre.sbl <def.sbl >def.spt
 
 # run preprocessor to get sys for nasm as target
 
@@ -264,7 +258,7 @@ osx-export:
 
 # use preprocessor to make version of rewriter for gas
 
-	$(BASEBOL) -u osx_32_gas pre.sbl <$(DEF) >def.spt
+	$(BASEBOL) -u osx_32_gas pre.sbl <def.sbl >def.spt
 
 # run preprocessor to get sys for ngas as target
 
@@ -316,7 +310,7 @@ sys-asm:
 
 # use preprocessor to make version of rewriter for asm
 
-	$(BASEBOL) -u $(TARGET)_asm pre.sbl <$(DEF) >def.spt
+	$(BASEBOL) -u $(TARGET)_asm pre.sbl <def.sbl >def.spt
 
 # run asm definer to resolve system dependencies in sys
 
@@ -334,7 +328,7 @@ sys-gas:
 
 # use preprocessor to make version of rewriter for gas
 
-	$(BASEBOL) -u $(TARGET)_gas pre.sbl <$(DEF) >def.spt
+	$(BASEBOL) -u $(TARGET)_gas pre.sbl <def.sbl >def.spt
 
 # run gas definer to resolve system dependencies in sys
 
