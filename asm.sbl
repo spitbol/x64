@@ -29,7 +29,7 @@
 
 	A symbol begins with a capital in the output assembly language iff it reflects a difference between asm 
 	and gas that will be resolved later, either by one-line macros in the case of asm, or via expansion by 
-def.sbl in the case of gas.
+	def.sbl in the case of gas.
 
 	For example, 'Mov_' is generated instead of 'mov' since asm wants destination before the source, whilst
 	gas wants the destination after the source.
@@ -715,23 +715,6 @@ genlab	genlab = (differ(prefix) prefix,'')  '_' lpad(genlabels = genlabels + 1,4
 *  generate operation with label
 
 opl	
-	ident(gopc)				:s(opl.done)
-simple
-	opc = simple_op[gopc]
-	ident(opc)				:s(opl.done)
-	gopc = opc
-	simples = simples + 1
-.if gas
-
-*	Nothing to do if unary op.
-
-	ident(gop2)				:s(opl.done)
-
-*	here if binary op. Swap arguments since targeting gas
-
-	tmp = gop1; gop1 = gop2; gop2 = tmp
-.fi
-opl.done
 	cstmts[cstmts.n = cstmts.n + 1] =
 .		tstmt(gopl,gopc,gop1,gop2,gop3)	:(return)
 
@@ -1437,7 +1420,7 @@ g.bod
 	op('And_',reg.w0,getarg(i1))
 	op((ident(incode,'bod') 'jne', 'je'),getarg(i2)) :(opdone) 
 g.brn  
-	op('Jmp_',getarg(i1))			:(opdone)
+	op('Jmp_',g('*') getarg(i1))			:(opdone)
 
 g.bsw
 	reg = getarg(i1)
@@ -1449,7 +1432,7 @@ g.bsw
 * here after default case.
 g.bsw1
 .if asm
-	op('Jmp_', mem( lbl '+' reg '*' cfp_b)) 
+	op('Jmp_',g'('*')  mem( lbl '+' reg '*' cfp_b)) 
 .fi
 .if gas
 	op('jmp','*' lbl '(,' reg ',' cfp_b ')' )
@@ -1509,7 +1492,7 @@ g.lei
 .fi
 .if gas
 	op('Dec_',t1)
-	op('mov', '(' t1 ')', reglow['w0'])
+	op('movb', '(' t1 ')', reglow['w0'])
 	op('movz' (eq(ws,32) 'bl','bq'),reglow['w0'],t1) :(opdone)
 .fi
 
@@ -1972,7 +1955,7 @@ g.trc
 	lbl = genlab('trc')
 	opl(lbl ':','movz' (eq(ws,32) 'bl', 'bq'),'(' reg.xr ')',reg.w0)
 	op('Add_','(' reg.xl ')',reg.w0)
-	op('mov','(' reg.w0 ')', reglow['w0'])
+	op('movb','(' reg.w0 ')', reglow['w0'])
 .fi
 	op('stos' op_b)
 	op('Dec_',reg.wa)
@@ -2164,12 +2147,12 @@ decend
 
 g.dac	
 	t1 = i.type(i1)
-	t2 = "" ;*(le(t1,2) "", le(t1,4) "d_offset_(", le(t1,6) "d_offset_(", "")
-	opl(thislabel ':')
-	op('Word_',t2 i.text(i1))
+	outfile = '# g.dac ' thislabel
+	opl(thislabel)
+	op('Word_',i.text(i1))
 						:(decend)
 g.dic
-	opl(thislabel ':')
+	opl(thislabel)
 	op('Word_',i.text(i1))
 						:(decend)
 
@@ -2177,6 +2160,8 @@ g.drc
 	align(8)
 	t1 = i.text(i1)
 	t1 ? fence "+" = ""
+	opl(thislabel)
+	thislabel =
 	op('Real_',t1)
 
 *	note that want to attach label to last instruction
@@ -2189,7 +2174,7 @@ g.dtc
 *	change first and last chars to " (assume / used in source)
 	txt = i.text(i1)
 	txt = substr(txt,2,size(txt) - 2)
-	opl(thislabel ':')
+	opl(thislabel)
 	op('Char_', '"' txt '"')
 
 	n = remdr(size(txt),cfp_b)
@@ -2199,7 +2184,7 @@ g.dtc
 *	Pad out with null bytes to next word boundary
 
 dtc.1	eq(n)					:s(opdone)
-	op('Byte_',,'0')
+	op('Byte_','0')
 	n = n - 1				:(dtc.1)
 
 	align(cfp_b)			

@@ -1,21 +1,19 @@
 .def comment_asterisk
-/*
- copyright 2012-2015 david shields
-
- this file is part of macro spitbol.
-
-	macro spitbol is free software: you can redistribute it and/or modify it under the terms of the 
-	gnu general public license as published by the free software foundation, either version 2 of the license, or
-	(at your option) any later version.
-
-	macro spitbol is distributed in the hope that it will be useful, but without any warranty; without even 
-	the implied warranty of merchantability or fitness for a particular purpose.  see the gnu general 
-	public license for more details.
-
-	you should have received a copy of the gnu general public license along with macro spitbol.  
-	if not, see <http://www.gnu.org/licenses/>.
-
-*/
+* copyright 2012-2015 david shields
+*
+* this file is part of macro spitbol.
+*
+*	macro spitbol is free software: you can redistribute it and/or modify it under the terms of the 
+*	gnu general public license as published by the free software foundation, either version 2 of the license, or
+*	(at your option) any later version.
+*
+*	macro spitbol is distributed in the hope that it will be useful, but without any warranty; without even 
+*	the implied warranty of merchantability or fitness for a particular purpose.  see the gnu general 
+*	public license for more details.
+*
+*	you should have received a copy of the gnu general public license along with macro spitbol.  
+*	if not, see <http://www.gnu.org/licenses/>.
+*
 
 *	expand symbolic definitions for target environment as input to assembler
 
@@ -23,6 +21,7 @@
 	define('epilog()')
 	define('error(text)')
 	define('g(text)')
+	define('gen()tmp')
 	define('m(line)')
 	define('mem(line)')
 	define('out(opc,op1,op2)')
@@ -31,26 +30,29 @@
 
 	&anchor = 0
 	&dump = 3
-	&stlimit = 100000
+	&stlimit = 1500000
 	&trim = 1
 
 	target = (differ(host(0)) host(0), "unix_64_gas") 
 	target break('_') . os '_' break('_') . ws '_' rem . asm
 
 	comment_char = (ident(asm,'asm') ';', '#')
-	output  = a(';') g('#') ' def: os ' os '  ws ' ws '  asm  ' asm
+	output  = comment_char ' def: os ' os '  ws ' ws '  asm  ' asm
 
 	tab = char(9)
 	whitespace = ' ' tab
+	letters = &ucase &lcase '_'
+	digits = '0123456789'
+	id_chars = letters digits
 
-	ops = ' add align and byte byte cdq char char cmp cmpb dec equ extern fill global '
-+		'inc lea mov not or real real sal sar section sub word '
+	ops = ' add align and byte byte cdq char char cmp dec equ extern fill global '
++		'idiv inc jmp lea mov not or real real sal sar section sub word xchg xor '
 
 *	create map from Minimal registers to hardware register name, create map from 'low' 
 *	register names to corresponding gas names 
 
-	reg.pat =  ('IA' | ('X' any('LRST')) | ('W' any('ABC0')) )
-	low.pat = 'W' any('ABC0') '_L'
+	regpat =  ('IA' | ('X' any('LRST')) | ('W' any('ABC0')) )
+	lowpat = 'W' any('ABC0') '_L'
 	regmap = table(20)
 	p = g('%') (eq(ws,32) 'e', 'r')
 	regmap['XL'] = p 'si'; regmap['XR'] = p 'di'; regmap['XS'] = regmap['XT'] = p 'si';
@@ -78,99 +80,38 @@ cloop	line any('#') = ';'			:s(cloop)
 cloop	line any(';') = '#'			:s(cloop)			
 .fi
 
+*	copy out line just consisting of label
+
+	line pos(0) notany(id_chars)		:s(nolabel)
+	line pos(0) span(id_chars) ':' rpos(0)	:s(copy)
+nolabel
 	inline = line
-
-*	resolve register references
-
-	line any('XW')				:f(regs.end)
-reg.loop 	line reg.pat . reg = prefix regmap[reg]	:s(reg.loop)
-	line break('W')				:f(low.end)
-low.loop 	line low.pat . reg  = lowmap[reg]		:s(low.loop)
-low.end
-regs.end
-	line = mem(line)
 	line break(&ucase)			:f(copy)
 	parse(line)
-*	output = '# parse :' label ':' op ':' op1 ':' op2 ':' comment
 
 *	Branch on valid opcode, just copy line to output otherwise
 
 	c = substr(op,1,1)
 	op_suffix = ident(asm,'gas') (eq(ws,32) 'l', 'q')	;* operator suffix needed for gas
-	ops breakx(' ') ' ' op ' '		:f(copy)
-						:($('op.' op))
+	ops breakx(' ') ' ' op ' '		:f(nogen)
+	line = gen()
+nogen
+
+*	Map minimal register names to hardware names
+
+	line break('XW')			:f(regs.end)
+reg.loop 	
+	line regpat . reg = prefix regmap[reg]	:s(reg.loop)
+low.loop 	
+	line lowpat . reg  = lowmap[reg]		:s(low.loop)
+low.end
+regs.end
+
+*	expand Mem_(..) memory references
+
+	line = mem(line)			:(copy)
+
 -stitl a(text)
-
-op.fill
-	op = (ident(asm,'asm') 'times', '.fill')
-	op1 = ident(asm,'asm') op1 ' db 0 '
-						:(op.done)
-op.section
-	op = ident(asm,'asm') 'section'
-	op1 = ident(asm,'asm') '.' op1
-	op = ident(asm,'gas') '.' op1
-	op1 = ident(asm,'gas') ''		:(op.done)
-op.align
-	op = (ident(asm,'asm') 'align','.balign')	:(op.done)
-op.dec
-op.inc
-op.not
-	ident(asm,'asm')			:s(op.done)
-	op = op (eq(ws,32) 'l','q')		:(op.done)
-op.extern
-	line = tab (ident(asm,'asm') 'extern','.extern') tab op1 :(copy)
-op.global
-	line = tab (ident(asm,'asm') 'global','.global') tab op1	:(copy)
-
-op.byte
-	op = tab a('db') g('.byte')		:(op.done)
-op.char
-	op = a('db') g('.ascii')		:(op.done)
-op.real
-	op = a('dq') g('.double')		:(op.done)
-op.word
-	ident(asm,'gas')			:s(op.word.gas)
-	op = (eq(ws,32) 'dword','qword')	:(op.done)
-op.word.gas
-	op = (eq(ws,32) '.long','.quad')	:(op.done)
-op.equ
-	ident(asm,'gas')			:s(op.equ.gas)
-	label = op1; op1 = op2			:(op.done)
-op.equ.gas
-	op = '.set'				:(op.done)
-op.eq
-op.ne
-	:(op.done)
-op.add
-op.and
-op.cmp
-op.cmpb
-op.lea
-op.mov
-op.or
-op.sal
-op.sar
-op.sub
-	op = ident(asm,'gas') differ(op, 'jmp') op (eq(ws,32) 'l', 'q')	
-.if gas
-*	output = '# swap ' op1 ':' op2 ' 
-*	swap operand order if targeting gag
-	tmp = op1; op1 = op2; op2 = tmp
-	
-.fi
-						:(op.done)
-op.cdq
-	ident(op,'cdq') (eq(ws,32) 'cdq','cqo')			:s(op.done)
-
-op.done
-	line = 
-*	output  = 'op.done :' label ':' op ':' op1 ':' op2 ':' comment
-	line = (differ(label) label ':','')  tab op
-+		(differ(op1) tab op1,'')  (differ(op2) ',' op2,'') 
-+		(differ(comment)  tab comment_char ' ' comment,'')
-
-*	output = '# new line:' line ':'
-				:(copy)
 *	emit text if using asm
 a
 	a = ident(asm,'asm') line		:(return)
@@ -195,6 +136,81 @@ error
 *	emit text if using gas
 g 
 	g = ident(asm,'gas') text		:(return)	
+-stitl	gen()tmp
+gen						:($('gen.' op))
+gen.fill
+	op = (ident(asm,'asm') 'times', '.fill')
+	op1 = ident(asm,'asm') op1 ' db 0 '
+						:(gen.done)
+gen.section
+	op = ident(asm,'asm') 'section'
+	op1 = ident(asm,'asm') '.' op1
+	op = ident(asm,'gas') '.' op1
+	op1 = ident(asm,'gas') ''		:(gen.done)
+gen.align
+	op = (ident(asm,'asm') 'align','.balign')	:(gen.done)
+gen.dec
+gen.idiv
+gen.inc
+gen.not
+	ident(asm,'asm')			:s(gen.done)
+	op = op (eq(ws,32) 'l','q')		:(gen.done)
+gen.jmp
+	:(gen.done)
+gen.extern
+	line = tab (ident(asm,'asm') 'extern','.extern') tab op1 :(copy)
+gen.global
+	line = tab (ident(asm,'asm') 'global','.global') tab op1	:(copy)
+
+gen.byte
+	op = tab a('db') g('.byte')		:(gen.done)
+gen.char
+	op = a('db') g('.ascii')		:(gen.done)
+gen.real
+	op = a('dq') g('.double')		:(gen.done)
+gen.word
+	ident(asm,'gas')			:s(gen.word.gas)
+	op = (eq(ws,32) 'dd','dq')		:(gen.done)
+gen.word.gas
+	op = (eq(ws,32) '.long','.quad')	:(gen.done)
+gen.equ
+	ident(asm,'gas')			:s(gen.equ.gas)
+	label = op1; op1 = op2; op2 =			:(gen.done)
+gen.equ.gas
+	op = '.set'				:(gen.done)
+gen.eq
+gen.ne
+	:(gen.done)
+gen.add
+gen.and
+gen.cmp
+gen.lea
+gen.mov
+gen.or
+gen.sal
+gen.sar
+gen.sub
+gen.xor
+gen.xchg
+	op = ident(asm,'gas') differ(op, 'jmp') op (eq(ws,32) 'l', 'q')	
+
+.if gas
+*	output = '# swap ' op1 ':' op2 ' 
+*	swap operand order if targeting gag
+	tmp = op1; op1 = op2; op2 = tmp
+	
+.fi
+						:(gen.done)
+gen.cdq
+	ident(op,'cdq') (eq(ws,32) 'cdq','cqo')			:s(gen.done)
+
+gen.done
+	gen = 
+*	output  = 'gen.done :' label ':' op ':' op1 ':' op2 ':' comment
+	gen = (differ(label) label,'')  tab op
++		(differ(op1) tab op1,'')  (differ(op2) ',' op2,'') 
++		(differ(comment)  tab ' ' comment,'')
+				:(return)
 -stitl	m(ref)
 *	remofve enclosing parentheses
 	define('mem(ref)')
@@ -213,12 +229,12 @@ mem.next
 parse
 	label = op = op1 = op2 = comment =
 	line any(whitespace)			:s(parse.nolabel)
-	line break(':') .label ':' =
-	ident(line)				:s(return)
+	line break(':') . label ':' =
+	ident(line)				:s(parse.done)
 parse.nolabel
 	line = line ' '
 	line span(whitespace) break(whitespace) . op span(whitespace) =	:f(copy) 
-	ident(line)				:s(return)
+	ident(line)				:s(parse.done)
 	op break('_') . xop			:f(parse.args)
 *	here for extended op
 	op = replace(xop,&ucase,&lcase)
@@ -226,7 +242,7 @@ parse.args
 	line break(whitespace) . args span(whitespace) =
 	comment = line
 	op1 = args
-	args break(',')				:f(return)
+	args break(',')				:f(parse.done)
 
 *	parse argument, looking for comma at level 0
 *	Need to find comma (not enclosed in parentheses) that separates them
@@ -236,7 +252,7 @@ parse.args
 	comma = i = 0
 	comma = parse = lev = 0
 parse.next
-	gt(i = i + 1,size(args))		:s(return)
+	gt(i = i + 1,size(args))		:s(parse.done)
 	c = substr(args,i,1)
 	lev = ident(c,'(') lev + 1
 	lev = ident(c,')') lev - 1
@@ -244,6 +260,7 @@ parse.next
 	op1 = substr(args,1,i - 1)
 	op2 = substr(args,i + 1)
 	
+parse.done
 						:(return)
 -stitl prolog
 *	generate code at end of output

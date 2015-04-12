@@ -1088,7 +1088,7 @@ sysxi:
 	%endmacro
 
 	%macro	sbi_	0
-	Sub	Mem(reg_ia),W0
+	Sub_	Mem(reg_ia),W0
 	seto	byte [reg_fl]
 	%endmacro
 
@@ -1404,10 +1404,10 @@ rmi__:
 ocode:
 	or	W0,W0		; test for 0
 	jz	setovr		; jump if 0 divisor
-	xchg	W0,Mem(reg_ia)	; ia to w0, divisor to ia
+	Xchg_	W0,Mem(reg_ia)	; ia to w0, divisor to ia
 	Cdq_			; extend dividend
 	Mov_	W0,Mem(reg_ia)
-	idiv	W0		; perform division. w0=quotient, wc=remainder
+	Idiv_	W0		; perform division. w0=quotient, wc=remainder
 .if asm
 	seto	byte [rel reg_fl]
 .fi
@@ -1600,12 +1600,12 @@ $1:
 ovr_:
 .if asm
 	Mov_	ax, word [ rel reg_ra+6]	; get top 2 bytes
-	and	ax, 0x7ff0		; check for infinity or nan
+	And_	ax, 0x7ff0		; check for infinity or nan
 	Add_	ax, 0x10		; set/clear overflow accordingly
 .fi
 .if gas
-	mov	$reg_ra,W0
-	add	$6,W0
+	Mov_	W0,$reg_ra
+	Add_	W0,$6
 	movw	(W0),%ax		; get top 2 bytes
 	and	$0x7ff0,%ax		; check for infinity or nan
 	add	$0x10,%ax		; set/clear overflow accordingly
