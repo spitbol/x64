@@ -30,7 +30,7 @@
 
 	&anchor = 0
 	&dump = 3
-	&stlimit = 1500000
+*	&stlimit = 1500000
 	&trim = 1
 
 	target = (differ(host(0)) host(0), "unix_64_gas") 
@@ -55,7 +55,7 @@
 	lowpat = 'W' any('ABC0') '_L'
 	regmap = table(20)
 	p = g('%') (eq(ws,32) 'e', 'r')
-	regmap['XL'] = p 'si'; regmap['XR'] = p 'di'; regmap['XS'] = regmap['XT'] = p 'si';
+	regmap['XL'] = p 'si'; regmap['XR'] = p 'di'; regmap['XS'] = regmap['XT'] = p 'sp';
 	regmap['WA'] = p 'cx'; regmap['WB'] = p 'bx'; regmap['WC'] = p 'dx'; regmap['W0'] = p 'ax';
 	lowmap = table(4)
 	p = g('%')

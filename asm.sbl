@@ -1420,7 +1420,7 @@ g.bod
 	op('And_',reg.w0,getarg(i1))
 	op((ident(incode,'bod') 'jne', 'je'),getarg(i2)) :(opdone) 
 g.brn  
-	op('Jmp_',g('*') getarg(i1))			:(opdone)
+	op('Jmp_', getarg(i1))			:(opdone)
 
 g.bsw
 	reg = getarg(i1)
@@ -2057,13 +2057,13 @@ g.ctb
 g.ctb
 g.ctw
 	w.reg = getarg(i1); 
-	op('mov',w.reg,'ctbw_r')
-	op('mov' op_w,literal_ i.text(i2), 'ctbw_v')
+	op('Mov_','ctbw_r',w.reg)
+	op('Mov_','ctbw_v', literal_ i.text(i2))
 
 *	op('mov' op_w,w.reg,reg.w0)	
 
 	op('call', incode '_')
-	op('mov' op_w,'ctbw_r',w.reg)
+	op('Mov_',w.reg,'ctbw_r')
 						:(opdone)
 .fi
 

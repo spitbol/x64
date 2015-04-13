@@ -202,8 +202,8 @@ void trc() {
 			{ prtdif("WC.",reg_prefix,"dx", last_wc, save_wc, listed); listed += 1; }
 		if (save_ra != last_ra)
 			{ prtdifr("RA    ", last_ra, save_ra, listed); listed += 1; }
-		if (save_xr != last_xr)
-			{ prtdif("XS.",reg_prefix,"sp", last_xs, save_xs, listed); listed += 1; }
+//		if (save_xs != last_xs)
+//			{ prtdif("XS.",reg_prefix,"sp", last_xs, save_xs, listed); listed += 1; }
 		prtnl();
 	}
 
@@ -216,7 +216,7 @@ void trc() {
 		// print register values before the statement was executed
 		prtreg("XL.",reg_prefix,"si", save_xl); prtnl();
 		prtreg("XR.",reg_prefix,"di", save_xr); prtnl();
-		prtreg("XS.",reg_prefix,"sp", save_xs); prtnl();
+//		prtreg("XS.",reg_prefix,"sp", save_xs); prtnl();
 		prtreg("W0.",reg_prefix,"ax", save_w0); prtnl();
 		prtreg("WA.",reg_prefix,"cx", save_wa); prtnl();
 		prtreg("WB.",reg_prefix,"bx", save_wb); prtnl();
