@@ -319,7 +319,7 @@ reg_xl:
 reg_cp:
 	Word_	0        	; register cp
 reg_ra:
-	Gloat_	0.0		; register ra
+	Real_	0.0		; register ra
 
 ; these locations save information needed to return after calling osint and after a restart from exit()
 
@@ -1116,11 +1116,6 @@ sysxi:
 	Mov_	M_word [reg_cp],W0
 	%endmacro
 
-	%macro	Scp_	1
-	Mov_	W0,M_word [reg_cp]
-	Mov_	%1,W0
-	%endmacro
-
 .fi
 .if gas
 .if unix
@@ -1234,6 +1229,7 @@ sysxi:
 	.endm
 
 .fi
+.if gas
 .if osx
 	.macro	callext
 	Extern_	$1
@@ -1339,11 +1335,10 @@ sysxi:
 	Mov_	reg_cp,W0
 	.endm
 
-	.macro	Scp_	val
+	.macro	Scp_
 	Mov_	W0,reg_cp
-	Mov_	\val,W0
+	Mov_	$1,W0
 	.endm
-
 .fi
 .fi
 /*

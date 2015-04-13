@@ -377,15 +377,15 @@ skip_init.end
 *  dispatch table
 
 	argcase = table(100)
-	argcase[01] = .getarop.c.1;	argcase[2]  = .getarop.c.2;	argcase[3]  = .getarop.c.3;
-	argcase[04] = .getarop.c.4;	argcase[5]  = .getarop.c.5;	argcase[6]  = .getarop.c.6;
-	argcase[07] = .getarop.c.7;	argcase[8]  = .getarop.c.8;	argcase[9]  = .getarop.c.9;
-	argcase[10] = .getarop.c.10;	argcase[11] = .getarop.c.11;	argcase[12] = .getarop.c.12;
-	argcase[13] = .getarop.c.13;	argcase[14] = .getarop.c.14;	argcase[15] = .getarop.c.15;
-	argcase[16] = .getarop.c.16;	argcase[17] = .getarop.c.17;	argcase[18] = .getarop.c.18;
-	argcase[19] = .getarop.c.19;	argcase[20] = .getarop.c.20;	argcase[21] = .getarop.c.21;
-	argcase[22] = .getarop.c.22;	argcase[23] = .getarop.c.23;	argcase[24] = .getarop.c.24;
-	argcase[25] = .getarop.c.25;	argcase[26] = .getarop.c.26;	argcase[27] = .getarop.c.27
+	argcase[01] = .getarg.c.1;	argcase[2]  = .getarg.c.2;	argcase[3]  = .getarg.c.3;
+	argcase[04] = .getarg.c.4;	argcase[5]  = .getarg.c.5;	argcase[6]  = .getarg.c.6;
+	argcase[07] = .getarg.c.7;	argcase[8]  = .getarg.c.8;	argcase[9]  = .getarg.c.9;
+	argcase[10] = .getarg.c.10;	argcase[11] = .getarg.c.11;	argcase[12] = .getarg.c.12;
+	argcase[13] = .getarg.c.13;	argcase[14] = .getarg.c.14;	argcase[15] = .getarg.c.15;
+	argcase[16] = .getarg.c.16;	argcase[17] = .getarg.c.17;	argcase[18] = .getarg.c.18;
+	argcase[19] = .getarg.c.19;	argcase[20] = .getarg.c.20;	argcase[21] = .getarg.c.21;
+	argcase[22] = .getarg.c.22;	argcase[23] = .getarg.c.23;	argcase[24] = .getarg.c.24;
+	argcase[25] = .getarg.c.25;	argcase[26] = .getarg.c.26;	argcase[27] = .getarg.c.27
 
 	adrcase = table(50)
 	adrcase[03] = .getlea.c.3;	adrcase[04] = .getlea.c.4;	adrcase[09] = .getlea.c.9;
@@ -797,161 +797,161 @@ getarg
 	typ = i.type(iarg)
 	trc_suspend = 1
 	eq(typ)					:f($(argcase[typ]))
-	getarg = txt				:(getarop.done)
+	getarg = txt				:(getarg.done)
 
 *	int
 
-getarop.c.1 getarg = txt				:(getarop.done)
+getarg.c.1 getarg = txt				:(getarg.done)
 
 *	dlbl
 
-getarop.c.2 getarg = txt				:(getarop.done)
+getarg.c.2 getarg = txt				:(getarg.done)
 
 *	wlbl, clbl
 
-getarop.c.3
-getarop.c.4 
+getarg.c.3
+getarg.c.4 
 .if asm
-	getarg = mem(txt)			:(getarop.done)
+	getarg = mem(txt)			:(getarg.done)
 .fi
 .if gas
-	disp = txt				:(getarop.mem)
+	disp = txt				:(getarg.mem)
 .fi
 
 * elbl, plbl
 
-getarop.c.5
-getarop.c.6 getarg = txt				:(getarop.done)
+getarg.c.5
+getarg.c.6 getarg = txt				:(getarg.done)
 
 *	w,x, map register name
 
-getarop.c.7
-getarop.c.8
-	getarg = regmap[txt]			:(getarop.done)
+getarg.c.7
+getarg.c.8
+	getarg = regmap[txt]			:(getarg.done)
 
 *	(x), register indirect
 
-getarop.c.9
+getarg.c.9
 .if asm
 	txt len(1) len(2) . typ
 	typ = regmap[typ]
 	getarg = mem( typ )
-						:(getarop.done)
+						:(getarg.done)
 .fi
 .if gas
-	txt len(1) len(2) . indx		:(getarop.mem)
+	txt len(1) len(2) . indx		:(getarg.mem)
 .fi
 /*
 	(x)+, register indirect, post increment use lea reg,[reg+cfp_b] unless reg is esp, 
 	since it takes an extra byte.  actually, lea reg,[reg+cfp_b] and add reg,cfp_b are both 
 	2 cycles and 3 bytes for all the other regs, and either could be used.
 */
-getarop.c.10
+getarg.c.10
 .if asm
 	txt = substr(txt,2,2)
 	t1 = regmap[txt]
 	getarg = mem( t1 )
-	(ident(txt,'xs') genaop(tstmt(,'Add_',t1,cfp_b))) :s(getarop.done)
-	genaop(tstmt(,'Lea_',t1,'Adr(' t1 '+cfp_b)')):(getarop.done)
+	(ident(txt,'xs') genaop(tstmt(,'Add_',t1,cfp_b))) :s(getarg.done)
+	genaop(tstmt(,'Lea_',t1,'Adr(' t1 '+cfp_b)')):(getarg.done)
 .fi
 .if gas
 	indx = substr(txt,2,2)
-	genaop(tstmt(,'Add_',regmap[indx],literal_ cfp_b)) :(getarop.mem)
+	genaop(tstmt(,'Add_',regmap[indx],literal_ cfp_b)) :(getarg.mem)
 .fi
 
 *	-(x), register indirect, pre decrement
 
-getarop.c.11
+getarg.c.11
 .if asm
 	t1 = regmap[substr(txt,3,2)]
 	getarg = mem( t1 )
-	genbop(tstmt(,'Lea_',t1,'Adr(' t1 '-cfp_b)')) :(getarop.done)
+	genbop(tstmt(,'Lea_',t1,'Adr(' t1 '-cfp_b)')) :(getarg.done)
 .fi
 .if gas
 	indx = substr(txt,3,2)
-	genbop(tstmt(,'Sub_',regmap[indx],literal_ cfp_b,)) 	:(getarop.mem)
+	genbop(tstmt(,'Sub_',regmap[indx],literal_ cfp_b,)) 	:(getarg.mem)
 .fi
 
 *	int(x)
 *	dlbl(x)
 
-getarop.c.12
-getarop.c.13
+getarg.c.12
+getarg.c.13
 .if asm
 	txt break('(') . t1 '(' len(2) . t2
 	getarg = mem('(cfp_b*' t1 ')+' regmap[t2])
-						:(getarop.done)
+						:(getarg.done)
 .fi
 .if gas
 	txt break('(') . disp '(' len(2) . indx
 	disp = cfp_b * equ_value[disp]
 	base = indx
-	indx = 					:(getarop.mem)
+	indx = 					:(getarg.mem)
 .fi
 
 *	name(x), where name is in working section
 
-getarop.c.14
-getarop.c.15
+getarg.c.14
+getarg.c.15
 .if asm
 	txt break('(') . t1 '(' len(2) . t2
 	getarg = mem(    t1 '+'  regmap[t2])
-						:(getarop.done)
+						:(getarg.done)
 .fi
 .if gas
-	txt break('(') . disp '(' len(2) . indx	:(getarop.mem)
+	txt break('(') . disp '(' len(2) . indx	:(getarg.mem)
 .fi
 
 *	signed integer
 
-getarop.c.16 getarg = txt			:(getarop.done)
+getarg.c.16 getarg = txt			:(getarg.done)
 
 *	signed real
 
-getarop.c.17 getarg = txt			:(getarop.done)
+getarg.c.17 getarg = txt			:(getarg.done)
 
 .if asm
-getarop.c.18
-getarop.c.19
-getarop.c.20
-getarop.c.21
-getarop.c.22
-	getarg = getval(iarg)			:(getarop.done)
+getarg.c.18
+getarg.c.19
+getarg.c.20
+getarg.c.21
+getarg.c.22
+	getarg = getval(iarg)			:(getarg.done)
 .fi
 .if gas
 
 *	=dlbl
 
-getarop.c.18	
-	getarg = literal_ substr(txt,2)		:(getarop.done)
+getarg.c.18	
+	getarg = literal_ substr(txt,2)		:(getarg.done)
 	
 *	*dlbl
 
-getarop.c.19
-	getarg  = literal_  cfp_b '*' substr(txt,2)	:(getarop.done)
+getarg.c.19
+	getarg  = literal_  cfp_b '*' substr(txt,2)	:(getarg.done)
 
 *	=name (data section)
 
-getarop.c.20
-getarop.c.21
+getarg.c.20
+getarg.c.21
         getarg = literal_ substr(txt,2)	
-						:(getarop.done)
+						:(getarg.done)
 	op('Lea_',reg.w0,substr(txt,2))
-	getarg = reg.w0				:(getarop.done)
+	getarg = reg.w0				:(getarg.done)
 
 *	=name (program section)
 
-getarop.c.22
+getarg.c.22
 
-       getarg = literal_ substr(txt,2)		:(getarop.done)
+       getarg = literal_ substr(txt,2)		:(getarg.done)
 
 .fi
 
 *	pnam, eqop
-getarop.c.23
-getarop.c.24 
+getarg.c.23
+getarg.c.24 
 .if asm
-	getarg = txt				:(getarop.done)
+	getarg = txt				:(getarg.done)
 .fi
 .if gas
 *	getarg = '$(' equ_value[txt] ')'	:(arop.done)
@@ -959,21 +959,21 @@ getarop.c.24
 .fi
 
 *	ptyp, text, dtext
-getarop.c.25
-getarop.c.26
-getarop.c.27 getarg = txt			:(getarop.done)
-getarop.done
+getarg.c.25
+getarg.c.26
+getarg.c.27 getarg = txt			:(getarg.done)
+getarg.done
 	trc_suspend = 0
 
 *	ne(x_trace) outline('; arg ' typ ':' txt   ' -> ' getarg)
 						:(return)
 .if gas
-getarop.mem
-	getarg = differ(base) disp '(' regmap[base] ')'		:s(getarop.done)	
-	getarg = ident(indx) disp 				:s(getarop.done)
-	getarg = ident(scale) ident(disp) '(' regmap[indx] ')'	:s(getarop.done)
-	getarg = ident(disp) ident(scale) '(' regmap[indx] ')' 	:s(getarop.done)
-	getarg = differ(disp) ident(scale) disp '(' regmap[indx]  ')'	:s(getarop.done)
+getarg.mem
+	getarg = differ(base) disp '(' regmap[base] ')'		:s(getarg.done)	
+	getarg = ident(indx) disp 				:s(getarg.done)
+	getarg = ident(scale) ident(disp) '(' regmap[indx] ')'	:s(getarg.done)
+	getarg = ident(disp) ident(scale) '(' regmap[indx] ')' 	:s(getarg.done)
+	getarg = differ(disp) ident(scale) disp '(' regmap[indx]  ')'	:s(getarg.done)
 	error('getarg');
 
 .fi
@@ -2198,8 +2198,7 @@ op.drc
 	t1 ? fence "+" = ""
 	opl(thislabel)
 	thislabel =
-*	Use 'Float' instead of 'Real' since REAL is a spitbol function.
-	op('Gloat_',t1)
+	op('Real_',t1)
 
 *	note that want to attach label to last instruction
 

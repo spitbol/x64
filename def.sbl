@@ -47,8 +47,8 @@
 	digits = '0123456789'
 	id_chars = letters digits
 
-	ops = ' add align and byte byte cdq char char cmp dec equ extern fill gloat global '
-+		'idiv inc jmp lea mov not or sal sar section sub word xchg xor '
+	ops = ' add align and byte byte cdq char char cmp dec equ extern fill global '
++		'idiv inc jmp lea mov not or real sal sar section sub word xchg xor '
 
 *	create map from Minimal registers to hardware register name, create map from 'low' 
 *	register names to corresponding gas names 
@@ -208,7 +208,7 @@ op.char
 	op = '.ascii'				:(op.done)
 .fi
 	op = a('db') g('.ascii')		:(op.done)
-op.gloat
+op.real
 	outfile = '# op.gloat'
 	op = a('dq') g('.double')		:(op.done)
 op.word

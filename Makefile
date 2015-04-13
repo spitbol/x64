@@ -280,11 +280,11 @@ osx-export:
 
 # run fixer to prefix certain names with underscore
 
-	$(BASEBOL) fix.sbl <err.s >err.tmp
+	$(BASEBOL) osx.sbl <err.s >err.tmp
 	mv	err.tmp	err.s
-	$(BASEBOL) fix.sbl <sbl.s >sbl.tmp
+	$(BASEBOL) osx.sbl <sbl.s >sbl.tmp
 	mv	sbl.tmp	sbl.s
-	$(BASEBOL) fix.sbl <sys.s >sys.tmp
+	$(BASEBOL) osx.sbl <sys.s >sys.tmp
 	mv	sys.tmp	sys.s
 
 	cp sys.s sbl.s err.s osx
