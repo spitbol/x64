@@ -18,6 +18,8 @@
 *	expand symbolic definitions for target environment as input to assembler
 
 	define('a(text)')
+	define('address(text)')
+	define('adr(line)')
 	define('epilog()')
 	define('error(text)')
 	define('g(text)')
@@ -106,9 +108,15 @@ low.loop
 low.end
 regs.end
 
+*	expand Adr(..) memory references
+
+	line = adr(line)			
+
 *	expand Mem_(..) memory references
 
-	line = mem(line)			:(copy)
+	line = mem(line)			
+
+						:(copy)
 
 -stitl a(text)
 *	emit text if using asm
@@ -117,6 +125,23 @@ a
 	a = text					
 .fi
 						:(return)	
+-sitl	address(text)
+*	expand address reference
+address
+.if asm
+	address = ref
+.fi
+.if gas
+	address = '$' ref
+.fi
+						:(return)
+* here to resolve adr references
+adr
+	adr = line
+	adr break('A')						:f(return)
+adr.next	
+*	adr breakx('A') . first 'Adr' bal . ref  rem . last = first address(ref) last	:s(adr.next)
+	adr breakx('A') . first 'Adr' bal . ref  rem . last = first address(ref) last	:f(return)
 -stitl epilog()
 *	generate code to appear at start of output
 epilog
