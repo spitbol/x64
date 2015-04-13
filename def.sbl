@@ -45,8 +45,8 @@
 	digits = '0123456789'
 	id_chars = letters digits
 
-	ops = ' add align and byte byte cdq char char cmp dec equ extern fill global '
-+		'idiv inc jmp lea mov not or real real sal sar section sub word xchg xor '
+	ops = ' add align and byte byte cdq char char cmp dec equ extern fill gloat global '
++		'idiv inc jmp lea mov not or sal sar section sub word xchg xor '
 
 *	create map from Minimal registers to hardware register name, create map from 'low' 
 *	register names to corresponding gas names 
@@ -72,7 +72,6 @@ next
 	line = input				:f(finis)
 	ident(line)				:s(next)
 	line pos(0) any('#;')			:s(next)
-*	output = '# read ' line
 .if asm
 cloop	line any('#') = ';'			:s(cloop)			
 .fi
@@ -114,7 +113,10 @@ regs.end
 -stitl a(text)
 *	emit text if using asm
 a
-	a = ident(asm,'asm') line		:(return)
+.if asm
+	a = text					
+.fi
+						:(return)	
 -stitl epilog()
 *	generate code to appear at start of output
 epilog
@@ -135,63 +137,83 @@ error
 -stitl g(text)
 *	emit text if using gas
 g 
-	g = ident(asm,'gas') text		:(return)	
+.if gas
+	g = text					
+.fi
+						:(return)	
 -stitl	gen()tmp
-gen						:($('gen.' op))
-gen.fill
+gen						:($('op.' op))
+op.fill
 	op = (ident(asm,'asm') 'times', '.fill')
 	op1 = ident(asm,'asm') op1 ' db 0 '
-						:(gen.done)
-gen.section
+						:(op.done)
+op.section
 	op = ident(asm,'asm') 'section'
 	op1 = ident(asm,'asm') '.' op1
 	op = ident(asm,'gas') '.' op1
-	op1 = ident(asm,'gas') ''		:(gen.done)
-gen.align
-	op = (ident(asm,'asm') 'align','.balign')	:(gen.done)
-gen.dec
-gen.idiv
-gen.inc
-gen.not
-	ident(asm,'asm')			:s(gen.done)
-	op = op (eq(ws,32) 'l','q')		:(gen.done)
-gen.jmp
-	:(gen.done)
-gen.extern
+	op1 = ident(asm,'gas') ''		:(op.done)
+op.align
+	op = (ident(asm,'asm') 'align','.balign')	:(op.done)
+op.dec
+op.idiv
+op.inc
+op.not
+	ident(asm,'asm')			:s(op.done)
+	op = op (eq(ws,32) 'l','q')		:(op.done)
+op.jmp
+	:(op.done)
+op.extern
 	line = tab (ident(asm,'asm') 'extern','.extern') tab op1 :(copy)
-gen.global
+op.global
 	line = tab (ident(asm,'asm') 'global','.global') tab op1	:(copy)
 
-gen.byte
-	op = tab a('db') g('.byte')		:(gen.done)
-gen.char
-	op = a('db') g('.ascii')		:(gen.done)
-gen.real
-	op = a('dq') g('.double')		:(gen.done)
-gen.word
-	ident(asm,'gas')			:s(gen.word.gas)
-	op = (eq(ws,32) 'dd','dq')		:(gen.done)
-gen.word.gas
-	op = (eq(ws,32) '.long','.quad')	:(gen.done)
-gen.equ
-	ident(asm,'gas')			:s(gen.equ.gas)
-	label = op1; op1 = op2; op2 =			:(gen.done)
-gen.equ.gas
-	op = '.set'				:(gen.done)
-gen.eq
-gen.ne
-	:(gen.done)
-gen.add
-gen.and
-gen.cmp
-gen.lea
-gen.mov
-gen.or
-gen.sal
-gen.sar
-gen.sub
-gen.xor
-gen.xchg
+op.byte
+.if asm
+	op = 'db'				:(op.done)
+.fi
+.if gas
+	op = '.byte'				:(op.done)
+.fi
+	op = a('db') g('.byte')			:(op.done)
+op.char
+.if asm
+	op = 'db'				:(op.done)
+.fi
+.if gas
+	op = '.ascii'				:(op.done)
+.fi
+	op = a('db') g('.ascii')		:(op.done)
+op.gloat
+	outfile = '# op.gloat'
+	op = a('dq') g('.double')		:(op.done)
+op.word
+	ident(asm,'gas')			:s(op.word.gas)
+	op = (eq(ws,32) 'dd','dq')		:(op.done)
+op.word.gas
+	op = (eq(ws,32) '.long','.quad')	:(op.done)
+op.equ
+.if asm
+	op = '%define'
+	op1 = op1 ' ' op2; op2 =		;* separate with space, not comma
+						:(op.done)	
+.fi
+.if gas
+	op = '.set'				:(op.done)
+.fi
+op.eq
+op.ne
+	:(op.done)
+op.add
+op.and
+op.cmp
+op.lea
+op.mov
+op.or
+op.sal
+op.sar
+op.sub
+op.xor
+op.xchg
 	op = ident(asm,'gas') differ(op, 'jmp') op (eq(ws,32) 'l', 'q')	
 
 .if gas
@@ -200,23 +222,29 @@ gen.xchg
 	tmp = op1; op1 = op2; op2 = tmp
 	
 .fi
-						:(gen.done)
-gen.cdq
-	ident(op,'cdq') (eq(ws,32) 'cdq','cqo')			:s(gen.done)
+						:(op.done)
+op.cdq
+	ident(op,'cdq') (eq(ws,32) 'cdq','cqo')			:s(op.done)
 
-gen.done
+op.done
 	gen = 
-*	output  = 'gen.done :' label ':' op ':' op1 ':' op2 ':' comment
+*	output  = 'op.done :' label ':' op ':' op1 ':' op2 ':' comment
 	gen = (differ(label) label,'')  tab op
 +		(differ(op1) tab op1,'')  (differ(op2) ',' op2,'') 
 +		(differ(comment)  tab ' ' comment,'')
 				:(return)
 -stitl	m(ref)
-*	remofve enclosing parentheses
+*	resolve enclosing parentheses
 	define('mem(ref)')
 m
-	ref len(1) break(')') . m		
-	m = ident(asm,'asm') (eq(ws,32) 'dword','qword') ' [' m ']' :(return)
+	m = ref
+*	ref len(1) break(')') . m		
+.if asm
+	m = (eq(ws,32) 'dword','qword') ' [' m ']' :(return)
+.fi
+.if gas
+						:(return)
+.fi
 -stitl mem(line)
 * here to resolve Mem references
 mem

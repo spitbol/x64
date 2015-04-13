@@ -2,105 +2,103 @@
 .def comment_semicolon
 .else
 .def comment_number
-.fi
 /*
- copyright 1987-2012 robert b. k. dewar and mark emmer.
- copyright 2012-2015 david shields
+	copyright 1987-2012 robert b. k. dewar and mark emmer.
+	copyright 2012-2015 david shields
 
- this file is part of macro spitbol.
+	this file is part of macro spitbol.
 
-     macro spitbol is free software: you can redistribute it and/or modify
-     it under the terms of the gnu general public license as published by
-     the free software foundation, either version 2 of the license, or
-     (at your option) any later version.
+	macro spitbol is free software: you can redistribute it and/or modify
+	it under the terms of the gnu general public license as published by
+	the free software foundation, either version 2 of the license, or
+	(at your option) any later version.
 
-     macro spitbol is distributed in the hope that it will be useful,
-     but without any warranty; without even the implied warranty of
-     merchantability or fitness for a particular purpose.  see the
-     gnu general public license for more details.
+	macro spitbol is distributed in the hope that it will be useful,
+	but without any warranty; without even the implied warranty of
+	merchantability or fitness for a particular purpose.  see the
+	gnu general public license for more details.
 
-     you should have received a copy of the gnu general public license
-     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+	you should have received a copy of the gnu general public license
+	along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 
 
 
-       this file contains the assembly language routines that interface
-       the macro spitbol compiler written in 80386 assembly language to its
-       operating system interface functions written in c.
+	this file contains the assembly language routines that interface
+	the macro spitbol compiler written in 80386 assembly language to its
+	operating system interface functions written in c.
 
-       contents:
+	contents:
 
-       o overview
-       o global variables accessed by osint functions
-       o interface routines between compiler and osint functions
-       o c callable function startup
-       o c callable function get_fp
-       o c callable function restart
-       o c callable function makeexec
-       o routines for minimal opcodes chk and cvd
-       o math functions for integer multiply, divide, and remainder
-       o math functions for real operation
+	o overview
+	o global variables accessed by osint functions
+	o interface routines between compiler and osint functions
+	o c callable function startup
+	o c callable function get_fp
+	o c callable function restart
+	o c callable function makeexec
+	o routines for minimal opcodes chk and cvd
+	o math functions for integer multiply, divide, and remainder
+	o math functions for real operation
 
-       overview
+	overview
 
-       the macro spitbol compiler relies on a set of operating system
-       interface functions to provide all interaction with the host
-       operating system.  these functions are referred to as osint
-       functions.  a typical call to one of these osint functions takes
-       the following form in the 80386 version of the compiler:
+	the macro spitbol compiler relies on a set of operating system
+	interface functions to provide all interaction with the host
+	operating system.  these functions are referred to as osint
+	functions.  a typical call to one of these osint functions takes
+	the following form in the 80386 version of the compiler:
 
-               ...code to put arguments in registers...
-               call    sysxx           ; call osint function
-             Word_    extrc_1          ; address of exit point 1
-             Word_    extrc_2          ; address of exit point 2
-               ...     ...             ; ...
-             Word_    extrc_n          ; address of exit point n
-               ...instruction following call...
+	...code to put arguments in registers...
+	call    sysxx           ; call osint function
+	Word_    extrc_1          ; address of exit point 1
+	Word_    extrc_2          ; address of exit point 2
+	...     ...             ; ...
+	Word_    extrc_n          ; address of exit point n
+	...instruction following call...
 
-       the osint function 'sysxx' can then return in one of n+1 ways:
-       to one of the n exit points or to the instruction following the
-       last exit.  this is not really very complicated - the call places
-       the return address on the stack, so all the interface function has
-       to do is add the appropriate offset to the return address and then
-       pick up the exit address and jump to it or do a normal return via
-       an ret instruction.
+	the osint function 'sysxx' can then return in one of n+1 ways:
+	to one of the n exit points or to the instruction following the
+	last exit.  this is not really very complicated - the call places
+	the return address on the stack, so all the interface function has
+	to do is add the appropriate offset to the return address and then
+	pick up the exit address and jump to it or do a normal return via
+	an ret instruction.
 
-       unfortunately, a c function cannot handle this scheme.  so, an
-       intermediary set of routines have been established to allow the
-       interfacing of c functions.  the mechanism is as follows:
+	unfortunately, a c function cannot handle this scheme.  so, an
+	intermediary set of routines have been established to allow the
+	interfacing of c functions.  the mechanism is as follows:
 
-       (1) the compiler calls osint functions as described above.
+	(1) the compiler calls osint functions as described above.
 
-       (2) a set of assembly language interface routines is established,
-           one per osint function, named accordingly.  each interface
-           routine ...
+	(2) a set of assembly language interface routines is established,
+	one per osint function, named accordingly.  each interface
+	routine ...
 
-           (a) saves all compiler registers in global variables
-               accessible by c functions
-           (b) calls the osint function written in c
-           (c) restores all compiler registers from the global variables
-           (d) inspects the osint function's return value to determine
-               which of the n+1 returns should be taken and does so
+		(a) saves all compiler registers in global variables accessible by c functions
+		(b) calls the osint function written in c
+		(c) restores all compiler registers from the global variables
+		(d) inspects the osint function's return value to determine which of 
+		    the n+1 returns should be taken and does so
 
-       (3) a set of c language osint functions is established, one per
-           osint function, named differently than the interface routines.
-           each osint function can access compiler registers via global
-           variables.  no arguments are passed via the call.
+	(3) a set of c language osint functions is established, one per
+	osint function, named differently than the interface routines.
+	each osint function can access compiler registers via global
+	variables.  no arguments are passed via the call.
 
-           when an osint function returns, it must return a value indicating
-           which of the n+1 exits should be taken.  these return values are
-           defined in header file 'inter.h'.
+	when an osint function returns, it must return a value indicating
+	which of the n+1 exits should be taken.  these return values are
+	defined in header file 'inter.h'.
 
-       note:  in the actual implementation below, the saving and restoring
-       of registers is actually done in one common routine accessed by all
-       interface routines.
+	note:  in the actual implementation below, the saving and restoring
+	of registers is actually done in one common routine accessed by all
+	interface routines.
 
-       other notes:
+	other notes:
 
-       some c ompilers transform "internal" global names to
-       "external" global names by adding a leading underscore at the front
-       of the internal name.  thus, the function name 'osopen' becomes
-       '_osopen'.  however, not all c compilers follow this convention.
+	some c ompilers transform "internal" global names to
+	"external" global names by adding a leading underscore at the front
+	of the internal name.  thus, the function name 'osopen' becomes
+'_osopen'.  however, not all c compilers follow this convention.
 */
 	Section_	text
 	Global_	dnamb
@@ -321,7 +319,7 @@ reg_xl:
 reg_cp:
 	Word_	0        	; register cp
 reg_ra:
-	Real_ 	0.0  		; register ra
+	Gloat_	0.0		; register ra
 
 ; these locations save information needed to return after calling osint and after a restart from exit()
 

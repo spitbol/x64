@@ -186,7 +186,7 @@ asm:
 
 # run asm to get .s and .err files
 
-	$(BASEBOL) -u $(TARGET)_asm$(TRCOPT) asm.spt
+	$(BASEBOL) -u $(TARGET)_asm:$(TRCOPT) asm.spt
 
 # run preprocessor to process multi-line comments in err
 
@@ -208,6 +208,11 @@ asm:
 # run asm definer to resolve system dependencies in sys
 
 	$(BASEBOL) -u $(TARGET)_asm  def.spt <sys.pre >sys.s
+
+# run asm definer to resolve system dependencies in sbl.s
+
+	mv	sbl.s	sbl.tmp
+	$(BASEBOL) -u $(TARGET)_asm  def.spt <sbl.tmp >sbl.s
 
 # combine sys.s,min.s, and err.s to get sincle assembler source file
 
