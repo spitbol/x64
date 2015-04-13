@@ -235,7 +235,8 @@ asm:
 
 osx-export:
 
-	rm	-f osx/*
+	rm	-fr osx
+	mkdir	osx
 
 # run preprocessor to process multi-line comments in lex
 
