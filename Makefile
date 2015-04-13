@@ -451,4 +451,4 @@ sanity:
 	echo "end sanity test"
 
 clean:
-	rm -f  *.def *.pre *.[ors] *.def tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol def.spt err.s r-asm.sbl sbl.equ sbl.err s.equ s.err s.lex sys.pre sys.s asm.spt sbl.tmp gas.spt
+	rm -f  *.def *.pre *.[ors] *.def tbol* sbl.err sbl.lex sbl.equ ./asmbol ./gasbol ./spitbol def.spt err.s r-asm.sbl sbl.equ sbl.err s.equ s.err s.lex sys.pre sys.s asm.spt sbl.tmp gas.spt err.spt lex.spt

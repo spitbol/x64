@@ -188,9 +188,33 @@ op.not
 op.jmp
 	:(op.done)
 op.extern
-	line = tab (ident(asm,'asm') 'extern','.extern') tab op1 :(copy)
+.if asm
+	line = tab 'extern' tab op1 :(copy)
+.fi
+.if gas
+.if unix
+	line = tab '.extern' tab op1 :(copy)
+.fi
+.if gas
+.if osx
+					:(next)
+.fi
+.fi
 op.global
-	line = tab (ident(asm,'asm') 'global','.global') tab op1	:(copy)
+.if asm
+	line = tab 'global' tab op1	:(copy)
+.fi
+.if gas
+.if unix
+	line = tab '.global' tab op1	:(copy)
+.fi
+.fi
+.if gas
+.if osx
+*	line = tab '.glbl' tab op1	:(copy)
+	:(nextk
+.fi
+.fi
 
 op.byte
 .if asm
