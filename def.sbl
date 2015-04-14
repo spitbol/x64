@@ -23,16 +23,16 @@
 	define('epilog()')
 	define('error(text)')
 	define('g(text)')
-	define('gen()tmp')
-	define('m(line)')
-	define('mem(line)')
+	define('gen()')
+	define('memory(line)ref')
 	define('out(opc,op1,op2)')
 	define('parse(line)comma,i,c,lev')
 	define('prolog()')
+	define('swap()')
 
-	&anchor = 0
+	&anchor = 1
 	&dump = 3
-*	&stlimit = 1500000
+	&stlimit = 1500000
 	&trim = 1
 
 	target = (differ(host(0)) host(0), "unix_64_gas") 
@@ -47,7 +47,7 @@
 	digits = '0123456789'
 	id_chars = letters digits
 
-	ops = ' add align and byte byte cdq char char cmp dec equ extern fill global '
+	ops = ' add align and byte byte cdq char char cmp cmpb dec equ extern fill global '
 +		'declarebyte declarechar declarereal declareword '
 +		'idiv inc jmp lea mov not or real sal sar section sub word xchg xor '
 
@@ -75,12 +75,12 @@ next
 	line = input				:f(finis)
 	ident(line)				:s(next)
 	line pos(0) any('#;')			:s(next)
-.if asm
-cloop	line any('#') = ';'			:s(cloop)			
-.fi
 .if gas
-cloop	line any(';') = '#'			:s(cloop)			
+	&anchor = 0
+	line	';' = '#'
+	&anchor = 1
 .fi
+*	&anchor = 1
 
 *	copy out line just consisting of label
 
@@ -102,12 +102,14 @@ nogen
 *	Map minimal register names to hardware names
 
 	line break('XW')			:f(regs.end)
+	&anchor = 0
 reg.loop 	
 	line regpat . reg = prefix regmap[reg]	:s(reg.loop)
 low.loop 	
 	line lowpat . reg  = lowmap[reg]		:s(low.loop)
 low.end
 regs.end
+	&anchor = 1
 
 *	expand Adr(..) memory references
 
@@ -115,7 +117,7 @@ regs.end
 
 *	expand Mem_(..) memory references
 
-	line = mem(line)			
+	line = memory(line)			
 
 						:(copy)
 
@@ -254,20 +256,26 @@ op.add
 op.and
 op.cmp
 op.lea
-op.mov
 op.or
 op.sal
 op.sar
 op.sub
 op.xor
 op.xchg
+op.mov
+	output = '# mov '
 	op = ident(asm,'gas') differ(op, 'jmp') op (eq(ws,32) 'l', 'q')	
+	swap()					:(op.done)
+
+op.cmpb
+.if asm
+	op = 'cmp'
+.fi
+						:(op.done)
 
 .if gas
-*	output = '# swap ' op1 ':' op2 ' 
 *	swap operand order if targeting gag
-	tmp = op1; op1 = op2; op2 = tmp
-	
+	swap()
 .fi
 						:(op.done)
 op.cdq
@@ -280,26 +288,37 @@ op.done
 +		(differ(op1) tab op1,'')  (differ(op2) ',' op2,'') 
 +		(differ(comment)  tab ' ' comment,'')
 				:(return)
--stitl	m(ref)
-*	resolve enclosing parentheses
-	define('mem(ref)')
-m
-	m = ref
-*	ref len(1) break(')') . m		
+-stitl memory(line)ref
+* here to resolve memory references
+memory
+	memory = line
+	&anchor = 1
+memory.next	
+	memory breakx('W') . first 'Word(' bal . ref ')'  rem . last	:f(memory.next.char)
+
+*	expand memory reference to word
+
+	ref len(1) break(')') . ref
 .if asm
-	m = (eq(ws,32) 'dword','qword') ' [' m ']' :(return)
+	memory = first (eq(ws,32) 'dword','qword') '[' ref ']' last
 .fi
 .if gas
-						:(return)
+	memory = first ref last
 .fi
--stitl mem(line)
-* here to resolve Mem references
-mem
-	mem = line
-	mem break('M')						:f(return)
-mem.next	
-*	mem breakx('M') . first 'Mem' bal . ref  rem . last = first m(ref) last	:s(mem.next)
-	mem breakx('M') . first 'Mem' bal . ref  rem . last = first m(ref) last	:f(return)
+memory.next.char
+
+*	expand memory reference to word
+
+	memory breakx('C') . first 'Char(' bal . ref ')'  rem . last :f(return)
+	ref len(1) break(')') . ref
+.if asm
+	memory = first 'byte [' ref ']' last
+.fi
+.if gas
+	memory = first ref last
+.fi
+	&anchor = 1
+						:(return)
 -stitl	parse(line)label,op,op1,op2,comment,cimma,i,c,lev')
 parse
 	label = op = op1 = op2 = comment =
@@ -357,6 +376,10 @@ prolog.gas
 *	output = tab '.set'	tab	'ws'	','	ws
 	output = '# end of gas prolog'
 					:(return)
+-stitl swap()
+swap
+	output = '# swapping ' op1 ':' op2
+	swap = op1; op1 = op2; op2 = swap; swap =    :(return)
 finis
 	epilog()
 	&dump = 0

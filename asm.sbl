@@ -737,7 +737,7 @@ mem
 *	invoke macro M to resolve ref at assembly
 
 	ident(ref) error('null argument to mem')
-	mem = 'Mem(' ref ')'				:(return)
+	mem = 'Word(' ref ')'				:(return)
 -stitl mov(i1,i2)i.src,i.dst,t.src
 
 *   translate 'mov' instruction
@@ -879,7 +879,7 @@ getarg.c.12
 getarg.c.13
 .if asm
 	txt break('(') . t1 '(' len(2) . t2
-	getarg = mem('(cfp_b*' t1 ')+' regmap[t2])
+	getarg = mem(regmap[t2] '+cfp_b*' t1)
 						:(getarg.done)
 .fi
 .if gas
@@ -895,7 +895,7 @@ getarg.c.14
 getarg.c.15
 .if asm
 	txt break('(') . t1 '(' len(2) . t2
-	getarg = mem(    t1 '+'  regmap[t2])
+	getarg = mem(regmap[t2] '+'  t1 )
 						:(getarg.done)
 .fi
 .if gas
@@ -1220,8 +1220,8 @@ chktrace.1
 	lbl = genlab('it')
 	opl(lbl ':')
 .if asm
-	op('Char_',trc_desc)
-	op('Char_','0');* string terminator
+	op('DeclareChar_',trc_desc)
+	op('DeclareChar_','0');* string terminator
 .fi
 .if gas
 	opl(lbl ':' ,'.asciz',trc_desc)
@@ -1868,11 +1868,9 @@ op.lch
 *	if target is w register, can load to it. otherwise, load to w0 and then move to x do indexed 
 *	load of source register
 
-*	outfile = Comment 'lch 1 reglow[(eq(w) d.reg, 'w0')]' reglow[(eq(w) d.reg, 'w0')]
-*	outfile = Comment 'lch,2 M_char [regmap[s.reg]])'  regmap[s.reg]
 
 .if asm
-	op('mov',reglow[(eq(w) d.reg, 'w0')],'M_char[' regmap[s.reg] ']')
+	op('mov',reglow[(eq(w) d.reg, 'w0')],'Char(' regmap[s.reg] ')')
 	ne(w) op('mov',regmap[d.reg],reg.w0)
 .fi
 .if gas
@@ -1912,7 +1910,7 @@ op.sch
 	ne(w) op('Mov_',reg.w0, regmap[s.reg])
 
 .if asm
-	op('mov','M_char [' regmap[d.reg] ']', reglow[(eq(w) s.reg, 'w0')])
+	op('mov','Char(' regmap[d.reg] ')', reglow[(eq(w) s.reg, 'w0')])
 .fi
 .if gas
 	op('movb', reglow[(eq(w) s.reg, 'w0')], '(' regmap[d.reg] ')') 
@@ -1955,7 +1953,7 @@ op.cmc
 op.trc
 	op('xchg',reop.xl,reop.xr)
 .if asm
-	opl((labl = genlab('trc')) ':','movzx',reg.w0,'M_char [XR]')
+	opl((labl = genlab('trc')) ':','movzx',reg.w0,'Char(XR)')
 	op('mov',reglow['w0'],'[XL+W0]')
 .fi
 .if gas
@@ -2238,7 +2236,7 @@ op.dtc.1
 	le(dtc_i = dtc_i + 1, size(t2))		:s(op.dtc.1)
 
 	tmp = ne(gtc.rem) t4 dupl(',0',cfp_c - gtc.rem)
-	op('Char_',thislabel,tmp)
+	op('DeclareChar_',thislabel,tmp)
 						:(opdone)
 op.dbc
 	opl(thislabel)

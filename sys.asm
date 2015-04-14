@@ -531,22 +531,22 @@ call_adr:
 */
 	Global_	save_regs
 save_regs:
-	Mov_	Mem(save_xl),XL
-	Mov_	Mem(save_xr),XR
-	Mov_	Mem(save_wa),WA
-	Mov_	Mem(save_wb),WB
-	Mov_	Mem(save_wc),WC
-	Mov_	Mem(save_xs),XS
+	Mov_	Word(save_xl),XL
+	Mov_	Word(save_xr),XR
+	Mov_	Word(save_wa),WA
+	Mov_	Word(save_wb),WB
+	Mov_	Word(save_wc),WC
+	Mov_	Word(save_xs),XS
 	ret
 
 	Global_	restore_regs
 restore_regs:
 	;	restore regs, except for sp. that is caller's responsibility
-	Mov_	XL,Mem(save_xl)
-	Mov_	XR,Mem(save_xr)
-	Mov_	WA,Mem(save_wa)
-	Mov_	WB,Mem(save_wb)
-	Mov_	WC,Mem(save_wc)
+	Mov_	XL,Word(save_xl)
+	Mov_	XR,Word(save_xr)
+	Mov_	WA,Word(save_wa)
+	Mov_	WB,Word(save_wb)
+	Mov_	WC,Word(save_wc)
 	ret
 /*
  ;
@@ -587,24 +587,24 @@ restore_regs:
 
 startup:
 	pop	W0			; discard return
-	Mov_	W0,Mem(maxint)		; set maximum integer value
-	Mov_	Mem(mxint),W0
+	Mov_	W0,Word(maxint)		; set maximum integer value
+	Mov_	Word(mxint),W0
 	call	stackinit		; initialize minimal stack
-	Mov_	W0,Mem(compsp)		; get minimal's stack pointer
-	Mov_ 	Mem(reg_wa),W0		; startup stack pointer
+	Mov_	W0,Word(compsp)		; get minimal's stack pointer
+	Mov_ 	Word(reg_wa),W0		; startup stack pointer
 
 	cld				; default to up direction for string ops
 ;	getoff  W0,dffnc		; get address of ppm offset
-	Mov_	Mem(ppoff),W0		; save for use later
+	Mov_	Word(ppoff),W0		; save for use later
 
-	Mov_	XS,Mem(osisp)		; switch to new c stack
+	Mov_	XS,Word(osisp)		; switch to new c stack
 .if asm
 	Mov_	W0,calltab_start
 .fi
 .if gas
 	Mov_	W0,$calltab_start
 .fi
-	Mov_	Mem(minimal_id),W0
+	Mov_	Word(minimal_id),W0
 	call	minimal			; load regs, switch stack, start compiler
 /*
 	stackinit  -- initialize spmin from sp.
@@ -636,11 +636,16 @@ startup:
 	Global_	stackinit
 stackinit:
 	Mov_	W0,XS
-	Mov_	Mem(compsp),W0	; save minimal's stack pointer
-	Sub_	W0,Mem(stacksiz)	; end of minimal stack is where c stack will start
-	Mov_	Mem(osisp),W0	; save new c stack pointer
+	Mov_	Word(compsp),W0	; save minimal's stack pointer
+	Sub_	W0,Word(stacksiz)	; end of minimal stack is where c stack will start
+	Mov_	Word(osisp),W0	; save new c stack pointer
+.if asm
+	Add_	W0,cfp_b*100		; 100 words smaller for chk
+.fi
+.if gas
 	Add_	W0,$cfp_b*100		; 100 words smaller for chk
-	Mov_	Mem(spmin),W0
+.fi
+	Mov_	Word(spmin),W0
 	ret
 
 ;	check for stack overflow, making W0 nonzero if found
@@ -648,7 +653,7 @@ stackinit:
 	Global_	chk__
 chk__:
 	xor	W0,W0			; set return value assuming no overflow
-	Cmp_	XS,Mem(spmin)
+	Cmp_	XS,Word(spmin)
 	jb	chk.oflo
 	ret
 chk.oflo:
@@ -670,30 +675,30 @@ chk.oflo:
 	the osint stack.
 */
 minimal:
-	Mov_	WA,Mem(reg_wa)	; restore registers
-	Mov_	WB,Mem(reg_wb)
-	Mov_	WC,Mem(reg_wc)	;
-	Mov_	XR,Mem(reg_xr)
-	Mov_	XL,Mem(reg_xl)
+	Mov_	WA,Word(reg_wa)	; restore registers
+	Mov_	WB,Word(reg_wb)
+	Mov_	WC,Word(reg_wc)	;
+	Mov_	XR,Word(reg_xr)
+	Mov_	XL,Word(reg_xl)
 
-	Mov_	Mem(osisp),XS	; save osint stack pointer
+	Mov_	Word(osisp),XS	; save osint stack pointer
 	xor	W0,W0
-	Cmp_	Mem(compsp),W0	; is there a compiler stack?
+	Cmp_	Word(compsp),W0	; is there a compiler stack?
 	je	min1			; jump if none yet
-	Mov_	XS,Mem(compsp)	; switch to compiler stack
+	Mov_	XS,Word(compsp)	; switch to compiler stack
 
  min1:
-	Mov_	W0,Mem(minimal_id)	; get ordinal
-;	call	Mem(calltab+W0*cfp_b)    ; off to the minimal code
+	Mov_	W0,Word(minimal_id)	; get ordinal
+;	call	Word(calltab+W0*cfp_b)    ; off to the minimal code
 	call	start
 
-	Mov_	XS,Mem(osisp)	; switch to osint stack
+	Mov_	XS,Word(osisp)	; switch to osint stack
 
-	Mov_	Mem(reg_wa),WA	; save registers
-	Mov_	Mem(reg_wb),WB
-	Mov_	Mem(reg_wc),WC
-	Mov_	Mem(reg_xr),XR
-	Mov_	Mem(reg_xl),XL
+	Mov_	Word(reg_wa),WA	; save registers
+	Mov_	Word(reg_wb),WB
+	Mov_	Word(reg_wc),WC
+	Mov_	Word(reg_xr),XR
+	Mov_	Word(reg_xl),XL
 	ret
 
 /*
@@ -759,24 +764,24 @@ minimal:
 syscall_init:
 ;	save registers in global variables
 
-	Mov_	Mem(reg_wa),WA      ; save registers
-	Mov_	Mem(reg_wb),WB
-	Mov_	Mem(reg_wc),WC      ; (also _reg_ia)
-	Mov_	Mem(reg_xr),XR
-	Mov_	Mem(reg_xl),XL
+	Mov_	Word(reg_wa),WA      ; save registers
+	Mov_	Word(reg_wb),WB
+	Mov_	Word(reg_wc),WC      ; (also _reg_ia)
+	Mov_	Word(reg_xr),XR
+	Mov_	Word(reg_xl),XL
 	ret
 
 syscall_exit:
-	Mov_	Mem(_rc_),W0	; save return code from function
-	Mov_	Mem(osisp),XS	; save osint's stack pointer
-	Mov_	XS,Mem(compsp)	; restore compiler's stack pointer
-	Mov_	WA,Mem(reg_wa)	; restore registers
-	Mov_	WB,Mem(reg_wb)
-	Mov_	WC,Mem(reg_wc)      ;
-	Mov_	XR,Mem(reg_xr)
-	Mov_	XL,Mem(reg_xl)
+	Mov_	Word(_rc_),W0	; save return code from function
+	Mov_	Word(osisp),XS	; save osint's stack pointer
+	Mov_	XS,Word(compsp)	; restore compiler's stack pointer
+	Mov_	WA,Word(reg_wa)	; restore registers
+	Mov_	WB,Word(reg_wb)
+	Mov_	WC,Word(reg_wc)      ;
+	Mov_	XR,Word(reg_xr)
+	Mov_	XL,Word(reg_xl)
 	cld
-	Mov_	W0,Mem(reg_pc)
+	Mov_	W0,Word(reg_pc)
 .if asm
 	jmp	W0
 .fi
@@ -787,13 +792,13 @@ syscall_exit:
 .if asm
 	%macro	syscall	2
 	pop	W0			; pop return address
-	Mov_	Mem(reg_pc),W0
+	Mov_	Word(reg_pc),W0
 	call	syscall_init
 
 ;	save compiler stack and switch to osint stack
 
-	Mov_	Mem(compsp),XS      ; save compiler's stack pointer
-	Mov_	XS,Mem(osisp)       ; load osint's stack pointer
+	Mov_	Word(compsp),XS      ; save compiler's stack pointer
+	Mov_	XS,Word(osisp)       ; load osint's stack pointer
 	call	%1
 	call	syscall_exit
 	%endmacro
@@ -801,13 +806,13 @@ syscall_exit:
 .if gas
 	.macro	syscall	proc,id
 	pop	W0			; pop return address
-	Mov_	Mem(reg_pc),W0
+	Mov_	Word(reg_pc),W0
 	call	syscall_init
 
 ;	save compiler stack and switch to osint stack
 
-	Mov_	Mem(compsp),XS      ; save compiler's stack pointer
-	Mov_	XS,Mem(osisp)       ; load osint's stack pointer
+	Mov_	Word(compsp),XS      ; save compiler's stack pointer
+	Mov_	XS,Word(osisp)       ; load osint's stack pointer
 	call	\proc
 	call	syscall_exit
 	.endm
@@ -826,7 +831,7 @@ sysbs:
 	Global_	sysbx
 	Extern_	zysbx
 sysbx:
-	Mov_	Mem(reg_xs),XS
+	Mov_	Word(reg_xs),XS
 	syscall	zysbx,2
 
 ;	global syscr
@@ -882,7 +887,7 @@ sysep:
 	Global_	sysex
 	Extern_	zysex
 sysex:
-	Mov_	Mem(reg_xs),XS
+	Mov_	Word(reg_xs),XS
 	syscall	zysex,13
 
 	Global_	sysfc
@@ -909,7 +914,7 @@ sysgc:
 	Global_	syshs
 	Extern_	zyshs
 syshs:
-	Mov_	Mem(reg_xs),XS
+	Mov_	Word(reg_xs),XS
 	syscall	zyshs,16
 
 	Global_	sysid
@@ -1015,7 +1020,7 @@ sysul:
 	Global_	sysxi
 	Extern_	zysxi
 sysxi:
-	Mov_	Mem(reg_xs),XS
+	Mov_	Word(reg_xs),XS
 	syscall	zysxi,38
 
 .if asm
@@ -1030,27 +1035,27 @@ sysxi:
 	%endmacro
 
 	%macro	adi_	0
-	Add_	Mem(reg_ia),W0
+	Add_	Word(reg_ia),W0
 	seto	byte [reg_fl]
 	%endmacro
 
 	%macro	dvi_	0
-	Mov_	Mem(reg_w0),W0
+	Mov_	Word(reg_w0),W0
 	call	dvi__
 	%endmacro
 
 	%macro	ldi_	1
 	Mov_	W0,%1
-	Mov_	Mem(reg_ia),W0
+	Mov_	Word(reg_ia),W0
 	%endmacro
 
 	%macro	mli_	0
-	imul	Mem(reg_ia)
+	imul	Word(reg_ia)
 	seto	byte [reg_fl]
 	%endmacro
 
 	%macro	ngi_	0
-	neg	Mem(reg_ia)
+	neg	Word(reg_ia)
 	seto	byte [reg_fl]
 	%endmacro
 
@@ -1087,39 +1092,39 @@ sysxi:
 	%endmacro
 
 	%macro	sbi_	0
-	Sub_	Mem(reg_ia),W0
+	Sub_	Word(reg_ia),W0
 	seto	byte [reg_fl]
 	%endmacro
 
 	%macro	sti_	1
-	Mov_	W0,Mem(reg_ia)
+	Mov_	W0,Word(reg_ia)
 	Mov_	%1,W0
 	%endmacro
 
 	%macro	Icp_	0
-	Mov_	W0,Mem(reg_cp)
+	Mov_	W0,Word(reg_cp)
 	Add_	W0,cfp_b
-	Mov_	Mem(reg_cp),W0
+	Mov_	Word(reg_cp),W0
 	%endmacro
 
 	%macro	Lcp_	1
 	Mov_	W0,%1
-	Mov_	Mem(reg_cp),W0
+	Mov_	Word(reg_cp),W0
 	%endmacro
 
 	%macro	Lcw_	1
-	Mov_	W0,Mem(reg_cp)			; load address of code word
+	Mov_	W0,Word(reg_cp)			; load address of code word
 	push	W0
-	Mov_	W0,Mem(W0)			; load code word
+	Mov_	W0,Word(W0)			; load code word
 	Mov_	%1,W0
 	pop	W0 				; load address of code word
 	Add_	W0,cfp_b
-	Mov_	Mem(reg_cp),W0
+	Mov_	Word(reg_cp),W0
 	%endmacro
 
 
 	%macro	Scp_	1
-	Mov_	W0,Mem(reg_cp)
+	Mov_	W0,Word(reg_cp)
 	Mov_	%1,W0
 	%endmacro
 .fi
@@ -1136,22 +1141,22 @@ sysxi:
 	.endm
 
 	.macro	adi_
-	Add_	Mem(reg_ia),W0
+	Add_	Word(reg_ia),W0
 	seto	reg_fl
 	.endm
 
 	.macro	dvi_
-	Mov_	Mem(reg_w0),W0
+	Mov_	Word(reg_w0),W0
 	call	dvi__
 	.endm
 
 	.macro	ldi_	val
 	Mov_	W0,\val
-	Mov_	Mem(reg_ia),W0
+	Mov_	Word(reg_ia),W0
 	.endm
 
 	.macro	mli_
-	mov	Mem(reg_ia),W0
+	mov	Word(reg_ia),W0
 	imul	W0
 	seto	reg_fl
 	.endm
@@ -1159,10 +1164,10 @@ sysxi:
 ; using W0 below since operand size not known, and putting it in register defers this problem
 
 	.macro	ngi_
-	mov	Mem(reg_ia),W0
+	mov	Word(reg_ia),W0
 	neg	W0
-	mov	W0,Mem(reg_ia)
-;	neg	Mem(reg_ia)
+	mov	W0,Word(reg_ia)
+;	neg	Word(reg_ia)
 	seto	reg_fl
 	.endm
 
@@ -1199,19 +1204,19 @@ sysxi:
 	.endm
 
 	.macro	sbi_
-	Sub	Mem(reg_ia),W0
+	Sub	Word(reg_ia),W0
 	seto	reg_fl
 	.endm
 
 	.macro	sti_	dst
-	Mov_	W0,Mem(reg_ia)
+	Mov_	W0,Word(reg_ia)
 	Mov_	\dst,W0
 	.endm
 
 	.macro	Icp_
-	Mov_	W0,Mem(reg_cp)
+	Mov_	W0,Word(reg_cp)
 	Add_	W0,cfp_b
-	Mov_	Mem(reg_cp),W0
+	Mov_	Word(reg_cp),W0
 	.endm
 
 	.macro	Lcp_	val
@@ -1249,22 +1254,22 @@ sysxi:
 	.endm
 
 	.macro	adi_
-	Add_	Mem(reg_ia),W0
+	Add_	Word(reg_ia),W0
 	seto	reg_fl
 	.endm
 
 	.macro	dvi_
-	Mov_	Mem(reg_w0),W0
+	Mov_	Word(reg_w0),W0
 	call	dvi__
 	.endm
 
 	.macro	ldi_	val
 	Mov_	W0,\val
-	Mov_	Mem(reg_ia),W0
+	Mov_	Word(reg_ia),W0
 	.endm
 
 	.macro	mli_
-	mov	Mem(reg_ia),W0
+	mov	Word(reg_ia),W0
 	imul	W0
 	seto	reg_fl
 	.endm
@@ -1272,10 +1277,10 @@ sysxi:
 ; using W0 below since operand size not known, and putting it in register defers this problem
 
 	.macro	ngi_
-	mov	Mem(reg_ia),W0
+	mov	Word(reg_ia),W0
 	neg	W0
-	mov	W0,Mem(reg_ia)
-;	neg	Mem(reg_ia)
+	mov	W0,Word(reg_ia)
+;	neg	Word(reg_ia)
 	seto	reg_fl
 	.endm
 
@@ -1312,19 +1317,19 @@ sysxi:
 	.endm
 
 	.macro	sbi_
-	Sub	Mem(reg_ia),W0
+	Sub	Word(reg_ia),W0
 	seto	reg_fl
 	.endm
 
 	.macro	sti
-	Mov_	W0,Mem(reg_ia)
+	Mov_	W0,Word(reg_ia)
 	Mov_	$1,W0
 	.endm
 
 	.macro	Icp_
-	Mov_	W0,Mem(reg_cp)
+	Mov_	W0,Word(reg_cp)
 	Add_	W0,cfp_b
-	Mov_	Mem(reg_cp),W0
+	Mov_	Word(reg_cp),W0
 	.endm
 
 	.macro	Lcp_
@@ -1363,16 +1368,16 @@ sysxi:
 	Global_	cvd__
 cvd__:
 	Extern_	i_cvd
-	Mov_	Mem(reg_wa),WA
+	Mov_	Word(reg_wa),WA
 	call	i_cvd
-	Mov_	WA,Mem(reg_wa)
+	Mov_	WA,Word(reg_wa)
 	ret
 
 ;	dvi__ - divide ia (edx) by long in w0
 	Global_	dvi__
 dvi__:
 	Extern_	i_dvi
-	Mov_	Mem(reg_w0),W0
+	Mov_	Word(reg_w0),W0
 	call	i_dvi
 .if asm
 	Mov_	al,byte [reg_fl]
@@ -1389,7 +1394,7 @@ dvi__:
 rmi__:
 	jmp	ocode
 	Extern_	i_rmi
-	Mov_	Mem(reg_w0),W0
+	Mov_	Word(reg_w0),W0
 	call	i_rmi
 .if asm
 	Mov_	al,byte [rel reg_fl]
@@ -1404,9 +1409,9 @@ rmi__:
 ocode:
 	or	W0,W0		; test for 0
 	jz	setovr		; jump if 0 divisor
-	Xchg_	W0,Mem(reg_ia)	; ia to w0, divisor to ia
+	Xchg_	W0,Word(reg_ia)	; ia to w0, divisor to ia
 	Cdq_			; extend dividend
-	Mov_	W0,Mem(reg_ia)
+	Mov_	W0,Word(reg_ia)
 	Idiv_	W0		; perform division. w0=quotient, wc=remainder
 .if asm
 	seto	byte [rel reg_fl]
@@ -1414,7 +1419,7 @@ ocode:
 .if gas
 	seto	reg_fl
 .fi
-	Mov_	Mem(reg_ia),WC
+	Mov_	Word(reg_ia),WC
 	ret
 
 setovr:
@@ -1465,12 +1470,12 @@ setovr:
 ;	Extern_	i_ldi
 ;	%macro	ldi_	1
 ;	Mov_	W0,%1
-;	Mov_	Mem(reg_ia),W0
+;	Mov_	Word(reg_ia),W0
 ;	call	i_ldi
 ;	%endmacro
 ;
 ;	%macro	sti_	1
-;	Mov_	W0, Mem(reg_ia)
+;	Mov_	W0, Word(reg_ia)
 ;	Mov_	%1,W0
 ;	%endmacro
 ;
@@ -1479,7 +1484,7 @@ setovr:
 ;	Global_	%1
 ;	Extern_	%2
 ;%1:
-;	Mov_	Mem(reg_w0),W0
+;	Mov_	Word(reg_w0),W0
 ;	call	%2
 ;	ret
 ;	%endmacro
@@ -1499,7 +1504,7 @@ setovr:
 	Global_	%1
 	Extern_	%2
 %1:
-	Mov_	Mem(%3),W0
+	Mov_	Word(%3),W0
 	call	%2
 	ret
 	%endmacro
@@ -1612,13 +1617,12 @@ ovr_:
 .fi
 	ret
 
-	Global_	get_fp			; get frame pointer
+	Global_	get_fp
 
-get_fp:
-	Mov_	W0,Mem(reg_xs)     ; minimal's xs
-	Add_	W0,4           	; pop return from call to sysbx or sysxi
-	ret                    	; done
-
+get_fp:					; get frame pointer
+	Mov_	W0,Word(reg_xs)
+	Add_	W0,4          
+	ret                  
 	Extern_	rereloc
 
 	Global_	restart
@@ -1636,27 +1640,27 @@ restart:
 	pop	W0                     	; discard dummy
 	pop	W0                     	; get lowest legal stack value
 
-	Add_	W0,Mem(stacksiz)  	; top of compiler's stack
+	Add_	W0,Word(stacksiz)  	; top of compiler's stack
 	Mov_	XS,W0                 	; switch to this stack
 	call	stackinit               ; initialize minimal stack
 
                                         ; set up for stack relocation
 	lea	W0,[rel tscblk+scstr]       ; top of saved stack
-	Mov_	WB,Mem(lmodstk)    	; bottom of saved stack
-	Mov_	WA,Mem(stbas)      ; wa = stbas from exit() time
+	Mov_	WB,Word(lmodstk)    	; bottom of saved stack
+	Mov_	WA,Word(stbas)      ; wa = stbas from exit() time
 	Sub	WB,W0                 	; wb = size of saved stack
 	Mov_	WC,WA
 	Sub	WC,WB                 	; wc = stack bottom from exit() time
 	Mov_	WB,WA
 	Sub	WB,XS                 	; wb =  stbas - new stbas
 
-	Mov_	Mem(stbas),XS       ; save initial sp
+	Mov_	Word(stbas),XS       ; save initial sp
 ;	getoff  W0,dffnc               ; get address of ppm offset
-	Mov_	Mem(ppoff),W0       ; save for use later
+	Mov_	Word(ppoff),W0       ; save for use later
 ;
 ;	restore stack from tscblk.
 ;
-	Mov_	XL,Mem(lmodstk)    	; -> bottom word of stack in tscblk
+	Mov_	XL,Word(lmodstk)    	; -> bottom word of stack in tscblk
 	lea	XR,[rel tscblk+scstr]      	; -> top word of stack
 	Cmp_	XL,XR                 	; any stack to transfer?
         je      re3               	;  skip if not
@@ -1675,11 +1679,11 @@ re2:
 	jae	re1                     ;    loop back
 
 re3:	cld
-	Mov_	Mem(compsp),XS     	; save compiler's stack pointer
-	Mov_	XS,Mem(osisp)      	; back to osint's stack pointer
+	Mov_	Word(compsp),XS     	; save compiler's stack pointer
+	Mov_	XS,Word(osisp)      	; back to osint's stack pointer
 	call	rereloc               	; relocate compiler pointers into stack
-	Mov_	W0,Mem(statb)      	; start of static region to xr
-	Mov_	Mem(reg_xr),W0
+	Mov_	W0,Word(statb)      	; start of static region to xr
+	Mov_	Word(reg_xr),W0
 	Mov_	W0,minimal_insta
 	call	minimal			; initialize static region
 /*
@@ -1706,7 +1710,7 @@ re3:	cld
 */
 	call	startbrk			; start control-c logic
 
-	Mov_	W0,Mem(stage)	; is this a -w call?
+	Mov_	W0,Word(stage)	; is this a -w call?
 .if asm
 	Cmp_	W0,4
 .fi
@@ -1726,20 +1730,20 @@ re3:	cld
 	go for it.
 */
 re4:
-	Mov_	W0,Mem(stbas)
-	Mov_	Mem(compsp),W0     	; empty the stack
+	Mov_	W0,Word(stbas)
+	Mov_	Word(compsp),W0     	; empty the stack
 
 ;	code that would be executed if we had returned to makeexec:
 
 	xor	W0,W0
-	Mov_	Mem(gbcnt),W0       	; reset garbage collect count to zero
+	Mov_	Word(gbcnt),W0       	; reset garbage collect count to zero
 	call	zystm                 	; fetch execution time to reg_ia
-	Mov_	W0,Mem(reg_ia)     	; set time into compiler
-	Mov_	Mem(timsx),W0
+	Mov_	W0,Word(reg_ia)     	; set time into compiler
+	Mov_	Word(timsx),W0
 
 ;	code that would be executed if we returned to sysbx:
 
-	push	Mem(outptr)        	; swcoup(outptr)
+	push	Word(outptr)        	; swcoup(outptr)
 	Extern 	swcoup
 	call	swcoup
 	Add_	XS,cfp_b
@@ -1747,7 +1751,7 @@ re4:
 ;	jump to minimal code to restart a save file.
 
 	Mov_	W0,minimal_rstrt
-	Mov_	Mem(minimal_id),W0
+	Mov_	Word(minimal_id),W0
 	call	minimal			; no return
 .fi
 
