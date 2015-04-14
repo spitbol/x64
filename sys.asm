@@ -2,6 +2,7 @@
 .def comment_semicolon
 .else
 .def comment_number
+.fi
 /*
 	copyright 1987-2012 robert b. k. dewar and mark emmer.
 	copyright 2012-2015 david shields
@@ -50,10 +51,10 @@
 
 	...code to put arguments in registers...
 	call    sysxx           ; call osint function
-	Word_    extrc_1          ; address of exit point 1
-	Word_    extrc_2          ; address of exit point 2
+	DeclareWord_    extrc_1          ; address of exit point 1
+	DeclareWord_    extrc_2          ; address of exit point 2
 	...     ...             ; ...
-	Word_    extrc_n          ; address of exit point n
+	DeclareWord_    extrc_n          ; address of exit point n
 	...instruction following call...
 
 	the osint function 'sysxx' can then return in one of n+1 ways:
@@ -198,36 +199,36 @@
 
 	Global_	typet
 	Section_	data
-        Word_	b_art   ; arblk type word - 0
-        Word_	b_cdc   ; cdblk type word - 1
-        Word_	b_exl   ; exblk type word - 2
-        Word_	b_icl   ; icblk type word - 3
-        Word_	b_nml   ; nmblk type word - 4
-        Word_	p_aba   ; p0blk type word - 5
-        Word_	p_alt   ; p1blk type word - 6
-        Word_	p_any   ; p2blk type word - 7
+        DeclareWord_	b_art   ; arblk type word - 0
+        DeclareWord_	b_cdc   ; cdblk type word - 1
+        DeclareWord_	b_exl   ; exblk type word - 2
+        DeclareWord_	b_icl   ; icblk type word - 3
+        DeclareWord_	b_nml   ; nmblk type word - 4
+        DeclareWord_	p_aba   ; p0blk type word - 5
+        DeclareWord_	p_alt   ; p1blk type word - 6
+        DeclareWord_	p_any   ; p2blk type word - 7
 ; next needed only if support real arithmetic cnra
-;       Word_	b_rcl   ; rcblk type word - 8
-        Word_	b_scl   ; scblk type word - 9
-        Word_	b_sel   ; seblk type word - 10
-        Word_	b_tbt   ; tbblk type word - 11
-        Word_	b_vct   ; vcblk type word - 12
-        Word_	b_xnt   ; xnblk type word - 13
-        Word_	b_xrt   ; xrblk type word - 14
-        Word_	b_bct   ; bcblk type word - 15
-        Word_	b_pdt   ; pdblk type word - 16
-        Word_	b_trt   ; trblk type word - 17
-        Word_	b_bft   ; bfblk type word   18
-        Word_	b_cct   ; ccblk type word - 19
-        Word_	b_cmt   ; cmblk type word - 20
-        Word_	b_ctt   ; ctblk type word - 21
-        Word_	b_dfc   ; dfblk type word - 22
-        Word_	b_efc   ; efblk type word - 23
-        Word_	b_evt   ; evblk type word - 24
-        Word_	b_ffc   ; ffblk type word - 25
-        Word_	b_kvt   ; kvblk type word - 26
-        Word_	b_pfc   ; pfblk type word - 27
-        Word_	b_tet   ; teblk type word - 28
+;       DeclareWord_	b_rcl   ; rcblk type word - 8
+        DeclareWord_	b_scl   ; scblk type word - 9
+        DeclareWord_	b_sel   ; seblk type word - 10
+        DeclareWord_	b_tbt   ; tbblk type word - 11
+        DeclareWord_	b_vct   ; vcblk type word - 12
+        DeclareWord_	b_xnt   ; xnblk type word - 13
+        DeclareWord_	b_xrt   ; xrblk type word - 14
+        DeclareWord_	b_bct   ; bcblk type word - 15
+        DeclareWord_	b_pdt   ; pdblk type word - 16
+        DeclareWord_	b_trt   ; trblk type word - 17
+        DeclareWord_	b_bft   ; bfblk type word   18
+        DeclareWord_	b_cct   ; ccblk type word - 19
+        DeclareWord_	b_cmt   ; cmblk type word - 20
+        DeclareWord_	b_ctt   ; ctblk type word - 21
+        DeclareWord_	b_dfc   ; dfblk type word - 22
+        DeclareWord_	b_efc   ; efblk type word - 23
+        DeclareWord_	b_evt   ; evblk type word - 24
+        DeclareWord_	b_ffc   ; ffblk type word - 25
+        DeclareWord_	b_kvt   ; kvblk type word - 26
+        DeclareWord_	b_pfc   ; pfblk type word - 27
+        DeclareWord_	b_tet   ; teblk type word - 28
 /*
    table of minimal entry points that can be dded from c
    via the minimal function (see inter.asm).
@@ -238,20 +239,20 @@
 */
 	Global_ calltab
 calltab:
-        Word_	relaj
-        Word_	relcr
-        Word_	reloc
-        Word_	alloc
-        Word_	alocs
-        Word_	alost
-        Word_	blkln
-        Word_	insta
-        Word_	rstrt
-        Word_	start
-        Word_	filnm
-        Word_	dtype
-;       Word_	enevs ;  engine words
-;       Word_	engts ;   not used
+        DeclareWord_	relaj
+        DeclareWord_	relcr
+        DeclareWord_	reloc
+        DeclareWord_	alloc
+        DeclareWord_	alocs
+        DeclareWord_	alost
+        DeclareWord_	blkln
+        DeclareWord_	insta
+        DeclareWord_	rstrt
+        DeclareWord_	start
+        DeclareWord_	filnm
+        DeclareWord_	dtype
+;       DeclareWord_	enevs ;  engine words
+;       DeclareWord_	engts ;   not used
 
 	Global_	b_efc
 	Global_	b_icl
@@ -300,33 +301,33 @@ calltab:
 
 	Align_ 16
 dummy:	
-	Word_	0
+	DeclareWord_	0
 reg_block:
 reg_ia: 
-	Word_	0		; register ia (ebp)
+	DeclareWord_	0		; register ia (ebp)
 reg_w0:	
-	Word_	0        	; register wa (ecx)
+	DeclareWord_	0        	; register wa (ecx)
 reg_wa:
-	Word_	0        	; register wa (ecx)
+	DeclareWord_	0        	; register wa (ecx)
 reg_wb:
-	Word_ 	0        	; register wb (ebx)
+	DeclareWord_ 	0        	; register wb (ebx)
 reg_wc:
-	Word_	0		; register wc
+	DeclareWord_	0		; register wc
 reg_xr:
-	Word_	0        	; register xr (xr)
+	DeclareWord_	0        	; register xr (xr)
 reg_xl:
-	Word_	0        	; register xl (xl)
+	DeclareWord_	0        	; register xl (xl)
 reg_cp:
-	Word_	0        	; register cp
+	DeclareWord_	0        	; register cp
 reg_ra:
-	Real_	0.0		; register ra
+	DeclareReal_	0.0		; register ra
 
 ; these locations save information needed to return after calling osint and after a restart from exit()
 
 reg_pc:
-	Word_      0               ; return pc from caller
+	DeclareWord_      0               ; return pc from caller
 reg_xs:
-	Word_	0		; minimal stack pointer
+	DeclareWord_	0		; minimal stack pointer
 
 ;	r_size  equ       $-reg_block
 
@@ -339,13 +340,13 @@ reg_xs:
 ; reg_rp is used to pass pointer to real operand for real arithmetic
 
 reg_rp:	
-	Word_	0
+	DeclareWord_	0
 
 ; reg_fl is used to communicate condition codes between minimal and c code.
 
 	Global_	reg_fl
 reg_fl:
-	Byte_	0		; condition code register for numeric operations
+	DeclareByte_	0		; condition code register for numeric operations
 
 	Align_	8
 
@@ -353,19 +354,19 @@ reg_fl:
 
 	Global_	ten
 ten:   
-	Word_      10              ; constant 10
+	DeclareWord_      10              ; constant 10
 	Global_	inf
 inf:
-	Word_	0
-	Word_      0x7ff00000      ; double precision infinity
+	DeclareWord_	0
+	DeclareWord_      0x7ff00000      ; double precision infinity
 	Global_	maxint
 .if 32
 maxint:
-	Word_ 2147483647
+	DeclareWord_ 2147483647
 .fi
 .if 64
 maxint:
-	Word_ 9223372036854775807
+	DeclareWord_ 9223372036854775807
 .fi
 
 	Global_	sav_block
@@ -376,23 +377,23 @@ sav_block:
 	Global_	ppoff
 
 ppoff:
-	Word_      0               	; offset for ppm exits
+	DeclareWord_      0               	; offset for ppm exits
 
 	Global_	compsp
 compsp:
-	Word_      0               	; compiler's stack pointer
+	DeclareWord_      0               	; compiler's stack pointer
 
 	Global_	sav_compsp
 sav_compsp:
-	Word_      0               	; save compsp here
+	DeclareWord_      0               	; save compsp here
 
 	Global_	osisp
 osisp: 
-	Word_      0               	; osint's stack pointer
+	DeclareWord_      0               	; osint's stack pointer
 
 	Global_	_rc_
 _rc_:
-	Word_   0				; return code from osint procedure
+	DeclareWord_   0				; return code from osint procedure
 
 	Align_	cfp_b
 	Global_	save_cp
@@ -403,25 +404,25 @@ _rc_:
 	Global_	save_wc
 	Global_	save_xs
 save_cp:
-	Word_	0		; saved cp value
+	DeclareWord_	0		; saved cp value
 save_ia:
-	Word_	0		; saved ia value
+	DeclareWord_	0		; saved ia value
 save_xl:
-	Word_	0		; saved xl value
+	DeclareWord_	0		; saved xl value
 save_xr:
-	Word_	0		; saved xr value
+	DeclareWord_	0		; saved xr value
 save_wa:
-	Word_	0		; saved wa value
+	DeclareWord_	0		; saved wa value
 save_wb:
-	Word_	0		; saved wb value
+	DeclareWord_	0		; saved wb value
 save_wc:
-	Word_	0		; saved wc value
+	DeclareWord_	0		; saved wc value
 save_xs:
-	Word_	0		; saved xs value
+	DeclareWord_	0		; saved xs value
 
 	Global_	minimal_id
 minimal_id:
-	Word_	0		; id for call to minimal from c. see proc minimal below.
+	DeclareWord_	0		; id for call to minimal from c. see proc minimal below.
 
 /*
 	%define setreal 0
@@ -431,37 +432,37 @@ minimal_id:
 */
 	Global_	id1
 id1:	
-	Word_	0
+	DeclareWord_	0
 .if dead
 %if setreal == 1
-	Word_	2
+	DeclareWord_	2
 
-       Word_       1
+       DeclareWord_       1
 	D_char	"1x\x00\x00\x00"
 %endif
 .fi
 
 	Global_	id1blk
 id1blk:
-		Word_	152
-	Word_	0
+		DeclareWord_	152
+	DeclareWord_	0
 	Fill_	152
 
 	Global_	id2blk
 id2blk:
-	Word_	152
-      	Word_	0
+	DeclareWord_	152
+      	DeclareWord_	0
 	Fill_	152
 
 	Global_	ticblk
 ticblk:
-	Word_	0
-	Word_	0
+	DeclareWord_	0
+	DeclareWord_	0
 
 	Global_	tscblk
 tscblk:
-	Word_	512
-	Word_	0
+	DeclareWord_	512
+	DeclareWord_	0
 	Fill_	512
 
 ;       standard input buffer block.
@@ -469,39 +470,39 @@ tscblk:
 	Global_	inpbuf
 
 inpbuf:
-		Word_	0			; type word
-	Word_	0               	; block length
-	Word_	1024            	; buffer size
-	Word_	0               	; remaining chars to read
-	Word_	0               	; offset to next character to read
-	Word_	0               	; file position of buffer
-	Word_	0               	; physical position in file
+		DeclareWord_	0			; type word
+	DeclareWord_	0               	; block length
+	DeclareWord_	1024            	; buffer size
+	DeclareWord_	0               	; remaining chars to read
+	DeclareWord_	0               	; offset to next character to read
+	DeclareWord_	0               	; file position of buffer
+	DeclareWord_	0               	; physical position in file
 	Fill_	1024
 
 	Global_	ttybuf
 
 ttybuf:
-	Word_	0     ; type word
-	Word_	0								; block length
-	Word_	260             	; buffer size  (260 ok in ms-dos with cinread())
-	Word_	0               	; remaining chars to read
-	Word_	0               	; offset to next char to read
-	Word_	0               	; file position of buffer
-	Word_	0               	; physical position in file
+	DeclareWord_	0     ; type word
+	DeclareWord_	0								; block length
+	DeclareWord_	260             	; buffer size  (260 ok in ms-dos with cinread())
+	DeclareWord_	0               	; remaining chars to read
+	DeclareWord_	0               	; offset to next char to read
+	DeclareWord_	0               	; file position of buffer
+	DeclareWord_	0               	; physical position in file
 	Fill_	260	         	; buffer
 
 	Global_	spmin
 
 spmin:
-	Word_	0			; stack limit (stack grows down for x86_64)
+	DeclareWord_	0			; stack limit (stack grows down for x86_64)
 spmin.a:
-	Word_	spmin
+	DeclareWord_	spmin
 
 	Align_	16
 	Align_	cfp_b
 
 call_adr:	
-	Word_	0
+	DeclareWord_	0
 
 	Section_	text
 /*
@@ -703,7 +704,7 @@ minimal:
 
 	sysxx:
 			call    ccaller ; call common interface
-                     	Word_    zysxx   ; dd      of c osint function
+                     	DeclareWord_    zysxx   ; dd      of c osint function
                        db      n       ; offset to instruction after
                                        ;   last procedure exit
 
@@ -723,7 +724,7 @@ minimal:
 	general calling sequence is
 
 			call	ccaller
-			Word_	address_of_c_function
+			DeclareWord_	address_of_c_function
 			db      2*number_of_extrc_points
 
 	control is never returned to a interface routine.  instead, control
@@ -1103,19 +1104,24 @@ sysxi:
 
 	%macro	Lcp_	1
 	Mov_	W0,%1
-	Mov_	M_word [reg_cp],W0
+	Mov_	Mem(reg_cp),W0
 	%endmacro
 
 	%macro	Lcw_	1
-	Mov_	W0,M_word [reg_cp]		; load address of code word
+	Mov_	W0,Mem(reg_cp)			; load address of code word
 	push	W0
-	Mov_	W0,M_word [W0]			; load code word
+	Mov_	W0,Mem(W0)			; load code word
 	Mov_	%1,W0
 	pop	W0 				; load address of code word
 	Add_	W0,cfp_b
-	Mov_	M_word [reg_cp],W0
+	Mov_	Mem(reg_cp),W0
 	%endmacro
 
+
+	%macro	Scp_	1
+	Mov_	W0,Mem(reg_cp)
+	Mov_	%1,W0
+	%endmacro
 .fi
 .if gas
 .if unix
@@ -1228,6 +1234,7 @@ sysxi:
 	Mov_	\val,W0
 	.endm
 
+.fi
 .fi
 .if gas
 .if osx
@@ -1492,7 +1499,7 @@ setovr:
 	Global_	%1
 	Extern_	%2
 %1:
-	Mov_	M_word [%3],W0
+	Mov_	Mem(%3),W0
 	call	%2
 	ret
 	%endmacro
@@ -1592,9 +1599,9 @@ $1:
 	Global_	ovr_
 ovr_:
 .if asm
-	Mov_	ax, word [ rel reg_ra+6]	; get top 2 bytes
-	And_	ax, 0x7ff0		; check for infinity or nan
-	Add_	ax, 0x10		; set/clear overflow accordingly
+	Mov_	ax,word [rel reg_ra+6]	; get top 2 bytes
+	And_	ax,0x7ff0		; check for infinity or nan
+	Add_	ax,0x10			; set/clear overflow accordingly
 .fi
 .if gas
 	Mov_	W0,$reg_ra

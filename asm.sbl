@@ -516,7 +516,7 @@ regmap.done
 
 	reglow = table(10)
 .if asm
-	s = 'w0 W0_L wa WA_L wb WB_L wc WC_L '
+	s = 'w0 al wa cl wb bl wc dl '
 .fi
 .if gas
 	s = 'w0 %al wa %cl wb %bl wc %dl '
@@ -1441,7 +1441,7 @@ op.bsw1
         opl(lbl ':')
 	trc_suspend =				:(opdone)
 
-op.iff   op('Word_',getarg(i2))              :(opdone)
+op.iff   op('DeclareWord_',getarg(i2))              :(opdone)
 
 op.esw
 	op('Section_','text')		:(opdone)
@@ -1872,7 +1872,7 @@ op.lch
 *	outfile = Comment 'lch,2 M_char [regmap[s.reg]])'  regmap[s.reg]
 
 .if asm
-	op('mov',reglow[(eq(w) d.reg, 'w0')],'M_char [' regmap[s.reg] ']')
+	op('mov',reglow[(eq(w) d.reg, 'w0')],'M_char[' regmap[s.reg] ']')
 	ne(w) op('mov',regmap[d.reg],reg.w0)
 .fi
 .if gas
@@ -2185,11 +2185,11 @@ op.dac
 	t1 = i.type(i1)
 	outfile = '# op.dac ' thislabel
 	opl(thislabel)
-	op('Word_',i.text(i1))
+	op('DeclareWord_',i.text(i1))
 						:(decend)
 op.dic
 	opl(thislabel)
-	op('Word_',i.text(i1))
+	op('DeclareWord_',i.text(i1))
 						:(decend)
 
 op.drc
@@ -2198,7 +2198,7 @@ op.drc
 	t1 ? fence "+" = ""
 	opl(thislabel)
 	thislabel =
-	op('Real_',t1)
+	op('DeclareReal_',t1)
 
 *	note that want to attach label to last instruction
 
@@ -2211,7 +2211,7 @@ op.dtc
 	txt = i.text(i1)
 	txt = substr(txt,2,size(txt) - 2)
 	opl(thislabel)
-	op('Char_', '"' txt '"')
+	op('DeclareChar_', '"' txt '"')
 
 	n = remdr(size(txt),cfp_b)
 	eq(n)					:s(opdone)
@@ -2220,7 +2220,7 @@ op.dtc
 *	Pad out with null bytes to next word boundary
 
 dtc.1	eq(n)					:s(opdone)
-	op('Byte_','0')
+	op('DeclareByte_','0')
 	n = n - 1				:(dtc.1)
 
 	align(cfp_b)			
@@ -2242,7 +2242,7 @@ op.dtc.1
 						:(opdone)
 op.dbc
 	opl(thislabel)
-	op('Word_',getarg(i1))
+	op('DeclareWord_',getarg(i1))
 						:(opdone)
 op.equ
 	op('Equ_',thislabel,i.text(i1))		:(opdone)

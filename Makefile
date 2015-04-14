@@ -240,7 +240,7 @@ osx-export:
 
 # run preprocessor to process multi-line comments in lex
 
-	$(BASEBOL) -u $(TARGET)_asm pre.sbl <lex.sbl >lex.spt
+	$(BASEBOL) -u $(TARGET)_gas pre.sbl <lex.sbl >lex.spt
 
 # run lex to get min.lex
 
