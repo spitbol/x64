@@ -102,6 +102,22 @@
 '_osopen'.  however, not all c compilers follow this convention.
 */
 	Section_	text
+
+/*
+ .if 32
+	Equ_	cfp_b,4
+	Equ_	cfp_c,4
+	Equ_	log_cfp_b,2
+	Equ_	log_cfp_c,2
+ .fi
+ .if 64
+	Equ_	cfp_b,8
+	Equ_	cfp_c,8
+	Equ_	log_cfp_b,3
+	Equ_	log_cfp_c,3
+ .fi
+*/
+
 	Global_	dnamb
 	Global_	dname
 
@@ -127,36 +143,8 @@
 
 	Global_	start
 
-.if asm
-	%macro	itz	1
-	Section_	data
-%%desc:	D_char	%1,0
-	Section_	text
-	Mov_	M_word [trc_de],%%desc
-	call	trc_
-	%endmacro
 
-.if 32
-	%define	cfp_b	4
-	%define	cfp_c	4
-.fi
 
-.if 64
-	%define	cfp_b	8
-	%define	cfp_c	8
-.fi
-.fi
-
-.if gas 
-.if 32
-	.set	cfp_b,4
-	.set	cfp_c,4
-.fi
-.if 64
-	.set	cfp_b,8
-	.set	cfp_c,8
-.fi
-.fi
 	Global_	reg_block
 	Global_	reg_w0
 	Global_	reg_wa
@@ -373,7 +361,7 @@ maxint:
 sav_block:
 	Fill_	44 			; save minimal registers during push/pop reg
 
-	Align_	cfp_b
+	Align_	Cfp_b
 	Global_	ppoff
 
 ppoff:
@@ -395,7 +383,7 @@ osisp:
 _rc_:
 	DeclareWord_   0				; return code from osint procedure
 
-	Align_	cfp_b
+	Align_	Cfp_b
 	Global_	save_cp
 	Global_	save_xl
 	Global_	save_xr
@@ -434,12 +422,12 @@ minimal_id:
 id1:	
 	DeclareWord_	0
 .if dead
-%if setreal == 1
+	%if setreal == 1
 	DeclareWord_	2
 
        DeclareWord_       1
 	D_char	"1x\x00\x00\x00"
-%endif
+	%endif
 .fi
 
 	Global_	id1blk
@@ -499,7 +487,7 @@ spmin.a:
 	DeclareWord_	spmin
 
 	Align_	16
-	Align_	cfp_b
+	Align_	Cfp_b
 
 call_adr:	
 	DeclareWord_	0
@@ -640,10 +628,10 @@ stackinit:
 	Sub_	W0,Word(stacksiz)	; end of minimal stack is where c stack will start
 	Mov_	Word(osisp),W0	; save new c stack pointer
 .if asm
-	Add_	W0,cfp_b*100		; 100 words smaller for chk
+	Add_	W0,Cfp_b*100		; 100 words smaller for chk
 .fi
 .if gas
-	Add_	W0,$cfp_b*100		; 100 words smaller for chk
+	Add_	W0,$Cfp_b*100		; 100 words smaller for chk
 .fi
 	Mov_	Word(spmin),W0
 	ret
@@ -689,7 +677,7 @@ minimal:
 
  min1:
 	Mov_	W0,Word(minimal_id)	; get ordinal
-;	call	Word(calltab+W0*cfp_b)    ; off to the minimal code
+;	call	Word(calltab+W0*Cfp_b)    ; off to the minimal code
 	call	start
 
 	Mov_	XS,Word(osisp)	; switch to osint stack
@@ -789,34 +777,16 @@ syscall_exit:
 	jmp	*W0		; gas jump to absolute address requires '*' prefix.
 .fi
 
-.if asm
-	%macro	syscall	2
+	Macro_	syscall,2
 	pop	W0			; pop return address
 	Mov_	Word(reg_pc),W0
 	call	syscall_init
-
 ;	save compiler stack and switch to osint stack
-
 	Mov_	Word(compsp),XS      ; save compiler's stack pointer
 	Mov_	XS,Word(osisp)       ; load osint's stack pointer
-	call	%1
+	call	@1
 	call	syscall_exit
-	%endmacro
-.fi
-.if gas
-	.macro	syscall	proc,id
-	pop	W0			; pop return address
-	Mov_	Word(reg_pc),W0
-	call	syscall_init
-
-;	save compiler stack and switch to osint stack
-
-	Mov_	Word(compsp),XS      ; save compiler's stack pointer
-	Mov_	XS,Word(osisp)       ; load osint's stack pointer
-	call	\proc
-	call	syscall_exit
-	.endm
-.fi
+	EndMacro_	0
 
 	Global_	sysax
 	Extern_	zysax
@@ -895,11 +865,11 @@ sysex:
 sysfc: 
 	pop	W0             ; <<<<remove stacked scblk>>>>
 .if asm
-	lea	XS,[XS+WC*cfp_b]
+	lea	XS,[XS+WC*Cfp_b]
 .fi
 .if gas
 	Mov_	W0,WC
-	Sal_	W0,$log_cfp_b
+	Sal_	W0,$Log_cfp_b
 	Add_	XS,W0
 .fi
 
@@ -1023,336 +993,139 @@ sysxi:
 	Mov_	Word(reg_xs),XS
 	syscall	zysxi,38
 
-.if asm
-	%macro	callext	2
-	Extern_	%1
-	call	%1
-	Add_XS,%2		; pop arguments
-	%endmacro
+	Macro_	callext,2
+	Extern_	@1
+	call	@1
+	Add_XS,@2		; pop arguments
+	EndMacro_	0
 
-	%macro	chk_	0
+	Macro_	chk_,0
 	call	chk__
-	%endmacro
+	EndMacro_	0
 
-	%macro	adi_	0
-	Add_	Word(reg_ia),W0
+	Macro_	set_fl,0
+.if asm
 	seto	byte [reg_fl]
-	%endmacro
+.fi
+.if gas
+	seto	reg_fl
+.fi
+	EndMacro_	0
 
-	%macro	dvi_	0
+	Macro_	adi_,0
+	Add_	Word(reg_ia),W0
+	set_fl
+	EndMacro_	0
+
+	Macro_	dvi_,0
 	Mov_	Word(reg_w0),W0
 	call	dvi__
-	%endmacro
+	EndMacro_	0
 
-	%macro	ldi_	1
-	Mov_	W0,%1
+	Macro_	ldi_,1
+	Mov_	W0,@1
 	Mov_	Word(reg_ia),W0
-	%endmacro
+	EndMacro_	0
 
-	%macro	mli_	0
-	imul	Word(reg_ia)
-	seto	byte [reg_fl]
-	%endmacro
+	Macro_	mli_,0
+	Imul_	Word(reg_ia)
+	set_fl
+	EndMacro_	0
+	
+	Macro_	ngi_,0
+	Neg_	Word(reg_ia)
+	set_fl
+	EndMacro_	0
 
-	%macro	ngi_	0
-	neg	Word(reg_ia)
-	seto	byte [reg_fl]
-	%endmacro
-
-	%macro	rmi_	0
+	Macro_	rmi_,0
 	call	rmi__
-	%endmacro
+	EndMacro_	0
 
-	%macro	cvd_	0
+	Macro_	cvd_,0
 	call	cvd__
-	%endmacro
+	EndMacro_	0
 
-	%macro	ino_	1
+	Macro_	get_fl,0
+.if asm
 	Mov_	al,byte [reg_fl]
 	or	al,al
-	jno	%1
-	%endmacro
+.fi
+.if gas
+	movb	reg_fl,%al
+	or	%al,%al
+.fi
+	EndMacro_	0
+	Macro_	ino_,1
+	get_fl
+	jno	@1
+	EndMacro_	0
 
-	%macro	iov_	1
-	Mov_	al,byte [reg_fl]
-	or	al,al
-	jo	%1
-	%endmacro
+	Macro_	iov_,1
+	get_fl
+	jo	@1
+	EndMacro_	0
 
-	%macro	rno_	1
-	Mov_	al,byte [reg_fl]
-	or	al,al
-	je	%1
-	%endmacro
+	Macro_	rno_,1
+	get_fl
+	je	@1
+	EndMacro_	0
 
-	%macro	rov_	1
-	Mov_	al,byte [reg_fl]
-	or	al,al
-	jne	%1
-	%endmacro
+	Macro_	rov_,1
+	get_fl
+	jne	@1
+	EndMacro_	0
 
-	%macro	sbi_	0
+	Macro_	sbi_,0
 	Sub_	Word(reg_ia),W0
+.if asm
 	seto	byte [reg_fl]
-	%endmacro
+.fi
+.if gas
+	seto	reg_fl
+.fi
+	EndMacro_	0
 
-	%macro	sti_	1
+	Macro_	sti_,1
 	Mov_	W0,Word(reg_ia)
-	Mov_	%1,W0
-	%endmacro
+	Mov_	@1,W0
+	EndMacro_	0
 
-	%macro	Icp_	0
+	Macro_	Icp_,0
 	Mov_	W0,Word(reg_cp)
-	Add_	W0,cfp_b
+	Add_	W0,Cfp_b
 	Mov_	Word(reg_cp),W0
-	%endmacro
+	EndMacro_	0
 
-	%macro	Lcp_	1
-	Mov_	W0,%1
+	Macro_	Lcp_,1
+	Mov_	W0,@1
 	Mov_	Word(reg_cp),W0
-	%endmacro
+	EndMacro_	0
 
-	%macro	Lcw_	1
+	Macro_	Lcw_,1
 	Mov_	W0,Word(reg_cp)			; load address of code word
 	push	W0
+.if asm
 	Mov_	W0,Word(W0)			; load code word
-	Mov_	%1,W0
-	pop	W0 				; load address of code word
-	Add_	W0,cfp_b
-	Mov_	Word(reg_cp),W0
-	%endmacro
-
-
-	%macro	Scp_	1
-	Mov_	W0,Word(reg_cp)
-	Mov_	%1,W0
-	%endmacro
 .fi
 .if gas
-.if unix
-	.macro	callext	name,id
-	Extern_	\name
-	call	\name
-	Add_XS,\id		; pop arguments
-	.endm
-
-	.macro	chk_
-	call	chk__
-	.endm
-
-	.macro	adi_
-	Add_	Word(reg_ia),W0
-	seto	reg_fl
-	.endm
-
-	.macro	dvi_
-	Mov_	Word(reg_w0),W0
-	call	dvi__
-	.endm
-
-	.macro	ldi_	val
-	Mov_	W0,\val
-	Mov_	Word(reg_ia),W0
-	.endm
-
-	.macro	mli_
-	mov	Word(reg_ia),W0
-	imul	W0
-	seto	reg_fl
-	.endm
-
-; using W0 below since operand size not known, and putting it in register defers this problem
-
-	.macro	ngi_
-	mov	Word(reg_ia),W0
-	neg	W0
-	mov	W0,Word(reg_ia)
-;	neg	Word(reg_ia)
-	seto	reg_fl
-	.endm
-
-	.macro	rmi_
-	call	rmi__
-	.endm
-
-	.macro	cvd_
-	call	cvd__
-	.endm
-
-	.macro	ino_	lbl
-	movb	reg_fl,%al
-	or	%al,%al
-	jno	\lbl
-	.endm
-
-	.macro	iov_	lbl
-	movb	reg_fl,%al
-	or	%al,%al
-	jo	\lbl
-	.endm
-
-	.macro	rno_	lbl
-	movb	reg_fl,%al
-	or	%al,%al
-	je	\lbl
-	.endm
-
-	.macro	rov_	lbl
-	mov	reg_fl,%al
-	or	%al,%al
-	jne	\lbl
-	.endm
-
-	.macro	sbi_
-	Sub	Word(reg_ia),W0
-	seto	reg_fl
-	.endm
-
-	.macro	sti_	dst
-	Mov_	W0,Word(reg_ia)
-	Mov_	\dst,W0
-	.endm
-
-	.macro	Icp_
-	Mov_	W0,Word(reg_cp)
-	Add_	W0,cfp_b
-	Mov_	Word(reg_cp),W0
-	.endm
-
-	.macro	Lcp_	val
-	Mov_	W0,\val
-	Mov_	reg_cp,W0
-	.endm
-
-	.macro	Lcw_	val
-	Mov_	W0,reg_cp			; load address of code word
-	push	W0
 	Mov_	W0,(W0)				; load code word
-	Mov_	\val,W0
-	pop	W0 				; load address of code word
-	Add_	W0,$cfp_b
-	Mov_	reg_cp,W0
-	.endm
-
-	.macro	Scp_	val
-	Mov_	W0,reg_cp
-	Mov_	\val,W0
-	.endm
-
 .fi
+	Mov_	@1,W0
+	pop	W0 				; load address of code word
+.if asm
+	Add_	W0,Cfp_b
 .fi
 .if gas
-.if osx
-	.macro	callext
-	Extern_	$1
-	call	$1
-	Add_	XS,$2		; pop arguments
-	.endm
-
-	.macro	chk_
-	call	chk__
-	.endm
-
-	.macro	adi_
-	Add_	Word(reg_ia),W0
-	seto	reg_fl
-	.endm
-
-	.macro	dvi_
-	Mov_	Word(reg_w0),W0
-	call	dvi__
-	.endm
-
-	.macro	ldi_	val
-	Mov_	W0,\val
-	Mov_	Word(reg_ia),W0
-	.endm
-
-	.macro	mli_
-	mov	Word(reg_ia),W0
-	imul	W0
-	seto	reg_fl
-	.endm
-
-; using W0 below since operand size not known, and putting it in register defers this problem
-
-	.macro	ngi_
-	mov	Word(reg_ia),W0
-	neg	W0
-	mov	W0,Word(reg_ia)
-;	neg	Word(reg_ia)
-	seto	reg_fl
-	.endm
-
-	.macro	rmi_
-	call	rmi__
-	.endm
-
-	.macro	cvd_
-	call	cvd__
-	.endm
-
-	.macro	ino_
-	movb	reg_fl,%al
-	or	%al,%al
-	jno	$1
-	.endm
-
-	.macro	iov_
-	movb	reg_fl,%al
-	or	%al,%al
-	jo	$1
-	.endm
-
-	.macro	rno_	
-	movb	reg_fl,%al
-	or	%al,%al
-	je	$1
-	.endm
-
-	.macro	rov_
-	mov	reg_fl,%al
-	or	%al,%al
-	jne	$1
-	.endm
-
-	.macro	sbi_
-	Sub	Word(reg_ia),W0
-	seto	reg_fl
-	.endm
-
-	.macro	sti
-	Mov_	W0,Word(reg_ia)
-	Mov_	$1,W0
-	.endm
-
-	.macro	Icp_
-	Mov_	W0,Word(reg_cp)
-	Add_	W0,cfp_b
+	Add_	W0,$Cfp_b
+.fi
 	Mov_	Word(reg_cp),W0
-	.endm
+	EndMacro_	0
 
-	.macro	Lcp_
-	Mov_	W0,$1
-	Mov_	reg_cp,W0
-	.endm
 
-	.macro	Lcw_
-	Mov_	W0,reg_cp			; load address of code word
-	push	W0
-	Mov_	W0,(W0)				; load code word
-	Mov_	$1,W0
-	pop	W0 				; load address of code word
-	Add_	W0,$cfp_b
-	Mov_	reg_cp,W0
-	.endm
-
-	.macro	Scp_
-	Mov_	W0,reg_cp
-	Mov_	$1,W0
-	.endm
-.fi
-.fi
+	Macro_	Scp_,1
+	Mov_	W0,Word(reg_cp)
+	Mov_	@1,W0
+	EndMacro_	0
 /*
 	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
 	placed in W0, which is then sign extended into wc:W0. after the divide, W0 contains the
@@ -1434,60 +1207,39 @@ setovr:
 .fi
 	ret
 
-.if asm
-	%macro	int_op 2
-	Global_	%1
-	Extern_	%2
-%1:
-	call	%2
+	Macro_	int_op,2
+	Global_	@1
+	Extern_	@2
+@1:
+	call	@2
 	ret
-%endmacro
-.fi
-.if gas
-.if unix
-	.macro	int_op glob,ext
-	Global_	\glob
-	Extern_	\ext
-\glob:
-	call	\ext
-	ret
-	.endm
-.fi
-.if osx
-	.macro	int_op 
-	Global_	$1
-	Extern_	$2
-\glob:
-	call	$2
-	ret
-	.endm
-.fi
-.fi
+EndMacro_	0
+
 
 	int_op itr_,f_itr
 	int_op rti_,f_rti
 
 ;	Extern_	i_ldi
-;	%macro	ldi_	1
-;	Mov_	W0,%1
+;	Macro_	ldi_	1
+;	Mov_	W0,@1
 ;	Mov_	Word(reg_ia),W0
 ;	call	i_ldi
-;	%endmacro
+;	EndMacro_	0
 ;
-;	%macro	sti_	1
+;	Macro_	sti_	1
 ;	Mov_	W0, Word(reg_ia)
-;	Mov_	%1,W0
-;	%endmacro
+;	Mov_	@1,W0
+;	EndMacro_	0
 ;
 ;	Extern w00
-;	%macro	int_op 2
-;	Global_	%1
-;	Extern_	%2
-;%1:
+;	Macro_	int_op 2
+;	Global_	@1
+;	Extern_	@2
+;@1:
 ;	Mov_	Word(reg_w0),W0
-;	call	%2
+;	call	@2
 ;	ret
-;	%endmacro
+;	EndMacro_	0
 ;
 ;	int_op	adi_,i_adi
 ;	int_op	mli_,i_mli
@@ -1497,60 +1249,21 @@ setovr:
 ;	int_op	ngi_,i_ngi	; causes spurious store of W0 that doesn't matter
 ;	int_op	itr_,f_itr
 ;	int_op	rti_,f_rti
-;%endif
+;@endif
 
-.if asm
-	%macro	osint_call 3
-	Global_	%1
-	Extern_	%2
-%1:
-	Mov_	Word(%3),W0
-	call	%2
+	Macro_	osint_call,3
+	Global_	@1
+	Extern_	@2
+@1:
+	Mov_	Word(@3),W0
+	call	@2
 	ret
-	%endmacro
-.fi
+	EndMacro_	0
 
-.if gas
-.if unix
-	.macro	osint_call glob,ext,reg
-	Global_	\glob
-	Extern_	\ext
-\glob:
-	Mov_	\reg,W0
-	call	\ext
-	ret
-	.endm
-.fi
-.if osx
-	.macro	osint_call 
-	Global_	$1
-	Extern_	$2
-$1:
-	Mov_	$3,W0
-	call	$2
-	ret
-	.endm
-.fi
-.fi
+	Macro_	real_op,2
+	osint_call	@1,@2,reg_rp
+	EndMacro_	0
 
-.if asm
-	%macro	real_op 2
-	osint_call	%1,%2,reg_rp
-	%endmacro
-.fi
-
-.if gas
-.if unix
-	.macro	real_op op,proc
-	osint_call	\op,\proc,reg_rp
-	.endm
-.fi
-.if osx
-	.macro	real_op
-	osint_call	$1,$2,\proc,reg_rp
-	.endm
-.fi
-.fi
 
 	real_op	ldr_,f_ldr
 	real_op	str_,f_str
@@ -1561,35 +1274,13 @@ $1:
 	real_op	ngr_,f_ngr
 	real_op cpr_,f_cpr
 
-.if asm
-	%macro	math_op 2
-	Global_	%1
-	Extern_	%2
-%1:
-	call	%2
+	Macro_	math_op,2
+	Global_	@1
+	Extern_	@2
+@1:
+	call	@2
 	ret
-	%endmacro
-.fi
-.if gas
-.if unix
-	.macro	math_op glob,ext
-	Global_	\glob
-	Extern_	\ext
-\glob:
-	call	\ext
-	ret
-	.endm
-.fi
-.if osx
-	.macro	math_op 
-	Global_	$1
-	Extern_	$2
-$1:
-	call	$2
-	ret
-	.endm
-.fi
-.fi
+	EndMacro_	0
 
 	math_op	atn_,f_atn
 	math_op	chp_,f_chp
@@ -1746,7 +1437,7 @@ re4:
 	push	Word(outptr)        	; swcoup(outptr)
 	Extern 	swcoup
 	call	swcoup
-	Add_	XS,cfp_b
+	Add_	XS,Cfp_b
 
 ;	jump to minimal code to restart a save file.
 
@@ -1764,10 +1455,13 @@ trc_:
 	call	restore_regs
 	popf
 	ret
-.if asm
-;	%undef		cfp_b
-;	%undef		cfp_c
-.fi
-
-
+/*
+	Macro_	itz	1
+	Section_	data
+%%desc:	D_char	%1,0
+	Section_	text
+	Mov_	M_word [trc_de],%%desc
+	call	trc_
+	EndMacro_	0
+*/
 	Global_	reav1

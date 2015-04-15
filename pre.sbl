@@ -11,6 +11,7 @@
 	defined['1'] = 1
 
 	&anchor = &trim = 1
+	&dump = 3
 
 
 *	catab is the transfer vector for routing control to generators for conditional assembly directives.
@@ -59,6 +60,7 @@ copy
 	output = line
 next
 	line = input							:f(finis)
+	lines = lines + 1
 
 	leq(substr(line,1,1),'.')					:f(other)
 
@@ -160,4 +162,5 @@ err
 	terminal = 'error, line: ' line
 									:(finis)
 finis
+	&dump = 0
 end

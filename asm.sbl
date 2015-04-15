@@ -212,11 +212,11 @@ options.done
 *	cfp_b is bytes per word, cfp_c is characters per word these should agree with values used in translator
 *	set target-dependent configuration parameters
 
+
 	:($('confiop.' ws))
 
 confiop.32
 	cfp_b = 4
-	cfp_bm1 = 3
 	cfp_c = 4
 	log_cfp_b = 2
 	log_cfp_c = 2
@@ -243,8 +243,8 @@ confiop.32
 confiop.64
 
 *	cfp_b is bytes per word, cfp_c is characters per word these should agree with values used in translator
+
 	cfp_b = 8
-	cfp_bm1 = 7
 	cfp_c = 8
 	log_cfp_b = 3
 	log_cfp_c = 3

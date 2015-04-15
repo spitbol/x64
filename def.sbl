@@ -24,6 +24,7 @@
 	define('error(text)')
 	define('g(text)')
 	define('gen()')
+	define('macro(line)first,last,num')
 	define('memory(line)ref')
 	define('out(opc,op1,op2)')
 	define('parse(line)comma,i,c,lev')
@@ -47,9 +48,9 @@
 	digits = '0123456789'
 	id_chars = letters digits
 
-	ops = ' add align and byte byte cdq char char cmp cmpb dec equ extern fill global '
+	ops = ' add align and byte byte cdq char char cmp cmpb dec endmacro equ extern fill global '
 +		'declarebyte declarechar declarereal declareword '
-+		'idiv inc jmp lea mov not or real sal sar section sub word xchg xor '
++		'idiv imul inc jmp lea macro mov neg not or real sal sar section sub word xchg xor '
 
 *	create map from Minimal registers to hardware register name, create map from 'low' 
 *	register names to corresponding gas names 
@@ -63,6 +64,14 @@
 	lowmap = table(4)
 	p = g('%')
 	lowmap['W0_L'] = p 'al'; lowmap['WA_L'] = p 'cl'; lowmap['WB_L'] = p 'bl'; lowmap['WC_L'] = p 'dl'
+
+.if gas
+	macro_args = table(4)
+	macro_args['1'] = 'arg1'
+	macro_args['2'] = 'arg1,arg2'
+	macro_args['3'] = 'arg1,arg2,arg3'
+	macro_args['4'] = 'arg1,arg2,arg3,arg4'
+.fi
 
 	prolog()				:(next)
 copy
@@ -88,6 +97,13 @@ next
 	line pos(0) span(id_chars) ':' rpos(0)	:s(copy)
 nolabel
 	inline = line
+
+*	expand macro argument references
+
+	line = macro(line)
+
+*	no more to do unless there is upper case letter than may signify extended operation
+
 	line break(&ucase)			:f(copy)
 	parse(line)
 
@@ -103,11 +119,11 @@ nogen
 
 	line break('XW')			:f(regs.end)
 	&anchor = 0
-reg.loop 	
-	line regpat . reg = prefix regmap[reg]	:s(reg.loop)
 low.loop 	
 	line lowpat . reg  = lowmap[reg]		:s(low.loop)
 low.end
+reg.loop 	
+	line regpat . reg = prefix regmap[reg]	:s(reg.loop)
 regs.end
 	&anchor = 1
 
@@ -141,9 +157,8 @@ address
 * here to resolve adr references
 adr
 	adr = line
-	adr break('A')						:f(return)
-adr.next	
-*	adr breakx('A') . first 'Adr' bal . ref  rem . last = first address(ref) last	:s(adr.next)
+	adr break('A')				:f(return)
+adr.next
 	adr breakx('A') . first 'Adr' bal . ref  rem . last = first address(ref) last	:f(return)
 -stitl epilog()
 *	generate code to appear at start of output
@@ -151,10 +166,10 @@ epilog
 	ident(asm,'gas')			:(epilog.gas)
 *	output standard definitions for asm
 
-	output = tab '%define'	tab	'cfp_b'	tab	(eq(ws,32) 4, 8)
-	output = tab '%define'	tab 	'cfp_c'	tab	(eq(ws,32) 4, 8)
-	output = tab '%define'	tab	'os '	tab	os
-	output = tab '%define'	tab	'ws'	tab	ws	
+*	output = tab '%define'	tab	'cfp_b'	tab	(eq(ws,32) 4, 8)
+*	output = tab '%define'	tab 	'cfp_c'	tab	(eq(ws,32) 4, 8)
+*	output = tab '%define'	tab	'os '	tab	os
+*	output = tab '%define'	tab	'ws'	tab	ws	
 						:(return)
 epilog.gas
 						:(return)
@@ -171,6 +186,29 @@ g
 						:(return)	
 -stitl	gen()tmp
 gen						:($('op.' op))
+
+op.macro
+
+.if asm
+	op = '%macro'				:(op.done)
+.fi
+.if gas
+	op = '.macro'
+.if unix
+*	put all args for macro in op1 since using blank to separate name from argument list
+	op1 = op1 ' ' macro_args[op2]			
+	op2 =
+						:(op.done)
+.fi
+.if osx
+*	osx, like nasm, just wants the number of arguments
+						:(opdone)
+.fi
+.fi
+
+op.endmacro
+	op = a('%endmacro') g('.endm')		:(op.done)
+
 op.fill
 	op = (ident(asm,'asm') 'times', '.fill')
 	op1 = ident(asm,'asm') op1 ' db 0 '
@@ -180,14 +218,18 @@ op.section
 	op1 = ident(asm,'asm') '.' op1
 	op = ident(asm,'gas') '.' op1
 	op1 = ident(asm,'gas') ''		:(op.done)
+
 op.align
 	op = (ident(asm,'asm') 'align','.balign')	:(op.done)
 op.dec
 op.idiv
+op.imul
 op.inc
+op.neg
 op.not
 	ident(asm,'asm')			:s(op.done)
 	op = op (eq(ws,32) 'l','q')		:(op.done)
+
 op.jmp
 	:(op.done)
 op.extern
@@ -233,7 +275,6 @@ op.declarechar
 .fi
 	op = a('db') g('.ascii')		:(op.done)
 op.declarereal
-	outfile = '# op.gloat'
 	op = a('dq') g('.double')		:(op.done)
 op.declareword
 	ident(asm,'gas')			:s(op.word.gas)
@@ -263,7 +304,6 @@ op.sub
 op.xor
 op.xchg
 op.mov
-	output = '# mov '
 	op = ident(asm,'gas') differ(op, 'jmp') op (eq(ws,32) 'l', 'q')	
 	swap()					
 						:(op.done)
@@ -320,6 +360,26 @@ memory.next.char
 .fi
 	&anchor = 1
 						:(return)
+-stitl	macro(line)first,last,num
+macro
+	macro = line
+	macro break('@')			:f(return)
+
+macro.loop
+	macro break('@') . first '@' len(1) . num rem . last	:f(return)
+.if asm
+	macro = first '%' num last
+.fi
+.if gas
+.if unix
+	macro = first '\arg' num last
+.fi
+.if osx
+	macro = first '$' num last
+.fi						
+.fi
+						:(macro.loop)						
+
 -stitl	parse(line)label,op,op1,op2,comment,cimma,i,c,lev')
 parse
 	label = op = op1 = op2 = comment =
@@ -328,7 +388,11 @@ parse
 	ident(line)				:s(parse.done)
 parse.nolabel
 	line = line ' '
-	line span(whitespace) break(whitespace) . op span(whitespace) =	:f(copy) 
+	line span(whitespace) = 
+	differ(line,'EndMacro_')		:s(parse.1)
+	op = 'endmacro'		:(parse.args)
+parse.1
+	line break(whitespace) . op span(whitespace) =	:f(copy) 
 	ident(line)				:s(parse.done)
 	op break('_') . xop			:f(parse.args)
 *	here for extended op
@@ -361,21 +425,21 @@ parse.done
 *	generate code at end of output
 prolog
 	ident(asm,'gas')		:s(prolog.gas)
-	output = tab '%define'	tab	'cfp_b'	tab	(eq(ws,32) 4, 8)
-	output = tab '%define'	tab 	'cfp_c'	tab	(eq(ws,32) 4, 8)
+	output = tab '%define'	tab	'Cfp_b'	tab	(eq(ws,32) 4, 8)
+	output = tab '%define' tab	'Log_cfp_b' tab  (eq(ws,32) 2, 3)
+*	output = tab '%define'	tab 	'cfp_c'	tab	(eq(ws,32) 4, 8)
 	output = tab '%define'	tab	'os '	tab	os
 	output = tab '%define'	tab	'ws'	tab	ws	
 						:(return)
 prolog.gas
 *	output standard definitions
 
-*	output = tab '.set' tab 'cfp_b,'  (eq(ws,32) 4, 8)
+	output = tab '.set' tab 'Cfp_b,'  (eq(ws,32) 4, 8)
+	output = tab '.set' tab 'Log_cfp_b,' (eq(ws,32) 2, 3)
 * 	output = tab '.set' tab 'cfp_c,' (eq(ws,32) 4, 8)
 *	output = tab '.set' tab 'os ' ',' os
-	output = tab '.set' tab 'log_cfp_b,' (eq(ws,32) 2, 3)
 *	output = tab '.set' tab 'log_cfp_c,' (eq(ws,32) 2, 3)
 *	output = tab '.set'	tab	'ws'	','	ws
-	output = '# end of gas prolog'
 					:(return)
 -stitl swap()
 *	swap operands if targeting gas
