@@ -32,7 +32,7 @@
 
 	&anchor = 1
 	&dump = 3
-	&stlimit = 1500000
+
 	&trim = 1
 
 	target = (differ(host(0)) host(0), "unix_64_gas") 
@@ -265,7 +265,8 @@ op.xchg
 op.mov
 	output = '# mov '
 	op = ident(asm,'gas') differ(op, 'jmp') op (eq(ws,32) 'l', 'q')	
-	swap()					:(op.done)
+	swap()					
+						:(op.done)
 
 op.cmpb
 .if asm
@@ -377,9 +378,12 @@ prolog.gas
 	output = '# end of gas prolog'
 					:(return)
 -stitl swap()
+*	swap operands if targeting gas
 swap
-	output = '# swapping ' op1 ':' op2
-	swap = op1; op1 = op2; op2 = swap; swap =    :(return)
+.if gas
+	swap = op1; op1 = op2; op2 = swap; swap =
+.fi
+						:(return)
 finis
 	epilog()
 	&dump = 0
