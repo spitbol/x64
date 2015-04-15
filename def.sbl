@@ -190,7 +190,7 @@ gen						:($('op.' op))
 op.macro
 
 .if asm
-	op = '%macro'				:(op.done)
+	op = '%macro'
 .fi
 .if gas
 	op = '.macro'
@@ -198,20 +198,26 @@ op.macro
 *	put all args for macro in op1 since using blank to separate name from argument list
 	op1 = op1 ' ' macro_args[op2]			
 	op2 =
-						:(op.done)
 .fi
 .if osx
-*	osx, like nasm, just wants the number of arguments
-						:(opdone)
+*	osx wants just the macro name, not anything about number of arguments
+	op2 =
 .fi
 .fi
+						:(op.done)
 
 op.endmacro
 	op = a('%endmacro') g('.endm')		:(op.done)
 
 op.fill
-	op = (ident(asm,'asm') 'times', '.fill')
-	op1 = ident(asm,'asm') op1 ' db 0 '
+.if asm
+	op = 'times'
+	op1 =  op1 ' db 0 '
+.fi
+.if gas
+	op = '.fill'
+	op1 = op1 ',1,0'
+.fi
 						:(op.done)
 op.section
 	op = ident(asm,'asm') 'section'
