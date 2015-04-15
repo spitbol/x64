@@ -254,7 +254,7 @@ op.global
 .fi
 .if osx
 *	line = tab '.glbl' tab op1	:(copy)
-	:(nextk
+	:(next)
 .fi
 .fi
 
