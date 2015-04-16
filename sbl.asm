@@ -4369,8 +4369,6 @@ bits9	dbc	256			; bit in position 9
 bit10	dbc	512			; bit in position 10
 bit11	dbc	1024			; bit in position 11
 bit12	dbc	2048			; bit in position 12
-;bitsm	dbc  cfp_m	      mask for max integer
-bitsm	dbc	0			; mask for max integer (value filled in at runtime)
 
 ;      bit constants for svblk (svbit field) tests
 
@@ -6315,9 +6313,10 @@ lodna	dac	0			; count number of arguments
 .fi
 /*
 	mxint is value of maximum positive integer. it is computed at runtime to allow the compilation of spitbol
-	on a machine with smaller word size the the target.
+	on a machine with smaller word size as as the the target.
 */
-mxint	dic	+0			;
+mxint	dic	+0
+bitsm	dic	+0			; mask for max integer (value filled in at runtime)
 .if    .cnpf
 .else
 

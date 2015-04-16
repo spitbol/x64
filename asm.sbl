@@ -2284,7 +2284,13 @@ op.sec.2
 *	constants section
 
 op.sec.3
+.if gas
 	op('Section_','data')
+.fi
+.if asm
+	op('section','.rodata')
+*	op('section','.data')
+.fi
 	global('sec03')
 	opl('sec03:')
 						:(opdone)
