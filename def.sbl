@@ -190,7 +190,9 @@ gen						:($('op.' op))
 op.macro
 
 .if asm
+	output = '; nasm macro :' op ':' op1 ':' op2 ':  ' line
 	op = '%macro'
+	op1 = op1 ' ' op2; op2 =
 .fi
 .if gas
 	op = '.macro'
