@@ -1,0 +1,113 @@
+* Copyright 2012-2015 David Shields
+* 
+* This file is part of Macro SPITBOL.
+* 
+*     Macro SPITBOL is free software: you can redistribute it and/or modify
+*     it under the terms of the GNU General Public License as published by
+*     the Free Software Foundation, either version 2 of the License, or
+*     (at your option) any later version.
+* 
+*     Macro SPITBOL is distributed in the hope that it will be useful,
+*     but WITHOUT ANY WARRANTY; without even the implied warranty of
+*     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*     GNU General Public License for more details.
+* 
+*     You should have received a copy of the GNU General Public License
+*     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+*
+	&anchor = 0
+	&trim = 1
+	&stlimit = 10000000
+	&dump = 2
+	define('getname(varg)')
+	define('adjust()i')
+	input(.varfile,1,'s.dic')
+	names = array('1000')
+	offsets = array('1000')
+	n = 0
+	min_val = 0
+	max_val = 0
+vloop	
+	line = varfile			:f(vend)
+	line break(' ') . name ' '   
++	     rem . offset :f(error)
+v.add
+	n = n + 1
+	names[n] = name
+	offsets[n] = +offset
+					:(vloop)
+vend
+	i = 0
+bloop
+	gt(i = i + 1,n)		:s(bloop.end)
+	offsets[i] = offsets[i] + min_val
+				:(bloop)
+bloop.end
+		:(loop)
+copy
+	output = trim(line)
+loop	
+	line = input 			:f(finis)
+*  	output = 'input: ' line
+	lt(size(line),15)		:s(loop.1)
+	lne(substr(line,10,1),' ')	:s(loop.1)
+	vname = substr(line,1,9)
+	min_val = ident(vname,'OFF_C_AAA') +substr(line,11)
+  	output = ident(vname,'OFF_C_AAA') 'min_val ' substr(line,11)
+	max_val = ident(vname,'OFF_W_YYY') +substr(line,11)
+  	output = ident(vname,'OFF_W_YYY') 'max_val ' substr(line,11)
+	ident(vname,'OFF_C_AAA') adjust()
+ 	output = ident(vname,'OFF_W_YYY') 'max-min ' max_val - min_val
+loop.1
+	line 'Z' span('0123456789') . varg = getname(varg) :s(loop.1)
+					:(copy)
+error
+	:(copy)
+	output = 'ERROR line ' line	:(copy)
+
+getname
+	leq(substr(varg,1,1),'2')		:s(return)
+	leq(substr(varg,1,1),'3')		:s(return)
+	leq(substr(varg,1,1),'4')		:s(return)
+	getname = 'xxxxxxxx'
+	eq(min_val)			:s(return)
+	val = +varg 
+	lt(val, min_val)		:s(return)
+	gt(val, max_val)		:s(return)
+	getnameoff = 0
+* 	output = 'getname arg ' varg
+	i = n
+* 	output = 'i,v,offsets '  i ' ' val ' ' offsets[i]
+	eq(val, offsets[i])		:s(found)
+	i = 1
+*	output 'i,v,offsets '  i ' ' val ' ' offsets[i]
+	eq(val, offsets[i])		:s(found)
+*	output = 'getname looking for ' val
+get.loop
+	i = i + 1
+*	output = 'i,n,val,offsets ' i ' ' n ' ' val ' ' offsets[i]
+
+	gt(i,n)				:s(error)
+	eq(val,offsets[i])		:s(found)
+	lt(val, offsets[i + 1])		:s(found)f(get.loop)
+found
+* 	output = 'found ' varg ' ' i	
+	matched = matched + 1
+	getname = '!' names[i]  (ne(val, offsets[i])
++            '+' (val - offsets[i]), '')
++					:(return)
+
+adjust
+	min_val = +min_val
+*	output = 'adjust min_val ' min_val
+	ai = 0
+adjust.1
+	gt(ai = ai + 1,n)			:s(return)
+	offsets[ai] = min_val + offsets[ai] 
+* 	output = names[ai] ' ' offsets[ai]
+					:(adjust.1)
+	
+finis
+	&DUMP = 0
+	output = 'matched ' matched ' entries'
+end
