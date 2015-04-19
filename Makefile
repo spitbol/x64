@@ -29,10 +29,8 @@ ITOPT:=:it
 ITDEF:=-Dzz_trace
 endif
 
-# basebol determines which spitbol to use to compile
-sbl?=./bin/sbl_$(HOST)
-
-BASEBOL:=$(sbl)
+basebol?=./bin/unix_64
+BASEBOL=$(basebol)
 
 cc?=gcc
 CC:=$(cc)
@@ -128,3 +126,45 @@ sclean:
 	make clean
 	rm tbol*
 
+test_unix_64:
+# Do a sanity test on spitbol to  verify that spitbol is able to compile itself.
+# This is done by building the system three times, and comparing the generated assembly (.s)
+# filesbl. Normally, all three assembly files wil be equal. However, if a new optimization is
+# being introduced, the first two may differ, but the second and third should always agree.
+#
+	rm tbol.*
+	echo "start 64-bit sanity test"
+	cp	./bin/sbl_unix_64 .
+	make clean>/dev/null
+	gcc -Dunix_64 -m64 -c osint/*.c
+	./sbl_unix_64 -u unix_64 lex.sbl
+	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
+	./sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
+	cat sys.asm err.s sbl.tmp >sbl.s
+	nasm -f elf64 -Dunix_64 -o sbl.o sbl.s
+	gcc -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl_unix_64
+	mv sbl.lex tbol.lex.0
+	mv sbl.s tbol.s.0
+	gcc -Dunix_64 -m64 -c osint/*.c
+	./sbl_unix_64 -u unix_64 lex.sbl
+	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
+	./sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
+	cat sys.asm err.s sbl.tmp >sbl.s
+	nasm -f elf64 -Dunix_64 -o sbl.o sbl.s
+	gcc -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl_unix_64 
+	mv sbl.lex tbol.lex.1
+	mv sbl.s tbol.s.1
+	make 	BASEBOL=./tbol  unix_64
+	gcc -Dunix_64 -m64 -c osint/*.c
+	./sbl_unix_64 -u unix_64 lex.sbl
+	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
+	./sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
+	cat sys.asm err.s sbl.tmp >sbl.s
+	nasm -f elf64 -Dunix_64 -o sbl.o sbl.s
+	gcc -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl_unix_64
+	mv sbl.lex tbol.lex.2
+	mv sbl.s tbol.s.2
+	echo "comparing generated .s files"
+	diff tbol.s.1 tbol.s.2
+	echo "end sanity test"
+	
