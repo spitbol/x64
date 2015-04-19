@@ -642,12 +642,20 @@ genrip	genrip = 'r_' lpad(riplabels = riplabels + 1,4,'0') :(return)
 -stitl genopl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
 genopl	
-	genopl = swap_op[gopc]
-	ident(genopl)				:s(genopl.1)
+*
+*	genopl = swap_op[gopc]
+*
+*	ident(genopl)				:s(genopl.1)
+*
 *	here to swap the operands
-	genopl = gop1;gop1 = gop2; gop2 = genopl
-	genopl =
-genopl.1
+*	genopl = gop1; gop1 = gop2; gop2 = genopl
+*
+*
+*	genopl =
+*
+*genopl.1
+
+*
 	cstmts[cstmts.n = cstmts.n + 1] =
 .		tstmt(gopl,gopc,gop1,gop2,gop3)	:(return)
 
