@@ -396,7 +396,7 @@ readerr_end
 
 *  putout title and header information
 *
-        outfile = asm.comment ' compressed spitbol error messages ' date()
+        outfile = asm.comment ' compressed spitbol error messages '
         outfile = asm.comment
         outfile = name
         outfile = model
