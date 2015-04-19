@@ -1,5 +1,8 @@
 -title mincod: phase 2 translation from minimal tokens to 80386 code
 -stitl description
+
+* TODO
+
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
 * copyright 2012-2015 david shields
 
@@ -233,6 +236,11 @@ skip_init.end
 *	skip_init('srpl5:srpl8')
 
 
+*	swap_op is set if operand order is reversed in gas att syntax
+
+	swap_op = table(100)
+	swap_op['add'] = swap_op['and'] = swap_op['cmp'] = swap_op['lea'] = swap_op['mov'] =
++	swap_op['or'] = swap_op['sal'] = swap_op['sar'] = swap_op['sub'] = swap_op['xor'] = swap_op['xchg'] =  1
 
 *  data structures
 
@@ -633,7 +641,14 @@ genrip	genrip = 'r_' lpad(riplabels = riplabels + 1,4,'0') :(return)
 
 -stitl genopl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
-genopl	cstmts[cstmts.n = cstmts.n + 1] =
+genopl	
+	genopl = swap_op[gopc]
+	ident(genopl)				:s(genopl.1)
+*	here to swap the operands
+	genopl = gop1;gop1 = gop2; gop2 = genopl
+	genopl =
+genopl.1
+	cstmts[cstmts.n = cstmts.n + 1] =
 .		tstmt(gopl,gopc,gop1,gop2,gop3)	:(return)
 
 -stitl genop(gopc,gop1,gop2,gop3)
