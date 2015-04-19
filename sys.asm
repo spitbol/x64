@@ -20,73 +20,14 @@
 
 ;	ws is bits per word, cfp_b is bytes per word, cfp_c is characters per word
 
-%ifdef	osx_32
-	%define	os	osx
-	%define	osx
-	%define	ws	32
-%endif
-
-%ifdef	unix_32
 	%define	os	unix
-	%define	unix
-	%define	ws	32
-%endif
-
-%ifdef	unix_64
-	%define	os	unix
-	%define	unix
 	%define	ws	64
-%endif
-
-%ifdef	osx
-	%define cmpss	_cmpss
-%endif
-
 
 	%define m_char	byte	; reference to byte in memory
 	%define d_char	db	; define value of byte
 	%define m_real	qword	; reference to floating point value in memory
 	%define d_real	dq	; define value for floating point
 
-%if	ws=32
-
-	%define	ia	ebp
-
-	%define w0	eax
-	%define w1	ebp
-	%define wa	ecx
-	%define wa_l    cl
-	%define wb	ebx
-	%define wb_l  	bl
-	%define wc	edx
-	%define wc_l  	dl
-
-	%define	xl	esi
-	%define	xt	esi
-	%define xr	edi
-	%define xs	esp
-
-	%define m_word	dword	; reference to word in memory
-	%define d_word	dd	; define value for memory word
-;	%define	cfp_b	4
-	%define log_cfp_b 2
-	%define cfp_c_val	4
-	%define log_cfp_c 2
-	%define cfp_m_	2147483647
-;	%define	cfp_n_	32
-
-	%define	lods_b	lodsb
-	%define	lods_w	lodsd
-	%define movs_b	movsb
-	%define movs_w	movsd
-	%define	stos_b	stosb
-	%define	stos_w	stosd
-	%define	cmps_b	cmpsb
-
-	%define	cdq	cdq	; sign extend (32 bits)
-	%define m(ref) dword[ref]
-	%define a(ref) [ref]
-%else
 	%define	ia	rbp
 
 	%define	w0	rax
@@ -126,14 +67,9 @@
 	%define	cdq	cqo	; sign extend (64 bits)
 
 ;	%define mem(ref) qword[ref]
-%ifdef osx
+
 	%define m(ref) qword[ref]
 	%define a(ref) [ref]
-%else
-	%define m(ref) qword[ref]
-	%define a(ref) [ref]
-%endif
-%endif
 
 ;	flags
 	%define	flag_of	0x80
@@ -266,14 +202,9 @@
 	%define	zysxi		_zysxi
 %endif
 
-%ifdef	unix_32
-	%define	cfp_b	4
-	%define	cfp_c	4
-%else
 	%define	cfp_b	8
 	%define	cfp_c	8
 	%define		m64			// make m64 the default
-%endif
 
 	global	reg_block
 	global	reg_w0
@@ -294,7 +225,7 @@
 	global	minimal
 	extern	stacksiz
 
-;	values below must agree with calltab defined in x32.hdr and also in osint/osint.h
+;	values below must agree with calltab defined in osint/osint.h
 
 minimal_relaj	equ	0
 minimal_relcr	equ	1

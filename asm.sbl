@@ -136,9 +136,7 @@ option.next
 	options ':' =				:s(option.next)
 	options break(':') . option ':' =	:f(options.done)
 
-	ident(option,'unix_32')			:s(option.unix.32)
 	ident(option,'unix_64')			:s(option.unix.64)
-	ident(option,'osx_32')			:s(option.osx.32)
 	ident(option,'xt')			:s(option.xt)
 	ident(option,'it')			:s(option.it)
 
@@ -147,15 +145,13 @@ option.next
 	output = "error: unknown option '" option "', translation ends."	
 	&dump = 0				:(end)
 
-option.unix.32
-	os = 'unix'; 	ws = '32'		:(option.next)
 option.unix.64
 	os = 'unix'; 	ws = '64'		:(option.next)
-option.osx.32
-	os = 'osx'; 	ws = '32'		:(option.next)
+
 option.it
 *	turn on instruction trace
 	i_trace = 1				:(option.next)
+
 option.xt
 *  x_trace turns on tracing for executable instructions
 	x_trace = 1				:(option.next)
@@ -164,40 +160,20 @@ options.done
 	target = os '_' ws
 	report(target,'target')
 
-
-
-	filebase = "s"
+	filebase = "sbl"
 
 *	cfp_b is bytes per word, cfp_c is characters per word
 *       these should agree with values used in translator
-* set target-dependent configuration parameters
-	:($('config.' ws))
 
-config.32
-	cfp_b = 4
-	cfp_c = 4
-	log_cfp_b = '2'
-	log_cfp_c = '2'
-*	op_w is instruction suffix for word-size
-	op_w = 'd'
-*	op_c is instruction suffix for minimal character size
-	op_c = 'b'
-	rel = ''
-						:(config.done)
-
-config.64
-*	cfp_b is bytes per word, cfp_c is characters per word
-*       these should agree with values used in translator
 	cfp_b = 8
 	cfp_c = 8
-	log_cfp_b = '3'
-	log_cfp_c = '3'
+	log_cfp_b = 3
+	log_cfp_c = 3
 	op_w = 'q'
 	op_c = 'b'
 *	rel = 'rel '
 	rel = ''
 
-config.done
 
 *	rip_mode is needed for osx. See getval()
 
@@ -357,7 +333,7 @@ skip_init.end
 .	'aov[1]beq[1]bne[1]bge[1]bgt[1]bhi[1]ble[1]blo[1]'
 .	'blt[1]bne[1]bnz[1]ceq[1]cne[1]mfi[1]nzb[1]zrb[1]')
 
-*	trace not working for mvc (x32/x64)
+*	trace not working for mvc (x64)
 
 	is_executable = table(100)
 	s =

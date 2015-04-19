@@ -114,7 +114,7 @@ install:
 	sudo cp ./bin/sbl /usr/local/bin
 .PHONY:	clean
 clean:
-	rm -f $(OBJS) *.o s.lex s.tmp err.s sbl.s ./sbl sbl.lex sbl.tmp
+	rm -f $(OBJS) *.o s.lex s.tmp err.s sbl.s ./sbl sbl.lex sbl.tmp sbl_unix_64 tb*
 
 z:
 	nm -n s.o >s.nm
