@@ -2,6 +2,11 @@
 -stitl description
 
 * TODO
+* done	drop 32 bit code
+* done	add code to swap operand order for certain binary operators
+* done	drop tests for equality of cfp_b and cfp_c
+* todo	add suffix indicating operand length. For example, addq for 64 bit adder.
+* todo	add v(string) and iv(string) to evaluate string as integer. 
 
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
 * copyright 2012-2015 david shields
@@ -1072,7 +1077,7 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 .						:f(freturn)s(return)
 
 g.flc
-	t1 = (eq(cfp_b,cfp_c) reglow[getarg(i1)], getarg(i1))
+	t1 = reglow[getarg(i1)]
 	t2 = genlab()
 *	z_suspend = 1
 	genop('cmp',t1,"'A'")
@@ -1513,9 +1518,7 @@ g.r1	genop('call','cpr_')
 
 g.plc
 g.psc
-	ne(cfp_b,cfp_c)				:s(g.plc.1)
-*  last arg is optional.  if present and a register or constant,
-*  use lea instead.
+*  last arg is optional.  if present and a register or constant, then  use lea instead.
 
 	t1 = getarg(i1)
 	t2 = i.type(i2)
@@ -1528,24 +1531,6 @@ g.psc
 
 	genop('add',t1,getarg(i2))		:(opdone)
 
-g.plc.1
-*  here for case where character size if word size
-*  last arg is optional.  if present and a register or constant,
-*  use lea instead.
-
-	t1 = getarg(i1)
-	t2 = i.type(i2)
-	((ifreg(i2), ge(t2,1) le(t2,2))
-+	genop('lea',t1,'a(cfp_f+' t1 '+' 'cfp_b*' getarg(i2) ')')) :s(opdone)
-	genop('add',t1,'cfp_f')
-	eq(i.type(i2))				:s(opdone)
-
-*  here if d_offset_(given (in a variable), so add it in, after converting to byte count
-	genop('mov','w0', getarg(i2))
-	genop('sal','w0', 'log_cfp_b')
-
-	genop('add',t1,'w0')		:(opdone)
-
 *  lch requires separate cases for each first operand possibility.
 
 g.lch
@@ -1555,53 +1540,41 @@ g.lch
 *  see if predecrement needed.
 	leq('-',substr(t2,1,1))			:f(g.lcg.1)
 	t2 break('(') len(1) len(2) . t3
-	(eq(cfp_b,cfp_c) genop('dec',regmap[t3]), genop('sub',regmap[t3],'cfp_b'))
+	genop('dec',regmap[t3])
 g.lcg.1
 	t2 break('(') len(1) len(2) . t3
-	eq(cfp_b,cfp_c) genop('mov',w0,'0')
-	eq(cfp_b,cfp_c) genop('mov','al','m_char [' regmap[t3] ']')
-	eq(cfp_b,cfp_c) genop('mov',t1,w0)
-
-	ne(cfp_b,cfp_c) genop('mov',t1,'m_char [' regmap[t3] ']')
+	genop('mov',w0,'0')
+	genop('mov','al','m_char [' regmap[t3] ']')
+	genop('mov',t1,w0)
 
 *  see if postincrement needed.
 	t2 rtab(1) '+'				:f(g.lcg.2)
-	(eq(cfp_b,cfp_c) genop('inc',regmap[t3]), genop('add',regmap[t3],'cfp_b'))
+	genop('inc',regmap[t3])
 g.lcg.2						:(opdone)
 
 g.sch
 	t2 = i.text(i2)
 	eq(i.type(i1),8)			:s(g.scg.w)
 	t1 = getarg(i1)
-	eq(cfp_b,cfp_w)				:f(g.scg.0)
-	ident(t2,'(xr)+')			:f(g.scg.0)
-
-*  here if can use stos.
-
-	eq(cfp_b,cfp_c) genop('mov','al',getarg(i1))
-	ne(cfp_b,cfp_c) genop('mov','eax',getarg(i1))
-	genop('stos_b')				:(opdone)
-
 g.scg.0
 	leq('-',substr(t2,1,1))			:f(g.scg.1)
 	t2 break('(') len(1) len(2) . t3
 	genop('dec',regmap[t3])
-	(eq(cfp_b,cfp_c) genop('dec',regmap[t3]), genop('sub',regmap[t3],'cfp_b'))
+	genop('dec',regmap[t3])
 g.scg.1
 	t2 break('(') len(1) len(2) . t3
-	eq(cfp_b,cfp_c) genop('mov',w0,t1,)
-	eq(cfp_b,cfp_c) genop('mov','[' regmap[t3] ']','al')
-	ne(cfp_b,cfp_c) genop('mov','m_char [' regmap[t3] ']',t1)
+	genop('mov',w0,t1,)
+	genop('mov','[' regmap[t3] ']','al')
 *  see if postincrement needed.
 	t2 rtab(1) '+'				:f(g.scg.2)
-	(eq(cfp_b,cfp_c) genop('inc',regmap[t3]), genop('add',regmap[t3],'cfp_b'))
+	genop('inc',regmap[t3])
 g.scg.2						:(opdone)
 g.scg.w
 
 *  here if moving character from work register, convert t1
 *  to name of low part.
 
-	t1 = (eq(cfp_b,cfp_c) reglow[getarg(i1)], getarg(i1))
+	t1 = reglow[getarg(i1)]
 
 	ident(t2,'(xl)')			:s(g.scg.w.xl)
 	ident(t2,'-(xl)')			:s(g.scg.w.pxl)
@@ -1612,21 +1585,21 @@ g.scg.w
 g.scg.w.xl
 	genop('mov','m_char [xl]',t1)		:(opdone)
 g.scg.w.pxl
-	(eq(cfp_b,cfp_c)  genop('dec', 'xl'), genop('sub','xl', 'cfp_b'))
+	genop('dec', 'xl')
 	genop('mov','m_char [xl]',t1)			:(opdone)
 
 g.scg.w.xlp
 	genop('mov','m_char [xl]',t1)
-	(eq(cfp_b,cfp_c)  genop('inc', 'xl'), genop('add','xl', 'cfp_b'))
+	genop('inc', 'xl')
 						:(opdone)
 g.scg.w.xr
 	genop('mov','m_char [xr]',t1)			:(opdone)
 
 g.scg.w.pxr
-	(eq(cfp_b,cfp_c)  genop('dec', 'xr'), genop('sub','xr', 'cfp_b'))
+	genop('dec', 'xr')
 	genop('mov','m_char [xr]',t1)			:(opdone)
 g.scg.w.xrp
-	(eq(cfp_b,cfp_c) genop('mov','al',t1), genop('mov','eax',t1))
+	genop('mov','al',t1)
 	genop('stos_b')				:(opdone)
 
 g.csc  	ident(thislabel)			:s(opnext)
@@ -1655,11 +1628,8 @@ g.cmc
 
 g.trc
 	genop('xchg','xl','xr')
-        eq(cfp_b,cfp_c) genopl((t1 = genlab()) ':','movzx',w0,'m_char [xr]')
-        ne(cfp_b,cfp_c) genopl((t1 = genlab()) ':','mov',w0,'m_char [xr]')
-	ne(cfp_b,cfp_c) genop('sal', w0, 'log_cfp_b');* convert char value to byte offset
-	eq(cfp_b,cfp_c) genop('mov','al','[xl+w0]')
-	ne(cfp_b,cfp_c) genop('mov','eax','[xl+w0]')
+        genopl((t1 = genlab()) ':','movzx',w0,'m_char [xr]')
+	genop('mov','al','[xl+w0]')
 	genop('stos' op_c)
 *	genop('loop',t1)
 	genop('dec','wa')
@@ -1737,21 +1707,11 @@ g.mfi.2
 g.ctw
 *  assume cfp_c chars per word
 	t1 = getarg(i1)
-	eq(cfp_b,cfp_c)				:s(g.ctw.1)
-*  here if one word per character, so just add character count
-	genop('add',t1,i.text(i2))
-						:(opdone)
-g.ctw.1
 	genop('add',t1,'(cfp_c-1)+cfp_c*' i.text(i2))
 	genop('shr',t1,'log_cfp_c')
 					:(opdone)
 g.ctb
 	t1 = getarg(i1)
-	eq(cfp_b,cfp_c)				:s(g.ctb.1)
-*  here if one word per character, so just add character count, then convert to byte count
-	genop('add',t1,i.text(i2))
-        genop('sal',getarg(i1),'log_cfp_b')	:(opdone)
-g.ctb.1
 	genop('add',t1,'(cfp_b-1)+cfp_b*' i.text(i2))
 	genop('and',t1,'-cfp_b')
 						:(opdone)
@@ -1769,8 +1729,6 @@ g.cvd
 g.mvc
 *	use word move if character size is word size
 *	if charsize is word size, convert character count to byte count for word move
-	ne(cfp_b,cfp_c) genop('shl', 'wa', 'log_cfp_b')
-	ne(cfp_b,cfp_c)				:s(g.mvw)
 
 	t1 = genlab()
 	z_suspend = 1
@@ -1817,8 +1775,6 @@ g.mwb
 
 g.mcb
 *	use word move if character size is word size
-	ne(cfp_b,cfp_c) genop('shl', 'wa', 'log_cfp_b')
-	ne(cfp_b,cfp_c)				:s(g.mwb)
 	genop('std')
 	genop('dec','xl')
 	genop('dec','xr')
