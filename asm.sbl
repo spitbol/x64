@@ -1806,7 +1806,7 @@ g.mwb
 	genop('cld')				:(opdone)
 
 	genop('std')
-	genop(shr.w,reg.wa,log_cfp_b)
+	genop(shr.w,reg.wa,iv(log_cfp_b))
 	genop('rep')
 	genop('movs_w')
 	genop('ctd')
@@ -1857,7 +1857,7 @@ g.dic   genopl(thislabel,'d_word',i.text(i1))
 						:(decend)
 
 g.drc
-*	genop('align',cfp_b)
+*	genop('align',v(cfp_b))
 	genop('align',8)
 	t1 = i.text(i1)
 	t1 ? fence "+" = ""
