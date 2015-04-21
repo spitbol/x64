@@ -6,7 +6,7 @@
 * done	add code to swap operand order for certain binary operators
 * done	drop tests for equality of cfp_b and cfp_c
 * done	identify register operands with prefix 'reg.'
-* todo	add suffix indicating operand length. For example, 'add.w' for full word add
+* done	add suffix indicating operand length. For example, add.w  for 64 bit adder.
 * todo	add v(string) and iv(string) to evaluate string as integer. 
 
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
@@ -75,8 +75,7 @@
 
 *  keyword initialization
 
-	&anchor = &trim	= &dump = 3
-*	&dump = 3
+	&anchor = &trim	= &dump = 1
 	&stlimit = 10000000
 	
 
@@ -246,19 +245,18 @@ skip_init.end
 *	swap_op is set if operand order is reversed in gas att syntax
 
 	swap_op = table(100)
-	swap_op['add'] = swap_op['and'] = swap_op['cmp'] = swap_op['lea'] = swap_op['mov'] =
+	swap_op[add.w] = swap_op['and'] = swap_op['cmp'] = swap_op['lea'] = swap_op['mov'] =
 +	swap_op['or'] = swap_op['sal'] = swap_op['sar'] = swap_op['sub'] = swap_op['xor'] = swap_op['xchg'] =  1
 
-	s = 'add and cmp dec inc lea mov movs  not or pop push sal sar shl shr sub xor xchg xor '
+
+	s = 'add and cmp dec inc lea lods mov movs not or pop push sal sar shl shr stos sub xchg xor '
 op_map.init
 	s break(' ') . op ' ' =			:f(op_map.done)
 	$(op '.w') = op				:(op_map.init)
 op_map.done
-	mov.b = 'mov';			movs.b = 'movsb'
-	movzx.b = 'movzx';  		cmp.b = 'cmp';		
-	test.b = 'test';		lods.b = 'lodsb'
-	stos.b = 'stosb';		stos.w = 'stosw'
-	lods.b = 'lodsb';		lods.w = 'lodsw'
+	mov.b = 'mov';		movs.b = 'movsb';	movzx.b = 'movzx';	cmp.b = 'cmp';		
+	test.b = 'test';	lods.b = 'lodsb';	stos.b = 'stosb';	stos.w = 'stosq'
+	lods.w = 'lodsq'
 
 *  data structures
 
@@ -679,7 +677,6 @@ genopl
 *genopl.1
 
 *
-*	ident(gopc)	error('no opcode')
 	cstmts[cstmts.n = cstmts.n + 1] =
 .		tstmt(gopl,gopc,gop1,gop2,gop3)	:(return)
 
@@ -1099,9 +1096,9 @@ g.flc
 	t1 = reglow[getarg(i1)]
 	t2 = genlab()
 *	z_suspend = 1
-	genop(cmp.w,t1,"'A'")
+	genop('cmp',t1,"'A'")
 	genop('jb', t2 )
-	genop(cmp.w,t1,"'Z'")
+	genop('cmp',t1,"'Z'")
 	genop('ja', t2)
 	genop(add.w,t1,'32')
         genopl(t2 ':')
@@ -1133,7 +1130,7 @@ g.mov
 						:(opdone)
 mov.xtp
 mov.xlp
-	ident(t.dst,'(xr)+') genop(movs.w)	:s(opdone)
+	ident(t.dst,'(xr)+') genop('movs_w')	:s(opdone)
 	genop(lods.w)
 	ident(t.dst,'-(xs)') genop(push.w,reg.w0)	:s(opdone)
 	genop(mov.w,getarg(i.dst),reg.w0)		:(opdone)
@@ -1141,21 +1138,21 @@ mov.xsp
 	ident(t.dst,'(xr)+')		:s(mov.xsprp)
 	genop(pop.w,getarg(i.dst))		:(opdone)
 mov.xsprp genop(pop.w,reg.w0)
-	genop(stos.w)				:(opdone)
+	genop('stos_w')				:(opdone)
 mov.xrp genop(mov.w,reg.w0,getarg(i.src))
-	genop(stos.w)				:(opdone)
+	genop('stos_w')				:(opdone)
 mov.2
 	genop(push.w,getarg(i.src))		:(opdone)
 
 * odd/even tests.  if w reg, use low byte of register.
 g.bod	t1 = getarg(i1)
  	t1 = eq(i.type(i1),8) reglow[t1]
-	genop(test.b,t1,'1')
+	genop('test',t1,'1')
 	genop('jne',getarg(i2))			:(opdone)
 
 g.bev	t1 = getarg(i1)
 	t1 = eq(i.type(i1),8) reglow[t1]
-	genop(test.b,t1,'1')
+	genop('test',t1,'1')
 	genop('je',getarg(i2))
 						:(opdone)
 
@@ -1165,7 +1162,7 @@ g.bsw	t1 = getarg(i1)
 	t2 = genlab()
 	z_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
-	genop(cmp.w,t1,getarg(i2))
+	genop('cmp',t1,getarg(i2))
 	genop('jge',getarg(i3))
 * here after default case.
 g.bsw1	
@@ -1229,7 +1226,7 @@ g.ent.2
 g.bri	genop('jmp',getarg(i1))			:(opdone)
 
 g.lei	t1 = regmap[i.text(i1)]
-	genop(movzx.b,t1,'byte [' t1 '-1]' )	:(opdone)
+	genop('movzx',t1,'byte [' t1 '-1]' )	:(opdone)
 
 g.jsr
 	jsr_proc = getarg(i1)
@@ -1345,7 +1342,7 @@ g.icv   genop(inc.w,getarg(i1))    :(opdone)
 g.dcv   genop(dec.w,getarg(i1))    :(opdone)
 
 g.zer	ident(i.text(i1),'(xr)+') genop(mov.w,reg.w0,'0')
-+		genop(stos.w)			:s(opdone)
++		genop('stos_w')			:s(opdone)
 	ifreg(i1)				:s(g.zer1)
 	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
 	genop(mov.w,reg.w0,'0')
@@ -1385,13 +1382,13 @@ g.bhi
 
 	memmem()
 	t1 = branchtab[incode]
-	genop(cmp.w,getarg(i1),getarg(i2))
+	genop('cmp',getarg(i1),getarg(i2))
 	genop(branchtab[incode],getarg(i3))
 .						:(opdone)
 
 g.bnz
 	ifreg(i1)				:s(g.bnz1)
-        genop(cmp.w, getarg(i1) ,'0')
+        genop('cmp', getarg(i1) ,'0')
 	genop('jnz',getarg(i2))
 						:(opdone)
 g.bnz1
@@ -1400,7 +1397,7 @@ g.bnz1
 						:(opdone)
 
 g.bze   ifreg(i1)				:s(g.bze1)
-        genop(cmp.w, getarg(i1)  ,'0')
+        genop('cmp', getarg(i1)  ,'0')
 	genop('jz',getarg(i2))
 						:(opdone)
 g.bze1
@@ -1626,12 +1623,12 @@ g.csc  	ident(thislabel)			:s(opnext)
 
 g.ceq
 	memmem()
-	genop(cmp.w,getarg(i1),getarg(i2))
+	genop('cmp',getarg(i1),getarg(i2))
 	genop('je',getarg(i3))
 						:(opdone)
 
 g.cne   memmem()
-	genop(cmp.w,getarg(i1),getarg(i2))
+	genop('cmp',getarg(i1),getarg(i2))
 	genop('jnz',getarg(i3))
 						:(opdone)
 
@@ -1649,7 +1646,7 @@ g.trc
 	genop(xchg.w,reg.xl,reg.xr)
         genopl((t1 = genlab()) ':','movzx',reg.w0,'m_char [xr]')
 	genop(mov.w,reg.al,'[xl+w0]')
-	genop(stos.b)
+	genop('stos' op_c)
 *	genop('loop',t1)
 	genop(dec.w,reg.wa)
 	genop('jnz',t1)
@@ -1674,7 +1671,7 @@ g.lsx
 	error('lsx not supported')
 
 g.nzb	ifreg(i1)				:s(g.nzb1)
-	genop(cmp.w,getarg(i1),'0')
+	genop('cmp',getarg(i1),'0')
 	genop('jnz',getarg(i2))
 						:(opdone)
 g.nzb1
@@ -1683,7 +1680,7 @@ g.nzb1
 						:(opdone)
 
 g.zrb	ifreg(i1)				:s(g.zrb1)
-	genop(cmp.w,getarg(i1),'0')
+	genop('cmp',getarg(i1),'0')
 	genop('jz',getarg(i2))
 						:(opdone)
 g.zrb1
@@ -1756,8 +1753,8 @@ g.mvc
 	z_suspend = 0
 						:(opdone)
 	t1 = genlab()
-	genopl(t1 ':', mov.b,reg.al,'byte [esi]')
-	genop(mov.b,'byte [edi]',reg.al)
+	genopl(t1 ':', mov.w,reg.al,'byte [esi]')
+	genop(mov.w,'byte [edi]',reg.al)
 	genop(inc.w, 'esi')
 	genop(inc.w, 'edi')
 	genop(dec.w,reg.wa)
@@ -1788,7 +1785,7 @@ g.mwb
 	genop('std')
 	genop(shr.w,reg.wa,'log_cfp_b')
 	genop('rep')
-	genop(movs.w)
+	genop('movs_w')
 	genop('ctd')
 						:(opdone)
 
@@ -1797,7 +1794,7 @@ g.mcb
 	genop('std')
 	genop(dec.w,reg.xl)
 	genop(dec.w,reg.xr)
- 	genrep('movs_b')
+ 	genrep(movs.b)
 	genop('cld')
 						:(opdone)
 	genop('std')
