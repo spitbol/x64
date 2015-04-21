@@ -74,7 +74,7 @@ OSXOPTS = -f macho64 -Dosx_64 $(ITDEF)
 unix_64:
 	$(CC) -Dunix_64 -m64 $(CCOPTS) -c osint/*.c
 	./bin/sbl_unix_64 -u unix_64 lex.sbl
-	./bin/sbl_unix_64 -r -u unix_64:$(ITOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
+	./bin/sbl_unix_64 -r -u unix_64:$(ITOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
 	./bin/sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
 	cat sys.asm err.s sbl.tmp >sbl.s
 	$(NASM) -f elf64 -Dunix_64 -o sbl.o sbl.s
@@ -137,7 +137,7 @@ test_unix_64:
 	cp	./bin/sbl_unix_64 .
 	gcc -Dunix_64 -m64 -c osint/*.c
 	./sbl_unix_64 -u unix_64 lex.sbl
-	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
+	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
 	./sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
 	cat sys.asm err.s sbl.tmp >sbl.s
 	nasm -f elf64 -Dunix_64 -o sbl.o sbl.s
@@ -146,7 +146,7 @@ test_unix_64:
 	mv sbl.s tbol.s.0
 	gcc -Dunix_64 -m64 -c osint/*.c
 	./sbl_unix_64 -u unix_64 lex.sbl
-	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
+	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
 	./sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
 	cat sys.asm err.s sbl.tmp >sbl.s
 	nasm -f elf64 -Dunix_64 -o sbl.o sbl.s
@@ -155,7 +155,7 @@ test_unix_64:
 	mv sbl.s tbol.s.1
 	gcc -Dunix_64 -m64 -c osint/*.c
 	./sbl_unix_64 -u unix_64 lex.sbl
-	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
+	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
 	./sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
 	cat sys.asm err.s sbl.tmp >sbl.s
 	nasm -f elf64 -Dunix_64 -o sbl.o sbl.s

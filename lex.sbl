@@ -361,6 +361,7 @@
 	filenamc = parm '.cnd'
 	filenami = parm '.asm'
 	filenamo = parm '.lex'
+	filename = parm '.equ'
 *
 *  get file name
 *
@@ -391,6 +392,9 @@
 main1	output(.outfile,2,filenamo)		:s(main2)
         output = "cannot open lexeme file: " filenamo  :(end)
 main2
+	output(.equfile,3,filename)		:s(main3)
+        output = "cannot open equ file: " filenamo  :(end)
+main3
 
 *  patterns used by dostmt
 	p.opsk1 = (break(' ') | rem) . argskel
@@ -851,6 +855,9 @@ g.equ
 	num1    = differ(sym1) equates[sym1]
 	num2    = differ(sym2) equates[sym2]
 	val     = (differ(oprtr) eval( num1 ' ' oprtr ' ' num2 ), num1)	:f(g.equ3)
+
+	equfile  = label ' ' val
+
 g.equ1	equates[label] = val				:(dsgen)
 g.equ2	error("equ operand syntax error")
 g.equ3	error("equ evaluation failed: " num1 ' ' oprtr ' ' num2 ' "' op1 '"' )
