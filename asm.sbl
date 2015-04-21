@@ -117,6 +117,7 @@
 	define('getrip(iarg)txt,typ,pre,post,ent,lb,var,reg')
 	define('getval(iarg)txt,typ,pre,post')
 	define('ifreg(iarg)')
+	define('iv(text)')
 	define('memmem()t')
 	define('outline(txt)')
 	define('prcent(n)')
@@ -915,7 +916,10 @@ val.c.22
         getval =  substr(txt,2)			:(val.done)
 val.done
 						:(return)
-
+-stitl iv(text)
+iv
+*	return immediate value of integer expression. Will need prefix '$' for gas
+	iv = v(text)				:(return)
 -stitl memmem()t
 memmem
 *  memmem is called for those ops for which both operands may be
@@ -1186,7 +1190,7 @@ g.bsw	t1 = getarg(i1)
 * here after default case.
 g.bsw1	
 	ne(rip_mode)				:s(g.bsw.2)	
-	genop('jmp', 'm(' t2 '+' t1 '*cfp_b)' ) :(g.bsw.3)
+	genop('jmp', 'm(' t2 '+' t1 '*cfp_b)') :(g.bsw.3)
 g.bsw.2
 * in rip_mode, need to generate location to reference destination
 	lbl = genrip()
@@ -1383,9 +1387,9 @@ g.add	memmem()
 g.sub	memmem()
 	genop(sub.w,getarg(i1),getarg(i2))	:(opdone)
 
-g.ica   genop(add.w,getarg(i1),'cfp_b')		:(opdone)
+g.ica   genop(add.w,getarg(i1),iv(cfp_b))	:(opdone)
 
-g.dca   genop(sub.w,getarg(i1),'cfp_b')		:(opdone)
+g.dca   genop(sub.w,getarg(i1),iv(cfp_b))	:(opdone)
 
 g.beq
 g.bne
@@ -1464,14 +1468,14 @@ g.scp
 						:(opdone)
 *  should be able to get lodsd; xchg eax,getarg(i1)
 	genop(mov.w,getarg(i1),m(reg.cp))
-	genop(add.w,reg.cp,'cfp_b')
+	genop(add.w,reg.cp,iv(cfp_b))
 
 						:(opdone)
 
 
 g.icp
 	genop(op_)				:(opdone)
-	genop(add.w,reg.cp,'cfp_b')
+	genop(add.w,reg.cp,iv(cfp_b))
 						:(opdone)
 *  integer accumulator kept in wdx (wc)
 g.ldi
