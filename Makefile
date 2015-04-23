@@ -8,15 +8,13 @@ nasm?=nasm
 
 debug?=0
 
-NASM=$(nasm)
-
 os?=unix
 OS:=$(os)
 
 ws?=64
 WS=$(ws)
 
-asm?=nasm
+asm?=as
 ASM=$(asm)
 
 
@@ -58,9 +56,9 @@ vpath %.c $(OSINT)
 
 # Assembler info -- Intel 64-bit syntax
 ifeq	($(DEBUG),0)
-NASMOPTS = -f $(ELF) -D$(TARGET) $(ITDEF)
+ASMOPTS =  -D$(TARGET) $(ITDEF)
 else
-NASMOPTS = -g -f $(ELF) -D$(TARGET) $(ITDEF)
+ASMOPTS = -g  -D$(TARGET) $(ITDEF)
 endif
 
 OSXOPTS = -f macho64 -Dosx_64 $(ITDEF)
@@ -77,7 +75,7 @@ unix_64:
 	./bin/sbl_unix_64 -r -u unix_64:$(ITOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
 	./bin/sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
 	cat sys.asm err.s sbl.tmp >sbl.s
-	$(NASM) -f elf64 -Dunix_64 -o sbl.o sbl.s
+	$(ASM) -o sbl.o sbl.s
 	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl 
 
 osx_64:
@@ -86,7 +84,7 @@ osx_64:
 	$(BASEBOL)  -r -u osx_64:$(ITOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
 	$(BASEBOL)  -u osx_64 -1=sbl.err -2=err.s err.sbl
 	cat sys.asm err.s sbl.tmp >sbl.s
-	$(NASM) -f macho64 -Dosx_64 -o sbl.o sbl.s
+	$(ASM) -f macho64 -Dosx_64 -o sbl.o sbl.s
 	$(CC) -lm -Dosx_64 -m64 $(LDOPTS)  *.o -lm  -osbl 
 
 # link spitbol with dynamic linking
@@ -102,7 +100,7 @@ bootbol:
 osx-export: 
 	
 	cp sbl.s  osx/sbl.s
-	$(NASM) -Dosx_64 -f macho64 -o osx/sbl.o osx/sbl.s
+	$(ASM) -Dosx_64 -f macho64 -o osx/sbl.o osx/sbl.s
 
 osx-import: 
 	gcc -arch i386 -c osint/*.c
@@ -140,7 +138,7 @@ test_unix_64:
 	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
 	./sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
 	cat sys.asm err.s sbl.tmp >sbl.s
-	nasm -f elf64 -Dunix_64 -o sbl.o sbl.s
+	as -Dunix_64 -o sbl.o sbl.s
 	gcc -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl_unix_64
 	mv sbl.lex tbol.lex.0
 	mv sbl.s tbol.s.0
@@ -149,7 +147,7 @@ test_unix_64:
 	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
 	./sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
 	cat sys.asm err.s sbl.tmp >sbl.s
-	nasm -f elf64 -Dunix_64 -o sbl.o sbl.s
+	as -Dunix_64 -o sbl.o sbl.s
 	gcc -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl_unix_64 
 	mv sbl.lex tbol.lex.1
 	mv sbl.s tbol.s.1
@@ -158,7 +156,7 @@ test_unix_64:
 	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
 	./sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
 	cat sys.asm err.s sbl.tmp >sbl.s
-	nasm -f elf64 -Dunix_64 -o sbl.o sbl.s
+	as -Dunix_64 -o sbl.o sbl.s
 	gcc -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl_unix_64
 	mv sbl.lex tbol.lex.2
 	mv sbl.s tbol.s.2

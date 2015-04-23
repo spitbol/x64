@@ -20,192 +20,17 @@
 
 #	ws is bits per word, cfp_b is bytes per word, cfp_c is characters per word
 
-	%define	os	unix
-	%define	ws	64
+	.set	os,unix
+	.set	ws,64
+	.set	cfp_b,8
+	.set	cfp_c,8
 
-	%define m_char	byte	# reference to byte in memory
-	%define d_char	db	# define value of byte
-	%define m_real	qword	# reference to floating point value in memory
-
-	%define	ia	rbp
-
-	%define	%rax	rax
-	%define	%rax_l	al
-	%define w1	rbp
-	%define	wa	rcx
-	%define wa_l	cl
-	%define	wb	rbx
-	%define wb_l    bl
-	%define	wc	rdx
-	%define wc_l    dl
-
-	%define	xl	rsi
-	%define	xt	rsi
-	%define	xr	rdi
-	%define	xs	rsp
-
-	%define m_word  qword
-	%define d_word	dq
-#	%define	cfp_b	8
-	%define log_cfp_b 3
-	%define log_cfp_c 3
-	%define cfp_c_val	8
-	%define log_cfp_c 3
-	%define cfp_m_	9223372036854775807
-#	%define	cfp_n_	64
-
-	%define	lods_w	lodsq
-	%define	lods_b	lodsb
-	%define movs_b	movsb
-	%define movs_w	movsq
-	%define stos_b	stosb
-	%define	stos_w	stosq
-	%define	cmps_b	cmpsb
-
-	%define	cdq	cqo	# sign extend (64 bits)
-
-#	%define mem(ref) qword[ref]
-
-	%define m(ref) qword[ref]
-	%define a(ref) [ref]
-
-#	flags
-	%define	flag_of	0x80
-	%define	flag_cf	0x01
-	%define	flag_ca	0x40
-
-%ifdef osx
-# redefine symbols needed by C to account for leading _ inserted by C compiler on osx
-	%define	b_icl		_b_icl
-	%define	b_scl		_b_scl
-	%define	b_xnt		_b_xnt
-	%define	b_xrt		_b_xrt
-	%define	c_aaa		_c_aaa
-	%define	c_yyy		_c_yyy
-	%define	dnamb		_dnamb
-	%define	dnamp		_dnamp
-	%define	errors		_errors
-	%define	flprt		_flprt
-	%define	flptr		_flptr
-	%define	g_aaa		_g_aaa
-	%define	get_fp		_get_fp
-	%define	gtcef		_gtcef
-	%define	hasfpu		_hasfpu
-	%define	headv		_headv
-	%define	hshtb		_hshtb
-	%define	id1blk		_id1blk
-	%define	id2blk		_id2blk
-	%define	inf		_inf
-	%define	inpbuf		_inpbuf
-	%define	minimal		_minimal
-	%define	minimal_id	_minimal_id
-	%define	phrases		_phrases
-	%define	pmhbs		_pmhbs
-	%define	polct		_polct
-	%define	r_fcb		_r_fcb
-	%define	reg_block	_reg_block
-	%define	reg_cp		_reg_cp
-	%define	reg_xl		_reg_xl
-	%define	reg_xr		_reg_xr
-	%define	reg_xs		_reg_xs
-	%define	reg_%rax		_reg_%rax
-	%define	reg_wa		_reg_wa
-	%define	reg_wb		_reg_wb
-	%define	reg_wc		_reg_wc
-	%define	reg_ia		_reg_ia
-	%define	reg_fl		_reg_fl
-	%define	reg_ra		_reg_ra
-	%define	reg_rp		_reg_rp
-	%define	reg_size	_reg_size
-	%define	restart		_restart
-	%define	s_aaa		_s_aaa
-	%define	s_yyy		_s_yyy
-	%define	startup		_startup
-	%define	state		_state
-	%define	stbas		_stbas
-	%define	ticblk		_ticblk
-	%define	tscblk		_tscblk
-	%define	ttybuf		_ttybuf
-	%define	w_yyy		_w_yyy
-	%define	i_adi		_i_adi
-	%define	i_dvi		_i_dvi
-	%define	i_mli		_i_mli
-	%define	i_ngi		_i_ngi
-	%define	i_rmi		_i_rmi
-	%define	f_adr		_f_adr
-	%define	f_atn		_f_atn
-	%define	f_chk		_f_chk
-	%define	f_chp		_f_chp
-	%define	f_cos		_f_cos
-	%define	f_cpr		_f_cpr
-	%define	f_dvr		_f_dvr
-	%define	f_etx		_f_etx
-	%define	f_itr		_f_itr
-	%define	f_ldr		_f_ldr
-	%define	f_lnf		_f_lnf
-	%define	f_mlr		_f_mlr
-	%define	f_ngr		_f_ngr
-	%define	f_rti		_f_rti
-	%define	f_sbr		_f_sbr
-	%define	f_sin		_f_sin
-	%define	f_sqr		_f_sqr
-	%define	f_str		_f_str
-	%define	f_tan		_f_tan
-	%define	i_cvd		_i_cvd
-	%define	i_dvi		_i_dvi
-	%define	i_rmi		_i_rmi
-	%define	lmodstk		_lmodstk
-	%define	outptr		_outptr
-	%define	rereloc		_rereloc
-	%define	stacksiz	_stacksiz
-	%define	startbrk	_startbrk
-	%define	swcoup		_swcoup
-	%define	zysax		_zysax
-	%define	zysaz		_zysaz
-	%define	zysbs		_zysbs
-	%define	zysbx		_zysbx
-	%define	zysdc		_zysdc
-	%define	zysdm		_zysdm
-	%define	zysdt		_zysdt
-	%define	zysea		_zysea
-	%define	zysef		_zysef
-	%define	zysej		_zysej
-	%define	zysem		_zysem
-	%define	zysen		_zysen
-	%define	zysep		_zysep
-	%define	zysex		_zysex
-	%define	zysfc		_zysfc
-	%define	zysgc		_zysgc
-	%define	zyshs		_zyshs
-	%define	zysid		_zysid
-	%define	zysif		_zysif
-	%define	zysil		_zysil
-	%define	zysin		_zysin
-	%define	zysio		_zysio
-	%define	zysld		_zysld
-	%define	zysmm		_zysmm
-	%define	zysmx		_zysmx
-	%define	zysou		_zysou
-	%define	zyspi		_zyspi
-	%define	zyspl		_zyspl
-	%define	zyspp		_zyspp
-	%define	zyspr		_zyspr
-	%define	zysrd		_zysrd
-	%define	zysri		_zysri
-	%define	zysrw		_zysrw
-	%define	zysst		_zysst
-	%define	zystm		_zystm
-	%define	zystt		_zystt
-	%define	zysul		_zysul
-	%define	zysxi		_zysxi
-%endif
-
-	%define	cfp_b	8
-	%define	cfp_c	8
-	%define		m64			// make m64 the default
+	.set	flag_of,0x80
+	.set	flag_cf,0x01
+	.set	flag_ca,0x40
 
 	.global	reg_block
-	.global	reg_%rax
+	.global	reg_w0 
 	.global	reg_wa
 	.global	reg_wb
 	.global	reg_ia
@@ -240,7 +65,7 @@
 	.equ	minimal_enevs,10
 	.equ	minimal_engts,12
 
-	.equ	define globals,1                       #asm globals defined here
+	.equ	globals,1                       #asm globals defined here
 
 
 #       ---------------------------------------
@@ -333,7 +158,7 @@
 dummy:	.quad	0
 reg_block:
 reg_ia: .quad	0		# register ia (ebp)
-reg_%rax:	.quad	0        	# register wa (ecx)
+reg_w0:	.quad	0        	# register wa (ecx)
 reg_wa:	.quad	0        	# register wa (ecx)
 reg_wb:	.quad 	0        	# register wb (ebx)
 reg_wc:	.quad	0		# register wc
@@ -372,9 +197,9 @@ inf:	.quad	0
 
 	.global	sav_block
 #sav_block: times r_size db 0     	# save minimal registers during push/pop reg
-sav_block: times 44 db 0     		# save minimal registers during push/pop reg
+sav_block: .fill  440     		# save minimal registers during push/pop reg
 
-	.balign cfp_b
+	.balign 8
 	.global	ppoff
 ppoff:  .quad      0               	# offset for ppm exits
 	.global	compsp
@@ -406,12 +231,12 @@ save_wc:	.quad	0		# saved wc value
 minimal_id:	.quad	0		# id for call to minimal from c. see proc minimal below.
 
 	.global  id1blk
-id1blk	.quad   152
+id1blk:	.quad   152
       	.quad   0
 	.fill   152
 
 	.global  id2blk
-id2blk	.quad   152
+id2blk:	.quad   152
       	.quad	0
 	.fill   152
 
@@ -465,7 +290,7 @@ cprtmsg:
 call_adr:	.quad	0
 
 
-	segment	.text
+	.text
 #
 #       save and restore minimal and interface registers on stack.
 #       used by any routine that needs to call back into the minimal
@@ -492,23 +317,23 @@ call_adr:	.quad	0
 #
 	.global	save_regs
 save_regs:
-	movq	IA,save_ia
-	movq	XL,save_xl
-	movq	XR,save_xr
-	movq	WA,save_wa
-	movq	WB,save_wb
-	movq	WC,save_wc
+	movq	%rbp,save_ia
+	movq	%rsi,save_xl
+	movq	%rdi,save_xr
+	movq	%rcx,save_wa
+	movq	%rbx,save_wb
+	movq	%rbx,save_wc
 	ret
 
 	.global	restore_regs
 restore_regs:
 	#	restore regs, except for sp. that is caller's responsibility
-	movq	save_ia),IA
-	movq	save_xl),XL
-	movq	save_xr),XR
-	movq	save_wa),WA
-	movq	save_wb),WB
-	movq	save_wc),WC
+	movq	save_ia,%rbp
+	movq	save_xl,%rsi
+	movq	save_xr,%rdi
+	movq	save_wa,%rcx
+	movq	save_wb,%rbx
+	movq	save_wc,%rbx
 	ret
 
 # #
@@ -548,15 +373,16 @@ restore_regs:
 startup:
 	pop	%rax			# discard return
 	call	stackinit		# initialize minimal stack
-	mov	%rax,m(compsp)	# get minimal's stack pointer
-	mov	m(reg_wa),%rax		# startup stack pointer
+	mov	%rax,compsp	# get minimal's stack pointer
+	mov	reg_wa,%rax		# startup stack pointer
 
 	cld				# default to up direction for string ops
 #        getoff  %rax,dffnc               # get address of ppm offset
-	mov	m(ppoff),%rax	# save for use later
+	mov	ppoff,%rax	# save for use later
 
-	mov	xs,m(osisp)	# switch to new c stack
-	movq	m(minimal_id),calltab_start
+	mov	%rsp,osisp	# switch to new c stack
+	mov	$calltab_start,%rax
+	mov	%rax,minimal_id
 	call	minimal			# load regs, switch stack, start compiler
 
 #	stackinit  -- initialize spmin from sp.
@@ -585,7 +411,7 @@ startup:
 #	initialize stack
 	.global	stackinit
 stackinit:
-	movq	xs,%rax
+	movq	%rsp,%rax
 	movq	%rax,compsp	# save minimal's stack pointer
 	subq	stacksiz,%rax	# end of minimal stack is where c stack will start
 	movq	%rax,osisp	# save new c stack pointer
@@ -597,7 +423,7 @@ stackinit:
 	.global	chk__
 chk__:
 	xorq	%rax,%rax		# set return value assuming no overflow
-	cmpq	spmin,xs
+	cmpq	spmin,%rsp
 	jb	chk.oflo
 	ret
 chk.oflo:
@@ -621,28 +447,28 @@ chk.oflo:
 minimal:
 #         pushad		# save all registers for c
 	movq 	reg_wa,%rcx	# restore registers
-	movq	reg_wb,wb
-	movq	reg_wc,wc	#
-	movq	reg_xr,xr
-	movq	reg_xl,xl
-	movq	m(osisp),xs	# save osint stack pointer
+	movq	reg_wb,%rbx
+	movq	reg_wc,%rdx	#
+	movq	reg_xl,%rsi
+	movq	reg_xr,%rdi
+	movq	osisp,%rsp	# save osint stack pointer
 	xorq	%rax,%rax
 	cmpq	%rax,compsp	# is there a compiler stack?
 	je 	min1			# jump if none yet
-	movq	compsp,xs	# switch to compiler stack
+	movq	compsp,%rsp	# switch to compiler stack
 
  min1:
 	movq	minimal_id,%rax	# get ordinal
-#	call   m(calltab+%rax*cfp_b)    # off to the minimal code
+#	call   calltab+%rax*cfp_b    # off to the minimal code
 	call	start
 
-	mov     osisp,xs	# switch to osint stack
+	mov     osisp,%rsp	# switch to osint stack
 
 	movq	%rcx,reg_wa	# save registers
-	movq	wb,reg_wb
-	movq	wc,reg_wc
-	movq	xr,reg_xr
-	movq	xr,reg_xl
+	movq	%rbx,reg_wb
+	movq	%rdx,reg_wc
+	movq	%rsi,reg_xl
+	movq	%rdi,reg_xr
 	ret
 
 
@@ -696,29 +522,29 @@ minimal:
 
 	.global	get_ia
 get_ia:
-	movq	IA,%rax
+	movq	%rbp,%rax
 	ret
 
 	.global	set_ia_
 set_ia_:	
-	movq	(reg_%rax),ia
+	movq	(reg_%rax),%rbp
 	ret
 
 syscall_init:
 #       save registers in global variables
 
 	mov     %rcx,reg_wa      # save registers
-	movq	wb,reg_wb
-	movq	wc,reg_wc      # (also _reg_ia)
-	movq	xr,reg_xr
-	movq	xl,reg_xl
-	movq	IA,reg_ia
+	movq	%rbx,reg_wb
+	movq	%rdx,reg_wc      # (also _reg_ia)
+	movq	%rsi,reg_xl
+	movq	%rdi,reg_xr
+	movq	%rbp,reg_ia
 	ret
 
 syscall_exit:
 	movq	%rax,_rc_	# save return code from function
-	movq	xs,osisp       # save osint's stack pointer
-	movq	compsp,xs      # restore compiler's stack pointer
+	movq	%rsp,osisp       # save osint's stack pointer
+	movq	compsp,%rsp      # restore compiler's stack pointer
 	movq	reg_wa,%rcx      # restore registers
 	movq	reg_wb,%rbx
 	movq	reg_wc,%rdx      #
@@ -796,13 +622,13 @@ sysep:	syscall	zysep,12
 
 	.global sysex
 	.extern	zysex
-sysex:	movq	m(reg_sp),%rsp
+sysex:	movq	reg_sp,%rsp
 	syscall	zysex,13
 
 	.global sysfc
 	.extern	zysfc
 sysfc:	popq	%rax             # <<<<remove stacked scblk>>>>
-*	lea	%rsp,[%rsp+wc*cfp_b] (in nasm syntax)
+#	lea	%rsp,[%rsp+wc*cfp_b] (in nasm syntax)
 	lea	(%rsp,%rdx,8),%rsp
 	pushq	%rax
 	syscall	zysfc,14
@@ -898,7 +724,7 @@ sysul:	syscall	zysul,37
 
 	.global sysxi
 	.extern	zysxi
-sysxi:	movq	m(reg_sp),%rsp
+sysxi:	movq	reg_sp,%rsp
 	syscall	zysxi,38
 
 	.macro	callext	arg1,arg2
@@ -934,8 +760,8 @@ dvi__:
 	movq	%rax,reg_w0
 	call	i_dvi
 	movq	reg_ia,%rbp
-	movq	reg_fl,%al
-	orq	%al,%al
+	movb	reg_fl,%al
+	orb	%al,%al
 	ret
 
 	.global	rmi__
@@ -946,8 +772,8 @@ rmi__:
 	movq	%rax,reg_w0
 	call	i_rmi
 	movq	reg_ia,%rbp
-	movq	reg_fl,%al
-	orq	%al,%al
+	movb	reg_fl,%al
+	orb	%al,%al
 	ret
 
 ocode:
@@ -961,7 +787,7 @@ ocode:
 	ret
 
 setovr: movb     $1,%al		# set overflow indicator
-	movb	%1,reg_fl
+	movb	$1,reg_fl
 	ret
 
 	.macro	real_op arg1,arg2
@@ -971,7 +797,7 @@ setovr: movb     $1,%al		# set overflow indicator
 	movq	%rax,reg_rp
 	call	\arg2
 	ret
-%endmacro
+	.endm
 
 	real_op	ldr_,f_ldr
 	real_op	str_,f_str
@@ -989,7 +815,7 @@ setovr: movb     $1,%al		# set overflow indicator
 	movq	%rbp,reg_ia
 	call	\arg2
 	ret
-%endmacro
+	.endm
 
 	int_op itr_,f_itr
 	int_op rti_,f_rti
@@ -1000,7 +826,7 @@ setovr: movb     $1,%al		# set overflow indicator
 \arg1:
 	call	\arg2
 	ret
-%endmacro
+	.endm
 
 	math_op	atn_,f_atn
 	math_op	chp_,f_chp
@@ -1035,7 +861,8 @@ get_fp:
 	.extern	outptr
 	.extern	swcoup
 #	scstr is offset to start of string in scblk, or two words
-	%define scstr	cfp_c+cfp_c
+#	%define scstr	cfp_c+cfp_c
+	.set	scstr,16
 
 #
 restart:
@@ -1053,9 +880,9 @@ restart:
 	movq	lmodstk,qb    		# bottom of saved stack
 	movq	stbas,%rcx      		# wa = stbas from exit() time
 	subq	%rax,%rbx                 	# wb = size of saved stack
-	movq	%rxc,%rdx
+	movq	%rcx,%rdx
 	subq	%rbx,%rdx                 	# wc = stack bottom from exit() time
-	movq	%rxc,%rbx
+	movq	%rcx,%rbx
 	subq	wb,%rsp                 	# wb =  stbas - new stbas
 
 	movq	%rsp,stbas		# save initial sp
@@ -1151,20 +978,20 @@ re4:	movq	stbas,%rax
 	movq	%rax,minimal_id
         call	minimal			# no return
 
-%ifdef zz_trace
-	.extern	zz_ra
-	.global	zz_
-	.extern	zz,zz_cp,zz_%rsi,zz_%rdi,zz_wa,zz_wb,zz_%rdx,zz_%rax
-zz_:
-	pushf
-	call	save_regs
-	call	zz
-	call	restore_regs
-	popf
-	ret
-%endif
-
-        section	.text
+#%ifdef zz_trace
+#	.extern	zz_ra
+#	.global	zz_
+#	.extern	zz,zz_cp,zz_%rsi,zz_%rdi,zz_wa,zz_wb,zz_%rdx,zz_%rax
+#zz_:
+#	pushf
+#	call	save_regs
+#	call	zz
+#	call	restore_regs
+#	popf
+#	ret
+#%endif
+#
+        .text
 
 
 	.global	mxint

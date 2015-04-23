@@ -105,25 +105,14 @@
 
 * set target definition flag, if any.
 *
-	target = (differ(host(0)) host(0), "nasm")
+	target = (differ(host(0)) host(0), "gas")
         output = "target: " target
 
-	ident(target,'gas')				:s(asm.gas)
-* here for nasm target
-	asm.comment	= ';'
-	asm.data	= '.data'
-	asm.global	= 'global'
-	asm.segment	= 'segment'
-	asm.string	= 'db'
-	
-							:(asm.done)
-asm.gas
 	asm.comment	= '#'
 	asm.data	= '.data'
 	asm.global	= '.global'
 	asm.segment	= '.segment'
 	asm.string	= '.string'
-asm.done
 
 * tab character
 	tab	= char(9)

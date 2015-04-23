@@ -78,6 +78,7 @@
 
 	&anchor = &trim	= &dump = 1
 	&stlimit = 10000000
+*	&dump = 3
 	
 
 *  useful constants
@@ -109,12 +110,11 @@
 	define('genbop(stmt)')
         define('genlab()')
         define('genrip()')
-	define('genop(gopc,gop1,gop2,gop3)')
-	define('genopl(gopl,gopc,gop1,gop2,gop3)')
+	define('op(gopc,gop1,gop2,gop3)')
+	define('opl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
 	define('getarg(iarg)txt,typ,pre,post')
 	define('getlea(iarg)txt,typ,pre,post')
-	define('getrip(iarg)txt,typ,pre,post,ent,lb,var,reg')
 	define('getval(iarg)txt,typ,pre,post')
 	define('ifreg(iarg)')
 	define('iv(text)')
@@ -325,24 +325,24 @@ op_map.done
 *  dispatch table
 
 	argcase = table(100)
-	argcase[01] = .arg.c.1;	argcase[2]  = .arg.c.2;	argcase[3]  = .arg.c.3;
-	argcase[04] = .arg.c.4;	argcase[5]  = .arg.c.5;	argcase[6]  = .arg.c.6;
-	argcase[07] = .arg.c.7;	argcase[8]  = .arg.c.8;	argcase[9]  = .arg.c.9;   
-	argcase[10] = .arg.c.10;	argcase[11] = .arg.c.11;	argcase[12] = .arg.c.12;
-	argcase[13] = .arg.c.13;	argcase[14] = .arg.c.14;	argcase[15] = .arg.c.15;
-	argcase[16] = .arg.c.16;	argcase[17] = .arg.c.17;	argcase[18] = .arg.c.18;
-	argcase[19] = .arg.c.19;	argcase[20] = .arg.c.20;	argcase[21] = .arg.c.21; 
-	argcase[22] = .arg.c.22;	argcase[23] = .arg.c.23;	argcase[24] = .arg.c.24;
-	argcase[25] = .arg.c.25;	argcase[26] = .arg.c.26;	argcase[27] = .arg.c.27
+	argcase[01] = .getarg.c.1;	argcase[2]  = .getarg.c.2;	argcase[3]  = .getarg.c.3;
+	argcase[04] = .getarg.c.4;	argcase[5]  = .getarg.c.5;	argcase[6]  = .getarg.c.6;
+	argcase[07] = .getarg.c.7;	argcase[8]  = .getarg.c.8;	argcase[9]  = .getarg.c.9;   
+	argcase[10] = .getarg.c.10;	argcase[11] = .getarg.c.11;	argcase[12] = .getarg.c.12;
+	argcase[13] = .getarg.c.13;	argcase[14] = .getarg.c.14;	argcase[15] = .getarg.c.15;
+	argcase[16] = .getarg.c.16;	argcase[17] = .getarg.c.17;	argcase[18] = .getarg.c.18;
+	argcase[19] = .getarg.c.19;	argcase[20] = .getarg.c.20;	argcase[21] = .getarg.c.21; 
+	argcase[22] = .getarg.c.22;	argcase[23] = .getarg.c.23;	argcase[24] = .getarg.c.24;
+	argcase[25] = .getarg.c.25;	argcase[26] = .getarg.c.26;	argcase[27] = .getarg.c.27
 
 	leacase = table(50) 
-	leacase[03] = .lea.c.3;		leacase[04] = .lea.c.4;		leacase[09] = .lea.c.9;   
-	leacase[12] = .lea.c.12;	leacase[13] = .lea.c.13;	leacase[14] = .lea.c.14
-	leacase[15] = .lea.c.15;		 
+	leacase[03] = .getlea.c.3;		leacase[04] = .getlea.c.4;		leacase[09] = .getlea.c.9;   
+	leacase[12] = .getlea.c.12;	leacase[13] = .getlea.c.13;	leacase[14] = .getlea.c.14
+	leacase[15] = .getlea.c.15;		 
 
 	valcase = table(50)
-	valcase[18] = .val.c.18;	valcase[19] = .val.c.19;	valcase[20] = .val.c.20;	
-	valcase[21] = .val.c.21;	valcase[22] = .val.c.22
+	valcase[18] = .getval.c.18;	valcase[19] = .getval.c.19;	valcase[20] = .getval.c.20;	
+	valcase[21] = .getval.c.21;	valcase[22] = .getval.c.22
 
 	riptable = table(500)
 	rip_count = 0
@@ -426,7 +426,7 @@ flgs2
 * various constants
 
 	tab = char(9)
-        comment.delim = ';'
+        comment.delim = '#'
 
 	w0_arg = minarg(8,'w0')
 *  branchtab maps minimal opcodes 'beq', etc to desired
@@ -675,247 +675,236 @@ genlab	genlab = 'l_' lpad(genlabels = genlabels + 1,4,'0') :(return)
 *  generate unique labels for use in generated code
 genrip	genrip = 'r_' lpad(riplabels = riplabels + 1,4,'0') :(return)
 
--stitl genopl(gopl,gopc,gop1,gop2,gop3)
+-stitl opl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
-genopl	
-*
-*	genopl = swap_op[gopc]
-*
-*	ident(genopl)				:s(genopl.1)
-*
-*	here to swap the operands
-*	genopl = gop1; gop1 = gop2; gop2 = genopl
-*
-*
-*	genopl =
-*
-*genopl.1
+opl	
+
+	opl = swap_op[gopc]
+
+	ident(opl)				:s(opl.1)
+
+	here to swap the operands
+	opl = gop1; gop1 = gop2; gop2 = opl
+
+
+	opl =
+
+opl.1
 
 *
 	cstmts[cstmts.n = cstmts.n + 1] =
 .		tstmt(gopl,gopc,gop1,gop2,gop3)	:(return)
 
--stitl genop(gopc,gop1,gop2,gop3)
+-stitl op(gopc,gop1,gop2,gop3)
 *  generate operation with no label
-genop   genopl(,gopc,gop1,gop2,gop3)            :(return)
+op   opl(,gopc,gop1,gop2,gop3)            :(return)
 
 
 -stitl getarg(iarg)
 getarg
-*	imem is null to generate memory reference, otherwise just get
-*	address for use in lea.w instruction.
-	pre = 'm('
-	post = ')'	
+
+*	imem is null to generate memory reference, otherwise just get address for use in 'Lea_' instruction.
+
+	base = disp = indx = scale =
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
+	trc_suspend = 1
 	eq(typ)					:f($(argcase[typ]))
-	getarg = txt				:(arg.done)
+	getarg = txt				:(getarg.done)
 
-* int
-arg.c.1 getarg = txt				:(arg.done)
+*	int
 
-* dlbl
-arg.c.2 getarg = txt				:(arg.done)
+getarg.c.1 getarg = txt				:(getarg.done)
 
-* wlbl, clbl
-arg.c.3
-arg.c.4 getarg = pre txt post			:(arg.done)
+*	dlbl
+
+getarg.c.2 getarg = txt				:(getarg.done)
+
+*	wlbl, clbl
+
+getarg.c.3
+getarg.c.4 
+	disp = txt				:(getarg.mem)
 
 * elbl, plbl
-arg.c.5
-arg.c.6 getarg = txt				:(arg.done)
 
-* w,x, map register name
-arg.c.7
-arg.c.8
-	getarg = regmap[txt]			:(arg.done)
+getarg.c.5
+getarg.c.6 getarg = txt				:(getarg.done)
 
-* (x), register indirect
-arg.c.9
-	txt len(1) len(2) . typ
-	typ = regmap[typ]
-	getarg = pre typ post
-						:(arg.done)
+*	w,x, map register name
 
-* (x)+, register indirect, post increment
-* use lea reg,[reg+cfp_b] unless reg is esp, since it takes an extra byte.
-* actually, lea reg,[reg+cfp_b] and add reg,cfp_b are both 2 cycles and 3 bytes
-* for all the other regs, and either could be used.
-arg.c.10
-	txt = substr(txt,2,2)
-	t1 = regmap[txt]
-	getarg = pre t1 post
-	(ident(txt,reg.xs) genaop(tstmt(,add.w,t1,'cfp_b'))) :s(arg.done)
-	genaop(tstmt(,lea.w,t1,'a(' t1 '+cfp_b)'))	:(arg.done)
+getarg.c.7
+getarg.c.8
+	getarg = regmap[txt]			:(getarg.done)
 
-*  -(x), register indirect, pre decrement
-arg.c.11
-	t1 = regmap[substr(txt,3,2)]
-	getarg = pre t1 post
-	genbop(tstmt(,lea.w,t1,'a(' t1 '-cfp_b)')) :(arg.done)
+*	(x), register indirect
 
-* int(x)
-* dlbl(x)
-arg.c.12
-arg.c.13
-	txt break('(') . t1 '(' len(2) . t2
-	getarg = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
-							:(arg.done)
+getarg.c.9
+	txt len(1) len(2) . indx		:(getarg.mem)
+*	(x)+, register indirect, post increment use lea reg,[reg+cfp_b] unless reg is esp, 
+*	since it takes an extra byte.  actually, lea reg,[reg+cfp_b] and add reg,cfp_b are both 
+*	2 cycles and 3 bytes for all the other regs, and either could be used.
 
-*  name(x), where name is in working section
-arg.c.14
-arg.c.15
-	getarg = ne(rip_mode)	getrip(iarg)		:s(return)
-	txt break('(') . t1 '(' len(2) . t2
-	getarg = pre    t1 '+'  regmap[t2] 	post
-							:(arg.done)
-* signed integer
-arg.c.16 getarg = txt				:(arg.done)
+getarg.c.10
+	indx = substr(txt,2,2)
+	genaop(tstmt(,'Add_',regmap[indx],literal_ cfp_b)) :(getarg.mem)
 
-* signed real
-arg.c.17 getarg = txt				:(arg.done)
+*	-(x), register indirect, pre decrement
 
-arg.c.18
-arg.c.19
-arg.c.20
-arg.c.21
-arg.c.22
-	getarg = getval(iarg)			:(arg.done)
-*  pnam, eqop
-arg.c.23
-arg.c.24 getarg = txt				:(arg.done)
+getarg.c.11
+	indx = substr(txt,3,2)
+	genbop(tstmt(,'Sub_',regmap[indx],literal_ cfp_b,)) 	:(getarg.mem)
 
-* ptyp, text, dtext
-arg.c.25
-arg.c.26
-arg.c.27 getarg = txt				:(arg.done)
-arg.done
+*	int(x)
+*	dlbl(x)
+
+getarg.c.12
+getarg.c.13
+	txt break('(') . disp '(' len(2) . indx
+	disp = cfp_b * equ_value[disp]
+	base = indx
+	indx = 					:(getarg.mem)
+
+*	name(x), where name is in working section
+
+getarg.c.14
+getarg.c.15
+	txt break('(') . disp '(' len(2) . indx	:(getarg.mem)
+
+*	signed integer
+
+getarg.c.16 getarg = txt			:(getarg.done)
+
+*	signed real
+
+getarg.c.17 getarg = txt			:(getarg.done)
+
+
+*	=dlbl
+
+getarg.c.18	
+	getarg = literal_ substr(txt,2)		:(getarg.done)
+	
+*	*dlbl
+
+getarg.c.19
+	getarg  = literal_  cfp_b '*' substr(txt,2)	:(getarg.done)
+
+*	=name (data section)
+
+getarg.c.20
+getarg.c.21
+        getarg = literal_ substr(txt,2)	
+						:(getarg.done)
+	op('Lea_',reg.w0,substr(txt,2))
+	getarg = reg.w0				:(getarg.done)
+
+*	=name (program section)
+
+getarg.c.22
+
+       getarg = literal_ substr(txt,2)		:(getarg.done)
+
+
+*	pnam, eqop
+getarg.c.23
+getarg.c.24 
+	getarg = txt				:(getarg.done)
+*	getarg = '$(' equ_value[txt] ')'	:(arop.done)
+	getarg =  equ_value[txt]		:(arop.done)
+
+*	ptyp, text, dtext
+getarg.c.25
+getarg.c.26
+getarg.c.27 getarg = txt			:(getarg.done)
+getarg.done
+	trc_suspend = 0
+
 *	ne(x_trace) outline('; arg ' typ ':' txt   ' -> ' getarg)
 						:(return)
+getarg.mem
+	getarg = differ(base) disp '(' regmap[base] ')'		:s(getarg.done)	
+	getarg = ident(indx) disp 				:s(getarg.done)
+	getarg = ident(scale) ident(disp) '(' regmap[indx] ')'	:s(getarg.done)
+	getarg = ident(disp) ident(scale) '(' regmap[indx] ')' 	:s(getarg.done)
+	getarg = differ(disp) ident(scale) disp '(' regmap[indx]  ')'	:s(getarg.done)
+	error('getarg');
 
 -stitl getlea(iarg)
 getlea
-*	similar to getarg, but gets effective address
-*	this procedure only called if operand is
-*	ops: 3,4,9,12,13,14,15
-*	imem is null to generate memory reference, otherwise just get
-*	address for use in lea.w instruction.
-	pre = 'a('
-	post = ')'	
+
+*	similar to getarg, but gets effective address this procedure only called if operand is in 
+*	range 3-4 or 9-15 it generates code to load effective address of the argument to w0
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
 	eq(typ)					:f($(leacase[typ]))
-	getlea = txt				:(return)
-* wlbl, clbl
-lea.c.3
-lea.c.4 
-	getlea = pre txt post			:(return)
 
-* (x), register indirect
-lea.c.9
+*	wlbl, clbl
+
+getlea.c.3
+getlea.c.4
+i	op('Mov_',reg.w0,literal_ txt)		:(return)
+
+*	(x), register indirect
+
+getlea.c.9
 	txt len(1) len(2) . typ
 	typ = regmap[typ]
-	getlea = pre typ post
-						:(return)
-* int(x)
-* dlbl(x)
-lea.c.12
-lea.c.13
+	op('Mov_',reg.w0,typ)			:(return)
+
+*	int(x)
+*	dlbl(x)
+
+getlea.c.12
+getlea.c.13
 	txt break('(') . t1 '(' len(2) . t2
-	getlea = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
-							:(return)
+	op('Mov_',reg.w0,regmap[t2])
+	op('Add_',reg.w0,'(cfp_b*' t1 ')')	:(return)
 
-*  name(x), where name is in working section
-lea.c.14
-lea.c.15
+*	name(x), where name is in working section
+
+getlea.c.14
+getlea.c.15
 	txt break('(') . t1 '(' len(2) . t2
-	getlea = pre    t1 '+'  regmap[t2] 	post
-							:(return)
+	op('Mov_',reg.w0,regmap[t2])
+	op('Add_',reg.w0,t1)			:(return)
+getlea.asm
 
--stitl getrip(iarg)
-getrip
-*  return value suitable for use in rip mode (needed for osx). This requires that we
-*  allocate a variable to hold the address,value. This is loaded into w0.
+*	here to generate Lea instruction (asm case)
 
-	pre = 'm('
-	post = ')'	
-	txt = i.text(iarg)
-	typ = i.type(iarg)
-	eq(typ)					:f($(ripcase[typ]))
-	getrip = txt				:(rip.done)
-
-*  name(x), where name is in working section
-rip.c.14
-rip.c.15
-	txt break('(') . var '(' len(2) . reg
-*	getrip = pre    var '+'  regmap[t2] 	post
-	getrip = var 
-						:(rip.done)
-*  *dlbl
-rip.c.19
-	getrip = 'cfp_b*' substr(txt,2)		:(rip.done)
-
-*  =dlbl
-rip.c.18	
-*  =name (data section)
-rip.c.20
-rip.c.21
-*  =name (program section)
-rip.c.22
-        getrip =  substr(txt,2)   		:(rip.done)
-
-rip.done
-*  see if have generated location for argument with same txt. Use it if so, else make new one.
-	ent = riptable[txt]
-	differ(ent)				:s(rip.ent)
-*  here to make new entry for generated location
-	rip_count = rip_count + 1
-	lbl = genrip()
-	riptable[txt] = lbl
-	ent = lbl
-	genop('segment','.data')
-	genopl(lbl ':','d_word',getrip)
-	genop('segment','.text')
-rip.ent
-*	generate reference via w0 if needed
-	genop(mov.w,reg.w0,pre ent post)
-	differ(reg)	genop(add.w,reg.w0,reg)
-	getrip = w0
-*	outfile = ne(x_trace) '; getrip ' ent
-						:(return)
-	
-
+	op('Lea_',reg.w0,'Adr(' getlea ')')	:(return)
 -stitl getval(iarg)
 getval
-	pre = 'm('
-	post = ')'	
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
 	output = lt(typ, 18) gt(typ.22) ' impossible type for getval ' typ
-	getval = ne(rip_mode) getrip(iarg)	:s(return)
 	eq(typ)					:f($(valcase[typ]))
-	getarg = txt				:(val.done)
+	getarg = txt				:(getval.done)
 
 *  =dlbl
-val.c.18	
-	getval = substr(txt,2)			:(val.done)
-val.c.18.1
-	getval = substr(txt,2)			:(val.done)
-*  *dlbl
-val.c.19
-	getval = 'cfp_b*' substr(txt,2)		:(val.done)
-*  =name (data section)
-val.c.20
-val.c.21
-        getval =  substr(txt,2)			:(val.done)
-*  =name (program section)
-val.c.22
-        getval =  substr(txt,2)			:(val.done)
-val.done
+
+getval.c.18
+	getval = substr(txt,2)			:(getval.done)
+getval.c.18.1
+	getval = substr(txt,2)			:(getval.done)
+*	*dlbl
+
+getval.c.19
+	getval = 'cfp_b*' substr(txt,2)		:(getval.done)
+*	=name (data section)
+
+getval.c.20
+getval.c.21
+        getval =  substr(txt,2)			:(getval.done)
+*	=name (program section)
+getval.c.22
+        getval =  substr(txt,2)			:(getval.done)
+getval.done
 						:(return)
+
 -stitl iv(text)
 iv
 *	return immediate value of integer expression. Will need prefix '$' for gas
@@ -932,7 +921,7 @@ memmem
 *  here if memory-memory case, load second argument
   t = getarg(i2)
   i2 = w0_arg
-  genop(mov.w,reg.w0,t)				:(return)
+  op(mov.w,reg.w0,t)				:(return)
 
 -stitl outline(txt)
 outline	
@@ -1119,12 +1108,12 @@ g.flc
 	t1 = reglow[getarg(i1)]
 	t2 = genlab()
 *	z_suspend = 1
-	genop('cmp',t1,"'A'")
-	genop('jb', t2 )
-	genop('cmp',t1,"'Z'")
-	genop('ja', t2)
-	genop(add.w,t1,'32')
-        genopl(t2 ':')
+	op('cmp',t1,"'A'")
+	op('jb', t2 )
+	op('cmp',t1,"'Z'")
+	op('ja', t2)
+	op(add.w,t1,'32')
+        opl(t2 ':')
 *	z_suspend = 0
 						:(opdone)
 
@@ -1149,68 +1138,68 @@ g.mov
 	ident(t.dst,'(xr)+')			:s(mov.xrp)
 	ident(t.dst,'-(xs)')			:s(mov.2)
 	memmem()
-	genop(mov.w,getarg(i1),getarg(i2))
+	op(mov.w,getarg(i1),getarg(i2))
 						:(opdone)
 mov.xtp
 mov.xlp
-	ident(t.dst,'(xr)+') genop('movs_w')	:s(opdone)
-	genop(lods.w)
-	ident(t.dst,'-(xs)') genop(push.w,reg.w0)	:s(opdone)
-	genop(mov.w,getarg(i.dst),reg.w0)		:(opdone)
+	ident(t.dst,'(xr)+') op('movs_w')	:s(opdone)
+	op(lods.w)
+	ident(t.dst,'-(xs)') op(push.w,reg.w0)	:s(opdone)
+	op(mov.w,getarg(i.dst),reg.w0)		:(opdone)
 mov.xsp
 	ident(t.dst,'(xr)+')		:s(mov.xsprp)
-	genop(pop.w,getarg(i.dst))		:(opdone)
-mov.xsprp genop(pop.w,reg.w0)
-	genop('stos_w')				:(opdone)
-mov.xrp genop(mov.w,reg.w0,getarg(i.src))
-	genop('stos_w')				:(opdone)
+	op(pop.w,getarg(i.dst))		:(opdone)
+mov.xsprp op(pop.w,reg.w0)
+	op('stos_w')				:(opdone)
+mov.xrp op(mov.w,reg.w0,getarg(i.src))
+	op('stos_w')				:(opdone)
 mov.2
-	genop(push.w,getarg(i.src))		:(opdone)
+	op(push.w,getarg(i.src))		:(opdone)
 
 * odd/even tests.  if w reg, use low byte of register.
 g.bod	t1 = getarg(i1)
  	t1 = eq(i.type(i1),8) reglow[t1]
-	genop('test',t1,'1')
-	genop('jne',getarg(i2))			:(opdone)
+	op('test',t1,'1')
+	op('jne',getarg(i2))			:(opdone)
 
 g.bev	t1 = getarg(i1)
 	t1 = eq(i.type(i1),8) reglow[t1]
-	genop('test',t1,'1')
-	genop('je',getarg(i2))
+	op('test',t1,'1')
+	op('je',getarg(i2))
 						:(opdone)
 
-g.brn   genop('jmp',getarg(i1))			:(opdone)
+g.brn   op('jmp',getarg(i1))			:(opdone)
 
 g.bsw	t1 = getarg(i1)
 	t2 = genlab()
 	z_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
-	genop('cmp',t1,getarg(i2))
-	genop('jge',getarg(i3))
+	op('cmp',t1,getarg(i2))
+	op('jge',getarg(i3))
 * here after default case.
 g.bsw1	
 	ne(rip_mode)				:s(g.bsw.2)	
-	genop('jmp', 'm(' t2 '+' t1 '*cfp_b)') :(g.bsw.3)
+	op('jmp', 'm(' t2 '+' t1 '*cfp_b)') :(g.bsw.3)
 g.bsw.2
 * in rip_mode, need to generate location to reference destination
 	lbl = genrip()
-        genop('segment .data')
-	genopl(lbl,'d_word',t2 )
-	genop('segment','.text')
-	genop(mov.w,reg.w0,t1)
-	genop(sal.w,reg.w0,v(log_cfp_b))
-	genop(add.w,reg.w0,'m(' lbl ')')
-	genop('jmp', w0)
+        op('segment .data')
+	opl(lbl,'d_word',t2 )
+	op('segment','.text')
+	op(mov.w,reg.w0,t1)
+	op(sal.w,reg.w0,v(log_cfp_b))
+	op(add.w,reg.w0,'m(' lbl ')')
+	op('jmp', w0)
 g.bsw.3
-	genop('segment','.data')
-        genopl(t2 ':')
+	op('segment','.data')
+        opl(t2 ':')
 	z_suspend = 0
 						:(opdone)
 
-g.iff   genop('d_word',getarg(i2))              :(opdone)
+g.iff   op('d_word',getarg(i2))              :(opdone)
 
 g.esw
-        genop('segment .text')			:(opdone)
+        op('segment .text')			:(opdone)
 g.ent
 
 *  entry points are stored in byte before program entry label
@@ -1227,7 +1216,7 @@ g.ent
 
 
 	t1 = i.text(i1)
-*        genop('align',2)
+*        op('align',2)
 	outline(tab 'align' tab '2')
 	differ(t1)				:s(g.ent.1)
 	outline(tab 'nop')
@@ -1236,24 +1225,24 @@ g.ent.1
 	outline(tab 'db' tab	t1)
 
 g.ent.2
-	genopl(thislabel)
+	opl(thislabel)
 *  note that want to attach label to last instruction
 *	t1 = cstmts[cstmts.n]
 *	t.label(t1) = tlabel
 *	cstmts[cstmts.n] = t1
 *  here to see if want label made public
 	thislabel ? rtab(1) . thislabel ':'
-        (differ(pubtab[thislabel]), differ(debug)) genop('global',thislabel)
+        (differ(pubtab[thislabel]), differ(debug)) op('global',thislabel)
 	thislabel =				:(opdone)
 
-g.bri	genop('jmp',getarg(i1))			:(opdone)
+g.bri	op('jmp',getarg(i1))			:(opdone)
 
 g.lei	t1 = regmap[i.text(i1)]
-	genop('movzx',t1,'byte [' t1 '-1]' )	:(opdone)
+	op('movzx',t1,'byte [' t1 '-1]' )	:(opdone)
 
 g.jsr
 	jsr_proc = getarg(i1)
-	genop('call',jsr_proc)
+	op('call',jsr_proc)
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
 	eq(jsr_count)				:s(opdone)
@@ -1261,8 +1250,8 @@ g.jsr
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
-	genop(dec.w,'m(' rcode ')')
-	genop('js',jsr_label_norm)
+	op(dec.w,'m(' rcode ')')
+	op('js',jsr_label_norm)
 	z_suspend = 0
 
 *	generate branch around for ppms that will follow
@@ -1288,26 +1277,26 @@ g.ppm
 						:(g.ppm.loop)
 
 g.ppm.loop.next
-	genopl(lab_next ':')
+	opl(lab_next ':')
  	jsr_count = jsr_count - 1
  	z_suspend = eq(jsr_count) 0
-	eq(jsr_count) genopl(jsr_label_norm ':') :(opdone)
+	eq(jsr_count) opl(jsr_label_norm ':') :(opdone)
 g.ppm.loop
 	lab_next = genlab()
-	genop(dec.w,'m(' rcode ')' )
-	genop('jns',lab_next)
+	op(dec.w,'m(' rcode ')' )
+	op('jns',lab_next)
 	ident(incode,'ppm')			:s(g.ppm.loop.ppm)
 *  here if error exit via exi. set rcode to exit code and jump
 *  to error handler with error code in rcode
 g.ppm.loop.err
-	genop(mov.w,'m(' rcode ')', +t1)
-	genop('jmp','err_')
+	op(mov.w,'m(' rcode ')', +t1)
+	op('jmp','err_')
 						:(g.ppm.loop.next)
 g.ppm.loop.ppm
 *	check each ppm case and take branch if appropriate
 	ident(i.text(i1))			:s(g.ppm.2)
 	count.ppm = count.ppm + 1
-	genop('jmp',	getarg(i1))
+	op('jmp',	getarg(i1))
 						:(g.ppm.loop.next)
 
 g.ppm.2
@@ -1322,8 +1311,8 @@ g.prc
 *  generate public declaration
 *	t1 = thislabel
 *	t1 ? rtab(1) . t1 ':'
-*	genop()
-*	genop('global',t1)
+*	op()
+*	op('global',t1)
 *  nop needed to get labels straight
 	prc.args = getarg(i2)
 	ppm_cases[thislabel] = i.text(i2)
@@ -1336,60 +1325,60 @@ g.prc.r						:(opdone)
 g.prc.n
 *  store return address in reserved location
 	prc.count = prc.count + 1
-	genop(pop.w, 'm(' prcent(prc.count) ')')	:(opdone)
+	op(pop.w, 'm(' prcent(prc.count) ')')	:(opdone)
 
 g.exi
         t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
 *  if type r or e, and no exit parameters, just return
- 	differ(t2,'n') eq(prc.args)	genop('ret')	:s(opdone)
+ 	differ(t2,'n') eq(prc.args)	op('ret')	:s(opdone)
         t3 = ident(t3) '0'
-    	genop(mov.w,'m('  rcode ')',+t3)
+    	op(mov.w,'m('  rcode ')',+t3)
 	ident(t2,'n')				:s(g.exi.1)
-	genop('ret')				:(opdone)
+	op('ret')				:(opdone)
 g.exi.1
 
-	genop(mov.w,reg.w0, 'm( ' prcent(prc.count) ')' )
-	genop('jmp',reg.w0)
+	op(mov.w,reg.w0, 'm( ' prcent(prc.count) ')' )
+	op('jmp',reg.w0)
 						:(opdone)
-g.enp   genop()					:(opdone)
+g.enp   op()					:(opdone)
 
 g.erb
 	errfile =  i.text(i1) ' ' i.text(i2)
 *	set rcode to error code and branch to error handler
-	genop(mov.w, 'm(' rcode ')',  +(i.text(i1)))
- 	genop('jmp','err_')
+	op(mov.w, 'm(' rcode ')',  +(i.text(i1)))
+ 	op('jmp','err_')
 						:(opdone)
 
 
-g.icv   genop(inc.w,getarg(i1))    :(opdone)
-g.dcv   genop(dec.w,getarg(i1))    :(opdone)
+g.icv   op(inc.w,getarg(i1))    :(opdone)
+g.dcv   op(dec.w,getarg(i1))    :(opdone)
 
-g.zer	ident(i.text(i1),'(xr)+') genop(mov.w,reg.w0,'0')
-+		genop('stos_w')			:s(opdone)
+g.zer	ident(i.text(i1),'(xr)+') op(mov.w,reg.w0,'0')
++		op('stos_w')			:s(opdone)
 	ifreg(i1)				:s(g.zer1)
 	ident(i.text(i1),'-(xs)')		:s(g.zer.xs)
-	genop(mov.w,reg.w0,'0')
-	genop(mov.w,getarg(i1),reg.w0)		:(opdone)
+	op(mov.w,reg.w0,'0')
+	op(mov.w,getarg(i1),reg.w0)		:(opdone)
 g.zer1	t1 = getarg(i1)
-	genop(xor.w,t1,t1)			:(opdone)
-g.zer.xs genop(push.w,'0')			:(opdone)
+	op(xor.w,t1,t1)			:(opdone)
+g.zer.xs op(push.w,'0')			:(opdone)
 
-g.mnz   genop(mov.w,getarg(i1),reg.xs)		:(opdone)
+g.mnz   op(mov.w,getarg(i1),reg.xs)		:(opdone)
 
 g.ssl
 g.sss
 g.rtn
-	genop()					:(opdone)
+	op()					:(opdone)
 
 g.add	memmem()
-	genop(add.w,getarg(i1),getarg(i2))	:(opdone)
+	op(add.w,getarg(i1),getarg(i2))	:(opdone)
 
 g.sub	memmem()
-	genop(sub.w,getarg(i1),getarg(i2))	:(opdone)
+	op(sub.w,getarg(i1),getarg(i2))	:(opdone)
 
-g.ica   genop(add.w,getarg(i1),iv(cfp_b))	:(opdone)
+g.ica   op(add.w,getarg(i1),iv(cfp_b))	:(opdone)
 
-g.dca   genop(sub.w,getarg(i1),iv(cfp_b))	:(opdone)
+g.dca   op(sub.w,getarg(i1),iv(cfp_b))	:(opdone)
 
 g.beq
 g.bne
@@ -1405,28 +1394,28 @@ g.bhi
 
 	memmem()
 	t1 = branchtab[incode]
-	genop('cmp',getarg(i1),getarg(i2))
-	genop(branchtab[incode],getarg(i3))
+	op('cmp',getarg(i1),getarg(i2))
+	op(branchtab[incode],getarg(i3))
 .						:(opdone)
 
 g.bnz
 	ifreg(i1)				:s(g.bnz1)
-        genop('cmp', getarg(i1) ,'0')
-	genop('jnz',getarg(i2))
+        op('cmp', getarg(i1) ,'0')
+	op('jnz',getarg(i2))
 						:(opdone)
 g.bnz1
-	genop(or.w,getarg(i1),getarg(i1))
-	genop('jnz',getarg(i2))
+	op(or.w,getarg(i1),getarg(i1))
+	op('jnz',getarg(i2))
 						:(opdone)
 
 g.bze   ifreg(i1)				:s(g.bze1)
-        genop('cmp', getarg(i1)  ,'0')
-	genop('jz',getarg(i2))
+        op('cmp', getarg(i1)  ,'0')
+	op('jz',getarg(i2))
 						:(opdone)
 g.bze1
 	t1 = getarg(i1)
-	genop(or.w,t1,t1)
-	genop('jz',getarg(i2))			:(opdone)
+	op(or.w,t1,t1)
+	op('jz',getarg(i2))			:(opdone)
 
 g.lct
 
@@ -1435,9 +1424,9 @@ g.lct
 	differ(i.text(i1),i.text(i2))		:s(g.lct.1)
 *  here if operands same. emit no code if no label, else emit null
 	ident(thislabel)			:s(opnext)
-	genop()					:(opdone)
+	op()					:(opdone)
 
-g.lct.1	genop(mov.w,getarg(i1),getarg(i2))	:(opdone)
+g.lct.1	op(mov.w,getarg(i1),getarg(i2))	:(opdone)
 
 g.bct
 *  can issue loop if target register is cx.
@@ -1446,54 +1435,54 @@ g.bct
 	:(g.bct2)
 	ident(t1,reg.wa)				:s(g.bct1)
 g.bct2
-	genop(dec.w,t1)
-	genop('jnz',t2)				:(opdone)
+	op(dec.w,t1)
+	op('jnz',t2)				:(opdone)
 g.bct1
-	genop('loop',t2)			:(opdone)
+	op('loop',t2)			:(opdone)
 
 g.aov
-	genop(add.w,getarg(i2),getarg(i1))
-	genop('jc',getarg(i3))
+	op(add.w,getarg(i2),getarg(i1))
+	op('jc',getarg(i3))
 						:(opdone)
 g.lcp
 g.lcw
 g.scp
-	genop(op_,getarg(i1))			:(opdone)
+	op(op_,getarg(i1))			:(opdone)
 
 *  use cp for code pointer.
-	genop(mov.w,reg.cp,getarg(i1))
+	op(mov.w,reg.cp,getarg(i1))
 						:(opdone)
 
-	genop(mov.w,getarg(i1),reg.cp)
+	op(mov.w,getarg(i1),reg.cp)
 						:(opdone)
 *  should be able to get lodsd; xchg eax,getarg(i1)
-	genop(mov.w,getarg(i1),m(reg.cp))
-	genop(add.w,reg.cp,iv(cfp_b))
+	op(mov.w,getarg(i1),m(reg.cp))
+	op(add.w,reg.cp,iv(cfp_b))
 
 						:(opdone)
 
 
 g.icp
-	genop(op_)				:(opdone)
-	genop(add.w,reg.cp,iv(cfp_b))
+	op(op_)				:(opdone)
+	op(add.w,reg.cp,iv(cfp_b))
 						:(opdone)
 *  integer accumulator kept in wdx (wc)
 g.ldi
 g.sti
-	genop(op_,getarg(i1))			:(opdone)
+	op(op_,getarg(i1))			:(opdone)
 g.adi
 g.mli
 g.sbi
 g.dvi
 g.rmi
-	genop(op_,getarg(i1))			:(opdone)
+	op(op_,getarg(i1))			:(opdone)
 
 g.ngi
-	genop(op_)				:(opdone)
+	op(op_)				:(opdone)
 
 g.ino
 g.iov
-	genop(op_,getarg(i1))			:(opdone)
+	op(op_,getarg(i1))			:(opdone)
 
 
 g.ieq	jop = 'je'				:(op.cmp)
@@ -1503,18 +1492,18 @@ g.ile	jop = 'jle'				:(op.cmp)
 g.ilt	jop = 'jl'				:(op.cmp)
 g.ine	jop = 'jne'				:(op.cmp)
 op.cmp
-	genop('sti_',reg.w0)
-	genop(or.w,reg.w0,reg.w0)
-	genop(jop,getarg(i1))			:(opdone)
+	op('sti_',reg.w0)
+	op(or.w,reg.w0,reg.w0)
+	op(jop,getarg(i1))			:(opdone)
 
 *  real operations
 
-g.itr	genop('call','itr_')	:(opdone)
+g.itr	op('call','itr_')	:(opdone)
 
-g.rti	genop('rti_')
+g.rti	op('rti_')
 	eq(i.type(i1))				:s(opdone)
 *  here if label given, branch if real too large
-        genop('jc',getarg(i1))                 :(opdone)
+        op('jc',getarg(i1))                 :(opdone)
 
 g.ldr
 g.str
@@ -1522,8 +1511,8 @@ g.adr
 g.sbr
 g.mlr
 g.dvr
-	genop(lea.w,reg.w0,getlea(i1))
-	genop('call',op_)
+	op(lea.w,reg.w0,getlea(i1))
+	op('call',op_)
 						:(opdone)
 g.ngr
 g.atn
@@ -1534,15 +1523,15 @@ g.lnf
 g.sin
 g.sqr
 g.tan
-	genop('call',op_)
+	op('call',op_)
 						:(opdone)
 
 g.rov
-g.rno	genop(op_,getarg(i1))			:(opdone)
+g.rno	op(op_,getarg(i1))			:(opdone)
 *g.rno	t1 = 'jno'				:(g.rov1)
 *g.rov	t1 = 'jo'
-*g.rov1  genop('call','ovr_')
-	genop(t1,getarg(i1))			:(opdone)
+*g.rov1  op('call','ovr_')
+	op(t1,getarg(i1))			:(opdone)
 
 g.req	jop = 'je'				:(g.r1)
 g.rne	jop = 'jne'				:(g.r1)
@@ -1550,10 +1539,10 @@ g.rge	jop = 'jge'				:(g.r1)
 g.rgt	jop = 'jg'				:(g.r1)
 g.rle	jop = 'jle'				:(g.r1)
 g.rlt	jop = 'jl'
-g.r1	genop('call','cpr_')
-	genop(mov.w,reg.al,'byte [reg_fl]')
-	genop(or.w,reg.al,reg.al)
-	genop(jop,getarg(i1))			:(opdone)
+g.r1	op('call','cpr_')
+	op(mov.w,reg.al,'byte [reg_fl]')
+	op(or.w,reg.al,reg.al)
+	op(jop,getarg(i1))			:(opdone)
 
 g.plc
 g.psc
@@ -1562,13 +1551,13 @@ g.psc
 	t1 = getarg(i1)
 	t2 = i.type(i2)
 	((ifreg(i2), ge(t2,1) le(t2,2))
-+	genop(lea.w,t1,'a(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
-	genop(add.w,t1,'cfp_f')
++	op(lea.w,t1,'a(cfp_f+' t1 '+' getarg(i2) ')')) :s(opdone)
+	op(add.w,t1,'cfp_f')
 	eq(i.type(i2))				:s(opdone)
 
 *  here if d_offset_(given (in a variable), so add it in.
 
-	genop(add.w,t1,getarg(i2))		:(opdone)
+	op(add.w,t1,getarg(i2))		:(opdone)
 
 *  lch requires separate cases for each first operand possibility.
 
@@ -1579,16 +1568,16 @@ g.lch
 *  see if predecrement needed.
 	leq('-',substr(t2,1,1))			:f(g.lcg.1)
 	t2 break('(') len(1) len(2) . t3
-	genop(dec.w,regmap[t3])
+	op(dec.w,regmap[t3])
 g.lcg.1
 	t2 break('(') len(1) len(2) . t3
-	genop(mov.w,reg.w0,'0')
-	genop(mov.w,reg.al,'m_char [' regmap[t3] ']')
-	genop(mov.w,t1,reg.w0)
+	op(mov.w,reg.w0,'0')
+	op(mov.w,reg.al,'m_char [' regmap[t3] ']')
+	op(mov.w,t1,reg.w0)
 
 *  see if postincrement needed.
 	t2 rtab(1) '+'				:f(g.lcg.2)
-	genop(inc.w,regmap[t3])
+	op(inc.w,regmap[t3])
 g.lcg.2						:(opdone)
 
 g.sch
@@ -1598,15 +1587,15 @@ g.sch
 g.scg.0
 	leq('-',substr(t2,1,1))			:f(g.scg.1)
 	t2 break('(') len(1) len(2) . t3
-	genop(dec.w,regmap[t3])
-	genop(dec.w,regmap[t3])
+	op(dec.w,regmap[t3])
+	op(dec.w,regmap[t3])
 g.scg.1
 	t2 break('(') len(1) len(2) . t3
-	genop(mov.w,reg.w0,t1,)
-	genop(mov.w,'[' regmap[t3] ']',reg.al)
+	op(mov.w,reg.w0,t1,)
+	op(mov.w,'[' regmap[t3] ']',reg.al)
 *  see if postincrement needed.
 	t2 rtab(1) '+'				:f(g.scg.2)
-	genop(inc.w,regmap[t3])
+	op(inc.w,regmap[t3])
 g.scg.2						:(opdone)
 g.scg.w
 
@@ -1622,71 +1611,71 @@ g.scg.w
 	ident(t2,'-(xr)')			:s(g.scg.w.pxr)
 	ident(t2,'(xr)+')			:s(g.scg.w.xrp)
 g.scg.w.xl
-	genop(mov.w,'m_char [xl]',t1)		:(opdone)
+	op(mov.w,'m_char [xl]',t1)		:(opdone)
 g.scg.w.pxl
-	genop(dec.w, reg.xl)
-	genop(mov.w,'m_char [xl]',t1)			:(opdone)
+	op(dec.w, reg.xl)
+	op(mov.w,'m_char [xl]',t1)			:(opdone)
 
 g.scg.w.xlp
-	genop(mov.w,'m_char [xl]',t1)
-	genop(inc.w, reg.xl)
+	op(mov.w,'m_char [xl]',t1)
+	op(inc.w, reg.xl)
 						:(opdone)
 g.scg.w.xr
-	genop(mov.w,'m_char [xr]',t1)			:(opdone)
+	op(mov.w,'m_char [xr]',t1)			:(opdone)
 
 g.scg.w.pxr
-	genop(dec.w, reg.xr)
-	genop(mov.w,'m_char [xr]',t1)			:(opdone)
+	op(dec.w, reg.xr)
+	op(mov.w,'m_char [xr]',t1)			:(opdone)
 g.scg.w.xrp
-	genop(mov.w,reg.al,t1)
-	genop(stos.b)				:(opdone)
+	op(mov.w,reg.al,t1)
+	op(stos.b)				:(opdone)
 
 g.csc  	ident(thislabel)			:s(opnext)
-	genop()					:(opdone)
+	op()					:(opdone)
 
 g.ceq
 	memmem()
-	genop('cmp',getarg(i1),getarg(i2))
-	genop('je',getarg(i3))
+	op('cmp',getarg(i1),getarg(i2))
+	op('je',getarg(i3))
 						:(opdone)
 
 g.cne   memmem()
-	genop('cmp',getarg(i1),getarg(i2))
-	genop('jnz',getarg(i3))
+	op('cmp',getarg(i1),getarg(i2))
+	op('jnz',getarg(i3))
 						:(opdone)
 
 g.cmc
-	genop('repe','cmps_b')
-	genop(mov.w,reg.xl,'0')
-	genop(mov.w,reg.xr,reg.xl)
+	op('repe','cmps_b')
+	op(mov.w,reg.xl,'0')
+	op(mov.w,reg.xr,reg.xl)
 	t1 = getarg(i1)
 	t2 = getarg(i2)
-	(ident(t1,t2) genop('jnz',t1))		:s(opdone)
-	genop('ja',t2)
-	genop('jb',t1)				:(opdone)
+	(ident(t1,t2) op('jnz',t1))		:s(opdone)
+	op('ja',t2)
+	op('jb',t1)				:(opdone)
 
 g.trc
-	genop(xchg.w,reg.xl,reg.xr)
-        genopl((t1 = genlab()) ':','movzx',reg.w0,'m_char [xr]')
-	genop(mov.w,reg.al,'[xl+w0]')
-	genop('stos' op_c)
-*	genop('loop',t1)
-	genop(dec.w,reg.wa)
-	genop('jnz',t1)
-	genop(xor.w,reg.xl,reg.xl)
-	genop(xor.w,reg.xr,reg.xr)
+	op(xchg.w,reg.xl,reg.xr)
+        opl((t1 = genlab()) ':','movzx',reg.w0,'m_char [xr]')
+	op(mov.w,reg.al,'[xl+w0]')
+	op('stos' op_c)
+*	op('loop',t1)
+	op(dec.w,reg.wa)
+	op('jnz',t1)
+	op(xor.w,reg.xl,reg.xl)
+	op(xor.w,reg.xr,reg.xr)
 						:(opdone)
 
-g.anb   genop(and.w,getarg(i1),getarg(i2))	:(opdone)
-g.orb   genop(or.w,getarg(i1),getarg(i2))	:(opdone)
-g.xob   genop(xor.w,getarg(i1),getarg(i2))	:(opdone)
-g.cmb   genop(not.w,getarg(i1))			:(opdone)
+g.anb   op(and.w,getarg(i1),getarg(i2))	:(opdone)
+g.orb   op(or.w,getarg(i1),getarg(i2))	:(opdone)
+g.xob   op(xor.w,getarg(i1),getarg(i2))	:(opdone)
+g.cmb   op(not.w,getarg(i1))			:(opdone)
 
 g.rsh
-	genop(shr.w,getarg(i1),getarg(i2))	:(opdone)
+	op(shr.w,getarg(i1),getarg(i2))	:(opdone)
 
 g.lsh
-	genop(shl.w,getarg(i1),getarg(i2))	:(opdone)
+	op(shl.w,getarg(i1),getarg(i2))	:(opdone)
 
 g.rsx
 	error('rsx not supported')
@@ -1694,174 +1683,174 @@ g.lsx
 	error('lsx not supported')
 
 g.nzb	ifreg(i1)				:s(g.nzb1)
-	genop('cmp',getarg(i1),'0')
-	genop('jnz',getarg(i2))
+	op('cmp',getarg(i1),'0')
+	op('jnz',getarg(i2))
 						:(opdone)
 g.nzb1
-	genop(or.w,getarg(i1),getarg(i1))
-	genop('jnz',getarg(i2))
+	op(or.w,getarg(i1),getarg(i1))
+	op('jnz',getarg(i2))
 						:(opdone)
 
 g.zrb	ifreg(i1)				:s(g.zrb1)
-	genop('cmp',getarg(i1),'0')
-	genop('jz',getarg(i2))
+	op('cmp',getarg(i1),'0')
+	op('jz',getarg(i2))
 						:(opdone)
 g.zrb1
-	genop(or.w,getarg(i1),getarg(i1))
-	genop('jz',getarg(i2))
+	op(or.w,getarg(i1),getarg(i1))
+	op('jz',getarg(i2))
 						:(opdone)
 
 g.zgb
-	genop('nop')				:(opdone)
+	op('nop')				:(opdone)
 
 g.zzz
- 	genop('zzz',getarg(i1))			:(opdone)
+ 	op('zzz',getarg(i1))			:(opdone)
 
-g.wtb   genop(sal.w,getarg(i1),v(log_cfp_b))	:(opdone)
+g.wtb   op(sal.w,getarg(i1),v(log_cfp_b))	:(opdone)
 
-g.btw   genop(shr.w,getarg(i1),log_cfp_b)	:(opdone)
+g.btw   op(shr.w,getarg(i1),log_cfp_b)	:(opdone)
 
 
 g.mti	ident(i.text(i1),'(xs)+')		:f(g.mti.1)
-	genop(pop.w,reg.w0)
-	genop('ldi_',reg.w0)			:(opdone)
+	op(pop.w,reg.w0)
+	op('ldi_',reg.w0)			:(opdone)
 g.mti.1
-	genop('ldi_',getarg(i1))		:(opdone)
+	op('ldi_',getarg(i1))		:(opdone)
 
 g.mfi
 *  last arg is optional
 *  compare with cfp$m, branching if result negative
 	eq(i.type(i2))				:s(g.mfi.1)
 *  here if label given, branch if wc not in range (ie, negative)
-	genop('sti_',reg.w0)
-	genop(or.w,reg.w0,reg.w0)
-	genop('js',getarg(i2))
+	op('sti_',reg.w0)
+	op(or.w,reg.w0,reg.w0)
+	op('js',getarg(i2))
 g.mfi.1
 	ident(i.text(i1),'-(xs)')		:s(g.mfi.2)
-	genop('sti_',getarg(i1))		:(opdone)
+	op('sti_',getarg(i1))		:(opdone)
 g.mfi.2
-	genop('sti_',reg.w0)
-	genop(push.w,reg.w0)			:(opdone)
+	op('sti_',reg.w0)
+	op(push.w,reg.w0)			:(opdone)
 
 g.ctw
 *  assume cfp_c chars per word
 	t1 = getarg(i1)
-	genop(add.w,t1,'(cfp_c-1)+cfp_c*' i.text(i2))
-	genop(shr.w,t1,log_cfp_c)
+	op(add.w,t1,'(cfp_c-1)+cfp_c*' i.text(i2))
+	op(shr.w,t1,log_cfp_c)
 					:(opdone)
 g.ctb
 	t1 = getarg(i1)
-	genop(add.w,t1,'(cfp_b-1)+cfp_b*' i.text(i2))
-	genop(and.w,t1,'-cfp_b')
+	op(add.w,t1,'(cfp_b-1)+cfp_b*' i.text(i2))
+	op(and.w,t1,'-cfp_b')
 						:(opdone)
 g.cvm	t1 = getarg(i1)
-	genop('sti_',reg.w0)
-	genop('imul',reg.w0,'10')
-	genop('jo',t1)
-	genop(sub.w,regmap[reg.wb],'ch_d0')
-	genop(sub.w,reg.w0,regmap[reg.wb])
-	genop('ldi_',reg.w0)
-	genop('jo',t1)
+	op('sti_',reg.w0)
+	op('imul',reg.w0,'10')
+	op('jo',t1)
+	op(sub.w,regmap[reg.wb],'ch_d0')
+	op(sub.w,reg.w0,regmap[reg.wb])
+	op('ldi_',reg.w0)
+	op('jo',t1)
 						:(opdone)
 g.cvd
-	genop('cvd_')				:(opdone)
+	op('cvd_')				:(opdone)
 g.mvc
 *	use word move if character size is word size
 *	if charsize is word size, convert character count to byte count for word move
 
 	t1 = genlab()
 	z_suspend = 1
-	genop('rep')
-	genop(movs.b)
+	op('rep')
+	op(movs.b)
 	z_suspend = 0
 						:(opdone)
 	t1 = genlab()
-	genopl(t1 ':', mov.w,reg.al,'byte [esi]')
-	genop(mov.w,'byte [edi]',reg.al)
-	genop(inc.w, 'esi')
-	genop(inc.w, 'edi')
-	genop(dec.w,reg.wa)
-	genop('jnz', t1)
+	opl(t1 ':', mov.w,reg.al,'byte [esi]')
+	op(mov.w,'byte [edi]',reg.al)
+	op(inc.w, 'esi')
+	op(inc.w, 'edi')
+	op(dec.w,reg.wa)
+	op('jnz', t1)
 						:(opdone)
 
 	t1 = genlab()
-	genopl(t1 ':', lods.b)
-	genop(stos.b)
-	genop(dec.w, reg.wa)
-	genop('jnz',t1)
+	opl(t1 ':', lods.b)
+	op(stos.b)
+	op(dec.w, reg.wa)
+	op('jnz',t1)
 						:(opdone)
 g.mvw
 	z_suspend = 1
-	genop(shr.w,reg.wa,log_cfp_b)
- 	genop('rep','movs_w')
+	op(shr.w,reg.wa,log_cfp_b)
+ 	op('rep','movs_w')
 	z_suspend = 0
 						:(opdone)
 
 g.mwb
-	genop(shr.w,reg.wa,log_cfp_b)
-	genop('std')
-	genop(lea.w,reg.xl,'a(xl-cfp_b)')
-	genop(lea.w,reg.xr,'a(xr-cfp_b)')
+	op(shr.w,reg.wa,log_cfp_b)
+	op('std')
+	op(lea.w,reg.xl,'a(xl-cfp_b)')
+	op(lea.w,reg.xr,'a(xr-cfp_b)')
  	genrep('movs_w')
-	genop('cld')				:(opdone)
+	op('cld')				:(opdone)
 
-	genop('std')
-	genop(shr.w,reg.wa,iv(log_cfp_b))
-	genop('rep')
-	genop('movs_w')
-	genop('ctd')
+	op('std')
+	op(shr.w,reg.wa,iv(log_cfp_b))
+	op('rep')
+	op('movs_w')
+	op('ctd')
 						:(opdone)
 
 g.mcb
 *	use word move if character size is word size
-	genop('std')
-	genop(dec.w,reg.xl)
-	genop(dec.w,reg.xr)
+	op('std')
+	op(dec.w,reg.xl)
+	op(dec.w,reg.xr)
  	genrep(movs.b)
-	genop('cld')
+	op('cld')
 						:(opdone)
-	genop('std')
-	genop('rep')
-	genop(movs.b)
-	genop('cld')
+	op('std')
+	op('rep')
+	op(movs.b)
+	op('cld')
 						:(opdone)
 genrep
 *	generate equivalent of rep op loop
 	l1 = genlab()
 	l2 = genlab()
-	genopl(l1 ':')
-	genop(or.w,reg.wa,reg.wa)
-	genop('jz',l2)
-	genop(op)
-	genop(dec.w,reg.wa)
-	genop('jmp',l1)
-	genopl(l2 ':')
+	opl(l1 ':')
+	op(or.w,reg.wa,reg.wa)
+	op('jz',l2)
+	op(op)
+	op(dec.w,reg.wa)
+	op('jmp',l1)
+	opl(l2 ':')
 						:(return)
 
 g.chk
-	genop('chk_')
-	genop(or.w,reg.w0,reg.w0);
-	genop('jne','sec06')			:(opdone)
+	op('chk_')
+	op(or.w,reg.w0,reg.w0);
+	op('jne','sec06')			:(opdone)
 
 decend
 *  here at end of dic or dac to see if want label made public
 	thislabel ? rtab(1) . thislabel ':'
-        differ(pubtab[thislabel]) genop('global',thislabel)
+        differ(pubtab[thislabel]) op('global',thislabel)
 						:(opdone)
 
 g.dac	t1 = i.type(i1)
         t2 = "" ;*(le(t1,2) "", le(t1,4) "d_offset_(", le(t1,6) "d_offset_(", "")
-        genopl(thislabel,'d_word',t2 i.text(i1))
+        opl(thislabel,'d_word',t2 i.text(i1))
 						:(decend)
-g.dic   genopl(thislabel,'d_word',i.text(i1))
+g.dic   opl(thislabel,'d_word',i.text(i1))
 						:(decend)
 
 g.drc
-*	genop('align',v(cfp_b))
-	genop('align',8)
+*	op('align',v(cfp_b))
+	op('align',8)
 	t1 = i.text(i1)
 	t1 ? fence "+" = ""
-        genop('d_real',t1)
+        op('d_real',t1)
 *  note that want to attach label to last instruction
 	t.label(cstmts[cstmts.n]) = thislabel
 	thislabel =				:(opdone)
@@ -1882,15 +1871,15 @@ g.dtc.1
 	le(dtc_i = dtc_i + 1, size(t2))		:s(g.dtc.1)
 
         t4 = ne(t3) t4 dupl(',0',cfp_c - t3)
-        genopl(thislabel,'d_char',t4)
+        opl(thislabel,'d_char',t4)
 						:(opdone)
-g.dbc   genopl(thislabel,'d_word',getarg(i1))
+g.dbc   opl(thislabel,'d_word',getarg(i1))
 						:(opdone)
-g.equ   genopl(thislabel,'equ',i.text(i1))
+g.equ   opl(thislabel,'equ',i.text(i1))
 						:(opdone)
 g.exp
 	ppm_cases[thislabel] = i.text(i1)
-*	genop('extern',thislabel)
+*	op('extern',thislabel)
 	thislabel =				:(opdone)
 
 g.inp
@@ -1900,37 +1889,37 @@ g.inp
 
 g.inr						:(opnext)
 
-g.ejc	genop('')				:(opdone)
+g.ejc	op('')				:(opdone)
 
-g.ttl	genop('')
+g.ttl	op('')
 						:(opdone)
 
-g.sec	genop('')
+g.sec	op('')
 	sectnow = sectnow + 1			:($("g.sec." sectnow))
 
 * procedure declaration section
-g.sec.1 genop('segment .text')
-        genop('global','sec01')
-        genopl('sec01' ':')             	:(opdone)
+g.sec.1 op('segment .text')
+        op('global','sec01')
+        opl('sec01' ':')             	:(opdone)
 
 * definitions section
 g.sec.2
-        genop('segment .data')
-        genop('global','sec02')
-        genopl('sec02' ':')             	:(opdone)
+        op('segment .data')
+        op('global','sec02')
+        opl('sec02' ':')             	:(opdone)
 
 * constants section
 g.sec.3
-        genop('segment .data')
-        genop('global','sec03')
-        genopl('sec03' ':')     		:(opdone)
+        op('segment .data')
+        op('global','sec03')
+        opl('sec03' ':')     		:(opdone)
 
 * working variables section
-g.sec.4 genop('global','esec03')
-        genopl('esec03' ':')
-        genop('segment .data')
-        genop('global','sec04')
-        genopl('sec04' ':')     
+g.sec.4 op('global','esec03')
+        opl('esec03' ':')
+        op('segment .data')
+        op('global','sec04')
+        opl('sec04' ':')     
 						:(opdone)
 
 *  here at start of program section.  if any n type procedures,
@@ -1938,34 +1927,34 @@ g.sec.4 genop('global','esec03')
 g.sec.5
 *  emit code to indicate in code section
 *  get direction set to up.
-        genop('global','esec04')
-        genopl('esec04' ':')
-*        (gt(prc.count1) genopl('prc$' ':','times', prc.count1 ' dd 0'))
-	genop('prc_: times ' prc.count1 ' dd 0')
-        genop('global','end_min_data')
-        genopl('end_min_data' ':')
-        genop('segment .text')
-        genop('global','sec05')
-        genopl('sec05' ':')     
+        op('global','esec04')
+        opl('esec04' ':')
+*        (gt(prc.count1) opl('prc$' ':','times', prc.count1 ' dd 0'))
+	op('prc_: times ' prc.count1 ' dd 0')
+        op('global','end_min_data')
+        opl('end_min_data' ':')
+        op('segment .text')
+        op('global','sec05')
+        opl('sec05' ':')     
 *  enable tracing if desired
 						:(opdone)
 
 *  stack overflow section.  output exi__n tail code
 g.sec.6
-        genop('global','sec06')
-        genopl('sec06'  ':', 'nop')
+        op('global','sec06')
+        opl('sec06'  ':', 'nop')
 				             :(opdone)
 
 *  error section.  produce code to receive erb's
 g.sec.7
-        genop('global','sec07')
-        genopl('sec07' ':')
+        op('global','sec07')
+        opl('sec07' ':')
 	flush()
 *  error section.  produce code to receive erb's
 
 *	allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
-	genopl('err_:',xchg.w,reg.wa,'m(' rcode ')')
+	opl('err_:',xchg.w,reg.wa,'m(' rcode ')')
 						:(opdone)
 
 
@@ -2041,3 +2030,219 @@ g.end.2
 	report(time(),'execution time ms')
 	:(end)
 end
+-stitl getarg(iarg)
+getarg
+*	imem is null to generate memory reference, otherwise just get
+*	address for use in lea.w instruction.
+	pre = 'm('
+	post = ')'	
+
+	txt = i.text(iarg)
+	typ = i.type(iarg)
+	eq(typ)					:f($(argcase[typ]))
+	getarg = txt				:(arg.done)
+
+* int
+arg.c.1 getarg = txt				:(arg.done)
+
+* dlbl
+arg.c.2 getarg = txt				:(arg.done)
+
+* wlbl, clbl
+arg.c.3
+arg.c.4 getarg = pre txt post			:(arg.done)
+
+* elbl, plbl
+arg.c.5
+arg.c.6 getarg = txt				:(arg.done)
+
+* w,x, map register name
+arg.c.7
+arg.c.8
+	getarg = regmap[txt]			:(arg.done)
+
+* (x), register indirect
+arg.c.9
+	txt len(1) len(2) . typ
+	typ = regmap[typ]
+	getarg = pre typ post
+						:(arg.done)
+
+* (x)+, register indirect, post increment
+* use lea reg,[reg+cfp_b] unless reg is esp, since it takes an extra byte.
+* actually, lea reg,[reg+cfp_b] and add reg,cfp_b are both 2 cycles and 3 bytes
+* for all the other regs, and either could be used.
+arg.c.10
+	txt = substr(txt,2,2)
+	t1 = regmap[txt]
+	getarg = pre t1 post
+	(ident(txt,reg.xs) genaop(tstmt(,add.w,t1,'cfp_b'))) :s(arg.done)
+	genaop(tstmt(,lea.w,t1,'a(' t1 '+cfp_b)'))	:(arg.done)
+
+*  -(x), register indirect, pre decrement
+arg.c.11
+	t1 = regmap[substr(txt,3,2)]
+	getarg = pre t1 post
+	genbop(tstmt(,lea.w,t1,'a(' t1 '-cfp_b)')) :(arg.done)
+
+* int(x)
+* dlbl(x)
+arg.c.12
+arg.c.13
+	txt break('(') . t1 '(' len(2) . t2
+	getarg = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
+							:(arg.done)
+
+*  name(x), where name is in working section
+arg.c.14
+arg.c.15
+	getarg = ne(rip_mode)	getrip(iarg)		:s(return)
+	txt break('(') . t1 '(' len(2) . t2
+	getarg = pre    t1 '+'  regmap[t2] 	post
+							:(arg.done)
+* signed integer
+arg.c.16 getarg = txt				:(arg.done)
+
+* signed real
+arg.c.17 getarg = txt				:(arg.done)
+
+arg.c.18
+arg.c.19
+arg.c.20
+arg.c.21
+arg.c.22
+	getarg = getval(iarg)			:(arg.done)
+*  pnam, eqop
+arg.c.23
+arg.c.24 getarg = txt				:(arg.done)
+
+* ptyp, text, dtext
+arg.c.25
+arg.c.26
+arg.c.27 getarg = txt				:(arg.done)
+arg.done
+*	ne(x_trace) outline('; arg ' typ ':' txt   ' -> ' getarg)
+						:(return)
+
+-stitl getlea(iarg)
+getlea
+*	similar to getarg, but gets effective address
+*	this procedure only called if operand is
+*	ops: 3,4,9,12,13,14,15
+*	imem is null to generate memory reference, otherwise just get
+*	address for use in lea.w instruction.
+	pre = 'a('
+	post = ')'	
+
+	txt = i.text(iarg)
+	typ = i.type(iarg)
+	eq(typ)					:f($(leacase[typ]))
+	getlea = txt				:(return)
+* wlbl, clbl
+lea.c.3
+lea.c.4 
+	getlea = pre txt post			:(return)
+
+* (x), register indirect
+lea.c.9
+	txt len(1) len(2) . typ
+	typ = regmap[typ]
+	getlea = pre typ post
+						:(return)
+* int(x)
+* dlbl(x)
+lea.c.12
+lea.c.13
+	txt break('(') . t1 '(' len(2) . t2
+	getlea = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
+							:(return)
+
+*  name(x), where name is in working section
+lea.c.14
+lea.c.15
+	txt break('(') . t1 '(' len(2) . t2
+	getlea = pre    t1 '+'  regmap[t2] 	post
+							:(return)
+
+-stitl getrip(iarg)
+getrip
+*  return value suitable for use in rip mode (needed for osx). This requires that we
+*  allocate a variable to hold the address,value. This is loaded into w0.
+
+	pre = 'm('
+	post = ')'	
+	txt = i.text(iarg)
+	typ = i.type(iarg)
+	eq(typ)					:f($(ripcase[typ]))
+	getrip = txt				:(rip.done)
+
+*  name(x), where name is in working section
+rip.c.14
+rip.c.15
+	txt break('(') . var '(' len(2) . reg
+*	getrip = pre    var '+'  regmap[t2] 	post
+	getrip = var 
+						:(rip.done)
+*  *dlbl
+rip.c.19
+	getrip = 'cfp_b*' substr(txt,2)		:(rip.done)
+
+*  =dlbl
+rip.c.18	
+*  =name (data section)
+rip.c.20
+rip.c.21
+*  =name (program section)
+rip.c.22
+        getrip =  substr(txt,2)   		:(rip.done)
+
+rip.done
+*  see if have generated location for argument with same txt. Use it if so, else make new one.
+	ent = riptable[txt]
+	differ(ent)				:s(rip.ent)
+*  here to make new entry for generated location
+	rip_count = rip_count + 1
+	lbl = genrip()
+	riptable[txt] = lbl
+	ent = lbl
+	op('segment','.data')
+	opl(lbl ':','d_word',getrip)
+	op('segment','.text')
+rip.ent
+*	generate reference via w0 if needed
+	op(mov.w,reg.w0,pre ent post)
+	differ(reg)	op(add.w,reg.w0,reg)
+	getrip = w0
+*	outfile = ne(x_trace) '; getrip ' ent
+						:(return)
+	
+
+-stitl getval(iarg)
+getval
+	pre = 'm('
+	post = ')'	
+
+	txt = i.text(iarg)
+	typ = i.type(iarg)
+	output = lt(typ, 18) gt(typ.22) ' impossible type for getval ' typ
+	getval = ne(rip_mode) getrip(iarg)	:s(return)
+	eq(typ)					:f($(valcase[typ]))
+	getarg = txt				:(val.done)
+
+*  =dlbl
+val.c.18	
+	getval = substr(txt,2)			:(val.done)
+val.c.18.1
+	getval = substr(txt,2)			:(val.done)
+*  *dlbl
+val.c.19
+	getval = 'cfp_b*' substr(txt,2)		:(val.done)
+*  =name (data section)
+val.c.20
+val.c.21
+        getval =  substr(txt,2)			:(val.done)
+*  =name (program section)
+val.c.22
+        getval =  substr(txt,2)			:(val.done)
+val.done
+						:(return)
