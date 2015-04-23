@@ -875,9 +875,10 @@ restart:
 	call	stackinit               # initialize minimal stack
 
                                         # set up for stack relocation
-#TODO#
-	lea	%rax,[tscblk+scstr]       # top of saved stack
-	movq	lmodstk,qb    		# bottom of saved stack
+#	lea	%rax,[tscblk+scstr]       # top of saved stack
+	movq	$tscblk,%rax
+	addq	$scstr,%rax
+	movq	lmodstk,%rbx    		# bottom of saved stack to WB
 	movq	stbas,%rcx      		# wa = stbas from exit() time
 	subq	%rax,%rbx                 	# wb = size of saved stack
 	movq	%rcx,%rdx
@@ -891,7 +892,6 @@ restart:
 #
 #       restore stack from tscblk.
 #
-#TODO
 #					# compute effective address of tscblk +cfp_c+cfp+b
 	mov	$tscblk,%rax
 	addq	$16,%rax
@@ -900,7 +900,7 @@ restart:
 	je	re3               	#  skip if not
 	subq	$4,%rsi
 	std
-re1:	lodsd                           # get old stack word to %rax
+re1:	lodsw                           # get old stack word to %rax
 	cmpq	%rdx,%rax               # below old stack bottom?
 	jb	re2               	#   j. if %rax < %rdx
 	cmpq	wa,%rax                	# above old stack top?
@@ -996,29 +996,29 @@ re4:	movq	stbas,%rax
 
 	.global	mxint
 
-%ifdef zz_trace
-	.extern	shields
-	.extern	zz
-	.extern	zz_
-	.extern	zz_cp
-	.extern	zz_%rsi
-	.extern	zz_%rdi
-	.extern	zz_sp
-	.extern	zz_wa
-	.extern	zz_wb
-	.extern	zz_%rdx
-	.extern	zz_%rax
-	.extern	zz_zz
-	.extern	zz_id
-	.extern	zz_de
-	.extern	zz_0
-	.extern	zz_1
-	.extern	zz_2
-	.extern	zz_3
-	.extern	zz_4
-	.extern	zz_arg
-	.extern	zz_num
-%endif
+#	%ifdef zz_trace
+#		.extern	shields
+#		.extern	zz
+#		.extern	zz_
+#		.extern	zz_cp
+#		.extern	zz_%rsi
+#		.extern	zz_%rdi
+#		.extern	zz_sp
+#		.extern	zz_wa
+#		.extern	zz_wb
+#		.extern	zz_%rdx
+#		.extern	zz_%rax
+#		.extern	zz_zz
+#		.extern	zz_id
+#		.extern	zz_de
+#		.extern	zz_0
+#		.extern	zz_1
+#		.extern	zz_2
+#		.extern	zz_3
+#		.extern	zz_4
+#		.extern	zz_arg
+#		.extern	zz_num
+#	%endif
 	.global	start
 
 
@@ -1026,7 +1026,6 @@ re4:	movq	stbas,%rax
 #		section	.data
 #	%%desc:	db	\arg1,0
 #		section	.text
-#	#HERE
 #		movq	m_word [zz_de],%%desc
 #		call	zz_
 #		.endm
@@ -1036,7 +1035,7 @@ re4:	movq	stbas,%rax
 #
 
 	.global	typet
-	section .data
+	.data
 
 	.quad	b_art	# arblk type word - 0
 	.quad	b_cdc	# cdblk type word - 1
@@ -1099,7 +1098,7 @@ calltab:
 	.global	b_scl
 	.global	b_vct
 	.global	b_xnt
-	.global	b_%rdit
+	.global	b_xrt
 	.global	c_aaa
 	.global	c_yyy
 	.global	dnamb
@@ -1117,7 +1116,7 @@ calltab:
 	.global	kvftr
 	.global	kvcom
 	.global	kvpfl
-	.global	m%rsien
+	.global	mxlen
 	.global	polct
 	.global	s_yyy
 	.global	s_aaa

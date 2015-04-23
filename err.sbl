@@ -109,25 +109,22 @@
         output = "target: " target
 
 	asm.comment	= '#'
-	asm.data	= '.data'
-	asm.global	= '.global'
-	asm.segment	= '.segment'
-	asm.string	= '.string'
 
 * tab character
 	tab	= char(9)
 
 *
 *  comma delimited string of decimal bytes:
-	byte	= tab asm.string tab
+	byte	= tab '.byte' tab
 
 *  delim delimited string of 'normal' ascii characters (32-127)
 	delim	= '"'
-        ascii   = tab asm.string  tab
+	delim 	= "'"
+        ascii   = tab '.ascii'	tab
 
 *  data and public definitions
 *
-        data    = tab asm.segment	tab asm.data
+        data    = tab '.data'
 
 *  setup keywords
 *
@@ -285,7 +282,7 @@ repl_end
 
 *  entry.  put out comment line to show what string is being compressed.
 putout  outfile =
-        outfile = asm.comment lpad(i,5) '  "' expand(s) '"'
+        outfile = '#' lpad(i,5) '  "' expand(s) '"'
 
 *  main loop.  get segments of normal and special characters.  each segment
 *    (or both) may be null.
@@ -399,15 +396,15 @@ readerr_end
 *
 	prefix = ident(target,"osx_64") "_"
 
-	outfile = tab 'global' tab prefix "errors"
-	outfile = prefix 'errors:' tab 'db' tab '0'
+	outfile = tab '.global' tab prefix "errors"
+	outfile = prefix 'errors:' tab '.byte' tab '0'
 	seq(" putout(err[i],i)", .i)
 
 *  putout label and phrase table
 *
         outfile =
-	outfile = tab 'global' tab prefix 'phrases'
-	outfile = prefix 'phrases:' tab 'db' tab '0'
+	outfile = tab '.global' tab prefix 'phrases'
+	outfile = prefix 'phrases:' tab '.word' tab '0'
 	seq(" putout(phrase[i],spread(i))", .i)
 
 *  finish up the output file
