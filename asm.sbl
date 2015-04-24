@@ -88,6 +88,7 @@
 	lcase   = 'abcdefghijklmnopqrstuvwxyz'
 	nos     = '0123456789'
 	tab	= char(9)
+	literal_ = '$'
 
 
 *  function definitions
@@ -119,6 +120,7 @@
 	define('ifreg(iarg)')
 	define('iv(text)')
 	define('memmem()t')
+	define('newstmt(gopl,gopc,gop1,gop2,gop3)arg1,arg2,swap')
 	define('outline(txt)')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
@@ -247,19 +249,28 @@ skip_init.end
 
 *	swap_op is set if operand order is reversed in gas att syntax
 
-	swap_op = table(100)
-	swap_op[add.w] = swap_op['and'] = swap_op['cmp'] = swap_op['lea'] = swap_op['mov'] =
-+	swap_op['or'] = swap_op['sal'] = swap_op['sar'] = swap_op['sub'] = swap_op['xor'] = swap_op['xchg'] =  1
-
-
 	s = 'add and cmp dec inc lea lods mov movs not or pop push sal sar shl shr stos sub xchg xor '
 op_map.init
 	s break(' ') . op ' ' =			:f(op_map.done)
-	$(op '.w') = op				:(op_map.init)
+	$(op '.w') = op 'q'			
+						:(op_map.init)
 op_map.done
-	mov.b = 'mov';		movs.b = 'movsb';	movzx.b = 'movzx';	cmp.b = 'cmp';		
+
+	swap_op = table(100)
+	s = 'add and cmp lea mov movs or sub xchg xor '
+	swap_op[ op 'q'] = 1
+
+	mov.b = 'movb';		movs.b = 'movsb';	movzx.b = 'movzx';	cmp.b = 'cmp';		
 	test.b = 'test';	lods.b = 'lodsb';	stos.b = 'stosb';	stos.w = 'stosq'
 	lods.w = 'lodsq'
+
+	swap_op[mov.b] = swap_op[movs.b] = swap_op[movzx.b] = swap_op[cmp.b]
+
+*	swap_op is set if operand order is reversed in gas att syntax
+
+	swap_op = table(100)
+	swap_op['addq'] = swap_op['andq'] = swap_op['cmpq'] = swap_op['leaq'] = swap_op['movq'] = 1
+	swap_op['orq'] = swap_op['salq'] = swap_op['sarq'] = swap_op['subq'] = swap_op['xorq'] = swap_op['xchg'] =  1
 
 *  data structures
 
@@ -678,26 +689,24 @@ genrip	genrip = 'r_' lpad(riplabels = riplabels + 1,4,'0') :(return)
 -stitl opl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
 opl	
-
-	opl = swap_op[gopc]
-
-	ident(opl)				:s(opl.1)
-
-	here to swap the operands
-	opl = gop1; gop1 = gop2; gop2 = opl
-
-
-	opl =
-
-opl.1
-
-*
 	cstmts[cstmts.n = cstmts.n + 1] =
-.		tstmt(gopl,gopc,gop1,gop2,gop3)	:(return)
+.		newstmt(gopl,gopc,gop1,gop2,gop3)	:(return)
 
+-stitl newstmt(gopl,gopc,gop1,gop2,gop3)arg1,arg2,swap
+newstmt
+
+*	see if need to swap operands
+
+	swap = swap_op[gopc]
+	outfile = differ(swap) '# swapping ' gopc ':' gop1 ':' gop2 ':'
+	arg1 = (ident(swap) gop1, gop2)
+	arg2 = (ident(swap) gop2, gop1)
+	newstmt = tstmt(gopl,gopc,arg1,arg2,gop3)
+						:(return)
 -stitl op(gopc,gop1,gop2,gop3)
 *  generate operation with no label
-op   opl(,gopc,gop1,gop2,gop3)            :(return)
+op   
+	opl(,gopc,gop1,gop2,gop3)		:(return)
 
 
 -stitl getarg(iarg)
@@ -748,13 +757,13 @@ getarg.c.9
 
 getarg.c.10
 	indx = substr(txt,2,2)
-	genaop(tstmt(,'Add_',regmap[indx],literal_ cfp_b)) :(getarg.mem)
+	genaop(newstmt(,'addq',regmap[indx],literal_ cfp_b)) :(getarg.mem)
 
 *	-(x), register indirect, pre decrement
 
 getarg.c.11
 	indx = substr(txt,3,2)
-	genbop(tstmt(,'Sub_',regmap[indx],literal_ cfp_b,)) 	:(getarg.mem)
+	genbop(newstmt(,'subq',regmap[indx],literal_ cfp_b,)) 	:(getarg.mem)
 
 *	int(x)
 *	dlbl(x)
@@ -845,14 +854,14 @@ getlea
 
 getlea.c.3
 getlea.c.4
-i	op('Mov_',reg.w0,literal_ txt)		:(return)
+i	op('mov',reg.w0,literal_ txt)		:(return)
 
 *	(x), register indirect
 
 getlea.c.9
 	txt len(1) len(2) . typ
 	typ = regmap[typ]
-	op('Mov_',reg.w0,typ)			:(return)
+	op(mov.w,reg.w0,typ)			:(return)
 
 *	int(x)
 *	dlbl(x)
@@ -860,15 +869,15 @@ getlea.c.9
 getlea.c.12
 getlea.c.13
 	txt break('(') . t1 '(' len(2) . t2
-	op('Mov_',reg.w0,regmap[t2])
-	op('Add_',reg.w0,'(cfp_b*' t1 ')')	:(return)
+	op(mov.w,reg.w0,regmap[t2])
+	op('add',reg.w0,'(cfp_b*' t1 ')')	:(return)
 
 *	name(x), where name is in working section
 
 getlea.c.14
 getlea.c.15
 	txt break('(') . t1 '(' len(2) . t2
-	op('Mov_',reg.w0,regmap[t2])
+	op(mov.w,reg.w0,regmap[t2])
 	op('Add_',reg.w0,t1)			:(return)
 getlea.asm
 
@@ -1846,11 +1855,10 @@ g.dic   opl(thislabel,'.quad',i.text(i1))
 						:(decend)
 
 g.drc
-*	op('align',v(cfp_b))
-	op('align',8)
+	op('.align',8)
 	t1 = i.text(i1)
 	t1 ? fence "+" = ""
-        op('d_real',t1)
+        op('.double',t1)
 *  note that want to attach label to last instruction
 	t.label(cstmts[cstmts.n]) = thislabel
 	thislabel =				:(opdone)
@@ -1858,22 +1866,17 @@ g.drc
 g.dtc
 *  change first and last chars to " (assume / used in source)
 	t1 = i.text(i1)
-	t1 tab(1) rtab(1) . t2
-	t3 = remdr(size(t2),cfp_c)
-*        t2 = "'" t2 "'"
-*  append nulls to complete last word so constant length is multiple
-*  of word word
-	dtc_i = 1
-	t4 =
+	t1 tab(1) rtab(1) . str
+	left = cfp_c - remdr(size(str),cfp_c)
+        str = '"' str '"'
+	op('.ascii',str)
 g.dtc.1
-	t4 = gt(dtc_i, 1) t4 ","
-	t4 = t4 "'" substr(t2,dtc_i,1) "'"
-	le(dtc_i = dtc_i + 1, size(t2))		:s(g.dtc.1)
+	eq(left)				:s(opdone)
+*  append nulls to complete last word so length is multiple of word word
+	op('.byte','0')
+	left = left - 1				:(g.dtc.1)
 
-        t4 = ne(t3) t4 dupl(',0',cfp_c - t3)
-        opl(thislabel,'.ascii',t4)
-						:(opdone)
-g.dbc   opl(thislabel,'.byte',getarg(i1))
+g.dbc   opl(thislabel,'.quad',getarg(i1))
 						:(opdone)
 g.equ   
 *	opl(thislabel,'equ',i.text(i1))
@@ -2077,14 +2080,14 @@ arg.c.10
 	txt = substr(txt,2,2)
 	t1 = regmap[txt]
 	getarg = pre t1 post
-	(ident(txt,reg.xs) genaop(tstmt(,add.w,t1,'cfp_b'))) :s(arg.done)
+	(ident(txt,reg.xs) genaop(newstmt(,add.w,t1,'cfp_b'))) :s(arg.done)
 	genaop(tstmt(,lea.w,t1,'a(' t1 '+cfp_b)'))	:(arg.done)
 
 *  -(x), register indirect, pre decrement
 arg.c.11
 	t1 = regmap[substr(txt,3,2)]
 	getarg = pre t1 post
-	genbop(tstmt(,lea.w,t1,'a(' t1 '-cfp_b)')) :(arg.done)
+	genbop(newstmt(,lea.w,t1,'a(' t1 '-cfp_b)')) :(arg.done)
 
 * int(x)
 * dlbl(x)
@@ -2246,4 +2249,3 @@ val.c.21
 val.c.22
         getval =  substr(txt,2)			:(val.done)
 val.done
-						:(return)
