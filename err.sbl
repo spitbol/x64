@@ -118,8 +118,8 @@
 	byte	= tab '.byte' tab
 
 *  delim delimited string of 'normal' ascii characters (32-127)
-	delim	= '"'
 	delim 	= "'"
+	delim	= '"'
         ascii   = tab '.ascii'	tab
 
 *  data and public definitions

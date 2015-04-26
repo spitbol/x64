@@ -75,7 +75,7 @@ unix_64:
 	./bin/sbl_unix_64 -r -u unix_64:$(ITOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
 	./bin/sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
 #	cat sys.asm err.s sbl.tmp >sbl.s
-	cat sys.asm sbl.tmp >sbl.s
+	cat sys.asm err.s sbl.tmp >sbl.s
 	$(ASM) -o sbl.o sbl.s
 	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl 
 

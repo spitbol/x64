@@ -527,7 +527,7 @@ get_ia:
 
 	.global	set_ia_
 set_ia_:	
-	movq	(reg_%rax),%rbp
+	movq	(%rax),%rbp
 	ret
 
 syscall_init:
@@ -577,7 +577,7 @@ sysbs:	syscall	  zysbs,2
 	.global sysbx
 	.extern	zysbx
 sysbx:	
-	movq	%rsp,reg_sp
+	movq	%rsp,reg_xs
 	syscall	zysbx,2
 
 #        global syscr
@@ -622,7 +622,7 @@ sysep:	syscall	zysep,12
 
 	.global sysex
 	.extern	zysex
-sysex:	movq	reg_sp,%rsp
+sysex:	movq	reg_xs,%rsp
 	syscall	zysex,13
 
 	.global sysfc
@@ -639,7 +639,7 @@ sysgc:	syscall	zysgc,15
 
 	.global syshs
 	.extern	zyshs
-syshs:	movq	reg_sp,%rsp
+syshs:	movq	reg_xs,%rsp
 	syscall	zyshs,16
 
 	.global sysid
@@ -724,7 +724,7 @@ sysul:	syscall	zysul,37
 
 	.global sysxi
 	.extern	zysxi
-sysxi:	movq	reg_sp,%rsp
+sysxi:	movq	reg_xs,%rsp
 	syscall	zysxi,38
 
 	.macro	callext	arg1,arg2
@@ -742,8 +742,8 @@ sysxi:	movq	reg_sp,%rsp
 #       input   ia = number <=0 to convert
 #       output  ia / 10
 #               wa ecx) = remainder + '0'
-	.global	cvd__
-cvd__:
+	.global	cvd_
+cvd_:
 	.extern	i_cvd
 	movq	%rbp,reg_ia
 	movq	reg_wa,%rcx
@@ -753,7 +753,7 @@ cvd__:
 	ret
 
 
-#       dvi__ - divide ia (edx) by long in %rax
+#       dvi_ - divide ia (edx) by long in %rax
 	.global	dvi__
 dvi__:
 	.extern	i_dvi
@@ -765,7 +765,7 @@ dvi__:
 	ret
 
 	.global	rmi__
-#       rmi__ - remainder of ia (edx) divided by long in %rax
+#       rmi_ - remainder of ia (edx) divided by long in %rax
 rmi__:
 	jmp	ocode
 	.extern	i_rmi
@@ -849,7 +849,7 @@ ovr_:
 
 	.global	get_fp			# get frame pointer
 get_fp:
-	movq	reg_sp,%rax     		# minimal's %rsp
+	movq	reg_xs,%rax     		# minimal's %rsp
 	addq	$8,%rax           	# pop return from call to sysbx or sysxi
 	ret                    		# done
 
@@ -884,7 +884,7 @@ restart:
 	movq	%rcx,%rdx
 	subq	%rbx,%rdx                 	# wc = stack bottom from exit() time
 	movq	%rcx,%rbx
-	subq	wb,%rsp                 	# wb =  stbas - new stbas
+	subq	%rbx,%rsp                 	# wb =  stbas - new stbas
 
 	movq	%rsp,stbas		# save initial sp
 #        getoff  %rax,dffnc               # get address of ppm offset
@@ -903,7 +903,7 @@ restart:
 re1:	lodsw                           # get old stack word to %rax
 	cmpq	%rdx,%rax               # below old stack bottom?
 	jb	re2               	#   j. if %rax < %rdx
-	cmpq	wa,%rax                	# above old stack top?
+	cmpq	%rcx,%rax                	# above old stack top?
 	ja	re2               	#   j. if %rax > wa
 	subq	%rbx,%rax              	# within old stack, perform relocation
 re2:	pushq   %rax                   	# transfer word of stack
@@ -964,7 +964,7 @@ re4:	movq	stbas,%rax
 	movq	%rax,gbcnt	       	# reset garbage collect count
 	call	zystm                 	# fetch execution time to reg_ia
 	movq	reg_ia,%rax	     	# set time into compiler
-	movq	%rax,timsx0
+	movq	%rax,timsx
 
 #       code that would be executed if we returned to sysbx:
 #
@@ -1039,7 +1039,7 @@ re4:	movq	stbas,%rax
 
 	.quad	b_art	# arblk type word - 0
 	.quad	b_cdc	# cdblk type word - 1
-	.quad	b_e%rsi	# exblk type word - 2
+	.quad	b_exl	# exblk type word - 2
 	.quad	b_icl	# icblk type word - 3
 	.quad	b_nml	# nmblk type word - 4
 	.quad	p_aba	# p0blk type word - 5
@@ -1052,7 +1052,7 @@ re4:	movq	stbas,%rax
 	.quad	b_tbt	# tbblk type word - 11
 	.quad	b_vct	# vcblk type word - 12
 	.quad	b_xnt	# xnblk type word - 13
-	.quad	b_%rdit	# xrblk type word - 14
+	.quad	b_xrt	# xrblk type word - 14
 	.quad	b_bct	# bcblk type word - 15
 	.quad	b_pdt	# pdblk type word - 16
 	.quad	b_trt	# trblk type word - 17
@@ -1185,7 +1185,7 @@ calltab:
 
 	.macro	ngi_
 	neg	%rbp
-	seto	byte [reg_fl]
+	seto	reg_fl
 	.endm
 
 	.macro	rmi_	arg1
@@ -1231,7 +1231,7 @@ calltab:
 	.endm
 
 	.macro	rov_	arg1
-	movq	reg_fl,%al
+	movb	reg_fl,%al
 	orb	%al,%al
 	jne	\arg1
 	.endm
