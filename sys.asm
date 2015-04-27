@@ -373,14 +373,14 @@ restore_regs:
 startup:
 	pop	%rax			# discard return
 	call	stackinit		# initialize minimal stack
-	mov	%rax,compsp	# get minimal's stack pointer
-	mov	reg_wa,%rax		# startup stack pointer
+	mov	compsp,%rax	# get minimal's stack pointer
+	mov	%rax,reg_wa	# startup stack pointer
 
 	cld				# default to up direction for string ops
 #        getoff  %rax,dffnc               # get address of ppm offset
-	mov	ppoff,%rax	# save for use later
+	mov	%rax,ppoff	# save for use later
 
-	mov	%rsp,osisp	# switch to new c stack
+	mov	osisp,%rsp	# switch to new c stack
 	mov	$calltab_start,%rax
 	mov	%rax,minimal_id
 	call	minimal			# load regs, switch stack, start compiler
@@ -1020,19 +1020,21 @@ re4:	movq	stbas,%rax
 #		.extern	zz_num
 #	%endif
 	.global	start
+	.extern	trc
+	.extern	trc_de
+
+	.macro	trc	lbl,desc
+	.data
+\lbl:	.ascii	\desc
+	.byte	0
+	.text
+	movq	$\lbl,trc_de
+	call	trc
+	.endm
 
 
-#		.macro	zzz	arg1
-#		section	.data
-#	%%desc:	db	\arg1,0
-#		section	.text
-#		movq	m_word [zz_de],%%desc
-#		call	zz_
-#		.endm
-#
-#
 #   table to recover type word from type ordinal
-#
+
 
 	.global	typet
 	.data

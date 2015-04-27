@@ -71,7 +71,6 @@
         version = 'v1.12'
 	rcode = '_rc_'
 
-
 -eject
 
 *  keyword initialization
@@ -79,17 +78,16 @@
 	&anchor = &trim	= &dump = 1
 	&stlimit = 10000000
 *	&dump = 3
-	
 
 *  useful constants
 
-	letters = 'abcdefghijklmnopqrstuvwxyz'
-	ucase   = letters
-	lcase   = 'abcdefghijklmnopqrstuvwxyz'
-	nos     = '0123456789'
-	tab	= char(9)
+        comment.delim = '#'
+	letters = &lcase
+	cs	= '# '			;* comment string
 	ls	= ':'			;* label and options delimiter 
 	literal_ = '$'
+	nos     = '0123456789'
+	tab	= char(9)
 
 
 *  function definitions
@@ -143,6 +141,7 @@
 
 	os = 'unix';	ws = '64'
 	options = host(0)
+	
 	output = 'options: ' options
 *	add trailing colon so always have colon after an argument
 	options = options ls
@@ -150,10 +149,11 @@ option.next
 *	ignore extraneous : in list (helps with writing makefiles)
 	options ls =				:s(option.next)
 	options break(ls) . option ls =	:f(options.done)
+	outfile = cs ' options ' options ls
 
 	ident(option,'unix_64')			:s(option.unix.64)
 	ident(option,'xt')			:s(option.xt)
-	ident(option,'it')			:s(option.it)
+	ident(option,'trc')			:s(option.trc)
 
 * here if unknown option
 
@@ -163,7 +163,7 @@ option.next
 option.unix.64
 	os = 'unix'; 	ws = '64'		:(option.next)
 
-option.it
+option.trc
 *	turn on instruction trace
 	i_trace = 1				:(option.next)
 
@@ -198,20 +198,20 @@ options.done
 	report('rip', rip_mode)
 	ne(rip_mode) ripinit()
 
-*	z_limit is maximum number of calls to be generated if non-zero
-	z_limit = 0
-*	set z_first non-zero to skip first number of instructions that would generate trace
-	z_first = 1
+*	i_limit is maximum number of calls to be generated if non-zero
+	i_limit = 0
+*	set i_first non-zero to skip first number of instructions that would generate trace
+	i_first = 1
 *	will set in_executable when in part of program where executable
 *	instructions may occur
-	z_exec = 0
+	i_exec = 0
 
-*	z_suspend is set to temporarily disable the trace.
+*	i_suspend is set to temporarily disable the trace.
 *	initially set so emit no code until reach code section
-	z_suspend = 0
+	i_suspend = 0
 *	set in_skip when should not insert trace code, else assembly errors result.
 *	start with skip on, turn off when see first start of code.
-	z_skip = 1
+	i_skip = 1
 *	skip_on and skip_off are labels indicating the start and end,
 *	respectively, of sections of the code that should not be traced,
 *	usually because they contain a loop instruction that won't
@@ -434,24 +434,19 @@ is_exec.2
 
 *	filebase ? break(';:') . filebase len(1) (break(';:') | rem) . target
 *+		((len(1) rem . flags) | '')
-*	$replace(target,lcase,ucase) = 1
+*	$replace(target,&lcase,&ucase) = 1
 
 * parse and display flags, setting each one's name to non-null value (1).
 
  :(flgs.skip)
 flgs	flags ? ((len(1) break(';:')) . flag len(1)) |
 +	 ((len(1) rem) . flag) =			:f(flgs2)
-	flag = replace(flag,lcase,ucase)
+	flag = replace(flag,&ucase,&lcase)
         output = "  flag: " flag
 	$flag = 1					:(flgs)
 
 flgs.skip
 flgs2
-
-* various constants
-
-	tab = char(9)
-        comment.delim = '#'
 
 	w0_arg = minarg(8,'w0')
 *  branchtab maps minimal opcodes 'beq', etc to desired
@@ -500,26 +495,16 @@ flgs2
 	reg.xt = regmap['xt'] = '%rsp'
 	reg.xr = regmap['xr'] = '%rdi'  
 	reg.xs = regmap['xs'] = '%rsp'
-	reg.w0 = regmap['w0'] = '%rax'
 	reg.wa = regmap['wa'] = '%rcx'  
 	reg.wb = regmap['wb'] = '%rbx'
 	reg.wc = regmap['wc'] = '%rdx'  
 	reg.ia = regmap['ia'] = '%rbp'
 *	w0 is temp register
-	w0 = '??w0??'
-	regmap['w0'] = '%rax'
-	reg.w0 = regmap['w0']
-	reg.wa = regmap['wa']
-	reg.wb = regmap['wb']
-	reg.wc = regmap['wc']
-	reg.xl = regmap['xl']
-	reg.xr = regmap['xr']
-	reg.xs = regmap['xs']
-	reg.al = '%al'
+	reg.w0 = regmap['w0'] = '%rax'
+	reg.al = '%al'		;* least-significant (low) part of w0.
 
 
-* reglow maps register to identify target, so
-* can extract 'l' part.
+* reglow maps register to identify target, so can extract 'l' part.
 	reglow = table(4)
 	reglow['wa'] = '%cl';	reglow['wb'] = '%bl';	reglow['wc'] = '%dl'
 
@@ -642,7 +627,7 @@ opnext.1
 	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' '
 .		i.text(i2) ' ' i.text(i3)
 	argerrs = 0
-*	differ(it_trace) ge(sectnow,5) eq(z_suspend) chktrace()
+	differ(i_trace) ge(sectnow,5) eq(i_suspend) chktrace()
 	ge(sectnow,5) chktrace()
 						:($('g.' incode))
 *  here if bad opcode
@@ -732,7 +717,7 @@ getarg
 
 	txt = i.text(iarg)
 	typ = i.type(iarg)
-	trc_suspend = 1
+	i_suspend = 1
 	eq(typ)					:f($(argcase[typ]))
 	getarg = txt				:(getarg.done)
 
@@ -835,7 +820,7 @@ getarg.c.25
 getarg.c.26
 getarg.c.27 getarg = txt			:(getarg.done)
 getarg.done
-	trc_suspend = 0
+	i_suspend = 0
 
 *	ne(x_trace) outline('; arg ' typ ls txt   ' -> ' getarg)
 						:(return)
@@ -886,7 +871,7 @@ getlea.c.15
 	op(mov.w,reg.w0,regmap[reg])
 	op(add.w,reg.w0,literal_ disp)		:(lea.done)
 lea.done
-	getlea = reg.wo				:(return)
+	getlea = reg.w0				:(return)
 -stitl iv(text)
 iv
 	iv = '$' v(text)				:(return)
@@ -968,23 +953,23 @@ outstmt4
 
 -stitl  chktrace()
 chktrace
-	ident(i_trace)				:s(return)
-	ne(z_suspend)				:s(return)
+	eq(i_trace)				:s(return)
+	ne(i_suspend)				:s(return)
 	clabel = inlabel
- 	old_z_skip = z_skip
- 	old_z_exec = z_exec
+ 	old_i_skip = i_skip
+ 	old_i_exec = i_exec
  	old_is_exec = is_exec
-	z_skip = ident(inlabel,'s_aaa') 0
+	i_skip = ident(inlabel,'s_aaa') 0
 
 	is_exec = is_executable[incode]
-	z_exec = differ(i_trace)  ident(inlabel, 's_aaa') 1
-	z_exec = differ(i_trace) ge(sectnow,5) 1
+	i_exec = ne(i_trace)  ident(inlabel, 's_aaa') 1
+	i_exec = ne(i_trace) ge(sectnow,5) 1
 
- 	z_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
- 	z_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
+ 	i_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
+ 	i_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
 
-	ne(z_skip)				:s(return)
-	eq(z_exec)				:s(return)
+	ne(i_skip)				:s(return)
+	eq(i_exec)				:s(return)
 	eq(is_exec)				:s(return)
 
 *	ne(in_gcol)				:s(return)
@@ -993,17 +978,23 @@ chktrace.1
 
 genz
 *	no trace if trace has been suspended
-*	output = ne(z_suspend) 'z_suspend ' thisline
-	z_count = z_count + 1
-	gt(z_first) le(z_count,z_first)		:s(return)
-	gt(z_limit)  gt(z_count, z_limit)	:s(return)
+*	output = ne(i_suspend) 'i_suspend ' thisline
+	i_count = i_count + 1
+	gt(i_first) le(i_count,i_first)		:s(return)
+	gt(i_limit)  gt(i_count, i_limit)	:s(return)
 
 *	only trace an instruction once
 	eq(nlines,nlast)			:s(return)
 	nlast = nlines
+	i_desc = '"' replace(thisline,'|',' ') '"'
+	lbl = genlab()
+	op('.data')
+	opl(lbl,'.ascii',i_desc)
+	op('.byte',0)
+	op('.text')
+	op(mov.w,'trc_de',literal_ lbl)
+	op('call','trc')
 
-	z_desc = '"' replace(thisline,'|',' ') '"'
-	outline(tab 'zzz' tab	z_desc)
 						:(return)
 
 -stitl prsarg(iarg)
@@ -1022,8 +1013,8 @@ readline readline = infile                      :f(rl02)
 	ident( readline )			:s(readline)
 readline.0
 	leq( substr(readline,1,1 ),';' )       	:f(rl01)
-	z_skip = ident(readline,';z+') 0	:s(readline)
-*	z_skip = ident(readline,';z-') 1	:s(readline)
+	i_skip = ident(readline,';z+') 0	:s(readline)
+	i_skip = ident(readline,';z-') 1	:s(readline)
 * force skip of full line comments
 	:(readline)
 
@@ -1104,14 +1095,14 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 g.flc
 	t1 = reglow[i.text(i1)]
 	t2 = genlab()
-*	z_suspend = 1
+*	i_suspend = 1
 	op(cmp.b,t1,"'A'")
 	op('jb', t2 )
 	op(cmp.b,t1,"'Z'")
 	op('ja', t2)
 	op(add.b,t1,literal_ '32')
         opl(t2)
-*	z_suspend = 0
+*	i_suspend = 0
 						:(opdone)
 
 g.mov
@@ -1169,7 +1160,7 @@ g.brn   op('jmp','*' getarg(i1))			:(opdone)
 
 g.bsw	reg = getarg(i1)
 	t2 = genlab()
-	z_suspend = 1
+	i_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
 	op(cmp.w,reg,getarg(i2))
 	op('jge',getarg(i3))
@@ -1191,7 +1182,7 @@ g.bsw.2
 g.bsw.3
 	op('.data')
         opl(t2)
-	z_suspend = 0
+	i_suspend = 0
 						:(opdone)
 
 g.iff   op('.quad',getarg(i2))              :(opdone)
@@ -1247,13 +1238,13 @@ g.jsr
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
 	eq(jsr_count)				:s(opdone)
-	z_suspend = 1
+	i_suspend = 1
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
 	op(dec.w,rcode)
 	op('js',jsr_label_norm)
-	z_suspend = 0
+	i_suspend = 0
 
 *	generate branch around for ppms that will follow
 *	take the branch if normal return (eax==0)
@@ -1280,7 +1271,7 @@ g.ppm
 g.ppm.loop.next
 	opl(lab_next)
  	jsr_count = jsr_count - 1
- 	z_suspend = eq(jsr_count) 0
+ 	i_suspend = eq(jsr_count) 0
 	eq(jsr_count) opl(jsr_label_norm) :(opdone)
 g.ppm.loop
 	lab_next = genlab()
@@ -1766,10 +1757,10 @@ g.mvc
 *	if charsize is word size, convert character count to byte count for word move
 
 	t1 = genlab()
-	z_suspend = 1
+	i_suspend = 1
 	op('rep')
 	op(movs.b)
-	z_suspend = 0
+	i_suspend = 0
 						:(opdone)
 	t1 = genlab()
 *	Minimal's xl and xr registers correspond to the hardware 'source' and 'destination' registers
@@ -1788,10 +1779,10 @@ g.mvc
 	op('jnz',t1)
 						:(opdone)
 g.mvw
-	z_suspend = 1
+	i_suspend = 1
 	op(shr.w,reg.wa,iv(log_cfp_b))
  	op('rep',movs.w)
-	z_suspend = 0
+	i_suspend = 0
 						:(opdone)
 
 g.mwb
@@ -2015,6 +2006,7 @@ g.end.2
 	endfile(1)
 	endfile(2)
 	endfile(3)
+	report(i_trace,		'trace option')
         report(nlines,		'lines read')
         report(nstmts,		'statements processed')
         report(ntarget,		'target code lines produced')

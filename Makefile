@@ -1,4 +1,4 @@
-# SPITBOL makefile using tccSE
+# SPTRCBOL makefile using tccSE
 host?=unix_64
 HOST=$(host)
 
@@ -20,11 +20,11 @@ ASM=$(asm)
 
 TARGET=$(OS)_$(WS)
 
-it?=0
-IT:=$(it)
-ifneq ($(IT),0)
-ITOPT:=:it
-ITDEF:=-Dzz_trace
+trc?=0
+TRC:=$(trc)
+ifneq ($(TRC),0)
+TRCOPT:=:trc
+TRCDEF:=-Dzz_trace
 endif
 
 basebol?=./bin/unix_64
@@ -39,7 +39,7 @@ endif
 
 ARCH=-D$(TARGET)  -m$(WS)
 
-CCOPTS:= $(ITDEF) $(GFLAG) 
+CCOPTS:= $(TRCDEF) $(GFLAG) 
 LDOPTS:= $(GFLAG)
 LMOPT:=-lm
 
@@ -56,12 +56,12 @@ vpath %.c $(OSINT)
 
 # Assembler info -- Intel 64-bit syntax
 ifeq	($(DEBUG),0)
-ASMOPTS =  -D$(TARGET) $(ITDEF)
+ASMOPTS =  -D$(TARGET) $(TRCDEF)
 else
-ASMOPTS = -g  -D$(TARGET) $(ITDEF)
+ASMOPTS = -g  -D$(TARGET) $(TRCDEF)
 endif
 
-OSXOPTS = -f macho64 -Dosx_64 $(ITDEF)
+OSXOPTS = -f macho64 -Dosx_64 $(TRCDEF)
 # tools for processing Minimal source file.
 
 # implicit rule for building objects from C files.
@@ -72,7 +72,7 @@ OSXOPTS = -f macho64 -Dosx_64 $(ITDEF)
 unix_64:
 	$(CC) -Dunix_64 -m64 $(CCOPTS) -c osint/*.c
 	./bin/sbl_unix_64 -u unix_64 lex.sbl
-	./bin/sbl_unix_64 -r -u unix_64:$(ITOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
+	./bin/sbl_unix_64 -r -u unix_64:$(TRCOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
 	./bin/sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
 #	cat sys.asm err.s sbl.tmp >sbl.s
 	cat sys.asm err.s sbl.tmp >sbl.s
@@ -82,7 +82,7 @@ unix_64:
 osx_64:
 	$(CC) $(CCOPTS) -c osint/*.c
 	$(BASEBOL)  -u osx_64 lex.sbl
-	$(BASEBOL)  -r -u osx_64:$(ITOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
+	$(BASEBOL)  -r -u osx_64:$(TRCOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
 	$(BASEBOL)  -u osx_64 -1=sbl.err -2=err.s err.sbl
 	cat sys.asm err.s sbl.tmp >sbl.s
 	$(ASM) -f macho64 -Dosx_64 -o sbl.o sbl.s
