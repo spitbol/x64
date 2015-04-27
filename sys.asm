@@ -538,7 +538,6 @@ syscall_init:
 	movq	%rdx,reg_wc      # (also _reg_ia)
 	movq	%rsi,reg_xl
 	movq	%rdi,reg_xr
-	movq	%rbp,reg_ia
 	ret
 
 syscall_exit:
@@ -550,7 +549,6 @@ syscall_exit:
 	movq	reg_wc,%rdx      #
 	movq	reg_xr,%rdi
 	movq	reg_xs,%rsi
-	movq	reg_ia,%rbp
 	cld
 	movq	reg_pc,%rax
 	jmp	*%rax
@@ -733,6 +731,7 @@ sysxi:	movq	reg_xs,%rsp
 	addq	\arg2,%rsp		# pop arguments
 	.endm
 
+
 #	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
 #	placed in %rax, which is then sign extended into wc:%rax. after the divide, %rax contains the
 #	quotient, wc contains the remainder.
@@ -745,24 +744,30 @@ sysxi:	movq	reg_xs,%rsp
 	.global	cvd_
 cvd_:
 	.extern	i_cvd
-	movq	%rbp,reg_ia
 	movq	reg_wa,%rcx
 	call	i_cvd
-	movq	reg_ia,%rbp
 	movq	reg_wa,%rcx
 	ret
 
+	.macro	dvi_	arg1
+	movq	\arg1,%rax
+	call	dvi__
+	.endm
 
-#       dvi_ - divide ia (edx) by long in %rax
+#       dvi__ - divide ia (edx) by long in %rax
 	.global	dvi__
 dvi__:
 	.extern	i_dvi
 	movq	%rax,reg_w0
 	call	i_dvi
-	movq	reg_ia,%rbp
 	movb	reg_fl,%al
 	orb	%al,%al
 	ret
+	
+	.macro	rmi_	arg1
+	movq	\arg1,%rax
+	call	rmi__
+	.endm
 
 	.global	rmi__
 #       rmi_ - remainder of ia (edx) divided by long in %rax
@@ -771,7 +776,6 @@ rmi__:
 	.extern	i_rmi
 	movq	%rax,reg_w0
 	call	i_rmi
-	movq	reg_ia,%rbp
 	movb	reg_fl,%al
 	orb	%al,%al
 	ret
@@ -1141,7 +1145,8 @@ calltab:
 #	.extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_%rdx
 
 	.macro	adi_	arg1	
-	addq	\arg1,%rbp
+	movq	\arg1,%rax
+	addq	%rax,reg_ia
 	seto	reg_fl
 	.endm
 
@@ -1150,13 +1155,6 @@ calltab:
 	call	chk__
 	.endm
 
-	.macro	cvd_0
-	call	cvd__
-	.endm
-
-	.macro	dvi_	arg1
-	call	dvi__
-	.endm
 
 	.macro	icp_
 	movq	reg_cp,%rax
@@ -1177,39 +1175,39 @@ calltab:
 	.endm
 
 	.macro	ldi_	arg1
-	movq	\arg1,%rbp
+	movq	\arg1,%rax
+	movq	%rax,reg_ia
 	.endm
 
+#TODO need to check this
 	.macro	mli_	arg1
-	imulq	\arg1,%rbp
+	movq	\arg1,%rax
+	imulq	%rax
 	seto	reg_fl
 	.endm
 
 	.macro	ngi_
-	neg	%rbp
+	negq	reg_ia
 	seto	reg_fl
-	.endm
-
-	.macro	rmi_	arg1
-	movq	\arg1,%rax
-	call	rmi__
 	.endm
 
 	.extern	f_rti
 
 	.macro	rti_
 	call	f_rti
-	movq	reg_ia,%rbp
 	.endm
 
+#TODO - check for overflow in sbi
 	.macro	sbi_	arg1
-	subq	\arg1,%rbp
+	movq	\arg1,%rax
+	subq	%rax,reg_ia
 	xorq	%rax,%rax
 	seto	reg_fl
 	.endm
 
 	.macro	sti_	arg1
-	movq	%rbp,\arg1
+	movq	\arg1,%rax
+	movq	%rax,reg_ia
 	.endm
 
 	.macro	lcp_	arg1

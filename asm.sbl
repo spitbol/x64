@@ -498,7 +498,7 @@ flgs2
 	reg.wa = regmap['wa'] = '%rcx'  
 	reg.wb = regmap['wb'] = '%rbx'
 	reg.wc = regmap['wc'] = '%rdx'  
-	reg.ia = regmap['ia'] = '%rbp'
+*	reg.ia = regmap['ia'] = '%rbp'
 *	w0 is temp register
 	reg.w0 = regmap['w0'] = '%rax'
 	reg.al = '%al'		;* least-significant (low) part of w0.
@@ -986,7 +986,11 @@ genz
 *	only trace an instruction once
 	eq(nlines,nlast)			:s(return)
 	nlast = nlines
+	lbl = genlab()
 	i_desc = '"' replace(thisline,'|',' ') '"'
+	i_desc = replace(i_desc,',',' ')
+	op('trc',lbl,i_desc)
+						:(return)
 	lbl = genlab()
 	op('.data')
 	opl(lbl,'.ascii',i_desc)
@@ -1452,7 +1456,6 @@ g.icp
 	op(op_)				:(opdone)
 g.ldi
 g.sti
-	op(op_,getarg(i1))			:(opdone)
 g.adi
 g.mli
 g.sbi
