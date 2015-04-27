@@ -1,5 +1,8 @@
 # SPITBOL makefile using tccSE
-host?=unix_32
+ws?=32
+WS=$(ws)
+
+host?=unix_$(WS)
 HOST=$(host)
 
 DEBUG:=$(debug)
@@ -12,9 +15,6 @@ NASM=$(nasm)
 
 os?=unix
 OS:=$(os)
-
-ws?=32
-WS=$(ws)
 
 asm?=nasm
 ASM=$(asm)
