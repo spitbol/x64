@@ -798,8 +798,7 @@ getarg.c.17 getarg = txt			:(getarg.done)
 	getarg = txt				:(getval.done)
 
 getarg.c.18	;* =dlbl
-	getarg = iv(equ_value[substr(txt,2)])			
-					:(getarg.done)
+	getarg = iv(substr(txt,2))		:(getarg.done)
 
 getarg.c.19	;* *dlbl
 	getarg = iv(cfp_b * v(substr(txt,2)))	:(getarg.done)
@@ -988,16 +987,17 @@ genz
 	nlast = nlines
 	lbl = genlab()
 	i_desc = '"' replace(thisline,'|',' ') '"'
-	i_desc = replace(i_desc,',',' ')
-	op('trc',lbl,i_desc)
-						:(return)
+*	i_desc = replace(i_desc,',',' ')
+
+*	op('trc',lbl,i_desc)
+*						:(return)
 	lbl = genlab()
 	op('.data')
 	opl(lbl,'.ascii',i_desc)
 	op('.byte',0)
 	op('.text')
 	op(mov.w,'trc_de',literal_ lbl)
-	op('call','trc')
+	op('call','trc_')
 
 						:(return)
 
@@ -1072,15 +1072,12 @@ tin02   str     (break('[') $ index len(1) break(']') $ val len(1)) =
 -stitl v(text)
 *	return value of text, as integer
 v
-	integer(text)				:s(v.1)
-	v = equ_value[text]
-	integer(v)				:s(v.1)
-	outfile = 'v value not found'
-*	dump(3)
-*	&dump = 3	:(g.end.2)
-		:(return)
-v.1
-	v = +v					:(return)
+	ident(text)				:s(v.err)
+	v = integer(text) +text			:s(return)
+	v = differ(equ_value[text]) +equ_value[text]	:s(return)
+v.err
+	outfile = cs ' #error v value not found' ls  text ls
+	dump(3) :(end)
 
 -stitl generators
 

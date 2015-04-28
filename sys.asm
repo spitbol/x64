@@ -317,7 +317,6 @@ call_adr:	.quad	0
 #
 	.global	save_regs
 save_regs:
-	movq	%rbp,save_ia
 	movq	%rsi,save_xl
 	movq	%rdi,save_xr
 	movq	%rcx,save_wa
@@ -328,7 +327,6 @@ save_regs:
 	.global	restore_regs
 restore_regs:
 	#	restore regs, except for sp. that is caller's responsibility
-	movq	save_ia,%rbp
 	movq	save_xl,%rsi
 	movq	save_xr,%rdi
 	movq	save_wa,%rcx
@@ -1026,6 +1024,14 @@ re4:	movq	stbas,%rax
 	.global	start
 	.extern	trc
 	.extern	trc_de
+
+trc_:
+	pushf
+	call	save_regs
+	call	trc
+	call	restore_regs
+	popf
+	ret
 
 	.macro	trc	lbl,desc
 	.data
