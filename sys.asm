@@ -219,6 +219,7 @@ _rc_:	.byte   0				# return code from osint procedure
 	.global	save_wa
 	.global	save_wb
 	.global	save_wc
+	.global	save_ia
 save_cp:	.quad	0		# saved cp value
 save_ia:	.quad	0		# saved ia value
 save_xl:	.quad	0		# saved xl value
@@ -321,7 +322,9 @@ save_regs:
 	movq	%rdi,save_xr
 	movq	%rcx,save_wa
 	movq	%rbx,save_wb
-	movq	%rbx,save_wc
+	movq	%rdx,save_wc
+	movq	reg_ia,%rax
+	movq	%rax,save_ia
 	ret
 
 	.global	restore_regs
@@ -331,7 +334,7 @@ restore_regs:
 	movq	save_xr,%rdi
 	movq	save_wa,%rcx
 	movq	save_wb,%rbx
-	movq	save_wc,%rbx
+	movq	save_wc,%rdx
 	ret
 
 # #
@@ -546,7 +549,7 @@ syscall_exit:
 	movq	reg_wb,%rbx
 	movq	reg_wc,%rdx      #
 	movq	reg_xr,%rdi
-	movq	reg_xs,%rsi
+	movq	reg_xl,%rsi
 	cld
 	movq	reg_pc,%rax
 	jmp	*%rax

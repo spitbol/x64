@@ -7682,10 +7682,7 @@ start	prc	e,0			; entry point
 	zer	wb			;
 	mov	xs,wa			; discard return
 ;z+
-	jsr	trc_3
 	jsr	systm			; initialise timer
-	jsr	trc_3
-	jsr	trc_4
 .if    .cnbt
 	sti	timsx			; store time
 	mov	statb,xr		; start address of static

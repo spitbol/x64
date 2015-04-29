@@ -120,6 +120,25 @@ z:
 	sbl map-$(WS).sbl <s.nm >s.dic
 	sbl z.sbl <ad >ae
 
+# build system using nasm
+nasm_64:
+	$(CC) -Dunix_64 -m64 $(CCOPTS) -c osint/*.c
+	./bin/sbl_unix_64 -u unix_64 nasm/lex.sbl
+	./bin/sbl_unix_64 -r -u unix_64:$(ITOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err nasm/asm.sbl
+	./bin/sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s nasm/err.sbl
+	cat sys.asm err.s sbl.tmp >sbl.s
+	nasm -f elf64 -Dunix_64 -o sbl.o sbl.s
+	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl 
+
+nasm_32:
+	$(CC) -Dunix_32 -m32 $(CCOPTS) -c osint/*.c
+	$(BASEBOL)  -u unix_32 nasm/lex.sbl
+	$(BASEBOL)  -r -u unix_32:$(ITOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err nasm/asm.sbl
+	$(BASEBOL)  -u unix_32 -1=sbl.err -2=err.s nams/err.sbl
+	cat sys.asm err.s sbl.tmp >sbl.s
+	nasm -f elf32 -Dunix_32 -o sbl.o sbl.s
+	$(CC) -lm -Dunix_32 -m32 $(LDOPTS)  *.o -lm  -osbl 
+
 sclean:
 # clean up after sanity-check
 	make clean

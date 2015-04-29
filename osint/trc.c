@@ -36,6 +36,7 @@ uword save_xs;
 uword save_wa;
 uword save_wb;
 uword save_wc;
+uword save_ia;
 uword save_w0;
 uword save_cp;
 double save_ra;
@@ -48,6 +49,7 @@ uword last_xs;
 uword last_wa;
 uword last_wb;
 uword last_wc;
+uword last_ia;
 uword last_w0;
 uword last_cp;
 double last_ra;
@@ -182,6 +184,7 @@ void trc() {
 	if (save_wc != last_wc)  changed += 1;
 	if (save_w0 != last_w0)  changed += 1;
 	if (save_ra != last_ra)  changed += 1;
+	if (save_ia != last_ia)  changed += 1;
 	if (save_xs != last_xs)  changed += 1;
 //  changed = 0; // bypass printout
 	if (changed) {
@@ -200,6 +203,8 @@ void trc() {
 			{ prtdif("WB.",reg_prefix,"bx", last_wb, save_wb, listed); listed += 1; }
 		if (save_wc != last_wc)
 			{ prtdif("WC.",reg_prefix,"dx", last_wc, save_wc, listed); listed += 1; }
+		if (save_ia != last_ia)
+			{ prtdif("IA.",reg_prefix,"ia", last_ia, save_ia, listed); listed += 1; }
 		if (save_ra != last_ra)
 			{ prtdifr("RA    ", last_ra, save_ra, listed); listed += 1; }
 //		if (save_xs != last_xs)
@@ -221,12 +226,13 @@ void trc() {
 		prtreg("WA.",reg_prefix,"cx", save_wa); prtnl();
 		prtreg("WB.",reg_prefix,"bx", save_wb); prtnl();
 		prtreg("WC.",reg_prefix,"dx", save_wc); prtnl();
+		prtreg("IA.",reg_prefix,"ia", save_ia); prtnl();
 		prtnl();
 	}
 	// save current register contents.
 	last_xl = save_xl; last_xr = save_xr; 
 	last_wa = save_wa; last_wb = save_wb; last_wc = save_wc; last_w0 = save_w0;
-	last_xs = save_xs;
+	last_xs = save_xs; last_ia = reg_ia;
 
 	// display instruction pointer and description of current statement.
 	// extract line number at end of trace string

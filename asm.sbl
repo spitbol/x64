@@ -252,7 +252,7 @@ skip_init.end
 *	For each hardware operation that can take byte or word operands we define two symbols that give the
 *	corresponding opcode. For example, 'add.w' for 64-bit addition, and 'add.b' for 8-bit addition.
 
-	s = 'add and cmp cmps dec imul inc lea lods mov movs movz not or pop push shl shr stos sub test xchg xor '
+	s = 'add and cmp cmps dec imul inc lea lods mov movs movz not or pop push sal sar stos sub test xchg xor '
 
 
 op_map.init
@@ -273,7 +273,7 @@ op_map.done
 *	swap_op is set if operand order is reversed in gas att syntax
 
 	swap_op = table(100)
-	s = 	'add and cmp cmps lea mov movs movz or shl shr sub test xchg xor '
+	s = 	'add and cmp cmps lea mov movs movz or sal sar sub test xchg xor '
 swap.init
 	s break(' ') . op ' ' =			:f(swap.init.done)
 	swap_op[op 'b'] = swap_op[op 'q'] = 1				:(swap.init)
@@ -472,8 +472,8 @@ flgs2
 	optim.tab<"neg"> = 1
 	optim.tab<"or"> = 1
 	optim.tab<"xor"> = 1
-	optim.tab<"shr"> = 1
-	optim.tab<"shl"> = 1
+	optim.tab<"sar"> = 1
+	optim.tab<"sal"> = 1
 	optim.tab<"inc"> = 1
 	optim.tab<"dec"> = 1
 
@@ -996,8 +996,10 @@ genz
 	opl(lbl,'.ascii',i_desc)
 	op('.byte',0)
 	op('.text')
+	i_suspend = 1;			;* no need to trace the trace code.
 	op(mov.w,'trc_de',literal_ lbl)
 	op('call','trc_')
+	i_suspend = 0
 
 						:(return)
 
@@ -1157,7 +1159,7 @@ g.bev	reg = getarg(i1)
 	op('je',getarg(i2))
 						:(opdone)
 
-g.brn   op('jmp','*' getarg(i1))			:(opdone)
+g.brn   op('jmp',getarg(i1))			:(opdone)
 
 g.bsw	reg = getarg(i1)
 	t2 = genlab()
@@ -1177,7 +1179,7 @@ g.bsw.2
 	opl(lbl,'.quad',t2 )
 	op('.text')
 	op(mov.w,reg.w0,t1)
-	op(shl.w,reg.w0,iv(log_cfp_b))
+	op(sal.w,reg.w0,iv(log_cfp_b))
 	op(add.w,reg.w0,lbl)
 	op('jmp', '*' w0)
 g.bsw.3
@@ -1358,7 +1360,10 @@ g.zer.xs
 	op(xor.w,reg.w0,reg.w0)
 	op(push.w,reg.w0)			:(opdone)
 
-g.mnz   op(mov.w,getarg(i1),reg.xs)		:(opdone)
+g.mnz   
+	op(xor.w,reg.w0,reg.w0)
+	op(inc.w,reg.w0)
+	op(mov.w,getarg(i1),reg.w0)		:(opdone)
 
 g.ssl
 g.sss
@@ -1396,11 +1401,13 @@ g.bhi
 g.bnz
 	ifreg(i1)				:s(g.bnz1)
 	op(xor.w,reg.w0,reg.w0)
-        op(cmp.w, getarg(i1) ,reg.w0)
+*        op(cmp.w, getarg(i1) ,reg.w0)
+        op(cmp.w, reg.w0,getarg(i1))
 	op('jnz',getarg(i2))
 						:(opdone)
 g.bnz1
-	op(or.w,getarg(i1),getarg(i1))
+	reg = getarg(i1)
+	op(or.w,reg,reg)
 	op('jnz',getarg(i2))
 						:(opdone)
 
@@ -1666,10 +1673,10 @@ g.xob   op(xor.w,getarg(i1),getarg(i2))	:(opdone)
 g.cmb   op(not.w,getarg(i1))			:(opdone)
 
 g.rsh
-	op(shr.w,getarg(i1),iv(getarg(i2)))	:(opdone)
+	op(sar.w,getarg(i1),iv(getarg(i2)))	:(opdone)
 
 g.lsh
-	op(shl.w,getarg(i1),iv(getarg(i2)))	:(opdone)
+	op(sal.w,getarg(i1),iv(getarg(i2)))	:(opdone)
 
 g.rsx
 	error('rsx not supported')
@@ -1702,9 +1709,9 @@ g.zgb
 g.zzz
  	op('zzz',getarg(i1))			:(opdone)
 
-g.wtb   op(shr.w,getarg(i1),iv(log_cfp_b))	:(opdone)
+g.wtb   op(sal.w,getarg(i1),iv(log_cfp_b))	:(opdone)
 
-g.btw   op(shr.w,getarg(i1),iv(log_cfp_b))	:(opdone)
+g.btw   op(sar.w,getarg(i1),iv(log_cfp_b))	:(opdone)
 
 
 g.mti	ident(i.text(i1),'(xs)+')		:f(g.mti.1)
@@ -1732,11 +1739,12 @@ g.ctw
 *  assume cfp_c chars per word
 	reg = getarg(i1)
 	op(add.w,reg,iv((cfp_b - 1) + cfp_b * v(i.text(i2))))
-	op(shr.w,reg,iv(log_cfp_c))
+	op(sar.w,reg,iv(log_cfp_c))
 					:(opdone)
 g.ctb
 	reg = getarg(i1)
 	op(add.w,reg,iv((cfp_b - 1) + cfp_b * v(i.text(i2))))
+	op(and.w,reg, iv(-cfp_b))
 						:(opdone)
 g.cvm	lbl = getarg(i1)
 	op('sti_',reg.w0)
@@ -1780,13 +1788,13 @@ g.mvc
 						:(opdone)
 g.mvw
 	i_suspend = 1
-	op(shr.w,reg.wa,iv(log_cfp_b))
+	op(sar.w,reg.wa,iv(log_cfp_b))
  	op('rep',movs.w)
 	i_suspend = 0
 						:(opdone)
 
 g.mwb
-	op(shr.w,reg.wa,iv(log_cfp_b))
+	op(sar.w,reg.wa,iv(log_cfp_b))
 	op('std')
 	
 	op(lea.w,reg.xl, '-' cfp_b '(' reg.xl ')')
@@ -1795,7 +1803,7 @@ g.mwb
 	op('cld')				:(opdone)
 
 	op('std')
-	op(shr.w,reg.wa,iv(log_cfp_b))
+	op(sar.w,reg.wa,iv(log_cfp_b))
 	op('rep')
 	op(movs.w)
 	op('ctd')
