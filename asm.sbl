@@ -182,7 +182,7 @@ options.done
 
 	cfp_b = 8
 	cfp_c = 8
-	cfp_f = +cfp_b + +cfp_f
+	cfp_f = +cfp_b + +cfp_c
 	log_cfp_b = 3
 	log_cfp_c = 3
 	op_w = 'q'
@@ -1171,6 +1171,7 @@ g.bsw	reg = getarg(i1)
 g.bsw1	
 	ne(rip_mode)				:s(g.bsw.2)	
 *	op('jmp', 'm(' t2 '+' reg '*cfp_b)') :(g.bsw.3)
+	outfile = cs 'g.bsw '  t2 '(,' reg ',' cfp_b ')'
 	op('jmp','*'  t2 '(,' reg ',' cfp_b ')' )	:(g.bsw.3)
 g.bsw.2
 * in rip_mode, need to generate location to reference destination
@@ -1427,6 +1428,7 @@ g.lct
 
 	differ(i.text(i1),i.text(i2))		:s(g.lct.1)
 *  here if operands same. emit no code if no label, else emit null
+	:(opdone)
 	ident(thislabel)			:s(opnext)
 	op()					:(opdone)
 
@@ -1540,9 +1542,7 @@ g.psc
 
 	reg = getarg(i1)
 	typ = i.type(i2)
-	((ifreg(i2), ge(typ,1) le(typ,2))
-+	op(lea.w,reg, cfp_f '(' reg ',' getarg(i2) ')' )) :s(opdone)
-
+	(ifreg(i2), ge(typ,1) le(typ,2)) op(lea.w,reg, cfp_f '(' reg ',' getarg(i2) ')') :s(opdone)
 	op(add.w,reg,iv(cfp_f))
 	eq(i.type(i2))				:s(opdone)
 
