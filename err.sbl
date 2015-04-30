@@ -105,26 +105,40 @@
 
 * set target definition flag, if any.
 *
-	target = (differ(host(0)) host(0), "gas")
+	target = (differ(host(0)) host(0), "unix_64_gas")
         output = "target: " target
-
-	asm.comment	= '#'
+	target break('_') . os '_' break('_') . ws '_' rem . asm
 
 * tab character
+
 	tab	= char(9)
 
-*
-*  comma delimited string of decimal bytes:
-	byte	= tab '.byte' tab
+	ident(asm,'gas')				:s(config.gas)
+	ident(asm,'nasm')				:s(config.nasm)
+	output = 'unknown target assembler, using gas format'
+	
+config.gas
+	asm.byte	= '.byte'
+	asm.comment	= '#'
+	asm.data	= '.data'
+	asm.delim	= '"'
+	asm.global	= '.global'
+	asm.string	= '.ascii'
+	asm.word	= '.word'
+							:(config.done)
+config.nasm
+	asm.byte	= 'db'
+	asm.comment	= ';'
+	asm.data	= 'segment' tab '.data'
+	asm.delim	= "'"
+	asm.global	= 'global'
+	asm.string	= 'db'
+	asm.word	= (eq(ws,32) 'dd', 'dq')
 
-*  delim delimited string of 'normal' ascii characters (32-127)
-	delim 	= "'"
-	delim	= '"'
-        ascii   = tab '.ascii'	tab
-
-*  data and public definitions
+config.done
 *
-        data    = tab '.data'
+	byte	= tab (ident(asm,'gas') '.byte','db')  tab
+
 
 *  setup keywords
 *
@@ -291,7 +305,7 @@ put1	s ? put_pat =
 
 *  put out the normal characters, if any.
 *
-        outfile = differ(w) ascii delim w delim
+        outfile = differ(w) tab asm.string  tab asm.delim w asm.delim
 	outsize = outsize + size(w)
 
 *  if s is exhausted, append '\0' to special characters, then
@@ -394,17 +408,17 @@ readerr_end
 *  putout label and compressed error message table
 *  osx visible names must start with '_'.
 *
-	prefix = ident(target,"osx_64") "_"
+*	prefix = ident(target,"osx_64") "_"
 
-	outfile = tab '.global' tab prefix "errors"
-	outfile = prefix 'errors:' tab '.byte' tab '0'
+	outfile = tab asm.global tab prefix "errors"
+	outfile = prefix 'errors:' tab asm.byte tab '0'
 	seq(" putout(err[i],i)", .i)
 
 *  putout label and phrase table
 *
         outfile =
-	outfile = tab '.global' tab prefix 'phrases'
-	outfile = prefix 'phrases:' tab '.word' tab '0'
+	outfile = tab asm.global tab prefix 'phrases'
+	outfile = prefix 'phrases:' tab asm.word  tab '0'
 	seq(" putout(phrase[i],spread(i))", .i)
 
 *  finish up the output file
