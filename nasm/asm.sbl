@@ -367,7 +367,7 @@ skip_init.end
 +       'cos ctb ctw cvd cvm dca dcv eti dvi dvr erb esw etx flc '
 +       'ica icp icv ieq ige igt ile ilt ine ino iov itr jmp '
 +       'jsr lch lct lcp lcw ldi ldr lei lnf lsh lsx mcb mfi mli mlr '
-+       'mnz mov mti mvw mwb ngi eti ngr nzb orb plc prc psc '
++       'mnz mov mti mvw mwb ngi eti ngr nzb orb plc psc '
 +       'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
 +       'sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer '
 +       'zgb zrb'
@@ -996,11 +996,11 @@ genz
 	eq(nlines,nlast)			:s(return)
 	nlast = nlines
 	lbl = genlab()
-	i_desc = '"' replace(thisline,'|',' ') '"'
-*	i_desc = replace(i_desc,',',' ')
+	i_desc = '"' replace(thisline,'|,;','   ') '"'
+	i_desc = replace(i_desc,',',' ')
 
 	genop('trc_',lbl,i_desc)
-*						:(return)
+						:(return)
 	lbl = genlab()
 	genop('segment','.data')
 	genopl(lbl,'db',i_desc)
@@ -1008,7 +1008,6 @@ genz
 	genop('segment','.text')
 	i_suspend = 1;			;* no need to trace the trace code.
 	genop('mov','trc_de',lbl)
-	genop('trc_')
 	i_suspend = 0
 
 						:(return)
