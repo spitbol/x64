@@ -140,7 +140,7 @@ option.next
 	ident(option,'unix_64')			:s(option.unix.64)
 	ident(option,'osx_32')			:s(option.osx.32)
 	ident(option,'xt')			:s(option.xt)
-	ident(option,'it')			:s(option.it)
+	ident(option,'trc')			:s(option.trc)
 
 * here if unknown option
 
@@ -153,7 +153,7 @@ option.unix.64
 	os = 'unix'; 	ws = '64'		:(option.next)
 option.osx.32
 	os = 'osx'; 	ws = '32'		:(option.next)
-option.it
+option.trc
 *	turn on instruction trace
 	i_trace = 1				:(option.next)
 option.xt
@@ -983,20 +983,34 @@ chktrace
 *	ne(in_gcol)				:s(return)
 chktrace.1
 	genz()
+						:(return)
 
 genz
 *	no trace if trace has been suspended
-*	output = ne(z_suspend) 'z_suspend ' thisline
-	z_count = z_count + 1
-	gt(z_first) le(z_count,z_first)		:s(return)
-	gt(z_limit)  gt(z_count, z_limit)	:s(return)
+*	output = ne(i_suspend) 'i_suspend ' thisline
+	i_count = i_count + 1
+	gt(i_first) le(i_count,i_first)		:s(return)
+	gt(i_limit)  gt(i_count, i_limit)	:s(return)
 
 *	only trace an instruction once
 	eq(nlines,nlast)			:s(return)
 	nlast = nlines
+	lbl = genlab()
+	i_desc = '"' replace(thisline,'|',' ') '"'
+*	i_desc = replace(i_desc,',',' ')
 
-	z_desc = '"' replace(thisline,'|',' ') '"'
-	outline(tab 'zzz' tab	z_desc)
+	genop('trc_',lbl,i_desc)
+*						:(return)
+	lbl = genlab()
+	genop('segment','.data')
+	genopl(lbl,'db',i_desc)
+	genop('db',0)
+	genop('segment','.text')
+	i_suspend = 1;			;* no need to trace the trace code.
+	genop('mov','trc_de',lbl)
+	genop('trc_')
+	i_suspend = 0
+
 						:(return)
 
 -stitl prsarg(iarg)

@@ -1227,58 +1227,14 @@ re4:	mov	w0,m(stbas)
 	mov	m(minimal_id),w0
         call	minimal			; no return
 
-%ifdef zz_trace
-	extern	zz_ra
-	global	zz_
-	extern	zz,zz_cp,zz_xl,zz_xr,zz_wa,zz_wb,zz_wc,zz_w0
-zz_:
-	pushf
-	call	save_regs
-	call	zz
-	call	restore_regs
-	popf
-	ret
-%endif
 
         section	.text
 
 
 	global	mxint
 
-%ifdef zz_trace
-	extern	shields
-	extern	zz
-	extern	zz_
-	extern	zz_cp
-	extern	zz_xl
-	extern	zz_xr
-	extern	zz_xs
-	extern	zz_wa
-	extern	zz_wb
-	extern	zz_wc
-	extern	zz_w0
-	extern	zz_zz
-	extern	zz_id
-	extern	zz_de
-	extern	zz_0
-	extern	zz_1
-	extern	zz_2
-	extern	zz_3
-	extern	zz_4
-	extern	zz_arg
-	extern	zz_num
-%endif
 	global	start
 
-
-	%macro	zzz	1
-	section	.data
-%%desc:	db	%1,0
-	section	.text
-	mov	m_word [zz_de],%%desc
-	call	zz_
-	%endmacro
-;
 ;
 ;   table to recover type word from type ordinal
 ;
@@ -1493,3 +1449,22 @@ calltab:
 	%undef cfp_b
 	%undef cfp_c
 	%undef scstr
+	extern trc
+	extern	trc_de
+trc__:
+	pushf
+	call	save_regs
+	call	trc
+	call	restore_regs
+	popf
+	ret
+
+	%macro	trc_	2
+	segment	.data
+%1:	db	%2
+	db	0
+	segment	.text
+	mov	trc_de,%1
+	call	trc__
+	%endmacro
+

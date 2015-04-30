@@ -26,6 +26,7 @@ This file is part of Macro SPITBOL.
 
 #include <fcntl.h>
 
+#include <stdio.h>
 
 /*
  * getargs
@@ -82,6 +83,7 @@ char	*argv[];
 
     for( i = 1 ; i < argc ; i++ ) {
         cp = argv[i];			// point to next cmd line argument
+	fprintf(stderr,"option %s\n",cp);
 
         /*
          *   If this command line argument does not start with a '-
@@ -224,6 +226,7 @@ char	*argv[];
 		*/
 	    case 'I':  
 		spitflag |= ITRACE;
+	fprintf(stderr,"itrace enabled\n");
 		break;
                 /*
                 /   -r	read INPUT from source program file

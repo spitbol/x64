@@ -296,7 +296,7 @@ repl_end
 
 *  entry.  put out comment line to show what string is being compressed.
 putout  outfile =
-        outfile = '#' lpad(i,5) '  "' expand(s) '"'
+        outfile = asm.comment lpad(i,5) '  "' expand(s) '"'
 
 *  main loop.  get segments of normal and special characters.  each segment
 *    (or both) may be null.

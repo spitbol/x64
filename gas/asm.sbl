@@ -778,7 +778,12 @@ getarg.c.13
 
 getarg.c.14
 getarg.c.15
-	txt break('(') . disp '(' len(2) . indx	:(getarg.mem)
+	
+	outfile = cs 'getarg.14.15' ls txt cs ' disp ' disp ' val' ls val ls
+	txt break('(') . disp '(' len(2) . indx	
+	val = equ_value[disp]
+	disp = differ(val) literal_ val
+						:(getarg.mem)
 
 *	signed integer
 
@@ -1165,7 +1170,7 @@ g.bsw	reg = getarg(i1)
 	t2 = genlab()
 	i_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
-	op(cmp.w,reg,getarg(i2))
+	op(cmp.w,reg,iv(getarg(i2)))
 	op('jge',getarg(i3))
 * here after default case.
 g.bsw1	
@@ -1714,7 +1719,9 @@ g.wtb   op(sal.w,getarg(i1),iv(log_cfp_b))	:(opdone)
 g.btw   op(sar.w,getarg(i1),iv(log_cfp_b))	:(opdone)
 
 
-g.mti	ident(i.text(i1),'(xs)+')		:f(g.mti.1)
+g.mti	
+	outfile = cs 'g.mti' ls i.text(i1)
+	ident(i.text(i1),'(xs)+')		:f(g.mti.1)
 	op(pop.w,reg.w0)
 	op('ldi_',reg.w0)			:(opdone)
 g.mti.1
