@@ -358,7 +358,6 @@
 	target = (differ(host(0)) host(0), "unix_64_nasm")
 	target break('_') . os len(1) rem . ws
 	parm = "sbl"
-	filenamc = parm '.cnd'
 	filenami = parm '.asm'
 	filenamo = parm '.lex'
 	filename = parm '.equ'
@@ -381,18 +380,16 @@
 *  associate input file to lu1.  if a conditional file was specified,
 *  read it first.
 *
-	input(.infile,1,(differ(filenamc) filenamc,filenami))	:s(main1)
-        output = differ(filenamc) "cannot open conditional file: " filenamc
-+						:s(end)
+	input(.infile,1)			:s(main1)
         output = "cannot open minimal file: " filenami        :(end)
 *
 *
 *  associate output file
 *
-main1	output(.outfile,2,filenamo)		:s(main2)
+main1	output(.outfile,2)			:s(main2)
         output = "cannot open lexeme file: " filenamo  :(end)
 main2
-	output(.equfile,3,filename)		:s(main3)
+	output(.equfile,3)		:s(main3)
         output = "cannot open equ file: " filenamo  :(end)
 main3
 
@@ -694,7 +691,7 @@ outstmt
 *  lines beginning with ">" are treated as snobol4 statements
 *  and immediately executed.
 *
-rdline	rdline = infile				:f(rl02)
+rdline	rdline = infile				:f(g.end)
 	nlines  = nlines + 1
 	ident( rdline )				:s(rdline)
 *
@@ -720,17 +717,6 @@ rl01	leq( substr( rdline,1,1 ),'>' )		:f(return)
 *
 	c = code(substr( rdline, 2 ) "; :(rdline)") :s<c>
         output = "error compiling snobol4 statement"
-  						:(rl03)
-*
-*  here on eof.  filenamc is non-null if we were reading from it.
-*
-rl02	ident(filenamc)				:s(rl03)
-	filenamc =
-	ignore_defs = 1
-	endfile(1)
-	nlines = 0
-	input(.infile,1,filenami)		:s(rdline)
-        output = "cannot open minimal file: " filenami        :(end)
 
 rl03	rdline = '       end'			:(rl01)
 *
