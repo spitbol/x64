@@ -632,6 +632,7 @@ calltab_engts equ   13
 
 startup:
 	pop     w0			; discard return
+	xor	ia,ia			; initialize IA to zero
 	call	stackinit		; initialize minimal stack
 	mov     w0,m(compsp)	; get minimal's stack pointer
 	mov m(reg_wa),w0		; startup stack pointer

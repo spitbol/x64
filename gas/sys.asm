@@ -375,12 +375,13 @@ restore_regs:
 
 startup:
 	pop	%rax			# discard return
+	xorq	%rbp,%rbp		# initialize IA to zero
 	call	stackinit		# initialize minimal stack
-	mov	compsp,%rax	# get minimal's stack pointer
-	mov	%rax,reg_wa	# startup stack pointer
+	mov	compsp,%rax		# get minimal's stack pointer
+	mov	%rax,reg_wa		# startup stack pointer
 
 	cld				# default to up direction for string ops
-#        getoff  %rax,dffnc               # get address of ppm offset
+#	getoff	%rax,dffnc		# get address of ppm offset
 	mov	%rax,ppoff	# save for use later
 
 	mov	osisp,%rsp	# switch to new c stack
@@ -449,6 +450,7 @@ chk.oflo:
 
 minimal:
 #         pushad		# save all registers for c
+	movq	reg_ia,%rbp
 	movq 	reg_wa,%rcx	# restore registers
 	movq	reg_wb,%rbx
 	movq	reg_wc,%rdx	#
@@ -472,6 +474,7 @@ minimal:
 	movq	%rdx,reg_wc
 	movq	%rsi,reg_xl
 	movq	%rdi,reg_xr
+	movq	%rbp,reg_ia
 	ret
 
 
