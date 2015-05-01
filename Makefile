@@ -24,7 +24,6 @@ trc?=0
 TRC:=$(trc)
 ifneq ($(TRC),0)
 TRCOPT:=:trc
-TRCDEF:=-Dzz_trace
 endif
 
 basebol?=./bin/unix_64
@@ -39,7 +38,7 @@ endif
 
 ARCH=-D$(TARGET)  -m$(WS)
 
-CCOPTS:= $(TRCDEF) $(GFLAG) 
+CCOPTS:= $(GFLAG) 
 LDOPTS:= $(GFLAG)
 LMOPT:=-lm
 
@@ -56,12 +55,12 @@ vpath %.c $(OSINT)
 
 # Assembler info -- Intel 64-bit syntax
 ifeq	($(DEBUG),0)
-ASMOPTS =  -D$(TARGET) $(TRCDEF)
+ASMOPTS =  -D$(TARGET) 
 else
-ASMOPTS = -g  -D$(TARGET) $(TRCDEF)
+ASMOPTS = -g  -D$(TARGET) 
 endif
 
-OSXOPTS = -f macho64 -Dosx_64 $(TRCDEF)
+OSXOPTS = -f macho64 -Dosx_64 
 # tools for processing Minimal source file.
 
 # implicit rule for building objects from C files.

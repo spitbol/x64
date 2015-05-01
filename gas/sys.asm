@@ -323,8 +323,8 @@ save_regs:
 	movq	%rcx,save_wa
 	movq	%rbx,save_wb
 	movq	%rdx,save_wc
-	movq	reg_ia,%rax
-	movq	%rax,save_ia
+#	movq	reg_ia,%rax
+#	movq	%rax,save_ia
 	ret
 
 	.global	restore_regs
@@ -1028,7 +1028,7 @@ re4:	movq	stbas,%rax
 	.extern	trc
 	.extern	trc_de
 
-trc_:
+trc__:
 	pushf
 	call	save_regs
 	call	trc
@@ -1036,13 +1036,11 @@ trc_:
 	popf
 	ret
 
-	.macro	trc	lbl,desc
-	.data
-\lbl:	.ascii	\desc
-	.byte	0
+	.macro	trc_	lbl
 	.text
-	movq	$\lbl,trc_de
-	call	trc
+	movq	$\lbl,%rax
+	movq	%rax,trc_de
+	call	trc__
 	.endm
 
 

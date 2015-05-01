@@ -395,7 +395,7 @@ swap.init.done
 +       'cos ctb ctw cvd cvm dca dcv eti dvi dvr erb esw etx flc '
 +       'ica icp icv ieq ige igt ile ilt ine ino iov itr jmp '
 +       'jsr lch lct lcp lcw ldi ldr lei lnf lsh lsx mcb mfi mli mlr '
-+       'mnz mov mti mvw mwb ngi eti ngr nzb orb plc prc psc '
++       'mnz mov mti mvw mwb ngi eti ngr nzb orb plc psc '
 +       'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
 +       'sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer '
 +       'zgb zrb'
@@ -991,19 +991,21 @@ genz
 	eq(nlines,nlast)			:s(return)
 	nlast = nlines
 	lbl = genlab()
-	i_desc = '"' replace(thisline,'|',' ') '"'
-*	i_desc = replace(i_desc,',',' ')
+	i_desc = '"' replace(thisline,'|', ' ') '"'
 
-*	op('trc',lbl,i_desc)
+*	gas doesn't allow string constants as macro arguments, so we generate the declaratin
+*	for the descriptive string directly, then issue a macro invocation
+*	op('trc_',lbl,i_desc)
 *						:(return)
 	lbl = genlab()
 	op('.data')
-	opl(lbl,'.ascii',i_desc)
-	op('.byte',0)
-	op('.text')
+	opl(lbl,'.asciz',i_desc)
+	
+*	op('.byte',0)
+*	op('.text')
 	i_suspend = 1;			;* no need to trace the trace code.
-	op(mov.w,'trc_de',literal_ lbl)
-	op('call','trc_')
+*	op(mov.w,'trc_de',literal_ lbl)
+	op('trc_',lbl)
 	i_suspend = 0
 
 						:(return)

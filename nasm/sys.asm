@@ -1464,7 +1464,7 @@ trc__:
 %1:	db	%2
 	db	0
 	segment	.text
-	mov	w0,[%1]
+	lea	w0,[%1]
 	mov	m_word [trc_de],w0
 	call	trc__
 	%endmacro
