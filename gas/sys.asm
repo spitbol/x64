@@ -318,18 +318,20 @@ call_adr:	.quad	0
 #
 	.global	save_regs
 save_regs:
+	movq	%rbp,save_ia
 	movq	%rsi,save_xl
 	movq	%rdi,save_xr
 	movq	%rcx,save_wa
 	movq	%rbx,save_wb
 	movq	%rdx,save_wc
 #	movq	reg_ia,%rax
-#	movq	%rax,save_ia
+	movq	%rax,save_ia
 	ret
 
 	.global	restore_regs
 restore_regs:
 	#	restore regs, except for sp. that is caller's responsibility
+	movq	save_ia,%rbp
 	movq	save_xl,%rsi
 	movq	save_xr,%rdi
 	movq	save_wa,%rcx
@@ -539,6 +541,7 @@ syscall_init:
 	movq	%rdx,reg_wc      # (also _reg_ia)
 	movq	%rsi,reg_xl
 	movq	%rdi,reg_xr
+	movq	%rbp,reg_ia
 	ret
 
 syscall_exit:
@@ -550,6 +553,7 @@ syscall_exit:
 	movq	reg_wc,%rdx      #
 	movq	reg_xr,%rdi
 	movq	reg_xl,%rsi
+	movq	reg_ia,%rbp
 	cld
 	movq	reg_pc,%rax
 	jmp	*%rax
@@ -742,11 +746,13 @@ sysxi:	movq	reg_xs,%rsp
 #       input   ia = number <=0 to convert
 #       output  ia / 10
 #               wa ecx) = remainder + '0'
-	.global	cvd_
-cvd_:
+	.global	cvd__
+cvd__:
 	.extern	i_cvd
-	movq	reg_wa,%rcx
+	movq	%rbp,reg_ia	
+	movq	%rcx,reg_wa
 	call	i_cvd
+	mov	reg_ia,%rbp
 	movq	reg_wa,%rcx
 	ret
 
@@ -761,15 +767,11 @@ dvi__:
 	.extern	i_dvi
 	movq	%rax,reg_w0
 	call	i_dvi
+	mov	reg_ia,%rbp
 	movb	reg_fl,%al
 	orb	%al,%al
 	ret
 	
-	.macro	rmi_	arg1
-	movq	\arg1,%rax
-	call	rmi__
-	.endm
-
 	.global	rmi__
 #       rmi_ - remainder of ia (edx) divided by long in %rax
 rmi__:
@@ -777,6 +779,7 @@ rmi__:
 	.extern	i_rmi
 	movq	%rax,reg_w0
 	call	i_rmi
+	mov	reg_ia,%rbp
 	movb	reg_fl,%al
 	orb	%al,%al
 	ret
@@ -1152,8 +1155,7 @@ calltab:
 #	.extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_%rdx
 
 	.macro	adi_	arg1	
-	movq	\arg1,%rax
-	addq	%rax,reg_ia
+	addq	\arg1,%rbp
 	seto	reg_fl
 	.endm
 
@@ -1162,6 +1164,9 @@ calltab:
 	call	chk__
 	.endm
 
+	.macro	cvd_
+	call	cvd__
+	.endm
 
 	.macro	icp_
 	movq	reg_cp,%rax
@@ -1182,39 +1187,41 @@ calltab:
 	.endm
 
 	.macro	ldi_	arg1
-	movq	\arg1,%rax
-	movq	%rax,reg_ia
+	movq	\arg1,%rbp
 	.endm
 
 #TODO need to check this
 	.macro	mli_	arg1
-	movq	\arg1,%rax
-	imulq	%rax
+	imulq	\arg1,%rbp
 	seto	reg_fl
 	.endm
 
 	.macro	ngi_
-	negq	reg_ia
+	negq	%rbp
 	seto	reg_fl
+	.endm
+
+	.macro	rmi_	arg1
+	movq	\arg1,%rax
+	call	rmi__
 	.endm
 
 	.extern	f_rti
 
 	.macro	rti_
 	call	f_rti
+	mov	reg_ia,%rbp
 	.endm
 
 #TODO - check for overflow in sbi
 	.macro	sbi_	arg1
-	movq	\arg1,%rax
-	subq	%rax,reg_ia
+	subq	\arg1,%rbp
 	xorq	%rax,%rax
 	seto	reg_fl
 	.endm
 
 	.macro	sti_	arg1
-	movq	\arg1,%rax
-	movq	%rax,reg_ia
+	movq	%rbp,\arg1
 	.endm
 
 	.macro	lcp_	arg1
