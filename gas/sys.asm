@@ -318,7 +318,6 @@ call_adr:	.quad	0
 #
 	.global	save_regs
 save_regs:
-	movq	%rbp,save_ia
 	movq	%rsi,save_xl
 	movq	%rdi,save_xr
 	movq	%rcx,save_wa
@@ -331,7 +330,6 @@ save_regs:
 	.global	restore_regs
 restore_regs:
 	#	restore regs, except for sp. that is caller's responsibility
-	movq	save_ia,%rbp
 	movq	save_xl,%rsi
 	movq	save_xr,%rdi
 	movq	save_wa,%rcx
@@ -375,7 +373,8 @@ restore_regs:
 
 startup:
 	pop	%rax			# discard return
-	xorq	%rbp,%rbp		# initialize IA to zero
+	xorq	%rax,%rax
+	xorq	%rax,reg_ia		# initialize IA to zero
 	call	stackinit		# initialize minimal stack
 	mov	compsp,%rax		# get minimal's stack pointer
 	mov	%rax,reg_wa		# startup stack pointer
@@ -450,7 +449,6 @@ chk.oflo:
 
 minimal:
 #         pushad		# save all registers for c
-	movq	reg_ia,%rbp
 	movq 	reg_wa,%rcx	# restore registers
 	movq	reg_wb,%rbx
 	movq	reg_wc,%rdx	#
@@ -474,7 +472,6 @@ minimal:
 	movq	%rdx,reg_wc
 	movq	%rsi,reg_xl
 	movq	%rdi,reg_xr
-	movq	%rbp,reg_ia
 	ret
 
 
@@ -528,12 +525,13 @@ minimal:
 
 	.global	get_ia
 get_ia:
-	movq	%rbp,%rax
+	movq	reg_ia,%rax
 	ret
 
 	.global	set_ia_
 set_ia_:	
-	movq	(%rax),%rbp
+	movq	(%rax),%rax
+	movq	%rax,reg_ia
 	ret
 
 syscall_init:
@@ -544,7 +542,6 @@ syscall_init:
 	movq	%rdx,reg_wc      # (also _reg_ia)
 	movq	%rsi,reg_xl
 	movq	%rdi,reg_xr
-	movq	%rbp,reg_ia
 	ret
 
 syscall_exit:
@@ -556,7 +553,6 @@ syscall_exit:
 	movq	reg_wc,%rdx      #
 	movq	reg_xr,%rdi
 	movq	reg_xl,%rsi
-	movq	reg_ia,%rbp
 	cld
 	movq	reg_pc,%rax
 	jmp	*%rax
@@ -752,10 +748,8 @@ sysxi:	movq	reg_xs,%rsp
 	.global	cvd__
 cvd__:
 	.extern	i_cvd
-	movq	%rbp,reg_ia	
 	movq	%rcx,reg_wa
 	call	i_cvd
-	mov	reg_ia,%rbp
 	movq	reg_wa,%rcx
 	ret
 
@@ -770,7 +764,6 @@ dvi__:
 	.extern	i_dvi
 	movq	%rax,reg_w0
 	call	i_dvi
-	mov	reg_ia,%rbp
 	movb	reg_fl,%al
 	orb	%al,%al
 	ret
@@ -782,7 +775,6 @@ rmi__:
 	.extern	i_rmi
 	movq	%rax,reg_w0
 	call	i_rmi
-	mov	reg_ia,%rbp
 	movb	reg_fl,%al
 	orb	%al,%al
 	ret
@@ -790,11 +782,11 @@ rmi__:
 ocode:
 	orq	%rax,%rax         	# test for 0
 	jz	setovr   	 	# jump if 0 divisor
-	xchg	%rax,%rbp         	# ia to %rax, divisor to ia
+	xchg	%rax,reg_ia         	# ia to %rax, divisor to ia
 	cdq                    		# extend dividend
-	idiv	%rbp              	# perform division. %rax=quotient, wc=remainder
+	idivq	reg_ia              	# perform division. %rax=quotient, wc=remainder
 	seto	reg_fl
-	movq	%rdx,%rbp
+	movq	%rdx,reg_ia
 	ret
 
 setovr: movb     $1,%al		# set overflow indicator
@@ -823,7 +815,6 @@ setovr: movb     $1,%al		# set overflow indicator
 	.global	\arg1
 	.extern	\arg2
 \arg1:
-	movq	%rbp,reg_ia
 	call	\arg2
 	ret
 	.endm
@@ -1158,7 +1149,8 @@ calltab:
 #	.extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_%rdx
 
 	.macro	adi_	arg1	
-	addq	\arg1,%rbp
+	movq	\arg1,%rax
+	addq	%rax,reg_ia
 	seto	reg_fl
 	.endm
 
@@ -1190,17 +1182,19 @@ calltab:
 	.endm
 
 	.macro	ldi_	arg1
-	movq	\arg1,%rbp
+	movq	\arg1,%rax
+	movq	%rax,reg_ia
 	.endm
 
-#TODO need to check this
 	.macro	mli_	arg1
-	imulq	\arg1,%rbp
+# next is troublesome: TODO
+	movq	\arg1,%rax
+	imulq	reg_ia
 	seto	reg_fl
 	.endm
 
 	.macro	ngi_
-	negq	%rbp
+	negq	reg_ia
 	seto	reg_fl
 	.endm
 
@@ -1213,18 +1207,18 @@ calltab:
 
 	.macro	rti_
 	call	f_rti
-	mov	reg_ia,%rbp
 	.endm
 
 #TODO - check for overflow in sbi
 	.macro	sbi_	arg1
-	subq	\arg1,%rbp
-	xorq	%rax,%rax
+	movq	\arg1,%rax
+	subq	%rax,reg_ia
 	seto	reg_fl
 	.endm
 
 	.macro	sti_	arg1
-	movq	%rbp,\arg1
+	movq	reg_ia,%rax
+	movq	%rax,\arg1
 	.endm
 
 	.macro	lcp_	arg1
