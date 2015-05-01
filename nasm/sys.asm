@@ -50,8 +50,6 @@
 
 %if	ws=32
 
-	%define	ia	ebp
-
 	%define w0	eax
 	%define w1	ebp
 	%define wa	ecx
@@ -87,8 +85,6 @@
 	%define m(ref) dword[ref]
 	%define a(ref) [ref]
 %else
-	%define	ia	rbp
-
 	%define	w0	rax
 	%define	w0_l	al
 	%define w1	rbp
@@ -577,7 +573,6 @@ call_adr:	d_word	0
 ;
 	global	save_regs
 save_regs:
-	mov	m(save_ia),ia
 	mov	m(save_xl),xl
 	mov	m(save_xr),xr
 	mov	m(save_wa),wa
@@ -588,7 +583,6 @@ save_regs:
 	global	restore_regs
 restore_regs:
 	;	restore regs, except for sp. that is caller's responsibility
-	mov	ia,m(save_ia)
 	mov	xl,m(save_xl)
 	mov	xr,m(save_xr)
 	mov	wa,m(save_wa)
@@ -632,7 +626,8 @@ calltab_engts equ   13
 
 startup:
 	pop     w0			; discard return
-	xor	ia,ia			; initialize IA to zero
+	xor	w0,w0
+	mov	w0,m(reg_ia)		; initialize IA to zero
 	call	stackinit		; initialize minimal stack
 	mov     w0,m(compsp)	; get minimal's stack pointer
 	mov m(reg_wa),w0		; startup stack pointer
@@ -782,11 +777,13 @@ minimal:
 
 	global	get_ia
 get_ia:
-	mov	w0,ia
+	mov	w0,m(reg_ia)
 	ret
 
 	global	set_ia_
-set_ia_:	mov	ia,m_word[reg_w0]
+set_ia_:	
+	mov	w0,m_word[reg_w0]
+	mov	m(reg_ia),w0
 	ret
 
 syscall_init:
@@ -797,7 +794,6 @@ syscall_init:
 	mov     m(reg_wc),wc      ; (also _reg_ia)
 	mov	m(reg_xr),xr
 	mov	m(reg_xl),xl
-	mov	m(reg_ia),ia
 	ret
 
 syscall_exit:
@@ -808,7 +804,6 @@ syscall_exit:
 	mov	wb,m(reg_wb)
 	mov     wc,m(reg_wc)      ;
 	mov	xr,m(reg_xr)
-	mov	ia,m(reg_ia)
 	mov	xl,m(reg_xl)
 	cld
 	mov	w0,m(reg_pc)
@@ -1002,10 +997,8 @@ sysxi:	mov	m(reg_xs),xs
 	global	cvd__
 cvd__:
 	extern	i_cvd
-	mov	m(reg_ia),ia
 	mov	m(reg_wa),wa
 	call	i_cvd
-	mov	ia,m(reg_ia)
 	mov	wa,m(reg_wa)
 	ret
 
@@ -1016,7 +1009,6 @@ dvi__:
 	extern	i_dvi
 	mov	m(reg_w0),w0
 	call	i_dvi
-	mov	ia,m(reg_ia)
 	mov	al,byte [reg_fl]
 	or	al,al
 	ret
@@ -1028,22 +1020,22 @@ rmi__:
 	extern	i_rmi
 	mov	m(reg_w0),w0
 	call	i_rmi
-	mov	ia,m(reg_ia)
 	mov	al,byte [reg_fl]
 	or	al,al
 	ret
 
 ocode:
-        or      w0,w0         	; test for 0
-        jz      setovr    	; jump if 0 divisor
-        xchg    w0,ia         	; ia to w0, divisor to ia
-        cdq                     ; extend dividend
-        idiv    ia              ; perform division. w0=quotient, wc=remainder
+        or      w0,w0		; test for 0
+        jz      setovr		; jump if 0 divisor
+        xchg    w0,m(reg_ia)	; ia to w0, divisor to ia
+        cdq			; extend dividend
+        idiv		m(reg_ia)	; perform division. w0=quotient, wc=remainder
 	seto	byte [reg_fl]
-	mov	ia,wc
+	mov	m(reg_ia),wc
 	ret
 
-setovr: mov     al,1		; set overflow indicator
+setovr: 
+	mov	al,1		; set overflow indicator
 	mov	byte [reg_fl],al
 	ret
 
@@ -1069,7 +1061,6 @@ setovr: mov     al,1		; set overflow indicator
 	global	%1
 	extern	%2
 %1:
-	mov	m(reg_ia),ia
 	call	%2
 	ret
 %endmacro
@@ -1345,7 +1336,8 @@ calltab:
 ;	extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
 
 	%macro	adi_	1
-	add	ia,%1
+	mov	w0,%1
+	add	m(reg_ia),w0
 	seto	byte [reg_fl]
 	%endmacro
 
@@ -1381,16 +1373,19 @@ calltab:
 	%endmacro
 
 	%macro	ldi_	1
-	mov	ia,%1
+	mov	w0,%1
+	mov	m(reg_ia),w0
 	%endmacro
 
 	%macro	mli_	1
-	imul	ia,%1
+	mov	w0,m(reg_ia)
+	imul	w0,%1
+	mov	m(reg_ia),w0
 	seto	byte [reg_fl]
 	%endmacro
 
 	%macro	ngi_	0
-	neg	ia
+	neg	m(reg_ia)
 	seto	byte [reg_fl]
 	%endmacro
 
@@ -1401,19 +1396,19 @@ calltab:
 
 	extern	f_rti
 	%macro	rti_	0
-
 	call	f_rti
-	mov	ia,m_word [reg_ia]
 	%endmacro
 
 	%macro	sbi_	1
-	sub	ia,%1
-	mov	w0,0
+	mov	w0,m(reg_ia)
+	sub	w0,%1
+	mov	w0,m(reg_ia)
 	seto	byte [reg_fl]
 	%endmacro
 
 	%macro	sti_	1
-	mov	%1,ia
+	mov	%1,w0
+	mov	w0,m(reg_ia)	
 	%endmacro
 
 	%macro	lcp_	1
