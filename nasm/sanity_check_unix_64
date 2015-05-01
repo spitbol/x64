@@ -10,17 +10,17 @@ rm tbol.*
 echo "start 64-bit sanity test"
 cp	./bin/sbl_unix_64 tbol
 make clean>/dev/null
-make 	BASEBOL=./tbol unix_64
-mv sbl.lex tbol.lex.0
-mv sbl.s tbol.s.0
+make 	BASEBOL=./tbol unix_64_nasm
+mv bld/sbl.lex tbol.lex.0
+mv bld/sbl.s tbol.s.0
 cp sbl tbol
-make 	BASEBOL=./tbol  unix_64
-mv sbl.lex tbol.lex.1
-mv sbl.s tbol.s.1
+make 	BASEBOL=./tbol  unix_64_nasm
+mv bld/sbl.lex tbol.lex.1
+mv bld/sbl.s tbol.s.1
 cp sbl tbol
-make 	BASEBOL=./tbol  unix_64
-mv sbl.lex tbol.lex.2
-mv sbl.s tbol.s.2
+make 	BASEBOL=./tbol  unix_64_nasm
+mv bld/sbl.lex tbol.lex.2
+mv bld/sbl.s tbol.s.2
 echo "comparing generated .s files"
 diff tbol.s.1 tbol.s.2
 echo "end sanity test"
