@@ -51,7 +51,6 @@
 %if	ws=32
 
 	%define w0	eax
-	%define w1	ebp
 	%define wa	ecx
 	%define wa_l    cl
 	%define wb	ebx
@@ -60,9 +59,9 @@
 	%define wc_l  	dl
 
 	%define	xl	esi
-	%define	xt	esi
 	%define xr	edi
 	%define xs	esp
+	%define	xt	esp
 
 	%define m_word	dword	; reference to word in memory
 	%define d_word	dd	; define value for memory word
@@ -87,7 +86,6 @@
 %else
 	%define	w0	rax
 	%define	w0_l	al
-	%define w1	rbp
 	%define	wa	rcx
 	%define wa_l	cl
 	%define	wb	rbx
@@ -96,9 +94,9 @@
 	%define wc_l    dl
 
 	%define	xl	rsi
-	%define	xt	rsi
 	%define	xr	rdi
 	%define	xs	rsp
+	%define	xt	rsp
 
 	%define m_word  qword
 	%define d_word	dq
@@ -627,7 +625,7 @@ calltab_engts equ   13
 startup:
 	pop     w0			; discard return
 	xor	w0,w0
-	mov	w0,m(reg_ia)		; initialize IA to zero
+	mov	m(reg_ia),w0		; initialize IA to zero
 	call	stackinit		; initialize minimal stack
 	mov     w0,m(compsp)	; get minimal's stack pointer
 	mov m(reg_wa),w0		; startup stack pointer
@@ -789,20 +787,20 @@ set_ia_:
 syscall_init:
 ;       save registers in global variables
 
-	mov     m(reg_wa),wa      ; save registers
+	mov	m(reg_wa),wa      ; save registers
 	mov	m(reg_wb),wb
-	mov     m(reg_wc),wc      ; (also _reg_ia)
+	mov	m(reg_wc),wc
 	mov	m(reg_xr),xr
 	mov	m(reg_xl),xl
 	ret
 
 syscall_exit:
 	mov	m(_rc_),w0	; save return code from function
-	mov     m(osisp),xs       ; save osint's stack pointer
-	mov     xs,m(compsp)      ; restore compiler's stack pointer
-	mov     wa,m(reg_wa)      ; restore registers
+	mov	m(osisp),xs       ; save osint's stack pointer
+	mov	xs,m(compsp)      ; restore compiler's stack pointer
+	mov	wa,m(reg_wa)      ; restore registers
 	mov	wb,m(reg_wb)
-	mov     wc,m(reg_wc)      ;
+	mov	wc,m(reg_wc)      ;
 	mov	xr,m(reg_xr)
 	mov	xl,m(reg_xl)
 	cld
@@ -810,12 +808,12 @@ syscall_exit:
 	jmp	w0
 
 	%macro	syscall	2
-	pop     w0			; pop return address
+	pop	w0			; pop return address
 	mov	m(reg_pc),w0
 	call	syscall_init
-;       save compiler stack and switch to osint stack
-	mov     m(compsp),xs      ; save compiler's stack pointer
-	mov     xs,m(osisp)       ; load osint's stack pointer
+;	save compiler stack and switch to osint stack
+	mov	m(compsp),xs      ; save compiler's stack pointer
+	mov	xs,m(osisp)       ; load osint's stack pointer
 	call	%1
 	call	syscall_exit
 	%endmacro
@@ -824,63 +822,63 @@ syscall_exit:
 	extern	zysax
 sysax:	syscall	  zysax,1
 
-	global sysbs
+	global	sysbs
 	extern	zysbs
 sysbs:	syscall	  zysbs,2
 
-	global sysbx
+	global	sysbx
 	extern	zysbx
 sysbx:	mov	m(reg_xs),xs
 	syscall	zysbx,2
 
 ;        global syscr
 ;	extern	zyscr
-;syscr:  syscall    zyscr ;    ,0
+;syscr:	syscall    zyscr ;    ,0
 
 	global sysdc
 	extern	zysdc
 sysdc:	syscall	zysdc,4
 
-	global sysdm
+	global	sysdm
 	extern	zysdm
 sysdm:	syscall	zysdm,5
 
-	global sysdt
+	global	sysdt
 	extern	zysdt
 sysdt:	syscall	zysdt,6
 
-	global sysea
+	global	sysea
 	extern	zysea
 sysea:	syscall	zysea,7
 
-	global sysef
+	global	sysef
 	extern	zysef
 sysef:	syscall	zysef,8
 
-	global sysej
+	global	sysej
 	extern	zysej
 sysej:	syscall	zysej,9
 
-	global sysem
+	global	sysem
 	extern	zysem
 sysem:	syscall	zysem,10
 
-	global sysen
+	global	sysen
 	extern	zysen
 sysen:	syscall	zysen,11
 
-	global sysep
+	global	sysep
 	extern	zysep
 sysep:	syscall	zysep,12
 
-	global sysex
+	global	sysex
 	extern	zysex
 sysex:	mov	m(reg_xs),xs
 	syscall	zysex,13
 
-	global sysfc
+	global	sysfc
 	extern	zysfc
-sysfc:  pop     w0             ; <<<<remove stacked scblk>>>>
+sysfc:	pop	w0             ; <<<<remove stacked scblk>>>>
 	lea	xs,[xs+wc*cfp_b]
 	push	w0
 	syscall	zysfc,14
@@ -889,36 +887,36 @@ sysfc:  pop     w0             ; <<<<remove stacked scblk>>>>
 	extern	zysgc
 sysgc:	syscall	zysgc,15
 
-	global syshs
+	global	syshs
 	extern	zyshs
 syshs:	mov	m(reg_xs),xs
 	syscall	zyshs,16
 
-	global sysid
+	global	sysid
 	extern	zysid
 sysid:	syscall	zysid,17
 
-	global sysif
+	global	sysif
 	extern	zysif
 sysif:	syscall	zysif,18
 
-	global sysil
+	global	sysil
 	extern	zysil
-sysil:  syscall zysil,19
+sysil:	syscall zysil,19
 
-	global sysin
+	global	sysin
 	extern	zysin
 sysin:	syscall	zysin,20
 
-	global sysio
+	global	sysio
 	extern	zysio
 sysio:	syscall	zysio,21
 
-	global sysld
+	global	sysld
 	extern	zysld
 sysld:  syscall zysld,22
 
-	global sysmm
+	global	sysmm
 	extern	zysmm
 sysmm:	syscall	zysmm,23
 
@@ -926,55 +924,55 @@ sysmm:	syscall	zysmm,23
 	extern	zysmx
 sysmx:	syscall	zysmx,24
 
-	global sysou
+	global	sysou
 	extern	zysou
 sysou:	syscall	zysou,25
 
-	global syspi
+	global	syspi
 	extern	zyspi
 syspi:	syscall	zyspi,26
 
-	global syspl
+	global	syspl
 	extern	zyspl
 syspl:	syscall	zyspl,27
 
-	global syspp
+	global	syspp
 	extern	zyspp
 syspp:	syscall	zyspp,28
 
-	global syspr
+	global	syspr
 	extern	zyspr
 syspr:	syscall	zyspr,29
 
-	global sysrd
+	global	sysrd
 	extern	zysrd
 sysrd:	syscall	zysrd,30
 
-	global sysri
+	global	sysri
 	extern	zysri
 sysri:	syscall	zysri,32
 
-	global sysrw
+	global	sysrw
 	extern	zysrw
 sysrw:	syscall	zysrw,33
 
-	global sysst
+	global	sysst
 	extern	zysst
 sysst:	syscall	zysst,34
 
-	global systm
+	global	systm
 	extern	zystm
 systm:	syscall	zystm,35
 
-	global systt
+	global	systt
 	extern	zystt
 systt:	syscall	zystt,36
 
-	global sysul
+	global	sysul
 	extern	zysul
 sysul:	syscall	zysul,37
 
-	global sysxi
+	global	sysxi
 	extern	zysxi
 sysxi:	mov	m(reg_xs),xs
 	syscall	zysxi,38
@@ -1029,7 +1027,7 @@ ocode:
         jz      setovr		; jump if 0 divisor
         xchg    w0,m(reg_ia)	; ia to w0, divisor to ia
         cdq			; extend dividend
-        idiv		m(reg_ia)	; perform division. w0=quotient, wc=remainder
+        idiv	m(reg_ia)	; perform division. w0=quotient, wc=remainder
 	seto	byte [reg_fl]
 	mov	m(reg_ia),wc
 	ret
@@ -1378,9 +1376,8 @@ calltab:
 	%endmacro
 
 	%macro	mli_	1
-	mov	w0,m(reg_ia)
-	imul	w0,%1
-	mov	m(reg_ia),w0
+	mov	w0,%1
+	imul	m(reg_ia)
 	seto	byte [reg_fl]
 	%endmacro
 
@@ -1400,15 +1397,14 @@ calltab:
 	%endmacro
 
 	%macro	sbi_	1
-	mov	w0,m(reg_ia)
-	sub	w0,%1
-	mov	w0,m(reg_ia)
+	mov	w0,%1
+	sub	m(reg_ia),w0
 	seto	byte [reg_fl]
 	%endmacro
 
 	%macro	sti_	1
+	mov	w0,m(reg_ia)
 	mov	%1,w0
-	mov	w0,m(reg_ia)	
 	%endmacro
 
 	%macro	lcp_	1
