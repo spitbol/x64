@@ -77,6 +77,7 @@
 	lcase   = 'abcdefghijklmnopqrstuvwxyz'
 	nos     = '0123456789'
 	tab	= char(9)
+	dtc_pad	= ',0,0,0,0,0,0,0 '
 
 
 *  function definitions
@@ -176,6 +177,7 @@ options.done
 config.32
 	cfp_b = 4
 	cfp_c = 4
+	cfp_f = +cfp_b + cfp_c
 	log_cfp_b = '2'
 	log_cfp_c = '2'
 *	op_w is instruction suffix for word-size
@@ -190,6 +192,7 @@ config.64
 *       these should agree with values used in translator
 	cfp_b = 8
 	cfp_c = 8
+	cfp_f = +cfp_b + cfp_c
 	log_cfp_b = '3'
 	log_cfp_c = '3'
 	op_w = 'q'
@@ -206,20 +209,20 @@ config.done
 	report('rip', rip_mode)
 	ne(rip_mode) ripinit()
 
-*	z_limit is maximum number of calls to be generated if non-zero
-	z_limit = 0
-*	set z_first non-zero to skip first number of instructions that would generate trace
-	z_first = 1
+*	i_limit is maximum number of calls to be generated if non-zero
+	i_limit = 0
+*	set i_first non-zero to skip first number of instructions that would generate trace
+	i_first = 1
 *	will set in_executable when in part of program where executable
 *	instructions may occur
-	z_exec = 0
+	i_exec = 0
 
-*	z_suspend is set to temporarily disable the trace.
+*	i_suspend is set to temporarily disable the trace.
 *	initially set so emit no code until reach code section
-	z_suspend = 0
+	i_suspend = 0
 *	set in_skip when should not insert trace code, else assembly errors result.
 *	start with skip on, turn off when see first start of code.
-	z_skip = 1
+	i_skip = 1
 *	skip_on and skip_off are labels indicating the start and end,
 *	respectively, of sections of the code that should not be traced,
 *	usually because they contain a loop instruction that won't
@@ -401,19 +404,14 @@ is_exec.2
 
 *  get file name
 
-
 * get definition file name following token file name, and flags.
-
-*	filebase ? break(';:') . filebase len(1) (break(';:') | rem) . target
-*+		((len(1) rem . flags) | '')
-*	$replace(target,lcase,ucase) = 1
 
 * parse and display flags, setting each one's name to non-null value (1).
 
  :(flgs.skip)
 flgs	flags ? ((len(1) break(';:')) . flag len(1)) |
 +	 ((len(1) rem) . flag) =			:f(flgs2)
-	flag = replace(flag,lcase,ucase)
+	flag = replace(flag,&ucase,&lcase)
         output = "  flag: " flag
 	$flag = 1					:(flgs)
 
@@ -426,8 +424,7 @@ flgs2
         comment.delim = ';'
 
 	w0_arg = minarg(8,'w0')
-*  branchtab maps minimal opcodes 'beq', etc to desired
-*  target instruction
+*  branchtab maps minimal opcodes 'beq', etc to desired target instruction
 
 	branchtab = table(10)
 	branchtab['beq'] = 'je'
@@ -439,24 +436,7 @@ flgs2
 	branchtab['blo'] = 'jb'
 	branchtab['bhi'] = 'ja'
 
-*  optim.tab flags opcodes capable of participating in or optimization
-*		in outstmt routine
-
-	optim.tab = table(10)
-	optim.tab<"and"> = 1
-	optim.tab<"add"> = 1
-	optim.tab<"sub"> = 1
-	optim.tab<"neg"> = 1
-	optim.tab<"or"> = 1
-	optim.tab<"xor"> = 1
-	optim.tab<"shr"> = 1
-	optim.tab<"shl"> = 1
-	optim.tab<"inc"> = 1
-	optim.tab<"dec"> = 1
-
-
-*  ismem is table indexed by operand type which is nonzero if
-*  operand type implies memory reference.
+*  ismem is table indexed by operand type which is nonzero if operand type implies memory reference.
 
 	ismem = array(30,0)
 	ismem<3> = 1; ismem<4> = 1; ismem<5> = 1
@@ -464,8 +444,7 @@ flgs2
 	ismem<12> = 1; ismem<13> = 1; ismem<14> = 1
 	ismem<15> = 1
 
-*  regmap maps minimal register name to target machine
-*  register/memory-location name.
+*  regmap maps minimal register name to target machine register/memory-location name.
 
 	regmap = table(30)
 	regmap['xl'] = 'xl';  regmap['xt'] = 'xt'
@@ -481,8 +460,7 @@ flgs2
 	reg.wa = regmap['wa']
 	reg.cp = regmap['cp']
 
-* reglow maps register to identify target, so
-* can extract 'l' part.
+* reglow maps register to identify target, so can extract 'l' part.
 	reglow = table(4)
 	reglow['wa'] = 'wa_l'
 	reglow['wb'] = 'wb_l'
@@ -596,7 +574,7 @@ opnext.1
 	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' '
 .		i.text(i2) ' ' i.text(i3)
 	argerrs = 0
-*	differ(it_trace) ge(sectnow,5) eq(z_suspend) chktrace()
+*	differ(i_trace) ge(sectnow,5) eq(i_suspend) chktrace()
 	ge(sectnow,5) chktrace()
 						:($('g.' incode))
 *  here if bad opcode
@@ -962,22 +940,22 @@ outstmt4
 -stitl  chktrace()
 chktrace
 	ident(i_trace)				:s(return)
-	ne(z_suspend)				:s(return)
+	ne(i_suspend)				:s(return)
 	clabel = inlabel
- 	old_z_skip = z_skip
- 	old_z_exec = z_exec
+ 	old_i_skip = i_skip
+ 	old_i_exec = i_exec
  	old_is_exec = is_exec
-	z_skip = ident(inlabel,'s_aaa') 0
+	i_skip = ident(inlabel,'s_aaa') 0
 
 	is_exec = is_executable[incode]
-	z_exec = differ(i_trace)  ident(inlabel, 's_aaa') 1
-	z_exec = differ(i_trace) ge(sectnow,5) 1
+	i_exec = differ(i_trace)  ident(inlabel, 's_aaa') 1
+	i_exec = differ(i_trace) ge(sectnow,5) 1
 
- 	z_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
- 	z_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
+ 	i_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
+ 	i_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
 
-	ne(z_skip)				:s(return)
-	eq(z_exec)				:s(return)
+	ne(i_skip)				:s(return)
+	eq(i_exec)				:s(return)
 	eq(is_exec)				:s(return)
 
 *	ne(in_gcol)				:s(return)
@@ -1027,8 +1005,8 @@ readline readline = infile                      :f(rl02)
 	ident( readline )			:s(readline)
 readline.0
 	leq( substr(readline,1,1 ),';' )       	:f(rl01)
-	z_skip = ident(readline,';z+') 0	:s(readline)
-*	z_skip = ident(readline,';z-') 1	:s(readline)
+	i_skip = ident(readline,';z+') 0	:s(readline)
+*	i_skip = ident(readline,';z-') 1	:s(readline)
 * force skip of full line comments
 	:(readline)
 
@@ -1087,14 +1065,14 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 g.flc
 	t1 = (eq(cfp_b,cfp_c) reglow[getarg(i1)], getarg(i1))
 	t2 = genlab()
-*	z_suspend = 1
+*	i_suspend = 1
 	genop('cmp',t1,"'A'")
 	genop('jb', t2 )
 	genop('cmp',t1,"'Z'")
 	genop('ja', t2)
 	genop('add',t1,'32')
         genopl(t2 ':')
-*	z_suspend = 0
+*	i_suspend = 0
 						:(opdone)
 
 g.mov
@@ -1152,7 +1130,7 @@ g.brn   genop('jmp',getarg(i1))			:(opdone)
 
 g.bsw	t1 = getarg(i1)
 	t2 = genlab()
-	z_suspend = 1
+	i_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
 	genop('cmp',t1,getarg(i2))
 	genop('jge',getarg(i3))
@@ -1173,7 +1151,7 @@ g.bsw.2
 g.bsw.3
 	genop('segment','.data')
         genopl(t2 ':')
-	z_suspend = 0
+	i_suspend = 0
 						:(opdone)
 
 g.iff   genop('d_word',getarg(i2))              :(opdone)
@@ -1226,13 +1204,13 @@ g.jsr
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
 	eq(jsr_count)				:s(opdone)
-	z_suspend = 1
+	i_suspend = 1
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
 	genop('dec','m(' rcode ')')
 	genop('js',jsr_label_norm)
-	z_suspend = 0
+	i_suspend = 0
 
 *	generate branch around for ppms that will follow
 *	take the branch if normal return (eax==0)
@@ -1259,7 +1237,7 @@ g.ppm
 g.ppm.loop.next
 	genopl(lab_next ':')
  	jsr_count = jsr_count - 1
- 	z_suspend = eq(jsr_count) 0
+ 	i_suspend = eq(jsr_count) 0
 	eq(jsr_count) genopl(jsr_label_norm ':') :(opdone)
 g.ppm.loop
 	lab_next = genlab()
@@ -1786,10 +1764,10 @@ g.mvc
 	ne(cfp_b,cfp_c)				:s(g.mvw)
 
 	t1 = genlab()
-	z_suspend = 1
+	i_suspend = 1
 	genop('rep')
 	genop('movs_b')
-	z_suspend = 0
+	i_suspend = 0
 						:(opdone)
 	t1 = genlab()
 	genopl(t1 ':', 'mov','al','byte [esi]')
@@ -1807,10 +1785,10 @@ g.mvc
 	genop('jnz',t1)
 						:(opdone)
 g.mvw
-	z_suspend = 1
+	i_suspend = 1
 	genop('shr','wa','log_cfp_b')
  	genop('rep','movs_w')
-	z_suspend = 0
+	i_suspend = 0
 						:(opdone)
 
 g.mwb
@@ -1886,25 +1864,18 @@ g.drc
 
 g.dtc
 *  change first and last chars to " (assume / used in source)
-	t1 = i.text(i1)
-	t1 tab(1) rtab(1) . t2
-	t3 = remdr(size(t2),cfp_c)
-*        t2 = "'" t2 "'"
-*  append nulls to complete last word so constant length is multiple
-*  of word word
-	dtc_i = 1
-	t4 =
-g.dtc.1
-	t4 = gt(dtc_i, 1) t4 ","
-	t4 = t4 "'" substr(t2,dtc_i,1) "'"
-	le(dtc_i = dtc_i + 1, size(t2))		:s(g.dtc.1)
-
-        t4 = ne(t3) t4 dupl(',0',cfp_c - t3)
-        genopl(thislabel,'d_char',t4)
+	txt = i.text(i1)
+	txt tab(1) rtab(1) . txt
+	pad = remdr(size(txt),cfp_c)
+	pad = ne(pad) cfp_c - pad
+*  append nulls if needed so constant length is multiple  of word size
+	genopl(thislabel,'db','"' txt '"' (gt(pad) substr(dtc_pad,1, pad * 2),  ''))
 						:(opdone)
 g.dbc   genopl(thislabel,'d_word',getarg(i1))
 						:(opdone)
-g.equ   genopl(thislabel,'equ',i.text(i1))
+g.equ   
+*	genopl(thislabel,'equ',i.text(i1))
+	genop('set',thislabel,i.text(i1))
 						:(opdone)
 g.exp
 	ppm_cases[thislabel] = i.text(i1)

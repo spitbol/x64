@@ -1349,6 +1349,7 @@ calltab:
 	%endmacro
 
 	%macro	dvi_	1
+	mov	w0,%1
 	call	dvi__
 	%endmacro
 
@@ -1461,3 +1462,6 @@ trc__:
 	call	trc__
 	%endmacro
 
+	%macro	set	2
+%1	equ	%2
+	%endmacro

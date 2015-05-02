@@ -1,15 +1,6 @@
 -title mincod: phase 2 translation from minimal tokens to 80386 code
 -stitl description
 
-* TODO
-* done	drop 32 bit code
-* done	add code to swap operand order for certain binary operators
-* done	drop tests for equality of cfp_b and cfp_c
-* done	identify register operands with prefix 'reg.'
-* done	add suffix indicating operand length. For example, add.w  for 64 bit adder.
-* todo	add v(string) and iv(string) to evaluate string as integer. 
-*
-
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
 * copyright 2012-2015 david shields
 
@@ -293,8 +284,7 @@ swap.init.done
 
 	sectnow = 0
 
-*	ppm_cases gives count of ppm/err statments that must follow call to
-*	a procedure
+*	ppm_cases gives count of ppm/err statments that must follow call to a procedure
 
 	ppm_cases = table(50,,0)
 
@@ -309,8 +299,7 @@ swap.init.done
 
 	labtab = table(500)
 
-*  for each statement, code in generated into three
-*  arrays of statements:
+*  for each statement, code in generated into three arrays of statements:
 
 *	astmts:	statements after opcode (()+, etc.)
 *	bstmts: statements before code (-(), etc)
@@ -430,16 +419,6 @@ is_exec.2
 *  get file name
 
 
-* get definition file name following token file name, and flags.
-
-*	filebase ? break(';:') . filebase len(1) (break(';:') | rem) . target
-*+		((len(1) rem . flags) | '')
-*	$replace(target,&lcase,&ucase) = 1
-
-* parse and display flags, setting each one's name to non-null value (1).
-
- :(flgs.skip)
-flgs	flags ? ((len(1) break(';:')) . flag len(1)) |
 +	 ((len(1) rem) . flag) =			:f(flgs2)
 	flag = replace(flag,&ucase,&lcase)
         output = "  flag: " flag
@@ -462,24 +441,7 @@ flgs2
 	branchtab['blo'] = 'jb'
 	branchtab['bhi'] = 'ja'
 
-*  optim.tab flags opcodes capable of participating in or optimization
-*		in outstmt routine
-
-	optim.tab = table(10)
-	optim.tab<"and"> = 1
-	optim.tab<"add"> = 1
-	optim.tab<"sub"> = 1
-	optim.tab<"neg"> = 1
-	optim.tab<"or"> = 1
-	optim.tab<"xor"> = 1
-	optim.tab<"sar"> = 1
-	optim.tab<"sal"> = 1
-	optim.tab<"inc"> = 1
-	optim.tab<"dec"> = 1
-
-
-*  ismem is table indexed by operand type which is nonzero if
-*  operand type implies memory reference.
+*  ismem is table indexed by operand type which is nonzero if operand type implies memory reference.
 
 	ismem = array(30,0)
 	ismem<3> = 1; ismem<4> = 1; ismem<5> = 1
@@ -487,8 +449,7 @@ flgs2
 	ismem<12> = 1; ismem<13> = 1; ismem<14> = 1
 	ismem<15> = 1
 
-*  regmap maps minimal register name to target machine
-*  register/memory-location name.
+*  regmap maps minimal register name to target machine register/memory-location name.
 
 	regmap = table(30)
 	reg.xl = regmap['xl'] = '%rsi'  
@@ -509,6 +470,7 @@ flgs2
 	reglow['wa'] = '%cl';	reglow['wb'] = '%bl';	reglow['wc'] = '%dl'
 
 * real_op maps minimal real opcode to machine opcode
+
 	real_op = table(10)
 	real_op['adr'] = 'fadd'
 	real_op['atn'] = 'fpatan'
@@ -770,8 +732,11 @@ getarg.c.11
 getarg.c.12
 getarg.c.13
 	txt break('(') . disp '(' len(2) . indx
-	disp = cfp_b * equ_value[disp]
+	outfile = cs 'getarg typ' ls typ ls '  disp' cs disp cs
+	disp = v(cfp_b * v(disp))
+	outfile = cs ' getarg 12,13 disp' cs disp cs
 	base = indx
+*	outfile = '#quitting'; dump(3) :(end)
 	indx = 					:(getarg.mem)
 
 *	name(x), where name is in working section
@@ -979,6 +944,7 @@ chktrace
 *	ne(in_gcol)				:s(return)
 chktrace.1
 	genz()
+						:(return)
 
 genz
 *	no trace if trace has been suspended
