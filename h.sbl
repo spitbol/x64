@@ -1,2 +1,7 @@
   output = 'hello world'
+	i = 5
+	sum = i * i + i - (6 * i)
+	output = sum
+	sum = i * i  - (6 * i)
+	output = sum
 end

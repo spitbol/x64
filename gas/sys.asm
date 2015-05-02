@@ -323,8 +323,6 @@ save_regs:
 	movq	%rcx,save_wa
 	movq	%rbx,save_wb
 	movq	%rdx,save_wc
-#	movq	reg_ia,%rax
-	movq	%rax,save_ia
 	ret
 
 	.global	restore_regs
@@ -374,18 +372,18 @@ restore_regs:
 startup:
 	pop	%rax			# discard return
 	xorq	%rax,%rax
-	xorq	%rax,reg_ia		# initialize IA to zero
+	movq	%rax,reg_ia		# initialize IA to zero
 	call	stackinit		# initialize minimal stack
-	mov	compsp,%rax		# get minimal's stack pointer
-	mov	%rax,reg_wa		# startup stack pointer
+	movq	compsp,%rax		# get minimal's stack pointer
+	movq	%rax,reg_wa		# startup stack pointer
 
 	cld				# default to up direction for string ops
 #	getoff	%rax,dffnc		# get address of ppm offset
-	mov	%rax,ppoff	# save for use later
+	movq	%rax,ppoff	# save for use later
 
-	mov	osisp,%rsp	# switch to new c stack
-	mov	$calltab_start,%rax
-	mov	%rax,minimal_id
+	movq	osisp,%rsp	# switch to new c stack
+	movq	$calltab_start,%rax
+	movq	%rax,minimal_id
 	call	minimal			# load regs, switch stack, start compiler
 
 #	stackinit  -- initialize spmin from sp.
@@ -539,7 +537,7 @@ syscall_init:
 
 	mov     %rcx,reg_wa      # save registers
 	movq	%rbx,reg_wb
-	movq	%rdx,reg_wc      # (also _reg_ia)
+	movq	%rdx,reg_wc
 	movq	%rsi,reg_xl
 	movq	%rdi,reg_xr
 	ret
@@ -551,8 +549,8 @@ syscall_exit:
 	movq	reg_wa,%rcx      # restore registers
 	movq	reg_wb,%rbx
 	movq	reg_wc,%rdx      #
-	movq	reg_xr,%rdi
 	movq	reg_xl,%rsi
+	movq	reg_xr,%rdi
 	cld
 	movq	reg_pc,%rax
 	jmp	*%rax
@@ -980,47 +978,10 @@ re4:	movq	stbas,%rax
 	movq	%rax,minimal_id
         call	minimal			# no return
 
-#%ifdef zz_trace
-#	.extern	zz_ra
-#	.global	zz_
-#	.extern	zz,zz_cp,zz_%rsi,zz_%rdi,zz_wa,zz_wb,zz_%rdx,zz_%rax
-#zz_:
-#	pushf
-#	call	save_regs
-#	call	zz
-#	call	restore_regs
-#	popf
-#	ret
-#%endif
-#
         .text
-
 
 	.global	mxint
 
-#	%ifdef zz_trace
-#		.extern	shields
-#		.extern	zz
-#		.extern	zz_
-#		.extern	zz_cp
-#		.extern	zz_%rsi
-#		.extern	zz_%rdi
-#		.extern	zz_sp
-#		.extern	zz_wa
-#		.extern	zz_wb
-#		.extern	zz_%rdx
-#		.extern	zz_%rax
-#		.extern	zz_zz
-#		.extern	zz_id
-#		.extern	zz_de
-#		.extern	zz_0
-#		.extern	zz_1
-#		.extern	zz_2
-#		.extern	zz_3
-#		.extern	zz_4
-#		.extern	zz_arg
-#		.extern	zz_num
-#	%endif
 	.global	start
 	.extern	trc
 	.extern	trc_de
