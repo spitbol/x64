@@ -1006,7 +1006,7 @@ readline readline = infile                      :f(rl02)
 readline.0
 	leq( substr(readline,1,1 ),';' )       	:f(rl01)
 	i_skip = ident(readline,';z+') 0	:s(readline)
-*	i_skip = ident(readline,';z-') 1	:s(readline)
+	i_skip = ident(readline,';z-') 1	:s(readline)
 * force skip of full line comments
 	:(readline)
 
@@ -1065,14 +1065,14 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 g.flc
 	t1 = (eq(cfp_b,cfp_c) reglow[getarg(i1)], getarg(i1))
 	t2 = genlab()
-*	i_suspend = 1
+	i_suspend = 1
 	genop('cmp',t1,"'A'")
 	genop('jb', t2 )
 	genop('cmp',t1,"'Z'")
 	genop('ja', t2)
 	genop('add',t1,'32')
         genopl(t2 ':')
-*	i_suspend = 0
+	i_suspend = 0
 						:(opdone)
 
 g.mov
@@ -1321,7 +1321,11 @@ g.zer1	t1 = getarg(i1)
 	genop('xor',t1,t1)			:(opdone)
 g.zer.xs genop('push','0')			:(opdone)
 
-g.mnz   genop('mov',getarg(i1),'xs')		:(opdone)
+g.mnz   
+	genop('xor',w0,w0)
+	genop('inc',w0)
+	genop('mov',getarg(i1),w0)		
+						:(opdone)
 
 g.ssl
 g.sss

@@ -243,7 +243,7 @@ skip_init.end
 *	For each hardware operation that can take byte or word operands we define two symbols that give the
 *	corresponding opcode. For example, 'add.w' for 64-bit addition, and 'add.b' for 8-bit addition.
 
-	s = 'add and cmp cmps dec imul inc lea lods mov movs movz not or pop push sal sar stos sub test xchg xor '
+	s = 'add and cmp cmps dec imul inc lea lods mov movs movz not or pop push shl shr stos sub test xchg xor '
 
 
 op_map.init
@@ -264,7 +264,7 @@ op_map.done
 *	swap_op is set if operand order is reversed in gas att syntax
 
 	swap_op = table(100)
-	s = 	'add and cmp cmps lea mov movs movz or sal sar sub test xchg xor '
+	s = 	'add and cmp cmps lea mov movs movz or shl shr sub test xchg xor '
 swap.init
 	s break(' ') . op ' ' =			:f(swap.init.done)
 	swap_op[op 'b'] = swap_op[op 'q'] = 1				:(swap.init)
@@ -415,10 +415,14 @@ is_exec.2
 
 *  the generators are listed in a separate section below.
 
-
 *  get file name
 
+* get definition file name following token file name, and flags.
 
+* parse and display flags, setting each one's name to non-null value (1).
+
+ :(flgs.skip)
+flgs	flags ? ((len(1) break(';:')) . flag len(1)) |
 +	 ((len(1) rem) . flag) =			:f(flgs2)
 	flag = replace(flag,&ucase,&lcase)
         output = "  flag: " flag
@@ -589,7 +593,7 @@ opnext.1
 	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' '
 .		i.text(i2) ' ' i.text(i3)
 	argerrs = 0
-	differ(i_trace) ge(sectnow,5) eq(i_suspend) chktrace()
+*	differ(i_trace) ge(sectnow,5) eq(i_suspend) chktrace()
 	ge(sectnow,5) chktrace()
 						:($('g.' incode))
 *  here if bad opcode
@@ -1065,29 +1069,17 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 g.flc
 	t1 = reglow[i.text(i1)]
 	t2 = genlab()
-*	i_suspend = 1
+	i_suspend = 1
 	op(cmp.b,t1,"'A'")
 	op('jb', t2 )
 	op(cmp.b,t1,"'Z'")
 	op('ja', t2)
 	op(add.b,t1,literal_ '32')
         opl(t2)
-*	i_suspend = 0
+	i_suspend = 0
 						:(opdone)
 
 g.mov
-*  perhaps change mov x,(xr)+ to
-*	mov ax,x; stows
-
-*  perhaps do  mov (xl)+,wx as
-*	lodsw
-*	xchg ax,tx
-*  and also mov (xl)+,name as
-*	lodsw
-*	mov name,w0
-*  need to process memory-memory case
-*  change 'mov (xs)+,a' to 'pop a'
-*  change 'mov a,-(xs)' to 'push a'
         i.src = i2; i.dst = i1
 	t.src = i.text(i.src); t.dst = i.text(i.dst)
 	ident(t.src,'(xl)+')			:s(mov.xlp)
@@ -1147,7 +1139,7 @@ g.bsw.2
 	opl(lbl,'.quad',t2 )
 	op('.text')
 	op(mov.w,reg.w0,t1)
-	op(sal.w,reg.w0,iv(log_cfp_b))
+	op(shl.w,reg.w0,iv(log_cfp_b))
 	op(add.w,reg.w0,lbl)
 	op('jmp', '*' w0)
 g.bsw.3
@@ -1520,8 +1512,16 @@ g.psc
 *  lch requires separate cases for each first operand possibility.
 
 g.lch
+	outfile = cs 'g.lch' ls i.text(i1) ls i.text(i2) ls
+
+*	clear reg, load character to %al, then or with target
 	opv = i.text(i2)
 	reg = getarg(i1)
+
+	op(xor.w,reg.w0,reg.w0)
+	op(mov.b,reg.al,getarg(i2))
+	op(mov.w,reg,reg.w0)
+		:(opdone)
 
 *  see if predecrement needed.
 	leq('-',substr(opv,1,1))			:f(g.lch.1)
@@ -1540,8 +1540,19 @@ g.lch.1
 g.lch.2						:(opdone)
 
 g.sch
+	outfile = cs 'g.sch' ls i.text(i1) ls i.text(i2) ls
 	reg = getarg(i1)
 	opv = i.text(i2)
+*	
+	op(mov.w,reg.w0,reg)
+	op(mov.b,getarg(i2),reg.al)
+		:(opdone)
+
+	op(and.w,reg,reg.w0)
+	op(mov.b,reg.al,getarg(i2))
+	:(opdone)
+
+
 	eq(i.type(i1),8)			:s(g.sch.w)
 	:(g.sch.0)
 	ident(opv,'(xr)+')			:f(g.sch.0)
@@ -1640,10 +1651,10 @@ g.xob   op(xor.w,getarg(i1),getarg(i2))	:(opdone)
 g.cmb   op(not.w,getarg(i1))			:(opdone)
 
 g.rsh
-	op(sar.w,getarg(i1),iv(getarg(i2)))	:(opdone)
+	op(shr.w,getarg(i1),iv(getarg(i2)))	:(opdone)
 
 g.lsh
-	op(sal.w,getarg(i1),iv(getarg(i2)))	:(opdone)
+	op(shl.w,getarg(i1),iv(getarg(i2)))	:(opdone)
 
 g.rsx
 	error('rsx not supported')
@@ -1676,9 +1687,9 @@ g.zgb
 g.zzz
  	op('zzz',getarg(i1))			:(opdone)
 
-g.wtb   op(sal.w,getarg(i1),iv(log_cfp_b))	:(opdone)
+g.wtb   op(shl.w,getarg(i1),iv(log_cfp_b))	:(opdone)
 
-g.btw   op(sar.w,getarg(i1),iv(log_cfp_b))	:(opdone)
+g.btw   op(shr.w,getarg(i1),iv(log_cfp_b))	:(opdone)
 
 
 g.mti	
@@ -1708,7 +1719,7 @@ g.ctw
 *  assume cfp_c chars per word
 	reg = getarg(i1)
 	op(add.w,reg,iv((cfp_b - 1) + cfp_b * v(i.text(i2))))
-	op(sar.w,reg,iv(log_cfp_c))
+	op(shr.w,reg,iv(log_cfp_c))
 					:(opdone)
 g.ctb
 	reg = getarg(i1)
@@ -1757,13 +1768,13 @@ g.mvc
 						:(opdone)
 g.mvw
 	i_suspend = 1
-	op(sar.w,reg.wa,iv(log_cfp_b))
+	op(shr.w,reg.wa,iv(log_cfp_b))
  	op('rep',movs.w)
 	i_suspend = 0
 						:(opdone)
 
 g.mwb
-	op(sar.w,reg.wa,iv(log_cfp_b))
+	op(shr.w,reg.wa,iv(log_cfp_b))
 	op('std')
 	
 	op(lea.w,reg.xl, '-' cfp_b '(' reg.xl ')')
@@ -1772,7 +1783,7 @@ g.mwb
 	op('cld')				:(opdone)
 
 	op('std')
-	op(sar.w,reg.wa,iv(log_cfp_b))
+	op(shr.w,reg.wa,iv(log_cfp_b))
 	op('rep')
 	op(movs.w)
 	op('ctd')
