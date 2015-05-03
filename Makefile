@@ -163,37 +163,43 @@ test_unix_64:
 # filesbl. Normally, all three assembly files wil be equal. However, if a new optimization is
 # being introduced, the first two may differ, but the second and third should always agree.
 #
-	rm -f tbol.*
 	echo "start 64-bit sanity test"
-	cp	./bin/sbl_unix_64 .
-	gcc -Dunix_64 -m64 -c osint/*.c
-	./sbl_unix_64 -u unix_64 lex.sbl
-	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
-	./sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
-	cat sys.asm err.s sbl.tmp >sbl.s
-	as -Dunix_64 -o sbl.o sbl.s
-	gcc -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl_unix_64
-	mv sbl.lex tbol.lex.0
-	mv sbl.s tbol.s.0
-	gcc -Dunix_64 -m64 -c osint/*.c
-	./sbl_unix_64 -u unix_64 lex.sbl
-	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
-	./sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
-	cat sys.asm err.s sbl.tmp >sbl.s
-	as -Dunix_64 -o sbl.o sbl.s
-	gcc -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl_unix_64 
-	mv sbl.lex tbol.lex.1
-	mv sbl.s tbol.s.1
-	gcc -Dunix_64 -m64 -c osint/*.c
-	./sbl_unix_64 -u unix_64 lex.sbl
-	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
-	./sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
-	cat sys.asm err.s sbl.tmp >sbl.s
-	as -Dunix_64 -o sbl.o sbl.s
-	gcc -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl_unix_64
-	mv sbl.lex tbol.lex.2
-	mv sbl.s tbol.s.2
+	rm -f tbol.*
+	cp ./bin/sbl_unix_64 .
+	rm -fr bld
+	mkdir bld
+	cp ./bin/sbl_unix_64 .
+	$(CC) -Dunix_64 -m64 $(CCOPTS) -c osint/*.c
+	mv *.o bld
+	./sbl_unix_64 -u unix_64_gas -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
+	./sbl_unix_64 -r -u unix_64:$(TRCOPT) -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
+	./sbl_unix_64 -u unix_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
+	cat gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
+	as -o bld/sbl.o bld/sbl.s
+	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
+	mv bld/sbl.lex	tbol.sbl.lex.0
+	mv bld/sbl.s	tbol.sbl.s.0
+	mv ./sbl sbl_unix_64
+	rm bld/sbl.o
+	./sbl_unix_64 -u unix_64_gas -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
+	./sbl_unix_64 -r -u unix_64:$(TRCOPT) -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
+	./sbl_unix_64 -u unix_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
+	cat gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
+	as -o bld/sbl.o bld/sbl.s
+	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
+	mv bld/sbl.lex	tbol.sbl.lex.1
+	mv bld/sbl.s	tbol.sbl.s.1
+	mv ./sbl sbl_unix_64
+	./sbl_unix_64 -u unix_64_gas -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
+	./sbl_unix_64 -r -u unix_64:$(TRCOPT) -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
+	./sbl_unix_64 -u unix_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
+	cat gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
+	as -o bld/sbl.o bld/sbl.s
+	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
+	cp bld/sbl.lex	tbol.sbl.lex.2
+	cp bld/sbl.s	tbol.sbl.s.2
+	$(CC) -Dunix_64 -m64 $(CCOPTS) -c osint/*.c
 	echo "comparing generated .s files"
-	diff tbol.s.1 tbol.s.2
+	diff tbol.sbl.s.1 tbol.sbl.s.2
 	echo "end sanity test"
 	

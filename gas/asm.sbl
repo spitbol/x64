@@ -1071,14 +1071,14 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 g.flc
 	t1 = reglow[i.text(i1)]
 	t2 = genlab()
-	i_suspend = 1
+*	i_suspend = 1
 	op(cmp.b,t1,"'A'")
 	op('jb', t2 )
 	op(cmp.b,t1,"'Z'")
 	op('ja', t2)
 	op(add.b,t1,literal_ '32')
         opl(t2)
-	i_suspend = 0
+*	i_suspend = 0
 						:(opdone)
 
 g.mov
