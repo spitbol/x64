@@ -571,20 +571,21 @@ opnext	thisline = readline()
 	op_ = incode '_'
 
 
+	ident(inlabel)				:s(opnext.1)
+
 * output label of executable instruction immediately if there is one,
 * as it simplifies later processing, especially for tracing.
-	ident(inlabel)				:s(opnext.1)
 	thislabel = inlabel (differ(inlabel) ge(sectnow,3),)
-* keep the label as is is not in executable code
+* keep the label if it is not in executable code
 	lt(sectnow,5)				:s(opnext.1)
 * here if in code, so output label now
 * defer label processing for ent to allow emission of alignment ops for x86.
 	ident(incode,'ent')			:s(opnext.1)
 	outline(thislabel ls)
 * set lastlabel so can check to avoid emitting duplicate label definitions
-	lastlabel = thislabel
+*	lastlabel = thislabel
 * clear out label info once generated
-	label = thislabel =
+	inlabel = thislabel =
 opnext.1
 	thislabel = inlabel (differ(inlabel) ge(sectnow,3),)
 	i1 = prsarg(iarg1)
@@ -736,9 +737,10 @@ getarg.c.11
 getarg.c.12
 getarg.c.13
 	txt break('(') . disp '(' len(2) . indx
-	outfile = cs 'getarg typ' ls typ ls '  disp' cs disp cs
+*	outfile = cs 'getarg typ' ls typ ls '  disp' cs disp cs
 	disp = v(cfp_b * v(disp))
-	outfile = cs ' getarg 12,13 disp' cs disp cs
+*	outfile = cs ' getarg 12,13 disp' cs disp cs
+
 	base = indx
 *	outfile = '#quitting'; dump(3) :(end)
 	indx = 					:(getarg.mem)
@@ -748,7 +750,7 @@ getarg.c.13
 getarg.c.14
 getarg.c.15
 	
-	outfile = cs 'getarg.14.15' ls txt cs ' disp ' disp ' val' ls val ls
+*	outfile = cs 'getarg.14.15' ls txt cs ' disp ' disp ' val' ls val ls
 	txt break('(') . disp '(' len(2) . indx	
 	val = equ_value[disp]
 	disp = differ(val) literal_ val
@@ -1512,7 +1514,7 @@ g.psc
 *  lch requires separate cases for each first operand possibility.
 
 g.lch
-	outfile = cs 'g.lch' ls i.text(i1) ls i.text(i2) ls
+*	outfile = cs 'g.lch' ls i.text(i1) ls i.text(i2) ls
 
 *	clear reg, load character to %al, then or with target
 	opv = i.text(i2)
@@ -1540,7 +1542,7 @@ g.lch.1
 g.lch.2						:(opdone)
 
 g.sch
-	outfile = cs 'g.sch' ls i.text(i1) ls i.text(i2) ls
+*	outfile = cs 'g.sch' ls i.text(i1) ls i.text(i2) ls
 	reg = getarg(i1)
 	opv = i.text(i2)
 *	
