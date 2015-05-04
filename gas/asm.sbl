@@ -1848,10 +1848,11 @@ g.drc
 g.dtc
 *  change first and last chars to " (assume / used in source)
 	t1 = i.text(i1)
-	t1 tab(1) rtab(1) . str
-	left = cfp_c - remdr(size(str),cfp_c)
-        str = '"' str '"'
+	t1 tab(1) rtab(1) . txt
+        str = '"' txt '"'
 	opl(thislabel,'.ascii',str)
+	eq(remdr(size(txt),cfp_c))		:s(opdone)
+	left = cfp_c - remdr(size(txt),cfp_c)
 g.dtc.1
 	eq(left)				:s(opdone)
 *  append nulls to complete last word so length is multiple of word word
