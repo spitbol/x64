@@ -1751,7 +1751,8 @@ g.ctb.1
 	genop('and',t1,'-cfp_b')
 						:(opdone)
 g.cvm	
-	genop('cvm_')				:(opdone)
+	genop('cvm_',getarg(i1))		:(opdone)
+
 	t1 = getarg(i1)
 	genop('sti_',w0)
 	genop('imul',w0,'10')

@@ -1326,24 +1326,31 @@ calltab:
 	call	restore_regs
 	%endmacro
 
-	extern	i_cvm
-	%macro	cvm_ 0
+	extern	i_cvm 
+	%macro	cvm_ 1
 	call	save_regs
 	mov	m(reg_wb),wb
 	call	i_cvm
 	call	restore_regs
+	mov	al,byte [reg_fl]
+	or	al,al
+	jnz	%1
 	%endmacro
 
 	extern	i_dvi	
 	%macro	dvi_	1
 	mov	w0,%1
 	call	i_dvi
+	mov	al,byte [reg_fl]
+	or	al,al
 	%endmacro
 
 	extern	i_mli
 	%macro	mli_	1
 	mov	w0,%1
 	call	i_mli
+	mov	al,byte [reg_fl]
+	or	al,al
 	%endmacro
 
 	%macro	icp_	0

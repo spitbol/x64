@@ -1,5 +1,6 @@
   output = 'hello world'
 	output = remdr(1234,100)
+end
 	str = '123'
 	n = +str
 	output = n
