@@ -1734,12 +1734,12 @@ g.cvm	lbl = getarg(i1)
 
 *	can't write 64-bit literal 10, so use storage location 'ten' defined in sys.asm.
 
-	op(imul.w,reg.w0,ten)			
+	op(imul.w,'ten')			
 	op('jo',lbl)
-	op(sub.w,reg.wb,'ch_d0')
+	op(sub.w,reg.wb,iv('ch_d0'))
 	op(sub.w,reg.w0,reg.wb)
 	op('ldi_',reg.w0)
-	op('jo',t1)
+	op('jo',lbl)
 						:(opdone)
 g.cvd
 	op('cvd_')				:(opdone)
