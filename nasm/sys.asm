@@ -983,33 +983,6 @@ sysxi:	mov	m(reg_xs),xs
 	add	xs,%2		; pop arguments
 	%endmacro
 
-;	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
-;	placed in w0, which is then sign extended into wc:w0. after the divide, w0 contains the
-;	quotient, wc contains the remainder.
-;
-;       cvd__ - convert by division
-;
-;       input   ia = number <=0 to convert
-;       output  ia / 10
-;               wa ecx) = remainder + '0'
-	global	cvd__
-cvd__:
-	extern	i_cvd
-	mov	m(reg_wa),wa
-	call	i_cvd
-	mov	wa,m(reg_wa)
-	ret
-
-
-;       dvi__ - divide ia (edx) by long in w0
-	global	dvi__
-dvi__:
-	extern	i_dvi
-	mov	m(reg_w0),w0
-	call	i_dvi
-	mov	al,byte [reg_fl]
-	or	al,al
-	ret
 
 	global	rmi__
 ;       rmi__ - remainder of ia (edx) divided by long in w0
@@ -1344,13 +1317,33 @@ calltab:
 	call	chk__
 	%endmacro
 
+	extern	i_cvd
 	%macro	cvd_	0
-	call	cvd__
+	call	save_regs
+	mov	m(reg_wb),wb
+	call	i_cvd
+	mov	wa,m(reg_wa)
+	call	restore_regs
 	%endmacro
 
+	extern	i_cvm
+	%macro	cvm_ 0
+	call	save_regs
+	mov	m(reg_wb),wb
+	call	i_cvm
+	call	restore_regs
+	%endmacro
+
+	extern	i_dvi	
 	%macro	dvi_	1
 	mov	w0,%1
-	call	dvi__
+	call	i_dvi
+	%endmacro
+
+	extern	i_mli
+	%macro	mli_	1
+	mov	w0,%1
+	call	i_mli
 	%endmacro
 
 	%macro	icp_	0
@@ -1376,20 +1369,17 @@ calltab:
 	mov	m(reg_ia),w0
 	%endmacro
 
-	%macro	mli_	1
-	mov	w0,%1
-	imul	m(reg_ia)
-	seto	byte [reg_fl]
-	%endmacro
-
 	%macro	ngi_	0
 	neg	m(reg_ia)
 	seto	byte [reg_fl]
 	%endmacro
 
+	extern	i_rmi
 	%macro	rmi_	1
 	mov	w0,%1
-	call	rmi__
+	call	save_regs
+	call	i_rmi
+	call	restore_regs
 	%endmacro
 
 	extern	f_rti
@@ -1465,3 +1455,8 @@ trc__:
 	%macro	set	2
 %1	equ	%2
 	%endmacro
+	global	nulls
+	global	inton
+	global	v_inp
+	global	stndo
+	global	opsnb

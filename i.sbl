@@ -1,7 +1,26 @@
   output = 'hello world'
+	output = remdr(1234,100)
+	str = '123'
+	n = +str
+	output = n
+	output = n 'ave'
+end
+	i = 5
+	sum = i * i
+	output = sum
+	sum = sum + i
+	output = sum
+	sum = sum - (6 * i)
+	output = sum
+	sum = i * i  - (6 * i)
+	output = sum
+	sum = i * i
+	output = sum
+	sum = sum - (i * 6)
+	output = sum
+end
 	i = 5
 	sum = i * i + i - (6 * i)
 	output = sum
 	sum = i * i  - (6 * i)
 	output = sum
-end

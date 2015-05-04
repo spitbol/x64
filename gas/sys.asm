@@ -1212,3 +1212,8 @@ calltab:
 	movq	reg_cp,%rax
 	movq	%rax,\arg1
        	.endm
+	.global	nulls
+	.global	inton
+	.global	v_inp
+	.global	stndo
+	.global	opsnb

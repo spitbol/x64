@@ -1750,7 +1750,9 @@ g.ctb.1
 	genop('add',t1,'(cfp_b-1)+cfp_b*' i.text(i2))
 	genop('and',t1,'-cfp_b')
 						:(opdone)
-g.cvm	t1 = getarg(i1)
+g.cvm	
+	genop('cvm_')				:(opdone)
+	t1 = getarg(i1)
 	genop('sti_',w0)
 	genop('imul',w0,'10')
 	genop('jo',t1)

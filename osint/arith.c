@@ -27,6 +27,7 @@ This file is part of Macro SPITBOL.
  */
 
 #include "port.h"
+#include <stdio.h>
 
 
 long w00;
@@ -117,13 +118,33 @@ void i_dvi() {
 }
 
 void i_mli() {
-	reg_fl = 0;
-	reg_ia *= reg_w0;
+	long product;
+	if (reg_w0 ==0 || reg_ia ==0) {
+		reg_ia = 0;
+		reg_fl = 0;
+	}
+	else {
+		reg_fl = 0;
+		product = reg_ia * reg_w0;
+		if (product / reg_w0 != reg_ia) {
+			reg_fl = 1;
+		}
+		else {
+			reg_ia = product;
+			reg_fl = 0;
+		}
+	}
 }
 
 void i_ngi() {
+	long checkin,checkout;
+	checkin = reg_ia;
 	reg_fl = 0;
 	reg_ia = -reg_ia;
+	checkout = -reg_ia;
+	if (checkin != checkout) {
+		reg_fl = 1;
+	}
 }
 
 void i_rmi() {
@@ -136,15 +157,41 @@ void i_rmi() {
 	}
 }
 
+extern long save_wa;
 void i_sbi() {
 	reg_ia -= reg_w0;
 }
 
 void i_cvd() {
 	
+//	fprintf(stderr,"cvd entry reg_ia %ld  reg_wa %ld\n",reg_ia,reg_wa);
 	reg_wa = reg_ia % 10;
 	reg_ia /= 10;
 	reg_wa  = -reg_wa + 48; // convert remainder to character code for digit
+//	fprintf(stderr,"cvd exit  reg_ia %ld  reg_wa %ld reg_wa %c\n",reg_ia,reg_wa,reg_wa);
+	save_wa = reg_wa;
+}
+
+void i_cvm() {
+	long	product;
+	int	dig;
+//	fprintf(stderr,"cvm entry reg_ia %ld reg_wb '%c' \n",reg_ia,reg_wb);
+	product = reg_ia * 10;
+	if (product / 10 != reg_ia) {
+		reg_fl = 1;
+	}
+	else {
+		dig = reg_wb - '0';
+		reg_ia = product - dig;
+		if (reg_ia + dig != product) {
+			reg_fl = 1;
+		} 
+		else {
+			reg_fl = 0;
+		}
+	}
+//	fprintf(stderr,"cvm exit  reg_ia %ld  reg_fl %d\n",reg_ia,reg_fl);
+	return;
 }
 
 long ctbw_r;
