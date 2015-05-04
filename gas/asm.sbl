@@ -1514,16 +1514,16 @@ g.psc
 *  lch requires separate cases for each first operand possibility.
 
 g.lch
-*	outfile = cs 'g.lch' ls i.text(i1) ls i.text(i2) ls
+	outfile = cs 'g.lch' ls i.text(i1) ls i.text(i2) ls
 
 *	clear reg, load character to %al, then or with target
 	opv = i.text(i2)
 	reg = getarg(i1)
 
-	op(xor.w,reg.w0,reg.w0)
-	op(mov.b,reg.al,getarg(i2))
-	op(mov.w,reg,reg.w0)
-		:(opdone)
+*	op(xor.w,reg.w0,reg.w0)
+*	op(mov.b,reg.al,getarg(i2))
+*	op(mov.w,reg,reg.w0)
+*		:(opdone)
 
 *  see if predecrement needed.
 	leq('-',substr(opv,1,1))			:f(g.lch.1)
@@ -1538,6 +1538,7 @@ g.lch.1
 
 *  see if postincrement needed.
 	opv rtab(1) '+'				:f(g.lch.2)
+	outfile = cs 'g.lch.1+'
 	op(inc.w,regmap[t3])
 g.lch.2						:(opdone)
 
