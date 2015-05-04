@@ -98,6 +98,16 @@ void f_cpr() {
 void f_pra () {
 }
 
+void i_enter(char * name) {
+	return;
+	fprintf(stderr,"i_enter name %s  ia %ld  w0 %ld wa %ld \n",name,reg_ia,reg_w0,reg_wa);
+}
+
+void i_leave(char * name) {
+	return;
+	fprintf(stderr,"i_leave name %s  ia %ld  w0 %ld wa %ld reg_fl %d \n",name,reg_ia,reg_w0,reg_wa,reg_fl);
+}
+
 void i_ldi() {
 	reg_ia = reg_w0;
 }
@@ -108,6 +118,7 @@ void i_adi() {
 }
 
 void i_dvi() {
+	i_enter("dvi");
 	if (reg_w0 == 0) {
 		reg_fl = 1;
 	}
@@ -115,10 +126,12 @@ void i_dvi() {
 		reg_fl = 0;
 		reg_ia /= reg_w0;
 	}
+	i_leave("dvi");
 }
 
 void i_mli() {
 	long product;
+	i_enter("mli");
 	if (reg_w0 ==0 || reg_ia ==0) {
 		reg_ia = 0;
 		reg_fl = 0;
@@ -134,10 +147,12 @@ void i_mli() {
 			reg_fl = 0;
 		}
 	}
+	i_leave("mli");
 }
 
 void i_ngi() {
 	long checkin,checkout;
+	i_enter("mli");
 	checkin = reg_ia;
 	reg_fl = 0;
 	reg_ia = -reg_ia;
@@ -145,9 +160,12 @@ void i_ngi() {
 	if (checkin != checkout) {
 		reg_fl = 1;
 	}
+	i_leave("mli");
 }
 
 void i_rmi() {
+	
+	i_enter("rmi");
 	if (reg_w0 == 0) {
 		reg_fl = 1;
 	}
@@ -155,6 +173,7 @@ void i_rmi() {
 		reg_ia = reg_ia % reg_w0;
 		reg_fl = 0;
 	}
+	i_leave("rmi");
 }
 
 extern long save_wa;
@@ -164,18 +183,18 @@ void i_sbi() {
 
 void i_cvd() {
 	
-//	fprintf(stderr,"cvd entry reg_ia %ld  reg_wa %ld\n",reg_ia,reg_wa);
+	i_enter("cvd");
 	reg_wa = reg_ia % 10;
 	reg_ia /= 10;
 	reg_wa  = -reg_wa + 48; // convert remainder to character code for digit
-//	fprintf(stderr,"cvd exit  reg_ia %ld  reg_wa %ld reg_wa %c\n",reg_ia,reg_wa,reg_wa);
 	save_wa = reg_wa;
+	i_leave("cvd");
 }
 
 void i_cvm() {
 	long	product;
 	int	dig;
-//	fprintf(stderr,"cvm entry reg_ia %ld reg_wb '%c' \n",reg_ia,reg_wb);
+	i_enter("cvm");
 	product = reg_ia * 10;
 	if (product / 10 != reg_ia) {
 		reg_fl = 1;
@@ -190,8 +209,7 @@ void i_cvm() {
 			reg_fl = 0;
 		}
 	}
-//	fprintf(stderr,"cvm exit  reg_ia %ld  reg_fl %d\n",reg_ia,reg_fl);
-	return;
+	i_leave("cvm");
 }
 
 long ctbw_r;

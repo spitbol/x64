@@ -1340,6 +1340,7 @@ calltab:
 	extern	i_dvi	
 	%macro	dvi_	1
 	mov	w0,%1
+	mov	m(reg_w0),w0
 	call	i_dvi
 	mov	al,byte [reg_fl]
 	or	al,al
@@ -1348,6 +1349,7 @@ calltab:
 	extern	i_mli
 	%macro	mli_	1
 	mov	w0,%1
+	mov	m(reg_w0),w0
 	call	i_mli
 	mov	al,byte [reg_fl]
 	or	al,al
@@ -1384,6 +1386,7 @@ calltab:
 	extern	i_rmi
 	%macro	rmi_	1
 	mov	w0,%1
+	mov	m(reg_w0),w0
 	call	save_regs
 	call	i_rmi
 	call	restore_regs
