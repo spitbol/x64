@@ -472,6 +472,7 @@ flgs2
 * reglow maps register to identify target, so can extract 'l' part.
 	reglow = table(4)
 	reglow['wa'] = '%cl';	reglow['wb'] = '%bl';	reglow['wc'] = '%dl'
+	reglow['w0'] = '%al'
 
 * real_op maps minimal real opcode to machine opcode
 
@@ -1421,6 +1422,8 @@ g.scp
 						:(opdone)
 g.icp
 	op(op_)				:(opdone)
+
+*	integer arithmetic operations
 g.ldi
 g.sti
 g.adi
@@ -1428,15 +1431,12 @@ g.mli
 g.sbi
 g.dvi
 g.rmi
-	op(op_,getarg(i1))			:(opdone)
+g.ino
+g.iov
+	op(op_,getarg(i1))		:(opdone)
 
 g.ngi
 	op(op_)				:(opdone)
-
-g.ino
-g.iov
-	op(op_,getarg(i1))			:(opdone)
-
 
 g.ieq	jop = 'je'				:(op.cmp)
 g.ige	jop = 'jge'				:(op.cmp)
@@ -1514,101 +1514,89 @@ g.psc
 *  lch requires separate cases for each first operand possibility.
 
 g.lch
-	outfile = cs 'g.lch' ls i.text(i1) ls i.text(i2) ls
+*	if loading to w register, use its low part. otherwise copy register to w0 and use w0's low part
+	reg = i.text(i1)
+*	will load to register lreg, which will be same as reg if loading to w register
 
-*	clear reg, load character to %al, then or with target
-	opv = i.text(i2)
-	reg = getarg(i1)
-
-*	op(xor.w,reg.w0,reg.w0)
-*	op(mov.b,reg.al,getarg(i2))
-*	op(mov.w,reg,reg.w0)
-*		:(opdone)
-
-*  see if predecrement needed.
-	leq('-',substr(opv,1,1))			:f(g.lch.1)
-	opv break('(') len(1) len(2) . t3
-	op(dec.w,regmap[t3])
-g.lch.1
-	opv break('(') len(1) len(2) . t3
+	rtype = i.type(i1)
+	opc = i.text(i2)
+	eq(rtype,8)				:s(g.lch.w)
+*	here if loading into x register, so load to w0 and then will copy to x register
 	op(xor.w,reg.w0,reg.w0)
-	op(mov.b,reg.al,'(' regmap[t3] ')')
-	op(mov.w,reg,reg.w0)
-
-
-*  see if postincrement needed.
-	opv rtab(1) '+'				:f(g.lch.2)
-	outfile = cs 'g.lch.1+'
-	op(inc.w,regmap[t3])
-g.lch.2						:(opdone)
+	lreg = reglow['w0']
+						:(g.lch.1)
+g.lch.w
+	op(xor.w,regmap[reg],regmap[reg])
+	lreg = reglow[reg]
+g.lch.1
+	
+	ident(opc,'(xl)')			:s(g.lch.xl)
+	ident(opc,'(xr)')			:s(g.lch.xr)
+	ident(opc,'(xl)+')			:s(g.lch.xlp)
+	ident(opc,'(xr)+')			:s(g.lch.xrp)
+	ident(opc,'-(xl)')			:s(g.lch.pxl)
+	ident(opc,'-(xr)')			:s(g.lch.pxr)
+	error('illegal second argument to lch')
+g.lch.xl
+	op(mov.b,'(' regmap['xl'] ')',lreg)			:(lchdone)
+g.lch.xr
+	op(mov.b,'(' regmap['xr'] ')',lreg)			:(lchdone)
+g.lch.xlp
+	op(mov.b,'(' regmap['xl'] ')',lreg)
+	op(inc.w,reg.xl)			:(lchdone)
+g.lch.xrp
+	op(mov.b,'(' regmap['xr'] ')',lreg)
+	op(inc.w,reg.xr)			:(lchdone)
+g.lch.pxl
+	op(dec.w,reg.xl)
+	op(mov.b,'(' regmap['xl'] ')',lreg)			:(lchdone)
+g.lch.pxr
+	op(dec.w,reg.xr)
+	op(mov.b,'(' regmap['xr'] ')',lreg)			:(lchdone)
+lchdone
+*	If loading into x register, copy w0 to that register
+	eq(rtype,7)	op(mov.w,reg.w0,regmap[reg])
+						:(opdone)
 
 g.sch
-*	outfile = cs 'g.sch' ls i.text(i1) ls i.text(i2) ls
-	reg = getarg(i1)
-	opv = i.text(i2)
-*	
-	op(mov.w,reg.w0,reg)
-	op(mov.b,getarg(i2),reg.al)
-		:(opdone)
+*	if storing from w register, use its low part. otherwise copy register to w0 and use w0's low part
+	reg = i.text(i1)
+*	will store from sreg, which will be same as reg if storing from w register
 
-	op(and.w,reg,reg.w0)
-	op(mov.b,reg.al,getarg(i2))
-	:(opdone)
-
-
-	eq(i.type(i1),8)			:s(g.sch.w)
-	:(g.sch.0)
-	ident(opv,'(xr)+')			:f(g.sch.0)
-
-*  here if can use stos.
-
-	op(mov.b,reg.al,getarg(i1))
-	op(stos.b)				:(opdone)
-
-g.sch.0
-	leq('-',substr(opv,1,1))			:f(g.sch.1)
-	opv break('(') len(1) len(2) . t3
-	op(dec.w,regmap[t3])
-	op(dec.w,regmap[t3])
-g.sch.1
-	opv break('(') len(1) len(2) . t3
-	op(mov.w,reg.w0,reg,)
-	op(mov.b, '(' regmap[t3] ')' ,reg.al)
-*  see if postincrement needed.
-	opv rtab(1) '+'				:f(g.sch.2)
-	op(inc.w,regmap[t3])
-g.sch.2						:(opdone)
+	rtype = i.type(i1)
+	opc = i.text(i2)
+	eq(rtype,8)				:s(g.sch.w)
+*	here if storing from x register, so copy to w0 and then use w0's low part
+	op(mov.w,regmap[reg],reg.w0)
+	sreg = reglow['w0']
+						:(g.sch.1)
 g.sch.w
+	sreg = reglow[reg]
+g.sch.1
+	ident(opc,'(xl)')			:s(g.sch.xl)
+	ident(opc,'(xr)')			:s(g.sch.xr)
+	ident(opc,'(xl)+')			:s(g.sch.xlp)
+	ident(opc,'(xr)+')			:s(g.sch.xrp)
+	ident(opc,'-(xl)')			:s(g.sch.pxl)
+	ident(opc,'-(xr)')			:s(g.sch.pxr)
+	error('illegal second argument to sch')
+g.sch.xl
+	op(mov.b,sreg,'(' regmap['xl'] ')')			:(opdone)
+g.sch.xr
+	op(mov.b,sreg,'(' regmap['xr'] ')')			:(opdone)
+g.sch.xlp
+	op(mov.b,sreg,'(' regmap['xl'] ')')
+	op(inc.w,reg.xl)			:(opdone)
+g.sch.xrp
+	op(mov.b,sreg,'(' regmap['xr'] ')')
+	op(inc.w,reg.xr)			:(opdone)
+g.sch.pxl
+	op(dec.w,reg.xl)
+	op(mov.b,sreg,'(' regmap['xl'] ')')			:(opdone)
+g.sch.pxr
+	op(dec.w,reg.xr)
+	op(mov.b,sreg,'(' regmap['xr'] ')')			:(opdone)
 
-*  here if moving character from work register, convert reg to name of low part.
-
-	regl = reglow[i.text(i1)]
-
-	ident(opv,'(xl)')			:s(g.sch.w.xl)
-	ident(opv,'-(xl)')			:s(g.sch.w.pxl)
-	ident(opv,'(xl)+')			:s(g.sch.w.xlp)
-	ident(opv,'(xr)')			:s(g.sch.w.xr)
-	ident(opv,'-(xr)')			:s(g.sch.w.pxr)
-	ident(opv,'(xr)+')			:s(g.sch.w.xrp)
-g.sch.w.xl
-	op(mov.b,'(' reg.xl ')',regl)		:(opdone)
-g.sch.w.pxl
-	op(dec.w, '(' reg.xl ')')
-	op(mov.b, '(' reg.xl ')',regl)	:(opdone)
-
-g.sch.w.xlp
-	op(mov.b,'(' reg.xl ')',regl)
-	op(inc.w, '(' reg.xl ')')
-						:(opdone)
-g.sch.w.xr
-	op(mov.b,'(' reg.xr ')',regl)		:(opdone)
-
-g.sch.w.pxr
-	op(dec.w, '(' reg.xr ')')
-	op(mov.b,'(' reg.xr ')',regl)	:(opdone)
-g.sch.w.xrp
-	op(mov.b,reg.al,regl)
-	op(stos.b)				:(opdone)
 
 g.csc  	ident(thislabel)			:s(opnext)
 	op()					:(opdone)
@@ -1701,7 +1689,7 @@ g.mti
 	op(pop.w,reg.w0)
 	op('ldi_',reg.w0)			:(opdone)
 g.mti.1
-	op('ldi_',getarg(i1))		:(opdone)
+	op('ldi_',getarg(i1))			:(opdone)
 
 g.mfi
 *  last arg is optional
@@ -1713,7 +1701,7 @@ g.mfi
 	op('js',getarg(i2))
 g.mfi.1
 	ident(i.text(i1),'-(xs)')		:s(g.mfi.2)
-	op('sti_',getarg(i1))		:(opdone)
+	op('sti_',getarg(i1))			:(opdone)
 g.mfi.2
 	op('sti_',reg.w0)
 	op(push.w,reg.w0)			:(opdone)
@@ -1723,13 +1711,16 @@ g.ctw
 	reg = getarg(i1)
 	op(add.w,reg,iv((cfp_b - 1) + cfp_b * v(i.text(i2))))
 	op(shr.w,reg,iv(log_cfp_c))
-					:(opdone)
+						:(opdone)
 g.ctb
 	reg = getarg(i1)
 	op(add.w,reg,iv((cfp_b - 1) + cfp_b * v(i.text(i2))))
 	op(and.w,reg, iv(-cfp_b))
 						:(opdone)
-g.cvm	lbl = getarg(i1)
+g.cvm	
+	op('cvm_',getarg(i1))			:(opdone)
+
+	lbl = getarg(i1)
 	op('sti_',reg.w0)
 
 *	can't write 64-bit literal 10, so use storage location 'ten' defined in sys.asm.

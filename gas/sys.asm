@@ -751,31 +751,16 @@ cvd__:
 	movq	reg_wa,%rcx
 	ret
 
+	.extern	i_dvi
 	.macro	dvi_	arg1
 	movq	\arg1,%rax
-	call	dvi__
-	.endm
-
-#       dvi__ - divide ia (edx) by long in %rax
-	.global	dvi__
-dvi__:
-	.extern	i_dvi
 	movq	%rax,reg_w0
+	call	save_regs
 	call	i_dvi
+	call	restore_regs
 	movb	reg_fl,%al
 	orb	%al,%al
-	ret
-	
-	.global	rmi__
-#       rmi_ - remainder of ia (edx) divided by long in %rax
-rmi__:
-	jmp	ocode
-	.extern	i_rmi
-	movq	%rax,reg_w0
-	call	i_rmi
-	movb	reg_fl,%al
-	orb	%al,%al
-	ret
+	.endm
 
 ocode:
 	orq	%rax,%rax         	# test for 0
@@ -893,7 +878,7 @@ restart:
 #       restore stack from tscblk.
 #
 #					# compute effective address of tscblk +cfp_c+cfp+b
-	mov	$tscblk,%rax
+	movq	$tscblk,%rax
 	addq	$16,%rax
 	movq	%rax,%rdi
 	cmpq	%rdi,%rsi               # any stack to transfer?
@@ -1120,8 +1105,26 @@ calltab:
 	call	chk__
 	.endm
 
-	.macro	cvd_
-	call	cvd__
+	.extern	i_cvd
+	.macro	cvd_ 
+	movq	%rbx,reg_wb
+	call	save_regs
+	call	i_cvd
+	call	restore_regs
+	movq	reg_wa,%rcx
+	movb	reg_fl,%al
+	or	%al,%al
+	.endm
+
+	.extern	i_cvm
+	.macro	cvm_	arg1
+	movq	%rbx,reg_wb
+	call	save_regs
+	call	i_cvm
+	call	restore_regs
+	movb	reg_fl,%al
+	orb	%al,%al
+	jnz	\arg1
 	.endm
 
 	.macro	icp_
@@ -1147,11 +1150,15 @@ calltab:
 	movq	%rax,reg_ia
 	.endm
 
+	.extern	i_mli
 	.macro	mli_	arg1
-# next is troublesome: TODO
 	movq	\arg1,%rax
-	imulq	reg_ia
-	seto	reg_fl
+	movq	%rax,reg_w0
+	call	save_regs
+	call	i_mli
+	call	restore_regs
+	movb	reg_fl,%al
+	or	%al,%al
 	.endm
 
 	.macro	ngi_
@@ -1159,9 +1166,13 @@ calltab:
 	seto	reg_fl
 	.endm
 
+	.extern	i_rmi
 	.macro	rmi_	arg1
 	movq	\arg1,%rax
-	call	rmi__
+	movq	%rax,reg_w0
+	call	save_regs
+	call	i_rmi
+	call	restore_regs
 	.endm
 
 	.extern	f_rti
