@@ -1422,30 +1422,25 @@ g.scp
 	genop('add',reg.cp,'cfp_b')
 
 						:(opdone)
-
-
 g.icp
 	genop(op_)				:(opdone)
 	genop('add',reg.cp,'cfp_b')
 						:(opdone)
-*  integer accumulator kept in wdx (wc)
+*  integer arithmetic operations
+
 g.ldi
 g.sti
-	genop(op_,getarg(i1))			:(opdone)
 g.adi
 g.mli
 g.sbi
 g.dvi
 g.rmi
-	genop(op_,getarg(i1))			:(opdone)
-
-g.ngi
-	genop(op_)				:(opdone)
-
 g.ino
 g.iov
 	genop(op_,getarg(i1))			:(opdone)
 
+g.ngi
+	genop(op_)				:(opdone)
 
 g.ieq	jop = 'je'				:(op.cmp)
 g.ige	jop = 'jge'				:(op.cmp)
@@ -1464,7 +1459,9 @@ g.itr	genop('call','itr_')	:(opdone)
 
 g.rti	genop('rti_')
 	eq(i.type(i1))				:s(opdone)
+
 *  here if label given, branch if real too large
+
         genop('jc',getarg(i1))                 :(opdone)
 
 g.ldr

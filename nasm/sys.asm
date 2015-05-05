@@ -990,7 +990,9 @@ rmi__:
 	jmp	ocode
 	extern	i_rmi
 	mov	m(reg_w0),w0
+	call	save_regs
 	call	i_rmi
+	call	restore_regs
 	mov	al,byte [reg_fl]
 	or	al,al
 	ret
@@ -1341,7 +1343,9 @@ calltab:
 	%macro	dvi_	1
 	mov	w0,%1
 	mov	m(reg_w0),w0
+	call	save_regs
 	call	i_dvi
+	call	restore_regs
 	mov	al,byte [reg_fl]
 	or	al,al
 	%endmacro
@@ -1350,7 +1354,9 @@ calltab:
 	%macro	mli_	1
 	mov	w0,%1
 	mov	m(reg_w0),w0
+	call	save_regs
 	call	i_mli
+	call	restore_regs
 	mov	al,byte [reg_fl]
 	or	al,al
 	%endmacro
