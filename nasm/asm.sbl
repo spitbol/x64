@@ -444,27 +444,19 @@ flgs2
 	ismem<12> = 1; ismem<13> = 1; ismem<14> = 1
 	ismem<15> = 1
 
-*  regmap maps minimal register name to target machine register/memory-location name.
-
-	regmap = table(30)
-	regmap['xl'] = 'xl';  regmap['xt'] = 'xt'
-	regmap['xr'] = 'xr';  regmap['xs'] = 'xs'
-	regmap['wa'] = 'wa';  regmap['wb'] = 'wb'
-	regmap['wc'] = 'wc';  regmap['ia'] = 'ia'
-	regmap['cp'] = 'cp'
 *	w0 is temp register
-	regmap['w0'] = 'w0'
-	w0 = regmap['w0']
+	w0 = 'w0'
 
 *  quick reference:
-	reg.wa = regmap['wa']
-	reg.cp = regmap['cp']
+	reg.wa = 'wa'
+	reg.cp = 'cp'
 
 * reglow maps register to identify target, so can extract 'l' part.
 	reglow = table(4)
 	reglow['wa'] = 'wa_l'
 	reglow['wb'] = 'wb_l'
 	reglow['wc'] = 'wc_l'
+	reglow['w0'] = 'w0_l'
 
 * real_op maps minimal real opcode to machine opcode
 	real_op = table(10)
@@ -587,7 +579,7 @@ ds.typerr
 -stitl comregs(line)t,pre,word
 comregs
 	line p.comregs =			:f(comregs1)
-	word = eq(size(word),2) differ(t = regmap[word]) t
+	word = eq(size(word),2) differ(t) t
 	comregs = comregs pre word		:(comregs)
 comregs1 comregs = comregs line			:(return)
 -stitl crack(line)
@@ -672,12 +664,11 @@ arg.c.6 getarg = txt				:(arg.done)
 * w,x, map register name
 arg.c.7
 arg.c.8
-	getarg = regmap[txt]			:(arg.done)
+	getarg = txt				:(arg.done)
 
 * (x), register indirect
 arg.c.9
 	txt len(1) len(2) . typ
-	typ = regmap[typ]
 	getarg = pre typ post
 						:(arg.done)
 
@@ -687,14 +678,14 @@ arg.c.9
 * for all the other regs, and either could be used.
 arg.c.10
 	txt = substr(txt,2,2)
-	t1 = regmap[txt]
+	t1 = txt
 	getarg = pre t1 post
 	(ident(txt,'xs') genaop(tstmt(,'add',t1,'cfp_b'))) :s(arg.done)
 	genaop(tstmt(,'lea',t1,'a(' t1 '+cfp_b)'))	:(arg.done)
 
 *  -(x), register indirect, pre decrement
 arg.c.11
-	t1 = regmap[substr(txt,3,2)]
+	t1 = substr(txt,3,2)
 	getarg = pre t1 post
 	genbop(tstmt(,'lea',t1,'a(' t1 '-cfp_b)')) :(arg.done)
 
@@ -703,7 +694,7 @@ arg.c.11
 arg.c.12
 arg.c.13
 	txt break('(') . t1 '(' len(2) . t2
-	getarg = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
+	getarg = pre  '(cfp_b*' t1 ')+' t2  post
 							:(arg.done)
 
 *  name(x), where name is in working section
@@ -711,7 +702,7 @@ arg.c.14
 arg.c.15
 	getarg = ne(rip_mode)	getrip(iarg)		:s(return)
 	txt break('(') . t1 '(' len(2) . t2
-	getarg = pre    t1 '+'  regmap[t2] 	post
+	getarg = pre    t1 '+'  t2 	post
 							:(arg.done)
 * signed integer
 arg.c.16 getarg = txt				:(arg.done)
@@ -759,7 +750,6 @@ lea.c.4
 * (x), register indirect
 lea.c.9
 	txt len(1) len(2) . typ
-	typ = regmap[typ]
 	getlea = pre typ post
 						:(return)
 * int(x)
@@ -767,14 +757,14 @@ lea.c.9
 lea.c.12
 lea.c.13
 	txt break('(') . t1 '(' len(2) . t2
-	getlea = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
+	getlea = pre  '(cfp_b*' t1 ')+' t2  post
 							:(return)
 
 *  name(x), where name is in working section
 lea.c.14
 lea.c.15
 	txt break('(') . t1 '(' len(2) . t2
-	getlea = pre    t1 '+'  regmap[t2] 	post
+	getlea = pre    t1 '+'  t2 	post
 							:(return)
 
 -stitl getrip(iarg)
@@ -793,7 +783,7 @@ getrip
 rip.c.14
 rip.c.15
 	txt break('(') . var '(' len(2) . reg
-*	getrip = pre    var '+'  regmap[t2] 	post
+*	getrip = pre    var '+'  t2 	post
 	getrip = var 
 						:(rip.done)
 *  *dlbl
@@ -1195,7 +1185,7 @@ g.ent.2
 
 g.bri	genop('jmp',getarg(i1))			:(opdone)
 
-g.lei	t1 = regmap[i.text(i1)]
+g.lei	t1 = i.text(i1)
 	genop('movzx',t1,'byte [' t1 '-1]' )	:(opdone)
 
 g.jsr
@@ -1536,30 +1526,53 @@ g.plc.1
 	genop('mov','w0', getarg(i2))
 	genop('sal','w0', 'log_cfp_b')
 
-	genop('add',t1,'w0')		:(opdone)
+	genop('add',t1,'w0')			:(opdone)
 
-*  lch requires separate cases for each first operand possibility.
 
 g.lch
-	t2 = i.text(i2)
-	t1 = getarg(i1)
+*	if loading to w register, use its low part. otherwise copy register to w0 and use w0's low part
+	reg = i.text(i1)
+*	will load to register lreg, which will be same as reg if loading to w register
 
-*  see if predecrement needed.
-	leq('-',substr(t2,1,1))			:f(g.lcg.1)
-	t2 break('(') len(1) len(2) . t3
-	(eq(cfp_b,cfp_c) genop('dec',regmap[t3]), genop('sub',regmap[t3],'cfp_b'))
-g.lcg.1
-	t2 break('(') len(1) len(2) . t3
-	eq(cfp_b,cfp_c) genop('mov',w0,'0')
-	eq(cfp_b,cfp_c) genop('mov','al','m_char [' regmap[t3] ']')
-	eq(cfp_b,cfp_c) genop('mov',t1,w0)
+	rtype = i.type(i1)
+	opc = i.text(i2)
+	eq(rtype,8)				:s(g.lch.w)
+*	here if loading into x register, so load to w0 and then will copy to x register
+	genop('xor',w0,w0)
+	lreg = reglow[w0]
+						:(g.lch.1)
+g.lch.w
+	genop('xor',reg,reg)
+	lreg = reglow[reg]
+g.lch.1
+	ident(opc,'(xl)')			:s(g.lch.xl)
+	ident(opc,'(xr)')			:s(g.lch.xr)
+	ident(opc,'(xl)+')			:s(g.lch.xlp)
+	ident(opc,'(xr)+')			:s(g.lch.xrp)
+	ident(opc,'-(xl)')			:s(g.lch.pxl)
+	ident(opc,'-(xr)')			:s(g.lch.pxr)
+	error('illegal second argument to lch')
+g.lch.xl
+	genop('mov',lreg, 'm_char [xl]')		:(lchdone)
+g.lch.xr
+	genop('mov',lreg, 'm_char [xr]')		:(lchdone)
+g.lch.xlp
+	genop('mov',lreg, 'm_char [xl]')
+	genop('inc','xl')			:(lchdone)
+g.lch.xrp
+	genop('mov',lreg, 'm_char [xr]')
+	genop('inc','xr')			:(lchdone)
+g.lch.pxl
+	genop('dec','xl')
+	genop('mov',lreg, 'm_char [xl]')	:(lchdone)
+g.lch.pxr
+	genop('dec','xr')
+	genop('mov',lreg, 'm_char [xr]')	:(lchdone)
+lchdone
+*	If loading into x register, copy w0 to that register
+	eq(rtype,7)	genop('mov',reg,w0)
+						:(opdone)
 
-	ne(cfp_b,cfp_c) genop('mov',t1,'m_char [' regmap[t3] ']')
-
-*  see if postincrement needed.
-	t2 rtab(1) '+'				:f(g.lcg.2)
-	(eq(cfp_b,cfp_c) genop('inc',regmap[t3]), genop('add',regmap[t3],'cfp_b'))
-g.lcg.2						:(opdone)
 
 g.sch
 	t2 = i.text(i2)
@@ -1577,16 +1590,16 @@ g.sch
 g.scg.0
 	leq('-',substr(t2,1,1))			:f(g.scg.1)
 	t2 break('(') len(1) len(2) . t3
-	genop('dec',regmap[t3])
-	(eq(cfp_b,cfp_c) genop('dec',regmap[t3]), genop('sub',regmap[t3],'cfp_b'))
+	genop('dec',t3)
+	(eq(cfp_b,cfp_c) genop('dec',t3), genop('sub',t3,'cfp_b'))
 g.scg.1
 	t2 break('(') len(1) len(2) . t3
 	eq(cfp_b,cfp_c) genop('mov',w0,t1,)
-	eq(cfp_b,cfp_c) genop('mov','[' regmap[t3] ']','al')
-	ne(cfp_b,cfp_c) genop('mov','m_char [' regmap[t3] ']',t1)
+	eq(cfp_b,cfp_c) genop('mov','[' t3 ']','al')
+	ne(cfp_b,cfp_c) genop('mov','m_char [' t3 ']',t1)
 *  see if postincrement needed.
 	t2 rtab(1) '+'				:f(g.scg.2)
-	(eq(cfp_b,cfp_c) genop('inc',regmap[t3]), genop('add',regmap[t3],'cfp_b'))
+	(eq(cfp_b,cfp_c) genop('inc',t3), genop('add',t3,'cfp_b'))
 g.scg.2						:(opdone)
 g.scg.w
 
@@ -1754,8 +1767,8 @@ g.cvm
 	genop('sti_',w0)
 	genop('imul',w0,'10')
 	genop('jo',t1)
-	genop('sub',regmap['wb'],'ch_d0')
-	genop('sub',w0,regmap['wb'])
+	genop('sub','wb','ch_d0')
+	genop('sub',w0,'wb')
 	genop('ldi_',w0)
 	genop('jo',t1)
 						:(opdone)
