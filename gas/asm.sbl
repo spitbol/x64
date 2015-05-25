@@ -130,8 +130,10 @@
 
 	define('readline()')
 
-	os = 'unix';	ws = '64'
-	options = host(0)
+	target = (differ(host(0)) host(0), "unix_64_gas")
+        output = "target: " target
+	target break('_') . os '_' break('_') . ws '_' rem . asm
+
 	
 	output = 'options: ' options
 *	add trailing colon so always have colon after an argument
@@ -1073,9 +1075,9 @@ g.flc
 	t1 = reglow[i.text(i1)]
 	t2 = genlab()
 *	i_suspend = 1
-	op(cmp.b,t1,"'A'")
+	op(cmp.b,t1,literal_ "'A'")
 	op('jb', t2 )
-	op(cmp.b,t1,"'Z'")
+	op(cmp.b,t1,literal_ "'Z'")
 	op('ja', t2)
 	op(add.b,t1,literal_ '32')
         opl(t2)
@@ -1538,24 +1540,24 @@ g.lch.1
 	ident(opc,'-(xr)')			:s(g.lch.pxr)
 	error('illegal second argument to lch')
 g.lch.xl
-	op(mov.b,'(' regmap['xl'] ')',lreg)			:(lchdone)
+	op(mov.b,lreg,'(' regmap['xl'] ')')	:(lchdone)
 g.lch.xr
-	op(mov.b,'(' regmap['xr'] ')',lreg)			:(lchdone)
+	op(mov.b,lreg,'(' regmap['xr'] ')')	:(lchdone)
 g.lch.xlp
-	op(mov.b,'(' regmap['xl'] ')',lreg)
+	op(mov.b,lreg,'(' regmap['xl'] ')')
 	op(inc.w,reg.xl)			:(lchdone)
 g.lch.xrp
-	op(mov.b,'(' regmap['xr'] ')',lreg)
+	op(mov.b,lreg,'(' regmap['xr'] ')')
 	op(inc.w,reg.xr)			:(lchdone)
 g.lch.pxl
 	op(dec.w,reg.xl)
-	op(mov.b,'(' regmap['xl'] ')',lreg)			:(lchdone)
+	op(mov.b,lreg,'(' regmap['xl'] ')')	:(lchdone)
 g.lch.pxr
 	op(dec.w,reg.xr)
-	op(mov.b,'(' regmap['xr'] ')',lreg)			:(lchdone)
+	op(mov.b,lreg,'(' regmap['xr'] ')')	:(lchdone)
 lchdone
 *	If loading into x register, copy w0 to that register
-	eq(rtype,7)	op(mov.w,reg.w0,regmap[reg])
+	eq(rtype,7)	op(mov.w,regmap[reg],reg.w0)
 						:(opdone)
 
 g.sch
@@ -1567,7 +1569,7 @@ g.sch
 	opc = i.text(i2)
 	eq(rtype,8)				:s(g.sch.w)
 *	here if storing from x register, so copy to w0 and then use w0's low part
-	op(mov.w,regmap[reg],reg.w0)
+	op(mov.w,reg.w0,regmap[reg])
 	sreg = reglow['w0']
 						:(g.sch.1)
 g.sch.w
@@ -1581,21 +1583,21 @@ g.sch.1
 	ident(opc,'-(xr)')			:s(g.sch.pxr)
 	error('illegal second argument to sch')
 g.sch.xl
-	op(mov.b,sreg,'(' regmap['xl'] ')')			:(opdone)
+	op(mov.b,'(' regmap['xl'] ')',sreg)	:(opdone)
 g.sch.xr
-	op(mov.b,sreg,'(' regmap['xr'] ')')			:(opdone)
+	op(mov.b,'(' regmap['xr'] ')',sreg)	:(opdone)
 g.sch.xlp
-	op(mov.b,sreg,'(' regmap['xl'] ')')
+	op(mov.b,'(' regmap['xl'] ')',sreg)
 	op(inc.w,reg.xl)			:(opdone)
 g.sch.xrp
-	op(mov.b,sreg,'(' regmap['xr'] ')')
+	op(mov.b,'(' regmap['xr'] ')',sreg)
 	op(inc.w,reg.xr)			:(opdone)
 g.sch.pxl
 	op(dec.w,reg.xl)
-	op(mov.b,sreg,'(' regmap['xl'] ')')			:(opdone)
+	op(mov.b,'(' regmap['xl'] ')',sreg)	:(opdone)
 g.sch.pxr
 	op(dec.w,reg.xr)
-	op(mov.b,sreg,'(' regmap['xr'] ')')			:(opdone)
+	op(mov.b,'(' regmap['xr'] ')',sreg)	:(opdone)
 
 
 g.csc  	ident(thislabel)			:s(opnext)

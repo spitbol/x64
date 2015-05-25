@@ -1,45 +1,45 @@
 	i = 0
-end
 	j = 3
 	k = 5
-	Output = i
-	Output = j
-	Output = k
+	output = i
+	output = j
+	output = k
 	t = i + j
-*	Output = t
+	output = t
+*end
 	t = i * j
-	Output = t
+	output = t
 	t = t - 5
 
-*	Output = t
+*	output = t
 	t = (i + j) * k
-	Output = t
+	output = t
 	t = t / k
-	Output = t
+	output = t
 	t = k * k + k - (6 * k)
-	Output = t
+	output = t
 	t = k * k  - (6 * k)
-	Output = t
+	output = t
 end
 
 
-  Output = 'hello world'
-	Output = remdr(1234,100)
+  output = 'hello world'
+	output = remdr(1234,100)
 	str = '123'
 	n = +str
-	Output = n
-	Output = n 'ave'
-	Output = 'five test'
+	output = n
+	output = n 'ave'
+	output = 'five test'
 	i = 5
 	t = i * i
-	Output = t
+	output = t
 	t = t + i
-	Output = t
+	output = t
 	t = t - (6 * i)
-	Output = t
+	output = t
 	t = i * i  - (6 * i)
-	Output = t
+	output = t
 	t = i * i
-	Output = t
+	output = t
 	t = t - (i * 6)
-	Output = t
+	output = t

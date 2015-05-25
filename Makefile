@@ -1,5 +1,5 @@
-# SPTRCBOL makefile using tccSE
-host?=unix_64
+# SPITBOL makefile using gcc 
+host?=sbl_unix_64
 HOST=$(host)
 
 DEBUG:=$(debug)
@@ -26,8 +26,8 @@ ifneq ($(TRC),0)
 TRCOPT:=:trc
 endif
 
-basebol?=./bin/unix_64
-BASEBOL=$(basebol)
+sbl?=./bin/sbl_unix_64
+SBL=$(sbl)
 
 cc?=gcc
 CC:=$(cc)
@@ -73,9 +73,9 @@ unix_64_gas:
 	mkdir bld
 	$(CC) -Dunix_64 -m64 $(CCOPTS) -c osint/*.c
 	mv *.o bld
-	./bin/sbl_unix_64 -u unix_64_gas -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
-	./bin/sbl_unix_64 -r -u unix_64:$(TRCOPT) -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
-	./bin/sbl_unix_64 -u unix_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
+	$(SBL) -u unix_64_gas	-1=sbl.asm	-2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
+	$(SBL) -u unix_64:$(TRCOPT) -1=bld/sbl.lex	-2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
+	$(SBL) -u unix_64_gas	-1=bld/sbl.err -2=bld/err.s 	err.sbl
 	cat gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
 	as -o bld/sbl.o bld/sbl.s
 	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
@@ -85,22 +85,26 @@ unix_64_nasm:
 	mkdir bld
 	$(CC) -Dunix_64 -m64 $(CCOPTS) -c osint/*.c
 	mv *.o bld
-	./bin/sbl_unix_64 -u unix_64_nasm -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
-	./bin/sbl_unix_64 -r -u unix_64:$(TRCOPT) -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ nasm/asm.sbl
-	./bin/sbl_unix_64 -u unix_64_nasm -1=bld/sbl.err -2=bld/err.s err.sbl
+	$(SBL) -u unix_64 		-1=sbl.asm 	-2=bld/sbl.lex	-3=bld/sbl.equ lex.sbl
+	$(SBL) -u unix_64:$(TRCOPT) -1=bld/sbl.lex	-2=bld/sbl.tmp	-3=bld/sbl.err -4=bld/sbl.equ nasm/asm.sbl
+	$(SBL) -u unix_64_nasm 	-1=bld/sbl.err	-2=bld/err.s 	err.sbl
 	cat nasm/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
 	nasm -f elf64 -Dunix_64 -o bld/sbl.o bld/sbl.s
 	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
 
 osx_64:
 	$(CC) $(CCOPTS) -c osint/*.c
-	$(BASEBOL)  -u osx_64 lex.sbl
-	$(BASEBOL)  -r -u osx_64:$(TRCOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
-	$(BASEBOL)  -u osx_64 -1=sbl.err -2=err.s err.sbl
+	$(SBL)  -u osx_64 lex.sbl
+	$(SBL)  -r -u osx_64:$(TRCOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
+	$(SBL)  -u osx_64 -1=sbl.err -2=err.s err.sbl
 	cat sys.asm err.s sbl.tmp >sbl.s
 	$(ASM) -f macho64 -Dosx_64 -o sbl.o sbl.s
 	$(CC) -lm -Dosx_64 -m64 $(LDOPTS)  *.o -lm  -osbl 
 
+lex-0:
+	./nbl -I  -u unix_64_gas -1=sbl.asm -2=lx/sbl.lex.0 -3=lx/sbl.equ.0 lex.sbl 1>lx/ok.ad 2>lx/ok.ae
+lex-1:
+	./sbl -I -u unix_64_gas -1=sbl.asm -2=lx/sbl.lex.1 -3=lx/sbl.equ.1 lex.sbl  1>lx/ad 2>lx/ae
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS) $(NOBJS)
 	$(CC) $(LDOPTS) $(OBJS) $(NOBJS) $(LMOPT)  -osbl 
@@ -136,18 +140,18 @@ z:
 # build system using nasm
 nasm_64:
 	$(CC) -Dunix_64 -m64 $(CCOPTS) -c osint/*.c
-	./bin/sbl_unix_64 -u unix_64 nasm/lex.sbl
-	./bin/sbl_unix_64 -r -u unix_64:$(ITOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err nasm/asm.sbl
-	./bin/sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s nasm/err.sbl
+	$(SBL) -u unix_64 lex.sbl
+	$(SBL) -r -u unix_64:$(ITOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err nasm/asm.sbl
+	$(SBL) -u unix_64 -1=sbl.err -2=err.s nasm/err.sbl
 	cat sys.asm err.s sbl.tmp >sbl.s
 	nasm -f elf64 -Dunix_64 -o sbl.o sbl.s
 	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl 
 
 nasm_32:
 	$(CC) -Dunix_32 -m32 $(CCOPTS) -c osint/*.c
-	$(BASEBOL)  -u unix_32 nasm/lex.sbl
-	$(BASEBOL)  -r -u unix_32:$(ITOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err nasm/asm.sbl
-	$(BASEBOL)  -u unix_32 -1=sbl.err -2=err.s nams/err.sbl
+	$(SBL)  -u unix_32 nasm/lex.sbl
+	$(SBL)  -r -u unix_32:$(ITOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err nasm/asm.sbl
+	$(SBL)  -u unix_32 -1=sbl.err -2=err.s nams/err.sbl
 	cat sys.asm err.s sbl.tmp >sbl.s
 	nasm -f elf32 -Dunix_32 -o sbl.o sbl.s
 	$(CC) -lm -Dunix_32 -m32 $(LDOPTS)  *.o -lm  -osbl 
@@ -157,7 +161,7 @@ sclean:
 	make clean
 	rm tbol*
 
-test_unix_64:
+sanity_unix_64:
 # Do a sanity test on spitbol to  verify that spitbol is able to compile itself.
 # This is done by building the system three times, and comparing the generated assembly (.s)
 # filesbl. Normally, all three assembly files wil be equal. However, if a new optimization is

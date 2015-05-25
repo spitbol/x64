@@ -1,2 +1,6 @@
   output = 'hello world'
+	i = 5
+	j = 10
+	output = i + j
+
 end

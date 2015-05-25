@@ -1,0 +1,32 @@
+gcc -Dunix_64 -m64    -c osint/*.c
+../bin/sbl_unix_64  -u unix_64 lex.sbl
+unix_64	target
+  28129	minimal source lines
+  12256	statements processed
+  12317	target code lines produced
+1095034	spitbol statements executed
+      0	errors detected
+2106280	free bytes
+      0	execution time ms
+../bin/sbl_unix_64  -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
+options: unix_64:
+unix_64	target
+    rip	0
+  25532	lines read
+  12317	statements processed
+  16077	target code lines produced
+1528099	spitbol statements executed
+    330	maximum err/erb number
+     19	prc count
+      0	errors detected
+ 429850	free words
+      0	execution time ms
+../bin/sbl_unix_64  -u unix_64 -1=sbl.err -2=err.s err.sbl
+target: unix_64
+input message length = 13413
+output string size = 4322
+savings = 9091
+spitbol statements executed 480208
+cat sys.asm err.s sbl.tmp >sbl.s
+nasm -f elf64 -Dunix_64 -o sbl.o sbl.s
+gcc -lm -Dunix_64 -m64   *.o -lm  -osbl 
