@@ -60,6 +60,7 @@
 	%define wb_l  	bl
 	%define wc	edx
 	%define wc_l  	dl
+	%define w0_l	al
 
 	%define	xl	esi
 	%define	xt	esi

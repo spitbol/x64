@@ -77,6 +77,7 @@
 	lcase   = 'abcdefghijklmnopqrstuvwxyz'
 	nos     = '0123456789'
 	tab	= char(9)
+	dtc_pad	= ',0,0,0,0,0,0,0 '
 
 
 *  function definitions
@@ -140,7 +141,7 @@ option.next
 	ident(option,'unix_64')			:s(option.unix.64)
 	ident(option,'osx_32')			:s(option.osx.32)
 	ident(option,'xt')			:s(option.xt)
-	ident(option,'it')			:s(option.it)
+	ident(option,'trc')			:s(option.trc)
 
 * here if unknown option
 
@@ -153,7 +154,7 @@ option.unix.64
 	os = 'unix'; 	ws = '64'		:(option.next)
 option.osx.32
 	os = 'osx'; 	ws = '32'		:(option.next)
-option.it
+option.trc
 *	turn on instruction trace
 	i_trace = 1				:(option.next)
 option.xt
@@ -176,8 +177,9 @@ options.done
 config.32
 	cfp_b = 4
 	cfp_c = 4
-	log_cfp_b = '2'
-	log_cfp_c = '2'
+	cfp_f = cfp_b + cfp_c
+	log_cfp_b = 2
+	log_cfp_c = 2
 *	op_w is instruction suffix for word-size
 	op_w = 'd'
 *	op_c is instruction suffix for minimal character size
@@ -190,8 +192,9 @@ config.64
 *       these should agree with values used in translator
 	cfp_b = 8
 	cfp_c = 8
-	log_cfp_b = '3'
-	log_cfp_c = '3'
+	cfp_f = cfp_b + cfp_c
+	log_cfp_b = 3
+	log_cfp_c = 3
 	op_w = 'q'
 	op_c = 'b'
 *	rel = 'rel '
@@ -206,20 +209,20 @@ config.done
 	report('rip', rip_mode)
 	ne(rip_mode) ripinit()
 
-*	z_limit is maximum number of calls to be generated if non-zero
-	z_limit = 0
-*	set z_first non-zero to skip first number of instructions that would generate trace
-	z_first = 1
+*	i_limit is maximum number of calls to be generated if non-zero
+	i_limit = 0
+*	set i_first non-zero to skip first number of instructions that would generate trace
+	i_first = 1
 *	will set in_executable when in part of program where executable
 *	instructions may occur
-	z_exec = 0
+	i_exec = 0
 
-*	z_suspend is set to temporarily disable the trace.
+*	i_suspend is set to temporarily disable the trace.
 *	initially set so emit no code until reach code section
-	z_suspend = 0
+	i_suspend = 0
 *	set in_skip when should not insert trace code, else assembly errors result.
 *	start with skip on, turn off when see first start of code.
-	z_skip = 1
+	i_skip = 1
 *	skip_on and skip_off are labels indicating the start and end,
 *	respectively, of sections of the code that should not be traced,
 *	usually because they contain a loop instruction that won't
@@ -406,7 +409,7 @@ is_exec.2
 
 *	filebase ? break(';:') . filebase len(1) (break(';:') | rem) . target
 *+		((len(1) rem . flags) | '')
-*	$replace(target,lcase,ucase) = 1
+*	$replace(target,&ucase,&lcase) = 1
 
 * parse and display flags, setting each one's name to non-null value (1).
 
@@ -426,8 +429,7 @@ flgs2
         comment.delim = ';'
 
 	w0_arg = minarg(8,'w0')
-*  branchtab maps minimal opcodes 'beq', etc to desired
-*  target instruction
+*  branchtab maps minimal opcodes 'beq', etc to desired target instruction
 
 	branchtab = table(10)
 	branchtab['beq'] = 'je'
@@ -439,24 +441,7 @@ flgs2
 	branchtab['blo'] = 'jb'
 	branchtab['bhi'] = 'ja'
 
-*  optim.tab flags opcodes capable of participating in or optimization
-*		in outstmt routine
-
-	optim.tab = table(10)
-	optim.tab<"and"> = 1
-	optim.tab<"add"> = 1
-	optim.tab<"sub"> = 1
-	optim.tab<"neg"> = 1
-	optim.tab<"or"> = 1
-	optim.tab<"xor"> = 1
-	optim.tab<"shr"> = 1
-	optim.tab<"shl"> = 1
-	optim.tab<"inc"> = 1
-	optim.tab<"dec"> = 1
-
-
-*  ismem is table indexed by operand type which is nonzero if
-*  operand type implies memory reference.
+*  ismem is table indexed by operand type which is nonzero if operand type implies memory reference.
 
 	ismem = array(30,0)
 	ismem<3> = 1; ismem<4> = 1; ismem<5> = 1
@@ -464,29 +449,19 @@ flgs2
 	ismem<12> = 1; ismem<13> = 1; ismem<14> = 1
 	ismem<15> = 1
 
-*  regmap maps minimal register name to target machine
-*  register/memory-location name.
+*	w0 is work register
 
-	regmap = table(30)
-	regmap['xl'] = 'xl';  regmap['xt'] = 'xt'
-	regmap['xr'] = 'xr';  regmap['xs'] = 'xs'
-	regmap['wa'] = 'wa';  regmap['wb'] = 'wb'
-	regmap['wc'] = 'wc';  regmap['ia'] = 'ia'
-	regmap['cp'] = 'cp'
-*	w0 is temp register
-	regmap['w0'] = 'w0'
-	w0 = regmap['w0']
+	wa = 'wa'; wb = 'wb'; wc = 'wc'; w0 = 'w0'
+	xl = 'xl'; xr = 'xr'; xs = 'xs'; xt = 'xt'
+	ia = 'ia'; cp = 'cp'
 
-*  quick reference:
-	reg.wa = regmap['wa']
-	reg.cp = regmap['cp']
+* reglow maps register to identify target, so can extract 'l' part.
 
-* reglow maps register to identify target, so
-* can extract 'l' part.
 	reglow = table(4)
 	reglow['wa'] = 'wa_l'
 	reglow['wb'] = 'wb_l'
 	reglow['wc'] = 'wc_l'
+	reglow['w0'] = 'w0_l'
 
 * real_op maps minimal real opcode to machine opcode
 	real_op = table(10)
@@ -596,7 +571,7 @@ opnext.1
 	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' '
 .		i.text(i2) ' ' i.text(i3)
 	argerrs = 0
-*	differ(it_trace) ge(sectnow,5) eq(z_suspend) chktrace()
+*	differ(i_trace) ge(sectnow,5) eq(i_suspend) chktrace()
 	ge(sectnow,5) chktrace()
 						:($('g.' incode))
 *  here if bad opcode
@@ -609,7 +584,7 @@ ds.typerr
 -stitl comregs(line)t,pre,word
 comregs
 	line p.comregs =			:f(comregs1)
-	word = eq(size(word),2) differ(t = regmap[word]) t
+	word = eq(size(word),2) differ(t = word) t
 	comregs = comregs pre word		:(comregs)
 comregs1 comregs = comregs line			:(return)
 -stitl crack(line)
@@ -694,12 +669,11 @@ arg.c.6 getarg = txt				:(arg.done)
 * w,x, map register name
 arg.c.7
 arg.c.8
-	getarg = regmap[txt]			:(arg.done)
+	getarg = txt				:(arg.done)
 
 * (x), register indirect
 arg.c.9
 	txt len(1) len(2) . typ
-	typ = regmap[typ]
 	getarg = pre typ post
 						:(arg.done)
 
@@ -709,14 +683,14 @@ arg.c.9
 * for all the other regs, and either could be used.
 arg.c.10
 	txt = substr(txt,2,2)
-	t1 = regmap[txt]
+	t1 = txt
 	getarg = pre t1 post
 	(ident(txt,'xs') genaop(tstmt(,'add',t1,'cfp_b'))) :s(arg.done)
 	genaop(tstmt(,'lea',t1,'a(' t1 '+cfp_b)'))	:(arg.done)
 
 *  -(x), register indirect, pre decrement
 arg.c.11
-	t1 = regmap[substr(txt,3,2)]
+	t1 = substr(txt,3,2)
 	getarg = pre t1 post
 	genbop(tstmt(,'lea',t1,'a(' t1 '-cfp_b)')) :(arg.done)
 
@@ -725,7 +699,7 @@ arg.c.11
 arg.c.12
 arg.c.13
 	txt break('(') . t1 '(' len(2) . t2
-	getarg = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
+	getarg = pre  '(cfp_b*' t1 ')+' t2  post
 							:(arg.done)
 
 *  name(x), where name is in working section
@@ -733,7 +707,7 @@ arg.c.14
 arg.c.15
 	getarg = ne(rip_mode)	getrip(iarg)		:s(return)
 	txt break('(') . t1 '(' len(2) . t2
-	getarg = pre    t1 '+'  regmap[t2] 	post
+	getarg = pre    t1 '+'  t2 	post
 							:(arg.done)
 * signed integer
 arg.c.16 getarg = txt				:(arg.done)
@@ -781,7 +755,6 @@ lea.c.4
 * (x), register indirect
 lea.c.9
 	txt len(1) len(2) . typ
-	typ = regmap[typ]
 	getlea = pre typ post
 						:(return)
 * int(x)
@@ -789,14 +762,14 @@ lea.c.9
 lea.c.12
 lea.c.13
 	txt break('(') . t1 '(' len(2) . t2
-	getlea = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
+	getlea = pre  '(cfp_b*' t1 ')+' t2  post
 							:(return)
 
 *  name(x), where name is in working section
 lea.c.14
 lea.c.15
 	txt break('(') . t1 '(' len(2) . t2
-	getlea = pre    t1 '+'  regmap[t2] 	post
+	getlea = pre    t1 '+'  t2 	post
 							:(return)
 
 -stitl getrip(iarg)
@@ -815,7 +788,7 @@ getrip
 rip.c.14
 rip.c.15
 	txt break('(') . var '(' len(2) . reg
-*	getrip = pre    var '+'  regmap[t2] 	post
+*	getrip = pre    var '+'  t2 	post
 	getrip = var 
 						:(rip.done)
 *  *dlbl
@@ -962,41 +935,52 @@ outstmt4
 -stitl  chktrace()
 chktrace
 	ident(i_trace)				:s(return)
-	ne(z_suspend)				:s(return)
+	ne(i_suspend)				:s(return)
 	clabel = inlabel
- 	old_z_skip = z_skip
- 	old_z_exec = z_exec
+ 	old_i_skip = i_skip
+ 	old_i_exec = i_exec
  	old_is_exec = is_exec
-	z_skip = ident(inlabel,'s_aaa') 0
+	i_skip = ident(inlabel,'s_aaa') 0
 
 	is_exec = is_executable[incode]
-	z_exec = differ(i_trace)  ident(inlabel, 's_aaa') 1
-	z_exec = differ(i_trace) ge(sectnow,5) 1
+	i_exec = differ(i_trace)  ident(inlabel, 's_aaa') 1
+	i_exec = differ(i_trace) ge(sectnow,5) 1
 
- 	z_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
- 	z_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
+ 	i_skip  = differ(inlabel) differ(skip_on[inlabel]) 1
+ 	i_skip  = differ(inlabel) differ(skip_off[inlabel]) 0
 
-	ne(z_skip)				:s(return)
-	eq(z_exec)				:s(return)
+	ne(i_skip)				:s(return)
+	eq(i_exec)				:s(return)
 	eq(is_exec)				:s(return)
 
 *	ne(in_gcol)				:s(return)
 chktrace.1
 	genz()
+						:(return)
 
 genz
 *	no trace if trace has been suspended
-*	output = ne(z_suspend) 'z_suspend ' thisline
-	z_count = z_count + 1
-	gt(z_first) le(z_count,z_first)		:s(return)
-	gt(z_limit)  gt(z_count, z_limit)	:s(return)
+*	output = ne(i_suspend) 'i_suspend ' thisline
+	i_count = i_count + 1
+	gt(i_first) le(i_count,i_first)		:s(return)
+	gt(i_limit)  gt(i_count, i_limit)	:s(return)
 
 *	only trace an instruction once
 	eq(nlines,nlast)			:s(return)
 	nlast = nlines
+	lbl = genlab()
+	i_desc = '"' replace(thisline,'|',' ') '"'
 
-	z_desc = '"' replace(thisline,'|',' ') '"'
-	outline(tab 'zzz' tab	z_desc)
+	genop('trc_',lbl,i_desc)
+						:(return)
+	lbl = genlab()
+	genop('segment','.data')
+	genopl(lbl,'db',i_desc)
+	genop('db',0)
+	genop('segment','.text')
+	i_suspend = 1;			;* no need to trace the trace code.
+	genop('mov','trc_de',lbl)
+	i_suspend = 0
 						:(return)
 
 -stitl prsarg(iarg)
@@ -1015,8 +999,8 @@ readline readline = infile                      :f(rl02)
 	ident( readline )			:s(readline)
 readline.0
 	leq( substr(readline,1,1 ),';' )       	:f(rl01)
-	z_skip = ident(readline,';z+') 0	:s(readline)
-*	z_skip = ident(readline,';z-') 1	:s(readline)
+	i_skip = ident(readline,';z+') 0	:s(readline)
+	i_skip = ident(readline,';z-') 1	:s(readline)
 * force skip of full line comments
 	:(readline)
 
@@ -1075,14 +1059,14 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 g.flc
 	t1 = (eq(cfp_b,cfp_c) reglow[getarg(i1)], getarg(i1))
 	t2 = genlab()
-*	z_suspend = 1
+	i_suspend = 1
 	genop('cmp',t1,"'A'")
 	genop('jb', t2 )
 	genop('cmp',t1,"'Z'")
 	genop('ja', t2)
 	genop('add',t1,'32')
         genopl(t2 ':')
-*	z_suspend = 0
+	i_suspend = 0
 						:(opdone)
 
 g.mov
@@ -1140,7 +1124,7 @@ g.brn   genop('jmp',getarg(i1))			:(opdone)
 
 g.bsw	t1 = getarg(i1)
 	t2 = genlab()
-	z_suspend = 1
+	i_suspend = 1
 	ident(i.text(i3))			:s(g.bsw1)
 	genop('cmp',t1,getarg(i2))
 	genop('jge',getarg(i3))
@@ -1161,7 +1145,7 @@ g.bsw.2
 g.bsw.3
 	genop('segment','.data')
         genopl(t2 ':')
-	z_suspend = 0
+	i_suspend = 0
 						:(opdone)
 
 g.iff   genop('d_word',getarg(i2))              :(opdone)
@@ -1205,7 +1189,7 @@ g.ent.2
 
 g.bri	genop('jmp',getarg(i1))			:(opdone)
 
-g.lei	t1 = regmap[i.text(i1)]
+g.lei	t1 = i.text(i1)
 	genop('movzx',t1,'byte [' t1 '-1]' )	:(opdone)
 
 g.jsr
@@ -1214,13 +1198,13 @@ g.jsr
 *	get count of following ppm statements
 	jsr_count = ppm_cases[jsr_proc]
 	eq(jsr_count)				:s(opdone)
-	z_suspend = 1
+	i_suspend = 1
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
 	genop('dec','m(' rcode ')')
 	genop('js',jsr_label_norm)
-	z_suspend = 0
+	i_suspend = 0
 
 *	generate branch around for ppms that will follow
 *	take the branch if normal return (eax==0)
@@ -1247,7 +1231,7 @@ g.ppm
 g.ppm.loop.next
 	genopl(lab_next ':')
  	jsr_count = jsr_count - 1
- 	z_suspend = eq(jsr_count) 0
+ 	i_suspend = eq(jsr_count) 0
 	eq(jsr_count) genopl(jsr_label_norm ':') :(opdone)
 g.ppm.loop
 	lab_next = genlab()
@@ -1331,7 +1315,10 @@ g.zer1	t1 = getarg(i1)
 	genop('xor',t1,t1)			:(opdone)
 g.zer.xs genop('push','0')			:(opdone)
 
-g.mnz   genop('mov',getarg(i1),'xs')		:(opdone)
+g.mnz   
+	genop('xor',w0,w0)
+	genop('inc',w0)				
+	genop('mov',getarg(i1),w0)		:(opdone)
 
 g.ssl
 g.sss
@@ -1418,21 +1405,21 @@ g.scp
 	genop(op_,getarg(i1))			:(opdone)
 
 *  use cp for code pointer.
-	genop('mov',reg.cp,getarg(i1))
+	genop('mov',cp,getarg(i1))
 						:(opdone)
 
-	genop('mov',getarg(i1),reg.cp)
+	genop('mov',getarg(i1),cp)
 						:(opdone)
 *  should be able to get lodsd; xchg eax,getarg(i1)
-	genop('mov',getarg(i1),m(reg.cp))
-	genop('add',reg.cp,'cfp_b')
+	genop('mov',getarg(i1),m(cp))
+	genop('add',cp,'cfp_b')
 
 						:(opdone)
 
 
 g.icp
 	genop(op_)				:(opdone)
-	genop('add',reg.cp,'cfp_b')
+	genop('add',cp,'cfp_b')
 						:(opdone)
 *  integer accumulator kept in wdx (wc)
 g.ldi
@@ -1550,85 +1537,87 @@ g.plc.1
 *  lch requires separate cases for each first operand possibility.
 
 g.lch
-	t2 = i.text(i2)
-	t1 = getarg(i1)
+*	if loading to w register, use its low part. otherwise copy register to w0 and use w0's low part
+	reg = i.text(i1)
+*	will load to register lreg, which will be same as reg if loading to w register
 
-*  see if predecrement needed.
-	leq('-',substr(t2,1,1))			:f(g.lcg.1)
-	t2 break('(') len(1) len(2) . t3
-	(eq(cfp_b,cfp_c) genop('dec',regmap[t3]), genop('sub',regmap[t3],'cfp_b'))
-g.lcg.1
-	t2 break('(') len(1) len(2) . t3
-	eq(cfp_b,cfp_c) genop('mov',w0,'0')
-	eq(cfp_b,cfp_c) genop('mov','al','m_char [' regmap[t3] ']')
-	eq(cfp_b,cfp_c) genop('mov',t1,w0)
-
-	ne(cfp_b,cfp_c) genop('mov',t1,'m_char [' regmap[t3] ']')
-
-*  see if postincrement needed.
-	t2 rtab(1) '+'				:f(g.lcg.2)
-	(eq(cfp_b,cfp_c) genop('inc',regmap[t3]), genop('add',regmap[t3],'cfp_b'))
-g.lcg.2						:(opdone)
+	rtype = i.type(i1)
+	opc = i.text(i2)
+	eq(rtype,8)				:s(g.lch.w)
+*	here if loading into x register, so load to w0 and then will copy to x register
+	genop('xor',w0,w0)
+	lreg = reglow['w0']
+						:(g.lch.1)
+g.lch.w
+	genop('xor',reg,reg)
+	lreg = reglow[reg]
+g.lch.1
+	ident(opc,'(xl)')			:s(g.lch.xl)
+	ident(opc,'(xr)')			:s(g.lch.xr)
+	ident(opc,'(xl)+')			:s(g.lch.xlp)
+	ident(opc,'(xr)+')			:s(g.lch.xrp)
+	ident(opc,'-(xl)')			:s(g.lch.pxl)
+	ident(opc,'-(xr)')			:s(g.lch.pxr)
+	error('illegal second argument to lch')
+g.lch.xl
+	genop('mov',lreg, 'm_char [xl]')		:(lchdone)
+g.lch.xr
+	genop('mov',lreg, 'm_char [xr]')		:(lchdone)
+g.lch.xlp
+	genop('mov',lreg, 'm_char [xl]')
+	genop('inc','xl')			:(lchdone)
+g.lch.xrp
+	genop('mov',lreg, 'm_char [xr]')
+	genop('inc','xr')			:(lchdone)
+g.lch.pxl
+	genop('dec','xl')
+	genop('mov',lreg, 'm_char [xl]')	:(lchdone)
+g.lch.pxr
+	genop('dec','xr')
+	genop('mov',lreg, 'm_char [xr]')	:(lchdone)
+lchdone
+*	If loading into x register, copy w0 to that register
+	eq(rtype,7)	genop('mov',reg,w0)
+						:(opdone)
 
 g.sch
-	t2 = i.text(i2)
-	eq(i.type(i1),8)			:s(g.scg.w)
-	t1 = getarg(i1)
-	eq(cfp_b,cfp_w)				:f(g.scg.0)
-	ident(t2,'(xr)+')			:f(g.scg.0)
+*	if storing from w register, use its low part. otherwise copy register to w0 and use w0's low part
+	reg = i.text(i1)
+*	will stort from sreg, which will be same as reg if storing from w register
 
-*  here if can use stos.
-
-	eq(cfp_b,cfp_c) genop('mov','al',getarg(i1))
-	ne(cfp_b,cfp_c) genop('mov','eax',getarg(i1))
-	genop('stos_b')				:(opdone)
-
-g.scg.0
-	leq('-',substr(t2,1,1))			:f(g.scg.1)
-	t2 break('(') len(1) len(2) . t3
-	genop('dec',regmap[t3])
-	(eq(cfp_b,cfp_c) genop('dec',regmap[t3]), genop('sub',regmap[t3],'cfp_b'))
-g.scg.1
-	t2 break('(') len(1) len(2) . t3
-	eq(cfp_b,cfp_c) genop('mov',w0,t1,)
-	eq(cfp_b,cfp_c) genop('mov','[' regmap[t3] ']','al')
-	ne(cfp_b,cfp_c) genop('mov','m_char [' regmap[t3] ']',t1)
-*  see if postincrement needed.
-	t2 rtab(1) '+'				:f(g.scg.2)
-	(eq(cfp_b,cfp_c) genop('inc',regmap[t3]), genop('add',regmap[t3],'cfp_b'))
-g.scg.2						:(opdone)
-g.scg.w
-
-*  here if moving character from work register, convert t1
-*  to name of low part.
-
-	t1 = (eq(cfp_b,cfp_c) reglow[getarg(i1)], getarg(i1))
-
-	ident(t2,'(xl)')			:s(g.scg.w.xl)
-	ident(t2,'-(xl)')			:s(g.scg.w.pxl)
-	ident(t2,'(xl)+')			:s(g.scg.w.xlp)
-	ident(t2,'(xr)')			:s(g.scg.w.xr)
-	ident(t2,'-(xr)')			:s(g.scg.w.pxr)
-	ident(t2,'(xr)+')			:s(g.scg.w.xrp)
-g.scg.w.xl
-	genop('mov','m_char [xl]',t1)		:(opdone)
-g.scg.w.pxl
-	(eq(cfp_b,cfp_c)  genop('dec', 'xl'), genop('sub','xl', 'cfp_b'))
-	genop('mov','m_char [xl]',t1)			:(opdone)
-
-g.scg.w.xlp
-	genop('mov','m_char [xl]',t1)
-	(eq(cfp_b,cfp_c)  genop('inc', 'xl'), genop('add','xl', 'cfp_b'))
-						:(opdone)
-g.scg.w.xr
-	genop('mov','m_char [xr]',t1)			:(opdone)
-
-g.scg.w.pxr
-	(eq(cfp_b,cfp_c)  genop('dec', 'xr'), genop('sub','xr', 'cfp_b'))
-	genop('mov','m_char [xr]',t1)			:(opdone)
-g.scg.w.xrp
-	(eq(cfp_b,cfp_c) genop('mov','al',t1), genop('mov','eax',t1))
-	genop('stos_b')				:(opdone)
+	rtype = i.type(i1)
+	opc = i.text(i2)
+	eq(rtype,8)				:s(g.sch.w)
+*	here if storing from x register, so copy to w0 and then use w0's low part
+	genop('mov',w0,reg)
+	sreg = reglow['w0']
+						:(g.sch.1)
+g.sch.w
+	sreg = reglow[reg]
+g.sch.1
+	ident(opc,'(xl)')			:s(g.sch.xl)
+	ident(opc,'(xr)')			:s(g.sch.xr)
+	ident(opc,'(xl)+')			:s(g.sch.xlp)
+	ident(opc,'(xr)+')			:s(g.sch.xrp)
+	ident(opc,'-(xl)')			:s(g.sch.pxl)
+	ident(opc,'-(xr)')			:s(g.sch.pxr)
+	error('illegal second argument to sch')
+g.sch.xl
+	genop('mov','m_char [xl]',sreg)		:(opdone)
+g.sch.xr
+	genop('mov','m_char [xr]',sreg)		:(opdone)
+g.sch.xlp
+	genop('mov','m_char [xl]',sreg)
+	genop('inc','xl')			:(opdone)
+g.sch.xrp
+	genop('mov','m_char [xr]',sreg)
+	genop('inc','xr')			:(opdone)
+g.sch.pxl
+	genop('dec','xl')
+	genop('mov','m_char [xl]',sreg)	:(opdone)
+g.sch.pxr
+	genop('dec','xr')
+	genop('mov','m_char [xr]',sreg)	:(opdone)
 
 g.csc  	ident(thislabel)			:s(opnext)
 	genop()					:(opdone)
@@ -1760,8 +1749,8 @@ g.cvm	t1 = getarg(i1)
 	genop('sti_',w0)
 	genop('imul',w0,'10')
 	genop('jo',t1)
-	genop('sub',regmap['wb'],'ch_d0')
-	genop('sub',w0,regmap['wb'])
+	genop('sub','wb','ch_d0')
+	genop('sub',w0,'wb')
 	genop('ldi_',w0)
 	genop('jo',t1)
 						:(opdone)
@@ -1774,10 +1763,10 @@ g.mvc
 	ne(cfp_b,cfp_c)				:s(g.mvw)
 
 	t1 = genlab()
-	z_suspend = 1
+	i_suspend = 1
 	genop('rep')
 	genop('movs_b')
-	z_suspend = 0
+	i_suspend = 0
 						:(opdone)
 	t1 = genlab()
 	genopl(t1 ':', 'mov','al','byte [esi]')
@@ -1795,10 +1784,10 @@ g.mvc
 	genop('jnz',t1)
 						:(opdone)
 g.mvw
-	z_suspend = 1
+	i_suspend = 1
 	genop('shr','wa','log_cfp_b')
  	genop('rep','movs_w')
-	z_suspend = 0
+	i_suspend = 0
 						:(opdone)
 
 g.mwb
@@ -1874,21 +1863,12 @@ g.drc
 
 g.dtc
 *  change first and last chars to " (assume / used in source)
-	t1 = i.text(i1)
-	t1 tab(1) rtab(1) . t2
-	t3 = remdr(size(t2),cfp_c)
-*        t2 = "'" t2 "'"
-*  append nulls to complete last word so constant length is multiple
-*  of word word
-	dtc_i = 1
-	t4 =
-g.dtc.1
-	t4 = gt(dtc_i, 1) t4 ","
-	t4 = t4 "'" substr(t2,dtc_i,1) "'"
-	le(dtc_i = dtc_i + 1, size(t2))		:s(g.dtc.1)
-
-        t4 = ne(t3) t4 dupl(',0',cfp_c - t3)
-        genopl(thislabel,'d_char',t4)
+	txt = i.text(i1)
+	txt tab(1) rtab(1) . txt
+	pad = remdr(size(txt),cfp_c)
+	pad = ne(pad) cfp_c - pad
+*  append nulls if needed so constant length is multiple  of word size
+	genopl(thislabel,'db','"' txt '"' (gt(pad) substr(dtc_pad,1, pad * 2),  ''))
 						:(opdone)
 g.dbc   genopl(thislabel,'d_word',getarg(i1))
 						:(opdone)
@@ -1971,7 +1951,7 @@ g.sec.7
 
 *	allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
-	genopl('err_:','xchg',reg.wa,'m(' rcode ')')
+	genopl('err_:','xchg',wa,'m(' rcode ')')
 						:(opdone)
 
 
