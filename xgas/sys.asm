@@ -318,20 +318,16 @@ call_adr:	.quad	0
 #
 	.global	save_regs
 save_regs:
-	movq	%rbp,save_ia
 	movq	%rsi,save_xl
 	movq	%rdi,save_xr
 	movq	%rcx,save_wa
 	movq	%rbx,save_wb
 	movq	%rdx,save_wc
-#	movq	reg_ia,%rax
-	movq	%rax,save_ia
 	ret
 
 	.global	restore_regs
 restore_regs:
 	#	restore regs, except for sp. that is caller's responsibility
-	movq	save_ia,%rbp
 	movq	save_xl,%rsi
 	movq	save_xr,%rdi
 	movq	save_wa,%rcx
@@ -375,18 +371,19 @@ restore_regs:
 
 startup:
 	pop	%rax			# discard return
-	xorq	%rbp,%rbp		# initialize IA to zero
+	xorq	%rax,%rax
+	movq	%rax,reg_ia		# initialize IA to zero
 	call	stackinit		# initialize minimal stack
-	mov	compsp,%rax		# get minimal's stack pointer
-	mov	%rax,reg_wa		# startup stack pointer
+	movq	compsp,%rax		# get minimal's stack pointer
+	movq	%rax,reg_wa		# startup stack pointer
 
 	cld				# default to up direction for string ops
 #	getoff	%rax,dffnc		# get address of ppm offset
-	mov	%rax,ppoff	# save for use later
+	movq	%rax,ppoff	# save for use later
 
-	mov	osisp,%rsp	# switch to new c stack
-	mov	$calltab_start,%rax
-	mov	%rax,minimal_id
+	movq	osisp,%rsp	# switch to new c stack
+	movq	$calltab_start,%rax
+	movq	%rax,minimal_id
 	call	minimal			# load regs, switch stack, start compiler
 
 #	stackinit  -- initialize spmin from sp.
@@ -450,7 +447,6 @@ chk.oflo:
 
 minimal:
 #         pushad		# save all registers for c
-	movq	reg_ia,%rbp
 	movq 	reg_wa,%rcx	# restore registers
 	movq	reg_wb,%rbx
 	movq	reg_wc,%rdx	#
@@ -474,7 +470,6 @@ minimal:
 	movq	%rdx,reg_wc
 	movq	%rsi,reg_xl
 	movq	%rdi,reg_xr
-	movq	%rbp,reg_ia
 	ret
 
 
@@ -528,12 +523,13 @@ minimal:
 
 	.global	get_ia
 get_ia:
-	movq	%rbp,%rax
+	movq	reg_ia,%rax
 	ret
 
 	.global	set_ia_
 set_ia_:	
-	movq	(%rax),%rbp
+	movq	(%rax),%rax
+	movq	%rax,reg_ia
 	ret
 
 syscall_init:
@@ -541,10 +537,9 @@ syscall_init:
 
 	mov     %rcx,reg_wa      # save registers
 	movq	%rbx,reg_wb
-	movq	%rdx,reg_wc      # (also _reg_ia)
+	movq	%rdx,reg_wc
 	movq	%rsi,reg_xl
 	movq	%rdi,reg_xr
-	movq	%rbp,reg_ia
 	ret
 
 syscall_exit:
@@ -554,9 +549,8 @@ syscall_exit:
 	movq	reg_wa,%rcx      # restore registers
 	movq	reg_wb,%rbx
 	movq	reg_wc,%rdx      #
-	movq	reg_xr,%rdi
 	movq	reg_xl,%rsi
-	movq	reg_ia,%rbp
+	movq	reg_xr,%rdi
 	cld
 	movq	reg_pc,%rax
 	jmp	*%rax
@@ -752,49 +746,30 @@ sysxi:	movq	reg_xs,%rsp
 	.global	cvd__
 cvd__:
 	.extern	i_cvd
-	movq	%rbp,reg_ia	
 	movq	%rcx,reg_wa
 	call	i_cvd
-	mov	reg_ia,%rbp
 	movq	reg_wa,%rcx
 	ret
 
+	.extern	i_dvi
 	.macro	dvi_	arg1
 	movq	\arg1,%rax
-	call	dvi__
-	.endm
-
-#       dvi__ - divide ia (edx) by long in %rax
-	.global	dvi__
-dvi__:
-	.extern	i_dvi
 	movq	%rax,reg_w0
+	call	save_regs
 	call	i_dvi
-	mov	reg_ia,%rbp
+	call	restore_regs
 	movb	reg_fl,%al
 	orb	%al,%al
-	ret
-	
-	.global	rmi__
-#       rmi_ - remainder of ia (edx) divided by long in %rax
-rmi__:
-	jmp	ocode
-	.extern	i_rmi
-	movq	%rax,reg_w0
-	call	i_rmi
-	mov	reg_ia,%rbp
-	movb	reg_fl,%al
-	orb	%al,%al
-	ret
+	.endm
 
 ocode:
 	orq	%rax,%rax         	# test for 0
 	jz	setovr   	 	# jump if 0 divisor
-	xchg	%rax,%rbp         	# ia to %rax, divisor to ia
+	xchg	%rax,reg_ia         	# ia to %rax, divisor to ia
 	cdq                    		# extend dividend
-	idiv	%rbp              	# perform division. %rax=quotient, wc=remainder
+	idivq	reg_ia              	# perform division. %rax=quotient, wc=remainder
 	seto	reg_fl
-	movq	%rdx,%rbp
+	movq	%rdx,reg_ia
 	ret
 
 setovr: movb     $1,%al		# set overflow indicator
@@ -823,7 +798,6 @@ setovr: movb     $1,%al		# set overflow indicator
 	.global	\arg1
 	.extern	\arg2
 \arg1:
-	movq	%rbp,reg_ia
 	call	\arg2
 	ret
 	.endm
@@ -904,7 +878,7 @@ restart:
 #       restore stack from tscblk.
 #
 #					# compute effective address of tscblk +cfp_c+cfp+b
-	mov	$tscblk,%rax
+	movq	$tscblk,%rax
 	addq	$16,%rax
 	movq	%rax,%rdi
 	cmpq	%rdi,%rsi               # any stack to transfer?
@@ -989,47 +963,10 @@ re4:	movq	stbas,%rax
 	movq	%rax,minimal_id
         call	minimal			# no return
 
-#%ifdef zz_trace
-#	.extern	zz_ra
-#	.global	zz_
-#	.extern	zz,zz_cp,zz_%rsi,zz_%rdi,zz_wa,zz_wb,zz_%rdx,zz_%rax
-#zz_:
-#	pushf
-#	call	save_regs
-#	call	zz
-#	call	restore_regs
-#	popf
-#	ret
-#%endif
-#
         .text
-
 
 	.global	mxint
 
-#	%ifdef zz_trace
-#		.extern	shields
-#		.extern	zz
-#		.extern	zz_
-#		.extern	zz_cp
-#		.extern	zz_%rsi
-#		.extern	zz_%rdi
-#		.extern	zz_sp
-#		.extern	zz_wa
-#		.extern	zz_wb
-#		.extern	zz_%rdx
-#		.extern	zz_%rax
-#		.extern	zz_zz
-#		.extern	zz_id
-#		.extern	zz_de
-#		.extern	zz_0
-#		.extern	zz_1
-#		.extern	zz_2
-#		.extern	zz_3
-#		.extern	zz_4
-#		.extern	zz_arg
-#		.extern	zz_num
-#	%endif
 	.global	start
 	.extern	trc
 	.extern	trc_de
@@ -1158,7 +1095,8 @@ calltab:
 #	.extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_%rdx
 
 	.macro	adi_	arg1	
-	addq	\arg1,%rbp
+	movq	\arg1,%rax
+	addq	%rax,reg_ia
 	seto	reg_fl
 	.endm
 
@@ -1167,8 +1105,26 @@ calltab:
 	call	chk__
 	.endm
 
-	.macro	cvd_
-	call	cvd__
+	.extern	i_cvd
+	.macro	cvd_ 
+	movq	%rbx,reg_wb
+	call	save_regs
+	call	i_cvd
+	call	restore_regs
+	movq	reg_wa,%rcx
+	movb	reg_fl,%al
+	or	%al,%al
+	.endm
+
+	.extern	i_cvm
+	.macro	cvm_	arg1
+	movq	%rbx,reg_wb
+	call	save_regs
+	call	i_cvm
+	call	restore_regs
+	movb	reg_fl,%al
+	orb	%al,%al
+	jnz	\arg1
 	.endm
 
 	.macro	icp_
@@ -1190,41 +1146,51 @@ calltab:
 	.endm
 
 	.macro	ldi_	arg1
-	movq	\arg1,%rbp
+	movq	\arg1,%rax
+	movq	%rax,reg_ia
 	.endm
 
-#TODO need to check this
+	.extern	i_mli
 	.macro	mli_	arg1
-	imulq	\arg1,%rbp
-	seto	reg_fl
+	movq	\arg1,%rax
+	movq	%rax,reg_w0
+	call	save_regs
+	call	i_mli
+	call	restore_regs
+	movb	reg_fl,%al
+	or	%al,%al
 	.endm
 
 	.macro	ngi_
-	negq	%rbp
+	negq	reg_ia
 	seto	reg_fl
 	.endm
 
+	.extern	i_rmi
 	.macro	rmi_	arg1
 	movq	\arg1,%rax
-	call	rmi__
+	movq	%rax,reg_w0
+	call	save_regs
+	call	i_rmi
+	call	restore_regs
 	.endm
 
 	.extern	f_rti
 
 	.macro	rti_
 	call	f_rti
-	mov	reg_ia,%rbp
 	.endm
 
 #TODO - check for overflow in sbi
 	.macro	sbi_	arg1
-	subq	\arg1,%rbp
-	xorq	%rax,%rax
+	movq	\arg1,%rax
+	subq	%rax,reg_ia
 	seto	reg_fl
 	.endm
 
 	.macro	sti_	arg1
-	movq	%rbp,\arg1
+	movq	reg_ia,%rax
+	movq	%rax,\arg1
 	.endm
 
 	.macro	lcp_	arg1
@@ -1257,3 +1223,8 @@ calltab:
 	movq	reg_cp,%rax
 	movq	%rax,\arg1
        	.endm
+	.global	nulls
+	.global	inton
+	.global	v_inp
+	.global	stndo
+	.global	opsnb

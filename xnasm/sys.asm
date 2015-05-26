@@ -50,10 +50,7 @@
 
 %if	ws=32
 
-	%define	ia	ebp
-
 	%define w0	eax
-	%define w1	ebp
 	%define wa	ecx
 	%define wa_l    cl
 	%define wb	ebx
@@ -62,9 +59,9 @@
 	%define wc_l  	dl
 
 	%define	xl	esi
-	%define	xt	esi
 	%define xr	edi
 	%define xs	esp
+	%define	xt	esp
 
 	%define m_word	dword	; reference to word in memory
 	%define d_word	dd	; define value for memory word
@@ -87,11 +84,8 @@
 	%define m(ref) dword[ref]
 	%define a(ref) [ref]
 %else
-	%define	ia	rbp
-
 	%define	w0	rax
 	%define	w0_l	al
-	%define w1	rbp
 	%define	wa	rcx
 	%define wa_l	cl
 	%define	wb	rbx
@@ -100,9 +94,9 @@
 	%define wc_l    dl
 
 	%define	xl	rsi
-	%define	xt	rsi
 	%define	xr	rdi
 	%define	xs	rsp
+	%define	xt	rsp
 
 	%define m_word  qword
 	%define d_word	dq
@@ -577,7 +571,6 @@ call_adr:	d_word	0
 ;
 	global	save_regs
 save_regs:
-	mov	m(save_ia),ia
 	mov	m(save_xl),xl
 	mov	m(save_xr),xr
 	mov	m(save_wa),wa
@@ -588,7 +581,6 @@ save_regs:
 	global	restore_regs
 restore_regs:
 	;	restore regs, except for sp. that is caller's responsibility
-	mov	ia,m(save_ia)
 	mov	xl,m(save_xl)
 	mov	xr,m(save_xr)
 	mov	wa,m(save_wa)
@@ -632,7 +624,8 @@ calltab_engts equ   13
 
 startup:
 	pop     w0			; discard return
-	xor	ia,ia			; initialize IA to zero
+	xor	w0,w0
+	mov	m(reg_ia),w0		; initialize IA to zero
 	call	stackinit		; initialize minimal stack
 	mov     w0,m(compsp)	; get minimal's stack pointer
 	mov m(reg_wa),w0		; startup stack pointer
@@ -782,45 +775,45 @@ minimal:
 
 	global	get_ia
 get_ia:
-	mov	w0,ia
+	mov	w0,m(reg_ia)
 	ret
 
 	global	set_ia_
-set_ia_:	mov	ia,m_word[reg_w0]
+set_ia_:	
+	mov	w0,m_word[reg_w0]
+	mov	m(reg_ia),w0
 	ret
 
 syscall_init:
 ;       save registers in global variables
 
-	mov     m(reg_wa),wa      ; save registers
+	mov	m(reg_wa),wa      ; save registers
 	mov	m(reg_wb),wb
-	mov     m(reg_wc),wc      ; (also _reg_ia)
+	mov	m(reg_wc),wc
 	mov	m(reg_xr),xr
 	mov	m(reg_xl),xl
-	mov	m(reg_ia),ia
 	ret
 
 syscall_exit:
 	mov	m(_rc_),w0	; save return code from function
-	mov     m(osisp),xs       ; save osint's stack pointer
-	mov     xs,m(compsp)      ; restore compiler's stack pointer
-	mov     wa,m(reg_wa)      ; restore registers
+	mov	m(osisp),xs       ; save osint's stack pointer
+	mov	xs,m(compsp)      ; restore compiler's stack pointer
+	mov	wa,m(reg_wa)      ; restore registers
 	mov	wb,m(reg_wb)
-	mov     wc,m(reg_wc)      ;
+	mov	wc,m(reg_wc)      ;
 	mov	xr,m(reg_xr)
-	mov	ia,m(reg_ia)
 	mov	xl,m(reg_xl)
 	cld
 	mov	w0,m(reg_pc)
 	jmp	w0
 
 	%macro	syscall	2
-	pop     w0			; pop return address
+	pop	w0			; pop return address
 	mov	m(reg_pc),w0
 	call	syscall_init
-;       save compiler stack and switch to osint stack
-	mov     m(compsp),xs      ; save compiler's stack pointer
-	mov     xs,m(osisp)       ; load osint's stack pointer
+;	save compiler stack and switch to osint stack
+	mov	m(compsp),xs      ; save compiler's stack pointer
+	mov	xs,m(osisp)       ; load osint's stack pointer
 	call	%1
 	call	syscall_exit
 	%endmacro
@@ -829,63 +822,63 @@ syscall_exit:
 	extern	zysax
 sysax:	syscall	  zysax,1
 
-	global sysbs
+	global	sysbs
 	extern	zysbs
 sysbs:	syscall	  zysbs,2
 
-	global sysbx
+	global	sysbx
 	extern	zysbx
 sysbx:	mov	m(reg_xs),xs
 	syscall	zysbx,2
 
 ;        global syscr
 ;	extern	zyscr
-;syscr:  syscall    zyscr ;    ,0
+;syscr:	syscall    zyscr ;    ,0
 
 	global sysdc
 	extern	zysdc
 sysdc:	syscall	zysdc,4
 
-	global sysdm
+	global	sysdm
 	extern	zysdm
 sysdm:	syscall	zysdm,5
 
-	global sysdt
+	global	sysdt
 	extern	zysdt
 sysdt:	syscall	zysdt,6
 
-	global sysea
+	global	sysea
 	extern	zysea
 sysea:	syscall	zysea,7
 
-	global sysef
+	global	sysef
 	extern	zysef
 sysef:	syscall	zysef,8
 
-	global sysej
+	global	sysej
 	extern	zysej
 sysej:	syscall	zysej,9
 
-	global sysem
+	global	sysem
 	extern	zysem
 sysem:	syscall	zysem,10
 
-	global sysen
+	global	sysen
 	extern	zysen
 sysen:	syscall	zysen,11
 
-	global sysep
+	global	sysep
 	extern	zysep
 sysep:	syscall	zysep,12
 
-	global sysex
+	global	sysex
 	extern	zysex
 sysex:	mov	m(reg_xs),xs
 	syscall	zysex,13
 
-	global sysfc
+	global	sysfc
 	extern	zysfc
-sysfc:  pop     w0             ; <<<<remove stacked scblk>>>>
+sysfc:	pop	w0             ; <<<<remove stacked scblk>>>>
 	lea	xs,[xs+wc*cfp_b]
 	push	w0
 	syscall	zysfc,14
@@ -894,36 +887,36 @@ sysfc:  pop     w0             ; <<<<remove stacked scblk>>>>
 	extern	zysgc
 sysgc:	syscall	zysgc,15
 
-	global syshs
+	global	syshs
 	extern	zyshs
 syshs:	mov	m(reg_xs),xs
 	syscall	zyshs,16
 
-	global sysid
+	global	sysid
 	extern	zysid
 sysid:	syscall	zysid,17
 
-	global sysif
+	global	sysif
 	extern	zysif
 sysif:	syscall	zysif,18
 
-	global sysil
+	global	sysil
 	extern	zysil
-sysil:  syscall zysil,19
+sysil:	syscall zysil,19
 
-	global sysin
+	global	sysin
 	extern	zysin
 sysin:	syscall	zysin,20
 
-	global sysio
+	global	sysio
 	extern	zysio
 sysio:	syscall	zysio,21
 
-	global sysld
+	global	sysld
 	extern	zysld
 sysld:  syscall zysld,22
 
-	global sysmm
+	global	sysmm
 	extern	zysmm
 sysmm:	syscall	zysmm,23
 
@@ -931,55 +924,55 @@ sysmm:	syscall	zysmm,23
 	extern	zysmx
 sysmx:	syscall	zysmx,24
 
-	global sysou
+	global	sysou
 	extern	zysou
 sysou:	syscall	zysou,25
 
-	global syspi
+	global	syspi
 	extern	zyspi
 syspi:	syscall	zyspi,26
 
-	global syspl
+	global	syspl
 	extern	zyspl
 syspl:	syscall	zyspl,27
 
-	global syspp
+	global	syspp
 	extern	zyspp
 syspp:	syscall	zyspp,28
 
-	global syspr
+	global	syspr
 	extern	zyspr
 syspr:	syscall	zyspr,29
 
-	global sysrd
+	global	sysrd
 	extern	zysrd
 sysrd:	syscall	zysrd,30
 
-	global sysri
+	global	sysri
 	extern	zysri
 sysri:	syscall	zysri,32
 
-	global sysrw
+	global	sysrw
 	extern	zysrw
 sysrw:	syscall	zysrw,33
 
-	global sysst
+	global	sysst
 	extern	zysst
 sysst:	syscall	zysst,34
 
-	global systm
+	global	systm
 	extern	zystm
 systm:	syscall	zystm,35
 
-	global systt
+	global	systt
 	extern	zystt
 systt:	syscall	zystt,36
 
-	global sysul
+	global	sysul
 	extern	zysul
 sysul:	syscall	zysul,37
 
-	global sysxi
+	global	sysxi
 	extern	zysxi
 sysxi:	mov	m(reg_xs),xs
 	syscall	zysxi,38
@@ -990,36 +983,6 @@ sysxi:	mov	m(reg_xs),xs
 	add	xs,%2		; pop arguments
 	%endmacro
 
-;	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
-;	placed in w0, which is then sign extended into wc:w0. after the divide, w0 contains the
-;	quotient, wc contains the remainder.
-;
-;       cvd__ - convert by division
-;
-;       input   ia = number <=0 to convert
-;       output  ia / 10
-;               wa ecx) = remainder + '0'
-	global	cvd__
-cvd__:
-	extern	i_cvd
-	mov	m(reg_ia),ia
-	mov	m(reg_wa),wa
-	call	i_cvd
-	mov	ia,m(reg_ia)
-	mov	wa,m(reg_wa)
-	ret
-
-
-;       dvi__ - divide ia (edx) by long in w0
-	global	dvi__
-dvi__:
-	extern	i_dvi
-	mov	m(reg_w0),w0
-	call	i_dvi
-	mov	ia,m(reg_ia)
-	mov	al,byte [reg_fl]
-	or	al,al
-	ret
 
 	global	rmi__
 ;       rmi__ - remainder of ia (edx) divided by long in w0
@@ -1027,23 +990,25 @@ rmi__:
 	jmp	ocode
 	extern	i_rmi
 	mov	m(reg_w0),w0
+	call	save_regs
 	call	i_rmi
-	mov	ia,m(reg_ia)
+	call	restore_regs
 	mov	al,byte [reg_fl]
 	or	al,al
 	ret
 
 ocode:
-        or      w0,w0         	; test for 0
-        jz      setovr    	; jump if 0 divisor
-        xchg    w0,ia         	; ia to w0, divisor to ia
-        cdq                     ; extend dividend
-        idiv    ia              ; perform division. w0=quotient, wc=remainder
+        or      w0,w0		; test for 0
+        jz      setovr		; jump if 0 divisor
+        xchg    w0,m(reg_ia)	; ia to w0, divisor to ia
+        cdq			; extend dividend
+        idiv	m(reg_ia)	; perform division. w0=quotient, wc=remainder
 	seto	byte [reg_fl]
-	mov	ia,wc
+	mov	m(reg_ia),wc
 	ret
 
-setovr: mov     al,1		; set overflow indicator
+setovr: 
+	mov	al,1		; set overflow indicator
 	mov	byte [reg_fl],al
 	ret
 
@@ -1069,7 +1034,6 @@ setovr: mov     al,1		; set overflow indicator
 	global	%1
 	extern	%2
 %1:
-	mov	m(reg_ia),ia
 	call	%2
 	ret
 %endmacro
@@ -1345,7 +1309,8 @@ calltab:
 ;	extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
 
 	%macro	adi_	1
-	add	ia,%1
+	mov	w0,%1
+	add	m(reg_ia),w0
 	seto	byte [reg_fl]
 	%endmacro
 
@@ -1354,12 +1319,46 @@ calltab:
 	call	chk__
 	%endmacro
 
+	extern	i_cvd
 	%macro	cvd_	0
-	call	cvd__
+	call	save_regs
+	mov	m(reg_wb),wb
+	call	i_cvd
+	mov	wa,m(reg_wa)
+	call	restore_regs
 	%endmacro
 
+	extern	i_cvm 
+	%macro	cvm_ 1
+	call	save_regs
+	mov	m(reg_wb),wb
+	call	i_cvm
+	call	restore_regs
+	mov	al,byte [reg_fl]
+	or	al,al
+	jnz	%1
+	%endmacro
+
+	extern	i_dvi	
 	%macro	dvi_	1
-	call	dvi__
+	mov	w0,%1
+	mov	m(reg_w0),w0
+	call	save_regs
+	call	i_dvi
+	call	restore_regs
+	mov	al,byte [reg_fl]
+	or	al,al
+	%endmacro
+
+	extern	i_mli
+	%macro	mli_	1
+	mov	w0,%1
+	mov	m(reg_w0),w0
+	call	save_regs
+	call	i_mli
+	call	restore_regs
+	mov	al,byte [reg_fl]
+	or	al,al
 	%endmacro
 
 	%macro	icp_	0
@@ -1381,39 +1380,38 @@ calltab:
 	%endmacro
 
 	%macro	ldi_	1
-	mov	ia,%1
-	%endmacro
-
-	%macro	mli_	1
-	imul	ia,%1
-	seto	byte [reg_fl]
+	mov	w0,%1
+	mov	m(reg_ia),w0
 	%endmacro
 
 	%macro	ngi_	0
-	neg	ia
+	neg	m(reg_ia)
 	seto	byte [reg_fl]
 	%endmacro
 
+	extern	i_rmi
 	%macro	rmi_	1
 	mov	w0,%1
-	call	rmi__
+	mov	m(reg_w0),w0
+	call	save_regs
+	call	i_rmi
+	call	restore_regs
 	%endmacro
 
 	extern	f_rti
 	%macro	rti_	0
-
 	call	f_rti
-	mov	ia,m_word [reg_ia]
 	%endmacro
 
 	%macro	sbi_	1
-	sub	ia,%1
-	mov	w0,0
+	mov	w0,%1
+	sub	m(reg_ia),w0
 	seto	byte [reg_fl]
 	%endmacro
 
 	%macro	sti_	1
-	mov	%1,ia
+	mov	w0,m(reg_ia)
+	mov	%1,w0
 	%endmacro
 
 	%macro	lcp_	1
@@ -1470,3 +1468,11 @@ trc__:
 	call	trc__
 	%endmacro
 
+	%macro	set	2
+%1	equ	%2
+	%endmacro
+	global	nulls
+	global	inton
+	global	v_inp
+	global	stndo
+	global	opsnb

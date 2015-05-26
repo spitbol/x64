@@ -10,10 +10,12 @@ rm tbol.*
 echo "start 64-bit sanity test"
 make clean>/dev/null
 cp	./bin/sbl_unix_64 tbol
+ls -l tbol
 make 	basebol=./tbol unix_64_nasm
 mv bld/sbl.lex tbol.lex.0
 mv bld/sbl.s tbol.s.0
 cp sbl tbol
+ls -l tbol
 make 	basebol=./tbol  unix_64_nasm
 mv bld/sbl.lex tbol.lex.1
 mv bld/sbl.s tbol.s.1

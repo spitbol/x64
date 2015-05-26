@@ -110,30 +110,19 @@ void prtval(long reg) {
 //		fprintf(stderr,"\t---------", reg);
 	}
 }
-
-void prtvia(long reg) {			// print value of ia
-	fprintf(stderr,"\t%8ld ", reg);
-}
-
 void prtregr(char * name, double val) {
 	prtreal(val);
 	fprintf(stderr," %c%s\n", reg_prefix,name);
-}
-
-void prtia(char * name, char type, char *reg, long val) {
-	prtvia(val);
-	fprintf(stderr," %s%c%s", name,reg_prefix, reg);
 }
 
 void prtreg(char * name, char type, char *reg, long val) {
 	prtval(val);
 	fprintf(stderr," %s%c%s", name,reg_prefix, reg);
 }
-
 void prtdif(char* name, char type, char *reg, long old, long new, long listed)
 {
 	// print old and new values of named register
-	fprintf(stderr,"+%s%c%s:", name, reg_prefix, reg);
+	fprintf(stderr,"%s%c%s:", name, reg_prefix, reg);
 	prtval(old); fprintf(stderr," -> "); prtval(new);
 	prtnl();
 }
@@ -185,7 +174,6 @@ void trc() {
 	trc_calls++;
 	if (trc_calls > 50000) return;
 
-	save_ia = reg_ia;	// ia is kept in memory, not register
 	// print registers that have changed since last statement
 
 	// see if any have changed.
@@ -238,7 +226,7 @@ void trc() {
 		prtreg("WA.",reg_prefix,"cx", save_wa); prtnl();
 		prtreg("WB.",reg_prefix,"bx", save_wb); prtnl();
 		prtreg("WC.",reg_prefix,"dx", save_wc); prtnl();
-		prtia("IA.",reg_prefix,"--", save_ia); prtnl();
+		prtreg("IA.",reg_prefix,"ia", save_ia); prtnl();
 		prtnl();
 	}
 	// save current register contents.

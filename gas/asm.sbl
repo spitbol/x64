@@ -1,6 +1,15 @@
 -title mincod: phase 2 translation from minimal tokens to 80386 code
 -stitl description
 
+* TODO
+* done	drop 32 bit code
+* done	add code to swap operand order for certain binary operators
+* done	drop tests for equality of cfp_b and cfp_c
+* done	identify register operands with prefix 'reg.'
+* done	add suffix indicating operand length. For example, add.w  for 64 bit adder.
+* todo	add v(string) and iv(string) to evaluate string as integer. 
+*
+
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
 * copyright 2012-2015 david shields
 
@@ -130,10 +139,8 @@
 
 	define('readline()')
 
-	target = (differ(host(0)) host(0), "unix_64_gas")
-        output = "target: " target
-	target break('_') . os '_' break('_') . ws '_' rem . asm
-
+	os = 'unix';	ws = '64'
+	options = host(0)
 	
 	output = 'options: ' options
 *	add trailing colon so always have colon after an argument
@@ -245,7 +252,7 @@ skip_init.end
 *	For each hardware operation that can take byte or word operands we define two symbols that give the
 *	corresponding opcode. For example, 'add.w' for 64-bit addition, and 'add.b' for 8-bit addition.
 
-	s = 'add and cmp cmps dec imul inc lea lods mov movs movz not or pop push shl shr stos sub test xchg xor '
+	s = 'add and cmp cmps dec imul inc lea lods mov movs movz not or pop push sal sar stos sub test xchg xor '
 
 
 op_map.init
@@ -266,7 +273,7 @@ op_map.done
 *	swap_op is set if operand order is reversed in gas att syntax
 
 	swap_op = table(100)
-	s = 	'add and cmp cmps lea mov movs movz or shl shr sub test xchg xor '
+	s = 	'add and cmp cmps lea mov movs movz or sal sar sub test xchg xor '
 swap.init
 	s break(' ') . op ' ' =			:f(swap.init.done)
 	swap_op[op 'b'] = swap_op[op 'q'] = 1				:(swap.init)
@@ -286,7 +293,8 @@ swap.init.done
 
 	sectnow = 0
 
-*	ppm_cases gives count of ppm/err statments that must follow call to a procedure
+*	ppm_cases gives count of ppm/err statments that must follow call to
+*	a procedure
 
 	ppm_cases = table(50,,0)
 
@@ -301,7 +309,8 @@ swap.init.done
 
 	labtab = table(500)
 
-*  for each statement, code in generated into three arrays of statements:
+*  for each statement, code in generated into three
+*  arrays of statements:
 
 *	astmts:	statements after opcode (()+, etc.)
 *	bstmts: statements before code (-(), etc)
@@ -417,9 +426,15 @@ is_exec.2
 
 *  the generators are listed in a separate section below.
 
+
 *  get file name
 
+
 * get definition file name following token file name, and flags.
+
+*	filebase ? break(';:') . filebase len(1) (break(';:') | rem) . target
+*+		((len(1) rem . flags) | '')
+*	$replace(target,&lcase,&ucase) = 1
 
 * parse and display flags, setting each one's name to non-null value (1).
 
@@ -447,7 +462,24 @@ flgs2
 	branchtab['blo'] = 'jb'
 	branchtab['bhi'] = 'ja'
 
-*  ismem is table indexed by operand type which is nonzero if operand type implies memory reference.
+*  optim.tab flags opcodes capable of participating in or optimization
+*		in outstmt routine
+
+	optim.tab = table(10)
+	optim.tab<"and"> = 1
+	optim.tab<"add"> = 1
+	optim.tab<"sub"> = 1
+	optim.tab<"neg"> = 1
+	optim.tab<"or"> = 1
+	optim.tab<"xor"> = 1
+	optim.tab<"sar"> = 1
+	optim.tab<"sal"> = 1
+	optim.tab<"inc"> = 1
+	optim.tab<"dec"> = 1
+
+
+*  ismem is table indexed by operand type which is nonzero if
+*  operand type implies memory reference.
 
 	ismem = array(30,0)
 	ismem<3> = 1; ismem<4> = 1; ismem<5> = 1
@@ -455,7 +487,8 @@ flgs2
 	ismem<12> = 1; ismem<13> = 1; ismem<14> = 1
 	ismem<15> = 1
 
-*  regmap maps minimal register name to target machine register/memory-location name.
+*  regmap maps minimal register name to target machine
+*  register/memory-location name.
 
 	regmap = table(30)
 	reg.xl = regmap['xl'] = '%rsi'  
@@ -474,10 +507,8 @@ flgs2
 * reglow maps register to identify target, so can extract 'l' part.
 	reglow = table(4)
 	reglow['wa'] = '%cl';	reglow['wb'] = '%bl';	reglow['wc'] = '%dl'
-	reglow['w0'] = '%al'
 
 * real_op maps minimal real opcode to machine opcode
-
 	real_op = table(10)
 	real_op['adr'] = 'fadd'
 	real_op['atn'] = 'fpatan'
@@ -574,21 +605,20 @@ opnext	thisline = readline()
 	op_ = incode '_'
 
 
-	ident(inlabel)				:s(opnext.1)
-
 * output label of executable instruction immediately if there is one,
 * as it simplifies later processing, especially for tracing.
+	ident(inlabel)				:s(opnext.1)
 	thislabel = inlabel (differ(inlabel) ge(sectnow,3),)
-* keep the label if it is not in executable code
+* keep the label as is is not in executable code
 	lt(sectnow,5)				:s(opnext.1)
 * here if in code, so output label now
 * defer label processing for ent to allow emission of alignment ops for x86.
 	ident(incode,'ent')			:s(opnext.1)
 	outline(thislabel ls)
 * set lastlabel so can check to avoid emitting duplicate label definitions
-*	lastlabel = thislabel
+	lastlabel = thislabel
 * clear out label info once generated
-	inlabel = thislabel =
+	label = thislabel =
 opnext.1
 	thislabel = inlabel (differ(inlabel) ge(sectnow,3),)
 	i1 = prsarg(iarg1)
@@ -597,7 +627,7 @@ opnext.1
 	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' '
 .		i.text(i2) ' ' i.text(i3)
 	argerrs = 0
-*	differ(i_trace) ge(sectnow,5) eq(i_suspend) chktrace()
+	differ(i_trace) ge(sectnow,5) eq(i_suspend) chktrace()
 	ge(sectnow,5) chktrace()
 						:($('g.' incode))
 *  here if bad opcode
@@ -740,12 +770,8 @@ getarg.c.11
 getarg.c.12
 getarg.c.13
 	txt break('(') . disp '(' len(2) . indx
-*	outfile = cs 'getarg typ' ls typ ls '  disp' cs disp cs
-	disp = v(cfp_b * v(disp))
-*	outfile = cs ' getarg 12,13 disp' cs disp cs
-
+	disp = cfp_b * equ_value[disp]
 	base = indx
-*	outfile = '#quitting'; dump(3) :(end)
 	indx = 					:(getarg.mem)
 
 *	name(x), where name is in working section
@@ -753,7 +779,7 @@ getarg.c.13
 getarg.c.14
 getarg.c.15
 	
-*	outfile = cs 'getarg.14.15' ls txt cs ' disp ' disp ' val' ls val ls
+	outfile = cs 'getarg.14.15' ls txt cs ' disp ' disp ' val' ls val ls
 	txt break('(') . disp '(' len(2) . indx	
 	val = equ_value[disp]
 	disp = differ(val) literal_ val
@@ -953,7 +979,6 @@ chktrace
 *	ne(in_gcol)				:s(return)
 chktrace.1
 	genz()
-						:(return)
 
 genz
 *	no trace if trace has been suspended
@@ -1075,9 +1100,9 @@ g.flc
 	t1 = reglow[i.text(i1)]
 	t2 = genlab()
 *	i_suspend = 1
-	op(cmp.b,t1,literal_ "'A'")
+	op(cmp.b,t1,"'A'")
 	op('jb', t2 )
-	op(cmp.b,t1,literal_ "'Z'")
+	op(cmp.b,t1,"'Z'")
 	op('ja', t2)
 	op(add.b,t1,literal_ '32')
         opl(t2)
@@ -1085,6 +1110,18 @@ g.flc
 						:(opdone)
 
 g.mov
+*  perhaps change mov x,(xr)+ to
+*	mov ax,x; stows
+
+*  perhaps do  mov (xl)+,wx as
+*	lodsw
+*	xchg ax,tx
+*  and also mov (xl)+,name as
+*	lodsw
+*	mov name,w0
+*  need to process memory-memory case
+*  change 'mov (xs)+,a' to 'pop a'
+*  change 'mov a,-(xs)' to 'push a'
         i.src = i2; i.dst = i1
 	t.src = i.text(i.src); t.dst = i.text(i.dst)
 	ident(t.src,'(xl)+')			:s(mov.xlp)
@@ -1144,7 +1181,7 @@ g.bsw.2
 	opl(lbl,'.quad',t2 )
 	op('.text')
 	op(mov.w,reg.w0,t1)
-	op(shl.w,reg.w0,iv(log_cfp_b))
+	op(sal.w,reg.w0,iv(log_cfp_b))
 	op(add.w,reg.w0,lbl)
 	op('jmp', '*' w0)
 g.bsw.3
@@ -1424,8 +1461,6 @@ g.scp
 						:(opdone)
 g.icp
 	op(op_)				:(opdone)
-
-*	integer arithmetic operations
 g.ldi
 g.sti
 g.adi
@@ -1433,12 +1468,15 @@ g.mli
 g.sbi
 g.dvi
 g.rmi
-g.ino
-g.iov
-	op(op_,getarg(i1))		:(opdone)
+	op(op_,getarg(i1))			:(opdone)
 
 g.ngi
 	op(op_)				:(opdone)
+
+g.ino
+g.iov
+	op(op_,getarg(i1))			:(opdone)
+
 
 g.ieq	jop = 'je'				:(op.cmp)
 g.ige	jop = 'jge'				:(op.cmp)
@@ -1516,89 +1554,81 @@ g.psc
 *  lch requires separate cases for each first operand possibility.
 
 g.lch
-*	if loading to w register, use its low part. otherwise copy register to w0 and use w0's low part
-	reg = i.text(i1)
-*	will load to register lreg, which will be same as reg if loading to w register
+	opv = i.text(i2)
+	reg = getarg(i1)
 
-	rtype = i.type(i1)
-	opc = i.text(i2)
-	eq(rtype,8)				:s(g.lch.w)
-*	here if loading into x register, so load to w0 and then will copy to x register
-	op(xor.w,reg.w0,reg.w0)
-	lreg = reglow['w0']
-						:(g.lch.1)
-g.lch.w
-	op(xor.w,regmap[reg],regmap[reg])
-	lreg = reglow[reg]
+*  see if predecrement needed.
+	leq('-',substr(opv,1,1))			:f(g.lch.1)
+	opv break('(') len(1) len(2) . t3
+	op(dec.w,regmap[t3])
 g.lch.1
-	
-	ident(opc,'(xl)')			:s(g.lch.xl)
-	ident(opc,'(xr)')			:s(g.lch.xr)
-	ident(opc,'(xl)+')			:s(g.lch.xlp)
-	ident(opc,'(xr)+')			:s(g.lch.xrp)
-	ident(opc,'-(xl)')			:s(g.lch.pxl)
-	ident(opc,'-(xr)')			:s(g.lch.pxr)
-	error('illegal second argument to lch')
-g.lch.xl
-	op(mov.b,lreg,'(' regmap['xl'] ')')	:(lchdone)
-g.lch.xr
-	op(mov.b,lreg,'(' regmap['xr'] ')')	:(lchdone)
-g.lch.xlp
-	op(mov.b,lreg,'(' regmap['xl'] ')')
-	op(inc.w,reg.xl)			:(lchdone)
-g.lch.xrp
-	op(mov.b,lreg,'(' regmap['xr'] ')')
-	op(inc.w,reg.xr)			:(lchdone)
-g.lch.pxl
-	op(dec.w,reg.xl)
-	op(mov.b,lreg,'(' regmap['xl'] ')')	:(lchdone)
-g.lch.pxr
-	op(dec.w,reg.xr)
-	op(mov.b,lreg,'(' regmap['xr'] ')')	:(lchdone)
-lchdone
-*	If loading into x register, copy w0 to that register
-	eq(rtype,7)	op(mov.w,regmap[reg],reg.w0)
-						:(opdone)
+	opv break('(') len(1) len(2) . t3
+	op(xor.w,reg.w0,reg.w0)
+	op(mov.b,reg.al,'(' regmap[t3] ')')
+	op(mov.w,reg,reg.w0)
+
+
+*  see if postincrement needed.
+	opv rtab(1) '+'				:f(g.lch.2)
+	op(inc.w,regmap[t3])
+g.lch.2						:(opdone)
 
 g.sch
-*	if storing from w register, use its low part. otherwise copy register to w0 and use w0's low part
-	reg = i.text(i1)
-*	will store from sreg, which will be same as reg if storing from w register
+	reg = getarg(i1)
+	opv = i.text(i2)
+	eq(i.type(i1),8)			:s(g.sch.w)
+	:(g.sch.0)
+	ident(opv,'(xr)+')			:f(g.sch.0)
 
-	rtype = i.type(i1)
-	opc = i.text(i2)
-	eq(rtype,8)				:s(g.sch.w)
-*	here if storing from x register, so copy to w0 and then use w0's low part
-	op(mov.w,reg.w0,regmap[reg])
-	sreg = reglow['w0']
-						:(g.sch.1)
-g.sch.w
-	sreg = reglow[reg]
+*  here if can use stos.
+
+	op(mov.b,reg.al,getarg(i1))
+	op(stos.b)				:(opdone)
+
+g.sch.0
+	leq('-',substr(opv,1,1))			:f(g.sch.1)
+	opv break('(') len(1) len(2) . t3
+	op(dec.w,regmap[t3])
+	op(dec.w,regmap[t3])
 g.sch.1
-	ident(opc,'(xl)')			:s(g.sch.xl)
-	ident(opc,'(xr)')			:s(g.sch.xr)
-	ident(opc,'(xl)+')			:s(g.sch.xlp)
-	ident(opc,'(xr)+')			:s(g.sch.xrp)
-	ident(opc,'-(xl)')			:s(g.sch.pxl)
-	ident(opc,'-(xr)')			:s(g.sch.pxr)
-	error('illegal second argument to sch')
-g.sch.xl
-	op(mov.b,'(' regmap['xl'] ')',sreg)	:(opdone)
-g.sch.xr
-	op(mov.b,'(' regmap['xr'] ')',sreg)	:(opdone)
-g.sch.xlp
-	op(mov.b,'(' regmap['xl'] ')',sreg)
-	op(inc.w,reg.xl)			:(opdone)
-g.sch.xrp
-	op(mov.b,'(' regmap['xr'] ')',sreg)
-	op(inc.w,reg.xr)			:(opdone)
-g.sch.pxl
-	op(dec.w,reg.xl)
-	op(mov.b,'(' regmap['xl'] ')',sreg)	:(opdone)
-g.sch.pxr
-	op(dec.w,reg.xr)
-	op(mov.b,'(' regmap['xr'] ')',sreg)	:(opdone)
+	opv break('(') len(1) len(2) . t3
+	op(mov.w,reg.w0,reg,)
+	op(mov.b, '(' regmap[t3] ')' ,reg.al)
+*  see if postincrement needed.
+	opv rtab(1) '+'				:f(g.sch.2)
+	op(inc.w,regmap[t3])
+g.sch.2						:(opdone)
+g.sch.w
 
+*  here if moving character from work register, convert reg to name of low part.
+
+	regl = reglow[i.text(i1)]
+
+	ident(opv,'(xl)')			:s(g.sch.w.xl)
+	ident(opv,'-(xl)')			:s(g.sch.w.pxl)
+	ident(opv,'(xl)+')			:s(g.sch.w.xlp)
+	ident(opv,'(xr)')			:s(g.sch.w.xr)
+	ident(opv,'-(xr)')			:s(g.sch.w.pxr)
+	ident(opv,'(xr)+')			:s(g.sch.w.xrp)
+g.sch.w.xl
+	op(mov.b,'(' reg.xl ')',regl)		:(opdone)
+g.sch.w.pxl
+	op(dec.w, '(' reg.xl ')')
+	op(mov.b, '(' reg.xl ')',regl)	:(opdone)
+
+g.sch.w.xlp
+	op(mov.b,'(' reg.xl ')',regl)
+	op(inc.w, '(' reg.xl ')')
+						:(opdone)
+g.sch.w.xr
+	op(mov.b,'(' reg.xr ')',regl)		:(opdone)
+
+g.sch.w.pxr
+	op(dec.w, '(' reg.xr ')')
+	op(mov.b,'(' reg.xr ')',regl)	:(opdone)
+g.sch.w.xrp
+	op(mov.b,reg.al,regl)
+	op(stos.b)				:(opdone)
 
 g.csc  	ident(thislabel)			:s(opnext)
 	op()					:(opdone)
@@ -1644,10 +1674,10 @@ g.xob   op(xor.w,getarg(i1),getarg(i2))	:(opdone)
 g.cmb   op(not.w,getarg(i1))			:(opdone)
 
 g.rsh
-	op(shr.w,getarg(i1),iv(getarg(i2)))	:(opdone)
+	op(sar.w,getarg(i1),iv(getarg(i2)))	:(opdone)
 
 g.lsh
-	op(shl.w,getarg(i1),iv(getarg(i2)))	:(opdone)
+	op(sal.w,getarg(i1),iv(getarg(i2)))	:(opdone)
 
 g.rsx
 	error('rsx not supported')
@@ -1680,9 +1710,9 @@ g.zgb
 g.zzz
  	op('zzz',getarg(i1))			:(opdone)
 
-g.wtb   op(shl.w,getarg(i1),iv(log_cfp_b))	:(opdone)
+g.wtb   op(sal.w,getarg(i1),iv(log_cfp_b))	:(opdone)
 
-g.btw   op(shr.w,getarg(i1),iv(log_cfp_b))	:(opdone)
+g.btw   op(sar.w,getarg(i1),iv(log_cfp_b))	:(opdone)
 
 
 g.mti	
@@ -1691,7 +1721,7 @@ g.mti
 	op(pop.w,reg.w0)
 	op('ldi_',reg.w0)			:(opdone)
 g.mti.1
-	op('ldi_',getarg(i1))			:(opdone)
+	op('ldi_',getarg(i1))		:(opdone)
 
 g.mfi
 *  last arg is optional
@@ -1703,7 +1733,7 @@ g.mfi
 	op('js',getarg(i2))
 g.mfi.1
 	ident(i.text(i1),'-(xs)')		:s(g.mfi.2)
-	op('sti_',getarg(i1))			:(opdone)
+	op('sti_',getarg(i1))		:(opdone)
 g.mfi.2
 	op('sti_',reg.w0)
 	op(push.w,reg.w0)			:(opdone)
@@ -1712,27 +1742,24 @@ g.ctw
 *  assume cfp_c chars per word
 	reg = getarg(i1)
 	op(add.w,reg,iv((cfp_b - 1) + cfp_b * v(i.text(i2))))
-	op(shr.w,reg,iv(log_cfp_c))
-						:(opdone)
+	op(sar.w,reg,iv(log_cfp_c))
+					:(opdone)
 g.ctb
 	reg = getarg(i1)
 	op(add.w,reg,iv((cfp_b - 1) + cfp_b * v(i.text(i2))))
 	op(and.w,reg, iv(-cfp_b))
 						:(opdone)
-g.cvm	
-	op('cvm_',getarg(i1))			:(opdone)
-
-	lbl = getarg(i1)
+g.cvm	lbl = getarg(i1)
 	op('sti_',reg.w0)
 
 *	can't write 64-bit literal 10, so use storage location 'ten' defined in sys.asm.
 
-	op(imul.w,'ten')			
+	op(imul.w,reg.w0,ten)			
 	op('jo',lbl)
-	op(sub.w,reg.wb,iv('ch_d0'))
+	op(sub.w,reg.wb,'ch_d0')
 	op(sub.w,reg.w0,reg.wb)
 	op('ldi_',reg.w0)
-	op('jo',lbl)
+	op('jo',t1)
 						:(opdone)
 g.cvd
 	op('cvd_')				:(opdone)
@@ -1764,13 +1791,13 @@ g.mvc
 						:(opdone)
 g.mvw
 	i_suspend = 1
-	op(shr.w,reg.wa,iv(log_cfp_b))
+	op(sar.w,reg.wa,iv(log_cfp_b))
  	op('rep',movs.w)
 	i_suspend = 0
 						:(opdone)
 
 g.mwb
-	op(shr.w,reg.wa,iv(log_cfp_b))
+	op(sar.w,reg.wa,iv(log_cfp_b))
 	op('std')
 	
 	op(lea.w,reg.xl, '-' cfp_b '(' reg.xl ')')
@@ -1779,7 +1806,7 @@ g.mwb
 	op('cld')				:(opdone)
 
 	op('std')
-	op(shr.w,reg.wa,iv(log_cfp_b))
+	op(sar.w,reg.wa,iv(log_cfp_b))
 	op('rep')
 	op(movs.w)
 	op('ctd')
@@ -1842,11 +1869,10 @@ g.drc
 g.dtc
 *  change first and last chars to " (assume / used in source)
 	t1 = i.text(i1)
-	t1 tab(1) rtab(1) . txt
-        str = '"' txt '"'
+	t1 tab(1) rtab(1) . str
+	left = cfp_c - remdr(size(str),cfp_c)
+        str = '"' str '"'
 	opl(thislabel,'.ascii',str)
-	eq(remdr(size(txt),cfp_c))		:s(opdone)
-	left = cfp_c - remdr(size(txt),cfp_c)
 g.dtc.1
 	eq(left)				:s(opdone)
 *  append nulls to complete last word so length is multiple of word word
@@ -2012,3 +2038,213 @@ g.end.2
 	report(time(),'execution time ms')
 	:(end)
 end
+-stitl getarg(iarg)
+getarg
+*	imem is null to generate memory reference, otherwise just get
+*	address for use in lea.w instruction
+
+	txt = i.text(iarg)
+	typ = i.type(iarg)
+	eq(typ)					:f($(argcase[typ]))
+	getarg = txt				:(arg.done)
+
+* int
+arg.c.1 getarg = txt				:(arg.done)
+
+* dlbl
+arg.c.2 getarg = txt				:(arg.done)
+
+* wlbl, clbl
+arg.c.3
+arg.c.4 getarg = txt				:(arg.done)
+
+* elbl, plbl
+arg.c.5
+arg.c.6 getarg = txt				:(arg.done)
+
+* w,x, map register name
+arg.c.7
+arg.c.8
+	getarg = regmap[txt]			:(arg.done)
+
+* (x), register indirect
+arg.c.9
+	txt len(1) len(2) . typ
+	typ = regmap[typ]
+	getarg = typ
+						:(arg.done)
+
+* (x)+, register indirect, post increment
+* use lea reg,[reg+cfp_b] unless reg is esp, since it takes an extra byte.
+* actually, lea reg,[reg+cfp_b] and add reg,cfp_b are both 2 cycles and 3 bytes
+* for all the other regs, and either could be used.
+arg.c.10
+	txt = substr(txt,2,2)
+	t1 = regmap[txt]
+	getarg = t1
+	(ident(txt,reg.xs) genaop(newstmt(,add.w,t1,'cfp_b'))) :s(arg.done)
+	genaop(tstmt(,lea.w,t1,'a(' t1 '+cfp_b)'))	:(arg.done)
+
+*  -(x), register indirect, pre decrement
+arg.c.11
+	t1 = regmap[substr(txt,3,2)]
+	getarg = t1
+	genbop(newstmt(,lea.w,t1,'a(' t1 '-cfp_b)')) :(arg.done)
+
+* int(x)
+* dlbl(x)
+arg.c.12
+arg.c.13
+	txt break('(') . t1 '(' len(2) . t2
+	getarg = '(cfp_b*' t1 ')+' regmap[t2] 
+							:(arg.done)
+
+*  name(x), where name is in working section
+arg.c.14
+arg.c.15
+	getarg = ne(rip_mode)	getrip(iarg)		:s(return)
+	txt break('(') . t1 '(' len(2) . t2
+	getarg = t1 '+'  regmap[t2]
+							:(arg.done)
+* signed integer
+arg.c.16 getarg = txt				:(arg.done)
+
+* signed real
+arg.c.17 getarg = txt				:(arg.done)
+
+arg.c.18
+arg.c.19
+arg.c.20
+arg.c.21
+arg.c.22
+	getarg = getval(iarg)			:(arg.done)
+*  pnam, eqop
+arg.c.23
+arg.c.24 getarg = txt				:(arg.done)
+
+* ptyp, text, dtext
+arg.c.25
+arg.c.26
+arg.c.27 getarg = txt				:(arg.done)
+arg.done
+*	ne(x_trace) outline('# arg ' typ ls txt   ' -> ' getarg)
+						:(return)
+
+-stitl getlea(iarg)
+getlea
+*	similar to getarg, but gets effective address
+*	this procedure only called if operand is
+*	ops: 3,4,9,12,13,14,15
+*	imem is null to generate memory reference, otherwise just get
+*	address for use in lea.w instruction.
+	pre = 'a('
+	post = ')'	
+
+	txt = i.text(iarg)
+	typ = i.type(iarg)
+	eq(typ)					:f($(leacase[typ]))
+	getlea = txt				:(return)
+* wlbl, clbl
+lea.c.3
+lea.c.4 
+	getlea = pre txt post			:(return)
+
+* (x), register indirect
+lea.c.9
+	txt len(1) len(2) . typ
+	typ = regmap[typ]
+	getlea = pre typ post
+						:(return)
+* int(x)
+* dlbl(x)
+lea.c.12
+lea.c.13
+	txt break('(') . t1 '(' len(2) . t2
+	getlea = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
+							:(return)
+
+*  name(x), where name is in working section
+lea.c.14
+lea.c.15
+	txt break('(') . t1 '(' len(2) . t2
+	getlea = pre    t1 '+'  regmap[t2] 	post
+							:(return)
+
+-stitl getrip(iarg)
+getrip
+*  return value suitable for use in rip mode (needed for osx). This requires that we
+*  allocate a variable to hold the address,value. This is loaded into w0.
+
+	pre = 'm('
+	post = ')'	
+	txt = i.text(iarg)
+	typ = i.type(iarg)
+	eq(typ)					:f($(ripcase[typ]))
+	getrip = txt				:(rip.done)
+
+*  name(x), where name is in working section
+rip.c.14
+rip.c.15
+	txt break('(') . var '(' len(2) . reg
+*	getrip = pre    var '+'  regmap[t2] 	post
+	getrip = var 
+						:(rip.done)
+*  *dlbl
+rip.c.19
+	getrip = 'cfp_b*' substr(txt,2)		:(rip.done)
+
+*  =dlbl
+rip.c.18	
+*  =name (data section)
+rip.c.20
+rip.c.21
+*  =name (program section)
+rip.c.22
+        getrip =  substr(txt,2)   		:(rip.done)
+
+rip.done
+*  see if have generated location for argument with same txt. Use it if so, else make new one.
+	ent = riptable[txt]
+	differ(ent)				:s(rip.ent)
+*  here to make new entry for generated location
+	rip_count = rip_count + 1
+	lbl = genrip()
+	riptable[txt] = lbl
+	ent = lbl
+	op('.data')
+	opl(lbl ls,'.quad',getrip)
+	op('.text')
+rip.ent
+*	generate reference via w0 if needed
+	op(mov.w,reg.w0,pre ent post)
+	differ(reg)	op(add.w,reg.w0,reg)
+	getrip = w0
+*	outfile = ne(x_trace) '; getrip ' ent
+						:(return)
+	
+
+-stitl getval(iarg)txt
+getval
+	txt = i.text(iarg)
+	typ = i.type(iarg)
+	output = lt(typ, 18) gt(typ.22) ' impossible type for getval ' typ
+	getval = ne(rip_mode) getrip(iarg)	:s(return)
+	eq(typ)					:f($(valcase[typ]))
+	getarg = txt				:(val.done)
+
+*  =dlbl
+val.c.18	
+	getval = substr(txt,2)			:(val.done)
+val.c.18.1
+	getval = substr(txt,2)			:(val.done)
+*  *dlbl
+val.c.19
+	getval = 'cfp_b*' substr(txt,2)		:(val.done)
+*  =name (data section)
+val.c.20
+val.c.21
+        getval =  substr(txt,2)			:(val.done)
+*  =name (program section)
+val.c.22
+        getval =  substr(txt,2)			:(val.done)
+val.done
