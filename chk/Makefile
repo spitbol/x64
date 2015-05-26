@@ -74,7 +74,7 @@ OSXOPTS = -f macho32 -Dosx_32 $(ITDEF)
 	$(CC)  $(CCOPTS) -c  -o$@ $(OSINT)/$*.c
 
 unix_64:
-	$(CC) -Dunix_64 -m64 $(CCOPTS) -c osint/*.c
+	$(CC) -Dunix_64 -m64 $(CCOPTS) -c ../osint/*.c
 	$(BASEBOL)  -u unix_64 lex.sbl
 	$(BASEBOL)  -r -u unix_64:$(ITOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
 	$(BASEBOL)  -u unix_64 -1=sbl.err -2=err.s err.sbl
