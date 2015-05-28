@@ -266,7 +266,7 @@ op_map.done
 *	swap_op is set if operand order is reversed in gas att syntax
 
 	swap_op = table(100)
-	s = 	'add and cmp cmps lea mov movs movz or sal shl shr sub test xchg xor '
+	s = 	'add and cmp cmps imul lea mov movs movz or sal shl shr sub test xchg xor '
 swap.init
 	s break(' ') . op ' ' =			:f(swap.init.done)
 	swap_op[op 'b'] = swap_op[op 'q'] = 1				:(swap.init)
@@ -1144,7 +1144,7 @@ g.bsw.2
 	opl(lbl,'.quad',t2 )
 	op('.text')
 	op(mov.w,reg.w0,t1)
-	op(shl.w,reg.w0,iv(log_cfp_b))
+	op(sal.w,reg.w0,iv(log_cfp_b))
 	op(add.w,reg.w0,lbl)
 	op('jmp', '*' w0)
 g.bsw.3
@@ -1392,7 +1392,6 @@ g.lct
 
 	differ(i.text(i1),i.text(i2))		:s(g.lct.1)
 *  here if operands same. emit no code if no label, else emit null
-	:(opdone)
 	ident(thislabel)			:s(opnext)
 	op()					:(opdone)
 
@@ -1726,7 +1725,7 @@ g.cvm
 
 *	can't write 64-bit literal 10, so use storage location 'ten' defined in sys.asm.
 
-	op(imul.w,'ten')			
+	op(imul.w,reg.w0,'ten')			
 	op('jo',lbl)
 	op(sub.w,reg.wb,iv('ch_d0'))
 	op(sub.w,reg.w0,reg.wb)
@@ -1747,8 +1746,8 @@ g.mvc
 						:(opdone)
 	t1 = genlab()
 *	Minimal's xl and xr registers correspond to the hardware 'source' and 'destination' registers
-	opl(t1, mov.w,reg.al,reglow['xl'])
-	op(mov.w,reglow['xr'],reg.al)
+	opl(t1, mov.b,reg.al,reglow['xl'])
+	op(mov.b,reglow['xr'],reg.al)
 	op(inc.w, reg.xl)
 	op(inc.w, reg.xr)
 	op(dec.w,reg.wa)
