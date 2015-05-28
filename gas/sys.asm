@@ -192,8 +192,8 @@ reg_fl:	.byte	0		# condition code register for numeric operations
 	.global	ten
 ten:    .quad      10              # constant 10
 	.global  inf
-inf:	.quad	0
-	.quad      0x7ff00000      # double precision infinity
+inf:	.word	0
+	.int      0x7ff00000      # double precision infinity
 
 	.global	sav_block
 #sav_block: times r_size db 0     	# save minimal registers during push/pop reg
@@ -281,12 +281,6 @@ spmin.a:	.quad	spmin
 
 	.balign	16
 	.balign	8
-
-	.global	cprtmsg
-cprtmsg:
-	.ascii          " copyright 1987-2012 robert b. k. dewar and mark emmer."
-	.byte	0
-	.byte	0
 
 call_adr:	.quad	0
 
@@ -474,7 +468,6 @@ minimal:
 	movq	%rdx,reg_wc
 	movq	%rsi,reg_xl
 	movq	%rdi,reg_xr
-	movq	%rbp,reg_ia
 	ret
 
 
@@ -525,16 +518,6 @@ minimal:
 #                     8         take procedure exit 3
 #                    ...        ...
 
-
-	.global	get_ia
-get_ia:
-	movq	%rbp,%rax
-	ret
-
-	.global	set_ia_
-set_ia_:	
-	movq	(%rax),%rbp
-	ret
 
 syscall_init:
 #       save registers in global variables
@@ -770,7 +753,7 @@ dvi__:
 	.extern	i_dvi
 	movq	%rax,reg_w0
 	call	i_dvi
-	mov	reg_ia,%rbp
+	movq	reg_ia,%rbp
 	movb	reg_fl,%al
 	orb	%al,%al
 	ret
@@ -798,7 +781,7 @@ ocode:
 	ret
 
 setovr: movb     $1,%al		# set overflow indicator
-	movb	$1,reg_fl
+	movb	%al,reg_fl
 	ret
 
 	.macro	real_op arg1,arg2

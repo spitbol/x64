@@ -543,10 +543,6 @@ spmin.a:	d_word	spmin
 	align	16
 	align         cfp_b
 
-	global	cprtmsg
-cprtmsg:
-	db          ' copyright 1987-2012 robert b. k. dewar and mark emmer.',0,0
-
 call_adr:	d_word	0
 
 
@@ -778,16 +774,6 @@ minimal:
 ;                     4         take procedure exit 2
 ;                     8         take procedure exit 3
 ;                    ...        ...
-
-
-	global	get_ia
-get_ia:
-	mov	w0,ia
-	ret
-
-	global	set_ia_
-set_ia_:	mov	ia,m_word[reg_w0]
-	ret
 
 syscall_init:
 ;       save registers in global variables
@@ -1359,6 +1345,7 @@ calltab:
 	%endmacro
 
 	%macro	dvi_	1
+	mov	w0,%1
 	call	dvi__
 	%endmacro
 

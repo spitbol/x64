@@ -21,9 +21,8 @@ ASM:=$(asm)
 TARGET=$(OS)_$(WS)
 
 trc?=0
-TRC:=$(trc)
-ifneq ($(TRC),0)
-TRCOPT:=:trc
+ifeq	($(trc),1)
+TRC=trc
 endif
 
 basebol?=./bin/sbl_unix_64
@@ -73,9 +72,9 @@ unix_64_gas:
 	mkdir bld
 	$(CC) -Dunix_64 -m64 $(CCOPTS) -c osint/*.c
 	mv *.o bld
-	./bin/sbl_unix_64 -u unix_64_gas -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
-	./bin/sbl_unix_64 -r -u unix_64:$(TRCOPT) -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
-	./bin/sbl_unix_64 -u unix_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
+	$(BASEBOL)  -u unix_64_gas -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
+	$(BASEBOL)  -r -u unix_64_gas:$(TRC) -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
+	$(BASEBOL)  -u unix_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
 	cat gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
 	as -o bld/sbl.o bld/sbl.s
 	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
@@ -86,7 +85,7 @@ unix_64_nasm:
 	$(CC) -Dunix_64 -m64 $(CCOPTS) -c osint/*.c
 	mv *.o bld
 	$(BASEBOL) -u unix_64_nasm -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
-	$(BASEBOL) -r -u unix_64:$(TRCOPT) -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ nasm/asm.sbl
+	$(BASEBOL) -r -u unix_64:$(TRC) -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ nasm/asm.sbl
 	$(BASEBOL) -u unix_64_nasm -1=bld/sbl.err -2=bld/err.s err.sbl
 	cat nasm/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
 	nasm -f elf64 -Dunix_64 -o bld/sbl.o bld/sbl.s
@@ -95,7 +94,7 @@ unix_64_nasm:
 osx_64:
 	$(CC) $(CCOPTS) -c osint/*.c
 	$(BASEBOL)  -u osx_64 lex.sbl
-	$(BASEBOL)  -r -u osx_64:$(TRCOPT) -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
+	$(BASEBOL)  -r -u osx_64:$(TRC) -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
 	$(BASEBOL)  -u osx_64 -1=sbl.err -2=err.s err.sbl
 	cat sys.asm err.s sbl.tmp >sbl.s
 	$(ASM) -f macho64 -Dosx_64 -o sbl.o sbl.s

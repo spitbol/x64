@@ -203,8 +203,8 @@ void trc() {
 			{ prtdif("WB.",reg_prefix,"bx", last_wb, save_wb, listed); listed += 1; }
 		if (save_wc != last_wc)
 			{ prtdif("WC.",reg_prefix,"dx", last_wc, save_wc, listed); listed += 1; }
-		if (save_ia != last_ia)
-			{ prtdif("IA.",reg_prefix,"ia", last_ia, save_ia, listed); listed += 1; }
+//		if (save_ia != last_ia)
+//			{ prtdif("IA.",reg_prefix,"ia", last_ia, save_ia, listed); listed += 1; }
 		if (save_ra != last_ra)
 			{ prtdifr("RA    ", last_ra, save_ra, listed); listed += 1; }
 //		if (save_xs != last_xs)
@@ -226,7 +226,7 @@ void trc() {
 		prtreg("WA.",reg_prefix,"cx", save_wa); prtnl();
 		prtreg("WB.",reg_prefix,"bx", save_wb); prtnl();
 		prtreg("WC.",reg_prefix,"dx", save_wc); prtnl();
-		prtreg("IA.",reg_prefix,"ia", save_ia); prtnl();
+//		prtreg("IA.",reg_prefix,"ia", save_ia); prtnl();
 		prtnl();
 	}
 	// save current register contents.
