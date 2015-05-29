@@ -1,0 +1,15 @@
+* extract slice from file, option of form first:last with last negative to copy to end of file
+
+	first = 1
+	last = -1
+	option = differ(host(0)) host(0)
+	option break(':') . first len(1) rem . last
+	lines = 0			:(loop)
+copy
+	output = line
+loop
+	line =	input			:f(end)
+	lines = lines + 1
+	lt(lines,first)			:s(loop)
+	gt(last,0) gt(lines,last)	:s(end)f(copy)
+end

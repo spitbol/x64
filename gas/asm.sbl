@@ -459,13 +459,13 @@ flgs2
 
 	regmap = table(30)
 	reg.xl = regmap['xl'] = '%rsi'  
-	reg.xt = regmap['xt'] = '%rsp'
+	reg.xt = regmap['xt'] = '%rsi'
 	reg.xr = regmap['xr'] = '%rdi'  
 	reg.xs = regmap['xs'] = '%rsp'
 	reg.wa = regmap['wa'] = '%rcx'  
 	reg.wb = regmap['wb'] = '%rbx'
 	reg.wc = regmap['wc'] = '%rdx'  
-*	reg.ia = regmap['ia'] = '%rbp'
+	reg.ia = regmap['ia'] = '%rbp'
 *	w0 is temp register
 	reg.w0 = regmap['w0'] = '%rax'
 	reg.al = '%al'		;* least-significant (low) part of w0.
@@ -902,7 +902,7 @@ outstmt2
 .		  (ident(op1), op1
 .			(ident(op2), ',' op2
 .				(ident(op3), ',' op3))) ,27)
-.       (ident(strip_comment,'y'), ' ' (ident(comment), ';') comment)
+.       (ident(strip_comment,'y'), tab (ident(comment), ';') comment)
 .						:(outstmt4)
 outstmt3
 	stmtout = label tab opcode tab
@@ -1366,8 +1366,7 @@ g.bhi
 g.bnz
 	ifreg(i1)				:s(g.bnz1)
 	op(xor.w,reg.w0,reg.w0)
-*        op(cmp.w, getarg(i1) ,reg.w0)
-        op(cmp.w, reg.w0,getarg(i1))
+        op(cmp.w, getarg(i1) ,reg.w0)
 	op('jnz',getarg(i2))
 						:(opdone)
 g.bnz1
@@ -1686,7 +1685,6 @@ g.btw   op(shr.w,getarg(i1),iv(log_cfp_b))	:(opdone)
 
 
 g.mti	
-	outfile = cs 'g.mti' ls i.text(i1)
 	ident(i.text(i1),'(xs)+')		:f(g.mti.1)
 	op(pop.w,reg.w0)
 	op('ldi_',reg.w0)			:(opdone)
@@ -1746,8 +1744,8 @@ g.mvc
 						:(opdone)
 	t1 = genlab()
 *	Minimal's xl and xr registers correspond to the hardware 'source' and 'destination' registers
-	opl(t1, mov.b,reg.al,reglow['xl'])
-	op(mov.b,reglow['xr'],reg.al)
+	opl(t1, mov.b,reg.al,'(' regmap['xl'] ')')
+	op(mov.b,'(' regmap['xr'] ')',reg.al)
 	op(inc.w, reg.xl)
 	op(inc.w, reg.xr)
 	op(dec.w,reg.wa)

@@ -318,8 +318,6 @@ save_regs:
 	movq	%rcx,save_wa
 	movq	%rbx,save_wb
 	movq	%rdx,save_wc
-#	movq	reg_ia,%rax
-	movq	%rax,save_ia
 	ret
 
 	.global	restore_regs
@@ -468,6 +466,7 @@ minimal:
 	movq	%rdx,reg_wc
 	movq	%rsi,reg_xl
 	movq	%rdi,reg_xr
+	movq	%rbp,reg_ia
 	ret
 
 
@@ -524,7 +523,7 @@ syscall_init:
 
 	mov     %rcx,reg_wa      # save registers
 	movq	%rbx,reg_wb
-	movq	%rdx,reg_wc      # (also _reg_ia)
+	movq	%rdx,reg_wc
 	movq	%rsi,reg_xl
 	movq	%rdi,reg_xr
 	movq	%rbp,reg_ia
@@ -628,7 +627,7 @@ sysgc:	syscall	zysgc,15
 
 	.global syshs
 	.extern	zyshs
-syshs:	movq	reg_xs,%rsp
+syshs:	movq	%rsp,reg_xs
 	syscall	zyshs,16
 
 	.global sysid
@@ -1219,9 +1218,7 @@ calltab:
 	movq	reg_cp,%rax			# load address of code word
 	movq	(%rax),%rax				# load code word
 	movq	%rax,\arg1
-	movq	reg_cp,%rax			# load address of code word
-	addq	$8,%rax				# add cfp_b
-	movq	%rax,reg_cp
+	addq	$8,reg_cp			# increment cp by word size
 	.endm
 
 	.macro	rno_	arg1

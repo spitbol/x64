@@ -930,7 +930,7 @@ outstmt2
 	op2 = t.op2(ostmt)
 	op3 = t.op3(ostmt)
 	differ(compress)			:s(outstmt3)
-	stmtout = rpad( rpad(label,7) ' ' rpad(opcode,4) ' '
+	stmtout = rpad( rpad(label,7) tab rpad(opcode,4) tab
 .		  (ident(op1), op1
 .			(ident(op2), ',' op2
 .				(ident(op3), ',' op3))) ,27)

@@ -466,6 +466,7 @@ _rc_:	dd   0				; return code from osint procedure
 	global	save_wa
 	global	save_wb
 	global	save_wc
+	global	save_ia
 save_cp:	d_word	0		; saved cp value
 save_ia:	d_word	0		; saved ia value
 save_xl:	d_word	0		; saved xl value
@@ -780,7 +781,7 @@ syscall_init:
 
 	mov     m(reg_wa),wa      ; save registers
 	mov	m(reg_wb),wb
-	mov     m(reg_wc),wc      ; (also _reg_ia)
+	mov     m(reg_wc),wc
 	mov	m(reg_xr),xr
 	mov	m(reg_xl),xl
 	mov	m(reg_ia),ia
@@ -1412,9 +1413,7 @@ calltab:
 	mov	w0,m_word [reg_cp]		; load address of code word
 	mov	w0,m_word [w0]			; load code word
 	mov	%1,w0
-	mov	w0,m_word [reg_cp]		; load address of code word
-	add	w0,cfp_b
-	mov	m_word [reg_cp],w0
+	add	m_word[reg_cp],cfp_b
 	%endmacro
 
 	%macro	rno_	1

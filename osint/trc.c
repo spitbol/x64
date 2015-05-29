@@ -172,7 +172,7 @@ void trc() {
 	if ((spitflag & ITRACE) == 0)	return;
 
 	trc_calls++;
-	if (trc_calls > 50000) return;
+	if (trc_calls > 500000) exit(0);
 
 	// print registers that have changed since last statement
 
@@ -203,8 +203,8 @@ void trc() {
 			{ prtdif("WB.",reg_prefix,"bx", last_wb, save_wb, listed); listed += 1; }
 		if (save_wc != last_wc)
 			{ prtdif("WC.",reg_prefix,"dx", last_wc, save_wc, listed); listed += 1; }
-//		if (save_ia != last_ia)
-//			{ prtdif("IA.",reg_prefix,"ia", last_ia, save_ia, listed); listed += 1; }
+		if (save_ia != last_ia)
+			{ prtdif("IA.",reg_prefix,"ia", last_ia, save_ia, listed); listed += 1; }
 		if (save_ra != last_ra)
 			{ prtdifr("RA    ", last_ra, save_ra, listed); listed += 1; }
 //		if (save_xs != last_xs)
@@ -226,13 +226,13 @@ void trc() {
 		prtreg("WA.",reg_prefix,"cx", save_wa); prtnl();
 		prtreg("WB.",reg_prefix,"bx", save_wb); prtnl();
 		prtreg("WC.",reg_prefix,"dx", save_wc); prtnl();
-//		prtreg("IA.",reg_prefix,"ia", save_ia); prtnl();
+		prtreg("IA.",reg_prefix,"ia", save_ia); prtnl();
 		prtnl();
 	}
 	// save current register contents.
 	last_xl = save_xl; last_xr = save_xr; 
 	last_wa = save_wa; last_wb = save_wb; last_wc = save_wc; last_w0 = save_w0;
-	last_xs = save_xs; last_ia = reg_ia;
+	last_xs = save_xs; last_ia = save_ia;
 
 	// display instruction pointer and description of current statement.
 	// extract line number at end of trace string

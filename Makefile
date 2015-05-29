@@ -164,31 +164,35 @@ test_unix_64:
 #
 	rm -f tbol.*
 	echo "start 64-bit sanity test"
-	cp	./bin/sbl_unix_64 .
+	cp	./bin/sbl_unix_64 tbol
 	gcc -Dunix_64 -m64 -c osint/*.c
-	./sbl_unix_64 -u unix_64 lex.sbl
-	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
-	./sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
-	cat sys.asm err.s sbl.tmp >sbl.s
-	as -Dunix_64 -o sbl.o sbl.s
+	./tbol -u unix_64_gas -1=sbl.asm -2=sbl.lex -3=sbl.equ lex.sbl
+	./tbol -r -u unix_64_gas: -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ gas/asm.sbl
+	./tbol -u unix_64_gas -1=sbl.err -2=err.s err.sbl
+	cat gas/sys.asm err.s sbl.tmp >sbl.s
+	as -o sbl.o sbl.s
 	gcc -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl_unix_64
 	mv sbl.lex tbol.lex.0
 	mv sbl.s tbol.s.0
 	gcc -Dunix_64 -m64 -c osint/*.c
-	./sbl_unix_64 -u unix_64 lex.sbl
-	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
-	./sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
-	cat sys.asm err.s sbl.tmp >sbl.s
-	as -Dunix_64 -o sbl.o sbl.s
+	mv sbl tbol
+	rm bld/*
+	./tbol -u unix_64_gas -1=sbl.asm -2=sbl.lex -3=sbl.equ lex.sbl
+	./tbol -r -u unix_64_gas: -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ gas/asm.sbl
+	./tbol -u unix_64_gas -1=sbl.err -2=err.s err.sbl
+	cat gas/sys.asm err.s sbl.tmp >sbl.s
+	as -o sbl.o sbl.s
 	gcc -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl_unix_64 
 	mv sbl.lex tbol.lex.1
 	mv sbl.s tbol.s.1
 	gcc -Dunix_64 -m64 -c osint/*.c
-	./sbl_unix_64 -u unix_64 lex.sbl
-	./sbl_unix_64 -r -u unix_64: -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ asm.sbl
-	./sbl_unix_64 -u unix_64 -1=sbl.err -2=err.s err.sbl
-	cat sys.asm err.s sbl.tmp >sbl.s
-	as -Dunix_64 -o sbl.o sbl.s
+	mv sbl tbol
+	rm bld/*
+	./tbol -u unix_64_gas -1=sbl.asm -2=sbl.lex -3=sbl.equ lex.sbl
+	./tbol -r -u unix_64_gas: -1=sbl.lex -2=sbl.tmp -3=sbl.err -4=sbl.equ gas/asm.sbl
+	./tbol -u unix_64_gas -1=sbl.err -2=err.s err.sbl
+	cat gas/sys.asm err.s sbl.tmp >sbl.s
+	as -o sbl.o sbl.s
 	gcc -lm -Dunix_64 -m64 $(LDOPTS)  *.o -lm  -osbl_unix_64
 	mv sbl.lex tbol.lex.2
 	mv sbl.s tbol.s.2
