@@ -219,7 +219,7 @@ skip_init	s break(ls) . on ls rem . off	:f(return)
 skip_init.end
 
 *	skip_init('start:ini03')
-   	skip_init('gbcol:gtarr')
+*   	skip_init('gbcol:gtarr')
 *	skip_init('gtn01:gtnvr')
 *	skip_init('bpf05:bpf07')
 *	skip_init('scv12:scv19')
@@ -1733,31 +1733,10 @@ g.cvm
 g.cvd
 	op('cvd_')				:(opdone)
 g.mvc
-*	use word move if character size is word size
-*	if charsize is word size, convert character count to byte count for word move
-
-	t1 = genlab()
 	i_suspend = 1
 	op('rep')
 	op(movs.b)
 	i_suspend = 0
-						:(opdone)
-	t1 = genlab()
-*	Minimal's xl and xr registers correspond to the hardware 'source' and 'destination' registers
-	opl(t1, mov.b,reg.al,'(' regmap['xl'] ')')
-	op(mov.b,'(' regmap['xr'] ')',reg.al)
-	op(inc.w, reg.xl)
-	op(inc.w, reg.xr)
-	op(dec.w,reg.wa)
-	op('jnz', t1)
-						:(opdone)
-
-	t1 = genlab()
-	opl(t1, lods.b)
-	op(stos.b)
-	op(dec.w, reg.wa)
-	op('jnz',t1)
-						:(opdone)
 g.mvw
 	i_suspend = 1
 	op(shr.w,reg.wa,iv(log_cfp_b))
@@ -1768,32 +1747,16 @@ g.mvw
 g.mwb
 	op(shr.w,reg.wa,iv(log_cfp_b))
 	op('std')
-	
 	op(lea.w,reg.xl, '-' cfp_b '(' reg.xl ')')
 	op(lea.w,reg.xr, '-' cfp_b '(' reg.xr ')')
  	genrep(movs.w)
 	op('cld')				:(opdone)
-
-	op('std')
-	op(shr.w,reg.wa,iv(log_cfp_b))
-	op('rep')
-	op(movs.w)
-	op('ctd')
-						:(opdone)
-
 g.mcb
-*	use word move if character size is word size
 	op('std')
 	op(dec.w,reg.xl)
 	op(dec.w,reg.xr)
  	genrep(movs.b)
 	op('cld')
-						:(opdone)
-	op('std')
-	op('rep')
-	op(movs.b)
-	op('cld')
-						:(opdone)
 genrep
 *	generate equivalent of rep op loop
 	l1 = genlab()

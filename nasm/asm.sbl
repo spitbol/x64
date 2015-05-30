@@ -235,7 +235,7 @@ skip_init	s break(':') . on ':' rem . off	:f(return)
 skip_init.end
 
 *	skip_init('start:ini03')
-   	skip_init('gbcol:gtarr')
+*   	skip_init('gbcol:gtarr')
 *	skip_init('gtn01:gtnvr')
 *	skip_init('bpf05:bpf07')
 *	skip_init('scv12:scv19')
@@ -1737,29 +1737,10 @@ g.cvm	t1 = getarg(i1)
 g.cvd
 	op('cvd_')				:(opdone)
 g.mvc
-*	use word move if character size is word size
-*	if charsize is word size, convert character count to byte count for word move
-
-	t1 = genlab()
 	i_suspend = 1
 	op('rep')
 	op('movs_b')
 	i_suspend = 0
-						:(opdone)
-	t1 = genlab()
-	opl(t1 ':', 'mov','al','byte [esi]')
-	op('mov','byte [edi]','al')
-	op('inc', 'esi')
-	op('inc', 'edi')
-	op('dec','wa')
-	op('jnz', t1)
-						:(opdone)
-
-	t1 = genlab()
-	opl(t1 ':', 'lods_b')
-	op('stos_b')
-	op('dec', 'wa')
-	op('jnz',t1)
 						:(opdone)
 g.mvw
 	i_suspend = 1
@@ -1776,24 +1757,11 @@ g.mwb
  	genrep('movs_w')
 	op('cld')				:(opdone)
 
-	op('std')
-	op('shr','wa','log_cfp_b')
-	op('rep')
-	op('movs_w')
-	op('ctd')
-						:(opdone)
-
 g.mcb
-*	use word move if character size is word size
 	op('std')
 	op('dec','xl')
 	op('dec','xr')
  	genrep('movs_b')
-	op('cld')
-						:(opdone)
-	op('std')
-	op('rep')
-	op('movs_b')
 	op('cld')
 						:(opdone)
 genrep

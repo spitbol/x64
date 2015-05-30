@@ -130,10 +130,9 @@ config.nasm
 	asm.byte	= 'db'
 	asm.comment	= ';'
 	asm.data	= 'segment' tab '.data'
-	asm.delim	= "'"
+	asm.delim	= '"'
 	asm.global	= 'global'
 	asm.string	= 'db'
-	asm.word	= (eq(ws,32) 'dd', 'dq')
 
 config.done
 *
@@ -418,7 +417,7 @@ readerr_end
 *
         outfile =
 	outfile = tab asm.global tab prefix 'phrases'
-	outfile = prefix 'phrases:' tab asm.word  tab '0'
+	outfile = prefix 'phrases:' tab asm.byte  tab '0'
 	seq(" putout(phrase[i],spread(i))", .i)
 
 *  finish up the output file
