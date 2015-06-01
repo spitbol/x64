@@ -162,6 +162,7 @@ option.xt
 	x_trace = 1				:(option.next)
 
 options.done
+	i_trace = ident(i_trace) 0
 	target = os '_' ws
 	report(target,'target')
 
@@ -1853,13 +1854,17 @@ g.sec.2
 g.sec.3
         op('segment .data')
         op('global','sec03')
-        opl('sec03' ':')     		:(opdone)
+	outline(tab 'align' tab cfp_b)
+        opl('sec03' ':')     		
+
+	:(opdone)
 
 * working variables section
 g.sec.4 op('global','esec03')
         opl('esec03' ':')
         op('segment .data')
         op('global','sec04')
+	outline(tab 'align' tab cfp_b)
         opl('sec04' ':')     
 						:(opdone)
 

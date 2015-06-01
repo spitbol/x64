@@ -49,6 +49,7 @@
 	&anchor = 1
 	&anchor  = 1
 *  useful constants
+	&dump = 3
 
 	minlets = 'abcdefghijklmnopqrstuvwxy_z' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 	nos     = '0123456789'
@@ -698,9 +699,9 @@ rdline	rdline = infile				:f(g.end)
 *  transfer control to appropriate conditional assembly
 *  directive generator or other statement generator.
 *
-	leq( substr( rdline,1,1 ),'.' )		:f(other)
+	leq( substr( rdline,1,1 ),'.' )	:f(other)
 	rdline ? p.condasm			:s( $catab[condcmd] )
-rl00	leq( substr( rdline,1,1 ),';' )		:f(rl01)
+rl00	ident( substr( rdline,1,1 ),';' )	:f(rl01)
 
 *
 *  only print comment if requested.
@@ -710,7 +711,7 @@ rl00	leq( substr( rdline,1,1 ),';' )		:f(rl01)
 *
 *  here if not a comment line
 *
-rl01	leq( substr( rdline,1,1 ),'>' )		:f(return)
+rl01	ident( substr( rdline,1,1 ),'>' )	:f(return)
 
 *
 *  here with snobol4 line to execute
@@ -893,6 +894,7 @@ g.end
 g.end.1 output = t[i,1] ' ' t[i,2]            :f(g.end.2)
 	i = i + 1				:(g.end.1)
 g.end.2
+	&dump = 0
 						:(end)
 g.ent
 *  note program entry labels

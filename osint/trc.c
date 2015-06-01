@@ -63,7 +63,13 @@ uword trc_last = 0;
 char * trc_de;
 
 extern long c_aaa;
+extern long c_yyy;
+extern long w_aaa;
 extern long w_yyy;
+long off_c_aaa;
+long off_c_yyy;
+long off_w_aaa;
+long off_w_yyy;
 
 long off_c_aaa;
 long off_w_yyy;
@@ -172,7 +178,9 @@ void trc() {
 	if ((spitflag & ITRACE) == 0)	return;
 
 	trc_calls++;
-	if (trc_calls > 500000) exit(0);
+//	if (trc_calls < 1106000) return;
+//	if (trc_calls > 1110000) return;
+//	if (trc_calls > 500000) exit(0);
 
 	// print registers that have changed since last statement
 
@@ -186,7 +194,7 @@ void trc() {
 	if (save_ra != last_ra)  changed += 1;
 	if (save_ia != last_ia)  changed += 1;
 	if (save_xs != last_xs)  changed += 1;
-//  changed = 0; // bypass printout
+  changed = 0; // bypass printout
 	if (changed) {
 /* marked changed Minimal registers with "!" to make it easy to search
    backward for last statement that changed a register. */
@@ -213,7 +221,7 @@ void trc() {
 	}
 
 	int prtregs=1;
-//	 prtregs=0;
+	 prtregs=0;
 	--regline;
 //	if (prtregs>0 && (regline <= 0)) {
 	if (prtregs) {
@@ -239,7 +247,8 @@ void trc() {
 	dp = trc_de + strlen(trc_de) - 4;
 	trc_last = atoi(dp);
 	if (trc_ln != trc_last) {
-	fprintf(stderr, "\n %s\n",trc_de);
+//	fprintf(stderr, "\n %s\n",trc_de);
+	fprintf(stderr, " %s\n",trc_de);
 	}
 	trc_last = trc_ln;
 
@@ -283,16 +292,16 @@ void trc_init(long basemem, long topmem) {
 	off_topmem = topmem;
 	if ((spitflag & ITRACE) == 0) return;
 	off_c_aaa = (long) &c_aaa;
+	off_c_yyy = (long) &c_yyy;
+	off_w_aaa = (long) &w_aaa;
 	off_w_yyy = (long) &w_yyy;
-	off_s_aaa = (long) &s_aaa;
-	off_s_yyy = (long) &s_yyy;
 	fprintf(stderr, "off_c_aaa %ld\n", 		(long) &c_aaa);
-	fprintf(stderr, "off_w_yyy %ld\n", 		(long) &w_yyy);
-	fprintf(stderr, "off_yyy-off_aaa %ld\n", 	off_w_yyy-off_c_aaa);
+	fprintf(stderr, "off_c_yyy %ld\n", 		(long) &c_yyy);
+	fprintf(stderr, "c_yyy-c_aaa %ld\n", 		(long) &c_yyy-(long) &c_aaa);
 
-	fprintf(stderr, "off_s_aaa %ld\n", 		(long) &s_aaa);
-	fprintf(stderr, "off_s_yyy %ld\n", 		(long) &s_yyy);
-	fprintf(stderr, "s_yyy-s_aaa %ld\n", 		off_s_yyy - off_s_aaa);
+	fprintf(stderr, "off_w_aaa %ld\n", 		(long) &w_aaa);
+	fprintf(stderr, "off_w_yyy %ld\n", 		(long) &w_yyy);
+	fprintf(stderr, "w_yyy-w_aaa %ld\n", 		(long) &w_yyy - (long) &w_aaa);
 
 	fprintf(stderr, "off_dnamb %ld\n", 		(long) &dnamb);
 //	fprintf(stderr, "off_dname %ld\n", 		(long) &dname);

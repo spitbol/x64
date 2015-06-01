@@ -69,6 +69,7 @@
 	&anchor = &trim	= &dump = 1
 	&stlimit = 10000000
 *	&dump = 3
+	&dump = 0
 
 *  useful constants
 
@@ -165,6 +166,7 @@ option.xt
 	x_trace = 1				:(option.next)
 
 options.done
+	i_trace = ident(i_trace) 0
 	target = os '_' ws '_' asm
 	report(target,'target')
 
@@ -266,7 +268,7 @@ op_map.done
 *	swap_op is set if operand order is reversed in gas att syntax
 
 	swap_op = table(100)
-	s = 	'add and cmp cmps imul lea mov movs movz or sal shl shr sub test xchg xor '
+	s = 	'add and cmp imul lea mov movs movz or sal shl shr sub test xchg xor '
 swap.init
 	s break(' ') . op ' ' =			:f(swap.init.done)
 	swap_op[op 'b'] = swap_op[op 'q'] = 1				:(swap.init)
@@ -994,7 +996,7 @@ readline readline = infile                      :f(rl02)
 	nlines  = nlines + 1
 	ident( readline )			:s(readline)
 readline.0
-	leq( substr(readline,1,1 ),';' )       	:f(rl01)
+	ident( substr(readline,1,1 ),';' )       :f(rl01)
 	i_skip = ident(readline,';z+') 0	:s(readline)
 	i_skip = ident(readline,';z-') 1	:s(readline)
 * force skip of full line comments
@@ -1615,7 +1617,8 @@ g.cne   memmem()
 
 g.cmc
 	op('repe',cmps.b)
-	op(xor.w,reg.xl,reg.xl)
+*	must set xl and xr to zero, but without changing flags that were set by cmp instruction.
+	op(mov.w,reg.xl,'zero')
 	op(mov.w,reg.xr,reg.xl)
 	t1 = getarg(i1)
 	t2 = getarg(i2)
@@ -1853,7 +1856,9 @@ g.sec.2
 g.sec.3
         op(' .data')
         op('.global','sec03')
-        opl('sec03')     		:(opdone)
+	op('.align',8)
+        opl('sec03')     		
+					:(opdone)
 
 * working variables section
 g.sec.4 op('.global','esec03')

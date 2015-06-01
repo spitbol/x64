@@ -194,6 +194,8 @@ ten:    .quad      10              # constant 10
 	.global  inf
 inf:	.word	0
 	.int      0x7ff00000      # double precision infinity
+	.global	zero
+zero:	.quad	0
 
 	.global	sav_block
 #sav_block: times r_size db 0     	# save minimal registers during push/pop reg
@@ -773,7 +775,7 @@ ocode:
 	orq	%rax,%rax         	# test for 0
 	jz	setovr   	 	# jump if 0 divisor
 	xchg	%rax,%rbp         	# ia to %rax, divisor to ia
-	cdq                    		# extend dividend
+	cqo                    		# extend dividend
 	idiv	%rbp              	# perform division. %rax=quotient, wc=remainder
 	seto	reg_fl
 	movq	%rdx,%rbp
@@ -1132,6 +1134,7 @@ calltab:
 	.global	pmhbs
 	.global	r_cod
 	.global	r_fcb
+	.global	w_aaa
 	.global	w_yyy
 	.global	end_min_data
 

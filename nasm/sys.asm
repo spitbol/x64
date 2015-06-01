@@ -83,7 +83,6 @@
 	%define	stos_w	stosd
 	%define	cmps_b	cmpsb
 
-	%define	cdq	cdq	; sign extend (32 bits)
 	%define m(ref) dword[ref]
 	%define a(ref) [ref]
 %else
@@ -123,7 +122,6 @@
 	%define	stos_w	stosq
 	%define	cmps_b	cmpsb
 
-	%define	cdq	cqo	; sign extend (64 bits)
 
 ;	%define mem(ref) qword[ref]
 %ifdef osx
@@ -193,6 +191,7 @@
 	%define	tscblk		_tscblk
 	%define	ttybuf		_ttybuf
 	%define	w_yyy		_w_yyy
+	%define	w_aaa		_w_yyy
 	%define	i_adi		_i_adi
 	%define	i_dvi		_i_dvi
 	%define	i_mli		_i_mli
@@ -1024,7 +1023,12 @@ ocode:
         or      w0,w0         	; test for 0
         jz      setovr    	; jump if 0 divisor
         xchg    w0,ia         	; ia to w0, divisor to ia
-        cdq                     ; extend dividend
+%if ws=32
+	cdq
+%endif
+%if ws=64
+	cqo
+%endif
         idiv    ia              ; perform division. w0=quotient, wc=remainder
 	seto	byte [reg_fl]
 	mov	ia,wc
@@ -1324,6 +1328,7 @@ calltab:
 	global	pmhbs
 	global	r_cod
 	global	r_fcb
+	global	w_aaa
 	global	w_yyy
 	global	end_min_data
 
