@@ -191,8 +191,6 @@ options.done
 	rip_mode = (ident(os,'osx') 1, 0)
 	rip_mode = 0
 
-	prc.count = 0
-
 	report('rip', rip_mode)
 	ne(rip_mode) ripinit()
 
@@ -873,7 +871,7 @@ outline
 	outfile = txt
 						:(return)
 -stitl prcent(n)
-prcent prcent = 'prc_' lpad(n,3,'0')		:(return)
+prcent prcent = 'prc_+cfp_b*' ( n - 1)	:(return)
 
 -stitl outstmt(ostmt)label,opcode,op1,op2,op3,comment)
 *  this module writes the components of the statement
@@ -973,9 +971,9 @@ genz
 	op('.data')
 	opl(lbl,'.asciz',i_desc)
 	i_suspend = 1;			;* no need to trace the trace code.
-	op('.text')
-	op(lea.w,reg.w0,lbl '(%rip)');
-	op('trc_')
+* TODO RIP next
+*	op(mov.w,'trc_de',literal_ lbl)
+	op('trc_',lbl)
 	i_suspend = 0
 
 						:(return)
@@ -1144,9 +1142,9 @@ g.bsw.2
         op('.data')
 	opl(lbl,'.quad',t2 )
 	op('.text')
-	op(sal.w,reg,iv(log_cfp_b))
-	op(lea.w,reg.w0,lbl '(%rip)')
-	op(add.w,reg.w0,reg)
+	op(mov.w,reg.w0,t1)
+	op(sal.w,reg.w0,iv(log_cfp_b))
+	op(add.w,reg.w0,lbl)
 	op('jmp', '*' w0)
 g.bsw.3
 	op('.data')
@@ -1286,7 +1284,7 @@ g.prc.r						:(opdone)
 g.prc.n
 *  store return address in reserved location
 	prc.count = prc.count + 1
-	op(pop.w, prcent(prc.count) '(%rip)')		:(opdone)
+	op(pop.w, prcent(prc.count))		:(opdone)
 
 g.exi
         t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
@@ -1298,7 +1296,7 @@ g.exi
 	op('ret')				:(opdone)
 g.exi.1
 
-	op(mov.w,reg.w0,prcent(prc.count) '(%rip)' )
+	op(mov.w,reg.w0,prcent(prc.count))
 	op('jmp','*' reg.w0)
 						:(opdone)
 g.enp   op()					:(opdone)
@@ -1617,7 +1615,7 @@ g.cne   memmem()
 g.cmc
 	op('repe',cmps.b)
 *	must set xl and xr to zero, but without changing flags that were set by cmp instruction.
-	op(mov.w,reg.xl,literal_ '0')
+	op(mov.w,reg.xl,'zero')
 	op(mov.w,reg.xr,reg.xl)
 	t1 = getarg(i1)
 	t2 = getarg(i2)
@@ -1725,7 +1723,7 @@ g.cvm
 
 *	can't write 64-bit literal 10, so use storage location 'ten' defined in sys.asm.
 
-	op(imul.w,reg.w0,'ten' '(%rip)')			
+	op(imul.w,reg.w0,'ten')			
 	op('jo',lbl)
 	op(sub.w,reg.wb,iv('ch_d0'))
 	op(sub.w,reg.w0,reg.wb)
@@ -1847,13 +1845,13 @@ g.sec.1 op('.text')
 
 * definitions section
 g.sec.2
-        op('.data')
+        op(' .data')
         op('.global','sec02')
         opl('sec02')             	:(opdone)
 
 * constants section
 g.sec.3
-        op('.data')
+        op(' .data')
         op('.global','sec03')
 	op('.align',8)
         opl('sec03')     		
@@ -1862,7 +1860,7 @@ g.sec.3
 * working variables section
 g.sec.4 op('.global','esec03')
         opl('esec03')
-        op('.data')
+        op(' .data')
         op('.global','sec04')
         opl('sec04')     
 						:(opdone)
@@ -1874,9 +1872,10 @@ g.sec.5
 *  get direction set to up.
         op('.global','esec04')
         opl('esec04')
+	opl('prc_','.fill', prc.count1 '0,0')
         op('.global','end_min_data')
         opl('end_min_data')
-        op('.text')
+        op(' .text')
         op('.global','sec05')
         opl('sec05')     
 *  enable tracing if desired
@@ -1884,14 +1883,6 @@ g.sec.5
 
 *  stack overflow section.  output exi__n tail code
 g.sec.6
-	op('.data')
-	outfile = cs ' prc.count ' prc.count
-	prci = 1
-g.sec.6.1
-	opl('prc_' lpad(prci,3,'0'), '.quad','0 ');
-	flush()
-	le(prci = prci + 1, prc.count)		:s(g.sec.6.1)
-	op('.text')
         op('.global','sec06')
         opl('sec06', 'nop')
 				             :(opdone)
@@ -1967,7 +1958,7 @@ g.end.2
         report(ntarget,		'target code lines produced')
 	report(&stcount,	'spitbol statements executed')
         report(max.err,		'maximum err/erb number')
-        report(prc.count, 	'prc count')
+        report(prc.count1, 	'prc count')
         output  = '  ' gt(prc.count,prc.count1)
 .	  'differing counts for n-procedures:'
 .	  ' inp ' prc.count1 ' prc ' prc.count

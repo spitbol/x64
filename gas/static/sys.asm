@@ -314,23 +314,23 @@ call_adr:	.quad	0
 #
 	.global	save_regs
 save_regs:
-	movq	%rbp,save_ia(%rip)
-	movq	%rsi,save_xl(%rip)
-	movq	%rdi,save_xr(%rip)
-	movq	%rcx,save_wa(%rip)
-	movq	%rbx,save_wb(%rip)
-	movq	%rdx,save_wc(%rip)
+	movq	%rbp,save_ia
+	movq	%rsi,save_xl
+	movq	%rdi,save_xr
+	movq	%rcx,save_wa
+	movq	%rbx,save_wb
+	movq	%rdx,save_wc
 	ret
 
 	.global	restore_regs
 restore_regs:
 	#	restore regs, except for sp. that is caller's responsibility
-	movq	save_ia(%rip),%rbp
-	movq	save_xl(%rip),%rsi
-	movq	save_xr(%rip),%rdi
-	movq	save_wa(%rip),%rcx
-	movq	save_wb(%rip),%rbx
-	movq	save_wc(%rip),%rdx
+	movq	save_ia,%rbp
+	movq	save_xl,%rsi
+	movq	save_xr,%rdi
+	movq	save_wa,%rcx
+	movq	save_wb,%rbx
+	movq	save_wc,%rdx
 	ret
 
 # #
@@ -371,16 +371,16 @@ startup:
 	pop	%rax			# discard return
 	xorq	%rbp,%rbp		# initialize IA to zero
 	call	stackinit		# initialize minimal stack
-	mov	compsp(%rip),%rax		# get minimal's stack pointer
-	mov	%rax,reg_wa(%rip)		# startup stack pointer
+	mov	compsp,%rax		# get minimal's stack pointer
+	mov	%rax,reg_wa		# startup stack pointer
 
 	cld				# default to up direction for string ops
 #	getoff	%rax,dffnc		# get address of ppm offset
-	mov	%rax,ppoff(%rip)	# save for use later
+	mov	%rax,ppoff	# save for use later
 
-	mov	osisp(%rip),%rsp	# switch to new c stack
-	leaq	calltab_start(%rip),%rax
-	mov	%rax,minimal_id(%rip)
+	mov	osisp,%rsp	# switch to new c stack
+	mov	$calltab_start,%rax
+	mov	%rax,minimal_id
 	call	minimal			# load regs, switch stack, start compiler
 
 #	stackinit  -- initialize spmin from sp.
@@ -410,18 +410,18 @@ startup:
 	.global	stackinit
 stackinit:
 	movq	%rsp,%rax
-	movq	%rax,compsp(%rip)	# save minimal's stack pointer
-	subq	stacksiz(%rip),%rax	# end of minimal stack is where c stack will start
-	movq	%rax,osisp(%rip)	# save new c stack pointer
+	movq	%rax,compsp	# save minimal's stack pointer
+	subq	stacksiz,%rax	# end of minimal stack is where c stack will start
+	movq	%rax,osisp	# save new c stack pointer
 	addq	$cfp_b*100,%rax	# 100 words smaller for chk
-	movq	%rax,spmin(%rip)
+	movq	%rax,spmin
 	ret
 
 #	check for stack overflow, making %rax nonzero if found
 	.global	chk__
 chk__:
 	xorq	%rax,%rax		# set return value assuming no overflow
-	cmpq	spmin(%rip),%rsp
+	cmpq	spmin,%rsp
 	jb	chk.oflo
 	ret
 chk.oflo:
@@ -444,31 +444,31 @@ chk.oflo:
 
 minimal:
 #         pushad		# save all registers for c
-	movq	reg_ia(%rip),%rbp
-	movq 	reg_wa(%rip),%rcx	# restore registers
-	movq	reg_wb(%rip),%rbx
-	movq	reg_wc(%rip),%rdx	#
-	movq	reg_xl(%rip),%rsi
-	movq	reg_xr(%rip),%rdi
-	movq	osisp(%rip),%rsp	# save osint stack pointer
+	movq	reg_ia,%rbp
+	movq 	reg_wa,%rcx	# restore registers
+	movq	reg_wb,%rbx
+	movq	reg_wc,%rdx	#
+	movq	reg_xl,%rsi
+	movq	reg_xr,%rdi
+	movq	osisp,%rsp	# save osint stack pointer
 	xorq	%rax,%rax
-	cmpq	%rax,compsp(%rip)	# is there a compiler stack?
+	cmpq	%rax,compsp	# is there a compiler stack?
 	je 	min1			# jump if none yet
-	movq	compsp(%rip),%rsp	# switch to compiler stack
+	movq	compsp,%rsp	# switch to compiler stack
 
  min1:
-	movq	minimal_id(%rip),%rax	# get ordinal
+	movq	minimal_id,%rax	# get ordinal
 #	call   calltab+%rax*cfp_b    # off to the minimal code
 	call	start
 
-	mov     osisp(%rip),%rsp	# switch to osint stack
+	mov     osisp,%rsp	# switch to osint stack
 
-	movq	%rcx,reg_wa(%rip)	# save registers
-	movq	%rbx,reg_wb(%rip)
-	movq	%rdx,reg_wc(%rip)
-	movq	%rsi,reg_xl(%rip)
-	movq	%rdi,reg_xr(%rip)
-	movq	%rbp,reg_ia(%rip)
+	movq	%rcx,reg_wa	# save registers
+	movq	%rbx,reg_wb
+	movq	%rdx,reg_wc
+	movq	%rsi,reg_xl
+	movq	%rdi,reg_xr
+	movq	%rbp,reg_ia
 	ret
 
 
@@ -523,35 +523,35 @@ minimal:
 syscall_init:
 #       save registers in global variables
 
-	mov     %rcx,reg_wa(%rip)      # save registers
-	movq	%rbx,reg_wb(%rip)
-	movq	%rdx,reg_wc(%rip)
-	movq	%rsi,reg_xl(%rip)
-	movq	%rdi,reg_xr(%rip)
-	movq	%rbp,reg_ia(%rip)
+	mov     %rcx,reg_wa      # save registers
+	movq	%rbx,reg_wb
+	movq	%rdx,reg_wc
+	movq	%rsi,reg_xl
+	movq	%rdi,reg_xr
+	movq	%rbp,reg_ia
 	ret
 
 syscall_exit:
 	movq	%rax,_rc_	# save return code from function
-	movq	%rsp,osisp(%rip)       # save osint's stack pointer
-	movq	compsp(%rip),%rsp      # restore compiler's stack pointer
-	movq	reg_wa(%rip),%rcx      # restore registers
-	movq	reg_wb(%rip),%rbx
-	movq	reg_wc(%rip),%rdx      #
-	movq	reg_xr(%rip),%rdi
-	movq	reg_xl(%rip),%rsi
-	movq	reg_ia(%rip),%rbp
+	movq	%rsp,osisp       # save osint's stack pointer
+	movq	compsp,%rsp      # restore compiler's stack pointer
+	movq	reg_wa,%rcx      # restore registers
+	movq	reg_wb,%rbx
+	movq	reg_wc,%rdx      #
+	movq	reg_xr,%rdi
+	movq	reg_xl,%rsi
+	movq	reg_ia,%rbp
 	cld
-	movq	reg_pc(%rip),%rax
+	movq	reg_pc,%rax
 	jmp	*%rax
 
 	.macro	syscall	arg1,arg2
 	popq    %rax			# pop return address
-	movq	%rax,reg_pc(%rip)
+	movq	%rax,reg_pc
 	call	syscall_init
 #       save compiler stack and switch to osint stack
-	movq	%rsp,compsp(%rip)      # save compiler's stack pointer
-	movq	osisp(%rip),%rsp       # load osint's stack pointer
+	movq	%rsp,compsp      # save compiler's stack pointer
+	movq	osisp,%rsp       # load osint's stack pointer
 	call	\arg1
 	call	syscall_exit
 	.endm
@@ -567,7 +567,7 @@ sysbs:	syscall	  zysbs,2
 	.global sysbx
 	.extern	zysbx
 sysbx:	
-	movq	%rsp,reg_xs(%rip)
+	movq	%rsp,reg_xs
 	syscall	zysbx,2
 
 #        global syscr
@@ -612,7 +612,7 @@ sysep:	syscall	zysep,12
 
 	.global sysex
 	.extern	zysex
-sysex:	movq	reg_xs(%rip),%rsp
+sysex:	movq	reg_xs,%rsp
 	syscall	zysex,13
 
 	.global sysfc
@@ -629,7 +629,7 @@ sysgc:	syscall	zysgc,15
 
 	.global syshs
 	.extern	zyshs
-syshs:	movq	%rsp,reg_xs(%rip)
+syshs:	movq	%rsp,reg_xs
 	syscall	zyshs,16
 
 	.global sysid
@@ -714,7 +714,7 @@ sysul:	syscall	zysul,37
 
 	.global sysxi
 	.extern	zysxi
-sysxi:	movq	reg_xs(%rip),%rsp
+sysxi:	movq	reg_xs,%rsp
 	syscall	zysxi,38
 
 	.macro	callext	arg1,arg2
@@ -736,11 +736,11 @@ sysxi:	movq	reg_xs(%rip),%rsp
 	.global	cvd__
 cvd__:
 	.extern	i_cvd
-	movq	%rbp,reg_ia(%rip)	
-	movq	%rcx,reg_wa(%rip)
+	movq	%rbp,reg_ia	
+	movq	%rcx,reg_wa
 	call	i_cvd
-	mov	reg_ia(%rip),%rbp
-	movq	reg_wa(%rip),%rcx
+	mov	reg_ia,%rbp
+	movq	reg_wa,%rcx
 	ret
 
 	.macro	dvi_	arg1
@@ -752,10 +752,10 @@ cvd__:
 	.global	dvi__
 dvi__:
 	.extern	i_dvi
-	movq	%rax,reg_w0(%rip)
+	movq	%rax,reg_w0
 	call	i_dvi
-	movq	reg_ia(%rip),%rbp
-	movb	reg_fl(%rip),%al
+	movq	reg_ia,%rbp
+	movb	reg_fl,%al
 	orb	%al,%al
 	ret
 	
@@ -764,10 +764,10 @@ dvi__:
 rmi__:
 	jmp	ocode
 	.extern	i_rmi
-	movq	%rax,reg_w0(%rip)
+	movq	%rax,reg_w0
 	call	i_rmi
-	mov	reg_ia(%rip),%rbp
-	movb	reg_fl(%rip),%al
+	mov	reg_ia,%rbp
+	movb	reg_fl,%al
 	orb	%al,%al
 	ret
 
@@ -777,12 +777,12 @@ ocode:
 	xchg	%rax,%rbp         	# ia to %rax, divisor to ia
 	cqo                    		# extend dividend
 	idiv	%rbp              	# perform division. %rax=quotient, wc=remainder
-	seto	reg_fl(%rip)
+	seto	reg_fl
 	movq	%rdx,%rbp
 	ret
 
 setovr: movb     $1,%al		# set overflow indicator
-	movb	%al,reg_fl(%rip)
+	movb	%al,reg_fl
 	ret
 
 	.macro	real_op arg1,arg2
@@ -807,7 +807,7 @@ setovr: movb     $1,%al		# set overflow indicator
 	.global	\arg1
 	.extern	\arg2
 \arg1:
-	movq	%rbp,reg_ia(%rip)
+	movq	%rbp,reg_ia
 	call	\arg2
 	ret
 	.endm
@@ -835,7 +835,7 @@ setovr: movb     $1,%al		# set overflow indicator
 #       ovr_ test for overflow value in ra
 	.global	ovr_
 ovr_:
-	lea	reg_ra(%rip),%rax
+	lea	reg_ra,%rax
 	add	$6,%rax
 	movw	(%rax),%ax		# get top 2 bytes
 	andw	0x7ff0,%ax             	# check for infinity or nan
@@ -844,7 +844,7 @@ ovr_:
 
 	.global	get_fp			# get frame pointer
 get_fp:
-	movq	reg_xs(%rip),%rax     		# minimal's %rsp
+	movq	reg_xs,%rax     		# minimal's %rsp
 	addq	$8,%rax           	# pop return from call to sysbx or sysxi
 	ret                    		# done
 
@@ -865,30 +865,30 @@ restart:
 	popq	%rax                     	# discard dummy
 	popq	%rax                     	# get lowest legal stack value
 
-	add	stacksiz(%rip),%rax  		# top of compiler's stack
+	add	stacksiz,%rax  		# top of compiler's stack
 	movq	%rax,%rsp                 	# switch to this stack
 	call	stackinit               # initialize minimal stack
 
                                         # set up for stack relocation
 #	lea	%rax,[tscblk+scstr]       # top of saved stack
-	leaq	tscblk(%rip),%rax
+	movq	$tscblk,%rax
 	addq	$scstr,%rax
-	movq	lmodstk(%rip),%rbx    		# bottom of saved stack to WB
-	movq	stbas(%rip),%rcx      		# wa = stbas from exit() time
+	movq	lmodstk,%rbx    		# bottom of saved stack to WB
+	movq	stbas,%rcx      		# wa = stbas from exit() time
 	subq	%rax,%rbx                 	# wb = size of saved stack
 	movq	%rcx,%rdx
 	subq	%rbx,%rdx                 	# wc = stack bottom from exit() time
 	movq	%rcx,%rbx
 	subq	%rbx,%rsp                 	# wb =  stbas - new stbas
 
-	movq	%rsp,stbas(%rip)		# save initial sp
+	movq	%rsp,stbas		# save initial sp
 #        getoff  %rax,dffnc               # get address of ppm offset
-        mov     %rax,ppoff(%rip)		# save for use later
+        mov     %rax,ppoff		# save for use later
 #
 #       restore stack from tscblk.
 #
 #					# compute effective address of tscblk +cfp_c+cfp+b
-	leaq	tscblk(%rip),%rax
+	mov	$tscblk,%rax
 	addq	$16,%rax
 	movq	%rax,%rdi
 	cmpq	%rdi,%rsi               # any stack to transfer?
@@ -906,12 +906,12 @@ re2:	pushq   %rax                   	# transfer word of stack
 	jae	re1                     #    loop back
 
 re3:	cld
-	movq	%rsp,compsp(%rip)     		# save compiler's stack pointer
-	movq	osisp(%rip),%rsp      		# back to osint's stack pointer
+	movq	%rsp,compsp     		# save compiler's stack pointer
+	movq	osisp,%rsp      		# back to osint's stack pointer
 	call	rereloc               	# relocate compiler pointers into stack
-	movq	statb(%rip),%rax		# start of static region to %rdi
-	movq	%rax,reg_wc(%rip)
-	movq	minimal_insta(%rip),%rax
+	movq	statb,%rax		# start of static region to %rdi
+	movq	%rax,reg_wc
+	movq	minimal_insta,%rax
 	call	minimal			# initialize static region
 
 #
@@ -936,7 +936,7 @@ re3:	cld
 #
         call   startbrk			# start control-c logic
 
-	movq	stage(%rip),%rax      	# is this a -w call?
+	movq	stage,%rax      	# is this a -w call?
 	cmp	%rax,4
 	je            re4               # yes, do a complete fudge
 
@@ -950,16 +950,16 @@ re3:	cld
 #       would occur if we naively returned to sysbx.  clear the stack and
 #       go for it.
 #
-re4:	movq	stbas(%rip),%rax
-	movq	%rax,compsp(%rip)	     	# empty the stack
+re4:	movq	stbas,%rax
+	movq	%rax,compsp	     	# empty the stack
 
 #       code that would be executed if we had returned to makeexec:
 #
 	xorq	%rax,%rax
-	movq	%rax,gbcnt(%rip)	       	# reset garbage collect count
+	movq	%rax,gbcnt	       	# reset garbage collect count
 	call	zystm                 	# fetch execution time to reg_ia
-	movq	reg_ia(%rip),%rax	     	# set time into compiler
-	movq	%rax,timsx(%rip)
+	movq	reg_ia,%rax	     	# set time into compiler
+	movq	%rax,timsx
 
 #       code that would be executed if we returned to sysbx:
 #
@@ -970,7 +970,7 @@ re4:	movq	stbas(%rip),%rax
 #       jump to minimal code to restart a save file.
 
 	movq	minimal_rstrt,%rax
-	movq	%rax,minimal_id(%rip)
+	movq	%rax,minimal_id
         call	minimal			# no return
 
 #%ifdef zz_trace
@@ -1026,8 +1026,10 @@ trc__:
 	popf
 	ret
 
-	.macro	trc_
-	movq	%rax,trc_de(%rip)
+	.macro	trc_	lbl
+	.text
+	movq	$\lbl,%rax
+	movq	%rax,trc_de
 	call	trc__
 	.endm
 
@@ -1142,7 +1144,7 @@ calltab:
 
 	.macro	adi_	arg1	
 	addq	\arg1,%rbp
-	seto	reg_fl(%rip)
+	seto	reg_fl
 	.endm
 
 
@@ -1155,19 +1157,19 @@ calltab:
 	.endm
 
 	.macro	icp_
-	movq	reg_cp(%rip),%rax
+	movq	reg_cp,%rax
 	addq	$8,%rax			# add cfp_b
-	movq	%rax,reg_cp(%rip)
+	movq	%rax,reg_cp
 	.endm
 
 	.macro	ino_	arg1
-	movb	reg_fl(%rip),%al
+	movb	reg_fl,%al
 	orb	%al,%al
 	jno	\arg1
 	.endm
 
 	.macro	iov_	arg1
-	movb	reg_fl(%rip),%al
+	movb	reg_fl,%al
 	orb	%al,%al
 	jo	\arg1
 	.endm
@@ -1176,14 +1178,15 @@ calltab:
 	movq	\arg1,%rbp
 	.endm
 
+#TODO need to check this
 	.macro	mli_	arg1
 	imulq	\arg1,%rbp
-	seto	reg_fl(%rip)
+	seto	reg_fl
 	.endm
 
 	.macro	ngi_
 	negq	%rbp
-	seto	reg_fl(%rip)
+	seto	reg_fl
 	.endm
 
 	.macro	rmi_	arg1
@@ -1195,12 +1198,14 @@ calltab:
 
 	.macro	rti_
 	call	f_rti
-	mov	reg_ia(%rip),%rbp
+	mov	reg_ia,%rbp
 	.endm
 
+#TODO - check for overflow in sbi
 	.macro	sbi_	arg1
 	subq	\arg1,%rbp
-	seto	reg_fl(%rip)
+	xorq	%rax,%rax
+	seto	reg_fl
 	.endm
 
 	.macro	sti_	arg1
@@ -1209,29 +1214,29 @@ calltab:
 
 	.macro	lcp_	arg1
 	movq	\arg1,%rax
-	movq	%rax,reg_cp(%rip)
+	movq	%rax,reg_cp
 	.endm
 
 	.macro	lcw_	arg1
-	movq	reg_cp(%rip),%rax			# load address of code word
+	movq	reg_cp,%rax			# load address of code word
 	movq	(%rax),%rax				# load code word
 	movq	%rax,\arg1
-	addq	$8,reg_cp(%rip)			# increment cp by word size
+	addq	$8,reg_cp			# increment cp by word size
 	.endm
 
 	.macro	rno_	arg1
-	movb	reg_fl(%rip),%al
+	movb	reg_fl,%al
 	orb	%al,%al
 	je	\arg1
 	.endm
 
 	.macro	rov_	arg1
-	movb	reg_fl(%rip),%al
+	movb	reg_fl,%al
 	orb	%al,%al
 	jne	\arg1
 	.endm
 
 	.macro	scp_	arg1
-	movq	reg_cp(%rip),%rax
+	movq	reg_cp,%rax
 	movq	%rax,\arg1
        	.endm
