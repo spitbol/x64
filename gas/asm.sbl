@@ -102,6 +102,7 @@
 	define('genbop(stmt)')
         define('genlab()')
         define('genrip()')
+	define('getlit(txt)lbl,lit')
 	define('op(gopc,gop1,gop2,gop3)')
 	define('opl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
@@ -351,10 +352,6 @@ swap.init.done
 	leacase[12] = .getlea.c.12;	leacase[13] = .getlea.c.13;	leacase[14] = .getlea.c.14
 	leacase[15] = .getlea.c.15;		 
 
-	valcase = table(50)
-	valcase[18] = .getval.c.18;	valcase[19] = .getval.c.19;	valcase[20] = .getval.c.20;	
-	valcase[21] = .getval.c.21;	valcase[22] = .getval.c.22
-
 	riptable = table(500)
 	rip_count = 0
 	ripcase = table(50)
@@ -502,6 +499,11 @@ flgs2
 	strip_comment = (differ(comments) 'n', 'y')
 
         output = ~input(.infile,1) "no input file"	:s(end)
+
+	
+*	litmap is used to resolve literals, arguments of the form =lbl or *lbl (types 18-22)
+
+	litmap = table(300)
 
 inputok 
 
@@ -651,6 +653,18 @@ genlab	genlab = 'l_' lpad(genlabels = genlabels + 1,4,'0') :(return)
 *  generate unique labels for use in generated code
 genrip	genrip = 'r_' lpad(riplabels = riplabels + 1,4,'0') :(return)
 
+-stitl getlit(txt)lbl,lit
+getlit
+	lit = litmap[txt]
+	getlit = differ(lit) lit		:s(return)
+*	make new literal entry
+	op('.data')
+	lbl = genrip()
+	opl(lbl,'.quad', txt)
+	op('.text')
+	litmap[txt] = rip(lbl)
+	getlit = litmap[txt]
+						:(return)
 -stitl opl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
 opl	
@@ -698,13 +712,13 @@ getarg.c.2
 
 getarg.c.3
 getarg.c.4 
-	getarg = (ne(rip_mode) txt '(%rip)', txt)
+	getarg = rip(txt)
 						:(getarg.done)
 
 * elbl, plbl
 
 getarg.c.5
-getarg.c.6 getarg = (ne(rip_mode) txt '(%rip)', txt)
+getarg.c.6 getarg = txt
 						:(getarg.done)
 
 *	w,x, map register name
@@ -764,16 +778,8 @@ getarg.c.16 getarg = txt			:(getarg.done)
 
 *	signed real
 
-getarg.c.17 getarg = txt			:(getarg.done)
-
-
-
-	txt = i.text(iarg)
-	typ = i.type(iarg)
-	
-	output = lt(typ, 18) gt(typ.22) ' impossible type for getval ' typ
-	eq(typ)					:f($(valcase[typ]))
-	getarg = txt				:(getval.done)
+getarg.c.17 
+	getarg = txt			:(getarg.done)
 
 getarg.c.18	;* =dlbl
 	getarg = iv(substr(txt,2))		:(getarg.done)
@@ -1263,7 +1269,7 @@ g.prc.r						:(opdone)
 g.prc.n
 *  store return address in reserved location
 	prc.count = prc.count + 1
-	op(pop.w, prcent(prc.count) '(%rip)')		:(opdone)
+	op(pop.w,rip(prcent(prc.count)))		:(opdone)
 
 g.exi
         t1 = getarg(i1); t2 = prc.type; t3 = i.text(i1)
@@ -1275,7 +1281,7 @@ g.exi
 	op('ret')				:(opdone)
 g.exi.1
 
-	op(mov.w,reg.w0,prcent(prc.count) '(%rip)' )
+	op(mov.w,reg.w0,rip(prcent(prc.count)))
 	op('jmp','*' reg.w0)
 						:(opdone)
 g.enp   op()					:(opdone)
@@ -1702,7 +1708,7 @@ g.cvm
 
 *	can't write 64-bit literal 10, so use storage location 'ten' defined in sys.asm.
 
-	op(imul.w,reg.w0,'ten' '(%rip)')			
+	op(imul.w,reg.w0,rip('ten'))			
 	op('jo',lbl)
 	op(sub.w,reg.wb,iv('ch_d0'))
 	op(sub.w,reg.w0,reg.wb)
