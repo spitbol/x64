@@ -116,7 +116,7 @@
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
 	define('report(num,text)')
-	define('ripinit()')
+	define('rip(txt)')
 	define('tblini(str)pos,cnt,index,val,lastval')
 	define('v(text)')
 
@@ -184,17 +184,7 @@ options.done
 	op_c = 'b'
 *	rel = 'rel '
 	rel = ''
-
-
-*	rip_mode is needed for osx. See getval()
-
-	rip_mode = (ident(os,'osx') 1, 0)
-	rip_mode = 0
-
 	prc.count = 0
-
-	report('rip', rip_mode)
-	ne(rip_mode) ripinit()
 
 *	i_limit is maximum number of calls to be generated if non-zero
 	i_limit = 0
@@ -1019,12 +1009,10 @@ rl01
 
 rl02    readline = '       end'
 						:(rl01)
--stitl ripinit()
-*  initialize rip mode, allocating the table used to save allocated locations
-ripinit
-	riptable = table(500)
-						:(return)
-
+-stitl rip(txt)
+* return instruction-pointer relative reference to argument
+rip 
+	rip = txt '(%rip)'			:(return)
 -stitl tblini(str)
 *  this routine is called to initialize a table from a string of
 *  index/value pairs.
@@ -1137,18 +1125,7 @@ g.bsw1
 	ne(rip_mode)				:s(g.bsw.2)	
 *	op('jmp', 'm(' t2 '+' reg '*cfp_b)') :(g.bsw.3)
 	outfile = cs 'g.bsw '  t2 '(,' reg ',' cfp_b ')'
-	op('jmp','*'  t2 '(,' reg ',' cfp_b ')' )	:(g.bsw.3)
-g.bsw.2
-* in rip_mode, need to generate location to reference destination
-	lbl = genrip()
-        op('.data')
-	opl(lbl,'.quad',t2 )
-	op('.text')
-	op(sal.w,reg,iv(log_cfp_b))
-	op(lea.w,reg.w0,lbl '(%rip)')
-	op(add.w,reg.w0,reg)
-	op('jmp', '*' w0)
-g.bsw.3
+	op('jmp','*'  t2 '(,' reg ',' cfp_b ')' )
 	op('.data')
         opl(t2)
 	i_suspend = 0
