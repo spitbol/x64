@@ -446,6 +446,7 @@ flgs2
 	ismem<9> = 1; ismem<10> = 1; ismem<11> = 1
 	ismem<12> = 1; ismem<13> = 1; ismem<14> = 1
 	ismem<15> = 1
+	ismem<20> = ismem<21> = ismem<22> = 1
 
 *  regmap maps minimal register name to target machine register/memory-location name.
 
@@ -786,9 +787,11 @@ getarg.c.18	;* =dlbl
 
 getarg.c.19	;* *dlbl
 	getarg = iv(cfp_b * v(substr(txt,2)))	:(getarg.done)
+
 getarg.c.20	;* =name (data section)
-getarg.c.21	;* =name (program section)
+getarg.c.21	;* =clbl (constant section)
 getarg.c.22	;* =elbl
+	getarg = getlit(substr(txt,2))		:(getarg.done)
         getarg =  '$' substr(txt,2)		:(getarg.done)
 
 *	pnam, eqop
@@ -1128,8 +1131,6 @@ g.bsw	reg = getarg(i1)
 	op('jge',getarg(i3))
 * here after default case.
 g.bsw1	
-	ne(rip_mode)				:s(g.bsw.2)	
-*	op('jmp', 'm(' t2 '+' reg '*cfp_b)') :(g.bsw.3)
 	outfile = cs 'g.bsw '  t2 '(,' reg ',' cfp_b ')'
 	op('jmp','*'  t2 '(,' reg ',' cfp_b ')' )
 	op('.data')
@@ -1396,16 +1397,30 @@ g.aov
 	op(add.w,getarg(i2),getarg(i1))
 	op('jc',getarg(i3))
 						:(opdone)
-g.lcp
 g.lcw
+	op(mov.w,reg.w0, rip('reg_cp'))
+	op(mov.w,reg.w0,'(' reg.w0 ')')
+	op(mov.w,getarg(i1),reg.w0)
+	op(add.w,rip('reg_cp'),iv(cfp_b))
+						:(opdone)
+g.lcp
+	op(mov.w,reg.w0, getarg(i1))
+	op(mov.w,rip('reg_cp'),reg.w0)
+						:(opdone)
 g.scp
-	op(op_,getarg(i1))			:(opdone)
+	op(mov.w,reg.w0, rip('reg_cp'))
+	op(mov.w,getarg(i1),reg.w0)
+						:(opdone)
 g.icp
-	op(op_)					:(opdone)
+	op(mov.w,reg.w0,rip('reg_cp'))
+	op(add.w,reg.w0,iv(cfp_b))
+	op(mov.w,rip('reg_cp'),reg.w0)
+						:(opdone)
 
 *	integer arithmetic operations
-g.ldi
 g.sti
+	op(mov.w,getarg(i1),reg.ia)		:(opdone)
+g.ldi
 	op(op_,getarg(i1))			:(opdone)
 g.adi
 g.mli
@@ -1430,7 +1445,7 @@ g.ile	jop = 'jle'				:(op.cmp)
 g.ilt	jop = 'jl'				:(op.cmp)
 g.ine	jop = 'jne'				:(op.cmp)
 op.cmp
-	op('sti_',reg.w0)
+	op(mov.w,reg.w0,reg.ia)
 	op(or.w,reg.w0,reg.w0)
 	op(jop,getarg(i1))			:(opdone)
 
@@ -1681,14 +1696,14 @@ g.mfi
 *  compare with cfp$m, branching if result negative
 	eq(i.type(i2))				:s(g.mfi.1)
 *  here if label given, branch if wc not in range (ie, negative)
-	op('sti_',reg.w0)
+	op(mov.w,reg.w0,reg.ia)
 	op(or.w,reg.w0,reg.w0)
 	op('js',getarg(i2))
 g.mfi.1
 	ident(i.text(i1),'-(xs)')		:s(g.mfi.2)
-	op('sti_',getarg(i1))			:(opdone)
+	op(mov.w,getarg(i1),reg.ia)		:(opdone)
 g.mfi.2
-	op('sti_',reg.w0)
+	op(mov.w,reg.w0,reg.ia)
 	op(push.w,reg.w0)			:(opdone)
 
 g.ctw
