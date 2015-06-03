@@ -356,7 +356,7 @@
 *
 *  default the parameter string if none present
 *
-	target = (differ(host(0)) host(0), "unix_64_nasm")
+	target = (differ(host(0)) host(0), "unix_64")
 	target break('_') . os len(1) rem . ws
 	parm = "sbl"
 	filenami = parm '.asm'
