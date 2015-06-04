@@ -113,6 +113,7 @@
 	define('iv(text)')
 	define('memmem()t')
 	define('newstmt(gopl,gopc,gop1,gop2,gop3)arg1,arg2,swap')
+	define('osint(txt)')
 	define('outline(txt)')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
@@ -241,7 +242,7 @@ skip_init.end
 *	For each hardware operation that can take byte or word operands we define two symbols that give the
 *	corresponding opcode. For example, 'add.w' for 64-bit addition, and 'add.b' for 8-bit addition.
 
-	s = 'add and cmp cmps dec imul inc lea lods mov movs movz not or pop push sal shl shr stos sub test xchg xor '
+	s = 'add and cmp cmps dec imul inc lea lods mov movs movz neg not or pop push sal shl shr stos sub test xchg xor '
 
 
 op_map.init
@@ -506,6 +507,16 @@ flgs2
 
 	litmap = table(300)
 
+*	is_osint_proc is non-null for name of osint procedure
+
+	osint_procs =	'sysax sysbs sysbx sysdc sysdm sysdt sysea sysef sysej sysem sysen sysep sysex '
++			'sysfc sysgc syshs sysid sysif sysil sysin sysio sysld sysmm sysmx sysou syspi '
++			'syspl syspp syspr sysrd sysri sysrw sysst systm systt sysul sysxi '
+	is_osint_proc = table(100)
+init_osint.1
+	osint_procs break(' ') . name len(1) =	:f(init_osint.2)
+	is_osint_proc[name] = 1			:(init_osint.1)
+init_osint.2
 inputok 
 
 
@@ -569,8 +580,6 @@ nopub
 dsout
 opnext	thisline = readline()
 	crack(thisline)				:f(dsout)
-	op_ = incode '_'
-
 
 	ident(inlabel)				:s(opnext.1)
 
@@ -866,6 +875,22 @@ memmem
   i2 = w0_arg
   op(mov.w,reg.w0,t)				:(return)
 
+-stitl osint(txt)
+
+osint
+*	local name always starts with 'sys' while library name starts with 'zys'
+	txt = substr(txt,2)
+	opl('s' txt)
+	op(pop.w,reg.w0)
+	op(mov.w,rip('reg_pc'),reg.w0)
+	op('call','syscall_init')
+	op(mov.w,rip('compsp'),'%rsp');* save compiler's stack pointer
+	op(mov.w,'%rsp',rip('osisp'));* switch to osint stack
+	op('call', 'z' txt)
+	op('call','syscall_exit')
+	flush()
+	
+						:(return)
 -stitl outline(txt)
 outline	
 	outlines = outlines + 1		
@@ -974,7 +999,8 @@ genz
 	i_suspend = 1;			;* no need to trace the trace code.
 	op('.text')
 	op(lea.w,reg.w0,lbl '(%rip)');
-	op('trc_')
+	op(mov.w,rip('trc_de'),reg.w0)
+	op('call','trc_')
 	i_suspend = 0
 
 						:(return)
@@ -1186,6 +1212,7 @@ g.lei	reg = regmap[i.text(i1)]
 	op(movz.bq,reg,reg.al)
 						:(opdone)
 g.jsr
+*	differ(is_osint_proc[jsr_proc]) 	:s($('g.' jsr_proc))
 	jsr_proc = getarg(i1)
 	op('call',jsr_proc)
 *	get count of following ppm statements
@@ -1199,10 +1226,10 @@ g.jsr
 	op('js',jsr_label_norm)
 	i_suspend = 0
 
-*	generate branch around for ppms that will follow
-*	take the branch if normal return (eax==0)
+*	generate branch around for ppms that will follow take the branch if normal return (eax==0)
 						:(opdone)
-
+g.sysax
+	osint('sysax')				:(opdone)
 g.err
 g.ppm
 
@@ -1421,21 +1448,33 @@ g.icp
 g.sti
 	op(mov.w,getarg(i1),reg.ia)		:(opdone)
 g.ldi
-	op(op_,getarg(i1))			:(opdone)
+	op(mov.w,reg.ia,getarg(i1))		:(opdone)
 g.adi
+	op(add.w,reg.ia,getarg(i1))
+	op('seto',rip('reg_fl'))		:(opdone)
 g.mli
+	op(imul.w,reg.ia,getarg(i1))
+	op('seto',rip('reg_fl'))		:(opdone)
 g.sbi
+	op(sub.w,reg.ia,getarg(i1))
+	op('seto',rip('reg_fl'))		:(opdone)
 g.dvi
+	op(mov.w,reg.w0,getarg(i1))
+	op('call','dvi_')			:(opdone)
 g.rmi
-	op(op_,getarg(i1))			:(opdone)
+	op(mov.w,reg.w0,getarg(i1))
+	op('call','rmi_')			:(opdone)
 
 g.ngi
-	op(op_)					:(opdone)
-
+	op(neg.w,reg.ia)			:(opdone)
 g.ino
+	op(mov.b,reg.al,rip('reg_fl'))
+	op(or.b,reg.al,reg.al)
+	op('jno',getarg(i1))			:(opdone)
 g.iov
-	op(op_,getarg(i1))			:(opdone)
-
+	op(mov.b,reg.al,rip('reg_fl'))
+	op(or.b,reg.al,reg.al)
+	op('jo',getarg(i1))			:(opdone)
 
 
 g.ieq	jop = 'je'				:(op.cmp)
@@ -1451,9 +1490,14 @@ op.cmp
 
 *  real operations
 
-g.itr	op('call','itr_')	:(opdone)
+g.itr	
+	op(mov.w,rip('reg_ia'),reg.ia)
+	op('call','f_' incode)			:(opdone)
 
-g.rti	op('rti_')
+g.rti	
+	op(mov.w,rip('reg_ia'),reg.ia)
+	op('call','f_rti')
+	op(mov.w,reg.ia,rip('reg_ia'))
 	eq(i.type(i1))				:s(opdone)
 *  here if label given, branch if real too large
         op('jc',getarg(i1))                 :(opdone)
@@ -1465,9 +1509,11 @@ g.sbr
 g.mlr
 g.dvr
 	getlea(i1)				;* get address to w0
-	op('call',op_)
+	op(mov.w,rip('reg_rp'),reg.w0)
+	op('call','f_' incode)
 						:(opdone)
 g.ngr
+	op('call','f_ngr')			:(opdone)
 g.atn
 g.chp
 g.cos
@@ -1476,15 +1522,16 @@ g.lnf
 g.sin
 g.sqr
 g.tan
-	op('call',op_)
+	op('call','f_' incode)
 						:(opdone)
-
 g.rov
-g.rno	op(op_,getarg(i1))			:(opdone)
-*g.rno	t1 = 'jno'				:(g.rov1)
-*g.rov	t1 = 'jo'
-*g.rov1  op('call','ovr_')
-	op(t1,getarg(i1))			:(opdone)
+	op(mov.b,reg.al,rip('reg_fl'))
+	op(or.b,reg.al,reg.al)
+	op('jne',getarg(i1))			:(opdone)
+g.rno
+	op(mov.b,reg.al,rip('reg_fl'))
+	op(or.b,reg.al,reg.al)
+	op('je',getarg(i1))			:(opdone)
 
 g.req	jop = 'je'				:(g.r1)
 g.rne	jop = 'jne'				:(g.r1)
@@ -1492,8 +1539,8 @@ g.rge	jop = 'jge'				:(g.r1)
 g.rgt	jop = 'jg'				:(g.r1)
 g.rle	jop = 'jle'				:(g.r1)
 g.rlt	jop = 'jl'
-g.r1	op('call','cpr_')
-	op(mov.b,reg.al,'reg_fl')
+g.r1	op('call','f_cpr')
+	op(mov.b,reg.al,rip('reg_fl'))
 	op(or.b,reg.al,reg.al)
 	op(jop,getarg(i1))			:(opdone)
 
@@ -1687,9 +1734,9 @@ g.btw   op(shr.w,getarg(i1),iv(log_cfp_b))	:(opdone)
 g.mti	
 	ident(i.text(i1),'(xs)+')		:f(g.mti.1)
 	op(pop.w,reg.w0)
-	op('ldi_',reg.w0)			:(opdone)
+	op(mov.w,reg.ia,reg.w0)			:(opdone)
 g.mti.1
-	op('ldi_',getarg(i1))			:(opdone)
+	op(mov.w,reg.ia,getarg(i1))		:(opdone)
 
 g.mfi
 *  last arg is optional
@@ -1719,7 +1766,7 @@ g.ctb
 						:(opdone)
 g.cvm	
 	lbl = getarg(i1)
-	op('sti_',reg.w0)
+	op(mov.w,reg.w0,reg.ia)
 
 *	can't write 64-bit literal 10, so use storage location 'ten' defined in sys.asm.
 
@@ -1727,11 +1774,11 @@ g.cvm
 	op('jo',lbl)
 	op(sub.w,reg.wb,iv('ch_d0'))
 	op(sub.w,reg.w0,reg.wb)
-	op('ldi_',reg.w0)
+	op(mov.w,reg.ia,reg.w0)
 	op('jo',lbl)
 						:(opdone)
 g.cvd
-	op('cvd_')				:(opdone)
+	op('call','cvd_')			:(opdone)
 g.mvc
 	i_suspend = 1
 	op('rep')
@@ -1771,7 +1818,7 @@ genrep
 						:(return)
 
 g.chk
-	op('chk_')
+	op('call','chk_')
 	op(or.w,reg.w0,reg.w0);
 	op('jne','sec06')			:(opdone)
 
@@ -1877,6 +1924,10 @@ g.sec.5
         op('.text')
         op('.global','sec05')
         opl('sec05')     
+
+*	define interface to call osint procedures
+	osint('sysax')
+
 *  enable tracing if desired
 						:(opdone)
 

@@ -418,8 +418,8 @@ stackinit:
 	ret
 
 #	check for stack overflow, making %rax nonzero if found
-	.global	chk__
-chk__:
+	.global	chk_
+chk_:
 	xorq	%rax,%rax		# set return value assuming no overflow
 	cmpq	spmin(%rip),%rsp
 	jb	chk.oflo
@@ -556,9 +556,9 @@ syscall_exit:
 	call	syscall_exit
 	.endm
 
-	.global sysax
-	.extern	zysax
-sysax:	syscall	  zysax,1
+#	.global sysax
+#	.extern	zysax
+#sysax:	syscall	  zysax,1
 
 	.global sysbs
 	.extern	zysbs
@@ -717,24 +717,18 @@ sysul:	syscall	zysul,37
 sysxi:	movq	reg_xs(%rip),%rsp
 	syscall	zysxi,38
 
-	.macro	callext	arg1,arg2
-	.extern	\arg1
-	call	\arg1
-	addq	\arg2,%rsp		# pop arguments
-	.endm
-
 
 #	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
 #	placed in %rax, which is then sign extended into wc:%rax. after the divide, %rax contains the
 #	quotient, wc contains the remainder.
 #
-#       cvd__ - convert by division
+#       cvd_ - convert by division
 #
 #       input   ia = number <=0 to convert
 #       output  ia / 10
 #               wa ecx) = remainder + '0'
-	.global	cvd__
-cvd__:
+	.global	cvd_
+cvd_:
 	.extern	i_cvd
 	movq	%rbp,reg_ia(%rip)	
 	movq	%rcx,reg_wa(%rip)
@@ -743,14 +737,10 @@ cvd__:
 	movq	reg_wa(%rip),%rcx
 	ret
 
-	.macro	dvi_	arg1
-	movq	\arg1,%rax
-	call	dvi__
-	.endm
 
-#       dvi__ - divide ia (edx) by long in %rax
-	.global	dvi__
-dvi__:
+#       dvi_ - divide ia (edx) by long in %rax
+	.global	dvi_
+dvi_:
 	.extern	i_dvi
 	movq	%rax,reg_w0(%rip)
 	call	i_dvi
@@ -759,9 +749,9 @@ dvi__:
 	orb	%al,%al
 	ret
 	
-	.global	rmi__
+	.global	rmi_
 #       rmi_ - remainder of ia (edx) divided by long in %rax
-rmi__:
+rmi_:
 	jmp	ocode
 	.extern	i_rmi
 	movq	%rax,reg_w0(%rip)
@@ -785,52 +775,6 @@ setovr: movb     $1,%al		# set overflow indicator
 	movb	%al,reg_fl(%rip)
 	ret
 
-	.macro	real_op arg1,arg2
-	.global	\arg1
-	.extern	\arg2
-\arg1:
-	movq	%rax,reg_rp
-	call	\arg2
-	ret
-	.endm
-
-	real_op	ldr_,f_ldr
-	real_op	str_,f_str
-	real_op	adr_,f_adr
-	real_op	sbr_,f_sbr
-	real_op	mlr_,f_mlr
-	real_op	dvr_,f_dvr
-	real_op	ngr_,f_ngr
-	real_op cpr_,f_cpr
-
-	.macro	int_op arg1,arg2
-	.global	\arg1
-	.extern	\arg2
-\arg1:
-	movq	%rbp,reg_ia(%rip)
-	call	\arg2
-	ret
-	.endm
-
-	int_op itr_,f_itr
-	int_op rti_,f_rti
-
-	.macro	math_op arg1,arg2
-	.global	\arg1
-	.extern	\arg2
-\arg1:
-	call	\arg2
-	ret
-	.endm
-
-	math_op	atn_,f_atn
-	math_op	chp_,f_chp
-	math_op	cos_,f_cos
-	math_op	etx_,f_etx
-	math_op	lnf_,f_lnf
-	math_op	sin_,f_sin
-	math_op	sqr_,f_sqr
-	math_op	tan_,f_tan
 
 #       ovr_ test for overflow value in ra
 	.global	ovr_
@@ -1015,21 +959,14 @@ re4:	movq	stbas(%rip),%rax
 #		.extern	zz_num
 #	%endif
 	.global	start
-	.extern	trc
-	.extern	trc_de
 
-trc__:
+trc_:
 	pushf
 	call	save_regs
 	call	trc
 	call	restore_regs
 	popf
 	ret
-
-	.macro	trc_
-	movq	%rax,trc_de(%rip)
-	call	trc__
-	.endm
 
 
 #   table to recover type word from type ordinal
@@ -1138,100 +1075,3 @@ calltab:
 
 
 
-#	.extern	reg_ia,reg_wa,reg_fl,reg_w0,reg_%rdx
-
-	.macro	adi_	arg1	
-	addq	\arg1,%rbp
-	seto	reg_fl(%rip)
-	.endm
-
-
-	.macro	chk_
-	call	chk__
-	.endm
-
-	.macro	cvd_
-	call	cvd__
-	.endm
-
-	.macro	icp_
-	movq	reg_cp(%rip),%rax
-	addq	$8,%rax			# add cfp_b
-	movq	%rax,reg_cp(%rip)
-	.endm
-
-	.macro	ino_	arg1
-	movb	reg_fl(%rip),%al
-	orb	%al,%al
-	jno	\arg1
-	.endm
-
-	.macro	iov_	arg1
-	movb	reg_fl(%rip),%al
-	orb	%al,%al
-	jo	\arg1
-	.endm
-
-	.macro	ldi_	arg1
-	movq	\arg1,%rbp
-	.endm
-
-	.macro	mli_	arg1
-	imulq	\arg1,%rbp
-	seto	reg_fl(%rip)
-	.endm
-
-	.macro	ngi_
-	negq	%rbp
-	seto	reg_fl(%rip)
-	.endm
-
-	.macro	rmi_	arg1
-	movq	\arg1,%rax
-	call	rmi__
-	.endm
-
-	.extern	f_rti
-
-	.macro	rti_
-	call	f_rti
-	mov	reg_ia(%rip),%rbp
-	.endm
-
-	.macro	sbi_	arg1
-	subq	\arg1,%rbp
-	seto	reg_fl(%rip)
-	.endm
-
-	.macro	sti_	arg1
-	movq	%rbp,\arg1
-	.endm
-
-	.macro	lcp_	arg1
-	movq	\arg1,%rax
-	movq	%rax,reg_cp(%rip)
-	.endm
-
-	.macro	lcw_	arg1
-	movq	reg_cp(%rip),%rax			# load address of code word
-	movq	(%rax),%rax				# load code word
-	movq	%rax,\arg1
-	addq	$8,reg_cp(%rip)			# increment cp by word size
-	.endm
-
-	.macro	rno_	arg1
-	movb	reg_fl(%rip),%al
-	orb	%al,%al
-	je	\arg1
-	.endm
-
-	.macro	rov_	arg1
-	movb	reg_fl(%rip),%al
-	orb	%al,%al
-	jne	\arg1
-	.endm
-
-	.macro	scp_	arg1
-	movq	reg_cp(%rip),%rax
-	movq	%rax,\arg1
-       	.endm
