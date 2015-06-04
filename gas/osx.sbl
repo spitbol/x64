@@ -28,6 +28,7 @@ next
 	line = input					:f(end)
 	raw = line
 
+	line	'.global' = '.globl'
 	line	'b_icl' = '_b_icl'
 	line	'b_scl' = '_b_scl'
 	line	'b_xnt' = '_b_xnt'

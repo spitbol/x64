@@ -20,8 +20,8 @@
 
 #	ws is bits per word, cfp_b is bytes per word, cfp_c is characters per word
 
-	.set	os,unix
-	.set	ws,64
+#	.set	os,unix
+#	.set	ws,64
 	.set	cfp_b,8
 	.set	cfp_c,8
 
@@ -46,26 +46,25 @@
 	.global	reg_rp
 
 	.global	minimal
-	.extern	stacksiz
 
 #	values below must agree with calltab defined in osint/osint.h
 
-	.equ	minimal_relaj,0
-	.equ	minimal_relcr,1
-	.equ	minimal_reloc,2
-	.equ	minimal_alloc,3
-	.equ	minimal_alocs,4
-	.equ	minimal_alost,5
-	.equ	minimal_blkln,6
-	.equ	minimal_insta,7
-	.equ	minimal_rstrt,8
-	.equ	minimal_start,9
-	.equ	minimal_filnm,10
-	.equ	minimal_dtype,11
-	.equ	minimal_enevs,10
-	.equ	minimal_engts,12
+	.set	minimal_relaj,0
+	.set	minimal_relcr,1
+	.set	minimal_reloc,2
+	.set	minimal_alloc,3
+	.set	minimal_alocs,4
+	.set	minimal_alost,5
+	.set	minimal_blkln,6
+	.set	minimal_insta,7
+	.set	minimal_rstrt,8
+	.set	minimal_start,9
+	.set	minimal_filnm,10
+	.set	minimal_dtype,11
+	.set	minimal_enevs,10
+	.set	minimal_engts,12
 
-	.equ	globals,1                       #asm globals defined here
+	.set	globals,1                       #asm globals defined here
 
 
 #       ---------------------------------------
@@ -174,8 +173,8 @@ reg_pc: .quad	0               # return pc from caller
 reg_xs:	.quad	0		# minimal stack pointer
 
 #	r_size  equ       $-reg_block
-	.equ	r_size,80
-reg_size:	.word   r_size
+	.set	r_size,80
+reg_size:	.long   r_size
 
 # end of words saved during exit(-3)
 
@@ -192,14 +191,14 @@ reg_fl:	.byte	0		# condition code register for numeric operations
 	.global	ten
 ten:    .quad      10              # constant 10
 	.global  inf
-inf:	.word	0
-	.int      0x7ff00000      # double precision infinity
+inf:	.long	0
+	.long      0x7ff00000      # double precision infinity
 	.global	zero
 zero:	.quad	0
 
 	.global	sav_block
 #sav_block: times r_size db 0     	# save minimal registers during push/pop reg
-sav_block: .fill  440     		# save minimal registers during push/pop reg
+sav_block: .fill  440,1,0     		# save minimal registers during push/pop reg
 
 	.balign 8
 	.global	ppoff
@@ -236,12 +235,12 @@ minimal_id:	.quad	0		# id for call to minimal from c. see proc minimal below.
 	.global  id1blk
 id1blk:	.quad   152
       	.quad   0
-	.fill   152
+	.fill   152,1,0
 
 	.global  id2blk
 id2blk:	.quad   152
       	.quad	0
-	.fill   152
+	.fill   152,1,0
 
 	.global ticblk
 ticblk:	.quad	0
@@ -250,7 +249,7 @@ ticblk:	.quad	0
 	.global  tscblk
 tscblk: .quad   512
 	.quad   0
-	.fill   512
+	.fill   512,1,0
 
 #       standard input buffer block.
 
@@ -263,7 +262,7 @@ inpbuf:	.quad	0			# type word
 	.quad   0               	# offset to next character to read
 	.quad   0               	# file position of buffer
 	.quad   0               	# physical position in file
-	.fill	1024	        	# buffer
+	.fill	1024,1,0        	# buffer
 
 	.global  ttybuf
 
@@ -274,7 +273,7 @@ ttybuf:	.quad    0     # type word
 	.quad    0               	# offset to next char to read
 	.quad    0               	# file position of buffer
 	.quad    0               	# physical position in file
-	.fill   260	         	# buffer
+	.fill   260,1,0	         	# buffer
 
 	.global	spmin
 
@@ -351,20 +350,20 @@ restore_regs:
 #   the order of entries here must correspond to the order of
 #   calltab entries in the inter assembly language module.
 
-	.equ	calltab_relaj,0
-	.equ	calltab_relcr,1
-	.equ	calltab_reloc,2
-	.equ	calltab_alloc,3
-	.equ	calltab_alocs,4
-	.equ	calltab_alost,5
-	.equ	calltab_blkln,6
-	.equ	calltab_insta,7
-	.equ	calltab_rstrt,8
-	.equ	calltab_start,9
-	.equ	calltab_filnm,10
-	.equ	calltab_dtype,11
-	.equ	calltab_enevs,12
-	.equ	calltab_engts,13
+	.set	calltab_relaj,0
+	.set	calltab_relcr,1
+	.set	calltab_reloc,2
+	.set	calltab_alloc,3
+	.set	calltab_alocs,4
+	.set	calltab_alost,5
+	.set	calltab_blkln,6
+	.set	calltab_insta,7
+	.set	calltab_rstrt,8
+	.set	calltab_start,9
+	.set	calltab_filnm,10
+	.set	calltab_dtype,11
+	.set	calltab_enevs,12
+	.set	calltab_engts,13
 
 
 startup:
@@ -557,7 +556,6 @@ syscall_exit:
 #               wa ecx) = remainder + '0'
 	.global	cvd_
 cvd_:
-	.extern	i_cvd
 	movq	%rbp,reg_ia(%rip)	
 	movq	%rcx,reg_wa(%rip)
 	call	i_cvd
@@ -569,7 +567,6 @@ cvd_:
 #       dvi_ - divide ia (edx) by long in %rax
 	.global	dvi_
 dvi_:
-	.extern	i_dvi
 	movq	%rax,reg_w0(%rip)
 	call	i_dvi
 	movq	reg_ia(%rip),%rbp
@@ -581,7 +578,6 @@ dvi_:
 #       rmi_ - remainder of ia (edx) divided by long in %rax
 rmi_:
 	jmp	ocode
-	.extern	i_rmi
 	movq	%rax,reg_w0(%rip)
 	call	i_rmi
 	mov	reg_ia(%rip),%rbp
@@ -620,16 +616,11 @@ get_fp:
 	addq	$8,%rax           	# pop return from call to sysbx or sysxi
 	ret                    		# done
 
-	.extern	rereloc
 
 	.global	restart
-	.extern	lmodstk
-	.extern	startbrk
-	.extern	outptr
-	.extern	swcoup
-#	scstr is offset to start of string in scblk, or two words
-#	%define scstr	cfp_c+cfp_c
-	.set	scstr,16
+#	scstr_off is offset to start of string in scblk, or two words
+#	%define scstr_off	cfp_c+cfp_c
+	.set	scstr_off,16
 
 #
 restart:
@@ -642,9 +633,9 @@ restart:
 	call	stackinit               # initialize minimal stack
 
                                         # set up for stack relocation
-#	lea	%rax,[tscblk+scstr]       # top of saved stack
+#	lea	%rax,[tscblk+scstr_off]       # top of saved stack
 	leaq	tscblk(%rip),%rax
-	addq	$scstr,%rax
+	addq	$scstr_off,%rax
 	movq	lmodstk(%rip),%rbx    		# bottom of saved stack to WB
 	movq	stbas(%rip),%rcx      		# wa = stbas from exit() time
 	subq	%rax,%rbx                 	# wb = size of saved stack
@@ -746,9 +737,7 @@ re4:	movq	stbas(%rip),%rax
         call	minimal			# no return
 
 #%ifdef zz_trace
-#	.extern	zz_ra
 #	.global	zz_
-#	.extern	zz,zz_cp,zz_%rsi,zz_%rdi,zz_wa,zz_wb,zz_%rdx,zz_%rax
 #zz_:
 #	pushf
 #	call	save_regs
@@ -764,27 +753,6 @@ re4:	movq	stbas(%rip),%rax
 	.global	mxint
 
 #	%ifdef zz_trace
-#		.extern	shields
-#		.extern	zz
-#		.extern	zz_
-#		.extern	zz_cp
-#		.extern	zz_%rsi
-#		.extern	zz_%rdi
-#		.extern	zz_sp
-#		.extern	zz_wa
-#		.extern	zz_wb
-#		.extern	zz_%rdx
-#		.extern	zz_%rax
-#		.extern	zz_zz
-#		.extern	zz_id
-#		.extern	zz_de
-#		.extern	zz_0
-#		.extern	zz_1
-#		.extern	zz_2
-#		.extern	zz_3
-#		.extern	zz_4
-#		.extern	zz_arg
-#		.extern	zz_num
 #	%endif
 	.global	start
 

@@ -79,7 +79,7 @@ unix_64_gas:
 	as 	-o bld/sbl.o	bld/sbl.s
 	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
 
-unix_64_osx:
+osx_64_gas:
 # same as for unix except for added step to translate names using osx.sbl
 	rm -fr bld
 	mkdir bld
@@ -104,15 +104,6 @@ unix_64_nasm:
 	cat nasm/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
 	nasm -f elf64 -Dunix_64 -o bld/sbl.o bld/sbl.s
 	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
-
-osx_64:
-	$(CC) $(CCOPTS) -c osint/*.c
-	$(BASEBOL)  -u osx_64 lex.sbl
-	$(BASEBOL)  -r -u osx_64:$(TRC) -1=sbl.lex -2=sbl.tmp -3=sbl.err asm.sbl
-	$(BASEBOL)  -u osx_64 -1=sbl.err -2=err.s err.sbl
-	cat sys.asm err.s sbl.tmp >sbl.s
-	$(ASM) -f macho64 -Dosx_64 -o sbl.o sbl.s
-	$(CC) -lm -Dosx_64 -m64 $(LDOPTS)  *.o -lm  -osbl 
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS) $(NOBJS)
