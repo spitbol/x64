@@ -863,6 +863,7 @@ getlea
 
 getlea.c.3
 getlea.c.4
+	op(lea.w,reg.w0, rip(txt))		:(lea.done)
 	op(mov.w,reg.w0,literal_ txt)		:(lea.done)
 
 *	(x), register indirect
