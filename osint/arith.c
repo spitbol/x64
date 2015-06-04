@@ -51,12 +51,14 @@ void f_adr() {			// add real
 }
 
 void f_sbr() {			// subtract real
+	reg_fl = 0;
 	reg_ra -= *reg_rp;
 	return;
 }
 
 void f_mlr() {			// multiply real
 	reg_ra *= *reg_rp;
+	reg_fl = 0;
 	return;
 }
 

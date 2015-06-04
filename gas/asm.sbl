@@ -101,6 +101,7 @@
 	define('genaop(stmt)')
 	define('genbop(stmt)')
         define('genlab()')
+	define('gen_osint()name')
         define('genrip()')
 	define('getlit(txt)lbl,lit')
 	define('op(gopc,gop1,gop2,gop3)')
@@ -509,14 +510,6 @@ flgs2
 
 *	is_osint_proc is non-null for name of osint procedure
 
-	osint_procs =	'sysax sysbs sysbx sysdc sysdm sysdt sysea sysef sysej sysem sysen sysep sysex '
-+			'sysfc sysgc syshs sysid sysif sysil sysin sysio sysld sysmm sysmx sysou syspi '
-+			'syspl syspp syspr sysrd sysri sysrw sysst systm systt sysul sysxi '
-	is_osint_proc = table(100)
-init_osint.1
-	osint_procs break(' ') . name len(1) =	:f(init_osint.2)
-	is_osint_proc[name] = 1			:(init_osint.1)
-init_osint.2
 inputok 
 
 
@@ -658,6 +651,44 @@ genbop
 -stitl genlab()
 *  generate unique labels for use in generated code
 genlab	genlab = 'l_' lpad(genlabels = genlabels + 1,4,'0') :(return)
+
+-stitl gen_osint()
+
+gen_osint
+	s  =	'sysax sysbs sysbx sysdc sysdm sysdt sysea sysef sysej sysem sysen sysep sysex '
++			'sysfc sysgc syshs sysid sysif sysil sysin sysio sysld sysmm sysmx sysou syspi '
++			'syspl syspp syspr sysrd sysri sysrw sysst systm systt sysul sysxi '
+* for each system procedure, declare it, handle any special
+* argument handling, and then generate call to 
+* corresponding osint procedure
+
+	op('.text')
+gen_osint.1
+	s break(' ') . name len(1) =		:f(return)
+	opl(name)
+	ident(name,'sysbx')			:s(gen_osint.sysbx)
+	ident(name,'sysfc')			:s(gen_osint.sysfc)
+	ident(name,'syshs')			:s(gen_osint.syshs)
+	ident(name,'sysxi')			:s(gen_osint.sysxi)
+						:(gen_osint.2)
+gen_osint.sysbx
+	op(mov.w,rip('reg_xs'),'%rsp')		:(gen_osint.2)
+
+gen_osint.sysfc
+	op(pop.w,reg.w0)
+	op(lea.w,'%rsp', '(%rsp,%rdx,8)');* remove stacked fcblk
+	op(push.w,reg.w0)
+						:(gen_osint.2)
+gen_osint.syshs
+	op(mov.w,rip('reg_xs'),'%rsp')		:(gen_osint.2)
+
+gen_osint.sysxi
+	op(mov.w,rip('reg_xs'),'%rsp')		:(gen_osint.2)
+
+gen_osint.2
+	flush()
+	osint(name)
+						:(gen_osint.1)
 
 -stitl genrip()
 *  generate unique labels for use in generated code
@@ -879,14 +910,13 @@ memmem
 
 osint
 *	local name always starts with 'sys' while library name starts with 'zys'
-	txt = substr(txt,2)
-	opl('s' txt)
+	
 	op(pop.w,reg.w0)
 	op(mov.w,rip('reg_pc'),reg.w0)
 	op('call','syscall_init')
 	op(mov.w,rip('compsp'),'%rsp');* save compiler's stack pointer
 	op(mov.w,'%rsp',rip('osisp'));* switch to osint stack
-	op('call', 'z' txt)
+	op('call', 'z' substr(txt,2))
 	op('call','syscall_exit')
 	flush()
 	
@@ -1229,45 +1259,7 @@ g.jsr
 *	generate branch around for ppms that will follow take the branch if normal return (eax==0)
 						:(opdone)
 
-	osint('sysax')				:(opdone)
-sys.sysbs
-sys.sysbx
-sys.sysdc
-sys.sysdm
-sys.sysdt
-sys.sysea
-sys.sysef
-sys.sysej
-sys.sysem
-sys.sysen
-sys.sysep
-sys.sysex
-sys.sysfc
-sys.sysgc
-sys.syshs
-sys.sysid
-sys.sysif
-sys.sysil
-sys.sysin
-sys.sysio
-sys.sysld
-sys.sysmm
-sys.sysmx
-sys.sysou
-sys.syspi
-sys.syspl
-sys.syspp
-sys.syspr
-sys.sysrd
-sys.sysri
-sys.sysrw
-sys.sysst
-sys.systm
-g,ststt
-sys.sysul
-sys.sysxi
-						:(opdone)
-
+*HERE
 g.err
 g.ppm
 
@@ -1924,7 +1916,10 @@ g.sec	op('')
 	sectnow = sectnow + 1			:($("g.sec." sectnow))
 
 * procedure declaration section
-g.sec.1 op('.text')
+g.sec.1 
+*	generate bodies of osint interface procedures
+	gen_osint()
+	op('.text')
         op('.global','sec01')
         opl('sec01')             	:(opdone)
 
