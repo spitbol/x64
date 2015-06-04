@@ -1212,7 +1212,7 @@ g.lei	reg = regmap[i.text(i1)]
 	op(movz.bq,reg,reg.al)
 						:(opdone)
 g.jsr
-*	differ(is_osint_proc[jsr_proc]) 	:s($('g.' jsr_proc))
+*	differ(is_osint_proc[jsr_proc]) 	:s($('sys.' jsr_proc))
 	jsr_proc = getarg(i1)
 	op('call',jsr_proc)
 *	get count of following ppm statements
@@ -1228,8 +1228,46 @@ g.jsr
 
 *	generate branch around for ppms that will follow take the branch if normal return (eax==0)
 						:(opdone)
-g.sysax
+
 	osint('sysax')				:(opdone)
+sys.sysbs
+sys.sysbx
+sys.sysdc
+sys.sysdm
+sys.sysdt
+sys.sysea
+sys.sysef
+sys.sysej
+sys.sysem
+sys.sysen
+sys.sysep
+sys.sysex
+sys.sysfc
+sys.sysgc
+sys.syshs
+sys.sysid
+sys.sysif
+sys.sysil
+sys.sysin
+sys.sysio
+sys.sysld
+sys.sysmm
+sys.sysmx
+sys.sysou
+sys.syspi
+sys.syspl
+sys.syspp
+sys.syspr
+sys.sysrd
+sys.sysri
+sys.sysrw
+sys.sysst
+sys.systm
+g,ststt
+sys.sysul
+sys.sysxi
+						:(opdone)
+
 g.err
 g.ppm
 
