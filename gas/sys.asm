@@ -45,7 +45,7 @@
 
 	.global	reg_rp
 
-	.global	minimal
+	.global	c_minimal
 
 #	values below must agree with calltab defined in osint/osint.h
 
@@ -380,7 +380,7 @@ startup:
 	mov	osisp(%rip),%rsp	# switch to new c stack
 	leaq	calltab_start(%rip),%rax
 	mov	%rax,minimal_id(%rip)
-	call	minimal			# load regs, switch stack, start compiler
+	call	c_minimal		# load regs, switch stack, start compiler
 
 #	stackinit  -- initialize spmin from sp.
 
@@ -427,7 +427,7 @@ chk.oflo:
 	incq	%rax		# make nonzero to indicate stack overflo%rax
 	ret
 
-#       mimimal -- call minimal function from c
+#       call_mimimal -- call minimal function from c
 
 #       usage:  extern void minimal(word callno)
 
@@ -441,7 +441,7 @@ chk.oflo:
 #       stack to switch to.  in that case, just make the call on the
 #       the osint stack.
 
-minimal:
+c_minimal:
 #         pushad		# save all registers for c
 	movq	reg_ia(%rip),%rbp
 	movq 	reg_wa(%rip),%rcx	# restore registers
@@ -531,7 +531,7 @@ syscall_init:
 	ret
 
 syscall_exit:
-	movq	%rax,_rc_	# save return code from function
+	movq	%rax,_rc_(%rip)	# save return code from function
 	movq	%rsp,osisp(%rip)       # save osint's stack pointer
 	movq	compsp(%rip),%rsp      # restore compiler's stack pointer
 	movq	reg_wa(%rip),%rcx      # restore registers
@@ -564,9 +564,9 @@ cvd_:
 	ret
 
 
-#       dvi_ - divide ia (edx) by long in %rax
-	.global	dvi_
-dvi_:
+#       sys_dvi_ - divide ia (edx) by long in %rax
+	.global	sys_dvi
+sys_dvi:
 	movq	%rax,reg_w0(%rip)
 	call	i_dvi
 	movq	reg_ia(%rip),%rbp
@@ -574,9 +574,9 @@ dvi_:
 	orb	%al,%al
 	ret
 	
-	.global	rmi_
-#       rmi_ - remainder of ia (edx) divided by long in %rax
-rmi_:
+	.global	sys_rmi
+#       rmi - remainder of ia (edx) divided by long in %rax
+sys_rmi:
 	jmp	ocode
 	movq	%rax,reg_w0(%rip)
 	call	i_rmi
@@ -675,7 +675,7 @@ re3:	cld
 	movq	statb(%rip),%rax		# start of static region to %rdi
 	movq	%rax,reg_wc(%rip)
 	movq	minimal_insta(%rip),%rax
-	call	minimal			# initialize static region
+	call	c_minimal		# initialize static region
 
 #
 #       now pretend that we're executing the following c statement from
@@ -726,15 +726,15 @@ re4:	movq	stbas(%rip),%rax
 
 #       code that would be executed if we returned to sysbx:
 #
-        pushq   outptr	        	# s%rdxoup(outptr)
+        pushq   outptr(%rip)        	# s%rdxoup(outptr)
 	call	swcoup
 	addq	$8,%rsp			# add cfp_b
 
 #       jump to minimal code to restart a save file.
 
-	movq	minimal_rstrt,%rax
+	movq	minimal_rstrt(%rip),%rax
 	movq	%rax,minimal_id(%rip)
-        call	minimal			# no return
+        call	c_minimal		# no return
 
 #%ifdef zz_trace
 #	.global	zz_

@@ -103,7 +103,7 @@ extern uword	minimal_id;
 extern void minimal (void);
 extern void popregs (void);
 extern void pushregs (void);
-#define MINIMAL(cn) minimal_id = cn; minimal();
+#define MINIMAL(cn) minimal_id = cn; c_minimal();
 #define MINSAVE() pushregs()
 #define MINRESTORE() popregs()
 

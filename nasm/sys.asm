@@ -290,7 +290,7 @@
 
 	global	reg_rp
 
-	global	minimal
+	global	c_minimal
 	extern	stacksiz
 
 ;	values below must agree with calltab defined in x32.hdr and also in osint/osint.h
@@ -639,7 +639,7 @@ startup:
 
 	mov     xs,m(osisp)	; switch to new c stack
 	mov	m(minimal_id),calltab_start
-	call	minimal			; load regs, switch stack, start compiler
+	call	c_minimal			; load regs, switch stack, start compiler
 
 ;	stackinit  -- initialize spmin from sp.
 
@@ -686,7 +686,7 @@ chk.oflo:
 	inc	w0			; make nonzero to indicate stack overflow0
 	ret
 
-;       mimimal -- call minimal function from c
+;       c_mimimal -- call minimal function from c
 
 ;       usage:  extern void minimal(word callno)
 
@@ -700,7 +700,7 @@ chk.oflo:
 ;       stack to switch to.  in that case, just make the call on the
 ;       the osint stack.
 
-minimal:
+c_minimal:
 ;         pushad			; save all registers for c
 	mov     wa,m(reg_wa)	; restore registers
 	mov	wb,m(reg_wb)
@@ -1159,7 +1159,7 @@ re3:	cld
         mov	w0,m(statb)      	; start of static region to xr
 	mov	m(reg_xr),w0
 	mov	w0,minimal_insta
-	call	minimal			; initialize static region
+	call	c_minimal		; initialize static region
 
 ;
 ;       now pretend that we're executing the following c statement from
@@ -1217,7 +1217,7 @@ re4:	mov	w0,m(stbas)
 
 	mov	w0,minimal_rstrt
 	mov	m(minimal_id),w0
-        call	minimal			; no return
+        call	c_minimal		; no return
 
 
         section	.text

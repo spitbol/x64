@@ -28,6 +28,24 @@ next
 	line = input					:f(end)
 	raw = line
 
+scan
+	line	'sys_dvi' = '_sys_dvi'
+	line	'sys_rmi' = '_sys_rmi'
+	line	'trc'	  = '_trc'
+	line	'reg_w0'  = '_reg_w0'
+	line	'reg_wa'  = '_reg_wa'
+	line	'reg_wb'  = '_reg_wb'
+	line	'reg_wc'  = '_reg_wc'
+	line	'reg_xl'  = '_reg_xl'
+	line	'reg_xr'  = '_reg_xr'
+	line	'reg_xs'  = '_reg_xs'
+	line	'reg_xt'  = '_reg_xt'
+	line	'reg_cp'  = '_reg_cp'
+	line	'reg_ra'  = '_reg_ra'
+	line	'reg_ia'  = '_reg_ia'
+	line	'reg_fl'  = '_reg_fl'
+	line	'reg_rp'  = '_reg_rp'
+	line	'w_aaa'   = '_w_aaa'
 	line	'.global' = '.globl'
 	line	'b_icl' = '_b_icl'
 	line	'b_scl' = '_b_scl'
@@ -50,7 +68,7 @@ next
 	line	'id2blk' = '_id2blk'
 	line	'inf' = '_inf'
 	line	'inpbuf' = '_inpbuf'
-	line	'minimal' = '_minimal'
+	line	'c_minimal' = '_c_minimal'
 	line	'minimal_id' = '_minimal_id'
 	line	'phrases' = '_phrases'
 	line	'pmhbs' = '_pmhbs'
@@ -92,8 +110,6 @@ next
 	line	'f_str' = '_f_str'
 	line	'f_tan' = '_f_tan'
 	line	'i_cvd' = '_i_cvd'
-	line	'i_dvi' = '_i_dvi'
-	line	'i_rmi' = '_i_rmi'
 	line	'lmodstk' = '_lmodstk'
 	line	'outptr' = '_outptr'
 	line	'rereloc' = '_rereloc'
@@ -138,6 +154,8 @@ next
 	line	'zystt' = '_zystt'
 	line	'zysul' = '_zysul'
 	line	'zysxi' = '_zysxi'
+*	lt(scans = scans + 1,3)			:s(scan)
+
 	fixed = differ(raw,line) fixed + 1
 						:(copy)
 end

@@ -95,6 +95,7 @@
 
 *  error is used to report an error for current statement
 
+
 	define('error(text)')
 	define('flush()')
 	define('genz()')
@@ -103,11 +104,11 @@
         define('genlab()')
 	define('gen_osint()name')
         define('genrip()')
-	define('getlit(txt)lbl,lit')
+	define('getrip(txt)lbl,lit')
 	define('op(gopc,gop1,gop2,gop3)')
 	define('opl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
-	define('getarg(iarg)txt,typ,pre,post')
+	define('getarg(iarg)txt,typ,lit,disp,indx')
 	define('getlea(iarg)txt,typ,reg,disp')
 	define('getvalue(text)')
 	define('ifreg(iarg)')
@@ -122,7 +123,6 @@
 	define('rip(txt)')
 	define('tblini(str)pos,cnt,index,val,lastval')
 	define('v(text)')
-
 *  outstmt is used to send a target statement to the target code
 *  output file outfile
 
@@ -504,9 +504,9 @@ flgs2
         output = ~input(.infile,1) "no input file"	:s(end)
 
 	
-*	litmap is used to resolve literals, arguments of the form =lbl or *lbl (types 18-22)
+*	ripmap is used to resolve literals, arguments of the form =lbl or *lbl (types 18-22)
 
-	litmap = table(300)
+	ripmap = table(300)
 
 *	is_osint_proc is non-null for name of osint procedure
 
@@ -694,17 +694,17 @@ gen_osint.2
 *  generate unique labels for use in generated code
 genrip	genrip = 'r_' lpad(riplabels = riplabels + 1,4,'0') :(return)
 
--stitl getlit(txt)lbl,lit
-getlit
-	lit = litmap[txt]
-	getlit = differ(lit) lit		:s(return)
+-stitl getrip(txt)lbl,lit
+getrip
+	lit = ripmap[txt]
+	getrip = differ(lit) lit		:s(return)
 *	make new literal entry
 	op('.data')
 	lbl = genrip()
 	opl(lbl,'.quad', txt)
 	op('.text')
-	litmap[txt] = rip(lbl)
-	getlit = litmap[txt]
+	ripmap[txt] = rip(lbl)
+	getrip = ripmap[txt]
 						:(return)
 -stitl opl(gopl,gopc,gop1,gop2,gop3)
 *  generate operation with label
@@ -739,38 +739,28 @@ getarg
 	eq(typ)					:f($(argcase[typ]))
 	getarg = txt				:(getarg.done)
 
-*	int
-
-getarg.c.1 
+getarg.c.1 	;* int		integer
 	getarg = txt				:(getarg.done)
 
-*	dlbl
-
-getarg.c.2 
+getarg.c.2 	;* dlbl		symbol defined in definitions section
 	getarg = txt				:(getarg.done)
 
-*	wlbl, clbl
 
-getarg.c.3
-getarg.c.4 
+getarg.c.3	;* wlbl		label in working section
+getarg.c.4 	;* clcl		label in constant section
 	getarg = rip(txt)
 						:(getarg.done)
 
-* elbl, plbl
+getarg.c.5	;* elbl		program section entry label
+getarg.c.6 	;* plbl		program section entry (non entry)
+	getarg = txt			:(getarg.done)
 
-getarg.c.5
-getarg.c.6 getarg = txt
-						:(getarg.done)
-
-*	w,x, map register name
-
-getarg.c.7
-getarg.c.8
+getarg.c.7	;*		x register
+getarg.c.8	;*		w register
 	getarg = regmap[txt]			:(getarg.done)
 
-*	(x), register indirect
 
-getarg.c.9
+getarg.c.9	;* (x)		 location referenced by x
 	txt len(1) len(2) . indx		
 	getarg = '(' regmap[indx] ')'
 						:(getarg.done)
@@ -779,43 +769,38 @@ getarg.c.9
 *	since it takes an extra byte.  actually, lea reg,[reg+cfp_b] and add reg,cfp_b are both 
 *	2 cycles and 3 bytes for all the other regs, and either could be used.
 
-getarg.c.10
+getarg.c.10	;* (x)+		like (x) but predecrement x
 	indx = substr(txt,2,2)
 	getarg = '(' regmap[indx] ')'
 	genaop(newstmt(,'addq',regmap[indx],literal_ cfp_b)) 
 						:(getarg.done)
 
-*	-(x), register indirect, pre decrement
-
-getarg.c.11
+getarg.c.11	;* -(x)		like (x) but post increment x
 	indx = substr(txt,3,2)
 	genbop(newstmt(,'subq',regmap[indx],literal_ cfp_b,)) 	
 	getarg = '(' regmap[indx] ')'
 						:(getarg.done)
 
-*	int(x)
-*	dlbl(x)
-
-getarg.c.12
-getarg.c.13
+getarg.c.12	;* int(x)	int words beyond addr in x
+getarg.c.13	;* dlbl(x)	dlbl words past address in x
 	txt break('(') . disp '(' len(2) . indx
 	disp = v(cfp_b * v(disp))
 	getarg = disp '(' regmap[indx] ')'
 						:(getarg.done)
 
-*	name(x), where name is in working section
-
-getarg.c.14
-getarg.c.15
+getarg.c.14	;* clbl(x)	(x) bytes beyond clbl
+getarg.c.15	;* wlbl(x)	(x) bytes beyone wlbl
+	
+	
 	txt break('(') . disp '(' len(2) . indx	
-	val = equ_value[disp]
-	disp = differ(val) literal_ val
-	getarg = disp '(' regmap[indx] ')'
-						:(getarg.done)
+	lit = getrip(disp)
+	op(mov.w,reg.w0,lit)
+	op(add.w,reg.w0,regmap[indx])
+	getarg = '(' reg.w0 ')'
+						:(return)
 
-*	signed integer
-
-getarg.c.16 getarg = txt			:(getarg.done)
+getarg.c.16	;* integer
+	getarg = txt			:(getarg.done)
 
 *	signed real
 
@@ -831,8 +816,7 @@ getarg.c.19	;* *dlbl
 getarg.c.20	;* =name (data section)
 getarg.c.21	;* =clbl (constant section)
 getarg.c.22	;* =elbl
-	getarg = getlit(substr(txt,2))		:(getarg.done)
-        getarg =  '$' substr(txt,2)		:(getarg.done)
+	getarg = getrip(substr(txt,2))		:(getarg.done)
 
 *	pnam, eqop
 getarg.c.23
@@ -1127,16 +1111,18 @@ ifreg	ge(i.type(iarg),7) le(i.type(iarg),8)
 .						:f(freturn)s(return)
 
 g.flc
-	t1 = reglow[i.text(i1)]
-	t2 = genlab()
-*	i_suspend = 1
-	op(cmp.b,t1,literal_ "'A'")
-	op('jb', t2 )
-	op(cmp.b,t1,literal_ "'Z'")
-	op('ja', t2)
-	op(add.b,t1,literal_ '32')
-        opl(t2)
-*	i_suspend = 0
+	reg = getarg(i1)
+	lbl = genlab()
+	i_suspend = 1
+	op(cmp.w,reg,getrip("65"));* compare with upper case A
+	op('jb', lbl )
+	op(cmp.w,reg,getrip("90"));* compare with upper case Z
+	op('ja', lbl)
+	op(add.w,reg,getrip("32"))
+	flush()
+        opl(lbl)
+	flush()
+	i_suspend = 0
 						:(opdone)
 
 g.mov
@@ -1180,6 +1166,8 @@ g.bev	reg = getarg(i1)
 
 g.brn   op('jmp',getarg(i1))			:(opdone)
 
+g.iff   op('.quad',getarg(i2))              :(opdone)
+
 g.bsw	reg = getarg(i1)
 	t2 = genlab()
 	i_suspend = 1
@@ -1188,14 +1176,20 @@ g.bsw	reg = getarg(i1)
 	op('jge',getarg(i3))
 * here after default case.
 g.bsw1	
-	outfile = cs 'g.bsw '  t2 '(,' reg ',' cfp_b ')'
-	op('jmp','*'  t2 '(,' reg ',' cfp_b ')' )
+* in rip_mode, need to generate location to reference destination
+	lbl = genrip()
+        op('.data')
+	opl(lbl,'.quad',t2 )
+	op('.text')
+	op(mov.w,reg.w0,rip(lbl))
+	op(sal.w,reg,iv(log_cfp_b))
+	op(add.w,reg.w0,reg)
+	op('jmp', '*(' reg.w0 ')')
+g.bsw.3
 	op('.data')
         opl(t2)
 	i_suspend = 0
 						:(opdone)
-
-g.iff   op('.quad',getarg(i2))              :(opdone)
 
 g.esw
         op('.text')			:(opdone)
@@ -1253,7 +1247,7 @@ g.jsr
 	jsr_calls = jsr_calls +  1
 	jsr_label = 'call_' jsr_calls
 	jsr_label_norm = jsr_label
-	op(dec.w,rcode)
+	op(dec.w,rip(rcode))
 	op('js',jsr_label_norm)
 	i_suspend = 0
 
@@ -1286,13 +1280,13 @@ g.ppm.loop.next
 	eq(jsr_count) opl(jsr_label_norm) :(opdone)
 g.ppm.loop
 	lab_next = genlab()
-	op(dec.w,rcode)
+	op(dec.w,rip(rcode))
 	op('jns',lab_next)
 	ident(incode,'ppm')			:s(g.ppm.loop.ppm)
 *  here if error exit via exi. set rcode to exit code and jump
 *  to error handler with error code in rcode
 g.ppm.loop.err
-	op(mov.w,rcode,literal_  +t1)
+	op(mov.w,rip(rcode),literal_  +t1)
 	op('jmp','err_')
 						:(g.ppm.loop.next)
 g.ppm.loop.ppm
@@ -1335,7 +1329,7 @@ g.exi
 *  if type r or e, and no exit parameters, just return
  	differ(t2,'n') eq(prc.args)	op('ret')	:s(opdone)
         t3 = ident(t3) '0'
-    	op(mov.w,rcode,literal_ +t3)
+    	op(mov.w,rip(rcode),literal_ +t3)
 	ident(t2,'n')				:s(g.exi.1)
 	op('ret')				:(opdone)
 g.exi.1
@@ -1348,7 +1342,7 @@ g.enp   op()					:(opdone)
 g.erb
 	errfile =  i.text(i1) ' ' i.text(i2)
 *	set rcode to error code and branch to error handler
-	op(mov.w, rcode,literal_   +(i.text(i1)))
+	op(mov.w, rip(rcode),literal_   +(i.text(i1)))
  	op('jmp','err_')
 						:(opdone)
 
@@ -1491,10 +1485,10 @@ g.sbi
 	op('seto',rip('reg_fl'))		:(opdone)
 g.dvi
 	op(mov.w,reg.w0,getarg(i1))
-	op('call','dvi_')			:(opdone)
+	op('call','sys_dvi')			:(opdone)
 g.rmi
 	op(mov.w,reg.w0,getarg(i1))
-	op('call','rmi_')			:(opdone)
+	op('call','sys_rmi')			:(opdone)
 
 g.ngi
 	op(neg.w,reg.ia)			:(opdone)
@@ -1987,7 +1981,7 @@ g.sec.7
 
 *	allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
-	opl('err_',xchg.w,reg.wa,rcode)
+	opl('err_',xchg.w,reg.wa,rip(rcode))
 						:(opdone)
 
 
