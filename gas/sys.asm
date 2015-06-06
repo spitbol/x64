@@ -1,4 +1,4 @@
-# copyright 1987-2012 robert b. k. dewar and mark emmer.
+# opyright 1987-2012 robert b. k. dewar and mark emmer.
 
 # copyright 2012-2015 david shields
 #
@@ -414,7 +414,7 @@ stackinit:
 	movq	%rax,compsp(%rip)	# save minimal's stack pointer
 	subq	stacksiz(%rip),%rax	# end of minimal stack is where c stack will start
 	movq	%rax,osisp(%rip)	# save new c stack pointer
-	addq	$cfp_b*100,%rax	# 100 words smaller for chk
+	addq	$cfp_b*128,%rax	# 128 words smaller for chk (need multiple of 16 for mac osx)
 	movq	%rax,spmin(%rip)
 	ret
 
