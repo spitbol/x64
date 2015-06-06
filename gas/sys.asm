@@ -368,10 +368,12 @@ restore_regs:
 
 startup:
 	pop	%rax			# discard return
+	call	trc_s
 	xorq	%rbp,%rbp		# initialize IA to zero
 	call	stackinit		# initialize minimal stack
 	mov	compsp(%rip),%rax		# get minimal's stack pointer
 	mov	%rax,reg_wa(%rip)		# startup stack pointer
+	call	trc_s
 
 	cld				# default to up direction for string ops
 #	getoff	%rax,dffnc		# get address of ppm offset

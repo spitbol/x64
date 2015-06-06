@@ -259,6 +259,10 @@ void trc_0() {
 void trc_1() {
 	fprintf(stderr, "trc_1\n");
 }
+void trc_s() {
+	fprintf(stderr,"osisp %lx\n",osisp);
+	fprintf(stderr,"compsp %lx\n",compsp);
+}
 void trc_2() {
 	fprintf(stderr, "trc_2\n");
 }
