@@ -76,6 +76,7 @@ char	*argv[];
     */
     dcdone = 0;
 
+#undef EXECFILE
 #if EXECFILE
     /*
     /   If this is a restart of this program from a load module, set things
@@ -123,9 +124,10 @@ char	*argv[];
 
     switch (getsave(getrdfd())) {
     case 1:					// save file loaded
-        inpcnt = 0;               // v1.02 no more cmd line files
-        swcinp(inpcnt, inpptr );  // v1.01
-        restart( (char *)0L, lowsp );
+	wrterr("SPITBOL save file no supported");
+//        inpcnt = 0;               // v1.02 no more cmd line files
+ //       swcinp(inpcnt, inpptr );  // v1.01
+  //      restart( (char *)0L, lowsp );
 
     case 0:					// not a save file
 #if RUNTIME
