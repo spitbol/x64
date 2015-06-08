@@ -201,8 +201,6 @@ zero:	.quad	0
 sav_block: .fill  440,1,0     		# save minimal registers during push/pop reg
 
 	.balign 8
-	.global	ppoff
-ppoff:  .quad      0               	# offset for ppm exits
 	.global	compsp
 compsp: .quad      0               	# compiler's stack pointer
 	.global	sav_compsp
@@ -368,23 +366,24 @@ restore_regs:
 
 startup:
 	pop	%rax			# discard return
-	call	trc_s
 	xorq	%r12,%r12		# initialize IA to zero
+	movq	%r12,reg_ia(%rip)
 	call	stackinit		# initialize minimal stack
 	mov	compsp(%rip),%rax		# get minimal's stack pointer
 	mov	%rax,reg_wa(%rip)		# startup stack pointer
-	call	trc_s
-
 	cld				# default to up direction for string ops
-#	getoff	%rax,dffnc		# get address of ppm offset
-	mov	%rax,ppoff(%rip)	# save for use later
-
 	mov	osisp(%rip),%rsp	# switch to new c stack
-	leaq	calltab_start(%rip),%rax
-	mov	%rax,minimal_id(%rip)
-	call	c_minimal		# load regs, switch stack, start compiler
+#	initialize registers to values set by osint before calling startup
+	movq	reg_ia(%rip),%r12
+	movq 	reg_wa(%rip),%rcx	# restore registers
+	movq	reg_wb(%rip),%rbx
+	movq	reg_wc(%rip),%rdx	#
+	movq	reg_xl(%rip),%rsi
+	movq	reg_xr(%rip),%rdi
+	movq	osisp(%rip),%rsp	# save osint stack pointer
+	call	start
 
-#	stackinit  -- initialize spmin from sp.
+#	stackinit  -- initialize stacks
 
 #	input:  sp - current c stack
 #		stacksiz - size of desired minimal stack in bytes
@@ -444,32 +443,10 @@ chk.oflo:
 #       the osint stack.
 
 c_minimal:
-#         pushad		# save all registers for c
-	movq	reg_ia(%rip),%r12
-	movq 	reg_wa(%rip),%rcx	# restore registers
-	movq	reg_wb(%rip),%rbx
-	movq	reg_wc(%rip),%rdx	#
-	movq	reg_xl(%rip),%rsi
-	movq	reg_xr(%rip),%rdi
-	movq	osisp(%rip),%rsp	# save osint stack pointer
-	xorq	%rax,%rax
-	cmpq	%rax,compsp(%rip)	# is there a compiler stack?
-	je 	min1			# jump if none yet
-	movq	compsp(%rip),%rsp	# switch to compiler stack
-
- min1:
-	movq	minimal_id(%rip),%rax	# get ordinal
-#	call   calltab+%rax*cfp_b    # off to the minimal code
-	call	start
-
-	mov     osisp(%rip),%rsp	# switch to osint stack
-
-	movq	%rcx,reg_wa(%rip)	# save registers
-	movq	%rbx,reg_wb(%rip)
-	movq	%rdx,reg_wc(%rip)
-	movq	%rsi,reg_xl(%rip)
-	movq	%rdi,reg_xr(%rip)
-	movq	%r12,reg_ia(%rip)
+#	this is just place holder, c_minimal should never be called. Cf. osint/sysxi.c.
+# 	force error in case it is ever called.
+	xorq %rax,%rax
+	jmp *%rax
 	ret
 
 
