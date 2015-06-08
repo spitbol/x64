@@ -460,7 +460,7 @@ flgs2
 	reg.wa = regmap['wa'] = '%rcx'  
 	reg.wb = regmap['wb'] = '%rbx'
 	reg.wc = regmap['wc'] = '%rdx'  
-	reg.ia = regmap['ia'] = '%rbp'
+	reg.ia = regmap['ia'] = '%r12'
 *	w0 is temp register
 	reg.w0 = regmap['w0'] = '%rax'
 	reg.al = '%al'		;* least-significant (low) part of w0.

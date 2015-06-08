@@ -313,7 +313,7 @@ call_adr:	.quad	0
 #
 	.global	save_regs
 save_regs:
-	movq	%rbp,save_ia(%rip)
+	movq	%r12,save_ia(%rip)
 	movq	%rsi,save_xl(%rip)
 	movq	%rdi,save_xr(%rip)
 	movq	%rcx,save_wa(%rip)
@@ -324,7 +324,7 @@ save_regs:
 	.global	restore_regs
 restore_regs:
 	#	restore regs, except for sp. that is caller's responsibility
-	movq	save_ia(%rip),%rbp
+	movq	save_ia(%rip),%r12
 	movq	save_xl(%rip),%rsi
 	movq	save_xr(%rip),%rdi
 	movq	save_wa(%rip),%rcx
@@ -369,7 +369,7 @@ restore_regs:
 startup:
 	pop	%rax			# discard return
 	call	trc_s
-	xorq	%rbp,%rbp		# initialize IA to zero
+	xorq	%r12,%r12		# initialize IA to zero
 	call	stackinit		# initialize minimal stack
 	mov	compsp(%rip),%rax		# get minimal's stack pointer
 	mov	%rax,reg_wa(%rip)		# startup stack pointer
@@ -445,7 +445,7 @@ chk.oflo:
 
 c_minimal:
 #         pushad		# save all registers for c
-	movq	reg_ia(%rip),%rbp
+	movq	reg_ia(%rip),%r12
 	movq 	reg_wa(%rip),%rcx	# restore registers
 	movq	reg_wb(%rip),%rbx
 	movq	reg_wc(%rip),%rdx	#
@@ -469,7 +469,7 @@ c_minimal:
 	movq	%rdx,reg_wc(%rip)
 	movq	%rsi,reg_xl(%rip)
 	movq	%rdi,reg_xr(%rip)
-	movq	%rbp,reg_ia(%rip)
+	movq	%r12,reg_ia(%rip)
 	ret
 
 
@@ -529,7 +529,7 @@ syscall_init:
 	movq	%rdx,reg_wc(%rip)
 	movq	%rsi,reg_xl(%rip)
 	movq	%rdi,reg_xr(%rip)
-	movq	%rbp,reg_ia(%rip)
+	movq	%r12,reg_ia(%rip)
 	ret
 
 syscall_exit:
@@ -541,7 +541,7 @@ syscall_exit:
 	movq	reg_wc(%rip),%rdx      #
 	movq	reg_xr(%rip),%rdi
 	movq	reg_xl(%rip),%rsi
-	movq	reg_ia(%rip),%rbp
+	movq	reg_ia(%rip),%r12
 	cld
 	movq	reg_pc(%rip),%rax
 	jmp	*%rax
@@ -558,10 +558,10 @@ syscall_exit:
 #               wa ecx) = remainder + '0'
 	.global	cvd_
 cvd_:
-	movq	%rbp,reg_ia(%rip)	
+	movq	%r12,reg_ia(%rip)	
 	movq	%rcx,reg_wa(%rip)
 	call	i_cvd
-	mov	reg_ia(%rip),%rbp
+	mov	reg_ia(%rip),%r12
 	movq	reg_wa(%rip),%rcx
 	ret
 
@@ -571,7 +571,7 @@ cvd_:
 sys_dvi:
 	movq	%rax,reg_w0(%rip)
 	call	i_dvi
-	movq	reg_ia(%rip),%rbp
+	movq	reg_ia(%rip),%r12
 	movb	reg_fl(%rip),%al
 	orb	%al,%al
 	ret
@@ -582,7 +582,7 @@ sys_rmi:
 	jmp	ocode
 	movq	%rax,reg_w0(%rip)
 	call	i_rmi
-	mov	reg_ia(%rip),%rbp
+	mov	reg_ia(%rip),%r12
 	movb	reg_fl(%rip),%al
 	orb	%al,%al
 	ret
@@ -590,11 +590,11 @@ sys_rmi:
 ocode:
 	orq	%rax,%rax         	# test for 0
 	jz	setovr   	 	# jump if 0 divisor
-	xchg	%rax,%rbp         	# ia to %rax, divisor to ia
+	xchg	%rax,%r12         	# ia to %rax, divisor to ia
 	cqo                    		# extend dividend
-	idiv	%rbp              	# perform division. %rax=quotient, wc=remainder
+	idiv	%r12              	# perform division. %rax=quotient, wc=remainder
 	seto	reg_fl(%rip)
-	movq	%rdx,%rbp
+	movq	%rdx,%r12
 	ret
 
 setovr: movb     $1,%al		# set overflow indicator
