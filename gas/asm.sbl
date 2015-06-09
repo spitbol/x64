@@ -892,11 +892,6 @@ osint.2
 	op(mov.w,'%rsp',rip('osisp'));* switch to osint stack
 	op('call', 'z' substr(name,2))
 	op('call','syscall_exit')
-	op(mov.w,reg.w0,rip('_rc_'));
-	op(mov.w,rip('osisp'),'%rsp');
-	op(mov.w,'%rsp',rip('compsp'));
-	op(mov.w,reg.w0,rip('reg_pc'));
-	op('jmp', '*' reg.w0);
 	flush()
 						:(osint.1)
 -stitl outline(txt)

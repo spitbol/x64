@@ -500,8 +500,7 @@ c_minimal:
 
 syscall_init:
 #       save registers in global variables
-
-	mov     %rcx,reg_wa(%rip)      # save registers
+	movq    %rcx,reg_wa(%rip)      # save registers
 	movq	%rbx,reg_wb(%rip)
 	movq	%rdx,reg_wc(%rip)
 	movq	%rsi,reg_xl(%rip)
@@ -512,17 +511,15 @@ syscall_init:
 syscall_exit:
 	movq	reg_wa(%rip),%rcx      # restore registers
 	movq	reg_wb(%rip),%rbx
-	movq	reg_wc(%rip),%rdx      #
+	movq	reg_wc(%rip),%rdx      
 	movq	reg_xr(%rip),%rdi
 	movq	reg_xl(%rip),%rsi
 	movq	reg_ia(%rip),%r12
 	cld
-	movq	%rax,_rc_(%rip)	# save return code from function
-	movq	%rsp,osisp(%rip)       # save osint's stack pointer
-	movq	compsp(%rip),%rsp      # restore compiler's stack pointer
-	movq	reg_pc(%rip),%rax
-	jmp	*%rax
-
+	movq	%rax,_rc_(%rip)		# save return code from function
+	movq	compsp(%rip),%rsp	# switch to compiler's stack 
+	movq	reg_pc(%rip),%rax	# load return address
+	jmp	*%rax			# return to caller
 
 #	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
 #	placed in %rax, which is then sign extended into wc:%rax. after the divide, %rax contains the
@@ -542,30 +539,36 @@ cvd_:
 	movq	reg_wa(%rip),%rcx
 	ret
 
-
 #       sys_dvi_ - divide ia (edx) by long in %rax
 	.global	sys_dvi
 sys_dvi:
 	movq	%rax,reg_w0(%rip)
-	call	i_dvi
-	movq	reg_ia(%rip),%r12
+	popq	%rax			# save return address for minimal caller	#
+	movq	%rax,reg_pc(%rip)	
+	call	syscall_init		# save register contents
+	movq	osisp(%rip),%rsp	# switch to osint stack
+	call	i_dvi			# call osint procedure
 	movb	reg_fl(%rip),%al
 	orb	%al,%al
-	ret
+	call	syscall_exit		# return to minimal code
 	
 	.global	sys_rmi
 #       rmi - remainder of ia (edx) divided by long in %rax
 sys_rmi:
 	jmp	ocode
 	movq	%rax,reg_w0(%rip)
+	popq	%rax			# save return address for minimal caller	#
+	movq	%rax,reg_pc(%rip)	
+	call	syscall_init		# save register contents
+	movq	osisp(%rip),%rsp	# switch to osint stack
 	call	i_rmi
 	mov	reg_ia(%rip),%r12
 	movb	reg_fl(%rip),%al
 	orb	%al,%al
-	ret
+	call	syscall_exit		# return to minimal code
 
 ocode:
-	orq	%rax,%rax         	# test for 0
+	orq	%rax,%rax		# test for 0
 	jz	setovr   	 	# jump if 0 divisor
 	xchg	%rax,%r12         	# ia to %rax, divisor to ia
 	cqo                    		# extend dividend
