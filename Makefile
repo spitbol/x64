@@ -77,7 +77,7 @@ unix_64_gas:
 	$(BASEBOL) -u unix_64_gas		-1=bld/sbl.err	-2=bld/err.s err.sbl
 	cat	gas/sys.asm	bld/err.s	bld/sbl.tmp	>bld/sbl.s
 	as 	-o bld/sbl.o	bld/sbl.s
-	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
+	$(CC) -lm -Dunix_64 -m64 -static $(LDOPTS)  bld/*.o -lm  -osbl 
 
 osx_64_gas:
 # same as for unix except for added step to translate names using osx.sbl
