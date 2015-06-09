@@ -510,9 +510,6 @@ syscall_init:
 	ret
 
 syscall_exit:
-	movq	%rax,_rc_(%rip)	# save return code from function
-	movq	%rsp,osisp(%rip)       # save osint's stack pointer
-	movq	compsp(%rip),%rsp      # restore compiler's stack pointer
 	movq	reg_wa(%rip),%rcx      # restore registers
 	movq	reg_wb(%rip),%rbx
 	movq	reg_wc(%rip),%rdx      #
@@ -520,6 +517,9 @@ syscall_exit:
 	movq	reg_xl(%rip),%rsi
 	movq	reg_ia(%rip),%r12
 	cld
+	movq	%rax,_rc_(%rip)	# save return code from function
+	movq	%rsp,osisp(%rip)       # save osint's stack pointer
+	movq	compsp(%rip),%rsp      # restore compiler's stack pointer
 	movq	reg_pc(%rip),%rax
 	jmp	*%rax
 

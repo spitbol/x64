@@ -102,7 +102,6 @@
 	define('genaop(stmt)')
 	define('genbop(stmt)')
         define('genlab()')
-	define('gen_osint()name')
         define('genrip()')
 	define('getrip(txt)lbl,lit')
 	define('op(gopc,gop1,gop2,gop3)')
@@ -115,7 +114,7 @@
 	define('iv(text)')
 	define('memmem()t')
 	define('newstmt(gopl,gopc,gop1,gop2,gop3)arg1,arg2,swap')
-	define('osint(txt)')
+	define('osint()name')
 	define('outline(txt)')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
@@ -651,45 +650,6 @@ genbop
 -stitl genlab()
 *  generate unique labels for use in generated code
 genlab	genlab = 'l_' lpad(genlabels = genlabels + 1,4,'0') :(return)
-
--stitl gen_osint()
-
-gen_osint
-	s  =	'sysax sysbs sysbx sysdc sysdm sysdt sysea sysef sysej sysem sysen sysep sysex '
-+			'sysfc sysgc syshs sysid sysif sysil sysin sysio sysld sysmm sysmx sysou syspi '
-+			'syspl syspp syspr sysrd sysri sysrw sysst systm systt sysul sysxi '
-* for each system procedure, declare it, handle any special
-* argument handling, and then generate call to 
-* corresponding osint procedure
-
-	op('.text')
-gen_osint.1
-	s break(' ') . name len(1) =		:f(return)
-	opl(name)
-	ident(name,'sysbx')			:s(gen_osint.sysbx)
-	ident(name,'sysfc')			:s(gen_osint.sysfc)
-	ident(name,'syshs')			:s(gen_osint.syshs)
-	ident(name,'sysxi')			:s(gen_osint.sysxi)
-						:(gen_osint.2)
-gen_osint.sysbx
-	op(mov.w,rip('reg_xs'),'%rsp')		:(gen_osint.2)
-
-gen_osint.sysfc
-	op(pop.w,reg.w0)
-	op(lea.w,'%rsp', '(%rsp,%rdx,8)');* remove stacked fcblk
-	op(push.w,reg.w0)
-						:(gen_osint.2)
-gen_osint.syshs
-	op(mov.w,rip('reg_xs'),'%rsp')		:(gen_osint.2)
-
-gen_osint.sysxi
-	op(mov.w,rip('reg_xs'),'%rsp')		:(gen_osint.2)
-
-gen_osint.2
-	flush()
-	osint(name)
-						:(gen_osint.1)
-
 -stitl genrip()
 *  generate unique labels for use in generated code
 genrip	genrip = 'r_' lpad(riplabels = riplabels + 1,4,'0') :(return)
@@ -891,21 +851,54 @@ memmem
   i2 = w0_arg
   op(mov.w,reg.w0,t)				:(return)
 
--stitl osint(txt)
-
+-stitl osint()
 osint
-*	local name always starts with 'sys' while library name starts with 'zys'
-	
+	s  =	'sysax sysbs sysbx sysdc sysdm sysdt sysea sysef sysej sysem sysen sysep sysex '
++			'sysfc sysgc syshs sysid sysif sysil sysin sysio sysld sysmm sysmx sysou syspi '
++			'syspl syspp syspr sysrd sysri sysrw sysst systm systt sysul sysxi '
+* for each system procedure, declare it, handle any special
+* argument handling, and then generate call to 
+* corresponding osint procedure
+
+	op('.text')
+osint.1
+	s break(' ') . name len(1) =		:f(return)
+	opl(name)
+	ident(name,'sysbx')			:s(osint.sysbx)
+	ident(name,'sysfc')			:s(osint.sysfc)
+	ident(name,'syshs')			:s(osint.syshs)
+	ident(name,'sysxi')			:s(osint.sysxi)
+						:(osint.2)
+osint.sysbx
+	op(mov.w,rip('reg_xs'),'%rsp')		:(osint.2)
+
+osint.sysfc
+	op(pop.w,reg.w0)
+	op(lea.w,'%rsp', '(%rsp,%rdx,8)');* remove stacked fcblk
+	op(push.w,reg.w0)
+						:(osint.2)
+osint.syshs
+	op(mov.w,rip('reg_xs'),'%rsp')		:(osint.2)
+
+osint.sysxi
+	op(mov.w,rip('reg_xs'),'%rsp')		:(osint.2)
+
+osint.2
+	flush()
 	op(pop.w,reg.w0)
 	op(mov.w,rip('reg_pc'),reg.w0)
 	op('call','syscall_init')
 	op(mov.w,rip('compsp'),'%rsp');* save compiler's stack pointer
 	op(mov.w,'%rsp',rip('osisp'));* switch to osint stack
-	op('call', 'z' substr(txt,2))
+	op('call', 'z' substr(name,2))
 	op('call','syscall_exit')
+	op(mov.w,reg.w0,rip('_rc_'));
+	op(mov.w,rip('osisp'),'%rsp');
+	op(mov.w,'%rsp',rip('compsp'));
+	op(mov.w,reg.w0,rip('reg_pc'));
+	op('jmp', '*' reg.w0);
 	flush()
-	
-						:(return)
+						:(osint.1)
 -stitl outline(txt)
 outline	
 	outlines = outlines + 1		
@@ -1912,7 +1905,7 @@ g.sec	op('')
 * procedure declaration section
 g.sec.1 
 *	generate bodies of osint interface procedures
-	gen_osint()
+	osint()
 	op('.text')
         op('.global','sec01')
         opl('sec01')             	:(opdone)
@@ -1951,11 +1944,6 @@ g.sec.5
         op('.text')
         op('.global','sec05')
         opl('sec05')     
-
-*	define interface to call osint procedures
-	osint('sysax')
-
-*  enable tracing if desired
 						:(opdone)
 
 *  stack overflow section.  output exi__n tail code

@@ -176,6 +176,11 @@ char	*argv[];
 
 
     /*
+	Adjust stacksiz to be multiple of 16. This is required for OSX and causes
+	no harm for unix.
+    */
+	stacksiz = 16 * (stacksiz / 16 );
+    /*
     /   All compiler registers are initially zero, except for XL and XR which
     /   are set to top and bottom of heap.
     */
