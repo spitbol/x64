@@ -534,6 +534,19 @@ syscall_exit:
 cvd_:
 	movq	%r12,reg_ia(%rip)	
 	movq	%rcx,reg_wa(%rip)
+	popq	%rax			# save return address for minimal caller	#
+	movq	%rax,reg_pc(%rip)	
+	call	syscall_init		# save register contents
+	movq	%rsp,compsp(%rip)	# save compiler stack pointer
+	movq	osisp(%rip),%rsp	# switch to osint stack
+	call	i_cvd
+	mov	reg_ia(%rip),%r12
+	movq	reg_wa(%rip),%rcx
+	call	syscall_exit
+	ret
+
+	movq	%r12,reg_ia(%rip)	
+	movq	%rcx,reg_wa(%rip)
 	call	i_cvd
 	mov	reg_ia(%rip),%r12
 	movq	reg_wa(%rip),%rcx
@@ -543,29 +556,14 @@ cvd_:
 	.global	sys_dvi
 sys_dvi:
 	movq	%rax,reg_w0(%rip)
-	popq	%rax			# save return address for minimal caller	#
-	movq	%rax,reg_pc(%rip)	
-	call	syscall_init		# save register contents
-	movq	osisp(%rip),%rsp	# switch to osint stack
-	call	i_dvi			# call osint procedure
-	movb	reg_fl(%rip),%al
-	orb	%al,%al
-	call	syscall_exit		# return to minimal code
+	syscall	i_dvi
 	
 	.global	sys_rmi
 #       rmi - remainder of ia (edx) divided by long in %rax
 sys_rmi:
 	jmp	ocode
 	movq	%rax,reg_w0(%rip)
-	popq	%rax			# save return address for minimal caller	#
-	movq	%rax,reg_pc(%rip)	
-	call	syscall_init		# save register contents
-	movq	osisp(%rip),%rsp	# switch to osint stack
-	call	i_rmi
-	mov	reg_ia(%rip),%r12
-	movb	reg_fl(%rip),%al
-	orb	%al,%al
-	call	syscall_exit		# return to minimal code
+	syscall	i_rmi
 
 ocode:
 	orq	%rax,%rax		# test for 0

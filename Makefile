@@ -75,7 +75,7 @@ unix_64_gas:
 	$(BASEBOL) -u unix_64_gas		-1=sbl.asm 	-2=bld/sbl.lex	-3=bld/sbl.equ lex.sbl
 	$(BASEBOL) -u unix_64_gas:$(TRC)	-1=bld/sbl.lex	-2=bld/sbl.tmp	-3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
 	$(BASEBOL) -u unix_64_gas		-1=bld/sbl.err	-2=bld/err.s err.sbl
-	cat	gas/sys.asm	bld/err.s	bld/sbl.tmp	>bld/sbl.s
+	cat	gas/unix.asm gas/sys.asm	bld/err.s	bld/sbl.tmp	>bld/sbl.s
 	as 	-o bld/sbl.o	bld/sbl.s
 	$(CC) -lm -Dunix_64 -m64 -static $(LDOPTS)  bld/*.o -lm  -osbl 
 
@@ -176,7 +176,7 @@ test_unix_64:
 	./tbol -u unix_64_gas -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
 	./tbol -r -u unix_64_gas: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
 	./tbol -u unix_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
-	cat gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
+	cat gas/unix.asm gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
 	as -o bld/sbl.o bld/sbl.s
 	gcc -lm -Dunix_64 -m64 bld/*.o -lm  -osbl
 	mv bld/sbl.lex	tbol.lex.0
@@ -188,7 +188,7 @@ test_unix_64:
 	./tbol -u unix_64_gas -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
 	./tbol -r -u unix_64_gas: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
 	./tbol -u unix_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
-	cat gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
+	cat gas/unix.asm gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
 	as -o bld/sbl.o bld/sbl.s
 	gcc -lm -Dunix_64 -m64 bld/*.o -lm  -osbl
 	mv bld/sbl.lex	tbol.lex.1
@@ -200,7 +200,7 @@ test_unix_64:
 	./tbol -u unix_64_gas -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
 	./tbol -r -u unix_64_gas: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
 	./tbol -u unix_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
-	cat gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
+	cat gas/unix.asm gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
 	as -o bld/sbl.o bld/sbl.s
 	gcc -lm -Dunix_64 -m64 bld/*.o -lm  -osbl
 	ls -l sbl tbol

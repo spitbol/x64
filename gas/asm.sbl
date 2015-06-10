@@ -885,13 +885,14 @@ osint.sysxi
 
 osint.2
 	flush()
-	op(pop.w,reg.w0)
-	op(mov.w,rip('reg_pc'),reg.w0)
-	op('call','syscall_init')
-	op(mov.w,rip('compsp'),'%rsp');* save compiler's stack pointer
-	op(mov.w,'%rsp',rip('osisp'));* switch to osint stack
-	op('call', 'z' substr(name,2))
-	op('call','syscall_exit')
+	op('syscall','z' substr(name,2))
+*	op(pop.w,reg.w0)
+*	op(mov.w,rip('reg_pc'),reg.w0)
+*	op('call','syscall_init')
+*	op(mov.w,rip('compsp'),'%rsp');* save compiler's stack pointer
+*	op(mov.w,'%rsp',rip('osisp'));* switch to osint stack
+*	op('call', 'z' substr(name,2))
+*	op('call','syscall_exit')
 	flush()
 						:(osint.1)
 -stitl outline(txt)
