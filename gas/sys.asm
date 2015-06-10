@@ -521,51 +521,9 @@ syscall_exit:
 	movq	reg_pc(%rip),%rax	# load return address
 	jmp	*%rax			# return to caller
 
-#	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
-#	placed in %rax, which is then sign extended into wc:%rax. after the divide, %rax contains the
-#	quotient, wc contains the remainder.
-#
-#       cvd_ - convert by division
-#
-#       input   ia = number <=0 to convert
-#       output  ia / 10
-#               wa ecx) = remainder + '0'
-	.global	cvd_
-cvd_:
-	movq	%r12,reg_ia(%rip)	
-	movq	%rcx,reg_wa(%rip)
-	popq	%rax			# save return address for minimal caller	#
-	movq	%rax,reg_pc(%rip)	
-	call	syscall_init		# save register contents
-	movq	%rsp,compsp(%rip)	# save compiler stack pointer
-	movq	osisp(%rip),%rsp	# switch to osint stack
-	call	i_cvd
-	mov	reg_ia(%rip),%r12
-	movq	reg_wa(%rip),%rcx
-	call	syscall_exit
-	ret
-
-	movq	%r12,reg_ia(%rip)	
-	movq	%rcx,reg_wa(%rip)
-	call	i_cvd
-	mov	reg_ia(%rip),%r12
-	movq	reg_wa(%rip),%rcx
-	ret
-
-#       sys_dvi_ - divide ia (edx) by long in %rax
-	.global	sys_dvi
-sys_dvi:
-	movq	%rax,reg_w0(%rip)
-	syscall	i_dvi
-	
-	.global	sys_rmi
+	.global	M_rmi
 #       rmi - remainder of ia (edx) divided by long in %rax
-sys_rmi:
-	jmp	ocode
-	movq	%rax,reg_w0(%rip)
-	syscall	i_rmi
-
-ocode:
+M_rmi:
 	orq	%rax,%rax		# test for 0
 	jz	setovr   	 	# jump if 0 divisor
 	xchg	%rax,%r12         	# ia to %rax, divisor to ia
@@ -609,9 +567,7 @@ get_fp:
 
 trc_:
 	pushf
-	call	save_regs
-	call	trc
-	call	restore_regs
+	syscall	trc
 	popf
 	ret
 

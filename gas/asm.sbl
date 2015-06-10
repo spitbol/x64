@@ -114,7 +114,7 @@
 	define('iv(text)')
 	define('memmem()t')
 	define('newstmt(gopl,gopc,gop1,gop2,gop3)arg1,arg2,swap')
-	define('osint()name')
+	define('osint()txt,cname,mname,s')
 	define('outline(txt)')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
@@ -143,8 +143,8 @@ option.next
 	options break(ls) . option ls =	:f(options.done)
 	outfile = cs ' options ' options ls
 
-	ident(option,'unix_64_gas')		:s(option.unix.64_gas)
-	ident(option,'unix_64_nasm')		:s(option.unix.64_nasm)
+	ident(option,'unix_64_gas')		:s(option.unix.64)
+	ident(option,'osx_64_gas')		:s(option.osx.64)
 	ident(option,'xt')			:s(option.xt)
 	ident(option,'trc')			:s(option.trc)
 
@@ -153,11 +153,14 @@ option.next
 	output = "error: unknown option '" option "', translation ends."	
 	&dump = 0				:(end)
 
-option.unix.64_gas
+option.unix.64
 	os = 'unix'; 	ws = '64'; asm = 'gas' 	:(option.next)
 
-option.unix.64_nasm:
-	os = 'unix'; 	ws = '64'; asm = 'nasm' :(option.next)
+option.osx.64
+	os = 'osx'; 	ws = '64'; asm = 'gas' 
+*	osx requires '_' before names of procedures and variables defined in osint or referenced frmo it.
+	c_prefix = '_'
+						:(option.next)
 
 option.trc
 *	turn on instruction trace
@@ -470,22 +473,6 @@ flgs2
 	reglow['wa'] = '%cl';	reglow['wb'] = '%bl';	reglow['wc'] = '%dl'
 	reglow['w0'] = '%al'
 
-* real_op maps minimal real opcode to machine opcode
-
-	real_op = table(10)
-	real_op['adr'] = 'fadd'
-	real_op['atn'] = 'fpatan'
-	real_op['chp'] = 'frndint'
-	real_op['cos'] = 'fcos'
-	real_op['dvr'] = 'fdiv'
-	real_op['ldr'] = 'fld'
-	real_op['mlr'] = 'fmul'
-	real_op['ngr'] = 'fchs'
-	real_op['sbr'] = 'fsub'
-	real_op['sin'] = 'fsin'
-	real_op['sqr'] = 'fsqrt'
-	real_op['str'] = 'fst'
-
 *  other definitions that are dependent upon things defined in the
 *  machine definition file, and cannot be built until after the definition
 *  file has been read in.
@@ -506,8 +493,6 @@ flgs2
 *	ripmap is used to resolve literals, arguments of the form =lbl or *lbl (types 18-22)
 
 	ripmap = table(300)
-
-*	is_osint_proc is non-null for name of osint procedure
 
 inputok 
 
@@ -853,21 +838,29 @@ memmem
 
 -stitl osint()
 osint
-	s  =	'sysax sysbs sysbx sysdc sysdm sysdt sysea sysef sysej sysem sysen sysep sysex '
-+			'sysfc sysgc syshs sysid sysif sysil sysin sysio sysld sysmm sysmx sysou syspi '
-+			'syspl syspp syspr sysrd sysri sysrw sysst systm systt sysul sysxi '
+	s  =	'sysax:zysax sysbs:zysbs sysbx:zysbx sysdc:zysdc sysdm:zysdm sysdt:zysdt sysea:zysea '
++		'sysef:zysef sysej:zysej sysem:zysem sysen:zysen sysep:zysep sysex:zysex '
++		'sysfc:zysfc sysgc:zysgc syshs:zyshs sysid:zysid sysif:zysif sysil:zysil sysin:zysin '
++		'sysio:zysio sysld:zysld sysmm:zysmm sysmx:zysmx sysou:zysou syspi:zyspi syspl:zyspl '
++		'syspp:zyspp syspr:zyspr sysrd:zysrd sysri:zysri sysrw:zysrw sysst:zysst systm:zystm '
++		'systt:zystt sysul:zysul sysxi:zysxi '
++		'M_cvd:i_cvd M_dvi:f_dvi M_rti:f_rti M_itr:f_itr M_ldr:f_ldr M_str:f_str M_adr:f_adr M_sbr:f_sbr '
++		'M_mlr:f_mlr M_dvr:f_dvr M_ngr:f_ngr M_atn:f_atn M_chp:f_chp M_cos:f_cos '
++		'M_etx:f_etx M_lnf:f_lnf M_sin:f_sin M_sqr:f_sqr M_tan:f_tan M_cpr:f_cpr '
 * for each system procedure, declare it, handle any special
 * argument handling, and then generate call to 
 * corresponding osint procedure
 
 	op('.text')
 osint.1
-	s break(' ') . name len(1) =		:f(return)
-	opl(name)
-	ident(name,'sysbx')			:s(osint.sysbx)
-	ident(name,'sysfc')			:s(osint.sysfc)
-	ident(name,'syshs')			:s(osint.syshs)
-	ident(name,'sysxi')			:s(osint.sysxi)
+	s break(' ') . txt len(1) =		:f(return)
+	txt break(':') . mname ':' rem . cname
+	opl(mname)
+	ident(mname,'sysbx')			:s(osint.sysbx)
+	ident(mname,'sysfc')			:s(osint.sysfc)
+	ident(mname,'syshs')			:s(osint.syshs)
+	ident(mname,'sysxi')			:s(osint.sysxi)
+	ident(mname,'M_dvi')			:s(osint.dvi)
 						:(osint.2)
 osint.sysbx
 	op(mov.w,rip('reg_xs'),'%rsp')		:(osint.2)
@@ -883,16 +876,11 @@ osint.syshs
 osint.sysxi
 	op(mov.w,rip('reg_xs'),'%rsp')		:(osint.2)
 
+osint.dvi
+	op(mov.w,rip('reg_w0'),reg.w0)		:(osint.2)
+
 osint.2
-	flush()
-	op('syscall','z' substr(name,2))
-*	op(pop.w,reg.w0)
-*	op(mov.w,rip('reg_pc'),reg.w0)
-*	op('call','syscall_init')
-*	op(mov.w,rip('compsp'),'%rsp');* save compiler's stack pointer
-*	op(mov.w,'%rsp',rip('osisp'));* switch to osint stack
-*	op('call', 'z' substr(name,2))
-*	op('call','syscall_exit')
+	op('syscall',c_prefix cname)
 	flush()
 						:(osint.1)
 -stitl outline(txt)
@@ -1226,7 +1214,6 @@ g.lei	reg = regmap[i.text(i1)]
 	op(movz.bq,reg,reg.al)
 						:(opdone)
 g.jsr
-*	differ(is_osint_proc[jsr_proc]) 	:s($('sys.' jsr_proc))
 	jsr_proc = getarg(i1)
 	op('call',jsr_proc)
 *	get count of following ppm statements
@@ -1474,10 +1461,10 @@ g.sbi
 	op('seto',rip('reg_fl'))		:(opdone)
 g.dvi
 	op(mov.w,reg.w0,getarg(i1))
-	op('call','sys_dvi')			:(opdone)
+	op('call','M_dvi')			:(opdone)
 g.rmi
 	op(mov.w,reg.w0,getarg(i1))
-	op('call','sys_rmi')			:(opdone)
+	op('call','M_rmi')			:(opdone)
 
 g.ngi
 	op(neg.w,reg.ia)			:(opdone)
@@ -1506,11 +1493,11 @@ op.cmp
 
 g.itr	
 	op(mov.w,rip('reg_ia'),reg.ia)
-	op('call','f_' incode)			:(opdone)
+	op('call','M_' incode)			:(opdone)
 
 g.rti	
 	op(mov.w,rip('reg_ia'),reg.ia)
-	op('call','f_rti')
+	op('call','M_rti')
 	op(mov.w,reg.ia,rip('reg_ia'))
 	eq(i.type(i1))				:s(opdone)
 *  here if label given, branch if real too large
@@ -1524,10 +1511,10 @@ g.mlr
 g.dvr
 	getlea(i1)				;* get address to w0
 	op(mov.w,rip('reg_rp'),reg.w0)
-	op('call','f_' incode)
+	op('call','M_' incode)
 						:(opdone)
 g.ngr
-	op('call','f_ngr')			:(opdone)
+	op('call','M_ngr')			:(opdone)
 g.atn
 g.chp
 g.cos
@@ -1536,7 +1523,7 @@ g.lnf
 g.sin
 g.sqr
 g.tan
-	op('call','f_' incode)
+	op('call','M_' incode)
 						:(opdone)
 g.rov
 	op(mov.b,reg.al,rip('reg_fl'))
@@ -1553,7 +1540,7 @@ g.rge	jop = 'jge'				:(g.r1)
 g.rgt	jop = 'jg'				:(g.r1)
 g.rle	jop = 'jle'				:(g.r1)
 g.rlt	jop = 'jl'
-g.r1	op('call','f_cpr')
+g.r1	op('call','M_cpr')
 	op(mov.b,reg.al,rip('reg_fl'))
 	op(or.b,reg.al,reg.al)
 	op(jop,getarg(i1))			:(opdone)
@@ -1792,7 +1779,7 @@ g.cvm
 	op('jo',lbl)
 						:(opdone)
 g.cvd
-	op('call','cvd_')			:(opdone)
+	op('call','M_cvd')			:(opdone)
 g.mvc
 	i_suspend = 1
 	op('rep')
