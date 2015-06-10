@@ -844,7 +844,7 @@ osint
 +		'sysio:zysio sysld:zysld sysmm:zysmm sysmx:zysmx sysou:zysou syspi:zyspi syspl:zyspl '
 +		'syspp:zyspp syspr:zyspr sysrd:zysrd sysri:zysri sysrw:zysrw sysst:zysst systm:zystm '
 +		'systt:zystt sysul:zysul sysxi:zysxi '
-+		'M_cvd:i_cvd M_dvi:f_dvi M_rti:f_rti M_itr:f_itr M_ldr:f_ldr M_str:f_str M_adr:f_adr M_sbr:f_sbr '
++		'M_cvd:i_cvd M_dvi:i_dvi M_rti:f_rti M_itr:f_itr M_ldr:f_ldr M_str:f_str M_adr:f_adr M_sbr:f_sbr '
 +		'M_mlr:f_mlr M_dvr:f_dvr M_ngr:f_ngr M_atn:f_atn M_chp:f_chp M_cos:f_cos '
 +		'M_etx:f_etx M_lnf:f_lnf M_sin:f_sin M_sqr:f_sqr M_tan:f_tan M_cpr:f_cpr '
 * for each system procedure, declare it, handle any special
