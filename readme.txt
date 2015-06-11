@@ -8,6 +8,8 @@ The unix/linux version is built and tested with
 	make unix	build ./sbl for unix 64 bit
 	make test_unix
 
+
+
 The "sanity" test on spitbol verifies that spitbol is able to compile itself.  This is done by 
 building the system three times, and comparing the generated assembly files. 
 Normally, all three assembly files wil be equal. However, if a new optimization is
@@ -19,9 +21,9 @@ Examine the test results with
 
 Spitbol is now built by default using the translator from minimal to gas, found in ./gas
 
-Building Spitbol on OSX requires XCode. Assembly is done using the Xcode version of the gnu as (gas)
-assembler. (Apple's as is based on a decade-old version of as, hence the need for ./gas/unix.asm and
-./gas/osx.asm)
+You can also build on unix using the nasm assembler:
+	make unix_nasm
+	make test_nasm
 
 Status Report	19 April 2015	Dave Shields
 
