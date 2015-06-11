@@ -1,5 +1,5 @@
 # SPTRCBOL makefile using tccSE
-host?=unix_64
+host?=osx_64
 HOST=$(host)
 
 DEBUG:=$(debug)
@@ -67,18 +67,6 @@ OSXOPTS = -f macho64 -Dosx_64
 #.c.o:
 	$(CC)  $(CCOPTS) -c  -o$@ $(OSINT)/$*.c
 
-unix_64_gas:
-	rm -fr bld
-	mkdir bld
-	$(CC) -Dunix_64	-m64 $(CCOPTS)	-c osint/*.c
-	mv *.o bld
-	$(BASEBOL) -u unix_64_gas		-1=sbl.asm 	-2=bld/sbl.lex	-3=bld/sbl.equ lex.sbl
-	$(BASEBOL) -u unix_64_gas:$(TRC)	-1=bld/sbl.lex	-2=bld/sbl.tmp	-3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
-	$(BASEBOL) -u unix_64_gas		-1=bld/sbl.err	-2=bld/err.s err.sbl
-	cat	gas/unix.asm gas/sys.asm	bld/err.s	bld/sbl.tmp	>bld/sbl.s
-	as 	-o bld/sbl.o	bld/sbl.s
-	$(CC) -lm -Dunix_64 -m64 -static $(LDOPTS)  bld/*.o -lm  -osbl 
-
 osx_64_gas:
 # same as for unix except for added step to translate names using osx.sbl
 	rm -fr bld
@@ -92,6 +80,18 @@ osx_64_gas:
 	$(BASEBOL) 	<bld/sbl.s 	>bld/sbl.osx	gas/osx.sbl
 	as	-o bld/sbl.o	bld/sbl.osx
 	$(CC) bld/*.o -osbl 
+
+unix_64_gas:
+	rm -fr bld
+	mkdir bld
+	$(CC) -Dunix_64	-m64 $(CCOPTS)	-c osint/*.c
+	mv *.o bld
+	$(BASEBOL) -u unix_64_gas		-1=sbl.asm 	-2=bld/sbl.lex	-3=bld/sbl.equ lex.sbl
+	$(BASEBOL) -u unix_64_gas:$(TRC)	-1=bld/sbl.lex	-2=bld/sbl.tmp	-3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
+	$(BASEBOL) -u unix_64_gas		-1=bld/sbl.err	-2=bld/err.s err.sbl
+	cat	gas/unix.asm gas/sys.asm	bld/err.s	bld/sbl.tmp	>bld/sbl.s
+	as 	-o bld/sbl.o	bld/sbl.s
+	$(CC) -lm -Dunix_64 -m64 -static $(LDOPTS)  bld/*.o -lm  -osbl 
 
 unix_64_nasm:
 	rm -fr bld
