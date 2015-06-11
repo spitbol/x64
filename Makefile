@@ -64,9 +64,8 @@ OSXOPTS = -f macho64 -Dosx_64
 #.c.o:
 	$(CC)  $(CCOPTS) -c  -o$@ $(OSINT)/$*.c
 
-# default is osx 64 bit built using gas
 osx:	
-# same as for unix except for added step to translate names using osx.sbl
+# build using gas translator for osx 64 bits
 	rm -fr bld
 	mkdir bld
 	$(CC) -Dosx_64 -m64 $(CCOPTS) -c osint/*.c
@@ -79,8 +78,8 @@ osx:
 	as	-o bld/sbl.o	bld/sbl.osx
 	$(CC) bld/*.o -osbl 
 
-	# default for unix is 64 bit gas
 unix:
+# build using gas translator for unix 64 bits
 	rm -fr bld
 	mkdir bld
 	$(CC) -Dunix_64	-m64 $(CCOPTS)	-c osint/*.c
@@ -159,7 +158,7 @@ sclean:
 	make clean
 	rm tbol*
 
-unix_test:
+test_unix:
 # Do a sanity test on spitbol to  verify that spitbol is able to compile itself.
 # This is done by building the system three times, and comparing the generated assembly (.s)
 # filesbl. Normally, all three assembly files wil be equal. However, if a new optimization is
@@ -208,7 +207,7 @@ unix_test:
 	echo "comparing generated .s files"
 	diff tbol.s.1 tbol.s.2
 	echo "end sanity test"
-osx_test:
+test_osx:
 # Do a sanity test on spitbol to  verify that spitbol is able to compile itself.
 # This is done by building the system three times, and comparing the generated assembly (.s)
 # filesbl. Normally, all three assembly files wil be equal. However, if a new optimization is
