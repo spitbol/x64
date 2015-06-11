@@ -212,7 +212,7 @@ char	*argv[];
     */
     startup();
     printf("oops! startup unexpectedly returned. exiting...\n");
-    return;
+    return 1;
 #endif					// !RUNTIME
 
     /*
