@@ -1,4 +1,29 @@
-Status Report (19 April 2015) by Dave Shields
+Status Report	10 June 2015	Dave Shields
+
+The port to OSX is now working and passes the basic sanity test:
+	make osx	build ./sbl for osx 64 bit
+	make test_osx
+
+The unix/linux version is built and tested with
+	make unix	build ./sbl for unix 64 bit
+	make test_unix
+
+The "sanity" test on spitbol verifies that spitbol is able to compile itself.  This is done by 
+building the system three times, and comparing the generated assembly files. 
+Normally, all three assembly files wil be equal. However, if a new optimization is
+being introduced, the first two may differ, but the second and third should always agree.
+
+Examine the test results with
+
+	ls -l tb*
+
+Spitbol is now built by default using the translator from minimal to gas, found in ./gas
+
+Building Spitbol on OSX requires XCode. Assembly is done using the Xcode version of the gnu as (gas)
+assembler. (Apple's as is based on a decade-old version of as, hence the need for ./gas/unix.asm and
+./gas/osx.asm)
+
+Status Report	19 April 2015	Dave Shields
 
 Since January I've been working on the port to Apple OSX.
 
