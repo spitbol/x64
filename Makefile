@@ -1,15 +1,12 @@
-# SPTRCBOL makefile using tccSE
-host?=osx_64
-HOST=$(host)
+os=osx
+OS=$(os)
+
 
 DEBUG:=$(debug)
 
 nasm?=nasm
 
 debug?=0
-
-os?=unix
-OS:=$(os)
 
 ws?=64
 WS:=$(ws)
@@ -25,7 +22,7 @@ ifeq	($(trc),1)
 TRC=trc
 endif
 
-basebol?=./bin/sbl_unix_64
+basebol=./bin/sbl_osx_64
 BASEBOL=$(basebol)
 
 cc?=gcc
@@ -67,28 +64,30 @@ OSXOPTS = -f macho64 -Dosx_64
 #.c.o:
 	$(CC)  $(CCOPTS) -c  -o$@ $(OSINT)/$*.c
 
-osx_64_gas:
+# default is osx 64 bit built using gas
+osx:	
 # same as for unix except for added step to translate names using osx.sbl
 	rm -fr bld
 	mkdir bld
 	$(CC) -Dosx_64 -m64 $(CCOPTS) -c osint/*.c
 	mv *.o bld
-	$(BASEBOL) -u osx_64_gas	-1=sbl.asm	-2=bld/sbl.lex	-3=bld/sbl.equ lex.sbl
-	$(BASEBOL) -u osx_64_gas:$(TRC) 	-1=bld/sbl.lex 	-2=bld/sbl.tmp 	-3=bld/sbl.err 	-4=bld/sbl.equ gas/asm.sbl
-	$(BASEBOL) -u osx_64_gas	-1=bld/sbl.err	-2=bld/err.s err.sbl
+	./bin/sbl_osx_64 -u osx_64_gas	-1=sbl.asm	-2=bld/sbl.lex	-3=bld/sbl.equ lex.sbl
+	./bin/sbl_osx_64 -u osx_64_gas:$(TRC) 	-1=bld/sbl.lex 	-2=bld/sbl.tmp 	-3=bld/sbl.err 	-4=bld/sbl.equ gas/asm.sbl
+	./bin/sbl_osx_64 -u osx_64_gas	-1=bld/sbl.err	-2=bld/err.s err.sbl
 	cat 	gas/osx.asm gas/sys.asm 	bld/err.s 	bld/sbl.tmp 	>bld/sbl.s
-	$(BASEBOL) 	<bld/sbl.s 	>bld/sbl.osx	gas/osx.sbl
+	./bin/sbl_osx_64 	<bld/sbl.s 	>bld/sbl.osx	gas/osx.sbl
 	as	-o bld/sbl.o	bld/sbl.osx
 	$(CC) bld/*.o -osbl 
 
-unix_64_gas:
+	# default for unix is 64 bit gas
+unix:
 	rm -fr bld
 	mkdir bld
 	$(CC) -Dunix_64	-m64 $(CCOPTS)	-c osint/*.c
 	mv *.o bld
-	$(BASEBOL) -u unix_64_gas		-1=sbl.asm 	-2=bld/sbl.lex	-3=bld/sbl.equ lex.sbl
-	$(BASEBOL) -u unix_64_gas:$(TRC)	-1=bld/sbl.lex	-2=bld/sbl.tmp	-3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
-	$(BASEBOL) -u unix_64_gas		-1=bld/sbl.err	-2=bld/err.s err.sbl
+	./bin/sbl_unix_64 -u unix_64_gas		-1=sbl.asm 	-2=bld/sbl.lex	-3=bld/sbl.equ lex.sbl
+	./bin/sbl_unix_64 -u unix_64_gas:$(TRC)	-1=bld/sbl.lex	-2=bld/sbl.tmp	-3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
+	./bin/sbl_unix_64 -u unix_64_gas		-1=bld/sbl.err	-2=bld/err.s err.sbl
 	cat	gas/unix.asm gas/sys.asm	bld/err.s	bld/sbl.tmp	>bld/sbl.s
 	as 	-o bld/sbl.o	bld/sbl.s
 	$(CC) -lm -Dunix_64 -m64 -static $(LDOPTS)  bld/*.o -lm  -osbl 
@@ -98,9 +97,9 @@ unix_64_nasm:
 	mkdir bld
 	$(CC) -Dunix_64 -m64 $(CCOPTS) -c osint/*.c
 	mv *.o bld
-	$(BASEBOL) -u unix_64_nasm -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
-	$(BASEBOL) -r -u unix_64:$(TRC) -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ nasm/asm.sbl
-	$(BASEBOL) -u unix_64_nasm -1=bld/sbl.err -2=bld/err.s err.sbl
+	./bin/sbl_unix_64 -u unix_64_nasm -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
+	./bin/sbl_unix_64 -r -u unix_64:$(TRC) -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ nasm/asm.sbl
+	./bin/sbl_unix_64 -u unix_64_nasm -1=bld/sbl.err -2=bld/err.s err.sbl
 	cat nasm/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
 	nasm -f elf64 -Dunix_64 -o bld/sbl.o bld/sbl.s
 	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
@@ -261,3 +260,5 @@ test_osx_64:
 	echo "comparing generated .s files"
 	diff tbol.s.1 tbol.s.2
 	echo "end sanity test"
+dave:
+	echo $(OS)
