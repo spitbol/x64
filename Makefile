@@ -159,7 +159,7 @@ sclean:
 	make clean
 	rm tbol*
 
-test_unix_64:
+unix_test:
 # Do a sanity test on spitbol to  verify that spitbol is able to compile itself.
 # This is done by building the system three times, and comparing the generated assembly (.s)
 # filesbl. Normally, all three assembly files wil be equal. However, if a new optimization is
@@ -208,7 +208,7 @@ test_unix_64:
 	echo "comparing generated .s files"
 	diff tbol.s.1 tbol.s.2
 	echo "end sanity test"
-test_osx_64:
+osx_test:
 # Do a sanity test on spitbol to  verify that spitbol is able to compile itself.
 # This is done by building the system three times, and comparing the generated assembly (.s)
 # filesbl. Normally, all three assembly files wil be equal. However, if a new optimization is
