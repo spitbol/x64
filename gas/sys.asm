@@ -20,6 +20,7 @@
 
 #	ws is bits per word, cfp_b is bytes per word, cfp_c is characters per word
 
+	.data
 #	.set	os,unix
 #	.set	ws,64
 	.set	cfp_b,8
@@ -149,7 +150,6 @@
 
 #       global variables
 
-	.data
 #
 # # words saved during exit(-3)
 # #
@@ -283,6 +283,7 @@ spmin.a:	.quad	spmin
 
 call_adr:	.quad	0
 
+init_ra:	.quad	0		# initial return address
 
 	.text
 #
@@ -362,27 +363,12 @@ restore_regs:
 	.set	calltab_dtype,11
 	.set	calltab_enevs,12
 	.set	calltab_engts,13
-
-
+	
 startup:
-	pop	%rax			# discard return
-	xorq	%r12,%r12		# initialize IA to zero
-	movq	%r12,reg_ia(%rip)
-	call	stackinit		# initialize minimal stack
-	mov	compsp(%rip),%rax		# get minimal's stack pointer
-	mov	%rax,reg_wa(%rip)		# startup stack pointer
-	cld				# default to up direction for string ops
-	mov	osisp(%rip),%rsp	# switch to new c stack
-#	initialize registers to values set by osint before calling startup
-	movq	reg_ia(%rip),%r12
-	movq 	reg_wa(%rip),%rcx	# restore registers
-	movq	reg_wb(%rip),%rbx
-	movq	reg_wc(%rip),%rdx	#
-	movq	reg_xl(%rip),%rsi
-	movq	reg_xr(%rip),%rdi
-	movq	osisp(%rip),%rsp	# save osint stack pointer
-	call	start
-
+	pop	%rax			# save return address
+#	since we have popped return address, c stack is now aligned on 16-byte boundary.
+	mov	%rax,init_ra(%rip)
+#	initialize stack
 #	stackinit  -- initialize stacks
 
 #	input:  sp - current c stack
@@ -407,15 +393,33 @@ startup:
 #	(low)	|                |
 
 #	initialize stack
-	.global	stackinit
-stackinit:
+#	movq	%rsp,%rax
+	movq	%rsp,compsp(%rip)	# save minimal's stack pointer
+	subq	stacksiz(%rip),%rsp	# end of minimal stack is where c stack will start
 	movq	%rsp,%rax
-	movq	%rax,compsp(%rip)	# save minimal's stack pointer
-	subq	stacksiz(%rip),%rax	# end of minimal stack is where c stack will start
-	movq	%rax,osisp(%rip)	# save new c stack pointer
 	addq	$cfp_b*128,%rax	# 128 words smaller for chk (need multiple of 16 for mac osx)
 	movq	%rax,spmin(%rip)
-	ret
+#	here with new c stack empty, and hence aligned on 16-byte boundary
+	movq	init_ra(%rip),%rax	# get original return address
+	pushq	%rax			# restore return address
+	pushq	%rbp			# save frame pointer
+	subq	$16,%rsp		# keep stack aligned
+	movq	%rsp,osisp(%rip)	# save new c stack pointer
+
+	mov	compsp(%rip),%rax		# get minimal's stack pointer
+	mov	%rax,reg_wa(%rip)		# startup stack pointer
+
+	cld				# default to up direction for string ops
+	mov	osisp(%rip),%rsp	# switch to new c stack
+#	initialize registers to values set by osint before calling startup
+	movq	reg_ia(%rip),%r12
+	movq 	reg_wa(%rip),%rcx	# restore registers
+	movq	reg_wb(%rip),%rbx
+	movq	reg_wc(%rip),%rdx	#
+	movq	reg_xl(%rip),%rsi
+	movq	reg_xr(%rip),%rdi
+	xorq	%r12,%r12		# initialize IA to zero
+	call	start
 
 #	check for stack overflow, making %rax nonzero if found
 	.global	chk_
@@ -425,7 +429,7 @@ chk_:
 	jb	chk.oflo
 	ret
 chk.oflo:
-	incq	%rax		# make nonzero to indicate stack overflo%rax
+	incq	%rax		# make nonzero to indicate stack overflo
 	ret
 
 #       call_mimimal -- call minimal function from c

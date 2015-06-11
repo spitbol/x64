@@ -43,6 +43,7 @@ This file is part of Macro SPITBOL.
 #define GLOBALS			// global variables will be defined in this module
 #include "port.h"
 #include <stdint.h>
+#include <stdio.h>
 
 #ifdef DEBUG
 #undef DEBUG			// Change simple -DDEBUG on command line to -DDEBUG=1
@@ -53,7 +54,7 @@ This file is part of Macro SPITBOL.
 
 void setout ( void );
 
-main( argc, argv )
+int main( argc, argv )
 int	argc;
 char	*argv[];
 
@@ -210,11 +211,14 @@ char	*argv[];
     /   Startup compiler.
     */
     startup();
+    printf("oops! startup unexpectedly returned. exiting...\n");
+    return;
 #endif					// !RUNTIME
 
     /*
     /   Never returns. exit is via exit().
     */
+	return 0;
 }
 
 
