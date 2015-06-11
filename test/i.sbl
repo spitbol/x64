@@ -1,3 +1,4 @@
+	output = sqrt(2.0)
 	i = 0
 	j = 3
 	k = 5
