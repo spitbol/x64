@@ -74,8 +74,7 @@ osx:
 	./bin/sbl_osx_64 -u osx_64_gas:$(TRC) 	-1=bld/sbl.lex 	-2=bld/sbl.tmp 	-3=bld/sbl.err 	-4=bld/sbl.equ gas/asm.sbl
 	./bin/sbl_osx_64 -u osx_64_gas	-1=bld/sbl.err	-2=bld/err.s err.sbl
 	cat 	gas/osx.asm gas/sys.asm 	bld/err.s 	bld/sbl.tmp 	>bld/sbl.s
-	./bin/sbl_osx_64 	<bld/sbl.s 	>bld/sbl.osx	gas/osx.sbl
-	as	-o bld/sbl.o	bld/sbl.osx
+	as	-o bld/sbl.o	bld/sbl.s
 	$(CC) bld/*.o -osbl 
 
 unix:
@@ -174,8 +173,7 @@ test_osx:
 	./tbol -r -u osx_64_gas: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
 	./tbol -u osx_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
 	cat gas/osx.asm gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
-	./tbol 	<bld/sbl.s 	>bld/sbl.osx	gas/osx.sbl
-	as -o bld/sbl.o bld/sbl.osx
+	as -o bld/sbl.o bld/sbl.s
 	gcc -lm -Dosx_64 -m64 bld/*.o -lm  -osbl
 	mv bld/sbl.lex	tbol.lex.0
 	mv bld/sbl.s	tbol.s.0
@@ -187,8 +185,7 @@ test_osx:
 	./tbol -r -u osx_64_gas: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
 	./tbol -u osx_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
 	cat gas/osx.asm gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
-	./tbol 	<bld/sbl.s 	>bld/sbl.osx	gas/osx.sbl
-	as -o bld/sbl.o bld/sbl.osx
+	as -o bld/sbl.o bld/sbl.s
 	gcc -lm -Dosx_64 -m64 bld/*.o -lm  -osbl
 	mv bld/sbl.lex	tbol.lex.1
 	mv bld/sbl.s	tbol.s.1
@@ -252,6 +249,55 @@ test_nasm:
 	cat nasm/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
 	nasm -f elf64 -Dunix_64 -o bld/sbl.o bld/sbl.s
 	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
+	ls -l sbl tbol
+	mv bld/sbl.lex	tbol.lex.2
+	mv bld/sbl.s	tbol.s.2
+	mv bld/err.s	tbol.err.2
+	echo "comparing generated .s files"
+	diff tbol.s.1 tbol.s.2
+	echo "end sanity test"
+test_unix:
+# Do a sanity test on spitbol to  verify that spitbol is able to compile itself.
+# This is done by building the system three times, and comparing the generated assembly (.s)
+# filesbl. Normally, all three assembly files wil be equal. However, if a new optimization is
+# being introduced, the first two may differ, but the second and third should always agree.
+#
+	rm -f tb*
+	rm -f bld/*
+	echo "start 64-bit sanity test"
+	cp	./bin/sbl_unix_64 tbol
+	gcc -Dunix_64 -m64 -c osint/*.c
+	mv *.o bld
+	./tbol -u unix_64_gas -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
+	./tbol -r -u unix_64_gas: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
+	./tbol -u unix_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
+	cat gas/unix.asm gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
+	as -o bld/sbl.o bld/sbl.s
+	gcc -lm -Dunix_64 -m64 bld/*.o -lm  -osbl
+	mv bld/sbl.lex	tbol.lex.0
+	mv bld/sbl.s	tbol.s.0
+	mv bld/err.s	tbol.err.s
+	rm bld/sbl.*
+	ls -l sbl tbol
+	mv sbl tbol
+	./tbol -u unix_64_gas -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
+	./tbol -r -u unix_64_gas: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
+	./tbol -u unix_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
+	cat gas/unix.asm gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
+	as -o bld/sbl.o bld/sbl.s
+	gcc -lm -Dunix_64 -m64 bld/*.o -lm  -osbl
+	mv bld/sbl.lex	tbol.lex.1
+	mv bld/sbl.s	tbol.s.1
+	mv bld/err.s	tbol.err.1
+	ls -l sbl tbol
+	mv sbl tbol
+	rm bld/sbl.*
+	./tbol -u unix_64_gas -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
+	./tbol -r -u unix_64_gas: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
+	./tbol -u unix_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
+	cat gas/unix.asm gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
+	as -o bld/sbl.o bld/sbl.s
+	gcc -lm -Dunix_64 -m64 bld/*.o -lm  -osbl
 	ls -l sbl tbol
 	mv bld/sbl.lex	tbol.lex.2
 	mv bld/sbl.s	tbol.s.2

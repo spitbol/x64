@@ -783,7 +783,6 @@ getlea
 
 *	similar to getarg, but gets effective address this procedure only called if operand is in 
 *	range 3-4 or 9-15 it generates code to load effective address of the argument to w0
-
 	txt = i.text(iarg)
 	typ = i.type(iarg)
 	eq(typ)					:f($(leacase[typ]))
@@ -792,8 +791,7 @@ getlea
 
 getlea.c.3
 getlea.c.4
-	op(lea.w,reg.w0, rip(txt))		:(lea.done)
-	op(mov.w,reg.w0,literal_ txt)		:(lea.done)
+	op(mov.w,reg.w0, getrip(txt))		:(lea.done)
 
 *	(x), register indirect
 
