@@ -91,7 +91,7 @@ unix:
 	as 	-o bld/sbl.o	bld/sbl.s
 	$(CC) -lm -Dunix_64 -m64 -static $(LDOPTS)  bld/*.o -lm  -osbl 
 
-unix_64_nasm:
+unix_nasm:
 	rm -fr bld
 	mkdir bld
 	$(CC) -Dunix_64 -m64 $(CCOPTS) -c osint/*.c
@@ -101,7 +101,7 @@ unix_64_nasm:
 	./bin/sbl_unix_64 -u unix_64_nasm -1=bld/sbl.err -2=bld/err.s err.sbl
 	cat nasm/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
 	nasm -f elf64 -Dunix_64 -o bld/sbl.o bld/sbl.s
-	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
+	$(CC) -lm -Dunix_64 -m64 $(LDOPTS) -static  bld/*.o -lm  -osbl 
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS) $(NOBJS)
@@ -158,55 +158,6 @@ sclean:
 	make clean
 	rm tbol*
 
-test_unix:
-# Do a sanity test on spitbol to  verify that spitbol is able to compile itself.
-# This is done by building the system three times, and comparing the generated assembly (.s)
-# filesbl. Normally, all three assembly files wil be equal. However, if a new optimization is
-# being introduced, the first two may differ, but the second and third should always agree.
-#
-	rm -f tb*
-	rm -f bld/*
-	echo "start 64-bit sanity test"
-	cp	./bin/sbl_unix_64 tbol
-	gcc -Dunix_64 -m64 -c osint/*.c
-	mv *.o bld
-	./tbol -u unix_64_gas -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
-	./tbol -r -u unix_64_gas: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
-	./tbol -u unix_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
-	cat gas/unix.asm gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
-	as -o bld/sbl.o bld/sbl.s
-	gcc -lm -Dunix_64 -m64 bld/*.o -lm  -osbl
-	mv bld/sbl.lex	tbol.lex.0
-	mv bld/sbl.s	tbol.s.0
-	mv bld/err.s	tbol.err.s
-	rm bld/sbl.*
-	ls -l sbl tbol
-	mv sbl tbol
-	./tbol -u unix_64_gas -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
-	./tbol -r -u unix_64_gas: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
-	./tbol -u unix_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
-	cat gas/unix.asm gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
-	as -o bld/sbl.o bld/sbl.s
-	gcc -lm -Dunix_64 -m64 bld/*.o -lm  -osbl
-	mv bld/sbl.lex	tbol.lex.1
-	mv bld/sbl.s	tbol.s.1
-	mv bld/err.s	tbol.err.1
-	ls -l sbl tbol
-	mv sbl tbol
-	rm bld/sbl.*
-	./tbol -u unix_64_gas -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
-	./tbol -r -u unix_64_gas: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
-	./tbol -u unix_64_gas -1=bld/sbl.err -2=bld/err.s err.sbl
-	cat gas/unix.asm gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
-	as -o bld/sbl.o bld/sbl.s
-	gcc -lm -Dunix_64 -m64 bld/*.o -lm  -osbl
-	ls -l sbl tbol
-	mv bld/sbl.lex	tbol.lex.2
-	mv bld/sbl.s	tbol.s.2
-	mv bld/err.s	tbol.err.2
-	echo "comparing generated .s files"
-	diff tbol.s.1 tbol.s.2
-	echo "end sanity test"
 test_osx:
 # Do a sanity test on spitbol to  verify that spitbol is able to compile itself.
 # This is done by building the system three times, and comparing the generated assembly (.s)
@@ -259,5 +210,52 @@ test_osx:
 	echo "comparing generated .s files"
 	diff tbol.s.1 tbol.s.2
 	echo "end sanity test"
-dave:
-	echo $(OS)
+test_unix_nasm:
+# Do a sanity test on spitbol to  verify that spitbol is able to compile itself.
+# This is done by building the system three times, and comparing the generated assembly (.s)
+# filesbl. Normally, all three assembly files wil be equal. However, if a new optimization is
+# being introduced, the first two may differ, but the second and third should always agree.
+#
+	rm -f tb*
+	rm -f bld/*
+	echo "start 64-bit sanity test"
+	cp	./bin/sbl_unix_64 tbol
+	gcc -Dunix_64 -m64 -c osint/*.c
+	mv *.o bld
+	./tbol -u unix_64_nasm -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
+	./tbol -r -u unix_64: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ nasm/asm.sbl
+	./tbol -u unix_64_nasm -1=bld/sbl.err -2=bld/err.s err.sbl
+	cat nasm/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
+	nasm -f elf64 -Dunix_64 -o bld/sbl.o bld/sbl.s
+	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
+	mv bld/sbl.lex	tbol.lex.0
+	mv bld/sbl.s	tbol.s.0
+	mv bld/err.s	tbol.err.s
+	rm bld/sbl.*
+	ls -l sbl tbol
+	mv sbl tbol
+	./tbol -u unix_64_nasm -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
+	./tbol -r -u unix_64: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ nasm/asm.sbl
+	./tbol -u unix_64_nasm -1=bld/sbl.err -2=bld/err.s err.sbl
+	cat nasm/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
+	nasm -f elf64 -Dunix_64 -o bld/sbl.o bld/sbl.s
+	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
+	mv bld/sbl.lex	tbol.lex.1
+	mv bld/sbl.s	tbol.s.1
+	mv bld/err.s	tbol.err.1
+	ls -l sbl tbol
+	mv sbl tbol
+	rm bld/sbl.*
+	./tbol -u unix_64_nasm -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
+	./tbol -r -u unix_64: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ nasm/asm.sbl
+	./tbol -u unix_64_nasm -1=bld/sbl.err -2=bld/err.s err.sbl
+	cat nasm/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
+	nasm -f elf64 -Dunix_64 -o bld/sbl.o bld/sbl.s
+	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
+	ls -l sbl tbol
+	mv bld/sbl.lex	tbol.lex.2
+	mv bld/sbl.s	tbol.s.2
+	mv bld/err.s	tbol.err.2
+	echo "comparing generated .s files"
+	diff tbol.s.1 tbol.s.2
+	echo "end sanity test"
