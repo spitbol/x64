@@ -210,7 +210,7 @@ test_osx:
 	echo "comparing generated .s files"
 	diff tbol.s.1 tbol.s.2
 	echo "end sanity test"
-test_unix_nasm:
+test_nasm:
 # Do a sanity test on spitbol to  verify that spitbol is able to compile itself.
 # This is done by building the system three times, and comparing the generated assembly (.s)
 # filesbl. Normally, all three assembly files wil be equal. However, if a new optimization is
