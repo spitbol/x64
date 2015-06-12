@@ -29,7 +29,8 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 
-long w00;
+// reg_rb is used to pass arguments to read operations
+double reg_rb;
 
 // overflow codes
 // OF = 0x80
@@ -37,34 +38,30 @@ long w00;
 // zr = 0x40
 
 void f_ldr() {			// load real
-	reg_ra = *reg_rp;
-	return;
-}
-void f_str() {			// store real
-	*reg_rp = reg_ra;
+	reg_ra = reg_rb;
 	return;
 }
 
 void f_adr() {			// add real
-	reg_ra += *reg_rp;
+	reg_ra += reg_rb;
 	return;
 }
 
 void f_sbr() {			// subtract real
 	reg_fl = 0;
-	reg_ra -= *reg_rp;
+	reg_ra -= reg_rb;
 	return;
 }
 
 void f_mlr() {			// multiply real
-	reg_ra *= *reg_rp;
+	reg_ra *= reg_rb;
 	reg_fl = 0;
 	return;
 }
 
 void f_dvr() {			// divide real
-	if (*reg_rp != 0.0) {
-		reg_ra /= *reg_rp;
+	if (reg_rb != 0.0) {
+		reg_ra /= reg_rb;
 		reg_fl = 0;
 	}
 	else
