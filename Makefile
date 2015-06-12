@@ -74,7 +74,8 @@ osx:
 	./bin/sbl_osx_64 -u osx_64_gas:$(TRC) 	-1=bld/sbl.lex 	-2=bld/sbl.tmp 	-3=bld/sbl.err 	-4=bld/sbl.equ gas/asm.sbl
 	./bin/sbl_osx_64 -u osx_64_gas	-1=bld/sbl.err	-2=bld/err.s err.sbl
 	cat 	gas/osx.asm gas/sys.asm 	bld/err.s 	bld/sbl.tmp 	>bld/sbl.s
-	as	-o bld/sbl.o	bld/sbl.s
+	./bin/sbl_osx_64 	<bld/sbl.s 	>bld/sbl.osx	gas/osx.sbl
+	as	-o bld/sbl.o	bld/sbl.osx
 	$(CC) bld/*.o -osbl 
 
 unix:
