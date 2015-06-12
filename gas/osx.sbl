@@ -44,6 +44,7 @@ scan
 	line	'reg_xt'  = '_reg_xt'
 	line	'reg_cp'  = '_reg_cp'
 	line	'reg_ra'  = '_reg_ra'
+	line	'reg_rb'  = '_reg_rb'
 	line	'reg_ia'  = '_reg_ia'
 	line	'reg_fl'  = '_reg_fl'
 	line	'reg_rp'  = '_reg_rp'
