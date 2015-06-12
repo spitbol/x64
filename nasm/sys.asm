@@ -214,7 +214,6 @@
 	%define	f_sbr		_f_sbr
 	%define	f_sin		_f_sin
 	%define	f_sqr		_f_sqr
-	%define	f_str		_f_str
 	%define	f_tan		_f_tan
 	%define	i_cvd		_i_cvd
 	%define	i_dvi		_i_dvi
@@ -284,6 +283,7 @@
 	global	reg_xl
 	global	reg_cp
 	global	reg_ra
+	global	reg_rb
 	global	reg_pc
 	global	reg_xs
 	global	reg_size
@@ -411,6 +411,8 @@ reg_xr:	d_word	0        	; register xr (xr)
 reg_xl:	d_word	0        	; register xl (xl)
 reg_cp:	d_word	0        	; register cp
 reg_ra:	d_real 	0.0  		; register ra
+; reg_rg is used to pass argument to real operations.
+reg_rb:	d_real 	0.0  		; register ra
 
 ; these locations save information needed to return after calling osint
 ; and after a restart from exit()
@@ -1048,7 +1050,6 @@ setovr: mov     al,1		; set overflow indicator
 %endmacro
 
 	real_op	ldr_,f_ldr
-	real_op	str_,f_str
 	real_op	adr_,f_adr
 	real_op	sbr_,f_sbr
 	real_op	mlr_,f_mlr

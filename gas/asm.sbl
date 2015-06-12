@@ -108,7 +108,6 @@
 	define('opl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
 	define('getarg(iarg)txt,typ,lit,disp,indx')
-	define('getlea(iarg)txt,typ,reg,disp')
 	define('getvalue(text)')
 	define('ifreg(iarg)')
 	define('iv(text)')
@@ -350,11 +349,6 @@ swap.init.done
 	argcase[19] = .getarg.c.19;	argcase[20] = .getarg.c.20;	argcase[21] = .getarg.c.21; 
 	argcase[22] = .getarg.c.22;	argcase[23] = .getarg.c.23;	argcase[24] = .getarg.c.24;
 	argcase[25] = .getarg.c.25;	argcase[26] = .getarg.c.26;	argcase[27] = .getarg.c.27
-
-	leacase = table(50) 
-	leacase[03] = .getlea.c.3;		leacase[04] = .getlea.c.4;		leacase[09] = .getlea.c.9;   
-	leacase[12] = .getlea.c.12;	leacase[13] = .getlea.c.13;	leacase[14] = .getlea.c.14
-	leacase[15] = .getlea.c.15;		 
 
 	riptable = table(500)
 	rip_count = 0
@@ -778,45 +772,6 @@ getarg.done
 *	ne(x_trace) outline('; arg ' typ ls txt   ' -> ' getarg)
 						:(return)
 
--stitl getlea(iarg)
-getlea
-
-*	similar to getarg, but gets effective address this procedure only called if operand is in 
-*	range 3-4 or 9-15 it generates code to load effective address of the argument to w0
-	txt = i.text(iarg)
-	typ = i.type(iarg)
-	eq(typ)					:f($(leacase[typ]))
-
-*	wlbl, clbl
-
-getlea.c.3
-getlea.c.4
-	op(mov.w,reg.w0, getrip(txt))		:(lea.done)
-
-*	(x), register indirect
-
-getlea.c.9
-	txt len(1) len(2) . reg
-	op(mov.w,reg.w0,regmap[reg])		:(lea.done)
-
-*	int(x)
-*	dlbl(x)
-
-getlea.c.12
-getlea.c.13
-	txt break('(') . disp '(' len(2) . reg
-	op(mov.w,reg.w0,regmap[reg])
-	op(add.w,reg.w0,iv(cfp_b * v(disp)))	:(lea.done)
-
-*	name(x), where name is in working section
-
-getlea.c.14
-getlea.c.15
-	txt break('(') . disp '(' len(2) . reg
-	op(mov.w,reg.w0,regmap[reg])
-	op(add.w,reg.w0,literal_ disp)		:(lea.done)
-lea.done
-	getlea = reg.w0				:(return)
 -stitl iv(text)
 iv
 	iv = '$' v(text)				:(return)

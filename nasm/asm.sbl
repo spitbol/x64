@@ -104,7 +104,6 @@
 	define('opl(gopl,gopc,gop1,gop2,gop3)')
 	define('genrep(op)l1,l2)')
 	define('getarg(iarg)txt,typ,pre,post')
-	define('getlea(iarg)txt,typ,pre,post')
 	define('getrip(iarg)txt,typ,pre,post,ent,lb,var,reg')
 	define('getval(iarg)txt,typ,pre,post')
 	define('ifreg(iarg)')
@@ -761,46 +760,6 @@ arg.c.27 getarg = txt				:(arg.done)
 arg.done
 *	ne(x_trace) outline('; arg ' typ ':' txt   ' -> ' getarg)
 						:(return)
-
--stitl getlea(iarg)
-getlea
-*	similar to getarg, but gets effective address
-*	this procedure only called if operand is
-*	ops: 3,4,9,12,13,14,15
-*	imem is null to generate memory reference, otherwise just get
-*	address for use in 'lea' instruction.
-	pre = 'a('
-	post = ')'	
-
-	txt = i.text(iarg)
-	typ = i.type(iarg)
-	eq(typ)					:f($(leacase[typ]))
-	getlea = txt				:(return)
-* wlbl, clbl
-lea.c.3
-lea.c.4 
-	getlea = pre txt post			:(return)
-
-* (x), register indirect
-lea.c.9
-	txt len(1) len(2) . typ
-	typ = regmap[typ]
-	getlea = pre typ post
-						:(return)
-* int(x)
-* dlbl(x)
-lea.c.12
-lea.c.13
-	txt break('(') . t1 '(' len(2) . t2
-	getlea = pre  '(cfp_b*' t1 ')+' regmap[t2]  post
-							:(return)
-
-*  name(x), where name is in working section
-lea.c.14
-lea.c.15
-	txt break('(') . t1 '(' len(2) . t2
-	getlea = pre    t1 '+'  regmap[t2] 	post
-							:(return)
 
 -stitl getrip(iarg)
 getrip
@@ -1477,13 +1436,17 @@ g.rti	op('rti_')
         op('jc',getarg(i1))                 :(opdone)
 
 g.ldr
-g.str
 g.adr
 g.sbr
 g.mlr
 g.dvr
-	op('lea',w0,getlea(i1))
+	op('mov',w0,getarg(i1))
+	op('mov','m(reg_rb)',w0)
 	op('call',op_)
+						:(opdone)
+g.str
+	op('mov',w0,'m(reg_ra)')
+	op('mov',getarg(i1),w0)
 						:(opdone)
 g.ngr
 g.atn
