@@ -30,7 +30,7 @@ This file is part of Macro SPITBOL.
 
 
 // reg_rb is used to pass arguments to read operations
-double reg_rb;
+extern double reg_rb;
 
 // overflow codes
 // OF = 0x80

@@ -40,6 +40,7 @@
 	.global	reg_xl
 	.global	reg_cp
 	.global	reg_ra
+	.global	reg_rb
 	.global	reg_pc
 	.global	reg_xs
 	.global	reg_size
@@ -165,6 +166,8 @@ reg_xr:	.quad	0        	# register xr (xr)
 reg_xl:	.quad	0        	# register xl (xl)
 reg_cp:	.quad	0        	# register cp
 reg_ra:	.double 	0.0  		# register ra
+# reg_rb is used to pass argument to real operations
+reg_rb:	.double 	0.0  		# register rb
 
 # these locations save information needed to return after calling osint
 # and after a restart from exit()
