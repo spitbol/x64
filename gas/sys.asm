@@ -41,9 +41,11 @@
 	.global	reg_cp
 	.global	reg_ra
 	.global	reg_rb
+	.global	reg_rc
 	.global	reg_pc
 	.global	reg_xs
 	.global	reg_size
+	.global	reav1
 
 	.global	reg_rp
 
@@ -168,6 +170,7 @@ reg_cp:	.quad	0        	# register cp
 reg_ra:	.double 	0.0  		# register ra
 # reg_rb is used to pass argument to real operations
 reg_rb:	.double 	0.0  		# register rb
+reg_rc:	.double 	0.0  		# register rb
 
 # these locations save information needed to return after calling osint
 # and after a restart from exit()
@@ -289,64 +292,6 @@ call_adr:	.quad	0
 init_ra:	.quad	0		# initial return address
 
 	.text
-#
-#       save and restore minimal and interface registers on stack.
-#       used by any routine that needs to call back into the minimal
-#       code in such a way that the minimal code might trigger another
-#       sysxx call before returning.
-#
-#       note 1:  pushregs returns a collectable value in xl, safe
-#       for subsequent call to memory allocation routine.
-#
-#       note 2:  these are not recursive routines.  only reg_xl is
-#       saved on the stack, where it is accessible to the garbage
-#       collector.  other registers are just moved to a temp area.
-#
-#       note 3:  popregs does not restore reg_cp, because it may have
-#       been modified by the minimal routine called between pushregs
-#       and popregs as a result of a garbage collection.  calling of
-#       another sysxx routine in between is not a problem, because
-#       cp will have been preserved by minimal.
-#
-#       note 4:  if there isn't a compiler stack yet, we don't bother
-#       saving xl.  this only happens in call of nextef from sysxi when
-#       reloading a save file.
-#
-#
-	.global	save_regs
-save_regs:
-	movq	%r12,save_ia(%rip)
-	movq	%rsi,save_xl(%rip)
-	movq	%rdi,save_xr(%rip)
-	movq	%rcx,save_wa(%rip)
-	movq	%rbx,save_wb(%rip)
-	movq	%rdx,save_wc(%rip)
-	ret
-
-	.global	restore_regs
-restore_regs:
-	#	restore regs, except for sp. that is caller's responsibility
-	movq	save_ia(%rip),%r12
-	movq	save_xl(%rip),%rsi
-	movq	save_xr(%rip),%rdi
-	movq	save_wa(%rip),%rcx
-	movq	save_wb(%rip),%rbx
-	movq	save_wc(%rip),%rdx
-	ret
-
-# #
-# #       startup( char *dummy1, char *dummy2) - startup compiler
-# #
-# #       an osint c function calls startup to transfer control
-# #       to the compiler.
-# #
-# #       (xr) = basemem
-# #       (xl) = topmem - sizeof(word)
-# #
-# #	note: this function never returns.
-# #
-#
-	.global	startup
 #   ordinals for minimal calls from assembly language.
 
 #   the order of entries here must correspond to the order of
@@ -367,6 +312,19 @@ restore_regs:
 	.set	calltab_enevs,12
 	.set	calltab_engts,13
 	
+#
+#       startup( char *dummy1, char *dummy2) - startup compiler
+#
+#       an osint c function calls startup to transfer control
+#       to the compiler.
+#
+#       (xr) = basemem
+#       (xl) = topmem - sizeof(word)
+#
+#	note: this function never returns.
+#
+#
+	.global	startup
 startup:
 	pop	%rax			# save return address
 #	since we have popped return address, c stack is now aligned on 16-byte boundary.
@@ -515,6 +473,16 @@ syscall_init:
 	movq	%r12,reg_ia(%rip)
 	ret
 
+syscallf_init:
+#       save registers in global variables
+	movq    %rcx,save_wa(%rip)      # save registers
+	movq	%rbx,save_wb(%rip)
+	movq	%rdx,save_wc(%rip)
+	movq	%rsi,save_xl(%rip)
+	movq	%rdi,save_xr(%rip)
+	movq	%r12,save_ia(%rip)
+	ret
+
 syscall_exit:
 	movq	reg_wa(%rip),%rcx      # restore registers
 	movq	reg_wb(%rip),%rbx
@@ -527,6 +495,20 @@ syscall_exit:
 	movq	compsp(%rip),%rsp	# switch to compiler's stack 
 	movq	reg_pc(%rip),%rax	# load return address
 	jmp	*%rax			# return to caller
+
+syscallf_exit:
+	movq	save_wa(%rip),%rcx      # restore registers
+	movq	save_wb(%rip),%rbx
+	movq	save_wc(%rip),%rdx      
+	movq	save_xr(%rip),%rdi
+	movq	save_xl(%rip),%rsi
+	movq	save_ia(%rip),%r12
+	cld
+	movq	%rax,_rc_(%rip)		# save return code from function
+	movq	compsp(%rip),%rsp	# switch to compiler's stack 
+	movq	reg_pc(%rip),%rax	# load return address
+	jmp	*%rax			# return to caller
+
 
 	.global	M_rmi
 #       rmi - remainder of ia (edx) divided by long in %rax
@@ -572,10 +554,11 @@ get_fp:
 #	%endif
 	.global	start
 
+	.data
+trc_fl:	.quad	0			# used to save flags for trc calls
+	.text
 trc_:
-	pushf
-	syscall	trc
-	popf
+	syscallf	trc
 	ret
 
 

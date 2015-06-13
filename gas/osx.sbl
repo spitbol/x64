@@ -29,6 +29,8 @@ next
 	raw = line
 
 scan
+	line	'trc_fl' = '_trc_fl'
+	line	'_trc_' = '_trc_'
 	line	'compsp' = '_compsp'
 	line	'osisp' = '_osisp'
 	line	'sys_dvi' = '_sys_dvi'

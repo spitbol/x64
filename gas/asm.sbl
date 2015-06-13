@@ -1461,8 +1461,13 @@ g.adr
 g.sbr
 g.mlr
 g.dvr
+*	outid = outid + 1
+*	outfile = cs ' outid ' outid
+*	op(mov.w,reg.w0,getrip(outid))
+*	op(mov.w,rip('outid'),reg.w0)
 	op(mov.w,reg.w0,getarg(i1))
 	op(mov.w,rip('reg_rb'),reg.w0)
+*	op(mov.w,rip('reg_rc'),reg.xr)
 	op('call','M_' incode)
 						:(opdone)
 g.str

@@ -194,7 +194,7 @@ void trc() {
 	if (save_ra != last_ra)  changed += 1;
 	if (save_ia != last_ia)  changed += 1;
 	if (save_xs != last_xs)  changed += 1;
-  changed = 0; // bypass printout
+//  changed = 0; // bypass printout
 	if (changed) {
 /* marked changed Minimal registers with "!" to make it easy to search
    backward for last statement that changed a register. */
@@ -221,7 +221,7 @@ void trc() {
 	}
 
 	int prtregs=1;
-	 prtregs=0;
+//	 prtregs=0;
 	--regline;
 //	if (prtregs>0 && (regline <= 0)) {
 	if (prtregs) {
