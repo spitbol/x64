@@ -168,7 +168,7 @@ int reglines; // print full registers every this number of lines
 int regline; // current line module reglines
 
 extern uword _rc_;
-void trc() {
+void trc_i() {
 
 	char *p;
 	char *dp;

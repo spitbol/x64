@@ -504,7 +504,6 @@ syscallf_exit:
 	movq	save_xl(%rip),%rsi
 	movq	save_ia(%rip),%r12
 	cld
-	movq	%rax,_rc_(%rip)		# save return code from function
 	movq	compsp(%rip),%rsp	# switch to compiler's stack 
 	movq	reg_pc(%rip),%rax	# load return address
 	jmp	*%rax			# return to caller
@@ -558,7 +557,7 @@ get_fp:
 trc_fl:	.quad	0			# used to save flags for trc calls
 	.text
 trc_:
-	syscallf	trc
+	syscallf	trc_i
 	ret
 
 
