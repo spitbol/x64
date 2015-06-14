@@ -135,10 +135,11 @@ test_osx:
 	gcc -Dosx_64 -m64 -c osint/*.c
 	mv *.o bld
 	./tbol -u osx -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
-	./tbol -r osx -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
+	./tbol -u osx -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
 	./tbol -u osx_gas -1=bld/sbl.err -2=bld/err.s err.sbl
 	cat gas/osx.asm gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
-	as -o bld/sbl.o bld/sbl.s
+	./tbol 	<bld/sbl.s 	>bld/sbl.osx	gas/osx.sbl
+	as -o bld/sbl.o bld/sbl.osx
 	gcc -lm -Dosx_64 -m64 bld/*.o -lm  -osbl
 	mv bld/sbl.lex	tbol.lex.0
 	mv bld/sbl.s	tbol.s.0
@@ -147,10 +148,11 @@ test_osx:
 	ls -l sbl tbol
 	mv sbl tbol
 	./tbol -u osx -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
-	./tbol -r osx: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
+	./tbol -u osx: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
 	./tbol -u osx_gas -1=bld/sbl.err -2=bld/err.s err.sbl
 	cat gas/osx.asm gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
-	as -o bld/sbl.o bld/sbl.s
+	./tbol 	<bld/sbl.s 	>bld/sbl.osx	gas/osx.sbl
+	as -o bld/sbl.o bld/sbl.osx
 	gcc -lm -Dosx_64 -m64 bld/*.o -lm  -osbl
 	mv bld/sbl.lex	tbol.lex.1
 	mv bld/sbl.s	tbol.s.1
@@ -159,7 +161,7 @@ test_osx:
 	mv sbl tbol
 	rm bld/sbl.*
 	./tbol -u osx -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
-	./tbol -r osx -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
+	./tbol -u osx -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ gas/asm.sbl
 	./tbol -u osx_gas -1=bld/sbl.err -2=bld/err.s err.sbl
 	cat gas/osx.asm gas/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
 	./tbol 	<bld/sbl.s 	>bld/sbl.osx	gas/osx.sbl
