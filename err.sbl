@@ -105,9 +105,9 @@
 
 * set target definition flag, if any.
 *
-	target = (differ(host(0)) host(0), "unix_64_gas")
+	target = (differ(host(0)) host(0), "unix_gas")
         output = "target: " target
-	target break('_') . os '_' break('_') . ws '_' rem . asm
+	target break('_') . os '_' rem . asm
 
 * tab character
 

@@ -142,8 +142,8 @@ option.next
 	options break(ls) . option ls =	:f(options.done)
 	outfile = cs ' options ' options ls
 
-	ident(option,'unix_64_gas')		:s(option.unix.64)
-	ident(option,'osx_64_gas')		:s(option.osx.64)
+	ident(option,'unix')		:s(option.unix)
+	ident(option,'osx')		:s(option.osx)
 	ident(option,'xt')			:s(option.xt)
 	ident(option,'trc')			:s(option.trc)
 
@@ -156,16 +156,17 @@ option.next
 * for unix is it number of bytes, while for osx it is a power of 2.
 * For example, '.align 8' aligns on byte boundary, or 2**8 = 256 byte boundary on osx, so 
 * equivalent of unix '.align 8' is '.align 3'
-option.unix.64
-	os = 'unix'; 	ws = '64'; asm = 'gas' 	
+option.unix
+	target = 'unix'
 	align_even = 2;* align on even address
 	align_quad = 8;* align on word (8-byte) address
 						:(option.next)
 
-option.osx.64
-	align_even = 1;
+option.osx
+	target = 'osx'
+	align_even = 1
 	align_quad = 3
-	os = 'osx'; 	ws = '64'; asm = 'gas' 
+	os = 'osx'
 *	osx requires '_' before names of procedures and variables defined in osint or referenced frmo it.
 	c_prefix = '_'
 						:(option.next)
@@ -180,7 +181,6 @@ option.xt
 
 options.done
 	i_trace = ident(i_trace) 0
-	target = os '_' ws '_' asm
 	report(target,'target')
 
 	filebase = "sbl"

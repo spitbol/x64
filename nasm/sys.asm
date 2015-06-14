@@ -1442,12 +1442,12 @@ calltab:
 	%undef cfp_b
 	%undef cfp_c
 	%undef scstr
-	extern trc
+	extern trc_i
 	extern	trc_de
 trc__:
 	pushf
 	call	save_regs
-	call	trc
+	call	trc_i
 	call	restore_regs
 	popf
 	ret

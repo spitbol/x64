@@ -356,8 +356,6 @@
 *
 *  default the parameter string if none present
 *
-	target = (differ(host(0)) host(0), "unix_64")
-	target break('_') . os len(1) rem . ws
 	parm = "sbl"
 	filenami = parm '.asm'
 	filenamo = parm '.lex'
@@ -427,7 +425,6 @@ main3
 . 'ch_pp[040]ch_rb[062]ch_rp[041]ch_qu[063]ch_sl[047]ch_sm[059]'
 . 'ch_sq[039]ch_u_[095]ch_ob[091]ch_cb[093]ch_ht[009]ch_vt[011]'
 . 'ch_ey[094]iodel[032]' )
-* set target-dependent configuration parameters
 
 	equ_defs['cfp_a'] = '256'
 	equ_defs['cfp_b'] = '8'
@@ -875,7 +872,6 @@ report
 g.end
 	outstmt(,'end',,,,comment)
 	(ne(level) error("  unclosed if conditional clause"))
-	report(target,		'target')
         report(nlines,		'minimal source lines')
         report(nstmts, 		'statements processed')
         report(ntarget, 	'target code lines produced')

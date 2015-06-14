@@ -1,4 +1,4 @@
-Status Report	10 June 2015	Dave Shields
+Status Report	15 June 2015	Dave Shields
 
 The port to OSX is now working and passes the basic sanity test:
 	make osx	build ./sbl for osx 64 bit
@@ -9,9 +9,8 @@ The unix/linux version is built and tested with
 	make test_unix
 
 
-
-The "sanity" test on spitbol verifies that spitbol is able to compile itself.  This is done by 
-building the system three times, and comparing the generated assembly files. 
+The "sanity" test on spitbol verifies that spitbol is able to translate itself.
+This is done by building the system three times, and comparing the generated assembly files. 
 Normally, all three assembly files wil be equal. However, if a new optimization is
 being introduced, the first two may differ, but the second and third should always agree.
 
@@ -19,10 +18,22 @@ Examine the test results with
 
 	ls -l tb*
 
+Here is the result from a successfull run on Linux:
+	-rwxr-xr-x 1 daveshields daveshields 289957 Jun 14 17:48 tbol
+	-rw-r--r-- 1 daveshields daveshields  41362 Jun 14 17:48 tbol.err.1
+	-rw-r--r-- 1 daveshields daveshields  41362 Jun 14 17:48 tbol.err.2
+	-rw-r--r-- 1 daveshields daveshields  41362 Jun 14 17:48 tbol.err.s
+	-rw-r--r-- 1 daveshields daveshields 910986 Jun 14 17:48 tbol.lex.0
+	-rw-r--r-- 1 daveshields daveshields 910986 Jun 14 17:48 tbol.lex.1
+	-rw-r--r-- 1 daveshields daveshields 910986 Jun 14 17:48 tbol.lex.2
+	-rw-r--r-- 1 daveshields daveshields 472404 Jun 14 17:48 tbol.s.0
+	-rw-r--r-- 1 daveshields daveshields 472404 Jun 14 17:48 tbol.s.1
+	-rw-r--r-- 1 daveshields daveshields 472404 Jun 14 17:48 tbol.s.2
+
 Spitbol is now built by default using the translator from minimal to gas, found in ./gas
 
 You can also build on unix using the nasm assembler:
-	make unix_nasm
+	make nasm
 	make test_nasm
 
 Status Report	19 April 2015	Dave Shields
