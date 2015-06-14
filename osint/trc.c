@@ -89,7 +89,7 @@ void prtnl() {
 	fprintf(stderr,"\n");
 }
 void prtreal(double val) {
-	fprintf(stderr, " %8.3g ", val);
+	fprintf(stderr, " %15.3g ", val);
 }
 
 void prtval(long reg) {
@@ -118,7 +118,7 @@ void prtval(long reg) {
 }
 void prtregr(char * name, double val) {
 	prtreal(val);
-	fprintf(stderr," %c%s\n", reg_prefix,name);
+	fprintf(stderr,"   RA");
 }
 
 void prtreg(char * name, char type, char *reg, long val) {
@@ -191,7 +191,7 @@ void trc_i() {
 	if (save_wb != last_wb)  changed += 1;
 	if (save_wc != last_wc)  changed += 1;
 	if (save_w0 != last_w0)  changed += 1;
-	if (save_ra != last_ra)  changed += 1;
+	if (reg_ra  != last_ra)  changed += 1; // reg_ra kept in memory, not register
 	if (save_ia != last_ia)  changed += 1;
 	if (save_xs != last_xs)  changed += 1;
 //  changed = 0; // bypass printout
@@ -235,6 +235,7 @@ void trc_i() {
 		prtreg("WB.",reg_prefix,"bx", save_wb); prtnl();
 		prtreg("WC.",reg_prefix,"dx", save_wc); prtnl();
 		prtreg("IA.",reg_prefix,"ia", save_ia); prtnl();
+		prtregr("RA.", reg_ra); prtnl();
 		prtnl();
 	}
 	// save current register contents.
