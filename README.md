@@ -1,7 +1,8 @@
 spitbol
 =======
 
-Efficient implementation of the SNOBOL4 programming language.
+SPITBOL is an efficient implementation of the SNOBOL4 programming language. It is written in a portable assembly
+language called MINIMAL, with runtime support provided by code written in C.
 
 Executable binaries:
 
