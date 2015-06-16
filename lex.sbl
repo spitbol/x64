@@ -590,6 +590,8 @@ crack   nstmts  = nstmts + 1
 	text p.minlabel . label =
 *  skip any whitespace and extract opcode
 	text p.whitespace len(3) . opcode =
+*  make opcode lower case
+	opcode = replace(opcode,&ucase,&lcase)
 *  done if there is nothing after the opcode
 	ident(text)				:s(cs01)
 *  strip any leading whitespace before the arguments
