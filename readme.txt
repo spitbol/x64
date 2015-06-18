@@ -1,3 +1,13 @@
+Update		17 June 2015	Dave Shields
+
+File ./docs/minimal-reference-manual.md replaces ./docs/minimal-reference-manual.html. (This was easier to format, and the
+markdown md format can be viewed directly from github.)
+
+File ./docs/markdown.html is a reference document for writing markdown format.
+
+Note that ./docs/v37.min has Minimal source as of September 2009 (when I took over the project). It contains
+a record of changes  going back to 1977, almost forty years ago.
+
 Status Report	15 June 2015	Dave Shields
 
 The port to OSX is now working and passes the basic sanity test:
