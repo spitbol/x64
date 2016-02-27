@@ -54,6 +54,7 @@ This file is part of Macro SPITBOL.
 #endif
 
 void setout ( void );
+void trc_init ( long, long );
 
 int main( argc, argv )
 int	argc;
@@ -207,7 +208,7 @@ char	*argv[];
     SET_XR( basemem );
     SET_XL( topmem - sizeof(word) );
 
-    trc_init(basemem, topmem);
+    trc_init( (long) basemem, (long) topmem );
     /*
     /   Startup compiler.
     */

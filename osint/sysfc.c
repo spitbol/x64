@@ -176,7 +176,7 @@ struct	scblk	*scptr;
                 return	-1;
             break;
 
-	/* M and N options no longer needed (DS 1 Feb 2013)
+	// M and N options no longer needed (DS 1 Feb 2013)
 
             /*
             /   R - raw mode access of v characters.
