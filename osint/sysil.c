@@ -39,6 +39,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
+int
 zysil()
 
 {

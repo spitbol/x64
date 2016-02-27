@@ -29,8 +29,15 @@ This file is part of Macro SPITBOL.
 /	Number of I/O errors, should be 0.
 */
 
-#include "port.h"
 
+#include "port.h"
+#define _POSIX_SOURCE
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <signal.h>
+
+int
 osclose( ioptr )
 struct	ioblk	*ioptr;
 {
@@ -79,7 +86,7 @@ struct	ioblk	*ioptr;
         */
         else if ( ioptr->flg1 & IO_INP )
         {
-            kill( ioptr->pid );
+            kill( ioptr->pid, SIGINT );
             oswait( ioptr->pid );
         }
 

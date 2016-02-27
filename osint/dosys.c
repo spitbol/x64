@@ -33,6 +33,8 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
+#include <stdlib.h>
+
 int dosys( cmd, path )
 char	*cmd;
 char	*path;

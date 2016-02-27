@@ -73,6 +73,7 @@ enum stage {
     STGNO				// Number of codes
 };
 
+int
 zysea()
 {
     register struct scblk *fnscblk = XL(struct scblk *);

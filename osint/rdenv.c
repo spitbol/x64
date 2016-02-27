@@ -55,6 +55,7 @@ int  vn;
 
 }
 
+int
 rdenv( varname, result )
 register struct scblk *varname, *result;
 {

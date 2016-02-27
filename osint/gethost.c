@@ -38,6 +38,7 @@ char htype[] = "x86-64";
 char osver[] = ":unix ";
 
 #include <fcntl.h>
+#include <unistd.h>
 
 void gethost( scptr, maxlen )
 struct	scblk	*scptr;

@@ -34,12 +34,13 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
+int
 zysdm()
 {
     return NORMAL_RETURN;
 }
 
-
+int
 zystt()
 {
     return NORMAL_RETURN;

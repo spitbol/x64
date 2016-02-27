@@ -42,6 +42,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
+int
 zysax()
 {
     //  swcoup does real work

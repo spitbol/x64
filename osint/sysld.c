@@ -44,6 +44,7 @@ static void *openloadfile (char *namebuf);
 static void closeloadfile (void *fd);
 #endif					// EXTFUN
 
+int
 zysld()
 {
 #if EXTFUN

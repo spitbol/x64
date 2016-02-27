@@ -58,6 +58,7 @@ register int value;
     dest[1] = value - i*10 + '0';
 }
 
+int
 zysdt()
 {
     struct icblk *dtscb = XR (struct icblk *);

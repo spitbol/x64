@@ -22,6 +22,8 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 #include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
 
 /*
 /   swcoup( oupptr )

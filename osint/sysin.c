@@ -49,6 +49,7 @@ word x;
     return (x >= 0) ? x : -x;
 }
 
+int
 zysin()
 {
     register word	reclen;

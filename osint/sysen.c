@@ -45,6 +45,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
+int
 zysen()
 {
     register struct fcblk *fcb = WA (struct fcblk *);
