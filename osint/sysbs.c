@@ -43,11 +43,13 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include <unistd.h>
 
 static int back (struct ioblk *iob);
 
 #define RET_BIAS 100
 
+int
 zysbs()
 {
     register int c;

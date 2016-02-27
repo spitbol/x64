@@ -34,12 +34,13 @@ This file is part of Macro SPITBOL.
 
 #if FLOAT
 #if FLTHDWR
+int
 checkfpu()
 {
     return -1;			// Hardware flting pt always present
 }
 #else					// FLTHDWR
-
+int
 checkfpu()
 {
     return -1;    // Assume all modern machines have FPU (excludes 80386 without 80387)

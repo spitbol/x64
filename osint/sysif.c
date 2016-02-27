@@ -40,6 +40,8 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 #include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
 
 static	void	openprev (void);
 
@@ -58,6 +60,7 @@ static void openprev()
     doset( getrdiob(),inc_pos[nesting],0 );	// Position file where left off
 }
 
+int
 zysif()
 {
     register struct scblk *fnscb = XL (struct scblk *);

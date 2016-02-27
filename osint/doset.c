@@ -49,6 +49,8 @@ This file is part of Macro SPITBOL.
 #include <math.h>       // for floor()
 #endif
 
+#include <unistd.h>
+
 FILEPOS doset( ioptr, offset, whence )
 
 struct	ioblk	*ioptr;

@@ -49,6 +49,7 @@ This file is part of Macro SPITBOL.
 /	be active with an error message when zysid is called.
 */
 
+int
 zysid()
 
 {

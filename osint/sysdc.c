@@ -33,7 +33,9 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include <unistd.h>
 
+int
 zysdc()
 {
     struct scblk *pheadv = GET_DATA_OFFSET(headv,struct scblk *);

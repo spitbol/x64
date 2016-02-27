@@ -45,11 +45,11 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 #define pollevent()
-extern  rearmbrk (void);
+extern int rearmbrk (void);
 extern	int	brkpnd;
 #define stmtDelay PollCount
 
-
+int
 zyspl()
 {
     // Make simple polling case the fastest by avoiding switch statement

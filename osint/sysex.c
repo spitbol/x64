@@ -48,6 +48,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 
+int
 zysex()
 {
 #if EXTFUN

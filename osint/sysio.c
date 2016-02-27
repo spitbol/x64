@@ -50,6 +50,7 @@ This file is part of Macro SPITBOL.
 
 extern struct ioblk	tioblk;
 
+int
 zysio()
 {
     register char	*charptr = WA( char *);

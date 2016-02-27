@@ -44,6 +44,7 @@ This file is part of Macro SPITBOL.
 
 #include "port.h"
 #include <string.h>
+#include <unistd.h>
 
 word osread( mode, recsiz, ioptr, scptr )
 

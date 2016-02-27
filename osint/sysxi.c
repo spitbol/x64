@@ -60,7 +60,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-//#include <unistd.h>
+#include <unistd.h>
 #include <sys/types.h>
 
 #if EXECFILE
@@ -85,6 +85,7 @@ static void hcopy (char *src, char *dst, int len, int max);
 extern ssize_t read (int F, void *Buf, size_t Cnt);
 extern off_t LSEEK (int F, off_t Loc, int Method);
 
+int
 zysxi()
 
 {

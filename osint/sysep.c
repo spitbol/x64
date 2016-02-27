@@ -39,7 +39,9 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include <unistd.h>
 
+int
 zysep()
 {
     write( 1, "\f", 1 );

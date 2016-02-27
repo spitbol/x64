@@ -42,6 +42,7 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #include "save.h"
 
+int
 zysgc()
 {
     in_gbcol = XR(word);  // retain information

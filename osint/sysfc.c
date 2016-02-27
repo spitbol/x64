@@ -373,6 +373,7 @@ word	*intptr;
 
 struct ioblk	tioblk;			// temporary ioblk
 
+int
 zysfc()
 {
     int	fd_spec, i;

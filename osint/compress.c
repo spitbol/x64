@@ -49,6 +49,7 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #include "sproto.h"
 #include <string.h>
+#include <unistd.h>
 
 #define HASHING_SHIFT (LZWBITS-8)
 #define MAX_VALUE ((1L << LZWBITS) - 1)

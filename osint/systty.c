@@ -54,6 +54,7 @@ void ttyinit()
 /	1	failure
 */
 
+int
 zyspi()
 
 {
@@ -85,6 +86,7 @@ zyspi()
 */
 
 
+int
 zysri()
 
 {

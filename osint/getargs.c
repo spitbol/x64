@@ -25,6 +25,7 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 #include <fcntl.h>
+#include <unistd.h>
 
 /*
  * getargs

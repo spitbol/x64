@@ -34,7 +34,9 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include <unistd.h>
 
+int
 zysrw()
 {
     register struct fcblk *fcb = WA (struct fcblk *);

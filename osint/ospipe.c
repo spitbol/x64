@@ -20,7 +20,8 @@ This file is part of Macro SPITBOL.
 
 
 #include "port.h"
-//#include <unistd.h>
+#include <unistd.h>
+
 typedef int HFILE;
 
 char	*getshell();

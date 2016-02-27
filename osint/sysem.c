@@ -69,6 +69,7 @@ extern unsigned char ERRDIST phrases[];
 word msgcopy (word n, unsigned char ERRDIST *source, char *dest );
 word special (word c);
 
+int
 zysem()
 {
     ptscblk->len = msgcopy( WA(word), errors, ptscblk->str );

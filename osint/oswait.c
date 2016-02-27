@@ -36,6 +36,9 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 #include <signal.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
 
 void oswait( pid )
 int	pid;

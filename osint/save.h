@@ -49,7 +49,7 @@ This file is part of Macro SPITBOL.
 #define VWBSHFT     4
 #define VIASHFT     (VWBSHFT+2)
 #define VERSION     5
-#define SaveVersion ((unsigned char)(VERSION+((WORDBITS/32)<<VWBSHFT)+(IABITS/32)<<VIASHFT))
+#define SaveVersion ((unsigned char)(VERSION+((WORDBITS/32)<<VWBSHFT)+((IABITS/32)<<VIASHFT)))
 #define UargSize    128
 
 struct svfilehdr {

@@ -30,7 +30,11 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
 
+int
 osclose( ioptr )
 struct	ioblk	*ioptr;
 {

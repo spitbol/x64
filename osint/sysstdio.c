@@ -60,6 +60,7 @@ void stdioinit()
 /	1	failure
 */
 
+int
 zyspr()
 
 {
@@ -95,6 +96,7 @@ zyspr()
 /       	new file name in SCBLK and non-zero length.)
 */
 
+int
 zysrd()
 
 {

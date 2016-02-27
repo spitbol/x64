@@ -41,6 +41,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include <unistd.h>
 
 int flush( ioptr )
 struct	ioblk	*ioptr;

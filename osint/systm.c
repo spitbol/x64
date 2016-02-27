@@ -45,6 +45,7 @@ This file is part of Macro SPITBOL.
 #include <sys/times.h>
 #define CLK_TCK sysconf(_SC_CLK_TCK)
 
+int
 zystm() {
 
     /*
@@ -68,6 +69,7 @@ zystm() {
 }
 #endif
 
+int
 zystm() {
 
     SET_IA( 600);

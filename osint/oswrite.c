@@ -42,6 +42,7 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
+#include <unistd.h>
 
 word oswrite( mode, linesiz, recsiz, ioptr, scptr )
 word	mode;

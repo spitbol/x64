@@ -44,6 +44,7 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #ifdef DEBUG
 #undef DEBUG			// Change simple -DDEBUG on command line to -DDEBUG=1

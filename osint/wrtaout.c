@@ -37,7 +37,9 @@ This file is part of Macro SPITBOL.
 #include <sys/times.h>
 
 #include <fcntl.h>
-
+#include <stdio.h>
+#include <time.h>
+#include <unistd.h>
 
 /*  openaout(file, tmpfnbuf, exe)
 /
