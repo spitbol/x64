@@ -91,6 +91,7 @@ int     type;
     time_t      tod;
 
     register struct tm *tm;
+    tod = time(NULL);
     tm = localtime( &tod );
 
     switch (type)
