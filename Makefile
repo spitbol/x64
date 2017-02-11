@@ -82,7 +82,8 @@ z:
 	sbl map-$(WS).sbl <s.nm >s.dic
 	sbl z.sbl <ad >ae
 
-test_unix:
+.PHONY: test
+test:
 # Do a sanity test on spitbol to  verify that spitbol is able to compile itself.
 # This is done by building the system three times, and comparing the generated assembly (.s)
 # filesbl. Normally, all three assembly files wil be equal. However, if a new optimization is

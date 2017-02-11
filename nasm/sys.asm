@@ -32,6 +32,12 @@
 	%define	ws	32
 %endif
 
+%ifdef	macos
+	%define	os	macos
+	%define	macos
+	%define	ws	64
+%endif
+
 %ifdef	unix_64
 	%define	os	unix
 	%define	unix

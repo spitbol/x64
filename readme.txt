@@ -13,6 +13,16 @@ Makefile is now for just unix and only uses nasm. Will no longer maintain gas fo
 makefile.macos is the makefile to be used for macos. Will hopefully be able to use nasm for macos, but that is yet to 
 be determined.
 
+The unix/linux version is built and tested with
+
+	make 		build ./sbl for unix 64 bit
+	make test
+
+The port to OSX is now NOT working and DOES NOT pass the basic sanity test:
+
+	make macos	build ./sbl for osx 64 bit
+	make test_macos
+
 Update		17 June 2015	Dave Shields
 
 File ./docs/minimal-reference-manual.md replaces ./docs/minimal-reference-manual.html. (This was easier to format, and the
@@ -25,13 +35,15 @@ a record of changes  going back to 1977, almost forty years ago.
 
 Status Report	15 June 2015	Dave Shields
 
-The port to OSX is now working and passes the basic sanity test:
-	make osx	build ./sbl for osx 64 bit
-	make test_osx
-
 The unix/linux version is built and tested with
+
 	make unix	build ./sbl for unix 64 bit
 	make test_unix
+
+The port to OSX is now working and passes the basic sanity test:
+
+	make osx	build ./sbl for osx 64 bit
+	make test_osx
 
 
 The "sanity" test on spitbol verifies that spitbol is able to translate itself.
