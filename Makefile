@@ -51,14 +51,14 @@ endif
 unix:
 	rm -fr bld
 	mkdir bld
-	$(CC) -Dunix_64 -m64 $(CCOPTS) -c osint/*.c
+	$(CC) -DWS64 -m64 $(CCOPTS) -c osint/*.c
 	mv *.o bld
 	./bin/sbl_unix -u unix -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
 	./bin/sbl_unix -u unix:$(TRC) -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ nasm/asm.sbl
 	./bin/sbl_unix -u unix_nasm -1=bld/sbl.err -2=bld/err.s err.sbl
 	cat nasm/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
-	nasm -f elf64 -Dunix_64 -o bld/sbl.o bld/sbl.s
-	$(CC) -lm -Dunix_64 -m64 $(LDOPTS) -static  bld/*.o -lm  -osbl 
+	nasm -f elf64 -DWS64 -o bld/sbl.o bld/sbl.s
+	$(CC) -lm -DWS64 -m64 $(LDOPTS) -static  bld/*.o -lm  -osbl 
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS) $(NOBJS)
@@ -94,14 +94,14 @@ test:
 	rm -f bld/*
 	echo "start unix nasm  sanity test"
 	cp	./bin/sbl_unix tbol
-	gcc -Dunix_64 -m64 -c osint/*.c
+	gcc -DWS64 -m64 -c osint/*.c
 	mv *.o bld
 	./tbol -u unix -1=sbl.asm -2=bld/sbl.lex -3=bld/sbl.equ lex.sbl
 	./tbol -u unix -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ nasm/asm.sbl
 	./tbol -u unix_nasm -1=bld/sbl.err -2=bld/err.s err.sbl
 	cat nasm/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
-	nasm -f elf64 -Dunix_64 -o bld/sbl.o bld/sbl.s
-	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
+	nasm -f elf64 -DWS64 -o bld/sbl.o bld/sbl.s
+	$(CC) -lm -DWS64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
 	mv bld/sbl.lex	tbol.lex.0
 	mv bld/sbl.s	tbol.s.0
 	mv bld/err.s	tbol.err.s
@@ -112,8 +112,8 @@ test:
 	./tbol -u unix: -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ nasm/asm.sbl
 	./tbol -u unix_nasm -1=bld/sbl.err -2=bld/err.s err.sbl
 	cat nasm/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
-	nasm -f elf64 -Dunix_64 -o bld/sbl.o bld/sbl.s
-	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
+	nasm -f elf64 -DWS64 -o bld/sbl.o bld/sbl.s
+	$(CC) -lm -DWS64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
 	mv bld/sbl.lex	tbol.lex.1
 	mv bld/sbl.s	tbol.s.1
 	mv bld/err.s	tbol.err.1
@@ -124,8 +124,8 @@ test:
 	./tbol -u unix -1=bld/sbl.lex -2=bld/sbl.tmp -3=bld/sbl.err -4=bld/sbl.equ nasm/asm.sbl
 	./tbol -u unix_nasm -1=bld/sbl.err -2=bld/err.s err.sbl
 	cat nasm/sys.asm bld/err.s bld/sbl.tmp >bld/sbl.s
-	nasm -f elf64 -Dunix_64 -o bld/sbl.o bld/sbl.s
-	$(CC) -lm -Dunix_64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
+	nasm -f elf64 -DWS64 -o bld/sbl.o bld/sbl.s
+	$(CC) -lm -DWS64 -m64 $(LDOPTS)  bld/*.o -lm  -osbl 
 	ls -l sbl tbol
 	mv bld/sbl.lex	tbol.lex.2
 	mv bld/sbl.s	tbol.s.2

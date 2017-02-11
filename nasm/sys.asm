@@ -20,34 +20,16 @@
 
 ;	ws is bits per word, cfp_b is bytes per word, cfp_c is characters per word
 
-%ifdef	osx_32
-	%define	os	osx
-	%define	osx
+	%define	os	unix
+	%define	unix
+
+%ifdef 	WS32
 	%define	ws	32
 %endif
 
-%ifdef	unix_32
-	%define	os	unix
-	%define	unix
-	%define	ws	32
-%endif
-
-%ifdef	macos
-	%define	os	macos
-	%define	macos
+%ifdef	WS64
 	%define	ws	64
 %endif
-
-%ifdef	unix_64
-	%define	os	unix
-	%define	unix
-	%define	ws	64
-%endif
-
-%ifdef	osx
-	%define cmpss	_cmpss
-%endif
-
 
 	%define m_char	byte	; reference to byte in memory
 	%define d_char	db	; define value of byte
