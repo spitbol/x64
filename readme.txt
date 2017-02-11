@@ -1,3 +1,18 @@
+Update		10 Feb 2017	Dave Shields
+
+Fix problems in DATE() (osint/systm.c) and reporting elapsed execution time (osint/systm.c)
+
+Can no longer build Apple version cleanly. Underlying toolset changed, as did the os name, from 'osx' to 'macos'.
+Hence, dropping the pretense that macos is just another unix. It's a different beast. Hence
+
+Since use of gnu gas assembler as alternate to nasm was just introduced for macos, only using nasm going forward for
+unix.
+
+Makefile is now for just unix and only uses nasm. Will no longer maintain gas for unix.
+
+makefile.macos is the makefile to be used for macos. Will hopefully be able to use nasm for macos, but that is yet to 
+be determined.
+
 Update		17 June 2015	Dave Shields
 
 File ./docs/minimal-reference-manual.md replaces ./docs/minimal-reference-manual.html. (This was easier to format, and the
