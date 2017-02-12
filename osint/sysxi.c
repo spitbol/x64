@@ -486,13 +486,13 @@ int fd;
 
             s = svfheader.maxsize - svfheader.dynoff; // Minimum load address
             cp = "Insufficient memory to load ";
-            if ((unsigned long)sbrk(0) < s )    // If DNAMB will be below old MXLEN,
-                if (brk((char *)s))             //  try to move basemem up.
+            if ((unsigned long)sbrkx(0) < s )    // If DNAMB will be below old MXLEN,
+                if (brkx((char *)s))             //  try to move basemem up.
                     goto reload_err;
 
             // Allocate heap. Restore topmem to its prior state
             s = svfheader.topmem - svfheader.heapadr;
-            basemem = (char *)sbrk((uword)s);
+            basemem = (char *)sbrkx((uword)s);
             if (basemem == (char *)-1)
                 goto reload_err;
             topmem = basemem + s;

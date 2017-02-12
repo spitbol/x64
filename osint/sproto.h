@@ -221,11 +221,9 @@ extern	int			zysxi ( void );
 //#include <unistd.h>
 #define LSEEK lseek
 
-// Redefine sbrk and brk to use custom routines in syslinux.c
-#undef sbrk
-#undef brk
-#define sbrk sbrkx
-#define brk  brkx
+// SPITBOL uses its own versions of brk and sbrk, by using 'x' appended to name.
+// Definitions of these altered versions can be found in syslinux.c
+
 extern	int 		brkx ( void *addr );
 extern	void		*sbrkx ( long incr );
 

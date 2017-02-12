@@ -28,8 +28,6 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 #include <stdlib.h>
 #include <fcntl.h>
-#undef brk  // remove sproto redefinition
-#undef sbrk // remove sproto redefinition
 //#include <malloc.h>
 
 // Size and offset of fields of a structure.  Probably not portable.

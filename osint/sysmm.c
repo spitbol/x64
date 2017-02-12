@@ -81,7 +81,7 @@ char **pp;
     *pp = (char *) 0;		// no result sbrk value
 
     while ( n >= sizeof(word) ) {	// Word is minimum allocation unit
-        p = (char *)sbrk((uword)n);		// Attempt allocation
+        p = (char *)sbrkx((uword)n);		// Attempt allocation
         if ( p != (char *) -1 ) {	// If successful
             result += n;		// Accumulate allocation size
             if (*pp == (char *) 0) {// First success?

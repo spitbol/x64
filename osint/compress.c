@@ -102,7 +102,7 @@ uword size;
     if (!bits && expanding)		// Turn off expansion
     {
         if (extra)
-            sbrk(-extra);		// release any extra memory acquired
+            sbrkx(-extra);		// release any extra memory acquired
         extra = 0;
         expanding = 0;
         return 0;
@@ -115,7 +115,7 @@ uword size;
         else
         {
             extra = EMEMORY - size;	// extra memory needed
-            if ((char *)sbrk((uword)extra) == (char *) -1)
+            if ((char *)sbrkx((uword)extra) == (char *) -1)
                 return 1;			// not available
         }
         expanding = bits;
@@ -355,7 +355,7 @@ uword size;
             wrtaout((unsigned char *)buffer, bufcnt);
         bufcnt = 0;
         if (extra)
-            sbrk(-extra);		// release any extra memory acquired
+            sbrkx(-extra);		// release any extra memory acquired
         extra = 0;
         compressing = 0;
         return 0;
@@ -368,7 +368,7 @@ uword size;
         else
         {
             extra = CMEMORY - size;	// extra memory needed
-            if ((char *)sbrk((uword)extra) == (char *) -1)
+            if ((char *)sbrkx((uword)extra) == (char *) -1)
                 return 1;			// not available
         }
         compressing = bits;

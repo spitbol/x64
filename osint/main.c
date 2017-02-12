@@ -85,7 +85,7 @@ char	*argv[];
     /   resumes program execution.
     */
     if ( lmodstk ) {
-        if ( brk( (char *) topmem ) < 0 ) { // restore topmem to its prior state
+        if ( brkx( (char *) topmem ) < 0 ) { // restore topmem to its prior state
             wrterr( "Insufficient memory to load." );
             __exit(1);
         }
@@ -151,7 +151,7 @@ char	*argv[];
     /*
      *	Force the memory manager to initialize itself
      */
-    if ((char *)sbrk(0) == (char *)-1) {
+    if ((char *)sbrkx(0) == (char *)-1) {
         wrterr( "Insufficient memory.  Try smaller -d, -m, or -s command line options." );
         __exit( 1 );
     }
@@ -159,7 +159,7 @@ char	*argv[];
     /*
     /   Allocate stack
     */
-    if ((lowsp = sbrk((uword)stacksiz)) == (char *) -1) {
+    if ((lowsp = sbrkx((uword)stacksiz)) == (char *) -1) {
         wrterr( "Stack memory unavailable." );
         __exit( 1 );
     }
@@ -168,7 +168,7 @@ char	*argv[];
     /
     */
 
-    if ((basemem = (char *)sbrk((uword)memincb)) == (char *) -1) {
+    if ((basemem = (char *)sbrkx((uword)memincb)) == (char *) -1) {
         wrterr( "Workspace memory unavailable." );
         __exit( 1 );
     }
