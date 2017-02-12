@@ -194,9 +194,9 @@ config.64
 
 config.done
 
-*	rip_mode is needed for osx. See getval()
+*	rip_mode is needed for macos. See getval()
 
-	rip_mode = (ident(os,'osx') 1, 0)
+	rip_mode = (ident(os,'macos') 1, 0)
 
 	report('rip', rip_mode)
 	ne(rip_mode) ripinit()
@@ -291,7 +291,7 @@ skip_init.end
 
 	genlabels = 0
 
-*  riplabel is count of generated rip (osx rip address mode) labels
+*  riplabel is count of generated rip (macos rip address mode) labels
 
 	riplabels = 0
 
@@ -757,7 +757,7 @@ arg.done
 
 -stitl getrip(iarg)
 getrip
-*  return value suitable for use in rip mode (needed for osx). This requires that we
+*  return value suitable for use in rip mode (needed for macos). This requires that we
 *  allocate a variable to hold the address,value. This is loaded into w0.
 
 	pre = 'm('

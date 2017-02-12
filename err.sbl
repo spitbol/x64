@@ -105,17 +105,19 @@
 
 * set target definition flag, if any.
 *
-	target = (differ(host(0)) host(0), "unix_gas")
+	target = (differ(host(0)) host(0), 'macos')
         output = "target: " target
-	target break('_') . os '_' rem . asm
 
+	asm = 'nasm'
+
+	output = 'target assembler: ' asm
 * tab character
 
 	tab	= char(9)
 
 	ident(asm,'gas')				:s(config.gas)
 	ident(asm,'nasm')				:s(config.nasm)
-	output = 'unknown target assembler, using gas format'
+	output = 'unknown target assembler, using nasm format' :(config.nasm)
 	
 config.gas
 	asm.byte	= '.byte'
@@ -405,9 +407,9 @@ readerr_end
         outfile =
 
 *  putout label and compressed error message table
-*  osx visible names must start with '_'.
+*  macos visible names must start with '_'.
 *
-*	prefix = ident(target,"osx_64") "_"
+*	prefix = ident(target,"macos") "_"
 
 	outfile = tab asm.global tab prefix "errors"
 	outfile = prefix 'errors:' tab asm.byte tab '0'

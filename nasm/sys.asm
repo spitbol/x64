@@ -20,63 +20,28 @@
 
 ;	ws is bits per word, cfp_b is bytes per word, cfp_c is characters per word
 
-;	assume ws is 64 and os is unix
-
 %define	ws	64
+
+%ifdef IGNORE
 
 %define	unix
 %define	os	unix
-
 
 %ifdef	macos
 %undef	unix
 %undef os
 %define os	macos
 %endif
+%endif
+
+%define os macos
+%define macos
 
 	%define m_char	byte	; reference to byte in memory
 	%define d_char	db	; define value of byte
 	%define m_real	qword	; reference to floating point value in memory
 	%define d_real	dq	; define value for floating point
 
-%if	ws=32
-
-	%define	ia	ebp
-
-	%define w0	eax
-	%define w1	ebp
-	%define wa	ecx
-	%define wa_l    cl
-	%define wb	ebx
-	%define wb_l  	bl
-	%define wc	edx
-	%define wc_l  	dl
-
-	%define	xl	esi
-	%define	xt	esi
-	%define xr	edi
-	%define xs	esp
-
-	%define m_word	dword	; reference to word in memory
-	%define d_word	dd	; define value for memory word
-;	%define	cfp_b	4
-	%define log_cfp_b 2
-	%define cfp_c_val	4
-	%define log_cfp_c 2
-	%define cfp_m_	2147483647
-;	%define	cfp_n_	32
-
-	%define	lods_b	lodsb
-	%define	lods_w	lodsd
-	%define movs_b	movsb
-	%define movs_w	movsd
-	%define	stos_b	stosb
-	%define	stos_w	stosd
-	%define	cmps_b	cmpsb
-
-	%define m(ref) dword[ref]
-	%define a(ref) [ref]
-%else
 	%define	ia	rbp
 
 	%define	w0	rax
@@ -115,22 +80,16 @@
 
 
 ;	%define mem(ref) qword[ref]
-%ifdef osx
 	%define m(ref) qword[ref]
 	%define a(ref) [ref]
-%else
-	%define m(ref) qword[ref]
-	%define a(ref) [ref]
-%endif
-%endif
 
 ;	flags
 	%define	flag_of	0x80
 	%define	flag_cf	0x01
 	%define	flag_ca	0x40
 
-%ifdef osx
-; redefine symbols needed by C to account for leading _ inserted by C compiler on osx
+%ifdef macos
+; redefine symbols needed by C to account for leading _ inserted by C compiler on macos
 	%define	b_icl		_b_icl
 	%define	b_scl		_b_scl
 	%define	b_xnt		_b_xnt
@@ -182,7 +141,7 @@
 	%define	tscblk		_tscblk
 	%define	ttybuf		_ttybuf
 	%define	w_yyy		_w_yyy
-	%define	w_aaa		_w_yyy
+	%define	w_aaa		_w_aaa
 	%define	i_adi		_i_adi
 	%define	i_dvi		_i_dvi
 	%define	i_mli		_i_mli
@@ -255,14 +214,9 @@
 	%define	zysxi		_zysxi
 %endif
 
-%ifdef	unix_32
-	%define	cfp_b	4
-	%define	cfp_c	4
-%else
 	%define	cfp_b	8
 	%define	cfp_c	8
 	%define		m64			// make m64 the default
-%endif
 
 	global	reg_block
 	global	reg_w0

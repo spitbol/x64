@@ -147,8 +147,7 @@
 
 #       some c ompilers transform "internal" global names to
 #       "external" global names by adding a leading underscore at the front
-#       of the internal name.  thus, the function name 'osopen' becomes
-#       '_osopen'.  however, not all c compilers follow this convention.
+#       of the internal name.
 
 #       global variables
 
@@ -356,7 +355,7 @@ startup:
 	movq	%rsp,compsp(%rip)	# save minimal's stack pointer
 	subq	stacksiz(%rip),%rsp	# end of minimal stack is where c stack will start
 	movq	%rsp,%rax
-	addq	$cfp_b*128,%rax	# 128 words smaller for chk (need multiple of 16 for mac osx)
+	addq	$cfp_b*128,%rax	# 128 words smaller for chk (need multiple of 16 for mac macos)
 	movq	%rax,spmin(%rip)
 #	here with new c stack empty, and hence aligned on 16-byte boundary
 	movq	init_ra(%rip),%rax	# get original return address
@@ -547,6 +546,7 @@ get_fp:
 
 	.global	mxint
 
+#ifdef IGNORE
 #	%ifdef zz_trace
 #	%endif
 	.global	start
@@ -557,6 +557,7 @@ trc_fl:	.quad	0			# used to save flags for trc calls
 trc_:
 	syscallf	trc_i
 	ret
+#endif
 
 
 #   table to recover type word from type ordinal

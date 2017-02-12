@@ -143,7 +143,7 @@ option.next
 	outfile = cs ' options ' options ls
 
 	ident(option,'unix')		:s(option.unix)
-	ident(option,'osx')		:s(option.osx)
+	ident(option,'macos')		:s(option.macos)
 	ident(option,'xt')			:s(option.xt)
 	ident(option,'trc')			:s(option.trc)
 
@@ -152,9 +152,9 @@ option.next
 	output = "error: unknown option '" option "', translation ends."	
 	&dump = 0				:(end)
 
-* unix and osx gas differ in their interpretation of the argument to '.align' instruction.
-* for unix is it number of bytes, while for osx it is a power of 2.
-* For example, '.align 8' aligns on byte boundary, or 2**8 = 256 byte boundary on osx, so 
+* unix and macos gas differ in their interpretation of the argument to '.align' instruction.
+* for unix is it number of bytes, while for macos it is a power of 2.
+* For example, '.align 8' aligns on byte boundary, or 2**8 = 256 byte boundary on macos, so 
 * equivalent of unix '.align 8' is '.align 3'
 option.unix
 	target = 'unix'
@@ -162,12 +162,12 @@ option.unix
 	align_quad = 8;* align on word (8-byte) address
 						:(option.next)
 
-option.osx
-	target = 'osx'
+option.macos
+	target = 'macos'
 	align_even = 1
 	align_quad = 3
-	os = 'osx'
-*	osx requires '_' before names of procedures and variables defined in osint or referenced frmo it.
+	os = 'macos'
+*	macos requires '_' before names of procedures and variables defined in osint or referenced frmo it.
 	c_prefix = '_'
 						:(option.next)
 
@@ -323,7 +323,7 @@ swap.init.done
 
 	genlabels = 0
 
-*  riplabel is count of generated rip (osx rip address mode) labels
+*  riplabel is count of generated rip (macos rip address mode) labels
 
 	riplabels = 0
 

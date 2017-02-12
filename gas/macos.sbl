@@ -17,7 +17,7 @@
 * no case folding
 -case  0
 
-*	osx requires that names referenced from c code be prefixed with underline character.
+*	macos requires that names referenced from c code be prefixed with underline character.
 *	don't be fancy. simple is as simple does.
 	
 	&trim = 1

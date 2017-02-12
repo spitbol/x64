@@ -1,4 +1,4 @@
-#	unix and osx use differnt conventions for defining a macro. This one is for unix.
+#	unix and macos use differnt conventions for defining a macro. This one is for unix.
 	.macro	syscall	
        	popq	%rax			# save minimal return address
        	movq	%rax,reg_pc(%rip)	
