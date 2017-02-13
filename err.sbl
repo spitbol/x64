@@ -108,9 +108,9 @@
 	target = (differ(host(0)) host(0), 'macos')
         output = "target: " target
 
-	asm = 'nasm'
-
+	asm = (ident(target,'macos') 'gas', 'nasm')
 	output = 'target assembler: ' asm
+
 * tab character
 
 	tab	= char(9)

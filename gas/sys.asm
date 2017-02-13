@@ -554,9 +554,11 @@ get_fp:
 	.data
 trc_fl:	.quad	0			# used to save flags for trc calls
 	.text
-trc_:
-	syscallf	trc_i
-	ret
+#ifdef TRC
+#trc_:
+#	syscallf	trc_i
+#	ret
+#endif
 #endif
 
 

@@ -9,7 +9,7 @@
        	call	syscall_exit		# save result, restore registers, switch back to minimal stack, and return
 	.endm
 
-	.macro	syscallf	cproc
+	.macro	syscallf
        	popq	%rax			# save minimal return address
        	movq	%rax,reg_pc(%rip)	
        	call	syscallf_init		# save registers
