@@ -72,27 +72,31 @@ Demonstration programs from the SPITBOL User Manual can be found in `./demos`
 
 ## Building SPITBOL
 
-To build spitbol (`./sbl`)
+To build spitbol (`./sbl`) and then test it:
 
-OSX:
+macOS:
 
 ```
-	make osx
-	make test_osx
+	make -f macos.makefile
+	make -f macos.makefile test
 ```
 
 Unix:
 
 ```
-	make unix
-	make test_unix
+	make -f unix.makefile 
+	make -f unix.makefile test
 ```
 
 See `readme.txt` for instructions on interpreting the test output.
 
+You need the NASM assembler to build the unix version. You can install it using 
+```
+	sudo apt-get install nasm
+```
+in Ubuntu and its variants, or consult http://nasm.us for downloadable binaries and source.
+
 # License
 
 SPITBOL is licensed under the GPL (v2 or later) license.
-All code needed to build the system is included in
-this repository.
 
