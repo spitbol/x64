@@ -58,7 +58,7 @@
 
 *  revision history:
 
-        version = 'v1.12'
+        version = 'v2.0'
 	rcode = '_rc_'
 
 
@@ -126,7 +126,8 @@
 
 	define('readline()')
 
-	os = 'unix';	ws = '64'
+	ws = '64'
+	
 	options = (differ(host(0) host(0)), "unix")
 	output = 'options: ' options
 *	add trailing colon so always have colon after an argument
@@ -136,6 +137,7 @@ option.next
 	options ':' =				:s(option.next)
 	options break(':') . option ':' =	:f(options.done)
 
+	ident(option,'macos')			:s(option.macos)
 	ident(option,'unix')			:s(option.unix)
 	ident(option,'xt')			:s(option.xt)
 	ident(option,'trc')			:s(option.trc)
@@ -145,11 +147,18 @@ option.next
 	output = "error: unknown option '" option "', translation ends."	
 	&dump = 0				:(end)
 
+option.macos
+	os = 'macos'; rip = 1			:(option.next)
+
 option.unix
-	os = 'unix'; 	ws = '64'		:(option.next)
+
+	os = 'unix'				:(option.next)
+
 option.trc
+
 *	turn on instruction trace
 	i_trace = 1				:(option.next)
+
 option.xt
 *  x_trace turns on tracing for executable instructions
 	x_trace = 1				:(option.next)
@@ -158,8 +167,6 @@ options.done
 	i_trace = ident(i_trace) 0
 	target = os '_' ws
 	report(target,'target')
-
-
 
 	filebase = "s"
 

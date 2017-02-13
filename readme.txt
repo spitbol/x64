@@ -1,27 +1,24 @@
-Update		10 Feb 2017	Dave Shields
+Update		13 Feb 2017	Dave Shields
 
-Fix problems in DATE() (osint/systm.c) and reporting elapsed execution time (osint/systm.c)
+Now supply two makefiles:
 
-Can no longer build Apple version cleanly. Underlying toolset changed, as did the os name, from 'osx' to 'macos'.
-Hence, dropping the pretense that macos is just another unix. It's a different beast. Hence
+	macos.makefile	to build unix version, using nasm assembler
+	unix.makefile	to build macos version, using gnu as assembler (gas).
 
-Since use of gnu gas assembler as alternate to nasm was just introduced for macos, only using nasm going forward for
-unix.
-
-Makefile is now for just unix and only uses nasm. Will no longer maintain gas for unix.
-
-makefile.macos is the makefile to be used for macos. Will hopefully be able to use nasm for macos, but that is yet to 
-be determined.
 
 The unix/linux version is built and tested with
 
-	make 		build ./sbl for unix 64 bit
-	make test
+	make -f unix.makefile 		build ./sbl for unix
+	make -f unix.makefile test	to test
 
-The port to OSX is now NOT working and DOES NOT pass the basic sanity test:
+The macos (formerly osx) version is built and tested with
 
-	make macos	build ./sbl for osx 64 bit
-	make test_macos
+	make -f macos.makefile 		build ./sbl for macos
+	make -f macos.makefile test	to test
+
+Update		10 Feb 2017	Dave Shields
+
+Fix problems in DATE() (osint/systm.c) and reporting elapsed execution time (osint/systm.c)
 
 Update		17 June 2015	Dave Shields
 
