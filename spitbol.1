@@ -1,10 +1,10 @@
 .\" Process this file with groff -man -Tascii spitbol.1
 .\"
-.TH SPITBOL 1 "July 2012 (3.8.2)" "Robert B. K. Dewar" "User Commands"
+.TH SPITBOL 1 "February 2017 (version 15.01)" "Robert B. K. Dewar" "User Commands"
 .SH NAME
 spitbol \- SPeedy ImplemenTation of snoBOL
 .SH SYNOPSIS
-\fBspitbol\fR [\fB-?\fR] [\fB#\fR=\fIfile-and-options\fR]
+\fBspitbol\fR [\fB-?\fR] [\fB-#\fR=\fIfile-and-options\fR]
 [\fB-T=\fIterm-file\fR] [\fB-a\fR] [\fB-b\fR] [\fB-c\fR] [\fB-d\fI#\fR]
 [\fB-e\fR] [\fB-f\fR] [\fB-g\fI#\fR] [\fB-h\fR] [\fB-i\fI#\fR] [\fB-k\fR]
 [\fB-l\fR] [\fB-m\fI#\fR] [\fB-n\fR] [\fB-o\fR=\fIout-file\fR] [\fB-p\fR]
@@ -15,7 +15,7 @@ spitbol \- SPeedy ImplemenTation of snoBOL
     Command arguments without values such as \fB-a\fR \fB-p\fR \fB-e\fR
     can be combined together as \fB-ape\fR.
 
-    option defaults: -d64m -i128k -m4m -s128k -g60 -t120
+    option defaults: -d64m -g60 -i128k -m4m -s128k -t120
 .fi
 .SH DESCRIPTION
 \fBMacro SPITBOL\fR is an extremely high-performance implementation of the
@@ -148,14 +148,15 @@ application will then begin execution if the -n option was not specified.
 produce listings with form feeds
 .TP 6
 .I in-file\fR ...
-Maybe the name of a \fBMacro SPITBOL\fR save file (.spx) or a list of one or
-more source files (.spt) from which a program will be read. The files are read
-sequentially (file contents are concatenated together) until an END statement
-is found. If no files are specified, \fBMacro SPITBOL\fR will output a short
-summary of the options available and will then terminate.
+May be the name of a \fBMacro SPITBOL\fR save file (.spx) or a list of one or
+more source files (.spl or .spt) from which a program will be read. The files
+are read sequentially (file contents are concatenated together) until an END
+statement is found. If no files are specified, \fBMacro SPITBOL\fR will output
+a short summary of the options available and will then terminate.
 
 \fBMacro SPITBOL\fR will attempt to open files specified without a file name
-extension by appending the extensions .spt (source file) and .spx (save file).
+extension by appending the extensions .spl or .spt (source file) and .spx
+(save file).
 
 The special file name, '-', can be used to specify that the standard input file
 be read. See the \fBMacro SPITBOL\fR manual for additional information.
@@ -166,8 +167,9 @@ program's END statement are ignored by \fBMacro SPITBOL\fR. These extra
 arguments are made available to the \fBMacro SPITBOL\fR program via the
 HOST(3) and HOST(2,i) functions.
 .SH FILES
-\fBMacro SPITBOL\fR source files should use .spt as the file name extension.
-This is by convention and it not a requirement.
+\fBMacro SPITBOL\fR source files should use .spl or .spt as the file name
+extension. This is by convention and it not a requirement.
+\fBMacro SPITBOL\fR save files should use .spx as the file name extension.
 .SH ENVIRONMENT
 .TP 6
 .I SNOLIB
@@ -196,7 +198,7 @@ the HOST function must match the case of the variable name.
 .SH DIAGNOSTICS
 The diagnostic messages should be self explanatory. A complete list of the
 compile-time and run-time messages produced by \fBMacro SPITBOL\fR can be found
-in "Appendix D" of the \fBMacro SPITBOL 386 Manual\fR.
+in "Appendix D" of the \fBMacro SPITBOL\fR Manual.
 .SH BUGS
 The LOAD(s1,s2) function is currently disabled.
 
@@ -223,7 +225,7 @@ This man page was written by Craig J. Wright.
 Of course, we would probably not have the pleasure of being able to write
 programs in \fBSPITBOL\fR if it were not for the development of the SNOBOL
 programming language by Ralph E. Griswold, David J. Farber, Ivan P. Polonsky
-and other at Bell Labs.
+and others at Bell Labs.
 .SH REPORTING BUGS
 Please report any bugs to thedaveshields@gmail.com
 .SH SEE ALSO
@@ -238,8 +240,12 @@ implementation, please refer to the \fIMacro SPITBOL\fR manual. It is
 included in the file that you downloaded and is located at
 \fBdocs/spitbol-manual-3.7.pdf\fR.
 .SH COPYRIGHT
-\fBMacro SPITBOL\fR is Copyright \(co 1989, 2010 by Robert B. K. Dewar and 
-Catspaw, Inc. (Mark Emmer).
+Copyright information for \fBMacro SPITBOL\fR is shown below:
+.RS 3
+Copyright \(co 1987-2012 by Robert B. K. Dewar and Catspaw, Inc. (Mark Emmer)
+.br
+Copyright \(co 2012-2017 by David Shields
+.RE
 
 Additional materials are copyrighted by others.
 .SH SOFTWARE LICENSE
