@@ -42,7 +42,10 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 #include <sys/times.h>
-#define CLK_TCK sysconf(_SC_CLK_TCK)
+//#define CLK_TCK sysconf(_SC_CLK_TCK)
+//
+#define CLK_TCK 100
+
 
 zystm() {
 

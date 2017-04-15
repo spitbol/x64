@@ -156,7 +156,7 @@ struct	ioblk	*ioptr;
         len--;                              //   zap 2nd delimiter
     cmdbuf[len] = '\0';                     // Nul terminate cmd
     shellpath = getshell();         // get shell's path
-    execl( shellpath, pathlast( shellpath ), "-c", cmdbuf, (char *)NULL );
+    execl( shellpath, pathlast( shellpath ), "-c", cmdbuf, (char *)0 );
     return -1;					// should not get here
 }
 

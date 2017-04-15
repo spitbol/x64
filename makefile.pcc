@@ -1,4 +1,4 @@
-# SPITBOL makefile using tcc
+# SPITBOL makefile using pcc
 
 ws?=64
 
@@ -16,7 +16,7 @@ ARCHDEF=-D m$(WS)
 
 ifeq ($(OS),unix)
 #CC=tools/tcc/bin/tcc
-CC=gcc
+CC=pcc
 ELF=elf$(WS)
 else
 CC=llvm
@@ -38,10 +38,10 @@ ASM	=	nasm
 
 ifeq	($(DEBUG),0)
 #CFLAGS= -D m$(WS) -m$(WS) -Itools/tcc/include
-CFLAGS= -D m$(WS) -m$(WS) 
+#CFLAGS= -D m$(WS) -m$(WS) 
+CFLAGS= 
 else
-#CFLAGS= -D m$(WS) -g -m$(WS) 
-CFLAGS= -D m$(WS) -g -m$(WS)
+CFLAGS= -D m$(WS) -g -m$(WS)-Itools/tcc/include
 endif
 
 # Assembler info -- Intel 32-bit syntax
@@ -122,10 +122,11 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 # link spitbol with static linking
 #LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a $(MUSL)/lib/libc.a 
 #LIBS = -Ltools/tcc/lib -Ltools/musl/lib
-LIBS = 
+LIBS = -Ltools/musl/lib
 spitbol: $(OBJS)
 #	$(CC) $(CFLAGS) $(LIBS) -static -lm $(OBJS) -o$(EXECUTABLE) 
-	$(CC) $(CFLAGS) $(LIBS) -lm $(OBJS) -o$(EXECUTABLE) 
+#	$(CC) $(CFLAGS) $(LIBS) -lm $(OBJS) -o$(EXECUTABLE) 
+	$(CC) $(CFLAGS) $(LIBS) $(OBJS) -o$(EXECUTABLE) 
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS)
