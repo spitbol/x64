@@ -1,0 +1,253 @@
+.\" Process this file with groff -man -Tascii spitbol.1
+.\"
+.TH SPITBOL 1 "February 2017 (version 15.01)" "Robert B. K. Dewar" "User Commands"
+.SH NAME
+spitbol \- SPeedy ImplemenTation of snoBOL
+.SH SYNOPSIS
+\fBspitbol\fR [\fB-?\fR] [\fB-#\fR=\fIfile-and-options\fR]
+[\fB-T=\fIterm-file\fR] [\fB-a\fR] [\fB-b\fR] [\fB-c\fR] [\fB-d\fI#\fR]
+[\fB-e\fR] [\fB-f\fR] [\fB-g\fI#\fR] [\fB-h\fR] [\fB-i\fI#\fR] [\fB-k\fR]
+[\fB-l\fR] [\fB-m\fI#\fR] [\fB-n\fR] [\fB-o\fR=\fIout-file\fR] [\fB-p\fR]
+[\fB-r\fR] [\fB-s\fI#\fR] [\fB-t\fI#\fR] [\fB-u\fR \fI"string"\fR] [\fB-x\fR]
+[\fB-y\fR] [\fB-z\fR] [\fBin-file\fR ...] [\fBargs\fR]
+
+.nf
+    Command arguments without values such as \fB-a\fR \fB-p\fR \fB-e\fR
+    can be combined together as \fB-ape\fR.
+
+    option defaults: -d64m -g60 -i128k -m4m -s128k -t120
+.fi
+.SH DESCRIPTION
+\fBMacro SPITBOL\fR is an extremely high-performance implementation of the
+SNOBOL4 language.
+
+With SNOBOL4, you can manipulate text and search for patterns in a simple and
+natural manner. SNOBOL4 is a completely general programming language, and its
+magic extends far beyond the world of text processing. Concise and powerful
+programs are easy to write. In addition, SNOBOL4's pattern programming
+provides a new way to work with computers.
+
+Confusion often arises for those that think "SPITBOL" is a dialect of "COBOL",
+even though there's absolutely no similarity between the two. They do share
+"BOL" in their name, but that's as close as they get. SPITBOL and COBOL were
+designed for very different types of applications.
+.SH OPTIONS
+.TP 6
+.I -?
+displays a short summary of the options available and will then terminate.
+.TP 6
+.I -#=file-and-options
+associate the named file with I/O channel #. INPUT and OUTPUT function calls
+with the same channel number (2nd argument) may omit the file name (3rd
+argument). \fBMacro SPITBOL\fR will use the file specified on the command line
+for this channel. File processing options may appear in square brackets after
+the file name (see the description of the INPUT function -- Chapter 19 -- in
+the \fIMacro SPITBOL\fR for the supported processing options). For
+example, -23=infile.dat[-r10] associates \fBinfile.dat\fR with I/O channel 23.
+The file can be read in binary mode using 10-character records after executing
+the \fBMacro SPITBOL\fR statement, INPUT(.IN, 23).
+.TP 6
+.I -T=term-file
+write TERMINAL output to the named file
+.TP 6
+.I -a
+Same as specifying the -l, -c, and -x options. Listing and statistical
+information will be provided
+.TP 6
+.I -b
+suppress \fBMacro SPITBOL's\fR two-line screen signon message. This option
+will also be recorded in any save files produced.
+.TP 6
+.I -c
+generate compilation statistics
+.TP 6
+.I -d#
+maximum size (in bytes) of the allocated dynamic area (the heap). The size
+value can be followed by "k" for kilobytes or "m" for megabytes. (default is
+-d64m).
+.TP 6
+.I -e
+dont send error messages or trace output to the screen; send to standard output
+instead, which may then be redirected
+.TP 6
+.I -f
+don't fold lower-case names to upper-case
+.TP 6
+.I -g#
+specify number of lines per page for listings (default is -g60)
+.TP 6
+.I -h
+suppress the \fBMacro SPITBOL\fR version identification string and date/time
+that normally appear at the start of the listing
+.TP 6
+.I -i#
+maximum size (in bytes) by which the allocated dynamic area (the heap) is
+enlarged each time more memory is required. This value also specifies the
+initial size of the heap. The size value can be followed by "k" for kilobytes
+or "m" for megabytes. (default is -i128k).
+.TP 6
+.I -k
+run the program even when it contains compilation errors (same as using the
+-ERRORS control statement)
+.TP 6
+.I -l
+produce normal program listing
+.TP 6
+.I -m#
+maximum size (in bytes) of any created object. This is the size of the longest
+individual string allowed and the largest individual array allowed. The
+keyword, &MAXLNGHT, is assigned this value when execution begins. The size
+value can be followed by "k" for kilobytes or "m" for megabytes. (default is
+-m4m).
+.TP 6
+.I -n
+suppress execution (same as using the -NOEXEC control statement)
+.TP 6
+.I -o=out-file
+any program listing, statistics, error messages, or dumps are written to this
+file. If no extension is specified, \fBMacro SPITBOL\fR appends .lst. Data
+assigned to the variable, OUTPUT, is not affected by this option, and
+continues to be written to standard output. To write to standard output and
+simultaneous redirect standard output, use a hyphen for the file name:
+.nf
+    spitbol -o=- program.spt >output.txt
+.fi
+.TP 6
+.I -p
+produce listing with wide titles for printer
+.TP 6
+.I -r
+INPUT variable will begin reading data at the line following the END statement
+in the last source file compiled. If no lines follow the END statement, INPUT
+signals end-of-file immediately. Normally \fBMacro SPITBOL\fR ignores anything
+following the END statement.
+.TP 6
+.I -s#
+maximum size (in bytes) of the stack space. The size value can be followed by
+"k" for kilobytes or "m" for megabytes. (default is -s32k).
+.TP 6
+.I -t#
+line width in characters for listings (default is -t120)
+.TP 6
+.I -u \(dqstring\(dq
+this string is retrievable by the program vai calls to the HOST(0) function.
+The string must be quoted if it contains any blanks or other command-line
+delimiters. A better way for a program to process its command-line arguments is
+through the \fBargs.inc\fR include file. (see the description in Appendix A of
+the \fIMacro SPITBOl\fR manual).
+.TP 6
+.I -x
+generate execution statistics
+.TP 6
+.I -y
+create a save file after compilation. The save file's name will be based on the
+first in-file specified and will have the file name extension of .spx. The
+application will then begin execution if the -n option was not specified.
+.TP 6
+.I -z
+produce listings with form feeds
+.TP 6
+.I in-file\fR ...
+May be the name of a \fBMacro SPITBOL\fR save file (.spx) or a list of one or
+more source files (.spl or .spt) from which a program will be read. The files
+are read sequentially (file contents are concatenated together) until an END
+statement is found. If no files are specified, \fBMacro SPITBOL\fR will output
+a short summary of the options available and will then terminate.
+
+\fBMacro SPITBOL\fR will attempt to open files specified without a file name
+extension by appending the extensions .spl or .spt (source file) and .spx
+(save file).
+
+The special file name, '-', can be used to specify that the standard input file
+be read. See the \fBMacro SPITBOL\fR manual for additional information.
+.TP 6
+.I [args]
+Arguments on the command line that appear after the source file containing the
+program's END statement are ignored by \fBMacro SPITBOL\fR. These extra
+arguments are made available to the \fBMacro SPITBOL\fR program via the
+HOST(3) and HOST(2,i) functions.
+.SH FILES
+\fBMacro SPITBOL\fR source files should use .spl or .spt as the file name
+extension. This is by convention and it not a requirement.
+\fBMacro SPITBOL\fR save files should use .spx as the file name extension.
+.SH ENVIRONMENT
+.TP 6
+.I SNOLIB
+The environment variable, SNOLIB, may be set to a list of subdirectory paths to
+be searched for files specified in an -INCLUDE control statement. The name,
+SNOLIB, must be in upper-case letters. For example:
+.nf
+    SNOLIB=/usr/local/snolib:/opt/spitbol-linux/includes
+    export SNOLIB
+.fi
+.TP 6
+.B Accessing Environment String from your Program
+The HOST funcition provides a way for programs to retrieve the value of a
+particular environment variable. Given the shell (bash) commands:
+.nf
+    DIRECTION=NorthEast
+    export DIRECTION
+.fi
+The program statement
+.nf
+    HEADING = HOST(4, "DIRECTION")
+.fi
+will result in HEADING being set to the value "NorthEast". The HOST function
+fails if the desired environment variable is not found. The second argument to
+the HOST function must match the case of the variable name.
+.SH DIAGNOSTICS
+The diagnostic messages should be self explanatory. A complete list of the
+compile-time and run-time messages produced by \fBMacro SPITBOL\fR can be found
+in "Appendix D" of the \fBMacro SPITBOL\fR Manual.
+.SH BUGS
+The LOAD(s1,s2) function is currently disabled.
+
+For information about differences between SNOBOL4, SNOBOL4+, and Spitbol (and
+differences between various \fBSpitbol\fR implementations) please refer to the
+\fBMacro SPITBOL\fR manual.
+.SH AUTHOR
+\fBSPITBOL\fR was initially implemented for the IBM System/360 and System/370
+family of computers by Robert B. K. Dewar and Ken Belcher.
+
+\fBMacro SPITBOL\fR is an implementation of \fBSPITBOL\fR written in the 1970s
+by Robert B. K. Dewar and Anthony P. McCann.
+
+Version 3.7 of \fBMacro SPITBOL\fR was maintained by Mark B. Emmer of Catspaw,
+Inc.  Other changes were made by Steve Duff, Robert E. Goldberg, and Dave Shields.
+
+Dave Shields has maintained the project since 2009.
+
+The \fBMacro SPITBOL\fR manual was written by Mark B. Emmer, Edward K.
+Quillen, and Robert B. K. Dewar.
+
+This man page was written by Craig J. Wright.
+
+Of course, we would probably not have the pleasure of being able to write
+programs in \fBSPITBOL\fR if it were not for the development of the SNOBOL
+programming language by Ralph E. Griswold, David J. Farber, Ivan P. Polonsky
+and others at Bell Labs.
+.SH REPORTING BUGS
+Please report any bugs to thedaveshields@gmail.com
+.SH SEE ALSO
+For additional information about the SNOBOL4 programming language, you might
+want to read the book, \fIThe SNOBOL4 Programming Language\fR second edition by
+R. E. Griswold, J. F. Poage, and I. P. Polonsky (sometimes known as the
+"Green Book"). It is included in the file that you downloaded and is located at
+\fBdocs/green-book.pdf\fR
+
+For additional information about this specific \fBMacro SPITBOL\fR
+implementation, please refer to the \fIMacro SPITBOL\fR manual. It is
+included in the file that you downloaded and is located at
+\fBdocs/spitbol-manual-3.7.pdf\fR.
+.SH COPYRIGHT
+Copyright information for \fBMacro SPITBOL\fR is shown below:
+.RS 3
+Copyright \(co 1987-2012 by Robert B. K. Dewar and Catspaw, Inc. (Mark Emmer)
+.br
+Copyright \(co 2012-2017 by David Shields
+.RE
+
+Additional materials are copyrighted by others.
+.SH SOFTWARE LICENSE
+As of version 3.8, \fBMacro SPITBOL\fR is available under the GPL (v2 or later) software
+license.
