@@ -26,6 +26,7 @@ This file is part of Macro SPITBOL.
 
 #include <fcntl.h>
 
+
 /*
  * getargs
  *
@@ -218,12 +219,6 @@ char	*argv[];
                 spitflag &= ~NOLIST;
                 break;
 
-		/*
-		/   -I	turn on instruction trace
-		*/
-	    case 'I':  
-		spitflag |= ITRACE;
-		break;
                 /*
                 /   -r	read INPUT from source program file
                 */
@@ -238,8 +233,6 @@ char	*argv[];
                 cp = optnum( cp, &stacksiz );
                 // round up to machine word boundary
                 stacksiz = (stacksiz + sizeof(int) - 1)  & ~(sizeof(int) - 1);
-		// make multiple of 16 (needed for mac osx)
-		stacksiz = 16 * (stacksiz / 16);
             }
             break;
 

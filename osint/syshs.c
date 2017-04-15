@@ -310,7 +310,7 @@ zyshs()
                     pticblk->val = (long)topmem;
                     return EXIT_8;
                 case 4:
-                    pticblk->val = stacksiz - 512;	// safety margin - should be multiple of 16
+                    pticblk->val = stacksiz - 400;	// safety margin
                     return EXIT_8;
                 case 5:							// stack in use
                     pticblk->val = stacksiz - (XS(long) - (long)lowsp);

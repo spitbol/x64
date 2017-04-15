@@ -1,0 +1,159 @@
+* Copyright 2012-2015 David Shields
+* 
+* This file is part of Macro SPITBOL.
+* 
+*     Macro SPITBOL is free software: you can redistribute it and/or modify
+*     it under the terms of the GNU General Public License as published by
+*     the Free Software Foundation, either version 2 of the License, or
+*     (at your option) any later version.
+* 
+*     Macro SPITBOL is distributed in the hope that it will be useful,
+*     but WITHOUT ANY WARRANTY; without even the implied warranty of
+*     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*     GNU General Public License for more details.
+* 
+*     You should have received a copy of the GNU General Public License
+*     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+*
+	&trim = 1
+	&dump = 0
+	isglobal = 0
+	int0 = INTEGER(CHAR('0'))
+	define('intof(off)val,i,str,c')
+	define('global_init()')
+	digits = table()
+	digits['0'] = 0
+	digits['1'] = 1
+	digits['2'] = 2
+	digits['3'] = 3
+	digits['4'] = 4
+	digits['5'] = 5
+	digits['6'] = 6
+	digits['7'] = 7
+	digits['8'] = 8
+	digits['9'] = 9
+	digits['a'] = 10
+	digits['b'] = 11
+	digits['c'] = 12
+	digits['d'] = 13
+	digits['e'] = 14
+	digits['f'] = 15
+
+	global_init()
+
+loop
+	line = input			:f(finis)
+	ne(size(line),24)		:s(loop)
+	line LEN(16) . offset  ' '  ANY('dD') 
++		' ' rem . name	:f(loop) 
+	IDENT(global_index_table[name])	:s(loop)
+	ioffset = intof(offset)
+	base = IDENT(name, 'C_AAA') ioffset
+	output = NE(REMDR(ioffset,4)) 'not aligned ' name
+*	output  = IDENT(name, 'C_AAA') 'base ' ioffset
+ 	output = name ' ' (ioffset - base)
+	last_name = name
+	DIFFER(name,'W_YYY')		:s(loop)
+*	output = 'last name ' last_name
+loop.end
+	:(finis)
+
+intof
+	intof = 0
+	i = 0
+	str = REVERSE(off)
+	str = off
+*	output = 'intof arg ' off
+intof.1
+	gt(i = i + 1, 16)		:s(return)
+	c = SUBSTR(str,i,1)
+	intof = intof * 16 + digits[c]  
+					:(intof.1)
+	intof = intof - base		:(return)
+global_init
+	global_index_table = TABLE(600)
+	global_name_table = TABLE(600)
+	s = 
++    'C_AAA ALFSP BITS0 BITS1 BITS2 BITS3 BITS4 BITS5 BITS6 '
++    'BITS7 BITS8 BITS9 BIT10 BIT11 BIT12 BITSM BTFNC BTKNM '
++    'BTLBL BTFFC BTCKW BTKWV BTPRD BTPRE BTVAL CCNMS DMHDK '
++    'DMHDV ENCM1 ENCM2 ENCM3 ENCM4 ENCM5 ENDAB ENDMO ENDML '
++    'ENDMS ENDSO ENDTU ERMMS ERMNS LSTMS HEADR HEADV GBSDP '
++    'INT_R INTV0 INTON INTV1 INTTW INTV2 INTVT INTVH INTTH '
++    'INTAB NDABB NDABD NDARC NDEXB NDFNB NDFND NDEXC NDIMB '
++    'NDIMD NDNTH NDPAB NDPAD NDUNA NDABO NDARB NDBAL NDFAL '
++    'NDFEN NDREM NDSUC NULLS NULLW LCASE UCASE OPDVC OPDVP '
++    'OPDVS OPDVD OPDVN OAMN_ OAMV_ OAON_ OAOV_ OCER_ OFEX_ '
++    'OFIF_ OFNC_ OFNE_ OFNS_ OGOF_ OINN_ OKWN_ OLEX_ OLPT_ '
++    'OLVN_ ONTA_ ONTB_ ONTC_ OPMN_ OPMS_ OPOP_ ORNM_ ORPL_ '
++    'ORVL_ OSLA_ OSLB_ OSLC_ OSLD_ OSTP_ OUNF_ OPSNB OPNSU '
++    'PFI2A PFMS1 PFMS2 PFMS3 SCARR SCCOD SCEXP SCEXT SCINT '
++    'SCNAM SCNUM SCPAT SCSTR SCTAB SCFIL SCFRT SCNRT SCRTN '
++    'SCNMT STLIM STNDF STNDL STNDO STNVR STPM1 STPM2 STPM3 '
++    'STPM4 STPM5 STPM6 STPM7 STRTU SVCTB TMASB TMBEB TRBEV '
++    'TRBKV TRXDR TRXDC V_EQF V_GEF V_GTF V_LEF V_LTF V_NEF '
++    'V_ANY V_ARB V_ARG V_BAL V_END V_LEN V_LEQ V_LGE V_LGT '
++    'V_LLE V_LLT V_LNE V_POS V_REM V_SET V_TAB V_CAS V_CHR '
++    'V_COD V_COP V_DAT V_DTE V_DMP V_DUP V_EVL V_EXT V_FAL '
++    'V_FIL V_HST V_ITM V_LIN V_LOD V_LPD V_RPD V_RPS V_RTB '
++    'V_SI_ V_SRT V_SPN V_STN V_TIM V_TRM V_ABE V_ABO V_APP '
++    'V_ABN V_ARR V_BRK V_CLR V_EJC V_FEN V_FLD V_IDN V_INP '
++    'V_LCS V_LOC V_OPS V_RMD V_RSR V_TBL V_TRA V_UCS V_ANC '
++    'V_BKX V_DEF V_DET V_DIF V_FTR V_LST V_NAY V_OUP V_RET '
++    'V_REW V_STT V_SUB V_UNL V_COL V_COM V_CNV V_ENF V_ETX '
++    'V_ERT V_FRT V_INT V_NRT V_PFL V_RPL V_RVS V_RTN V_STX '
++    'V_STC V_STL V_SUC V_ALP V_CNT V_DTP V_ERL V_FNC V_FLS '
++    'V_LFL V_LLN V_MXL V_TER V_BSP V_PRO V_SCN VDMKW VSRCH '
++    'C_YYY CMLAB W_AAA ACTRM ALDYN ALLIA ALLSV ALSTA ARCDM '
++    'ARNEL ARPTR ARSVL ARFSI ARFXS BEFOF BPFPF BPFSV BPFXT '
++    'CLSVI CNSCC CNSWC CNR_T CNVTP DATDV DATXS DEFLB DEFNA '
++    'DEFVR DEFXS DMARG DMPSA DMPSB DMPSV DMVCH DMPCH DMPKB '
++    'DMPKT DMPKN DTCNB DTCNM DUPSI ENFCH ERTWA ERTWB EVLIN '
++    'EVLIS EVLIV EVLIO EVLIF EXPSV GBCFL GBCLM GBCNM GBCNS '
++    'GBCIA GBCSD GBCSF GBSVA GBSVB GBSVC GNVHE GNVNW GNVSA '
++    'GNVSB GNVSP GNVST GTAWA GTINA GTINB GTNNF GTNSI GTPSB '
++    'GTSSF GTSVC GTSVB GTVRC IOPTT LODFN LODNA PFSVW PRNSI '
++    'PRSNA PRSVA PRSVB PRSVC PRTSA PRTSB PRVSI PSAVE PSAVC '
++    'RLALS RLDCD RLDST RLDLS RTNBP RTNFV RTNSV SBSSV SCNSA '
++    'SCNSB SCNSC SCNOF SRTDF SRTFD SRTFF SRTFO SRTNR SRTOF '
++    'SRTRT SRTS1 SRTS2 SRTSC SRTSF SRTSN SRTSO SRTSR SRTST '
++    'SRTWC STPSI STPTI TFNSI XSCRT XSCWB G_AAA ALFSF CMERC '
++    'CMPLN CMPXS CMPSN CNSIL CNIND CNSPT CNTTL CPSTS CSWDB '
++    'CSWER CSWEX CSWFL CSWIN CSWLS CSWNO CSWPR CTMSK CURID '
++    'CWCOF DNAMS ERICH ERLST ERRFT ERRSP EXSTS FLPRT FLPTR '
++    'GBSED GBCNT GTCEF GTSWK HEADP HSHNB INITR KVABE KVANC '
++    'KVCAS KVCOD KVCOM KVDMP KVERL KVERT KVFTR KVFLS KVINP '
++    'KVMXL KVOUP KVPFL KVTRA KVTRM KVFNC KVLST KVLLN KVLIN '
++    'KVSTN KVALP KVRTN KVSTL KVSTC LSTID LSTLC LSTNP LSTPF '
++    'LSTPG LSTPO LSTSN MXLEN NOXEQ PFDMP PFFNC PFSTM PFETM '
++    'PFNTE PFSTE PMDFL PMHBS PMSSL POLCS POLCT PRICH PRSTD '
++    'PRSTO PRBUF PRECL PRLEN PRLNW PROFS PRTEF RDCLN RDNLN '
++    'RSMEM STMCS STMCT A_AAA CMPSS DNAMB DNAMP DNAME HSHTB '
++    'HSHTE INISS PFTBL PRNMV STATB STATE STXVR R_AAA R_ARF '
++    'R_CCB R_CIM R_CMP R_CNI R_CNT R_COD R_CTP R_CTS R_ERT '
++    'R_ETX R_EXS R_FCB R_FNC R_GTC R_ICI R_IFA R_IFL R_IFN '
++    'R_INC R_IO1 R_IO2 R_IOF R_ION R_IOP R_IOT R_PMS R_RA2 '
++    'R_RA3 R_RPT R_SCP R_SFC R_SFN R_SXL R_SXR R_STC R_STL '
++    'R_SXC R_TTL R_XSC R_UBA R_UBM R_UBN R_UBP R_UBT R_UUB '
++    'R_UUE R_UUN R_UUP R_UUS R_UUX R_YYY SCNBL SCNCC SCNGO '
++    'SCNIL SCNPT SCNRS SCNSE SCNTP STAGE STBAS STXOC STXOF '
++    'TIMSX TIMUP XSOFS W_YYY '
+g.loop
+	s break(' ') . name ' ' =	:f(g.loop.end)
+	global_count = global_count + 1
+	global_name_table[global_count] = name
+	global_index_table[name] = global_count
+	global_names = array(global_count)
+					:(g.loop)
+g.loop.end
+	i = 0
+gg.loop
+	gt(i = I = 1, global_count)	:s(gg.loop.end)
+	global_names[i] = name 
+gg.loop.end
+
+					:(return)
+finis
+	&dump = 0
+end
+	

@@ -42,24 +42,27 @@ This file is part of Macro SPITBOL.
 #include "port.h"
 
 #include <sys/times.h>
-#include <unistd.h>
-
 #define CLK_TCK sysconf(_SC_CLK_TCK)
 
 zystm() {
 
-/*
-	times returns clock 'ticks', which need to be divided by
-	CLK_TCK to get time in seconds. We want user time in 
-	milliseconds, so we multiply tick count by 1000 before	
-	dividing by CLK_TCK.
-*/
-    struct tms st_cpu;
-    clock_t st_time;
+    /*
+    /	process times are in 60ths of second, multiply by 100
+    /	to get 6000ths of second, divide by 6 to get 100ths
+    */
+    struct tms	timebuf;
 
-    st_time = (times(&st_cpu) * 1000)  / CLK_TCK;
+    timebuf.tms_utime = 0;	// be sure to init in case failure
+    times( &timebuf );	// get process times
 
-    SET_IA( st_time );
+    /* CLK_TCK is clock ticks/second:
+     * # of seconds = tms_utime / CLK_TCK
+     * # of milliseconds = tms_utime * 1000 / CLK_TCK
+     *
+     * To avoid overflow, use
+     * # of milliseconds = tms_utime * (1000/10) / (CLK_TCK / 10)
+     */
+    SET_IA( (timebuf.tms_utime * (1000/10)) / (CLK_TCK/10) );
     return NORMAL_RETURN;
 }
 

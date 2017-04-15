@@ -1,8 +1,0 @@
-  output = 'hello world'
-	output(.file,2,'dave.s')
-	file = 'shields'
-	i = 5
-	j = 10
-	output = i + j
-
-end

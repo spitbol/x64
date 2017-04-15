@@ -43,7 +43,6 @@ This file is part of Macro SPITBOL.
 #define GLOBALS			// global variables will be defined in this module
 #include "port.h"
 #include <stdint.h>
-#include <stdio.h>
 
 #ifdef DEBUG
 #undef DEBUG			// Change simple -DDEBUG on command line to -DDEBUG=1
@@ -54,7 +53,7 @@ This file is part of Macro SPITBOL.
 
 void setout ( void );
 
-int main( argc, argv )
+main( argc, argv )
 int	argc;
 char	*argv[];
 
@@ -77,7 +76,6 @@ char	*argv[];
     */
     dcdone = 0;
 
-#undef EXECFILE
 #if EXECFILE
     /*
     /   If this is a restart of this program from a load module, set things
@@ -85,7 +83,7 @@ char	*argv[];
     /   resumes program execution.
     */
     if ( lmodstk ) {
-        if ( brkx( (char *) topmem ) < 0 ) { // restore topmem to its prior state
+        if ( brk( (char *) topmem ) < 0 ) { // restore topmem to its prior state
             wrterr( "Insufficient memory to load." );
             __exit(1);
         }
@@ -97,6 +95,9 @@ char	*argv[];
         pathptr = (char *)-1L;	// include paths unknown
         clrbuf();				// no chars left in std input buffer
         sfn = 0;
+#if FLOAT
+        hasfpu = checkfpu();	// check for floating point hardware
+#endif					// FLOAT
         heapmove();				// move the heap up
         malloc_empty();			// mark the malloc region as empty
         zysdc();							// Brag if necessary
@@ -123,12 +124,18 @@ char	*argv[];
     */
     swcinp( inpcnt, inpptr );
 
+#if FLOAT
+    /*
+     * test if floating point hardware present
+     */
+    hasfpu = checkfpu();
+#endif					// FLOAT
+
     switch (getsave(getrdfd())) {
     case 1:					// save file loaded
-	wrterr("SPITBOL save file no supported");
-//        inpcnt = 0;               // v1.02 no more cmd line files
- //       swcinp(inpcnt, inpptr );  // v1.01
-  //      restart( (char *)0L, lowsp );
+        inpcnt = 0;               // v1.02 no more cmd line files
+        swcinp(inpcnt, inpptr );  // v1.01
+        restart( (char *)0L, lowsp );
 
     case 0:					// not a save file
 #if RUNTIME
@@ -151,7 +158,7 @@ char	*argv[];
     /*
      *	Force the memory manager to initialize itself
      */
-    if ((char *)sbrkx(0) == (char *)-1) {
+    if ((char *)sbrk(0) == (char *)-1) {
         wrterr( "Insufficient memory.  Try smaller -d, -m, or -s command line options." );
         __exit( 1 );
     }
@@ -159,7 +166,7 @@ char	*argv[];
     /*
     /   Allocate stack
     */
-    if ((lowsp = sbrkx((uword)stacksiz)) == (char *) -1) {
+    if ((lowsp = sbrk((uword)stacksiz)) == (char *) -1) {
         wrterr( "Stack memory unavailable." );
         __exit( 1 );
     }
@@ -168,7 +175,7 @@ char	*argv[];
     /
     */
 
-    if ((basemem = (char *)sbrkx((uword)memincb)) == (char *) -1) {
+    if ((basemem = (char *)sbrk((uword)memincb)) == (char *) -1) {
         wrterr( "Workspace memory unavailable." );
         __exit( 1 );
     }
@@ -177,48 +184,38 @@ char	*argv[];
 
 
     /*
-	Adjust stacksiz to be multiple of 16. This is required for OSX and causes
-	no harm for unix.
-    */
-	stacksiz = 16 * (stacksiz / 16 );
-    /*
     /   All compiler registers are initially zero, except for XL and XR which
     /   are set to top and bottom of heap.
     */
     SET_CP( 0 );
     SET_IA( 0 );
-    SET_WA( 0 );
-
-/* Pass value of largest integer in WB on startup. It's not possible to set this up
-   at compile time if we compiling for 64 bits on 32 bit machine.
+/* For x32-x86, we pass value of largest integer in WA on startup. It's not possible to set this up
+   at compile time, if we want to compile for 64 bits on 32 bit machine.
  */
-#ifdef unix_32
+    SET_WA( 0 );
+#ifdef m32
     long mxint = INT32_MAX;
 #else
     long mxint = INT64_MAX;
 #endif
-#ifdef osx_32
-    long mxint = INT32_MAX;
-#endif
+//    reg_wb = mxint;
     SET_WB( mxint );
-
     SET_WC( 0 );
     SET_XR( basemem );
     SET_XL( topmem - sizeof(word) );
 
-    trc_init(basemem, topmem);
     /*
     /   Startup compiler.
     */
+#ifdef Z_TRACE
+    zz_init();
+#endif
     startup();
-    printf("oops! startup unexpectedly returned. exiting...\n");
-    return 1;
 #endif					// !RUNTIME
 
     /*
     /   Never returns. exit is via exit().
     */
-	return 0;
 }
 
 

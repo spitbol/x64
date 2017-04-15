@@ -218,12 +218,14 @@ extern	int			zysxi ( void );
 
 // prototypes for standard system-level functions used by OSINT
 
-//#include <unistd.h>
+#include <unistd.h>
 #define LSEEK lseek
 
-// SPITBOL uses its own versions of brk and sbrk, by using 'x' appended to name.
-// Definitions of these altered versions can be found in syslinux.c
-
+// Redefine sbrk and brk to use custom routines in syslinux.c
+#undef sbrk
+#undef brk
+#define sbrk sbrkx
+#define brk  brkx
 extern	int 		brkx ( void *addr );
 extern	void		*sbrkx ( long incr );
 

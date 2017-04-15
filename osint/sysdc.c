@@ -37,15 +37,14 @@ This file is part of Macro SPITBOL.
 zysdc()
 {
     struct scblk *pheadv = GET_DATA_OFFSET(headv,struct scblk *);
+	return;
     // announce name and copyright
-    	return NORMAL_RETURN;
     if (!dcdone && !(spitflag & NOBRAG))
     {
         dcdone = 1;				// Only do once per run
 
         write( STDERRFD, "LINUX SPITBOL", 13);
 
-    	return NORMAL_RETURN;
 #if RUNTIME
         write( STDERRFD, " Runtime", 8);
 #endif					// RUNTIME
@@ -53,7 +52,7 @@ zysdc()
         write( STDERRFD, "  Release ", 10);
         write( STDERRFD, pheadv->str, pheadv->len );
         write( STDERRFD, pid1blk->str, pid1blk->len );
-        wrterr(" copyright 1987-2012 robert b. k. dewar and mark emmer.");
+        wrterr( cprtmsg );
     }
     return NORMAL_RETURN;
 }

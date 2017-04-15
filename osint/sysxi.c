@@ -60,7 +60,6 @@ This file is part of Macro SPITBOL.
 */
 
 #include "port.h"
-//#include <unistd.h>
 #include <sys/types.h>
 
 #if EXECFILE
@@ -74,8 +73,6 @@ This file is part of Macro SPITBOL.
 extern word	*edata;
 extern word	*etext;
 #endif					// EXECFILE
-
-//extern	long	reg_block;
 
 struct svfilehdr svfheader;
 char uargbuf[UargSize];
@@ -382,7 +379,7 @@ word *stkbase, stklen;
                         GET_MIN_VALUE(dnamp,uword) - GET_MIN_VALUE(dnamb,uword) );
 
     // write out MINIMAL register block
-//    result |= compress( (unsigned char *)&reg_block, reg_size );
+    result |= compress( (unsigned char *)&reg_block, reg_size );
 #if EXTFUN
     scanef();			// prepare to scan for external functions
     while ((textlen = (word)nextef(&bufp, 1)) != 0)
@@ -486,13 +483,13 @@ int fd;
 
             s = svfheader.maxsize - svfheader.dynoff; // Minimum load address
             cp = "Insufficient memory to load ";
-            if ((unsigned long)sbrkx(0) < s )    // If DNAMB will be below old MXLEN,
-                if (brkx((char *)s))             //  try to move basemem up.
+            if ((unsigned long)sbrk(0) < s )    // If DNAMB will be below old MXLEN,
+                if (brk((char *)s))             //  try to move basemem up.
                     goto reload_err;
 
             // Allocate heap. Restore topmem to its prior state
             s = svfheader.topmem - svfheader.heapadr;
-            basemem = (char *)sbrkx((uword)s);
+            basemem = (char *)sbrk((uword)s);
             if (basemem == (char *)-1)
                 goto reload_err;
             topmem = basemem + s;
@@ -568,8 +565,8 @@ int fd;
              * The only Minimal register in need of relocation is CP,
              * and this is handled by the rereloc routine.
              */
-//            if ( expand( fd, (unsigned char *)&reg_block, reg_size ) )
- //               goto reload_ioerr;
+            if ( expand( fd, (unsigned char *)&reg_block, reg_size ) )
+                goto reload_ioerr;
 
             /* No Minimal calls past this point should be done if it
              * involves setting any of the Minimal registers.
@@ -665,11 +662,7 @@ struct	scblk	*scbptr;
     /	to get the last component of the shell's path.
     */
     shellpath = getshell();
-#ifdef  exec
-// suppress call as it generates warning message we don't need for now. 
-    execl( shellpath, pathlast( shellpath ), "-c", cmdbuf, (char *)NULL );
     execle( shellpath, pathlast( shellpath ), "-c", cp, (char *)NULL, environ );	// no return
-#endif
 
     unmake_c_str(&cp[length], savech);
 }

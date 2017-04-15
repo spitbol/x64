@@ -1,0 +1,1478 @@
+-title mincod: phase 2 translation from minimal tokens to 80386 code
+-stitl description
+
+* copyright 1987-2012 robert b. k. dewar and mark emmer.
+* copyright 2012-2015 david shields
+*
+* this file is part of macro spitbol.
+*
+*     macro spitbol is free software: you can redistribute it and/or modify
+*     it under the terms of the gnu general public license as published by
+*     the free software foundation, either version 2 of the license, or
+*     (at your option) any later version.
+*
+*     macro spitbol is distributed in the hope that it will be useful,
+*     but without any warranty; without even the implied warranty of
+*     merchantability or fitness for a particular purpose.  see the
+*     gnu general public license for more details.
+*
+*     you should have received a copy of the gnu general public license
+*     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+*
+*
+*  this program takes input file in minimal token form and
+*  produces assembly code for intel 80386 processor.
+*  the program obtains the name of the file to be translated from the
+*  command line string in host(0).  options relating to the processing
+*  of comments can be changed by modifying the source.
+*
+*  in addition to the minimal token file, the program requires the
+*  name of a "machine definition file" that contains code specific
+*  to a particular 80386 assembler.
+*
+*  you may also specify option flags on the command line to control the
+*  code generation.  the following flags are processed:
+*       comments        retain full-line and end-of-line comments
+*	list.comments = 1
+*
+*  the variable arch is set equal to the uppercase name of the machine
+*  being processed.  specific tests upon this variable are discouraged, as
+*  all machine-dependent code should be placed in the machine-definition
+*  file if possible.
+*
+*  in addition to the normal minimal register complement, one scratch
+*  work register, wt is defined.
+*  see the register map below for specific allocations.
+*
+*  this program is based in part on earlier translators for the dec vax
+*  (vms and un*x) written by steve duff and robert goldberg, and the
+*  pc-spitbol translator by david shields.
+*
+*  to run under spitbol:
+*       spitbol -u "<file>:<machine>[:flag:...:flag]" codlinux.spt
+*
+*	reads <file>.lex	containing tokenized source code
+*       writes <file>.s         with 80386 assembly code
+*	also writes <file>.err	with err and erb error messages
+*       parts of <machine>.hdr  are prepended and appended to <file>.s
+*	also sets flags		to 1 after converting names to upper case
+*	also reads <file>.pub	for debug symbols to be declared public
+*
+*  example:
+*       spitbol -u v37:dos codlinux.spt
+*
+*
+*  revision history:
+*
+        version = 'v1.0'
+*
+*
+-eject
+*
+*  keyword initialization
+*
+	&anchor = 1;	&stlimit = 10000000;	&trim	= 1;  &dump = 1
+*
+*  useful constants
+*
+	letters = 'abcdefghijklmnopqrstuvwxyz'
+	ucase  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+	lcase   = letters
+	nos     = '0123456789'
+	tab	= char(9)
+
+	define('lower(s)')
+	define('upper(s)')
+
+*  default the parameter string if none present
+*
+        arch = (differ(host(0)) host(0), "i32")
+	arch = lower(arch)
+	
+	output = 'target architecture ' arch
+*        output = ident(fileprefix) "filename (.lex) required" :s(end)
+	fileprefix = "s"
+	output = '  target architecture:' arch
+
+*	1 is bytes per word, 1 is characters per word
+*       these should agree with values used in translator
+* set target-dependent configuration parameters
+
+	hdr = 'i32'
+*	op_w is instruction suffix for word-size
+	op_w = ''
+*	op_c is instruction suffix for minimal character size
+	op_c = ''
+
+
+*
+*  data structures
+*
+	data('minarg(i.type,i.text)')
+
+	sectnow = 0
+
+*	ppm_cases gives count of ppm/err statments that must follow call to
+*	a procedure
+
+	ppm_cases = table(50,,0)
+
+*	prc_names maps program_counter values to name of program entry point
+	prc_names = table(100)
+
+	error_messages = table(200)
+*
+*  function definitions
+*
+*  crack parses stmt into a stmt data plex and returns it.
+*  it fails if there is a syntax error.
+*
+	define('crack(line)operands,operand,char')
+*
+*	comregs - map minimal register names to target register names
+	define('comregs(line)t,pre,word')
+*
+*  error is used to report an error for current statement
+*
+	define('error(text)')
+	define('genz()')
+	define('genaop(stmt)')
+	define('genbop(stmt)')
+	define('putconst(value)')
+        define('genlab()')
+	define('genop(gopc,gop1,gop2,gop3)')
+	define('genopl(gopl,gopc,gop1,gop2,gop3)')
+	define('get1()')
+	define('get2()')
+	define('getarg(iarg,imem)l1,l2,t1,t2')
+	define('getoff(iarg)itext,itype')
+	define('getreg(iarg)atype')
+	define('iflit(iarg)')
+	define('ifmem(iarg)')
+	define('ifpost(iarg)')
+	define('ifpre(iarg)')
+	define('ifreg(iarg)')
+	define('move(dst,src)dtype,stype,mop,stext,dtext')
+	define('prcent(n)')
+	define('prsarg(iarg)l1,l2')
+	define('put1()')
+	define('putlab(label)')
+	define('putline(stmt)')
+	define('report(num,text)')
+	define('tblini(str)pos,cnt,index,val,lastval')
+
+*  putstmt writes a target statement
+*
+	define('putstmt(label,opcode,op1,op2,op3,comment)')
+
+*  readline is called to return the next non-comment line from
+*  the minimal input file (infile <=> lu1).   note that it will
+*  not fail on eof, but it will return a minimal end statement
+*
+	define('readline()')
+*
+	 p.comregs = break(letters) . pre span(letters) . word
+
+*  exttab has entry for external procedures
+*
+	exttab = table(50)
+
+*  labtab records labels and their offsets in the program section
+*
+	labtab = table(500)
+
+*
+*  genlabels is count of generated labels (cf. genlab)
+*
+	genlabels = 0
+
+*
+*  initialize variables
+*
+	labcnt = noutlines = nlines = nstmts = ntarget = nerrors = 0
+	lastopc = lastop1 = lastop2 =
+	data_lc = 0
+	max_exi = 0
+*
+*  initial patterns
+*
+*  p.csparse parses tokenized line
+	p.csparse = '{' break('{') . inlabel
+.	'{' break('{') . incode
+.	'{' break('{') . iarg1
+.	'{' break('{') . iarg2
+.	'{' break('{') . iarg3
+.	'{' break('{') . incomment
+	'{' rem . slineno
+
+*  dispatch table
+*
+	getargcase = table(27)
+	getargcase[1] = .getarg.c.1;   getargcase[2] = .getarg.c.2
+	getargcase[3] = .getarg.c.3;   getargcase[4] = .getarg.c.4
+	getargcase[5] = .getarg.c.5;   getargcase[6] = .getarg.c.6
+	getargcase[7] = .getarg.c.7;   getargcase[8] = .getarg.c.8
+	getargcase[9] = .getarg.c.9;   getargcase[10] = .getarg.c.10
+	getargcase[11] = .getarg.c.11; getargcase[12] = .getarg.c.12
+	getargcase[13] = .getarg.c.13; getargcase[14] = .getarg.c.14
+	getargcase[15] = .getarg.c.15; getargcase[16] = .getarg.c.16
+	getargcase[17] = .getarg.c.17; getargcase[18] = .getarg.c.18
+	getargcase[19] = .getarg.c.19; getargcase[20] = .getarg.c.20
+	getargcase[21] = .getarg.c.21; getargcase[22] = .getarg.c.22
+	getargcase[23] = .getarg.c.23; getargcase[24] = .getarg.c.24
+	getargcase[25] = .getarg.c.25; getargcase[26] = .getarg.c.26
+	getargcase[27] = .getarg.c.27
+
+	opcodes = table(100)
+	s =
++       'add adi adr anb aov atn '
++	'bct beq bev bge bgt bhi ble blo blt bne bnz bod '
++       'brn bri bsw btw bze call ceq chk chp cmb cmc cmp cne csc '
++       'cos ctb ctw cvd cvm dca dcv eti dvi dvr enp err erb esw etx exi flc '
++       'ica icp icv ieq ige igt ile ilt ine ino iov itr jmp '
++       'jsr jsrerr lch lct lcp lcw ldi ldr lei loadi loadcfp lnf lsh lsx mcb mfi mli mlr '
++       'mnz mov mti mvc mvw mwb ngi eti ngr nzb orb plc ppm prc psc '
++       'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
++       'sch scp sin sqr ssl sss sti str sub sys tan trc wtb xob zer '
++	'ent inr lea move load loadi push pushi pushr pop popr realop store zrb '
+
+*	don't trace mvc as doing so causes just 'end' to fail. sort out later. (ds 01/09/13)
+	opsused = table(100)
+
+opcodes.1
+	s break(' ') . opc ' ' =			:f(opcodes.2)
+	opcodes[opc] = 1			:(opcodes.1)
+opcodes.2
+
+* since program is represented as an array of unsigned integers we cannot enter real constants, so we
+* create a map that can be used to enter the values later.
+	drctab = table(50)
+
+* initialize osint procs
+	osiprocs = 
+.	'sysax sysbs sysbx syscm sysdc sysdm sysdt sysea sysef sysej sysem sysen sysep sysex '
+.	'sysfc sysgc syshs sysid sysif sysil sysin sysio sysld sysmm sysmx sysou syspi syspl '
+.	'syspp syspr sysrd sysri sysrw sysst systt systm sysul sysxi '
+	is_osint = table(50)
+	str = osiprocs
+osiprocs.1
+	str break(' ') . name ' ' =			:f(osiprocs.2)
+	is_osint[name] = 1			:(osiprocs.1)
+osiprocs.2
+
+-stitl main program
+*  here follows the driver code for the "main" program.
+
+*
+*  loop until program exits via g.end
+*
+*  opnext is invoked to initiate processing of the next line from
+*  readline.
+*  after doing this, opnext branches to the generator routine indicated
+*  for this opcode if there is one.
+*  the generators all have entry points beginning
+*  with "g.", and can be considered a logical extension of the
+*  opnext routine.  
+*  the generators are listed in a separate section below.
+*
+*
+*  get file name
+
+*
+* get definition file name following token file name, and flags.
+*
+*	fileprefix ? break(';:') . fileprefix len(1) (break(';:') | rem) . target
+*+		((len(1) rem . flags) | '')
+*	$replace(target,lcase,ucase) = 1
+*
+* parse and display flags, setting each one's name to non-null value (1).
+*
+ :(flgs.skip)
+flgs	flags ? ((len(1) break(';:')) . flag len(1)) |
++	 ((len(1) rem) . flag) =			:f(flgs2)
+	flag = replace(flag,lcase,ucase)
+        output = "  flag: " flag
+	$flag = 1					:(flgs)
+*
+flgs.skip
+flgs2
+
+* We use three additional registers in addition to the minimal registers
+*
+*	r0	is always zero
+*	r1	is used to load the value of the first operand if it is in memory
+*	r2	is used to load the value of the second operand if it is in memory
+
+	r0 = 'R0'; r1 = 'R1'; r2 = 'R2'
+	xl = 'XL'; xr = 'XR'; xs = 'XS'; xt = 'XL'
+	wa = 'WA'; wb = 'WB'; wc = 'WC'
+	ia = 'IA'; cp = 'CP'; ra = 'RA'
+* user rc for error handling (this is memory location in x32 version)
+	r1 = 'R1'
+	r2 = 'R2'
+
+	arg.r1 = minarg(8, 'R1')
+	arg.r2 = minarg(8, 'R2')
+	arg.ia = minarg(8, 'IA')
+	ra.arg = minarg(8, 'RA')
+
+	r0 = 'r0'; r1 = 'r1'; r2 = 'r2'
+	xl = 'xl'; xr = 'xr'; xs = 'xs'; xt = 'xl'
+	wa = 'wa'; wb = 'wb'; wc = 'wc'
+	ia = 'ia'; cp = 'cp'; ra = 'ra'
+* user rc for error handling (this is memory location in x32 version)
+	r1 = 'r1'
+	r2 = 'r2'
+
+	arg.r1 = minarg(8, 'r1')
+	arg.r2 = minarg(8, 'r2')
+	arg.ia = minarg(8, 'ia')
+	ra.arg = minarg(8, 'ra')
+
+* operation encoding
+
+* Each generated operation has four fields:
+*	opc - opcode
+*	dst - destination register
+*	src - source register
+*	off - offset, either immediate constant or address
+*
+* Memory references always use the src and off registers. 
+* The effective address is obtained by adding the offset to the contents of the
+* src register. If the src register is r0, the the effective address is the offset.
+*
+	filenami = fileprefix '.lex'
+        input(.infile,1,filenami)                     :s(inputok)
+
+inputok output = '  input lex file: ' filenami
+
+*
+*
+*
+*  associate output files.
+*
+	filenamo = fileprefix '.go'
+        output(.outfile,2,filenamo)             :s(outputok)
+        output = '  cannot open asm file: ' filenamo :(end)
+outputok
+        output = '  output go file: ' filenamo
+
+*  then copy contents of <machine>.hdr (if it exists) to outfile
+*  stop at line with just 'end' or end of file
+*
+	noutlines = noutlines + 1
+
+	input(.hdrfile,4,hdr '.hdr')	:f(nohdr)
+	havehdr = 1
+        output = '  input header file:  ' hdr  '.hdr'
+hdrcopy line = hdrfile				:f(hdrend)
+	ident(line,'end')			:s(nohdr)
+	outfile = line
+	noutlines = noutlines + 1		:(hdrcopy)
+hdrend	havehdr =
+nohdr
+*
+*  will have havehdr non-null if more remains to copy out at end.
+*
+*  read in pub file if it exists.  this contains a list of symbols to
+*  be declared public when encountered.
+*
+	pubtab = table(2)
+	input(.pubfile,5, fileprefix ".pub")	:f(nopub)
+	pubtab = table(101)
+pubcopy	line = pubfile				:f(pubend)
+	pubtab[line] = 1			:(pubcopy)
+pubend	endfile(5)
+nopub
+
+						:(translate)
+
+  &trace = 2000
+  &ftrace = 1000
+
+*  &profile = 1
+
+translate
+	putline('package minimal')
+* start translation
+opnext	
+	label = thislabel =
+	thisline = readline()
+	crack(thisline)				:f(opnext)
+	thislabel = inlabel
+	lt(sectnow,3)				:s(opnext.1)
+	ident(inlabel)				:s(opnext.1)
+* need to defer label generation in case of 'ent' operator
+	differ(incode,'ent')	putlab(inlabel)
+*	need to defer label generate for 'ent' operator
+*	differ(incode,'ent')	putlab(inlabel)
+	label = thislabel =
+opnext.1
+	i1 = prsarg(iarg1)
+	i2 = prsarg(iarg2)
+	i3 = prsarg(iarg3)
+
+	tcomment = comregs(incomment) '} ' incode ' ' i.text(i1) ' '
+.		i.text(i2) ' ' i.text(i3)
+	argerrs = 0
+						:($('g.' incode))
+*  here if bad opcode
+ds01	error('bad op-code')			:(opnext)
+
+*  generate tokens.
+*
+ds.typerr
+	error('operand type zero')		:(opnext)
+-stitl comregs(line)t,pre,word
+comregs
+	line p.comregs =			:f(comregs1)
+	word = eq(size(word),2) differ(t = word) t
+	comregs = comregs pre word		:(comregs)
+comregs1 comregs = comregs line			:(return)
+-stitl crack(line)
+*  crack is called to create a stmt plex containing the various parts  of
+* the minimal source statement in line.  for conditional assembly ops,
+* the opcode is the op, and op1 is the symbol.  note that dtc is handled
+*  as a special case to assure that the decomposition is correct.
+
+*  crack prints an error and fails if a syntax error occurs.
+*
+crack   nstmts  = nstmts + 1
+	op1 = op2 = op3 = typ1 = typ2 = typ3 =
+	line    p.csparse			:s(return)
+*  here on syntax error
+*
+	error('source line syntax error')	:(freturn)
+estitl error(text)
+*  this module handles reporting of errors with the offending
+*  statement text in thisline.  comments explaining
+*  the error are written to the listing (including error chain), and
+*  the appropriate counts are updated.
+*
+error   outfile = '* *???* ' thisline
+	outfile = '*       ' text
+.	          (ident(lasterror),'. last error was line ' lasterror)
+	lasterror = noutlines
+	noutlines = noutlines + 2
+	le(nerrors = nerrors + 1, 10)		:s(opnext)
+        output = 'too many errors, quitting'  	:(end)
+-stitl	putconst(value)
+putconst
+	putstmt('',value)	:(return)
+
+-stitl genlab()
+*  generate unique labels for use in generated code
+genlab	genlab = 'labl' lpad(genlabels = genlabels + 1,3,'0') :(return)
+
+-stitl genopl(gopl,gopc,gop1,gop2,gop3)
+*  generate operation with label
+genopl	
+	gopc = lower(gopc)
+	opsused[gopc] = opsused[gopc] + 1
+	putstmt(gopl,gopc,gop1,gop2,gop3)	:(return)
+
+-stitl genop(gopc,gop1,gop2,gop3)
+*  generate operation with no label
+genop   genopl(,lower(gopc),gop1,gop2,gop3)            
+* output = 'genop ' gopc ',' gop1 ',' gop2 ',' gop3
+						:(return)
+
+-stitl get1()
+* return argument if it is a register, or else load the argument
+* value into r1
+get1
+	ident(i.text(i1))			:s(return)
+	ifreg(i1)				:f(get1.1)
+        get1 = getreg(i1)			:(return)
+get1.1
+	move(arg.r1,i1)
+        get1 = r1	                        :(return)
+
+-stitl get2()
+* return register if i2 is register, else load i2 value to r2
+get2
+	ident(i.text(i2))			:s(return)
+	ifreg(i2)				:f(get2.1)
+        get2 = getreg(i2)			:(return)
+get2.1
+	move(arg.r2,i2)
+        get2 = r2	                        :(return)
+
+-stitl getarg.iarg,imem)
+getarg
+	l1 = i.text(iarg)
+	l2 = i.type(iarg)
+	eq(l2)					:f($(getargcase[l2]))
+	getarg = l1				:(return)
+
+* int
+getarg.c.1 getarg = l1				:(return)
+
+* dlbl
+getarg.c.2 getarg = l1				:(return)
+
+* wlbl, clbl
+getarg.c.3
+getarg.c.4 getarg =  l1      			:(return)
+
+* elbl, plbl
+getarg.c.5
+getarg.c.6 
+* cannot use 'error' as label since it is go keyword
+	l1 = ident(l1,'error') 'error_'
+	getarg = l1				:(return)
+
+* w,x, map register name
+getarg.c.7
+getarg.c.8
+	getarg = $l1				:(return)
+
+* (x), register indirect
+getarg.c.9
+	l1 len(1) len(2) . l2
+	l2 = $l2
+	getarg =  l2 				:(return)
+
+* (x)+, register indirect, post increment
+getarg.c.10
+	l1 = substr(l1,2,2)
+	t1 = $l1
+	getarg =  t1
+						:(return)
+
+*  -(x), register indirect, pre decrement
+getarg.c.11
+	t1 = $substr(l1,3,2)
+	getarg =  t1
+						:(return)
+
+* int(x)
+* dlbl(x)
+getarg.c.12
+getarg.c.13
+	l1 break('(') . t1 '(' len(2) . t2
+	getarg =  $t2 '!' t1   			:(return)
+
+*  name(x), where name is in working section
+getarg.c.14
+getarg.c.15
+	l1 break('(') . t1 '(' len(2) . t2
+	getarg = $t2 '!' t1			:(return)
+
+* signed integer
+getarg.c.16 getarg = l1				:(return)
+
+* signed real
+getarg.c.17 getarg = l1				:(return)
+
+*  =dlbl
+getarg.c.18
+	getarg = substr(l1,2)			:(return)
+
+*  *dlbl
+getarg.c.19
+	getarg = substr(l1,2)			:(return)
+
+*  =name (data section)
+getarg.c.20
+getarg.c.21
+        getarg =  substr(l1,2) 			:(return)
+
+*  =name (program section)
+getarg.c.22
+        getarg =  substr(l1,2)   		:(return)
+
+*  pnam, eqop
+getarg.c.23
+getarg.c.24 getarg = l1				:(return)
+
+* ptyp, text, dtext
+getarg.c.25
+getarg.c.26
+getarg.c.27 getarg = l1				:(return)
+
+-stitl getoff(iarg)itext,itype
+- return offset of argument, or 0
+getoff
+	itype = i.type(iarg)
+	itext = i.text(iarg)
+	lt(itype,2)				:s(return)
+	gt(itype,6)				:s(getoff.1)
+* here if plain label, just return it
+	getoff = itext				:(return)
+getoff.1
+	lt(itype,12)				:s(return)
+	gt(itype,15)				:s(getoff.2)
+	i.text(iarg) break('(') . getoff	:(return)
+getoff.2
+	gt(itype,22)				:s(return)
+	getoff = substr(itext,2)		:(return)
+
+-stitl getreg(iarg)atype
+* return register associated with argument, or r0 if no register
+* since it is assumed a register is needed.
+getreg
+* assume result is r0
+	getreg = r0
+	atype = i.type(iarg)
+	lt(atype,6)				:s(return)
+	gt(atype,8)				:s(getreg.1)
+* here if explicit x or w register
+	getreg = i.text(iarg)			:(return)
+getreg.1
+	gt(atype,15)				:s(getreg.2)
+* here if register enclosed in parentheses
+	i.text(iarg) break('(') '('  len(2) . getreg
+	getreg = getreg
+					 	:(return)
+getreg.2
+* no type if numeric constant
+	le(atype,17)				:s(return)
+	gt(atype,22)				:s(return)
+* here if literal, so return r0
+	getreg = r0				:(return)
+
+-stitl iflit(iarg) - test if argument is literal
+iflit	ge(i.type(iarg),18) le(i.type(iarg),22) :f(freturn)s(return)
+
+-stitl ifmem(iarg) - test if argument is in memory
+ifmem
+        ge(i.type(iarg),3) lt(i.type(iarg),6)  	:s(return)
+	ge(i.type(iarg),9) le(i.type(iarg),15)	:s(return)f(freturn)
+-stitl ifpost(iarg) - test if postincrement of register
+ifpost
+	eq(i.type(iarg),10)			:s(return)f(freturn)
+-stitl ifpre(iarg) - test if preincrement of register
+ifpre
+	eq(i.type(iarg),11)			:s(return)f(freturn)
+-stitl ifreg(iarg) - test if argument is register
+ifreg	
+*	ia is considered to be a register
+	eq(i.type(iarg),8) ident(i.text(iarg),'ia')	:s(return)
+	ge(i.type(iarg),7) le(i.type(iarg),8) 	:f(freturn)s(return)
+
+-stitl lower(s) -  convert argument to upper case
+lower
+	lower = replace(s,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+.			  'abcdefghijklmnopqrstuvwxyz')	:(return)
+
+-stltl move(dst,src)dtype,stype,stext,dtext
+* generate code for move instruction
+move
+* move is translated to one of more of the following
+*
+* dst and src indicate registers (either w or x register, or r0, which is always zero)
+* lab indicates proram label
+* lit is program literal
+*
+* Cases where destination is a register
+* mov  dst,src	
+*		move	dst,src
+* mov	dst,(src)
+*		load	dst,src
+* mov	dst,off(src)
+*		load	dst,src,off
+* mov	dst,(src)+
+*		load	dst,src,0
+*		ica	src
+* mov	dst,-(src)
+*		dca	src
+*		load	dst,src,0
+* mov	dst,lab
+*		load	dst,r0,lab
+* mov	dst,lit
+*		loadi	dst,r0,lit
+* if target is not a register and the source is not in a register,
+* then the source operand is loaded to a register.
+* the remaining cases are:
+*
+* mov	(x)+,reg
+*		store	reg,x,0
+*		ica	x
+* mov	-(x),reg
+*		dca	x
+*		store	reg,x,0
+* mov	lab,reg	
+*		store	reg,r0,lab
+* mov	(x),reg
+*		store	reg,x,0
+*		
+*		
+*
+* The src and off fields are always used to refer to an operand in memory
+
+	stype = i.type(src); stext = i.text(src)
+	dtype = i.type(dst); dtext = i.text(dst)
+
+	ifreg(dst) ifreg(src)			:s(move.reg.reg)
+	ifreg(dst) ifpost(src)			:s(move.reg.post)
+	ifreg(dst) ifpre(src)			:s(move.reg.pre)
+	ifreg(dst) iflit(src)			:s(move.reg.lit)
+	ifreg(dst) ifmem(src)			:s(move.reg.mem)
+* remaining cases are
+*	mov	dst,(src)
+*	mov	dst,off(src)
+*	mov	dst,lab
+
+***	ifreg(dst) ifmem(src)			:s(move.dst.mem)
+
+* here if target not register and source is not in a register
+	ifpost(dst) ifreg(src)			:s(move.post.reg)
+	ifpre(dst) ifreg(src)			:s(move.pre.reg)
+	ifmem(dst) ifreg(src)			:s(move.mem.reg)
+* here if dst and src both in memory, so move src to r1 and then do store
+*	output = 'memory to memory'
+*	output = 'move ' program_counter ' ' dtype ' ' dtext '  ' stype ' ' stext
+*.	(ifreg(dst) ' DR','') (ifmem(dst) ' DM', '') 
+*.	(ifreg(src) ' SR','') (ifmem(src) ' SM','')
+	move(arg.r1,src)
+	move(dst,arg.r1)				:(return)
+	error('impossible move case')		:(return)
+move.reg.reg
+	genop('move',getreg(dst),getreg(src))	:(return)
+move.reg.post
+	genop('load',getreg(dst),getreg(src))
+	genop('ica',getreg(src))		:(return)
+move.reg.pre
+	genop('dca',getreg(src))		
+	genop('load',getreg(dst),getreg(src))
+						:(return)
+move.reg.lit
+	off = getoff(src)
+	differ(off,'cfp_m')			:s(move.reg.lit.1)
+	genop('loadcfp',getreg(dst))		:(return)
+move.reg.lit.1
+* special case cfp_m since it won't fit into offset field of loadi instruction.
+	genop('loadi',getreg(dst),,getoff(src))	:(return)
+
+move.reg.mem
+	genop('load',getreg(dst),getreg(src),getoff(src))	:(return)
+
+move.post.reg
+	genop('store',getreg(src),getreg(dst))
+	genop('ica',getreg(dst))
+						:(return)
+move.pre.reg
+	genop('dca',getreg(dst))
+	genop('store',getreg(src),getreg(dst))
+						:(return)
+move.mem.reg
+	genop('store',getreg(src),getreg(dst),getoff(dst))
+						:(return)
+
+-stitl prcent(n)
+prcent 
+	prcent = 'prc_' '+'  (1 * ( n - 1)) 	:(return)
+
+-stitl putlab(label)
+putlab
+*	ident(incode,'ent')			:s(return)
+	ident(label)				:s(return)
+	
+* avoid use of go keyword as label
+	label = ident(label,'error') 'error_'
+	labtab<label> = program_counter
+*	putline('// ' label ' - ' +program_counter )		:(return)
+	putline('// ' label ':')			:(return)
+
+-stitl putstmt(label,opcode,op1,op2,op3,comment)
+putstmt	
+*	putline(thisline)
+
+*	 putline('putstmt ' opcode ',' op1 ',' op2 ',' op3)
+
+	op2 = ident(op2,r0) ''
+	stmtout = 
+.	"/* " lpad(program_counter,5) " */"
+.	tab rpad(opcode,8) 
+.	(differ(op1) '| ' rpad(op1,6)  ' << dst_ ',)
+.	(differ(op2) '| ' rpad(op2,6)  ' << src_ ',)
+.	(differ(op3) '| ' rpad(op3,6)  ' << off_ ',) ','
+	op = op1 = op2 = op3 =
+	ident(list.comments)			:s(putstmt.1)
+	ident(incomment)			:s(putstmt.1)
+	stmtout = rpad(stmtout,60) '// ' incomment
+*	reset incomment since single minimal statement may generate more than one target statement
+	incomment =
+putstmt.1
+	stmtout = trim(stmtout)
+	ident(stmtout)				:s(return)
+	program_counter = program_counter + 1
+	putline(stmtout)
+						:(return)
+
+-stitl prsarg
+prsarg	prsarg = minarg(0)
+	iarg break(',') . l1 ',' rem . l2	:f(return)
+	prsarg = minarg(convert(l1,'integer'),l2)	:(return)
+
+-stitl put1()
+put1
+*	store updated value of i1 is memory reference
+	ifreg(i1)				:s(return)
+	move(i1,arg.r1)				:(return)
+
+-stitl readline()
+*  this routine returns the next statement line in the input file
+*  to the caller.  it never fails.  if there is no more input,
+*  then a minimal end statement is returned.
+*  comments are passed through to the output file directly.
+*
+*
+readline 
+	readline = lower(infile)              	:f(readline.1)
+	nlines  = nlines + 1
+	ident( readline )			:s(readline)
+readline.0
+	leq( substr(readline,1,1 ),'*' )       	:f(return)
+	differ(list.comments) putline('//' substr(readline,2))
+* force skip of full line comments
+	:(readline)
+*
+*  here on eof
+*
+readline.1    readline = '       end'
+						:(return)
+-stitl putline(stmt)
+putline
+	outfile = stmt
+	ntarget	= ntarget + 1
+	noutlines = noutlines + 1		:(return)
+
+-stitl tblini(str)
+*  this routine is called to initialize a table from a string of
+*  index/value pairs.
+*
+tblini   pos     = 0
+*
+*  count the number of "[" symbols to get an assessment of the table
+*  size we need.
+*
+tin01   str     (tab(*pos) '[' break(']') *?(cnt = cnt + 1) @pos)
+.						:s(tin01)
+*
+*  allocate the table, and then fill it. note that a small memory
+*  optimisation is attempted here by trying to re-use the previous
+*  value string if it is the same as the present one.
+*
+	tblini   = table(cnt)
+tin02   str     (break('[') $ index len(1) break(']') $ val len(1)) =
+.						:f(return)
+	val     = convert( val,'integer' )
+	val     = ident(val,lastval) lastval
+	lastval = val
+	tblini[index] = val			:(tin02)
+-stitl generators
+
+-stitl upper(s) - convert string to upper case
+upper
+	upper = replace(s,'abcdefghijklmnopqrstuvwxyz',
+.			  'ABCDEFGHIJKLMNOPQRSTUVWXYZ')	:(return)
+
+* 1 - Basic instruction set
+
+g.mov
+	move(i1,i2)				:(opnext)
+
+g.brn
+        genop('brn',,,getarg(i1))		:(opnext)
+        
+
+g.bsw	
+	genop('loadi',r1,,i.text(i2))
+	genop(incode,get1(),r1,getarg(i3))	:(opnext)
+
+g.iff   
+	putconst(i.text(i2))			:(opnext)
+
+g.esw						:(opnext)
+
+g.ent
+*	note that emitted constant must come before the label declaration
+	putconst((differ(i.text(i1)) i.text(i1), '0'))	
+*	reset incode so putlab will write the label
+	putlab(inlabel)				
+						:(opnext)
+
+g.bri	genop(incode,getarg(i1))		:(opnext)
+
+g.lei	
+	genop(incode,i.text(i1))		:(opnext)
+
+g.jsr
+	jsr_proc = getarg(i1)
+	is_os = is_osint[jsr_proc]
+	jsr_op = (differ(is_os) 'sys', 'call')
+	genop(jsr_op,,,jsr_proc (differ(is_os) '_',''))
+*	get count of following ppm statements
+	jsr_count = ppm_cases[jsr_proc]
+	eq(jsr_count)				:s(opnext)
+	genop('jsrerr',r1,,jsr_count)
+						:s(opnext)
+
+g.err
+	error_messages[+i.text(i1)] = i.text(i2)
+*	statement has no comment, so make one from the error message text
+	incomment = i.text(i2)
+	genop(incode,,,+i.text(i1))		:(opnext)
+g.ppm
+	genop(incode,,,i.text(i1))		:(opnext)
+
+g.prc
+	prc_names[program_counter] = inlabel
+	prc.args = getarg(i2)
+	ppm_cases[thislabel] = i.text(i2)
+	thislabel =
+	max_exi = gt(prc.args,max_exi) prc.args
+	prc.type = i.text(i1)			:($('g.prc.' prc.type))
+
+g.prc.e
+g.prc.r						:(opnext)
+
+g.prc.n
+*  store return address in reserved location
+*  the interpreter requires prc.count be nonzero for 'n' type procedures.
+	prc.count = prc.count + 1
+	genop('prc',,,prc.count)
+	:(opnext)
+
+g.exi
+* TODO: multiply by 100 if prc type 'n'
+ 	exitn = (ident(i1) 0, +i.text(i1))
+	exitn = ident(prc.type,'n') 100 * prc.count + exitn
+	genop(incode,,,exitn)			:(opnext)
+
+g.enp						:(opnext)
+
+g.erb
+	error_messages[+i.text(i1)] = i.text(i2)
+	genop('erb',,,+i.text(i1))
+						:(opnext)
+
+g.start
+
+g.icv
+        genop('icv',get1())
+        put1()					:(opnext)
+
+g.dcv
+        genop('dcv',get1())
+        put1() 					:(opnext) 
+
+g.zer
+g.mnz
+	zer.reg = (ident(incode, 'zer') r0, xs)
+	move(i1,minarg(8,zer.reg))
+                                                :(opnext)
+
+g.rtn
+g.ssl
+g.sss   					
+						:(opnext)
+
+* 2 - Operations on one word integer values (addresses)
+
+g.add
+	genop('add',get1(),get2())
+        put1()
+                                                :(opnext)
+
+g.sub
+	genop('sub',get1(),get2())
+        put1()
+                                                :(opnext)
+
+g.ica
+* result may need to be stored back to memory
+        genop('ica',get1())
+        put1()
+                                                :(opnext)
+
+g.dca
+* result may need to be stored back to memory
+        genop('dca',get1())
+        put1()
+                                                :(opnext)
+
+g.beq
+g.bne
+g.bgt
+g.bge
+g.blt
+g.ble
+g.blo
+g.bhi
+	genop(incode,get1(),get2(),getarg(i3)) 	:(opnext)
+
+g.bod
+g.bev
+g.bnz
+g.bze
+	genop(incode,get1(),,getarg(i2))		:(opnext)
+
+g.lct
+	ident(i.text(i1),i.text(i2))			:s(opnext)
+	move(i1,i2)					:(opnext)
+	
+g.lct.1	genop('mov',get1(),get2())		:(opnext)
+
+g.bct
+        genop('bct',getarg(i1),,getarg(i2))    	:(opnext)
+
+g.aov
+* result may need to be stored back to memory
+* TODO: results are in wrong order in minimal code (need to fix)
+* so put second argument first in generated pseudo-code
+	genop(incode,get2(),get1(),getoff(i3))	:(opnext)
+
+* 3 - Operations on the code pointer register (CP)
+
+g.lcp
+g.lcw
+g.scp
+                                                :(op.one)
+
+g.icp
+                                                :(op.none)
+
+* 4 - Operatons on signed integer values
+
+g.ldi
+g.adi
+g.mli
+g.sbi
+g.dvi
+g.rmi
+                                                :(op.one)
+
+g.ngi						:(op.none)
+
+g.sti
+	move(i1,arg.ia)			:(opnext)
+
+g.ino
+g.iov
+        genop(incode,,,getarg(i1))             	:(opnext)
+
+g.ieq
+g.ige
+g.igt
+g.ile
+g.ilt
+g.ine
+        genop(incode,,,getarg(i1))             	:(opnext)
+
+* 5 - Operations on real values
+
+g.ldr
+g.adr
+g.sbr
+g.mlr
+g.dvr
+                                                :(op.one)
+
+g.str move(i1,ra.arg)			:(opnext)
+ 
+g.ngr						:(op.none)
+
+g.atn
+g.chp
+g.cos
+g.etx
+g.lnf
+g.sin
+g.sqr
+g.tan
+	genop('realop',,,incode)		
+                                                :(opnext)
+
+g.rno	
+g.rov
+g.req
+g.rne
+g.rge
+g.rgt
+g.rle
+g.rlt
+	genop(incode,,,getoff(i1))
+                                                :(opnext)
+
+* 6 - Operations on character values
+
+g.plc
+g.psc
+	genop(incode,get1(),get2())		:(opnext)
+
+g.lch
+	move(i1,i2)				:(opnext)
+g.sch
+	move(i2,i1)				:(opnext)
+
+g.csc  						:(opnext)
+
+g.ceq
+g.cne 
+	genop(incode,get1(),get2(),getarg(i3))  :(opnext)
+
+g.cmc
+	genop('loadi',r1,getarg(i1))
+	genop('loadi',r2,getarg(i2))
+	genop('cmc')				:(opnext)
+
+g.trc
+	genop(incode)				:(opnext)
+
+g.flc
+	genop(incode,get1())			:(opnext)
+
+* 7 - Operations on bit string values
+
+g.anb
+g.orb
+g.xob
+						:(op.two)
+
+g.rsh
+g.lsh
+	genop(incode,getarg(i1),getarg(i2))	:(opnext)
+
+g.cmb   genop(incode,getarg(i1))		:(opnext)
+
+g.rsx
+	error('rsx not supported')
+g.lsx
+	error('lsx not supported')
+
+g.nzb	
+g.zrb
+	genop(incode,get1(),,getarg(i2))	:(opnext)
+	
+g.zgb						:(opnext)
+
+* 8 - Conversion instructions
+
+g.wtb   					:(opnext)
+
+g.btw   					:(opnext)
+
+g.mti	
+	move(arg.ia,i1)			:(opnext)
+
+g.mfi
+	move(i1,arg.ia)				
+*  last arg is optional
+	eq(i.type(i2))				:s(g.mfi.1)
+*  compare with cfp$m, branching if result negative
+*  here if label given, branch if ia not in range (ie, negative)
+	genop(incode,,,getoff(i2))
+g.mfi.1
+						:(opnext)
+
+g.itr genop(incode)				:(opnext)
+
+g.rti
+*  here if label given, branch if real too large
+        genop(incode,,,getarg(i1))             	:(opnext)
+
+g.ctw
+g.ctb
+	output = incode ' ' i.text(i1) ' ' i.text(i2)
+	ident(i.text(i2),'0')			:s(opnext)
+	genop(incode,getarg(i1),,getarg(i2))	:(opnext)
+	
+g.cvm
+	genop(incode,getarg(i1))		:(opnext)
+
+g.cvd						:(op.none)
+
+* 9 - BLock move instructions
+
+g.mvc
+g.mcb
+g.mvw
+g.mwb
+						:(op.none)
+
+* 10 - Operations connected with the stack
+
+g.chk						:(op.none)
+	genop('cmp',xs,,'lowspmin')
+	genop('jb',,,'sec06')
+						:(opnext)
+
+* 11 - Data generation instructions
+
+g.dac
+g.dbc
+g.dic
+	putconst(i.text(i1))
+						:(opnext)
+g.drc
+	str = i.text(i1)
+*	strip leading +
+	str '+' =
+	drctab<program_counter> = i.text(i1)
+	putconst("0")
+						:(opnext)
+
+g.dtc
+* each character needs separate declaration, but do not include enclosing '/' characters
+
+*	putline('dtc ' i.text(i1))
+	differ(thislabel) putlab(thislabel)
+	str = i.text(i1)
+	str = substr(str,2,size(str) - 2)
+
+g.dtc.1
+	str len(1) . c =			:f(opnext)
+	putconst("'" c "'") 			:(g.dtc.1)
+
+
+* 12 - Symbol definition instructions
+
+g.equ   
+	putline(tab thislabel ' = ' i.text(i1))
+						:(opnext)
+g.exp
+	ppm_cases[thislabel] = i.text(i1)
+*	putline('//' tab 'extern' tab thislabel)
+	thislabel =				:(opnext)
+
+g.inp
+	ppm_cases[thislabel] = i.text(i2)
+	prc.count1 = ident(i.text(i1),'n') prc.count1 + 1
++						:(opnext)
+
+g.inr
+	putline('//' tab incode tab thislabel) :(opnext) 
+
+* 13 - Assembly listing layout instruction
+
+g.ejc						:(opnext)
+
+g.ttl	
+* TODO: add line text later
+*	putline('// ' thisline)
+
+						:(opnext)
+
+* 14 - Program form
+g.sec	sectnow = sectnow + 1			:($("g.sec." sectnow))
+
+* procedure declaration section
+g.sec.1
+* write out opcode definitions
+
+	putline('const (')
+	putline(tab	'nop = iota')
+	opcodea = sort(opcodes,1)
+	i = 0
+* write out opcodes offsets sorted by offset value
+	opcodea = sort(opcodes,1)	
+	i = 0
+g.sec.1.2
+	i = i +  1
+*	differ(opcodea<i,1>) putline(tab opcodea<i,1>  tab '=' tab  opcodea<i,2>)	:s(g.sec.1.2)
+	putline(tab opcodea<i,1>)		:s(g.sec.1.2)
+	putline(')')
+
+g.sec.1.1
+	putline('//sec01')
+        			            	:(opnext)
+
+* definitions section
+g.sec.2
+	putline('const (')
+				             	:(opnext)
+
+* constants section
+g.sec.3
+	putline(tab ')')
+	putline('//sec03')
+	putline('var program = []uint32 {')
+* emit single word so program counter will start at one.
+	putline(tab "0,")
+	program_counter = 1
+				     		:(opnext)
+
+* working variables section
+g.sec.4
+        putline('//sec04' )     
+						:(opnext)
+
+*  here at start of program section.  if any n type procedures,
+*  put out entry-word block declaration at end of working storage
+g.sec.5
+*  emit code to indicate in code section
+*  get direction set to up.
+*        (gt(prc.count1) genopl('prc$' ':','times', prc.count1 ' dd 0'))
+*TODO	genop('prc_: times ' prc.count1 ' dd 0') putline('// sec05' )
+						:(opnext)
+
+*  stack overflow section.  output exi__n tail code
+g.sec.6
+	putlab('sec06')				:(opnext)
+
+*  error section.  produce code to receive erb's
+g.sec.7
+        putline('//sec07' )
+*  since 'error' is a keyword, emit label 'error_' for use in generating err instruction
+	putlab('error_')	
+						:(opnext)
+
+g.end						:(program.end)
+
+* These utility procedures are used to just map Minimal opcode and
+* its arguments into the same target opcode.
+
+op.none
+        genop(incode)                           :(opnext)
+
+op.one
+        genop(incode,get1())
+                                                :(opnext)
+op.two
+*	putline("// op.two " incode " " i.text(i1) "," i.text(i2))
+        genop(incode,get1(),get2())
+                                                :(opnext)
+
+op.oneput
+* here for standard case with single argument which is computed
+* and so must be stored back if it came from memory
+of 	ifreg(i1)				:f(op.oneput.1)
+* here if argument is register, so just use it
+	genop(incode,getreg(i1))		:(opnext)
+op.oneput.1
+* here if argument in memory. First bring it to r1
+	oneput.arg = i1
+* then do the operation
+	oneput.res = get1()
+	genop(incode,oneput.res)
+* and now store it back
+	genop('store',oneput.res,oneput.reop.oneput.off)	
+						:(opnext)
+op.twoput
+* here for standard case with two arguments
+        genop(incode,get1(),get2())
+        differ(get1.mem) put1('r1',get1.mem)
+                                                :(opnext)
+
+report
+	output = lpad(num,10) '  ' text		:(return)
+
+* Complete compilation by writing out needed declarations
+
+program.end
+	&dump = 0
+	ident(havehdr)				:s(g.end.2)
+*  here to copy remaining part from hdr file
+g.end.1	line = hdrfile				:f(g.end.2)
+	ntarget = ntarget + 1
+	noutlines = noutlines + 1
+	outfile = line				:(g.end.1)
+g.end.2
+
+* here at end of code generation.
+*	mark end of program
+	putline('}')
+	putline('const (')
+
+* write out labels offsets sorted by offset value
+	labels = sort(labtab,2)	
+	i = 0
+g.end.labels
+	i = i +  1
+	differ(labels<i,1>) putline(tab labels<i,1>  tab '=' tab  labels<i,2>)	:s(g.end.labels)
+	putline(')')
+
+* TODO - fix declaration below
+	:(g.end.4a)
+* write out any real constants that need to be patched into the program text
+	putline('reals = map[int] float32 {')
+	drcara = sort(drctab,1)
+	i = 0
+g.end.reals
+	i = i + 1
+	putline(tab drcara<i,1> tab ':' tab  drcara<i,2> ",") :s(g.end.reals)
+	putline('}')
+
+g.end.4a
+* write out const definitions for osint procedures
+
+	putline('const (')
+	str = osiprocs
+	str break(' ') . name ' ' =
+	putline(tab name '_ = iota')
+g.end.osint
+	str break(' ') . name ' ' =		:f(g.end.osint.1)
+	putline(tab name '_' )			:(g.end.osint)
+g.end.osint.1
+	putline(')')
+
+* list ops used
+	usedara = sort(opsused,1)
+	i = 0
+g.end.ops
+	nused = nused + 1
+	opnam = usedara<i = i + 1,1>		:f(g.end.opsdone)
+	opcnt = usedara<i,2>
+*	output = opnam tab opcnt			
+*	output = tab 'case ' opnam  ':'
+*	output = opnam
+						:(g.end.ops)
+g.end.opsdone
+
+
+*	output = 'ppm_cases'
+*	putline(tab "var ppm_cases =  map[int]int {")
+* list ppm_cases
+	ppm_cases_ara = sort(ppm_cases,1)
+	i = 0
+	:(g.end.ppm.1)
+* this may not be needed
+g.end.ppm
+	i = i + 1
+	putline(tab  ppm_cases_ara[i,1]  tab ':' ppm_cases_ara[i,2] ',')	:s(g.end.ppm)
+	putline('}')
+g.end.ppm.1
+
+*	emit error messages
+	ara = sort(error_messages,1)
+	i = 0
+	putline('var error_messages = map[uint32]string {')
+g.end.11
+	i = i + 1
+	putline(tab ara<i,1> tab ': "' ara<i,2> '",')	:s(g.end.11)
+	putline("}")
+	
+	putline('var prc_names = map[uint32]string {')
+	prc_ara = sort(prc_names,1)
+	i = 0
+g.end.prc_names
+	n = prc_ara<i = i + 1,1>				:f(g.end.prc_names.1)
+	nam = prc_ara<i,2>
+	putline(tab	+n tab	':' tab	'"' nam '",')
+						:(g.end.prc_names)
+g.end.prc_names.1
+	putline('}')
+
+* Close files and issue summary report
+
+	endfile(1)
+	endfile(2)
+
+        report(nlines,		'lines read')
+        report(nstmts,		'statements processed')
+        report(ntarget,		'target code lines produced')
+	report(nused,		'opcodes used')
+	report(&stcount,	'spitbol statements executed')
+        report(prc.count1, 	'prc count')
+        output  = '  ' gt(prc.count,prc.count1)
+.	  '  differing counts for n-procedures:'
+.	  ' inp ' prc.count1 ' prc ' prc.count
+        differ(nerrors) report(nerrors,'errors detected')
+
+	&code   = ne(nerrors) 2001
+        report(collect(), 'free words')
+	:(end)
+end

@@ -25,10 +25,13 @@ This file is part of Macro SPITBOL.
 \************************************************************************/
 
 #define PRIVATEBLOCKS 1
+#include <unistd.h>
 #include "port.h"
 #include <stdlib.h>
 #include <fcntl.h>
-//#include <malloc.h>
+#undef brk  // remove sproto redefinition
+#undef sbrk // remove sproto redefinition
+#include <malloc.h>
 
 // Size and offset of fields of a structure.  Probably not portable.
 #define FIELDSIZE(str, fld) (sizeof(((str *)0)->fld))

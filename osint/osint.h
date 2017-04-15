@@ -103,7 +103,7 @@ extern uword	minimal_id;
 extern void minimal (void);
 extern void popregs (void);
 extern void pushregs (void);
-#define MINIMAL(cn) minimal_id = cn; c_minimal();
+#define MINIMAL(cn) minimal_id = cn; minimal();
 #define MINSAVE() pushregs()
 #define MINRESTORE() popregs()
 
@@ -146,43 +146,44 @@ enum CALLS {
 /   Names for accessing MINIMAL data values via GET_DATA_OFFSET macro.
 */
 extern word
-c_aaa,
-c_yyy,
-cswfl,
+gbcnt,
+headv,
+mxlen,
+stage,
+timsx,
 dnamb,
 dnamp,
+state,
+stbas,
+statb,
+polct,
+typet,
+lowspmin,
 flprt,
 flptr,
-g_aaa,
-gbcnt,
 gtcef,
-headv,
 hshtb,
-id1blk,
-id2blk,
-inpbuf,
+pmhbs,
+r_fcb,
+c_aaa,
+c_yyy,
+g_aaa,
+w_yyy,
+r_cod,
 kvstn,
 kvdmp,
 kvftr,
 kvcom,
 kvpfl,
-mxlen,
-pmhbs,
-polct,
-r_fcb,
-r_cod,
-stage,
-statb,
-state,
-stbas,
+cswfl,
 stmcs,
 stmct,
 ticblk,
-timsx,
 tscblk,
+id1blk,
+id2blk,
+inpbuf,
 ttybuf,
-typet,
-w_yyy,
 end_min_data;
 
 /*

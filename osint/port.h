@@ -26,7 +26,6 @@ This file is part of Macro SPITBOL.
 /   dependencies.  Many of these values will be changed when porting
 /   the OS interface to another machine/operating system.
 */
-#include <stddef.h>
 #include "systype.h"
 
 /*
@@ -92,12 +91,10 @@ This file is part of Macro SPITBOL.
 /*
  *  Other defaulted values that may be overridden in systype.h
  */
-#ifdef unix_32		// 32 bit words
+#ifdef m32		// 32 bit words
 #ifndef INTBITS
 #define INTBITS		32
 #define MAXINT		0x7FFFFFFFL
-#define CPW		4
-#define LOG_CPW		2
 #endif
 #ifndef WORDBITS
 #define WORDBITS	32
@@ -108,12 +105,10 @@ This file is part of Macro SPITBOL.
 #endif
 #endif
 
-#ifndef unix_32		// 64 bit words
+#ifndef m32		// 64 bit words
 #ifndef INTBITS
 #define INTBITS		64
 #define MAXINT		0x7FFFFFFFFFFFFFFFL
-#define CPW		8
-#define LOG_CPW		3
 #endif
 #ifndef WORDBITS
 #define WORDBITS	64
@@ -250,8 +245,7 @@ typedef unsigned long uword;	// minimal word as unsigned value
 /                   to make the stack larger results in a stack overflow
 /                   error.  Defined in BYTES!
 */
-//#define STACK_SIZE  (0x100000)      // Set to 1MB 6/28/09
-#define STACK_SIZE  (0x10000)      //  DS Jan 2015
+#define STACK_SIZE  (0x100000)      // Set to 1MB 6/28/09
 
 
 /*
@@ -277,8 +271,7 @@ typedef unsigned long uword;	// minimal word as unsigned value
 / PSEP is the separator between multiple paths.
 / FSEP is the separator between directories in a path.
 / EXT is separator between name and extension.
-/ COMPEXTSPT is extension for source files: .spt
-/ COMPEXTSBL is another extension for source files: .sbl
+/ COMPEXT is extension for source files.
 / EFNEXT is extension for external functions.
 / RUNEXT is extension for save files.
 / BINEXT is extension for load modules
@@ -290,8 +283,7 @@ typedef unsigned long uword;	// minimal word as unsigned value
 
 #define EXT '.'
 #define	BINEXT ".out"
-#define COMPEXTSPT ".spt"
-#define COMPEXTSBL ".sbl"
+#define COMPEXT ".spt"
 #define EFNEXT ".slf"
 #define LISTEXT ".lst"
 #define RUNEXT ".spx"
@@ -360,7 +352,6 @@ typedef unsigned long uword;	// minimal word as unsigned value
 /   WRTEXE	write executable module after compilation
 /   CASFLD      fold upper and lower case names
 /   NOFAIL	no fail mode
-/   ITRACE	enable instruction trace
 /
 /   DFLT_FLAGS	reasonable defaults for UN*X environment
 */
@@ -381,7 +372,6 @@ typedef unsigned long uword;	// minimal word as unsigned value
 #define NOFAIL		0x00002000L
 #define WRTEXE		0x00004000L
 #define WRTSAV		0x00008000L
-#define ITRACE		0x00010000L
 
 #define NOBRAG		0x02000000L	//	No signon header when loading save file
 

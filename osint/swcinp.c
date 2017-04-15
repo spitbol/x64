@@ -202,14 +202,7 @@ char	**fileptr;
                 break;
 #if !RUNTIME
             case 1:		// try with .spt extension
-                if (!executing && appendext(cp, COMPEXTSPT, namebuf, 0))
-                    if ((lastfd = tryopen(namebuf)) >= 0 )
-                    {
-                        sfn = namebuf;
-                        goto swci_exit;
-                    }
-				// try with .sbl extension
-                if (!executing && appendext(cp, COMPEXTSBL, namebuf, 0))
+                if (!executing && appendext(cp, COMPEXT, namebuf, 0))
                     if ((lastfd = tryopen(namebuf)) >= 0 )
                     {
                         sfn = namebuf;
