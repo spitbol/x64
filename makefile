@@ -1,6 +1,7 @@
-# SPITBOL makefile using tcc
+# SPITBOL makefile using gcc
 
 ws?=64
+ws?=32
 
 debug?=0
 EXECUTABLE=spitbol

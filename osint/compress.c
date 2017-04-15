@@ -439,7 +439,7 @@ uword size;
         index = find_match(string_code, character);	// See if the string is in
         if (code_value[index] != -1)				// the table.  If it is,
             string_code = code_value[index];		// get the code value.  If
-        else										// the string is not in the
+        else						// the string is not in the
         {   // table, try to add it.
             if (next_code <= MAX_CODE)
             {

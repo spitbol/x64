@@ -16,7 +16,7 @@ ARCHDEF=-D m$(WS)
 
 ifeq ($(OS),unix)
 #CC=tools/tcc/bin/tcc
-CC=gcc
+CC=tcc
 ELF=elf$(WS)
 else
 CC=llvm

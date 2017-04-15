@@ -1,44 +1,11 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 Copyright 2012-2013 David Shields
-
-This file is part of Macro SPITBOL.
-
-    Macro SPITBOL is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
-
-    Macro SPITBOL is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /*
-/   File:  SPITIO.H     Version:  01.09
-/   -------------------------------------------
-/
 /   This header file defines the I/O control blocks used by the
 /   operating system interface for the Macro Spitbol compiler.
-/
-/  V1.09 27-Apr-97 Add FILEPOS definition.
-/  V1.08 26-Oct-94 Add "share" word to ioblk to allow file sharing
-/			options.  Also, in the bfblk, change buf[1] to buf[sizeof(word)]
-/			so that BFSIZE is calculated properly with compilers that
-/			round-up the size of a structure to a word-multiple.
-/	V1.07	01-Aug-93 Add IO_EOT flag to ignore EOT char in DOS-mode text files.
-/	V1.06	01-Feb-93 Split record size into two fields (rsz and mode) in fcb, to
-/			prevent negative record size appearing to be a valid
-/			pointer in 8088 SPITBOL.
-/	V1.05	Add IO_DIR, change definitions in bfblk to
-/			accommodate read/write files.
-/	V1.04	Split IOBLK flags into two words
-/	V1.03	Add IO_COT flag from MS-DOS
-/	V1.02	Split RECSIZ into IRECSIZ and ORECSIZ
 */
 
 // Size of file position words in I/O buffer block
