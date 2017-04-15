@@ -1,4 +1,4 @@
-# SPITBOL makefile using gcc
+# SPITBOL makefile using musl-gcc
 
 ws?=64
 ws?=32
@@ -17,7 +17,7 @@ ARCHDEF=-D m$(WS)
 
 ifeq ($(OS),unix)
 #CC=tools/tcc/bin/tcc
-CC=gcc
+CC=musl-gcc
 ELF=elf$(WS)
 else
 CC=llvm
