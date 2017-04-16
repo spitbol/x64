@@ -1,13 +1,14 @@
 # SPITBOL x64
 
 SPITBOL x64 is an efficient implementation of the SNOBOL4 programming language for the 64-bit architecture x86-64 (amd64), 
-using the Unix system and its derivatives, including Linux and macOS.
+using the Unix system and its derivatives, including Linux.
 
-It is written in a portable assembly language called MINIMAL, with runtime support provided by code written in C.
+It is written in a portable assembly language called MINIMAL, with runtime support 
+provided by code written in C.
 
 ## Executable binaries
 
-A ready-to-run binary executables is provided in `./bin/sbl`.
+A ready-to-run binary executable is provided in `./bin/sbl`.
 
 ## Building SPITBOL
 
