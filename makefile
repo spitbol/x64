@@ -1,10 +1,9 @@
 # SPITBOL makefile using musl-gcc
 
 ws?=64
-ws?=32
 
 debug?=0
-EXECUTABLE=spitbol
+EXECUTABLE=sbl
 
 os?=unix
 
@@ -12,18 +11,8 @@ OS=$(os)
 WS=$(ws)
 DEBUG=$(debug)
 
-ARCH=m$(WS)
-ARCHDEF=-D m$(WS)
-
-ifeq ($(OS),unix)
-#CC=tools/tcc/bin/tcc
 CC=musl-gcc
 ELF=elf$(WS)
-else
-CC=llvm
-ELF=macho$(WS)
-endif
-
 
 # SPITBOL Version:
 MIN=   s
@@ -56,7 +45,7 @@ endif
 LEX=	lex.spt
 COD=    asm.spt
 ERR=    err.spt
-BASEBOL =   ./bin/spitbol.$(ARCH)
+BASEBOL =   ./bin/sbl
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
@@ -120,17 +109,17 @@ VOBJS =	s.o
 # All objects:
 OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 
-# link spitbol with static linking
+# link sbl with static linking
 #LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a $(MUSL)/lib/libc.a 
 #LIBS = -Ltools/tcc/lib -Ltools/musl/lib
 LIBS = 
-spitbol: $(OBJS)
+sbl: $(OBJS)
 #	$(CC) $(CFLAGS) $(LIBS) -static -lm $(OBJS) -o$(EXECUTABLE) 
 	$(CC) $(CFLAGS) $(LIBS) -lm $(OBJS) -o$(EXECUTABLE) 
 
-# link spitbol with dynamic linking
-spitbol-dynamic: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LIBS) lm -ospitbol 
+# link sbl with dynamic linking
+sbl-dynamic: $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) $(LIBS) lm -osbl 
 
 # Assembly language dependencies:
 err.o: err.s
@@ -168,16 +157,16 @@ sysgc.o: $(OSINT)/save.h
 sysxi.o: $(OSINT)/save.h
 dlfcn.o: dlfcn.h
 
-# install binaries from ./bin as the system spitbol compilers
+# install binaries from ./bin as the system sbl compilers
 install:
-	sudo cp ./bin/spitbol /usr/local/bin
+	sudo cp ./bin/sbl /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t ./spitbol
+	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t ./sbl
 
 z:
 	nm -n s.o >s.nm
-	spitbol map-$(WS).spt <s.nm >s.dic
-	spitbol z.spt <ad >ae
+	sbl map-$(WS).spt <s.nm >s.dic
+	sbl z.spt <ad >ae
 
 sclean:
 # clean up after sanity-check
