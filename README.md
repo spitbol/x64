@@ -10,22 +10,11 @@ It is written in a portable assembly language called MINIMAL, with runtime suppo
 Ready-to-run binary executables can be found in
 the directory `./bin`.
 
-* macOS SPITBOL: `./bin/sbl_macos`	
-
-* Unix SPITBOL: `./bin/sbl_unix`
+* Unix SPITBOL: `./bin/sbl
 
 ## Building SPITBOL
 
 To build spitbol (`./sbl`) and then test it:
-
-macOS:
-
-```
-	make -f macos.makefile
-	make -f macos.makefile test
-```
-
-Unix:
 
 ```
 	make -f unix.makefile 
