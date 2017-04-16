@@ -7,10 +7,7 @@ It is written in a portable assembly language called MINIMAL, with runtime suppo
 
 ## Executable binaries
 
-Ready-to-run binary executables can be found in
-the directory `./bin`.
-
-* Unix SPITBOL: `./bin/sbl
+A ready-to-run binary executables is provided in `./bin/sbl`.
 
 ## Building SPITBOL
 
