@@ -17,17 +17,17 @@ the directory `./bin`.
 To build spitbol (`./sbl`) and then test it:
 
 ```
-	make -f unix.makefile 
-	make -f unix.makefile test
+	make
+	./sanity-check
 ```
 
 See `readme.txt` for instructions on interpreting the test output.
 
 You need the NASM assembler to build the unix version. You can install it using 
 ```
-	sudo apt-get install nasm
+	sudo dnf install nasm
 ```
-in Ubuntu and its variants, or consult http://nasm.us for downloadable binaries and source.
+in Fedora, or consult http://nasm.us for downloadable binaries and source.
 
 # License
 
@@ -71,8 +71,8 @@ Directory ./docs contains documentation:
 
 * The SNOBOL4 Programming Language, Griswold, et. al.  `./docs/green-book.pdf`	
 
-This is the classic introduction to SNOBOL4, known affectionately to SNOBOL enthusiasts as "The Green Book," due to its bright green
-cover.
+This is the classic introduction to SNOBOL4, known affectionately to SNOBOL enthusiasts 
+as "The Green Book," due to its bright green cover.
 
 * SPITBOL User Manual, Emmer and Quillen	`./docs/spitbol-manual.pdf`	
 
@@ -88,5 +88,5 @@ Demonstration programs from the SPITBOL User Manual can be found in `./demos`
 
 ## Manual Page
 
-Craig Wright kindly provided the unix 'man' page that he wrote: spitbol.1
+Craig Wright kindly provided the unix _man_ page that he wrote: spitbol.1
 
