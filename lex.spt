@@ -372,7 +372,7 @@
 *
 *  default the parameter string if none present
 *
-	arch = (differ(host(0)) host(0), "32")
+	arch = "64"
 	parm = "s"
 	filenamc = parm '.cnd'
 	filenami = parm '.min'
@@ -442,26 +442,10 @@ main2
 . 'ch_sq[039]ch_u_[095]ch_ob[091]ch_cb[093]ch_ht[009]ch_vt[011]'
 . 'ch_ey[094]iodel[032]' )
 * set target-dependent configuration parameters
-	:($('config.' arch))
 
-							:(config.done)
-config.32
-	equ_defs['cfp_a'] = '256'
-	equ_defs['cfp_b'] = '4'
-	equ_defs['cfp_c'] = '4'
-	equ_defs['cfp_f'] = '8'
-	equ_defs['cfp_i'] = '1'
-	equ_defs['cfp_l'] = '4294967295'
-	equ_defs['cfp_m'] = '2147483647'
-	equ_defs['cfp_n'] = '32'
- 	equ_defs['cfp_r'] = '2'
-	equ_defs['cfp_u'] = '128'
-*	use 6 words, or 24 characters, for hash in x32
-	equ_defs['e_hnw'] = '6'
-							:(config.done)
-config.64
-	equ_defs['cfp_a'] = '256'
-	equ_defs['cfp_b'] = '8'
+
+        equ_defs['cfp_a'] = '256'
+        equ_defs['cfp_b'] = '8'
 	equ_defs['cfp_c'] = '8'
 	equ_defs['cfp_f'] = '16'
 	equ_defs['cfp_i'] = '1'
@@ -473,6 +457,7 @@ config.64
 *	use 3 words, or 24 characters, for hash in x64
 *	this is done so hashes for x32 and x64 should agree
 	equ_defs['e_hnw'] = '3'
+
 config.done
 
 *

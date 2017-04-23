@@ -10,15 +10,15 @@ rm tbol.*
 echo "start sanity test"
 cp	./bin/sbl tbol
 make clean>/dev/null
-make BASEBOL=./tbol WS=64
+make BASEBOL=./tbol
 mv s.lex tbol.lex.0
 mv s.s tbol.s.0
 cp sbl tbol
-make BASEBOL=./tbol WS=64
+make BASEBOL=./tbol
 mv s.lex tbol.lex.1
 mv s.s tbol.s.1
 cp sbl tbol
-make BASEBOL=./tbol WS=64
+make BASEBOL=./tbol
 mv s.lex tbol.lex.2
 mv s.s tbol.s.2
 echo "comparing generated .s files"

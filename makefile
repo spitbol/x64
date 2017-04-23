@@ -27,11 +27,11 @@ vpath %.c $(OSINT)
 ASM	=	nasm
 
 ifeq	($(DEBUG),0)
-#CFLAGS= -D m$(WS) -m$(WS) -Itools/tcc/include
-CFLAGS= -D m$(WS) -m$(WS) 
+#CFLAGS=  -Itools/tcc/include
+CFLAGS=   
 else
-#CFLAGS= -D m$(WS) -g -m$(WS) 
-CFLAGS= -D m$(WS) -g -m$(WS)
+#CFLAGS= -g-m$(WS) 
+CFLAGS= -g
 endif
 
 # Assembler info -- Intel 32-bit syntax
@@ -133,11 +133,10 @@ s.go:	s.lex go.spt
 	$(BASEBOL) -u i32 go.spt
 
 s.s:	s.lex $(VHDRS) $(COD) 
-	$(BASEBOL) -u $(WS) $(COD)
+	$(BASEBOL)  $(COD)
 
 s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
-#	 $(BASEBOL) -u $(WS) $(LEX)
-	 $(BASEBOL) -u $(WS) $(LEX)
+	 $(BASEBOL)  $(LEX)
 
 s.err: s.s
 
@@ -165,7 +164,7 @@ clean:
 
 z:
 	nm -n s.o >s.nm
-	sbl map-$(WS).spt <s.nm >s.dic
+	sbl map.spt <s.nm >s.dic
 	sbl z.spt <ad >ae
 
 sclean:
