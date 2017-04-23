@@ -1255,9 +1255,24 @@ g.icp
 g.ldi
 g.sti
 	genop(op_,getarg(i1))			:(opdone)
+
 g.adi
-g.mli
+
+	genop('add',"ia",getarg(i1))                :(opdone)
+
 g.sbi
+
+	genop('sub',"ia",getarg(i1))                :(opdone)
+
+g.mli
+
+	genop('imul',"ia",getarg(i1))                :(opdone)
+
+*g.dvi
+
+	genop('idiv',"ia",getarg(i1))                
+        genop('cgt')                                    :(opdone)
+
 g.dvi
 g.rmi
 	genop(op_,getarg(i1))			:(opdone)
