@@ -15,7 +15,7 @@
 ;	We exploit one elegant feature of the Minimal design:
 ;	ia and wc may share the same register.
 
-	%define	ia	rbp
+	%define	ia	rdx
 
 	%define	wa	rcx
 	%define wa_l	cl
