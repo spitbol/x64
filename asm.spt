@@ -20,10 +20,12 @@
 *
 *
 *  this program takes input file in minimal token form and
-*  produces assembly code for intel 80386 processor.
+*  produces assembly code for intel x64 processor.
 *  the program obtains the name of the file to be translated from the
-*  command line string in host(0).  options relating to the processing
-*  of comments can be changed by modifying the source.
+*  command line string in host(0).  
+
+*  options relating to the processing of comments can be 
+*  changed by modifying the source.
 *
 *  in addition to the minimal token file, the program requires the
 *  name of a "machine definition file" that contains code specific
@@ -91,7 +93,6 @@
 *       these should agree with values used in translator
 * set target-dependent configuration parameters
 
-config.64
 *	cfp_b is bytes per word, cfp_c is characters per word
 *       these should agree with values used in translator
 	cfp_b = 8
@@ -283,7 +284,7 @@ skip_init.end
 .	'aov[1]beq[1]bne[1]bge[1]bgt[1]bhi[1]ble[1]blo[1]'
 .	'blt[1]bne[1]bnz[1]ceq[1]cne[1]mfi[1]nzb[1]zrb[1]')
 *
-*	trace not working for mvc (x32/x64)
+*	trace not working for mvc (x64)
 
 	is_executable = table(100)
 	s =
@@ -464,7 +465,7 @@ outputok
 err_ok
 
 
-*  then copy contents of m.hdr (if it exists) to outfile
+*  then copy contents of x64.hdr (if it exists) to outfile
 *  stop at line with just 'end' or end of file
 *
 	noutlines = noutlines + 1
