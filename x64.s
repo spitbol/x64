@@ -29,7 +29,7 @@
 	%define	cfp_c	8
 %endif
 
-	%include	"m.h"
+	%include	"x64.h"
 
 	global	reg_block
 	global	reg_w0

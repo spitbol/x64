@@ -22,40 +22,6 @@
 	%define m_real	qword	; reference to floating point value in memory
 	%define d_real	dq	; define value for floating point
 
-%ifdef	m32
-	%define	xl	esi
-	%define	xt	esi
-	%define xr	edi
-	%define xs	esp
-	%define w0	eax
-	%define w1	ebp
-	%define wa	ecx
-	%define wa_l    cl
-	%define wb	ebx
-	%define wb_l  	bl
-	%define wc	edx
-	%define wc_l  	dl
-;	%define ia	edx
-	%define ia	ebp
-	%define m_word	dword	; reference to word in memory
-	%define d_word	dd	; define value for memory word
-;	%define	cfp_b	4
-	%define log_cfp_b 2
-	%define cfp_c_val	4
-	%define log_cfp_c 2
-	%define cfp_m_	2147483647
-;	%define	cfp_n_	32
-
-	%define	lods_b	lodsb
-	%define	lods_w	lodsd
-	%define movs_b	movsb
-	%define movs_w	movsd
-	%define	stos_b	stosb
-	%define	stos_w	stosd
-	%define	cmps_b	cmpsb
-
-	%define	cdq	cdq	; sign extend (32 bits)
-%else
 	%define	xl	rsi
 	%define	xt	rsi
 	%define	xr	rdi
@@ -91,8 +57,6 @@
 	%define	cmps_b	cmpsb
 
 	%define	cdq	cqo	; sign extend (64 bits)
-
-%endif
 
 ;	flags
 	%define	flag_of	0x80

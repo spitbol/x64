@@ -85,27 +85,11 @@
 
 *  default the parameter string if none present
 *
-        arch = (differ(host(0)) host(0), "32")
-	output = 'target architecture ' arch
-*        output = ident(fileprefix) "filename (.lex) required" :s(end)
 	fileprefix = "s"
-	output = '  target architecture:' arch
 
 *	cfp_b is bytes per word, cfp_c is characters per word
 *       these should agree with values used in translator
 * set target-dependent configuration parameters
-	:($('config.' arch))
-
-config.32
-	cfp_b = 4
-	cfp_c = 4
-	log_cfp_b = '2'
-	log_cfp_c = '2'
-*	op_w is instruction suffix for word-size
-	op_w = 'd'
-*	op_c is instruction suffix for minimal character size
-	op_c = 'b'
-						:(config.done)
 
 config.64
 *	cfp_b is bytes per word, cfp_c is characters per word
@@ -485,7 +469,7 @@ err_ok
 *
 	noutlines = noutlines + 1
 
-	input(.hdrfile,4,'m.hdr')	:f(nohdr)
+	input(.hdrfile,4,'x64.hdr')	:f(nohdr)
 	havehdr = 1
 *        output = '  input header file:  ' hdr  '.hdr'
 hdrcopy line = hdrfile				:f(hdrend)

@@ -18,7 +18,7 @@
 ;
         section	.text
 
-	%include	"m.h"
+	%include	"x64.h"
 
 	extern	osisp
 	extern	compsp

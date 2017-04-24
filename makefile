@@ -66,7 +66,7 @@ UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/syste
 HDRS=	$(CHDRS) $(UHDRS)
 
 # Headers for Minimal source translation:
-VHDRS=	m.hdr 
+VHDRS=	x64.hdr 
 
 # OSINT objects:
 SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
@@ -86,7 +86,7 @@ COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
 # Assembly langauge objects common to all versions:
 # CAOBJS is for gas, NAOBJS for nasm
 CAOBJS = 
-NAOBJS = m.o err.o
+NAOBJS = x64.o err.o
 
 # Objects for SPITBOL's HOST function:
 #HOBJS=	hostrs6.o scops.o kbops.o vmode.o
