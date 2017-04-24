@@ -42,7 +42,6 @@ ASMFLAGS = -g -f $(ELF) -d m64
 endif
 
 # Tools for processing Minimal source file.
-LEX=	lex.spt
 COD=    asm.spt
 ERR=    err.spt
 BASEBOL =   ./bin/sbl
@@ -135,9 +134,9 @@ s.go:	s.lex go.spt
 s.s:	s.lex $(VHDRS) $(COD) 
 	$(BASEBOL) -u $(WS) $(COD)
 
-s.lex: $(MINPATH)$(MIN).min $(MIN).cnd $(LEX)
-#	 $(BASEBOL) -u $(WS) $(LEX)
-	 $(BASEBOL) -u $(WS) $(LEX)
+s.lex: $(MINPATH)$(MIN).min $(MIN).cnd lex.spt
+#	 $(BASEBOL) -u $(WS) lex.spt
+	 $(BASEBOL) -u $(WS) lex.spt
 
 s.err: s.s
 
