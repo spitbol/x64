@@ -21,13 +21,8 @@
 ;	ws is bits per word, cfp_b is bytes per word, cfp_c is characters per word
 
 
-%ifdef	m32
-	%define	cfp_b	4
-	%define	cfp_c	4
-%else
 	%define	cfp_b	8
 	%define	cfp_c	8
-%endif
 
 	%include	"x64.h"
 
@@ -51,7 +46,7 @@
 	extern	calltab
 	extern	stacksiz
 
-;	values below must agree with calltab defined in x32.hdr and also in osint/osint.h
+;	values below must agree with calltab defined in x64.hdr and also in osint/osint.h
 
 minimal_relaj	equ	0
 minimal_relcr	equ	1
