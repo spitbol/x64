@@ -24,8 +24,6 @@ OSINT=./osint
 
 vpath %.c $(OSINT)
 
-ASM	=	nasm
-
 ifeq	($(DEBUG),0)
 #CFLAGS= -D m64 -m64 -Itools/tcc/include
 CFLAGS= -D m64 -m64 
@@ -53,7 +51,7 @@ BASEBOL =   ./bin/sbl
 
 # Implicit rule for building objects from assembly language files.
 .s.o:
-	$(ASM) $(ASMFLAGS) -l $*.lst -o$@ $*.s
+	nasm $(ASMFLAGS) -l $*.lst -o$@ $*.s
 
 # C Headers common to all versions and all source files of SPITBOL:
 CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h 
@@ -134,13 +132,13 @@ s.go:	s.lex go.spt
 s.s:	s.lex $(VHDRS) $(COD) 
 	$(BASEBOL) -u $(WS) $(COD)
 
-s.lex: $(MINPATH)$(MIN).min $(MIN).cnd lex.spt
+s.lex: $(MINPATH)s.min s.cnd lex.spt
 #	 $(BASEBOL) -u $(WS) lex.spt
 	 $(BASEBOL) -u $(WS) lex.spt
 
 s.err: s.s
 
-err.s: $(MIN).cnd $(ERR) s.s
+err.s: s.cnd $(ERR) s.s
 	   $(BASEBOL) -1=s.err -2=err.s $(ERR)
 
 
