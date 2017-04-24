@@ -1255,6 +1255,7 @@ g.mli
 
 *g.dvi
 
+
 	genop('idiv',"ia",getarg(i1))                
         genop('cgt')                                    :(opdone)
 
