@@ -12,6 +12,9 @@
 	%define m_real	qword	; reference to floating point value in memory
 	%define d_real	dq	; define value for floating point
 
+;	We exploit one elegant feature of the Minimal design:
+;	ia and wc may share the same register.
+
 	%define	ia	rbp
 
 	%define	wa	rcx
