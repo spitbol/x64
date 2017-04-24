@@ -27,18 +27,18 @@ vpath %.c $(OSINT)
 ASM	=	nasm
 
 ifeq	($(DEBUG),0)
-#CFLAGS= -D m64 -m$(WS) -Itools/tcc/include
-CFLAGS= -D m64 -m$(WS) 
+#CFLAGS= -D m64 -m64 -Itools/tcc/include
+CFLAGS= -D m64 -m64 
 else
-#CFLAGS= -D m64 -g -m$(WS) 
-CFLAGS= -D m64 -g -m$(WS)
+#CFLAGS= -D m64 -g -m64 
+CFLAGS= -D m64 -g -m64
 endif
 
 # Assembler info -- Intel 32-bit syntax
 ifeq	($(DEBUG),0)
-ASMFLAGS = -f $(ELF) -d m$(WS)
+ASMFLAGS = -f $(ELF) -d m64
 else
-ASMFLAGS = -g -f $(ELF) -d m$(WS)
+ASMFLAGS = -g -f $(ELF) -d m64
 endif
 
 # Tools for processing Minimal source file.
