@@ -40,8 +40,6 @@ ASMFLAGS = -g -f $(ELF) -d m64
 endif
 
 # Tools for processing Minimal source file.
-COD=    asm.spt
-ERR=    err.spt
 BASEBOL =   ./bin/sbl
 
 # Implicit rule for building objects from C files.
@@ -129,8 +127,8 @@ err.o: err.s
 s.go:	s.lex go.spt
 	$(BASEBOL) -u i32 go.spt
 
-s.s:	s.lex $(VHDRS) $(COD) 
-	$(BASEBOL) -u $(WS) $(COD)
+s.s:	s.lex $(VHDRS) asm.spt 
+	$(BASEBOL) -u $(WS) asm.spt
 
 s.lex: $(MINPATH)s.min s.cnd lex.spt
 #	 $(BASEBOL) -u $(WS) lex.spt
@@ -138,8 +136,8 @@ s.lex: $(MINPATH)s.min s.cnd lex.spt
 
 s.err: s.s
 
-err.s: s.cnd $(ERR) s.s
-	   $(BASEBOL) -1=s.err -2=err.s $(ERR)
+err.s: s.cnd err.spt s.s
+	   $(BASEBOL) -1=s.err -2=err.s err.spt
 
 
 # make osint objects
