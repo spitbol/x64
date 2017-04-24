@@ -388,7 +388,27 @@ flgs2
 	ismem<9> = 1; ismem<10> = 1; ismem<11> = 1
 	ismem<12> = 1; ismem<13> = 1; ismem<14> = 1
 	ismem<15> = 1
+
+*  The Minimal registers are mapped to the hardware registers as follows:
+
+*	ia	rbp
+*	wa	rcx
+*	wb	rbx
+*	wc	rdx
+*	xl	rsi
+*	xr	rdi
+*	xs	rsi
+*	xt	rsi
+
+*	Minimal register cp is kept in memory.
 *
+*	In addition the register 'w0' is reserved for use
+*	in executing a single Minimal instruction. Its
+*	value both before and after the insruction is
+*	executed is otherwise undefined.
+
+*	w0	rax
+
 *  regmap maps minimal register name to target machine
 *  register/memory-location name.
 *

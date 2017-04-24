@@ -1,42 +1,34 @@
 ; copyright 1987-2012 robert b. k. dewar and mark emmer.
+; copyright 2012-2017 david shields
 
-; copyright 2012-2015 david shields
+; This program is licensed under the GPL2 (or later) license.
+
 ;
 ; this file is part of macro spitbol.
 ;
-;     macro spitbol is free software: you can redistribute it and/or modify
-;     it under the terms of the gnu general public license as published by
-;     the free software foundation, either version 2 of the license, or
-;     (at your option) any later version.
-;
-;     macro spitbol is distributed in the hope that it will be useful,
-;     but without any warranty; without even the implied warranty of
-;     merchantability or fitness for a particular purpose.  see the
-;     gnu general public license for more details.
-;
-;     you should have received a copy of the gnu general public license
-;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 
 	%define m_char	byte	; reference to byte in memory
 	%define d_char	db	; define value of byte
 	%define m_real	qword	; reference to floating point value in memory
 	%define d_real	dq	; define value for floating point
 
-	%define	xl	rsi
-	%define	xt	rsi
-	%define	xr	rdi
-	%define	w0	rax
-	%define w1	rbp
+	%define	ia	rbp
+
 	%define	wa	rcx
 	%define wa_l	cl
 	%define	wb	rbx
 	%define wb_l    bl
 	%define	wc	rdx
 	%define wc_l    dl
+
+	%define	w0	rax
+
+	%define	xl	rsi
+	%define	xr	rdi
 	%define	xs	rsp
-	%define	w0_l	al
-;	%define	ia	rdx
-	%define	ia	rbp
+	%define	xt	rsi
+
+
 	%define m_word  qword
 	%define d_word	dq
 ;	%define	cfp_b	8
