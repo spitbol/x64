@@ -1,2 +1,0 @@
-#!/bin/sh
-exec "${REALGCC:-gcc}" "$@" -specs "~/h/spitbol/tools/musl/lib/musl-gcc.specs"
