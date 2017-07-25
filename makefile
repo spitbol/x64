@@ -25,10 +25,8 @@ OSINT=./osint
 vpath %.c $(OSINT)
 
 ifeq	($(DEBUG),0)
-#CFLAGS= -D m64 -m64 -Itools/tcc/include
 CFLAGS= -D m64 -m64 -static 
 else
-#CFLAGS= -D m64 -g -m64 
 CFLAGS= -D m64 -g -m64
 endif
 
@@ -79,12 +77,10 @@ COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
 	trypath.o wrtaout.o zz.o
 
 # Assembly langauge objects common to all versions:
-# CAOBJS is for gas, NAOBJS for nasm
 CAOBJS = 
 NAOBJS = x64.o err.o
 
 # Objects for SPITBOL's HOST function:
-#HOBJS=	hostrs6.o scops.o kbops.o vmode.o
 HOBJS=
 
 # Objects for SPITBOL's LOAD function.  AIX 4 has dlxxx function library.
@@ -105,11 +101,9 @@ VOBJS =	s.o
 OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 
 # link spitbol with static linking
-#LIBS = -L$(MUSL)/lib  -Ltcc/lib/tcc/libtcc1.a $(MUSL)/lib/libc.a 
-#LIBS = -Ltools/tcc/lib -Ltools/musl/lib
 LIBS = 
+
 spitbol: $(OBJS)
-#	$(CC) $(CFLAGS) $(LIBS) -static -lm $(OBJS) -o$(EXECUTABLE) 
 	$(CC) $(CFLAGS) $(LIBS) -lm $(OBJS) -o$(EXECUTABLE) 
 
 # link spitbol with dynamic linking
@@ -124,20 +118,19 @@ err.o: err.s
 
 
 # SPITBOL Minimal source
-s.go:	s.lex go.spt
-	$(BASEBOL) -x -u i32 go.spt
+s.go:	s.lex go.sbl
+	$(BASEBOL) -x -u i32 go.sbl
 
-s.s:	s.lex $(VHDRS) asm.spt 
-	$(BASEBOL) -x -u $(WS) asm.spt
+s.s:	s.lex $(VHDRS) asm.sbl 
+	$(BASEBOL) -x -u $(WS) asm.sbl
 
-s.lex: $(MINPATH)s.min s.cnd lex.spt
-#	 $(BASEBOL) -u $(WS) lex.spt
-	 $(BASEBOL) -x -u $(WS) lex.spt
+s.lex: $(MINPATH)s.min s.cnd lex.sbl
+	 $(BASEBOL) -x -u $(WS) lex.sbl
 
 s.err: s.s
 
-err.s: s.cnd err.spt s.s
-	   $(BASEBOL) -x -1=s.err -2=err.s err.spt
+err.s: s.cnd err.sbl s.s
+	   $(BASEBOL) -x -1=s.err -2=err.s err.sbl
 
 
 # make osint objects
@@ -160,8 +153,8 @@ clean:
 
 z:
 	nm -n s.o >s.nm
-	spitbol map-$(WS).spt <s.nm >s.dic
-	spitbol z.spt <ad >ae
+	spitbol map-$(WS).sbl <s.nm >s.dic
+	spitbol z.sbl <ad >ae
 
 sclean:
 # clean up after sanity-check

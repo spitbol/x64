@@ -14,19 +14,19 @@ void prompt()
     wrterr("usage: spitrun [options] file[.spx] [program arguments]");
 #else					// RUNTIME
 
-    wrterr("usage: spitbol4 [options] files[.sbl or .spx] [args to HOST(2)]");
+    wrterr("usage: spitbol [options] files[.sbl or .spx] [args to HOST(2)]");
 
 #endif					// RUNTIME
 
 #if RUNTIME
-    wrterr("spitbol4 v1.1");
+    wrterr("spitbol v4.0");
     wrterr("options: (# is a decimal number)");
     wrterr("-u \"string\" data string available to program");
     wrterr("-#=file   associate file with I/O channel #");
 #else					// RUNTIME
     wrterr("source files are concatenated, filename '-' is standard input/output");
     wrterr("# is a decimal number.  Append \"k\" for kilobytes, \"m\" for megabytes.");
-    wrterr("spitbol4 v1.1");
+    wrterr("spitbol v4.0");
     wrterr("options:");
     wrterr("-d# #bytes max heap            -i# #bytes initial heap size & enlarge amount");
     wrterr("-m# #bytes max object size     -s# #bytes stack size");
