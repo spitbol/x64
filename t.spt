@@ -1,0 +1,5 @@
+	define('set(a)')	:(set.end)
+set
+	set = a
+set.end
+end

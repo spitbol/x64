@@ -458,9 +458,6 @@
 *      .csed                 define to use sediment in gbcol
 *      .csfn                 define to track source file names
 *      .csln                 define if line number in code block
-*      .csn5                 define to pad stmt nos to 5 chars
-*      .csn6                 define to pad stmt nos to 6 chars
-*      .csn8                 define to pad stmt nos to 8 chars
 *      .csou                 define if output, terminal to sysou
 *      .ctet                 define to table entry trace wanted
 *      .ctmd                 define if systm unit is decisecond
@@ -516,9 +513,6 @@
 *      .csed                 define to use sediment in gbcol
 *      .csfn                 define to track source file names
 *      .csln                 define if line number in code block
-*      .csn5                 define to pad stmt nos to 5 chars
-*      .csn6                 define to pad stmt nos to 6 chars
-.def   .csn8                 define to pad stmt nos to 8 chars
 *      .csou                 define if output, terminal to sysou
 .def   .ctet                 define to table entry trace wanted
 *      .ctmd                 define if systm unit is decisecond
@@ -1610,7 +1604,7 @@ systm  exp  0                define external entry point
 *
 *      systm is used to obtain the amount of execution time
 *      used so far since spitbol was given control. the units
-*      are described as milliseconds in the spitbol output, but
+*      are described as microseconds in the spitbol output, but
 *      the exact meaning is system dependent. where appropriate,
 *      this value should relate to processor rather than clock
 *      timing values.
@@ -1618,7 +1612,7 @@ systm  exp  0                define external entry point
 *      as deciseconds (0.1 second).
 *
 *      jsr  systm            call to get timer value
-*      (ia)                  time so far in milliseconds
+*      (ia)                  time so far in micliseconds
 *                            (deciseconds if .ctmd defined)
        ejc
 *
@@ -4452,15 +4446,7 @@ stgno  equ  stgee+1          number of codes
 *
 *      statement number pad count for listr
 *
-.if    .csn6
-stnpd  equ  6                statement no. pad count
-.fi
-.if    .csn8
 stnpd  equ  8                statement no. pad count
-.fi
-.if    .csn5
-stnpd  equ  5                statement no. pad count
-.fi
 *
 *      syntax type codes
 *
@@ -4823,7 +4809,7 @@ encm4  dac  b_scl
        dtc  /comp time (decisec)/
 .else
        dac  20
-       dtc  /comp time (millisec)/
+       dtc  /comp time (microsec)/
 .fi
 *
 encm5  dac  b_scl            execution suppressed
@@ -5418,33 +5404,36 @@ stpm2  dac  b_scl
        dtc  /stmts executed/
 *
 stpm3  dac  b_scl
-.if    .ctmd
-       dac  18
-       dtc  /run time (decisec)/
-.else
-       dac  19
-       dtc  /run time (millisec)/
-.fi
+       dac  20
+       dtc  /execution time msec /
 *
-stpm4  dac  b_scl
-       dac  12
-       dtc  _mcsec / stmt_
+.if    .csln
+stpm4  dac  b_scl            in line
+       dac  7
+       dtc  /in line/
+.fi
 *
 stpm5  dac  b_scl
        dac  13
        dtc  /regenerations/
-.if    .csln
 *
-stpm6  dac  b_scl            in line
-       dac  7
-       dtc  /in line/
-.fi
 .if    .csfn
-*
-stpm7  dac  b_scl            in file
+stpm6  dac  b_scl            in file
        dac  7
        dtc  /in file/
 .fi
+*
+stpm7  dac  b_scl
+       dac  15
+       dtc  _stmt / microsec_
+*
+stpm8  dac  b_scl
+       dac  15
+       dtc  _stmt / millisec_
+*
+stpm9  dac  b_scl
+       dac  13
+       dtc  _stmt / second_
 *
 *      chars for /tu/ ending code
 *
@@ -5680,9 +5669,9 @@ v_rem  dbc  svkvc            rem
        dac  ndrem
 .if    .cust
 *
-v_set  dbc  svfnn            set
+v_set  dbc  svfnn            set (renamed to zet for setl4)
        dac  3
-       dtc  /set/
+       dtc  /zet/
        dac  s_set
        dac  3
 .fi
@@ -6920,7 +6909,7 @@ initr  dac  0                save terminal flag
 *      following order (as dictated by k_xxx definition values).
 *
 kvabe  dac  0                abend
-kvanc  dac  0                anchor
+kvanc  dac  1                anchor
 .if    .culc
 kvcas  dac  0                case
 .fi
@@ -6941,7 +6930,7 @@ kvoup  dac  1                output
 kvpfl  dac  0                profile
 .fi
 kvtra  dac  0                trace
-kvtrm  dac  0                trim
+kvtrm  dac  1                trim
 kvfnc  dac  0                fnclevel
 kvlst  dac  0                lastno
 .if    .csln
@@ -12256,7 +12245,7 @@ s_cnv  ent                   entry point
        ppm  scv29            error if second argument not string
        bze  wa,scv29         or if null string
 .if    .culc
-       jsr  flstg            fold lower case to upper case
+       jsr  flstg            fold upper case to lower case
 .fi
        mov  xl,(xs)          load first argument
        bne  (xl),=b_pdt,scv01 jump if not program defined
@@ -12576,7 +12565,7 @@ s_dat  ent                   entry point
 .if    .culc
 sdat1  mov  wa,sclen(xr)     get length
        bze  wa,sdt1a         avoid folding if null string
-       jsr  flstg            fold lower case to upper case
+       jsr  flstg            fold upper case to lower case
 sdt1a  mov  xl,xr            save name ptr
 .else
 sdat1  mov  xl,xr            save name ptr
@@ -13569,7 +13558,7 @@ slod2  mov  wc,=ch_rp        delimiter one is right paren
 slod3  mov  wb,wa            save scan mode
        mov  wa,sclen(xr)     datatype length
        bze  wa,sld3a         bypass if null string
-       jsr  flstg            fold to upper case
+       jsr  flstg            fold to lower case
 sld3a  mov  wa,wb            restore scan mode
        mov  -(xs),xr         stack datatype name pointer
 .else
@@ -13647,7 +13636,7 @@ slod6  mov  -(xr),(xs)+      store one type code from stack
        mov  xr,(xs)+         load function string name
 .if    .culc
        mov  wa,sclen(xr)     function name length
-       jsr  flstg            fold to upper case
+       jsr  flstg            fold to lower case
 .fi
        mov  xl,(xs)          load library name
        mov  (xs),wb          store efblk pointer
@@ -15464,7 +15453,7 @@ stpr0  jsr  prtpg            eject printer
 stpr1  jsr  prtis            print blank line
 .if    .csfn
        bnz  gbcfl,stpr5      if in garbage collection, skip
-       mov  xr,=stpm7        point to message /in file xxx/
+       mov  xr,=stpm6        point to message /in file xxx/
        jsr  prtst            print it
        mov  profs,=prtmf     set column offset
        mov  wc,kvstn         get statement number
@@ -15480,16 +15469,11 @@ stpr1  jsr  prtis            print blank line
 .fi
        mov  xr,r_cod         get code pointer
        mti  cdsln(xr)        get source line number
-       mov  xr,=stpm6        point to message /in line xxx/
+       mov  xr,=stpm4        point to message /in line xxx/
        jsr  prtmx            print it
 .fi
 stpr5  mti  kvstn            get statement number
        mov  xr,=stpm1        point to message /in statement xxx/
-       jsr  prtmx            print it
-       jsr  systm            get current time
-       sbi  timsx            minus start time = elapsed exec tim
-       sti  stpti            save for later
-       mov  xr,=stpm3        point to msg /execution time msec /
        jsr  prtmx            print it
        ldi  kvstl            get statement limit
        ilt  stpr2            skip if negative
@@ -15502,14 +15486,45 @@ stpr5  mti  kvstn            get statement number
        sti  stpsi            save
        mov  xr,=stpm2        point to message /stmts executed/
        jsr  prtmx            print it
+       jsr  systm            get current time
+       sbi  timsx            minus start time = elapsed exec tim in nanosec
+       sti  stpti            save for later
+       dvi  intth            divide by 1000 to convert to microseconds
+       iov  stpr2            jump if we cannot compute
+       dvi  intth            divide by 1000 to convert to milliseconds
+       iov  stpr2            jump if we cannot compute
+       sti  stpti            save elapsed time in milliseconds
+       mov  xr,=stpm3        point to msg /execution time msec /
+       jsr  prtmx            print it
+*
+*      Only list peformance statistics giving stmts / millisec, etc.
+*      if program ran for more than one millisecond.
+*
+       ldi  stpti            reload execution time in milliseconds
+       ile  stpr2            jump if exection time less than a millisecond
 .if    .ctmd
 .else
-       ldi  stpti            reload elapsed time
-       mli  intth            *1000 (microsecs)
+
+       ldi  stpsi            load statement count
+       dvi  stpti            divide to get stmts per millisecond
        iov  stpr2            jump if we cannot compute
-       dvi  stpsi            divide by statement count
+       dvi  intth            divide to get stmts per microsecond
+       iov  stpr2            jump if we cannot compute
+       mov  xr,=stpm7        point to msg (stmt / microsec)
+       jsr  prtmx            print it
+*
+       ldi  stpsi            reload statement count
+       dvi  stpti            divide to get stmts per millisecond 
+       iov  stpr2            jump if we cannot compute
+       mov  xr,=stpm8        point to msg (stmt / millisec )
+       jsr  prtmx            print it
+*
+       ldi  stpsi            reload statement count
+       dvi  stpti            divide to get stmts per millisecond 
+       iov  stpr2            jump if we cannot compute
+       mli  intth            multiply by 1000 to get stmts per microsecond
        iov  stpr2            jump if overflow
-       mov  xr,=stpm4        point to msg (mcsec per statement /
+       mov  xr,=stpm9        point to msg ( stmt / second )
        jsr  prtmx            print it
 .fi
        ejc
@@ -15519,7 +15534,7 @@ stpr5  mti  kvstn            get statement number
 *      merge to skip message (overflow or negative stlimit)
 *
 stpr2  mti  gbcnt            load count of collections
-       mov  xr,=stpm5        point to message /regenerations /
+       mov  xr,=stpm4        point to message /regenerations /
        jsr  prtmx            print it
        jsr  prtmm            print memory usage
        jsr  prtis            one more blank for luck
@@ -18280,7 +18295,7 @@ cnc0a  mnz  scncc            set flag for scane
        jsr  sbstr            extract substring for comparison
 .if    .culc
        mov  wa,sclen(xr)     reload length
-       jsr  flstg            fold to upper case
+       jsr  flstg            fold to lower case
 .fi
        mov  cnscc,xr         keep control card substring ptr
        mov  xr,=ccnms        point to list of standard names

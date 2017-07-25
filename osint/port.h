@@ -1,6 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
-Copyright 2012-2015 David Shields
+Copyright 2012-2017 David Shields
 */
 
 /*
@@ -268,7 +268,7 @@ typedef unsigned long uword;	// minimal word as unsigned value
 
 #define EXT '.'
 #define	BINEXT ".out"
-#define COMPEXT ".spt"
+#define COMPEXT ".stl"
 #define EFNEXT ".slf"
 #define LISTEXT ".lst"
 #define RUNEXT ".spx"

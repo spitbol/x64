@@ -1,7 +1,7 @@
 -title lex: phase 1 translation from minimal to lexemes (lexemes)
 -stitl initialization
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
-* copyright 2012-2015 david shields
+* copyright 2012-2017 david shields
 *
 * this file is part of macro spitbol.
 *
@@ -437,7 +437,7 @@ main2
 . 'ch_lu[117]ch_lv[118]ch_lw[119]ch_lx[120]ch_ly[121]ch_l_[122]'
 . 'ch_am[038]ch_as[042]ch_at[064]ch_bb[060]ch_bl[032]ch_br[124]'
 . 'ch_cl[058]ch_cm[044]ch_dl[036]ch_dt[046]ch_dq[034]ch_eq[061]'
-. 'ch_ex[033]ch_mn[045]ch_nm[035]ch_nt[126]ch_pc[037]ch_pl[043]'
+. 'ch_ex[033]ch_mn[045]ch_nm[035]ch_nt[126]ch_pc[094]ch_pl[043]'
 . 'ch_pp[040]ch_rb[062]ch_rp[041]ch_qu[063]ch_sl[047]ch_sm[059]'
 . 'ch_sq[039]ch_u_[095]ch_ob[091]ch_cb[093]ch_ht[009]ch_vt[011]'
 . 'ch_ey[094]iodel[032]' )
@@ -925,8 +925,8 @@ g.prc
 	ident(t = prctab[label]) error('missing inp')
 	differ(t,op1) error('inconsistent inp/prc')
 	prctab[label] =				:(dsgen)
-* convert argument to upper case
+* convert argument to lower case
 lower
-	lower = replace(s,'abcdefghijklmnopqrstuvwxyz',
+	lower = replace(s,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
 .			  'abcdefghijklmnopqrstuvwxyz')	:(return)
 end

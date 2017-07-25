@@ -43,7 +43,7 @@
 *                            defined, a full comment line indicates
 *                            symbol initially not defined.
 *
-.def   .caex                 define to allow up arrow for exponentiation
+*      .caex                 define to allow up arrow for exponentiation
 .def   .caht                 define to include horizontal tab
 .def   .casl                 define to include 26 shifted lettrs
 *      .cavt                 define to include vertical tab
@@ -82,15 +82,11 @@
 .def   .csed                 define to use sediment in garbage collector
 .def   .csfn                 define to track source file names
 .def   .csln                 define to put source line number in code blocks
-*      .csn5                 define to pad stmt nos to 5 chars
-*      .csn6                 define to pad stmt nos to 6 chars
-.def   .csn8                 define to pad stmt nos to 8 chars
-*      .ctmd                 define if systm unit is decisecond
 .def   .cucf                 define to include cfp$u
 .def   .cuej                 define to suppress needless ejects
-.def   .culc                 define to include &case (lc names)
+*      .culc                 define to include &case (lc names)
 .def   .culk                 define to include &lcase, &ucase keywords
-.def   .cust                 define to include set() code
+*      .cust                 define to include set() code
 *      .cusr                 define to have set() use real values
 *                             (must also #define setreal 1 in systype.h)
 *

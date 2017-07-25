@@ -1,6 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
-Copyright 2012-2015 David Shields
+Copyright 2012-2017 David Shields
 
 This file is part of Macro SPITBOL.
 
@@ -96,75 +96,6 @@ void f_cpr() {
 void f_pra () {
 }
 
-#ifdef trace_int
-extern long reg_i1,reg_i2,reg_i3;
-
-void t_ldi() {
-}
-
-void t_sti() {
-}
-
-void t_adi() {
-}
-
-void t_mli() {
-}
-
-void t_sbi() {
-}
-
-void t_dvi() {
-}
-
-void t_rmi() {
-}
-
-void t_ngi() {
-}
-
-#endif
-
-
-void i_adi() {
-	reg_fl = 0;
-	reg_ia += reg_w0;
-}
-
-void i_dvi() {
-	if (reg_w0 == 0) {
-		reg_fl = 1;
-	}
-	else {
-		reg_ia /= reg_w0;
-	}
-}
-
-void i_mli() {
-	reg_fl = 0;
-	reg_ia *= reg_w0;
-}
-
-void i_ngi() {
-	reg_fl = 0;
-	reg_ia = -reg_ia;
-}
-
-void i_rmi() {
-	if (reg_ia == 0) {
-		reg_fl = 1;
-	}
-	else {
-		reg_wa = reg_ia % 10;
-		reg_ia = reg_ia / 10;
-		reg_wa = -reg_wa + '0';
-		reg_fl = 0;
-	}
-}
-
-void i_sbi() {
-	reg_ia -= reg_w0;
-}
 
 void i_cvd() {
 	

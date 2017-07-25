@@ -1,6 +1,6 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
-Copyright 2012-2013 David Shields
+Copyright 2012-2017 David Shields
 */
 
 #include "port.h"
@@ -14,28 +14,29 @@ void prompt()
     wrterr("usage: spitrun [options] file[.spx] [program arguments]");
 #else					// RUNTIME
 
-    wrterr("usage: spitbol [options] files[.spt or .spx] [args to HOST(2)]");
+    wrterr("usage: spitbol4 [options] files[.sbl or .spx] [args to HOST(2)]");
 
 #endif					// RUNTIME
 
 #if RUNTIME
+    wrterr("spitbol4 v1.1");
     wrterr("options: (# is a decimal number)");
     wrterr("-u \"string\" data string available to program");
     wrterr("-#=file   associate file with I/O channel #");
 #else					// RUNTIME
     wrterr("source files are concatenated, filename '-' is standard input/output");
     wrterr("# is a decimal number.  Append \"k\" for kilobytes, \"m\" for megabytes.");
+    wrterr("spitbol4 v1.1");
     wrterr("options:");
     wrterr("-d# #bytes max heap            -i# #bytes initial heap size & enlarge amount");
     wrterr("-m# #bytes max object size     -s# #bytes stack size");
     wrterr("-c compiler statistics         -x execution statistics");
     wrterr("-a same as -lcx                -l normal listing");
-    wrterr("-p listing with wide titles    -z listing with form feeds");
     wrterr("-o=file[.lst]  listing file    -h suppress version ID/date in listing");
-    wrterr("-g# lines per page             -t# line width in characters");
+/*    wrterr("-g# lines per page             -t# line width in characters");*/
     wrterr("-b suppress signon message     -e errors to list file only");
     wrterr("-k run with compilation error  -n suppress execution");
-    wrterr("-f no case-folding             -u \"string\" data passed to HOST(0)");
+    wrterr("-u \"string\" data passed to HOST(0)");
 
 #if EXECFILE
     wrterr("-w write load (.out) module    -y write save (.spx) file");

@@ -1,7 +1,5 @@
 ; copyright 1987-2012 robert b. k. dewar and mark emmer.
 ; copyright 2012-2015 david shields
-
-; This program is licensed under the GPLv2 (or later) license.
 ;
 ; this file is part of macro spitbol.
 ;
@@ -208,6 +206,17 @@ calltab:
 	add	ia,%1
 	seto	byte [reg_fl]
 	%endmacro
+	extern	dvi__
+	%macro	dvi_	1
+	call	dvi__
+	%endmacro
+
+	extern	rmi__
+	%macro	rmi_	1
+	mov	w0,%1
+	call	rmi__
+	%endmacro
+
 
 	%macro	ino_	1
 	mov	al,byte [reg_fl]
@@ -242,7 +251,7 @@ calltab:
 	%endmacro
 
 	%macro	sbi_	1
-	subzz	ia,%1
+	sub	ia,%1
 	mov	w0,0
 	seto	byte [reg_fl]
 	%endmacro

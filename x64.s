@@ -741,29 +741,6 @@ cvd__:
 	ret
 
 
-;       dvi__ - divide ia (edx) by long in w0
-	global	dvi__
-dvi__:
-	extern	i_dvi
-	mov	m_word [reg_w0],w0
-	call	i_dvi
-	mov	ia,m_word [reg_ia]
-	mov	al,byte [reg_fl]
-	or	al,al
-	ret
-
-	global	rmi__
-;       rmi__ - remainder of ia (edx) divided by long in w0
-rmi__:
-	jmp	ocode
-	extern	i_rmi
-	mov	m_word [reg_w0],w0
-	call	i_rmi
-	mov	ia,m_word [reg_ia]
-	mov	al,byte [reg_fl]
-	or	al,al
-	ret
-
 ocode:
         or      w0,w0         	; test for 0
         jz      setovr    	; jump if 0 divisor

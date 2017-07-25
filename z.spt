@@ -1,4 +1,4 @@
-* Copyright 2012-2015 David Shields
+* Copyright 2012-2017 David Shields
 * 
 * This file is part of Macro SPITBOL.
 * 
@@ -15,7 +15,7 @@
 *     You should have received a copy of the GNU General Public License
 *     along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
 *
-	&anchor = 0
+	&anchor = 1
 	&trim = 1
 	&stlimit = 10000000
 	&dump = 2
