@@ -755,7 +755,145 @@ described.  A star (*) is appended to the mnemonic if the last operand
 may optionally be omitted.  See section -15- for details of statement
 format and comment conventions.
 
-TABLE
+
+
+
+
+|  sec|opcode|operands|description|
+| ----- | ---- | ---------------|-------------------------------------------------|
+| 2.1|add|opv,opn|add address|
+| 4.2|adi|ops|add integer|
+| 5.3|adr|ops|add real|
+| 7.1|anb|opw,w|and bit string|
+| 2.17|aov|opv,opn,plbl|add address, fail if overflow|
+| 5.16|atn|arctangent of real accum|
+| 2.16|bct|w,plbl|branch and count|
+| 2.5|beq|opn,opv,plbl|branch if address equal|
+| 2.18|bev|opn,plbl|branch if address even|
+| 2.8|bge|opn,opv,plbl|branch if address greater or equl|
+| 2.7|bgt|opn,opv,plbl|branch if address greater|
+| 2.12|bhi|opn,opv,plbl|branch if address high|
+| 2.10|ble|opn,opv,plbl|branch if address less or equal|
+| 2.11|blo|opn,opv,plbl|branch if address low|
+| 2.9|blt|opn,opv,plbl|branch if address less than|
+| 2.6|bne|opn,opv,plbl|branch if address not equal|
+| 2.13|bnz|opn,plbl|branch if address non-zero|
+| 2.19|bod|opn,plbl|branch if address odd|
+| 1.2|brn|plbl|branch unconditional|
+| 1.7|bri|opn|branch indirect|
+| 1.3|bsw!|x,val,plbl|branch on switch value|
+| 8.2|btw|reg|convert bytes to words|
+| 2.14|bze|opn,plbl|branch if address zero|
+| 6.6|ceq|opw,opw,plbl|branch if characters equal|
+| 10.1|chk| | check stack overflow|
+| 5.17|chp| | integer portion of real accum|
+| 7.4|cmb|w|complement bit string|
+| 6.8|cmc|plbl,plbl|compare character strings|
+| 6.7|cne|opw,opw,plbl|branch if characters not equal|
+| 6.5|csc|x|complete store characters|
+| 5.18|cos| |cosine of real accum|
+| 8.8|ctb|w,val|convert character count to bytes|
+| 8.7|ctw|w,val|convert character count to words|
+| 8.10|cvd| |convert by division|
+| 8.9|cvm|plbl|convert by multiplication|
+| 11.1|dac|addr|define address constant|
+| 11.5|dbc|val|define bit string constant|
+| 2.4|dca|opn|decrement address by one word|
+| 1.17|dcv|opn|decrement value by one|
+| 11.2|dic|integer|define integer constant|
+| 11.3|drc|real|define real constant|
+| 11.4|dtc|dtext|define text (character) constant|
+| 4.5|dvi|ops|divide integer|
+| 5.6|dvr|ops|divide real|
+| 13.1|ejc| | eject assembly listing|
+| 14.2|end| |end of assembly|
+| 1.13|enp| | define end of procedure|
+| 1.6|ent!|val|define entry point|
+| 12.1|equ|eqop|define symbolic value|
+| 1.15|erb|int,text|assemble error code and branch|
+| 1.14|err|int,text|assemble error code|
+| 1.5|esw| |end of switch list for bsw|
+| 5.19|etx| |e to the power in the real accum|
+| 1.12|exi!|int|exit from procedure|
+| 12.2|exp| |define external procedure|
+| 6.10|flc|w|fold character to upper case|
+| 2.3|ica|opn|increment address by one word|
+| 3.4|icp| |increment code pointer|
+| 1.16|icv|opn|increment value by one|
+| 4.11|ieq|plbl|jump if integer zero|
+| 1.4|iff|val,plbl|specify branch for bsw|
+| 4.12|ige|plbl|jump if integer non-negative|
+| 4.13|igt|plbl|jump if integer positive|
+| 4.14|ile|plbl|jump if integer negative or zero|
+| 4.15|ilt|plbl|jump if integer negative|
+| 4.16|ine|plbl|jump if integer non-zero|
+| 4.9|ino|plbl|jump if no integer overflow|
+| 12.3|inp|ptyp,int|internal procedure|
+| 12.4|inr| |internal routine|
+| 4.10|iov|plbl|jump if integer overflow|
+| 8.5|itr| | convert integer to real|
+| 1.9|jsr|pnam|call procedure|
+| 6.3|lch|reg,opc|load character|
+| 2.15|lct|w,opv|load counter for loop|
+| 3.1|lcp|reg|load code pointer register|
+| 3.3|lcw|reg|load next code word|
+| 4.1|ldi|ops|load integer|
+| 5.1|ldr|ops|load real|
+| 1.8|lei|x|load entry point id|
+| 5.20|lnf| | natural logorithm of real accum|
+| 7.6|lsh|w,val|left shift bit string|
+| 7.8|lsx|w,(x)|left shift indexed|
+| 9.4|mcb| |move characterswords backwards|
+| 8.4|mfi!|opn,plbl|convert (ia) to address value|
+| 4.3|mli|ops|multiply integer|
+| 5.5|mlr|ops|multiply real|
+| 1.19|mnz|opn|move non-zero|
+| 1.1|mov|opv,opn|move|
+| 8.3|mti|opn|move address value to (ia)|
+| 9.1|mvc| |move characters|
+| 9.2|mvw| |move words|
+| 9.3|mwb| |move words backwards|
+| 4.8|ngi| |negate integer|
+| 5.9|ngr| |negate real|
+| 7.9|nzb|w,plbl|jump if not all zero bits|
+| 7.2|orb|opw,w|or bit strings|
+| 6.1|plc!|x,opv|prepare to load characters|
+| 1.10|ppm!|plbl|provide procedure exit parameter|
+| 1.11|prc|ptyp,val|define start of procedure|
+| 6.2|psc!|x,opv|prepare to store characters|
+| 5.10|req|plbl|jump if real zero|
+| 5.11|rge|plbl|jump if real positive or zero|
+| 5.12|rgt|plbl|jump if real positive|
+| 5.13|rle|plbl|jump if real negative or zero|
+| 5.14|rlt|plbl|jump if real negative|
+| 4.6|rmi|ops|remainder integer|
+| 5.15|rne|plbl|jump if real non-zero|
+| 5.8|rno|plbl|jump if no real overflow|
+| 5.7|rov|plbl|jump if real overflow|
+| 7.5|rsh|w,val|right shift bit string|
+| 7.7|rsx|w,(x)|right shift indexed|
+| 8.6|rti!|plbl|convert real to integer|
+| 1.22|rtn| |define start of routine|
+| 4.4|sbi|ops|subtract integer|
+| 5.4|sbr|ops|subtract reals|
+| 6.4|sch|reg,opc|store character|
+| 3.2|scp|reg|store code pointer|
+| 14.1|sec| |define start of assembly section|
+| 5.21|sin| |sine of real accum|
+| 5.22|sqr| |square root of real accum|
+| 1.20|ssl|opw|subroutine stack load|
+| 1.21|sss|opw|subroutine stack store|
+| 4.7|sti|ops|store integer|
+| 5.2|str|ops|store real|
+| 2.2|sub|opv,opn|subtract address|
+| 5.23|tan| |tangent of real accum|
+| 6.9|trc| |translate character string|
+| 13.2|ttl|text|supply assembly title|
+| 8.1|wtb|reg|convert words to bytes|
+| 7.3|xob|opw,w|exclusive or bit strings|
+| 1.18|zer|opn|zeroise integer location|
+| 7.11|zgb|opn|zeroise garbage bits|
+| 7.10|zrb|w,plbl|jump if all zero bits|
 
 ### MINIMAL Instructions
 
