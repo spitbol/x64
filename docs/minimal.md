@@ -45,27 +45,27 @@ from the MINIMAL source:
 
 asg10  bze  kvoup,asg07      ignore output assoc if output off
 asg1b  mov  xr,xl            copy trblk pointer
-       mov  trnxt(xr),xr     point to next trblk
-       beq  (xr),=b_trt,asg1b loop back if another trblk
+       mov  trnxt(XR),xr     point to next trblk
+       beq  (XR),=b_trt,asg1b loop back if another trblk
        mov  xl,xr            else point back to last trblk
 .if    .cnbf
-       mov  trval(xr),-(xs)  stack value to output
+       mov  trval(XR),-(XS)  stack value to output
 .else
-       mov  trval(xr),xr     get value to output
-       beq  (xr),=b_bct,asg11 branch if buffer
-       mov  xr,-(xs)         stack value to output
+       mov  trval(XR),xr     get value to output
+       beq  (XR),=b_bct,asg11 branch if buffer
+       mov  xr,-(XS)         stack value to output
 .fi
-       jsr  gtstg            convert to string
-       ppm  asg12            get datatype name if unconvertible
+       JSR  gtstg            convert to string
+       PPM  asg12            get datatype name if unconvertible
 
 *      merge with string or buffer to output in xr
 
-asg11  mov  trfpt(xl),wa     fcblk ptr
+asg11  mov  trfpt(XL),wa     FCBLK ptr
        bze  wa,asg13         jump if standard output file
 
 *      here for output to file
 
-asg1a  jsr  sysou            call system output routine
+asg1a  JSR  sysou            call system output routine
        err  206,output caused file overflow
        err  207,output caused non-recoverable error
        exi                   else all done, return to caller
@@ -78,7 +78,7 @@ needed intermediate code (shown below) to go from MINIMAL to C at runtime):
 ```
 zysou()
 {
-    REGISTER struct fcblk *fcb = WA(struct fcblk *);
+    REGISTER struct FCBLK *fcb = WA(struct FCBLK *);
     REGISTER union block *blk = XR(union block *);
     int result;
 
@@ -93,7 +93,7 @@ zysou()
 	SET_XR(blk->bcb.bcbuf);
     }
 
-    if (fcb == (struct fcblk *) 0 || fcb == (struct fcblk *) 1) {
+    if (fcb == (struct FCBLK *) 0 || fcb == (struct FCBLK *) 1) {
 	if (!fcb)
 	    result = zyspi();
 	else
@@ -133,7 +133,7 @@ and is written using NASM (Netwide Assembler) syntax.
         mov     dword [reg_wc],edx	; (also reg_ia)
         mov     dword [reg_xr],edi
         mov     dword [reg_xl],esi
-        mov     dword [reg_cp],ebp	; Needed in image saved by sysxi
+        mov     dword [reg_cp],ebp	; Needed in image saved by SYSXI
         call    %1			; call c interface function
 ;       restore minimal registers since called procedure  may have changed them
         mov     ecx, dword [reg_wa]	; restore registers
@@ -182,65 +182,65 @@ parameters.
 The definitions of these parameters are supplied by the translation
 program to match the target machine.
 
-*   *CFP$A*
+*   CFP$A
 
 Number of distinct characters in internal alphabet in the range 64
-le *CFP$A</STRONG> le *MAXLEN*.
+le CFP$A* le *MAXLEN*.
 
-*   *CFP$B*
+*   CFP$B
 
 Number of bytes in a word where a byte is the amount of storage
 addressed by the least significant address bit.
 
-* *CFP$C*
+*   CFP$C
 
  Number of characters which can be stored in a single word.
 
-*   *CFP$F*
+*   CFP$F
 
 Byte offset from start of a string block to the first character.
 depends both on target machine and string data structure. see
 PLC psc
 
-*   *CFP$I*
+*   CFP$I
 
  Number of words in a signed integer constant
 
-*   *CFP$L*
+*   CFP$L
 
  The largest unsigned integer of form 2n - 1 which can be stored
-in a single word.  n will often be *CFP$N* but need not
+in a single word.  n will often be CFP$N but need not
 be.
 
-*   *CFP$M*
+*   CFP$M
 
 The largest positive signed integer of form 2n - 1 which can be
-stored in a single word.  n will often be *CFP$N* -1
+stored in a single word.  n will often be CFP$N -1
 but need not be.
 
-*   *CFP$N*
+*   CFP$N
 
  Number of bits which can be stored in a one word bit string.
 
-*   *CFP$R*
+*   CFP$R
 
  Number of words in a real constant
 
-*   *CFP$S*
+*   CFP$S
 
 
 
 Number of significant digits to be output in conversion of a real
-quantity.  .if .cncr .else the integer consisting of this number of 9s
+quantity.  .if .CNCR .else the integer consisting of this number of 9s
 must not be too large to fit in the integer accum.  .fi
 
 ```
 .if    .cucf
-       *CFP$U*                  realistic upper bound on alphabet.
+       CFP$U                  realistic upper bound on alphabet.
 
 
 .fi
-       *CFP$X*                  number of digits in real exponent
+       CFP$X                  number of digits in real exponent
 ```
 
 
@@ -249,31 +249,31 @@ must not be too large to fit in the integer accum.  .fi
 
 
 Memory is organized into words which each contain
-*CFP$B* bytes. for word machines *CFP$B*
+CFP$B bytes. for word machines *CFP$B
 , which is a configuration parameter, may be one in which case words
 and bytes are identical. To each word corresponds an address which is
-a non-negative quantity which is a multiple of *CFP$B*
+a non-negative quantity which is a multiple of CFP$B
 .  Data is organized into words as follows.
 
 
 
-* A signed integer value occupies *CFP$I* consecutive
-words (*CFP$I* is a configuration parameter).  The
+* A signed integer value occupies CFP$I consecutive
+words (CFP$I is a configuration parameter).  The
 range may include more negative numbers than positive (e.g. the twos
 complement representation).
 
-*   A signed real value occupies *CFP$R* consecutive
-words. (*CFP$R* is a configuration parameter).
+*   A signed real value occupies CFP$R consecutive
+words. (CFP$R is a configuration parameter).
 
-   *CFP$C* characters may be stored in a single word
-(*CFP$C* is a configuration parameter).
+   CFP$C characters may be stored in a single word
+(CFP$C is a configuration parameter).
 
-*   A bit string containing *CFP$N* bits can be stored in a
-single word (*CFP$N* is a configuration parameter).
+*   A bit string containing CFP$N bits can be stored in a
+single word (CFP$N is a configuration parameter).
 
 
 *   A word can contain a unsigned integer value in the range (*0 le n le
-CFP$L* . These integer values may represent addresses
+CFP$L . These integer values may represent addresses
 of other words and some of the instructions use this fact to provide
 indexing and indirection facilities.
 
@@ -306,7 +306,7 @@ There are three index registers called XR
 ,XL ,XS . In addition
 XL may sometimes be referred to by the alias of *XT* -
 see section 4. Any of the above registers may hold a positive unsigned
-integer in the range (*0 le n le CFP$L* ). When the
+integer in the range (*0 le n le CFP$L ). When the
 index register is used for indexing purposes, this must be an appropriate address.
 XS is special in that it is
 used to point to the top item of a stack in memory. The stack may
@@ -320,7 +320,7 @@ which therefore cannot be used in code sequences referencing *XT*.
 
 
 
-The stack is used for s-r linkage and temporary data storage for which
+The stack is used for subroutine linkage and temporary data storage for which
 the stack arrangement is suitable.  XR
 ,XL can also contain a character pointer in
 conjunction with the character instructions (see description of plc).
@@ -328,23 +328,19 @@ conjunction with the character instructions (see description of plc).
 
 
 
-There are three work registers called *WA*,WB
-,WC which can contain any data item which can be
+There are three work registers called WA,WB ,WC which can contain any data item which can be
 stored in a single memory word. In fact, the work registers are just
 like memory locations except that they have no addresses and are
 referenced in a special way by the instructions.
 
 
 
-Note that registers *WA*,WB have special uses in
-connection with the CVD CVM
-*mvc* MVW MWB ,
-CMC TRC instructions.
+Note that registers WA,WB have special uses in connection with the CVD,CVM, MVC MVW MWB, CMC, and  TRC instructions.
 
 
 
 Register WC may overlap the integer accumulator
-(IA ) in some implementations. thus any operation
+(IA) in some implementations. thus any operation
 changing the value in WC leaves (IA
 ) undefined and vice versa except as noted in the following
 restriction on simple dump/restore operations.
@@ -365,12 +361,12 @@ restriction on simple dump/restore operations.
 
 
 
-There is an integer accumulator (IA ) which is
-capable of holding a signed integer value (*CFP$I*
+There is an integer accumulator (IA) which is
+capable of holding a signed integer value (CFP$I
 words long).  register WC may overlap the integer
-accumulator (IA ) in some implementations. thus any
+accumulator (IA) in some implementations. thus any
 operation changing the value in WC leaves
-(IA ) undefined and vice versa except as noted in the
+(IA) undefined and vice versa except as noted in the
 above restriction on simple dump/restore operations.
 
 There is a single real accumulator (RA ) which can
@@ -428,10 +424,10 @@ XS , *XT*. For example
 
        mov  WA,-(XS)     sbi  XS ,1       adi  XS ,1
                          sto  WA,(XS)     sto  WA,(XS)
-       mov  (xt)+,WC     lod  WC ,(XL)    lod  WC ,(XL)
+       mov  (XT)+,WC     lod  WC ,(XL)    lod  WC ,(XL)
                          adi  XL ,1       sbi  XL ,1
        add  XS,=seven      adi  XS ,7     sbi  XS ,7
-       mov  2(xt),WA     lod  WA,2(XL)    lod  WA,-2(XL)
+       mov  2(XT),WA     lod  WA,2(XL)    lod  WA,-2(XL)
        ica  XS           adi  XS ,1       sbi  XS ,1
 
        Note that forms such as
@@ -445,7 +441,7 @@ are illegal, since they assume information storage above the stack top.
 ### Internal Character Set
 
 The internal character set is represented by a set of contiguous codes
-from 0 to *CFP$A-1* . The codes for the digits 0-9 must
+from 0 to CFP$A-1* . The codes for the digits 0-9 must
 be contiguous and in sequence. Other than this, there are no
 restraints.
 
@@ -587,7 +583,7 @@ condition processor of the translator.
 
 The following section describes the various possibilities for operands
 of instructions and assembly operations.
-</p>
+
 ```
       01   int              unsigned integer le CFP$L
       02   dlbl             symbol defined in definitions sec
@@ -607,7 +603,7 @@ of instructions and assembly operations.
       16   integer          signed integer (dic)
       17   real             signed real (drc)
       18   =dlbl            location containing dac dlbl
-      19   *dlbl            location containing dac CFP$B*dlbl
+      19   *dlbl            location containing dac CFP$Bdlbl
       20   =wlbl            location containing dac wlbl
       21   =clbl            location containing dac clbl
       22   =elbl            location containing dac elbl
@@ -633,7 +629,7 @@ possibilities
 
 
 _val_ is used to refer to a predefined one word integer value in the
-range 0 le n le *CFP$L*
+range 0 le n le CFP$L
 
 *reg  07,08
 
@@ -643,7 +639,7 @@ register
 
 _reg_ is used to describe an operand which can be any of the
 registers (XL , XR ,
-XS ,*XT* , *WA* ,
+XS ,*XT* , WA ,
 WB , WC ). Such an operand can hold
 a one word integer (address).
 
@@ -678,7 +674,7 @@ the case of multiword operands, the address given is the first word.
 _opw_ is used to refer to an operand whose capacity is that of
 a full memory word.  _opw_ includes all the possibilities for
 _ops_ (the referenced word is used) plus the use of one of the
-three work registers (*WA*,WB ,WC ).
+three work registers (WA,WB ,WC ).
 in addition, the formats (X)+ and -(X) allow indexed operations in
 which the index register is popped by one word after the reference
 (X)+, or pushed by one word before the reference -(X) these latter two
@@ -703,7 +699,7 @@ contain a one word integer (e.g. an address).  This includes all the
 possibilities for _opw_ plus the use of one of the index
 registers (XL ,XR ,
 *XT* , XS ). The range of integer
-values is *0 le n le CFP$L*
+values is *0 le n le CFP$L
 
 * _opv_  as for  _opn_ + 18-22
 
@@ -737,7 +733,7 @@ value) for use with DAC
 
             ************************************************
             *   in the following descriptions the usage --     *
-            *      (XL ),(XR ), ... ,(IA )                        *
+            *      (XL ),(XR ), ... ,(IA)                        *
             *   in the descriptive te*XT* signifies the          +
             *   contents of the stated register.               *
             ************************************************
@@ -766,7 +762,7 @@ format and comment conventions.
 | 5.3|adr|ops|add real|
 | 7.1|anb|opw,w|and bit string|
 | 2.17|aov|opv,opn,plbl|add address, fail if overflow|
-| 5.16|atn|arctangent of real accum|
+| 5.16|atn| |arctangent of real accum|
 | 2.16|bct|w,plbl|branch and count|
 | 2.5|beq|opn,opv,plbl|branch if address equal|
 | 2.18|bev|opn,plbl|branch if address even|
@@ -832,7 +828,7 @@ format and comment conventions.
 | 12.4|inr| |internal routine|
 | 4.10|iov|plbl|jump if integer overflow|
 | 8.5|itr| | convert integer to real|
-| 1.9|jsr|pnam|call procedure|
+| 1.9|JSR|pnam|call procedure|
 | 6.3|lch|reg,opc|load character|
 | 2.15|lct|w,opv|load counter for loop|
 | 3.1|lcp|reg|load code pointer register|
@@ -844,12 +840,12 @@ format and comment conventions.
 | 7.6|lsh|w,val|left shift bit string|
 | 7.8|lsx|w,(x)|left shift indexed|
 | 9.4|mcb| |move characterswords backwards|
-| 8.4|mfi!|opn,plbl|convert (ia) to address value|
+| 8.4|mfi!|opn,plbl|convert (IA) to address value|
 | 4.3|mli|ops|multiply integer|
 | 5.5|mlr|ops|multiply real|
 | 1.19|mnz|opn|move non-zero|
 | 1.1|mov|opv,opn|move|
-| 8.3|mti|opn|move address value to (ia)|
+| 8.3|mti|opn|move address value to (IA)|
 | 9.1|mvc| |move characters|
 | 9.2|mvw| |move words|
 | 9.3|mwb| |move words backwards|
@@ -858,7 +854,7 @@ format and comment conventions.
 | 7.9|nzb|w,plbl|jump if not all zero bits|
 | 7.2|orb|opw,w|or bit strings|
 | 6.1|plc!|x,opv|prepare to load characters|
-| 1.10|ppm!|plbl|provide procedure exit parameter|
+| 1.10|PPM!|plbl|provide procedure exit parameter|
 | 1.11|prc|ptyp,val|define start of procedure|
 | 6.2|psc!|x,opv|prepare to store characters|
 | 5.10|req|plbl|jump if real zero|
@@ -966,8 +962,8 @@ entry point which can subsequently be used in conjunction with the
 BRI instruction, which provides the only means of
 entering the code. It is illegal to fall into code identified by an
 entry point. the entry symbol is assigned an address which need not be
-a multiple of *CFP$B* but which must be in the range 0
-le *CFP$L* and the address must not lie within the
+a multiple of CFP$B but which must be in the range 0
+le CFP$L and the address must not lie within the
 address range of the allocated data area.  Furthermore, addresses of
 successive entry points must be assigned in some ascending sequence so
 that the address comparison instructions can be used to test the order
@@ -1053,7 +1049,7 @@ It is not permitted to fall into a
 procedure.  All procedures should be named in section 0
 INP statements.
 
-_int_ is the number of exit parameters (ppm-s) to be used in
+_int_ is the number of exit parameters (PPM-s) to be used in
 JSR calls.
 
 There are three possibilities for _ptyp_, each consisting of a
@@ -1114,7 +1110,7 @@ EXI int causes control to be returned to the int-th
 such param. EXI 1 gives control to the _plbl_
 of the first PPM after the JSR if
 int is omitted, control is passed back past the last exit parameter
-(or past the * jsr* if there are none).
+(or past the * JSR* if there are none).
 
 For _r and_ _e_
 type procedures, the stack pointer XS must be set to
@@ -1136,7 +1132,7 @@ executed, hence it must have no label.
 
 
 
-ERR may replace an exit parameter (ppm) in any
+ERR may replace an exit parameter (PPM) in any
 procedure call. the int argument is a unique error code in 0 to 899.
 
 The text supplied as the other operand is arbitrary text in the
@@ -1147,13 +1143,13 @@ other file of messages to be used by the error handling code.
 In the event that an EXI attempts to return control via an
 exit parameter to an ERR control is instead passed to
 the first instruction in the error section (which follows the program
-section) with the error code in *WA*.
+section) with the error code in WA.
 
 *   1.15 ERB  _int,text_  error branch
 
 This instruction resembles ERR except that it may
 occur at any point where a branch is permitted.  It effects a transfer
-of control to the error section with the error code in *WA*.
+of control to the error section with the error code in WA.
 
 *   1.16 ICV   _opn_  increment value by one
 
@@ -1181,48 +1177,39 @@ will branch/fail to branch.
 *   1.21 SSS   _opw_      subroutine stack store
 
 This pair of operations is provided to make possible the use of a
-local stack to hold subroutine (s-r) return links for n-type
+local stack to hold subroutine (subroutine) return links for n-type
 procedures.
 
-    SSS stores the s-r stack pointer in _opw_ and SSL loads the s-r stack pointer from _opw_.
+    SSS stores the subroutine stack pointer in _opw_ and SSL loads the subroutine stack pointer from _opw_.
 
-By using SSS in the main program or on
-entry to a procedure which should regain control on occurrence of an
-ERR or ERB and by use of
-SSL in the error processing sections the s-r stack
-pointer can be restored giving a link stack cleaned up ready for
-resumed execution.
+By using SSS in the main program or on entry to a procedure which should regain control on occurrence of an
+ERR or ERB and by use of SSL in the error processing sections the subroutine stack
+pointer can be restored giving a link stack cleaned up ready for resumed execution.
 
-The form of the link stack pointer is undefined in
-MINIMAL (it is likely to be a private register known to the
+The form of the link stack pointer is undefined in MINIMAL (it is likely to be a private register known to the
 translator) and the only requirement is that it should fit into a
-single full word.  SSL and SSS are
-no- _ops_ if no private link stack is not used.
+single full word.
+
+SSL and SSS are no-ops if no private link stack is not used.
 
 *   1.22 RTN define start of routine
 
 
-However it is entered by any type of conditional or unconditional
-branch (not by JSR).
+However it is entered by any type of conditional or unconditional branch (not by JSR).
 
-On termination it passes control by a branch
-(often BRI through a code word) or even permits
-control to drop through to another routine.
+On termination it passes control by a branch (often BRI through a code word) or even permits control to drop through to another routine.
 
-No return link exists and the end of a routine is not marked by an explicit opcode (compare
-<code>enp</code> ).
+No return link exists and the end of a routine is not marked by an explicit opcode (compare ENP).
 
-All routines must be named in section 0
-INR statements.  
+All routines must be named in section 0 INR statements.  
 
 #### 2-  Operations on One Word Integer Values (addresses)
 
 
 *   2.1  ADD   _opn,opv_
 
-Adds  _opv_ to the value in  _opn_ and
-                             stores the result in  _opn_. Undefined
-                             if the result exceeds *CFP$L* .
+Adds  _opv_ to the value in  _opn_ and stores the result in  _opn_. 
+Undefined if the result exceeds CFP$L .
 
 *   2.2  SUB   _opn,opv_
 
@@ -1318,7 +1305,7 @@ ADD with carry test
 
 Adds  _opv_ to the value in  _opn_ and stores result in _opn_.
 
-Branches to _plbl_ result exceeds *CFP$L* with result in  _opn_ undefined. cf. ADD
+Branches to _plbl_ result exceeds CFP$L with result in  _opn_ undefined. cf. ADD
 
 *   2.18 BEV   _opn,plbl_
 
@@ -1332,12 +1319,12 @@ These operations are used only .cepp or .crpp is defined.
 
 On some implementations, a more efficient implementation is possible by noting
 that address of blocks must always be a multiple of
-*CFP$B*. We call such addresses even.
+CFP$B. We call such addresses even.
 
 Thus return
 address on the stack (.crpp) and entry point addresses (.cepp) can be
 distinguished from block addresses they are forced to be odd (not a
-multiple of *CFP$B* ).  BEV and
+multiple of CFP$B ).  BEV and
 BOD branch according as operand is even or odd,
 respectively.
 
@@ -1351,7 +1338,7 @@ use in an interpretor. It may be implemented as a real register or as
 a memory location, but in either case it is separate from any other
 register. the value in the code pointer register is always a word
 address (i.e.  a one word integer which is a multiple of
-*CFP$B* ).
+CFP$B ).
 
 *   3.1  LCP   _reg_
 
@@ -1453,10 +1440,10 @@ and RMI is
             rem = remainder left in IA  by rmi
 ```
 
-The sign of the result of DVI is + (IA ) and ( _ops_) have the same sign and is -
+The sign of the result of DVI is + (IA) and ( _ops_) have the same sign and is -
 they have opposite signs.
 
-The sign of (IA ) is always used as the sign of the result of `rem`.
+The sign of (IA) is always used as the sign of the result of `rem`.
 
 Assuming in each case that IA contains the number
 specified in parentheses and that seven and msevn hold +7 and -7 resp.
@@ -1480,7 +1467,7 @@ The above instructions operate on a full range of signed integer
 values. with the exception of LDI and
 STI these instructions may cause integer overflow by
 attempting to produce an undefined or out of range result in which
-case integer overflow is set, The result in (IA ) is
+case integer overflow is set, The result in (IA) is
 undefined and the following instruction must be IOV
 or INO.
 
@@ -1663,7 +1650,7 @@ Character operations employ the concept of a character pointer which
 uses either index register XR or XL (not XS ).
 
 A character pointer points to a specific character in a string of
-characters stored *CFP$C* chars to a word.
+characters stored CFP$C chars to a word.
 
 The only operations permitted on a character pointer are LCH
 and SCH. In particular, a character pointer may not even be moved with MOV
@@ -1694,7 +1681,7 @@ Prepare ch ptr for LCH CMC mvc,TRC MCB
 
 *   6.2  PSC  _x,opv_
 
-Prepare character pointer for SCH *mvc* MCB
+Prepare character pointer for SCH MVC MCB
 
 _opv_ can be omitted it is zero.
 
@@ -1702,12 +1689,12 @@ _opv_ can be omitted it is zero.
 is determined by the word address in x and the integer offset
 _opv_.
 
-There is an automatic implied offset of *CFP$F* bytes.  *CFP$F* is used to
+There is an automatic implied offset of CFP$F bytes.  *CFP$F* is used to
 formally introduce into MINIMAL a value needed in translating these
 opcodes which, since MINIMAL itself does not prescribe a string
 structure in detail, depends on the choice of a data structure for
-strings in the MINIMAL program.  e.g. *CFP$B* =
-*CFP$C* = 3, *CFP$F* = 6, num01 = 1,
+strings in the MINIMAL program.  e.g. CFP$B =
+CFP$C = 3, *CFP$F = 6, num01 = 1,
 XL points to a series of 4 words, abc/def/ghi/jkl,
 then PLC XL ,=num01
 points to h.
@@ -1763,7 +1750,7 @@ Where CSC is not a no-op, it must observe restriction 2.
 to SCH sequence being started so CSC must not nullify this action.)
 
 The following instructions are used to compare two words containing
-*CFP$C* characters.
+CFP$C characters.
 
 Comparisons distinct from BEQ BNE are provided as on some target machines, the
 possibility of the sign bit being set may require special action.
@@ -1789,7 +1776,7 @@ executing CMC  registers are set up as follows.
 ```
             (XL )             character ptr for first string
             (XR )             character pointer for second string
-            (*WA*)             character count (must be .gt. zero)
+            (WA)             character count (must be .gt. zero)
 ```
 
 XL and XR should have been prepared by PLC control passes to first _plbl_ the
@@ -1797,7 +1784,7 @@ first string is lexically less than the second string, and to the
 second _plbl_ the first string is lexically greater.
 
 Control passes to the following instruction the strings are identical. after
-executing this instruction, the values of XR and XL are set to zero and the value in (*WA*) is
+executing this instruction, the values of XR and XL are set to zero and the value in (WA) is
 undefined.
 
 Arguments to CMC may be complete or partial strings, so making optimisation to use whole word comparisons
@@ -1813,14 +1800,14 @@ registers are set as follows.
 ```
             (XL )             char ptr to string to be translated
             (XR )             char ptr to translate table
-            (*WA*)             length of string to be translated
+            (WA)             length of string to be translated
 ```
 
 XL and XR should have been prepared by PLC the translate table consists of
-*CFP$A* contiguous characters giving the translations
-of the *CFP$A* characters in the alphabet.
+CFP$A* contiguous characters giving the translations
+of the CFP$A* characters in the alphabet.
 
-On completion, (XR ) and (XL ) are set to zero and (*WA*) is undefined.
+On completion, (XR ) and (XL ) are set to zero and (WA) is undefined.
 
 *   6.10 FLC  _w_
 
@@ -1846,7 +1833,7 @@ Or bit string values, result in _w_
 Exclusive or bit string values, result in _w_
 
 In the above operations, the logical connective is applied separately
-to each of the *CFP$N* bits.  The result is stored in the second operand location.
+to each of the CFP$N bits.  The result is stored in the second operand location.
 
 *   7.4  CMB  _w_
 
@@ -1875,7 +1862,7 @@ Left shift _w_ by the  number of bits in _x_
 
 The above shifts are logical shifts in which bits shifted out are lost
 and zero bits supplied as required. The shift count is in the range
-0-*CFP$N* .
+0-CFP$N .
 
 *   7.9  NZB  w,_plbl_
 
@@ -1911,13 +1898,13 @@ bytes and lengths in words.
 Convert  _reg_ from words to bytes.
 
 
-That is, multiply by *CFP$B* . this is a no-op *CFP$B*  is one.
+That is, multiply by CFP$B . this is a no-op *CFP$B  is one.
 
 *   8.2  BTW  _reg_
 
 Convert  _reg_ from bytes to words
 
-By dividing _reg_ by *CFP$B* discarding the fraction. no-op *CFP$B* is one
+By dividing _reg_ by CFP$B discarding the fraction. no-op *CFP$B is one
 
 The following instructions provide for conversion of one word integer
 values (addresses) to and from the full signed integer format.
@@ -1931,12 +1918,12 @@ to the integer accumulator.
 
 The value currently stored in the integer accumulator is moved to
 _opn_ as an address it is in the range 0 to
-*CFP$M* inclusive.
+CFP$M inclusive.
 
 IftThe accumulator value is outside this range, *then* the result in _opn_ is
 undefined and control is passed to _plbl_.
 
-MFI destroys the value of (ia) whether or not integer overflow is
+MFI destroys the value of (IA) whether or not integer overflow is
 signalled.  _plbl_ may be omitted overflow is impossible.
 
 The following instructions provide for conversion between real values and integer values.
@@ -1963,8 +1950,8 @@ required for a text string.
 This instruction computes the sum (number of words required to store w
 characters) + (val). the sum is stored in _w_.
 
-For example, *CFP$C* is 5, and *WA* contains 32, *then*
-CTW *WA*,2 gives a result of 9 in *WA*.
+For example, CFP$C is 5, and WA contains 32, *then*
+CTW WA,2 gives a result of 9 in WA.
 
 *   8.8  CTB  w,val
 
@@ -1986,7 +1973,7 @@ The integer accumulator, which is zero or negative, is multiplied by
 value of this digit is then subtracted from the result.
 
 The result is out of range, *then* control is passed to _plbl_
-with the result in (IA ) undefined. execution of CVM leaves the result in (WB )
+with the result in (IA) undefined. execution of CVM leaves the result in (WB )
 undefined.
 
 
@@ -1997,8 +1984,8 @@ Convert by division
 The integer accumulator, which is zero or negative, is divided by 10.
 the quotient (zero or negative) is replaced in the accumulator. The
 remainder is converted to the character code of a digit and placed in
-*WA*. For example, an operand of -523 gives a quotient of -52 and a
-remainder in *WA* of ch$d3.
+WA. For example, an operand of -523 gives a quotient of -52 and a
+remainder in WA of CH$D3.
 
 #### 9-  Block Move Instructions
 
@@ -2010,17 +1997,17 @@ indicated series of other macro-instructions, but more efficient
 implementations will be possible on most machines.
 
 Note that in the equivalent code sequence shown below, a zero
-value in *WA* will move at least one item, and may may wrap the counter
-causing a core dump in some imple- mentations.  Thus *WA* should be .gt.
+value in WA will move at least one item, and may may wrap the counter
+causing a core dump in some imple- mentations.  Thus WA should be .gt.
 0 prior to invoking any of these block move instructions.
 
-*   9.1  *mvc*
+*   9.1  MVC
 
 Move characters
 
 
-Before obeying this order *WA*,XL ,XR should have been set up, the latter two by PLC
-PSC resp.  *mvc* is equivalent to the sequence
+Before obeying this order WA,XL ,XR should have been set up, the latter two by PLC
+PSC resp.  MVC is equivalent to the sequence
 
 ```
                    mov  dumpb,WB
@@ -2033,7 +2020,7 @@ PSC resp.  *mvc* is equivalent to the sequence
 
 ```
 
-The character pointers are bumped as indicated and the final value of *WA* is undefined.
+The character pointers are bumped as indicated and the final value of WA is undefined.
 
 
 *9.2  MVW
@@ -2053,14 +2040,14 @@ MVW is equivalent to the sequence
 
 
 
-Note that this implies that the value in *WA* is the length in bytes
-which is a multiple of *CFP$B* .
+Note that this implies that the value in WA is the length in bytes
+which is a multiple of CFP$B .
 
 The initial addresses in XR ,XL are word addresses.
 
 As indicated, the final XR ,XL values point past the new and old regions of memory respectively.
 
-The final value of *WA* is undefined.  *WA*,XL ,XR must be set up before obeying MVW
+The final value of WA is undefined.  WA,XL ,XR must be set up before obeying MVW
 
 *   9.3  MWB
 
@@ -2081,9 +2068,9 @@ be at least 256 less than the value in XR . this
 allows an implementation in which chunks of 256 bytes are moved
 forward (IBM 360, ICL 1900).
 
-The final value of *WA* is undefined.
+The final value of WA is undefined.
 
-*WA* ,XL , XR must be set up before obeying MWB .
+WA ,XL , XR must be set up before obeying MWB .
 
 *   9.4  MCB
 
@@ -2112,7 +2099,7 @@ be at least 256 less than the value in XR . this
 allows an implementation in which chunks of 256 bytes are moved
 forward (IBM 360, ICL 1900).
 
-The final value of *WA* is undefined.  *WA*,XL ,XR must be set up before
+The final value of WA is undefined.  WA,XL ,XR must be set up before
 obeying MCB
 
 
@@ -2180,14 +2167,14 @@ Generates one word containing the specified one word integer value
 
 *   11.2 DIC  _integer_
 
-Generates an integer value which occupies *CFP$I*
+Generates an integer value which occupies CFP$I
 consecutive words.
 
 The operand is a digit string with a required leading sign.
 
 *   11.3 DRC  _real_
 
-Assembles a real constant which occupies *CFP$R*
+Assembles a real constant which occupies CFP$R
 consecutive words.
 
 The operand form must obey the rules for a FORTRAN
@@ -2201,7 +2188,7 @@ Define _text_ constant.
 
 *Text* is started and ended with any character not contained in the
 characters to be assembled. The constant occupies consecutive words as
-dictated by the configuration parameter *CFP$C* .
+dictated by the configuration parameter CFP$C .
 
 Any unused chars in the last word are right filled with zeros (i.e. the
 character whose internal code is zero).  The string contains a
@@ -2241,7 +2228,7 @@ the indicated value is used
 
 *   _val+val_
 
-The sum of the two values is used.  This sum must not exceed *CFP$M*
+The sum of the two values is used.  This sum must not exceed CFP$M
 
 *   _val-val_
 
@@ -2469,7 +2456,7 @@ osint (operating system interface).
 procedures are usually handled by making an error return. If this is
 not feasible or appropriate, osint may use the MINIMAL error section
 to report errors directly by branching to it with a suitable numeric
-error code in *WA*.  
+error code in WA.  
 
 ### Section 11 - Statement Format
 
@@ -2570,19 +2557,19 @@ u-stack will occupy 23457,23458,...
 
 Address of the first word in the data area
 
-    *(XL )
+    *(XL)
 
 Address of the last word in the data area.
 
-*(*WA*)
+*   (WA)
 
 Initial stack pointer
 
-* (WB ,WC ,IA ,ra,CP )
+*   (WB ,WC ,IA ,ra,CP )
 
 There is no explicit way to terminate the execution of a program. This
 function is performed by an appropriate system procedure referenced
-with the *sysej* instruction.
+with the SYSEJ instruction.
 
 
 ## SPITBOL Operating System Interface (OSINT)
@@ -2592,7 +2579,7 @@ mostly written in C, the are used by MACRO SPITBOL for runtime
 support,doing input/output, loading external functions, reading and
 writing save files, reading and writing load modules, and so forth.
 
-<h5>*sysax* -- after execution</h5>
+### SYSAX -- after execution
 
  If the conditional assembly symbol .csax is defined, this routine
 is called immediately after execution and before printing of execution
@@ -2600,15 +2587,14 @@ statistics or dump output.
 
  The purpose of call is for the implementor to determine and if the
 call is not required it will be omitted if .csax is undefined. in this
-case *sysax* need not be coded.
+case SYSAX need not be coded.
 
 ```
-jsr  sysax            call after execution
+JSR  SYSAX            call after execution
 ```
-<h5>sysbs -- backspace file</h5>
+### sysbs -- backspace file
 
- *sysbs* is used to implement the snobol4 function
-backspace.
+SYSBS is used to implement the snobol4 function backspace.
 
  If the conditional assembly symbol .cbsp is defined.  the meaning
 is system dependent.  In general, backspace repositions the file one
@@ -2617,94 +2603,94 @@ write will operate on the previous record.
 
 ```
 
-       (wa)                  pointer to fcblk or zero
-       (xr)                  backspace argument (scblk pointer)
-       jsr  sysbs            call to backspace
-       ppm  loc              return here if file does not exist
-       ppm  loc              return here if backspace not allowed
-       ppm  loc              return here if i/o error
-       (wa,wb)               destroyed
+       (WA)                  pointer to FCBLK or zero
+       (XR)                  backspace argument (scblk pointer)
+       JSR  sysbs            call to backspace
+       PPM  loc              return here if file does not exist
+       PPM  loc              return here if backspace not allowed
+       PPM  loc              return here if i/o error
+       (WA,WB)               destroyed
 ```
 
- The second error return is used for files for which backspace is
+The second error return is used for files for which backspace is
 not permitted. For example, it may be expected files on character
 devices are in this category.
 
-<h5>*sysbp*  exp  0                define external entry point</h5>
+### SYSBP  exp  0                define external entry point
 
- *sysbp* is not required in normal operation. It is
+ SYSBP is not required in normal operation. It is
 called as a breakpoint to assist in debugging.
 
 ```
-       jsr  sysbp            call to breakpoint
+       JSR  SYSBP            call to breakpoint
 ```
-<h5>sysbx -- before execution</h5>
+### SYSBX -- before execution
 
-sysbx  exp  0                define external entry point
+SYSBX  exp  0                define external entry point
 
- Called after initial SPITBOL compilation and before commencing
+Called after initial SPITBOL compilation and before commencing
 execution in case osint needs to assign files or perform other
 necessary services.  osint may also choose to send a message to online
 terminal (if any) indicating that execution is starting.
 
 ```
-       jsr  sysbx            call before execution starts
+       JSR  SYSBX            call before execution starts
 ```
 
-<h5>sysci -- convert integer</h5>
+### SYSCI -- convert integer
 
-*sysci* is an optional osint routine that causes
-SPITBOL to call *sysci* to convert integer values to
+SYSCI is an optional osint routine that causes
+SPITBOL to call SYSCI to convert integer values to
 strings, rather than using the internal SPITBOL conversion code.
 
 This code may be less efficient on machines with hardware
 conversion instructions and in such cases, It may be an advantage to
-include *sysci*.  The symbol .cnci must be defined if
+include SYSCI.  The symbol .CNCI must be defined if
 this routine is to be used.
 
- The rules for converting integers to strings are that positive
+The rules for converting integers to strings are that positive
 values are represented without any sign, and
 
- There are never any leading blanks or zeros, except in the case of
+There are never any leading blanks or zeros, except in the case of
 zero itself which is represented as a single zero digit.  Negative
 numbers are represented with a preceeding minus sign.  There are never
 any trailing blanks, and conversion cannot fail.
 
 ```
-       (ia)                  value to be converted
-       jsr  sysci            call to convert integer value
-       (xl)                  pointer to pseudo-scblk with string
+       (IA)                  value to be converted
+       JSR  SYSCI            call to convert integer value
+       (XL)                  pointer to pseudo-scblk with string
 ```
 
-<h5>*syscb* -- general string comparison function</h5>
+### SYSCB -- general string comparison function
 
  Provides string comparison determined by interface.  used for
 international string comparison.
 
 
 ```
-       (xr)                  character pointer for first string
-       (xl)                  character pointer for second string
-       (wb)                  character count of first string
-       (wa)                  character count of second string
-       jsr  syscb            call to syscb function
-       ppm  loc              string too long for syscb
-       ppm  loc              first string lexically gt second
-       ppm  loc              first string lexically lt second
+       (XR)                  character pointer for first string
+       (XL)                  character pointer for second string
+       (WB)                  character count of first string
+       (WA)                  character count of second string
+       JSR  SYSCB            call to SYSCB function
+       PPM  loc              string too long for SYSCB
+       PPM  loc              first string lexically gt second
+       PPM  loc              first string lexically lt second
        ---                   strings equal
-       (xl)                  zero
-       (xr)                  destroyed
+       (XL)                  zero
+       (XR)                  destroyed
 ```
 
-<h5>*syscr* -- convert real</h5>
+### SYSCR -- convert real
 
-*syscr* is an optional osint routine that causes
-SPITBOL to call *syscr* to convert real values to
+SYSCR is an optional osint routine that causes
+SPITBOL to call SYSCR to convert real values to
 strings, rather than using the internal SPITBOL conversion code.
 
 This code may be desired on machines where the integer size is too
 small to allow production of a sufficient number of significant
-digits.  The symbol .cncr must be defined if this routine is to be
+digits.  The symbol .CNCR must be defined if this routine is to be
 used.
 
 The rules for converting reals to strings are that positive values
@@ -2715,243 +2701,240 @@ with a preceeding minus sign.  There are never any trailing blanks, or
 trailing zeros in the fractional part.  conversion cannot fail.
 
 ```
-       (ra)                  value to be converted
-       (wa)                  no. of significant digits desired
-       (wb)                  conversion type:
-                     negative for e-type conversion
-                     zero for g-type conversion
-                     positive for f-type conversion
-       (wc)                  character positions in result *scblk*
-       (xr)                  scblk for result
-       jsr  syscr            call to convert real value
-       (xr)                  result *scblk*
-       (wa)                  number of result characters
+       (RA)                  value to be converted
+       (WA)                  no. of significant digits desired
+       (WB)                  conversion type:
+                             negative for e-type conversion
+                             zero for g-type conversion
+                             positive for f-type conversion
+       (WC)                  character positions in result SCBLK
+       (XR)                  scblk for result
+       JSR  SYSCR            call to convert real value
+       (XR)                  result SCBLK
+       (WA)                  number of result characters
 ```
 
-<h5>*sysdc* -- date check</h5>
+### SYSDC -- date check
 
-*sysdc* is called to check that the expiry date for
+SYSDC is called to check that the expiry date for
 a trial version of SPITBOL is unexpired.
 
 ```
-       jsr  sysdc>            call to check date
+       JSR  SYSDC             call to check date
 return only if date is ok
 ```
 
 
-<h5>*sysdm*  exp  0                define external entry point</h5>
+### SYSDM  exp  0                define external entry point
 
-*sysdm* is called by a SPITBOL program call of
-dump(n) with n ge 4.  Its purpose is to provide a core dump.  n could
+SYSDM is called by a SPITBOL program call of
+DUMP(n) with n ge 4.  Its purpose is to provide a core dump.  n could
 hold an encoding of the start adrs for dump and amount to be dumped
-e.g.  n = 256*a + s , s = start adrs in kilowords, a = kilowords to
+e.g.  n = 256\*a + s , s = start adrs in kilowords, a = kilowords to
 dump
 
 ```
-       (xr)                  parameter n of call dump(n)
-       jsr  sysdm            call to enter routine
+       (XR)                  parameter n of call DUMP(n)
+       JSR  SYSDM            call to enter routine
 
 ```
 
-<h5>*sysdt* -- get current date</h5>
+### SYSDT -- get current date
 
-*sysdt* is used to obtain the current date. The
-date is returned as a character string in any format appropriate to
+SYSDT is used to obtain the current date. The date is returned as a character string in any format appropriate to
 the operating system in use. It may also contain the current time of
-day. *sysdt* is used to implement the snobol4 function
-date().
+day.
+
+SYSDT is used to implement the SNOBOL4 function DATE().
 
 ```
-       (xr)                  parameter n of call date(n)
-       jsr  sysdt            call to get date
-       (xl)                  pointer to block containing date
+       (XR)                  parameter n of call date(n)
+       JSR  SYSDT            call to get date
+       (XL)                  pointer to block containing date
 ```
 
-The format of the block is like an *scblk* except
+The format of the block is like an SCBLK except
 that the first word need not be set. The result is copied into SPITBOL
-dynamic memory on return.  <h5>*sysea* -- inform osint
-of compilation and runtime errors</h5>
+dynamic memory on return.  
+
+### SYSEA -- inform osint of compilation and runtime errors
 
 Provides means for interface to take special actions on errors
 
 ```
-       (wa)                  error code
-       (wb)                  line number
-       (wc)                  column number
-       (xr)                  system stage
-       (xl)                  file name (scblk)
-       jsr  sysea            call to sysea function
-       ppm  loc              suppress printing of error message
-       (xr)                  message to print (scblk) or 0
+       (WA)                  error code
+       (WB)                  line number
+       (WC)                  column number
+       (XR)                  system stage
+       (XL)                  file name (scblk)
+       JSR  SYSEA            call to SYSEA function
+       PPM  loc              suppress printing of error message
+       (XR)                  message to print (scblk) or 0
 
 ```
 
-*sysea* may not return if interface chooses to
+SYSEA may not return if interface chooses to
 retain control.  Closing files via the fcb chain will be the
 responsibility of the interface.
 
 All registers must be preserved
 
-<h5>*sysef* -- eject file</h5>
+### SYSEF -- eject file
 
-*sysef* is used to write a page eject to a named
+SYSEF is used to write a page eject to a named
 file. It may only be used for files where this concept makes sense.
-Note that *sysef* is not normally used for the standard
-output file (see *sysep*).
+Note that SYSEF is not normally used for the standard
+output file (see SYSEP).
 
 ```
-       (wa)                  pointer to fcblk> or zero
-       (xr)                  eject argument (scblk pointer)
-       jsr  sysef            call to eject file
-       ppm  loc              return here if file does not exist
-       ppm  loc              return here if inappropriate file
-       ppm  loc              return here if i/o error
+       (WA)                  pointer to FCBLK> or zero
+       (XR)                  eject argument (scblk pointer)
+       JSR  SYSEF            call to eject file
+       PPM  loc              return here if file does not exist
+       PPM  loc              return here if inappropriate file
+       PPM  loc              return here if i/o error
 ```
 
-<h5>*sysej* -- end of job</h5>
+### SYSEJ -- end of job
 
-*sysef* is used to write a page eject to a named
-file. It may only be used for files where this concept makes sense.
-
-Note that *sysef* is not normally used for the
-standard output file (see *sysep*).
-
-```
-       (wa)                  pointer to fcblk or zero
-       (xr)                  eject argument (scblk pointer)
-       jsr  sysef            call to eject file
-       ppm  loc              return here if file does not exist
-       ppm  loc              return here if inappropriate file
-       ppm  loc              return here if i/o error
-```
-
-<h5>*sysej* -- end of job</h5>
-
-*sysef* is used to write a page eject to a named
+SYSEF is used to write a page eject to a named
 file. It may only be used for files where this concept makes sense.
 
-Note that *sysef* is not normally used for the
-standard output file (see *sysep*).
+Note that SYSEF is not normally used for the
+standard output file (see SYSEP).
 
 ```
-       (wa)                  pointer to fcblk or zero
-       (xr)                  eject argument (scblk pointer)
-       jsr  sysef            call to eject file
-       ppm  loc              return here if file does not exist
-       ppm  loc              return here if inappropriate file
-       ppm  loc              return here if i/o error
+       (WA)                  pointer to FCBLK or zero
+       (XR)                  eject argument (scblk pointer)
+       JSR  SYSEF            call to eject file
+       PPM  loc              return here if file does not exist
+       PPM  loc              return here if inappropriate file
+       PPM  loc              return here if i/o error
 ```
 
-<h5>*sysej* -- end of job</h5>
+### SYSEF -- end of job
 
-*sysej* is called once at the end of execution to
+SYSEF is used to write a page eject to a named
+file. It may only be used for files where this concept makes sense.
+
+Note that SYSEF is not normally used for the standard output file (see SYSEP).
+
+```
+       (WA)                  pointer to FCBLK or zero
+       (XR)                  eject argument (scblk pointer)
+       JSR  SYSEF            call to eject file
+       PPM  loc              return here if file does not exist
+       PPM  loc              return here if inappropriate file
+       PPM  loc              return here if i/o error
+```
+
+### SYSEJ -- end of job
+
+SYSEJ is called once at the end of execution to
 terminate the run. The significance of the abend and code values is
 system dependent. In general, the code value should be made available
 for testing, and the abend value should cause some post-mortem action
 such as a dump.
 
-Note that *sysej* does not return to its caller.
-See *sysxi* for details of *fcblk* chain
+Note that SYSEJ does not return to its caller.  See SYSXI for details of FCBLK chain
 
 ```
-       (wa)                  value of abend keyword
-       (wb)                  value of code keyword
-       (xl)                  zero or pointer to head of fcblk chain
-       jsr  sysej            call to end job
+       (WA)                  value of abend keyword
+       (WB)                  value of code keyword
+       (XL)                  zero or pointer to head of FCBLK chain
+       JSR  SYSEJ            call to end job
 ```
 
-The following special values are used as codes in
-(WB)
+The following special values are used as codes in (WB)
 
 ```
 999  execution suppressed
-998  standard output file full or unavailable in a *sysxi*
+998  standard output file full or unavailable in a SYSXI
 load module. in these cases (*wa*) contains the number
 of the statement causing premature termination.
 ```
 
-<h5>*sysem* -- get error message text</h5>
+### SYSEM -- get error message text
 
-*sysem* is used to obtain the text of err, erb
+SYSEM is used to obtain the text of err, erb
 calls in the source program given the error code number. It is allowed
 to return a null string if this facility is unavailable.
 
 ```
-       (wa)                  error code number
-       jsr  sysem            call to get text
-       (xr)                  text of message
+       (WA)                  error code number
+       JSR  SYSEM            call to get text
+       (XR)                  text of message
 ```
 
 The returned value is a pointer to a block in
-*scblk* format except that the first word need not be
+SCBLK format except that the first word need not be
 set. The string is copied into dynamic memory on return.  if the null
-string is returned either because *sysem* does not
+string is returned either because SYSEM does not
 provide error message texts or because *wa* is out of
 range, SPITBOL will print the string stored in errtext keyword.
 
-<h5>*sysen* - endfile</h5>
+### SYSEN - endfile
 
-*sysen* is used to implement the snobol4 function
+SYSEN is used to implement the snobol4 function
 endfile.  The meaning is system dependent. In general, endfile implies
 that no further i/o operations will be performed, but does not
 guarantee this to be the case. The file should be closed after the
 call, a subsequent read or write may reopen the file at the start or
-it may be necessary to reopen the file via *sysio*.
+it may be necessary to reopen the file via SYSIO.
 
 ```
-       (wa)                  pointer to fcblk or zero
-       (xr)                  endfile argument (scblk pointer)
-       jsr  sysen            call to endfile
-       ppm  loc              return here if file does not exist
-       ppm  loc              return here if endfile not allowed
-       ppm  loc              return here if i/o error
-       (wa,wb)               destroyed
+       (WA)                  pointer to FCBLK or zero
+       (XR)                  endfile argument (scblk pointer)
+       JSR  SYSEN            call to endfile
+       PPM  loc              return here if file does not exist
+       PPM  loc              return here if endfile not allowed
+       PPM  loc              return here if i/o error
+       (WA,WB)               destroyed
 ```
 
 The second error return is used for files for which endfile is not
 permitted. For example, it may be expected that the standard input and
 output files are in this category.
 
-<h5>*sysep* -- eject printer page</h5>
+### SYSEP -- eject printer page
 
-*sysep* is called to perform a page eject on the
-standard printer output file (corresponding to *syspr*
+SYSEP is called to perform a page eject on the
+standard printer output file (corresponding to SYSPR
 output).
 
 ```
-       jsr  *sysep*            call to eject printer output<
+       JSR  SYSEP            call to eject printer output<
 ```
 
-    <h5>*sysex* -- call external function</h5>
+### SYSEX -- call external function
 
-*sysex* is called to pass control to an
-external function previously loaded with a call to sysld.
+SYSEX is called to pass control to an
+external function previously loaded with a call to SYSLD.
 
 ```
-       (xs)                  pointer to arguments on stack
-       (xl)                  pointer to control block (efblk)
-       (wa)                  number of arguments on stack
-       jsr  sysex            call to pass control to function
-       ppm  loc              return here if function call fails
-       ppm  loc              return here if insufficient memory
-       ppm  loc              return here if bad argument type
-       (xs)                  popped past arguments
-       (xr)                  result returned
+       (XS)                  pointer to arguments on stack
+       (XL)                  pointer to control block (efblk)
+       (WA)                  number of arguments on stack
+       JSR  SYSEX            call to pass control to function
+       PPM  loc              return here if function call fails
+       PPM  loc              return here if insufficient memory
+       PPM  loc              return here if bad argument type
+       (XS)                  popped past arguments
+       (XR)                  result returned
 ```
 
 The arguments are stored on the stack with the last argument at
-0(XS). On return, *xs* is popped past
-the arguments.
+0(XS). On return, XS is popped past the arguments.
 
 The form of the arguments as passed is that used in the SPITBOL
 translator (see definitions and data structures section). The control
-block format is also described (under *efblk*) in this
+block format is also described (under EFBLK) in this
 section.
 
 There are two ways of returning a result:
 
 
-   Return a pointer to a block in dynamic storage. this block must
+Return a pointer to a block in dynamic storage. this block must
 be in exactly correct format, including the first word. Only functions
 written with intimate knowledge of the system will return in this
 way.
@@ -2959,8 +2942,8 @@ way.
 String, integer and real results may be returned by pointing to a
 pseudo-block outside dynamic memory.
 
-This block is in *icblk*, *rcblk* or
-*scblk* format except that the first word will be
+This block is in ICBLK, RCBLK or
+SCBLK format except that the first word will be
 overwritten by a type word on return and so need not be correctly set.
 
 
@@ -2970,70 +2953,65 @@ is in correct format including type word recognisable by garbage
 collector since block is copied into dynamic memory.
 
 
+### SYSFC -- file control block routine
 
-
-
-<h5>sysfc -- file control block routine</h5>
-
-See also *sysio*
+See also SYSIO
 
 Input and output have three arguments referred to as an
-input(variable name,file _arg1_,file _arg2_)
-output(variable name,file _arg1_,file _arg2_)
 
-File _arg1_ may be an integer or string used to identify an
+`input(variable name,file arg1,file arg2)`
+`output(variable name,file arg1,file arg2)`
+
+File *arg1* may be an integer or string used to identify an
 i/o channel. It is converted to a string for checking.
 
-The exact significance of file _arg2_ is not rigorously
+The exact significance of file *arg2* is not rigorously
 prescribed but to improve portability, The scheme described in the
 SPITBOL user manual should be adopted when possible. The preferred
 form is
 
-```
-a string _f_,r_r_,c_c_,i_i_,...,z_z_  where
-_f_ is an optional file name which is placed first.
+A string "f,r,c,i,...,z"  where
+*f* is an optional file name which is placed first.
 remaining items may be omitted or included in any order.
 
-_r_ is maximum record length
+*r* is maximum record length
 
-_c_ is a carriage control character or character string
+*c* is a carriage control character or character string
 
-_i_ is some form of channel identification used in the
-absence of _f_ to associate the variable
-with a file allocated dynamically by jcl commands at
+*i* is some form of channel identification used in the
+absence of *f* to associate the variable with a file allocated dynamically by jcl commands at
 SPITBOL load time.
 
-,...,z_z_ are additional fields.
-```
+,...,*z* are additional fields.
 
 If , (comma) cannot be used as a delimiter, .ciod should be defined
 to introduce by conditional assembly another delimiter (see```
-iodel equ *``` early in definitions section).
-*sysfc* is called when a variable is input or output
-associated to check file _arg1_ and file _arg2_ and to
-report whether an *fcblk* (file control block) is
+iodel equ \*``` early in definitions section).
+
+SYSFC is called when a variable is input or output associated to check file _arg1_ and file _arg2_ and to
+report whether an FCBLK (file control block) is
 necessary and if so what size it should be.
 
 This makes it possible for SPITBOL rather than osint to allocate
 such a block in dynamic memory if required or alternatively in static
 memory.
 
-The significance of an *fcblk* , if one is
+The significance of an FCBLK , if one is
 requested, is entirely up to the system interface.
 
-The only restriction is that if the *fcblk* should
+The only restriction is that if the FCBLK should
 appear to lie in dynamic memory, pointers to it should be proper
 pointers to the start of a recognisable and garbage collectable block
-(this condition will be met if *sysfc* requests SPITBOL
-to provide an *fcblk*).
+(this condition will be met if SYSFC requests SPITBOL
+to provide an FCBLK).
 
 An option is provided for osint to return a pointer in
-XL to an *fcblk* which it privately
+XL to an FCBLK which it privately
 allocated. This pointer will be made available when i/o occurs later.
-private *fcblk*s may have arbitrary contents and
+private FCBLKs may have arbitrary contents and
 SPITBOL stores nothing in them.
 
-The requested size for an *fcblk* in dynamic memory
+The requested size for an FCBLK in dynamic memory
 should allow a 2 word overhead for block type and length fields.
 
 Information subsequently stored in the remaining words may be
@@ -3045,31 +3023,31 @@ collectable (i.e.  any apparent pointers into dynamic should be
 genuine block pointers).
 
 
-These restrictions do not apply if an *fcblk* is
+These restrictions do not apply if an FCBLK is
 allocated outside dynamic or is not allocated at all.
 
-If an *fcblk* is requested, its fields will be
-initialised to zero before entry to *sysio* with the
+If an FCBLK is requested, its fields will be
+initialised to zero before entry to SYSIO with the
 exception of words 0 and 1 in which the block type and length fields
-are placed for *fcblk*s in dynamic memory only.
+are placed for FCBLKs in dynamic memory only.
 
-For the possible use of *sysej* and
-*sysxi*, if *fcblk*s are used, a chain
-is built so that they may all be found - see *sysxi*
+For the possible use of SYSEJ and
+SYSXI, if FCBLKs are used, a chain
+is built so that they may all be found - see SYSXI
 for details.
 
 
 If both file _arg1_ and file _arg2_ are null, calls
-of *sysfc* and *sysio* are omitted.
+of SYSFC and SYSIO are omitted.
 
 If file _arg1_ is null (standard input/output file),
-*sysfc* is called to check non-null file _arg2_
-but any request for an *fcblk* will be ignored, since
+SYSFC is called to check non-null file _arg2_
+but any request for an FCBLK will be ignored, since
 SPITBOL handles the standard files specially and cannot readily keep
-*fcblk* pointers for them.file _arg1_ is
+FCBLK pointers for them.file _arg1_ is
 type checked by SPITBOL so further checking may be unneccessary in
 many implementations.  file _arg2_ is passed so that
-*sysfc* may analyse and check it. however to assist in
+SYSFC may analyse and check it. however to assist in
 this, SPITBOL also passes on the stack the components of this argument
 with file name, _f_ (otherwise null) extracted and stacked first.
 
@@ -3077,31 +3055,31 @@ The other fields, if any, are extracted as substrings, pointers to
 them are stacked and a count of all items stacked is placed in
 WC.
 
-If an fcblk was earlier
-allocated and pointed to via file _arg1_, sysfc is also passed a pointer to this
-fcblk.
+If an FCBLK was earlier
+allocated and pointed to via file _arg1_, SYSFC is also passed a pointer to this
+FCBLK.
 
 ```
-      (xl)                  file arg1 scblk ptr (2nd arg)
-      (xr)                  filearg2 (3rd arg) or null
-      -(xs)...-(xs)         scblks for $f$,$r$,$c$,...
-      (wc)                  no. of stacked scblks above
-      (wa)                  existing file arg1 fcblk ptr or 0
-      (wb)                  0/3 for input/output assocn
-      jsr  sysfc            call to check need for fcblk
-      ppm  loc              invalid file argument
-      ppm  loc              fcblk already in use
-      (xs)                  popped (wc) times
-      (wa non zero)         byte size of requested fcblk
-      (wa=0,xl non zero)    private fcblk ptr in xl
-      (wa=xl=0)             no fcblk wanted, no private fcblk
-      (wc)                  0/1/2 request alloc of xrblk/xnblk
-                            /static block for use as fcblk
-      (wb)                  destroyed
+      (XL)                  file arg1 scblk ptr (2nd arg)
+      (XR)                  filearg2 (3rd arg) or null
+      -(XS)...-(XS)         scblks for $f$,$r$,$c$,...
+      (WC)                  no. of stacked scblks above
+      (WA)                  existing file arg1 FCBLK ptr or 0
+      (WB)                  0/3 for input/output assocn
+      JSR  SYSFC            call to check need for FCBLK
+      PPM  loc              invalid file argument
+      PPM  loc              FCBLK already in use
+      (XS)                  popped (WC) times
+      (WA non zero)         byte size of requested FCBLK
+      (WA=0,xl non zero)    private FCBLK ptr in xl
+      (WA=XL=0)             no FCBLK wanted, no private FCBLK
+      (WC)                  0/1/2 request alloc of xrblk/xnblk
+                            /static block for use as FCBLK
+      (WB)                  destroyed
 ```
 
-<h5>*sysgc* -- inform interface of garbage
-collections</h5>
+### SYSGC -- inform interface of garbage
+collections
 
 Provides means for interface to take special actions prior to and
 after a garbage collection.
@@ -3119,25 +3097,25 @@ inform virtual memory manager that contents of memory freed by
 garbage collection can be discarded. 
 
 ```
-      (xr)                  non-zero if beginning gc
+      (XR)                  non-zero if beginning gc
                             =0 if completing gc
-      (wa)                  dnamb=start of dynamic area
-      (wb)                  dnamp=next available location
-      (wc)                  dname=last available location + 1
-      jsr  sysgc            call to sysgc function
+      (WA)                  dnamb=start of dynamic area
+      (WB)                  dnamp=next available location
+      (WC)                  dname=last available location + 1
+      JSR  SYSGC            call to sysgc function
       all registers preserved
 ```
 
-<h5>syshs -- give access to host computer features</h5>
+### SYSHS -- give access to host computer features
 
 Provides means for implementing special features on different host
 computers.  the only defined entry is that where all arguments are
-null in which case *syshs* *syshs* returns an *scblk* containing name of computer, name of
+null in which case SYSHS *SYSHS* returns an SCBLK containing name of computer, name of
 operating system and name of site separated by colons.
 
-The *scblk* need not have a correct first field as this is supplied on copying string to dynamic memory.
+The SCBLK need not have a correct first field as this is supplied on copying string to dynamic memory.
 
- SPITBOL does no argument checking but does provide a single error return for arguments checked as erroneous by osint.  It also provides
+SPITBOL does no argument checking but does provide a single error return for arguments checked as erroneous by osint.  It also provides
 a single execution error return.
 
 If these are inadequate, use may be made of the minimal error section direct as described in minimal documentation, section 10.
@@ -3150,27 +3128,27 @@ return causing SPITBOL statement failure.
 If a returned result is in dynamic memory it must obey garbage
 collector rules.
 
-The only results copied on return are strings returned via ppm loc3
+The only results copied on return are strings returned via PPM loc3
 return.
 
 ```
-       (wa)                  argument 1
-       (xl)                  argument 2
-       (xr)                  argument 3
-       (wb)                  argument 4
-       (wc)                  argument 5
-       jsr  syshs            call to get host information
-       ppm  loc1             erroneous arg
-       ppm  loc2             execution error
-       ppm  loc3             *scblk* pointer in xl or 0 if unavailable
-       ppm  loc4             return a null result
-       ppm  loc5             return result in xr
-       ppm  loc6             cause statement failure
-       ppm  loc7             return string at xl, length wa
-       ppm  loc8             return copy of result in xr
+       (WA)                  argument 1
+       (XL)                  argument 2
+       (XR)                  argument 3
+       (WB)                  argument 4
+       (WC)                  argument 5
+       JSR  syshs            call to get host information
+       PPM  loc1             erroneous arg
+       PPM  loc2             execution error
+       PPM  loc3             SCBLK pointer in xl or 0 if unavailable
+       PPM  loc4             return a null result
+       PPM  loc5             return result in xr
+       PPM  loc6             cause statement failure
+       PPM  loc7             return string at xl, length wa
+       PPM  loc8             return copy of result in xr
 ```
 
-<h5>*sysid* -- return system identification</h5>
+### SYSID -- return system identification
 
 This routine should return strings to head the standard printer
 output. the first string will be appended to a heading line of the
@@ -3194,106 +3172,103 @@ the run.  optionally the strings may include site name of the the
 implementor and/or machine on which run takes place, unique site or
 copy number and other information as appropriate without making it so
 long as to be a nuisance to users.  the first words of the
-*scblk*s pointed at need not be correctly set.
+SCBLKs pointed at need not be correctly set.
 
 
 ```
-       jsr  sysid            call for system identification
-       (xr)                  scblk pointer for addition to header
-       (xl)                  scblk pointer for second header
+       JSR  sysid            call for system identification
+       (XR)                  scblk pointer for addition to header
+       (XL)                  scblk pointer for second header
 ```
 
-<h5>*sysif* -- switch to new include file</h5>
+### SYSIF -- switch to new include file
 
-*sysif* is used for include file processing, both to
+SYSIF is used for include file processing, both to
 inform the interface when a new include file is desired, and when the
 end of file of an include file has been reached and it is desired to
 return to reading from the previous nested file.
 
-It is the responsibility of *sysif* to remember the
+It is the responsibility of SYSIF to remember the
 file access path to the present input file before switching to the new
 include file.
 
 ```
-      (xl)                  ptr to scblk or zero
-      (xr)                  ptr to vacant scblk of length cswin
+      (XL)                  ptr to scblk or zero
+      (XR)                  ptr to vacant scblk of length cswin
                             (xr not used if xl is zero)
-      jsr  sysif            call to change files
-      ppm  loc              unable to open file
-      (xr)                  scblk with full path name of file
+      JSR  sysif            call to change files
+      PPM  loc              unable to open file
+      (XR)                  scblk with full path name of file
                             (xr not used if input xl is zero)
 ```
 
-Register XL points to an *scblk*
-containing the name of the include file to which the interface should
-switch.  Data is fetched from the file upon the next call to
-*sysrd*.
+Register XL points to an SCBLK containing the name of the include file to which the interface should
+switch.  Data is fetched from the file upon the next call to SYSRD.
 
-*sysif* may have the ability to search multiple
+SYSIF may have the ability to search multiple
 libraries for the include file named in (XL).  It is
 therefore required that the full path name of the file where the file
 was finally located be returned in (XR).  It is this
 name that is recorded along with the source statements, and will
 accompany subsequent error messages.
 
-Register XL is zero to mark conclusion of use of
-an include file.
+Register XL is zero to mark conclusion of use of an include file.
 
-<h5>*sysil* -- get input record length</h5>
+### SYSIL -- get input record length
 
-*sysil* is used to get the length of the next input
+SYSIL is used to get the length of the next input
 record from a file previously input associated with a
-*sysio* call. The length returned is used to establish
-a buffer for a subsequent *sysin* call.
-*sysil* also indicates to the caller if this is a
+SYSIO call. The length returned is used to establish
+a buffer for a subsequent SYSIN call.
+SYSIL also indicates to the caller if this is a
 binary or text file.
 
 ```
-       (wa)                  pointer to fcblk or zero
-       jsr  sysil            call to get record length
-       (wa)                  length or zero if file closed
-       (wc)                  zero if binary, non-zero if text
+       (WA)                  pointer to FCBLK or zero
+       JSR  sysil            call to get record length
+       (WA)                  length or zero if file closed
+       (WC)                  zero if binary, non-zero if text
 ```
 
 No harm is done if the value returned is too long since unused
-space will be reclaimed after the *sysin* call.
+space will be reclaimed after the SYSIN call.
 
-Note that it is the *sysil* call (not the
-*sysio* call) which causes the file to be opened as
+Note that it is the SYSIL call (not the
+SYSIO call) which causes the file to be opened as
 required for the first record input from the file.
 
-<h5>h*sysin* -- read input record</h5>
+### SYSIN -- read input record
 
-*sysin* is used to read a record from the file
-which was referenced in a prior call to *sysil* (i.e.
+SYSIN is used to read a record from the file
+which was referenced in a prior call to SYSIL (i.e.
 these calls always occur in pairs). The buffer provided is an
-*scblk* for a string of length set from the
-*sysil* call.  If the actual length read is less than
-this, the length field of the *scblk* must be modified
+SCBLK for a string of length set from the
+SYSIL call.  If the actual length read is less than
+this, the length field of the SCBLK must be modified
 before returning unless buffer is right padded with zeroes.
 
 It is also permissible to take any of the alternative returns after
-*scblk* length has been modified.
+SCBLK length has been modified.
 
 ```
-       (wa)                  pointer to fcblk or zero
-       (xr)                  pointer to buffer (scblk pointer)
-       jsr  sysin            call to read record
-       ppm  loc              endfile or no i/p file after sysxi
-       ppm  loc              return here if i/o error
-       ppm  loc              return here if record format error
-       (wa,wb,wc)            destroyed
+       (WA)                  pointer to FCBLK or zero
+       (XR)                  pointer to buffer (scblk pointer)
+       JSR  sysin            call to read record
+       PPM  loc              endfile or no i/p file after SYSXI
+       PPM  loc              return here if i/o error
+       PPM  loc              return here if record format error
+       (WA,WB,WC)            destroyed
 ```
 
-<h5>*sysio* -- input/output file association</h5>
+### SYSIO -- input/output file association
 
-See also *sysfc*.
+See also SYSFC.
 
-*sysio* is called in response to a snobol4 input or
+SYSIO is called in response to a snobol4 input or
 output function call except when file _arg1_ and file
 _arg2_ are both null.  Its call always follows immediately
-after a call of *sysfc*. If *sysfc*
-requested allocation of an *fcblk*, its address will be
+after a call of SYSFC. If SYSFC
+requested allocation of an FCBLK, its address will be
 in *wa*.  for input files, non-zero values of _r_
 should be copied to WC for use in allocating input
 buffers. If _r_ is defaulted or not implemented, WC
@@ -3305,49 +3280,49 @@ merely associate the additional variable name (first argument) to the
 file and do not result in re-opening the file.
 
 In subsequent associated accesses to the file a pointer to any
-*fcblk* allocated will be made available.
+FCBLK allocated will be made available.
 
 ```
-       (xl)                  file arg1 scblk pointer (2nd arg)
-       (xr)                  file arg2 scblk pointer (3rd arg)
-       (wa)                  fcblk pointer (0 if none)
-       (wb)                  0 for input, 3 for output
-       jsr  sysio            call to associate file
-       ppm  loc              return here if file does not exist
-       ppm  loc              return if input/output not allowed
-       (xl)                  fcblk pointer (0 if none)
-       (wc)                  0 (for default) or max record lngth
-       (wa,wb)               destroyed
+       (XL)                  file arg1 scblk pointer (2nd arg)
+       (XR)                  file arg2 scblk pointer (3rd arg)
+       (WA)                  FCBLK pointer (0 if none)
+       (WB)                  0 for input, 3 for output
+       JSR  SYSIO            call to associate file
+       PPM  loc              return here if file does not exist
+       PPM  loc              return if input/output not allowed
+       (XL)                  FCBLK pointer (0 if none)
+       (WC)                  0 (for default) or max record lngth
+       (WA,WB)               destroyed
 ```
 
 The second error return is used if the file named exists but
 input/output from the file is not allowed. For example, the standard
 output file may be in this category as regards input association.
 
-<h5>sysld -- load external function</h5>
+### SYSLD -- load external function
 
-*sysld* is called in response to the use of the snobol4 load
+SYSLD is called in response to the use of the snobol4 load
 function. The named function is loaded (whatever this means), and a
 pointer is returned. the pointer will be used on subsequent calls to
-the function (see *sysex*).
+the function (see SYSEX).
 
 ```
-       (xr)                  pointer to function name (scblk)
-       (xl)                  pointer to library name (scblk)
-       jsr  sysld            call to load function
-       ppm  loc              return here if func does not exist
-       ppm  loc              return here if i/o error
-       ppm  loc              return here if insufficient memory
-       (xr)                  pointer to loaded code
+       (XR)                  pointer to function name (scblk)
+       (XL)                  pointer to library name (scblk)
+       JSR  SYSLD            call to load function
+       PPM  loc              return here if func does not exist
+       PPM  loc              return here if i/o error
+       PPM  loc              return here if insufficient memory
+       (XR)                  pointer to loaded code
 ```
 
 The significance of the pointer returned is up to the system
 interface routine. The only restriction is that if the pointer is
 within dynamic storage, it must be a proper block pointer.
 
-<h5>*sysmm* -- get more memory</h5>
+### SYSMM -- get more memory
 
-*sysmm* is called in an attempt to allocate more
+SYSMM is called in an attempt to allocate more
 dynamic memory. This memory must be allocated contiguously with the
 current dynamic data area.
 
@@ -3355,12 +3330,12 @@ The amount allocated is up to the system to decide. any value is
 acceptable including zero if allocation is impossible.
 
 ```
-       jsr  sysmm            call to get more memory
-       (xr)                  number of additional words obtained
+       JSR  SYSMM            call to get more memory
+       (XR)                  number of additional words obtained
 
 ```
 
-<h5>*sysmx* -- supply *mXLen*</h5>
+### SYSMX -- supply *mXLen*
 
 Because of the method of garbage collection, no SPITBOL object is
 allowed to occupy more bytes of memory than the integer giving the
@@ -3386,70 +3361,70 @@ maXLngth. Otherwise the initial low address of
 dynamic memory is used for this keyword.
 
 ```
-       jsr  sysmx            call to get mxlen
-       (wa)                  either mxlen or 0 for default
+       JSR  SYSMX            call to get mxlen
+       (WA)                  either mxlen or 0 for default
 ```
 
-<h5>*sysou* -- output record</h5>
+### SYSOU -- output record
 
-*sysou* is used to write a record to a file previously
-associated with a *sysio* call.
+SYSOU is used to write a record to a file previously
+associated with a SYSIO call.
 
 ```
-       (wa)                  pointer to fcblk or 0 for terminal or 1 for output
-       (xr)                  record to be written (scblk)
-       jsr  sysou            call to output record
-       ppm  loc              file full or no file after sysxi
-       ppm  loc              return here if i/o error
-       (wa,wb,wc)            destroyed
+       (WA)                  pointer to FCBLK or 0 for terminal or 1 for output
+       (XR)                  record to be written (scblk)
+       JSR  sysou            call to output record
+       PPM  loc              file full or no file after SYSXI
+       PPM  loc              return here if i/o error
+       (WA,WB,WC)            destroyed
 ```
 
-Note that it is the *sysou* call (not the
-*sysio* call) which causes the file to be opened as
+Note that it is the SYSOU call (not the
+SYSIO call) which causes the file to be opened as
 required for the first record output to the file.
 
-<h5>*syspi* -- print on interactive channel</h5>
+### SYSPI -- print on interactive channel
 
 If SPITBOL is run from an online terminal, osint can request that
 messages such as copies of compilation errors be sent to the terminal
-(see *syspp*). if relevant reply was made by
-*syspp* then *syspi* is called to send
-such messages to the interactive channel.  *syspi* is
+(see SYSPP). if relevant reply was made by
+SYSPP then SYSPI is called to send
+such messages to the interactive channel.  SYSPI is
 also used for sending output to the terminal through the special
 variable name, terminal. (XR) pointer to line
-buffer (*scblk*) (*wa*) line length jsr
-*syspi* call to print line ppm loc failure return
+buffer (SCBLK) (*wa*) line length JSR
+SYSPI call to print line PPM loc failure return
 (*wa*,WB) destroyed
 
-<h5>*syspl* -- provide interactive control of SPITBOL</h5>
+### SYSPL -- provide interactive control of SPITBOL
 
 Provides means for interface to take special actions, such as
 interrupting execution, breakpointing, stepping, and expression
 evaluation.  These last three options are not presently implemented by
-the code calling *syspl*.
+the code calling SYSPL.
 
 ```
-       (wa)                  opcode as follows-
+       (WA)                  opcode as follows-
                              =0 poll to allow osint to interrupt
                              =1 breakpoint hit
                              =2 completion of statement stepping
                              =3 expression evaluation result
-       (wb)                  statement number
-       r_fcb                 zero or pointer to head of fcblk chain
-       jsr  syspl            call to syspl function
-       ppm  loc              user interruption
-       ppm  loc              step one statement
-       ppm  loc              evaluate expression
+       (WB)                  statement number
+       r_fcb                 zero or pointer to head of FCBLK chain
+       JSR  syspl            call to syspl function
+       PPM  loc              user interruption
+       PPM  loc              step one statement
+       PPM  loc              evaluate expression
        ---                   resume execution
-                             (wa) = new polling interval
+                             (WA) = new polling interval
 ```
 
-<h5>*syspp* -- obtain print parameters</h5>
+### SYSPP -- obtain print parameters
 
-*syspp* is called once during compilation to obtain
+SYSPP is called once during compilation to obtain
 parameters required for correct printed output format and to select
 other options. it may also be called again after
-*sysxi* when a load module is resumed. in this case the
+SYSXI when a load module is resumed. in this case the
 value returned in *wa* may be less than or equal to
 that returned in initial call but may not be greater.
 
@@ -3457,51 +3432,50 @@ that returned in initial call but may not be greater.
 the information returned is -
 
 
-
-   line length in chars for standard print file
+line length in chars for standard print file
 
 no of lines/page. 0 is preferable for a non-paged device (e.g.
 online terminal) in which case listing page throws are suppressed and
 page headers resulting from -title,-stitl lines are kept short.
 
- an initial -nolist option to suppress listing unless the program
+an initial -nolist option to suppress listing unless the program
 contains an explicit -list.
 
- options to suppress listing of compilation and/or execution stats
+options to suppress listing of compilation and/or execution stats
 (useful for established programs) - combined with 3. gives possibility
 of listing file never being opened.
 
- option to have copies of errors sent to an interactive channel in
+option to have copies of errors sent to an interactive channel in
 addition to standard printer.
 
- option to keep page headers short (e.g. if listing to an online
+option to keep page headers short (e.g. if listing to an online
 terminal).
 
- an option to choose extended or compact listing format. in the
+an option to choose extended or compact listing format. in the
 former a page eject and in the latter a few line feeds precede the
 printing of each of-- listing, compilation statistics, execution
 output and execution statistics.
 
- an option to suppress execution as though a -noexecute card were
+an option to suppress execution as though a -noexecute card were
 supplied.
 
- an option to request that name /terminal/ be pre- associated to
-an online terminal via *syspi* and
-*sysri*
+an option to request that name /terminal/ be pre- associated to
+an online terminal via SYSPI and
+SYSRI
 
- an intermediate (standard) listing option requiring that page
+an intermediate (standard) listing option requiring that page
 ejects occur in source listings. redundant if extended option chosen
 but partially extends compact option.
 
- option to suppress *sysid* identification.
+ option to suppress SYSID identification.
 
 
 ```
 
-       jsr  syspp            call to get print parameters
-       (wa)                  print line length in chars
-       (wb)                  number of lines/page
-       (wc)                  bits value ...mlkjihgfedcba where
+       JSR  syspp            call to get print parameters
+       (WA)                  print line length in chars
+       (WB)                  number of lines/page
+       (WC)                  bits value ...mlkjihgfedcba where
                      a = 1 to send error copy to int.ch.
                      b = 1 means std printer is int. ch.
                      c = 1 for -nolist option
@@ -3519,21 +3493,21 @@ but partially extends compact option.
                      m = 1 for -case 1
 ```
 
-<h5>*syspr* -- print line on standard output file</h5>
+### SYSPR -- print line on standard output file
 
-*syspr* is used to print a single line on the
+SYSPR is used to print a single line on the
 standard output file.
 
 ```
-       (xr)                  pointer to line buffer (scblk)
-       (wa)                  line length
-       jsr  syspr            call to print line
-       ppm  loc              too much o/p or no file after sysxi
-       (wa,wb)               destroyed
+       (XR)                  pointer to line buffer (scblk)
+       (WA)                  line length
+       JSR  SYSPR            call to print line
+       PPM  loc              too much o/p or no file after SYSXI
+       (WA,WB)               destroyed
 ```
 
 The buffer pointed to is the length obtained from the
-*syspp* call and is filled out with trailing blanks.
+SYSPP call and is filled out with trailing blanks.
 the value in *wa* is the actual line length which may
 be less than the maximum line length possible. there is no space
 control associated with the line, all lines are printed single spaced.
@@ -3547,54 +3521,52 @@ printed output.
 If possible, printing should be permitted after this
 condition has been signalled once to allow for dump and other
 diagnostic information.  assuming this to be possible, SPITBOL may
-make more *syspr* calls. if the error return occurs
+make more SYSPR calls. if the error return occurs
 another time, execution is terminated by a call of
-*sysej* with ending code 998.
+SYSEJ with ending code 998.
 
-<h5>*sysrd* -- read record from standard input
-file</h5>
+### SYSRD -- read record from standard input
+file
 
-*sysrd* is used to read a record from the standard
-input file. the buffer provided is an *scblk* for a
+SYSRD is used to read a record from the standard
+input file. the buffer provided is an SCBLK for a
 string the length of which in characters is given in
 WC, this corresponding to the maximum length of
 string which SPITBOL is prepared to receive. at compile time it
-corresponds to xxx in the most recent -inxxx card (default 72) and at
-execution time to the most recent ,r_r_ (record length) in the third
+corresponds to xxx in the most recent `-inxxx` card (default 72) and at
+execution time to the most recent ,*r* (record length) in the third
 arg of an input() statement for the standard input file (default 80).
 
-If fewer than (WC) characters are read, the
-length field of the *scblk* must be adjusted before
+If fewer than (WC) characters are read, the length field of the SCBLK must be adjusted before
 returning unless the buffer is right padded with zeroes.
 
-It is also permissible to take the alternative return after such an
-adjustment has been made.
+It is also permissible to take the alternative return after such an adjustment has been made.
 
 SPITBOL may continue to make calls after an endfile return so this
 routine should be prepared to make repeated endfile returns.
 
 ```
-       (xr)                  pointer to buffer (scblk pointer)
-       (wc)                  length of buffer in characters
-       jsr  sysrd            call to read line
-       ppm  loc              endfile or no i/p file after sysxi
+       (XR)                  pointer to buffer (scblk pointer)
+       (WC)                  length of buffer in characters
+       JSR  sysrd            call to read line
+       PPM  loc              endfile or no i/p file after SYSXI
                              or input file name change.  if
                              the former,scblk length is zero.
                              if input file name change, length
                              is non-zero. caller should re-issue
                              sysrd to obtain input record.
-       (wa,wb,wc)            destroyed
+       (WA,WB,WC)            destroyed
 ```
 
-<h5>*sysri* -- read record from interactive channel</h5>
+### SYSRI -- read record from interactive channel
 
 Reads a record from online terminal for SPITBOL variable,
 terminal. if online terminal is unavailable then code the endfile
 return only.
 
 The buffer provided is of length 258 characters.
-*sysri* should replace the count in the second word of
-the *scblk* by the actual character count unless buffer
+SYSRI should replace the count in the second word of
+the SCBLK by the actual character count unless buffer
 is right padded with zeroes.
 
 It is also permissible to take the alternative return after
@@ -3605,93 +3577,92 @@ sense on the target machine (e.g. if there is an
 eof character.)
 
 ```
-       (xr)                  pointer to 258 char buffer (scblk pointer)
-       jsr  sysri            call to read line from terminal
-       ppm  loc              end of file return
-       (wa,wb,wc)            may be destroyed
+       (XR)                  pointer to 258 char buffer (scblk pointer)
+       JSR  sysri            call to read line from terminal
+       PPM  loc              end of file return
+       (WA,WB,WC)            may be destroyed
 ```
 
-<h5> *sysrw* -- rewind file</h5>
+###  SYSRW -- rewind file
 
-*sysrw* is used to rewind a file i.e. reposition
+SYSRW is used to rewind a file i.e. reposition
 the file at the start before the first record. the file should be
 closed and the next read or write call will open the file at the
 start.
 
 ```
-       (wa)                  pointer to fcblk or zero
-       (xr)                  rewind arg scblk pointer)
-       jsr  sysrw            call to rewind file
-       ppm loc return here if file does not exist
-       ppm loc return here if rewind not allowed ppm loc return here if i / o error
+       (WA)                  pointer to FCBLK or zero
+       (XR)                  rewind arg scblk pointer)
+       JSR  sysrw            call to rewind file
+       PPM loc return here if file does not exist
+       PPM loc return here if rewind not allowed PPM loc return here if i / o error
 ```
 
-<h5>*sysst* -- set file pointer</h5>
+### SYSST -- set file pointer
 
-*sysst* is called to change the position of a file
+SYSST is called to change the position of a file
 pointer. this is accomplished in a system dependent manner, and thus
 the 2nd and 3rd arguments are passed unconverted.
 
 ```
-       (wa)                  fcblk pointer
-       (wb)                  2nd argument
-       (wc)                  3rd argument
-       jsr  *sysst*            call to set file pointer
-       ppm  loc              return here if invalid 2nd arg
-       ppm  loc              return here if invalid 3rd arg
-       ppm  loc              return here if file does not exist
-       ppm  loc              return here if set not allowed
-       ppm  loc              return here if i/o error
+       (WA)                  FCBLK pointer
+       (WB)                  2nd argument
+       (WC)                  3rd argument
+       JSR  SYSST            call to set file pointer
+       PPM  loc              return here if invalid 2nd arg
+       PPM  loc              return here if invalid 3rd arg
+       PPM  loc              return here if file does not exist
+       PPM  loc              return here if set not allowed
+       PPM  loc              return here if i/o error
 ```
 
-<h5>*systm* -- get execution time so far</h5>
+### SYSTM -- get execution time so far
 
-*systm* is used to obtain the amount of execution
+SYSTM is used to obtain the amount of execution
 time used so far since SPITBOL was given control. the units are
 described as milliseconds in the SPITBOL output, but the exact meaning
 is system dependent. where appropriate, this value should relate to
 processor rather than clock timing values.
 
-If the symbol .ctmd is defined, the units are described as
+If the symbol `.ctm` is defined, the units are described as
 deciseconds (0.1 second).
 
 ```
-       jsr  systm            call to get timer value
-       (ia)                  time so far in milliseconds
+       JSR  systm            call to get timer value
+       (IA)                  time so far in milliseconds
                             (deciseconds if .ctmd defined)
 ```
 
-<h5> *systt* -- trace toggle</h5>
+###  SYSTT -- trace toggle
 
 Called by SPITBOL function trace() with no args to toggle the
 system trace switch.  this permits tracing of labels in SPITBOL code
 to be turned on or off.
 
 ```
-       jsr  systt            call to toggle trace switch
+       JSR  systt            call to toggle trace switch
 ```
 
-<h5>*sysul* -- unload external function</h5>
+### SYSUL -- unload external function
 
-*sysul* is used to unload a function previously
-loaded with a call to sysld.
+SYSUL is used to unload a function previously
+loaded with a call to SYSLD.
 
 ```
-       (xr)                  pointer to control block (efblk)
-       jsr  sysul            call to unload function
+       (XR)                  pointer to control block (efblk)
+       JSR  SYSUL            call to unload function
 ```
 
-The function cannot be called following a *sysul*
-call until another sysld call is made for the same function.
+The function cannot be called following a SYSUL
+call until another SYSLD call is made for the same function.
 
-The *efblk* contains the function code pointer and
+The EFBLK contains the function code pointer and
 also a pointer to the vrblk containing the function name (see
 definitions and data structures section).
 
-<h5>*sysxi* -- exit to produce load module</h5></h5>
+### SYSXI -- exit to produce load module
 
-When *sysxi* is called, XL
-contains either a string pointer or zero. In the former case, the
+When SYSXI is called, XL contains either a string pointer or zero. In the former case, the
 string gives the character name of a program. The intention is that
 SPITBOL execution should be terminated forthwith and the named program
 loaded and executed.
@@ -3710,8 +3681,8 @@ integers
     Version numbers to check compatibility should be
     kept in both segments and checked on loading.
     To assist with this check, (XR) on entry is a
-    pointer to an *scblk* containing the SPITBOL major
-    version number v.v (see *sysid*).  The file thus
+    pointer to an SCBLK containing the SPITBOL major
+    version number v.v (see SYSID).  The file thus
     created is called a save file.
 
 0    If possible, return control to job control
@@ -3728,68 +3699,66 @@ In the case of saved load modules, the status of open files is not
 preserved and implementors may choose to offer means of attaching
 files before execution of load modules starts or leave it to the user
 to include suitable input(), output() calls in his program.
-*sysxi* should make a note that no i/o channels,
+SYSXI should make a note that no i/o channels,
 including standard files, have files attached so that calls of
-*sysin*, *sysou*, *syspr*,
+SYSIN, SYSOU, SYSPR,
 
-*sysrd* should fail unless
-new associations are made for the load module.
-at least in the case of the standard output file,
+SYSRD should fail unless new associations are made for the load module.  at least in the case of the standard output file,
 
 It is recommended that either the user be required to attach a file
 or that a default file is attached, since the problem of error
 messages generated by the load module is otherwise severe.As a
 last resort, if SPITBOL attempts to write to the standard output file
 and gets a reply indicating that such ouput is unacceptable it stops
-by using an entry to *sysej* with ending code 998.  As
+by using an entry to SYSEJ with ending code 998.  As
 described below, passing of some arguments makes it clear that load
 module will use a standard output file.
 
-If use is made of *fcblk*s for i/o association,
+If use is made of FCBLKs for i/o association,
 SPITBOL builds a chain so that those in use may be found in
-*sysxi* and *sysej*. The nodes are 4
+SYSXI and SYSEJ. The nodes are 4
 words long. The third word contains link to next node or 0, and the
-fourth word contains a *fcblk* pointer.
+fourth word contains a FCBLK pointer.
 
 ```
-       (xl)                  zero or scblk pointer to first argument
-       (xr)                  pointer to v.v scblk
-       (ia)                  signed integer argument
-       (wa)                  scblk pointer to second argument
-       (wb)                  0 or pointer to head of fcblk chain
-       jsr  sysxi            call to exit
-       ppm  loc              requested action not possible
-       ppm  loc              action caused irrecoverable error
-       (wb,wc,ia,xr,xl,cp)   should be preserved over call
-       (wa)                  0 in all cases except sucessful
+       (XL)                  zero or scblk pointer to first argument
+       (XR)                  pointer to v.v scblk
+       (IA)                  signed integer argument
+       (WA)                  scblk pointer to second argument
+       (WB)                  0 or pointer to head of FCBLK chain
+       JSR  SYSXI            call to exit
+       PPM  loc              requested action not possible
+       PPM  loc              action caused irrecoverable error
+       (WB,WC,IA,XR,XL,CP)   should be preserved over call
+       (WA)                  0 in all cases except sucessful
                              performance of exit(4) or exit(-4),
                              in which case 1 should be returned.
 ```
 
 Loading and running the load module or returning from jcl command
 level causes execution to resume at the point after the error returns
-which follow the call of *sysxi*.  The value passed as
+which follow the call of SYSXI.  The value passed as
 exit argument is used to indicate options required on resumption of
 load module.
 
-The values +1 or -1 require that on resumption, *sysid* and
-*syspp* be called and a heading printed on the standard
+The values +1 or -1 require that on resumption, SYSID and
+SYSPP be called and a heading printed on the standard
 output file.
 
-The values +2 or -2 indicate that *syspp* will be called but not *sysid*
+The values +2 or -2 indicate that SYSPP will be called but not SYSID
 and no heading will be put on standard output file.
 
 Above options have the obvious implication that a
 standard o/p file must be provided for the load module.
 
-The values +3, +4, -3 or -4 indicate calls of neither *sysid* nor
-*syspp* and no heading will be placed on standard output
+The values +3, +4, -3 or -4 indicate calls of neither SYSID nor
+SYSPP and no heading will be placed on standard output
        file.
 
 The values  +4 or -4 indicate that execution is to continue after creation of
 the save file or load module, although all files will be closed by the
-*sysxi* action.  This permits the user to checkpoint
+SYSXI action.  This permits the user to checkpoint
 long-running programs while continuing execution.
 
-No return from *sysxi* is possible if another
-program is loaded and entered.
+No return from SYSXI is possible if another
+program is loadednd entered.
