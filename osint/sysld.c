@@ -29,7 +29,7 @@ static void *openloadfile (char *namebuf);
 static void closeloadfile (void *fd);
 #endif					// EXTFUN
 
-zysld()
+int zysld()
 {
 #if EXTFUN
     void *fd;					// keep stack word-aligned

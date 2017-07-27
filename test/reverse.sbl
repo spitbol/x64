@@ -1,3 +1,0 @@
-loop
-  output = reverse(input)	:s(loop)
-end

@@ -55,10 +55,10 @@ char uargbuf[UargSize];
 
 static void hcopy (char *src, char *dst, int len, int max);
 
-extern ssize_t read (int F, void *Buf, size_t Cnt);
+extern size_t read (int F, void *Buf, size_t Cnt);
 extern off_t LSEEK (int F, off_t Loc, int Method);
 
-zysxi()
+int zysxi()
 
 {
 #if EXECFILE

@@ -35,7 +35,7 @@ extern	int	brkpnd;
 #define stmtDelay PollCount
 
 
-zyspl()
+int zyspl()
 {
     // Make simple polling case the fastest by avoiding switch statement
     if (WA(word) == 0) {

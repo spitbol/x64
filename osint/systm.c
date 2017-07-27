@@ -25,7 +25,7 @@ Copyright 2012-2017 David Shields
 #define CLK_TCK 100
 
 
-zystm() {
+int zystm() {
 
 	struct timespec tim;
 	long etime;

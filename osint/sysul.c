@@ -15,7 +15,7 @@ Copyright 2012-2017 David Shields
 #include "port.h"
 
 
-zysul()
+int zysul()
 {
 #if EXTFUN
     unldef(XR(struct efblk *));

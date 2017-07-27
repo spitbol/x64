@@ -70,7 +70,7 @@ zyspi()
 */
 
 
-zysri()
+int zysri()
 
 {
     register word	length;

@@ -358,7 +358,7 @@ word	*intptr;
 
 struct ioblk	tioblk;			// temporary ioblk
 
-zysfc()
+int zysfc()
 {
     int	fd_spec, i;
     word	allocsize, length_fname;

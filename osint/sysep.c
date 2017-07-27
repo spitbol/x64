@@ -18,7 +18,7 @@ Copyright 2012-2017 David Shields
 
 #include "port.h"
 
-zysep()
+int zysep()
 {
     write( 1, "\f", 1 );
     return NORMAL_RETURN;

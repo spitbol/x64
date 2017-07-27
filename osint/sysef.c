@@ -32,7 +32,7 @@ static struct scblk	ffscblk =
     '\f'	//  string is a form-feed
 };
 
-zysef()
+int zysef()
 {
     register struct fcblk *fcb = WA(struct fcblk *);
     register struct ioblk *iob = ((struct ioblk *) (fcb->iob));

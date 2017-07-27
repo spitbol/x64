@@ -11,6 +11,8 @@ Copyright 2012-2017 David Shields
 #ifndef	_sproto_
 #define	_sproto_
 
+#include <stddef.h> 
+
 typedef int File_handle;
 typedef int File_mode;
 typedef int Open_method;
@@ -168,7 +170,7 @@ extern	int			zysdm ( void );
 extern	int			zysdt ( void );
 extern	int			zysea ( void );
 extern	int			zysef ( void );
-extern	void		zysej ( void );
+extern	int 		zysej ( void );
 extern	int			zysem ( void );
 extern	int			zysen ( void );
 extern	int			zysep ( void );
@@ -200,7 +202,7 @@ extern	int			zysxi ( void );
 
 // prototypes for standard system-level functions used by OSINT
 
-//#include <unistd.h>
+#include <unistd.h>
 #define LSEEK lseek
 
 // Redefine sbrk and brk to use custom routines in syslinux.c
@@ -211,5 +213,6 @@ extern	int			zysxi ( void );
 extern	int 		brkx ( void *addr );
 extern	void		*sbrkx ( long incr );
 
+size_t read(int fd, void *buf, size_t count);
 
 #endif

@@ -173,3 +173,5 @@ union block {
     struct scblk	scb;
     struct vrblk	vrb;
 };
+
+size_t read(int fc, void *buf,size_t count);

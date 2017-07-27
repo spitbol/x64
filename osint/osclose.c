@@ -16,7 +16,7 @@ Copyright 2012-2017 David Shields
 
 #include "port.h"
 
-osclose( ioptr )
+int osclose( ioptr )
 struct	ioblk	*ioptr;
 {
     register int	errcnt = 0;

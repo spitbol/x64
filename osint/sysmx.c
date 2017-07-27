@@ -16,7 +16,7 @@ Copyright 2012-2017 David Shields
 
 #include "port.h"
 
-zysmx()
+int zysmx()
 
 {
     SET_WA( maxsize );

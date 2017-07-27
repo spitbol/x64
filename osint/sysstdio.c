@@ -45,7 +45,7 @@ void stdioinit()
 /	1	failure
 */
 
-zyspr()
+int zyspr()
 
 {
     /*

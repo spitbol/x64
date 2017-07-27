@@ -26,7 +26,7 @@ static int back (struct ioblk *iob);
 
 #define RET_BIAS 100
 
-zysbs()
+int zysbs()
 {
     register int c;
     register struct fcblk *fcb = WA(struct fcblk *);

@@ -34,7 +34,7 @@ Copyright 2012-2017 David Shields
 #if ALTCOMP
 long *kvcom_ptr;
 
-zyscm()
+int zyscm()
 {
     register word result;
 

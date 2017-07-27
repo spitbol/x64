@@ -20,7 +20,7 @@ Copyright 2012-2017 David Shields
 
 #include "port.h"
 
-zysou()
+int zysou()
 
 {
     register struct fcblk *fcb = WA (struct fcblk *);

@@ -20,7 +20,7 @@ Copyright 2012-2017 David Shields
 
 #include "port.h"
 
-zysrw()
+int zysrw()
 {
     register struct fcblk *fcb = WA (struct fcblk *);
     register struct ioblk *iob = ((struct ioblk *) (fcb->iob));

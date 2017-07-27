@@ -49,7 +49,7 @@ register struct chfcb *chb;
 
 
 
-void zysej()
+int zysej()
 {
 
     if (!in_gbcol) {		// Only if not mid-garbage collection

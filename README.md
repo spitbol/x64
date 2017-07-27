@@ -1,24 +1,16 @@
-## Unix SPITBOL 15.01 (Jan 2015)
+## Unix SPITBOL V4.0 (July 2017)
 
-This version adds support for [x86-64](http://en.wikipedia.org/wiki/x86-64),
-so that both 32-bit and 64-bit versions of Spitbol are now available.
-
-Downloads in the traditional form are no longer directly supported, since both
-"Google Code" and "Github" no longer provide downloads built by the project.
+The project provides support only for the 64-bit x86_64 version.
 
 Spitbol is now available only from its home at
 [github.com/hardbol/spitbol](http://github.com/hardbol/spitbol). If you wish
 to use git to work with the probject, use:  
-`$ git clone http://github.com/hardbol/spitbol`  
-
+```
+$ git clone http://github.com/hardbol/spitbol`  
+```
 If you just want to use the system, then select "Download ZIP" from the
 project home page, and extract the files from that.
 
-The binaries for 32-bit and 64-bit versions can be found in
-`./bin/spitbol.m32` and `./bin/spitbol.m64`, respectively.
-
-This 64-bit version is built by default, as 32-bit processors are no longer
-widely used.
 
 Three tools are needed to build Spitbol:
 
@@ -26,48 +18,17 @@ Three tools are needed to build Spitbol:
   2. A C runtime library
   3. An assembler
 
-Previous versions used _gcc_ and _glibc_ for the compiler and runtime support,
-and the [nasm](http://www.nasm.us) assembler.
+SPITBOL uses the gcc compiler to compile C source files.
 
-This version uses [tcc](http://bellard.org/tcc) for the compiler, [musl](http
-://musl-libc.org) for the runtime support, and continues the use of _nasm_.
+SPITBOL use [musl](http://musl-libc.org) for the runtime support.
+The command `musl-gcc` must be used instead of `gcc` to link to the musl library and include files.
 
-The make file `makefile` now uses tcc and musl to build (only) the 64-bit
-version. To build the 32-bit version and/or to use gcc, use `makefile.gcc`.
+SPITBOL requires NASM, the Netwide ASseMbler: [nasm](http://www.nasm.us).
 
-This version rescinds the support for Unicode added in version 13.05. (This
-caused enough problems that it was deemed best to abandon this experiment.)
 
 Known problems
 
-  * The SAVE function doesn't work. (This loss of function occurred whilst adding 64-bit support). Note that SAVE mode was mainly of interest back in the day when Spitbol was proprietary, so that one could distribute a program written in Spitbol without having to disclose the source.
-
-## Unix SPITBOl 13.05 (May 2013)
-
-This version includes versions of SPITBOL for both ASCII (8-bit characters)
-and Unicode (32-bit characters). The binaries can be found in ./bin/spitbol
-and ./bin/uspitbol, respectively.
-
-## Unicode SPITBOL
-
-The Unicode version of SPITBOL (`uspitbol`) uses 32-bit characters internally.
-Character strings are converted from UTF-8 encoding to 32-bit characters when
-input from the command line, the operating system environment, a pipe, or a
-file opened in line mode. Character strings are converted from 32-bit
-characters 8-bit characters in UTF-8 format when written to a file opened in
-line mode, a pipe, or when passed as an argument to an operating system
-procedure.
-
-Program source files, which are read by SPITBOL in line mode, may thus contain
-UTF-8 format Unicode characters in strings and comments. Identifiers are still
-restricted to ASCII.
-
-Use the following command to build the Unicode version:
-
-    
-    
-    $ make UNICODE=1
-    
+* The SAVE function doesn't work. (This loss of function occurred whilst adding 64-bit support). Note that SAVE mode was mainly of interest back in the day when Spitbol was proprietary, so that one could distribute a program written in Spitbol without having to disclose the source.
 
 ## Overview
 
@@ -78,9 +39,6 @@ It is maintained by Dave Shields (thedaveshields at gmail dot com).
 
 Source files, development versions, as well as other files of interest, can be
 found at [github.com/hardbol/spitbol](http://github.com/hardbol/spitbol).
-
-Downloads are available from [ http://code.google.com/p/spitbol/downloads/list
-](http://code.google.com/p/spitbol/downloads/list)
 
 ## Licensing
 
@@ -107,52 +65,39 @@ contains a statically-linked copy of the 8-bit version of spitbol.
 
 You can install it in `/usr/local/bin/spitbol` with the command:
 
-    
-    
+```
     $ sudo make install
+```
     
 
 ## Building SPITBOL
 
-You should be able to build SPITBOL on most Unix systems with a processor that
-implements the x86-32 or x86-64 architecture.
-
-The development work and testing was done using the 32-bit version of [linux
-mint](http://linuxmint.com), a variant of Ubuntu.
-
-You need the `gcc` compiler, `make`, and the netwide assembler, `nasm`, to
-build the system. You can install nasm with:
-
-    
-    
-    $ sudo apt-get install nasm
-    
+You should be able to build SPITBOL on most Unix systems.
 
 The file `./bin/spitbol` is the base version of Spitbol that is used to build
 the system.
 
 To see if spitbol is working, try the "hello world" program:
 
+```    
+    $ ./bin/spitbol test/hello.sbl
+```
     
-    
-    $ ./bin/spitbol test/hi.spt
-    
-
 To build the system:
 
     
-    
+```    
     $ make clean
     $ make
-    
+```
 
 This should produce the file `spitbol`. You can test it with the "hello world"
 program:
 
     
-    
-    $ ./spitbol test/hi.spt
-    
+   ``` 
+    $ ./spitbol test/hi.sbl
+   ``` 
 
 Directory `demos` contains some demonstration programs.  
 Directory `test` contains some small test programs.
@@ -211,9 +156,9 @@ or, if that doesn't work, try:
 
 The SPITBOL implementation includes the following files:
 
-asm.spt
+asm.sbl
 
-    Second stage of translator. It translates the token file produced by lex.spt to x86 assembly language.
+    Second stage of translator. It translates the token file produced by lex.sbl to x86 assembly language.
 ./bin/spitbol
 
     base compiler, used to compile the SPITBOL part of the Minimal translator
@@ -221,88 +166,85 @@ asm.spt
 
     variant of SPITBOL that supports Unicode. COPYING 
     license information
+
 COPYING-LOAD-MODULES
 
     license information for SPITBOL load modules
+
 COPYING-SAVE-FILES
 
     license information for SPITBOL save files
+
 demos
 
     directory with SPITBOL demonstration programs
+
 docs
 
     directory with pdf version of SNOBOL "Green Book" and MACRO SPITBOL user manual.
-lex.spt
+
+lex.sbl
 
     First stage of translator. It translates Minimal source to a file of lexemes (tokens)
+
 makefile
 
     make file
-map-x32.spt
+
+map-x32.sbl
 
     file used for debugging x32 version
-map-x64.spt
+map-x64.sbl
 
     file used to debugging x64 version
+
 minimal-reference-manual.html
 
     Minimal Reference Manual
+
 osint
 
     operating system interface files, written in C99.
+
 readme.html
 
     system introduction
+
 README.md
 
     system identification (required by Github for use with Git).
+
 sanity-check
 
     script to run test that compiler can compile itself
+
 s.cnd
 
     selection of Minimal conditional assembly options for spitbol
+
 s.min
 
     Minimal source for SPITBOL
+
 test
 
     directory with several small tests
-x32.h
 
-    header file for 32-bit version
-x32.hdr
-
-    file prepended to s.min for compiling 32-bit version
-x32.s
-
-    assembly language support and interface routines for 32-bit version
 x64.h
 
     header file for 64-bit version
+
 x64.hdr
 
     file prepended to s.min for compiling 64-bit version
+
 x64.s
 
     assembly language support and interface routines for 64-bit version
-z.spt
+
+z.sbl
 
     prorgram used to insert trace code in generated assembly for debugging.
-
-## Notes
-
-This version contains code supporting both 32 and 64 bit implementations of
-SPITBOL. Only the 32-bit version is complete. The 64-bit version is able to
-compile lex and asm, but fails compiling the error message processor.
-
-You can build the 64-bit version, on a 64-bit system, with:
-
-    
-    
-    $ make ARCH=X32_64
-    
 
 ## Documentation
 
@@ -330,12 +272,4 @@ ed-quillen-dies-at-age).
 Mark Emmer's SNOBOL4 site: [snobol4.com](http://snobol4.com)
 
 Phil Bunde's SNOBOL site: [snobol4.org](http://www.snobol4.org)
-
-## Release History
-
-## Unix SPITBOL 13.01 (January 2013)
-
-This version completes the initial port to Linux. Currently only Intel 32-bit
-(X32) architecture is supported. There are files for building a 64-bit
-version, but this version is not able to compile itself.
 

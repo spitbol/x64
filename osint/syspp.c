@@ -8,7 +8,7 @@ Copyright 2012-2017 David Shields
 
 #include "port.h"
 
-zyspp()
+int zyspp()
 
 {
     /*

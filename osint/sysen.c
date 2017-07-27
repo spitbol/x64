@@ -23,7 +23,7 @@ Copyright 2012-2017 David Shields
 
 #include "port.h"
 
-zysen()
+int zysen()
 {
     register struct fcblk *fcb = WA (struct fcblk *);
     register struct ioblk *iob = ((struct ioblk *) (fcb->iob));

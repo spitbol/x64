@@ -42,7 +42,7 @@ static void openprev()
     doset( getrdiob(),inc_pos[nesting],0 );	// Position file where left off
 }
 
-zysif()
+int zysif()
 {
     register struct scblk *fnscb = XL (struct scblk *);
     register struct scblk *pnscb = XR (struct scblk *);

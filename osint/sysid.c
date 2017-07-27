@@ -34,7 +34,7 @@ Copyright 2012-2017 David Shields
 /	be active with an error message when zysid is called.
 */
 
-zysid()
+int zysid()
 
 {
     time_t now;

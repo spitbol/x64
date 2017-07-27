@@ -247,8 +247,7 @@ long *pword;
     return 1;
 }
 
-int
-zyshs()
+int zyshs()
 {
     word	retval;
     long	val;

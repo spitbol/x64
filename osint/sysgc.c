@@ -27,7 +27,7 @@ Copyright 2012-2017 David Shields
 #include "port.h"
 #include "save.h"
 
-zysgc()
+int zysgc()
 {
     in_gbcol = XR(word);  // retain information
     return NORMAL_RETURN;
