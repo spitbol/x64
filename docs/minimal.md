@@ -921,10 +921,10 @@ label in the program section.
 
 *   1.3  BSW  _x,val,plbl_    branch on switch value
 
-* 1.4  *iff*  _val,plbl_        provide branch for switch
+* 1.4  IFF  _val,plbl_        provide branch for switch
 
 ```
-            *iff*  val,_plbl_     ...
+            IFF  val,_plbl_     ...
             ...
             ...
 ```
@@ -932,27 +932,26 @@ label in the program section.
 *   1.5  ESW      end of branch switch table
 
 
-
-
-BSW *iff*,ESW provide a capability for
+BSW IFF,ESW provide a capability for
 a switched branch similar to a fortran computed goto. The _val_ on the
 BSW instruction is the maximum number of branches.
 the value in x ranges from zero up to but not including this maximum.
-each *iff* provides a branch.
+each IFF provides a branch.
 
 _val_ must be less than
 that given on the bsw and control goes to _plbl_ if the value
 in x matches.  If the value in x does not correspond to any of the
-*iff* entries, then control passes to
+IFF entries, then control passes to
 the _plbl_ on the BSW.
 
- This _plbl_ operand may be omitted if there are no values missing from the list.
+The  _plbl_ operand may be omitted if there are no values missing from the list.
 
 
-*iff* and ESW may only be used in this
+IFF and ESW may only be used in this
 contextxt.  Execution of BSW may destroy the contents
-of x.  The *iff* entries may be in any order and since
-a translator may thus need to store and sort them, the comment field
+of _x_.
+
+The IFF entries may be in any order and since a translator may thus need to store and sort them, the comment field
 is restricted in length (sec 11).
 
 *   1.6  ENT  _val_ define program entry point
@@ -2497,7 +2496,7 @@ MINIMAL statements are in a fixed format as follows.
                              may occasionally start after column
                              30 the operand extends past 28.
                              a special exception occurs for the
-                             *iff* instruction, whose comment may
+                             IFF instruction, whose comment may
                              be only 20 characters long (30-49).
 
        cols 65 on            unused
