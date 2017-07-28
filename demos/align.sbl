@@ -1,0 +1,63 @@
+
+*   Copyright 2017, David Shields
+*   Licensed under the MIT license.
+
+*   Program to align the goto fields in a program.
+
+    &anchor = &trim = 1
+    margin = 56
+
+copy
+
+*   Merge here to copy the current line and continue to the next.
+
+    output = trim(line)
+
+loop
+
+    line = input                                     :f(end)
+
+*   Copy blank and comment lines as it.
+
+    ident(line)                                      :s(copy)
+    line '*'                                         :s(copy)
+
+*   See if line has colon. Continue to next line if not.
+
+    line break(':')                                  :f(copy)
+
+*   See if line just contains goto field.
+
+    iline = line
+    iline span(' ') =
+    ident(iline)                                     :s(copy)
+    iline ':'                                        :f(loop.text)
+
+*   Here if line just has goto field.
+
+    line = rpad(' ',margin) iline                    :(copy)
+
+loop.text
+
+
+
+*   Here if line contains goto field after text.
+*   Look at reverse of line, extract the goto field, then put line
+*   back together. This avoids thinking we have a goto field when in
+*   fact there is colon in string within the line.
+
+    rline = reverse(line)
+    rline break(':') . last ':'  rem . first         :f(copy)
+
+*   Trim leading blanks from first, which corresonds to trimming the reverse.
+
+    first span(' ') =
+
+*   Here if goto to left of margin, so pad it out and copy.
+
+    first = trim(reverse(first))
+    last = trim(reverse(last))
+*   output = '[*' rpad(first,margin) ']'  ":[" last ']'
+    line = rpad(first,margin) ":" last          :(copy)
+
+end
