@@ -29,7 +29,7 @@
 *   where:
 
 *   infile    - minimal file name, less .min extension
-*   condfiile - conditional file name, less .cnd extension
+*   condfile - conditional file name, less .cnd extension
 *   outfile   - output file name, less .lex extension.
 *             default is infile.lex.
 
@@ -377,79 +377,19 @@ main2
 *   patterns used by dostmt
     p.opsk1 = (break(' ') | rem) . argskel
 
--stitl machine-dependent initializations
-*   initianlize configuration parameters common to all implementations
+-include "s.def"
 
-    equ_defs = tblini(
-.   'nstmx[10]'
-.   'cfp_s[9]'
-.   'cfp_x[3]'
-.   'e_srs[100]'
-.   'e_sts[1000]'
-.   'e_cbs[500]'
-.   'e_hnb[257]'
-.   'e_hnw[6]'
-.   'e_fsp[15]'
-.   'e_sed[25]'
-.   'ch_ua[065]ch_ub[066]ch_uc[067]ch_ud[068]ch_ue[069]ch_uf[070]'
-.   'ch_ug[071]ch_uh[072]ch_ui[073]ch_uj[074]ch_uk[075]ch_ul[076]'
-.   'ch_um[077]ch_un[078]ch_uo[079]ch_up[080]ch_uq[081]ch_ur[082]'
-.   'ch_us[083]ch_ut[084]ch_uu[085]ch_uv[086]ch_uw[087]ch_ux[088]'
-.   'ch_uy[089]ch_uz[090]'
-.   'ch_d0[048]ch_d1[049]ch_d2[050]ch_d3[051]ch_d4[052]ch_d5[053]'
-.   'ch_d6[054]ch_d7[055]ch_d8[056]ch_d9[057]ch_la[097]ch_lb[098]'
-.   'ch_lc[099]ch_ld[100]ch_le[101]ch_lf[102]ch_lg[103]ch_lh[104]'
-.   'ch_li[105]ch_lj[106]ch_lk[107]ch_ll[108]ch_lm[109]ch_ln[110]'
-.   'ch_lo[111]ch_lp[112]ch_lq[113]ch_lr[114]ch_ls[115]ch_lt[116]'
-.   'ch_lu[117]ch_lv[118]ch_lw[119]ch_lx[120]ch_ly[121]ch_l_[122]'
-.   'ch_am[038]ch_as[042]ch_at[064]ch_bb[060]ch_bl[032]ch_br[124]'
-.   'ch_cl[058]ch_cm[044]ch_dl[036]ch_dt[046]ch_dq[034]ch_eq[061]'
-.   'ch_ex[033]ch_mn[045]ch_nm[035]ch_nt[126]ch_pc[094]ch_pl[043]'
-.   'ch_pp[040]ch_rb[062]ch_rp[041]ch_qu[063]ch_sl[047]ch_sm[059]'
-.   'ch_sq[039]ch_u_[095]ch_ob[091]ch_cb[093]ch_ht[009]ch_vt[011]'
-.   'ch_ey[094]iodel[032]' )
+*   Initialize equ_defs from defintions in s.def
 
-* set target-dependent configuration parameters
-                                                        :($('config.' arch))
-config.32
+    equ_defs = table(100)
 
-    equ_defs['cfp_a'] = '256'
-    equ_defs['cfp_b'] = '4'
-    equ_defs['cfp_c'] = '4'
-    equ_defs['cfp_f'] = '8'
-    equ_defs['cfp_i'] = '1'
-    equ_defs['cfp_l'] = '4294967295'
-    equ_defs['cfp_m'] = '2147483647'
-    equ_defs['cfp_n'] = '32'
-    equ_defs['cfp_r'] = '2'
-    equ_defs['cfp_u'] = '128'
+equ_defs_next
 
-*   use 6 words, or 24 characters, for hash in x32
+    equ_defs_init break(':') . equ_key ':' break(' ') . equ_value ' ' = :f(equ_defs_done)
+    equ_defs[equ_key] = equ_value                       :(equ_defs_next)
 
-    equ_defs['e_hnw'] = '6'
-                                                        :(config.done)
-config.64
+equ_defs_done
 
-    equ_defs['cfp_a'] = '256'
-    equ_defs['cfp_b'] = '8'
-    equ_defs['cfp_c'] = '8'
-    equ_defs['cfp_f'] = '16'
-    equ_defs['cfp_i'] = '1'
-    equ_defs['cfp_l'] = '18446744073709551616'
-    equ_defs['cfp_m'] = '9223372036854775807'
-    equ_defs['cfp_n'] = '64'
-    equ_defs['cfp_r'] = '1'
-    equ_defs['cfp_u'] = '128'
-
-*   use 3 words, or 24 characters, for hash in x64
-*   this is done so hashes for x32 and x64 should agree
-
-    equ_defs['e_hnw'] = '3'
-
-config.done
-
-
-                                                        :(dsout)
     &trace = 4000
     &ftrace = 4000
 *   &profile = 1
