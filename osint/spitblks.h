@@ -174,4 +174,3 @@ union block {
     struct vrblk	vrb;
 };
 
-size_t read(int fc, void *buf,size_t count);
