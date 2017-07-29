@@ -1,4 +1,5 @@
 
+
 -title lex                               phase 1 translation from minimal to lexemes (lexemes)
 -stitl initialization
 
@@ -384,13 +385,13 @@ main2
 
 equ_defs_next
 
-    equ_defs_init break(':') . equ_key ':' break(' ') . equ_value ' ' = :f(equ_defs_done)
+    equ_defs_init break(':') . equ_key ':' break(' ') . equ_value ' ' =:f(equ_defs_done)
     equ_defs[equ_key] = equ_value                       :(equ_defs_next)
 
 equ_defs_done
 
-    &trace = 4000
-    &ftrace = 4000
+*   &trace = 4000
+*   &ftrace = 4000
 *   &profile = 1
 
 dsout
