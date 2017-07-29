@@ -335,7 +335,6 @@
 
 *   default the parameter string if none present
 
-    arch = (differ(host(0)) host(0), "32")
     parm = "s"
     filenamc = parm '.cnd'
     filenami = parm '.min'
