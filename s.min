@@ -51,6 +51,7 @@
 
 
        ttl  s p i t b o l - revision history
+       ejc
 *      r e v i s i o n   h i s t o r y
 *      -------------------------------
 
@@ -73,6 +74,7 @@
 *              commit logs, not in this file.
 
        ttl  s p i t b o l  -- basic information
+       ejc
 
 *      general structure
 *      -----------------
@@ -127,6 +129,7 @@
 *      the actual translation phase. accordingly, nearly all the
 *      code in the program section is concerned with the actual
 *      execution of the snobol4 program.
+       ejc
 
 *      interpretive code format
 *      ------------------------
@@ -173,6 +176,7 @@
 *      control is passed to the appropriate location in the
 *      current code block with the stack pointer pointing to the
 *      failure offset on the stack and flptr unchanged.
+       ejc
 
 *      internal data representations
 *      -----------------------------
@@ -211,6 +215,7 @@
 *      table                 tbblk
 
 *      program datatype      pdblk
+       ejc
 
 *      representation of variables
 *      ---------------------------
@@ -263,6 +268,7 @@
 *      pseudo-variables are handled as special cases by the
 *      access procedure (acess) and the assignment procedure
 *      (asign). see these two procedures for details.
+       ejc
 
 *      organization of data area
 *      -------------------------
@@ -296,6 +302,7 @@
 *      the minimum size of static is given approximately by
 *           12 + *e_hnb + *e_sts + space for alphabet string
 *           and standard print buffer.
+       ejc
 *      dynamic area
 
 *      the dynamic area is built upwards in memory after the
@@ -358,6 +365,7 @@
 *      of memory to free space). spitbol procs which call
 *      system routines assume that they cannot precipitate
 *      collection and this must be respected.
+       ejc
 
 *      register usage
 *      --------------
@@ -398,6 +406,7 @@
 
 *      (ra)                  real accumulator. used for all
 *                            floating point arithmetic.
+       ejc
 
 *      spitbol conditional assembly symbols
 *      ------------------------------------
@@ -558,6 +567,7 @@
 
        sec                   start of procedures section
 .if    .csax
+       ejc
 
 *      sysax -- after execution
 
@@ -573,6 +583,7 @@ sysax  exp  0                define external entry point
 *      jsr  sysax            call after execution
 .else
 .fi
+       ejc
 .if    .cbsp
 
 *      sysbs -- backspace file
@@ -597,6 +608,7 @@ sysbs  exp  3                define external entry point
 *      the second error return is used for files for which
 *      backspace is not permitted. for example, it may be expected
 *      files on character devices are in this category.
+       ejc
 .fi
 
 *      sysbx -- before execution
@@ -610,6 +622,7 @@ sysbx  exp  0                define external entry point
 *      terminal (if any) indicating that execution is starting.
 
 *      jsr  sysbx            call before execution starts
+       ejc
 .if    .cnci
 
 *      sysci -- convert integer
@@ -635,6 +648,7 @@ sysci  exp
 *      (ia)                  value to be converted
 *      jsr  sysci            call to convert integer value
 *      (xl)                  pointer to pseudo-scblk with string
+       ejc
 .fi
 .if    .ccmc
 
@@ -658,6 +672,7 @@ syscm  exp  1                define external entry point
 *      (xl)                  zero
 *      (xr)                  destroyed
 
+       ejc
 .fi
 .if    .cnra
 .else
@@ -695,6 +710,7 @@ syscr  exp
 *      jsr  syscr            call to convert real value
 *      (xr)                  result scblk
 *      (wa)                  number of result characters
+       ejc
 .fi
 .fi
 
@@ -707,6 +723,7 @@ sysdc  exp  0                define external entry point
 
 *      jsr  sysdc            call to check date
 *      return only if date is ok
+       ejc
 
 *      sysdm  -- dump core
 
@@ -720,6 +737,7 @@ sysdm  exp  0                define external entry point
 
 *      (xr)                  parameter n of call dump(n)
 *      jsr  sysdm            call to enter routine
+       ejc
 
 *      sysdt -- get current date
 
@@ -739,6 +757,7 @@ sysdt  exp  0                define external entry point
 *      the first word need not be set. the result is copied
 *      into spitbol dynamic memory on return.
 .if    .cera
+       ejc
 
 *      sysea -- inform osint of compilation and runtime errors
 
@@ -764,6 +783,7 @@ sysea  exp  1                define external entry point
 
 *      all registers preserved
 .fi
+       ejc
 
 *      sysef -- eject file
 
@@ -780,6 +800,7 @@ sysef  exp  3                define external entry point
 *      ppm  loc              return here if file does not exist
 *      ppm  loc              return here if inappropriate file
 *      ppm  loc              return here if i/o error
+       ejc
 
 *      sysej -- end of job
 
@@ -803,6 +824,7 @@ sysej  exp  0                define external entry point
 *      998  standard output file full or unavailable in a sysxi
 *           load module. in these cases (wa) contains the number
 *           of the statement causing premature termination.
+       ejc
 
 *      sysem -- get error message text
 
@@ -823,6 +845,7 @@ sysem  exp  0                define external entry point
 *      not provide error message texts or because wa is out of
 *      range, spitbol will print the string stored in errtext
 *      keyword.
+       ejc
 
 *      sysen -- endfile
 
@@ -848,6 +871,7 @@ sysen  exp  3                define external entry point
 *      endfile is not permitted. for example, it may be expected
 *      that the standard input and output files are in this
 *      category.
+       ejc
 
 *      sysep -- eject printer page
 
@@ -857,6 +881,7 @@ sysep  exp  0                define external entry point
 *      printer output file (corresponding to syspr output).
 
 *      jsr  sysep            call to eject printer output
+       ejc
 
 *      sysex -- call external function
 
@@ -905,6 +930,7 @@ sysex  exp  3                define external entry point
 *           pseudo-block which is in correct format including
 *           type word recognisable by garbage collector since
 *           block is copied into dynamic memory.
+       ejc
 
 *      sysfc -- file control block routine
 
@@ -954,6 +980,7 @@ sysfc  exp  2                define external entry point
 *      will be made available when i/o occurs later.
 *      private fcblks may have arbitrary contents and spitbol
 *      stores nothing in them.
+       ejc
 *      the requested size for an fcblk in dynamic memory
 *      should allow a 2 word overhead for block type and
 *      length fields. information subsequently stored in the
@@ -1008,6 +1035,7 @@ sysfc  exp  2                define external entry point
 *                            /static block for use as fcblk
 *      (wb)                  destroyed
 .if    .cgbc
+       ejc
 
 *      sysgc -- inform interface of garbage collections
 
@@ -1035,6 +1063,7 @@ sysgc  exp  0                define external entry point
 *      all registers preserved
 .fi
 
+       ejc
 
 *      syshs -- give access to host computer features
 
@@ -1077,6 +1106,7 @@ syshs  exp  8                define external entry point
 *      ppm  loc6             cause statement failure
 *      ppm  loc7             return string at xl, length wa
 *      ppm  loc8             return copy of result in xr
+       ejc
 
 *      sysid -- return system identification
 
@@ -1105,6 +1135,7 @@ sysid  exp  0                define external entry point
 *      jsr  sysid            call for system identification
 *      (xr)                  scblk ptr for addition to header
 *      (xl)                  scblk ptr for second header
+       ejc
 .if    .cinc
 
 *      sysif -- switch to new include file
@@ -1142,6 +1173,7 @@ sysif  exp  1                define external entry point
 
 *      register xl is zero to mark conclusion of use of an
 *      include file.
+       ejc
 .fi
 
 *      sysil -- get input record length
@@ -1165,6 +1197,7 @@ sysil  exp  0                define external entry point
 *      note that it is the sysil call (not the sysio call) which
 *      causes the file to be opened as required for the first
 *      record input from the file.
+       ejc
 
 *      sysin -- read input record
 
@@ -1187,6 +1220,7 @@ sysin  exp  3                define external entry point
 *      ppm  loc              return here if i/o error
 *      ppm  loc              return here if record format error
 *      (wa,wb,wc)            destroyed
+       ejc
 
 *      sysio -- input/output file association
 
@@ -1225,6 +1259,7 @@ sysio  exp  2                define external entry point
 *      but input/output from the file is not allowed. for
 *      example, the standard output file may be in this category
 *      as regards input association.
+       ejc
 
 *      sysld -- load external function
 
@@ -1247,6 +1282,7 @@ sysld  exp  3                define external entry point
 *      system interface routine. the only restriction is that
 *      if the pointer is within dynamic storage, it must be
 *      a proper block pointer.
+       ejc
 
 *      sysmm -- get more memory
 
@@ -1262,6 +1298,7 @@ sysmm  exp  0                define external entry point
 
 *      jsr  sysmm            call to get more memory
 *      (xr)                  number of additional words obtained
+       ejc
 
 *      sysmx -- supply mxlen
 
@@ -1291,6 +1328,7 @@ sysmx  exp  0                define external entry point
 
 *      jsr  sysmx            call to get mxlen
 *      (wa)                  either mxlen or 0 for default
+       ejc
 
 *      sysou -- output record
 
@@ -1316,6 +1354,7 @@ sysou  exp  2                define external entry point
 *      note that it is the sysou call (not the sysio call) which
 *      causes the file to be opened as required for the first
 *      record output to the file.
+       ejc
 
 *      syspi -- print on interactive channel
 
@@ -1335,6 +1374,7 @@ syspi  exp  1                define external entry point
 *      ppm  loc              failure return
 *      (wa,wb)               destroyed
 .if    .cpol
+       ejc
 
 *      syspl -- provide interactive control of spitbol
 
@@ -1361,6 +1401,7 @@ syspl  exp  3                define external entry point
 *                            (wa) = new polling interval
 
 .fi
+       ejc
 
 *      syspp -- obtain print parameters
 
@@ -1426,6 +1467,7 @@ syspp  exp  0                define external entry point
 
 *                            m = 1 for -case 1
 .fi
+       ejc
 
 *      syspr -- print line on standard output file
 
@@ -1455,6 +1497,7 @@ syspr  exp  1                define external entry point
 *      assuming this to be possible, spitbol may make more syspr
 *      calls. if the error return occurs another time, execution
 *      is terminated by a call of sysej with ending code 998.
+       ejc
 
 *      sysrd -- read record from standard input file
 
@@ -1490,6 +1533,7 @@ sysrd  exp  1                define external entry point
 *                            sysrd to obtain input record.
 .fi
 *      (wa,wb,wc)            destroyed
+       ejc
 
 *      sysri -- read record from interactive channel
 
@@ -1512,6 +1556,7 @@ sysri  exp  1                define external entry point
 *      jsr  sysri            call to read line from terminal
 *      ppm  loc              end of file return
 *      (wa,wb,wc)            may be destroyed
+       ejc
 
 *      sysrw -- rewind file
 
@@ -1528,6 +1573,7 @@ sysrw  exp  3                define external entry point
 *      ppm  loc              return here if file does not exist
 *      ppm  loc              return here if rewind not allowed
 *      ppm  loc              return here if i/o error
+       ejc
 .if    .cust
 
 *      sysst -- set file pointer
@@ -1549,6 +1595,7 @@ sysst  exp  0                define external entry point
 *      ppm  loc              return here if set not allowed
 *      ppm  loc              return here if i/o error
 
+       ejc
 .fi
 
 *      systm -- get execution time so far
@@ -1567,6 +1614,7 @@ systm  exp  0                define external entry point
 *      jsr  systm            call to get timer value
 *      (ia)                  time so far in micliseconds
 *                            (deciseconds if .ctmd defined)
+       ejc
 
 *      systt -- trace toggle
 
@@ -1577,6 +1625,7 @@ systt  exp  0                define external entry point
 *      labels in spitbol code to be turned on or off.
 
 *      jsr  systt            call to toggle trace switch
+       ejc
 
 *      sysul -- unload external function
 
@@ -1596,6 +1645,7 @@ sysul  exp  0                define external entry point
 *      definitions and data structures section).
 .if    .cnex
 .else
+       ejc
 
 *      sysxi -- exit to produce load module
 
@@ -1655,6 +1705,7 @@ sysxi  exp  2                define external entry point
 *      and sysej. the nodes are 4 words long. third word
 *      contains link to next node or 0, fourth word contains
 *      fcblk pointer.
+       ejc
 
 *      sysxi (continued)
 
@@ -1694,6 +1745,7 @@ sysxi  exp  2                define external entry point
 *      no return from sysxi is possible if another program
 *      is loaded and entered.
 .fi
+       ejc
 
 *      introduce the internal procedures.
 
@@ -1755,6 +1807,7 @@ flstg  inp  e,0
 gbcol  inp  e,0
 gbcpf  inp  e,0
 gtarr  inp  e,2
+       ejc
 gtcod  inp  e,1
 gtexp  inp  e,1
 gtint  inp  e,1
@@ -1818,6 +1871,7 @@ prtpg  inp  e,0
 prtps  inp  e,0
 prtsn  inp  e,0
 prtst  inp  r,0
+       ejc
 prttr  inp  e,0
 prtvl  inp  r,0
 prtvn  inp  e,0
@@ -1960,6 +2014,7 @@ nstmx  equ  mxdgs+5          max space for real
 
 cfp_u  equ  *                realistic upper bound on alphabet
 .fi
+       ejc
 
 *      environment parameters
 
@@ -2025,6 +2080,7 @@ e_fsp  equ  *                15 percent
 
 e_sed  equ  *                25 percent
 .fi
+       ejc
 
 *      definitions of codes for letters
 
@@ -2067,6 +2123,7 @@ ch_d6  equ  *                digit 6
 ch_d7  equ  *                digit 7
 ch_d8  equ  *                digit 8
 ch_d9  equ  *                digit 9
+       ejc
 
 *      definitions of codes for special characters
 
@@ -2102,6 +2159,7 @@ ch_sq  equ  *                single quote
 ch_u_  equ  *                special identifier char (underline)
 ch_ob  equ  *                opening bracket
 ch_cb  equ  *                closing bracket
+       ejc
 
 *      remaining chars are optional additions to the standards.
 .if    .caht
@@ -2159,6 +2217,7 @@ iodel  equ  *
 .else
 iodel  equ  ch_cm
 .fi
+       ejc
 
 *      data block formats and definitions
 
@@ -2189,6 +2248,7 @@ iodel  equ  ch_cm
 *      in the dynamic region. the garbage collector (actually
 *      procedure gbcpf) requires that all such relocatable
 *      fields in a block must be contiguous.
+       ejc
 
 *      the description format uses the following scheme.
 
@@ -2224,6 +2284,7 @@ offs3  equ  3
 *           of the various fields.
 
 *      the order is alphabetical by identification code.
+       ejc
 
 *      definitions of block codes
 
@@ -2282,6 +2343,7 @@ bl_te  equ  bl_pf+1          teblk
 bl__i  equ  0                default identification code
 bl__t  equ  bl_tr+1          code for data or trace block
 bl___  equ  bl_te+1          number of block codes
+       ejc
 
 *      field references
 
@@ -2319,6 +2381,7 @@ bl___  equ  bl_te+1          number of block codes
 *      apart from the exceptions listed, references are symbolic
 *      as far as possible and modifying the order or number
 *      of fields will not require changes.
+       ejc
 
 *      common fields for function blocks
 
@@ -2354,6 +2417,7 @@ fargs  equ  1                number of arguments
 *      dfblk                 datatype function
 *      pfblk                 program defined function
 *      efblk                 external loaded function
+       ejc
 
 *      identification field
 
@@ -2380,6 +2444,7 @@ idval  equ  1                id value field
 
 *      note that a zero idval means that the block is only
 *      half built and should not be dumped (see dumpr).
+       ejc
 
 *      array block (arblk)
 
@@ -2413,6 +2478,7 @@ idval  equ  1                id value field
 *           /                arvls               /
 *           /                                    /
 *           +------------------------------------+
+       ejc
 
 *      array block (continued)
 
@@ -2478,6 +2544,7 @@ bcsi_  equ  bcbuf+1          size of bcblk
 *      array in the bfblk.  characters following the offset
 *      of bclen are undefined.
 
+       ejc
 
 *      string buffer block (bfblk)
 
@@ -2514,6 +2581,7 @@ bfsi_  equ  bfchr            size of standard fields in bfblk
 *      bclen is always less than or equal to bfalc.
 
 .fi
+       ejc
 
 *      code construction block (ccblk)
 
@@ -2549,6 +2617,7 @@ cccod  equ  ccuse+1          start of generated code in block
 *      the reason that the ccblk is a separate block type from
 *      the usual cdblk is that the garbage collector must
 *      only process those fields which have been set (see gbcpf)
+       ejc
 
 *      code block (cdblk)
 
@@ -2609,6 +2678,7 @@ cdsi_  equ  cdcod            number of standard fields in cdblk
 
 *           cdjmp = b_cdc
 *           cdfal is the offset to the o_gof word
+       ejc
 
 *      code block (continued)
 
@@ -2662,6 +2732,7 @@ cdsi_  equ  cdcod            number of standard fields in cdblk
 *                            value code for last subscript
 *                            =o_amv
 *                            number of subscripts
+       ejc
 
 *      code block (continued)
 
@@ -2708,6 +2779,7 @@ cdsi_  equ  cdcod            number of standard fields in cdblk
 *                            value code for last argument
 *                            pointer to svfnc field of svblk
 
+       ejc
 
 *      code block (continued)
 
@@ -2754,6 +2826,7 @@ cdsi_  equ  cdcod            number of standard fields in cdblk
 *                            value code for operand
 *                            =o_ntb
 *                            =o_ntc
+       ejc
 
 *      code block (continued)
 
@@ -2792,6 +2865,7 @@ cdsi_  equ  cdcod            number of standard fields in cdblk
 *      subtraction           value code for left operand
 *                            value code for right operand
 *                            =o_sub
+       ejc
 
 *      code block (continued)
 
@@ -2839,6 +2913,7 @@ cdsi_  equ  cdcod            number of standard fields in cdblk
 *      note that in this description, =o_xxx refers to the
 *      generation of a word containing the address of another
 *      word which contains the entry point address o_xxx.
+       ejc
 
 *      code block (continued)
 
@@ -2889,6 +2964,7 @@ cdsi_  equ  cdcod            number of standard fields in cdblk
 *      are identical and either complex or direct. in this case,
 *      no code is generated for the success goto and control
 *      is allowed to fall into the failure goto on success.
+       ejc
 
 *      compiler block (cmblk)
 
@@ -2939,6 +3015,7 @@ cmar1  equ  cmvls+1          array subscript pointers
 *      binary operator       cmopn = ptr to operator dvblk
 *                            cmrop = ptr to right operand
 *                            cmlop = ptr to left operand
+       ejc
 
 *      cmtyp is set to indicate the type of expression element
 *      as shown by the following table of definitions.
@@ -2971,6 +3048,7 @@ c_pmt  equ  c_sel+1          pattern match
 
 c_pr_  equ  c_bvn            last preevaluable code
 c__nv  equ  c_pmt+1          number of different cmblk types
+       ejc
 
 *      character table block (ctblk)
 
@@ -3001,6 +3079,7 @@ ctsi_  equ  ctchs+cfp_a      number of words in ctblk
 *      a bitstring is used to form a column of bit indicators.
 *      a bit is set on if the character is in the table and off
 *      if the character is not present.
+       ejc
 
 *      datatype function block (dfblk)
 
@@ -3042,6 +3121,7 @@ dfsi_  equ  dffld            number of standard fields in dfblk
 *      the fcode field points to the routine b_dfc
 
 *      fargs (the number of arguments) is the number of fields.
+       ejc
 
 *      dope vector block (dvblk)
 
@@ -3094,6 +3174,7 @@ dvubs  equ  dvus_+dvbs_      size of unop + binop (see scane)
 *      the left precedence of unary operators is set to an
 *      arbitrary high value. the right value is not required and
 *      consequently the dvrpr field is omitted for unary ops.
+       ejc
 
 *      table of operator precedence values
 
@@ -3141,6 +3222,7 @@ lluno  equ  999              left      all unary operators
 *      3)   the equal sign has been added as a low precedence
 *           operator which is right associative to reflect its
 *           more general usage in this version of snobol4.
+       ejc
 
 *      external function block (efblk)
 
@@ -3196,6 +3278,7 @@ efsi_  equ  eftar            number of standard fields in efblk
 *           4                type is file
 .fi
 .fi
+       ejc
 
 *      expression variable block (evblk)
 
@@ -3226,6 +3309,7 @@ evsi_  equ  evvar+1          size of evblk
 *      note that there is no need to allow for the case of an
 *      expression variable which references an seblk since a
 *      variable which is of the form *var is equivalent to var.
+       ejc
 
 *      expression block (exblk)
 
@@ -3276,6 +3360,7 @@ exsi_  equ  excod            number of standard fields in exblk
 
 *                            (code for expr by value)
 *                            =o_rvl
+       ejc
 
 *      field function block (ffblk)
 
@@ -3314,6 +3399,7 @@ ffsi_  equ  ffofs+1          size of ffblk in words
 *      ffnxt is used to point to the next ffblk of the same name
 *      in the case where there are several fields of the same
 *      name for different datatypes. zero marks the end of chain
+       ejc
 
 *      integer constant block (icblk)
 
@@ -3333,6 +3419,7 @@ icval  equ  icget+1          integer value
 icsi_  equ  icval+cfp_i      size of icblk
 
 *      the length of the icval field is cfp_i.
+       ejc
 
 *      keyword variable block (kvblk)
 
@@ -3355,6 +3442,7 @@ kvsi_  equ  kvnum+1          size of kvblk
 *      the name of a keyword variable is represented by a
 *      base pointer to the kvblk and an offset of kvvar. the
 *      value appears to be trapped by the pointer to trbkv.
+       ejc
 
 *      name block (nmblk)
 
@@ -3384,6 +3472,7 @@ nmsi_  equ  nmofs+1          size of nmblk
 *      a name may be built for any variable (see section on
 *      representations of variables) this includes the
 *      cases of pseudo-variables.
+       ejc
 
 *      pattern block, no parameters (p0blk)
 
@@ -3405,6 +3494,7 @@ pasi_  equ  pthen+1          size of p0blk
 *      block ndnth if there is no subsequent (end of pattern)
 
 *      pcode is a pointer to the match routine for the node.
+       ejc
 
 *      pattern block (one parameter)
 
@@ -3430,6 +3520,7 @@ pbsi_  equ  parm1+1          size of p1blk in words
 *      field are included in the description of the individual
 *      match routines. parm1 is always an address pointer which
 *      is processed by the garbage collector.
+       ejc
 
 *      pattern block (two parameters)
 
@@ -3457,6 +3548,7 @@ pcsi_  equ  parm2+1          size of p2blk in words
 *      parm2 is a non-relocatable field and is not
 *      processed by the garbage collector. accordingly, it may
 *      not contain a pointer to a block in dynamic memory.
+       ejc
 
 *      program-defined datatype block
 
@@ -3489,6 +3581,7 @@ pddfs  equ  dfsi_-pdsi_      difference in dfblk, pdblk sizes
 
 *      pdfld values are stored in order from left to right.
 *      they contain values or pointers to trblk chains.
+       ejc
 
 *      program defined function block (pfblk)
 
@@ -3535,6 +3628,7 @@ pfsi_  equ  pfarg            number of standard fields in pfblk
 *           locals (left to right)
 .if    .cnra
 .else
+       ejc
 
 *      real constant block (rcblk)
 
@@ -3553,6 +3647,7 @@ rcsi_  equ  rcval+cfp_r      size of rcblk
 
 *      the length of the rcval field is cfp_r.
 .fi
+       ejc
 
 *      string constant block (scblk)
 
@@ -3587,6 +3682,7 @@ scsi_  equ  schar            size of standard fields in scblk
 *      automatically allowed for in plc, psc.
 *      note that for a spitbol scblk, the value of cfp_f
 *      is given by cfp_b*schar.
+       ejc
 
 *      simple expression block (seblk)
 
@@ -3602,6 +3698,7 @@ scsi_  equ  schar            size of standard fields in scblk
 setyp  equ  0                ptr to routine b_sel to load expr
 sevar  equ  setyp+1          ptr to vrblk for variable
 sesi_  equ  sevar+1          length of seblk in words
+       ejc
 
 *      standard variable block (svblk)
 
@@ -3634,6 +3731,7 @@ sesi_  equ  sevar+1          length of seblk in words
 *           +------------------------------------+
 *           i                svval               i
 *           +------------------------------------+
+       ejc
 
 *      standard variable block (continued)
 
@@ -3683,6 +3781,7 @@ svfpk  equ  svfnp+svkvc      preeval fcn + const keywd + val
 
 *      the svprd bit is set on for all predicate functions to
 *      enable the special concatenation code optimization.
+       ejc
 
 *      svblk (continued)
 
@@ -3730,6 +3829,7 @@ svfpk  equ  svfnp+svkvc      preeval fcn + const keywd + val
 *           it is a pointer to the pattern node (ndxxx) which
 *           is the standard initial value of the variable.
 *           this value is copied to the vrval field of the vrblk
+       ejc
 
 *      svblk (continued)
 
@@ -3792,6 +3892,7 @@ k_fal  equ  k_bal+pasi_      fail
 k_fen  equ  k_fal+pasi_      fence
 k_rem  equ  k_fen+pasi_      rem
 k_suc  equ  k_rem+pasi_      succeed
+       ejc
 
 *      keyword number table (continued)
 
@@ -3837,6 +3938,7 @@ k__n_  equ  k__sl+1          number of special cases
 k_p__  equ  k_fnc            first protected keyword
 k_v__  equ  k_abo            first keyword with constant value
 k_s__  equ  k_alp            first keyword with special acess
+       ejc
 
 *      format of a table block (tbblk)
 
@@ -3871,6 +3973,7 @@ tbnbk  equ  11               default no. of buckets
 *      tbbuk entries either point to the first teblk on the
 *      chain or they point to the tbblk itself to indicate the
 *      end of the chain.
+       ejc
 
 *      table element block (teblk)
 
@@ -3901,6 +4004,7 @@ tesi_  equ  tenxt+1          size of teblk in words
 *      teval contains a data pointer or a trblk pointer.
 
 *      tesub contains a data pointer.
+       ejc
 
 *      trap block (trblk)
 
@@ -3938,6 +4042,7 @@ trtac  equ  trtin+1          trace type for access trace
 trtvl  equ  trtac+1          trace type for value trace
 trtou  equ  trtvl+1          trace type for output association
 trtfc  equ  trtou+1          trace type for fcblk identification
+       ejc
 
 *      trap block (continued)
 
@@ -3979,6 +4084,7 @@ trtfc  equ  trtou+1          trace type for fcblk identification
 *           trnxt points to next trblk or trval has variable val
 *           trtag is the trace tag (0 if none)
 *           trfnc is the trace function vrblk ptr (0 if none)
+       ejc
 *      trap block (continued)
 
 *      variable output association
@@ -4026,6 +4132,7 @@ trtfc  equ  trtou+1          trace type for fcblk identification
 *           trlbl points to the actual label (cdblk) value
 *           trtag is the trace tag (0 if none)
 *           trfnc is the trace function vrblk ptr (0 if none)
+       ejc
 
 *      trap block (continued)
 
@@ -4075,6 +4182,7 @@ trtfc  equ  trtou+1          trace type for fcblk identification
 
 *      this implementation does not permit trace or i/o
 *      associations to any of the pseudo-variables.
+       ejc
 
 *      vector block (vcblk)
 
@@ -4103,6 +4211,7 @@ vctbd  equ  tbsi_-vcsi_      difference in sizes - see prtvl
 *      vcvls are either data pointers or trblk pointers
 
 *      the dimension can be deduced from vclen.
+       ejc
 
 *      variable block (vrblk)
 
@@ -4145,6 +4254,7 @@ vctbd  equ  tbsi_-vcsi_      difference in sizes - see prtvl
 *           /            vrchs = vrsvp           /
 *           /                                    /
 *           +------------------------------------+
+       ejc
 
 *      variable block (continued)
 
@@ -4198,6 +4308,7 @@ vrsvo  equ  vrsvp-vrsof      pseudo-offset to vrsvp field
 
 *      vrchs is the name (ljrz) if vrlen is non-zero.
 *      vrsvp is a ptr to the svblk if vrlen is zero.
+       ejc
 
 *      format of a non-relocatable external block (xnblk)
 
@@ -4227,6 +4338,7 @@ xnsi_  equ  xndta            size of standard fields in xnblk
 *      note that the term non-relocatable refers to the contents
 *      and not the block itself. an xnblk can be moved around if
 *      it is built in the dynamic memory area.
+       ejc
 
 *      relocatable external block (xrblk)
 
@@ -4252,6 +4364,7 @@ xrtyp  equ  0                pointer to dummy routine b_xrt
 xrlen  equ  xrtyp+1          length of xrblk in bytes
 xrptr  equ  xrlen+1          start of address pointers
 xrsi_  equ  xrptr            size of standard fields in xrblk
+       ejc
 
 *      s_cnv (convert) function switch constants.  the values
 *      are tied to the order of the entries in the svctb table
@@ -4304,6 +4417,7 @@ nm321  equ  321
 nini8  equ  998
 nini9  equ  999
 thsnd  equ  1000
+       ejc
 
 *      numbers of undefined spitbol operators
 
@@ -4327,6 +4441,7 @@ stgxe  equ  stgce+1          exec. compile after end line
 stgnd  equ  stgce-stgic      difference in stage after end
 stgee  equ  stgxe+1          eval evaluating expression
 stgno  equ  stgee+1          number of codes
+       ejc
 
 
 *      statement number pad count for listr
@@ -4362,6 +4477,7 @@ t_sgo  equ  t_fgo+1          success goto
 *      operator come first to facilitate operator syntax check.
 
 t_uok  equ  t_fnc            last code ok before unary operator
+       ejc
 
 *      definitions of values for expan jump table
 
@@ -4403,6 +4519,7 @@ t_sm1  equ  t_smc+1          semicolon, state one
 t_sm2  equ  t_smc+2          semicolon, state two
 
 t_nes  equ  t_sm2+1          number of entries in branch table
+       ejc
 
 *       definition of offsets used in control card processing
 
@@ -4462,6 +4579,7 @@ ccofs  equ  7                offset to start of title/subtitle
 .if    .cinc
 ccinm  equ  9                max depth of include file nesting
 .fi
+       ejc
 
 *      definitions of stack offsets used in cmpil procedure
 
@@ -4491,6 +4609,7 @@ pfpd3  equ  32               ... printout
 pf_i2  equ  cfp_i+cfp_i      size of table entry (2 ints)
 .fi
 .if    .crel
+       ejc
 
 *      definition of limits and adjustments that are built by
 *      relcr for use by the routines that relocate pointers
@@ -4608,6 +4727,7 @@ btkwv  dbc  svkwv            bits to test for keword with value
 btprd  dbc  svprd            bit to test for predicate function
 btpre  dbc  svpre            bit to test for preevaluation
 btval  dbc  svval            bit to test for value
+       ejc
 
 *      list of names used for control card processing
 
@@ -4658,6 +4778,7 @@ dmhdk  dac  b_scl            dump of keyword values
 dmhdv  dac  b_scl            dump of natural variables
        dac  25
        dtc  /dump of natural variables/
+       ejc
 
 *      message text for compilation statistics
 
@@ -4700,6 +4821,7 @@ encm5  dac  b_scl            execution suppressed
 endab  dac  b_scl
        dac  12
        dtc  /abnormal end/
+       ejc
 
 *      memory overflow during initialisation
 
@@ -4724,6 +4846,7 @@ endso  dac  b_scl            stack overflow in garbage collector
 endtu  dac  b_scl
        dac  15
        dtc  /error - time up/
+       ejc
 
 *      string constant for error message (error section)
 
@@ -4774,6 +4897,7 @@ intth  dic  +1000            1000
 intab  dac  int_r            pointer to 0
        dac  inton            pointer to 1
        dac  inttw            pointer to 2
+       ejc
 
 *      special pattern nodes. the following pattern nodes
 *      consist simply of a pcode pointer, see match routines
@@ -4836,6 +4960,7 @@ ucase  dac  b_scl
        dac  26
        dtc  /ABCDEFGHIJKLMNOPQRSTUVWXYZ/
 .fi
+       ejc
 
 *      operator dope vectors (see dvblk format)
 
@@ -4887,6 +5012,7 @@ opdvs  dac  o_ass            assignment
        dac  c_alt
        dac  llalt
        dac  rralt
+       ejc
 
 *      operator dope vectors (continued)
 
@@ -4925,6 +5051,7 @@ opdvs  dac  o_ass            assignment
        dac  c_bvl
        dac  llmlt
        dac  rrmlt
+       ejc
 
 *      operator dope vectors (continued)
 
@@ -4967,6 +5094,7 @@ opdvs  dac  o_ass            assignment
        dac  0                negation
        dac  c_neg
        dac  lluno
+       ejc
 
 *      operator dope vectors (continued)
 
@@ -5006,6 +5134,7 @@ opdvd  dac  o_god            direct goto
 opdvn  dac  o_goc            complex normal goto
        dac  c_unm
        dac  lluno
+       ejc
 
 *      operator entry address pointers, used in code
 
@@ -5040,6 +5169,7 @@ oslc_  dac  o_slc            selection, third entry
 osld_  dac  o_sld            selection, fourth entry
 ostp_  dac  o_stp            stop execution
 ounf_  dac  o_unf            unexpected failure
+       ejc
 
 *      table of names of undefined binary operators for opsyn
 
@@ -5102,6 +5232,7 @@ reavt  drc  +1.0e+1          10**1
        drc  +1.0e+9          10**9
 reatt  drc  +1.0e+10         10**10
 .fi
+       ejc
 
 *      string constants (scblk format) for dtype procedure
 
@@ -5163,6 +5294,7 @@ scfil  dac  b_scl            file (for extended load arguments)
        dac  4
        dtc  /file/
 .fi
+       ejc
 
 *      string constants (scblk format) for kvrtn (see retrn)
 
@@ -5220,6 +5352,7 @@ scre0  dac  b_scl
        dac  2
        dtc  /0./
 .fi
+       ejc
 
 *      used to re-initialise kvstl
 
@@ -5258,6 +5391,7 @@ stnvr  dac  b_vrl            vrget
        dac  stndl            vrlbl
        dac  stndf            vrfnc
        dac  0                vrnxt
+       ejc
 
 *      messages used in end of run processing (stopr)
 
@@ -5327,6 +5461,7 @@ svctb  dac  scstr            string
        dac  scbuf            buffer
 .fi
        dac  0                zero marks end of list
+       ejc
 
 *      messages (scblk format) used by trace procedures
 
@@ -5352,6 +5487,7 @@ trbkv  dac  b_trt            dummy trblk
 
 trxdr  dac  o_txr            block points to return routine
 trxdc  dac  trxdr            pointer to block
+       ejc
 
 *      standard variable blocks
 
@@ -5438,6 +5574,7 @@ v_arb  dbc  svkvc            arb
        dtc  /arb/
        dac  k_arb
        dac  ndarb
+       ejc
 
 *      standard variable blocks (continued)
 
@@ -5503,6 +5640,7 @@ v_lle  dbc  svfpr            lle
        dtc  /lle/
        dac  s_lle
        dac  2
+       ejc
 
 *      standard variable blocks (continued)
 
@@ -5609,6 +5747,7 @@ v_cop  dbc  svfnn            copy
        dtc  /copy/
        dac  s_cop
        dac  1
+       ejc
 
 *      standard variable blocks (continued)
 
@@ -5670,6 +5809,7 @@ v_hst  dbc  svfnn            host
        dtc  /host/
        dac  s_hst
        dac  5
+       ejc
 
 *      standard variable blocks (continued)
 
@@ -5739,6 +5879,7 @@ v_spn  dbc  svfnp            span
        dtc  /span/
        dac  s_spn
        dac  1
+       ejc
 
 *      standard variable blocks (continued)
 
@@ -5797,6 +5938,7 @@ v_arr  dbc  svfnn            array
        dtc  /array/
        dac  s_arr
        dac  2
+       ejc
 
 *      standard variable blocks (continued)
 
@@ -5865,6 +6007,7 @@ v_loc  dbc  svfnn            local
        dtc  /local/
        dac  s_loc
        dac  2
+       ejc
 
 *      standard variable blocks (continued)
 
@@ -5949,6 +6092,7 @@ v_det  dbc  svfnn            detach
        dtc  /detach/
        dac  s_det
        dac  1
+       ejc
 
 *      standard variable blocks (continued)
 
@@ -6006,6 +6150,7 @@ v_stt  dbc  svfnn            stoptr
        dtc  /stoptr/
        dac  s_stt
        dac  2
+       ejc
 
 *      standard variable blocks (continued)
 
@@ -6071,6 +6216,7 @@ v_nrt  dbc  svlbl            nreturn
        dac  7
        dtc  /nreturn/
        dac  l_nrt
+       ejc
 
 *      standard variable blocks (continued)
 
@@ -6131,6 +6277,7 @@ v_cnt  dbc  svlbl            continue
        dac  8
        dtc  /continue/
        dac  l_cnt
+       ejc
 
 *      standard variable blocks (continued)
 
@@ -6200,6 +6347,7 @@ v_scn  dbc  svlbl            scontinue
 
        dbc  0                dummy entry to end list
        dac  10               length gt 9 (scontinue)
+       ejc
 
 *      list of svblk pointers for keywords to be dumped. the
 *      list is in the order which appears on the dump output.
@@ -6326,6 +6474,7 @@ c_yyy  dac  0                last location in constant section
 *      does not affect the execution of the spitbol program.
 
        sec                   start of working storage section
+       ejc
 
 *      this area is not cleared by initial code
 
@@ -6357,6 +6506,7 @@ arcdm  dac  0                count dimensions
 arnel  dic  +0               count elements
 arptr  dac  0                offset ptr into arblk
 arsvl  dic  +0               save integer low bound
+       ejc
 
 *      work areas for arref routine
 
@@ -6425,6 +6575,7 @@ dupsi  dic  +0               store integer string length
 *      work area for endfile (s_enf)
 
 enfch  dac  0                for iochn chain head
+       ejc
 
 *      work areas for ertex
 
@@ -6479,6 +6630,7 @@ gtawa  dac  0                save wa
 
 gtina  dac  0                save wa
 gtinb  dac  0                save wb
+       ejc
 
 *      work areas for gtnum procedure
 
@@ -6609,6 +6761,7 @@ scnsc  dac  0                save wc
 scnof  dac  0                save offset
 .if    .cnsr
 .else
+       ejc
 
 *      work area used by sorta, sortc, sortf, sorth
 
@@ -6687,6 +6840,7 @@ cswpr  dac  0                0/1 for -noprint/-print
 
 ctmsk  dbc  0                last bit position used in r_ctp
 curid  dac  0                current id value
+       ejc
 
 *      global value for cdwrd procedure
 
@@ -6748,6 +6902,7 @@ hshnb  dic  +0               number of hash buckets
 *      global areas for init
 
 initr  dac  0                save terminal flag
+       ejc
 
 *      global values for keyword values which are stored as one
 *      word integers. these values must be assembled in the
@@ -6833,6 +6988,7 @@ pfnte  dac  0                nr of table entries
 pfste  dic  +0               gets int rep of table entry size
 .fi
 
+       ejc
 
 *      global values used in pattern match routines
 
@@ -6861,6 +7017,7 @@ prlen  dac  0                length of print buffer in chars
 prlnw  dac  0                length of print buffer in words
 profs  dac  0                offset to next location in prbuf
 prtef  dac  0                endfile flag
+       ejc
 
 *      global area for readr
 
@@ -6968,6 +7125,7 @@ r_stl  dac  0                source listing sub-title
 r_sxc  dac  0                code (cdblk) ptr for setexit trap
 r_ttl  dac  nulls            source listing title
 r_xsc  dac  0                string pointer for xscan
+       ejc
 
 *      the remaining pointers in this list are used to point
 *      to function blocks for normally undefined operators.
@@ -6999,6 +7157,7 @@ scntp  dac  0                save syntax type from last call
 *      global value for indicating stage (see error section)
 
 stage  dac  0                initial value = initial compile
+       ejc
 
 *      global stack pointer
 
@@ -7078,6 +7237,7 @@ rlaj3  add  xl,*rssi_        advance to next section
 rlaj4  ica  xr               increment to next ptr on list
        brn  rlaj0            jump to check  for completion
        enp                   end procedure relaj
+       ejc
 
 *      relcr -- create relocation info after save file reload
 
@@ -7138,6 +7298,7 @@ relcr  prc  e,0              entry point
        mov  -(xl),wc         save as end of old dynamic region
        exi
        enp
+       ejc
 
 *      reldn -- relocate pointers in the dynamic region
 
@@ -7174,6 +7335,7 @@ rld01  add  (xr),rldcd       adjust block type word
 *      while scanning dynamic must be adjusted at this time.
 *      see processing of ffblk for example.
 
+       ejc
 
 *      reldn (continued)
 
@@ -7232,6 +7394,7 @@ rld04  add  wa,xr            point past last reloc field
        add  wb,xr            point to first reloc field
        mov  xl,rldls         point to list of bounds
        jsr  relaj            adjust pointers
+       ejc
 
 *      reldn (continued)
 
@@ -7286,6 +7449,7 @@ rld09  mov  wa,*offs3        point past third field
 rld10  mov  wa,exlen(xr)     load length
        mov  wb,*exflc        set offset
        brn  rld04            jump back
+       ejc
 
 *      reldn (continued)
 
@@ -7350,6 +7514,7 @@ rld15  mov  xl,pddfp(xr)     load ptr to dfblk
        mov  wa,dfpdl(xl)     get pdblk length
        mov  wb,*pddfp        set offset
        brn  rld04            all set
+       ejc
 
 *      reldn (continued)
 
@@ -7385,6 +7550,7 @@ rld20  mov  wa,xrlen(xr)     load length
        mov  wb,*xrptr        set offset
        brn  rld04            jump back
        enp                   end procedure reldn
+       ejc
 
 *      reloc -- relocate storage after save file reload
 
@@ -7406,6 +7572,7 @@ reloc  prc  e,0              entry point
        jsr  relst            relocate pointers in static
        exi                   return to caller
        enp                   end procedure reloc
+       ejc
 
 *      relst -- relocate pointers in the static region
 
@@ -7459,6 +7626,7 @@ rls04  add  wa,xr            create end ptr
 
 rls05  exi                   return to caller
        enp                   end procedure relst
+       ejc
 
 *      relws -- relocate pointers in the working section
 
@@ -7546,6 +7714,7 @@ ini02  mov  (xr)+,wa         store value
        mov  lstpf,wa         nothing for listr yet
        mov  wa,=iniln        input image length
        mov  cswin,wa         -in72
+       ejc
        mov  wa,=nulls        get null string pointer
        mov  kvrtn,wa         return
        mov  r_etx,wa         errtext
@@ -7598,6 +7767,7 @@ ini03  mlr  reavt            * 10.0
 .fi
        zer  wc               set to read parameters
        jsr  prpar            read them
+       ejc
 
 *      now compute starting address for dynamic store and if
 *      necessary request more memory.
@@ -7627,6 +7797,7 @@ ini06  mov  dnamb,xr         dynamic base adrs
        dca  xr               point a word in front
        mov  kvmxl,xr         use as maxlngth
        mov  mxlen,xr         and as mxlen
+       ejc
 
 *      loop here if necessary till enough memory obtained
 *      so that dname is above dnamb
@@ -7730,6 +7901,7 @@ ini11  zer  (xr)+            blank a word
        mov  wc,initr         terminal flag
        bze  wc,ini13         skip if no terminal
        jsr  prpar            associate terminal
+       ejc
 
 *      check for expiry date
 
@@ -7779,6 +7951,7 @@ ini13  jsr  sysdc            call date check
        bze  headp,inix0      no eject if nothing printed
        jsr  prtpg            eject printer
 .fi
+       ejc
 
 *      prepare now to start execution
 
@@ -7867,6 +8040,7 @@ rstrt  prc  e,0              entry point
 
 *      (cp)                  pointer to next code word
 *      (xs)                  current stack pointer
+       ejc
 
 *      binary plus (addition)
 
@@ -7894,6 +8068,7 @@ oadd1  adr  rcval(xl)        add right operand to left
        rno  exrea            return real if no overflow
        erb  261,addition caused real overflow
 .fi
+       ejc
 
 *      unary plus (affirmation)
 
@@ -7904,6 +8079,7 @@ o_aff  ent                   entry point
        mov  -(xs),xr         result if converted to numeric
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      binary bar (alternation)
 
@@ -7936,6 +8112,7 @@ oalt2  mov  pthen(xl),parm1(xr) build the (b / c) node
        mov  -(xs),pthen(xr)  set a as new left arg
        mov  xr,xl            set (b / c) as new right arg
        brn  oalt1            merge back to build a / (b / c)
+       ejc
 
 *      array reference (multiple subscripts, by name)
 
@@ -7943,6 +8120,7 @@ o_amn  ent                   entry point
        lcw  xr               load number of subscripts
        mov  wb,xr            set flag for by name
        brn  arref            jump to array reference routine
+       ejc
 
 *      array reference (multiple subscripts, by value)
 
@@ -7950,6 +8128,7 @@ o_amv  ent                   entry point
        lcw  xr               load number of subscripts
        zer  wb               set flag for by value
        brn  arref            jump to array reference routine
+       ejc
 
 *      array reference (one subscript, by name)
 
@@ -7990,6 +8169,7 @@ oaon3  mnz  wb               set flag for name reference
 
 oaon4  lcw  xr               result on stack, get code word
        bri  (xr)             execute next code word
+       ejc
 
 *      array reference (one subscript, by value)
 
@@ -8031,6 +8211,7 @@ oaov3  zer  wb               set flag for value reference
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      assignment
 
@@ -8046,11 +8227,13 @@ oass0  mov  wb,(xs)+         load value to be assigned
        ppm  exfal            fail if assignment fails
        lcw  xr               result on stack, get code word
        bri  (xr)             execute next code word
+       ejc
 
 *      compilation error
 
 o_cer  ent                   entry point
        erb  007,compilation error encountered during execution
+       ejc
 
 *      unary at (cursor assignment)
 
@@ -8062,6 +8245,7 @@ o_cas  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      concatenation
 
@@ -8104,6 +8288,7 @@ ocnc2  jsr  gtstg            convert right arg to string
        mov  xl,xr            move left arg to proper reg
        mov  xr,(xs)          move right arg to proper reg
        brn  ocnc1            merge back to concatenate strings
+       ejc
 
 *      concatenation (continued)
 
@@ -8139,6 +8324,7 @@ ocnc6  jsr  gtpat            convert left arg to pattern
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      complementation
 
@@ -8172,6 +8358,7 @@ ocom3  ldr  rcval(xr)        load real value
        ngr                   negate
        brn  exrea            return real result
 .fi
+       ejc
 
 *      binary slash (division)
 
@@ -8198,6 +8385,7 @@ odvd2  dvr  rcval(xl)        divide left operand by right
        rno  exrea            return real if no overflow
        erb  262,division caused real overflow
 .fi
+       ejc
 
 *      exponentiation
 
@@ -8240,6 +8428,7 @@ oexp1  bct  wa,oex13         loop if more to go
 *      here if integer overflow
 
 oexp2  erb  017,exponentiation caused integer overflow
+       ejc
 
 *      exponentiation (continued)
 .if    .cnra
@@ -8340,6 +8529,7 @@ oex12  mov  -(xs),xr         stack base
 .else
 oex12  erb  019,exponentiation right operand is negative
 .fi
+       ejc
 
 *      failure in expression evaluation
 
@@ -8349,11 +8539,13 @@ oex12  erb  019,exponentiation right operand is negative
 
 o_fex  ent                   entry point
        brn  evlx6            jump to failure loc in evalx
+       ejc
 
 *      failure during evaluation of a complex or direct goto
 
 o_fif  ent                   entry point
        erb  020,goto evaluation failure
+       ejc
 
 *      function call (more than one argument)
 
@@ -8363,6 +8555,7 @@ o_fnc  ent                   entry point
        mov  xl,vrfnc(xr)     load function pointer
        bne  wa,fargs(xl),cfunc use central routine if wrong num
        bri  (xl)             jump to function if arg count ok
+       ejc
 
 *      function name error
 
@@ -8374,6 +8567,7 @@ o_fne  ent                   entry point
 *      here for error
 
 ofne1  erb  021,function called by name returned a value
+       ejc
 
 *      function call (single argument)
 
@@ -8383,10 +8577,12 @@ o_fns  ent                   entry point
        mov  xl,vrfnc(xr)     load function pointer
        bne  wa,fargs(xl),cfunc use central routine if wrong num
        bri  (xl)             jump to function if arg count ok
+       ejc
 *      call to undefined function
 
 o_fun  ent                   entry point
        erb  022,undefined function called
+       ejc
 
 *      execute complex goto
 
@@ -8399,6 +8595,7 @@ o_goc  ent                   entry point
 *      here if goto operand is not natural variable
 
 ogoc1  erb  023,goto operand is not a natural variable
+       ejc
 
 *      execute direct goto
 
@@ -8408,6 +8605,7 @@ o_god  ent                   entry point
        beq  wa,=b_cds,bcds0  jump if code block to code routine
        beq  wa,=b_cdc,bcdc0  jump if code block to code routine
        erb  024,goto operand in direct goto is not code
+       ejc
 
 *      set goto failure trap
 
@@ -8420,6 +8618,7 @@ o_gof  ent                   entry point
        icp                   point to next code word
        lcw  xr               fetch next code word
        bri  (xr)             execute it
+       ejc
 
 *      binary dollar (immediate assignment)
 
@@ -8444,12 +8643,14 @@ o_ima  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      indirection (by name)
 
 o_inn  ent                   entry point
        mnz  wb               set flag for result by name
        brn  indir            jump to common routine
+       ejc
 
 *      interrogation
 
@@ -8457,18 +8658,21 @@ o_int  ent                   entry point
        mov  (xs),=nulls      replace operand with null
        lcw  xr               get next code word
        bri  (xr)             execute next code word
+       ejc
 
 *      indirection (by value)
 
 o_inv  ent                   entry point
        zer  wb               set flag for by value
        brn  indir            jump to common routine
+       ejc
 
 *      keyword reference (by name)
 
 o_kwn  ent                   entry point
        jsr  kwnam            get keyword name
        brn  exnam            exit with result name
+       ejc
 
 *      keyword reference (by value)
 
@@ -8480,6 +8684,7 @@ o_kwv  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      load expression by name
 
@@ -8493,6 +8698,7 @@ o_lex  ent                   entry point
        mov  xl,xr            move name base to proper reg
        mov  wa,*evvar        set name offset = zero
        brn  exnam            exit with name in (xl,wa)
+       ejc
 
 *      load pattern value
 
@@ -8501,6 +8707,7 @@ o_lpt  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      load variable name
 
@@ -8510,6 +8717,7 @@ o_lvn  ent                   entry point
        mov  -(xs),*vrval     stack name offset
        lcw  xr               get next code word
        bri  (xr)             execute next code word
+       ejc
 
 *      binary asterisk (multiplication)
 
@@ -8536,6 +8744,7 @@ omlt1  mlr  rcval(xl)        multiply left operand by right
        rno  exrea            return real if no overflow
        erb  263,multiplication caused real overflow
 .fi
+       ejc
 
 *      name reference
 
@@ -8548,6 +8757,7 @@ o_nam  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      negation
 
@@ -8573,11 +8783,13 @@ o_ntc  ent                   entry point
        ica  xs               pop failure offset
        mov  flptr,(xs)+      restore old failure pointer
        brn  exnul            exit giving null result
+       ejc
 
 *      use of undefined operator
 
 o_oun  ent                   entry point
        erb  029,undefined operator referenced
+       ejc
 
 *      binary dot (pattern assignment)
 
@@ -8602,12 +8814,14 @@ o_pas  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      pattern match (by name, for replacement)
 
 o_pmn  ent                   entry point
        zer  wb               set type code for match by name
        brn  match            jump to routine to start match
+       ejc
 
 *      pattern match (statement)
 
@@ -8618,12 +8832,14 @@ o_pmn  ent                   entry point
 o_pms  ent                   entry point
        mov  wb,=num02        set flag for statement to match
        brn  match            jump to routine to start match
+       ejc
 
 *      pattern match (by value)
 
 o_pmv  ent                   entry point
        mov  wb,=num01        set type code for value match
        brn  match            jump to routine to start match
+       ejc
 
 *      pop top item on stack
 
@@ -8631,11 +8847,13 @@ o_pop  ent                   entry point
        ica  xs               pop top stack entry
        lcw  xr               get next code word
        bri  (xr)             execute next code word
+       ejc
 
 *      terminate execution (code compiled for end statement)
 
 o_stp  ent                   entry point
        brn  lend0            jump to end circuit
+       ejc
 
 *      return name from expression
 *      this entry points is used if the evaluation of an
@@ -8644,6 +8862,7 @@ o_stp  ent                   entry point
 
 o_rnm  ent                   entry point
        brn  evlx4            return to evalx procedure
+       ejc
 
 *      pattern replacement
 
@@ -8684,6 +8903,7 @@ o_rpl  ent                   entry point
        mov  xl,num01(xs)     else point to subject string
        plc  xl               point to subject string chars
        mvc                   move first part to result
+       ejc
 *      pattern replacement (continued)
 
 *      now move in replacement value
@@ -8728,6 +8948,7 @@ orpl4  mov  xl,xr            copy scblk replacement ptr
        lcw  xr               result on stack, get code word
        bri  (xr)             execute next code word
 .fi
+       ejc
 
 *      return value from expression
 
@@ -8737,6 +8958,7 @@ orpl4  mov  xl,xr            copy scblk replacement ptr
 
 o_rvl  ent                   entry point
        brn  evlx3            return to evalx procedure
+       ejc
 
 *      selection
 
@@ -8778,6 +9000,7 @@ o_sld  ent                   entry point
        mov  flptr,(xs)+      restore old failure pointer
        lcw  xr               get next code word
        bri  (xr)             execute next code word
+       ejc
 
 *      binary minus (subtraction)
 
@@ -8804,11 +9027,13 @@ osub1  sbr  rcval(xl)        subtract right operand from left
        rno  exrea            return real if no overflow
        erb  264,subtraction caused real overflow
 .fi
+       ejc
 
 *      dummy operator to return control to trxeq procedure
 
 o_txr  ent                   entry point
        brn  trxq1            jump into trxeq procedure
+       ejc
 
 *      unexpected failure
 
@@ -8866,6 +9091,7 @@ o_unf  ent                   entry point
 *      match routines section) defines the last such entry point
 
 b_aaa  ent  bl__i            entry point of first block routine
+       ejc
 
 *      exblk
 
@@ -8878,6 +9104,7 @@ b_exl  ent  bl_ex            entry point (exblk)
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      seblk
 
@@ -8892,6 +9119,7 @@ b_sel  ent  bl_se            entry point (seblk)
 *      define symbol which marks end of entries for expressions
 
 b_e__  ent  bl__i            entry point
+       ejc
 
 *      trblk
 
@@ -8902,12 +9130,14 @@ b_trt  ent  bl_tr            entry point (trblk)
 *      define symbol marking end of trap and expression blocks
 
 b_t__  ent  bl__i            end of trblk,seblk,exblk entries
+       ejc
 
 *      arblk
 
 *      the routine for arblk is never executed
 
 b_art  ent  bl_ar            entry point (arblk)
+       ejc
 
 *      bcblk
 
@@ -8916,6 +9146,7 @@ b_art  ent  bl_ar            entry point (arblk)
 *      (xr)                  pointer to bcblk
 
 b_bct  ent  bl_bc            entry point (bcblk)
+       ejc
 
 *      bfblk
 
@@ -8924,12 +9155,14 @@ b_bct  ent  bl_bc            entry point (bcblk)
 *      (xr)                  pointer to bfblk
 
 b_bft  ent  bl_bf            entry point (bfblk)
+       ejc
 
 *      ccblk
 
 *      the routine for ccblk is never entered
 
 b_cct  ent  bl_cc            entry point (ccblk)
+       ejc
 
 *      cdblk
 
@@ -8944,6 +9177,7 @@ b_cdc  ent  bl_cd            entry point (cdblk)
 bcdc0  mov  xs,flptr         pop garbage off stack
        mov  (xs),cdfal(xr)   set failure offset
        brn  stmgo            enter stmt
+       ejc
 
 *      cdblk (continued)
 
@@ -8955,18 +9189,21 @@ b_cds  ent  bl_cd            entry point (cdblk)
 bcds0  mov  xs,flptr         pop garbage off stack
        mov  (xs),*cdfal      set failure offset
        brn  stmgo            enter stmt
+       ejc
 
 *      cmblk
 
 *      the routine for a cmblk is never executed
 
 b_cmt  ent  bl_cm            entry point (cmblk)
+       ejc
 
 *      ctblk
 
 *      the routine for a ctblk is never executed
 
 b_ctt  ent  bl_ct            entry point (ctblk)
+       ejc
 
 *      dfblk
 
@@ -8990,6 +9227,7 @@ bdfc1  mov  -(xr),(xs)+      move a field value
        bct  wa,bdfc1         loop till all moved
        mov  xr,wc            recall pointer to pdblk
        brn  exsid            exit setting id field
+       ejc
 
 *      efblk
 
@@ -9062,6 +9300,7 @@ befc2  mov  -(xs),(xt)       stack arg ptr
        jsr  gtstg            convert argument to string
        err  039,external function argument is not a string
        brn  befc6            jump to merge
+       ejc
 
 *      efblk (continued)
 
@@ -9107,6 +9346,7 @@ befc7  bnz  wc,befc1         loop back if more to go
        wtb  wa               convert number of args to bytes
        add  xs,wa            remove arguments from stack
 .fi
+       ejc
 
 *      efblk (continued)
 
@@ -9175,12 +9415,14 @@ bef12  mov  xl,xr            save source string pointer
        lcw  xr               get next code word
        bri  (xr)             execute next code word
 .fi
+       ejc
 
 *      evblk
 
 *      the routine for an evblk is never executed
 
 b_evt  ent  bl_ev            entry point (evblk)
+       ejc
 
 *      ffblk
 
@@ -9205,6 +9447,7 @@ bffc1  beq  wa,ffdfp(xr),bffc3 jump if this is the correct ffblk
 *      here for bad argument
 
 bffc2  erb  041,field function argument is wrong datatype
+       ejc
 
 *      ffblk (continued)
 
@@ -9233,6 +9476,7 @@ bffc4  mov  (xs),xr          store value on stack (over pdblk)
 bffc5  mov  -(xs),wa         store name offset (base is set)
        lcw  xr               get next code word
        bri  (xr)             execute next code word
+       ejc
 
 *      icblk
 
@@ -9245,12 +9489,14 @@ b_icl  ent  bl_ic            entry point (icblk)
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      kvblk
 
 *      the routine for a kvblk is never executed.
 
 b_kvt  ent  bl_kv            entry point (kvblk)
+       ejc
 
 *      nmblk
 
@@ -9265,12 +9511,14 @@ b_nml  ent  bl_nm            entry point (nmblk)
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      pdblk
 
 *      the routine for a pdblk is never executed
 
 b_pdt  ent  bl_pd            entry point (pdblk)
+       ejc
 
 *      pfblk
 
@@ -9319,6 +9567,7 @@ bpf01  mov  wb,xl            save pointer
        wtb  wa               convert no. of args to bytes offset
        add  xt,wa            point before first arg
        mov  bpfxt,xt         remember arg pointer
+       ejc
 
 *      pfblk (continued)
 
@@ -9367,6 +9616,7 @@ bpf06  mov  wc,xl            save pointer
        mov  xl,wc            point back to block with value
        mov  vrval(xl),wb     set null as new value
        bct  wa,bpf05         loop till all locals processed
+       ejc
 
 *      pfblk (continued)
 
@@ -9444,6 +9694,7 @@ bpf09  mov  xr,pfctr(xl)     load possible call trace trblk
        dcv  kvtra            decrement trace count
        bze  trfnc(xr),bpf11  jump if print trace
        jsr  trxeq            execute function type trace
+       ejc
 
 *      pfblk (continued)
 
@@ -9477,6 +9728,7 @@ bpf13  mov  (xs),wb          save arg ctr (over failoffs is ok)
        sub  xl,wb            restore pfblk pointer
        mov  xr,vrval(xr)     load next value
        jsr  prtvl            print argument value
+       ejc
 
 *      here after dealing with one argument
 
@@ -9507,6 +9759,7 @@ bpf17  mov  flptr,num02(xs)  reset so exfal can return to evalx
        erb  286,function call to undefined entry label
 .if    .cnra
 .else
+       ejc
 
 *      rcblk
 
@@ -9520,6 +9773,7 @@ b_rcl  ent  bl_rc            entry point (rcblk)
        lcw  xr               get next code word
        bri  (xr)             execute it
 .fi
+       ejc
 
 *      scblk
 
@@ -9532,24 +9786,28 @@ b_scl  ent  bl_sc            entry point (scblk)
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      tbblk
 
 *      the routine for a tbblk is never executed
 
 b_tbt  ent  bl_tb            entry point (tbblk)
+       ejc
 
 *      teblk
 
 *      the routine for a teblk is never executed
 
 b_tet  ent  bl_te            entry point (teblk)
+       ejc
 
 *      vcblk
 
 *      the routine for a vcblk is never executed
 
 b_vct  ent  bl_vc            entry point (vcblk)
+       ejc
 
 *      vrblk
 
@@ -9573,6 +9831,7 @@ b_vra  ent  bl__i            entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      vrblk (continued)
 
@@ -9582,6 +9841,7 @@ b_vra  ent  bl__i            entry point
 
 b_vre  ent                   entry point
        erb  042,attempt to change value of protected variable
+       ejc
 
 *      vrblk (continued)
 
@@ -9594,6 +9854,7 @@ b_vrg  ent                   entry point
        mov  xr,vrlbo(xr)     load code pointer
        mov  xl,(xr)          load entry address
        bri  xl               jump to routine for next code word
+       ejc
 
 *      vrblk (continued)
 
@@ -9606,6 +9867,7 @@ b_vrl  ent                   entry point
        mov  -(xs),vrval(xr)  load value onto stack (vrget = 0)
        lcw  xr               get next code word
        bri  (xr)             execute next code word
+       ejc
 
 *      vrblk (continued)
 
@@ -9618,6 +9880,7 @@ b_vrs  ent                   entry point
        mov  vrvlo(xr),(xs)   store value, leave on stack
        lcw  xr               get next code word
        bri  (xr)             execute next code word
+       ejc
 
 *      vrblk (continued)
 
@@ -9654,6 +9917,7 @@ bvrt1  jsr  prtsn            print statement number
 
 bvrt2  mov  xr,trlbl(xr)     load pointer to actual code
        bri  (xr)             execute statement at label
+       ejc
 
 *      vrblk (continued)
 
@@ -9673,12 +9937,14 @@ b_vrv  ent                   entry point
        ppm  exfal            fail if assignment fails
        lcw  xr               else get next code word
        bri  (xr)             execute next code word
+       ejc
 
 *      xnblk
 
 *      the routine for an xnblk is never executed
 
 b_xnt  ent  bl_xn            entry point (xnblk)
+       ejc
 
 *      xrblk
 
@@ -9728,6 +9994,7 @@ p_aaa  ent  bl__i            entry to mark first pattern
 
 *      control is passed by branching through the pcode
 *      field of the initial pattern node (bri (xr)).
+       ejc
 
 *      description of algorithm
 
@@ -9781,6 +10048,7 @@ p_aaa  ent  bl__i            entry to mark first pattern
 *      +---+            i
 *      i c i------------i
 *      +---+
+       ejc
 
 *      during the match, the registers are used as follows.
 
@@ -9831,6 +10099,7 @@ p_aaa  ent  bl__i            entry to mark first pattern
 
 *      succp                 success in matching current node
 *      failp                 failure in matching current node
+       ejc
 
 *      compound patterns
 
@@ -9858,6 +10127,7 @@ p_aaa  ent  bl__i            entry to mark first pattern
 *           +---+            the p_bal node scans a balanced
 *           i b i-----       string and then stacks a pointer
 *           +---+            to itself on the history stack.
+       ejc
 
 *      compound pattern structures (continued)
 
@@ -9905,6 +10175,7 @@ p_aaa  ent  bl__i            entry to mark first pattern
 *      alternative is taken so as to terminate the loop.  p_abd
 *      restores inner pmhbs ptr and fails , thus trying to match
 *      alternatives left by the arbno argument.
+       ejc
 
 *      compound pattern structures (continued)
 
@@ -9944,6 +10215,7 @@ p_aaa  ent  bl__i            entry to mark first pattern
 *           +---+            the node for succeed matches null
 *           i s i-----       and stacks a pointer to itself
 *           +---+            to repeat the match on a failure.
+       ejc
 
 *      compound patterns (continued)
 
@@ -9980,6 +10252,7 @@ p_aaa  ent  bl__i            entry to mark first pattern
 *      is simply to remove its entry from the stack and fail.
 *      this includes removing the special node pointer stored
 *      in addition to the standard two entries on the stack.
+       ejc
 
 *      compount pattern structures (continued)
 
@@ -10013,6 +10286,7 @@ p_aaa  ent  bl__i            entry to mark first pattern
 *      ndfnd (p_fnd) is entered when the pattern fails after
 *      going through a non-optimized p_fnc, and it pops the
 *      stack back past the innter stack base created by p_fna
+       ejc
 
 *      compound patterns (continued)
 
@@ -10062,6 +10336,7 @@ p_aaa  ent  bl__i            entry to mark first pattern
 *      instead of building the p_exc node in step 2, it is more
 *      efficient to simply pop off the p_exb entry and its
 *      associated node pointer. the effect is the same.
+       ejc
 
 *      compound patterns (continued)
 
@@ -10101,6 +10376,7 @@ p_aaa  ent  bl__i            entry to mark first pattern
 *      an optimization occurs if the inner pattern makes no
 *      entries on the history stack. in this case, p_imc pops
 *      the p_imb entry instead of making a p_imd entry.
+       ejc
 
 *      arbno
 
@@ -10116,6 +10392,7 @@ p_aba  ent  bl_p0            p0blk
        mov  -(xs),=ndabb     stack ptr to node ndabb
        mov  pmhbs,xs         store new stack base ptr
        brn  succp            succeed
+       ejc
 
 *      arbno (remove p_aba special stack entry)
 
@@ -10124,6 +10401,7 @@ p_aba  ent  bl_p0            p0blk
 p_abb  ent                   entry point
        mov  pmhbs,wb         restore history stack base ptr
        brn  flpop            fail and pop dummy node ptr
+       ejc
 
 *      arbno (check if arg matched null string)
 
@@ -10147,6 +10425,7 @@ pabc1  add  xs,*num04        remove ndabb entry and cursor
 pabc2  bne  wa,wb,succp      allow further attempt if non-null
        mov  xr,pthen(xr)     bypass alternative node so as to ...
        brn  succp            ... refuse further match attempts
+       ejc
 
 *      arbno (try for alternatives in arbno argument)
 
@@ -10155,6 +10434,7 @@ pabc2  bne  wa,wb,succp      allow further attempt if non-null
 p_abd  ent                   entry point
        mov  pmhbs,wb         restore inner stack base ptr
        brn  failp            and fail
+       ejc
 
 *      abort
 
@@ -10162,6 +10442,7 @@ p_abd  ent                   entry point
 
 p_abo  ent  bl_p0            p0blk
        brn  exfal            signal statement failure
+       ejc
 
 *      alternation
 
@@ -10172,6 +10453,7 @@ p_alt  ent  bl_p1            p1blk
        mov  -(xs),parm1(xr)  stack pointer to alternative
        chk                   check for stack overflow
        brn  succp            if all ok, then succeed
+       ejc
 
 *      any (one character argument) (1-char string also)
 
@@ -10185,6 +10467,7 @@ p_ans  ent  bl_p1            p1blk
        bne  wa,parm1(xr),failp fail if no match
        icv  wb               else bump cursor
        brn  succp            and succeed
+       ejc
 
 *      any (multi-character argument case)
 
@@ -10207,6 +10490,7 @@ pany1  beq  wb,pmssl,failp   fail if no characters left
        zrb  wa,failp         fail if no match
        icv  wb               else bump cursor
        brn  succp            and succeed
+       ejc
 
 *      any (expression argument)
 
@@ -10217,6 +10501,7 @@ p_ayd  ent  bl_p1            p1blk
        err  043,any evaluated argument is not a string
        ppm  failp            fail if evaluation failure
        ppm  pany1            merge multi-char case if ok
+       ejc
 
 *      p_arb                 initial arb match
 
@@ -10232,6 +10517,7 @@ p_arb  ent  bl_p0            p0blk
        mov  -(xs),wb         stack cursor
        mov  -(xs),=ndarc     stack ptr to special node ndarc
        bri  (xr)             execute next node matching null
+       ejc
 
 *      p_arc                 extend arb match
 
@@ -10244,6 +10530,7 @@ p_arc  ent                   entry point
        mov  -(xs),xr         restack pointer to ndarc node
        mov  xr,num02(xs)     load successor pointer
        bri  (xr)             off to reexecute successor node
+       ejc
 
 *      bal
 
@@ -10287,6 +10574,7 @@ pbal4  bze  wc,failp         fail if no matching left paren
 pbal5  mov  -(xs),wb         stack cursor
        mov  -(xs),xr         stack ptr to bal node for extend
        brn  succp            and succeed
+       ejc
 
 *      break (expression argument)
 
@@ -10297,6 +10585,7 @@ p_bkd  ent  bl_p1            p1blk
        err  044,break evaluated argument is not a string
        ppm  failp            fail if evaluation fails
        ppm  pbrk1            merge with multi-char case if ok
+       ejc
 
 *      break (one character argument)
 
@@ -10317,6 +10606,7 @@ pbks1  lch  wa,(xl)+         load next char, bump pointer
        icv  wb               else push cursor
        bct  wc,pbks1         loop back if more to go
        brn  failp            fail if end of string, no break chr
+       ejc
 
 *      break (multi-character argument)
 
@@ -10348,6 +10638,7 @@ pbrk2  lch  wa,(xl)+         load next char, bump pointer
        icv  wb               else push cursor
        bct  wc,pbrk2         loop back unless end of string
        brn  failp            fail if end of string, no break chr
+       ejc
 
 *      breakx (extension)
 
@@ -10360,6 +10651,7 @@ pbrk2  lch  wa,(xl)+         load next char, bump pointer
 p_bkx  ent  bl_p0            p0blk
        icv  wb               step cursor past previous break chr
        brn  succp            succeed to rematch break
+       ejc
 
 *      breakx (expression argument)
 
@@ -10375,6 +10667,7 @@ p_bxd  ent  bl_p1            p1blk
        err  045,breakx evaluated argument is not a string
        ppm  failp            fail if evaluation fails
        ppm  pbrk1            merge with break if all ok
+       ejc
 
 *      cursor assignment
 
@@ -10395,6 +10688,7 @@ p_cas  ent  bl_p2            p2blk
        mov  wb,(xs)+         else restore cursor
        mov  xr,(xs)+         restore node pointer
        brn  succp            and succeed matching null
+       ejc
 
 *      expression node (p_exa, initial entry)
 
@@ -10433,6 +10727,7 @@ pexa1  beq  wa,=b_scl,pexa2  jump if it is already a string
 
 pexa2  bze  sclen(xl),succp  just succeed if null string
        brn  pstr1            else merge with string circuit
+       ejc
 
 *      expression node (p_exb, remove ndexb entry)
 
@@ -10444,6 +10739,7 @@ pexa2  bze  sclen(xl),succp  just succeed if null string
 p_exb  ent                   entry point
        mov  pmhbs,wb         restore outer level stack pointer
        brn  flpop            fail and pop p_exa node ptr
+       ejc
 
 *      expression node (p_exc, remove ndexc entry)
 
@@ -10455,6 +10751,7 @@ p_exb  ent                   entry point
 p_exc  ent                   entry point
        mov  pmhbs,wb         restore inner stack base pointer
        brn  failp            and fail into expr pattern alternvs
+       ejc
 
 *      fail
 
@@ -10462,6 +10759,7 @@ p_exc  ent                   entry point
 
 p_fal  ent  bl_p0            p0blk
        brn  failp            just signal failure
+       ejc
 
 *      fence
 
@@ -10474,6 +10772,7 @@ p_fen  ent  bl_p0            p0blk
        mov  -(xs),wb         stack dummy cursor
        mov  -(xs),=ndabo     stack ptr to abort node
        brn  succp            and succeed matching null
+       ejc
 
 *      fence (function)
 
@@ -10487,6 +10786,7 @@ p_fna  ent  bl_p0            p0blk
        mov  -(xs),=ndfnb     stack indir ptr to p_fnb (failure)
        mov  pmhbs,xs         begin new history stack
        brn  succp            succeed
+       ejc
 
 *      fence (function) (reset history stack and fail)
 
@@ -10495,6 +10795,7 @@ p_fna  ent  bl_p0            p0blk
 p_fnb  ent  bl_p0            p0blk
        mov  pmhbs,wb         restore outer pmhbs stack base
        brn  failp            ...and fail
+       ejc
 
 *      fence (function) (make fence trap entry on stack)
 
@@ -10512,6 +10813,7 @@ p_fnc  ent  bl_p0            p0blk
 
 pfnc1  add  xs,*num02        pop off p_fnb entry
        brn  succp            succeed
+       ejc
 
 *      fence (function) (skip past alternatives on failure)
 
@@ -10520,6 +10822,7 @@ pfnc1  add  xs,*num02        pop off p_fnb entry
 p_fnd  ent  bl_p0            p0blk
        mov  xs,wb            pop stack to fence() history base
        brn  flpop            pop base entry and fail
+       ejc
 
 *      immediate assignment (initial entry, save current cursor)
 
@@ -10535,6 +10838,7 @@ p_ima  ent  bl_p0            p0blk
        mov  -(xs),=ndimb     stack ptr to special node ndimb
        mov  pmhbs,xs         store new stack base pointer
        brn  succp            and succeed
+       ejc
 
 *      immediate assignment (remove cursor mark entry)
 
@@ -10546,6 +10850,7 @@ p_ima  ent  bl_p0            p0blk
 p_imb  ent                   entry point
        mov  pmhbs,wb         restore history stack base ptr
        brn  flpop            fail and pop dummy node ptr
+       ejc
 
 *      immediate assignment (perform actual assignment)
 
@@ -10585,6 +10890,7 @@ pimc2  mov  -(xs),wa         save current (final) cursor
        mov  xr,(xs)+         else restore node pointer
        mov  wb,(xs)+         restore cursor
        brn  succp            and succeed
+       ejc
 
 *      immediate assignment (remove ndimd entry on failure)
 
@@ -10596,6 +10902,7 @@ pimc2  mov  -(xs),wa         save current (final) cursor
 p_imd  ent                   entry point
        mov  pmhbs,wb         restore inner stack base pointer
        brn  failp            and fail
+       ejc
 
 *      len (integer argument)
 
@@ -10608,6 +10915,7 @@ p_len  ent  bl_p1            p1blk
 plen1  add  wb,parm1(xr)     push cursor indicated amount
        ble  wb,pmssl,succp   succeed if not off end
        brn  failp            else fail
+       ejc
 
 *      len (expression argument)
 
@@ -10619,6 +10927,7 @@ p_lnd  ent  bl_p1            p1blk
        err  048,len evaluated argument is negative or too large
        ppm  failp            fail if evaluation fails
        ppm  plen1            merge with normal circuit if ok
+       ejc
 
 *      notany (expression argument)
 
@@ -10629,6 +10938,7 @@ p_nad  ent  bl_p1            p1blk
        err  049,notany evaluated argument is not a string
        ppm  failp            fail if evaluation fails
        ppm  pnay1            merge with multi-char case if ok
+       ejc
 
 *      notany (one character argument)
 
@@ -10642,6 +10952,7 @@ p_nas  ent  bl_p1            entry point
        beq  wa,parm1(xr),failp fail if match
        icv  wb               else bump cursor
        brn  succp            and succeed
+       ejc
 
 *      notany (multi-character string argument)
 
@@ -10664,6 +10975,7 @@ pnay1  beq  wb,pmssl,failp   fail if no characters left
        nzb  wa,failp         fail if character is matched
        icv  wb               else bump cursor
        brn  succp            and succeed
+       ejc
 
 *      end of pattern match
 
@@ -10699,6 +11011,7 @@ pnth1  add  xs,*num04        remove p_exb entry and node ptr
 
 pnth2  mov  pmssl,wb         save final cursor in safe place
        bze  pmdfl,pnth6      jump if no pattern assignments
+       ejc
 
 *      end of pattern match (continued)
 
@@ -10737,6 +11050,7 @@ pnth4  mov  wa,num01(xt)     load final cursor
        jsr  asinp            perform assignment
        ppm  exfal            match fails if name eval fails
        mov  xt,(xs)+         else restore history stack ptr
+       ejc
 
 *      end of pattern match (continued)
 
@@ -10781,6 +11095,7 @@ pnth8  mov  -(xs),xl         stack subject pointer
 
 pnth9  lcw  xr               get next code word
        bri  (xr)             execute next code word
+       ejc
 
 *      pos (integer argument)
 
@@ -10816,6 +11131,7 @@ ppos2  bne  -(xt),=nduna,failp  fail if not unanchored mode
        bgt  wb,pmssl,exfal   abort if off end
        mov  num02(xt),wb     fake number of unanchored moves
        brn  succp            continue match with adjusted cursor
+       ejc
 
 *      pos (expression argument)
 
@@ -10835,6 +11151,7 @@ ppos1  beq  wb,parm1(xr),succp succeed if at right location
        mov  wa,evlio         get original node ptr
        bne  wa,-(xt),failp   fail if pos is not first node
        brn  ppos2            merge with integer argument code
+       ejc
 
 *      pattern assignment (initial entry, save cursor)
 
@@ -10847,6 +11164,7 @@ p_paa  ent  bl_p0            p0blk
        mov  -(xs),wb         stack initial cursor
        mov  -(xs),=ndpab     stack ptr to ndpab special node
        brn  succp            and succeed matching null
+       ejc
 
 *      pattern assignment (remove saved cursor)
 
@@ -10857,6 +11175,7 @@ p_paa  ent  bl_p0            p0blk
 
 p_pab  ent                   entry point
        brn  failp            just fail (entry is already popped)
+       ejc
 
 *      pattern assignment (end of match, make assign entry)
 
@@ -10873,6 +11192,7 @@ p_pac  ent  bl_p2            p2blk
        mov  -(xs),=ndpad     stack ptr to special ndpad node
        mnz  pmdfl            set dot flag non-zero
        brn  succp            and succeed
+       ejc
 
 *      pattern assignment (remove assign entry)
 
@@ -10883,6 +11203,7 @@ p_pac  ent  bl_p2            p2blk
 
 p_pad  ent                   entry point
        brn  flpop            fail and remove p_pac node
+       ejc
 
 *      rem
 
@@ -10891,6 +11212,7 @@ p_pad  ent                   entry point
 p_rem  ent  bl_p0            p0blk
        mov  wb,pmssl         point cursor to end of string
        brn  succp            and succeed
+       ejc
 
 *      rpos (expression argument)
 
@@ -10924,6 +11246,7 @@ prps1  mov  wc,pmssl         get length of string
        mov  wa,evlio         get original node ptr
        bne  wa,-(xt),failp   fail if pos is not first node
        brn  prps2            merge with integer arg code
+       ejc
 
 *      rpos (integer argument)
 
@@ -10950,6 +11273,7 @@ prps2  bne  -(xt),=nduna,failp  fail if not unanchored mode
        sub  wb,parm1(xr)     else set new cursor
        mov  num02(xt),wb     fake number of unanchored moves
        brn  succp            continue match with adjusted cursor
+       ejc
 
 *      rtab (integer argument)
 
@@ -10965,6 +11289,7 @@ prtb1  mov  wc,wb            save initial cursor
        sub  wb,parm1(xr)     else set new cursor
        bge  wb,wc,succp      and succeed if not too far already
        brn  failp            in which case, fail
+       ejc
 
 *      rtab (expression argument)
 
@@ -10976,6 +11301,7 @@ p_rtd  ent  bl_p1            p1blk
        err  055,rtab evaluated argument is negative or too large
        ppm  failp            fail if evaluation fails
        ppm  prtb1            merge with normal case if success
+       ejc
 
 *      span (expression argument)
 
@@ -10986,6 +11312,7 @@ p_spd  ent  bl_p1            p1blk
        err  056,span evaluated argument is not a string
        ppm  failp            fail if evaluation fails
        ppm  pspn1            merge with multi-char case if ok
+       ejc
 
 *      span (multi-character argument case)
 
@@ -11022,6 +11349,7 @@ pspn2  lch  wa,(xl)+         load next character, bump pointer
 
 pspn3  bne  wb,psavc,succp   succeed if chars matched
        brn  failp            else fail if null string matched
+       ejc
 
 *      span (one character argument)
 
@@ -11047,6 +11375,7 @@ psps1  lch  wa,(xl)+         load next character, bump pointer
 
 psps2  bne  wb,psavc,succp   succeed if chars matched
        brn  failp            fail if null string matched
+       ejc
 
 *      multi-character string
 
@@ -11072,6 +11401,7 @@ pstr1  mov  psave,xr         save node pointer
        mov  xr,psave         if all matched, restore node ptr
        mov  wb,psavc         restore updated cursor
        brn  succp            and succeed
+       ejc
 
 *      succeed
 
@@ -11084,6 +11414,7 @@ p_suc  ent  bl_p0            p0blk
        mov  -(xs),wb         stack cursor
        mov  -(xs),xr         stack pointer to this node
        brn  succp            succeed matching null
+       ejc
 
 *      tab (integer argument)
 
@@ -11097,6 +11428,7 @@ ptab1  bgt  wb,parm1(xr),failp fail if too far already
        mov  wb,parm1(xr)     else set new cursor position
        ble  wb,pmssl,succp   succeed if not off end
        brn  failp            else fail
+       ejc
 
 *      tab (expression argument)
 
@@ -11108,6 +11440,7 @@ p_tbd  ent  bl_p1            p1blk
        err  058,tab evaluated argument is negative or too large
        ppm  failp            fail if evaluation fails
        ppm  ptab1            merge with normal case if ok
+       ejc
 
 *      anchor movement
 
@@ -11122,6 +11455,7 @@ p_una  ent                   entry point
        mov  -(xs),xr         restack initial node ptr
        mov  -(xs),=nduna     restack unanchored node
        bri  (xr)             rematch first node
+       ejc
 
 *      end of pattern match routines
 
@@ -11141,6 +11475,7 @@ p_yyy  ent  bl__i            mark last entry in pattern section
 *      letter variable name identifier.
 
 *      entries are in alphabetical order
+       ejc
 
 *      abort
 
@@ -11181,6 +11516,7 @@ labo2  jsr  ermsg            print error message
 *      here if no error had occured
 
 labo3  erb  036,goto abort with no preceding error
+       ejc
 
 *      continue
 
@@ -11214,6 +11550,7 @@ lcnt3  icv  errft            fatal error
 
 lcnt4  icv  errft            fatal error
        erb  332,goto continue with error in failure goto
+       ejc
 
 *      end
 
@@ -11223,24 +11560,28 @@ l_end  ent                   entry point
 
 lend0  mov  xr,=endms        point to message /normal term.../
        brn  stopr            jump to routine to stop run
+       ejc
 
 *      freturn
 
 l_frt  ent                   entry point
        mov  wa,=scfrt        point to string /freturn/
        brn  retrn            jump to common return routine
+       ejc
 
 *      nreturn
 
 l_nrt  ent                   entry point
        mov  wa,=scnrt        point to string /nreturn/
        brn  retrn            jump to common return routine
+       ejc
 
 *      return
 
 l_rtn  ent                   entry point
        mov  wa,=scrtn        point to string /return/
        brn  retrn            jump to common return routine
+       ejc
 
 *      scontinue
 
@@ -11265,6 +11606,7 @@ lscn1  icv  errft            fatal error
 
 lscn2  icv  errft            fatal error
        erb  321,goto scontinue with no preceding error
+       ejc
 
 *      undefined label
 
@@ -11295,6 +11637,7 @@ l_und  ent                   entry point
 *      the form s_xxx where xxx is the three letter code for
 *      the system variable name. the functions are in order
 *      alphabetically by their entry names.
+       ejc
 .if    .c370
 
 *      abs
@@ -11343,6 +11686,7 @@ sand1  mov  wa,(xl)+         get next cfp_c chars from arg 1
        mov  (xr)+,wa         put back in memory
        bct  wc,sand1         loop over all words in string block
        brn  exits            fetch next code word
+       ejc
 .fi
 
 *      any
@@ -11356,6 +11700,7 @@ s_any  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 .if    .cnbf
 .else
 
@@ -11373,6 +11718,7 @@ sapn1  jsr  apndb            do the append
        err  276,append second argument is not a string
        ppm  exfal            no room - fail
        brn  exnul            exit with null result
+       ejc
 .fi
 
 *      apply
@@ -11408,6 +11754,7 @@ sapp2  ica  xs               adjust stack ptr for apply 1st arg
 *      here for invalid first argument
 
 sapp3  erb  060,apply first arg is not natural variable name
+       ejc
 
 *      arbno
 
@@ -11439,6 +11786,7 @@ s_abn  ent                   entry point
        mov  parm1(xl),xr     point alternative back to argument
        lcw  xr               get next code word
        bri  (xr)             execute next code word
+       ejc
 
 *      arg
 
@@ -11462,6 +11810,7 @@ s_arg  ent                   entry point
 *      here if 1st argument is bad
 
 sarg1  erb  063,arg first argument is not program function name
+       ejc
 
 *      array
 
@@ -11479,6 +11828,7 @@ s_arr  ent                   entry point
        jsr  vmake            create vector
        ppm  sar11            fail if too large
        brn  exsid            exit setting idval
+       ejc
 
 *      array (continued)
 
@@ -11518,6 +11868,7 @@ sar03  ldi  intv1            load one as default low bound
        mov  xl,wc            and delimiter two = comma
        zer  wa               retain blanks in prototype
        jsr  xscan            scan high bound
+       ejc
 
 *      array (continued)
 
@@ -11554,6 +11905,7 @@ sar05  icv  arcdm            bump dimension count
 
 sar06  bnz  wa,sar03         loop back unless end of bounds
        bnz  arptr,sar09      jump if end of pass 2
+       ejc
 
 *      array (continued)
 
@@ -11587,6 +11939,7 @@ sar07  add  wa,*ardms        allow space for one set of bounds
 
 sar08  mov  (xr)+,wb         set one word
        bct  wa,sar08         loop till all set
+       ejc
 
 *      array (continued)
 
@@ -11620,6 +11973,7 @@ sar10  erb  067,array dimension is zero, negative or out of range
 *      here if array is too large
 
 sar11  erb  068,array size exceeds maximum permitted
+       ejc
 .if    .cmth
 
 *      atan
@@ -11631,8 +11985,10 @@ s_atn  ent                   entry point
        ldr  rcval(xr)        load accumulator with argument
        atn                   take arctangent
        brn  exrea            overflow, out of range not possible
+       ejc
 .fi
 .if    .cbsp
+       ejc
 
 *      backspace
 
@@ -11646,6 +12002,7 @@ s_bsp  ent                   entry point
        err  318,backspace file does not permit backspace
        err  319,backspace caused non-recoverable error
        brn  exnul            return null as result
+       ejc
 .fi
 .if    .cnbf
 .else
@@ -11673,6 +12030,7 @@ sbf01  erb  272,buffer first argument is not positive
 *      here for allocation size integer overflow
 
 sbf02  erb  273,buffer size exceeds value of maxlngth keyword
+       ejc
 .fi
 
 *      break
@@ -11686,6 +12044,7 @@ s_brk  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      breakx
 
@@ -11712,6 +12071,7 @@ s_bkx  ent                   entry point
        mov  pthen(xr),wa     set alternate node as successor
        lcw  xr               result on stack
        bri  (xr)             execute next code word
+       ejc
 
 *      char
 
@@ -11735,6 +12095,7 @@ s_chr  ent                   entry point
 *      here if char argument is out of range
 
 schr1  erb  282,char argument not in range
+       ejc
 .if    .cmth
 
 *      chop
@@ -11746,6 +12107,7 @@ s_chp  ent                   entry point
        ldr  rcval(xr)        load accumulator with argument
        chp                   truncate to integer valued real
        brn  exrea            no overflow possible
+       ejc
 .fi
 
 *      clear
@@ -11783,6 +12145,7 @@ sclr3  beq  wb,hshte,exnul   exit returning null if none left
 sclr4  mov  xr,vrnxt(xr)     point to next vrblk on chain
        bze  xr,sclr3         jump for next bucket if chain end
        bnz  vrget(xr),sclr5  jump if not flagged
+       ejc
 
 *      clear (continued)
 
@@ -11808,6 +12171,7 @@ sclr6  mov  wa,xl            save block pointer
        mov  xl,wa            restore block pointer
        mov  vrval(xl),=nulls store null constant value
        brn  sclr4            loop back for next vrblk
+       ejc
 
 *      code
 
@@ -11819,6 +12183,7 @@ s_cod  ent                   entry point
        zer  r_ccb            forget interim code block
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      collect
 
@@ -11846,6 +12211,7 @@ s_col  ent                   entry point
        ilt  exfal            fail if not enough
        adi  clsvi            else recompute available
        brn  exint            and exit with integer result
+       ejc
 .if    .c370
 
 *      compl
@@ -11869,6 +12235,7 @@ scmp1  lch  wa,(xl)+         get next char from arg 1
        bct  wc,scmp1         loop over all chars in string block
        csc                   complete store character
        brn  exits            fetch next code word.
+       ejc
 .fi
 
 *      convert
@@ -11909,6 +12276,7 @@ scv02  mov  xr,(xl)+         load next table entry, bump pointer
        plc  xl               point to chars of string arg
        mov  wa,wc            set number of chars to compare
        cmc  scv04,scv04      compare, jump if no match
+       ejc
 
 *      convert (continued)
 
@@ -11954,6 +12322,7 @@ scv06  mov  -(xs),xr         replace string argument on stack
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      convert (continued)
 
@@ -12031,6 +12400,7 @@ scv19  mov  wa,(xr)          load first word of block
        mov  -(xs),xr         replace arblk pointer on stack
        beq  wa,=b_tbt,exits  return arg if already a table
        bne  wa,=b_art,exfal  else fail if not an array
+       ejc
 
 *      convert (continued)
 
@@ -12070,6 +12440,7 @@ scv21  mov  xl,num01(xs)     point to arblk
        add  wb,*num02        bump offset
        mov  xr,(xl)          load subscript name
        dca  xl               adjust ptr to merge (trval=1+1)
+       ejc
 
 *      convert (continued)
 
@@ -12123,6 +12494,7 @@ scv27  jsr  gtnum            convert to numeric
 scv31  mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 .if    .cnbf
 .else
 
@@ -12143,6 +12515,7 @@ scv28  mov  -(xs),xr         stack first arg for procedure
 
 scv30  mov  xr,wb            return buffer without conversion
        brn  scv31            merge to return result
+       ejc
 .fi
 
 *      second argument not string or null
@@ -12155,6 +12528,7 @@ s_cop  ent                   entry point
        jsr  copyb            copy the block
        ppm  exits            return if no idval field
        brn  exsid            exit setting id value
+       ejc
 .if    .cmth
 
 *      cos
@@ -12167,6 +12541,7 @@ s_cos  ent                   entry point
        cos                   take cosine
        rno  exrea            if no overflow, return result in ra
        erb  322,cos argument is out of range
+       ejc
 .fi
 
 *      data
@@ -12224,6 +12599,7 @@ sdat3  jsr  gtnvr            locate vrblk for field name
        mov  -(xs),xr         stack vrblk pointer
        icv  wb               increment counter
        beq  wa,=num02,sdat2  loop back if stopped by comma
+       ejc
 
 *      data (continued)
 
@@ -12258,6 +12634,7 @@ sdat4  mov  (xr)+,-(xt)      move one field name vrblk pointer
        mov  xt,datxs         point back on stack
        mov  xl,(xt)          load dfblk pointer
        jsr  dffnc            define function
+       ejc
 
 *      data (continued)
 
@@ -12294,6 +12671,7 @@ sdat6  mov  xr,(xs)+         load vrblk pointer
        bne  xs,datxs,sdat5   loop back till all done
        ica  xs               pop dfblk pointer
        brn  exnul            return with null result
+       ejc
 
 *      datatype
 
@@ -12303,6 +12681,7 @@ s_dtp  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      date
 
@@ -12318,6 +12697,7 @@ s_dte  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      define
 
@@ -12359,6 +12739,7 @@ sdf03  mov  wc,=ch_rp        delimiter one = right paren
        jsr  xscan            scan out next argument name
        bnz  wa,sdf04         skip if delimiter found
        erb  085,null arg name or missing ) in define first arg.
+       ejc
 
 *      define (continued)
 
@@ -12396,6 +12777,7 @@ sdf08  jsr  gtnvr            get vrblk pointer
        icv  wb               if ok, increment count
        mov  -(xs),xr         stack vrblk pointer
        bnz  wa,sdf07         loop back if stopped by a comma
+       ejc
 
 *      define (continued)
 
@@ -12426,6 +12808,7 @@ sdf09  mov  wa,wb            copy count of locals
 sdf10  mov  (xr)+,-(xt)      store one entry and bump pointers
        bct  wc,sdf10         loop till all stored
        mov  xl,wa            recover pfblk pointer
+       ejc
 
 *      define (continued)
 
@@ -12440,6 +12823,7 @@ sdf11  mov  xs,defxs         pop stack
 *      here for erroneous label
 
 sdf12  erb  086,define function entry point is not defined label
+       ejc
 
 *      detach
 
@@ -12449,6 +12833,7 @@ s_det  ent                   entry point
        err  087,detach argument is not appropriate name
        jsr  dtach            detach i/o association from name
        brn  exnul            return null result
+       ejc
 
 *      differ
 
@@ -12458,6 +12843,7 @@ s_dif  ent                   entry point
        jsr  ident            call ident comparison routine
        ppm  exfal            fail if ident
        brn  exnul            return null if differ
+       ejc
 
 *      dump
 
@@ -12467,6 +12853,7 @@ s_dmp  ent                   entry point
        err  089,dump argument is negative or too large
        jsr  dumpr            else call dump routine
        brn  exnul            and return null as result
+       ejc
 
 *      dupl
 
@@ -12507,6 +12894,7 @@ sdup2  mov  xl,wc            point back to argument string
        zer  xl               clear garbage value
        lcw  xr               get next code word
        bri  (xr)             execute next code word
+       ejc
 
 *      dupl (continued)
 
@@ -12546,6 +12934,7 @@ sdup6  mov  (xs),xr          store result on stack
 
 sdup7  ica  xs               pop first argument
        brn  exfal            fail
+       ejc
 
 *      eject
 
@@ -12564,6 +12953,7 @@ s_ejc  ent                   entry point
 
 sejc1  jsr  sysep            call routine to eject printer
        brn  exnul            exit with null result
+       ejc
 
 *      endfile
 
@@ -12614,6 +13004,7 @@ senf4  mov  xl,enfch         get chain head
        mov  xl,ionmb(xl)     name base
        jsr  dtach            detach name
        brn  senf4            loop till done
+       ejc
 
 *      eq
 
@@ -12624,6 +13015,7 @@ s_eqf  ent                   entry point
        ppm  exfal            fail if lt
        ppm  exnul            return null if eq
        ppm  exfal            fail if gt
+       ejc
 
 *      eval
 
@@ -12674,6 +13066,7 @@ sevl2  mov  wb,=num01        set flag for by name
        brn  exnam            exit with name
 .if    .cnex
 .else
+       ejc
 
 *      exit
 
@@ -12751,6 +13144,7 @@ sext4  jsr  systm            get execution time start (sgd11)
 sext5  mov  xr,=inton        integer one
        brn  exixr            return as result
 .fi
+       ejc
 .if    .cmth
 
 *      exp
@@ -12763,6 +13157,7 @@ s_exp  ent                   entry point
        etx                   take exponential
        rno  exrea            if no overflow, return result in ra
        erb  305,exp produced real overflow
+       ejc
 .fi
 
 *      field
@@ -12790,6 +13185,7 @@ s_fld  ent                   entry point
 *      here for bad first argument
 
 sfld1  erb  108,field first argument is not datatype name
+       ejc
 
 *      fence
 
@@ -12810,6 +13206,7 @@ s_fnc  ent                   entry point
        mov  -(xs),xr         set as result
        lcw  xr               get next code word
        bri  (xr)             execute next code word
+       ejc
 
 *      ge
 
@@ -12820,6 +13217,7 @@ s_gef  ent                   entry point
        ppm  exfal            fail if lt
        ppm  exnul            return null if eq
        ppm  exnul            return null if gt
+       ejc
 
 *      gt
 
@@ -12830,6 +13228,7 @@ s_gtf  ent                   entry point
        ppm  exfal            fail if lt
        ppm  exfal            fail if eq
        ppm  exnul            return null if gt
+       ejc
 
 *      host
 
@@ -12874,6 +13273,7 @@ shst4  mov  -(xs),xr         stack results
        jsr  copyb            make copy of block
        ppm  exits            if not an aggregate structure
        brn  exsid            set current id value otherwise
+       ejc
 
 *      ident
 
@@ -12883,6 +13283,7 @@ s_idn  ent                   entry point
        jsr  ident            call ident comparison routine
        ppm  exnul            return null if ident
        brn  exfal            fail if differ
+       ejc
 
 *      input
 
@@ -12897,6 +13298,7 @@ s_inp  ent                   entry point
        err  117,input file cannot be read
        err  289,input channel currently in use
        brn  exnul            return null string
+       ejc
 .if    .cnbf
 .else
 
@@ -12924,6 +13326,7 @@ sins1  jsr  insbf            call to insert
        err  280,insert fourth argument is not a string
        ppm  exfal            fail if out of range
        brn  exnul            else ok - exit with null
+       ejc
 .fi
 
 *      integer
@@ -12934,6 +13337,7 @@ s_int  ent                   entry point
        ppm  exfal            fail if non-numeric
        beq  wa,=b_icl,exnul  return null if integer
        brn  exfal            fail if real
+       ejc
 
 *      item
 
@@ -12966,6 +13370,7 @@ sitm1  scp  xr               get current code pointer
 sitm2  mnz  wb               set code for call by name
        lcw  wa               load and ignore ofne_ call
        brn  arref            off to array reference routine
+       ejc
 
 *      le
 
@@ -12976,6 +13381,7 @@ s_lef  ent                   entry point
        ppm  exnul            return null if lt
        ppm  exnul            return null if eq
        ppm  exfal            fail if gt
+       ejc
 
 *      len
 
@@ -12988,6 +13394,7 @@ s_len  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      leq
 
@@ -12998,6 +13405,7 @@ s_leq  ent                   entry point
        ppm  exfal            fail if llt
        ppm  exnul            return null if leq
        ppm  exfal            fail if lgt
+       ejc
 
 *      lge
 
@@ -13008,6 +13416,7 @@ s_lge  ent                   entry point
        ppm  exfal            fail if llt
        ppm  exnul            return null if leq
        ppm  exnul            return null if lgt
+       ejc
 
 *      lgt
 
@@ -13018,6 +13427,7 @@ s_lgt  ent                   entry point
        ppm  exfal            fail if llt
        ppm  exfal            fail if leq
        ppm  exnul            return null if lgt
+       ejc
 
 *      lle
 
@@ -13028,6 +13438,7 @@ s_lle  ent                   entry point
        ppm  exnul            return null if llt
        ppm  exnul            return null if leq
        ppm  exfal            fail if lgt
+       ejc
 
 *      llt
 
@@ -13038,6 +13449,7 @@ s_llt  ent                   entry point
        ppm  exnul            return null if llt
        ppm  exfal            fail if leq
        ppm  exfal            fail if lgt
+       ejc
 
 *      lne
 
@@ -13048,6 +13460,7 @@ s_lne  ent                   entry point
        ppm  exnul            return null if llt
        ppm  exfal            fail if leq
        ppm  exnul            return null if lgt
+       ejc
 .if    .cmth
 
 *      ln
@@ -13066,6 +13479,7 @@ slnf1  erb  307,ln produced real overflow
 *      here for bad argument
 
 slnf2  erb  315,ln argument negative
+       ejc
 .fi
 
 *      local
@@ -13096,6 +13510,7 @@ s_loc  ent                   entry point
 sloc1  erb  135,local first arg is not a program function name
 .if    .cnld
 .else
+       ejc
 
 *      load
 
@@ -13131,6 +13546,7 @@ slod2  mov  wc,=ch_rp        delimiter one is right paren
        icv  lodna            bump argument count
        bnz  wa,slod3         jump if ok delimiter was found
        erb  141,load first argument is missing a right paren
+       ejc
 
 *      load (continued)
 
@@ -13188,6 +13604,7 @@ slod4  mov  (xs),wb          store code on stack
        jsr  xscan            scan result name
        zer  wa               set code for processing result
        brn  slod3            jump back to process result name
+       ejc
 
 *      load (continued)
 
@@ -13233,6 +13650,7 @@ slod6  mov  -(xr),(xs)+      store one type code from stack
        jsr  dffnc            perform function definition
        brn  exnul            return null result
 .fi
+       ejc
 
 *      lpad
 
@@ -13288,6 +13706,7 @@ slpd3  lcw  xr               load next code word
 
 slpd4  zer  wc               zero pad count
        brn  slpd1            merge
+       ejc
 
 *      lt
 
@@ -13298,6 +13717,7 @@ s_ltf  ent                   entry point
        ppm  exnul            return null if lt
        ppm  exfal            fail if eq
        ppm  exfal            fail if gt
+       ejc
 
 *      ne
 
@@ -13308,6 +13728,7 @@ s_nef  ent                   entry point
        ppm  exnul            return null if lt
        ppm  exfal            fail if eq
        ppm  exnul            return null if gt
+       ejc
 
 *      notany
 
@@ -13320,6 +13741,7 @@ s_nay  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      opsyn
 
@@ -13352,6 +13774,7 @@ sops2  jsr  gtstg            get operator name
        bne  wa,=num01,sops5  error if not one char long
        plc  xr               else point to character
        lch  wc,(xr)          load character name
+       ejc
 
 *      opsyn (continued)
 
@@ -13387,6 +13810,7 @@ sops5  erb  156,opsyn first arg is not correct operator name
 sops6  mov  xr,wa            copy pointer to function block ptr
        sub  xr,*vrfnc        make it look like dummy vrblk
        brn  sops1            merge back to define operator
+       ejc
 .if    .c370
 
 *      or
@@ -13406,6 +13830,7 @@ sorf1  mov  wa,(xl)+         get next cfp_c chars from arg 1
        mov  (xr)+,wa         put back in memory
        bct  wc,sorf1         loop over all words in string block
        brn  exits            fetch next code word
+       ejc
 .fi
 
 *      output
@@ -13421,6 +13846,7 @@ s_oup  ent                   entry point
        err  161,output file cannot be written to
        err  290,output channel currently in use
        brn  exnul            return null string
+       ejc
 
 *      pos
 
@@ -13433,6 +13859,7 @@ s_pos  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      prototype
 
@@ -13480,6 +13907,7 @@ spr05  mov  xr,bcbuf(xr)     point to bfblk
        mti  bfalc(xr)        load allocated length
        brn  exint            exit with integer allocation
 .fi
+       ejc
 
 *      remdr
 
@@ -13558,6 +13986,7 @@ srm09  rlt  srm08            should be pos, and result negative
 
 srm10  erb  312,remdr caused real overflow
 .fi
+       ejc
 
 *      replace
 
@@ -13606,6 +14035,7 @@ srpl1  mov  wb,sclen(xl)     load 3rd argument length
 
 srpl2  ctb  wa,scsi_         compute length of scblk
        mvw                   copy to get initial table values
+       ejc
 
 *      replace (continued)
 
@@ -13631,6 +14061,7 @@ srpl3  mov  xl,r_ra2         point to 2nd arg
        sch  wa,(xl)          store in table
        csc  xl               complete store characters
        bct  wb,srpl3         loop till done
+       ejc
 
 *      replace (continued)
 
@@ -13686,6 +14117,7 @@ srpl7  bze  wa,srpl8         return buffer unchanged if empty
        trc                   perform translation
        brn  srpl8            stack result and exit
 .fi
+       ejc
 
 *      rewind
 
@@ -13699,6 +14131,7 @@ s_rew  ent                   entry point
        err  175,rewind file does not permit rewind
        err  176,rewind caused non-recoverable error
        brn  exnul            exit with null result if no error
+       ejc
 
 *      reverse
 
@@ -13754,6 +14187,7 @@ srvs5  lch  wb,-(xl)         load next char from end
        bct  wc,srvs5         loop till all moved
        brn  srvs4            complete store
 .fi
+       ejc
 
 *      rpad
 
@@ -13806,6 +14240,7 @@ srpd2  sch  wb,(xr)+         store pad character, bump ptr
 
 srpd3  zer  wc               zero pad count
        brn  srpd1            merge
+       ejc
 
 *      rtab
 
@@ -13818,6 +14253,7 @@ s_rtb  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 .if    .cust
 
 *      set
@@ -13853,6 +14289,7 @@ s_set  ent                   entry point
 .else
        brn  exint            otherwise return position
 .fi
+       ejc
 .fi
 
 *      tab
@@ -13866,6 +14303,7 @@ s_tab  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      rpos
 
@@ -13880,6 +14318,7 @@ s_rps  ent                   entry point
        bri  (xr)             execute it
 .if    .cnsr
 .else
+       ejc
 
 *      rsort
 
@@ -13889,6 +14328,7 @@ s_rsr  ent                   entry point
        ppm  exfal            if conversion fails, so shall we
        brn  exsid            return, setting idval
 .fi
+       ejc
 
 *      setexit
 
@@ -13927,6 +14367,7 @@ s_sin  ent                   entry point
        sin                   take sine
        rno  exrea            if no overflow, return result in ra
        erb  323,sin argument is out of range
+       ejc
 .fi
 .if    .cmth
 
@@ -13944,9 +14385,11 @@ s_sqr  ent                   entry point
 *      here if bad argument
 
 ssqr1  erb  314,sqrt argument negative
+       ejc
 .fi
 .if    .cnsr
 .else
+       ejc
 
 *      sort
 
@@ -13956,6 +14399,7 @@ s_srt  ent                   entry point
        ppm  exfal            if conversion fails, so shall we
        brn  exsid            return, setting idval
 .fi
+       ejc
 
 *      span
 
@@ -13968,6 +14412,7 @@ s_spn  ent                   entry point
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      size
 
@@ -13984,6 +14429,7 @@ s_si_  ent                   entry point
 
        mti  wa               load length as integer
        brn  exint            exit with integer result
+       ejc
 
 *      stoptr
 
@@ -13993,6 +14439,7 @@ s_stt  ent                   entry point
        err  190,stoptr first argument is not appropriate name
        err  191,stoptr second argument is not trace type
        brn  exnul            return null
+       ejc
 
 *      substr
 
@@ -14035,6 +14482,7 @@ ssub2  mov  xl,wa            save string length
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      table
 
@@ -14051,6 +14499,7 @@ s_tbl  ent                   entry point
 
 stbl1  jsr  tmake            make table
        brn  exsid            exit setting idval
+       ejc
 .if    .cmth
 
 *      tan
@@ -14063,6 +14512,7 @@ s_tan  ent                   entry point
        tan                   take tangent
        rno  exrea            if no overflow, return result in ra
        erb  310,tan produced real overflow or argument is out of range
+       ejc
 .fi
 
 *      time
@@ -14071,6 +14521,7 @@ s_tim  ent                   entry point
        jsr  systm            get timer value
        sbi  timsx            subtract starting time
        brn  exint            exit with integer value
+       ejc
 
 *      trace
 
@@ -14103,6 +14554,7 @@ str02  jsr  systt            call it
 *      here for bad fourth argument
 
 str03  erb  197,trace fourth arg is not function name or null
+       ejc
 
 *      trim
 
@@ -14168,6 +14620,7 @@ strm5  csc  xr               complete store characters
 strm6  lcw  xr               get next code word
        bri  (xr)             execute it
 .fi
+       ejc
 
 *      unload
 
@@ -14179,6 +14632,7 @@ s_unl  ent                   entry point
        jsr  dffnc            undefine named function
        brn  exnul            return null as result
 .if    .c370
+       ejc
 
 *      xor
 
@@ -14220,6 +14674,7 @@ sxor1  mov  wa,(xl)+         get next cfp_c chars from arg 1
 
 *      the routines have names consisting of five letters
 *      and are assembled in alphabetical order.
+       ejc
 *      arref -- array reference
 
 *      (xl)                  may be non-collectable
@@ -14270,6 +14725,7 @@ arf03  mov  xr,-(xt)         load next subscript
        sti  arfsi            save current subscript
        ldi  icval(xr)        load integer value in case
        beq  (xr),=b_icl,arf04 jump if it was an integer
+       ejc
 
 *      arref (continued)
 
@@ -14313,6 +14769,7 @@ arf06  mov  xs,arfxs         pop stack entries
        mov  -(xs),xr         stack result
        lcw  xr               get next code word
        bri  (xr)             execute it
+       ejc
 
 *      arref (continued)
 
@@ -14361,6 +14818,7 @@ arf12  erb  238,array subscript is not integer
 
 arf13  zer  r_arf            finished with array pointer
        brn  exfal            fail
+       ejc
 
 *      cfunc -- call a function
 
@@ -14404,6 +14862,7 @@ cfnc2  mov  -(xs),=nulls     stack a null argument
 *      merge here to jump to function
 
 cfnc3  bri  (xl)             jump through fcode field
+       ejc
 
 *      exfal -- exit signalling snobol failure
 
@@ -14420,6 +14879,7 @@ exfal  rtn
        lcw  xr               load next code word
        mov  xl,(xr)          load entry address
        bri  xl               jump to execute next code word
+       ejc
 
 *      exint -- exit with integer result
 
@@ -14433,6 +14893,7 @@ exfal  rtn
 exint  rtn
        zer  xl               clear dud value
        jsr  icbld            build icblk
+       ejc
 *      exixr -- exit with result in (xr)
 
 *      (xr)                  result
@@ -14456,6 +14917,7 @@ exits  rtn
        lcw  xr               load next code word
        mov  xl,(xr)          load entry address
        bri  xl               jump to execute next code word
+       ejc
 
 *      exnam -- exit with name in (xl,wa)
 
@@ -14471,6 +14933,7 @@ exnam  rtn
        mov  -(xs),wa         stack name offset
        lcw  xr               load next code word
        bri  (xr)             execute it
+       ejc
 
 *      exnul -- exit with null result
 
@@ -14484,6 +14947,7 @@ exnul  rtn
        lcw  xr               load next code word
        mov  xl,(xr)          load entry address
        bri  xl               jump to execute next code word
+       ejc
 .if    .cnra
 .else
 
@@ -14500,6 +14964,7 @@ exrea  rtn
        jsr  rcbld            build rcblk
        brn  exixr            jump to exit with result in xr
 .fi
+       ejc
 
 *      exsid -- exit setting id field
 
@@ -14523,6 +14988,7 @@ exsi1  icv  wa               bump id value
        mov  curid,wa         store for next time
        mov  idval(xr),wa     store id value
        brn  exixr            exit with result in (xr)
+       ejc
 
 *      exvnm -- exit with name of variable
 
@@ -14541,6 +15007,7 @@ exvnm  rtn
        mov  nmbas(xr),xl     store name base
        mov  nmofs(xr),*vrval store name offset
        brn  exixr            exit with result in xr
+       ejc
 
 *      flpop -- fail and pop in pattern matching
 
@@ -14552,6 +15019,7 @@ exvnm  rtn
 
 flpop  rtn
        add  xs,*num02        pop two entries off stack
+       ejc
 
 *      failp -- failure in matching pattern node
 
@@ -14568,6 +15036,7 @@ failp  rtn
        mov  wb,(xs)+         restore old cursor
        mov  xl,(xr)          load pcode entry pointer
        bri  xl               jump to execute code for node
+       ejc
 
 *      indir -- compute indirect reference
 
@@ -14600,6 +15069,7 @@ indr2  mov  xl,nmbas(xr)     load name base
        jsr  acess            else get value first
        ppm  exfal            fail if access fails
        brn  exixr            else return with value in xr
+       ejc
 
 *      match -- initiate pattern match
 
@@ -14657,6 +15127,7 @@ mtch1  mov  wc,wb            save match type in wc
 mtch2  zer  -(xs)            dummy cursor value
        mov  -(xs),=ndabo     stack pointer to abort node
        bri  (xr)             start match of first node
+       ejc
 
 *      retrn -- return from function
 
@@ -14706,6 +15177,7 @@ rtn01  mov  xs,flprt         pop stack
        mov  wa,*vrval        else set name offset
        mov  kvrtn,num01(xs)  make sure rtntype is set right
        jsr  trxeq            execute full trace
+       ejc
 
 *      retrn (continued)
 
@@ -14745,6 +15217,7 @@ rtn05  mov  xr,(xs)+         pop pfblk pointer
 
 rtn06  mov  kvrtn,wa         set rtntype keyword
        mov  xl,pfvbl(xr)     load pointer to fn vrblk
+       ejc
 *      retrn (continued)
 
 *      get value of function
@@ -14816,6 +15289,7 @@ rtn10  mov  xl,rtnbp         restore ptr to last function block
        mov  wa,kvrtn         load return type
        beq  wa,=scrtn,exixr  exit with result in xr if return
        beq  wa,=scfrt,exfal  fail if freturn
+       ejc
 
 *      retrn (continued)
 
@@ -14847,6 +15321,7 @@ rtn12  mov  xr,xl            preserve xl
        mov  (xs),xl          store result on stack
        mov  xl,(xr)          load routine address
        bri  xl               jump to execute next code word
+       ejc
 
 *      stcov -- signal statement counter overflow
 
@@ -14865,6 +15340,7 @@ stcov  rtn
        sti  kvstc            set as new count
        jsr  stgcc            recompute countdown counters
        erb  244,statement count exceeds value of stlimit keyword
+       ejc
 
 *      stmgo -- start execution of new statement
 
@@ -14944,6 +15420,7 @@ stgo4  ldi  kvstc            get stmt count
 
 stgo5  mov  stmct,stmcs      reset counter
        brn  stgo1            fetch next code word
+       ejc
 
 *      stopr -- terminate run
 
@@ -15050,6 +15527,7 @@ stpr5  mti  kvstn            get statement number
        mov  xr,=stpm9        point to msg ( stmt / second )
        jsr  prtmx            print it
 .fi
+       ejc
 
 *      stopr (continued)
 
@@ -15085,6 +15563,7 @@ stpr4  rtn
        brn  stpr3            check if dump or profile needed
 .fi
 
+       ejc
 
 *      succp -- signal successful match of a pattern node
 
@@ -15101,6 +15580,7 @@ succp  rtn
        mov  xr,pthen(xr)     load successor node
        mov  xl,(xr)          load node code entry address
        bri  xl               jump to match successor node
+       ejc
 
 *      sysab -- print /abnormal end/ and terminate
 
@@ -15109,6 +15589,7 @@ sysab  rtn
        mov  kvabe,=num01     set abend flag
        jsr  prtnl            skip to new line
        brn  stopr            jump to pack up
+       ejc
 
 *      systu -- print /time up/ and terminate
 
@@ -15164,6 +15645,7 @@ systu  rtn
 
 *      the procedures all have names consisting of five letters
 *      and are in alphabetical order by their names.
+       ejc
 
 *      acess - access variable value with trace/input checks
 
@@ -15204,6 +15686,7 @@ acs02  bne  (xr),=b_trt,acs18 jump if not trapped
        jsr  evalx            evaluate expression
        ppm  acs04            jump if evaluation failure
        brn  acs02            check value for more trblks
+       ejc
 
 *      acess (continued)
 
@@ -15252,6 +15735,7 @@ acs6a  jsr  alocs            allocate string of correct size
        ppm  acs03            jump to fail exit if end of file
        ppm  acs22            error
        ppm  acs23            error
+       ejc
 
 *      acess (continued)
 
@@ -15283,6 +15767,7 @@ acs10  bne  wb,=trtac,acs09  loop back if not access trace
        bze  kvtra,acs09      ignore access trace if trace off
        dcv  kvtra            else decrement trace count
        bze  trfnc(xr),acs11  jump if print trace
+       ejc
 
 *      acess (continued)
 
@@ -15336,6 +15821,7 @@ acs15  mov  xl,kvrtn         load rtntype in case
        iff  k__sl,acs13      stlimit
        iff  k__et,acs20      errtext
        esw                   end switch on keyword number
+       ejc
 
 *      acess (continued)
 
@@ -15409,6 +15895,7 @@ acs22  mov  dnamp,xr         pop unused scblk
 acs23  mov  dnamp,xr         pop unused scblk
        erb  203,input file record has incorrect format
        enp                   end procedure acess
+       ejc
 
 *      acomp -- compare two arithmetic values
 
@@ -15447,6 +15934,7 @@ acmp1  exi  5                take gt exit
 *      here if arg1 eq arg2
 
 acmp2  exi  4                take eq exit
+       ejc
 
 *      acomp (continued)
 
@@ -15487,6 +15975,7 @@ acmp7  exi  1                take error exit
 
 acmp8  exi  2                take error exit
        enp                   end procedure acomp
+       ejc
 
 *      alloc                 allocate block of dynamic storage
 
@@ -15544,6 +16033,7 @@ alc3b  add  dname,rsmem      get the reserve memory
        zer  rsmem            only permissible once
        icv  errft            fatal error
        erb  204,memory overflow
+       ejc
 
 *      here after successful garbage collection
 
@@ -15573,6 +16063,7 @@ aloc5  ldi  allia            recover ia
        mov  wb,allsv         restore wb
        brn  aloc1            jump back to exit
        enp                   end procedure alloc
+       ejc
 .if    .cnbf
 .else
 
@@ -15612,6 +16103,7 @@ alobf  prc  e,0              entry point
 
 alb01  erb  273,buffer size exceeds value of maxlngth keyword
        enp                   end procedure alobf
+       ejc
 .fi
 
 *      alocs -- allocate string block
@@ -15659,6 +16151,7 @@ alcs1  mov  dnamp,xr         set updated storage pointer
 
 alcs2  erb  205,string length exceeds value of maxlngth keyword
        enp                   end procedure alocs
+       ejc
 
 *      alost -- allocate space in static region
 
@@ -15700,6 +16193,7 @@ alst3  jsr  alloc            allocate block to ensure room
        mov  wa,alsta         restore wa
        brn  alst1            loop back to try again
        enp                   end procedure alost
+       ejc
 .if    .cnbf
 .else
 
@@ -15734,6 +16228,7 @@ apn01  exi  1                return to caller alternate
 
 apn02  exi  2                alternate exit to caller
        enp                   end procedure apndb
+       ejc
 .fi
 
 *      arith -- fetch arithmetic operands
@@ -15772,6 +16267,7 @@ apn02  exi  2                alternate exit to caller
 *      (wa,wb,wc)            destroyed
 *      (xs)                  popped twice
 .fi
+       ejc
 
 *      arith (continued)
 
@@ -15828,6 +16324,7 @@ arth3  jsr  gtnum            convert left arg to numeric
        mov  xl,xr            copy right arg ptr
        mov  xr,(xs)+         load left argument
        brn  arth5            merge for real-real case
+       ejc
 
 *      arith (continued)
 
@@ -15852,6 +16349,7 @@ arth6  ica  xs               pop unwanted left arg
 
 arth7  exi  1                take appropriate error return
        enp                   end procedure arith
+       ejc
 
 *      asign -- perform assignment
 
@@ -15898,6 +16396,7 @@ asg02  sub  xl,wa            restore name base
        ppm  asg03            jump if evaluation fails
        mov  wb,(xs)+         else reload value to assign
        brn  asg01            loop back to perform assignment
+       ejc
 
 *      asign (continued)
 
@@ -15938,6 +16437,7 @@ asg08  bze  kvtra,asg07      ignore value trace if trace off
        bze  trfnc(xr),asg09  jump if print trace
        jsr  trxeq            else execute function trace
        brn  asg07            and loop back
+       ejc
 
 *      asign (continued)
 
@@ -16001,6 +16501,7 @@ asg1c  jsr  prtst            print string value
        jsr  prtnl            end of line
        exi                   return to caller
 .fi
+       ejc
 
 *      asign (continued)
 
@@ -16104,6 +16605,7 @@ asg26  bnz  wa,asg15         if acceptable value
        erb  274,value assigned to keyword fullscan is zero
 
        enp                   end procedure asign
+       ejc
 
 *      asinp -- assign during pattern match
 
@@ -16150,6 +16652,7 @@ asnp2  mov  pmdfl,(xs)+      restore dot flag
        mov  pmssl,(xs)+      restore subject string length
        exi  1                take failure exit
        enp                   end procedure asinp
+       ejc
 
 *      blkln -- determine length of block
 
@@ -16211,6 +16714,7 @@ blkln  prc  e,0              entry point
 .fi
        iff  bl_sc,bln10      scblk
        esw                   end of jump table on block type
+       ejc
 
 *      blkln (continued)
 
@@ -16243,6 +16747,7 @@ bln04  mov  wa,*num04        load length (four words)
 
 bln05  mov  wa,*num05        load length
        exi                   return to blkln caller
+       ejc
 
 *      blkln (continued)
 
@@ -16292,6 +16797,7 @@ bln12  mov  wa,num03(xr)     load length from cdlen/exlen
        exi                   return to blkln caller
 .fi
        enp                   end procedure blkln
+       ejc
 
 *      copyb -- copy a block
 
@@ -16343,6 +16849,7 @@ cop02  mov  xl,(xr)          load next pointer
 cop03  bne  (xl),=b_trt,cop04 jump if not trapped
        mov  xl,trval(xl)     else point to next value
        brn  cop03            and loop back
+       ejc
 
 *      copyb (continued)
 
@@ -16400,6 +16907,7 @@ cop09  mov  xr,(xs)+         load pointer to block
 *      alternative return
 
 cop10  exi  1                return
+       ejc
 .if    .cnbf
 .else
 
@@ -16445,6 +16953,7 @@ cdgc1  mov  wa,xl            goto operator
 cdgc2  jsr  cdgvl            generate operand by value
        brn  cdgc1            merge to return
        enp                   end procedure cdgcg
+       ejc
 
 *      cdgex -- build expression block
 
@@ -16483,6 +16992,7 @@ cdgx1  mov  xr,xl            copy tree pointer
        mov  wa,(xr)          get type word
        bne  wa,=b_cmt,cdgx2  call by value if not cmblk
        bge  cmtyp(xr),=c__nm,cdgx2 jump if cmblk only by value
+       ejc
 
 *      cdgex (continued)
 
@@ -16504,6 +17014,7 @@ cdgx3  jsr  cdwrd            generate return word
        mov  wc,(xs)+         restore wc
        exi                   return to cdgex caller
        enp                   end procedure cdgex
+       ejc
 
 *      cdgnm -- generate code by name
 
@@ -16546,6 +17057,7 @@ cgn02  mov  wa,=olvn_        load variable load call
        jsr  cdwrd            generate it
        mov  wa,xr            copy vrblk pointer
        jsr  cdwrd            generate vrblk pointer
+       ejc
 
 *      cdgnm (continued)
 
@@ -16589,6 +17101,7 @@ cgn06  jsr  cmgen            generate code for next operand
        mov  wa,wc            copy cmblk length
        btw  wa               convert to words
        sub  wa,=cmvls        calculate number of subscripts
+       ejc
 
 *      cdgnm (continued)
 
@@ -16638,6 +17151,7 @@ cgn11  mov  xr,cmrop(xl)     get operand
 cgn12  jsr  cdwrd            generate code for operator
        brn  cgn03            exit
        enp                   end procedure cdgnm
+       ejc
 
 *      cdgvl -- generate code by value
 
@@ -16687,6 +17201,7 @@ cgvl0  mnz  wc               indicate non-constant value
 cgv00  mov  wa,xr            copy ptr to var or constant
        jsr  cdwrd            generate as code word
        exi                   return to caller
+       ejc
 
 *      cdgvl (continued)
 
@@ -16733,6 +17248,7 @@ cgv02  bsw  xr,c__nv         switch to appropriate generator
        iff  c_neg,cgv28      negation
        iff  c_pmt,cgv18      pattern match
        esw                   end switch on cmblk type
+       ejc
 
 *      cdgvl (continued)
 
@@ -16777,6 +17293,7 @@ cgv07  sub  wb,*cmvls        get number of arg ptrs (bytes)
        mov  wa,svbit(xl)     load bit mask
        anb  wa,btffc         test for fast function call allowed
        zrb  wa,cgv12         jump if not
+       ejc
 
 *      cdgvl (continued)
 
@@ -16816,6 +17333,7 @@ cgv10  jsr  cdwrd            generate one call
 
 cgv11  mov  wa,xl            copy pointer to svfnc field
        brn  cgv36            jump to generate call
+       ejc
 
 *      cdgvl (continued)
 
@@ -16869,6 +17387,7 @@ cgv16  jsr  cdwrd            generate o_slc (o_sla first time)
        mov  wa,num01(xs)     load old chain ptr
        mov  num01(xs),cwcof  set current loc as new chain head
        jsr  cdwrd            generate forward chain link
+       ejc
 
 *      cdgvl (continued)
 
@@ -16908,6 +17427,7 @@ cgv18  mov  xr,cmlop(xl)     load left operand pointer
 
 cgv19  mov  xr,cmrop(xl)     load right (only) operand ptr
        jsr  cdgvl            gen code by value
+       ejc
 
 *      cdgvl (continued)
 
@@ -16953,6 +17473,7 @@ cgv22  jsr  expap            test for pattern match on left side
 cgv23  mnz  wc               inhibit pre-evaluation
        jsr  cdgnm            gen code by name for left side
        brn  cgv31            merge with unop circuit
+       ejc
 
 *      cdgvl (continued)
 
@@ -16992,6 +17513,7 @@ cgv27  mov  xr,cmrop(xl)     load right operand ptr
        jsr  cdgnm            gen code by name for right arg
        mov  xr,cmopn(xl)     get operator code word
        bne  (xr),=o_kwv,cgv20 gen call unless keyword value
+       ejc
 
 *      cdgvl (continued)
 
@@ -17031,6 +17553,7 @@ cgv28  mov  wa,=onta_        get initial word
 
 cgv29  mov  xr,cmlop(xl)     load left operand ptr
        jsr  cdgvl            generate code by value
+       ejc
 
 *      cdgvl (continued)
 
@@ -17080,6 +17603,7 @@ cgv35  exi                   return to cdgvl caller
 
 cgv36  jsr  cdwrd            generate word
        bnz  wc,cgv34         jump to exit if not constant
+       ejc
 
 *      cdgvl (continued)
 
@@ -17104,6 +17628,7 @@ cgv37  mov  wa,xr            copy constant pointer
        zer  wc               set result constant
        brn  cgv34            jump back to exit
        enp                   end procedure cdgvl
+       ejc
 
 *      cdwrd -- generate one word of code
 
@@ -17160,6 +17685,7 @@ cdwd2  mov  wa,cwcof         load current offset
        mov  xl,xr            copy pointer
        blt  wa,mxlen,cdwd3   jump if not too large
        mov  wa,mxlen         else reset to max allowed size
+       ejc
 
 *      cdwrd (continued)
 
@@ -17195,6 +17721,7 @@ cdwd4  mov  wa,cwcof         load current offset
 
 cdwd5  erb  213,syntax error: statement is too complicated.
        enp                   end procedure cdwrd
+       ejc
 
 *      cmgen -- generate code for cmblk ptr
 
@@ -17215,6 +17742,7 @@ cmgen  prc  r,0              entry point, recursive
        ica  wb               bump offset
        exi                   return to caller
        enp                   end procedure cmgen
+       ejc
 
 *      cmpil (compile source code)
 
@@ -17271,6 +17799,7 @@ cmgen  prc  r,0              entry point, recursive
 *      scnse                 offset (in r_cim) of most recently
 *                            scanned element. set zero if not
 *                            currently scanning items
+       ejc
 
 *      cmpil (continued)
 
@@ -17318,6 +17847,7 @@ cmgen  prc  r,0              entry point, recursive
 *                            current statement. zero if no label
 
 *      cmtra(xs)             pointer to cdblk for entry stmnt.
+       ejc
 
 *      cmpil (continued)
 
@@ -17370,6 +17900,7 @@ cmp03  bge  scnpt,scnil,cmp09 end loop if end of image
        lch  wc,(xr)+         get char
        icv  scnpt            advance offset
        bne  wc,=ch_sm,cmp03  loop if not semi-colon
+       ejc
 
 *      cmpil (continued)
 
@@ -17419,6 +17950,7 @@ cmple  mov  r_cim,r_cmp      point to bad line
 cmp05  beq  wc,=ch_sm,cmp07  skip if semicolon
        icv  wa               bump offset
        beq  wa,scnil,cmp07   jump if end of image (label end)
+       ejc
 
 *      cmpil (continued)
 
@@ -17476,6 +18008,7 @@ cmp09  zer  xr               clear garbage xr value
 cmp10  mov  wa,=ostp_        set stop call pointer
        jsr  cdwrd            generate as statement call
        brn  cmpse            jump to generate as failure
+       ejc
 
 *      cmpil (continued)
 
@@ -17545,6 +18078,7 @@ cmp16  jsr  scngf            scan goto field
        bnz  cmfgo(xs),cmp17  error if fgoto already given
        mov  cmfgo(xs),xr     else store fgoto pointer
        brn  cmp13            loop back for next field
+       ejc
 
 *      cmpil (continued)
 
@@ -17590,6 +18124,7 @@ cmp20  beq  xr,cmfgo(xs),cmp22 no code if same as fgoto
 cmp21  mov  cmsoc(xs),cwcof  set success fill in offset
        mov  wa,=ocer_        point to compile error call
        jsr  cdwrd            generate as temporary value
+       ejc
 
 *      cmpil (continued)
 
@@ -17627,6 +18162,7 @@ cmp23  mov  wa,=ounf_        load unexpected failure call in cas
 *      also special entry after statement error
 
 cmpse  mov  wb,=b_cds        set cdtyp for simple case
+       ejc
 
 *      cmpil (continued)
 
@@ -17679,6 +18215,7 @@ cmp27  mov  wa,cmsop(xs)     load success offset
        add  xl,wa            else point to fill in location
        mov  (xl),xr          store forward pointer
        zer  xl               clear garbage xl value
+       ejc
 
 *      cmpil (continued)
 
@@ -17716,6 +18253,7 @@ cmp32  icv  wb               point past ch_mn
        zer  scnse            clear start of element loc.
        brn  cmpce            loop for next statement
        enp                   end procedure cmpil
+       ejc
 
 *      cncrd -- control card processor
 
@@ -17779,6 +18317,7 @@ cnc03  ica  xr               bump standard names ptr
 
 cnc04  cne  schar(xl),(xr),cnc05 comp. up to cfp_c chars at once
        bct  wa,cnc03         loop if more words to compare
+       ejc
 
 *      cncrd (continued)
 
@@ -17858,6 +18397,7 @@ cnc07  lch  wa,(xr)+         get next char
        ppm  cnc06            fail if not integer
        ppm  cnc06            fail if negative or large
        mov  cswin,xr         keep integer
+       ejc
 
 *      cncrd (continued)
 
@@ -17916,6 +18456,7 @@ cnc16  mnz  cswls            set switch
        zer  lstpf            permit listing
        jsr  listr            list line
        brn  cnc08            merge
+       ejc
 
 *      cncrd (continued)
 
@@ -17958,6 +18499,7 @@ cnc24  zer  cswno            clear switch
 
 cnc25  mnz  cswpr            set switch
        brn  cnc08            merge
+       ejc
 
 *      cncrd (continued)
 
@@ -17993,6 +18535,7 @@ cnc29  add  lstlc,wc         bump line count
 cnc30  jsr  prtnl            print a blank
        bct  wc,cnc30         loop
        brn  cnc09            merge
+       ejc
 
 *      cncrd (continued)
 
@@ -18195,6 +18738,7 @@ cnc46  brn  cnc09            merge
 .fi
 .fi
        enp                   end procedure cncrd
+       ejc
 .if    .ceng
 
 *      enevs -- evaluate string expression for engine
@@ -18240,6 +18784,7 @@ enev2  mov  xr,=num01        return integer one result
 .fi
        exi
        enp
+       ejc
 
 *      engts -- get string for engine
 
@@ -18262,6 +18807,7 @@ engts  prc  e,0              entry point
 engt1  zer  xr               return zero
        exi
        enp
+       ejc
 .fi
 
 *      dffnc -- define function
@@ -18313,6 +18859,7 @@ dffn3  mov  vrfnc(xr),wa     store new function pointer
        mov  xl,wa            restore function block pointer
        exi                   return to dffnc caller
        enp                   end procedure dffnc
+       ejc
 
 *      dtach -- detach i/o associated names
 
@@ -18363,6 +18910,7 @@ dtch4  mov  xr,xl            remember link ptr
        add  wc,ionmo(xl)     add offset
        bne  wc,dtcnm,dtch4   loop if no match
        mov  trtrf(xr),trtrf(xl) remove name from chain
+       ejc
 
 *      dtach (continued)
 
@@ -18379,6 +18927,7 @@ dtch6  mov  xr,dtcnb         possible vrblk ptr
        jsr  setvr            reset vrblk if necessary
        exi                   return
        enp                   end procedure dtach
+       ejc
 
 *      dtype -- get datatype name
 
@@ -18400,6 +18949,7 @@ dtyp1  mov  xr,pddfp(xr)     point to dfblk
        mov  xr,dfnam(xr)     get datatype name from dfblk
        exi                   return to dtype caller
        enp                   end procedure dtype
+       ejc
 
 *      dumpr -- print dump of storage
 
@@ -18461,6 +19011,7 @@ dmp00  mov  xr,wa            copy hash bucket pointer
 dmp01  mov  xr,vrnxt(xr)     point to next vrblk on chain
        bze  xr,dmp09         jump if end of this hash chain
        mov  xl,xr            else copy vrblk pointer
+       ejc
 
 *      dumpr (continued)
 
@@ -18518,6 +19069,7 @@ dmp05  mov  xl,wb            point to entering vrblk string
 
 dmp06  mov  wb,dmpsb         restore wb
        brn  dmp08            found insertion point
+       ejc
 
 *      dumpr (continued)
 
@@ -18536,6 +19088,7 @@ dmp07  mov  wb,dmpsb         restore wb
 dmp06  mov  wa,sclen(xr)     load shorter length
        plc  xr               point to chars of old string
        cmc  dmp08,dmp07      compare, insert if new one low
+       ejc
 
 *      dumpr (continued)
 
@@ -18579,6 +19132,7 @@ dmp11  jsr  prtnl            print blank line
        jsr  prtnl            end line
        jsr  prtnl            print one blank line
        mov  xl,=vdmkw        point to list of keyword svblk ptrs
+       ejc
 
 *      dumpr (continued)
 
@@ -18633,6 +19187,7 @@ dmp14  beq  xr,dnamp,dmp27   jump if end of used region
 dmp15  jsr  blkln            get length of block
        add  xr,wa            point past this block
        brn  dmp14            loop back for next block
+       ejc
 
 *      dumpr (continued)
 
@@ -18682,6 +19237,7 @@ dmp21  mov  xr,vrval(xr)     load next value
 dmp2b  beq  (xr),=b_trt,dmp21 loop back if trapped
        jsr  prtnv            else print name = value
        brn  dmp20            loop back for next field
+       ejc
 
 *      dumpr (continued)
 
@@ -18735,6 +19291,7 @@ dmp29  jsr  sysdm            call it
        brn  dmp28            return
 .if    .cnbf
 .else
+       ejc
 
 *      dumpr (continued)
 
@@ -18768,6 +19325,7 @@ dmp32  mov  wa,=ch_dq        stuff quote
        brn  dmp15            merge to get next block
 .fi
        enp                   end procedure dumpr
+       ejc
 
 *      ermsg -- print error code and error message
 
@@ -18799,6 +19357,7 @@ ermsg  prc  e,0              entry point
        jsr  prtis            print blank line
        exi                   return to ermsg caller
        enp                   end procedure ermsg
+       ejc
 
 *      ertex -- get error message text
 
@@ -18830,6 +19389,7 @@ ert01  mov  wb,ertwb         restore wb
 ert02  mov  xr,r_etx         get errtext
        brn  ert01            return
        enp
+       ejc
 
 *      evali -- evaluate integer argument
 
@@ -18879,6 +19439,7 @@ evli2  exi  1                take non-integer error exit
 
 evli3  exi  2                take out-of-range error exit
        enp                   end procedure evali
+       ejc
 
 *      evalp -- evaluate expression during pattern match
 
@@ -18933,6 +19494,7 @@ evlp1  chk                   check for stack space
        mov  -(xs),pmdfl      stack dot flag
        mov  -(xs),pmhbs      stack history stack base pointer
        mov  xr,parm1(xr)     load expression pointer
+       ejc
 
 *      evalp (continued)
 
@@ -18970,6 +19532,7 @@ evlp4  mov  pmhbs,(xs)+      restore history stack base pointer
        add  xs,*num02        remove node ptr, cursor
        exi  1                take failure exit
        enp                   end procedure evalp
+       ejc
 
 *      evals -- evaluate string argument
 
@@ -19015,6 +19578,7 @@ evls1  exi  2                take failure return
 evls2  add  xs,*num02        pop successor and cursor
        exi  1                take non-string error exit
        enp                   end procedure evals
+       ejc
 
 *      evalx -- evaluate expression
 
@@ -19044,6 +19608,7 @@ evalx  prc  r,1              entry point, recursive
 *      merge here to exit for seblk case
 
 evlx1  exi                   return to evalx caller
+       ejc
 
 *      evalx (continued)
 
@@ -19085,6 +19650,7 @@ evlx2  scp  wc               get code pointer
 evlx0  zer  xl               clear garbage xl
        lcw  xr               load first code word
        bri  (xr)             execute it
+       ejc
 
 *      evalx (continued)
 
@@ -19130,6 +19696,7 @@ evlx8  add  xs,*num02        pop name/value indicator, *exfal
 
 evlx9  exi  1                take failure exit
        enp                   end of procedure evalx
+       ejc
 
 *      exbld -- build exblk
 
@@ -19186,6 +19753,7 @@ exbl1  mov  xr,(xl)+         get next code word
 exbl2  mov  xr,(xs)+         pop exblk ptr into xr
        mov  xl,(xs)+         pop reduction constant
        exi                   return to caller
+       ejc
 
 *      exbld (continued)
 
@@ -19209,6 +19777,7 @@ exbl5  mov  xr,(xl)+         get next code word
        bct  wa,exbl5         loop
        brn  exbl2            merge to return
        enp                   end procedure exbld
+       ejc
 
 *      expan -- analyze expression
 
@@ -19261,6 +19830,7 @@ exbl5  mov  xr,(xl)+         get next code word
 
 *      2    scanning a direct goto. the only valid
 *           terminator is a right bracket.
+       ejc
 
 *      expan (continued)
 
@@ -19313,6 +19883,7 @@ exp01  jsr  scane            scan next element
        iff  t_sm1,exp05      semicolon, s=1
        iff  t_sm2,exp19      semicolon, s=2
        esw                   end switch on element type/state
+       ejc
 
 *      expan (continued)
 
@@ -19360,6 +19931,7 @@ exp05  erb  221,syntax error: missing operand
 
 exp06  mov  xl,=num04        set new level indicator
        zer  xr               set zero value for cmopn
+       ejc
 
 *      expan (continued)
 
@@ -19405,6 +19977,7 @@ exp11  icv  wc               increment counter
        zer  wa               set new state
        bgt  wb,=num02,exp01  loop back unless outer level
        erb  223,syntax error: invalid use of comma
+       ejc
 
 *      expan (continued)
 
@@ -19447,6 +20020,7 @@ exp15  jsr  expdm            dump operators at this level
 exp16  mov  -(xr),(xs)+      move one operand ptr from stack
        mov  wb,(xs)+         pop to old level indicator
        bct  wc,exp16         loop till all moved
+       ejc
 
 *      expan (continued)
 
@@ -19478,6 +20052,7 @@ exp18  mov  xl,=c_arr        set cmtyp for array reference
        beq  wb,=num03,exp15  jump to build cmblk if end arrayref
        beq  wb,=num02,exp20  jump if end of direct goto
        erb  225,syntax error: unbalanced right bracket
+       ejc
 
 *      expan (continued)
 
@@ -19518,6 +20093,7 @@ exp23  erb  228,syntax error: right bracket missing from goto
 *      missing array bracket
 
 exp24  erb  229,syntax error: missing right array bracket
+       ejc
 
 *      expan (continued)
 
@@ -19557,6 +20133,7 @@ exp27  mov  -(xs),xr         stack operator dvptr on stack
        zer  wa               set state zero
        brn  exp01            jump for next element
        enp                   end procedure expan
+       ejc
 
 *      expap -- test for pattern match tree
 
@@ -19602,6 +20179,7 @@ expp1  mov  xl,(xs)+         restore entry xl
 expp2  mov  xl,(xs)+         restore entry xl
        exi  1                give non-match return
        enp                   end procedure expap
+       ejc
 
 *      expdm -- dump operators at current level (for expan)
 
@@ -19628,6 +20206,7 @@ exdm2  mov  xl,r_exs         restore xl
        zer  r_exs            release save location
        exi                   return to expdm caller
        enp                   end procedure expdm
+       ejc
 
 *      expop-- pop operator (for expan)
 
@@ -19671,6 +20250,7 @@ expo2  mov  wa,*cmus_        set size of unary operator cmblk
        mov  xl,(xs)          load operator dv pointer
        brn  expo1            merge back to exit
        enp                   end procedure expop
+       ejc
 .if    .csfn
 
 *      filnm -- obtain file name from statement number
@@ -19735,6 +20315,7 @@ filn3  mov  wb,(xs)+         restore wb
        mov  xl,=nulls        return null string
        exi
        enp
+       ejc
 .fi
 
 .if    .culc
@@ -19781,6 +20362,7 @@ fst20  mov  wa,sclen(xr)     reload string length
        mov  xl,(xs)+         restore xl
 fst99  exi                   return
        enp
+       ejc
 .fi
 
 *      gbcol -- perform garbage collection
@@ -19835,6 +20417,7 @@ fst99  exi                   return
 *      the caller must guarantee that there is enough room.
 *      furthermore the value in wb if it is non-zero, must be at
 *      least 256 so that the mwb instruction conditions are met.
+       ejc
 
 *      gbcol (continued)
 
@@ -19888,6 +20471,7 @@ fst99  exi                   return
 *           the blocks down to the bottom of the dynamic region.
 *           the collection is then complete and the next
 *           available location pointer is reset.
+       ejc
 
 *      gbcol (continued)
 
@@ -19931,6 +20515,7 @@ fst99  exi                   return
 *      offset is subtracted to restore them to their original
 *      value.
 .fi
+       ejc
 
 *      gbcol (continued)
 
@@ -19968,6 +20553,7 @@ fst99  exi                   return
 *      for collection on the next gbcol call.
 
 .fi
+       ejc
 
 *      gbcol (continued)
 
@@ -20034,6 +20620,7 @@ gbc00  jsr  gbcpf            process pointers on stack
 gbc01  mov  xl,wa            point to next slot
        ica  wa               bump bucket pointer
        mov  gbcnm,wa         save bucket pointer
+       ejc
 
 *      gbcol (continued)
 
@@ -20051,6 +20638,7 @@ gbc02  mov  xr,(xl)          load ptr to next vrblk
 
 gbc03  mov  wa,gbcnm         restore bucket pointer
        bne  wa,hshte,gbc01   loop back if more buckets to go
+       ejc
 
 *      gbcol (continued)
 
@@ -20144,6 +20732,7 @@ gbc06  mov  xl,wa            copy pointer
        bhi  wa,=p_yyy,gbc06  loop back if not end of chain
        blo  wa,=b_aaa,gbc06  loop back if not end of chain
 .fi
+       ejc
 
 *      gbcol (continued)
 
@@ -20188,6 +20777,7 @@ gbc09  sub  xr,*num02        point 2 words behind for move block
        add  xr,*num02        point back to block in use
        mov  num01(xl),xr     store starting address
        brn  gbc06            jump to process block in use
+       ejc
 
 *      gbcol (continued)
 
@@ -20273,6 +20863,7 @@ gb13a  ldi  gbcia            restore ia
 gbc14  icv  errft            fatal error
        erb  250,insufficient memory to complete dump
        enp                   end procedure gbcol
+       ejc
 
 *      gbcpf -- process fields for garbage collector
 
@@ -20334,6 +20925,7 @@ gpf02  mov  xr,wc            restore field pointer
 
 gpf2a  ica  xr               bump to next field
        bne  xr,(xs),gpf01    loop back if more to go
+       ejc
 
 *      gbcpf (continued)
 
@@ -20410,6 +21002,7 @@ gpf03  mov  xr,xl            copy block pointer
        iff  bl_se,gpf02      seblk
        iff  bl_xn,gpf02      xnblk
        esw                   end of jump table
+       ejc
 
 *      gbcpf (continued)
 
@@ -20443,6 +21036,7 @@ gpf06  mov  wa,arlen(xr)     load length
 gpf07  mov  wa,ccuse(xr)     set length in use
        mov  wb,*ccuse        1st word (make sure at least one)
        brn  gpf05            all set
+       ejc
 
 *      gbcpf (continued)
 
@@ -20485,6 +21079,7 @@ gpf11  mov  wa,*ffofs        set length
 gpf12  mov  wa,*parm2        length (parm2 is non-relocatable)
        mov  wb,*pthen        set offset
        brn  gpf05            all set
+       ejc
 
 *      gbcpf (continued)
 
@@ -20528,6 +21123,7 @@ gpf18  mov  wa,*bcsi_        set length
        brn  gpf05            all set
 .fi
        enp                   end procedure gbcpf
+       ejc
 *z+
 
 *      gtarr -- get array
@@ -20588,6 +21184,7 @@ gtar4  mov  xl,teval(xl)     load value
        beq  (xl),=b_trt,gtar4 loop till value found
        mov  wc,xl            copy value
        mov  xl,cnvtp         restore teblk pointer
+       ejc
 
 *      gtarr (continued)
 
@@ -20642,6 +21239,7 @@ gtar6  bne  wa,(xs),gtar2    loop back if more buckets to go
        mov  wb,xr            save arblk pointer
        add  xr,*arvl2        point to first element location
        brn  gtar1            jump back to fill in elements
+       ejc
 
 *      gtarr (continued)
 
@@ -20687,6 +21285,7 @@ gta9a  exi  2                return
 
 gta9b  erb  260,conversion array size exceeds maximum permitted
        enp                   procedure gtarr
+       ejc
 
 *      gtcod -- convert to code
 
@@ -20731,6 +21330,7 @@ gtcd1  exi                   give normal gtcod return
 
 gtcd2  exi  1                give error return
        enp                   end procedure gtcod
+       ejc
 
 *      gtexp -- convert to expression
 
@@ -20798,6 +21398,7 @@ gtex1  exi                   return to gtexp caller
 
 gtex2  exi  1                take error exit
        enp                   end procedure gtexp
+       ejc
 
 *      gtint -- get integer value
 
@@ -20842,6 +21443,7 @@ gtin2  exi                   return to gtint caller
 
 gtin3  exi  1                take convert error exit
        enp                   end procedure gtint
+       ejc
 
 *      gtnum -- get numeric value
 
@@ -20897,6 +21499,7 @@ gtnum  prc  e,1              entry point
 gtn01  lch  wb,(xr)+         load first character
        blt  wb,=ch_d0,gtn02  jump if not digit
        ble  wb,=ch_d9,gtn06  jump if first char is a digit
+       ejc
 
 *      gtnum (continued)
 
@@ -20950,6 +21553,7 @@ gtn07  bnz  gtnnf,gtn32      jump if negative (all set)
        ngi                   else negate
        ino  gtn32            jump if no overflow
        brn  gtn36            else signal error
+       ejc
 
 *      gtnum (continued)
 
@@ -21005,6 +21609,7 @@ gtn11  sub  wb,=ch_d0        convert digit to number
        mnz  gtnrd            set digit found flag
        bct  wa,gtn10         loop back if more chars
        brn  gtn22            else jump to scale
+       ejc
 
 *      gtnum (continued)
 
@@ -21063,6 +21668,7 @@ gtn17  bct  wa,gtn18         jump if chars left
 *      loop to convert exponent digits
 
 gtn18  lch  wb,(xr)+         load next character
+       ejc
 
 *      gtnum (continued)
 
@@ -21115,6 +21721,7 @@ gtn23  ble  wa,=num10,gtn24  jump if 10 or less to go
        dvr  reatt            else divide by 10**10
        sub  wa,=num10        decrement scale
        brn  gtn23            and loop back
+       ejc
 
 *      gtnum (continued)
 
@@ -21159,6 +21766,7 @@ gtn29  add  xr,wa            bump pointer
        bct  wb,gtn29         once for each word in value
        mlr  (xr)             scale up
        rov  gtn36            error if overflow
+       ejc
 
 *      gtnum (continued)
 
@@ -21204,6 +21812,7 @@ gtn35  lch  wb,-(xr)         reload current character
 gtn36  mov  xr,(xs)+         reload original argument
        exi  1                take convert-error exit
        enp                   end procedure gtnum
+       ejc
 
 *      gtnvr -- convert to natural variable
 
@@ -21252,6 +21861,7 @@ gnv02  mov  gnvsa,wa         save wa
        wtb  wc               convert offset to bytes
        add  wc,hshtb         point to proper hash chain
        sub  wc,*vrnxt        subtract offset to merge into loop
+       ejc
 
 *      gtnvr (continued)
 
@@ -21299,6 +21909,7 @@ gnv08  zer  xr               clear garbage xr pointer
        mov  xl,wa            else copy length
        wtb  xl               convert to byte offset
        mov  xl,vsrch(xl)     point to first svblk of this length
+       ejc
 
 *      gtnvr (continued)
 
@@ -21349,6 +21960,7 @@ gnv14  mov  wc,wa            copy vrlen value
        mov  wa,=vrchs        load standard size -chars
        add  wa,gnvnw         adjust for chars of name
        wtb  wa               convert length to bytes
+       ejc
 
 *      gtnvr (continued)
 
@@ -21390,6 +22002,7 @@ gnv16  mov  xl,gnvsp         load pointer to svblk
        anb  wc,wb            and to test
        zrb  wc,gnv17         jump if no keyword number
        ica  xl               else bump pointer
+       ejc
 
 *      gtnvr (continued)
 
@@ -21418,6 +22031,7 @@ gnv19  mov  wc,btval         load test bit
        mov  vrsto(xr),=b_vre set error store access
        brn  gnv06            merge back to exit to caller
        enp                   end procedure gtnvr
+       ejc
 
 *      gtpat -- get pattern
 
@@ -21451,6 +22065,7 @@ gtpat  prc  e,1              entry point
 
        mov  xr,=ndnth        point to nothen node
        brn  gtpt4            jump to exit
+       ejc
 
 *      gtpat (continued)
 
@@ -21490,6 +22105,7 @@ gtpt5  exi                   return to gtpat caller
        enp                   end procedure gtpat
 .if    .cnra
 .else
+       ejc
 
 *      gtrea -- get real value
 
@@ -21525,6 +22141,7 @@ gtre2  exi                   return to gtrea caller
 gtre3  exi  1                take convert error exit
        enp                   end procedure gtrea
 .fi
+       ejc
 
 *      gtsmi -- get small integer
 
@@ -21569,6 +22186,7 @@ gtsm2  exi  1                take non-integer error exit
 
 gtsm3  exi  2                take out-of-range error exit
        enp                   end procedure gtsmi
+       ejc
 .if    .cnbf
 .else
 
@@ -21617,6 +22235,7 @@ gtsb3  ica  xs               pop argument
        mov  xr,bcbuf(xr)     return bfblk pointer in xr
        exi                   return with buffer result
        enp                   end procedure gtstg
+       ejc
 .fi
 
 *      gtstg -- get string
@@ -21660,6 +22279,7 @@ gts01  mov  -(xs),xr         restack argument in case error
 gts02  mov  xl,(xs)+         restore xl
        mov  xr,(xs)+         reload input argument
        exi  1                take convert error exit
+       ejc
 
 *      gtstg (continued)
 
@@ -21693,6 +22313,7 @@ gts05  ldi  icval(xr)        load integer value
        ilt  gts06            skip if integer is negative
        ngi                   else negate integer
        zer  gtssf            and reset negative flag
+       ejc
 
 *      gtstg (continued)
 
@@ -21737,6 +22358,7 @@ gts09  mov  wa,xl            recall length to move
 .if    .cnra
 .else
        brn  gts29            jump to exit
+       ejc
 
 *      gtstg (continued)
 
@@ -21790,6 +22412,7 @@ gts14  sbr  reatt            subtract 10**10 to compare
        str  gtsrs            store new value
        adi  intvt            increment exponent by 10
        brn  gts14            loop back
+       ejc
 
 *      gtstg (continued)
 
@@ -21828,6 +22451,7 @@ gts17  ldr  gtsrs            get value again
 *      here if rounding did not muck up scaling
 
 gts18  ldr  gtsrs            reload rounded value
+       ejc
 
 *      gtstg (continued)
 
@@ -21865,6 +22489,7 @@ gts19  mov  xl,=cfp_s        set num dec digits = cfp_s
 
 gts20  sub  xl,wa            compute digits after decimal point
        ldi  intv0            reset exponent to zero
+       ejc
 
 *      gtstg (continued)
 
@@ -21908,6 +22533,7 @@ gts24  bze  xl,gts27         jump if no digits left to do
        bne  wa,=ch_d0,gts26  jump if not a zero
        dcv  xl               decrement counter
        brn  gts24            loop back for next digit
+       ejc
 
 *      gtstg (continued)
 
@@ -21963,6 +22589,7 @@ gts31  mov  xl,=scre0        point to string
 .fi
 .if    .cnbf
 .else
+       ejc
 
 *      here to convert a buffer block
 
@@ -21986,6 +22613,7 @@ gts33  mov  xr,=nulls        point to null
        brn  gts29            exit with null
 .fi
        enp                   end procedure gtstg
+       ejc
 
 *      gtvar -- get variable for i/o/trace association
 
@@ -22029,6 +22657,8 @@ gtvr3  bhi  xl,state,gtvr4   all ok if not natural variable
 
 gtvr4  exi                   return to caller
        enp                   end procedure gtvar
+       ejc
+       ejc
 
 *      hashs -- compute hash index for string
 
@@ -22237,6 +22867,7 @@ icbl3  wtb  xr               convert integer to offset
        mov  xr,intab(xr)     point to pre-built icblk
        exi                   return
        enp                   end procedure icbld
+       ejc
 
 *      ident -- compare two values
 
@@ -22328,6 +22959,7 @@ iden3  cne  (xr),(xl),iden8  differ if chars do not match
        ica  xr               else bump arg one pointer
        ica  xl               bump arg two pointer
        bct  wc,iden3         loop back till all checked
+       ejc
 
 *      ident (continued)
 
@@ -22371,6 +23003,7 @@ iden8  zer  xr               clear garbage ptr in xr
        zer  xl               clear garbage ptr in xl
        exi                   return to caller (differ)
        enp                   end procedure ident
+       ejc
 
 *      inout - used to initialise input and output variables
 
@@ -22403,6 +23036,7 @@ inout  prc  e,0              entry point
        mov  vrsto(xl),=b_vrv set trapped store
        exi                   return to caller
        enp                   end procedure inout
+       ejc
 .if    .cnbf
 .else
 
@@ -22466,6 +23100,7 @@ ins09  mov  xl,xr            save string ptr
        mov  xr,bcbuf(xr)     point to bfblk
        mov  -(xs),xl         save scblk ptr
        blo  inssb,insln,ins01 brn if shift is for more room
+       ejc
 
 *      insbf (continued)
 
@@ -22514,6 +23149,7 @@ ins02  mov  xl,(xs)+         restore scblk or bfblk ptr
 ins03  sch  wb,(xr)+         stuff zero pad
        bct  wa,ins03         branch for more
        csc  xr               complete store character
+       ejc
 
 *      insbf (continued)
 
@@ -22566,6 +23202,7 @@ ins08  jsr  gtstg            call to get string
        ppm  ins05            take string convert err exit
        brn  ins09            merge back to perform insertion
        enp                   end procedure insbf
+       ejc
 .fi
 
 *      insta - used to initialize structures in static region
@@ -22626,6 +23263,7 @@ inst2  sch  wb,(xr)+         store next code
        mov  xr,wa            return current static ptr
        exi                   return to caller
        enp                   end procedure insta
+       ejc
 
 *      iofcb -- get input/output fcblk pointer
 
@@ -22675,6 +23313,7 @@ iofc3  exi  2                null arg return
 
 iofc4  exi  3                file not found return
        enp                   end procedure iofcb
+       ejc
 
 *      ioppf -- process filearg2 for ioput
 
@@ -22706,6 +23345,7 @@ iopp1  mov  xl,=iodel        get delimiter
        mov  xl,r_io1         filearg1
        exi                   return
        enp                   end procedure ioppf
+       ejc
 
 *      ioput -- routine used by input and output
 
@@ -22761,6 +23401,7 @@ iopp1  mov  xl,=iodel        get delimiter
 *                         i  name offset  i       i    etc    i
 *                         +---------------+
 *                           (iochn - chain of name pointers)
+       ejc
 
 *      ioput (continued)
 
@@ -22810,6 +23451,7 @@ iop00  bze  xl,iop01         skip if both args null
        ppm  iop16            fail
        ppm  iop26            fail
        brn  iop11            complete file association
+       ejc
 
 *      ioput (continued)
 
@@ -22855,6 +23497,7 @@ iop03  mov  vrval(xl),wc     link to this trblk
 *      see if an fcblk has already been allocated.
 
 iop04  zer  wa               in case no fcblk found
+       ejc
 
 *      ioput (continued)
 
@@ -22903,6 +23546,7 @@ iop07  zer  (xr)+            clear a word
        bnz  wc,iop09         jump if xnblk wanted
        mov  (xl),=b_xrt      xrblk code requested
 
+       ejc
 *      ioput (continued)
 
 *      complete fcblk initialisation
@@ -22978,6 +23622,7 @@ iop18  mov  xr,r_iop         is there a trblk to release
        mov  vrval(xr),vrval(xl) unsplice it
        jsr  setvr            adjust trace intercepts
 iopa8  exi  6                i/o file cannot be read/written
+       ejc
 
 *      ioput (continued)
 
@@ -23033,6 +23678,7 @@ iop24  mov  wa,*num04        space needed
 
 iop25  exi                   return to caller
        enp                   end procedure ioput
+       ejc
 
 *      ktrex -- execute keyword trace
 
@@ -23081,6 +23727,7 @@ ktrx2  mov  xr,(xs)+         restore entry xr
 
 ktrx3  exi                   return to ktrex caller
        enp                   end procedure ktrex
+       ejc
 
 *      kwnam -- get pseudo-variable name for keyword
 
@@ -23117,6 +23764,7 @@ kwnam  prc  n,0              entry point
 
 kwnm1  erb  251,keyword operand is not name of defined keyword
        enp                   end procedure kwnam
+       ejc
 
 *      lcomp-- compare two strings lexically
 
@@ -23158,6 +23806,7 @@ lcomp  prc  n,5              entry point
        ppm  lcmp4            arg 2 lt arg 1, lgt exit
        ppm  lcmp3            arg 2 gt arg 1, llt exit
        exi  4                else identical strings, leq exit
+       ejc
 
 *      lcomp (continued)
 .else
@@ -23170,6 +23819,7 @@ lcmp1  bze  wa,lcmp7         if null string, compare lengths
        cmc  lcmp4,lcmp3      compare strings, jump if unequal
 lcmp7  bne  wb,wc,lcmp2      if equal, jump if lengths unequal
        exi  4                else identical strings, leq exit
+       ejc
 
 *      lcomp (continued)
 
@@ -23194,6 +23844,7 @@ lcmp5  exi  1                take bad first arg exit
 
 lcmp6  exi  2                take bad second arg error exit
        enp                   end procedure lcomp
+       ejc
 
 *      listr -- list source line
 
@@ -23265,6 +23916,7 @@ list2  mov  xr,lstid         include depth of image
        mov  profs,wa         set as starting position
        mti  xr               include depth as integer
        jsr  prtin            print include depth
+       ejc
 
 *      listr (continued)
 
@@ -23272,6 +23924,7 @@ list2  mov  xr,lstid         include depth of image
 
 list8  mov  profs,=stnpd     point past statement number
 .else
+       ejc
 
 *      listr (continued)
 
@@ -23311,6 +23964,7 @@ list6  jsr  prtps            eject
 list7  jsr  listt            list title
        brn  list0            merge
        enp                   end procedure listr
+       ejc
 
 *      listt -- list title and subtitle
 
@@ -23344,6 +23998,7 @@ listt  prc  e,0              entry point
 lstt1  jsr  prtnl            print a blank line
        exi                   return to caller
        enp                   end procedure listt
+       ejc
 .if    .csfn
 
 *      newfn -- record new source file name
@@ -23381,6 +24036,7 @@ newfn  prc  e,0              entry point
 
 nwfn1  ica  xs               pop stack
        exi
+       ejc
 .fi
 
 *      nexts -- acquire next source image
@@ -23446,6 +24102,7 @@ nxts3  mov  scnil,wa         use as record length
        zer  lstpf            set line not listed yet
        exi                   return to nexts caller
        enp                   end procedure nexts
+       ejc
 
 *      patin -- pattern construction for len,pos,rpos,tab,rtab
 
@@ -23482,6 +24139,7 @@ ptin2  mov  wb,xl            copy expr arg case pcode
 
 ptin3  exi  2                take out-of-range error exit
        enp                   end procedure patin
+       ejc
 
 *      patst -- pattern construction for any,notany,
 *               break,span and breakx pattern functions.
@@ -23521,6 +24179,7 @@ patst  prc  n,1              entry point
 
 pats1  jsr  pbild            call routine to build node
        exi                   return to patst caller
+       ejc
 
 *      patst (continued)
 
@@ -23557,6 +24216,7 @@ pats4  mov  ctmsk,wc         save parm2 (new bit position)
        bze  wb,pats6         jump if null string case
        lct  wb,wb            else set loop counter
        plc  xl               point to characters in argument
+       ejc
 
 *      patst (continued)
 
@@ -23587,6 +24247,7 @@ pats7  mov  wb,wc            set pcode for expression argument
        blo  (xr),=b_e__,pats1 jump to exit if expression arg
        exi  1                else take wrong type error exit
        enp                   end procedure patst
+       ejc
 
 *      pbild -- build pattern node
 
@@ -23633,6 +24294,7 @@ pbld4  mov  (xr),wb          store pcode
        mov  pthen(xr),=ndnth set nothen successor pointer
        exi                   return to pbild caller
        enp                   end procedure pbild
+       ejc
 
 *      pconc -- concatenate two patterns
 
@@ -23675,6 +24337,7 @@ pconc  prc  e,0              entry point
        mov  xt,xs            initialize pointer to stack entries
        jsr  pcopy            copy first node of left arg
        mov  num02(xt),wa     store as result under list
+       ejc
 
 *      pconc (continued)
 
@@ -23704,6 +24367,7 @@ pcnc2  mov  xs,wc            restore stack pointer
        mov  xr,(xs)+         load pointer to copy
        exi                   return to pconc caller
        enp                   end procedure pconc
+       ejc
 
 *      pcopy -- copy a pattern node
 
@@ -23751,6 +24415,7 @@ pcop2  mov  wa,-(xt)         load address of copy from list
 pcop3  mov  xt,wb            restore xt
        exi                   return to pcopy caller
        enp                   end procedure pcopy
+       ejc
 .if    .cnpf
 .else
 
@@ -23816,6 +24481,7 @@ prfl3  add  xr,*pf_i2        bump index ptr (sgd07)
 
 prfl4  exi                   return
        enp                   end of prflr
+       ejc
 
 *      prflu -- update an entry in the profile table
 
@@ -23893,6 +24559,7 @@ pflu3  mov  xr,(xs)+         restore callers xr
 pflu4  zer  pffnc            reset the condition flag
        exi                   and immediate return
        enp                   end of procedure prflu
+       ejc
 .fi
 
 *      prpar - process print parameters
@@ -23946,6 +24613,7 @@ prpa4  mov  wb,bits1         bit 1 mask
        mov  wb,bits5         bit 5 mask
        anb  wb,wc            get bit
        mov  exsts,wb         flag for exec stats suppression
+       ejc
 
 *      prpar (continued)
 
@@ -24016,6 +24684,7 @@ prpa8  mnz  initr            note terminal associated
 
 prpa9  exi                   return
        enp                   end procedure prpar
+       ejc
 
 *      prtch -- print a character
 
@@ -24039,6 +24708,7 @@ prch1  mov  xr,prbuf         point to print buffer
        mov  xr,(xs)+         restore entry xr
        exi                   return to prtch caller
        enp                   end procedure prtch
+       ejc
 
 *      prtic -- print to interactive channel
 
@@ -24068,6 +24738,7 @@ prtc2  zer  erich            prevent looping
        erb  252,error on printing to interactive channel
        brn  prtc1            return
        enp                   procedure prtic
+       ejc
 
 *      prtis -- print to interactive and standard printer
 
@@ -24090,6 +24761,7 @@ prtis  prc  e,0              entry point
 prts1  jsr  prtnl            print to standard printer
        exi                   return
        enp                   end procedure prtis
+       ejc
 
 *      prtin -- print an integer
 
@@ -24118,6 +24790,7 @@ prti1  mov  -(xs),xr         stack ptr for gtstg
        mov  xr,(xs)+         restore entry xr
        exi                   return to prtin caller
        enp                   end procedure prtin
+       ejc
 
 *      prtmi -- print message and integer
 
@@ -24134,6 +24807,7 @@ prtmi  prc  e,0              entry point
        jsr  prtnl            print line
        exi                   return to prtmi caller
        enp                   end procedure prtmi
+       ejc
 
 *      prtmm -- print memory used and available
 
@@ -24163,6 +24837,7 @@ prtmm  prc  e,0
        jsr  prtmi            print line
        exi                   return to prtmm caller
        enp                   end of procedure prtmm
+       ejc
 
 *      prtmx  -- as prtmi with extra copy to interactive chan.
 
@@ -24176,6 +24851,7 @@ prtmx  prc  e,0              entry point
        jsr  prtis            print line
        exi                   return
        enp                   end procedure prtmx
+       ejc
 
 *      prtnl -- print new line (end print line)
 
@@ -24227,6 +24903,7 @@ prnl3  mov  wb,=nini8        ending code
        mov  xl,r_fcb         get fcblk chain head
        jsr  sysej            stop
        enp                   end procedure prtnl
+       ejc
 
 *      prtnm -- print variable name
 
@@ -24271,6 +24948,7 @@ prn02  mov  wb,wa            copy name offset
        jsr  prtvn            print field name
        mov  wa,=ch_pp        load left paren
        jsr  prtch            print character
+       ejc
 
 *      prtnm (continued)
 
@@ -24311,6 +24989,7 @@ prn06  mov  xr,vrnxt(xr)     point to next vrblk on hash chain
 
 prn07  mov  wc,xr            copy vrblk pointer
        bze  wc,prn09         jump if chain end (or prnmv zero)
+       ejc
 
 *      prtnm (continued)
 
@@ -24352,6 +25031,7 @@ prn11  mov  wc,(xl)          load first word of name base
 prn12  jsr  prtch            print final character
        mov  wa,wb            restore name offset
        brn  prn01            merge back to exit
+       ejc
 
 *      prtnm (continued)
 
@@ -24387,6 +25067,7 @@ prn15  mov  wa,wb            copy name offset
        mti  wa               move to integer accum
        jsr  prtin            print linear subscript
        brn  prn14            merge back for right bracket
+       ejc
 
 *      prtnm (continued)
 
@@ -24434,6 +25115,7 @@ prn19  mti  (xs)+            load subscript offset as integer
        bct  wb,prn18         loop back till all printed
        brn  prn14            merge back to print right bracket
        enp                   end procedure prtnm
+       ejc
 
 *      prtnv -- print name value
 
@@ -24464,6 +25146,7 @@ prtnv  prc  e,0              entry point
        mov  xr,(xs)+         restore entry xr
        exi                   return to caller
        enp                   end procedure prtnv
+       ejc
 
 *      prtpg  -- print a page throw
 
@@ -24500,6 +25183,7 @@ prp03  mov  xr,headp         remember headp
        jsr  prtnl            print blank line
        mov  lstlc,=num03     count blank lines
        mov  headp,xr         restore header flag
+       ejc
 
 *      prptg (continued)
 
@@ -24529,6 +25213,7 @@ prp05  mov  xr,(xs)+         restore xr
 
 prp06  exi                   return
        enp                   end procedure prtpg
+       ejc
 
 *      prtps - print page with test for standard listing option
 
@@ -24543,6 +25228,7 @@ prtps  prc  e,0              entry point
        zer  prstd            clear flag
        exi                   return
        enp                   end procedure prtps
+       ejc
 
 *      prtsn -- print statement number
 
@@ -24588,6 +25274,7 @@ prsn2  mov  wa,=ch_bl        get blank
        mov  xr,(xs)+         restore entry xr
        exi                   return to prtsn caller
        enp                   end procedure prtsn
+       ejc
 
 *      prtst -- print string
 
@@ -24625,6 +25312,7 @@ prst1  mov  wa,sclen(xr)     load string length
        bnz  xr,prst2         skip if room left on this line
        jsr  prtnl            else print this line
        mov  xr,prlen         and set full width available
+       ejc
 
 *      prtst (continued)
 
@@ -24653,6 +25341,7 @@ prst4  mov  wb,prsvb         restore entry wb
        mov  wa,prsva         restore entry wa
        exi                   return to prtst caller
        enp                   end procedure prtst
+       ejc
 
 *      prttr -- print to terminal
 
@@ -24678,6 +25367,7 @@ prtt1  mov  (xr)+,wb         clear a word
        mov  xr,(xs)+         restore xr
        exi                   return
        enp                   end procedure prttr
+       ejc
 
 *      prtvl -- print a value
 
@@ -24733,6 +25423,7 @@ prv03  mov  xr,(xs)+         reload argument
 
 prv04  mov  xr,trval(xr)     load real value
        brn  prv01            and loop back
+       ejc
 
 *      prtvl (continued)
 
@@ -24774,6 +25465,7 @@ prv08  mov  -(xs),xr         stack argument for gtstg
        jsr  prtst            print the string
        mov  dnamp,xr         delete garbage string from storage
        brn  prv03            back to exit
+       ejc
 
 *      prtvl (continued)
 
@@ -24809,6 +25501,7 @@ prv11  mov  wa,=ch_sq        load single quote
        jsr  prtst            print string value
        jsr  prtch            print another quote
        brn  prv03            back to exit
+       ejc
 
 *      prtvl (continued)
 
@@ -24844,6 +25537,7 @@ prv14  mti  wa               move as integer
        brn  prv06            merge back for rest
 .if    .cnbf
 .else
+       ejc
 
 *      prtvl (continued)
 
@@ -24864,6 +25558,7 @@ prv15  mov  xl,xr            preserve argument
        brn  prv06            merge to finish up
 .fi
        enp                   end procedure prtvl
+       ejc
 
 *      prtvn -- print natural variable name
 
@@ -24886,6 +25581,7 @@ prvn1  jsr  prtst            print string name of variable
        enp                   end procedure prtvn
 .if    .cnra
 .else
+       ejc
 
 *      rcbld -- build a real block
 
@@ -24911,6 +25607,7 @@ rcbl1  mov  dnamp,xr         set new pointer
        exi                   return to rcbld caller
        enp                   end procedure rcbld
 .fi
+       ejc
 
 *      readr -- read next source image at compile time
 
@@ -25044,6 +25741,7 @@ read4  mov  dnamp,xr         pop unused scblk
 read6  zer  xr               zero ptr as result
        brn  read2            merge
        enp                   end procedure readr
+       ejc
 .if    .c370
 
 *      sbool-- setup for boolean operations on strings
@@ -25121,6 +25819,7 @@ sbl04  exi  1                take bad first arg error exit
 
 sbl05  exi  2                take bad second arg error exit
        enp                   end procedure sbool
+       ejc
 .fi
 
 *      sbstr -- build a substring
@@ -25157,6 +25856,7 @@ sbst1  zer  xl               clear garbage pointer in xl
 sbst2  mov  xr,=nulls        set null string as result
        brn  sbst1            return
        enp                   end procedure sbstr
+       ejc
 
 *      stgcc -- compute counters for stmt startup testing
 
@@ -25205,6 +25905,7 @@ stgc3  mov  stmcs,wa         update breakout count start value
        mov  polct,wb
 .fi
        exi
+       ejc
 
 *      tfind -- locate table element
 
@@ -25256,6 +25957,7 @@ tfn00  mov  wa,1(xr)         load second word
 
 tfn01  mti  wa               convert to integer
        brn  tfn06            jump to merge
+       ejc
 
 *      tfind (continued)
 
@@ -25313,6 +26015,7 @@ tfn07  mov  wb,xr            save teblk pointer
 
        mov  wc,*tenxt        set offset to link field (xl base)
        brn  tfn11            jump to merge
+       ejc
 
 *      tfind (continued)
 
@@ -25363,6 +26066,7 @@ tfn11  mov  xr,(xs)          tbblk pointer
 
 tfn12  exi  1                alternative return
        enp                   end procedure tfind
+       ejc
 
 *      tmake -- make new table
 
@@ -25391,6 +26095,7 @@ tma01  mov  (xr)+,wb         store tbblk ptr in bucket header
        mov  xr,wb            recall pointer to tbblk
        exi
        enp
+       ejc
 
 *      vmake -- create a vector
 
@@ -25425,6 +26130,7 @@ vmak1  mov  (xl)+,wc         store one value
 
 vmak2  exi  1                fail return
        enp
+       ejc
 
 *      scane -- scan an element
 
@@ -25472,6 +26178,7 @@ vmak2  exi  1                fail return
 
 *      scntp                 save syntax type from last
 *                            call (in case rescan is set).
+       ejc
 
 *      scane (continued)
 
@@ -25516,6 +26223,7 @@ vmak2  exi  1                fail return
 *      f (scngo ne 0)        t_fgo     t_fgo
 
 *      s (scngo ne 0)        t_sgo     t_sgo
+       ejc
 
 *      scane (continued)
 
@@ -25550,6 +26258,7 @@ scn01  jsr  readr            read next image
 scn02  jsr  nexts            acquire next source image
        mov  scnpt,=num01     set scan pointer past continuation
        mnz  scnbl            set blanks flag
+       ejc
 
 *      scane (continued)
 
@@ -25612,6 +26321,7 @@ scn06  lch  xr,(xl)+         get next character
        iff  ch_d7,scn08      digit 7
        iff  ch_d8,scn08      digit 8
        iff  ch_d9,scn08      digit 9
+       ejc
 
 *      scane (continued)
 
@@ -25667,6 +26377,7 @@ scn06  lch  xr,(xl)+         get next character
        iff  ch_uy,scn09      shifted y
        iff  ch_uz,scn09      shifted z
 .fi
+       ejc
 
 *      scane (continued)
 
@@ -25705,6 +26416,7 @@ scn06  lch  xr,(xl)+         get next character
 
 scn07  bze  wb,scn10         jump if scanning name or constant
        erb  230,syntax error: illegal character
+       ejc
 
 *      scane (continued)
 
@@ -25741,6 +26453,7 @@ scn11  mov  scnpt,wa         store updated scan offset
 *      merge here to exit with constant
 
 scn12  mov  xl,=t_con        set result type of constant
+       ejc
 
 *      scane (continued)
 
@@ -25784,6 +26497,7 @@ scn18  beq  wa,scnil,scn19   error if end of image
        lch  wc,(xl)+         else load next character
        icv  wa               bump offset
        bne  wc,wb,scn18      loop back if not terminator
+       ejc
 
 *      scane (continued)
 
@@ -25825,6 +26539,7 @@ scn23  bze  wb,scn10         jump if end of name/constant
 
 scn24  bze  wb,scn09         part of name if scanning name
        brn  scn07            else illegal
+       ejc
 
 *      scane (continued)
 
@@ -25866,6 +26581,7 @@ scn30  mov  xr,=t_smc        semi-colon, set code
 
 scn31  mov  xr,=t_cma        comma, set code
        brn  scn23            take special character exit
+       ejc
 
 *      scane (continued)
 
@@ -25926,6 +26642,7 @@ scn46  bze  wb,scn10         operator terminates name/constant
        add  xr,*dvbs_        point to dv for unary op
        mov  xl,=t_uop        set type for unary operator
        ble  scntp,=t_uok,scn13 ok unary if ok preceding element
+       ejc
 
 *      scane (continued)
 
@@ -25969,6 +26686,7 @@ scn51  mov  scnpt,xr         save scan pointer past 2nd *
        mov  wa,xr            copy scan pointer
        brn  scn37            merge with exclamation
        enp                   end procedure scane
+       ejc
 
 *      scngf -- scan goto field
 
@@ -26005,6 +26723,7 @@ scng1  mov  wb,=num01        set expan flag for normal goto
 scng2  mov  wb,=num02        set expan flag for direct goto
        jsr  expan            scan goto field
        mov  wa,=opdvd        set opdv pointer for direct goto
+       ejc
 
 *      scngf (continued)
 
@@ -26019,6 +26738,7 @@ scng3  mov  -(xs),wa         stack operator dv pointer
 
 scng4  exi                   return to caller
        enp                   end procedure scngf
+       ejc
 
 *      setvr -- set vrget,vrsto fields of vrblk
 
@@ -26053,6 +26773,7 @@ setv1  exi                   return to setvr caller
        enp                   end procedure setvr
 .if    .cnsr
 .else
+       ejc
 
 *      sorta -- sort array
 
@@ -26089,6 +26810,7 @@ setv1  exi                   return to setvr caller
 *      ppm  loc              transfer loc if table is empty
 *      (xr)                  sorted array
 *      (xl,wa,wb,wc)         destroyed
+       ejc
 
 *      sorta (continued)
 
@@ -26138,6 +26860,7 @@ srt02  ldi  ardim(xl)        get possible dimension
        jsr  gtint            convert to integer
        ppm  srt17            fail
        ldi  icval(xr)        get actual integer value
+       ejc
 
 *      sorta (continued)
 
@@ -26193,6 +26916,7 @@ srt05  mov  xr,(xl)          get an entry
 srt06  bne  (xr),=b_trt,srt07 jump out if not trblk
        mov  xr,trval(xr)     get value field
        brn  srt06            loop
+       ejc
 
 *      sorta (continued)
 
@@ -26251,6 +26975,7 @@ srt11  dca  wc               i = i - 1 (n - 1 initially)
        jsr  sorth            sorth(1,n)
        mov  wc,wa            restore wc
        brn  srt11            loop
+       ejc
 
 *      sorta (continued)
 
@@ -26292,6 +27017,7 @@ srt17  erb  258,sort/rsort 2nd arg out of range or non-integer
 
 srt18  exi  1                return indication of null table
        enp                   end procudure sorta
+       ejc
 
 *      sortc --  compare sort keys
 
@@ -26323,6 +27049,7 @@ sortc  prc  e,1              entry point
        mov  xl,(xl)          get key1
        mov  xr,(xr)          get key2
        bne  srtdf,=nulls,src12 jump if datatype field name used
+       ejc
 
 *      sortc (continued)
 
@@ -26419,6 +27146,7 @@ src07  blt  xl,xr,src03      item first created is less
 
 src08  blt  srts1,srts2,src04 test offsets or key addrss instead
        brn  src06            offset 1 greater
+       ejc
 
 *      sortc (continued)
 
@@ -26463,6 +27191,7 @@ src12  jsr  sortf            call routine to find field 1
        mov  xl,(xs)+         recover key1
        brn  src01            merge
        enp                   procedure sortc
+       ejc
 
 *      sortf -- find field for sortc
 
@@ -26498,6 +27227,7 @@ srtf1  mov  xl,(xl)          get item from field
 srtf2  mov  xr,(xs)+         restore xr
 
 srtf3  exi                   return
+       ejc
 
 *      sortf (continued)
 
@@ -26526,6 +27256,7 @@ srtf6  mov  srtff,(xr)       keep field name ptr
        add  xl,wc            point to field
        brn  srtf1            return
        enp                   procedure sortf
+       ejc
 
 *      sorth -- heap routine for sorta
 
@@ -26565,6 +27296,7 @@ srh01  bgt  wc,srtsn,srh03   done if j gt n
        jsr  sortc            compare keys - lt(a(j+1),a(j))
        ppm  srh02            a(j+1) lt a(j)
        ica  wc               point to greater son, a(j+1)
+       ejc
 
 *      sorth (continued)
 
@@ -26608,6 +27340,7 @@ srh03  btw  wc               convert to words
        exi                   return
        enp                   end procedure sorth
 .fi
+       ejc
 
 *      trace -- set/reset a trace association
 
@@ -26655,6 +27388,7 @@ trc01  jsr  gtnvr            point to vrblk for name
        mov  xr,vrfnc(xr)     point to function block
        bne  (xr),=b_pfc,trc17 error if not program function
        beq  wa,=ch_lr,trc02  jump if r (return)
+       ejc
 
 *      trace (continued)
 
@@ -26692,6 +27426,7 @@ trc04  beq  xl,=stndl,trc16  error if undefined label
 trc05  mov  vrlbl(xr),xl     store label ptr back in vrblk
        mov  vrtra(xr),=b_vrg store normal transfer address
        exi                   return
+       ejc
 
 *      trace (continued)
 
@@ -26726,6 +27461,7 @@ trc08  mov  r_ert,xl         set/reset errtype trace
 trc09  mov  r_stc,xl         set/reset stcount trace
        jsr  stgcc            update countdown counters
        exi                   return
+       ejc
 
 *      trace (continued)
 
@@ -26779,6 +27515,7 @@ trc16  ica  xs               pop stack
 
 trc17  exi  1                take bad name error exit
        enp                   end procedure trace
+       ejc
 
 *      trbld -- build trblk
 
@@ -26803,6 +27540,7 @@ trbld  prc  e,0              entry point
        mov  trval(xr),=nulls for now, a null value
        exi                   return to caller
        enp                   end procedure trbld
+       ejc
 
 *      trimr -- trim trailing blanks
 
@@ -26843,6 +27581,7 @@ trim1  dcv  wa               else decrement character count
 trim2  mov  dnamp,xr         wipe out input string block
        mov  xr,=nulls        load null result
        brn  trim5            merge to exit
+       ejc
 
 *      trimr (continued)
 
@@ -26868,6 +27607,7 @@ trim4  sch  wc,(xl)+         store zero character
 trim5  zer  xl               clear garbage xl pointer
        exi                   return to caller
        enp                   end procedure trimr
+       ejc
 
 *      trxeq -- execute function type trace
 
@@ -26915,6 +27655,7 @@ trxeq  prc  r,0              entry point (recursive)
        mov  wc,=trxdc        load new (dummy) code blk pointer
        mov  r_cod,wc         set as code block pointer
        lcp  wc               and new code pointer
+       ejc
 
 *      trxeq (continued)
 
@@ -26958,6 +27699,7 @@ trxq1  mov  xs,flptr         point back to our stack entries
 trxq2  erb  197,trace fourth arg is not function name or null
 
        enp                   end procedure trxeq
+       ejc
 
 *      xscan -- execution function argument scan
 
@@ -26997,6 +27739,7 @@ trxq2  erb  197,trace fourth arg is not function name or null
 *      string includes all the characters to the end of the
 *      string. no further calls can be made to xscan until
 *      xscni is called to initialize a new argument scan
+       ejc
 
 *      xscan (continued)
 
@@ -27042,6 +27785,7 @@ xscn3  mov  xl,r_xsc         point to string block
        zer  r_xsc            clear string ptr for collector
        zer  xscrt            set zero (runout) return code
        brn  xscn7            jump to exit
+       ejc
 
 *      xscan (continued)
 
@@ -27080,6 +27824,7 @@ xscn8  mov  wa,xscrt         load return code
        mov  wb,xscwb         restore wb
        exi                   return to xscan caller
        enp                   end procedure xscan
+       ejc
 
 *      xscni -- execution function argument scan
 
@@ -27178,6 +27923,7 @@ error  beq  r_cim,=cmlab,cmple jump if error in scanning label
        iff  stgce,err01      compile - after end
        iff  stgxe,err04      xeq compile-past end
        esw                   end switch on error type
+       ejc
 
 *      error during initial compile
 
@@ -27228,6 +27974,7 @@ err01  mov  xs,cmpxs         reset stack pointer
 erra1  lch  wc,(xl)+         get next char
        beq  wc,=ch_ht,erra2  skip if tab
        mov  wc,=ch_bl        get a blank
+       ejc
 
 *      merge to store blank or tab in error line
 
@@ -27268,6 +28015,7 @@ erra3  zer  xr               in case of fatal error
        icv  cmerc            bump error count
        add  noxeq,cswer      inhibit xeq if -noerrors
        bne  stage,=stgic,cmp10  special return if after end line
+       ejc
 
 *      loop to scan to end of statement
 
@@ -27332,6 +28080,7 @@ errb4  bnz  kverl,err07      jump if errlimit non-zero
 
 errc4  mov  xs,flptr         restore stack from flptr
        brn  errb4            merge
+       ejc
 
 *      error at execute time.
 
