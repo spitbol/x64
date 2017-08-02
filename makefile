@@ -37,7 +37,7 @@ ASMFLAGS = -g -f $(ELF) -d m64
 endif
 
 # Tools for processing Minimal source file.
-BASEBOL =   ./bin/spitbol
+BASEBOL =   ./bin/sbl
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
@@ -146,14 +146,14 @@ dlfcn.o: dlfcn.h
 
 # install binaries from ./bin as the system spitbol compilers
 install:
-	sudo cp ./bin/spitbol /usr/local/bin
+	sudo cp ./bin/sbl /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t ./spitbol
+	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t ./sbl
 
 z:
 	nm -n s.o >s.nm
-	spitbol map-$(WS).sbl <s.nm >s.dic
-	spitbol z.sbl <ad >ae
+	sbl map-$(WS).sbl <s.nm >s.dic
+	sbl z.sbl <ad >ae
 
 sclean:
 # clean up after sanity-check
