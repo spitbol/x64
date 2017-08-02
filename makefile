@@ -3,7 +3,6 @@
 ws?=64
 
 debug?=0
-EXECUTABLE=spitbol
 
 os?=unix
 
@@ -103,12 +102,12 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 # link spitbol with static linking
 LIBS = 
 
-spitbol: $(OBJS)
-	$(CC) $(CFLAGS) $(LIBS) -lm $(OBJS) -o$(EXECUTABLE) 
+sbl: $(OBJS)
+	$(CC) $(CFLAGS) $(LIBS) -lm $(OBJS) -osbl
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -lm -ospitbol 
+	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -lm -osbl 
 
 # Assembly language dependencies:
 err.o: err.s
