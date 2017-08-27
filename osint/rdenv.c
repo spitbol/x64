@@ -20,6 +20,7 @@ Copyright 2012-2017 David Shields
 */
 
 #include "port.h"
+#include <stdlib.h>
 
 /*
 /   Find environment variable vq of length vn.  Return
