@@ -272,7 +272,7 @@ typedef unsigned long uword;	// minimal word as unsigned value
 #define EFNEXT ".slf"
 #define LISTEXT ".lst"
 #define RUNEXT ".spx"
-#define SPITFILEPATH  "snolib"  // path for include and external files
+#define SPITFILEPATH  "SETL4PATH"  // path for include and external files
 
 /*
 /   The following manifest constant determines the maximum number of
