@@ -553,7 +553,8 @@ syscall_exit:
 	mov     m_word [compsp],xs      ; save compiler's stack pointer
 	mov     xs,m_word [osisp]       ; load osint's stack pointer
 	call	%1
-	call	syscall_exit
+	jmp	syscall_exit		; was a call for debugging purposes, but that would cause a crash when the 
+					; compilers stack pointer blew up
 	%endmacro
 
 	global sysax
@@ -880,7 +881,9 @@ re3:	cld
         mov	w0,m_word [statb]      	; start of static region to xr
 	mov	m_word [reg_xr],w0
 	mov	w0,minimal_insta
-	call	minimal			; initialize static region
+	jmp	minimal			; initialize static region 
+					; was a call, but there is nothing to return to.  This was probably for 
+					; debugging purposes.
 
 ;
 ;       now pretend that we're executing the following c statement from
