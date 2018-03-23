@@ -41,7 +41,7 @@ Copyright 2012-2017 David Shields
 #endif
 
 #ifndef	RUNTIME
-#define	RUNTIME		0	// not making runtime version
+#define	RUNTIME		0	// not making runtime version of the spitbol executable
 #endif
 
 #ifndef SETREAL

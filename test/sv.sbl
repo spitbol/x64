@@ -1,4 +1,4 @@
- OUTPUT = 'saving ...'
- EXIT(-3)
- OUTPUT = 'resuming'
-END
+ output = 'saving ...'
+ exit(-3)
+ output = 'resuming'
+end

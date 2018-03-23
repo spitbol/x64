@@ -84,7 +84,14 @@ char	*argv[];
         hasfpu = checkfpu();	// check for floating point hardware
 #endif					// FLOAT
         heapmove();				// move the heap up
-        malloc_empty();			// mark the malloc region as empty
+/*        malloc_empty();			// mark the malloc region as empty
+  3/21/2018
+  Hib Engler- malloc_empty seems to be lefto over from a malloc wrapper defined at https://raw.githubusercontent.com/spitbol/88-source/master/c/MALLOC.C
+  it went with a malloc_init call that wiuld set the heap size, I guess trying not to be bloated like modern computers.
+  This was for SUN - (sorta linux but not fully implemented.
+  In the 88-source, a second sbrek woud be done further for the workspace , so this might be something to do with the garbage collection concept.
+  I feel confident to comment it out */
+  
         zysdc();							// Brag if necessary
         restart( (char *)0L, lowsp );       // call restart to continue execution
     }

@@ -20,4 +20,4 @@ Copyright 2012-2017 David Shields
  */
 #define EXECFILE    0
 #define FLTHDWR     0   // Change to 1 when do floating ops inline
-#define GCCi32      1
+#define GCCi32      0   // I think this should be 64 for 64 bit snobol

@@ -34,12 +34,14 @@ Copyright 2012-2017 David Shields
 /	    1 - requested action not possible
 /	    2 - action caused irrecoverable error
 */
-
 #include "port.h"
 #include <sys/types.h>
 
+
+
 #if EXECFILE
 #include <a.out.h>
+/* Hib Engler - I looked into this.  This needs to be changed to an elf format. */
 #endif
 
 #include "save.h"
@@ -136,6 +138,59 @@ int zysxi()
 
 #if EXECFILE
     if (IA(long) > 0 ) {
+    
+    /* Hib Engler 3/22/2018. Found some of the code to do this and rewrote it.
+      Basically, this is copying the executable snobol file, and then adding sections to the bottom of it.
+      Well, this can syill be done,  but it should use the ELF format. -- finish another day.
+      Getting the modules to work (spx files) will be good enough for now. */
+        int exefd;
+	word bufsize;
+	word length_to_copy;
+	word size;
+	word extra_space;
+	char *buffer;
+	
+	exefd = openexe(gblargv[0]) ;
+	if (exefd == -1) {
+	  write(STDERRFD("cant read spitbol to make the executable\n");
+	  retval = -1;
+	  goto fail;
+	  }
+	  
+	bufsize = 65536;
+	buffer = GET_MIN_VALUE(DNAMP, char *);
+	size = topmem - buffer;
+	extra_space = bufsize - size;  
+	if (extra>0) {
+	     if (sbrk((uword)extra) == (void *)-1) {
+	       bufsize = size;
+	       extra = 0;
+	       }
+	     }
+	length_to_copy = bufsize;
+	retval = -1;
+	if (!bufsize) goto fail;
+	
+	do {
+	  size = read(exefd,buffer,length_to_copy > bufsize? bufsize:length_to_copy);
+	  if ((!size) || (size == -1)) {
+	    close(exefd);
+	    retval = -1;
+	    goto fail;
+	    }
+	  if (retval) {
+	    length_to_copy = savestart(exefd,buffer,size);
+	    if (length_to_copy==0)  goto fail;
+	    retval = 0;
+	    }
+	  length_to_copy -= size;
+	  retval |= wrtaout(buffer,size);
+	  } while ((length_to_copy >0) && (retval==0));
+        close(fromfd);
+	
+	if (extra > 0) sbrk(-extra);  
+	
+	retval |= saveend(stackbase,stacklength);
 
         /*
         /	Copy entire stack into local storage of temporary SCBLK.
@@ -198,7 +253,7 @@ void heapmove()
 /	These actions must be taken so that these pointers into the
 /	stack can be adjusted every time that the load module is executed.
 /	Why?  Because there is no way to guarantee that the stack can be
-/	rebuilt during subsequent executions of the laod module at the
+/	rebuilt during subsequent executions of the load module at the
 /	same locations as when the load module was written.
 /
 /	So, function unreloc takes such variables and turns them into
@@ -268,7 +323,7 @@ int len, max;
 /	system page size.
 */
 
-static word roundup(n)
+word roundup(n)
 word	n;
 {
     return (n + PAGESIZE - 1) & ~((word)PAGESIZE - 1);
@@ -406,8 +461,8 @@ int fd;
             /
             /   Read file header from save file
             */
-
             doexpand(0, (char *)0, 0);	// turn off expansion for header
+	    
             if ( expand( fd, (unsigned char *)&svfheader, sizeof(struct svfilehdr) ) )
                 goto reload_ioerr;
 
@@ -424,15 +479,13 @@ int fd;
             spitflag = svfheader.flags;	// restore flags
             spitflag |= NOLIST;		// no listing (screws up swcoup if reset)
             setout();
-#define SKIPIT
-#ifdef SKIPIT
+
             // Check version number
             if ( svfheader.version != SaveVersion )
             {
                 cp = "Wrong save file version.";
                 goto reload_verserr;
             }
-#endif
 
             if ( svfheader.sec3size != (GET_DATA_OFFSET(c_yyy,uword) - GET_DATA_OFFSET(c_aaa,uword)) )
             {

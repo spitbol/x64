@@ -51,7 +51,7 @@ int	exe;
     }
 
     if ( (aoutfd = spit_open( tmpfnbuf, O_WRONLY|O_TRUNC|O_CREAT,
-                              IO_PRIVATE | IO_DENY_READWRITE | exe /* ? 0777 : 0666 */,
+                              IO_PRIVATE | IO_DENY_READWRITE | exe ? 0777 : 0666 ,
                               IO_REPLACE_IF_EXISTS | IO_CREATE_IF_NOT_EXIST )) < 0 )
         return	-1;
     fp = (FILEPOS)0;           //   file position
