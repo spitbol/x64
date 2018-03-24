@@ -107,9 +107,9 @@ enum CALLS {
     minimal_rstrt,
     minimal_start,
     minimal_filnm,
-    minimal_dtype,
+    minimal_dtype/*,
     minimal_enevs,
-    minimal_engts
+    minimal_engts*/
 };
 
 /*
@@ -139,14 +139,14 @@ state,
 stbas,
 statb,
 polct,
-typet,
+typet,   
 lowspmin,
-flprt,
-flptr,
-gtcef,
-hshtb,
-pmhbs,
-r_fcb,
+flprt,   
+flptr,   
+gtcef,   
+hshtb,   
+pmhbs,   
+r_fcb,   
 c_aaa,
 c_yyy,
 g_aaa,
@@ -167,6 +167,7 @@ id2blk,
 inpbuf,
 ttybuf,
 end_min_data;
+
 
 /*
 /   Names for accessing MINIMAL code values via GET_CODE_OFFSET macro.
