@@ -433,7 +433,7 @@ stackinit:
 ;       stack to switch to.  in that case, just make the call on the
 ;       the osint stack.
 
- minimal:
+minimal:
 ;         pushad			; save all registers for c
 	mov     wa,m_word [reg_wa]	; restore registers
 	mov	wb,m_word [reg_wb]
@@ -815,7 +815,8 @@ ovr_:
 
 get_fp:
          mov     w0,m_word [reg_xs]     ; minimal's xs
-         add     w0,4           	; pop return from call to sysbx or sysxi
+         add     w0,cfp_b           	; pop return from call to sysbx or sysxi
+         add     w0,cfp_b           	; theres a pesky 200000000000000 
          ret                    	; done
 
 	extern	rereloc
@@ -834,9 +835,13 @@ scstr	equ	cfp_c+cfp_c
 
 ;
 restart:
-        pop     w0                      ; discard return
-        pop     w0                     	; discard dummy
-        pop     w0                     	; get lowest legal stack value
+        pop     w0                      ; discard return maybee maybee not
+        mov     w0,xt			; For x86_cr System V AMD64 ABI conventions,
+					; arg 2 is in rsi (xt)
+
+; old way to get teh values on 32 bit:
+;        pop     w0                     	; discard dummy
+;        pop     w0                     	; get lowest legal stack value
 
         add     w0,m_word [stacksiz]  	; top of compiler's stack
         mov     xs,w0                 	; switch to this stack
@@ -862,7 +867,8 @@ restart:
         lea     xr,[tscblk+scstr]      	; -> top word of stack
         cmp     xl,xr                 	; any stack to transfer?
         je      re3               	;  skip if not
-	sub	xl,4
+	sub	xl,cfp_b		; this was 4 (32 bit. changed to "8" via cfp_b.
+					; note - 8088 dec index twice with dec.
 	std
 re1:    lodsd                           ; get old stack word to w0
         cmp     w0,wc                 	; below old stack bottom?
@@ -880,10 +886,8 @@ re3:	cld
         call   rereloc               	; relocate compiler pointers into stack
         mov	w0,m_word [statb]      	; start of static region to xr
 	mov	m_word [reg_xr],w0
-	mov	w0,minimal_insta
-	jmp	minimal			; initialize static region 
-					; was a call, but there is nothing to return to.  This was probably for 
-					; debugging purposes.
+	mov	word [minimal_id],minimal_insta
+	call	minimal			; initialize static region 
 
 ;
 ;       now pretend that we're executing the following c statement from

@@ -38,7 +38,6 @@ Copyright 2012-2017 David Shields
 #include <sys/types.h>
 
 
-
 #if EXECFILE
 #include <a.out.h>
 /* Hib Engler - I looked into this.  This needs to be changed to an elf format. */
@@ -384,10 +383,11 @@ word *stkbase, stklen;
     */
     unreloc();
 
+    svfheader.compress = 0;  // hardcode turn compression off. Some day we will use gnupg for that. At least it works. !* later - fix compression
     if (docompress(svfheader.compress, basemem+svfheader.heapsize,
                    (uword)(topmem-(basemem+svfheader.heapsize)) ) )	// Do compression if room
         svfheader.compress = 0;
-
+   
     // write out header
     result |= wrtaout( (unsigned char *)&svfheader, sizeof( struct svfilehdr ) );
 
@@ -440,19 +440,51 @@ int fd;
     unsigned char *bufp;
     int textlen;
 #endif					// EXTFUN
-    word adjusts[15];				// structure to hold adjustments
+    word adjusts[21] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};				// structure to hold adjustments
+      /* was 15 - but relaj like 
+    /* rnsi_ and rssi_ structures 
+     here is my interpretaion of relcr setting this adjusts array/structure up
+     
+    original s_aaa code address fron the loaded file
+    s_aaa offset   (add to old s_aaa and you are at the new location s_aaa is target code section?
+    original s_yyy - end of original code section
+    
+    original c_aaa   - constant address in original code
+    c_aaa offset (add to original c_aaa section to get new c_aaa
+    original c_yyy - end of the original section
+
+    original g_aaa   - from the original load code
+    gaa_offset to add to place to the new code
+    original g_yyy end for the global section
+    
+    original statb    - static region variable
+    offset from old static region to new static region
+    original state      - end of the sttic region.
+    
+    original dnamb dynamic region
+    offset from old dynamic region to new dynamic region
+    original dynamic region of wc
+    This is placed in xl for all the minimal calls upon loading vie getsave      
+    */    
+    
 
     /*
     / Test if input is from a block device, and if so, peek ahead and
     / see if it's a save file that needs to be loaded.
     */
-    if ( testty(fd) && (pos = LSEEK(fd, (FILEPOS)0, 1)) >=0 )
-    {
+    if ( testty(fd) ) {
+        // Hib Engler 3/24/2018 there was code that would seek and read the beginning of the file and see if magic1 was working, and then
+	// return via lseek and see if the current position was working.
+	// I guess this would be a loop here or multiple parts in as single file, of the file is another type.
         // If not char device or pipe, peek ahead to see if it's a save file
-        n = read(fd, (char *)&svfheader.magic1, sizeof(svfheader.magic1));
-        LSEEK(fd, pos, 0);           // Restore position
-
-        if (n == sizeof(svfheader.magic1) && svfheader.magic1 == OURMAGIC1)
+	// I wrote it to not use the seek, (but there is an option to) - this allows the spx file to be stream based, like a named pipe.
+	
+        doexpand(0, (char *)0, 0);	// turn off expansion for header
+	if ( expand( fd, (unsigned char *)&svfheader, sizeof(svfheader.magic1) ) ) { // read magic number 1
+		goto noerror_no_magic;
+		}
+	 
+        if (svfheader.magic1 == OURMAGIC1)
         {
             /*
             /   This is reload of a saved impure data region:  set things
@@ -462,8 +494,9 @@ int fd;
             /   Read file header from save file
             */
             doexpand(0, (char *)0, 0);	// turn off expansion for header
-	    
-            if ( expand( fd, (unsigned char *)&svfheader, sizeof(struct svfilehdr) ) )
+
+	    /* read the rest - excepting the magic */	    
+            if ( expand( fd, ((unsigned char *)&svfheader)+sizeof(svfheader.magic1), sizeof(struct svfilehdr)-sizeof(svfheader.magic1) ) )
                 goto reload_ioerr;
 
             // Check header validity.   ** UNDER CONSTRUCTION **
@@ -508,6 +541,8 @@ int fd;
 
             // build onto existing stack
             lowsp = (char *)&fd - svfheader.stacksiz - 100;
+	    
+
 
             s = svfheader.maxsize - svfheader.dynoff; // Minimum load address
             cp = "Insufficient memory to load ";
@@ -563,6 +598,9 @@ int fd;
             if ( expand(fd, (unsigned char *)basemem+svfheader.dynoff,
                         GET_MIN_VALUE(dnamp,uword)-GET_MIN_VALUE(dnamb,uword)) )
                 goto reload_ioerr;
+            
+	    
+	    
 
             // Relocate all pointers because of different reload addresses
             SET_WA(svfheader.sec5adr);
@@ -571,15 +609,15 @@ int fd;
             SET_XR(basemem);
             SET_CP(basemem+svfheader.dynoff);
             SET_XL(adjusts);
-            MINIMAL(minimal_relcr);
-            MINIMAL(minimal_reloc);
+            MINIMAL(minimal_relcr);  // Sets up adusts with relocation table for code section, constant section, global, static, and dynamic  -- not stack
+            MINIMAL(minimal_reloc);  // Relocate stuff in the dynamic section, working section, static section
 
             // Relocate any return addresses in stack
             SET_WB(ptscblk->str);
             SET_WA(ptscblk->str + svfheader.stacklength);
+            SET_XL(adjusts); // should not have to
             if (svfheader.stacklength) {
-
-                MINIMAL(minimal_relaj);
+                MINIMAL(minimal_relaj); 
 	    }
 
             /* Note: There are return addresses in the PRC_ variables
@@ -614,7 +652,6 @@ int fd;
 
             doexpand(0, (char *)0, 0);	// turn off compression
 
-            LSEEK(fd, (FILEPOS)0, 2); // advance to EOF should be a nop
             pathptr = (char *)-1L;  // include paths unknown
             pinpbuf->next = 0;  // no chars left in std input buffer
             pinpbuf->fill = 0;	// ditto
@@ -646,7 +683,13 @@ reload_err:
             return -1;
         }
     }
+    
     return 0;
+noerror_no_magic:
+#ifdef WANT_TO_RESTORE_FILE_TO_ORIGINAL_POSITION
+    LSEEK(fd, -sizeof(svfheader.magic1) , SEEK_CUR);           // Restore position
+#endif
+return 0;    
 }
 /*
 /   doexec( scptr )
