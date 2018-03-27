@@ -29,7 +29,7 @@ else
 CFLAGS= -D m64 -g -m64
 endif
 
-# Assembler info -- Intel 32-bit syntax
+# Assembler info -- Intel 64-bit syntax
 ifeq	($(DEBUG),0)
 ASMFLAGS = -f $(ELF) -d m64
 else
@@ -52,7 +52,7 @@ BASEBOL =   ./bin/sbl
 CHDRS =	$(OSINT)/osint.h $(OSINT)/port.h $(OSINT)/sproto.h $(OSINT)/spitio.h $(OSINT)/spitblks.h $(OSINT)/globals.h 
 
 # C Headers unique to this version of SPITBOL:
-UHDRS=	$(OSINT)/systype.h $(OSINT)/extern32.h $(OSINT)/blocks32.h $(OSINT)/system.h
+UHDRS=	$(OSINT)/systype.h $(OSINT)/extern64.h $(OSINT)/blocks64.h $(OSINT)/system.h
 
 # Headers common to all C files.
 HDRS=	$(CHDRS) $(UHDRS)
@@ -118,7 +118,7 @@ err.o: err.s
 
 # SPITBOL Minimal source
 s.go:	s.lex go.sbl
-	$(BASEBOL) -x -u i32 go.sbl
+	$(BASEBOL) -x -u i64 go.sbl
 
 s.s:	s.lex $(VHDRS) asm.sbl 
 	$(BASEBOL) -x -u $(WS) asm.sbl

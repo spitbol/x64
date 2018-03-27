@@ -1,15 +1,16 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 Copyright 2012-2017 David Shields
+Copyright 2018 Hibbard M. Engler
 */
 
-//----------------------------  blocks32.h  --------------------------------
-#ifndef __blocks32__
-#define __blocks32__
+//----------------------------  blocks64.h  --------------------------------
+#ifndef __blocks64__
+#define __blocks64__
 
 /*
  * Definitions of SPITBOL data blocks available to C-language
- * external functions to be called from 32-bit versions of SPITBOL.
+ * external functions to be called from 64-bit versions of SPITBOL.
  *
  * SPITBOL BLOCKS
  *
@@ -323,7 +324,7 @@ struct ioblk {
 #if SETREAL
 typedef double FILEPOS;     // real file positions
 #else
-typedef long FILEPOS;       // 32-bit file positions
+typedef long FILEPOS;       // 64-bit file positions
 #endif
 
 struct bfbblk {
@@ -630,4 +631,4 @@ union block {
 };
 
 #endif
-//------------------------  end of blocks32.h  ------------------------------
+//------------------------  end of blocks64.h  ------------------------------

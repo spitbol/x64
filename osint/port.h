@@ -369,7 +369,7 @@ typedef unsigned long uword;	// minimal word as unsigned value
 #include "osint.h"
 
 #ifdef PRIVATEBLOCKS
-#include "extern32.h"
+#include "extern64.h"
 #else					// PRIVATEBLOCKS
 #include "spitblks.h"
 #include "spitio.h"

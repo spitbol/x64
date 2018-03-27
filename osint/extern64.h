@@ -1,15 +1,16 @@
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 Copyright 2012-2017 David Shields
+Copyright 2018      Hibbard M. Engler
 */
 
-//----------------------------  extern32.h  ------------------------------
-#ifndef __extern32__
-#define __extern32__
+//----------------------------  extern64.h  ------------------------------
+#ifndef __extern64__
+#define __extern64__
 
 /*
  *  Definitions of routines and data available to C-language
- *  external function to be called from 32-bit versions of SPITBOL.
+ *  external function to be called from 64-bit versions of SPITBOL.
  *
  *  Definition of information placed on stack prior to pushing arguments to
  *  an external function.
@@ -34,7 +35,7 @@ typedef unsigned int muword;	// MINIMAL unsigned word
 #define near
 #endif
 
-#include "blocks32.h"
+#include "blocks64.h"
 #include <string.h>
 
 
@@ -62,9 +63,9 @@ enum ext_type {						// Executing under:
     t_intel,						//  Intel DOS Extender
     t_os2,							//  OS/2 2.0
     t_tc16,						 	//  MS-DOS TurboC with 16-bit IA
-    t_tc32,							//  MS-DOS TurboC with 32-bit IA
+    t_tc64,							//  MS-DOS TurboC with 64-bit IA
     t_w1616,						//  16-bit Windows, 16-bit SPITBOL
-    t_w1632,						//  16-bit Windows, 32-bit SPITBOL
+    t_w1664,						//  16-bit Windows, 64-bit SPITBOL
     t_wnt8,							//  Windows NT on 386/486
     t_sparc,						//  Sun 4 / SPARC
     t_mac,							//  Apple Macintosh
@@ -102,7 +103,7 @@ enum ext_type {						// Executing under:
 
 /*
  * Simple names for datatypes.  Performs a lookup in SPITBOL's type
- * table to fetch a 32-bit type word for specific data types.
+ * table to fetch a 64-bit type word for specific data types.
  */
 
 #define ar	(*((*pinfo).ptyptab))[BL_AR]	// Array
@@ -154,5 +155,5 @@ mword     retnxdtf (void *s, size_t n, union block *presult);
 mword     retreal (double val, union block *presult);
 mword     retstrt (char *s, union block *presult);
 
-#endif          // __extern32__
-//-------------------------- end of extern32.h ------------------------
+#endif          // __extern64__
+//-------------------------- end of extern64.h ------------------------

@@ -187,9 +187,9 @@ calltab:
 	section	.data
 %%desc:	db	%3,0
 	section	.text
-	mov	m_word [zz_id],%1
-	mov	m_word [zz_zz],%2
-	mov	m_word [zz_de],%%desc
+	mov	[zz_id],%1
+	mov	[zz_zz],%2
+	mov	[zz_de],%%desc
 	call	zzz
 	%endmacro
 
@@ -247,7 +247,7 @@ calltab:
 	extern	f_rti
 	%macro	rti_	0
 	call	f_rti
-	mov	ia,m_word [reg_ia]
+	mov	ia, [reg_ia]
 	%endmacro
 
 	%macro	sbi_	1
@@ -266,27 +266,27 @@ calltab:
 
 	%macro	lcp_	1
 	mov	w0,%1
-	mov	m_word [reg_cp],w0
+	mov	[reg_cp],w0
 	%endmacro
 
 	%macro	lcw_	1
-	mov	w0,m_word [reg_cp]		; load address of code word
-	mov	w0,m_word [w0]			; load code word
+	mov	w0,[reg_cp]		; load address of code word
+	mov	w0,[w0]			; load code word
 	mov	%1,w0
-	mov	w0,m_word [reg_cp]		; load address of code word
+	mov	w0,[reg_cp]		; load address of code word
 	add	w0,cfp_b
-	mov	m_word [reg_cp],w0
+	mov	[reg_cp],w0
 	%endmacro
 
 	%macro	scp_	1
-	mov	w0,m_word [reg_cp]
+	mov	w0,[reg_cp]
 	mov	%1,w0
 	%endmacro
 
 	%macro	icp_	0
-	mov	w0,m_word [reg_cp]
+	mov	w0,[reg_cp]
 	add	w0,cfp_b
-	mov	m_word [reg_cp],w0
+	mov	[reg_cp],w0
 	%endmacro
 
 	%macro	rov_	1
