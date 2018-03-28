@@ -13,83 +13,83 @@
 *
 *	Contributed by Prof. Michael Feldman, George Washington Univ.
 
-	&TRACE = 500
-    &ANCHOR = 0
-	&TRIM = 1
-	UPPERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	LOWERS = "abcdefghijklmnopqrstuvwxyz"
+	&trace = 500
+    &anchor = 0
+	&trim = 1
+	uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	lowers = "abcdefghijklmnopqrstuvwxyz"
 
-	BL = SPAN(' ')
+	bl = span(' ')
 
-	NOUN = (  'BOY' | 'GIRL' | 'MONKEY' | 'TREE' | 'SCHOOL' | 'BOOK'
-+			| 'BANANA' ) $ NOM
-	TRACE('NOM')
+	noun = (  'boy' | 'girl' | 'monkey' | 'tree' | 'school' | 'book'
++			| 'banana' ) $ nom
+	trace('nom')
 
-	ARTICLE = ( 'A' | 'THE' ) $ ART
-	TRACE('ART')
+	article = ( 'a' | 'the' ) $ art
+	trace('art')
 
-	CONJUNCTION =  ( 'AND' | 'BUT' | 'HOWEVER' ) $ CONJ
-	TRACE('CONJ')
+	conjunction =  ( 'and' | 'but' | 'however' ) $ conj
+	trace('conj')
 
-	PROPER = ( 'DICK' | 'JANE' | 'ZIPPY' ) $ PROP
-	TRACE('PROP')
+	proper = ( 'dick' | 'jane' | 'zippy' ) $ prop
+	trace('prop')
 
-	PRONOUN = ( 'HE' | 'SHE' | 'IT' ) $ PRON
-	TRACE('PRON')
+	pronoun = ( 'he' | 'she' | 'it' ) $ pron
+	trace('pron')
 
-	ADJECTIVE = ( 'LARGE' | 'SMALL' | 'GRAY' | 'YELLOW'
-+			| 'NICE' | 'AGGRESSIVE' ) $ ADJ
-	TRACE('ADJ')
+	adjective = ( 'large' | 'small' | 'gray' | 'yellow'
++			| 'nice' | 'aggressive' ) $ adj
+	trace('adj')
 
-	ADVERB = ( 'SLOWLY' | 'ENTHUSIASTICALLY' ) $ ADV
-	TRACE('ADV')
+	adverb = ( 'slowly' | 'enthusiastically' ) $ adv
+	trace('adv')
 
-	TRANSITIVE = ( 'READS' | 'GIVES' | 'EATS' | 'WRITES' ) $ TRANS
-	TRACE('TRANS')
+	transitive = ( 'reads' | 'gives' | 'eats' | 'writes' ) $ trans
+	trace('trans')
 
-	INTRANSITIVE = ( 'RUNS' | 'WALKS' ) $ INTRANS
-	TRACE('INTRANS')
+	intransitive = ( 'runs' | 'walks' ) $ intrans
+	trace('intrans')
 
-	BEING = ( 'IS' | 'WAS' ) $ BE
-	TRACE('BE')
+	being = ( 'is' | 'was' ) $ be
+	trace('be')
 
-	PREPOSITION = ( 'TO' | 'FROM' | 'WITH' ) $ PREP
-	TRACE('PREP')
+	preposition = ( 'to' | 'from' | 'with' ) $ prep
+	trace('prep')
 
-	NOUN.PHRASE = ( *PROPER | (*ARTICLE *BL *NOUN)
-+			| (*ARTICLE *BL *ADJECTIVE *BL *NOUN) ) $ NP
-	TRACE('NP')
+	noun.phrase = ( *proper | (*article *bl *noun)
++			| (*article *bl *adjective *bl *noun) ) $ np
+	trace('np')
 
-	PREP.PHRASE = ( *PREPOSITION *BL *NOUN.PHRASE ) $ PP
-	TRACE('PP')
+	prep.phrase = ( *preposition *bl *noun.phrase ) $ pp
+	trace('pp')
 
-	VERB.PHRASE = ( (*INTRANSITIVE *BL *PREP.PHRASE)
-+			| (*TRANSITIVE *BL *NOUN.PHRASE *BL *PREP.PHRASE)
-+			| (*TRANSITIVE *BL *NOUN.PHRASE)
-+			| (*BEING *BL *NOUN.PHRASE)
-+			| *INTRANSITIVE | *BEING ) $ VP
-	TRACE('VP')
+	verb.phrase = ( (*intransitive *bl *prep.phrase)
++			| (*transitive *bl *noun.phrase *bl *prep.phrase)
++			| (*transitive *bl *noun.phrase)
++			| (*being *bl *noun.phrase)
++			| *intransitive | *being ) $ vp
+	trace('vp')
 
-	PREDICATE = ( (*VERB.PHRASE *BL *ADVERB)
-+			| *VERB.PHRASE  ) $ PRED
-	TRACE('PRED')
+	predicate = ( (*verb.phrase *bl *adverb)
++			| *verb.phrase  ) $ pred
+	trace('pred')
 
-	SUBJECT = ( *PRONOUN | *NOUN.PHRASE ) $ SUBJ
-	TRACE('SUBJ')
+	subject = ( *pronoun | *noun.phrase ) $ subj
+	trace('subj')
 
-	CLAUSE = ( *SUBJECT *BL *PREDICATE ) $ CL
-	TRACE('CL')
+	clause = ( *subject *bl *predicate ) $ cl
+	trace('cl')
 
-	SENTENCE = POS(0) ( *CLAUSE
-+		ARBNO( *BL *CONJUNCTION *BL *CLAUSE ) )
-+ 		$ SENT (*BL | "") RPOS(0)
-	TRACE('SENT')
+	sentence = pos(0) ( *clause
++		arbno( *bl *conjunction *bl *clause ) )
++ 		$ sent (*bl | "") rpos(0)
+	trace('sent')
 
-READ	S = INPUT						:F(END)
-	OUTPUT = '-----------------------------------------------'
-	OUTPUT = S
-	OUTPUT = '-----------------------------------------------'
-	REPLACE(S,LOWERS ",.-!?;:",UPPERS "       ") ? SENTENCE	:S(YES)F(NO)
-YES	OUTPUT = '==>SENTENCE FOUND'			:(READ)
-NO	OUTPUT = 'NO' 					:(READ)
-END
+read	s = input						:f(end)
+	output = '-----------------------------------------------'
+	output = s
+	output = '-----------------------------------------------'
+	replace(s,uppers ",.-!?;:",lowers "       ") ? sentence	:s(yes)f(no)
+yes	output = '==>sentence found'			:(read)
+no	output = 'no' 					:(read)
+end
