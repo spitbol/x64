@@ -1,0 +1,22 @@
+* example of callin external functions
+* works as long as we dont garbage collect - Hib 4/1//2018
+*
+
+
+        load("add(integer,integer)integer","./test_ext.so") :f(e1)
+	c = add(1,'2')
+	output = 'answer is ' c 
+	
+
+	
+        load("piglatin(string)string","./test_ext.so") :f(e1)
+	c = piglatin('cat')
+	output = 'pig latin for cat is ' c
+
+ 	output = 'bye'
+	:(endd)
+e1 terminal = 'error'
+	
+endd	
+end
+

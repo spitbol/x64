@@ -1,9 +1,9 @@
-# Unix SPITBOL V4.0 (July 2017)
+# Unix SPITBOL V4.05 (Apr 2018)
 
 SPITBOL is an extremely high performance implementation of the SNOBOL4 language that brings raw power and speed
 to non-numeric computation.
 
-SPITBOL V4.0 is currently only available for 64-bit x86_64 processors running Unix.  
+SPITBOL V4.05 is currently only available for 64-bit x86_64 processors running Unix.  
 
 The latest version of SPITBOL V4.0 can be found at [github.com/spitbol/x64](http://github.com/spitbol/x64).
 
@@ -13,11 +13,11 @@ Address comments, suggestions, and bug reports to `spitbol@fastmail.com`.
 
 Version 4.0 differs from previous versions of SPITBOL as follows:
 
-*   The initial value of &ANCHOR is one, not null as in prior versions.
+*   The initial value of &anchor is one, not null as in prior versions.
 
-*   The initial value of &TERM is one, not null as in prior versions.
+*   The initial value of &term is one, not null as in prior versions.
 
-*   The initial value of &CASE is zero, not one as in prior versions.
+*   The initial value of &case is zero, not one as in prior versions.
 
 The manual has always suggested setting &ANCHOR and &TERM to non-null values for more efficient searching.
 
@@ -28,18 +28,19 @@ lower case terminals and printers were just coming into use, those days are long
 
 ## Known Problems and Limitations
 
-The SAVE function doesn't work. (This loss of function occurred whilst adding 64-bit support).
-Note that SAVE mode was mainly of interest back in the day when Spitbol was proprietary,
-so that one could distribute a program written in Spitbol without having to disclose the source.
+The save file exit(-3) and exir(-4) function does work.   The save to executable [exit(3) and exit(4)] does not work.
+save files are useful for snobol programs with a large amount of setup to do prior to execution, such as making complex patterns.
 
-Load modules are not supported.
-
-Loading of external functions is not supported.
+Load modules are partially supported.
+It is assumed that string inputs to a function are (const char *) functions and null terminated.
+a string return value is assumed to be char * and null terminated. The string is copied into a spitbol SP string.
+Currently there is a problem with garbage collection that has not been perfected.
 
 ## Installing SPITBOL
 
 If you just want to use SPITBOL without building it, the file `./bin/spitbol`
-contains a statically-linked copy of the 64-bit version of spitbol.
+contains a statically-linked copy of the 64-bit version of spitbol (sbl-static).
+Also, there is a dynamically linked copy (sbl) that requires the musl library to be installed
 
 You can install it in `/usr/local/bin/spitbol` with the command:
 
@@ -62,19 +63,43 @@ The command `musl-gcc` must be used instead of `gcc` to link to the musl library
 SPITBOL requires NASM, the Netwide ASseMbler: [nasm](http://www.nasm.us) to assemble the generated
 x86_64 machine code.
 
+For external function loading, SPITBOL also requires libffcall compiled for the musl environement.  
+This can be turne doff by setting EXTFUN to 0 in osint/systype.h
 
 ## Building SPITBOL
 
 You should be able to build SPITBOL on most Unix systems.
 
-The file `./bin/spitbol` is the base version of Spitbol that is used to build the system.  
+The file `./bin/sbl-static` is the base version of Spitbol that is used to build the system.  
 
 To see if spitbol is working, try the "hello world" program:
 
 ```    
-    $ ./bin/spitbol test/hello.sbl
+    $ ./bin/sbl-static test/hello.sbl
 ```
+
+conversely, the dynamic version of spitbol can be tested as so:
+```    
+    $ ./bin/sbl test/hello.sbl
+```
+
+Prerequisite for the build:
     
+For external function loading, SPITBOL also libffcall compiled for the musl environement.  
+To do this, please type the following:
+
+```    
+wget https://ftp.gnu.org/gnu/libffcall/libffcall-2.1.tar.gz
+tar -xzvf libffcall-2.1.tar.gz
+cd libffcall-2.1
+export CC=musl-gcc
+./configure --prefix=/usr --libdir=/usr/lib/x86_64-linux-musl  --includedir=/usr/include/x86_64-linux-musl
+make
+sudo make install
+```   
+
+	
+	        
 To build the system:
 
     
@@ -83,12 +108,12 @@ To build the system:
     $ make
 ```
 
-This should produce the file `./spitbol`. You can test it with the "hello world"
+This should produce the file `./sbl` and the file `./sbl-static` . You can test it with the "hello world"
 program:
 
     
    ``` 
-    $ ./spitbol test/hello.sbl
+    $ ./sbl-static test/hello.sbl
    ``` 
 
 To test the system more comprehensively, do:
@@ -107,10 +132,18 @@ be tested in the final build.
 
 Additional test programs can be found in the directory `./bin`.
 
-NEVER replace the file `./bin/spitbol` with a newly built `spitbol` without first running and checking the results of
+NEVER replace the file `./bin/sbl-static` with a newly built `sbl-static` without first running and checking the results of
 running the sanity test.  There's a good reason it has that name.  
 
-Use the command below to install `spitbol` in `/usr/local/bin`.
+To install the new version as the base for futher checks (after the sanity test is cleared, type the following:
+```
+ $ make base
+ $ make
+```
+	
+
+
+Use the command below to install `sbl` and `sbl-static` in `/usr/local/bin`.
     
 ```    
     $ make install
@@ -133,7 +166,7 @@ The lexcal scan is followed by running `asm.sbl` to translate the tokens into ma
 
 The program `err.sbl` is used to produce a compact representation of the error messages contained in the Minimal source.
 
-`./bin/spitbol` is the statically linked binary for SPITBOL. You should be able to run in on any 64-bit x86_64 processor
+`./bin/sbl-static` is the statically linked binary for SPITBOL. You should be able to run in on any 64-bit x86_64 processor
 using Unix.
 
 

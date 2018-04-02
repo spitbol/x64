@@ -56,9 +56,12 @@ int zysej()
         close_all( XL( struct chfcb * ) );
 
 #if EXTFUN
+// musl-c doesnt unload functions anyways.  Plus this code is incomplete
+#ifdef junk
         scanef();					// prepare to scan for external functions
         while (nextef(&bufp, 1))	// perform closing callback to some
             ;
+#endif	    
 #endif					// EXTFUN
 
     }

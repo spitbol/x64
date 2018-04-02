@@ -83,11 +83,12 @@ extern uword	minimal_id;
 /	The argument is an ordinal number defined below.
 */
 extern void minimal (void);
-extern void popregs (void);
 extern void pushregs (void);
+extern void popregs (void);
 #define MINIMAL(cn) minimal_id = cn; minimal();
 #define MINSAVE() pushregs()
 #define MINRESTORE() popregs()
+
 
 /*
 /	Ordinals for MINIMAL calls from C.

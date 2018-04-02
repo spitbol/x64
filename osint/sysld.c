@@ -21,24 +21,64 @@ Copyright 2012-2017 David Shields
 //
 
 #include "port.h"
+       #define _GNU_SOURCE
+       
 #include <dlfcn.h>
 #include <fcntl.h>
 
 #if EXTFUN
 static void *openloadfile (char *namebuf);
 static void closeloadfile (void *fd);
-#endif					// EXTFUN
 
-int zysld()
+#endif					// EXTFUN
+/* xL - "."
+wa - ox42
+IA - 0
+WC - 0
+*/
+int zysld(void)
 {
 #if EXTFUN
     void *fd;					// keep stack word-aligned
     void *result = 0;
+    char prototype[2048],library_name[2048];
+    struct efblk *efblk = WB(struct efblk *);
+    char savech1;
+    struct scblk  *scbf = XL(struct scblk *);
+    
+    struct scblk  *scbp = XR(struct scblk *);
+    char savech2;
+    
+    savech1 = make_c_str(scbf->str+scbf->len);
+    savech2 = make_c_str(scbp->str+scbp->len);
+    
+    fd = openloadfile(scbf->str);
+    char *errstr;
+    
+    errstr = dlerror();
+//    if (errstr != NULL)
+//    fprintf (stderr,"A dynamic linking error occurred: (%s)\n", errstr);
+	
+//    fd = openloadfile(ptscblk->str);
+    if ( fd ) {			// If file opened OK
+	typedef void *(*PFN)();				// pointer to function
+	PFN pfnProcAddress;
 
-    fd = openloadfile(ptscblk->str);
-    if ( fd != -1 ) {			// If file opened OK
-        result = loadef(fd, ptscblk->str); // Invoke loader
-        closeloadfile(fd);
+        // syslinux would look for the symbol too. Dont know if you shoud close -c ould still be open    
+         pfnProcAddress = (PFN)dlsym(fd, scbp->str);
+         errstr = dlerror();
+//         if (errstr != NULL)
+//             fprintf (stderr,"A dynamic somehow linking error occurred: (%s)\n", errstr);
+        if (!pfnProcAddress) {
+          dlclose(fd);
+	  unmake_c_str(scbf->str+scbf->len,savech1);
+  	  unmake_c_str(scbp->str+scbf->len,savech2);
+          return EXIT_1;
+          }
+    
+	unmake_c_str(scbf->str+scbf->len,savech1);
+	unmake_c_str(scbp->str+scbf->len,savech2);
+        result = loadef((word)fd, pfnProcAddress); // Invoke loader
         switch ((word)result) {
         case (word)0:
             return EXIT_2;			// I/O error
@@ -47,37 +87,37 @@ int zysld()
         case (word)-2:
             return EXIT_3;			// insufficient memory
         default:
+//	    efblk->efcod = result; - this is done is slod6
+	    SET_XL(efblk);
             SET_XR(result);
             return NORMAL_RETURN;	// Success, return pointer to stuff in EFBLK
-        }
-    }
-    else
+        } // case
+    } // if opened load file
+    else {
+    	unmake_c_str(scbf->str+scbf->len,savech1);
+    	unmake_c_str(scbp->str+scbf->len,savech2);
+	
         return EXIT_1;
+	}
 }
 
 
+
 static void closeloadfile(fd)
-word fd;
+void *fd;
 {
+dlclose(fd);
 }
 
 static void *openloadfile(file)
 char *file;
 {
-
-    register struct scblk *lnscb = XL (struct scblk *);
-    register struct scblk *fnscb = XR (struct scblk *);
-    char *savecp;
-    char savechar;
-    void *handle;
-	handle = dlopen(file, RTLD_LAZY);
-	if (handle == NULL)
-		return EXIT_1;
-	else {
-		// todo ...
-		return EXIT_NORMAL
-	}
+// return dlopen(file, RTLD_LAZY);
+// LAZY is good for glibc, but musl-c needs it fully loaded
+// see https://wiki.musl-libc.org/functional-differences-from-glibc.html
+return dlopen(file, RTLD_NOW);
+}
 #else					// EXTFUN
-    return EXIT_1;
+    return (NULL);
 }
 #endif					// EXTFUN

@@ -16,8 +16,10 @@ Copyright 2012-2017 David Shields
  * SPITBOL to examine all the default values in port.h and override those
  * that need to be altered.
  */
-/*  Values for x86 Linux 32-bit SPITBOL.
+/*  Values for x86 Linux 64-bit SPITBOL.
  */
-#define EXECFILE    0
+//#define EXECFILE    0
+#define EXTFUN	    1
 #define FLTHDWR     0   // Change to 1 when do floating ops inline
-#define GCCi32      0   // I think this should be 64 for 64 bit snobol
+#define GCCi32      0   
+#define GCCi64	    1

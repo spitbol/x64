@@ -13558,7 +13558,7 @@ slod2  mov  wc,=ch_rp        delimiter one is right paren
 slod3  mov  wb,wa            save scan mode
        mov  wa,sclen(xr)     datatype length
        bze  wa,sld3a         bypass if null string
-       jsr  flstg            fold to lower case
+*       jsr  flstg            fold to lower case
 sld3a  mov  wa,wb            restore scan mode
        mov  -(xs),xr         stack datatype name pointer
 .else
@@ -13573,14 +13573,14 @@ slod3  mov  -(xs),xr         stack datatype name pointer
        mov  xl,=scint        point to /integer/
        jsr  ident            check for match
        ppm  slod4            jump if match
-.if    .cnra
-.else
+
+
        mov  xr,(xs)          else reload string pointer
        icv  wb               set code for real (3)
        mov  xl,=screa        point to /real/
        jsr  ident            check for match
        ppm  slod4            jump if match
-.fi
+
 .if    .cnlf
        mov  xr,(xs)          reload string pointer
        icv  wb               code for file (4, or 3 if no reals)
@@ -13588,6 +13588,7 @@ slod3  mov  -(xs),xr         stack datatype name pointer
        jsr  ident            check for match
        ppm  slod4            jump if match
 .fi
+
        zer  wb               else get code for no convert
 
 *      merge here with proper datatype code in wb
@@ -13605,7 +13606,7 @@ slod4  mov  (xs),wb          store code on stack
        zer  wa               set code for processing result
        brn  slod3            jump back to process result name
        ejc
-
+       
 *      load (continued)
 
 *      here after processing all args and result
@@ -13636,7 +13637,7 @@ slod6  mov  -(xr),(xs)+      store one type code from stack
        mov  xr,(xs)+         load function string name
 .if    .culc
        mov  wa,sclen(xr)     function name length
-       jsr  flstg            fold to lower case
+*       jsr  flstg            fold to lower case
 .fi
        mov  xl,(xs)          load library name
        mov  (xs),wb          store efblk pointer
@@ -18295,7 +18296,7 @@ cnc0a  mnz  scncc            set flag for scane
        jsr  sbstr            extract substring for comparison
 .if    .culc
        mov  wa,sclen(xr)     reload length
-       jsr  flstg            fold to lower case
+*       jsr  flstg            fold to lower case
 .fi
        mov  cnscc,xr         keep control card substring ptr
        mov  xr,=ccnms        point to list of standard names

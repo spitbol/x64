@@ -25,8 +25,8 @@ Copyright 2018      Hibbard M. Engler
  */
 
 #include "system.h"
-typedef int mword;				// MINIMAL word
-typedef unsigned int muword;	// MINIMAL unsigned word
+typedef long mword;				// MINIMAL word
+typedef unsigned long muword;			// MINIMAL unsigned word
 #ifndef far
 #define far
 #endif

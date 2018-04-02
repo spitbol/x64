@@ -219,6 +219,7 @@ _rc_:	dd   0				; return code from osint procedure
 	global	save_wb
 	global	save_wc
 	global	save_w0
+	global	save_minimal_id
 save_cp:	d_word	0		; saved cp value
 save_ia:	d_word	0		; saved ia value
 save_xl:	d_word	0		; saved xl value
@@ -228,6 +229,7 @@ save_wa:	d_word	0		; saved wa value
 save_wb:	d_word	0		; saved wb value
 save_wc:	d_word	0		; saved wc value
 save_w0:	d_word	0		; saved w0 value
+save_minimal_id:	d_word	0		; saved minima_id value
 
 	global	minimal_id
 minimal_id:	d_word	0		; id for call to minimal from c. see proc minimal below.
@@ -311,6 +313,12 @@ ttybuf:	d_word    0     ; type word
 ;       reloading a save file.
 ;
 ;
+; pushregs and popregs are in syslinux.c
+
+
+
+;       resrtore_regs is for debugging
+;	save_regs is for debugging. it doesnt do all those weird rules
 	global	save_regs
 save_regs:
 	mov	m_word [save_ia],ia
@@ -321,6 +329,9 @@ save_regs:
 	mov	m_word [save_wb],wb
 	mov	m_word [save_wc],wc
 	mov	m_word [save_w0],w0
+	mov	m_word w0,minimal_id
+	mov	m_word [save_minimal_id],w0
+	mov	m_word w0,[save_w0]		
 	ret
 
 	global	restore_regs
@@ -333,6 +344,8 @@ restore_regs:
 	mov	wa,m_word [save_wa]
 	mov	wb,m_word [save_wb]
 	mov	wc,m_word [save_wc]
+	mov	w0,m_word [save_minimal_id]
+	mov	m_word [minimal_id],w0
 	mov	w0,m_word [save_w0]
 	ret
 ; ;
@@ -447,7 +460,7 @@ minimal:
 	mov     xs,m_word [compsp]	; switch to compiler stack
 
  min1:
-	mov     w0,m_word [minimal_id]	; get ordinal
+	mov    w0,m_word [minimal_id]	; get ordinal
 	call   m_word [calltab+w0*cfp_b]    ; off to the minimal code
 
 	mov     xs,m_word [osisp]	; switch to osint stack
@@ -961,3 +974,6 @@ zzz:
 	popf
 	ret
 %endif
+
+
+

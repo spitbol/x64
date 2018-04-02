@@ -399,6 +399,10 @@ struct xnblk {
             short	xnsave;			//    non-zero = first call after reload
             far void (*xncbp)(void);//    callback function prior to exiting
             short	xnpad;			//    pad to dword boundary
+	    // vvv added cause syslinux had itdon't know if minimal knows
+	    mword 	xnpfn;		//   link to the next free block if this bloc is available
+	    void 	*xnhand;			//    handle for the external function
+	    
         } ef;
     } xnu;
 };

@@ -83,7 +83,7 @@ extern	void		init_custom ( void );
 extern	void		initpath ( char *name );
 extern	word		lenfnm ( struct scblk *scptr );
 extern	int			length ( char *cp );
-extern	void *		loadef (word fd, char *filename);
+extern	void *		loadef (word fd, void *func_entry);
 extern	long		lstrncmp (char*, char*, long, long);
 extern	int			_main ( int srcfd, int argc, char *argv[] );
 extern	int			makeexec ( struct scblk *scptr, int type );

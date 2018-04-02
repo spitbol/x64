@@ -33,8 +33,10 @@ int zysex()
     union block *result = 0;		// initialize so collectable
 
     // Bypass return word in second argument to callef
-    result = callef(efb, ((word) (MP_OFF(XS(union block **)))
-                               + sizeof(word),union block **), nargs);
+    word xs;
+    xs = XS(word);
+    xs += 8;
+    result = callef(efb, (union block **)(xs), nargs);
     switch ((word)result) {
     case (word)0:
         return EXIT_1;			// fail

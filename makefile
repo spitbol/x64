@@ -24,8 +24,10 @@ OSINT=./osint
 vpath %.c $(OSINT)
 
 ifeq	($(DEBUG),0)
-CFLAGS= -D m64 -m64 -static 
+SCFLAGS= -D m64 -O3 -static -m64 
+CFLAGS= -D m64 -O3  -m64 
 else
+SCFLAGS= -D m64 -g -static -m64 
 CFLAGS= -D m64 -g -m64
 endif
 
@@ -37,7 +39,9 @@ ASMFLAGS = -g -f $(ELF) -d m64
 endif
 
 # Tools for processing Minimal source file.
-BASEBOL =   ./bin/sbl
+BASEBOL =   ./bin/sbl-static
+
+BASEBOLS = ./bin/sbl-static ./bin/sbl 
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
@@ -73,7 +77,9 @@ COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
 	lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
-	trypath.o wrtaout.o zz.o
+	trypath.o wrtaout.o zz.o 
+		
+
 
 # Assembly langauge objects common to all versions:
 CAOBJS = 
@@ -102,12 +108,15 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 # link spitbol with static linking
 LIBS = 
 
-sbl: $(OBJS)
-	$(CC) $(CFLAGS) $(LIBS) -lm $(OBJS) -osbl
 
-# link spitbol with dynamic linking
-spitbol-dynamic: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -lm -osbl 
+system: sbl-static sbl
+
+sbl-static: $(OBJS)
+	$(CC) $(SCFLAGS)  $(OBJS) /usr/lib/x86_64-linux-musl/libffcall.a  $(LIBS) -lm  -osbl-static
+
+# link spitbol with dynamic linking (needed for LOADing of external functions)
+sbl: $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -lm /usr/lib/x86_64-linux-musl/libffcall.a -osbl 
 
 # Assembly language dependencies:
 err.o: err.s
@@ -115,6 +124,8 @@ s.o: s.s
 
 err.o: err.s
 
+base:  sbl-static sbl
+	cp  sbl-static sbl ./bin
 
 # SPITBOL Minimal source
 s.go:	s.lex go.sbl

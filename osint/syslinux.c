@@ -37,11 +37,21 @@ sudo make install
 #include <dlfcn.h>
 #include <avcall.h>
 
-typedef struct xnblk XFNode, *pXFNode;
+typedef struct xnblk XFNode;
+typedef XFNode * pXFNode;
+
 typedef mword (*PFN)();				// pointer to function
 
 static union block *scanp;			// used by scanef/nextef
 static pXFNode xnfree = (pXFNode)0;	// list of freed blocks
+
+
+#define FUNC_TYPE_UNCONVERTED 0
+#define FUNC_TYPE_STRING 1
+#define FUNC_TYPE_INTEGER 2
+#define FUNC_TYPE_REAL 3
+//#define FUNC_TYPE_FILE 4
+// set cnra
 
 #ifdef USE_FLOAT_TABLE
 extern long f_2_i (double ra);
@@ -79,6 +89,10 @@ static APDF flttab = {
 };
 #endif
 
+
+
+
+
 misc miscinfo = {0x105,				// internal version number
                  GCCi32 ? t_lnx8632 : t_lnx8664,           // environment
                  0,								// spare
@@ -93,6 +107,81 @@ misc miscinfo = {0x105,				// internal version number
  But now we use avcall
  */
 //extern mword callextfun (struct efblk *efb, union block **sp, mword nargs, mword nbytes);
+
+
+
+/*
+;       
+;       save and restore minimal and interface registers on stack.
+;       used by any routine that needs to call back into the minimal
+;       code in such a way that the minimal code might trigger another
+;       sysxx call before returning.
+;       
+;       note 1:  pushregs returns a collectable value in xl, safe
+;       for subsequent call to memory allocation routine.
+;       
+;       note 2:  these are not recursive routines.  only reg_xl is
+;       saved on the stack, where it is accessible to the garbage
+;       collector.  other registers are just moved to a temp area.
+;       
+;       note 3:  popregs does not restore reg_cp, because it may have
+;       been modified by the minimal routine called between pushregs
+;       and popregs as a result of a garbage collection.  calling of
+;       another sysxx routine in between is not a problem, because
+;       cp will have been preserved by minimal.
+;       
+;       note 4:  if there isn't a compiler stack yet, we don't bother
+;       saving xl.  this only happens in call of nextef from sysxi when 
+;       reloading a save file.
+;       
+;               
+*/
+
+/* simulation of pushregs and popregs of yesteryear - 
+ours mimics the weird code, and also, it is recursive */
+
+extern word compsp;
+word syslinux_reg_pointer=0;
+word syslinux_reg_stack[512];
+void pushregs(void) {
+if (compsp) {
+  compsp -= sizeof(word);
+  ((word *)compsp)[0] =  XL(word);
+  }
+else {
+  syslinux_reg_stack[syslinux_reg_pointer++] = XL(word);
+  }
+syslinux_reg_stack[syslinux_reg_pointer++] = IA(word);
+syslinux_reg_stack[syslinux_reg_pointer++] = W0(word);
+syslinux_reg_stack[syslinux_reg_pointer++] = WA(word);
+syslinux_reg_stack[syslinux_reg_pointer++] = WB(word);
+syslinux_reg_stack[syslinux_reg_pointer++] = WC(word);
+syslinux_reg_stack[syslinux_reg_pointer++] = XR(word);
+syslinux_reg_stack[syslinux_reg_pointer++] = compsp;
+syslinux_reg_stack[syslinux_reg_pointer++] = RA(word);
+syslinux_reg_stack[syslinux_reg_pointer++] = minimal_id;
+}
+
+
+void popregs(void) {
+minimal_id = syslinux_reg_stack[--syslinux_reg_pointer];
+SET_RA(syslinux_reg_stack[--syslinux_reg_pointer]);
+compsp = (syslinux_reg_stack[--syslinux_reg_pointer]);
+SET_XR(syslinux_reg_stack[--syslinux_reg_pointer]);
+SET_WC(syslinux_reg_stack[--syslinux_reg_pointer]);
+SET_WB(syslinux_reg_stack[--syslinux_reg_pointer]);
+SET_WA(syslinux_reg_stack[--syslinux_reg_pointer]);
+SET_W0(syslinux_reg_stack[--syslinux_reg_pointer]);
+SET_IA(syslinux_reg_stack[--syslinux_reg_pointer]);
+if (compsp) {
+  SET_XL(((word *)compsp)[0]);
+  compsp += sizeof(word);
+  }
+else {
+  SET_XL(syslinux_reg_stack[--syslinux_reg_pointer]);
+  }
+}
+
 
 
  word typet;
@@ -166,62 +255,21 @@ word nargs;
     result = (union block *)ptscblk;
     void (*function)() = (void *)((pXFNode)pnode->xnu.ef.xnpfn);
 
-    switch (type+1) {
-
-    case BL_XN:						// XNBLK    external block
-//
-    case BL_AR:	 					// ARBLK	array
-    case BL_CD:						// CDBLK	code
-    case BL_EX:						// EXBLK	expression
-    	av_start_void(alist, function);
-        break;
-    case BL_IC:						// ICBLK	integer
+    switch (type) {
+    case FUNC_TYPE_INTEGER:
     	av_start_long(alist, function,&long_return);
         break;
-    
-    case BL_NM:		
-    				// NMBLK	name
-        av_start_ptr(alist,function,char *,&ptr_return);    
-        break;
-    case BL_P0:						// P0BLK	pattern, 0 args
-    case BL_P1:						// P1BLK	pattern, 1 arg
-    case BL_P2:						// P2BLK	pattern, 2 args
-    	av_start_void(alist, function);
-        break;
-    case BL_RC:						// RCBLK	real
+    case FUNC_TYPE_REAL:
     	av_start_double(alist, function,&double_return);
         break;
-    case BL_SC:						// SCBLK	string
-        av_start_ptr(alist,function,char *,&ptr_return);    
-    case BL_SE:						// SEBLK	expression
-    case BL_TB:						// TBBLK	table
-    	av_start_void(alist, function);
-        break;    
-    case BL_VC:						// VCBLK	vector (array)
+    case FUNC_TYPE_STRING:
     	av_start_ptr(alist, function,void *,&ptr_return);
-        break;   
-    case BL_XR:						// XRBLK	external, relocatable contents
-    	av_start_ptr(alist, function,void *,&ptr_return);
-        break;       
-    case BL_PD:						// PDBLK	program defined datatype
-        result->scb.sctyp = (*pTYPET)[type];
-        break;
-
-    case BL_NC:	 					// return result block unchanged
-    	av_start_void(alist, function);
-        break;    
-
-    case BL_FS:						// string pointer at tscblk.str
-    	av_start_ptr(alist, function,void *,&ptr_return);
-        break;   
-
-    case BL_FX:						// pointer to external data at tscblk.str
-    	av_start_ptr(alist, function,void *,&ptr_return);
-        break;   
-
+        break; 		
     case FAIL:						// fail
+        av_start_void(alist,function);   
+	break;
     default:
-    	av_start_void(alist, function);
+    	av_start_ptr(alist, function,void *,&result);
         break;   
     }
     
@@ -233,61 +281,18 @@ word nargs;
       mword eftype;
       eftype = efb->eftar[i];
       
-      switch (eftype+1) {
-
-      case BL_XN:						// XNBLK    external block
-//
-      case BL_AR:	 					// ARBLK	array
-      case BL_CD:						// CDBLK	code
-      case BL_EX:						// EXBLK	expression
-        break;
-      case BL_IC:						// ICBLK	integer
+      switch (eftype) {
+      case FUNC_TYPE_INTEGER:
     	av_long(alist,(sp[i]->icb.icval));
         break;
-    
-      case BL_NM:						// NMBLK	name
-	savechar[i] =make_c_str(&((char *)(sp[i]->nmb.nmbas))[sp[i]->nmb.nmofs]);
-        av_ptr(alist,char *,(char *)(sp[i]->nmb.nmbas));
-        break;
-      case BL_P0:						// P0BLK	pattern, 0 args
-      case BL_P1:						// P1BLK	pattern, 1 arg
-      case BL_P2:						// P2BLK	pattern, 2 args
-    	av_ptr(alist,void *,sp[i]);
-        break;
-      case BL_RC:						// RCBLK	real
+      case FUNC_TYPE_REAL:
     	av_double(alist,sp[i]->rcb.rcval);
         break;
-      case BL_SC:						// SCBLK	string
+      case FUNC_TYPE_STRING:
+        /* hack allocate chuink */
 	savechar[i] =make_c_str(&((char *)(sp[i]->scb.scstr))[sp[i]->scb.sclen]);
         av_ptr(alist,char *,(char *)(sp[i]->scb.scstr));
         break;
-      case BL_SE:						// SEBLK	expression
-      case BL_TB:						// TBBLK	table
-    	av_ptr(alist,void *,sp[i]);
-        break;    
-      case BL_VC:						// VCBLK	vector (array)
-    	av_ptr(alist,void *,sp[i]);
-        break;   
-      case BL_XR:						// XRBLK	external, relocatable contents
-    	av_ptr(alist,void *,sp[i]);
-        break;       
-      case BL_PD:						// PDBLK	program defined datatype
-    	av_ptr(alist,void *,sp[i]);        
-        break;
-
-      case BL_NC:	 					// return result block unchanged
-    	av_ptr(alist,void *,sp[i]);        
-        break;    
-
-      case BL_FS:						// string pointer at tscblk.str
-	savechar[i] =make_c_str(&((char *)(sp[i]->fsb.fsptr))[sp[i]->fsb.fslen]);
-        av_ptr(alist,char *,(char *)(sp[i]->fsb.fsptr));
-        break;   
-
-      case BL_FX:						// pointer to external data at tscblk.str
-    	av_ptr(alist,void *,sp[i]);
-        break;   
-
       case FAIL:						// fail
       default:
      	av_ptr(alist,void *,sp[i]);
@@ -303,70 +308,48 @@ word nargs;
       mword eftype;
       eftype = efb->eftar[i];
       
-      switch (eftype+1) {
-      case BL_NM:						// NMBLK	name
-	unmake_c_str(&((char *)(sp[i]->nmb.nmbas))[sp[i]->nmb.nmofs],savechar[i]);
-        break;
-      case BL_SC:						// SCBLK	string
+      switch (eftype) {
+      case FUNC_TYPE_STRING:	
 	unmake_c_str(&((char *)(sp[i]->scb.scstr))[sp[i]->scb.sclen],savechar[i]);
 	break;
-      case BL_FS:						// string pointer at tscblk.str
-	unmake_c_str(&((char *)(sp[i]->fsb.fsptr))[sp[i]->fsb.fslen],savechar[i]);
-        break;   
       default:
         break;   
       } // switch eftype
     } // for each argument
 
         
-    switch (type+1) {
+    switch (type) {
 
-    case BL_XN:						// XNBLK    external block
-        result->xnb.xnlen = ((result->xnb.xnlen + sizeof(mword) - 1) &
-                             -sizeof(mword)) + FIELDOFFSET(struct xnblk, xnu.xndta[0]);
-    case BL_AR:	 					// ARBLK	array
-    case BL_CD:						// CDBLK	code
-    case BL_EX:						// EXBLK	expression
-    case BL_IC:						// ICBLK	integer
-        result->icb.ictyp = (*pTYPET)[type];
+     case FUNC_TYPE_INTEGER:
+        result->icb.ictyp = (*pTYPET)[BL_IC];
 	result->icb.icval = long_return;
+	break;
+    case FUNC_TYPE_REAL:
+        result->rcb.rctyp = (*pTYPET)[BL_RC];
+        result->rcb.rcval = double_return;
         break;
-    
-    case BL_NM:						// NMBLK	name
-    case BL_P0:						// P0BLK	pattern, 0 args
-    case BL_P1:						// P1BLK	pattern, 1 arg
-    case BL_P2:						// P2BLK	pattern, 2 args
-    case BL_RC:						// RCBLK	real
-    case BL_SC:						// SCBLK	string
-    	
-    case BL_SE:						// SEBLK	expression
-    case BL_TB:						// TBBLK	table
-    case BL_VC:						// VCBLK	vector (array)
-    case BL_XR:						// XRBLK	external, relocatable contents
-    case BL_PD:						// PDBLK	program defined datatype
-        result->scb.sctyp = (*pTYPET)[type];
-        break;
+    case FUNC_TYPE_STRING:		  	 
+      if (!ptr_return) {
+        length = 0;
+	result = 0;
+	break;						 // return null string result
+	}
+      length = strlen((char *)ptr_return);      
 
-    case BL_NC:	 					// return result block unchanged
-        break;
+      MINSAVE();
+      SET_WA( length);
+      MINIMAL(minimal_alocs);				// allocate string storage
+      result = XR(union block *);
+      MINRESTORE();
 
-    case BL_FS:						// string pointer at tscblk.str
-        result->fsb.fstyp = (*pTYPET)[BL_SC];
-        p = result->fsb.fsptr;
-        length = result->fsb.fslen;
-        if (!length)
-            break;						// return null string result
-        MINSAVE();
-        SET_WA(length);
-        MINIMAL(minimal_alocs);				// allocate string storage
-        result = XR(union block *);
-        MINRESTORE();
-        q = result->scb.scstr;
-        while (length--)
-            *q++ = *p++;
-        break;
+//      result->scv.fstyp = (*pTYPET)[BL_FS];      
+      memcpy(result->scb.scstr, ptr_return, length);
+      break;
 
-    case BL_FX:						// pointer to external data at tscblk.str
+    case FAIL:						// fail
+      result = 0;
+      break;
+    default:
         length = ((result->fxb.fxlen + sizeof(mword) - 1) &
                   -sizeof(mword)) + FIELDOFFSET(struct xnblk, xnu.xndta[0]);
         if (length > GET_MIN_VALUE(mxlen,mword)) {
@@ -382,14 +365,8 @@ word nargs;
         result->xnb.xnlen = length;
         result->xnb.xntyp = (*pTYPET)[BL_XN];
         s = result->xnb.xnu.xndta;
-        length = (length - FIELDOFFSET(struct xnblk, xnu.xndta[0])) / sizeof(mword);
-        while (length--)
-            *s++ = *r++;
-        break;
-
-    case FAIL:						// fail
-    default:
-        result = (union block *)0;
+        length = (length - FIELDOFFSET(struct xnblk, xnu.xndta[0]));
+	memcpy(s,r,length*sizeof(mword));
         break;
     }
     return result;
@@ -499,13 +476,11 @@ int io;
     void *result = 0;
     mword type, blksize;
     pXFNode pnode;
-
     blksize = 0;
     MINSAVE();
     for (mydnamp = GET_MIN_VALUE(dnamp,union block *);
             scanp < mydnamp; scanp = ((union block *) (MP_OFF(scanp,muword)+blksize))) {
         type = scanp->scb.sctyp;				// any block type lets us access type word
-//	fprintf(stderr,"scanp %lx dnamp %lx type %lx eftype %lx io %d\n",(long)scanp,(long)mydnamp,(long)type,(long)ef_type,io);  
 	if (type==0) {
 	  blksize = 16;
 	  continue;
