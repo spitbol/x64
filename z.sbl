@@ -17,7 +17,7 @@
 *
 	&anchor = 1
 	&trim = 1
-	&stlimit = 10000000
+*	&stlimit = 10000000
 	&dump = 2
 	define('getname(varg)')
 	define('adjust()i')

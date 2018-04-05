@@ -1,0 +1,74 @@
+	&anchor = 0
+	s = span(' 	')
+	sz = s | ''
+	athruz = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'
+	athruznum = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+	label = ( any(athruz) ( span(athruznum) | '' ) ) . the_label
+	command = ( any(athruz) ( span(athruznum) | '' ) ) . the_command
+	zerothrunine = '0123456789'
+	numbers = span(zerothrunine) . the_numbers
+	characters_general = &alphabet
+	characters_general '"' = ''
+	characters_general '\' = ''
+	string_inside_char = ( any(characters_general) | '\"' | '\\' | '\n' | '\r' ) . the_string_inside_char
+	string_inside_chars = arbno(string_inside_char) . the_string_inside_chars
+
+	string = '"' string_inside_chars '"'
+	argument = ( numbers | string ) . the_argument
+	&anchor = 1
+	
+	output = '// note - this file is generated from err.s via convert_err_s_to_err_c.sbl'
+	output = '// and err.s is built from err.sbl via lex-asm'
+	output = 'typedef unsigned long word;'
+	current_array  = ''
+
+loop	
+	x = input	:f(endd)
+	x ';' = '//'   :s(worked)
+	x break(';') . aa ';' = a '//'	
+	x s 'segment' s arbno(any(&alphabet)) . segment_name = '// segment was ' segment_name	:s(worked)
+	x s 'global' s label . the_name = '// extern const word ' the_name '[];'	:s(worked)
+	the_string_inside_chars = ''
+	x label sz ':' s command s argument sz rpos(0)	:s(got_start)
+	x  s command s argument sz rpos(0)	:s(got_db)
+	:(worked)
+
+
+got_start 
+	ident(current_array,'')	:s(got_first_array)	
+	output = '}; /* array known as   ' current_array '   */'
+got_first_array	
+	current_array = the_label
+	output = 'const word ' the_label '[] = {'
+	
+
+
+got_db	the_argument numbers rpos(0)	:s(skip_deal_string)
+	the_argument = ''
+gdbl1	the_string_inside_chars  any(characters_general) . the_next_char = ''	:s(got_next_char)
+	the_string_inside_chars '\"' = ''					:f(not_quote1)
+	the_next_char = '"'						        :s(got_next_char)
+not_quote1	the_string_inside_chars '\\' = ''					:f(not_quote2)
+	the_next_char = '\'						        :s(got_next_char)
+not_quote2	the_string_inside_chars '\n' = ''					:f(not_quote3)
+	the_next_char = char(10)					        :s(got_next_char)
+not_quote3	the_string_inside_chars '\r' = ''					:f(done_quote)
+	the_next_char = char(13)					        :s(got_next_char)
+	
+got_next_char the_argument = the_argument the_next_char :(gdbl1)
+
+done_quote
+	output = '	(word)("' the_argument '"),'		:(loop)
+skip_deal_string
+	output = '	(word)' the_argument '	,'		:(loop)
+		
+worked
+	output = x
+	:(loop)
+
+	
+		
+endd	
+	output = '};'
+end
+

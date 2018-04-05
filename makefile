@@ -79,11 +79,17 @@ COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
 	trypath.o wrtaout.o zz.o 
 		
+# C only pnjects
 
 
 # Assembly langauge objects common to all versions:
 CAOBJS = 
 NAOBJS = x64.o err.o
+
+
+# for the c version:
+C_CAOBJS = 
+C_NAOBJS = cx64.o cerr.o
 
 # Objects for SPITBOL's HOST function:
 HOBJS=
@@ -99,17 +105,23 @@ MOBJS=	getargs.o main.o
 # All assembly language objects
 AOBJS = $(CAOBJS)
 
+C_AOBJS = $(C_CAOBJS)
+
 # Minimal source object file:
 VOBJS =	s.o
+C_VOBJS = cs.o
 
 # All objects:
 OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
+
+# All objects for c version:
+C_OBJS=	$(C_AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(C_VOBJS) $(MOBJS) $(C_NAOBJS)
 
 # link spitbol with static linking
 LIBS = 
 
 
-system: sbl-static sbl
+system: csbl sbl-static sbl
 
 sbl-static: $(OBJS)
 	$(CC) $(SCFLAGS)  $(OBJS) /usr/lib/x86_64-linux-musl/libffcall.a  $(LIBS) -lm  -osbl-static
@@ -118,11 +130,24 @@ sbl-static: $(OBJS)
 sbl: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -lm /usr/lib/x86_64-linux-musl/libffcall.a -osbl 
 
+csbl: $(C_OBJS)
+	$(CC) $(CFLAGS) $(C_OBJS) $(LIBS) -lm /usr/lib/x86_64-linux-musl/libffcall.a -ocsbl 
+
 # Assembly language dependencies:
 err.o: err.s
 s.o: s.s
 
+cerr.o: $(OSINT)/cerr.c
+cs.o: cs.c
+
+
+$(OSINT)/cerr.c: err.s convert_err_s_to_err_c.sbl
+	$(BASEBOL) convert_err_s_to_err_c.sbl <err.s >$(OSINT)/cerr.c
+
 err.o: err.s
+
+cx64.o: cx64.c
+
 
 base:  sbl-static sbl
 	cp  sbl-static sbl ./bin
@@ -133,6 +158,9 @@ s.go:	s.lex go.sbl
 
 s.s:	s.lex $(VHDRS) asm.sbl 
 	$(BASEBOL) -x -u $(WS) asm.sbl
+	
+cs.c: 	s.lex $(VHDRS) cgen.sbl
+	$(BASEBOL) -x -u $(WS) cgen.sbl
 
 s.lex: $(MINPATH)s.min s.cnd lex.sbl
 	 $(BASEBOL) -x -u $(WS) lex.sbl
@@ -141,6 +169,8 @@ s.err: s.s
 
 err.s: s.cnd err.sbl s.s
 	   $(BASEBOL) -x -1=s.err -2=err.s err.sbl
+
+cs.err: cs.c
 
 
 # make osint objects
@@ -159,7 +189,7 @@ dlfcn.o: dlfcn.h
 install:
 	sudo cp ./bin/sbl /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t ./sbl
+	rm -f $(OBJS) *.o *.lst *.map *.err s.lex s.tmp s.s err.s s.S s.t ./sbl ./sbl-static
 
 z:
 	nm -n s.o >s.nm

@@ -1,12 +1,11 @@
-
-
--title mincod                                           : phase 2 translation from minimal tokens to 80386 code
+-title mincod                                           : phase 2 translation from minimal tokens to 64 bit C code
 -stitl description
 
 *   Copyright 1987-2012 robert b. k. dewar and mark emmer.
 *   Copyright 2012-2017 david shields
+*   Copyright 2018 - Hib Engler
 
-*   this file is part of macro spitbol.
+*   this file is part of macro spitbol -> lex into C code
 
 *   macro spitbol is free software: you can redistribute it and/or modify
 *   it under the terms of the gnu general public license as published by
@@ -23,7 +22,48 @@
 
 
 *   this program takes input file in minimal token form and
-*   produces assembly code for intel x64 processor.
+*   produces C code.
+*   So there will probably be two types of c code.  One type will have 
+*   the dreaded "if" statement, and gotos all over the place.  The stack will
+*   be mitigated and minimized, unless calling an osint function.
+*
+*   The other method will Queue the function labels that will be void pointers.
+*   After a reurn is done, a SUCCESS/FAILURE/OTHER queue will be evaluated and called - gone to for the rest of the work.
+*   this means that every label will be it's own function.
+*   or a mini "kernel" if you will.
+*
+*   And heres the idea.
+*   alot of kernels will basically be doing the same thing, except going to different labels.
+*   that means that they could be consolidated through different parts, and simpleified,
+*   so that each queue effectively can be a separate thread, or virtual thread,   where the threads on the computer
+*   will swith the context and do the work.
+*   That would mean the registers will be contexed per-queue.  Analysis of a block can determine what is going through, to limit the regs, but for the beginning
+*   all regs would be through the stack.
+*   This then means that things can happen at the same time.
+*   Possibly a program can be compiled 100 lines at a time, but will it be fast?
+*   on the CPU, yes,  but then for kernels.
+*   All the variables can become streams, or something like it, now it could be possible to to thousands of pattern matches at once.
+*   Well, thats the idea behind converting the code to C.
+*   I want to use the brook idea of multidimensional streams, where the dimensions are determined at run time.
+*   It might go that a CPU will reduce the streams,  although brook could do it with a sort, and then test for zero.
+*   brook - brook gpu - and probably opencl and other stuff. to be figured out.
+*   imagine all commands becoming something like spitbol:
+*   [<label>] [[<expression> [?] [pattern] [= expression]] [goto]
+*
+*   variable assignments could be done multiple ways.  One way is to have a user file system map the elf file dynamically and provide memory maps to the parent data,
+*   and have writes to that be locally administered.   There is code for this,  and if it is done right, the virtual memory system can contain the changes to global variables that 
+*   are and are not important
+*   would need something to contol input/output so that they can be streams instead of a single character stream.  
+*   the parent data could be consolidated, with any clas resolved by the line number (thread number) of the input file.
+*   there can also be sibling shares, or perhaps storing value, then array of tables (value, thread id in x,y,z) to capture this if it needs to fo to the parent.
+*   it could go to parent, or siblings, and siblings should be able to peek and set their own values. the hooks used to turn input and output to external strams could work there
+*   Well, you see, it brings snobol4 into a new realm. A realm where the while statement is possibly mapped, the if statement is taboo.
+*   in other words, the assembly language goto solves what openCL, and SYCL (and I think Cuda - but got to learn more) do by having a compiler check everything and build everything during runtime.
+*   yeah, spitbol can still do that. 
+*   cuda can do it. the parent would make a block, with the threads picking what to do. then an array of gotos would be queued for processing - maybe compressed here
+*   with a sort.  Cuda would need blocks and threads to be predefined amounts, probably ^2 ish
+*   anyways.
+*
 *   the program obtains the name of the file to be translated from the
 *   command line string in host(0).
 
@@ -32,7 +72,8 @@
 
 *   in addition to the minimal token file, the program requires the
 *   name of a "machine definition file" that contains code specific
-*   to a particular 80386 assembler.
+*   to a particular C variant.  note - for now, the assembly language will be printed first as a comment.
+*   the C variant will need two passes. Lets see if the original asm does this
 
 *   you may also specify option flags on the command line to control the
 *   code generation.  the following flags are processed:
@@ -57,7 +98,7 @@
 *       spitbol -u "<file>:<machine>[:flag:...:flag]" codlinux.spt
 
 *       reads <file>.lex        containing tokenized source code
-*       writes <file>.s         with 80386 assembly code
+*       writes <file>.c         with a c goto script
 *       also writes <file>.err  with err and erb error messages
 *       parts of m.hdr  are prepended and appended to <file>.s
 *       also sets flags         to 1 after converting names to upper case
@@ -65,12 +106,13 @@
 
 *   example:
 
-*       spitbol -u v37:dos:compress codlinux.spt
+*       spitbol -u min:x86_64:compress cgen.spt
 
 
 *   revision history:
 
-    version = 'v1.12'
+    version = 'v1.00'
+* from 1.12 of asm.sno
     rcode = '_rc_'
 
 
@@ -165,6 +207,8 @@ skip_init.end
 *   skip_init('srpl5:srpl8')
 
 
+	
+
 
 *   data structures
 
@@ -180,6 +224,10 @@ skip_init.end
 
 
 *   function definitions
+
+   define('upper(s)') 
+	        xUP_LO  =  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+		xLO_UP  =  'ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 *   crack parses stmt into a stmt data plex and returns it.
 *   it fails if there is a syntax error.
@@ -208,12 +256,40 @@ skip_init.end
     define('prsarg(iarg)l1,l2')
     define('report(num,text)')
     define('tblini(str)pos,cnt,index,val,lastval')
+    define('gencode_c(pass,x)a,b,c')
+    define('get_c_argument(iarg,imem)a,b,c,l1,l2,t1,t2,tmem')
+    define('get_c_label(iarg,imem)a,b,c,l1,l2,t1,t2,tmem')
+    define('convert_value_c(x)a,b,c,d)')
+    define('do_current_label()')
+    
+
+	p.c_symbol = '&&' | '||' | '>=' | '<=' | '->' | '*=' | any('^|!=+-*/%[]{}.')
+	p.c_sbrk = '\\' | '\"' | "\'"
+	&anchor = 0
+	p.c_stringchar1 = &alphabet
+	p.c_stringchar1 '"' = ''
+	p.c_stringchar2 = p.c_sbrk | any(p.c_stringchar1)
+	p.c_string = '"' arbno(p.c_stringchar2) '"'
+	p.c_comment = '/*' arbno(any(&alphabet)) '*/'
+	p.c_charchar1 = &alphabet
+	p.c_charchar1 "'" = ""
+	p.c_charchar2 =  p.c_sbrk | any(p.c_charchar1)
+	p.c_char = "'" p.c_charchar2 "'"
+	p.c_label = any('abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ') ( span('abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') | '' )
+	p.c_s = span(' 	') 
+	p.c_n1 = span('0123456789')
+	p.c_n2 = span('0123456789') '.' ( span('0123456789') | '' ) ( 'f' | 'l' | 'ul' | 'd' | '' )
+	p.c_token = p.c_n2 | p.c_n1 | p.c_string | p.c_comment | p.c_char | p.c_label | p.c_symbol | p.c_s
+	&anchor = 1
+    
 
 *   outstmt is used to send a target statement to the target code
 *   output file outfile
 
+    
     define('outstmt(ostmt)label,opcode,op1,op2,op3,comment,t,stmtout')
 
+    
 *   readline is called to return the next non-comment line from
 *   the minimal input file (infile <=> lu1).   note that it will
 *   not fail on eof, but it will return a minimal end statement
@@ -225,25 +301,35 @@ skip_init.end
 *   exttab has entry for external procedures
 
     exttab = table(50)
+    external_procedures = exttab
 
 *   labtab records labels in the code section, and their line numbers
 
     labtab = table(500)
+    labels_in_the_code_section = labtab
 
 *   for each statement, code in generated into three
 *   arrays of statements:
 
 *   astmts: statements after opcode (()+, etc.)
+*   after_opcode_statements
 *   bstmts: statements before code (-(), etc)
+*   before_code_statements
 *   cstmts: generated code proper
+*   code_statements
 
-    astmts = array(20,'')
-    bstmts = array(10,'')
-    cstmts = array(20,'')
+*    astmts = array(20,'')
+    after_opcode_statements = array(1000,'')
+    astmts = after_opcode_statements
+    before_code_statements = array(1000,'')
+    bstmts = before_code_stmts
+    code_statements = array(1000,'')
+    cstmts = code_statements
 
 *   genlabels is count of generated labels (cf. genlab)
 
     genlabels = 0
+
 
 
 *   initialize variables
@@ -252,6 +338,10 @@ skip_init.end
     lastopc = lastop1 = lastop2 =
     data_lc = 0
     max_exi = 0
+    
+    c_definitions = table(1000)
+    
+    
 
 *   initial patterns
 
@@ -265,6 +355,8 @@ skip_init.end
     '{' rem . slineno
 
 *   dispatch table
+* these are name addresses of labels in getarg.  I bet this does something like :($label) but faster
+*
 
     getargcase = table(27)
     getargcase[1] = .getarg.c.1;   getargcase[2] = .getarg.c.2
@@ -281,6 +373,22 @@ skip_init.end
     getargcase[23] = .getarg.c.23; getargcase[24] = .getarg.c.24
     getargcase[25] = .getarg.c.25; getargcase[26] = .getarg.c.26
     getargcase[27] = .getarg.c.27
+
+    get_c_argumentcase = table(27)
+    get_c_argumentcase[1] = .get_c_argument.c.1;   get_c_argumentcase[2] = .get_c_argument.c.2
+    get_c_argumentcase[3] = .get_c_argument.c.3;   get_c_argumentcase[4] = .get_c_argument.c.4
+    get_c_argumentcase[5] = .get_c_argument.c.5;   get_c_argumentcase[6] = .get_c_argument.c.6
+    get_c_argumentcase[7] = .get_c_argument.c.7;   get_c_argumentcase[8] = .get_c_argument.c.8
+    get_c_argumentcase[9] = .get_c_argument.c.9;   get_c_argumentcase[10] = .get_c_argument.c.10
+    get_c_argumentcase[11] = .get_c_argument.c.11; get_c_argumentcase[12] = .get_c_argument.c.12
+    get_c_argumentcase[13] = .get_c_argument.c.13; get_c_argumentcase[14] = .get_c_argument.c.14
+    get_c_argumentcase[15] = .get_c_argument.c.15; get_c_argumentcase[16] = .get_c_argument.c.16
+    get_c_argumentcase[17] = .get_c_argument.c.17; get_c_argumentcase[18] = .get_c_argument.c.18
+    get_c_argumentcase[19] = .get_c_argument.c.19; get_c_argumentcase[20] = .get_c_argument.c.20
+    get_c_argumentcase[21] = .get_c_argument.c.21; get_c_argumentcase[22] = .get_c_argument.c.22
+    get_c_argumentcase[23] = .get_c_argument.c.23; get_c_argumentcase[24] = .get_c_argument.c.24
+    get_c_argumentcase[25] = .get_c_argument.c.25; get_c_argumentcase[26] = .get_c_argument.c.26
+    get_c_argumentcase[27] = .get_c_argument.c.27
 
 
 *   pifatal maps minimal opcodes for which no a code allowed
@@ -317,7 +425,6 @@ is_exec.2
 
 -stitl main program
 *   here follows the driver code for the "main" program.
-
 
 *   loop until program exits via g.end
 
@@ -361,13 +468,13 @@ flgs2
 
 *   various constants
 
-    comment.delim = ';'
+    comment.delim = '//'
 
 *   branchtab maps minimal opcodes 'beq', etc to desired
 *   target instruction
 
     branchtab = table(10)
-    branchtab['beq'] = 'je'
+    branchtab['beq'] = 'be'
     branchtab['bne'] = 'jne'
     branchtab['bgt'] = 'ja'
     branchtab['bge'] = 'jae'
@@ -376,6 +483,19 @@ flgs2
     branchtab['blo'] = 'jb'
     branchtab['bhi'] = 'ja'
 
+    branchtab_standard_c = table(10)
+    branchtab_standard_c['beq'] = '=='
+    branchtab_standard_c['bne'] = '!='
+    branchtab_standard_c['bgt'] = '>'
+    branchtab_standard_c['bge'] = '>='
+    branchtab_standard_c['ble'] = '<='
+    branchtab_standard_c['blt'] = '<'
+    branchtab_standard_c['blo'] = '<'
+    branchtab_standard_c['bhi'] = '>'
+    
+    
+    
+    
 *   optim.tab flags opcodes capable of participating in or optimization
 *                in outstmt routine
 
@@ -414,6 +534,23 @@ flgs2
     regmap['w0'] = 'w0'
     w0 = regmap['w0']
 
+
+* C uses better names
+    better_register_name = table(30)
+    better_register_name['xl'] = 'work_base';  
+    better_register_name['xl'] = 'index_left';  
+    better_register_name['xt'] = 'index_t'
+    better_register_name['xr'] = 'index_right';  
+    better_register_name['xs'] = 'the_stack'
+    better_register_name['wa'] = 'work_a';  
+    better_register_name['wb'] = 'work_b'
+    better_register_name['wc'] = 'work_c';  
+    better_register_name['ia'] = 'integer_accumulator'
+    better_register_name['cp'] = 'code_pointer'
+*        w0 is temp register
+    better_register_name['w0'] = 'w0'
+    w0 = better_register_name['w0']
+
 *   quick reference:
     reg.wa = regmap['wa']
     reg.cp = regmap['cp']
@@ -446,7 +583,7 @@ flgs2
 *   machine definition file, and cannot be built until after the definition
 *   file has been read in.
 
-*   p.outstmt examines output lines for certain types of comment contructions
+*   p.outstmt examines output lines for certain types of comment contructions. works for comment only stuff too
 
     fillc     = (ident(compress) " ",tab)
     p.outstmt = (break(fillc) . label span(fillc)) . leader
@@ -466,7 +603,7 @@ inputok
 
 *   associate output files.
 
-    filenamo = fileprefix '.s'
+    filenamo = 'osint/c' fileprefix '.c'
     output(.outfile,2,filenamo)                         :s(outputok)
     output = '  cannot open asm file: ' filenamo        :(end)
 
@@ -487,6 +624,8 @@ err_ok
 
     noutlines = noutlines + 1
 
+* we dont use a header for c
+	:(nohdr)    
     input(.hdrfile,4,'x64.hdr')                         :f(nohdr)
     havehdr = 1
 
@@ -525,19 +664,101 @@ pubend
 
 nopub
 
-                                                        :(dsout)
-    &trace = 2000
-    &ftrace = 1000
+                                                        :(initialize)
+initialize							
+*    &trace = 2000
+*    &ftrace = 1000
 *   &profile = 1
+    parser_pass = 1
+    
+    last_labels = array(100)
+    section_labels = table()
+    section_labels[1] = table(1000)
+    section_labels[2] = table(1000)
+    section_labels[3] = table(1000)
+    section_labels[4] = table(1000)
+    section_labels[5] = table(1000)
+    section_labels[6] = table(1000)
+    section_labels[7] = table(1000)
+    section_labels[8] = table(1000)
+    
+    gencode_c(1,'/* generated from ' infile ' into C code */')
+    gencode_c(1,'#include "port.h"')
+    gencode_c(1,'')
+    gencode_c(1,'')
+    gencode_c(1,'')
+    flush()
+    
 
+    last_labels.n = 0
+    
 dsout
 
 opnext
-
      thisline = readline()
+     genbop(tstmt('//	' thisline,'','','',''))
+     thisline '{{end'			:s(opnext.2)
+opnext.0     
+* did_c_code is a flag so we don't output things if it is not our pass to do so
+     did_c_code = 0
+     did_c_code = 1
+* ^^^ for debugging     
      crack(thisline)                                    :f(dsout)
      op_ = incode '_'
+     
+     
+* handle_labels for c code
+    ident(inlabel)                                      :s(opnext.asm)
+    eq(pass,1)						:f(opnext.pass2)
+    ident(incode)					:s(opnext.p1.gotcode)
+* here we have labels multiple to the same thing
+    last_labels[last_labels.n = last_labels.n + 1] = thislabel
+    
+    ident(section_labels[sectnow][thislabel],'')	:f(opnext.p1.know_about_it)
+    section_labels[sectnow][thislabel] = table()
+    section_labels[sectnow][thislabel]['type'] = 'extra'
 
+opnext.p1.know_about_it
+	gencode_c(1,'')
+						:(opnext.asm)
+        
+opnext.p1.gotcode
+	t0 = 1
+*	lt(t0,last_labels.n)	
+
+opnext.pass2
+	ident(incode)					:s(opnext.p2.gotcode)
+	eq(sectnow,1)					:s(opnext.asm)
+	eq(sectnow,2)					:s(opnext.asm)
+	eq(sectnow,3)					:s(opnext.asm)
+	eq(sectnow,4)					:s(opnext.asm)
+	eq(sectnow,5)					:s(opnext.asm)
+	eq(sectnow,6)					:s(opnext.asm)
+	eq(sectnow,7)					:s(opnext.asm)
+	eq(sectnow,8)					:s(opnext.asm)
+	eq(sectnow,9)					:s(opnext.asm)
+	:(opnext.asm)
+	
+	
+opnext.p2.gotcode
+	eq(sectnow,3)					:s(opnext.p2_gotsec3code)
+	:(opnext_asm)
+	
+		
+opnext.p2_gotsec3code			
+	t0 = 1
+	lt(t0,last_labels.n)		:f(opnext.p2.ready_for_def)
+	genbop(tstmt('#define ' last_labels[t0] '	' thislabel,'','','',''))
+	t0 = t0 + 1			:s(opnext.p2_gotsec3code)
+	
+	
+	
+	
+opnext.p2.endgotcode
+	last_labels.n = 0		:(opnext.asm)
+	
+	
+opnext.asm
 *   append ':' after label if in code or data.
 
 *   output label of executable instruction immediately if there is one,
@@ -554,9 +775,9 @@ opnext
 *   defer label processing for ent to allow emission of alignment ops for x86.
 
     ident(incode,'ent')                                 :s(opnext.1)
-    outfile = thislabel
+    outfile = '// ' thislabel
     outlines = outlines + 1
-
+    
 *   set lastlabel so can check to avoid emitting duplicate label definitions
 
     lastlabel = thislabel
@@ -576,6 +797,33 @@ opnext.1
     argerrs = 0
                                                         :($('g.' incode))
 *   here if bad opcode
+
+
+* the file is at eof. We can either do another pass, or complete the current one
+opnext.2 
+	terminal = 'done pass ' parser_pass
+	
+	eq(parser_pass,2)					:s(opnext.0)
+
+* we have to close and reopen the file
+	endfile(1)
+	
+        input(.infile,1,filenami)  
+* reset some simple counters that work with the file
+    labcnt = noutlines = nlines = nstmts = ntarget = nerrors = 0
+    lastopc = lastop1 = lastop2 =
+    data_lc = 0
+    max_exi = 0
+	prc.count1 = 0
+    sectnow = 0
+	
+	parser_pass = parser_pass + 1
+	terminal = 'start pass ' parser_pass
+	:(opnext)
+
+
+
+
 
 ds01
 
@@ -631,12 +879,11 @@ error
 -stitl genaop(stmt)
 genaop
 
-    astmts[astmts.n = astmts.n + 1] = stmt              :(return)
+    after_opcode_statements[after_opcode_statements.n = after_opcode_statements.n + 1] = stmt              :(return)
 
 -stitl genbop(stmt)
 genbop
-
-    bstmts[bstmts.n = bstmts.n + 1] = stmt              :(return)
+    before_code_statements[before_code_statements.n = before_code_statements.n + 1] = stmt              :(return)
 
 -stitl genlab()
 *   generate unique labels for use in generated code
@@ -645,13 +892,23 @@ genlab
 
     genlab = '_l' lpad(genlabels = genlabels + 1,4,'0') :(return)
 
+-stitl gencode_c(pass,x)
+*   generate code
+gencode_c 		
+	eq(parser_pass,pass)		:f(return)
+	did_c_code = 1
+	code_statements[code_statements.n = code_statements.n + 1] = 
+.               tstmt('',x,'','','')
+	
+	:(return)
+ 
 -stitl genopl(gopl,gopc,gop1,gop2,gop3)
 *   generate operation with label
 
 genopl
 
-    cstmts[cstmts.n = cstmts.n + 1] =
-.               tstmt(gopl,gopc,gop1,gop2,gop3)         :(return)
+    code_statements[code_statements.n = code_statements.n + 1] =
+.               tstmt('//A	' gopl,gopc,gop1,gop2,gop3)         :(return)
 
 -stitl genop(gopc,gop1,gop2,gop3)
 *   generate operation with no label
@@ -722,8 +979,8 @@ getarg.c.10
     l1 = substr(l1,2,2)
     t1 = regmap[l1]
     getarg = tmem '[' t1 ']'
-    (ident(l1,'xs') genaop(tstmt(,'add',t1,'cfp_b')))   :s(return)
-    genaop(tstmt(,'lea',t1,'[' t1 '+cfp_b]'))           :(return)
+    (ident(l1,'xs') genaop(tstmt('//ASM	','add',t1,'cfp_b')))   :s(return)
+    genaop(tstmt('//ASM	','lea',t1,'[' t1 '+cfp_b]'))           :(return)
 
 *   -(x), register indirect, pre decrement
 
@@ -731,7 +988,7 @@ getarg.c.11
 
     t1 = regmap[substr(l1,3,2)]
     getarg = tmem '[' t1 ']'
-    genbop(tstmt(,'lea',t1,'[' t1 '-cfp_b]'))           :(return)
+    genbop(tstmt('//ASM	','lea',t1,'[' t1 '-cfp_b]'))           :(return)
 
 *  int(x)
 *  dlbl(x)
@@ -798,6 +1055,161 @@ getarg.c.27
 
    getarg = l1                                          :(return)
 
+
+
+
+
+
+
+-stitl get_c_label(iarg,imem)
+get_c_label get_c_label = get_c_argument(iarg,imem)	:s(return)f(freturn)
+
+
+
+
+
+-stitl get_c_argument(iarg,imem)
+
+get_c_argument	
+*	t2 = &lastline
+*	terminal = 'hi ' t2
+
+    tmem = (differ(imem) '', 'm_word ')
+    l1 = i.text(iarg)
+    l2 = i.type(iarg)
+    eq(l2)                                              :f($(get_c_argumentcase[l2]))
+    get_c_argument = l1                                         :(return)
+
+*  int
+
+get_c_argument.c.1
+
+   get_c_argument = l1                                          :(return)
+
+*  dlbl
+
+get_c_argument.c.2
+
+   get_c_argument = l1                                          :(return)
+
+*  wlbl, clbl
+
+get_c_argument.c.3
+get_c_argument.c.4
+
+   get_c_argument = tmem '*((word *)' l1 ')'                             :(return)
+
+*  elbl, plbl
+
+get_c_argument.c.5
+get_c_argument.c.6
+
+   get_c_argument = l1                                          :(return)
+
+*  w,x, map register name
+
+get_c_argument.c.7
+get_c_argument.c.8
+
+    get_c_argument = regmap[l1]                                 :(return)
+
+
+*  (x), register indirect
+get_c_argument.c.9
+
+    l1 len(1) len(2) . l2
+    l2 = regmap[l2]
+    get_c_argument = tmem '[' l2 ']'                            :(return)
+
+*  (x)+, register indirect, post increment
+*  use lea reg,[reg+cfp_b] unless reg is esp, since it takes an extra byte.
+*  actually, lea reg,[reg+cfp_b] and add reg,cfp_b are both 2 cycles and 3 bytes
+*  for all the other regs, and either could be used.
+
+get_c_argument.c.10
+
+    l1 = substr(l1,2,2)
+    t1 = regmap[l1]
+    get_c_argument = tmem '[' t1 ']'
+    (ident(l1,'xs') genaop(tstmt('//ASM	','add',t1,'cfp_b')))   :s(return)
+    genaop(tstmt('//ASM	','lea',t1,'[' t1 '+cfp_b]'))           :(return)
+
+*   -(x), register indirect, pre decrement
+
+get_c_argument.c.11
+
+    t1 = regmap[substr(l1,3,2)]
+    get_c_argument = tmem '[' t1 ']'
+    genbop(tstmt('//ASM	','lea',t1,'[' t1 '-cfp_b]'))           :(return)
+
+*  int(x)
+*  dlbl(x)
+
+get_c_argument.c.12
+get_c_argument.c.13
+
+    l1 break('(') . t1 '(' len(2) . t2
+    get_c_argument = tmem '[(cfp_b*' t1 ')+' regmap[t2] ']'     :(return)
+
+*   name(x), where name is in working section
+
+get_c_argument.c.14
+get_c_argument.c.15
+
+    l1 break('(') . t1 '(' len(2) . t2
+    get_c_argument = tmem '[' t1 '+'  regmap[t2] ']'            :(return)
+
+*  signed integer
+
+get_c_argument.c.16 get_c_argument = l1                                 :(return)
+
+*  signed real
+
+get_c_argument.c.17 get_c_argument = l1                                 :(return)
+
+*   =dlbl
+
+get_c_argument.c.18
+
+    get_c_argument = substr(l1,2)                               :(return)
+
+*   *dlbl
+
+get_c_argument.c.19
+
+    get_c_argument = 'cfp_b*' substr(l1,2)                      :(return)
+
+*   =name (data section)
+
+get_c_argument.c.20
+get_c_argument.c.21
+
+    get_c_argument =  substr(l1,2)                              :(return)
+
+*   =name (program section)
+
+get_c_argument.c.22
+
+    get_c_argument =  substr(l1,2)                              :(return)
+
+*   pnam, eqop
+
+get_c_argument.c.23
+get_c_argument.c.24
+
+   get_c_argument = l1                                          :(return)
+
+*  ptyp, text, dtext
+
+get_c_argument.c.25
+get_c_argument.c.26
+get_c_argument.c.27
+
+   get_c_argument = l1                                          :(return)
+    
+
+
+
 -stitl memmem()t
 memmem
 
@@ -818,11 +1230,14 @@ memmem
 -stitl prcent(n)
 prcent prcent = 'prc_+cfp_b*' ( n - 1)                  :(return)
 
+
+
 -stitl outstmt(ostmt)label,opcode,op1,op2,op3,comment)
 *   this module writes the components of the statement
 *   passed in the argument list to the formatted .s file
 
-outstmt label = t.label(ostmt)
+outstmt 
+    label = t.label(ostmt)
 
 *   clear label if definition already emitted
 
@@ -891,7 +1306,14 @@ outstmt5
 *   record code labels in table with delimiter removed.
     (ge(sectnow,5) differ(thislabel))                   :f(return)
     label ? break(':') . label                          :f(return)
-    labtab<label> = noutlines                           :(return)
+    labels_in_the_code_section<label> = noutlines                           :(return)
+
+
+
+
+
+
+
 
 -stitl  chktrace()
 chktrace
@@ -973,22 +1395,30 @@ prsarg
     iarg break(',') . l1 ',' rem . l2                   :f(return)
     prsarg = minarg(convert(l1,'integer'),l2)           :(return)
 
+
+
 -stitl readline()
 *   this routine returns the next statement line in the input file
-*   to the caller.  it never fails.  if there is no more input,
+*   to the caller.  it does fail on eof.  if there is no more input,
 *   then a minimal end statement is returned.
 *   comments are passed through to the output file directly.
+*  the failure 
 
 
 readline
-
     readline = infile                                   :f(rl02)
     nlines  = nlines + 1
     ident( readline )                                   :s(readline)
+    
 
 readline.0
 
-    leq( substr(readline,1,1 ),'*' )                    :f(rl01)
+    leq( substr(readline,1,1 ),'*' )                    :s(rl01a)
+* added # as a comment for linux reasons    
+    leq( substr(readline,1,1 ),'#' )                    :s(rl01a)
+* added // as a comment for c,java,javascript reasons    
+    leq( substr(readline,1,2 ),'//' )                    :f(rl01)
+rl01a    
     z_skip = ident(readline,'*z+') 0                    :s(readline)
     z_skip = ident(readline,'*z-') 1                    :s(readline)
 
@@ -997,20 +1427,24 @@ readline.0
 *   only print comment if requested.
 
     ident(strip_comment,'n')                            :f(readline)
-    readline len(1) = ';'
+    readline '*' | '#' | '//' = '//'
     outfile = readline
-    noutlines = noutlines + 1                           :(readline)
+    noutlines = noutlines + 1        
+
+		                      :(readline)
 
 *   here if not a comment line
 
-rl01                                                    :(return)
+rl01             
+                                       :(return)
 
 *   here on eof
 
 rl02
 
-    readline = '       end'
-                                                        :(rl01)
+* we need to check for this in order to handle multiple passes for the C and other parsers
+    readline = '		end'
+                                                        :(return)
 -stitl tblini(str)
 *   this routine is called to initialize a table from a string of
 *   index/value pairs.
@@ -1063,6 +1497,7 @@ g.flc
     genopl(t2 '                                         :')
 
 *   z_suspend = 0
+	gencode_c(2,'/* upper case folding not done */')
                                                         :(opdone)
 
 g.mov
@@ -1089,6 +1524,7 @@ g.mov
     ident(t.dst,'-(xs)')                                :s(mov.2)
     memmem()
     genop('mov',getarg(i1),getarg(i2))
+    gencode_c(2,get_c_argument(i1) '= ' get_c_argument(i2) ';')
                                                         :(opdone)
 mov.xtp
 mov.xlp
@@ -1096,24 +1532,39 @@ mov.xlp
     ident(t.dst,'(xr)+') genop('movs_w')                :s(opdone)
     genop('lods_w')
     ident(t.dst,'-(xs)') genop('push','w0')             :s(opdone)
-    genop('mov',getarg(i.dst),'w0')                     :(opdone)
+    genop('mov',getarg(i.dst),'w0')                    
+    gencode_c(2,get_c_argument(i1) '= ' get_c_argument(i2) ';')
+    
+     		 :(opdone)
 
 mov.xsp
 
     ident(t.dst,'(xr)+')                                :s(mov.xsprp)
-    genop('pop',getarg(i.dst))                          :(opdone)
+    genop('pop',getarg(i.dst))                          
+    gencode_c(2,get_c_argument(i1) '= ' get_c_argument(i2) ';')
+    
+    :(opdone)
 
 mov.xsprp genop('pop','w0')
 
-    genop('stos_w')                                     :(opdone)
+    genop('stos_w')                                
+    gencode_c(2,'/* moving the stack pointer wtf?*/ sdssd ' get_c_argument(i.src) )
+    
+	 
+	           :(opdone)
 
 mov.xrp genop('mov','w0',getarg(i.src))
 
-    genop('stos_w')                                     :(opdone)
+    genop('stos_w')                                 
+    gencode_c(2,'/* moving the stack pointer wtf?*/ sdssd ' get_c_argument(i.src) )
+        :(opdone)
 
 mov.2
 
-    genop('push',getarg(i.src))                         :(opdone)
+    genop('push',getarg(i.src))                          
+    gencode_c(2,'/* moving the stack pointer wtf?*/ sdssd ' get_c_argument(i.src) ';')   
+      
+	    :(opdone)
 
 *  odd/even tests.  if w reg, use low byte of register.
 
@@ -1122,7 +1573,10 @@ g.bod
     t1 = getarg(i1)
     t1 = eq(i.type(i1),8) reglow[t1]
     genop('test',t1,'1')
-    genop('jne',getarg(i2))                             :(opdone)
+    genop('jne',getarg(i2))                     
+    gencode_c(2, 'if (' better_register_name['w0'] ' = ('  get_c_argument(i1) ' & 1))  C_GOTO(' get_c_label(i2) ');' )
+    
+	            :(opdone)
 
 g.bev
 
@@ -1130,11 +1584,16 @@ g.bev
     t1 = eq(i.type(i1),8) reglow[t1]
     genop('test',t1,'1')
     genop('je',getarg(i2))
+    gencode_c(2, 'if (' better_register_name['w0'] ' = !('  get_c_argument(i1) ' & 1))  C_GOTO(' get_c_label(i2) ');' )
+    
                                                         :(opdone)
 
 g.brn
 
-    genop('jmp',getarg(i1))                             :(opdone)
+    genop('jmp',getarg(i1))                        
+     gencode_c(2, ' C_GOTO(' get_c_label(i2) ');')
+*    and with that, ourr function is fonr
+	      :(opdone)
 
 g.bsw
 
@@ -1142,8 +1601,9 @@ g.bsw
     t2 = genlab()
     z_suspend = 1
     ident(i.text(i3))                                   :s(g.bsw1)
-    genop('cmp',t1,getarg(i2))
+    genop('cmp',t1,getarg(i2))    
     genop('jge',getarg(i3))
+    gencode_c(2, 'if ((' better_register_name['w0'] ' = '  get_c_argument(i1) ' - '  get_c_argument(i2) ') >=0 )  C_GOTO(' get_c_label(i3) ');' )
 
 *  here after default case.
 
@@ -1153,15 +1613,22 @@ g.bsw1
     genop('segment .data')
     genopl(t2 '                                         :')
     z_suspend = 0
+    gencode_c(2, 'if C_GOTO( ((m_word *)(cfp_b))[' t2 '+' get_c_argument(i1) ']((' better_register_name['w0'] ' = '  get_c_argument(i1) ' - ' get_c_argument(i2) ') >=0 )  C_GOTO(' get_c_label(i3) ');' )
+    
                                                         :(opdone)
 
 g.iff
 
-    genop('d_word',getarg(i2))                          :(opdone)
+    genop('d_word',getarg(i2))                     
+    gencode_c(2, 'dword xxxl' linen ' = ' get_c_argument(i2) ';')
+	 
+	           :(opdone)
 
 g.esw
 
-    genop('segment .text')                              :(opdone)
+    genop('segment .text')                             
+     gencode_c(2, '// ?fjdk;ldf')
+      :(opdone)
 
 g.ent
 
@@ -1190,31 +1657,42 @@ g.ent.1
 g.ent.2
 
     outlines = outlines + 2
+    gencode_c(2,'enhfefhrk // this needs to be an entry point - odd or some poo')
     genopl(thislabel)
 
 *   note that want to attach label to last instruction
-*        t1 = cstmts[cstmts.n]
+*        t1 = code_statements[code_statements.n]
 *        t.label(t1) = tlabel
-*        cstmts[cstmts.n] = t1
+*        code_statements[code_statements.n] = t1
 *   here to see if want label made public
 
     thislabel ? rtab(1) . thislabel '                   :'
     (differ(pubtab[thislabel]), differ(debug)) genop('global',thislabel)
-    thislabel =                                         :(opdone)
+    gencode_c(2,thislabel 'enhfefhrk // this needs to be an entry point - odd or some poo')
+    thislabel =                                        
+    
+      :(opdone)
 
 g.bri
 
-    genop('jmp',getarg(i1))                             :(opdone)
+    genop('jmp',getarg(i1))                           
+     gencode_c(2,'C_GOTO(' get_c_label(i1) ' indirect branching wow);' )
+      
+	  :(opdone)
 
 g.lei
-
     t1 = regmap[i.text(i1)]
-    genop('movzx',t1,'byte [' t1 '-1]' )                :(opdone)
+    genop('movzx',t1,'byte [' t1 '-1]' )              
+    gencode_c(2,'hjlkdfhdflj/* entry point thing wha?*/')
+    
+        :(opdone)
 
 g.jsr
 
     jsr_proc = getarg(i1)
     genop('call',jsr_proc)
+    gencode_c(2,jsr_proc '();')
+    
 
 *        get count of following ppm statements
 
@@ -1226,6 +1704,7 @@ g.jsr
     jsr_label_norm = jsr_label
     genop('dec','m_word [' rcode ']')
     genop('js',jsr_label_norm)
+    gencode_c(2,'ddfhjdfhdf ppm ??? ' rcode) 
     z_suspend = 0
 
 *        generate branch around for ppms that will follow
@@ -1256,7 +1735,9 @@ g.ppm.loop.next
     genopl(lab_next '                                   :')
     jsr_count = jsr_count - 1
     z_suspend = eq(jsr_count) 0
-    eq(jsr_count) genopl(jsr_label_norm ':')            :(opdone)
+    eq(jsr_count) genopl(jsr_label_norm ':')          
+    gencode_c(2,' provide procedure exit procedure')
+        :(opdone)
 
 g.ppm.loop
 
@@ -1306,13 +1787,20 @@ g.prc
     prc.type = i.text(i1)                               :($('g.prc.' prc.type))
 
 g.prc.e
-g.prc.r                                                 :(opdone)
+g.prc.r           
+
+     gencode_c(2,'generate public declaration about ' t1 ' and 				      ')
+                                      :(opdone)
 
 g.prc.n
 
 *   store return address in reserved location
     prc.count = prc.count + 1
-    genop('pop', 'm_word [' prcent(prc.count) ']')      :(opdone)
+    genop('pop', 'm_word [' prcent(prc.count) ']')     
+    
+     gencode_c(2,'pop stackgenerate public declaration about ' t1 ' and 				      ')
+     
+       :(opdone)
 
 g.exi
 
@@ -1320,16 +1808,20 @@ g.exi
 
 *   if type r or e, and no exit parameters, just return
 
-    differ(t2,'n') eq(prc.args)     genop('ret')        :s(opdone)
+    differ(t2,'n') eq(prc.args)     genop('ret')      
+      :s(opdone)
     t3 = ident(t3) '0'
     genop('mov','m_word [' rcode ']',+t3)
     ident(t2,'n')                                       :s(g.exi.1)
-    genop('ret')                                        :(opdone)
+    genop('ret')                                   
+    gencode_c(2,'return;')
+    	           :(opdone)
 
 g.exi.1
 
     genop('mov','w0', 'm_word ['  prcent(prc.count) ']' )
     genop('jmp','w0')
+    gencode_c(2,'C_GOTO sjfsksjklsf')
                                                         :(opdone)
 g.enp   genop()                                         :(opdone)
 
@@ -1338,16 +1830,21 @@ g.erb
 *        set rcode to error code and branch to error handler
     genop('mov', 'm_word [' rcode ']',  +(i.text(i1)))
     genop('jmp','err_')
+      gencode_c(2,'C_GOTO err_')
                                                         :(opdone)
 
 
 g.icv
 
-    genop('inc',getarg(i1))                             :(opdone)
+    genop('inc',getarg(i1))                            
+    gencode_c(2,'(' get_c_argument(i1) ')++;')
+      :(opdone)
 
 g.dcv
 
-    genop('dec',getarg(i1))                             :(opdone)
+    genop('dec',getarg(i1))                  
+    gencode_c(2,'(' get_c_argument(i1) ')++;')
+               :(opdone)
 
 g.zer
 
@@ -1356,20 +1853,29 @@ g.zer
     ifreg(i1)                                           :s(g.zer1)
     ident(i.text(i1),'-(xs)')                           :s(g.zer.xs)
     genop('mov','w0','0')
-    genop('mov',getarg(i1),'w0')                        :(opdone)
+    genop('mov',getarg(i1),'w0')                    
+    gencode_c(2,'push 0 on stack')
+	    :(opdone)
 
 g.zer1
 
     t1 = getarg(i1)
-    genop('xor',t1,t1)                                  :(opdone)
+    genop('xor',t1,t1)                                
+    gencode_c(2,get_c_argument(i1) '=0;')
+    
+        :(opdone)
 
 g.zer.xs
 
-    genop('push','0')                                   :(opdone)
+    genop('push','0')                
+     gencode_c(2,'push 0 on stack other eway')
+		                          :(opdone)
 
 g.mnz
 
-    genop('mov',getarg(i1),'xs')                        :(opdone)
+    genop('mov',getarg(i1),'xs')                
+    gencode_c(2,'get_c_argument(i1) = ' better_register_name['xs'] ';' )
+	            :(opdone)
 
 g.ssl
 g.sss
@@ -1405,31 +1911,84 @@ g.bhi
     t1 = branchtab[incode]
     genop('cmp',getarg(i1),getarg(i2))
     genop(branchtab[incode],getarg(i3))
-.                                                       :(opdone)
+    gencode_c(2, 'if (' better_register_name['w0'] ' =  (' get_c_argument(i1) '-'  get_c_argument(i2) ') ' branchtab_standard_c[incode] '0) C_GOTO(' get_c_label(i3) ');' )
+    :(opdone)
+    
+* gencode_q is more complex. we are not using global variables (or local links)
+* in this case we define the parameters coming into the kernel in pass 1
+* and would make an after kernel - which might use items in the before kernel, might not
+* so the uncompressed method would be to write a second kernel for the goto here
+* but we could compress it using variables (v1, v2, etc) again with two passes to see if the data is input, and not output
+* then there is the chain.
+* if a chain uses WA as input, and that is run from p1, to p2 to p3 to p4, well, we need to carry that chain WA along.
+* the same with known variables.  
+* best to give the standard variables at first - registers general purpoise in or out.
+* or we could have a define_jump that gives us temporaries that can change, or read onlys, or something.
+* lets think about how to reduce the size:
+* got an array of 1000 possible links in one direction, and 1000 in another direction
+* 
+* could have multiple kernels being built - one for kernel_base and one for kernel1 and one for kernel2 if they all go together without  a branch.
+* but - too complex.
+*
+* variabes- kernel_name
+* also      last_was_branch
+* also 	    kernel has loop
+*   eq(pass,1)	:f(g.pass2)
+* see if it is kernel, then we can loop through
+*g.pass1
+*   eq(get_c_argument(i3),kernel_name) :s(g.pass1.go)
+*   
+*   eq(last_was_branch,1) 	:s(no_need_add_last_branch)
+*   build_kernel_next(kernel_name,('kernel_name' '_ln_' nlines )
+*  that name will
+*   kernel_add_branch(getarg(i3)) :(g.pass1_finalize)
+*
+*g.pass1.go
+*   kernel_add_while = 1
+*g.pass1.finalize   
+*   last_was_branch = 1
+*   :(opdone)
+*   
+*
+*g.pass2   
+*   eq(get_c_argument(i3),kernel_name) :s(g.pass2.go)
+*   last_was_branch = 1
+*   gencode_q = 'if (' better_register_name['w0'] '=(' get_q_argument(i1) branchtab_standard_c[incode] get_q_argument(i2) ')) Q_GOTO(' get_q_label(i3) kernel_args_for(get_q_label(i3)) ');'
+* later - first c then cuda/gpu crap - it will work, but the queues will be sparse sometimes and might need unsparsine.
+* one way is via random number insertions from other queue , etc.
+   
+
+                                                       :(opdone)
 
 g.bnz
 
     ifreg(i1)                                           :s(g.bnz1)
     genop('cmp', getarg(i1) ,'0')
     genop('jnz',getarg(i2))
-                                                        :(opdone)
-g.bnz1
 
+                                                        :(g.bnz2)
+g.bnz1
+	
     genop('or',getarg(i1),getarg(i1))
     genop('jnz',getarg(i2))
+g.bnz2    
+    gencode_c(2, 'if (' better_register_name['w0'] ' = ' get_c_argument(i1) ') C_GOTO(' get_c_label(i2) ');' )
                                                         :(opdone)
 
 g.bze   ifreg(i1)                                       :s(g.bze1)
 
     genop('cmp', getarg(i1)  ,'0')
     genop('jz',getarg(i2))
-                                                        :(opdone)
+                                                        :(g.bze2)
 g.bze1
 
     t1 = getarg(i1)
     genop('or',t1,t1)
-    genop('jz',getarg(i2))                              :(opdone)
-
+    genop('jz',getarg(i2))                             
+g.bze2    
+    gencode_c(2, 'if ( !(' better_register_name['w0'] ' = ' get_c_argument(i1) ') ) C_GOTO(' get_c_label(i2) ');' )
+ 					:(opdone)
+ 
 g.lct
 
 *   if operands differ must emit code
@@ -1439,11 +1998,15 @@ g.lct
 *   here if operands same. emit no code if no label, else emit null
 
     ident(thislabel)                                    :s(opnext)
-    genop()                                             :(opdone)
+    genop()                                        
+	     :(opdone)
 
 g.lct.1
 
-    genop('mov',getarg(i1),getarg(i2))                  :(opdone)
+    genop('mov',getarg(i1),getarg(i2))                  
+    gencode_c(2,getarg(i1) '= ' getarg(i2) ';' )
+    							:(opdone)
+    
 
 g.bct
 
@@ -1452,66 +2015,94 @@ g.bct
     t1 = getarg(i1)
     t2 = getarg(i2)
                                                         :(g.bct2)
-    ident(t1,'wa')                                      :s(g.bct1)
+    ident(t1,better_register_name['wa'])                                      :s(g.bct1)
 
 g.bct2
 
     genop('dec',t1)
-    genop('jnz',t2)                                     :(opdone)
+    genop('jnz',t2)              
+    gencode_c(2, 'if ((' better_register_name['w0'] ' = (--' get_c_argument(i1) '))  C_GOTO(' get_c_label(i2) ');' )
+    
+    							:(opdone)
 
 g.bct1
 
-    genop('loop',t2)                                    :(opdone)
+    genop('loop',t2)                                   
+    gencode_c(2, 'loop?? wtf' get_c_label(i2) )
+     
+       :(opdone)
 
 g.aov
 
     genop('add',getarg(i2),getarg(i1))
     genop('jc',getarg(i3))
+* note - the opcode for this is doing carry, we are checking actual overflow where the carry could be 0 or 1,
+* but if the sign bit flips, we went over.
+    gencode_c(2,'{word a; word b='  get_c_argument(i2) '; word c= (a= ' get_c_argument(i1) ') += b; if (((a&0x8000000000000000) == (b&0x8000000000000000))' 
++      '  && ((a&0x8000000000000000) != (c&0x8000000000000000)))  C_GOTO(' get_c_label(i2) '); else a=c; ' better_register_name['w0'] ' = c;} /* overflow*/ ') 
                                                         :(opdone)
 g.lcp
 g.lcw
 g.scp
 
-    genop(op_,getarg(i1))                               :(opdone)
+    genop(op_,getarg(i1))                            
+    gencode_c(2,'/* g.lcp do nothing I think */' )
+    :(opdone)
 
 *   use cp for code pointer.
     genop('mov',reg.cp,getarg(i1))
+    gencode_c(2,better_register_name[reg.cp] '=' get_c_argument(i1) ';')
                                                         :(opdone)
 
     genop('mov',getarg(i1),reg.cp)
+    gencode_c(2,get_c_argument(i1) '= ' better_register_name[reg.cp] ';' )
                                                         :(opdone)
 *   should be able to get lodsd; xchg eax,getarg(i1)
     genop('mov',getarg(i1),'m_word [' reg.cp ']')
     genop('add',reg.cp,'cfp_b')
+    gencode_c(2,get_c_argument(i1) '= (m_word)' better_register_name[reg.cp] ';  '  better_register_name[reg.cp] '+= cfp_b;' ) 
 
                                                         :(opdone)
 
 
 g.icp
 
-    genop(op_)                                          :(opdone)
+    genop(op_)                                          
+    gencode_c(2,'/* g.icp do nothing I think */')
+    
+    :(opdone)
     genop('add',reg.cp,'cfp_b')
+    
                                                         :(opdone)
 g.ldi
 
     genop('mov','ia',getarg(i1))
-
+    gencode_c(2,get_c_argument(i1) '= (m_word)' better_register_name[reg.cp] ';  '  better_register_name[reg.cp] '+= ' 'cfp_b;')
+* yes, this falls in.    
 
 g.sti
 
-    genop('mov',getarg(i1),'ia')                        :(opdone)
+    genop('mov',getarg(i1),'ia')                    
+    gencode_c(2,get_c_argument(i1) '= ' better_register_name['ia'] ';')
+    :(opdone)
 
 g.adi
 
-    genop('add','ia',getarg(i1))                        :(opdone)
+    genop('add','ia',getarg(i1))                      
+    
+    gencode_c(2,better_register_name['ia'] '+=' get_c_argument(i1) ';')
+      
+	  :(opdone)
 
 g.sbi
 
     genop('sub','ia',getarg(i1))                        :(opdone)
-
+    gencode_c(2,better_register_name['ia'] '-=' get_c_argument(i1) ';')
+ 
 g.mli
 
     genop('imul','ia',getarg(i1))                       :(opdone)
+    gencode_c(2,better_register_name['ia'] '*=' get_c_argument(i1) ';')
 
 g.dvi
 
@@ -1520,6 +2111,8 @@ g.dvi
     genop('cdq')
     genop('idiv',getarg(i1))
     genop('mov','ia','rax')
+    gencode_c(2,better_register_name['ia'] '=' better_register_name['ia'] ' / ' get_c_argument(i1) ';')
+    
                                                         :(opdone)
 
 g.rmi
@@ -1527,34 +2120,56 @@ g.rmi
     genop('cdq')
     genop('idiv',getarg(i1))
     genop('mov','ia','rdx')
+    gencode_c(2,better_register_name['ia'] '=' better_register_name['ia'] ' % ' get_c_argument(i1) ';')
                                                         :(opdone)
 
 g.ngi
-    genop('neg','ia')                                   :(opdone)
+    genop('neg','ia')                                   
+    gencode_c(2,better_register_name['ia'] '= -' better_register_name['ia'] ';')
+                                                        :(opdone)
+    
+    :(opdone)
 
 g.ino
 g.iov
 
-    genop(op_,getarg(i1))                               :(opdone)
+    genop(op_,getarg(i1))                        
+    gencode_c(2,'/*g.ino g.iov is a noop*/')
+
+	   
+		  
+			        :(opdone)
 
 
-g.ieq   jop = 'je'                                      :(op.cmp)
-g.ige   jop = 'jge'                                     :(op.cmp)
-g.igt   jop = 'jg'                                      :(op.cmp)
-g.ile   jop = 'jle'                                     :(op.cmp)
-g.ilt   jop = 'jl'                                      :(op.cmp)
-g.ine   jop = 'jne'                                     :(op.cmp)
+g.ieq   jop = 'je'  
+	the_test =     branchtab_standard_c['beq']                                    :(op.cmp)
+g.ige   jop = 'jge'                              
+	the_test =     branchtab_standard_c['bge']                                    :(op.cmp)
+g.igt   jop = 'jg'                               
+	the_test =     branchtab_standard_c['bgt']                                    :(op.cmp)
+g.ile   jop = 'jle'                              
+	the_test =     branchtab_standard_c['ble']                                    :(op.cmp)
+g.ilt   jop = 'jl'                               
+	the_test =     branchtab_standard_c['blt']                                    :(op.cmp)
+g.ine   jop = 'jne'                              
+	the_test =     branchtab_standard_c['bne']                                    :(op.cmp)
 op.cmp
 
     genop('sti_',w0)
     genop('or',w0,w0)
-    genop(jop,getarg(i1))                               :(opdone)
+    genop(jop,getarg(i1))                              
+    gencode_c(2,'if (' better_register_name['w0'] ' ' the_test ' 0)  C_GOTO(' get_c_label(i1) ');' ) 
+    
+    						:(opdone)
 
 *   real operations
 
 g.itr
 
-    genop('call','itr_')                                :(opdone)
+    genop('call','itr_')                           
+    gencode_c(2,better_register_name['ra'] ' =  (double) (' better_register_name['ia'] ';') 
+	 
+	           :(opdone)
 
 g.rti
 
@@ -1563,48 +2178,102 @@ g.rti
 
 *   here if label given, branch if real too large
 
-    genop('jc',getarg(i1))                              :(opdone)
+    genop('jc',getarg(i1))                          
+    gencode_c(2,better_register_name['ia'] ' =  *( ' better_register_name['ra'] ');' )
+    
+	    :(opdone)
 
 g.ldr
+   tempg = better_register_name['ra'] ' =  *(' better_register_name['rp'] ');' 
+	:(continue_real1  )
 g.str
+    tempg = '*(' better_register_name['rp'] ') = (' better_register_name['ra'] ');' 
+	:(continue_real1)  
 g.adr
+    tempg = better_register_name['ra'] ' += *(' better_register_name['rp'] ');' 
+	:(continue_real1  )
+   
 g.sbr
+    tempg = better_register_name['ra'] ' -= *(' better_register_name['rp'] ');' 
+	:(continue_real1  )
 g.mlr
+    tempg = better_register_name['ra'] ' *= *(' better_register_name['rp'] ');' 
+	:(continue_real1  )
 g.dvr
-
+    tempg = '{if  *(' better_register_name['rp'] ') != 0.0 { ' better_register_name['ra'] ' /= *(' better_register_name['rp'] ');' 
++         better_register_name['fl'] '= 0;} else {'
++						 better_register_name['fl'] '=1;}'    
+	:(continue_real1  )
+continue_real1
     t1 = getarg(i1,'m_word')
     genop('lea','w0',t1)
     genop('call',op_)
+    gencode_c(2,tempg)
                                                         :(opdone)
 g.ngr
+	tempg = better_register_name['ra'] ' = - ' better_register_name['ra'] ';'
+	:(continue_real2)
 g.atn
+	tempg = better_register_name['ra'] ' = atan(' better_register_name['ra'] ');'
+	:(continue_real2)
 g.chp
+	tempg = better_register_name['ra'] ' = (long)(' better_register_name['ra'] ');'
+	:(continue_real2)
 g.cos
+	tempg = better_register_name['ra'] ' = cos(' better_register_name['ra'] ');'
+	:(continue_real2)
 g.etx
+	tempg = better_register_name['ra'] ' = exp(' better_register_name['ra'] ');'
+	:(continue_real2)
 g.lnf
+	tempg = better_register_name['ra'] ' = log(' better_register_name['ra'] ');'
+	:(continue_real2)
 g.sin
+	tempg = better_register_name['ra'] ' = sin(' better_register_name['ra'] ');'
+	:(continue_real2)
 g.sqr
+	tempg = better_register_name['ra'] ' = sqrt(' better_register_name['ra'] ');'
+	:(continue_real2)
 g.tan
+	tempg = better_register_name['ra']  ' = tan(' better_register_name['ra'] ');'
+	:(continue_real2)
 
+continue_real2
     genop('call',op_)
+     gencode_c(2,tempg)
+     
                                                         :(opdone)
 
 g.rov
 g.rno
-
     genop(op_,getarg(i1))                               :(opdone)
 
-g.req   jop = 'je'                                      :(g.r1)
-g.rne   jop = 'jne'                                     :(g.r1)
-g.rge   jop = 'jge'                                     :(g.r1)
-g.rgt   jop = 'jg'                                      :(g.r1)
-g.rle   jop = 'jle'                                     :(g.r1)
+
+g.req   jop = 'je'                                 
+	the_test =     branchtab_standard_c['jeq']      :(g.r1)
+g.rne   jop = 'jne'                                     
+	the_test =     branchtab_standard_c['bne']                                    :(op.cmp)
+	:(g.r1)
+g.rge   jop = 'jge'                                     
+	the_test =     branchtab_standard_c['bge']                                    :(op.cmp)
+	:(g.r1)
+g.rgt   jop = 'jg'                                      
+	the_test =     branchtab_standard_c['bgt']                                    :(op.cmp)
+	:(g.r1)
+g.rle   jop = 'jle'                                     
+	the_test =     branchtab_standard_c['ble']                                    :(op.cmp)
+	:(g.r1)
 g.rlt   jop = 'jl'
+	the_test =     branchtab_standard_c['blt']                                    :(op.cmp)
 g.r1    genop('call','cpr_')
 
     genop('mov','al','byte [reg_fl]')
     genop('or','al','al')
-    genop(jop,getarg(i1))                               :(opdone)
+    genop(jop,getarg(i1))                            
+* maybe should be al
+    gencode_c(2,'if (' better_register_name['w0'] ' ' the_test ' 0)  C_GOTO(' get_c_label(i1) ');' ) 
+    
+          :(opdone)
 
 g.plc
 g.psc
@@ -1617,13 +2286,15 @@ g.psc
     t1 = getarg(i1)
     t2 = i.type(i2)
     ((ifreg(i2), ge(t2,1) le(t2,2))
-+       genop('lea',t1,'[cfp_f+' t1 '+' getarg(i2) ']')):s(opdone)
++       genop('lea',t1,'[cfp_f+' t1 '+' getarg(i2) ']')):s(plcpsc_done)
     genop('add',t1,'cfp_f')
-    eq(i.type(i2))                                      :s(opdone)
+    eq(i.type(i2))                            
+	              :s(plcpsc_done)
 
 *   here if d_offset_(given (in a variable), so add it in.
 
-    genop('add',t1,getarg(i2))                          :(opdone)
+    genop('add',t1,getarg(i2))                        
+                                                     :(plcpsc_done)
 
 g.plc.1
 
@@ -1634,15 +2305,41 @@ g.plc.1
     t1 = getarg(i1)
     t2 = i.type(i2)
     ((ifreg(i2), ge(t2,1) le(t2,2))
-+       genop('lea',t1,'[cfp_f+' t1 '+' 'cfp_b*' getarg(i2) ']')):s(opdone)
++       genop('lea',t1,'[cfp_f+' t1 '+' 'cfp_b*' getarg(i2) ']')):s(plcpsc_done)
     genop('add',t1,'cfp_f')
-    eq(i.type(i2))                                      :s(opdone)
+    eq(i.type(i2))                                      :s(plcpsc_done)
 
 *   here if d_offset_(given (in a variable), so add it in, after converting to byte count
     genop('mov','w0', getarg(i2))
     genop('sal','w0', 'log_cfp_b')
 
-    genop('add',t1,'w0')                                :(opdone)
+    genop('add',t1,'w0')                                :(plcpsc_done)
+
+* now for c
+plcpsc_done
+
+    t1 = get_c_argument(i1)
+    t2 = i.type(i2)
+    ne(cfp_b,cfp_c)                                     :s(g.plc.1c)
+*nonop that branch for now    
+    
+     ((ifreg(i2), ge(t2,1) le(t2,2)) 
++     gencode_c(2,'{char *effective_address = '  
++	get_c_argument(i1) ' + fp_f + ' get_c_argument(i2) ';}' )) :s(opdone)
+     gencode_c(2,t1 ' += cfp_f;')
+     eq(i.type(i2))			
+     gencode_c(2,t1 ' += ' get_c_argument(i2) '<<log_cfp_b);' )
+     		:s(opdone)
+     
+    
+    
+    
+s.pcl.1c gencode_c(2,' hey you got some code to write at s.pcl.1c')        
+			:(opdone)
+
+
+
+
 
 *   lch requires separate cases for each first operand possibility.
 
@@ -2013,7 +2710,17 @@ g.dac
     t1 = i.type(i1)
     t2 = "" ;*(le(t1,2) "", le(t1,4) "d_offset_(", le(t1,6) "d_offset_(", "")
     genopl(thislabel,'d_word',t2 i.text(i1))
+    eq(secnow,3)			:s(g.dac_const)
+    			:s(g.dac_const)
+    	:(decend) 
+g.dac_const
+    current_label = do_current_label()
+    gencode_c(2,'const d_word ' current_label ' 		= ' convert_value_c(i.text(i1)) ';' )
+g.dac.cdone1    
                                                         :(decend)
+							
+							
+							
 g.dic
 
     genopl(thislabel,'d_word',i.text(i1))
@@ -2028,8 +2735,13 @@ g.drc
 
 *   note that want to attach label to last instruction
 
-    t.label(cstmts[cstmts.n]) = thislabel
-    thislabel =                                         :(opdone)
+    t.label(code_statements[code_statements.n]) = thislabel
+    thislabel =                                         
+    current_label = do_current_label()
+    gencode_c(2,'const double ' current_label ' 		= ' convert_value_c(i.text(i1)) ';' )
+    thislabel =                                         
+        
+    :(opdone)
 
 g.dtc
 
@@ -2054,14 +2766,45 @@ g.dtc.1
 
     t4 = ne(t3) t4 dupl(',0',cfp_c - t3)
     genopl(thislabel,'d_char',t4)
-                                                        :(opdone)
+                                                        :(g.dtc.ccode)
+    
+g.dtc.ccode
+    dtc_i = 1
+    t1 = i.text(i1)
+    t1 tab(1) rtab(1) . t2
+    t3 = remdr(size(t2),cfp_c)
+    t4 = ''
+g.dtc.ccode.1
+	t5 = "'" substr(t2,dtc_i,1) "'"
+        current_label = do_current_label()
+	gencode_c(2,"const char " current_label " = " t5 ";" )
+        le(dtc_i = dtc_i + 1, size(t2))                     :s(g.dtc.ccode.1)
+	t6 = 0
+g.dtc.ccode.2
+	lt(t6,cfp_c - t3)				:f(opdone)
+        current_label = do_current_label()
+	gencode_c(2,"const char " current_label " = 0;" )
+	t6 = t6 + 1	
+	:(g.dtc.ccode.2)	
+							
 g.dbc
 
     genopl(thislabel,'d_word',getarg(i1))
+    		:s(g.dbc_const)
+    	:(opdone) 
+g.dbc_const	   
+    current_label = do_current_label()
+    gencode_c(2,'const d_word ' current_label ' 		= ' convert_value_c(i.text(i1)) ';' )
                                                         :(opdone)
 g.equ
 
     genopl(thislabel,'equ',i.text(i1))
+    eq(parser_pass,1) :f(opdone)
+* make the definitions    
+    c_definitions[thislabel] = table()
+    c_definitions[thislabel]['upper_name'] = upper(thislabel)
+    c_definitions[thislabel]['value'] = convert_value_c(i.text(i1))
+    gencode_c(1,'#define ' c_definitions[thislabel]['upper_name'] '	' c_definitions[thislabel]['value'])
                                                         :(opdone)
 g.exp
 
@@ -2094,7 +2837,10 @@ g.sec.1
 
     genop('segment .text')
     genop('global','sec01')
-    genopl('sec01' ':')                                 :(opdone)
+    genopl('sec01' ':')         
+    gencode_c(2,'/*-------------------------------------------------------------------- sec01 --------*/')
+    gencode_c(2,'// procedure declarations ')
+    				 :(opdone)
 
 *   definitions section
 
@@ -2102,7 +2848,12 @@ g.sec.2
 
     genop('segment .data')
     genop('global','sec02')
-    genopl('sec02' ':')                                 :(opdone)
+    genopl('sec02' ':')                          
+    gencode_c(2,'/*-------------------------------------------------------------------- sec02 --------*/')
+    gencode_c(2,'// definitions ')
+    
+	   
+		         :(opdone)
 
 *  constants section
 
@@ -2110,7 +2861,11 @@ g.sec.3
 
     genop('segment .data')
     genop('global','sec03')
-    genopl('sec03' ':')                                 :(opdone)
+    genopl('sec03' ':')                             
+    gencode_c(2,'/*-------------------------------------------------------------------- sec03 --------*/')
+    gencode_c(2,'// constants ')
+    
+	    :(opdone)
 
 *  working variables section
 
@@ -2118,9 +2873,15 @@ g.sec.4
 
     genop('global','esec03')
     genopl('esec03' '                                   :')
+    gencode_c(2,'/*-------------------------------------------------------------------- esec03 --------*/')
+    gencode_c(2,'// constants ')
+    
     genop('segment .data')
     genop('global','sec04')
-    genopl('sec04' ':')                                 :(opdone)
+    genopl('sec04' ':')                           
+    gencode_c(2,'/*-------------------------------------------------------------------- sec04 --------*/')
+    gencode_c(2,'// working variables ')		      
+			          :(opdone)
 
 *   here at start of program section.  if any n type procedures,
 *   put out entry-word block declaration at end of working storage
@@ -2142,7 +2903,12 @@ g.sec.5
     genopl('end_min_data' '                             :')
     genop('segment .text')
     genop('global','sec05')
-    genopl('sec05' ':')                                 :(opdone)
+    genopl('sec05' ':')                              
+    gencode_c(2,'/*-------------------------------------------------------------------- sec05 --------*/')
+    gencode_c(2,'// working variables ')		      
+    
+       
+	     :(opdone)
 
 *   stack overflow section.  output exi__n tail code
 
@@ -2150,6 +2916,9 @@ g.sec.6
 
     genop('global','sec06')
     genopl('sec06'  '                                   :', 'nop')
+    gencode_c(2,'/*-------------------------------------------------------------------- sec06 --------*/')
+    gencode_c(2,'// stack overflow ')		      
+    
                                                         :(opdone)
 
 *   error section.  produce code to receive erb's
@@ -2157,8 +2926,11 @@ g.sec.6
 g.sec.7
 
     genop('global','sec07')
+    gencode_c(2,'/*-------------------------------------------------------------------- sec07 --------*/')
+    gencode_c(2,'// errors ')		      
     genopl('sec07' '                                    :')
     flush()
+    
 *   error section.  produce code to receive erb's
 
 *        allow for some extra cases in case of max.err bad estimate
@@ -2172,12 +2944,14 @@ opdone
 
     flush()                                             :(opnext)
 
-*   here to emit bstmts, cstmts, astmts. attach input label and
+*   here to emit before_code_statements, code_statements, after_opcode_statements. attach input label and
 *   comment to first instruction generated.
 
 flush
-
-    eq(astmts.n) eq(bstmts.n) eq(cstmts.n)              :f(opdone1)
+* dont flush anything if C didnt do anything
+    eq(did_c_code,1)							:f(opdone.6)
+* flush it    
+    eq(after_opcode_statements.n) eq(before_code_statements.n) eq(code_statements.n)              :f(opdone1)
 
 *   here if some statements to emit, so output single 'null' statement to get label
 *   and comment field right.
@@ -2187,25 +2961,25 @@ flush
 
 opdone1
 
-    eq(bstmts.n)                                        :s(opdone.2)
+    eq(before_code_statements.n)                                        :s(opdone.2)
     i = 1
 
 opdone.1
 
-    outstmt(bstmts[i])
-    le(i = i + 1, bstmts.n)                             :s(opdone.1)
+    outstmt(before_code_statements[i])
+    le(i = i + 1, before_code_statements.n)                             :s(opdone.1)
 
 opdone.2
 
-    eq(cstmts.n)                                        :s(opdone.4)
+    eq(code_statements.n)                                        :s(opdone.4)
     i = 1
 
 opdone.3
 
-    outstmt(cstmts[i])
-    le(i = i + 1, cstmts.n)                             :s(opdone.3)
+    outstmt(code_statements[i])
+    le(i = i + 1, code_statements.n)                             :s(opdone.3)
 
-opdone.4        eq(astmts.n)                            :s(opdone.6)
+opdone.4        eq(after_opcode_statements.n)                            :s(opdone.6)
 
     i = 1
     ident(pifatal[incode])                              :s(opdone.5)
@@ -2214,18 +2988,20 @@ opdone.4        eq(astmts.n)                            :s(opdone.6)
 
 opdone.5
 
-    outstmt(astmts[i])
-    le(i = i + 1, astmts.n)                             :s(opdone.5)
+    outstmt(after_opcode_statements[i])
+    le(i = i + 1, after_opcode_statements.n)                             :s(opdone.5)
 
 opdone.6
 
-    astmts.n = bstmts.n = cstmts.n =                    :(return)
+    after_opcode_statements.n = before_code_statements.n = code_statements.n =                    :(return)
 
 flush_end
 
 report
 
-    output = lpad(num,10) '  ' text                     :(return)
+    output = lpad(num,10) '  ' text                
+    gencode_c(2,'/* done withflush*/')
+         :(return)
 
 
 g.end
@@ -2266,5 +3042,45 @@ g.end.2
 
     &code   = ne(nerrors) 2001
     report(collect(), 'free words')
-                                                        :(end)
+                                                   :(end)
+
+
+convert_value_c
+	a = &anchor
+	&anchor = 1
+	b = x
+	c = ''
+	d = ''
+cvl1 
+	ident(b,'')		:s(cvd1)
+	b p.c_token . c = '' 	:f(cvnon)
+	c p.c_label 		:f(cvad)
+	ident(c_definitions[c],'') :s(cvad)
+	c = c_definitions[c]['upper_name'] :f(cvad)
+cvnon   b any(1) . c = ''
+cvad	d = d c
+	:(cvl1)
+cvd1	&anchor = a
+	convert_value_c = d
+	:(return)
+							
+							
+upper   upper   =  replace(s, xUP_LO, xLO_UP)      :(return)
+							
+
+do_current_label														do_current_label    
+    ident(thislabel,position_label)		:s(do_current_label.use_what_we_got)
+    ident(thislabel,'')				:s(do_current_label.use_what_we_got)
+    position_label = thislabel
+    position_sequence = 0
+    do_current_label = position_label
+    do_current_label arbno(any(&alphabet)) . frrrff ':'  = frrrff
+    	:(return)
+do_current_label.use_what_we_got
+	position_sequence = position_sequence + 1
+	do_current_label = position_label '__pos__' position_sequence
+    do_current_label arbno(any(&alphabet)) . frrrff ':'  = frrrff
+	:(return)    
+														
+
 end
