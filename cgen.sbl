@@ -2710,13 +2710,24 @@ g.dac
     t1 = i.type(i1)
     t2 = "" ;*(le(t1,2) "", le(t1,4) "d_offset_(", le(t1,6) "d_offset_(", "")
     genopl(thislabel,'d_word',t2 i.text(i1))
-    eq(secnow,3)			:s(g.dac_const)
-    			:s(g.dac_const)
+    
+    eq(sectnow,3)			:s(g.dac_const)
+    eq(sectnow,4)			:s(g.dac_no_const)
     	:(decend) 
 g.dac_const
     current_label = do_current_label()
+    eq(current_label_is_base,1)   :f(g.dac.noext1)
+    gencode_c(1,'extern const d_word ' current_label ';' )
+g.dac.noext1
     gencode_c(2,'const d_word ' current_label ' 		= ' convert_value_c(i.text(i1)) ';' )
 g.dac.cdone1    
+                                                        :(decend)
+g.dac_no_const
+    eq(current_label_is_base,1)   :f(g.dac.noext2)
+    gencode_c(1,'extern d_word ' current_label ';' )
+g.dac.noext2
+    current_label = do_current_label()
+    gencode_c(2,'d_word ' current_label ' 		= ' convert_value_c(i.text(i1)) ';' )
                                                         :(decend)
 							
 							
@@ -2738,7 +2749,24 @@ g.drc
     t.label(code_statements[code_statements.n]) = thislabel
     thislabel =                                         
     current_label = do_current_label()
+    
+    eq(sectnow,3)			:s(g.drc_const)
+    eq(sectnow,4)			:s(g.drc_noconst)
+    thislabel =                                         
+    :(opdone)
+g.drc_const
+    eq(current_label_is_base,1)   :f(g.drc.noext1)
+    gencode_c(1,'extern const double ' current_label ';' )
+g.drc.noext1
     gencode_c(2,'const double ' current_label ' 		= ' convert_value_c(i.text(i1)) ';' )
+    thislabel =                                         
+        
+    :(opdone)
+g.drc_noconst
+    eq(current_label_is_base,1)   :f(g.drc.noext2)
+    gencode_c(1,'extern double ' current_label ';' )
+g.drc.noext2
+    gencode_c(2,'double ' current_label ' 		= ' convert_value_c(i.text(i1)) ';' )
     thislabel =                                         
         
     :(opdone)
@@ -2774,16 +2802,24 @@ g.dtc.ccode
     t1 tab(1) rtab(1) . t2
     t3 = remdr(size(t2),cfp_c)
     t4 = ''
+    t8 = 'const '
+    eq(sectnow,3)			:s(g.dtc.ccode.1)
+    eq(sectnow,4)			:f(opdone)
+    t8 = ''
+    
 g.dtc.ccode.1
 	t5 = "'" substr(t2,dtc_i,1) "'"
         current_label = do_current_label()
-	gencode_c(2,"const char " current_label " = " t5 ";" )
+	eq(current_label_is_base,1)   :f(g.dtc.noext)
+	gencode_c(1,"extern " t8 " char " current_label ';' )
+g.dtc.noext	
+	gencode_c(2,t8 "char " current_label " = " t5 ";" )
         le(dtc_i = dtc_i + 1, size(t2))                     :s(g.dtc.ccode.1)
 	t6 = 0
 g.dtc.ccode.2
 	lt(t6,cfp_c - t3)				:f(opdone)
         current_label = do_current_label()
-	gencode_c(2,"const char " current_label " = 0;" )
+	gencode_c(2,t8 "char " current_label " = 0;" )
 	t6 = t6 + 1	
 	:(g.dtc.ccode.2)	
 							
@@ -2793,8 +2829,17 @@ g.dbc
     		:s(g.dbc_const)
     	:(opdone) 
 g.dbc_const	   
+    t8 = 'const '
+    eq(sectnow,3)                       :s(g.dbc.ccode)
+	    eq(sectnow,4)                       :f(opdone)
+    t8 = ''	    
+	    
+g.dbc.ccode	    
     current_label = do_current_label()
-    gencode_c(2,'const d_word ' current_label ' 		= ' convert_value_c(i.text(i1)) ';' )
+    eq(current_label_is_base,1)   :f(g.dbc.noext)
+    gencode_c(1,'extern ' t8 'd_word ' current_label ';' )
+g.dbc.noext    
+    gencode_c(2,t8 'd_word ' current_label ' 		= ' convert_value_c(i.text(i1)) ';' )
                                                         :(opdone)
 g.equ
 
@@ -3071,12 +3116,14 @@ upper   upper   =  replace(s, xUP_LO, xLO_UP)      :(return)
 do_current_label														do_current_label    
     ident(thislabel,position_label)		:s(do_current_label.use_what_we_got)
     ident(thislabel,'')				:s(do_current_label.use_what_we_got)
+    current_label_is_base = 1
     position_label = thislabel
     position_sequence = 0
     do_current_label = position_label
     do_current_label arbno(any(&alphabet)) . frrrff ':'  = frrrff
     	:(return)
 do_current_label.use_what_we_got
+	current_label_is_base = 0
 	position_sequence = position_sequence + 1
 	do_current_label = position_label '__pos__' position_sequence
     do_current_label arbno(any(&alphabet)) . frrrff ':'  = frrrff
