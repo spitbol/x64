@@ -179,8 +179,8 @@ NoInit(	word	*lmodstk);
  * Globals found in assembly language modules.
  *
  */
-extern int  reg_size;
-extern int  hasfpu;
+extern word  reg_size;
+extern word hasfpu;
 extern char cprtmsg[];
 extern word reg_block;
 

@@ -1,0 +1,30 @@
+t2 is 2x faster.
+t3 is 2x faster still.
+but complicated. to implement
+t4 is fast and pretty simple
+
+t4 it is.
+
+
+rtn nextfunc=0;
+	return;
+
+jsr is low level and can be done any way possible.
+jsr
+   nextfunc=0;
+   p1();
+   while (nextfunc)
+     nextfunc
+     
+   
+
+jmp p1
+  nextfunc=p1
+  ret
+  
+  
+  
+ml
+  while (1) {
+    nextfunc();
+    }

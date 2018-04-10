@@ -1,0 +1,37 @@
+save.sbl
+statb  -270073824
+state 140737218284440
+stackbase 0x7fffffffd8fc
+stacklength 12
+stbas 140737488345352 - stbas - the end of the stack
+sext1+24
+
+
+#0  0x000000000040fdff in exits ()
+#1  0x000000000061d6f8 in intv0 ()
+#2  0x0000000000000020 in ?? ()
+#3  0x0000000000621900 in startup ()
+#4  0x00007fffffffd958 in ?? ()
+#5  0x0000000200000000 in ?? ()
+#6  0x0000000000000000 in ?? ()
+
+
+
+save.sbx
+statb -271122400
+state 140737217235864
+stbas 140737488345352
+compsp 0   --> -10304
+stacksize 1048576
+osisp -1058880
+lmodstk 62118
+stbase now 140737488345032
+flptr from fffffffffffffff8 to 7fffffffd7c0
+flprt from ffff8000000026f8 to fffffffffffffec0
+gtcef from 0 to 7fffffffd7c8
+pmhbs from ffff8000000026f8 to fffffffffffffec0
+rldys 2 rldye 0
+
+
+p rlals -10160
+

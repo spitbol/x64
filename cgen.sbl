@@ -1204,7 +1204,7 @@ get_c_argument.c.12
 get_c_argument.c.13
 
     l1 break('(') . t1 '(' len(2) . t2
-    get_c_argument = tmem '*(word *)(CFP_B*' t1 ')+' regmap[t2] '))'     :(get_c_argument_return)
+    get_c_argument = tmem '*((word *)(CFP_B*' t1 ' + ' regmap[t2] '))'     :(get_c_argument_return)
 
 *   name(x), where name is in working section
 
@@ -1664,7 +1664,7 @@ g.bev
     t1 = eq(i.type(i1),8) reglow[t1]
     genop('test',t1,'1')
     genop('je',getarg(i2))
-    gencode_c(2, 'if (!(' better_register_name['w0'] ' = '  get_c_argument(i1) ') & 1)  C_GOTO(' get_c_label(i2) ');' )
+    gencode_c(2, 'if (!((' better_register_name['w0'] ' = '  get_c_argument(i1) ') & 1))  C_GOTO(' get_c_label(i2) ');' )
     
                                                         :(opdone)
 
@@ -2148,7 +2148,7 @@ g.bct2
 
     genop('dec',t1)
     genop('jnz',t2)              
-    gencode_c(2, 'if ((' better_register_name['w0'] ' = (--' get_c_argument(i1) '))  C_GOTO(' get_c_label(i2) ');' )
+    gencode_c(2, 'if ((' better_register_name['w0'] ' = (--' get_c_argument(i1) ')))  C_GOTO(' get_c_label(i2) ');' )
     
     							:(opdone)
 
@@ -2169,11 +2169,19 @@ g.aov
 +      '  && ((a&0x8000000000000000) != (c&0x8000000000000000)))  C_GOTO(' get_c_label(i2) '); else a=c; ' better_register_name['w0'] ' = c;} /* overflow*/ ') 
                                                         :(opdone)
 g.lcp
+    genop(op_,getarg(i1))                            
+    gencode_c(2,'reg_cp = ' get_c_argument(i1) ';')
+    :(opdone)
+	
 g.lcw
+    genop(op_,getarg(i1))                            
+    gencode_c(2,  get_c_argument(i1) '  = *(((word *)reg_cp)++);')
+    :(opdone)
+    
 g.scp
 
     genop(op_,getarg(i1))                            
-    gencode_c(2,'/* g.lcp do nothing I think */' )
+    gencode_c(2, get_c_argument(i1) '= reg_cp;' )
     :(opdone)
 
 *   use cp for code pointer.
@@ -2195,17 +2203,19 @@ g.scp
 g.icp
 
     genop(op_)                                          
-    gencode_c(2,'/* g.icp do nothing I think */')
+    gencode_c(2,'reg_cp += CFP_B;')
     
     :(opdone)
-    genop('add',reg.cp,'cfp_b')
-    
-                                                        :(opdone)
+*    genop('add',reg.cp,'cfp_b')   
+*                                                        :(opdone)
 g.ldi
 
     genop('mov','ia',getarg(i1))
-    gencode_c(2,get_c_argument(i1) '= (m_word)' better_register_name[reg.cp] ';  '  better_register_name[reg.cp] '+= ' 'cfp_b;')
-* yes, this falls in.    
+    gencode_c(2,'ia = ' get_c_argument(i1) ';' )
+    
+* yes, this falls in.   well, it did.
+                                                        :(opdone)
+ 
 
 g.sti
 
@@ -2261,7 +2271,7 @@ g.ino
 g.iov
 
     genop(op_,getarg(i1))                        
-    gencode_c(2,'/*g.ino g.iov is a noop*/')
+    gencode_c(2,'/*g.ino g.iov is a noop, but could be done like g.aov*/')
 
 	   
 		  
@@ -3077,28 +3087,6 @@ g.sec.5
     genop('global','sec05')
     genopl('sec05' ':')                              
     gencode_c(2,'/*-------------------------------------------------------------------- esec04 --------*/')
-    gencode_c(2,'word prc_;' )
-    gencode_c(2,'word prc_1;' )
-    gencode_c(2,'word prc_2;' )
-    gencode_c(2,'word prc_3;' )
-    gencode_c(2,'word prc_4;' )
-    gencode_c(2,'word prc_5;' )
-    gencode_c(2,'word prc_6;' )
-    gencode_c(2,'word prc_7;' )
-    gencode_c(2,'word prc_8;' )
-    gencode_c(2,'word prc_9;' )
-    gencode_c(2,'word prc_10;' )
-    gencode_c(2,'word prc_11;' )
-    gencode_c(2,'word prc_12;' )
-    gencode_c(2,'word prc_13;' )
-    gencode_c(2,'word prc_14;' )
-    gencode_c(2,'word prc_15;' )
-    gencode_c(2,'word prc_16;' )
-    gencode_c(2,'word prc_17;' )
-    gencode_c(2,'word prc_18;' )
-    gencode_c(2,'word prc_19;' )
-    gencode_c(2,'word prc_20;' )
-    
     
     gencode_c(2,'/*-------------------------------------------------------------------- sec05 --------*/')
     gencode_c(2,'// working variables ')		      
