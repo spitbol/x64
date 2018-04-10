@@ -263,7 +263,7 @@ skip_init.end
     define('do_current_label()')
     
 
-	p.c_symbol = '&&' | '||' | '>=' | '<=' | '->' | '*=' | any('^|!=+-*/%[]{}.')
+	p.c_symbol = '&&' | '||' | '>=' | '<=' | '->' | '*=' | any('^|!=+-*/%[]{}().')
 	p.c_sbrk = '\\' | '\"' | "\'"
 	&anchor = 0
 	p.c_stringchar1 = &alphabet
@@ -338,6 +338,7 @@ skip_init.end
     lastopc = lastop1 = lastop2 =
     data_lc = 0
     max_exi = 0
+    gone_baby_gone = 0
     
     c_definitions = table(1000)
     
@@ -548,7 +549,9 @@ flgs2
     better_register_name['ia'] = 'integer_accumulator'
     better_register_name['cp'] = 'code_pointer'
 *        w0 is temp register
-    better_register_name['w0'] = 'w0'
+    better_register_name['w0'] = 'work_register'
+    better_register_name['cp'] = 'code_pointer'
+    
     w0 = better_register_name['w0']
 
 *   quick reference:
@@ -666,12 +669,12 @@ nopub
 
                                                         :(initialize)
 initialize							
-*    &trace = 2000
+*    &trace = 20000
 *    &ftrace = 1000
 *   &profile = 1
     parser_pass = 1
     
-    last_labels = array(100)
+    last_labels = array(100,'')
     section_labels = table()
     section_labels[1] = table(1000)
     section_labels[2] = table(1000)
@@ -683,6 +686,7 @@ initialize
     section_labels[8] = table(1000)
     
     gencode_c(1,'/* generated from ' infile ' into C code */')
+    gencode_c(1,'#include "c_64.h"')
     gencode_c(1,'#include "port.h"')
     gencode_c(1,'')
     gencode_c(1,'')
@@ -696,6 +700,7 @@ dsout
 
 opnext
      thisline = readline()
+
      genbop(tstmt('//	' thisline,'','','',''))
      thisline '{{end'			:s(opnext.2)
 opnext.0     
@@ -708,31 +713,64 @@ opnext.0
      
      
 * handle_labels for c code
-    ident(inlabel)                                      :s(opnext.asm)
-    eq(pass,1)						:f(opnext.pass2)
-    ident(incode)					:s(opnext.p1.gotcode)
-* here we have labels multiple to the same thing
-    last_labels[last_labels.n = last_labels.n + 1] = thislabel
-    
-    ident(section_labels[sectnow][thislabel],'')	:f(opnext.p1.know_about_it)
-    section_labels[sectnow][thislabel] = table()
-    section_labels[sectnow][thislabel]['type'] = 'extra'
 
-opnext.p1.know_about_it
-	gencode_c(1,'')
-						:(opnext.asm)
+    
+
+    ident(inlabel)                                      :s(opnext.asm)
+    eq(parser_pass,1)						:f(opnext.pass2)
+opnext.pass1
+    ident(incode)					:s(opnext.p1.add_ext)
+    ident(incode,'ent')						:s(opnext.p1.add_ext)
+    ident(incode,'prc')						:s(opnext.p1.add_ext)
+    :(opnext.p1.gotcode)
+    
+    
+opnext.p1.add_ext
+* here we have labels multiple to the same thing
+    last_labels[last_labels.n = last_labels.n + 1] = inlabel    
+*    ident(section_labels[sectnow][inlabel],'')	:f(opnext.p1.know_about_it)
+    section_labels[sectnow][inlabel] = table()
+    section_labels[sectnow][inlabel]['type'] = 'extra'
+
+*opnext.p1.know_about_it
+*	terminal = 'know ' inlabel
+*	gencode_c(1,'')
+*						:(opnext.asm)
         
 opnext.p1.gotcode
+
+	eq(sectnow,1)					:s(opnext.asm)
+	eq(sectnow,2)					:s(opnext.asm)
+	eq(sectnow,3)					:s(opnext.p1_gotsec345code)
+	eq(sectnow,4)					:s(opnext.p1_gotsec345code)
+	eq(sectnow,5)					:s(opnext.p1_gotsec345code)
+	eq(sectnow,6)					:s(opnext.asm)
+	:(opnext.asm)
+	
+opnext.p1_gotsec345code
 	t0 = 1
-*	lt(t0,last_labels.n)	
+opnext.p1_gotsec345loop	
+	ge(t0,last_labels.n)		:s(opnext.p1.ready_for_def)
+	genbop(tstmt('#define ' last_labels[t0] '	' inlabel,'','','',''))
+	t0 = t0 + 1			:(opnext.p1_gotsec345loop)
+	
+opnext.p1.ready_for_def
+	last_labels.n = 0
+* ^^^ make the next label clean
+	eq(sectnow,5)				:f(opnext.p1.endgotcode);
+	gencode_c(1,'extern void ' inlabel '();' )
+* make_better_name
+	:(opnext.p1.endgotcode)
 
 opnext.pass2
 	ident(incode)					:s(opnext.p2.gotcode)
+	ident(incode,'ent')				:s(opnext.p2.gotcode)
+	ident(incode,'prc')				:s(opnext.p2.gotcode)
 	eq(sectnow,1)					:s(opnext.asm)
 	eq(sectnow,2)					:s(opnext.asm)
 	eq(sectnow,3)					:s(opnext.asm)
 	eq(sectnow,4)					:s(opnext.asm)
-	eq(sectnow,5)					:s(opnext.asm)
+	eq(sectnow,5)					:s(opnext.p2_gotsec5code)
 	eq(sectnow,6)					:s(opnext.asm)
 	eq(sectnow,7)					:s(opnext.asm)
 	eq(sectnow,8)					:s(opnext.asm)
@@ -742,18 +780,32 @@ opnext.pass2
 	
 opnext.p2.gotcode
 	eq(sectnow,3)					:s(opnext.p2_gotsec3code)
+	eq(sectnow,4)					:s(opnext.p2_gotsec3code)
+	eq(sectnow,5)					:s(opnext.p2_gotsec5code)
 	:(opnext_asm)
 	
 		
 opnext.p2_gotsec3code			
-	t0 = 1
-	lt(t0,last_labels.n)		:f(opnext.p2.ready_for_def)
-	genbop(tstmt('#define ' last_labels[t0] '	' thislabel,'','','',''))
-	t0 = t0 + 1			:s(opnext.p2_gotsec3code)
+	:(opnext.p2.endgotcode)
+
+opnext.p2_gotsec5code			
+	ident(current_function_name)			:s(opnext.p2_gotsec5code.nofinish)
+        eq(gone_baby_gone,1)				:s(opnext.p2.skip_goto)
+	gencode_c(2,'C_GOTO(' inlabel ');' )
+opnext.p2.skip_goto
+	gencode_c(2,'} /* ' current_function_name ' */')
+	gencode_c(2,'')
+	current_function_name = ''
+	gone_baby_gone = 0
+opnext.p2_gotsec5code.nofinish		
+	gencode_c(2,'void ' inlabel '() {' )
+	current_function_name = inlabel
+		
+	:(opnext.p2.endgotcode)
 	
 	
 	
-	
+opnext.p1.endgotcode
 opnext.p2.endgotcode
 	last_labels.n = 0		:(opnext.asm)
 	
@@ -810,6 +862,8 @@ opnext.2
 	
         input(.infile,1,filenami)  
 * reset some simple counters that work with the file
+initialize2
+	gone_baby_gone = 0
     labcnt = noutlines = nlines = nstmts = ntarget = nerrors = 0
     lastopc = lastop1 = lastop2 =
     data_lc = 0
@@ -1076,42 +1130,44 @@ get_c_argument
 
     tmem = (differ(imem) '', 'm_word ')
     l1 = i.text(iarg)
+    l1 'm_word ' = ''
+    l2 'm_word ' = ''
     l2 = i.type(iarg)
     eq(l2)                                              :f($(get_c_argumentcase[l2]))
-    get_c_argument = l1                                         :(return)
+    get_c_argument = l1                                         :(get_c_argument_return)
 
 *  int
 
 get_c_argument.c.1
 
-   get_c_argument = l1                                          :(return)
+   get_c_argument = l1                                          :(get_c_argument_return)
 
 *  dlbl
 
 get_c_argument.c.2
 
-   get_c_argument = l1                                          :(return)
+   get_c_argument = l1                                          :(get_c_argument_return)
 
 *  wlbl, clbl
 
 get_c_argument.c.3
 get_c_argument.c.4
 
-   get_c_argument = tmem '*((word *)' l1 ')'                             :(return)
+   get_c_argument = tmem '*((word *)' l1 ')'                             :(get_c_argument_return)
 
 *  elbl, plbl
 
 get_c_argument.c.5
 get_c_argument.c.6
 
-   get_c_argument = l1                                          :(return)
+   get_c_argument = l1                                          :(get_c_argument_return)
 
 *  w,x, map register name
 
 get_c_argument.c.7
 get_c_argument.c.8
 
-    get_c_argument = regmap[l1]                                 :(return)
+    get_c_argument = regmap[l1]                                 :(get_c_argument_return)
 
 
 *  (x), register indirect
@@ -1119,7 +1175,7 @@ get_c_argument.c.9
 
     l1 len(1) len(2) . l2
     l2 = regmap[l2]
-    get_c_argument = tmem '[' l2 ']'                            :(return)
+    get_c_argument = tmem '*((word *)(' l2 '))'                            :(get_c_argument_return)
 
 *  (x)+, register indirect, post increment
 *  use lea reg,[reg+cfp_b] unless reg is esp, since it takes an extra byte.
@@ -1130,17 +1186,17 @@ get_c_argument.c.10
 
     l1 = substr(l1,2,2)
     t1 = regmap[l1]
-    get_c_argument = tmem '[' t1 ']'
-    (ident(l1,'xs') genaop(tstmt('//ASM	','add',t1,'cfp_b')))   :s(return)
-    genaop(tstmt('//ASM	','lea',t1,'[' t1 '+cfp_b]'))           :(return)
+    get_c_argument = tmem '*((word *)(' t1 '))'
+    (ident(l1,'xs') genaop(tstmt('//ASM	','add',t1,'cfp_b')))   :s(get_c_argument_return)
+    genaop(tstmt('//ASM	','lea',t1,'[' t1 '+cfp_b]'))           :(get_c_argument_return)
 
 *   -(x), register indirect, pre decrement
 
 get_c_argument.c.11
 
     t1 = regmap[substr(l1,3,2)]
-    get_c_argument = tmem '[' t1 ']'
-    genbop(tstmt('//ASM	','lea',t1,'[' t1 '-cfp_b]'))           :(return)
+    get_c_argument = tmem '*((word *)((' t1 ' -= CFP_B)) +CFP_B)'
+    genbop(tstmt('//ASM	','lea',t1,'[' t1 '-cfp_b]'))           :(get_c_argument_return)
 
 *  int(x)
 *  dlbl(x)
@@ -1149,7 +1205,7 @@ get_c_argument.c.12
 get_c_argument.c.13
 
     l1 break('(') . t1 '(' len(2) . t2
-    get_c_argument = tmem '[(cfp_b*' t1 ')+' regmap[t2] ']'     :(return)
+    get_c_argument = tmem '*(word *)(CFP_B*' t1 ')+' regmap[t2] '))'     :(get_c_argument_return)
 
 *   name(x), where name is in working section
 
@@ -1157,47 +1213,47 @@ get_c_argument.c.14
 get_c_argument.c.15
 
     l1 break('(') . t1 '(' len(2) . t2
-    get_c_argument = tmem '[' t1 '+'  regmap[t2] ']'            :(return)
+    get_c_argument = tmem '*(word *)(' t1 ')+' regmap[t2] '))'     :(get_c_argument_return)
 
 *  signed integer
 
-get_c_argument.c.16 get_c_argument = l1                                 :(return)
+get_c_argument.c.16 get_c_argument = l1                                 :(get_c_argument_return)
 
 *  signed real
 
-get_c_argument.c.17 get_c_argument = l1                                 :(return)
+get_c_argument.c.17 get_c_argument = l1                                 :(get_c_argument_return)
 
 *   =dlbl
 
 get_c_argument.c.18
 
-    get_c_argument = substr(l1,2)                               :(return)
+    get_c_argument = substr(l1,2)                               :(get_c_argument_return)
 
 *   *dlbl
 
 get_c_argument.c.19
 
-    get_c_argument = 'cfp_b*' substr(l1,2)                      :(return)
+    get_c_argument = 'CFP_B*' substr(l1,2)                      :(get_c_argument_return)
 
 *   =name (data section)
 
 get_c_argument.c.20
 get_c_argument.c.21
 
-    get_c_argument =  substr(l1,2)                              :(return)
+    get_c_argument =  substr(l1,2)                              :(get_c_argument_return)
 
 *   =name (program section)
 
 get_c_argument.c.22
 
-    get_c_argument =  substr(l1,2)                              :(return)
+    get_c_argument =  substr(l1,2)                              :(get_c_argument_return)
 
 *   pnam, eqop
 
 get_c_argument.c.23
 get_c_argument.c.24
 
-   get_c_argument = l1                                          :(return)
+   get_c_argument = l1                                          :(get_c_argument_return)
 
 *  ptyp, text, dtext
 
@@ -1205,9 +1261,13 @@ get_c_argument.c.25
 get_c_argument.c.26
 get_c_argument.c.27
 
-   get_c_argument = l1                                          :(return)
+   get_c_argument = l1                                          :(get_c_argument_return)
     
-
+get_c_argument_return
+* fix the #defines and stuff
+	get_c_argument 'm_word ' = ''
+	get_c_argument = convert_value_c(get_c_argument)
+	:(return)
 
 
 -stitl memmem()t
@@ -1562,8 +1622,7 @@ mov.xrp genop('mov','w0',getarg(i.src))
 mov.2
 
     genop('push',getarg(i.src))                          
-    gencode_c(2,'/* moving the stack pointer wtf?*/ sdssd ' get_c_argument(i.src) ';')   
-      
+    gencode_c(2,'C_PUSH(' get_c_argument(i.src) ');')   
 	    :(opdone)
 
 *  odd/even tests.  if w reg, use low byte of register.
@@ -1591,7 +1650,8 @@ g.bev
 g.brn
 
     genop('jmp',getarg(i1))                        
-     gencode_c(2, ' C_GOTO(' get_c_label(i2) ');')
+     gencode_c(2, ' C_GOTO(' get_c_label(i1) ');')
+     gone_baby_gone = 1
 *    and with that, ourr function is fonr
 	      :(opdone)
 
@@ -1613,7 +1673,8 @@ g.bsw1
     genop('segment .data')
     genopl(t2 '                                         :')
     z_suspend = 0
-    gencode_c(2, 'if C_GOTO( ((m_word *)(cfp_b))[' t2 '+' get_c_argument(i1) ']((' better_register_name['w0'] ' = '  get_c_argument(i1) ' - ' get_c_argument(i2) ') >=0 )  C_GOTO(' get_c_label(i3) ');' )
+    gencode_c(2, 'if ( ((m_word *)(cfp_b))[' t2 '+' get_c_argument(i1) ']((' 
++        better_register_name['w0'] ' = '  get_c_argument(i1) ' - ' get_c_argument(i2) ') >=0 )  C_GOTO(' get_c_label(i3) ');' )
     
                                                         :(opdone)
 
@@ -1657,7 +1718,7 @@ g.ent.1
 g.ent.2
 
     outlines = outlines + 2
-    gencode_c(2,'enhfefhrk // this needs to be an entry point - odd or some poo')
+    gencode_c(2,'// this needs to be an entry point - odd or some poo')
     genopl(thislabel)
 
 *   note that want to attach label to last instruction
@@ -1677,6 +1738,7 @@ g.bri
 
     genop('jmp',getarg(i1))                           
      gencode_c(2,'C_GOTO(' get_c_label(i1) ' indirect branching wow);' )
+     gone_baby_gone = 1
       
 	  :(opdone)
 
@@ -1691,13 +1753,14 @@ g.jsr
 
     jsr_proc = getarg(i1)
     genop('call',jsr_proc)
-    gencode_c(2,jsr_proc '();')
+    gencode_c(2,'C_JSR(' jsr_proc ');')
     
 
 *        get count of following ppm statements
 
+
     jsr_count = ppm_cases[jsr_proc]
-    eq(jsr_count)                                       :s(opdone)
+    eq(jsr_count)                                     g.jsr_zero
     z_suspend = 1
     jsr_calls = jsr_calls +  1
     jsr_label = 'call_' jsr_calls
@@ -1710,6 +1773,19 @@ g.jsr
 *        generate branch around for ppms that will follow
 *        take the branch if normal return (eax==0)
                                                         :(opdone)
+g.jsr_zero
+	hey_did_a_jsr = jsr_proc
+	hey_did_jsr_args = ''
+	hey_did_jsr_count = 0
+	eq(parser_pass,1)				:s(opdone)
+* hey_did_a_jsr is so we can get the next pos
+	next_pos = procedures[jsr_proc]['next_position']
+	jsr_count = ppm_cases[jsr_proc]
+	eq(jsr_count,0)					:f(opdone)
+
+	gencode_c(2,'C_JSR(' jsr_proc ',' next_pos ');')
+	:(opdone)
+
 
 g.err
 g.ppm
@@ -1726,6 +1802,8 @@ g.ppm
 
     ident(incode,'ppm')                                 :s(g.ppm.loop)
     count.err =  count.err + 1
+    hey_did_jsr_count = hey_did_jsr_count + 1
+    hey_did_jsr_args = hey_did_jsr_args ',' '(C_ERR(' i.text(i1) '))' 
     errfile =   i.text(i1) ' ' i.text(i2)
     max.err = gt(t1,max.err) t1
                                                         :(g.ppm.loop)
@@ -1734,9 +1812,14 @@ g.ppm.loop.next
 
     genopl(lab_next '                                   :')
     jsr_count = jsr_count - 1
+    hey_did_jsr_count = hey_did_jsr_count + 1
+    hey_did_jsr_args = hey_did_jsr_args ',' 'C_GOTO(' t1 ')'
     z_suspend = eq(jsr_count) 0
-    eq(jsr_count) genopl(jsr_label_norm ':')          
-    gencode_c(2,' provide procedure exit procedure')
+    eq(jsr_count) genopl(jsr_label_norm ':')  
+    gencode_c(2,'C_JSR_' hey_did_jsr_count '(' hey_did_a_jsr hey_did_jsr_args ');' )
+    hey_did_a_jsr = ''
+    hey_did_jsr_count = 0
+    hey_did_jsr_args = ''
         :(opdone)
 
 g.ppm.loop
@@ -1769,7 +1852,10 @@ g.ppm.2
 
     t1 = 299
     errfile =  t1 ' internal logic error                : unexpected ppm branch'
+    hey_did_jsr_args = hey_did_jsr_args ',' '(C_ERR(' t1 '))'
+    hey_did_jsr_count = hey_did_jsr_count + 1
                                                         :(g.ppm.loop.err)
+
 
 g.prc
 
@@ -1788,18 +1874,15 @@ g.prc
 
 g.prc.e
 g.prc.r           
-
-     gencode_c(2,'generate public declaration about ' t1 ' and 				      ')
+    eq(parser_pass,1)				:s(g.prc.ccode)
                                       :(opdone)
 
 g.prc.n
-
 *   store return address in reserved location
     prc.count = prc.count + 1
-    genop('pop', 'm_word [' prcent(prc.count) ']')     
+    genop('pop', 'm_word [' prcent(nprc.count) ']')     
     
-     gencode_c(2,'pop stackgenerate public declaration about ' t1 ' and 				      ')
-     
+g.prc.ccode     
        :(opdone)
 
 g.exi
@@ -1808,21 +1891,29 @@ g.exi
 
 *   if type r or e, and no exit parameters, just return
 
-    differ(t2,'n') eq(prc.args)     genop('ret')      
-      :s(opdone)
+    differ(t2,'n') eq(prc.args)     genop('ret')     
+      :s(g.exi_c) 
+
     t3 = ident(t3) '0'
     genop('mov','m_word [' rcode ']',+t3)
     ident(t2,'n')                                       :s(g.exi.1)
     genop('ret')                                   
-    gencode_c(2,'return;')
+g.exi_c
+
+    t3 = ident(t3) '0'
+    gencode_c(2,'{goto_nextfunction = NULL;  _rt_ = ' t3 ';return;}')
+    gone_baby_gone = 1
     	           :(opdone)
 
 g.exi.1
 
     genop('mov','w0', 'm_word ['  prcent(prc.count) ']' )
     genop('jmp','w0')
-    gencode_c(2,'C_GOTO sjfsksjklsf')
+    :(g.exi_c)
+
                                                         :(opdone)
+							
+							
 g.enp   genop()                                         :(opdone)
 
 g.erb
@@ -1830,7 +1921,8 @@ g.erb
 *        set rcode to error code and branch to error handler
     genop('mov', 'm_word [' rcode ']',  +(i.text(i1)))
     genop('jmp','err_')
-      gencode_c(2,'C_GOTO err_')
+      gencode_c(2,'C_ERR( get_c_argument(i.text(i1))')
+      gone_baby_gone = 1
                                                         :(opdone)
 
 
@@ -1885,15 +1977,27 @@ g.rtn
 
 g.add   memmem()
 
-    genop('add',getarg(i1),getarg(i2))                  :(opdone)
+    genop('add',getarg(i1),getarg(i2))                  
+    gencode_c(2,get_c_argument(i1) ' += ' get_c_argument(i2) ';' )
+    :(opdone)
 
 g.sub   memmem()
 
-    genop('sub',getarg(i1),getarg(i2))                  :(opdone)
+    genop('sub',getarg(i1),getarg(i2))                 
+    gencode_c(2,get_c_argument(i1) ' -= ' get_c_argument(i2) ';' )
+    
+     
+       :(opdone)
 
-g.ica   genop('add',getarg(i1),'cfp_b')                 :(opdone)
+g.ica   genop('add',getarg(i1),'cfp_b')                
+    gencode_c(2,get_c_argument(i1) ' += ' 'CFP_B' ';')
+  
+  :(opdone)
 
-g.dca   genop('sub',getarg(i1),'cfp_b')                 :(opdone)
+g.dca   genop('sub',getarg(i1),'cfp_b')                 
+    gencode_c(2,get_c_argument(i1) ' -= ' 'CFP_B' ';')
+
+	:(opdone)
 
 g.beq
 g.bne
@@ -1911,7 +2015,9 @@ g.bhi
     t1 = branchtab[incode]
     genop('cmp',getarg(i1),getarg(i2))
     genop(branchtab[incode],getarg(i3))
-    gencode_c(2, 'if (' better_register_name['w0'] ' =  (' get_c_argument(i1) '-'  get_c_argument(i2) ') ' branchtab_standard_c[incode] '0) C_GOTO(' get_c_label(i3) ');' )
+    gencode_c(2, 'if (' better_register_name['w0'] ' =  (' get_c_argument(i1) 
++ '-'  get_c_argument(i2) ') ' branchtab_standard_c[incode] ' 0) '
++  'C_GOTO(' get_c_label(i3) ');' )
     :(opdone)
     
 * gencode_q is more complex. we are not using global variables (or local links)
@@ -2004,7 +2110,7 @@ g.lct
 g.lct.1
 
     genop('mov',getarg(i1),getarg(i2))                  
-    gencode_c(2,getarg(i1) '= ' getarg(i2) ';' )
+    gencode_c(2,get_c_argument(i1) '= ' get_c_argument(i2) ';' )
     							:(opdone)
     
 
@@ -2949,6 +3055,30 @@ g.sec.5
     genop('segment .text')
     genop('global','sec05')
     genopl('sec05' ':')                              
+    gencode_c(2,'/*-------------------------------------------------------------------- esec04 --------*/')
+    gencode_c(2,'word prc_;' )
+    gencode_c(2,'word prc_1;' )
+    gencode_c(2,'word prc_2;' )
+    gencode_c(2,'word prc_3;' )
+    gencode_c(2,'word prc_4;' )
+    gencode_c(2,'word prc_5;' )
+    gencode_c(2,'word prc_6;' )
+    gencode_c(2,'word prc_7;' )
+    gencode_c(2,'word prc_8;' )
+    gencode_c(2,'word prc_9;' )
+    gencode_c(2,'word prc_10;' )
+    gencode_c(2,'word prc_11;' )
+    gencode_c(2,'word prc_12;' )
+    gencode_c(2,'word prc_13;' )
+    gencode_c(2,'word prc_14;' )
+    gencode_c(2,'word prc_15;' )
+    gencode_c(2,'word prc_16;' )
+    gencode_c(2,'word prc_17;' )
+    gencode_c(2,'word prc_18;' )
+    gencode_c(2,'word prc_19;' )
+    gencode_c(2,'word prc_20;' )
+    
+    
     gencode_c(2,'/*-------------------------------------------------------------------- sec05 --------*/')
     gencode_c(2,'// working variables ')		      
     
@@ -3102,7 +3232,10 @@ cvl1
 	c p.c_label 		:f(cvad)
 	ident(c_definitions[c],'') :s(cvad)
 	c = c_definitions[c]['upper_name'] :f(cvad)
-cvnon   b any(1) . c = ''
+	:(cvad)
+cvnon   terminal = 'huh [' b '] '
+	b any(1) . c = ''
+
 cvad	d = d c
 	:(cvl1)
 cvd1	&anchor = a
