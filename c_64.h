@@ -29,19 +29,31 @@ typedef unsigned long d_word;
 typedef unsigned long m_word;
 typedef unsigned long word;
 
+typedef union (word w,word *wp,m_char *cp,void *vp) itis;
 
-// The registers
-word xl;
-word xr;
-word w0;
-word w1;
-word wa;
-word wb;
-word wc;
-word xs;
-word ia;
-word cp;
+#define xl (xl_it.w)
+#define xr (xr_it.w)
+#define w0 (w0_it.w)
+#define w1 (w1_it.w)
+#define wa (wa_it.w)
+#define wb (wb_it.w)
+#define wc (wc_it.w)
+#define xs (xs_it.w)
+#define ia (ia_it.w)
+#define cp (cp_it.w)
+
+itis xl_it;
+itis xr_it;
+itis w0_it;
+itis w1_it;
+itis wa_it;
+itis wb_it;
+itis wc_it;
+itis xs_it;
+itis ia_it;
+itis cp_it;
 word _rt_;
+
 
 void (*goto_nextfunction)();
 word goto_counter=0;
@@ -92,10 +104,10 @@ word goto_counter=0;
 #define C_CALL(new_func) {new_func(); }
 
 #define C_POP() \
-  *((word *)(xs += CFP_B))
+  *(xs_it.wp++)
 #define C_TOP() \
-  *((word *)(xs + CFP_B))
-#define C_PUSH(val)  *((word *)(xs -= CFP_B)) = val
+  *(xs_it.wp)
+#define C_PUSH(val)  *(--xs.wp) = val
 
 typedef void (*voidcall());
 
@@ -118,6 +130,7 @@ typedef void (*voidcall());
 
 #define C_ERR(errnumber) {error_found(errnumber);return;}
 
+#define C_EXIT(par) { goto_nextfunction = NULL;  _rt_ = par;return;}
 
 extern void error_found(word errornum);
 

@@ -263,7 +263,7 @@ skip_init.end
     define('do_current_label()')
     
 
-	p.c_symbol = '&&' | '||' | '>=' | '<=' | '->' | '*=' | any('^|!=+-*/%[]{}().')
+	p.c_symbol = '&&' | '||' | '>=' | '<=' | '->' | '*=' | any('^|!=+-*/%[]{}().&')
 	p.c_sbrk = '\\' | '\"' | "\'"
 	&anchor = 0
 	p.c_stringchar1 = &alphabet
@@ -538,19 +538,18 @@ flgs2
 
 * C uses better names
     better_register_name = table(30)
-    better_register_name['xl'] = 'work_base';  
-    better_register_name['xl'] = 'index_left';  
-    better_register_name['xt'] = 'index_t'
-    better_register_name['xr'] = 'index_right';  
-    better_register_name['xs'] = 'the_stack'
-    better_register_name['wa'] = 'work_a';  
-    better_register_name['wb'] = 'work_b'
-    better_register_name['wc'] = 'work_c';  
-    better_register_name['ia'] = 'integer_accumulator'
-    better_register_name['cp'] = 'code_pointer'
+    better_register_name['xl'] = 'xl'
+    better_register_name['xt'] = 'xt'
+    better_register_name['xr'] = 'xr'  
+    better_register_name['xs'] = 'xs'
+    better_register_name['wa'] = 'wa'  
+    better_register_name['wb'] = 'wb'
+    better_register_name['wc'] = 'wc'  
+    better_register_name['ia'] = 'ia'
+    better_register_name['cp'] = 'cp'
 *        w0 is temp register
-    better_register_name['w0'] = 'work_register'
-    better_register_name['cp'] = 'code_pointer'
+    better_register_name['w0'] = 'w0'
+    better_register_name['cp'] = 'cp'
     
     w0 = better_register_name['w0']
 
@@ -1131,7 +1130,6 @@ get_c_argument
     tmem = (differ(imem) '', 'm_word ')
     l1 = i.text(iarg)
     l1 'm_word ' = ''
-    l2 'm_word ' = ''
     l2 = i.type(iarg)
     eq(l2)                                              :f($(get_c_argumentcase[l2]))
     get_c_argument = l1                                         :(get_c_argument_return)
@@ -1146,14 +1144,15 @@ get_c_argument.c.1
 
 get_c_argument.c.2
 
-   get_c_argument = l1                                          :(get_c_argument_return)
+   get_c_argument =  l1                                          :(get_c_argument_return)
 
 *  wlbl, clbl
 
 get_c_argument.c.3
 get_c_argument.c.4
 
-   get_c_argument = tmem '*((word *)' l1 ')'                             :(get_c_argument_return)
+*   get_c_argument = tmem '*((word *)' l1 ')'                             :(get_c_argument_return)
+   get_c_argument = tmem  l1                              :(get_c_argument_return)
 
 *  elbl, plbl
 
@@ -1175,7 +1174,7 @@ get_c_argument.c.9
 
     l1 len(1) len(2) . l2
     l2 = regmap[l2]
-    get_c_argument = tmem '*((word *)(' l2 '))'                            :(get_c_argument_return)
+    get_c_argument = tmem '*(' l2 '_it.wp)'                            :(get_c_argument_return)
 
 *  (x)+, register indirect, post increment
 *  use lea reg,[reg+cfp_b] unless reg is esp, since it takes an extra byte.
@@ -1186,7 +1185,7 @@ get_c_argument.c.10
 
     l1 = substr(l1,2,2)
     t1 = regmap[l1]
-    get_c_argument = tmem '*((word *)(' t1 '))'
+    get_c_argument = tmem '*(it_' t1 '.wp++)'
     (ident(l1,'xs') genaop(tstmt('//ASM	','add',t1,'cfp_b')))   :s(get_c_argument_return)
     genaop(tstmt('//ASM	','lea',t1,'[' t1 '+cfp_b]'))           :(get_c_argument_return)
 
@@ -1195,7 +1194,7 @@ get_c_argument.c.10
 get_c_argument.c.11
 
     t1 = regmap[substr(l1,3,2)]
-    get_c_argument = tmem '*((word *)((' t1 ' -= CFP_B)) +CFP_B)'
+    get_c_argument = tmem '*(--' t1 '_it.wp)'
     genbop(tstmt('//ASM	','lea',t1,'[' t1 '-cfp_b]'))           :(get_c_argument_return)
 
 *  int(x)
@@ -1221,13 +1220,13 @@ get_c_argument.c.16 get_c_argument = l1                                 :(get_c_
 
 *  signed real
 
-get_c_argument.c.17 get_c_argument = l1                                 :(get_c_argument_return)
+get_c_argument.c.17 get_c_argument = '(double)' l1                                 :(get_c_argument_return)
 
 *   =dlbl
 
 get_c_argument.c.18
 
-    get_c_argument = substr(l1,2)                               :(get_c_argument_return)
+    get_c_argument =  substr(l1,2)                               :(get_c_argument_return)
 
 *   *dlbl
 
@@ -1239,14 +1238,15 @@ get_c_argument.c.19
 
 get_c_argument.c.20
 get_c_argument.c.21
-
-    get_c_argument =  substr(l1,2)                              :(get_c_argument_return)
+   terminal = '(word)(&' substr(l1,2) ')'
+    get_c_argument =  '(word)(&' substr(l1,2) ')'                             :(get_c_argument_return)
 
 *   =name (program section)
 
 get_c_argument.c.22
 
-    get_c_argument =  substr(l1,2)                              :(get_c_argument_return)
+   terminal = '(word)(' substr(l1,2) ')'
+    get_c_argument =   '(word)(' substr(l1,2) ')'                              :(get_c_argument_return)
 
 *   pnam, eqop
 
@@ -1267,6 +1267,7 @@ get_c_argument_return
 * fix the #defines and stuff
 	get_c_argument 'm_word ' = ''
 	get_c_argument = convert_value_c(get_c_argument)
+
 	:(return)
 
 
@@ -1584,46 +1585,66 @@ g.mov
     ident(t.dst,'-(xs)')                                :s(mov.2)
     memmem()
     genop('mov',getarg(i1),getarg(i2))
-    gencode_c(2,get_c_argument(i1) '= ' get_c_argument(i2) ';')
-                                                        :(opdone)
+                                                        :(g.mov.c)
 mov.xtp
 mov.xlp
 
-    ident(t.dst,'(xr)+') genop('movs_w')                :s(opdone)
+    ident(t.dst,'(xr)+') genop('movs_w')                :s(g.mov.c)
     genop('lods_w')
-    ident(t.dst,'-(xs)') genop('push','w0')             :s(opdone)
+    ident(t.dst,'-(xs)') genop('push','w0')             :s(g.mov.c)
     genop('mov',getarg(i.dst),'w0')                    
-    gencode_c(2,get_c_argument(i1) '= ' get_c_argument(i2) ';')
-    
-     		 :(opdone)
+     		 :(g.mov.c)
 
 mov.xsp
-
     ident(t.dst,'(xr)+')                                :s(mov.xsprp)
     genop('pop',getarg(i.dst))                          
-    gencode_c(2,get_c_argument(i1) '= ' get_c_argument(i2) ';')
-    
-    :(opdone)
+    :(g.mov.c)
 
 mov.xsprp genop('pop','w0')
-
     genop('stos_w')                                
-    gencode_c(2,'/* moving the stack pointer wtf?*/ sdssd ' get_c_argument(i.src) )
-    
-	 
-	           :(opdone)
+	           :(g.mov.c)
 
 mov.xrp genop('mov','w0',getarg(i.src))
 
     genop('stos_w')                                 
-    gencode_c(2,'/* moving the stack pointer wtf?*/ sdssd ' get_c_argument(i.src) )
-        :(opdone)
+        :(g.mov.c)
 
 mov.2
 
     genop('push',getarg(i.src))                          
-    gencode_c(2,'C_PUSH(' get_c_argument(i.src) ');')   
-	    :(opdone)
+	    :(g.mov.c)
+	    
+	    
+g.mov.c
+    ident(t.src,'(xl)+')                                :s(mov.c.xlp)
+    ident(t.src,'(xt)+')                                :s(mov.c.xtp)
+    ident(t.src,'(xs)+')                                :s(mov.c.xsp)
+    ident(t.dst,'(xr)+')                                :s(mov.c.xrp)
+g.mov.c2
+    ident(t.dst,'-(xs)')                                :s(mov.c.2)
+    :(mov.fixed_c)
+
+mov.c.xsp
+    gencode_c(2,get_c_argument(i1) '= C_POP();')
+     :(opdone)
+
+mov.c.xrp    
+    i.text(i2) = '*(xr_it.wp++)'	    	    :(g.mov.c2)
+
+mov.c.xlp
+mov.c.xtp
+    i.text(i2) = '*(xl_it.wp++)'	    	    :(g.mov.c2)
+    
+mov.c.2
+	gencode_c(2,'C_PUSH(' get_c_argument(i2) ');')
+	:(opdone)
+	
+mov.fixed_c
+	gencode_c(2,get_c_argument(i1) '= ' get_c_argument(i2) ';')
+	:(opdone)	        
+    
+    
+
 
 *  odd/even tests.  if w reg, use low byte of register.
 
@@ -1633,7 +1654,7 @@ g.bod
     t1 = eq(i.type(i1),8) reglow[t1]
     genop('test',t1,'1')
     genop('jne',getarg(i2))                     
-    gencode_c(2, 'if (' better_register_name['w0'] ' = ('  get_c_argument(i1) ' & 1))  C_GOTO(' get_c_label(i2) ');' )
+    gencode_c(2, 'if ((' better_register_name['w0'] ' = '  get_c_argument(i1) ' & 1))  C_GOTO(' get_c_label(i2) ');' )
     
 	            :(opdone)
 
@@ -1643,7 +1664,7 @@ g.bev
     t1 = eq(i.type(i1),8) reglow[t1]
     genop('test',t1,'1')
     genop('je',getarg(i2))
-    gencode_c(2, 'if (' better_register_name['w0'] ' = !('  get_c_argument(i1) ' & 1))  C_GOTO(' get_c_label(i2) ');' )
+    gencode_c(2, 'if (!(' better_register_name['w0'] ' = '  get_c_argument(i1) ') & 1)  C_GOTO(' get_c_label(i2) ');' )
     
                                                         :(opdone)
 
@@ -1901,7 +1922,7 @@ g.exi
 g.exi_c
 
     t3 = ident(t3) '0'
-    gencode_c(2,'{goto_nextfunction = NULL;  _rt_ = ' t3 ';return;}')
+    gencode_c(2,'C_EXIT(' t3 ');')
     gone_baby_gone = 1
     	           :(opdone)
 
@@ -2015,8 +2036,8 @@ g.bhi
     t1 = branchtab[incode]
     genop('cmp',getarg(i1),getarg(i2))
     genop(branchtab[incode],getarg(i3))
-    gencode_c(2, 'if (' better_register_name['w0'] ' =  (' get_c_argument(i1) 
-+ '-'  get_c_argument(i2) ') ' branchtab_standard_c[incode] ' 0) '
+    gencode_c(2, 'if ((' better_register_name['w0'] ' =  (' get_c_argument(i1) 
++ '-'  get_c_argument(i2) ')) ' branchtab_standard_c[incode] ' 0) '
 +  'C_GOTO(' get_c_label(i3) ');' )
     :(opdone)
     
