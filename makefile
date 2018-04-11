@@ -140,7 +140,6 @@ s.o: s.s
 cerr.o: $(OSINT)/cerr.c
 cs.o: cs.c
 
-
 $(OSINT)/cerr.c: err.s convert_err_s_to_err_c.sbl
 	$(BASEBOL) convert_err_s_to_err_c.sbl <err.s >$(OSINT)/cerr.c
 

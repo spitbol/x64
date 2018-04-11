@@ -17,9 +17,13 @@ typedef int File_handle;
 typedef int File_mode;
 typedef int Open_method;
 
-extern	union block *	alloc (word nchars);
-extern	struct scblk *	alocs (word nchars);
-extern	union block *	alost (word nchars);
+//extern	union block *	alloc (word nchars);
+//extern	struct scblk *	alocs (word nchars);
+//extern	union block *	alost (word nchars);
+extern void alloc();
+extern void alocs();
+extern void alost();
+
 extern	int			appendext (char *path, char *ext, char *result, int force);
 #if EXTFUN
 extern  union block *   callef (struct efblk *efb, union block **sp, word nargs);

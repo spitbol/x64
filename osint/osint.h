@@ -128,9 +128,11 @@ enum CALLS {
 /*
 /   Names for accessing MINIMAL data values via GET_DATA_OFFSET macro.
 */
+extern const word c_aaa,c_yyy,headv;
+
+
 extern word
 gbcnt,
-headv,
 mxlen,
 stage,
 timsx,
@@ -148,8 +150,6 @@ gtcef,
 hshtb,   
 pmhbs,   
 r_fcb,   
-c_aaa,
-c_yyy,
 g_aaa,
 w_yyy,
 r_cod,
