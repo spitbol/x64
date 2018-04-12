@@ -252,6 +252,7 @@ skip_init.end
     define('getarg(iarg,imem)l1,l2,t1,t2,tmem')
     define('ifreg(iarg)')
     define('memmem()t')
+    define('c_umemmem()t')
     define('prcent(n)')
     define('prsarg(iarg)l1,l2')
     define('report(num,text)')
@@ -261,6 +262,9 @@ skip_init.end
     define('get_c_assignment(iarg,imem)a,b,c,l1,l2,t1,t2,tmem')
 * get_c_assignment handles assigning to constants and variables
     define('get_c_label(iarg,imem)a,b,c,l1,l2,t1,t2,tmem')
+    define('ll_filter(x)')
+* low level goto fix for calling the error function, since error is a clib standard
+* we change the code to ezzor
     define('convert_value_c(x)a,b,c,d)')
     define('convert_value_assignment(x)a,b,c,d)')
 * convert_value_assignment also is used for constants and variables
@@ -750,13 +754,16 @@ opnext.p1.gotcode
 
 	eq(sectnow,1)					:s(opnext.asm)
 	eq(sectnow,2)					:s(opnext.asm)
-	eq(sectnow,3)					:s(opnext.p1_gotsec345code)
-	eq(sectnow,4)					:s(opnext.p1_gotsec345code)
-	eq(sectnow,5)					:s(opnext.p1_gotsec345code)
-	eq(sectnow,6)					:s(opnext.asm)
+	eq(sectnow,3)					:s(opnext.p1_gotsec34567code)
+	eq(sectnow,4)					:s(opnext.p1_gotsec34567code)
+	eq(sectnow,5)					:s(opnext.p1_gotsec34567code)
+	eq(sectnow,6)					:s(opnext.p1_gotsec34567code)
+	eq(sectnow,7)					:s(opnext.p1_gotsec34567code)
+	eq(sectnow,8)					:s(opnext.asm)
+	eq(sectnow,9)					:s(opnext.asm)
 	:(opnext.asm)
 	
-opnext.p1_gotsec345code
+opnext.p1_gotsec34567code
 	t0 = 1
 opnext.p1_gotsec345loop	
 	ge(t0,last_labels.n)		:s(opnext.p1.ready_for_def)
@@ -766,15 +773,17 @@ opnext.p1_gotsec345loop
 opnext.p1.ready_for_def
 	last_labels.n = 0
 * ^^^ make the next label clean
-	eq(sectnow,5)				:f(opnext.p1.endgotcode);
+	eq(sectnow,5)				:s(opnext.p1.567code)
+	eq(sectnow,6)				:s(opnext.p1.567code)
+	eq(sectnow,7)				:s(opnext.p1.567code)
+	:(opnext.p1.endgotcode);
+opnext.p1.567code	
 	ident(incode,'ent')			:s(opnext.p1.entry_goofie);
 	gencode_c(1,'extern void ' inlabel '();' )
 * make_better_name
 	:(opnext.p1.endgotcode)
 opnext.p1.entry_goofie
-*	section_labels[sectnow][inlabel '__entry'] = table()
-	gencode_c(1,'extern void ' inlabel '__entry();' )    	
-	gencode_c(1,'#define ' inlabel ' ( ((word)(' inlabel '__entry)) +1) ' )
+	gencode_c(1,'extern void ' inlabel '();' )    	
 	:(opnext.p1.endgotcode)
 	
 
@@ -786,9 +795,9 @@ opnext.pass2
 	eq(sectnow,2)					:s(opnext.asm)
 	eq(sectnow,3)					:s(opnext.asm)
 	eq(sectnow,4)					:s(opnext.asm)
-	eq(sectnow,5)					:s(opnext.p2_gotsec5code)
-	eq(sectnow,6)					:s(opnext.asm)
-	eq(sectnow,7)					:s(opnext.asm)
+	eq(sectnow,5)					:s(opnext.p2_gotsec567code)
+	eq(sectnow,6)					:s(opnext.p2_gotsec567code)
+	eq(sectnow,7)					:s(opnext.p2_gotsec567code)
 	eq(sectnow,8)					:s(opnext.asm)
 	eq(sectnow,9)					:s(opnext.asm)
 	:(opnext.asm)
@@ -797,17 +806,19 @@ opnext.pass2
 opnext.p2.gotcode
 	eq(sectnow,3)					:s(opnext.p2_gotsec3code)
 	eq(sectnow,4)					:s(opnext.p2_gotsec3code)
-	eq(sectnow,5)					:s(opnext.p2_gotsec5code)
+	eq(sectnow,5)					:s(opnext.p2_gotsec567code)
+	eq(sectnow,6)					:s(opnext.p2_gotsec567code)
+	eq(sectnow,7)					:s(opnext.p2_gotsec567code)
 	:(opnext_asm)
 	
 		
 opnext.p2_gotsec3code			
 	:(opnext.p2.endgotcode)
 
-opnext.p2_gotsec5code			
+opnext.p2_gotsec567code			
 	ident(current_function_name)			:s(opnext.p2_gotsec5code.nofinish)
         eq(gone_baby_gone,1)				:s(opnext.p2.skip_goto)
-	gencode_c(2,'C_GOTO(' inlabel ');' )
+	gencode_c(2,'C_GOTO(' ll_filter(inlabel) ');' )
 opnext.p2.skip_goto
 	gencode_c(2,'} /* ' current_function_name ' */')
 	gencode_c(2,' ')
@@ -815,12 +826,12 @@ opnext.p2.skip_goto
 	gone_baby_gone = 0
 opnext.p2_gotsec5code.nofinish		
 	 ident(incode,'ent')				:s(opnext.p2_gotsec5code.nofinish.entry)	
-	gencode_c(2,'void ' inlabel '() {' )
+	gencode_c(2,'void ' ll_filter(inlabel) '() {' )
 	current_function_name = inlabel
 		
 	:(opnext.p2.endgotcode)
 opnext.p2_gotsec5code.nofinish.entry	
-	gencode_c(2,'void ' inlabel '__entry() {' );
+	gencode_c(2,'void ' ll_filter(inlabel) '() {' );
 	gencode_c(2,'_rt_ = w0 +1;  /* essentially a noop so that the jump will still work with an odd entry ' );
 	gencode_c(2,'/* note that the entry is +1 byte instead of -1 byte so that we dont run out of scope or anything */');
 	
@@ -881,6 +892,7 @@ opnext.2
 	terminal = 'done pass ' parser_pass
 	
 	eq(parser_pass,2)					:s(opnext.0)
+
 
 * we have to close and reopen the file
 	endfile(1)
@@ -1140,10 +1152,19 @@ getarg.c.27
 
 
 -stitl get_c_label(iarg,imem)
-get_c_label    	get_c_label = get_c_argument(iarg,imem)	:s(return)f(freturn)
+get_c_label    	get_c_label = ll_filter(get_c_argument(iarg,imem))	:s(return)f(freturn)
+
+-stitl ll_filter(x)
+* couldnt do it in the header because c has warnings and shit
+* This is to catch error and switch it to ezzor
+* and other things like that
 
 
-
+ll_filter
+    	ident(x,'error')		:s(l_ohno_error)
+	ll_filter = x	:(return)
+l_ohno_error
+	ll_filter = 'ezzor' :(return)
 
 
 -stitl get_c_argument(iarg,imem)
@@ -1237,7 +1258,7 @@ get_c_argument.c.14
 get_c_argument.c.15
 
     l1 break('(') . t1 '(' len(2) . t2
-    get_c_argument = tmem '*(word *)(' t1 ')+' regmap[t2] '))'     :(get_c_argument_return)
+    get_c_argument = tmem '((word *)(' t1 '))[' regmap[t2] ']'     :(get_c_argument_return)
 
 *  signed integer
 
@@ -1310,7 +1331,9 @@ memmem
 *   in memory, in which case, we generate code to load second operand
 *   to pseudo-register 'w0', and then modify the second argument
 *   to reference this register
-
+	memmem_c_savei1 = copy(i1)
+	memmem_c_savei2 = copy(i2)
+	
     eq(ismem[i.type(i1)])                               :s(return)
     eq(ismem[i.type(i2)])                               :s(return)
 
@@ -1319,6 +1342,22 @@ memmem
     t = getarg(i2)
     i2 = minarg(8,'w0')
     genop('mov','w0',t)                                 :(return)
+
+
+
+
+
+
+-stitl c_umemmem()t
+c_umemmem
+* undo damage done with memmem for C
+* so we can still see the proper assembly and compare
+
+	i1 = memmem_c_savei1 
+	i2 = memmem_c_savei2 	
+	:(return)
+
+
 
 -stitl prcent(n)
 prcent prcent = 'prc_+CFP_B*' ( n - 1)                  :(return)
@@ -1610,12 +1649,18 @@ g.mov
 
     i.src = i2; i.dst = i1
     t.src = i.text(i.src); t.dst = i.text(i.dst)
+	inlabel 'bpf02'	:f(oooo1)
+	terminal = 'mhey1 ' i.text(i.dst)
+	terminal = 'mhey2 ' i.text(i.src)
+	terminal = 'yeah'	
+
+oooo1
+    memmem()
     ident(t.src,'(xl)+')                                :s(mov.xlp)
     ident(t.src,'(xt)+')                                :s(mov.xtp)
     ident(t.src,'(xs)+')                                :s(mov.xsp)
     ident(t.dst,'(xr)+')                                :s(mov.xrp)
     ident(t.dst,'-(xs)')                                :s(mov.2)
-    memmem()
     genop('mov',getarg(i1),getarg(i2))
                                                         :(g.mov.c)
 mov.xtp
@@ -1648,36 +1693,67 @@ mov.2
 	    
 	    
 g.mov.c
+* undo the memmem stuff
+    c_umemmem()
+    i.src = i2; i.dst = i1
+	inlabel 'bpf02'	:f(oooo)
+	terminal = 'zhey1 ' i.text(i.dst)
+	terminal = 'zhey2 ' i.text(i.src)
+	terminal = 'yeah'	
+oooo
+    t.src = i.text(i.src); t.dst = i.text(i.dst)
+    
     ident(t.src,'(xl)+')                                :s(mov.c.xlp)
     ident(t.src,'(xt)+')                                :s(mov.c.xtp)
     ident(t.src,'(xs)+')                                :s(mov.c.xsp)
-    ident(t.dst,'(xr)+')                                :s(mov.c.xrp)
+    ident(t.src,'(xr)+')                                :s(mov.c.xrp)
+* note - in c it is source
 g.mov.c2
     ident(t.dst,'-(xs)')                                :s(mov.c.2)
-    :(mov.fixed_c)
+    :(mov.fixed_c2)
+
+g.mov.c3
+    ident(t.dst,'-(xs)')                                :s(mov.c.3)
+    :(mov.fixed_c3)
 
 mov.c.xsp
     gencode_c(2,get_c_argument(i1) '= C_POP();')
      :(opdone)
 
 mov.c.xrp    
-    i.text(i2) = '*(xr_it.wp++)'	    	    :(g.mov.c2)
+    i.text(i2) = '*(xr_it.wp++)'	    	    :(g.mov.c3)
 
 mov.c.xlp
 mov.c.xtp
-    i.text(i2) = '*(xl_it.wp++)'	    	    :(g.mov.c2)
+    i.text(i2) = '*(xl_it.wp++)'	    	    :(g.mov.c3)
     
 mov.c.2
-	gencode_c(2,'C_PUSH(' get_c_argument(i2) ');')
+	gencode_c(2,'C_PUSH(' get_c_argument(i.src) ');')
+	:(opdone)
+
+mov.c.3
+	gencode_c(2,'C_PUSH(' i.text(i2) ');')
 	:(opdone)
 	
-mov.fixed_c
-	gencode_c(2,get_c_argument(i1) '= ' get_c_argument(i2) ';')
+mov.fixed_c2
+	inlabel 'bpf02'	:f(oooo3)
+	terminal = 'hey1 ' i.text(i.dst)
+	terminal = 'hey2 ' i.text(i.src)
+	terminal = 'yeah'	
+oooo3
+	gencode_c(2,get_c_argument(i.dst) '= ' get_c_argument(i.src) ';')
+	:(opdone)	        
+    
+mov.fixed_c3
+	inlabel 'bpf02'	:f(oooo4)
+	terminal = 'hey1 ' i.text(i.dst)
+	terminal = 'hey2 ' i.text(i.src)
+	terminal = 'yeah'	
+oooo4
+	gencode_c(2,get_c_argument(i.dst) '= ' i.text(i2) ';')
 	:(opdone)	        
     
     
-
-
 *  odd/even tests.  if w reg, use low byte of register.
 
 g.bod
@@ -1716,8 +1792,8 @@ g.bsw
     ident(i.text(i3))                                   :s(g.bsw1)
     genop('cmp',t1,getarg(i2))    
     genop('jge',getarg(i3))
-    gencode_c(2, 'if ((' better_register_name['w0'] ' = '  get_c_argument(i1) ' - '  get_c_argument(i3) ') >=0 )  {'
-+         ' C_GOTO( get_c_label(i3) ;}' )
+    gencode_c(2, 'if ((' better_register_name['w0'] ' = '  get_c_argument(i1) ' - (word)('  get_c_argument(i3) ')) >=0 )  {'
++         ' C_GOTO(' get_c_label(i3) ');}' )
     
 *  here after default case.
 
@@ -1741,14 +1817,14 @@ g.bsw1
 g.iff
         ident(iff_label_next)                   :s(g.iff2)
     genop('d_word',getarg(i2))
-    gencode_c(2, '	'  get_c_assignment(i2) ',' )
+    gencode_c(2, '	(word)('  get_c_assignment(i2) '),' )
 	           :(opdone)
 	
                                
 g.iff2
 
     genop('d_word',getarg(i2))                     
-    gencode_c(2, 'dword xxxl' linen ' = ' get_c_argument(i2) ';')
+    gencode_c(2, 'dword xxxl' linen ' = (word)(' get_c_argument(i2) ';')
 	 
 	           :(opdone)
 
@@ -1894,7 +1970,7 @@ g.err.2
 g.ppm.add
     jsr_count = jsr_count - 1
     hey_did_jsr_count = hey_did_jsr_count + 1
-    hey_did_jsr_args = hey_did_jsr_args ',' 'C_GOTO(' t1 ')'
+    hey_did_jsr_args = hey_did_jsr_args ',' 'C_GOTO(' ll_filter(t1) ')'
     z_suspend = eq(jsr_count) 0
 g.ppn_final
 	
@@ -2030,11 +2106,12 @@ g.rtn
 g.add   memmem()
 
     genop('add',getarg(i1),getarg(i2))                  
+    c_umemmem()
     gencode_c(2,get_c_argument(i1) ' += ' get_c_argument(i2) ';' )
     :(opdone)
 
 g.sub   memmem()
-
+    c_umemmem()
     genop('sub',getarg(i1),getarg(i2))                 
     gencode_c(2,get_c_argument(i1) ' -= ' get_c_argument(i2) ';' )
     
@@ -2067,6 +2144,7 @@ g.bhi
     t1 = branchtab[incode]
     genop('cmp',getarg(i1),getarg(i2))
     genop(branchtab[incode],getarg(i3))
+    c_umemmem()
     gencode_c(2, 'if ((' better_register_name['w0'] ' =  (' get_c_argument(i1) 
 + '-'  get_c_argument(i2) ')) ' branchtab_standard_c[incode] ' 0) '
 +  'C_GOTO(' get_c_label(i3) ');' )
@@ -2157,11 +2235,12 @@ g.lct
 
     ident(thislabel)                                    :s(opnext)
     genop()                                        
-	     :(opdone)
+	     :(g.lct.c)
 
 g.lct.1
 
     genop('mov',getarg(i1),getarg(i2))                  
+g.lct.c
     gencode_c(2,get_c_argument(i1) '= ' get_c_argument(i2) ';' )
     							:(opdone)
     
@@ -2196,8 +2275,13 @@ g.aov
     genop('jc',getarg(i3))
 * note - the opcode for this is doing carry, we are checking actual overflow where the carry could be 0 or 1,
 * but if the sign bit flips, we went over.
-    gencode_c(2,'{word a; word b='  get_c_argument(i2) '; word c= (a= ' get_c_argument(i1) ') += b; if (((a&0x8000000000000000) == (b&0x8000000000000000))' 
-+      '  && ((a&0x8000000000000000) != (c&0x8000000000000000)))  C_GOTO(' get_c_label(i2) '); else a=c; ' better_register_name['w0'] ' = c;} /* overflow*/ ') 
+    gencode_c(2,'{word a; word b; word c; '
++   ' a = ' get_c_argument(i1) ';'
++   ' c = (' get_c_argument(i2) ' += a); '
++   ' b = c-a; '
++   'if (((a&0x8000000000000000) == (b&0x8000000000000000))' 
++      '  && ((a&0x8000000000000000) != (c&0x8000000000000000)))  {C_GOTO(' get_c_label(i3) ');}'
++   ' else {' better_register_name['w0'] ' = c;}}') 
                                                         :(opdone)
 g.lcp
     genop(op_,getarg(i1))                            
@@ -2371,7 +2455,7 @@ g.mlr
 g.dvr
     tempg = '{if (*(' better_register_name['rp'] ') != 0.0) { ' better_register_name['ra'] ' /= *(' better_register_name['rp'] ');' 
 +         better_register_name['fl'] '= 0;} else {'
-+						 better_register_name['fl'] '=1;}'    
++						 better_register_name['fl'] '=1;}}'    
 	:(continue_real1  )
 continue_real1
     t1 = getarg(i1,'m_word')
@@ -2619,12 +2703,20 @@ g.ceq
     memmem()
     genop('cmp',getarg(i1),getarg(i2))
     genop('je',getarg(i3))
+    c_umemmem()
+    gencode_c(2,'if (' better_register_name['w0'] '=(' get_c_argument(i1) ' - '  get_c_argument(i2) ')== 0) ' 
++      'C_GOTO(' get_c_label(i3) ');' )
+    
+    
                                                         :(opdone)
 
 g.cne   memmem()
 
     genop('cmp',getarg(i1),getarg(i2))
     genop('jnz',getarg(i3))
+    c_umemmem()
+    gencode_c(2,'if (' better_register_name['w0'] '=(' get_c_argument(i1) ' - '  get_c_argument(i2) ')!= 0) '
++      'C_GOTO(' get_c_label(i3) ');' )
                                                         :(opdone)
 
 g.cmc
@@ -3248,6 +3340,17 @@ report
 
 
 g.end
+
+	terminal = 'edndsnfdjkrnewrophgrouehgehgoirieeheohwout' current_function_name
+* if we are pass 2 and this is the end - close the last function 
+        eq(parser_pass,1) :s(opnext.noendfunction)
+	terminal = 'd'
+	ident(current_function_name)				:s(opnext.noendfunction)
+	gencode_c(2,'} /* ' current_function_name ' */')
+        flush()
+
+opnext.noendfunction	
+* ok done compiling
 
     &dump = 0
     ident(havehdr)                                      :s(g.end.2)
