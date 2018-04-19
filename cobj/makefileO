@@ -19,16 +19,16 @@ MIN=   s
 # Minimal source directory.
 MINPATH=./
 
-OSINT=./osint
+OSINT=../osint
 
 vpath %.c $(OSINT)
 
 ifeq	($(DEBUG),0)
-SCFLAGS= -D m64 -O3 -static -m64 
-CFLAGS= -D m64 -O3  -m64 
+SCFLAGS= -D m64 -O3 -static -m64 -DGEN_C_CODE=1
+CFLAGS= -D m64 -O3  -m64  -DGEN_C_CODE=1
 else
-SCFLAGS= -D m64 -g -static -m64 
-CFLAGS= -D m64 -g -m64
+SCFLAGS= -D m64 -g -static -m64  -DGEN_C_CODE=1
+CFLAGS= -D m64 -g -m64  -DGEN_C_CODE=1
 endif
 
 # Assembler info -- Intel 64-bit syntax
@@ -39,9 +39,9 @@ ASMFLAGS = -g -f $(ELF) -d m64
 endif
 
 # Tools for processing Minimal source file.
-BASEBOL =   ./bin/sbl-static
+BASEBOL =   ../bin/sbl-static
 
-BASEBOLS = ./bin/sbl-static ./bin/sbl 
+BASEBOLS = ../bin/csbl
 
 # Implicit rule for building objects from C files.
 ./%.o: %.c
@@ -84,7 +84,7 @@ COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
 
 # Assembly langauge objects common to all versions:
 CAOBJS = 
-NAOBJS = x64.o err.o
+NAOBJS = 
 
 
 # for the c version:
@@ -121,29 +121,31 @@ C_OBJS=	$(C_AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(C_VOBJS) $(MOBJS) $(C
 LIBS = 
 
 
-system: csbl sbl-static sbl
 
-sbl-static: $(OBJS)
-	$(CC) $(SCFLAGS)  $(OBJS) /usr/lib/x86_64-linux-musl/libffcall.a  $(LIBS) -lm  -osbl-static
 
-# link spitbol with dynamic linking (needed for LOADing of external functions)
-sbl: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -lm /usr/lib/x86_64-linux-musl/libffcall.a -osbl 
+system: $(OSINT)/gen_code_c.h  csbl
 
 csbl: $(C_OBJS)
 	$(CC) $(CFLAGS) $(C_OBJS) $(LIBS) -lm /usr/lib/x86_64-linux-musl/libffcall.a -ocsbl 
 
 # Assembly language dependencies:
 err.o: err.s
-s.o: s.s
+
 
 cerr.o: $(OSINT)/cerr.c
 cs.o: cs.c
 
-$(OSINT)/cerr.c: err.s convert_err_s_to_err_c.sbl
-	$(BASEBOL) convert_err_s_to_err_c.sbl <err.s >$(OSINT)/cerr.c
 
-err.o: err.s
+
+$(OSINT)/gen_code_c.h: $(OSINT)/gen_c_code_head_fragment.h $(OSINT)/gen_c_code_tail_fragment.h $(OSINT)/cs.c
+	$(BASEBOL) cs_c_to_gen_c_code.sbl <$(OSINT)/cs.c >tempad
+	cat >$(OSINT)/gen_code_c.h  $(OSINT)/gen_c_code_head_fragment.h  tempad $(OSINT)/gen_c_code_tail_fragment.h
+	rm  tempad
+
+
+$(OSINT)/cerr.c: err.s ../convert_err_s_to_err_c.sbl
+	$(BASEBOL) ../convert_err_s_to_err_c.sbl <err.s >$(OSINT)/cerr.c
+
 
 cx64.o: cx64.c
 
@@ -155,19 +157,26 @@ base:  sbl-static sbl
 s.go:	s.lex go.sbl
 	$(BASEBOL) -x -u i64 go.sbl
 
-s.s:	s.lex $(VHDRS) asm.sbl 
-	$(BASEBOL) -x -u $(WS) asm.sbl
 	
-cs.c: 	s.lex $(VHDRS) cgen.sbl
-	$(BASEBOL) -x -u $(WS) cgen.sbl
+x64.hdr: ../x64.hdr
+	cp ../x64.hdr .	
 
-s.lex: $(MINPATH)s.min s.cnd lex.sbl
-	 $(BASEBOL) -x -u $(WS) lex.sbl
+$(OSINT)/cs.c: 	s.lex $(VHDRS) ../cgen.sbl x64.hdr
+	$(BASEBOL) -x -u $(WS) ../cgen.sbl
 
-s.err: s.s
+s.min: ../s.min
+	cp ../s.min .
 
-err.s: s.cnd err.sbl s.s
-	   $(BASEBOL) -x -1=s.err -2=err.s err.sbl
+s.cnd: ../s.cnd
+	cp ../s.cnd .
+
+
+s.lex: $(MINPATH)s.min s.cnd ../lex.sbl
+	 $(BASEBOL) -x -u $(WS) ../lex.sbl
+
+err.s: ../err.s
+	cp ../err.s .
+
 
 cs.err: cs.c
 

@@ -259,7 +259,7 @@ skip_init.end
     define('report(num,text)')
     define('tblini(str)pos,cnt,index,val,lastval')
     define('gencode_c(pass,x)a,b,c')
-    define('get_c_argument(iarg,imem)a,b,c,l1,l2,t1,t2,tmem')
+    define('get_c_argument(iarg,imem)a,b,c,l0,l1,l2,t1,t2,tmem')
     define('get_c_character_argument(iarg,imem)a,b,c,l1,l2,t1,t2,tmem')
     define('get_c_assignment(iarg,imem)a,b,c,l1,l2,t1,t2,tmem')
 * get_c_assignment handles assigning to constants and variables
@@ -286,10 +286,12 @@ skip_init.end
 	p.c_charchar2 =  p.c_sbrk | any(p.c_charchar1)
 	p.c_char = "'" p.c_charchar2 "'"
 	p.c_label = any('abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ') ( span('abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') | '' )
+	p.c_label_with_dot = any('abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ') ( span('.abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') | '' )	
 	p.c_s = span(' 	') 
 	p.c_n1 = span('0123456789')
 	p.c_n2 = span('0123456789') '.' ( span('0123456789') | '' ) ( 'f' | 'l' | 'ul' | 'd' | '' )
 	p.c_token = p.c_n2 | p.c_n1 | p.c_string | p.c_comment | p.c_char | p.c_label | p.c_symbol | p.c_s
+	p.c_token_with_dot = p.c_n2 | p.c_n1 | p.c_string | p.c_comment | p.c_char | p.c_label_with_dot | p.c_symbol | p.c_s
 	&anchor = 1
     
 
@@ -635,7 +637,7 @@ inputok
 
 *   associate output files.
 
-    filenamo = 'osint/c' fileprefix '.c'
+    filenamo = '../osint/c' fileprefix '.c'
     output(.outfile,2,filenamo)                         :s(outputok)
     output = '  cannot open asm file: ' filenamo        :(end)
 
@@ -715,6 +717,10 @@ initialize
     section_labels[8] = table(1000)
     
     gencode_c(1,'/* generated from ' infile ' into C code */')
+    gencode_c(1,'#ifdef GEN_C_CODE')
+    gencode_c(1,'#undef GEN_C_CODE')
+    gencode_c(1,'// This is because GEN_C_CODE will  trigger code for standard c routines to shim around the v.variable and c.constant fields')
+    gencode_c(1,'#endif')
     gencode_c(1,'#include "port.h"')
     gencode_c(1,'#include "c_64.h"')
     gencode_c(1,'')
@@ -1240,8 +1246,14 @@ get_c_argument.c.9
 
 get_c_argument.c.10
 
-    l1 = substr(l1,2,2)
-    t1 = regmap[l1]
+	l0 = l1
+    l1 = substr(l0,2,2)
+    l1 '('		:f(get_c_argument.c.10_good1)
+    l1 = substr(l0,3,2)
+get_c_argument.c.10_good1    
+    t1 = regmap[l1]		:s(huihu)
+huihu    
+    terminal = l1 ' -> ' t1
     get_c_argument = tmem '*(' t1 '_it.wp++)'
     (ident(l1,'xs') genaop(tstmt('//ASM	','add',t1,'CFP_B')))   :s(get_c_argument_return)
     genaop(tstmt('//ASM	','lea',t1,'[' t1 '+CFP_B]'))           :(get_c_argument_return)
@@ -1269,7 +1281,7 @@ get_c_argument.c.14
 get_c_argument.c.15
 
     l1 break('(') . t1 '(' len(2) . t2
-    get_c_argument = tmem '*((word *)(&' t1 ' + ' regmap[t2] '))'     :(get_c_argument_return)
+    get_c_argument = tmem '*((word *)( ((word)&' t1 ') + ' regmap[t2] '))'     :(get_c_argument_return)
 
 *  signed integer
 
@@ -1907,21 +1919,11 @@ mov.c.3
 	:(opdone)
 	
 mov.fixed_c2
-	inlabel 'bpf02'	:f(oooo3)
-	terminal = 'hey1 ' i.text(i.dst)
-	terminal = 'hey2 ' i.text(i.src)
-	terminal = 'yeah'	
-oooo3
 	gencode_c(2,get_c_argument(i.dst) '= ' get_c_argument(i.src) ';')
 	:(opdone)	        
     
 mov.fixed_c3
-	inlabel 'bpf02'	:f(oooo4)
-	terminal = 'hey1 ' i.text(i.dst)
-	terminal = 'hey2 ' i.text(i.src)
-	terminal = 'yeah'	
-oooo4
-	gencode_c(2,get_c_argument(i.dst) '= ' i.text(i2) ';')
+	gencode_c(2,get_c_argument(i.dst) '= ' get_c_argument(i.src) ';')
 	:(opdone)	        
     
     
@@ -1963,7 +1965,7 @@ g.bsw
     ident(i.text(i3))                                   :s(g.bsw1)
     genop('cmp',t1,getarg(i2))    
     genop('jge',getarg(i3))
-    gencode_c(2, 'if (' get_c_argument(i1) ' - (word)('  get_c_argument(i3) ') >=0 )  {'
+    gencode_c(2, 'if (' get_c_argument(i1) ' - (word)('  get_c_argument(i2) ') >=0 )  {'
 +         ' C_GOTO(' get_c_label(i3) ');}' )
     
 *  here after default case.
@@ -1974,8 +1976,10 @@ g.bsw1
     genopl(t2 '                                         :')
     z_suspend = 0
     gencode_c(2,'extern word ' t2 ' [];' )  
+*    gencode_c(2, '{'
+*+         ' w0 = ((word *)'  t2 ')[' get_c_argument(i1) '];  w0=w0&0xfffffffffffffff8; C_GOTO(w0_it.callp);}' ) 
     gencode_c(2, '{'
-+         ' w0 = ((word *)'  t2 ')[' get_c_argument(i1) '];  w0=w0&0xfffffffffffffff8; C_GOTO(w0_it.callp);}' ) 
++         ' w0 = ((word *)'  t2 ')[' get_c_argument(i1) '];  C_GOTO(w0_it.callp);}' ) 
     gencode_c(2, '}  /* ' current_function_name ' */')
     gencode_c(2,' ')
        current_function_name = ''
@@ -2755,7 +2759,7 @@ plcpsc_done
     
      ((ifreg(i2), ge(t2,1) le(t2,2)) 
 +     gencode_c(2,
-+	get_c_argument(i1) '_it.chp + CFP_F + CFP_B * ' get_c_argument(i2) ';' )) :s(opdone)
++	get_c_argument(i1) '_it.chp += CFP_F + CFP_B * ' get_c_argument(i2) ';' )) :s(opdone)
      gencode_c(2,t1 ' += CFP_F;')
      eq(i.type(i2))	:s(opdone)	
      gencode_c(2,t1 ' <<=LOG_CFP_B;' )
@@ -3250,20 +3254,20 @@ g.dac
     	:(decend) 
 g.dac_const
     current_label = do_current_label()
-    eq(current_label_is_base,1)   :f(g.dac.noext1)
-    gencode_c(1,'extern const word ' current_label ';' )
+*    eq(current_label_is_base,1)   :f(g.dac.noext1)
+    gencode_c(1,'word ' current_label ';' )
 
 g.dac.noext1
-    gencode_c(2,'const word ' current_label ' 		= ' get_c_assignment(i1) ';' )
+    gencode_c(2,'.' current_label ' 		= ' get_c_assignment(i1) ',' )
 g.dac.cdone1    
                                                         :(decend)
 g.dac_no_const
     current_label = do_current_label()
-    eq(current_label_is_base,1)   :f(g.dac.noext2)
-    gencode_c(1,'extern word ' current_label ';' )
+*    eq(current_label_is_base,1)   :f(g.dac.noext2)
+    gencode_c(1,'word ' current_label ';' )
 
 g.dac.noext2
-    gencode_c(2,'word ' current_label ' 		= ' get_c_assignment(i1) ';' )
+    gencode_c(2,'.' current_label ' 		= ' get_c_assignment(i1) ',' )
                                                         :(decend)
 							
 							
@@ -3281,20 +3285,20 @@ g.dic
     	:(decend) 
 g.dic_const
     current_label = do_current_label()
-    eq(current_label_is_base,1)   :f(g.dic.noext1)
-    gencode_c(1,'extern const word ' current_label ';' )
+*    eq(current_label_is_base,1)   :f(g.dic.noext1)
+    gencode_c(1,'word ' current_label ';' )
 
 g.dic.noext1
-    gencode_c(2,'const word ' current_label ' 		= ' get_c_assignment(i1) ';' )
+    gencode_c(2,'.' current_label ' 		= ' get_c_assignment(i1) ',' )
 g.dic.cdone1    
                                                         :(decend)
 g.dic_no_const
     current_label = do_current_label()
-    eq(current_label_is_base,1)   :f(g.dic.noext2)
-    gencode_c(1,'extern word ' current_label ';' )
+*    eq(current_label_is_base,1)   :f(g.dic.noext2)
+    gencode_c(1,'word ' current_label ';' )
 
 g.dic.noext2
-    gencode_c(2,'word ' current_label ' 		= ' get_c_assignment(i1) ';' )
+    gencode_c(2,'.' current_label ' 		= ' get_c_assignment(i1) ',' )
                                                         :(decend)
 
 g.drc
@@ -3317,20 +3321,20 @@ g.drc
     :(decend)
 g.drc_const
     current_label = do_current_label()
-    eq(current_label_is_base,1)   :f(g.drc.noext1)
-    gencode_c(1,'extern const double ' current_label ';' )
+*    eq(current_label_is_base,1)   :f(g.drc.noext1)
+    gencode_c(1,'double ' current_label ';' )
 
 g.drc.noext1
-    gencode_c(2,'const double ' current_label ' 		= ' get_c_assignment(i1) ';' )
+    gencode_c(2,'.' current_label ' 		= ' get_c_assignment(i1) ',' )
         
     :(decend)
 g.drc_noconst
     current_label = do_current_label()
-    eq(current_label_is_base,1)   :f(g.drc.noext2)
-    gencode_c(1,'extern double ' current_label ';' )
+*    eq(current_label_is_base,1)   :f(g.drc.noext2)
+    gencode_c(1,'double ' current_label ';' )
 
 g.drc.noext2
-    gencode_c(2,'double ' current_label ' 		= ' get_c_assignment(i1) ';' )
+    gencode_c(2,'.' current_label ' 		= ' get_c_assignment(i1) ',' )
 
         
     :(decend)
@@ -3366,7 +3370,8 @@ g.dtc.ccode
     t1 tab(1) rtab(1) . t2
     t3 = remdr(size(t2),cfp_c)
     t4 = ''
-    t8 = 'const '
+* t8 held const before
+    t8 = ''
     eq(sectnow,3)			:s(g.dtc.ccode.1)
     eq(sectnow,4)			:f(decend)
     t8 = ''
@@ -3374,16 +3379,17 @@ g.dtc.ccode
 g.dtc.ccode.1
 	t5 = "'" substr(t2,dtc_i,1) "'"
         current_label = do_current_label()
-	eq(current_label_is_base,1)   :f(g.dtc.noext)
-	gencode_c(1,"extern " t8 " char " current_label ';' )
+*	eq(current_label_is_base,1)   :f(g.dtc.noext)
+	gencode_c(1,"" t8 " char " current_label ';' )
 g.dtc.noext	
-	gencode_c(2,t8 "char " current_label " = " t5 ";" )
+	gencode_c(2,t8 "." current_label " = " t5 "," )
         le(dtc_i = dtc_i + 1, size(t2))                     :s(g.dtc.ccode.1)
 	t6 = 0
 g.dtc.ccode.2
 	lt(t6,cfp_c - t3)				:f(decend)
         current_label = do_current_label()
-	gencode_c(2,t8 "char " current_label " = 0;" )
+	gencode_c(1,"" t8 " char " current_label ';' )
+	gencode_c(2,t8 "." current_label " = 0," )
 	t6 = t6 + 1	
 	:(g.dtc.ccode.2)	
 							
@@ -3393,17 +3399,17 @@ g.dbc
     		:s(g.dbc_const)
     	:(decend) 
 g.dbc_const	   
-    t8 = 'const '
+    t8 = ''
     eq(sectnow,3)                       :s(g.dbc.ccode)
 	    eq(sectnow,4)                       :f(decend)
     t8 = ''	    
 	    
 g.dbc.ccode	    
     current_label = do_current_label()
-    eq(current_label_is_base,1)   :f(g.dbc.noext)
-    gencode_c(1,'extern ' t8 'd_word ' current_label ';' )
+*    eq(current_label_is_base,1)   :f(g.dbc.noext)
+    gencode_c(1,'' t8 'd_word ' current_label ';' )
 g.dbc.noext    
-    gencode_c(2,t8 'd_word ' current_label ' 		= ' get_c_argument(i1) ';' )
+    gencode_c(2,t8 '.' current_label ' 		= ' get_c_argument(i1) ',' )
                                                         :(decend)
 g.equ
 
@@ -3483,8 +3489,8 @@ g.sec.3
     genopl('sec03' ':')                             
     gencode_c(2,'/*-------------------------------------------------------------------- sec03 --------*/')
     gencode_c(2,'// constants ')
-    gencode_c(1,'struct spitbol_constants {'
-    gencode_c(2,'struct spitbol_constants c = {'
+    gencode_c(1,'struct spitbol_constants {')
+    gencode_c(2,'const struct spitbol_constants c = {')
     
 	    :(opdone)
 
@@ -3492,8 +3498,8 @@ g.sec.3
 
 g.sec.4
 
-    gencode_c(1,'}; /* struct spitbol_constants */ '
-    gencode_c(2,'}; /* struct spitbol_constants */ '
+    gencode_c(1,'}; /* struct spitbol_constants */ ')
+    gencode_c(2,'}; /* struct spitbol_constants */ ')
     genop('global','esec03')
     genopl('esec03' '                                   :')
     gencode_c(2,'/*-------------------------------------------------------------------- esec03 --------*/')
@@ -3504,8 +3510,8 @@ g.sec.4
     genopl('sec04' ':')                           
     gencode_c(2,'/*-------------------------------------------------------------------- sec04 --------*/')
     gencode_c(2,'// working variables ')		      
-    gencode_c(1,'struct spitbol_variables {'
-    gencode_c(2,'struct spitbol_variables v = {'
+    gencode_c(1,'struct spitbol_variables {')
+    gencode_c(2,'struct spitbol_variables v = {')
 			          :(opdone)
 
 *   here at start of program section.  if any n type procedures,
@@ -3529,8 +3535,8 @@ g.sec.5
     genop('segment .text')
     genop('global','sec05')
     genopl('sec05' ':')                              
-    gencode_c(1,'}; /* struct spitbol_variables */ '
-    gencode_c(2,'}; /* struct spitbol_variables */ '
+    gencode_c(1,'}; /* struct spitbol_variables */ ')
+    gencode_c(2,'}; /* struct spitbol_variables */ ')
     gencode_c(2,'/*-------------------------------------------------------------------- esec04 --------*/')
     
     gencode_c(2,'/*-------------------------------------------------------------------- sec05 --------*/')
@@ -3704,16 +3710,27 @@ cvl1
 	ident(b,'')		:s(cvd1)
 	b p.c_token . c = '' 	:f(cvnon)
 	c p.c_label 		:f(cvad)
+	differ(section_labels[3][c]) :s(cv_constant)
+	differ(section_labels[4][c]) :s(cv_variable)
 	ident(c_definitions[c],'') :s(cvad)
 	c = c_definitions[c]['upper_name'] :f(cvad)
 	:(cvad)
 cvnon   terminal = 'huh [' b '] '
 	b any(1) . c = ''
-
+	:(cvad)
+cv_constant
+	c = 'c.' c
+	:(cvad)
+cv_variable
+	c = 'v.' c
+	:(cvad)
+	
 cvad	d = d c
 	:(cvl1)
 cvd1	&anchor = a
 	convert_value_c = d
+	x arbno(any(&alphabet)) 'int_r'	:f(return)
+	terminal = x '	->	' d
 	:(return)
 
 							
@@ -3728,15 +3745,19 @@ convert_value_assignment
 	d = ''
 cval1 
 	ident(b,'')		:s(cvad1)
-	b p.c_token . c = '' 	:f(cvanon)
-	c p.c_label 		:f(cvaad)
+	b p.c_token_with_dot . c = '' 	:f(cvanon)
+	c p.c_label_with_dot 		:f(cvaad)
 	ident(c,'double')	:s(cvaad)
-	ident(section_labels[5][c])  :f(cva_procedure)
+	cprime = c
+	cprime ( any('abcdefghijklmnopqrstuvwxyz') '.' ) = ''
+	ident(section_labels[5][cprime])  :f(cva_procedure)
 *	ident(c_definitions[c],'') :f(cvaad)
 *	c = c_definitions[c]['upper_name'] :s(cva_constant)
-	ident(section_labels[3][c]) :f(cva_variable)
-	ident(section_labels[4][c]) :f(cva_variable)
+	ident(section_labels[3][cprime]) :f(cva_constant)
+	ident(section_labels[4][cprime]) :f(cva_variable)
 	:(cvaad)
+cva_constant
+	c = '(word)(&' c ')'	:(cvaad)
 cva_variable
 	c = '(word)(&' c ')'	:(cvaad)
 cva_procedure
@@ -3756,17 +3777,6 @@ upper   upper   =  replace(s, xUP_LO, xLO_UP)      :(return)
 							
 
 do_current_label
-	position_label 'tims'		:f(jkjkjk)
-	thislabel 'tims'		    :f(jkjkjk)
-	inlabel 'tims' 	:f(jkjkjk)
-	terminal = 'position_label ' position_label
-	terminal = 'thislabel ' thislabel
-	terminal = 'inlabel ' inlabel	
-	
-jkjkjk	
-	thislabel 'tims'	:f(fdsjkd)
-	terminal = '2thislabel ' thislabel 
-fdsjkd
 		
     ident(position_label,'')    		:s(better_set_it_now)
     ident(thislabel,position_label)		:s(do_current_label.use_what_we_got)

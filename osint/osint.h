@@ -34,6 +34,8 @@ extern uword	minimal_id;
 /   Macros to fetch a value of appropriate type from a compiler register
 */
 
+extern word compsp;
+
 #define CP(type)	((type) reg_cp)
 #define IA(type)	((type) reg_ia)
 #define W0(type)	((type) reg_w0)
@@ -43,7 +45,7 @@ extern uword	minimal_id;
 #define XR(type)	((type) reg_xr)
 #define XL(type)	((type) reg_xl)
 #define PC(type)	((type) reg_pc)
-#define XS(type)	((type) reg_xs)
+#define XS(type)	((type) compsp)
 #define RA(type)        ((type) reg_ra)
 /*
 /   Macros to set a value of appropriate type into a compiler register.

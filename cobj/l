@@ -1,0 +1,79 @@
+break.o: In function `catchbrk':
+/home/hib/my/spitbol/cobj/../osint/break.c:49: undefined reference to `polct'
+gethost.o: In function `gethost':
+/home/hib/my/spitbol/cobj/../osint/gethost.c:32: undefined reference to `headv'
+oswait.o: In function `oswait':
+/home/hib/my/spitbol/cobj/../osint/oswait.c:40: undefined reference to `r_fcb'
+syslinux.o: In function `callef':
+/home/hib/my/spitbol/cobj/../osint/syslinux.c:355: undefined reference to `mxlen'
+syslinux.o: In function `nextef':
+/home/hib/my/spitbol/cobj/../osint/syslinux.c:481: undefined reference to `dnamp'
+syslinux.o: In function `scanef':
+/home/hib/my/spitbol/cobj/../osint/syslinux.c:545: undefined reference to `dnamb'
+syslinux.o: In function `makeexec':
+/home/hib/my/spitbol/cobj/../osint/syslinux.c:737: undefined reference to `headv'
+sysdc.o: In function `zysdc':
+/home/hib/my/spitbol/cobj/../osint/sysdc.c:39: undefined reference to `headv'
+sysxi.o: In function `zysxi':
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:115: undefined reference to `stbas'
+sysxi.o: In function `unreloc':
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:280: undefined reference to `stbas'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:281: undefined reference to `flptr'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:281: undefined reference to `flptr'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:282: undefined reference to `flprt'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:282: undefined reference to `flprt'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:283: undefined reference to `gtcef'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:283: undefined reference to `gtcef'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:284: undefined reference to `pmhbs'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:284: undefined reference to `pmhbs'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:285: undefined reference to `dnamb'
+sysxi.o: In function `rereloc':
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:298: undefined reference to `stbas'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:299: undefined reference to `flptr'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:299: undefined reference to `flptr'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:300: undefined reference to `flprt'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:300: undefined reference to `flprt'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:301: undefined reference to `gtcef'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:301: undefined reference to `gtcef'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:302: undefined reference to `pmhbs'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:302: undefined reference to `pmhbs'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:303: undefined reference to `dnamb'
+sysxi.o: In function `putsave':
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:360: undefined reference to `stbas'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:361: undefined reference to `c_yyy'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:361: undefined reference to `c_aaa'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:362: undefined reference to `c_aaa'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:363: undefined reference to `w_yyy'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:363: undefined reference to `g_aaa'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:364: undefined reference to `g_aaa'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:365: undefined reference to `hshtb'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:366: undefined reference to `dnamb'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:367: undefined reference to `dnamp'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:405: undefined reference to `state'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:405: undefined reference to `hshtb'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:404: undefined reference to `hshtb'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:409: undefined reference to `dnamp'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:409: undefined reference to `dnamb'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:408: undefined reference to `dnamb'
+sysxi.o: In function `getsave':
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:523: undefined reference to `c_yyy'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:523: undefined reference to `c_aaa'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:529: undefined reference to `w_yyy'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:529: undefined reference to `g_aaa'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:584: undefined reference to `stbas'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:589: undefined reference to `g_aaa'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:594: undefined reference to `state'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:594: undefined reference to `hshtb'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:599: undefined reference to `dnamp'
+/home/hib/my/spitbol/cobj/../osint/sysxi.c:599: undefined reference to `dnamb'
+cx64.o: In function `restart':
+/home/hib/my/spitbol/cobj/../osint/cx64.c:893: undefined reference to `stbas'
+/home/hib/my/spitbol/cobj/../osint/cx64.c:911: undefined reference to `stbas'
+cx64.o: In function `re3':
+/home/hib/my/spitbol/cobj/../osint/cx64.c:970: undefined reference to `statb'
+/home/hib/my/spitbol/cobj/../osint/cx64.c:1015: undefined reference to `stage'
+cx64.o: In function `re4':
+/home/hib/my/spitbol/cobj/../osint/cx64.c:1033: undefined reference to `stbas'
+/home/hib/my/spitbol/cobj/../osint/cx64.c:1042: undefined reference to `timsx'
+collect2: error: ld returned 1 exit status
+make: *** [csbl] Error 1

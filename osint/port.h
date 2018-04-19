@@ -379,3 +379,11 @@ typedef unsigned long uword;	// minimal word as unsigned value
 #include "globals.h"
 #include "sproto.h"
 
+
+
+// handle if C code - where the variablea ar e all v.something in stead of just globals something:
+#ifdef  GEN_C_CODE
+#include "gen_c_code.h"
+#endif
+
+

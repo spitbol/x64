@@ -34,12 +34,14 @@ typedef unsigned long m_word;
 typedef union itis { 
   word w;
   word *wp;
-  m_char *chp;
+  m_char *chp;  /* chp for multibyte characters experiimental */
+  m_char *byp;
   void *vp;
   void (*callp)();
   double *dp;
   double d;
-  char c[4];} 
+  char c[4]; 
+  char b[4];} 
   itis;
 
 // exp10 is a math function. So is log. Neex to differentiate
@@ -61,8 +63,7 @@ typedef union itis {
 #define ia (ia_it.w)
 #define cp (cp_it.w)
 #define ra (ra_it.d)
-#define rp (rp_it.dp)
-#define rp (rp_it.dp)
+#define rp (w0_it.dp)
 #define fl (fl_it.c[0])
 
 itis xl_it;
@@ -76,13 +77,11 @@ itis xs_it;
 itis ia_it;
 itis cp_it;
 itis ra_it;
-itis rp_it;
 itis fl_it;
 word _rt_;
 
 void (*goto_nextfunction)();
-word goto_counter=0;
-
+extern word goto_counter;
 
 
 
@@ -94,8 +93,8 @@ word goto_counter=0;
 #define wb_l *((byte *)(&wb))
 #define w0_l *(byte *)(&w0))
 
-#define CFP_B	8
-#define CFP_C	8
+#define CFP_B	(8)
+#define CFP_C	(8)
 #define LOG_CFP_B 3
 #define LOG_CFP_C 3
 #define CFP_C_VAL	8
@@ -112,7 +111,7 @@ word goto_counter=0;
 
 
 
-#define C_GOTO(new_func) { if ((goto_counter++) &31) { new_func();} else goto_nextfunction = new_func; return;}
+#define C_GOTO(new_func) { if ((goto_counter++) &31) { new_func();} else goto_nextfunction = new_func; _rt_=0; return;}
 #define C_CALL(new_func) {new_func(); }
 
 #define C_POP() \
@@ -123,8 +122,13 @@ word goto_counter=0;
 
 typedef void (*voidcall());
 
+
+
+
+
 #define C_JSR(procedureya) \
-  {C_CALL(procedureya); while (goto_nextfunction) { goto_nextfunction(); }}
+  {C_CALL(procedureya); while (goto_nextfunction) { goto_nextfunction(); }} 
+
 #define C_JSR_1(procedureya,nogo) \
   {C_CALL(procedureya); while (goto_nextfunction) { goto_nextfunction(); } if (_rt_) nogo; }
 
@@ -174,3 +178,32 @@ extern void error_found(word errornum);
 extern void ezzor();
 
 
+/* main string compare */
+#define C_CMC(one_it,two_it,len_it,ltl,gtl) \
+{long test; long i=0; while (i<len_it.w) {  \
+  if (test=   (one_it.chp[i] - two_it.chp[i])) {  \
+    one_it.w=0;two_it.w=0; if (test>0) C_GOTO(gtl) else C_GOTO(ltl); \
+    } \
+  i++; \
+  } \
+one_it.w=0;two_it.w=0; \
+}
+
+
+
+
+
+/* main string compare differ */
+#define C_CMC_DIFFER(one_it,two_it,len_it,different) \
+{long test; long i=0; while (i<len_it.w) {  \
+  if (test=   (one_it.chp[i] - two_it.chp[i])) {  \
+    one_it.w=0;two_it.w=0; C_GOTO(different) \
+    } \
+  i++; \
+  } \
+one_it.w=0;two_it.w=0; }
+
+
+
+
+/* end of c_64.h */

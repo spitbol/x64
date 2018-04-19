@@ -1,0 +1,59 @@
+* this extracts the middle part of gen_c_code.h to help the osint c functions to compile
+* Basically it is extracting all the #defines, the const structure, and the variable structure.
+
+	nums = '0123456789'
+	secno = 'sec' any(nums) any(nums)
+	sz = span(' 	') | ''
+	mode = 'sec00'
+
+
+cleanloop
+	the_comment = ''
+
+loop	x = input	:f(end)
+	x '//A' sz secno . mode :s(cleanloop)
+	x break('{') '{' break('{') '{' break('{') '{' break('{') '{' break('{') '{' break('{') '{' break('{') . the_comment '{' 
+	x '//'	:s(loop)
+	:($mode)
+	
+outit
+	ident(the_comment) :s(outit2)
+	output = x '		/* ' the_comment '*/'
+	the_comment = ''
+	:(loop)
+	
+outit2  output = x
+	:(loop)
+	
+	
+outit_def
+	ident(the_comment) :s(outit2)
+	output = x 
+	output = '//	^^^ ' the_comment
+	the_comment = ''
+	:(loop)
+
+	
+			
+sec00
+	:(loop)
+
+sec01
+	:(loop)
+sec02
+	
+	x	sz '#define'	:s(outit_def)
+	:(loop)
+	
+	
+sec03	terminal = '3' x
+	:(outit)
+
+sec04	:(outit)
+
+sec05	:(end)
+
+
+
+
+end

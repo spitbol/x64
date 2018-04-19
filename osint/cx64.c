@@ -20,9 +20,10 @@
 
 //	ws is bits per word, cfp_b is bytes per word, cfp_c is characters per word
 
+
 #include "port.h"
 #include "c_64.h"
-
+#include <stdio.h>
 	word	reg_w0;
 	word	reg_wa;
 	word	reg_wb;
@@ -40,7 +41,45 @@
 	double	*reg_rp = NULL;
 
 	void 	minimal();
-	word calltab;
+//
+//  table of minimal entry points that can be dded from c
+//  via the minimal function (see inter.asm).
+//
+//  note that the order of entries in this table must correspond
+//  to the order of entries in the call enumeration in osint.h
+//  and osint.inc.
+//      
+extern void relaj();
+extern void relcr();
+extern void reloc();
+extern void alloc();
+extern void alocs();
+extern void alost();
+extern void blkln();
+extern void insta();
+extern void rstrt();
+extern void start();
+extern void filnm();
+extern void dtype();
+
+
+	word calltab	= (word)(relaj);
+ word calltab_s_001 =  (word)(relcr);
+ word calltab_s_002 =  (word)(reloc);
+ word calltab_s_003 =  (word)(alloc);
+ word calltab_s_004 =  (word)(alocs);
+ word calltab_s_005 =  (word)(alost);
+ word calltab_s_006 =  (word)(blkln);
+ word calltab_s_007 =  (word)(insta);
+ word calltab_s_008 =  (word)(rstrt);
+ word calltab_s_009 =  (word)(start);
+ word calltab_s_010 =  (word)(filnm);
+ word calltab_s_011 =  (word)(dtype);
+//      d_word  enevs ;  engine words
+//      d_word  engts ;   not used
+
+
+	
 	uword	stacksiz;
 
 //	values below must agree with calltab defined in x64.hdr and also in osint/osint.h
@@ -407,18 +446,41 @@ minimal_id = CALLTAB_START;
 //	  	|----------------| <-- future c stack pointer, osisp
 //		|  new c stack	 |
 //	(low)	|                |
-C_GOTO(stackinit);
+//C_GOTO(stackinit);
+C_JSR(stackinit);
+C_JSR(minimal);
 }
 
+	word lowspmin;
 
 void stackinit() {
+	/* Since xs is not the real xs we need to cheat a bit */
+	word *s;
+	{
+	char stuff[128];
+	stuff[0]='h' + w0;
+	stuff[99]='i' + w0;	
+	s = (word *)stuff;
+	}
+	xs=((word)(s))+128*CFP_B;  // around there - might need to adjust
+	w0 = xs;
+	compsp = w0;
+	osisp = compsp-stacksiz;
+	lowspmin=CFP_B*100;	
+	
+	/* Hib Done here because of START functionality */
+	reg_wa = compsp;		
+					
+	
+	/* old code 
 	w0=xs;
-// save as minimal's stack pointer
-// end of minimal stack is where c stack will start
-// save new c stack pointer
-// 100 words smaller for chk
-	extern	word lowspmin;
+	compsp = 10;// save as minimal's stack pointer
+	w0 = stacksiz;// end of minimal stack is where c stack will start
+        osisp=w0;// save new c stack pointer
+	w0=CFP_B*100;// 100 words smaller for chk
 	lowspmin=w0;
+	*/
+
 	C_EXIT(0);
 }
 
@@ -442,9 +504,13 @@ extern void min1();
 void minimal() {
 //         pushad			; save all registers for c
 // restore registers
+	wa=reg_wa;
 	wb=reg_wb;
+	wc=reg_wc;
 	xr=reg_xr;
 	xl=reg_xl;
+	osisp=xs;
+	if (compsp) xs=compsp;
 C_GOTO(min1);
 // save osint stack pointer
 // is there a compiler stack?
@@ -455,12 +521,14 @@ C_GOTO(min1);
 
 
 void min1() {
-// get ordinal
-// off to the minimal code
+w0 = minimal_id; // get ordinal
+w0 = ((word *)(&calltab))[w0];
+C_JSR(w0_it.callp);   // off to the minimal code
 
-// switch to osint stack
+xs=osisp;// switch to osint stack
 
 // save registers
+reg_wa=wa;
 reg_wb=wb;
 reg_wc=wc;
 reg_xr=xr;
@@ -531,11 +599,13 @@ void syscall_init() {
 //       save registers in global variables
 
 // save registers
+reg_wa=wa;
 reg_wb=wb;
-// (also _reg_ia)
+reg_wc=wc;
 reg_xr=xr;
 reg_xl=xl;
 reg_ia=ia;
+reg_xs = xs;
 C_EXIT(0);
 }
 
@@ -545,17 +615,24 @@ void syscall_exit() {
 // save osint's stack pointer
 // restore compiler's stack pointer
 // restore registers
+// _rc_ is set
+//osisp=xs;
+//xs=compsp;
+wa=reg_wa;
 wb=reg_wb;
+wc=reg_wc;
 xr=reg_xr;
 xl=reg_xl;
 ia=reg_ia;
-w0=reg_pc;
+//w0=reg_pc;
+//  hib - checked - we are not setting a go to from any syscall at the moment.
 //C_GOTO(w0_it.callp);
+// xs = reg_xs;
 // rt has the value for return.
 C_EXIT(_rt_);
 }
 
-#define syscall(a,b) {reg_pc=w0;C_JSR(syscall_init);_rt_=b;_rt_=a();C_GOTO(syscall_exit);}
+#define syscall(a,b) {C_JSR(syscall_init)_rt_=b;_rt_=a();C_GOTO(syscall_exit);}
 
 // pop return address	
 //       save compiler stack and switch to osint stack
@@ -776,10 +853,6 @@ return (word *)(w0);
 
 	extern	void rereloc();
 
-	extern	word stbas;
-	extern	word statb;
-	extern	word stage;
-	extern	word gbcnt;
 	extern	word *lmodstk;
 	extern	void startbrk();
 	extern	char *outptr;
@@ -962,7 +1035,7 @@ void re4() {
 // reset garbage collect count
 // fetch execution time to reg_ia
 // set time into compiler
-	extern	word timsx;
+
 	timsx=w0;
 
 //       code that would be executed if we returned to sysbx:
@@ -992,6 +1065,25 @@ void zzz() {
 	C_EXIT(0);
 }
 
-
-
 #endif
+
+
+
+
+void error_found(word errornum) {
+fprintf(stderr,"error found %ld\n",errornum);
+}
+
+
+word goto_counter=0;
+
+
+
+  #define SCGET   0
+   #define SCLEN   (SCGET+1)
+   
+
+int dinout() {
+fprintf(stderr,"inout stpte %lx %s type %lx\n",xl,xl_it.chp,wb);
+fprintf(stderr,"wa %lx %lx should = %lx = %lx\n",SCLEN,CFP_B*SCLEN, *((word *)(CFP_B*SCLEN + xl)),xl_it.wp[SCLEN]);
+}

@@ -202,6 +202,8 @@ char	*argv[];
 #ifdef Z_TRACE
     zz_init();
 #endif
+
+
     startup();
 #endif					// !RUNTIME
 

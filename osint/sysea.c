@@ -39,7 +39,7 @@ int n;
 /*
  * Error stage states
  */
-enum stage {
+enum stages {
     STGIC=0,			// Initial compile
     STGXC,				// Execution compile (CODE)
     STGEV,				// Expression eval during execution

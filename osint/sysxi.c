@@ -351,13 +351,13 @@ word *stkbase, stklen;
     svfheader.version = SaveVersion;
     svfheader.system = SYSVERSION;
     svfheader.spare = 0;
-    hcopy(vscb->str, svfheader.headv, vscb->len, sizeof(svfheader.headv));
+    hcopy(vscb->str, svfheader.aheadv, vscb->len, sizeof(svfheader.aheadv));
     hcopy(pid1blk->str, svfheader.iov, pid1blk->len, sizeof(svfheader.iov));
     svfheader.timedate = time((time_t *)0);
     svfheader.flags = spitflag;
     svfheader.stacksiz = (uword)stacksiz;
     svfheader.stacklength = (uword)stklen;
-    svfheader.stbas = GET_MIN_VALUE(stbas,char *);
+    svfheader.astbas = GET_MIN_VALUE(stbas,char *);
     svfheader.sec3size = (uword)(GET_DATA_OFFSET(c_yyy,char *) - GET_DATA_OFFSET(c_aaa,char *));
     svfheader.sec3adr = GET_DATA_OFFSET(c_aaa,char *);
     svfheader.sec4size = (uword)(GET_DATA_OFFSET(w_yyy,char *) - GET_DATA_OFFSET(g_aaa,char *));
@@ -581,7 +581,7 @@ int fd;
             if ( expand( fd, (unsigned char *)ptscblk->str, svfheader.stacklength ) )
                 goto reload_ioerr;
 
-            SET_MIN_VALUE(stbas, svfheader.stbas,word);
+            SET_MIN_VALUE(stbas, svfheader.astbas,word);
             lmodstk = (word *)(ptscblk->str + svfheader.stacklength);
             stacksiz = svfheader.stacksiz;
 
@@ -670,7 +670,7 @@ reload_verserr:
             write( STDERRFD, "Need ", 5);
             write( STDERRFD, ((svfheader.version>>VWBSHFT) & 0xF)==2 ? "32" : "64", 2);
             write( STDERRFD, "-bit SPITBOL release ", 21);
-            write( STDERRFD, svfheader.headv, length(svfheader.headv) );
+            write( STDERRFD, svfheader.aheadv, length(svfheader.aheadv) );
             write( STDERRFD, svfheader.iov, length(svfheader.iov) );
             cp = " to load file ";
             goto reload_err;
