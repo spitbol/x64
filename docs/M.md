@@ -1,5 +1,4 @@
-## Introduction
-
+## Introduction 
 The implementation of MACRO SPITBOL is written in three languages:
 MINIMAL, C, and assembler.
 
@@ -55,7 +54,7 @@ asg1b  mov  xr,xl            copy trblk pointer
        beq  (XR),=b_bct,asg11 branch if buffer
        mov  xr,-(XS)         stack value to output
 .fi
-       JSR  gtstg            convert to string
+       JSR  GTSTG            convert to string
        PPM  asg12            get datatype name if unconvertible
 
 *      merge with string or buffer to output in xr
@@ -65,7 +64,7 @@ asg11  mov  trfpt(XL),wa     FCBLK ptr
 
 *      here for output to file
 
-asg1a  JSR  sysou            call system output routine
+asg1a  JSR  SYSOU            call system output routine
        err  206,output caused file overflow
        err  207,output caused non-recoverable error
        exi                   else all done, return to caller
@@ -112,7 +111,7 @@ zysou()
     /* write the data, fail if unsuccessful */
     if (oswrite
 	(fcb->mode, fcb->rsz, WA(word), MK_MP(fcb->iob, struct ioblk *),
-	 XR(struct scblk *)) != 0)
+	 XR(struct SCBLK *)) != 0)
 	 return EXI_2;
 
     /* normal return */
@@ -724,7 +723,7 @@ value) for use with DAC
 
             ************************************************
             *   in the following descriptions the usage --     *
-            *      (XL ),(XR ), ... ,(IA)                        *
+            *      (XL),(XR), ... ,(IA)                        *
             *   in the descriptive te*XT* signifies the          +
             *   contents of the stated register.               *
             ************************************************
@@ -1008,7 +1007,7 @@ LEI replaces the contents of _x_ by this value.
 
 JSR causes control to be passed to the named
 procedure. _pnam_ is the label on a PRC
-statement elsewhere in the program section (see prc) or has been
+statement elsewhere in the program section (see PRC) or has been
 defined using an *exp* instruction.
 
 The
@@ -1031,11 +1030,10 @@ procedure for use with JSR a procedure is a
 contiguous section of instructions to which control may be passed with
 a JSR instruction.
 
-This is the only way in which the instructions in a
-procedure may be executed.
+This is the only way in which the instructions in a procedure may be executed.
 
-It is not permitted to fall into a
-procedure.  All procedures should be named in section 0
+It is not permitted to fall into a procedure.
+All procedures should be named in section 0
 INP statements.
 
 _int_ is the number of exit parameters (PPM-s) to be used in
@@ -1048,7 +1046,7 @@ single letter as follows.
 *  r    recursive
 
 The return point (one or more words) is stored on the stack as though
-one or more MOV ...,-(XS )
+one or more MOV ...,-(XS)
 
 *   n   non non-recursive
 
@@ -1377,7 +1375,7 @@ $$$ can also be used.
             CP    _reg_         MOV  *CP* $$$,_reg_
 
             LCW   _reg_         MOV  CP $$$,XL
-                             MOV  (XL )+,_reg_
+                             MOV  (XL)+,_reg_
                              MOV  XL ,CP $$$
 
             iCP               ICA  *CP* $$$
@@ -1620,7 +1618,7 @@ Sine of real accumulator
 
 square root of real accumulat
 
-*5.23 TAN
+*   5.23 TAN
 
 Tangent of real accumulator
 
@@ -1636,7 +1634,7 @@ the following instruction must be either ROV or RNO
 
 
 Character operations employ the concept of a character pointer which
-uses either index register XR or XL (not XS ).
+uses either index register XR or XL (not XS).
 
 A character pointer points to a specific character in a string of
 characters stored CFP$C chars to a word.
@@ -1763,9 +1761,9 @@ CMC is used to compare two character strings. before
 executing CMC  registers are set up as follows.
 
 ```
-            (XL )             character ptr for first string
-            (XR )             character pointer for second string
-            (WA)             character count (must be .gt. zero)
+            (XL)             character ptr for first string
+            (XR)             character pointer for second string
+            (WA             character count (must be .gt. zero)
 ```
 
 XL and XR should have been prepared by PLC control passes to first _plbl_ the
@@ -1787,16 +1785,16 @@ TRC is used to translate a character string using a supplied translation table. 
 registers are set as follows.
 
 ```
-            (XL )             char ptr to string to be translated
-            (XR )             char ptr to translate table
+            (XL)             char ptr to string to be translated
+            (XR)             char ptr to translate table
             (WA)             length of string to be translated
 ```
 
 XL and XR should have been prepared by PLC the translate table consists of
-CFP$A* contiguous characters giving the translations
-of the CFP$A* characters in the alphabet.
+CFP$A contiguous characters giving the translations
+of the CFP$A characters in the alphabet.
 
-On completion, (XR ) and (XL ) are set to zero and (WA) is undefined.
+On completion, (XR) and (XL) are set to zero and (WA) is undefined.
 
 *   6.10 FLC  _w_
 
@@ -2593,7 +2591,7 @@ write will operate on the previous record.
 ```
 
        (WA)                  pointer to FCBLK or zero
-       (XR)                  backspace argument (scblk pointer)
+       (XR)                  backspace argument (SCBLK pointer)
        JSR  sysbs            call to backspace
        PPM  loc              return here if file does not exist
        PPM  loc              return here if backspace not allowed
@@ -2648,7 +2646,7 @@ any trailing blanks, and conversion cannot fail.
 ```
        (IA)                  value to be converted
        JSR  SYSCI            call to convert integer value
-       (XL)                  pointer to pseudo-scblk with string
+       (XL)                  pointer to pseudo-SCBLK with string
 ```
 
 ### SYSCB -- general string comparison function
@@ -2697,7 +2695,7 @@ trailing zeros in the fractional part.  conversion cannot fail.
                              zero for g-type conversion
                              positive for f-type conversion
        (WC)                  character positions in result SCBLK
-       (XR)                  scblk for result
+       (XR)                  SCBLK for result
        JSR  SYSCR            call to convert real value
        (XR)                  result SCBLK
        (WA)                  number of result characters
@@ -2755,10 +2753,10 @@ Provides means for interface to take special actions on errors
        (WB)                  line number
        (WC)                  column number
        (XR)                  system stage
-       (XL)                  file name (scblk)
+       (XL)                  file name (SCBLK)
        JSR  SYSEA            call to SYSEA function
        PPM  loc              suppress printing of error message
-       (XR)                  message to print (scblk) or 0
+       (XR)                  message to print (SCBLK) or 0
 
 ```
 
@@ -2777,7 +2775,7 @@ output file (see SYSEP).
 
 ```
        (WA)                  pointer to FCBLK> or zero
-       (XR)                  eject argument (scblk pointer)
+       (XR)                  eject argument (SCBLK pointer)
        JSR  SYSEF            call to eject file
        PPM  loc              return here if file does not exist
        PPM  loc              return here if inappropriate file
@@ -2794,7 +2792,7 @@ standard output file (see SYSEP).
 
 ```
        (WA)                  pointer to FCBLK or zero
-       (XR)                  eject argument (scblk pointer)
+       (XR)                  eject argument (SCBLK pointer)
        JSR  SYSEF            call to eject file
        PPM  loc              return here if file does not exist
        PPM  loc              return here if inappropriate file
@@ -2810,7 +2808,7 @@ Note that SYSEF is not normally used for the standard output file (see SYSEP).
 
 ```
        (WA)                  pointer to FCBLK or zero
-       (XR)                  eject argument (scblk pointer)
+       (XR)                  eject argument (SCBLK pointer)
        JSR  SYSEF            call to eject file
        PPM  loc              return here if file does not exist
        PPM  loc              return here if inappropriate file
@@ -2873,7 +2871,7 @@ it may be necessary to reopen the file via SYSIO.
 
 ```
        (WA)                  pointer to FCBLK or zero
-       (XR)                  endfile argument (scblk pointer)
+       (XR)                  endfile argument (SCBLK pointer)
        JSR  SYSEN            call to endfile
        PPM  loc              return here if file does not exist
        PPM  loc              return here if endfile not allowed
@@ -3049,10 +3047,10 @@ allocated and pointed to via file _arg1_, SYSFC is also passed a pointer to this
 FCBLK.
 
 ```
-      (XL)                  file arg1 scblk ptr (2nd arg)
-      (XR)                  filearg2 (3rd arg) or null
-      -(XS)...-(XS)         scblks for $f$,$r$,$c$,...
-      (WC)                  no. of stacked scblks above
+      (XL)                  file arg1 SCBLK ptr (second arg)
+      (XR)                  filearg2 (third arg) or null
+      -(XS)...-(XS)         SCBLKs for $f$,$r$,$c$,...
+      (WC)                  no. of stacked SCBLKs above
       (WA)                  existing file arg1 FCBLK ptr or 0
       (WB)                  0/3 for input/output assocn
       JSR  SYSFC            call to check need for FCBLK
@@ -3075,14 +3073,14 @@ after a garbage collection.
 
 Possible usages- 
 
-provide visible screen icon of garbage collection in
+SYSSGCC provides visible screen icon of garbage collection in
 progress.
 
-inform virtual memory manager to ignore page access patterns
-during garbage collection.  such accesses typically destroy the page
+To inform virtual memory manager to ignore page access patterns
+during garbage collection.  Such accesses typically destroy the page
 working set accumulated by the program.
 
-inform virtual memory manager that contents of memory freed by
+Inform virtual memory manager that contents of memory freed by
 garbage collection can be discarded. 
 
 ```
@@ -3166,8 +3164,8 @@ SCBLKs pointed at need not be correctly set.
 
 ```
        JSR  sysid            call for system identification
-       (XR)                  scblk pointer for addition to header
-       (XL)                  scblk pointer for second header
+       (XR)                  SCBLK pointer for addition to header
+       (XL)                  SCBLK pointer for second header
 ```
 
 ### SYSIF -- switch to new include file
@@ -3182,12 +3180,12 @@ file access path to the present input file before switching to the new
 include file.
 
 ```
-      (XL)                  ptr to scblk or zero
-      (XR)                  ptr to vacant scblk of length cswin
+      (XL)                  ptr to SCBLK or zero
+      (XR)                  ptr to vacant SCBLK of length cswin
                             (xr not used if xl is zero)
       JSR  sysif            call to change files
       PPM  loc              unable to open file
-      (XR)                  scblk with full path name of file
+      (XR)                  SCBLK with full path name of file
                             (xr not used if input xl is zero)
 ```
 
@@ -3241,7 +3239,7 @@ SCBLK length has been modified.
 
 ```
        (WA)                  pointer to FCBLK or zero
-       (XR)                  pointer to buffer (scblk pointer)
+       (XR)                  pointer to buffer (SCBLK pointer)
        JSR  sysin            call to read record
        PPM  loc              endfile or no i/p file after SYSXI
        PPM  loc              return here if i/o error
@@ -3272,8 +3270,8 @@ In subsequent associated accesses to the file a pointer to any
 FCBLK allocated will be made available.
 
 ```
-       (XL)                  file arg1 scblk pointer (2nd arg)
-       (XR)                  file arg2 scblk pointer (3rd arg)
+       (XL)                  file arg1 SCBLK pointer (second arg)
+       (XR)                  file arg2 SCBLK pointer (third arg)
        (WA)                  FCBLK pointer (0 if none)
        (WB)                  0 for input, 3 for output
        JSR  SYSIO            call to associate file
@@ -3296,8 +3294,8 @@ pointer is returned. the pointer will be used on subsequent calls to
 the function (see SYSEX).
 
 ```
-       (XR)                  pointer to function name (scblk)
-       (XL)                  pointer to library name (scblk)
+       (XR)                  pointer to function name (SCBLK)
+       (XL)                  pointer to library name (SCBLK)
        JSR  SYSLD            call to load function
        PPM  loc              return here if func does not exist
        PPM  loc              return here if i/o error
@@ -3361,7 +3359,7 @@ associated with a SYSIO call.
 
 ```
        (WA)                  pointer to FCBLK or 0 for terminal or 1 for output
-       (XR)                  record to be written (scblk)
+       (XR)                  record to be written (SCBLK)
        JSR  sysou            call to output record
        PPM  loc              file full or no file after SYSXI
        PPM  loc              return here if i/o error
@@ -3400,7 +3398,7 @@ the code calling SYSPL.
                              =3 expression evaluation result
        (WB)                  statement number
        r_fcb                 zero or pointer to head of FCBLK chain
-       JSR  syspl            call to syspl function
+       JSR  SYSPL            call to syspl function
        PPM  loc              user interruption
        PPM  loc              step one statement
        PPM  loc              evaluate expression
@@ -3421,26 +3419,26 @@ that returned in initial call but may not be greater.
 the information returned is -
 
 
-line length in chars for standard print file
+* line length in chars for standard print file
 
-no of lines/page. 0 is preferable for a non-paged device (e.g.
+* no of lines/page. 0 is preferable for a non-paged device (e.g.
 online terminal) in which case listing page throws are suppressed and
 page headers resulting from -title,-stitl lines are kept short.
 
-an initial -nolist option to suppress listing unless the program
+* an initial -nolist option to suppress listing unless the program
 contains an explicit -list.
 
-options to suppress listing of compilation and/or execution stats
+* options to suppress listing of compilation and/or execution stats
 (useful for established programs) - combined with 3. gives possibility
 of listing file never being opened.
 
-option to have copies of errors sent to an interactive channel in
+* option to have copies of errors sent to an interactive channel in
 addition to standard printer.
 
-option to keep page headers short (e.g. if listing to an online
+* option to keep page headers short (e.g. if listing to an online
 terminal).
 
-an option to choose extended or compact listing format. in the
+* an option to choose extended or compact listing format. in the
 former a page eject and in the latter a few line feeds precede the
 printing of each of-- listing, compilation statistics, execution
 output and execution statistics.
@@ -3448,23 +3446,23 @@ output and execution statistics.
 an option to suppress execution as though a -noexecute card were
 supplied.
 
-an option to request that name /terminal/ be pre- associated to
+* an option to request that name /terminal/ be pre- associated to
 an online terminal via SYSPI and
 SYSRI
 
-an intermediate (standard) listing option requiring that page
+* an intermediate (standard) listing option requiring that page
 ejects occur in source listings. redundant if extended option chosen
 but partially extends compact option.
 
- option to suppress SYSID identification.
+* option to suppress SYSID identification.
 
 
 ```
 
-       JSR  syspp            call to get print parameters
-       (WA)                  print line length in chars
-       (WB)                  number of lines/page
-       (WC)                  bits value ...mlkjihgfedcba where
+       JSR  SYSPP    call to get print parameters
+       (WA)          print line length in chars
+       (WB)          number of lines/page
+       (WC)          bits value ...mlkjihgfedcba where
                      a = 1 to send error copy to int.ch.
                      b = 1 means std printer is int. ch.
                      c = 1 for -nolist option
@@ -3488,7 +3486,7 @@ SYSPR is used to print a single line on the
 standard output file.
 
 ```
-       (XR)                  pointer to line buffer (scblk)
+       (XR)                  pointer to line buffer (SCBLK)
        (WA)                  line length
        JSR  SYSPR            call to print line
        PPM  loc              too much o/p or no file after SYSXI
@@ -3497,15 +3495,13 @@ standard output file.
 
 The buffer pointed to is the length obtained from the
 SYSPP call and is filled out with trailing blanks.
-the value in *wa* is the actual line length which may
+the value in WA is the actual line length which may
 be less than the maximum line length possible. there is no space
 control associated with the line, all lines are printed single spaced.
 
-Note that null lines (*wa*=0) are possible in which
-case a blank line is to be printed.
+Note that null lines (WA=0) are possible in which case a blank line is to be printed.
 
-The error exit is used for systems which limit the amount of
-printed output.
+The error exit is used for systems which limit the amount of printed output.
 
 If possible, printing should be permitted after this
 condition has been signalled once to allow for dump and other
@@ -3514,8 +3510,7 @@ make more SYSPR calls. if the error return occurs
 another time, execution is terminated by a call of
 SYSEJ with ending code 998.
 
-### SYSRD -- read record from standard input
-file
+### SYSRD -- read record from standard input file
 
 SYSRD is used to read a record from the standard
 input file. the buffer provided is an SCBLK for a
@@ -3535,71 +3530,65 @@ SPITBOL may continue to make calls after an endfile return so this
 routine should be prepared to make repeated endfile returns.
 
 ```
-       (XR)                  pointer to buffer (scblk pointer)
+       (XR)                  pointer to buffer (SCBLK pointer)
        (WC)                  length of buffer in characters
-       JSR  sysrd            call to read line
-       PPM  loc              endfile or no i/p file after SYSXI
+       JSR  SYSRD            call to read line
+       PPM  loc              endfile or no input/output file after SYSXI
                              or input file name change.  if
-                             the former,scblk length is zero.
+                             the former,the SCBLK length is zero.
                              if input file name change, length
-                             is non-zero. caller should re-issue
-                             sysrd to obtain input record.
+                             is non-zero. The caller should re-issue
+                             SYSRD to obtain input record.
        (WA,WB,WC)            destroyed
 ```
 
 ### SYSRI -- read record from interactive channel
 
 Reads a record from online terminal for SPITBOL variable,
-terminal. if online terminal is unavailable then code the endfile
-return only.
+terminal. If the online terminal is unavailable then code the endfile return only.
 
-The buffer provided is of length 258 characters.
-SYSRI should replace the count in the second word of
-the SCBLK by the actual character count unless buffer
-is right padded with zeroes.
+The buffer provided is of length 258 characters. SYSRI should replace the count in the second word of
+the SCBLK by the actual character count unless the buffer is right padded with zeroes.
 
-It is also permissible to take the alternative return after
-adjusting the count.
+It is also permissible to take the alternative return after adjusting the count.
 
-The end of file return may be used if this makes
-sense on the target machine (e.g. if there is an
-eof character.)
+The end of file return may be used if this makes sense on the target machine (e.g. if there is an
+EOF character.)
 
 ```
-       (XR)                  pointer to 258 char buffer (scblk pointer)
-       JSR  sysri            call to read line from terminal
+       (XR)                  pointer to 258 char buffer (SCBLK pointer)
+       JSR  SYSRI            call to read line from terminal
        PPM  loc              end of file return
        (WA,WB,WC)            may be destroyed
 ```
 
 ###  SYSRW -- rewind file
 
-SYSRW is used to rewind a file i.e. reposition
-the file at the start before the first record. the file should be
-closed and the next read or write call will open the file at the
+SYSRW is used to rewind a file i.e. reposition the file at the start before the first record.
+The file should be closed and the next read or write call will open the file at the
 start.
 
 ```
        (WA)                  pointer to FCBLK or zero
-       (XR)                  rewind arg scblk pointer)
-       JSR  sysrw            call to rewind file
+       (XR)                  rewind arg SCBLK pointer)
+       JSR  SYSRW            call to rewind file
        PPM loc return here if file does not exist
        PPM loc return here if rewind not allowed PPM loc return here if i / o error
 ```
 
 ### SYSST -- set file pointer
 
-SYSST is called to change the position of a file
-pointer. this is accomplished in a system dependent manner, and thus
-the 2nd and 3rd arguments are passed unconverted.
+SYSST is called to change the position of a file pointer. 
+This is accomplished in a system dependent manner,
+and thus the second and third arguments are passed unconverted.
 
 ```
        (WA)                  FCBLK pointer
-       (WB)                  2nd argument
-       (WC)                  3rd argument
+       (WB)                  second argument
+       (WC)                  third argument
        JSR  SYSST            call to set file pointer
-       PPM  loc              return here if invalid 2nd arg
-       PPM  loc              return here if invalid 3rd arg
+       PPM  loc              return here if invalid second arg
+       PPM  loc              return here if invalid third arg
        PPM  loc              return here if file does not exist
        PPM  loc              return here if set not allowed
        PPM  loc              return here if i/o error
@@ -3687,7 +3676,7 @@ integers
 In the case of saved load modules, the status of open files is not
 preserved and implementors may choose to offer means of attaching
 files before execution of load modules starts or leave it to the user
-to include suitable input(), output() calls in his program.
+to include suitable INPUT(), OUTPUT() calls in his program.
 SYSXI should make a note that no i/o channels,
 including standard files, have files attached so that calls of
 SYSIN, SYSOU, SYSPR,
@@ -3705,15 +3694,14 @@ module will use a standard output file.
 
 If use is made of FCBLKs for i/o association,
 SPITBOL builds a chain so that those in use may be found in
-SYSXI and SYSEJ. The nodes are 4
-words long. The third word contains link to next node or 0, and the
+SYSXI and SYSEJ. The nodes are four words long. The third word contains link to next node or 0, and the
 fourth word contains a FCBLK pointer.
 
 ```
-       (XL)                  zero or scblk pointer to first argument
-       (XR)                  pointer to v.v scblk
+       (XL)                  zero or SCBLK pointer to first argument
+       (XR)                  pointer to v.v SCBLK
        (IA)                  signed integer argument
-       (WA)                  scblk pointer to second argument
+       (WA)                  SCBLK pointer to second argument
        (WB)                  0 or pointer to head of FCBLK chain
        JSR  SYSXI            call to exit
        PPM  loc              requested action not possible
@@ -3721,7 +3709,7 @@ fourth word contains a FCBLK pointer.
        (WB,WC,IA,XR,XL,CP)   should be preserved over call
        (WA)                  0 in all cases except sucessful
                              performance of exit(4) or exit(-4),
-                             in which case 1 should be returned.
+                             in which case one should be returned.
 ```
 
 Loading and running the load module or returning from jcl command
@@ -3741,13 +3729,11 @@ Above options have the obvious implication that a
 standard o/p file must be provided for the load module.
 
 The values +3, +4, -3 or -4 indicate calls of neither SYSID nor
-SYSPP and no heading will be placed on standard output
-       file.
+SYSPP and no heading will be placed on standard output file.
 
 The values  +4 or -4 indicate that execution is to continue after creation of
 the save file or load module, although all files will be closed by the
 SYSXI action.  This permits the user to checkpoint
 long-running programs while continuing execution.
 
-No return from SYSXI is possible if another
-program is loadednd entered.
+No return from SYSXI is possible if another program is loaded and entered.
