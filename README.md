@@ -183,12 +183,16 @@ You can learn more about Ed at [Ed's web site](http://www.edquillen.com/) and
 home](http://www.denverpost.com/obituaries/ci_20781716/denver-post-columnist-
 ed-quillen-dies-at-age).
 
-### V37.MIN
+### v37.min
 
 `v37.min` is the source file for SPITBOL v3.7. It is the state of SPITBOL as of 2009 when
 Dave Shields took over the maintainer role. The actual code in the current system is
 very close to v3.7. The main difference is that the change history has been deleted, and
 the MINIMAL specification formerly in this document can now be found in the file `minimal.md`
+
+The supplied version of v37.min is just the source for SPITBOL converted from all upper case
+to all lower case.
+
 
 ### MINIMAL.MD
 

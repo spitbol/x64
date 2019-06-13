@@ -66,13 +66,1123 @@
 *      version 3.8 (june 2012, david shields)
 *      --------------------------------------
 
-*	       this version is very close to v3.7, with the
-*              same functionality.
+*	       this version is very close to v3.7, with the same functionality.
 
 *              the source is now maintained using git, so going forward
 *              the detailed revision history will be recorded in the git
 *              commit logs, not in this file.
 
+*      version 3.6a to 3.7 (november 1, 1991, mark b. emmer)
+*      -----------------------------------------------------
+*
+*      bugs fixed
+*      ----------
+*
+*      b3.701  add btkwv and refined test at cdgvl+9 to prevent
+*              variable names alphabet, lcase, ucase from being
+*              pre-evaluated because of their associated
+*              constant keywords.  the code
+*                 alphabet = "abc"; output = size(alphabet)
+*              returned zero because of pre-evaluation.
+*      b3.702  delay binding to function block of fourth
+*              argument to trace function.  this permits the
+*              trace function to be invoked before the 4th
+*              argument function is defined.  accomplished by
+*              storing a vrblk pointer in trfnc, and fetching
+*              its vrfnc entry later, in trxeq.
+*      b3.703  references to keywords with constant pattern
+*              values (&arb, &bal, etc.) did not work.  a wtb
+*              instruction had been omitted at acs14+2.
+*      b3.704  if a program employed the code function to
+*              redefine a label that was the entry location of
+*              a user-defined function, the function would
+*              continue to jump to its old function body.  pfcod
+*              in pfblk was pointing directly to the target code
+*              block, instead of doing so indirectly through the
+*              vrblk for the entry label.
+*      b3.705  the test that required a label to be defined
+*              before it could be used as the entry of a user-
+*              defined function has been removed.  functions
+*              may be defined even if the label is yet
+*              undefined.
+*      b3.706  after a compilation error in the code function,
+*              the eval function produces spurrious errors.  the
+*              code offset cwcof was not being reset to the
+*              beginning of code block.  add line at err04+1 to
+*              accomplish this reset.
+*      b3.707  inconsistant tests with mxlen corrected.  several
+*              places were testing with bge instead of bgt,
+*              resulting in such anomalies as the statement
+*                 &maxlngth = &maxlngth
+*              failing.  since mxlen is guaranteed to be
+*              strictly less than dnamb, it is permissible to
+*              create objects of size mxlen.  bge changed to
+*              bgt at locations
+*                 s$arr+14, sar07+8, alobf+3, asg14+8, gtar6+10.
+*      b3.708  exit(command string) was not loading ptr to fcb
+*              chain into wb.  corrected at sext1.
+*      b3.709  change patst to return non-string error for null
+*              argument.  previously, break(), any(), etc., were
+*              succeeding, contrary to the language definition.
+*      b3.710  convert function with null second argument
+*              crashed system by calling flstg with wa=0.  added
+*              test at s$cnv, moved error 74 to separate erb at
+*              scv29.
+*      b3.711  leq(,) crashed system.  lcomp did not obey
+*              minimal assumption that cmc opcode will always
+*              be called with wa .gt. 0.  added test at lcmp1.
+*      b3.712  modified line at sdf07+4 to use register wa
+*              instead of wb.  this corrects problem of define
+*              function with local variable list that begins
+*              with comma-  define("f(x),l1,l2")
+*      b3.713  erroneous plc on uninitialised r$cim in listr.
+*      b3.714  erroneous call to flstg possible with null string
+*              at sdat1.
+*      b3.715  when copy function used with table argument, fix
+*              problem at cop07.  when copying first teblk on a
+*              chain, the pseudo-previous block pointer in xr
+*              is pushed on the stack prior to calling alloc.
+*              this is not a valid block pointer, as it points
+*              within the tbblk.  if the subsequent alloc
+*              invokes gbcol, the heap becomes scrambled.
+*              recoded to save pointer to start of block, plus
+*              offset in wb.
+*      b3.716  at iop01, if gtvar triggered garbage collection
+*              via alost, trap block in wc was not collected.
+*              save wc on stack to make it collectable across
+*              gtvar call.
+*      b3.717  at asg10, allow case of variable with more than
+*              one trblk, as happens with the following stmt -
+*              output(.output, .output, filename).
+*      b3.718  at senf1, trblk chain search was reloading chain
+*              head, causing infinite loop if the desired trblk
+*              was not the first on chain.  system crashed with
+*              trace(.v1) output(.v2,.v1,file).
+*      b3.719  prototype strings (define, load, data, etc.) were
+*              allowing blank characters, producing bogus
+*              variable names.
+*      b3.720  the fact that iofcb destroyed register wc was not
+*              documented.  b$efc conversion of file argument
+*              never worked because wc and xt were destroyed by
+*              call to iofcb.
+*      b3.721  ioput left a trblk attached to filearg1 if sysio
+*              failed.  subsequent use of this filearg1 variable
+*              in another i/o call would crash system.
+*      b3.722  add chk at evlp1 to catch recursive pattern error.
+*      b3.723  allow -line to work properly within code function
+*              by setting cmpln directly in cnc44.  if file name
+*              absent, decrement scnpt to rescan terminator.
+*      b3.724  when mxlen exceeds start of dynamic memory, round
+*              it up to multiple of word size prior to storing
+*              in dnamb at ini06.
+*      b3.725  provide right padding of zero characters to any
+*              string returned by an external function.
+*      b3.726  reset flptr at bpf17 for undefined function
+*              when evalx is evaluating an expression.
+*      b3.727  modify code after read5 for outer nesting of
+*              an execute-time compile of -include statement.
+*              create a substring of remainder of original
+*              code function argument string and return as
+*              result of readr function
+*      b3.728  the definition of the aov opcode is corrected.
+*              formerly the definition specified that the branch
+*              was to be taken if the result of the addition
+*              exceeded cfp$m, implying a test for overflow
+*              from signed addition.
+*              however, address arithmetic must be unsigned to
+*              allow for systems where the high order address
+*              bit is set.  therefore, the test must be for
+*              carry out of the high order bit, if the result
+*              would exceed cfp$l.
+*      b3.729  a label trace on the entry label for a function
+*              was undetected, resulting in a transfer to
+*              b$trt and subsequent crash.  see bpf08 for fix.
+*      b3.730  pop first argument to substr if it is a buffer.
+*      b3.731  pattern replacement with buffer subject returned
+*              null string instead of new subject value.
+*              changed to behave as if subject was a string.
+*      b3.732  if convert function was called with a buffer
+*              first argument and "buffer" second argument,
+*              it would convert the buffer to a string, and
+*              then back to a buffer.  this has be corrected
+*              to simply return the first argument as the
+*              function result.
+*      b3.733  detect external function returning a null string
+*              unconverted result at bef12, and jump to exnul.
+*      b3.734  fix problem at ins04 when inserting zero length
+*              string into buffer.  defend against invoking
+*              mvc with a zero value in wa, which will cause
+*              some implementations to wrap the counter.
+*      b3.735  add overflow test for cos and sin to detect
+*              out-of-range argument.
+*      b3.736  fixed problem introduced with b3.727 not
+*              restoring r$cim, scnpt and scnil after creating
+*              substring.
+*      b3.737  fixed tfind to place default value in newly
+*              allocated teblk.
+*      b3.738  added bl$p0 to p$nth entry point.  the expression
+*              datatype(convert("","pattern")) would crash when
+*              the dtype function uses the non-existant type
+*              word preceding p$nth.
+*      b3.739  bug at gtn35 in the case of overflow during cvm.
+*              wb can be destroyed by cvm on some platforms.
+*      b3.740  protect scontinue from usage in other than error
+*              320 case.
+*      b3.741  protect continue from usage following error
+*              evaluating complex failure goto.
+*
+*
+*      changes
+*      -------
+*
+*      c3.701  add .culk conditional to include &lcase, &ucase.
+*      c3.702  add -line nn "filename" control card.
+*      c3.703  move .cnld conditional up in routine dffnc to
+*              omit all tests for b$efc.
+*      c3.704  add conditional .cicc to ignore unrecognized
+*              control cards.
+*      c3.705  add conditional .cnsc to omit string to numeric
+*              conversion in sort.  the presence of this
+*              conversion mode produces a sort result that is
+*              dependent upon the order of input data.
+*              for example, given input data "2", 5, "10",
+*              string comparison yields "10" lt "2", but string
+*              to integer conversion yields "2" lt 5 lt "10".
+*      c3.706  add seventh return from syshs that allows callee
+*              to return a string pointer and length.  this is
+*              done to eliminate the need for the caller to have
+*              an scblk big enough to accommodate long strings.
+*      c3.707  add eighth return from syshs to force copy of
+*              block pointed to by xr.
+*      c3.708  made -copy a synonym for -include.
+*      c3.709  add conditional .cbyt for statistics displayed
+*              in bytes rather than words.
+*      c3.710  dump null valued variables when dump = 3.  core
+*              dump produced for dump = 4.
+*      c3.711  restrict minimum value to which keyword maxlngth
+*              can be set to 1,024 via new variable mnlen.
+*      c3.712  add conditional symbol .cmth for extended math
+*              functions- atan, chop, cos, exp, ln, sin, sqrt,
+*              tan.  x**y and remdr(x,y) are extended to include
+*              reals.
+*      c3.713  add bit to syspp to set -print upon entry
+*      c3.714  add conditional .csfn to track source file name
+*              associated with each code block.
+*      c3.715  add conditional .cinc for -include control card
+*              feature.  the format of the card is
+*                 -include "filename"
+*              include control cards may be used during both the
+*              initial compile and execute-time compile.  the
+*              filename is saved in a table, and redundant
+*              includes of that file are ignored.
+*      c3.716  add conditional .csln to include source line
+*              number in code blocks.  release current ccblk
+*              after initial compile.
+*      c3.717  changed rilen to 258 (from 120) to provide
+*              uniform input line length when reading from
+*              terminal or input.
+*      c3.718  add additional exit to iofcb to distinguish
+*              argument not convertable to string and argument
+*              file not open.
+*      c3.719  add fourth and fifth arguments to host function.
+*      c3.720  add &compare keyword to control string
+*              comparisons.
+*      c3.721  setup pfdmp at iniy0 in case osint forced
+*              &profile non-zero.
+*      c3.722  add conditional symbol .caex to include up arrow
+*              as synonym for exponentiation.
+*      c3.723  add conditional .ccmc and external function syscm
+*              to provide string comparison using collation
+*              sequence other than strict ordering of character
+*              codes (international compares).
+*      c3.724  add conditional .cpol and external function syspl
+*              to provide interactive control of spitbol
+*              execution.
+*      c3.725  add conditional symbol .cera and external
+*              function sysea to provide advice of compilation
+*              and runtime errors to osint.
+*      c3.726  add cmpln, rdcln, rdnln to track source line
+*              number.
+*      c3.727  converted error messages to upper/lower case.
+*      c3.728  add conditional .cgbc to external routine sysgc.
+*              called at the start and end of garbage collection
+*              to perform any needed notification to operating
+*              system or user.
+*      c3.729  modified last line of s$set from exnul to exint
+*              so seek can return final file position after
+*              seek.
+*      c3.730  place mov xr,(xs) at s$rmd+4 to allow real second
+*              arg to remdr.
+*      c3.731  remove redundant bge xr,=cfp$u,scn07 at scn06+4
+*      c3.732  change definition of cmc and trc such that only
+*              xl must be cleared after operation.  note, this
+*              change was subsequently voided.  cmc and trc must
+*              clear both xl and xr, because utility routines
+*              may preserve xl or xr on the stack, and the stack
+*              is collectable by gbcol.
+*      c3.733  remove most branches to exits and exixr.
+*              instead, jump directly to next code word.
+*      c3.734  add error 260 for array too large in gtarr.
+*      c3.735  add conditional .cs32 to initialize stlim to
+*              2147483647.
+*      c3.736  add second argument to exit function, allowing
+*              user to specify file name of load module being
+*              written.  if omitted, osint will provide a
+*              default name.
+*      c3.737  add conditional .cspr to include spare locations
+*              in working area.  these may be used in later bug
+*              fixes without changing the size of the working
+*              storage and obsoleting modules created by exit().
+*              subsuently removed in c3.767.
+*      c3.738  add r$cts to remember last string used to build
+*              bit column in patst.
+*      c3.739  change flstg to type e procedure instead of r.
+*      c3.740  standardize on big-endian systems.  at the
+*              implementors choice, the zgb opcode can also
+*              perform a byte swap if necessary to achieve big-
+*              endian byte ordering.  this is done so that
+*              systems with similar word lengths will produce
+*              the same hash code for strings, and hence the
+*              same ordering for table entries.  the hashs
+*              procedure has an additional zgb added to reorder
+*              the length word.
+*      c3.741  add conditional .csou to cause assignments to
+*              output and terminal variables to be processed
+*              through calls to sysou rather than through
+*              listing buffer.  done to eliminate short record
+*              lengths enforced by buffer size.  a code of 0 or
+*              1 is passed to sysou instead of an fcblk.
+*      c3.742  increased iniln, inils, rilen to 1024.
+*      c3.743  add bit to syspp to set noerrors mode.
+*      c3.744  add .ccmk conditional to include keyword compare
+*              even if syscm is not being included.  done to
+*              provide identical data regions in systems that
+*              implement syscm and those which do not, so that
+*              save files can be exchanged in the next release.
+*      c3.745  add wc return parameter to sysil to allow
+*              interface to inform spitbol if file about to be
+*              read is a binary file.  if so, no blank trimming
+*              occurs.
+*      c3.746  fold load function argument types to upper case.
+*      c3.747  add .cexp conditional to have sysex pop its
+*              arguments.
+*      c3.748  in stopr, do not attempt to display file name and
+*              line number if stopping because of stack overflow
+*              during garbage collection.  pointers to file name
+*              table and code block are wrong.
+*      c3.749  add bit to syspp to set case folding mode.
+*      c3.750  add additional return from sysld if insufficient
+*              memory to load/call external function.
+*      c3.751  add additional returns from sysex if insufficient
+*              memory or bad argument type.
+*      c3.752  ignore leading and trailing blanks in arguments
+*              within prototype strings to clear, data, define
+*              and load.
+*      c3.753  test for fatal error at err04 and abort if so.
+*              force termination on stack overflow by setting
+*              errft to 4 in stack overflow section.
+*      c3.754  recode copy loop at srt14 to exchange usage of
+*              registers xl and xr.  this permits use of the
+*              mvw order instead of the explicit loop coding
+*              previously employed.
+*      c3.755  add .ceng conditional to include routines needed
+*              by text processing engine. add routines enevs and
+*              engts for use by engine or debugger.  copy xr to
+*              xl around call to syspl to allow syspl to
+*              trigger garbage collection.
+*      c3.756  add &file, &lastfile, &line, &lastline keywords.
+*              for now, line and lastline are maintained in the
+*              same manner as stno and lastno, which adds over-
+*              head to the statement initialization code.  a
+*              possible change is to create a stmln procedure
+*              that maps statement numbers to line numbers.
+*              one simple strategy would be to sweep code blocks
+*              in memory looking for the statement number and
+*              extracting the line number from that code block.
+*              such a procedure would also allow line numbers
+*              (and file names) to be added to statement profile
+*              reports.
+*      c3.757  change sort to fail instead of producing error
+*              message if argument table is null.  change sorta
+*              to return failure.  add another return to gtarr
+*              to distinguish null table from bad argument.
+*      c3.758  create procedure prtmm to display memory usage
+*              statistics, and call it when producing end-of-
+*              run stats.
+*      c3.759  add label scontinue to allow setexit to resume
+*              execution exactly where it was interrupted.
+*      c3.760  add snobol4 backspace function and conditional
+*              .cbsp.
+*      c3.761  add additional arguments to sysgc to assist
+*              virtual memory managers.
+*      c3.762  the method of converting a table to an array has
+*              been revised.  previously, table elements were
+*              copied to the result array in the order they were
+*              encountered along the various hash chains.  this
+*              appeared to the user as a random ordering.  how-
+*              ever, spitbol/370 as well as sil snobol4 ordered
+*              array elements according to their time of entry
+*              into the table.  user programs that relied upon
+*              this behavior malfunctioned when ported to macro
+*              spitbol.
+*              to remedy this, the conversion is performed in
+*              three steps:
+*              1. convert table to an array placing the address
+*                 of each teblk in the array instead of the key
+*                 and value.
+*              2. sort the array of addresses.  this orders ele-
+*                 ments by time of creation (ascending address).
+*              3. scan the array, replacing addresses with the
+*                 key and value from the referenced teblk.
+*              the affected portions of the program are at s$cnv
+*              and in gtarr, which now accepts an additional
+*              argument specifying whether to place key/values
+*              in the array or teblk addresses.
+*      c3.763  if case-folding is active, fold the function name
+*              provided to the load() function before passing it
+*              to sysld.
+*      c3.764  add sediment algorithm to garbage collector,
+*              conditioned on .csed.
+*      c3.765  add optimization to discard null statements and
+*              statements which just have a constant subject
+*              (see code at cmp12).
+*      c3.766  rearranged order of initial objects in static
+*              memory so that hash table is the last of the four
+*              object created by initialization code.  this is
+*              done so that the print buffer, gts work area, and
+*              &alphabet keywords do not need to be saved in
+*              any save file created by osint.  added routine to
+*              initialize these structures.
+*      c3.767  removed .cspr conditional and spare locations.
+*      c3.768  added .crel conditional and extensive routines
+*              (reloc et. al.) to perform relocation of data
+*              in working section, static region, and dynamic
+*              region after reload of a saved memory image.
+*              routines relaj, relcr, and reloc are invoked
+*              by osint after reloading a save file.
+*              it is now possible to reload such an image even
+*              if the spitbol compiler and its data structures
+*              are reloaded to other addresses.  the working
+*              section has been extensively rearranged to
+*              accommodate the reloc procedure.
+*      c3.769  zero r$ccb (interim ccblk ptr) in collect,
+*              convert, eval, and exit functions to release
+*              unneeded ccblk memory.
+*      c3.770  add exit(4) and exit(-4) to allow execution to
+*              continue after writing save file or load module.
+*              revised sysxi interface to detect continuation
+*              after performance of exit(4) or exit(-4) action.
+*      c3.771  change filnm to preserve registers.
+*      c3.772  addition of .cncr and syscr (real to string
+*              system routine option).
+*      c3.773  modified replace function to optimize usage
+*              when second argument is &alphabet.  in this case,
+*              the third argument can be used as the translate
+*              table directly.
+*      c3.774  modified conditionals for buffers and reals so
+*              that their respective block codes are always
+*              present, even if these data types are conditioned
+*              out.  this provides consistent block code
+*              numbering for external functions.
+*      c3.775  modified alobf to test string length against
+*              kvmxl instead of mxlen.  also, alobf was testing
+*              total size of bfblk, instead of just string len.
+*      c3.776  move utility routines source up to lie between
+*              predefined snobol functions (s$xxx) routines and
+*              utility procedures.  this was done to assist
+*              translation on platforms such as apple macintosh
+*              that use 15-bit offsets to store error exits (ppm
+*              branches).  offsets to labels like exfal were
+*              just too far away.  similarly, functions tfind,
+*              tmake, and vmake are located out of alphabetic
+*              order to satisfy the macintosh's limited range
+*              for subroutine calls.  move built-in labels
+*              beyond the block and pattern routines to get it
+*              within 32k of the error routines.
+*      c3.777  at scn46, allow colon, right paren and right
+*              bracket to terminate = operator with default
+*              null operand.
+*      c3.778  added .ctet conditional for table entry trace.
+*      c3.779  introduce cfp$l, the largest unsigned value
+*              that may be stored in a one-word integer.  this
+*              is done to accommodate machines where memory
+*              addresses have the high-order address bit set.
+*      c3.780  perform replace in place if first arg is buffer.
+*      c3.781  perform reverse in place if first arg is buffer.
+*      c3.782  change sysou to accept buffer as well as string
+*              to be output.  change code at asg11 to prevent
+*              conversion of buffer to string.
+*      c3.783  optimize pos and rpos when it is the first node
+*              of a pattern and has either an integer or simple
+*              expression variable argument.  if unanchored mode
+*              and the cursor is zero, it is advanced directly
+*              to the desired cursor position.
+*      c3.784  perform trim function in place if arg is buffer.
+*      c3.785  add gtstb procedure to get a string or buffer
+*              argument for replace, reverse, size, trim, etc.
+*      c3.786  change leq, lgt, etc. to perform comparisons
+*              without converting buffer arguments to strings.
+*              this is done by changing lcomp to accept buffer
+*              argument(s).  this also affects sort function,
+*              which will compare two buffers as strings.
+*      c3.787  change gtnum to use characters in buffer without
+*              conversion to a string.  this implies that acomp
+*              will perform arithmetic comparisons of buffers
+*              without converting to strings first.
+*      c3.788  perform comparisons of strings and buffers in
+*              sortc.
+*      c3.789  change insbf to allow insertion of a buffer into
+*              a buffer without first converting it to a string.
+*              note that this only works when the two buffers
+*              are not the same.
+*      c3.790  documentation change:  note that all of the block
+*              move opcodes should have wa .gt. 0.  not all
+*              implementations avoid moving objects when wa is
+*              zero.
+*      c3.791  change ident to provide buffer/buffer and
+*              buffer/string comparisons, to accommodate users
+*              who perform ident(buf) to check for null string
+*              in buffer.
+*      c3.792  added fullscan keyword initialized to one.  user
+*              may set to any non-zero value, will receive an
+*              error message if attempts to set to zero, since
+*              quickscan mode is not supported.
+*      c3.793  rewrote statement startup code at stmgo to only
+*              perform checking of profiling, stcount tracing,
+*              and statement counting if necessary.
+*      c3.794  add additional exit to sysfc and ioput to signal
+*              that i/o channel (fcblk) is already in use.
+*              added error message numbers 289 and 290.
+*      c3.795  added optional integer argument to date function
+*              to specify format of date string returned by
+*              sysdt.
+*
+*
+*      version 3.6 to 3.6a (oct 83)
+*      ---------------------------
+*
+*      changes
+*      -------
+*
+*      c3.617  add .cnlf. if defined, then arguments to external
+*              functions may be declared to have type file.
+*              such arguments must have been used as second
+*              arg to input() or output() and a pointer to the
+*              fcb is passed to the external function.
+*
+*
+*      version 3.5 to 3.6 (jun 83)
+*      ---------------------------
+*
+*      codes used to identify authors are (sgd) for duff,
+*      (reg) for  goldberg, and (lds) for shields.
+*
+*      bugs fixed
+*      ----------
+*      b3.601  (sgd) to fix multiple trap block problem in asign
+*      b3.602  (sgd) patch in gtarr to fix null convert.
+*      b3.603  (sgd) inserted missing wtb after sysmm calls.
+*      b3.604  (sgd) use string length in hashs.
+*      b3.605  (sgd) fixed serious parser problem
+*              relating to (x y) on line being viewed as pattern
+*              match.  fixed by addition of new cmtyp value
+*              c$cnp (concatenation - not pattern match).
+*      b3.606  (sgd) fixed exit(n) respecification code
+*              to properly observe header semantics on return.
+*      b3.607  (sgd) bypass prtpg call at initialization
+*              following compilation if no output generated.
+*              this prevents output files consisting of the
+*              headers and a few blank lines when there is no
+*              source listing and no compilation stats.
+*              also fix timsx initialization in same code.
+*      b3.608  (sgd) b$efc code did not check for
+*              unconverted result returning null string.
+*      b3.609  (sgd) load pfvbl field in retrn for
+*              return tracing. this was causing bug on return
+*              traces that tried to access the variable name.
+*      b3.610  (sgd) fixed problem relating to compilation of
+*              goto fields containing small integers
+*              (in const sec).
+*      b3.611  (reg) prevent clear() from clobbering protected
+*              variables at label sclr5.
+*      b3.612  (reg) fixed gtexp from accepting trailing
+*              semicolon or colon. this is not a legal way
+*              to end an expression.
+*      b3.613  (reg) fixed difficulties with listings during
+*              execution when no listing generated during
+*              compilation. -list to code() caused bomb.
+*              fix is to reset r$ttl and r$stl to nulls not 0
+*              after compilation.
+*              (listr and listt expect nulls)
+*              when listing and statistics routed to different
+*              file than execution output, error message is sent
+*              to execution output (and gets separated from
+*              ... in statement ... msg). labo1 calls sysax and
+*              stopr does not call sysax if entered from labo1.
+*      b3.614  (lds) fix misuse of wc just after asg10.
+*      b3.615  (lds) add comment pointing out suspicious code
+*              after tfn02
+*      b3.616  (lds) fix inconsistent declaration of sorth.
+*      b3.617  (lds) insert missing conditional tests on cnbf.
+*      b3.618  (lds) fix some violations of minimal language
+*              that had slipped past some translators.
+*      b3.619  (lds) correct error introduced in fixing b3.614.
+       ejc
+*      changes
+*      -------
+*
+*
+*      c3.601  (sgd) addition of .cnci and sysci (int to string
+*              system routine option)
+*      c3.602  (reg) changed iniln and and inils to 258
+*      c3.603  (sgd) merged in profiler patches, repaired code.
+*      c3.604  (sgd) added buffer type and symbol cnbf
+*      c3.605  (sgd) added char function.  char(n) returns nth
+*              character of host machine character set.
+*      c3.606  (reg) added cfp$u to ease translation on smaller
+*              systems - conditional .cucf
+*      c3.607  (reg) added lower case support, conditional .culc
+*      c3.608  (reg) added set i/o function, conditional .cust
+*      c3.609  (reg) conditionalized page eject after call to
+*              sysbx and added another before call to sysbx,
+*              so that, if desired by the implementor,
+*              standard output will reflect assignments made
+*              by executing program only.
+*              conditional .cuej controls - if defined then
+*              eject is before call to sysbx.
+*      c3.610  (lds) introduce .ctmd to support systm that
+*              reports elapsed time in deciseconds instead of
+*              milliseconds.
+*      c3.611  (lds)  provide place for .def or .und for each
+*              conditional  option, so that settings can be
+*              changed without changing line numbers.
+*              current settings are for 808x translation.
+*      c3.612  (lds) obey (new) restriction that operand in
+*              conditional branch instruction cannot have form
+*              (x)+ in order to simplify translations for which
+*              postincrement not readily available.
+*      c3.613  (reg,lds) add op
+*                    flc wreg
+*              that folds character in wreg to upper case.
+*              this op is used only if .culc is defined.
+*              this change also involves addition of keyword
+*              &case which when nonzero (the initial setting)
+*              causes the case folding just described to be
+*              done.
+*      c3.614  (lds) add option .cs16 to permit initialization
+*              of statement limit values to 32767 for 16 bit
+*              machines.
+*      c3.615  (lds) permit return point and entry point
+*              addresses to be distinguished by their parity
+*              instead of by lying within a certain range
+*              of values.  introduce conditional symbols
+*              .crpp  return points have odd parity
+*              .cepp  entry points have odd parity
+*      c3.616  (lds) introduce new minimal opcodes to branch
+*              according to parity,
+*                bev  opn,plbl  branch if address even
+*                bod  opn,plbl  branch if address odd
+*              an address is even if it is a multiple of cfp$b.
+       ejc
+*      documentation revisions
+*      -----------------------
+*
+*      d3.601  (lds) bring minimal machine description up to
+*              date
+*
+       ejc
+*      version 3.4 to 3.5 (feb 79)
+*      ---------------------------
+*
+*
+*      bugs fixed
+*      ----------
+*
+*      b3.401  prtst should be declared as an r type procedure.
+*      b3.402  timing error if spitbol fails in dump.
+*      b3.403  error in handling omitted args of operators.
+*      b3.404  too many lines put on first page of listing.
+*      b3.405  leading unary operator in eval erroneously needed
+*              preceding blank.
+*      b3.406  identifying name in dump of array or table values
+*              was omitted.
+*      b3.407  eval unable to return a deferred expression.
+*      b3.408  illegal if setexit code branches to return.
+*      b3.409  illegal on detaching input, output, terminal.
+*
+*      changes
+*      -------
+*
+*      c3.401  -sequ and -nose control cards removed.
+*      c3.402  option provided to suppress system identification
+*              on listing.
+*      c3.403  description of sysbx slightly revised.
+*      c3.404  permissible to modify scblk length before taking
+*              error returns from sysin, sysrd, sysri.
+*      c3.405  conditional .cnld may be defined to omit load().
+*      c3.406  conditional .cnex may be defined to omit exit().
+*      c3.407  table now accepts a third argument specifying
+*              default initial lookup value.
+*      c3.408  routines sort, rsort for sorting arrays and table
+*              introduced. specification is as in sitbol.
+*              routines may be omitted by defining .cnsr .
+*      c3.409  error in code(), eval() call now causes statement
+*              failure but errtext keyword is still set.
+*      c3.410  arg to code() may contain embedded control cards
+*              and comment delimited by a semicolon.
+*
+*      documentation revisions
+*      -----------------------
+*
+*      d3.401  purpose of restriction 2 in minimal section -6-
+*              (operations on char values), erroneously stated
+*              to be for cmc, rather than for ceq, cne.
+*              descriptions of above opcodes revised.
+*      d3.402  description of ent clarified.
+*      d3.403  descriptions of several opcodes revised to remove
+*              technically invalid literals e.g. =0 , *1.
+*      d3.405  restricted use of letter z in minimal clarified.
+*      d3.406  divide by zero explicitly mentioned in relation
+*              to overflow setting.
+       ejc
+*      version 3.3 to 3.4 (oct 78)
+*      ---------------------------
+*
+*
+*      bugs fixed
+*      ----------
+*
+*      b3.301  illegal for erroneous eval() arg.
+*      b3.302  address arithmetic overflow in alloc and alocs.
+*      b3.303  -eject and -space ignored -nolist option.
+*      b3.304  erroneous argument scan in load().
+*      b3.305  erroneous plc on uninitialised r$cim in nexts.
+*      b3.306  ldi used instead of mti after prv07.
+*      b3.307  misuse of rmi at erra2.
+*      b3.308  misuse of mti in hashs.
+*      b3.309  bug in -sequ card sequence number checking.
+*      b3.310  stack overflow error message not always printed.
+*      b3.311  corrupt prototype print for traced arrays.
+*      b3.312  pattern first arg in dupl caused error.
+*      b3.313  omitted csc in s$rpd, erroneous csc in convert.
+*      b3.314  misplaced btw in exbld.
+*      b3.315  incorrect code in hashs.
+*      b3.316  failure of load to scan integer arg.
+*      b3.317  table access with negative integer arg. failed.
+*      b3.318  error in returning result of loaded function.
+*      b3.319  =e$srs used after ini01 instead of *e$srs.
+*      b3.320  err used instead of erb after systu
+*      b3.321  label could start with disallowed character.
+*      b3.322  continue after setexit had bad heuristic.
+       ejc
+*
+*
+*      changes
+*      -------
+*
+*      c3.301  sysax and .csax introduced - see sysax
+*              in procedures section.
+*      c3.302  variable mxlen introduced. contains the maximum
+*              size of a spitbol object and is not changeable
+*              after initialisation. may be defaulted or set
+*              explicitly by sysmx.
+*      c3.303  syshs returns revised - see syshs.
+*      c3.304  new minimal opcode aov to fix b3.302.
+*      c3.305  inhibit stlimit check if stlimit made negative.
+*      c3.306  cfp$m is required to be of form 2**n - 1.
+*      c3.307  dupl made to conform to sil snobol4 standard.
+*      c3.308  lch and sch actions more closely defined.
+*      c3.309  batch initialisation code omitted if conditional
+*              assembly symbol .cnbt (no batch) defined.
+*      c3.310  (wa) contains argument count in sysex call.
+*      c3.311  sysfc  may request allocation of static fcblk.
+*      c3.312  if ia,wc overlap, restriction put on dumping/
+*              restoring these registers.
+*      c3.313  new listing option intermediate between compact
+*              and extended provided (see syspp).
+*      c3.314  revision of sysxi interface to permit options for
+*              load module standard o/p file (see sysxi,syspp).
+*      c3.315  last arg of substr may be omitted - treated
+*              as remainder of string.
+       ejc
+*      version 3.2 to 3.3 (jan 78)
+*      ---------------------------
+*
+*      bugs fixed
+*      ----------
+*
+*      b3.201  array reference and external function load
+*              routines illegally accessed information
+*              beyond the stack front.
+*              similar fault in unanchored pattern matching.
+*      b3.202  dump(1) produced dump(2) type output.
+*      b3.203  wtb conversion omitted in code following
+*              ini01, ini02, exbld.
+*      b3.204  incorrect fail return from tfind in arref.
+*      b3.205  endfile did not detach i/o associated variables.
+*      b3.206  -space with omitted arg. failed
+*      b3.207  looped if dump keyword non-zero after stack
+*              overflow in garbage collect failure.
+*      b3.208  failure in reading numbers with trailing blanks.
+*
+*      changes
+*      -------
+*
+*      the extensive changes made here mostly result from a
+*      snobol4 implementors meeting held at new york university
+*      in august 1977. they are aimed at
+*           (1) having spitbol conform to certain snobol4
+*           language standards  and
+*           (2) producing a stable definition of minimal by
+*           carrying out a few essential revisions in the light
+*           of experience in its use.
+*
+*      changes to spitbol
+*      ------------------
+*
+*      c3.201  default values for keywords trim and anchor are
+*              zero. on systems where records are customarily
+*              handled without traling blanks, there is no
+*              obligation to supply such blanks.
+*      c3.202  default value of -inxx control card is -in72.
+       ejc
+*      c3.203  the second argument of input and output is
+*              permitted to be an integer as in snobol4.
+*              in addition input(), output() now give a snobol4
+*              statement failure if sysio uses the file not
+*              found return.
+*              the third argument has a recommended format and
+*              to override its default delimiter (,) a
+*              conditional assembly symbol, .ciod, is used.
+*              interfaces to sysef,sysej,syfc,sysio,sysrw
+*              are revised.
+*              wc may now be used to return from sysio, a max
+*              record length.
+*      c3.204  a new configuration parameter cfp$f (scblk offset
+*              is introduced. cfp$u is removed.
+*      c3.205  implementation and version identification is
+*              required - see sysid.
+*      c3.206  routine sysmx returns the maximum length of
+*              spitbol objects (strings arrays etc).  this
+*              information is not now needed at time of entry to
+*              spitbol and hence wc should be zero on entry.
+*      c3.207  a conditional parameter .cnra permits assembly
+*              of a more compact version with no real
+*              arithmetic code.
+*      c3.208  terminal is a new pre-associated variable
+*              capable of performing input and output to an
+*              online terminal.
+*              sysri is a new routine used in the implementation
+*              of this. see also syspp.
+*      c3.209  the environment parameters e$--- are now
+*              provided by the minimal translator using the
+*              revised   equ  *   format (see c3.229 and start
+*              of spitbol definitions section - some reordering
+*              of symbols has occurred).
+*      c3.210  the interface of sysxi has been slightly revised.
+*              unavailability of i/o channels after exit(1),
+*              exit(-1) is documented together with additional
+*              error return usage for sysin,sysou,syspr,sysrd.
+*      c3.211  spitbol error codes have been frozen - see c3.230
+*      c3.212  the utility routines arref etc. are now
+*              introduced by rtn statements.
+*      c3.213  sysrl (record length for std input file) is
+*              removed. since implementation of a general -inxxx
+*              control card and an ability to specify max record
+*              length using the third argument of input, sysrl
+*              has become redundant.
+*      c3.214  sysej and sysxi are now passed a chain linking
+*              all fcblks in use.
+*      c3.215  a special ending code in sysej is used when
+*              attempts to use standard output channel fail.
+*      c3.216  restriction c3.233 observed so simplifying
+*              optimised translation of ent with omitted val.
+       ejc
+*
+*      changes to minimal
+*      ------------------
+*
+*      c3.220  minimal opcodes dec, dim, inc, and bmp
+*              are withdrawn and replaced by the more consistent
+*              set dca, dcv, ica, icv.
+*      c3.221  chs has been replaced by the more generally
+*              useful zgb (still likely to be a no-op for most
+*              implementations however).
+*      c3.222  the set of character comparisons has been
+*              reduced to ceq and cne to ease implementation
+*              problems.
+*      c3.223  opcode irz is removed and dvi, rmi orders are
+*              redefined to conform to more common usage.
+*      c3.224  new opcodes ssl and sss are defined. their use
+*              permits return links for n type procedures to be
+*              placed on a local stack if desired.
+*      c3.225  opcode mnz complements zer. it moves a non-zero
+*              flag to its destination.
+*      c3.226  for some machines it is preferable for the stack
+*              to build up rather than down. to permit this
+*              without need for massive changes in minimal and
+*              recoding of existing programs, a scheme has been
+*              devised in which an additional register name, xt,
+*              is used as a synonym for xl when this register
+*              is involved in stack manipulation- see section 4.
+*      c3.227  section 0 of a minimal program is renamed the
+*              procedure section. it now contains, in addition
+*              to exp, specifications of internal procedures
+*              and routines by means of the inp and inr opcodes.
+*      c3.228  the literal operand formats =int and *int have
+*              been withdrawn. =dlbl and *dlbl must be used in
+*              their stead.
+*      c3.229  the format
+*              label  equ  *nn
+*              used to specify values supplied by the minimal
+*              translator for char. codes etc. is replaced by
+*              label  equ  *
+*              where the order in which the definitions are
+*              supplied by the translator should match the
+*              order of occurrence in the definitions section.
+*      c3.230  the format of err,erb opcodes is changed to
+*              require a numeric operand.
+*      c3.231  the rtn opcode is used to introduce routines
+*              (which are quite distinct from procedures).
+*      c3.232  conditional assembly directives may be nested.
+*      c3.233  minor restriction placed on the omission of
+*              val with the ent opcode.
+       ejc
+*      version 3.1 to 3.2 (aug 77)
+*      ---------------------------
+*
+*      bugs fixed
+*      ----------
+*
+*      b3.101  astonishing this was unnoticed for three years.
+*              bad code for snobol4 integer divide, /, gave
+*              wrong result for operands of opposite signs.
+*              implementations have either wrongly translated
+*              dvi and got correct result or correctly
+*              translated dvi and got wrong result - leeds had
+*              one of each. see also c3.106.
+*              test program no. 1 now extended to check /
+*              more thoroughly.
+*      b3.102  garbage collection bug in scane
+*
+*      changes
+*      -------
+*
+*      c3.101  option to use additional characters ch$ht,ch$vt
+*              (horizontal and vertical tab) with same syntactic
+*              significance as ch$bl (blank).
+*      c3.102  option to use a set of shifted case alphabetic
+*              characters ch$$a ... ch$$$.
+*      c3.103  conditional assembly features are introduced into
+*              minimal on account of the above.
+*              see minimal documentation section for details
+*              of above changes.
+*      c3.104  lch and sch may use an x register first
+*              operand as alternative to a w register.
+*      c3.105  spitbol statement numbers in the listing may
+*              optionally be padded to 6 or 8 chars instead of 5
+*              by defining conditional assembly symbols
+*              .csn6 or .csn8 .
+*      c3.106  to fix bug 3.101. at moderate cost,
+*              opcode irz (branch if integer divide remainder
+*              zero) introduced.
+*      c3.107  to handle possible machine dependency in string
+*              hashing, chs (complete hashing of string) opcode
+*              is introduced. probably a no-op on most machines
+*              - not on the dec10.
+*      c3.108  procedures patin,tfind,trace have been
+*              modified to conform to the minimal standard
+*              call and return regime.
+*      c3.109  sysfc interface revised slightly to permit
+*              osint to return a pointer to a privately
+*              allocated fcblk which spitbol will return on
+*              subsequent i/o - see sysfc doc.
+*      c3.110  to remove inconsistencies in calling sequences,
+*              all sys routines having access to a possible
+*              fcblk have fcblk ptr or zero in reg. wa on entry.
+*              change affects sysef, sysen, sysil, sysin,
+*              sysou, sysrw.
+*      c3.111  syspp bit allocated to provide
+*               -noexec option on entry to spitbol.
+       ejc
+*
+*      documentation revisions
+*      -----------------------
+*
+*      d3.101  need to preserve registers in syspi, syspr,
+*              sysrd calls was overstated.
+       ejc
+*      version 3.0 to 3.1 (mar 77)
+*      ---------------------------
+*
+*      bugs fixed
+*      ----------
+*
+*      b3.001  replace() could fail during pre-evaluation.
+*              spitbol now signals an error for null or
+*              unequally long 2nd and 3rd arguments.
+*      b3.002  negative second arguments to dupl, lpad, rpad
+*              caused spitbol to signal an error. now causes
+*              return of null string or first arg respectively.
+*      b3.003  brn-s used instead of ppm-s in s$sub.
+*      b3.004  err used instead of erb after cmp30.
+*      b3.005  b$pfc, s$cnv, s$def, arith and arref kept
+*              information illegally above the stack top.
+*      b3.006  pre-evaluation of constant parts of
+*              complex gotos was erroneous.
+*      b3.007  incorrect handling of labels compiled by code().
+*      b3.008  the single use of trc (in s$rpl) was not in
+*              accord with its definition. some translations of
+*              trc may need revision now that the use
+*              has been brought into line with definition.
+*
+*      changes
+*      -------
+*
+*      a debate on a few weaknesses in minimal design has
+*      been resolved by introducing 4 new opcodes.
+*
+*      c3.001  new minimal opcodes bmp and dim introduced
+*              to augment inc and dec which are applicable
+*              only to addresses.
+*      c3.002  the opcode szc (store zero characters) had
+*              a restricted applicability. it has been
+*              replaced by the more general zer (zeroise).
+*      c3.003  fcblks may be optionally allocated as xrblk-s or
+*              xnblk-s  - see sysfc for vital information.
+*      c3.004  control card processing has been recoded.
+*              -inxxx allows specification of standard input
+*              file record lengths other than 72 or 80, see also
+*              sysrl. -sequ is ignored unless -in80 is in effect
+*      c3.005  to enable efficient buffering of chars on
+*              machines without char. handling orders, the
+*              csc (complete store characters) instruction
+*              is introduced. current implementations can
+*              translate it as a no-op if it is of no benefit.
+*      c3.006  integers 0,1,2 are treated specially.
+*              icblks in static are used instead of
+*              allocating space in dynamic.
+       ejc
+*
+*      version 2.7 (june 76) to 3.0 (jan 77)
+*      -------------------------------------
+*
+*      bugs fixed
+*      ----------
+*
+*      b2.701  goes illegal if timed out during processing of
+*              dump() call.
+*      b2.702  goes illegal if spitbol error detected in args of
+*              code() or eval(). bug fixed so that user now gets
+*              a spitbol error report (trappable by setexit)
+*              before statement failure.
+*      b2.703  goes illegal in some circumstances when
+*              multiple compilation errors occur in a statement
+*      b2.704  goes illegal if garbage collector runs out of
+*              stack space.
+*      b2.705  control card processing incorrect for cdc 6400.
+*      b2.706  incorrect handling of multiple occurrences of
+*              chars in replace 2nd and 3rd args.
+*      b2.707  stack overflow in pre-evaluation of replace in
+*              cdc 6400 version.
+*      b2.708  an explicit call of sysmw was coded in s$dat
+*              instead of the mvw opcode.
+*      b2.709  call of garbage collector whilst dumping
+*              caused havoc.
+*      b2.710  size restriction on spitbol objects (size must be
+*              numerically less than lowest dynamic address)
+*              was not enforced, with potential for catastrophe.
+*      b2.711  deferred expressions involving alternation or
+*              negation were incorrectly translated.
+*      b2.712  listing of a compilation error at the end of a
+*              long line could cause compiler to go illegal.
+*      b2.713  incorrect -nofail code with success goto.
+       ejc
+*
+*
+*      changes
+*      -------
+*
+*      (it is not anticipated that major revisions on this
+*      scale will be frequent).
+*
+*      c2.701  default value of anchor keyword is set to 1. this
+*              conflicts with snobol4 practice but is a
+*              preferable default for most applications.
+*      c2.702  if errtype is out of range the string in keyword
+*              errtext is printed as the error message.
+*      c2.703  if stlimit is exceeded, up to 10 more statements
+*              may be obeyed to permit setexit trap to gain
+*              control.
+*      c2.704  the concept of an interactive channel is
+*              introduced for implementations where an online
+*              terminal may be used for spitbol. the standard
+*              print file may be specified as interactive in
+*              which case shorter title lines are output.
+*              alternatively copies of compilation and
+*              execution errors only may be sent to this channel
+*      c2.705  printing of compilation statistics may be
+*              suppressed.
+*      c2.706  printing of execution statistics may be
+*              suppressed.
+*      c2.707  extended or compact listing format may be
+*              selected.
+*      c2.708  an initial -nolist option may be specified
+*              before compilation starts.
+*      c2.709  to specify choices implied by c2.704 to c2.708
+*              syspp interface is revised and syspi is defined.
+*      c2.710  compilation and execution time statistics
+*              messages have been shortened.
+*      c2.711  the exit function as in sitbol is introduced
+*              to permit saving load modules - see sysxi, s$ext.
+*      c2.712  diagnostic routines sysgb and sysgd have been
+*              removed. they were useful in the early debugging
+*              days but have fallen into disuse now.
+*      c2.713  szc may have an operand of type opn instead of
+*              type opw
+*      c2.714  input/output association interface has been
+*              revised. sysif,sysof have been consolidated into
+*              the new system routine, sysio, and the
+*              specification of sysfc has been slightly changed.
+*      c2.715  configuration parameter mxlen has been withdrawn
+*              and the maximum size of a spitbol object which
+*              was formerly fixed at spitbol compile time by
+*              reference to it may now be specified as a run
+*              time option by placing a value in wc before entry
+*              to spitbol. (see comment on dynamic area in
+*              basic information section).
+*      c2.716  a function, host, is introduced which yields
+*              information about the host machine - see syshs
+*              and s$hst.
+       ejc
+*
+*      documentation revisions
+*      -----------------------
+*
+*      d2.701  the description of mvc has been revised to
+*              reflect the fact that some spitbol code sequences
+*              rely on mvc not destroying wb. minor changes
+*              have been made to mwb and mvw descriptions to
+*              emphasise similarities in the implicit loops of
+*              these orders.
+*      d2.702  descriptions of dvi and rmi have been clarified.
+*      d2.703  implementation of rsx,lsx,ceq,cge,cgt,chi,clo,clt
+*              is optional at present since they are currently
+*              unused. their use in later versions is not
+*              excluded.
+*      d2.704  impossibility of using stack for return links of
+*              n type procedures is emphasised.
+*      d2.705  notation (xl),(wc) etc in language description is
+*              clarified.
+*      d2.706  documentation of sysfc, sysio has been improved.
+*      d2.707  opcode descriptions are cross referenced from
+*              the alphabetical opcode list.
+*      d2.708  general description of compiler has been moved to
+*              the start of the compiler proper.
+*      d2.709  definitions of environment parameters have been
+*              put near the front of the definitions section.
+       ttl  minimal -- machine independent macro assembly lang.
+       ejc
        ttl  s p i t b o l  -- basic information
        ejc
 
