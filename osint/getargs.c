@@ -309,7 +309,7 @@ char	*argv[];
             case '9':
                 if (++maxf >= Ncmdf) {
                     wrterr( "Too many files on command line." );
-                    __exit(1);
+                    exit(1);
                 }
                 cp = getnum(cp - 1, (uword *)&(cfiles[maxf].filenum));
                 cfiles[maxf].fileptr = filenamearg(argc, argv);
@@ -325,7 +325,7 @@ badopt:
                 write( STDERRFD, "Illegal option -", 17 );
                 write( STDERRFD,  (cp - 1), 1 );
                 wrterr( "?" );
-                __exit(1);			// V1.08
+                exit(1);			// V1.08
             }
     }
 

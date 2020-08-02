@@ -53,5 +53,5 @@ void prompt()
 
 #endif					// RUNTIME
 
-    __exit(0);
+    exit(0);
 }

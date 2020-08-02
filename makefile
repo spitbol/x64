@@ -1,4 +1,4 @@
-# SPITBOL makefile using musl-gcc
+# SPITBOL makefile using nasm
 
 ws?=64
 
@@ -10,7 +10,7 @@ OS=$(os)
 WS=$(ws)
 DEBUG=$(debug)
 
-CC=musl-gcc
+CC=gcc
 ELF=elf$(WS)
 
 # SPITBOL Version:
@@ -69,7 +69,7 @@ SYSOBJS=sysax.o sysbs.o sysbx.o syscm.o sysdc.o sysdt.o sysea.o \
 
 # Other C objects:
 COBJS =	break.o checkfpu.o compress.o cpys2sc.o \
-	doset.o dosys.o fakexit.o float.o flush.o gethost.o getshell.o \
+	doset.o dosys.o float.o flush.o gethost.o getshell.o \
 	lenfnm.o math.o optfile.o osclose.o \
 	osopen.o ospipe.o osread.o oswait.o oswrite.o prompt.o rdenv.o \
 	st2d.o stubs.o swcinp.o swcoup.o syslinux.o testty.o\
@@ -103,7 +103,7 @@ OBJS=	$(AOBJS) $(COBJS) $(HOBJS) $(LOBJS) $(SYSOBJS) $(VOBJS) $(MOBJS) $(NAOBJS)
 LIBS = 
 
 sbl: $(OBJS)
-	$(CC) $(CFLAGS) $(LIBS) -lm $(OBJS) -osbl
+	$(CC) $(CFLAGS) $(LIBS) $(OBJS) -osbl -lm
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS)

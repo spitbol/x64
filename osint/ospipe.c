@@ -92,7 +92,7 @@ struct	ioblk	*ioptr;
 
         if (doshell(ioptr) == -1)
             return -1;
-        __exit(1);			// Should never get here!
+        exit(1);			// Should never get here!
 
     default:
         /*

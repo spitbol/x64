@@ -66,7 +66,7 @@ int zysej()
     /	Pass &CODE to function __exit.  Don't call standard exit function,
     /	because of its association with the stdio package.
     */
-    __exit( WB(int) );
+    exit( WB(int) );
 
 }
 

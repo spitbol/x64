@@ -70,7 +70,7 @@ char	*argv[];
     if ( lmodstk ) {
         if ( brk( (char *) topmem ) < 0 ) { // restore topmem to its prior state
             wrterr( "Insufficient memory to load." );
-            __exit(1);
+            exit(1);
         }
 
         cmdcnt = 1;       // allow access to command line args
@@ -130,7 +130,7 @@ char	*argv[];
 #endif					// RUNTIME
 
     case -1:				// error loading save file
-        __exit(1);
+        exit(1);
     }
 
     /*
@@ -145,7 +145,7 @@ char	*argv[];
      */
     if ((char *)sbrk(0) == (char *)-1) {
         wrterr( "Insufficient memory.  Try smaller -d, -m, or -s command line options." );
-        __exit( 1 );
+        exit( 1 );
     }
 
     /*
@@ -153,7 +153,7 @@ char	*argv[];
     */
     if ((lowsp = sbrk((uword)stacksiz)) == (char *) -1) {
         wrterr( "Stack memory unavailable." );
-        __exit( 1 );
+        exit( 1 );
     }
     /*
     /   Allocate initial increment of dynamic memory.
@@ -162,7 +162,7 @@ char	*argv[];
 
     if ((basemem = (char *)sbrk((uword)memincb)) == (char *) -1) {
         wrterr( "Workspace memory unavailable." );
-        __exit( 1 );
+        exit( 1 );
     }
     topmem = basemem + memincb;
     maxmem = basemem + databts;

@@ -65,7 +65,7 @@ char **pp;
             if (*pp == (char *) 0) {// First success?
                 if (p != topmem) {
                     wrterr( "Internal system error--SYSMM" );
-                    __exit(1);
+                    exit(1);
                 }
                 *pp = p;		// record first allocation
             }

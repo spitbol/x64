@@ -208,7 +208,7 @@ unsigned int code;
         if (i++ >= 4000)
         {
             wrterr("Fatal error during save file expansion.");
-            __exit(1);
+            exit(1);
         }
     }
     *buffer = (unsigned char) code;
