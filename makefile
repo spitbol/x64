@@ -107,7 +107,7 @@ sbl: $(OBJS)
 
 # link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -lm -osbl 
+	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -osbl -lm 
 
 # Assembly language dependencies:
 err.o: err.s
