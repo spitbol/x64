@@ -482,12 +482,12 @@ outputok
 err_ok
 
 
-*   then copy contents of x64.hdr (if it exists) to outfile
+*   then copy contents of nasm.hdr (if it exists) to outfile
 *   stop at line with just 'end' or end of file
 
     noutlines = noutlines + 1
 
-    input(.hdrfile,4,'x64.hdr')                         :f(nohdr)
+    input(.hdrfile,4,'nasm.hdr')                         :f(nohdr)
     havehdr = 1
 
 *         output = '  input header file:  ' hdr  '.hdr'
