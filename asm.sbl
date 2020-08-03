@@ -487,19 +487,9 @@ err_ok
 
     noutlines = noutlines + 1
 
-    input(.hdrfile,4,'x64.hdr')                         :f(nohdr)
+    input(.hdrfile,4,'x64.nasm')                         :f(nohdr)
     havehdr = 1
-
-*         output = '  input header file:  ' hdr  '.hdr'
-
-hdrcopy
-
-    line = hdrfile                                      :f(hdrend)
-    ident(line,'end')                                   :s(nohdr)
-    outfile = line
-    noutlines = noutlines + 1                           :(hdrcopy)
-
-hdrend
+    outfile = '    %include "x64.nasm"'
 
      havehdr =
 

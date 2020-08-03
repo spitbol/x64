@@ -545,6 +545,11 @@ syscall_exit:
 	mov	w0,m_word [reg_pc]
 	jmp	w0
 
+	%macro	sysdecl 2
+	global	%1
+	extern	%2
+	%endmacro
+
 	%macro	syscall	2
 	pop     w0			; pop return address
 	mov	m_word [reg_pc],w0
@@ -557,162 +562,124 @@ syscall_exit:
 					; compilers stack pointer blew up
 	%endmacro
 
-	global sysax
-	extern	zysax
+	sysdecl sysax,zysax
 sysax:	syscall	  zysax,1
 
-	global sysbs
-	extern	zysbs
+	sysdecl sysbs,zysbs
 sysbs:	syscall	  zysbs,2
 
-	global sysbx
-	extern	zysbx
+	sysdecl sysbx,zysbx
 sysbx:	mov	m_word [reg_xs],xs
 	syscall	zysbx,2
 
-;        global syscr
-;	extern	zyscr
+;        sysdecl syscr ;,	zyscr
 ;syscr:  syscall    zyscr ;    ,0
 
-	global sysdc
-	extern	zysdc
+	sysdecl sysdc,zysdc
 sysdc:	syscall	zysdc,4
 
-	global sysdm
-	extern	zysdm
+	sysdecl sysdm,zysdm
 sysdm:	syscall	zysdm,5
 
-	global sysdt
-	extern	zysdt
+	sysdecl sysdt,zysdt
 sysdt:	syscall	zysdt,6
 
-	global sysea
-	extern	zysea
+	sysdecl sysea,zysea
 sysea:	syscall	zysea,7
 
-	global sysef
-	extern	zysef
+	sysdecl sysef,zysef
 sysef:	syscall	zysef,8
 
-	global sysej
-	extern	zysej
+	sysdecl sysej,zysej
 sysej:	syscall	zysej,9
 
-	global sysem
-	extern	zysem
+	sysdecl sysem,zysem
 sysem:	syscall	zysem,10
 
-	global sysen
-	extern	zysen
+	sysdecl sysen,zysen
 sysen:	syscall	zysen,11
 
-	global sysep
-	extern	zysep
+	sysdecl sysep,zysep
 sysep:	syscall	zysep,12
 
-	global sysex
-	extern	zysex
+	sysdecl sysex,zysex
 sysex:	mov	m_word [reg_xs],xs
 	syscall	zysex,13
 
-	global sysfc
-	extern	zysfc
+	sysdecl sysfc,zysfc
 sysfc:  pop     w0             ; <<<<remove stacked scblk>>>>
 	lea	xs,[xs+wc*cfp_b]
 	push	w0
 	syscall	zysfc,14
 
-	global sysgc
-	extern	zysgc
+	sysdecl sysgc,zysgc
 sysgc:	syscall	zysgc,15
 
-	global syshs
-	extern	zyshs
+	sysdecl syshs,zyshs
 syshs:	mov	m_word [reg_xs],xs
 	syscall	zyshs,16
 
-	global sysid
-	extern	zysid
+	sysdecl sysid,zysid
 sysid:	syscall	zysid,17
 
-	global sysif
-	extern	zysif
+	sysdecl sysif,zysif
 sysif:	syscall	zysif,18
 
-	global sysil
-	extern	zysil
+	sysdecl sysil,zysil
 sysil:  syscall zysil,19
 
-	global sysin
-	extern	zysin
+	sysdecl sysin,zysin
 sysin:	syscall	zysin,20
 
-	global sysio
-	extern	zysio
+	sysdecl sysio,zysio
 sysio:	syscall	zysio,21
 
-	global sysld
-	extern	zysld
+	sysdecl sysld,zysld
 sysld:  syscall zysld,22
 
-	global sysmm
-	extern	zysmm
+	sysdecl sysmm,zysmm
 sysmm:	syscall	zysmm,23
 
-	global sysmx
-	extern	zysmx
+	sysdecl sysmx,zysmx
 sysmx:	syscall	zysmx,24
 
-	global sysou
-	extern	zysou
+	sysdecl sysou,zysou
 sysou:	syscall	zysou,25
 
-	global syspi
-	extern	zyspi
+	sysdecl syspi,zyspi
 syspi:	syscall	zyspi,26
 
-	global syspl
-	extern	zyspl
+	sysdecl syspl,zyspl
 syspl:	syscall	zyspl,27
 
-	global syspp
-	extern	zyspp
+	sysdecl syspp,zyspp
 syspp:	syscall	zyspp,28
 
-	global syspr
-	extern	zyspr
+	sysdecl syspr,zyspr
 syspr:	syscall	zyspr,29
 
-	global sysrd
-	extern	zysrd
+	sysdecl sysrd,zysrd
 sysrd:	syscall	zysrd,30
 
-	global sysri
-	extern	zysri
+	sysdecl sysri,zysri
 sysri:	syscall	zysri,32
 
-	global sysrw
-	extern	zysrw
+	sysdecl sysrw,zysrw
 sysrw:	syscall	zysrw,33
 
-	global sysst
-	extern	zysst
+	sysdecl sysst,zysst
 sysst:	syscall	zysst,34
 
-	global systm
-	extern	zystm
+	sysdecl systm,zystm
 systm:	syscall	zystm,35
 
-	global systt
-	extern	zystt
+	sysdecl systt,zystt
 systt:	syscall	zystt,36
 
-	global sysul
-	extern	zysul
+	sysdecl sysul,zysul 
 sysul:	syscall	zysul,37
 
-	global sysxi
-	extern	zysxi
+	sysdecl sysxi,zysxi
 sysxi:	mov	m_word [reg_xs],xs
 	syscall	zysxi,38
 
