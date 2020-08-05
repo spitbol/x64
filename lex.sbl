@@ -689,7 +689,12 @@ rdline
 
     rdline = infile                                     :f(rl02)
     nlines  = nlines + 1
-    ident( rdline )                                     :s(rdline)
+    differ( rdline )                                     :s(rdline.1)
+
+    outfile = 
+    noutlines = noutlines + 1                           :(rdline)
+    
+rdline.1
 
 *   transfer control to appropriate conditional assembly
 *   directive generator or other statement generator.

@@ -974,7 +974,7 @@ prsarg
     prsarg = minarg(convert(l1,'integer'),l2)           :(return)
 
 -stitl readline()
-*   this routine returns the next statement line in the input file
+*   this routine returns the next statement line in the input lex file
 *   to the caller.  it never fails.  if there is no more input,
 *   then a minimal end statement is returned.
 *   comments are passed through to the output file directly.
@@ -982,35 +982,30 @@ prsarg
 
 readline
 
-    readline = infile                                   :f(rl02)
+    readline = infile                                   :f(readline.eof)
+
     nlines  = nlines + 1
-    ident( readline )                                   :s(readline)
+    ident( readline )                                   :f(readline.2)
 
-readline.0
-
-    leq( substr(readline,1,1 ),'*' )                    :f(rl01)
-    z_skip = ident(readline,'*z+') 0                    :s(readline)
-    z_skip = ident(readline,'*z-') 1                    :s(readline)
-
-*  force skip of full line comments
-                                                        :(readline)
-*   only print comment if requested.
-
-    ident(strip_comment,'n')                            :f(readline)
-    readline len(1) = ';'
     outfile = readline
     noutlines = noutlines + 1                           :(readline)
 
-*   here if not a comment line
+readline.2 
+    lne(substr(readline,1,1 ),'*' )			:s(return)
 
-rl01                                                    :(return)
+*   Here if comment.
 
-*   here on eof
+    z_skip = ident(readline,'*z+') 0                    :s(readline)
+    z_skip = ident(readline,'*z-') 1                    :s(readline)
 
-rl02
+    outfile = ';' substr(readline,2)
+    noutlines = noutlines + 1                           :(readline)
 
-    readline = '       end'
-                                                        :(rl01)
+readline.eof
+
+   readline = '        end'				:(return)
+readline.end
+
 -stitl tblini(str)
 *   this routine is called to initialize a table from a string of
 *   index/value pairs.
