@@ -453,9 +453,6 @@ flgs2
 +                       comment.delim rem . comment
     p.alltabs = span(tab) rpos(0)
 
-*   strip end of comments if y
-
-    strip_comment = (differ(comments) 'n', 'y')
 
     filenami = fileprefix '.lex'
     input(.infile,1,filenami)                           :s(inputok)
@@ -830,17 +827,12 @@ outstmt label = t.label(ostmt)
 
 outstmt1
 
-    comment = t.comment(ostmt)
-
-*  ds suppress comments
-
-    comment = tcomment = comments =
-                                                        :(outstmt2)
 *   attach source comment to first generated instruction
 
     differ(comment)                                     :s(outstmt2)
     ident(tcomment)                                     :s(outstmt2)
     comment = tcomment; tcomment =
+
 outstmt2
 
     opcode = t.opc(ostmt)
@@ -852,38 +844,35 @@ outstmt2
 .                 (ident(op1), op1
 .                       (ident(op2), ',' op2
 .                               (ident(op3), ',' op3))) ,27)
-.       (ident(strip_comment,'y'), ' ' (ident(comment), ';') comment)
-.                                                       :(outstmt4)
+							:(outstmt4)
 outstmt3
 
     stmtout = label tab opcode tab
 .                 (ident(op1), op1
 .                   (ident(op2), ',' op2
 .                     (ident(op3), ',' op3)))
-.       (ident(strip_comment,'y'), tab (ident(comment), ';') comment)
-
-**      send text to outfile
-
-**
 
 outstmt4
 
+    stmtout = trim(stmtout)
+    stmtout = le(size(stmtout),48) rpad(stmtout,48) '; ' comment :s(outstmt5)
+    stmtout = le(size(stmtout),56) rpad(stmtout,56) '; ' comment :s(outstmt5)
+    stmtout = stmtout '; ' comment
+
+outstmt5
 **
 **      send text to output file if not null.
 
 *        stmtout = replace(trim(stmtout),'$','_')
 
-    stmtout = trim(stmtout)
-    ident(stmtout)                                      :s(return)
-    eq(z_trace)                                         :s(outstmt5)
+    eq(z_trace)                                         :s(outstmt6)
 
 *        here if trace code desired for executable instructions
 
     chktrace()
 
-outstmt5
+outstmt6
 
-    ident(stmtout)                                      :s(return)
     outfile = stmtout
     ntarget = ntarget + 1
     noutlines = noutlines + 1
