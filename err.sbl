@@ -150,14 +150,25 @@ nomachine
 
 *   functions
 
+    define('asc(c)')                                    :(asc.end)
 
+*   asc(c)
+
+*   return the integer code for an ascii character c.
+
+
+asc
+    &alphabet break(c) @asc                             :(return)
+
+asc.end
+
+    define('seq(arg_s,arg_name)')                       :(seq.end)
 *   seq(s,n)
 
 *   will sequence through a set of statements until failure is detected.
 *   the indexing variable is given by the name n. from gimpel, "algorithms
 *   in snobol4."
 
-    define('seq(arg_s,arg_name)')                       :(seq_end)
 
 *   entry point:  initialize indexing variable.  then convert arg_s to code.
 
@@ -180,31 +191,20 @@ seq_1
 seq_2
     eq($arg_name,1)                                     :s(freturn)f(return)
 
-seq_end
+seq.end
 
-*   asc(c)
-
-*   return the integer code for an ascii character c.
-
-    define('asc(c)')                                    :(asc_end)
-
-asc
-    &alphabet break(c) @asc                             :(return)
-
-asc_end
-
+    define('spread(spread)')                            :(spread.end)
 
 *   spread(n)
 
 *   given n in the range [1-159], spread it out over the ranges [1-31]
 *   and [128-255].
 
-    define('spread(spread)')                            :(spread_end)
 spread
 
     spread = ge(spread,32) spread + 96                  :(return)
 
-spread_end
+spread.end
 
 
 *   shrink(n)
@@ -212,12 +212,12 @@ spread_end
 *   given n in the ranges [1-31] and [128-255], shrink it back to the
 *   range [1-159].
 
-    define('shrink(shrink)')                            :(shrink_end)
+    define('shrink(shrink)')                            :(shrink.end)
 shrink
 
     shrink = ge(shrink,128) shrink - 96                 :(return)
 
-shrink_end
+shrink.end
 
 *   best(err,n)
 
@@ -229,7 +229,7 @@ shrink_end
 *   possible phrases in the err array, sort it, and select the best.
 *   then make all possible replacements, using integer n for the code.
 
-    define('best(err,n)t,j')                            :(best_end)
+    define('best(err,n)t,j')                            :(best.end)
 
 *   entry:  define a fresh table to hold all the generated phrases.
 
@@ -253,7 +253,7 @@ best
     seq(" repl(.err[j],best,n)", .j)
     seq(" repl(.phrase[j],best,n)", .j)                 :(return)
 
-best_end
+best.end
 
 
 *   generate(s,t)
@@ -275,12 +275,12 @@ best_end
 +          ((breakx(' ' specials) len(1)) | (len(1) rem)) $ w
 +               *differ(s,w)
 +                  *?(t[w] = (ident(t[w]) -2, t[w] + size(w) - 1)) fail
-+                                                       :(generate_end)
++                                                       :(generate.end)
 generate
 
     s ? gen_pat                                         :(return)
 
-generate_end
+generate.end
 
 
 *   repl(x,i,s,n)
@@ -289,13 +289,13 @@ generate_end
 *   this must be isolated into a function to prevent seq from
 *   terminating early when a pattern match fails.
 
-    define('repl(x,s,n)')                               :(repl_end)
+    define('repl(x,s,n)')                               :(repl.end)
 
 repl
 
    $x ? s = char(n)                                     :f(return)s(repl)
 
-repl_end
+repl.end
 
 *   putout(s,i)
 
@@ -308,7 +308,7 @@ repl_end
 
     put_pat = (break(specials) | (len(1) rem)) . w
 +                       (span(specials) | "") . n
-    put_one = len(1) . c                                :(putout_end)
+    put_one = len(1) . c                                :(putout.end)
 
 *   entry.  put out comment line to show what string is being compressed.
 
@@ -344,7 +344,7 @@ put3
 
    differ(s)                                            :s(put1)f(return)
 
-putout_end
+putout.end
 
 
 *   expand(s)
@@ -353,7 +353,7 @@ putout_end
 
     define('expand(s)f,c')
     ex_pat = (break(specials) . f len(1) . c) |
-+                ((len(1) rem) . f "" . c)              :(expand_end)
++                ((len(1) rem) . f "" . c)              :(expand.end)
 
 expand
 
@@ -361,7 +361,7 @@ expand
     expand = ident(c) expand f                          :s(return)
     expand = expand f expand(phrase[shrink(asc(c))])
 +                                                       :(expand)
-expand_end
+expand.end
 
 
 *   readerr(err)
@@ -371,7 +371,7 @@ expand_end
 
     define('readerr(a)s,n,msg')
     rde_done = fence notany('0123456789')
-    rde_pat = fence len(3) . n len(1) rem . msg         :(readerr_end)
+    rde_pat = fence len(3) . n len(1) rem . msg         :(readerr.end)
 
 readerr
 
@@ -393,7 +393,7 @@ rderr2
     output = "first use                                 : " a[n]
     output = "   re-use: " msg                          :(freturn)
 
-readerr_end
+readerr.end
 
 
 ***************************************************************************
