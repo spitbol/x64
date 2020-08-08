@@ -1,5 +1,3 @@
-
-
 -title lex                               phase 1 translation from minimal to lexemes (lexemes)
 -stitl initialization
 
@@ -70,6 +68,7 @@
 
     define('argtype(op,typ)')
 
+*    define('comment(inline)s')
 
 *   crack parses stmt into a stmt data plex and returns it.
 *   stmt is the common data plex used to hold the components of
@@ -399,6 +398,9 @@ dsout
 dostmt
 
     thisline = rdline()
+*    output = 'read lne <' thisline '>'
+*    thisline = comment(thisline)
+*    output = 'comment lne <' thisline '>'
     crack(thisline)                                     :f(dsout)
     differ(label) labenter()
     argerrs = 0
@@ -1007,4 +1009,30 @@ lower
     lower = replace(s,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
 .             'abcdefghijklmnopqrstuvwxyz')             :(return)
 
+end
+
+comment
+
+   comment = inline
+   differ(comment.active)				:s(comment.1)
+   inline '/*'						:s(comment.1)f(comment.done)
+
+comment.1
+
+   s = substr(inline,2)
+   output = 'comment 1 ' inline ' s ' s
+
+   
+   comment.active = (ident(s,'*/') 0, 1)
+   ident(inline)					:s(comment.done)
+   inline '/*' = 
+   ident(inline)					:s(comment.done)
+   inline '*/' = 
+   ident(inline)					:s(comment.done)
+   inline '*'						:s(comment.done)
+   inline = '*' inline
+
+comment.done
+
+   comment = inline					:(return)
 end
