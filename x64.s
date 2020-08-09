@@ -318,8 +318,8 @@ save_regs:
 	mov	m_word [save_xr],xr
 	mov	m_word [save_xs],xs
 	mov	m_word [save_wa],wa
-	mov	m_word [save_wb],wb
-	mov	m_word [save_wc],wc
+	mov	m_word [save_wb],rbx
+	mov	m_word [save_wc],rdx
 	mov	m_word [save_w0],w0
 	ret
 
@@ -331,8 +331,8 @@ restore_regs:
 	mov	xr,m_word [save_xr]
 ;	mov	xs,m_word [save_xs	; caller restores sp]
 	mov	wa,m_word [save_wa]
-	mov	wb,m_word [save_wb]
-	mov	wc,m_word [save_wc]
+	mov	rbx,m_word [save_wb]
+	mov	rdx,m_word [save_wc]
 	mov	w0,m_word [save_w0]
 	ret
 ; ;
@@ -436,8 +436,8 @@ stackinit:
  minimal:
 ;         pushad			; save all registers for c
 	mov     wa,m_word [reg_wa]	; restore registers
-	mov	wb,m_word [reg_wb]
-	mov     wc,m_word [reg_wc]	;
+	mov	rbx,m_word [reg_wb]
+	mov     rdx,m_word [reg_wc]	;
 	mov	xr,m_word [reg_xr]
 	mov	xl,m_word [reg_xl]
 
@@ -453,8 +453,8 @@ stackinit:
 	mov     xs,m_word [osisp]	; switch to osint stack
 
 	mov     m_word [reg_wa],wa	; save registers
-	mov	m_word [reg_wb],wb
-	mov	m_word [reg_wc],wc
+	mov	m_word [reg_wb],rbx
+	mov	m_word [reg_wc],rdx
 	mov	m_word [reg_xr],xr
 	mov	m_word [reg_xl],xl
 	ret
@@ -524,8 +524,8 @@ syscall_init:
 ;       save registers in global variables
 
 	mov     m_word [reg_wa],wa      ; save registers
-	mov	m_word [reg_wb],wb
-	mov     m_word [reg_wc],wc      ; (also _reg_ia)
+	mov	m_word [reg_wb],rbx
+	mov     m_word [reg_wc],rdx      ; (also _reg_ia)
 	mov	m_word [reg_xr],xr
 	mov	m_word [reg_xl],xl
 	mov	m_word [reg_ia],ia
@@ -536,8 +536,8 @@ syscall_exit:
 	mov     m_word [osisp],xs       ; save osint's stack pointer
 	mov     xs,m_word [compsp]      ; restore compiler's stack pointer
 	mov     wa,m_word [reg_wa]      ; restore registers
-	mov	wb,m_word [reg_wb]
-	mov     wc,m_word [reg_wc]      ;
+	mov	rbx,m_word [reg_wb]
+	mov     rdx,m_word [reg_wc]      ;
 	mov	xr,m_word [reg_xr]
 	mov	xl,m_word [reg_xl]
 	mov	ia,m_word [reg_ia]
@@ -618,7 +618,7 @@ sysex:	mov	m_word [reg_xs],xs
 	global sysfc
 	extern	zysfc
 sysfc:  pop     w0             ; <<<<remove stacked scblk>>>>
-	lea	xs,[xs+wc*cfp_b]
+	lea	xs,[xs+rdx*cfp_b]
 	push	w0
 	syscall	zysfc,14
 
@@ -723,8 +723,8 @@ sysxi:	mov	m_word [reg_xs],xs
 	%endmacro
 
 ;	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
-;	placed in w0, which is then sign extended into wc:w0. after the divide, w0 contains the
-;	quotient, wc contains the remainder.
+;	placed in w0, which is then sign extended into rdx:w0. after the divide, w0 contains the
+;	quotient, rdx contains the remainder.
 ;
 ;       cvd__ - convert by division
 ;
@@ -747,9 +747,9 @@ ocode:
         jz      setovr    	; jump if 0 divisor
         xchg    w0,ia         	; ia to w0, divisor to ia
         cdq                     ; extend dividend
-        idiv    ia              ; perform division. w0=quotient, wc=remainder
+        idiv    ia              ; perform division. w0=quotient, rdx=remainder
 	seto	byte [reg_fl]
-	mov	ia,wc
+	mov	ia,rdx
 	ret
 
 setovr: mov     al,1		; set overflow indicator
@@ -844,13 +844,13 @@ restart:
 
                                         ; set up for stack relocation
         lea     w0,[tscblk+scstr]       ; top of saved stack
-        mov     wb,m_word [lmodstk]    	; bottom of saved stack
+        mov     rbx,m_word [lmodstk]    	; bottom of saved stack
         mov	wa,m_word [stbas]      ; wa = stbas from exit() time
-        sub     wb,w0                 	; wb = size of saved stack
-	mov	wc,wa
-        sub     wc,wb                 	; wc = stack bottom from exit() time
-	mov	wb,wa
-        sub     wb,xs                 	; wb =  stbas - new stbas
+        sub     rbx,w0                 	; wb = size of saved stack
+	mov	rdx,wa
+        sub     rdx,rbx                 	; rdx = stack bottom from exit() time
+	mov	rbx,wa
+        sub     rbx,xs                 	; rbx =  stbas - new stbas
 
         mov	m_word [stbas],xs       ; save initial sp
 ;        getoff  w0,dffnc               ; get address of ppm offset
@@ -865,11 +865,11 @@ restart:
 	sub	xl,4
 	std
 re1:    lodsd                           ; get old stack word to w0
-        cmp     w0,wc                 	; below old stack bottom?
-        jb      re2               	;   j. if w0 < wc
+        cmp     w0,rdx                 	; below old stack bottom?
+        jb      re2               	;   j. if w0 < rdx
         cmp     w0,wa                 	; above old stack top?
         ja      re2               	;   j. if w0 > wa
-        sub     w0,wb                 	; within old stack, perform relocation
+        sub     w0,rbx                 	; within old stack, perform relocation
 re2:    push    w0                     	; transfer word of stack
         cmp     xl,xr                 	; if not at end of relocation then
         jae     re1                     ;    loop back
