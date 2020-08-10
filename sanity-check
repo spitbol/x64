@@ -2,7 +2,7 @@
 # Copyright 2012-2013 David Shields
 #
 # This program does a sanity test on spitbol, to verify that spitbol is able to compile itself.
-# This is done by building the system three times, and comparing the generated assembly (.s)
+# This is done by building the sbl.stem three times, and comparing the generated assembly (.s)
 # files. Normally, all three assembly files wil be equal. However, if a new optimization is
 # being introduced, the first two may differ, but the second and third should always agree.
 #
@@ -11,16 +11,16 @@ echo "start sanity test"
 cp	./bin/sbl tbol
 make clean>/dev/null
 make BASEBOL=./tbol
-mv s.lex tbol.lex.0
-mv s.s tbol.s.0
+mv sbl.lex tbol.lex.0
+mv sbl.s tbol.s.0
 cp sbl tbol
 make BASEBOL=./tbol
-mv s.lex tbol.lex.1
-mv s.s tbol.s.1
+mv sbl.lex tbol.lex.1
+mv sbl.s tbol.s.1
 cp sbl tbol
 make BASEBOL=./tbol
-mv s.lex tbol.lex.2
-mv s.s tbol.s.2
+mv sbl.lex tbol.lex.2
+mv sbl.s tbol.s.2
 echo "comparing generated .s files"
 diff tbol.s.1 tbol.s.2
 echo "end sanity test"
