@@ -18,7 +18,7 @@
 ;
         section	.text
 
-	%include	"nasm.h"
+	%include	"n.h"
 
 	extern	osisp
 	extern	compsp
