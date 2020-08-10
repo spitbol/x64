@@ -1,6 +1,3 @@
-* s.cnd goes here
-*      spitbol conditional assembly symbols for use by token.spt
-*      ---------------------------------------------------------
 *
 *      this file of conditional symbols will override the conditional
 *      definitions contained in the spitbol minimal file.   in addition,

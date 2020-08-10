@@ -335,11 +335,13 @@
 
 
 *	default the parameter string if none present
-
-	parm = "s"
+*	parm = host(0)
+*	parm = ident(parm) "min"
+	parm = 'sbl'
 	filenamc = parm '.cnd'
 	filenami = parm '.min'
 	filenamo = parm '.lex'
+	output = "lexing " parm
 
 *	get file name
 
@@ -377,7 +379,7 @@ main2
 *	patterns used by dostmt
 	p.opsk1 = (break(' ') | rem) . argskel
 
--include "s.def"
+-include "sbl.def"
 
 *	Initialize equ_defs from defintions in s.def
 
