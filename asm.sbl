@@ -1,5 +1,3 @@
-
-
 -title mincod						: phase 2 translation from minimal tokens to 80386 code
 -stitl description
 
@@ -203,6 +201,7 @@ skip_init.end
 	define('genrep(op)l1,l2)')
 	define('getarg(iarg,imem)l1,l2,t1,t2,tmem')
 	define('ifreg(iarg)')
+	define('include(filename)includefile')
 	define('memmem()t')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
@@ -329,7 +328,7 @@ is_exec.2
 *	with "g.", and can be considered a logical extension of the
 *	opnext routine.	 the generators have the choice of branching back
 *	to dsgen to cause the thisstmt plex to be sent to outstmt, or
-*	or branching to dsout, in which case the generator must output
+*	or branching to opnext, in which case the generator must output
 *	all needed code itself.
 
 *	the generators are listed in a separate section below.
@@ -479,31 +478,9 @@ outputok
 err_ok
 
 
-*	then copy contents of name.hdr (if it exists) to outfile
-*	stop at line with just 'end' or end of file
-
-	noutlines = noutlines + 1
-
-	input(.hdrfile,4,'nasm.hdr')			    :f(nohdr)
-	havehdr = 1
-
-*	      output = '  input header file:  ' hdr  '.hdr'
-
-hdrcopy
-
-	line = hdrfile					    :f(hdrend)
-	ident(line,'end')				    :s(nohdr)
-	outfile = line
-	noutlines = noutlines + 1			    :(hdrcopy)
-
-hdrend
-
-	 havehdr =
-
-nohdr
-
 *	will have havehdr non-null if more remains to copy out at end.
 
+	:(nopub)
 *	read in pub file if it exists.	this contains a list of symbols to
 *	be declared public when encountered.
 
@@ -529,10 +506,13 @@ nopub
 
 dsout
 
+	include('n.h')
+	include('n.dcl')
+
 opnext
 
 	 thisline = readline()
-	 crack(thisline)				    :f(dsout)
+	 crack(thisline)				    :f(opnext)
 	 op_ = incode '_'
 
 *	append ':' after label if in code or data.
@@ -576,13 +556,13 @@ opnext.1
 
 ds01
 
-	error('bad op-code')				    :(dsout)
+	error('bad op-code')				    :(opnext)
 
 *	generate tokens.
 
 ds.typerr
 
-	error('operand type zero')			    :(dsout)
+	error('operand type zero')			    :(opnext)
 
 -stitl comregs(line)t,pre,word
 comregs
@@ -622,7 +602,7 @@ error
 .		  (ident(lasterror),'. last error was line ' lasterror)
 	lasterror = noutlines
 	noutlines = noutlines + 2
-	le(nerrors = nerrors + 1, 10)			    :s(dsout)
+	le(nerrors = nerrors + 1, 10)			    :s(opnext)
 	output = 'too many errors, quitting'		    :(end)
 
 -stitl genaop(stmt)
@@ -795,6 +775,22 @@ getarg.c.27
 
    getarg = l1						:(return)
 
+-stitl include
+
+*	copy contents of filename to output
+	
+	output = 'include file <' filename '>'
+	input(.includefile,4,filename)			:s(include)
+
+	error('cannot open include file ' filename)	:(return)
+
+include
+
+	outfile = '%include "' filename '"'	:(return)
+	outfile = includefile				:s(include)
+
+	output = 'closing include of ' filename
+	endfile(4)					:(return)
 -stitl memmem()t
 memmem
 
@@ -1183,7 +1179,7 @@ g.ent.2
 *	here to see if want label made public
 
 	thislabel ? rtab(1) . thislabel '		    :'
-	(differ(pubtab[thislabel]), differ(debug)) genop('global',thislabel)
+*	(differ(pubtab[thislabel]), differ(debug)) genop('global',thislabel)
 	thislabel =					    :(opdone)
 
 g.bri
@@ -1989,7 +1985,7 @@ decend
 *	here at end of dic or dac to see if want label made public
 
 	thislabel ? rtab(1) . thislabel '		    :'
-	differ(pubtab[thislabel]) genop('global',thislabel)
+*	differ(pubtab[thislabel]) genop('global',thislabel)
 							    :(opdone)
 
 g.dac

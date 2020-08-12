@@ -42,7 +42,7 @@ spitbol:
 	$(BASEBOL) -x -u min asm.sbl
 	$(BASEBOL) -x -1=sbl.err -2=err.s err.sbl
 	$(ASM) $(ASMFLAGS) err.s
-	$(ASM) $(ASMFLAGS) $(ASM).s
+	$(ASM) $(ASMFLAGS) n.s
 	$(ASM) $(ASMFLAGS) sbl.s
 #stop:
 	$(CC) $(CFLAGS) -c osint/*.c

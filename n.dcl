@@ -18,8 +18,6 @@
 ;
         section	.text
 
-	%include	"n.h"
-
 	extern	osisp
 	extern	compsp
 	extern	save_regs
