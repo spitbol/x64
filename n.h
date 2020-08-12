@@ -19,9 +19,13 @@
 
 	%define m_char	byte	; reference to byte in memory
 	%define d_char	db	; define value of byte
+
+	%define m_word  qword
+	%define d_word	dq
+
 	%define m_real	qword	; reference to floating point value in memory
 	%define d_real	dq	; define value for floating point
-
+; N INCLUDE
 	%define	xl	rsi
 	%define	xt	rsi
 	%define	xr	rdi
@@ -37,8 +41,6 @@
 	%define	w0_l	al
 ;	%define	ia	rdx
 	%define	ia	rbp
-	%define m_word  qword
-	%define d_word	dq
 ;	%define	cfp_b	8
 	%define log_cfp_b 3
 	%define log_cfp_c 3

@@ -104,6 +104,49 @@
 	op_w = 'q'
 	op_c = 'b'
 
+*	regmap maps minimal register name to target machine
+*	register/memory-location name.
+
+*	     w0 is temp register
+
+	regmap = table(30)
+	xl = regmap['xl'] = regmap['rsi'] = 'rsi'
+	xt = regmap['xt'] = 'xt'
+	xr = regmap['xr'] = 'xr'  
+	xs = regmap['xs'] = 'xs'
+	wa = regmap['wa'] = 'wa'  
+	wb = regmap['wb'] = 'wb'
+	wc = regmap['wc'] = 'wc'  
+	w0 = regmap['w0'] = 'w0'
+
+	ia = regmap['ia'] = 'ia'
+        cp = regmap['cp'] = 'cp'
+
+*	reglow maps register to identify target, so can extract 'l' part.
+
+	reglow = table(4)
+	w0_l = reglow[w0] = 'al'
+	wa_l = reglow[wa] = 'cl'
+	wb_l = reglow[wb] = 'bl'
+	wc_l = reglow[wc] = 'dl'
+
+
+*	real_op maps minimal real opcode to machine opcode
+
+	real_op = table(10)
+	real_op['adr'] = 'fadd'
+	real_op['atn'] = 'fpatan'
+	real_op['chp'] = 'frndint'
+	real_op['cos'] = 'fcos'
+	real_op['dvr'] = 'fdiv'
+	real_op['ldr'] = 'fld'
+	real_op['mlr'] = 'fmul'
+	real_op['ngr'] = 'fchs'
+	real_op['sbr'] = 'fsub'
+	real_op['sin'] = 'fsin'
+	real_op['sqr'] = 'fsqrt'
+	real_op['str'] = 'fst'
+
 config.done
 
 
@@ -201,7 +244,7 @@ skip_init.end
 	define('genrep(op)l1,l2)')
 	define('getarg(iarg,imem)l1,l2,t1,t2,tmem')
 	define('ifreg(iarg)')
-	define('include(filename)includefile')
+	define('include(filename)includefile,line')
 	define('memmem()t')
 	define('prcent(n)')
 	define('prsarg(iarg)l1,l2')
@@ -399,47 +442,6 @@ flgs2
 	ismem<9> = 1; ismem<10> = 1; ismem<11> = 1
 	ismem<12> = 1; ismem<13> = 1; ismem<14> = 1
 	ismem<15> = 1
-
-*	regmap maps minimal register name to target machine
-*	register/memory-location name.
-
-	regmap = table(30)
-	regmap['xl'] = 'xl';  regmap['xt'] = 'xt'
-	regmap['xr'] = 'xr';  regmap['xs'] = 'xs'
-	regmap['wa'] = 'wa';  regmap['wb'] = 'wb'
-	regmap['wc'] = 'wc';  regmap['ia'] = 'ia'
-	regmap['cp'] = 'cp'
-*	     w0 is temp register
-	regmap['w0'] = 'w0'
-	w0 = regmap['w0']
-
-*	quick reference:
-	reg.wa = regmap['wa']
-	reg.cp = regmap['cp']
-
-*	reglow maps register to identify target, so
-*	can extract 'l' part.
-
-	reglow = table(4)
-	reglow['wa'] = 'wa_l'
-	reglow['wb'] = 'wb_l'
-	reglow['wc'] = 'wc_l'
-
-*	real_op maps minimal real opcode to machine opcode
-
-	real_op = table(10)
-	real_op['adr'] = 'fadd'
-	real_op['atn'] = 'fpatan'
-	real_op['chp'] = 'frndint'
-	real_op['cos'] = 'fcos'
-	real_op['dvr'] = 'fdiv'
-	real_op['ldr'] = 'fld'
-	real_op['mlr'] = 'fmul'
-	real_op['ngr'] = 'fchs'
-	real_op['sbr'] = 'fsub'
-	real_op['sin'] = 'fsin'
-	real_op['sqr'] = 'fsqrt'
-	real_op['str'] = 'fst'
 
 *	other definitions that are dependent upon things defined in the
 *	machine definition file, and cannot be built until after the definition
@@ -699,7 +701,7 @@ getarg.c.10
 	l1 = substr(l1,2,2)
 	t1 = regmap[l1]
 	getarg = tmem '[' t1 ']'
-	(ident(l1,'xs') genaop(tstmt(,'add',t1,'cfp_b')))   :s(return)
+	(ident(l1,xs) genaop(tstmt(,'add',t1,'cfp_b')))   :s(return)
 	genaop(tstmt(,'lea',t1,'[' t1 '+cfp_b]'))	    :(return)
 
 *	-(x), register indirect, pre decrement
@@ -779,24 +781,22 @@ getarg.c.27
 
 *	copy contents of filename to output
 	
-	output = 'include file <' filename '>'
-	input(.includefile,4,filename)			:s(include)
-
+include
+	
+	input(.includefile,4,filename)			:s(include.next)
 	error('cannot open include file ' filename)	:(return)
 
-include
+include.next
 
-	outfile = '%include "' filename '"'	:(return)
-	outfile = includefile				:s(include)
-
-	output = 'closing include of ' filename
+	outfile = includefile				:s(include.next)
 	endfile(4)					:(return)
+include.end
 -stitl memmem()t
 memmem
 
 *	memmem is called for those ops for which both operands may be
 *	in memory, in which case, we generate code to load second operand
-*	to pseudo-register 'w0', and then modify the second argument
+*	to pseudo-register w0, and then modify the second argument
 *	to reference this register
 
 	eq(ismem[i.type(i1)])				    :s(return)
@@ -805,8 +805,8 @@ memmem
 *	here if memory-memory case, load second argument
 
 	t = getarg(i2)
-	i2 = minarg(8,'w0')
-	genop('mov','w0',t)				    :(return)
+	i2 = minarg(8,w0)
+	genop('mov',w0,t)				    :(return)
 
 -stitl prcent(n)
 prcent prcent = 'prc_+cfp_b*' ( n - 1)			:(return)
@@ -1075,19 +1075,19 @@ mov.xlp
 
 	ident(t.dst,'(xr)+') genop('movs_w')		    :s(opdone)
 	genop('lods_w')
-	ident(t.dst,'-(xs)') genop('push','w0')		    :s(opdone)
-	genop('mov',getarg(i.dst),'w0')			    :(opdone)
+	ident(t.dst,'-(xs)') genop('push',w0)		    :s(opdone)
+	genop('mov',getarg(i.dst),w0)			    :(opdone)
 
 mov.xsp
 
 	ident(t.dst,'(xr)+')				    :s(mov.xsprp)
 	genop('pop',getarg(i.dst))			    :(opdone)
 
-mov.xsprp genop('pop','w0')
+mov.xsprp genop('pop',w0)
 
 	genop('stos_w')					    :(opdone)
 
-mov.xrp genop('mov','w0',getarg(i.src))
+mov.xrp genop('mov',w0,getarg(i.src))
 
 	genop('stos_w')					    :(opdone)
 
@@ -1308,8 +1308,8 @@ g.exi
 
 g.exi.1
 
-	genop('mov','w0', 'm_word ['  prcent(prc.count) ']' )
-	genop('jmp','w0')
+	genop('mov',w0, 'm_word ['  prcent(prc.count) ']' )
+	genop('jmp',w0)
 							    :(opdone)
 g.enp	genop()						:(opdone)
 
@@ -1331,12 +1331,12 @@ g.dcv
 
 g.zer
 
-	ident(i.text(i1),'(xr)+') genop('mov','w0','0')
+	ident(i.text(i1),'(xr)+') genop('mov',w0,'0')
 +		genop('stos_w')				:s(opdone)
 	ifreg(i1)					    :s(g.zer1)
 	ident(i.text(i1),'-(xs)')			    :s(g.zer.xs)
-	genop('mov','w0','0')
-	genop('mov',getarg(i1),'w0')			    :(opdone)
+	genop('mov',w0,'0')
+	genop('mov',getarg(i1),w0)			    :(opdone)
 
 g.zer1
 
@@ -1349,7 +1349,7 @@ g.zer.xs
 
 g.mnz
 
-	genop('mov',getarg(i1),'xs')			    :(opdone)
+	genop('mov',getarg(i1),xs)			    :(opdone)
 
 g.ssl
 g.sss
@@ -1432,7 +1432,7 @@ g.bct
 	t1 = getarg(i1)
 	t2 = getarg(i2)
 							    :(g.bct2)
-	ident(t1,'wa')					    :s(g.bct1)
+	ident(t1,wa)					    :s(g.bct1)
 
 g.bct2
 
@@ -1455,14 +1455,14 @@ g.scp
 	genop(op_,getarg(i1))				    :(opdone)
 
 *	use cp for code pointer.
-	genop('mov',reg.cp,getarg(i1))
+	genop('mov',cp,getarg(i1))
 							    :(opdone)
 
-	genop('mov',getarg(i1),reg.cp)
+	genop('mov',getarg(i1),cp)
 							    :(opdone)
 *	should be able to get lodsd; xchg eax,getarg(i1)
-	genop('mov',getarg(i1),'m_word [' reg.cp ']')
-	genop('add',reg.cp,'cfp_b')
+	genop('mov',getarg(i1),'m_word [' cp ']')
+	genop('add',cp,'cfp_b')
 
 							    :(opdone)
 
@@ -1470,7 +1470,7 @@ g.scp
 g.icp
 
 	genop(op_)					    :(opdone)
-	genop('add',reg.cp,'cfp_b')
+	genop('add',cp,'cfp_b')
 							    :(opdone)
 g.ldi
 
@@ -1553,7 +1553,7 @@ g.mlr
 g.dvr
 
 	t1 = getarg(i1,'m_word')
-	genop('lea','w0',t1)
+	genop('lea',w0,t1)
 	genop('call',op_)
 							    :(opdone)
 g.ngr
@@ -1619,10 +1619,10 @@ g.plc.1
 	eq(i.type(i2))					    :s(opdone)
 
 *	here if d_offset_(given (in a variable), so add it in, after converting to byte count
-	genop('mov','w0', getarg(i2))
-	genop('sal','w0', 'log_cfp_b')
+	genop('mov',w0, getarg(i2))
+	genop('sal',w0, 'log_cfp_b')
 
-	genop('add',t1,'w0')				    :(opdone)
+	genop('add',t1,w0)				    :(opdone)
 
 *	lch requires separate cases for each first operand possibility.
 
@@ -1639,9 +1639,9 @@ g.lch
 g.lcg.1
 
 	t2 break('(') len(1) len(2) . t3
-	eq(cfp_b,cfp_c) genop('mov','w0','0')
+	eq(cfp_b,cfp_c) genop('mov',w0,'0')
 	eq(cfp_b,cfp_c) genop('mov','al','m_char [' regmap[t3] ']')
-	eq(cfp_b,cfp_c) genop('mov',t1,'w0')
+	eq(cfp_b,cfp_c) genop('mov',t1,w0)
 
 	ne(cfp_b,cfp_c) genop('mov',t1,'m_char [' regmap[t3] ']')
 
@@ -1661,8 +1661,8 @@ g.sch
 
 *	here if can use stos.
 
-	eq(cfp_b,cfp_c) genop('mov','al',getarg(i1))
-	ne(cfp_b,cfp_c) genop('mov','eax',getarg(i1))
+	eq(cfp_b,cfp_c) genop('mov',w0_l,getarg(i1))
+	ne(cfp_b,cfp_c) genop('mov',w0,getarg(i1))
 	genop('stos_b')					    :(opdone)
 
 g.scg.0
@@ -1674,7 +1674,7 @@ g.scg.0
 g.scg.1
 
 	t2 break('(') len(1) len(2) . t3
-	eq(cfp_b,cfp_c) genop('mov','w0',t1,)
+	eq(cfp_b,cfp_c) genop('mov',w0,t1,)
 	eq(cfp_b,cfp_c) genop('mov','[' regmap[t3] ']','al')
 	ne(cfp_b,cfp_c) genop('mov','m_char [' regmap[t3] ']',t1)
 *	see if postincrement needed.
@@ -1702,13 +1702,13 @@ g.scg.w.xl
 
 g.scg.w.pxl
 
-	(eq(cfp_b,cfp_c)  genop('dec', 'xl'), genop('sub','xl', 'cfp_b'))
+	(eq(cfp_b,cfp_c)  genop('dec', xl), genop('sub',xl, 'cfp_b'))
 	genop('mov','m_char [xl]',t1)			    :(opdone)
 
 g.scg.w.xlp
 
 	genop('mov','m_char [xl]',t1)
-	(eq(cfp_b,cfp_c)  genop('inc', 'xl'), genop('add','xl', 'cfp_b'))
+	(eq(cfp_b,cfp_c)  genop('inc', xl), genop('add',xl, 'cfp_b'))
 							    :(opdone)
 g.scg.w.xr
 
@@ -1716,7 +1716,7 @@ g.scg.w.xr
 
 g.scg.w.pxr
 
-	(eq(cfp_b,cfp_c)  genop('dec', 'xr'), genop('sub','xr', 'cfp_b'))
+	(eq(cfp_b,cfp_c)  genop('dec', xr), genop('sub',xr, 'cfp_b'))
 	genop('mov','m_char [xr]',t1)			    :(opdone)
 
 g.scg.w.xrp
@@ -1744,8 +1744,8 @@ g.cne	memmem()
 g.cmc
 
 	genop('repe','cmps_b')
-	genop('mov','xl','0')
-	genop('mov','xr','xl')
+	genop('mov',xl,'0')
+	genop('mov',xr,xl)
 	t1 = getarg(i1)
 	t2 = getarg(i2)
 	(ident(t1,t2) genop('jnz',t1))			    :s(opdone)
@@ -1754,18 +1754,18 @@ g.cmc
 
 g.trc
 
-	genop('xchg','xl','xr')
-	eq(cfp_b,cfp_c) genopl((t1 = genlab()) '	    :','movzx','w0','m_char [xr]')
-	ne(cfp_b,cfp_c) genopl((t1 = genlab()) '	    :','mov','w0','m_char [xr]')
-	ne(cfp_b,cfp_c) genop('sal', 'w0', 'log_cfp_b');* convert char value to byte offset
+	genop('xchg',xl,xr)
+	eq(cfp_b,cfp_c) genopl((t1 = genlab()) '	    :','movzx',w0,'m_char [xr]')
+	ne(cfp_b,cfp_c) genopl((t1 = genlab()) '	    :','mov',w0,'m_char [xr]')
+	ne(cfp_b,cfp_c) genop('sal', w0, 'log_cfp_b');* convert char value to byte offset
 	eq(cfp_b,cfp_c) genop('mov','al','[xl+w0]')
 	ne(cfp_b,cfp_c) genop('mov','eax','[xl+w0]')
 	genop('stos' op_c)
 *	     genop('loop',t1)
-	genop('dec','wa')
+	genop('dec',wa)
 	genop('jnz',t1)
-	genop('xor','xl','xl')
-	genop('xor','xr','xr')
+	genop('xor',xl,xl)
+	genop('xor',xr,xr)
 							    :(opdone)
 
 g.anb	genop('and',getarg(i1),getarg(i2))		:(opdone)
@@ -1830,8 +1830,8 @@ g.btw	genop('shr',getarg(i1),'log_cfp_b')		:(opdone)
 
 g.mti	ident(i.text(i1),'(xs)+')			:f(g.mti.1)
 
-	genop('pop','w0')
-	genop('ldi_','w0')				    :(opdone)
+	genop('pop',w0)
+	genop('ldi_',w0)				    :(opdone)
 
 g.mti.1
 
@@ -1846,8 +1846,8 @@ g.mfi
 
 *	here if label given, branch if wc not in range (ie, negative)
 
-	genop('sti_','w0')
-	genop('or','w0','w0')
+	genop('sti_',w0)
+	genop('or',w0,w0)
 	genop('js',getarg(i2))
 
 g.mfi.1
@@ -1857,8 +1857,8 @@ g.mfi.1
 
 g.mfi.2
 
-	genop('sti_','w0')
-	genop('push','w0')				    :(opdone)
+	genop('sti_',w0)
+	genop('push',w0)				    :(opdone)
 
 g.ctw
 
@@ -1896,8 +1896,8 @@ g.cvm	t1 = getarg(i1)
 	genop('sti_',w0)
 	genop('imul',w0,'10')
 	genop('jo',t1)
-	genop('sub',regmap['wb'],'ch_d0')
-	genop('sub',w0,regmap['wb'])
+	genop('sub',regmap[wb],'ch_d0')
+	genop('sub',w0,regmap[wb])
 	genop('ldi_',w0)
 	genop('jo',t1)
 							    :(opdone)
@@ -1910,7 +1910,7 @@ g.mvc
 *	     use word move if character size is word size
 *	     if charsize is word size, convert character count to byte count for word move
 
-	ne(cfp_b,cfp_c) genop('shl', 'wa', 'log_cfp_b')
+	ne(cfp_b,cfp_c) genop('shl', wa, 'log_cfp_b')
 	ne(cfp_b,cfp_c)					    :s(g.mvw)
 	t1 = genlab()
 	z_suspend = 1
@@ -1922,22 +1922,22 @@ g.mvc
 g.mvw
 
 	z_suspend = 1
-	genop('shr','wa','log_cfp_b')
+	genop('shr',wa,'log_cfp_b')
 	genop('rep','movs_w')
 	z_suspend = 0
 							    :(opdone)
 
 g.mwb
 
-	genop('shr','wa','log_cfp_b')
+	genop('shr',wa,'log_cfp_b')
 	genop('std')
-	genop('lea','xl','[xl-cfp_b]')
-	genop('lea','xr','[xr-cfp_b]')
+	genop('lea',xl,'[xl-cfp_b]')
+	genop('lea',xr,'[xr-cfp_b]')
 	genrep('movs_w')
 	genop('cld')					    :(opdone)
 
 	genop('std')
-	genop('shr','wa','log_cfp_b')
+	genop('shr',wa,'log_cfp_b')
 	genop('rep')
 	genop('movs_w')
 	genop('ctd')
@@ -1947,11 +1947,11 @@ g.mcb
 
 *	     use word move if character size is word size
 
-	ne(cfp_b,cfp_c) genop('shl', 'wa', 'log_cfp_b')
+	ne(cfp_b,cfp_c) genop('shl', wa, 'log_cfp_b')
 	ne(cfp_b,cfp_c)					    :s(g.mwb)
 	genop('std')
-	genop('dec','xl')
-	genop('dec','xr')
+	genop('dec',xl)
+	genop('dec',xr)
 	genrep('movs_b')
 	genop('cld')
 							    :(opdone)
@@ -1966,17 +1966,17 @@ genrep
 	l1 = genlab()
 	l2 = genlab()
 	genopl(l1 '					    :')
-	genop('or','wa','wa')
+	genop('or',wa,wa)
 	genop('jz',l2)
 	genop(op)
-	genop('dec','wa')
+	genop('dec',wa)
 	genop('jmp',l1)
 	genopl(l2 '					    :')
 							    :(return)
 
 g.chk
 
-	genop('cmp','xs','lowspmin')
+	genop('cmp',xs,'lowspmin')
 	genop('jb','sec06')
 							    :(opdone)
 
@@ -2144,7 +2144,7 @@ g.sec.7
 *	     allow for some extra cases in case of max.err bad estimate
 	n1 = max.err + 8
 	output = '  max.err ' max.err
-	genopl('err_					    :','xchg',reg.wa,'m_word [' rcode ']')
+	genopl('err_					    :','xchg',wa,'m_word [' rcode ']')
 							    :(opdone)
 
 

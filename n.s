@@ -314,7 +314,7 @@ ttybuf:	d_word    0     ; type word
 	global	save_regs
 save_regs:
 	mov	m_word [save_ia],ia
-	mov	m_word [save_xl],xl
+	mov	m_word [save_xl],rsi
 	mov	m_word [save_xr],xr
 	mov	m_word [save_xs],xs
 	mov	m_word [save_wa],wa
@@ -327,7 +327,7 @@ save_regs:
 restore_regs:
 	;	restore regs, except for sp. that is caller's responsibility
 	mov	ia,m_word [save_ia]
-	mov	xl,m_word [save_xl]
+	mov	rsi,m_word [save_xl]
 	mov	xr,m_word [save_xr]
 ;	mov	xs,m_word [save_xs	; caller restores sp]
 	mov	wa,m_word [save_wa]
@@ -342,7 +342,7 @@ restore_regs:
 ; ;       to the compiler.
 ; ;
 ; ;       (xr) = basemem
-; ;       (xl) = topmem - sizeof(word)
+; ;       (rsi) = topmem - sizeof(word)
 ; ;
 ; ;	note: this function never returns.
 ; ;
@@ -439,7 +439,7 @@ stackinit:
 	mov	rbx,m_word [reg_wb]
 	mov     rdx,m_word [reg_wc]	;
 	mov	xr,m_word [reg_xr]
-	mov	xl,m_word [reg_xl]
+	mov	rsi,m_word [reg_xl]
 
 	mov     m_word [osisp],xs	; save osint stack pointer
 	cmp     m_word [compsp],0	; is there a compiler stack?
@@ -456,7 +456,7 @@ stackinit:
 	mov	m_word [reg_wb],rbx
 	mov	m_word [reg_wc],rdx
 	mov	m_word [reg_xr],xr
-	mov	m_word [reg_xl],xl
+	mov	m_word [reg_xl],rsi
 	ret
 
 
@@ -527,7 +527,7 @@ syscall_init:
 	mov	m_word [reg_wb],rbx
 	mov     m_word [reg_wc],rdx      ; (also _reg_ia)
 	mov	m_word [reg_xr],xr
-	mov	m_word [reg_xl],xl
+	mov	m_word [reg_xl],rsi
 	mov	m_word [reg_ia],ia
 	ret
 
@@ -539,7 +539,7 @@ syscall_exit:
 	mov	rbx,m_word [reg_wb]
 	mov     rdx,m_word [reg_wc]      ;
 	mov	xr,m_word [reg_xr]
-	mov	xl,m_word [reg_xl]
+	mov	rsi,m_word [reg_xl]
 	mov	ia,m_word [reg_ia]
 	cld
 	mov	w0,m_word [reg_pc]
@@ -858,11 +858,11 @@ restart:
 ;
 ;       restore stack from tscblk.
 ;
-        mov     xl,m_word [lmodstk]    	; -> bottom word of stack in tscblk
+        mov     rsi,m_word [lmodstk]    	; -> bottom word of stack in tscblk
         lea     xr,[tscblk+scstr]      	; -> top word of stack
-        cmp     xl,xr                 	; any stack to transfer?
+        cmp     rsi,xr                 	; any stack to transfer?
         je      re3               	;  skip if not
-	sub	xl,4
+	sub	rsi,4
 	std
 re1:    lodsd                           ; get old stack word to w0
         cmp     w0,rdx                 	; below old stack bottom?
@@ -871,7 +871,7 @@ re1:    lodsd                           ; get old stack word to w0
         ja      re2               	;   j. if w0 > wa
         sub     w0,rbx                 	; within old stack, perform relocation
 re2:    push    w0                     	; transfer word of stack
-        cmp     xl,xr                 	; if not at end of relocation then
+        cmp     rsi,xr                 	; if not at end of relocation then
         jae     re1                     ;    loop back
 
 re3:	cld
