@@ -36,7 +36,7 @@ BASEBOL =   ./bin/sbl
 #LOBJS=  dlfcn.o load.o
 LOBJS=
 
-spitbol: $(OBJS)
+spitbol: 
 #	rm sbl sbl.lex sbl.s sbl.err err.s
 	$(BASEBOL) lex.sbl 
 	$(BASEBOL) -x -u min asm.sbl

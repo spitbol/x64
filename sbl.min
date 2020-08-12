@@ -1586,51 +1586,101 @@
 *                            indicates symbol initially not
 *                            defined.
 
-.def   .caex                 define to allow up arrow for expon.
+*	The following options are enabled for the linux implementationss.
+
+
+* copyright 1987-2012 robert b. k. dewar and mark emmer.
+*
+* copyright 2012-2015 david shields
+*
+* this file is part of macro spitbol.
+*
+*     macro spitbol is free software: you can redistribute it and/or modify
+*     it under the terms of the gnu general public license as published by
+*     the free software foundation, either version 2 of the license, or
+*     (at your option) any later version.
+*
+*     macro spitbol is distributed in the hope that it will be useful,
+*     but without any warranty; without even the implied warranty of
+*     merchantability or fitness for a particular purpose.  see the
+*     gnu general public license for more details.
+*
+*     you should have received a copy of the gnu general public license
+*     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+*
+*      spitbol conditional assembly symbols for use by token.spt
+*      ---------------------------------------------------------
+*
+*      this file of conditional symbols will override the conditional
+*      definitions contained in the spitbol minimal file.   in addition,
+*      lines beginning with ">" are treated as spitbol statements and
+*      immediately executed.
+*
+*      in the spitbol translator, the following conditional
+*      assembly symbols are referred to. to incorporate the
+*      features referred to, the minimal source should be
+*      prefaced by suitable conditional assembly symbol
+*      definitions.
+*      in all cases it is permissible to default the definitions
+*      in which case the additional features will be omitted
+*      from the target code.
+*
+*
+*                            conditional options
+*                            since .undef not allowed if symbol not
+*                            defined, a full comment line indicates
+*                            symbol initially not defined.
+*
+
+*	The following options are set for the linux implementations
+
+*      .caex                 define to allow up arrow for exponentiation
 .def   .caht                 define to include horizontal tab
 .def   .casl                 define to include 26 shifted lettrs
-.def   .cavt                 define to include vertical tab
-*      .cbyt                 define for statistics in bytes
+*      .cavt                 define to include vertical tab
+.def   .cbsp                 define to include backspace function
+.def   .cbyt                 define for statistics in bytes
 *      .ccmc                 define to include syscm function
-*      .ccmk                 define to include compare keyword
-*      .cepp                 define if entrys have odd parity
-*      .cera                 define to include sysea function
-*      .cexp                 define if spitbol pops sysex args
+.def   .ccmk                 define to include compare keyword
+*      .ceng                 define to include engine features
+.def   .cepp                 define if entry points have odd parity
+.def   .cera                 define to include sysea function
+.def   .cevb                 define to fix eval bug
+.def   .cexp                 define to have spitbol pop sysex arguments
 .def   .cgbc                 define to include sysgc function
-*      .cicc                 define to ignore bad control cards
-*      .cinc                 define to add -include control card
-.def   .ciod                 define to not use default delimiter
-*                            in processing 3rd arg of input()
-*                            and output()
-*      .cmth                 define to include math functions
+.def   .cicc                 define to ignore unrecognised control card
+.def   .cinc                 define to include -include control card
+.def   .ciod                 if defined, default delimiter is
+.def   .cmth                 define to include extended math functions
 .def   .cnbf                 define to omit buffer extension
 .def   .cnbt                 define to omit batch initialisation
 *      .cnci                 define to enable sysci routine
 *      .cncr                 define to enable syscr routine
 *      .cnex                 define to omit exit() code.
-.def   .cnld                 define to omit load() code.
-*      .cnlf                 define to add file type to load()
+*      .cnld                 define to omit load() code.
+.def   .cnlf                 define to support file type for load()
 *      .cnpf                 define to omit profile stuff
-*      .cnra                 define to omit all real arithmetic
-*      .cnsc                 define if no numeric-string compare
+*def   .cnra                 define to omit all real arithmetic
+.def   .cnsc                 define to omit numeric-string compare in sort
 *      .cnsr                 define to omit sort, rsort
-*      .cpol                 define if interface polling desired
-*      .crel                 define to include reloc routines
-*      .crpp                 define if returns have odd parity
+.def   .csou                 define if output, terminal go to sysou
+.def   .cpol                 define if interface polling desired
+.def   .crel                 define to include reloc routines
+*      .crpp                 define if return points have odd parity
 *      .cs16                 define to initialize stlim to 32767
-*      .cs32                 define to init stlim to 2147483647
+.def   .cs32                 define to initialize stlim to 2147483647
 .def   .csax                 define if sysax is to be called
-*      .csed                 define to use sediment in gbcol
-*      .csfn                 define to track source file names
-*      .csln                 define if line number in code block
-*      .csou                 define if output, terminal to sysou
-.def   .ctet                 define to table entry trace wanted
-*      .ctmd                 define if systm unit is decisecond
-.def   .cucf                 define to include cfp_u
+.def   .csed                 define to use sediment in garbage collector
+.def   .csfn                 define to track source file names
+.def   .csln                 define to put source line number in code blocks
+.def   .cucf                 define to include cfp$u
 .def   .cuej                 define to suppress needless ejects
-.def   .culk                 define to include &l/ucase keywords
-.def   .culc                 define to include &case (lc names)
-.def   .cust                 define to include set() code
+*      .culc                 define to include &case (lc names)
+.def   .culk                 define to include &lcase, &ucase keywords
+*      .cust                 define to include set() code
+*      .cusr                 define to have set() use real values
+*                             (must also #define setreal 1 in systype.h)
+*
 
 *      force definition of .ccmk if .ccmc is defined
 
