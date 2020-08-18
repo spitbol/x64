@@ -972,7 +972,7 @@ is_exec.2
         p.alltabs = span(tab) rpos(0)
 
 
-        filenami = fileprefix '.lex'
+        filenami = 'sbl.lex'
         input(.infile,1,filenami)                       :s(inputok)
 
 inputok
@@ -981,7 +981,7 @@ inputok
 
 *       associate output files.
 
-        filenamo = fileprefix '.s'
+        filenamo = 'as-sbl.s'
         output(.outfile,2,filenamo)                     :s(outputok)
         output = '  cannot open asm file: ' filenamo    :(end)
 
@@ -1065,12 +1065,12 @@ init.end
 
 *       the generators are listed in a separate section below.
 
-        &trace = 2000
-        &ftrace = 1000
+*       &trace = 2000
+*       &ftrace = 1000
 *       &profile = 1
 
-        include('n.h')
-        include('n.dcl')
+        include('nasm.h')
+        include('nasm.dcl')
 
 *	Main loop - read next line and generate necessary code for it.
 
