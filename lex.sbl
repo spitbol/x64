@@ -49,6 +49,10 @@ init
         p.real  = span(nos) '.' (span(nos) | null) (p.exp | null) rpos(0)
         tab = char(9)
 
+*	sepchar separates fields in output file
+
+	sepchar = '|'
+
 *       catab is the transfer vector for routing control to generators
 *       for conditional assembly directives.
 
@@ -406,11 +410,11 @@ labenter.end
         define('outstmt(label,opcode,op1,op2,op3,comment)t,stmtout'):(outstmt.end)
 -stitl outstmt(label,opcode,op1,op2,op3,comment)t,stmtout
 outstmt
-        outfile = '{' label '{' opcode '{'
-.   (ident(typ1), typ1 ',') op1 '{'
-.   (ident(typ2), typ2 ',') op2 '{'
-.   (ident(typ3), typ3 ',') op3 '{' comment
-.   '{' nlines
+        outfile = sepchar  label sepchar  opcode sepchar 
+.   (ident(typ1), typ1 ',') op1 sepchar 
+.   (ident(typ2), typ2 ',') op2 sepchar 
+.   (ident(typ3), typ3 ',') op3 sepchar  comment
+.   sepchar  nlines
         ntarget = ntarget + 1
         noutlines = noutlines + 1
 .                                                       :(return)
@@ -421,6 +425,10 @@ rdline
         rdline = infile                                 :f(rl03)
         nlines  = nlines + 1
         differ( rdline )                                :s(rdline.1)
+
+*	skip blank line.
+
+	:(rdline)
         outfile =
         noutlines = noutlines + 1                       :(rdline)
 rdline.1
@@ -428,6 +436,11 @@ rdline.1
         rdline ? p.condasm                              :s( $catab[condcmd] )
 rl00
         leq( substr( rdline,1,1 ),'*' )                 :f(rl01)
+
+*	skip full line comment
+
+	:(rdline)
+
         outfile = ident(flcflag,'y') rdline             :f(rdline)
         noutlines = noutlines + 1                       :(rdline)
 rl01
@@ -534,7 +547,7 @@ dsgen
 g.bsw
         ub = ( integer( op2 ) op2, equates[op2] )
         iffar = integer( ub )
-.       array( '0:' ub - 1,'{{' )                       :f(g.bsw1)
+.       array('0:' ub - 1,sepchar sepchar)		:f(g.bsw1)
         dplbl = op3
         bsw   = 1                                       :(dsgen)
 g.bsw1
@@ -544,7 +557,7 @@ g.iff
         ifftyp = ( integer(op1) '1', '2')
         iffval = ( integer( op1 ) op1, equates[op1] )
         iffar[iffval] = integer( iffval )
-.       ifftyp ',' op1 '{' typ2 ',' op2 '{'  comment
+.       ifftyp ',' op1 sepchar  typ2 ',' op2 sepchar   comment
 .                                                       :s(dsout)
         error("non-integer iff value")
 g.equ
@@ -565,8 +578,8 @@ g.esw
         (eq(bsw) error("esw without bsw"))
         iffindx = 0
 g.esw1
-        iffar[iffindx] break('{') $ val len(1)
-.       break( '{' ) $ plbl len(1)
+        iffar[iffindx] break(sepchar ) $ val len(1)
+.       break( sepchar  ) $ plbl len(1)
 .       rem $ cmnt
 .                                                       :f(g.esw2)
         val = ident( val ) '1,' iffindx
