@@ -313,27 +313,27 @@ ttybuf:	d_word    0     ; type word
 ;
 	global	save_regs
 save_regs:
-	mov	m_word [save_ia],ia
+	mov	m_word [save_ia],rdx
 	mov	m_word [save_xl],rsi
-	mov	m_word [save_xr],xr
-	mov	m_word [save_xs],xs
-	mov	m_word [save_wa],wa
+	mov	m_word [save_xr],rdi
+	mov	m_word [save_xs],rsp
+	mov	m_word [save_wa],rcx
 	mov	m_word [save_wb],rbx
 	mov	m_word [save_wc],rdx
-	mov	m_word [save_w0],w0
+	mov	m_word [save_w0],rax
 	ret
 
 	global	restore_regs
 restore_regs:
 	;	restore regs, except for sp. that is caller's responsibility
-	mov	ia,m_word [save_ia]
+	mov	rdx,m_word [save_ia]
 	mov	rsi,m_word [save_xl]
-	mov	xr,m_word [save_xr]
-;	mov	xs,m_word [save_xs	; caller restores sp]
-	mov	wa,m_word [save_wa]
+	mov	rdi,m_word [save_xr]
+;	mov	rsp,m_word [save_xs	; caller restores sp]
+	mov	rcx,m_word [save_wa]
 	mov	rbx,m_word [save_wb]
 	mov	rdx,m_word [save_wc]
-	mov	w0,m_word [save_w0]
+	mov	rax,m_word [save_w0]
 	ret
 ; ;
 ; ;       startup( char *dummy1, char *dummy2) - startup compiler
@@ -341,7 +341,7 @@ restore_regs:
 ; ;       an osint c function calls startup to transfer control
 ; ;       to the compiler.
 ; ;
-; ;       (xr) = basemem
+; ;       (rdi) = basemem
 ; ;       (rsi) = topmem - sizeof(word)
 ; ;
 ; ;	note: this function never returns.
@@ -369,14 +369,14 @@ calltab_enevs equ   12
 calltab_engts equ   13
 
 startup:
-	pop     w0			; discard return
+	pop     rax			; discard return
 	call	stackinit		; initialize minimal stack
-	mov     w0,m_word [compsp]	; get minimal's stack pointer
-	mov m_word [reg_wa],w0		; startup stack pointer
+	mov     rax,m_word [compsp]	; get minimal's stack pointer
+	mov m_word [reg_wa],rax		; startup stack pointer
 
 	cld				; default to up direction for string ops
-;        getoff  w0,dffnc               # get address of ppm offset
-	mov     m_word [ppoff],w0	; save for use later
+;        getoff  rax,dffnc               # get address of ppm offset
+	mov     m_word [ppoff],rax	; save for use later
 
 	mov     xs,m_word [osisp]	; switch to new c stack
 	mov	m_word [minimal_id],calltab_start
@@ -387,7 +387,7 @@ startup:
 ;	input:  sp - current c stack
 ;		stacksiz - size of desired minimal stack in bytes
 
-;	uses:	w0
+;	uses:	rax
 
 ;	output: register wa, sp, lowspmin, compsp, osisp set up per diagram:
 
@@ -410,13 +410,13 @@ startup:
 
 	global	stackinit
 stackinit:
-	mov	w0,xs
-	mov     m_word [compsp],w0	; save as minimal's stack pointer
-	sub	w0,m_word [stacksiz]	; end of minimal stack is where c stack will start
-	mov     m_word [osisp],w0	; save new c stack pointer
-	add	w0,cfp_b*100		; 100 words smaller for chk
+	mov	rax,xs
+	mov     m_word [compsp],rax	; save as minimal's stack pointer
+	sub	rax,m_word [stacksiz]	; end of minimal stack is where c stack will start
+	mov     m_word [osisp],rax	; save new c stack pointer
+	add	rax,cfp_b*100		; 100 words smaller for chk
 	extern	lowspmin
-	mov	m_word [lowspmin],w0
+	mov	m_word [lowspmin],rax
 	ret
 
 ;       mimimal -- call minimal function from c
@@ -447,8 +447,8 @@ stackinit:
 	mov     xs,m_word [compsp]	; switch to compiler stack
 
  min1:
-	mov     w0,m_word [minimal_id]	; get ordinal
-	call   m_word [calltab+w0*cfp_b]    ; off to the minimal code
+	mov     rax,m_word [minimal_id]	; get ordinal
+	call   m_word [calltab+rax*cfp_b]    ; off to the minimal code
 
 	mov     xs,m_word [osisp]	; switch to osint stack
 
@@ -532,7 +532,7 @@ syscall_init:
 	ret
 
 syscall_exit:
-	mov	m_word [_rc_],w0	; save return code from function
+	mov	m_word [_rc_],rax	; save return code from function
 	mov     m_word [osisp],xs       ; save osint's stack pointer
 	mov     xs,m_word [compsp]      ; restore compiler's stack pointer
 	mov     wa,m_word [reg_wa]      ; restore registers
@@ -542,12 +542,12 @@ syscall_exit:
 	mov	rsi,m_word [reg_xl]
 	mov	ia,m_word [reg_ia]
 	cld
-	mov	w0,m_word [reg_pc]
-	jmp	w0
+	mov	rax,m_word [reg_pc]
+	jmp	rax
 
 	%macro	syscall	2
-	pop     w0			; pop return address
-	mov	m_word [reg_pc],w0
+	pop     rax			; pop return address
+	mov	m_word [reg_pc],rax
 	call	syscall_init
 ;       save compiler stack and switch to osint stack
 	mov     m_word [compsp],xs      ; save compiler's stack pointer
@@ -617,9 +617,9 @@ sysex:	mov	m_word [reg_xs],xs
 
 	global sysfc
 	extern	zysfc
-sysfc:  pop     w0             ; <<<<remove stacked scblk>>>>
+sysfc:  pop     rax             ; <<<<remove stacked scblk>>>>
 	lea	xs,[xs+rdx*cfp_b]
-	push	w0
+	push	rax
 	syscall	zysfc,14
 
 	global sysgc
@@ -723,7 +723,7 @@ sysxi:	mov	m_word [reg_xs],xs
 	%endmacro
 
 ;	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
-;	placed in w0, which is then sign extended into rdx:w0. after the divide, w0 contains the
+;	placed in rax, which is then sign extended into rdx:rax. after the divide, rax contains the
 ;	quotient, rdx contains the remainder.
 ;
 ;       cvd__ - convert by division
@@ -743,11 +743,11 @@ cvd__:
 
 
 ocode:
-        or      w0,w0         	; test for 0
+        or      rax,rax         	; test for 0
         jz      setovr    	; jump if 0 divisor
-        xchg    w0,ia         	; ia to w0, divisor to ia
+        xchg    rax,ia         	; ia to rax, divisor to ia
         cdq                     ; extend dividend
-        idiv    ia              ; perform division. w0=quotient, rdx=remainder
+        idiv    ia              ; perform division. rax=quotient, rdx=remainder
 	seto	byte [reg_fl]
 	mov	ia,rdx
 	ret
@@ -760,7 +760,7 @@ setovr: mov     al,1		; set overflow indicator
 	global	%1
 	extern	%2
 %1:
-	mov	m_word [reg_rp],w0
+	mov	m_word [reg_rp],rax
 	call	%2
 	ret
 %endmacro
@@ -814,8 +814,8 @@ ovr_:
 	global	get_fp			; get frame pointer
 
 get_fp:
-         mov     w0,m_word [reg_xs]     ; minimal's xs
-         add     w0,4           	; pop return from call to sysbx or sysxi
+         mov     rax,m_word [reg_xs]     ; minimal's xs
+         add     rax,4           	; pop return from call to sysbx or sysxi
          ret                    	; done
 
 	extern	rereloc
@@ -834,27 +834,27 @@ scstr	equ	cfp_c+cfp_c
 
 ;
 restart:
-        pop     w0                      ; discard return
-        pop     w0                     	; discard dummy
-        pop     w0                     	; get lowest legal stack value
+        pop     rax                      ; discard return
+        pop     rax                     	; discard dummy
+        pop     rax                     	; get lowest legal stack value
 
-        add     w0,m_word [stacksiz]  	; top of compiler's stack
-        mov     xs,w0                 	; switch to this stack
+        add     rax,m_word [stacksiz]  	; top of compiler's stack
+        mov     xs,rax                 	; switch to this stack
 	call	stackinit               ; initialize minimal stack
 
                                         ; set up for stack relocation
-        lea     w0,[tscblk+scstr]       ; top of saved stack
+        lea     rax,[tscblk+scstr]       ; top of saved stack
         mov     rbx,m_word [lmodstk]    	; bottom of saved stack
         mov	wa,m_word [stbas]      ; wa = stbas from exit() time
-        sub     rbx,w0                 	; wb = size of saved stack
+        sub     rbx,rax                 	; wb = size of saved stack
 	mov	rdx,wa
         sub     rdx,rbx                 	; rdx = stack bottom from exit() time
 	mov	rbx,wa
         sub     rbx,xs                 	; rbx =  stbas - new stbas
 
         mov	m_word [stbas],xs       ; save initial sp
-;        getoff  w0,dffnc               ; get address of ppm offset
-        mov     m_word [ppoff],w0       ; save for use later
+;        getoff  rax,dffnc               ; get address of ppm offset
+        mov     m_word [ppoff],rax       ; save for use later
 ;
 ;       restore stack from tscblk.
 ;
@@ -864,13 +864,13 @@ restart:
         je      re3               	;  skip if not
 	sub	rsi,4
 	std
-re1:    lodsd                           ; get old stack word to w0
-        cmp     w0,rdx                 	; below old stack bottom?
-        jb      re2               	;   j. if w0 < rdx
-        cmp     w0,wa                 	; above old stack top?
-        ja      re2               	;   j. if w0 > wa
-        sub     w0,rbx                 	; within old stack, perform relocation
-re2:    push    w0                     	; transfer word of stack
+re1:    lodsd                           ; get old stack word to rax
+        cmp     rax,rdx                 	; below old stack bottom?
+        jb      re2               	;   j. if rax < rdx
+        cmp     rax,wa                 	; above old stack top?
+        ja      re2               	;   j. if rax > wa
+        sub     rax,rbx                 	; within old stack, perform relocation
+re2:    push    rax                     	; transfer word of stack
         cmp     rsi,xr                 	; if not at end of relocation then
         jae     re1                     ;    loop back
 
@@ -878,9 +878,9 @@ re3:	cld
         mov     m_word [compsp],xs     	; save compiler's stack pointer
         mov     xs,m_word [osisp]      	; back to osint's stack pointer
         call   rereloc               	; relocate compiler pointers into stack
-        mov	w0,m_word [statb]      	; start of static region to xr
-	mov	m_word [reg_xr],w0
-	mov	w0,minimal_insta
+        mov	rax,m_word [statb]      	; start of static region to xr
+	mov	m_word [reg_xr],rax
+	mov	rax,minimal_insta
 	jmp	minimal			; initialize static region 
 					; was a call, but there is nothing to return to.  This was probably for 
 					; debugging purposes.
@@ -907,13 +907,13 @@ re3:	cld
 ;
         call   startbrk			; start control-c logic
 
-        mov	w0,m_word [stage]      	; is this a -w call?
-	cmp	w0,4
+        mov	rax,m_word [stage]      	; is this a -w call?
+	cmp	rax,4
         je            re4               ; yes, do a complete fudge
 
 ;
 ;       jump back with return value = normal_return
-	xor	w0,w0			; set to zero to indicate normal return
+	xor	rax,rax			; set to zero to indicate normal return
 	call	syscall_exit
 	ret
 
@@ -921,16 +921,16 @@ re3:	cld
 ;       would occur if we naively returned to sysbx.  clear the stack and
 ;       go for it.
 ;
-re4:	mov	w0,m_word [stbas]
-        mov     m_word [compsp],w0     	; empty the stack
+re4:	mov	rax,m_word [stbas]
+        mov     m_word [compsp],rax     	; empty the stack
 
 ;       code that would be executed if we had returned to makeexec:
 ;
         mov	m_word [gbcnt],0       	; reset garbage collect count
         call    zystm                 	; fetch execution time to reg_ia
-        mov     w0,m_word [reg_ia]     	; set time into compiler
+        mov     rax,m_word [reg_ia]     	; set time into compiler
 	extern	timsx
-	mov	m_word [timsx],w0
+	mov	m_word [timsx],rax
 
 ;       code that would be executed if we returned to sysbx:
 ;
@@ -941,8 +941,8 @@ re4:	mov	w0,m_word [stbas]
 
 ;       jump to minimal code to restart a save file.
 
-	mov	w0,minimal_rstrt
-	mov	m_word [minimal_id],w0
+	mov	rax,minimal_rstrt
+	mov	m_word [minimal_id],rax
         call	minimal			; no return
 
 %ifdef z_trace

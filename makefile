@@ -59,7 +59,8 @@ sbl.go:	sbl.lex go.sbl
 install:
 	sudo cp ./bin/sbl /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o *.lst *.map *.err sbl.lex sbl.tmp sbl.s err.s s.S s.t ./sbl
+	rm -f  *.o *.lst *.map *.err sbl.lex sbl.tmp sbl.s err.s s.S s.t ./sbl nasm-sbl.s
+#	rm sbl.s sbl.lex err.s nasm-sbl.s
 
 z:
 	nm -n sbl.o >s.nm

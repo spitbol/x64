@@ -12,15 +12,15 @@ cp	./bin/sbl tbol
 make clean>/dev/null
 make BASEBOL=./tbol
 mv sbl.lex tbol.lex.0
-mv sbl.s tbol.s.0
+mv nasm-sbl.s tbol.s.0
 cp sbl tbol
 make BASEBOL=./tbol
 mv sbl.lex tbol.lex.1
-mv sbl.s tbol.s.1
+mv nasm-sbl.s tbol.s.1
 cp sbl tbol
 make BASEBOL=./tbol
 mv sbl.lex tbol.lex.2
-mv sbl.s tbol.s.2
+mv nasm-sbl.s tbol.s.2
 echo "comparing generated .s files"
 diff tbol.s.1 tbol.s.2
 echo "end sanity test"
