@@ -211,7 +211,7 @@ calltab:
 
 	extern	rmi__
 	%macro	rmi_	1
-	mov	w0,%1
+	mov	rax,%1
 	call	rmi__
 	%endmacro
 
@@ -250,7 +250,7 @@ calltab:
 
 	%macro	sbi_	1
 	sub	ia,%1
-	mov	w0,0
+	mov	rax,0
 	seto	byte [reg_fl]
 	%endmacro
 
@@ -263,28 +263,28 @@ calltab:
 	extern	reg_cp
 
 	%macro	lcp_	1
-	mov	w0,%1
-	mov	m_word [reg_cp],w0
+	mov	rax,%1
+	mov	m_word [reg_cp],rax
 	%endmacro
 
 	%macro	lcw_	1
-	mov	w0,m_word [reg_cp]		; load address of code word
-	mov	w0,m_word [w0]			; load code word
-	mov	%1,w0
-	mov	w0,m_word [reg_cp]		; load address of code word
-	add	w0,cfp_b
-	mov	m_word [reg_cp],w0
+	mov	rax,m_word [reg_cp]		; load address of code word
+	mov	rax,m_word [rax]			; load code word
+	mov	%1,rax
+	mov	rax,m_word [reg_cp]		; load address of code word
+	add	rax,cfp_b
+	mov	m_word [reg_cp],rax
 	%endmacro
 
 	%macro	scp_	1
-	mov	w0,m_word [reg_cp]
-	mov	%1,w0
+	mov	rax,m_word [reg_cp]
+	mov	%1,rax
 	%endmacro
 
 	%macro	icp_	0
-	mov	w0,m_word [reg_cp]
-	add	w0,cfp_b
-	mov	m_word [reg_cp],w0
+	mov	rax,m_word [reg_cp]
+	add	rax,cfp_b
+	mov	m_word [reg_cp],rax
 	%endmacro
 
 	%macro	rov_	1

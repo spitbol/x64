@@ -155,12 +155,12 @@ minimal_engts	equ	12
 	align cfp_b
 reg_block:
 reg_ia: d_word	0		; register ia (ebp)
-reg_w0:	d_word	0        	; register wa (ecx)
-reg_wa:	d_word	0        	; register wa (ecx)
-reg_wb:	d_word 	0        	; register wb (ebx)
-reg_wc:	d_word	0		; register wc
-reg_xr:	d_word	0        	; register xr (xr)
-reg_xl:	d_word	0        	; register xl (xl)
+reg_w0:	d_word	0        	; register w0 (rax)
+reg_wa:	d_word	0        	; register wa (rcx)
+reg_wb:	d_word 	0        	; register wb (rbx)
+reg_wc:	d_word	0		; register wc (rdx)
+reg_xl:	d_word	0        	; register xl (rsi)
+reg_xr:	d_word	0        	; register xr (rdi)
 reg_cp:	d_word	0        	; register cp
 reg_ra:	d_real 	0.0  		; register ra
 
@@ -378,7 +378,7 @@ startup:
 ;        getoff  rax,dffnc               # get address of ppm offset
 	mov     m_word [ppoff],rax	; save for use later
 
-	mov     xs,m_word [osisp]	; switch to new c stack
+	mov     rsp,m_word [osisp]	; switch to new c stack
 	mov	m_word [minimal_id],calltab_start
 	call	minimal			; load regs, switch stack, start compiler
 
@@ -393,7 +393,7 @@ startup:
 
 ;	(high)	+----------------+
 ;		|  old c stack   |
-;	  	|----------------| <-- incoming sp, resultant wa (future xs)
+;	  	|----------------| <-- incoming sp, resultant wa (future rsp)
 ;		|	     ^	 |
 ;		|	     |	 |
 ;		/ stacksiz bytes /
@@ -410,7 +410,7 @@ startup:
 
 	global	stackinit
 stackinit:
-	mov	rax,xs
+	mov	rax,rsp
 	mov     m_word [compsp],rax	; save as minimal's stack pointer
 	sub	rax,m_word [stacksiz]	; end of minimal stack is where c stack will start
 	mov     m_word [osisp],rax	; save new c stack pointer
@@ -435,27 +435,27 @@ stackinit:
 
  minimal:
 ;         pushad			; save all registers for c
-	mov     wa,m_word [reg_wa]	; restore registers
+	mov     rcx,m_word [reg_wa]	; restore registers
 	mov	rbx,m_word [reg_wb]
 	mov     rdx,m_word [reg_wc]	;
-	mov	xr,m_word [reg_xr]
+	mov	rdi,m_word [reg_xr]
 	mov	rsi,m_word [reg_xl]
 
-	mov     m_word [osisp],xs	; save osint stack pointer
+	mov     m_word [osisp],rsp	; save osint stack pointer
 	cmp     m_word [compsp],0	; is there a compiler stack?
 	je      min1			; jump if none yet
-	mov     xs,m_word [compsp]	; switch to compiler stack
+	mov     rsp,m_word [compsp]	; switch to compiler stack
 
  min1:
 	mov     rax,m_word [minimal_id]	; get ordinal
 	call   m_word [calltab+rax*cfp_b]    ; off to the minimal code
 
-	mov     xs,m_word [osisp]	; switch to osint stack
+	mov     rsp,m_word [osisp]	; switch to osint stack
 
-	mov     m_word [reg_wa],wa	; save registers
+	mov     m_word [reg_wa],rcx	; save registers
 	mov	m_word [reg_wb],rbx
 	mov	m_word [reg_wc],rdx
-	mov	m_word [reg_xr],xr
+	mov	m_word [reg_xr],rdi
 	mov	m_word [reg_xl],rsi
 	ret
 
@@ -523,22 +523,22 @@ call_adr:	d_word	0
 syscall_init:
 ;       save registers in global variables
 
-	mov     m_word [reg_wa],wa      ; save registers
+	mov     m_word [reg_wa],rcx      ; save registers
 	mov	m_word [reg_wb],rbx
 	mov     m_word [reg_wc],rdx      ; (also _reg_ia)
-	mov	m_word [reg_xr],xr
+	mov	m_word [reg_xr],rdi
 	mov	m_word [reg_xl],rsi
 	mov	m_word [reg_ia],ia
 	ret
 
 syscall_exit:
 	mov	m_word [_rc_],rax	; save return code from function
-	mov     m_word [osisp],xs       ; save osint's stack pointer
-	mov     xs,m_word [compsp]      ; restore compiler's stack pointer
-	mov     wa,m_word [reg_wa]      ; restore registers
+	mov     m_word [osisp],rsp       ; save osint's stack pointer
+	mov     rsp,m_word [compsp]      ; restore compiler's stack pointer
+	mov     rcx,m_word [reg_wa]      ; restore registers
 	mov	rbx,m_word [reg_wb]
 	mov     rdx,m_word [reg_wc]      ;
-	mov	xr,m_word [reg_xr]
+	mov	rdi,m_word [reg_xr]
 	mov	rsi,m_word [reg_xl]
 	mov	ia,m_word [reg_ia]
 	cld
@@ -550,8 +550,8 @@ syscall_exit:
 	mov	m_word [reg_pc],rax
 	call	syscall_init
 ;       save compiler stack and switch to osint stack
-	mov     m_word [compsp],xs      ; save compiler's stack pointer
-	mov     xs,m_word [osisp]       ; load osint's stack pointer
+	mov     m_word [compsp],rsp      ; save compiler's stack pointer
+	mov     rsp,m_word [osisp]       ; load osint's stack pointer
 	call	%1
 	jmp	syscall_exit		; was a call for debugging purposes, but that would cause a crash when the 
 					; compilers stack pointer blew up
@@ -567,7 +567,7 @@ sysbs:	syscall	  zysbs,2
 
 	global sysbx
 	extern	zysbx
-sysbx:	mov	m_word [reg_xs],xs
+sysbx:	mov	m_word [reg_xs],rsp
 	syscall	zysbx,2
 
 ;        global syscr
@@ -612,13 +612,13 @@ sysep:	syscall	zysep,12
 
 	global sysex
 	extern	zysex
-sysex:	mov	m_word [reg_xs],xs
+sysex:	mov	m_word [reg_xs],rsp
 	syscall	zysex,13
 
 	global sysfc
 	extern	zysfc
 sysfc:  pop     rax             ; <<<<remove stacked scblk>>>>
-	lea	xs,[xs+rdx*cfp_b]
+	lea	rsp,[rsp+rdx*cfp_b]
 	push	rax
 	syscall	zysfc,14
 
@@ -628,7 +628,7 @@ sysgc:	syscall	zysgc,15
 
 	global syshs
 	extern	zyshs
-syshs:	mov	m_word [reg_xs],xs
+syshs:	mov	m_word [reg_xs],rsp
 	syscall	zyshs,16
 
 	global sysid
@@ -713,13 +713,13 @@ sysul:	syscall	zysul,37
 
 	global sysxi
 	extern	zysxi
-sysxi:	mov	m_word [reg_xs],xs
+sysxi:	mov	m_word [reg_xs],rsp
 	syscall	zysxi,38
 
 	%macro	callext	2
 	extern	%1
 	call	%1
-	add	xs,%2		; pop arguments
+	add	rsp,%2		; pop arguments
 	%endmacro
 
 ;	x64 hardware divide, expressed in form of minimal register mappings, requires dividend be
@@ -735,10 +735,10 @@ sysxi:	mov	m_word [reg_xs],xs
 cvd__:
 	extern	i_cvd
 	mov	m_word [reg_ia],ia
-	mov	m_word [reg_wa],wa
+	mov	m_word [reg_wa],rcx
 	call	i_cvd
 	mov	ia,m_word [reg_ia]
-	mov	wa,m_word [reg_wa]
+	mov	rcx,m_word [reg_wa]
 	ret
 
 
@@ -839,46 +839,46 @@ restart:
         pop     rax                     	; get lowest legal stack value
 
         add     rax,m_word [stacksiz]  	; top of compiler's stack
-        mov     xs,rax                 	; switch to this stack
+        mov     rsp,rax                 	; switch to this stack
 	call	stackinit               ; initialize minimal stack
 
                                         ; set up for stack relocation
         lea     rax,[tscblk+scstr]       ; top of saved stack
         mov     rbx,m_word [lmodstk]    	; bottom of saved stack
-        mov	wa,m_word [stbas]      ; wa = stbas from exit() time
+        mov	rcx,m_word [stbas]      ; rcx = stbas from exit() time
         sub     rbx,rax                 	; wb = size of saved stack
-	mov	rdx,wa
+	mov	rdx,rcx
         sub     rdx,rbx                 	; rdx = stack bottom from exit() time
-	mov	rbx,wa
-        sub     rbx,xs                 	; rbx =  stbas - new stbas
+	mov	rbx,rcx
+        sub     rbx,rsp                 	; rbx =  stbas - new stbas
 
-        mov	m_word [stbas],xs       ; save initial sp
+        mov	m_word [stbas],rsp       ; save initial sp
 ;        getoff  rax,dffnc               ; get address of ppm offset
         mov     m_word [ppoff],rax       ; save for use later
 ;
 ;       restore stack from tscblk.
 ;
         mov     rsi,m_word [lmodstk]    	; -> bottom word of stack in tscblk
-        lea     xr,[tscblk+scstr]      	; -> top word of stack
-        cmp     rsi,xr                 	; any stack to transfer?
+        lea     rdi,[tscblk+scstr]      	; -> top word of stack
+        cmp     rsi,rdi                 	; any stack to transfer?
         je      re3               	;  skip if not
 	sub	rsi,4
 	std
 re1:    lodsd                           ; get old stack word to rax
         cmp     rax,rdx                 	; below old stack bottom?
         jb      re2               	;   j. if rax < rdx
-        cmp     rax,wa                 	; above old stack top?
-        ja      re2               	;   j. if rax > wa
+        cmp     rax,rcx                 	; above old stack top?
+        ja      re2               	;   j. if rax > rcx
         sub     rax,rbx                 	; within old stack, perform relocation
 re2:    push    rax                     	; transfer word of stack
-        cmp     rsi,xr                 	; if not at end of relocation then
+        cmp     rsi,rdi                 	; if not at end of relocation then
         jae     re1                     ;    loop back
 
 re3:	cld
-        mov     m_word [compsp],xs     	; save compiler's stack pointer
-        mov     xs,m_word [osisp]      	; back to osint's stack pointer
+        mov     m_word [compsp],rsp     	; save compiler's stack pointer
+        mov     rsp,m_word [osisp]      	; back to osint's stack pointer
         call   rereloc               	; relocate compiler pointers into stack
-        mov	rax,m_word [statb]      	; start of static region to xr
+        mov	rax,m_word [statb]      	; start of static region to rdi
 	mov	m_word [reg_xr],rax
 	mov	rax,minimal_insta
 	jmp	minimal			; initialize static region 
@@ -937,7 +937,7 @@ re4:	mov	rax,m_word [stbas]
         push    m_word [outptr]        	; swcoup(outptr)
 	extern 	swcoup
 	call	swcoup
-	add	xs,cfp_b
+	add	rsp,cfp_b
 
 ;       jump to minimal code to restart a save file.
 
