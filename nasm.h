@@ -27,20 +27,22 @@
 	%define d_real	dq	; define value for floating point
 ; N INCLUDE
 	%define	xl	rsi
+	%define xr	rdi
 	%define	xt	rsi
-	%define	xr	rdi
-	%define	w0	rax
-	%define w1	rbp
-	%define	wa	rcx
+
+;	%define	w0	rax
+
+;	%define	wa	rcx
 	%define wa_l	cl
+
 	%define	wb	rbx
 	%define wb_l    bl
+
 	%define	wc	rdx
 	%define wc_l    dl
-	%define	xs	rsp
-	%define	w0_l	al
-;	%define	ia	rdx
-	%define	ia	rbp
+
+	%define ia	rbp
+
 ;	%define	cfp_b	8
 	%define log_cfp_b 3
 	%define log_cfp_c 3

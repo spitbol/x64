@@ -154,7 +154,7 @@ minimal_engts	equ	12
 ; ;
 	align cfp_b
 reg_block:
-reg_ia: d_word	0		; register ia (ebp)
+reg_ia: d_word	0		; register ia (rbp)
 reg_w0:	d_word	0        	; register w0 (rax)
 reg_wa:	d_word	0        	; register wa (rcx)
 reg_wb:	d_word 	0        	; register wb (rbx)
@@ -528,7 +528,7 @@ syscall_init:
 	mov     m_word [reg_wc],rdx      ; (also _reg_ia)
 	mov	m_word [reg_xr],rdi
 	mov	m_word [reg_xl],rsi
-	mov	m_word [reg_ia],ia
+	mov	m_word [reg_ia],rbp
 	ret
 
 syscall_exit:
@@ -540,7 +540,7 @@ syscall_exit:
 	mov     rdx,m_word [reg_wc]      ;
 	mov	rdi,m_word [reg_xr]
 	mov	rsi,m_word [reg_xl]
-	mov	ia,m_word [reg_ia]
+	mov	rbp,m_word [reg_ia]
 	cld
 	mov	rax,m_word [reg_pc]
 	jmp	rax
@@ -734,10 +734,10 @@ sysxi:	mov	m_word [reg_xs],rsp
 	global	cvd__
 cvd__:
 	extern	i_cvd
-	mov	m_word [reg_ia],ia
+	mov	m_word [reg_ia],rbp
 	mov	m_word [reg_wa],rcx
 	call	i_cvd
-	mov	ia,m_word [reg_ia]
+	mov	rbp,m_word [reg_ia]
 	mov	rcx,m_word [reg_wa]
 	ret
 
@@ -745,11 +745,11 @@ cvd__:
 ocode:
         or      rax,rax         	; test for 0
         jz      setovr    	; jump if 0 divisor
-        xchg    rax,ia         	; ia to rax, divisor to ia
+        xchg    rax,rbp         	; ia to rax, divisor to ia
         cdq                     ; extend dividend
-        idiv    ia              ; perform division. rax=quotient, rdx=remainder
+        idiv    rbp              ; perform division. rax=quotient, rdx=remainder
 	seto	byte [reg_fl]
-	mov	ia,rdx
+	mov	rbp,rdx
 	ret
 
 setovr: mov     al,1		; set overflow indicator
@@ -778,7 +778,7 @@ setovr: mov     al,1		; set overflow indicator
 	global	%1
 	extern	%2
 %1:
-	mov	m_word [reg_ia],ia
+	mov	m_word [reg_ia],rbp
 	call	%2
 	ret
 %endmacro

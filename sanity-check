@@ -21,6 +21,6 @@ cp sbl tbol
 make BASEBOL=./tbol
 mv sbl.lex tbol.lex.2
 mv sbl.asm tbol.asm.2
-echo "comparing generated .s files"
+echo "comparing generated .asm files"
 diff tbol.asm.1 tbol.asm.2
 echo "end sanity test"
