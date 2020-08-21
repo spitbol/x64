@@ -36,14 +36,14 @@ BASEBOL =   ./bin/sbl
 #LOBJS=  dlfcn.o load.o
 LOBJS=
 
-spitbol: $(OBJS)
+spitbol: 
 #	rm sbl sbl.lex sbl.s sbl.err err.s
 	$(BASEBOL) lex.sbl 
-	$(BASEBOL) -x -u min asm.sbl
-	$(BASEBOL) -x -1=sbl.err -2=err.s err.sbl
-	$(ASM) $(ASMFLAGS) err.s
-	$(ASM) $(ASMFLAGS) $(ASM).s
-	$(ASM) $(ASMFLAGS) sbl.s
+	$(BASEBOL) -x nasm.sbl
+	$(BASEBOL) -x -1=sbl.err -2=err.asm err.sbl
+	$(ASM) $(ASMFLAGS) err.asm
+	$(ASM) $(ASMFLAGS) nasm.asm
+	$(ASM) $(ASMFLAGS) sbl.asm
 #stop:
 	$(CC) $(CFLAGS) -c osint/*.c
 	$(CC) $(CFLAGS) *.o -osbl -lm
@@ -59,7 +59,7 @@ sbl.go:	sbl.lex go.sbl
 install:
 	sudo cp ./bin/sbl /usr/local/bin
 clean:
-	rm -f $(OBJS) *.o *.lst *.map *.err sbl.lex sbl.tmp sbl.s err.s s.S s.t ./sbl
+	rm -f  *.o *.lst *.map *.err err.lex sbl.lex sbl.err sbl.asm err.asm ./sbl  
 
 z:
 	nm -n sbl.o >s.nm
