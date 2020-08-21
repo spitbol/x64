@@ -1018,7 +1018,7 @@ inputok
 
 *       associate output files.
 
-        filenamo = 'nasm-sbl.s'
+        filenamo = 'sbl.asm'
         output(.outfile,2,filenamo)                     :s(outputok)
         output = '  cannot open asm file: ' filenamo    :(end)
 
