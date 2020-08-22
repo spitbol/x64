@@ -29,10 +29,11 @@
 	%define	xl	rsi
 	%define xr	rdi
 	%define	xt	rsi
+	%define xs	rsp
 
-;	%define	w0	rax
+	%define	w0	rax
 
-;	%define	wa	rcx
+	%define	wa	rcx
 	%define wa_l	cl
 
 	%define	wb	rbx
@@ -44,6 +45,7 @@
 	%define ia	rbp
 
 ;	%define	cfp_b	8
+
 	%define log_cfp_b 3
 	%define log_cfp_c 3
 	%define d_real	dq

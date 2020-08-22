@@ -789,6 +789,9 @@ init
 
 	xs = 'rsp'
 
+	w0 = 'w0'; wa = 'wa'; wb = 'wb'; wc = 'wc'
+	xl = 'xl'; xr = 'xr'; xs = 'xs'; xt = xl
+
 * symbolic target assignments
 
 *       real_op maps minimal real opcode to machine opcode
@@ -1236,7 +1239,6 @@ mov.xrp genop('mov',w0,getarg(i.src))
         genop('stos_w')                                 :(opdone)
 
 mov.2
- output = 'mov.2 line ' input_lines '<'  t.src '>'
 *	isreg(i2) genop('push', register(t.src))	:s(opdone)
         genop('push',getarg(i.src))                     :(opdone)
 
