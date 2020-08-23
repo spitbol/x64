@@ -786,6 +786,12 @@ init
 	w0 = 'w0'; wa = 'wa'; wb = 'wb'; wc = 'wc'
 	xl = 'xl'; xr = 'xr'; xs = 'xs'; xt = xl
 
+*	_ia_ is mapped to _rbp_ in nasm.h.
+
+	ia = 'ia'
+
+*	cp is kept in memory
+
 * symbolic target assignments
 
 *       real_op maps minimal real opcode to machine opcode
@@ -2162,7 +2168,7 @@ g_icp   genop(op_,getarg(i1))                          	:(opdone)
 
 g_ldi
 
-        genop('mov','ia',getarg(i1))			:(opdone)
+        genop('mov',ia,getarg(i1))			:(opdone)
 
 *	*   4.2  ADI   _ops_
 
@@ -2170,7 +2176,7 @@ g_ldi
 
 g_adi
 
-        genop('add','ia',getarg(i1))                    :(opdone)
+        genop('add',ia,getarg(i1))                    :(opdone)
 
 *	*   4.3  MLI   _ops_
 
@@ -2178,7 +2184,7 @@ g_adi
 
 g_mli
 
-        genop('imul','ia',getarg(i1))                   :(opdone)
+        genop('imul',ia,getarg(i1))                   :(opdone)
 
 *	*   4.4  SBI   _ops_
 
@@ -2186,7 +2192,7 @@ g_mli
 
 g_sbi
 
-        genop('sub','ia',getarg(i1))                    :(opdone)
+        genop('sub',ia,getarg(i1))                    :(opdone)
 
 *	*   4.5  DVI   _ops_
 
@@ -2195,10 +2201,10 @@ g_sbi
 g_dvi
 
 
-        genop('mov','rax','ia')
+        genop('mov',w0,ia)
         genop('cdq')
         genop('idiv',getarg(i1))
-        genop('mov','ia','rax')
+        genop('mov',ia,w0)
                                                         :(opdone)
 
 *	*   4.6  RMI   _ops_
@@ -2206,10 +2212,10 @@ g_dvi
 *	Set integer accumulator to `mod(intacc,_ops_)`
 
 g_rmi
-        genop('mov','rax','ia')
+        genop('mov',w0,ia)
         genop('cdq')
         genop('idiv',getarg(i1))
-        genop('mov','ia','rdx')
+        genop('mov',ia,wc)
                                                         :(opdone)
 *	*   4.7  STI   _ops_
 
@@ -2260,10 +2266,10 @@ g_rmi
 
 g_sti
 
-        genop('mov',getarg(i1),'ia')                    :(opdone)
+        genop('mov',getarg(i1),ia)                    	:(opdone)
 
 g_ngi
-        genop('neg','ia')                               :(opdone)
+        genop('neg',ia)                               	:(opdone)
 
 g_ino
 g_iov
