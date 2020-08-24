@@ -20,14 +20,16 @@
 *	along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 
 
-*	this program takes input file in minimal token form and produces assembly code for intel 
-*	x64 processor. the program obtains the name of the file to be translated from the
-*	command line string in host(0).
+*	this program takes input file in minimal token form and produces assembly
+*	code for intel x64 processor. the program obtains the name of the file
+*	to be translated from the command line string in host(0).
 
-*	options relating to the processing of comments can be changed by modifying the source.
+*	options relating to the processing of comments can be changed
+*	by modifying the source.
 
-*	in addition to the minimal token file, the program requires the name of a 
-*	"machine definition file" that contains code specific to a particular 80386 assembler.
+*	In addition to the minimal token file, the program requires the name
+*	of a "machine definition file" that contains code specific to a
+*	particular 80386 assembler.
 
 *	you may also specify option flags on the command line to control the
 *	code generation.  the following flags are processed:
@@ -35,16 +37,19 @@
 *	    compress	    generate tabs rather than spaces in output file
 *	    comments	    retain full-line and end-of-line comments
 
-*	the variable arch is set equal to the uppercase name of the machine being processed.
-*	specific tests upon this variable are discouraged, as all machine-dependent code should 
-*	be placed in the machine-definition file if possible.
+*	the variable arch is set equal to the uppercase name of the machine
+*	being processed. specific tests upon this variable are discouraged,
+*	as all machine-dependent code should be placed in the machine-definition
+*	file if possible.
 
-*	in addition to the normal minimal register complement, one scratch work register, w0 is defined.
-*	see the register map below for specific allocations.
+*	in addition to the normal minimal register complement, one scratch work
+*	register, w0 is defined. see the register map below for 
+*	specific allocations.
 
-*	this program is based in part on earlier translators for the it is based in part on earlier 
-*	translators for the dec vax (vms and un*x) written by steve duff and robert goldberg,
-*	and the pc-spitbol translator by david shields.
+*	this program is based in part on earlier translators for the it is based
+*	in part on earlier translators for the dec vax (vms and un*x)
+*	written by steve duff and robert goldberg, and the pc-spitbol 
+*	translator written by david shields.
 
 *  to run under spitbol:
 
@@ -68,15 +73,17 @@
 -stitl crack(line)
 	define('crack(line)operands,operand,char')	:(crack.end)
 
-*	crack is called to create a stmt plex containing the various parts  of the minimal source 
-*	statement in line.  for conditional assembly ops, the opcode is the op, and op1 is the symbol.
-*	note that dtc is handled as a special case to assure that the decomposition is correct.
+*	crack is called to create a stmt plex containing the various parts of
+*	the minimal source statement in line.  for conditional assembly ops,
+*	the opcode is the op, and op1 is the symbol. note that dtc is 
+*	handled as a special case to assure that the decomposition is correct.
 
 *	crack prints an error and fails if a syntax error occurs.
 
 
 
-*	crack parses stmt into a stmt data plex and returns it. it fails if there is a syntax error.
+*	crack parses stmt into a stmt data plex and returns it.
+*	it fails if there is a syntax error.
 
 crack
 
@@ -113,8 +120,9 @@ chktrace
 	z_exec = ne(z_trace)  ident(inlabel, 's_aaa') 1
 	z_exec = gt(input_lines,2186) 1
 
-*	     need to skip certain blocks since otherwise get branches that are too long skip when in 
-*	code that won't assemble if try to trace this was discovered on a case-by-case basis.
+*	need to skip certain blocks since otherwise get branches that are
+*	too long skip when in code that won't assemble if try to trace
+*	this was discovered on a case-by-case basis.
 
 	z_skip	= differ(inlabel) differ(skip_on[inlabel]) 1
 	z_skip	= differ(inlabel) differ(skip_off[inlabel]) 0
@@ -123,8 +131,8 @@ chktrace
 	eq(z_exec)					:s(return)
 	eq(is_exec)					:s(return)
 
-*	     here to emit trace. need to emit trace after label if there is label
-*	     ident(inlabel)			     :s(chktrace.1)
+*	here to emit trace. need to emit trace after label if there is label
+*	ident(inlabel)			     :s(chktrace.1)
 *	     only trace at labels since get jumps that are too removed otherwise
 *	     ident(label)			     :s(return)
 *	     here to emit trace code when there is label
@@ -152,8 +160,8 @@ flush
 
 	eq(astmts.n) eq(bstmts.n) eq(cstmts.n)		:f(flush_0)
 
-*	here if some statements to emit, so output single 'null' statement to get label
-*	and comment field right.
+*	here if some statements to emit, so output single 'null' statement 
+*	to get label and comment field right.
 
 	label = thislabel =
 	outstmt(tstmt())				:(flush_6)
@@ -460,7 +468,7 @@ getarg_c.24
 *	pnam, eqop
 
 
-	getarg = l1					       :(return)
+	getarg = l1					:(return)
 
 getarg_c.25
 getarg_c.26
@@ -530,7 +538,8 @@ memmem
 	eq(ismem[i.type(i1)])				:s(return)
 	eq(ismem[i.type(i2)])				:s(return)
 
-*	here if memory-memory case, load second argument and then make second argument *w0*.
+*	here if memory-memory case, load second argument and then make
+*	the second argument *w0*.
 
 	t = getarg(i2)
 	genop('mov',w0,getarg(i2))
@@ -553,7 +562,8 @@ report
 
 report.end
 -stitl outstmt(ostmt)label,opcode,op1,op2,op3,comment,line)
-	define('outstmt(ostmt)line,label,opcode,op1,op2,op3,comment,t,stmtout'):(outstmt.end)
+	define('outstmt(ostmt)line,label,opcode,op1,op2,op3,comment,t,stmtout')
+.			:(outstmt.end)
 
 *	outstmt is used to send a target statement to the output file.
 
@@ -647,7 +657,7 @@ readline
 	ident( readline )				:f(readline_2)
 
 	outfile = readline
-	output_lines = output_lines + 1			      :(readline)
+	output_lines = output_lines + 1			:(readline)
 
 readline_2
 * output = readline
@@ -659,14 +669,14 @@ readline_2
 	z_skip = ident(readline,'*z-') 1		:s(readline)
 
 	outfile = ';' substr(readline,2)
-	output_lines = output_lines + 1			      :(readline)
+	output_lines = output_lines + 1			:(readline)
 
 readline_eof
 
    readline = '	       end'				:(return)
 readline_end
 -stitl	register(s)
-	define('register(s)')				       :(register.end)
+	define('register(s)')				:(register.end)
 
 *	returns target register for register *s*.
 *	fails if *s* is not a valid register name.
@@ -674,7 +684,7 @@ readline_end
 register
 
 	register = $(s)
-	ident(register)					       :s(freturn)
+	ident(register)					:s(freturn)
 							:(return)
 
 register.end
@@ -685,19 +695,18 @@ register.end
 
 reglow
 
-	reglow = ident(s,'w0')	'al'			       :s(return);* w0
-	reglow = ident(s,'wa')	'cl'			       :s(return);* wa
-	reglow = ident(s,'wb')	'bl'			       :s(return);* wb
-	reglow = ident(s,'wc')	'dl'			       :s(return);* wc
-
-	reglow = ident(s,'rax') 'al'			       :s(return);* w0
-	reglow = ident(s,'rbx') 'bl'			       :s(return);* wa
-	reglow = ident(s,'rcx') 'cl'			       :s(return);* wb
-	reglow = ident(s,'rdx') 'dl'			       :s(return);* wc
-	error('bad argument to reglow')			       :(return)
+	reglow = ident(s,'w0')	'al'			:s(return);* w0
+	reglow = ident(s,'wa')	'cl'			:s(return);* wa
+	reglow = ident(s,'wb')	'bl'			:s(return);* wb
+	reglow = ident(s,'wc')	'dl'			:s(return);* wc
+	reglow = ident(s,'rax') 'al'			:s(return);* w0
+	reglow = ident(s,'rbx') 'bl'			:s(return);* wa
+	reglow = ident(s,'rcx') 'cl'			:s(return);* wb
+	reglow = ident(s,'rdx') 'dl'			:s(return);* wc
+	error('bad argument to reglow')			:(return)
 
 reglow.end
-	define('skip_init(s)on,off')			       :(skip_init.end)
+	define('skip_init(s)on,off')			:(skip_init.end)
 
 *	initialize the skip table used for instruction trace.
 
@@ -708,7 +717,7 @@ skip_init	s break(':') . on ':' rem . off		:f(return)
 
 skip_init.end
 
-	define('init()')				       :(init.end)
+	define('init()')				:(init.end)
 
 init
 
@@ -739,12 +748,13 @@ init
 
 	fileprefix = "sbl"
 
-*	     cfp_b is bytes per word, cfp_c is characters per word
-*	     these should agree with values used in translator
-*  set target-dependent configuration parameters
+*	cfp_b is bytes per word, cfp_c is characters per word these should
+*	agree with the values used in translator.  set target-dependent 
+*	configuration parameters.
 
-*	     cfp_b is bytes per word, cfp_c is characters per word
-*	     these should agree with values used in translator
+*	cfp_b is bytes per word, cfp_c is characters per word
+*	these should agree with values used in translator
+
 	cfp_b = 8
 	log_cfp_b = '3'
 
@@ -818,7 +828,8 @@ config_done
 	z_trace = 0
 *	z_limit is maximum number of calls to be generated if non-zero
 	z_limit = 000
-*	set z_first non-zero to skip first number of instructions that would generate trace
+*	set z_first non-zero to skip first number of instructions that would
+*	 generate trace
 	z_first = 0
 *	will set in_executable when in part of program where executable
 *	instructions may occur
@@ -986,20 +997,24 @@ is_exec.2
 	branchtab['blo'] = 'jb'
 	branchtab['bhi'] = 'ja'
 
-*	optim.tab flags opcodes capable of participating in or optimization in outstmt routine.
+*	optim.tab flags opcodes capable of participating in or optimization
+*	in outstmt routine.
 
 	optim.tab = table(10)
 
-	optim.tab<"and"> = optim.tab<"add"> = optim.tab<"sub"> = optim.tab<"neg"> = optim.tab<"or"> =
-.	optim.tab<"xor"> = optim.tab<"shr"> = optim.tab<"shl"> = optim.tab<"inc"> = optim.tab<"dec"> =	1
+	optim.tab<"and"> = optim.tab<"add"> = optim.tab<"sub"> =
+.	optim.tab<"neg"> = optim.tab<"or">  = optim.tab<"xor"> =
+.	optim.tab<"shr"> = optim.tab<"shl"> = optim.tab<"inc"> = 
+.	optim.tab<"dec"> = 1
 
 
-*	ismem is a map from operand type that is nonzero if the operand type is a memory reference.
+*	ismem is a map from operand type that is nonzero if the operand type
+*	is a memory reference.
 
 	ismem = array(30,0)
 
-	ismem<3> = ismem<4> = ismem<5> = ismem<9> = ismem<10> = ismem<11> = ismem<12> =
-.	ismem<13> = ismem<14>  = ismem<15> = 1
+	ismem<3> = ismem<4> = ismem<5> = ismem<9> = ismem<10> = 
+.	ismem<11> = ismem<12> = ismem<13> = ismem<14>  = ismem<15> = 1
 
 *	other definitions that are dependent upon things defined in the
 *	machine definition file, and cannot be built until after the definition
@@ -1063,17 +1078,19 @@ nopub
 
 *  get definition file name following token file name, and flags.
 
-*	     fileprefix ? break(';:') . fileprefix len(1) (break(';:') | rem) . target
-*+		((len(1) rem . flags) | '')
-*	     $replace(target,lcase,ucase) = 1
+*	fileprefix ? break(';:') . fileprefix len(1) 
+*.	(break(';:') | rem) . target
+*.	((len(1) rem . flags) | '')
 
-*  parse and display flags, setting each one's name to non-null value (1).
+*	$replace(target,lcase,ucase) = 1
+
+*	parse and display flags, setting each one's name to non-null value (1).
 
 							:(flgs.skip)
 flgs
 
    flags ? ((len(1) break(';				:')) . flag len(1)) |
-+	 ((len(1) rem) . flag) =			:f(flgs2)
+.	 ((len(1) rem) . flag) =			:f(flgs2)
 	flag = replace(flag,lcase,ucase)
 	output = "  flag				: " flag
 	$flag = 1					:(flgs)
@@ -1085,6 +1102,7 @@ flgs2
 							:(return)
 init.end
 -stitl main program
+
 *	here follows the driver code for the "main" program.
 
 	init()
@@ -1095,12 +1113,12 @@ init.end
 *	readline_
 *	after doing this, opnext branches to the generator routine indicated
 *	for this opcode if there is one.
-*	the generators all have entry points beginning
-*	with "g_", and can be considered a logical extension of the
-*	opnext routine.	 the generators have the choice of branching back
-*	to dsgen to cause the thisstmt plex to be sent to outstmt, or
-*	or branching to opnext, in which case the generator must output
-*	all needed code itself.
+
+*	the generators all have entry points beginning with "g_",
+*	and can be considered a logical extension of the opnext routine.
+*	the generators have the choice of branching back to dsgen to cause
+*	the thisstmt plex to be sent to outstmt, or or branching to opnext,
+*	in which case the generator must output all needed code itself.
 
 *	the generators are listed in a separate section below.
 
@@ -1175,11 +1193,13 @@ ds.typerr
 
 *	*   1.1	 MOV   _opn,opv_  move one word value
 
-*	MOV causes the value of operand _opv_ to be set as the new contents of operand location 
-*	_opn_. In the case where _opn_ is not an index register, any value which can normally occupy 
-*	a memory word (including a part of a multiword real or integer value) can be transferred 
-*	using MOV. If the target location _opn_ is an index register, then _opv_ must specify
-*	an appropriate one word value or operand containing such an appropriate value.
+*	MOV causes the value of operand _opv_ to be set as the new contents
+*	of operand location _opn_. In the case where _opn_ is not an index
+*	register, any value which can normally occupy a memory word
+*	(including a part of a multiword real or integer value) can be
+*	transferred using MOV. If the target location _opn_ is an index register,
+*	then _opv_ must specify an appropriate one word value or operand
+*	containing such an appropriate value.
 
 g_mov
 
@@ -1238,7 +1258,8 @@ mov_2
 
 *	* 1.2  BRN  _plbl_    unconditional branch
 
-*	BRN causes control to be passed to the indicated label in the program section.
+*	BRN causes control to be passed to the indicated label in
+*	the program section.
 
 g_brn
 
@@ -1246,20 +1267,23 @@ g_brn
 
 *	* 1.3  BSW  _x,val,plbl_    branch on switch value
 
-*	BSW IFF,ESW provide a capability for a switched branch similar to a fortran computed goto. 
-*	The _val_ on the BSW instruction is the maximum number of branches. the value in x ranges 
-*	from zero up to but not including this maximum. each IFF provides a branch.
+*	BSW IFF,ESW provide a capability for a switched branch similar to a
+*	fortran computed goto.  The _val_ on the BSW instruction is the
+*	maximum number of branches. the value in x ranges from zero up to
+*	but not including this maximum. each IFF provides a branch.
 
-*	_val_ must be less than that given on the bsw and control goes to _plbl_ if the value in 
-*	x matches.  If the value in x does not correspond to any of the IFF entries, then control 
-*	passes to the _plbl_ on the BSW.
+*	_val_ must be less than that given on the bsw and control goes to
+*	_plbl_ if the value in x matches.  If the value in x does not correspond
+*	to any of the IFF entries, then control passes to the _plbl_ on the BSW.
 
-*	The  _plbl_ operand may be omitted if there are no values missing from the list.
+*	The  _plbl_ operand may be omitted if there are no values missing
+*	from the list.
 
-*	IFF and ESW may only be used in this context.  Execution of BSW may destroy the contents of _x_.
+*	IFF and ESW may only be used in this context.  Execution of BSW
+*	may destroy the contents of _x_.
 
-*	The IFF entries may be in any order and since a translator may thus need to store and 
-*	sort them, the comment field is restricted in length (sec 11).
+*	The IFF entries may be in any order and since a translator may thus need
+*	to store and sort them, the comment field is restricted in length (sec 11)
 
 g_bsw
 
@@ -1298,23 +1322,23 @@ g_esw
 
 *	*   1.6	 ENT  _val_ define program entry point
 
-*	The symbol appearing in the label field is defined to be a program entry point which 
-*	can subsequently be used in conjunction with the BRI instruction, which provides the 
-*	only means of entering the code. 
+*	The symbol appearing in the label field is defined to be a program entry
+*	point which can subsequently be used in conjunction with the BRI
+*	instruction, which provides the only means of entering the code. 
 
 g_ent
 
-*	entry points are stored in byte before program entry label
-*	last arg is optional, in which case no initial 'db' need be
-*	issued. we force odd alignment so can distinguish entry point
-*	addresses from block addresses (which are always even).
+*	entry points are stored in byte before program entry label last arg is
+*	optional, in which case no initial 'db' need be issued. we force
+*	odd alignment so can distinguish entry point addresses from block
+*	addresses (which are always even).
 
-*	note that this address of odd/even is less restrictive than
-*	the minimal definition, which defines an even address as being
-*	a multiple of cfp_b (4), and an odd address as one that is not
-*	a multiple of cfp_b (ends in 1, 2, or 3).  the definition here
-*	is a simple odd/even, least significant bit definition.
-*	that is, for us, 1 and 3 are odd, 2 and 4 are even.
+*	note that this address of odd/even is less restrictive than the minimal
+*	definition, which defines an even address as being a multiple of
+*	cfp_b * 4, and an odd address as one that is not a multiple of
+*	cfp_b (ends in 1, 2, or 3).  the definition here is a simple odd/even,
+*	least significant bit definition. that is, for us, 1 and 3 are odd,
+*	2 and 4 are even.
 
 
 	t1 = i.text(i1)
@@ -1354,7 +1378,8 @@ g_bri
 *	*   1.8	 LEI  _x_	  load entry point identification
 
 *	X contains the address of an entry point for which an identifying
-*	value was given on the the ENT line. LEI replaces the contents of _x_ by this value.
+*	value was given on the the ENT line. LEI replaces the contents of
+*	_x_ by this value.
 
 g_lei
 
@@ -1368,7 +1393,7 @@ g_jsr
 	jsr_proc = getarg(i1)
 	genop('call',jsr_proc)
 
-*	     get count of following ppm statements
+*	get count of following ppm statements
 
 	jsr_count = ppm_cases[jsr_proc]
 	eq(jsr_count)					:s(opdone)
@@ -1392,30 +1417,34 @@ g_jsr
 *		    PPM	 _plbl_		...
 *	```
 
-*	JSR causes control to be passed to the named procedure. _pnam_ is the label on a PRC
-*	statement elsewhere in the program section (see prc) or has been defined using an 
-*	*exp* instruction.
+*	JSR causes control to be passed to the named procedure. _pnam_ is the
+*	label on a PRC statement elsewhere in the program section (see prc)
+*	or has been defined using an *exp* instruction.
 
-*	The PPM exit parameters following the call give names of program locations (_plbl_-s)
-*	to which alternative EXI returns of the called procedure may pass control.
+*	The PPM exit parameters following the call give names of program
+*	locations (_plbl_-s) to which alternative EXI returns of the called
+*	procedure may pass control.
 
-*	They may optionally be replaced by error returns (see err). the number of exit parameters
-*	following a JSR must equal the int in the procedure definition.
+*	They may optionally be replaced by error returns (see err). the
+*	number of exit parameters following a JSR must equal the int in the
+*	procedure definition.
 
-*	The operand of PPM may be omitted if the corresponding EXI return is certain not to be taken.
+*	The operand of PPM may be omitted if the corresponding EXI return
+*	is certain not to be taken.
 
 g_ppm							:(g_err)
 
 *	*   1.11 PRC  _ptyp,int_  define start of procedure
 
-*	The symbol appearing in the label field is defined to be the name of a procedure for use 
-*	with JSR a procedure is a contiguous section of instructions to which control may be passed 
-*	with a JSR instruction.
+*	The symbol appearing in the label field is defined to be the name
+*	of a procedure for use with JSR a procedure is a contiguous section of
+*	instructions to which control may be passed with a JSR instruction.
 
-*	This is the only way in which the instructions in a procedure may be executed.
+*	This is the only way in which the instructions in a procedure may
+*	be executed.
 
-*	It is not permitted to fall into a procedure.  All procedures should be named in section 0
-*	 INP statements.
+*	It is not permitted to fall into a procedure.  All procedures should
+*	be named in section 0 INP statements.
 
 *	_int_ is the number of exit parameters (PPM-s) to be used in JSR calls.
 
@@ -1449,15 +1478,16 @@ g_prc.n
 
 *	The PPM and ERR parameters following a JSR are numbered starting from 1.
 
-*	EXI int causes control to be returned to the int-th such param. EXI 1 gives control to 
-*	the _plbl_ of the first PPM after the JSR if int is omitted, control is passed back past 
-*	the last exit parameter (or past the JSR if there are none).
+*	EXI int causes control to be returned to the int-th such param.
+*	EXI 1 gives control to the _plbl_ of the first PPM after the JSR if
+*	 _int_ is omitted, control is passed back past the last exit parameter
+*	(or past the JSR if there are none).
 
-*	For _r and_ _e_ type procedures, the stack pointer XS must be set to its appropriate entry 
-*	value before executing an EXI instruction.
+*	For _r and_ _e_ type procedures, the stack pointer XS must be set to
+*	its appropriate entry value before executing an EXI instruction.
 
-*	In this case, EXI removes return points from the stack if any are stored there so 
-*	that the stack pointer is restored to its calling value.
+*	In this case, EXI removes return points from the stack if any are stored
+*	there so that the stack pointer is restored to its calling value.
 
 g_exi
 
@@ -1479,27 +1509,31 @@ g_exi.1
 
 *	*   1.13 ENP  define end of procedure body
 
-*	ENP delimits a procedure body and may not actually be executed, hence it must have no label.
+*	ENP delimits a procedure body and may not actually be executed,
+*	hence it must have no label.
 
 g_enp	genop()						:(opdone)
 
 *	*   1.14 ERR  _int,text_  provide error return
 
-*	ERR may replace an exit parameter (PPM) in any procedure call. the int argument is a 
-*	unique error code in 0 to 899.
+*	ERR may replace an exit parameter (PPM) in any procedure call.
+*	the int argument is a unique error code in 0 to 899.
 
-*	The text supplied as the other operand is arbitrary text in the FORTRAN character set 
-*	and may be used in constructing a file of error messages to be used by the error handling code.
+*	The text supplied as the other operand is arbitrary text in the
+*	FORTRAN character set and may be used in constructing a file of
+*	error messages to be used by the error handling code.
 
-*	In the event that an EXI attempts to return control via an exit parameter to an ERR control 
-*	is instead passed to the first instruction in the error section (which follows the program
-*	section) with the error code in WA.
+*	In the event that an EXI attempts to return control via an exit
+*	parameter to an ERR control is instead passed to the first instruction
+*	in the error section (which follows the program section) with the
+*	error code in WA.
 
 g_err
 
-*	Here with return code in rcode. it is zero for normal return and positive for error return.
-*	decrement the value. if it is negative then this is normal return. otherwise, proceed 
-*	decrementing rcode until it goes negative,and then take the appropriate branch.
+*	Here with return code in rcode. it is zero for normal return and
+*	positive for error return. decrement the value. if it is negative
+*	then this is normal return. otherwise, proceed decrementing _rcode_
+*	until it goes negative,and then take the appropriate branch.
 
 	t1 = getarg(i1)
 
@@ -1525,8 +1559,8 @@ g_ppm.loop
 	genop('jns',lab_next)
 	ident(incode,'ppm')				:s(g_ppm.loop.ppm)
 
-*	here if error exit via exi. set rcode to exit code and jump
-*	to error handler with error code in rcode
+*	here if error exit via exi. set rcode to exit code and jump to error
+*	handler with error code in rcode
 
 g_ppm.loop.err
 
@@ -1553,8 +1587,9 @@ g_ppm.2
 
 *	*   1.15 ERB  _int,text_  error branch
 
-*	This instruction resembles ERR except that it may occur at any point where a branch is permitted.
-*	It effects a transfer of control to the error section with the error code in WA.
+*	This instruction resembles ERR except that it may occur at any point
+*	where a branch is permitted. It effects a transfer of control to the
+*	error section with the error code in WA.
 
 g_erb
 	errfile =  i.text(i1) ' ' i.text(i2)
@@ -1622,7 +1657,9 @@ g_scg_0
 	leq('-',substr(t2,1,1))				:f(g_scg_1)
 	t2 break('(') len(1) len(2) . t3
 	genop('dec',register(t3))
-	(eq(cfp_b,cfp_c) genop('dec',register(t3)), genop('sub',register(t3),'cfp_b'))
+	(eq(cfp_b,cfp_c)
+.		 genop('dec',register(t3)), genop('sub',register(t3),'cfp_b'))
+
 g_scg_1
 
 	t2 break('(') len(1) len(2) . t3
@@ -1631,13 +1668,14 @@ g_scg_1
 	ne(cfp_b,cfp_c) genop('mov','m_char [' register(t3) ']',t1)
 *	see if postincrement needed.
 	t2 rtab(1) '+'					:f(g_scg_2)
-	(eq(cfp_b,cfp_c) genop('inc',register(t3)), genop('add',register(t3),'cfp_b'))
+	(eq(cfp_b,cfp_c) 
+.		genop('inc',register(t3)), genop('add',register(t3),'cfp_b'))
 
 g_scg_2							:(opdone)
 g_scg_w
 
-*	here if moving character from work register, convert t1
-*	to name of low part.
+*	here if moving character from work register, convert t1 to name of
+*	low part of the register.
 
 	t1 = (eq(cfp_b,cfp_c) reglow(getarg(i1)), getarg(i1))
 
@@ -1650,26 +1688,26 @@ g_scg_w
 
 g_scg_w.xl
 
-	genop('mov','m_char [' register(xl) ']',t1)		      :(opdone)
+	genop('mov','m_char [' register(xl) ']',t1)	:(opdone)
 
 g_scg_w.pxl
 
 	(eq(cfp_b,cfp_c)  genop('dec', xl), genop('sub',xl, 'cfp_b'))
-	genop('mov','m_char [' register(xl) ']',t1)		      :(opdone)
+	genop('mov','m_char [' register(xl) ']',t1)	:(opdone)
 
 g_scg_w.xlp
 
 	genop('mov','m_char [' register(xl) ']',t1)
-	(eq(cfp_b,cfp_c)  genop('inc', xl), genop('add',xl, 'cfp_b'))
-							:(opdone)
+	(eq(cfp_b,cfp_c)  genop('inc', xl), genop('add',xl, 'cfp_b')) :(opdone)
+
 g_scg_w.xr
 
-	genop('mov','m_char [' register(xr) ']',t1)		      :(opdone)
+	genop('mov','m_char [' register(xr) ']',t1)	:(opdone)
 
 g_scg_w.pxr
 
 	(eq(cfp_b,cfp_c)  genop('dec', xr), genop('sub',xr, 'cfp_b'))
-	genop('mov','m_char [' register(xr) ']',t1)		      :(opdone)
+	genop('mov','m_char [' register(xr) ']',t1)	:(opdone)
 
 g_scg_w.xrp
 
@@ -1677,14 +1715,14 @@ g_scg_w.xrp
 	genop('stos_b')					:(opdone)
 
 
-
 *	*   7.8	 LSX  _w,(x)_
 
 *	Left shift _w_ by the  number of bits in _x_
 
 
-*	The above shifts are logical shifts in which bits shifted out are lost and zero bits supplied 
-*	as required. The shift count is in the range 0-CFP$N .
+*	The above shifts are logical shifts in which bits shifted out are lost
+*	and zero bits supplied as required. The shift count is in the
+*	range 0-CFP$N .
 
 g_lsx
 
@@ -1700,7 +1738,8 @@ g_zzz
 *	This instruction computes the sum (number of words required to store 
 *	w characters) + (val). the sum is stored in _w_.
 
-*	For example, CFP$C is 5, and WA contains 32, then CTW WA,2 gives a result of 9 in WA.
+*	For example, CFP$C is 5, and WA contains 32, then CTW WA,2
+*	gives a result of 9 in WA.
 
 
 g_ctw
@@ -1771,7 +1810,7 @@ g_sec.5
 
 *	      (gt(prc.count1) genopl('prc$' ':','times', prc.count1 ' dd 0'))
 
-	genop('prc_					: times ' prc.count1 ' dd 0')
+	genop('prc_ : times ' prc.count1 ' dd 0')
 	genop('global','lowspmin')
 	genopl('lowspmin' '				:','d_word','0')
 	genop('global','end_min_data')
@@ -1797,11 +1836,11 @@ g_sec.7
 	flush()
 *	error section.	produce code to receive erb's
 
-*	     allow for some extra cases in case of max.err bad estimate
+*	allow for some extra cases in case of max.err bad estimate
+
 	n1 = max.err + 8
 	output = '  max.err ' max.err
-	genopl('err_					:','xchg',wa,'m_word [' rcode ']')
-							:(opdone)
+	genopl('err_ :','xchg',wa,'m_word [' rcode ']') :(opdone)
 
 
 opdone
@@ -1830,7 +1869,7 @@ g_end.2
 	endfile(1)
 	endfile(2)
 	endfile(3)
-	report(input_lines,	     'lines read')
+	report(input_lines,	'lines read')
 	report(nstmts,		'statements processed')
 	report(ntarget,		'target code lines produced')
 	report(&stcount,	'spitbol statements executed')
@@ -1842,7 +1881,7 @@ g_end.2
 	differ(nerrors) report(nerrors,'errors detected')
 
 	errfile = '* ' max.err ' maximum err/erb number'
-	errfile	 = '* ' prc.count ' prc count'
+	errfile	= '* ' prc.count ' prc count'
 .		differ(lasterror) '  the last error was in line ' lasterror
 
 	&code	= ne(nerrors) 2001
@@ -1864,35 +1903,43 @@ g_end.2
 *	*   1.19 MNZ   _opn_ move non-zero to  _opn_
 
 
-*	Any non-zero collectable value may used, for which the opcodes *bnz/bze* will branch/fail to branch.
+*	Any non-zero collectable value may used, for which the opcodes
+*	_bnz/bze_ will branch/fail to branch.
 
 
 *	*   1.20 SSL   _opw_	  subroutine stack load
 
 *	*   1.21 SSS   _opw_	  subroutine stack store
 
-*	This pair of operations is provided to make possible the use of a local stack to hold 
-*	subroutine (subroutine) return links for n-type procedures.
+*	This pair of operations is provided to make possible the use of a
+*	local stack to hold subroutine (subroutine) return links for n-type
+*	procedures.
 
-*	SSS stores the subroutine stack pointer in _opw_ and SSL loads the subroutine stack pointer from _opw_.
+*	SSS stores the subroutine stack pointer in _opw_ and SSL loads the
+*	subroutine stack pointer from _opw_.
 
-*	By using SSS in the main program or on entry to a procedure which should regain control on occurrence of an
-*	ERR or ERB and by use of SSL in the error processing sections the subroutine stack
-*	pointer can be restored giving a link stack cleaned up ready for resumed execution.
+*	By using SSS in the main program or on entry to a procedure which
+*	should regain control on occurrence of an ERR or ERB and by use of
+*	SSL in the error processing sections the subroutine stack pointer can be
+*	restored giving a link stack cleaned up ready for resumed execution.
 
-*	The form of the link stack pointer is undefined in MINIMAL (it is likely to be a private register known to the
-*	translator) and the only requirement is that it should fit into a single full word.
+*	The form of the link stack pointer is undefined in MINIMAL (it is likely
+*	to be a private register known to the translator) and the only
+*	requirement is that it should fit into a single full word.
 
 *	SSL and SSS are no-ops if no private link stack is not used.
 
 *	*   1.22 RTN define start of routine
 
 
-*	However it is entered by any type of conditional or unconditional branch (not by JSR).
+*	However it is entered by any type of conditional or unconditional
+*	branch (not by JSR).
 
-*	On termination it passes control by a branch (often BRI through a code word) or even permits control to drop through to another routine.
+*	On termination it passes control by a branch (often BRI through a code
+*	word) or even permits control to drop through to another routine.
 
-*	No return link exists and the end of a routine is not marked by an explicit opcode (compare ENP).
+*	No return link exists and the end of a routine is not marked by
+*	an explicit opcode (compare ENP).
 
 *	All routines must be named in section 0 INR statements.	 
 
@@ -1910,7 +1957,8 @@ g_add
 
 *	*   2.2	 SUB   _opn,opv_
 
-*	Subtracts _opv_ from _opn_, and stores the result in _opn_. Undefined if the result is negative.
+*	Subtracts _opv_ from _opn_, and stores the result in _opn_. Undefined
+*	if the result is negative.
 
 g_sub
 
@@ -1963,9 +2011,10 @@ g_dca	genop('sub',getarg(i1),'cfp_b')			:(opdone)
 
 *	Equivalent to BGT or BGE
 
-*	The above instructions compare two address values as unsigned integer values.  The BLO and BHI 
-*	instructions are used in cases where the equal condition either does not occur or can result 
-*	either in a branch or no branch.
+*	The above instructions compare two address values as unsigned integer
+*	values.  The BLO and BHI instructions are used in cases where the equal
+*	condition either does not occur or can result either in a branch or
+*	no branch.
 
 *	This avoids inefficient translations in some implementations.
 
@@ -1978,8 +2027,8 @@ g_ble
 g_blo
 g_bhi
 
-*	these operators all have two operands, memmem may apply
-*	issue target opcode by table lookup.
+*	these operators all have two operands, memmem may apply.  issue target
+*	opcode by table lookup.
 
 	memmem()
 	t1 = branchtab[incode]
@@ -2022,10 +2071,11 @@ g_bze1
 
 *	Load counter for BCT
 
-*	LCT loads a counter value for use with the BCT instruction. The value in _opv_ is 
-*	the number of loop operations to be executed.
+*	LCT loads a counter value for use with the BCT instruction. The value
+*	in _opv_ is the number of loop operations to be executed.
 
-*	The value in _w_ after this operation is an undefined one word integer quantity.
+*	The value in _w_ after this operation is an undefined one word
+*	integer quantity.
 
 g_lct
 
@@ -2046,8 +2096,8 @@ g_lct.1
 
 *	Branch and count
 
-*	BCT uses the counter value in w to branch the required number of times and then finally to fall
-*	through to the next instruction.
+*	BCT uses the counter value in w to branch the required number of times
+*	and then finally to fall through to the next instruction.
 
 *	BCT can only be used following an appropriate LCT instruction.
 
@@ -2077,7 +2127,8 @@ g_bct1
 
 *	Adds  _opv_ to the value in  _opn_ and stores result in _opn_.
 
-*	Branches to _plbl_ result exceeds CFP$L with result in	_opn_ undefined. cf. ADD
+*	Branches to _plbl_ result exceeds CFP$L with result in	_opn_*
+	undefined. 
 
 g_aov
 
@@ -3277,11 +3328,11 @@ g_exp
 
 *	Define internal procedure
 
-*	INP defines the symbol appearing in the label field to be the name of an internal 
-*	procedure and gives its type and number of exit parameters.
+*	INP defines the symbol appearing in the label field to be the name of 
+*	an internal procedure and gives its type and number of exit parameters.
 
-*	The label can be referenced in JSR instructions and it must appear labelling a
-*	PRC instruction in the program section.
+*	The label can be referenced in JSR instructions and it must appear
+*	labelling a PRC instruction in the program section.
 
 g_inp
 
@@ -3292,17 +3343,19 @@ g_inp
 
 *	Define internal routine
 
-*	INR defines the symbol appearing in the label field to be the name of an internal routine.
+*	INR defines the symbol appearing in the label field to be the name of 
+*	an internal routine.
 
-*	The label may be referenced in any type of branch order and it must appear labelling a
-*	RTN instruction in the program section.
+*	The label may be referenced in any type of branch order and it must 
+*	appear labelling a RTN instruction in the program section.
 
 
 g_inr	genop('')						:(opdone)
 
 *	### 13 - Assembly Listing Layout Instruction
 
-*	Who uses listings these days? Who even knows what a listing is? Those were the days ...
+*	Who uses listings these days? Who even knows what a listing is?
+*	Those were the days ...
 
 *	*   13.1 EJC
 
@@ -3314,12 +3367,13 @@ g_ejc								:(opnext)
 
 *	Set new assembly title
 
-*	TTL implies an immediate eject of the assembly listing to print the new title.
+*	TTL implies an immediate eject of the assembly listing to print 
+*	the new title.
 
 *	The use of TTL and EJC cards is such that the program will list neatly the 
-*	printer prints as many as 58 lines per page. In the event that the printer depth
-*	is less than this, or the listing contains interspersed lines (such as actual generated
-*	code), then the format may be upset.
+*	printer prints as many as 58 lines per page. In the event that the printer
+*	depth is less than this, or the listing contains interspersed lines (such
+*	 as actual generated code), then the format may be upset.
 
 
 g_ttl								:(opnext)

@@ -1,4 +1,4 @@
--title lex                               phase 1 translation from minimal to lexemes (lexemes)
+-title lex  phase 1 translation from minimal to lexical tokens
 -stitl initialization
 
 * Copyright 1987-2012 robert b. k. dewar and mark emmer.
@@ -156,8 +156,9 @@ init
 .	validform[7,20]  = validform[7,21]  = validform[7,22]  = validform[8,1]  =
 .	validform[8,2]  = validform[8,3]  = validform[8,4]  = validform[8,5]  =
 .	validform[8,6]  = validform[9,7]  = validform[10,8]  = validform[11,6]  =
-.	validform[12,9]  = validform[13,16]  = validform[14,17]  = validform[15,27]  =
-.	validform[16,24]  = validform[17,1]  = validform[18,6]  = validform[18,23]  = 1
+.	validform[12,9]  = validform[13,16]  = validform[14,17]  =
+.	validform[15,27]  = validform[16,24]  = validform[17,1]  =
+.	validform[18,6]  = validform[18,23]  = 1
 
 	labcnt = noutlines = nlines = nstmts = ntarget = nerrors = 0
 	p.minlabel = any(minlets) any(minlets) any(minlets nos)
@@ -189,8 +190,7 @@ init
 .	       len(7) (len(1) $ char  break(*char)  len(1)) . operand
 .	       (span(' ') | '')  rtab(0) . comment
 
-*	p.equ.rip is a pattern that parses out the components of an equ
-*	expression.
+*	The p.equ.rip pattern parses out the components of an equ expression.
 
 	p.equ.rip  = ( span(nos) . num1 | p.minlabel . sym1 )
 .	    ( any('+-') . oprtr | '' )
@@ -201,21 +201,20 @@ init
 *	types and is used for argument checking and processing.
 
 	optab = initmap(
-.	'flc[w]'
-.	'add[opn,opv]adi[ops]adr[ops]anb[w,opw]aov[opv,opn,plbl]atn[none]'
+.	'flc[w]add[opn,opv]adi[ops]adr[ops]anb[w,opw]aov[opv,opn,plbl]atn[none]'
 .	'bod[opn,plbl]bev[opn,plbl]'
 .	'bct[w,plbl]beq[opn,opv,plbl]bge[opn,opv,plbl]bgt[opn,opv,plbl]'
 .	'bhi[opn,opv,plbl]ble[opn,opv,plbl]blo[opn,opv,plbl]'
 .	'blt[opn,opv,plbl]bne[opn,opv,plbl]bnz[opn,plbl]brn[plbl]'
 .	'bri[opn]bsw[x,val,*plbl bsw]btw[reg]'
 .	'bze[opn,plbl]ceq[ops,ops,plbl]'
-.	'chk[none]chp[none]cmb[w]cmc[plbl,plbl]cne[ops,ops,plbl]cos[none]csc[x]ctb[w,val]'
-.	'ctw[w,val]cvd[none]cvm[plbl]dac[addr]dbc[val]dca[opn]dcv[opn]'
-.	'def[def]dic[integer]drc[real]dtc[dtext]dvi[ops]dvr[ops]ejc[none]'
+.	'chk[none]chp[none]cmb[w]cmc[plbl,plbl]cne[ops,ops,plbl]cos[none]'
+.	'csc[x]ctb[w,val]ctw[w,val]cvd[none]cvm[plbl]dac[addr]dbc[val]dca[opn]'
+.	'dcv[opn]def[def]dic[integer]drc[real]dtc[dtext]dvi[ops]dvr[ops]ejc[none]'
 .	'else[else]end[none end]enp[none]ent[*val ent]equ[eqop equ]'
-.	'erb[int,text erb]err[int,text err]esw[none esw]etx[none]exi[*int]exp[int]fi[fi]'
-.	'ica[opn]icp[none]icv[opn]ieq[plbl]if[if]iff[val,plbl iff]ige[plbl]'
-.	'igt[plbl]ile[plbl]ilt[plbl]ine[plbl]ino[plbl]inp[ptyp,int inp]'
+.	'erb[int,text erb]err[int,text err]esw[none esw]etx[none]exi[*int]'
+.	'exp[int]fi[fi]ica[opn]icp[none]icv[opn]ieq[plbl]if[if]iff[val,plbl iff]'
+.	'ige[plbl]igt[plbl]ile[plbl]ilt[plbl]ine[plbl]ino[plbl]inp[ptyp,int inp]'
 .	'inr[none]iov[plbl]itr[none]jsr[pnam]lch[reg,opc]lct[w,opv]lcp[reg]'
 .	'lcw[reg]ldi[ops]ldr[ops]lei[x]lnf[none]lsh[w,val]lsx[w,(x)]mcb[none]'
 .	'mfi[opn,*plbl]mli[ops]mlr[ops]mnz[opn]mov[opn,opv]mti[opn]'
@@ -223,9 +222,10 @@ init
 .	'orb[w,opw]plc[x,*opv]ppm[*plbl]prc[ptyp,val prc]psc[x,*opv]req[plbl]'
 .	'rge[plbl]rgt[plbl]rle[plbl]rlt[plbl]rmi[ops]rne[plbl]rno[plbl]'
 .	'rov[plbl]rsh[w,val]rsx[w,(x)]rti[*plbl]rtn[none]sbi[ops]'
-.	'sbr[ops]sch[reg,opc]scp[reg]sec[none sec]sin[none]sqr[none]ssl[opw]sss[opw]'
-.	'sti[ops]str[ops]sub[opn,opv]tan[none]then[then]trc[none]ttl[none ttl]'
-.	'undef[undef]wtb[reg]xob[w,opw]zer[opn]zgb[opn]zrb[w,plbl]zzz[int]' )
+.	'sbr[ops]sch[reg,opc]scp[reg]sec[none sec]sin[none]sqr[none]ssl[opw]'
+.	'sss[opw]sti[ops]str[ops]sub[opn,opv]tan[none]then[then]trc[none]'
+.	'ttl[none ttl]undef[undef]wtb[reg]xob[w,opw]zer[opn]zgb[opn]zrb[w,plbl]'
+.	'zzz[int]' )
 
 *	prctab is table of procedures declared in inp that is used to
 *	check for consistency of inp/prc statements.
@@ -268,19 +268,23 @@ main2
 main3
 	p.opsk1 = (break(' ') | rem) . argskel
 	equ_defs = initmap(
-.	'nstmx[10]cfp_s[9]cfp_x[3]e_srs[100]e_sts[1000]e_cbs[500]e_hnb[257]e_hnw[3]e_fsp[15]'
-.	'e_sed[25]ch_ua[65]ch_ub[66]ch_uc[67]ch_ud[68]ch_ue[69]ch_uf[70]ch_ug[71]ch_uh[72]'
-.	'ch_ui[73]ch_uj[74]ch_uk[75]ch_ul[76]ch_um[77]ch_un[78]ch_uo[79]ch_up[80]ch_uq[81]'
-.	'ch_ur[82]ch_us[83]ch_ut[84]ch_uu[85]ch_uv[86]ch_uw[87]ch_ux[88]ch_uy[89]ch_uz[90]'
-.	'ch_d0[48]ch_d1[49]ch_d2[50]ch_d3[51]ch_d4[52]ch_d5[53]ch_d6[54]ch_d7[55]ch_d8[56]'
-.	'ch_d9[57]ch_la[97]ch_lb[98]ch_lc[99]ch_ld[100]ch_le[101]ch_lf[102]ch_lg[103]ch_lh[104]ch_li[105]'
-.	'ch_lj[106]ch_lk[107]ch_ll[108]ch_lm[109]ch_ln[110]ch_lo[111]ch_lp[112]ch_lq[113]ch_lr[114]'
-.	'ch_ls[115]ch_lt[116]ch_lu[117]ch_lv[118]ch_lw[119]ch_lx[120]ch_ly[121]ch_l_[122]ch_am[38]'
-.	'ch_as[42]ch_at[64]ch_bb[60]ch_bl[32]ch_br[124]ch_cl[58]ch_cm[44]ch_dl[36]ch_dt[46]ch_dq[34]'
-.	'ch_eq[61]ch_ex[33]ch_mn[45]ch_nm[35]ch_nt[126]ch_pc[94]ch_pl[43]ch_pp[40]ch_rb[62]'
-.	'ch_rp[41]ch_qu[63]ch_sl[47]ch_sm[59]ch_sq[39]ch_u_[95]ch_ob[91]ch_cb[93]ch_ht[9]ch_vt[11]'
-.	'ch_ey[94]iodel[32]cfp_a[256]cfp_b[8]cfp_c[8]cfp_f[16]cfp_i[1]cfp_l[18446744073709551616]'
-.	'cfp_m[9223372036854775807]cfp_n[64]cfp_r[1]cfp_u[128]')
+.	'nstmx[10]cfp_s[9]cfp_x[3]e_srs[100]e_sts[1000]e_cbs[500]e_hnb[257]'
+.	'e_hnw[3]e_fsp[15]e_sed[25]ch_ua[65]ch_ub[66]ch_uc[67]ch_ud[68]ch_ue[69]'
+.	'ch_uf[70]ch_ug[71]ch_uh[72]ch_ui[73]ch_uj[74]ch_uk[75]ch_ul[76]'
+.	'ch_um[77]ch_un[78]ch_uo[79]ch_up[80]ch_uq[81]ch_ur[82]ch_us[83]'
+.	'ch_ut[84]ch_uu[85]ch_uv[86]ch_uw[87]ch_ux[88]ch_uy[89]ch_uz[90]'
+.	'ch_d0[48]ch_d1[49]ch_d2[50]ch_d3[51]ch_d4[52]ch_d5[53]ch_d6[54]ch_d7[55]'
+.	'ch_d8[56]ch_d9[57]ch_la[97]ch_lb[98]ch_lc[99]ch_ld[100]ch_le[101]ch_lf'
+.	'[102]ch_lg[103]ch_lh[104]ch_li[105]ch_lj[106]ch_lk[107]ch_ll[108]'
+.	'ch_lm[109]ch_ln[110]ch_lo[111]ch_lp[112]ch_lq[113]ch_lr[114]ch_ls[115]'
+.	'ch_lt[116]ch_lu[117]ch_lv[118]ch_lw[119]ch_lx[120]ch_ly[121]ch_l_[122]'
+.	'ch_am[38]ch_as[42]ch_at[64]ch_bb[60]ch_bl[32]ch_br[124]ch_cl[58]'
+.	'ch_cm[44]ch_dl[36]ch_dt[46]ch_dq[34]ch_eq[61]ch_ex[33]ch_mn[45]ch_nm[35'
+.	']ch_nt[126]ch_pc[94]ch_pl[43]ch_pp[40]ch_rb[62]ch_rp[41]ch_qu[63]'
+.	'ch_sl[47]ch_sm[59]ch_sq[39]ch_u_[95]ch_ob[91]ch_cb[93]ch_ht[9]ch_vt[11]'
+.	'ch_ey[94]iodel[32]cfp_a[256]cfp_b[8]cfp_c[8]cfp_f[16]cfp_i[1]'
+.	'cfp_l[18446744073709551616]cfp_m[9223372036854775807]cfp_n[64]'
+.	'cfp_r[1]cfp_u[128]')
 
 	                                                :(return)
 
@@ -368,8 +372,7 @@ argform.sreal
 	arg len(1) p.real                               :f(return)
 	argform = 17                                    :(return)
 argform.index
-	arg break('(') . t '(x' any('lrst') ')' rpos(0)
-.	                                                 :f(return)
+	arg break('(') . t '(x' any('lrst') ')' rpos(0) :f(return)
 	t p.nos                                         :f(argform.index1)
 	argform = 12                                    :(return)
 argform.index1
@@ -404,8 +407,8 @@ argtype.end
 	define('labenter()tlab')                        :(labenter.end)
 labenter
 	ident(label)                                    :s(return)
-	labtab[label] = (eq(sectnow,2) 2, eq(sectnow,3) 4,
-.   eq(sectnow,4) 3 , gt(sectnow,4)  6)                 :(return)
+	labtab[label] = 
+.	(eq(sectnow,2) 2, eq(sectnow,3) 4, eq(sectnow,4) 3 , gt(sectnow,4)  6)                 :(return)
 labenter.end
 	define('outstmt(label,opcode,op1,op2,op3,comment)t,stmtout'):(outstmt.end)
 -stitl outstmt(label,opcode,op1,op2,op3,comment)t,stmtout
@@ -493,8 +496,6 @@ rdline.end
 report
 	output = lpad(num,10) '  ' text                 :(return)
 report.end
--title lex                               phase 1 translation from minimal to lexemes (lexemes)
--stitl initialization
 
 *	Main
 	output = 'start scan'
@@ -565,15 +566,15 @@ g.equ
 .	     equ_defs[label]                             :s(dsgen)
 	num1 = num2 = sym1 = sym2 = oprtr =
 	op1 p.equ.rip                                   :f(g.equ2)
-	num1    = differ(sym1) equates[sym1]
-	num2    = differ(sym2) equates[sym2]
-	val     = (differ(oprtr) eval( num1 ' ' oprtr ' ' num2 ), num1):f(g.equ3)
+	num1 = differ(sym1) equates[sym1]
+	num2 = differ(sym2) equates[sym2]
+	val  = (differ(oprtr) eval( num1 ' ' oprtr ' ' num2 ), num1):f(g.equ3)
 g.equ1
 	equates[label] = val                            :(dsgen)
 g.equ2
 	error("equ operand syntax error")
 g.equ3
-	error("equ evaluation failed                    : " num1 ' ' oprtr ' ' num2 ' "' op1 '"' )
+	error("equ evaluation failed: " num1 ' ' oprtr ' ' num2 ' "' op1 '"' )
 g.esw
 	(eq(bsw) error("esw without bsw"))
 	iffindx = 0
@@ -593,15 +594,15 @@ g.esw2
 g.end
 	outstmt(,'end',,,,comment)
 	(ne(level) error("  unclosed if conditional clause"))
-	    report(nlines,      'lines read')
-	    report(nstmts,      'statements processed')
-	    report(ntarget,     'target code lines produced')
-	report(&stcount,    'spitbol statements executed')
+	    report(nlines,'lines read')
+	    report(nstmts,'statements processed')
+	    report(ntarget,'target code lines produced')
+	report(&stcount,'spitbol statements executed')
 	    differ(nerrors) report(nerrors,'errors detected')
 	report =
 +     differ(lasterror) '  the last error was in line ' lasterror
 	&code   = ne(nerrors) 2001
-	    report(collect() * 5,   'free bytes')
+	    report(collect() * 5,'free bytes')
 	t = convert(prctab,'array')                     :f(g.end.2)
 	    output = '  procedures with inp, no prc'
 	i = 1
