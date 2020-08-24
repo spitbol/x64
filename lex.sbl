@@ -4,634 +4,634 @@
 * Copyright 1987-2012 robert b. k. dewar and mark emmer.
 * Copyright 2012-2017 david shields
 
-*       This file is part of macro spitbol.
+*	This file is part of macro spitbol.
 
-*       macro spitbol is free software: you can redistribute it and/or modify
-*       it under the terms of the gnu general public license as published by
-*       the free software foundation, either version 2 of the license, or
-*       (at your option) any later version.
+*	macro spitbol is free software: you can redistribute it and/or modify
+*	it under the terms of the gnu general public license as published by
+*	the free software foundation, either version 2 of the license, or
+*	(at your option) any later version.
 
-*       macro spitbol is distributed in the hope that it will be useful,
-*       but without any warranty; without even the implied warranty of
-*       merchantability or fitness for a particular purpose.  see the
-*       gnu general public license for more details.
+*	macro spitbol is distributed in the hope that it will be useful,
+*	but without any warranty; without even the implied warranty of
+*	merchantability or fitness for a particular purpose.  see the
+*	gnu general public license for more details.
 
-*       you should have received a copy of the gnu general public license
-*       along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+*	you should have received a copy of the gnu general public license
+*	along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 
 
-*        usage:
+*	 usage:
 
 	sbl lex.lex.sbl
 
 *	The variablel *parm* specifies the base of the input file, with
 *	the default value *sbl*.
 
-*       This program takes minimal statements and parses them up into
-*       a stream of lexemes, or lexemes. It performs equ * substitution and
-*       conditional assembly.
+*	This program takes minimal statements and parses them up into
+*	a stream of lexemes, or lexemes. It performs equ * substitution and
+*	conditional assembly.
 
-*       It is based on earlier translators written by David Shields, Steve Duff
-*       and Robert Goldberg.
+*	It is based on earlier translators written by David Shields, Steve Duff
+*	and Robert Goldberg.
 
 -eject
 
-*       procedure definitions
+*	procedure definitions
 
-        define('init()')                                :(init.end)
+	define('init()')                                :(init.end)
 init
-        &anchor = 1
-        &trim   = 1
-        minlets = 'abcdefghijklmnopqrstuvwxy_z' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        nos     = '0123456789'
-        p.nos   = span(nos) rpos(0)
-        p.exp   = 'e' any('+-') span(nos)
-        p.real  = span(nos) '.' (span(nos) | null) (p.exp | null) rpos(0)
-        tab = char(9)
+	&anchor = 1
+	&trim   = 1
+	minlets = 'abcdefghijklmnopqrstuvwxy_z' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+	nos     = '0123456789'
+	p.nos   = span(nos) rpos(0)
+	p.exp   = 'e' any('+-') span(nos)
+	p.real  = span(nos) '.' (span(nos) | null) (p.exp | null) rpos(0)
+	tab = char(9)
 
 *	sepchar separates fields in output file
 
 	sepchar = '|'
 
-*       catab is the transfer vector for routing control to generators
-*       for conditional assembly directives.
+*	catab is the transfer vector for routing control to generators
+*	for conditional assembly directives.
 
-           catab = table( 11,,.badop )
-           catab['.def']   = .defop; catab['.undef'] = .undefop
-           catab['.if']    = .ifop; catab['.then']  = .thenop
-           catab['.else']  = .elseop; catab['.fi']    = .fiop
+	   catab = table( 11,,.badop )
+	   catab['.def']   = .defop; catab['.undef'] = .undefop
+	   catab['.if']    = .ifop; catab['.then']  = .thenop
+	   catab['.else']  = .elseop; catab['.fi']    = .fiop
 
-*       symtbl tracks defined conditional symbols.  (undefined symbols
-*       are assigned null values in symtbl.)
+*	symtbl tracks defined conditional symbols.  (undefined symbols
+*	are assigned null values in symtbl.)
 
-        symtbl      = table( 11 )
+	symtbl      = table( 11 )
 
-*       statestk maintains all state information while processing conditional
-*       statements.  level indexes the top entry.  another variable, top,
-*       has a copy of savestk[level].
+*	statestk maintains all state information while processing conditional
+*	statements.  level indexes the top entry.  another variable, top,
+*	has a copy of savestk[level].
 
-        statestk    = array( 30 )
-        level       = 0
-        top         =
+	statestk    = array( 30 )
+	level       = 0
+	top         =
 
-*       each state entry in statestk contains state information about
-*       the processing for each active .if.  the state is maintained
-*       as 2 fields:
+*	each state entry in statestk contains state information about
+*	the processing for each active .if.  the state is maintained
+*	as 2 fields:
 
-*           result    the result of the .if expression evaluation-
-*                     true, false, or bypass
+*	    result    the result of the .if expression evaluation-
+*	              true, false, or bypass
 
-*           mode      whether processing then or else portion of .if
+*	    mode      whether processing then or else portion of .if
 
-        data('state(result,mode)')
+	data('state(result,mode)')
 
-        false    = 0
-        true     = 1
-        bypass   = 2
-        else     = 0
-        then     = 1
+	false    = 0
+	true     = 1
+	bypass   = 2
+	else     = 0
+	then     = 1
 
-*       processrec is indexed by the current result and mode to determine
-*       whether or not a statement should be processed and written to the
-*       output file.
+*	processrec is indexed by the current result and mode to determine
+*	whether or not a statement should be processed and written to the
+*	output file.
 
-        processrec    = array( false ':' bypass ',' else ':' then,0 )
-        processrec[true,then]  = 1
-        processrec[false,else] = 1
+	processrec    = array( false ':' bypass ',' else ':' then,0 )
+	processrec[true,then]  = 1
+	processrec[false,else] = 1
 
-*       p.condasm breaks up conditional assembly directives.
+*	p.condasm breaks up conditional assembly directives.
 
-*       p.condasm breaks up conditional assembly directives.
+*	p.condasm breaks up conditional assembly directives.
 
-        sep      = ' '
-        p.condasm      = ( break(sep) | rem ) . condcmd
-.             ( span(sep) | '' )
-.             ( break(sep) | rem ) . condvar
-        p.argskel1 = fence(break(',') | rem) $ argthis *differ(argthis)
-        p.argskel2 = len(1) fence(break(',') | rem) $ argthis *differ(argthis)
+	sep      = ' '
+	p.condasm      = ( break(sep) | rem ) . condcmd
+.	       ( span(sep) | '' )
+.	       ( break(sep) | rem ) . condvar
+	p.argskel1 = fence(break(',') | rem) $ argthis *differ(argthis)
+	p.argskel2 = len(1) fence(break(',') | rem) $ argthis *differ(argthis)
 
-*       ityptab is table mapping from common operands to gross type
+*	ityptab is table mapping from common operands to gross type
 
-        ityptab = table(21)
-        ityptab['0'] = 1; ityptab['1'] = 1; ityptab['wa'] = 8
-        ityptab['wb'] = 8; ityptab['wc'] = 8; ityptab['xl'] = 7
-        ityptab['xr'] = 7; ityptab['xs'] = 7; ityptab['xt'] = 7
-        ityptab['(xl)'] = 9; ityptab['(xr)'] = 9; ityptab['(xs)'] = 9
-        ityptab['(xt)'] = 9; ityptab['-(xl)'] = 11; ityptab['-(xr)'] = 11
-        ityptab['-(xs)'] = 11; ityptab['-(xt)'] = 11;
-        ityptab['(xl)+'] = 10;  ityptab['(xr)+'] = 10;
-        ityptab['(xs)+'] = 10; ityptab['(xt)+'] = 10
-
-
-*       opformtab is table mapping general op formats to row index for
-*       validform array.
-
-        opformtab = initmap(
-+   'val[1]reg[2]opc[3]ops[4]opw[5]opn[6]opv[7]addr[8]'
-+   'x[9]w[10]plbl[11](x)[12]integer[13]real[14]'
-+   'dtext[15]eqop[16]int[17]pnam[18]')
+	ityptab = table(21)
+	ityptab['0'] = 1; ityptab['1'] = 1; ityptab['wa'] = 8
+	ityptab['wb'] = 8; ityptab['wc'] = 8; ityptab['xl'] = 7
+	ityptab['xr'] = 7; ityptab['xs'] = 7; ityptab['xt'] = 7
+	ityptab['(xl)'] = 9; ityptab['(xr)'] = 9; ityptab['(xs)'] = 9
+	ityptab['(xt)'] = 9; ityptab['-(xl)'] = 11; ityptab['-(xr)'] = 11
+	ityptab['-(xs)'] = 11; ityptab['-(xt)'] = 11;
+	ityptab['(xl)+'] = 10;  ityptab['(xr)+'] = 10;
+	ityptab['(xs)+'] = 10; ityptab['(xt)+'] = 10
 
 
-*       validform is array that validates general op formats (opv, etc).
-*       the first index is named type val=1 reg=2 opc=3 ops=4 opw=5
-*       opn=6 opv=7 addr=8 x=9 w=10 plbl=11 (x)=12 integer=13 real=14
-*       dtext=15 eqop=16 int=17 pnam=18
-*       the second argument is gross type 01=int 02=dlbl ... 27=dtext
-*       the entry [i,j] is nonzero is gross type j is valid for named
-*       type i.
+*	opformtab is table mapping general op formats to row index for
+*	validform array.
 
-        validform = array('18,27',0)
-        validform[1,1]  = validform[1,2]  = validform[2,7]  = validform[2,8]  =
-.   validform[3,9]  = validform[3,10]  = validform[3,11]  = validform[4,3]  =
-.   validform[4,4]  = validform[4,9]  = validform[4,12]  = validform[4,13]  =
-.   validform[4,14]  = validform[4,15]  = validform[5,3]  = validform[5,4]  =
-.   validform[5,8]  = validform[5,9]  = validform[5,10]  = validform[5,11]  =
-.   validform[5,12]  = validform[5,13]  = validform[5,14]  = validform[5,15]  =
-.   validform[6,3]  = validform[6,4]  = validform[6,7]  = validform[6,8]  =
-.   validform[6,9]  = validform[6,10]  = validform[6,11]  = validform[6,12]  =
-.   validform[6,13]  = validform[6,14]  = validform[6,15]  = validform[7,3]  =
-.   validform[7,4]  = validform[7,7]  = validform[7,8]  = validform[7,9]  =
-.   validform[7,10]  = validform[7,11]  = validform[7,12]  = validform[7,13]  =
-.   validform[7,14]  = validform[7,15]  = validform[7,18]  = validform[7,19]  =
-.   validform[7,20]  = validform[7,21]  = validform[7,22]  = validform[8,1]  =
-.   validform[8,2]  = validform[8,3]  = validform[8,4]  = validform[8,5]  =
-.   validform[8,6]  = validform[9,7]  = validform[10,8]  = validform[11,6]  =
-.   validform[12,9]  = validform[13,16]  = validform[14,17]  = validform[15,27]  =
-.   validform[16,24]  = validform[17,1]  = validform[18,6]  = validform[18,23]  = 1
-
-        labcnt = noutlines = nlines = nstmts = ntarget = nerrors = 0
-        p.minlabel = any(minlets) any(minlets) any(minlets nos)
-.              any(minlets nos) any(minlets nos)
+	opformtab = initmap(
++	'val[1]reg[2]opc[3]ops[4]opw[5]opn[6]opv[7]addr[8]'
++	'x[9]w[10]plbl[11](x)[12]integer[13]real[14]'
++	'dtext[15]eqop[16]int[17]pnam[18]')
 
 
-*       p.csparse parses out the components of the input line in stmt,
-*       and puts them into the locals: label, opcode, operands, comment
+*	validform is array that validates general op formats (opv, etc).
+*	the first index is named type val=1 reg=2 opc=3 ops=4 opw=5
+*	opn=6 opv=7 addr=8 x=9 w=10 plbl=11 (x)=12 integer=13 real=14
+*	dtext=15 eqop=16 int=17 pnam=18
+*	the second argument is gross type 01=int 02=dlbl ... 27=dtext
+*	the entry [i,j] is nonzero is gross type j is valid for named
+*	type i.
 
-        p.csparse = (((p.minlabel . label) | ('     '  '' . label)) '  '
+	validform = array('18,27',0)
+	validform[1,1]  = validform[1,2]  = validform[2,7]  = validform[2,8]  =
+.	validform[3,9]  = validform[3,10]  = validform[3,11]  = validform[4,3]  =
+.	validform[4,4]  = validform[4,9]  = validform[4,12]  = validform[4,13]  =
+.	validform[4,14]  = validform[4,15]  = validform[5,3]  = validform[5,4]  =
+.	validform[5,8]  = validform[5,9]  = validform[5,10]  = validform[5,11]  =
+.	validform[5,12]  = validform[5,13]  = validform[5,14]  = validform[5,15]  =
+.	validform[6,3]  = validform[6,4]  = validform[6,7]  = validform[6,8]  =
+.	validform[6,9]  = validform[6,10]  = validform[6,11]  = validform[6,12]  =
+.	validform[6,13]  = validform[6,14]  = validform[6,15]  = validform[7,3]  =
+.	validform[7,4]  = validform[7,7]  = validform[7,8]  = validform[7,9]  =
+.	validform[7,10]  = validform[7,11]  = validform[7,12]  = validform[7,13]  =
+.	validform[7,14]  = validform[7,15]  = validform[7,18]  = validform[7,19]  =
+.	validform[7,20]  = validform[7,21]  = validform[7,22]  = validform[8,1]  =
+.	validform[8,2]  = validform[8,3]  = validform[8,4]  = validform[8,5]  =
+.	validform[8,6]  = validform[9,7]  = validform[10,8]  = validform[11,6]  =
+.	validform[12,9]  = validform[13,16]  = validform[14,17]  = validform[15,27]  =
+.	validform[16,24]  = validform[17,1]  = validform[18,6]  = validform[18,23]  = 1
+
+	labcnt = noutlines = nlines = nstmts = ntarget = nerrors = 0
+	p.minlabel = any(minlets) any(minlets) any(minlets nos)
+.	        any(minlets nos) any(minlets nos)
+
+
+*	p.csparse parses out the components of the input line in stmt,
+*	and puts them into the locals: label, opcode, operands, comment
+
+	p.csparse = (((p.minlabel . label) | ('     '  '' . label)) '  '
 .     len(3) . opcode
 .     (('  ' (break(' ') | rtab(0)) . operands
-.         (span(' ') | '') rtab(0) . comment)  |
-.         (rpos(0) . operands . comment)))  |
-.        ('.'  '' . label  mincond . opcode
-.          ((tab(7)  '.'  len(4) . operands) | (rpos(0) . operands))
-.              '' . comment)
+.	   (span(' ') | '') rtab(0) . comment)  |
+.	   (rpos(0) . operands . comment)))  |
+.	  ('.'  '' . label  mincond . opcode
+.	    ((tab(7)  '.'  len(4) . operands) | (rpos(0) . operands))
+.	        '' . comment)
 
 
-*       p.csoperand breaks out the next operand in the operands string.
+*	p.csoperand breaks out the next operand in the operands string.
 
-        p.csoperand = (break(',') . operand  ',')  |
-.           ((len(1) rtab(0)) . operand)
+	p.csoperand = (break(',') . operand  ',')  |
+.	     ((len(1) rtab(0)) . operand)
 
-*       p.csdtc is a pattern that handles the special case of the
-*       minimal dtc op
+*	p.csdtc is a pattern that handles the special case of the
+*	minimal dtc op
 
-        p.csdtc   = ((p.minlabel . label)  |  ('     '  '' . label))
-.             len(7) (len(1) $ char  break(*char)  len(1)) . operand
-.             (span(' ') | '')  rtab(0) . comment
+	p.csdtc   = ((p.minlabel . label)  |  ('     '  '' . label))
+.	       len(7) (len(1) $ char  break(*char)  len(1)) . operand
+.	       (span(' ') | '')  rtab(0) . comment
 
-*       p.equ.rip is a pattern that parses out the components of an equ
-*       expression.
+*	p.equ.rip is a pattern that parses out the components of an equ
+*	expression.
 
-        p.equ.rip  = ( span(nos) . num1 | p.minlabel . sym1 )
-.          ( any('+-') . oprtr | '' )
-.          ( span(nos) . num2 | p.minlabel . sym2 | '' )
-.          rpos(0)
+	p.equ.rip  = ( span(nos) . num1 | p.minlabel . sym1 )
+.	    ( any('+-') . oprtr | '' )
+.	    ( span(nos) . num2 | p.minlabel . sym2 | '' )
+.	    rpos(0)
 
-*       optab is a table that maps opcodes into their argument
-*       types and is used for argument checking and processing.
+*	optab is a table that maps opcodes into their argument
+*	types and is used for argument checking and processing.
 
-        optab = initmap(
-. 'flc[w]'
-. 'add[opn,opv]adi[ops]adr[ops]anb[w,opw]aov[opv,opn,plbl]atn[none]'
-. 'bod[opn,plbl]bev[opn,plbl]'
-. 'bct[w,plbl]beq[opn,opv,plbl]bge[opn,opv,plbl]bgt[opn,opv,plbl]'
-. 'bhi[opn,opv,plbl]ble[opn,opv,plbl]blo[opn,opv,plbl]'
-. 'blt[opn,opv,plbl]bne[opn,opv,plbl]bnz[opn,plbl]brn[plbl]'
-. 'bri[opn]bsw[x,val,*plbl bsw]btw[reg]'
-. 'bze[opn,plbl]ceq[ops,ops,plbl]'
-. 'chk[none]chp[none]cmb[w]cmc[plbl,plbl]cne[ops,ops,plbl]cos[none]csc[x]ctb[w,val]'
-. 'ctw[w,val]cvd[none]cvm[plbl]dac[addr]dbc[val]dca[opn]dcv[opn]'
-. 'def[def]dic[integer]drc[real]dtc[dtext]dvi[ops]dvr[ops]ejc[none]'
-. 'else[else]end[none end]enp[none]ent[*val ent]equ[eqop equ]'
-. 'erb[int,text erb]err[int,text err]esw[none esw]etx[none]exi[*int]exp[int]fi[fi]'
-. 'ica[opn]icp[none]icv[opn]ieq[plbl]if[if]iff[val,plbl iff]ige[plbl]'
-. 'igt[plbl]ile[plbl]ilt[plbl]ine[plbl]ino[plbl]inp[ptyp,int inp]'
-. 'inr[none]iov[plbl]itr[none]jsr[pnam]lch[reg,opc]lct[w,opv]lcp[reg]'
-. 'lcw[reg]ldi[ops]ldr[ops]lei[x]lnf[none]lsh[w,val]lsx[w,(x)]mcb[none]'
-. 'mfi[opn,*plbl]mli[ops]mlr[ops]mnz[opn]mov[opn,opv]mti[opn]'
-. 'mvc[none]mvw[none]mwb[none]ngi[none]ngr[none]nzb[w,plbl]'
-. 'orb[w,opw]plc[x,*opv]ppm[*plbl]prc[ptyp,val prc]psc[x,*opv]req[plbl]'
-. 'rge[plbl]rgt[plbl]rle[plbl]rlt[plbl]rmi[ops]rne[plbl]rno[plbl]'
-. 'rov[plbl]rsh[w,val]rsx[w,(x)]rti[*plbl]rtn[none]sbi[ops]'
-. 'sbr[ops]sch[reg,opc]scp[reg]sec[none sec]sin[none]sqr[none]ssl[opw]sss[opw]'
-. 'sti[ops]str[ops]sub[opn,opv]tan[none]then[then]trc[none]ttl[none ttl]'
-. 'undef[undef]wtb[reg]xob[w,opw]zer[opn]zgb[opn]zrb[w,plbl]zzz[int]' )
+	optab = initmap(
+.	'flc[w]'
+.	'add[opn,opv]adi[ops]adr[ops]anb[w,opw]aov[opv,opn,plbl]atn[none]'
+.	'bod[opn,plbl]bev[opn,plbl]'
+.	'bct[w,plbl]beq[opn,opv,plbl]bge[opn,opv,plbl]bgt[opn,opv,plbl]'
+.	'bhi[opn,opv,plbl]ble[opn,opv,plbl]blo[opn,opv,plbl]'
+.	'blt[opn,opv,plbl]bne[opn,opv,plbl]bnz[opn,plbl]brn[plbl]'
+.	'bri[opn]bsw[x,val,*plbl bsw]btw[reg]'
+.	'bze[opn,plbl]ceq[ops,ops,plbl]'
+.	'chk[none]chp[none]cmb[w]cmc[plbl,plbl]cne[ops,ops,plbl]cos[none]csc[x]ctb[w,val]'
+.	'ctw[w,val]cvd[none]cvm[plbl]dac[addr]dbc[val]dca[opn]dcv[opn]'
+.	'def[def]dic[integer]drc[real]dtc[dtext]dvi[ops]dvr[ops]ejc[none]'
+.	'else[else]end[none end]enp[none]ent[*val ent]equ[eqop equ]'
+.	'erb[int,text erb]err[int,text err]esw[none esw]etx[none]exi[*int]exp[int]fi[fi]'
+.	'ica[opn]icp[none]icv[opn]ieq[plbl]if[if]iff[val,plbl iff]ige[plbl]'
+.	'igt[plbl]ile[plbl]ilt[plbl]ine[plbl]ino[plbl]inp[ptyp,int inp]'
+.	'inr[none]iov[plbl]itr[none]jsr[pnam]lch[reg,opc]lct[w,opv]lcp[reg]'
+.	'lcw[reg]ldi[ops]ldr[ops]lei[x]lnf[none]lsh[w,val]lsx[w,(x)]mcb[none]'
+.	'mfi[opn,*plbl]mli[ops]mlr[ops]mnz[opn]mov[opn,opv]mti[opn]'
+.	'mvc[none]mvw[none]mwb[none]ngi[none]ngr[none]nzb[w,plbl]'
+.	'orb[w,opw]plc[x,*opv]ppm[*plbl]prc[ptyp,val prc]psc[x,*opv]req[plbl]'
+.	'rge[plbl]rgt[plbl]rle[plbl]rlt[plbl]rmi[ops]rne[plbl]rno[plbl]'
+.	'rov[plbl]rsh[w,val]rsx[w,(x)]rti[*plbl]rtn[none]sbi[ops]'
+.	'sbr[ops]sch[reg,opc]scp[reg]sec[none sec]sin[none]sqr[none]ssl[opw]sss[opw]'
+.	'sti[ops]str[ops]sub[opn,opv]tan[none]then[then]trc[none]ttl[none ttl]'
+.	'undef[undef]wtb[reg]xob[w,opw]zer[opn]zgb[opn]zrb[w,plbl]zzz[int]' )
 
-*       prctab is table of procedures declared in inp that is used to
-*       check for consistency of inp/prc statements.
+*	prctab is table of procedures declared in inp that is used to
+*	check for consistency of inp/prc statements.
 
-        prctab = table(60)
+	prctab = table(60)
 
 
-*       equates is used by g.equ and .  it contains a directory of
-*       all labels that were defined by equ instructions.
+*	equates is used by g.equ and .  it contains a directory of
+*	all labels that were defined by equ instructions.
 
-        equates = table(257)
+	equates = table(257)
 
-*       labtab is a table that maps each label to the section in which
-*       it is defined, except labels defined in the definitions section
-*       (section 2).
+*	labtab is a table that maps each label to the section in which
+*	it is defined, except labels defined in the definitions section
+*	(section 2).
 
-        labtab = table(150,150)
+	labtab = table(150,150)
 
-*       bsw is a flag that indicates whether or not a bsw...esw range
-*       is being processed.
+*	bsw is a flag that indicates whether or not a bsw...esw range
+*	is being processed.
 
-        bsw = 0
+	bsw = 0
 
-        trandate = date()
-        parm = 'sbl'
-        filenami = parm '.min'
-        filenamo = parm '.lex'
-        output = rpad('input file:',15) filenami
-        output = rpad('output file:',15) filenamo
-        flcflag = 'n'
-        flcflag = 'y'
-        ejcflag = 'n'
-        ejcflag = 'y'
+	trandate = date()
+	parm = 'sbl'
+	filenami = parm '.min'
+	filenamo = parm '.lex'
+	output = rpad('input file:',15) filenami
+	output = rpad('output file:',15) filenamo
+	flcflag = 'n'
+	flcflag = 'y'
+	ejcflag = 'n'
+	ejcflag = 'y'
 main1
-        output(.outfile,2,filenamo)                     :s(main2)
-        output = "cannot open lexeme file: " filenamo   :(end)
+	output(.outfile,2,filenamo)                     :s(main2)
+	output = "cannot open lexeme file: " filenamo   :(end)
 main2
-        input(.infile,1,filenami)                       :s(main3)
-        error('cannot open minimal file ' filenami)
+	input(.infile,1,filenami)                       :s(main3)
+	error('cannot open minimal file ' filenami)
 main3
-        p.opsk1 = (break(' ') | rem) . argskel
-        equ_defs = initmap(
-.       'nstmx[10]cfp_s[9]cfp_x[3]e_srs[100]e_sts[1000]e_cbs[500]e_hnb[257]e_hnw[3]e_fsp[15]'
-.       'e_sed[25]ch_ua[65]ch_ub[66]ch_uc[67]ch_ud[68]ch_ue[69]ch_uf[70]ch_ug[71]ch_uh[72]'
-.       'ch_ui[73]ch_uj[74]ch_uk[75]ch_ul[76]ch_um[77]ch_un[78]ch_uo[79]ch_up[80]ch_uq[81]'
-.       'ch_ur[82]ch_us[83]ch_ut[84]ch_uu[85]ch_uv[86]ch_uw[87]ch_ux[88]ch_uy[89]ch_uz[90]'
-.       'ch_d0[48]ch_d1[49]ch_d2[50]ch_d3[51]ch_d4[52]ch_d5[53]ch_d6[54]ch_d7[55]ch_d8[56]'
-.       'ch_d9[57]ch_la[97]ch_lb[98]ch_lc[99]ch_ld[100]ch_le[101]ch_lf[102]ch_lg[103]ch_lh[104]ch_li[105]'
-.       'ch_lj[106]ch_lk[107]ch_ll[108]ch_lm[109]ch_ln[110]ch_lo[111]ch_lp[112]ch_lq[113]ch_lr[114]'
-.       'ch_ls[115]ch_lt[116]ch_lu[117]ch_lv[118]ch_lw[119]ch_lx[120]ch_ly[121]ch_l_[122]ch_am[38]'
-.       'ch_as[42]ch_at[64]ch_bb[60]ch_bl[32]ch_br[124]ch_cl[58]ch_cm[44]ch_dl[36]ch_dt[46]ch_dq[34]'
-.       'ch_eq[61]ch_ex[33]ch_mn[45]ch_nm[35]ch_nt[126]ch_pc[94]ch_pl[43]ch_pp[40]ch_rb[62]'
-.       'ch_rp[41]ch_qu[63]ch_sl[47]ch_sm[59]ch_sq[39]ch_u_[95]ch_ob[91]ch_cb[93]ch_ht[9]ch_vt[11]'
-.       'ch_ey[94]iodel[32]cfp_a[256]cfp_b[8]cfp_c[8]cfp_f[16]cfp_i[1]cfp_l[18446744073709551616]'
-.       'cfp_m[9223372036854775807]cfp_n[64]cfp_r[1]cfp_u[128]')
+	p.opsk1 = (break(' ') | rem) . argskel
+	equ_defs = initmap(
+.	'nstmx[10]cfp_s[9]cfp_x[3]e_srs[100]e_sts[1000]e_cbs[500]e_hnb[257]e_hnw[3]e_fsp[15]'
+.	'e_sed[25]ch_ua[65]ch_ub[66]ch_uc[67]ch_ud[68]ch_ue[69]ch_uf[70]ch_ug[71]ch_uh[72]'
+.	'ch_ui[73]ch_uj[74]ch_uk[75]ch_ul[76]ch_um[77]ch_un[78]ch_uo[79]ch_up[80]ch_uq[81]'
+.	'ch_ur[82]ch_us[83]ch_ut[84]ch_uu[85]ch_uv[86]ch_uw[87]ch_ux[88]ch_uy[89]ch_uz[90]'
+.	'ch_d0[48]ch_d1[49]ch_d2[50]ch_d3[51]ch_d4[52]ch_d5[53]ch_d6[54]ch_d7[55]ch_d8[56]'
+.	'ch_d9[57]ch_la[97]ch_lb[98]ch_lc[99]ch_ld[100]ch_le[101]ch_lf[102]ch_lg[103]ch_lh[104]ch_li[105]'
+.	'ch_lj[106]ch_lk[107]ch_ll[108]ch_lm[109]ch_ln[110]ch_lo[111]ch_lp[112]ch_lq[113]ch_lr[114]'
+.	'ch_ls[115]ch_lt[116]ch_lu[117]ch_lv[118]ch_lw[119]ch_lx[120]ch_ly[121]ch_l_[122]ch_am[38]'
+.	'ch_as[42]ch_at[64]ch_bb[60]ch_bl[32]ch_br[124]ch_cl[58]ch_cm[44]ch_dl[36]ch_dt[46]ch_dq[34]'
+.	'ch_eq[61]ch_ex[33]ch_mn[45]ch_nm[35]ch_nt[126]ch_pc[94]ch_pl[43]ch_pp[40]ch_rb[62]'
+.	'ch_rp[41]ch_qu[63]ch_sl[47]ch_sm[59]ch_sq[39]ch_u_[95]ch_ob[91]ch_cb[93]ch_ht[9]ch_vt[11]'
+.	'ch_ey[94]iodel[32]cfp_a[256]cfp_b[8]cfp_c[8]cfp_f[16]cfp_i[1]cfp_l[18446744073709551616]'
+.	'cfp_m[9223372036854775807]cfp_n[64]cfp_r[1]cfp_u[128]')
 
-                                                        :(return)
+	                                                :(return)
 
 init.end
 -stitl  initmap(str)index,val
-        define('initmap(str),index,val')		:(initmap.end)
+	define('initmap(str),index,val')		:(initmap.end)
 initmap 
 
 	initmap = table(size(str))
 initmap.next
-        str     (break('[') $ index len(1) break(']') $ val len(1)) =:f(return)
-        val     = convert( val,'integer' )
-        val     = ident(val,lastval) lastval
-        lastval = val
-        initmap[index] = val                           	:(initmap.next)
+	str     (break('[') $ index len(1) break(']') $ val len(1)) =:f(return)
+	val     = convert( val,'integer' )
+	val     = ident(val,lastval) lastval
+	lastval = val
+	initmap[index] = val                           	:(initmap.next)
 initmap.end
 -stitl crack(line)operands,operand,char
-        define('crack(line)operands,operand,char')      :(crack.end)
+	define('crack(line)operands,operand,char')      :(crack.end)
 
 *	break out current line into fields
 
 crack
-        nstmts  = nstmts + 1
-        line    p.csparse                               :f(cs03)
-        op1 = op2 = op3 = typ1 = typ2 = typ3 =
-        ident(opcode,'dtc')                             :s(cs02)
-        operands  p.csoperand =                         :f(cs01)
-        op1 = operand
-        operands  p.csoperand =                         :f(cs01)
-        op2 = operand
-        operands  p.csoperand                           :f(cs01)
-        op3 = operand
+	nstmts  = nstmts + 1
+	line    p.csparse                               :f(cs03)
+	op1 = op2 = op3 = typ1 = typ2 = typ3 =
+	ident(opcode,'dtc')                             :s(cs02)
+	operands  p.csoperand =                         :f(cs01)
+	op1 = operand
+	operands  p.csoperand =                         :f(cs01)
+	op2 = operand
+	operands  p.csoperand                           :f(cs01)
+	op3 = operand
 cs01                                                    :(return)
 cs02    line    p.csdtc                                 :f(cs03)
-        op1 = operand
-                                                        :(cs01)
+	op1 = operand
+	                                                :(cs01)
 cs03
-        error('source line syntax error')               :(freturn)
+	error('source line syntax error')               :(freturn)
 crack.end
 -stitl error(text)
-        define('error(text)')                           :(error.end)
+	define('error(text)')                           :(error.end)
 error
-        outfile = '* *???* ' thisline
-        outfile = '*       ' text
-.             (ident(lasterror),'. last error was line ' lasterror)
-        lasterror = noutlines
-        noutlines = noutlines + 2
-        nerrors = nerrors + 1
-.                                                       :(dsout)
+	outfile = '* *???* ' thisline
+	outfile = '*       ' text
+.	       (ident(lasterror),'. last error was line ' lasterror)
+	lasterror = noutlines
+	noutlines = noutlines + 2
+	nerrors = nerrors + 1
+.	                                                 :(dsout)
 error.end
 -stitl argform(arg)
-        define('argform(arg)')                          :(argform.end)
+	define('argform(arg)')                          :(argform.end)
 argform
-        argform = 0
-        ident(t = ityptab[arg])                         :s(argform1)
-        argform = t                                     :(return)
+	argform = 0
+	ident(t = ityptab[arg])                         :s(argform1)
+	argform = t                                     :(return)
 argform1
-        arg p.nos                                       :s(argform.int)
-        arg '='                                         :s(argform.eq)
-        arg '*'                                         :s(argform.star)
-        arg any('+-')                                   :s(argform.snum)
-        arg break('(')                                  :s(argform.index)
-        ident(t = labtab[arg])                          :s(argform.plbl)
-        argform = t                                     :(return)
+	arg p.nos                                       :s(argform.int)
+	arg '='                                         :s(argform.eq)
+	arg '*'                                         :s(argform.star)
+	arg any('+-')                                   :s(argform.snum)
+	arg break('(')                                  :s(argform.index)
+	ident(t = labtab[arg])                          :s(argform.plbl)
+	argform = t                                     :(return)
 argform.plbl
-        labtab[arg] = 6
-        argform = 6                                     :(return)
+	labtab[arg] = 6
+	argform = 6                                     :(return)
 argform.eq
-        arg len(1) rem . itypa
-        itypa = labtab[itypa]
-        argform = (eq(itypa,2) 18, eq(itypa,6) 22,
+	arg len(1) rem . itypa
+	itypa = labtab[itypa]
+	argform = (eq(itypa,2) 18, eq(itypa,6) 22,
 .   gt(itypa,2) itypa + 17)                             :s(return)
-        argform = 22
-        labtab[itypa] = 5                               :(return)
+	argform = 22
+	labtab[itypa] = 5                               :(return)
 argform.star
-        arg len(1) rem . t                              :f(return)
-        eq(labtab[t],2)                                 :f(return)
-        argform = 19                                    :(return)
+	arg len(1) rem . t                              :f(return)
+	eq(labtab[t],2)                                 :f(return)
+	argform = 19                                    :(return)
 argform.int
-        argform = 1                                     :(return)
+	argform = 1                                     :(return)
 argform.snum
-        arg len(1) p.nos                                :f(argform.sreal)
-        argform = 16                                    :(return)
+	arg len(1) p.nos                                :f(argform.sreal)
+	argform = 16                                    :(return)
 argform.sreal
-        arg len(1) p.real                               :f(return)
-        argform = 17                                    :(return)
+	arg len(1) p.real                               :f(return)
+	argform = 17                                    :(return)
 argform.index
-        arg break('(') . t '(x' any('lrst') ')' rpos(0)
-.                                                       :f(return)
-        t p.nos                                         :f(argform.index1)
-        argform = 12                                    :(return)
+	arg break('(') . t '(x' any('lrst') ')' rpos(0)
+.	                                                 :f(return)
+	t p.nos                                         :f(argform.index1)
+	argform = 12                                    :(return)
 argform.index1
-        ident(t = labtab[t])                            :s(return)
-        argform = (eq(t,2) 13, eq(t,3) 15, eq(t,4) 14)  :(return)
+	ident(t = labtab[t])                            :s(return)
+	argform = (eq(t,2) 13, eq(t,3) 15, eq(t,4) 14)  :(return)
 argform.end
 -stitl argtype(op,typ)
-        define('argtype(op,typ)')                       :(argtype.end)
+	define('argtype(op,typ)')                       :(argtype.end)
 argtype
-        argtype = 0
-        typ '*' =
-        ident(typ,'text')                               :s(arg.text)
-        ident(typ,'dtext')                              :s(arg.dtext)
-        ident(typ,'ptyp')                               :s(arg.ptyp)
-        ident(typ,'eqop')                               :s(arg.eqop)
-        itype = argform(op)
-        opform = opformtab<typ>
-        argtype = ne(validform<+opform,itype>) itype    :(return)
+	argtype = 0
+	typ '*' =
+	ident(typ,'text')                               :s(arg.text)
+	ident(typ,'dtext')                              :s(arg.dtext)
+	ident(typ,'ptyp')                               :s(arg.ptyp)
+	ident(typ,'eqop')                               :s(arg.eqop)
+	itype = argform(op)
+	opform = opformtab<typ>
+	argtype = ne(validform<+opform,itype>) itype    :(return)
 arg.text
-        argtype = 26                                    :(return)
+	argtype = 26                                    :(return)
 arg.dtext
-        argtype = 27                                    :(return)
+	argtype = 27                                    :(return)
 arg.ptyp
-        op any('rne')                                   :f(return)
-        argtype = 25                                    :(return)
+	op any('rne')                                   :f(return)
+	argtype = 25                                    :(return)
 arg.eqop
-        op1 = ident(op,'*')
-.           equ_defs[label]
-        argtype = 24                                    :(return)
+	op1 = ident(op,'*')
+.	     equ_defs[label]
+	argtype = 24                                    :(return)
 argtype.end
 -stitl labenter()tlab
-        define('labenter()tlab')                        :(labenter.end)
+	define('labenter()tlab')                        :(labenter.end)
 labenter
-        ident(label)                                    :s(return)
-        labtab[label] = (eq(sectnow,2) 2, eq(sectnow,3) 4,
+	ident(label)                                    :s(return)
+	labtab[label] = (eq(sectnow,2) 2, eq(sectnow,3) 4,
 .   eq(sectnow,4) 3 , gt(sectnow,4)  6)                 :(return)
 labenter.end
-        define('outstmt(label,opcode,op1,op2,op3,comment)t,stmtout'):(outstmt.end)
+	define('outstmt(label,opcode,op1,op2,op3,comment)t,stmtout'):(outstmt.end)
 -stitl outstmt(label,opcode,op1,op2,op3,comment)t,stmtout
 outstmt
-        outfile = sepchar  label sepchar  opcode sepchar 
+	outfile = sepchar  label sepchar  opcode sepchar 
 .   (ident(typ1), typ1 ',') op1 sepchar 
 .   (ident(typ2), typ2 ',') op2 sepchar 
 .   (ident(typ3), typ3 ',') op3 sepchar  comment
 .   sepchar  nlines
-        ntarget = ntarget + 1
-        noutlines = noutlines + 1
-.                                                       :(return)
+	ntarget = ntarget + 1
+	noutlines = noutlines + 1
+.	                                                 :(return)
 outstmt.end
 -stitl rdline()
-        define('rdline()')                              :(rdline.end)
+	define('rdline()')                              :(rdline.end)
 rdline
-        rdline = infile                                 :f(rl03)
-        nlines  = nlines + 1
-        differ( rdline )                                :s(rdline.1)
+	rdline = infile                                 :f(rl03)
+	nlines  = nlines + 1
+	differ( rdline )                                :s(rdline.1)
 
 *	skip blank line.
 
 	:(rdline)
-        outfile =
-        noutlines = noutlines + 1                       :(rdline)
+	outfile =
+	noutlines = noutlines + 1                       :(rdline)
 rdline.1
-        leq( substr( rdline,1,1 ),'.' )                 :f(other)
-        rdline ? p.condasm                              :s( $catab[condcmd] )
+	leq( substr( rdline,1,1 ),'.' )                 :f(other)
+	rdline ? p.condasm                              :s( $catab[condcmd] )
 rl00
-        leq( substr( rdline,1,1 ),'*' )                 :f(rl01)
+	leq( substr( rdline,1,1 ),'*' )                 :f(rl01)
 
 *	skip full line comment
 
 	:(rdline)
 
-        outfile = ident(flcflag,'y') rdline             :f(rdline)
-        noutlines = noutlines + 1                       :(rdline)
+	outfile = ident(flcflag,'y') rdline             :f(rdline)
+	noutlines = noutlines + 1                       :(rdline)
 rl01
-        leq( substr( rdline,1,1 ),'>' )                 :f(return)
-        c = code(substr( rdline, 2 ) "; :(rdline)")     :s<c>
-        output = "error compiling snobol4 statement"
-                                                        :(rl03)
+	leq( substr( rdline,1,1 ),'>' )                 :f(return)
+	c = code(substr( rdline, 2 ) "; :(rdline)")     :s<c>
+	output = "error compiling snobol4 statement"
+	                                                :(rl03)
 rl03
-        rdline = '       end'                           :(rl01)
+	rdline = '       end'                           :(rl01)
 synerr output = incnt '(syntax error):' rdline          :(rdline)
 defop
-        ident( condvar )                                :s(synerr)
-        differ( ignore_defs )                           :s(rdline)
-        eq( level )                                     :s(defok)
-        eq( processrec[result(top),mode(top)] )         :s(rdline)
+	ident( condvar )                                :s(synerr)
+	differ( ignore_defs )                           :s(rdline)
+	eq( level )                                     :s(defok)
+	eq( processrec[result(top),mode(top)] )         :s(rdline)
 defok
-        symtbl[condvar] = 1                             :(rdline)
+	symtbl[condvar] = 1                             :(rdline)
 undefop
-           ident( condvar )                             :s(synerr)
-           eq( level )                                  :s(undok)
-           eq( processrec[result(top),mode(top)] )      :s(rdline)
+	   ident( condvar )                             :s(synerr)
+	   eq( level )                                  :s(undok)
+	   eq( processrec[result(top),mode(top)] )      :s(rdline)
 undok
-        symtbl[condvar] =                               :(rdline)
+	symtbl[condvar] =                               :(rdline)
 ifop
-        ident( condvar )                                :s(synerr)
-        eq( level )                                     :s(ifok)
-        ne( processrec[result(top),mode(top)] )         :s(ifok)
-        level    = level + 1
-        top      = statestk[level] = state(bypass,then) :(rdline)
+	ident( condvar )                                :s(synerr)
+	eq( level )                                     :s(ifok)
+	ne( processrec[result(top),mode(top)] )         :s(ifok)
+	level    = level + 1
+	top      = statestk[level] = state(bypass,then) :(rdline)
 ifok
-        level    = level + 1
-        top      = statestk[level] = state(
-.                ( differ( symtbl[condvar] ) true,false ),
-.                then )                                 :(rdline)
+	level    = level + 1
+	top      = statestk[level] = state(
+.	          ( differ( symtbl[condvar] ) true,false ),
+.	          then )                                 :(rdline)
 thenop
-        differ(condvar)                                 :s(synerr)
-        eq(level)                                       :s(synerr)f(rdline)
+	differ(condvar)                                 :s(synerr)
+	eq(level)                                       :s(synerr)f(rdline)
 elseop
-        differ(condvar)                                 :s(synerr)
-        mode(top) = ne( level ) else                    :s(rdline)f(synerr)
+	differ(condvar)                                 :s(synerr)
+	mode(top) = ne( level ) else                    :s(rdline)f(synerr)
 fiop
-        differ(condvar)                                 :s(synerr)
-        level = ne( level ) level - 1                   :f(synerr)
-        top   = ( ne( level ) statestk[level],'' )      :(rdline)
+	differ(condvar)                                 :s(synerr)
+	level = ne( level ) level - 1                   :f(synerr)
+	top   = ( ne( level ) statestk[level],'' )      :(rdline)
 other
-        eq( level )                                     :s(rl00)
-        eq( processrec[result(top),mode(top)] )         :s(rdline)f(rl00)
+	eq( level )                                     :s(rl00)
+	eq( processrec[result(top),mode(top)] )         :s(rdline)f(rl00)
 rdline.end
-        define('report(num,text)')                      :(report.end)
+	define('report(num,text)')                      :(report.end)
 report
-        output = lpad(num,10) '  ' text                 :(return)
+	output = lpad(num,10) '  ' text                 :(return)
 report.end
 -title lex                               phase 1 translation from minimal to lexemes (lexemes)
 -stitl initialization
 
-*       Main
-        output = 'start scan'
+*	Main
+	output = 'start scan'
 * &ftrace = 10000
 * &trace = 10000
-        init()
-        
-*       Main loop - scan all the lines in the input file.
+	init()
+	
+*	Main loop - scan all the lines in the input file.
 
 dsout
 dostmt
-        thisline = rdline()
-        crack(thisline)                                 :f(dsout)
-        differ(label) labenter()
-        argerrs = 0
-        opskel = optab[opcode]                          :f(ds01)
-        ident(opskel) error("opcode not known")
-        opskel p.opsk1 =
-        ident(argskel,'none')                           :s(dos10)
+	thisline = rdline()
+	crack(thisline)                                 :f(dsout)
+	differ(label) labenter()
+	argerrs = 0
+	opskel = optab[opcode]                          :f(ds01)
+	ident(opskel) error("opcode not known")
+	opskel p.opsk1 =
+	ident(argskel,'none')                           :s(dos10)
 dos01
-        ident(argskel)                                  :s(dos05)
-        argskel p.argskel1 =
-        argthis '*' ident(op1)                          :s(dos05)
-        typ1 = argtype(op1,argthis)
-        argerrs = eq(typ1) argerrs + 1
-        ident(argskel)                                  :s(dos05)
-        argskel p.argskel2 =
-        argthis '*' ident(op2)                          :s(dos05)
-        typ2 = argtype(op2,argthis)
-        argerrs = eq(typ2) argerrs + 1
-        ident(argskel)                                  :s(dos05)
-        argskel p.argskel2 =
-        argthis '*' ident(op3)                          :s(dos05)
-        typ3 = argtype(op3,argthis)                     :(dos05)
-        argerrs = eq(typ3) argerrs + 1
+	ident(argskel)                                  :s(dos05)
+	argskel p.argskel1 =
+	argthis '*' ident(op1)                          :s(dos05)
+	typ1 = argtype(op1,argthis)
+	argerrs = eq(typ1) argerrs + 1
+	ident(argskel)                                  :s(dos05)
+	argskel p.argskel2 =
+	argthis '*' ident(op2)                          :s(dos05)
+	typ2 = argtype(op2,argthis)
+	argerrs = eq(typ2) argerrs + 1
+	ident(argskel)                                  :s(dos05)
+	argskel p.argskel2 =
+	argthis '*' ident(op3)                          :s(dos05)
+	typ3 = argtype(op3,argthis)                     :(dos05)
+	argerrs = eq(typ3) argerrs + 1
 dos10
 dos05
-        gt(argerrs) error('arg type not known')
-        opskel ' ' =                                    :f(dsgen)
-                                                        :($('g.' opskel))
-                                                        :(g.h)
+	gt(argerrs) error('arg type not known')
+	opskel ' ' =                                    :f(dsgen)
+	                                                :($('g.' opskel))
+	                                                :(g.h)
 ds01
-        error('bad op-code')                            :(dsout)
+	error('bad op-code')                            :(dsout)
 ds.typerr
-        error('operand type zero')                      :(dsout)
+	error('operand type zero')                      :(dsout)
 dsgen
-        outstmt(label,opcode,op1,op2,op3,comment)       :(dsout)
+	outstmt(label,opcode,op1,op2,op3,comment)       :(dsout)
 
 -stitl generators
 g.bsw
-        ub = ( integer( op2 ) op2, equates[op2] )
-        iffar = integer( ub )
-.       array('0:' ub - 1,sepchar sepchar)		:f(g.bsw1)
-        dplbl = op3
-        bsw   = 1                                       :(dsgen)
+	ub = ( integer( op2 ) op2, equates[op2] )
+	iffar = integer( ub )
+.	 array('0:' ub - 1,sepchar sepchar)		:f(g.bsw1)
+	dplbl = op3
+	bsw   = 1                                       :(dsgen)
 g.bsw1
-        error("non-integer lower bound for bsw")
+	error("non-integer lower bound for bsw")
 g.iff
-        (eq( bsw ) error("iff without bsw"))
-        ifftyp = ( integer(op1) '1', '2')
-        iffval = ( integer( op1 ) op1, equates[op1] )
-        iffar[iffval] = integer( iffval )
-.       ifftyp ',' op1 sepchar  typ2 ',' op2 sepchar   comment
-.                                                       :s(dsout)
-        error("non-integer iff value")
+	(eq( bsw ) error("iff without bsw"))
+	ifftyp = ( integer(op1) '1', '2')
+	iffval = ( integer( op1 ) op1, equates[op1] )
+	iffar[iffval] = integer( iffval )
+.	 ifftyp ',' op1 sepchar  typ2 ',' op2 sepchar   comment
+.	                                                 :s(dsout)
+	error("non-integer iff value")
 g.equ
-        equates[label] = ident(op1,'*')
-.           equ_defs[label]                             :s(dsgen)
-        num1 = num2 = sym1 = sym2 = oprtr =
-        op1 p.equ.rip                                   :f(g.equ2)
-        num1    = differ(sym1) equates[sym1]
-        num2    = differ(sym2) equates[sym2]
-        val     = (differ(oprtr) eval( num1 ' ' oprtr ' ' num2 ), num1):f(g.equ3)
+	equates[label] = ident(op1,'*')
+.	     equ_defs[label]                             :s(dsgen)
+	num1 = num2 = sym1 = sym2 = oprtr =
+	op1 p.equ.rip                                   :f(g.equ2)
+	num1    = differ(sym1) equates[sym1]
+	num2    = differ(sym2) equates[sym2]
+	val     = (differ(oprtr) eval( num1 ' ' oprtr ' ' num2 ), num1):f(g.equ3)
 g.equ1
-        equates[label] = val                            :(dsgen)
+	equates[label] = val                            :(dsgen)
 g.equ2
-        error("equ operand syntax error")
+	error("equ operand syntax error")
 g.equ3
-        error("equ evaluation failed                    : " num1 ' ' oprtr ' ' num2 ' "' op1 '"' )
+	error("equ evaluation failed                    : " num1 ' ' oprtr ' ' num2 ' "' op1 '"' )
 g.esw
-        (eq(bsw) error("esw without bsw"))
-        iffindx = 0
+	(eq(bsw) error("esw without bsw"))
+	iffindx = 0
 g.esw1
-        iffar[iffindx] break(sepchar ) $ val len(1)
-.       break( sepchar  ) $ plbl len(1)
-.       rem $ cmnt
-.                                                       :f(g.esw2)
-        val = ident( val ) '1,' iffindx
-        plbl = ident( plbl ) '6,' dplbl
-        (ident(dplbl) ident(plbl) error("missing iff value: "
-.        val " without plbl in preceding bsw"))
-        outstmt(,'iff',val,plbl,,cmnt)
-        iffindx = iffindx + 1                           :(g.esw1)
+	iffar[iffindx] break(sepchar ) $ val len(1)
+.	 break( sepchar  ) $ plbl len(1)
+.	 rem $ cmnt
+.	                                                 :f(g.esw2)
+	val = ident( val ) '1,' iffindx
+	plbl = ident( plbl ) '6,' dplbl
+	(ident(dplbl) ident(plbl) error("missing iff value: "
+.	  val " without plbl in preceding bsw"))
+	outstmt(,'iff',val,plbl,,cmnt)
+	iffindx = iffindx + 1                           :(g.esw1)
 g.esw2
-        iffar =                                         :(dsgen)
+	iffar =                                         :(dsgen)
 g.end
-        outstmt(,'end',,,,comment)
-        (ne(level) error("  unclosed if conditional clause"))
-            report(nlines,      'lines read')
-            report(nstmts,      'statements processed')
-            report(ntarget,     'target code lines produced')
-        report(&stcount,    'spitbol statements executed')
-            differ(nerrors) report(nerrors,'errors detected')
-        report =
+	outstmt(,'end',,,,comment)
+	(ne(level) error("  unclosed if conditional clause"))
+	    report(nlines,      'lines read')
+	    report(nstmts,      'statements processed')
+	    report(ntarget,     'target code lines produced')
+	report(&stcount,    'spitbol statements executed')
+	    differ(nerrors) report(nerrors,'errors detected')
+	report =
 +     differ(lasterror) '  the last error was in line ' lasterror
-        &code   = ne(nerrors) 2001
-            report(collect() * 5,   'free bytes')
-        t = convert(prctab,'array')                     :f(g.end.2)
-            output = '  procedures with inp, no prc'
-        i = 1
+	&code   = ne(nerrors) 2001
+	    report(collect() * 5,   'free bytes')
+	t = convert(prctab,'array')                     :f(g.end.2)
+	    output = '  procedures with inp, no prc'
+	i = 1
 g.end.1
-        output = t[i,1] ' ' t[i,2]                      :f(g.end.2)
-        i = i + 1                                       :(g.end.1)
+	output = t[i,1] ' ' t[i,2]                      :f(g.end.2)
+	i = i + 1                                       :(g.end.1)
 g.end.2
-                                                        :(end)
+	                                                :(end)
 g.ent
-        labtab[label] = 5                               :(dsgen)
+	labtab[label] = 5                               :(dsgen)
 g.h                                                     :(dsgen)
 g.sec
-        sectnow = sectnow + 1                           :(dsgen)
+	sectnow = sectnow + 1                           :(dsgen)
 g.ttl
-        thisline len(10) rem . t
-        t span(' ') =
-        outstmt(,'ttl','27,' t)                         :(dsout)
+	thisline len(10) rem . t
+	t span(' ') =
+	outstmt(,'ttl','27,' t)                         :(dsout)
 g.erb
 g.err   thisline break(',') len(1) rem . t
-        outstmt(label,opcode,op1, t)                    :(dsout)
+	outstmt(label,opcode,op1, t)                    :(dsout)
 g.inp
-        ident(label) error('no label for inp')
-        differ(t = prctab[label]) error('duplicate inp')
-        prctab[label] = op1                             :(dsgen)
+	ident(label) error('no label for inp')
+	differ(t = prctab[label]) error('duplicate inp')
+	prctab[label] = op1                             :(dsgen)
 g.prc
-        ident(label) error('no label for prc')
-        ident(t = prctab[label]) error('missing inp')
-        differ(t,op1) error('inconsistent inp/prc')
-        prctab[label] =                                 :(dsgen)
+	ident(label) error('no label for prc')
+	ident(t = prctab[label]) error('missing inp')
+	differ(t,op1) error('inconsistent inp/prc')
+	prctab[label] =                                 :(dsgen)
 lower
-        lower = replace(s,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-.             'abcdefghijklmnopqrstuvwxyz')             :(return)
+	lower = replace(s,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+.	       'abcdefghijklmnopqrstuvwxyz')             :(return)
 end

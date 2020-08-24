@@ -15,12 +15,12 @@
 ;     gnu general public license for more details.
 ;
 ;     you should have received a copy of the gnu general public license
-;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+;     along with macro spitbol.	 if not, see <http://www.gnu.org/licenses/>.
 
 	%define m_char	byte	; reference to byte in memory
 	%define d_char	db	; define value of byte
 
-	%define m_word  qword
+	%define m_word	qword
 	%define d_word	dq
 
 	%define m_real	qword	; reference to floating point value in memory
@@ -37,10 +37,10 @@
 	%define wa_l	cl
 
 	%define	wb	rbx
-	%define wb_l    bl
+	%define wb_l	bl
 
 	%define	wc	rdx
-	%define wc_l    dl
+	%define wc_l	dl
 
 	%define ia	rbp
 
