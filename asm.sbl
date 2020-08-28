@@ -95,7 +95,7 @@ crack
 	error('source line syntax error')		:(freturn)
 crack.end
 -stitl	chktrace()
-	define('chktrace()')				:(chktrace.end)
+	define('chktrace()')				:(chktrace_end)
 chktrace
 
 *						     :(return)
@@ -149,7 +149,7 @@ chktrace.1
 	genz()
 							:(return)
 
-chktrace.end
+chktrace_end
 -stitl	flush
 	define('flush()')				:(flush_end)
 
@@ -222,7 +222,7 @@ genrep
 							:(return)
 genrep_end
 -stitl genz
-	define('genz()')				:(genz.end)
+	define('genz()')				:(genz_end)
 
 *	generate trace instruction if needed.
 
@@ -247,9 +247,9 @@ genz
 	outlines = outlines + 1
 							:(return)
 
-genz.end
+genz_end
 -stitl comregs(line)t,pre,word
-	define('comregs(line)t,pre,word')		:(comregs.end)
+	define('comregs(line)t,pre,word')		:(comregs_end)
 
 *	map minimal register names to target register names
 
@@ -261,9 +261,9 @@ comregs
 
 comregs1 comregs = comregs line				:(return)
 
-comregs.end
+comregs_end
 -stitl error(text)
-	define('error(text)')				:(error.end)
+	define('error(text)')				:(error_end)
 
 *	this module handles reporting of errors with the offending
 *	statement text in thisline.  comments explaining
@@ -279,7 +279,7 @@ error
 	le(nerrors = nerrors + 1, 10)			:s(opnext)
 	output = 'too many errors, quitting'		:(end)
 
-error.end
+error_end
 -stitl genaop(stmt)
 	define('genaop(stmt)')				:(genaop_end)
 
@@ -315,7 +315,7 @@ genlab
 
 genlab_end
 -stitl genopl(gopl,gopc,gop1,gop2,gop3)
-	define('genopl(gopl,gopc,gop1,gop2,gop3)')	:(genopl.end)
+	define('genopl(gopl,gopc,gop1,gop2,gop3)')	:(genopl_end)
 
 *	generate operation with label
 
@@ -324,7 +324,7 @@ genopl
 	cstmts[cstmts.n = cstmts.n + 1] =
 .		tstmt(gopl,gopc,gop1,gop2,gop3)		:(return)
 
-genopl.end
+genopl_end
 -stitl genop(gopc,gop1,gop2,gop3)
 	define('genop(gopc,gop1,gop2,gop3)')		:(genop_end)
 
@@ -547,23 +547,23 @@ memmem
 							:(return)
 memmem.end
 -stitl prcent(n)
-	define('prcent(n)')				:(prcent.end)
+	define('prcent(n)')				:(prcent_end)
 
 prcent prcent = 'prc_+cfp_b*' ( n - 1)			:(return)
 
-prcent.end
+prcent_end
 -stitl	report(num,text)
 
-	define('report(num,text)')			:(report.end)
+	define('report(num,text)')			:(report_end)
 
 report
 
 	output = rpad('	 ' text ':',30) num			:(return)
 
-report.end
+report_end
 -stitl outstmt(ostmt)label,opcode,op1,op2,op3,comment,line)
 	define('outstmt(ostmt)line,label,opcode,op1,op2,op3,comment,t,stmtout')
-.			:(outstmt.end)
+.			:(outstmt_end)
 
 *	outstmt is used to send a target statement to the output file.
 
@@ -629,9 +629,9 @@ outstmt6
 *	record code labels in table with delimiter removed.
 	(ge(sectnow,5) differ(thislabel))		:f(return)
 	label ? break(':') . label			:f(return)
-	labtab<label> = output_lines			   :(return)
+	labtab<label> = output_lines			:(return)
 
-outstmt.end
+outstmt_end
 -stitl prsarg(iarg)
 	define('prsarg(iarg)l1,l2')			:(prsarg_end)
 prsarg
@@ -676,7 +676,7 @@ readline_eof
    readline = '	       end'				:(return)
 readline_end
 -stitl	register(s)
-	define('register(s)')				:(register.end)
+	define('register(s)')				:(register_end)
 
 *	returns target register for register *s*.
 *	fails if *s* is not a valid register name.
@@ -687,9 +687,9 @@ register
 	ident(register)					:s(freturn)
 							:(return)
 
-register.end
+register_end
 -stitl	reglow(s)
-	define('reglow(s)')				       :(reglow.end)
+	define('reglow(s)')				       :(reglow_end)
 
 *	returns name of low (rightmost byte) part of target register *s*.
 
@@ -705,8 +705,8 @@ reglow
 	reglow = ident(s,'rdx') 'dl'			:s(return);* wc
 	error('bad argument to reglow')			:(return)
 
-reglow.end
-	define('skip_init(s)on,off')			:(skip_init.end)
+reglow_end
+	define('skip_init(s)on,off')			:(skip_init_end)
 
 *	initialize the skip table used for instruction trace.
 
@@ -715,9 +715,9 @@ skip_init	s break(':') . on ':' rem . off		:f(return)
 	skip_on[on] = 1
 	skip_off[off] = 1				:(return)
 
-skip_init.end
+skip_init_end
 
-	define('init()')				:(init.end)
+	define('init()')				:(init_end)
 
 init
 
@@ -1100,7 +1100,7 @@ flgs.skip
 flgs2
 
 							:(return)
-init.end
+init_end
 -stitl main program
 
 *	here follows the driver code for the "main" program.
@@ -1126,8 +1126,8 @@ init.end
 *	&ftrace = 1000
 *	&profile = 1
 
-	include('nasm.h')
-	include('nasm.dcl')
+	include('int.h')
+	include('int.dcl')
 
 *	Main loop - read next line and generate necessary code for it.
 

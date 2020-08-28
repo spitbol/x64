@@ -24,7 +24,7 @@
 	%define	cfp_b	8
 	%define	cfp_c	8
 
-	%include "nasm.h"
+	%include "int.h"
 
 	global	reg_block
 	global	reg_w0
