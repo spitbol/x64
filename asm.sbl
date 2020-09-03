@@ -346,7 +346,7 @@ getarg
 	tmem = (differ(imem) '', 'm_word ')
 	l1 = i.text(iarg)
 	l2 = i.type(iarg)
-	eq(l2)						:f($(getargcase[l2]))
+	eq(l2)						:f($('getarg_c.' l2))
 
 getarg_c.1
 	getarg = l1					:(return)
@@ -490,10 +490,9 @@ isreg
 
 isreg_end
 -stitl initmap(str)
-	define('initmap(str),index,val')		:(initmap.end)
+	define('initmap(str),key,val')			:(initmap.end)
 
-*	this routine is called to initialize a table from a string of
-*	index/value pairs.
+*	Initialize a table from a string of key/value pairs.
 
 initmap
 
@@ -501,12 +500,10 @@ initmap
 
 initmap.1
 
-	str	(break('[') $ index len(1) break(']') $ val len(1)) =
-.							:f(return)
-	val	= convert( val,'integer' )
-	val	= ident(val,lastval) lastval
-	lastval = val
-	initmap[index] = val				:(initmap.1)
+	str break(':') $ key len(1) break(' ') $ val len(1) = :f(return)
+	key = convert(key,'integer')
+	val = convert(val,'integer' )
+	initmap[key] = val				:(initmap.1)
 
 initmap.end
 -stitl include(filename)
@@ -929,96 +926,46 @@ config_done
 .	sepchar break(sepchar) . incomment
 	sepchar rem . slineno
 
-*	dispatch table
-
-	getargcase = table(27)
-	getargcase[1] = .getarg_c.1;   getargcase[2] = .getarg_c.2
-	getargcase[3] = .getarg_c.3;   getargcase[4] = .getarg_c.4
-	getargcase[5] = .getarg_c.5;   getargcase[6] = .getarg_c.6
-	getargcase[7] = .getarg_c.7;   getargcase[8] = .getarg_c.8
-	getargcase[9] = .getarg_c.9;   getargcase[10] = .getarg_c.10
-	getargcase[11] = .getarg_c.11; getargcase[12] = .getarg_c.12
-	getargcase[13] = .getarg_c.13; getargcase[14] = .getarg_c.14
-	getargcase[15] = .getarg_c.15; getargcase[16] = .getarg_c.16
-	getargcase[17] = .getarg_c.17; getargcase[18] = .getarg_c.18
-	getargcase[19] = .getarg_c.19; getargcase[20] = .getarg_c.20
-	getargcase[21] = .getarg_c.21; getargcase[22] = .getarg_c.22
-	getargcase[23] = .getarg_c.23; getargcase[24] = .getarg_c.24
-	getargcase[25] = .getarg_c.25; getargcase[26] = .getarg_c.26
-	getargcase[27] = .getarg_c.27
-
-
-*	pifatal maps minimal opcodes for which no a code allowed
-*	to nonzero value. such operations include conditional
-*	branches with operand of form (x)+
+*	pifatal maps minimal opcodes for which no a code allowed to nonzero value. 
+*	such operations include conditional branches with operand of form (x)+
 
 	pifatal = initmap(
-.	'aov[1]beq[1]bne[1]bge[1]bgt[1]bhi[1]ble[1]blo[1]'
-.	'blt[1]bne[1]bnz[1]ceq[1]cne[1]mfi[1]nzb[1]zrb[1]')
+.	'aov:1 beq:1 bne:1 bge:1 bgt:1 bhi:1 ble:1 blo:1 blt:1 bne:1 bnz:1 ceq:1 cne:1 mfi:1 nzb:1 zrb:1 ')
 
-*	     trace not working for mvc (x64)
+*	trace not working for mvc (x64)
 
-	is_executable = table(100)
-	s =
-+	'add adi adr anb aov atn '
-+	'bct beq bev bge bgt bhi ble blo blt bne bnz bod '
-+	'brn bri bsw btw bze ceq chk chp cmb cmc cmp cne csc '
-+	'cos ctb ctw cvd cvm dca dcv eti dvi dvr erb esw etx flc '
-+	'ica icp icv ieq ige igt ile ilt ine ino iov itr jmp '
-+	'jsr lch lct lcp lcw ldi ldr lei lnf lsh lsx mcb mfi mli mlr '
-+	'mnz mov mti mvw mwb ngi eti ngr nzb orb plc prc psc '
-+	'req rge rgt rle rlt rmi rne rno rov rsh rsx rti rtn sbi sbr '
-+	'sch scp sin sqr ssl sss sti str sub tan trc wtb xob zer '
-+	'zgb zrb'
+	is_executable = initmap(
++	'add:1 adi:1 adr:1 anb:1 aov:1 atn:1 '
++	'bct:1 beq:1 bev:1 bge:1 bgt:1 bhi:1 ble:1 blo:1 blt:1 bne:1 bnz:1 bod:1 '
++	'brn:1 bri:1 bsw:1 btw:1 bze:1 ceq:1 chk:1 chp:1 cmb:1 cmc:1 cmp:1 cne:1 csc:1 '
++	'cos:1 ctb:1 ctw:1 cvd:1 cvm:1 dca:1 dcv:1 eti:1 dvi:1 dvr:1 erb:1 esw:1 etx:1 flc:1 '
++	'ica:1 icp:1 icv:1 ieq:1 ige:1 igt:1 ile:1 ilt:1 ine:1 ino:1 iov:1 itr:1 jmp:1 '
++	'jsr:1 lch:1 lct:1 lcp:1 lcw:1 ldi:1 ldr:1 lei:1 lnf:1 lsh:1 lsx:1 mcb:1 mfi:1 mli:1 mlr:1 '
++	'mnz:1 mov:1 mti:1 mvw:1 mwb:1 ngi:1 eti:1 ngr:1 nzb:1 orb:1 plc:1 prc:1 psc:1 '
++	'req:1 rge:1 rgt:1 rle:1 rlt:1 rmi:1 rne:1 rno:1 rov:1 rsh:1 rsx:1 rti:1 rtn:1 sbi:1 sbr:1 '
++	'sch:1 scp:1 sin:1 sqr:1 ssl:1 sss:1 sti:1 str:1 sub:1 tan:1 trc:1 wtb:1 xob:1 zer:1 '
++	'zgb:1 zrb')
 
 *	     don't trace mvc as doing so causes just 'end' to fail. sort out later. (ds 01/09/13)
-
-is_exec.1
-
-	s len(3) . opc ' ' =				:f(is_exec.2)
-	is_executable[opc] = 1				:(is_exec.1)
-
-is_exec.2
 
 *	various constants
 
 	comment.delim = ';'
 
-*	branchtab maps minimal opcodes 'beq', etc to desired
-*	target instruction
+*	branchtab maps minimal opcodes 'beq', etc to desired target instruction
 
-	branchtab = table(10)
-	branchtab['beq'] = 'je'
-	branchtab['bne'] = 'jne'
-	branchtab['bgt'] = 'ja'
-	branchtab['bge'] = 'jae'
-	branchtab['ble'] = 'jbe'
-	branchtab['blt'] = 'jb'
-	branchtab['blo'] = 'jb'
-	branchtab['bhi'] = 'ja'
+	branchtab = initmap( 'beq:je bne:jne bgt:ja bge:jae ble:jbe blt:jb blo:jb bhi:ja ')
 
-*	optim.tab flags opcodes capable of participating in or optimization
-*	in outstmt routine.
+*	optim.tab flags opcodes capable of participating in or optimization in outstmt routine.
 
-	optim.tab = table(10)
+	optim.tab = initmap('and:1 add:1 sub:1 neg:1 or:1 xor:1 shr:1 shl:1 inc:1 dec:1 ')
 
-	optim.tab<"and"> = optim.tab<"add"> = optim.tab<"sub"> =
-.	optim.tab<"neg"> = optim.tab<"or">  = optim.tab<"xor"> =
-.	optim.tab<"shr"> = optim.tab<"shl"> = optim.tab<"inc"> = 
-.	optim.tab<"dec"> = 1
+*	ismem is a map from operand type that is nonzero if the operand type is a memory reference.
 
+	ismem = initmap('3:1 4:1 5:1 9:1 10:1 11:1 12:1 13:1 14:1 15:1 ')
 
-*	ismem is a map from operand type that is nonzero if the operand type
-*	is a memory reference.
-
-	ismem = array(30,0)
-
-	ismem<3> = ismem<4> = ismem<5> = ismem<9> = ismem<10> = 
-.	ismem<11> = ismem<12> = ismem<13> = ismem<14>  = ismem<15> = 1
-
-*	other definitions that are dependent upon things defined in the
-*	machine definition file, and cannot be built until after the definition
-*	file has been read in.
+*	other definitions that are dependent upon things defined in the machine definition file,
+*	and cannot be built until after the definition file has been read in.
 
 *	p.outstmt examines output lines for certain types of comment contructions
 
