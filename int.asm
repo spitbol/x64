@@ -60,8 +60,8 @@ minimal_rstrt	equ	8
 minimal_start	equ	9
 minimal_filnm	equ	10
 minimal_dtype	equ	11
-minimal_enevs	equ	10
-minimal_engts	equ	12
+minimal_enevs	equ	12
+minimal_engts	equ	13
 
 %define globals 1			;asm globals defined here
 
