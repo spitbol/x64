@@ -1546,13 +1546,25 @@ g_erb
 							:(opdone)
 
 
+*	*   1.16 ICV   _opn_  increment value by one
+
+*	ICV increments the value of the operand by unity.
+
 g_icv
 
 	genop('inc',getarg(i1))				:(opdone)
 
+*	*   1.17 DCV   _opn_	  decrement value by one
+
+*	DCV decrements the value of the operand by unity.
+
 g_dcv
 
 	genop('dec',getarg(i1))				:(opdone)
+
+*	*   1.18 ZER   _opn_ zeroise  _opn_
+
+*	ZER is equivalent to MOV =zeroe,_opn_
 
 g_zer
 
@@ -1572,282 +1584,12 @@ g_zer.xs
 
 	genop('push','0')				:(opdone)
 
+*	*   1.19 MNZ   _opn_ move non-zero to  _opn_
+
 g_mnz
 
 	genop('mov',getarg(i1),xs)			:(opdone)
 
-g_ssl
-g_sss
-g_rtn
-
-	genop()						:(opdone)
-
-
-g_ieq	jop = 'je'					:(op.cmp)
-g_ige	jop = 'jge'					:(op.cmp)
-g_igt	jop = 'jg'					:(op.cmp)
-g_ile	jop = 'jle'					:(op.cmp)
-g_ilt	jop = 'jl'					:(op.cmp)
-g_ine	jop = 'jne'					:(op.cmp)
-op.cmp
-
-	genop('sti_',w0)
-	genop('or',w0,w0)
-	genop(jop,getarg(i1))				:(opdone)
-
-*	real operations
-
-*	lch requires separate cases for each first operand possibility.
-
-g_scg_0
-
-	leq('-',substr(t2,1,1))				:f(g_scg_1)
-	t2 break('(') len(1) len(2) . t3
-	genop('dec',register(t3))
-	(eq(cfp_b,cfp_c)
-.		 genop('dec',register(t3)), genop('sub',register(t3),'cfp_b'))
-
-g_scg_1
-
-	t2 break('(') len(1) len(2) . t3
-	eq(cfp_b,cfp_c) genop('mov',w0,t1,)
-	eq(cfp_b,cfp_c) genop('mov','[' register(t3) ']','al')
-	ne(cfp_b,cfp_c) genop('mov','m_char [' register(t3) ']',t1)
-*	see if postincrement needed.
-	t2 rtab(1) '+'					:f(g_scg_2)
-	(eq(cfp_b,cfp_c) 
-.		genop('inc',register(t3)), genop('add',register(t3),'cfp_b'))
-
-g_scg_2							:(opdone)
-g_scg_w
-
-*	here if moving character from work register, convert t1 to name of
-*	low part of the register.
-
-	t1 = (eq(cfp_b,cfp_c) reglow(getarg(i1)), getarg(i1))
-
-	ident(t2,'(xl)')				:s(g_scg_w.xl)
-	ident(t2,'-(xl)')				:s(g_scg_w.pxl)
-	ident(t2,'(xl)+')				:s(g_scg_w.xlp)
-	ident(t2,'(xr)')				:s(g_scg_w.xr)
-	ident(t2,'-(xr)')				:s(g_scg_w.pxr)
-	ident(t2,'(xr)+')				:s(g_scg_w.xrp)
-
-g_scg_w.xl
-
-	genop('mov','m_char [' register(xl) ']',t1)	:(opdone)
-
-g_scg_w.pxl
-
-	(eq(cfp_b,cfp_c)  genop('dec', xl), genop('sub',xl, 'cfp_b'))
-	genop('mov','m_char [' register(xl) ']',t1)	:(opdone)
-
-g_scg_w.xlp
-
-	genop('mov','m_char [' register(xl) ']',t1)
-	(eq(cfp_b,cfp_c)  genop('inc', xl), genop('add',xl, 'cfp_b')) :(opdone)
-
-g_scg_w.xr
-
-	genop('mov','m_char [' register(xr) ']',t1)	:(opdone)
-
-g_scg_w.pxr
-
-	(eq(cfp_b,cfp_c)  genop('dec', xr), genop('sub',xr, 'cfp_b'))
-	genop('mov','m_char [' register(xr) ']',t1)	:(opdone)
-
-g_scg_w.xrp
-
-	(eq(cfp_b,cfp_c) genop('mov','al',t1), genop('mov','eax',t1))
-	genop('stos_b')					:(opdone)
-
-
-*	*   7.8	 LSX  _w,(x)_
-
-*	Left shift _w_ by the  number of bits in _x_
-
-
-*	The above shifts are logical shifts in which bits shifted out are lost
-*	and zero bits supplied as required. The shift count is in the
-*	range 0-CFP$N .
-
-g_lsx
-
-	error('lsx not supported')
-
-g_zzz
-
-	genop('zzz',getarg(i1))				:(opdone)
-
-
-*	*   8.7	 CTW  _w,val_
-
-*	This instruction computes the sum (number of words required to store 
-*	w characters) + (val). the sum is stored in _w_.
-
-*	For example, CFP$C is 5, and WA contains 32, then CTW WA,2
-*	gives a result of 9 in WA.
-
-
-g_ctw
-
-*	assume cfp_c chars per word
-
-	t1 = getarg(i1)
-	eq(cfp_b,cfp_c)					:s(g_ctw.1)
-
-*	here if one word per character, so just add character count
-
-	genop('add',t1,i.text(i2))
-							:(opdone)
-g_ctw.1
-
-	genop('add',t1,'(cfp_c-1)+cfp_c*' i.text(i2))
-	genop('shr',t1,'log_cfp_c')
-							:(opdone)
-g_sec
-
-	genop('')
-	sectnow = sectnow + 1				:($("g_sec." sectnow))
-
-*  procedure declaration section
-
-g_sec.1
-
-	genop('segment .text')
-	genop('global','sec01')
-	genopl('sec01' ':')				:(opdone)
-
-*	definitions section
-
-g_sec.2
-
-	genop('segment .data')
-	genop('global','sec02')
-	genopl('sec02' ':')				:(opdone)
-
-*  constants section
-
-g_sec.3
-
-	genop('segment .data')
-	genop('global','sec03')
-	genopl('sec03' ':')				:(opdone)
-
-*  working variables section
-
-g_sec.4
-
-	genop('global','esec03')
-	genopl('esec03' '				:')
-	genop('segment .data')
-	genop('global','sec04')
-	genopl('sec04' ':')				:(opdone)
-
-*	here at start of program section.  if any n type procedures,
-*	put out entry-word block declaration at end of working storage
-
-g_sec.5
-
-*	emit code to indicate in code section
-*	get direction set to up.
-
-	genop('global','esec04')
-	genopl('esec04' '				:')
-
-*	      (gt(prc.count1) genopl('prc$' ':','times', prc.count1 ' dd 0'))
-
-	genop('prc_ : times ' prc.count1 ' dd 0')
-	genop('global','lowspmin')
-	genopl('lowspmin' '				:','d_word','0')
-	genop('global','end_min_data')
-	genopl('end_min_data' '				:')
-	genop('segment .text')
-	genop('global','sec05')
-	genopl('sec05' ':')				:(opdone)
-
-*	stack overflow section.	 output exi__n tail code
-
-g_sec.6
-
-	genop('global','sec06')
-	genopl('sec06'	'				:', 'nop')
-							:(opdone)
-
-*	error section.	produce code to receive erb's
-
-g_sec.7
-
-	genop('global','sec07')
-	genopl('sec07' '				:')
-	flush()
-*	error section.	produce code to receive erb's
-
-*	allow for some extra cases in case of max.err bad estimate
-
-	n1 = max.err + 8
-	output = '  max.err ' max.err
-	genopl('err_ :','xchg',wa,'m_word [' rcode ']') :(opdone)
-
-
-opdone
-
-	flush()						:(opnext)
-opdone.end
-g_end
-
-	&dump = 2
-	&dump = 0
-	ident(havehdr)					:s(g_end.2)
-
-*	here to copy remaining part from hdr file
-
-g_end.1
-
-	line = hdrfile					:f(g_end.2)
-	ntarget = ntarget + 1
-	output_lines = output_lines + 1
-	outfile = line					:(g_end.1)
-
-g_end.2
-
-*	here at end of code generation.
-
-	endfile(1)
-	endfile(2)
-	endfile(3)
-	report(input_lines,	'lines read')
-	report(nstmts,		'statements processed')
-	report(ntarget,		'target code lines produced')
-	report(&stcount,	'spitbol statements executed')
-	report(max.err,		'maximum err/erb number')
-	report(prc.count1,	'prc count')
-	output	= '  ' gt(prc.count,prc.count1)
-.	  '  differing counts for n-procedures		:'
-.	  ' inp ' prc.count1 ' prc ' prc.count
-	differ(nerrors) report(nerrors,'errors detected')
-
-	errfile = '* ' max.err ' maximum err/erb number'
-	errfile	= '* ' prc.count ' prc count'
-.		differ(lasterror) '  the last error was in line ' lasterror
-
-	&code	= ne(nerrors) 2001
-	report(collect(), 'free words')
-							:(end)
-
-*	*   1.16 ICV   _opn_  increment value by one
-
-*	ICV increments the value of the operand by unity.
-
-*	*   1.17 DCV   _opn_	  decrement value by one
-
-*	DCV decrements the value of the operand by unity.
-
-*	*   1.18 ZER   _opn_ zeroise  _opn_
-
-*	ZER is equivalent to MOV =zeroe,_opn_
-
-*	*   1.19 MNZ   _opn_ move non-zero to  _opn_
 
 
 *	Any non-zero collectable value may used, for which the opcodes
@@ -1876,6 +1618,12 @@ g_end.2
 
 *	SSL and SSS are no-ops if no private link stack is not used.
 
+g_ssl
+g_sss
+
+	genop()						:(opdone)
+
+
 *	*   1.22 RTN define start of routine
 
 
@@ -1889,6 +1637,10 @@ g_end.2
 *	an explicit opcode (compare ENP).
 
 *	All routines must be named in section 0 INR statements.	 
+
+g_rtn
+
+	genop()						:(opdone)
 
 *	#### 2-	 Operations on One Word Integer Values (addresses)
 
@@ -2115,7 +1867,7 @@ g_bod
 
 *	 #### 3- Operations on the Code Pointer Register
 
-*	(CP )
+*	(CP)
 
 *	The code pointer register provides a psuedo instruction counter for use in an interpretor. It may 
 *	be implemented as a real register or as a memory location, but in either case it is separate 
@@ -2217,11 +1969,18 @@ g_rmi
 							:(opdone)
 *	*   4.7	 STI   _ops_
 
+g_sti
+
+	genop('mov',getarg(i1),ia)			:(opdone)
+
 *	Store integer accumulator at  _ops_
 
 *	*   4.8	 NGI
 
 *	Negate the value in the integer accumulator (change its sign)
+
+g_ngi
+	genop('neg',ia)					:(opdone)
 
 *	*   4.9	 INO  _plbl_
 
@@ -2235,6 +1994,11 @@ g_rmi
 *	integer overflow (ADI, SBI MLI DVI RMI ngi) and test the result of the preceding instruction.
 
 *	IOV and INO may not have labels.
+
+g_ino
+g_iov
+
+	genop(op_,getarg(i1))				:(opdone)
 
 *	*   4.11 IEQ  _plbl_
 
@@ -2262,17 +2026,17 @@ g_rmi
 
 *	The above conditional jump instructions do not change the contents of the accumulator.
 
-g_sti
+g_ieq	jop = 'je'					:(op.cmp)
+g_ige	jop = 'jge'					:(op.cmp)
+g_igt	jop = 'jg'					:(op.cmp)
+g_ile	jop = 'jle'					:(op.cmp)
+g_ilt	jop = 'jl'					:(op.cmp)
+g_ine	jop = 'jne'					:(op.cmp)
+op.cmp
 
-	genop('mov',getarg(i1),ia)			:(opdone)
-
-g_ngi
-	genop('neg',ia)					:(opdone)
-
-g_ino
-g_iov
-
-	genop(op_,getarg(i1))				:(opdone)
+	genop('sti_',w0)
+	genop('or',w0,w0)
+	genop(jop,getarg(i1))				:(opdone)
 
 *	 #### 5- Operations on Real Values 
 
@@ -2284,15 +2048,13 @@ g_iov
 
 *	Store real accumulator at  _ops_
 
-
-*	*   `5.3  ADR	_ops_
+*	*   5.3  ADR	_ops_
 
 *	ADD  _ops_ to real accumulator
 
 *	*   5.4	 SBR   _ops_
 
 *	Subtract  _ops_ from real accumulator
-
 
 *	*   5.5	 MLR   _ops_
 
@@ -2551,6 +2313,68 @@ g_sch
 	ne(cfp_b,cfp_c) genop('mov',w0,getarg(i1))
 	genop('stos_b')					:(opdone)
 
+g_scg_0
+
+	leq('-',substr(t2,1,1))				:f(g_scg_1)
+	t2 break('(') len(1) len(2) . t3
+	genop('dec',register(t3))
+	(eq(cfp_b,cfp_c)
+.		 genop('dec',register(t3)), genop('sub',register(t3),'cfp_b'))
+
+g_scg_1
+
+	t2 break('(') len(1) len(2) . t3
+	eq(cfp_b,cfp_c) genop('mov',w0,t1,)
+	eq(cfp_b,cfp_c) genop('mov','[' register(t3) ']','al')
+	ne(cfp_b,cfp_c) genop('mov','m_char [' register(t3) ']',t1)
+*	see if postincrement needed.
+	t2 rtab(1) '+'					:f(g_scg_2)
+	(eq(cfp_b,cfp_c) 
+.		genop('inc',register(t3)), genop('add',register(t3),'cfp_b'))
+
+g_scg_2							:(opdone)
+g_scg_w
+
+*	here if moving character from work register, convert t1 to name of
+*	low part of the register.
+
+	t1 = (eq(cfp_b,cfp_c) reglow(getarg(i1)), getarg(i1))
+
+	ident(t2,'(xl)')				:s(g_scg_w.xl)
+	ident(t2,'-(xl)')				:s(g_scg_w.pxl)
+	ident(t2,'(xl)+')				:s(g_scg_w.xlp)
+	ident(t2,'(xr)')				:s(g_scg_w.xr)
+	ident(t2,'-(xr)')				:s(g_scg_w.pxr)
+	ident(t2,'(xr)+')				:s(g_scg_w.xrp)
+
+g_scg_w.xl
+
+	genop('mov','m_char [' register(xl) ']',t1)	:(opdone)
+
+g_scg_w.pxl
+
+	(eq(cfp_b,cfp_c)  genop('dec', xl), genop('sub',xl, 'cfp_b'))
+	genop('mov','m_char [' register(xl) ']',t1)	:(opdone)
+
+g_scg_w.xlp
+
+	genop('mov','m_char [' register(xl) ']',t1)
+	(eq(cfp_b,cfp_c)  genop('inc', xl), genop('add',xl, 'cfp_b')) :(opdone)
+
+g_scg_w.xr
+
+	genop('mov','m_char [' register(xr) ']',t1)	:(opdone)
+
+g_scg_w.pxr
+
+	(eq(cfp_b,cfp_c)  genop('dec', xr), genop('sub',xr, 'cfp_b'))
+	genop('mov','m_char [' register(xr) ']',t1)	:(opdone)
+
+g_scg_w.xrp
+
+	(eq(cfp_b,cfp_c) genop('mov','al',t1), genop('mov','eax',t1))
+	genop('stos_b')					:(opdone)
+
 *	*   6.5	 CSC  _x_
 
 *	Complete store characters
@@ -2734,6 +2558,20 @@ g_lsh
 
 	genop('shl',getarg(i1),getarg(i2))		:(opdone)
 
+
+*	*   7.8	 LSX  _w,(x)_
+
+*	Left shift _w_ by the  number of bits in _x_
+
+
+*	The above shifts are logical shifts in which bits shifted out are lost
+*	and zero bits supplied as required. The shift count is in the
+*	range 0-CFP$N .
+
+g_lsx
+
+	error('lsx not supported')
+
 *	*   7.7	 RSX  _w,(x)_
 
 *	Right shift _w_ by  number of bits in _x_
@@ -2890,6 +2728,32 @@ g_rti
 
 	genop('jc',getarg(i1))				:(opdone)
 
+*	*   8.7	 CTW  _w,val_
+
+*	This instruction computes the sum (number of words required to store 
+*	w characters) + (val). the sum is stored in _w_.
+
+*	For example, CFP$C is 5, and WA contains 32, then CTW WA,2
+*	gives a result of 9 in WA.
+
+
+g_ctw
+
+*	assume cfp_c chars per word
+
+	t1 = getarg(i1)
+	eq(cfp_b,cfp_c)					:s(g_ctw.1)
+
+*	here if one word per character, so just add character count
+
+	genop('add',t1,i.text(i2))
+							:(opdone)
+g_ctw.1
+
+	genop('add',t1,'(cfp_c-1)+cfp_c*' i.text(i2))
+	genop('shr',t1,'log_cfp_c')
+							:(opdone)
+
 *	*   8.8	 CTB  _w,val_
 
 *	CTB is exactly like CTW except that the result is in bytes.
@@ -2995,7 +2859,7 @@ g_mvc
 	z_suspend = 0
 							:(opdone)
 
-*	* 9.2  MVW
+*	*  9.2  MVW
 
 *		      move words
 
@@ -3324,5 +3188,144 @@ g_ejc								:(opnext)
 
 
 g_ttl								:(opnext)
+
+*	*   14.1  SEC	
+
+g_sec
+
+	genop('')
+	sectnow = sectnow + 1				:($("g_sec." sectnow))
+
+*  procedure declaration section
+
+g_sec.1
+
+	genop('segment .text')
+	genop('global','sec01')
+	genopl('sec01' ':')				:(opdone)
+
+*	definitions section
+
+g_sec.2
+
+	genop('segment .data')
+	genop('global','sec02')
+	genopl('sec02' ':')				:(opdone)
+
+*  constants section
+
+g_sec.3
+
+	genop('segment .data')
+	genop('global','sec03')
+	genopl('sec03' ':')				:(opdone)
+
+*  working variables section
+
+g_sec.4
+
+	genop('global','esec03')
+	genopl('esec03' '				:')
+	genop('segment .data')
+	genop('global','sec04')
+	genopl('sec04' ':')				:(opdone)
+
+*	here at start of program section.  if any n type procedures,
+*	put out entry-word block declaration at end of working storage
+
+g_sec.5
+
+*	emit code to indicate in code section
+*	get direction set to up.
+
+	genop('global','esec04')
+	genopl('esec04' '				:')
+
+*	      (gt(prc.count1) genopl('prc$' ':','times', prc.count1 ' dd 0'))
+
+	genop('prc_ : times ' prc.count1 ' dd 0')
+	genop('global','lowspmin')
+	genopl('lowspmin' '				:','d_word','0')
+	genop('global','end_min_data')
+	genopl('end_min_data' '				:')
+	genop('segment .text')
+	genop('global','sec05')
+	genopl('sec05' ':')				:(opdone)
+
+*	stack overflow section.	 output exi__n tail code
+
+g_sec.6
+
+	genop('global','sec06')
+	genopl('sec06'	'				:', 'nop')
+							:(opdone)
+
+*	error section.	produce code to receive erb's
+
+g_sec.7
+
+	genop('global','sec07')
+	genopl('sec07' '				:')
+	flush()
+*	error section.	produce code to receive erb's
+
+*	allow for some extra cases in case of max.err bad estimate
+
+	n1 = max.err + 8
+	output = '  max.err ' max.err
+	genopl('err_ :','xchg',wa,'m_word [' rcode ']') :(opdone)
+
+*	14.2  END  
+
+g_end
+
+	&dump = 2
+	&dump = 0
+	ident(havehdr)					:s(g_end.2)
+
+*	here to copy remaining part from hdr file
+
+g_end.1
+
+	line = hdrfile					:f(g_end.2)
+	ntarget = ntarget + 1
+	output_lines = output_lines + 1
+	outfile = line					:(g_end.1)
+
+g_end.2
+
+*	here at end of code generation.
+
+	endfile(1)
+	endfile(2)
+	endfile(3)
+	report(input_lines,	'lines read')
+	report(nstmts,		'statements processed')
+	report(ntarget,		'target code lines produced')
+	report(&stcount,	'spitbol statements executed')
+	report(max.err,		'maximum err/erb number')
+	report(prc.count1,	'prc count')
+	output	= '  ' gt(prc.count,prc.count1)
+.	  '  differing counts for n-procedures		:'
+.	  ' inp ' prc.count1 ' prc ' prc.count
+	differ(nerrors) report(nerrors,'errors detected')
+
+	errfile = '* ' max.err ' maximum err/erb number'
+	errfile	= '* ' prc.count ' prc count'
+.		differ(lasterror) '  the last error was in line ' lasterror
+
+	&code	= ne(nerrors) 2001
+	report(collect(), 'free words')
+							:(end)
+
+g_zzz
+
+	genop('zzz',getarg(i1))				:(opdone)
+
+
+opdone
+
+	flush()						:(opnext)
+opdone.end
 
 end
