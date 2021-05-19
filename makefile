@@ -54,6 +54,9 @@ spitbol-dynamic: $(OBJS)
 sbl.go:	sbl.lex go.sbl
 	$(BASEBOL) -x -u i32 go.sbl
 
+# Copy binary into BASEBOL
+bininst:
+	cp sbl ./bin
 
 # install binaries from ./bin as the system spitbol compilers
 install:
