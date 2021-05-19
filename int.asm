@@ -311,6 +311,7 @@ ttybuf:	d_word	  0	; type word
 ;	reloading a save file.
 ;
 ;
+	segment	.text
 	global	save_regs
 save_regs:
 	mov	m_word [save_ia],rdx
