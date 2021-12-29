@@ -242,9 +242,9 @@ calltab:
 	seto	byte [reg_fl]
 	%endmacro
 
-	extern	f_rti
+	extern	rti_
 	%macro	rti_	0
-	call	f_rti
+	call	rti_
 	mov	ia,m_word [reg_ia]
 	%endmacro
 

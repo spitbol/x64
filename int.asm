@@ -737,7 +737,13 @@ cvd__:
 	extern	i_cvd
 	mov	m_word [reg_ia],rbp
 	mov	m_word [reg_wa],rcx
+	push	rdi
+	push	rsi
+	push	rdx
 	call	i_cvd
+	pop	rdx
+	pop	rsi
+	pop	rdi
 	mov	rbp,m_word [reg_ia]
 	mov	rcx,m_word [reg_wa]
 	ret
@@ -761,8 +767,16 @@ setovr: mov	al,1		; set overflow indicator
 	global	%1
 	extern	%2
 %1:
+	push	rdi
+	push	rsi
+	push	rdx
+	push	rcx
 	mov	m_word [reg_rp],rax
 	call	%2
+	pop	rcx
+	pop	rdx
+	pop	rsi
+	pop	rdi
 	ret
 %endmacro
 
@@ -779,8 +793,16 @@ setovr: mov	al,1		; set overflow indicator
 	global	%1
 	extern	%2
 %1:
+	push	rdi
+	push	rsi
+	push	rdx
+	push	rcx
 	mov	m_word [reg_ia],rbp
 	call	%2
+	pop	rcx
+	pop	rdx
+	pop	rsi
+	pop	rdi
 	ret
 %endmacro
 
@@ -791,7 +813,15 @@ setovr: mov	al,1		; set overflow indicator
 	global	%1
 	extern	%2
 %1:
+	push	rdi
+	push	rsi
+	push	rdx
+	push	rcx
 	call	%2
+	pop	rcx
+	pop	rdx
+	pop	rsi
+	pop	rdi
 	ret
 %endmacro
 
