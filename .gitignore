@@ -9,3 +9,9 @@
 *.ap
 ./osint/*.ao
 ./osint/*.ap
+# Build outputs
+sbl
+err.asm
+sbl.asm
+sbl.err
+sbl.lex

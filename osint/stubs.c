@@ -10,13 +10,13 @@ Copyright 2012-2017 David Shields
 
 #include "port.h"
 
-zysdm()
+int zysdm()
 {
     return NORMAL_RETURN;
 }
 
 
-zystt()
+int zystt()
 {
     return NORMAL_RETURN;
 }

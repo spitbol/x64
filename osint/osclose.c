@@ -15,6 +15,7 @@ Copyright 2012-2017 David Shields
 */
 
 #include "port.h"
+#include <signal.h>
 
 int osclose( ioptr )
 struct	ioblk	*ioptr;
@@ -64,7 +65,7 @@ struct	ioblk	*ioptr;
         */
         else if ( ioptr->flg1 & IO_INP )
         {
-            kill( ioptr->pid );
+            kill( ioptr->pid, SIGQUIT );
             oswait( ioptr->pid );
         }
 

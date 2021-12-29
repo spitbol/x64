@@ -28,7 +28,7 @@ Copyright 2012-2017 David Shields
 
 extern struct ioblk	tioblk;
 
-zysio()
+int zysio()
 {
     register char	*charptr = WA( char *);
     register struct fcblk	*fcb;

@@ -30,7 +30,7 @@ int zystm() {
 	struct timespec tim;
 	long etime;
 
-	(long) clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&tim);
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&tim);
 
 	etime = (long) (tim.tv_sec * 1000000000) + (long) (tim.tv_nsec);
 	SET_IA(etime);

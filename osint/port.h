@@ -366,6 +366,7 @@ typedef unsigned long uword;	// minimal word as unsigned value
 
 #define const
 
+#include <stdlib.h>
 #include "osint.h"
 
 #ifdef PRIVATEBLOCKS

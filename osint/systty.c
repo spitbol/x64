@@ -39,8 +39,7 @@ void ttyinit()
 /	1	failure
 */
 
-zyspi()
-
+int zyspi()
 {
     word	retval;
 

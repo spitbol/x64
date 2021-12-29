@@ -12,6 +12,8 @@ Copyright 2012-2017 David Shields
 
 #include <sys/types.h>
 #include <sys/times.h>
+#include <time.h>
+#include <stdio.h>
 
 #include <fcntl.h>
 

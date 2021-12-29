@@ -21,6 +21,7 @@ Copyright 2012-2017 David Shields
 #include "port.h"
 
 #include <signal.h>
+#include <sys/wait.h>
 
 void oswait( pid )
 int	pid;

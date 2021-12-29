@@ -27,7 +27,7 @@ word x;
     return (x >= 0) ? x : -x;
 }
 
-zysin()
+int zysin()
 {
     register word	reclen;
     register struct fcblk *fcb = WA (struct fcblk *);

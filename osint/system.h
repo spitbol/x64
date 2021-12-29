@@ -9,7 +9,7 @@ Copyright 2012-2017 David Shields
  * Define system type.
  */
 
-#define gcc32  1
-#define gcc64  0
+#define gcc32  0
+#define gcc64  1
 #define gcc    (gcc32 | gcc64)
 

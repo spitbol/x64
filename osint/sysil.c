@@ -17,7 +17,7 @@ Copyright 2012-2017 David Shields
 
 #include "port.h"
 
-zysil()
+int zysil()
 
 {
     register struct fcblk *fcb = WA (struct fcblk *);

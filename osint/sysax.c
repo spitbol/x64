@@ -19,7 +19,7 @@ Copyright 2012-2017 David Shields
 
 #include "port.h"
 
-zysax()
+int zysax()
 {
     //  swcoup does real work
     swcoup( outptr );

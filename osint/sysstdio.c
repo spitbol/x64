@@ -80,8 +80,7 @@ int zyspr()
 /       	new file name in SCBLK and non-zero length.)
 */
 
-zysrd()
-
+int zysrd()
 {
 
     word	length;

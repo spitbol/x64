@@ -15,9 +15,9 @@ ELF=elf$(WS)
 
 
 ifeq	($(DEBUG),0)
-CFLAGS= -D m64 -m64 -static 
+CFLAGS= -Dm64 -m64 -static 
 else
-CFLAGS= -D m64 -g -m64
+CFLAGS= -Dm64 -g -m64 -static 
 endif
 
 # Assembler info 
@@ -26,7 +26,7 @@ ASM=nasm
 ifeq	($(DEBUG),0)
 ASMFLAGS = -f $(ELF) -d m64
 else
-ASMFLAGS = -g -f $(ELF) -d m64
+ASMFLAGS = -g -F stabs -f $(ELF) -d m64
 endif
 
 # Tools for processing Minimal source file.

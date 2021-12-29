@@ -30,8 +30,8 @@ Copyright 2012-2017 David Shields
 #include "port.h"
 
 #define pollevent()
-extern  rearmbrk (void);
-extern	int	brkpnd;
+extern  int rearmbrk (void);
+extern	int brkpnd;
 #define stmtDelay PollCount
 
 

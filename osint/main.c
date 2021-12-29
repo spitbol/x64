@@ -38,9 +38,7 @@ Copyright 2012-2017 David Shields
 
 void setout ( void );
 
-main( argc, argv )
-int	argc;
-char	*argv[];
+int main( int argc, char **argv )
 
 {
     int		i;

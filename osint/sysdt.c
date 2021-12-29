@@ -4,7 +4,6 @@ Copyright 2012-2017 David Shields
 */
 
 /*
-/*
 /	zysdt - get current date
 /
 /	zysdt is called when executing a Spitbol date function.
@@ -36,7 +35,7 @@ register int value;
     dest[1] = value - i*10 + '0';
 }
 
-zysdt()
+int zysdt()
 {
     struct icblk *dtscb = XR (struct icblk *);
 

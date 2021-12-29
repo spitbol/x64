@@ -40,7 +40,7 @@ int  vn;
 
 }
 
-rdenv( varname, result )
+int rdenv( varname, result )
 register struct scblk *varname, *result;
 {
     register char *p;
@@ -72,9 +72,7 @@ char *p;
 
 
 // Intel compiler bug?
-void unmake_c_str(p, savech)
-char *p;
-char savech;
+void unmake_c_str(char *p,  char savech)
 {
     if (savech)
         *p = savech;
