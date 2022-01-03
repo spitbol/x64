@@ -184,6 +184,9 @@ reg_rp:	d_word	0
 	global	reg_fl
 reg_fl:	db	0		; condition code register for numeric operations
 
+	align 8
+fl_flags:	d_word	0	; float flags
+
 	align	8
 ;  constants
 
@@ -554,7 +557,7 @@ syscall_exit:
 	mov	m_word [compsp],rsp	 ; save compiler's stack pointer
 	mov	rsp,m_word [osisp]	 ; load osint's stack pointer
 	call	%1
-	jmp	syscall_exit		; was a call for debugging purposes, but that would cause a crash when the 
+	jmp	syscall_exit		; was a call for debugging purposes, but that would cause a crash when the
 					; compilers stack pointer blew up
 	%endmacro
 
@@ -780,14 +783,44 @@ setovr: mov	al,1		; set overflow indicator
 	ret
 %endmacro
 
+	%macro	real_op_fl 2
+	global	%1
+	extern	%2
+%1:
+	push	rdi
+	push	rsi
+	push	rdx
+	push	rcx
+	mov	m_word [reg_rp],rax
+	call	%2
+	pop	rcx
+	pop	rdx
+	pop	rsi
+	pop	rdi
+
+	mov	ax, word [reg_ra+6]	; get top 2 bytes
+	and	ax, 0x7ff0			; check for infinity or nan
+	add	ax, 0x10			; set/clear overflow accordingly
+	seto	byte [reg_fl]
+	jo	%%done
+
+	xor	rax, rax
+	fstsw	ax				; Get FPU status word
+	stmxcsr	[fl_flags]		; Get SSE status
+	or	rax, m_word [fl_flags]	; Combine
+	and	al, 0x1f			; INVALID | DENORM | DIVBYZERO | OVERFLOW | UNDERFLOW
+	mov	byte [reg_fl], al
+%%done: ret
+%endmacro
+
 	real_op	ldr_,f_ldr
 	real_op	str_,f_str
-	real_op	adr_,f_adr
-	real_op	sbr_,f_sbr
-	real_op	mlr_,f_mlr
-	real_op	dvr_,f_dvr
+	real_op_fl	adr_,f_adr
+	real_op_fl	sbr_,f_sbr
+	real_op_fl	mlr_,f_mlr
+	real_op_fl	dvr_,f_dvr
 	real_op	ngr_,f_ngr
-	real_op cpr_,f_cpr
+	real_op 	cpr_,f_cpr
 
 	%macro	int_op 2
 	global	%1
@@ -912,8 +945,8 @@ re3:	cld
 	mov	rax,m_word [statb]		; start of static region to rdi
 	mov	m_word [reg_xr],rax
 	mov	rax,minimal_insta
-	jmp	minimal			; initialize static region 
-					; was a call, but there is nothing to return to.  This was probably for 
+	jmp	minimal			; initialize static region
+					; was a call, but there is nothing to return to.  This was probably for
 					; debugging purposes.
 
 ;

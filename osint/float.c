@@ -26,6 +26,7 @@ This file is part of Macro SPITBOL.
  */
 
 #include "port.h"
+#include <math.h>
 #if (FLOAT & !FLTHDWR) | EXTFUN
 
 
@@ -63,8 +64,10 @@ void f_dvr() {			// divide real
 		reg_ra /= *reg_rp;
 		reg_fl = 0;
 	}
-	else
+	else {
 		reg_fl = 1;
+		reg_ra = NAN;
+	}
 	return;
 }
 
