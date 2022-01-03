@@ -83,14 +83,13 @@ void f_rti() {			// real to integer
 }
 
 
-#include <stdio.h>
 void f_cpr() {
-	if ( reg_ra == 0.0) 
-		reg_fl =  0; 
-	else if ( reg_ra < 0.0) 
-		reg_fl = -1; 
-	else 
-		reg_fl =  1; 
+	if ( reg_ra == 0.0)
+		reg_fl =  0;
+	else if ( reg_ra < 0.0)
+		reg_fl = -1;
+	else
+		reg_fl =  1;
 }
 
 void f_pra () {
@@ -98,10 +97,9 @@ void f_pra () {
 
 
 void i_cvd() {
-	
 	reg_wa = reg_ia % 10;
 	reg_ia /= 10;
-	reg_wa  = -reg_wa + 48; // convert remainder to character code for digit
+	reg_wa  = -reg_wa + '0'; // convert remainder to character code for digit
 }
 
 #endif					// (FLOAT & !FLTHDWR) | EXTFUN
