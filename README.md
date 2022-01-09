@@ -38,7 +38,7 @@ Loading of external functions is not supported.
 
 ## Installing SPITBOL
 
-If you just want to use SPITBOL without building it, the file `./bin/spitbol`
+If you just want to use SPITBOL without building it, the file `./bin/sbl`
 contains a statically-linked copy of the 64-bit version of spitbol.
 
 You can install it in `/usr/local/bin/spitbol` with the command:
@@ -56,9 +56,6 @@ Three tools are needed to build Spitbol:
 
 SPITBOL uses the gcc compiler to compile C source files.
 
-SPITBOL uses [musl](http://musl-libc.org) for the runtime support.
-The command `musl-gcc` must be used instead of `gcc` to link to the musl library and include files.
-
 SPITBOL requires NASM, the Netwide ASseMbler: [nasm](http://www.nasm.us) to assemble the generated
 x86_64 machine code.
 
@@ -67,12 +64,12 @@ x86_64 machine code.
 
 You should be able to build SPITBOL on most Unix systems.
 
-The file `./bin/spitbol` is the base version of Spitbol that is used to build the system.  
+The file `./bin/sbl` is the base version of Spitbol that is used to build the system.  
 
 To see if spitbol is working, try the "hello world" program:
 
 ```    
-    $ ./bin/spitbol test/hello.sbl
+    $ ./bin/sbl test/hello.sbl
 ```
     
 To build the system:
@@ -83,18 +80,18 @@ To build the system:
     $ make
 ```
 
-This should produce the file `./spitbol`. You can test it with the "hello world"
+This should produce the file `./sbl`. You can test it with the "hello world"
 program:
 
     
    ``` 
-    $ ./spitbol test/hello.sbl
+    $ ./sbl test/hello.sbl
    ``` 
 
-To test the system more comprehensively, do:
+To verify that the spitbol is building itself correctly you can run:
     
 ```    
-    $ ./test/sanity-test
+    $ ./sanity-check
 ```    
     
 This shell script should be run after bulding the system. Since part of the SPITBOL translator is written
@@ -105,9 +102,9 @@ results of using it to build the system, and finally building the system again t
 Three builds are needed, since it possible the new version contains an optimization or other code change whose effects will only
 be tested in the final build.
 
-Additional test programs can be found in the directory `./bin`.
+Additional test programs can be found in the directory `./test`.
 
-NEVER replace the file `./bin/spitbol` with a newly built `spitbol` without first running and checking the results of
+NEVER replace the file `./bin/sbl` with a newly built `spitbol` without first running and checking the results of
 running the sanity test.  There's a good reason it has that name.  
 
 Use the command below to install `spitbol` in `/usr/local/bin`.
@@ -116,6 +113,17 @@ Use the command below to install `spitbol` in `/usr/local/bin`.
     $ make install
 ```    
 
+## Building from the bootstrap
+
+A pre-built spitbol executable is provided in ./bin/sbl.  
+
+If this executable fails, a bootstrap is provided.
+
+```
+    $ make bootsbl
+    $ make BOOTBOL=./bootsbl spitbol
+```
+
 
 ## Files
 
@@ -123,7 +131,7 @@ The SPITBOL implementation includes the following files:
 
 ### Minimal source
 
-The principal source file is `s.min`. The file `s.cnd` contains the definition of conditional assembly options.
+The principal source file is `sbl.min`.
 
 ### Minimal translation
 
@@ -133,7 +141,7 @@ The lexcal scan is followed by running `asm.sbl` to translate the tokens into ma
 
 The program `err.sbl` is used to produce a compact representation of the error messages contained in the Minimal source.
 
-`./bin/spitbol` is the statically linked binary for SPITBOL. You should be able to run in on any 64-bit x86_64 processor
+`./bin/sbl` is the statically linked binary for SPITBOL. You should be able to run in on any 64-bit x86_64 processor
 using Unix.
 
 
@@ -144,17 +152,13 @@ environment.
 
 ### Assembly Language Support
 
-The files  `x64.h`,  `x64.hdr`, and `x64.s` contain that part of the runtime that cannot be expressed in C and
+The files  `int.h`, `int.dcl`, and `int.asm` contain that part of the runtime that cannot be expressed in C and
 so is written in assembler.
 
 ### Instruction Tracing
 
 The file `z.sbl` can be used to insert trace code in generated assembly for debugging. This is not required to
 build this system, and was last used in 2009 as part of the port of SPITBOL to Linux.
-
-### Demonstration Programs
-
-Some demonstration programs can be found in the directory `./demos`.
 
 ## Documentation
 
@@ -167,3 +171,22 @@ Mark Emmer's SNOBOL4 site: [snobol4.com](http://snobol4.com)
 
 Phil Bunde's SNOBOL site: [snobol4.org](http://www.snobol4.org)
 
+## Maintainer notes:
+
+Before commiting changes perform the following checks:
+
+```
+    ./sanity-check
+    make checkboot
+```
+
+If checkboot shows differences
+
+```
+    make makeboot
+```
+
+Finally create the binary executable for distribution
+```
+    make bininst
+```

@@ -10,6 +10,7 @@
 ./osint/*.ao
 ./osint/*.ap
 # Build outputs
+bootsbl
 sbl
 err.asm
 sbl.asm

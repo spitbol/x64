@@ -13,6 +13,7 @@ DEBUG=$(debug)
 CC=gcc
 ELF=elf$(WS)
 
+DEST=/usr/local/bin
 
 ifeq	($(DEBUG),0)
 CFLAGS= -Dm64 -m64 -static 
@@ -47,7 +48,8 @@ spitbol:
 #stop:
 	$(CC) $(CFLAGS) -c osint/*.c
 	$(CC) $(CFLAGS) *.o -osbl -lm
-# link spitbol with dynamic linking
+
+# (BROKEN) link spitbol with dynamic linking
 spitbol-dynamic: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -osbl -lm 
 
@@ -56,7 +58,7 @@ sbl.go:	sbl.lex go.sbl
 
 
 # Use the bootstrap assembler files
-# You can then do: make BASEBOL=bootsbl to do a first make of spitbol
+# You can then do: make BASEBOL=./bootsbl to do a first make of spitbol
 bootsbl:
 	cp bootstrap/sbl.asm .
 	cp bootstrap/err.asm .
@@ -85,7 +87,8 @@ bininst:
 
 # install binaries from ./bin as the system spitbol compilers
 install:
-	sudo cp ./bin/sbl /usr/local/bin
+	sudo cp ./bin/sbl $(DEST)/spitbol
+
 clean:
 	rm -f  *.o *.lst *.map *.err err.lex sbl.lex sbl.err sbl.asm err.asm ./sbl ./bootsbl
 
