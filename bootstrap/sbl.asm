@@ -783,7 +783,8 @@ svkvl   equ  svkvc+svlbl                        ; constant keyword + value + lab
 svfpk   equ  svfnp+svkvc                        ; preeval fcn + const keywd + val} equ svfnp+svkvc  
 k_abe   equ  0                                  ; abend} equ 0  
 k_anc   equ  k_abe+cfp_b                        ; anchor} equ k_abe+cfp_b  
-k_cod   equ  k_anc+cfp_b                        ; code} equ k_anc+cfp_b  
+k_cas   equ  k_anc+cfp_b                        ; case} equ k_anc+cfp_b  
+k_cod   equ  k_cas+cfp_b                        ; code} equ k_cas+cfp_b  
 k_com   equ  k_cod+cfp_b                        ; compare} equ k_cod+cfp_b  
 k_dmp   equ  k_com+cfp_b                        ; dump} equ k_com+cfp_b  
 k_erl   equ  k_dmp+cfp_b                        ; errlimit} equ k_dmp+cfp_b  
@@ -980,7 +981,8 @@ t_sm0   equ  t_smc+0                            ; semicolon, state zero} equ t_s
 t_sm1   equ  t_smc+1                            ; semicolon, state one} equ t_smc+1  
 t_sm2   equ  t_smc+2                            ; semicolon, state two} equ t_smc+2  
 t_nes   equ  t_sm2+1                            ; number of entries in branch table} equ t_sm2+1  
-cc_do   equ  0                                  ; -double} equ 0  
+cc_ca   equ  0                                  ; -case} equ 0  
+cc_do   equ  cc_ca+1                            ; -double} equ cc_ca+1  
 cc_co   equ  cc_do+1                            ; -compare} equ cc_do+1  
 cc_du   equ  cc_co+1                            ; -dump} equ cc_co+1  
 cc_cp   equ  cc_du+1                            ; -copy} equ cc_du+1  
@@ -1074,7 +1076,8 @@ btkwv:  d_word svkwv                            ; bits to test for keword with v
 btprd:  d_word svprd                            ; bit to test for predicate function} dbc svprd  
 btpre:  d_word svpre                            ; bit to test for preevaluation} dbc svpre  
 btval:  d_word svval                            ; bit to test for value} dbc svval  
-ccnms:  d_char 'd','o','u','b',0,0,0,0          ; } dtc /doub/  
+ccnms:  d_char 'c','a','s','e',0,0,0,0          ; } dtc /case/  
+        d_char 'd','o','u','b',0,0,0,0          ; } dtc /doub/  
         d_char 'c','o','m','p',0,0,0,0          ; } dtc /comp/  
         d_char 'd','u','m','p',0,0,0,0          ; } dtc /dump/  
         d_char 'c','o','p','y',0,0,0,0          ; } dtc /copy/  
@@ -1657,6 +1660,10 @@ v_atn:  d_word svfnp                            ; atan} dbc svfnp
         d_char 'a','t','a','n',0,0,0,0          ; } dtc /atan/  
         d_word s_atn                            ; } dac s_atn  
         d_word 1                                ; } dac 1  
+v_cas:  d_word svknm                            ; case} dbc svknm  
+        d_word 4                                ; } dac 4  
+        d_char 'c','a','s','e',0,0,0,0          ; } dtc /case/  
+        d_word k_cas                            ; } dac k_cas  
 v_chr:  d_word svfnp                            ; char} dbc svfnp  
         d_word 4                                ; } dac 4  
         d_char 'c','h','a','r',0,0,0,0          ; } dtc /char/  
@@ -2095,6 +2102,7 @@ v_scn:  d_word svlbl                            ; scontinue} dbc svlbl
         d_word 0                                ; dummy entry to end list} dbc 0  
         d_word 10                               ; length gt 9 (scontinue)} dac 10  
 vdmkw:  d_word v_anc                            ; anchor} dac v_anc  
+        d_word v_cas                            ; ccase} dac v_cas  
         d_word v_cod                            ; code} dac v_cod  
         d_word 1                                ; compare not printed} dac 1  
         d_word v_dmp                            ; dump} dac v_dmp  
@@ -2315,6 +2323,7 @@ hshnb:  d_word +0                               ; number of hash buckets} dic +0
 initr:  d_word 0                                ; save terminal flag} dac 0  
 kvabe:  d_word 0                                ; abend} dac 0  
 kvanc:  d_word 1                                ; anchor} dac 1  
+kvcas:  d_word 0                                ; case} dac 0  
 kvcod:  d_word 0                                ; code} dac 0  
 kvcom:  d_word 0                                ; compare} dac 0  
 kvdmp:  d_word 0                                ; dump} dac 0  
@@ -6173,6 +6182,7 @@ _l0125:                                         ;
 call_72:                                        ; 
         or   wa,wa                              ; or if null string} bze wa scv29 
         jz   scv29                              ; 
+        call flstg                              ; fold upper case to lower case} jsr flstg  
         mov  xl,m_word [xs]                     ; load first argument} mov xl (xs) 
         cmp  m_word [xl],b_pdt                  ; jump if not program defined} bne (xl) =b_pdt scv01
         jne  scv01                              ; 
@@ -6502,6 +6512,11 @@ call_87:                                        ;
         mov  m_word [_rc_],77                   ; } erb 077 data argument is missing a left paren 
         jmp  err_                               ; 
 sdat1:
+        mov  wa,m_word [(cfp_b*sclen)+xr]       ; get length} mov wa sclen(xr) 
+        or   wa,wa                              ; avoid folding if null string} bze wa sdt1a 
+        jz   sdt1a                              ; 
+        call flstg                              ; fold upper case to lower case} jsr flstg  
+sdt1a:
         mov  xl,xr                              ; save name ptr} mov xl xr 
         mov  wa,m_word [(cfp_b*sclen)+xr]       ; get length} mov wa sclen(xr) 
         add  wa,(cfp_b-1)+cfp_b*scsi_           ; compute space needed} ctb wa scsi_ 
@@ -7897,6 +7912,13 @@ slod2:
         mov  m_word [_rc_],141                  ; } erb 141 load first argument is missing a right paren 
         jmp  err_                               ; 
 slod3:
+        mov  wb,wa                              ; save scan mode} mov wb wa 
+        mov  wa,m_word [(cfp_b*sclen)+xr]       ; datatype length} mov wa sclen(xr) 
+        or   wa,wa                              ; bypass if null string} bze wa sld3a 
+        jz   sld3a                              ; 
+        call flstg                              ; fold to lower case} jsr flstg  
+sld3a:
+        mov  wa,wb                              ; restore scan mode} mov wa wb 
         push xr                                 ; stack datatype name pointer} mov -(xs) xr 
         mov  wb,num01                           ; set string code in case} mov wb =num01 
         mov  xl,scstr                           ; point to /string/} mov xl =scstr 
@@ -7978,6 +8000,8 @@ slod6:
         dec  wc                                 ; loop till all stored} bct wc slod6 
         jnz  slod6                              ; 
         pop  xr                                 ; load function string name} mov xr (xs)+ 
+        mov  wa,m_word [(cfp_b*sclen)+xr]       ; function name length} mov wa sclen(xr) 
+        call flstg                              ; fold to lower case} jsr flstg  
         mov  xl,m_word [xs]                     ; load library name} mov xl (xs) 
         mov  m_word [xs],wb                     ; store efblk pointer} mov (xs) wb 
         call sysld                              ; call function to load external func} jsr sysld  
@@ -11649,6 +11673,12 @@ cnc01:
         mov  al,m_char [xr]                     ; 
         mov  wa,w0                              ; 
         inc  xr                                 ; 
+        cmp  cl,'A'                             ; fold to lower case} flc wa  
+        jb   _l0391                             ; 
+        cmp  cl,'Z'                             ; 
+        ja   _l0391                             ; 
+        add  cl,32                              ; 
+_l0391					:                                    ; 
         cmp  wa,ch_li                           ; special case of -inxxx} beq wa =ch_li cnc07
         je   cnc07                              ; 
 cnc0a:
@@ -11664,6 +11694,8 @@ cnc0a:
         mov  xl,xr                              ; point to control card name} mov xl xr 
         xor  wb,wb                              ; zero offset for substring} zer wb  
         call sbstr                              ; extract substring for comparison} jsr sbstr  
+        mov  wa,m_word [(cfp_b*sclen)+xr]       ; reload length} mov wa sclen(xr) 
+        call flstg                              ; fold to lower case} jsr flstg  
         mov  m_word [cnscc],xr                  ; keep control card substring ptr} mov cnscc xr 
         mov  xr,ccnms                           ; point to list of standard names} mov xr =ccnms 
         xor  wb,wb                              ; initialise name offset} zer wb  
@@ -11684,11 +11716,12 @@ cnc04:
         mov  xl,wb                              ; get name offset} mov xl wb 
         cmp  xl,cc_nc                           ; switch} bsw xl cc_nc cnc08
         jge  cnc08                              ; 
-        jmp  m_word [_l0391+xl*cfp_b]           ; 
+        jmp  m_word [_l0392+xl*cfp_b]           ; 
         segment .data                           ; 
-_l0391:                                         ; 
+_l0392:                                         ; 
+        d_word cnc37                            ; -case} iff cc_ca cnc37 
         d_word cnc10                            ; -double} iff cc_do cnc10 
-        d_word cnc08                            ; } iff 1 cnc08 
+        d_word cnc08                            ; } iff 2 cnc08 
         d_word cnc11                            ; -dump} iff cc_du cnc11 
         d_word cnc41                            ; -copy} iff cc_cp cnc41 
         d_word cnc12                            ; -eject} iff cc_ej cnc12 
@@ -11728,6 +11761,12 @@ cnc07:
         mov  al,m_char [xr]                     ; 
         mov  wa,w0                              ; 
         inc  xr                                 ; 
+        cmp  cl,'A'                             ; fold to lower case} flc wa  
+        jb   _l0393                             ; 
+        cmp  cl,'Z'                             ; 
+        ja   _l0393                             ; 
+        add  cl,32                              ; 
+_l0393					:                                    ; 
         cmp  wa,ch_ln                           ; if not letter n} bne wa =ch_ln cnc0a
         jne  cnc0a                              ; 
         mov  w0,0                               ; get third char} lch wa (xr) 
@@ -11744,13 +11783,13 @@ cnc07:
         dec  m_word [_rc_]                      ; 
         js   call_217                           ; 
         dec  m_word [_rc_]                      ; fail if not integer} ppm cnc06  
-        jns  _l0392                             ; 
+        jns  _l0394                             ; 
         jmp  cnc06                              ; 
-_l0392:                                         ; 
+_l0394:                                         ; 
         dec  m_word [_rc_]                      ; fail if negative or large} ppm cnc06  
-        jns  _l0393                             ; 
+        jns  _l0395                             ; 
         jmp  cnc06                              ; 
-_l0393:                                         ; 
+_l0395:                                         ; 
 call_217:                                       ; 
         mov  m_word [cswin],xr                  ; keep integer} mov cswin xr 
 cnc08:
@@ -11836,13 +11875,13 @@ cnc28:
         dec  m_word [_rc_]                      ; 
         js   call_218                           ; 
         dec  m_word [_rc_]                      ; fail if not integer} ppm cnc06  
-        jns  _l0394                             ; 
+        jns  _l0396                             ; 
         jmp  cnc06                              ; 
-_l0394:                                         ; 
+_l0396:                                         ; 
         dec  m_word [_rc_]                      ; fail if negative or large} ppm cnc06  
-        jns  _l0395                             ; 
+        jns  _l0397                             ; 
         jmp  cnc06                              ; 
-_l0395:                                         ; 
+_l0397:                                         ; 
 call_218:                                       ; 
         or   wc,wc                              ; jump if non zero} bnz wc cnc29 
         jnz  cnc29                              ; 
@@ -11899,6 +11938,27 @@ cnc35:
 cnc36:
         call systt                              ; toggle switch} jsr systt  
         jmp  cnc08                              ; merge} brn cnc08  
+cnc37:
+        call scane                              ; scan integer after -case} jsr scane  
+        xor  wc,wc                              ; get 0 in case none there} zer wc  
+        cmp  xl,t_smc                           ; skip if no integer} beq xl =t_smc cnc38
+        je   cnc38                              ; 
+        push xr                                 ; stack it} mov -(xs) xr 
+        call gtsmi                              ; check integer} jsr gtsmi  
+        dec  m_word [_rc_]                      ; 
+        js   call_219                           ; 
+        dec  m_word [_rc_]                      ; fail if not integer} ppm cnc06  
+        jns  _l0398                             ; 
+        jmp  cnc06                              ; 
+_l0398:                                         ; 
+        dec  m_word [_rc_]                      ; fail if negative or too large} ppm cnc06  
+        jns  _l0399                             ; 
+        jmp  cnc06                              ; 
+_l0399:                                         ; 
+call_219:                                       ; 
+cnc38:
+        mov  m_word [kvcas],wc                  ; store new case value} mov kvcas wc 
+        jmp  cnc09                              ; merge} brn cnc09  
 cnc41:
         mov  m_word [scncc],xs                  ; set flag for scane} mnz scncc  
         call scane                              ; scan quoted file name} jsr scane  
@@ -11913,13 +11973,13 @@ cnc41:
         xor  wb,wb                              ; lookup by value} zer wb  
         call tfind                              ; do lookup} jsr tfind  
         dec  m_word [_rc_]                      ; 
-        js   call_219                           ; 
+        js   call_220                           ; 
         dec  m_word [_rc_]                      ; never fails} ppm   
-        jns  _l0396                             ; 
+        jns  _l0400                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0396:                                         ; 
-call_219:                                       ; 
+_l0400:                                         ; 
+call_220:                                       ; 
         cmp  xr,inton                           ; ignore if already in table} beq xr =inton cnc09
         je   cnc09                              ; 
         mov  wb,xs                              ; set for trim} mnz wb  
@@ -11929,13 +11989,13 @@ call_219:                                       ;
         mov  wb,xs                              ; lookup by name this time} mnz wb  
         call tfind                              ; do lookup} jsr tfind  
         dec  m_word [_rc_]                      ; 
-        js   call_220                           ; 
+        js   call_221                           ; 
         dec  m_word [_rc_]                      ; never fails} ppm   
-        jns  _l0397                             ; 
+        jns  _l0401                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0397:                                         ; 
-call_220:                                       ; 
+_l0401:                                         ; 
+call_221:                                       ; 
         mov  m_word [(cfp_b*teval)+xl],inton    ; make table value integer 1} mov teval(xl) =inton 
         inc  m_word [cnind]                     ; increase nesting level} icv cnind  
         mov  wa,m_word [cnind]                  ; load new nest level} mov wa cnind 
@@ -11957,12 +12017,12 @@ call_220:                                       ;
         call alocs                              ; get buffer for complete file name} jsr alocs  
         call sysif                              ; open include file} jsr sysif  
         dec  m_word [_rc_]                      ; 
-        js   call_221                           ; 
+        js   call_222                           ; 
         dec  m_word [_rc_]                      ; could not open} ppm cnc43  
-        jns  _l0398                             ; 
+        jns  _l0402                             ; 
         jmp  cnc43                              ; 
-_l0398:                                         ; 
-call_221:                                       ; 
+_l0402:                                         ; 
+call_222:                                       ; 
         xor  wb,wb                              ; do not trim trailing blanks} zer wb  
         call trimr                              ; adjust scblk for actual length} jsr trimr  
         mov  m_word [r_sfc],xr                  ; save ptr to file name} mov r_sfc xr 
@@ -11972,13 +12032,13 @@ call_221:                                       ;
         mov  wb,xs                              ; lookup statement number by name} mnz wb  
         call tfind                              ; allocate new teblk} jsr tfind  
         dec  m_word [_rc_]                      ; 
-        js   call_222                           ; 
+        js   call_223                           ; 
         dec  m_word [_rc_]                      ; always possible to allocate block} ppm   
-        jns  _l0399                             ; 
+        jns  _l0403                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0399:                                         ; 
-call_222:                                       ; 
+_l0403:                                         ; 
+call_223:                                       ; 
         mov  w0,m_word [r_sfc]                  ; record file name as entry value} mov teval(xl) r_sfc 
         mov  m_word [(cfp_b*teval)+xl],w0       ; 
         mov  w0,0                               ; restart line counter for new file} zer rdnln  
@@ -12270,13 +12330,13 @@ dmp12:
         mov  wa,cfp_b*kvvar                     ; set zero offset} mov wa *kvvar 
         call acess                              ; get keyword value} jsr acess  
         dec  m_word [_rc_]                      ; 
-        js   call_223                           ; 
+        js   call_224                           ; 
         dec  m_word [_rc_]                      ; failure is impossible} ppm   
-        jns  _l0400                             ; 
+        jns  _l0404                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0400:                                         ; 
-call_223:                                       ; 
+_l0404:                                         ; 
+call_224:                                       ; 
         call prtvl                              ; print keyword value} jsr prtvl  
         call prtnl                              ; terminate print line} jsr prtnl  
         mov  xl,m_word [dmpsv]                  ; restore table pointer} mov xl dmpsv 
@@ -12429,28 +12489,28 @@ evali:
                                                 ; entry point (recursive)} prc r 4 
         call evalp                              ; evaluate expression} jsr evalp  
         dec  m_word [_rc_]                      ; 
-        js   call_224                           ; 
+        js   call_225                           ; 
         dec  m_word [_rc_]                      ; jump on failure} ppm evli1  
-        jns  _l0401                             ; 
+        jns  _l0405                             ; 
         jmp  evli1                              ; 
-_l0401:                                         ; 
-call_224:                                       ; 
+_l0405:                                         ; 
+call_225:                                       ; 
         push xl                                 ; stack result for gtsmi} mov -(xs) xl 
         mov  xl,m_word [(cfp_b*pthen)+xr]       ; load successor pointer} mov xl pthen(xr) 
         mov  m_word [evlio],xr                  ; save original node pointer} mov evlio xr 
         mov  m_word [evlif],wc                  ; zero if simple argument} mov evlif wc 
         call gtsmi                              ; convert arg to small integer} jsr gtsmi  
         dec  m_word [_rc_]                      ; 
-        js   call_225                           ; 
+        js   call_226                           ; 
         dec  m_word [_rc_]                      ; jump if not integer} ppm evli2  
-        jns  _l0402                             ; 
+        jns  _l0406                             ; 
         jmp  evli2                              ; 
-_l0402:                                         ; 
+_l0406:                                         ; 
         dec  m_word [_rc_]                      ; jump if out of range} ppm evli3  
-        jns  _l0403                             ; 
+        jns  _l0407                             ; 
         jmp  evli3                              ; 
-_l0403:                                         ; 
-call_225:                                       ; 
+_l0407:                                         ; 
+call_226:                                       ; 
         mov  m_word [evliv],xr                  ; store result in special dummy node} mov evliv xr 
         mov  xr,evlin                           ; point to dummy node with result} mov xr =evlin 
         mov  m_word [xr],p_len                  ; dummy pattern block pcode} mov (xr) =p_len 
@@ -12491,12 +12551,12 @@ evlp2:
         xor  wb,wb                              ; set flag for by value} zer wb  
         call evalx                              ; evaluate expression} jsr evalx  
         dec  m_word [_rc_]                      ; 
-        js   call_226                           ; 
+        js   call_227                           ; 
         dec  m_word [_rc_]                      ; jump on failure} ppm evlp4  
-        jns  _l0404                             ; 
+        jns  _l0408                             ; 
         jmp  evlp4                              ; 
-_l0404:                                         ; 
-call_226:                                       ; 
+_l0408:                                         ; 
+call_227:                                       ; 
         mov  wa,m_word [xr]                     ; else load first word of value} mov wa (xr) 
         cmp  wa,b_e__                           ; loop back to reevaluate expression} blo wa =b_e__ evlp2
         jb   evlp2                              ; 
@@ -12527,12 +12587,12 @@ evals:
                                                 ; entry point (recursive)} prc r 3 
         call evalp                              ; evaluate expression} jsr evalp  
         dec  m_word [_rc_]                      ; 
-        js   call_227                           ; 
+        js   call_228                           ; 
         dec  m_word [_rc_]                      ; jump if evaluation fails} ppm evls1  
-        jns  _l0405                             ; 
+        jns  _l0409                             ; 
         jmp  evls1                              ; 
-_l0405:                                         ; 
-call_227:                                       ; 
+_l0409:                                         ; 
+call_228:                                       ; 
         push m_word [(cfp_b*pthen)+xr]          ; save successor pointer} mov -(xs) pthen(xr) 
         push wb                                 ; save cursor} mov -(xs) wb 
         push xl                                 ; stack result ptr for patst} mov -(xs) xl 
@@ -12541,12 +12601,12 @@ call_227:                                       ;
         mov  xl,p_brk                           ; appropriate pcode for our use} mov xl =p_brk 
         call patst                              ; call routine to build node} jsr patst  
         dec  m_word [_rc_]                      ; 
-        js   call_228                           ; 
+        js   call_229                           ; 
         dec  m_word [_rc_]                      ; jump if not string} ppm evls2  
-        jns  _l0406                             ; 
+        jns  _l0410                             ; 
         jmp  evls2                              ; 
-_l0406:                                         ; 
-call_228:                                       ; 
+_l0410:                                         ; 
+call_229:                                       ; 
         pop  wb                                 ; restore cursor} mov wb (xs)+ 
         pop  m_word [(cfp_b*pthen)+xr]          ; store successor pointer} mov pthen(xr) (xs)+ 
         mov  m_word [_rc_],3                    ; take success return} exi 3  
@@ -12569,12 +12629,12 @@ evalx:
         jnz  evlx1                              ; 
         call acess                              ; call routine to access value} jsr acess  
         dec  m_word [_rc_]                      ; 
-        js   call_229                           ; 
+        js   call_230                           ; 
         dec  m_word [_rc_]                      ; jump if failure on access} ppm evlx9  
-        jns  _l0407                             ; 
+        jns  _l0411                             ; 
         jmp  evlx9                              ; 
-_l0407:                                         ; 
-call_229:                                       ; 
+_l0411:                                         ; 
+call_230:                                       ; 
 evlx1:
         mov  m_word [_rc_],0                    ; return to evalx caller} exi   
         ret                                     ; 
@@ -12617,12 +12677,12 @@ evlx4:
         jnz  evlx5                              ; 
         call acess                              ; else access value first} jsr acess  
         dec  m_word [_rc_]                      ; 
-        js   call_230                           ; 
+        js   call_231                           ; 
         dec  m_word [_rc_]                      ; jump if failure during access} ppm evlx6  
-        jns  _l0408                             ; 
+        jns  _l0412                             ; 
         jmp  evlx6                              ; 
-_l0408:                                         ; 
-call_230:                                       ; 
+_l0412:                                         ; 
+call_231:                                       ; 
 evlx5:
         xor  wb,wb                              ; note successful} zer wb  
         jmp  evlx7                              ; merge} brn evlx7  
@@ -12718,9 +12778,9 @@ expan:
 exp01:
         call scane                              ; scan next element} jsr scane  
         add  xl,wa                              ; add state to syntax code} add xl wa 
-        jmp  m_word [_l0409+xl*cfp_b]           ; switch on element type/state} bsw xl t_nes 
+        jmp  m_word [_l0413+xl*cfp_b]           ; switch on element type/state} bsw xl t_nes 
         segment .data                           ; 
-_l0409:                                         ; 
+_l0413:                                         ; 
         d_word exp27                            ; unop, s=0} iff t_uo0 exp27 
         d_word exp27                            ; unop, s=1} iff t_uo1 exp27 
         d_word exp04                            ; unop, s=2} iff t_uo2 exp04 
@@ -12869,9 +12929,9 @@ exp18:
 exp19:
         mov  m_word [scnrs],xs                  ; rescan terminator} mnz scnrs  
         mov  xl,wb                              ; copy level indicator} mov xl wb 
-        jmp  m_word [_l0410+xl*cfp_b]           ; switch on level indicator} bsw xl 6 
+        jmp  m_word [_l0414+xl*cfp_b]           ; switch on level indicator} bsw xl 6 
         segment .data                           ; 
-_l0410:                                         ; 
+_l0414:                                         ; 
         d_word exp20                            ; normal outer level} iff 0 exp20 
         d_word exp22                            ; fail if normal goto} iff 1 exp22 
         d_word exp23                            ; fail if direct goto} iff 2 exp23 
@@ -13028,6 +13088,54 @@ filn3:
         mov  xl,nulls                           ; return null string} mov xl =nulls 
         ret                                     ; } exi   
                                                 ; } enp   
+flstg:
+                                                ; entry point} prc e 0 
+        cmp  m_word [kvcas],0                   ; skip if &case is 0} bze kvcas fst99 
+        jz   fst99                              ; 
+        push xl                                 ; save xl across call} mov -(xs) xl 
+        push xr                                 ; save original scblk ptr} mov -(xs) xr 
+        call alocs                              ; allocate new string block} jsr alocs  
+        mov  xl,m_word [xs]                     ; point to original scblk} mov xl (xs) 
+        push xr                                 ; save pointer to new scblk} mov -(xs) xr 
+        add  xl,cfp_f                           ; point to original chars} plc xl  
+        add  xr,cfp_f                           ; point to new chars} psc xr  
+        push 0                                  ; init did fold flag} zer -(xs)  
+fst01:
+        mov  w0,0                               ; load character} lch wa (xl)+ 
+        mov  al,m_char [xl]                     ; 
+        mov  wa,w0                              ; 
+        inc  xl                                 ; 
+        cmp  wa,ch_ua                           ; skip if less than uc a} blt wa =ch_ua fst02
+        jb   fst02                              ; 
+        cmp  wa,ch_uz                           ; skip if greater than uc z} bgt wa =ch_uz fst02
+        ja   fst02                              ; 
+        cmp  cl,'A'                             ; fold character to lower case} flc wa  
+        jb   _l0415                             ; 
+        cmp  cl,'Z'                             ; 
+        ja   _l0415                             ; 
+        add  cl,32                              ; 
+_l0415					:                                    ; 
+        mov  m_word [xs],xs                     ; set did fold character flag} mnz (xs)  
+fst02:
+        mov  al,cl                              ; store (possibly folded) character} sch wa (xr)+ 
+        stos_b                                  ; 
+        dec  wc                                 ; loop thru entire string} bct wc fst01 
+        jnz  fst01                              ; 
+        pop  xr                                 ; see if any change} mov xr (xs)+ 
+        or   xr,xr                              ; skip if folding done (no change)} bnz xr fst10 
+        jnz  fst10                              ; 
+        pop  m_word [dnamp]                     ; do not need new scblk} mov dnamp (xs)+ 
+        pop  xr                                 ; return original scblk} mov xr (xs)+ 
+        jmp  fst20                              ; merge below} brn fst20  
+fst10:
+        pop  xr                                 ; return new scblk} mov xr (xs)+ 
+        add  xs,cfp_b                           ; throw away original scblk pointer} ica xs  
+fst20:
+        mov  wa,m_word [(cfp_b*sclen)+xr]       ; reload string length} mov wa sclen(xr) 
+        pop  xl                                 ; restore xl} mov xl (xs)+ 
+fst99:
+        ret                                     ; return} exi   
+                                                ; } enp   
 gbcol:
                                                 ; entry point} prc e 0 
         cmp  m_word [dmvch],0                   ; fail if in mid-dump} bnz dmvch gbc14 
@@ -13179,13 +13287,13 @@ gbc12:
         std                                     ; 
         lea  xl,[xl-cfp_b]                      ; 
         lea  xr,[xr-cfp_b]                      ; 
-_l0411					:                                    ; 
+_l0416					:                                    ; 
         or   wa,wa                              ; 
-        jz   _l0412                             ; 
+        jz   _l0417                             ; 
         movs_w                                  ; 
         dec  wa                                 ; 
-        jmp  _l0411                             ; 
-_l0412					:                                    ; 
+        jmp  _l0416                             ; 
+_l0417					:                                    ; 
         cld                                     ; 
 gbc13:
         xor  xr,xr                              ; clear garbage value in xr} zer xr  
@@ -13265,9 +13373,9 @@ gpf3a:
         mov  xr,xl                              ; copy block pointer} mov xr xl 
         mov  xl,wa                              ; copy first word of block} mov xl wa 
         movzx xl,byte [xl-1]                    ; load entry point id (bl_xx)} lei xl  
-        jmp  m_word [_l0413+xl*cfp_b]           ; switch on block type} bsw xl bl___ 
+        jmp  m_word [_l0418+xl*cfp_b]           ; switch on block type} bsw xl bl___ 
         segment .data                           ; 
-_l0413:                                         ; 
+_l0418:                                         ; 
         d_word gpf06                            ; arblk} iff bl_ar gpf06 
         d_word gpf19                            ; cdblk} iff bl_cd gpf19 
         d_word gpf17                            ; exblk} iff bl_ex gpf17 
@@ -13457,13 +13565,13 @@ gtar7:
         push xr                                 ; store ptr for gtstg} mov -(xs) xr 
         call gtstg                              ; convert to string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
-        js   call_231                           ; 
+        js   call_232                           ; 
         dec  m_word [_rc_]                      ; convert fail is impossible} ppm   
-        jns  _l0414                             ; 
+        jns  _l0419                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0414:                                         ; 
-call_231:                                       ; 
+_l0419:                                         ; 
+call_232:                                       ; 
         mov  xl,xr                              ; copy string pointer} mov xl xr 
         pop  xr                                 ; reload arblk pointer} mov xr (xs)+ 
         mov  m_word [(cfp_b*arpr2)+xr],xl       ; store prototype ptr (nn02)} mov arpr2(xr) xl 
@@ -13494,12 +13602,12 @@ gtcod:
         push xr                                 ; stack argument for gtstg} mov -(xs) xr 
         call gtstg                              ; convert argument to string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
-        js   call_232                           ; 
+        js   call_233                           ; 
         dec  m_word [_rc_]                      ; jump if non-convertible} ppm gtcd2  
-        jns  _l0415                             ; 
+        jns  _l0420                             ; 
         jmp  gtcd2                              ; 
-_l0415:                                         ; 
-call_232:                                       ; 
+_l0420:                                         ; 
+call_233:                                       ; 
         mov  w0,m_word [flptr]                  ; save fail ptr in case of error} mov gtcef flptr 
         mov  m_word [gtcef],w0                  ; 
         mov  w0,m_word [r_cod]                  ; also save code ptr} mov r_gtc r_cod 
@@ -13530,12 +13638,12 @@ gtexp:
         push xr                                 ; store argument for gtstg} mov -(xs) xr 
         call gtstg                              ; convert argument to string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
-        js   call_233                           ; 
+        js   call_234                           ; 
         dec  m_word [_rc_]                      ; jump if unconvertible} ppm gtex2  
-        jns  _l0416                             ; 
+        jns  _l0421                             ; 
         jmp  gtex2                              ; 
-_l0416:                                         ; 
-call_233:                                       ; 
+_l0421:                                         ; 
+call_234:                                       ; 
         mov  xl,xr                              ; copy input string pointer} mov xl xr 
         lea  xl,[cfp_f+xl+wa]                   ; point one past the string end} plc xl wa 
         dec  xl                                 ; fetch the last character} lch xl -(xl) 
@@ -13586,12 +13694,12 @@ gtint:
         mov  m_word [gtinb],wb                  ; save wb} mov gtinb wb 
         call gtnum                              ; convert to numeric} jsr gtnum  
         dec  m_word [_rc_]                      ; 
-        js   call_234                           ; 
+        js   call_235                           ; 
         dec  m_word [_rc_]                      ; jump if unconvertible} ppm gtin3  
-        jns  _l0417                             ; 
+        jns  _l0422                             ; 
         jmp  gtin3                              ; 
-_l0417:                                         ; 
-call_234:                                       ; 
+_l0422:                                         ; 
+call_235:                                       ; 
         cmp  wa,b_icl                           ; jump if integer} beq wa =b_icl gtin1
         je   gtin1                              ; 
         lea  w0,[(cfp_b*rcval)+xr]              ; load real value} ldr rcval(xr)  
@@ -13620,12 +13728,12 @@ gtnum:
         push xr                                 ; stack argument for gtstg} mov -(xs) xr 
         call gtstg                              ; convert argument to string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
-        js   call_235                           ; 
+        js   call_236                           ; 
         dec  m_word [_rc_]                      ; jump if unconvertible} ppm gtn36  
-        jns  _l0418                             ; 
+        jns  _l0423                             ; 
         jmp  gtn36                              ; 
-_l0418:                                         ; 
-call_235:                                       ; 
+_l0423:                                         ; 
+call_236:                                       ; 
         mov  ia,m_word [intv0]                  ; initialize integer result to zero} ldi intv0  
         or   wa,wa                              ; jump to exit with zero if null} bze wa gtn32 
         jz   gtn32                              ; 
@@ -13756,6 +13864,10 @@ gtn13:
         cmp  wb,ch_le                           ; jump if e for exponent} beq wb =ch_le gtn15
         je   gtn15                              ; 
         cmp  wb,ch_ld                           ; jump if d for exponent} beq wb =ch_ld gtn15
+        je   gtn15                              ; 
+        cmp  wb,ch_ue                           ; jump if e for exponent} beq wb =ch_ue gtn15
+        je   gtn15                              ; 
+        cmp  wb,ch_ud                           ; jump if d for exponent} beq wb =ch_ud gtn15
         je   gtn15                              ; 
 gtn14:
         cmp  wb,ch_bl                           ; jump if blank} beq wb =ch_bl gtnb4
@@ -13945,14 +14057,15 @@ gnv02:
         push xr                                 ; stack argument for gtstg} mov -(xs) xr 
         call gtstg                              ; convert argument to string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
-        js   call_236                           ; 
+        js   call_237                           ; 
         dec  m_word [_rc_]                      ; jump if conversion error} ppm gnv01  
-        jns  _l0419                             ; 
+        jns  _l0424                             ; 
         jmp  gnv01                              ; 
-_l0419:                                         ; 
-call_236:                                       ; 
+_l0424:                                         ; 
+call_237:                                       ; 
         or   wa,wa                              ; null string is an error} bze wa gnv01 
         jz   gnv01                              ; 
+        call flstg                              ; fold upper case to lower case} jsr flstg  
         push xl                                 ; save xl} mov -(xs) xl 
         push xr                                 ; stack string ptr for later} mov -(xs) xr 
         mov  wb,xr                              ; copy string pointer} mov wb xr 
@@ -14119,12 +14232,12 @@ gtpat:
         push xr                                 ; stack argument for gtstg} mov -(xs) xr 
         call gtstg                              ; convert argument to string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
-        js   call_237                           ; 
+        js   call_238                           ; 
         dec  m_word [_rc_]                      ; jump if impossible} ppm gtpt2  
-        jns  _l0420                             ; 
+        jns  _l0425                             ; 
         jmp  gtpt2                              ; 
-_l0420:                                         ; 
-call_237:                                       ; 
+_l0425:                                         ; 
+call_238:                                       ; 
         or   wa,wa                              ; jump if non-null} bnz wa gtpt1 
         jnz  gtpt1                              ; 
         mov  xr,ndnth                           ; point to nothen node} mov xr =ndnth 
@@ -14161,12 +14274,12 @@ gtrea:
         je   gtre2                              ; 
         call gtnum                              ; else convert argument to numeric} jsr gtnum  
         dec  m_word [_rc_]                      ; 
-        js   call_238                           ; 
+        js   call_239                           ; 
         dec  m_word [_rc_]                      ; jump if unconvertible} ppm gtre3  
-        jns  _l0421                             ; 
+        jns  _l0426                             ; 
         jmp  gtre3                              ; 
-_l0421:                                         ; 
-call_238:                                       ; 
+_l0426:                                         ; 
+call_239:                                       ; 
         cmp  wa,b_rcl                           ; jump if real was returned} beq wa =b_rcl gtre2
         je   gtre2                              ; 
 gtre1:
@@ -14187,12 +14300,12 @@ gtsmi:
         je   gtsm1                              ; 
         call gtint                              ; convert argument to integer} jsr gtint  
         dec  m_word [_rc_]                      ; 
-        js   call_239                           ; 
+        js   call_240                           ; 
         dec  m_word [_rc_]                      ; jump if convert is impossible} ppm gtsm2  
-        jns  _l0422                             ; 
+        jns  _l0427                             ; 
         jmp  gtsm2                              ; 
-_l0422:                                         ; 
-call_239:                                       ; 
+_l0427:                                         ; 
+call_240:                                       ; 
 gtsm1:
         mov  ia,m_word [(cfp_b*icval)+xr]       ; load integer value} ldi icval(xr)  
         sti_ w0                                 ; move as one word, jump if ovflow} mfi wc gtsm3 
@@ -14500,12 +14613,12 @@ gtvr2:
         mov  m_word [gtvrc],wc                  ; save wc} mov gtvrc wc 
         call gtnvr                              ; locate vrblk if possible} jsr gtnvr  
         dec  m_word [_rc_]                      ; 
-        js   call_240                           ; 
+        js   call_241                           ; 
         dec  m_word [_rc_]                      ; jump if convert error} ppm gtvr1  
-        jns  _l0424                             ; 
+        jns  _l0429                             ; 
         jmp  gtvr1                              ; 
-_l0424:                                         ; 
-call_240:                                       ; 
+_l0429:                                         ; 
+call_241:                                       ; 
         mov  xl,xr                              ; else copy vrblk name base} mov xl xr 
         mov  wa,cfp_b*vrval                     ; and set offset} mov wa *vrval 
         mov  wc,m_word [gtvrc]                  ; restore wc} mov wc gtvrc 
@@ -14560,9 +14673,9 @@ hshsa:
         mov  xl,wc                              ; load length for branch} mov xl wc 
         cmp  xl,num25                           ; use first characters if longer} bge xl =num25 hsh24
         jae  hsh24                              ; 
-        jmp  m_word [_l0425+xl*cfp_b]           ; merge to compute hash} bsw xl 25 
+        jmp  m_word [_l0430+xl*cfp_b]           ; merge to compute hash} bsw xl 25 
         segment .data                           ; 
-_l0425:                                         ; 
+_l0430:                                         ; 
         d_word hsh00                            ; } iff 0 hsh00 
         d_word hsh01                            ; } iff 1 hsh01 
         d_word hsh02                            ; } iff 2 hsh02 
@@ -14866,13 +14979,13 @@ inout:
         call sbstr                              ; build a proper scblk} jsr sbstr  
         call gtnvr                              ; build vrblk} jsr gtnvr  
         dec  m_word [_rc_]                      ; 
-        js   call_241                           ; 
+        js   call_242                           ; 
         dec  m_word [_rc_]                      ; no error return} ppm   
-        jns  _l0426                             ; 
+        jns  _l0431                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0426:                                         ; 
-call_241:                                       ; 
+_l0431:                                         ; 
+call_242:                                       ; 
         mov  wc,xr                              ; save vrblk pointer} mov wc xr 
         pop  wb                                 ; get trter field} mov wb (xs)+ 
         xor  xl,xl                              ; zero trfpt} zer xl  
@@ -14930,21 +15043,21 @@ iofcb:
         pop  m_word [prc_+cfp_b*7]              ; entry point} prc n 3 
         call gtstg                              ; get arg as string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
-        js   call_242                           ; 
+        js   call_243                           ; 
         dec  m_word [_rc_]                      ; fail} ppm iofc2  
-        jns  _l0427                             ; 
+        jns  _l0432                             ; 
         jmp  iofc2                              ; 
-_l0427:                                         ; 
-call_242:                                       ; 
+_l0432:                                         ; 
+call_243:                                       ; 
         mov  xl,xr                              ; copy string ptr} mov xl xr 
         call gtnvr                              ; get as natural variable} jsr gtnvr  
         dec  m_word [_rc_]                      ; 
-        js   call_243                           ; 
+        js   call_244                           ; 
         dec  m_word [_rc_]                      ; fail if null} ppm iofc3  
-        jns  _l0428                             ; 
+        jns  _l0433                             ; 
         jmp  iofc3                              ; 
-_l0428:                                         ; 
-call_243:                                       ; 
+_l0433:                                         ; 
+call_244:                                       ; 
         mov  wb,xl                              ; copy string pointer again} mov wb xl 
         mov  xl,xr                              ; copy vrblk ptr for return} mov xl xr 
         xor  wa,wa                              ; in case no trblk found} zer wa  
@@ -15004,36 +15117,36 @@ ioput:
         mov  m_word [ioptt],wb                  ; store i/o trace type} mov ioptt wb 
         call xscni                              ; prepare to scan filearg2} jsr xscni  
         dec  m_word [_rc_]                      ; 
-        js   call_244                           ; 
+        js   call_245                           ; 
         dec  m_word [_rc_]                      ; fail} ppm iop13  
-        jns  _l0429                             ; 
+        jns  _l0434                             ; 
         jmp  iop13                              ; 
-_l0429:                                         ; 
+_l0434:                                         ; 
         dec  m_word [_rc_]                      ; null file arg2} ppm iopa0  
-        jns  _l0430                             ; 
+        jns  _l0435                             ; 
         jmp  iopa0                              ; 
-_l0430:                                         ; 
-call_244:                                       ; 
+_l0435:                                         ; 
+call_245:                                       ; 
 iopa0:
         mov  m_word [r_io2],xr                  ; keep file arg2} mov r_io2 xr 
         mov  xl,wa                              ; copy length} mov xl wa 
         call gtstg                              ; convert filearg1 to string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
-        js   call_245                           ; 
+        js   call_246                           ; 
         dec  m_word [_rc_]                      ; fail} ppm iop14  
-        jns  _l0431                             ; 
+        jns  _l0436                             ; 
         jmp  iop14                              ; 
-_l0431:                                         ; 
-call_245:                                       ; 
+_l0436:                                         ; 
+call_246:                                       ; 
         mov  m_word [r_io1],xr                  ; keep filearg1 ptr} mov r_io1 xr 
         call gtnvr                              ; convert to natural variable} jsr gtnvr  
         dec  m_word [_rc_]                      ; 
-        js   call_246                           ; 
+        js   call_247                           ; 
         dec  m_word [_rc_]                      ; jump if null} ppm iop00  
-        jns  _l0432                             ; 
+        jns  _l0437                             ; 
         jmp  iop00                              ; 
-_l0432:                                         ; 
-call_246:                                       ; 
+_l0437:                                         ; 
+call_247:                                       ; 
         jmp  iop04                              ; jump to process non-null args} brn iop04  
 iop00:
         or   xl,xl                              ; skip if both args null} bze xl iop01 
@@ -15041,16 +15154,16 @@ iop00:
         call ioppf                              ; process filearg2} jsr ioppf  
         call sysfc                              ; call for filearg2 check} jsr sysfc  
         dec  m_word [_rc_]                      ; 
-        js   call_247                           ; 
+        js   call_248                           ; 
         dec  m_word [_rc_]                      ; fail} ppm iop16  
-        jns  _l0433                             ; 
+        jns  _l0438                             ; 
         jmp  iop16                              ; 
-_l0433:                                         ; 
+_l0438:                                         ; 
         dec  m_word [_rc_]                      ; fail} ppm iop26  
-        jns  _l0434                             ; 
+        jns  _l0439                             ; 
         jmp  iop26                              ; 
-_l0434:                                         ; 
-call_247:                                       ; 
+_l0439:                                         ; 
+call_248:                                       ; 
         jmp  iop11                              ; complete file association} brn iop11  
 iop01:
         mov  wb,m_word [ioptt]                  ; get trace type} mov wb ioptt 
@@ -15061,12 +15174,12 @@ iop01:
         push wc                                 ; make trblk collectable} mov -(xs) wc 
         call gtvar                              ; point to variable} jsr gtvar  
         dec  m_word [_rc_]                      ; 
-        js   call_248                           ; 
+        js   call_249                           ; 
         dec  m_word [_rc_]                      ; fail} ppm iop15  
-        jns  _l0435                             ; 
+        jns  _l0440                             ; 
         jmp  iop15                              ; 
-_l0435:                                         ; 
-call_248:                                       ; 
+_l0440:                                         ; 
+call_249:                                       ; 
         pop  wc                                 ; recover trblk pointer} mov wc (xs)+ 
         mov  m_word [r_ion],xl                  ; save name pointer} mov r_ion xl 
         mov  xr,xl                              ; copy name pointer} mov xr xl 
@@ -15111,16 +15224,16 @@ iop06:
         call ioppf                              ; process filearg2} jsr ioppf  
         call sysfc                              ; see if fcblk required} jsr sysfc  
         dec  m_word [_rc_]                      ; 
-        js   call_249                           ; 
+        js   call_250                           ; 
         dec  m_word [_rc_]                      ; fail} ppm iop16  
-        jns  _l0436                             ; 
+        jns  _l0441                             ; 
         jmp  iop16                              ; 
-_l0436:                                         ; 
+_l0441:                                         ; 
         dec  m_word [_rc_]                      ; fail} ppm iop26  
-        jns  _l0437                             ; 
+        jns  _l0442                             ; 
         jmp  iop26                              ; 
-_l0437:                                         ; 
-call_249:                                       ; 
+_l0442:                                         ; 
+call_250:                                       ; 
         or   wa,wa                              ; skip if no new fcblk wanted} bze wa iop12 
         jz   iop12                              ; 
         cmp  wc,num02                           ; jump if fcblk in dynamic} blt wc =num02 iop6a
@@ -15174,16 +15287,16 @@ iop11:
         mov  xl,m_word [r_io1]                  ; get file arg1} mov xl r_io1 
         call sysio                              ; associate to the file} jsr sysio  
         dec  m_word [_rc_]                      ; 
-        js   call_250                           ; 
+        js   call_251                           ; 
         dec  m_word [_rc_]                      ; fail} ppm iop17  
-        jns  _l0438                             ; 
+        jns  _l0443                             ; 
         jmp  iop17                              ; 
-_l0438:                                         ; 
+_l0443:                                         ; 
         dec  m_word [_rc_]                      ; fail} ppm iop18  
-        jns  _l0439                             ; 
+        jns  _l0444                             ; 
         jmp  iop18                              ; 
-_l0439:                                         ; 
-call_250:                                       ; 
+_l0444:                                         ; 
+call_251:                                       ; 
         cmp  m_word [r_iot],0                   ; not std input if non-null trtrf blk} bnz r_iot iop01 
         jnz  iop01                              ; 
         cmp  m_word [ioptt],0                   ; jump if output} bnz ioptt iop01 
@@ -15318,13 +15431,13 @@ ktrx1:
         mov  m_word [dnamp],xr                  ; reset ptr to delete kvblk} mov dnamp xr 
         call acess                              ; get keyword value} jsr acess  
         dec  m_word [_rc_]                      ; 
-        js   call_251                           ; 
+        js   call_252                           ; 
         dec  m_word [_rc_]                      ; failure is impossible} ppm   
-        jns  _l0440                             ; 
+        jns  _l0445                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0440:                                         ; 
-call_251:                                       ; 
+_l0445:                                         ; 
+call_252:                                       ; 
         call prtvl                              ; print keyword value} jsr prtvl  
         call prtnl                              ; terminate print line} jsr prtnl  
 ktrx2:
@@ -15368,22 +15481,22 @@ lcomp:
         pop  m_word [prc_+cfp_b*11]             ; entry point} prc n 5 
         call gtstg                              ; convert second arg to string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
-        js   call_252                           ; 
+        js   call_253                           ; 
         dec  m_word [_rc_]                      ; jump if second arg not string} ppm lcmp6  
-        jns  _l0441                             ; 
+        jns  _l0446                             ; 
         jmp  lcmp6                              ; 
-_l0441:                                         ; 
-call_252:                                       ; 
+_l0446:                                         ; 
+call_253:                                       ; 
         mov  xl,xr                              ; else save pointer} mov xl xr 
         mov  wc,wa                              ; and length} mov wc wa 
         call gtstg                              ; convert first argument to string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
-        js   call_253                           ; 
+        js   call_254                           ; 
         dec  m_word [_rc_]                      ; jump if not string} ppm lcmp5  
-        jns  _l0442                             ; 
+        jns  _l0447                             ; 
         jmp  lcmp5                              ; 
-_l0442:                                         ; 
-call_253:                                       ; 
+_l0447:                                         ; 
+call_254:                                       ; 
         mov  wb,wa                              ; save arg 1 length} mov wb wa 
         add  xr,cfp_f                           ; point to chars of arg 1} plc xr  
         add  xl,cfp_f                           ; point to chars of arg 2} plc xl  
@@ -15522,12 +15635,12 @@ newfn:
         mov  xl,m_word [r_sfc]                  ; load previous name} mov xl r_sfc 
         call ident                              ; check for equality} jsr ident  
         dec  m_word [_rc_]                      ; 
-        js   call_254                           ; 
+        js   call_255                           ; 
         dec  m_word [_rc_]                      ; jump if identical} ppm nwfn1  
-        jns  _l0443                             ; 
+        jns  _l0448                             ; 
         jmp  nwfn1                              ; 
-_l0443:                                         ; 
-call_254:                                       ; 
+_l0448:                                         ; 
+call_255:                                       ; 
         pop  xr                                 ; different, restore name} mov xr (xs)+ 
         mov  m_word [r_sfc],xr                  ; record current file name} mov r_sfc xr 
         mov  wb,m_word [cmpsn]                  ; get current statement} mov wb cmpsn 
@@ -15537,13 +15650,13 @@ call_254:                                       ;
         mov  wb,xs                              ; lookup statement number by name} mnz wb  
         call tfind                              ; allocate new teblk} jsr tfind  
         dec  m_word [_rc_]                      ; 
-        js   call_255                           ; 
+        js   call_256                           ; 
         dec  m_word [_rc_]                      ; always possible to allocate block} ppm   
-        jns  _l0444                             ; 
+        jns  _l0449                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0444:                                         ; 
-call_255:                                       ; 
+_l0449:                                         ; 
+call_256:                                       ; 
         mov  w0,m_word [r_sfc]                  ; record file name as entry value} mov teval(xl) r_sfc 
         mov  m_word [(cfp_b*teval)+xl],w0       ; 
         ret                                     ; } exi   
@@ -15594,16 +15707,16 @@ patin:
         mov  xl,wa                              ; preserve expression arg pcode} mov xl wa 
         call gtsmi                              ; try to convert arg as small integer} jsr gtsmi  
         dec  m_word [_rc_]                      ; 
-        js   call_256                           ; 
+        js   call_257                           ; 
         dec  m_word [_rc_]                      ; jump if not integer} ppm ptin2  
-        jns  _l0445                             ; 
+        jns  _l0450                             ; 
         jmp  ptin2                              ; 
-_l0445:                                         ; 
+_l0450:                                         ; 
         dec  m_word [_rc_]                      ; jump if out of range} ppm ptin3  
-        jns  _l0446                             ; 
+        jns  _l0451                             ; 
         jmp  ptin3                              ; 
-_l0446:                                         ; 
-call_256:                                       ; 
+_l0451:                                         ; 
+call_257:                                       ; 
 ptin1:
         call pbild                              ; build pattern node} jsr pbild  
         mov  m_word [_rc_],0                    ; return to caller} exi   
@@ -15625,12 +15738,12 @@ patst:
         pop  m_word [prc_+cfp_b*13]             ; entry point} prc n 1 
         call gtstg                              ; convert argument as string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
-        js   call_257                           ; 
+        js   call_258                           ; 
         dec  m_word [_rc_]                      ; jump if not string} ppm pats7  
-        jns  _l0447                             ; 
+        jns  _l0452                             ; 
         jmp  pats7                              ; 
-_l0447:                                         ; 
-call_257:                                       ; 
+_l0452:                                         ; 
+call_258:                                       ; 
         or   wa,wa                              ; jump if null string (catspaw)} bze wa pats7 
         jz   pats7                              ; 
         cmp  wa,num01                           ; jump if not one char string} bne wa =num01 pats2
@@ -15966,6 +16079,10 @@ prpa5:
         mov  wb,m_word [bits9]                  ; bit 9 mask} mov wb bits9 
         and  wb,wc                              ; get bit 9} anb wb wc 
         mov  m_word [prsto],wb                  ; keep it as std listing option} mov prsto wb 
+        mov  wb,wc                              ; copy flags} mov wb wc 
+        shr  wb,12                              ; right justify bit 13} rsh wb 12 
+        and  wb,m_word [bits1]                  ; get bit} anb wb bits1 
+        mov  m_word [kvcas],wb                  ; set -case} mov kvcas wb 
         mov  wb,m_word [bit12]                  ; bit 12 mask} mov wb bit12 
         and  wb,wc                              ; get bit 12} anb wb wc 
         mov  m_word [cswer],wb                  ; keep it as errors/noerrors option} mov cswer wb 
@@ -15986,13 +16103,13 @@ prpa6:
         mov  xl,v_ter                           ; ptr to /terminal/} mov xl =v_ter 
         call gtnvr                              ; get vrblk pointer} jsr gtnvr  
         dec  m_word [_rc_]                      ; 
-        js   call_258                           ; 
+        js   call_259                           ; 
         dec  m_word [_rc_]                      ; cant fail} ppm   
-        jns  _l0448                             ; 
+        jns  _l0453                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0448:                                         ; 
-call_258:                                       ; 
+_l0453:                                         ; 
+call_259:                                       ; 
         mov  m_word [(cfp_b*vrval)+xr],nulls    ; clear value of terminal} mov vrval(xr) =nulls 
         call setvr                              ; remove association} jsr setvr  
         jmp  prpa9                              ; return} brn prpa9  
@@ -16034,12 +16151,12 @@ prtic:
         mov  wa,m_word [profs]                  ; no of chars} mov wa profs 
         call syspi                              ; print} jsr syspi  
         dec  m_word [_rc_]                      ; 
-        js   call_259                           ; 
+        js   call_260                           ; 
         dec  m_word [_rc_]                      ; fail return} ppm prtc2  
-        jns  _l0449                             ; 
+        jns  _l0454                             ; 
         jmp  prtc2                              ; 
-_l0449:                                         ; 
-call_259:                                       ; 
+_l0454:                                         ; 
+call_260:                                       ; 
 prtc1:
         pop  xr                                 ; restore xr} mov xr (xs)+ 
         ret                                     ; return} exi   
@@ -16074,13 +16191,13 @@ prti1:
         push xr                                 ; stack ptr for gtstg} mov -(xs) xr 
         call gtstg                              ; convert to string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
-        js   call_260                           ; 
+        js   call_261                           ; 
         dec  m_word [_rc_]                      ; convert error is impossible} ppm   
-        jns  _l0450                             ; 
+        jns  _l0455                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0450:                                         ; 
-call_260:                                       ; 
+_l0455:                                         ; 
+call_261:                                       ; 
         mov  m_word [dnamp],xr                  ; reset pointer to delete scblk} mov dnamp xr 
         call prtst                              ; print integer string} jsr prtst  
         pop  xr                                 ; restore entry xr} mov xr (xs)+ 
@@ -16129,12 +16246,12 @@ prnl0:
         mov  wa,m_word [profs]                  ; load number of chars in buffer} mov wa profs 
         call syspr                              ; call system print routine} jsr syspr  
         dec  m_word [_rc_]                      ; 
-        js   call_261                           ; 
+        js   call_262                           ; 
         dec  m_word [_rc_]                      ; jump if failed} ppm prnl2  
-        jns  _l0451                             ; 
+        jns  _l0456                             ; 
         jmp  prnl2                              ; 
-_l0451:                                         ; 
-call_261:                                       ; 
+_l0456:                                         ; 
+call_262:                                       ; 
         mov  wa,m_word [prlnw]                  ; load length of buffer in words} lct wa prlnw 
         add  xr,cfp_b*schar                     ; point to chars of buffer} add xr *schar 
         mov  wb,m_word [nullw]                  ; get word of blanks} mov wb nullw 
@@ -16473,9 +16590,9 @@ prv01:
         movzx xl,byte [xl-1]                    ; load entry point id} lei xl  
         cmp  xl,bl__t                           ; switch on block type} bsw xl bl__t prv02
         jge  prv02                              ; 
-        jmp  m_word [_l0453+xl*cfp_b]           ; 
+        jmp  m_word [_l0458+xl*cfp_b]           ; 
         segment .data                           ; 
-_l0453:                                         ; 
+_l0458:                                         ; 
         d_word prv05                            ; arblk} iff bl_ar prv05 
         d_word prv02                            ; } iff 1 prv02 
         d_word prv02                            ; } iff 2 prv02 
@@ -16529,13 +16646,13 @@ prv08:
         push xr                                 ; stack argument for gtstg} mov -(xs) xr 
         call gtstg                              ; convert to string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
-        js   call_262                           ; 
+        js   call_263                           ; 
         dec  m_word [_rc_]                      ; error return is impossible} ppm   
-        jns  _l0454                             ; 
+        jns  _l0459                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0454:                                         ; 
-call_262:                                       ; 
+_l0459:                                         ; 
+call_263:                                       ; 
         call prtst                              ; print the string} jsr prtst  
         mov  m_word [dnamp],xr                  ; delete garbage string from storage} mov dnamp xr 
         jmp  prv03                              ; back to exit} brn prv03  
@@ -16628,12 +16745,12 @@ reada:
         call alocs                              ; allocate buffer} jsr alocs  
         call sysrd                              ; read input image} jsr sysrd  
         dec  m_word [_rc_]                      ; 
-        js   call_263                           ; 
+        js   call_264                           ; 
         dec  m_word [_rc_]                      ; jump if eof or new file name} ppm read4  
-        jns  _l0455                             ; 
+        jns  _l0460                             ; 
         jmp  read4                              ; 
-_l0455:                                         ; 
-call_263:                                       ; 
+_l0460:                                         ; 
+call_264:                                       ; 
         inc  m_word [rdnln]                     ; increment next line number} icv rdnln  
         dec  m_word [polct]                     ; test if time to poll interface} dcv polct  
         cmp  m_word [polct],0                   ; not yet} bnz polct read0 
@@ -16642,23 +16759,23 @@ call_263:                                       ;
         mov  wb,m_word [rdnln]                  ; line number} mov wb rdnln 
         call syspl                              ; allow interactive access} jsr syspl  
         dec  m_word [_rc_]                      ; 
-        js   call_264                           ; 
+        js   call_265                           ; 
         dec  m_word [_rc_]                      ; } err 320 user interrupt 
-        jns  _l0456                             ; 
+        jns  _l0461                             ; 
         mov  m_word [_rc_],320                  ; 
         jmp  err_                               ; 
-_l0456:                                         ; 
+_l0461:                                         ; 
         dec  m_word [_rc_]                      ; single step} ppm   
-        jns  _l0457                             ; 
+        jns  _l0462                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0457:                                         ; 
+_l0462:                                         ; 
         dec  m_word [_rc_]                      ; expression evaluation} ppm   
-        jns  _l0458                             ; 
+        jns  _l0463                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0458:                                         ; 
-call_264:                                       ; 
+_l0463:                                         ; 
+call_265:                                       ; 
         mov  m_word [polcs],wa                  ; new countdown start value} mov polcs wa 
         mov  m_word [polct],wa                  ; new counter value} mov polct wa 
 read0:
@@ -16689,13 +16806,13 @@ read5:
         xor  xl,xl                              ; eof within include file} zer xl  
         call sysif                              ; switch stream back to previous file} jsr sysif  
         dec  m_word [_rc_]                      ; 
-        js   call_265                           ; 
+        js   call_266                           ; 
         dec  m_word [_rc_]                      ; } ppm   
-        jns  _l0459                             ; 
+        jns  _l0464                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0459:                                         ; 
-call_265:                                       ; 
+_l0464:                                         ; 
+call_266:                                       ; 
         mov  wa,m_word [cnind]                  ; restore prev line number, file name} mov wa cnind 
         add  wa,vcvlb                           ; vector offset in words} add wa =vcvlb 
         sal  wa,log_cfp_b                       ; convert to bytes} wtb wa  
@@ -16719,13 +16836,13 @@ call_265:                                       ;
         mov  wb,xs                              ; lookup statement number by name} mnz wb  
         call tfind                              ; allocate new teblk} jsr tfind  
         dec  m_word [_rc_]                      ; 
-        js   call_266                           ; 
+        js   call_267                           ; 
         dec  m_word [_rc_]                      ; always possible to allocate block} ppm   
-        jns  _l0460                             ; 
+        jns  _l0465                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0460:                                         ; 
-call_266:                                       ; 
+_l0465:                                         ; 
+call_267:                                       ; 
         mov  w0,m_word [r_sfc]                  ; record file name as entry value} mov teval(xl) r_sfc 
         mov  m_word [(cfp_b*teval)+xl],w0       ; 
         cmp  m_word [stage],stgic               ; if initial compile, reissue read} beq stage =stgic reada
@@ -16810,9 +16927,9 @@ tfind:
         movzx xl,byte [xl-1]                    ; load block entry id (bl_xx)} lei xl  
         cmp  xl,bl__d                           ; switch on block type} bsw xl bl__d tfn00
         jge  tfn00                              ; 
-        jmp  m_word [_l0462+xl*cfp_b]           ; 
+        jmp  m_word [_l0467+xl*cfp_b]           ; 
         segment .data                           ; 
-_l0462:                                         ; 
+_l0467:                                         ; 
         d_word tfn00                            ; } iff 0 tfn00 
         d_word tfn00                            ; } iff 1 tfn00 
         d_word tfn00                            ; } iff 2 tfn00 
@@ -16870,12 +16987,12 @@ tfn07:
         mov  xl,m_word [(cfp_b*1)+xs]           ; load input argument subscript val} mov xl 1(xs) 
         call ident                              ; compare them} jsr ident  
         dec  m_word [_rc_]                      ; 
-        js   call_267                           ; 
+        js   call_268                           ; 
         dec  m_word [_rc_]                      ; jump if equal (ident)} ppm tfn08  
-        jns  _l0463                             ; 
+        jns  _l0468                             ; 
         jmp  tfn08                              ; 
-_l0463:                                         ; 
-call_267:                                       ; 
+_l0468:                                         ; 
+call_268:                                       ; 
         mov  xl,wb                              ; restore teblk pointer} mov xl wb 
         mov  xr,m_word [(cfp_b*tenxt)+xl]       ; point to next teblk on chain} mov xr tenxt(xl) 
         cmp  xr,m_word [xs]                     ; jump if there is one} bne xr (xs) tfn07
@@ -16890,12 +17007,12 @@ tfn08:
         jnz  tfn09                              ; 
         call acess                              ; else get value} jsr acess  
         dec  m_word [_rc_]                      ; 
-        js   call_268                           ; 
+        js   call_269                           ; 
         dec  m_word [_rc_]                      ; jump if reference fails} ppm tfn12  
-        jns  _l0464                             ; 
+        jns  _l0469                             ; 
         jmp  tfn12                              ; 
-_l0464:                                         ; 
-call_268:                                       ; 
+_l0469:                                         ; 
+call_269:                                       ; 
         xor  wb,wb                              ; restore name/value indicator} zer wb  
 tfn09:
         add  xs,cfp_b*num03                     ; pop stack entries} add xs *num03 
@@ -17034,9 +17151,9 @@ scn06:
         mov  m_word [scnpt],wa                  ; store offset past char scanned} mov scnpt wa 
         cmp  xr,cfp_u                           ; switch on scanned character} bsw xr cfp_u scn07
         jge  scn07                              ; 
-        jmp  m_word [_l0465+xr*cfp_b]           ; 
+        jmp  m_word [_l0470+xr*cfp_b]           ; 
         segment .data                           ; 
-_l0465:                                         ; 
+_l0470:                                         ; 
         d_word scn07                            ; } iff 0 scn07 
         d_word scn07                            ; } iff 1 scn07 
         d_word scn07                            ; } iff 2 scn07 
@@ -17193,12 +17310,12 @@ scn11:
         mov  m_word [dnamp],xr                  ; delete from storage (not needed)} mov dnamp xr 
         call gtnum                              ; convert to numeric} jsr gtnum  
         dec  m_word [_rc_]                      ; 
-        js   call_269                           ; 
+        js   call_270                           ; 
         dec  m_word [_rc_]                      ; jump if conversion failure} ppm scn14  
-        jns  _l0466                             ; 
+        jns  _l0471                             ; 
         jmp  scn14                              ; 
-_l0466:                                         ; 
-call_269:                                       ; 
+_l0471:                                         ; 
+call_270:                                       ; 
 scn12:
         mov  xl,t_con                           ; set result type of constant} mov xl =t_con 
 scn13:
@@ -17219,13 +17336,13 @@ scn15:
         jnz  scn13                              ; 
         call gtnvr                              ; locate/build vrblk} jsr gtnvr  
         dec  m_word [_rc_]                      ; 
-        js   call_270                           ; 
+        js   call_271                           ; 
         dec  m_word [_rc_]                      ; dummy (unused) error return} ppm   
-        jns  _l0467                             ; 
+        jns  _l0472                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0467:                                         ; 
-call_270:                                       ; 
+_l0472:                                         ; 
+call_271:                                       ; 
         mov  xl,t_var                           ; set type as variable} mov xl =t_var 
         jmp  scn13                              ; back to exit} brn scn13  
 scn16:
@@ -17289,13 +17406,13 @@ scn25:
         call sbstr                              ; get string name for function} jsr sbstr  
         call gtnvr                              ; locate/build vrblk} jsr gtnvr  
         dec  m_word [_rc_]                      ; 
-        js   call_271                           ; 
+        js   call_272                           ; 
         dec  m_word [_rc_]                      ; dummy (unused) error return} ppm   
-        jns  _l0468                             ; 
+        jns  _l0473                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0468:                                         ; 
-call_271:                                       ; 
+_l0473:                                         ; 
+call_272:                                       ; 
         mov  xl,t_fnc                           ; set code for function call} mov xl =t_fnc 
         jmp  scn13                              ; back to exit} brn scn13  
 scn26:
@@ -17480,27 +17597,27 @@ sorta:
         mov  wa,xs                              ; use key/values of table entries} mnz wa  
         call gtarr                              ; convert to array} jsr gtarr  
         dec  m_word [_rc_]                      ; 
-        js   call_272                           ; 
+        js   call_273                           ; 
         dec  m_word [_rc_]                      ; signal that table is empty} ppm srt18  
-        jns  _l0469                             ; 
+        jns  _l0474                             ; 
         jmp  srt18                              ; 
-_l0469:                                         ; 
+_l0474:                                         ; 
         dec  m_word [_rc_]                      ; error if non-convertable} ppm srt16  
-        jns  _l0470                             ; 
+        jns  _l0475                             ; 
         jmp  srt16                              ; 
-_l0470:                                         ; 
-call_272:                                       ; 
+_l0475:                                         ; 
+call_273:                                       ; 
         push xr                                 ; stack ptr to resulting key array} mov -(xs) xr 
         push xr                                 ; another copy for copyb} mov -(xs) xr 
         call copyb                              ; get copy array for sorting into} jsr copyb  
         dec  m_word [_rc_]                      ; 
-        js   call_273                           ; 
+        js   call_274                           ; 
         dec  m_word [_rc_]                      ; cant fail} ppm   
-        jns  _l0471                             ; 
+        jns  _l0476                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0471:                                         ; 
-call_273:                                       ; 
+_l0476:                                         ; 
+call_274:                                       ; 
         push xr                                 ; stack pointer to sort array} mov -(xs) xr 
         mov  xr,m_word [r_sxr]                  ; get second arg} mov xr r_sxr 
         mov  xl,m_word [(cfp_b*num01)+xs]       ; get ptr to key array} mov xl num01(xs) 
@@ -17510,13 +17627,13 @@ call_273:                                       ;
         je   srt01                              ; 
         call gtnvr                              ; get vrblk ptr for it} jsr gtnvr  
         dec  m_word [_rc_]                      ; 
-        js   call_274                           ; 
+        js   call_275                           ; 
         dec  m_word [_rc_]                      ; } err 257 erroneous 2nd arg in sort/rsort of vector 
-        jns  _l0472                             ; 
+        jns  _l0477                             ; 
         mov  m_word [_rc_],257                  ; 
         jmp  err_                               ; 
-_l0472:                                         ; 
-call_274:                                       ; 
+_l0477:                                         ; 
+call_275:                                       ; 
         mov  m_word [srtdf],xr                  ; store datatype field name vrblk} mov srtdf xr 
 srt01:
         mov  wc,cfp_b*vclen                     ; offset to a(0)} mov wc *vclen 
@@ -17539,12 +17656,12 @@ srt02:
         je   srt03                              ; 
         call gtint                              ; convert to integer} jsr gtint  
         dec  m_word [_rc_]                      ; 
-        js   call_275                           ; 
+        js   call_276                           ; 
         dec  m_word [_rc_]                      ; fail} ppm srt17  
-        jns  _l0473                             ; 
+        jns  _l0478                             ; 
         jmp  srt17                              ; 
-_l0473:                                         ; 
-call_275:                                       ; 
+_l0478:                                         ; 
+call_276:                                       ; 
         mov  ia,m_word [(cfp_b*icval)+xr]       ; get actual integer value} ldi icval(xr)  
 srt03:
         sub  ia,m_word [(cfp_b*arlb2)+xl]       ; subtract low bound} sbi arlb2(xl)  
@@ -17707,28 +17824,28 @@ src14:
         push xr                                 ; args} mov -(xs) xr 
         call acomp                              ; compare objects} jsr acomp  
         dec  m_word [_rc_]                      ; 
-        js   call_276                           ; 
+        js   call_277                           ; 
         dec  m_word [_rc_]                      ; not numeric} ppm src10  
-        jns  _l0474                             ; 
+        jns  _l0479                             ; 
         jmp  src10                              ; 
-_l0474:                                         ; 
+_l0479:                                         ; 
         dec  m_word [_rc_]                      ; not numeric} ppm src10  
-        jns  _l0475                             ; 
+        jns  _l0480                             ; 
         jmp  src10                              ; 
-_l0475:                                         ; 
+_l0480:                                         ; 
         dec  m_word [_rc_]                      ; key1 less} ppm src03  
-        jns  _l0476                             ; 
+        jns  _l0481                             ; 
         jmp  src03                              ; 
-_l0476:                                         ; 
+_l0481:                                         ; 
         dec  m_word [_rc_]                      ; keys equal} ppm src08  
-        jns  _l0477                             ; 
+        jns  _l0482                             ; 
         jmp  src08                              ; 
-_l0477:                                         ; 
+_l0482:                                         ; 
         dec  m_word [_rc_]                      ; key1 greater} ppm src05  
-        jns  _l0478                             ; 
+        jns  _l0483                             ; 
         jmp  src05                              ; 
-_l0478:                                         ; 
-call_276:                                       ; 
+_l0483:                                         ; 
+call_277:                                       ; 
 src03:
         cmp  m_word [srtsr],0                   ; jump if rsort} bnz srtsr src06 
         jnz  src06                              ; 
@@ -17758,30 +17875,30 @@ src09:
         push xr                                 ; args} mov -(xs) xr 
         call lcomp                              ; compare objects} jsr lcomp  
         dec  m_word [_rc_]                      ; 
-        js   call_277                           ; 
+        js   call_278                           ; 
         dec  m_word [_rc_]                      ; cant} ppm   
-        jns  _l0479                             ; 
+        jns  _l0484                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0479:                                         ; 
+_l0484:                                         ; 
         dec  m_word [_rc_]                      ; fail} ppm   
-        jns  _l0480                             ; 
+        jns  _l0485                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0480:                                         ; 
+_l0485:                                         ; 
         dec  m_word [_rc_]                      ; key1 less} ppm src03  
-        jns  _l0481                             ; 
+        jns  _l0486                             ; 
         jmp  src03                              ; 
-_l0481:                                         ; 
+_l0486:                                         ; 
         dec  m_word [_rc_]                      ; keys equal} ppm src08  
-        jns  _l0482                             ; 
+        jns  _l0487                             ; 
         jmp  src08                              ; 
-_l0482:                                         ; 
+_l0487:                                         ; 
         dec  m_word [_rc_]                      ; key1 greater} ppm src05  
-        jns  _l0483                             ; 
+        jns  _l0488                             ; 
         jmp  src05                              ; 
-_l0483:                                         ; 
-call_277:                                       ; 
+_l0488:                                         ; 
+call_278:                                       ; 
 src10:
         mov  xl,m_word [r_sxl]                  ; get arg1} mov xl r_sxl 
         mov  xr,m_word [r_sxr]                  ; get arg2} mov xr r_sxr 
@@ -17872,12 +17989,12 @@ srh01:
         mov  wb,m_word [xr]                     ; get a(j)} mov wb (xr) 
         call sortc                              ; compare keys - lt(a(j+1),a(j))} jsr sortc  
         dec  m_word [_rc_]                      ; 
-        js   call_278                           ; 
+        js   call_279                           ; 
         dec  m_word [_rc_]                      ; a(j+1) lt a(j)} ppm srh02  
-        jns  _l0484                             ; 
+        jns  _l0489                             ; 
         jmp  srh02                              ; 
-_l0484:                                         ; 
-call_278:                                       ; 
+_l0489:                                         ; 
+call_279:                                       ; 
         add  wc,cfp_b                           ; point to greater son, a(j+1)} ica wc  
 srh02:
         mov  xl,m_word [(cfp_b*num01)+xs]       ; key array base adrs} mov xl num01(xs) 
@@ -17890,12 +18007,12 @@ srh02:
         mov  wb,m_word [srtrt]                  ; get root} mov wb srtrt 
         call sortc                              ; compare them - lt(a(j),root)} jsr sortc  
         dec  m_word [_rc_]                      ; 
-        js   call_279                           ; 
+        js   call_280                           ; 
         dec  m_word [_rc_]                      ; father exceeds sons - done} ppm srh03  
-        jns  _l0485                             ; 
+        jns  _l0490                             ; 
         jmp  srh03                              ; 
-_l0485:                                         ; 
-call_279:                                       ; 
+_l0490:                                         ; 
+call_280:                                       ; 
         mov  xr,m_word [xs]                     ; get sort array adrs} mov xr (xs) 
         add  xr,m_word [srtso]                  ; point to a(0)} add xr srtso 
         mov  xl,xr                              ; copy it} mov xl xr 
@@ -17930,16 +18047,22 @@ trace:
         pop  m_word [prc_+cfp_b*17]             ; entry point} prc n 2 
         call gtstg                              ; get trace type string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
-        js   call_280                           ; 
+        js   call_281                           ; 
         dec  m_word [_rc_]                      ; jump if not string} ppm trc15  
-        jns  _l0486                             ; 
+        jns  _l0491                             ; 
         jmp  trc15                              ; 
-_l0486:                                         ; 
-call_280:                                       ; 
+_l0491:                                         ; 
+call_281:                                       ; 
         add  xr,cfp_f                           ; else point to string} plc xr  
         mov  w0,0                               ; load first character} lch wa (xr) 
         mov  al,m_char [xr]                     ; 
         mov  wa,w0                              ; 
+        cmp  cl,'A'                             ; fold to lower case} flc wa  
+        jb   _l0492                             ; 
+        cmp  cl,'Z'                             ; 
+        ja   _l0492                             ; 
+        add  cl,32                              ; 
+_l0492					:                                    ; 
         mov  xr,m_word [xs]                     ; load name argument} mov xr (xs) 
         mov  m_word [xs],xl                     ; stack trblk ptr or zero} mov (xs) xl 
         mov  wc,trtac                           ; set trtyp for access trace} mov wc =trtac 
@@ -17963,12 +18086,12 @@ call_280:                                       ;
 trc01:
         call gtnvr                              ; point to vrblk for name} jsr gtnvr  
         dec  m_word [_rc_]                      ; 
-        js   call_281                           ; 
+        js   call_282                           ; 
         dec  m_word [_rc_]                      ; jump if bad name} ppm trc16  
-        jns  _l0487                             ; 
+        jns  _l0493                             ; 
         jmp  trc16                              ; 
-_l0487:                                         ; 
-call_281:                                       ; 
+_l0493:                                         ; 
+call_282:                                       ; 
         add  xs,cfp_b                           ; pop stack} ica xs  
         mov  xr,m_word [(cfp_b*vrfnc)+xr]       ; point to function block} mov xr vrfnc(xr) 
         cmp  m_word [xr],b_pfc                  ; error if not program function} bne (xr) =b_pfc trc17
@@ -17986,12 +18109,12 @@ trc02:
 trc03:
         call gtnvr                              ; point to vrblk} jsr gtnvr  
         dec  m_word [_rc_]                      ; 
-        js   call_282                           ; 
+        js   call_283                           ; 
         dec  m_word [_rc_]                      ; jump if bad name} ppm trc16  
-        jns  _l0488                             ; 
+        jns  _l0494                             ; 
         jmp  trc16                              ; 
-_l0488:                                         ; 
-call_282:                                       ; 
+_l0494:                                         ; 
+call_283:                                       ; 
         mov  xl,m_word [(cfp_b*vrlbl)+xr]       ; load label pointer} mov xl vrlbl(xr) 
         cmp  m_word [xl],b_trt                  ; jump if no old trace} bne (xl) =b_trt trc04
         jne  trc04                              ; 
@@ -18018,12 +18141,12 @@ trc05:
 trc06:
         call gtnvr                              ; point to vrblk} jsr gtnvr  
         dec  m_word [_rc_]                      ; 
-        js   call_283                           ; 
+        js   call_284                           ; 
         dec  m_word [_rc_]                      ; error if not natural var} ppm trc16  
-        jns  _l0489                             ; 
+        jns  _l0495                             ; 
         jmp  trc16                              ; 
-_l0489:                                         ; 
-call_283:                                       ; 
+_l0495:                                         ; 
+call_284:                                       ; 
         cmp  m_word [(cfp_b*vrlen)+xr],0        ; error if not system var} bnz vrlen(xr) trc16 
         jnz  trc16                              ; 
         add  xs,cfp_b                           ; pop stack} ica xs  
@@ -18056,12 +18179,12 @@ trc09:
 trc10:
         call gtvar                              ; locate variable} jsr gtvar  
         dec  m_word [_rc_]                      ; 
-        js   call_284                           ; 
+        js   call_285                           ; 
         dec  m_word [_rc_]                      ; error if not appropriate name} ppm trc16  
-        jns  _l0490                             ; 
+        jns  _l0496                             ; 
         jmp  trc16                              ; 
-_l0490:                                         ; 
-call_284:                                       ; 
+_l0496:                                         ; 
+call_285:                                       ; 
         pop  wb                                 ; get new trblk ptr again} mov wb (xs)+ 
         add  wa,xl                              ; point to variable location} add wa xl 
         mov  xr,wa                              ; copy variable pointer} mov xr wa 
@@ -18293,12 +18416,12 @@ xscni:
         pop  m_word [prc_+cfp_b*18]             ; entry point} prc n 2 
         call gtstg                              ; fetch argument as string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
-        js   call_285                           ; 
+        js   call_286                           ; 
         dec  m_word [_rc_]                      ; jump if not convertible} ppm xsci1  
-        jns  _l0491                             ; 
+        jns  _l0497                             ; 
         jmp  xsci1                              ; 
-_l0491:                                         ; 
-call_285:                                       ; 
+_l0497:                                         ; 
+call_286:                                       ; 
         mov  m_word [r_xsc],xr                  ; else store scblk ptr for xscan} mov r_xsc xr 
         mov  w0,0                               ; set offset to zero} zer xsofs  
         mov  m_word [xsofs],w0                  ; 
@@ -18345,9 +18468,9 @@ error:
         mov  m_word [polcs],num01               ; reset poll count} mov polcs =num01 
         mov  m_word [polct],num01               ; reset poll count} mov polct =num01 
         mov  xr,m_word [stage]                  ; load current stage} mov xr stage 
-        jmp  m_word [_l0492+xr*cfp_b]           ; jump to appropriate error circuit} bsw xr stgno 
+        jmp  m_word [_l0498+xr*cfp_b]           ; jump to appropriate error circuit} bsw xr stgno 
         segment .data                           ; 
-_l0492:                                         ; 
+_l0498:                                         ; 
         d_word err01                            ; initial compile} iff stgic err01 
         d_word err04                            ; execute time compile} iff stgxc err04 
         d_word err04                            ; eval compiling expr.} iff stgev err04 
@@ -18368,12 +18491,12 @@ err01:
         mov  xr,m_word [stage]                  ; } mov xr stage 
         call sysea                              ; advise system of error} jsr sysea  
         dec  m_word [_rc_]                      ; 
-        js   call_286                           ; 
+        js   call_287                           ; 
         dec  m_word [_rc_]                      ; if system does not want print} ppm erra3  
-        jns  _l0493                             ; 
+        jns  _l0499                             ; 
         jmp  erra3                              ; 
-_l0493:                                         ; 
-call_286:                                       ; 
+_l0499:                                         ; 
+call_287:                                       ; 
         push xr                                 ; save any provided print message} mov -(xs) xr 
         mov  w0,m_word [erich]                  ; set flag for listr} mov erlst erich 
         mov  m_word [erlst],w0                  ; 

@@ -1675,7 +1675,7 @@
 .def   .csln                 define to put source line number in code blocks
 .def   .cucf                 define to include cfp$u
 .def   .cuej                 define to suppress needless ejects
-*      .culc                 define to include &case (lc names)
+.def   .culc                 define to include &case (lc names)
 .def   .culk                 define to include &lcase, &ucase keywords
 *      .cust                 define to include set() code
 *      .cusr                 define to have set() use real values

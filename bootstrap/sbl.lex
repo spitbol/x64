@@ -138,6 +138,7 @@
 |expdm|inp|25,n|1,0|||2959
 |expop|inp|25,n|1,0|||2960
 |filnm|inp|25,e|1,0|||2962
+|flstg|inp|25,e|1,0|||2965
 |gbcol|inp|25,e|1,0|||2967
 |gbcpf|inp|25,e|1,0|||2968
 |gtarr|inp|25,e|1,2|||2969
@@ -637,7 +638,8 @@
 ||ejc|||||4992
 |k_abe|equ|24,0|||abend|5005
 |k_anc|equ|24,k_abe+cfp_b|||anchor|5006
-|k_cod|equ|24,k_anc+cfp_b|||code|5011
+|k_cas|equ|24,k_anc+cfp_b|||case|5008
+|k_cod|equ|24,k_cas+cfp_b|||code|5009
 |k_com|equ|24,k_cod+cfp_b|||compare|5014
 |k_dmp|equ|24,k_com+cfp_b|||dump|5015
 |k_erl|equ|24,k_dmp+cfp_b|||errlimit|5019
@@ -851,7 +853,8 @@
 |t_sm2|equ|24,t_smc+2|||semicolon, state two|5679
 |t_nes|equ|24,t_sm2+1|||number of entries in branch table|5681
 ||ejc|||||5682
-|cc_do|equ|24,0|||-double|5690
+|cc_ca|equ|24,0|||-case|5687
+|cc_do|equ|24,cc_ca+1|||-double|5688
 |cc_co|equ|24,cc_do+1|||-compare|5693
 |cc_du|equ|24,cc_co+1|||-dump|5694
 |cc_cp|equ|24,cc_du+1|||-copy|5699
@@ -946,7 +949,8 @@
 |btpre|dbc|2,svpre|||bit to test for preevaluation|5888
 |btval|dbc|2,svval|||bit to test for value|5889
 ||ejc|||||5890
-|ccnms|dtc|27,/doub/||||5898
+|ccnms|dtc|27,/case/||||5895
+||dtc|27,/doub/||||5896
 ||dtc|27,/comp/||||5901
 ||dtc|27,/dump/||||5903
 ||dtc|27,/copy/||||5905
@@ -1533,6 +1537,10 @@
 ||dtc|27,/atan/||||6872
 ||dac|6,s_atn||||6873
 ||dac|1,1||||6874
+|v_cas|dbc|2,svknm|||case|6878
+||dac|1,4||||6879
+||dtc|27,/case/||||6880
+||dac|2,k_cas||||6881
 |v_chr|dbc|2,svfnp|||char|6884
 ||dac|1,4||||6885
 ||dtc|27,/char/||||6886
@@ -1981,6 +1989,7 @@
 ||dac|1,10|||length gt 9 (scontinue)|7509
 ||ejc|||||7510
 |vdmkw|dac|4,v_anc|||anchor|7515
+||dac|4,v_cas|||ccase|7517
 ||dac|4,v_cod|||code|7519
 ||dac|1,1|||compare not printed|7524
 ||dac|4,v_dmp|||dump|7527
@@ -2200,6 +2209,7 @@
 ||ejc|||||8065
 |kvabe|dac|1,0|||abend|8071
 |kvanc|dac|1,1|||anchor|8072
+|kvcas|dac|1,0|||case|8074
 |kvcod|dac|1,0|||code|8076
 |kvcom|dac|1,0|||compare|8078
 |kvdmp|dac|1,0|||dump|8080
@@ -4669,6 +4679,7 @@
 ||jsr|6,gtstg|||convert second argument to string|13404
 ||ppm|6,scv29|||error if second argument not string|13405
 ||bze|8,wa|6,scv29||or if null string|13406
+||jsr|6,flstg|||fold upper case to lower case|13408
 ||mov|7,xl|9,(xs)||load first argument|13410
 ||bne|9,(xl)|22,=b_pdt|6,scv01|jump if not program defined|13411
 ||mov|7,xl|13,pddfp(xl)||point to dfblk|13415
@@ -4843,7 +4854,10 @@
 ||jsr|6,xscan|||scan datatype name|13719
 ||bnz|8,wa|6,sdat1||skip if left paren found|13720
 ||erb|1,077|26,data argument is missing a left paren|||13721
-|sdat1|mov|7,xl|7,xr||save name ptr|13731
+|sdat1|mov|8,wa|13,sclen(xr)||get length|13726
+||bze|8,wa|6,sdt1a||avoid folding if null string|13727
+||jsr|6,flstg|||fold upper case to lower case|13728
+|sdt1a|mov|7,xl|7,xr||save name ptr|13729
 ||mov|8,wa|13,sclen(xr)||get length|13733
 ||ctb|8,wa|2,scsi_||compute space needed|13734
 ||jsr|6,alost|||request static store for name|13735
@@ -5472,7 +5486,12 @@
 ||bnz|8,wa|6,slod3||jump if ok delimiter was found|14707
 ||erb|1,141|26,load first argument is missing a right paren|||14708
 ||ejc|||||14709
-|slod3|mov|11,-(xs)|7,xr||stack datatype name pointer|14725
+|slod3|mov|8,wb|8,wa||save scan mode|14718
+||mov|8,wa|13,sclen(xr)||datatype length|14719
+||bze|8,wa|6,sld3a||bypass if null string|14720
+||jsr|6,flstg|||fold to lower case|14721
+|sld3a|mov|8,wa|8,wb||restore scan mode|14722
+||mov|11,-(xs)|7,xr||stack datatype name pointer|14723
 ||mov|8,wb|18,=num01||set string code in case|14727
 ||mov|7,xl|21,=scstr||point to /string/|14728
 ||jsr|6,ident|||check for match|14729
@@ -5521,6 +5540,8 @@
 |slod6|mov|11,-(xr)|10,(xs)+||store one type code from stack|14791
 ||bct|8,wc|6,slod6||loop till all stored|14792
 ||mov|7,xr|10,(xs)+||load function string name|14796
+||mov|8,wa|13,sclen(xr)||function name length|14798
+||jsr|6,flstg|||fold to lower case|14799
 ||mov|7,xl|9,(xs)||load library name|14801
 ||mov|9,(xs)|8,wb||store efblk pointer|14802
 ||jsr|6,sysld|||call function to load external func|14803
@@ -7736,6 +7757,7 @@
 ||mov|7,xr|3,r_cim||point to image|19436
 ||plc|7,xr|3,scnpt||char ptr for first char|19437
 ||lch|8,wa|10,(xr)+||get first char|19438
+||flc|8,wa|||fold to lower case|19440
 ||beq|8,wa|18,=ch_li|6,cnc07|special case of -inxxx|19442
 |cnc0a|mnz|3,scncc|||set flag for scane|19443
 ||jsr|6,scane|||scan card name|19444
@@ -7746,6 +7768,8 @@
 ||mov|7,xl|7,xr||point to control card name|19453
 ||zer|8,wb|||zero offset for substring|19454
 ||jsr|6,sbstr|||extract substring for comparison|19455
+||mov|8,wa|13,sclen(xr)||reload length|19457
+||jsr|6,flstg|||fold to lower case|19458
 ||mov|3,cnscc|7,xr||keep control card substring ptr|19460
 ||mov|7,xr|21,=ccnms||point to list of standard names|19461
 ||zer|8,wb|||initialise name offset|19462
@@ -7760,8 +7784,9 @@
 ||ejc|||||19480
 ||mov|7,xl|8,wb||get name offset|19486
 ||bsw|7,xl|2,cc_nc|6,cnc08|switch|19488
+||iff|2,cc_ca|6,cnc37||-case|19527
 ||iff|2,cc_do|6,cnc10||-double|19527
-||iff|1,1|6,cnc08|||19527
+||iff|1,2|6,cnc08|||19527
 ||iff|2,cc_du|6,cnc11||-dump|19527
 ||iff|2,cc_cp|6,cnc41||-copy|19527
 ||iff|2,cc_ej|6,cnc12||-eject|19527
@@ -7792,6 +7817,7 @@
 ||brn|6,cnc08|||ignore unrecognized control card|19536
 |cnc06|erb|1,247|26,invalid control statement|||19541
 |cnc07|lch|8,wa|10,(xr)+||get next char|19545
+||flc|8,wa|||fold to lower case|19547
 ||bne|8,wa|18,=ch_ln|6,cnc0a|if not letter n|19549
 ||lch|8,wa|9,(xr)||get third char|19550
 ||blt|8,wa|18,=ch_d0|6,cnc0a|if not digit|19551
@@ -7895,6 +7921,15 @@
 ||brn|6,cnc09|||return|19740
 |cnc36|jsr|6,systt|||toggle switch|19746
 ||brn|6,cnc08|||merge|19747
+|cnc37|jsr|6,scane|||scan integer after -case|19754
+||zer|8,wc|||get 0 in case none there|19755
+||beq|7,xl|18,=t_smc|6,cnc38|skip if no integer|19756
+||mov|11,-(xs)|7,xr||stack it|19757
+||jsr|6,gtsmi|||check integer|19758
+||ppm|6,cnc06|||fail if not integer|19759
+||ppm|6,cnc06|||fail if negative or too large|19760
+|cnc38|mov|3,kvcas|8,wc||store new case value|19761
+||brn|6,cnc09|||merge|19762
 |cnc41|mnz|3,scncc|||set flag for scane|19785
 ||jsr|6,scane|||scan quoted file name|19786
 ||zer|3,scncc|||clear scane flag|19787
@@ -8669,6 +8704,37 @@
 ||exi|||||21476
 ||enp|||||21477
 ||ejc|||||21478
+|flstg|prc|25,e|1,0||entry point|21495
+||bze|3,kvcas|6,fst99||skip if &case is 0|21496
+||mov|11,-(xs)|7,xl||save xl across call|21497
+||mov|11,-(xs)|7,xr||save original scblk ptr|21498
+||jsr|6,alocs|||allocate new string block|21499
+||mov|7,xl|9,(xs)||point to original scblk|21500
+||mov|11,-(xs)|7,xr||save pointer to new scblk|21501
+||plc|7,xl|||point to original chars|21502
+||psc|7,xr|||point to new chars|21503
+||zer|11,-(xs)|||init did fold flag|21504
+||lct|8,wc|8,wc||load loop counter|21505
+|fst01|lch|8,wa|10,(xl)+||load character|21506
+||blt|8,wa|18,=ch_ua|6,fst02|skip if less than uc a|21507
+||bgt|8,wa|18,=ch_uz|6,fst02|skip if greater than uc z|21508
+||flc|8,wa|||fold character to lower case|21509
+||mnz|9,(xs)|||set did fold character flag|21510
+|fst02|sch|8,wa|10,(xr)+||store (possibly folded) character|21511
+||bct|8,wc|6,fst01||loop thru entire string|21512
+||csc|7,xr|||complete store characters|21513
+||mov|7,xr|10,(xs)+||see if any change|21514
+||bnz|7,xr|6,fst10||skip if folding done (no change)|21515
+||mov|3,dnamp|10,(xs)+||do not need new scblk|21516
+||mov|7,xr|10,(xs)+||return original scblk|21517
+||brn|6,fst20|||merge below|21518
+|fst10|mov|7,xr|10,(xs)+||return new scblk|21519
+||ica|7,xs|||throw away original scblk pointer|21520
+|fst20|mov|8,wa|13,sclen(xr)||reload string length|21521
+||mov|7,xl|10,(xs)+||restore xl|21522
+|fst99|exi||||return|21523
+||enp|||||21524
+||ejc|||||21525
 ||ejc|||||21580
 ||ejc|||||21634
 ||ejc|||||21678
@@ -9160,6 +9226,8 @@
 ||brn|6,gtn22|||else jump to scale|22782
 |gtn13|beq|8,wb|18,=ch_le|6,gtn15|jump if e for exponent|22786
 ||beq|8,wb|18,=ch_ld|6,gtn15|jump if d for exponent|22787
+||beq|8,wb|18,=ch_ue|6,gtn15|jump if e for exponent|22789
+||beq|8,wb|18,=ch_ud|6,gtn15|jump if d for exponent|22790
 |gtn14|beq|8,wb|18,=ch_bl|6,gtnb4|jump if blank|22795
 ||beq|8,wb|18,=ch_ht|6,gtnb4|jump if horizontal tab|22797
 ||brn|6,gtn36|||error if non-blank|22802
@@ -9260,6 +9328,7 @@
 ||jsr|6,gtstg|||convert argument to string|23004
 ||ppm|6,gnv01|||jump if conversion error|23005
 ||bze|8,wa|6,gnv01||null string is an error|23006
+||jsr|6,flstg|||fold upper case to lower case|23008
 ||mov|11,-(xs)|7,xl||save xl|23010
 ||mov|11,-(xs)|7,xr||stack string ptr for later|23011
 ||mov|8,wb|7,xr||copy string pointer|23012
@@ -10499,6 +10568,10 @@
 ||mov|8,wb|4,bits9||bit 9 mask|25795
 ||anb|8,wb|8,wc||get bit 9|25796
 ||mov|3,prsto|8,wb||keep it as std listing option|25797
+||mov|8,wb|8,wc||copy flags|25799
+||rsh|8,wb|1,12||right justify bit 13|25800
+||anb|8,wb|4,bits1||get bit|25801
+||mov|3,kvcas|8,wb||set -case|25802
 ||mov|8,wb|4,bit12||bit 12 mask|25804
 ||anb|8,wb|8,wc||get bit 12|25805
 ||mov|3,cswer|8,wb||keep it as errors/noerrors option|25806
@@ -11876,6 +11949,7 @@
 ||ppm|6,trc15|||jump if not string|28521
 ||plc|7,xr|||else point to string|28522
 ||lch|8,wa|9,(xr)||load first character|28523
+||flc|8,wa|||fold to lower case|28525
 ||mov|7,xr|9,(xs)||load name argument|28527
 ||mov|9,(xs)|7,xl||stack trblk ptr or zero|28528
 ||mov|8,wc|18,=trtac||set trtyp for access trace|28529
