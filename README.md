@@ -160,6 +160,10 @@ so is written in assembler.
 The file `z.sbl` can be used to insert trace code in generated assembly for debugging. This is not required to
 build this system, and was last used in 2009 as part of the port of SPITBOL to Linux.
 
+### Demonstration Programs
+
+Some demonstration programs can be found in the directory `./demos`.
+
 ## Documentation
 
 The documentation files for SPITBOL can be found in the repository:
