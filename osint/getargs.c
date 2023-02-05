@@ -138,6 +138,13 @@ char	*argv[];
                 break;
 
                 /*
+                /   -F	fold lower case to upper case
+                */
+            case 'F':
+                spitflag |= CASFLD;
+                break;
+
+                /*
                 /   -gddd	set page length in lines  V1.08
                 */
             case 'g':

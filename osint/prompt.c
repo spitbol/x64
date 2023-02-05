@@ -36,6 +36,7 @@ void prompt()
 /*    wrterr("-g# lines per page             -t# line width in characters");*/
     wrterr("-b suppress signon message     -e errors to list file only");
     wrterr("-k run with compilation error  -n suppress execution");
+    wrterr("-F fold source code case (ignore source code case) -f don't fold source code");
     wrterr("-u \"string\" data passed to HOST(0)");
 
 #if EXECFILE
@@ -49,7 +50,7 @@ void prompt()
     wrterr("-r INPUT from source file following END statement");
     wrterr("-T=file  write TERMINAL output to file");
     wrterr("-#=file[options]  associate file with I/O channel #");
-    wrterr("option defaults: -d64m -i128k -m4m -s128k -g60 -t120");
+    wrterr("option defaults: -F -d64m -i128k -m4m -s128k -g60 -t120");
 
 #endif					// RUNTIME
 
