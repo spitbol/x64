@@ -6,7 +6,7 @@ spitbol \- SPeedy ImplemenTation of snoBOL
 .SH SYNOPSIS
 \fBspitbol\fR [\fB-?\fR] [\fB-#\fR=\fIfile-and-options\fR]
 [\fB-T=\fIterm-file\fR] [\fB-a\fR] [\fB-b\fR] [\fB-c\fR] [\fB-d\fI#\fR]
-[\fB-e\fR] [\fB-f\fR] [\fB-g\fI#\fR] [\fB-h\fR] [\fB-i\fI#\fR] [\fB-k\fR]
+[\fB-e\fR] [\fB-F\fR] [\fB-f\fR] [\fB-g\fI#\fR] [\fB-h\fR] [\fB-i\fI#\fR] [\fB-k\fR]
 [\fB-l\fR] [\fB-m\fI#\fR] [\fB-n\fR] [\fB-o\fR=\fIout-file\fR] [\fB-p\fR]
 [\fB-r\fR] [\fB-s\fI#\fR] [\fB-t\fI#\fR] [\fB-u\fR \fI"string"\fR] [\fB-x\fR]
 [\fB-y\fR] [\fB-z\fR] [\fBin-file\fR ...] [\fBargs\fR]
@@ -15,7 +15,7 @@ spitbol \- SPeedy ImplemenTation of snoBOL
     Command arguments without values such as \fB-a\fR \fB-p\fR \fB-e\fR
     can be combined together as \fB-ape\fR.
 
-    option defaults: -d64m -g60 -i128k -m4m -s128k -t120
+    option defaults: -d64m -F -g60 -i128k -m4m -s128k -t120
 .fi
 .SH DESCRIPTION
 \fBMacro SPITBOL\fR is an extremely high-performance implementation of the
@@ -69,6 +69,9 @@ value can be followed by "k" for kilobytes or "m" for megabytes. (default is
 .I -e
 dont send error messages or trace output to the screen; send to standard output
 instead, which may then be redirected
+.TP 6
+.I -F
+fold lower-case names to upper-case
 .TP 6
 .I -f
 don't fold lower-case names to upper-case
@@ -227,7 +230,7 @@ programs in \fBSPITBOL\fR if it were not for the development of the SNOBOL
 programming language by Ralph E. Griswold, David J. Farber, Ivan P. Polonsky
 and others at Bell Labs.
 .SH REPORTING BUGS
-Please report any bugs to thedaveshields@gmail.com
+Please report any bugs to the github repository at: https://github.com/spitbol/x64
 .SH SEE ALSO
 For additional information about the SNOBOL4 programming language, you might
 want to read the book, \fIThe SNOBOL4 Programming Language\fR second edition by

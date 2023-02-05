@@ -23,9 +23,13 @@
 *      m a c r o   s p i t b o l     v e r s i o n   13.01
 *      ---------------------------------------------------
 
-*      date of release  -  january 2013
+*      date of release  -  Feburary 2023
+*      version 4.0a is maintained by
+*           Cheyenne Wills
+*           Jamestown, Co.
+*      contact via github repository: https://github.com/spitbol/x64
 
-*      macro spitbol is maintained by
+*      version 4.0 was maintained by
 *           dr. david shields
 *           260 garth rd apt 3h4
 *           scarsdale, ny 10583
@@ -6027,8 +6031,8 @@ lstms  dac  b_scl            page
 *      listing header message
 
 headr  dac  b_scl
-       dac  25
-       dtc  /macro spitbol version 4.0/
+       dac  26
+       dtc  /macro spitbol version 4.0a/
 
 headv  dac  b_scl            for exit() version no. check
        dac  5
