@@ -1,30 +1,31 @@
-# Unix SPITBOL V4.0 (July 2017)
+# Unix SPITBOL V4.0a (Feburary 2023)
 
 SPITBOL is an extremely high performance implementation of the SNOBOL4 language that brings raw power and speed
 to non-numeric computation.
 
-SPITBOL V4.0 is currently only available for 64-bit x86_64 processors running Unix.  
+SPITBOL V4.0a is currently only available for 64-bit x86_64 processors running Unix.
 
 The latest version of SPITBOL V4.0 can be found at [github.com/spitbol/x64](http://github.com/spitbol/x64).
 
-Address comments, suggestions, and bug reports to `spitbol@fastmail.com`.
+For comments, suggestions, and bug reports please open an issue in the github repository.
 
 ## Language Changes
+
+Version 4.0a contains minor bug fixes and clarifications
 
 Version 4.0 differs from previous versions of SPITBOL as follows:
 
 *   The initial value of &ANCHOR is one, not null as in prior versions.
 
-*   The initial value of &TERM is one, not null as in prior versions.
+*   The initial value of &TRIM is one, not null as in prior versions.
 
-*   The initial value of &CASE is zero, not one as in prior versions.
-
-The manual has always suggested setting &ANCHOR and &TERM to non-null values for more efficient searching.
+The manual has always suggested setting &ANCHOR and &TRIM to non-null values for more efficient searching.
 
 Prior versions also folded cases by default, so that variables differing only in case, such as
 'Var' and 'VAR' were treated as the same variable. Though this may have made sense when
 lower case terminals and printers were just coming into use, those days are long gone.
 
+The compiler option '-F' will enable folded cases (&CASE set to one).
 
 ## Known Problems and Limitations
 
@@ -47,7 +48,7 @@ You can install it in `/usr/local/bin/spitbol` with the command:
     $ sudo make install
 ```
 ## Required Programs
-    
+
 Three tools are needed to build Spitbol:
 
   1. A C compiler
@@ -64,18 +65,18 @@ x86_64 machine code.
 
 You should be able to build SPITBOL on most Unix systems.
 
-The file `./bin/sbl` is the base version of Spitbol that is used to build the system.  
+The file `./bin/sbl` is the base version of Spitbol that is used to build the system.
 
 To see if spitbol is working, try the "hello world" program:
 
-```    
+```
     $ ./bin/sbl test/hello.sbl
 ```
-    
+
 To build the system:
 
-    
-```    
+
+```
     $ make clean
     $ make
 ```
@@ -83,17 +84,17 @@ To build the system:
 This should produce the file `./sbl`. You can test it with the "hello world"
 program:
 
-    
-   ``` 
+
+   ```
     $ ./sbl test/hello.sbl
-   ``` 
+   ```
 
 To verify that the spitbol is building itself correctly you can run:
-    
-```    
+
+```
     $ ./sanity-check
-```    
-    
+```
+
 This shell script should be run after bulding the system. Since part of the SPITBOL translator is written
 in SPITBOL, it is essential to make sure that a new build of SPITBOL is able to build the system. The test
 uses successive versions to build the system three times; first to see if the new version runs, second to see the
@@ -105,23 +106,23 @@ be tested in the final build.
 Additional test programs can be found in the directory `./test`.
 
 NEVER replace the file `./bin/sbl` with a newly built `spitbol` without first running and checking the results of
-running the sanity test.  There's a good reason it has that name.  
+running the sanity test.  There's a good reason it has that name.
 
 Use the command below to install `spitbol` in `/usr/local/bin`.
-    
-```    
+
+```
     $ make install
-```    
+```
 
 ## Building from the bootstrap
 
-A pre-built spitbol executable is provided in ./bin/sbl.  
+A pre-built spitbol executable is provided in ./bin/sbl.
 
 If this executable fails, a bootstrap is provided.
 
 ```
     $ make bootsbl
-    $ make BOOTBOL=./bootsbl spitbol
+    $ make BASEBOL=./bootsbl spitbol
 ```
 
 
@@ -135,7 +136,7 @@ The principal source file is `sbl.min`.
 
 ### Minimal translation
 
-`lex.sbl` is the first state of compilation. It converts the source file into a sequence of lexical tokens. 
+`lex.sbl` is the first state of compilation. It converts the source file into a sequence of lexical tokens.
 
 The lexcal scan is followed by running `asm.sbl` to translate the tokens into machine code for the target machine.
 
@@ -173,7 +174,7 @@ http://github.com/spitbol/spitbol-docs.
 
 Mark Emmer's SNOBOL4 site: [snobol4.com](http://snobol4.com)
 
-Phil Bunde's SNOBOL site: [snobol4.org](http://www.snobol4.org)
+Phil Bunde's SNOBOL site: [snobol4.org](https://www.regressive.org/snobol4/)
 
 ## Maintainer notes:
 
@@ -194,3 +195,4 @@ Finally create the binary executable for distribution
 ```
     make bininst
 ```
+
