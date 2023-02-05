@@ -174,7 +174,7 @@ http://github.com/spitbol/spitbol-docs.
 
 Mark Emmer's SNOBOL4 site: [snobol4.com](http://snobol4.com)
 
-Phil Bunde's SNOBOL site: [snobol4.org](https://www.regressive.org/snobol4/)
+Phil Bunde's SNOBOL site: [www.regressive.org/snobol4](https://www.regressive.org/snobol4/)
 
 ## Maintainer notes:
 
