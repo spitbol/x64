@@ -8073,7 +8073,7 @@ initr  dac  0                save terminal flag
 *      following order (as dictated by k_xxx definition values).
 
 kvabe  dac  0                abend
-kvanc  dac  1                anchor
+kvanc  dac  0                anchor
 .if    .culc
 kvcas  dac  0                case
 .fi
