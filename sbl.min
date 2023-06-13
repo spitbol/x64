@@ -20858,7 +20858,9 @@ evlx8  add  xs,*num02        pop name/value indicator, *exfal
 
 *      merge here for failure in seblk case
 
-evlx9  exi  1                take failure exit
+evlx9  bne  stage,=stgev,evlxa return failure
+       exi  0                no failure
+evlxa  exi  1                failure
        enp                   end of procedure evalx
        ejc
 
