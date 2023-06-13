@@ -274,7 +274,7 @@ main3
 +        'ch_lt[116]ch_lu[117]ch_lv[118]ch_lw[119]ch_lx[120]ch_ly[121]ch_l_[122]'
 +        'ch_am[38]ch_as[42]ch_at[64]ch_bb[60]ch_bl[32]ch_br[124]ch_cl[58]'
 +        'ch_cm[44]ch_dl[36]ch_dt[46]ch_dq[34]ch_eq[61]ch_ex[33]ch_mn[45]ch_nm[35'
-+        ']ch_nt[126]ch_pc[94]ch_pl[43]ch_pp[40]ch_rb[62]ch_rp[41]ch_qu[63]'
++        ']ch_nt[126]ch_pc[37]ch_pl[43]ch_pp[40]ch_rb[62]ch_rp[41]ch_qu[63]'
 +        'ch_sl[47]ch_sm[59]ch_sq[39]ch_u_[95]ch_ob[91]ch_cb[93]ch_ht[9]ch_vt[11]'
 +        'ch_ey[94]iodel[32]cfp_a[256]cfp_b[8]cfp_c[8]cfp_f[16]cfp_i[1]'
 +        'cfp_l[18446744073709551616]cfp_m[9223372036854775807]cfp_n[64]'

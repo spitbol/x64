@@ -1638,7 +1638,7 @@
 
 *      The following options are set for the linux implementations
 
-*      .caex                 define to allow up arrow for exponentiation
+.def   .caex                 define to allow up arrow for exponentiation
 .def   .caht                 define to include horizontal tab
 .def   .casl                 define to include 26 shifted lettrs
 *      .cavt                 define to include vertical tab
