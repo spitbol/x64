@@ -685,7 +685,7 @@ config_done
 +        sepchar break(sepchar) . iarg2
 +        sepchar break(sepchar) . iarg3
 +        sepchar break(sepchar) . incomment
-   sepchar rem . slineno
++        sepchar rem . slineno
 
 *  pifatal maps minimal opcodes for which no a code allowed to nonzero value.
 *  such operations include conditional branches with operand of form (x)+
