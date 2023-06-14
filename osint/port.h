@@ -140,9 +140,9 @@ typedef unsigned long uword; /* minimal word as unsigned value */
 #endif
 
 /*
- * Define the data type returned by a call to signal()
+ * Define how to set a signal
  */
-#define SigType void
+#define USE_SIGACTION
 
 /*
 /   The following manifest constants define the page size used when the
