@@ -3248,6 +3248,10 @@ g_sec.7
 
 g_end
 
+*  Tail end of assembly output
+   genop('section .note.GNU-stack noalloc noexec nowrite progbits')
+   flush()
+*
    &dump = 2
    &dump = 0
    ident(havehdr)             :s(g_end.2)

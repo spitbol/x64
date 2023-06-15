@@ -1021,3 +1021,4 @@ zzz:
       popf
       ret
 %endif
+section .note.GNU-stack noalloc noexec nowrite progbits

@@ -447,10 +447,10 @@ readerr.end
 
    outfile =
    outfile = enddata
+   outfile = '        section .note.GNU-stack noalloc noexec nowrite progbits'
    outfile = endstmt
 
 *  print statistics
-
    output = "input message length = " insize
    output = "output string size = " outsize
    output = "savings = " insize - outsize
