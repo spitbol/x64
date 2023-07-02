@@ -194,66 +194,78 @@ calltab:
     extern  reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
 
 ;   integer arithmetic instructions
+
+;   convert by division
     extern  cvd__
     %macro  cvd_    0
     call    cvd__
     %endmacro
 
-
+;   add integer
     %macro  adi_    1
     add ia,%1
     seto    byte [reg_fl]
     %endmacro
+
+;   divide integer
     extern  dvi__
     %macro  dvi_    1
     call    dvi__
     %endmacro
 
+;   remainder integer
     extern  rmi__
     %macro  rmi_    1
     mov rax,%1
     call    rmi__
     %endmacro
 
-
+;   jump if no overflow
     %macro  ino_    1
     mov al,byte [reg_fl]
-    or  al,al
-    jno %1
+    test    al,al
+    jz  %1
     %endmacro
 
+;   jump if overflow
     %macro  iov_    1
     mov al,byte [reg_fl]
-    or  al,al
-    jo  %1
+    test    al,al
+    jnz %1
     %endmacro
 
+;   load integer
     %macro  ldi_    1
     mov ia,%1
     %endmacro
 
+;   multiply integer
     %macro  mli_    1
     imul    ia,%1
     seto    byte [reg_fl]
     %endmacro
 
+;   negative integer
     %macro  ngi_    0
     neg ia
     seto    byte [reg_fl]
     %endmacro
 
+;   real to integer
     extern  rti_
     %macro  rti_    0
     call    rti_
     mov ia,m_word [reg_ia]
     %endmacro
 
+;   subtract integer
     %macro  sbi_    1
     sub ia,%1
     mov rax,0
     seto    byte [reg_fl]
     %endmacro
 
+;   store integer
     %macro  sti_    1
     mov %1,ia
     %endmacro
