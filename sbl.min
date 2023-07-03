@@ -16698,7 +16698,7 @@ stpr5  mti  kvstn            get statement number
 *      merge to skip message (overflow or negative stlimit)
 
 stpr2  mti  gbcnt            load count of collections
-       mov  xr,=stpm4        point to message /regenerations /
+       mov  xr,=stpm5        point to message /regenerations /
        jsr  prtmx            print it
        jsr  prtmm            print memory usage
        jsr  prtis            one more blank for luck
