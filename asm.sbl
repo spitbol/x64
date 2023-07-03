@@ -497,9 +497,9 @@ init
 
 *  useful constants
 
-   letters = 'abcdefghijklmnopqrstuvwxyz'
-   ucase = letters
+   ucase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
    lcase = 'abcdefghijklmnopqrstuvwxyz'
+   letters = ucase lcase
    nos   = '0123456789'
    tab   = char(9)
 
