@@ -1,0 +1,42 @@
+* Find floating point limits
+    define('LIMITS(lower,upper,maxdigit)')              :(LIMITS.end)
+
+LIMITS
+    cursor = 2
+    output = 'Find limits to ' maxdigit ' digits'
+
+nextcursor
+    testnum = lower
+    cursor = cursor + 1
+    gt(cursor,maxdigit + 1)                             :s(report)
+    i = 0
+
+nexti
+    testnum pos(cursor) len(1) = i
+    result = eval(testnum)                              :s(print)
+    result = "***"
+
+print
+    testnum ' = ' result
+    result pos(0) '***' rpos(0)                         :s(saveupper)
+    lower = testnum
+    le(i = i + 1, 9)                                    :s(nexti)f(nextcursor)
+
+saveupper
+    upper = testnum                                     :(nextcursor)
+
+report
+    output = 'lower: ' lower ' = ' eval(lower)
+    output = 'upper: ' upper ' = ' '***'
+                                                        :(return)
+LIMITS.end
+
+    LIMITS('-1.000000000E+308' ,             '-2.000000000E+308', 10)
+    LIMITS('-1.0000000000E+308' ,            '-2.0000000000E+308', 11)
+    LIMITS('-1.00000000000E+308' ,           '-2.00000000000E+308', 12)
+    LIMITS('-1.000000000000E+308' ,          '-2.000000000000E+308', 13)
+    LIMITS('-1.0000000000000E+308' ,         '-2.0000000000000E+308', 14)
+    LIMITS('-1.00000000000000E+308' ,        '-2.00000000000000E+308', 15)
+    LIMITS('-1.000000000000000E+308' ,       '-2.000000000000000E+308', 16)
+
+END

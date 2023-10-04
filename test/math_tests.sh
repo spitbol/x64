@@ -1,0 +1,22 @@
+#!/bin/bash
+../bin/sbl math_atan.sbl
+../bin/sbl math_chop.sbl
+../bin/sbl math_cos.sbl
+../bin/sbl math_diff.sbl
+../bin/sbl math_div.sbl
+../bin/sbl math_exp.sbl
+../bin/sbl math_limits1.sbl
+../bin/sbl math_limits2.sbl
+../bin/sbl math_limits3.sbl
+../bin/sbl math_limits4.sbl
+../bin/sbl math_ln.sbl
+../bin/sbl math_plus.sbl
+../bin/sbl math_minus.sbl
+../bin/sbl math_pow.sbl
+../bin/sbl math_prod.sbl
+../bin/sbl math_read.sbl
+../bin/sbl math_remdr.sbl
+../bin/sbl math_sin.sbl
+../bin/sbl math_sqrt.sbl
+../bin/sbl math_sum.sbl
+../bin/sbl math_tan.sbl

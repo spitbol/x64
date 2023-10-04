@@ -1,0 +1,15 @@
+    setexit(.errtrace)
+    &errlimit = 100
+
+    n1 = 1.0
+    n0 = 0.1e-308
+*    a = n1 / n0         :f(oops)
+    r = eval('n1 / n0') :s(end)f(oops)
+oops
+    output = "oops"       :(end)
+errtrace
+    output = 'trace'
+    output = ">> error #" &errtype ", " &errtext
+    setexit(.errtrace)
+    (differ(&errtype,20) differ(&errtype,23) differ(&errtype,24) differ(&errtype,38)) :s(continue)f(abort)
+end
