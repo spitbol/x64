@@ -1,473 +1,463 @@
 
 -in80
--title err.spt						:  compress spitbol error messages
+-title err.spt  :  compress spitbol error messages
 -stitle initialization
 
-*	Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
-*	Copyright 2012-2017 David Shields
+*  Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
+*  Copyright 2012-2017 David Shields
 
-*	this file is part of macro spitbol.
+*  this file is part of macro spitbol.
 
-*	macro spitbol is free software: you can redistribute it and/or modify
-*	it under the terms of the gnu general public license as published by
-*	the free software foundation, either version 2 of the license, or
-*	(at your option) any later version.
+*  macro spitbol is free software: you can redistribute it and/or modify
+*  it under the terms of the gnu general public license as published by
+*  the free software foundation, either version 2 of the license, or
+*  (at your option) any later version.
 
-*	macro spitbol is distributed in the hope that it will be useful,
-*	but without any warranty; without even the implied warranty of
-*	merchantability or fitness for a particular purpose.  see the
-*	gnu general public license for more details.
+*  macro spitbol is distributed in the hope that it will be useful,
+*  but without any warranty; without even the implied warranty of
+*  merchantability or fitness for a particular purpose.  see the
+*  gnu general public license for more details.
 
-*	you should have received a copy of the gnu general public license
-*	along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
+*  you should have received a copy of the gnu general public license
+*  along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 
+*  err.spt
 
-*	err.spt
+*  find a near optimum compression for a spitbol error message file.
 
-*	find a near optimum compression for a spitbol error message file.
+*  spitbol -u "machine" -1<input file> -2<output file> err
 
-*	spitbol -u "machine" -1<input file> -2<output file> err
+*  the variable machine is set equal to the uppercase name of the machine
+*  being processed.  usage is optional.
 
-*	the variable machine is set equal to the uppercase name of the machine
-*	being processed.  usage is optional.
+*  technique:
 
-*	technique:
+*  the 159 characters from 1 to 31, and 128 to 255 are used to
+*  represent words and phrases from the error file.  the error
+*  list is then reduced to two character strings:
+*  1. an error message string
+*  2. a phrase string
 
-*	the 159 characters from 1 to 31, and 128 to 255 are used to
-*	represent words and phrases from the error file.  the error
-*	list is then reduced to two character strings:
-*	1. an error message string
-*	2. a phrase string
+*  within each string, the individual messages or phrases are
+*  separated by '\0' characters. the nth element of either
+*  string can be found by scanning and counting '\0's.
 
-*	within each string, the individual messages or phrases are
-*	separated by '\0' characters. the nth element of either
-*	string can be found by scanning and counting '\0's.
+*  when a character with value 1 to 31, or 128 to 255 is encountered,
+*  it should be mapped to an ordinal number in the range [1-159], and
+*  the phrase string consulted to obtain the appropriate phrase.
 
-*	when a character with value 1 to 31, or 128 to 255 is encountered,
-*	it should be mapped to an ordinal number in the range [1-159], and
-*	the phrase string consulted to obtain the appropriate phrase.
+*  naturally (this being snobol4), phrases may recursively contain
+*  other code characters.
 
-*	naturally (this being snobol4), phrases may recursively contain
-*	other code characters.
+*  the problem reduces to finding the 159 phrases that will
+*  provide the greatest compression.  for any phrase p of length s
+*  that occurs n times in the source error message file, replacing
+*  it with a single character and adding it to the phrase string
+*  produces a savings of n*(s-1) - s - 1 characters.
 
-*	the problem reduces to finding the 159 phrases that will
-*	provide the greatest compression.  for any phrase p of length s
-*	that occurs n times in the source error message file, replacing
-*	it with a single character and adding it to the phrase string
-*	produces a savings of n*(s-1) - s - 1 characters.
+*  each of the n occurrances of p are replaced by a single character,
+*  for a savings of n*(s-1) in the error message string.  the phrase
+*  string is lengthened by s + 1 characters (1 for the '\0' at the end).
 
-*	each of the n occurrances of p are replaced by a single character,
-*	for a savings of n*(s-1) in the error message string.  the phrase
-*	string is lengthened by s + 1 characters (1 for the '\0' at the end).
+*  for a unique phrase (n=1), the savings is -2, that is, there is no
+*  savings, but rather a net gain of 2 characters.
 
-*	for a unique phrase (n=1), the savings is -2, that is, there is no
-*	savings, but rather a net gain of 2 characters.
+*  a sneaky pattern is used to generate all single- and multi-word
+*  phrases in a particular error message. each phrase indexes a table
+*  entry that counts the cost savings associated with that phrase.
 
-*	a sneaky pattern is used to generate all single- and multi-word
-*	phrases in a particular error message.	each phrase indexes a table
-*	entry that counts the cost savings associated with that phrase.
+*  all error messages are scanned to build this savings table, which
+*  is then rsorted to obtain the phrase that if chosen, would produce
+*  the greatest savings.  taking that phrase, all occurrances of it
+*  in all error messages are replaced by a single character, and the
+*  phrase is added to a phrase array.
 
-*	all error messages are scanned to build this savings table, which
-*	is then rsorted to obtain the phrase that if chosen, would produce
-*	the greatest savings.  taking that phrase, all occurrances of it
-*	in all error messages are replaced by a single character, and the
-*	phrase is added to a phrase array.
+*  the entire process is repeated again, rather than just taking the
+*  next best entry from the table.   this allows new combinations to
+*  materialize, as a result of having replaced the phrase with a single
+*  character, and also eliminates the problem of now obsolete table
+*  entries that partially overlapped the chosen phrase.  the process
+*  is repeated for all 159 entries that can be accommodated in the
+*  phrase table.
 
-*	the entire process is repeated again, rather than just taking the
-*	next best entry from the table.	 this allows new combinations to
-*	materialize, as a result of having replaced the phrase with a single
-*	character, and also eliminates the problem of now obsolete table
-*	entries that partially overlapped the chosen phrase.  the process
-*	is repeated for all 159 entries that can be accommodated in the
-*	phrase table.
+*  as each phrase is selected, the phrase array is also scanned
+*  to see any substitutions can be made there.
 
-*	as each phrase is selected, the phrase array is also scanned
-*	to see any substitutions can be made there.
+*  the program makes considerable use of gimpel's seq function to
+*  sequence through various arrays.
 
-*	the program makes considerable use of gimpel's seq function to
-*	sequence through various arrays.
+*  the output is a series of data statements in generic 68000 assembly
+*  language.  there are two types of pseudo-ops:
+*  1.  byte to define decimal data bytes
+*  2.  ascii   to define an ascii string
 
-*	the output is a series of data statements in generic 68000 assembly
-*	language.  there are two types of pseudo-ops:
-*	1.  byte	to define decimal data bytes
-*	2.  ascii	to define an ascii string
+*  needless to say, it does take some time to grind out the results (22
+*  minutes with 68k spitbol on a unix pc, 22 hours with snobol4+ on
+*  a pc/xt).
 
-*	needless to say, it does take some time to grind out the results (22
-*	minutes with 68k spitbol on a unix pc, 22 hours with snobol4+ on
-*	a pc/xt).
+*  note: moving the lower case characters (64-95) from the normal
+*  character set to the special set (thus providing for 191
+*  phrases instead of 159), only saved 40 bytes in the output
+*  file, and was deemed unnecessarily restrictive.
 
-*	note: moving the lower case characters (64-95) from the normal
-*	character set to the special set (thus providing for 191
-*	phrases instead of 159), only saved 40 bytes in the output
-*	file, and was deemed unnecessarily restrictive.
-
-*	concatenating the error and phrase arrays prior to each call
-*	produced a less optimal packing, and was discarding
-*	in favor of just using the error array to pick the next
-*	phrase for compression.
+*  concatenating the error and phrase arrays prior to each call
+*  produced a less optimal packing, and was discarding
+*  in favor of just using the error array to pick the next
+*  phrase for compression.
 
 * set machine definition flag, if any.
 
-	ident(host(0))					    :s(nomachine)
-	$replace(host(0),&lcase,&ucase) = 1
-	output = "machine				    : " host(0)
+   ident(host(0))                 :s(nomachine)
+   $replace(host(0),&lcase,&ucase) = 1
+   output = "machine              : " host(0)
 
 nomachine
 
 * tab character
 
-	tab	= char(9)
-*	comma delimited string of decimal bytes:
+   tab   = char(9)
+*  comma delimited string of decimal bytes:
 
-	db	= 'db'
-	byte	= tab db tab
+   db = 'db'
+   byte  = tab db tab
 
-*	delim delimited string of 'normal' ascii characters (32-127)
+*  delim delimited string of 'normal' ascii characters (32-127)
 
-	delim	= '"'
-	ascii	= tab 'db' tab
+   delim = '"'
+   ascii = tab 'db' tab
 
-*	comment lead-in character
+*  comment lead-in character
 
-	comment = ';'
+   comment = ';'
 
-*	data and public definitions
+*  data and public definitions
 
-	data	= tab 'segment' tab '.data'
+   data  = tab 'segment' tab '.data'
 
-*	setup keywords
+*  setup keywords
 
-	&anchor = 0
-	&trim	= 1
-*	     &stlimit = -1
-	&code = 1
-*	&fullscan = 1			;* for snobol4+
+   &anchor = 0
+   &trim = 1
+*       &stlimit = -1
+   &code = 1
+*  &fullscan = 1        ;* for snobol4+
 
-*	define the characters whose codes will be used as special pointers.
+*  define the characters whose codes will be used as special pointers.
 
-	&alphabet len(1) len(31) . f1 len(96) len(128) . f2
-	specials = f1 f2
+   &alphabet len(1) len(31) . f1 len(96) len(128) . f2
+   specials = f1 f2
 
-*	functions
+*  functions
 
-	define('asc(c)')				    :(asc.end)
+   define('asc(c)')               :(asc.end)
 
-*	asc(c)
+*  asc(c)
 
-*	return the integer code for an ascii character c.
-
+*  return the integer code for an ascii character c.
 
 asc
-	&alphabet break(c) @asc				    :(return)
+   &alphabet break(c) @asc              :(return)
 
 asc.end
 
-	define('seq(arg_s,arg_name)')			    :(seq.end)
-*	seq(s,n)
+   define('seq(arg_s,arg_name)')           :(seq.end)
+*  seq(s,n)
 
-*	will sequence through a set of statements until failure is detected.
-*	the indexing variable is given by the name n. from gimpel, "algorithms
-*	in snobol4."
+*  will sequence through a set of statements until failure is detected.
+*  the indexing variable is given by the name n. from gimpel, "algorithms
+*  in snobol4."
 
-
-*	entry point:  initialize indexing variable.  then convert arg_s to code.
+*  entry point:  initialize indexing variable.  then convert arg_s to code.
 
 seq
 
-	$arg_name  =  0
-	arg_s  =  code(arg_s  '				    :s(seq_1)f(seq_2)')
-+							:f(error)
+   $arg_name  =  0
+   arg_s  =  code(arg_s  '              :s(seq_1)f(seq_2)')
++                    :f(error)
 
-*	increment indexing variable by 1 and spring off to compiled code.
-*	return will be to seq_1 or seq_2.
+*  increment indexing variable by 1 and spring off to compiled code.
+*  return will be to seq_1 or seq_2.
 
 seq_1
 
-	$arg_name  =  $arg_name + 1			    :<arg_s>
+   $arg_name  =  $arg_name + 1             :<arg_s>
 
-*	control flows to seq_2 if a fail was detected.	if first time through
-*	fail;  otherwise succeed.
+*  control flows to seq_2 if a fail was detected.  if first time through
+*  fail;  otherwise succeed.
 
 seq_2
-	eq($arg_name,1)					    :s(freturn)f(return)
+   eq($arg_name,1)                   :s(freturn)f(return)
 
 seq.end
 
-	define('spread(spread)')			    :(spread.end)
+   define('spread(spread)')             :(spread.end)
 
-*	spread(n)
+*  spread(n)
 
-*	given n in the range [1-159], spread it out over the ranges [1-31]
-*	and [128-255].
+*  given n in the range [1-159], spread it out over the ranges [1-31]
+*  and [128-255].
 
 spread
 
-	spread = ge(spread,32) spread + 96		    :(return)
+   spread = ge(spread,32) spread + 96         :(return)
 
 spread.end
 
+*  shrink(n)
 
-*	shrink(n)
+*  given n in the ranges [1-31] and [128-255], shrink it back to the
+*  range [1-159].
 
-*	given n in the ranges [1-31] and [128-255], shrink it back to the
-*	range [1-159].
-
-	define('shrink(shrink)')			    :(shrink.end)
+   define('shrink(shrink)')             :(shrink.end)
 shrink
 
-	shrink = ge(shrink,128) shrink - 96		    :(return)
+   shrink = ge(shrink,128) shrink - 96        :(return)
 
 shrink.end
 
-*	best(err,n)
+*  best(err,n)
 
-*	select the best phrase from the error message array -- that is,
-*	the phrase that will provide the greatest savings if replaced
-*	by a one character code.
+*  select the best phrase from the error message array -- that is,
+*  the phrase that will provide the greatest savings if replaced
+*  by a one character code.
 
-*	technique:  build a table of the savings associated with all
-*	possible phrases in the err array, sort it, and select the best.
-*	then make all possible replacements, using integer n for the code.
+*  technique:  build a table of the savings associated with all
+*  possible phrases in the err array, sort it, and select the best.
+*  then make all possible replacements, using integer n for the code.
 
-	define('best(err,n)t,j')			    :(best.end)
+   define('best(err,n)t,j')             :(best.end)
 
-*	entry:	define a fresh table to hold all the generated phrases.
+*  entry:   define a fresh table to hold all the generated phrases.
 
 best
 
-	t = table(1001)
+   t = table(1001)
 
-*	generate phrases for all error messages, then sort and select best.
+*  generate phrases for all error messages, then sort and select best.
 
-	seq(" generate(err[j],t)", .j)
-	t = rsort(t,2)					    :f(freturn)
+   seq(" generate(err[j],t)", .j)
+   t = rsort(t,2)                 :f(freturn)
 
-*	abort the caller's sequencing if there is not a net savings possible
-*	any more.
+*  abort the caller's sequencing if there is not a net savings possible
+*  any more.
 
-	gt(t[1,2],0)					    :f(freturn)
-	best = t[1,1]
+   gt(t[1,2],0)                   :f(freturn)
+   best = t[1,1]
 
-*	now replace the selected phrase in all error and phrase strings.
+*  now replace the selected phrase in all error and phrase strings.
 
-	seq(" repl(.err[j],best,n)", .j)
-	seq(" repl(.phrase[j],best,n)", .j)		    :(return)
+   seq(" repl(.err[j],best,n)", .j)
+   seq(" repl(.phrase[j],best,n)", .j)        :(return)
 
 best.end
 
+*  generate(s,t)
 
-*	generate(s,t)
+*  generate all phrases from a string s, and add their potential
+*  savings to table t.  the first occurence of a phrase produces
+*  a savings of -2 (net loss).  subsequent occurences provide an
+*  incremental savings of size(phrase) -1.
 
-*	generate all phrases from a string s, and add their potential
-*	savings to table t.  the first occurence of a phrase produces
-*	a savings of -2 (net loss).  subsequent occurences provide an
-*	incremental savings of size(phrase) -1.
+*  the one phrase we do not generate from s is the entire
+*  string s itself, since moving it to the phrase table is
+*  meaningless.  (assuming unique input strings.)
 
-*	the one phrase we do not generate from s is the entire
-*	string s itself, since moving it to the phrase table is
-*	meaningless.  (assuming unique input strings.)
+*  this relies upon fail pattern to generate all the permutations.
+*  put a trace on variable w to watch the results.
 
-*	this relies upon fail pattern to generate all the permutations.
-*	put a trace on variable w to watch the results.
-
-	define('generate(s,t)w')
-	gen_pat = fence ("" | (breakx(' ' specials) len(1)))
-+	   ((breakx(' ' specials) len(1)) | (len(1) rem)) $ w
-+		*differ(s,w)
-+		   *?(t[w] = (ident(t[w]) -2, t[w] + size(w) - 1)) fail
-+							:(generate.end)
+   define('generate(s,t)w')
+   gen_pat = fence ("" | (breakx(' ' specials) len(1)))
++        ((breakx(' ' specials) len(1)) | (len(1) rem)) $ w
++        *differ(s,w)
++        *?(t[w] = (ident(t[w]) -2, t[w] + size(w) - 1)) fail
++                    :(generate.end)
 generate
 
-	s ? gen_pat					    :(return)
+   s ? gen_pat                 :(return)
 
 generate.end
 
+*  repl(x,i,s,n)
 
-*	repl(x,i,s,n)
+*  replace string s in $x with char(n).
+*  this must be isolated into a function to prevent seq from
+*  terminating early when a pattern match fails.
 
-*	replace string s in $x with char(n).
-*	this must be isolated into a function to prevent seq from
-*	terminating early when a pattern match fails.
-
-	define('repl(x,s,n)')				    :(repl.end)
+   define('repl(x,s,n)')                :(repl.end)
 
 repl
 
-   $x ? s = char(n)					:f(return)s(repl)
+   $x ? s = char(n)              :f(return)s(repl)
 
 repl.end
 
-*	putout(s,i)
+*  putout(s,i)
 
-*	output string s as a series of ascii and byte data statements.
-*	i is the index of the string being compressed.
+*  output string s as a series of ascii and byte data statements.
+*  i is the index of the string being compressed.
 
-	define('putout(s,i)c,n,w')
+   define('putout(s,i)c,n,w')
 
-*	pattern to break s into normal and special characters.
+*  pattern to break s into normal and special characters.
 
-	put_pat = (break(specials) | (len(1) rem)) . w
-+			(span(specials) | "") . n
-	put_one = len(1) . c				    :(putout.end)
+   put_pat = (break(specials) | (len(1) rem)) . w
++        (span(specials) | "") . n
+   put_one = len(1) . c              :(putout.end)
 
-*	entry.	put out comment line to show what string is being compressed.
+*  entry.   put out comment line to show what string is being compressed.
 
 putout
 
-	outfile =
-	outfile = comment lpad(i,5) '  "' expand(s) '"'
+   outfile =
+   outfile = comment lpad(i,5) '  "' expand(s) '"'
 
-*	main loop.  get segments of normal and special characters.  each segment
-*	  (or both) may be null.
+*  main loop.  get segments of normal and special characters.  each segment
+*    (or both) may be null.
 
 put1
 
-	s ? put_pat =
+   s ? put_pat =
 
-*	put out the normal characters, if any.
+*  put out the normal characters, if any.
 
-	outfile = differ(w) ascii delim w delim
-	outsize = outsize + size(w)
+   outfile = differ(w) ascii delim w delim
+   outsize = outsize + size(w)
 
-*	if s is exhausted, append '\0' to special characters, then
-*	put it out as a series of byte data statements.
+*  if s is exhausted, append '\0' to special characters, then
+*  put it out as a series of byte data statements.
 
-	n = ident(s) n char(0)
-	outsize = outsize + size(n)
+   n = ident(s) n char(0)
+   outsize = outsize + size(n)
 
 put2
 
-	n ? put_one =					    :f(put3)
-	outfile = byte asc(c)				    :(put2)
+   n ? put_one =                  :f(put3)
+   outfile = byte asc(c)                :(put2)
 
 put3
 
-   differ(s)						:s(put1)f(return)
+   differ(s)                  :s(put1)f(return)
 
 putout.end
 
+*  expand(s)
 
-*	expand(s)
+*  recursively expand a string with compressed phrases.
 
-*	recursively expand a string with compressed phrases.
-
-	define('expand(s)f,c')
-	ex_pat = (break(specials) . f len(1) . c) |
-+		 ((len(1) rem) . f "" . c)		:(expand.end)
+   define('expand(s)f,c')
+   ex_pat = (break(specials) . f len(1) . c) |
++        ((len(1) rem) . f "" . c)    :(expand.end)
 
 expand
 
-	s ? ex_pat =					    :f(return)
-	expand = ident(c) expand f			    :s(return)
-	expand = expand f expand(phrase[shrink(asc(c))])
-+							:(expand)
+   s ? ex_pat =                   :f(return)
+   expand = ident(c) expand f           :s(return)
+   expand = expand f expand(phrase[shrink(asc(c))])
++                    :(expand)
 expand.end
 
+*  readerr(err)
 
-*	readerr(err)
+*  read in the error message file, building array of messages.
+*  return maximum error number as function value.
 
-*	read in the error message file, building array of messages.
-*	return maximum error number as function value.
-
-	define('readerr(a)s,n,msg')
-	rde_done = fence notany('0123456789')
-	rde_pat = fence len(3) . n len(1) rem . msg	    :(readerr.end)
+   define('readerr(a)s,n,msg')
+   rde_done = fence notany('0123456789')
+   rde_pat = fence len(3) . n len(1) rem . msg      :(readerr.end)
 
 readerr
 
-	s = infile					    :f(return)
-	s ? rde_done					    :s(return)
-	s ? rde_pat					    :f(rderr1)
-	(differ(a[n]) differ(a[n],msg))			    :s(rderr2)
-	a[n] = msg
-	readerr = gt(n,readerr) n
-	insize = insize + 1 + size(msg)			    :(readerr)
+   s = infile                  :f(return)
+   s ? rde_done                   :s(return)
+   s ? rde_pat                 :f(rderr1)
+   (differ(a[n]) differ(a[n],msg))            :s(rderr2)
+   a[n] = msg
+   readerr = gt(n,readerr) n
+   insize = insize + 1 + size(msg)            :(readerr)
 
 rderr1
 
-	output = "bad input line: " s			    :(freturn)
+   output = "bad input line: " s           :(freturn)
 
 rderr2
 
-	output = "inconsistent re-use of message number " n
-	output = "first use				    : " a[n]
-	output = "   re-use: " msg			    :(freturn)
+   output = "inconsistent re-use of message number " n
+   output = "first use               : " a[n]
+   output = "   re-use: " msg           :(freturn)
 
 readerr.end
 
-
 ***************************************************************************
 
-*	main program
+*  main program
 
-*	open channel 1 on command line for infile, channel 2 for outfile
+*  open channel 1 on command line for infile, channel 2 for outfile
 
-	output = ~input(.infile,1) "no input file"	    :s(end)
-	output = ~output(.outfile,2) "no output file"	    :s(end)
+   output = ~input(.infile,1) "no input file"       :s(end)
+   output = ~output(.outfile,2) "no output file"       :s(end)
 
-*	arrays to hold error messages and phrases
+*  arrays to hold error messages and phrases
 
-	in	= array(400)
-	phrase	= array(159)
+   in = array(400)
+   phrase   = array(159)
 
-*	prepare statistics
+*  prepare statistics
 
-	insize	= 0
-	outsize = 0
+   insize   = 0
+   outsize = 0
 
-*	read input file, create err array of exact size to just hold error messages.
+*  read input file, create err array of exact size to just hold error messages.
 
-	err = array(readerr(in))			    :f(end)
+   err = array(readerr(in))             :f(end)
 
-*	copy in array to err array, then discard in array.
+*  copy in array to err array, then discard in array.
 
-	seq(" err[i] = in[i]", .i)
-	in =
+   seq(" err[i] = in[i]", .i)
+   in =
 
-*	build phrase array
+*  build phrase array
 
-	seq(" phrase[i] = best(err, spread(i))", .i)
+   seq(" phrase[i] = best(err, spread(i))", .i)
 
+*  putout title and header information
 
-*	putout title and header information
+   outfile = comment ' compressed spitbol error messages ' date()
+   outfile = comment
+   outfile = name
+   outfile = model
+   outfile = include
+   outfile = group
+   outfile = data
+   outfile =
 
-	outfile = comment ' compressed spitbol error messages ' date()
-	outfile = comment
-	outfile = name
-	outfile = model
-	outfile = include
-	outfile = group
-	outfile = data
-	outfile =
+*  putout label and compressed error message table
 
-*	putout label and compressed error message table
+   outfile = tab 'global' tab 'errors'
+   outfile = 'errors              :' tab 'db' tab '0'
+   seq(" putout(err[i],i)", .i)
 
-	outfile = tab 'global' tab 'errors'
-	outfile = 'errors				    :' tab 'db' tab '0'
-	seq(" putout(err[i],i)", .i)
+*  putout label and phrase table
 
-*	putout label and phrase table
+   outfile =
+   outfile = tab 'global' tab 'phrases'
+   outfile = 'phrases                :' tab 'db' tab '0'
+   seq(" putout(phrase[i],spread(i))", .i)
 
-	outfile =
-	outfile = tab 'global' tab 'phrases'
-	outfile = 'phrases				    :' tab 'db' tab '0'
-	seq(" putout(phrase[i],spread(i))", .i)
+*  finish up the output file
 
-*	finish up the output file
+   outfile =
+   outfile = enddata
+   outfile = endstmt
 
-	outfile =
-	outfile = enddata
-	outfile = endstmt
+*  print statistics
 
-*	print statistics
+   output = "input message length = " insize
+   output = "output string size = " outsize
+   output = "savings = " insize - outsize
+   output = "spitbol statements executed " &stcount
 
-	output = "input message length = " insize
-	output = "output string size = " outsize
-	output = "savings = " insize - outsize
-	output = "spitbol statements executed " &stcount
+*  clear error indicator for successful return
 
-*	clear error indicator for successful return
-
-	&code = 0
+   &code = 0
 
 end

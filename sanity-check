@@ -8,7 +8,7 @@
 #
 rm tbol.*
 echo "start sanity test"
-cp	./bin/sbl tbol
+cp  ./bin/sbl tbol
 make clean>/dev/null
 make BASEBOL=./tbol
 mv sbl.lex tbol.lex.0

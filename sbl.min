@@ -70,7 +70,7 @@
 *      version 3.8 (june 2012, david shields)
 *      --------------------------------------
 
-*	       this version is very close to v3.7, with the same functionality.
+*             this version is very close to v3.7, with the same functionality.
 
 *              the source is now maintained using git, so going forward
 *              the detailed revision history will be recorded in the git
@@ -1590,7 +1590,7 @@
 *                            indicates symbol initially not
 *                            defined.
 
-*	The following options are enabled for the linux implementationss.
+*      The following options are enabled for the linux implementationss.
 
 
 * copyright 1987-2012 robert b. k. dewar and mark emmer.
@@ -1636,7 +1636,7 @@
 *                            symbol initially not defined.
 *
 
-*	The following options are set for the linux implementations
+*      The following options are set for the linux implementations
 
 *      .caex                 define to allow up arrow for exponentiation
 .def   .caht                 define to include horizontal tab
@@ -16678,13 +16678,13 @@ stpr5  mti  kvstn            get statement number
        jsr  prtmx            print it
 
        ldi  stpsi            reload statement count
-       dvi  stpti            divide to get stmts per millisecond 
+       dvi  stpti            divide to get stmts per millisecond
        iov  stpr2            jump if we cannot compute
        mov  xr,=stpm8        point to msg (stmt / millisec )
        jsr  prtmx            print it
 
        ldi  stpsi            reload statement count
-       dvi  stpti            divide to get stmts per millisecond 
+       dvi  stpti            divide to get stmts per millisecond
        iov  stpr2            jump if we cannot compute
        mli  intth            multiply by 1000 to get stmts per microsecond
        iov  stpr2            jump if overflow

@@ -5,20 +5,20 @@
     &dump = 2
     files = 0
 loop
-    line = trim(input)			:f(atend) 
-    line '!@#$'				:f(copy)
+    line = trim(input)          :f(atend)
+    line '!@#$'             :f(copy)
     line len(4) rem . filename
     filename = trim(filename)
     terminal = 'extracting ' filename
     files = files + 1
-    eq(files,1)				:s(first)
+    eq(files,1)             :s(first)
     endfile(1)
 first
-    output(.file, 1, filename)		:(loop)
+    output(.file, 1, filename)      :(loop)
 copy
     file = trim(line)                         :(loop)
 done
     endfile(1)                                :(loop)
 atend
-	&dump = 0
+    &dump = 0
 end
