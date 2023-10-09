@@ -423,6 +423,8 @@ readerr.end
 
    outfile = comment ' compressed spitbol error messages ' date()
    outfile = comment
+   outfile = '  BITS 64'
+   outfile = '  DEFAULT REL'
    outfile = name
    outfile = model
    outfile = include

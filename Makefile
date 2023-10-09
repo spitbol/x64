@@ -20,9 +20,9 @@ DEMODEST=$(destprefix)/share/spitbol
 MANDEST=$(destprefix)/man/man1
 
 ifeq ($(DEBUG),0)
-CFLAGS= -Dm64 -m64 -static
+CFLAGS= -Dm64 -m64 -fPIE -static
 else
-CFLAGS= -Dm64 -g -m64 -static
+CFLAGS= -Dm64 -g -m64 -fPIE -static
 endif
 
 # Assembler info
@@ -48,9 +48,9 @@ sbl: sbl.min lex.sbl asm.sbl err.sbl int.asm int.dcl int.h osint/*.c osint/*.h
 	$(BASEBOL) lex.sbl
 	$(BASEBOL) -x asm.sbl
 	$(BASEBOL) -x -1=sbl.err -2=err.asm err.sbl
-	$(ASM) $(ASMFLAGS) err.asm
-	$(ASM) $(ASMFLAGS) int.asm
-	$(ASM) $(ASMFLAGS) sbl.asm
+	$(ASM) $(ASMFLAGS) -l err.lst err.asm
+	$(ASM) $(ASMFLAGS) -l int.lst int.asm
+	$(ASM) $(ASMFLAGS) -l sbl.lst sbl.asm
 #stop:
 	$(CC) $(CFLAGS) -c osint/*.c
 	$(CC) $(CFLAGS) *.o -osbl -lm
@@ -60,9 +60,9 @@ sbl: sbl.min lex.sbl asm.sbl err.sbl int.asm int.dcl int.h osint/*.c osint/*.h
 bootsbl:
 	cp bootstrap/sbl.asm .
 	cp bootstrap/err.asm .
-	$(ASM) $(ASMFLAGS) err.asm
-	$(ASM) $(ASMFLAGS) int.asm
-	$(ASM) $(ASMFLAGS) sbl.asm
+	$(ASM) $(ASMFLAGS) -l err.lst err.asm
+	$(ASM) $(ASMFLAGS) -l int.lst int.asm
+	$(ASM) $(ASMFLAGS) -l sbl.lst sbl.asm
 	$(CC) $(CFLAGS) -c osint/*.c
 	$(CC) $(CFLAGS) *.o -obootsbl -lm
 	rm -f *.o *.lst *.map *.err err.lex sbl.lex sbl.err sbl.asm err.asm

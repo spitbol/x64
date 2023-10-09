@@ -17,6 +17,9 @@
 ;     you should have received a copy of the gnu general public license
 ;     along with macro spitbol.  if not, see <http://www.gnu.org/licenses/>.
 
+        BITS 64
+        DEFAULT REL
+
         %define m_char  byte    ; reference to byte in memory
         %define d_char  db      ; define value of byte
 

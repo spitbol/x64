@@ -19,7 +19,8 @@
 
 
 ;     ws is bits per word, cfp_b is bytes per word, cfp_c is characters per word
-
+      BITS 64
+      DEFAULT REL
 
       %define     cfp_b 8
       %define     cfp_c 8
