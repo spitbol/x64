@@ -303,13 +303,13 @@ genopl_end
 genrep
    l1 = genlab()
    l2 = genlab()
-   genopl(l1 '             :')
+   genopl(l1 ':')
    genop('or',wa,wa)
    genop('jz',l2)
    genop(op)
    genop('dec',wa)
    genop('jmp',l1)
-   genopl(l2 '             :')
+   genopl(l2 ':')
                      :(return)
 genrep_end
 
@@ -2486,8 +2486,8 @@ g_cmc
 g_trc
 
    genop('xchg',xl,xr)
-   eq(cfp_b,cfp_c) genopl((t1 = genlab()) '  :','movzx',w0,'m_char [' register(xr) ']')
-   ne(cfp_b,cfp_c) genopl((t1 = genlab()) '  :','mov',w0,'m_char [' register(xr) ']')
+   eq(cfp_b,cfp_c) genopl((t1 = genlab()) ':','movzx',w0,'m_char [' register(xr) ']')
+   ne(cfp_b,cfp_c) genopl((t1 = genlab()) ':','mov',w0,'m_char [' register(xr) ']')
    ne(cfp_b,cfp_c) genop('sal', w0, 'log_cfp_b');* convert char value to byte offset
    eq(cfp_b,cfp_c) genop('mov','al', '[' xl '+' w0 ']')
    ne(cfp_b,cfp_c) genop('mov',w0,'[' xl '+' w0 ']')
@@ -3200,7 +3200,7 @@ g_sec.1
 
    genop('segment .text')
    genop('global','sec01')
-   genopl('sec01' ':')           :(opdone)
+   genopl('sec01:')           :(opdone)
 
 *  definitions section
 
@@ -3208,7 +3208,7 @@ g_sec.2
 
    genop('segment .data')
    genop('global','sec02')
-   genopl('sec02' ':')           :(opdone)
+   genopl('sec02:')           :(opdone)
 
 *  constants section
 
@@ -3216,17 +3216,17 @@ g_sec.3
 
    genop('segment .data')
    genop('global','sec03')
-   genopl('sec03' ':')           :(opdone)
+   genopl('sec03:')           :(opdone)
 
 *  working variables section
 
 g_sec.4
 
    genop('global','esec03')
-   genopl('esec03' '          :')
+   genopl('esec03:')
    genop('segment .data')
    genop('global','sec04')
-   genopl('sec04' ':')           :(opdone)
+   genopl('sec04:')           :(opdone)
 
 *  here at start of program section.  if any n type procedures,
 *  put out entry-word block declaration at end of working storage
@@ -3237,25 +3237,24 @@ g_sec.5
 *  get direction set to up.
 
    genop('global','esec04')
-   genopl('esec04' '          :')
+   genopl('esec04:')
 
-*        (gt(prc.count1) genopl('prc$' ':','times', prc.count1 ' dd 0'))
+   (gt(prc.count1) genopl('prc_:','times', prc.count1 ' dd 0'))
 
-   genop('prc_ : times ' prc.count1 ' dd 0')
    genop('global','lowspmin')
-   genopl('lowspmin' '           :','d_word','0')
+   genopl('lowspmin:','d_word','0')
    genop('global','end_min_data')
-   genopl('end_min_data' '          :')
+   genopl('end_min_data:')
    genop('segment .text')
    genop('global','sec05')
-   genopl('sec05' ':')           :(opdone)
+   genopl('sec05:')           :(opdone)
 
 *  stack overflow section.  output exi__n tail code
 
 g_sec.6
 
    genop('global','sec06')
-   genopl('sec06' '           :', 'nop')
+   genopl('sec06:', 'nop')
                      :(opdone)
 
 *  error section. produce code to receive erb's
@@ -3263,7 +3262,7 @@ g_sec.6
 g_sec.7
 
    genop('global','sec07')
-   genopl('sec07' '           :')
+   genopl('sec07:')
    flush()
 *  error section. produce code to receive erb's
 
@@ -3271,7 +3270,7 @@ g_sec.7
 
    n1 = max.err + 8
    output = '  max.err ' max.err
-   genopl('err_ :','xchg',wa,'m_word [' rcode ']') :(opdone)
+   genopl('err_:','xchg',wa,'m_word [' rcode ']') :(opdone)
 
 *  14.2  END
 
