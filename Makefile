@@ -20,9 +20,9 @@ DEMODEST=$(destprefix)/share/spitbol
 MANDEST=$(destprefix)/man/man1
 
 ifeq ($(DEBUG),0)
-CFLAGS= -Dm64 -m64 -fPIE -static
+CFLAGS= -Dm64 -m64 -fPIE -static  -mdaz-ftz -mfpmath=sse -mieee-fp -mlong-double-64 -ffloat-store
 else
-CFLAGS= -Dm64 -g -m64 -fPIE -static
+CFLAGS= -Dm64 -g -m64 -fPIE -static -mdaz-ftz -mfpmath=sse -mieee-fp -mlong-double-64 -ffloat-store
 endif
 
 # Assembler info

@@ -14,18 +14,19 @@ Copyright 2012-2017 David Shields
  */
 
 #include "port.h"
-
 #include <errno.h>
 
 #if FLOAT & !MATHHDWR
 
 # include <math.h>
+# include <xmmintrin.h>
 
 # ifndef errno
 int errno;
 # endif
 
-extern double inf; /* infinity */
+extern double inf;     /* infinity */
+extern word reg_flerr; /* Floating point error */
 
 /*
  * f_atn - arctangent
@@ -33,7 +34,12 @@ extern double inf; /* infinity */
 void
 f_atn(void)
 {
+    unsigned int mxcsr;
+
     reg_ra = atan(reg_ra);
+    mxcsr = _mm_getcsr();
+    if(mxcsr & _MM_EXCEPT_UNDERFLOW)
+        reg_ra = 0;
 }
 
 /*
@@ -54,7 +60,11 @@ f_chp(void)
 void
 f_cos(void)
 {
+    unsigned int mxcsr;
     reg_ra = cos(reg_ra);
+    mxcsr = _mm_getcsr();
+    if(mxcsr & _MM_EXCEPT_UNDERFLOW)
+        reg_ra = 0;
 }
 
 /*
@@ -63,11 +73,14 @@ f_cos(void)
 void
 f_etx(void)
 {
+    unsigned int mxcsr;
     errno = 0;
     reg_ra = exp(reg_ra);
-    if(errno) {
+    mxcsr = _mm_getcsr();
+    if(mxcsr & _MM_EXCEPT_UNDERFLOW)
+        reg_ra = 0;
+    else if(errno)
         reg_ra = inf;
-    }
 }
 
 /*
@@ -76,11 +89,15 @@ f_etx(void)
 void
 f_lnf(void)
 {
+    unsigned int mxcsr;
     errno = 0;
+
     reg_ra = log(reg_ra);
-    if(errno) {
+    mxcsr = _mm_getcsr();
+    if(mxcsr & _MM_EXCEPT_UNDERFLOW)
+        reg_ra = 0;
+    else if(errno)
         reg_ra = inf;
-    }
 }
 
 /*
@@ -89,7 +106,11 @@ f_lnf(void)
 void
 f_sin(void)
 {
+    unsigned int mxcsr;
     reg_ra = sin(reg_ra);
+    mxcsr = _mm_getcsr();
+    if(mxcsr & _MM_EXCEPT_UNDERFLOW)
+        reg_ra = 0;
 }
 
 /*
@@ -98,7 +119,11 @@ f_sin(void)
 void
 f_sqr(void)
 {
+    unsigned int mxcsr;
     reg_ra = sqrt(reg_ra);
+    mxcsr = _mm_getcsr();
+    if(mxcsr & _MM_EXCEPT_UNDERFLOW)
+        reg_ra = 0;
 }
 
 /*
@@ -107,9 +132,13 @@ f_sqr(void)
 void
 f_tan(void)
 {
-    double result;
-    result = tan(reg_ra);
+    unsigned int mxcsr;
     errno = 0;
-    reg_ra = errno ? inf : result;
+    reg_ra = tan(reg_ra);
+    mxcsr = _mm_getcsr();
+    if(mxcsr & _MM_EXCEPT_UNDERFLOW)
+        reg_ra = 0;
+    else if(errno)
+        reg_ra = inf;
 }
 #endif /* FLOAT & !MATHHDWR */

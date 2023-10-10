@@ -543,9 +543,10 @@ init
 
    wc = 'rdx'
 
-   ia = 'rbp'
+   ia = 'r12'
+   ra = 'xmm12'
 
-   cp = 'cp'
+   cp = 'r13'
 
    xl = 'rsi'
    xl = 'xl'
@@ -559,9 +560,18 @@ init
    w0 = 'w0'; wa = 'wa'; wb = 'wb'; wc = 'wc'
    xl = 'xl'; xr = 'xr'; xs = 'xs'; xt = xl
 
-*  _ia_ is mapped to _rbp_ in nasm.h.
+*  internal work registers
+*  r10, r11 scope only within individual minimal opcodes
+*           values not preserved or used outside of the minimal opcode
+   r10 = 'r10'; r11 = 'r11'
+
+* Global registers that are preserved
+*  _ia_ is mapped to _r12_ in nasm.h.
+*  _ra_ is mapped to _xmm12_ in nasm.h
 
    ia = 'ia'
+   ra = 'ra'
+   cp = 'r13'
 
 *  cp is kept in memory
 
@@ -1293,17 +1303,16 @@ g_ent
 *  2 and 4 are even.
 
    t1 = i.text(i1)
-   outfile = tab 'align' tab '2'
+   genop('align', 2)
    differ(t1)              :s(g_ent.1)
-   outfile = tab 'nop'
+   genop('nop')
                      :(g_ent.2)
 g_ent.1
 
-   outfile = tab 'db' tab  t1
+   genop('db', t1)
 
 g_ent.2
 
-   outlines = outlines + 2
    genopl(thislabel)
 
 *  note that want to attach label to last instruction
@@ -1569,11 +1578,11 @@ g_dcv
 
 g_zer
 
-   ident(i.text(i1),'(xr)+') genop('mov',w0,'0')
+   ident(i.text(i1),'(xr)+') genop('xor',w0, w0)
 +        genop('stos_w')            :s(opdone)
    isreg(i1)               :s(g_zer1)
    ident(i.text(i1),'-(xs)')        :s(g_zer.xs)
-   genop('mov',w0,'0')
+   genop('xor',w0, w0)
    genop('mov',getarg(i1),w0)       :(opdone)
 
 g_zer1
@@ -1744,7 +1753,7 @@ g_bnz
                      :(opdone)
 g_bnz1
 
-   genop('or',getarg(i1),getarg(i1))
+   genop('test',getarg(i1), getarg(i1))
    genop('jnz',getarg(i2))
                      :(opdone)
 
@@ -1756,7 +1765,7 @@ g_bze isreg(i1)               :s(g_bze1)
 g_bze1
 
    t1 = getarg(i1)
-   genop('or',t1,t1)
+   genop('test',t1, t1)
    genop('jz',getarg(i2))           :(opdone)
 
 *  *   2.15 LCT  _w,opv_
@@ -1873,14 +1882,14 @@ g_bod
 *  This instruction causes the code pointer register to be set from the
 *  value in _reg_ which is unchanged
 
-g_lcp genop(op_,getarg(i1))            :(opdone)
+g_lcp genop('mov', cp, getarg(i1))            :(opdone)
 
 *  *   3.2   SCP   _reg_
 
 *  Store code pointer register this instruction loads the current value in the code pointer
 *  register into reg_ (CP ) is unchanged.
 
-g_scp      genop(op_,getarg(i1))       :(opdone)
+g_scp genop('mov',getarg(i1), cp)       :(opdone)
 
 *  *   3.3   LCW  _reg_
 
@@ -1891,7 +1900,9 @@ g_scp      genop(op_,getarg(i1))       :(opdone)
 
 *  Execution of LCW may destroy XL .
 
-g_lcw  genop(op_,getarg(i1))           :(opdone)
+g_lcw  genop('mov', 'r10', 'm_word [r13]')
+       genop('mov', getarg(i1, 'm_word'), 'r10')
+       genop('add', cp, 'cfp_b')           :(opdone)
 
 *  *   3.4   ICP
 
@@ -1901,7 +1912,7 @@ g_lcw  genop(op_,getarg(i1))           :(opdone)
 
 *  Current implementation keeps *CP* in memory.
 
-g_icp genop(op_,getarg(i1))            :(opdone)
+g_icp genop('add', cp, 'cfp_b')            :(opdone)
 
 *  #### 4-   Operations on Signed Integer Values
 
@@ -1942,11 +1953,9 @@ g_sbi
 *  Divide integer accumulator by  _ops_
 
 g_dvi
+   genop('mov', r10, getarg(i1))
+   genop('call','do_dvi')
 
-   genop('mov',w0,ia)
-   genop('cdq')
-   genop('idiv',getarg(i1))
-   genop('mov',ia,w0)
                      :(opdone)
 
 *  *   4.6   RMI   _ops_
@@ -1954,10 +1963,8 @@ g_dvi
 *  Set integer accumulator to `mod(intacc,_ops_)`
 
 g_rmi
-   genop('mov',w0,ia)
-   genop('cdq')
-   genop('idiv',getarg(i1))
-   genop('mov',ia,wc)
+   genop('mov',r10, getarg(i1))
+   genop('call', 'do_rmi')
                      :(opdone)
 *  *   4.7   STI   _ops_
 
@@ -1988,9 +1995,9 @@ g_ngi
 *  IOV and INO may not have labels.
 
 g_ino
+   genop('jno', getarg(i1))         :(opdone)
 g_iov
-
-   genop(op_,getarg(i1))            :(opdone)
+   genop('jo', getarg(i1))          :(opdone)
 
 *  *   4.11 IEQ  _plbl_
 
@@ -2026,9 +2033,8 @@ g_ilt jop = 'jl'              :(op.cmp)
 g_ine jop = 'jne'             :(op.cmp)
 op.cmp
 
-   genop('sti_',w0)
-   genop('or',w0,w0)
-   genop(jop,getarg(i1))            :(opdone)
+   genop('cmp',ia, '0')
+   genop(jop, getarg(i1))            :(opdone)
 
 *   #### 5- Operations on Real Values
 
@@ -2064,16 +2070,30 @@ op.cmp
 *  Particular care may be needed on target machines having distinct overflow and divide by zero conditions.
 
 g_ldr
+   genop('movsd', ra, getarg(i1,'m_real'))   :(opdone)
 g_str
+   genop('movsd', getarg(i1, 'm_real'), ra)  :(opdone)
 g_adr
+   genop('ldmxcsr', '[mxcsr_set]')
+   genop('addsd', ra, getarg(i1, 'm_real'))  :(g_runder)
 g_sbr
+   genop('ldmxcsr', '[mxcsr_set]')
+   genop('subsd', ra, getarg(i1, 'm_real'))  :(g_runder)
 g_mlr
+   genop('ldmxcsr', '[mxcsr_set]')
+   genop('mulsd', ra, getarg(i1, 'm_real'))  :(g_runder)
 g_dvr
+   genop('ldmxcsr', '[mxcsr_set]')
+   genop('divsd', ra, getarg(i1, 'm_real'))  :(g_runder)
 
-   t1 = getarg(i1,'m_word')
-   genop('lea',w0,t1)
-   genop('call',op_)
-                     :(opdone)
+g_runder
+   genop('stmxcsr', '[mxcsr]')
+   genop('test', 'm_word [mxcsr]','0x0010')
+   genop('jz', (l1 = genlab()))
+   genop('pxor', ra, ra)
+   genop('ldmxcsr', '[mxcsr_set]')
+   genopl(l1 ':')                                :(opdone)
+
 *  *   5.7   ROV  _plbl_
 
 *  Jump to _plbl_ real overflow
@@ -2086,15 +2106,18 @@ g_dvr
 *  overflow (ADR,SBR MLR DVR.
 
 g_rov
+   genop('call', 'do_chk_real_inf')
+   genop('jnz', getarg(i1))           :(opdone)
 g_rno
-   genop(op_,getarg(i1))            :(opdone)
+   genop('call', 'do_chk_real_inf')
+   genop('jz', getarg(i1))           :(opdone)
 
 *  *   5.9 NGR
 
 *  Negate real accumulator (change sign)
 
-g_ngr genop('call',op_)
-                     :(opdone)
+g_ngr genop('movsd', 'xmm0', 'm_real [zeron]')
+      genop('pxor', ra, 'xmm0')   :(opdone)
 *  *   5.10 REQ  _plbl_
 
 *  Jump to _plbl_ if (RA) eq 0.0
@@ -2123,14 +2146,13 @@ g_ngr genop('call',op_)
 
 g_req jop = 'je'              :(g_r1)
 g_rne jop = 'jne'             :(g_r1)
-g_rge jop = 'jge'             :(g_r1)
-g_rgt jop = 'jg'              :(g_r1)
-g_rle jop = 'jle'             :(g_r1)
-g_rlt jop = 'jl'
-g_r1  genop('call','cpr_')
-
-   genop('mov','al','byte [reg_fl]')
-   genop('or','al','al')
+g_rge jop = 'jae'             :(g_r1)
+g_rgt jop = 'ja'              :(g_r1)
+g_rle jop = 'jbe'             :(g_r1)
+g_rlt jop = 'jb'
+g_r1
+   genop('pxor', 'xmm0', 'xmm0')
+   genop('ucomisd', ra, 'xmm0')
    genop(jop,getarg(i1))            :(opdone)
 
 *  *   5.16 ATN
@@ -2179,9 +2201,7 @@ g_lnf
 g_sin
 g_sqr
 g_tan
-
-   genop('call',op_)
-                     :(opdone)
+   genop('call',op_)    :(opdone)
 
 *  #### 6-   Operations on Character Values
 
@@ -2269,7 +2289,7 @@ g_lch
 g_lcg_1
 
    t2 break('(') len(1) len(2) . t3
-   eq(cfp_b,cfp_c) genop('mov',w0,'0')
+   eq(cfp_b,cfp_c) genop('xor',w0, w0)
    eq(cfp_b,cfp_c) genop('mov','al','m_char [' register(t3) ']')
    eq(cfp_b,cfp_c) genop('mov',t1,w0)
 
@@ -2577,7 +2597,7 @@ g_nzb isreg(i1)               :s(g_nzb1)
                      :(opdone)
 g_nzb1
 
-   genop('or',getarg(i1),getarg(i1))
+   genop('test',getarg(i1),getarg(i1))
    genop('jnz',getarg(i2))
                      :(opdone)
 *  *   7.10 ZRB  w,_plbl_
@@ -2591,7 +2611,7 @@ g_zrb isreg(i1)               :s(g_zrb1)
                      :(opdone)
 g_zrb1
 
-   genop('or',getarg(i1),getarg(i1))
+   genop('test',getarg(i1),getarg(i1))
    genop('jz',getarg(i2))
                      :(opdone)
 *  *   7.11 ZGB   _opn_
@@ -2639,12 +2659,11 @@ g_btw genop('shr',getarg(i1),'log_cfp_b')    :(opdone)
 
 g_mti ident(i.text(i1),'(xs)+')        :f(g_mti.1)
 
-   genop('pop',w0)
-   genop('ldi_',w0)           :(opdone)
+   genop('pop', ia)           :(opdone)
 
 g_mti.1
 
-   genop('ldi_',getarg(i1))         :(opdone)
+   genop('mov', ia, getarg(i1))         :(opdone)
 
 *  *   8.4   MFI   _opn,plbl_
 
@@ -2668,19 +2687,17 @@ g_mfi
 
 *  here if label given, branch if wc not in range (ie, negative)
 
-   genop('sti_',w0)
-   genop('or',w0,w0)
-   genop('js',getarg(i2))
+   genop('test', ia, ia)
+   genop('js', getarg(i2))
 
 g_mfi.1
 
-   ident(i.text(i1),'-(xs)')        :s(g_mfi.2)
-   genop('sti_',getarg(i1))         :(opdone)
+   ident(i.text(i1), '-(xs)')           :s(g_mfi.2)
+   genop('mov', getarg(i1), ia)         :(opdone)
 
 g_mfi.2
 
-   genop('sti_',w0)
-   genop('push',w0)           :(opdone)
+   genop('push', ia)                    :(opdone)
 
 *  *   8.5   ITR
 
@@ -2688,8 +2705,8 @@ g_mfi.2
 *  (may lose precision in some cases)
 
 g_itr
-
-   genop('call','itr_')          :(opdone)
+   genop('pxor', ra, ra)
+   genop('cvtsi2sd', ra, ia)  :(opdone)
 
 *  *   8.6   RTI  _plbl_
 
@@ -2703,13 +2720,13 @@ g_itr
 *  The following instructions provide for computing the length of storage required for a text string_
 
 g_rti
-
-   genop('rti_')
+   genop('cvttsd2si', ia, ra)
    eq(i.type(i1))             :s(opdone)
 
 *  here if label given, branch if real too large
-
-   genop('jc',getarg(i1))           :(opdone)
+   genop('mov', r10, '0x80000000')
+   genop('cmp', ia, r10)
+   genop('je',getarg(i1))           :(opdone)
 
 *  *   8.7   CTW  _w,val_
 
@@ -2771,12 +2788,12 @@ g_ctb.1
 
 g_cvm t1 = getarg(i1)
 
-   genop('sti_',w0)
+   genop('mov',w0, ia)
    genop('imul',w0,'10')
    genop('jo',t1)
    genop('sub',register(wb),'ch_d0')
    genop('sub',w0,register(wb))
-   genop('ldi_',w0)
+   genop('mov',ia, w0)
    genop('jo',t1)
                      :(opdone)
 
@@ -2793,7 +2810,19 @@ g_cvm t1 = getarg(i1)
 
 g_cvd
 
-   genop('cvd_')              :(opdone)
+   genop('mov', r10, ia)
+   genop('mov', w0, '7378697629483820647')
+   genop('imul', r10)
+   genop('mov', w0, r10)
+   genop('sar', w0, '63')
+   genop('sar', wc, '2')
+   genop('sub', wc, w0)
+   genop('lea', w0, '[wc+wc*4]')
+   genop('mov', ia, wc)
+   genop('add', w0, w0)
+   genop('sub', w0, r10)
+   genop('add', w0, '48')
+   genop('mov', wa, w0)       :(opdone)
 
 *  #### 9-   Block Move Instructions
 

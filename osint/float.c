@@ -27,23 +27,27 @@ This file is part of Macro SPITBOL.
  */
 
 #include "port.h"
+#include <fenv.h>
 #include <math.h>
+#define FE_SBL_EXCEPT (FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW)
+
 #if(FLOAT & !FLTHDWR) | EXTFUN
 
+# if 0
 /* overflow codes */
 /* OF = 0x80 */
 /* cf = 0x01 */
 /* zr = 0x40 */
 
 void
-f_ldr()
+f_ldr(void)
 { /* load real */
     reg_ra = *reg_rp;
     return;
 }
 
 void
-f_str()
+f_str(void)
 { /* store real */
     *reg_rp = reg_ra;
     return;
@@ -52,59 +56,46 @@ f_str()
 void
 f_adr()
 { /* add real */
+    feclearexcept(FE_ALL_EXCEPT);
     reg_ra += *reg_rp;
+    reg_flerr = fetestexcept(FE_SBL_EXCEPT);
     return;
 }
 
 void
-f_sbr()
+f_sbr(void)
 { /* subtract real */
+    feclearexcept(FE_ALL_EXCEPT);
     reg_ra -= *reg_rp;
+    reg_flerr = fetestexcept(FE_SBL_EXCEPT);
     return;
 }
 
 void
-f_mlr()
+f_mlr(void)
 { /* multiply real */
+    feclearexcept(FE_ALL_EXCEPT);
     reg_ra *= *reg_rp;
+    reg_flerr = fetestexcept(FE_SBL_EXCEPT);
     return;
 }
 
 void
-f_dvr()
+f_dvr(void)
 { /* divide real */
+    feclearexcept(FE_ALL_EXCEPT);
     if(*reg_rp != 0.0) {
         reg_ra /= *reg_rp;
-        reg_fl = 0;
+        reg_flerr = fetestexcept(FE_SBL_EXCEPT);
     } else {
-        reg_fl = 1;
         reg_ra = NAN;
+        reg_flerr = FE_DIVBYZERO;
     }
     return;
 }
 
 void
-f_ngr()
-{ /* negate real */
-    reg_ra = -reg_ra;
-    return;
-}
-
-void
-f_itr()
-{ /* integer to real */
-    reg_ra = (double)reg_ia;
-    return;
-}
-
-void
-f_rti()
-{ /* real to integer */
-    reg_ia = reg_ra;
-}
-
-void
-f_cpr()
+f_cpr(void)
 {
     if(reg_ra == 0.0)
         reg_fl = 0;
@@ -115,15 +106,15 @@ f_cpr()
 }
 
 void
-f_pra()
+f_pra(void)
 {}
 
 void
-i_cvd()
+i_cvd(void)
 {
     reg_wa = reg_ia % 10;
     reg_ia /= 10;
     reg_wa = -reg_wa + '0'; /* convert remainder to character code for digit */
 }
-
+# endif
 #endif /* (FLOAT & !FLTHDWR) | EXTFUN */

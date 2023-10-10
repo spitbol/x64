@@ -262,7 +262,7 @@ main2
 main3
     p.opsk1 = (break(' ') | rem) . argskel
     equ_defs = initmap(
-+        'nstmx[10]cfp_s[9]cfp_x[3]e_srs[100]e_sts[1000]e_cbs[500]e_hnb[257]'
++        'nstmx[10]cfp_s[15]cfp_x[3]e_srs[100]e_sts[1000]e_cbs[500]e_hnb[257]'
 +        'e_hnw[3]e_fsp[15]e_sed[25]ch_ua[65]ch_ub[66]ch_uc[67]ch_ud[68]ch_ue[69]'
 +        'ch_uf[70]ch_ug[71]ch_uh[72]ch_ui[73]ch_uj[74]ch_uk[75]ch_ul[76]'
 +        'ch_um[77]ch_un[78]ch_uo[79]ch_up[80]ch_uq[81]ch_ur[82]ch_us[83]'

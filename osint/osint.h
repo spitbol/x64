@@ -17,6 +17,7 @@ Copyright 2012-2017 David Shields
 
 extern word reg_cp, reg_wa, reg_wb, reg_wc, reg_xr, reg_xl, reg_xs, reg_w0;
 extern signed char reg_fl;
+extern word reg_flerr;
 extern long reg_ia;
 extern double reg_ra, *reg_rp;
 extern uword minimal_id;

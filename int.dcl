@@ -24,7 +24,11 @@
     extern  restore_regs
     extern  _rc_
     extern  reg_fl
-    extern  reg_w0
+    extern  reg_ra
+    extern  inf
+    extern  neg1f
+    extern  zeron
+    extern  mxcsr_set
 
     global  mxint
 
@@ -72,7 +76,7 @@
     d_word  p_alt   ; p1blk type word - 6
     d_word  p_any   ; p2blk type word - 7
 ; next needed only if support real arithmetic cnra
-;   d_word  b_rcl   ; rcblk type word - 8
+    d_word  b_rcl   ; rcblk type word - 8
     d_word  b_scl   ; scblk type word - 9
     d_word  b_sel   ; seblk type word - 10
     d_word  b_tbt   ; tbblk type word - 11
@@ -191,124 +195,79 @@ calltab:
     call    zzz
     %endmacro
 
-    extern  reg_ia,reg_wa,reg_fl,reg_w0,reg_wc
-
 ;   integer arithmetic instructions
-
-;   convert by division
-    extern  cvd__
-    %macro  cvd_    0
-    call    cvd__
-    %endmacro
-
-;   add integer
-    %macro  adi_    1
-    add ia,%1
-    seto    byte [reg_fl]
-    %endmacro
-
-;   divide integer
-    extern  dvi__
-    %macro  dvi_    1
-    call    dvi__
-    %endmacro
-
-;   remainder integer
-    extern  rmi__
-    %macro  rmi_    1
-    mov rax,%1
-    call    rmi__
-    %endmacro
-
-;   jump if no overflow
-    %macro  ino_    1
-    mov al,byte [reg_fl]
-    test    al,al
-    jz  %1
-    %endmacro
-
-;   jump if overflow
-    %macro  iov_    1
-    mov al,byte [reg_fl]
-    test    al,al
-    jnz %1
-    %endmacro
-
-;   load integer
-    %macro  ldi_    1
-    mov ia,%1
-    %endmacro
-
-;   multiply integer
-    %macro  mli_    1
-    imul    ia,%1
-    seto    byte [reg_fl]
-    %endmacro
-
-;   negative integer
-    %macro  ngi_    0
-    neg ia
-    seto    byte [reg_fl]
-    %endmacro
-
-;   real to integer
-    extern  rti_
-    %macro  rti_    0
-    call    rti_
-    mov ia,m_word [reg_ia]
-    %endmacro
-
-;   subtract integer
-    %macro  sbi_    1
-    sub ia,%1
-    mov rax,0
-    seto    byte [reg_fl]
-    %endmacro
-
-;   store integer
-    %macro  sti_    1
-    mov %1,ia
-    %endmacro
 
 ;   code pointer instructions (cp maintained in location reg_cp)
 
     extern  reg_cp
 
-    %macro  lcp_    1
-    mov rax,%1
-    mov m_word [reg_cp],rax
-    %endmacro
+; opcode helpers
+    section .data
+    align 8
+mxcsr:       dd  0
+;                          0x8000          0x1000           0x0800           0x0400        | 0x200               |  0x0100        | 0x0040
+mxcsr_set:   dd  0x9fc0  ; Flush to zero | Precision mask | Underflow mask | Overflow mask | Divide by Zero mask | Denormal mask | Denormals are zero
+    section .text
 
-    %macro  lcw_    1
-    mov rax,m_word [reg_cp]     ; load address of code word
-    mov rax,m_word [rax]            ; load code word
-    mov %1,rax
-    mov rax,m_word [reg_cp]     ; load address of code word
-    add rax,cfp_b
-    mov m_word [reg_cp],rax
-    %endmacro
+; divide ia by r10 result in ia
+; clobbers wc:w0
+; set overflow
+do_dvi:
+    test    r10,r10         ; check for divide by zero
+    jz      do_dvi_over     ; set overflow
+    mov     w0,ia
+    cdq
+    idiv    r10
+    mov     ia,w0
+    xor     w0,w0
+    ret
+do_dvi_over:
+    xor     w0,w0
+    cmp     al,-128
+    ret
 
-    %macro  scp_    1
-    mov rax,m_word [reg_cp]
-    mov %1,rax
-    %endmacro
+; remained of ia by r10 result in ia
+; clobbers wc:w0
+; set overflow
+do_rmi:
+    test    r10,r10         ; check for divide by zero
+    jz      do_rmi_over     ; set overflow
+    mov     w0,ia
+    cdq
+    idiv    r10
+    mov     ia,wc
+    xor     w0,w0
+    ret
+do_rmi_over:
+    xor     w0,w0
+    cmp     al,-128
+    ret
 
-    %macro  icp_    0
-    mov rax,m_word [reg_cp]
-    add rax,cfp_b
-    mov m_word [reg_cp],rax
-    %endmacro
-
-    %macro  rov_    1
-    mov al,byte [reg_fl]
-    or  al,al
-    jne %1
-    %endmacro
-
-    %macro  rno_    1
-    mov al,byte [reg_fl]
-    or  al,al
-    je  %1
-    %endmacro
-
-
+; Check ra for inf or fpe exception
+; clobbers xmm1
+; sets:
+;  unordered  ZF PF CF all 1  (either is NAN)
+;  GT         ZF PF CF all 0
+;  LT         ZF PF zero CF 1
+;  EQUAL      ZF 1 PF CF 0
+;
+do_chk_real_inf:
+    stmxcsr [mxcsr]                 ; get SSE status word
+    test    m_word [mxcsr], 0x000c  ; Overflow | divide by zero set ZF=1
+    jnz     do_chk_real_inf_except  ;
+    test    m_word [mxcsr], 0x0013  ; All others set as zero and ZF=0
+    jnz     do_chk_real_inf_zero    ; Set value as zero and return "okay"
+    movapd  xmm1,ra
+    andpd   xmm1,m_reall [neg1f]    ; Test for +/- NAN
+    ucomisd xmm1,m_real [inf]
+    je      do_chk_real_inf_except
+    cmp     al,al
+    ret
+do_chk_real_inf_zero:               ; Some exception, return a zero ZF=0
+    pxor    ra,ra
+    cmp     al,al
+    ret
+do_chk_real_inf_except:             ; Overflow ZF=1
+    xor     al,al
+    cmp     al,-128
+    ret
