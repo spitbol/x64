@@ -1,3 +1,4 @@
+
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 Copyright 2012-2015 David Shields
@@ -19,18 +20,17 @@ typedef long i;
 /*
  * i_mli - multiply to accumulator
  */
-i i_mli(arg,ia)
-i arg,ia;
+i
+i_mli(i arg, i ia)
 {
     return ia * arg;
 }
 
-
 /*
  * i_dvi - divide into accumulator
  */
-i i_dvi(arg,ia)
-i arg,ia;
+i
+i_dvi(i arg, i ia)
 {
     return ia / arg;
 }
@@ -38,10 +38,10 @@ i arg,ia;
 /*
  * i_rmi - remainder after division into accumulator
  */
-i i_rmi(arg,ia)
-i arg,ia;
+i
+i_rmi(i arg, i ia;)
 {
     return ia % arg;
 }
 
-#endif					// SUN4
+#endif /* SUN4 */

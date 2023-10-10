@@ -1,3 +1,4 @@
+
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 Copyright 2012-2017 David Shields
@@ -18,70 +19,75 @@ Copyright 2012-2017 David Shields
 
 #if FLOAT & !MATHHDWR
 
-#include <math.h>
+# include <math.h>
 
-#ifndef errno
+# ifndef errno
 int errno;
-#endif
+# endif
 
-extern double inf;	// infinity
+extern double inf; /* infinity */
 
 /*
  * f_atn - arctangent
  */
-void f_atn()
+void
+f_atn(void)
 {
-	reg_ra = atan(reg_ra);
+    reg_ra = atan(reg_ra);
 }
 
 /*
  * f_chp - chop
  */
-void f_chp()
+void
+f_chp(void)
 {
-    if (reg_ra >= 0.0)
-        reg_ra =  floor(reg_ra);
+    if(reg_ra >= 0.0)
+        reg_ra = floor(reg_ra);
     else
-        reg_ra =  ceil(reg_ra);
+        reg_ra = ceil(reg_ra);
 }
 
 /*
  * f_cos - cosine
  */
-void f_cos()
+void
+f_cos(void)
 {
-    reg_ra =  cos(reg_ra);
+    reg_ra = cos(reg_ra);
 }
-
 
 /*
  * f_etx - e to the x
  */
-void f_etx()
+void
+f_etx(void)
 {
     errno = 0;
     reg_ra = exp(reg_ra);
-    if (errno) {
-	reg_ra = inf;
+    if(errno) {
+        reg_ra = inf;
     }
 }
 
 /*
  * f_lnf - natureg_ral log
  */
-void f_lnf()
+void
+f_lnf(void)
 {
     errno = 0;
     reg_ra = log(reg_ra);
-    if (errno) {
-	reg_ra = inf;
+    if(errno) {
+        reg_ra = inf;
     }
 }
 
 /*
  * f_sin - sine
  */
-void f_sin()
+void
+f_sin(void)
 {
     reg_ra = sin(reg_ra);
 }
@@ -89,7 +95,8 @@ void f_sin()
 /*
  * f_sqr - square root  (reg_range checked by caller)
  */
-void f_sqr()
+void
+f_sqr(void)
 {
     reg_ra = sqrt(reg_ra);
 }
@@ -97,11 +104,12 @@ void f_sqr()
 /*
  * f_tan - tangent
  */
-void f_tan()
+void
+f_tan(void)
 {
     double result;
     result = tan(reg_ra);
     errno = 0;
     reg_ra = errno ? inf : result;
 }
-#endif					// FLOAT & !MATHHDWR
+#endif /* FLOAT & !MATHHDWR */

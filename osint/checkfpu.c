@@ -14,21 +14,22 @@ Copyright 2012-2017 David Shields
  * Returns 0 if absent, -1 if present.
  */
 
-
 #include "port.h"
 
 #if FLOAT
-#if FLTHDWR
-checkfpu()
+# if FLTHDWR
+int
+checkfpu(void)
 {
-    return -1;			// Hardware flting pt always present
+    return -1; /* Hardware flting pt always present */
 }
-#else					// FLTHDWR
-
-int checkfpu()
+# else /* FLTHDWR */
+int
+checkfpu(void)
 {
-    return -1;    // Assume all modern machines have FPU (excludes 80386 without 80387)
+    return -1; /* Assume all modern machines have FPU (excludes 80386 without
+                  80387) */
 }
 
-#endif					// FLTHDWR
-#endif					// FLOAT
+# endif /* FLTHDWR */
+#endif  /* FLOAT */

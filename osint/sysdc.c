@@ -1,3 +1,4 @@
+
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 Copyright 2012-2017 David Shields
@@ -15,44 +16,44 @@ This file is part of Macro SPITBOL.
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Macro SPITBOL.  If not, see <http://www.gnu.org/licenses/>.
+    along with Macro SPITBOL.  If not, see www.gnu.org/licenses.
 */
 
 /*
-/	zysdc - check system expiration date
+/    zysdc - check system expiration date
 /
-/	zysdc prints any header messages and may check
-/	the date to see if execution is allowed to proceed.
+/    zysdc prints any header messages and may check
+/    the date to see if execution is allowed to proceed.
 /
-/	Parameters:
-/	    Nothing
-/	Returns
-/	    Nothing
-/	    No return if execution not permitted
+/    Parameters:
+/        Nothing
+/    Returns
+/        Nothing
+/        No return if execution not permitted
 /
 */
 
 #include "port.h"
 
-int zysdc()
+int
+zysdc()
 {
-    struct scblk *pheadv = GET_DATA_OFFSET(headv,struct scblk *);
-	return NORMAL_RETURN;
-    // announce name and copyright
-    if (!dcdone && !(spitflag & NOBRAG))
-    {
-        dcdone = 1;				// Only do once per run
+    struct scblk *pheadv = GET_DATA_OFFSET(headv, struct scblk *);
+    return NORMAL_RETURN;
+    /* announce name and copyright */
+    if(!dcdone && !(spitflag & NOBRAG)) {
+        dcdone = 1; /* Only do once per run */
 
-        write( STDERRFD, "LINUX SPITBOL", 13);
+        write(STDERRFD, "LINUX SPITBOL", 13);
 
 #if RUNTIME
-        write( STDERRFD, " Runtime", 8);
-#endif					// RUNTIME
+        write(STDERRFD, " Runtime", 8);
+#endif /* RUNTIME */
 
-        write( STDERRFD, "  Release ", 10);
-        write( STDERRFD, pheadv->str, pheadv->len );
-        write( STDERRFD, pid1blk->str, pid1blk->len );
-        wrterr( cprtmsg );
+        write(STDERRFD, "  Release ", 10);
+        write(STDERRFD, pheadv->str, pheadv->len);
+        write(STDERRFD, pid1blk->str, pid1blk->len);
+        wrterr(cprtmsg);
     }
     return NORMAL_RETURN;
 }

@@ -1,0 +1,22 @@
+---
+BasedOnStyle: gnu
+IndentPPDirectives: AfterHash
+PPIndentWidth: 1
+IndentWidth: 4
+UseTab: Never
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterControlStatements: false
+  AfterFunctionDefinitionName: false
+
+BreakBeforeBinaryOperators: None
+ReflowComments: false
+
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterEnum: false
+  AfterStruct: false
+  SplitEmptyFunction: false
+  AfterControlStatement: Never
+  AfterFunction: true

@@ -1,3 +1,4 @@
+
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 Copyright 2012-2017 David Shields
@@ -11,16 +12,17 @@ Copyright 2012-2017 David Shields
 /   Function getshell returns the path for the current shell.
 /
 /   Parameters:
-/	None
+/    None
 /   Returns:
-/	Pointer to character string representing current shell path
+/    Pointer to character string representing current shell path
 */
 
-char *getshell()
+char *
+getshell(void)
 {
-    register char *p;
+    char *p;
 
-    if ((p = findenv(SHELL_ENV_NAME, sizeof(SHELL_ENV_NAME))) == (char *)0)
-        p = SHELL_PATH;		// failure -- use default
-    return p;			// value (with a null terminator)
+    if((p = findenv(SHELL_ENV_NAME, sizeof(SHELL_ENV_NAME))) == (char *)0)
+        p = SHELL_PATH; /* failure -- use default */
+    return p;           /* value (with a null terminator) */
 }

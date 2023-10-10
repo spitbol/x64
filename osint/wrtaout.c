@@ -1,3 +1,4 @@
+
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 Copyright 2012-2017 David Shields
@@ -10,53 +11,51 @@ Copyright 2012-2017 David Shields
 
 #include "port.h"
 
-#include <sys/types.h>
-#include <sys/times.h>
-#include <time.h>
 #include <stdio.h>
+#include <sys/times.h>
+#include <sys/types.h>
+#include <time.h>
 
 #include <fcntl.h>
-
 
 /*  openaout(file, tmpfnbuf, exe)
 /
 /   Parameters:
-/	file = file name
-/	tmpfnbuf = buffer where we can build temp file name
-/	exe = IO_EXECUTABLE to mark file as executable, else 0
+/    file = file name
+/    tmpfnbuf = buffer where we can build temp file name
+/    exe = IO_EXECUTABLE to mark file as executable, else 0
 /   Returns:
-/	0	successful. Variable aoutfd set to file descriptor.
-/	-1	create error for "a.out"
+/    0    successful. Variable aoutfd set to file descriptor.
+/    -1    create error for "a.out"
 */
-int openaout(fn, tmpfnbuf, exe)
-char *fn;
-char *tmpfnbuf;
-int	exe;
+int
+openaout(char *fn, char *tmpfnbuf, int exe)
 {
-    char			*p;
-    unsigned int	m,n;
+    char *p;
+    unsigned int m, n;
 
     mystrcpy(tmpfnbuf, fn);
     n = (unsigned int)clock();
-    m = n = n - ((n / 10000) * 10000);		// put in range 0 - 9999
-    for (;;) {
-        p = pathlast(tmpfnbuf);				// p = address we can append to
+    m = n = n - ((n / 10000) * 10000); /* put in range 0 - 9999 */
+    for(;;) {
+        p = pathlast(tmpfnbuf); /* p = address we can append to */
         p = mystrcpy(p, "temp");
         p += stcu_d(p, n, 4);
         mystrcpy(p, ".tmp");
-        if (access(tmpfnbuf, 0) != 0)
+        if(access(tmpfnbuf, 0) != 0)
             break;
         n++;
-        n = n - ((n / 10000) * 10000);		// put in range 0 - 9999
-        if (m == n)
+        n = n - ((n / 10000) * 10000); /* put in range 0 - 9999 */
+        if(m == n)
             return -1;
     }
 
-    if ( (aoutfd = spit_open( tmpfnbuf, O_WRONLY|O_TRUNC|O_CREAT,
-                              IO_PRIVATE | IO_DENY_READWRITE | exe /* ? 0777 : 0666 */,
-                              IO_REPLACE_IF_EXISTS | IO_CREATE_IF_NOT_EXIST )) < 0 )
-        return	-1;
-    fp = (FILEPOS)0;           //   file position
+    if((aoutfd = spit_open(tmpfnbuf, O_WRONLY | O_TRUNC | O_CREAT,
+                           IO_PRIVATE | IO_DENY_READWRITE | exe
+                           /* ? 0777 : 0666 */,
+                           IO_REPLACE_IF_EXISTS | IO_CREATE_IF_NOT_EXIST)) < 0)
+        return -1;
+    fp = (FILEPOS)0; /*   file position */
     return 0;
 }
 
@@ -64,115 +63,107 @@ int	exe;
 /   wrtaout( startadr, size )
 /
 /   Parameters:
-/	startadr	char pointer to first address to write
-/	size		number of bytes to write
+/    startadr    char pointer to first address to write
+/    size        number of bytes to write
 /   Returns:
-/	0	successful
-/	-2	error writing memory to a.out
+/    0    successful
+/    -2    error writing memory to a.out
 /
 /   Write data to a.out file.
 */
-int wrtaout( startadr, size )
-unsigned char *startadr;
-uword size;
+int
+wrtaout(unsigned char *startadr, uword size)
 {
-    if ( (uword)write( aoutfd, startadr, size ) != size )
-        return	-2;
+    if((uword)write(aoutfd, startadr, size) != size)
+        return -2;
 
-    fp += size;			//   advance file position
+    fp += size; /*   advance file position */
     return 0;
 }
 
 #if EXECFILE
+
 /*
 /   seekaout( pagesize )
 /
 /   Parameters:
-/	pagesize	power of two (e.g. 1024)
+/    pagesize    power of two (e.g. 1024)
 /   Returns:
-/	0	successful
+/    0    successful
 /  -3 LSEEK to pagesize-1 file position failed
-/	-4	forced write to pagesize boundary failed
+/    -4    forced write to pagesize boundary failed
 /
 /   Seek and extend file to power of two boundary.
 */
 
-int seekaout( pagesize )
-long pagesize;
+int
+seekaout(long pagesize)
 {
-    register long excess;
+    long excess;
 
     /*
-    /   If fp not multiple of pagesize, force file size up to multiple.
-    /   Notice trick to force file size up:  seek to 1 character in front
-    /   of desired length, then write a single character at that position.
-    /   The file system will fill in seeked over characters.
-    */
-    if ( (excess = ((long)fp & (pagesize - 1))) != 0 )
-    {
-        excess	= pagesize - excess;
-        if ( LSEEK( aoutfd, (FILEPOS)(excess-1), 1 ) < (FILEPOS)0 )
-            return	-3;
-        if ( write( aoutfd, "", 1 ) != 1 )
-            return	-4;
+       /   If fp not multiple of pagesize, force file size up to multiple.
+       /   Notice trick to force file size up:  seek to 1 character in front
+       /   of desired length, then write a single character at that position.
+       /   The file system will fill in seeked over characters.
+     */
+    if((excess = ((long)fp & (pagesize - 1))) != 0) {
+        excess = pagesize - excess;
+        if(LSEEK(aoutfd, (FILEPOS)(excess - 1), 1) < (FILEPOS)0)
+            return -3;
+        if(write(aoutfd, "", 1) != 1)
+            return -4;
         fp += (FILEPOS)excess;
     }
 
     return 0;
 }
-#endif					// EXECFILE
-
+#endif /* EXECFILE */
 
 /*
 /   closeaout(filename)
 /
 /   Parameters
-/	filename
+/    filename
 /   Returns:
-/	none
+/    none
 /
 /   Close "a.out" file and return.
 */
 
-word closeaout(fn, tmpfnbuf, errflag)
-char *fn;
-char *tmpfnbuf;
-word errflag;
+word
+closeaout(char *fn, char *tmpfnbuf, word errflag)
 {
-    close( aoutfd );
-    if (errflag == 0)
-    {
-        unlink(fn);							// delete old file, if any
-        if (rename(tmpfnbuf, fn) != 0)
-            errflag = -1;					// if can't rename it
+    close(aoutfd);
+    if(errflag == 0) {
+        unlink(fn); /* delete old file, if any */
+        if(rename(tmpfnbuf, fn) != 0)
+            errflag = -1; /* if can't rename it */
     }
-    if (errflag != 0)						// if failing, delete temp file
+    if(errflag != 0) /* if failing, delete temp file */
         unlink(tmpfnbuf);
     return errflag;
 }
-
 
 /*
 /   rdaout( fd, startadr, size ) - read in section of file created by wrtaout()
 /
 /   Parameters:
-/	fd		file descriptor
-/	startadr	char pointer to first address to read
-/	size		number of bytes to read
+/    fd        file descriptor
+/    startadr    char pointer to first address to read
+/    size        number of bytes to read
 /   Returns:
-/	0	successful
-/	-2	error reading from a.out
+/    0    successful
+/    -2    error reading from a.out
 /
 /   Read data from .spx file.
 */
-int rdaout( fd, startadr, size )
-int	fd;
-unsigned char *startadr;
-uword size;
+int
+rdaout(int fd, unsigned char *startadr, uword size)
 {
-    if ( (uword)read( fd, startadr, size ) != size )
-        return	-2;
+    if((uword)read(fd, startadr, size) != size)
+        return -2;
 
-    fp += size;			//   advance file position
+    fp += size; /*   advance file position */
     return 0;
 }

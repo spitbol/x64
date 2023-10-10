@@ -1,8 +1,8 @@
+
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 Copyright 2012-2017 David Shields
 */
-
 
 /*
 /   arg2scb( req, argc, argv, scptr, maxs )
@@ -11,90 +11,83 @@ Copyright 2012-2017 David Shields
 /   The copy is appended to the string in the SCBLK provided.
 /
 /   Parameters:
-/	req	number of argument to copy
-/	argc	number of arguments
-/	argv	pointer to array of pointers to strings (arguments)
-/	scptr	pointer to SCBLK to receive copy of argument
-/	maxs	maximum number of characters to append.
+/    req    number of argument to copy
+/    argc    number of arguments
+/    argv    pointer to array of pointers to strings (arguments)
+/    scptr    pointer to SCBLK to receive copy of argument
+/    maxs    maximum number of characters to append.
 /   Returns:
-/	Length of argument copied or -1 if req is out of range.
+/    Length of argument copied or -1 if req is out of range.
 /   Side Effects:
-/	Modifies contents of passed SCBLK (scptr).
-/	SCBLK length field is incremented.
+/    Modifies contents of passed SCBLK (scptr).
+/    SCBLK length field is incremented.
 */
 
 #include "port.h"
 
-static int 
-arg2scb( req, argc, argv, scptr, maxs )
-
-int	req;
-int	argc;
-char	*argv[];
-struct	scblk	*scptr;
-int	maxs;
-
+static int
+arg2scb(int req, int argc, char *argv[], struct scblk *scptr, int maxs)
 {
-    register word	i;
-    register char	*argcp, *scbcp;
+    word i;
+    char *argcp, *scbcp;
 
-    if ( req < 0  ||  req >= argc )
-        return	-1;
+    if(req < 0 || req >= argc)
+        return -1;
 
-    argcp	= argv[req];
-    scbcp	= scptr->str + scptr->len;
-    for( i = 0 ; i < maxs  &&  ((*scbcp++ = *argcp++) != 0) ; i++ )
+    argcp = argv[req];
+    scbcp = scptr->str + scptr->len;
+    for(i = 0; i < maxs && ((*scbcp++ = *argcp++) != 0); i++)
         ;
     scptr->len += i;
     return i;
 }
 
 /*
-/	zyshs - host specific functions
+/    zyshs - host specific functions
 /
-/	zyshs is the catch-all function in the interface.  Any actions that
-/	are host specific should be placed here.
+/    zyshs is the catch-all function in the interface.  Any actions that
+/    are host specific should be placed here.
 /
-/	zyshs determines what function to preformed by examining the value
-/	of argument 1.  Current functions:
+/    zyshs determines what function to preformed by examining the value
+/    of argument 1.  Current functions:
 /
-/	HOST()
-/		returns the host string identifying the host environment
+/    HOST()
+/        returns the host string identifying the host environment
 /
-/	HOST( 0 )
-/		returns -u argument from command line
+/    HOST( 0 )
+/        returns -u argument from command line
 /
-/	HOST( 1, "command" )
-/		executes 2nd argument as a Unix command
+/    HOST( 1, "command" )
+/        executes 2nd argument as a Unix command
 /
-/	HOST( 2, n )
-/		returns command line argument "n"
+/    HOST( 2, n )
+/        returns command line argument "n"
 /
-/	HOST( 3 )
-/		returns the command count
+/    HOST( 3 )
+/        returns the command count
 /
-/	HOST( 4, "v" )
-/		returns the value of environment variable "v"
+/    HOST( 4, "v" )
+/        returns the value of environment variable "v"
 /
-/	Other HOST functions may be provided by system specific modules.
+/    Other HOST functions may be provided by system specific modules.
 /
-/	Parameters:
-/	    WA - argument 1
-/	    XL - argument 2
-/	    XR - argument 3
-/	    WB - argument 4
-/	    WC - argument 5
-/	Returns:
-/	    See exits
-/	Exits:
-/	    1 - erroneous argument
-/	    2 - execution error
-/	    3 - pointer to SCBLK or 0 in XL
-/	    4 - return NULL string
-/	    5 - return result in XR
-/	    6 - cause statement failure
-/	    7 - return string in XL, length in WA (may be 0)
-/	    8 - return copy of result in XR
+/    Parameters:
+/        WA - argument 1
+/        XL - argument 2
+/        XR - argument 3
+/        WB - argument 4
+/        WC - argument 5
+/    Returns:
+/        See exits
+/    Exits:
+/        1 - erroneous argument
+/        2 - execution error
+/        3 - pointer to SCBLK or 0 in XL
+/        4 - return NULL string
+/        5 - return result in XR
+/        6 - cause statement failure
+/        7 - return string in XL, length in WA (may be 0)
+/        8 - return copy of result in XR
 */
 
 /*
@@ -104,8 +97,8 @@ int
 checkstr(scp)
 struct scblk *scp;
 {
-    return scp != (struct scblk *)0L &&
-           scp->typ == TYPE_SCL && scp->len < tscblk_length;
+    return scp != (struct scblk *)0L && scp->typ == TYPE_SCL &&
+           scp->len < tscblk_length;
 }
 
 /*  check2str - check first two argument strings in XL, XR.
@@ -115,17 +108,16 @@ struct scblk *scp;
 int
 check2str()
 {
-    return checkstr( XL(struct scblk *) ) && checkstr( XR(struct scblk *) );
+    return checkstr(XL(struct scblk *)) && checkstr(XR(struct scblk *));
 }
-
 
 /*
  *  savestr - convert an scblk to a valid C string.  Returns pointer to
- *		start of string, or 0 if fail.  The char replaced by the
- *		'\0' terminator is returned in *cp.
+ *        start of string, or 0 if fail.  The char replaced by the
+ *        '\0' terminator is returned in *cp.
  */
 char *
-savestr(scp,cp)
+savestr(scp, cp)
 struct scblk *scp;
 char *cp;
 {
@@ -137,12 +129,10 @@ char *cp;
 /*
  *  save2str - convert first two argument strings in XL, XR.
  */
-void
-save2str(s1p,s2p)
-char **s1p, **s2p;
+void save2str(s1p, s2p) char **s1p, **s2p;
 {
-    *s1p = savestr( XL(struct scblk *), &savexl );
-    *s2p = savestr( XR(struct scblk *), &savexr );
+    *s1p = savestr(XL(struct scblk *), &savexl);
+    *s2p = savestr(XR(struct scblk *), &savexr);
 }
 
 /*
@@ -151,13 +141,12 @@ char **s1p, **s2p;
  *   replaced by the '\0' terminator is returned in *cp.
  */
 char *
-getstring(scp,cp)
+getstring(scp, cp)
 struct scblk *scp;
 char *cp;
 {
-    return checkstr(scp) ? savestr(scp,cp) : (char *)0L;
+    return checkstr(scp) ? savestr(scp, cp) : (char *)0L;
 }
-
 
 /*
  *  restorestring - restore an scblk after a getstring call.
@@ -165,14 +154,12 @@ char *cp;
  *  when making multiple getstring calls, call restorestring in the reverse
  *  order from getstring, in case two arguments point to the same source string.
  */
-void restorestring(scp,c)
-struct scblk *scp;
+void restorestring(scp, c) struct scblk *scp;
 word c;
 {
-    if (scp)
+    if(scp)
         scp->str[scp->len] = c;
 }
-
 
 /*
  *  restore2str - restore two argument strings in XL, XR.
@@ -180,8 +167,8 @@ word c;
 void
 restore2str()
 {
-    restorestring( XR(struct scblk *), savexr);
-    restorestring( XL(struct scblk *), savexl);
+    restorestring(XR(struct scblk *), savexr);
+    restorestring(XL(struct scblk *), savexl);
 }
 
 /*
@@ -190,54 +177,51 @@ restore2str()
  *  returns 1 if successful, 0 if failed.
  */
 int
-getint(icp,pword)
-struct icblk *icp;
-long *pword;
+getint(struct icblk *icp, long *pword)
 {
-    register char *p, c;
+    char *p, c;
     struct scblk *scp;
     word i;
     long result;
     int sign;
 
     sign = 1;
-    if ( icp->typ == TYPE_ICL)
+    if(icp->typ == TYPE_ICL)
         result = icp->val;
 #ifdef REAL_ARITH
-    else if (icp->typ == TYPE_RCL)
-    {
-#if sparc
+    else if(icp->typ == TYPE_RCL) {
+# if sparc
         union {
-            mword  rcvals[2];
+            mword rcvals[2];
             double rcval;
         } val;
         val.rcvals[0] = ((struct rcblk *)icp)->rcvals[0];
         val.rcvals[1] = ((struct rcblk *)icp)->rcvals[1];
         result = (long)val.rcval;
-#else
+# else
         result = (long)(((struct rcblk *)icp)->rcval);
-#endif
+# endif
     }
 #endif
     else {
         scp = (struct scblk *)icp;
-        if (!checkstr(scp))
+        if(!checkstr(scp))
             return 0;
         i = scp->len;
         p = scp->str;
         result = (long)0;
-        while (i && *p == ' ') {		// remove leading blanks
+        while(i && *p == ' ') { /* remove leading blanks */
             p++;
             i--;
         }
-        if (i && (*p == '+' || *p == '-')) {	// process optional sign char
-            if (*p++ == '-')
+        if(i && (*p == '+' || *p == '-')) { /* process optional sign char */
+            if(*p++ == '-')
                 sign = -1;
             i--;
         }
-        while (i--) {
+        while(i--) {
             c = *p++;
-            if ( c < '0' || c > '9' ) {	// not handling trailing blanks
+            if(c < '0' || c > '9') { /* not handling trailing blanks */
                 return 0;
             }
             result = result * 10 + (c - '0');
@@ -247,40 +231,40 @@ long *pword;
     return 1;
 }
 
-int zyshs()
+int
+zyshs()
 {
-    word	retval;
-    long	val;
-    register struct icblk *icp = WA (struct icblk *);
-    register struct scblk *scp;
+    word retval;
+    long val;
+    struct icblk *icp = WA(struct icblk *);
+    struct scblk *scp;
 
     /*
-    /   if argument one is null...
-    */
-    scp = WA (struct scblk *);
-    if (scp->typ == TYPE_SCL && !scp->len)
-    {
-        gethost( ptscblk, tscblk_length );
-        if ( ptscblk->len == 0 )
+       /   if argument one is null...
+     */
+    scp = WA(struct scblk *);
+    if(scp->typ == TYPE_SCL && !scp->len) {
+        gethost(ptscblk, tscblk_length);
+        if(ptscblk->len == 0)
             return EXIT_4;
-        SET_XL( ptscblk );
+        SET_XL(ptscblk);
         return EXIT_3;
     }
 
     /*
-    /   If argument one is an integer ...
-    */
-    if ( getint(icp,&val) ) {
-        switch( (int)val ) {
+       /   If argument one is an integer ...
+     */
+    if(getint(icp, &val)) {
+        switch((int)val) {
             /*
-            / HOST( -1, n ) returns internal parameter n
-            */
+                   / HOST( -1, n ) returns internal parameter n
+                 */
         case -1:
-            icp = XL( struct icblk * );
-            if ( getint(icp,&val) ) {
+            icp = XL(struct icblk *);
+            if(getint(icp, &val)) {
                 pticblk->typ = TYPE_ICL;
-                SET_XR( pticblk );
-                switch ( (int)val ) {
+                SET_XR(pticblk);
+                switch((int)val) {
                 case 0:
                     pticblk->val = memincb;
                     return EXIT_8;
@@ -294,9 +278,9 @@ int zyshs()
                     pticblk->val = (long)topmem;
                     return EXIT_8;
                 case 4:
-                    pticblk->val = stacksiz - 400;	// safety margin
+                    pticblk->val = stacksiz - 400; /* safety margin */
                     return EXIT_8;
-                case 5:							// stack in use
+                case 5: /* stack in use */
                     pticblk->val = stacksiz - (XS(long) - (long)lowsp);
                     return EXIT_8;
                 case 6:
@@ -305,109 +289,104 @@ int zyshs()
                 default:
                     return EXIT_1;
                 }
-            }
-            else
+            } else
                 return EXIT_1;
 
             /*
-            /  HOST( 0 ) returns the -u command line option argument
-            */
+                   /  HOST( 0 ) returns the -u command line option argument
+                 */
         case 0:
-            if ( uarg ) {
-                cpys2sc( uarg, ptscblk, tscblk_length );
-                SET_XL( ptscblk );
+            if(uarg) {
+                cpys2sc(uarg, ptscblk, tscblk_length);
+                SET_XL(ptscblk);
                 return EXIT_3;
-            }
-            else if ((val = cmdcnt) != 0) {
+            } else if((val = cmdcnt) != 0) {
                 ptscblk->len = 0;
-                while (ptscblk->len < tscblk_length - 2 &&
-                        arg2scb( (int) val++, gblargc, gblargv,
-                                 ptscblk, tscblk_length - ptscblk->len ) > 0)
+                while(ptscblk->len < tscblk_length - 2 &&
+                      arg2scb((int)val++, gblargc, gblargv, ptscblk,
+                              tscblk_length - ptscblk->len) > 0)
                     ptscblk->str[ptscblk->len++] = ' ';
-                if (ptscblk->len)
+                if(ptscblk->len)
                     --ptscblk->len;
-                SET_XL( ptscblk );
+                SET_XL(ptscblk);
                 return EXIT_3;
-            }
-            else
+            } else
                 return EXIT_4;
             /*
-            / HOST( 1, "command", "path" ) executes "command" using "path"
-            */
+                   / HOST( 1, "command", "path" ) executes "command" using "path"
+                 */
         case 1: {
             char *cmd, *path;
 
-            if (!check2str())
+            if(!check2str())
                 return EXIT_1;
-            save2str(&cmd,&path);
-            save0();		// made sure fd 0 OK
-            pticblk->val = dosys( cmd, path );
+            save2str(&cmd, &path);
+            save0(); /* made sure fd 0 OK */
+            pticblk->val = dosys(cmd, path);
 
             pticblk->typ = TYPE_ICL;
             restore2str();
             restore0();
-            if (pticblk->val < 0)
+            if(pticblk->val < 0)
                 return EXIT_6;
-            SET_XR( pticblk );
+            SET_XR(pticblk);
             return EXIT_8;
         }
 
-        /*
-        / HOST( 2, n ) returns command line argument n
-        */
+            /*
+                   / HOST( 2, n ) returns command line argument n
+                 */
         case 2:
-            icp = XL( struct icblk * );
-            if ( getint(icp,&val) ) {
+            icp = XL(struct icblk *);
+            if(getint(icp, &val)) {
                 ptscblk->len = 0;
-                retval = arg2scb( (int) val, gblargc, gblargv, ptscblk, tscblk_length );
-                if ( retval < 0 )
+                retval = arg2scb((int)val, gblargc, gblargv, ptscblk,
+                                 tscblk_length);
+                if(retval < 0)
                     return EXIT_6;
-                if ( retval == 0 )
+                if(retval == 0)
                     return EXIT_1;
-                SET_XL( ptscblk );
+                SET_XL(ptscblk);
                 return EXIT_3;
-            }
-            else
+            } else
                 return EXIT_1;
 
             /*
-            /  HOST( 3 ) returns the command count
-            */
+                   /  HOST( 3 ) returns the command count
+                 */
         case 3:
-            if ( cmdcnt ) {
+            if(cmdcnt) {
                 pticblk->typ = TYPE_ICL;
                 pticblk->val = cmdcnt;
-                SET_XR( pticblk );
+                SET_XR(pticblk);
                 return EXIT_8;
-            }
-            else
+            } else
                 return EXIT_6;
 
             /*
-            / HOST( 4, "env-var" ) returns the value of "env-var" from
-            /	    the environment.
-            */
+                   / HOST( 4, "env-var" ) returns the value of "env-var" from
+                   /        the environment.
+                 */
         case 4:
-            scp = XL( struct scblk * );
-            if ( scp->typ == TYPE_SCL ) {
-                if ( scp->len == 0 )
+            scp = XL(struct scblk *);
+            if(scp->typ == TYPE_SCL) {
+                if(scp->len == 0)
                     return EXIT_1;
-                if ( rdenv( scp, ptscblk ) < 0 )
+                if(rdenv(scp, ptscblk) < 0)
                     return EXIT_6;
-                SET_XL( ptscblk );
+                SET_XL(ptscblk);
                 return EXIT_3;
-            }
-            else
+            } else
                 return EXIT_1;
-        }       // end switch
+        } /* end switch */
 
         /*
-        / Any other integer value is processed by the system-specific functions
-        */
+           / Any other integer value is processed by the system-specific functions
+         */
 
         /*
-        /   Here if first argument wasn't an integer or was an illegal value.
-        */
+           /   Here if first argument wasn't an integer or was an illegal value.
+         */
     }
     return EXIT_1;
 }

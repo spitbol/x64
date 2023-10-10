@@ -1,3 +1,4 @@
+
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 Copyright 2012-2017 David Shields
@@ -20,7 +21,8 @@ Copyright 2012-2017 David Shields
 
 #include "port.h"
 
-void ttyinit()
+void
+ttyinit()
 {
     ttyiobin.bfb = MP_OFF(pttybuf, struct bfblk *);
 }
@@ -31,29 +33,30 @@ void ttyinit()
 /   zyspi prints a line on the user's terminal.
 /
 /   Parameters:
-/	xr	pointer to SCBLK containing string to print
-/	wa	length of string
+/    xr    pointer to SCBLK containing string to print
+/    wa    length of string
 /   Returns:
-/	Nothing
+/    Nothing
 /   Exits:
-/	1	failure
+/    1    failure
 */
 
-int zyspi()
+int
+zyspi()
 {
-    word	retval;
+    word retval;
 
-    retval = oswrite( 1, ttyiobout.len, WA(word), &ttyiobout, XR( struct scblk * ) );
+    retval =
+        oswrite(1, ttyiobout.len, WA(word), &ttyiobout, XR(struct scblk *));
 
     /*
-    /	Return error if oswrite fails.
-    */
-    if ( retval != 0 )
+       /    Return error if oswrite fails.
+     */
+    if(retval != 0)
         return EXIT_1;
 
-    return  NORMAL_RETURN;
+    return NORMAL_RETURN;
 }
-
 
 /*
 /   zysri - read from interactive channel
@@ -61,51 +64,50 @@ int zyspi()
 /   zysri reads a line from the user's terminal.
 /
 /   Parameters:
-/	xr	pointer to SCBLK to receive line
+/    xr    pointer to SCBLK to receive line
 /   Returns:
-/	Nothing
+/    Nothing
 /   Exits:
-/	1	EOF
+/    1    EOF
 */
 
-
-int zysri()
-
+int
+zysri()
 {
-    register word	length;
-    register struct scblk *scb = XR( struct scblk * );
-    register char *saveptr, savechr;
+    word length;
+    struct scblk *scb = XR(struct scblk *);
+    char *saveptr, savechr;
 
     /*
-    /	Read a line specified by length of scblk.  If EOF take exit 1.
-    */
-    length = scb->len;					// Length of buffer provided
-    saveptr = scb->str + length;		// Save char following buffer for \n
+       /    Read a line specified by length of scblk.  If EOF take exit 1.
+     */
+    length = scb->len;           /* Length of buffer provided */
+    saveptr = scb->str + length; /* Save char following buffer for \n */
     savechr = *saveptr;
 
-    ((struct bfblk *) (ttyiobin.bfb))->size = ++length; // Size includes extra byte for \n
+    ((struct bfblk *)(ttyiobin.bfb))->size =
+        ++length; /* Size includes extra byte for \n */
 
-    length = osread( 1, length, &ttyiobin, scb );
+    length = osread(1, length, &ttyiobin, scb);
 
-    *saveptr = savechr;					// Restore saved char
+    *saveptr = savechr; /* Restore saved char */
 
-    if ( length < 0 )
-        return  EXIT_1;
+    if(length < 0)
+        return EXIT_1;
 
     /*
-    /	Line read OK, so set string length and return normally.
-    */
+       /    Line read OK, so set string length and return normally.
+     */
     scb->len = length;
     return NORMAL_RETURN;
 }
 
-
-// change handle used for TERMINAL output
-void ttyoutfdn(h)
-File_handle h;
+/* change handle used for TERMINAL output */
+void
+ttyoutfdn(File_handle h)
 {
     ttyiobout.fdn = h;
-    if (testty(h))
+    if(testty(h))
         ttyiobout.flg1 &= ~IO_COT;
     else
         ttyiobout.flg1 |= IO_COT;

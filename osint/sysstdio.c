@@ -1,8 +1,8 @@
+
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 Copyright 2012-2017 David Shields
 */
-
 
 /*
 /   sysstdio module
@@ -24,7 +24,8 @@ Copyright 2012-2017 David Shields
 
 #include "port.h"
 
-void stdioinit()
+void
+stdioinit()
 {
     inpiob.bfb = MP_OFF(pinpbuf, struct bfblk *);
 }
@@ -37,28 +38,27 @@ void stdioinit()
 /   for details.
 /
 /   Parameters:
-/	xr	pointer to SCBLK containing string to print
-/	wa	length of string
+/    xr    pointer to SCBLK containing string to print
+/    wa    length of string
 /   Returns:
-/	Nothing
+/    Nothing
 /   Exits:
-/	1	failure
+/    1    failure
 */
 
-int zyspr()
-
+int
+zyspr()
 {
     /*
-    /	Do writes in line mode.
-    */
+       /    Do writes in line mode.
+     */
 
-    if ( oswrite( 1, oupiob.len, WA(word), &oupiob, XR( struct scblk * ) ) < 0 ) {
-        return  EXIT_1;
+    if(oswrite(1, oupiob.len, WA(word), &oupiob, XR(struct scblk *)) < 0) {
+        return EXIT_1;
     }
 
     return NORMAL_RETURN;
 }
-
 
 /*
 /   zysrd - read from standard input
@@ -71,82 +71,68 @@ int zyspr()
 /   it is accepted.
 /
 /   Parameters:
-/	xr	pointer to SCBLK to receive line
-/	wc	length of string area in SCBLK
+/    xr    pointer to SCBLK to receive line
+/    wc    length of string area in SCBLK
 /   Returns:
-/	Nothing
+/    Nothing
 /   Exits:
-/	1	EOF or switch to new file.  (Returns length=0 in SCBLK if EOF, else
-/       	new file name in SCBLK and non-zero length.)
+/    1    EOF or switch to new file.  (Returns length=0 in SCBLK if EOF, else
+/           new file name in SCBLK and non-zero length.)
 */
 
-int zysrd()
+int
+zysrd()
 {
 
-    word	length;
-    struct scblk *scb = XR( struct scblk * );
+    word length;
+    struct scblk *scb = XR(struct scblk *);
 
-    if (provide_name)
-    {
-        // Provide compiler with name of source file, if desired.
+    if(provide_name) {
+        /* Provide compiler with name of source file, if desired. */
         provide_name = 0;
-        if (sfn && sfn[0])
-        {
-            cpys2sc( sfn, scb, WC(word));
-            return  EXIT_1;
+        if(sfn && sfn[0]) {
+            cpys2sc(sfn, scb, WC(word));
+            return EXIT_1;
         }
     }
 
-
     /*
-    /	Read a line from standard input.  If EOF on current standard input
-    /	file, call function swcinp to switch to the next file, if any, except
-    /       if within an include file.
-    */
-    while ( (length = osread( 1, WC(word), &inpiob, scb )) < 0 )
-    {
-        if ( nesting || swcinp( inpcnt, inpptr ) < 0 )
-        {
-            // EOF
+       /    Read a line from standard input.  If EOF on current standard input
+       /    file, call function swcinp to switch to the next file, if any, except
+       /       if within an include file.
+     */
+    while((length = osread(1, WC(word), &inpiob, scb)) < 0) {
+        if(nesting || swcinp(inpcnt, inpptr) < 0) {
+            /* EOF */
             scb->len = 0;
-            return  EXIT_1;
-        }
-        else
-        {
-            // Successful switch, report new file name if still in compilation phase
-            if (!executing && sfn && sfn[0])
-            {
-                cpys2sc( sfn, scb, WC(word));
-                return  EXIT_1;
+            return EXIT_1;
+        } else {
+            /* Successful switch, report new file name if still in compilation phase */
+            if(!executing && sfn && sfn[0]) {
+                cpys2sc(sfn, scb, WC(word));
+                return EXIT_1;
             }
         }
-
     }
-    scb->len = length;	// line read, so set line length
+    scb->len = length; /* line read, so set line length */
     /*
-    /	Special check for '#!' invocation.
-    */
-    if ( first_record  &&  inpptr )
-    {
+       /    Special check for '#!' invocation.
+     */
+    if(first_record && inpptr) {
         first_record = 0;
-        if ( scb->str[0] == '#'  &&  scb->str[1] == '!' )
-        {
+        if(scb->str[0] == '#' && scb->str[1] == '!') {
             cmdcnt = gblargc - inpcnt + 1;
             inpcnt = 1;
-            while( (length=osread(1, WC(word), &inpiob, scb)) < 0 )
-            {
-                if ( swcinp( inpcnt, inpptr ) < 0 )
-                {
+            while((length = osread(1, WC(word), &inpiob, scb)) < 0) {
+                if(swcinp(inpcnt, inpptr) < 0) {
                     scb->len = 0;
-                    return  EXIT_1;
+                    return EXIT_1;
                 }
-                // Successful switch, report new file name
-                if (sfn && sfn[0])
-                {
-                    cpys2sc( sfn, scb, WC(word));
-                    return  EXIT_1;
+                /* Successful switch, report new file name */
+                if(sfn && sfn[0]) {
+                    cpys2sc(sfn, scb, WC(word));
+                    return EXIT_1;
                 }
-
             }
             scb->len = length;
         }
@@ -159,7 +145,8 @@ int zysrd()
  /    Return file descriptor for standard input channel.
 */
 
-int getrdfd( )
+int
+getrdfd()
 {
     return inpiob.fdn;
 }
@@ -168,11 +155,11 @@ int getrdfd( )
  /    Return file descriptor for standard output channel.
 */
 
-int getprfd( )
+int
+getprfd()
 {
     return oupiob.fdn;
 }
-
 
 /*
  /    Return iob for standard input channel.
@@ -184,15 +171,15 @@ getrdiob()
     return &inpiob;
 }
 
-
 /*
  * CLRBUF - clear input buffer
  */
-void clrbuf()
+void
+clrbuf()
 {
-    register struct bfblk *bfptr;
+    struct bfblk *bfptr;
 
-    bfptr = ((struct bfblk *) (inpiob.bfb));
+    bfptr = ((struct bfblk *)(inpiob.bfb));
     bfptr->next = bfptr->fill = 0;
     bfptr->offset = (FILEPOS)0;
     bfptr->curpos = (FILEPOS)-1;
@@ -202,7 +189,8 @@ void clrbuf()
 /*
  *  OUPEOF - advance output file to EOF
  */
-void oupeof()
+void
+oupeof()
 {
     doset(&oupiob, 0L, 2);
 }

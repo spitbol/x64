@@ -1,3 +1,4 @@
+
 /*
 Copyright 1987-2012 Robert B. K. Dewar and Mark Emmer.
 Copyright 2012-2017 David Shields
@@ -9,20 +10,20 @@ Copyright 2012-2017 David Shields
 
 #include "port.h"
 
-int zyspp()
-
+int
+zyspp()
 {
     /*
-    /   Set default case flag here; cannot set before starting up
-    /   compiler because of its clearing of its local data.
-    */
+       /   Set default case flag here; cannot set before starting up
+       /   compiler because of its clearing of its local data.
+     */
     /*
-    /   Set page width, lines per page, and compiler flags.
-    */
+       /   Set page width, lines per page, and compiler flags.
+     */
 
-    SET_WA( pagewdth );
-    SET_WB( lnsppage );
-    SET_WC( spitflag );
+    SET_WA(pagewdth);
+    SET_WB(lnsppage);
+    SET_WC(spitflag);
 
     return NORMAL_RETURN;
 }
