@@ -1,15 +1,93 @@
-# Unix SPITBOL V4.0a (Feburary 2023)
+# SPITBOL is an extremely high performance implementation of the SNOBOL4 language
+that brings raw power and speed to non-numeric computation.
 
-SPITBOL is an extremely high performance implementation of the SNOBOL4 language that brings raw power and speed
-to non-numeric computation.
+SPITBOL is currently only available for 64-bit x86_64 processors running Unix
+like systems.
 
-SPITBOL V4.0a is currently only available for 64-bit x86_64 processors running Unix.
+The latest version of SPITBOL can be found at
+[github.com/spitbol/x64](http://github.com/spitbol/x64).
 
-The latest version of SPITBOL V4.0 can be found at [github.com/spitbol/x64](http://github.com/spitbol/x64).
+For comments, suggestions, and bug reports please open an issue in the github
+repository.
 
-For comments, suggestions, and bug reports please open an issue in the github repository.
+## Unix SPITBOL V4.0c (Oct 2023)
 
-## Language Changes
+### Updates:
+
+* Set default for &anchor to 0
+* SIGQUIT and SIGHUP will cancel spitbol
+* Set max number of floating point digits on output to 16
+  (e.g. 0.1234567890123456) plus 3 digits for any exponent.
+* Extended test suite to include more math related tests.
+* Quick install instructions in INSTALL.md
+
+### Bugs fixed:
+
+* Fix the end of run summary for regenerations statics to use the proper message
+  text
+* Fix overflow detection for both integer and floating point
+* Mark stack as non-executable (needed for hardened systems)
+* Fix incorrect error handling within eval
+* Fix using caret '^' for exponents (e.g. 2 ^ 2 => 4)
+
+### Internal changes:
+
+* Using more x86_64 registers for the internal workings of the minimal
+  instructions.
+    * R12 used for IA (integer accumulator)
+    * XMM12 used for RA (real accumulator)
+    * R13 used for CP
+    * R10 and R11 are used as work registers.
+    * XMM0, XMM1 are used as work registers for floating point
+    * MXCSR used to manage floating point operations and detecting floating
+      point errors
+
+* Generate assembly code instead of calling C routines for some math and
+  arithmetic operations.
+
+* Use 'test' instead of 'or' to check register values
+* Use 'xor' to zero registers
+
+* Use sigaction instead of signal.
+
+* Eliminate some of the internal macros and just generate the assembly code
+  directly.  Use internal helper routines to handle some of the larger generated
+  code blocks.
+
+* General code formatting cleanup.
+    * Using spaces instead of tab characters
+    * Use standard C function declarations and definitions.
+    * Reindent all C code using clangd lsp (see osint/.clang-format for options
+      used)
+    * Makefile cleanup
+
+* Fix parsing source linenumber in asm.sbl
+* Fix ucase and letters in asm.sbl
+* Clean up label generation in asm.sbl
+* Explicitly set REL and BITS64 in generated assembly code
+
+The above needs more general testing.  Specific areas for testing are:
+
+* Floating point operations and functions
+* Integer "boundary" conditions
+
+Thanks to Jeff Cooper for feedback, performing testing and providing additional
+tests for arithmetic/math functions.
+
+Note that the changes associated with the development release SPITBOL V4.0b
+have been reworked into this release.
+
+### Wish list items:
+
+* Detection/and use of NAN and +/- INF for floating point.
+
+## Unix SPITBOL V4.0b (Jun 2023)
+
+Development release (see development branch in git repository)
+
+## Unix SPITBOL V4.0a (Feb 2023)
+
+### Language Changes
 
 Version 4.0a contains minor bug fixes and clarifications
 
@@ -51,14 +129,14 @@ You can install it in `/usr/local/bin/spitbol` with the command:
 
 Three tools are needed to build Spitbol:
 
-  1. A C compiler
-  2. A C runtime library
-  3. An assembler
+  1. Posix C compiler
+  2. Standard C runtime library
+  3. NASM assembler
 
 SPITBOL uses the gcc compiler to compile C source files.
 
-SPITBOL requires NASM, the Netwide ASseMbler: [nasm](http://www.nasm.us) to assemble the generated
-x86_64 machine code.
+SPITBOL requires NASM, the Netwide ASseMbler: [nasm](http://www.nasm.us) to
+assemble the generated x86_64 machine code.
 
 
 ## Building SPITBOL
