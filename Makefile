@@ -13,21 +13,25 @@ DEBUG=$(debug)
 CC=gcc
 ELF=elf$(WS)
 
-DEST=/usr/local/bin
+destprefix?=/usr/local
 
-ifeq	($(DEBUG),0)
-CFLAGS= -Dm64 -m64 -static 
+DEST=$(destprefix)/bin
+DEMODEST=$(destprefix)/share/spitbol
+MANDEST=$(destprefix)/man/man1
+
+ifeq ($(DEBUG),0)
+CFLAGS= -Dm64 -m64 -static
 else
-CFLAGS= -Dm64 -g -m64 -static 
+CFLAGS= -Dm64 -g -m64 -static
 endif
 
-# Assembler info 
+# Assembler info
 # Assembler
 ASM=nasm
 ifeq	($(DEBUG),0)
 ASMFLAGS = -f $(ELF) -d m64
 else
-ASMFLAGS = -g -F stabs -f $(ELF) -d m64
+ASMFLAGS = -g -F dwarf -f $(ELF) -d m64
 endif
 
 # Tools for processing Minimal source file.
@@ -37,9 +41,11 @@ BASEBOL =   ./bin/sbl
 #LOBJS=  dlfcn.o load.o
 LOBJS=
 
-spitbol: 
+spitbol: sbl
+
+sbl: sbl.min lex.sbl asm.sbl err.sbl int.asm int.dcl int.h osint/*.c osint/*.h
 #	rm sbl sbl.lex sbl.s sbl.err err.s
-	$(BASEBOL) lex.sbl 
+	$(BASEBOL) lex.sbl
 	$(BASEBOL) -x asm.sbl
 	$(BASEBOL) -x -1=sbl.err -2=err.asm err.sbl
 	$(ASM) $(ASMFLAGS) err.asm
@@ -48,14 +54,6 @@ spitbol:
 #stop:
 	$(CC) $(CFLAGS) -c osint/*.c
 	$(CC) $(CFLAGS) *.o -osbl -lm
-
-# (BROKEN) link spitbol with dynamic linking
-spitbol-dynamic: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -osbl -lm 
-
-sbl.go:	sbl.lex go.sbl
-	$(BASEBOL) -x -u i32 go.sbl
-
 
 # Use the bootstrap assembler files
 # You can then do: make BASEBOL=./bootsbl to do a first make of spitbol
@@ -69,13 +67,13 @@ bootsbl:
 	$(CC) $(CFLAGS) *.o -obootsbl -lm
 	rm -f *.o *.lst *.map *.err err.lex sbl.lex sbl.err sbl.asm err.asm
 
-# verify that the bootstrap files match 
+# verify that the bootstrap files match
 checkboot:
 	diff err.asm bootstrap/err.asm
 	diff sbl.asm bootstrap/sbl.asm
 	diff sbl.lex bootstrap/sbl.lex
 
-# Run sanity check first to make sure we have good output. 
+# Run sanity check first to make sure we have good output.
 makeboot: spitbol
 	cp err.asm bootstrap/err.asm
 	cp sbl.asm bootstrap/sbl.asm
@@ -85,17 +83,17 @@ makeboot: spitbol
 bininst:
 	cp sbl ./bin
 
-# install binaries from ./bin as the system spitbol compilers
+# install into the system
 install:
+	sudo mkdir -p $(DEST)
+	sudo mkdir -p $(DEMODEST)
+	sudo mkdir -p $(MANDEST)
 	sudo cp ./bin/sbl $(DEST)/spitbol
+	sudo cp ./demos/* $(DEMODEST)
+	sudo cp spitbol.1 $(MANDEST)/spitbol.1
 
 clean:
 	rm -f  *.o *.lst *.map *.err err.lex sbl.lex sbl.err sbl.asm err.asm ./sbl ./bootsbl
-
-z:
-	nm -n sbl.o >s.nm
-	sbl map-$(WS).sbl <s.nm >s.dic
-	sbl z.sbl <ad >ae
 
 sclean:
 # clean up after sanity-check
