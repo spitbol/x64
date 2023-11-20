@@ -49,7 +49,7 @@ main(int argc, char **argv)
      */
     gblargc = argc;
     gblargv = argv;
-    lowsp = 0L;
+    lowsp = NULL;
     /*
        /    Initialize buffers
      */
@@ -141,7 +141,7 @@ main(int argc, char **argv)
     /*
      *  Force the memory manager to initialize itself
      */
-    if((char *)sbrk(0) == (char *)-1) {
+    if(sbrk(0) == (char *)-1) {
         wrterr("Insufficient memory.  Try smaller -d, -m, or -s command "
                "line options.");
         exit(1);

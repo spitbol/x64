@@ -46,6 +46,9 @@
       global      minimal
       extern      calltab
       extern      stacksiz
+      extern      lowsp
+      extern      lowspmin
+      extern      basemem
 
 ;     values below must agree with calltab defined in x64.hdr and also in osint/osint.h
 
@@ -403,15 +406,10 @@ startup:
       call  stackinit         ; initialize minimal stack
       mov   rax,m_word [compsp]     ; get minimal's stack pointer
       mov m_word [reg_wa],rax       ; startup stack pointer
-
       cld                     ; default to up direction for string ops
-      stmxcsr [mxcsr_save]      ; Remember default mxcsr
-;      getoff      rax,dffnc         # get address of ppm offset
-      mov   m_word [ppoff],rax      ; save for use later
-
-      mov   rsp,m_word [osisp]      ; switch to new c stack
+      stmxcsr [mxcsr_save]    ; Remember default mxcsr
       mov   m_word [minimal_id],calltab_start
-      call  minimal                 ; load regs, switch stack, start compiler
+      call  minimal           ; load regs, switch stack, start compiler
 
 ;     stackinit  -- initialize lowspmin from sp.
 
@@ -423,31 +421,37 @@ startup:
 ;     output: register wa, sp, lowspmin, compsp, osisp set up per diagram:
 
 ;     (high)      +----------------+
-;           |  old c stack     |
-;           |----------------| <-- incoming sp, resultant wa (future rsp)
-;           |          ^       |
-;           |          |       |
-;           / stacksiz bytes /
-;           |          |       |
-;           |          |       |
-;           |----------- | --| <-- resultant lowspmin
-;           | 400 bytes  v     |
-;           |----------------| <-- future c stack pointer, osisp
-;           |  new c stack     |
-;     (low) |            |
-
-
+;                 |  old c stack   |
+;                 |    //////      |  <- incoming sp
+;                 |----------------|
+;                 |   vdso/vvar    |
+;                 |    etc ////    |
+;                 |----------------| <-- high heap
+;                 | free alloc     |
+;                 |                | <- maxmem
+;                 |----------------| <- topmem (will grow to maxmem)
+;                 / memincb        /
+;                 |----------------| <- basemem
+;                 |          ^     | <- initial compsp (stack goes down)
+;                 |          |     |
+;                 / stacksiz bytes /
+;                 |          |     |
+;                 |          |     |
+;                 |--------- | ----| <-- resultant lowspmin
+;                 | 400 bytesv     |
+;                 |----------------| <- lowsp
+;    (low)          // free heap //
 
 
       global      stackinit
 stackinit:
-      mov   rax,rsp
+      mov   rax, m_word [lowsp]     ;
+      add   rax, cfp_b*400
+      mov   m_word [lowspmin], rax
+      mov   rax, m_word [lowsp]
+      add   rax, m_word [stacksiz]
+      sub   rax, cfp_b
       mov   m_word [compsp],rax     ; save as minimal's stack pointer
-      sub   rax,m_word [stacksiz]   ; end of minimal stack is where c stack will start
-      mov   m_word [osisp],rax      ; save new c stack pointer
-      add   rax,cfp_b*100           ; 100 words smaller for chk
-      extern      lowspmin
-      mov   m_word [lowspmin],rax
       ret
 
 ;     mimimal -- call minimal function from c

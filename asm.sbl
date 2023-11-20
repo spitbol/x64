@@ -2992,7 +2992,7 @@ g_mcb
 
 g_chk
 
-   genop('cmp',xs,'lowspmin')
+   genop('cmp',xs,'m_word [lowspmin]')
    genop('jb','sec06')
                      :(opdone)
 
@@ -3239,7 +3239,7 @@ g_sec.5
    genop('global','esec04')
    genopl('esec04:')
 
-   (gt(prc.count1) genopl('prc_:','times', prc.count1 ' dd 0'))
+   (gt(prc.count1) genopl('prc_:','times', prc.count1 ' dq 0'))
 
    genop('global','lowspmin')
    genopl('lowspmin:','d_word','0')

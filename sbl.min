@@ -11867,7 +11867,7 @@ p_exa  ent  bl_p1            p1blk
        blo  wa,=p_aaa,pexa1  jump if result is not a pattern
 
 *      here if result of expression is a pattern
-
+       chk                   check for stack overflow
        mov  -(xs),wb         stack dummy cursor
        mov  -(xs),xr         stack ptr to p_exa node
        mov  -(xs),pmhbs      stack history stack base ptr
