@@ -6032,7 +6032,7 @@ lstms  dac  b_scl            page
 
 headr  dac  b_scl
        dac  26
-       dtc  /macro spitbol version 4.0c/
+       dtc  /macro spitbol version 4.0d/
 
 headv  dac  b_scl            for exit() version no. check
        dac  5

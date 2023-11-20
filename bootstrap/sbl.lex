@@ -1025,7 +1025,7 @@
 ||dtc|27,/page /||||6029
 |headr|dac|6,b_scl||||6033
 ||dac|1,26||||6034
-||dtc|27,/macro spitbol version 4.0c/||||6035
+||dtc|27,/macro spitbol version 4.0d/||||6035
 |headv|dac|6,b_scl|||for exit() version no. check|6037
 ||dac|1,5||||6038
 ||dtc|27,/15.01/||||6039
@@ -3912,6 +3912,7 @@
 ||jsr|6,evalp|||evaluate expression|11865
 ||ppm|6,failp|||fail if evaluation fails|11866
 ||blo|8,wa|22,=p_aaa|6,pexa1|jump if result is not a pattern|11867
+||chk||||check for stack overflow|11870
 ||mov|11,-(xs)|8,wb||stack dummy cursor|11871
 ||mov|11,-(xs)|7,xr||stack ptr to p_exa node|11872
 ||mov|11,-(xs)|3,pmhbs||stack history stack base ptr|11873

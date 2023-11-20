@@ -1,4 +1,4 @@
-; compressed spitbol error messages 09/25/00 12:57:20
+; compressed spitbol error messages 05/10/85 03:57:36
 ;
   BITS 64
   DEFAULT REL

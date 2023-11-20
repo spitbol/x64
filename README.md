@@ -10,6 +10,19 @@ The latest version of SPITBOL can be found at
 For comments, suggestions, and bug reports please open an issue in the github
 repository.
 
+## Unix SPITBOL V4.0d (Nov 2023)
+
+### Updates
+
+* allow passing the path to the spitbol binary for tests/math_test.sh
+
+### Bugs fixed
+
+* Fix date routine. Fixes issue #24
+* Fix segfauts due to incorrect stack allocation. Fixes issue #27
+* Ensure man, help and options are in sync. Fixes issue #26
+* Don't use static linkking to building spitbol bin.  Fixes issue #25
+
 ## Unix SPITBOL V4.0c (Oct 2023)
 
 ### Updates:

@@ -1125,7 +1125,7 @@ lstms:  d_word b_scl                            ; page} dac b_scl
         d_char 'p','a','g','e',' ',0,0,0        ; } dtc /page /  
 headr:  d_word b_scl                            ; } dac b_scl  
         d_word 26                               ; } dac 26  
-        d_char 'm','a','c','r','o',' ','s','p','i','t','b','o','l',' ','v','e','r','s','i','o','n',' ','4','.','0','c',0,0,0,0,0,0; } dtc /macro spitbol version 4.0c/  
+        d_char 'm','a','c','r','o',' ','s','p','i','t','b','o','l',' ','v','e','r','s','i','o','n',' ','4','.','0','d',0,0,0,0,0,0; } dtc /macro spitbol version 4.0d/  
 headv:  d_word b_scl                            ; for exit() version no. check} dac b_scl  
         d_word 5                                ; } dac 5  
         d_char '1','5','.','0','1',0,0,0        ; } dtc /15.01/  
@@ -2442,7 +2442,7 @@ w_yyy:  d_word 0                                ; } dac 0
                                                 ; start of program section} sec   
         global esec04                           ; 
 esec04:                                         ; 
-prc_:   times 19 dd 0                           ; 
+prc_:   times 19 dq 0                           ; 
         global lowspmin                         ; 
 lowspmin: d_word 0                              ; 
         global end_min_data                     ; 
@@ -4480,7 +4480,7 @@ bpf7c:
         push m_word [flptr]                     ; stack old failure pointer} mov -(xs) flptr 
         push xl                                 ; stack pointer to pfblk} mov -(xs) xl 
         push 0                                  ; dummy zero entry for fail return} zer -(xs)  
-        cmp  xs,lowspmin                        ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
         jb   sec06                              ; 
         mov  m_word [flptr],xs                  ; set new fail return value} mov flptr xs 
         mov  m_word [flprt],xs                  ; set new flprt} mov flprt xs 
@@ -4736,7 +4736,7 @@ p_abo:                                          ;
 p_alt:                                          ; 
         push wb                                 ; stack cursor} mov -(xs) wb 
         push m_word [(cfp_b*parm1)+xr]          ; stack pointer to alternative} mov -(xs) parm1(xr) 
-        cmp  xs,lowspmin                        ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
         jb   sec06                              ; 
         jmp  succp                              ; if all ok, then succeed} brn succp  
         align 2                                 ; p1blk} ent bl_p1  
@@ -4976,6 +4976,8 @@ _l0074:                                         ;
 call_39:                                        ; 
         cmp  wa,p_aaa                           ; jump if result is not a pattern} blo wa =p_aaa pexa1
         jb   pexa1                              ; 
+        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
+        jb   sec06                              ; 
         push wb                                 ; stack dummy cursor} mov -(xs) wb 
         push xr                                 ; stack ptr to p_exa node} mov -(xs) xr 
         push m_word [pmhbs]                     ; stack history stack base ptr} mov -(xs) pmhbs 
@@ -5227,7 +5229,7 @@ pnth3:
         cmp  wa,ndpab                           ; jump if not ndpab entry} bne wa =ndpab pnth5
         jne  pnth5                              ; 
         push m_word [(cfp_b*num01)+xl]          ; stack initial cursor} mov -(xs) num01(xt) 
-        cmp  xs,lowspmin                        ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
         jb   sec06                              ; 
         jmp  pnth3                              ; loop back if ok} brn pnth3  
 pnth4:
@@ -10974,7 +10976,7 @@ cdgnm:
                                                 ; entry point, recursive} prc r 0 
         push xl                                 ; save entry xl} mov -(xs) xl 
         push wb                                 ; save entry wb} mov -(xs) wb 
-        cmp  xs,lowspmin                        ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
         jb   sec06                              ; 
         mov  wa,m_word [xr]                     ; load type word} mov wa (xr) 
         cmp  wa,b_cmt                           ; jump if cmblk} beq wa =b_cmt cgn04
@@ -11085,7 +11087,7 @@ cgv01:
         push xl                                 ; save entry xl} mov -(xs) xl 
         push wc                                 ; save entry constant flag} mov -(xs) wc 
         push m_word [cwcof]                     ; save initial code offset} mov -(xs) cwcof 
-        cmp  xs,lowspmin                        ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
         jb   sec06                              ; 
         mov  xl,xr                              ; copy cmblk pointer} mov xl xr 
         mov  xr,m_word [(cfp_b*cmtyp)+xr]       ; load cmblk type} mov xr cmtyp(xr) 
@@ -12723,7 +12725,7 @@ evalp:
         cmp  wa,b_t__                           ; jump if not seblk, trblk or exblk} bhi wa =b_t__ evlp3
         ja   evlp3                              ; 
 evlp1:
-        cmp  xs,lowspmin                        ; check for stack space} chk   
+        cmp  xs,m_word [lowspmin]               ; check for stack space} chk   
         jb   sec06                              ; 
         push xr                                 ; stack node pointer} mov -(xs) xr 
         push wb                                 ; stack cursor} mov -(xs) wb 
@@ -13038,7 +13040,7 @@ exp07:
         push xr                                 ; stack cmopn value} mov -(xs) xr 
         push wc                                 ; stack old counter} mov -(xs) wc 
         push wb                                 ; stack old level indicator} mov -(xs) wb 
-        cmp  xs,lowspmin                        ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
         jb   sec06                              ; 
         xor  wa,wa                              ; set new state to zero} zer wa  
         mov  wb,xl                              ; set new level indicator} mov wb xl 
@@ -13161,7 +13163,7 @@ exp26:
         jb   exp25                              ; 
 exp27:
         push xr                                 ; stack operator dvptr on stack} mov -(xs) xr 
-        cmp  xs,lowspmin                        ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
         jb   sec06                              ; 
         mov  wa,num01                           ; set new state} mov wa =num01 
         cmp  xr,opdvs                           ; back for next element unless =} bne xr =opdvs exp01
@@ -13605,7 +13607,7 @@ gpf05:
         add  xr,wb                              ; point to first reloc field} add xr wb 
         push wc                                 ; stack old field pointer} mov -(xs) wc 
         push wa                                 ; stack new limit pointer} mov -(xs) wa 
-        cmp  xs,lowspmin                        ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
         jb   sec06                              ; 
         jmp  gpf01                              ; if ok, back to process} brn gpf01  
 gpf06:
@@ -16225,7 +16227,7 @@ pcop1:
         call alloc                              ; allocate space for copy} jsr alloc  
         push xl                                 ; store old address on list} mov -(xs) xl 
         push xr                                 ; store new address on list} mov -(xs) xr 
-        cmp  xs,lowspmin                        ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
         jb   sec06                              ; 
         shr  wa,log_cfp_b                       ; move words from old block to copy} mvw   
         rep  movs_w                             ; 
@@ -16905,7 +16907,7 @@ prtvl:
                                                 ; entry point, recursive} prc r 0 
         push xl                                 ; save entry xl} mov -(xs) xl 
         push xr                                 ; save argument} mov -(xs) xr 
-        cmp  xs,lowspmin                        ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
         jb   sec06                              ; 
 prv01:
         mov  w0,m_word [(cfp_b*idval)+xr]       ; copy idval (if any)} mov prvsi idval(xr) 
