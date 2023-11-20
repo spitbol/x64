@@ -1,22 +1,28 @@
 #!/bin/bash
-../bin/sbl math_atan.sbl
-../bin/sbl math_chop.sbl
-../bin/sbl math_cos.sbl
-../bin/sbl math_diff.sbl
-../bin/sbl math_div.sbl
-../bin/sbl math_exp.sbl
-../bin/sbl math_limits1.sbl
-../bin/sbl math_limits2.sbl
-../bin/sbl math_limits3.sbl
-../bin/sbl math_limits4.sbl
-../bin/sbl math_ln.sbl
-../bin/sbl math_plus.sbl
-../bin/sbl math_minus.sbl
-../bin/sbl math_pow.sbl
-../bin/sbl math_prod.sbl
-../bin/sbl math_read.sbl
-../bin/sbl math_remdr.sbl
-../bin/sbl math_sin.sbl
-../bin/sbl math_sqrt.sbl
-../bin/sbl math_sum.sbl
-../bin/sbl math_tan.sbl
+if [[ x$1 -eq x ]]; then
+   sblbin=../bin/sbl
+else
+   sblbin=$1
+fi
+
+${sblbin} math_atan.sbl
+${sblbin} math_chop.sbl
+${sblbin} math_cos.sbl
+${sblbin} math_diff.sbl
+${sblbin} math_div.sbl
+${sblbin} math_exp.sbl
+${sblbin} math_limits1.sbl
+${sblbin} math_limits2.sbl
+${sblbin} math_limits3.sbl
+${sblbin} math_limits4.sbl
+${sblbin} math_ln.sbl
+${sblbin} math_plus.sbl
+${sblbin} math_minus.sbl
+${sblbin} math_pow.sbl
+${sblbin} math_prod.sbl
+${sblbin} math_read.sbl
+${sblbin} math_remdr.sbl
+${sblbin} math_sin.sbl
+${sblbin} math_sqrt.sbl
+${sblbin} math_sum.sbl
+${sblbin} math_tan.sbl
