@@ -67,6 +67,7 @@ datecvt(char *cp, int type)
     time_t tod;
 
     struct tm *tm;
+    time(&tod);
     tm = localtime(&tod);
 
     switch(type) {
