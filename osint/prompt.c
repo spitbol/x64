@@ -37,6 +37,8 @@ prompt(void)
     wrterr("-m# #bytes max object size     -s# #bytes stack size");
     wrterr("-c compiler statistics         -x execution statistics");
     wrterr("-a same as -lcx                -l normal listing");
+    wrterr("-g# listing page length        -t# listing line width");
+    wrterr("-p long listing format         -z standard listing options");
     wrterr("-o=file[.lst]  listing file    -h suppress version ID/date in "
            "listing");
 

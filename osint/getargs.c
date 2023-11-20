@@ -61,7 +61,7 @@ getargs(int argc, char *argv[])
        /   A single '-' represents the standard file provided by the shell
        /   and is treated as an input-file or output file as appropriate.
      */
-    result = (char **)0; /* no source file */
+    result = NULL; /* no source file */
 
     for(i = 1; i < argc; i++) {
         cp = argv[i]; /* point to next cmd line argument */
@@ -84,163 +84,86 @@ getargs(int argc, char *argv[])
         ++cp;
         while(*cp)
             switch(*cp++) {
-                /*
-                   /    -?  display option summary
-                 */
-            case '?':
+            case '?':   /* display option summary */
                 prompt();
                 break;
 #if !RUNTIME
-                /*
-                   /   -a   turn on all listing options except header
-                 */
-            case 'a':
+            case 'l':   /* turn on compilation listing */
+                spitflag &= ~NOLIST;
+                break;
+            case 'c':   /* turn on compilation statistics */
+                spitflag &= ~NOCMPS;
+                break;
+            case 'x':   /* print executaion statistics */
+                spitflag &= ~NOEXCS;
+                break;
+            case 'a':   /* (lcx) turn on all listing options except header */
                 spitflag &= ~(NOLIST | NOCMPS | NOEXCS);
                 break;
-
-                /*
-                   /   -b   suppress signon message when reloading save
-                   file
-                 */
-            case 'b':
+            case 'g':   /* ddd set page length in lines V1.08 */
+                cp = getnum(cp, &lnsppage);
+                break;
+            case 't':   /* ddd set line width in characters   V1.08 */
+                cp = getnum(cp, &pagewdth);
+                break;
+            case 'h':   /* suppress version header in listing */
+                spitflag |= NOHEDR;
+                break;
+            case 'p':   /* turn on long listing format */
+                spitflag |= LNGLST;
+                spitflag &= ~NOLIST;
+                break;
+            case 'z':   /* turn on standard listing options */
+                spitflag |= STDLST;
+                spitflag &= ~NOLIST;
+                break;
+            case 'b':   /* suppress signon message when reloading save */
                 spitflag |= NOBRAG;
                 break;
 
-                /*
-                   /   -c   turn on compilation statistics
-                 */
-            case 'c':
-                spitflag &= ~NOCMPS;
-                break;
-
-                /*
-                   /   -dnnn    set maximum size of dynamic area in
-                   bytes
-                 */
-            case 'd':
+            case 'd':   /* nnn set maximum size of dynamic area in bytes */
                 cp = optnum(cp, &databts);
                 /* round up to machine word boundary */
                 databts = (databts + sizeof(int) - 1) & ~(sizeof(int) - 1);
                 break;
-
-                /*
-                   /   -e don't send errors to terminal
-                 */
-            case 'e':
+            case 'e':   /* don't send errors to terminal */
                 spitflag &= ~ERRORS;
                 break;
-
-                /*
-                   /   -f   don't fold lower case to upper case
-                 */
-            case 'f':
+            case 'f':   /* don't fold lower case to upper case */
                 spitflag &= ~CASFLD;
                 break;
-
-                /*
-                   /   -F   fold lower case to upper case
-                 */
-            case 'F':
+            case 'F':   /* fold lower case to upper case */
                 spitflag |= CASFLD;
                 break;
-
-                /*
-                   /   -gddd    set page length in lines  V1.08
-                 */
-            case 'g':
-                cp = getnum(cp, &lnsppage);
-                break;
-
-                /*
-                   /   -h   suppress version header in listing
-                 */
-            case 'h':
-                spitflag |= NOHEDR;
-                break;
-
-                /*
-                   /   -iddd    set memory expansion increment (bytes)
-                 */
-            case 'i':
+            case 'i':   /* ddd set memory expansion increment (bytes) */
                 cp = optnum(cp, &memincb);
                 break;
-
-                /*
-                   /   -k   run inspite of compilation errors
-                 */
-            case 'k':
+            case 'k':   /* run inspite of compilation errors */
                 spitflag &= ~NOERRO;
                 break;
-
-                /*
-                   /   -l   turn on compilation listing
-                 */
-            case 'l':
-                spitflag &= ~NOLIST;
-                break;
-
-                /*
-                   /   -mddd    set maximum size of object in dynamic
-                   area
-                 */
-            case 'm':
+            case 'm':   /* ddd set maximum size of object in dynmaic area */
                 cp = optnum(cp, &maxsize);
                 break;
-
-                /*
-                   /   -n   suppress program execution
-                 */
-            case 'n':
+            case 'n':   /* supress program execution */
                 spitflag |= NOEXEC;
                 break;
-
-                /*
-                   /   -o fff   set output file to fff
-                   /   -o:fff & -o=fff also allowed.
-                 */
-            case 'o':
+            case 'o':   /* fff | :fff | =fff set output file to fff */
                 outptr = filenamearg(argc, argv);
                 if(!outptr)
                     goto badopt;
                 break;
-
-                /*
-                   /   -p   turn on long listing format
-                 */
-            case 'p':
-                spitflag |= LNGLST;
-                spitflag &= ~NOLIST;
-                break;
-
-                /*
-                   /   -r   read INPUT from source program file
-                 */
-            case 'r':
+            case 'r':   /* read INPUT from source program file */
                 readshell0 = 0;
                 break;
-
-                /*
-                   /   -s   set stack size in bytes
-                 */
-            case 's': {
+            case 's':   /* ddd set stack size in bytes */
                 cp = optnum(cp, &stacksiz);
                 /* round up to machine word boundary */
                 stacksiz = (stacksiz + sizeof(int) - 1) & ~(sizeof(int) - 1);
-            } break;
-
-                /*
-                   /   -tddd    set line width in characters  V1.08
-                 */
-            case 't':
-                cp = getnum(cp, &pagewdth);
                 break;
+
 #endif /* !RUNTIME */
 
-                /*
-                   /   -T fff  write TERMINAL output to file fff
-                   /   -T:fff & -T=fff also allowed.
-                 */
-            case 'T': {
+            case 'T': { /* fff | :fff | =fff write TERMINAL output to file fff */
                 char *ttyfile;
                 File_handle h;
                 ttyfile = filenamearg(argc, argv);
@@ -256,10 +179,7 @@ getargs(int argc, char *argv[])
                 ttyoutfdn(h);
             } break;
 
-                /*
-                   /   -u aaa   set user argument accessible via host()
-                 */
-            case 'u':
+            case 'u':   /* aaa set user argument accessible via host() */
                 uarg = argv[++i];
                 if(i == argc)
                     goto badopt; /* V1.08 */
@@ -267,42 +187,16 @@ getargs(int argc, char *argv[])
 
 #if !RUNTIME
 # if EXECFILE
-                /*
-                   /   -w   write executable module after compilation
-                 */
-            case 'w':
+            case 'w':   /* write executable module after compilation */
                 spitflag |= WRTEXE;
                 break;
-
 # endif /* EXECFILE */
-
-                /*
-                   /   -x   print execution statistics
-                 */
-            case 'x':
-                spitflag &= ~NOEXCS;
-                break;
-
-                /*
-                   /   -y   write executable module after compilation
-                 */
-            case 'y':
+            case 'y':   /* write executable module after compilation */
                 spitflag |= WRTSAV;
-                break;
-
-                /*
-                   /   -z   turn on standard listing options
-                 */
-            case 'z':
-                spitflag |= STDLST;
-                spitflag &= ~NOLIST;
                 break;
 #endif /* !RUNTIME */
 
-                /*
-                   / -# fff associate file fff with channel #
-                 */
-            case '0':
+            case '0':   /* # fff associate file fff with channel # */
             case '1':
             case '2':
             case '3':
@@ -322,10 +216,7 @@ getargs(int argc, char *argv[])
                     goto badopt;
                 break;
 
-                /*
-                   /   anything else is an error
-                 */
-            default:
+            default:    /* anything else is an error */
             badopt:
                 write(STDERRFD, "Illegal option -", 17);
                 write(STDERRFD, (cp - 1), 1);

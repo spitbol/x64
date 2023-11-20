@@ -15,6 +15,7 @@ spitbol \- SPeedy ImplemenTation of snoBOL
 [\fB-e\fR]
 [\fB-F\fR]
 [\fB-f\fR]
+[\fB-g\fI#\fR]
 [\fB-h\fR]
 [\fB-i\fI#\fR]
 [\fB-k\fR]
@@ -22,8 +23,10 @@ spitbol \- SPeedy ImplemenTation of snoBOL
 [\fB-m\fI#\fR]
 [\fB-n\fR]
 [\fB-o\fR=\fIout-file\fR]
+[\fB-p\fR]
 [\fB-r\fR]
 [\fB-s\fI#\fR]
+[\fB-t\fI#\fR]
 [\fB-u\fR \fI"string"\fR]
 [\fB-x\fR]
 [\fB-y\fR]
@@ -40,16 +43,17 @@ spitbol \- SPeedy ImplemenTation of snoBOL
 \fBMacro SPITBOL\fR is an extremely high-performance implementation of the
 SNOBOL4 language.
 
-With SNOBOL4, you can manipulate text and search for patterns in a simple and
-natural manner. SNOBOL4 is a completely general programming language, and its
-magic extends far beyond the world of text processing. Concise and powerful
+With the SNOBOL4 language, you can manipulate text and search for patterns in a
+simple and natural manner. SNOBOL4 is a completely general programming language,
+and its magic extends far beyond the world of text processing. Concise and powerful
 programs are easy to write. In addition, SNOBOL4's pattern programming
 provides a new way to work with computers.
 
-Confusion often arises for those that think "SPITBOL" is a dialect of "COBOL",
-even though there's absolutely no similarity between the two. They do share
-"BOL" in their name, but that's as close as they get. SPITBOL and COBOL were
-designed for very different types of applications.
+.P
+For information about differences between SNOBOL4, SNOBOL4+, and Spitbol (and
+differences between various \fBSpitbol\fR implementations) please refer to the
+\fBMacro SPITBOL\fR manual.
+
 .SH OPTIONS
 .TP 6
 .I -?
@@ -66,11 +70,14 @@ example, -23=infile.dat[-r10] associates \fBinfile.dat\fR with I/O channel 23.
 The file can be read in binary mode using 10-character records after executing
 the \fBMacro SPITBOL\fR statement, INPUT(.IN, 23).
 .TP 6
+.I -t#
+line width in characters for listings (default is -t120)
+.TP 6
 .I -T=term-file
 write TERMINAL output to the named file
 .TP 6
 .I -a
-Same as specifying the -l, -c, and -x options. Listing and statistical
+same as specifying the -l, -c, and -x options. Listing and statistical
 information will be provided
 .TP 6
 .I -b
@@ -90,10 +97,17 @@ dont send error messages or trace output to the screen; send to standard output
 instead, which may then be redirected
 .TP 6
 .I -F
-fold lower-case names to upper-case
+turns on case folding (default).  All statements will be internally converted to lower case.
+This option is the same as specifying the \fB-code 0\fR statement.
+See \fICase Folding\fR in \fINOTES\fR.
 .TP 6
 .I -f
-don't fold lower-case names to upper-case
+turns off case folding.  All case of all statements will preserved.
+This option is the same as specifying \fB-code 1\fR statement.
+See \fICase Folding\fR in \fINOTES\fR.
+.TP 6
+.I -g#
+specify the number of lines per page for listings (default is -g60)
 .TP 6
 .I -h
 suppress the \fBMacro SPITBOL\fR version identification string and date/time
@@ -131,6 +145,9 @@ simultaneous redirect standard output, use a hyphen for the file name:
 .nf
     spitbol -o=- program.spt >output.txt
 .fi
+.TP 6
+.I -p
+produce listing with wide titles for printer
 .TP 6
 .I -r
 INPUT variable will begin reading data at the line following the END statement
@@ -176,10 +193,67 @@ Arguments on the command line that appear after the source file containing the
 program's END statement are ignored by \fBMacro SPITBOL\fR. These extra
 arguments are made available to the \fBMacro SPITBOL\fR program via the
 HOST(3) and HOST(2,i) functions.
+.SH NOTES
+.TP 6
+\fBExecutable source files\fR
+.P
+\fBMacro SPITBOL\fR will ignore the first line of the initial source file if it begins with
+.I #!
+This allows the source file to marked as an executable in most command shells (e.g. bash).
+The first line contains the path to the spitbol executable with any of the spitbol options:
+.EX
+    #!/usr/bin/spitbol -x
+        output = 'Hello world'
+    end
+.EE
+.TP 6
+\fBSpecial note on Case Folding\fR
+.P
+When reading the input source code, or when processing strings using the \fBeval()\fR or \fBcode()\fR
+functions, the statements will internally either be translated to lower case, or left as-is.
+This behavior is controlled via the \fB-F\fR, \fB-f\fR command line options, the \fB-code\fR
+statement or the \fB&code\fR keyword.
+.P
+Internally all \fBMacro SPITBOL\fR built-in functions, keywords, special names, etc.
+are in lower case (including the special \fIend\fR label). (See \fBBUGS\fR)
+
+Consider the following code segment:
+.EX
+
+    a = 'Hello'
+    A = a ' World'
+    output = a
+    output = A
+    OUTPUT = 'All done'
+end
+.EE
+.P
+When running with the default options (case folding), the variable names \fIa\fR and \fIA\fR are
+the same the output will be the following:
+.EX
+    Hello World
+    Hello World
+    All done
+
+.EE
+.P
+When case folding is turned off (the \fB-f\fR command line option, the \fB-code \fInon-zero\fR
+statement, or setting the \fB&case\fR keyword to a non-zero value)
+the case of the variable names are preserved.  Because the variable names \fIa\fR and \fIA\fR are
+now different, the output will be:
+.EX
+    Hello
+    Hello World
+
+.EE
+Note that only 2 lines are displayed, because \fIoutput\fR is the special name for output and
+\fIOUTPUT\fR is a variable name.
+.P
+
 .SH FILES
 \fBMacro SPITBOL\fR source files should use .spl or .spt as the file name
 extension. This is by convention and it not a requirement.
-\fBMacro SPITBOL\fR save files should use .spx as the file name extension.
+
 .SH ENVIRONMENT
 .TP 6
 .I SNOLIB
@@ -209,12 +283,18 @@ the HOST function must match the case of the variable name.
 The diagnostic messages should be self explanatory. A complete list of the
 compile-time and run-time messages produced by \fBMacro SPITBOL\fR can be found
 in "Appendix D" of the \fBMacro SPITBOL\fR Manual.
+
 .SH BUGS
 The LOAD(s1,s2) function is currently disabled.
 
-For information about differences between SNOBOL4, SNOBOL4+, and Spitbol (and
-differences between various \fBSpitbol\fR implementations) please refer to the
-\fBMacro SPITBOL\fR manual.
+.P
+Currently the handling of case folding is inconsistent with older versions of \fBMacro SPITBOL\fR as well
+as with other current implementations of \fBSNOBOL\fR when folding is turned off.  Internally,
+\fBMacro SPITBOL\fR uses lower case for all internal built-in functions, keywords, special names, etc., while
+the proper behavior should be to use upper case for these internals.  For best compatibility, it is
+suggested to use the default where all statements are translated to lower case.  A future update will
+change this behavior so that the internals can be upper case.  Options will be added to control this behavior.
+
 .SH AUTHOR
 \fBSPITBOL\fR was initially implemented for the IBM System/360 and System/370
 family of computers by Robert B. K. Dewar and Ken Belcher.
