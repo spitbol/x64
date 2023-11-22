@@ -597,6 +597,7 @@ syscall_exit:
 ;     save compiler stack and switch to osint stack
       mov   m_word [compsp],rsp      ; save compiler's stack pointer
       mov   rsp,m_word [osisp]       ; load osint's stack pointer
+      and   rsp,0xfffffffffffffff0   ; 16byte alignment
       call  %1
       jmp   syscall_exit            ; was a call for debugging purposes, but that would cause a crash when the
                               ; compilers stack pointer blew up
@@ -865,6 +866,7 @@ re2:  push  rax                     ; transfer word of stack
 re3:  cld
       mov   m_word [compsp],rsp           ; save compiler's stack pointer
       mov   rsp,m_word [osisp]            ; back to osint's stack pointer
+      and   rsp,0xfffffffffffffff0  ; 16byte alignment
       call   rereloc                ; relocate compiler pointers into stack
       mov   rax,m_word [statb]            ; start of static region to rdi
       mov   m_word [reg_xr],rax
