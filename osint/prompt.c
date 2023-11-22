@@ -21,7 +21,7 @@ prompt(void)
 #endif /* RUNTIME */
 
 #if RUNTIME
-    wrterr("spitbol v4.0d");
+    wrterr("spitbol v4.0e");
     wrterr("options: (# is a decimal number)");
     wrterr("-u \"string\" data string available to program");
     wrterr("-#=file   associate file with I/O channel #");
@@ -30,7 +30,7 @@ prompt(void)
            "input/output");
     wrterr("# is a decimal number.  Append \"k\" for kilobytes, \"m\" for "
            "megabytes.");
-    wrterr("spitbol v4.0d");
+    wrterr("spitbol v4.0e");
     wrterr("options:");
     wrterr("-d# #bytes max heap            -i# #bytes initial heap size & "
            "enlarge amount");

@@ -1025,7 +1025,7 @@
 ||dtc|27,/page /||||6029
 |headr|dac|6,b_scl||||6033
 ||dac|1,26||||6034
-||dtc|27,/macro spitbol version 4.0d/||||6035
+||dtc|27,/macro spitbol version 4.0e/||||6035
 |headv|dac|6,b_scl|||for exit() version no. check|6037
 ||dac|1,5||||6038
 ||dtc|27,/15.01/||||6039

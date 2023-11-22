@@ -10,6 +10,14 @@ The latest version of SPITBOL can be found at
 For comments, suggestions, and bug reports please open an issue in the github
 repository.
 
+## Unix SPITBOL V4.0e (Nov 2023)
+
+### Bugs fixed
+
+* Fix segfault in C routines due to stack alignment Fixes issue #29
+* Fix typo in man page, add to BUGS that support for .spx files is currently
+  broken
+
 ## Unix SPITBOL V4.0d (Nov 2023)
 
 ### Updates

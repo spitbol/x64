@@ -1125,7 +1125,7 @@ lstms:  d_word b_scl                            ; page} dac b_scl
         d_char 'p','a','g','e',' ',0,0,0        ; } dtc /page /  
 headr:  d_word b_scl                            ; } dac b_scl  
         d_word 26                               ; } dac 26  
-        d_char 'm','a','c','r','o',' ','s','p','i','t','b','o','l',' ','v','e','r','s','i','o','n',' ','4','.','0','d',0,0,0,0,0,0; } dtc /macro spitbol version 4.0d/  
+        d_char 'm','a','c','r','o',' ','s','p','i','t','b','o','l',' ','v','e','r','s','i','o','n',' ','4','.','0','e',0,0,0,0,0,0; } dtc /macro spitbol version 4.0e/  
 headv:  d_word b_scl                            ; for exit() version no. check} dac b_scl  
         d_word 5                                ; } dac 5  
         d_char '1','5','.','0','1',0,0,0        ; } dtc /15.01/  
