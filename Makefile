@@ -10,7 +10,6 @@ OS=$(os)
 WS=$(ws)
 DEBUG=$(debug)
 
-CC=gcc
 ELF=elf$(WS)
 
 destprefix?=/usr/local
@@ -19,10 +18,11 @@ DEST=$(destprefix)/bin
 DEMODEST=$(destprefix)/share/spitbol
 MANDEST=$(destprefix)/man/man1
 
-ifeq ($(DEBUG),0)
-CFLAGS= -Dm64 -m64  -no-pie -fPIC -mdaz-ftz -mfpmath=sse -mieee-fp -mlong-double-64 -ffloat-store
-else
-CFLAGS= -Dm64 -g -no-pie -fPIC -m64  -mdaz-ftz -mfpmath=sse -mieee-fp -mlong-double-64 -ffloat-store
+CFLAGS=-Dm64 -m64 -no-pie -fPIC  -mfpmath=sse -mlong-double-64 -ffloat-store \
+    -Wno-unused-command-line-argument -Wno-ignored-optimization-argument
+
+ifeq ($(DEBUG),1)
+CFLAGS+= -g
 endif
 
 # Assembler info

@@ -94,8 +94,7 @@ arg2scb(int req, int argc, char *argv[], struct scblk *scptr, int maxs)
  *  checkstr - check if scblk is a valid string.  Returns 1 if so, else 0.
  */
 int
-checkstr(scp)
-struct scblk *scp;
+checkstr(struct scblk *scp)
 {
     return scp != (struct scblk *)0L && scp->typ == TYPE_SCL &&
            scp->len < tscblk_length;
@@ -106,7 +105,7 @@ struct scblk *scp;
  * Returns 1 if both OK, else 0.
  */
 int
-check2str()
+check2str(void)
 {
     return checkstr(XL(struct scblk *)) && checkstr(XR(struct scblk *));
 }
@@ -117,9 +116,7 @@ check2str()
  *        '\0' terminator is returned in *cp.
  */
 char *
-savestr(scp, cp)
-struct scblk *scp;
-char *cp;
+savestr(struct scblk *scp, char *cp)
 {
     *cp = scp->str[scp->len];
     scp->str[scp->len] = '\0';
@@ -129,7 +126,7 @@ char *cp;
 /*
  *  save2str - convert first two argument strings in XL, XR.
  */
-void save2str(s1p, s2p) char **s1p, **s2p;
+void save2str(char **s1p, char **s2p)
 {
     *s1p = savestr(XL(struct scblk *), &savexl);
     *s2p = savestr(XR(struct scblk *), &savexr);
@@ -141,9 +138,7 @@ void save2str(s1p, s2p) char **s1p, **s2p;
  *   replaced by the '\0' terminator is returned in *cp.
  */
 char *
-getstring(scp, cp)
-struct scblk *scp;
-char *cp;
+getstring(struct scblk *scp, char *cp)
 {
     return checkstr(scp) ? savestr(scp, cp) : (char *)0L;
 }
@@ -154,8 +149,7 @@ char *cp;
  *  when making multiple getstring calls, call restorestring in the reverse
  *  order from getstring, in case two arguments point to the same source string.
  */
-void restorestring(scp, c) struct scblk *scp;
-word c;
+void restorestring(struct scblk *scp, word c)
 {
     if(scp)
         scp->str[scp->len] = c;

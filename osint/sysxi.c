@@ -626,9 +626,6 @@ getsave(int fd)
 /
 */
 
-char *getshell();
-char *pathlast();
-
 void
 doexec(
      struct scblk *scbptr)

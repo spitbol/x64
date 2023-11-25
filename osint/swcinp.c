@@ -269,8 +269,7 @@ restore0()
 /   returns -1 if fails, else file descriptor >= 0
 */
 int
-tryopen(cp)
-char *cp;
+tryopen(char *cp)
 {
     int fd;
     if((fd = spit_open(cp, O_RDONLY, IO_PRIVATE | IO_DENY_WRITE,

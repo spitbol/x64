@@ -13,15 +13,14 @@ Copyright 2012-2017 David Shields
  * are called by inter.*, and by external functions.
  */
 
-#include "port.h"
 #include <errno.h>
 
-#if FLOAT & !MATHHDWR
+#include <math.h>
+#include <xmmintrin.h>
 
-# include <math.h>
-# include <xmmintrin.h>
+#include "port.h"
 
-# ifndef errno
+#ifndef errno
 int errno;
 # endif
 
@@ -141,4 +140,3 @@ f_tan(void)
     else if(errno)
         reg_ra = inf;
 }
-#endif /* FLOAT & !MATHHDWR */
