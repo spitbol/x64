@@ -42,8 +42,9 @@
       global      reg_size
 
       global      reg_rp
-
+      global      mxcsr_set
       global      minimal
+
       extern      calltab
       extern      stacksiz
       extern      lowsp
@@ -190,7 +191,10 @@ reg_rp:     d_word      0
 reg_fl:     db    0           ; condition code register for numeric operations
 
       align 8
-mxcsr_save:  dd   0           ; Preserved mxcsr (restore when calling to C)
+;                          0x8000          0x1000           0x0800           0x0400        | 0x200               |  0x0100        | 0x0040
+mxcsr_set:   dd  0x9fc0  ; Flush to zero | Precision mask | Underflow mask | Overflow mask | Divide by Zero mask | Denormal mask | Denormals are zero
+;
+mxcsr_save:  dd   0           ; Preserved mxcsr (restore when returning to C -- except for math functions)
       global      reg_flerr
 reg_flerr:  d_word      0     ; Floatint point error
 
@@ -779,7 +783,7 @@ sysxi:      mov   m_word [reg_xs],rsp
       push  r12
       push  r13
       movsd [reg_ra], ra
-      ldmxcsr [mxcsr_save]
+      ldmxcsr [mxcsr_set]
       call  %2
       movsd ra, [reg_ra]
       pop   r13

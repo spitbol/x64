@@ -200,15 +200,10 @@ calltab:
 ;   code pointer instructions (cp maintained in location reg_cp)
 
     extern  reg_cp
-
-; opcode helpers
     section .data
-    align 8
-mxcsr:       dd  0
-;                          0x8000          0x1000           0x0800           0x0400        | 0x200               |  0x0100        | 0x0040
-mxcsr_set:   dd  0x9fc0  ; Flush to zero | Precision mask | Underflow mask | Overflow mask | Divide by Zero mask | Denormal mask | Denormals are zero
+    align   8
+mxcsr       dd      0       ; used to test mxcsr exceptions
     section .text
-
 ; divide ia by r10 result in ia
 ; clobbers wc:w0
 ; set overflow
