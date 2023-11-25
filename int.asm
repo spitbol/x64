@@ -200,7 +200,7 @@ reg_flerr:  d_word      0     ; Floatint point error
       global      ten
 ten:  d_word      10              ; constant 10
       global      inf
-      align 8
+      align 16
 ; double precision
 ;    0        1        2         3        4        5       6        7
 ; seeeeeee eeeeffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff
@@ -218,7 +218,7 @@ infl: dd          -1
       dd          2146435071
 
       global neg1f
-      align 8
+      align 16
 neg1f: dq         0x7fffffffffffffff
 
       global      sav_block
