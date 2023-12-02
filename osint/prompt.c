@@ -61,7 +61,7 @@ prompt(void)
     wrterr("-r INPUT from source file following END statement");
     wrterr("-T=file  write TERMINAL output to file");
     wrterr("-#=file[options]  associate file with I/O channel #");
-    wrterr("option defaults: -F -d64m -i128k -m4m -s128k");
+    wrterr("option defaults: -F -d128m -i1m -m16m -s4m");
 
 #endif /* RUNTIME */
 

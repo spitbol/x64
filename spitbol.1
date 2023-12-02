@@ -37,7 +37,7 @@ spitbol \- SPeedy ImplemenTation of snoBOL
     Command arguments without values such as \fB-a\fR \fB-p\fR \fB-e\fR
     can be combined together as \fB-ape\fR.
 
-    option defaults: -d64m -F -i128k -m4m -s128k
+    option defaults: -d128m -F -i1m -m16m -s4m
 .fi
 .SH DESCRIPTION
 \fBMacro SPITBOL\fR is an extremely high-performance implementation of the
@@ -90,7 +90,7 @@ generate compilation statistics
 .I -d#
 maximum size (in bytes) of the allocated dynamic area (the heap). The size
 value can be followed by "k" for kilobytes or "m" for megabytes. (default is
--d64m).
+-d128m).
 .TP 6
 .I -e
 dont send error messages or trace output to the screen; send to standard output
@@ -117,7 +117,7 @@ that normally appear at the start of the listing
 maximum size (in bytes) by which the allocated dynamic area (the heap) is
 enlarged each time more memory is required. This value also specifies the
 initial size of the heap. The size value can be followed by "k" for kilobytes
-or "m" for megabytes. (default is -i128k).
+or "m" for megabytes. (default is -i1m).
 .TP 6
 .I -k
 run the program even when it contains compilation errors (same as using the
@@ -131,7 +131,7 @@ maximum size (in bytes) of any created object. This is the size of the longest
 individual string allowed and the largest individual array allowed. The
 keyword, &MAXLNGHT, is assigned this value when execution begins. The size
 value can be followed by "k" for kilobytes or "m" for megabytes. (default is
--m4m).
+-m16m).
 .TP 6
 .I -n
 suppress execution (same as using the -NOEXEC control statement)

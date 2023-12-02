@@ -45,15 +45,14 @@ Init(long spitflag, DFLT_FLAGS);  /*  flags to be given to compiler */
 /   Memory variables that control compiler's dynamic area and stack.
 */
 Init(uword memincb, CHUNK_B_SIZE); /*  meminc converted to bytes */
-Init(uword databts,
-     HEAP_SIZE * sizeof(word)); /*  max size in bytes of data area */
+Init(uword databts, HEAP_SIZE * sizeof(word)); /*  max size in bytes of data area */
 NoInit(char *basemem);          /*  base of dynamic memory */
 NoInit(char *topmem);           /*  current top of dynamic memory */
 NoInit(char *maxmem);           /*  maximum top of dynamic memory */
-Init(uword maxsize,
-     OBJECT_SIZE * sizeof(word)); /*  maximum size element in dyn. memory */
+Init(uword maxsize, OBJECT_SIZE * sizeof(word)); /*  maximum size element in dyn. memory */
 Init(uword stacksiz, STACK_SIZE); /*  maximum size of stack in bytes */
 NoInit(char *lowsp);              /*  lowest legal sp value */
+
 
 /*
 /   Variables that describe access to standard input and output files.
@@ -198,6 +197,7 @@ extern int reg_size;
 extern int hasfpu;
 extern char cprtmsg[];
 extern word reg_block;
+extern void *compsp;      /*  minimal stack pointer - set when leaving minimal space */
 
 #if ENGINE
 

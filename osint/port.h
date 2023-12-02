@@ -173,26 +173,26 @@ OUTPUT, TERMINAL
 /   All values can be overriden via command line options.
 /
 /   CHUNK_SIZE          the size of an allocation unit (chunk) used to
-/                   create the heap.  Defined in WORDS!
+/                       create the heap.  Defined in WORDS!
 /
 /   CHUNK_B_SIZE        CHUNK_SIZE in bytes.
 /
 /   HEAP_SIZE           the maximum size that spitbol's heap (dynamic area)
-/                   can become.  Defined in WORDS!
+/                       can become.  Defined in WORDS!
 /
 /   OBJECT_SIZE         the maximum size of any object created in the heap.
-/                   Defined in WORDS!
+/                       Defined in WORDS!
 /       Note: It was necessary to reduce this value from 8M to 1M  because
-/   some DPMI hosts (like 386MAX) use much smaller
+/       some DPMI hosts (like 386MAX) use much smaller
 /       starting address for data section.  4MB seems to be a good lowest
 /       common denominator so that Save files can move between all the
 /       different DPMI platforms.
 */
 
-#define CHUNK_SIZE 32768
+#define CHUNK_SIZE 131072	/* # words = 1M */
 #define CHUNK_B_SIZE (CHUNK_SIZE * sizeof(word))
-#define HEAP_SIZE 16777216  /* 16Mwords = 64Mbytes */
-#define OBJECT_SIZE 1048576 /* 1 Mword = 4 Mbytes */
+#define HEAP_SIZE 16777216  /* 16Mwords = 128Mbytes */
+#define OBJECT_SIZE 2097152 /* 2Mwords = 16 Mbytes */
 
 /*
  *  Define the maximum nesting allowed of INCLUDE files
@@ -229,11 +229,9 @@ OUTPUT, TERMINAL
 /
 /   The value can be overriden via command line option.
 /
-/   STACK_SIZE          the maximum size of the run-time stack.  Any attempt
-/                   to make the stack larger results in a stack overflow
-/                   error.  Defined in BYTES!
+/   STACK_SIZE          the maximum size of the run-time stack.
 */
-#define STACK_SIZE (0x100000) /* Set to 1MB 6/28/09 */
+#define STACK_SIZE 4*1024*1024 /* 4MB */
 
 /*
 /   The following manifest constant defines the location of the host file

@@ -10,8 +10,8 @@ Copyright 2012-2017 David Shields
 
 # include <stdio.h>
 
-extern uword compsp;
-extern uword osisp;
+extern void *compsp;
+extern void *osisp;
 
 uword save_xl;
 uword save_xr;
