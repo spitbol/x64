@@ -1,0 +1,13 @@
+	&ABEND = 1	; &DUMP = 1
+	DATA('THING(A,B)')
+MAKE	LIST = THING(N,LIST)
+	N = N + 1 LT(N,100000) :S(MAKE)
+	OUTPUT = 'starting garbage collection'
+	OUTPUT = COLLECT()
+	OUTPUT = COLLECT()
+TEST	OUTPUT = NE(A(LIST),N) 'OOPS'	:S(END)
+	LIST = B(LIST)
+	N = N - 1 GT(N,0) :S(TEST)
+	&ABEND = 0	; &DUMP = 0
+	OUTPUT = 'test succeeded'
+END
