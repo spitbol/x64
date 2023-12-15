@@ -1,13 +1,21 @@
-	&ABEND = 1	; &DUMP = 1
-	DATA('THING(A,B)')
-MAKE	LIST = THING(N,LIST)
-	N = N + 1 LT(N,100000) :S(MAKE)
-	OUTPUT = 'starting garbage collection'
-	OUTPUT = COLLECT()
-	OUTPUT = COLLECT()
-TEST	OUTPUT = NE(A(LIST),N) 'OOPS'	:S(END)
-	LIST = B(LIST)
-	N = N - 1 GT(N,0) :S(TEST)
-	&ABEND = 0	; &DUMP = 0
-	OUTPUT = 'test succeeded'
-END
+        &abend = 1      ; &dump = 1
+        data('thing(a,b)')
+make    list = thing(n,list)
+        n = n + 1 lt(n,100000) :s(make)
+        output = 'starting garbage collection'
+        output = collect()
+        output = collect()
+test    output = ne(a(list),n) 'oops'   :s(end)
+        list = b(list)
+        n = n - 1 gt(n,0) :s(test)
+        &abend = 0      ; &dump = 1
+        output = 'test succeeded'
+     memincb = host(-1, 0)
+     databts = host(-1, 1)
+     basemem = host(-1, 2)
+     topmem  = host(-1, 3)
+     stacksiz = host(-1,4)
+     stackcur = host(-1,5)
+     wordsize = host(-1,6)
+     stackmax = host(-1,7)
+end

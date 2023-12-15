@@ -2991,9 +2991,13 @@ g_mcb
 *  expanded. In some implementations, the checking may be automatic and CHK will have no effect.
 
 g_chk
-
-   genop('cmp',xs,'m_word [lowspmin]')
+   t1 = genlab()
+   genop('cmp',xs,'m_word [lowspminx]')
+   genop('jae', t1)
+   genop('mov','m_word [lowspminx]', xs)
+   genop('cmp', xs, 'm_word [lowspmin]')
    genop('jb','sec06')
+   genopl(t1 ':')
                      :(opdone)
 
 *  #### 11- Data Generation Instructions

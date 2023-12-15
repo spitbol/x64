@@ -28,6 +28,7 @@
     extern  inf
     extern  neg1f
     extern  zeron
+    extern  lowspminx
     extern  mxcsr_set
 
     global  mxint

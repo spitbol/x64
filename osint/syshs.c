@@ -24,7 +24,7 @@ Copyright 2012-2017 David Shields
 */
 
 #include "port.h"
-
+extern char *lowspminx;
 static int
 arg2scb(int req, int argc, char *argv[], struct scblk *scptr, int maxs)
 {
@@ -279,6 +279,9 @@ zyshs()
                     return EXIT_8;
                 case 6:
                     pticblk->val = sizeof(long);
+                    return EXIT_8;
+	    	case 7:
+                    pticblk->val = stacksiz - ((char *)lowspminx - (char *)lowsp);
                     return EXIT_8;
                 default:
                     return EXIT_1;

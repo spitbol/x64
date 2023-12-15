@@ -239,6 +239,8 @@ sav_compsp:
       d_word          0             ; save compsp here
       global      osisp
 osisp:      d_word          0             ; osint's stack pointer
+      global lowspminx
+lowspminx:  d_word          -1            ; lowest used stack
       global      _rc_
 _rc_: dd   0                        ; return code from osint procedure
 
