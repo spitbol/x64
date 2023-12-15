@@ -13,11 +13,11 @@ make clean>/dev/null
 make BASEBOL=./tbol
 mv sbl.lex tbol.lex.0
 mv sbl.asm tbol.asm.0
-cp sbl tbol
+mv sbl tbol
 make BASEBOL=./tbol
 mv sbl.lex tbol.lex.1
 mv sbl.asm tbol.asm.1
-cp sbl tbol
+mv sbl tbol
 make BASEBOL=./tbol
 mv sbl.lex tbol.lex.2
 mv sbl.asm tbol.asm.2
