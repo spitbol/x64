@@ -10,6 +10,23 @@ The latest version of SPITBOL can be found at
 For comments, suggestions, and bug reports please open an issue in the github
 repository.
 
+
+## Unix SPITBOL V4.0f (Jan 2024)
+
+### Updates
+
+* Support building with clang.  Fixes issue #32
+* Support building on FreeBSD.  Fixes issue #32
+* Use more realistic initial memory settings.  Fixes issue #33
+* Add additional test routine (contributed by Viktors Berstis)
+* Keep track of stack usage, use internal host(-1, 7) to obtain
+  the usage
+
+### Bugs fixed
+
+* Fix segfaults due to misaligned variables Fixes issue #31
+* Fix sanity check script
+
 ## Unix SPITBOL V4.0e (Nov 2023)
 
 ### Bugs fixed

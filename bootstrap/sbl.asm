@@ -103,6 +103,7 @@
     extern  inf
     extern  neg1f
     extern  zeron
+    extern  lowspminx
     extern  mxcsr_set
 
     global  mxint
@@ -275,15 +276,10 @@ calltab:
 ;   code pointer instructions (cp maintained in location reg_cp)
 
     extern  reg_cp
-
-; opcode helpers
     section .data
-    align 8
-mxcsr:       dd  0
-;                          0x8000          0x1000           0x0800           0x0400        | 0x200               |  0x0100        | 0x0040
-mxcsr_set:   dd  0x9fc0  ; Flush to zero | Precision mask | Underflow mask | Overflow mask | Divide by Zero mask | Denormal mask | Denormals are zero
+    align   8
+mxcsr       dd      0       ; used to test mxcsr exceptions
     section .text
-
 ; divide ia by r10 result in ia
 ; clobbers wc:w0
 ; set overflow
@@ -1125,7 +1121,7 @@ lstms:  d_word b_scl                            ; page} dac b_scl
         d_char 'p','a','g','e',' ',0,0,0        ; } dtc /page /  
 headr:  d_word b_scl                            ; } dac b_scl  
         d_word 26                               ; } dac 26  
-        d_char 'm','a','c','r','o',' ','s','p','i','t','b','o','l',' ','v','e','r','s','i','o','n',' ','4','.','0','e',0,0,0,0,0,0; } dtc /macro spitbol version 4.0e/  
+        d_char 'm','a','c','r','o',' ','s','p','i','t','b','o','l',' ','v','e','r','s','i','o','n',' ','4','.','0','f',0,0,0,0,0,0; } dtc /macro spitbol version 4.0f/  
 headv:  d_word b_scl                            ; for exit() version no. check} dac b_scl  
         d_word 5                                ; } dac 5  
         d_char '1','5','.','0','1',0,0,0        ; } dtc /15.01/  
@@ -4480,8 +4476,12 @@ bpf7c:
         push m_word [flptr]                     ; stack old failure pointer} mov -(xs) flptr 
         push xl                                 ; stack pointer to pfblk} mov -(xs) xl 
         push 0                                  ; dummy zero entry for fail return} zer -(xs)  
-        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspminx]              ; check for stack overflow} chk   
+        jae  _l0062                             ; 
+        mov  m_word [lowspminx],xs              ; 
+        cmp  xs,m_word [lowspmin]               ; 
         jb   sec06                              ; 
+_l0062:                                         ; 
         mov  m_word [flptr],xs                  ; set new fail return value} mov flptr xs 
         mov  m_word [flprt],xs                  ; set new flprt} mov flprt xs 
         mov  wa,m_word [kvtra]                  ; load trace value} mov wa kvtra 
@@ -4592,9 +4592,9 @@ b_vra:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_33                            ; 
         dec  m_word [_rc_]                      ; fail if access fails} ppm exfal  
-        jns  _l0062                             ; 
+        jns  _l0063                             ; 
         jmp  exfal                              ; 
-_l0062:                                         ; 
+_l0063:                                         ; 
 call_33:                                        ; 
         push xr                                 ; stack result} mov -(xs) xr 
         mov  r10,m_word [r13]                   ; get next code word} lcw xr  
@@ -4669,9 +4669,9 @@ b_vrv:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_34                            ; 
         dec  m_word [_rc_]                      ; fail if assignment fails} ppm exfal  
-        jns  _l0063                             ; 
+        jns  _l0064                             ; 
         jmp  exfal                              ; 
-_l0063:                                         ; 
+_l0064:                                         ; 
 call_34:                                        ; 
         mov  r10,m_word [r13]                   ; else get next code word} lcw xr  
         mov  xr,r10                             ; 
@@ -4736,8 +4736,12 @@ p_abo:                                          ;
 p_alt:                                          ; 
         push wb                                 ; stack cursor} mov -(xs) wb 
         push m_word [(cfp_b*parm1)+xr]          ; stack pointer to alternative} mov -(xs) parm1(xr) 
-        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspminx]              ; check for stack overflow} chk   
+        jae  _l0065                             ; 
+        mov  m_word [lowspminx],xs              ; 
+        cmp  xs,m_word [lowspmin]               ; 
         jb   sec06                              ; 
+_l0065:                                         ; 
         jmp  succp                              ; if all ok, then succeed} brn succp  
         align 2                                 ; p1blk} ent bl_p1  
         db   bl_p1                              ; 
@@ -4780,18 +4784,18 @@ p_ayd:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_35                            ; 
         dec  m_word [_rc_]                      ; } err 043 any evaluated argument is not a string 
-        jns  _l0064                             ; 
+        jns  _l0066                             ; 
         mov  m_word [_rc_],43                   ; 
         jmp  err_                               ; 
-_l0064:                                         ; 
-        dec  m_word [_rc_]                      ; fail if evaluation failure} ppm failp  
-        jns  _l0065                             ; 
-        jmp  failp                              ; 
-_l0065:                                         ; 
-        dec  m_word [_rc_]                      ; merge multi-char case if ok} ppm pany1  
-        jns  _l0066                             ; 
-        jmp  pany1                              ; 
 _l0066:                                         ; 
+        dec  m_word [_rc_]                      ; fail if evaluation failure} ppm failp  
+        jns  _l0067                             ; 
+        jmp  failp                              ; 
+_l0067:                                         ; 
+        dec  m_word [_rc_]                      ; merge multi-char case if ok} ppm pany1  
+        jns  _l0068                             ; 
+        jmp  pany1                              ; 
+_l0068:                                         ; 
 call_35:                                        ; 
         align 2                                 ; p0blk} ent bl_p0  
         db   bl_p0                              ; 
@@ -4855,18 +4859,18 @@ p_bkd:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_36                            ; 
         dec  m_word [_rc_]                      ; } err 044 break evaluated argument is not a string 
-        jns  _l0067                             ; 
+        jns  _l0069                             ; 
         mov  m_word [_rc_],44                   ; 
         jmp  err_                               ; 
-_l0067:                                         ; 
-        dec  m_word [_rc_]                      ; fail if evaluation fails} ppm failp  
-        jns  _l0068                             ; 
-        jmp  failp                              ; 
-_l0068:                                         ; 
-        dec  m_word [_rc_]                      ; merge with multi-char case if ok} ppm pbrk1  
-        jns  _l0069                             ; 
-        jmp  pbrk1                              ; 
 _l0069:                                         ; 
+        dec  m_word [_rc_]                      ; fail if evaluation fails} ppm failp  
+        jns  _l0070                             ; 
+        jmp  failp                              ; 
+_l0070:                                         ; 
+        dec  m_word [_rc_]                      ; merge with multi-char case if ok} ppm pbrk1  
+        jns  _l0071                             ; 
+        jmp  pbrk1                              ; 
+_l0071:                                         ; 
 call_36:                                        ; 
         align 2                                 ; p1blk} ent bl_p1  
         db   bl_p1                              ; 
@@ -4928,18 +4932,18 @@ p_bxd:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_37                            ; 
         dec  m_word [_rc_]                      ; } err 045 breakx evaluated argument is not a string 
-        jns  _l0070                             ; 
+        jns  _l0072                             ; 
         mov  m_word [_rc_],45                   ; 
         jmp  err_                               ; 
-_l0070:                                         ; 
-        dec  m_word [_rc_]                      ; fail if evaluation fails} ppm failp  
-        jns  _l0071                             ; 
-        jmp  failp                              ; 
-_l0071:                                         ; 
-        dec  m_word [_rc_]                      ; merge with break if all ok} ppm pbrk1  
-        jns  _l0072                             ; 
-        jmp  pbrk1                              ; 
 _l0072:                                         ; 
+        dec  m_word [_rc_]                      ; fail if evaluation fails} ppm failp  
+        jns  _l0073                             ; 
+        jmp  failp                              ; 
+_l0073:                                         ; 
+        dec  m_word [_rc_]                      ; merge with break if all ok} ppm pbrk1  
+        jns  _l0074                             ; 
+        jmp  pbrk1                              ; 
+_l0074:                                         ; 
 call_37:                                        ; 
         align 2                                 ; p2blk} ent bl_p2  
         db   bl_p2                              ; 
@@ -4956,9 +4960,9 @@ p_cas:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_38                            ; 
         dec  m_word [_rc_]                      ; fail on assignment failure} ppm flpop  
-        jns  _l0073                             ; 
+        jns  _l0075                             ; 
         jmp  flpop                              ; 
-_l0073:                                         ; 
+_l0075:                                         ; 
 call_38:                                        ; 
         pop  wb                                 ; else restore cursor} mov wb (xs)+ 
         pop  xr                                 ; restore node pointer} mov xr (xs)+ 
@@ -4970,14 +4974,18 @@ p_exa:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_39                            ; 
         dec  m_word [_rc_]                      ; fail if evaluation fails} ppm failp  
-        jns  _l0074                             ; 
+        jns  _l0076                             ; 
         jmp  failp                              ; 
-_l0074:                                         ; 
+_l0076:                                         ; 
 call_39:                                        ; 
         cmp  wa,p_aaa                           ; jump if result is not a pattern} blo wa =p_aaa pexa1
         jb   pexa1                              ; 
-        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspminx]              ; check for stack overflow} chk   
+        jae  _l0077                             ; 
+        mov  m_word [lowspminx],xs              ; 
+        cmp  xs,m_word [lowspmin]               ; 
         jb   sec06                              ; 
+_l0077:                                         ; 
         push wb                                 ; stack dummy cursor} mov -(xs) wb 
         push xr                                 ; stack ptr to p_exa node} mov -(xs) xr 
         push m_word [pmhbs]                     ; stack history stack base ptr} mov -(xs) pmhbs 
@@ -4994,10 +5002,10 @@ pexa1:
         dec  m_word [_rc_]                      ; 
         js   call_40                            ; 
         dec  m_word [_rc_]                      ; } err 046 expression does not evaluate to pattern 
-        jns  _l0075                             ; 
+        jns  _l0078                             ; 
         mov  m_word [_rc_],46                   ; 
         jmp  err_                               ; 
-_l0075:                                         ; 
+_l0078:                                         ; 
 call_40:                                        ; 
         mov  wc,xr                              ; copy string pointer} mov wc xr 
         mov  xr,xl                              ; restore node pointer} mov xr xl 
@@ -5100,9 +5108,9 @@ pimc2:
         dec  m_word [_rc_]                      ; 
         js   call_41                            ; 
         dec  m_word [_rc_]                      ; fail if assignment fails} ppm flpop  
-        jns  _l0076                             ; 
+        jns  _l0079                             ; 
         jmp  flpop                              ; 
-_l0076:                                         ; 
+_l0079:                                         ; 
 call_41:                                        ; 
         pop  xr                                 ; else restore node pointer} mov xr (xs)+ 
         pop  wb                                 ; restore cursor} mov wb (xs)+ 
@@ -5127,23 +5135,23 @@ p_lnd:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_42                            ; 
         dec  m_word [_rc_]                      ; } err 047 len evaluated argument is not integer 
-        jns  _l0077                             ; 
+        jns  _l0080                             ; 
         mov  m_word [_rc_],47                   ; 
         jmp  err_                               ; 
-_l0077:                                         ; 
+_l0080:                                         ; 
         dec  m_word [_rc_]                      ; } err 048 len evaluated argument is negative or too large 
-        jns  _l0078                             ; 
+        jns  _l0081                             ; 
         mov  m_word [_rc_],48                   ; 
         jmp  err_                               ; 
-_l0078:                                         ; 
+_l0081:                                         ; 
         dec  m_word [_rc_]                      ; fail if evaluation fails} ppm failp  
-        jns  _l0079                             ; 
+        jns  _l0082                             ; 
         jmp  failp                              ; 
-_l0079:                                         ; 
+_l0082:                                         ; 
         dec  m_word [_rc_]                      ; merge with normal circuit if ok} ppm plen1  
-        jns  _l0080                             ; 
+        jns  _l0083                             ; 
         jmp  plen1                              ; 
-_l0080:                                         ; 
+_l0083:                                         ; 
 call_42:                                        ; 
         align 2                                 ; p1blk} ent bl_p1  
         db   bl_p1                              ; 
@@ -5152,18 +5160,18 @@ p_nad:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_43                            ; 
         dec  m_word [_rc_]                      ; } err 049 notany evaluated argument is not a string 
-        jns  _l0081                             ; 
+        jns  _l0084                             ; 
         mov  m_word [_rc_],49                   ; 
         jmp  err_                               ; 
-_l0081:                                         ; 
+_l0084:                                         ; 
         dec  m_word [_rc_]                      ; fail if evaluation fails} ppm failp  
-        jns  _l0082                             ; 
+        jns  _l0085                             ; 
         jmp  failp                              ; 
-_l0082:                                         ; 
+_l0085:                                         ; 
         dec  m_word [_rc_]                      ; merge with multi-char case if ok} ppm pnay1  
-        jns  _l0083                             ; 
+        jns  _l0086                             ; 
         jmp  pnay1                              ; 
-_l0083:                                         ; 
+_l0086:                                         ; 
 call_43:                                        ; 
         align 2                                 ; entry point} ent bl_p1  
         db   bl_p1                              ; 
@@ -5229,8 +5237,12 @@ pnth3:
         cmp  wa,ndpab                           ; jump if not ndpab entry} bne wa =ndpab pnth5
         jne  pnth5                              ; 
         push m_word [(cfp_b*num01)+xl]          ; stack initial cursor} mov -(xs) num01(xt) 
-        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspminx]              ; check for stack overflow} chk   
+        jae  _l0087                             ; 
+        mov  m_word [lowspminx],xs              ; 
+        cmp  xs,m_word [lowspmin]               ; 
         jb   sec06                              ; 
+_l0087:                                         ; 
         jmp  pnth3                              ; loop back if ok} brn pnth3  
 pnth4:
         mov  wa,m_word [(cfp_b*num01)+xl]       ; load final cursor} mov wa num01(xt) 
@@ -5248,9 +5260,9 @@ pnth4:
         dec  m_word [_rc_]                      ; 
         js   call_44                            ; 
         dec  m_word [_rc_]                      ; match fails if name eval fails} ppm exfal  
-        jns  _l0084                             ; 
+        jns  _l0088                             ; 
         jmp  exfal                              ; 
-_l0084:                                         ; 
+_l0088:                                         ; 
 call_44:                                        ; 
         pop  xl                                 ; else restore history stack ptr} mov xt (xs)+ 
 pnth5:
@@ -5312,23 +5324,23 @@ p_psd:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_45                            ; 
         dec  m_word [_rc_]                      ; } err 050 pos evaluated argument is not integer 
-        jns  _l0085                             ; 
+        jns  _l0089                             ; 
         mov  m_word [_rc_],50                   ; 
         jmp  err_                               ; 
-_l0085:                                         ; 
+_l0089:                                         ; 
         dec  m_word [_rc_]                      ; } err 051 pos evaluated argument is negative or too large 
-        jns  _l0086                             ; 
+        jns  _l0090                             ; 
         mov  m_word [_rc_],51                   ; 
         jmp  err_                               ; 
-_l0086:                                         ; 
+_l0090:                                         ; 
         dec  m_word [_rc_]                      ; fail if evaluation fails} ppm failp  
-        jns  _l0087                             ; 
+        jns  _l0091                             ; 
         jmp  failp                              ; 
-_l0087:                                         ; 
+_l0091:                                         ; 
         dec  m_word [_rc_]                      ; process expression case} ppm ppos1  
-        jns  _l0088                             ; 
+        jns  _l0092                             ; 
         jmp  ppos1                              ; 
-_l0088:                                         ; 
+_l0092:                                         ; 
 call_45:                                        ; 
 ppos1:
         cmp  wb,m_word [(cfp_b*parm1)+xr]       ; succeed if at right location} beq wb parm1(xr) succp
@@ -5378,23 +5390,23 @@ p_rpd:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_46                            ; 
         dec  m_word [_rc_]                      ; } err 052 rpos evaluated argument is not integer 
-        jns  _l0089                             ; 
+        jns  _l0093                             ; 
         mov  m_word [_rc_],52                   ; 
         jmp  err_                               ; 
-_l0089:                                         ; 
+_l0093:                                         ; 
         dec  m_word [_rc_]                      ; } err 053 rpos evaluated argument is negative or too large 
-        jns  _l0090                             ; 
+        jns  _l0094                             ; 
         mov  m_word [_rc_],53                   ; 
         jmp  err_                               ; 
-_l0090:                                         ; 
+_l0094:                                         ; 
         dec  m_word [_rc_]                      ; fail if evaluation fails} ppm failp  
-        jns  _l0091                             ; 
+        jns  _l0095                             ; 
         jmp  failp                              ; 
-_l0091:                                         ; 
+_l0095:                                         ; 
         dec  m_word [_rc_]                      ; merge with normal case if ok} ppm prps1  
-        jns  _l0092                             ; 
+        jns  _l0096                             ; 
         jmp  prps1                              ; 
-_l0092:                                         ; 
+_l0096:                                         ; 
 call_46:                                        ; 
 prps1:
         mov  wc,m_word [pmssl]                  ; get length of string} mov wc pmssl 
@@ -5453,23 +5465,23 @@ p_rtd:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_47                            ; 
         dec  m_word [_rc_]                      ; } err 054 rtab evaluated argument is not integer 
-        jns  _l0093                             ; 
+        jns  _l0097                             ; 
         mov  m_word [_rc_],54                   ; 
         jmp  err_                               ; 
-_l0093:                                         ; 
+_l0097:                                         ; 
         dec  m_word [_rc_]                      ; } err 055 rtab evaluated argument is negative or too large 
-        jns  _l0094                             ; 
+        jns  _l0098                             ; 
         mov  m_word [_rc_],55                   ; 
         jmp  err_                               ; 
-_l0094:                                         ; 
+_l0098:                                         ; 
         dec  m_word [_rc_]                      ; fail if evaluation fails} ppm failp  
-        jns  _l0095                             ; 
+        jns  _l0099                             ; 
         jmp  failp                              ; 
-_l0095:                                         ; 
+_l0099:                                         ; 
         dec  m_word [_rc_]                      ; merge with normal case if success} ppm prtb1  
-        jns  _l0096                             ; 
+        jns  _l0100                             ; 
         jmp  prtb1                              ; 
-_l0096:                                         ; 
+_l0100:                                         ; 
 call_47:                                        ; 
         align 2                                 ; p1blk} ent bl_p1  
         db   bl_p1                              ; 
@@ -5478,18 +5490,18 @@ p_spd:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_48                            ; 
         dec  m_word [_rc_]                      ; } err 056 span evaluated argument is not a string 
-        jns  _l0097                             ; 
+        jns  _l0101                             ; 
         mov  m_word [_rc_],56                   ; 
         jmp  err_                               ; 
-_l0097:                                         ; 
+_l0101:                                         ; 
         dec  m_word [_rc_]                      ; fail if evaluation fails} ppm failp  
-        jns  _l0098                             ; 
+        jns  _l0102                             ; 
         jmp  failp                              ; 
-_l0098:                                         ; 
+_l0102:                                         ; 
         dec  m_word [_rc_]                      ; merge with multi-char case if ok} ppm pspn1  
-        jns  _l0099                             ; 
+        jns  _l0103                             ; 
         jmp  pspn1                              ; 
-_l0099:                                         ; 
+_l0103:                                         ; 
 call_48:                                        ; 
         align 2                                 ; p2blk} ent bl_p2  
         db   bl_p2                              ; 
@@ -5591,23 +5603,23 @@ p_tbd:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_49                            ; 
         dec  m_word [_rc_]                      ; } err 057 tab evaluated argument is not integer 
-        jns  _l0100                             ; 
+        jns  _l0104                             ; 
         mov  m_word [_rc_],57                   ; 
         jmp  err_                               ; 
-_l0100:                                         ; 
+_l0104:                                         ; 
         dec  m_word [_rc_]                      ; } err 058 tab evaluated argument is negative or too large 
-        jns  _l0101                             ; 
+        jns  _l0105                             ; 
         mov  m_word [_rc_],58                   ; 
         jmp  err_                               ; 
-_l0101:                                         ; 
+_l0105:                                         ; 
         dec  m_word [_rc_]                      ; fail if evaluation fails} ppm failp  
-        jns  _l0102                             ; 
+        jns  _l0106                             ; 
         jmp  failp                              ; 
-_l0102:                                         ; 
+_l0106:                                         ; 
         dec  m_word [_rc_]                      ; merge with normal case if ok} ppm ptab1  
-        jns  _l0103                             ; 
+        jns  _l0107                             ; 
         jmp  ptab1                              ; 
-_l0103:                                         ; 
+_l0107:                                         ; 
 call_49:                                        ; 
         align 2                                 ; entry point} ent   
         nop                                     ; 
@@ -5642,9 +5654,9 @@ labo1:
         dec  m_word [_rc_]                      ; 
         js   call_50                            ; 
         dec  m_word [_rc_]                      ; if system does not want print} ppm stpr4  
-        jns  _l0104                             ; 
+        jns  _l0108                             ; 
         jmp  stpr4                              ; 
-_l0104:                                         ; 
+_l0108:                                         ; 
 call_50:                                        ; 
         call prtpg                              ; else eject printer} jsr prtpg  
         test xr,xr                              ; did sysea request print} bze xr labo2 
@@ -5751,10 +5763,10 @@ s_any:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_51                            ; 
         dec  m_word [_rc_]                      ; } err 059 any argument is not a string or expression 
-        jns  _l0105                             ; 
+        jns  _l0109                             ; 
         mov  m_word [_rc_],59                   ; 
         jmp  err_                               ; 
-_l0105:                                         ; 
+_l0109:                                         ; 
 call_51:                                        ; 
         push xr                                 ; stack result} mov -(xs) xr 
         mov  r10,m_word [r13]                   ; get next code word} lcw xr  
@@ -5787,9 +5799,9 @@ sapp2:
         dec  m_word [_rc_]                      ; 
         js   call_52                            ; 
         dec  m_word [_rc_]                      ; jump if not natural variable} ppm sapp3  
-        jns  _l0106                             ; 
+        jns  _l0110                             ; 
         jmp  sapp3                              ; 
-_l0106:                                         ; 
+_l0110:                                         ; 
 call_52:                                        ; 
         mov  xl,m_word [(cfp_b*vrfnc)+xr]       ; else point to function block} mov xl vrfnc(xr) 
         jmp  cfunc                              ; go call applied function} brn cfunc  
@@ -5815,10 +5827,10 @@ s_abn:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_53                            ; 
         dec  m_word [_rc_]                      ; } err 061 arbno argument is not pattern 
-        jns  _l0107                             ; 
+        jns  _l0111                             ; 
         mov  m_word [_rc_],61                   ; 
         jmp  err_                               ; 
-_l0107:                                         ; 
+_l0111:                                         ; 
 call_53:                                        ; 
         call pconc                              ; concat arg with p_abc node} jsr pconc  
         mov  xl,xr                              ; remember ptr to concd patterns} mov xl xr 
@@ -5839,14 +5851,14 @@ s_arg:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_54                            ; 
         dec  m_word [_rc_]                      ; } err 062 arg second argument is not integer 
-        jns  _l0108                             ; 
+        jns  _l0112                             ; 
         mov  m_word [_rc_],62                   ; 
         jmp  err_                               ; 
-_l0108:                                         ; 
+_l0112:                                         ; 
         dec  m_word [_rc_]                      ; fail if out of range or negative} ppm exfal  
-        jns  _l0109                             ; 
+        jns  _l0113                             ; 
         jmp  exfal                              ; 
-_l0109:                                         ; 
+_l0113:                                         ; 
 call_54:                                        ; 
         mov  wa,xr                              ; save argument number} mov wa xr 
         pop  xr                                 ; load first argument} mov xr (xs)+ 
@@ -5854,9 +5866,9 @@ call_54:                                        ;
         dec  m_word [_rc_]                      ; 
         js   call_55                            ; 
         dec  m_word [_rc_]                      ; jump if not natural variable} ppm sarg1  
-        jns  _l0110                             ; 
+        jns  _l0114                             ; 
         jmp  sarg1                              ; 
-_l0110:                                         ; 
+_l0114:                                         ; 
 call_55:                                        ; 
         mov  xr,m_word [(cfp_b*vrfnc)+xr]       ; else load function block pointer} mov xr vrfnc(xr) 
         cmp  m_word [xr],b_pfc                  ; jump if not program defined} bne (xr) =b_pfc sarg1
@@ -5881,9 +5893,9 @@ s_arr:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_56                            ; 
         dec  m_word [_rc_]                      ; jump if not integer} ppm sar02  
-        jns  _l0111                             ; 
+        jns  _l0115                             ; 
         jmp  sar02                              ; 
-_l0111:                                         ; 
+_l0115:                                         ; 
 call_56:                                        ; 
         mov  ia,m_word [(cfp_b*icval)+xr]       ; load integer value} ldi icval(xr)  
         cmp  ia,0                               ; jump if zero or neg (bad dimension)} ile sar10  
@@ -5895,9 +5907,9 @@ call_56:                                        ;
         dec  m_word [_rc_]                      ; 
         js   call_57                            ; 
         dec  m_word [_rc_]                      ; fail if too large} ppm sar11  
-        jns  _l0112                             ; 
+        jns  _l0116                             ; 
         jmp  sar11                              ; 
-_l0112:                                         ; 
+_l0116:                                         ; 
 call_57:                                        ; 
         jmp  exsid                              ; exit setting idval} brn exsid  
 sar02:
@@ -5906,14 +5918,14 @@ sar02:
         dec  m_word [_rc_]                      ; 
         js   call_58                            ; 
         dec  m_word [_rc_]                      ; } err 064 array first argument is not integer or string 
-        jns  _l0113                             ; 
+        jns  _l0117                             ; 
         mov  m_word [_rc_],64                   ; 
         jmp  err_                               ; 
-_l0113:                                         ; 
+_l0117:                                         ; 
         dec  m_word [_rc_]                      ; dummy (unused) null string exit} ppm exnul  
-        jns  _l0114                             ; 
+        jns  _l0118                             ; 
         jmp  exnul                              ; 
-_l0114:                                         ; 
+_l0118:                                         ; 
 call_58:                                        ; 
         push m_word [r_xsc]                     ; save prototype pointer} mov -(xs) r_xsc 
         push xl                                 ; save default value} mov -(xs) xl 
@@ -5936,10 +5948,10 @@ sar03:
         dec  m_word [_rc_]                      ; 
         js   call_59                            ; 
         dec  m_word [_rc_]                      ; } err 065 array first argument lower bound is not integer 
-        jns  _l0115                             ; 
+        jns  _l0119                             ; 
         mov  m_word [_rc_],65                   ; 
         jmp  err_                               ; 
-_l0115:                                         ; 
+_l0119:                                         ; 
 call_59:                                        ; 
         mov  ia,m_word [(cfp_b*icval)+xr]       ; load value of low bound} ldi icval(xr)  
         mov  m_word [arsvl],ia                  ; store low bound value} sti arsvl  
@@ -5952,10 +5964,10 @@ sar04:
         dec  m_word [_rc_]                      ; 
         js   call_60                            ; 
         dec  m_word [_rc_]                      ; } err 066 array first argument upper bound is not integer 
-        jns  _l0116                             ; 
+        jns  _l0120                             ; 
         mov  m_word [_rc_],66                   ; 
         jmp  err_                               ; 
-_l0116:                                         ; 
+_l0120:                                         ; 
 call_60:                                        ; 
         mov  ia,m_word [(cfp_b*icval)+xr]       ; get high bound} ldi icval(xr)  
         sub  ia,m_word [arsvl]                  ; subtract lower bound} sbi arsvl  
@@ -6044,10 +6056,10 @@ s_atn:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_61                            ; 
         dec  m_word [_rc_]                      ; } err 301 atan argument not numeric 
-        jns  _l0117                             ; 
+        jns  _l0121                             ; 
         mov  m_word [_rc_],301                  ; 
         jmp  err_                               ; 
-_l0117:                                         ; 
+_l0121:                                         ; 
 call_61:                                        ; 
         movsd ra,[(cfp_b*rcval)+xr]             ; load accumulator with argument} ldr rcval(xr)  
         call atn_                               ; take arctangent} atn   
@@ -6059,39 +6071,39 @@ s_bsp:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_62                            ; 
         dec  m_word [_rc_]                      ; } err 316 backspace argument is not a suitable name 
-        jns  _l0118                             ; 
+        jns  _l0122                             ; 
         mov  m_word [_rc_],316                  ; 
         jmp  err_                               ; 
-_l0118:                                         ; 
+_l0122:                                         ; 
         dec  m_word [_rc_]                      ; } err 316 backspace argument is not a suitable name 
-        jns  _l0119                             ; 
+        jns  _l0123                             ; 
         mov  m_word [_rc_],316                  ; 
         jmp  err_                               ; 
-_l0119:                                         ; 
+_l0123:                                         ; 
         dec  m_word [_rc_]                      ; } err 317 backspace file does not exist 
-        jns  _l0120                             ; 
+        jns  _l0124                             ; 
         mov  m_word [_rc_],317                  ; 
         jmp  err_                               ; 
-_l0120:                                         ; 
+_l0124:                                         ; 
 call_62:                                        ; 
         call sysbs                              ; call backspace file function} jsr sysbs  
         dec  m_word [_rc_]                      ; 
         js   call_63                            ; 
         dec  m_word [_rc_]                      ; } err 317 backspace file does not exist 
-        jns  _l0121                             ; 
+        jns  _l0125                             ; 
         mov  m_word [_rc_],317                  ; 
         jmp  err_                               ; 
-_l0121:                                         ; 
+_l0125:                                         ; 
         dec  m_word [_rc_]                      ; } err 318 backspace file does not permit backspace 
-        jns  _l0122                             ; 
+        jns  _l0126                             ; 
         mov  m_word [_rc_],318                  ; 
         jmp  err_                               ; 
-_l0122:                                         ; 
+_l0126:                                         ; 
         dec  m_word [_rc_]                      ; } err 319 backspace caused non-recoverable error 
-        jns  _l0123                             ; 
+        jns  _l0127                             ; 
         mov  m_word [_rc_],319                  ; 
         jmp  err_                               ; 
-_l0123:                                         ; 
+_l0127:                                         ; 
 call_63:                                        ; 
         jmp  exnul                              ; return null as result} brn exnul  
         align 2                                 ; entry point} ent   
@@ -6104,10 +6116,10 @@ s_brk:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_64                            ; 
         dec  m_word [_rc_]                      ; } err 069 break argument is not a string or expression 
-        jns  _l0124                             ; 
+        jns  _l0128                             ; 
         mov  m_word [_rc_],69                   ; 
         jmp  err_                               ; 
-_l0124:                                         ; 
+_l0128:                                         ; 
 call_64:                                        ; 
         push xr                                 ; stack result} mov -(xs) xr 
         mov  r10,m_word [r13]                   ; get next code word} lcw xr  
@@ -6124,10 +6136,10 @@ s_bkx:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_65                            ; 
         dec  m_word [_rc_]                      ; } err 070 breakx argument is not a string or expression 
-        jns  _l0125                             ; 
+        jns  _l0129                             ; 
         mov  m_word [_rc_],70                   ; 
         jmp  err_                               ; 
-_l0125:                                         ; 
+_l0129:                                         ; 
 call_65:                                        ; 
         push xr                                 ; save ptr to break node} mov -(xs) xr 
         mov  wb,p_bkx                           ; set pcode for breakx node} mov wb =p_bkx 
@@ -6150,14 +6162,14 @@ s_chr:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_66                            ; 
         dec  m_word [_rc_]                      ; } err 281 char argument not integer 
-        jns  _l0126                             ; 
+        jns  _l0130                             ; 
         mov  m_word [_rc_],281                  ; 
         jmp  err_                               ; 
-_l0126:                                         ; 
+_l0130:                                         ; 
         dec  m_word [_rc_]                      ; too big error exit} ppm schr1  
-        jns  _l0127                             ; 
+        jns  _l0131                             ; 
         jmp  schr1                              ; 
-_l0127:                                         ; 
+_l0131:                                         ; 
 call_66:                                        ; 
         cmp  wc,cfp_a                           ; see if out of range of host set} bge wc =cfp_a schr1
         jae  schr1                              ; 
@@ -6184,10 +6196,10 @@ s_chp:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_67                            ; 
         dec  m_word [_rc_]                      ; } err 302 chop argument not numeric 
-        jns  _l0128                             ; 
+        jns  _l0132                             ; 
         mov  m_word [_rc_],302                  ; 
         jmp  err_                               ; 
-_l0128:                                         ; 
+_l0132:                                         ; 
 call_67:                                        ; 
         movsd ra,[(cfp_b*rcval)+xr]             ; load accumulator with argument} ldr rcval(xr)  
         call chp_                               ; truncate to integer valued real} chp   
@@ -6199,14 +6211,14 @@ s_clr:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_68                            ; 
         dec  m_word [_rc_]                      ; } err 071 clear argument is not a string 
-        jns  _l0129                             ; 
+        jns  _l0133                             ; 
         mov  m_word [_rc_],71                   ; 
         jmp  err_                               ; 
-_l0129:                                         ; 
+_l0133:                                         ; 
         dec  m_word [_rc_]                      ; jump if null} ppm sclr2  
-        jns  _l0130                             ; 
+        jns  _l0134                             ; 
         jmp  sclr2                              ; 
-_l0130:                                         ; 
+_l0134:                                         ; 
 call_68:                                        ; 
 sclr1:
         mov  wc,ch_cm                           ; set delimiter one = comma} mov wc =ch_cm 
@@ -6217,10 +6229,10 @@ sclr1:
         dec  m_word [_rc_]                      ; 
         js   call_69                            ; 
         dec  m_word [_rc_]                      ; } err 072 clear argument has null variable name 
-        jns  _l0131                             ; 
+        jns  _l0135                             ; 
         mov  m_word [_rc_],72                   ; 
         jmp  err_                               ; 
-_l0131:                                         ; 
+_l0135:                                         ; 
 call_69:                                        ; 
         xor  w0,w0                              ; else flag by zeroing vrget field} zer vrget(xr)  
         mov  m_word [(cfp_b*vrget)+xr],w0       ; 
@@ -6262,9 +6274,9 @@ s_cod:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_70                            ; 
         dec  m_word [_rc_]                      ; fail if conversion is impossible} ppm exfal  
-        jns  _l0132                             ; 
+        jns  _l0136                             ; 
         jmp  exfal                              ; 
-_l0132:                                         ; 
+_l0136:                                         ; 
 call_70:                                        ; 
         push xr                                 ; stack result} mov -(xs) xr 
         xor  w0,w0                              ; forget interim code block} zer r_ccb  
@@ -6281,10 +6293,10 @@ s_col:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_71                            ; 
         dec  m_word [_rc_]                      ; } err 073 collect argument is not integer 
-        jns  _l0133                             ; 
+        jns  _l0137                             ; 
         mov  m_word [_rc_],73                   ; 
         jmp  err_                               ; 
-_l0133:                                         ; 
+_l0137:                                         ; 
 call_71:                                        ; 
         mov  ia,m_word [(cfp_b*icval)+xr]       ; load collect argument} ldi icval(xr)  
         mov  m_word [clsvi],ia                  ; save collect argument} sti clsvi  
@@ -6312,9 +6324,9 @@ s_cnv:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_72                            ; 
         dec  m_word [_rc_]                      ; error if second argument not string} ppm scv29  
-        jns  _l0134                             ; 
+        jns  _l0138                             ; 
         jmp  scv29                              ; 
-_l0134:                                         ; 
+_l0138:                                         ; 
 call_72:                                        ; 
         test wa,wa                              ; or if null string} bze wa scv29 
         jz   scv29                              ; 
@@ -6328,9 +6340,9 @@ call_72:                                        ;
         dec  m_word [_rc_]                      ; 
         js   call_73                            ; 
         dec  m_word [_rc_]                      ; exit if ident with arg as result} ppm exits  
-        jns  _l0135                             ; 
+        jns  _l0139                             ; 
         jmp  exits                              ; 
-_l0135:                                         ; 
+_l0139:                                         ; 
 call_73:                                        ; 
         jmp  exfal                              ; else fail} brn exfal  
 scv01:
@@ -6358,9 +6370,9 @@ scv03:
         mov  xl,wb                              ; copy entry number} mov xl wb 
         add  xs,cfp_b                           ; pop string arg off stack} ica xs  
         pop  xr                                 ; load first argument} mov xr (xs)+ 
-        jmp  m_word [_l0136+xl*cfp_b]           ; jump to appropriate routine} bsw xl cnvtt 
+        jmp  m_word [_l0140+xl*cfp_b]           ; jump to appropriate routine} bsw xl cnvtt 
         segment .data                           ; 
-_l0136:                                         ; 
+_l0140:                                         ; 
         d_word scv06                            ; string} iff 0 scv06 
         d_word scv07                            ; integer} iff 1 scv07 
         d_word scv09                            ; name} iff 2 scv09 
@@ -6383,9 +6395,9 @@ scv06:
         dec  m_word [_rc_]                      ; 
         js   call_74                            ; 
         dec  m_word [_rc_]                      ; fail if conversion not possible} ppm exfal  
-        jns  _l0137                             ; 
+        jns  _l0141                             ; 
         jmp  exfal                              ; 
-_l0137:                                         ; 
+_l0141:                                         ; 
 call_74:                                        ; 
         push xr                                 ; stack result} mov -(xs) xr 
         mov  r10,m_word [r13]                   ; get next code word} lcw xr  
@@ -6397,9 +6409,9 @@ scv07:
         dec  m_word [_rc_]                      ; 
         js   call_75                            ; 
         dec  m_word [_rc_]                      ; fail if conversion not possible} ppm exfal  
-        jns  _l0138                             ; 
+        jns  _l0142                             ; 
         jmp  exfal                              ; 
-_l0138:                                         ; 
+_l0142:                                         ; 
 call_75:                                        ; 
         push xr                                 ; stack result} mov -(xs) xr 
         mov  r10,m_word [r13]                   ; get next code word} lcw xr  
@@ -6411,9 +6423,9 @@ scv08:
         dec  m_word [_rc_]                      ; 
         js   call_76                            ; 
         dec  m_word [_rc_]                      ; fail if conversion not possible} ppm exfal  
-        jns  _l0139                             ; 
+        jns  _l0143                             ; 
         jmp  exfal                              ; 
-_l0139:                                         ; 
+_l0143:                                         ; 
 call_76:                                        ; 
         push xr                                 ; stack result} mov -(xs) xr 
         mov  r10,m_word [r13]                   ; get next code word} lcw xr  
@@ -6427,9 +6439,9 @@ scv09:
         dec  m_word [_rc_]                      ; 
         js   call_77                            ; 
         dec  m_word [_rc_]                      ; fail if conversion not possible} ppm exfal  
-        jns  _l0140                             ; 
+        jns  _l0144                             ; 
         jmp  exfal                              ; 
-_l0140:                                         ; 
+_l0144:                                         ; 
 call_77:                                        ; 
         jmp  exvnm                              ; else exit building nmblk for vrblk} brn exvnm  
 scv10:
@@ -6437,9 +6449,9 @@ scv10:
         dec  m_word [_rc_]                      ; 
         js   call_78                            ; 
         dec  m_word [_rc_]                      ; fail if conversion not possible} ppm exfal  
-        jns  _l0141                             ; 
+        jns  _l0145                             ; 
         jmp  exfal                              ; 
-_l0141:                                         ; 
+_l0145:                                         ; 
 call_78:                                        ; 
         push xr                                 ; stack result} mov -(xs) xr 
         mov  r10,m_word [r13]                   ; get next code word} lcw xr  
@@ -6453,13 +6465,13 @@ scv11:
         dec  m_word [_rc_]                      ; 
         js   call_79                            ; 
         dec  m_word [_rc_]                      ; fail if empty table} ppm exfal  
-        jns  _l0142                             ; 
+        jns  _l0146                             ; 
         jmp  exfal                              ; 
-_l0142:                                         ; 
+_l0146:                                         ; 
         dec  m_word [_rc_]                      ; fail if not convertible} ppm exfal  
-        jns  _l0143                             ; 
+        jns  _l0147                             ; 
         jmp  exfal                              ; 
-_l0143:                                         ; 
+_l0147:                                         ; 
 call_79:                                        ; 
         pop  xl                                 ; reload original arg} mov xl (xs)+ 
         cmp  m_word [xl],b_tbt                  ; exit if original not a table} bne (xl) =b_tbt exsid
@@ -6471,9 +6483,9 @@ call_79:                                        ;
         dec  m_word [_rc_]                      ; 
         js   call_80                            ; 
         dec  m_word [_rc_]                      ; if sort fails, so shall we} ppm exfal  
-        jns  _l0144                             ; 
+        jns  _l0148                             ; 
         jmp  exfal                              ; 
-_l0144:                                         ; 
+_l0148:                                         ; 
 call_80:                                        ; 
         mov  wb,xr                              ; save array result} mov wb xr 
         mov  ia,m_word [(cfp_b*ardim)+xr]       ; load dim 1 (number of elements)} ldi ardim(xr)  
@@ -6543,9 +6555,9 @@ scv23:
         dec  m_word [_rc_]                      ; 
         js   call_81                            ; 
         dec  m_word [_rc_]                      ; fail if acess fails} ppm exfal  
-        jns  _l0145                             ; 
+        jns  _l0149                             ; 
         jmp  exfal                              ; 
-_l0145:                                         ; 
+_l0149:                                         ; 
 call_81:                                        ; 
         pop  m_word [(cfp_b*teval)+xl]          ; store value in teblk} mov teval(xl) (xs)+ 
         jmp  scv21                              ; loop back for next element} brn scv21  
@@ -6559,9 +6571,9 @@ scv25:
         dec  m_word [_rc_]                      ; 
         js   call_82                            ; 
         dec  m_word [_rc_]                      ; fail if conversion not possible} ppm exfal  
-        jns  _l0146                             ; 
+        jns  _l0150                             ; 
         jmp  exfal                              ; 
-_l0146:                                         ; 
+_l0150:                                         ; 
 call_82:                                        ; 
         xor  w0,w0                              ; forget interim code block} zer r_ccb  
         mov  m_word [r_ccb],w0                  ; 
@@ -6575,9 +6587,9 @@ scv26:
         dec  m_word [_rc_]                      ; 
         js   call_83                            ; 
         dec  m_word [_rc_]                      ; fail if conversion is not possible} ppm exfal  
-        jns  _l0147                             ; 
+        jns  _l0151                             ; 
         jmp  exfal                              ; 
-_l0147:                                         ; 
+_l0151:                                         ; 
 call_83:                                        ; 
         xor  w0,w0                              ; forget interim code block} zer r_ccb  
         mov  m_word [r_ccb],w0                  ; 
@@ -6591,9 +6603,9 @@ scv27:
         dec  m_word [_rc_]                      ; 
         js   call_84                            ; 
         dec  m_word [_rc_]                      ; fail if unconvertible} ppm exfal  
-        jns  _l0148                             ; 
+        jns  _l0152                             ; 
         jmp  exfal                              ; 
-_l0148:                                         ; 
+_l0152:                                         ; 
 call_84:                                        ; 
 scv31:
         push xr                                 ; stack result} mov -(xs) xr 
@@ -6611,9 +6623,9 @@ s_cop:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_85                            ; 
         dec  m_word [_rc_]                      ; return if no idval field} ppm exits  
-        jns  _l0149                             ; 
+        jns  _l0153                             ; 
         jmp  exits                              ; 
-_l0149:                                         ; 
+_l0153:                                         ; 
 call_85:                                        ; 
         jmp  exsid                              ; exit setting id value} brn exsid  
         align 2                                 ; entry point} ent   
@@ -6624,10 +6636,10 @@ s_cos:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_86                            ; 
         dec  m_word [_rc_]                      ; } err 303 cos argument not numeric 
-        jns  _l0150                             ; 
+        jns  _l0154                             ; 
         mov  m_word [_rc_],303                  ; 
         jmp  err_                               ; 
-_l0150:                                         ; 
+_l0154:                                         ; 
 call_86:                                        ; 
         movsd ra,[(cfp_b*rcval)+xr]             ; load accumulator with argument} ldr rcval(xr)  
         call cos_                               ; take cosine} cos   
@@ -6642,15 +6654,15 @@ s_dat:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_87                            ; 
         dec  m_word [_rc_]                      ; } err 075 data argument is not a string 
-        jns  _l0151                             ; 
+        jns  _l0155                             ; 
         mov  m_word [_rc_],75                   ; 
         jmp  err_                               ; 
-_l0151:                                         ; 
+_l0155:                                         ; 
         dec  m_word [_rc_]                      ; } err 076 data argument is null 
-        jns  _l0152                             ; 
+        jns  _l0156                             ; 
         mov  m_word [_rc_],76                   ; 
         jmp  err_                               ; 
-_l0152:                                         ; 
+_l0156:                                         ; 
 call_87:                                        ; 
         mov  wc,ch_pp                           ; delimiter one = left paren} mov wc =ch_pp 
         mov  xl,wc                              ; delimiter two = left paren} mov xl wc 
@@ -6680,10 +6692,10 @@ sdt1a:
         dec  m_word [_rc_]                      ; 
         js   call_88                            ; 
         dec  m_word [_rc_]                      ; } err 078 data argument has null datatype name 
-        jns  _l0153                             ; 
+        jns  _l0157                             ; 
         mov  m_word [_rc_],78                   ; 
         jmp  err_                               ; 
-_l0153:                                         ; 
+_l0157:                                         ; 
 call_88:                                        ; 
         mov  m_word [datdv],xr                  ; save vrblk pointer for datatype} mov datdv xr 
         mov  m_word [datxs],xs                  ; store starting stack value} mov datxs xs 
@@ -6702,10 +6714,10 @@ sdat3:
         dec  m_word [_rc_]                      ; 
         js   call_89                            ; 
         dec  m_word [_rc_]                      ; } err 080 data argument has null field name 
-        jns  _l0154                             ; 
+        jns  _l0158                             ; 
         mov  m_word [_rc_],80                   ; 
         jmp  err_                               ; 
-_l0154:                                         ; 
+_l0158:                                         ; 
 call_89:                                        ; 
         push xr                                 ; stack vrblk pointer} mov -(xs) xr 
         inc  wb                                 ; increment counter} icv wb  
@@ -6786,10 +6798,10 @@ s_dte:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_90                            ; 
         dec  m_word [_rc_]                      ; } err 330 date argument is not integer 
-        jns  _l0155                             ; 
+        jns  _l0159                             ; 
         mov  m_word [_rc_],330                  ; 
         jmp  err_                               ; 
-_l0155:                                         ; 
+_l0159:                                         ; 
 call_90:                                        ; 
         call sysdt                              ; call system date routine} jsr sysdt  
         mov  wa,m_word [(cfp_b*num01)+xl]       ; load length for sbstr} mov wa num01(xl) 
@@ -6814,9 +6826,9 @@ s_def:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_91                            ; 
         dec  m_word [_rc_]                      ; jump if not a variable name} ppm sdf12  
-        jns  _l0156                             ; 
+        jns  _l0160                             ; 
         jmp  sdf12                              ; 
-_l0156:                                         ; 
+_l0160:                                         ; 
 call_91:                                        ; 
         mov  m_word [deflb],xr                  ; else set specified entry} mov deflb xr 
 sdf01:
@@ -6824,15 +6836,15 @@ sdf01:
         dec  m_word [_rc_]                      ; 
         js   call_92                            ; 
         dec  m_word [_rc_]                      ; } err 081 define first argument is not a string 
-        jns  _l0157                             ; 
+        jns  _l0161                             ; 
         mov  m_word [_rc_],81                   ; 
         jmp  err_                               ; 
-_l0157:                                         ; 
+_l0161:                                         ; 
         dec  m_word [_rc_]                      ; } err 082 define first argument is null 
-        jns  _l0158                             ; 
+        jns  _l0162                             ; 
         mov  m_word [_rc_],82                   ; 
         jmp  err_                               ; 
-_l0158:                                         ; 
+_l0162:                                         ; 
 call_92:                                        ; 
         mov  wc,ch_pp                           ; delimiter one = left paren} mov wc =ch_pp 
         mov  xl,wc                              ; delimiter two = left paren} mov xl wc 
@@ -6847,10 +6859,10 @@ sdf02:
         dec  m_word [_rc_]                      ; 
         js   call_93                            ; 
         dec  m_word [_rc_]                      ; } err 084 define first argument has null function name 
-        jns  _l0159                             ; 
+        jns  _l0163                             ; 
         mov  m_word [_rc_],84                   ; 
         jmp  err_                               ; 
-_l0159:                                         ; 
+_l0163:                                         ; 
 call_93:                                        ; 
         mov  m_word [defvr],xr                  ; save vrblk pointer for function nam} mov defvr xr 
         xor  wb,wb                              ; zero count of arguments} zer wb  
@@ -6877,9 +6889,9 @@ sdf05:
         dec  m_word [_rc_]                      ; 
         js   call_94                            ; 
         dec  m_word [_rc_]                      ; loop back to ignore null name} ppm sdf03  
-        jns  _l0160                             ; 
+        jns  _l0164                             ; 
         jmp  sdf03                              ; 
-_l0160:                                         ; 
+_l0164:                                         ; 
 call_94:                                        ; 
         push xr                                 ; stack argument vrblk pointer} mov -(xs) xr 
         inc  wb                                 ; increment counter} icv wb  
@@ -6902,9 +6914,9 @@ sdf08:
         dec  m_word [_rc_]                      ; 
         js   call_95                            ; 
         dec  m_word [_rc_]                      ; loop back to ignore null name} ppm sdf07  
-        jns  _l0161                             ; 
+        jns  _l0165                             ; 
         jmp  sdf07                              ; 
-_l0161:                                         ; 
+_l0165:                                         ; 
 call_95:                                        ; 
         inc  wb                                 ; if ok, increment count} icv wb  
         push xr                                 ; stack vrblk pointer} mov -(xs) xr 
@@ -6963,10 +6975,10 @@ s_det:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_96                            ; 
         dec  m_word [_rc_]                      ; } err 087 detach argument is not appropriate name 
-        jns  _l0162                             ; 
+        jns  _l0166                             ; 
         mov  m_word [_rc_],87                   ; 
         jmp  err_                               ; 
-_l0162:                                         ; 
+_l0166:                                         ; 
 call_96:                                        ; 
         call dtach                              ; detach i/o association from name} jsr dtach  
         jmp  exnul                              ; return null result} brn exnul  
@@ -6979,9 +6991,9 @@ s_dif:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_97                            ; 
         dec  m_word [_rc_]                      ; fail if ident} ppm exfal  
-        jns  _l0163                             ; 
+        jns  _l0167                             ; 
         jmp  exfal                              ; 
-_l0163:                                         ; 
+_l0167:                                         ; 
 call_97:                                        ; 
         jmp  exnul                              ; return null if differ} brn exnul  
         align 2                                 ; entry point} ent   
@@ -6991,15 +7003,15 @@ s_dmp:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_98                            ; 
         dec  m_word [_rc_]                      ; } err 088 dump argument is not integer 
-        jns  _l0164                             ; 
+        jns  _l0168                             ; 
         mov  m_word [_rc_],88                   ; 
         jmp  err_                               ; 
-_l0164:                                         ; 
+_l0168:                                         ; 
         dec  m_word [_rc_]                      ; } err 089 dump argument is negative or too large 
-        jns  _l0165                             ; 
+        jns  _l0169                             ; 
         mov  m_word [_rc_],89                   ; 
         jmp  err_                               ; 
-_l0165:                                         ; 
+_l0169:                                         ; 
 call_98:                                        ; 
         call dumpr                              ; else call dump routine} jsr dumpr  
         jmp  exnul                              ; and return null as result} brn exnul  
@@ -7010,23 +7022,23 @@ s_dup:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_99                            ; 
         dec  m_word [_rc_]                      ; } err 090 dupl second argument is not integer 
-        jns  _l0166                             ; 
+        jns  _l0170                             ; 
         mov  m_word [_rc_],90                   ; 
         jmp  err_                               ; 
-_l0166:                                         ; 
+_l0170:                                         ; 
         dec  m_word [_rc_]                      ; jump if negative or too big} ppm sdup7  
-        jns  _l0167                             ; 
+        jns  _l0171                             ; 
         jmp  sdup7                              ; 
-_l0167:                                         ; 
+_l0171:                                         ; 
 call_99:                                        ; 
         mov  wb,xr                              ; save duplication factor} mov wb xr 
         call gtstg                              ; get first arg as string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
         js   call_100                           ; 
         dec  m_word [_rc_]                      ; jump if not a string} ppm sdup4  
-        jns  _l0168                             ; 
+        jns  _l0172                             ; 
         jmp  sdup4                              ; 
-_l0168:                                         ; 
+_l0172:                                         ; 
 call_100:                                       ; 
         mov  ia,wa                              ; acquire length as integer} mti wa  
         mov  m_word [dupsi],ia                  ; save for the moment} sti dupsi  
@@ -7065,10 +7077,10 @@ sdup4:
         dec  m_word [_rc_]                      ; 
         js   call_101                           ; 
         dec  m_word [_rc_]                      ; } err 091 dupl first argument is not a string or pattern 
-        jns  _l0170                             ; 
+        jns  _l0174                             ; 
         mov  m_word [_rc_],91                   ; 
         jmp  err_                               ; 
-_l0170:                                         ; 
+_l0174:                                         ; 
 call_101:                                       ; 
         push xr                                 ; store pattern on stack} mov -(xs) xr 
         mov  xr,ndnth                           ; start off with null pattern} mov xr =ndnth 
@@ -7099,38 +7111,38 @@ s_ejc:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_102                           ; 
         dec  m_word [_rc_]                      ; } err 092 eject argument is not a suitable name 
-        jns  _l0171                             ; 
+        jns  _l0175                             ; 
         mov  m_word [_rc_],92                   ; 
         jmp  err_                               ; 
-_l0171:                                         ; 
+_l0175:                                         ; 
         dec  m_word [_rc_]                      ; null argument} ppm sejc1  
-        jns  _l0172                             ; 
+        jns  _l0176                             ; 
         jmp  sejc1                              ; 
-_l0172:                                         ; 
+_l0176:                                         ; 
         dec  m_word [_rc_]                      ; } err 093 eject file does not exist 
-        jns  _l0173                             ; 
+        jns  _l0177                             ; 
         mov  m_word [_rc_],93                   ; 
         jmp  err_                               ; 
-_l0173:                                         ; 
+_l0177:                                         ; 
 call_102:                                       ; 
         call sysef                              ; call eject file function} jsr sysef  
         dec  m_word [_rc_]                      ; 
         js   call_103                           ; 
         dec  m_word [_rc_]                      ; } err 093 eject file does not exist 
-        jns  _l0174                             ; 
+        jns  _l0178                             ; 
         mov  m_word [_rc_],93                   ; 
         jmp  err_                               ; 
-_l0174:                                         ; 
+_l0178:                                         ; 
         dec  m_word [_rc_]                      ; } err 094 eject file does not permit page eject 
-        jns  _l0175                             ; 
+        jns  _l0179                             ; 
         mov  m_word [_rc_],94                   ; 
         jmp  err_                               ; 
-_l0175:                                         ; 
+_l0179:                                         ; 
         dec  m_word [_rc_]                      ; } err 095 eject caused non-recoverable output error 
-        jns  _l0176                             ; 
+        jns  _l0180                             ; 
         mov  m_word [_rc_],95                   ; 
         jmp  err_                               ; 
-_l0176:                                         ; 
+_l0180:                                         ; 
 call_103:                                       ; 
         jmp  exnul                              ; return null as result} brn exnul  
 sejc1:
@@ -7143,39 +7155,39 @@ s_enf:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_104                           ; 
         dec  m_word [_rc_]                      ; } err 096 endfile argument is not a suitable name 
-        jns  _l0177                             ; 
+        jns  _l0181                             ; 
         mov  m_word [_rc_],96                   ; 
         jmp  err_                               ; 
-_l0177:                                         ; 
+_l0181:                                         ; 
         dec  m_word [_rc_]                      ; } err 097 endfile argument is null 
-        jns  _l0178                             ; 
+        jns  _l0182                             ; 
         mov  m_word [_rc_],97                   ; 
         jmp  err_                               ; 
-_l0178:                                         ; 
+_l0182:                                         ; 
         dec  m_word [_rc_]                      ; } err 098 endfile file does not exist 
-        jns  _l0179                             ; 
+        jns  _l0183                             ; 
         mov  m_word [_rc_],98                   ; 
         jmp  err_                               ; 
-_l0179:                                         ; 
+_l0183:                                         ; 
 call_104:                                       ; 
         call sysen                              ; call endfile routine} jsr sysen  
         dec  m_word [_rc_]                      ; 
         js   call_105                           ; 
         dec  m_word [_rc_]                      ; } err 098 endfile file does not exist 
-        jns  _l0180                             ; 
+        jns  _l0184                             ; 
         mov  m_word [_rc_],98                   ; 
         jmp  err_                               ; 
-_l0180:                                         ; 
+_l0184:                                         ; 
         dec  m_word [_rc_]                      ; } err 099 endfile file does not permit endfile 
-        jns  _l0181                             ; 
+        jns  _l0185                             ; 
         mov  m_word [_rc_],99                   ; 
         jmp  err_                               ; 
-_l0181:                                         ; 
+_l0185:                                         ; 
         dec  m_word [_rc_]                      ; } err 100 endfile caused non-recoverable output error 
-        jns  _l0182                             ; 
+        jns  _l0186                             ; 
         mov  m_word [_rc_],100                  ; 
         jmp  err_                               ; 
-_l0182:                                         ; 
+_l0186:                                         ; 
 call_105:                                       ; 
         mov  wb,xl                              ; remember vrblk ptr from iofcb call} mov wb xl 
         mov  xr,xl                              ; copy pointer} mov xr xl 
@@ -7223,27 +7235,27 @@ s_eqf:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_106                           ; 
         dec  m_word [_rc_]                      ; } err 101 eq first argument is not numeric 
-        jns  _l0183                             ; 
+        jns  _l0187                             ; 
         mov  m_word [_rc_],101                  ; 
         jmp  err_                               ; 
-_l0183:                                         ; 
+_l0187:                                         ; 
         dec  m_word [_rc_]                      ; } err 102 eq second argument is not numeric 
-        jns  _l0184                             ; 
+        jns  _l0188                             ; 
         mov  m_word [_rc_],102                  ; 
         jmp  err_                               ; 
-_l0184:                                         ; 
+_l0188:                                         ; 
         dec  m_word [_rc_]                      ; fail if lt} ppm exfal  
-        jns  _l0185                             ; 
+        jns  _l0189                             ; 
         jmp  exfal                              ; 
-_l0185:                                         ; 
+_l0189:                                         ; 
         dec  m_word [_rc_]                      ; return null if eq} ppm exnul  
-        jns  _l0186                             ; 
+        jns  _l0190                             ; 
         jmp  exnul                              ; 
-_l0186:                                         ; 
+_l0190:                                         ; 
         dec  m_word [_rc_]                      ; fail if gt} ppm exfal  
-        jns  _l0187                             ; 
+        jns  _l0191                             ; 
         jmp  exfal                              ; 
-_l0187:                                         ; 
+_l0191:                                         ; 
 call_106:                                       ; 
         align 2                                 ; entry point} ent   
         nop                                     ; 
@@ -7267,10 +7279,10 @@ sevl1:
         dec  m_word [_rc_]                      ; 
         js   call_107                           ; 
         dec  m_word [_rc_]                      ; } err 103 eval argument is not expression 
-        jns  _l0188                             ; 
+        jns  _l0192                             ; 
         mov  m_word [_rc_],103                  ; 
         jmp  err_                               ; 
-_l0188:                                         ; 
+_l0192:                                         ; 
 call_107:                                       ; 
         xor  w0,w0                              ; forget interim code block} zer r_ccb  
         mov  m_word [r_ccb],w0                  ; 
@@ -7279,9 +7291,9 @@ call_107:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_108                           ; 
         dec  m_word [_rc_]                      ; fail if evaluation fails} ppm exfal  
-        jns  _l0189                             ; 
+        jns  _l0193                             ; 
         jmp  exfal                              ; 
-_l0189:                                         ; 
+_l0193:                                         ; 
 call_108:                                       ; 
         mov  xl,xr                              ; copy result} mov xl xr 
         mov  xr,m_word [xs]                     ; reload next code word} mov xr (xs) 
@@ -7293,10 +7305,10 @@ sevl2:
         dec  m_word [_rc_]                      ; 
         js   call_109                           ; 
         dec  m_word [_rc_]                      ; } err 103 eval argument is not expression 
-        jns  _l0190                             ; 
+        jns  _l0194                             ; 
         mov  m_word [_rc_],103                  ; 
         jmp  err_                               ; 
-_l0190:                                         ; 
+_l0194:                                         ; 
 call_109:                                       ; 
         xor  w0,w0                              ; forget interim code block} zer r_ccb  
         mov  m_word [r_ccb],w0                  ; 
@@ -7305,9 +7317,9 @@ call_109:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_110                           ; 
         dec  m_word [_rc_]                      ; fail if evaluation fails} ppm exfal  
-        jns  _l0191                             ; 
+        jns  _l0195                             ; 
         jmp  exfal                              ; 
-_l0191:                                         ; 
+_l0195:                                         ; 
 call_110:                                       ; 
         jmp  exnam                              ; exit with name} brn exnam  
         align 2                                 ; entry point} ent   
@@ -7324,20 +7336,20 @@ s_ext:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_111                           ; 
         dec  m_word [_rc_]                      ; } err 288 exit second argument is not a string 
-        jns  _l0192                             ; 
+        jns  _l0196                             ; 
         mov  m_word [_rc_],288                  ; 
         jmp  err_                               ; 
-_l0192:                                         ; 
+_l0196:                                         ; 
 call_111:                                       ; 
         mov  xl,xr                              ; copy second arg string pointer} mov xl xr 
         call gtstg                              ; convert arg to string} jsr gtstg  
         dec  m_word [_rc_]                      ; 
         js   call_112                           ; 
         dec  m_word [_rc_]                      ; } err 104 exit first argument is not suitable integer or string 
-        jns  _l0193                             ; 
+        jns  _l0197                             ; 
         mov  m_word [_rc_],104                  ; 
         jmp  err_                               ; 
-_l0193:                                         ; 
+_l0197:                                         ; 
 call_112:                                       ; 
         push xl                                 ; save second argument} mov -(xs) xl 
         mov  xl,xr                              ; copy first arg string ptr} mov xl xr 
@@ -7345,9 +7357,9 @@ call_112:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_113                           ; 
         dec  m_word [_rc_]                      ; skip if unconvertible} ppm sext1  
-        jns  _l0194                             ; 
+        jns  _l0198                             ; 
         jmp  sext1                              ; 
-_l0194:                                         ; 
+_l0198:                                         ; 
 call_113:                                       ; 
         xor  xl,xl                              ; note it is integer} zer xl  
         mov  ia,m_word [(cfp_b*icval)+xr]       ; get integer arg} ldi icval(xr)  
@@ -7359,15 +7371,15 @@ sext1:
         dec  m_word [_rc_]                      ; 
         js   call_114                           ; 
         dec  m_word [_rc_]                      ; } err 105 exit action not available in this implementation 
-        jns  _l0195                             ; 
+        jns  _l0199                             ; 
         mov  m_word [_rc_],105                  ; 
         jmp  err_                               ; 
-_l0195:                                         ; 
+_l0199:                                         ; 
         dec  m_word [_rc_]                      ; } err 106 exit action caused irrecoverable error 
-        jns  _l0196                             ; 
+        jns  _l0200                             ; 
         mov  m_word [_rc_],106                  ; 
         jmp  err_                               ; 
-_l0196:                                         ; 
+_l0200:                                         ; 
 call_114:                                       ; 
         cmp  ia,0                               ; return if argument 0} ieq exnul  
         je   exnul                              ; 
@@ -7411,10 +7423,10 @@ s_exp:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_115                           ; 
         dec  m_word [_rc_]                      ; } err 304 exp argument not numeric 
-        jns  _l0197                             ; 
+        jns  _l0201                             ; 
         mov  m_word [_rc_],304                  ; 
         jmp  err_                               ; 
-_l0197:                                         ; 
+_l0201:                                         ; 
 call_115:                                       ; 
         movsd ra,[(cfp_b*rcval)+xr]             ; load accumulator with argument} ldr rcval(xr)  
         call etx_                               ; take exponential} etx   
@@ -7429,14 +7441,14 @@ s_fld:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_116                           ; 
         dec  m_word [_rc_]                      ; } err 107 field second argument is not integer 
-        jns  _l0198                             ; 
+        jns  _l0202                             ; 
         mov  m_word [_rc_],107                  ; 
         jmp  err_                               ; 
-_l0198:                                         ; 
+_l0202:                                         ; 
         dec  m_word [_rc_]                      ; fail if out of range} ppm exfal  
-        jns  _l0199                             ; 
+        jns  _l0203                             ; 
         jmp  exfal                              ; 
-_l0199:                                         ; 
+_l0203:                                         ; 
 call_116:                                       ; 
         mov  wb,xr                              ; else save integer value} mov wb xr 
         pop  xr                                 ; load first argument} mov xr (xs)+ 
@@ -7444,9 +7456,9 @@ call_116:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_117                           ; 
         dec  m_word [_rc_]                      ; jump (error) if not variable name} ppm sfld1  
-        jns  _l0200                             ; 
+        jns  _l0204                             ; 
         jmp  sfld1                              ; 
-_l0200:                                         ; 
+_l0204:                                         ; 
 call_117:                                       ; 
         mov  xr,m_word [(cfp_b*vrfnc)+xr]       ; else point to function block} mov xr vrfnc(xr) 
         cmp  m_word [xr],b_dfc                  ; error if not datatype function} bne (xr) =b_dfc sfld1
@@ -7474,10 +7486,10 @@ s_fnc:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_118                           ; 
         dec  m_word [_rc_]                      ; } err 259 fence argument is not pattern 
-        jns  _l0201                             ; 
+        jns  _l0205                             ; 
         mov  m_word [_rc_],259                  ; 
         jmp  err_                               ; 
-_l0201:                                         ; 
+_l0205:                                         ; 
 call_118:                                       ; 
         call pconc                              ; concatenate to p_fnc node} jsr pconc  
         mov  xl,xr                              ; save ptr to concatenated pattern} mov xl xr 
@@ -7497,27 +7509,27 @@ s_gef:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_119                           ; 
         dec  m_word [_rc_]                      ; } err 109 ge first argument is not numeric 
-        jns  _l0202                             ; 
+        jns  _l0206                             ; 
         mov  m_word [_rc_],109                  ; 
         jmp  err_                               ; 
-_l0202:                                         ; 
+_l0206:                                         ; 
         dec  m_word [_rc_]                      ; } err 110 ge second argument is not numeric 
-        jns  _l0203                             ; 
+        jns  _l0207                             ; 
         mov  m_word [_rc_],110                  ; 
         jmp  err_                               ; 
-_l0203:                                         ; 
+_l0207:                                         ; 
         dec  m_word [_rc_]                      ; fail if lt} ppm exfal  
-        jns  _l0204                             ; 
+        jns  _l0208                             ; 
         jmp  exfal                              ; 
-_l0204:                                         ; 
+_l0208:                                         ; 
         dec  m_word [_rc_]                      ; return null if eq} ppm exnul  
-        jns  _l0205                             ; 
+        jns  _l0209                             ; 
         jmp  exnul                              ; 
-_l0205:                                         ; 
+_l0209:                                         ; 
         dec  m_word [_rc_]                      ; return null if gt} ppm exnul  
-        jns  _l0206                             ; 
+        jns  _l0210                             ; 
         jmp  exnul                              ; 
-_l0206:                                         ; 
+_l0210:                                         ; 
 call_119:                                       ; 
         align 2                                 ; entry point} ent   
         nop                                     ; 
@@ -7526,27 +7538,27 @@ s_gtf:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_120                           ; 
         dec  m_word [_rc_]                      ; } err 111 gt first argument is not numeric 
-        jns  _l0207                             ; 
+        jns  _l0211                             ; 
         mov  m_word [_rc_],111                  ; 
         jmp  err_                               ; 
-_l0207:                                         ; 
+_l0211:                                         ; 
         dec  m_word [_rc_]                      ; } err 112 gt second argument is not numeric 
-        jns  _l0208                             ; 
+        jns  _l0212                             ; 
         mov  m_word [_rc_],112                  ; 
         jmp  err_                               ; 
-_l0208:                                         ; 
+_l0212:                                         ; 
         dec  m_word [_rc_]                      ; fail if lt} ppm exfal  
-        jns  _l0209                             ; 
+        jns  _l0213                             ; 
         jmp  exfal                              ; 
-_l0209:                                         ; 
+_l0213:                                         ; 
         dec  m_word [_rc_]                      ; fail if eq} ppm exfal  
-        jns  _l0210                             ; 
+        jns  _l0214                             ; 
         jmp  exfal                              ; 
-_l0210:                                         ; 
+_l0214:                                         ; 
         dec  m_word [_rc_]                      ; return null if gt} ppm exnul  
-        jns  _l0211                             ; 
+        jns  _l0215                             ; 
         jmp  exnul                              ; 
-_l0211:                                         ; 
+_l0215:                                         ; 
 call_120:                                       ; 
         align 2                                 ; entry point} ent   
         nop                                     ; 
@@ -7560,39 +7572,39 @@ s_hst:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_121                           ; 
         dec  m_word [_rc_]                      ; } err 254 erroneous argument for host 
-        jns  _l0212                             ; 
+        jns  _l0216                             ; 
         mov  m_word [_rc_],254                  ; 
         jmp  err_                               ; 
-_l0212:                                         ; 
+_l0216:                                         ; 
         dec  m_word [_rc_]                      ; } err 255 error during execution of host 
-        jns  _l0213                             ; 
+        jns  _l0217                             ; 
         mov  m_word [_rc_],255                  ; 
         jmp  err_                               ; 
-_l0213:                                         ; 
-        dec  m_word [_rc_]                      ; store host string} ppm shst1  
-        jns  _l0214                             ; 
-        jmp  shst1                              ; 
-_l0214:                                         ; 
-        dec  m_word [_rc_]                      ; return null result} ppm exnul  
-        jns  _l0215                             ; 
-        jmp  exnul                              ; 
-_l0215:                                         ; 
-        dec  m_word [_rc_]                      ; return xr} ppm exixr  
-        jns  _l0216                             ; 
-        jmp  exixr                              ; 
-_l0216:                                         ; 
-        dec  m_word [_rc_]                      ; fail return} ppm exfal  
-        jns  _l0217                             ; 
-        jmp  exfal                              ; 
 _l0217:                                         ; 
-        dec  m_word [_rc_]                      ; store actual string} ppm shst3  
+        dec  m_word [_rc_]                      ; store host string} ppm shst1  
         jns  _l0218                             ; 
-        jmp  shst3                              ; 
+        jmp  shst1                              ; 
 _l0218:                                         ; 
-        dec  m_word [_rc_]                      ; return copy of xr} ppm shst4  
+        dec  m_word [_rc_]                      ; return null result} ppm exnul  
         jns  _l0219                             ; 
-        jmp  shst4                              ; 
+        jmp  exnul                              ; 
 _l0219:                                         ; 
+        dec  m_word [_rc_]                      ; return xr} ppm exixr  
+        jns  _l0220                             ; 
+        jmp  exixr                              ; 
+_l0220:                                         ; 
+        dec  m_word [_rc_]                      ; fail return} ppm exfal  
+        jns  _l0221                             ; 
+        jmp  exfal                              ; 
+_l0221:                                         ; 
+        dec  m_word [_rc_]                      ; store actual string} ppm shst3  
+        jns  _l0222                             ; 
+        jmp  shst3                              ; 
+_l0222:                                         ; 
+        dec  m_word [_rc_]                      ; return copy of xr} ppm shst4  
+        jns  _l0223                             ; 
+        jmp  shst4                              ; 
+_l0223:                                         ; 
 call_121:                                       ; 
 shst1:
         test xl,xl                              ; null string if syshs uncooperative} bze xl exnul 
@@ -7616,9 +7628,9 @@ shst4:
         dec  m_word [_rc_]                      ; 
         js   call_122                           ; 
         dec  m_word [_rc_]                      ; if not an aggregate structure} ppm exits  
-        jns  _l0220                             ; 
+        jns  _l0224                             ; 
         jmp  exits                              ; 
-_l0220:                                         ; 
+_l0224:                                         ; 
 call_122:                                       ; 
         jmp  exsid                              ; set current id value otherwise} brn exsid  
         align 2                                 ; entry point} ent   
@@ -7630,9 +7642,9 @@ s_idn:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_123                           ; 
         dec  m_word [_rc_]                      ; return null if ident} ppm exnul  
-        jns  _l0221                             ; 
+        jns  _l0225                             ; 
         jmp  exnul                              ; 
-_l0221:                                         ; 
+_l0225:                                         ; 
 call_123:                                       ; 
         jmp  exfal                              ; fail if differ} brn exfal  
         align 2                                 ; entry point} ent   
@@ -7643,39 +7655,39 @@ s_inp:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_124                           ; 
         dec  m_word [_rc_]                      ; } err 113 input third argument is not a string 
-        jns  _l0222                             ; 
+        jns  _l0226                             ; 
         mov  m_word [_rc_],113                  ; 
         jmp  err_                               ; 
-_l0222:                                         ; 
+_l0226:                                         ; 
         dec  m_word [_rc_]                      ; } err 114 inappropriate second argument for input 
-        jns  _l0223                             ; 
+        jns  _l0227                             ; 
         mov  m_word [_rc_],114                  ; 
         jmp  err_                               ; 
-_l0223:                                         ; 
+_l0227:                                         ; 
         dec  m_word [_rc_]                      ; } err 115 inappropriate first argument for input 
-        jns  _l0224                             ; 
+        jns  _l0228                             ; 
         mov  m_word [_rc_],115                  ; 
         jmp  err_                               ; 
-_l0224:                                         ; 
+_l0228:                                         ; 
         dec  m_word [_rc_]                      ; } err 116 inappropriate file specification for input 
-        jns  _l0225                             ; 
+        jns  _l0229                             ; 
         mov  m_word [_rc_],116                  ; 
         jmp  err_                               ; 
-_l0225:                                         ; 
+_l0229:                                         ; 
         dec  m_word [_rc_]                      ; fail if file does not exist} ppm exfal  
-        jns  _l0226                             ; 
+        jns  _l0230                             ; 
         jmp  exfal                              ; 
-_l0226:                                         ; 
+_l0230:                                         ; 
         dec  m_word [_rc_]                      ; } err 117 input file cannot be read 
-        jns  _l0227                             ; 
+        jns  _l0231                             ; 
         mov  m_word [_rc_],117                  ; 
         jmp  err_                               ; 
-_l0227:                                         ; 
+_l0231:                                         ; 
         dec  m_word [_rc_]                      ; } err 289 input channel currently in use 
-        jns  _l0228                             ; 
+        jns  _l0232                             ; 
         mov  m_word [_rc_],289                  ; 
         jmp  err_                               ; 
-_l0228:                                         ; 
+_l0232:                                         ; 
 call_124:                                       ; 
         jmp  exnul                              ; return null string} brn exnul  
         align 2                                 ; entry point} ent   
@@ -7686,9 +7698,9 @@ s_int:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_125                           ; 
         dec  m_word [_rc_]                      ; fail if non-numeric} ppm exfal  
-        jns  _l0229                             ; 
+        jns  _l0233                             ; 
         jmp  exfal                              ; 
-_l0229:                                         ; 
+_l0233:                                         ; 
 call_125:                                       ; 
         cmp  wa,b_icl                           ; return null if integer} beq wa =b_icl exnul
         je   exnul                              ; 
@@ -7722,27 +7734,27 @@ s_lef:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_126                           ; 
         dec  m_word [_rc_]                      ; } err 118 le first argument is not numeric 
-        jns  _l0230                             ; 
+        jns  _l0234                             ; 
         mov  m_word [_rc_],118                  ; 
         jmp  err_                               ; 
-_l0230:                                         ; 
+_l0234:                                         ; 
         dec  m_word [_rc_]                      ; } err 119 le second argument is not numeric 
-        jns  _l0231                             ; 
+        jns  _l0235                             ; 
         mov  m_word [_rc_],119                  ; 
         jmp  err_                               ; 
-_l0231:                                         ; 
+_l0235:                                         ; 
         dec  m_word [_rc_]                      ; return null if lt} ppm exnul  
-        jns  _l0232                             ; 
+        jns  _l0236                             ; 
         jmp  exnul                              ; 
-_l0232:                                         ; 
+_l0236:                                         ; 
         dec  m_word [_rc_]                      ; return null if eq} ppm exnul  
-        jns  _l0233                             ; 
+        jns  _l0237                             ; 
         jmp  exnul                              ; 
-_l0233:                                         ; 
+_l0237:                                         ; 
         dec  m_word [_rc_]                      ; fail if gt} ppm exfal  
-        jns  _l0234                             ; 
+        jns  _l0238                             ; 
         jmp  exfal                              ; 
-_l0234:                                         ; 
+_l0238:                                         ; 
 call_126:                                       ; 
         align 2                                 ; entry point} ent   
         nop                                     ; 
@@ -7753,15 +7765,15 @@ s_len:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_127                           ; 
         dec  m_word [_rc_]                      ; } err 120 len argument is not integer or expression 
-        jns  _l0235                             ; 
+        jns  _l0239                             ; 
         mov  m_word [_rc_],120                  ; 
         jmp  err_                               ; 
-_l0235:                                         ; 
+_l0239:                                         ; 
         dec  m_word [_rc_]                      ; } err 121 len argument is negative or too large 
-        jns  _l0236                             ; 
+        jns  _l0240                             ; 
         mov  m_word [_rc_],121                  ; 
         jmp  err_                               ; 
-_l0236:                                         ; 
+_l0240:                                         ; 
 call_127:                                       ; 
         push xr                                 ; stack result} mov -(xs) xr 
         mov  r10,m_word [r13]                   ; get next code word} lcw xr  
@@ -7775,27 +7787,27 @@ s_leq:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_128                           ; 
         dec  m_word [_rc_]                      ; } err 122 leq first argument is not a string 
-        jns  _l0237                             ; 
+        jns  _l0241                             ; 
         mov  m_word [_rc_],122                  ; 
         jmp  err_                               ; 
-_l0237:                                         ; 
+_l0241:                                         ; 
         dec  m_word [_rc_]                      ; } err 123 leq second argument is not a string 
-        jns  _l0238                             ; 
+        jns  _l0242                             ; 
         mov  m_word [_rc_],123                  ; 
         jmp  err_                               ; 
-_l0238:                                         ; 
+_l0242:                                         ; 
         dec  m_word [_rc_]                      ; fail if llt} ppm exfal  
-        jns  _l0239                             ; 
+        jns  _l0243                             ; 
         jmp  exfal                              ; 
-_l0239:                                         ; 
+_l0243:                                         ; 
         dec  m_word [_rc_]                      ; return null if leq} ppm exnul  
-        jns  _l0240                             ; 
+        jns  _l0244                             ; 
         jmp  exnul                              ; 
-_l0240:                                         ; 
+_l0244:                                         ; 
         dec  m_word [_rc_]                      ; fail if lgt} ppm exfal  
-        jns  _l0241                             ; 
+        jns  _l0245                             ; 
         jmp  exfal                              ; 
-_l0241:                                         ; 
+_l0245:                                         ; 
 call_128:                                       ; 
         align 2                                 ; entry point} ent   
         nop                                     ; 
@@ -7804,27 +7816,27 @@ s_lge:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_129                           ; 
         dec  m_word [_rc_]                      ; } err 124 lge first argument is not a string 
-        jns  _l0242                             ; 
+        jns  _l0246                             ; 
         mov  m_word [_rc_],124                  ; 
         jmp  err_                               ; 
-_l0242:                                         ; 
+_l0246:                                         ; 
         dec  m_word [_rc_]                      ; } err 125 lge second argument is not a string 
-        jns  _l0243                             ; 
+        jns  _l0247                             ; 
         mov  m_word [_rc_],125                  ; 
         jmp  err_                               ; 
-_l0243:                                         ; 
+_l0247:                                         ; 
         dec  m_word [_rc_]                      ; fail if llt} ppm exfal  
-        jns  _l0244                             ; 
+        jns  _l0248                             ; 
         jmp  exfal                              ; 
-_l0244:                                         ; 
+_l0248:                                         ; 
         dec  m_word [_rc_]                      ; return null if leq} ppm exnul  
-        jns  _l0245                             ; 
+        jns  _l0249                             ; 
         jmp  exnul                              ; 
-_l0245:                                         ; 
+_l0249:                                         ; 
         dec  m_word [_rc_]                      ; return null if lgt} ppm exnul  
-        jns  _l0246                             ; 
+        jns  _l0250                             ; 
         jmp  exnul                              ; 
-_l0246:                                         ; 
+_l0250:                                         ; 
 call_129:                                       ; 
         align 2                                 ; entry point} ent   
         nop                                     ; 
@@ -7833,27 +7845,27 @@ s_lgt:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_130                           ; 
         dec  m_word [_rc_]                      ; } err 126 lgt first argument is not a string 
-        jns  _l0247                             ; 
+        jns  _l0251                             ; 
         mov  m_word [_rc_],126                  ; 
         jmp  err_                               ; 
-_l0247:                                         ; 
+_l0251:                                         ; 
         dec  m_word [_rc_]                      ; } err 127 lgt second argument is not a string 
-        jns  _l0248                             ; 
+        jns  _l0252                             ; 
         mov  m_word [_rc_],127                  ; 
         jmp  err_                               ; 
-_l0248:                                         ; 
+_l0252:                                         ; 
         dec  m_word [_rc_]                      ; fail if llt} ppm exfal  
-        jns  _l0249                             ; 
+        jns  _l0253                             ; 
         jmp  exfal                              ; 
-_l0249:                                         ; 
+_l0253:                                         ; 
         dec  m_word [_rc_]                      ; fail if leq} ppm exfal  
-        jns  _l0250                             ; 
+        jns  _l0254                             ; 
         jmp  exfal                              ; 
-_l0250:                                         ; 
+_l0254:                                         ; 
         dec  m_word [_rc_]                      ; return null if lgt} ppm exnul  
-        jns  _l0251                             ; 
+        jns  _l0255                             ; 
         jmp  exnul                              ; 
-_l0251:                                         ; 
+_l0255:                                         ; 
 call_130:                                       ; 
         align 2                                 ; entry point} ent   
         nop                                     ; 
@@ -7862,27 +7874,27 @@ s_lle:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_131                           ; 
         dec  m_word [_rc_]                      ; } err 128 lle first argument is not a string 
-        jns  _l0252                             ; 
+        jns  _l0256                             ; 
         mov  m_word [_rc_],128                  ; 
         jmp  err_                               ; 
-_l0252:                                         ; 
+_l0256:                                         ; 
         dec  m_word [_rc_]                      ; } err 129 lle second argument is not a string 
-        jns  _l0253                             ; 
+        jns  _l0257                             ; 
         mov  m_word [_rc_],129                  ; 
         jmp  err_                               ; 
-_l0253:                                         ; 
+_l0257:                                         ; 
         dec  m_word [_rc_]                      ; return null if llt} ppm exnul  
-        jns  _l0254                             ; 
+        jns  _l0258                             ; 
         jmp  exnul                              ; 
-_l0254:                                         ; 
+_l0258:                                         ; 
         dec  m_word [_rc_]                      ; return null if leq} ppm exnul  
-        jns  _l0255                             ; 
+        jns  _l0259                             ; 
         jmp  exnul                              ; 
-_l0255:                                         ; 
+_l0259:                                         ; 
         dec  m_word [_rc_]                      ; fail if lgt} ppm exfal  
-        jns  _l0256                             ; 
+        jns  _l0260                             ; 
         jmp  exfal                              ; 
-_l0256:                                         ; 
+_l0260:                                         ; 
 call_131:                                       ; 
         align 2                                 ; entry point} ent   
         nop                                     ; 
@@ -7891,27 +7903,27 @@ s_llt:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_132                           ; 
         dec  m_word [_rc_]                      ; } err 130 llt first argument is not a string 
-        jns  _l0257                             ; 
+        jns  _l0261                             ; 
         mov  m_word [_rc_],130                  ; 
         jmp  err_                               ; 
-_l0257:                                         ; 
+_l0261:                                         ; 
         dec  m_word [_rc_]                      ; } err 131 llt second argument is not a string 
-        jns  _l0258                             ; 
+        jns  _l0262                             ; 
         mov  m_word [_rc_],131                  ; 
         jmp  err_                               ; 
-_l0258:                                         ; 
+_l0262:                                         ; 
         dec  m_word [_rc_]                      ; return null if llt} ppm exnul  
-        jns  _l0259                             ; 
+        jns  _l0263                             ; 
         jmp  exnul                              ; 
-_l0259:                                         ; 
+_l0263:                                         ; 
         dec  m_word [_rc_]                      ; fail if leq} ppm exfal  
-        jns  _l0260                             ; 
+        jns  _l0264                             ; 
         jmp  exfal                              ; 
-_l0260:                                         ; 
+_l0264:                                         ; 
         dec  m_word [_rc_]                      ; fail if lgt} ppm exfal  
-        jns  _l0261                             ; 
+        jns  _l0265                             ; 
         jmp  exfal                              ; 
-_l0261:                                         ; 
+_l0265:                                         ; 
 call_132:                                       ; 
         align 2                                 ; entry point} ent   
         nop                                     ; 
@@ -7920,27 +7932,27 @@ s_lne:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_133                           ; 
         dec  m_word [_rc_]                      ; } err 132 lne first argument is not a string 
-        jns  _l0262                             ; 
+        jns  _l0266                             ; 
         mov  m_word [_rc_],132                  ; 
         jmp  err_                               ; 
-_l0262:                                         ; 
+_l0266:                                         ; 
         dec  m_word [_rc_]                      ; } err 133 lne second argument is not a string 
-        jns  _l0263                             ; 
+        jns  _l0267                             ; 
         mov  m_word [_rc_],133                  ; 
         jmp  err_                               ; 
-_l0263:                                         ; 
+_l0267:                                         ; 
         dec  m_word [_rc_]                      ; return null if llt} ppm exnul  
-        jns  _l0264                             ; 
+        jns  _l0268                             ; 
         jmp  exnul                              ; 
-_l0264:                                         ; 
+_l0268:                                         ; 
         dec  m_word [_rc_]                      ; fail if leq} ppm exfal  
-        jns  _l0265                             ; 
+        jns  _l0269                             ; 
         jmp  exfal                              ; 
-_l0265:                                         ; 
+_l0269:                                         ; 
         dec  m_word [_rc_]                      ; return null if lgt} ppm exnul  
-        jns  _l0266                             ; 
+        jns  _l0270                             ; 
         jmp  exnul                              ; 
-_l0266:                                         ; 
+_l0270:                                         ; 
 call_133:                                       ; 
         align 2                                 ; entry point} ent   
         nop                                     ; 
@@ -7950,10 +7962,10 @@ s_lnf:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_134                           ; 
         dec  m_word [_rc_]                      ; } err 306 ln argument not numeric 
-        jns  _l0267                             ; 
+        jns  _l0271                             ; 
         mov  m_word [_rc_],306                  ; 
         jmp  err_                               ; 
-_l0267:                                         ; 
+_l0271:                                         ; 
 call_134:                                       ; 
         movsd ra,[(cfp_b*rcval)+xr]             ; load accumulator with argument} ldr rcval(xr)  
         pxor xmm0,xmm0                          ; overflow if argument is 0} req slnf1  
@@ -7978,14 +7990,14 @@ s_loc:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_135                           ; 
         dec  m_word [_rc_]                      ; } err 134 local second argument is not integer 
-        jns  _l0268                             ; 
+        jns  _l0272                             ; 
         mov  m_word [_rc_],134                  ; 
         jmp  err_                               ; 
-_l0268:                                         ; 
+_l0272:                                         ; 
         dec  m_word [_rc_]                      ; fail if out of range} ppm exfal  
-        jns  _l0269                             ; 
+        jns  _l0273                             ; 
         jmp  exfal                              ; 
-_l0269:                                         ; 
+_l0273:                                         ; 
 call_135:                                       ; 
         mov  wb,xr                              ; save local number} mov wb xr 
         pop  xr                                 ; load first argument} mov xr (xs)+ 
@@ -7993,9 +8005,9 @@ call_135:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_136                           ; 
         dec  m_word [_rc_]                      ; jump if not variable name} ppm sloc1  
-        jns  _l0270                             ; 
+        jns  _l0274                             ; 
         jmp  sloc1                              ; 
-_l0270:                                         ; 
+_l0274:                                         ; 
 call_136:                                       ; 
         mov  xr,m_word [(cfp_b*vrfnc)+xr]       ; else load function pointer} mov xr vrfnc(xr) 
         cmp  m_word [xr],b_pfc                  ; jump if not program defined} bne (xr) =b_pfc sloc1
@@ -8019,25 +8031,25 @@ s_lod:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_137                           ; 
         dec  m_word [_rc_]                      ; } err 136 load second argument is not a string 
-        jns  _l0271                             ; 
+        jns  _l0275                             ; 
         mov  m_word [_rc_],136                  ; 
         jmp  err_                               ; 
-_l0271:                                         ; 
+_l0275:                                         ; 
 call_137:                                       ; 
         mov  xl,xr                              ; save library name} mov xl xr 
         call xscni                              ; prepare to scan first argument} jsr xscni  
         dec  m_word [_rc_]                      ; 
         js   call_138                           ; 
         dec  m_word [_rc_]                      ; } err 137 load first argument is not a string 
-        jns  _l0272                             ; 
+        jns  _l0276                             ; 
         mov  m_word [_rc_],137                  ; 
         jmp  err_                               ; 
-_l0272:                                         ; 
+_l0276:                                         ; 
         dec  m_word [_rc_]                      ; } err 138 load first argument is null 
-        jns  _l0273                             ; 
+        jns  _l0277                             ; 
         mov  m_word [_rc_],138                  ; 
         jmp  err_                               ; 
-_l0273:                                         ; 
+_l0277:                                         ; 
 call_138:                                       ; 
         push xl                                 ; stack library name} mov -(xs) xl 
         mov  wc,ch_pp                           ; set delimiter one = left paren} mov wc =ch_pp 
@@ -8054,10 +8066,10 @@ slod1:
         dec  m_word [_rc_]                      ; 
         js   call_139                           ; 
         dec  m_word [_rc_]                      ; } err 140 load first argument has null function name 
-        jns  _l0274                             ; 
+        jns  _l0278                             ; 
         mov  m_word [_rc_],140                  ; 
         jmp  err_                               ; 
-_l0274:                                         ; 
+_l0278:                                         ; 
 call_139:                                       ; 
         mov  m_word [lodfn],xr                  ; save vrblk pointer} mov lodfn xr 
         xor  w0,w0                              ; zero count of arguments} zer lodna  
@@ -8087,9 +8099,9 @@ sld3a:
         dec  m_word [_rc_]                      ; 
         js   call_140                           ; 
         dec  m_word [_rc_]                      ; jump if match} ppm slod4  
-        jns  _l0275                             ; 
+        jns  _l0279                             ; 
         jmp  slod4                              ; 
-_l0275:                                         ; 
+_l0279:                                         ; 
 call_140:                                       ; 
         mov  xr,m_word [xs]                     ; else reload name} mov xr (xs) 
         add  wb,wb                              ; set code for integer (2)} add wb wb 
@@ -8098,9 +8110,9 @@ call_140:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_141                           ; 
         dec  m_word [_rc_]                      ; jump if match} ppm slod4  
-        jns  _l0276                             ; 
+        jns  _l0280                             ; 
         jmp  slod4                              ; 
-_l0276:                                         ; 
+_l0280:                                         ; 
 call_141:                                       ; 
         mov  xr,m_word [xs]                     ; else reload string pointer} mov xr (xs) 
         inc  wb                                 ; set code for real (3)} icv wb  
@@ -8109,9 +8121,9 @@ call_141:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_142                           ; 
         dec  m_word [_rc_]                      ; jump if match} ppm slod4  
-        jns  _l0277                             ; 
+        jns  _l0281                             ; 
         jmp  slod4                              ; 
-_l0277:                                         ; 
+_l0281:                                         ; 
 call_142:                                       ; 
         mov  xr,m_word [xs]                     ; reload string pointer} mov xr (xs) 
         inc  wb                                 ; code for file (4, or 3 if no reals)} icv wb  
@@ -8120,9 +8132,9 @@ call_142:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_143                           ; 
         dec  m_word [_rc_]                      ; jump if match} ppm slod4  
-        jns  _l0278                             ; 
+        jns  _l0282                             ; 
         jmp  slod4                              ; 
-_l0278:                                         ; 
+_l0282:                                         ; 
 call_143:                                       ; 
         xor  wb,wb                              ; else get code for no convert} zer wb  
 slod4:
@@ -8169,20 +8181,20 @@ slod6:
         dec  m_word [_rc_]                      ; 
         js   call_144                           ; 
         dec  m_word [_rc_]                      ; } err 142 load function does not exist 
-        jns  _l0279                             ; 
+        jns  _l0283                             ; 
         mov  m_word [_rc_],142                  ; 
         jmp  err_                               ; 
-_l0279:                                         ; 
+_l0283:                                         ; 
         dec  m_word [_rc_]                      ; } err 143 load function caused input error during load 
-        jns  _l0280                             ; 
+        jns  _l0284                             ; 
         mov  m_word [_rc_],143                  ; 
         jmp  err_                               ; 
-_l0280:                                         ; 
+_l0284:                                         ; 
         dec  m_word [_rc_]                      ; } err 328 load function - insufficient memory 
-        jns  _l0281                             ; 
+        jns  _l0285                             ; 
         mov  m_word [_rc_],328                  ; 
         jmp  err_                               ; 
-_l0281:                                         ; 
+_l0285:                                         ; 
 call_144:                                       ; 
         pop  xl                                 ; recall efblk pointer} mov xl (xs)+ 
         mov  m_word [(cfp_b*efcod)+xl],xr       ; store code pointer} mov efcod(xl) xr 
@@ -8196,10 +8208,10 @@ s_lpd:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_145                           ; 
         dec  m_word [_rc_]                      ; } err 144 lpad third argument is not a string 
-        jns  _l0282                             ; 
+        jns  _l0286                             ; 
         mov  m_word [_rc_],144                  ; 
         jmp  err_                               ; 
-_l0282:                                         ; 
+_l0286:                                         ; 
 call_145:                                       ; 
         add  xr,cfp_f                           ; point to character (null is blank)} plc xr  
         xor  w0,w0                              ; load pad character} lch wb (xr) 
@@ -8209,24 +8221,24 @@ call_145:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_146                           ; 
         dec  m_word [_rc_]                      ; } err 145 lpad second argument is not integer 
-        jns  _l0283                             ; 
+        jns  _l0287                             ; 
         mov  m_word [_rc_],145                  ; 
         jmp  err_                               ; 
-_l0283:                                         ; 
+_l0287:                                         ; 
         dec  m_word [_rc_]                      ; skip if negative or large} ppm slpd4  
-        jns  _l0284                             ; 
+        jns  _l0288                             ; 
         jmp  slpd4                              ; 
-_l0284:                                         ; 
+_l0288:                                         ; 
 call_146:                                       ; 
 slpd1:
         call gtstg                              ; get first argument (string to pad)} jsr gtstg  
         dec  m_word [_rc_]                      ; 
         js   call_147                           ; 
         dec  m_word [_rc_]                      ; } err 146 lpad first argument is not a string 
-        jns  _l0285                             ; 
+        jns  _l0289                             ; 
         mov  m_word [_rc_],146                  ; 
         jmp  err_                               ; 
-_l0285:                                         ; 
+_l0289:                                         ; 
 call_147:                                       ; 
         cmp  wa,wc                              ; return 1st arg if too long to pad} bge wa wc exixr
         jae  exixr                              ; 
@@ -8263,27 +8275,27 @@ s_ltf:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_148                           ; 
         dec  m_word [_rc_]                      ; } err 147 lt first argument is not numeric 
-        jns  _l0287                             ; 
+        jns  _l0291                             ; 
         mov  m_word [_rc_],147                  ; 
         jmp  err_                               ; 
-_l0287:                                         ; 
+_l0291:                                         ; 
         dec  m_word [_rc_]                      ; } err 148 lt second argument is not numeric 
-        jns  _l0288                             ; 
+        jns  _l0292                             ; 
         mov  m_word [_rc_],148                  ; 
         jmp  err_                               ; 
-_l0288:                                         ; 
+_l0292:                                         ; 
         dec  m_word [_rc_]                      ; return null if lt} ppm exnul  
-        jns  _l0289                             ; 
+        jns  _l0293                             ; 
         jmp  exnul                              ; 
-_l0289:                                         ; 
+_l0293:                                         ; 
         dec  m_word [_rc_]                      ; fail if eq} ppm exfal  
-        jns  _l0290                             ; 
+        jns  _l0294                             ; 
         jmp  exfal                              ; 
-_l0290:                                         ; 
+_l0294:                                         ; 
         dec  m_word [_rc_]                      ; fail if gt} ppm exfal  
-        jns  _l0291                             ; 
+        jns  _l0295                             ; 
         jmp  exfal                              ; 
-_l0291:                                         ; 
+_l0295:                                         ; 
 call_148:                                       ; 
         align 2                                 ; entry point} ent   
         nop                                     ; 
@@ -8292,27 +8304,27 @@ s_nef:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_149                           ; 
         dec  m_word [_rc_]                      ; } err 149 ne first argument is not numeric 
-        jns  _l0292                             ; 
+        jns  _l0296                             ; 
         mov  m_word [_rc_],149                  ; 
         jmp  err_                               ; 
-_l0292:                                         ; 
+_l0296:                                         ; 
         dec  m_word [_rc_]                      ; } err 150 ne second argument is not numeric 
-        jns  _l0293                             ; 
+        jns  _l0297                             ; 
         mov  m_word [_rc_],150                  ; 
         jmp  err_                               ; 
-_l0293:                                         ; 
+_l0297:                                         ; 
         dec  m_word [_rc_]                      ; return null if lt} ppm exnul  
-        jns  _l0294                             ; 
+        jns  _l0298                             ; 
         jmp  exnul                              ; 
-_l0294:                                         ; 
+_l0298:                                         ; 
         dec  m_word [_rc_]                      ; fail if eq} ppm exfal  
-        jns  _l0295                             ; 
+        jns  _l0299                             ; 
         jmp  exfal                              ; 
-_l0295:                                         ; 
+_l0299:                                         ; 
         dec  m_word [_rc_]                      ; return null if gt} ppm exnul  
-        jns  _l0296                             ; 
+        jns  _l0300                             ; 
         jmp  exnul                              ; 
-_l0296:                                         ; 
+_l0300:                                         ; 
 call_149:                                       ; 
         align 2                                 ; entry point} ent   
         nop                                     ; 
@@ -8324,10 +8336,10 @@ s_nay:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_150                           ; 
         dec  m_word [_rc_]                      ; } err 151 notany argument is not a string or expression 
-        jns  _l0297                             ; 
+        jns  _l0301                             ; 
         mov  m_word [_rc_],151                  ; 
         jmp  err_                               ; 
-_l0297:                                         ; 
+_l0301:                                         ; 
 call_150:                                       ; 
         push xr                                 ; stack result} mov -(xs) xr 
         mov  r10,m_word [r13]                   ; get next code word} lcw xr  
@@ -8341,15 +8353,15 @@ s_ops:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_151                           ; 
         dec  m_word [_rc_]                      ; } err 152 opsyn third argument is not integer 
-        jns  _l0298                             ; 
+        jns  _l0302                             ; 
         mov  m_word [_rc_],152                  ; 
         jmp  err_                               ; 
-_l0298:                                         ; 
+_l0302:                                         ; 
         dec  m_word [_rc_]                      ; } err 153 opsyn third argument is negative or too large 
-        jns  _l0299                             ; 
+        jns  _l0303                             ; 
         mov  m_word [_rc_],153                  ; 
         jmp  err_                               ; 
-_l0299:                                         ; 
+_l0303:                                         ; 
 call_151:                                       ; 
         mov  wb,wc                              ; if ok, save third argumnet} mov wb wc 
         pop  xr                                 ; load second argument} mov xr (xs)+ 
@@ -8357,10 +8369,10 @@ call_151:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_152                           ; 
         dec  m_word [_rc_]                      ; } err 154 opsyn second arg is not natural variable name 
-        jns  _l0300                             ; 
+        jns  _l0304                             ; 
         mov  m_word [_rc_],154                  ; 
         jmp  err_                               ; 
-_l0300:                                         ; 
+_l0304:                                         ; 
 call_152:                                       ; 
         mov  xl,m_word [(cfp_b*vrfnc)+xr]       ; if ok, load function block pointer} mov xl vrfnc(xr) 
         test wb,wb                              ; jump if operator opsyn case} bnz wb sops2 
@@ -8370,10 +8382,10 @@ call_152:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_153                           ; 
         dec  m_word [_rc_]                      ; } err 155 opsyn first arg is not natural variable name 
-        jns  _l0301                             ; 
+        jns  _l0305                             ; 
         mov  m_word [_rc_],155                  ; 
         jmp  err_                               ; 
-_l0301:                                         ; 
+_l0305:                                         ; 
 call_153:                                       ; 
 sops1:
         call dffnc                              ; call function definer} jsr dffnc  
@@ -8383,9 +8395,9 @@ sops2:
         dec  m_word [_rc_]                      ; 
         js   call_154                           ; 
         dec  m_word [_rc_]                      ; jump if not string} ppm sops5  
-        jns  _l0302                             ; 
+        jns  _l0306                             ; 
         jmp  sops5                              ; 
-_l0302:                                         ; 
+_l0306:                                         ; 
 call_154:                                       ; 
         cmp  wa,num01                           ; error if not one char long} bne wa =num01 sops5
         jne  sops5                              ; 
@@ -8425,39 +8437,39 @@ s_oup:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_155                           ; 
         dec  m_word [_rc_]                      ; } err 157 output third argument is not a string 
-        jns  _l0303                             ; 
+        jns  _l0307                             ; 
         mov  m_word [_rc_],157                  ; 
         jmp  err_                               ; 
-_l0303:                                         ; 
+_l0307:                                         ; 
         dec  m_word [_rc_]                      ; } err 158 inappropriate second argument for output 
-        jns  _l0304                             ; 
+        jns  _l0308                             ; 
         mov  m_word [_rc_],158                  ; 
         jmp  err_                               ; 
-_l0304:                                         ; 
+_l0308:                                         ; 
         dec  m_word [_rc_]                      ; } err 159 inappropriate first argument for output 
-        jns  _l0305                             ; 
+        jns  _l0309                             ; 
         mov  m_word [_rc_],159                  ; 
         jmp  err_                               ; 
-_l0305:                                         ; 
+_l0309:                                         ; 
         dec  m_word [_rc_]                      ; } err 160 inappropriate file specification for output 
-        jns  _l0306                             ; 
+        jns  _l0310                             ; 
         mov  m_word [_rc_],160                  ; 
         jmp  err_                               ; 
-_l0306:                                         ; 
+_l0310:                                         ; 
         dec  m_word [_rc_]                      ; fail if file does not exist} ppm exfal  
-        jns  _l0307                             ; 
+        jns  _l0311                             ; 
         jmp  exfal                              ; 
-_l0307:                                         ; 
+_l0311:                                         ; 
         dec  m_word [_rc_]                      ; } err 161 output file cannot be written to 
-        jns  _l0308                             ; 
+        jns  _l0312                             ; 
         mov  m_word [_rc_],161                  ; 
         jmp  err_                               ; 
-_l0308:                                         ; 
+_l0312:                                         ; 
         dec  m_word [_rc_]                      ; } err 290 output channel currently in use 
-        jns  _l0309                             ; 
+        jns  _l0313                             ; 
         mov  m_word [_rc_],290                  ; 
         jmp  err_                               ; 
-_l0309:                                         ; 
+_l0313:                                         ; 
 call_155:                                       ; 
         jmp  exnul                              ; return null string} brn exnul  
         align 2                                 ; entry point} ent   
@@ -8469,15 +8481,15 @@ s_pos:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_156                           ; 
         dec  m_word [_rc_]                      ; } err 162 pos argument is not integer or expression 
-        jns  _l0310                             ; 
+        jns  _l0314                             ; 
         mov  m_word [_rc_],162                  ; 
         jmp  err_                               ; 
-_l0310:                                         ; 
+_l0314:                                         ; 
         dec  m_word [_rc_]                      ; } err 163 pos argument is negative or too large 
-        jns  _l0311                             ; 
+        jns  _l0315                             ; 
         mov  m_word [_rc_],163                  ; 
         jmp  err_                               ; 
-_l0311:                                         ; 
+_l0315:                                         ; 
 call_156:                                       ; 
         push xr                                 ; stack result} mov -(xs) xr 
         mov  r10,m_word [r13]                   ; get next code word} lcw xr  
@@ -8522,19 +8534,19 @@ s_rmd:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_157                           ; 
         dec  m_word [_rc_]                      ; } err 166 remdr first argument is not numeric 
-        jns  _l0312                             ; 
+        jns  _l0316                             ; 
         mov  m_word [_rc_],166                  ; 
         jmp  err_                               ; 
-_l0312:                                         ; 
+_l0316:                                         ; 
         dec  m_word [_rc_]                      ; } err 165 remdr second argument is not numeric 
-        jns  _l0313                             ; 
+        jns  _l0317                             ; 
         mov  m_word [_rc_],165                  ; 
         jmp  err_                               ; 
-_l0313:                                         ; 
+_l0317:                                         ; 
         dec  m_word [_rc_]                      ; if real} ppm srm06  
-        jns  _l0314                             ; 
+        jns  _l0318                             ; 
         jmp  srm06                              ; 
-_l0314:                                         ; 
+_l0318:                                         ; 
 call_157:                                       ; 
         xor  wb,wb                              ; set positive flag} zer wb  
         mov  ia,m_word [(cfp_b*icval)+xr]       ; load left argument value} ldi icval(xr)  
@@ -8574,10 +8586,10 @@ srm07:
         divsd ra,[(cfp_b*rcval)+xl]             ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0315                             ; 
+        jz   _l0319                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0315:                                         ; 
+_l0319:                                         ; 
         call do_chk_real_inf                    ; jump if overflow} rov srm10  
         jnz  srm10                              ; 
         call chp_                               ; chop result} chp   
@@ -8585,18 +8597,18 @@ _l0315:                                         ;
         mulsd ra,[(cfp_b*rcval)+xl]             ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0316                             ; 
+        jz   _l0320                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0316:                                         ; 
+_l0320:                                         ; 
         ldmxcsr [mxcsr_set]                     ; compute difference} sbr rcval(xr)  
         subsd ra,[(cfp_b*rcval)+xr]             ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0317                             ; 
+        jz   _l0321                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0317:                                         ; 
+_l0321:                                         ; 
         test wb,wb                              ; if result should be positive} bze wb srm09 
         jz   srm09                              ; 
         pxor xmm0,xmm0                          ; if should be negative, and is} rle exrea  
@@ -8621,20 +8633,20 @@ s_rpl:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_158                           ; 
         dec  m_word [_rc_]                      ; } err 168 replace third argument is not a string 
-        jns  _l0318                             ; 
+        jns  _l0322                             ; 
         mov  m_word [_rc_],168                  ; 
         jmp  err_                               ; 
-_l0318:                                         ; 
+_l0322:                                         ; 
 call_158:                                       ; 
         mov  xl,xr                              ; save third arg ptr} mov xl xr 
         call gtstg                              ; get second argument} jsr gtstg  
         dec  m_word [_rc_]                      ; 
         js   call_159                           ; 
         dec  m_word [_rc_]                      ; } err 169 replace second argument is not a string 
-        jns  _l0319                             ; 
+        jns  _l0323                             ; 
         mov  m_word [_rc_],169                  ; 
         jmp  err_                               ; 
-_l0319:                                         ; 
+_l0323:                                         ; 
 call_159:                                       ; 
         cmp  xr,m_word [r_ra2]                  ; jump if 2nd argument different} bne xr r_ra2 srpl1
         jne  srpl1                              ; 
@@ -8690,10 +8702,10 @@ srpl5:
         dec  m_word [_rc_]                      ; 
         js   call_160                           ; 
         dec  m_word [_rc_]                      ; } err 170 replace first argument is not a string 
-        jns  _l0320                             ; 
+        jns  _l0324                             ; 
         mov  m_word [_rc_],170                  ; 
         jmp  err_                               ; 
-_l0320:                                         ; 
+_l0324:                                         ; 
 call_160:                                       ; 
         test wa,wa                              ; return null if null argument} bze wa exnul 
         jz   exnul                              ; 
@@ -8712,11 +8724,11 @@ call_160:                                       ;
         add  xl,cfp_f                           ; point to chars of string} plc xl  
         mov  wa,wc                              ; set number of chars to translate} mov wa wc 
         xchg xl,xr                              ; perform translation} trc   
-_l0321: movzx w0,m_char [xr]                    ; 
+_l0325: movzx w0,m_char [xr]                    ; 
         mov  al,[xl+w0]                         ; 
         stosb                                   ; 
         dec  wa                                 ; 
-        jnz  _l0321                             ; 
+        jnz  _l0325                             ; 
         xor  xl,xl                              ; 
         xor  xr,xr                              ; 
 srpl8:
@@ -8735,39 +8747,39 @@ s_rew:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_161                           ; 
         dec  m_word [_rc_]                      ; } err 172 rewind argument is not a suitable name 
-        jns  _l0322                             ; 
+        jns  _l0326                             ; 
         mov  m_word [_rc_],172                  ; 
         jmp  err_                               ; 
-_l0322:                                         ; 
+_l0326:                                         ; 
         dec  m_word [_rc_]                      ; } err 173 rewind argument is null 
-        jns  _l0323                             ; 
+        jns  _l0327                             ; 
         mov  m_word [_rc_],173                  ; 
         jmp  err_                               ; 
-_l0323:                                         ; 
+_l0327:                                         ; 
         dec  m_word [_rc_]                      ; } err 174 rewind file does not exist 
-        jns  _l0324                             ; 
+        jns  _l0328                             ; 
         mov  m_word [_rc_],174                  ; 
         jmp  err_                               ; 
-_l0324:                                         ; 
+_l0328:                                         ; 
 call_161:                                       ; 
         call sysrw                              ; call system rewind function} jsr sysrw  
         dec  m_word [_rc_]                      ; 
         js   call_162                           ; 
         dec  m_word [_rc_]                      ; } err 174 rewind file does not exist 
-        jns  _l0325                             ; 
+        jns  _l0329                             ; 
         mov  m_word [_rc_],174                  ; 
         jmp  err_                               ; 
-_l0325:                                         ; 
+_l0329:                                         ; 
         dec  m_word [_rc_]                      ; } err 175 rewind file does not permit rewind 
-        jns  _l0326                             ; 
+        jns  _l0330                             ; 
         mov  m_word [_rc_],175                  ; 
         jmp  err_                               ; 
-_l0326:                                         ; 
+_l0330:                                         ; 
         dec  m_word [_rc_]                      ; } err 176 rewind caused non-recoverable error 
-        jns  _l0327                             ; 
+        jns  _l0331                             ; 
         mov  m_word [_rc_],176                  ; 
         jmp  err_                               ; 
-_l0327:                                         ; 
+_l0331:                                         ; 
 call_162:                                       ; 
         jmp  exnul                              ; exit with null result if no error} brn exnul  
         align 2                                 ; entry point} ent   
@@ -8777,10 +8789,10 @@ s_rvs:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_163                           ; 
         dec  m_word [_rc_]                      ; } err 177 reverse argument is not a string 
-        jns  _l0328                             ; 
+        jns  _l0332                             ; 
         mov  m_word [_rc_],177                  ; 
         jmp  err_                               ; 
-_l0328:                                         ; 
+_l0332:                                         ; 
 call_163:                                       ; 
         test wa,wa                              ; return argument if null} bze wa exixr 
         jz   exixr                              ; 
@@ -8813,10 +8825,10 @@ s_rpd:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_164                           ; 
         dec  m_word [_rc_]                      ; } err 178 rpad third argument is not a string 
-        jns  _l0329                             ; 
+        jns  _l0333                             ; 
         mov  m_word [_rc_],178                  ; 
         jmp  err_                               ; 
-_l0329:                                         ; 
+_l0333:                                         ; 
 call_164:                                       ; 
         add  xr,cfp_f                           ; point to character (null is blank)} plc xr  
         xor  w0,w0                              ; load pad character} lch wb (xr) 
@@ -8826,24 +8838,24 @@ call_164:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_165                           ; 
         dec  m_word [_rc_]                      ; } err 179 rpad second argument is not integer 
-        jns  _l0330                             ; 
+        jns  _l0334                             ; 
         mov  m_word [_rc_],179                  ; 
         jmp  err_                               ; 
-_l0330:                                         ; 
+_l0334:                                         ; 
         dec  m_word [_rc_]                      ; skip if negative or large} ppm srpd3  
-        jns  _l0331                             ; 
+        jns  _l0335                             ; 
         jmp  srpd3                              ; 
-_l0331:                                         ; 
+_l0335:                                         ; 
 call_165:                                       ; 
 srpd1:
         call gtstg                              ; get first argument (string to pad)} jsr gtstg  
         dec  m_word [_rc_]                      ; 
         js   call_166                           ; 
         dec  m_word [_rc_]                      ; } err 180 rpad first argument is not a string 
-        jns  _l0332                             ; 
+        jns  _l0336                             ; 
         mov  m_word [_rc_],180                  ; 
         jmp  err_                               ; 
-_l0332:                                         ; 
+_l0336:                                         ; 
 call_166:                                       ; 
         cmp  wa,wc                              ; return 1st arg if too long to pad} bge wa wc exixr
         jae  exixr                              ; 
@@ -8881,15 +8893,15 @@ s_rtb:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_167                           ; 
         dec  m_word [_rc_]                      ; } err 181 rtab argument is not integer or expression 
-        jns  _l0334                             ; 
+        jns  _l0338                             ; 
         mov  m_word [_rc_],181                  ; 
         jmp  err_                               ; 
-_l0334:                                         ; 
+_l0338:                                         ; 
         dec  m_word [_rc_]                      ; } err 182 rtab argument is negative or too large 
-        jns  _l0335                             ; 
+        jns  _l0339                             ; 
         mov  m_word [_rc_],182                  ; 
         jmp  err_                               ; 
-_l0335:                                         ; 
+_l0339:                                         ; 
 call_167:                                       ; 
         push xr                                 ; stack result} mov -(xs) xr 
         mov  r10,m_word [r13]                   ; get next code word} lcw xr  
@@ -8905,15 +8917,15 @@ s_tab:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_168                           ; 
         dec  m_word [_rc_]                      ; } err 183 tab argument is not integer or expression 
-        jns  _l0336                             ; 
+        jns  _l0340                             ; 
         mov  m_word [_rc_],183                  ; 
         jmp  err_                               ; 
-_l0336:                                         ; 
+_l0340:                                         ; 
         dec  m_word [_rc_]                      ; } err 184 tab argument is negative or too large 
-        jns  _l0337                             ; 
+        jns  _l0341                             ; 
         mov  m_word [_rc_],184                  ; 
         jmp  err_                               ; 
-_l0337:                                         ; 
+_l0341:                                         ; 
 call_168:                                       ; 
         push xr                                 ; stack result} mov -(xs) xr 
         mov  r10,m_word [r13]                   ; get next code word} lcw xr  
@@ -8929,15 +8941,15 @@ s_rps:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_169                           ; 
         dec  m_word [_rc_]                      ; } err 185 rpos argument is not integer or expression 
-        jns  _l0338                             ; 
+        jns  _l0342                             ; 
         mov  m_word [_rc_],185                  ; 
         jmp  err_                               ; 
-_l0338:                                         ; 
+_l0342:                                         ; 
         dec  m_word [_rc_]                      ; } err 186 rpos argument is negative or too large 
-        jns  _l0339                             ; 
+        jns  _l0343                             ; 
         mov  m_word [_rc_],186                  ; 
         jmp  err_                               ; 
-_l0339:                                         ; 
+_l0343:                                         ; 
 call_169:                                       ; 
         push xr                                 ; stack result} mov -(xs) xr 
         mov  r10,m_word [r13]                   ; get next code word} lcw xr  
@@ -8952,9 +8964,9 @@ s_rsr:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_170                           ; 
         dec  m_word [_rc_]                      ; if conversion fails, so shall we} ppm exfal  
-        jns  _l0340                             ; 
+        jns  _l0344                             ; 
         jmp  exfal                              ; 
-_l0340:                                         ; 
+_l0344:                                         ; 
 call_170:                                       ; 
         jmp  exsid                              ; return, setting idval} brn exsid  
         align 2                                 ; entry point} ent   
@@ -8969,9 +8981,9 @@ s_stx:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_171                           ; 
         dec  m_word [_rc_]                      ; jump if not natural variable} ppm sstx2  
-        jns  _l0341                             ; 
+        jns  _l0345                             ; 
         jmp  sstx2                              ; 
-_l0341:                                         ; 
+_l0345:                                         ; 
 call_171:                                       ; 
         mov  xl,m_word [(cfp_b*vrlbl)+xr]       ; else load label} mov xl vrlbl(xr) 
         cmp  xl,stndl                           ; jump if label is not defined} beq xl =stndl sstx2
@@ -8997,10 +9009,10 @@ s_sin:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_172                           ; 
         dec  m_word [_rc_]                      ; } err 308 sin argument not numeric 
-        jns  _l0342                             ; 
+        jns  _l0346                             ; 
         mov  m_word [_rc_],308                  ; 
         jmp  err_                               ; 
-_l0342:                                         ; 
+_l0346:                                         ; 
 call_172:                                       ; 
         movsd ra,[(cfp_b*rcval)+xr]             ; load accumulator with argument} ldr rcval(xr)  
         call sin_                               ; take sine} sin   
@@ -9016,10 +9028,10 @@ s_sqr:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_173                           ; 
         dec  m_word [_rc_]                      ; } err 313 sqrt argument not numeric 
-        jns  _l0343                             ; 
+        jns  _l0347                             ; 
         mov  m_word [_rc_],313                  ; 
         jmp  err_                               ; 
-_l0343:                                         ; 
+_l0347:                                         ; 
 call_173:                                       ; 
         movsd ra,[(cfp_b*rcval)+xr]             ; load accumulator with argument} ldr rcval(xr)  
         pxor xmm0,xmm0                          ; negative number} rlt ssqr1  
@@ -9038,9 +9050,9 @@ s_srt:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_174                           ; 
         dec  m_word [_rc_]                      ; if conversion fails, so shall we} ppm exfal  
-        jns  _l0344                             ; 
+        jns  _l0348                             ; 
         jmp  exfal                              ; 
-_l0344:                                         ; 
+_l0348:                                         ; 
 call_174:                                       ; 
         jmp  exsid                              ; return, setting idval} brn exsid  
         align 2                                 ; entry point} ent   
@@ -9053,10 +9065,10 @@ s_spn:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_175                           ; 
         dec  m_word [_rc_]                      ; } err 188 span argument is not a string or expression 
-        jns  _l0345                             ; 
+        jns  _l0349                             ; 
         mov  m_word [_rc_],188                  ; 
         jmp  err_                               ; 
-_l0345:                                         ; 
+_l0349:                                         ; 
 call_175:                                       ; 
         push xr                                 ; stack result} mov -(xs) xr 
         mov  r10,m_word [r13]                   ; get next code word} lcw xr  
@@ -9070,10 +9082,10 @@ s_si_:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_176                           ; 
         dec  m_word [_rc_]                      ; } err 189 size argument is not a string 
-        jns  _l0346                             ; 
+        jns  _l0350                             ; 
         mov  m_word [_rc_],189                  ; 
         jmp  err_                               ; 
-_l0346:                                         ; 
+_l0350:                                         ; 
 call_176:                                       ; 
         mov  ia,wa                              ; load length as integer} mti wa  
         jmp  exint                              ; exit with integer result} brn exint  
@@ -9085,15 +9097,15 @@ s_stt:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_177                           ; 
         dec  m_word [_rc_]                      ; } err 190 stoptr first argument is not appropriate name 
-        jns  _l0347                             ; 
+        jns  _l0351                             ; 
         mov  m_word [_rc_],190                  ; 
         jmp  err_                               ; 
-_l0347:                                         ; 
+_l0351:                                         ; 
         dec  m_word [_rc_]                      ; } err 191 stoptr second argument is not trace type 
-        jns  _l0348                             ; 
+        jns  _l0352                             ; 
         mov  m_word [_rc_],191                  ; 
         jmp  err_                               ; 
-_l0348:                                         ; 
+_l0352:                                         ; 
 call_177:                                       ; 
         jmp  exnul                              ; return null} brn exnul  
         align 2                                 ; entry point} ent   
@@ -9103,28 +9115,28 @@ s_sub:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_178                           ; 
         dec  m_word [_rc_]                      ; } err 192 substr third argument is not integer 
-        jns  _l0349                             ; 
+        jns  _l0353                             ; 
         mov  m_word [_rc_],192                  ; 
         jmp  err_                               ; 
-_l0349:                                         ; 
+_l0353:                                         ; 
         dec  m_word [_rc_]                      ; jump if negative or too large} ppm exfal  
-        jns  _l0350                             ; 
+        jns  _l0354                             ; 
         jmp  exfal                              ; 
-_l0350:                                         ; 
+_l0354:                                         ; 
 call_178:                                       ; 
         mov  m_word [sbssv],xr                  ; save third argument} mov sbssv xr 
         call gtsmi                              ; load second argument} jsr gtsmi  
         dec  m_word [_rc_]                      ; 
         js   call_179                           ; 
         dec  m_word [_rc_]                      ; } err 193 substr second argument is not integer 
-        jns  _l0351                             ; 
+        jns  _l0355                             ; 
         mov  m_word [_rc_],193                  ; 
         jmp  err_                               ; 
-_l0351:                                         ; 
+_l0355:                                         ; 
         dec  m_word [_rc_]                      ; jump if out of range} ppm exfal  
-        jns  _l0352                             ; 
+        jns  _l0356                             ; 
         jmp  exfal                              ; 
-_l0352:                                         ; 
+_l0356:                                         ; 
 call_179:                                       ; 
         mov  wc,xr                              ; save second argument} mov wc xr 
         test wc,wc                              ; jump if second argument zero} bze wc exfal 
@@ -9134,10 +9146,10 @@ call_179:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_180                           ; 
         dec  m_word [_rc_]                      ; } err 194 substr first argument is not a string 
-        jns  _l0353                             ; 
+        jns  _l0357                             ; 
         mov  m_word [_rc_],194                  ; 
         jmp  err_                               ; 
-_l0353:                                         ; 
+_l0357:                                         ; 
 call_180:                                       ; 
         mov  wb,wc                              ; copy second arg to wb} mov wb wc 
         mov  wc,m_word [sbssv]                  ; reload third argument} mov wc sbssv 
@@ -9169,15 +9181,15 @@ s_tbl:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_181                           ; 
         dec  m_word [_rc_]                      ; } err 195 table argument is not integer 
-        jns  _l0354                             ; 
+        jns  _l0358                             ; 
         mov  m_word [_rc_],195                  ; 
         jmp  err_                               ; 
-_l0354:                                         ; 
+_l0358:                                         ; 
         dec  m_word [_rc_]                      ; } err 196 table argument is out of range 
-        jns  _l0355                             ; 
+        jns  _l0359                             ; 
         mov  m_word [_rc_],196                  ; 
         jmp  err_                               ; 
-_l0355:                                         ; 
+_l0359:                                         ; 
 call_181:                                       ; 
         test wc,wc                              ; jump if non-zero} bnz wc stbl1 
         jnz  stbl1                              ; 
@@ -9193,10 +9205,10 @@ s_tan:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_182                           ; 
         dec  m_word [_rc_]                      ; } err 309 tan argument not numeric 
-        jns  _l0356                             ; 
+        jns  _l0360                             ; 
         mov  m_word [_rc_],309                  ; 
         jmp  err_                               ; 
-_l0356:                                         ; 
+_l0360:                                         ; 
 call_182:                                       ; 
         movsd ra,[(cfp_b*rcval)+xr]             ; load accumulator with argument} ldr rcval(xr)  
         call tan_                               ; take tangent} tan   
@@ -9223,9 +9235,9 @@ s_tra:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_183                           ; 
         dec  m_word [_rc_]                      ; jump if not variable name} ppm str03  
-        jns  _l0357                             ; 
+        jns  _l0361                             ; 
         jmp  str03                              ; 
-_l0357:                                         ; 
+_l0361:                                         ; 
 call_183:                                       ; 
         mov  xl,xr                              ; else save vrblk in trfnc} mov xl xr 
 str01:
@@ -9237,15 +9249,15 @@ str01:
         dec  m_word [_rc_]                      ; 
         js   call_184                           ; 
         dec  m_word [_rc_]                      ; } err 198 trace first argument is not appropriate name 
-        jns  _l0358                             ; 
+        jns  _l0362                             ; 
         mov  m_word [_rc_],198                  ; 
         jmp  err_                               ; 
-_l0358:                                         ; 
+_l0362:                                         ; 
         dec  m_word [_rc_]                      ; } err 199 trace second argument is not trace type 
-        jns  _l0359                             ; 
+        jns  _l0363                             ; 
         mov  m_word [_rc_],199                  ; 
         jmp  err_                               ; 
-_l0359:                                         ; 
+_l0363:                                         ; 
 call_184:                                       ; 
         jmp  exnul                              ; return null} brn exnul  
 str02:
@@ -9262,10 +9274,10 @@ s_trm:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_185                           ; 
         dec  m_word [_rc_]                      ; } err 200 trim argument is not a string 
-        jns  _l0360                             ; 
+        jns  _l0364                             ; 
         mov  m_word [_rc_],200                  ; 
         jmp  err_                               ; 
-_l0360:                                         ; 
+_l0364:                                         ; 
 call_185:                                       ; 
         test wa,wa                              ; return null if argument is null} bze wa exnul 
         jz   exnul                              ; 
@@ -9291,10 +9303,10 @@ s_unl:                                          ;
         dec  m_word [_rc_]                      ; 
         js   call_186                           ; 
         dec  m_word [_rc_]                      ; } err 201 unload argument is not natural variable name 
-        jns  _l0361                             ; 
+        jns  _l0365                             ; 
         mov  m_word [_rc_],201                  ; 
         jmp  err_                               ; 
-_l0361:                                         ; 
+_l0365:                                         ; 
 call_186:                                       ; 
         mov  xl,stndf                           ; get ptr to undefined function} mov xl =stndf 
         call dffnc                              ; undefine named function} jsr dffnc  
@@ -9341,9 +9353,9 @@ arf03:
         dec  m_word [_rc_]                      ; 
         js   call_187                           ; 
         dec  m_word [_rc_]                      ; jump if not integer} ppm arf12  
-        jns  _l0362                             ; 
+        jns  _l0366                             ; 
         jmp  arf12                              ; 
-_l0362:                                         ; 
+_l0366:                                         ; 
 call_187:                                       ; 
         mov  ia,m_word [(cfp_b*icval)+xr]       ; if ok, load integer value} ldi icval(xr)  
 arf04:
@@ -9373,9 +9385,9 @@ arf05:
         dec  m_word [_rc_]                      ; 
         js   call_188                           ; 
         dec  m_word [_rc_]                      ; fail if acess fails} ppm arf13  
-        jns  _l0363                             ; 
+        jns  _l0367                             ; 
         jmp  arf13                              ; 
-_l0363:                                         ; 
+_l0367:                                         ; 
 call_188:                                       ; 
 arf06:
         mov  xs,m_word [arfxs]                  ; pop stack entries} mov xs arfxs 
@@ -9394,9 +9406,9 @@ arf07:
         dec  m_word [_rc_]                      ; 
         js   call_189                           ; 
         dec  m_word [_rc_]                      ; error if not integer} ppm arf12  
-        jns  _l0364                             ; 
+        jns  _l0368                             ; 
         jmp  arf12                              ; 
-_l0364:                                         ; 
+_l0368:                                         ; 
 call_189:                                       ; 
         mov  ia,m_word [(cfp_b*icval)+xr]       ; else load integer value} ldi icval(xr)  
         sub  ia,m_word [intv1]                  ; subtract for ones offset} sbi intv1  
@@ -9425,9 +9437,9 @@ arf10:
         dec  m_word [_rc_]                      ; 
         js   call_190                           ; 
         dec  m_word [_rc_]                      ; fail if failed} ppm arf13  
-        jns  _l0365                             ; 
+        jns  _l0369                             ; 
         jmp  arf13                              ; 
-_l0365:                                         ; 
+_l0369:                                         ; 
 call_190:                                       ; 
         test wb,wb                              ; exit with name if name call} bnz wb arf08 
         jnz  arf08                              ; 
@@ -9548,10 +9560,10 @@ indir:
         dec  m_word [_rc_]                      ; 
         js   call_191                           ; 
         dec  m_word [_rc_]                      ; } err 239 indirection operand is not name 
-        jns  _l0366                             ; 
+        jns  _l0370                             ; 
         mov  m_word [_rc_],239                  ; 
         jmp  err_                               ; 
-_l0366:                                         ; 
+_l0370:                                         ; 
 call_191:                                       ; 
         test wb,wb                              ; skip if by value} bze wb indr1 
         jz   indr1                              ; 
@@ -9573,9 +9585,9 @@ indr2:
         dec  m_word [_rc_]                      ; 
         js   call_192                           ; 
         dec  m_word [_rc_]                      ; fail if access fails} ppm exfal  
-        jns  _l0367                             ; 
+        jns  _l0371                             ; 
         jmp  exfal                              ; 
-_l0367:                                         ; 
+_l0371:                                         ; 
 call_192:                                       ; 
         jmp  exixr                              ; else return with value in xr} brn exixr  
 match:
@@ -9585,10 +9597,10 @@ match:
         dec  m_word [_rc_]                      ; 
         js   call_193                           ; 
         dec  m_word [_rc_]                      ; } err 240 pattern match right operand is not pattern 
-        jns  _l0368                             ; 
+        jns  _l0372                             ; 
         mov  m_word [_rc_],240                  ; 
         jmp  err_                               ; 
-_l0368:                                         ; 
+_l0372:                                         ; 
 call_193:                                       ; 
         mov  xl,xr                              ; if ok, save pattern pointer} mov xl xr 
         test wb,wb                              ; jump if not match by name} bnz wb mtch1 
@@ -9600,9 +9612,9 @@ call_193:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_194                           ; 
         dec  m_word [_rc_]                      ; fail if access fails} ppm exfal  
-        jns  _l0369                             ; 
+        jns  _l0373                             ; 
         jmp  exfal                              ; 
-_l0369:                                         ; 
+_l0373:                                         ; 
 call_194:                                       ; 
         mov  xl,m_word [xs]                     ; restore pattern pointer} mov xl (xs) 
         mov  m_word [xs],xr                     ; stack subject string val for merge} mov (xs) xr 
@@ -9612,10 +9624,10 @@ mtch1:
         dec  m_word [_rc_]                      ; 
         js   call_195                           ; 
         dec  m_word [_rc_]                      ; } err 241 pattern match left operand is not a string 
-        jns  _l0370                             ; 
+        jns  _l0374                             ; 
         mov  m_word [_rc_],241                  ; 
         jmp  err_                               ; 
-_l0370:                                         ; 
+_l0374:                                         ; 
 call_195:                                       ; 
         push wb                                 ; stack match type code} mov -(xs) wb 
         mov  m_word [r_pms],xr                  ; if ok, store subject string pointer} mov r_pms xr 
@@ -9766,10 +9778,10 @@ rtn10:
         dec  m_word [_rc_]                      ; 
         js   call_196                           ; 
         dec  m_word [_rc_]                      ; } err 243 function result in nreturn is not name 
-        jns  _l0371                             ; 
+        jns  _l0375                             ; 
         mov  m_word [_rc_],243                  ; 
         jmp  err_                               ; 
-_l0371:                                         ; 
+_l0375:                                         ; 
 call_196:                                       ; 
         mov  xl,xr                              ; if ok, copy vrblk (name base) ptr} mov xl xr 
         mov  wa,cfp_b*vrval                     ; set name offset} mov wa *vrval 
@@ -9790,9 +9802,9 @@ rtn12:
         dec  m_word [_rc_]                      ; 
         js   call_197                           ; 
         dec  m_word [_rc_]                      ; fail if access fails} ppm exfal  
-        jns  _l0372                             ; 
+        jns  _l0376                             ; 
         jmp  exfal                              ; 
-_l0372:                                         ; 
+_l0376:                                         ; 
 call_197:                                       ; 
         mov  xl,xr                              ; if ok, copy result} mov xl xr 
         mov  xr,m_word [xs]                     ; reload next code word} mov xr (xs) 
@@ -9858,20 +9870,20 @@ stgo3:
         dec  m_word [_rc_]                      ; 
         js   call_198                           ; 
         dec  m_word [_rc_]                      ; } err 320 user interrupt 
-        jns  _l0373                             ; 
+        jns  _l0377                             ; 
         mov  m_word [_rc_],320                  ; 
         jmp  err_                               ; 
-_l0373:                                         ; 
+_l0377:                                         ; 
         dec  m_word [_rc_]                      ; single step} ppm   
-        jns  _l0374                             ; 
+        jns  _l0378                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0374:                                         ; 
+_l0378:                                         ; 
         dec  m_word [_rc_]                      ; expression evaluation} ppm   
-        jns  _l0375                             ; 
+        jns  _l0379                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0375:                                         ; 
+_l0379:                                         ; 
 call_198:                                       ; 
         mov  xr,xl                              ; restore code block pointer} mov xr xl 
         mov  m_word [polcs],wa                  ; poll interval start value} mov polcs wa 
@@ -10045,9 +10057,9 @@ acs02:
         dec  m_word [_rc_]                      ; 
         js   call_199                           ; 
         dec  m_word [_rc_]                      ; jump if evaluation failure} ppm acs04  
-        jns  _l0376                             ; 
+        jns  _l0380                             ; 
         jmp  acs04                              ; 
-_l0376:                                         ; 
+_l0380:                                         ; 
 call_199:                                       ; 
         jmp  acs02                              ; check value for more trblks} brn acs02  
 acs03:
@@ -10078,9 +10090,9 @@ acs05:
         dec  m_word [_rc_]                      ; 
         js   call_200                           ; 
         dec  m_word [_rc_]                      ; jump to fail exit if end of file} ppm acs03  
-        jns  _l0377                             ; 
+        jns  _l0381                             ; 
         jmp  acs03                              ; 
-_l0377:                                         ; 
+_l0381:                                         ; 
 call_200:                                       ; 
         jmp  acs07                              ; else merge with other file case} brn acs07  
 acs06:
@@ -10096,17 +10108,17 @@ acs6a:
         dec  m_word [_rc_]                      ; 
         js   call_201                           ; 
         dec  m_word [_rc_]                      ; jump to fail exit if end of file} ppm acs03  
-        jns  _l0378                             ; 
+        jns  _l0382                             ; 
         jmp  acs03                              ; 
-_l0378:                                         ; 
+_l0382:                                         ; 
         dec  m_word [_rc_]                      ; error} ppm acs22  
-        jns  _l0379                             ; 
+        jns  _l0383                             ; 
         jmp  acs22                              ; 
-_l0379:                                         ; 
+_l0383:                                         ; 
         dec  m_word [_rc_]                      ; error} ppm acs23  
-        jns  _l0380                             ; 
+        jns  _l0384                             ; 
         jmp  acs23                              ; 
-_l0380:                                         ; 
+_l0384:                                         ; 
 call_201:                                       ; 
 acs07:
         mov  wb,m_word [actrm]                  ; load trim indicator} mov wb actrm 
@@ -10158,9 +10170,9 @@ acs15:
         mov  xl,m_word [kvrtn]                  ; load rtntype in case} mov xl kvrtn 
         mov  ia,m_word [kvstl]                  ; load stlimit in case} ldi kvstl  
         sub  xr,k_s__                           ; get case number} sub xr =k_s__ 
-        jmp  m_word [_l0381+xr*cfp_b]           ; switch on keyword number} bsw xr k__n_ 
+        jmp  m_word [_l0385+xr*cfp_b]           ; switch on keyword number} bsw xr k__n_ 
         segment .data                           ; 
-_l0381:                                         ; 
+_l0385:                                         ; 
         d_word acs16                            ; jump if alphabet} iff k__al acs16 
         d_word acs17                            ; rtntype} iff k__rt acs17 
         d_word acs19                            ; stcount} iff k__sc acs19 
@@ -10212,9 +10224,9 @@ acs21:
         dec  m_word [_rc_]                      ; 
         js   call_202                           ; 
         dec  m_word [_rc_]                      ; endfile} ppm acs03  
-        jns  _l0382                             ; 
+        jns  _l0386                             ; 
         jmp  acs03                              ; 
-_l0382:                                         ; 
+_l0386:                                         ; 
 call_202:                                       ; 
         jmp  acs07                              ; merge with record read} brn acs07  
 acs22:
@@ -10232,17 +10244,17 @@ acomp:
         dec  m_word [_rc_]                      ; 
         js   call_203                           ; 
         dec  m_word [_rc_]                      ; jump if first arg non-numeric} ppm acmp7  
-        jns  _l0383                             ; 
+        jns  _l0387                             ; 
         jmp  acmp7                              ; 
-_l0383:                                         ; 
+_l0387:                                         ; 
         dec  m_word [_rc_]                      ; jump if second arg non-numeric} ppm acmp8  
-        jns  _l0384                             ; 
+        jns  _l0388                             ; 
         jmp  acmp8                              ; 
-_l0384:                                         ; 
+_l0388:                                         ; 
         dec  m_word [_rc_]                      ; jump if real arguments} ppm acmp4  
-        jns  _l0385                             ; 
+        jns  _l0389                             ; 
         jmp  acmp4                              ; 
-_l0385:                                         ; 
+_l0389:                                         ; 
 call_203:                                       ; 
         sub  ia,m_word [(cfp_b*icval)+xl]       ; subtract to compare} sbi icval(xl)  
         jo   acmp3                              ; jump if overflow} iov acmp3  
@@ -10268,10 +10280,10 @@ acmp4:
         subsd ra,[(cfp_b*rcval)+xl]             ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0386                             ; 
+        jz   _l0390                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0386:                                         ; 
+_l0390:                                         ; 
         call do_chk_real_inf                    ; jump if overflow} rov acmp6  
         jnz  acmp6                              ; 
         pxor xmm0,xmm0                          ; else jump if arg1 gt} rgt acmp1  
@@ -10435,9 +10447,9 @@ arith:
         dec  m_word [_rc_]                      ; 
         js   call_204                           ; 
         dec  m_word [_rc_]                      ; jump if unconvertible} ppm arth6  
-        jns  _l0387                             ; 
+        jns  _l0391                             ; 
         jmp  arth6                              ; 
-_l0387:                                         ; 
+_l0391:                                         ; 
 call_204:                                       ; 
         mov  xl,xr                              ; else copy converted result} mov xl xr 
         mov  wa,m_word [xl]                     ; get right operand type word} mov wa (xl) 
@@ -10457,9 +10469,9 @@ arth3:
         dec  m_word [_rc_]                      ; 
         js   call_205                           ; 
         dec  m_word [_rc_]                      ; jump if not convertible} ppm arth7  
-        jns  _l0388                             ; 
+        jns  _l0392                             ; 
         jmp  arth7                              ; 
-_l0388:                                         ; 
+_l0392:                                         ; 
 call_205:                                       ; 
         cmp  wa,b_icl                           ; jump back if integer-integer} beq wa =b_icl arth2
         je   arth2                              ; 
@@ -10478,9 +10490,9 @@ arth4:
         dec  m_word [_rc_]                      ; 
         js   call_206                           ; 
         dec  m_word [_rc_]                      ; error if unconvertible} ppm arth7  
-        jns  _l0389                             ; 
+        jns  _l0393                             ; 
         jmp  arth7                              ; 
-_l0389:                                         ; 
+_l0393:                                         ; 
 call_206:                                       ; 
 arth5:
         movsd ra,[(cfp_b*rcval)+xr]             ; load left operand value} ldr rcval(xr)  
@@ -10521,9 +10533,9 @@ asg02:
         dec  m_word [_rc_]                      ; 
         js   call_207                           ; 
         dec  m_word [_rc_]                      ; jump if evaluation fails} ppm asg03  
-        jns  _l0390                             ; 
+        jns  _l0394                             ; 
         jmp  asg03                              ; 
-_l0390:                                         ; 
+_l0394:                                         ; 
 call_207:                                       ; 
         pop  wb                                 ; else reload value to assign} mov wb (xs)+ 
         jmp  asg01                              ; loop back to perform assignment} brn asg01  
@@ -10579,9 +10591,9 @@ asg1b:
         dec  m_word [_rc_]                      ; 
         js   call_208                           ; 
         dec  m_word [_rc_]                      ; get datatype name if unconvertible} ppm asg12  
-        jns  _l0391                             ; 
+        jns  _l0395                             ; 
         jmp  asg12                              ; 
-_l0391:                                         ; 
+_l0395:                                         ; 
 call_208:                                       ; 
 asg11:
         mov  wa,m_word [(cfp_b*trfpt)+xl]       ; fcblk ptr} mov wa trfpt(xl) 
@@ -10592,15 +10604,15 @@ asg1a:
         dec  m_word [_rc_]                      ; 
         js   call_209                           ; 
         dec  m_word [_rc_]                      ; } err 206 output caused file overflow 
-        jns  _l0392                             ; 
+        jns  _l0396                             ; 
         mov  m_word [_rc_],206                  ; 
         jmp  err_                               ; 
-_l0392:                                         ; 
+_l0396:                                         ; 
         dec  m_word [_rc_]                      ; } err 207 output caused non-recoverable error 
-        jns  _l0393                             ; 
+        jns  _l0397                             ; 
         mov  m_word [_rc_],207                  ; 
         jmp  err_                               ; 
-_l0393:                                         ; 
+_l0397:                                         ; 
 call_209:                                       ; 
         mov  m_word [_rc_],0                    ; else all done, return to caller} exi   
         ret                                     ; 
@@ -10621,10 +10633,10 @@ asg14:
         dec  m_word [_rc_]                      ; 
         js   call_210                           ; 
         dec  m_word [_rc_]                      ; } err 208 keyword value assigned is not integer 
-        jns  _l0394                             ; 
+        jns  _l0398                             ; 
         mov  m_word [_rc_],208                  ; 
         jmp  err_                               ; 
-_l0394:                                         ; 
+_l0398:                                         ; 
 call_210:                                       ; 
         mov  ia,m_word [(cfp_b*icval)+xr]       ; else load value} ldi icval(xr)  
         cmp  xl,k_stl                           ; jump if special case of stlimit} beq xl =k_stl asg16
@@ -10681,10 +10693,10 @@ asg19:
         dec  m_word [_rc_]                      ; 
         js   call_211                           ; 
         dec  m_word [_rc_]                      ; } err 211 value assigned to keyword errtext not a string 
-        jns  _l0395                             ; 
+        jns  _l0399                             ; 
         mov  m_word [_rc_],211                  ; 
         jmp  err_                               ; 
-_l0395:                                         ; 
+_l0399:                                         ; 
 call_211:                                       ; 
         mov  m_word [r_etx],xr                  ; make assignment} mov r_etx xr 
         mov  m_word [_rc_],0                    ; return to caller} exi   
@@ -10740,9 +10752,9 @@ asnp1:
         dec  m_word [_rc_]                      ; 
         js   call_212                           ; 
         dec  m_word [_rc_]                      ; jump if failure} ppm asnp2  
-        jns  _l0396                             ; 
+        jns  _l0400                             ; 
         jmp  asnp2                              ; 
-_l0396:                                         ; 
+_l0400:                                         ; 
 call_212:                                       ; 
         pop  m_word [pmdfl]                     ; restore dot flag} mov pmdfl (xs)+ 
         pop  m_word [r_pms]                     ; restore subject string pointer} mov r_pms (xs)+ 
@@ -10764,9 +10776,9 @@ blkln:
         movzx xl,byte [xl-1]                    ; get entry id (bl_xx)} lei xl  
         cmp  xl,bl___                           ; switch on block type} bsw xl bl___ bln00
         jge  bln00                              ; 
-        jmp  m_word [_l0397+xl*cfp_b]           ; 
+        jmp  m_word [_l0401+xl*cfp_b]           ; 
         segment .data                           ; 
-_l0397:                                         ; 
+_l0401:                                         ; 
         d_word bln01                            ; arblk} iff bl_ar bln01 
         d_word bln12                            ; cdblk} iff bl_cd bln12 
         d_word bln12                            ; exblk} iff bl_ex bln12 
@@ -10976,8 +10988,12 @@ cdgnm:
                                                 ; entry point, recursive} prc r 0 
         push xl                                 ; save entry xl} mov -(xs) xl 
         push wb                                 ; save entry wb} mov -(xs) wb 
-        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspminx]              ; check for stack overflow} chk   
+        jae  _l0402                             ; 
+        mov  m_word [lowspminx],xs              ; 
+        cmp  xs,m_word [lowspmin]               ; 
         jb   sec06                              ; 
+_l0402:                                         ; 
         mov  wa,m_word [xr]                     ; load type word} mov wa (xr) 
         cmp  wa,b_cmt                           ; jump if cmblk} beq wa =b_cmt cgn04
         je   cgn04                              ; 
@@ -11000,9 +11016,9 @@ cgn04:
         mov  xr,m_word [(cfp_b*cmtyp)+xr]       ; load cmblk type} mov xr cmtyp(xr) 
         cmp  xr,c__nm                           ; error if not name operand} bge xr =c__nm cgn01
         jae  cgn01                              ; 
-        jmp  m_word [_l0398+xr*cfp_b]           ; else switch on type} bsw xr c__nm 
+        jmp  m_word [_l0403+xr*cfp_b]           ; else switch on type} bsw xr c__nm 
         segment .data                           ; 
-_l0398:                                         ; 
+_l0403:                                         ; 
         d_word cgn05                            ; array reference} iff c_arr cgn05 
         d_word cgn08                            ; function call} iff c_fnc cgn08 
         d_word cgn09                            ; deferred expression} iff c_def cgn09 
@@ -11087,8 +11103,12 @@ cgv01:
         push xl                                 ; save entry xl} mov -(xs) xl 
         push wc                                 ; save entry constant flag} mov -(xs) wc 
         push m_word [cwcof]                     ; save initial code offset} mov -(xs) cwcof 
-        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspminx]              ; check for stack overflow} chk   
+        jae  _l0404                             ; 
+        mov  m_word [lowspminx],xs              ; 
+        cmp  xs,m_word [lowspmin]               ; 
         jb   sec06                              ; 
+_l0404:                                         ; 
         mov  xl,xr                              ; copy cmblk pointer} mov xl xr 
         mov  xr,m_word [(cfp_b*cmtyp)+xr]       ; load cmblk type} mov xr cmtyp(xr) 
         mov  wc,m_word [cswno]                  ; reset constant flag} mov wc cswno 
@@ -11096,9 +11116,9 @@ cgv01:
         jbe  cgv02                              ; 
         mov  wc,xs                              ; else force non-constant case} mnz wc  
 cgv02:
-        jmp  m_word [_l0399+xr*cfp_b]           ; switch to appropriate generator} bsw xr c__nv 
+        jmp  m_word [_l0405+xr*cfp_b]           ; switch to appropriate generator} bsw xr c__nv 
         segment .data                           ; 
-_l0399:                                         ; 
+_l0405:                                         ; 
         d_word cgv03                            ; array reference} iff c_arr cgv03 
         d_word cgv05                            ; function call} iff c_fnc cgv05 
         d_word cgv14                            ; deferred expression} iff c_def cgv14 
@@ -11260,9 +11280,9 @@ cgv22:
         dec  m_word [_rc_]                      ; 
         js   call_213                           ; 
         dec  m_word [_rc_]                      ; jump if not pattern match} ppm cgv23  
-        jns  _l0400                             ; 
+        jns  _l0406                             ; 
         jmp  cgv23                              ; 
-_l0400:                                         ; 
+_l0406:                                         ; 
 call_213:                                       ; 
         mov  w0,m_word [(cfp_b*cmrop)+xr]       ; save pattern ptr in safe place} mov cmlop(xl) cmrop(xr) 
         mov  m_word [(cfp_b*cmlop)+xl],w0       ; 
@@ -11388,10 +11408,10 @@ cgv36:
         dec  m_word [_rc_]                      ; 
         js   call_214                           ; 
         dec  m_word [_rc_]                      ; should not fail} ppm   
-        jns  _l0401                             ; 
+        jns  _l0407                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0401:                                         ; 
+_l0407:                                         ; 
 call_214:                                       ; 
         mov  wa,m_word [xr]                     ; load type word of result} mov wa (xr) 
         cmp  wa,p_aaa                           ; jump if not pattern} blo wa =p_aaa cgv37
@@ -11595,10 +11615,10 @@ cmp07:
         dec  m_word [_rc_]                      ; 
         js   call_215                           ; 
         dec  m_word [_rc_]                      ; dummy (impossible) error return} ppm   
-        jns  _l0402                             ; 
+        jns  _l0408                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0402:                                         ; 
+_l0408:                                         ; 
 call_215:                                       ; 
         mov  m_word [(cfp_b*cmlbl)+xs],xr       ; store label pointer} mov cmlbl(xs) xr 
         cmp  m_word [(cfp_b*vrlen)+xr],0        ; jump if not system label} bnz vrlen(xr) cmp11 
@@ -11712,9 +11732,9 @@ cmp18:
         dec  m_word [_rc_]                      ; 
         js   call_216                           ; 
         dec  m_word [_rc_]                      ; jump if not pattern match} ppm cmp19  
-        jns  _l0403                             ; 
+        jns  _l0409                             ; 
         jmp  cmp19                              ; 
-_l0403:                                         ; 
+_l0409:                                         ; 
 call_216:                                       ; 
         mov  m_word [(cfp_b*cmopn)+xr],opms_    ; else set pattern match pointer} mov cmopn(xr) =opms_ 
         mov  m_word [(cfp_b*cmtyp)+xr],c_pmt    ; } mov cmtyp(xr) =c_pmt 
@@ -11862,11 +11882,11 @@ cnc01:
         mov  wa,w0                              ; 
         inc  xr                                 ; 
         cmp  cl,'A'                             ; fold to lower case} flc wa  
-        jb   _l0404                             ; 
+        jb   _l0410                             ; 
         cmp  cl,'Z'                             ; 
-        ja   _l0404                             ; 
+        ja   _l0410                             ; 
         add  cl,32                              ; 
-_l0404             :                            ; 
+_l0410             :                            ; 
         cmp  wa,ch_li                           ; special case of -inxxx} beq wa =ch_li cnc07
         je   cnc07                              ; 
 cnc0a:
@@ -11904,9 +11924,9 @@ cnc04:
         mov  xl,wb                              ; get name offset} mov xl wb 
         cmp  xl,cc_nc                           ; switch} bsw xl cc_nc cnc08
         jge  cnc08                              ; 
-        jmp  m_word [_l0405+xl*cfp_b]           ; 
+        jmp  m_word [_l0411+xl*cfp_b]           ; 
         segment .data                           ; 
-_l0405:                                         ; 
+_l0411:                                         ; 
         d_word cnc37                            ; -case} iff cc_ca cnc37 
         d_word cnc10                            ; -double} iff cc_do cnc10 
         d_word cnc08                            ; } iff 2 cnc08 
@@ -11950,11 +11970,11 @@ cnc07:
         mov  wa,w0                              ; 
         inc  xr                                 ; 
         cmp  cl,'A'                             ; fold to lower case} flc wa  
-        jb   _l0406                             ; 
+        jb   _l0412                             ; 
         cmp  cl,'Z'                             ; 
-        ja   _l0406                             ; 
+        ja   _l0412                             ; 
         add  cl,32                              ; 
-_l0406             :                            ; 
+_l0412             :                            ; 
         cmp  wa,ch_ln                           ; if not letter n} bne wa =ch_ln cnc0a
         jne  cnc0a                              ; 
         xor  w0,w0                              ; get third char} lch wa (xr) 
@@ -11971,13 +11991,13 @@ _l0406             :                            ;
         dec  m_word [_rc_]                      ; 
         js   call_217                           ; 
         dec  m_word [_rc_]                      ; fail if not integer} ppm cnc06  
-        jns  _l0407                             ; 
+        jns  _l0413                             ; 
         jmp  cnc06                              ; 
-_l0407:                                         ; 
+_l0413:                                         ; 
         dec  m_word [_rc_]                      ; fail if negative or large} ppm cnc06  
-        jns  _l0408                             ; 
+        jns  _l0414                             ; 
         jmp  cnc06                              ; 
-_l0408:                                         ; 
+_l0414:                                         ; 
 call_217:                                       ; 
         mov  m_word [cswin],xr                  ; keep integer} mov cswin xr 
 cnc08:
@@ -12063,13 +12083,13 @@ cnc28:
         dec  m_word [_rc_]                      ; 
         js   call_218                           ; 
         dec  m_word [_rc_]                      ; fail if not integer} ppm cnc06  
-        jns  _l0409                             ; 
+        jns  _l0415                             ; 
         jmp  cnc06                              ; 
-_l0409:                                         ; 
+_l0415:                                         ; 
         dec  m_word [_rc_]                      ; fail if negative or large} ppm cnc06  
-        jns  _l0410                             ; 
+        jns  _l0416                             ; 
         jmp  cnc06                              ; 
-_l0410:                                         ; 
+_l0416:                                         ; 
 call_218:                                       ; 
         test wc,wc                              ; jump if non zero} bnz wc cnc29 
         jnz  cnc29                              ; 
@@ -12136,13 +12156,13 @@ cnc37:
         dec  m_word [_rc_]                      ; 
         js   call_219                           ; 
         dec  m_word [_rc_]                      ; fail if not integer} ppm cnc06  
-        jns  _l0411                             ; 
+        jns  _l0417                             ; 
         jmp  cnc06                              ; 
-_l0411:                                         ; 
+_l0417:                                         ; 
         dec  m_word [_rc_]                      ; fail if negative or too large} ppm cnc06  
-        jns  _l0412                             ; 
+        jns  _l0418                             ; 
         jmp  cnc06                              ; 
-_l0412:                                         ; 
+_l0418:                                         ; 
 call_219:                                       ; 
 cnc38:
         mov  m_word [kvcas],wc                  ; store new case value} mov kvcas wc 
@@ -12163,10 +12183,10 @@ cnc41:
         dec  m_word [_rc_]                      ; 
         js   call_220                           ; 
         dec  m_word [_rc_]                      ; never fails} ppm   
-        jns  _l0413                             ; 
+        jns  _l0419                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0413:                                         ; 
+_l0419:                                         ; 
 call_220:                                       ; 
         cmp  xr,inton                           ; ignore if already in table} beq xr =inton cnc09
         je   cnc09                              ; 
@@ -12179,10 +12199,10 @@ call_220:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_221                           ; 
         dec  m_word [_rc_]                      ; never fails} ppm   
-        jns  _l0414                             ; 
+        jns  _l0420                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0414:                                         ; 
+_l0420:                                         ; 
 call_221:                                       ; 
         mov  m_word [(cfp_b*teval)+xl],inton    ; make table value integer 1} mov teval(xl) =inton 
         inc  m_word [cnind]                     ; increase nesting level} icv cnind  
@@ -12207,9 +12227,9 @@ call_221:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_222                           ; 
         dec  m_word [_rc_]                      ; could not open} ppm cnc43  
-        jns  _l0415                             ; 
+        jns  _l0421                             ; 
         jmp  cnc43                              ; 
-_l0415:                                         ; 
+_l0421:                                         ; 
 call_222:                                       ; 
         xor  wb,wb                              ; do not trim trailing blanks} zer wb  
         call trimr                              ; adjust scblk for actual length} jsr trimr  
@@ -12222,10 +12242,10 @@ call_222:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_223                           ; 
         dec  m_word [_rc_]                      ; always possible to allocate block} ppm   
-        jns  _l0416                             ; 
+        jns  _l0422                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0416:                                         ; 
+_l0422:                                         ; 
 call_223:                                       ; 
         mov  w0,m_word [r_sfc]                  ; record file name as entry value} mov teval(xl) r_sfc 
         mov  m_word [(cfp_b*teval)+xl],w0       ; 
@@ -12519,10 +12539,10 @@ dmp12:
         dec  m_word [_rc_]                      ; 
         js   call_224                           ; 
         dec  m_word [_rc_]                      ; failure is impossible} ppm   
-        jns  _l0417                             ; 
+        jns  _l0423                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0417:                                         ; 
+_l0423:                                         ; 
 call_224:                                       ; 
         call prtvl                              ; print keyword value} jsr prtvl  
         call prtnl                              ; terminate print line} jsr prtnl  
@@ -12678,9 +12698,9 @@ evali:
         dec  m_word [_rc_]                      ; 
         js   call_225                           ; 
         dec  m_word [_rc_]                      ; jump on failure} ppm evli1  
-        jns  _l0418                             ; 
+        jns  _l0424                             ; 
         jmp  evli1                              ; 
-_l0418:                                         ; 
+_l0424:                                         ; 
 call_225:                                       ; 
         push xl                                 ; stack result for gtsmi} mov -(xs) xl 
         mov  xl,m_word [(cfp_b*pthen)+xr]       ; load successor pointer} mov xl pthen(xr) 
@@ -12690,13 +12710,13 @@ call_225:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_226                           ; 
         dec  m_word [_rc_]                      ; jump if not integer} ppm evli2  
-        jns  _l0419                             ; 
+        jns  _l0425                             ; 
         jmp  evli2                              ; 
-_l0419:                                         ; 
+_l0425:                                         ; 
         dec  m_word [_rc_]                      ; jump if out of range} ppm evli3  
-        jns  _l0420                             ; 
+        jns  _l0426                             ; 
         jmp  evli3                              ; 
-_l0420:                                         ; 
+_l0426:                                         ; 
 call_226:                                       ; 
         mov  m_word [evliv],xr                  ; store result in special dummy node} mov evliv xr 
         mov  xr,evlin                           ; point to dummy node with result} mov xr =evlin 
@@ -12725,8 +12745,12 @@ evalp:
         cmp  wa,b_t__                           ; jump if not seblk, trblk or exblk} bhi wa =b_t__ evlp3
         ja   evlp3                              ; 
 evlp1:
-        cmp  xs,m_word [lowspmin]               ; check for stack space} chk   
+        cmp  xs,m_word [lowspminx]              ; check for stack space} chk   
+        jae  _l0427                             ; 
+        mov  m_word [lowspminx],xs              ; 
+        cmp  xs,m_word [lowspmin]               ; 
         jb   sec06                              ; 
+_l0427:                                         ; 
         push xr                                 ; stack node pointer} mov -(xs) xr 
         push wb                                 ; stack cursor} mov -(xs) wb 
         push m_word [r_pms]                     ; stack subject string pointer} mov -(xs) r_pms 
@@ -12740,9 +12764,9 @@ evlp2:
         dec  m_word [_rc_]                      ; 
         js   call_227                           ; 
         dec  m_word [_rc_]                      ; jump on failure} ppm evlp4  
-        jns  _l0421                             ; 
+        jns  _l0428                             ; 
         jmp  evlp4                              ; 
-_l0421:                                         ; 
+_l0428:                                         ; 
 call_227:                                       ; 
         mov  wa,m_word [xr]                     ; else load first word of value} mov wa (xr) 
         cmp  wa,b_e__                           ; loop back to reevaluate expression} blo wa =b_e__ evlp2
@@ -12776,9 +12800,9 @@ evals:
         dec  m_word [_rc_]                      ; 
         js   call_228                           ; 
         dec  m_word [_rc_]                      ; jump if evaluation fails} ppm evls1  
-        jns  _l0422                             ; 
+        jns  _l0429                             ; 
         jmp  evls1                              ; 
-_l0422:                                         ; 
+_l0429:                                         ; 
 call_228:                                       ; 
         push m_word [(cfp_b*pthen)+xr]          ; save successor pointer} mov -(xs) pthen(xr) 
         push wb                                 ; save cursor} mov -(xs) wb 
@@ -12790,9 +12814,9 @@ call_228:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_229                           ; 
         dec  m_word [_rc_]                      ; jump if not string} ppm evls2  
-        jns  _l0423                             ; 
+        jns  _l0430                             ; 
         jmp  evls2                              ; 
-_l0423:                                         ; 
+_l0430:                                         ; 
 call_229:                                       ; 
         pop  wb                                 ; restore cursor} mov wb (xs)+ 
         pop  m_word [(cfp_b*pthen)+xr]          ; store successor pointer} mov pthen(xr) (xs)+ 
@@ -12818,9 +12842,9 @@ evalx:
         dec  m_word [_rc_]                      ; 
         js   call_230                           ; 
         dec  m_word [_rc_]                      ; jump if failure on access} ppm evlx9  
-        jns  _l0424                             ; 
+        jns  _l0431                             ; 
         jmp  evlx9                              ; 
-_l0424:                                         ; 
+_l0431:                                         ; 
 call_230:                                       ; 
 evlx1:
         mov  m_word [_rc_],0                    ; return to evalx caller} exi   
@@ -12868,9 +12892,9 @@ evlx4:
         dec  m_word [_rc_]                      ; 
         js   call_231                           ; 
         dec  m_word [_rc_]                      ; jump if failure during access} ppm evlx6  
-        jns  _l0425                             ; 
+        jns  _l0432                             ; 
         jmp  evlx6                              ; 
-_l0425:                                         ; 
+_l0432:                                         ; 
 call_231:                                       ; 
 evlx5:
         xor  wb,wb                              ; note successful} zer wb  
@@ -12972,9 +12996,9 @@ expan:
 exp01:
         call scane                              ; scan next element} jsr scane  
         add  xl,wa                              ; add state to syntax code} add xl wa 
-        jmp  m_word [_l0426+xl*cfp_b]           ; switch on element type/state} bsw xl t_nes 
+        jmp  m_word [_l0433+xl*cfp_b]           ; switch on element type/state} bsw xl t_nes 
         segment .data                           ; 
-_l0426:                                         ; 
+_l0433:                                         ; 
         d_word exp27                            ; unop, s=0} iff t_uo0 exp27 
         d_word exp27                            ; unop, s=1} iff t_uo1 exp27 
         d_word exp04                            ; unop, s=2} iff t_uo2 exp04 
@@ -13040,8 +13064,12 @@ exp07:
         push xr                                 ; stack cmopn value} mov -(xs) xr 
         push wc                                 ; stack old counter} mov -(xs) wc 
         push wb                                 ; stack old level indicator} mov -(xs) wb 
-        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspminx]              ; check for stack overflow} chk   
+        jae  _l0434                             ; 
+        mov  m_word [lowspminx],xs              ; 
+        cmp  xs,m_word [lowspmin]               ; 
         jb   sec06                              ; 
+_l0434:                                         ; 
         xor  wa,wa                              ; set new state to zero} zer wa  
         mov  wb,xl                              ; set new level indicator} mov wb xl 
         mov  wc,num01                           ; initialize new counter} mov wc =num01 
@@ -13123,9 +13151,9 @@ exp18:
 exp19:
         mov  m_word [scnrs],xs                  ; rescan terminator} mnz scnrs  
         mov  xl,wb                              ; copy level indicator} mov xl wb 
-        jmp  m_word [_l0427+xl*cfp_b]           ; switch on level indicator} bsw xl 6 
+        jmp  m_word [_l0435+xl*cfp_b]           ; switch on level indicator} bsw xl 6 
         segment .data                           ; 
-_l0427:                                         ; 
+_l0435:                                         ; 
         d_word exp20                            ; normal outer level} iff 0 exp20 
         d_word exp22                            ; fail if normal goto} iff 1 exp22 
         d_word exp23                            ; fail if direct goto} iff 2 exp23 
@@ -13163,8 +13191,12 @@ exp26:
         jb   exp25                              ; 
 exp27:
         push xr                                 ; stack operator dvptr on stack} mov -(xs) xr 
-        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspminx]              ; check for stack overflow} chk   
+        jae  _l0436                             ; 
+        mov  m_word [lowspminx],xs              ; 
+        cmp  xs,m_word [lowspmin]               ; 
         jb   sec06                              ; 
+_l0436:                                         ; 
         mov  wa,num01                           ; set new state} mov wa =num01 
         cmp  xr,opdvs                           ; back for next element unless =} bne xr =opdvs exp01
         jne  exp01                              ; 
@@ -13304,11 +13336,11 @@ fst01:
         cmp  wa,ch_uz                           ; skip if greater than uc z} bgt wa =ch_uz fst02
         ja   fst02                              ; 
         cmp  cl,'A'                             ; fold character to lower case} flc wa  
-        jb   _l0428                             ; 
+        jb   _l0437                             ; 
         cmp  cl,'Z'                             ; 
-        ja   _l0428                             ; 
+        ja   _l0437                             ; 
         add  cl,32                              ; 
-_l0428             :                            ; 
+_l0437             :                            ; 
         mov  m_word [xs],xs                     ; set did fold character flag} mnz (xs)  
 fst02:
         mov  al,cl                              ; store (possibly folded) character} sch wa (xr)+ 
@@ -13481,13 +13513,13 @@ gbc12:
         std                                     ; 
         lea  xl,[xl-cfp_b]                      ; 
         lea  xr,[xr-cfp_b]                      ; 
-_l0429:                                         ; 
+_l0438:                                         ; 
         or   wa,wa                              ; 
-        jz   _l0430                             ; 
+        jz   _l0439                             ; 
         movs_w                                  ; 
         dec  wa                                 ; 
-        jmp  _l0429                             ; 
-_l0430:                                         ; 
+        jmp  _l0438                             ; 
+_l0439:                                         ; 
         cld                                     ; 
 gbc13:
         xor  xr,xr                              ; clear garbage value in xr} zer xr  
@@ -13566,9 +13598,9 @@ gpf3a:
         mov  xr,xl                              ; copy block pointer} mov xr xl 
         mov  xl,wa                              ; copy first word of block} mov xl wa 
         movzx xl,byte [xl-1]                    ; load entry point id (bl_xx)} lei xl  
-        jmp  m_word [_l0431+xl*cfp_b]           ; switch on block type} bsw xl bl___ 
+        jmp  m_word [_l0440+xl*cfp_b]           ; switch on block type} bsw xl bl___ 
         segment .data                           ; 
-_l0431:                                         ; 
+_l0440:                                         ; 
         d_word gpf06                            ; arblk} iff bl_ar gpf06 
         d_word gpf19                            ; cdblk} iff bl_cd gpf19 
         d_word gpf17                            ; exblk} iff bl_ex gpf17 
@@ -13607,8 +13639,12 @@ gpf05:
         add  xr,wb                              ; point to first reloc field} add xr wb 
         push wc                                 ; stack old field pointer} mov -(xs) wc 
         push wa                                 ; stack new limit pointer} mov -(xs) wa 
-        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspminx]              ; check for stack overflow} chk   
+        jae  _l0441                             ; 
+        mov  m_word [lowspminx],xs              ; 
+        cmp  xs,m_word [lowspmin]               ; 
         jb   sec06                              ; 
+_l0441:                                         ; 
         jmp  gpf01                              ; if ok, back to process} brn gpf01  
 gpf06:
         mov  wa,m_word [(cfp_b*arlen)+xr]       ; load length} mov wa arlen(xr) 
@@ -13760,10 +13796,10 @@ gtar7:
         dec  m_word [_rc_]                      ; 
         js   call_232                           ; 
         dec  m_word [_rc_]                      ; convert fail is impossible} ppm   
-        jns  _l0432                             ; 
+        jns  _l0442                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0432:                                         ; 
+_l0442:                                         ; 
 call_232:                                       ; 
         mov  xl,xr                              ; copy string pointer} mov xl xr 
         pop  xr                                 ; reload arblk pointer} mov xr (xs)+ 
@@ -13797,9 +13833,9 @@ gtcod:
         dec  m_word [_rc_]                      ; 
         js   call_233                           ; 
         dec  m_word [_rc_]                      ; jump if non-convertible} ppm gtcd2  
-        jns  _l0433                             ; 
+        jns  _l0443                             ; 
         jmp  gtcd2                              ; 
-_l0433:                                         ; 
+_l0443:                                         ; 
 call_233:                                       ; 
         mov  w0,m_word [flptr]                  ; save fail ptr in case of error} mov gtcef flptr 
         mov  m_word [gtcef],w0                  ; 
@@ -13833,9 +13869,9 @@ gtexp:
         dec  m_word [_rc_]                      ; 
         js   call_234                           ; 
         dec  m_word [_rc_]                      ; jump if unconvertible} ppm gtex2  
-        jns  _l0434                             ; 
+        jns  _l0444                             ; 
         jmp  gtex2                              ; 
-_l0434:                                         ; 
+_l0444:                                         ; 
 call_234:                                       ; 
         mov  xl,xr                              ; copy input string pointer} mov xl xr 
         lea  xl,[cfp_f+xl+wa]                   ; point one past the string end} plc xl wa 
@@ -13889,9 +13925,9 @@ gtint:
         dec  m_word [_rc_]                      ; 
         js   call_235                           ; 
         dec  m_word [_rc_]                      ; jump if unconvertible} ppm gtin3  
-        jns  _l0435                             ; 
+        jns  _l0445                             ; 
         jmp  gtin3                              ; 
-_l0435:                                         ; 
+_l0445:                                         ; 
 call_235:                                       ; 
         cmp  wa,b_icl                           ; jump if integer} beq wa =b_icl gtin1
         je   gtin1                              ; 
@@ -13924,9 +13960,9 @@ gtnum:
         dec  m_word [_rc_]                      ; 
         js   call_236                           ; 
         dec  m_word [_rc_]                      ; jump if unconvertible} ppm gtn36  
-        jns  _l0436                             ; 
+        jns  _l0446                             ; 
         jmp  gtn36                              ; 
-_l0436:                                         ; 
+_l0446:                                         ; 
 call_236:                                       ; 
         mov  ia,m_word [intv0]                  ; initialize integer result to zero} ldi intv0  
         test wa,wa                              ; jump to exit with zero if null} bze wa gtn32 
@@ -14035,10 +14071,10 @@ gtn11:
         mulsd ra,[reavt]                        ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0437                             ; 
+        jz   _l0447                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0437:                                         ; 
+_l0447:                                         ; 
         call do_chk_real_inf                    ; convert error if overflow} rov gtn36  
         jnz  gtn36                              ; 
         movsd [gtnsr],ra                        ; save result} str gtnsr  
@@ -14049,10 +14085,10 @@ _l0437:                                         ;
         addsd ra,[gtnsr]                        ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0438                             ; 
+        jz   _l0448                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0438:                                         ; 
+_l0448:                                         ; 
         mov  w0,m_word [gtndf]                  ; increment scale if after dec point} add gtnsc gtndf 
         add  m_word [gtnsc],w0                  ; 
         mov  m_word [gtnrd],xs                  ; set digit found flag} mnz gtnrd  
@@ -14173,10 +14209,10 @@ gtn23:
         divsd ra,[reatt]                        ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0439                             ; 
+        jz   _l0449                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0439:                                         ; 
+_l0449:                                         ; 
         sub  wa,num10                           ; decrement scale} sub wa =num10 
         jmp  gtn23                              ; and loop back} brn gtn23  
 gtn24:
@@ -14193,10 +14229,10 @@ gtn25:
         divsd ra,[xr]                           ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0440                             ; 
+        jz   _l0450                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0440:                                         ; 
+_l0450:                                         ; 
         jmp  gtn30                              ; and jump} brn gtn30  
 gtn26:
         neg  ia                                 ; get absolute value of exponent} ngi   
@@ -14211,10 +14247,10 @@ gtn27:
         mulsd ra,[reatt]                        ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0441                             ; 
+        jz   _l0451                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0441:                                         ; 
+_l0451:                                         ; 
         call do_chk_real_inf                    ; error if overflow} rov gtn36  
         jnz  gtn36                              ; 
         sub  wa,num10                           ; else decrement scale} sub wa =num10 
@@ -14233,10 +14269,10 @@ gtn29:
         mulsd ra,[xr]                           ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0442                             ; 
+        jz   _l0452                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0442:                                         ; 
+_l0452:                                         ; 
         call do_chk_real_inf                    ; error if overflow} rov gtn36  
         jnz  gtn36                              ; 
 gtn30:
@@ -14293,9 +14329,9 @@ gnv02:
         dec  m_word [_rc_]                      ; 
         js   call_237                           ; 
         dec  m_word [_rc_]                      ; jump if conversion error} ppm gnv01  
-        jns  _l0443                             ; 
+        jns  _l0453                             ; 
         jmp  gnv01                              ; 
-_l0443:                                         ; 
+_l0453:                                         ; 
 call_237:                                       ; 
         test wa,wa                              ; null string is an error} bze wa gnv01 
         jz   gnv01                              ; 
@@ -14466,9 +14502,9 @@ gtpat:
         dec  m_word [_rc_]                      ; 
         js   call_238                           ; 
         dec  m_word [_rc_]                      ; jump if impossible} ppm gtpt2  
-        jns  _l0444                             ; 
+        jns  _l0454                             ; 
         jmp  gtpt2                              ; 
-_l0444:                                         ; 
+_l0454:                                         ; 
 call_238:                                       ; 
         test wa,wa                              ; jump if non-null} bnz wa gtpt1 
         jnz  gtpt1                              ; 
@@ -14508,9 +14544,9 @@ gtrea:
         dec  m_word [_rc_]                      ; 
         js   call_239                           ; 
         dec  m_word [_rc_]                      ; jump if unconvertible} ppm gtre3  
-        jns  _l0445                             ; 
+        jns  _l0455                             ; 
         jmp  gtre3                              ; 
-_l0445:                                         ; 
+_l0455:                                         ; 
 call_239:                                       ; 
         cmp  wa,b_rcl                           ; jump if real was returned} beq wa =b_rcl gtre2
         je   gtre2                              ; 
@@ -14535,9 +14571,9 @@ gtsmi:
         dec  m_word [_rc_]                      ; 
         js   call_240                           ; 
         dec  m_word [_rc_]                      ; jump if convert is impossible} ppm gtsm2  
-        jns  _l0446                             ; 
+        jns  _l0456                             ; 
         jmp  gtsm2                              ; 
-_l0446:                                         ; 
+_l0456:                                         ; 
 call_240:                                       ; 
 gtsm1:
         mov  ia,m_word [(cfp_b*icval)+xr]       ; load integer value} ldi icval(xr)  
@@ -14669,10 +14705,10 @@ gts12:
         subsd ra,[reap1]                        ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0448                             ; 
+        jz   _l0458                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0448:                                         ; 
+_l0458:                                         ; 
         pxor xmm0,xmm0                          ; jump if scale up not required} rge gts13  
         ucomisd ra,xmm0                         ; 
         jae  gts13                              ; 
@@ -14681,10 +14717,10 @@ _l0448:                                         ;
         mulsd ra,[reatt]                        ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0449                             ; 
+        jz   _l0459                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0449:                                         ; 
+_l0459:                                         ; 
         sub  ia,m_word [intvt]                  ; decrement exponent by 10} sbi intvt  
         jmp  gts12                              ; loop back to test again} brn gts12  
 gts13:
@@ -14693,10 +14729,10 @@ gts13:
         subsd ra,[reav1]                        ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0450                             ; 
+        jz   _l0460                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0450:                                         ; 
+_l0460:                                         ; 
         pxor xmm0,xmm0                          ; jump if no scale down required} rlt gts17  
         ucomisd ra,xmm0                         ; 
         jb   gts17                              ; 
@@ -14706,10 +14742,10 @@ gts14:
         subsd ra,[reatt]                        ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0451                             ; 
+        jz   _l0461                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0451:                                         ; 
+_l0461:                                         ; 
         pxor xmm0,xmm0                          ; jump if large step not required} rlt gts15  
         ucomisd ra,xmm0                         ; 
         jb   gts15                              ; 
@@ -14718,10 +14754,10 @@ _l0451:                                         ;
         divsd ra,[reatt]                        ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0452                             ; 
+        jz   _l0462                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0452:                                         ; 
+_l0462:                                         ; 
         movsd [gtsrs],ra                        ; store new value} str gtsrs  
         add  ia,m_word [intvt]                  ; increment exponent by 10} adi intvt  
         jmp  gts14                              ; loop back} brn gts14  
@@ -14735,10 +14771,10 @@ gts16:
         subsd ra,[xr]                           ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0453                             ; 
+        jz   _l0463                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0453:                                         ; 
+_l0463:                                         ; 
         pxor xmm0,xmm0                          ; loop till we find a larger entry} rge gts16  
         ucomisd ra,xmm0                         ; 
         jae  gts16                              ; 
@@ -14747,10 +14783,10 @@ _l0453:                                         ;
         divsd ra,[xr]                           ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0454                             ; 
+        jz   _l0464                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0454:                                         ; 
+_l0464:                                         ; 
         movsd [gtsrs],ra                        ; store value} str gtsrs  
 gts17:
         movsd ra,[gtsrs]                        ; get value again} ldr gtsrs  
@@ -14758,19 +14794,19 @@ gts17:
         addsd ra,[gtsrn]                        ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0455                             ; 
+        jz   _l0465                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0455:                                         ; 
+_l0465:                                         ; 
         movsd [gtsrs],ra                        ; store result} str gtsrs  
         ldmxcsr [mxcsr_set]                     ; subtract 1.0 to compare} sbr reav1  
         subsd ra,[reav1]                        ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0456                             ; 
+        jz   _l0466                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0456:                                         ; 
+_l0466:                                         ; 
         pxor xmm0,xmm0                          ; skip if ok} rlt gts18  
         ucomisd ra,xmm0                         ; 
         jb   gts18                              ; 
@@ -14780,10 +14816,10 @@ _l0456:                                         ;
         divsd ra,[reavt]                        ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0457                             ; 
+        jz   _l0467                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0457:                                         ; 
+_l0467:                                         ; 
         jmp  gts19                              ; jump to merge} brn gts19  
 gts18:
         movsd ra,[gtsrs]                        ; reload rounded value} ldr gtsrs  
@@ -14839,10 +14875,10 @@ gts23:
         mulsd ra,[gtssc]                        ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0458                             ; 
+        jz   _l0468                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0458:                                         ; 
+_l0468:                                         ; 
         cvttsd2si ia,ra                         ; get integer (overflow impossible)} rti   
         neg  ia                                 ; negate as required by cvd} ngi   
 gts24:
@@ -14947,9 +14983,9 @@ gtvr2:
         dec  m_word [_rc_]                      ; 
         js   call_241                           ; 
         dec  m_word [_rc_]                      ; jump if convert error} ppm gtvr1  
-        jns  _l0459                             ; 
+        jns  _l0469                             ; 
         jmp  gtvr1                              ; 
-_l0459:                                         ; 
+_l0469:                                         ; 
 call_241:                                       ; 
         mov  xl,xr                              ; else copy vrblk name base} mov xl xr 
         mov  wa,cfp_b*vrval                     ; and set offset} mov wa *vrval 
@@ -15005,9 +15041,9 @@ hshsa:
         mov  xl,wc                              ; load length for branch} mov xl wc 
         cmp  xl,num25                           ; use first characters if longer} bge xl =num25 hsh24
         jae  hsh24                              ; 
-        jmp  m_word [_l0460+xl*cfp_b]           ; merge to compute hash} bsw xl 25 
+        jmp  m_word [_l0470+xl*cfp_b]           ; merge to compute hash} bsw xl 25 
         segment .data                           ; 
-_l0460:                                         ; 
+_l0470:                                         ; 
         d_word hsh00                            ; } iff 0 hsh00 
         d_word hsh01                            ; } iff 1 hsh01 
         d_word hsh02                            ; } iff 2 hsh02 
@@ -15279,10 +15315,10 @@ iden5:
         subsd ra,[(cfp_b*rcval)+xl]             ; 
         stmxcsr [mxcsr]                         ; 
         test m_word [mxcsr],0x0010              ; 
-        jz   _l0461                             ; 
+        jz   _l0471                             ; 
         pxor ra,ra                              ; 
         ldmxcsr [mxcsr_set]                     ; 
-_l0461:                                         ; 
+_l0471:                                         ; 
         call do_chk_real_inf                    ; differ if overflow} rov iden1  
         jnz  iden1                              ; 
         pxor xmm0,xmm0                          ; differ if result is not zero} rne iden1  
@@ -15316,10 +15352,10 @@ inout:
         dec  m_word [_rc_]                      ; 
         js   call_242                           ; 
         dec  m_word [_rc_]                      ; no error return} ppm   
-        jns  _l0462                             ; 
+        jns  _l0472                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0462:                                         ; 
+_l0472:                                         ; 
 call_242:                                       ; 
         mov  wc,xr                              ; save vrblk pointer} mov wc xr 
         pop  wb                                 ; get trter field} mov wb (xs)+ 
@@ -15380,18 +15416,18 @@ iofcb:
         dec  m_word [_rc_]                      ; 
         js   call_243                           ; 
         dec  m_word [_rc_]                      ; fail} ppm iofc2  
-        jns  _l0463                             ; 
+        jns  _l0473                             ; 
         jmp  iofc2                              ; 
-_l0463:                                         ; 
+_l0473:                                         ; 
 call_243:                                       ; 
         mov  xl,xr                              ; copy string ptr} mov xl xr 
         call gtnvr                              ; get as natural variable} jsr gtnvr  
         dec  m_word [_rc_]                      ; 
         js   call_244                           ; 
         dec  m_word [_rc_]                      ; fail if null} ppm iofc3  
-        jns  _l0464                             ; 
+        jns  _l0474                             ; 
         jmp  iofc3                              ; 
-_l0464:                                         ; 
+_l0474:                                         ; 
 call_244:                                       ; 
         mov  wb,xl                              ; copy string pointer again} mov wb xl 
         mov  xl,xr                              ; copy vrblk ptr for return} mov xl xr 
@@ -15454,13 +15490,13 @@ ioput:
         dec  m_word [_rc_]                      ; 
         js   call_245                           ; 
         dec  m_word [_rc_]                      ; fail} ppm iop13  
-        jns  _l0465                             ; 
+        jns  _l0475                             ; 
         jmp  iop13                              ; 
-_l0465:                                         ; 
+_l0475:                                         ; 
         dec  m_word [_rc_]                      ; null file arg2} ppm iopa0  
-        jns  _l0466                             ; 
+        jns  _l0476                             ; 
         jmp  iopa0                              ; 
-_l0466:                                         ; 
+_l0476:                                         ; 
 call_245:                                       ; 
 iopa0:
         mov  m_word [r_io2],xr                  ; keep file arg2} mov r_io2 xr 
@@ -15469,18 +15505,18 @@ iopa0:
         dec  m_word [_rc_]                      ; 
         js   call_246                           ; 
         dec  m_word [_rc_]                      ; fail} ppm iop14  
-        jns  _l0467                             ; 
+        jns  _l0477                             ; 
         jmp  iop14                              ; 
-_l0467:                                         ; 
+_l0477:                                         ; 
 call_246:                                       ; 
         mov  m_word [r_io1],xr                  ; keep filearg1 ptr} mov r_io1 xr 
         call gtnvr                              ; convert to natural variable} jsr gtnvr  
         dec  m_word [_rc_]                      ; 
         js   call_247                           ; 
         dec  m_word [_rc_]                      ; jump if null} ppm iop00  
-        jns  _l0468                             ; 
+        jns  _l0478                             ; 
         jmp  iop00                              ; 
-_l0468:                                         ; 
+_l0478:                                         ; 
 call_247:                                       ; 
         jmp  iop04                              ; jump to process non-null args} brn iop04  
 iop00:
@@ -15491,13 +15527,13 @@ iop00:
         dec  m_word [_rc_]                      ; 
         js   call_248                           ; 
         dec  m_word [_rc_]                      ; fail} ppm iop16  
-        jns  _l0469                             ; 
+        jns  _l0479                             ; 
         jmp  iop16                              ; 
-_l0469:                                         ; 
+_l0479:                                         ; 
         dec  m_word [_rc_]                      ; fail} ppm iop26  
-        jns  _l0470                             ; 
+        jns  _l0480                             ; 
         jmp  iop26                              ; 
-_l0470:                                         ; 
+_l0480:                                         ; 
 call_248:                                       ; 
         jmp  iop11                              ; complete file association} brn iop11  
 iop01:
@@ -15511,9 +15547,9 @@ iop01:
         dec  m_word [_rc_]                      ; 
         js   call_249                           ; 
         dec  m_word [_rc_]                      ; fail} ppm iop15  
-        jns  _l0471                             ; 
+        jns  _l0481                             ; 
         jmp  iop15                              ; 
-_l0471:                                         ; 
+_l0481:                                         ; 
 call_249:                                       ; 
         pop  wc                                 ; recover trblk pointer} mov wc (xs)+ 
         mov  m_word [r_ion],xl                  ; save name pointer} mov r_ion xl 
@@ -15561,13 +15597,13 @@ iop06:
         dec  m_word [_rc_]                      ; 
         js   call_250                           ; 
         dec  m_word [_rc_]                      ; fail} ppm iop16  
-        jns  _l0472                             ; 
+        jns  _l0482                             ; 
         jmp  iop16                              ; 
-_l0472:                                         ; 
+_l0482:                                         ; 
         dec  m_word [_rc_]                      ; fail} ppm iop26  
-        jns  _l0473                             ; 
+        jns  _l0483                             ; 
         jmp  iop26                              ; 
-_l0473:                                         ; 
+_l0483:                                         ; 
 call_250:                                       ; 
         test wa,wa                              ; skip if no new fcblk wanted} bze wa iop12 
         jz   iop12                              ; 
@@ -15624,13 +15660,13 @@ iop11:
         dec  m_word [_rc_]                      ; 
         js   call_251                           ; 
         dec  m_word [_rc_]                      ; fail} ppm iop17  
-        jns  _l0474                             ; 
+        jns  _l0484                             ; 
         jmp  iop17                              ; 
-_l0474:                                         ; 
+_l0484:                                         ; 
         dec  m_word [_rc_]                      ; fail} ppm iop18  
-        jns  _l0475                             ; 
+        jns  _l0485                             ; 
         jmp  iop18                              ; 
-_l0475:                                         ; 
+_l0485:                                         ; 
 call_251:                                       ; 
         cmp  m_word [r_iot],0                   ; not std input if non-null trtrf blk} bnz r_iot iop01 
         jnz  iop01                              ; 
@@ -15768,10 +15804,10 @@ ktrx1:
         dec  m_word [_rc_]                      ; 
         js   call_252                           ; 
         dec  m_word [_rc_]                      ; failure is impossible} ppm   
-        jns  _l0476                             ; 
+        jns  _l0486                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0476:                                         ; 
+_l0486:                                         ; 
 call_252:                                       ; 
         call prtvl                              ; print keyword value} jsr prtvl  
         call prtnl                              ; terminate print line} jsr prtnl  
@@ -15818,9 +15854,9 @@ lcomp:
         dec  m_word [_rc_]                      ; 
         js   call_253                           ; 
         dec  m_word [_rc_]                      ; jump if second arg not string} ppm lcmp6  
-        jns  _l0477                             ; 
+        jns  _l0487                             ; 
         jmp  lcmp6                              ; 
-_l0477:                                         ; 
+_l0487:                                         ; 
 call_253:                                       ; 
         mov  xl,xr                              ; else save pointer} mov xl xr 
         mov  wc,wa                              ; and length} mov wc wa 
@@ -15828,9 +15864,9 @@ call_253:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_254                           ; 
         dec  m_word [_rc_]                      ; jump if not string} ppm lcmp5  
-        jns  _l0478                             ; 
+        jns  _l0488                             ; 
         jmp  lcmp5                              ; 
-_l0478:                                         ; 
+_l0488:                                         ; 
 call_254:                                       ; 
         mov  wb,wa                              ; save arg 1 length} mov wb wa 
         add  xr,cfp_f                           ; point to chars of arg 1} plc xr  
@@ -15972,9 +16008,9 @@ newfn:
         dec  m_word [_rc_]                      ; 
         js   call_255                           ; 
         dec  m_word [_rc_]                      ; jump if identical} ppm nwfn1  
-        jns  _l0479                             ; 
+        jns  _l0489                             ; 
         jmp  nwfn1                              ; 
-_l0479:                                         ; 
+_l0489:                                         ; 
 call_255:                                       ; 
         pop  xr                                 ; different, restore name} mov xr (xs)+ 
         mov  m_word [r_sfc],xr                  ; record current file name} mov r_sfc xr 
@@ -15987,10 +16023,10 @@ call_255:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_256                           ; 
         dec  m_word [_rc_]                      ; always possible to allocate block} ppm   
-        jns  _l0480                             ; 
+        jns  _l0490                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0480:                                         ; 
+_l0490:                                         ; 
 call_256:                                       ; 
         mov  w0,m_word [r_sfc]                  ; record file name as entry value} mov teval(xl) r_sfc 
         mov  m_word [(cfp_b*teval)+xl],w0       ; 
@@ -16044,13 +16080,13 @@ patin:
         dec  m_word [_rc_]                      ; 
         js   call_257                           ; 
         dec  m_word [_rc_]                      ; jump if not integer} ppm ptin2  
-        jns  _l0481                             ; 
+        jns  _l0491                             ; 
         jmp  ptin2                              ; 
-_l0481:                                         ; 
+_l0491:                                         ; 
         dec  m_word [_rc_]                      ; jump if out of range} ppm ptin3  
-        jns  _l0482                             ; 
+        jns  _l0492                             ; 
         jmp  ptin3                              ; 
-_l0482:                                         ; 
+_l0492:                                         ; 
 call_257:                                       ; 
 ptin1:
         call pbild                              ; build pattern node} jsr pbild  
@@ -16075,9 +16111,9 @@ patst:
         dec  m_word [_rc_]                      ; 
         js   call_258                           ; 
         dec  m_word [_rc_]                      ; jump if not string} ppm pats7  
-        jns  _l0483                             ; 
+        jns  _l0493                             ; 
         jmp  pats7                              ; 
-_l0483:                                         ; 
+_l0493:                                         ; 
 call_258:                                       ; 
         test wa,wa                              ; jump if null string (catspaw)} bze wa pats7 
         jz   pats7                              ; 
@@ -16227,8 +16263,12 @@ pcop1:
         call alloc                              ; allocate space for copy} jsr alloc  
         push xl                                 ; store old address on list} mov -(xs) xl 
         push xr                                 ; store new address on list} mov -(xs) xr 
-        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspminx]              ; check for stack overflow} chk   
+        jae  _l0494                             ; 
+        mov  m_word [lowspminx],xs              ; 
+        cmp  xs,m_word [lowspmin]               ; 
         jb   sec06                              ; 
+_l0494:                                         ; 
         shr  wa,log_cfp_b                       ; move words from old block to copy} mvw   
         rep  movs_w                             ; 
         mov  wa,m_word [xs]                     ; load pointer to copy} mov wa (xs) 
@@ -16437,10 +16477,10 @@ prpa6:
         dec  m_word [_rc_]                      ; 
         js   call_259                           ; 
         dec  m_word [_rc_]                      ; cant fail} ppm   
-        jns  _l0484                             ; 
+        jns  _l0495                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0484:                                         ; 
+_l0495:                                         ; 
 call_259:                                       ; 
         mov  m_word [(cfp_b*vrval)+xr],nulls    ; clear value of terminal} mov vrval(xr) =nulls 
         call setvr                              ; remove association} jsr setvr  
@@ -16485,9 +16525,9 @@ prtic:
         dec  m_word [_rc_]                      ; 
         js   call_260                           ; 
         dec  m_word [_rc_]                      ; fail return} ppm prtc2  
-        jns  _l0485                             ; 
+        jns  _l0496                             ; 
         jmp  prtc2                              ; 
-_l0485:                                         ; 
+_l0496:                                         ; 
 call_260:                                       ; 
 prtc1:
         pop  xr                                 ; restore xr} mov xr (xs)+ 
@@ -16525,10 +16565,10 @@ prti1:
         dec  m_word [_rc_]                      ; 
         js   call_261                           ; 
         dec  m_word [_rc_]                      ; convert error is impossible} ppm   
-        jns  _l0486                             ; 
+        jns  _l0497                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0486:                                         ; 
+_l0497:                                         ; 
 call_261:                                       ; 
         mov  m_word [dnamp],xr                  ; reset pointer to delete scblk} mov dnamp xr 
         call prtst                              ; print integer string} jsr prtst  
@@ -16580,9 +16620,9 @@ prnl0:
         dec  m_word [_rc_]                      ; 
         js   call_262                           ; 
         dec  m_word [_rc_]                      ; jump if failed} ppm prnl2  
-        jns  _l0487                             ; 
+        jns  _l0498                             ; 
         jmp  prnl2                              ; 
-_l0487:                                         ; 
+_l0498:                                         ; 
 call_262:                                       ; 
         mov  wa,m_word [prlnw]                  ; load length of buffer in words} lct wa prlnw 
         add  xr,cfp_b*schar                     ; point to chars of buffer} add xr *schar 
@@ -16907,8 +16947,12 @@ prtvl:
                                                 ; entry point, recursive} prc r 0 
         push xl                                 ; save entry xl} mov -(xs) xl 
         push xr                                 ; save argument} mov -(xs) xr 
-        cmp  xs,m_word [lowspmin]               ; check for stack overflow} chk   
+        cmp  xs,m_word [lowspminx]              ; check for stack overflow} chk   
+        jae  _l0500                             ; 
+        mov  m_word [lowspminx],xs              ; 
+        cmp  xs,m_word [lowspmin]               ; 
         jb   sec06                              ; 
+_l0500:                                         ; 
 prv01:
         mov  w0,m_word [(cfp_b*idval)+xr]       ; copy idval (if any)} mov prvsi idval(xr) 
         mov  m_word [prvsi],w0                  ; 
@@ -16916,9 +16960,9 @@ prv01:
         movzx xl,byte [xl-1]                    ; load entry point id} lei xl  
         cmp  xl,bl__t                           ; switch on block type} bsw xl bl__t prv02
         jge  prv02                              ; 
-        jmp  m_word [_l0489+xl*cfp_b]           ; 
+        jmp  m_word [_l0501+xl*cfp_b]           ; 
         segment .data                           ; 
-_l0489:                                         ; 
+_l0501:                                         ; 
         d_word prv05                            ; arblk} iff bl_ar prv05 
         d_word prv02                            ; } iff 1 prv02 
         d_word prv02                            ; } iff 2 prv02 
@@ -16974,10 +17018,10 @@ prv08:
         dec  m_word [_rc_]                      ; 
         js   call_263                           ; 
         dec  m_word [_rc_]                      ; error return is impossible} ppm   
-        jns  _l0490                             ; 
+        jns  _l0502                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0490:                                         ; 
+_l0502:                                         ; 
 call_263:                                       ; 
         call prtst                              ; print the string} jsr prtst  
         mov  m_word [dnamp],xr                  ; delete garbage string from storage} mov dnamp xr 
@@ -17072,9 +17116,9 @@ reada:
         dec  m_word [_rc_]                      ; 
         js   call_264                           ; 
         dec  m_word [_rc_]                      ; jump if eof or new file name} ppm read4  
-        jns  _l0491                             ; 
+        jns  _l0503                             ; 
         jmp  read4                              ; 
-_l0491:                                         ; 
+_l0503:                                         ; 
 call_264:                                       ; 
         inc  m_word [rdnln]                     ; increment next line number} icv rdnln  
         dec  m_word [polct]                     ; test if time to poll interface} dcv polct  
@@ -17086,20 +17130,20 @@ call_264:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_265                           ; 
         dec  m_word [_rc_]                      ; } err 320 user interrupt 
-        jns  _l0492                             ; 
+        jns  _l0504                             ; 
         mov  m_word [_rc_],320                  ; 
         jmp  err_                               ; 
-_l0492:                                         ; 
+_l0504:                                         ; 
         dec  m_word [_rc_]                      ; single step} ppm   
-        jns  _l0493                             ; 
+        jns  _l0505                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0493:                                         ; 
+_l0505:                                         ; 
         dec  m_word [_rc_]                      ; expression evaluation} ppm   
-        jns  _l0494                             ; 
+        jns  _l0506                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0494:                                         ; 
+_l0506:                                         ; 
 call_265:                                       ; 
         mov  m_word [polcs],wa                  ; new countdown start value} mov polcs wa 
         mov  m_word [polct],wa                  ; new counter value} mov polct wa 
@@ -17133,10 +17177,10 @@ read5:
         dec  m_word [_rc_]                      ; 
         js   call_266                           ; 
         dec  m_word [_rc_]                      ; } ppm   
-        jns  _l0495                             ; 
+        jns  _l0507                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0495:                                         ; 
+_l0507:                                         ; 
 call_266:                                       ; 
         mov  wa,m_word [cnind]                  ; restore prev line number, file name} mov wa cnind 
         add  wa,vcvlb                           ; vector offset in words} add wa =vcvlb 
@@ -17163,10 +17207,10 @@ call_266:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_267                           ; 
         dec  m_word [_rc_]                      ; always possible to allocate block} ppm   
-        jns  _l0496                             ; 
+        jns  _l0508                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0496:                                         ; 
+_l0508:                                         ; 
 call_267:                                       ; 
         mov  w0,m_word [r_sfc]                  ; record file name as entry value} mov teval(xl) r_sfc 
         mov  m_word [(cfp_b*teval)+xl],w0       ; 
@@ -17250,9 +17294,9 @@ tfind:
         movzx xl,byte [xl-1]                    ; load block entry id (bl_xx)} lei xl  
         cmp  xl,bl__d                           ; switch on block type} bsw xl bl__d tfn00
         jge  tfn00                              ; 
-        jmp  m_word [_l0498+xl*cfp_b]           ; 
+        jmp  m_word [_l0510+xl*cfp_b]           ; 
         segment .data                           ; 
-_l0498:                                         ; 
+_l0510:                                         ; 
         d_word tfn00                            ; } iff 0 tfn00 
         d_word tfn00                            ; } iff 1 tfn00 
         d_word tfn00                            ; } iff 2 tfn00 
@@ -17309,9 +17353,9 @@ tfn07:
         dec  m_word [_rc_]                      ; 
         js   call_268                           ; 
         dec  m_word [_rc_]                      ; jump if equal (ident)} ppm tfn08  
-        jns  _l0499                             ; 
+        jns  _l0511                             ; 
         jmp  tfn08                              ; 
-_l0499:                                         ; 
+_l0511:                                         ; 
 call_268:                                       ; 
         mov  xl,wb                              ; restore teblk pointer} mov xl wb 
         mov  xr,m_word [(cfp_b*tenxt)+xl]       ; point to next teblk on chain} mov xr tenxt(xl) 
@@ -17329,9 +17373,9 @@ tfn08:
         dec  m_word [_rc_]                      ; 
         js   call_269                           ; 
         dec  m_word [_rc_]                      ; jump if reference fails} ppm tfn12  
-        jns  _l0500                             ; 
+        jns  _l0512                             ; 
         jmp  tfn12                              ; 
-_l0500:                                         ; 
+_l0512:                                         ; 
 call_269:                                       ; 
         xor  wb,wb                              ; restore name/value indicator} zer wb  
 tfn09:
@@ -17471,9 +17515,9 @@ scn06:
         mov  m_word [scnpt],wa                  ; store offset past char scanned} mov scnpt wa 
         cmp  xr,cfp_u                           ; switch on scanned character} bsw xr cfp_u scn07
         jge  scn07                              ; 
-        jmp  m_word [_l0501+xr*cfp_b]           ; 
+        jmp  m_word [_l0513+xr*cfp_b]           ; 
         segment .data                           ; 
-_l0501:                                         ; 
+_l0513:                                         ; 
         d_word scn07                            ; } iff 0 scn07 
         d_word scn07                            ; } iff 1 scn07 
         d_word scn07                            ; } iff 2 scn07 
@@ -17632,9 +17676,9 @@ scn11:
         dec  m_word [_rc_]                      ; 
         js   call_270                           ; 
         dec  m_word [_rc_]                      ; jump if conversion failure} ppm scn14  
-        jns  _l0502                             ; 
+        jns  _l0514                             ; 
         jmp  scn14                              ; 
-_l0502:                                         ; 
+_l0514:                                         ; 
 call_270:                                       ; 
 scn12:
         mov  xl,t_con                           ; set result type of constant} mov xl =t_con 
@@ -17658,10 +17702,10 @@ scn15:
         dec  m_word [_rc_]                      ; 
         js   call_271                           ; 
         dec  m_word [_rc_]                      ; dummy (unused) error return} ppm   
-        jns  _l0503                             ; 
+        jns  _l0515                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0503:                                         ; 
+_l0515:                                         ; 
 call_271:                                       ; 
         mov  xl,t_var                           ; set type as variable} mov xl =t_var 
         jmp  scn13                              ; back to exit} brn scn13  
@@ -17728,10 +17772,10 @@ scn25:
         dec  m_word [_rc_]                      ; 
         js   call_272                           ; 
         dec  m_word [_rc_]                      ; dummy (unused) error return} ppm   
-        jns  _l0504                             ; 
+        jns  _l0516                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0504:                                         ; 
+_l0516:                                         ; 
 call_272:                                       ; 
         mov  xl,t_fnc                           ; set code for function call} mov xl =t_fnc 
         jmp  scn13                              ; back to exit} brn scn13  
@@ -17919,13 +17963,13 @@ sorta:
         dec  m_word [_rc_]                      ; 
         js   call_273                           ; 
         dec  m_word [_rc_]                      ; signal that table is empty} ppm srt18  
-        jns  _l0505                             ; 
+        jns  _l0517                             ; 
         jmp  srt18                              ; 
-_l0505:                                         ; 
+_l0517:                                         ; 
         dec  m_word [_rc_]                      ; error if non-convertable} ppm srt16  
-        jns  _l0506                             ; 
+        jns  _l0518                             ; 
         jmp  srt16                              ; 
-_l0506:                                         ; 
+_l0518:                                         ; 
 call_273:                                       ; 
         push xr                                 ; stack ptr to resulting key array} mov -(xs) xr 
         push xr                                 ; another copy for copyb} mov -(xs) xr 
@@ -17933,10 +17977,10 @@ call_273:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_274                           ; 
         dec  m_word [_rc_]                      ; cant fail} ppm   
-        jns  _l0507                             ; 
+        jns  _l0519                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0507:                                         ; 
+_l0519:                                         ; 
 call_274:                                       ; 
         push xr                                 ; stack pointer to sort array} mov -(xs) xr 
         mov  xr,m_word [r_sxr]                  ; get second arg} mov xr r_sxr 
@@ -17949,10 +17993,10 @@ call_274:                                       ;
         dec  m_word [_rc_]                      ; 
         js   call_275                           ; 
         dec  m_word [_rc_]                      ; } err 257 erroneous 2nd arg in sort/rsort of vector 
-        jns  _l0508                             ; 
+        jns  _l0520                             ; 
         mov  m_word [_rc_],257                  ; 
         jmp  err_                               ; 
-_l0508:                                         ; 
+_l0520:                                         ; 
 call_275:                                       ; 
         mov  m_word [srtdf],xr                  ; store datatype field name vrblk} mov srtdf xr 
 srt01:
@@ -17978,9 +18022,9 @@ srt02:
         dec  m_word [_rc_]                      ; 
         js   call_276                           ; 
         dec  m_word [_rc_]                      ; fail} ppm srt17  
-        jns  _l0509                             ; 
+        jns  _l0521                             ; 
         jmp  srt17                              ; 
-_l0509:                                         ; 
+_l0521:                                         ; 
 call_276:                                       ; 
         mov  ia,m_word [(cfp_b*icval)+xr]       ; get actual integer value} ldi icval(xr)  
 srt03:
@@ -18144,25 +18188,25 @@ src14:
         dec  m_word [_rc_]                      ; 
         js   call_277                           ; 
         dec  m_word [_rc_]                      ; not numeric} ppm src10  
-        jns  _l0510                             ; 
+        jns  _l0522                             ; 
         jmp  src10                              ; 
-_l0510:                                         ; 
+_l0522:                                         ; 
         dec  m_word [_rc_]                      ; not numeric} ppm src10  
-        jns  _l0511                             ; 
+        jns  _l0523                             ; 
         jmp  src10                              ; 
-_l0511:                                         ; 
+_l0523:                                         ; 
         dec  m_word [_rc_]                      ; key1 less} ppm src03  
-        jns  _l0512                             ; 
+        jns  _l0524                             ; 
         jmp  src03                              ; 
-_l0512:                                         ; 
+_l0524:                                         ; 
         dec  m_word [_rc_]                      ; keys equal} ppm src08  
-        jns  _l0513                             ; 
+        jns  _l0525                             ; 
         jmp  src08                              ; 
-_l0513:                                         ; 
+_l0525:                                         ; 
         dec  m_word [_rc_]                      ; key1 greater} ppm src05  
-        jns  _l0514                             ; 
+        jns  _l0526                             ; 
         jmp  src05                              ; 
-_l0514:                                         ; 
+_l0526:                                         ; 
 call_277:                                       ; 
 src03:
         cmp  m_word [srtsr],0                   ; jump if rsort} bnz srtsr src06 
@@ -18195,27 +18239,27 @@ src09:
         dec  m_word [_rc_]                      ; 
         js   call_278                           ; 
         dec  m_word [_rc_]                      ; cant} ppm   
-        jns  _l0515                             ; 
+        jns  _l0527                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0515:                                         ; 
+_l0527:                                         ; 
         dec  m_word [_rc_]                      ; fail} ppm   
-        jns  _l0516                             ; 
+        jns  _l0528                             ; 
         mov  m_word [_rc_],299                  ; 
         jmp  err_                               ; 
-_l0516:                                         ; 
+_l0528:                                         ; 
         dec  m_word [_rc_]                      ; key1 less} ppm src03  
-        jns  _l0517                             ; 
+        jns  _l0529                             ; 
         jmp  src03                              ; 
-_l0517:                                         ; 
+_l0529:                                         ; 
         dec  m_word [_rc_]                      ; keys equal} ppm src08  
-        jns  _l0518                             ; 
+        jns  _l0530                             ; 
         jmp  src08                              ; 
-_l0518:                                         ; 
+_l0530:                                         ; 
         dec  m_word [_rc_]                      ; key1 greater} ppm src05  
-        jns  _l0519                             ; 
+        jns  _l0531                             ; 
         jmp  src05                              ; 
-_l0519:                                         ; 
+_l0531:                                         ; 
 call_278:                                       ; 
 src10:
         mov  xl,m_word [r_sxl]                  ; get arg1} mov xl r_sxl 
@@ -18309,9 +18353,9 @@ srh01:
         dec  m_word [_rc_]                      ; 
         js   call_279                           ; 
         dec  m_word [_rc_]                      ; a(j+1) lt a(j)} ppm srh02  
-        jns  _l0520                             ; 
+        jns  _l0532                             ; 
         jmp  srh02                              ; 
-_l0520:                                         ; 
+_l0532:                                         ; 
 call_279:                                       ; 
         add  wc,cfp_b                           ; point to greater son, a(j+1)} ica wc  
 srh02:
@@ -18327,9 +18371,9 @@ srh02:
         dec  m_word [_rc_]                      ; 
         js   call_280                           ; 
         dec  m_word [_rc_]                      ; father exceeds sons - done} ppm srh03  
-        jns  _l0521                             ; 
+        jns  _l0533                             ; 
         jmp  srh03                              ; 
-_l0521:                                         ; 
+_l0533:                                         ; 
 call_280:                                       ; 
         mov  xr,m_word [xs]                     ; get sort array adrs} mov xr (xs) 
         add  xr,m_word [srtso]                  ; point to a(0)} add xr srtso 
@@ -18367,20 +18411,20 @@ trace:
         dec  m_word [_rc_]                      ; 
         js   call_281                           ; 
         dec  m_word [_rc_]                      ; jump if not string} ppm trc15  
-        jns  _l0522                             ; 
+        jns  _l0534                             ; 
         jmp  trc15                              ; 
-_l0522:                                         ; 
+_l0534:                                         ; 
 call_281:                                       ; 
         add  xr,cfp_f                           ; else point to string} plc xr  
         xor  w0,w0                              ; load first character} lch wa (xr) 
         mov  al,m_char [xr]                     ; 
         mov  wa,w0                              ; 
         cmp  cl,'A'                             ; fold to lower case} flc wa  
-        jb   _l0523                             ; 
+        jb   _l0535                             ; 
         cmp  cl,'Z'                             ; 
-        ja   _l0523                             ; 
+        ja   _l0535                             ; 
         add  cl,32                              ; 
-_l0523             :                            ; 
+_l0535             :                            ; 
         mov  xr,m_word [xs]                     ; load name argument} mov xr (xs) 
         mov  m_word [xs],xl                     ; stack trblk ptr or zero} mov (xs) xl 
         mov  wc,trtac                           ; set trtyp for access trace} mov wc =trtac 
@@ -18406,9 +18450,9 @@ trc01:
         dec  m_word [_rc_]                      ; 
         js   call_282                           ; 
         dec  m_word [_rc_]                      ; jump if bad name} ppm trc16  
-        jns  _l0524                             ; 
+        jns  _l0536                             ; 
         jmp  trc16                              ; 
-_l0524:                                         ; 
+_l0536:                                         ; 
 call_282:                                       ; 
         add  xs,cfp_b                           ; pop stack} ica xs  
         mov  xr,m_word [(cfp_b*vrfnc)+xr]       ; point to function block} mov xr vrfnc(xr) 
@@ -18429,9 +18473,9 @@ trc03:
         dec  m_word [_rc_]                      ; 
         js   call_283                           ; 
         dec  m_word [_rc_]                      ; jump if bad name} ppm trc16  
-        jns  _l0525                             ; 
+        jns  _l0537                             ; 
         jmp  trc16                              ; 
-_l0525:                                         ; 
+_l0537:                                         ; 
 call_283:                                       ; 
         mov  xl,m_word [(cfp_b*vrlbl)+xr]       ; load label pointer} mov xl vrlbl(xr) 
         cmp  m_word [xl],b_trt                  ; jump if no old trace} bne (xl) =b_trt trc04
@@ -18461,9 +18505,9 @@ trc06:
         dec  m_word [_rc_]                      ; 
         js   call_284                           ; 
         dec  m_word [_rc_]                      ; error if not natural var} ppm trc16  
-        jns  _l0526                             ; 
+        jns  _l0538                             ; 
         jmp  trc16                              ; 
-_l0526:                                         ; 
+_l0538:                                         ; 
 call_284:                                       ; 
         cmp  m_word [(cfp_b*vrlen)+xr],0        ; error if not system var} bnz vrlen(xr) trc16 
         jnz  trc16                              ; 
@@ -18499,9 +18543,9 @@ trc10:
         dec  m_word [_rc_]                      ; 
         js   call_285                           ; 
         dec  m_word [_rc_]                      ; error if not appropriate name} ppm trc16  
-        jns  _l0527                             ; 
+        jns  _l0539                             ; 
         jmp  trc16                              ; 
-_l0527:                                         ; 
+_l0539:                                         ; 
 call_285:                                       ; 
         pop  wb                                 ; get new trblk ptr again} mov wb (xs)+ 
         add  wa,xl                              ; point to variable location} add wa xl 
@@ -18736,9 +18780,9 @@ xscni:
         dec  m_word [_rc_]                      ; 
         js   call_286                           ; 
         dec  m_word [_rc_]                      ; jump if not convertible} ppm xsci1  
-        jns  _l0528                             ; 
+        jns  _l0540                             ; 
         jmp  xsci1                              ; 
-_l0528:                                         ; 
+_l0540:                                         ; 
 call_286:                                       ; 
         mov  m_word [r_xsc],xr                  ; else store scblk ptr for xscan} mov r_xsc xr 
         xor  w0,w0                              ; set offset to zero} zer xsofs  
@@ -18786,9 +18830,9 @@ error:
         mov  m_word [polcs],num01               ; reset poll count} mov polcs =num01 
         mov  m_word [polct],num01               ; reset poll count} mov polct =num01 
         mov  xr,m_word [stage]                  ; load current stage} mov xr stage 
-        jmp  m_word [_l0529+xr*cfp_b]           ; jump to appropriate error circuit} bsw xr stgno 
+        jmp  m_word [_l0541+xr*cfp_b]           ; jump to appropriate error circuit} bsw xr stgno 
         segment .data                           ; 
-_l0529:                                         ; 
+_l0541:                                         ; 
         d_word err01                            ; initial compile} iff stgic err01 
         d_word err04                            ; execute time compile} iff stgxc err04 
         d_word err04                            ; eval compiling expr.} iff stgev err04 
@@ -18811,9 +18855,9 @@ err01:
         dec  m_word [_rc_]                      ; 
         js   call_287                           ; 
         dec  m_word [_rc_]                      ; if system does not want print} ppm erra3  
-        jns  _l0530                             ; 
+        jns  _l0542                             ; 
         jmp  erra3                              ; 
-_l0530:                                         ; 
+_l0542:                                         ; 
 call_287:                                       ; 
         push xr                                 ; save any provided print message} mov -(xs) xr 
         mov  w0,m_word [erich]                  ; set flag for listr} mov erlst erich 
