@@ -12,8 +12,6 @@ Copyright 2012-2017 David Shields
 #ifndef _sproto_
 #define _sproto_
 
-#include <stddef.h>
-
 typedef int File_handle;
 typedef int File_mode;
 typedef int Open_method;
@@ -84,7 +82,7 @@ extern void init_custom(void);
 extern void initpath(char *name);
 extern word lenfnm(struct scblk *scptr);
 extern int length(char *cp);
-extern void *loadef(word fd, char *filename);
+extern void *loadef(void *handle, char *filename);
 extern long lstrncmp(char *, char *, long, long);
 extern int _main(int srcfd, int argc, char *argv[]);
 extern int makeexec(struct scblk *scptr, int type);
@@ -206,7 +204,6 @@ extern int zysxi(void);
 
 /* prototypes for standard system-level functions used by OSINT */
 
-#include <unistd.h>
 #define LSEEK lseek
 
 /* Redefine sbrk and brk to use custom routines in syslinux.c */

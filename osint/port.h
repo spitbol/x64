@@ -12,6 +12,8 @@ Copyright 2012-2017 David Shields
 /   dependencies.  Many of these values will be changed when porting
 /   the OS interface to another machine/operating system.
 */
+#include <stdlib.h>
+#include <unistd.h>
 #include "systype.h"
 
 /*
@@ -369,7 +371,6 @@ OUTPUT, TERMINAL
 #define const
 
 #include "osint.h"
-#include <stdlib.h>
 
 #ifdef PRIVATEBLOCKS
 # include "extern32.h"

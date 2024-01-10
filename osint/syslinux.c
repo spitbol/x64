@@ -15,10 +15,8 @@ Copyright 2012-2017 David Shields
 /*#include <unistd.h> */
 #include "port.h"
 #include <fcntl.h>
-#include <stdlib.h>
 #undef brk  /* remove sproto redefinition */
 #undef sbrk /* remove sproto redefinition */
-#include <malloc.h>
 
 /* Size and offset of fields of a structure.  Probably not portable. */
 #define FIELDSIZE(str, fld) (sizeof(((str *)0)->fld))
